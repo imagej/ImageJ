@@ -85,7 +85,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	private int width, height, numPixels;
 
 	public ColorThresholder() {
-		super("Threshold Color (experimental)");
+		super("Threshold Color");
 		if (instance!=null) {
 			WindowManager.toFront(instance);
 			return;

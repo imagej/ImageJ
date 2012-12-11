@@ -244,9 +244,12 @@ public class FolderOpener implements PlugIn {
 							bitDepth2 = 24;
 						}
 						if (bitDepth2!=bitDepth) {
-							if (bitDepth==8) {
+							if (bitDepth==8 && bitDepth2==24) {
 								ip = ip.convertToByte(true);
 								bitDepth2 = 8;
+							} else if (bitDepth==32) {
+								ip = ip.convertToFloat();
+								bitDepth2 = 32;
 							} else if (bitDepth==24) {
 								ip = ip.convertToRGB();
 								bitDepth2 = 24;

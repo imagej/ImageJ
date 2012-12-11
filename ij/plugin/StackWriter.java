@@ -170,6 +170,18 @@ public class StackWriter implements PlugIn {
 				path = directory+name+digits+extension;
 			else
 				path = directory+label+extension;
+			if (i==1) {
+				File f = new File(path);
+				if (f.exists()) {
+					if (!IJ.isMacro() && !IJ.showMessageWithCancel("Overwrite files?",
+						"One or more files will be overwritten if you click \"OK\".\n \n"+path)) {
+						imp.unlock();
+						IJ.showStatus("");
+						IJ.showProgress(1.0);
+						return;
+					}
+				}
+			}
 			if (Recorder.record)
 				Recorder.disablePathRecording();
 			IJ.saveAs(imp2, format, path);

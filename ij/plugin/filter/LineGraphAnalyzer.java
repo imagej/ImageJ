@@ -23,7 +23,7 @@ public class LineGraphAnalyzer implements PlugInFilter, Measurements  {
 	/** Uses ImageJ's particle analyzer to extract a set
 		of coordinate pairs from a digitized line graph. */
 	public void analyze(ImagePlus imp) {
-		ByteProcessor ip = (ByteProcessor)imp.getProcessor();
+		ImageProcessor ip = imp.getProcessor();
 		ImageProcessor ip2 = ip.crop();
 		int width = ip2.getWidth();
 		int height = ip2.getHeight();
@@ -42,8 +42,8 @@ public class LineGraphAnalyzer implements PlugInFilter, Measurements  {
 		cal.pixelWidth = ph;
 		cal.pixelHeight = pw;
 		imp2.setCalibration(cal);
-		if (IJ.altKeyDown()) imp2.show();
-		
+		if (IJ.altKeyDown())
+			imp2.show();
 		int options = ParticleAnalyzer.SHOW_PROGRESS;
 		int measurements = CENTROID;
 		int minSize = 1;
