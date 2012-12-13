@@ -2073,7 +2073,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (nonRect) ip.snapshot();
 			r = roi.getBounds();
 			ip.copyBits(clipboard.getProcessor(), r.x, r.y, pasteMode);
-			if (nonRect) ip.reset(getMask());
+			if (nonRect) {
+				ImageProcessor mask = roi.getMask();
+				ip.setMask(mask);
+				ip.setRoi(roi.getBounds());
+				ip.reset(ip.getMask());
+			}
 			updateAndDraw();
 			//deleteRoi();
 		} else if (roi!=null) {
