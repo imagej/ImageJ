@@ -1052,10 +1052,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		imp.draw(clipX-5, clipY-5, clipWidth+10, clipHeight+10);
 		if (Recorder.record) {
 			String method;
-			if (type==LINE) {
-				Line line = (Line)imp.getRoi();
-				Recorder.record("makeLine", line.x1, line.y1, line.x2, line.y2);
-			} else if (type==OVAL)
+			if (type==OVAL)
 				Recorder.record("makeOval", x, y, width, height);
 			else if (!(this instanceof TextRoi)) {
 				if (cornerDiameter==0)
@@ -1658,6 +1655,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		handleMouseDrag(e.getX(), e.getY(), e.getModifiers());
 	}
 	
+	public void mouseMoved(MouseEvent e) {
+	}
+
 	public void mouseReleased(MouseEvent e) {
 		handleMouseUp(e.getX(), e.getY());
 	}

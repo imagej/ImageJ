@@ -1392,11 +1392,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			&& roi.getState()==roi.CONSTRUCTING
 			&& type!=roi.POINT)
 				imp.deleteRoi();
-			else {
+			else
 				roi.handleMouseUp(e.getX(), e.getY());
-				if (roi.getType()==Roi.LINE && roi.getLength()==0.0)
-					imp.deleteRoi();
-			}
 		}
 	}
 	
@@ -1473,11 +1470,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (e.isConsumed()) return;
 		}
 		Roi roi = imp.getRoi();
-		if (roi!=null && (roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE || roi.getType()==Roi.ANGLE) 
-		&& roi.getState()==roi.CONSTRUCTING) {
-			PolygonRoi pRoi = (PolygonRoi)roi;
-			pRoi.handleMouseMove(sx, sy);
-		} else {
+		int type = roi!=null?roi.getType():-1;
+		if (type>0 && (type==Roi.POLYGON||type==Roi.POLYLINE||type==Roi.ANGLE||type==Roi.LINE) 
+		&& roi.getState()==roi.CONSTRUCTING)
+			roi.mouseMoved(e);
+		else {
 			if (ox<imageWidth && oy<imageHeight) {
 				ImageWindow win = imp.getWindow();
 				// Cursor must move at least 12 pixels before text

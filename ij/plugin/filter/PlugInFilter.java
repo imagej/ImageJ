@@ -82,7 +82,10 @@ public interface PlugInFilter {
     public final int FINAL_PROCESSING = 65536;
     /** Set this flag to keep the invisible binary threshold from being reset. */
     public final int KEEP_THRESHOLD = 131072;
-    /** Set this flag if images may be processed in parallel threads. Overrides PARALLELIZE_STACKS. */
+    /** Set this flag if images may be processed in parallel threads. Overrides PARALLELIZE_STACKS.
+		The plugin's run() method is called in parallel threads, with the ROI rectangle of the
+		ImageProcessor set according to the area that should be processed. Use the
+		Edit/Options/Memory & Threads command to view or set the thread count. */
     public final int PARALLELIZE_IMAGES = 262144;
 
     // flags 0x01000000 and above are reserved for ExtendedPlugInFilter

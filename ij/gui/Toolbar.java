@@ -282,6 +282,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					m(1,14); d(14,1); m(6,5); d(14,1); m(10,9); d(14,1); m(6,5); d(10,9);
 				} else {
 					m(0,12); d(17,3);
+					g.setColor(Color.red);
+					m(0,11); d(0,12); d(1,12);
+					m(9,7); d(10,7);;
+					m(17,2); d(18,2); d(18,3);
 				}
 				drawTriangle(12,14);
 				return;

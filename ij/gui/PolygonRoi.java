@@ -6,6 +6,7 @@ import ij.plugin.frame.*;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.geom.*;
+import java.awt.event.*;
 
 /** This class represents a polygon region of interest or polyline of interest. */
 public class PolygonRoi extends Roi {
@@ -358,7 +359,9 @@ public class PolygonRoi extends Roi {
 		}
 	}
 
-	void handleMouseMove(int sx, int sy) {
+	public void mouseMoved(MouseEvent e) {
+		int sx = e.getX();
+		int sy = e.getY();
 		// Do rubber banding
 		int tool = Toolbar.getToolId();
 		if (!(tool==Toolbar.POLYGON || tool==Toolbar.POLYLINE || tool==Toolbar.ANGLE)) {
