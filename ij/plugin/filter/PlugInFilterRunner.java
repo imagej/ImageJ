@@ -57,7 +57,13 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 			nPasses = ((flags&PlugInFilter.CONVERT_TO_FLOAT)!=0) ? imp.getProcessor().getNChannels():1;
 		}
 		if (theFilter instanceof ExtendedPlugInFilter) { // calling showDialog required?
-			flags = ((ExtendedPlugInFilter)theFilter).showDialog(imp, command, this);  // D I A L O G (may include preview)
+			try {
+				flags = ((ExtendedPlugInFilter)theFilter).showDialog(imp, command, this);  // D I A L O G (may include preview)
+			} catch(Exception e) {
+				killPreview();
+				if (Macro.MACRO_CANCELED.equals(e.getMessage()))
+					throw new RuntimeException(Macro.MACRO_CANCELED);
+			}
 			if (snapshotDone)
 				Undo.setup(Undo.FILTER, imp);			// ip has a snapshot that may be used for Undo
 			boolean keepPreviewFlag = (flags&ExtendedPlugInFilter.KEEP_PREVIEW)!=0;
