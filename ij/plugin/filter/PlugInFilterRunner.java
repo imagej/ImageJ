@@ -24,8 +24,8 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 	private long previewTime;				// time (ms) needed for preview processing
 	private boolean ipChanged;			// whether the image data have been changed
 	private int processedAsPreview;			// the slice processed during preview (if non-zero)
-	private Hashtable slicesForThread;		// gives first&last slice that a given thread should process
-	private Hashtable roisForThread;			// gives ROI that a given thread should process
+	private Hashtable<Thread, int[]> slicesForThread;		// gives first&last slice that a given thread should process
+	private Hashtable<Thread, ImageProcessor> roisForThread;// gives ROI that a given thread should process
 	Hashtable sliceForThread = new Hashtable(); // here the stack slice currently processed is stored.
 	private int nPasses;						// the number of calls to the run(ip) method of the filter
 	private int pass;						// passes done so far
@@ -128,7 +128,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 				if ((flags&PlugInFilter.PARALLELIZE_STACKS)!=0) {
 					threads = Prefs.getThreads(); // multithread support for multiprocessor machines
 					if (threads>slicesToDo) threads = slicesToDo;
-					if (threads>1) slicesForThread = new Hashtable(threads-1);
+					if (threads>1) slicesForThread = new Hashtable<Thread, int[]>(threads-1);
 				}
 				int startSlice = 1;
 				for (int i=1; i<threads; i++) {				// setup the background threads
@@ -300,8 +300,10 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 		if (thread.isInterrupted()) return;
 		if (doMasking)
 			ip.reset(ip.getMask());	 //restore image outside irregular roi
-   }
-   
+	}
+
+	/** process an image or a single color channel of an RGB image by splitting
+	 *	into ROIs and using a separate thread for each roi */
 	private void processChannelUsingThreads(ImageProcessor ip) {
 		ImageProcessor mask = ip.getMask();
 		Rectangle roi = ip.getRoi();
@@ -309,7 +311,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 		if (IJ.debugMode)
 			IJ.log("processing channel: "+threads);
 		if (threads>roi.height) threads = roi.height;
-		if (threads>1) roisForThread = new Hashtable(threads-1);
+		if (threads>1) roisForThread = new Hashtable<Thread, ImageProcessor>(threads-1);
 		int y1 = roi.y;
 		for (int i=1; i<threads; i++) {
 			int y2 = roi.y+(roi.height*i)/threads-1;
@@ -324,26 +326,40 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 		if (IJ.debugMode)
 			IJ.log("  main thread "+y1+"-"+(roi.y+roi.height));
 		ip.setRoi(new Rectangle(roi.x, y1, roi.width, roi.y+roi.height-y1));
-		((PlugInFilter)theFilter).run(ip);  // the current thread does the rest
+		((PlugInFilter)theFilter).run(ip);	// the current thread does the rest
 		pass++;
 		if (roisForThread != null) {
-			while (roisForThread.size()>0) {	  // for all other threads:
-				Thread theThread = (Thread)roisForThread.keys().nextElement();
+			for (Enumeration<Thread> en = roisForThread.keys(); en.hasMoreElements();) {
+				Thread theThread = en.nextElement();
 				try {
-					theThread.join();    // wait until thread has finished
-				} catch (InterruptedException e) {}
-				roisForThread.remove(theThread);	// and remove it from the list.
+					theThread.join();		// wait until thread has finished
+				} catch (InterruptedException e) { // if preview cancelled:
+					interruptRoiThreads(roisForThread); //interrupt all threads and join
+					Thread.currentThread().interrupt(); //restore 'interrupted' state
+					break;
+				}
 			}
 		}
 		roisForThread = null;
 		ip.setMask(mask);  // restore ROI
 		ip.setRoi(roi);
 	}
-	
+
 	ImageProcessor duplicateProcessor(ImageProcessor ip, Rectangle roi) {
 		ImageProcessor ip2 = (ImageProcessor)ip.clone();
 		ip2.setRoi(roi);
 		return ip2;
+	}
+
+	/** interrupt threads processing the rois of an image and wait till they have finished */
+	void interruptRoiThreads(Hashtable<Thread, ImageProcessor> roisForThread) {
+		if (roisForThread==null) return;	//class variable may become null in other thread
+		for (Enumeration<Thread> en = roisForThread.keys(); en.hasMoreElements();)
+			((Thread)en.nextElement()).interrupt(); //interrupt all threads
+		for (Enumeration<Thread> en = roisForThread.keys(); en.hasMoreElements();)
+			try {
+				((Thread)en.nextElement()).join();
+			} catch (Exception e){}
 	}
  
 	/** test whether an ImagePlus can be processed based on the flags specified
@@ -455,7 +471,8 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 			
 	/** The background thread for preview */
 	private void runPreview() {
-		if (IJ.debugMode) IJ.log("preview thread started; imp="+imp.getTitle());
+		if (IJ.debugMode)
+			IJ.log("preview thread started; imp="+imp.getTitle());
 		Thread thread = Thread.currentThread();
 		ImageProcessor ip = imp.getProcessor();
 		Roi originalRoi = imp.getRoi();
@@ -487,6 +504,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 					((ExtendedPlugInFilter)theFilter).setNPasses(nPasses); //this should reset pass in the filter
 				if (thread.isInterrupted())
 					break interruptable;
+				//IJ.log("process preview start now");
 				processOneImage(ip, fp, true);		// P R O C E S S   (sets ipChanged)
 				IJ.showProgress(1.0);
 				if (thread.isInterrupted())
@@ -494,7 +512,8 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 				previewDataOk = true;
 				previewTime = System.currentTimeMillis() - startTime;
 				imp.updateAndDraw();
-				if (IJ.debugMode) IJ.log("preview processing done");
+				if (IJ.debugMode)
+					IJ.log("preview processing done");
 			}
 			gd.previewRunning(false);				// optical feedback
 			IJ.showStatus("");						//delete last status messages from processing
@@ -525,16 +544,11 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 	 and wait until the preview thread has finished */
 	private void killPreview() {
 		if (previewThread == null) return;
-		//IJ.log("killPreview");
 		synchronized (this) {
 			previewThread.interrupt();		//ask for premature finishing (interrupt first -> no keepPreview)
 			bgPreviewOn = false;				//tell a possible background thread to terminate when it has finished
-			if (roisForThread!=null) {
-				for (Enumeration en=roisForThread.keys(); en.hasMoreElements();) {
-					Thread thread = (Thread)en.nextElement();
-					thread.interrupt();
-				}
-			}
+			if (roisForThread!=null)
+				interruptRoiThreads(roisForThread);
 		}
 		waitForPreviewDone();
 	}
@@ -587,7 +601,8 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 			if (priority < Thread.MIN_PRIORITY) priority = Thread.MIN_PRIORITY;
 			previewThread.setPriority(priority);	//preview on lower priority than dialog
 			previewThread.start();
-			if (IJ.debugMode) IJ.log(command+" Preview thread was started");
+			if (IJ.debugMode)
+				IJ.log(command+" Preview thread was started");
 			return true;
 		}
 		if (previewThread != null) {				//thread runs already

@@ -522,7 +522,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			case DROPPER:
 				String fg = foregroundColor.getRed() + "," + foregroundColor.getGreen() + "," + foregroundColor.getBlue();
 				String bg = backgroundColor.getRed() + "," + backgroundColor.getGreen() + "," + backgroundColor.getBlue();
-			IJ.showStatus("Color picker (" +  fg + "/"+ bg + ")");
+				IJ.showStatus("Color picker (" +  fg + "/"+ bg + ")");
 				return;
 			case ANGLE:
 				IJ.showStatus("Angle tool");
