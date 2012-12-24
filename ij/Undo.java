@@ -71,8 +71,9 @@ public class Undo {
 		} else {
 			ipCopy = null;
 			ImageProcessor ip = imp.getProcessor();
-			displayRangeMin = ip.getMin();
-			displayRangeMax = ip.getMax();
+			//displayRangeMin = ip.getMin();
+			//displayRangeMax = ip.getMax();
+			//IJ.log("reset-filter: "+displayRangeMin+" "+displayRangeMax);
 		}
 	}
 		
@@ -107,6 +108,7 @@ public class Undo {
 				if (ip!=null) {
 					if (!IJ.macroRunning()) {
 						ip.swapPixelArrays();
+						//IJ.log("undo-filter: "+displayRangeMin+" "+displayRangeMax);
 						//ip.setMinAndMax(displayRangeMin,displayRangeMax);
 						imp.updateAndDraw();
 						return; // don't reset
