@@ -522,7 +522,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 	
 	void setProcessor2(String title, ImageProcessor ip, ImageStack newStack) {
+		//IJ.log("setProcessor2: "+ip+" "+this.ip+" "+newStack);
 		if (title!=null) setTitle(title);
+		if (ip!=null & this.ip!=null && getWindow()!=null)
+			notifyListeners(UPDATED);
 		this.ip = ip;
 		if (ij!=null) ip.setProgressBar(ij.getProgressBar());
         int stackSize = 1;
@@ -1349,12 +1352,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				ip = stack.getProcessor(n);
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
-			if ((Prefs.autoContrast||IJ.shiftKeyDown()) && nChannels==1) {
-				if (imageType!=COLOR_RGB) {
-					(new ContrastEnhancer()).stretchHistogram(ip,0.35,ip.getStatistics());
-					//IJ.showStatus(n+": min="+ip.getMin()+", max="+ip.getMax());
-				}
+			if ((Prefs.autoContrast||IJ.shiftKeyDown()) && nChannels==1 && imageType!=COLOR_RGB) {
+				(new ContrastEnhancer()).stretchHistogram(ip,0.35,ip.getStatistics());
 				ContrastAdjuster.update();
+				//IJ.showStatus(n+": min="+ip.getMin()+", max="+ip.getMax());
 			}
 			if (stack.isVirtual()) {
 				Overlay overlay2 = stack.getProcessor(n).getOverlay();
@@ -2075,7 +2076,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (nonRect) ip.snapshot();
 			r = roi.getBounds();
 			ip.copyBits(clipboard.getProcessor(), r.x, r.y, pasteMode);
-			if (nonRect) ip.reset(getMask());
+			if (nonRect) {
+				ImageProcessor mask = roi.getMask();
+				ip.setMask(mask);
+				ip.setRoi(roi.getBounds());
+				ip.reset(ip.getMask());
+			}
 			updateAndDraw();
 			//deleteRoi();
 		} else if (roi!=null) {

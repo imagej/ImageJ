@@ -973,7 +973,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (roi==null) break;
 			if (roi.isArea() && roi.getType()!=Roi.RECTANGLE)
 				IJ.run(imp, "Area to Line", "");
-			ProfilePlot pp = new ProfilePlot(imp, IJ.altKeyDown());
+			ProfilePlot pp = new ProfilePlot(imp, Prefs.verticalProfile||IJ.altKeyDown());
 			y[i] = pp.getProfile();
 			if (y[i]==null) break;
 			if (y[i].length>maxX) maxX = y[i].length;

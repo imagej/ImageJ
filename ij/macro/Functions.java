@@ -2687,9 +2687,9 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		interp.getRightParen();
 		if (width==0&&height==0) {
-			Frame frame = WindowManager.getFrontWindow();
-			if (frame!=null)
-				frame.setLocation(x, y);
+			Window win = WindowManager.getActiveWindow();
+			if (win!=null)
+				win.setLocation(x, y);
 		} else {
 			ImagePlus imp = getImage();
 			ImageWindow win = imp.getWindow();

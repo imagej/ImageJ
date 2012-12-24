@@ -1006,6 +1006,10 @@ public class Menus {
 		return macrosMenu;
 	}
 
+	public static Menu getOpenRecentMenu() {
+		return openRecentMenu;
+	}
+
 	public int getMacroCount() {
 		return nMacros;
 	}

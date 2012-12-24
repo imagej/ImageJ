@@ -17,7 +17,7 @@ public class RecentOpener implements Runnable {
 	public void run() {
 		Opener o = new Opener();
 		o.open(path);
-		Menu menu = Menus.openRecentMenu;
+		Menu menu = Menus.getOpenRecentMenu();
 		int n = menu.getItemCount();
 		int index = 0;
 		for (int i=0; i<n; i++) {

@@ -831,49 +831,6 @@ public class ShapeRoi extends Roi {
 		return result2;
 	}
 
-	/*
-	float[] getSavedRoisAsArray() {
-		int n = savedRois.length;
-		Polygon[] polygons = new Polygon[n];
-		for (int i=0; i<n; i++) {
-			
-		}
-		float[] result = new float[7*s.size()];
-		for (int i=0; i<savedRois.length; i++) {
-			switch(segType) {
-				case PathIterator.SEG_MOVETO: case PathIterator.SEG_LINETO:
-					result[index++] = segType;
-					p = (Point2D.Double)h.elementAt(j++);
-					result[index++]=(float)p.getX()+x; result[index++]=(float)p.getY()+y;
-					break;
-				case PathIterator.SEG_QUADTO:
-					result[index++] = segType;
-					p = (Point2D.Double)h.elementAt(j++);
-					result[index++]=(float)p.getX()+x; result[index++]=(float)p.getY()+y;
-					p = (Point2D.Double)h.elementAt(j++);
-					result[index++]=(float)p.getX()+x; result[index++]=(float)p.getY()+y;
-					break;
-				case PathIterator.SEG_CUBICTO:
-					result[index++] = segType;
-					p = (Point2D.Double)h.elementAt(j++);
-					result[index++]=(float)p.getX()+x; result[index++]=(float)p.getY()+y;
-					p = (Point2D.Double)h.elementAt(j++);
-					result[index++]=(float)p.getX()+x; result[index++]=(float)p.getY()+y;
-					p = (Point2D.Double)h.elementAt(j++);
-					result[index++]=(float)p.getX()+x; result[index++]=(float)p.getY()+y;
-					break;
-				case PathIterator.SEG_CLOSE:
-					result[index++] = segType;
-					break;
-				default: break;
-			}
-		}
-		float[] result2 = new float[index];
-		System.arraycopy(result, 0, result2, 0, result2.length);
-		return result2;
-	}
-	*/
-
 	/**Parses the geometry of this ROI's shape by means of the shape's PathIterator 
 	 * and returns several convenience parameters in the arguments.
 	 * Iterates through the PathIterator argument and as a byproduct sets the values of
@@ -1036,10 +993,6 @@ public class ShapeRoi extends Roi {
 		return result;
 	}
 
-	/**********************************************************************************/
-	/***                         Drawing and Image routines                        ****/
-	/**********************************************************************************/
-
 	/** Non-destructively draws the shape of this object on the associated ImagePlus. */
 	public void draw(Graphics g) {
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
@@ -1166,10 +1119,6 @@ public class ShapeRoi extends Roi {
 		return true;
 	}
 
-	/**********************************************************************************/
-	/***                               Other helpers                               ****/
-	/**********************************************************************************/
-
 	/**Returns the element with the smallest value in the array argument.*/
 	private int min(int[] array) {
 		int val = array[0];
@@ -1184,39 +1133,6 @@ public class ShapeRoi extends Roi {
 		return val;
 	}
 	
-	/**
-	public static void addCircle(String sx, String sy, String swidth) {
-		int x = Integer.parseInt(sx);
-		int y = Integer.parseInt(sy);
-		int width = Integer.parseInt(swidth);
-		ImagePlus img = IJ.getImage();
-		if (img==null) return;
-		Roi roi = img.getRoi();
-		if (roi!=null) {
-			if (!(roi instanceof ShapeRoi))
-			roi = new ShapeRoi(roi);
-			((ShapeRoi)roi).or(getCircularRoi(x, y, width));
-		} else
-			roi = getCircularRoi(x, y, width);
-		img.setRoi(roi);
-	}
-
-	public static void subtractCircle(String sx, String sy, String swidth) {
-		int x = Integer.parseInt(sx);
-		int y = Integer.parseInt(sy);
-		int width = Integer.parseInt(swidth);
-		ImagePlus img = IJ.getImage();
-		if (img==null) return;
-		Roi roi = img.getRoi();
-		if (roi!=null) {
-			if (!(roi instanceof ShapeRoi))
-			roi = new ShapeRoi(roi);
-			((ShapeRoi)roi).not(getCircularRoi(x, y, width));
-			img.setRoi(roi);
-		}
-	}
-	*/
-
 	static ShapeRoi getCircularRoi(int x, int y, int width) {
 		return new ShapeRoi(new OvalRoi(x - width / 2, y - width / 2, width, width));
 	}
@@ -1233,20 +1149,21 @@ public class ShapeRoi extends Roi {
 		else
 			return null;
 	}
-
-    /*
-    static Polygon poly;
-	static ShapeRoi getCircularRoi(int x, int y, int width) {
-		if (poly==null || poly.getBoundingBox().width!=width) {
-			Roi roi = new OvalRoi(x-width/2, y-width/2, width, width);
-			poly = roi.getPolygon();
-			for (int i=0; i<poly.npoints; i++) {
-				poly.xpoints[i] -= x;
-				poly.ypoints[i] -= y;
-			}
-		}
-		return new ShapeRoi(x, y, poly);
+	
+	public Polygon getPolygon() {
+		Roi[] rois = getRois();
+		if (rois!=null && rois.length==1)
+			return rois[0].getPolygon();
+		else
+			return super.getPolygon();
 	}
-	*/
+
+	public FloatPolygon getFloatPolygon() {
+		Roi[] rois = getRois();
+		if (rois!=null && rois.length==1)
+			return rois[0].getFloatPolygon();
+		else
+			return super.getFloatPolygon();
+	}
 
 }

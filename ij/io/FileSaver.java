@@ -163,11 +163,13 @@ public class FileSaver {
 			for (int i=1; i<=vs.getSize(); i++) {
 				ImageProcessor ip = vs.getProcessor(i);
 				String label = vs.getSliceLabel(i);
-				if (i==1 && (label==null||label.length()<200)) break;
-				if (labels==null) labels = new String[vs.getSize()];
+				if (i==1 && label==null)
+					break;
+				if (labels==null)
+					labels = new String[vs.getSize()];
 				labels[i-1] = label;
 			}
-			fi.sliceLabels = labels;
+			this.fi.sliceLabels = labels;
 		} else
 			fi.sliceLabels = imp.getStack().getSliceLabels();
 		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());

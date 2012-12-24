@@ -470,8 +470,10 @@ public class ByteProcessor extends ImageProcessor {
 
 	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {
 		super.setThreshold(minThreshold, maxThreshold, lutUpdate);
-		if (this.minThreshold<0.0) this.minThreshold = 0.0;
-		if (this.maxThreshold>255.0) this.maxThreshold = 255.0;
+		if (this.minThreshold<0.0 && this.minThreshold!=NO_THRESHOLD)
+			this.minThreshold = 0.0;
+		if (this.maxThreshold>255.0)
+			this.maxThreshold = 255.0;
 	}
 
 	/** Copies the image contained in 'ip' to (xloc, yloc) using one of

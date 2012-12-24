@@ -89,7 +89,8 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 	
 	public void update() {
 		CompositeImage ci = getImage();
-		if (ci==null) return;
+		if (ci==null || checkbox==null)
+			return;
 		int n = checkbox.length;
 		int nChannels = ci.getNChannels();
 		if (nChannels!=n && nChannels<=CompositeImage.MAX_CHANNELS) {

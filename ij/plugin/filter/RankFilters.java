@@ -13,6 +13,7 @@ import java.util.Arrays;
  *	Remove Outliers, Remove NaNs and Despeckle commands.
  */
  // Version 2012-07-15 M. Schmid:	Fixes a bug that could cause preview not to work correctly
+ // Version 2012-12-23 M. Schmid:	Test for inverted LUT only once (not in each slice)
 
 public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 	public static final int	 MEAN=0, MIN=1, MAX=2, VARIANCE=3, MEDIAN=4, OUTLIERS=5, DESPECKLE=6, REMOVE_NAN=7,
@@ -191,6 +192,11 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		ImageProcessor mask = ip.getMask();
 		Rectangle roi1 = null;
 		int[] lineRadii = makeLineRadii(radius);
+
+		float minMaxOutliersSign = filterType==MIN ? -1f : 1f;
+		if (filterType == OUTLIERS)		//sign is -1 for high outliers: compare number with minimum
+			minMaxOutliersSign = (ip.isInvertedLut()==(whichOutliers==DARK_OUTLIERS)) ? -1f : 1f;
+
 		boolean isImagePart = (roi.width<ip.getWidth()) || (roi.height<ip.getHeight());
 		boolean[] aborted = new boolean[1];						// returns whether interrupted during preview or ESC pressed
 		for (int ch=0; ch<ip.getNChannels(); ch++) {
@@ -206,13 +212,13 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 					ip.setRoi(roi1);
 				}
 			}
-			doFiltering(ip, lineRadii, filterType1, whichOutliers, threshold, ch, aborted);
+			doFiltering(ip, lineRadii, filterType1, minMaxOutliersSign, threshold, ch, aborted);
 			if (aborted[0]) break;
 			if (isMultiStepFilter(filterType)) {
 				ip.setRoi(roi);
 				ip.setMask(mask);
 				int filterType2 = (filterType==OPEN) ? MAX : MIN;
-				doFiltering(ip, lineRadii, filterType2, whichOutliers, threshold, ch, aborted);
+				doFiltering(ip, lineRadii, filterType2, minMaxOutliersSign, threshold, ch, aborted);
 				if (aborted[0]) break;
 				if (isImagePart)
 					resetRoiBoundary(ip, roi, roi1);
@@ -227,7 +233,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 	// 'aborted' must not be a class variable because it signals the other threads to stop; and this may be caused
 	// by an interrupted preview thread after the main calculation has been started.
 	private void doFiltering(final ImageProcessor ip, final int[] lineRadii, final int filterType,
-			final int whichOutliers, final float threshold, final int colorChannel, final boolean[] aborted) {
+			final float minMaxOutliersSign, final float threshold, final int colorChannel, final boolean[] aborted) {
 		Rectangle roi = ip.getRoi();
 		int width = ip.getWidth();
 		Object pixels = ip.getPixels();
@@ -253,7 +259,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 					new Runnable() {
 						final public void run() {
 							doFiltering(ip, lineRadii, cache, cacheWidth, cacheHeight,
-									filterType, whichOutliers, threshold, colorChannel,
+									filterType, minMaxOutliersSign, threshold, colorChannel,
 									yForThread, ti, aborted);
 						}
 					},
@@ -264,7 +270,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		}
 
 		doFiltering(ip, lineRadii, cache, cacheWidth, cacheHeight,
-				filterType, whichOutliers, threshold, colorChannel,
+				filterType, minMaxOutliersSign, threshold, colorChannel,
 				yForThread, 0, aborted);
 		for (final Thread thread : threads)
 			try {
@@ -301,7 +307,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 	// from any pixel in the area. Therfore min or max is calculated; this is a much faster
 	// operation than the median.
 	private void doFiltering(ImageProcessor ip, int[] lineRadii, float[] cache, int cacheWidth, int cacheHeight,
-			int filterType, int whichOutliers, float threshold, int colorChannel,
+			int filterType, float minMaxOutliersSign, float threshold, int colorChannel,
 			int [] yForThread, int threadNumber, boolean[] aborted) {
 		if (aborted[0] || Thread.currentThread().isInterrupted()) return;
 		int width = ip.getWidth();
@@ -329,9 +335,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		double[] sums = sumFilter ? new double[2] : null;
 		float[] medianBuf1 = (medianFilter||filterType==REMOVE_NAN) ? new float[kNPoints] : null;
 		float[] medianBuf2 = (medianFilter||filterType==REMOVE_NAN) ? new float[kNPoints] : null;
-		float sign = filterType==MIN ? -1f : 1f;
-		if (filterType == OUTLIERS)		//sign is -1 for high outliers: compare number with minimum
-			sign = (ip.isInvertedLut()==(whichOutliers==DARK_OUTLIERS)) ? -1f : 1f;
+
 		boolean smallKernel = kRadius < 2;
 
 		Object pixels = ip.getPixels();
@@ -422,7 +426,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 
 			int cacheLineP = cacheWidth * (y % cacheHeight) + kRadius;	//points to pixel (roi.x, y)
 			filterLine(values, width, cache, cachePointers, kNPoints, cacheLineP, roi, y,	// F I L T E R
-					sums, medianBuf1, medianBuf2, sign, maxValue, isFloat, filterType,
+					sums, medianBuf1, medianBuf2, minMaxOutliersSign, maxValue, isFloat, filterType,
 					smallKernel, sumFilter, minOrMax, minOrMaxOrOutliers);
 			if (!isFloat)		//Float images: data are written already during 'filterLine'
 				writeLineToPixels(values, pixels, roi.x+y*width, roi.width, colorChannel);	// W R I T E
@@ -446,7 +450,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	private void filterLine(float[] values, int width, float[] cache, int[] cachePointers, int kNPoints, int cacheLineP, Rectangle roi, int y,
-			double[] sums, float[] medianBuf1, float[] medianBuf2, float sign, float maxValue, boolean isFloat, int filterType,
+			double[] sums, float[] medianBuf1, float[] medianBuf2, float minMaxOutliersSign, float maxValue, boolean isFloat, int filterType,
 			boolean smallKernel, boolean sumFilter, boolean minOrMax, boolean minOrMaxOrOutliers) {
 			int valuesP = isFloat ? roi.x+y*width : 0;
 			float max = 0f;
@@ -456,25 +460,25 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 				if (fullCalculation) {
 					fullCalculation = smallKernel;	//for small kernel, always use the full area, not incremental algorithm
 					if (minOrMaxOrOutliers)
-						max = getAreaMax(cache, x, cachePointers, 0, -Float.MAX_VALUE, sign);
+						max = getAreaMax(cache, x, cachePointers, 0, -Float.MAX_VALUE, minMaxOutliersSign);
 					if (minOrMax) {
-						values[valuesP] = max*sign;
+						values[valuesP] = max*minMaxOutliersSign;
 						continue;
 					}
 					else if (sumFilter)
 						getAreaSums(cache, x, cachePointers, sums);
 				} else {
 					if (minOrMaxOrOutliers) {
-						float newPointsMax = getSideMax(cache, x, cachePointers, true, sign);
+						float newPointsMax = getSideMax(cache, x, cachePointers, true, minMaxOutliersSign);
 						if (newPointsMax >= max) { //compare with previous maximum 'max'
 							max = newPointsMax;
 						} else {
-							float removedPointsMax = getSideMax(cache, x, cachePointers, false, sign);
+							float removedPointsMax = getSideMax(cache, x, cachePointers, false, minMaxOutliersSign);
 							if (removedPointsMax >= max)
-								max = getAreaMax(cache, x, cachePointers, 1, newPointsMax, sign);
+								max = getAreaMax(cache, x, cachePointers, 1, newPointsMax, minMaxOutliersSign);
 						}
 						if (minOrMax) {
-							values[valuesP] = max*sign;
+							values[valuesP] = max*minMaxOutliersSign;
 							continue;
 						}
 					} else if (sumFilter) {
@@ -496,10 +500,10 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 					values[valuesP] = median;
 				} else if (filterType == OUTLIERS) {
 					float v = cache[cacheLineP+x];
-					if (v*sign+threshold < max) {		//for low outliers: median can't be higher than max (sign is +1)
+					if (v*minMaxOutliersSign+threshold < max) {		//for low outliers: median can't be higher than max (minMaxOutliersSign is +1)
 						median = getMedian(cache, x, cachePointers, medianBuf1, medianBuf2, kNPoints, median);
-						if (v*sign+threshold < median*sign)
-							v = median;					//beyond threshold (below if sign=+1), replace outlier by median
+						if (v*minMaxOutliersSign+threshold < median*minMaxOutliersSign)
+							v = median;					//beyond threshold (below if minMaxOutliersSign=+1), replace outlier by median
 					}
 					values[valuesP] = v;
 				} else if (filterType == REMOVE_NAN) {	 //float only; then 'values' is pixels array

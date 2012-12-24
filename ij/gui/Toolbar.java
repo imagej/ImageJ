@@ -282,6 +282,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					m(1,14); d(14,1); m(6,5); d(14,1); m(10,9); d(14,1); m(6,5); d(10,9);
 				} else {
 					m(0,12); d(17,3);
+					g.fillRect(x,y+11,2,2);
+					g.fillRect(x+17,y+2,2,2);
 				}
 				drawTriangle(12,14);
 				return;
@@ -518,8 +520,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				IJ.showStatus("Scrolling tool (or press space bar and drag)");
 				return;
 			case DROPPER:
-				IJ.showStatus("Color picker (" + foregroundColor.getRed() + ","
-				+ foregroundColor.getGreen() + "," + foregroundColor.getBlue() + ")");
+				String fg = foregroundColor.getRed() + "," + foregroundColor.getGreen() + "," + foregroundColor.getBlue();
+				String bg = backgroundColor.getRed() + "," + backgroundColor.getGreen() + "," + backgroundColor.getBlue();
+				IJ.showStatus("Color picker (" +  fg + "/"+ bg + ")");
 				return;
 			case ANGLE:
 				IJ.showStatus("Angle tool");

@@ -52,7 +52,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	int y = 0;
 	boolean windowLevel, balance;
 	Font monoFont = new Font("Monospaced", Font.PLAIN, 12);
-	Font sanFont = new Font("SansSerif", Font.PLAIN, 12);
+	Font sanFont = ImageJ.SansSerif12;
 	int channels = 7; // RGB
 	Choice choice;
 

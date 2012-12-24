@@ -3,9 +3,10 @@ import ij.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.Straightener;
+import ij.plugin.frame.Recorder;
 import java.awt.*;
 import java.awt.image.*;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.awt.geom.*;
 
 
@@ -19,6 +20,8 @@ public class Line extends Roi {
 	protected double startxd, startyd;
 	static boolean widthChanged;
 	private boolean drawOffset;
+	private boolean dragged;
+	private int mouseUpCount;
 
 	/** Creates a new straight line selection using the specified
 		starting and ending offscreen integer coordinates. */
@@ -69,7 +72,29 @@ public class Line extends Roi {
 		setImage(imp);
 	}
 
-	protected void grow(int sx, int sy) {
+	protected void grow(int sx, int sy) { //mouseDragged
+		drawLine(sx, sy);
+		dragged = true;
+	}
+
+	public void mouseMoved(MouseEvent e) {
+		drawLine(e.getX(), e.getY());
+	}
+
+	protected void handleMouseUp(int screenX, int screenY) {
+		mouseUpCount++;
+		if (mouseUpCount==1 && !dragged)
+			return;
+		state = NORMAL;
+		if (imp==null) return;
+		imp.draw(clipX-5, clipY-5, clipWidth+10, clipHeight+10);
+		if (Recorder.record)
+			Recorder.record("makeLine", x1, y1, x2, y2);
+		if (getLength()==0.0)
+			imp.deleteRoi();
+	}
+
+	protected void drawLine(int sx, int sy) {
 		double xend = ic!=null?ic.offScreenXD(sx):sx;
 		double yend = ic!=null?ic.offScreenYD(sy):sy;
 		if (xend<0.0) xend=0.0; if (yend<0.0) yend=0.0;
@@ -334,7 +359,7 @@ public class Line extends Roi {
 			g.setColor(getColor());
 			g.drawLine(sx1, sy1, sx2, sy2);
 		}
-		if (state!=CONSTRUCTING && !overlay) {
+		if (!overlay) {
 			int size2 = HANDLE_SIZE/2;
 			mag = getMagnification();
 			handleColor = strokeColor!=null?strokeColor:ROIColor;
