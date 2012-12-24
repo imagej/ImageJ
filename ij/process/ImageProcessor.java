@@ -254,7 +254,7 @@ public abstract class ImageProcessor implements Cloneable {
 		if (inversionTested)
 			return invertedLut;
 		if (cm==null || !(cm instanceof IndexColorModel)) {
-			invertedLut=false;
+			invertedLut = false;
 			inversionTested = true;
 			return invertedLut;
 		}

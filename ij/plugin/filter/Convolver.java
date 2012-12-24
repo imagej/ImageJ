@@ -198,6 +198,9 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		return !canceled;
 	}
 	
+	/** If 'normalize' is true (the default), the convolve(), convolveFloat() and
+		convolveFloat1D() (4 argument version) methods divide each kernel
+		coefficient by the sum of the coefficients, preserving image brightness. */
 	public void setNormalize(boolean normalizeKernel) {
 		normalize = normalizeKernel;
 	}
@@ -274,7 +277,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	/** Convolves the image <code>ip</code> with a kernel of width
 		<code>kw</code> and height <code>kh</code>. */
 	public void convolveFloat1D(FloatProcessor ip, float[] kernel, int kw, int kh) {
-		convolveFloat1D(ip, kernel, kw, kh, 1.0);
+		convolveFloat1D(ip, kernel, kw, kh, normalize?getScale(kernel):1.0);
 	}
 
 	/** Convolves the image <code>ip</code> with a kernel of width 
@@ -335,7 +338,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		for (int i=0; i<kernel.length; i++)
 			sum += kernel[i];
 		if (sum!=0.0)
-			scale = (float)(1.0/sum);
+			scale = 1.0/sum;
 		return scale;
 	}
 
