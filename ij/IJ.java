@@ -1673,12 +1673,17 @@ public class IJ {
 		path = updateExtension(path, ".tif");
 		if (imp==null)
 			imp = getImage();
+		FileSaver fs = new FileSaver(imp);
+		boolean ok;
 		if (imp.getStackSize()>1)
-			return (new FileSaver(imp)).saveAsTiffStack(path);
+			ok = fs.saveAsTiffStack(path);
 		else
-			return (new FileSaver(imp)).saveAsTiff(path);
+			ok = fs.saveAsTiff(path);
+		if (ok)
+			fs.updateImagePlus(path, FileInfo.TIFF);
+		return ok;
 	}
-
+	
 	static String updateExtension(String path, String extension) {
 		if (path==null) return null;
 		int dotIndex = path.lastIndexOf(".");

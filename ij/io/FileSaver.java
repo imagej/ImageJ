@@ -600,6 +600,17 @@ public class FileSaver {
 		return true;
 	}
 
+	public void updateImagePlus(String path, int fileFormat) {
+		if (imp==null || fi==null)
+			return;
+		if (name==null && path!=null) {
+			File f = new File(path);
+			directory = f.getParent() + File.separator;
+			name = f.getName();
+		}
+		updateImp(fi, fileFormat);
+	}
+	
 	private void updateImp(FileInfo fi, int fileFormat) {
 		imp.changes = false;
 		if (name!=null) {

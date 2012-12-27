@@ -106,9 +106,9 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
     }
 
     public void run (ImageProcessor ip) {
-		int fg = Prefs.blackBackground ? 255 : 0;
-		foreground = ip.isInvertedLut() ? 255-fg : fg;
-        background = 255-foreground;
+        int fg = Prefs.blackBackground ? 255 : 0;
+        foreground = ip.isInvertedLut() ? 255-fg : fg;
+        background = 255 - foreground;
         ip.setSnapshotCopyMode(true);
         if (arg.equals("outline"))
             outline(ip);

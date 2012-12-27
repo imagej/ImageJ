@@ -254,8 +254,8 @@ public abstract class ImageProcessor implements Cloneable {
 		if (inversionTested)
 			return invertedLut;
 		if (cm==null || !(cm instanceof IndexColorModel)) {
-			invertedLut=false;
-			inversionTested=true;
+			invertedLut = false;
+			inversionTested = true;
 			return invertedLut;
 		}
 		IndexColorModel icm = (IndexColorModel)cm;
@@ -270,7 +270,7 @@ public abstract class ImageProcessor implements Cloneable {
 			}
 		}
 		invertedLut = !hasAscendingStep;
-		inversionTested=true;
+		inversionTested = true;
 		return invertedLut;
 	}
 	
