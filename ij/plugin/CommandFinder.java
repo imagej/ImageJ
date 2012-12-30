@@ -31,20 +31,21 @@ import javax.swing.event.DocumentEvent;
 
 public class CommandFinder implements PlugIn, ActionListener, WindowListener, KeyListener, ItemListener, MouseListener {
 
-	int multiClickInterval;
-	long lastClickTime=Long.MIN_VALUE;
-	JFrame d;
-	JTextField prompt;
-	JScrollPane scrollPane;
-	JButton runButton, sourceButton, closeButton;
-	JCheckBox closeCheckBox;
-	Hashtable commandsHash;
-	String [] commands;
+	private static final int TABLE_WIDTH = 600;
+	private static final int TABLE_ROWS = 18;
+	private int multiClickInterval;
+	private long lastClickTime;
+	private JFrame d;
+	private JTextField prompt;
+	private JScrollPane scrollPane;
+	private JButton runButton, sourceButton, closeButton;
+	private JCheckBox closeCheckBox;
+	private Hashtable commandsHash;
+	private String [] commands;
 	private static boolean closeWhenRunning = Prefs.get("command-finder.close", true);
 	private JTable table;
 	private TableModel tableModel;
 	private int lastClickedRow;
-
 
 	public CommandFinder() {
 		Toolkit toolkit=Toolkit.getDefaultToolkit();
@@ -52,9 +53,9 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		if (interval==null)
 			// Hopefully 300ms is a sensible default when the property
 			// is not available.
-			multiClickInterval=300;
+			multiClickInterval = 300;
 		else
-			multiClickInterval=interval.intValue();
+			multiClickInterval = interval.intValue();
 	}
 
 	class CommandAction {
@@ -105,32 +106,19 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		prompt.requestFocus();
 	}
 
-	private static class LevenshteinPair implements Comparable {
-		int index, cost;
-
-		LevenshteinPair(int index, int cost) {
-			this.index = index;
-			this.cost = cost;
-		}
-
-		public int compareTo(Object o) {
-			return cost - ((LevenshteinPair)o).cost;
-		}
-	}
-
 	public void actionPerformed(ActionEvent ae) {
 		Object source = ae.getSource();
 		if (source==runButton) {
 			int row = table.getSelectedRow();
 			if (row<0) {
-				IJ.error("Please select a command to run");
+				error("Please select a command to run");
 				return;
 			}
 			runCommand(tableModel.getCommand(row));
 		} else if (source==sourceButton) {
 			int row = table.getSelectedRow();
 			if (row<0) {
-				IJ.error("Please select a command");
+				error("Please select a command");
 				return;
 			}
 			showSource(tableModel.getCommand(row));
@@ -147,13 +135,10 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		long now=System.currentTimeMillis();
 		int row = table.getSelectedRow();
 		// Is this fast enough to be a double-click?
-		long thisClickInterval=now-lastClickTime;
+		long thisClickInterval = now-lastClickTime;
 		if (thisClickInterval<multiClickInterval) {
-			if (row>=0&&
-			    lastClickedRow>=0&&
-			    row==lastClickedRow) {
+			if (row>=0 && lastClickedRow>=0 && row==lastClickedRow)
 				runCommand(tableModel.getCommand(row));
-			}
 		}
 		lastClickTime = now;
 		lastClickedRow = row;
@@ -170,7 +155,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		if (IJ.debugMode)
 			IJ.log("showSource: "+cmd+"   "+className);
 		if (className==null) {
-			IJ.error("No source associated with this command:\n  "+cmd);
+			error("No source associated with this command:\n  "+cmd);
 			return;
 		}
 		int mstart = className.indexOf("ij.plugin.Macro_Runner(\"");
@@ -199,7 +184,11 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 			IJ.open(path);
 			return;
 		}
-		IJ.error("Unable to display source for this plugin:\n  "+className);
+		error("Unable to display source for this plugin:\n  "+className);
+	}
+	
+	private void error(String msg) {
+		IJ.error("Command Finder", msg);
 	}
 
 	protected void runCommand(String command) {
@@ -324,11 +313,8 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 		/* Find the "normal" commands; those which are
 		   registered plugins: */
-
 		Hashtable realCommandsHash = (Hashtable)(ij.Menus.getCommands().clone());
-
 		Set realCommandSet = realCommandsHash.keySet();
-
 		for (Iterator i = realCommandSet.iterator();
 		     i.hasNext();) {
 			String command = (String)i.next();
@@ -336,35 +322,28 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 			String trimmedCommand = command.trim();
 			if (trimmedCommand.length()>0 && !trimmedCommand.equals("-")) {
 				commandsHash.put(command,
-						 new CommandAction((String)realCommandsHash.get(command),
-								   null,
-								   null));
+						 new CommandAction((String)realCommandsHash.get(command), null, null));
 			}
 		}
 
 		/* There are some menu items that don't correspond to
 		   plugins, such as those added by RefreshScripts, so
 		   look through all the menus as well: */
-
 		findAllMenuItems();
 
 		/* Sort the commands, generate list labels for each
 		   and put them into a hash: */
-
 		commands = (String[])commandsHash.keySet().toArray(new String[0]);
 		Arrays.sort(commands);
 
 		/* The code below just constructs the dialog: */
-
 		ImageJ imageJ = IJ.getInstance();
-
 		d = new JFrame("Command Finder") {
 			public void setVisible(boolean visible) {
 				if (visible)
 					WindowManager.addWindow(this);
 				super.setVisible(visible);
 			}
-
 			public void dispose() {
 				WindowManager.removeWindow(this);
 				super.dispose();
@@ -378,25 +357,22 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		closeCheckBox.addItemListener(this);
 
 		JPanel northPanel = new JPanel();
-
 		northPanel.add(new JLabel("Search:"));
-
-		prompt = new JTextField("", 60);
+		prompt = new JTextField("", 50);
 		prompt.getDocument().addDocumentListener(new PromptDocumentListener());
 		prompt.addKeyListener(this);
-
 		northPanel.add(prompt);
-
 		contentPane.add(northPanel, BorderLayout.NORTH);
 
 		tableModel = new TableModel();
-		table = new JTable(10, tableModel.getColumnCount());
+		table = new JTable(tableModel);
 		//table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.setRowSelectionAllowed(true);
 		table.setColumnSelectionAllowed(false);
 		//table.setAutoCreateRowSorter(true);
-		table.setModel(tableModel);
 		tableModel.setColumnWidths(table.getColumnModel());
+		Dimension dim = new Dimension(TABLE_WIDTH, table.getRowHeight()*TABLE_ROWS);
+		table.setPreferredScrollableViewportSize(dim);
 		table.addKeyListener(this);
 		table.addMouseListener(this);
 
@@ -407,7 +383,6 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		runButton = new JButton("Run");
 		sourceButton = new JButton("Source");
 		closeButton = new JButton("Close");
-
 		runButton.addActionListener(this);
 		sourceButton.addActionListener(this);
 		closeButton.addActionListener(this);
@@ -437,19 +412,19 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 		int dialogWidth = d.getWidth();
 		int dialogHeight = d.getHeight();
-
 		int screenWidth = (int)screenSize.getWidth();
 		int screenHeight = (int)screenSize.getHeight();
 
-		Point pos=imageJ.getLocationOnScreen();
+		Point pos = imageJ.getLocationOnScreen();
+		Dimension size = imageJ.getSize();
 
 		/* Generally try to position the dialog slightly
 		   offset from the main ImageJ window, but if that
 		   would push the dialog off to the screen to any
 		   side, adjust it so that it's on the screen.
 		*/
-		int initialX = (int)pos.getX() + 38;
-		int initialY = (int)pos.getY() + 84;
+		int initialX = (int)pos.getX() + 10;
+		int initialY = (int)pos.getY() + size.height+10;
 
 		if (initialX+dialogWidth>screenWidth)
 			initialX = screenWidth-dialogWidth;
@@ -461,13 +436,11 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 			initialY = 0;
 
 		d.setLocation(initialX,initialY);
-
 		d.setVisible(true);
 		d.toFront();
 	}
 
 	/* Make sure that clicks on the close icon close the window: */
-
 	public void windowClosing(WindowEvent e) {
 		closeWindow();
 	}
@@ -484,7 +457,8 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	public void windowIconified(WindowEvent e) { }
 	public void windowDeiconified(WindowEvent e) { }
 	
-	private static class TableModel extends AbstractTableModel {
+	
+	private class TableModel extends AbstractTableModel {
 		protected ArrayList list;
 		public final static int COLUMNS = 4;
 
