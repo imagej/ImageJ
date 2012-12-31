@@ -441,12 +441,12 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		return max;
 	}
 
-	//only checks non-negative numbers in the array. Returns Integer.MAX_VALUE if no such values.
+	//returns the minimum of the array, but not less than 0
 	private int arrayMinNonNegative(int[] array) {
 		int min = Integer.MAX_VALUE;
 		for (int i=0; i<array.length; i++)
-			if (array[i]>=0 && array[i]<min) min = array[i];
-		return min;
+			if (array[i]<min) min = array[i];
+		return min<0 ? 0 : min;
 	}
 
 	private void filterLine(float[] values, int width, float[] cache, int[] cachePointers, int kNPoints, int cacheLineP, Rectangle roi, int y,

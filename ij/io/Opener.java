@@ -305,6 +305,8 @@ public class Opener {
 				if (imp!=null && imp.getNChannels()>1)
 					imp = new CompositeImage(imp, CompositeImage.COLOR);
 				fileType = wrap[0];
+				if (imp==null && fileType==UNKNOWN && IJ.getInstance()==null)
+					IJ.error("Unsupported format or not found");
 				return imp;
 			default:
 				return null;

@@ -35,14 +35,14 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	private static final int TABLE_ROWS = 18;
 	private int multiClickInterval;
 	private long lastClickTime;
-	private JFrame d;
+	private static JFrame frame;
 	private JTextField prompt;
 	private JScrollPane scrollPane;
 	private JButton runButton, sourceButton, closeButton;
 	private JCheckBox closeCheckBox;
 	private Hashtable commandsHash;
 	private String [] commands;
-	private static boolean closeWhenRunning = Prefs.get("command-finder.close", true);
+	private static boolean closeWhenRunning = Prefs.get("command-finder.close", false);
 	private JTable table;
 	private TableModel tableModel;
 	private int lastClickedRow;
@@ -308,7 +308,10 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	}
 
 	public void run(String ignored) {
-
+		if (frame!=null) {
+			WindowManager.toFront(frame);
+			return;
+		}
 		commandsHash = new Hashtable();
 
 		/* Find the "normal" commands; those which are
@@ -338,7 +341,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 		/* The code below just constructs the dialog: */
 		ImageJ imageJ = IJ.getInstance();
-		d = new JFrame("Command Finder") {
+		frame = new JFrame("Command Finder") {
 			public void setVisible(boolean visible) {
 				if (visible)
 					WindowManager.addWindow(this);
@@ -346,12 +349,20 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 			}
 			public void dispose() {
 				WindowManager.removeWindow(this);
+				Prefs.set("command-finder.close", closeWhenRunning);
+				frame = null;
 				super.dispose();
 			}
 		};
-		Container contentPane = d.getContentPane();
+		Container contentPane = frame.getContentPane();
 		contentPane.setLayout(new BorderLayout());
-		d.addWindowListener(this);
+		frame.addWindowListener(this);
+		if (imageJ!=null && !IJ.isMacOSX()) {
+			Image img = imageJ.getIconImage();
+			if (img!=null)
+				try {frame.setIconImage(img);} catch (Exception e) {}
+		}
+
 
 		closeCheckBox = new JCheckBox("Close window after running command", closeWhenRunning);
 		closeCheckBox.addItemListener(this);
@@ -408,10 +419,10 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
-		d.pack();
+		frame.pack();
 
-		int dialogWidth = d.getWidth();
-		int dialogHeight = d.getHeight();
+		int dialogWidth = frame.getWidth();
+		int dialogHeight = frame.getHeight();
 		int screenWidth = (int)screenSize.getWidth();
 		int screenHeight = (int)screenSize.getHeight();
 
@@ -435,9 +446,9 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		if (initialY<0)
 			initialY = 0;
 
-		d.setLocation(initialX,initialY);
-		d.setVisible(true);
-		d.toFront();
+		frame.setLocation(initialX,initialY);
+		frame.setVisible(true);
+		frame.toFront();
 	}
 
 	/* Make sure that clicks on the close icon close the window: */
@@ -446,8 +457,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	}
 	
 	private void closeWindow() {
-		d.dispose();
-		Prefs.set("command-finder.close", closeWhenRunning);
+		frame.dispose();
 	}
 
 	public void windowActivated(WindowEvent e) { }
@@ -504,7 +514,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		}
 
 		public void setColumnWidths(TableColumnModel columnModel) {
-			int[] widths = {200, 200, 100, 50};
+			int[] widths = {170, 150, 150, 50};
 			for (int i=0; i<widths.length; i++)
 				columnModel.getColumn(i).setPreferredWidth(widths[i]);
 		}

@@ -53,6 +53,7 @@ public class IJ {
 	private static boolean suppressPluginNotFoundError;
 	private static Hashtable commandTable;
 	private static Vector eventListeners = new Vector();
+	private static String lastErrorMessage;
 			
 	static {
 		osname = System.getProperty("os.name");
@@ -584,6 +585,7 @@ public class IJ {
 	public static void error(String title, String msg) {
 		String title2 = title!=null?title:"ImageJ";
 		boolean abortMacro = title!=null;
+		lastErrorMessage = msg;
 		if (redirectErrorMessages || redirectErrorMessages2) {
 			IJ.log(title2 + ": " + msg);
 			if (abortMacro && (title.equals("Opener")||title.equals("Open URL")||title.equals("DicomDecoder")))
@@ -592,6 +594,14 @@ public class IJ {
 			showMessage(title2, msg);
 		redirectErrorMessages = false;
 		if (abortMacro) Macro.abort();
+	}
+
+	/** Returns the last error message or null if ImageJ has not 
+		generated an error since the last time this method was called. */
+	public static String getErrorMessage() {
+		String msg = lastErrorMessage;
+		lastErrorMessage = null;
+		return msg;
 	}
 
 	/** Displays a message in a dialog box with the specified title.
