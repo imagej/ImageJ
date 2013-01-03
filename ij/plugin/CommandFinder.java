@@ -31,7 +31,7 @@ import javax.swing.event.DocumentEvent;
 
 public class CommandFinder implements PlugIn, ActionListener, WindowListener, KeyListener, ItemListener, MouseListener {
 
-	private static final int TABLE_WIDTH = 600;
+	private static final int TABLE_WIDTH = 640;
 	private static final int TABLE_ROWS = 18;
 	private int multiClickInterval;
 	private long lastClickTime;
@@ -369,7 +369,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 		JPanel northPanel = new JPanel();
 		northPanel.add(new JLabel("Search:"));
-		prompt = new JTextField("", 50);
+		prompt = new JTextField("", 40);
 		prompt.getDocument().addDocumentListener(new PromptDocumentListener());
 		prompt.addKeyListener(this);
 		northPanel.add(prompt);
@@ -514,7 +514,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		}
 
 		public void setColumnWidths(TableColumnModel columnModel) {
-			int[] widths = {170, 150, 150, 50};
+			int[] widths = {170, 150, 170, 30};
 			for (int i=0; i<widths.length; i++)
 				columnModel.getColumn(i).setPreferredWidth(widths[i]);
 		}

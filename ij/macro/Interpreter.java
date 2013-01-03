@@ -413,7 +413,6 @@ public class Interpreter implements MacroConstants {
 					array = v.getArray();
 					if (array!=null) arraySize=v.getArraySize();
 					isString = v.getString()!=null;
-					//IJ.log("token==WORD: "+isString+" "+pgm.decodeToken(token, tokenAddress));
 				}
 			}
 			putTokenBack();
@@ -422,8 +421,20 @@ public class Interpreter implements MacroConstants {
 			else if (isArrayFunction) {
 				getToken();
 				array = func.getArrayFunction(pgm.table[tokenAddress].type);
-			} else if (array==null)
-				value = getExpression();
+			} else if (array==null) {
+				if ((pgm.code[pc+2]&0xff)=='[' && nextToken()==WORD) {
+					int savePC = pc;
+					getToken();
+					Variable v = lookupVariable();
+					v = getArrayElement(v);
+					pc = savePC;
+					if (v.getString()!=null)
+						str = getString();
+					else
+						value = getExpression();
+				} else
+					value = getExpression();
+			}
 		}
 		if (inFunction) {
 			if (returnException==null)

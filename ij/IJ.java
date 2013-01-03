@@ -505,6 +505,7 @@ public class IJ {
 	public static void outOfMemory(String name) {
 		Undo.reset();
 		System.gc();
+		lastErrorMessage = "out of memory";
 		String tot = Runtime.getRuntime().totalMemory()/1048576L+"MB";
 		if (!memMessageDisplayed)
 			log(">>>>>>>>>>>>>>>>>>>>>>>>>>>");
@@ -596,8 +597,11 @@ public class IJ {
 		if (abortMacro) Macro.abort();
 	}
 
-	/** Returns the last error message or null if ImageJ has not 
-		generated an error since the last time this method was called. */
+	/** 
+	 * Returns the last error message written by IJ.error() or null if there
+	 * was no error since the last time this method was called.
+	 * @see #error(String)
+	 */
 	public static String getErrorMessage() {
 		String msg = lastErrorMessage;
 		lastErrorMessage = null;
@@ -1443,7 +1447,7 @@ public class IJ {
 
 	/** Returns the path to the home ("user.home"), startup, ImageJ, plugins, macros, 
 		luts, temp, current or image directory if <code>title</code> is "home", "startup", 
-		"imagej", "plugins", "macros", "luts", "temp", "current" or "image", otherwise, 
+		"imagej", "plugins", "macros", "luts", "temp", "current", "default", "image", otherwise, 
 		displays a dialog and returns the path to the directory selected by the user. 
 		Returns null if the specified directory is not found or the user
 		cancels the dialog box. Also aborts the macro if the user cancels
@@ -1466,7 +1470,7 @@ public class IJ {
 			return Prefs.getHomeDir() + File.separator;
 		else if (title2.equals("imagej"))
 			return getIJDir();
-		else if (title2.equals("current"))
+		else if (title2.equals("current") || title2.equals("default"))
 			return OpenDialog.getDefaultDirectory();
 		else if (title2.equals("temp")) {
 			String dir = System.getProperty("java.io.tmpdir");
