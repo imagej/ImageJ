@@ -369,7 +369,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 		JPanel northPanel = new JPanel();
 		northPanel.add(new JLabel("Search:"));
-		prompt = new JTextField("", 40);
+		prompt = new JTextField("", 20);
 		prompt.getDocument().addDocumentListener(new PromptDocumentListener());
 		prompt.addKeyListener(this);
 		northPanel.add(prompt);
