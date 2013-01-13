@@ -5054,6 +5054,16 @@ public class Functions implements MacroConstants, Measurements {
 			return 0.0;
 		else if (name.equals("hidden"))
 			return overlay!=null && imp.getHideOverlay()?1.0:0.0;
+		if (name.equals("addSelection")) {
+			Roi roi = imp.getRoi();
+			if (roi==null)
+				interp.error("No selection");
+			if (overlay==null)
+				overlay = new Overlay();
+			overlay.add(roi);
+			imp.setOverlay(overlay);
+			return Double.NaN;
+		}
 		if (overlay==null)
 			interp.error("No overlay");
 		int size = overlay.size();
@@ -5068,6 +5078,11 @@ public class Functions implements MacroConstants, Measurements {
 			checkIndex(index, 0, size-1);
 			overlay.remove(index);
 			imp.draw();
+			return Double.NaN;
+		} else if (name.equals("activateSelection")) {
+			int index = (int)getArg();
+			checkIndex(index, 0, size-1);
+			imp.setRoi(overlay.get(index));
 			return Double.NaN;
 		} else if (name.equals("setPosition")) {
 			int n = (int)getArg();
