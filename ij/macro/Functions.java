@@ -5054,7 +5054,7 @@ public class Functions implements MacroConstants, Measurements {
 			return 0.0;
 		else if (name.equals("hidden"))
 			return overlay!=null && imp.getHideOverlay()?1.0:0.0;
-		if (name.equals("addSelection")) {
+		else if (name.equals("addSelection")) {
 			Roi roi = imp.getRoi();
 			if (roi==null)
 				interp.error("No selection");
