@@ -1682,11 +1682,11 @@ public class IJ {
 		if 'path' is null or an empty string. Returns 'false' if there is an
 		error or if the user selects "Cancel" in the file save dialog. */
 	public static boolean saveAsTiff(ImagePlus imp, String path) {
+		if (imp==null)
+			imp = getImage();
 		if (path==null || path.equals(""))
 			return (new FileSaver(imp)).saveAsTiff();
 		path = updateExtension(path, ".tif");
-		if (imp==null)
-			imp = getImage();
 		FileSaver fs = new FileSaver(imp);
 		boolean ok;
 		if (imp.getStackSize()>1)

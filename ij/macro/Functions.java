@@ -2730,11 +2730,17 @@ public class Functions implements MacroConstants, Measurements {
 	void saveAs() {
 		String format = getFirstString();
 		String path =  null;
+		boolean oneArg = false;
 		if (interp.nextToken()==',')
 			path = getLastString();
-		else
+		else {
 			interp.getRightParen();
-		IJ.saveAs(format, path);
+			oneArg = true;
+		}
+		if (oneArg && format.contains(File.separator))
+			IJ.save(format); // argument is a path
+		else
+			IJ.saveAs(format, path);
 	}
 
 	double getZoom() {

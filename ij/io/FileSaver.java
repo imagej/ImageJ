@@ -117,7 +117,7 @@ public class FileSaver {
 		return true;
 	}
 	
-	byte[][] getOverlay(ImagePlus imp) {
+	public static byte[][] getOverlay(ImagePlus imp) {
 		if (imp.getHideOverlay())
 			return null;
 		Overlay overlay = imp.getOverlay();
