@@ -8,7 +8,7 @@ import ij.process.*;
 import ij.measure.*;
 
 /** Opens and displays FITS images. The FITS format is 
-	described at "ftp://nssdc.gsfc.nasa.gov/pub/fits".
+	described at "http://fits.gsfc.nasa.gov/fits_standard.html".
 */
 public class FITS_Reader extends ImagePlus implements PlugIn {
 
@@ -101,7 +101,7 @@ class FitsDecoder {
 				key = line.trim ();
 				value = "";
 			}
-
+			
 			// Time to stop ?
 			if (key.equals ("END") ) break;
 
@@ -154,6 +154,8 @@ class FitsDecoder {
 	String getString(int length) throws IOException {
 		byte[] b = new byte[length];
 		f.readFully(b);
+		if (IJ.debugMode)
+			IJ.log(new String(b));
 		return new String(b);
 	}
 

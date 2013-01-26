@@ -1305,6 +1305,16 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private 	void installStartupMacros() {
 		resetTools();
 		String path = IJ.getDirectory("macros")+"StartupMacros.txt";
+		File f = new File(path);
+		if (!f.exists()) {
+			String path2 = IJ.getDirectory("macros")+"StartupMacros.fiji.ijm";
+			f = new File(path2);
+			if (!f.exists()) {
+				IJ.error("StartupMacros not found:\n \n"+path);
+				return;
+			} else
+				path = path2;
+		}
 		if (IJ.shiftKeyDown()) {
 			IJ.open(path);
 			IJ.setKeyUp(KeyEvent.VK_SHIFT);

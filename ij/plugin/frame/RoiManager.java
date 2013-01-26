@@ -62,6 +62,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private int[] selectedIndexes;
 	private boolean appendResults;
 	private ResultsTable mmResults;
+	private int imageID;
 	
 	
 	public RoiManager() {
@@ -543,17 +544,37 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	boolean restore(ImagePlus imp, int index, boolean setSlice) {
-		String label = (String) listModel.getElementAt(index);
+		String label = (String)listModel.getElementAt(index);
 		Roi roi = (Roi)rois.get(label);
 		if (imp==null || roi==null)
 			return false;
 		if (setSlice) {
-			int n = getSliceNumber(roi, label);
-			if (n>=1 && n<=imp.getStackSize()) {
-				if (imp.isHyperStack()||imp.isComposite())
-					imp.setPosition(n);
+			int z = roi.getZPosition();
+			int t = roi.getTPosition();
+			boolean hyperstack = imp.isHyperStack();
+			if (z>1) {
+				if (hyperstack)
+					imp.setPosition(imp.getC(), z, imp.getT());
 				else
-					imp.setSlice(n);
+					imp.setSlice(getSliceNumber(roi, label));
+			} else if (t>0) {
+				if (hyperstack)
+					imp.setPosition(imp.getC(), imp.getZ(), t);
+				else
+					imp.setSlice(getSliceNumber(roi, label));
+			} else {
+				int n = getSliceNumber(roi, label);
+				if (n>=1 && n<=imp.getStackSize()) {
+					if (hyperstack) {
+						if (imp.getNSlices()>1 && n<imp.getNSlices())
+							imp.setPosition(imp.getC(),n,imp.getT());
+						else  if (imp.getNFrames()>1 && n<imp.getNFrames())
+							imp.setPosition(imp.getC(),imp.getZ(),n);
+						else
+							imp.setPosition(n);
+					} else
+						imp.setSlice(n);
+				}
 			}
 		}
 		if (showAllCheckbox.getState() && !restoreCentered && !noUpdateMode) {
@@ -1443,6 +1464,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (imp==null)
 			return;
 		boolean showAll = mode==SHOW_ALL;
+		if (showAll)
+			imageID = imp.getID();
 		if (mode==LABELS) {
 			showAll = true;
 			if (record())
@@ -1454,9 +1477,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		if (showAll) imp.deleteRoi();
 		Roi[] rois = getRoisAsArray();
-		if (mode==SHOW_NONE)
+		if (mode==SHOW_NONE) {
 			removeOverlay(imp);
-		else if (rois.length>0) {
+			imageID = 0;
+		} else if (rois.length>0) {
 			Overlay overlay = newOverlay();
 			for (int i=0; i<rois.length; i++)
 				overlay.add(rois[i]);
@@ -2032,6 +2056,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			}
 		}
 		
+	}
+
+    public void windowActivated(WindowEvent e) {
+    	super.windowActivated(e);
+    	ImagePlus imp = WindowManager.getCurrentImage();
+    	if (imp!=null) {
+    		if (imageID!=0 && imp.getID()!=imageID) {
+    			showAll(SHOW_NONE);
+				showAllCheckbox.setState(false);
+    		}
+    	}
 	}
 
 }

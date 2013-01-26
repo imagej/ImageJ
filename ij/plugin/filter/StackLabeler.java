@@ -29,6 +29,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 	private Color color;
 	private int firstFrame, lastFrame, defaultLastFrame;
 	private Overlay overlay;
+	private Overlay baseOverlay;
 	private boolean previewing; 
 	private boolean virtualStack; 
 	private int yoffset;
@@ -37,6 +38,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		if (imp!=null) {
 			virtualStack = imp.getStack().isVirtual();
 			if (virtualStack) useOverlay = true;
+			baseOverlay = imp.getOverlay();
 			flags += virtualStack?0:DOES_STACKS;
 			firstFrame=1; lastFrame=defaultLastFrame=imp.getStackSize();
 		}
@@ -177,7 +179,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 			}
 		} else {
 			if (previewing && overlay!=null) {
-				imp.setOverlay(null);
+				imp.setOverlay(baseOverlay);
 				overlay = null;
 			}
 			drawLabel(ip, image, n);
@@ -217,6 +219,10 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		if (useOverlay) {
 			if (image==1) {
 				overlay = new Overlay();
+				if (baseOverlay!=null) {
+					for (int i=0; i<baseOverlay.size(); i++)
+						overlay.add(baseOverlay.get(i));
+				}
 				Roi roi = imp.getRoi();
 				Rectangle r = roi!=null?roi.getBounds():null;
 				yoffset = r!=null?r.height:fontSize;

@@ -28,7 +28,7 @@ public class StackEditor implements PlugIn {
 	}
 
 	void addSlice() {
-		if (imp.isDisplayedHyperStack() || (imp.isComposite() && nSlices==imp.getNChannels())) {
+		if (imp.isHyperStack() || (imp.isComposite() && nSlices==imp.getNChannels())) {
 			addHyperstackChannelSliceOrFrame();
 			return;
 		}
@@ -58,7 +58,7 @@ public class StackEditor implements PlugIn {
 	void deleteSlice() {
 		if (nSlices<2)
 			{IJ.error("\"Delete Slice\" requires a stack"); return;}
-		if (imp.isDisplayedHyperStack() || (imp.isComposite() && nSlices==imp.getNChannels())) {
+		if (imp.isHyperStack() || (imp.isComposite() && nSlices==imp.getNChannels())) {
 			deleteHyperstackChannelSliceOrFrame();
 			return;
 		}

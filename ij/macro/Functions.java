@@ -71,6 +71,10 @@ public class Functions implements MacroConstants, Measurements {
 	int pasteMode;
 	int lineWidth = 1;
 	boolean expandableArrays;
+	int plotWidth;
+	int plotHeight;
+	boolean plotInterpolate;
+	boolean plotNoGridLines;
 
 
 	Functions(Interpreter interp, Program pgm) {
@@ -2271,6 +2275,10 @@ public class Functions implements MacroConstants, Measurements {
 		blackBackground = Prefs.blackBackground;
 		autoContrast = Prefs.autoContrast;
 		pasteMode = Roi.getCurrentPasteMode();
+		plotWidth = PlotWindow.plotWidth;
+		plotHeight = PlotWindow.plotHeight;
+		plotInterpolate = PlotWindow.interpolate;
+		plotNoGridLines = PlotWindow.noGridLines;
 	}
 	
 	void restoreSettings() {
@@ -2302,6 +2310,10 @@ public class Functions implements MacroConstants, Measurements {
 		Prefs.blackBackground = blackBackground;
 		Prefs.autoContrast = autoContrast;
 		Roi.setPasteMode(pasteMode);
+		PlotWindow.plotWidth = plotWidth;
+		PlotWindow.plotHeight = plotHeight;
+		PlotWindow.interpolate = plotInterpolate;
+		PlotWindow.noGridLines = plotNoGridLines;
 	}
 	
 	void setKeyDown() {
@@ -2730,11 +2742,17 @@ public class Functions implements MacroConstants, Measurements {
 	void saveAs() {
 		String format = getFirstString();
 		String path =  null;
+		boolean oneArg = false;
 		if (interp.nextToken()==',')
 			path = getLastString();
-		else
+		else {
 			interp.getRightParen();
-		IJ.saveAs(format, path);
+			oneArg = true;
+		}
+		if (oneArg && format.contains(File.separator))
+			IJ.save(format); // argument is a path
+		else
+			IJ.saveAs(format, path);
 	}
 
 	double getZoom() {
@@ -3943,10 +3961,8 @@ public class Functions implements MacroConstants, Measurements {
 		if (!IJ.isResultsWindow())
 			interp.error("No results");
 		TextPanel tp = IJ.getTextPanel();
-		if (tp==null) return null;
-		StringSelection ss = new StringSelection(tp.getText());
-		java.awt.datatransfer.Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-		clipboard.setContents(ss, null);
+		if (tp!=null)
+			tp.copySelection();
 		return null;
 	}
 
@@ -5056,6 +5072,16 @@ public class Functions implements MacroConstants, Measurements {
 			return 0.0;
 		else if (name.equals("hidden"))
 			return overlay!=null && imp.getHideOverlay()?1.0:0.0;
+		else if (name.equals("addSelection")) {
+			Roi roi = imp.getRoi();
+			if (roi==null)
+				interp.error("No selection");
+			if (overlay==null)
+				overlay = new Overlay();
+			overlay.add(roi);
+			imp.setOverlay(overlay);
+			return Double.NaN;
+		}
 		if (overlay==null)
 			interp.error("No overlay");
 		int size = overlay.size();
@@ -5070,6 +5096,11 @@ public class Functions implements MacroConstants, Measurements {
 			checkIndex(index, 0, size-1);
 			overlay.remove(index);
 			imp.draw();
+			return Double.NaN;
+		} else if (name.equals("activateSelection")) {
+			int index = (int)getArg();
+			checkIndex(index, 0, size-1);
+			imp.setRoi(overlay.get(index));
 			return Double.NaN;
 		} else if (name.equals("setPosition")) {
 			int n = (int)getArg();

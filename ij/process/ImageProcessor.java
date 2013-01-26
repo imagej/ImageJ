@@ -259,16 +259,17 @@ public abstract class ImageProcessor implements Cloneable {
 			return invertedLut;
 		}
 		IndexColorModel icm = (IndexColorModel)cm;
-		invertedLut = true;
+		boolean hasAscendingStep = false;
 		int v1, v2;
 		for (int i=1; i<255; i++) {
 			v1 = icm.getRed(i-1)+icm.getGreen(i-1)+icm.getBlue(i-1);
 			v2 = icm.getRed(i)+icm.getGreen(i)+icm.getBlue(i);
 			if (v1<v2) {
-				invertedLut = false;
+				hasAscendingStep = true;
 				break;
 			}
 		}
+		invertedLut = !hasAscendingStep;
 		inversionTested = true;
 		return invertedLut;
 	}

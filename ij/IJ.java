@@ -53,6 +53,7 @@ public class IJ {
 	private static boolean suppressPluginNotFoundError;
 	private static Hashtable commandTable;
 	private static Vector eventListeners = new Vector();
+	private static String lastErrorMessage;
 			
 	static {
 		osname = System.getProperty("os.name");
@@ -504,6 +505,7 @@ public class IJ {
 	public static void outOfMemory(String name) {
 		Undo.reset();
 		System.gc();
+		lastErrorMessage = "out of memory";
 		String tot = Runtime.getRuntime().totalMemory()/1048576L+"MB";
 		if (!memMessageDisplayed)
 			log(">>>>>>>>>>>>>>>>>>>>>>>>>>>");
@@ -584,6 +586,7 @@ public class IJ {
 	public static void error(String title, String msg) {
 		String title2 = title!=null?title:"ImageJ";
 		boolean abortMacro = title!=null;
+		lastErrorMessage = msg;
 		if (redirectErrorMessages || redirectErrorMessages2) {
 			IJ.log(title2 + ": " + msg);
 			if (abortMacro && (title.equals("Opener")||title.equals("Open URL")||title.equals("DicomDecoder")))
@@ -592,6 +595,17 @@ public class IJ {
 			showMessage(title2, msg);
 		redirectErrorMessages = false;
 		if (abortMacro) Macro.abort();
+	}
+
+	/** 
+	 * Returns the last error message written by IJ.error() or null if there
+	 * was no error since the last time this method was called.
+	 * @see #error(String)
+	 */
+	public static String getErrorMessage() {
+		String msg = lastErrorMessage;
+		lastErrorMessage = null;
+		return msg;
 	}
 
 	/** Displays a message in a dialog box with the specified title.
@@ -1433,7 +1447,7 @@ public class IJ {
 
 	/** Returns the path to the home ("user.home"), startup, ImageJ, plugins, macros, 
 		luts, temp, current or image directory if <code>title</code> is "home", "startup", 
-		"imagej", "plugins", "macros", "luts", "temp", "current" or "image", otherwise, 
+		"imagej", "plugins", "macros", "luts", "temp", "current", "default", "image", otherwise, 
 		displays a dialog and returns the path to the directory selected by the user. 
 		Returns null if the specified directory is not found or the user
 		cancels the dialog box. Also aborts the macro if the user cancels
@@ -1456,7 +1470,7 @@ public class IJ {
 			return Prefs.getHomeDir() + File.separator;
 		else if (title2.equals("imagej"))
 			return getIJDir();
-		else if (title2.equals("current"))
+		else if (title2.equals("current") || title2.equals("default"))
 			return OpenDialog.getDefaultDirectory();
 		else if (title2.equals("temp")) {
 			String dir = System.getProperty("java.io.tmpdir");
@@ -1668,17 +1682,22 @@ public class IJ {
 		if 'path' is null or an empty string. Returns 'false' if there is an
 		error or if the user selects "Cancel" in the file save dialog. */
 	public static boolean saveAsTiff(ImagePlus imp, String path) {
+		if (imp==null)
+			imp = getImage();
 		if (path==null || path.equals(""))
 			return (new FileSaver(imp)).saveAsTiff();
 		path = updateExtension(path, ".tif");
-		if (imp==null)
-			imp = getImage();
+		FileSaver fs = new FileSaver(imp);
+		boolean ok;
 		if (imp.getStackSize()>1)
-			return (new FileSaver(imp)).saveAsTiffStack(path);
+			ok = fs.saveAsTiffStack(path);
 		else
-			return (new FileSaver(imp)).saveAsTiff(path);
+			ok = fs.saveAsTiff(path);
+		if (ok)
+			fs.updateImagePlus(path, FileInfo.TIFF);
+		return ok;
 	}
-
+	
 	static String updateExtension(String path, String extension) {
 		if (path==null) return null;
 		int dotIndex = path.lastIndexOf(".");

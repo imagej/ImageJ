@@ -27,6 +27,7 @@ public class Undo {
 	private static ImagePlus impCopy;
 	private static Calibration calCopy;
 	private static Roi roiCopy;
+	private static double displayRangeMin, displayRangeMax;
 	
 	public static void setup(int what, ImagePlus imp) {
 		if (imp==null) {
@@ -67,8 +68,13 @@ public class Undo {
 				roiCopy.setImage(null);
 			} else
 				whatToUndo = NOTHING;
-		} else
+		} else {
 			ipCopy = null;
+			ImageProcessor ip = imp.getProcessor();
+			//displayRangeMin = ip.getMin();
+			//displayRangeMax = ip.getMax();
+			//IJ.log("reset-filter: "+displayRangeMin+" "+displayRangeMax);
+		}
 	}
 		
 	public static void reset() {
@@ -102,6 +108,8 @@ public class Undo {
 				if (ip!=null) {
 					if (!IJ.macroRunning()) {
 						ip.swapPixelArrays();
+						//IJ.log("undo-filter: "+displayRangeMin+" "+displayRangeMax);
+						//ip.setMinAndMax(displayRangeMin,displayRangeMax);
 						imp.updateAndDraw();
 						return; // don't reset
 					} else {
