@@ -6,7 +6,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 
-/** Implements the Plugins/Hotkeys/Install and Remove commands. */
+/** Implements the Plugins/Hotkeys/Create Shortcut and Remove commands. */
 public class Hotkeys implements PlugIn {
 
 	private static final String TITLE = "Hotkeys";
@@ -27,20 +27,15 @@ public class Hotkeys implements PlugIn {
 
 	void installHotkey() {
 		String[] commands = getAllCommands();
+		String[] shortcuts = getAvailableShortcuts();
 		GenericDialog gd = new GenericDialog("Create Shortcut");
 		gd.addChoice("Command:", commands, command);
-		gd.addStringField("Shortcut:", shortcut, 3);
+		gd.addChoice("Shortcut:", shortcuts, shortcuts[0]);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		command = gd.getNextChoice();
-		shortcut = gd.getNextString();
-		if (shortcut.equals("")) {
-			IJ.showMessage(TITLE, "Shortcut required");
-			return;
-		}
-		if (shortcut.length()>1)
-			shortcut = shortcut.replace('f','F');
+		shortcut = gd.getNextChoice();
 		String plugin = "ij.plugin.Hotkeys("+"\""+command+"\")";
 		int err = Menus.installPlugin(plugin,Menus.SHORTCUTS_MENU,"*"+command,shortcut,IJ.getInstance());
 		switch (err) {
@@ -94,9 +89,11 @@ public class Hotkeys implements PlugIn {
 	
 	String[] getAllCommands() {
 		Vector v = new Vector();
-		for (Enumeration en=Menus.getCommands().keys(); en.hasMoreElements();) {
+		Hashtable commandTable = Menus.getCommands();
+		Hashtable shortcuts = Menus.getShortcuts();
+		for (Enumeration en=commandTable.keys(); en.hasMoreElements();) {
 			String cmd = (String)en.nextElement();
-			if (!cmd.startsWith("*"))
+			if (!cmd.startsWith("*") && !cmd.startsWith(" ") && cmd.length()<35 && !shortcuts.contains(cmd))
 				v.addElement(cmd);
 		}
 		String[] list = new String[v.size()];
@@ -105,6 +102,34 @@ public class Hotkeys implements PlugIn {
 		return list;
 	}
 	
+	String[] getAvailableShortcuts() {
+		Vector v = new Vector();
+		Hashtable shortcuts = Menus.getShortcuts();
+		for (char c = '0'; c<='9'; c++) {
+			String shortcut = ""+c;
+			if (!Menus.shortcutInUse(shortcut))
+				v.add(shortcut);
+		}
+		for (char c = 'a'; c<='z'; c++) {
+			String shortcut = ""+c;
+			if (!Menus.shortcutInUse(shortcut))
+				v.add(shortcut);
+		}
+		for (char c = 'A'; c<='Z'; c++) {
+			String shortcut = ""+c;
+			if (!Menus.shortcutInUse(shortcut))
+				v.add(shortcut);
+		}
+		for (int i = 1; i<=12; i++) {
+			String shortcut = "F"+i;
+			if (!Menus.shortcutInUse(shortcut))
+				v.add(shortcut);
+		}
+		String[] list = new String[v.size()];
+		v.copyInto((String[])list);
+		return list;
+	}
+
 	String[] getInstalledCommands() {
 		Vector v = new Vector();
 		Hashtable commandTable = Menus.getCommands();
@@ -112,11 +137,6 @@ public class Hotkeys implements PlugIn {
 			String cmd = (String)en.nextElement();
 			if (cmd.startsWith("*"))
 				v.addElement(cmd);
-			else {
-				String plugin = (String)commandTable.get(cmd);
-				if (plugin.indexOf("_")>=0 && !plugin.startsWith("ij."))
-					v.addElement(cmd);
- 			}
 		}
 		if (v.size()==0)
 			return null;

@@ -1290,7 +1290,7 @@ public class Menus {
 			command += " [F"+(code-KeyEvent.VK_F1+1)+"]";
 			shortcuts.put(new Integer(code),command);
 			item = new MenuItem(command);
-		}else {
+		} else {
 			shortcuts.put(new Integer(code),command);
 			int keyCode = code;
 			boolean shift = false;

@@ -71,6 +71,10 @@ public class Functions implements MacroConstants, Measurements {
 	int pasteMode;
 	int lineWidth = 1;
 	boolean expandableArrays;
+	int plotWidth;
+	int plotHeight;
+	boolean plotInterpolate;
+	boolean plotNoGridLines;
 
 
 	Functions(Interpreter interp, Program pgm) {
@@ -2271,6 +2275,10 @@ public class Functions implements MacroConstants, Measurements {
 		blackBackground = Prefs.blackBackground;
 		autoContrast = Prefs.autoContrast;
 		pasteMode = Roi.getCurrentPasteMode();
+		plotWidth = PlotWindow.plotWidth;
+		plotHeight = PlotWindow.plotHeight;
+		plotInterpolate = PlotWindow.interpolate;
+		plotNoGridLines = PlotWindow.noGridLines;
 	}
 	
 	void restoreSettings() {
@@ -2302,6 +2310,10 @@ public class Functions implements MacroConstants, Measurements {
 		Prefs.blackBackground = blackBackground;
 		Prefs.autoContrast = autoContrast;
 		Roi.setPasteMode(pasteMode);
+		PlotWindow.plotWidth = plotWidth;
+		PlotWindow.plotHeight = plotHeight;
+		PlotWindow.interpolate = plotInterpolate;
+		PlotWindow.noGridLines = plotNoGridLines;
 	}
 	
 	void setKeyDown() {
