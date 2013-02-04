@@ -358,11 +358,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public void add(ImagePlus imp, Roi roi, int n) {
 		if (roi==null) return;
 		String label = roi.getName();
+		String label2 = label;
 		if (label==null)
 			label = getLabel(imp, roi, n);
+		else
+			label = label+"-"+n;
 		if (label==null) return;
 		listModel.addElement(label);
-		roi.setName(label);
+		roi.setName(label2);
 		rois.put(label, (Roi)roi.clone());
 	}
 

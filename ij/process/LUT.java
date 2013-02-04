@@ -3,15 +3,18 @@ import ij.plugin.Colors;
 import java.awt.image.*;
 import java.awt.Color;
 
-	/* This is an indexed color model that allows an
+	/** This is an indexed color model that allows an
 		lower and upper bound to be specified. */
     public class LUT extends IndexColorModel implements Cloneable {
         public double min, max;
 	
+    /** Constructs a LUT from red, green and blue byte arrays, which must have a length of 256. */
     public LUT(byte r[], byte g[], byte b[]) {
     	this(8, 256, r, g, b);
 	}
 	
+    /** Constructs a LUT from red, green and blue byte arrays, where 'bits' 
+    	must be 8 and 'size' must be less than or equal to 256. */
     public LUT(int bits, int size, byte r[], byte g[], byte b[]) {
     	super(bits, size, r, g, b);
 	}

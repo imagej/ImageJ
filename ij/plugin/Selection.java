@@ -18,7 +18,6 @@ public class Selection implements PlugIn, Measurements {
 	private float[] kernel = {1f, 1f, 1f, 1f, 1f};
 	private float[] kernel3 = {1f, 1f, 1f};
 	private static String angle = "15"; // degrees
-	private static String enlarge = "15"; // pixels
 	private static int bandSize = 15; // pixels
 	private static boolean nonScalable;
 	private static Color linec, fillc;
@@ -99,11 +98,8 @@ public class Selection implements PlugIn, Measurements {
 		if (rotate) {
 			String value = IJ.runMacroFile("ij.jar:RotateSelection", angle);
 			if (value!=null) angle = value;		
-		} else if (arg.equals("enlarge")) {
-			String value = IJ.runMacroFile("ij.jar:EnlargeSelection", enlarge); 
-			if (value!=null) enlarge = value; 
-			Roi.previousRoi = roi;
-		}
+		} else if (arg.equals("enlarge"))
+			(new RoiEnlarger()).run("");
 	}
 	
 	/*

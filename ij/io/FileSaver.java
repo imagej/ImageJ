@@ -79,7 +79,8 @@ public class FileSaver {
 	}
 	
 	/** Save the image or stack in TIFF format using a save file
-		dialog. Returns false if the user selects cancel. */
+		dialog. Returns false if the user selects cancel. Or use
+		IJ.saveAsTiff(imp,""), which is more convenient. */
 	public boolean saveAsTiff() {
 		String path = getPath("TIFF", ".tif");
 		if (path==null)
@@ -90,7 +91,8 @@ public class FileSaver {
 			return saveAsTiff(path);
 	}
 	
-	/** Save the image in TIFF format using the specified path. */
+	/** Save the image in TIFF format using the specified path. Or
+		 use IJ.saveAsTiff(imp,path), which is more convenient. */
 	public boolean saveAsTiff(String path) {
 		fi.nImages = 1;
 		Object info = imp.getProperty("Info");
@@ -141,7 +143,8 @@ public class FileSaver {
 		return array;
 	}
 
-	/** Save the stack as a multi-image TIFF using the specified path. */
+	/** Save the stack as a multi-image TIFF using the specified path.
+		 Or use IJ.saveAsTiff(imp,path), which is more convenient. */
 	public boolean saveAsTiffStack(String path) {
 		if (fi.nImages==1)
 			{IJ.error("This is not a stack"); return false;}

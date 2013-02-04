@@ -21,8 +21,10 @@ public class ThresholdToSelection implements PlugInFilter {
 	ImageProcessor ip;
 	float min, max;
 	int w, h;
+	boolean showStatus;
 
 	public void run(ImageProcessor ip) {
+		showStatus = true;
 		image.setRoi(convert(ip));
 	}
 	
@@ -171,7 +173,8 @@ public class ThresholdToSelection implements PlugInFilter {
 	 * lower right corner of the previous row.
 	 */
 	Roi getRoi() {
-		IJ.showStatus("Converting threshold to selection");
+		if (showStatus)
+			IJ.showStatus("Converting threshold to selection");
 		boolean[] prevRow, thisRow;
 		ArrayList polygons = new ArrayList();
 		Outline[] outline;
@@ -280,7 +283,8 @@ public class ThresholdToSelection implements PlugInFilter {
 					}
 				}
 			}
-			if ((y&progressInc)==0) IJ.showProgress(y + 1, h + 1);
+			if (showStatus && (y&progressInc)==0)
+				IJ.showProgress(y + 1, h + 1);
 		}
 
 		//IJ.showStatus("Creating GeneralPath");
@@ -290,7 +294,8 @@ public class ThresholdToSelection implements PlugInFilter {
 
 		ShapeRoi shape = new ShapeRoi(path);
 		Roi roi = shape!=null?shape.shapeToRoi():null; // try to convert to non-composite ROI
-		IJ.showProgress(1,1);
+		if (showStatus)
+			IJ.showProgress(1,1);
 		if (roi!=null)
 			return roi;
 		else

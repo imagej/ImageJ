@@ -5072,16 +5072,8 @@ public class Functions implements MacroConstants, Measurements {
 			return 0.0;
 		else if (name.equals("hidden"))
 			return overlay!=null && imp.getHideOverlay()?1.0:0.0;
-		else if (name.equals("addSelection")) {
-			Roi roi = imp.getRoi();
-			if (roi==null)
-				interp.error("No selection");
-			if (overlay==null)
-				overlay = new Overlay();
-			overlay.add(roi);
-			imp.setOverlay(overlay);
-			return Double.NaN;
-		}
+		else if (name.equals("addSelection"))
+			return overlayAddSelection(imp, overlay);
 		if (overlay==null)
 			interp.error("No overlay");
 		int size = overlay.size();
@@ -5100,7 +5092,7 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("activateSelection")) {
 			int index = (int)getArg();
 			checkIndex(index, 0, size-1);
-			imp.setRoi(overlay.get(index));
+			imp.setRoi(overlay.get(index), !Interpreter.isBatchMode());
 			return Double.NaN;
 		} else if (name.equals("setPosition")) {
 			int n = (int)getArg();
@@ -5112,6 +5104,41 @@ public class Functions implements MacroConstants, Measurements {
 		return Double.NaN;
 	}
 	
+	double overlayAddSelection(ImagePlus imp, Overlay overlay) {
+		String strokeColor = null;
+		double strokeWidth = Double.NaN;
+		String fillColor = null;
+		if (interp.nextToken()=='(') {
+			interp.getLeftParen();
+			if (isStringArg()) {
+				strokeColor = getString();
+				if (interp.nextToken()==',') {
+					interp.getComma();
+					strokeWidth = interp.getExpression();
+					if (interp.nextToken()==',') {
+						interp.getComma();
+						fillColor = interp.getString();
+					}
+				}
+			}
+			interp.getRightParen();
+		}
+		Roi roi = imp.getRoi();
+		if (roi==null)
+			interp.error("No selection");
+		if (overlay==null)
+			overlay = new Overlay();
+		if (strokeColor!=null && !strokeColor.equals(""))
+			roi.setStrokeColor(Colors.decode(strokeColor, Color.black));
+		if (!Double.isNaN(strokeWidth))
+			roi.setStrokeWidth(strokeWidth);
+		if (fillColor!=null && !fillColor.equals(""))
+			roi.setFillColor(Colors.decode(fillColor, Color.black));
+		overlay.add(roi);
+		imp.setOverlay(overlay);
+		return Double.NaN;
+	}
+
 	double overlayMoveTo() {
 		if (overlayPath==null) overlayPath = new GeneralPath();
 		interp.getLeftParen();
