@@ -36,7 +36,7 @@ public class RoiEnlarger implements PlugIn {
 	public double showDialog(ImagePlus imp, double pixels) {
 		Calibration cal = imp.getCalibration();
 		boolean scaled = cal.scaled();
-		boolean usePixels = scaled;
+		boolean usePixels = false;
 		double n = pixels*cal.pixelWidth;
 		int decimalPlaces = 0;
 		if (Math.floor(n)!=n)
@@ -99,7 +99,7 @@ public class RoiEnlarger implements PlugIn {
 		bounds.width += 2*n;
 		bounds.height += 2*n;
 		if (bounds.width<=0 || bounds.height<=0)
-			return null;
+			return roi;
 		if (roi.getType()==Roi.RECTANGLE)
 			return new Roi(bounds.x, bounds.y, bounds.width, bounds.height);
 		else
@@ -127,6 +127,8 @@ public class RoiEnlarger implements PlugIn {
 		ip.setThreshold(n+1, 255, ImageProcessor.NO_LUT_UPDATE);
 		Roi roi2 = (new ThresholdToSelection()).convert(ip);
 		Rectangle bounds2 = roi2.getBounds();
+		if (bounds2.width<=0 && bounds2.height<=0)
+			return roi;
 		roi2.setLocation(bounds.x+bounds2.x-1, bounds.y+bounds2.y-1);
 		return roi2;
 	}

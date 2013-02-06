@@ -161,11 +161,8 @@ import java.util.Comparator;
        		strings = new String[tokens];
         	for(int i=0; i<tokens; i++) 
         		strings[i] = t.nextToken();
-        } else {
-        	strings = new String[1];
-        	strings[0] = str;
-        	tokens = 1;
-        }
+        } else
+        	strings = new String[0];
 		return strings;
 	}
 	

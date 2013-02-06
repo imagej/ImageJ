@@ -1156,7 +1156,7 @@ public class Interpreter implements MacroConstants {
 			}
 		}
 		if (debugWindow==null)
-			debugWindow = new TextWindow("Debug", "Name\tValue", "", 300, 400);
+			debugWindow = new TextWindow("Debug", "Name\t*\tValue", "", 300, 400);
 		TextPanel panel = debugWindow.getTextPanel();
 		int n = variables.length;
 		if (n==0) {
@@ -1164,17 +1164,34 @@ public class Interpreter implements MacroConstants {
 			return debugWindow;
 		}
 		int lines = panel.getLineCount();
+		String[] markedVariables = markChanges(variables);
 		for (int i=0; i<lines; i++) {
 			if (i<n)
-				panel.setLine(i, variables[i]);
+				panel.setLine(i, markedVariables[i]);
 			else
 				panel.setLine(i, "");
 		}
 		for (int i=lines; i<n; i++)
-			debugWindow.append(variables[i]);
+			debugWindow.append(markedVariables[i]);
 		return debugWindow;
 	}
 
+	private static String[] prevVars; //previous variables for comparison
+
+	private String[] markChanges(String[] newVars) {//add asterisk if variable has changed
+		int len = newVars.length;
+		String[] copyOfNew = new String[len];
+		String[] hilitedVars = new String[len];
+		for (int jj = 0; jj < len; jj++) {
+			copyOfNew[jj] = newVars[jj];
+			String marker = "\t*\t";//changed
+			if (prevVars != null && jj < prevVars.length && jj < len && prevVars[jj].equals(newVars[jj]))
+				marker = "\t\t";//unchanged
+			hilitedVars[jj] = newVars[jj].replaceFirst("\t", marker);
+		}
+		prevVars = copyOfNew;
+		return hilitedVars;
+	}
 
 	String getErrorLine() {//n__
 		int savePC = pc;
