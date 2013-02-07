@@ -158,26 +158,26 @@ import java.util.Comparator;
 		int tokens = t.countTokens();
 		String[] strings;
 		if (tokens>0) {
-       		strings = new String[tokens];
-        	for(int i=0; i<tokens; i++) 
-        		strings[i] = t.nextToken();
-        } else
-        	strings = new String[0];
+			strings = new String[tokens];
+			for(int i=0; i<tokens; i++) 
+			strings[i] = t.nextToken();
+		} else
+			strings = new String[0];
 		return strings;
 	}
 	
 	static String[] splitLines(String str) {
 		Vector v = new Vector();
-        try {
-            BufferedReader br  = new BufferedReader(new StringReader(str));
-            String line;
-            while (true) {
-                line = br.readLine();
-                if (line == null) break;
-                v.addElement(line);
-            }
-            br.close();
-        } catch(Exception e) { }
+		try {
+			BufferedReader br  = new BufferedReader(new StringReader(str));
+			String line;
+			while (true) {
+				line = br.readLine();
+				if (line == null) break;
+				v.addElement(line);
+			}
+			br.close();
+		} catch(Exception e) { }
 		String[] lines = new String[v.size()];
 		v.copyInto((String[])lines);
 		return lines;

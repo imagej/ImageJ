@@ -85,7 +85,7 @@ public class SaveDialog {
 				name += extension;
 			else
 				name = name.substring(0, dotIndex) + extension;
-		} else
+		} else if (!name.endsWith(extension))
 			name += extension;
 		return name;
 	}

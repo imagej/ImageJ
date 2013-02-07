@@ -3413,9 +3413,9 @@ public class Functions implements MacroConstants, Measurements {
 		if (name.equals("open"))
 			return openFile();
 		else if (name.equals("openAsString"))
-			return openAsString(false);
+			return openAsString();
 		else if (name.equals("openAsRawString"))
-			return openAsString(true);
+			return openAsRawString();
 		else if (name.equals("openUrlAsString"))
 			return IJ.openUrlAsString(getStringArg());
 		else if (name.equals("openDialog"))
@@ -3567,15 +3567,25 @@ public class Functions implements MacroConstants, Measurements {
 		return "~0~";
 	}
 
-	String openAsString(boolean raw) {
+	String openAsString() {
+		String path = getStringArg();
+		String str = IJ.openAsString(path);
+		if (str==null)
+			interp.done = true;
+		else if (str.startsWith("Error: "))
+			interp.error(str);
+		return str;
+	}
+
+	String openAsRawString() {
 		int max = 5000;
 		String path = getFirstString();
 		boolean specifiedMax = false;
-		if (raw && interp.nextToken()==',') {
+		if (interp.nextToken()==',') {
 			max = (int)getNextArg();
 			specifiedMax = true;
 		} 
-		interp.getRightParen();			
+		interp.getRightParen();
 		if (path.equals("")) {
 			OpenDialog od = new OpenDialog("Open As String", "");
 			String directory = od.getDirectory();
@@ -3589,31 +3599,18 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("File not found");
 		try {
 			StringBuffer sb = new StringBuffer(5000);
-			if (raw) {
-				int len = (int)file.length();
-				if (max>len || (path.endsWith(".txt")&&!specifiedMax))
-					max = len;
-				InputStream in = new BufferedInputStream(new FileInputStream(path));
-				DataInputStream dis = new DataInputStream(in);
-				byte[] buffer = new byte[max];
-				dis.readFully(buffer);
-				dis.close();
-				char[] buffer2 = new char[buffer.length];
-				for (int i=0; i<buffer.length; i++)
-					buffer2[i] = (char)(buffer[i]&255);
-				str = new String(buffer2);
-			} else {
-				BufferedReader r = new BufferedReader(new FileReader(file));
-				while (true) {
-					String s=r.readLine();
-					if (s==null)
-						break;
-					else
-						sb.append(s+"\n");
-				}
-				r.close();
-				str = new String(sb);
-			}
+			int len = (int)file.length();
+			if (max>len || (path.endsWith(".txt")&&!specifiedMax))
+				max = len;
+			InputStream in = new BufferedInputStream(new FileInputStream(path));
+			DataInputStream dis = new DataInputStream(in);
+			byte[] buffer = new byte[max];
+			dis.readFully(buffer);
+			dis.close();
+			char[] buffer2 = new char[buffer.length];
+			for (int i=0; i<buffer.length; i++)
+				buffer2[i] = (char)(buffer[i]&255);
+			str = new String(buffer2);
 		}
 		catch (Exception e) {
 			interp.error("File open error \n\""+e.getMessage()+"\"\n");

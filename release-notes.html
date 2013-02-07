@@ -5,17 +5,20 @@
 </head>
 <body>
 
-<li> <u>1.47j 5 February 2013</u>
+<li> <u>1.47j 6 February 2013</u>
 <ul>
 <li> The <i>Edit&gt;Selection&gt;Enlarge</i> command is much faster.
 <li> Thanks to Norbert Vischer, the macro debugger now flags changed variables.
+<li> The File.openAsString() macro function no longer has a file size limit.
 <li> Thanks to Rainer Engel, added the File.copy(path1,path2) macro function.
 <li> Added the Overlay.addSelection(color), Overlay.addSelection(color, strokeWidth)
 and Overlay.addSelection("", 0, fillColor) macro functions.
 <li> Thanks to Gilles Carpentier, fixed a bug that could cause the ROI Manager
 to not work correctly if ROIs with duplicate names were programatically added.
-<li> Thanks to Norbert Vischer, fixed a bug that caused the split macro function
+<li> Thanks to Norbert Vischer, fixed a bug that caused the split() macro function
 to not return a zero length array when no tokens were found.
+<li> Thanks to Ignacio Arganda-Carreras, fixed a bug that caused the SaveDialog
+class to add the extension twice if it was longer than four characters.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
