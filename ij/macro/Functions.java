@@ -1689,7 +1689,11 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();
 		if (nBins==65536 && bitDepth==16) {
 			Variable[] array = counts.getArray();
-			int[] hist = getProcessor().getHistogram();
+			ImageProcessor ip = imp.getProcessor();
+			Roi roi = imp.getRoi();
+			if (roi!=null)
+				ip.setRoi(roi);
+			int[] hist = ip.getHistogram();
 			if (array!=null && array.length==nBins) {
 				for (int i=0; i<nBins; i++)
 					array[i].setValue(hist[i]);
