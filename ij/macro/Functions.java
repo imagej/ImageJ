@@ -4763,6 +4763,8 @@ public class Functions implements MacroConstants, Measurements {
 			return sliceArray();
 		else if (name.equals("print"))
 			return printArray();
+		else if (name.equals("resample"))
+			return resampleArray();
 		else
 			interp.error("Unrecognized Array function");
 		return null;
@@ -4984,6 +4986,45 @@ public class Functions implements MacroConstants, Measurements {
 		return a;
 	}
 	
+	Variable[] resampleArray() {
+		interp.getLeftParen();
+		Variable[] a1 = getArray();
+		int len1 = a1.length;
+		int len2 = (int)getLastArg();
+		if (len2<=0)
+			interp.error("Length<=0");
+		double[] d1 = new double[len1];
+		for (int i=0; i<len1; i++)
+			d1[i] = a1[i].getValue();
+		double[] d2 = resampleArray(d1, len2);
+		Variable[] a2 = new Variable[len2];
+		for (int i=0; i<len2; i++)
+			a2[i] = new Variable(d2[i]);
+		return a2;
+	}
+
+	private static double[] resampleArray(double[] y1, int len2) {
+		int len1 = y1.length;
+		double factor =  (double)(len2-1)/(len1-1);
+		double[] y2 = new double[len2];
+		double[] f1 = new double[len1];//fractional positions
+		double[] f2 = new double[len2];
+		for (int jj=0; jj<len1; jj++)
+			f1[jj] = jj*factor;
+		for (int jj=0; jj<len2; jj++)
+			f2[jj] = jj/factor;		
+		for (int jj=0; jj<len2-1; jj++) {
+			double pos = f2[jj];
+			int leftPos = (int)Math.floor(pos);
+			int rightPos = (int)Math.floor(pos)+1;
+			double fraction = pos-Math.floor(pos);
+			double value = y1[leftPos] + fraction*(y1[rightPos]-y1[leftPos]);
+			y2[jj] = value;
+		}
+		y2[len2-1] = y1[len1-1];
+		return y2;
+	}	
+
 	Variable[] reverseArray() {
 		interp.getLeftParen();
 		Variable[] a = getArray();
@@ -5385,6 +5426,6 @@ public class Functions implements MacroConstants, Measurements {
 			}
 		}
 	}
-	
+		
 } // class Functions
 
