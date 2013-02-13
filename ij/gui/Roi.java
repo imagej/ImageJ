@@ -1332,7 +1332,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	public void setNonScalable(boolean nonScalable) {
 		this.nonScalable = nonScalable;
 	}
-
+	
 	/** Sets the width of the line used to draw this ROI. Set
 	 * the width to 0.0 and the ROI will be drawn using a
 	 * a 1 pixel stroke width regardless of the magnification.

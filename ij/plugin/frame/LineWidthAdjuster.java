@@ -119,8 +119,11 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
 			Roi roi = imp.getRoi();
-			if (roi!=null && roi.isLine())
-				{roi.updateWideLine(Line.getWidth()); imp.draw(); return;}
+			if (roi!=null && roi.isLine()) {
+				roi.updateWideLine(Line.getWidth());
+				imp.draw();
+				return;
+			}
 		}
 		if (Roi.previousRoi==null) return;
 		int id = Roi.previousRoi.getImageID();
