@@ -964,11 +964,11 @@ public class IJ {
 			String macroOptions = Macro.getOptions();
 			if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE) {
 				if (macroOptions==null || !macroOptions.contains("slice"))
-					return flags+PlugInFilter.DOES_STACKS;
+					return flags | PlugInFilter.DOES_STACKS;
 			}
 			if (macroOptions!=null) {
 				if (macroOptions.indexOf("stack ")>=0)
-					return flags+PlugInFilter.DOES_STACKS;
+					return flags | PlugInFilter.DOES_STACKS;
 				else
 					return flags;
 			}
@@ -992,7 +992,7 @@ public class IJ {
 		    	}
 				if (Recorder.record)
 					Recorder.recordOption("stack");
-				return flags+PlugInFilter.DOES_STACKS;
+				return flags | PlugInFilter.DOES_STACKS;
 			}
 			if (Recorder.record)
 				Recorder.recordOption("slice");
@@ -1914,7 +1914,7 @@ public class IJ {
 		GraphicsDevice[] gd = ge.getScreenDevices();
 		GraphicsConfiguration[] gc = gd[0].getConfigurations();
 		Rectangle bounds = gc[0].getBounds();
-		if (bounds.x==0&&bounds.y==0)
+		if ((bounds.x==0&&bounds.y==0) || (IJ.isLinux()&&gc.length>1))
 			return new Dimension(bounds.width, bounds.height);
 		else
 			return Toolkit.getDefaultToolkit().getScreenSize();

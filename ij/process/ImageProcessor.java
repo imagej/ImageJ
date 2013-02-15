@@ -1999,7 +1999,8 @@ public abstract class ImageProcessor implements Cloneable {
 	}
 
 	/** Rotates the image or selection 'angle' degrees clockwise.
-		@see ImageProcessor#setInterpolate
+		@see ImageProcessor#setInterpolationMethod
+		@see ImageProcessor#setBackgroundValue
 	*/
   	public abstract void rotate(double angle);
   		

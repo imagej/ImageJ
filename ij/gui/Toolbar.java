@@ -200,6 +200,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	private void drawButtons(Graphics g) {
+		long start = IJ.debugMode?System.currentTimeMillis():0L;
 		if (Prefs.antialiasedTools) {
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -210,6 +211,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		drawButton(g, lineType);
 		for (int i=POINT; i<NUM_TOOLS; i++)
 			drawButton(g, i);
+		if (IJ.debugMode)
+			IJ.log("drawButtons: "+(System.currentTimeMillis()-start));
 	}
 
 	private void fill3DRect(Graphics g, int x, int y, int width, int height, boolean raised) {

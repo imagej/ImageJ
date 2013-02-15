@@ -17,7 +17,8 @@ import java.awt.event.KeyEvent;
 import java.lang.reflect.*;
 import java.net.URL;
 import java.awt.datatransfer.*;
-import java.awt.geom.*;;
+import java.awt.geom.*;
+import java.nio.channels.FileChannel;
 
 
 /** This class implements the built-in macro functions. */
@@ -1688,7 +1689,11 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();
 		if (nBins==65536 && bitDepth==16) {
 			Variable[] array = counts.getArray();
-			int[] hist = getProcessor().getHistogram();
+			ImageProcessor ip = imp.getProcessor();
+			Roi roi = imp.getRoi();
+			if (roi!=null)
+				ip.setRoi(roi);
+			int[] hist = ip.getHistogram();
 			if (array!=null && array.length==nBins) {
 				for (int i=0; i<nBins; i++)
 					array[i].setValue(hist[i]);
@@ -3412,9 +3417,9 @@ public class Functions implements MacroConstants, Measurements {
 		if (name.equals("open"))
 			return openFile();
 		else if (name.equals("openAsString"))
-			return openAsString(false);
+			return openAsString();
 		else if (name.equals("openAsRawString"))
-			return openAsString(true);
+			return openAsRawString();
 		else if (name.equals("openUrlAsString"))
 			return IJ.openUrlAsString(getStringArg());
 		else if (name.equals("openDialog"))
@@ -3442,6 +3447,13 @@ public class Functions implements MacroConstants, Measurements {
 				return f1.renameTo(f2)?"1":"0";
 			else
 				return "0";
+		} else if (name.equals("copy")) {
+			File f1 = new File(getFirstString());
+			File f2 = new File(getLastString());
+			String err = copyFile(f1, f2);
+			if (err.length()>0)
+				interp.error(err);
+			return null;
 		} else if (name.equals("append")) {
 			String err = IJ.append(getFirstString(), getLastString());
 			if (err!=null) interp.error(err);
@@ -3559,15 +3571,25 @@ public class Functions implements MacroConstants, Measurements {
 		return "~0~";
 	}
 
-	String openAsString(boolean raw) {
+	String openAsString() {
+		String path = getStringArg();
+		String str = IJ.openAsString(path);
+		if (str==null)
+			interp.done = true;
+		else if (str.startsWith("Error: "))
+			interp.error(str);
+		return str;
+	}
+
+	String openAsRawString() {
 		int max = 5000;
 		String path = getFirstString();
 		boolean specifiedMax = false;
-		if (raw && interp.nextToken()==',') {
+		if (interp.nextToken()==',') {
 			max = (int)getNextArg();
 			specifiedMax = true;
 		} 
-		interp.getRightParen();			
+		interp.getRightParen();
 		if (path.equals("")) {
 			OpenDialog od = new OpenDialog("Open As String", "");
 			String directory = od.getDirectory();
@@ -3581,31 +3603,18 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("File not found");
 		try {
 			StringBuffer sb = new StringBuffer(5000);
-			if (raw) {
-				int len = (int)file.length();
-				if (max>len || (path.endsWith(".txt")&&!specifiedMax))
-					max = len;
-				InputStream in = new BufferedInputStream(new FileInputStream(path));
-				DataInputStream dis = new DataInputStream(in);
-				byte[] buffer = new byte[max];
-				dis.readFully(buffer);
-				dis.close();
-				char[] buffer2 = new char[buffer.length];
-				for (int i=0; i<buffer.length; i++)
-					buffer2[i] = (char)(buffer[i]&255);
-				str = new String(buffer2);
-			} else {
-				BufferedReader r = new BufferedReader(new FileReader(file));
-				while (true) {
-					String s=r.readLine();
-					if (s==null)
-						break;
-					else
-						sb.append(s+"\n");
-				}
-				r.close();
-				str = new String(sb);
-			}
+			int len = (int)file.length();
+			if (max>len || (path.endsWith(".txt")&&!specifiedMax))
+				max = len;
+			InputStream in = new BufferedInputStream(new FileInputStream(path));
+			DataInputStream dis = new DataInputStream(in);
+			byte[] buffer = new byte[max];
+			dis.readFully(buffer);
+			dis.close();
+			char[] buffer2 = new char[buffer.length];
+			for (int i=0; i<buffer.length; i++)
+				buffer2[i] = (char)(buffer[i]&255);
+			str = new String(buffer2);
 		}
 		catch (Exception e) {
 			interp.error("File open error \n\""+e.getMessage()+"\"\n");
@@ -3624,6 +3633,29 @@ public class Functions implements MacroConstants, Measurements {
 		return null;
 	}
 	
+	// Based on the method with the same name in Tobias Pietzsch's TifBenchmark class. */
+	public static String copyFile(File source, File destination) {
+		try {
+			if (!source.exists() )
+				return "Source file does not exist";
+			if (!destination.exists() )
+				destination.createNewFile();
+			FileInputStream sourceStream = new FileInputStream(source);
+			FileChannel sourceChannel = sourceStream.getChannel();
+			FileOutputStream destStream = new FileOutputStream(destination);
+			final FileChannel destChannel = destStream.getChannel();
+			if (destChannel!=null && sourceChannel!=null )
+				destChannel.transferFrom(sourceChannel, 0, sourceChannel.size());
+			sourceChannel.close();
+			sourceStream.close();
+			destChannel.close();
+			destStream.close();
+		} catch(Exception e) {
+			return e.getMessage();
+		}
+		return "";
+	}
+
 	// Calls a public static method with an arbitrary number
 	// of String parameters, returning a String.
 	// Contributed by Johannes Schindelin
@@ -4731,6 +4763,8 @@ public class Functions implements MacroConstants, Measurements {
 			return sliceArray();
 		else if (name.equals("print"))
 			return printArray();
+		else if (name.equals("resample"))
+			return resampleArray();
 		else
 			interp.error("Unrecognized Array function");
 		return null;
@@ -4952,6 +4986,45 @@ public class Functions implements MacroConstants, Measurements {
 		return a;
 	}
 	
+	Variable[] resampleArray() {
+		interp.getLeftParen();
+		Variable[] a1 = getArray();
+		int len1 = a1.length;
+		int len2 = (int)getLastArg();
+		if (len2<=0)
+			interp.error("Length<=0");
+		double[] d1 = new double[len1];
+		for (int i=0; i<len1; i++)
+			d1[i] = a1[i].getValue();
+		double[] d2 = resampleArray(d1, len2);
+		Variable[] a2 = new Variable[len2];
+		for (int i=0; i<len2; i++)
+			a2[i] = new Variable(d2[i]);
+		return a2;
+	}
+
+	private static double[] resampleArray(double[] y1, int len2) {
+		int len1 = y1.length;
+		double factor =  (double)(len2-1)/(len1-1);
+		double[] y2 = new double[len2];
+		double[] f1 = new double[len1];//fractional positions
+		double[] f2 = new double[len2];
+		for (int jj=0; jj<len1; jj++)
+			f1[jj] = jj*factor;
+		for (int jj=0; jj<len2; jj++)
+			f2[jj] = jj/factor;		
+		for (int jj=0; jj<len2-1; jj++) {
+			double pos = f2[jj];
+			int leftPos = (int)Math.floor(pos);
+			int rightPos = (int)Math.floor(pos)+1;
+			double fraction = pos-Math.floor(pos);
+			double value = y1[leftPos] + fraction*(y1[rightPos]-y1[leftPos]);
+			y2[jj] = value;
+		}
+		y2[len2-1] = y1[len1-1];
+		return y2;
+	}	
+
 	Variable[] reverseArray() {
 		interp.getLeftParen();
 		Variable[] a = getArray();
@@ -5072,16 +5145,8 @@ public class Functions implements MacroConstants, Measurements {
 			return 0.0;
 		else if (name.equals("hidden"))
 			return overlay!=null && imp.getHideOverlay()?1.0:0.0;
-		else if (name.equals("addSelection")) {
-			Roi roi = imp.getRoi();
-			if (roi==null)
-				interp.error("No selection");
-			if (overlay==null)
-				overlay = new Overlay();
-			overlay.add(roi);
-			imp.setOverlay(overlay);
-			return Double.NaN;
-		}
+		else if (name.equals("addSelection"))
+			return overlayAddSelection(imp, overlay);
 		if (overlay==null)
 			interp.error("No overlay");
 		int size = overlay.size();
@@ -5100,7 +5165,7 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("activateSelection")) {
 			int index = (int)getArg();
 			checkIndex(index, 0, size-1);
-			imp.setRoi(overlay.get(index));
+			imp.setRoi(overlay.get(index), !Interpreter.isBatchMode());
 			return Double.NaN;
 		} else if (name.equals("setPosition")) {
 			int n = (int)getArg();
@@ -5112,6 +5177,41 @@ public class Functions implements MacroConstants, Measurements {
 		return Double.NaN;
 	}
 	
+	double overlayAddSelection(ImagePlus imp, Overlay overlay) {
+		String strokeColor = null;
+		double strokeWidth = Double.NaN;
+		String fillColor = null;
+		if (interp.nextToken()=='(') {
+			interp.getLeftParen();
+			if (isStringArg()) {
+				strokeColor = getString();
+				if (interp.nextToken()==',') {
+					interp.getComma();
+					strokeWidth = interp.getExpression();
+					if (interp.nextToken()==',') {
+						interp.getComma();
+						fillColor = interp.getString();
+					}
+				}
+			}
+			interp.getRightParen();
+		}
+		Roi roi = imp.getRoi();
+		if (roi==null)
+			interp.error("No selection");
+		if (overlay==null)
+			overlay = new Overlay();
+		if (strokeColor!=null && !strokeColor.equals(""))
+			roi.setStrokeColor(Colors.decode(strokeColor, Color.black));
+		if (!Double.isNaN(strokeWidth))
+			roi.setStrokeWidth(strokeWidth);
+		if (fillColor!=null && !fillColor.equals(""))
+			roi.setFillColor(Colors.decode(fillColor, Color.black));
+		overlay.add(roi);
+		imp.setOverlay(overlay);
+		return Double.NaN;
+	}
+
 	double overlayMoveTo() {
 		if (overlayPath==null) overlayPath = new GeneralPath();
 		interp.getLeftParen();
@@ -5326,6 +5426,6 @@ public class Functions implements MacroConstants, Measurements {
 			}
 		}
 	}
-	
+		
 } // class Functions
 

@@ -240,12 +240,11 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 			   switch the focus back to the prompt: */
 			prompt.requestFocus();
 		} else if (source==table) {
-			/* If you hit enter with the focus in the table,
-			   run the selected command */
+			/* If you hit enter with the focus in the table, run the selected command */
 			if (key==KeyEvent.VK_ENTER) {
 				ke.consume();
 				int row = table.getSelectedRow();
-				if (row>0)
+				if (row>=0)
 					runCommand(tableModel.getCommand(row));
 			}
 		}

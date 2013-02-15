@@ -37,6 +37,7 @@ public class Options implements PlugIn {
 		gd.addCheckbox("Move isolated plugins to Misc. menu", Prefs.moveToMisc);
 		if (!IJ.isMacOSX())
 			gd.addCheckbox("Run single instance listener", Prefs.runSocketListener);
+		gd.addCheckbox("Enhanced line tool", Prefs.enhancedLineTool);
 		gd.addCheckbox("Debug mode", IJ.debugMode);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#misc");
 		gd.showDialog();
@@ -65,6 +66,7 @@ public class Options implements PlugIn {
 		Prefs.moveToMisc = gd.getNextBoolean();
 		if (!IJ.isMacOSX())
 			Prefs.runSocketListener = gd.getNextBoolean();
+		Prefs.enhancedLineTool = gd.getNextBoolean();
 		IJ.debugMode = gd.getNextBoolean();
 	}
 

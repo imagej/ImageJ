@@ -83,11 +83,11 @@ public class OverlayCommands implements PlugIn {
 			} else
 				roi.setPosition(imp.getCurrentSlice());
 		}
-		int width = Line.getWidth();
-		Rectangle bounds = roi.getBounds();
-		boolean tooWide = width>Math.max(bounds.width, bounds.height)/3.0;
-		if (roi.getStroke()==null && width>1 && !tooWide)
-			roi.setStrokeWidth(Line.getWidth());
+		//int width = Line.getWidth();
+		//Rectangle bounds = roi.getBounds();
+		//boolean tooWide = width>Math.max(bounds.width, bounds.height)/3.0;
+		//if (roi.getStroke()==null && width>1 && !tooWide)
+		//	roi.setStrokeWidth(Line.getWidth());
 		//if (roi.getStrokeColor()==null)
 		//	roi.setStrokeColor(Toolbar.getForegroundColor());
 		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;
@@ -101,11 +101,16 @@ public class OverlayCommands implements PlugIn {
 		if (overlay==null || newOverlay)
 			overlay = OverlayLabels.createOverlay();
 		overlay.add(roi);
-		if (!roi.isDrawingTool())
+		if (!roi.isDrawingTool()) {
+			double dsw = defaultRoi.getStrokeWidth();
 			defaultRoi = (Roi)roi.clone();
+			if (roi.isLine())
+				defaultRoi.setStrokeWidth(dsw);
+		}
 		defaultRoi.setPosition(setPos?1:0);
 		imp.setOverlay(overlay);
-		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow)) imp.deleteRoi();
+		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow))
+			imp.deleteRoi();
 		Undo.setup(Undo.OVERLAY_ADDITION, imp);
 	}
 	
@@ -354,11 +359,11 @@ public class OverlayCommands implements PlugIn {
 			if (roi.getFillColor()==null)
 				roi.setFillColor(defaultRoi.getFillColor());
 		}
-		int width = Line.getWidth();
-		Rectangle bounds = roi.getBounds();
-		boolean tooWide = width>Math.max(bounds.width, bounds.height)/3.0;
-		if (roi.getStroke()==null && width>1 && !tooWide)
-			roi.setStrokeWidth(Line.getWidth());
+		//int width = Line.getWidth();
+		//Rectangle bounds = roi.getBounds();
+		//boolean tooWide = width>Math.max(bounds.width, bounds.height)/3.0;
+		//if (roi.getStroke()==null && width>1 && !tooWide)
+		//	roi.setStrokeWidth(Line.getWidth());
 		if (roi.getStrokeColor()==null)
 			roi.setStrokeColor(Roi.getColor());
 		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;

@@ -18,7 +18,6 @@ public class Selection implements PlugIn, Measurements {
 	private float[] kernel = {1f, 1f, 1f, 1f, 1f};
 	private float[] kernel3 = {1f, 1f, 1f};
 	private static String angle = "15"; // degrees
-	private static String enlarge = "15"; // pixels
 	private static int bandSize = 15; // pixels
 	private static boolean nonScalable;
 	private static Color linec, fillc;
@@ -99,11 +98,8 @@ public class Selection implements PlugIn, Measurements {
 		if (rotate) {
 			String value = IJ.runMacroFile("ij.jar:RotateSelection", angle);
 			if (value!=null) angle = value;		
-		} else if (arg.equals("enlarge")) {
-			String value = IJ.runMacroFile("ij.jar:EnlargeSelection", enlarge); 
-			if (value!=null) enlarge = value; 
-			Roi.previousRoi = roi;
-		}
+		} else if (arg.equals("enlarge"))
+			(new RoiEnlarger()).run("");
 	}
 	
 	/*
@@ -611,18 +607,21 @@ public class Selection implements PlugIn, Measurements {
 		if (roi==null || !roi.isLine())
 			{IJ.error("Line to Area", "Line selection required"); return;}
 		Undo.setup(Undo.ROI, imp);
-		ImageProcessor ip2 = new ByteProcessor(imp.getWidth(), imp.getHeight());
-		ip2.setColor(255);
-		if (roi.getType()==Roi.LINE && roi.getStrokeWidth()>1)
-			ip2.fillPolygon(roi.getPolygon());
-		else
+		Roi roi2 = null;
+		if (roi.getType()==Roi.LINE) {
+			FloatPolygon p = roi.getFloatPolygon();
+			roi2 = new PolygonRoi(p, Roi.POLYGON);
+		} else {
+			ImageProcessor ip2 = new ByteProcessor(imp.getWidth(), imp.getHeight());
+			ip2.setColor(255);
 			roi.drawPixels(ip2);
-		//new ImagePlus("ip2", ip2.duplicate()).show();
-		ip2.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
-		ThresholdToSelection tts = new ThresholdToSelection();
-		Roi roi2 = tts.convert(ip2);
+			//new ImagePlus("ip2", ip2.duplicate()).show();
+			ip2.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
+			ThresholdToSelection tts = new ThresholdToSelection();
+			roi2 = tts.convert(ip2);
+		}
 		transferProperties(roi, roi2);
-		roi2.setStroke(null);
+		roi2.setStrokeWidth(0);
 		Color c = roi2.getStrokeColor();
 		if (c!=null)  // remove any transparency
 			roi2.setStrokeColor(new Color(c.getRed(),c.getGreen(),c.getBlue()));
