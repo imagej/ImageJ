@@ -83,7 +83,7 @@ public class Line extends Roi {
 
 	protected void handleMouseUp(int screenX, int screenY) {
 		mouseUpCount++;
-		if (mouseUpCount==1 && !dragged)
+		if (Prefs.enhancedLineTool && mouseUpCount==1 && !dragged)
 			return;
 		state = NORMAL;
 		if (imp==null) return;

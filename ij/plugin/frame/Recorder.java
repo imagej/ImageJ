@@ -229,6 +229,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
  		}
 	}
 	
+	public static void recordCall(String className, String call) {
+		recordCall(javaMode()?className+" "+call:call);
+	}
+
 	public static void recordRoi(Polygon p, int type) {
 		if (textArea==null) return;
 		if (scriptMode)
@@ -269,8 +273,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		}
 		String ypoints = y.toString();
 		
-		boolean java = instance!=null && instance.mode.getSelectedItem().equals(modes[PLUGIN]);
-		if (java) {
+		if (javaMode()) {
 			textArea.append("int[] xpoints = {"+xpoints+"};\n");
 			textArea.append("int[] ypoints = {"+ypoints+"};\n");
 		} else {
@@ -287,6 +290,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			textArea.append("imp.setRoi(new PointRoi(xpoints,ypoints,"+p.npoints+"));\n");
 		else
 			textArea.append("imp.setRoi(new PolygonRoi(xpoints,ypoints,"+p.npoints+","+typeStr+"));\n");
+	}
+	
+	private static boolean javaMode() {
+		return instance!=null && instance.mode.getSelectedItem().equals(modes[PLUGIN]);
 	}
 	
 	public static void recordOption(String key, String value) {
