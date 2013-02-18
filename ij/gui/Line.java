@@ -398,7 +398,7 @@ public class Line extends Roi {
 				profile = ip.getLine(x1d, y1d, x2d, y2d);
 			} else {
 				ImageProcessor ip2 = (new Straightener()).rotateLine(imp,(int)getStrokeWidth());
-				if (ip2==null) return null;
+				if (ip2==null) return new double[0];
 				int width = ip2.getWidth();
 				int height = ip2.getHeight();
 				profile = new double[width];
@@ -415,6 +415,22 @@ public class Line extends Roi {
 			return profile;
 	}
 	
+	/** Returns, as a Polygon, the two points that define this line. */
+	public Polygon getPoints() {
+		Polygon p = new Polygon();
+		p.addPoint((int)Math.round(x1d), (int)Math.round(y1d));
+		p.addPoint((int)Math.round(x2d), (int)Math.round(y2d));
+		return p;
+	}
+
+	/** Returns, as a FloatPolygon, the two points that define this line. */
+	public FloatPolygon getFloatPoints() {
+		FloatPolygon p = new FloatPolygon();
+		p.addPoint((float)x1d, (float)y1d);
+		p.addPoint((float)x2d, (float)y2d);
+		return p;
+	}
+
 	public Polygon getPolygon() {
 		FloatPolygon p = getFloatPolygon();
 		return new Polygon(toIntR(p.xpoints), toIntR(p.ypoints), p.npoints);
