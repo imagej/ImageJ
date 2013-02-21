@@ -1755,18 +1755,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			macro = false;
 			return true;
 		} else if (cmd.equals("save")) {
-			if (!name.endsWith(".zip") && !name.equals(""))
-				return error("Name must end with '.zip'");
-			if (getCount()==0)
-				return error("The selection list is empty.");
-			int[] indexes = getAllIndexes();
-			boolean ok = false;
-			if (name.equals(""))
-				ok = saveMultiple(indexes, null);
-			else
-				ok = saveMultiple(indexes, name);
-			macro = false;
-			return ok;
+			save(name, false);
+		} else if (cmd.equals("save selected")) {
+			save(name, true);
 		} else if (cmd.equals("rename")) {
 			rename(name);
 			macro = false;
@@ -1805,6 +1796,27 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return true;
 		}
 		return false;
+	}
+	
+	private boolean save(String name, boolean saveSelected) {
+		if (!name.endsWith(".zip") && !name.equals(""))
+			return error("Name must end with '.zip'");
+		if (getCount()==0)
+			return error("The selection list is empty.");
+		int[] indexes = null;
+		if (saveSelected) {
+			indexes = getSelectedIndexes();
+			if (indexes.length==0)
+				indexes = getAllIndexes();
+		} else
+			indexes = getAllIndexes();
+		boolean ok = false;
+		if (name.equals(""))
+			ok = saveMultiple(indexes, null);
+		else
+			ok = saveMultiple(indexes, name);
+		macro = false;
+		return ok;
 	}
 	
 	/** Adds the current selection to the ROI Manager, using the

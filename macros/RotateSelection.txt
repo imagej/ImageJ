@@ -19,6 +19,8 @@
   xcenter=xbase+width/2; ycenter=ybase+height/2;
   getSelectionCoordinates(x, y);
   line = type==5;
+  if (type==0 && x.length>4) // rounded rectangle
+      type = 3;
   if (line) {
       getLine(x1, y1, x2, y2, lineWidth);
       x[0]=x1; y[0]=y1; x[1]=x2; y[1]=y2;

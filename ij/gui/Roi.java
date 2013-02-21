@@ -9,6 +9,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.frame.Recorder;
 import ij.plugin.filter.Analyzer;
+import ij.plugin.filter.ThresholdToSelection;
 import ij.plugin.RectToolOptions;
 import ij.macro.Interpreter;
 import ij.io.RoiDecoder;
@@ -365,6 +366,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 
 	public FloatPolygon getFloatPolygon() {
+		if (cornerDiameter>0) {
+			ImageProcessor ip = getMask();
+			Roi roi2 = (new ThresholdToSelection()).convert(ip);
+			roi2.setLocation(x, y);
+			return roi2.getFloatPolygon();
+		}
 		if (subPixelResolution()) {
 			float[] xpoints = new float[4];
 			float[] ypoints = new float[4];

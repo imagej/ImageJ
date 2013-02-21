@@ -1074,7 +1074,8 @@ public class ShapeRoi extends Roi {
 	/** Returns this ROI's mask pixels as a ByteProcessor with pixels "in" the mask
 		set to white (255) and pixels "outside" the mask set to black (0). */
 	public ImageProcessor getMask() {
-		if(shape==null) return null;
+		if (shape==null)
+			return null;
 		if (cachedMask!=null && cachedMask.getPixels()!=null)
 			return cachedMask;
 		//Rectangle r = getBounds();
@@ -1092,6 +1093,7 @@ public class ShapeRoi extends Roi {
 		DataBufferByte buffer = (DataBufferByte)raster.getDataBuffer();		
 		byte[] mask = buffer.getData();
 		cachedMask = new ByteProcessor(width, height, mask, null);
+		cachedMask.setThreshold(255,255,ImageProcessor.NO_LUT_UPDATE);
         return cachedMask;
 	}
 

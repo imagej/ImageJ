@@ -89,6 +89,9 @@ public class RoiEnlarger implements PlugIn {
 		ip.setThreshold(0, n, ImageProcessor.NO_LUT_UPDATE);
 		Roi roi2 = (new ThresholdToSelection()).convert(ip);
 		roi2.setLocation(bounds.x-n, bounds.y-n);
+		roi2.setStrokeColor(roi.getStrokeColor());
+		if (roi.getStroke()!=null)
+			roi2.setStroke(roi.getStroke());
 		return roi2;
 	}
 	

@@ -97,6 +97,9 @@ public class Selection implements PlugIn, Measurements {
 		roi = (Roi)roi.clone();
 		if (rotate) {
 			String value = IJ.runMacroFile("ij.jar:RotateSelection", angle);
+			Roi roi2 = imp.getRoi();
+			transferProperties(roi, roi2);
+			imp.setRoi(roi2);
 			if (value!=null) angle = value;		
 		} else if (arg.equals("enlarge"))
 			(new RoiEnlarger()).run("");
