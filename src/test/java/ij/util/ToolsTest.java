@@ -295,7 +295,7 @@ public class ToolsTest {
 	
 	@Test
 	public void testSplitString() {
-		testSplit("", new String[] {""});
+		testSplit("", new String[] {});
 		testSplit("abc", new String[] {"abc"});
 		testSplit("a\tb\tc\t", new String[] {"a", "b", "c"});
 		testSplit("a\rb\rc\r", new String[] {"a", "b", "c"});
@@ -305,10 +305,10 @@ public class ToolsTest {
 		testSplit("\na\r", new String[] {"a"});
 		testSplit(" a ", new String[] {"a"});
 		testSplit("a\tb\rc\nd", new String[] {"a", "b", "c", "d"});
-		testSplit("\n\n", new String[] {"\n\n"}); // BDZ: expected array value nonintuitive
-		testSplit("\r\r", new String[] {"\r\r"}); // BDZ: expected array value nonintuitive
-		testSplit("\t\t", new String[] {"\t\t"}); // BDZ: expected array value nonintuitive
-		testSplit("  ", new String[] {"  "});     // BDZ: expected array value nonintuitive
+		testSplit("\n\n", new String[] {});
+		testSplit("\r\r", new String[] {});
+		testSplit("\t\t", new String[] {});
+		testSplit("  ", new String[] {});
 		testSplit("a\r\t\n \n\t\rz", new String[] {"a", "z"});
 	}
 
@@ -321,14 +321,14 @@ public class ToolsTest {
 	
 	@Test
 	public void testSplitStringString() {
-		testSplit2("","#",new String[] {""});
+		testSplit2("","#",new String[] {});
 		testSplit2("###agh###", "#", new String[] {"agh"});
 		testSplit2("#k#o#pppp#","#", new String[] {"k","o","pppp"});
 		testSplit2("c:\\", ":", new String[] {"c", "\\"});
 		testSplit2("> m < bob == fred", "<>=", new String[] {" m ", " bob ", " fred"});
 		testSplit2("a?b?c","#",new String[] {"a?b?c"});
 		testSplit2("a?b?c","?",new String[] {"a","b","c"});
-		testSplit2("!!","!",new String[] {"!!"});  // BDZ: expected array value nonintuitive
+		testSplit2("!!","!",new String[] {});
 		testSplit2("7777m7s77d777f7777g","7",new String[] {"m","s","d","f","g"});
 		testSplit2("12366a","6",new String[] {"123","a"});
 	}

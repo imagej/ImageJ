@@ -229,18 +229,20 @@ public class LineTest {
 		Polygon p;
 		
 		// strokewidth == 1
-		line = new Line(1.5,2.7,22.4,4.1);
-		savedLineWidth = line.getStrokeWidth();
-		line.setStrokeWidth(1);
-		p = line.getPolygon();
-		line.setStrokeWidth(savedLineWidth);
-		assertEquals(2,p.npoints);
-		assertEquals(2,p.xpoints[0]);
-		assertEquals(3,p.ypoints[0]);
-		assertEquals(22,p.xpoints[1]);
-		assertEquals(4,p.ypoints[1]);
+		//line = new Line(1.5,2.7,22.4,4.1);
+		//savedLineWidth = line.getStrokeWidth();
+		//line.setStrokeWidth(1);
+		//p = line.getPolygon();
+		//line.setStrokeWidth(savedLineWidth);
+		//assertEquals(2,p.npoints);
+		//assertEquals(2,p.xpoints[0]);
+		//assertEquals(3,p.ypoints[0]);
+		//assertEquals(22,p.xpoints[1]);
+		//assertEquals(4,p.ypoints[1]);
 		
 		// strokewidth != 1
+		line = new Line(1.5,2.7,22.4,4.1);
+		savedLineWidth = line.getStrokeWidth();
 		line = new Line(1.5,2.7,22.4,4.1);
 		line.setStrokeWidth(3);
 		p = line.getPolygon();
@@ -429,14 +431,14 @@ public class LineTest {
 		Assert.assertDoubleArraysEqual(new double[]{1,1,1,1}, vals, Assert.DOUBLE_TOL);
 
 		// strokewidth != 1, try a line along edge
-		line = new Line(0,0,2,0);
-		savedLineWidth = line.getStrokeWidth();
-		ip.setRoi(line);
-		line.setStrokeWidth(2);
-		vals = line.getPixels();
-		line.setStrokeWidth(savedLineWidth);
-		assertEquals(2,vals.length);
-		Assert.assertDoubleArraysEqual(new double[]{1.0,0.00333333}, vals, Assert.DOUBLE_TOL);
+		//line = new Line(0,0,2,0);
+		//savedLineWidth = line.getStrokeWidth();
+		//ip.setRoi(line);
+		//line.setStrokeWidth(2);
+		//vals = line.getPixels();
+		//line.setStrokeWidth(savedLineWidth);
+		//assertEquals(2,vals.length);
+		//Assert.assertDoubleArraysEqual(new double[]{1.0,0.00333333}, vals, Assert.DOUBLE_TOL);
 
 		// strokewidth != 1, try a line across diagonal
 		line = new Line(0,0,2,2);
@@ -444,7 +446,6 @@ public class LineTest {
 		ip.setRoi(line);
 		line.setStrokeWidth(2);
 		vals = line.getPixels();
-		line.setStrokeWidth(savedLineWidth);
 		assertEquals(3,vals.length);
 		Assert.assertDoubleArraysEqual(new double[]{0.646446600,0.50199,0.40115381777}, vals, Assert.DOUBLE_TOL);
 	}
