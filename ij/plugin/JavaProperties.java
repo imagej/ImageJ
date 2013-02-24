@@ -64,6 +64,7 @@ public class JavaProperties implements PlugIn {
 		String userHome = System.getProperty("user.home");
 		String osName = System.getProperty("os.name");
 		sb.append("  IJ.getVersion: "+IJ.getVersion()+"\n");
+		sb.append("  IJ.getFullVersion: "+IJ.getFullVersion()+"\n");
 		sb.append("  IJ.isJava2: "+IJ.isJava2()+"\n");
 		sb.append("  IJ.isJava15: "+IJ.isJava15()+"\n");
 		sb.append("  IJ.isJava16: "+IJ.isJava16()+"\n");
@@ -72,9 +73,19 @@ public class JavaProperties implements PlugIn {
 		sb.append("  IJ.isMacOSX: "+IJ.isMacOSX()+"\n");
 		sb.append("  IJ.isWindows: "+IJ.isWindows()+"\n");
 		sb.append("  IJ.is64Bit: "+IJ.is64Bit()+"\n");
+		sb.append("\n");
+		sb.append("  IJ.getDirectory(\"imagej\"): "+ IJ.getDirectory("imagej") +"\n");
+		sb.append("  IJ.getDirectory(\"home\"): "+ IJ.getDirectory("home") +"\n");
+		sb.append("  IJ.getDirectory(\"plugins\"): "+ IJ.getDirectory("plugins") +"\n");
+		sb.append("  IJ.getDirectory(\"macros\"): "+ IJ.getDirectory("macros") +"\n");
+		sb.append("  IJ.getDirectory(\"luts\"): "+ IJ.getDirectory("luts") +"\n");
+		sb.append("  IJ.getDirectory(\"current\"): "+ IJ.getDirectory("current") +"\n");
+		sb.append("  IJ.getDirectory(\"temp\"): "+ IJ.getDirectory("temp") +"\n");
+		sb.append("  IJ.getDirectory(\"default\"): "+ IJ.getDirectory("default") +"\n");
+		sb.append("  IJ.getDirectory(\"image\"): "+ IJ.getDirectory("image") +"\n");
+		sb.append("\n");
 		sb.append("  Menus.getPlugInsPath: "+Menus.getPlugInsPath()+"\n");
 		sb.append("  Menus.getMacrosPath: "+Menus.getMacrosPath()+"\n");
-		sb.append("  Prefs.getHomeDir: "+Prefs.getHomeDir()+"\n");
 		sb.append("  Prefs.getThreads: "+Prefs.getThreads()+cores());	
 		sb.append("  Prefs.open100Percent: "+Prefs.open100Percent+"\n");		
 		sb.append("  Prefs.blackBackground: "+Prefs.blackBackground+"\n");		
@@ -98,8 +109,7 @@ public class JavaProperties implements PlugIn {
 		sb.append("  Screen size: " + d.width + "x" + d.height+"\n");
 		System.gc();
 		sb.append("  Memory in use: "+IJ.freeMemory()+"\n");	
-		if (IJ.altKeyDown())
-			doFullDump();
+		doFullDump();
 		if (IJ.getInstance()==null)
 			IJ.log(new String(sb));
 		else
@@ -122,7 +132,7 @@ public class JavaProperties implements PlugIn {
 	
 	void doFullDump() {
 		sb.append("\n");
-		sb.append("All Properties:\n");
+		sb.append("All Java Properties\n");
 		Properties props = System.getProperties();
 		for (Enumeration en=props.keys(); en.hasMoreElements();) {
 			String key = (String)en.nextElement();

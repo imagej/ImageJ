@@ -5,6 +5,7 @@ import ij.macro.*;
 import ij.text.*;
 import ij.util.*;
 import ij.plugin.frame.*;
+import ij.gui.GenericDialog;
 import java.io.*;
 import java.lang.reflect.*;
 
@@ -86,11 +87,14 @@ public class Macro_Runner implements PlugIn {
 			in.close();
 			if (name.endsWith(".js"))
 				return runJavaScript(macro, arg);
+			else if (name.endsWith(".bsh"))
+				return runBeanShellScript(macro, arg);
 			else
 				return runMacro(macro, arg);
 		}
 		catch (Exception e) {
-			IJ.error(e.getMessage());
+			if (!Macro.MACRO_CANCELED.equals(e.getMessage()))
+				IJ.error(e.getMessage());
 			return null;
 		}
 	}
@@ -181,7 +185,7 @@ public class Macro_Runner implements PlugIn {
 			return null;
 	}
 	
-	/** Runs a script on the current thread, passing 'arg', which
+	/** Runs a JavaScript script on the current thread, passing 'arg', which
 		the script can retrieve using the getArgument() function.*/
 	public String runJavaScript(String script, String arg) {
 		if (arg==null) arg = "";
@@ -204,6 +208,31 @@ public class Macro_Runner implements PlugIn {
 			return null;
 		}
 		return null;
+	}
+	
+	/** Runs a BeanShell script on the current thread.*/
+	public String runBeanShellScript(String script, String arg) {
+		Object bsh = IJ.runPlugIn("bsh", script);
+		if (bsh==null) {
+			boolean ok = installBeanShell();
+			if (ok)
+				bsh = IJ.runPlugIn("bsh", script);
+		}
+		return null;
+	}
+	
+	public static boolean installBeanShell() {
+		boolean ok = false;
+		String msg = "BeanShell.jar was not found in the plugins\nfolder. Click \"OK\" to download it from\nthe ImageJ website.";
+		GenericDialog gd = new GenericDialog("BeanShell");
+		gd.addMessage(msg);
+		gd.showDialog();
+		if (!gd.wasCanceled()) {
+			ok = (new PluginInstaller()).install(IJ.URL+"/plugins/bsh/BeanShell.jar");
+			if (!ok)
+				IJ.error("Could not download BeanShell.jar from "+IJ.URL+"/plugins/bsh/");
+		}
+		return ok;
 	}
 
 }

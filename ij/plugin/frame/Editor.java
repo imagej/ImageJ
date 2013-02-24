@@ -12,6 +12,7 @@ import ij.macro.*;
 import ij.plugin.MacroInstaller;
 import ij.plugin.NewPlugin;
 import ij.plugin.Commands;
+import ij.plugin.Macro_Runner;
 import ij.io.SaveDialog;
 
 /** This is a simple TextArea based editor for editing and compiling plugins. */
@@ -394,12 +395,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if (text.equals("")) return;
 		Object bsh = IJ.runPlugIn("bsh", text);
 		if (bsh==null) {
-			String msg = "BeanShell.jar was not found in the plugins\nfolder. Click \"OK\" to download it from\nthe ImageJ website.";
-			GenericDialog gd = new GenericDialog("BeanShell");
-			gd.addMessage(msg);
-			gd.showDialog();
-			if (!gd.wasCanceled())
-				IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+"/plugins/bsh");
+			boolean ok = Macro_Runner.installBeanShell();
+			if (ok)
+				bsh = IJ.runPlugIn("bsh", text);
 		}
 	}
 	

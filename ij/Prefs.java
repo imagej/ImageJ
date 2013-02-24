@@ -221,7 +221,7 @@ public class Prefs {
 		imagesURL = url;
 	}
 
-	/** Returns the path to the ImageJ directory. */
+	/** Obsolete, replaced by IJ.getDirectory("imagej"). */
 	public static String getHomeDir() {
 		return homeDir;
 	}

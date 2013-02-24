@@ -7,6 +7,7 @@ import ij.plugin.DICOM;
 import ij.plugin.AVI_Reader;
 import ij.plugin.SimpleCommands;
 import ij.plugin.HyperStackConverter;
+import ij.plugin.PluginInstaller;
 import ij.text.TextWindow;
 import ij.util.Java2;
 import ij.measure.ResultsTable;
