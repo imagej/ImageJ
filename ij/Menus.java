@@ -513,8 +513,8 @@ public class Menus {
 			}
 		}
 		String command = name.replace('_',' ');
-		if (command.endsWith(".js"))
-			command = command.substring(0, command.length()-3); //remove ".js"
+		if (command.endsWith(".js")||command.endsWith(".py"))
+			command = command.substring(0, command.length()-3); //remove ".js" or ".py"
 		else
 			command = command.substring(0, command.length()-4); //remove ".txt", ".ijm" or ".bsh"
 		command.trim();
@@ -943,7 +943,8 @@ public class Menus {
 	}
 	
 	private static boolean validMacroName(String name, boolean hasUnderscore) {
-		return (hasUnderscore&&name.endsWith(".txt"))||name.endsWith(".ijm")||name.endsWith(".js")||name.endsWith(".bsh");
+		return (hasUnderscore&&name.endsWith(".txt"))||name.endsWith(".ijm")||name.endsWith(".js")
+			||name.endsWith(".bsh")||name.endsWith(".py");
 	}
 
 	/** Installs a plugin in the Plugins menu using the class name,

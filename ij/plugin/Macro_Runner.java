@@ -89,6 +89,8 @@ public class Macro_Runner implements PlugIn {
 				return runJavaScript(macro, arg);
 			else if (name.endsWith(".bsh"))
 				return runBeanShellScript(macro, arg);
+			else if (name.endsWith(".py"))
+				return runPythonShellScript(macro, arg);
 			else
 				return runMacro(macro, arg);
 		}
@@ -214,23 +216,35 @@ public class Macro_Runner implements PlugIn {
 	public String runBeanShellScript(String script, String arg) {
 		Object bsh = IJ.runPlugIn("bsh", script);
 		if (bsh==null) {
-			boolean ok = installBeanShell();
+			boolean ok = downloadJar("/plugins/bsh/BeanShell.jar");
 			if (ok)
 				bsh = IJ.runPlugIn("bsh", script);
 		}
 		return null;
 	}
 	
-	public static boolean installBeanShell() {
+	/** Runs a Python script on the current thread.*/
+	public String runPythonShellScript(String script, String arg) {
+		Object jython = IJ.runPlugIn("Jython", script);
+		if (jython==null) {
+			boolean ok = downloadJar("/plugins/bsh/Jython.jar");
+			if (ok)
+				jython = IJ.runPlugIn("Jython", script);
+		}
+		return null;
+	}
+
+	public static boolean downloadJar(String url) {
+		String name = url.substring(url.lastIndexOf("/")+1);
 		boolean ok = false;
-		String msg = "BeanShell.jar was not found in the plugins\nfolder. Click \"OK\" to download it from\nthe ImageJ website.";
-		GenericDialog gd = new GenericDialog("BeanShell");
+		String msg = name+" was not found in the plugins\nfolder. Click \"OK\" to download it from\nthe ImageJ website.";
+		GenericDialog gd = new GenericDialog("Download "+name+"?");
 		gd.addMessage(msg);
 		gd.showDialog();
 		if (!gd.wasCanceled()) {
-			ok = (new PluginInstaller()).install(IJ.URL+"/plugins/bsh/BeanShell.jar");
+			ok = (new PluginInstaller()).install(IJ.URL+url);
 			if (!ok)
-				IJ.error("Could not download BeanShell.jar from "+IJ.URL+"/plugins/bsh/");
+				IJ.error("Could not download "+name+" from "+IJ.URL+url);
 		}
 		return ok;
 	}
