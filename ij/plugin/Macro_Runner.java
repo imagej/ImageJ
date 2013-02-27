@@ -90,7 +90,7 @@ public class Macro_Runner implements PlugIn {
 			else if (name.endsWith(".bsh"))
 				return runBeanShellScript(macro, arg);
 			else if (name.endsWith(".py"))
-				return runPythonShellScript(macro, arg);
+				return runPythonScript(macro, arg);
 			else
 				return runMacro(macro, arg);
 		}
@@ -224,10 +224,10 @@ public class Macro_Runner implements PlugIn {
 	}
 	
 	/** Runs a Python script on the current thread.*/
-	public String runPythonShellScript(String script, String arg) {
+	public String runPythonScript(String script, String arg) {
 		Object jython = IJ.runPlugIn("Jython", script);
 		if (jython==null) {
-			boolean ok = downloadJar("/plugins/bsh/Jython.jar");
+			boolean ok = downloadJar("/plugins/jython/Jython.jar");
 			if (ok)
 				jython = IJ.runPlugIn("Jython", script);
 		}

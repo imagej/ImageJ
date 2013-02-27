@@ -41,7 +41,7 @@ public class PluginInstaller implements PlugIn {
 			int index = path.lastIndexOf("/");
 			if (index!=-1 && index<=path.length()-1)
 					name = path.substring(index+1);
-			data = download(url);
+			data = download(url, name);
 		} else {
 			File f = new File(path);
 			name = f.getName();
@@ -90,7 +90,7 @@ public class PluginInstaller implements PlugIn {
 		return true;
 	}
 
-	byte[] download(URL url) {
+	byte[] download(URL url, String name) {
 		byte[] data;
 		try {
 			URLConnection uc = url.openConnection();
@@ -99,17 +99,20 @@ public class PluginInstaller implements PlugIn {
 			InputStream in = uc.getInputStream();
 			data = new byte[len];
 			int n = 0;
+			int lenk = len/1024;
 			while (n < len) {
 				int count = in.read(data, n, len - n);
 				if (count<0)
 					throw new EOFException();
 				n += count;
+				IJ.showStatus("Downloading "+name+" ("+(n/1024)+"/"+lenk+"k)");
 				IJ.showProgress(n, len);
 			}
 			in.close();
 		} catch (IOException e) {
 			return null;
 		}
+		IJ.showStatus("");
 		return data;
 	}
 	

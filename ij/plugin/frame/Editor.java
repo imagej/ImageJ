@@ -404,11 +404,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			plugin = "Jython";
 			url = "/plugins/jython/Jython.jar";
 		}
-		Object bsh = IJ.runPlugIn(plugin, text);
-		if (bsh==null) {
+		Object obj = IJ.runPlugIn(plugin, text);
+		if (obj==null) {
 			boolean ok = Macro_Runner.downloadJar(url);
 			if (ok)
-				bsh = IJ.runPlugIn(plugin, text);
+				obj = IJ.runPlugIn(plugin, text);
 		}
 	}
 	
