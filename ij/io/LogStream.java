@@ -8,12 +8,13 @@ import java.io.PrintStream;
  * and System.err streams to ImageJ's log console. The purpose is to allow 
  * use of existing Java classes or writing new generic Java classes that only 
  * output to System.out and are thus less dependent on ImageJ.
- * See the ImageJ plugin {@link Redirect_System_Streams} for usage examples.
+ * See the ImageJ plugin Redirect_System_Streams at
+ *    http://staff.fh-hagenberg.at/burger/imagej/
+ * for usage examples.
  *
- * @author Wilhelm Burger (wilbur@ieee.org)
- * @version 2013-02
+ * @author Wilhelm Burger (wilbur at ieee.org)
  * @
- * @see Redirect_System_Streams
+ * @see Redirect_System_Streams (http://staff.fh-hagenberg.at/burger/imagej/)
  */
 public class LogStream extends PrintStream {
 	
@@ -30,15 +31,24 @@ public class LogStream extends PrintStream {
 	 * using the default prefixes.
 	 */
 	public static void redirectSystem(boolean redirect) {
-		if (redirect) {
-			redirectSystemOut(outPrefix);
-			redirectSystemErr(errPrefix);
-		} else {
-			revertSystemOut();
-			revertSystemErr();
-		}
+		if (redirect)
+			redirectSystem();
+		else
+			revertSystem();
 	}
 	
+	/**
+	 * Redirects all output sent to <code>System.out</code> and <code>System.err</code> to ImageJ's log console
+	 * using the default prefixes.
+	 * Alternatively use 
+	 * {@link #redirectSystemOut(String)} and {@link #redirectSystemErr(String)}
+	 * to redirect the streams separately and to specify individual prefixes.
+	 */
+	public static void redirectSystem() {
+		redirectSystemOut(outPrefix);
+		redirectSystemErr(errPrefix);
+	}
+
 	/**
 	 * Redirects all output sent to <code>System.out</code> to ImageJ's log console.
 	 * @param prefix The prefix string inserted at the start of each output line. 
@@ -89,6 +99,15 @@ public class LogStream extends PrintStream {
 		return temporarySystemErr;
 	}
 	
+	/**
+	 * Use this method to revert both <code>System.out</code> and <code>System.err</code> 
+	 * to their original output streams.
+	 */
+	public static void revertSystem() {
+		revertSystemOut();
+		revertSystemErr();
+	}
+
 	/**
 	 * Use this method to revert<code>System.out</code>
 	 * to the original output stream.

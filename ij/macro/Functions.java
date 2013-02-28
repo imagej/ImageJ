@@ -2305,7 +2305,7 @@ public class Functions implements MacroConstants, Measurements {
 		Prefs.blackCanvas = blackCanvas;
 		Prefs.useJFileChooser = useJFileChooser;
 		Prefs.useInvertingLut = useInvertingLut;
-		IJ.debugMode = debugMode;
+		IJ.setDebugMode(debugMode);
 		Toolbar.setForegroundColor(foregroundColor);
 		Toolbar.setBackgroundColor(backgroundColor);
 		Roi.setColor(roiColor);
@@ -3778,7 +3778,7 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (arg1.equals("changes"))
 			getImage().changes = state;
 		else if (arg1.equals("debugmode"))
-			IJ.debugMode = state;
+			IJ.setDebugMode(state);
 		else if (arg1.equals("openusingplugins"))
 			Opener.setOpenUsingPlugins(state);
 		else if (arg1.equals("queuemacros"))

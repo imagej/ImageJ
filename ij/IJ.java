@@ -27,7 +27,9 @@ public class IJ {
 	public static final String URL = "http://imagej.nih.gov/ij";
 	public static final int ALL_KEYS = -1;
 	
+	/** Use setDebugMode(boolean) to enable/disable debug mode. */
 	public static boolean debugMode;
+	
 	public static boolean hideProcessStackDialog;
 	    
     public static final char micronSymbol = '\u00B5';
@@ -85,6 +87,12 @@ public class IJ {
 		return ij;
 	}
 	
+	/**Enable/disable debug mode.*/
+	public static void setDebugMode(boolean b) {
+		debugMode = b;
+		LogStream.redirectSystem(debugMode);
+	}
+
 	/** Runs the macro contained in the string <code>macro</code>.
 		Returns any string value returned by the macro, null if the macro
 		does not return a value, or "[aborted]" if the macro was aborted
@@ -374,8 +382,10 @@ public class IJ {
 				handleLogCommand(s);
 			else
 				logPanel.append(s);
-		} else
+		} else {
+			LogStream.redirectSystem(false);
 			System.out.println(s);
+		}
 	}
 
 	static void handleLogCommand(String s) {

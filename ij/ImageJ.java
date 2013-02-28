@@ -74,7 +74,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.47m";
-	public static final String BUILD = "7"; 
+	public static final String BUILD = "9"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -622,7 +622,6 @@ public class ImageJ extends Frame implements ActionListener,
 			javax.swing.JOptionPane.showMessageDialog(null,"ImageJ "+VERSION+" requires Java 1.5 or later.");
 			System.exit(0);
 		}
-		//IJ.debugMode = true;
 		boolean noGUI = false;
 		int mode = STANDALONE;
 		arguments = args;
@@ -637,7 +636,7 @@ public class ImageJ extends Frame implements ActionListener,
 				if (args[i].startsWith("-batch"))
 					noGUI = true;
 				else if (args[i].startsWith("-debug"))
-					IJ.debugMode = true;
+					IJ.setDebugMode(true);
 				else if (args[i].startsWith("-ijpath") && i+1<nArgs) {
 					Prefs.setHomeDir(args[i+1]);
 					commandLine = true;

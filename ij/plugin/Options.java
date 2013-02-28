@@ -67,7 +67,7 @@ public class Options implements PlugIn {
 		if (!IJ.isMacOSX())
 			Prefs.runSocketListener = gd.getNextBoolean();
 		Prefs.enhancedLineTool = gd.getNextBoolean();
-		IJ.debugMode = gd.getNextBoolean();
+		IJ.setDebugMode(gd.getNextBoolean());
 	}
 
 	void lineWidth() {
