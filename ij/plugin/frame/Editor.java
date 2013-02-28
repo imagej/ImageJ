@@ -401,6 +401,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			plugin = "bsh";
 			url = "/plugins/bsh/BeanShell.jar";
 		} else {
+			// http://imagej.nih.gov/ij/plugins/jython/
 			plugin = "Jython";
 			url = "/plugins/jython/Jython.jar";
 		}

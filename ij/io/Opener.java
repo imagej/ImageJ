@@ -136,7 +136,8 @@ public class Opener {
 			else
 				path = (new File(path)).getAbsolutePath();
 		}
-		if (!silentMode) IJ.showStatus("Opening: " + path);
+		if (!silentMode)
+			IJ.showStatus("Opening: " + path);
 		long start = System.currentTimeMillis();
 		ImagePlus imp = openImage(path);
 		if (imp==null && isURL)
@@ -224,7 +225,7 @@ public class Opener {
 	private boolean isText(String path) {
 		if (path.endsWith(".txt") || path.endsWith(".ijm") || path.endsWith(".java")
 		|| path.endsWith(".js") || path.endsWith(".html") || path.endsWith(".htm")
-		|| path.endsWith("/"))
+		|| path.endsWith(".bsh") || path.endsWith(".py") || path.endsWith("/"))
 			return true;
 		int lastSlash = path.lastIndexOf("/");
 		if (lastSlash==-1) lastSlash = 0;
@@ -1042,7 +1043,8 @@ public class Opener {
 			return FITS;
 			
 		// Java source file, text file or macro
-		if (name.endsWith(".java") || name.endsWith(".txt") || name.endsWith(".ijm") || name.endsWith(".js") || name.endsWith(".bsh") || name.endsWith(".html"))
+		if (name.endsWith(".java") || name.endsWith(".txt") || name.endsWith(".ijm") || name.endsWith(".js")
+			|| name.endsWith(".bsh") || name.endsWith(".py") || name.endsWith(".html"))
 			return JAVA_OR_TEXT;
 
 		// ImageJ, NIH Image, Scion Image for Windows ROI

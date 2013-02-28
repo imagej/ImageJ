@@ -223,13 +223,14 @@ public class Macro_Runner implements PlugIn {
 		return null;
 	}
 	
-	/** Runs a Python script on the current thread.*/
+	/** Runs a Python script using the plugin at
+		http://imagej.nih.gov/ij/plugins/jython/
+	*/
 	public String runPythonScript(String script, String arg) {
 		Object jython = IJ.runPlugIn("Jython", script);
 		if (jython==null) {
-			boolean ok = downloadJar("/plugins/jython/Jython.jar");
-			if (ok)
-				jython = IJ.runPlugIn("Jython", script);
+			downloadJar("/plugins/jython/Jython.jar");
+			jython = IJ.runPlugIn("Jython", script);
 		}
 		return null;
 	}
