@@ -229,8 +229,9 @@ public class Macro_Runner implements PlugIn {
 	public String runPythonScript(String script, String arg) {
 		Object jython = IJ.runPlugIn("Jython", script);
 		if (jython==null) {
-			downloadJar("/plugins/jython/Jython.jar");
-			jython = IJ.runPlugIn("Jython", script);
+			boolean ok = downloadJar("/plugins/jython/Jython.jar");
+			if (ok)
+				jython = IJ.runPlugIn("Jython", script);
 		}
 		return null;
 	}
@@ -245,7 +246,7 @@ public class Macro_Runner implements PlugIn {
 		if (!gd.wasCanceled()) {
 			ok = (new PluginInstaller()).install(IJ.URL+url);
 			if (!ok)
-				IJ.error("Could not download "+name+" from "+IJ.URL+url);
+				IJ.error("Unable to download "+name+" from "+IJ.URL+url);
 		}
 		return ok;
 	}

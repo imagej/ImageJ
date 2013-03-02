@@ -17,7 +17,7 @@ import ij.io.SaveDialog;
 
 /** This is a simple TextArea based editor for editing and compiling plugins. */
 public class Editor extends PlugInFrame implements ActionListener, ItemListener,
-	TextListener, ClipboardOwner, MacroConstants {
+	TextListener, ClipboardOwner, MacroConstants, Runnable {
 	
 	/** ImportPackage statements added in front of scripts. Contains no 
 	newlines so that lines numbers in error messages are not changed. */
@@ -82,6 +82,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private static Editor instance;
     private int runToLine;
     private boolean fixedLineEndings;
+    private String downloadUrl;
+    private boolean downloading;
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -386,6 +388,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 
 	void evaluateScript(String ext) {
+		if (downloading) {
+			IJ.beep();
+			IJ.showStatus("Download in progress");
+			return;
+		}
 		if (!getTitle().endsWith(ext))
 			setTitle(SaveDialog.setExtension(getTitle(), ext));
 		int start = ta.getSelectionStart();
@@ -401,15 +408,16 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			plugin = "bsh";
 			url = "/plugins/bsh/BeanShell.jar";
 		} else {
-			// http://imagej.nih.gov/ij/plugins/jython/
+			// download Jython from http://imagej.nih.gov/ij/plugins/jython/
 			plugin = "Jython";
 			url = "/plugins/jython/Jython.jar";
 		}
 		Object obj = IJ.runPlugIn(plugin, text);
 		if (obj==null) {
-			boolean ok = Macro_Runner.downloadJar(url);
-			if (ok)
-				obj = IJ.runPlugIn(plugin, text);
+			this.downloadUrl = url;
+			Thread thread = new Thread(this, "Downloader");
+			thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));
+			thread.start();
 		}
 	}
 	
@@ -1059,4 +1067,13 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		return changes;
 	}
 	
+	/** Downloads BeanShell or Jython interpreter using a separate thread. */
+	public void run() {
+		if (downloading || downloadUrl==null)
+			return;
+		downloading = true;
+		boolean ok = Macro_Runner.downloadJar(downloadUrl);
+		downloading = false;
+	}
+
 }

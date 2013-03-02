@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.URL;
 import java.net.*;
 import java.util.*;
+import java.awt.EventQueue;
 
 /** Installs plugins dragged and dropped on the "ImageJ" window, or plugins,
 	macros or scripts opened using the Plugins/Install command. */
@@ -160,5 +161,5 @@ public class PluginInstaller implements PlugIn {
 		}
 		return s;
 	}
-
+	
 }

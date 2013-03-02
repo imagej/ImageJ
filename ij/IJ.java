@@ -1950,9 +1950,10 @@ public class IJ {
 		PrintWriter pw = new PrintWriter(caw);
 		e.printStackTrace(pw);
 		String s = caw.toString();
-		if (getInstance()!=null)
-			new TextWindow("Exception", s, 500, 300);
-		else
+		if (getInstance()!=null) {
+			s = IJ.getInstance().getInfo()+"\n \n"+s;
+			new TextWindow("Exception", s, 500, 340);
+		} else
 			log(s);
 	}
 
