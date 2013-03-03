@@ -59,7 +59,9 @@ public class WindowManager {
 		return imageList.indexOf(currentWindow);
 	}
 
-	/** Returns a reference to the active image or null if there isn't one. */
+	/** Returns a reference to the active image or null if there isn't one.
+	 * @see ij.IJ.getImage#getImage
+	 */
 	public static ImagePlus getCurrentImage() {
 		ImagePlus img = (ImagePlus)tempImageTable.get(Thread.currentThread());
 		//String str = (img==null)?" null":"";

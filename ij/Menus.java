@@ -52,6 +52,7 @@ public class Menus {
 	private static PopupMenu popup;
 
 	private static ImageJ ij;
+	private static boolean isFiji;
 	private static Applet applet;
 	private Hashtable demoImagesTable = new Hashtable();
 	private static String pluginsPath, macrosPath;
@@ -84,6 +85,7 @@ public class Menus {
 		
 	Menus(ImageJ ijInstance, Applet appletInstance) {
 		ij = ijInstance;
+		isFiji = ij!=null && "Fiji".equals(ij.getTitle());
 		applet = appletInstance;
 		instance = this;
 	}
@@ -944,9 +946,9 @@ public class Menus {
 	
 	private static boolean validMacroName(String name, boolean hasUnderscore) {
 		return (hasUnderscore&&name.endsWith(".txt"))||name.endsWith(".ijm")||name.endsWith(".js")
-			||name.endsWith(".bsh")||name.endsWith(".py");
+			||(name.endsWith(".bsh")&&!isFiji)||(name.endsWith(".py")&&!isFiji);
 	}
-
+	
 	/** Installs a plugin in the Plugins menu using the class name,
 		with underscores replaced by spaces, as the command. */
 	void installUserPlugin(String className) {

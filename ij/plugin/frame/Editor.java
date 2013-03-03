@@ -39,8 +39,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"importPackage(java.io);"+
 		"function print(s) {IJ.log(s);};";
 		
-	public static String JS_NOT_FOUND = 
-		"JavaScript.jar was not found in the plugins\nfolder. It can be downloaded from:\n \n"+IJ.URL+"/download/tools/JavaScript.jar";
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
 	public static final int MONOSPACED=1, MENU_BAR=2;
 	public static final int MACROS_MENU_ITEMS = 10;
@@ -383,7 +381,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else {
 			Object js = IJ.runPlugIn("JavaScript", text);
 			if (js==null)
-				IJ.error(JS_NOT_FOUND);
+				download("/download/tools/JavaScript.jar");
 		}
 	}
 
@@ -413,14 +411,17 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			url = "/plugins/jython/Jython.jar";
 		}
 		Object obj = IJ.runPlugIn(plugin, text);
-		if (obj==null) {
-			this.downloadUrl = url;
-			Thread thread = new Thread(this, "Downloader");
-			thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));
-			thread.start();
-		}
+		if (obj==null)
+			download(url);
 	}
 	
+	private void download(String url) {
+		this.downloadUrl = url;
+		Thread thread = new Thread(this, "Downloader");
+		thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));
+		thread.start();
+	}
+
 	void evaluateLine() {
 		int start = ta.getSelectionStart();
 		int end = ta.getSelectionEnd();

@@ -2956,6 +2956,10 @@ public class Functions implements MacroConstants, Measurements {
 		if (eval) {
 			if (arg!=null && (name.equals("script")||name.equals("js")))
 				return (new Macro_Runner()).runJavaScript(arg, "");
+			else if (arg!=null && (name.equals("bsh")))
+				return Macro_Runner.runBeanShell(arg,"");
+			else if (arg!=null && (name.equals("python")))
+				return Macro_Runner.runPython(arg,"");
 			else
 				return IJ.runMacro(name, arg);
 		} else
