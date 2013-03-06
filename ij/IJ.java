@@ -151,9 +151,9 @@ public class IJ {
 	
 	/** Runs the specified plugin and returns a reference to it. */
 	public static Object runPlugIn(String commandName, String className, String arg) {
-		if (IJ.debugMode)
-			IJ.log("runPlugin: "+className+" "+arg);
 		if (arg==null) arg = "";
+		if (IJ.debugMode)
+			IJ.log("runPlugin: "+className+" "+(!arg.contains("\n")?arg:""));
 		// Load using custom classloader if this is a user 
 		// plugin and we are not running as an applet
 		if (!className.startsWith("ij.") && applet==null)
@@ -522,10 +522,8 @@ public class IJ {
 		log("<Out of memory>");
 		if (!memMessageDisplayed) {
 			log("<All available memory ("+tot+") has been>");
-			log("<used. Instructions for making more>");
-			log("<available can be found in the \"Memory\" >");
-			log("<sections of the installation notes at>");
-			log("<"+IJ.URL+"/docs/install/>");
+			log("<used. To make more available, use the>");
+			log("<Edit>Options>Memory & Threads command.>");
 			log(">>>>>>>>>>>>>>>>>>>>>>>>>>>");
 			memMessageDisplayed = true;
 		}

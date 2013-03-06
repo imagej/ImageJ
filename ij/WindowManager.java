@@ -60,7 +60,7 @@ public class WindowManager {
 	}
 
 	/** Returns a reference to the active image or null if there isn't one.
-	 * @see ij.IJ.getImage#getImage
+	 * @see ij.IJ#getImage
 	 */
 	public static ImagePlus getCurrentImage() {
 		ImagePlus img = (ImagePlus)tempImageTable.get(Thread.currentThread());

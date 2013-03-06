@@ -77,6 +77,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		method = gd.getNextChoice();
 		background = gd.getNextChoice();
 		useLocal = gd.getNextBoolean();
+		boolean saveBlackBackground = Prefs.blackBackground;
 		Prefs.blackBackground = gd.getNextBoolean();
 		if (!IJ.isMacro()) {
 			staticMethod = method;
@@ -88,6 +89,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			convertStackToBinary(imp);
 		else
 			applyThreshold(imp);
+		Prefs.blackBackground = saveBlackBackground; 
 	}
 
 	void applyThreshold(ImagePlus imp) {

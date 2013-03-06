@@ -365,7 +365,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			label = label+"-"+n;
 		if (label==null) return;
 		listModel.addElement(label);
-		roi.setName(label2);
+		if (label2!=null)
+			roi.setName(label2);
+		else
+			roi.setName(label);
 		rois.put(label, (Roi)roi.clone());
 	}
 
