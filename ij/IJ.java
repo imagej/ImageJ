@@ -27,7 +27,9 @@ public class IJ {
 	public static final String URL = "http://imagej.nih.gov/ij";
 	public static final int ALL_KEYS = -1;
 	
+	/** Use setDebugMode(boolean) to enable/disable debug mode. */
 	public static boolean debugMode;
+	
 	public static boolean hideProcessStackDialog;
 	    
     public static final char micronSymbol = '\u00B5';
@@ -85,6 +87,12 @@ public class IJ {
 		return ij;
 	}
 	
+	/**Enable/disable debug mode.*/
+	public static void setDebugMode(boolean b) {
+		debugMode = b;
+		LogStream.redirectSystem(debugMode);
+	}
+
 	/** Runs the macro contained in the string <code>macro</code>.
 		Returns any string value returned by the macro, null if the macro
 		does not return a value, or "[aborted]" if the macro was aborted
@@ -143,9 +151,9 @@ public class IJ {
 	
 	/** Runs the specified plugin and returns a reference to it. */
 	public static Object runPlugIn(String commandName, String className, String arg) {
-		if (IJ.debugMode)
-			IJ.log("runPlugin: "+className+" "+arg);
 		if (arg==null) arg = "";
+		if (IJ.debugMode)
+			IJ.log("runPlugin: "+className+" "+(!arg.contains("\n")?arg:""));
 		// Load using custom classloader if this is a user 
 		// plugin and we are not running as an applet
 		if (!className.startsWith("ij.") && applet==null)
@@ -374,8 +382,10 @@ public class IJ {
 				handleLogCommand(s);
 			else
 				logPanel.append(s);
-		} else
+		} else {
+			LogStream.redirectSystem(false);
 			System.out.println(s);
+		}
 	}
 
 	static void handleLogCommand(String s) {
@@ -512,10 +522,8 @@ public class IJ {
 		log("<Out of memory>");
 		if (!memMessageDisplayed) {
 			log("<All available memory ("+tot+") has been>");
-			log("<used. Instructions for making more>");
-			log("<available can be found in the \"Memory\" >");
-			log("<sections of the installation notes at>");
-			log("<"+IJ.URL+"/docs/install/>");
+			log("<used. To make more available, use the>");
+			log("<Edit>Options>Memory & Threads command.>");
 			log(">>>>>>>>>>>>>>>>>>>>>>>>>>>");
 			memMessageDisplayed = true;
 		}
@@ -1940,9 +1948,10 @@ public class IJ {
 		PrintWriter pw = new PrintWriter(caw);
 		e.printStackTrace(pw);
 		String s = caw.toString();
-		if (getInstance()!=null)
-			new TextWindow("Exception", s, 500, 300);
-		else
+		if (getInstance()!=null) {
+			s = IJ.getInstance().getInfo()+"\n \n"+s;
+			new TextWindow("Exception", s, 500, 340);
+		} else
 			log(s);
 	}
 

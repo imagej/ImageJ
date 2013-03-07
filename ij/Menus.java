@@ -52,6 +52,7 @@ public class Menus {
 	private static PopupMenu popup;
 
 	private static ImageJ ij;
+	private static boolean isFiji;
 	private static Applet applet;
 	private Hashtable demoImagesTable = new Hashtable();
 	private static String pluginsPath, macrosPath;
@@ -73,7 +74,7 @@ public class Menus {
 	private static boolean installingJars, duplicateCommand;
 	private static Vector jarFiles;  // JAR files in plugins folder with "_" in their name
 	private Map menuEntry2jarFile = new HashMap();
-	private static Vector macroFiles;  // Macro files in plugins folder with "_" in their name
+	private static Vector macroFiles;  // Macros and scripts in the plugins folder
 	private static int userPluginsIndex; // First user plugin or submenu in Plugins menu
 	private static boolean addSorted;
 	private static int defaultFontSize = IJ.isWindows()?14:0;
@@ -84,6 +85,7 @@ public class Menus {
 		
 	Menus(ImageJ ijInstance, Applet appletInstance) {
 		ij = ijInstance;
+		isFiji = ij!=null && "Fiji".equals(ij.getTitle());
 		applet = appletInstance;
 		instance = this;
 	}
@@ -483,7 +485,7 @@ public class Menus {
 		installMacros();
 	}
 	
-	/** Installs macro files that are located in the plugins folder and have a "_" in their name. */
+	/** Installs macros and scripts located in the plugins folder. */
 	void installMacros() {
 		if (macroFiles==null)
 			return;
@@ -493,7 +495,7 @@ public class Menus {
 		}		
 	}
 
-	/** Installs a macro in the Plugins menu, or submenu, with
+	/** Installs a macro or script in the Plugins menu, or submenu, with
 		with underscores in the file name replaced by spaces. */
 	void installMacro(String name) {
 		Menu menu = pluginsMenu;
@@ -513,10 +515,10 @@ public class Menus {
 			}
 		}
 		String command = name.replace('_',' ');
-		if (command.endsWith(".js"))
-			command = command.substring(0, command.length()-3); //remove ".js"
+		if (command.endsWith(".js")||command.endsWith(".py"))
+			command = command.substring(0, command.length()-3); //remove ".js" or ".py"
 		else
-			command = command.substring(0, command.length()-4); //remove ".txt" or ".ijm"
+			command = command.substring(0, command.length()-4); //remove ".txt", ".ijm" or ".bsh"
 		command.trim();
 		if (pluginsTable.get(command)!=null) // duplicate command?
 			command = command + " Macro";
@@ -711,7 +713,7 @@ public class Menus {
     
 	String getSubmenuName(String jarPath) {
 		//IJ.log("getSubmenuName: \n"+jarPath+"\n"+pluginsPath);
-		if(pluginsPath == null)
+		if (pluginsPath == null)
 			return null;
 		if (jarPath.startsWith(pluginsPath))
 			jarPath = jarPath.substring(pluginsPath.length() - 1);
@@ -873,7 +875,7 @@ public class Menus {
 			} else if (hasUnderscore && (name.endsWith(".jar") || name.endsWith(".zip"))) {
 				if (jarFiles==null) jarFiles = new Vector();
 				jarFiles.addElement(pluginsPath + name);
-			} else if ((hasUnderscore&&name.endsWith(".txt")) || name.endsWith(".ijm") || name.endsWith(".js")) {
+			} else if (validMacroName(name,hasUnderscore)) {
 				if (macroFiles==null) macroFiles = new Vector();
 				macroFiles.addElement(name);
 			} else {
@@ -913,7 +915,7 @@ public class Menus {
 				if (jarFiles==null) jarFiles = new Vector();
 				jarFiles.addElement(f.getPath() + File.separator + name);
 				otherCount++;
-			} else if ((hasUnderscore&&name.endsWith(".txt")) || name.endsWith(".ijm") || name.endsWith(".js")) {
+			} else if (validMacroName(name,hasUnderscore)) {
 				if (macroFiles==null) macroFiles = new Vector();
 				macroFiles.addElement(dir + name);
 				otherCount++;
@@ -935,13 +937,18 @@ public class Menus {
 		for (int i=0; i<list.length; i++) {
 			String name = list[i];
 			boolean hasUnderscore = name.indexOf('_')>=0;
-			if ((hasUnderscore&&name.endsWith(".txt")) || name.endsWith(".ijm") || name.endsWith(".js")) {
+			if (validMacroName(name,hasUnderscore)) {
 				if (macroFiles==null) macroFiles = new Vector();
 				macroFiles.addElement(dir+"/"+name);
 			}
 		}
 	}
-
+	
+	private static boolean validMacroName(String name, boolean hasUnderscore) {
+		return (hasUnderscore&&name.endsWith(".txt"))||name.endsWith(".ijm")||name.endsWith(".js")
+			||(name.endsWith(".bsh")&&!isFiji)||(name.endsWith(".py")&&!isFiji);
+	}
+	
 	/** Installs a plugin in the Plugins menu using the class name,
 		with underscores replaced by spaces, as the command. */
 	void installUserPlugin(String className) {

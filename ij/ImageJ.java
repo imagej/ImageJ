@@ -73,7 +73,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
-	public static final String VERSION = "1.47k";
+	public static final String VERSION = "1.47m";
 	public static final String BUILD = ""; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
@@ -357,6 +357,10 @@ public class ImageJ extends Frame implements ActionListener,
 			IJ.log("Windows: "+WindowManager.getWindowCount());
 	}
 	
+	public String getInfo() {
+		return version()+System.getProperty("os.name")+" "+System.getProperty("os.version")+"; "+IJ.freeMemory();
+	}
+
 	private String version() {
 		return "ImageJ "+VERSION+BUILD + "; "+"Java "+System.getProperty("java.version")+(IJ.is64Bit()?" [64-bit]; ":" [32-bit]; ");
 	}
@@ -622,7 +626,6 @@ public class ImageJ extends Frame implements ActionListener,
 			javax.swing.JOptionPane.showMessageDialog(null,"ImageJ "+VERSION+" requires Java 1.5 or later.");
 			System.exit(0);
 		}
-		//IJ.debugMode = true;
 		boolean noGUI = false;
 		int mode = STANDALONE;
 		arguments = args;
@@ -637,7 +640,7 @@ public class ImageJ extends Frame implements ActionListener,
 				if (args[i].startsWith("-batch"))
 					noGUI = true;
 				else if (args[i].startsWith("-debug"))
-					IJ.debugMode = true;
+					IJ.setDebugMode(true);
 				else if (args[i].startsWith("-ijpath") && i+1<nArgs) {
 					Prefs.setHomeDir(args[i+1]);
 					commandLine = true;

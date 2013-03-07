@@ -634,9 +634,11 @@ public class AutoThresholder {
 		}
 		// The threshold is the minimum between the two peaks.
 		for (int i=1; i<255; i++) {
-			//IJ.log(" "+i+"  "+iHisto[i]);
-			if (iHisto[i-1] > iHisto[i] && iHisto[i+1] >= iHisto[i])
+			//IJ.log(" "+i+"  "+iHisto[i]);
+			if (iHisto[i-1] > iHisto[i] && iHisto[i+1] >= iHisto[i]) {
 				threshold = i;
+				break;
+			}
 		}
 		return threshold;
 	}

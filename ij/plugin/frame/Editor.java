@@ -12,11 +12,12 @@ import ij.macro.*;
 import ij.plugin.MacroInstaller;
 import ij.plugin.NewPlugin;
 import ij.plugin.Commands;
+import ij.plugin.Macro_Runner;
 import ij.io.SaveDialog;
 
 /** This is a simple TextArea based editor for editing and compiling plugins. */
 public class Editor extends PlugInFrame implements ActionListener, ItemListener,
-	TextListener, ClipboardOwner, MacroConstants {
+	TextListener, ClipboardOwner, MacroConstants, Runnable {
 	
 	/** ImportPackage statements added in front of scripts. Contains no 
 	newlines so that lines numbers in error messages are not changed. */
@@ -38,8 +39,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"importPackage(java.io);"+
 		"function print(s) {IJ.log(s);};";
 		
-	public static String JS_NOT_FOUND = 
-		"JavaScript.jar was not found in the plugins\nfolder. It can be downloaded from:\n \n"+IJ.URL+"/download/tools/JavaScript.jar";
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
 	public static final int MONOSPACED=1, MENU_BAR=2;
 	public static final int MACROS_MENU_ITEMS = 10;
@@ -81,6 +80,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private static Editor instance;
     private int runToLine;
     private boolean fixedLineEndings;
+    private String downloadUrl;
+    private boolean downloading;
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -113,7 +114,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		m.add(new MenuItem("Open...", new MenuShortcut(KeyEvent.VK_O)));
 		m.add(new MenuItem("Save", new MenuShortcut(KeyEvent.VK_S)));
 		m.add(new MenuItem("Save As..."));
-		m.add(new MenuItem("Print...", new MenuShortcut(KeyEvent.VK_P)));
+		m.add(new MenuItem("Print..."));
 		m.addActionListener(this);
 		fileMenu = m;
 		mb.add(m);
@@ -196,7 +197,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		ta.setCaretPosition(0);
 		setWindowTitle(name);
 		boolean macroExtension = name.endsWith(".txt") || name.endsWith(".ijm");
-		if (macroExtension || name.endsWith(".js") || name.endsWith(".bsh") || name.indexOf(".")==-1) {
+		if (macroExtension || name.endsWith(".js") || name.endsWith(".bsh") || name.endsWith(".py") || name.indexOf(".")==-1) {
 			macrosMenu = new Menu("Macros");			
 			macrosMenu.add(new MenuItem("Run Macro", new MenuShortcut(KeyEvent.VK_R)));
 			macrosMenu.add(new MenuItem("Evaluate Line", new MenuShortcut(KeyEvent.VK_Y)));
@@ -207,11 +208,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			macrosMenu.addSeparator();
 			macrosMenu.add(new MenuItem("Evaluate JavaScript", new MenuShortcut(KeyEvent.VK_J, false)));
 			macrosMenu.add(new MenuItem("Evaluate BeanShell", new MenuShortcut(KeyEvent.VK_B, false)));
+			macrosMenu.add(new MenuItem("Evaluate Python", new MenuShortcut(KeyEvent.VK_P, false)));
 			macrosMenu.addSeparator();
 			// MACROS_MENU_ITEMS must be updated if items are added to this menu
 			macrosMenu.addActionListener(this);
 			mb.add(macrosMenu);
-			if (!name.endsWith(".js")) {
+			if (!(name.endsWith(".js")||name.endsWith(".bsh")||name.endsWith(".py"))) {
 				Menu debugMenu = new Menu("Debug");			
 				debugMenu.add(new MenuItem("Debug Macro", new MenuShortcut(KeyEvent.VK_D)));
 				debugMenu.add(new MenuItem("Step", new MenuShortcut(KeyEvent.VK_E)));
@@ -349,7 +351,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if (getTitle().endsWith(".js"))
 			{evaluateJavaScript(); return;}
 		else if (getTitle().endsWith(".bsh"))
-			{evaluateBeanShell(); return;}
+			{evaluateScript(".bsh"); return;}
+		else if (getTitle().endsWith(".py"))
+			{evaluateScript(".py"); return;}
 		int start = ta.getSelectionStart();
 		int end = ta.getSelectionEnd();
 		String text;
@@ -377,13 +381,18 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else {
 			Object js = IJ.runPlugIn("JavaScript", text);
 			if (js==null)
-				IJ.error(JS_NOT_FOUND);
+				download("/download/tools/JavaScript.jar");
 		}
 	}
 
-	void evaluateBeanShell() {
-		if (!getTitle().endsWith(".bsh"))
-			setTitle(SaveDialog.setExtension(getTitle(), ".bsh"));
+	void evaluateScript(String ext) {
+		if (downloading) {
+			IJ.beep();
+			IJ.showStatus("Download in progress");
+			return;
+		}
+		if (!getTitle().endsWith(ext))
+			setTitle(SaveDialog.setExtension(getTitle(), ext));
 		int start = ta.getSelectionStart();
 		int end = ta.getSelectionEnd();
 		String text;
@@ -392,17 +401,27 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else
 			text = ta.getSelectedText();
 		if (text.equals("")) return;
-		Object bsh = IJ.runPlugIn("bsh", text);
-		if (bsh==null) {
-			String msg = "BeanShell.jar was not found in the plugins\nfolder. Click \"OK\" to download it from\nthe ImageJ website.";
-			GenericDialog gd = new GenericDialog("BeanShell");
-			gd.addMessage(msg);
-			gd.showDialog();
-			if (!gd.wasCanceled())
-				IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+"/plugins/bsh");
+		String plugin, url;
+		if (ext.equals(".bsh")) {
+			plugin = "bsh";
+			url = "/plugins/bsh/BeanShell.jar";
+		} else {
+			// download Jython from http://imagej.nih.gov/ij/plugins/jython/
+			plugin = "Jython";
+			url = "/plugins/jython/Jython.jar";
 		}
+		Object obj = IJ.runPlugIn(plugin, text);
+		if (obj==null)
+			download(url);
 	}
 	
+	private void download(String url) {
+		this.downloadUrl = url;
+		Thread thread = new Thread(this, "Downloader");
+		thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));
+		thread.start();
+	}
+
 	void evaluateLine() {
 		int start = ta.getSelectionStart();
 		int end = ta.getSelectionEnd();
@@ -612,7 +631,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else if ("Evaluate JavaScript".equals(what))
 			evaluateJavaScript();
 		else if ("Evaluate BeanShell".equals(what))
-			evaluateBeanShell();
+			evaluateScript(".bsh");
+		else if ("Evaluate Python".equals(what))
+			evaluateScript(".py");
 		else if ("Print...".equals(what))
 			print();
 		else if (what.equals("Paste"))
@@ -1047,4 +1068,13 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		return changes;
 	}
 	
+	/** Downloads BeanShell or Jython interpreter using a separate thread. */
+	public void run() {
+		if (downloading || downloadUrl==null)
+			return;
+		downloading = true;
+		boolean ok = Macro_Runner.downloadJar(downloadUrl);
+		downloading = false;
+	}
+
 }

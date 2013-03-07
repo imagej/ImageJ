@@ -431,11 +431,13 @@ public class Line extends Roi {
 		return p;
 	}
 
+	/** Returns an outline of this line as a 4 point Polygon. */
 	public Polygon getPolygon() {
 		FloatPolygon p = getFloatPolygon();
 		return new Polygon(toIntR(p.xpoints), toIntR(p.ypoints), p.npoints);
 	}
 
+	/** Returns an outline of this line as a 4 point FloatPolygon. */
 	public FloatPolygon getFloatPolygon() {
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		FloatPolygon p = new FloatPolygon();

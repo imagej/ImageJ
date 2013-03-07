@@ -5,6 +5,7 @@ import ij.macro.*;
 import ij.text.*;
 import ij.util.*;
 import ij.plugin.frame.*;
+import ij.gui.GenericDialog;
 import java.io.*;
 import java.lang.reflect.*;
 
@@ -86,11 +87,16 @@ public class Macro_Runner implements PlugIn {
 			in.close();
 			if (name.endsWith(".js"))
 				return runJavaScript(macro, arg);
+			else if (name.endsWith(".bsh"))
+				return runBeanShell(macro, arg);
+			else if (name.endsWith(".py"))
+				return runPython(macro, arg);
 			else
 				return runMacro(macro, arg);
 		}
 		catch (Exception e) {
-			IJ.error(e.getMessage());
+			if (!Macro.MACRO_CANCELED.equals(e.getMessage()))
+				IJ.error(e.getMessage());
 			return null;
 		}
 	}
@@ -181,29 +187,102 @@ public class Macro_Runner implements PlugIn {
 			return null;
 	}
 	
-	/** Runs a script on the current thread, passing 'arg', which
+	/** Runs a JavaScript script on the current thread, passing 'arg', which
 		the script can retrieve using the getArgument() function.*/
 	public String runJavaScript(String script, String arg) {
-		if (arg==null) arg = "";
+		if (arg==null)
+			arg = "";
 		Object js = null;
 		if (IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit()))
 			js = IJ.runPlugIn("JavaScriptEvaluator", "");
-		else
+		else {
 			js = IJ.runPlugIn("JavaScript", "");
-		if (js==null) IJ.error(Editor.JS_NOT_FOUND);
+			if (js==null) {
+				boolean ok = downloadJar("/download/tools/JavaScript.jar");
+				if (ok)
+					js = IJ.runPlugIn("JavaScript", "");
+			}
+		}
 		script = Editor.getJSPrefix(arg)+script;
-		try {
-			Class c = js.getClass();
-			Method m = c.getMethod("run", new Class[] {script.getClass(), arg.getClass()});
-			String s = (String)m.invoke(js, new Object[] {script, arg});			
-		} catch(Exception e) {
-			String msg = ""+e;
-			if (msg.indexOf("NoSuchMethod")!=0)
-				msg = "\"JavaScript.jar\" ("+IJ.URL+"/download/tools/JavaScript.jar)\nis outdated";
-			IJ.error(msg);
+		if (js!=null)
+			return runScript(js, script, arg);
+		else
 			return null;
+	}
+	
+	private static String runScript(Object plugin, String script, String arg) {
+		if (plugin instanceof PlugInInterpreter) {
+			PlugInInterpreter interp = (PlugInInterpreter)plugin;
+			if (IJ.debugMode)
+				IJ.log("Running "+interp.getName()+" script; arg=\""+arg+"\"");
+			interp.run(script, arg);
+			return interp.getReturnValue();
+		} else { // call run(script,arg) method using reflection
+			try {
+				Class c = plugin.getClass();
+				Method m = c.getMethod("run", new Class[] {script.getClass(), arg.getClass()});
+				String s = (String)m.invoke(plugin, new Object[] {script, arg});			
+			} catch(Exception e) {
+				if ("Jython".equals(plugin.getClass().getName()))
+					IJ.runPlugIn("Jython", script);
+			}
 		}
 		return null;
+	}
+	
+	/** Runs a BeanShell script the on current thread, passing 'arg' to the script
+		as the variable 'argument'. Uses the plugin at
+		http://imagej.nih.gov/ij/plugins/bsh/
+		to run the script.
+	*/
+	public static String runBeanShell(String script, String arg) {
+		if (arg==null)
+			arg = "";
+		Object bsh = IJ.runPlugIn("bsh", "");
+		if (bsh==null) {
+			boolean ok = downloadJar("/plugins/bsh/BeanShell.jar");
+			if (ok)
+				bsh = IJ.runPlugIn("bsh", "");
+		}
+		if (bsh!=null)
+			return runScript(bsh, script, arg);
+		else
+			return null;
+	}
+	
+	/** Runs a Python script on the current thread, passing 'arg' to the script
+		as the variable 'argument'. Uses the plugin at
+		http://imagej.nih.gov/ij/plugins/jython/
+		to run the script.
+	*/
+	public static String runPython(String script, String arg) {
+		if (arg==null)
+			arg = "";
+		Object jython = IJ.runPlugIn("Jython", "");
+		if (jython==null) {
+			boolean ok = downloadJar("/plugins/jython/Jython.jar");
+			if (ok)
+				jython = IJ.runPlugIn("Jython", "");
+		}
+		if (jython!=null)
+			return runScript(jython, script, arg);
+		else
+			return null;
+	}
+
+	public static boolean downloadJar(String url) {
+		String name = url.substring(url.lastIndexOf("/")+1);
+		boolean ok = false;
+		String msg = name+" was not found in the plugins\nfolder. Click \"OK\" to download it from\nthe ImageJ website.";
+		GenericDialog gd = new GenericDialog("Download "+name+"?");
+		gd.addMessage(msg);
+		gd.showDialog();
+		if (!gd.wasCanceled()) {
+			ok = (new PluginInstaller()).install(IJ.URL+url);
+			if (!ok)
+				IJ.error("Unable to download "+name+" from "+IJ.URL+url);
+		}
+		return ok;
 	}
 
 }

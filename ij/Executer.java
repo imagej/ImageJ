@@ -85,7 +85,7 @@ public class Executer implements Runnable {
 						return;
 					s = Tools.fixNewLines(s);
 				}
-				int w=500, h=300;
+				int w=500, h=340;
 				if (s.indexOf("UnsupportedClassVersionError")!=-1) {
 					if (s.indexOf("version 49.0")!=-1) {
 						s = e + "\n \nThis plugin requires Java 1.5 or later.";
@@ -100,9 +100,10 @@ public class Executer implements Runnable {
 						w=700; h=150;
 					}
 				}
-				if (IJ.getInstance()!=null)
+				if (IJ.getInstance()!=null) {
+					s = IJ.getInstance().getInfo()+"\n \n"+s;
 					new TextWindow("Exception", s, w, h);
-				else
+				} else
 					IJ.log(s);
 			}
 		}

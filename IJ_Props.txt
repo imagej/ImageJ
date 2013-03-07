@@ -348,8 +348,9 @@ plug-in02=>"Shortcuts"
 plug-in03=>"Utilities"
 plug-in04=>"New_"
 plug-in05="Compile and Run...",ij.plugin.Compiler
-#plug-in06=-
-#plug-in07=>"User_Plugins"
+plug-in06="Install... [M]",ij.plugin.PluginInstaller
+#plug-in07=-
+#plug-in08=>"User_Plugins"
 
 # Install user plugins located in ij.jar to Plugins>User Plugins submenu
 #user_plugins01="Red And Blue",RedAndBlue_
@@ -358,7 +359,7 @@ plug-in05="Compile and Run...",ij.plugin.Compiler
 
 # Plugins installed in the Plugins/Macros submenu
 # 'MACROS_MENU_COMMANDS' in MacroInstaller must be updated when items are added
-macros01="Install...[M]",ij.plugin.MacroInstaller
+macros01="Install...",ij.plugin.MacroInstaller
 macros02="Run...",ij.plugin.Macro_Runner
 macros03="Edit...",ij.plugin.Compiler("edit")
 macros04="Startup Macros...",ij.plugin.Commands("startup")

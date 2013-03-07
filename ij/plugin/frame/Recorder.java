@@ -37,6 +37,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	private static boolean scriptMode;
 	private static boolean imageUpdated;
 	private static int imageID;
+	private static boolean fgColorSet, bgColorSet;
+	private static boolean bbSet;
 
 	public Recorder() {
 		super("Recorder");
@@ -78,6 +80,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		GUI.center(this);
 		show();
 		IJ.register(Recorder.class);
+		fgColorSet = bgColorSet = false;
+		bbSet = false;
 	}
 	
 	public static void record(String method) {
@@ -129,6 +133,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (textArea!=null && !(scriptMode&&sw||commandName!=null&&sw)) {
 			if (scriptMode && method.equals("roiManager"))
 				textArea.append("rm.runCommand(\""+arg+"\");\n");
+			else if (scriptMode && method.equals("run"))
+				textArea.append("IJ."+method+"(\""+arg+"\");\n");
 			else {
 				if (method.equals("setTool"))
 					method = "//"+(scriptMode?"IJ.":"")+method;
@@ -366,6 +372,13 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (name!=null) {
 			if (commandOptions==null && (name.equals("Fill")||name.equals("Clear")))
 				commandOptions = "slice";
+			if (!fgColorSet && (name.equals("Fill")||name.equals("Draw")))
+				setForegroundColor(Toolbar.getForegroundColor());
+			else if (!bgColorSet && (name.equals("Clear")||name.equals("Clear Outside")))
+				setBackgroundColor(Toolbar.getBackgroundColor());
+			if (!bbSet && (name.equals("Make Binary")||name.equals("Convert to Mask")||name.equals("Erode")
+			||name.equals("Dilate")||name.equals("Skeletonize")))
+				setBlackBackground();
 			if (commandOptions!=null) {
 				if (name.equals("Open...")) {
 					String s = scriptMode?"imp = IJ.openImage":"open";
@@ -401,7 +414,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 				}
 			} else {
 				if (name.equals("Threshold...") || name.equals("Fonts...") || name.equals("Brightness/Contrast..."))
-					textArea.append("//run(\""+name+"\");\n");
+					textArea.append((scriptMode?"//IJ.":"//")+"run(\""+name+"\");\n");
 				else if (name.equals("Start Animation [\\]"))
 					textArea.append("doCommand(\"Start Animation [\\\\]\");\n");
 				else if (name.equals("Add to Manager "))
@@ -541,6 +554,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			}
 		}
 		ed.createMacro(name, text);
+		fgColorSet = bgColorSet = false;
+		bbSet = false;
 	}
 	
 	void createPlugin(String text, String name) {
@@ -598,6 +613,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			fileName.setText("script.js");
 		else
 			fileName.setText("My_Plugin.java");
+		fgColorSet = bgColorSet = false;
+		bbSet = false;
 	}
 
 	public void imageUpdated(ImagePlus imp) {
@@ -645,6 +662,25 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	
 	public static Recorder getInstance() {
 		return instance;
+	}
+	
+	public static void setForegroundColor(Color c) {
+		record("setForegroundColor", c.getRed(), c.getGreen(), c.getBlue());
+		fgColorSet = true;
+	}
+	
+	public static void setBackgroundColor(Color c) {
+		record("setBackgroundColor", c.getRed(), c.getGreen(), c.getBlue());
+		bgColorSet = true;
+	}
+	
+	public static void setBlackBackground() {
+		String bb = Prefs.blackBackground?"true":"false";
+		if (scriptMode)
+			recordString("Prefs.blackBackground = "+bb+";\n");
+		else
+			recordString("setOption(\"BlackBackground\", "+bb+");\n");
+		bbSet = true;
 	}
 
 }

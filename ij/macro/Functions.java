@@ -2305,7 +2305,7 @@ public class Functions implements MacroConstants, Measurements {
 		Prefs.blackCanvas = blackCanvas;
 		Prefs.useJFileChooser = useJFileChooser;
 		Prefs.useInvertingLut = useInvertingLut;
-		IJ.debugMode = debugMode;
+		IJ.setDebugMode(debugMode);
 		Toolbar.setForegroundColor(foregroundColor);
 		Toolbar.setBackgroundColor(backgroundColor);
 		Roi.setColor(roiColor);
@@ -2402,7 +2402,8 @@ public class Functions implements MacroConstants, Measurements {
 		double countOrIndex=Double.NaN;
 		boolean twoArgCommand = cmd.equals("open")||cmd.equals("save")||cmd.equals("rename")
 			||cmd.equals("set color")||cmd.equals("set fill color")||cmd.equals("set line width")
-			||cmd.equals("associate")||cmd.equals("centered")||cmd.equals("usenames");
+			||cmd.equals("associate")||cmd.equals("centered")||cmd.equals("usenames")
+			||cmd.equals("save selected");
 		boolean select = cmd.equals("select");
 		boolean multiSelect = false;
 		boolean add = cmd.equals("add");
@@ -2955,6 +2956,10 @@ public class Functions implements MacroConstants, Measurements {
 		if (eval) {
 			if (arg!=null && (name.equals("script")||name.equals("js")))
 				return (new Macro_Runner()).runJavaScript(arg, "");
+			else if (arg!=null && (name.equals("bsh")))
+				return Macro_Runner.runBeanShell(arg,"");
+			else if (arg!=null && (name.equals("python")))
+				return Macro_Runner.runPython(arg,"");
 			else
 				return IJ.runMacro(name, arg);
 		} else
@@ -3777,7 +3782,7 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (arg1.equals("changes"))
 			getImage().changes = state;
 		else if (arg1.equals("debugmode"))
-			IJ.debugMode = state;
+			IJ.setDebugMode(state);
 		else if (arg1.equals("openusingplugins"))
 			Opener.setOpenUsingPlugins(state);
 		else if (arg1.equals("queuemacros"))
