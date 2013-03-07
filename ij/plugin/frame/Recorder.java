@@ -133,6 +133,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (textArea!=null && !(scriptMode&&sw||commandName!=null&&sw)) {
 			if (scriptMode && method.equals("roiManager"))
 				textArea.append("rm.runCommand(\""+arg+"\");\n");
+			else if (scriptMode && method.equals("run"))
+				textArea.append("IJ."+method+"(\""+arg+"\");\n");
 			else {
 				if (method.equals("setTool"))
 					method = "//"+(scriptMode?"IJ.":"")+method;
@@ -412,7 +414,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 				}
 			} else {
 				if (name.equals("Threshold...") || name.equals("Fonts...") || name.equals("Brightness/Contrast..."))
-					textArea.append("//run(\""+name+"\");\n");
+					textArea.append((scriptMode?"//IJ.":"//")+"run(\""+name+"\");\n");
 				else if (name.equals("Start Animation [\\]"))
 					textArea.append("doCommand(\"Start Animation [\\\\]\");\n");
 				else if (name.equals("Add to Manager "))
@@ -611,6 +613,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			fileName.setText("script.js");
 		else
 			fileName.setText("My_Plugin.java");
+		fgColorSet = bgColorSet = false;
+		bbSet = false;
 	}
 
 	public void imageUpdated(ImagePlus imp) {
