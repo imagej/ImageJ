@@ -5,34 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.47m 6 March 2013</u>
+<li> <u>1.47n 10 March 2013</u>
 <ul>
-<li> Added the <i>Plugins&gt;Install</i> command.
-<li> Thanks to John Hayes, added the <i>Macros&gt;Evaluate Python</i> command to the macro editor.
-The 8MB
-<a href="http://imagej.nih.gov/ij/plugins/jython">Jython interpreter (FIX)</a>
-is downloaded as needed from the ImageJ website to ImageJ/plugins/jars.
-<li> Scripts in the plugins folder with ".bsh" and ".py" extensions are added to the Plugins menu.
-<li> "Exception" windows now display the ImageJ version, Java version, OS version and memory usage.
-<li> <i>Plugins&gt;Utilities&gt;ImageJ Properties</i> now displays
-values returned by IJ.getDirectory() and all Java properties.
-<li> Improved recording of foreground/background color settings and the "Black background" option.
-<li> Thanks to Wilhelm Burger and Johannes Schindelin, output to System.out and System.err is redirected to the Log window
-when ImageJ is in the debug mode.
-<li> Wilhelm Burger's
-<a href="http://staff.fh-hagenberg.at/burger/imagej/plugins/RedirectSystemStreams/doc/Redirect_System_Streams.html">IjLogStream</a>
-class is built into ImageJ as ij.io.LogStream.
-<li> Thanks to Christophe Deroulers, added the roiManager("save selected", path)
-macro function.
-<li> Added the eval("bsh",script) and eval("python",script) macro functions.
-<li> Thanks to Norbert Vischer, fixed a bug that caused the <i>Edit&gt;Selection&gt;Rotate</i>
-command to not work as expected with rounded rectangle selections.
-<li> Thanks to Antti Niemisto and Gabriel Landini, fixed a bug that caused the "Minimum" thresholding
-method to set the wrong threshold for some unusual histograms.
-<li> Fixed a v1.47d regression that sometimes caused the <i>Process&gt;Binary&gt;Convert to Mask</i>
-command to change the "Black Background" option.
-<li> Thanks to Leon Espinosa, fixed a v1.47j regression that caused ROIs added to the ROI Manager by 
-the particle analyzer to have null names.
+<li> Added a <i>Macros&gt;Show Log Window</i> command to the macro editor.
+<li> Fixed a bug that caused the Python print statement to not work as expected.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

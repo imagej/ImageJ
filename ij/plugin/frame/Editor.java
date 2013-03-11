@@ -41,7 +41,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
 	public static final int MONOSPACED=1, MENU_BAR=2;
-	public static final int MACROS_MENU_ITEMS = 10;
+	public static final int MACROS_MENU_ITEMS = 11;
 	static final String FONT_SIZE = "editor.font.size";
 	static final String FONT_MONO= "editor.font.mono";
 	static final String CASE_SENSITIVE= "editor.case-sensitive";
@@ -209,6 +209,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			macrosMenu.add(new MenuItem("Evaluate JavaScript", new MenuShortcut(KeyEvent.VK_J, false)));
 			macrosMenu.add(new MenuItem("Evaluate BeanShell", new MenuShortcut(KeyEvent.VK_B, false)));
 			macrosMenu.add(new MenuItem("Evaluate Python", new MenuShortcut(KeyEvent.VK_P, false)));
+			macrosMenu.add(new MenuItem("Show Log Window", new MenuShortcut(KeyEvent.VK_L, true)));
 			macrosMenu.addSeparator();
 			// MACROS_MENU_ITEMS must be updated if items are added to this menu
 			macrosMenu.addActionListener(this);
@@ -634,6 +635,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			evaluateScript(".bsh");
 		else if ("Evaluate Python".equals(what))
 			evaluateScript(".py");
+		else if ("Show Log Window".equals(what))
+			showLogWindow();
 		else if ("Print...".equals(what))
 			print();
 		else if (what.equals("Paste"))
@@ -1064,6 +1067,14 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		ta.setText(text);
 	}
 	
+	public void showLogWindow() {
+		Frame log = WindowManager.getFrame("Log");
+		if (log!=null)
+			log.toFront();
+		else
+			IJ.log("");
+	}
+
 	public boolean fileChanged() {
 		return changes;
 	}

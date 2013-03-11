@@ -166,8 +166,7 @@ public class LogStream extends PrintStream {
 		String msg = new String(b, off, len);
 		if (msg.equals(endOfLineSystem) || msg.equals(endOfLineShort)) { // this is a newline sequence only
 			ejectBuffer();
-		}
-		else {
+		} else {
 			byteStream.write(b, off, len);	// append message to buffer
 			if (msg.endsWith(endOfLineSystem) || msg.endsWith(endOfLineShort)) { // line terminated by Newline
 				// note that this does not seem to happen ever (even with format)!?
@@ -185,7 +184,9 @@ public class LogStream extends PrintStream {
 	@Override
 	public void flush() {
 		if (byteStream.size() > 0) {
-			ejectBuffer();
+			String msg = byteStream.toString();
+			if (msg.endsWith(endOfLineSystem) || msg.endsWith(endOfLineShort))
+				ejectBuffer();
 		}
 		super.flush();
 	}

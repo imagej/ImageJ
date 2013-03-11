@@ -9,19 +9,24 @@ import ij.gui.GenericDialog;
 import java.io.*;
 import java.lang.reflect.*;
 
-/** Opens and runs a macro file. */
+/** This class runs macros and scripts installed in the Plugins menu as well as
+	macros and scripts opened using the Plugins/Macros/Run command. */
 public class Macro_Runner implements PlugIn {
 	
-	/** Opens and runs the specified macro file, which is assumed to be in the plugins folder,
-		on the current thread. Displays a file open dialog if <code>name</code> is an empty string. */
+	/** Opens and runs the specified macro file (.txt or .ijm) or script file (.js, .bsh or .py)  
+		on the current thread. Displays a file open dialog if <code>name</code> 
+		is an empty string. The macro or script is assumed to be in the ImageJ 
+		plugins folder if  <code>name</code> is not a full path. */
 	public void run(String name) {
+		if (IJ.debugMode)
+			IJ.log("Macro_Runner.run(): "+name);
 		Thread thread = Thread.currentThread();
 		String threadName = thread.getName();
 		if (!threadName.endsWith("Macro$"))
 			thread.setName(threadName+"Macro$");
 		String path = null;
 		if (name.equals("")) {
-			OpenDialog od = new OpenDialog("Run Macro...", path);
+			OpenDialog od = new OpenDialog("Run Macro or Script...", path);
 			String directory = od.getDirectory();
 			name = od.getFileName();
 			if (name!=null) {
@@ -42,7 +47,11 @@ public class Macro_Runner implements PlugIn {
 		|| name.endsWith("Menu.ijm") || name.endsWith("Menu.txt"))
 			(new MacroInstaller()).installTool(Menus.getPlugInsPath()+name);
 		else {
-			path = Menus.getPlugInsPath() + name;
+			boolean fullPath = name.startsWith("/") || name.startsWith("\\") || name.indexOf(":\\")==1;
+			if (fullPath)
+				path = name;
+			else
+				path = Menus.getPlugInsPath() + name;
 			runMacroFile(path, null);
 		}
 	}
