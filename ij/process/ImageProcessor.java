@@ -2363,6 +2363,11 @@ public abstract class ImageProcessor implements Cloneable {
 		return ImageStatistics.getStatistics(this, 127, null);
 	}
 	
+	/** Uses the Process/Math/Macro command to apply macro code to this image. */
+	public void applyMacro(String macro) {
+		ij.plugin.filter.ImageMath.applyMacro(this, macro, false);
+	}
+
 	/* Returns the PlugInFilter slice number. */
 	public int getSliceNumber() {
 		if (sliceNumber<1)

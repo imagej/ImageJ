@@ -1979,6 +1979,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
     }
     
+	/** Copies the contents of the current selection, or the entire 
+		image if there is no selection, to the internal clipboard. */
+	public void copy() {
+		copy(false);
+	}
+
 	/** Copies the contents of the current selection to the internal clipboard.
 		Copies the entire image if there is no selection. Also clears
 		the selection if <code>cut</code> is true. */

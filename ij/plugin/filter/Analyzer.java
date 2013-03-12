@@ -462,10 +462,21 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if ((measurements&RECT)!=0) {
 			if (roi!=null && roi.isLine()) {
 				Rectangle bounds = roi.getBounds();
-				rt.addValue(ResultsTable.ROI_X, bounds.x);
-				rt.addValue(ResultsTable.ROI_Y, bounds.y);
-				rt.addValue(ResultsTable.ROI_WIDTH, bounds.width);
-				rt.addValue(ResultsTable.ROI_HEIGHT, bounds.height);
+				double rx = bounds.x;
+				double ry = bounds.y;
+				double rw = bounds.width;
+				double rh = bounds.height;
+				Calibration cal = imp!=null?imp.getCalibration():null;
+				if (cal!=null) {
+					rx = cal.getX(rx);
+					ry = cal.getY(ry);
+					rw *= cal.pixelWidth;
+					rh *= cal.pixelHeight;
+				}
+				rt.addValue(ResultsTable.ROI_X, rx);
+				rt.addValue(ResultsTable.ROI_Y, ry);
+				rt.addValue(ResultsTable.ROI_WIDTH, rw);
+				rt.addValue(ResultsTable.ROI_HEIGHT, rh);
 			} else {
 				rt.addValue(ResultsTable.ROI_X,stats.roiX);
 				rt.addValue(ResultsTable.ROI_Y,stats.roiY);
