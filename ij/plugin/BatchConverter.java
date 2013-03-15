@@ -56,7 +56,10 @@ import java.io.*;
 				continue;
 			IJ.showProgress(i+1, list.length);
 			ImagePlus imp = IJ.openImage(path);
-			if (imp==null) continue;
+			if (imp==null) {
+				IJ.log("IJ.openImage() returned null: "+path);
+				continue;
+			}
 			//if (height!=0) {
 			//	double aspectRatio = (double)imp.getWidth()/imp.getHeight();
 			//	int width = (int)(height*aspectRatio);

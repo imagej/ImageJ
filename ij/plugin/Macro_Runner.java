@@ -239,8 +239,7 @@ public class Macro_Runner implements PlugIn {
 		return null;
 	}
 	
-	/** Runs a BeanShell script the on current thread, passing 'arg' to the script
-		as the variable 'argument'. Uses the plugin at
+	/** Runs a BeanShell script the on current thread. Uses the plugin at
 		http://imagej.nih.gov/ij/plugins/bsh/
 		to run the script.
 	*/
@@ -259,8 +258,7 @@ public class Macro_Runner implements PlugIn {
 			return null;
 	}
 	
-	/** Runs a Python script on the current thread, passing 'arg' to the script
-		as the variable 'argument'. Uses the plugin at
+	/** Runs a Python script on the current thread. Uses the plugin at
 		http://imagej.nih.gov/ij/plugins/jython/
 		to run the script.
 	*/

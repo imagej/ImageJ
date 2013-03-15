@@ -5,14 +5,19 @@
 </head>
 <body>
 
-<li> <u>1.47n 11 March 2013</u>
+<li> <u>1.47n 15 March 2013</u>
 <ul>
 <li> Added a <i>Macros&gt;Show Log Window</i> command to the macro editor.
-<li> Added the ImageProcessor.applyMacro() method
-(<a href="http://imagej.nih.gov/ij/macros/python/Rotational_Animation.py">example (FIX)</a>).
+<li> Added the blurGaussian() and applyMacro()
+methods to the ImageProcessor class
+(<a href="http://imagej.nih.gov/ij/macros/python/Animated_Gaussian_Blur.py">example1</a>,
+<a href="http://imagej.nih.gov/ij/macros/python/Rotational_Animation.py">example2 FIX</a>).
+<li> Added the Overlay.setPosition(c,z,t) and Overlay.drawLabels() macro functions (DOCS).
 <li> Fixed a bug that caused the Python print statement to not work as expected.
 <li> Thanks to Julian Cooper, fixed a bug that caused bounding box values displayed
-in the Results window for lines selections to always be in pixel units.
+in the Results window, when measuring lines selections, to always be in pixel units.
+<li> Thanks to Curtis Rueden, fixed a bug that caused the ROI Manager to not restore
+hyperstack ROIs to the current CZT position.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

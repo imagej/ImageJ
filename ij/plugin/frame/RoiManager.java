@@ -555,20 +555,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (imp==null || roi==null)
 			return false;
 		if (setSlice) {
+			int c = roi.getCPosition();
 			int z = roi.getZPosition();
 			int t = roi.getTPosition();
 			boolean hyperstack = imp.isHyperStack();
-			if (z>1) {
-				if (hyperstack)
-					imp.setPosition(imp.getC(), z, imp.getT());
-				else
-					imp.setSlice(getSliceNumber(roi, label));
-			} else if (t>0) {
-				if (hyperstack)
-					imp.setPosition(imp.getC(), imp.getZ(), t);
-				else
-					imp.setSlice(getSliceNumber(roi, label));
-			} else {
+			//IJ.log("restore: "+hyperstack+" "+c+" "+z+" "+t);
+			if (hyperstack && (c>0||z>0||t>0))
+				imp.setPosition(c, z, t);
+			else {
 				int n = getSliceNumber(roi, label);
 				if (n>=1 && n<=imp.getStackSize()) {
 					if (hyperstack) {
@@ -630,11 +624,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Returns the slice number associated with the specified ROI or name,
 		or -1 if the ROI or name does not include a slice number. */
 	int getSliceNumber(Roi roi, String label) {
-		int slice = roi!=null?roi.getPosition():-1;
-		if (slice==0)
-			slice=-1;
-		if (slice==-1)
-			slice = getSliceNumber(label);
+		int slice = getSliceNumber(label);
+		if (slice<0) {
+			int n = roi!=null?roi.getPosition():-1;
+			if (n>0)
+				slice = n;
+		}
 		return slice;
 	}
 
@@ -1672,9 +1667,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				shift = false;
 				alt = false;
 			}
-			ImagePlus imp = WindowManager.getCurrentImage();
-			Roi roi = imp!=null?imp.getRoi():null;
-			if (roi!=null) roi.setPosition(0);
+			setRoiPosition();
 			add(shift, alt);
 		} else if (cmd.equals("add & draw"))
 			addAndDraw(false);
@@ -1825,9 +1818,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Adds the current selection to the ROI Manager, using the
 		specified color (a 6 digit hex string) and line width. */
 	public boolean runCommand(String cmd, String hexColor, double lineWidth) {
-		ImagePlus imp = WindowManager.getCurrentImage();
-		Roi roi = imp!=null?imp.getRoi():null;
-		if (roi!=null) roi.setPosition(0);
+		setRoiPosition();
 		if (hexColor==null && lineWidth==1.0 && (IJ.altKeyDown()&&!Interpreter.isBatchMode()))
 			addRoi(true);
 		else {
@@ -1835,6 +1826,19 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			addRoi(null, false, color, (int)Math.round(lineWidth));
 		}
 		return true;	
+	}
+	
+	private void setRoiPosition() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp==null)
+			return;
+		Roi roi = imp.getRoi();
+		if (roi==null)
+			return;
+		if (imp.isHyperStack())
+			roi.setPosition(imp.getC(), imp.getZ(), imp.getT());
+		else
+			roi.setPosition(imp.getCurrentSlice());
 	}
 	
 	/** Assigns the ROI at the specified index to the current image. */

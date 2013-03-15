@@ -22,7 +22,8 @@ import java.io.*;
 			if (imp!=null) {
 				IJ.run(imp, "Measure", "");
 				imp.close();
-			}
+			} else if (!path.endsWith("/"))
+				IJ.log("IJ.openImage() returned null: "+path);
 		}
 	}
 

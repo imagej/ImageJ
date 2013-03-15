@@ -50,6 +50,7 @@ public class Functions implements MacroConstants, Measurements {
     Overlay offscreenOverlay;
     Overlay overlayClipboard;
     GeneralPath overlayPath;
+    boolean overlayDrawLabels;
 
     boolean saveSettingsCalled;
 	boolean usePointerCursor, hideProcessStackDialog;
@@ -5144,6 +5145,14 @@ public class Functions implements MacroConstants, Measurements {
 				interp.error("Overlay clipboard empty");
 			getImage().setOverlay(overlayClipboard);
 			return Double.NaN;
+		} else if (name.equals("drawLabels")) {
+			overlayDrawLabels = getBooleanArg();
+			Overlay overlay = imp.getOverlay();
+			if (overlay!=null) {
+				overlay.drawLabels(overlayDrawLabels);
+				imp.draw();
+			}
+			return Double.NaN;
 		}
 		Overlay overlay = imp.getOverlay();
 		if (overlay==null && name.equals("size"))
@@ -5173,9 +5182,20 @@ public class Functions implements MacroConstants, Measurements {
 			imp.setRoi(overlay.get(index), !Interpreter.isBatchMode());
 			return Double.NaN;
 		} else if (name.equals("setPosition")) {
-			int n = (int)getArg();
-			if (size>0)
+			int c=0, z=0, t=0;
+			int nargs = 1;
+			int n = (int)getFirstArg();
+			if (interp.nextToken()==',') {
+				nargs = 3;
+				c = n;
+				z = (int)getNextArg();
+				t = (int)getLastArg();
+			} else
+				interp.getRightParen();
+			if (nargs==1 && size>0)
 				overlay.get(size-1).setPosition(n);
+			else if (nargs==3)
+				overlay.get(size-1).setPosition(c, z, t);
 			return Double.NaN;
 		} else
 			interp.error("Unrecognized function name");

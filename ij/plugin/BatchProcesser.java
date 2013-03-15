@@ -40,6 +40,7 @@ import java.util.Vector;
 		private Thread thread;
 		private ImagePlus virtualStack;
 		private ImagePlus outputImage;
+		private boolean errorDisplayed;
 
 	public void run(String arg) {
 		if (arg.equals("stack")) {
@@ -170,7 +171,10 @@ import java.util.Vector;
 				continue;
 			IJ.showProgress(i+1, list.length);
 			ImagePlus imp = IJ.openImage(path);
-			if (imp==null) continue;
+			if (imp==null) {
+				IJ.log("IJ.openImage() returned null: "+path);
+				continue;
+			}
 			if (!macro.equals("")) {
 				outputImage = null;
 				if (!runMacro("i="+(index++)+";"+macro, imp))
@@ -381,7 +385,11 @@ import java.util.Vector;
 			imp = getVirtualStackImage();
 		else
 			imp = getFolderImage();
-		if (imp==null) return;
+		if (imp==null) {
+			if (!errorDisplayed)
+				IJ.log("IJ.openImage() returned null");
+			return;
+		}
 		runMacro("i=0;"+macro, imp);
 		Point loc = new Point(10, 30);
 		if (testImage!=0) {
@@ -411,6 +419,7 @@ import java.util.Vector;
 		File f1 = new File(inputPath);
 		if (!f1.exists() || !f1.isDirectory()) {
 			error("Input does not exist or is not a folder\n \n"+inputPath);
+			errorDisplayed = true;
 			return null;
 		}
 		String[] list = (new File(inputPath)).list();

@@ -41,7 +41,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
 	public static final int MONOSPACED=1, MENU_BAR=2;
-	public static final int MACROS_MENU_ITEMS = 11;
+	public static final int MACROS_MENU_ITEMS = 12;
 	static final String FONT_SIZE = "editor.font.size";
 	static final String FONT_MONO= "editor.font.mono";
 	static final String CASE_SENSITIVE= "editor.case-sensitive";
