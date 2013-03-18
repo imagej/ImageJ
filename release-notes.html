@@ -5,14 +5,16 @@
 </head>
 <body>
 
-<li> <u>1.47n 15 March 2013</u>
+<li> <u>1.47n 18 March 2013</u>
 <ul>
 <li> Added a <i>Macros&gt;Show Log Window</i> command to the macro editor.
+<li> Thanks to Johannes Schindelin, the eval("script",JavaScriptCode) macro function
+now returns, as a string, the value of the last expression evaluated.
 <li> Added the blurGaussian() and applyMacro()
 methods to the ImageProcessor class
 (<a href="http://imagej.nih.gov/ij/macros/python/Animated_Gaussian_Blur.py">example1</a>,
 <a href="http://imagej.nih.gov/ij/macros/python/Rotational_Animation.py">example2 FIX</a>).
-<li> Added the Overlay.setPosition(c,z,t) and Overlay.drawLabels() macro functions (DOCS).
+<li> Added the Overlay.setPosition(c,z,t) and Overlay.drawLabels() (no overlay???) macro functions (DOCS).
 <li> Fixed a bug that caused the Python print statement to not work as expected.
 <li> Thanks to Julian Cooper, fixed a bug that caused bounding box values displayed
 in the Results window, when measuring lines selections, to always be in pixel units.

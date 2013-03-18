@@ -526,6 +526,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Roi roi = (Roi)rois.get(name);
 		rois.remove(name);
 		roi.setName(name2);
+		int position = getSliceNumber(name2);
+		if (position>0 && roi.getCPosition()==0 && roi.getZPosition()==0 && roi.getTPosition()==0)
+			roi.setPosition(position);
 		rois.put(name2, roi);
 		listModel.setElementAt(name2, index);
 		list.setSelectedIndex(index);
@@ -624,12 +627,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Returns the slice number associated with the specified ROI or name,
 		or -1 if the ROI or name does not include a slice number. */
 	int getSliceNumber(Roi roi, String label) {
-		int slice = getSliceNumber(label);
-		if (slice<0) {
-			int n = roi!=null?roi.getPosition():-1;
-			if (n>0)
-				slice = n;
-		}
+		int slice = roi!=null?roi.getPosition():-1;
+		if (slice==0)
+			slice=-1;
+		if (slice==-1)
+			slice = getSliceNumber(label);
 		return slice;
 	}
 

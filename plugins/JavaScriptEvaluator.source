@@ -11,8 +11,9 @@ import javax.script.*;
     is used to evaluate JavaScript on Macs and on systems running versions
     of Java earlier than 1.6. */
 public class JavaScriptEvaluator implements PlugIn, Runnable  {
-	Thread thread;
-	String script;
+	private Thread thread;
+	private String script;
+	private Object result;
 
 	// run script in separate thread
 	public void run(String script) {
@@ -33,12 +34,13 @@ public class JavaScriptEvaluator implements PlugIn, Runnable  {
 	}
 
 	public void run() {
+		result = null;
 		try {
 			ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
 			ScriptEngine engine = scriptEngineManager.getEngineByName("ECMAScript");
 			if (engine == null)
 				{IJ.error("Could not find JavaScript engine"); return;}
-			engine.eval(script);
+			result = engine.eval(script);
 		} catch(Throwable e) {
 			String msg = e.getMessage();
 			if (msg.startsWith("sun.org.mozilla.javascript.internal.EcmaError: "))
@@ -48,6 +50,10 @@ public class JavaScriptEvaluator implements PlugIn, Runnable  {
 			if (msg.indexOf("Macro canceled")==-1)
 				IJ.log(msg);
 		}
+	}
+	
+	public String toString() {
+		return result!=null?""+result:"";
 	}
 
 }
