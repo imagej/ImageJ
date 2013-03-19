@@ -1,7 +1,9 @@
 package ij;
 
 	/** Plugins that implement this interface are notified when
-		an image window is opened, closed or updated. */
+		an image is opened, closed or updated. The 
+		Plugins/Utilities/Monitor Eventscommand uses this interface.
+	*/
 	public interface ImageListener {
 
 	public void imageOpened(ImagePlus imp);

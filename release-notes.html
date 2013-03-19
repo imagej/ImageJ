@@ -10,6 +10,8 @@
 <li> Added a <i>Macros&gt;Show Log Window</i> command to the macro editor.
 <li> Thanks to Johannes Schindelin, the eval("script",JavaScriptCode) macro function
 now returns, as a string, the value of the last expression evaluated.
+<li> The ImageListener class triggers an image updated event
+when an image is renamed.
 <li> Added the blurGaussian() and applyMacro()
 methods to the ImageProcessor class
 (<a href="http://imagej.nih.gov/ij/macros/python/Animated_Gaussian_Blur.py">example1</a>,
@@ -20,6 +22,9 @@ methods to the ImageProcessor class
 in the Results window, when measuring lines selections, to always be in pixel units.
 <li> Thanks to Curtis Rueden, fixed a bug that caused the ROI Manager to not restore
 hyperstack ROIs to the current CZT position.
+<li> Thanks to Julian Cooper, fixed a bug that caused vertical lines selections at the
+left image edge or horizontal line selections at the top image edge to not
+be restored correctly.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

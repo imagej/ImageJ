@@ -856,7 +856,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			}
 			win.setTitle(title+virtual+global+scale);
     	}
+    	boolean titleChanged = !title.equals(this.title);
     	this.title = title;
+		if (titleChanged && listeners.size()>0)
+			notifyListeners(UPDATED);
     }
 
     public int getWidth() {
@@ -1519,7 +1522,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (r.width<=width || r.height<=height || isSmaller(pRoi)) { // will it (mostly) fit in this image?
 				roi = (Roi)pRoi.clone();
 				roi.setImage(this);
-				if (r.x>=width || r.y>=height || (r.x+r.width)<=0 || (r.y+r.height)<=0) // does it need to be moved?
+				if (r.x>=width || r.y>=height || (r.x+r.width)<0 || (r.y+r.height)<0) // does it need to be moved?
 					roi.setLocation((width-r.width)/2, (height-r.height)/2);
 				else if (r.width==width && r.height==height) // is it the same size as the image
 					roi.setLocation(0, 0);

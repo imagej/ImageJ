@@ -196,8 +196,7 @@ public class Macro_Runner implements PlugIn {
 			return null;
 	}
 	
-	/** Runs a JavaScript script on the current thread, passing 'arg', which
-		the script can retrieve using the getArgument() function.*/
+	/** Runs a JavaScript script on the current thread. */
 	public String runJavaScript(String script, String arg) {
 		if (arg==null)
 			arg = "";
