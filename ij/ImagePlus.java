@@ -855,9 +855,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				scale = " (" + IJ.d2s(percent,digits) + "%)";
 			}
 			win.setTitle(title+virtual+global+scale);
-    	}
-    	boolean titleChanged = !title.equals(this.title);
-    	this.title = title;
+		}
+		boolean titleChanged = !title.equals(this.title);
+		this.title = title;
 		if (titleChanged && listeners.size()>0)
 			notifyListeners(UPDATED);
     }

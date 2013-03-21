@@ -198,8 +198,6 @@ public class Macro_Runner implements PlugIn {
 	
 	/** Runs a JavaScript script on the current thread. */
 	public String runJavaScript(String script, String arg) {
-		if (arg==null)
-			arg = "";
 		Object js = null;
 		if (IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit()))
 			js = IJ.runPlugIn("JavaScriptEvaluator", "");
