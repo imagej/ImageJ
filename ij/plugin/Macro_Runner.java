@@ -56,10 +56,13 @@ public class Macro_Runner implements PlugIn {
 		}
 	}
         
-    /** Opens and runs the specified macro file on the current thread.
-    	The file is assumed to be in the macros folder unless 
-    	<code>name</code> is a full path. ".txt"  is
-    	added if <code>name</code> does not have an extension. */
+    /** Opens and runs the specified macro or script file on the current
+		thread. The file is assumed to be in the ImageJ/macros folder
+		unless <code>name</code> is a full path. ".txt"  is
+		added if <code>name</code> does not have an extension. 
+		The macro or script can use the getArgument() function 
+		to retrieve the string argument.
+    */
 	public String runMacroFile(String name, String arg) {
 		if (name.startsWith("ij.jar:"))
 			return runMacroFromIJJar(name, arg);
@@ -110,8 +113,8 @@ public class Macro_Runner implements PlugIn {
 		}
 	}
 
-    /** Opens and runs the specified macro on the current thread. Macros can
-    	retrieve the optional string argument by calling the getArgument() macro function. 
+    /** Runs the specified macro on the current thread. Macros can retrieve 
+    	the optional string argument by calling the getArgument() macro function. 
     	Returns the String value returned by the macro, null if the macro does not
     	return a value, or "[aborted]" if the macro was aborted due to an error. */
 	public String runMacro(String macro, String arg) {
@@ -196,7 +199,9 @@ public class Macro_Runner implements PlugIn {
 			return null;
 	}
 	
-	/** Runs a JavaScript script on the current thread. */
+	/** Runs a JavaScript script on the current thread, passing a string argument, 
+		which the script can retrieve using the getArgument() function. Returns,
+		as a string, the last expression evaluated by the script. */
 	public String runJavaScript(String script, String arg) {
 		Object js = null;
 		if (IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit()))
@@ -236,8 +241,10 @@ public class Macro_Runner implements PlugIn {
 		}
 	}
 	
-	/** Runs a BeanShell script the on current thread. Uses the plugin at
-		http://imagej.nih.gov/ij/plugins/bsh/
+	/** Runs a BeanShell script on the current thread, passing a string argument, 
+		which the script can retrieve using the getArgument() function. Returns,
+		as a string, the last expression evaluated by the script.
+		Uses the plugin at http://imagej.nih.gov/ij/plugins/bsh/
 		to run the script.
 	*/
 	public static String runBeanShell(String script, String arg) {
@@ -255,8 +262,11 @@ public class Macro_Runner implements PlugIn {
 			return null;
 	}
 	
-	/** Runs a Python script on the current thread. Uses the plugin at
-		http://imagej.nih.gov/ij/plugins/jython/
+	/** Runs a Prython script on the current thread, passing a string argument, 
+		which the script can retrieve using the getArgument() function. Returns,
+		as a string, the value of the variable 'result'. For example, a Python script  
+		containing the line "result=123" will return the string "123".
+		Uses the plugin at http://imagej.nih.gov/ij/plugins/jython/
 		to run the script.
 	*/
 	public static String runPython(String script, String arg) {

@@ -291,6 +291,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				return false;
 			}
 		}
+		if ((roi instanceof PolygonRoi) && ((PolygonRoi)roi).getNCoordinates()==0)
+			return false;
 		if (color==null && roi.getStrokeColor()!=null)
 			color = roi.getStrokeColor();
 		else if (color==null && defaultColor!=null)

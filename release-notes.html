@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.47n 20 March 2013</u>
+<li> <u>1.47n 21 March 2013</u>
 <ul>
 <li> Added a <i>Macros&gt;Show Log Window</i> command to the macro editor.
 <li> Thanks to Johannes Schindelin, the eval("script",JavaScriptCode) macro function
@@ -25,6 +25,11 @@ hyperstack ROIs to the current CZT position.
 <li> Thanks to Julian Cooper, fixed a bug that caused vertical lines selections at the
 left image edge or horizontal line selections at the top image edge to not
 be restored correctly.
+<li> Thanks to Dimiter Prodanov, fixed a bug that could cause the ROI Manager
+to throw an exception if it contained a zero-point PolygonRoi.
+<li> Thanks to Michael Epping, fixed bugs that caused the Flip Horizontally, 
+Flip Vertically,  Rotate Left and Rotate Right commands to not correctly
+transform the image origin.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
