@@ -56,12 +56,11 @@ public class Macro_Runner implements PlugIn {
 		}
 	}
         
-    /** Opens and runs the specified macro or script file on the current
+	/** Opens and runs the specified macro or script on the current
 		thread. The file is assumed to be in the ImageJ/macros folder
-		unless <code>name</code> is a full path. ".txt"  is
-		added if <code>name</code> does not have an extension. 
-		The macro or script can use the getArgument() function 
-		to retrieve the string argument.
+		unless 'name' is a full path. ".txt"  is added if 'name' does not
+		have an extension. The macro or script can use the getArgument()
+		function to retrieve the string argument.
     */
 	public String runMacroFile(String name, String arg) {
 		if (name.startsWith("ij.jar:"))
@@ -115,7 +114,7 @@ public class Macro_Runner implements PlugIn {
 
     /** Runs the specified macro on the current thread. Macros can retrieve 
     	the optional string argument by calling the getArgument() macro function. 
-    	Returns the String value returned by the macro, null if the macro does not
+    	Returns the string value returned by the macro, null if the macro does not
     	return a value, or "[aborted]" if the macro was aborted due to an error. */
 	public String runMacro(String macro, String arg) {
 		Interpreter interp = new Interpreter();

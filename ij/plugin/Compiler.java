@@ -7,6 +7,7 @@ import ij.*;
 import ij.gui.*;
 import ij.io.*;
 import ij.plugin.frame.Editor;
+import ij.plugin.Macro_Runner;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -49,26 +50,25 @@ public class Compiler implements PlugIn, FilenameFilter {
 			runPlugin(name.substring(0, name.length()-1));
 			return;
 		}
-		if (!isJavac()) return;
+		if (!isJavac()) {
+			if (IJ.debugMode) IJ.log("Compiler: "+!isJavac());
+			Object compiler = IJ.runPlugIn("Compiler", dir+name);
+			if (IJ.debugMode) IJ.log("Compiler: "+compiler);
+			if (compiler==null) {
+				boolean ok = Macro_Runner.downloadJar("/download/tools/javac.jar");
+				if (ok)
+					IJ.runPlugIn("Compiler", dir+name);
+			}
+			return;
+		}
 		if (compile(dir+name))
 			runPlugin(name);
 	}
 	 
 	boolean isJavac() {
-		if(compilerTool == null){
-			compilerTool = CompilerTool.getDefault();
-		}
-		
-		if(compilerTool != null){
-			return true;
-		}else{
-			IJ.error("Unable to find javac.jar, which is included with ImageJ\n"
-					+"distributions bundled with Java, in the jre/lib/ext folder.\n"
-					+" \n"
-					+"	 java.home: "+System.getProperty("java.home")
-					);
-			return false;
-		}
+		if (compilerTool==null)
+			compilerTool=CompilerTool.getDefault();
+		return compilerTool!=null;
 	}
 
 	boolean compile(String path) {
@@ -387,15 +387,14 @@ abstract class CompilerTool {
 	}
 
 	public static CompilerTool getDefault() {
+		//Thread.currentThread().setContextClassLoader(IJ.getClassLoader());
 		CompilerTool javax = new JavaxCompilerTool();
-		if (javax.isSupported()) {
+		if (javax.isSupported())
 			return javax;
-		}
 		
 		CompilerTool legacy = new LegacyCompilerTool();
-		if (legacy.isSupported()) {
+		if (legacy.isSupported())
 			return legacy;
-		}
 
 		return null;
 	}

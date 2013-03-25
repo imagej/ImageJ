@@ -23,17 +23,18 @@ public class Transformer implements PlugInFilter {
 
 	public void run(ImageProcessor ip) {
 		Calibration cal = imp.getCalibration();
+		boolean transformOrigin = cal.xOrigin!=0 || cal.yOrigin!=0;
 		if (arg.equals("fliph")) {
 			ip.flipHorizontal();
 			Rectangle r = ip.getRoi();
-			if (r.x==0 && r.y==0 && r.width==ip.getWidth() && r.height==ip.getHeight())
+			if (transformOrigin && r.x==0 && r.y==0 && r.width==ip.getWidth() && r.height==ip.getHeight())
 				cal.xOrigin = imp.getWidth()-1 - cal.xOrigin;
 			return;
 		}
 		if (arg.equals("flipv")) {
 			ip.flipVertical();
 			Rectangle r = ip.getRoi();
-			if (r.x==0 && r.y==0 && r.width==ip.getWidth() && r.height==ip.getHeight())
+			if (transformOrigin && r.x==0 && r.y==0 && r.width==ip.getWidth() && r.height==ip.getHeight())
 	    		cal.yOrigin = imp.getHeight()-1 - cal.yOrigin;
 			return;
 		}
@@ -42,16 +43,20 @@ public class Transformer implements PlugInFilter {
 	    	ImageStack s2 = null;
 			if (arg.equals("right")) {
 	    		s2 = sp.rotateRight();
-	    		double xOrigin = imp.getWidth()-1 - cal.yOrigin;
-	    		double yOrigin = cal.xOrigin;
-	    		cal.xOrigin = xOrigin;
-	    		cal.yOrigin = yOrigin;
+	    		if (transformOrigin) {
+	    			double xOrigin = imp.getWidth()-1 - cal.yOrigin;
+	    			double yOrigin = cal.xOrigin;
+	    			cal.xOrigin = xOrigin;
+	    			cal.yOrigin = yOrigin;
+	    		}
 	    	} else {
 	    		s2 = sp.rotateLeft();
-	    		double xOrigin = cal.yOrigin;
-	    		double yOrigin = imp.getHeight()-1 - cal.xOrigin;
-	    		cal.xOrigin = xOrigin;
-	    		cal.yOrigin = yOrigin;
+	    		if (transformOrigin) {
+	    			double xOrigin = cal.yOrigin;
+	    			double yOrigin = imp.getHeight()-1 - cal.xOrigin;
+	    			cal.xOrigin = xOrigin;
+	    			cal.yOrigin = yOrigin;
+	    		}
 	    	}
 	    	imp.setStack(null, s2);
 	    	double pixelWidth = cal.pixelWidth;

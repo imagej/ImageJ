@@ -5,13 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.47n 21 March 2013</u>
+<li> <u>1.47n 25 March 2013</u>
 <ul>
 <li> Added a <i>Macros&gt;Show Log Window</i> command to the macro editor.
 <li> Thanks to Johannes Schindelin, the eval("script",JavaScriptCode) macro function
 now returns, as a string, the value of the last expression evaluated.
 <li> The ImageListener interface triggers an image updated event
 when an image is renamed.
+<li> The Compile and Run command downloads javac.jar to ImageJ/plugins/jars as needed.
 <li> Added the blurGaussian() and applyMacro()
 methods to the ImageProcessor class
 (<a href="http://imagej.nih.gov/ij/macros/python/Animated_Gaussian_Blur.py">example1</a>,
@@ -30,6 +31,8 @@ to throw an exception if it contained a zero-point PolygonRoi.
 <li> Thanks to Michael Epping, fixed bugs that caused the Flip Horizontally, 
 Flip Vertically,  Rotate Left and Rotate Right commands to not correctly
 transform the image origin.
+<li> Thanks to Rich VanMetter, fixed a bug that caused some DICOM images
+to open slowly.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

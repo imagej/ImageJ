@@ -769,10 +769,13 @@ class DicomDecoder {
 				if (elementLength==2)
 					value = Integer.toString(getShort());
 				else {
-					value = "";
 					int n = elementLength/2;
-					for (int i=0; i<n; i++)
-						value += Integer.toString(getShort())+" ";
+					StringBuilder sb = new StringBuilder();
+					for (int i=0; i<n; i++) {
+						sb.append(Integer.toString(getShort()));
+						sb.append(" ");
+					}
+					value = sb.toString();
 				}
 				break;
 			case IMPLICIT_VR:
