@@ -55,7 +55,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 			Object compiler = IJ.runPlugIn("Compiler", dir+name);
 			if (IJ.debugMode) IJ.log("Compiler: "+compiler);
 			if (compiler==null) {
-				boolean ok = Macro_Runner.downloadJar("/download/tools/javac.jar");
+				boolean ok = Macro_Runner.downloadJar("/plugins/compiler/Compiler.jar");
 				if (ok)
 					IJ.runPlugIn("Compiler", dir+name);
 			}

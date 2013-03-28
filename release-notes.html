@@ -5,14 +5,16 @@
 </head>
 <body>
 
-<li> <u>1.47n 25 March 2013</u>
+<li> <u>1.47n 27 March 2013</u>
 <ul>
 <li> Added a <i>Macros&gt;Show Log Window</i> command to the macro editor.
 <li> Thanks to Johannes Schindelin, the eval("script",JavaScriptCode) macro function
 now returns, as a string, the value of the last expression evaluated.
 <li> The ImageListener interface triggers an image updated event
 when an image is renamed.
-<li> The Compile and Run command downloads javac.jar to ImageJ/plugins/jars as needed.
+<li> The Compile and Run command downloads the
+<a href="http://imagej.nih.gov/ij/plugins/compiler/">Java compiler</a> FIX
+to the plugins/jars folder as needed.
 <li> Added the blurGaussian() and applyMacro()
 methods to the ImageProcessor class
 (<a href="http://imagej.nih.gov/ij/macros/python/Animated_Gaussian_Blur.py">example1</a>,
@@ -33,6 +35,8 @@ Flip Vertically,  Rotate Left and Rotate Right commands to not correctly
 transform the image origin.
 <li> Thanks to Rich VanMetter, fixed a bug that caused some DICOM images
 to open slowly.
+<li> Thanks to Stephen Cody, fixed a bug that caused the "Select" option in
+<i>Image&gt;Adjust&gt;Color Threshold</i> to sometimes not work as expected.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

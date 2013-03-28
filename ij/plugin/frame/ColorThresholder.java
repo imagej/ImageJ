@@ -8,6 +8,8 @@ import java.util.*;
 import java.awt.event.*;
 import ij.measure.*;
 import ij.plugin.*;
+import ij.plugin.filter.ThresholdToSelection;
+
 
 /*	This plugin isolates pixels in an RGB image or stack according to a range of Hue.
 	Original PassBand2 by Bob Dougherty. Some code borrowed from ThresholdAdjuster by Wayne Rasband.
@@ -575,15 +577,16 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	void createSelection() {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null) return;
-		imp.deleteRoi();
+		int saveMode = mode;
 		mode = BLACK_AND_WHITE;
 		apply(imp);
-		IJ.run(imp, "8-bit", "");
-		//if (Prefs.blackBackground)
-		//	IJ.run(imp, "Invert", "");
-		IJ.run(imp, "Create Selection", "");
-		IJ.run(imp, "RGB Color", "");
+		mode = saveMode;
+		ImageProcessor ip = imp.getProcessor().convertToByte(false);
+		int fg = Prefs.blackBackground?255:0;
+		ip.setThreshold(fg, fg, ImageProcessor.NO_LUT_UPDATE);
+		Roi roi = (new ThresholdToSelection()).convert(ip);
 		reset(imp);
+		imp.setRoi(roi);
 	}
 	
 	void generateMacro() {
