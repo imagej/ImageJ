@@ -3701,7 +3701,7 @@ public class Functions implements MacroConstants, Measurements {
 		Method m;
 		try {
 			Class[] argClasses = null;
-			if(args.length>0) {
+			if (args.length>0) {
 				argClasses = new Class[args.length];
 				for(int i=0;i<args.length;i++)
 					argClasses[i] = args[i].getClass();

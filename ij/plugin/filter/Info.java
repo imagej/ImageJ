@@ -1,6 +1,4 @@
 package ij.plugin.filter;
-import java.awt.*;
-import java.util.*;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
@@ -8,6 +6,9 @@ import ij.text.*;
 import ij.measure.*;
 import ij.io.*;
 import ij.util.Tools;
+import java.awt.*;
+import java.util.*;
+import java.lang.reflect.*;
 
 /** This plugin implements the Image/Show Info command. */
 public class Info implements PlugInFilter {
@@ -34,13 +35,47 @@ public class Info implements PlugInFilter {
 			if (label!=null && label.indexOf('\n')>0)
 				infoProperty = label;
 		}
-		if (infoProperty==null)
+		if (infoProperty==null) {
 			infoProperty = (String)imp.getProperty("Info");
+			if (infoProperty==null)
+				infoProperty = getExifData(imp);
+		}
 		String info = getInfo(imp, ip);
 		if (infoProperty!=null)
 			return infoProperty + "\n------------------------\n" + info;
 		else
 			return info;		
+	}
+	
+	private String getExifData(ImagePlus imp) {
+		FileInfo fi = imp.getOriginalFileInfo();
+		if (fi==null)
+			return null;
+		String directory = fi.directory;
+		String name = fi.fileName;
+		if (directory==null)
+			return null;
+		if ((name==null||name.equals("")) && imp.getStack().isVirtual())
+			name = imp.getStack().getSliceLabel(imp.getCurrentSlice());
+		if (name==null || !(name.endsWith("jpg")||name.endsWith("JPG")))
+			return null;
+		String path = directory + name;
+		String metadata = null;
+		try {
+			Class c = IJ.getClassLoader().loadClass("Exif_Reader");
+			if (c==null) return null;
+			String methodName = "getMetadata";
+			Class[] argClasses = new Class[1];
+			argClasses[0] = methodName.getClass();
+			Method m = c.getMethod("getMetadata", argClasses);
+			Object[] args = new Object[1];
+			args[0] = path;
+			Object obj = m.invoke(null, args);
+			metadata = obj!=null?obj.toString():null;
+		} catch(Exception e) {
+			return null;
+		}
+		return metadata;
 	}
 
 	String getInfo(ImagePlus imp, ImageProcessor ip) {
