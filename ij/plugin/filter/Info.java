@@ -75,7 +75,10 @@ public class Info implements PlugInFilter {
 		} catch(Exception e) {
 			return null;
 		}
-		return metadata;
+		if (metadata!=null && !metadata.startsWith("Error:"))
+			return metadata;
+		else
+			return null;
 	}
 
 	String getInfo(ImagePlus imp, ImageProcessor ip) {
