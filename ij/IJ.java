@@ -178,6 +178,7 @@ public class IJ {
 	}
         
 	static Object runUserPlugIn(String commandName, String className, String arg, boolean createNewLoader) {
+		if (debugMode) IJ.log("runUserPlugIn: "+className+" "+arg);
 		if (applet!=null) return null;
 		if (checkForDuplicatePlugins) {
 			// check for duplicate classes and jars in the plugins folder

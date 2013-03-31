@@ -223,7 +223,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int n = overlay.size();
 		if (IJ.debugMode) IJ.log("paint: drawing "+n+" overlay ROIs");
 		int currentImage = imp!=null?imp.getCurrentSlice():-1;
-		if (imp.getStackSize()==1)
+		int stackSize = imp.getStackSize();
+		if (stackSize==1)
 			currentImage = -1;
 		int channel=0, slice=0, frame=0;
 		boolean hyperstack = imp.isHyperStack();
@@ -259,8 +260,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				if (((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame)) || roiManagerShowAllMode)
 					drawRoi(g, roi, drawLabels?i+LIST_OFFSET:-1);
 			} else {
-				int position = roi.getPosition();
-				if (position==0)
+				int position =  stackSize>1?roi.getPosition():0;
+				if (position==0 && stackSize>1)
 					position = getSliceNumber(roi.getName());
 				//IJ.log(position+"  "+currentImage+" "+roiManagerShowAllMode);
 				if (position==0 || position==currentImage || roiManagerShowAllMode)
@@ -1410,7 +1411,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	
 	private boolean activateOverlayRoi(int ox, int oy) {
 		int currentImage = -1;
-		if (imp.getStackSize()>1)
+		int stackSize = imp.getStackSize();
+		if (stackSize>1)
 			currentImage = imp.getCurrentSlice();
 		int channel=0, slice=0, frame=0;
 		boolean hyperstack = imp.isHyperStack();
@@ -1424,6 +1426,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			o = overlay;
 		if (o==null)
 			return false;
+		boolean roiManagerShowAllMode = o==showAllOverlay && !Prefs.showAllSliceOnly;
 		boolean labels = o.getDrawLabels();
 		int sx = screenX(ox);
 		int sy = screenY(oy);
@@ -1435,11 +1438,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					int c = roi.getCPosition();
 					int z = roi.getZPosition();
 					int t = roi.getTPosition();
-					if (!((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame)))
+					if (!((c==0||c==channel)&&(z==0||z==slice)&&(t==0||t==frame) || roiManagerShowAllMode))
 						continue;
 				} else {
-					int position = roi.getPosition();
-					if (!(position==0||position==currentImage))
+					int position = stackSize>1?roi.getPosition():0;
+					if (!(position==0||position==currentImage||roiManagerShowAllMode))
 						continue;
 				}
 				roi.setImage(null);

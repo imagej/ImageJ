@@ -5,34 +5,41 @@
 </head>
 <body>
 
-<li> <u>1.47m 6 March 2013</u>
+<li> <u>1.47n 29 March 2013</u>
 <ul>
-<li> Added the <i>Plugins&gt;Install</i> command.
-<li> Thanks to John Hayes, added the <i>Macros&gt;Evaluate Python</i> command to the macro editor.
-The 8MB
-<a href="http://imagej.nih.gov/ij/plugins/jython">Jython interpreter (FIX)</a>
-is downloaded as needed from the ImageJ website to ImageJ/plugins/jars.
-<li> Scripts in the plugins folder with ".bsh" and ".py" extensions are added to the Plugins menu.
-<li> "Exception" windows now display the ImageJ version, Java version, OS version and memory usage.
-<li> <i>Plugins&gt;Utilities&gt;ImageJ Properties</i> now displays
-values returned by IJ.getDirectory() and all Java properties.
-<li> Improved recording of foreground/background color settings and the "Black background" option.
-<li> Thanks to Wilhelm Burger and Johannes Schindelin, output to System.out and System.err is redirected to the Log window
-when ImageJ is in the debug mode.
-<li> Wilhelm Burger's
-<a href="http://staff.fh-hagenberg.at/burger/imagej/plugins/RedirectSystemStreams/doc/Redirect_System_Streams.html">IjLogStream</a>
-class is built into ImageJ as ij.io.LogStream.
-<li> Thanks to Christophe Deroulers, added the roiManager("save selected", path)
-macro function.
-<li> Added the eval("bsh",script) and eval("python",script) macro functions.
-<li> Thanks to Norbert Vischer, fixed a bug that caused the <i>Edit&gt;Selection&gt;Rotate</i>
-command to not work as expected with rounded rectangle selections.
-<li> Thanks to Antti Niemisto and Gabriel Landini, fixed a bug that caused the "Minimum" thresholding
-method to set the wrong threshold for some unusual histograms.
-<li> Fixed a v1.47d regression that sometimes caused the <i>Process&gt;Binary&gt;Convert to Mask</i>
-command to change the "Black Background" option.
-<li> Thanks to Leon Espinosa, fixed a v1.47j regression that caused ROIs added to the ROI Manager by 
-the particle analyzer to have null names.
+<li> The <i>Image&gt;Show Info</i> command uses the
+<a href="http://imagej.nih.gov/ij/plugins/exif-reader.html">Exif Reader</a> FIX
+plugin (version 2013/03/29 or later) to display Exif data of JPEG images.
+<li> Added a <i>Macros&gt;Show Log Window</i> command to the macro editor.
+<li> Thanks to Johannes Schindelin, the eval("script",JavaScriptCode) macro function
+now returns, as a string, the value of the last expression evaluated.
+<li> The ImageListener interface triggers an image updated event
+when an image is renamed.
+<li> The Compile and Run command downloads the
+<a href="http://imagej.nih.gov/ij/plugins/compiler/">Java compiler</a> FIX
+to the plugins/jars folder as needed.
+<li> Added the blurGaussian() and applyMacro()
+methods to the ImageProcessor class
+(<a href="http://imagej.nih.gov/ij/macros/python/Animated_Gaussian_Blur.py">example1</a>,
+<a href="http://imagej.nih.gov/ij/macros/python/Rotational_Animation.py">example2 FIX</a>).
+<li> Added the Overlay.setPosition(c,z,t) and Overlay.drawLabels() (no overlay???) macro functions (DOCS).
+<li> Fixed a bug that caused the Python print statement to not work as expected.
+<li> Thanks to Julian Cooper, fixed a bug that caused bounding box values displayed
+in the Results window, when measuring lines selections, to always be in pixel units.
+<li> Thanks to Curtis Rueden, fixed a bug that caused the ROI Manager to not restore
+hyperstack ROIs to the current CZT position.
+<li> Thanks to Julian Cooper, fixed a bug that caused vertical lines selections at the
+left image edge or horizontal line selections at the top image edge to not
+be restored correctly.
+<li> Thanks to Dimiter Prodanov, fixed a bug that could cause the ROI Manager
+to throw an exception if it contained a zero-point PolygonRoi.
+<li> Thanks to Michael Epping, fixed bugs that caused the Flip Horizontally, 
+Flip Vertically,  Rotate Left and Rotate Right commands to not correctly
+transform the image origin.
+<li> Thanks to Rich VanMetter, fixed a bug that caused some DICOM images
+to open slowly.
+<li> Thanks to Stephen Cody, fixed a bug that caused the "Select" option in
+<i>Image&gt;Adjust&gt;Color Threshold</i> to sometimes not work as expected.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

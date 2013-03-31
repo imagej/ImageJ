@@ -855,8 +855,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				scale = " (" + IJ.d2s(percent,digits) + "%)";
 			}
 			win.setTitle(title+virtual+global+scale);
-    	}
-    	this.title = title;
+		}
+		boolean titleChanged = !title.equals(this.title);
+		this.title = title;
+		if (titleChanged && listeners.size()>0)
+			notifyListeners(UPDATED);
     }
 
     public int getWidth() {
@@ -1519,7 +1522,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (r.width<=width || r.height<=height || isSmaller(pRoi)) { // will it (mostly) fit in this image?
 				roi = (Roi)pRoi.clone();
 				roi.setImage(this);
-				if (r.x>=width || r.y>=height || (r.x+r.width)<=0 || (r.y+r.height)<=0) // does it need to be moved?
+				if (r.x>=width || r.y>=height || (r.x+r.width)<0 || (r.y+r.height)<0) // does it need to be moved?
 					roi.setLocation((width-r.width)/2, (height-r.height)/2);
 				else if (r.width==width && r.height==height) // is it the same size as the image
 					roi.setLocation(0, 0);
@@ -1979,6 +1982,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
     }
     
+	/** Copies the contents of the current selection, or the entire 
+		image if there is no selection, to the internal clipboard. */
+	public void copy() {
+		copy(false);
+	}
+
 	/** Copies the contents of the current selection to the internal clipboard.
 		Copies the entire image if there is no selection. Also clears
 		the selection if <code>cut</code> is true. */

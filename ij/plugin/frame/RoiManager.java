@@ -291,6 +291,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				return false;
 			}
 		}
+		if ((roi instanceof PolygonRoi) && ((PolygonRoi)roi).getNCoordinates()==0)
+			return false;
 		if (color==null && roi.getStrokeColor()!=null)
 			color = roi.getStrokeColor();
 		else if (color==null && defaultColor!=null)
@@ -422,8 +424,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 						roi.setPosition(0, imp.getSlice(), 0);
 					else if (imp.getNFrames()>1)
 						roi.setPosition(0, 0, imp.getFrame());
-				} else
-					roi.setPosition(slice);
+				} else {
+					if (imp.getStackSize()==1)
+						roi.setPosition(0);
+					else
+						roi.setPosition(slice);
+				}
 			}
 		}
 		return label;
@@ -526,6 +532,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Roi roi = (Roi)rois.get(name);
 		rois.remove(name);
 		roi.setName(name2);
+		int position = getSliceNumber(name2);
+		if (position>0 && roi.getCPosition()==0 && roi.getZPosition()==0 && roi.getTPosition()==0)
+			roi.setPosition(position);
 		rois.put(name2, roi);
 		listModel.setElementAt(name2, index);
 		list.setSelectedIndex(index);
@@ -555,20 +564,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (imp==null || roi==null)
 			return false;
 		if (setSlice) {
+			int c = roi.getCPosition();
 			int z = roi.getZPosition();
 			int t = roi.getTPosition();
 			boolean hyperstack = imp.isHyperStack();
-			if (z>1) {
-				if (hyperstack)
-					imp.setPosition(imp.getC(), z, imp.getT());
-				else
-					imp.setSlice(getSliceNumber(roi, label));
-			} else if (t>0) {
-				if (hyperstack)
-					imp.setPosition(imp.getC(), imp.getZ(), t);
-				else
-					imp.setSlice(getSliceNumber(roi, label));
-			} else {
+			//IJ.log("restore: "+hyperstack+" "+c+" "+z+" "+t);
+			if (hyperstack && (c>0||z>0||t>0))
+				imp.setPosition(c, z, t);
+			else {
 				int n = getSliceNumber(roi, label);
 				if (n>=1 && n<=imp.getStackSize()) {
 					if (hyperstack) {
@@ -599,7 +602,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				roi2.setLocation(r1.x+r1.width/2-r2.width/2, r1.y+r1.height/2-r2.height/2);
 			}
 		}
-		if (r.x>=width || r.y>=height || (r.x+r.width)<=0 || (r.y+r.height)<=0)
+		if (r.x>=width || r.y>=height || (r.x+r.width)<0 || (r.y+r.height)<0)
 			roi2.setLocation((width-r.width)/2, (height-r.height)/2);
 		if (noUpdateMode) {
 			imp.setRoi(roi2, false);
@@ -1672,9 +1675,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				shift = false;
 				alt = false;
 			}
-			ImagePlus imp = WindowManager.getCurrentImage();
-			Roi roi = imp!=null?imp.getRoi():null;
-			if (roi!=null) roi.setPosition(0);
+			setRoiPosition();
 			add(shift, alt);
 		} else if (cmd.equals("add & draw"))
 			addAndDraw(false);
@@ -1825,9 +1826,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Adds the current selection to the ROI Manager, using the
 		specified color (a 6 digit hex string) and line width. */
 	public boolean runCommand(String cmd, String hexColor, double lineWidth) {
-		ImagePlus imp = WindowManager.getCurrentImage();
-		Roi roi = imp!=null?imp.getRoi():null;
-		if (roi!=null) roi.setPosition(0);
+		setRoiPosition();
 		if (hexColor==null && lineWidth==1.0 && (IJ.altKeyDown()&&!Interpreter.isBatchMode()))
 			addRoi(true);
 		else {
@@ -1835,6 +1834,19 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			addRoi(null, false, color, (int)Math.round(lineWidth));
 		}
 		return true;	
+	}
+	
+	private void setRoiPosition() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp==null)
+			return;
+		Roi roi = imp.getRoi();
+		if (roi==null)
+			return;
+		if (imp.isHyperStack())
+			roi.setPosition(imp.getC(), imp.getZ(), imp.getT());
+		else
+			roi.setPosition(imp.getCurrentSlice());
 	}
 	
 	/** Assigns the ROI at the specified index to the current image. */

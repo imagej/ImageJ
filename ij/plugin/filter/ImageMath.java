@@ -24,8 +24,6 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	private static final double defaultGammaValue = 0.5;
 	private static double gammaValue = defaultGammaValue;
 	private static String macro = Prefs.get(MACRO_KEY, "v=v+50*sin(d/10)");
-	private int w, h, w2, h2;
-	private boolean hasX, hasA, hasD, hasGetPixel;
 	private String macro2;
 	private PlugInFilterRunner pfr;
 	private GenericDialog gd;
@@ -266,8 +264,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	// v=sin(x) * sin(y)
 	// v=cos(0.2*x) + sin(0.2*y)
 
-	void applyMacro(ImageProcessor ip) {
-		int PCStart = 23;
+	private void applyMacro(ImageProcessor ip) {
 		if (macro2==null) return;
 		if (macro2.indexOf("=")==-1) {
 			IJ.error("The variable 'v' must be assigned a value (e.g., \"v=255-v\")");
@@ -275,29 +272,41 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 			return;
 		}
 		macro = macro2;
+		ip.setSliceNumber(pfr.getSliceNumber());	
+		boolean showProgress = pfr.getSliceNumber()==1 && !Interpreter.isBatchMode();
+		applyMacro(ip, macro, showProgress);
+		if (pfr.getSliceNumber()==1)
+			ip.resetMinAndMax();
+	}
+
+	public static void applyMacro(ImageProcessor ip, String macro, boolean showProgress) {
+		ImagePlus temp = WindowManager.getTempCurrentImage();
+		WindowManager.setTempCurrentImage(new ImagePlus("",ip));
+		int PCStart = 23;
 		Program pgm = (new Tokenizer()).tokenize(macro);
-		hasX = pgm.hasWord("x");
-		hasA = pgm.hasWord("a");
-		hasD = pgm.hasWord("d");
-		hasGetPixel = pgm.hasWord("getPixel");
-		w = imp.getWidth();
-		h = imp.getHeight();
-		w2 = w/2;
-		h2 = h/2;
+		boolean hasX = pgm.hasWord("x");
+		boolean hasA = pgm.hasWord("a");
+		boolean hasD = pgm.hasWord("d");
+		boolean hasGetPixel = pgm.hasWord("getPixel");
+		int w = ip.getWidth();
+		int h = ip.getHeight();
+		int w2 = w/2;
+		int h2 = h/2;
 		String code =
 			"var v,x,y,z,w,h,d,a;\n"+
 			"function dummy() {}\n"+
-			macro2+";\n"; // code starts at program counter location 'PCStart'
+			macro+";\n"; // code starts at program counter location 'PCStart'
 		Interpreter interp = new Interpreter();
 		interp.run(code, null);
-		if (interp.wasError())
+		if (interp.wasError()) {
+			WindowManager.setTempCurrentImage(temp);
 			return;
+		}
 		Prefs.set(MACRO_KEY, macro);
 		interp.setVariable("w", w);
 		interp.setVariable("h", h);
-		boolean showProgress = pfr.getSliceNumber()==1 && !Interpreter.isBatchMode();
-		interp.setVariable("z", pfr.getSliceNumber()-1);
-		int bitDepth = imp.getBitDepth();
+		interp.setVariable("z", ip.getSliceNumber()-1);
+		int bitDepth = ip.getBitDepth();
 		Rectangle r = ip.getRoi();
 		int inc = r.height/50;
 		if (inc<1) inc = 1;
@@ -317,8 +326,8 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 					v = pixels1[index]&255;
 					interp.setVariable("v", v);
 					if (hasX) interp.setVariable("x", x);
-					if (hasA) interp.setVariable("a", getA(x,y));
-					if (hasD) interp.setVariable("d", getD(x,y));
+					if (hasA) interp.setVariable("a", getA((h-y-1)-h2, x-w2));
+					if (hasD) interp.setVariable("d", getD(x-w2,y-h2));
 					interp.run(PCStart);
 					v2 = (int)interp.getVariable("v");
 					if (v2<0) v2 = 0;
@@ -339,8 +348,8 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 				interp.setVariable("y", y);
 				for (int x=r.x; x<(r.x+r.width); x++) {
 					if (hasX) interp.setVariable("x", x);
-					if (hasA) interp.setVariable("a", getA(x,y));
-					if (hasD) interp.setVariable("d", getD(x,y));
+					if (hasA) interp.setVariable("a", getA((h-y-1)-h2, x-w2));
+					if (hasD) interp.setVariable("d", getD(x-w2,y-h2));
 					index = y*w+x;
 					rgb = pixels1[index];
 					if (hasGetPixel) {
@@ -378,8 +387,8 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 					v = ip.getPixelValue(x, y);
 					interp.setVariable("v", v);
 					if (hasX) interp.setVariable("x", x);
-					if (hasA) interp.setVariable("a", getA(x,y));
-					if (hasD) interp.setVariable("d", getD(x,y));
+					if (hasA) interp.setVariable("a", getA((h-y-1)-h2, x-w2));
+					if (hasD) interp.setVariable("d", getD(x-w2,y-h2));
 					interp.run(PCStart);
 					ip.putPixelValue(x, y, interp.getVariable("v"));
 				}
@@ -387,18 +396,15 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		}
 		if (showProgress)
 			IJ.showProgress(1.0);
-		if (pfr.getSliceNumber()==1)
-			ip.resetMinAndMax();
+		WindowManager.setTempCurrentImage(temp);
 	}
 	
-	final double getD(int x, int y) {
-          double dx = x - w2; 
-          double dy = y - h2;
+	private static final double getD(int dx, int dy) {
           return Math.sqrt(dx*dx + dy*dy);
 	}
 	
-	final double getA(int x, int y) {
-		double angle = Math.atan2((h-y-1)-h2, x-w2);
+	private static final double getA(int y, int x) {
+		double angle = Math.atan2(y, x);
 		if (angle<0) angle += 2*Math.PI;
 		return angle;
 	}
