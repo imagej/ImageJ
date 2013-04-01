@@ -4375,10 +4375,7 @@ public class Functions implements MacroConstants, Measurements {
 		int channel = (int)getFirstArg();
 		int slice = (int)getNextArg();
 		int frame = (int)getLastArg();
-		if (interp.isBatchMode())
-			img.setPositionWithoutUpdate(channel, slice, frame);
-		else
-			img.setPosition(channel, slice, frame);
+		img.setPosition(channel, slice, frame);
 	}
 
 	void setDimensions(ImagePlus img) {

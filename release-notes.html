@@ -5,41 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.47n 30 March 2013</u>
-<ul>
-<li> The <i>Image&gt;Show Info</i> command uses the
-<a href="http://imagej.nih.gov/ij/plugins/exif-reader.html">Exif Reader</a>
-plugin (version 2013/03/29 or later) to display Exif data of JPEG images.
-<li> Added a <i>Macros&gt;Show Log Window</i> command to the macro editor.
-<li> Thanks to Johannes Schindelin, the eval("script",JavaScriptCode) macro function
-now returns, as a string, the value of the last expression evaluated.
-<li> The ImageListener interface triggers an image updated event
-when an image is renamed.
-<li> The Compile and Run command downloads the
-<a href="http://imagej.nih.gov/ij/plugins/compiler/">Java compiler</a>
-to the plugins/jars folder as needed.
-<li> Added the blurGaussian() and applyMacro()
-methods to the ImageProcessor class
-(<a href="http://imagej.nih.gov/ij/macros/python/Animated_Gaussian_Blur.py">example1</a>,
-<a href="http://imagej.nih.gov/ij/macros/python/Rotational_Animation.py">example2</a>).
-<li> Added the Overlay.setPosition(c,z,t) and Overlay.drawLabels() macro functions.
-<li> Fixed a bug that caused the Python print statement to not work as expected.
-<li> Thanks to Julian Cooper, fixed a bug that caused bounding box values displayed
-in the Results window, when measuring lines selections, to always be in pixel units.
-<li> Thanks to Curtis Rueden, fixed a bug that caused the ROI Manager to not restore
-hyperstack ROIs to the current CZT position.
-<li> Thanks to Julian Cooper, fixed a bug that caused vertical lines selections at the
-left image edge or horizontal line selections at the top image edge to not
-be restored correctly.
-<li> Thanks to Dimiter Prodanov, fixed a bug that could cause the ROI Manager
-to throw an exception if it contained a zero-point PolygonRoi.
-<li> Thanks to Michael Epping, fixed bugs that caused the Flip Horizontally, 
-Flip Vertically,  Rotate Left and Rotate Right commands to not correctly
-transform the image origin.
-<li> Thanks to Rich VanMetter, fixed a bug that caused some DICOM images
-to open slowly.
-<li> Thanks to Stephen Cody, fixed a bug that caused the "Select" option in
-<i>Image&gt;Adjust&gt;Color Threshold</i> to sometimes not work as expected.
+<li> <u>1.47o 1 April 2013</u>
+<ul> Updated the ColorProcessor.getChannel() and ColorProcessor.setChannel()
+methods to support the alpha channel
+(<a href="http://imagej.nih.gov/ij/macros/bsh/Open_Modify_Save_Alpha_PNG.bsh">example</a>).
+<li> Added the IJ.getFilePath(dialogTitle) method.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

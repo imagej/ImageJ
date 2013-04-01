@@ -1501,6 +1501,13 @@ public class IJ {
 		}
 	}
 	
+	/** Displays an open file dialog and returns the path to the
+		choosen file, or returns null if the dialog is canceled. */
+	public static String getFilePath(String dialogTitle) {
+		OpenDialog od = new OpenDialog(dialogTitle);
+		return od.getPath();
+	}
+	
 	private static String getIJDir() {
 		String path = Menus.getPlugInsPath();
 		if (path==null) return null;
