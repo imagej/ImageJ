@@ -1702,7 +1702,8 @@ public class IJ {
 			imp = getImage();
 		if (path==null || path.equals(""))
 			return (new FileSaver(imp)).saveAsTiff();
-		path = updateExtension(path, ".tif");
+		if (!path.endsWith(".tiff"))
+			path = updateExtension(path, ".tif");
 		FileSaver fs = new FileSaver(imp);
 		boolean ok;
 		if (imp.getStackSize()>1)
