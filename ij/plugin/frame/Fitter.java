@@ -255,6 +255,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 				if (s.length()>100) break;
 				textArea.append(s+"\n");
 			}
+			r.close();
 		}
 		catch (Exception e) {
 			IJ.error(e.getMessage());
