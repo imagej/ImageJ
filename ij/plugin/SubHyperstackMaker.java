@@ -14,7 +14,6 @@ import java.util.List;
  */
 public class SubHyperstackMaker implements PlugIn {
 
-	@Override
 	public void run(final String arg) {
 		// verify input image is appropriate
 		final ImagePlus input = WindowManager.getCurrentImage();

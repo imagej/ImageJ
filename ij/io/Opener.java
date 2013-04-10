@@ -822,9 +822,11 @@ public class Opener {
 		ImagePlus imp = null;
 		try {
 			ZipInputStream zis = new ZipInputStream(new FileInputStream(path));
-			if (zis==null) return null;
 			ZipEntry entry = zis.getNextEntry();
-			if (entry==null) return null;
+			if (entry==null) {
+				zis.close();
+				return null;
+			}
 			String name = entry.getName();
 			if (name.endsWith(".roi")) {
 				zis.close();
@@ -846,6 +848,7 @@ public class Opener {
 				IJ.error("This ZIP archive does not appear to contain a \nTIFF (\".tif\") or DICOM (\".dcm\") file, or ROIs (\".roi\").");
 				return null;
 			}
+			zis.close();
 		} catch (Exception e) {
 			IJ.error("ZipDecoder", ""+e);
 			return null;
