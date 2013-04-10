@@ -822,7 +822,6 @@ public class Opener {
 		ImagePlus imp = null;
 		try {
 			ZipInputStream zis = new ZipInputStream(new FileInputStream(path));
-			if (zis==null) return null;
 			ZipEntry entry = zis.getNextEntry();
 			if (entry==null) return null;
 			String name = entry.getName();
