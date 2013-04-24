@@ -178,14 +178,16 @@ public class Projector implements PlugIn {
 		if (allTimePoints)
 			showMicroProgress = false;
 		int count = 1;
-		for (int c = 0; c < channels; c++) {
-			for (int f = f1; f <=f2; f++) {
+		for (int c=0; c<channels; c++) {
+			for (int f=f1; f<=f2; f++) {
 				if (allTimePoints)
 					IJ.showProgress(count++, channels*imp.getNFrames());
 				sliceInterval = originalSliceInterval;
 				ImagePlus impD = (new Duplicator()).run(imp, c+1, c+1, 1, imp.getNSlices(), f+1, f+1);
 				impD.setCalibration(imp.getCalibration());
 				if (interpolate && sliceInterval>1.0) {
+					if (impD.getBitDepth()==16 || impD.getBitDepth()==32)
+						IJ.run(impD, "8-bit", "");
 					impD = zScale(impD, false);
 					if (impD==null) return;
 					sliceInterval = 1.0;
@@ -217,7 +219,7 @@ public class Projector implements PlugIn {
 		if (imp.getNChannels()>1)
 			IJ.run( buildImp, 
 				"Stack to Hyperstack...", "order=xyztc channels=" + finalChannels + " slices=" + finalSlices + " frames=" + finalFrames + " display=Composite");
-		buildImp =  WindowManager.getCurrentImage();
+		//buildImp =  WindowManager.getCurrentImage();
 		if (imp.isComposite()) {
 			CompositeImage buildImp2 = new CompositeImage(buildImp, 0);
 			((CompositeImage)buildImp2).copyLuts(imp);

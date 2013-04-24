@@ -215,9 +215,11 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 				DirectoryChooser.setDefaultDirectory(path);
 			} else {
 				for (int k=0; k<names.length; k++) {
-					IJ.redirectErrorMessages();
-					if (!names[k].startsWith("."))
+					if (!names[k].startsWith(".")) {
+						IJ.redirectErrorMessages(true);
 						(new Opener()).open(path + names[k]);
+						IJ.redirectErrorMessages(false);
+					}
 				}
 			}
 			IJ.register(DragAndDrop.class);

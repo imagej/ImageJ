@@ -2042,7 +2042,16 @@ public abstract class ImageProcessor implements Cloneable {
 
 	/** Returns the histogram of the image or ROI. Returns
 		a luminosity histogram for RGB images and null
-		for float images. */
+		for float images.
+		<p>
+		For 8-bit and 16-bit images, returns an array with one entry for each possible
+		value that a pixel can have, from 0 to 255 (8-bit image) or 0-65535 (16-bit image).
+		Thus, the array size is 256 or 65536, and the bin width in uncalibrated units is 1.
+		<p>
+		For RGB images, the brightness is evaluated using the color weights (which would result in a
+		float value) and rounded to an int. This gives 256 bins. FloatProcessor.getHistogram is not
+		implemented (returns null).
+	*/
 	public abstract int[] getHistogram();
 	
 	/** Erodes the image or ROI using a 3x3 maximum filter. Requires 8-bit or RGB image. */

@@ -105,10 +105,11 @@ public class FolderOpener implements PlugIn {
 		Overlay overlay = null;
 		try {
 			for (int i=0; i<list.length; i++) {
-				IJ.redirectErrorMessages();
 				Opener opener = new Opener();
 				opener.setSilentMode(true);
+				IJ.redirectErrorMessages(true);
 				ImagePlus imp = opener.openImage(directory, list[i]);
+				IJ.redirectErrorMessages(false);
 				if (imp!=null) {
 					width = imp.getWidth();
 					height = imp.getHeight();
@@ -177,12 +178,13 @@ public class FolderOpener implements PlugIn {
 					continue;
 				Opener opener = new Opener();
 				opener.setSilentMode(true);
-				IJ.redirectErrorMessages();
+				IJ.redirectErrorMessages(true);
 				if ("RoiSet.zip".equals(list[i])) {
 					IJ.open(directory+list[i]);
 					imp = null;
 				} else if (!openAsVirtualStack||stack==null)
 					imp = opener.openImage(directory, list[i]);
+				IJ.redirectErrorMessages(false);
 				if (imp!=null && stack==null) {
 					width = imp.getWidth();
 					height = imp.getHeight();

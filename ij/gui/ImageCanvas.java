@@ -1445,6 +1445,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					if (!(position==0||position==currentImage||roiManagerShowAllMode))
 						continue;
 				}
+				if (!IJ.altKeyDown() && roi.getType()==Roi.COMPOSITE
+				&& roi.getBounds().width==imp.getWidth() && roi.getBounds().height==imp.getHeight())
+					return false;
 				roi.setImage(null);
 				imp.setRoi(roi);
 				roi.handleMouseDown(sx, sy);

@@ -18,7 +18,9 @@ import java.io.*;
 			if (list[i].startsWith(".")) continue;
 			String path = dir + list[i];
 			IJ.showProgress(i+1, list.length);
+			IJ.redirectErrorMessages(true);
 			ImagePlus imp = !path.endsWith("/")?IJ.openImage(path):null;
+			IJ.redirectErrorMessages(false);
 			if (imp!=null) {
 				IJ.run(imp, "Measure", "");
 				imp.close();

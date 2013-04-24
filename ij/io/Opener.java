@@ -24,6 +24,7 @@ import javax.swing.*;
 import javax.swing.filechooser.*;
 import java.awt.event.KeyEvent;
 import javax.imageio.ImageIO;
+import java.lang.reflect.Method;
 
 /** Opens tiff (and tiff stacks), dicom, fits, pgm, jpeg, bmp or
 	gif images, and look-up tables, using a file open dialog or a path.
@@ -458,7 +459,10 @@ public class Opener {
 		InputStream in = uc.getInputStream();
 		ZipInputStream zis = new ZipInputStream(in);
 		ZipEntry entry = zis.getNextEntry();
-		if (entry==null) return null;
+		if (entry==null) {
+			zis.close();
+			return null;
+		}
 		String name = entry.getName();
 		if (!(name.endsWith(".tif")||name.endsWith(".dcm")))
 			throw new IOException("This ZIP archive does not appear to contain a .tif or .dcm file\n"+name);
@@ -822,9 +826,11 @@ public class Opener {
 		ImagePlus imp = null;
 		try {
 			ZipInputStream zis = new ZipInputStream(new FileInputStream(path));
-			if (zis==null) return null;
 			ZipEntry entry = zis.getNextEntry();
-			if (entry==null) return null;
+			if (entry==null) {
+				zis.close();
+				return null;
+			}
 			String name = entry.getName();
 			if (name.endsWith(".roi")) {
 				zis.close();
@@ -846,6 +852,7 @@ public class Opener {
 				IJ.error("This ZIP archive does not appear to contain a \nTIFF (\".tif\") or DICOM (\".dcm\") file, or ROIs (\".roi\").");
 				return null;
 			}
+			zis.close();
 		} catch (Exception e) {
 			IJ.error("ZipDecoder", ""+e);
 			return null;
@@ -949,6 +956,31 @@ public class Opener {
 		return roi;
 	}
 	
+	/** Opens an image using the Bio-Formats plugin. */
+	public static ImagePlus openUsingBioFormats(String path) {
+		try {
+			Class c = IJ.getClassLoader().loadClass("loci.plugins.BF");
+			if (c==null)
+				return null;
+			String methodName = "openImagePlus";
+			Class[] argClasses = new Class[1];
+			argClasses[0] = methodName.getClass();
+			Method m = c.getMethod(methodName, argClasses);
+			Object[] args = new Object[1];
+			args[0] = path;
+			Object obj = m.invoke(null, args);
+			ImagePlus[] images = obj!=null?(ImagePlus[])obj:null;
+			if (images==null || images.length==0)
+				return null;
+			ImagePlus imp = images[0];
+			if (imp.getStackSize()==3 && imp.getNChannels()==3 && imp.getBitDepth()==8)
+				imp = imp.flatten();
+			return imp;
+		} catch(Exception e) {
+		}
+		return null;
+	}
+
 	/** Opens a tab or comma delimited text file in the Results window. */
 	public static void openResultsTable(String path) {
 		try {
@@ -959,6 +991,29 @@ public class Opener {
 		}
 	}
 	
+	/** Opens a tab or comma delimited text file. */
+	public static void openTable(String path) {
+		String name = "";
+		if (path==null || path.equals("")) {
+			OpenDialog od = new OpenDialog("Open Table...");
+			String dir = od.getDirectory();
+			name = od.getFileName();
+			if (name==null)
+				return;
+			else
+				path = dir+name;
+		}
+		try {
+			ResultsTable rt = ResultsTable.open(path);
+			if (rt!=null) {
+				rt.showRowNumbers(false);
+				rt.show(name);
+			}
+		} catch(IOException e) {
+			IJ.error("Open Table", e.getMessage());
+		}
+	}
+
 	public static String getFileFormat(String path) {
 		if (!((new File(path)).exists()))
 			return("not found");

@@ -5,15 +5,36 @@
 </head>
 <body>
 
-<li> <u>1.47o 1 April 2013</u>
+<li> <u>1.47o 24 April 2013</u>
+<li> Results tables can now contain columns of string values.
+<li> Added a "Open images using Bio-Formats" option to the
+<i>Process&gt;Batch&gt;Convert</i> dialog box.
 <li> Thanks to Norbert Vischer, <i>File&gt;Save As&gt;PNG</i> saves 4-image
 8-bit stacks or hyperstacks as PNG with alpha if the label of the fourth image is "Alpha".
-<ul> Updated the ColorProcessor.getChannel() and ColorProcessor.setChannel()
+<li> Thanks to Wilhelm Burger, added the ImagePlus.setAntialiasRendering(boolean) method,
+which enable/disable use of antialiasing by the ImagePlus.flatten() method and the
+<i>Image&gt;Overlay&gt;Flatten</i> command.
+<li> Updated the ColorProcessor.getChannel() and ColorProcessor.setChannel()
 methods to support the alpha channel
 (<a href="http://imagej.nih.gov/ij/macros/bsh/Open_Modify_Save_Alpha_PNG.bsh">example</a>).
+<li> Updated the setResult() macro function to work with string values and
+added the getResultString() function.
+<li> Added the addStringValue(), getStringValue() and setStringValue() 
+methods to the ResultsTable class.
 <li> Added the IJ.getFilePath(dialogTitle) method.
+<li> Johannes Schindelin added missing close() calls that caused Eclipse's resource leak warnings.
+<li> Johannes Schindelin made the ImageJ source compatible with Java 1.5 again by removing
+an illegal @override annotation from SubHyperstackMaker.java.
 <li> Thanks to Tom Kazimiers, fixed a v1.47f regression that caused the saveAs("tif",path) macro
-function to convert ".tiff" extensions to ".tif".
+function to convert ".tif" extensions to ".tif".
+<li> Thanks to Curtis Rueden, fixed a bug the caused <i>Image&gt;Stacks&gt;Make Montage</i> 
+to not work as expected with composite color images.
+<li> Fixed a bug that caused <i>Image&gt;Stacks&gt;3D Project</i> to throw an exception
+when working with 16 or 32 bit hyperstacks with the "Interpolate" option enabled.
+<li> Fixed a bug the caused <i>Edit&gtSelection&gt;Fit Spline</i> to not work
+correctly with polygon selections.
+<li> Thanks to Philippe Carl, fixed a bug that sometimes caused the 
+ImagePlus.setProcessor() method to not work as expected with stacks.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

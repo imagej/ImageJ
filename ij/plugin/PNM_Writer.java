@@ -83,7 +83,7 @@ public class PNM_Writer implements PlugIn {
 					}
 				output.write(pixels, 0, pixels.length);
 			}
-			output.flush();
+			output.close();
 		} catch(IOException e) {
 			IJ.handleException(e);
 		}

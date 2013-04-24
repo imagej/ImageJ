@@ -768,30 +768,23 @@ public class PolygonRoi extends Roi {
 			ySpline = new float[splinePoints];
 		}
 		int nNodes = nPoints;
-		if (type==POLYGON) {
-			nNodes++;
-			if (nNodes>=xpf.length)
-				enlargeArrays();
-			xpf[nNodes-1] = xpf[0];
-			ypf[nNodes-1] = ypf[0];
-		}
 		float[] xindex = new float[nNodes];
 		for (int i=0; i<nNodes; i++)
 			xindex[i] = i;
-		SplineFitter sfx = new SplineFitter(xindex, xpf, nNodes);
-		SplineFitter sfy = new SplineFitter(xindex, ypf, nNodes);
+		SplineFitter sfx = new SplineFitter(xindex, xpf, nNodes, !isLine());
+		SplineFitter sfy = new SplineFitter(xindex, ypf, nNodes, !isLine());
 	   
 		// Evaluate the splines at all points
-		double scale = (double)(nNodes-1)/(splinePoints-1);
+		double scale = (double)((isLine()?nNodes:nNodes+1)-1)/(splinePoints-1);
 		float xs=0f, ys=0f;
 		float xmin=Float.MAX_VALUE, xmax=-xmin, ymin=xmin, ymax=xmax;
 		for(int i=0; i<splinePoints; i++) {
 			double xvalue = i*scale;
-			xs = (float)sfx.evalSpline(xindex, xpf, nNodes, xvalue);
+			xs = (float)sfx.evalSpline(xvalue);
 			if (xs<xmin) xmin=xs;
 			if (xs>xmax) xmax=xs;
 			xSpline[i] = xs;
-			ys = (float)sfy.evalSpline(xindex, ypf, nNodes, xvalue);
+			ys = (float)sfy.evalSpline(xvalue);
 			if (ys<ymin) ymin=ys;
 			if (ys>ymax) ymax=ys;
 			ySpline[i] = ys;

@@ -39,7 +39,7 @@ public class MontageMaker implements PlugIn {
 				ci.setMode(CompositeImage.COLOR);
 			ImageStack stack = new ImageStack(imp.getWidth(), imp.getHeight());
 			for (int c=1; c<=channels; c++) {
-				imp.setPositionWithoutUpdate(c, imp.getSlice(), imp.getFrame());
+				imp.setPosition(c, imp.getSlice(), imp.getFrame());
 				Image img = imp.getImage();
 				stack.addSlice(null, new ColorProcessor(img));
 			}

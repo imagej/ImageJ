@@ -268,6 +268,7 @@ public class Functions implements MacroConstants, Measurements {
 			case LIST: str = doList(); break;
 			case DEBUG: str = debug(); break;
 			case IJ_CALL: str = ijCall(); break;
+			case GET_RESULT_STRING: str = getResultString(); break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -1086,6 +1087,29 @@ public class Functions implements MacroConstants, Measurements {
    			return rt.getValueAsDouble(col, row);
 	}
 
+	String getResultString() {
+		interp.getLeftParen();
+		String column = getString();
+		int row = -1;
+		if (interp.nextToken()==',') {
+			interp.getComma();
+			row = (int)interp.getExpression();
+		}
+		interp.getRightParen();
+		ResultsTable rt = Analyzer.getResultsTable();
+		int counter = rt.getCounter();
+		if (counter==0)
+			interp.error("\"Results\" table empty");
+		if (row==-1) row = counter-1;
+		if (row<0 || row>=counter)
+			interp.error("Row ("+row+") out of range");
+		int col = rt.getColumnIndex(column);
+		if (rt.columnExists(col))
+   			return rt.getStringValue(col, row);
+		else
+			return "null";
+	}
+
 	String getResultLabel() {
 		int row = (int)getArg();
 		ResultsTable rt = Analyzer.getResultsTable();
@@ -1105,9 +1129,10 @@ public class Functions implements MacroConstants, Measurements {
 		int row = (int)interp.getExpression();
 		interp.getComma();
 		double value = 0.0;
-		String label = null;
-		if (column.equals("Label"))
-			label = getString();
+		String stringValue = null;
+		boolean isLabel = column.equals("Label");
+		if (isStringArg() || isLabel)
+			stringValue = getString();
 		else
 			value = interp.getExpression();		
 		interp.getRightParen();
@@ -1117,9 +1142,12 @@ public class Functions implements MacroConstants, Measurements {
 		if (row==rt.getCounter())
 			rt.incrementCounter();
 		try {
-			if (label!=null)
-				rt.setLabel(label, row);
-			else
+			if (stringValue!=null) {
+				if (isLabel)
+					rt.setLabel(stringValue, row);
+				else
+					rt.setStringValue(column, row, stringValue);
+			} else
 				rt.setValue(column, row, value);
 			resultsPending = true;
 		} catch (Exception e) {

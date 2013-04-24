@@ -92,7 +92,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	private Overlay overlay;
 	private boolean hideOverlay;
 	private static int default16bitDisplayRange;
-
+	private boolean antialiasRendering = true;
+	
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {
@@ -501,20 +502,22 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		setStack(stack2, imp.getNChannels(), imp.getNSlices(), imp.getNFrames());
 	}
 	
-	/** Replaces the ImageProcessor with the one specified and updates the display. */
+	/** Replaces the ImageProcessor with the one specified and updates
+		 the display. With stacks, the ImageProcessor must be the same type 
+		 as the stack and must have the same width and height. */
 	public void setProcessor(ImageProcessor ip) {
 		setProcessor(null, ip);
 	}
 
 	/** Replaces the ImageProcessor with the one specified and updates the display.
-		Set 'title' to null to leave the image title unchanged. */
+		With stacks, the ImageProcessor must be the same type as the stack and must
+		have the same width and height.  Set 'title' to null to leave the title unchanged. */
 	public void setProcessor(String title, ImageProcessor ip) {
         if (ip==null || ip.getPixels()==null)
             throw new IllegalArgumentException("ip null or ip.getPixels() null");
-        int stackSize = getStackSize();
-        if (stackSize>1 && (ip.getWidth()!=width || ip.getHeight()!=height))
-            throw new IllegalArgumentException("ip wrong size");
-		if (stackSize<=1) {
+        if (getStackSize()>1)
+        	stack.setProcessor(ip, getCurrentSlice());
+        else {
 			stack = null;
 			setCurrentSlice(1);
 		}
@@ -531,7 +534,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
         int stackSize = 1;
 		if (stack!=null) {
 			stackSize = stack.getSize();
-			if (currentSlice>stackSize) setCurrentSlice(stackSize);
+			if (currentSlice>stackSize)
+				setCurrentSlice(stackSize);
 		}
 		img = null;
 		boolean dimensionsChanged = width>0 && height>0 && (width!=ip.getWidth() || height!=ip.getHeight());
@@ -1199,7 +1203,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		this is a single image. */
 	public int getCurrentSlice() {
 		if (currentSlice<1) setCurrentSlice(1);
-		if (currentSlice>getStackSize()) setCurrentSlice(getStackSize());
+		if (currentSlice>getStackSize())
+			setCurrentSlice(getStackSize());
 		return currentSlice;
 	}
 	
@@ -2225,9 +2230,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (ic!=null)
 			ic2.setShowAllList(ic.getShowAllList());
 		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		Graphics g = bi.getGraphics();
-		g.drawImage(getImage(), 0, 0, null);
-		ic2.paint(g);
+		Graphics2D g = (Graphics2D)bi.getGraphics();
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
+			antialiasRendering?RenderingHints.VALUE_ANTIALIAS_ON:RenderingHints.VALUE_ANTIALIAS_OFF);
+        g.drawImage(getImage(), 0, 0, null);
+        ic2.paint(g);
 		imp2.flatteningCanvas = null;
 		if (Recorder.record) Recorder.recordCall("imp = IJ.getImage().flatten();");
 		return new ImagePlus(title, new ColorProcessor(bi));
@@ -2293,6 +2300,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	public boolean getHideOverlay() {
 		return hideOverlay;
+	}
+	
+	/** Enable/disable use of antialiasing by the flatten() method. */
+	public void setAntialiasRendering(boolean antialiasRendering) {
+		this.antialiasRendering = antialiasRendering;
 	}
 
 	/** Returns a shallow copy of this ImagePlus. */

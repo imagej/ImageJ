@@ -276,6 +276,18 @@ public class ImageStack {
 		return ip;
 	}
 	
+	/** Assigns the pixel array of an ImageProcessor to the
+		 specified slice, were 1<=n<=nslices. */
+	public void setProcessor(ImageProcessor ip, int n) {
+		if (n<1 || n>nSlices)
+			throw new IllegalArgumentException(outOfRange+n);
+		if (type!=UNKNOWN && type!=getType(ip))
+			throw new IllegalArgumentException("Wrong type for this stack");
+		if (ip.getWidth()!=width || ip.getHeight()!=height)
+			throw new IllegalArgumentException("Wrong dimensions for this stack");
+		stack[n-1] = ip.getPixels();
+	}
+
 	/** Assigns a new color model to this stack. */
 	public void setColorModel(ColorModel cm) {
 		this.cm = cm;
@@ -562,6 +574,17 @@ public class ImageStack {
 			case RGB: return 24;
 		}
 		return 0;
+	}
+	
+	private int getType(ImageProcessor ip) {
+		int bitDepth = ip.getBitDepth();
+		switch (bitDepth) {
+			case 8: return BYTE;
+			case 16: return SHORT;
+			case 32: return FLOAT;
+			case 24: return RGB;
+		}
+		return UNKNOWN;
 	}
 
 	/** Creates a new ImageStack.

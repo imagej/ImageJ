@@ -251,10 +251,11 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 			BufferedReader r = new BufferedReader(new FileReader(directory+name));
 			while (true) {
 				String s=r.readLine();
-				if (s==null) break;
-				if (s.length()>100) break;
+				if (s==null ||(s.length()>100))
+					break;
 				textArea.append(s+"\n");
 			}
+			r.close();
 		}
 		catch (Exception e) {
 			IJ.error(e.getMessage());

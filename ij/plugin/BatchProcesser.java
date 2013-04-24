@@ -170,7 +170,9 @@ import java.util.Vector;
 			if (list[i].startsWith(".")||list[i].endsWith(".avi")||list[i].endsWith(".AVI"))
 				continue;
 			IJ.showProgress(i+1, list.length);
+			IJ.redirectErrorMessages(true);
 			ImagePlus imp = IJ.openImage(path);
+			IJ.redirectErrorMessages(false);
 			if (imp==null) {
 				IJ.log("IJ.openImage() returned null: "+path);
 				continue;
@@ -381,10 +383,12 @@ import java.util.Vector;
 			return;
 		}
 		ImagePlus imp = null;
+		IJ.redirectErrorMessages(true);
 		if (virtualStack!=null)
 			imp = getVirtualStackImage();
 		else
 			imp = getFolderImage();
+		IJ.redirectErrorMessages(false);
 		if (imp==null) {
 			if (!errorDisplayed)
 				IJ.log("IJ.openImage() returned null");
