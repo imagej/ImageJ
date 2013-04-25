@@ -502,22 +502,22 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		setStack(stack2, imp.getNChannels(), imp.getNSlices(), imp.getNFrames());
 	}
 	
-	/** Replaces the ImageProcessor with the one specified and updates
-		 the display. With stacks, the ImageProcessor must be the same type 
-		 as the stack and must have the same width and height. */
+	/** Replaces the ImageProcessor with the one specified and updates the
+		 display. With stacks, the ImageProcessor must be the same type as the
+		 other images in the stack and it must be the same width and height. */
 	public void setProcessor(ImageProcessor ip) {
 		setProcessor(null, ip);
 	}
 
-	/** Replaces the ImageProcessor with the one specified and updates the display.
-		With stacks, the ImageProcessor must be the same type as the stack and must
-		have the same width and height.  Set 'title' to null to leave the title unchanged. */
+	/** Replaces the ImageProcessor with the one specified and updates the display. With
+		stacks, the ImageProcessor must be the same type as other images in the stack and
+		it must be the same width and height.  Set 'title' to null to leave the title unchanged. */
 	public void setProcessor(String title, ImageProcessor ip) {
-        if (ip==null || ip.getPixels()==null)
-            throw new IllegalArgumentException("ip null or ip.getPixels() null");
-        if (getStackSize()>1)
-        	stack.setProcessor(ip, getCurrentSlice());
-        else {
+		if (ip==null || ip.getPixels()==null)
+			throw new IllegalArgumentException("ip null or ip.getPixels() null");
+		if (getStackSize()>1)
+			stack.setProcessor(ip, getCurrentSlice());
+		else {
 			stack = null;
 			setCurrentSlice(1);
 		}
@@ -2233,8 +2233,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		Graphics2D g = (Graphics2D)bi.getGraphics();
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
 			antialiasRendering?RenderingHints.VALUE_ANTIALIAS_ON:RenderingHints.VALUE_ANTIALIAS_OFF);
-        g.drawImage(getImage(), 0, 0, null);
-        ic2.paint(g);
+		g.drawImage(getImage(), 0, 0, null);
+		ic2.paint(g);
 		imp2.flatteningCanvas = null;
 		if (Recorder.record) Recorder.recordCall("imp = IJ.getImage().flatten();");
 		return new ImagePlus(title, new ColorProcessor(bi));

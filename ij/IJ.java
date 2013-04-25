@@ -1874,14 +1874,12 @@ public class IJ {
 		escapePressed = false;
 	}
 	
-	/** Causes IJ.error() output to be temporarily redirected to the "Log" window. Also
-		causes the Bio-Formats plugin to open images without a displaying a dialog box. */
+	/** Causes IJ.error() output to be temporarily redirected to the "Log" window. */
 	public static void redirectErrorMessages() {
 		redirectErrorMessages = true;
 	}
 	
-	/** Set 'true' and IJ.error() output will be temporarily redirected to the "Log" window. Also
-		causes the Bio-Formats plugin to open images without a displaying a dialog box.*/
+	/** Set 'true' and IJ.error() output will be temporarily redirected to the "Log" window. */
 	public static void redirectErrorMessages(boolean redirect) {
 		redirectErrorMessages = redirect;
 	}

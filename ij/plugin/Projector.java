@@ -186,8 +186,6 @@ public class Projector implements PlugIn {
 				ImagePlus impD = (new Duplicator()).run(imp, c+1, c+1, 1, imp.getNSlices(), f+1, f+1);
 				impD.setCalibration(imp.getCalibration());
 				if (interpolate && sliceInterval>1.0) {
-					if (impD.getBitDepth()==16 || impD.getBitDepth()==32)
-						IJ.run(impD, "8-bit", "");
 					impD = zScale(impD, false);
 					if (impD==null) return;
 					sliceInterval = 1.0;
@@ -799,6 +797,8 @@ public class Projector implements PlugIn {
 	} // end doOneProjectionZ()
 
 	private ImagePlus zScale(ImagePlus imp, boolean showProgress) {
+		if (imp.getBitDepth()==16 || imp.getBitDepth()==32)
+			IJ.run(imp, "8-bit", "");
 		IJ.showStatus("Z Scaling...");
 		ImageStack stack1 = imp.getStack();
 		int depth1 = stack1.getSize();
