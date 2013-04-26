@@ -956,13 +956,14 @@ public class Opener {
 		return roi;
 	}
 	
-	/** Opens an image using the Bio-Formats plugin. */
+	/** Opens an image file using the Bio-Formats plugin. */
 	public static ImagePlus openUsingBioFormats(String path) {
+		String className = "loci.plugins.BF";
+		String methodName = "openImagePlus";
 		try {
-			Class c = IJ.getClassLoader().loadClass("loci.plugins.BF");
+			Class c = IJ.getClassLoader().loadClass(className);
 			if (c==null)
 				return null;
-			String methodName = "openImagePlus";
 			Class[] argClasses = new Class[1];
 			argClasses[0] = methodName.getClass();
 			Method m = c.getMethod(methodName, argClasses);

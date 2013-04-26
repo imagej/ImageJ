@@ -876,6 +876,11 @@ public class ResultsTable implements Cloneable {
 				}
 			}
 		}
+		if (rt!=null) {
+			int p = Analyzer.getPrecision();
+			if (p>3)
+				rt.setPrecision(p);
+		}
 		return rt;
 	}
 	

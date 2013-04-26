@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.47o 25 April 2013</u>
+<li> <u>1.47o 26 April 2013</u>
 <li> Results tables can now contain columns of string values.
 <li> Added the <i>File&gt;Import&gt;Table</i> command.
 <li> Added a "Open images using Bio-Formats" option to the
@@ -23,7 +23,7 @@ added the getResultString() function.
 <li> Added the addStringValue(), getStringValue() and setStringValue() 
 methods to the ResultsTable class.
 <li> Added the IJ.getFilePath(dialogTitle) method.
-<li> Added the Opener.openUsingBioFormats(path) Opener.openTable(path)methods.
+<li> Added the Opener.openUsingBioFormats(path) and Opener.openTable(path) methods.
 <li> Johannes Schindelin added missing close() calls that caused Eclipse's resource leak warnings.
 <li> Johannes Schindelin made the ImageJ source compatible with Java 1.5 again by removing
 an illegal @override annotation from SubHyperstackMaker.java.
@@ -40,6 +40,8 @@ ImagePlus.setProcessor() method to not work as expected with stacks.
 <li> Thanks to Fabrice Cordelieres, fixed a bug that sometimes caused the
 <I>Image&gtStacks&gt;3D Project</i> command to throw an exception
 when working with 16-bit stacks with the "Interpolate" option enabled.
+<li> Thanks to Jan Eglinger, fixed a bug that caused the precision of imported
+results to always be set to 3 decimal places.
 
 </ul>
 
