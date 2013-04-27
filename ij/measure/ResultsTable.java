@@ -57,8 +57,13 @@ public class ResultsTable implements Cloneable {
 	private Hashtable stringColumns;
 
 
-	/** Constructs an empty ResultsTable with the counter=0 and no columns. */
+	/** Constructs an empty ResultsTable with the counter=0, no columns
+		and the precision set to 3 or the "Decimal places" value in
+		Analyze/Set Measurements if that value is higher than 3. */
 	public ResultsTable() {
+		int p = Analyzer.getPrecision();
+		if (p>precision)
+			setPrecision(p);
 	}
 	
 	/** Returns the ResultsTable used by the Measure command. This
@@ -152,14 +157,14 @@ public class ResultsTable implements Cloneable {
 	
 	/** Adds a string value to the end of the given column. If the column
 		does not exist, it is created.  Counter must be >0. */
-	public void addStringValue(String column, String value) {
+	public void addValue(String column, String value) {
 		if (column==null)
 			throw new IllegalArgumentException("Column is null");
 		int index = getColumnIndex(column);
 		if (index==COLUMN_NOT_FOUND)
 			index = getFreeColumn(column);
 		addValue(index, Double.NaN);
-		setStringValue(column, getCounter()-1, value);
+		setValue(column, getCounter()-1, value);
 		keep[index] = true;
 	}
 
@@ -417,18 +422,18 @@ public class ResultsTable implements Cloneable {
 		not exist, it is created. When adding columns, 
 		<code>show()</code> must be called to update the 
 		window that displays the table.*/
-	public void setStringValue(String column, int row, String value) {
+	public void setValue(String column, int row, String value) {
 		if (column==null)
 			throw new IllegalArgumentException("Column is null");
 		int col = getColumnIndex(column);
 		if (col==COLUMN_NOT_FOUND)
 			col = getFreeColumn(column);
-		setStringValue(col, row, value);
+		setValue(col, row, value);
 	}
 
 	/** Sets the string value of the given column and row, where
 		where 0&lt;=column&lt;=(lastRow+1 and 0&lt;=row&lt;=counter. */
-	public void setStringValue(int column, int row, String value) {
+	public void setValue(int column, int row, String value) {
 		setValue(column, row, Double.NaN);
 		if (stringColumns==null)
 			stringColumns = new Hashtable();
@@ -570,9 +575,10 @@ public class ResultsTable implements Cloneable {
 				headings[i] = defaultHeadings[i];
 	}
 
-	/** Sets the number of digits to the right of decimal point. */
-	public void setPrecision(int precision) {
-		this.precision = precision;
+	/** Sets the decimal places (digits to the right of decimal point)
+		that are used when this table is displayed. */
+	public void setPrecision(int decimalPlaces) {
+		this.precision = decimalPlaces;
 	}
 	
 	public void showRowNumbers(boolean showNumbers) {
@@ -870,16 +876,11 @@ public class ResultsTable implements Cloneable {
 				else if (j<headings.length) {
 					double value = Tools.parseDouble(items[j]);
 					if (Double.isNaN(value))
-						rt.addStringValue(headings[j], items[j]);
+						rt.addValue(headings[j], items[j]);
 					else
 						rt.addValue(headings[j], value);
 				}
 			}
-		}
-		if (rt!=null) {
-			int p = Analyzer.getPrecision();
-			if (p>3)
-				rt.setPrecision(p);
 		}
 		return rt;
 	}

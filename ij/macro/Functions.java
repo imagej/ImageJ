@@ -1146,7 +1146,7 @@ public class Functions implements MacroConstants, Measurements {
 				if (isLabel)
 					rt.setLabel(stringValue, row);
 				else
-					rt.setStringValue(column, row, stringValue);
+					rt.setValue(column, row, stringValue);
 			} else
 				rt.setValue(column, row, value);
 			resultsPending = true;
