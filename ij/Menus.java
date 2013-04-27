@@ -85,7 +85,8 @@ public class Menus {
 		
 	Menus(ImageJ ijInstance, Applet appletInstance) {
 		ij = ijInstance;
-		isFiji = ij!=null && "Fiji".equals(ij.getTitle());
+		String title = ij!=null?ij.getTitle():null;
+		isFiji = title!=null && title.contains("Fiji");
 		applet = appletInstance;
 		instance = this;
 	}

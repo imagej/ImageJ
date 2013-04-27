@@ -65,6 +65,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 	public Analyzer(ImagePlus imp, int measurements, ResultsTable rt) {
 		this.imp = imp;
 		this.measurements = measurements;
+		if (rt!=null)
+			rt = new ResultsTable();
+		rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
 		this.rt = rt;
 	}
 	
@@ -881,6 +884,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			tp.clear();
 		if (rt==null)
 			rt = new ResultsTable();
+		rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
 		systemRT = rt;
 		summarized = false;
 		umeans = null;

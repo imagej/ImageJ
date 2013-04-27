@@ -41,6 +41,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	private static boolean bbSet;
 
 	public Recorder() {
+		this(true);	
+	}
+
+	public Recorder(boolean showFrame) {
 		super("Recorder");
 		if (instance!=null) {
 			WindowManager.toFront(instance);
@@ -78,7 +82,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		add("Center", textArea);
 		pack();
 		GUI.center(this);
-		show();
+		if (showFrame)
+			show();
 		IJ.register(Recorder.class);
 		fgColorSet = bgColorSet = false;
 		bbSet = false;

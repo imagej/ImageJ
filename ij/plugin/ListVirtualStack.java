@@ -140,7 +140,7 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 	public ImageProcessor getProcessor(int n) {
 		if (n<1 || n>nImages)
 			throw new IllegalArgumentException("Argument out of range: "+n);
-		IJ.redirectErrorMessages();
+		IJ.redirectErrorMessages(true);
 		String url = list[n-1];
 		ImagePlus imp = null;
 		if (url.length()>0)
@@ -159,6 +159,7 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 			}
 			if (ip.getWidth()!=imageWidth || ip.getHeight()!=imageHeight)
 			ip = ip.resize(imageWidth, imageHeight);
+			IJ.redirectErrorMessages(false);
 			return ip;
 		} else {
 				ImageProcessor ip = null;
@@ -168,6 +169,7 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 					case 24:  ip=new ColorProcessor(imageWidth,imageHeight); break;
 					case 32: ip=new FloatProcessor(imageWidth,imageHeight); break;
 				}
+			IJ.redirectErrorMessages(false);
 			return ip;
 		}
 	 }

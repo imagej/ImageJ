@@ -22,6 +22,11 @@ import javax.swing.filechooser.*;
 	private static String lastDir, lastName;
 
 	
+	/** Displays a file open dialog with 'title' as the title. */
+	public OpenDialog(String title) {
+		this(title, null);
+	}
+
 	/** Displays a file open dialog with 'title' as
 		the title. If 'path' is non-blank, it is
 		used and the dialog is not displayed. Uses
@@ -190,6 +195,14 @@ import javax.swing.filechooser.*;
 		return name;
 	}
 		
+	/** Returns the selected file path or null if the dialog was canceled. */
+	public String getPath() {
+		if (getFileName()==null)
+			return null;
+		else return
+			getDirectory() + getFileName();
+	}
+
 	/** Returns the current working directory, which may be null. The
 		returned string always ends with the separator character ("/" or "\").*/
 	public static String getDefaultDirectory() {

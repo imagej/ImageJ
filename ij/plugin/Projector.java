@@ -178,8 +178,8 @@ public class Projector implements PlugIn {
 		if (allTimePoints)
 			showMicroProgress = false;
 		int count = 1;
-		for (int c = 0; c < channels; c++) {
-			for (int f = f1; f <=f2; f++) {
+		for (int c=0; c<channels; c++) {
+			for (int f=f1; f<=f2; f++) {
 				if (allTimePoints)
 					IJ.showProgress(count++, channels*imp.getNFrames());
 				sliceInterval = originalSliceInterval;
@@ -217,7 +217,7 @@ public class Projector implements PlugIn {
 		if (imp.getNChannels()>1)
 			IJ.run( buildImp, 
 				"Stack to Hyperstack...", "order=xyztc channels=" + finalChannels + " slices=" + finalSlices + " frames=" + finalFrames + " display=Composite");
-		buildImp =  WindowManager.getCurrentImage();
+		//buildImp =  WindowManager.getCurrentImage();
 		if (imp.isComposite()) {
 			CompositeImage buildImp2 = new CompositeImage(buildImp, 0);
 			((CompositeImage)buildImp2).copyLuts(imp);
@@ -797,6 +797,8 @@ public class Projector implements PlugIn {
 	} // end doOneProjectionZ()
 
 	private ImagePlus zScale(ImagePlus imp, boolean showProgress) {
+		if (imp.getBitDepth()==16 || imp.getBitDepth()==32)
+			IJ.run(imp, "8-bit", "");
 		IJ.showStatus("Z Scaling...");
 		ImageStack stack1 = imp.getStack();
 		int depth1 = stack1.getSize();

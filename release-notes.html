@@ -5,42 +5,47 @@
 </head>
 <body>
 
-<li> <u>1.47n 29 March 2013</u>
-<ul>
-<li> The <i>Image&gt;Show Info</i> command uses the
-<a href="http://imagej.nih.gov/ij/plugins/exif-reader.html">Exif Reader</a> FIX
-plugin (version 2013/03/29 or later) to display Exif data of JPEG images.
-<li> Added a <i>Macros&gt;Show Log Window</i> command to the macro editor.
-<li> Thanks to Johannes Schindelin, the eval("script",JavaScriptCode) macro function
-now returns, as a string, the value of the last expression evaluated.
-<li> The ImageListener interface triggers an image updated event
-when an image is renamed.
-<li> The Compile and Run command downloads the
-<a href="http://imagej.nih.gov/ij/plugins/compiler/">Java compiler</a> FIX
-to the plugins/jars folder as needed.
-<li> Added the blurGaussian() and applyMacro()
-methods to the ImageProcessor class
-(<a href="http://imagej.nih.gov/ij/macros/python/Animated_Gaussian_Blur.py">example1</a>,
-<a href="http://imagej.nih.gov/ij/macros/python/Rotational_Animation.py">example2 FIX</a>).
-<li> Added the Overlay.setPosition(c,z,t) and Overlay.drawLabels() (no overlay???) macro functions (DOCS).
-<li> Fixed a bug that caused the Python print statement to not work as expected.
-<li> Thanks to Julian Cooper, fixed a bug that caused bounding box values displayed
-in the Results window, when measuring lines selections, to always be in pixel units.
-<li> Thanks to Curtis Rueden, fixed a bug that caused the ROI Manager to not restore
-hyperstack ROIs to the current CZT position.
-<li> Thanks to Julian Cooper, fixed a bug that caused vertical lines selections at the
-left image edge or horizontal line selections at the top image edge to not
-be restored correctly.
-<li> Thanks to Dimiter Prodanov, fixed a bug that could cause the ROI Manager
-to throw an exception if it contained a zero-point PolygonRoi.
-<li> Thanks to Michael Epping, fixed bugs that caused the Flip Horizontally, 
-Flip Vertically,  Rotate Left and Rotate Right commands to not correctly
-transform the image origin.
-<li> Thanks to Rich VanMetter, fixed a bug that caused some DICOM images
-to open slowly.
-<li> Thanks to Stephen Cody, fixed a bug that caused the "Select" option in
-<i>Image&gt;Adjust&gt;Color Threshold</i> to sometimes not work as expected.
-</ul> 
+<li> <u>1.47o 26 April 2013</u>
+<li> Results tables can now contain columns of string values.
+<li> Added the <i>File&gt;Import&gt;Table</i> command.
+<li> Added a "Open images using Bio-Formats" option to the
+<i>Process&gt;Batch&gt;Convert</i> dialog box.
+<li> Thanks to Norbert Vischer, <i>File&gt;Save As&gt;PNG</i> saves 4-image
+8-bit stacks or hyperstacks as PNG with alpha if the label of the fourth image is "Alpha".
+<li> Thanks to Wilhelm Burger, added the ImagePlus.setAntialiasRendering(boolean) method,
+which enable/disable use of antialiasing by the ImagePlus.flatten() method and the
+<i>Image&gt;Overlay&gt;Flatten</i> command.
+<li> Updated the ColorProcessor.getChannel() and ColorProcessor.setChannel()
+methods to support the alpha channel
+(<a href="http://imagej.nih.gov/ij/macros/bsh/Open_Modify_Save_Alpha_PNG.bsh">example</a>).
+<li> Updated the setResult() macro function to work with string values and
+added the getResultString() function.
+<a href="http://imagej.nih.gov/ij/macros/examples/NonNumericResultsTable.txt">example</a>.
+<li> Updated ResultsTable addValue() and setStringValue() methods to work
+with string values and added the getStringValue() method
+<a href="http://imagej.nih.gov/ij/macros/js/NonNumericResultsTable.js">example</a>.
+<li> Added the IJ.getFilePath(dialogTitle) method.
+<li> Added the Opener.openUsingBioFormats(path) and Opener.openTable(path) methods.
+<li> Johannes Schindelin added missing close() calls that caused Eclipse's resource leak warnings.
+<li> Johannes Schindelin made the ImageJ source compatible with Java 1.5 again by removing
+an illegal @override annotation from SubHyperstackMaker.java.
+<li> Thanks to Tom Kazimiers, fixed a v1.47f regression that caused the saveAs("tif",path) macro
+function to convert ".tif" extensions to ".tif".
+<li> Thanks to Curtis Rueden, fixed a bug the caused <i>Image&gt;Stacks&gt;Make Montage</i> 
+to not work as expected with composite color images.
+<li> Fixed a bug that caused <i>Image&gt;Stacks&gt;3D Project</i> to throw an exception
+when working with 16 or 32 bit hyperstacks with the "Interpolate" option enabled.
+<li> Fixed a bug the caused <i>Edit&gtSelection&gt;Fit Spline</i> to not work
+correctly with polygon selections.
+<li> Thanks to Philippe Carl, fixed a bug that sometimes caused the 
+ImagePlus.setProcessor() method to not work as expected with stacks.
+<li> Thanks to Fabrice Cordelieres, fixed a bug that sometimes caused the
+<I>Image&gtStacks&gt;3D Project</i> command to throw an exception
+when working with 16-bit stacks with the "Interpolate" option enabled.
+<li> Thanks to Jan Eglinger, fixed a bug that caused the precision of imported
+results to always be set to 3 decimal places.
+
+</ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
 </body>

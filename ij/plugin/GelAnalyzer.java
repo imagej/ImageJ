@@ -122,7 +122,7 @@ public class GelAnalyzer implements PlugIn {
 		}
 
 		if (nLanes==0) {
-			show("You must first use the \"Outline First Lane\" command.");
+			show("You must first use the \"Select First Lane\" command.");
 			return;
 		}
 		if (arg.equals("next")) {

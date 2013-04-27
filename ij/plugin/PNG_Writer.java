@@ -41,7 +41,9 @@ public class PNG_Writer implements PlugIn {
     }
 
 	public void writeImage(ImagePlus imp, String path, int transparentIndex) throws Exception {
-		if (transparentIndex>=0 && transparentIndex<=255 && imp.getBitDepth()==8)
+		if (imp.getStackSize()==4 && imp.getBitDepth()==8 && "alpha".equalsIgnoreCase(imp.getStack().getSliceLabel(4)))
+			writeFourChannelsWithAlpha(imp, path);
+		else if (transparentIndex>=0 && transparentIndex<=255 && imp.getBitDepth()==8)
 			writeImageWithTransparency(imp, path, transparentIndex);
 		else if (imp.getOverlay()!=null && !imp.getHideOverlay())
 			ImageIO.write(imp.flatten().getBufferedImage(), "png", new File(path));
@@ -49,6 +51,19 @@ public class PNG_Writer implements PlugIn {
 			write16gs(imp, path);
         else
 			ImageIO.write(imp.getBufferedImage(), "png", new File(path));
+	}
+	
+	private void writeFourChannelsWithAlpha(ImagePlus imp, String path) throws Exception {
+		ImageStack stack = imp.getStack();
+		int w=imp.getWidth(), h=imp.getHeight();
+		ImagePlus imp2 = new ImagePlus("", new ColorProcessor(w,h));
+		ColorProcessor cp = (ColorProcessor)imp2.getProcessor();
+		for (int channel=1; channel<=4; channel++)
+			cp.setChannel(channel, (ByteProcessor)stack.getProcessor(channel));
+		BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		WritableRaster raster = bi.getRaster();
+		raster.setDataElements(0, 0, w, h, cp.getPixels());
+		ImageIO.write(bi, "png", new File(path));
 	}
     
 	void writeImageWithTransparency(ImagePlus imp, String path, int transparentIndex) throws Exception {

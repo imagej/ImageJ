@@ -19,6 +19,8 @@ public class SimpleCommands implements PlugIn {
 			search();
 		else if (arg.equals("import")) 
 			Opener.openResultsTable("");
+		else if (arg.equals("table")) 
+			Opener.openTable("");
 		else if (arg.equals("rename"))
 			rename();
 		else if (arg.equals("reset"))

@@ -5,7 +5,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.46
+# Version 1.47
 
 # Commands installed in the right-click popup menu
 # Overridden in StartupMacros
@@ -36,11 +36,12 @@ import03="LUT... ",ij.plugin.LutLoader
 import04="Text Image... ",ij.plugin.TextReader
 import05="Text File... ",ij.plugin.TextFileReader
 import06="Results... ",ij.plugin.SimpleCommands("import")
-import07="URL...",ij.plugin.URLOpener
-import08="Stack From List...",ij.plugin.ListVirtualStack
-import09="TIFF Virtual Stack...",ij.plugin.FileInfoVirtualStack
-import10="AVI...",ij.plugin.AVI_Reader
-import11="XY Coordinates... ",ij.plugin.XY_Reader
+import07="Table... ",ij.plugin.SimpleCommands("table")
+import08="URL...",ij.plugin.URLOpener
+import09="Stack From List...",ij.plugin.ListVirtualStack
+import10="TIFF Virtual Stack...",ij.plugin.FileInfoVirtualStack
+import11="AVI...",ij.plugin.AVI_Reader
+import12="XY Coordinates... ",ij.plugin.XY_Reader
 #import08="TWAIN...",ij.plugin.twain.Twain
 #import09="Capture Video...",QT_Capture
 #import10="QuickTime Movie...",Movie_Opener

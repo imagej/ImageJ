@@ -51,7 +51,7 @@ public class IJ {
 	private static boolean memMessageDisplayed;
 	private static long maxMemory;
 	private static boolean escapePressed;
-	private static boolean redirectErrorMessages, redirectErrorMessages2;
+	private static boolean redirectErrorMessages;
 	private static boolean suppressPluginNotFoundError;
 	private static Hashtable commandTable;
 	private static Vector eventListeners = new Vector();
@@ -208,7 +208,7 @@ public class IJ {
 		}
 		catch (InstantiationException e) {error("Unable to load plugin (ins)");}
 		catch (IllegalAccessException e) {error("Unable to load plugin, possibly \nbecause it is not public.");}
-		if (redirectErrorMessages && !"HandleExtraFileTypes".equals(className))
+		if (thePlugIn!=null && !"HandleExtraFileTypes".equals(className))
  			redirectErrorMessages = false;
 		suppressPluginNotFoundError = false;
 		return thePlugIn;
@@ -596,7 +596,7 @@ public class IJ {
 		String title2 = title!=null?title:"ImageJ";
 		boolean abortMacro = title!=null;
 		lastErrorMessage = msg;
-		if (redirectErrorMessages || redirectErrorMessages2) {
+		if (redirectErrorMessages) {
 			IJ.log(title2 + ": " + msg);
 			if (abortMacro && (title.equals("Opener")||title.equals("Open URL")||title.equals("DicomDecoder")))
 				abortMacro = false;
@@ -1501,6 +1501,13 @@ public class IJ {
 		}
 	}
 	
+	/** Displays an open file dialog and returns the path to the
+		choosen file, or returns null if the dialog is canceled. */
+	public static String getFilePath(String dialogTitle) {
+		OpenDialog od = new OpenDialog(dialogTitle);
+		return od.getPath();
+	}
+	
 	private static String getIJDir() {
 		String path = Menus.getPlugInsPath();
 		if (path==null) return null;
@@ -1695,7 +1702,8 @@ public class IJ {
 			imp = getImage();
 		if (path==null || path.equals(""))
 			return (new FileSaver(imp)).saveAsTiff();
-		path = updateExtension(path, ".tif");
+		if (!path.endsWith(".tiff"))
+			path = updateExtension(path, ".tif");
 		FileSaver fs = new FileSaver(imp);
 		boolean ok;
 		if (imp.getStackSize()>1)
@@ -1871,14 +1879,14 @@ public class IJ {
 		redirectErrorMessages = true;
 	}
 	
-	/** Set 'true' and IJ.error() output will be redirected to the "Log" window. */
+	/** Set 'true' and IJ.error() output will be temporarily redirected to the "Log" window. */
 	public static void redirectErrorMessages(boolean redirect) {
-		redirectErrorMessages2 = redirect;
+		redirectErrorMessages = redirect;
 	}
 
-	/** Returns the state of the  'redirectErrorMessages' flag. The File/Import/Image Sequence command sets this flag.*/
+	/** Returns the state of the  'redirectErrorMessages' flag, which is set by File/Import/Image Sequence. */
 	public static boolean redirectingErrorMessages() {
-		return redirectErrorMessages || redirectErrorMessages2;
+		return redirectErrorMessages;
 	}
 
 	/** Temporarily suppress "plugin not found" errors. */

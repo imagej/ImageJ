@@ -24,7 +24,7 @@ public class ColorProcessor extends ImageProcessor {
 	// to use 0.299, 0.587 and 0.114.
 	private static double rWeight=1d/3d, gWeight=1d/3d,	bWeight=1d/3d; 
 
-	/**Creates a ColorProcessor from an AWT Image. */
+	/**Creates a ColorProcessor from an AWT Image or BufferedImage. */
 	public ColorProcessor(Image img) {
 		width = img.getWidth(null);
 		height = img.getHeight(null);
@@ -481,34 +481,35 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 
-	/** Returns the specified plane (1=red, 2=green, 3=blue) as a byte array. */
+	/** Returns the specified plane (1=red, 2=green, 3=blue, 4=alpha) as a byte array. */
 	public byte[] getChannel(int channel) {
 		ByteProcessor bp = getChannel(channel, null);
 		return (byte[])bp.getPixels();
 	}
 	
-	/** Returns the specified plane (1=red, 2=green, 3=blue) as a ByteProcessor. */
+	/** Returns the specified plane (1=red, 2=green, 3=blue, 4=alpha) as a ByteProcessor. */
 	public ByteProcessor getChannel(int channel, ByteProcessor bp) {
 		int size = width*height;
 		if (bp == null || bp.getWidth()!=width || bp.getHeight()!=height)
 			bp = new ByteProcessor(width, height);
 		byte[] bPixels = (byte[])bp.getPixels();
 		int shift = 16 - 8*(channel-1);
-		int byteMask = 255<<shift;
+		if (channel==4) shift=24;
 		for (int i=0; i<size; i++)
-			bPixels[i] = (byte)((pixels[i]&byteMask)>>shift);
+			bPixels[i] = (byte)(pixels[i]>>shift);
 		return bp;
 	}
 	
 	/** Sets the pixels of one color channel from a ByteProcessor.
-	*  @param channelNumber   Determines the color channel, 1=red, 2=green, 3=blue
-	*  @param bp              The ByteProcessor where the image data are read from.
+	*  @param channelNumber  Determines the color channel, 1=red, 2=green, 3=blue, 4=alpha
+	*  @param bp  The ByteProcessor where the image data are read from.
 	*/
 	public void setChannel(int channel, ByteProcessor bp) {
 		byte[] bPixels = (byte[])bp.getPixels();
 		int value;
 		int size = width*height;
 		int shift = 16 - 8*(channel-1);
+		if (channel==4) shift=24;
 		int resetMask = 0xffffffff^(255<<shift);
 		for (int i=0; i<size; i++)
 			pixels[i] = (pixels[i]&resetMask) | ((bPixels[i]&255)<<shift);
@@ -830,7 +831,8 @@ public class ColorProcessor extends ImageProcessor {
 			for (int xs=0; xs<roiWidth; xs++)
 				pixels2[offset1++] = pixels[offset2++];
 		}
-		return new ColorProcessor(roiWidth, roiHeight, pixels2);
+		ColorProcessor cp2 = new ColorProcessor(roiWidth, roiHeight, pixels2);
+		return cp2;
 	}
 	
 	/** Returns a duplicate of this image. */ 
