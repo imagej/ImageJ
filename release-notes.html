@@ -5,45 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.47o 26 April 2013</u>
+<li> <u>1.47o 27 April 2013</u>
 <ul>
-<li> Results tables can now contain columns of strings
-(<a href="http://imagej.nih.gov/ij/macros/examples/NonNumericResultsTable.txt">example</a>).
-<li> Added the <i>File&gt;Import&gt;Table</i> command.
-<li> Added an "Open images using Bio-Formats" option to
-<i>Process&gt;Batch&gt;Convert</i>.
-<li> Thanks to Norbert Vischer, <i>File&gt;Save As&gt;PNG</i> saves 4-image
-8-bit stacks or hyperstacks as PNG with alpha if the label of the fourth image is "Alpha".
-<li> Thanks to Wilhelm Burger, added the ImagePlus.setAntialiasRendering(boolean) method,
-which enables/disables use of antialiasing by the ImagePlus.flatten() method and the
-<i>Image&gt;Overlay&gt;Flatten</i> command.
-<li> Updated the ColorProcessor.getChannel() and ColorProcessor.setChannel()
-methods to support the alpha channel
-(<a href="http://imagej.nih.gov/ij/macros/bsh/Open_Modify_Save_Alpha_PNG.bsh">example</a>).
-<li> Updated the setResult() macro function to work with string values and
-added the getResultString() function
-(<a href="http://imagej.nih.gov/ij/macros/examples/NonNumericResultsTable.txt">example</a>).
-<li> Updated the ResultsTable addValue() and setStringValue() methods to work
-with string values and added the getStringValue() method
-(<a href="http://imagej.nih.gov/ij/macros/js/NonNumericResultsTable.js">example</a>).
-<li> Added the IJ.getFilePath(dialogTitle) method.
-<li> Added the Opener.openUsingBioFormats(path) and Opener.openTable(path) methods.
-<li> Johannes Schindelin added missing close() calls that caused Eclipse's resource leak warnings.
-<li> Johannes Schindelin made the ImageJ source compatible with Java 1.5 again by removing
-an illegal @override annotation from SubHyperstackMaker.java.
-<li> Thanks to Tom Kazimiers, fixed a v1.47f regression that caused the saveAs("tif",path) macro
-function to convert ".tiff" extensions to ".tif".
-<li> Thanks to Curtis Rueden, fixed a bug the caused <i>Image&gt;Stacks&gt;Make Montage</i> 
-to not work as expected with composite color images.
-<li> Fixed a bug the caused <i>Edit&gtSelection&gt;Fit Spline</i> to not work
-correctly with polygon selections.
-<li> Thanks to Philippe Carl, fixed a bug that sometimes caused the 
-ImagePlus.setProcessor() method to not work as expected with stacks.
-<li> Thanks to Fabrice Cordelieres, fixed a bug that caused the
-<I>Image&gtStacks&gt;3D Project</i> command to throw an exception
-when working with 16 or 32 bit stacks and the "Interpolate" option was enabled.
-<li> Thanks to Jan Eglinger, fixed a bug that caused the precision of imported
-results to always be set to 3 decimal places.
+<li> Fixed a bug that caused the <i>Edit&gt;Selection&gt;Rotate</i> command
+to not work with composite selections.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

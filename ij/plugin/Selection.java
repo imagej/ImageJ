@@ -17,7 +17,6 @@ public class Selection implements PlugIn, Measurements {
 	private ImagePlus imp;
 	private float[] kernel = {1f, 1f, 1f, 1f, 1f};
 	private float[] kernel3 = {1f, 1f, 1f};
-	private static String angle = "15"; // degrees
 	private static int bandSize = 15; // pixels
 	private static boolean nonScalable;
 	private static Color linec, fillc;
@@ -63,48 +62,34 @@ public class Selection implements PlugIn, Measurements {
 			makeBand(imp);
 		else if (arg.equals("tobox"))
 			toBoundingBox(imp); 
-		else
-			runMacro(arg, imp);
+		else if (arg.equals("rotate"))
+			rotate(imp); 
+		else if (arg.equals("enlarge"))
+			enlarge(imp); 
 	}
 	
-	void runMacro(String arg, ImagePlus imp) {
-		boolean rotate = arg.equals("rotate");
+	private void rotate(ImagePlus imp) {
 		Roi roi = imp.getRoi();
-		if (rotate && IJ.macroRunning()) {
+		if (IJ.macroRunning()) {
 			String options = Macro.getOptions();
 			if (options!=null && (options.indexOf("grid=")!=-1||options.indexOf("interpolat")!=-1)) {
 				IJ.run("Rotate... ", options); // run Image>Transform>Rotate
 				return;
 			}
 		}
-		if (roi==null) {
-			noRoi(rotate?"Rotate":"Enlarge");
-			return;
-		}
-		double dangle = Tools.parseDouble(angle);
-		if (Double.isNaN(dangle)) {
-			dangle = 15;
-			angle = ""+dangle;
-		}
-		if (rotate && (roi instanceof ImageRoi)) {
-			dangle = IJ.getNumber("Angle (degrees):", dangle);
-			((ImageRoi)roi).rotate(dangle);
-			imp.draw();
-			angle = ""+dangle;
-			return;
-		}
-		Undo.setup(Undo.ROI, imp);
-		roi = (Roi)roi.clone();
-		if (rotate) {
-			String value = IJ.runMacroFile("ij.jar:RotateSelection", angle);
-			Roi roi2 = imp.getRoi();
-			transferProperties(roi, roi2);
-			imp.setRoi(roi2);
-			if (value!=null) angle = value;		
-		} else if (arg.equals("enlarge"))
-			(new RoiEnlarger()).run("");
+		(new RoiRotator()).run("");
 	}
 	
+	private void enlarge(ImagePlus imp) {
+		Roi roi = imp.getRoi();
+		if (roi!=null) {
+			Undo.setup(Undo.ROI, imp);
+			roi = (Roi)roi.clone();
+			(new RoiEnlarger()).run("");
+		} else
+			noRoi("Enlarge");
+	}
+
 	/*
 	if selection is closed shape, create a circle with the same area and centroid, otherwise use<br>
 	the Pratt method to fit a circle to the points that define the line or multi-point selection.<br>

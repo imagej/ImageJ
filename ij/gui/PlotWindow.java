@@ -452,7 +452,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	/** Draws a new plot in this window. */
 	public void drawPlot(Plot plot) {
 		this.plot = plot;
-		imp.setProcessor(null, plot.getProcessor());	
+		if (imp!=null)
+			imp.setProcessor(null, plot.getProcessor());	
 	}
 	
 	/** Called once when ImageJ quits. */
