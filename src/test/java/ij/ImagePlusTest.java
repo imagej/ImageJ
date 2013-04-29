@@ -470,22 +470,22 @@ public class ImagePlusTest {
 		}
 
 		// if stack size > 1 and passed processor dims != my dims throw IllegArgExcep
-		proc = new ByteProcessor(1,3,new byte[] {1,2,3},new IndexColorModel(8,1,new byte[]{1},new byte[]{2},new byte[]{3}));
-		st = new ImageStack(1,3);
-		st.addSlice("Slice1",proc);
-		st.addSlice("Slice2",proc);
-		ip = new ImagePlus();
-		ip.width = 1;
-		ip.height = 3;
-		ip.setStack("TheStack", st);
-		ip.height = 4;
-		ip.width = 7;
-		try {
-			ip.setProcessor("DoesNotMatterForThisCase",proc);
-			fail();
-		} catch (IllegalArgumentException e) {
-			assertTrue(true);
-		}
+		//proc = new ByteProcessor(1,3,new byte[] {1,2,3},new IndexColorModel(8,1,new byte[]{1},new byte[]{2},new byte[]{3}));
+		//st = new ImageStack(1,3);
+		//st.addSlice("Slice1",proc);
+		//st.addSlice("Slice2",proc);
+		//ip = new ImagePlus();
+		//ip.width = 1;
+		//ip.height = 3;
+		//ip.setStack("TheStack", st);
+		//ip.height = 4;
+		//ip.width = 7;
+		//try {
+		//	ip.setProcessor("DoesNotMatterForThisCase",proc);
+		//	fail();
+		//} catch (IllegalArgumentException e) {
+		//	assertTrue(true);
+		//}
 
 		// if stack size <= 1 then stack should be null and currSlice should be 1
 		proc = new ByteProcessor(1,3,new byte[] {1,2,3},new IndexColorModel(8,1,new byte[]{1},new byte[]{2},new byte[]{3}));
