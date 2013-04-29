@@ -347,10 +347,9 @@ public class ResultsTable implements Cloneable {
 		return getValueAsDouble(col,row);
 	}
 
-	/** Returns the string value of the given column and row, where
-		column must be less than or equal the value returned by
-		getLastColumn() and row must be greater than or equal
-		zero and less than the value returned by getCounter(). */
+	/** Returns the string value of the given column and row,
+		where row must be greater than or equal zero
+		and less than the value returned by getCounter(). */
 	public String getStringValue(String column, int row) {
 		if (row<0 || row>=getCounter())
 			throw new IllegalArgumentException("Row out of range");
