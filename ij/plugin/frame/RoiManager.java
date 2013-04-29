@@ -526,10 +526,16 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int index = list.getSelectedIndex();
 		if (index<0)
 			return error("Exactly one item in the list must be selected.");
-		String name = (String) listModel.getElementAt(index);
-		if (name2==null) name2 = promptForName(name);
-		if (name2==null) return false;
+		String name = (String)listModel.getElementAt(index);
+		if (name2==null)
+			name2 = promptForName(name);
+		else
+			name2 = getUniqueName(name2);
+		if (name2==null)
+			return false;
 		Roi roi = (Roi)rois.get(name);
+		if (roi==null)
+			return false;
 		rois.remove(name);
 		roi.setName(name2);
 		int position = getSliceNumber(name2);
@@ -710,21 +716,21 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 
 	String getUniqueName(String name) {
-			String name2 = name;
-			int n = 1;
-			Roi roi2 = (Roi)rois.get(name2);
-			while (roi2!=null) {
-				roi2 = (Roi)rois.get(name2);
-				if (roi2!=null) {
-					int lastDash = name2.lastIndexOf("-");
-					if (lastDash!=-1 && name2.length()-lastDash<5)
-						name2 = name2.substring(0, lastDash);
-					name2 = name2+"-"+n;
-					n++;
-				}
-				roi2 = (Roi)rois.get(name2);
+		String name2 = name;
+		int n = 1;
+		Roi roi2 = (Roi)rois.get(name2);
+		while (roi2!=null) {
+			roi2 = (Roi)rois.get(name2);
+			if (roi2!=null) {
+				int lastDash = name2.lastIndexOf("-");
+				if (lastDash!=-1 && name2.length()-lastDash<5)
+					name2 = name2.substring(0, lastDash);
+				name2 = name2+"-"+n;
+				n++;
 			}
-			return name2;
+			roi2 = (Roi)rois.get(name2);
+		}
+		return name2;
 	}
 	
 	boolean save() {
@@ -1289,8 +1295,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			indexes = getAllIndexes();
 		ShapeRoi s1=null, s2=null;
 		for (int i=0; i<indexes.length; i++) {
-			Roi roi = (Roi)rois.get((String) listModel.getElementAt(indexes[i]));
-			if (!roi.isArea()) continue;
+			Roi roi = (Roi)rois.get((String)listModel.getElementAt(indexes[i]));
+			if (roi==null || !roi.isArea())
+				continue;
 			if (s1==null) {
 				if (roi instanceof ShapeRoi)
 					s1 = (ShapeRoi)roi.clone();
