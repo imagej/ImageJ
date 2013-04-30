@@ -47,7 +47,7 @@ public class LineGraphAnalyzer implements PlugInFilter, Measurements  {
 		int options = ParticleAnalyzer.SHOW_PROGRESS;
 		int measurements = CENTROID;
 		int minSize = 1;
-		int maxSize = 999999;
+		int maxSize = Integer.MAX_VALUE;
 		ResultsTable rt = new ResultsTable();
 		ParticleAnalyzer pa = new ParticleAnalyzer(options, measurements, rt, minSize, maxSize);
 		if (!pa.analyze(imp2))

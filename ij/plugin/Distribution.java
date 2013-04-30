@@ -67,7 +67,8 @@ public class Distribution implements PlugIn, TextListener {
 		if (!autoBinning) {
 			nBins = (int)gd.getNextNumber();
 			range = gd.getNextString();
-			String[] minAndMax = Tools.split(range, " -");
+			//String[] minAndMax = Tools.split(range, " -");
+			String[] minAndMax = range.replaceAll("([0-9.])[\t ]*-", "$1,").split(",");
 			nMin = Tools.parseDouble(minAndMax[0]);
 			nMax = minAndMax.length==2?Tools.parseDouble(minAndMax[1]):Double.NaN;
 			if (Double.isNaN(nMin) || Double.isNaN(nMax))

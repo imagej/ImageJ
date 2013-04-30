@@ -178,8 +178,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		if (imp==null) {
 			ic = null;
 			clipboard = null;
-			xMax = 99999;
-			yMax = 99999;
+			xMax = yMax = Integer.MAX_VALUE;
 		} else {
 			ic = imp.getCanvas();
 			xMax = imp.getWidth();

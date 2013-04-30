@@ -276,7 +276,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		minCircularity = staticMinCircularity;
 		maxCircularity = staticMaxCircularity;
 		showChoice = staticShowChoice;
-		if (maxSize==999999) maxSize = DEFAULT_MAX_SIZE;
+		if (maxSize==999999)
+			maxSize = DEFAULT_MAX_SIZE;
 		options = staticOptions;
 		String unit = cal.getUnit();
 		boolean scaled = cal.scaled();
