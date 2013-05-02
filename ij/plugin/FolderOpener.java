@@ -351,7 +351,8 @@ public class FolderOpener implements PlugIn {
 		gd.addNumericField("Increment:", 1, 0);
 		gd.addNumericField("Scale images:", scale, 0, 4, "%");
 		gd.addStringField("File name contains:", "", 10);
-		gd.addStringField("or enter pattern:", "", 10);
+		gd.setInsets(0,50,0);
+		gd.addMessage("(enclose regex in parens)", null, Color.darkGray);
 		gd.addCheckbox("Convert_to_RGB", convertToRGB);
 		gd.addCheckbox("Sort names numerically", sortFileNames);
 		gd.addCheckbox("Use virtual stack", openAsVirtualStack);
@@ -369,9 +370,8 @@ public class FolderOpener implements PlugIn {
 		if (scale<5.0) scale = 5.0;
 		if (scale>100.0) scale = 100.0;
 		filter = gd.getNextString();
-		String regex = gd.getNextString();
-		if (!regex.equals("")) {
-			filter = regex;
+		if (filter.startsWith("(")&&filter.endsWith(")")) {
+			filter = filter.substring(1,filter.length()-1);
 			isRegex = true;
 		}
 		convertToRGB = gd.getNextBoolean();
@@ -483,10 +483,8 @@ class FolderOpenerDialog extends GenericDialog {
 		if (inc<1) inc = 1;
  		TextField tf = (TextField)stringField.elementAt(0);
  		String filter = tf.getText();
-		tf = (TextField)stringField.elementAt(1);
-  		String regex = tf.getText();
-		if (!regex.equals("")) {
-			filter = regex;
+		if (filter.startsWith("(")&&filter.endsWith(")")) {
+			filter = filter.substring(1,filter.length()-1);
 			isRegex = true;
 		}
  		if (!filter.equals("") && !filter.equals("*")) {
