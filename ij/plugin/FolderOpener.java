@@ -351,8 +351,8 @@ public class FolderOpener implements PlugIn {
 		gd.addNumericField("Increment:", 1, 0);
 		gd.addNumericField("Scale images:", scale, 0, 4, "%");
 		gd.addStringField("File name contains:", "", 10);
-		gd.setInsets(0,50,0);
-		gd.addMessage("(enclose regex in parens)", null, Color.darkGray);
+		gd.setInsets(0,45,0);
+		gd.addMessage("enclose regex in quotes", null, Color.darkGray);
 		gd.addCheckbox("Convert_to_RGB", convertToRGB);
 		gd.addCheckbox("Sort names numerically", sortFileNames);
 		gd.addCheckbox("Use virtual stack", openAsVirtualStack);
@@ -370,10 +370,7 @@ public class FolderOpener implements PlugIn {
 		if (scale<5.0) scale = 5.0;
 		if (scale>100.0) scale = 100.0;
 		filter = gd.getNextString();
-		if (filter.startsWith("(")&&filter.endsWith(")")) {
-			filter = filter.substring(1,filter.length()-1);
-			isRegex = true;
-		}
+		filter = checkForRegex(filter);
 		convertToRGB = gd.getNextBoolean();
 		sortFileNames = gd.getNextBoolean();
 		openAsVirtualStack = gd.getNextBoolean();
@@ -384,6 +381,14 @@ public class FolderOpener implements PlugIn {
 			staticOpenAsVirtualStack = openAsVirtualStack;
 		}
 		return true;
+	}
+
+	String checkForRegex(String filter) {
+		if (filter.length()>=2 && (filter.startsWith("\"")&&filter.endsWith("\"")||filter.startsWith("'")&&filter.endsWith("'"))) {
+			filter = filter.substring(1,filter.length()-1);
+			isRegex = true;
+		}
+		return filter;
 	}
 
 	/** Removes names that start with "." or end with ".db", ".txt", ".lut", "roi", ".pty", ".hdr", ".py", etc. */
@@ -435,102 +440,100 @@ public class FolderOpener implements PlugIn {
 		return StringSorter.sortNumerically(list);
 	}
 
+	class FolderOpenerDialog extends GenericDialog {
+		ImagePlus imp;
+		int fileCount;
+		boolean eightBits, rgb;
+		String[] list;
+		//boolean isRegex;
+	
+		public FolderOpenerDialog(String title, ImagePlus imp, String[] list) {
+			super(title);
+			this.imp = imp;
+			this.list = list;
+			this.fileCount = list.length;
+		}
+	
+		protected void setup() {
+			eightBits = ((Checkbox)checkbox.elementAt(0)).getState();
+			rgb = ((Checkbox)checkbox.elementAt(1)).getState();
+			setStackInfo();
+		}
+		
+		public void itemStateChanged(ItemEvent e) {
+		}
+		
+		public void textValueChanged(TextEvent e) {
+			setStackInfo();
+		}
+	
+		void setStackInfo() {
+			int width = imp.getWidth();
+			int height = imp.getHeight();
+			int depth = imp.getStackSize();
+			int bytesPerPixel = 1;
+			int n = getNumber(numberField.elementAt(0));
+			int start = getNumber(numberField.elementAt(1));
+			int inc = getNumber(numberField.elementAt(2));
+			double scale = getNumber(numberField.elementAt(3));
+			if (scale<5.0) scale = 5.0;
+			if (scale>100.0) scale = 100.0;
+			
+			if (n<1) n = fileCount;
+			if (start<1 || start>fileCount) start = 1;
+			if (start+n-1>fileCount)
+				n = fileCount-start+1;
+			if (inc<1) inc = 1;
+			TextField tf = (TextField)stringField.elementAt(0);
+			String filter = tf.getText();
+			filter = checkForRegex(filter);
+			if (!filter.equals("") && !filter.equals("*")) {
+				int n2 = 0;
+				for (int i=0; i<list.length; i++) {
+					if (isRegex&&list[i].matches(filter))
+						n2++;
+					else if (list[i].indexOf(filter)>=0)
+						n2++;
+				}
+				if (n2<n) n = n2;
+			}
+			switch (imp.getType()) {
+				case ImagePlus.GRAY16:
+					bytesPerPixel=2;break;
+				case ImagePlus.COLOR_RGB:
+				case ImagePlus.GRAY32:
+					bytesPerPixel=4; break;
+			}
+			if (eightBits)
+				bytesPerPixel = 1;
+			if (rgb)
+				bytesPerPixel = 4;
+			width = (int)(width*scale/100.0);
+			height = (int)(height*scale/100.0);
+			int n2 = ((fileCount-start+1)*depth)/inc;
+			if (n2<0) n2 = 0;
+			if (n2>n) n2 = n;
+			double size = ((double)width*height*n2*bytesPerPixel)/(1024*1024);
+			((Label)theLabel).setText(width+" x "+height+" x "+n2+" ("+IJ.d2s(size,1)+"MB)");
+		}
+	
+		public int getNumber(Object field) {
+			TextField tf = (TextField)field;
+			String theText = tf.getText();
+			double value;
+			Double d;
+			try {d = new Double(theText);}
+			catch (NumberFormatException e){
+				d = null;
+			}
+			if (d!=null)
+				return (int)d.doubleValue();
+			else
+				return 0;
+		  }
+	
+	} // FolderOpenerDialog
+
 } // FolderOpener
 
-class FolderOpenerDialog extends GenericDialog {
-	ImagePlus imp;
-	int fileCount;
- 	boolean eightBits, rgb;
- 	String[] list;
- 	boolean isRegex;
-
-	public FolderOpenerDialog(String title, ImagePlus imp, String[] list) {
-		super(title);
-		this.imp = imp;
-		this.list = list;
-		this.fileCount = list.length;
-	}
-
-	protected void setup() {
- 		eightBits = ((Checkbox)checkbox.elementAt(0)).getState();
- 		rgb = ((Checkbox)checkbox.elementAt(1)).getState();
-		setStackInfo();
-	}
- 	
-	public void itemStateChanged(ItemEvent e) {
-	}
-	
-	public void textValueChanged(TextEvent e) {
- 		setStackInfo();
-	}
-
-	void setStackInfo() {
-		int width = imp.getWidth();
-		int height = imp.getHeight();
-		int depth = imp.getStackSize();
-		int bytesPerPixel = 1;
- 		int n = getNumber(numberField.elementAt(0));
-		int start = getNumber(numberField.elementAt(1));
-		int inc = getNumber(numberField.elementAt(2));
-		double scale = getNumber(numberField.elementAt(3));
-		if (scale<5.0) scale = 5.0;
-		if (scale>100.0) scale = 100.0;
-		
-		if (n<1) n = fileCount;
-		if (start<1 || start>fileCount) start = 1;
-		if (start+n-1>fileCount)
-			n = fileCount-start+1;
-		if (inc<1) inc = 1;
- 		TextField tf = (TextField)stringField.elementAt(0);
- 		String filter = tf.getText();
-		if (filter.startsWith("(")&&filter.endsWith(")")) {
-			filter = filter.substring(1,filter.length()-1);
-			isRegex = true;
-		}
- 		if (!filter.equals("") && !filter.equals("*")) {
- 			int n2 = 0;
-			for (int i=0; i<list.length; i++) {
-				if (isRegex&&list[i].matches(filter))
-					n2++;
-				else if (list[i].indexOf(filter)>=0)
-					n2++;
-			}
-			if (n2<n) n = n2;
- 		}
-		switch (imp.getType()) {
-			case ImagePlus.GRAY16:
-				bytesPerPixel=2;break;
-			case ImagePlus.COLOR_RGB:
-			case ImagePlus.GRAY32:
-				bytesPerPixel=4; break;
-		}
-		if (eightBits)
-			bytesPerPixel = 1;
-		if (rgb)
-			bytesPerPixel = 4;
-		width = (int)(width*scale/100.0);
-		height = (int)(height*scale/100.0);
-		int n2 = ((fileCount-start+1)*depth)/inc;
-		if (n2<0) n2 = 0;
-		if (n2>n) n2 = n;
-		double size = ((double)width*height*n2*bytesPerPixel)/(1024*1024);
- 		((Label)theLabel).setText(width+" x "+height+" x "+n2+" ("+IJ.d2s(size,1)+"MB)");
-	}
-
-	public int getNumber(Object field) {
-		TextField tf = (TextField)field;
-		String theText = tf.getText();
-		double value;
-		Double d;
-		try {d = new Double(theText);}
-		catch (NumberFormatException e){
-			d = null;
-		}
-		if (d!=null)
-			return (int)d.doubleValue();
-		else
-			return 0;
-      }
-
-} // FolderOpenerDialog
 

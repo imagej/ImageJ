@@ -95,16 +95,18 @@ public class Straightener implements PlugIn {
 		if (!(tempRoi instanceof PolygonRoi))
 			return null;
 		PolygonRoi roi = (PolygonRoi)tempRoi;
-		if (roi==null) return null;
+		if (roi==null)
+			return null;
 		if (roi.getState()==Roi.CONSTRUCTING)
 			roi.exitConstructingMode();
-		boolean isSpline = roi.isSplineFit();
+		if (roi.isSplineFit())
+			roi.removeSplineFit();
 		int type = roi.getType();
 		int n = roi.getNCoordinates();
 		double len = roi.getLength();
-		if (!(isSpline && Math.abs(1.0-roi.getLength()/n)<0.5))
-			roi.fitSplineForStraightening();
-		if (roi.getNCoordinates()<2) return null;
+		roi.fitSplineForStraightening();
+		if (roi.getNCoordinates()<2)
+			return null;
 		FloatPolygon p = roi.getFloatPolygon();
 		n = p.npoints;
 		ImageProcessor ip = imp.getProcessor();
@@ -144,13 +146,10 @@ public class Straightener implements PlugIn {
 			} while (--n2>0);
 		}
 		if (!processStack) IJ.showProgress(n, n);
-		//imp.updateAndDraw();
-		if (!isSpline) {
-			if (type==Roi.FREELINE)
-				roi.removeSplineFit();
-			else
-				imp.draw();
-		}
+		if (type==Roi.FREELINE)
+			roi.removeSplineFit();
+		else
+			imp.draw();
 		if (imp.getBitDepth()!=24) {
 			ip2.setColorModel(ip.getColorModel());
 			ip2.resetMinAndMax();
