@@ -46,7 +46,8 @@ public class XYCoordinates implements PlugIn {
 			+ bg;
 				
 		GenericDialog gd = new GenericDialog("Save XY Coordinates");
-		gd.addMessage(msg);
+		gd.setInsets(0, 20, 0);
+		gd.addMessage(msg, null, Color.darkGray);
 		int digits = (int)background==background?0:4;
 		if (!rgb) {
 			gd.setInsets(5, 35, 3);

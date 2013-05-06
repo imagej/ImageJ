@@ -5,6 +5,7 @@ import ij.process.ImageProcessor;
 import ij.process.LUT;
 import java.util.ArrayList;
 import java.util.List;
+import java.awt.Color;
 
 /**
  * This plugin is used by the Image/Stacks/Tools/Make Substack
@@ -35,7 +36,7 @@ public class SubHyperstackMaker implements PlugIn {
 		// prompt for C, Z and T ranges
 		final GenericDialog gd = new GenericDialog("Subhyperstack Maker");
 		gd.addMessage("Enter a range (e.g. 2-14), a range with increment\n"
-			+ "(e.g. 1-100-2) or a list (e.g. 7,9,25,27)");
+			+ "(e.g. 1-100-2) or a list (e.g. 7,9,25,27)", null, Color.darkGray);
 		if (hasC) gd.addStringField("Channels:", "1-" + cCount, 40);
 		if (hasZ) gd.addStringField("Slices:", "1-" + zCount, 40);
 		if (hasT) gd.addStringField("Frames:", "1-" + tCount, 40);

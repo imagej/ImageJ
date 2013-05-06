@@ -513,11 +513,15 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		stacks, the ImageProcessor must be the same type as other images in the stack and
 		it must be the same width and height.  Set 'title' to null to leave the title unchanged. */
 	public void setProcessor(String title, ImageProcessor ip) {
-		if (ip==null || ip.getPixels()==null)
-			throw new IllegalArgumentException("ip null or ip.getPixels() null");
-		if (getStackSize()>1)
-			stack.setProcessor(ip, getCurrentSlice());
-		else {
+        if (ip==null || ip.getPixels()==null)
+            throw new IllegalArgumentException("ip null or ip.getPixels() null");
+        if (getStackSize()>1) {
+        	if (ip.getWidth()!=width || ip.getHeight()!=height)
+            	throw new IllegalArgumentException("Wrong dimensions for this stack");
+            int stackBitDepth = stack!=null?stack.getBitDepth():0;
+            if (stackBitDepth>0 && getBitDepth()!=stackBitDepth)
+            	throw new IllegalArgumentException("Wrong type for this stack");
+		} else {
 			stack = null;
 			setCurrentSlice(1);
 		}

@@ -270,7 +270,7 @@ public class Binner implements PlugIn {
 		gd.addChoice ("Bin Method: ", methods, methods[method]);
 		if (imp.getStackSize()==1) {
 			gd.setInsets(5, 0, 0);
-			gd.addMessage("This command supports Undo");
+			gd.addMessage("This command supports Undo", null, Color.darkGray);
 		}
 		gd.showDialog();
 		if (gd.wasCanceled()) 

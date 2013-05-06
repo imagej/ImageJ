@@ -29,6 +29,8 @@ public class SimpleCommands implements PlugIn {
 			aboutPluginsHelp();
 		else if (arg.equals("install"))
 			installation();
+		else if (arg.equals("set"))
+			setSliceLabel();
 		else if (arg.equals("remove"))
 			removeStackLabels();
 		else if (arg.equals("itor"))
@@ -105,6 +107,31 @@ public class SimpleCommands implements PlugIn {
 			IJ.URL+"/plugins/jar-demo.html");
 	}
 	
+	private void setSliceLabel() {
+		ImagePlus imp = IJ.getImage();
+		int size = imp.getStackSize();
+		if (size==1) {
+			IJ.error("Stack required");
+			return;
+		}
+		ImageStack stack = imp.getStack();
+		int n = imp.getCurrentSlice();
+		String label = stack.getSliceLabel(n);
+		String label2 = label;
+		if (label2==null)
+			label2 = "";
+		GenericDialog gd = new GenericDialog("Set Slice Label ("+n+")");
+		gd.addStringField("Label:", label2, 30);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		label2 = gd.getNextString();
+		if (label2!=label) {
+			stack.setSliceLabel(label2, n);
+			imp.repaintWindow();
+		}
+	}
+
 	private void removeStackLabels() {
 		ImagePlus imp = IJ.getImage();
 		int size = imp.getStackSize();

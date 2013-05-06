@@ -56,7 +56,8 @@ public class URLOpener implements PlugIn {
 		}
 		
 		GenericDialog gd = new GenericDialog("Enter a URL");
-		gd.addMessage("Enter URL of an image, macro or web page");
+		gd.setInsets(10, 32, 0);
+		gd.addMessage("Enter URL of an image, macro or web page", null, Color.darkGray);
 		gd.addStringField("URL:", url, 45);
 		gd.showDialog();
 		if (gd.wasCanceled())

@@ -24,6 +24,7 @@ public class FolderOpener implements PlugIn {
 	private int n, start, increment;
 	private String filter;
 	private boolean isRegex;
+	private String legacyRegex;
 	private FileInfo fi;
 	private String info1;
 	private ImagePlus image;
@@ -57,7 +58,7 @@ public class FolderOpener implements PlugIn {
 			}
 			arg = null;
 			String title = "Open Image Sequence...";
-			String macroOptions = Macro.getOptions();
+			String macroOptions = IJ.macroRunning()?Macro.getOptions():null;
 			if (macroOptions!=null) {
 				directory = Macro.getValue(macroOptions, title, null);
 				if (directory!=null) {
@@ -66,6 +67,9 @@ public class FolderOpener implements PlugIn {
 					if (!f.isDirectory() && (f.exists()||directory.lastIndexOf(".")>directory.length()-5))
 						directory = f.getParent();
 				}
+				legacyRegex = Macro.getValue(macroOptions, "or", "");
+				if (legacyRegex.equals(""))
+					legacyRegex = null;
 			}
 			if (directory==null) {
 				if (Prefs.useFileChooser && !IJ.isMacOSX()) {
@@ -138,16 +142,16 @@ public class FolderOpener implements PlugIn {
 			if (filter!=null) {
 				int filteredImages = 0;
   				for (int i=0; i<list.length; i++) {
-					if (isRegex&&list[i].matches(filter))
+					if (containsRegex(list[i],filter))
 						filteredImages++;
-					else if (list[i].indexOf(filter)>=0)
+					else if (list[i].contains(filter))
 						filteredImages++;
  					else
  						list[i] = null;
  				}
   				if (filteredImages==0) {
   					if (isRegex)
-  						IJ.error("Import Sequence", "None of the file names match the regular expression.");
+  						IJ.error("Import Sequence", "None of the file names contain the regular expression.");
   					else
    						IJ.error("Import Sequence", "None of the "+list.length+" files contain\n the string '"+filter+"' in their name.");
  					return;
@@ -352,7 +356,7 @@ public class FolderOpener implements PlugIn {
 		gd.addNumericField("Scale images:", scale, 0, 4, "%");
 		gd.addStringField("File name contains:", "", 10);
 		gd.setInsets(0,45,0);
-		gd.addMessage("enclose regex in quotes", null, Color.darkGray);
+		gd.addMessage("(enclose regex in parens)", null, Color.darkGray);
 		gd.addCheckbox("Convert_to_RGB", convertToRGB);
 		gd.addCheckbox("Sort names numerically", sortFileNames);
 		gd.addCheckbox("Use virtual stack", openAsVirtualStack);
@@ -371,6 +375,10 @@ public class FolderOpener implements PlugIn {
 		if (scale>100.0) scale = 100.0;
 		filter = gd.getNextString();
 		filter = checkForRegex(filter);
+		if (legacyRegex!=null) {
+			filter = legacyRegex;
+			isRegex = true;
+		}
 		convertToRGB = gd.getNextBoolean();
 		sortFileNames = gd.getNextBoolean();
 		openAsVirtualStack = gd.getNextBoolean();
@@ -383,12 +391,32 @@ public class FolderOpener implements PlugIn {
 		return true;
 	}
 
-	String checkForRegex(String filter) {
-		if (filter.length()>=2 && (filter.startsWith("\"")&&filter.endsWith("\"")||filter.startsWith("'")&&filter.endsWith("'"))) {
+	private String checkForRegex(String filter) {
+		if (filter.length()>=2 && filter.startsWith("(")&&filter.endsWith(")")) {
 			filter = filter.substring(1,filter.length()-1);
 			isRegex = true;
-		}
+		} else
+			isRegex = false;
+		IJ.showStatus("");
 		return filter;
+	}
+	
+	private boolean containsRegex(String name, String regex) {
+		boolean contains = false;
+		try {
+			if (isRegex) {
+				contains = name.replaceAll(regex,"").length()!=name.length();
+				IJ.showStatus("");
+			}
+		} catch(Exception e) {
+			String msg = e.getMessage();
+			int index = msg.indexOf("\n");
+			if (index>0)
+				msg = msg.substring(0,index);
+			IJ.showStatus("Regex error: "+msg);
+			contains = true;
+		}
+		return contains;
 	}
 
 	/** Removes names that start with "." or end with ".db", ".txt", ".lut", "roi", ".pty", ".hdr", ".py", etc. */
@@ -490,7 +518,7 @@ public class FolderOpener implements PlugIn {
 			if (!filter.equals("") && !filter.equals("*")) {
 				int n2 = 0;
 				for (int i=0; i<list.length; i++) {
-					if (isRegex&&list[i].matches(filter))
+					if (containsRegex(list[i],filter))
 						n2++;
 					else if (list[i].indexOf(filter)>=0)
 						n2++;

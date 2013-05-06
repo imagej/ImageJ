@@ -45,7 +45,8 @@ public class Distribution implements PlugIn, TextListener {
 		defaultRange = range;
 		GenericDialog gd = new GenericDialog("Distribution");
 		gd.addChoice("Parameter: ", strings, strings[getIndex(strings)]);
-		gd.addMessage("Data points: "+ count);
+		gd.setInsets(0, 40, 0);
+		gd.addMessage(count+" data points", null, Color.darkGray);
 		gd.addCheckbox("Automatic binning", autoBinning);
 		gd.addNumericField ("or specify bins:", nBins, 0);
 		gd.addStringField ("and range:", range);
@@ -67,7 +68,7 @@ public class Distribution implements PlugIn, TextListener {
 		if (!autoBinning) {
 			nBins = (int)gd.getNextNumber();
 			range = gd.getNextString();
-			//String[] minAndMax = Tools.split(range, " -");
+			// find hyphen and replace with comma
 			String[] minAndMax = range.replaceAll("([0-9.])[\t ]*-", "$1,").split(",");
 			nMin = Tools.parseDouble(minAndMax[0]);
 			nMax = minAndMax.length==2?Tools.parseDouble(minAndMax[1]):Double.NaN;

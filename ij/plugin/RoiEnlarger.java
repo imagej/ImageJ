@@ -48,7 +48,7 @@ public class RoiEnlarger implements PlugIn {
 			gd.addCheckbox("Pixel units", usePixels);
 		}
 		gd.setInsets(10, 0, 0);
-		gd.addMessage("Enter negative number to shrink");
+		gd.addMessage("Enter negative number to shrink", null, Color.darkGray);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return Double.NaN;
