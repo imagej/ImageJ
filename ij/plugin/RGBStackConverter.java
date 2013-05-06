@@ -168,7 +168,7 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 	boolean showDialog() {
 		GenericDialog gd = new GenericDialog("Convert to RGB");
 		gd.setInsets(10, 20, 5);
-		gd.addMessage("Create RGB Image With:");
+		gd.addMessage("Create RGB image with:");
 		gd.setInsets(0, 35, 0);
 		if (slices1!=1) gd.addCheckbox("Slices ("+slices1+")", true);
 		gd.setInsets(0, 35, 0);
@@ -176,7 +176,7 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 		gd.setInsets(5, 20, 0);
 		gd.addMessage(getNewDimensions()+"      ");
 		gd.setInsets(15, 20, 0);
-		gd.addCheckbox("Keep Source", keep);
+		gd.addCheckbox("Keep source", keep);
 		gd.addDialogListener(this);
 		gd.showDialog();
 		if (gd.wasCanceled())

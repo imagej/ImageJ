@@ -320,9 +320,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		String label = name!=null?name:getLabel(imp, roi, -1);
 		if (promptForName)
 			label = promptForName(label);
-		else
-			label = getUniqueName(label);
-		if (label==null) return false;
+		if (label==null)
+			return false;
+		label = getUniqueName(label);
 		listModel.addElement(label);
 		roi.setName(label);
 		Roi roiCopy = (Roi)roi.clone();
@@ -529,10 +529,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		String name = (String)listModel.getElementAt(index);
 		if (name2==null)
 			name2 = promptForName(name);
-		else
-			name2 = getUniqueName(name2);
 		if (name2==null)
 			return false;
+		if (name2.equals(name))
+			return false;
+		name2 = getUniqueName(name2);
 		Roi roi = (Roi)rois.get(name);
 		if (roi==null)
 			return false;
@@ -559,9 +560,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return null;
-		String name2 = gd.getNextString();
-		name2 = getUniqueName(name2);
-		return name2;
+		else
+			return gd.getNextString();
 	}
 
 	boolean restore(ImagePlus imp, int index, boolean setSlice) {

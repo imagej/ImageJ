@@ -41,8 +41,8 @@ public class RoiRotator implements PlugIn {
 		if ((int)angle!=angle)
 			decimalPlaces = 2;
 		gd.addNumericField("Angle:", angle, decimalPlaces, 3, "degrees");
-		gd.setInsets(10, 0, 0);
-		gd.addMessage("Enter negative angle to \nrotate counter-clockwise");
+		gd.setInsets(5, 0, 0);
+		gd.addMessage("Enter negative angle to \nrotate counter-clockwise", null, Color.darkGray);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return Double.NaN;

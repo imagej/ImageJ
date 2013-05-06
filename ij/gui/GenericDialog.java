@@ -456,12 +456,18 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     
     /** Adds a message consisting of one or more lines of text. */
     public void addMessage(String text) {
-    	addMessage(text, null);
+    	addMessage(text, null, null);
     }
 
     /** Adds a message consisting of one or more lines of text,
     	which will be displayed using the specified font. */
     public void addMessage(String text, Font font) {
+    	addMessage(text, font, null);
+    }
+    
+    /** Adds a message consisting of one or more lines of text,
+    	which will be displayed using the specified font and color. */
+    public void addMessage(String text, Font font, Color color) {
     	theLabel = null;
     	if (text.indexOf('\n')>=0)
 			theLabel = new MultiLineLabel(text);
@@ -476,6 +482,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		grid.setConstraints(theLabel, c);
 		if (font!=null)
 			theLabel.setFont(font);
+		if (color!=null)
+			theLabel.setForeground(color);
 		add(theLabel);
 		c.fill = GridBagConstraints.NONE;
 		y++;

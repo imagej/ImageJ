@@ -123,7 +123,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 	boolean showDialog() {
 		GenericDialog gd = new GenericDialog("Reduce");
 		gd.setInsets(10, 20, 5);
-		gd.addMessage("Create Image With:");
+		gd.addMessage("Create image with:");
 		gd.setInsets(0, 35, 0);
 		if (channels1!=1) gd.addCheckbox("Channels ("+channels1+")", true);
 		gd.setInsets(0, 35, 0);
@@ -133,7 +133,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 		gd.setInsets(5, 20, 0);
 		gd.addMessage(getNewDimensions()+"      ");
 		gd.setInsets(15, 20, 0);
-		gd.addCheckbox("Keep Source", keep);
+		gd.addCheckbox("Keep source", keep);
 		gd.addDialogListener(this);
 		gd.showDialog();
 		if (gd.wasCanceled())

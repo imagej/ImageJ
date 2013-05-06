@@ -162,11 +162,12 @@ tools_05="Insert...",ij.plugin.StackInserter
 tools_06="Montage to Stack...",ij.plugin.StackMaker
 tools_07="Make Substack...",ij.plugin.SubstackMaker
 tools_08="Grouped Z Project...",ij.plugin.GroupedZProjector
-tools_09="Remove Slice Labels",ij.plugin.SimpleCommands("remove")
-tools_10=-
-tools_11="Start Animation [\\]",ij.plugin.Animator("start")
-tools_12="Stop Animation",ij.plugin.Animator("stop")
-tools_13="Animation Options...",ij.plugin.Animator("options")
+tools_09="Set Label...",ij.plugin.SimpleCommands("set")
+tools_10="Remove Slice Labels",ij.plugin.SimpleCommands("remove")
+tools_11=-
+tools_12="Start Animation [\\]",ij.plugin.Animator("start")
+tools_13="Stop Animation",ij.plugin.Animator("stop")
+tools_14="Animation Options...",ij.plugin.Animator("options")
 
 # Plugins installed in the Image/Hyperstacks submenu
 hyperstacks01="New Hyperstack...",ij.plugin.HyperStackConverter("new")

@@ -510,7 +510,7 @@ class PixelInspector extends PlugInFrame
 		gd.addChoice("Grayscale readout:",GRAY_DISPLAY_TYPES,GRAY_DISPLAY_TYPES[grayDisplayType]);
 		gd.addChoice("RGB readout:",RGB_DISPLAY_TYPES,RGB_DISPLAY_TYPES[rgbDisplayType]);
 		gd.addChoice("Copy to clipboard:", COPY_TYPES, COPY_TYPES[copyType]);
-		gd.addMessage("Use arrow keys to move red outline.\nPress 'c' to copy data to clipboard.");
+		gd.addMessage("Use arrow keys to move red outline.\nPress 'c' to copy data to clipboard.", null, Color.darkGray);
 		Point loc = Prefs.getLocation(LOC_KEY);
 		if (loc!=null) {
 			gd.centerDialog(false);

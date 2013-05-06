@@ -528,25 +528,25 @@ public class AutoThresholder {
 	}
 
 	int MinErrorI(int [] data ) {
-		  // Kittler and J. Illingworth, "Minimum error thresholding," Pattern Recognition, vol. 19, pp. 41-47, 1986.
-		 // C. A. Glasbey, "An analysis of histogram-based thresholding algorithms," CVGIP: Graphical Models and Image Processing, vol. 55, pp. 532-537, 1993.
+		// Kittler and J. Illingworth, "Minimum error thresholding," Pattern Recognition, vol. 19, pp. 41-47, 1986.
+		// C. A. Glasbey, "An analysis of histogram-based thresholding algorithms," CVGIP: Graphical Models and Image Processing, vol. 55, pp. 532-537, 1993.
 		// Ported to ImageJ plugin by G.Landini from Antti Niemisto's Matlab code (GPL)
 		// Original Matlab code Copyright (C) 2004 Antti Niemisto
 		// See http://www.cs.tut.fi/~ant/histthresh/ for an excellent slide presentation
 		// and the original Matlab code.
 
-		int threshold =  Mean(data); //Initial estimate for the threshold is found with the MEAN algorithm.
+		int threshold =	 Mean(data); //Initial estimate for the threshold is found with the MEAN algorithm.
 		int Tprev =-2;
 		double mu, nu, p, q, sigma2, tau2, w0, w1, w2, sqterm, temp;
 		//int counter=1;
 		while (threshold!=Tprev){
 			//Calculate some statistics.
 			mu = B(data, threshold)/A(data, threshold);
-			nu = (B(data, 255)-B(data, threshold))/(A(data, 255)-A(data, threshold));
-			p = A(data, threshold)/A(data, 255);
-			q = (A(data, 255)-A(data, threshold)) / A(data, 255);
+			nu = (B(data, data.length - 1)-B(data, threshold))/(A(data, data.length - 1)-A(data, threshold));
+			p = A(data, threshold)/A(data, data.length - 1);
+			q = (A(data, data.length - 1)-A(data, threshold)) / A(data, data.length - 1);
 			sigma2 = C(data, threshold)/A(data, threshold)-(mu*mu);
-			tau2 = (C(data, 255)-C(data, threshold)) / (A(data, 255)-A(data, threshold)) - (nu*nu);
+			tau2 = (C(data, data.length - 1)-C(data, threshold)) / (A(data, data.length - 1)-A(data, threshold)) - (nu*nu);
 
 			//The terms of the quadratic equation to be solved.
 			w0 = 1.0/sigma2-1.0/tau2;
@@ -564,32 +564,30 @@ public class AutoThresholder {
 			Tprev = threshold;
 			temp = (w1+Math.sqrt(sqterm))/w0;
 
-			if ( Double.isNaN(temp)) {
-				IJ.log ("MinError(I): NaN, not converging.");
+			if (Double.isNaN(temp)) {
+				//IJ.log ("MinError(I): NaN, not converging.");
 				threshold = Tprev;
-			}
-			else
+			} else
 				threshold =(int) Math.floor(temp);
-			//IJ.log("Iter: "+ counter+++"  t:"+threshold);
 		}
 		return threshold;
 	}
 
-	double A(int [] y, int j) {
+	private double A(int [] y, int j) {
 		double x = 0;
 		for (int i=0;i<=j;i++)
 			x+=y[i];
 		return x;
 	}
 
-	double B(int [] y, int j) {
+	private double B(int [] y, int j) {
 		double x = 0;
 		for (int i=0;i<=j;i++)
 			x+=i*y[i];
 		return x;
 	}
 
-	double C(int [] y, int j) {
+	private double C(int [] y, int j) {
 		double x = 0;
 		for (int i=0;i<=j;i++)
 			x+=i*i*y[i];

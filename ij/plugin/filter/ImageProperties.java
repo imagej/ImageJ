@@ -54,7 +54,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		gd.addNumericField("Slices (z):", slices, 0);
 		gd.addNumericField("Frames (t):", frames, 0);
 		gd.setInsets(0, 5, 0);
-		gd.addMessage("Note: c*z*t must equal "+stackSize);
+		gd.addMessage("Note: c*z*t must equal "+stackSize, null, Color.darkGray);
 		gd.setInsets(15, 0, 0);
 		gd.addStringField("Unit of Length:", cal.getUnit());
 		gd.addNumericField("Pixel_Width:", cal.pixelWidth, digits, 8, null);

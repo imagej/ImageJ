@@ -3,6 +3,7 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.io.FileInfo;
+import java.awt.Color;
 
 /**
  * This plugin implements the Image/Stacks/Tools/Make Substack command.
@@ -103,7 +104,7 @@ public class SubstackMaker implements PlugIn {
 	String showDialog() {
 		GenericDialog gd = new GenericDialog("Substack Maker");
 		gd.setInsets(10,45,0);
-		gd.addMessage("Enter a range (e.g. 2-14), a range with increment\n(e.g. 1-100-2) or a list (e.g. 7,9,25,27)");
+		gd.addMessage("Enter a range (e.g. 2-14), a range with increment\n(e.g. 1-100-2) or a list (e.g. 7,9,25,27)", null, Color.darkGray);
 		gd.addStringField("Slices:", "", 40);
 		gd.addCheckbox("Delete slices from original stack", delete);
 		gd.showDialog();

@@ -205,7 +205,7 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 					"ALT to draw in background color\n"+
 					ctrlString+"-SHIFT-drag to change brush width\n"+
 					ctrlString+"-(ALT) click to change foreground (background) color\n"+
-					"or use this dialog or the Color Picker (shift-k).");
+					"or use this dialog or the Color Picker (shift-k).", null, Color.darkGray);
 			gd.hideCancelButton();
 			gd.addHelp("");
 			gd.setHelpLabel("Undo");
