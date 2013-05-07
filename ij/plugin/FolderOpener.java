@@ -142,7 +142,7 @@ public class FolderOpener implements PlugIn {
 			if (filter!=null) {
 				int filteredImages = 0;
   				for (int i=0; i<list.length; i++) {
-					if (containsRegex(list[i],filter))
+					if (isRegex && containsRegex(list[i],filter))
 						filteredImages++;
 					else if (list[i].contains(filter))
 						filteredImages++;
@@ -404,10 +404,11 @@ public class FolderOpener implements PlugIn {
 	private boolean containsRegex(String name, String regex) {
 		boolean contains = false;
 		try {
-			if (isRegex) {
+			if (legacyRegex!=null)
+				contains = name.matches(filter);
+			else
 				contains = name.replaceAll(regex,"").length()!=name.length();
-				IJ.showStatus("");
-			}
+			IJ.showStatus("");
 		} catch(Exception e) {
 			String msg = e.getMessage();
 			int index = msg.indexOf("\n");
@@ -518,7 +519,7 @@ public class FolderOpener implements PlugIn {
 			if (!filter.equals("") && !filter.equals("*")) {
 				int n2 = 0;
 				for (int i=0; i<list.length; i++) {
-					if (containsRegex(list[i],filter))
+					if (isRegex && containsRegex(list[i],filter))
 						n2++;
 					else if (list[i].indexOf(filter)>=0)
 						n2++;

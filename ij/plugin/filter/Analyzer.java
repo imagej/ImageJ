@@ -407,6 +407,16 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		ImageStatistics stats = ImageStatistics.getStatistics(ip2, AREA+MEAN+STD_DEV+MODE+MIN_MAX, imp2.getCalibration());
 		if (saveR!=null) ip2.setRoi(saveR);
+		if ((roi instanceof Line) && (measurements&CENTROID)!=0) {
+			FloatPolygon p = ((Line)roi).getFloatPoints();
+			stats.xCentroid = p.xpoints[0] + (p.xpoints[1]-p.xpoints[0])/2.0;
+			stats.yCentroid = p.ypoints[0] + (p.ypoints[1]-p.ypoints[0])/2.0;
+			if (imp2!=null) {
+				Calibration cal = imp.getCalibration();
+				stats.xCentroid = cal.getX(stats.xCentroid);
+				stats.yCentroid = cal.getY(stats.yCentroid);
+			}
+		}
 		saveResults(stats, roi);
 	}
 	

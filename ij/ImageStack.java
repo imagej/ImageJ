@@ -280,7 +280,7 @@ public class ImageStack {
 		 specified slice, were 1<=n<=nslices. */
 	public void setProcessor(ImageProcessor ip, int n) {
 		if (n<1 || n>nSlices)
-		throw new IllegalArgumentException(outOfRange+n);
+			throw new IllegalArgumentException(outOfRange+n);
 		if (type!=UNKNOWN && type!=getType(ip))
 			throw new IllegalArgumentException("Wrong type for this stack");
 		if (ip.getWidth()!=width || ip.getHeight()!=height)

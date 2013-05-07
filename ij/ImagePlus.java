@@ -512,21 +512,21 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Replaces the ImageProcessor with the one specified and updates the display. With
 		stacks, the ImageProcessor must be the same type as other images in the stack and
 		it must be the same width and height.  Set 'title' to null to leave the title unchanged. */
-	public void setProcessor(String title, ImageProcessor ip) {
-        if (ip==null || ip.getPixels()==null)
-            throw new IllegalArgumentException("ip null or ip.getPixels() null");
-        if (getStackSize()>1) {
-        	if (ip.getWidth()!=width || ip.getHeight()!=height)
-            	throw new IllegalArgumentException("Wrong dimensions for this stack");
-            int stackBitDepth = stack!=null?stack.getBitDepth():0;
-            if (stackBitDepth>0 && getBitDepth()!=stackBitDepth)
-            	throw new IllegalArgumentException("Wrong type for this stack");
-		} else {
-			stack = null;
-			setCurrentSlice(1);
+		public void setProcessor(String title, ImageProcessor ip) {
+			if (ip==null || ip.getPixels()==null)
+				throw new IllegalArgumentException("ip null or ip.getPixels() null");
+			if (getStackSize()>1) {
+				if (ip.getWidth()!=width || ip.getHeight()!=height)
+					throw new IllegalArgumentException("Wrong dimensions for this stack");
+				int stackBitDepth = stack!=null?stack.getBitDepth():0;
+				if (stackBitDepth>0 && getBitDepth()!=stackBitDepth)
+					throw new IllegalArgumentException("Wrong type for this stack");
+			} else {
+				stack = null;
+				setCurrentSlice(1);
+			}
+			setProcessor2(title, ip, null);
 		}
-		setProcessor2(title, ip, null);
-	}
 	
 	void setProcessor2(String title, ImageProcessor ip, ImageStack newStack) {
 		//IJ.log("setProcessor2: "+ip+" "+this.ip+" "+newStack);
