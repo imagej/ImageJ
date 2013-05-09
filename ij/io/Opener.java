@@ -666,7 +666,8 @@ public class Opener {
 						fi.stripOffsets = info[i].stripOffsets;
 						fi.stripLengths = info[i].stripLengths;
 					}
-					if (info[i].samplesPerPixel>1 && !(info[i].getBytesPerPixel()==3||info[i].getBytesPerPixel()==6)) {
+					int bpp = info[i].getBytesPerPixel();
+					if (info[i].samplesPerPixel>1 && !(bpp==3||bpp==4||bpp==6)) {
 						nChannels = fi.samplesPerPixel;
 						channels = new Object[nChannels];
 						for (int c=0; c<nChannels; c++) {
