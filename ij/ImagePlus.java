@@ -1528,7 +1528,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (Roi.previousRoi!=null) {
 			Roi pRoi = Roi.previousRoi;
 			Rectangle r = pRoi.getBounds();
-			if (r.width<=width || r.height<=height || isSmaller(pRoi)) { // will it (mostly) fit in this image?
+			if (r.width<=width||r.height<=height||(r.x>=0&&r.x<width&&r.y>=0&&r.y<height)
+			|| isSmaller(pRoi)) { // will it (mostly) fit in this image?
 				roi = (Roi)pRoi.clone();
 				roi.setImage(this);
 				if (r.x>=width || r.y>=height || (r.x+r.width)<0 || (r.y+r.height)<0) // does it need to be moved?

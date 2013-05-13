@@ -64,7 +64,7 @@ public class ImportDialog {
 	boolean showDialog() {
 		if (choiceSelection>=types.length)
 			choiceSelection = 0;
-		GenericDialog gd = new GenericDialog("Import...", IJ.getInstance());
+		GenericDialog gd = new GenericDialog("Import>Raw...", IJ.getInstance());
 		gd.addChoice("Image type:", types, types[choiceSelection]);
 		gd.addNumericField("Width:", width, 0, 6, "pixels");
 		gd.addNumericField("Height:", height, 0, 6, "pixels");

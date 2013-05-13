@@ -33,9 +33,9 @@ public class Opener {
 
 	public static final int UNKNOWN=0,TIFF=1,DICOM=2,FITS=3,PGM=4,JPEG=5,
 		GIF=6,LUT=7,BMP=8,ZIP=9,JAVA_OR_TEXT=10,ROI=11,TEXT=12,PNG=13,
-		TIFF_AND_DICOM=14,CUSTOM=15, AVI=16, OJJ=17, TABLE=18; // don't forget to also update 'types'
+		TIFF_AND_DICOM=14,CUSTOM=15, AVI=16, OJJ=17, TABLE=18, RAW=19; // don't forget to also update 'types'
 	public static final String[] types = {"unknown","tif","dcm","fits","pgm",
-		"jpg","gif","lut","bmp","zip","java/txt","roi","txt","png","t&d","custom","ojj","table"};
+		"jpg","gif","lut","bmp","zip","java/txt","roi","txt","png","t&d","custom","ojj","table","raw"};
 	private static String defaultDirectory = null;
 	private static int fileType;
 	private boolean error;
@@ -184,6 +184,9 @@ public class Opener {
 					break;
 				case TABLE:  // ImageJ Results table
 					openResultsTable(path);
+					break;
+				case RAW:
+					IJ.runPlugIn("ij.plugin.Raw", path);
 					break;
 				case UNKNOWN:
 					String msg =
@@ -1136,6 +1139,10 @@ public class Opener {
 		if ((b0==66 && b1==77)||name.endsWith(".dib"))
 			return BMP;
 				
+		// RAW
+		if (name.endsWith(".raw"))
+			return RAW;
+
 		return UNKNOWN;
 	}
 
