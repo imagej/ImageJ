@@ -126,26 +126,41 @@ public class Executer implements Runnable {
     			IJ.open(IJ.getDirectory("plugins")+arg);
     		else
 				IJ.runPlugIn(cmd, className, arg);
-		} else {
-			// Is this command in Plugins>Macros?
+		} else { // command is not a plugin
+			// is command in the Plugins>Macros menu?
 			if (MacroInstaller.runMacroCommand(cmd))
 				return;
-			// Is this command a LUT name?
-			String path = IJ.getDirectory("luts")+cmd.replace(" ","_")+".lut";
-			File f = new File(path);
-			if (!f.exists()) {
-				path = IJ.getDirectory("luts")+cmd+".lut";
-				f = new File(path);
-			}
-			if (f.exists()) {
-				String dir = OpenDialog.getLastDirectory();
-				IJ.open(path);
-				OpenDialog.setLastDirectory(dir);
-			} else if (!openRecent(cmd))
-				IJ.error("Unrecognized command: " + cmd);
+			// is it in the Image>Lookup Tables menu?
+			if (loadLut(cmd))
+				return;
+			// is it in the File>Open Recent menu?
+			if (openRecent(cmd))
+				return;
+			IJ.error("Unrecognized command: \"" + cmd+"\"");
 	 	}
     }
     
+    /** Opens a .lut file from the ImageJ/luts directory and returns 'true' if successful. */
+    public static boolean loadLut(String cmd) {
+		String path = IJ.getDirectory("luts")+cmd.replace(" ","_")+".lut";
+		File f = new File(path);
+		if (!f.exists()) {
+			path = IJ.getDirectory("luts")+cmd+".lut";
+			f = new File(path);
+		}
+		if (!f.exists()) {
+			path = IJ.getDirectory("luts")+cmd.toLowerCase().replace(" ","_")+".lut";
+			f = new File(path);
+		}
+		if (f.exists()) {
+			String dir = OpenDialog.getLastDirectory();
+			IJ.open(path);
+			OpenDialog.setLastDirectory(dir);
+			return true;
+		}
+		return false;
+    }
+
     /** Opens a file from the File/Open Recent menu 
  	      and returns 'true' if successful. */
     boolean openRecent(String cmd) {
