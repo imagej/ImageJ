@@ -343,6 +343,7 @@ public class Menus {
  			String name = list[i];
  			if (name.endsWith(".lut")) {
  				name = name.substring(0,name.length()-4);
+ 				name = name.replace("_", " ");
  				MenuItem item = new MenuItem(name);
 				submenu.add(item);
 				item.addActionListener(ij);
