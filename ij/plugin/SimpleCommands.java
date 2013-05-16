@@ -37,6 +37,8 @@ public class SimpleCommands implements PlugIn {
 			imageToResults();
 		else if (arg.equals("rtoi"))
 			resultsToImage();
+		else if (arg.equals("show"))
+			IJ.runMacroFile("ij.jar:ShowAllLuts", null);
 	}
 
 	private void reset() {

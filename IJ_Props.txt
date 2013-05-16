@@ -132,8 +132,9 @@ color05=-
 color06="Stack to RGB",ij.plugin.RGBStackConverter
 color07="Make Composite",ij.plugin.CompositeConverter
 color08="Show LUT",ij.plugin.filter.LutViewer
-color09="Edit LUT...",ij.plugin.LUT_Editor
-color10="Color Picker...[K]",ij.plugin.frame.ColorPicker
+color09="Show All LUTs",ij.plugin.SimpleCommands("show")
+color10="Edit LUT...",ij.plugin.LUT_Editor
+color11="Color Picker...[K]",ij.plugin.frame.ColorPicker
 
 # Plugins installed in the Image/Stacks submenu
 stacks01="Add Slice",ij.plugin.StackEditor("add")
