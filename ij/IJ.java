@@ -1937,6 +1937,27 @@ public class IJ {
 			return Toolkit.getDefaultToolkit().getScreenSize();
 	}
 	
+	/** Returns, as an array of strings, a list of the LUTs in the Image/Lookup Tables menu. */
+	public static String[] getLuts() {
+		ArrayList list = new ArrayList();
+		Hashtable commands = Menus.getCommands();
+		Menu lutsMenu = Menus.getImageJMenu("Image>Lookup Tables");
+		if (lutsMenu==null)
+			return new String[0];
+		for (int i=0; i<lutsMenu.getItemCount(); i++) {
+			MenuItem menuItem = lutsMenu.getItem(i);
+			if (menuItem.getActionListeners().length == 0) // separator?
+				continue;
+			String label = menuItem.getLabel();
+			if (label.equals("Invert LUT") || label.equals("Apply LUT"))
+				continue;
+			String command = (String)commands.get(label);
+			if (command==null || command.startsWith("ij.plugin.LutLoader"))
+				list.add(label);
+		}
+		return (String[])list.toArray(new String[list.size()]);
+	}
+	
 	static void abort() {
 		if (ij!=null || Interpreter.isBatchMode())
 			throw new RuntimeException(Macro.MACRO_CANCELED);

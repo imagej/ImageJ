@@ -343,7 +343,8 @@ public class Menus {
  			String name = list[i];
  			if (name.endsWith(".lut")) {
  				name = name.substring(0,name.length()-4);
- 				name = name.replace("_", " ");
+ 				if (!isFiji)
+ 					name = name.replace("_", " ");
  				MenuItem item = new MenuItem(name);
 				submenu.add(item);
 				item.addActionListener(ij);
@@ -667,15 +668,23 @@ public class Menus {
             }
     }
 
-	private static Menu getMenu(String menuName) {
-		return getMenu(menuName, false);
+	/** Returns the specified ImageJ menu (e.g., "File>New") or null if it is not found. */
+	public static Menu getImageJMenu(String menuPath) {
+		if (menus.get(menuPath)!=null)
+			return getMenu(menuPath, false);
+		else
+			return null;
+	}
+
+	private static Menu getMenu(String menuPath) {
+		return getMenu(menuPath, false);
 	}
 
 	private static Menu getMenu(String menuName, boolean readFromProps) {
 		if (menuName.endsWith(">"))
 			menuName = menuName.substring(0, menuName.length() - 1);
 		Menu result = (Menu)menus.get(menuName);
-		if (result == null) {
+		if (result==null) {
 			int offset = menuName.lastIndexOf('>');
 			if (offset < 0) {
 				result = new Menu(menuName);

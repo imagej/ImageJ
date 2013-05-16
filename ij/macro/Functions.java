@@ -3933,7 +3933,7 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	Variable[] getList() {
-		String key = getStringArg();
+		String key = getStringArg().toLowerCase();
 		if (key.equals("java.properties")) {
 			Properties props = System.getProperties();
 			Vector v = new Vector();
@@ -3953,6 +3953,12 @@ public class Functions implements MacroConstants, Measurements {
 			return array;
 		} else if (key.equals("threshold.methods")) {
 			String[] list = AutoThresholder.getMethods();
+			Variable[] array = new Variable[list.length];
+			for (int i=0; i<list.length; i++)
+				array[i] = new Variable(0, 0.0, list[i]);
+			return array;
+		} else if (key.equals("luts")) {
+			String[] list = IJ.getLuts();
 			Variable[] array = new Variable[list.length];
 			for (int i=0; i<list.length; i++)
 				array[i] = new Variable(0, 0.0, list[i]);

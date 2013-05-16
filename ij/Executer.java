@@ -141,15 +141,15 @@ public class Executer implements Runnable {
     }
     
     /** Opens a .lut file from the ImageJ/luts directory and returns 'true' if successful. */
-    public static boolean loadLut(String cmd) {
-		String path = IJ.getDirectory("luts")+cmd.replace(" ","_")+".lut";
+    public static boolean loadLut(String name) {
+		String path = IJ.getDirectory("luts")+name.replace(" ","_")+".lut";
 		File f = new File(path);
 		if (!f.exists()) {
-			path = IJ.getDirectory("luts")+cmd+".lut";
+			path = IJ.getDirectory("luts")+name+".lut";
 			f = new File(path);
 		}
 		if (!f.exists()) {
-			path = IJ.getDirectory("luts")+cmd.toLowerCase().replace(" ","_")+".lut";
+			path = IJ.getDirectory("luts")+name.toLowerCase().replace(" ","_")+".lut";
 			f = new File(path);
 		}
 		if (f.exists()) {
