@@ -2023,11 +2023,9 @@ public abstract class ImageProcessor implements Cloneable {
 				((ColorProcessor)this).filterRGB(ColorProcessor.RGB_TRANSLATE, xOffset, yOffset);
 			else {
 				for (int y=roiY; y<(roiY + roiHeight); y++) {
-					if (y%30==0) showProgress((double)(y-roiY)/roiHeight);
 					for (int x=roiX; x<(roiX + roiWidth); x++)
 						putPixel(x, y, ip2.getPixelInterpolated(x-xOffset, y-yOffset));
 				}
-				showProgress(1.0);
 			}
 		} 
   	}
@@ -2167,11 +2165,8 @@ public abstract class ImageProcessor implements Cloneable {
 			}			
 			result = (sum1/sum2 + sum3/sum4)/2.0;
 			movingIndex++;
-			if (max>255 && (movingIndex%inc)==0)
-				showProgress((double)(movingIndex)/max);
 		} while ((movingIndex+1)<=result && movingIndex<max-1);
 		
-		showProgress(1.0);
 		histogram[0]= count0; histogram[maxValue]=countMax;
 		level = (int)Math.round(result);
 		return level;

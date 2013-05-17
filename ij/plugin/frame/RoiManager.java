@@ -1075,7 +1075,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 					break;
 			}
 		}
-		runCommand("show none");
+		if (record() && (mode==DRAW||mode==FILL)) {
+			String cmd = mode==DRAW?"Draw":"Fill";
+			if (Recorder.scriptMode())
+				Recorder.recordCall("rm.runCommand(\""+cmd+"\");");
+			else
+				Recorder.recordString("roiManager(\""+cmd+"\");\n");
+		}
+		if (showAllCheckbox.getState())
+			runCommand("show none");
 		imp.updateAndDraw();
 		return true;
 	}
@@ -2014,6 +2022,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (indexes[i]>=count) indexes[i]=count-1;
 		}
 		selectedIndexes = indexes;
+		list.setSelectedIndices(indexes);
 	}
 	
 	private int[] getSelectedIndexes() {
@@ -2073,26 +2082,42 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public void mouseExited (MouseEvent e) {}
 	
 	public void valueChanged(ListSelectionEvent e) {
-		int index = 0;
-		if (getCount()==0)
+		if (e.getValueIsAdjusting())
 			return;
-		if (list.getSelectedIndices().length==0)
-			return;
-        index = list.getSelectedIndices()[0];
-//        list.repaint();
-		if (index<0) index = 0;
-		if (WindowManager.getCurrentImage()!=null) {
-			if (list.getSelectedIndices().length <=1) {
-				restore(getImage(), index, true);
-			}
+		if (getCount()==0) {
 			if (record()) {
 				if (Recorder.scriptMode())
-					Recorder.recordCall("rm.select(imp, "+index+");");
+					Recorder.recordCall("rm.runCommand(\"Deselect\");");
 				else
-					Recorder.record("roiManager", "Select", index);
+					Recorder.recordString("roiManager(\"Deselect\");\n");
+			}
+			return;
+		}
+		int[] selected = list.getSelectedIndices();
+		if (selected.length==0)
+			return;
+		if (WindowManager.getCurrentImage()!=null) {
+			if (selected.length==1)
+				restore(getImage(), selected[0], true);
+			if (record()) {
+				String arg = Arrays.toString(selected);
+				if (!arg.startsWith("[") || !arg.endsWith("]"))
+					return;
+				arg = arg.substring(1, arg.length()-1);
+				arg = arg.replace(" ", "");
+				if (Recorder.scriptMode()) {
+					if (selected.length==1)
+						Recorder.recordCall("rm.select("+arg+");");
+					else
+						Recorder.recordCall("rm.setSelectedIndexes(["+arg+"]);");
+				} else {
+					if (selected.length == 1)
+						Recorder.recordString("roiManager(\"Select\", " + arg + ");\n");
+					else
+						Recorder.recordString("roiManager(\"Select\", newArray(" + arg + "));\n");
+				}
 			}
 		}
-		
 	}
 
     public void windowActivated(WindowEvent e) {

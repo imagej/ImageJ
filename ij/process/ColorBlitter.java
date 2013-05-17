@@ -134,9 +134,6 @@ public class ColorBlitter implements Blitter {
 				}
 				pixels[dstIndex++] = 0xff000000 + (r2<<16) + (g2<<8) + b2;
 			}
-			if (y%20==0)
-				ip.showProgress((double)(y-rect1.y)/rect1.height);
 		}
-		ip.showProgress(1.0);
 	}
 }

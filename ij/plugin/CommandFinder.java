@@ -19,6 +19,7 @@
 package ij.plugin;
 import ij.*;
 import ij.text.*;
+import ij.plugin.frame.Editor;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -150,6 +151,8 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	public void mouseExited(MouseEvent e) {}
 	
 	void showSource(String cmd) {
+		if (showMacro(cmd))
+			return;
 		Hashtable table = Menus.getCommands();
 		String className = (String)table.get(cmd);
 		if (IJ.debugMode)
@@ -187,6 +190,26 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		error("Unable to display source for this plugin:\n  "+className);
 	}
 	
+	private boolean showMacro(String cmd) {
+		String name = null;
+		if (cmd.equals("Display LUTs"))
+			name = "ShowAllLuts.txt";
+		else if (cmd.equals("New Hyperstack...")||cmd.equals("Hyperstack..."))
+			name = "HyperStackMaker.txt";
+		else if (cmd.equals("Search..."))
+			name = "Search.txt";
+		if (name==null)
+			return false;
+		String code = BatchProcessor.openMacroFromJar(name);
+		if (code!=null) {
+			Editor ed = new Editor();
+			ed.setSize(700, 600);
+			ed.create(name, code);
+			return true;
+		}
+		return false;
+	}
+
 	private void error(String msg) {
 		IJ.error("Command Finder", msg);
 	}

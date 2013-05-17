@@ -235,6 +235,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (IJ.debugMode) IJ.log("recordCall: "+call+"  "+commandName);
 		boolean isMacro = Thread.currentThread().getName().endsWith("Macro$") && !recordInMacros;
 		if (textArea!=null && scriptMode && !IJ.macroRunning() && !isMacro) {
+			if (javaMode() && call.startsWith("rm.setSelected")) {
+				call = call.replace("[", "new int[]{");
+				call = call.replace("])", "})");
+			}
 			textArea.append(call+"\n");
 			commandName = null;
  		}
@@ -539,7 +543,6 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			if (text.indexOf("rm.")!=-1) {
 				text = (java?"RoiManager ":"")+ "rm = RoiManager.getInstance();\n"
 				+ "if (rm==null) rm = new RoiManager();\n"
-				+ "rm.runCommand(\"reset\");\n"
 				+ text;
 			}
 			if (text.indexOf("imp =")==-1 && text.indexOf("IJ.openImage")==-1 && text.indexOf("IJ.createImage")==-1)

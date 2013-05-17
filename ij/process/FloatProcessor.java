@@ -103,7 +103,6 @@ public class FloatProcessor extends ImageProcessor {
 			}
 		}
 		minMaxSet = true;
-		showProgress(1.0);
 	}
 
 	/**
@@ -558,8 +557,6 @@ public class FloatProcessor extends ImageProcessor {
 			if (scale==0) scale = 1f;
 			scale = 1f/scale; //multiplication factor (multiply is faster than divide)
 		}
-		int inc = roiHeight/25;
-		if (inc<1) inc = 1;
 		
 		float[] pixels2 = (float[])getPixelsCopy();
 		//float[] pixels2 = (float[])getPixelsCopy();
@@ -622,10 +619,7 @@ public class FloatProcessor extends ImageProcessor {
 				}
 				break;
 			}
-			if (y%inc==0)
-				showProgress((double)(y-roiY)/roiHeight);
 		}
-		showProgress(1.0);
 	}
 
 	/** Rotates the image or ROI 'angle' degrees clockwise.
@@ -658,7 +652,6 @@ public class FloatProcessor extends ImageProcessor {
 					ys = x*sa + tmp4;
 					pixels[index++] = (float)getBicubicInterpolatedPixel(xs, ys, ip2);
 				}
-				if (y%30==0) showProgress((double)(y-roiY)/roiHeight);
 			}
 		} else {
 			double dwidth=width,dheight=height;
@@ -688,11 +681,9 @@ public class FloatProcessor extends ImageProcessor {
 					} else
 						pixels[index++] = 0;
 				}
-				if (y%30==0)
 				showProgress((double)(y-roiY)/roiHeight);
 			}
 		}
-		showProgress(1.0);
 	}
 
 	public void flipVertical() {
@@ -781,7 +772,6 @@ public class FloatProcessor extends ImageProcessor {
 					xs = (x-xCenter)/xScale + xCenter;
 					pixels[index1++] = (float)getBicubicInterpolatedPixel(xs, ys, ip2);
 				}
-				if (y%30==0) showProgress((double)(y-ymin)/height);
 			}
 		} else {
 			double xlimit = width-1.0, xlimit2 = width-1.001;
@@ -807,10 +797,8 @@ public class FloatProcessor extends ImageProcessor {
 							pixels[index1++] = pixels2[index2+xsi];
 					}
 				}
-				if (y%30==0) showProgress((double)(y-ymin)/height);
 			}
 		}
-		showProgress(1.0);
 	}
 
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
@@ -886,7 +874,6 @@ public class FloatProcessor extends ImageProcessor {
 					xs = (x-dstCenterX)/xScale + srcCenterX;
 					pixels2[index++] = (float)getBicubicInterpolatedPixel(xs, ys, this);
 				}
-				if (y%30==0) showProgress((double)y/dstHeight);
 			}
 		} else {
 			double xlimit = width-1.0, xlimit2 = width-1.001;
@@ -909,10 +896,8 @@ public class FloatProcessor extends ImageProcessor {
 					} else
 						pixels2[index2++] = pixels[index1+(int)xs];
 				}
-				if (y%30==0) showProgress((double)y/dstHeight);
 			}
 		}
-		showProgress(1.0);
 		return ip2;
 	}
 	
