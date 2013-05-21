@@ -2767,10 +2767,27 @@ public class Functions implements MacroConstants, Measurements {
 		String type = getNextString();
 		int width = (int)getNextArg();
 		int height = (int)getNextArg();
-		int depth = (int)getLastArg();
+		int depth = (int)getNextArg();
+		int c=-1, z=-1, t=-1;
+		if (interp.nextToken()==')')
+			interp.getRightParen();
+		else {
+			c = depth;
+			z = (int)getNextArg();
+			t = (int)getLastArg();
+		}
 		if (width<1 || height<1)
 			interp.error("Width or height < 1");
-		IJ.newImage(title, type, width, height, depth);
+		if (c<0)
+			IJ.newImage(title, type, width, height, depth);
+		else {
+			ImagePlus imp = IJ.createImage(title, type, width, height, c*z*t);
+			imp.setDimensions(c, z, t);
+			if (imp.getBitDepth()!=24)
+				imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
+			imp.setOpenAsHyperStack(true);
+			imp.show();
+		}
 		resetImage();
 	}
 

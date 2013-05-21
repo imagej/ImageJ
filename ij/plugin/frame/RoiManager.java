@@ -1075,13 +1075,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 					break;
 			}
 		}
-		if (record() && (mode==DRAW||mode==FILL)) {
-			String cmd = mode==DRAW?"Draw":"Fill";
-			if (Recorder.scriptMode())
-				Recorder.recordCall("rm.runCommand(\""+cmd+"\");");
-			else
-				Recorder.recordString("roiManager(\""+cmd+"\");\n");
-		}
+		if (record() && (mode==DRAW||mode==FILL))
+			Recorder.record("roiManager", mode==DRAW?"Draw":"Fill");
 		if (showAllCheckbox.getState())
 			runCommand("show none");
 		imp.updateAndDraw();
@@ -2009,10 +2004,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 	}
 	
-	/** Temporarily selects multiple ROIs, where 'indexes' is an array of integers, 
+	/** Selects multiple ROIs, where 'indexes' is an array of integers, 
 		each greater than or equal to 0 and less than the value returned by getCount().
-		The selected ROIs are not highlighted in the ROI Manager list and are no 
-		longer selected after the next ROI Manager command is executed.
+	*/
+	/** Selects multiple ROIs, where 'indexes' is an array of integers, each
+	* greater than or equal to 0 and less than the value returned by getCount().
+	* @see #getSelectedIndexes
+	* @see #getSelectedRoisAsArray
+	* @see #getCount
 	*/
 	public void setSelectedIndexes(int[] indexes) {
 		int count = getCount();
@@ -2025,7 +2024,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		list.setSelectedIndices(indexes);
 	}
 	
-	private int[] getSelectedIndexes() {
+	/** Returns an array of all of the selected indexes. */
+	public int[] getSelectedIndexes() {
 		if (selectedIndexes!=null) {
 			int[] indexes = selectedIndexes;
 			selectedIndexes = null;
@@ -2085,12 +2085,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (e.getValueIsAdjusting())
 			return;
 		if (getCount()==0) {
-			if (record()) {
-				if (Recorder.scriptMode())
-					Recorder.recordCall("rm.runCommand(\"Deselect\");");
-				else
-					Recorder.recordString("roiManager(\"Deselect\");\n");
-			}
+			if (record())
+				Recorder.record("roiManager", "Deselect");
 			return;
 		}
 		int[] selected = list.getSelectedIndices();

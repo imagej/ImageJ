@@ -22,8 +22,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	/** Set this variable true to allow recording within IJ.run() calls. */
 	public static boolean recordInMacros;
 
-	private final static int MACRO=0, JAVASCRIPT=1, PLUGIN=2;
-	private final static String[] modes = {"Macro", "JavaScript", "Plugin"};
+	private final static int MACRO=0, JAVASCRIPT=1, BEANSHELL=2, JAVA=3;
+	private final static String[] modes = {"Macro", "JavaScript", "BeanShell", "Java"};
 	private Choice mode;
 	private Button makeMacro, help;
 	private TextField fileName;
@@ -61,7 +61,9 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		for (int i=0; i<modes.length; i++)
 			mode.addItem(modes[i]);
 		mode.addItemListener(this);
-		mode.select(Prefs.get("recorder.mode", modes[MACRO]));
+		String m = Prefs.get("recorder.mode", modes[MACRO]);
+		if (m.equals("Plugin")) m=modes[JAVA];
+		mode.select(m);
 		panel.add(mode);
 		panel.add(new Label("    Name:"));
 		fileName = new TextField(defaultName, 15);
@@ -308,7 +310,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	}
 	
 	private static boolean javaMode() {
-		return instance!=null && instance.mode.getSelectedItem().equals(modes[PLUGIN]);
+		if (instance==null)
+			return false;
+		String m = instance.mode.getSelectedItem();
+		return m.equals(modes[BEANSHELL]) || m.equals(modes[JAVA]);
 	}
 	
 	public static void recordOption(String key, String value) {
@@ -535,10 +540,11 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
 		if (ed==null)
 			return;
-		boolean java = mode.getSelectedItem().equals(modes[PLUGIN]);
+		boolean java = mode.getSelectedItem().equals(modes[JAVA]);
+		boolean beanshell = mode.getSelectedItem().equals(modes[BEANSHELL]);
 		String name = fileName.getText();
 		int dotIndex = name.lastIndexOf(".");
-		if (scriptMode) { // JavaScript or Java
+		if (scriptMode) { // JavaScript, BeanShell or Java
 			if (dotIndex>=0) name = name.substring(0, dotIndex);
 			if (text.indexOf("rm.")!=-1) {
 				text = (java?"RoiManager ":"")+ "rm = RoiManager.getInstance();\n"
@@ -553,7 +559,9 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 				name += ".java";
 				createPlugin(text, name);
 				return;
-			} else
+			} else if (beanshell)
+				name += ".bsh";
+			else
 				name += ".js";
 		} else { // ImageJ macro
 			if (!name.endsWith(".txt")) {
@@ -614,11 +622,13 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	
 	void setFileName() {
 		String name = mode.getSelectedItem();
-		scriptMode = name.equals(modes[JAVASCRIPT])||name.equals(modes[PLUGIN]);
+		scriptMode = !name.equals(modes[MACRO]);
 		if (name.equals(modes[MACRO]))
 			fileName.setText("Macro.ijm");
 		else if (name.equals(modes[JAVASCRIPT]))
-			fileName.setText("script.js");
+			fileName.setText("Script.js");
+		else if (name.equals(modes[BEANSHELL]))
+			fileName.setText("Script.bsh");
 		else
 			fileName.setText("My_Plugin.java");
 		fgColorSet = bgColorSet = false;
