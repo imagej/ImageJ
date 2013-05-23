@@ -2781,11 +2781,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (c<0)
 			IJ.newImage(title, type, width, height, depth);
 		else {
-			ImagePlus imp = IJ.createImage(title, type, width, height, c*z*t);
-			imp.setDimensions(c, z, t);
-			if (imp.getBitDepth()!=24)
-				imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
-			imp.setOpenAsHyperStack(true);
+			ImagePlus imp = IJ.createImage(title, type, width, height, c, z, t);
 			imp.show();
 		}
 		resetImage();

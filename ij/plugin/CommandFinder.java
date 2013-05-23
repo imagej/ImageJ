@@ -194,8 +194,6 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		String name = null;
 		if (cmd.equals("Display LUTs"))
 			name = "ShowAllLuts.txt";
-		else if (cmd.equals("New Hyperstack...")||cmd.equals("Hyperstack..."))
-			name = "HyperStackMaker.txt";
 		else if (cmd.equals("Search..."))
 			name = "Search.txt";
 		if (name==null)

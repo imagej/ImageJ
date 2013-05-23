@@ -406,7 +406,9 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 							String s = scriptMode?"IJ.saveAs(imp, ":"saveAs(";
 							textArea.append(s+"\""+name+"\", \""+path+"\");\n");
 				} else if (name.equals("Image..."))
-					appendNewImage();
+					appendNewImage(IJ.altKeyDown());
+				else if (name.equals("Hyperstack...")||name.equals("New Hyperstack..."))
+					appendNewImage(true);
 				else if (name.equals("Set Slice..."))
 					textArea.append((scriptMode?"imp.":"")+"setSlice("+strip(commandOptions)+");\n");
 				else if (name.equals("Rename..."))
@@ -490,17 +492,32 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			|| commandName.equals("Text... ");
 	}
 
-	static void appendNewImage() {
+	static void appendNewImage(boolean hyperstack) {
 		String options = getCommandOptions() + " ";
+		//IJ.log("appendNewImage: "+options);
 		String title = Macro.getValue(options, "name", "Untitled");
 		String type = Macro.getValue(options, "type", "8-bit");
 		String fill = Macro.getValue(options, "fill", "");
-		if (!fill.equals("")) type = type +" " + fill;
+		if (!fill.equals(""))
+			type = type +" " + fill.toLowerCase();
+		if (hyperstack) {
+			String mode = Macro.getValue(options, "display", "");
+			if (!mode.equals(""))
+				type = type +" " + mode.toLowerCase() + "-mode";
+			if (options.contains(" label"))
+				type = type +" label";
+		}
 		int width = (int)Tools.parseDouble(Macro.getValue(options, "width", "512"));
 		int height = (int)Tools.parseDouble(Macro.getValue(options, "height", "512"));
-		int depth= (int)Tools.parseDouble(Macro.getValue(options, "slices", "1"));
+		String d1= ", " + (int)Tools.parseDouble(Macro.getValue(options, "slices", "1"));
+		String d2="", d3="";
+		if (hyperstack) {
+			d1 = ", " + (int)Tools.parseDouble(Macro.getValue(options, "channels", "1"));
+			d2 = ", " + (int)Tools.parseDouble(Macro.getValue(options, "slices", "1"));
+			d3 = ", " + (int)Tools.parseDouble(Macro.getValue(options, "frames", "1"));
+		}
 		textArea.append((scriptMode?"imp = IJ.createImage":"newImage")
-			+"(\""+title+"\", "+"\""+type+"\", "+width+", "+height+", "+depth+");\n");
+			+"(\""+title+"\", "+"\""+type+"\", "+width+", "+height+d1+d2+d3+");\n");
 	}
 
 	static String strip(String value) {

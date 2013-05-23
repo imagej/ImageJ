@@ -1814,21 +1814,52 @@ public class IJ {
 	 public static ImagePlus createImage(String title, String type, int width, int height, int depth) {
 		type = type.toLowerCase(Locale.US);
 		int bitDepth = 8;
-		if (type.indexOf("16")!=-1) bitDepth = 16;
-		if (type.indexOf("24")!=-1||type.indexOf("rgb")!=-1) bitDepth = 24;
-		if (type.indexOf("32")!=-1) bitDepth = 32;
+		if (type.contains("16")) bitDepth = 16;
+		if (type.contains("24")||type.contains("rgb")) bitDepth = 24;
+		if (type.contains("32")) bitDepth = 32;
 		int options = NewImage.FILL_WHITE;
 		if (bitDepth==16 || bitDepth==32)
 			options = NewImage.FILL_BLACK;
-		if (type.indexOf("white")!=-1)
+		if (type.contains("white"))
 			options = NewImage.FILL_WHITE;
-		else if (type.indexOf("black")!=-1)
+		else if (type.contains("black"))
 			options = NewImage.FILL_BLACK;
-		else if (type.indexOf("ramp")!=-1)
+		else if (type.contains("ramp"))
 			options = NewImage.FILL_RAMP;
 		options += NewImage.CHECK_AVAILABLE_MEMORY;
 		return NewImage.createImage(title, width, height, depth, bitDepth, options);
 	}
+
+	/** Creates a new hyperstack.
+	* @param title   image name
+	* @param type  "8-bit", "16-bit", "32-bit" or "RGB".  May also
+	* contain "white" , "black" (the default), "ramp", "composite-mode",
+	* "color-mode", "grayscale-mode or "label".
+	* @param width  image width in pixels
+	* @param height image height in pixels
+	* @param channels number of channels
+	* @param slices number of slices
+	* @param frames number of frames
+	*/
+	 public static ImagePlus createImage(String title, String type, int width, int height, int channels, int slices, int frames) {
+		if (type.contains("label"))
+	 		type += "ramp";
+		if (!(type.contains("white")||type.contains("ramp")))
+	 		type += "black";
+		ImagePlus imp = IJ.createImage(title, type, width, height, channels*slices*frames);
+		imp.setDimensions(channels, slices, frames);
+		int mode = CompositeImage.COLOR;
+		if (type.contains("composite"))
+			mode = CompositeImage.COMPOSITE;
+		if (type.contains("grayscale"))
+			mode = CompositeImage.GRAYSCALE;
+		if (imp.getBitDepth()!=24)
+			imp = new CompositeImage(imp, mode);
+		imp.setOpenAsHyperStack(true);
+		if (type.contains("label"))
+			HyperStackMaker.labelHyperstack(imp);
+		return imp;
+	 }
 
 	/** Creates a new hyperstack.
 	*  @param title   image name
