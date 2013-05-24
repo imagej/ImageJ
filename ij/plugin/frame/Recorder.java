@@ -406,7 +406,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 							String s = scriptMode?"IJ.saveAs(imp, ":"saveAs(";
 							textArea.append(s+"\""+name+"\", \""+path+"\");\n");
 				} else if (name.equals("Image..."))
-					appendNewImage(IJ.altKeyDown());
+					appendNewImage(false);
 				else if (name.equals("Hyperstack...")||name.equals("New Hyperstack..."))
 					appendNewImage(true);
 				else if (name.equals("Set Slice..."))

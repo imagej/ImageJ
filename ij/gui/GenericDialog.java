@@ -41,7 +41,7 @@ public class GenericDialog extends Dialog implements ActionListener, TextListene
 FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	public static final int MAX_SLIDERS = 25;
-	protected Vector numberField, stringField, checkbox, choice, slider;
+	protected Vector numberField, stringField, checkbox, choice, slider, radioButtonGroup;
 	protected TextArea textArea1, textArea2;
 	protected Vector defaultValues,defaultText;
 	protected Component theLabel;
@@ -51,7 +51,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private String helpLabel = "Help";
     private boolean wasCanceled, wasOKed;
     private int y;
-    private int nfIndex, sfIndex, cbIndex, choiceIndex, textAreaIndex;
+    private int nfIndex, sfIndex, cbIndex, choiceIndex, textAreaIndex, radioButtonIndex;
 	private GridBagLayout grid;
 	private GridBagConstraints c;
 	private boolean firstNumericField=true;
@@ -189,7 +189,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		return new Label(label);
     }
     
-    private void saveLabel(Component component, String label) {
+    private void saveLabel(Object component, String label) {
     	if (labels==null)
     		labels = new Hashtable();
     	if (label.length()>0) {
@@ -418,6 +418,39 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		y++;
     }
 
+    /** Adds a radio button group.
+	* @param label			group label
+	* @param items		radio button labels
+	* @param rows			number of rows
+	* @param columns	number of columns
+	* @param defaultIndex		button initially selected
+	*/
+    public void addRadioButtonGroup(String label, String[] items, int rows, int columns, String defaultItem) {
+    	Panel panel = new Panel();
+    	int n = items.length;
+     	panel.setLayout(new GridLayout(rows, columns, 0, 0));
+		CheckboxGroup cg = new CheckboxGroup();
+		for (int i=0; i<n; i++)
+			panel.add(new Checkbox(items[i],cg,items[i]==defaultItem));
+		if (radioButtonGroup==null)
+			radioButtonGroup = new Vector();
+		radioButtonGroup.addElement(cg);
+		Insets insets = getInsets(5, 0, 0, 0);
+		if (label!=null && !label.equals("")) {
+			setInsets(10, insets.left, 0);
+			addMessage(label);
+		}
+		c.gridx = 0; c.gridy = y;
+		c.gridwidth = 2;
+		c.anchor = GridBagConstraints.WEST;
+		c.insets = new Insets(2, insets.left+10, 0, 0);
+		grid.setConstraints(panel, c);
+		add(panel);
+		if (Recorder.record || macro)
+			saveLabel(cg, label);
+		y++;
+    }
+
     /** Adds a popup menu.
    * @param label	the label
    * @param items	the menu items
@@ -626,10 +659,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     /** Adds a Panel to the dialog with custom contraint and insets. The
     	defaults are GridBagConstraints.WEST (left justified) and 
     	"new Insets(5, 0, 0, 0)" (5 pixels of padding at the top). */
-    public void addPanel(Panel panel, int contraints, Insets insets) {
+    public void addPanel(Panel panel, int constraints, Insets insets) {
 		c.gridx = 0; c.gridy = y;
 		c.gridwidth = 2;
-		c.anchor = contraints;
+		c.anchor = constraints;
 		c.insets = insets;
 		grid.setConstraints(panel, c);
 		add(panel);
@@ -790,8 +823,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		return value;
 	}
 
-	private void recordOption(Component component, String value) {
-		String label = (String)labels.get((Object)component);
+	private void recordOption(Object component, String value) {
+		String label = (String)labels.get(component);
 		if (value.equals("")) value = "[]";
 		Recorder.recordOption(label, value);
 	}
@@ -960,6 +993,25 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		return index;
     }
     
+  	/** Returns the index of the selected item in the next radio button group. */
+    public String getNextRadioButton() {
+		if (radioButtonGroup==null)
+			return null;
+		CheckboxGroup cg = (CheckboxGroup)(radioButtonGroup.elementAt(radioButtonIndex));
+		radioButtonIndex++;
+		Checkbox checkbox = cg.getSelectedCheckbox();
+		String item = "null";
+		if (checkbox!=null)
+			item = checkbox.getLabel();
+		if (macro) {
+			String label = (String)labels.get((Object)cg);
+			item = Macro.getValue(macroOptions, label, item);
+		}	
+		if (recorderOn)
+			recordOption(cg, item);
+		return item;
+    }
+
     private String getChoiceVariable(String item) {
 		item = item.substring(1);
 		Interpreter interp = Interpreter.getInstance();
