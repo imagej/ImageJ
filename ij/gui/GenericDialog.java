@@ -423,7 +423,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	* @param items		radio button labels
 	* @param rows			number of rows
 	* @param columns	number of columns
-	* @param defaultIndex		button initially selected
+	* @param defaultItem		button initially selected
 	*/
     public void addRadioButtonGroup(String label, String[] items, int rows, int columns, String defaultItem) {
     	Panel panel = new Panel();
@@ -431,7 +431,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
      	panel.setLayout(new GridLayout(rows, columns, 0, 0));
 		CheckboxGroup cg = new CheckboxGroup();
 		for (int i=0; i<n; i++)
-			panel.add(new Checkbox(items[i],cg,items[i]==defaultItem));
+			panel.add(new Checkbox(items[i],cg,items[i].equals(defaultItem)));
 		if (radioButtonGroup==null)
 			radioButtonGroup = new Vector();
 		radioButtonGroup.addElement(cg);
@@ -993,7 +993,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		return index;
     }
     
-  	/** Returns the index of the selected item in the next radio button group. */
+  	/** Returns the selected item in the next radio button group. */
     public String getNextRadioButton() {
 		if (radioButtonGroup==null)
 			return null;

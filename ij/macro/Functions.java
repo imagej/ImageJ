@@ -3242,6 +3242,8 @@ public class Functions implements MacroConstants, Measurements {
 				gd.addCheckbox(getFirstString(), getLastArg()==1?true:false);
 			} else if (name.equals("addCheckboxGroup")) {
 				addCheckboxGroup(gd);
+			} else if (name.equals("addRadioButtonGroup")) {
+				addRadioButtonGroup(gd);
 			} else if (name.equals("addMessage")) {
 				gd.addMessage(getStringArg());
 			} else if (name.equals("addHelp")) {
@@ -3279,6 +3281,9 @@ public class Functions implements MacroConstants, Measurements {
 			} else if (name.equals("getChoice")) {
 				interp.getParens();
 				return gd.getNextChoice();
+			} else if (name.equals("getRadioButton")) {
+				interp.getParens();
+				return gd.getNextRadioButton();
 			} else
 				interp.error("Unrecognized Dialog function "+name);
 		} catch (IndexOutOfBoundsException e) {
@@ -3300,6 +3305,16 @@ public class Functions implements MacroConstants, Measurements {
 		for (int i=0; i<n; i++)
 			states[i] = dstates[i]==1.0?true:false;
 		gd.addCheckboxGroup(rows, columns, labels, states);
+	}
+
+	void addRadioButtonGroup(GenericDialog gd) {
+		String label = getFirstString();
+		interp.getComma();
+		String[] items = getStringArray();
+		int rows = (int)getNextArg();
+		int columns = (int)getNextArg();
+		String defaultItem = getLastString();
+		gd.addRadioButtonGroup(label, items, rows, columns, defaultItem);
 	}
 
 	void getDateAndTime() {
