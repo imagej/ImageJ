@@ -419,7 +419,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     }
 
     /** Adds a radio button group.
-	* @param label			group label
+	* @param label			group label (or null)
 	* @param items		radio button labels
 	* @param rows			number of rows
 	* @param columns	number of columns
@@ -435,15 +435,20 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		if (radioButtonGroup==null)
 			radioButtonGroup = new Vector();
 		radioButtonGroup.addElement(cg);
-		Insets insets = getInsets(5, 0, 0, 0);
-		if (label!=null && !label.equals("")) {
+		Insets insets = getInsets(5, 10, 0, 0);
+		if (label==null || label.equals("")) {
+			label = "rbg"+radioButtonGroup.size();
+			insets.top += 5;
+		} else {
 			setInsets(10, insets.left, 0);
 			addMessage(label);
+			insets.top = 2;
+			insets.left += 10;
 		}
 		c.gridx = 0; c.gridy = y;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
-		c.insets = new Insets(2, insets.left+10, 0, 0);
+		c.insets = new Insets(insets.top, insets.left, 0, 0);
 		grid.setConstraints(panel, c);
 		add(panel);
 		if (Recorder.record || macro)
@@ -676,6 +681,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
         addMessage: 0,20,0 (empty string) or 10,20,0
         addCheckbox: 15,20,0 (first checkbox) or 0,20,0
         addCheckboxGroup: 10,0,0 
+        addRadioButtonGroup: 5,10,0 
         addNumericField: 5,0,3 (first field) or 0,0,3
         addStringField: 5,0,5 (first field) or 0,0,5
         addChoice: 5,0,5 (first field) or 0,0,5

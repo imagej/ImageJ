@@ -8,6 +8,7 @@
 <li> <u>1.47r 24 May 2013</u>
 <ul>
 <li> Added the <i>Image&gt;Color&gt;Display LUTs</i> command.
+<li> Improved the <i>Plugins&gt;Utilities&gt;Search</i> command.
 <li> Added a "BeanShell" mode to the recorder (<i>Plugins&gt;Macros&gt;Record</i>).
 <li> Thanks to Samuel Inverso, the <i>File&gt;Import&gt;Raw</i> dialog is displayed when
 a .raw file is dragged and dropped on the "ImageJ" window or opened using <i>File&gt;Open</i>.
@@ -33,6 +34,8 @@ to not work as expected with selections that extend beyond the image boundary.
 <li> Thanks to Johannes Schindelin, fixed ROI Manager bugs that caused key presses to be recorded
 twice, caused multiple selections to be recorded incorrectly as single selections, and caused
 macro calls like roiManager("Select",newArray(1,2)) to not update the GUI.
+<li> Worked aroung a bug in Java 1.7 for OS X that caused the DirectoryChooser, used by
+<i>File&gt;Import&gt;Image Sequence</i>, to fail.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
