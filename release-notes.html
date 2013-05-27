@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.47r 24 May 2013</u>
+<li> <u>1.47r 27 May 2013</u>
 <ul>
 <li> Added the <i>Image&gt;Color&gt;Display LUTs</i> command.
 <li> Improved the <i>Plugins&gt;Utilities&gt;Search</i> command.
@@ -16,6 +16,8 @@ a .raw file is dragged and dropped on the "ImageJ" window or opened using <i>Fil
 to the <i>Image&gt;Lookup Tables</i> menu.
 <li> Thanks to Ingo Bartholomaeus, several ImageProcessor methods (e.g. copyBits())
 no longer display progress bars.
+<li> Thanks to Norbert Vischer, the setColor() and Plot.setColor() macro functions now
+accept hex strings such "#ff0000".
 <li> Added the getList("LUTs") macro function 
 (<a href="macros/Time-Lapse_Color_Coder.txt">example</a>) and the IJ.getLuts() method.
 <li> Added the newImage(title,type,width,height,channels,slices,frames) macro function, which is
@@ -36,6 +38,8 @@ twice, caused multiple selections to be recorded incorrectly as single selection
 macro calls like roiManager("Select",newArray(1,2)) to not update the GUI.
 <li> Worked aroung a bug in Java 1.7 for OS X that caused the DirectoryChooser, used by
 <i>File&gt;Import&gt;Image Sequence</i>, to fail.
+<li> Thanks to Christophe Leterrier, fixed a bug in <i>File&gt;Import&gt;Image Sequence</i>
+that caused it to not set the slice label when the folder being opened contained a single image.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

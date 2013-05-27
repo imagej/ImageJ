@@ -533,7 +533,7 @@ public class Functions implements MacroConstants, Measurements {
 		return a;
 	}
 		
-	Color getColor() {
+	private Color getColor() {
 		String color = getString();
 		color = color.toLowerCase(Locale.US);
 		if (color.equals("black"))
@@ -562,8 +562,10 @@ public class Functions implements MacroConstants, Measurements {
 			return Color.yellow;
 		else if (color.equals("pink"))
 			return Color.pink;
+		else if (color.startsWith("#")) 
+			return Colors.decode(color, Color.black); 
 		else
-			interp.error("'red', 'green', etc. expected");
+			interp.error("'red', 'green', or '#0000ff' etc. expected");
 		return null;
 	}
 
@@ -1473,8 +1475,11 @@ public class Functions implements MacroConstants, Measurements {
 				return win!=null?win.createSubtitle():"";
 			} else if (key.equals("slice.label")) {
 				ImagePlus imp = getImage();
-				if (imp.getStackSize()==1) return "";
-				String label = imp.getStack().getShortSliceLabel(imp.getCurrentSlice());
+				String label = null;
+				if (imp.getStackSize()==1)
+					label = (String)imp.getProperty("Label");
+				else
+					label = imp.getStack().getShortSliceLabel(imp.getCurrentSlice());
 				return label!=null?label:"";
 			} else if (key.equals("window.contents")) {
 				return getWindowContents();
@@ -1550,7 +1555,8 @@ public class Functions implements MacroConstants, Measurements {
 		if (imp.getStackSize()>1) {
 			ImageStack stack = imp.getStack();
 			String label = stack.getSliceLabel(imp.getCurrentSlice());
-			if (label!=null && label.indexOf('\n')>0) metadata = label;
+			if (label!=null && label.indexOf('\n')>0)
+				metadata = label;
 		}
 		if (metadata==null)
 			metadata = (String)imp.getProperty("Info");

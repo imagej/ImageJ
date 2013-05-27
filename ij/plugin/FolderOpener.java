@@ -331,8 +331,11 @@ public class FolderOpener implements PlugIn {
 					imp2.setCalibration(cal);
 				}
 			}
-			if (imp2.getStackSize()==1 && info1!=null)
-				imp2.setProperty("Info", info1);
+			if (imp2.getStackSize()==1) {
+				imp2.setProperty("Label", list[0]);
+				if (info1!=null)
+					imp2.setProperty("Info", info1);
+			}
 			if (arg==null && !saveImage) {
 				imp2.show();
 				if (stack.isVirtual()) {
