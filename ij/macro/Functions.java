@@ -405,6 +405,28 @@ public class Functions implements MacroConstants, Measurements {
 		return arg==0?false:true;
 	}
 
+    boolean getFirstBoolean() {
+		interp.getLeftParen();
+		double arg = interp.getBooleanExpression();
+		interp.checkBoolean(arg);
+		return arg==0?false:true;
+	}
+
+	boolean getNextBoolean() {
+		interp.getComma();
+		double arg = interp.getBooleanExpression();
+		interp.checkBoolean(arg);
+		return arg==0?false:true;
+	}
+
+	boolean getLastBoolean() {
+		interp.getComma();
+		double arg = interp.getBooleanExpression();
+		interp.checkBoolean(arg);
+		interp.getRightParen();
+		return arg==0?false:true;
+	}
+
 	final Variable getVariableArg() {
 		interp.getLeftParen();
 		Variable v = getVariable();
@@ -1199,25 +1221,6 @@ public class Functions implements MacroConstants, Measurements {
 		else
 			return 0.0;
 	}
-
-	double getBoolean2() {
-		String prompt = getFirstString();
-		interp.getComma();
-		double defaultValue = interp.getBooleanExpression();
-		interp.checkBoolean(defaultValue);
-		interp.getRightParen();
-		String title = interp.macroName!=null?interp.macroName:"";
-		if (title.endsWith(" Options"))
-			title = title.substring(0, title.length()-8);
-		GenericDialog gd = new GenericDialog(title);
-		gd.addCheckbox(prompt, defaultValue==1.0?true:false);
-		gd.showDialog();
-		if (gd.wasCanceled()) {
-			interp.done = true;
-			return 0.0;
-		}
-		return gd.getNextBoolean()?1.0:0.0;
-	}
 	
 	String getStringDialog() {
 		interp.getLeftParen();
@@ -1985,12 +1988,21 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("setLimits")) {
 			plot.setLimits(getFirstArg(), getNextArg(), getNextArg(), getLastArg());
 		    return;
+		} else if (name.equals("setMaxIntervals")) {
+			plot.setMaxIntervals((int)getArg());
+			return;
+		} else if (name.equals("setAxes")) {
+			plot.setAxes(getFirstBoolean(), getNextBoolean(), getNextBoolean(), getNextBoolean(), getNextBoolean(), getNextBoolean(), (int)getNextArg(), (int)getLastArg());
+			return;
 		} else if (name.equals("addText") || name.equals("drawLabel")) {
 		    addPlotText(); 
 		    return;
 		} else if (name.equals("drawLine")) {
 		    drawPlotLine(); 
 		    return;
+		} else if (name.equals("drawVectors")) {
+			drawVectors(); 
+			return;
 		} else if (name.equals("setColor")) {
 		    setPlotColor(); 
 		    return;
@@ -2123,6 +2135,14 @@ public class Functions implements MacroConstants, Measurements {
 		plot.drawLine(x1, y1, x2, y2);
 	}
 
+	void drawVectors() {
+		double[] x1 = getFirstArray();
+		double[] y1 = getNextArray();
+		double[] x2 = getNextArray();
+		double[] y2 = getLastArray();
+		plot.drawVectors(x1, y1, x2, y2);
+	}
+
 	void setPlotColor() {
 		interp.getLeftParen();
 		plot.setColor(getColor());
@@ -2130,8 +2150,10 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void addToPlot(int what) {
+		boolean errorBars = false;
 		double[] x = getNextArray();
 		double[] y;
+		double[] e = new double[x.length];
 		if (interp.nextToken()==')') {
 			y = x;
 			x = new double[y.length];
@@ -2140,12 +2162,19 @@ public class Functions implements MacroConstants, Measurements {
 		} else {
 			interp.getComma();
 			y = getNumericArray();
+			if (interp.nextToken()!=')') {
+				errorBars = true;
+				interp.getComma();
+				e = getNumericArray();
+			}
 		}
 		interp.getRightParen();
 		if (what==-1)
 			plot.addErrorBars(y);
-		else			
-			plot.addPoints(x, y, what);		
+		else if (errorBars)
+			plot.addPoints(x, y, e, what);
+		else
+			plot.addPoints(x, y, what);
 	}
 	
 	void getBounds() {

@@ -48,6 +48,9 @@ public class HyperStackMaker implements PlugIn {
 	}
 	
 	private boolean showDialog() {
+		String options = IJ.isMacro()?Macro.getOptions():null;
+		if (options!=null && options.contains("title="))
+			Macro.setOptions(options.replace("title=", "name="));
 		GenericDialog gd = new GenericDialog("New Hyperstack...");
 		gd.addStringField("Name:", title, 12);
 		gd.addChoice("Type:", types, type);
