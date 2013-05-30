@@ -1966,9 +1966,6 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("setLimits")) {
 			plot.setLimits(getFirstArg(), getNextArg(), getNextArg(), getLastArg());
 		    return;
-		} else if (name.equals("setMaxIntervals")) {
-			plot.setMaxIntervals((int)getArg());
-			return;
 		} else if (name.equals("setLogScaleX")) {
 			interp.getParens();			
 			plot.setLogScaleX();

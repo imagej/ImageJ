@@ -40,6 +40,7 @@ public class HyperStackMaker implements PlugIn {
 		else if (mode.equals("Grayscale"))
 			type2 += " grayscale";
 		ImagePlus imp = IJ.createImage(title, type2, width, height, c, z, t);
+		WindowManager.checkForDuplicateName = true;          
 		imp.show();
 		if (!IJ.isMacro()) {
 			String defaults2 = type+" "+mode+" "+width+" "+height+" "+c+" "+z+" "+t+" "+(label?"1":"0");

@@ -148,6 +148,8 @@ public class SyncWindows extends PlugInFrame implements
 	* Method to pass on changes of the z-slice of a stack.
 	*/
 	public void displayChanged(DisplayChangeEvent e) {
+		//if (e!=null) throw new IllegalArgumentException();
+		//IJ.log("displayChanged: "+e);
 		if (vwins == null) return;
 
 		Object source = e.getSource();
@@ -167,12 +169,10 @@ public class SyncWindows extends PlugInFrame implements
 		if (cChannel.getState() && type==DisplayChangeEvent.CHANNEL) {
 			for (int n=0; n<vwins.size();++n) {
 				imp = getImageFromVector(n);
-				if (imp != null) {
+				if (imp!=null) {
 					iw = imp.getWindow();
-					if( !iw.equals(source)) {
-						if (iw instanceof StackWindow)
-							((StackWindow)iw).setPosition(value, imp.getSlice(), imp.getFrame());
-					}
+					if (!iw.equals(source))
+						imp.setC(value);
 				}
 			}	
 		}		 
@@ -183,13 +183,8 @@ public class SyncWindows extends PlugInFrame implements
 				imp = getImageFromVector(n);
 				if (imp != null) {
 					iw = imp.getWindow();
-					int stacksize = imp.getStackSize();
-					if (!iw.equals(source) && (iw instanceof StackWindow)) {
-						if (imp.getNChannels()==imp.getStackSize())
-							imp.setC(value);
-						else
-							((StackWindow)iw).setPosition(imp.getChannel(), value, imp.getFrame());
-					}
+					if (!iw.equals(source))
+						imp.setZ(value);
 				}
 			}
 		}
@@ -198,12 +193,10 @@ public class SyncWindows extends PlugInFrame implements
 		if (cFrame.getState() && type==DisplayChangeEvent.T) {
 			for(int n=0; n<vwins.size();++n) {
 				imp = getImageFromVector(n);
-				if (imp != null) {
+				if (imp!=null) {
 					iw = imp.getWindow();
-					if (!iw.equals(source)) {
-						if (iw instanceof StackWindow)
-							((StackWindow)iw).setPosition(imp.getChannel(), imp.getSlice(), value);
-					}
+					if (!iw.equals(source))
+						imp.setT(value);
 				}
 			}   
 		}

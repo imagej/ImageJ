@@ -127,9 +127,16 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			return;
 		if (source==cSelector)
 			SyncWindows.setC(this, cSelector.getValue());
-		else if (source==zSelector)
-			SyncWindows.setZ(this, zSelector.getValue());
-		else if (source==tSelector)
+		else if (source==zSelector) {
+			ImagePlus imp2 = this.getImagePlus();
+			int stackSize = imp2.getStackSize();
+			if (imp2.getNChannels()==stackSize)
+				SyncWindows.setC(this, zSelector.getValue());
+			else if (imp2.getNFrames()==stackSize)
+				SyncWindows.setT(this, zSelector.getValue());
+			else
+				SyncWindows.setZ(this, zSelector.getValue());
+		} else if (source==tSelector)
 			SyncWindows.setT(this, tSelector.getValue());
 		else
 			throw new RuntimeException("Unknownsource:"+source);
