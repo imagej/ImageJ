@@ -405,28 +405,6 @@ public class Functions implements MacroConstants, Measurements {
 		return arg==0?false:true;
 	}
 
-    boolean getFirstBoolean() {
-		interp.getLeftParen();
-		double arg = interp.getBooleanExpression();
-		interp.checkBoolean(arg);
-		return arg==0?false:true;
-	}
-
-	boolean getNextBoolean() {
-		interp.getComma();
-		double arg = interp.getBooleanExpression();
-		interp.checkBoolean(arg);
-		return arg==0?false:true;
-	}
-
-	boolean getLastBoolean() {
-		interp.getComma();
-		double arg = interp.getBooleanExpression();
-		interp.checkBoolean(arg);
-		interp.getRightParen();
-		return arg==0?false:true;
-	}
-
 	final Variable getVariableArg() {
 		interp.getLeftParen();
 		Variable v = getVariable();
@@ -1991,14 +1969,22 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("setMaxIntervals")) {
 			plot.setMaxIntervals((int)getArg());
 			return;
-		} else if (name.equals("setAxes")) {
-			plot.setAxes(getFirstBoolean(), getNextBoolean(), getNextBoolean(), getNextBoolean(), getNextBoolean(), getNextBoolean(), (int)getNextArg(), (int)getLastArg());
+		} else if (name.equals("setLogScaleX")) {
+			interp.getParens();			
+			plot.setLogScaleX();
+			return;
+		} else if (name.equals("setLogScaleY")) {
+			interp.getParens();			
+			plot.setLogScaleY();
 			return;
 		} else if (name.equals("addText") || name.equals("drawLabel")) {
 		    addPlotText(); 
 		    return;
 		} else if (name.equals("drawLine")) {
-		    drawPlotLine(); 
+		    drawPlotLine(false); 
+		    return;
+		} else if (name.equals("drawNormalizedLine")) {
+		    drawPlotLine(true); 
 		    return;
 		} else if (name.equals("drawVectors")) {
 			drawVectors(); 
@@ -2127,12 +2113,15 @@ public class Functions implements MacroConstants, Measurements {
 		plot.addLabel(x, y, str);
 	}
 
-	void drawPlotLine() {
+	void drawPlotLine(boolean normalized) {
 		double x1 = getFirstArg();
 		double y1 = getNextArg();
 		double x2 = getNextArg();
 		double y2 = getLastArg();
-		plot.drawLine(x1, y1, x2, y2);
+		if (normalized)
+			plot.drawNormalizedLine(x1, y1, x2, y2);
+		else
+			plot.drawLine(x1, y1, x2, y2);
 	}
 
 	void drawVectors() {

@@ -75,8 +75,6 @@ public class Plot {
 	/** the margin width below the plot frame */
 	public static final int BOTTOM_MARGIN = 40;
 
-	private static final int WIDTH  = 450;
-	private static final int HEIGHT = 200;
 	private static       int MAX_INTERVALS = 12;			//maximum number of intervals between ticks or grid lines
 	private static final int MIN_X_GRIDWIDTH = 60;			//minimum distance between grid lines or ticks along x
 	private static final int MIN_Y_GRIDWIDTH = 40;			//minimum distance between grid lines or ticks along y
@@ -316,6 +314,20 @@ public class Plot {
 		setYTicks         (yTicks);
 		setTickLength     (tickLenght);
 		setMinorTickLength(minorTickLenght);
+	}
+	
+	public void setLogScaleX() {
+		setAxisXLog(true);
+		setXMinorTicks(true);
+		setYMinorTicks (true);
+		setTickLength(8);
+	}
+
+	public void setLogScaleY() {
+		setAxisYLog(true);
+		setXMinorTicks(true);
+		setYMinorTicks (true);
+		setTickLength(8);
 	}
 
 	/** Adds a set of points to the plot or adds a curve if shape is set to LINE.
@@ -564,6 +576,16 @@ public class Plot {
 		int iy1 = TOP_MARGIN + frameHeight - (int)Math.round((y1-yMin)*yScale);
 		int ix2 = LEFT_MARGIN + (int)Math.round((x2-xMin)*xScale);
 		int iy2 = TOP_MARGIN + frameHeight - (int)Math.round((y2-yMin)*yScale);
+		ip.drawLine(ix1, iy1, ix2, iy2);
+	}
+
+	/* Draws a line using a normalized 0-1, 0-1 coordinate system. */
+	public void drawNormalizedLine(double x1, double y1, double x2, double y2) {
+		setup();
+		int ix1 = LEFT_MARGIN + (int)(x1*frameWidth);
+		int iy1 = TOP_MARGIN + (int)(y1*frameHeight);
+		int ix2 = LEFT_MARGIN + (int)(x2*frameWidth);
+		int iy2 = TOP_MARGIN + (int)(y2*frameHeight);
 		ip.drawLine(ix1, iy1, ix2, iy2);
 	}
 
