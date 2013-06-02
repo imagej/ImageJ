@@ -1853,7 +1853,7 @@ public class IJ {
 			mode = CompositeImage.COMPOSITE;
 		if (type.contains("grayscale"))
 			mode = CompositeImage.GRAYSCALE;
-		if (imp.getBitDepth()!=24)
+		if (imp.getStackSize()>1 && imp.getBitDepth()!=24)
 			imp = new CompositeImage(imp, mode);
 		imp.setOpenAsHyperStack(true);
 		if (type.contains("label"))

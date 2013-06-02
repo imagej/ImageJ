@@ -5306,8 +5306,10 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("No selection");
 		if (overlay==null)
 			overlay = new Overlay();
-		if (strokeColor!=null && !strokeColor.equals(""))
+		if (strokeColor!=null && !strokeColor.equals("")) {
+			roi.setFillColor(null);
 			roi.setStrokeColor(Colors.decode(strokeColor, Color.black));
+		}
 		if (!Double.isNaN(strokeWidth))
 			roi.setStrokeWidth(strokeWidth);
 		if (fillColor!=null && !fillColor.equals(""))

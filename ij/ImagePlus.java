@@ -604,15 +604,17 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (resetCurrentSlice) setSlice(currentSlice);
 			return;
 		}
-		boolean invalidDimensions = isDisplayedHyperStack() && !((StackWindow)win).validDimensions();
+		boolean invalidDimensions = (isDisplayedHyperStack()||isComposite()) && !((StackWindow)win).validDimensions();
 		if (newStackSize>1 && !(win instanceof StackWindow)) {
-			if (isDisplayedHyperStack()) setOpenAsHyperStack(true);
+			if (isDisplayedHyperStack())
+				setOpenAsHyperStack(true);
 			win = new StackWindow(this, getCanvas());   // replaces this window
 			setPosition(1, 1, 1);
 			if (Interpreter.getInstance()!=null)
 				IJ.wait(25);
 		} else if (newStackSize>1 && invalidDimensions) {
-			if (isDisplayedHyperStack()) setOpenAsHyperStack(true);
+			if (isDisplayedHyperStack())
+				setOpenAsHyperStack(true);
 			win = new StackWindow(this);   // replaces this window
 			setPosition(1, 1, 1);
 		} else if (dimensionsChanged || sliderChange) {
@@ -900,7 +902,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return slices;
 		}
 	}
-
+	
 	/** Sets the 3rd, 4th and 5th dimensions, where 
 	<code>nChannels</code>*<code>nSlices</code>*<code>nFrames</code> 
 	must be equal to the stack size. */

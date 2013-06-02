@@ -50,7 +50,7 @@ public class ImageStack {
 		nSlices = 0;
 	}
 
-	/** Adds an image in the forma of a pixel array to the end of the stack. */
+	/** Adds an image in the form of a pixel array to the end of the stack. */
 	public void addSlice(String sliceLabel, Object pixels) {
 		if (pixels==null) 
 			throw new IllegalArgumentException("'pixels' is null!");

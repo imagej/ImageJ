@@ -128,11 +128,10 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		if (source==cSelector)
 			SyncWindows.setC(this, cSelector.getValue());
 		else if (source==zSelector) {
-			ImagePlus imp2 = this.getImagePlus();
-			int stackSize = imp2.getStackSize();
-			if (imp2.getNChannels()==stackSize)
+			int stackSize = imp.getStackSize();
+			if (imp.getNChannels()==stackSize)
 				SyncWindows.setC(this, zSelector.getValue());
-			else if (imp2.getNFrames()==stackSize)
+			else if (imp.getNFrames()==stackSize)
 				SyncWindows.setT(this, zSelector.getValue());
 			else
 				SyncWindows.setZ(this, zSelector.getValue());
