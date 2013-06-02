@@ -204,11 +204,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (label==null) return 0;
 		int slice = 0;
 		if (label.length()>=14 && label.charAt(4)=='-' && label.charAt(9)=='-')
-			slice = (int)Tools.parseDouble(label.substring(0,4),-1);
+			slice = (int)Tools.parseDouble(label.substring(0,4),0);
 		else if (label.length()>=17 && label.charAt(5)=='-' && label.charAt(11)=='-')
-			slice = (int)Tools.parseDouble(label.substring(0,5),-1);
+			slice = (int)Tools.parseDouble(label.substring(0,5),0);
 		else if (label.length()>=20 && label.charAt(6)=='-' && label.charAt(13)=='-')
-			slice = (int)Tools.parseDouble(label.substring(0,6),-1);
+			slice = (int)Tools.parseDouble(label.substring(0,6),0);
 		return slice;
 	}
 
