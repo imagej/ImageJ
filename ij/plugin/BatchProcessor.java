@@ -11,7 +11,7 @@ import java.io.*;
 import java.util.Vector;
 
 /** This plugin implements the File/Batch/Macro and File/Batch/Virtual Stack commands. */
-	public class BatchProcesser implements PlugIn, ActionListener, ItemListener, Runnable {
+	public class BatchProcessor implements PlugIn, ActionListener, ItemListener, Runnable {
 		private static final String MACRO_FILE_NAME = "BatchMacro.ijm";
 		private static final String[] formats = {"TIFF", "8-bit TIFF", "JPEG", "GIF", "PNG", "PGM", "BMP", "FITS", "Text Image", "ZIP", "Raw"};
 		private static String format = Prefs.get("batch.format", formats[0]);
@@ -306,7 +306,7 @@ import java.util.Vector;
 		}
 	}
 
-	String openMacroFromJar(String name) {
+	public static String openMacroFromJar(String name) {
 		ImageJ ij = IJ.getInstance();
 		Class c = ij!=null?ij.getClass():(new ImageStack()).getClass();
 		String macro = null;
@@ -371,7 +371,7 @@ import java.util.Vector;
 	}
 
 	void error(String msg) {
-		IJ.error("Batch Processer", msg);
+		IJ.error("Batch Processor", msg);
 	}
 	
 	public void run() {

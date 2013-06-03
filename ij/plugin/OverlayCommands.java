@@ -74,24 +74,19 @@ public class OverlayCommands implements PlugIn {
 				roi.setFillColor(defaultRoi.getFillColor());
 		}
 		boolean setPos = defaultRoi.getPosition()!=0;
-		if (setPos && imp.getStackSize()>1) {
+		int stackSize = imp.getStackSize();
+		if (setPos && stackSize>1) {
 			if (imp.isHyperStack()||imp.isComposite()) {
+				boolean compositeMode = imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE;
+				int channel = !compositeMode||imp.getNChannels()==stackSize?imp.getChannel():0;
 				if (imp.getNSlices()>1)
-					roi.setPosition(0, imp.getSlice(), 0);
+					roi.setPosition(channel, imp.getSlice(), 0);
 				else if (imp.getNFrames()>1)
-					roi.setPosition(0, 0, imp.getFrame());
+					roi.setPosition(channel, 0, imp.getFrame());
 			} else
 				roi.setPosition(imp.getCurrentSlice());
 		}
-		//int width = Line.getWidth();
-		//Rectangle bounds = roi.getBounds();
-		//boolean tooWide = width>Math.max(bounds.width, bounds.height)/3.0;
-		//if (roi.getStroke()==null && width>1 && !tooWide)
-		//	roi.setStrokeWidth(Line.getWidth());
-		//if (roi.getStrokeColor()==null)
-		//	roi.setStrokeColor(Toolbar.getForegroundColor());
 		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;
-		//if (points) roi.setStrokeColor(Color.red);
 		if (IJ.altKeyDown() || (IJ.macroRunning() && Macro.getOptions()!=null)) {
 			RoiProperties rp = new RoiProperties("Add to Overlay", roi);
 			if (!rp.showDialog()) return;

@@ -317,7 +317,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		labels[2]="Clear results"; states[2]=(options&CLEAR_WORKSHEET)!=0;
 		labels[3]="Include holes"; states[3]=(options&INCLUDE_HOLES)!=0;
 		labels[4]="Summarize"; states[4]=(options&DISPLAY_SUMMARY)!=0;
-		labels[5]="Record starts"; states[5]=(options&RECORD_STARTS)!=0;
+		labels[5]="Record starts"; states[5]=false;
 		labels[6]="Add to Manager"; states[6]=(options&ADD_TO_MANAGER)!=0;
 		labels[7]="In_situ Show"; states[7]=(options&IN_SITU_SHOW)!=0;
 		gd.addCheckboxGroup(4, 2, labels, states);

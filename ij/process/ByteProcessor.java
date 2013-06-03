@@ -506,8 +506,6 @@ public class ByteProcessor extends ImageProcessor {
 		for (int i=0; i<kernel.length; i++)
 			scale += kernel[i];
 		if (scale==0) scale = 1;
-        int inc = roiHeight/25;
-        if (inc<1) inc = 1;
         byte[] pixels2 = (byte[])getPixelsCopy();
         int xEnd = roiX + roiWidth;
         int yEnd = roiY + roiHeight;
@@ -539,10 +537,7 @@ public class ByteProcessor extends ImageProcessor {
 				if (sum<0) sum = 0;
 				pixels[p] = (byte)sum;
 			}
-            if (y%inc==0)
-                showProgress((double)(y-roiY)/roiHeight);
         }
-        showProgress(1.0);
     }
 
 	/** Filters using a 3x3 neighborhood. The p1, p2, etc variables, which
@@ -556,9 +551,6 @@ public class ByteProcessor extends ImageProcessor {
 	*/
 	public void filter(int type) {
 		int p1, p2, p3, p4, p5, p6, p7, p8, p9;
-		int inc = roiHeight/25;
-		if (inc<1) inc = 1;
-		
 		byte[] pixels2 = (byte[])getPixelsCopy();
 		if (width==1) {
         	filterEdge(type, pixels2, roiHeight, roiX, roiY, 0, 1);
@@ -666,14 +658,11 @@ public class ByteProcessor extends ImageProcessor {
 				
 				pixels[offset++] = (byte)sum;
 			}
-			//if (y%inc==0)
-			//	showProgress((double)(y-roiY)/roiHeight);
 		}
         if (xMin==1) filterEdge(type, pixels2, roiHeight, roiX, roiY, 0, 1);
         if (yMin==1) filterEdge(type, pixels2, roiWidth, roiX, roiY, 1, 0);
         if (xMax==width-2) filterEdge(type, pixels2, roiHeight, width-1, roiY, 0, 1);
         if (yMax==height-2) filterEdge(type, pixels2, roiWidth, roiX, height-1, 1, 0);
-		//showProgress(1.0);
 	}
 
 	void filterEdge(int type, byte[] pixels2, int n, int x, int y, int xinc, int yinc) {
@@ -921,7 +910,6 @@ public class ByteProcessor extends ImageProcessor {
 					if (value>255) value = 255;
 					pixels[index1++] = (byte)value;
 				}
-				if (y%30==0) showProgress((double)(y-ymin)/height);
 			}
 		} else {
 			double xlimit = width-1.0, xlimit2 = width-1.001;
@@ -947,11 +935,8 @@ public class ByteProcessor extends ImageProcessor {
 							pixels[index1++] = pixels2[index2+xsi];
 					}
 				}
-				if (y%30==0)
-				showProgress((double)(y-ymin)/height);
 			}
 		}
-		showProgress(1.0);
 	}
 
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
@@ -1004,8 +989,6 @@ public class ByteProcessor extends ImageProcessor {
 					if (value>255) value = 255;
 					pixels2[index2++] = (byte)value;
 				}
-				if (y%30==0)
-				showProgress((double)y/dstHeight);
 			}
 		} else {
 			double xlimit = width-1.0, xlimit2 = width-1.001;
@@ -1027,11 +1010,8 @@ public class ByteProcessor extends ImageProcessor {
 					} else
 						pixels2[index2++] = pixels[index1+(int)xs];
 				}
-				if (y%30==0)
-				showProgress((double)y/dstHeight);
 			}
 		}
-		showProgress(1.0);
 		return ip2;
 	}
 
@@ -1076,7 +1056,6 @@ public class ByteProcessor extends ImageProcessor {
 					if (value>255) value = 255;
 					pixels[index++] = (byte)value;
 				}
-				if (y%30==0) showProgress((double)(y-roiY)/roiHeight);
 			}
 		} else {
 			for (int y=roiY; y<(roiY + roiHeight); y++) {
@@ -1103,11 +1082,8 @@ public class ByteProcessor extends ImageProcessor {
 					} else
 						pixels[index++] = (byte)bgColor;
 				}
-				if (y%30==0)
-					showProgress((double)(y-roiY)/roiHeight);
 			}
 		}
-		showProgress(1.0);
 	}
 
 	public void flipVertical() {

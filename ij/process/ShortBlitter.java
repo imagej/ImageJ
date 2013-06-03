@@ -140,9 +140,6 @@ public class ShortBlitter implements Blitter {
 					}
 					break;
 			}
-			if (y%20==0)
-				ip.showProgress((double)(y-r1.y)/r1.height);
 		}
-		ip.showProgress(1.0);
 	}
 }

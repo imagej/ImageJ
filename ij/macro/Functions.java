@@ -533,7 +533,7 @@ public class Functions implements MacroConstants, Measurements {
 		return a;
 	}
 		
-	Color getColor() {
+	private Color getColor() {
 		String color = getString();
 		color = color.toLowerCase(Locale.US);
 		if (color.equals("black"))
@@ -562,8 +562,10 @@ public class Functions implements MacroConstants, Measurements {
 			return Color.yellow;
 		else if (color.equals("pink"))
 			return Color.pink;
+		else if (color.startsWith("#")) 
+			return Colors.decode(color, Color.black); 
 		else
-			interp.error("'red', 'green', etc. expected");
+			interp.error("'red', 'green', or '#0000ff' etc. expected");
 		return null;
 	}
 
@@ -1197,25 +1199,6 @@ public class Functions implements MacroConstants, Measurements {
 		else
 			return 0.0;
 	}
-
-	double getBoolean2() {
-		String prompt = getFirstString();
-		interp.getComma();
-		double defaultValue = interp.getBooleanExpression();
-		interp.checkBoolean(defaultValue);
-		interp.getRightParen();
-		String title = interp.macroName!=null?interp.macroName:"";
-		if (title.endsWith(" Options"))
-			title = title.substring(0, title.length()-8);
-		GenericDialog gd = new GenericDialog(title);
-		gd.addCheckbox(prompt, defaultValue==1.0?true:false);
-		gd.showDialog();
-		if (gd.wasCanceled()) {
-			interp.done = true;
-			return 0.0;
-		}
-		return gd.getNextBoolean()?1.0:0.0;
-	}
 	
 	String getStringDialog() {
 		interp.getLeftParen();
@@ -1473,8 +1456,11 @@ public class Functions implements MacroConstants, Measurements {
 				return win!=null?win.createSubtitle():"";
 			} else if (key.equals("slice.label")) {
 				ImagePlus imp = getImage();
-				if (imp.getStackSize()==1) return "";
-				String label = imp.getStack().getShortSliceLabel(imp.getCurrentSlice());
+				String label = null;
+				if (imp.getStackSize()==1)
+					label = (String)imp.getProperty("Label");
+				else
+					label = imp.getStack().getShortSliceLabel(imp.getCurrentSlice());
 				return label!=null?label:"";
 			} else if (key.equals("window.contents")) {
 				return getWindowContents();
@@ -1550,7 +1536,8 @@ public class Functions implements MacroConstants, Measurements {
 		if (imp.getStackSize()>1) {
 			ImageStack stack = imp.getStack();
 			String label = stack.getSliceLabel(imp.getCurrentSlice());
-			if (label!=null && label.indexOf('\n')>0) metadata = label;
+			if (label!=null && label.indexOf('\n')>0)
+				metadata = label;
 		}
 		if (metadata==null)
 			metadata = (String)imp.getProperty("Info");
@@ -1979,12 +1966,26 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("setLimits")) {
 			plot.setLimits(getFirstArg(), getNextArg(), getNextArg(), getLastArg());
 		    return;
+		} else if (name.equals("setLogScaleX")) {
+			interp.getParens();			
+			plot.setLogScaleX();
+			return;
+		} else if (name.equals("setLogScaleY")) {
+			interp.getParens();			
+			plot.setLogScaleY();
+			return;
 		} else if (name.equals("addText") || name.equals("drawLabel")) {
 		    addPlotText(); 
 		    return;
 		} else if (name.equals("drawLine")) {
-		    drawPlotLine(); 
+		    drawPlotLine(false); 
 		    return;
+		} else if (name.equals("drawNormalizedLine")) {
+		    drawPlotLine(true); 
+		    return;
+		} else if (name.equals("drawVectors")) {
+			drawVectors(); 
+			return;
 		} else if (name.equals("setColor")) {
 		    setPlotColor(); 
 		    return;
@@ -2109,12 +2110,23 @@ public class Functions implements MacroConstants, Measurements {
 		plot.addLabel(x, y, str);
 	}
 
-	void drawPlotLine() {
+	void drawPlotLine(boolean normalized) {
 		double x1 = getFirstArg();
 		double y1 = getNextArg();
 		double x2 = getNextArg();
 		double y2 = getLastArg();
-		plot.drawLine(x1, y1, x2, y2);
+		if (normalized)
+			plot.drawNormalizedLine(x1, y1, x2, y2);
+		else
+			plot.drawLine(x1, y1, x2, y2);
+	}
+
+	void drawVectors() {
+		double[] x1 = getFirstArray();
+		double[] y1 = getNextArray();
+		double[] x2 = getNextArray();
+		double[] y2 = getLastArray();
+		plot.drawVectors(x1, y1, x2, y2);
 	}
 
 	void setPlotColor() {
@@ -2124,8 +2136,10 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void addToPlot(int what) {
+		boolean errorBars = false;
 		double[] x = getNextArray();
 		double[] y;
+		double[] e = new double[x.length];
 		if (interp.nextToken()==')') {
 			y = x;
 			x = new double[y.length];
@@ -2134,12 +2148,19 @@ public class Functions implements MacroConstants, Measurements {
 		} else {
 			interp.getComma();
 			y = getNumericArray();
+			if (interp.nextToken()!=')') {
+				errorBars = true;
+				interp.getComma();
+				e = getNumericArray();
+			}
 		}
 		interp.getRightParen();
 		if (what==-1)
 			plot.addErrorBars(y);
-		else			
-			plot.addPoints(x, y, what);		
+		else if (errorBars)
+			plot.addPoints(x, y, e, what);
+		else
+			plot.addPoints(x, y, what);
 	}
 	
 	void getBounds() {
@@ -2767,10 +2788,23 @@ public class Functions implements MacroConstants, Measurements {
 		String type = getNextString();
 		int width = (int)getNextArg();
 		int height = (int)getNextArg();
-		int depth = (int)getLastArg();
+		int depth = (int)getNextArg();
+		int c=-1, z=-1, t=-1;
+		if (interp.nextToken()==')')
+			interp.getRightParen();
+		else {
+			c = depth;
+			z = (int)getNextArg();
+			t = (int)getLastArg();
+		}
 		if (width<1 || height<1)
 			interp.error("Width or height < 1");
-		IJ.newImage(title, type, width, height, depth);
+		if (c<0)
+			IJ.newImage(title, type, width, height, depth);
+		else {
+			ImagePlus imp = IJ.createImage(title, type, width, height, c, z, t);
+			imp.show();
+		}
 		resetImage();
 	}
 
@@ -3229,6 +3263,8 @@ public class Functions implements MacroConstants, Measurements {
 				gd.addCheckbox(getFirstString(), getLastArg()==1?true:false);
 			} else if (name.equals("addCheckboxGroup")) {
 				addCheckboxGroup(gd);
+			} else if (name.equals("addRadioButtonGroup")) {
+				addRadioButtonGroup(gd);
 			} else if (name.equals("addMessage")) {
 				gd.addMessage(getStringArg());
 			} else if (name.equals("addHelp")) {
@@ -3266,6 +3302,9 @@ public class Functions implements MacroConstants, Measurements {
 			} else if (name.equals("getChoice")) {
 				interp.getParens();
 				return gd.getNextChoice();
+			} else if (name.equals("getRadioButton")) {
+				interp.getParens();
+				return gd.getNextRadioButton();
 			} else
 				interp.error("Unrecognized Dialog function "+name);
 		} catch (IndexOutOfBoundsException e) {
@@ -3287,6 +3326,16 @@ public class Functions implements MacroConstants, Measurements {
 		for (int i=0; i<n; i++)
 			states[i] = dstates[i]==1.0?true:false;
 		gd.addCheckboxGroup(rows, columns, labels, states);
+	}
+
+	void addRadioButtonGroup(GenericDialog gd) {
+		String label = getFirstString();
+		interp.getComma();
+		String[] items = getStringArray();
+		int rows = (int)getNextArg();
+		int columns = (int)getNextArg();
+		String defaultItem = getLastString();
+		gd.addRadioButtonGroup(label, items, rows, columns, defaultItem);
 	}
 
 	void getDateAndTime() {
@@ -3933,7 +3982,7 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	Variable[] getList() {
-		String key = getStringArg();
+		String key = getStringArg().toLowerCase();
 		if (key.equals("java.properties")) {
 			Properties props = System.getProperties();
 			Vector v = new Vector();
@@ -3953,6 +4002,12 @@ public class Functions implements MacroConstants, Measurements {
 			return array;
 		} else if (key.equals("threshold.methods")) {
 			String[] list = AutoThresholder.getMethods();
+			Variable[] array = new Variable[list.length];
+			for (int i=0; i<list.length; i++)
+				array[i] = new Variable(0, 0.0, list[i]);
+			return array;
+		} else if (key.equals("luts")) {
+			String[] list = IJ.getLuts();
 			Variable[] array = new Variable[list.length];
 			for (int i=0; i<list.length; i++)
 				array[i] = new Variable(0, 0.0, list[i]);
@@ -5251,8 +5306,10 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("No selection");
 		if (overlay==null)
 			overlay = new Overlay();
-		if (strokeColor!=null && !strokeColor.equals(""))
+		if (strokeColor!=null && !strokeColor.equals("")) {
+			roi.setFillColor(null);
 			roi.setStrokeColor(Colors.decode(strokeColor, Color.black));
+		}
 		if (!Double.isNaN(strokeWidth))
 			roi.setStrokeWidth(strokeWidth);
 		if (fillColor!=null && !fillColor.equals(""))

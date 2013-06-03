@@ -512,21 +512,21 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Replaces the ImageProcessor with the one specified and updates the display. With
 		stacks, the ImageProcessor must be the same type as other images in the stack and
 		it must be the same width and height.  Set 'title' to null to leave the title unchanged. */
-	public void setProcessor(String title, ImageProcessor ip) {
-        if (ip==null || ip.getPixels()==null)
-            throw new IllegalArgumentException("ip null or ip.getPixels() null");
-        if (getStackSize()>1) {
-        	if (ip.getWidth()!=width || ip.getHeight()!=height)
-            	throw new IllegalArgumentException("Wrong dimensions for this stack");
-            int stackBitDepth = stack!=null?stack.getBitDepth():0;
-            if (stackBitDepth>0 && getBitDepth()!=stackBitDepth)
-            	throw new IllegalArgumentException("Wrong type for this stack");
-		} else {
-			stack = null;
-			setCurrentSlice(1);
+		public void setProcessor(String title, ImageProcessor ip) {
+			if (ip==null || ip.getPixels()==null)
+				throw new IllegalArgumentException("ip null or ip.getPixels() null");
+			if (getStackSize()>1) {
+				if (ip.getWidth()!=width || ip.getHeight()!=height)
+					throw new IllegalArgumentException("Wrong dimensions for this stack");
+				int stackBitDepth = stack!=null?stack.getBitDepth():0;
+				if (stackBitDepth>0 && getBitDepth()!=stackBitDepth)
+					throw new IllegalArgumentException("Wrong type for this stack");
+			} else {
+				stack = null;
+				setCurrentSlice(1);
+			}
+			setProcessor2(title, ip, null);
 		}
-		setProcessor2(title, ip, null);
-	}
 	
 	void setProcessor2(String title, ImageProcessor ip, ImageStack newStack) {
 		//IJ.log("setProcessor2: "+ip+" "+this.ip+" "+newStack);
@@ -604,15 +604,17 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (resetCurrentSlice) setSlice(currentSlice);
 			return;
 		}
-		boolean invalidDimensions = isDisplayedHyperStack() && !((StackWindow)win).validDimensions();
+		boolean invalidDimensions = (isDisplayedHyperStack()||isComposite()) && !((StackWindow)win).validDimensions();
 		if (newStackSize>1 && !(win instanceof StackWindow)) {
-			if (isDisplayedHyperStack()) setOpenAsHyperStack(true);
+			if (isDisplayedHyperStack())
+				setOpenAsHyperStack(true);
 			win = new StackWindow(this, getCanvas());   // replaces this window
 			setPosition(1, 1, 1);
 			if (Interpreter.getInstance()!=null)
 				IJ.wait(25);
 		} else if (newStackSize>1 && invalidDimensions) {
-			if (isDisplayedHyperStack()) setOpenAsHyperStack(true);
+			if (isDisplayedHyperStack())
+				setOpenAsHyperStack(true);
 			win = new StackWindow(this);   // replaces this window
 			setPosition(1, 1, 1);
 		} else if (dimensionsChanged || sliderChange) {
@@ -900,7 +902,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return slices;
 		}
 	}
-
+	
 	/** Sets the 3rd, 4th and 5th dimensions, where 
 	<code>nChannels</code>*<code>nSlices</code>*<code>nFrames</code> 
 	must be equal to the stack size. */
@@ -1528,7 +1530,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (Roi.previousRoi!=null) {
 			Roi pRoi = Roi.previousRoi;
 			Rectangle r = pRoi.getBounds();
-			if (r.width<=width || r.height<=height || isSmaller(pRoi)) { // will it (mostly) fit in this image?
+			if (r.width<=width||r.height<=height||(r.x<width&&r.y<height)||isSmaller(pRoi)) { // will it (mostly) fit in this image?
 				roi = (Roi)pRoi.clone();
 				roi.setImage(this);
 				if (r.x>=width || r.y>=height || (r.x+r.width)<0 || (r.y+r.height)<0) // does it need to be moved?
@@ -2012,19 +2014,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (!batchMode) IJ.showStatus(msg+ "ing...");
 		ImageProcessor ip = getProcessor();
 		ImageProcessor ip2;	
-		Roi roi2 = null;	
 		ip2 = ip.crop();
-		if (roi!=null && roi.getType()!=Roi.RECTANGLE) {
-			roi2 = (Roi)roi.clone();
-			Rectangle r = roi.getBounds();
-			if (r.x<0 || r.y<0 || r.x+r.width>width || r.y+r.height>height) {
-				roi2 = new ShapeRoi(roi2);
-				ShapeRoi image = new ShapeRoi(new Roi(0, 0, width, height));
-				roi2 = image.and((ShapeRoi)roi2);
-			}
-		}
 		clipboard = new ImagePlus("Clipboard", ip2);
-		if (roi2!=null) clipboard.setRoi(roi2);
+		if (roi!=null)
+			clipboard.setRoi((Roi)roi.clone());
 		if (cut) {
 			ip.snapshot();
 	 		ip.setColor(Toolbar.getBackgroundColor());
@@ -2054,18 +2047,23 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	 is a selection the same size as the image on the clipboard, the image is inserted 
 	 into that selection, otherwise the selection is inserted into the center of the image.*/
 	 public void paste() {
-		if (clipboard==null) return;
+		if (clipboard==null)
+			return;
 		int cType = clipboard.getType();
 		int iType = getType();
-		
         int w = clipboard.getWidth();
         int h = clipboard.getHeight();
 		Roi cRoi = clipboard.getRoi();
 		Rectangle r = null;
+		Rectangle cr = null;
 		Roi roi = getRoi();
 		if (roi!=null)
 			r = roi.getBounds();
-		if (r==null || (r!=null && (w!=r.width || h!=r.height))) {
+		if (cRoi!=null)
+			cr = cRoi.getBounds();
+		if (cr==null)
+			cr = new Rectangle(0, 0, w, h);
+		if (r==null || (cr.width!=r.width || cr.height!=r.height)) {
 			// create a new roi centered on visible part of image
 			ImageCanvas ic = null;
 			if (win!=null)
@@ -2088,7 +2086,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			ImageProcessor ip = getProcessor();
 			if (nonRect) ip.snapshot();
 			r = roi.getBounds();
-			ip.copyBits(clipboard.getProcessor(), r.x, r.y, pasteMode);
+			int xoffset = cr.x<0?-cr.x:0;
+			int yoffset = cr.y<0?-cr.y:0;
+			ip.copyBits(clipboard.getProcessor(), r.x+xoffset, r.y+yoffset, pasteMode);
 			if (nonRect) {
 				ImageProcessor mask = roi.getMask();
 				ip.setMask(mask);

@@ -609,8 +609,6 @@ public class ShortProcessor extends ImageProcessor {
                 scale += kernel[i];
             if (scale==0) scale = 1;
         }
-        int inc = roiHeight/25;
-        if (inc<1) inc = 1;
 
         short[] pixels2 = (short[])getPixelsCopy();
         int xEnd = roiX + roiWidth;
@@ -676,10 +674,7 @@ public class ShortProcessor extends ImageProcessor {
                 }
                 break;
             }
-            if (y%inc==0)
-                showProgress((double)(y-roiY)/roiHeight);
         }
-        showProgress(1.0);
     }
 
 	/** Rotates the image or ROI 'angle' degrees clockwise.
@@ -720,7 +715,6 @@ public class ShortProcessor extends ImageProcessor {
 					if (value>65535) value = 65535;
 					pixels[index++] = (short)value;
 				}
-				if (y%30==0) showProgress((double)(y-roiY)/roiHeight);
 			}
 		} else {
 			for (int y=roiY; y<(roiY + roiHeight); y++) {
@@ -747,11 +741,8 @@ public class ShortProcessor extends ImageProcessor {
 					} else
 						pixels[index++] = (short)background;
 				}
-				if (y%30==0)
-				showProgress((double)(y-roiY)/roiHeight);
 			}
 		}
-		showProgress(1.0);
 	}
 
 	public void flipVertical() {
@@ -809,7 +800,6 @@ public class ShortProcessor extends ImageProcessor {
 					if (value<0) value=0; if (value>65535) value=65535;
 					pixels[index++] = (short)value;
 				}
-				if (y%30==0) showProgress((double)(y-ymin)/height);
 			}
 		} else {
 			double xlimit = width-1.0, xlimit2 = width-1.001;
@@ -835,10 +825,8 @@ public class ShortProcessor extends ImageProcessor {
 							pixels[index1++] = pixels2[index2+xsi];
 					}
 				}
-				if (y%30==0) showProgress((double)(y-ymin)/height);
 			}
 		}
-		showProgress(1.0);
 	}
 
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
@@ -882,7 +870,6 @@ public class ShortProcessor extends ImageProcessor {
 					if (value<0) value=0; if (value>65535) value=65535;
 					pixels2[index2++] = (short)value;
 				}
-				if (y%30==0) showProgress((double)y/dstHeight);
 			}
 		} else {
 			double xlimit = width-1.0, xlimit2 = width-1.001;
@@ -905,10 +892,8 @@ public class ShortProcessor extends ImageProcessor {
 					} else
 						pixels2[index2++] = pixels[index1+(int)xs];
 				}
-				if (y%30==0) showProgress((double)y/dstHeight);
 			}
 		}
-		showProgress(1.0);
 		return ip2;
 	}
 

@@ -24,7 +24,7 @@ popup12=Duplicate...
 
 # Plugins installed in the File/New submenu
 new01="Image...[n]",ij.plugin.Commands("new")
-new02="Hyperstack...",ij.plugin.HyperStackConverter("new")
+new02="Hyperstack...",ij.plugin.HyperStackMaker
 new03="Text Window[N]",ij.plugin.NewPlugin("text")
 new04="Internal Clipboard",ij.plugin.Clipboard("show")
 new05="System Clipboard[V]",ij.plugin.Clipboard("showsys")
@@ -132,8 +132,9 @@ color05=-
 color06="Stack to RGB",ij.plugin.RGBStackConverter
 color07="Make Composite",ij.plugin.CompositeConverter
 color08="Show LUT",ij.plugin.filter.LutViewer
-color09="Edit LUT...",ij.plugin.LUT_Editor
-color10="Color Picker...[K]",ij.plugin.frame.ColorPicker
+color09="Display LUTs",ij.plugin.SimpleCommands("display")
+color10="Edit LUT...",ij.plugin.LUT_Editor
+color11="Color Picker...[K]",ij.plugin.frame.ColorPicker
 
 # Plugins installed in the Image/Stacks submenu
 stacks01="Add Slice",ij.plugin.StackEditor("add")
@@ -170,7 +171,7 @@ tools_13="Stop Animation",ij.plugin.Animator("stop")
 tools_14="Animation Options...",ij.plugin.Animator("options")
 
 # Plugins installed in the Image/Hyperstacks submenu
-hyperstacks01="New Hyperstack...",ij.plugin.HyperStackConverter("new")
+hyperstacks01="New Hyperstack...",ij.plugin.HyperStackMaker
 hyperstacks02="Stack to Hyperstack...",ij.plugin.HyperStackConverter("stacktohs")
 hyperstacks03="Hyperstack to Stack",ij.plugin.HyperStackConverter("hstostack")
 hyperstacks04="Reduce Dimensionality...",ij.plugin.HyperStackReducer

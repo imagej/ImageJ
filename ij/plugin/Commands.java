@@ -17,7 +17,7 @@ public class Commands implements PlugIn {
 	public void run(String cmd) {
 		if (cmd.equals("new")) {
 			if (IJ.altKeyDown())
-				IJ.runPlugIn("ij.plugin.HyperStackConverter", "new");
+				IJ.runPlugIn("ij.plugin.HyperStackMaker", "");
 			else
 				new NewImage();
 		} else if (cmd.equals("open")) {

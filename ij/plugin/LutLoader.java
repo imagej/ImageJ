@@ -228,11 +228,12 @@ public class LutLoader extends ImagePlus implements PlugIn {
 		//IJ.showStatus("Opening: " + fi.directory + fi.fileName);
 		boolean isURL = fi.url!=null && !fi.url.equals("");
 		int length = 0;
+		String path = isURL?fi.url:fi.directory+fi.fileName;
 		if (!isURL) {
-			File f = new File(fi.directory + fi.fileName);
+			File f = new File(path);
 			length = (int)f.length();
 			if (length>10000) {
-				error();
+				error(path);
 				return false;
 			}
 		}
@@ -245,15 +246,15 @@ public class LutLoader extends ImagePlus implements PlugIn {
 			if (size==0 && length>768)
 				size = openTextLut(fi);
 			if (size==0)
-				error();
+				error(path);
 		} catch (IOException e) {
 			IJ.error(e.getMessage());
 		}
 		return size==256;
 	}
 	
-	void error() {
-		IJ.error("This is not an ImageJ or NIH Image LUT, a 768 byte \nraw LUT, or a LUT in text format.");
+	private void error(String path) {
+		IJ.error("This is not an ImageJ or NIH Image LUT, a 768 byte \nraw LUT, or a LUT in text format.\n \n"+path);
 	}
 
 	/** Opens an NIH Image LUT or a 768 byte binary LUT. */

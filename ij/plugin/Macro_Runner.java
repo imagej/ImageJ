@@ -63,6 +63,7 @@ public class Macro_Runner implements PlugIn {
 		function to retrieve the string argument.
     */
 	public String runMacroFile(String name, String arg) {
+		if (arg==null) arg = "";
 		if (name.startsWith("ij.jar:"))
 			return runMacroFromIJJar(name, arg);
         if (name.indexOf(".")==-1) name = name + ".txt";

@@ -1202,7 +1202,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			imp.getMask();
 			ImageProcessor ip = imp.getProcessor();
 			ip.reset();
-			ip.copyBits(clipboard.getProcessor(), x, y, pasteMode);
+			int xoffset=0, yoffset=0;
+			Roi croi = clipboard.getRoi();
+			if (croi!=null) {
+				Rectangle r = croi.getBounds();
+				if (r.x<0) xoffset=-r.x;
+				if (r.y<0) yoffset=-r.y;
+			}
+			ip.copyBits(clipboard.getProcessor(), x+xoffset, y+yoffset, pasteMode);
 			if (type!=RECTANGLE)
 				ip.reset(ip.getMask());
 			if (ic!=null)

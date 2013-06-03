@@ -1075,7 +1075,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 					break;
 			}
 		}
-		runCommand("show none");
+		if (record() && (mode==DRAW||mode==FILL))
+			Recorder.record("roiManager", mode==DRAW?"Draw":"Fill");
+		if (showAllCheckbox.getState())
+			runCommand("show none");
 		imp.updateAndDraw();
 		return true;
 	}
@@ -2001,10 +2004,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 	}
 	
-	/** Temporarily selects multiple ROIs, where 'indexes' is an array of integers, 
+	/** Selects multiple ROIs, where 'indexes' is an array of integers, 
 		each greater than or equal to 0 and less than the value returned by getCount().
-		The selected ROIs are not highlighted in the ROI Manager list and are no 
-		longer selected after the next ROI Manager command is executed.
+	*/
+	/** Selects multiple ROIs, where 'indexes' is an array of integers, each
+	* greater than or equal to 0 and less than the value returned by getCount().
+	* @see #getSelectedIndexes
+	* @see #getSelectedRoisAsArray
+	* @see #getCount
 	*/
 	public void setSelectedIndexes(int[] indexes) {
 		int count = getCount();
@@ -2014,9 +2021,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (indexes[i]>=count) indexes[i]=count-1;
 		}
 		selectedIndexes = indexes;
+		list.setSelectedIndices(indexes);
 	}
 	
-	private int[] getSelectedIndexes() {
+	/** Returns an array of all of the selected indexes. */
+	public int[] getSelectedIndexes() {
 		if (selectedIndexes!=null) {
 			int[] indexes = selectedIndexes;
 			selectedIndexes = null;
@@ -2073,26 +2082,38 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public void mouseExited (MouseEvent e) {}
 	
 	public void valueChanged(ListSelectionEvent e) {
-		int index = 0;
-		if (getCount()==0)
+		if (e.getValueIsAdjusting())
 			return;
-		if (list.getSelectedIndices().length==0)
+		if (getCount()==0) {
+			if (record())
+				Recorder.record("roiManager", "Deselect");
 			return;
-        index = list.getSelectedIndices()[0];
-//        list.repaint();
-		if (index<0) index = 0;
+		}
+		int[] selected = list.getSelectedIndices();
+		if (selected.length==0)
+			return;
 		if (WindowManager.getCurrentImage()!=null) {
-			if (list.getSelectedIndices().length <=1) {
-				restore(getImage(), index, true);
-			}
+			if (selected.length==1)
+				restore(getImage(), selected[0], true);
 			if (record()) {
-				if (Recorder.scriptMode())
-					Recorder.recordCall("rm.select(imp, "+index+");");
-				else
-					Recorder.record("roiManager", "Select", index);
+				String arg = Arrays.toString(selected);
+				if (!arg.startsWith("[") || !arg.endsWith("]"))
+					return;
+				arg = arg.substring(1, arg.length()-1);
+				arg = arg.replace(" ", "");
+				if (Recorder.scriptMode()) {
+					if (selected.length==1)
+						Recorder.recordCall("rm.select("+arg+");");
+					else
+						Recorder.recordCall("rm.setSelectedIndexes(["+arg+"]);");
+				} else {
+					if (selected.length == 1)
+						Recorder.recordString("roiManager(\"Select\", " + arg + ");\n");
+					else
+						Recorder.recordString("roiManager(\"Select\", newArray(" + arg + "));\n");
+				}
 			}
 		}
-		
 	}
 
     public void windowActivated(WindowEvent e) {
