@@ -45,7 +45,7 @@ public class OtherInstance {
 		int counter = 0;
 
 		public void sendArgument(String cmd) {
-			if (IJ.debugMode) IJ.log("SocketServer: command: \""+ cmd+"\"");
+			if (IJ.debugMode) IJ.log("SocketServer.sendArgument: \""+ cmd+"\"");
 			if (cmd.startsWith("open "))
 				(new Opener()).openAndAddToRecent(cmd.substring(5));
 			else if (cmd.startsWith("macro ")) {
@@ -126,12 +126,13 @@ public class OtherInstance {
 		if (!isRMIEnabled())
 			return false;
 		String file = getStubPath();
-		//IJ.log("sendArguments1: "+(args!=null&&args.length>0?args[0]:"null")+"  "+file);
-		if (args.length > 0) try {
+		try {
 			//IJ.log("sendArguments2: "+args.length);
 			FileInputStream in = new FileInputStream(file);
 			ImageJInstance instance = (ImageJInstance) new ObjectInputStream(in).readObject();
 			in.close();
+			if (instance==null)
+				return false;
 
 			//IJ.log("sendArguments3: "+instance);
 			instance.sendArgument("user.dir "+System.getProperty("user.dir"));
@@ -180,7 +181,7 @@ public class OtherInstance {
 
 	public static void startServer() {
 		if (IJ.debugMode)
-			System.err.println("Starting server");
+			System.err.println("OtherInstance: starting server");
 		try {
 			implementation = new Implementation();
 			stub = (ImageJInstance)UnicastRemoteObject.exportObject(implementation, 0);
@@ -193,7 +194,7 @@ public class OtherInstance {
 			out.close();
 
 			if (IJ.debugMode)
-				System.err.println("Server ready");
+				System.err.println("OtherInstance: server ready");
 		} catch (Exception e) {
 			if (IJ.debugMode) {
 				System.err.println("Server exception: " + e);
