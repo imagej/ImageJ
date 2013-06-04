@@ -126,7 +126,7 @@ public class OtherInstance {
 		if (!isRMIEnabled())
 			return false;
 		String file = getStubPath();
-		try {
+		if (args.length>0) try {
 			//IJ.log("sendArguments2: "+args.length);
 			FileInputStream in = new FileInputStream(file);
 			ImageJInstance instance = (ImageJInstance) new ObjectInputStream(in).readObject();
