@@ -127,7 +127,6 @@ public class OtherInstance {
 			return false;
 		String file = getStubPath();
 		if (args.length>0) try {
-			//IJ.log("sendArguments2: "+args.length);
 			FileInputStream in = new FileInputStream(file);
 			ImageJInstance instance = (ImageJInstance) new ObjectInputStream(in).readObject();
 			in.close();

@@ -1468,7 +1468,7 @@ public class IJ {
 		else if (title2.equals("macros"))
 			return Menus.getMacrosPath();
 		else if (title2.equals("luts")) {
-			String ijdir = getIJDir();
+			String ijdir = Prefs.getImageJDir();
 			if (ijdir!=null)
 				return ijdir + "luts" + File.separator;
 			else
@@ -1476,9 +1476,9 @@ public class IJ {
 		} else if (title2.equals("home"))
 			return System.getProperty("user.home") + File.separator;
 		else if (title2.equals("startup"))
-			return Prefs.getHomeDir() + File.separator;
+			return Prefs.getImageJDir();
 		else if (title2.equals("imagej"))
-			return getIJDir();
+			return Prefs.getImageJDir();
 		else if (title2.equals("current") || title2.equals("default"))
 			return OpenDialog.getDefaultDirectory();
 		else if (title2.equals("temp")) {
@@ -1507,15 +1507,7 @@ public class IJ {
 		OpenDialog od = new OpenDialog(dialogTitle);
 		return od.getPath();
 	}
-	
-	private static String getIJDir() {
-		String path = Menus.getPlugInsPath();
-		if (path==null) return null;
-		String ijdir = (new File(path)).getParent();
-		if (ijdir!=null) ijdir += File.separator;
-		return ijdir;
-	}
-	
+		
 	/** Displays a file open dialog box and then opens the tiff, dicom, 
 		fits, pgm, jpeg, bmp, gif, lut, roi, or text file selected by 
 		the user. Displays an error message if the selected file is not

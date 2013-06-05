@@ -78,7 +78,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.47t";
-	public static final String BUILD = "4"; 
+	public static final String BUILD = "8"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -213,7 +213,7 @@ public class ImageJ extends Frame implements ActionListener,
  	
  	private void loadCursors() {
 		Toolkit toolkit = Toolkit.getDefaultToolkit();
-		String path = Prefs.getHomeDir()+File.separator+"images/crosshair-cursor.gif";
+		String path = Prefs.getImageJDir()+"images/crosshair-cursor.gif";
 		File f = new File(path);
 		if (!f.exists())
 			return;
@@ -646,6 +646,7 @@ public class ImageJ extends Frame implements ActionListener,
 				else if (args[i].startsWith("-debug"))
 					IJ.setDebugMode(true);
 				else if (args[i].startsWith("-ijpath") && i+1<nArgs) {
+					if (IJ.debugMode) IJ.log("-ijpath: "+args[i+1]);
 					Prefs.setHomeDir(args[i+1]);
 					commandLine = true;
 					args[i+1] = null;

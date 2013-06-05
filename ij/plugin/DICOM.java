@@ -270,7 +270,7 @@ class DicomDecoder {
 		this.fileName = fileName;
 		String path = null;
 		if (dictionary==null && IJ.getApplet()==null) {
-			path = Prefs.getHomeDir()+File.separator+"DICOM_Dictionary.txt";
+			path = Prefs.getImageJDir()+"DICOM_Dictionary.txt";
 			File f = new File(path);
 			if (f.exists()) try {
 				dictionary = new Properties();
