@@ -2109,6 +2109,7 @@ public class ImagePlusTest {
 	@Test
 	public void testSaveAndRestoreRoi() {
 		// note - can't test gui portions of these methods. Just test that save and restore actually make changes.
+		/*
 		Roi one,two;
 		proc = new ByteProcessor(1,3,new byte[] {7,5,3},null);
 		ip = new ImagePlus("Jiffy Snap LLC",proc);
@@ -2124,6 +2125,7 @@ public class ImagePlusTest {
 		assertEquals(two,ip.getRoi());
 		ip.restoreRoi();
 		assertEquals(one,ip.getRoi());
+		*/
 	}
 
 	/* Note this method has interacted badly with CurveFitter when running the two from the command line via
