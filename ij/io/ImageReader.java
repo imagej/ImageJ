@@ -898,7 +898,7 @@ public class ImageReader {
  * Utility method for decoding an LZW-compressed image strip. 
  * Adapted from the TIFF 6.0 Specification:
  * http://partners.adobe.com/asn/developer/pdfs/tn/TIFF6.pdf (page 61)
- * @author Curtis Rueden (ctrueden at wisc.edu)
+ * Author: Curtis Rueden (ctrueden at wisc.edu)
  */
 	public byte[] lzwUncompress(byte[] input) {
 		if (input==null || input.length==0)

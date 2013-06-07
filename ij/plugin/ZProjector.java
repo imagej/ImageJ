@@ -11,9 +11,8 @@ import java.util.Arrays;
 
 /** This plugin performs a z-projection of the input stack. Type of
     output image is same as type of input image.
-
-    @author Patrick Kelly <phkelly@ucsd.edu> */
-
+    @author Patrick Kelly <phkelly@ucsd.edu>
+*/
 public class ZProjector implements PlugIn {
     public static final int AVG_METHOD = 0; 
     public static final int MAX_METHOD = 1;

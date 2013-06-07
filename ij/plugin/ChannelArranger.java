@@ -25,7 +25,11 @@ public class ChannelArranger implements PlugIn, TextListener {
 		ImagePlus imp = IJ.getImage();
 		nChannels = imp.getNChannels();
 		if (nChannels==1) {
-			IJ.error("Image must have more than one channel");
+			IJ.error("Channel Arranger", "Image must have more than one channel");
+			return;
+		}
+		if (nChannels>9) {
+			IJ.error("Channel Arranger", "This command does not work with more than 9 channels.");
 			return;
 		}
 		patternString = "1234567890".substring(0, nChannels);
@@ -50,7 +54,7 @@ public class ChannelArranger implements PlugIn, TextListener {
 			return;
 		for (int i=0; i<nChannels2; i++) {
 			if (!Character.isDigit(newOrder.charAt(i))) {
-				IJ.error("Arrange Channels", "Non-digit in new order string: \""+newOrder+"\"");
+				IJ.error("Channel Arranger", "Non-digit in new order string: \""+newOrder+"\"");
 				return;
 			}
 		}

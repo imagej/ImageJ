@@ -34,7 +34,6 @@ import java.util.Properties;
  *
  *	@author Johannes Schindelin
  */
-
 public class OtherInstance {
 
 	interface ImageJInstance extends Remote {

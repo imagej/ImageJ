@@ -363,7 +363,7 @@ public class FHT extends FloatProcessor {
 	}
 
 	/** Converts this FHT to a complex Fourier transform and returns it as a two slice stack.
-	*	@author Joachim Wesner
+	*	Author: Joachim Wesner
 	*/
 	public ImageStack getComplexTransform() {
 		if (!isFrequencyDomain)
@@ -384,7 +384,7 @@ public class FHT extends FloatProcessor {
 	}
 
 	/**	 FFT real value of one row from 2D Hartley Transform.
-	*	@author Joachim Wesner
+	*	Author: Joachim Wesner
 	*/
       void FHTreal(int row, int maxN, float[] fht, float[] real) {
             int base = row*maxN;

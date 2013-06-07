@@ -288,8 +288,7 @@ public class OvalRoi extends Roi {
 	}		
 
 	/** Tests if the specified point is inside the boundary of this OvalRoi.
-	* @author Barry DeZonia
-	* @author Michael Schmid
+	* Authors: Barry DeZonia and Michael Schmid
 	*/
 	public boolean contains(int ox, int oy) {
 		double a = width*0.5;
