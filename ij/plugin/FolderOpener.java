@@ -466,7 +466,7 @@ public class FolderOpener implements PlugIn {
 	
 	/** Sorts file names containing numerical components.
 	* @see ij.util.StringSorter#sortNumerically
-	* @author Norbert Vischer
+	* Author: Norbert Vischer
 	*/
 	public String[] sortFileList(String[] list) {
 		return StringSorter.sortNumerically(list);

@@ -897,8 +897,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				if (s!=null) theText = s;
 			}
 		}	
-		if (recorderOn)
-			recordOption(tf, theText);
+		if (recorderOn) {
+			String s = theText;
+			if (s!=null&&Character.isLetter(s.charAt(0))&&s.charAt(1)==':'&&s.charAt(2)=='\\')
+				s = s.replaceAll("\\\\", "\\\\\\\\");  // replace "\" with "\\" in Windows file paths
+			recordOption(tf, s);
+		}
 		sfIndex++;
 		return theText;
     }

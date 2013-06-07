@@ -27,6 +27,10 @@ public class StackReverser implements PlugIn {
 			stack.deleteLastSlice();
 		}
 		imp.setStack(null, stack2);
+		if (imp.isComposite()) {
+			((CompositeImage)imp).reset();
+			imp.updateAndDraw();
+		}
 	}
 
 }

@@ -1137,7 +1137,7 @@ class DisplayChangeEvent extends EventObject {
  * - Add the methods "add" and "remove" with the corresponding listener type.
  * <p>
  *
- * @author: code take from Sun's AWTEventMulticaster by J. Walter 2002-03-07
+ * @author code taken from Sun's AWTEventMulticaster by J. Walter 2002-03-07
  */
 
 class IJEventMulticaster extends AWTEventMulticaster implements DisplayChangeListener {

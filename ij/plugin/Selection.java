@@ -97,7 +97,7 @@ public class Selection implements PlugIn, Measurements {
 	Original code: Nikolai Chernov's MATLAB script for Newton-based Pratt fit.<br>
 	(http://www.math.uab.edu/~chernov/cl/MATLABcircle.html)<br>
 	Java version: https://github.com/mdoube/BoneJ/blob/master/src/org/doube/geometry/FitCircle.java<br>
-	@authors Nikolai Chernov, Michael Doube, Ved Sharma
+	Authors: Nikolai Chernov, Michael Doube, Ved Sharma
 	*/
 	void fitCircle(ImagePlus imp) {
 		Roi roi = imp.getRoi();

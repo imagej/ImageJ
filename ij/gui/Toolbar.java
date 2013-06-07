@@ -211,8 +211,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		drawButton(g, lineType);
 		for (int i=POINT; i<NUM_TOOLS; i++)
 			drawButton(g, i);
-		if (IJ.debugMode)
-			IJ.log("drawButtons: "+(System.currentTimeMillis()-start));
+		//if (IJ.debugMode)
+		//	IJ.log("drawButtons: "+(System.currentTimeMillis()-start));
 	}
 
 	private void fill3DRect(Graphics g, int x, int y, int width, int height, boolean raised) {

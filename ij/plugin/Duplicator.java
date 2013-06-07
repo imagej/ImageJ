@@ -364,7 +364,7 @@ public class Duplicator implements PlugIn, TextListener {
 	/*
 	* Duplicate the elements of overlay 'overlay1' which  
 	* intersect with the rectangle 'imgBounds'.
-	* @author Wilhelm Burger
+	* Author: Wilhelm Burger
 	*/
 	public static Overlay cropOverlay(Overlay overlay1, Rectangle imgBounds) {
 		Overlay overlay2 = new Overlay();

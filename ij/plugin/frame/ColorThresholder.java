@@ -1400,7 +1400,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	* see:
 	* http://www.brucelindbloom.com/index.html?WorkingSpaceInfo.html#Specifications
 	* http://www.easyrgb.com/math.php?MATH=M7#text7
-	* @author Gabriel Landini,  G.Landini@bham.ac.uk
+	* Author: Gabriel Landini,  G.Landini@bham.ac.uk
 	*/
 	public static void RGBtoLab() {
 		ImagePlus imp = IJ.getImage();
@@ -1472,7 +1472,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	
 	/** Converts the current image from RGB to YUV and stores 
 	* the results in the same RGB image R=Y, G=U, B=V.
-	* @author Gabriel Landini,  G.Landini@bham.ac.uk
+	* Author: Gabriel Landini,  G.Landini@bham.ac.uk
 	*/
 	public static void RGBtoYUV() {
 		ImagePlus imp = IJ.getImage();

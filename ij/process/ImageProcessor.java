@@ -1971,7 +1971,7 @@ public abstract class ImageProcessor implements Cloneable {
 			the interpolationMethod. False if subsampling without any averaging  
 			should be used on downsizing.  Has no effect on upsizing.
 		@ImageProcessor#setInterpolationMethod for setting the interpolation method
-		@author Michael Schmid
+		Author: Michael Schmid
 	*/
 	public ImageProcessor resize(int dstWidth, int dstHeight, boolean useAverging) {
 		Rectangle r = getRoi();

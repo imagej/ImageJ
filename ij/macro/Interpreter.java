@@ -1417,8 +1417,12 @@ public class Interpreter implements MacroConstants {
 		Variable[] array = v.getArray();
 		if (array==null)
 			error("Array expected");
-		if (index<0 || index>=array.length)
-			error("Index ("+index+") out of 0-"+(array.length-1)+" range");
+		if (index<0 || index>=array.length) {
+			if (array.length==0)
+				error("Empty array");
+			else
+				error("Index ("+index+") out of 0-"+(array.length-1)+" range");
+		}
 		return array[index];
 	}
 	

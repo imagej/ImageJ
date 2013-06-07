@@ -15,9 +15,6 @@ public class ImageJ_Updater implements PlugIn {
 		if (arg.equals("menus"))
 			{updateMenus(); return;}
 		if (IJ.getApplet()!=null) return;
-		//File file = new File(Prefs.getHomeDir() + File.separator + "ij.jar");
-		//if (isMac() && !file.exists())
-		//	file = new File(Prefs.getHomeDir() + File.separator + "ImageJ.app/Contents/Resources/Java/ij.jar");
 		URL url = getClass().getResource("/ij/IJ.class");
 		String ij_jar = url == null ? null : url.toString().replaceAll("%20", " ");
 		if (ij_jar==null || !ij_jar.startsWith("jar:file:")) {
@@ -161,7 +158,7 @@ public class ImageJ_Updater implements PlugIn {
 
 	/*Changes the name of ij.jar to ij-old.jar
 	boolean renameJar(File f) {
-		File backup = new File(Prefs.getHomeDir() + File.separator + "ij-old.jar");
+		File backup = new File(Prefs.getImageJDir() + "ij-old.jar");
 		if (backup.exists()) {
 			if (!backup.delete()) {
 				error("Unable to delete backup: "+backup.getPath());

@@ -1,12 +1,3 @@
-/*
- This plugin saves grayscale images in PGM (portable graymap) format 
- and RGB images in PPM (portable pixmap) format. These formats, 
- along with PBM (portable bitmap), are collectively known as the 
- PNM format. More information can be found at 
- "http://en.wikipedia.org/wiki/Portable_Pixmap_file_format".
- 
- @author Johannes Schindelin
- */
 package ij.plugin;
 import ij.*;
 import ij.process.*;
@@ -17,6 +8,15 @@ import java.io.*;
 import java.util.*;
 import java.awt.image.*;
 
+/*
+ This plugin saves grayscale images in PGM (portable graymap) format 
+ and RGB images in PPM (portable pixmap) format. These formats, 
+ along with PBM (portable bitmap), are collectively known as the 
+ PNM format. More information can be found at 
+ "http://en.wikipedia.org/wiki/Portable_Pixmap_file_format".
+ 
+ @author Johannes Schindelin
+ */
 public class PNM_Writer implements PlugIn {
 
 	public void run(String path) {

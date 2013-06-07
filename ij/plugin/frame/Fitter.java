@@ -18,7 +18,6 @@ import ij.measure.*;
  *
  * @author  Kieran Holland (email: holki659@student.otago.ac.nz)
  */
-
 public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionListener {
 
 	Choice fit;

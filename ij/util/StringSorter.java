@@ -31,7 +31,7 @@ public class StringSorter {
 	}
 	
 	/** Sorts file names containing numerical components.
-	* @author Norbert Vischer
+	* Author: Norbert Vischer
 	*/
 	public static String[] sortNumerically(String[] list) {
 		int n = list.length;
