@@ -597,7 +597,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			areas = new float[0];
 		String label = imp.getTitle();
 		if (slices>1) {
-			label = imp.getStack().getShortSliceLabel(slice);
+			if (processStack)
+				label = imp.getStack().getShortSliceLabel(slice);
+			else
+				label = imp.getStack().getShortSliceLabel(imp.getCurrentSlice());
 			label = label!=null&&!label.equals("")?label:""+slice;
 		}
 		String aLine = null;
@@ -616,6 +619,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		aLine = addMeans(aLine, areas.length>0?start:-1);
 		if (slices==1) {
 			Frame frame = WindowManager.getFrame("Summary");
+			if (frame!=null && (frame instanceof TextWindow) && summaryHdr.equals(prevHdr))
+				tw = (TextWindow)frame;
+		} else {
+			Frame frame = WindowManager.getFrame("Summary of "+imp.getTitle());
 			if (frame!=null && (frame instanceof TextWindow) && summaryHdr.equals(prevHdr))
 				tw = (TextWindow)frame;
 		}
