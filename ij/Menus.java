@@ -343,7 +343,7 @@ public class Menus {
  			String name = list[i];
  			if (name.endsWith(".lut")) {
  				name = name.substring(0,name.length()-4);
- 				if (!isFiji)
+ 				if (!isFiji && name.contains("_") && !name.contains(" "))
  					name = name.replace("_", " ");
  				MenuItem item = new MenuItem(name);
 				submenu.add(item);

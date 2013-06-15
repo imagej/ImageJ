@@ -416,6 +416,8 @@ public class IJ {
 			logPanel.setLine(line, s2);
 		} else if (s.equals("\\Clear")) {
 			logPanel.clear();
+		} else if (s.startsWith("\\Heading:")) {
+			logPanel.updateColumnHeadings(s.substring(10));
 		} else if (s.equals("\\Close")) {
 			Frame f = WindowManager.getFrame("Log");
 			if (f!=null && (f instanceof TextWindow))

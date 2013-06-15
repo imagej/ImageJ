@@ -21,14 +21,14 @@
 
   Dialog.create("Search");
   Dialog.addString("_", str, 20);
-  items = newArray("Macros", "Scripts", "Java", "Folder...");
+  items = newArray("Macros", "Scripts", "Java", "ImageJ folder", "Choose...");
   Dialog.setInsets(2,20,0);
   Dialog.addRadioButtonGroup("Search:", items, 5, 1, search);
   Dialog.setInsets(0, 20, 0);
   Dialog.addCheckbox("Search_contents", contents);
   Dialog.addCheckbox("Ignore case", ignore);
   Dialog.setInsets(10, 0, 0);
-  Dialog.addMessage("In the Log window, to open a file,\ndouble click on its file path.");
+  Dialog.addMessage("In the Log window, to open a file,\ndouble-click on its file path.");
   Dialog.show();
   str = Dialog.getString();
   contents = Dialog.getCheckbox();
@@ -46,10 +46,12 @@
       extensions = newArray(".js", ".py", ".rb", ".clj", ".bsh");
   } else if (search=="Java") {
       dir1 = getDirectory("plugins"); 
-      if (File.exists(IJdir+"source"))
+      if (sourceExists)
          dir2 = IJdir+"source"+"/";
       extensions = newArray(".java");
-  } else if (search=="Folder...") {
+  } else if (search=="ImageJ folder") {
+      dir1 = getDirectory("imagej");   
+  } else if (search=="Choose...") {
       dir1 = getDirectory("Choose a Directory");
   } else {
       dir1 = getDirectory("macros");   
@@ -79,6 +81,8 @@
                   s2 = toLowerCase(s);
               if (indexOf(s2,str)!=-1) {
                   count++;
+                  if (count==1)
+                  	print("\\Heading: Double-click on a file name to open it");
                   print("");
                   print(dir+list[i]);
                   lines = split(s, "\n");
@@ -93,13 +97,13 @@
                       }
                  } // for
               } // if match
-          } else if (valid(list[i])) {
+          } else {
               name = list[i];
               if (ignore)
                   name = toLowerCase(name);
               if (indexOf(name,str)!=-1) { // string in name?
                   print("");
-                  print(dir+name);
+                  print(dir+list[i]);
                   count++;
               }
           }
