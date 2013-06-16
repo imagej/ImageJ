@@ -6,6 +6,7 @@
   contents = true;
   ignore = false;
   search = "Macros";
+  firstLine = true;
   arg = getArgument;
   if (arg!="") {
       args = split(arg, "|");
@@ -38,6 +39,7 @@
      exit("Search string is empty");
 
   sourceExists = File.exists(IJdir+"source");
+  searchNames = false;
   dir1=""; dir2=""; dir3="";
   if (search=="Scripts") {
       dir1 = getDirectory("macros");   
@@ -50,9 +52,11 @@
          dir2 = IJdir+"source"+"/";
       extensions = newArray(".java");
   } else if (search=="ImageJ folder") {
-      dir1 = getDirectory("imagej");   
+      dir1 = getDirectory("imagej");
+      searchNames = true;
   } else if (search=="Choose...") {
       dir1 = getDirectory("Choose a Directory");
+      searchNames = true;
   } else {
       dir1 = getDirectory("macros");   
       dir2 = getDirectory("plugins");     
@@ -81,8 +85,8 @@
                   s2 = toLowerCase(s);
               if (indexOf(s2,str)!=-1) {
                   count++;
-                  if (count==1)
-                  	print("\\Heading: Double-click on a file name to open it");
+                  if (firstLine)
+                      showMessageInHeader();
                   print("");
                   print(dir+list[i]);
                   lines = split(s, "\n");
@@ -96,22 +100,28 @@
                           n++;
                       }
                  } // for
-              } // if match
-          } else {
-              name = list[i];
-              if (ignore)
-                  name = toLowerCase(name);
-              if (indexOf(name,str)!=-1) { // string in name?
-                  print("");
-                  print(dir+list[i]);
-                  count++;
-              }
-          }
+              } else
+                  searchName(list[i]);
+          } else if (searchNames || valid(list[i]))
+              searchName(list[i]);
       }
       if (count==1)
           showStatus("1 match");
       else
           showStatus(count+" matches");
+  }
+
+  function searchName(name) {
+      name2 = name;
+      if (ignore)
+          name2 = toLowerCase(name2);
+      if (indexOf(name2,str)!=-1) {
+          if (firstLine)
+              showMessageInHeader();
+          print("");
+          print(dir+name);
+          count++;
+      }
   }
 
   function valid(name) {
@@ -120,5 +130,10 @@
              return true;
       }
       return false;
+  }
+  
+  function showMessageInHeader() {
+      print("\\Heading: Double-click on a file name to open it");
+      firstLine = false;
   }
 
