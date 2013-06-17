@@ -153,7 +153,7 @@ public class IJ {
 	public static Object runPlugIn(String commandName, String className, String arg) {
 		if (arg==null) arg = "";
 		if (IJ.debugMode)
-			IJ.log("runPlugin: "+className+" "+(!arg.contains("\n")?arg:""));
+			IJ.log("runPlugIn: "+className+(arg!=null&&!arg.contains("\n")?"(\""+arg+"\")":""));
 		// Load using custom classloader if this is a user 
 		// plugin and we are not running as an applet
 		if (!className.startsWith("ij.") && applet==null)
@@ -178,7 +178,8 @@ public class IJ {
 	}
         
 	static Object runUserPlugIn(String commandName, String className, String arg, boolean createNewLoader) {
-		if (debugMode) IJ.log("runUserPlugIn: "+className+" "+arg);
+		if (IJ.debugMode)
+			IJ.log("runUserPlugIn: "+className+(arg!=null&&!arg.contains("\n")?"(\""+arg+"\")":""));
 		if (applet!=null) return null;
 		if (checkForDuplicatePlugins) {
 			// check for duplicate classes and jars in the plugins folder
