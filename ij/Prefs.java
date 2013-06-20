@@ -152,7 +152,6 @@ public class Prefs {
 	static int transparentIndex = -1;
 	static boolean commandLineMacro;
 	private static boolean resetPreferences;
-	private static boolean homeDirSet;
 
 	/** Finds and loads the ImageJ configuration file, "IJ_Props.txt".
 		@return	an error message if "IJ_Props.txt" not found.
@@ -230,13 +229,12 @@ public class Prefs {
 
 	/** Returns the path, ending in File.separator, to the ImageJ directory. */
 	public static String getImageJDir() {
-		String path = Menus.getPlugInsPath();
-		if (path==null || homeDirSet)
+		String path = Menus.getImageJPath();
+		if (IJ.debugMode) IJ.log("Prefs.getImageJDir: "+path);
+		if (path==null)
 			return homeDir + File.separator;
-		String ijdir = (new File(path)).getParent();
-		if (ijdir!=null)
-			ijdir += File.separator;
-		return ijdir;
+		else
+			return path;
 	}
 
 	/** Gets the path to the directory where the 
@@ -250,7 +248,6 @@ public class Prefs {
 		if (path.endsWith(File.separator))
 			path = path.substring(0, path.length()-1);
 		homeDir = path;
-		homeDirSet = true;
 	}
 
 	/** Returns the default directory, if any, or null. */

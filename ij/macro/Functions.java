@@ -4796,6 +4796,12 @@ public class Functions implements MacroConstants, Measurements {
 			arg = getStringArg().toLowerCase(Locale.US);
 		else
 			interp.getParens();
+		if (arg.equals("conditional")) {
+			if (IJ.debugMode)
+				arg = "break";
+			else
+				return null;
+		}
 		if (interp.editor==null && !(arg.equals("throw")||arg.equals("dump"))) {
 			Editor ed = Editor.getInstance();
 			if (ed==null)
