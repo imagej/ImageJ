@@ -28,6 +28,7 @@ public class Undo {
 	private static Calibration calCopy;
 	private static Roi roiCopy;
 	private static double displayRangeMin, displayRangeMax;
+	private static LUT lutCopy;
 	
 	public static void setup(int what, ImagePlus imp) {
 		if (imp==null) {
@@ -71,9 +72,7 @@ public class Undo {
 		} else {
 			ipCopy = null;
 			ImageProcessor ip = imp.getProcessor();
-			//displayRangeMin = ip.getMin();
-			//displayRangeMax = ip.getMax();
-			//IJ.log("reset-filter: "+displayRangeMin+" "+displayRangeMax);
+			//lutCopy = (LUT)ip.getLut().clone();
 		}
 	}
 		
@@ -86,6 +85,7 @@ public class Undo {
 		impCopy = null;
 		calCopy = null;
 		roiCopy = null;
+		lutCopy = null;
 		//IJ.log("Undo: reset");
 	}
 	
@@ -105,6 +105,10 @@ public class Undo {
 		switch (whatToUndo) {
 			case FILTER:
 				ImageProcessor ip = imp.getProcessor();
+				//if (lutCopy!=null) {
+				//	ip.setLut(lutCopy);
+				//	IJ.log("lutCopy2: "+lutCopy);
+				//}
 				if (ip!=null) {
 					if (!IJ.macroRunning()) {
 						ip.swapPixelArrays();

@@ -2,10 +2,11 @@ package ij.plugin.filter;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.text.*;
 import ij.measure.*;
 import ij.io.*;
 import ij.util.Tools;
+import ij.plugin.frame.Editor;
+import ij.text.TextWindow;
 import java.awt.*;
 import java.util.*;
 import java.lang.reflect.*;
@@ -317,6 +318,9 @@ public class Info implements PlugInFilter {
 
 	void showInfo(String info, int width, int height) {
 		new TextWindow("Info for "+imp.getTitle(), info, width, height);
+		//Editor ed = new Editor();
+		//ed.setSize(width, height);
+		//ed.create("Info for "+imp.getTitle(), info);
 	}
 	
 }

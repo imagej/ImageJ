@@ -142,6 +142,8 @@ public class Prefs {
 	public static boolean autoContrast;
 	/** Allow lines to be created with one click at start and another at the end */
 	public static boolean enhancedLineTool;
+	/** Keep arrow selection after adding to overlay */
+	public static boolean keepArrowSelections;
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);
@@ -230,7 +232,6 @@ public class Prefs {
 	/** Returns the path, ending in File.separator, to the ImageJ directory. */
 	public static String getImageJDir() {
 		String path = Menus.getImageJPath();
-		if (IJ.debugMode) IJ.log("Prefs.getImageJDir: "+path);
 		if (path==null)
 			return homeDir + File.separator;
 		else

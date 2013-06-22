@@ -834,29 +834,29 @@ public class Menus {
 		if (currentDir==null)
 			return;
 		if (currentDir.endsWith("plugins"))
-			ImageJPath = pluginsPath = currentDir+Prefs.separator;
+			ImageJPath = pluginsPath = currentDir+File.separator;
 		else {
-			String property = System.getProperty("plugins.dir");
-			if (property!=null && (property.endsWith("/")||property.endsWith("\\")))
-				property = property.substring(0, property.length()-1);
-			String pluginsDir = property;
+			String pluginsDir = System.getProperty("plugins.dir");
+			if (pluginsDir!=null) {
+				if (pluginsDir.endsWith("/")||pluginsDir.endsWith("\\"))
+					pluginsDir = pluginsDir.substring(0, pluginsDir.length()-1);
+				if (pluginsDir.endsWith("/plugins")||pluginsDir.endsWith("\\plugins"))
+					pluginsDir = pluginsDir.substring(0, pluginsDir.length()-8);
+			}
 			if (pluginsDir==null)
 				pluginsDir = currentDir;
 			else if (pluginsDir.equals("user.home")) {
 				pluginsDir = System.getProperty("user.home");
-				if (!(new File(pluginsDir+Prefs.separator+"plugins")).isDirectory()) 
-					pluginsDir = pluginsDir + Prefs.separator + "ImageJ";
-				property = null;
+				if (!(new File(pluginsDir+File.separator+"plugins")).isDirectory()) 
+					pluginsDir = pluginsDir + File.separator + "ImageJ";
 				// needed to run plugins when ImageJ launched using Java WebStart
 				if (applet==null)
 					System.setSecurityManager(null);
 				jnlp = true;
 			}
-			pluginsPath = pluginsDir+File.separator+"plugins"+Prefs.separator;
-			if (property!=null&&!(new File(pluginsPath)).isDirectory())
-				pluginsPath = pluginsDir + Prefs.separator;
-			macrosPath = pluginsDir+Prefs.separator+"macros"+Prefs.separator;
-			ImageJPath = pluginsDir+Prefs.separator;
+			pluginsPath = pluginsDir+File.separator+"plugins"+File.separator;
+			macrosPath = pluginsDir+File.separator+"macros"+File.separator;
+			ImageJPath = pluginsDir+File.separator;
 		}
 		File f = pluginsPath!=null?new File(pluginsPath):null;
 		if (f==null || !f.isDirectory()) {

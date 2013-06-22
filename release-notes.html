@@ -5,10 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.47u 20 June 2013</u>
+<li> <u>1.47u 22 June 2013</u>
 <ul>
 <li> Thanks to Tiago Ferreira, the <i>Plugins&gt;Utilities&gt;Search</i> command now displays
 "Double-click on a file name to open it" in the Log window header bar.
+<li> Added a "Keep after adding to overlay" option to the arrow tool options dialog box.
+<li> Thanks to Elyse Aurbach, <i>Analyze&gt;Calibrate</i> supports four more
+calibration functions and displays better calibration plots. 
 <li> Thanks to Norbert Vischer, added the debug("conditional") macro function.
 <li> Thanks to Ved Sharma, fixed a bug that caused the particle analyzer to always create a
 new "Summary of ..." table when processing stack slices.
@@ -25,6 +28,8 @@ plugins to be displayed in the Log window when ImageJ was in debug mode.
 recorder was running.
 <li> Thanks to Jerome Mutterer, fixed a v1.47 regression that caused command line options
 similar to "-Dplugins.dir=..\ImageJ" to not work as expected.
+<li> Fixed a bug that caused the paths returned by getDirectory("image") and getDirectory("macros")
+to be incorrect if the path specified in the "-Dplugins.dir=path" command line option ended in "plugins".
 <li> 
 
 </ul>

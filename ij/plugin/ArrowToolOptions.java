@@ -31,6 +31,7 @@ public class ArrowToolOptions implements PlugIn, DialogListener {
 		gd.addChoice("Style:", Arrow.styles, Arrow.styles[style]);
 		gd.addCheckbox("Outline", Arrow.getDefaultOutline());
 		gd.addCheckbox("Double head", Arrow.getDefaultDoubleHeaded());
+		gd.addCheckbox("Keep after adding to overlay", Prefs.keepArrowSelections);
 		gd.addDialogListener(this);
 		Point loc = Prefs.getLocation(LOC_KEY);
 		if (loc!=null) {
@@ -48,6 +49,7 @@ public class ArrowToolOptions implements PlugIn, DialogListener {
 		int style2 = gd.getNextChoiceIndex();
 		boolean outline2 = gd.getNextBoolean();
 		boolean doubleHeaded2 = gd.getNextBoolean();
+		Prefs.keepArrowSelections = gd.getNextBoolean();
 		if (colorName!=null && !colorName2.equals(colorName)) {
 			Color color = Colors.getColor(colorName2, Color.black);
 			Toolbar.setForegroundColor(color);
