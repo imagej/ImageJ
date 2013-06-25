@@ -247,7 +247,7 @@ public class IJ {
 		GenericDialog and OpenDialog classes. Does not return until
 		the command has finished executing. */
 	public static void run(String command, String options) {
-		//IJ.log("run1: "+command+" "+Thread.currentThread().hashCode());
+		//IJ.log("run1: "+command+" "+Thread.currentThread().hashCode()+" "+options);
 		if (ij==null && Menus.getCommands()==null)
 			init();
 		Macro.abort = false;

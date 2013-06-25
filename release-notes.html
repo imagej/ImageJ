@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.47u 22 June 2013</u>
+<li> <u>1.47u 25 June 2013</u>
 <ul>
 <li> Thanks to Tiago Ferreira, the <i>Plugins&gt;Utilities&gt;Search</i> command now displays
 "Double-click on a file name to open it" in the Log window header bar.
@@ -23,13 +23,15 @@ to not work with virtual stacks defined in Imglib.
 it to modify the contains of float arrays passed to it in the constructor.
 <li> Thanks to Sebastien Simard, fixed a bug that caused multi-line arguments passed to user
 plugins to be displayed in the Log window when ImageJ was in debug mode.
-<li> Thanks to Alberto Duina, fixed a v1.47t regression that caused
-<i>File&gt;Import&gt;Image Sequence</i> to throw an exception if the
-recorder was running.
 <li> Thanks to Jerome Mutterer, fixed a v1.47 regression that caused command line options
 similar to "-Dplugins.dir=..\ImageJ" to not work as expected.
 <li> Fixed a bug that caused the paths returned by getDirectory("image") and getDirectory("macros")
 to be incorrect if the path specified in the "-Dplugins.dir=path" command line option ended in "plugins".
+<li> Thanks to Andrew York, fixed a bug that caused macros run from the command line
+to sometimes unexpectedly display dialog boxes.
+<li> Thanks to Alberto Duina and Gabriel Landini, fixed a v1.47t regression that caused
+an exception to be thrown if a string with a length less than 3 was entered into a dialog box
+ and the recorder was running.
 <li> 
 
 </ul>
