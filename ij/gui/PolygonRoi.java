@@ -54,8 +54,12 @@ public class PolygonRoi extends Roi {
 	public PolygonRoi(float[] xPoints, float[] yPoints, int nPoints, int type) {
 		super(0, 0, null);
 		init1(nPoints, type);
-		xpf = xPoints;
-		ypf = yPoints;
+		xpf = new float[nPoints];
+		ypf = new float[nPoints];
+		for (int i=0; i<nPoints; i++) {
+			xpf[i] = xPoints[i];
+			ypf[i] = yPoints[i];
+		}
 		subPixel = true;
 		xp2 = new int[nPoints];
 		yp2 = new int[nPoints];

@@ -142,6 +142,8 @@ public class Prefs {
 	public static boolean autoContrast;
 	/** Allow lines to be created with one click at start and another at the end */
 	public static boolean enhancedLineTool;
+	/** Keep arrow selection after adding to overlay */
+	public static boolean keepArrowSelections;
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);
@@ -152,7 +154,6 @@ public class Prefs {
 	static int transparentIndex = -1;
 	static boolean commandLineMacro;
 	private static boolean resetPreferences;
-	private static boolean homeDirSet;
 
 	/** Finds and loads the ImageJ configuration file, "IJ_Props.txt".
 		@return	an error message if "IJ_Props.txt" not found.
@@ -230,13 +231,11 @@ public class Prefs {
 
 	/** Returns the path, ending in File.separator, to the ImageJ directory. */
 	public static String getImageJDir() {
-		String path = Menus.getPlugInsPath();
-		if (path==null || homeDirSet)
+		String path = Menus.getImageJPath();
+		if (path==null)
 			return homeDir + File.separator;
-		String ijdir = (new File(path)).getParent();
-		if (ijdir!=null)
-			ijdir += File.separator;
-		return ijdir;
+		else
+			return path;
 	}
 
 	/** Gets the path to the directory where the 
@@ -250,7 +249,6 @@ public class Prefs {
 		if (path.endsWith(File.separator))
 			path = path.substring(0, path.length()-1);
 		homeDir = path;
-		homeDirSet = true;
 	}
 
 	/** Returns the default directory, if any, or null. */

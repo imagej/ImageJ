@@ -2,7 +2,8 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 
-/** Implements the Image/Transform/Flip Z command. */
+/** This plugin implements the Image/Transform/Flip Z and
+	Image/Stacks/Tools/Reverse commands. */
 public class StackReverser implements PlugIn {
 	
 	public void run(String arg) {
@@ -20,13 +21,16 @@ public class StackReverser implements PlugIn {
 	
 	public void flipStack(ImagePlus imp) {
 		ImageStack stack = imp.getStack();
- 		ImageStack stack2 = imp.createEmptyStack();
- 		int n;
-		while ((n=stack.getSize())>0) { 
-			stack2.addSlice(stack.getSliceLabel(n), stack.getProcessor(n));
-			stack.deleteLastSlice();
-		}
-		imp.setStack(null, stack2);
+		int n = stack.getSize();
+		if (n==1)
+			return;
+ 		ImageStack stack2 = new ImageStack(imp.getWidth(), imp.getHeight(), n);
+ 		for (int i=1; i<=n; i++) {
+ 			stack2.setPixels(stack.getPixels(i), n-i+1);
+ 			stack2.setSliceLabel(stack.getSliceLabel(i), n-i+1);
+ 		}
+ 		stack2.setColorModel(stack.getColorModel());
+		imp.setStack(stack2);
 		if (imp.isComposite()) {
 			((CompositeImage)imp).reset();
 			imp.updateAndDraw();

@@ -1483,7 +1483,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				break;
 			case Toolbar.POINT:
 				roi = new PointRoi(sx, sy, this);
-				if (Prefs.pointAutoMeasure || (Prefs.pointAutoNextSlice&&!Prefs.pointAddToManager)) IJ.run("Measure");
+				if (Prefs.pointAutoMeasure || (Prefs.pointAutoNextSlice&&!Prefs.pointAddToManager))
+					IJ.run("Measure");
 				if (Prefs.pointAddToManager) {
 					IJ.run("Add to Manager ");
 					ImageCanvas ic = getCanvas();

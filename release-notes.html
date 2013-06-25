@@ -5,23 +5,35 @@
 </head>
 <body>
 
-<li> <u>1.47t 7 June 2013</u>
+<li> <u>1.47u 25 June 2013</u>
 <ul>
-<li> The macro intepreter provides a better error message when a macro tries to index an empty array,
-such as the ones returned by the split() function when no tokens are found.
-<li> Thanks to Gilles Carpentier, fixed a bug that caused <i>Image&gt;Stacks&gt;Tools&gt;Reverse</i>
-to not work as expected with composite color images.
-<li> Fixed a bug that sometimes caused <i>Edit&gt;Options&gt;Memory & Threads</i>
-to fail when ImageJ was started using the Linux launcher.
-<li> Thanks to Josef Borkovec, fixed a bug that caused GenericDialogs to not correctly record
-strings containing Windows file paths with backslashes.
-<li> Thanks to Barry DeZonia, fixed a bug in <i>Image&gt;Color&gt;Arrange Channels</i>
-that caused it to throw an exception with stacks with more than 10 channels.
-<li> Thanks to Gilles Courtand, fixed a v1.47s regression that caused the
-<i>Process&gt;Batch&gt;Macro</i> and <i>Process&gt;Batch&gt;Virtual Stack</i>
-commands to throw an exceptions.
+<li> Thanks to Tiago Ferreira, the <i>Plugins&gt;Utilities&gt;Search</i> command now displays
+"Double-click on a file name to open it" in the Log window header bar.
+<li> Added a "Keep after adding to overlay" option to the arrow tool options dialog box.
+<li> Thanks to Elyse Aurbach, <i>Analyze&gt;Calibrate</i> supports four more
+calibration functions and displays better calibration plots. 
+<li> Thanks to Norbert Vischer, added the debug("conditional") macro function.
+<li> Thanks to Ved Sharma, fixed a bug that caused the particle analyzer to always create a
+new "Summary of ..." table when processing stack slices.
+<li> Thanks to Tiago Ferreira, fixed a bug in the Overlay.activateSelection() macro
+function that caused it to ignore stack positions.
+<li> Thanks to Barry DeZonia, fixed a bug that caused <i>Image&gt;Stacks&gt;Tools&gt;Reverse</i>
+to not work with virtual stacks defined in Imglib.
+<li> Thanks to C Heeney, fixed a bug in the PolygonRoi class that caused
+it to modify the contains of float arrays passed to it in the constructor.
+<li> Thanks to Sebastien Simard, fixed a bug that caused multi-line arguments passed to user
+plugins to be displayed in the Log window when ImageJ was in debug mode.
+<li> Thanks to Jerome Mutterer, fixed a v1.47 regression that caused command line options
+similar to "-Dplugins.dir=..\ImageJ" to not work as expected.
+<li> Fixed a bug that caused the paths returned by getDirectory("image") and getDirectory("macros")
+to be incorrect if the path specified in the "-Dplugins.dir=path" command line option ended in "plugins".
+<li> Thanks to Andrew York, fixed a bug that caused macros run from the command line
+to sometimes unexpectedly display dialog boxes.
+<li> Thanks to Alberto Duina and Gabriel Landini, fixed a v1.47t regression that caused
+an exception to be thrown if a string with a length less than 3 was entered into a dialog box
+ and the recorder was running.
+<li> 
 
-<li>
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

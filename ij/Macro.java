@@ -84,8 +84,9 @@ public class Macro {
 		@see ij.io.OpenDialog
 	*/
 	public static String getOptions() {
-		//IJ.log("getOptions: "+Thread.currentThread().hashCode()); //ts
-		if (Thread.currentThread().getName().startsWith("Run$_")) {
+		String threadName = Thread.currentThread().getName();
+		//IJ.log("getOptions: "+threadName+" "+Thread.currentThread().hashCode()); //ts
+		if (threadName.startsWith("Run$_")||threadName.startsWith("RMI TCP")) {
 			Object options = table.get(Thread.currentThread());
 			return options==null?null:options+" ";
 		} else
@@ -94,7 +95,7 @@ public class Macro {
 
 	/** Define a set of Macro options for the current Thread. */
 	public static void setOptions(String options) {
-		//IJ.log("setOptions: "+Thread.currentThread().hashCode()+" "+options); //ts
+		//IJ.log("setOptions: "+Thread.currentThread().getName()+" "+Thread.currentThread().hashCode()+" "+options); //ts
 		if (options==null || options.equals(""))
 			table.remove(Thread.currentThread());
 		else

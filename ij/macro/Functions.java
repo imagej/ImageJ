@@ -4796,6 +4796,12 @@ public class Functions implements MacroConstants, Measurements {
 			arg = getStringArg().toLowerCase(Locale.US);
 		else
 			interp.getParens();
+		if (arg.equals("conditional")) {
+			if (IJ.debugMode)
+				arg = "break";
+			else
+				return null;
+		}
 		if (interp.editor==null && !(arg.equals("throw")||arg.equals("dump"))) {
 			Editor ed = Editor.getInstance();
 			if (ed==null)
@@ -5259,7 +5265,22 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("activateSelection")) {
 			int index = (int)getArg();
 			checkIndex(index, 0, size-1);
-			imp.setRoi(overlay.get(index), !Interpreter.isBatchMode());
+			Roi roi = overlay.get(index);
+			if (imp.getStackSize()>1) {
+				if (imp.isHyperStack()) {
+					int c = roi.getCPosition();
+					int z = roi.getZPosition();
+					int t = roi.getTPosition();
+					if (c>0 || z>0 || t>0) {
+						c = c>0?c:imp.getChannel();
+						z = z>0?z:imp.getSlice();
+						t = t>0?t:imp.getFrame();
+						imp.setPosition(c, z, t);
+					}
+				} else if (roi.getPosition()>0)
+					imp.setSlice(roi.getPosition());
+			}
+			imp.setRoi(roi, !Interpreter.isBatchMode());
 			return Double.NaN;
 		} else if (name.equals("setPosition")) {
 			int c=0, z=0, t=0;

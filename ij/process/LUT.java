@@ -1,4 +1,5 @@
 package ij.process;
+import ij.IJ;
 import ij.plugin.Colors;
 import java.awt.image.*;
 import java.awt.Color;
@@ -92,7 +93,7 @@ import java.awt.Color;
 	
 	public  String toString() {
 		return "rgb[0]="+Colors.colorToString(new Color(getRGB(0)))+", rgb[255]="
-			+Colors.colorToString(new Color(getRGB(255)))+", min="+(int)min+", max="+(int)max;
+			+Colors.colorToString(new Color(getRGB(255)))+", min="+IJ.d2s(min,4)+", max="+IJ.d2s(max,4);
 	}
 
 }

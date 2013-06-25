@@ -6,6 +6,7 @@ import ij.measure.*;
 import ij.util.*;
 import ij.io.*;
 import ij.plugin.TextReader;
+import ij.plugin.frame.Fitter;
 import java.awt.*;
 import java.util.*;
 import java.awt.event.*;
@@ -24,7 +25,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
     private ImagePlus imp;
 	private int choiceIndex;
 	private String[] functions;
-	private	int nFits = Calibration.RODBARD2;   //don't set to CurveFitter.fitList.length; Calibration can't cope with it
+	private	int nFits = Calibration.EXP_RECOVERY+1;   //don't set to CurveFitter.fitList.length; Calibration can't cope with it
 	private String curveFitError;
 	private int spacerIndex = nFits+1;
 	private int inverterIndex = nFits+2;
@@ -40,6 +41,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	private Button open, save;
 	private GenericDialog gd;
 	private boolean showPlotFlag = true;
+	private CurveFitter curveFitter;
 	
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
@@ -93,8 +95,8 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		gd.addTextAreas(xText, yText, 20, 14);
 		//gd.addMessage("Left column contains uncalibrated measured values,\n right column contains known values (e.g., OD).");
 		gd.addPanel(makeButtonPanel(gd));
-		gd.addCheckbox("Global calibration", global1);
-		gd.addCheckbox("Show plot", showPlotFlag);
+		gd.addCheckbox("Global calibration", IJ.isMacro()?false:global1);
+		gd.addCheckbox("Show plot", IJ.isMacro()?false:showPlotFlag);
 		//gd.addCheckbox("Show Simplex Settings", showSettings);
 		gd.addHelp(IJ.URL+"/docs/menus/analyze.html#cal");
 		gd.showDialog();
@@ -135,6 +137,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		double[] parameters = null;
 		double[] x=null, y=null;
 		boolean zeroClip=false;
+		curveFitter = null;
 		if (choiceIndex<=0) {
 			if (oldFunction==Calibration.NONE&&!yText.equals("")&&!xText.equals("")) {
 				IJ.error("Calibrate", "Please select a function");
@@ -185,8 +188,12 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			imp.repaintWindow();
 		if (global2 && global2!=global1)
 			FileOpener.setShowConflictMessage(true);
-		if (function!=Calibration.NONE)
-			showPlot(x, y, cal, fitGoodness);
+		if (function!=Calibration.NONE && showPlotFlag) {
+			if (curveFitter!=null)
+				Fitter.plot(curveFitter);
+			else
+				showPlot(x, y, cal, fitGoodness);
+		}
 	}
 
 	double[] doCurveFitting(double[] x, double[] y, int fitType) {
@@ -221,6 +228,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		int np = cf.getNumParams();
 		double[] p = cf.getParams();
 		fitGoodness = IJ.d2s(cf.getRSquared(),6);
+		curveFitter = cf;
 		double[] parameters = new double[np];
 		for (int i=0; i<np; i++)
 			parameters[i] = p[i];
@@ -434,5 +442,5 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		else if (source==open)
 			open();
 	}
-
+	
 }

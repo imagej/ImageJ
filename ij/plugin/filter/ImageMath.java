@@ -41,81 +41,51 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	 	
 	 	if (arg.equals("add")) {
 			ip.add(addValue);
-			return;
-		}
-
-	 	if (arg.equals("sub")) {
+		} else if (arg.equals("sub")) {
 			ip.subtract(addValue);
-			return;
-		}
-
-	 	if (arg.equals("mul")) {
+		} else if (arg.equals("mul")) {
 			ip.multiply(mulValue);
-			return;
-		}
-
-	 	if (arg.equals("div")) {
+		} else if (arg.equals("div")) {
 	 		if (mulValue==0.0&&imp.getBitDepth()!=32)
 	 			return;
-			ip.multiply(1.0/mulValue);
-			return;
-		}
-
-	 	if (arg.equals("and")) {
+	 		else
+				ip.multiply(1.0/mulValue);
+		} else if (arg.equals("and")) {
 	 		try {
 				ip.and(Integer.parseInt(andValue,2));
 			} catch (NumberFormatException e) {
 				andValue = defaultAndValue;
 				IJ.error("Binary number required");
 			}
-			return;
-		}
-
-	 	if (arg.equals("or")) {
+		} else if (arg.equals("or")) {
 	 		try {
 				ip.or(Integer.parseInt(andValue,2));
 			} catch (NumberFormatException e) {
 				andValue = defaultAndValue;
 				IJ.error("Binary number required");
 			}
-			return;
-		}
-			
-	 	if (arg.equals("xor")) {
+		} else if (arg.equals("xor")) {
 	 		try {
 				ip.xor(Integer.parseInt(andValue,2));
 			} catch (NumberFormatException e) {
 				andValue = defaultAndValue;
 				IJ.error("Binary number required");
 			}
-			return;
-		}
-		
-	 	if (arg.equals("min")) {
+		} else if (arg.equals("min")) {
 	 		ip.min(minValue);
 			if (!(ip instanceof ByteProcessor))
 				ip.resetMinAndMax();
-			return;
-		}
-
-	 	if (arg.equals("max")) {
+		} else if (arg.equals("max")) {
 	 		ip.max(maxValue);
 			if (!(ip instanceof ByteProcessor))
 				ip.resetMinAndMax();
-			return;
-		}
-
-	 	if (arg.equals("gamma")) {
+		} else if (arg.equals("gamma")) {
 	 		if ((gammaValue<0.1 || gammaValue>5.0) && !previewing()) {
 	 			IJ.error("Gamma must be between 0.1 and 5.0");
 	 			gammaValue = defaultGammaValue;
-	 			return;
 	 		}
 			ip.gamma(gammaValue);
-			return;
-		}
-
-	 	if (arg.equals("set")) {
+		} else if (arg.equals("set")) {
 	 		boolean rgb = ip instanceof ColorProcessor;
 			if (rgb) {
 				if (addValue>255.0) addValue=255.0;
@@ -125,31 +95,17 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 			} else
 	 			ip.setValue(addValue);
 			ip.fill();
-			return;
-		}
-
-	 	if (arg.equals("log")) {
+		} else if (arg.equals("log")) {
 			ip.log();
-			return;
-		}
-		
-	 	if (arg.equals("exp")) {
+		} else if (arg.equals("exp")) {
 			ip.exp();
-			return;
-		}
-
-	 	if (arg.equals("sqr")) {
+		} else if (arg.equals("sqr")) {
 			ip.sqr();
-			return;
-		}
-
-	 	if (arg.equals("sqrt")) {
+		} else if (arg.equals("sqrt")) {
 			ip.sqrt();
-			return;
-		}
-
-	 	if (arg.equals("reciprocal")) {
-			if (!isFloat(ip)) return;
+		} else if (arg.equals("reciprocal")) {
+			if (!isFloat(ip))
+				return;
 			float[] pixels = (float[])ip.getPixels();
 			for (int i=0; i<ip.getWidth()*ip.getHeight(); i++) {
 				if (pixels[i]==0f)
@@ -158,15 +114,9 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 					pixels[i] = 1f/pixels[i];
 			}
 			ip.resetMinAndMax();
-			return;
-		}
-		
-	 	if (arg.equals("nan")) {
+		} else if (arg.equals("nan")) {
 	 		setBackgroundToNaN(ip);
-			return;
-		}
-
-	 	if (arg.equals("abs")) {
+		} else if (arg.equals("abs")) {
 			if (!((ip instanceof FloatProcessor)||imp.getCalibration().isSigned16Bit())) {
 				IJ.error("32-bit or signed 16-bit image required");
 				canceled = true;
@@ -174,13 +124,11 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 				ip.abs();
 				ip.resetMinAndMax();
 			}
-			return;
-		}
-
-	 	if (arg.equals("macro")) {
+		} else if (arg.equals("macro")) {
 			applyMacro(ip);
-			return;
 		}
+		//if (imp.getBitDepth()==32 && imp.getRoi()==null && imp.getStackSize()==1)
+		//	imp.resetDisplayRange();
 
 	}
 	

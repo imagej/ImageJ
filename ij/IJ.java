@@ -153,7 +153,7 @@ public class IJ {
 	public static Object runPlugIn(String commandName, String className, String arg) {
 		if (arg==null) arg = "";
 		if (IJ.debugMode)
-			IJ.log("runPlugin: "+className+" "+(!arg.contains("\n")?arg:""));
+			IJ.log("runPlugIn: "+className+argument(arg));
 		// Load using custom classloader if this is a user 
 		// plugin and we are not running as an applet
 		if (!className.startsWith("ij.") && applet==null)
@@ -178,7 +178,8 @@ public class IJ {
 	}
         
 	static Object runUserPlugIn(String commandName, String className, String arg, boolean createNewLoader) {
-		if (debugMode) IJ.log("runUserPlugIn: "+className+" "+arg);
+		if (IJ.debugMode)
+			IJ.log("runUserPlugIn: "+className+argument(arg));
 		if (applet!=null) return null;
 		if (checkForDuplicatePlugins) {
 			// check for duplicate classes and jars in the plugins folder
@@ -201,8 +202,8 @@ public class IJ {
 		}
 		catch (NoClassDefFoundError e) {
 			int dotIndex = className.indexOf('.');
-			if (dotIndex >= 0)
-				return runUserPlugIn(commandName, className.substring(dotIndex + 1), arg, createNewLoader);
+			if (dotIndex>=0)
+				return runUserPlugIn(commandName, className.substring(dotIndex+1), arg, createNewLoader);
 			if (className.indexOf('_')!=-1 && !suppressPluginNotFoundError)
 				error("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 		}
@@ -213,6 +214,10 @@ public class IJ {
 		suppressPluginNotFoundError = false;
 		return thePlugIn;
 	} 
+	
+	private static String argument(String arg) {
+		return arg!=null && !arg.equals("") && !arg.contains("\n")?"(\""+arg+"\")":"";
+	}
 
 	static void wrongType(int capabilities, String cmd) {
 		String s = "\""+cmd+"\" requires an image of type:\n \n";
@@ -242,7 +247,7 @@ public class IJ {
 		GenericDialog and OpenDialog classes. Does not return until
 		the command has finished executing. */
 	public static void run(String command, String options) {
-		//IJ.log("run1: "+command+" "+Thread.currentThread().hashCode());
+		//IJ.log("run1: "+command+" "+Thread.currentThread().hashCode()+" "+options);
 		if (ij==null && Menus.getCommands()==null)
 			init();
 		Macro.abort = false;
@@ -416,6 +421,8 @@ public class IJ {
 			logPanel.setLine(line, s2);
 		} else if (s.equals("\\Clear")) {
 			logPanel.clear();
+		} else if (s.startsWith("\\Heading:")) {
+			logPanel.updateColumnHeadings(s.substring(10));
 		} else if (s.equals("\\Close")) {
 			Frame f = WindowManager.getFrame("Log");
 			if (f!=null && (f instanceof TextWindow))
