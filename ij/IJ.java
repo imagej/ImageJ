@@ -1997,6 +1997,10 @@ public class IJ {
 		classLoader = loader;
 	}
 
+	public static void resetClassLoader() {
+		setClassLoader(null);
+	}
+
 	/** Displays a stack trace. Use the setExceptionHandler 
 		method() to override with a custom exception handler. */
 	public static void handleException(Throwable e) {

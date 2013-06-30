@@ -1,5 +1,4 @@
 package ij.plugin;
-
 import java.awt.*;
 import java.io.*;
 import java.util.*;
@@ -8,6 +7,7 @@ import ij.gui.*;
 import ij.io.*;
 import ij.plugin.frame.Editor;
 import ij.plugin.Macro_Runner;
+import ij.plugin.filter.*;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -51,9 +51,11 @@ public class Compiler implements PlugIn, FilenameFilter {
 			return;
 		}
 		if (!isJavac()) {
-			if (IJ.debugMode) IJ.log("Compiler: "+!isJavac());
+			//boolean pluginClassLoader = this.getClass().getClassLoader()==IJ.getClassLoader();
+			//boolean contextClassLoader = Thread.currentThread().getContextClassLoader()==IJ.getClassLoader();
+			if (IJ.debugMode) IJ.log("javac not found: ");
 			Object compiler = IJ.runPlugIn("Compiler", dir+name);
-			if (IJ.debugMode) IJ.log("Compiler: "+compiler);
+			if (IJ.debugMode) IJ.log("plugin compiler: "+compiler);
 			if (compiler==null) {
 				boolean ok = Macro_Runner.downloadJar("/plugins/compiler/Compiler.jar");
 				if (ok)
@@ -252,7 +254,6 @@ public class Compiler implements PlugIn, FilenameFilter {
 
 
 class PlugInExecuter implements Runnable {
-
 	private String plugin;
 	private Thread thread;
 
@@ -266,20 +267,41 @@ class PlugInExecuter implements Runnable {
 	}
 
 	public void run() {
-		try {
-			IJ.resetEscape();
-			IJ.runPlugIn("ij.plugin.ClassChecker", "");
-			ImageJ ij = IJ.getInstance();
-			if (ij!=null) ij.runUserPlugIn(plugin, plugin, "", true);
-		} catch(Throwable e) {
-			IJ.showStatus("");
-			IJ.showProgress(1.0);
-			ImagePlus imp = WindowManager.getCurrentImage();
-			if (imp!=null) imp.unlock();
-			String msg = e.getMessage();
-			if (e instanceof RuntimeException && msg!=null && e.getMessage().equals(Macro.MACRO_CANCELED))
+		IJ.resetEscape();
+		IJ.runPlugIn("ij.plugin.ClassChecker", "");
+		runCompiledPlugin(plugin);
+	}
+	
+	void runCompiledPlugin(String className) {
+		if (IJ.debugMode) IJ.log("runCompiledPlugin: "+className);
+		IJ.resetClassLoader();
+		ClassLoader loader = IJ.getClassLoader();
+		Object thePlugIn = null;
+		try { 
+			thePlugIn = (loader.loadClass(className)).newInstance(); 
+			if (thePlugIn instanceof PlugIn)
+ 				((PlugIn)thePlugIn).run("");
+ 			else if (thePlugIn instanceof PlugInFilter)
+				new PlugInFilterRunner(thePlugIn, className, "");
+		}
+		catch (ClassNotFoundException e) {
+			if (className.indexOf('_')!=-1)
+				IJ.error("Plugin or class not found: \"" + className + "\"\n(" + e+")");
+		}
+		catch (NoClassDefFoundError e) {
+			String err = e.getMessage();
+			int index = err!=null?err.indexOf("wrong name: "):-1;
+			if (index>-1 && !className.contains(".")) {
+				String className2 = err.substring(index+12, err.length()-1);
+				className2 = className2.replace("/", ".");
+				runCompiledPlugin(className2);
 				return;
-			IJ.handleException(e);
+			}
+			if (className.indexOf('_')!=-1)
+				IJ.error("Plugin or class not found: \"" + className + "\"\n(" + e+")");
+		}
+		catch (Exception e) {
+			IJ.error(""+e);
 		}
 	}
 	
@@ -321,16 +343,16 @@ abstract class CompilerTool {
 		}
 
 		protected Object getJavac() throws Exception {
-			if(charsetC == null){
+			if (charsetC == null) {
 				charsetC = Class.forName("java.nio.charset.Charset");
 			}
-			if(diagnosticListenerC == null){
+			if (diagnosticListenerC == null) {
 				diagnosticListenerC = Class.forName("javax.tools.DiagnosticListener");
 			}
-			if(javaFileManagerC == null){
+			if (javaFileManagerC == null) {
 				javaFileManagerC = Class.forName("javax.tools.JavaFileManager");
 			}
-			if(toolProviderC == null){
+			if (toolProviderC == null) {
 				toolProviderC = Class.forName("javax.tools.ToolProvider");
 			}
 
@@ -387,7 +409,6 @@ abstract class CompilerTool {
 	}
 
 	public static CompilerTool getDefault() {
-		//Thread.currentThread().setContextClassLoader(IJ.getClassLoader());
 		CompilerTool javax = new JavaxCompilerTool();
 		if (javax.isSupported())
 			return javax;
