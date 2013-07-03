@@ -26,6 +26,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 	private static Editor errors;
 	private static boolean generateDebuggingInfo;
 	private static int target = (int)Prefs.get(TARGET_KEY, TARGET15);	
+	private static boolean checkForUpdateDone;
 
 	public void run(String arg) {
 		if (arg.equals("edit"))
@@ -54,6 +55,10 @@ public class Compiler implements PlugIn, FilenameFilter {
 			//boolean pluginClassLoader = this.getClass().getClassLoader()==IJ.getClassLoader();
 			//boolean contextClassLoader = Thread.currentThread().getContextClassLoader()==IJ.getClassLoader();
 			if (IJ.debugMode) IJ.log("javac not found: ");
+			if (!checkForUpdateDone) {
+				checkForUpdate("/plugins/compiler/Compiler.jar", "1.47v");
+				checkForUpdateDone = true;
+			}
 			Object compiler = IJ.runPlugIn("Compiler", dir+name);
 			if (IJ.debugMode) IJ.log("plugin compiler: "+compiler);
 			if (compiler==null) {
@@ -65,6 +70,36 @@ public class Compiler implements PlugIn, FilenameFilter {
 		}
 		if (compile(dir+name))
 			runPlugin(name);
+	}
+	
+	private void checkForUpdate(String plugin, String currentVersion) {
+		int slashIndex = plugin.lastIndexOf("/");
+		if (slashIndex==-1 || !plugin.endsWith(".jar"))
+			return;
+		String className = plugin.substring(slashIndex+1, plugin.length()-4);
+		File f = new File(Prefs.getImageJDir()+"plugins/jars/"+className+".jar");
+		if (!f.exists() || !f.canWrite()) {
+			if (IJ.debugMode) IJ.log("checkForUpdate: jar not found ("+plugin+")");
+			return;
+		}
+		String version = null;
+		try {
+			Class c = IJ.getClassLoader().loadClass("Compiler");
+			version = "0.00a";
+			Method m = c.getDeclaredMethod("getVersion", new Class[0]);
+			version = (String)m.invoke(null, new Object[0]);
+		}
+		catch (Exception e) {}
+		if (version==null) {
+			if (IJ.debugMode) IJ.log("checkForUpdate: class not found ("+className+")");
+			return;
+		}
+		if (version.compareTo(currentVersion)>=0) {
+			if (IJ.debugMode) IJ.log("checkForUpdate: up to date ("+className+"  "+version+")");
+			return;
+		}
+		boolean ok = Macro_Runner.downloadJar(plugin);
+		if (IJ.debugMode) IJ.log("checkForUpdate: "+className+" "+version+" "+ok);
 	}
 	 
 	boolean isJavac() {
