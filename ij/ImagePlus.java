@@ -2160,6 +2160,15 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return compositeImage && nChannels>=1 && imageType!=COLOR_RGB && (this instanceof CompositeImage);
 	}
 
+	/** Returns the composite display mode (CompositeImage.COMPOSITE, CompositeImage.COLOR
+		or CompositeImage.GRAYSCALE) if this is a CompositeImage, otherwise returns -1. */
+	public int getCompositeMode() {
+		if (isComposite())
+			return ((CompositeImage)this).getMode();
+		else
+			return -1;
+	}
+
 	/** Sets the display range of the current channel. With non-composite
 	    images it is identical to ip.setMinAndMax(min, max). */
 	public void setDisplayRange(double min, double max) {

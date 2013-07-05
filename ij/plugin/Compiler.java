@@ -77,7 +77,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 		if (slashIndex==-1 || !plugin.endsWith(".jar"))
 			return;
 		String className = plugin.substring(slashIndex+1, plugin.length()-4);
-		File f = new File(Prefs.getImageJDir()+"plugins/jars/"+className+".jar");
+		File f = new File(Prefs.getImageJDir()+"plugins"+File.separator+"jars"+File.separator+className+".jar");
 		if (!f.exists() || !f.canWrite()) {
 			if (IJ.debugMode) IJ.log("checkForUpdate: jar not found ("+plugin+")");
 			return;
