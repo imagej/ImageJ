@@ -124,7 +124,19 @@ public abstract class ImageProcessor implements Cloneable {
 	
     /** Returns the bit depth, 8, 16, 24 (RGB) or 32. RGB images actually use 32 bits per pixel. */
     public int getBitDepth() {
-    	return 0;
+    	Object pixels = getPixels();
+    	if (pixels==null)
+    		return 0;
+    	else if (pixels instanceof byte[])
+    		return 8;
+    	else if (pixels instanceof short[])
+    		return 16;
+    	else if (pixels instanceof int[])
+    		return 24;
+    	else if (pixels instanceof float[])
+    		return 32;
+    	else
+    		return 0;
     }
     
     /** Returns this processor's color model. For non-RGB processors,
