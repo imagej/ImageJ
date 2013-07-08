@@ -287,7 +287,7 @@ public class Macro_Runner implements PlugIn {
 	public static boolean downloadJar(String url) {
 		String name = url.substring(url.lastIndexOf("/")+1);
 		boolean ok = false;
-		String msg = name+" was not found in the plugins\nfolder. Click \"OK\" to download it from\nthe ImageJ website.";
+		String msg = name+" was not found in the plugins\nfolder or it is outdated. Click \"OK\" to download\nit from the ImageJ website.";
 		GenericDialog gd = new GenericDialog("Download "+name+"?");
 		gd.addMessage(msg);
 		gd.showDialog();

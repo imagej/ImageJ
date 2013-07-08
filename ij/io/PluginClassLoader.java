@@ -53,22 +53,30 @@ public class PluginClassLoader extends URLClassLoader {
 		for (int i=0; i<list.length; i++) {
 			if (list[i].equals(".rsrc"))
 				continue;
-			f=new File(path, list[i]);
-			if (f.isDirectory()) {
-                try {
-                    // Add first level subdirectories to search path
-                    addURL(f.toURI().toURL());
-                } catch (MalformedURLException e) {
-            		ij.IJ.log("PluginClassLoader: "+e);
-                }
-				String[] innerlist = f.list();
-				if (innerlist==null) continue;
-				for (int j=0; j<innerlist.length; j++) {
-					File g = new File(f,innerlist[j]);
-					if (g.isFile()) addJAR(g);
-				}
-			} else 
-				addJAR(f);
+			File f2=new File(path, list[i]);
+			if (f2.isDirectory())
+				addDirectory(f2);
+			else 
+				addJAR(f2);
+		}
+		addDirectory(f, "jars"); // add ImageJ/jars; requested by Wilhelm Burger
+	}
+
+	private void addDirectory(File f) {
+		if (IJ.debugMode) IJ.log("PluginClassLoader.addDirectory: "+f);
+		try {
+			// Add first level subdirectories to search path
+			addURL(f.toURI().toURL());
+		} catch (MalformedURLException e) {
+			ij.IJ.log("PluginClassLoader: "+e);
+		}
+		String[] innerlist = f.list();
+		if (innerlist==null)
+			return;
+		for (int j=0; j<innerlist.length; j++) {
+			File g = new File(f,innerlist[j]);
+			if (g.isFile())
+				addJAR(g);
 		}
 	}
 
@@ -81,5 +89,16 @@ public class PluginClassLoader extends URLClassLoader {
             }
         }
     }
+
+	private void addDirectory(File f, String name) {
+		f = f.getParentFile();
+		if (f==null)
+			return;
+		f = new File(f, name);
+		if (f==null)
+			return;
+		if (f.isDirectory())
+			addDirectory(f);
+	}
 
 }

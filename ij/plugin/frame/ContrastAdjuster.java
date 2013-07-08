@@ -330,7 +330,8 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		double max2 = imp.getDisplayRangeMax();
 		if (imp.getType()==ImagePlus.COLOR_RGB)
 			{min2=0.0; max2=255.0;}
-		if ((ip instanceof ShortProcessor) || (ip instanceof FloatProcessor)) {
+		int bitDepth = imp.getBitDepth();
+		if (bitDepth==16 || bitDepth==32) {
 			imp.resetDisplayRange();
 			defaultMin = imp.getDisplayRangeMin();
 			defaultMax = imp.getDisplayRangeMax();
@@ -544,7 +545,8 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	void reset(ImagePlus imp, ImageProcessor ip) {
  		if (RGBImage)
 			ip.reset();
-		if ((ip instanceof ShortProcessor) || (ip instanceof FloatProcessor)) {
+		int bitDepth = imp.getBitDepth();
+		if (bitDepth==16 || bitDepth==32) {
 			imp.resetDisplayRange();
 			defaultMin = imp.getDisplayRangeMin();
 			defaultMax = imp.getDisplayRangeMax();

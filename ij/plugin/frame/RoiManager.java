@@ -2066,9 +2066,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		for (int i=0; i<rois.length; i++) {
 			Rectangle r = rois[i].getBounds();
 			String color = Colors.colorToString(rois[i].getStrokeColor());
-			sb.append(i+"\t"+rois[i].getName()+"\t"+rois[i].getTypeAsString()+"\t"+(r.x+r.width/2)+"\t"+(r.y+r.height/2)+"\t"+color+"\n");
+			int position = rois[i].getPosition();
+			int c = rois[i].getCPosition();
+			int z = rois[i].getZPosition();
+			int t = rois[i].getTPosition();
+			sb.append(i+"\t"+rois[i].getName()+"\t"+rois[i].getTypeAsString()+"\t"+(r.x+r.width/2)
+			+"\t"+(r.y+r.height/2)+"\t"+color+"\t"+position+"\t"+c+"\t"+z+"\t"+t+"\n");
 		}
-        String headings = "Index\tName\tType\tX\tY\tColor";
+        String headings = "Index\tName\tType\tX\tY\tColor\tPosition\tC\tZ\tT";
 		new TextWindow("ROI List", headings, sb.toString(), 400, 400);
 	}
 
