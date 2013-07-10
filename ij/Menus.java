@@ -601,6 +601,7 @@ public class Menus {
     void installJarPlugin(String jar, String s) {
 		addSorted = false;
 		Menu menu;
+		s = s.trim();
         if (s.startsWith("Plugins>")) {
 			int firstComma = s.indexOf(',');
 			if (firstComma==-1 || firstComma<=8)

@@ -597,7 +597,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	
 	int copyAll() {
 		selectAll();
-		int count = selEnd - selStart;
+		int count = selEnd - selStart + 1;
 		if (count>0)
 			copySelection();
 		resetSelection();

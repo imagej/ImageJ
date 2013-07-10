@@ -5,17 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.47v 8 July 2013</u>
+<li> <u>1.48a 9 July 2013</u>
 <ul>
-<li> Thanks to Wilhelm Burger, <i>Plugins&gt;Compile and Run</i> works with plugins
-in packages that correspond to subfolders of the plugins folder and the PluginClassLoader searches
-ImageJ/jars for library jar files and classes.
-<li> Thanks to Gilles Carpentier, the ROI Manager's <i>More&gt;&gt;List</i> command
-now displays ROI stack and hyperstack positions and Overlay ROIs are always
-displayed on composite color images regardless of the stack positions of the ROIs.
-<li> Thanks to Laurent Holtzer, fixed a bug that caused <i>Image&gt;Adjust&gt;Brightness/Contrast</i>
-to not work correctly with 16-bit virtual stacks opened using the Bio-Formats plugin.
-<li> Fixed a bug the caused the getBitDepth() method of ImageProcessor subclasses to sometimes return 0 
+<li> 
+<li> Thanks to Michael Doube, fixed a bug that caused plugins in jar files with
+a plugins.config entry starting or ending in one or more spaces to not be
+installed correctly.
+<li> Thanks to Jason Rogers, fixed a bug that caused the
+<i>Edit&gt;Copy</i> command in the "Results" window to
+not work with one line tables.
 
 </ul> 
 
