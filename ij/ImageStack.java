@@ -68,16 +68,21 @@ public class ImageStack {
 		}
 		stack[nSlices-1] = pixels;
 		this.label[nSlices-1] = sliceLabel;
-		if (type==UNKNOWN) {
-			if (pixels instanceof byte[])
-				type = BYTE;
-			else if (pixels instanceof short[])
-				type = SHORT;
-			else if (pixels instanceof float[])
-				type = FLOAT;
-			else if (pixels instanceof int[])
-				type = RGB;
-		}
+		if (type==UNKNOWN)
+			setType(pixels);
+	}
+	
+	private void setType(Object pixels) {
+		if (pixels==null)
+			return;
+		if (pixels instanceof byte[])
+			type = BYTE;
+		else if (pixels instanceof short[])
+			type = SHORT;
+		else if (pixels instanceof float[])
+			type = FLOAT;
+		else if (pixels instanceof int[])
+			type = RGB;
 	}
 	
 	/**
@@ -567,6 +572,8 @@ public class ImageStack {
 	
 	/** Returns the bit depth (8=byte, 16=short, 24=RGB, 32=float). */
 	public int getBitDepth() {
+		if (type==UNKNOWN && stack!=null && stack.length>0)
+			setType(stack[0]);
 		switch (type) {
 			case BYTE: return 8;
 			case SHORT: return 16;
@@ -600,6 +607,36 @@ public class ImageStack {
 			stack.max = 0.0;
 		}
 		return stack;
+	 }
+	 
+	/** Duplicates this stack. */
+	 public ImageStack duplicate() {
+	 	return crop(0, 0, 0, width, height, getSize());
+	 }
+	 
+	/** Creates a new stack by cropping this one. */
+	 public ImageStack crop(int x, int y, int z, int width, int height, int depth) {
+	 	if (x<0||y<0||z<0||x+width>this.width||y+height>this.height||z+depth>getSize())
+	 		throw new IllegalArgumentException("Argument out of range");
+		ImageStack stack2 = new ImageStack(width, height, getColorModel());
+		for (int i=z; i<z+depth; i++) {
+			ImageProcessor ip2 = this.getProcessor(i+1);
+			ip2.setRoi(x, y, width, height);
+			ip2 = ip2.crop();
+			stack2.addSlice(this.getSliceLabel(i+1), ip2);
+		}
+		return stack2;
+	 }
+	 
+	/** Creates a float version of this stack. */
+	 public ImageStack convertToFloat() {
+		ImageStack stack2 = new ImageStack(width, height, getColorModel());
+		for (int i=1; i<=getSize(); i++) {
+			ImageProcessor ip2 = this.getProcessor(i);
+			ip2 = ip2.convertToFloat();
+			stack2.addSlice(this.getSliceLabel(i), ip2);
+		}
+		return stack2;
 	 }
 
 }

@@ -36,7 +36,7 @@ public class Filters3D implements PlugIn {
 		} else
 			return;
 		ImagePlus imp = IJ.getImage();
-		if (imp.isComposite() && imp.getNChannels() == imp.getStackSize()) {
+		if (imp.isComposite() && imp.getNChannels()==imp.getStackSize()) {
 			IJ.error(name, "Composite color images not supported");
 			return;
 		}

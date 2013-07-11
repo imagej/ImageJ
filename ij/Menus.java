@@ -598,29 +598,28 @@ public class Menus {
 	}
     
     /** Install a plugin located in a JAR file. */
-    void installJarPlugin(String jar, String s) {
+	void installJarPlugin(String jar, String s) {
 		addSorted = false;
 		Menu menu;
 		s = s.trim();
-        if (s.startsWith("Plugins>")) {
+		if (s.startsWith("Plugins>")) {
 			int firstComma = s.indexOf(',');
 			if (firstComma==-1 || firstComma<=8)
 				menu = null;
 			else {
-        		String name = s.substring(8, firstComma);
+				String name = s.substring(8, firstComma);
 				menu = getPluginsSubmenu(name);
 			}
-        } else if (s.startsWith("\"") || s.startsWith("Plugins")) {
-        	String name = getSubmenuName(jar);
-        	if (name!=null)
-        		menu = getPluginsSubmenu(name);
-        	else
+		} else if (s.startsWith("\"") || s.startsWith("Plugins")) {
+			String name = getSubmenuName(jar);
+			if (name!=null)
+				menu = getPluginsSubmenu(name);
+			else
 				menu = pluginsMenu;
 			addSorted = true;
 		} else {
 			int firstQuote = s.indexOf('"');
-			String name = firstQuote < 0 ? s
-				: s.substring(0, firstQuote).trim();
+			String name = firstQuote<0 ? s : s.substring(0, firstQuote).trim();
 			int comma = name.indexOf(',');
 			if (comma >= 0)
 				name = name.substring(0, comma);
@@ -864,8 +863,21 @@ public class Menus {
 			ImageJPath = currentDir+File.separator;
 			pluginsPath = ImageJPath+"plugins"+File.separator;
 			f = new File(pluginsPath);
-			if (!f.isDirectory())
-				ImageJPath = pluginsPath = null;
+			if (!f.isDirectory()) {
+				String altPluginsPath = System.getProperty("plugins.dir");
+				if (altPluginsPath!=null) {
+					f = new File(altPluginsPath);
+					if (!f.isDirectory())
+						altPluginsPath = null;
+					else {
+						ImageJPath = f.getParent() + File.separator;
+						pluginsPath = ImageJPath + f.getName() + File.separator;
+						macrosPath = ImageJPath+"macros"+File.separator;
+					}
+				}
+				if (altPluginsPath==null)
+					ImageJPath = pluginsPath = null;
+			}
 		}
 		f = macrosPath!=null?new File(macrosPath):null;
 		if (f!=null && !f.isDirectory()) {

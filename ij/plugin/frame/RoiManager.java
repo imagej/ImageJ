@@ -161,6 +161,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("Remove Slice Info");
 		addPopupItem("Labels...");
 		addPopupItem("List");
+		addPopupItem("Interpolate ROIs");
 		addPopupItem("Help");
 		addPopupItem("Options...");
 		add(pm);
@@ -229,6 +230,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			labels();
 		else if (command.equals("List"))
 			listRois();
+		else if (command.equals("Interpolate ROIs"))
+			IJ.runPlugIn("ij.plugin.RoiInterpolator", "");
 		else if (command.equals("Help"))
 			help();
 		else if (command.equals("Options..."))
