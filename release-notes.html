@@ -7,7 +7,9 @@
 
 <li> <u>1.48a 11 July 2013</u>
 <ul>
-<li> 
+<li>
+<li> Thanks to Dimiter Prodanov, added duplicate(), crop() and convertToFloat() 
+methods to the ImageStack class.
 <li> Thanks to Michael Doube, fixed a bug that caused plugins in jar files with
 a plugins.config entry starting or ending in one or more spaces to not be
 installed correctly.
@@ -18,6 +20,8 @@ not work with one line tables.
 3D filters in <i>Process&gt;Filters</i> to throw exceptions.
 <li> Thanks to Fabrice Cordelieres, fixed a 1.47v regression that sometimes caused
 unexpected results from setting the "plugins.dir" Java property.
+<li> Thanks to Norbert Vischer, fixed a bug that caused some commands in
+<i>Process&gt;Filters</i> to throw an exception if the selection was outside the image.
 
 </ul> 
 

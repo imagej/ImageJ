@@ -237,8 +237,9 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		Rectangle roi = ip.getRoi();
 		int width = ip.getWidth();
 		Object pixels = ip.getPixels();
-
 		int numThreads = Math.min(roi.height, this.numThreads);
+		if (numThreads==0)
+			return;
 
 		int kHeight = kHeight(lineRadii);
 		int kRadius	 = kRadius(lineRadii);
