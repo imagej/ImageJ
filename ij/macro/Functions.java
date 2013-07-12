@@ -3377,17 +3377,16 @@ public class Functions implements MacroConstants, Measurements {
 		} else
 			isInfo = arg1.startsWith("info") || arg1.startsWith("Info");
 		ImagePlus imp = getImage();
-		if (isInfo)
+		if (metadata!=null && metadata.length()==0)
+			metadata = null;
+		if (isInfo) {
 			imp.setProperty("Info", metadata);
-		else {
+		} else {
 			if (imp.getStackSize()==1) {
 				if (oneArg)
 					imp.setProperty("Info", metadata);
 				else {
-					if ("".equals(metadata))
-						imp.setProperty("Label", null);
-					else
-						imp.setProperty("Label", metadata);
+					imp.setProperty("Label", metadata);
 					if (!Interpreter.isBatchMode()) imp.repaintWindow();
 				}
 			} else {
