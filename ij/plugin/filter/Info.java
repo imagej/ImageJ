@@ -133,7 +133,10 @@ public class Info implements PlugInFilter {
 	    		if (imp.isInvertedLut())
 	    			lut = "inverting " + lut;
 	    		s += "(" + lut + ")\n";
-				s += "Display range: "+(int)ip.getMin()+"-"+(int)ip.getMax()+"\n";
+	    		if (imp.getNChannels()>1)
+	    			s += displayRanges(imp);
+	    		else
+					s += "Display range: "+(int)ip.getMin()+"-"+(int)ip.getMax()+"\n";
 	    		break;
 	    	case ImagePlus.GRAY16: case ImagePlus.GRAY32:
 	    		if (type==ImagePlus.GRAY16) {
@@ -141,14 +144,18 @@ public class Info implements PlugInFilter {
 	    			s += "Bits per pixel: 16 ("+sign+")\n";
 	    		} else
 	    			s += "Bits per pixel: 32 (float)\n";
-				s += "Display range: ";
-				double min = ip.getMin();
-				double max = ip.getMax();
-	    		if (cal.calibrated()) {
-	    			min = cal.getCValue((int)min);
-	    			max = cal.getCValue((int)max);
-	    		}
-		    	s += IJ.d2s(min,digits) + " - " + IJ.d2s(max,digits) + "\n";
+	    		if (imp.getNChannels()>1)
+	    			s += displayRanges(imp);
+	    		else {
+					s += "Display range: ";
+					double min = ip.getMin();
+					double max = ip.getMax();
+					if (cal.calibrated()) {
+						min = cal.getCValue((int)min);
+						max = cal.getCValue((int)max);
+					}
+					s += IJ.d2s(min,digits) + " - " + IJ.d2s(max,digits) + "\n";
+		    	}
 	    		break;
 	    	case ImagePlus.COLOR_256:
 	    		s += "Bits per pixel: 8 (color LUT)\n";
@@ -299,6 +306,22 @@ public class Info implements PlugInFilter {
 			}
 	    }
 	    
+		return s;
+	}
+	
+	private String displayRanges(ImagePlus imp) {
+		String s = "Display ranges\n";
+		int channel = imp.getChannel();
+		int n = imp.getNChannels();
+		if (n>7) n=7;
+		for (int c=1; c<=n; c++) {
+			imp.setC(c);
+			double min = imp.getDisplayRangeMin();
+			double max = imp.getDisplayRangeMax();
+			int digits = (int)min==min&&(int)max==max?0:2;
+			s += "  " + c + ": " + IJ.d2s(min,digits) + "-" + IJ.d2s(max,digits) + "\n";
+		}
+		imp.setC(channel);
 		return s;
 	}
 	

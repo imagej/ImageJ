@@ -7,17 +7,20 @@
 
 <li> <u>1.48a 12 July 2013</u>
 <ul>
-<li>
+<li> The <i>Image&gt;Show Info</i> command displays the display
+range of each channel, up to 7.
 <li> Thanks to Dimiter Prodanov, added duplicate(), crop() and convertToFloat() 
 methods to the ImageStack class.
+<li>
 <li> Thanks to Michael Doube, fixed a bug that caused plugins in jar files with
 a plugins.config entry starting or ending in one or more spaces to not be
 installed correctly.
 <li> Thanks to Jason Rogers, fixed a bug that caused the
 <i>Edit&gt;Copy</i> command in the "Results" window to
 not work with one line tables.
-<li> Thanks to Vytas Bindokas, fixed a bug that sometimes caused
-3D filters in <i>Process&gt;Filters</i> to throw exceptions.
+<li> Thanks to Vytas Bindokas, fixed bugs that caused
+3D filters in <i>Process&gt;Filters</i> to not work correctly
+with hyperstacks and to sometimes throw exceptions.
 <li> Thanks to Fabrice Cordelieres, fixed a 1.47v regression that sometimes caused
 unexpected results from setting the "plugins.dir" Java property.
 <li> Thanks to Norbert Vischer, fixed a bug that caused some commands in

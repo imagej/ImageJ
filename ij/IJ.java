@@ -1935,7 +1935,8 @@ public class IJ {
 				if (home!=null) {
 					if (!home.endsWith(Prefs.separator)) home+=Prefs.separator;
 					pluginsDir = home+"plugins"+Prefs.separator;
-					if (!(new File(pluginsDir)).isDirectory()) pluginsDir = home;
+					if (!(new File(pluginsDir)).isDirectory())
+						pluginsDir = home;
 				}
 			}
 			if (pluginsDir==null)
