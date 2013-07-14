@@ -132,21 +132,21 @@ public class Info implements PlugInFilter {
 	    			lut = "grayscale " + lut;
 	    		if (imp.isInvertedLut())
 	    			lut = "inverting " + lut;
-	    		s += "(" + lut + ")\n";
-	    		if (imp.getNChannels()>1)
-	    			s += displayRanges(imp);
-	    		else
+				s += "(" + lut + ")\n";
+				if (imp.getNChannels()>1)
+					s += displayRanges(imp);
+				else
 					s += "Display range: "+(int)ip.getMin()+"-"+(int)ip.getMax()+"\n";
-	    		break;
+				break;
 	    	case ImagePlus.GRAY16: case ImagePlus.GRAY32:
 	    		if (type==ImagePlus.GRAY16) {
 	    			String sign = cal.isSigned16Bit()?"signed":"unsigned";
 	    			s += "Bits per pixel: 16 ("+sign+")\n";
 	    		} else
 	    			s += "Bits per pixel: 32 (float)\n";
-	    		if (imp.getNChannels()>1)
-	    			s += displayRanges(imp);
-	    		else {
+				if (imp.getNChannels()>1)
+					s += displayRanges(imp);
+				else {
 					s += "Display range: ";
 					double min = ip.getMin();
 					double max = ip.getMax();
@@ -155,8 +155,8 @@ public class Info implements PlugInFilter {
 						max = cal.getCValue((int)max);
 					}
 					s += IJ.d2s(min,digits) + " - " + IJ.d2s(max,digits) + "\n";
-		    	}
-	    		break;
+				}
+				break;
 	    	case ImagePlus.COLOR_256:
 	    		s += "Bits per pixel: 8 (color LUT)\n";
 	    		break;

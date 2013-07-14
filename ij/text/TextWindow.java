@@ -136,6 +136,9 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		m.add(new MenuItem("Copy", new MenuShortcut(KeyEvent.VK_C)));
 		m.add(new MenuItem("Clear"));
 		m.add(new MenuItem("Select All", new MenuShortcut(KeyEvent.VK_A)));
+		m.addSeparator();
+		m.add(new MenuItem("Find...", new MenuShortcut(KeyEvent.VK_F)));
+		m.add(new MenuItem("Find Next", new MenuShortcut(KeyEvent.VK_G)));
 		m.addActionListener(this);
 		mb.add(m);
 		m = new Menu("Font");

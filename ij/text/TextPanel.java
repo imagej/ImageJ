@@ -54,6 +54,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
     String filePath;
     ResultsTable rt;
     boolean unsavedLines;
+    String searchString;
 
   
 	/** Constructs a new TextPanel. */
@@ -396,7 +397,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			scroll(-1);
 		else if (key==KeyEvent.VK_DOWN)
 			scroll(1);
-		else if (keyListener!=null&&key!=KeyEvent.VK_S&& key!=KeyEvent.VK_C && key!=KeyEvent.VK_X&& key!=KeyEvent.VK_A)
+		else if (keyListener!=null&&key!=KeyEvent.VK_S&& key!=KeyEvent.VK_C && key!=KeyEvent.VK_X
+		&& key!=KeyEvent.VK_A && key!=KeyEvent.VK_F && key!=KeyEvent.VK_G)
 			keyListener.keyPressed(e);
 	}
 	
@@ -425,6 +427,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			clearSelection();
 		else if (cmd.equals("Select All"))
 			selectAll();
+		else if (cmd.equals("Find..."))
+			find(null);
+		else if (cmd.equals("Find Next"))
+			find(searchString);
 		else if (cmd.equals("Rename..."))
 			rename(null);
 		else if (cmd.equals("Duplicate..."))
@@ -443,14 +449,57 @@ public class TextPanel extends Panel implements AdjustmentListener,
  	
  	public void lostOwnership (Clipboard clip, Transferable cont) {}
 
+	private void find(String s) {
+		int first = 0;
+		if (s==null) {
+			GenericDialog gd = new GenericDialog("Find...", getTextWindow());
+			gd.addStringField("Find: ", searchString, 20);
+			gd.showDialog();
+			if (gd.wasCanceled())
+				return;
+			s = gd.getNextString();
+		} else {
+			if (selEnd>=0 && selEnd<iRowCount-1)
+				first = selEnd + 1;
+			else {
+				IJ.beep();
+				return;
+			}
+		}
+		if (s.equals(""))
+			return;
+		boolean found = false;
+		for (int i=first; i<iRowCount; i++) {
+			String line = new String((char[])(vData.elementAt(i)));
+			if (line.contains(s)) {
+				setSelection(i, i);
+				found = true;
+				first = i + 1;
+				break;
+			}
+		}
+		if (!found) {
+			IJ.beep();
+			first = 0;
+		}
+		searchString = s;
+	}
+	
+	private TextWindow getTextWindow() {
+		Component comp = getParent();
+		if (comp==null || !(comp instanceof TextWindow))
+			return null;
+		else
+			return (TextWindow)comp;
+	}
+
 	void rename(String title2) {
 		if (rt==null) return;
 		if (title2!=null && title2.equals(""))
 			title2 = null;
-		Component comp = getParent();
-		if (comp==null || !(comp instanceof TextWindow))
+		TextWindow tw = getTextWindow();
+		if (tw==null)
 			return;
-		TextWindow tw = (TextWindow)comp;
 		if (title2==null) {
 			GenericDialog gd = new GenericDialog("Rename", tw);
 			gd.addStringField("Title:", "Results2", 20);
