@@ -249,14 +249,19 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		associated ImageProcessor, then displays it. Does
 		nothing if there is no window associated with
 		this image (i.e. show() has not been called).*/
-	public void updateAndDraw() {
-		if (ip!=null) {
-			if (win!=null) {
-				win.getCanvas().setImageUpdated();
-				if (listeners.size()>0) notifyListeners(UPDATED);
+	public synchronized void updateAndDraw() {
+		if (stack!=null && currentSlice>=1 && currentSlice<=stack.getSize()) {
+			Object pixels = stack.getPixels(currentSlice);
+			if (pixels!=null && pixels!=ip.getPixels()) { // was stack updated?
+				ip.setSnapshotPixels(null);
+				ip.setPixels(pixels);
 			}
-			draw();
 		}
+		if (win!=null) {
+			win.getCanvas().setImageUpdated();
+			if (listeners.size()>0) notifyListeners(UPDATED);
+		}
+		draw();
 	}
 	
 	/** Updates this image from the pixel data in its 
@@ -310,20 +315,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 		
 	/** ImageCanvas.paint() calls this method when the
-		ImageProcessor has generated new image. This method
-		is not thread safe so it must be called from the event
-		dispatch thread. */
+		ImageProcessor has generated new image. */
 	public void updateImage() {
-		if (ip==null)
-			return;
-		if (stack!=null && currentSlice>=1 && currentSlice<=stack.getSize()) {
-			Object pixels = stack.getPixels(currentSlice);
-			if (pixels!=null && pixels!=ip.getPixels()) {
-				ip.setSnapshotPixels(null);
-				ip.setPixels(pixels);
-			}
-		}
-		img = ip.createImage();
+		if (ip!=null)
+			img = ip.createImage();
 	}
 
 	/** Closes the window, if any, that is displaying this image. */

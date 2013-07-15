@@ -23,9 +23,8 @@ public class ColorProcessor extends ImageProcessor {
 	// Enable "Weighted RGB Conversion" in <i>Edit/Options/Conversions</i>
 	// to use 0.299, 0.587 and 0.114.
 	private static double rWeight=1d/3d, gWeight=1d/3d,	bWeight=1d/3d; 
-	private double[] weights; // Override rWeight, etc. when set by setWeights()
+	private double[] weights; // Overrides rWeight, etc. when set by setWeights()
 	 
-
 	/**Creates a ColorProcessor from an AWT Image or BufferedImage. */
 	public ColorProcessor(Image img) {
 		width = img.getWidth(null);
@@ -1259,11 +1258,11 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 	/** This is a thread-safe (non-static) version of setWeightingFactors(). */
-	public void setRGBWeights(double red, double green, double blue) {
+	public void setRGBWeights(double rweight, double gweight, double bweight) {
 		weights = new double[3];
-		weights[0] = red;
-		weights[1] = green;
-		weights[2] = blue;
+		weights[0] = rweight;
+		weights[1] = gweight;
+		weights[2] = bweight;
 	}
 
 	/** Returns the values set by setRGBWeights(), or null if setRGBWeights() has not been called. */
