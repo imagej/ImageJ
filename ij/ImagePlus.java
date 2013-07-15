@@ -310,10 +310,20 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 		
 	/** ImageCanvas.paint() calls this method when the
-		ImageProcessor has generated new image. */
+		ImageProcessor has generated new image. This method
+		is not thread safe so it must be called from the event
+		dispatch thread. */
 	public void updateImage() {
-		if (ip!=null)
-			img = ip.createImage();
+		if (ip==null)
+			return;
+		if (stack!=null && currentSlice>=1 && currentSlice<=stack.getSize()) {
+			Object pixels = stack.getPixels(currentSlice);
+			if (pixels!=null && pixels!=ip.getPixels()) {
+				ip.setSnapshotPixels(null);
+				ip.setPixels(pixels);
+			}
+		}
+		img = ip.createImage();
 	}
 
 	/** Closes the window, if any, that is displaying this image. */
@@ -684,7 +694,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	
 	void setupProcessor() {
 		if (imageType==COLOR_RGB) {
-			if (ip == null || ip instanceof ByteProcessor)
+			if (ip==null || ip instanceof ByteProcessor)
 				ip = new ColorProcessor(getImage());
 		} else if (ip==null || (ip instanceof ColorProcessor))
 			ip = new ByteProcessor(getImage());
