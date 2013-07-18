@@ -333,6 +333,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			roiCopy.setStrokeWidth(lineWidth);
 		if (color!=null)
 			roiCopy.setStrokeColor(color);
+		setRoiPosition(imp, roiCopy);
 		rois.put(label, roiCopy);
 		updateShowAll();
 		if (record())
@@ -368,7 +369,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			label = getLabel(imp, roi, n);
 		else
 			label = label+"-"+n;
-		if (label==null) return;
+		if (label==null)
+			return;
 		listModel.addElement(label);
 		if (label2!=null)
 			roi.setName(label2);
@@ -410,30 +412,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ys = "000000" + yc;
 		String label = ys.substring(ys.length()-digits) + "-" + xs.substring(xs.length()-digits);
 		if (imp!=null && imp.getStackSize()>1) {
-			boolean hasPosition = false;
-			boolean hyperstack = imp!=null &&  imp.isHyperStack();
-			int slice = roi.getPosition();
-			if (slice==0)
-				slice = imp.getCurrentSlice();
-			else
-				hasPosition = true;
-			if (!hasPosition)
-				hasPosition = hyperstack && (roi.getZPosition()>0 || roi.getTPosition()>0);
+			int slice = imp.getCurrentSlice();
 			String zs = "000000" + slice;
 			label = zs.substring(zs.length()-digits) + "-" + label;
-			if (!hasPosition) {
-				if (hyperstack) {
-					if (imp.getNSlices()>1)
-						roi.setPosition(0, imp.getSlice(), 0);
-					else if (imp.getNFrames()>1)
-						roi.setPosition(0, 0, imp.getFrame());
-				} else {
-					if (imp.getStackSize()==1)
-						roi.setPosition(0);
-					else
-						roi.setPosition(slice);
-				}
-			}
 		}
 		return label;
 	}
@@ -496,7 +477,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	
 	boolean update(boolean clone) {
 		ImagePlus imp = getImage();
-		if (imp==null) return false;
+		if (imp==null)
+			return false;
 		ImageCanvas ic = imp.getCanvas();
 		boolean showingAll = ic!=null &&  ic.getShowAllROIs();
 		Roi roi = imp.getRoi();
@@ -512,10 +494,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			rois.remove(name);
 			if (clone) {
 				Roi roi2 = (Roi)roi.clone();
-				if (imp.getStackSize()>1 && Prefs.showAllSliceOnly)
-					roi2.setPosition(imp.getCurrentSlice());
 				roi.setName(name);
 				roi2.setName(name);
+				setRoiPosition(imp, roi2);
 				rois.put(name, roi2);
 			} else
 				rois.put(name, roi);
@@ -1688,7 +1669,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				shift = false;
 				alt = false;
 			}
-			setRoiPosition();
+			//setRoiPosition();
 			add(shift, alt);
 		} else if (cmd.equals("add & draw"))
 			addAndDraw(false);
@@ -1839,7 +1820,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Adds the current selection to the ROI Manager, using the
 		specified color (a 6 digit hex string) and line width. */
 	public boolean runCommand(String cmd, String hexColor, double lineWidth) {
-		setRoiPosition();
+		//setRoiPosition();
 		if (hexColor==null && lineWidth==1.0 && (IJ.altKeyDown()&&!Interpreter.isBatchMode()))
 			addRoi(true);
 		else {
@@ -1849,16 +1830,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;	
 	}
 	
-	private void setRoiPosition() {
-		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp==null)
+	private void setRoiPosition(ImagePlus imp, Roi roi) {
+		if (imp==null || roi==null)
 			return;
-		Roi roi = imp.getRoi();
-		if (roi==null)
-			return;
-		if (imp.isHyperStack())
-			roi.setPosition(imp.getC(), imp.getZ(), imp.getT());
-		else
+		if (imp.isHyperStack()) {
+			if (imp.getNSlices()>1)
+				roi.setPosition(0, imp.getSlice(), 0);
+			else if (imp.getNFrames()>1)
+				roi.setPosition(0, 0, imp.getFrame());
+		} else
 			roi.setPosition(imp.getCurrentSlice());
 	}
 	
@@ -1969,14 +1949,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Overlay overlay = imp.getOverlay();
 		if (overlay==null)
 			overlay = newOverlay();
-		//ImageCanvas ic = imp.getCanvas();
-		//Color color = ic!=null?ic.getShowAllColor():null;
 		for (int i=0; i<n; i++) {
 			Roi roi = (Roi)rois[i].clone();
 			if (!Prefs.showAllSliceOnly)
 				roi.setPosition(0);
-			//if (color!=null && roi.getStrokeColor()==null)
-			//	roi.setStrokeColor(color);
 			if (roi.getStrokeWidth()==1)
 				roi.setStrokeWidth(0);
 			overlay.add(roi);
@@ -2077,7 +2053,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			+"\t"+(r.y+r.height/2)+"\t"+color+"\t"+position+"\t"+c+"\t"+z+"\t"+t+"\n");
 		}
         String headings = "Index\tName\tType\tX\tY\tColor\tPosition\tC\tZ\tT";
-		new TextWindow("ROI List", headings, sb.toString(), 400, 400);
+		new TextWindow("ROI List", headings, sb.toString(), 600, 400);
 	}
 
 	private boolean record() {

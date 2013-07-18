@@ -21,6 +21,7 @@ public class ImageStack {
 	private double min=Double.MAX_VALUE;
 	private double max;
 	private float[] cTable;
+	private int viewers;
 	
 	/** Default constructor. */
 	public ImageStack() { }
@@ -637,6 +638,12 @@ public class ImageStack {
 			stack2.addSlice(this.getSliceLabel(i), ip2);
 		}
 		return stack2;
+	 }
+	 
+	 int viewers(int inc) {
+	 	viewers += inc;
+	 	if (IJ.debugMode) IJ.log("stack.viewers: "+viewers);
+	 	return viewers;
 	 }
 
 }

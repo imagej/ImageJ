@@ -252,7 +252,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public synchronized void updateAndDraw() {
 		if (stack!=null && currentSlice>=1 && currentSlice<=stack.getSize()) {
 			Object pixels = stack.getPixels(currentSlice);
-			if (pixels!=null && pixels!=ip.getPixels()) { // was stack updated?
+			if (ip!=null && pixels!=null && pixels!=ip.getPixels()) { // was stack updated?
 				ip.setSnapshotPixels(null);
 				ip.setPixels(pixels);
 			}
@@ -603,6 +603,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	if (resetCurrentSlice) setCurrentSlice(newStackSize);
     	ImageProcessor ip = newStack.getProcessor(currentSlice);
     	boolean dimensionsChanged = width>0 && height>0 && (width!=ip.getWidth()||height!=ip.getHeight());
+    	if (this.stack==null)
+			newStack.viewers(+1);
     	this.stack = newStack;
     	setProcessor2(title, ip, newStack);
 		if (win==null) {
@@ -1754,7 +1756,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		ip = null;
 		if (roi!=null) roi.setImage(null);
 		roi = null;
-		if (stack!=null) {
+		if (stack!=null && stack.viewers(-1)<=0) {
 			Object[] arrays = stack.getImageArray();
 			if (arrays!=null) {
 				for (int i=0; i<arrays.length; i++)

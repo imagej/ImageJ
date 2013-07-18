@@ -310,18 +310,18 @@ public class Info implements PlugInFilter {
 	}
 	
 	private String displayRanges(ImagePlus imp) {
+		LUT[] luts = imp.getLuts();
+		if (luts==null)
+			return "";
 		String s = "Display ranges\n";
-		int channel = imp.getChannel();
-		int n = imp.getNChannels();
+		int n = luts.length;
 		if (n>7) n=7;
-		for (int c=1; c<=n; c++) {
-			imp.setC(c);
-			double min = imp.getDisplayRangeMin();
-			double max = imp.getDisplayRangeMax();
+		for (int i=0; i<n; i++) {
+			double min = luts[i].min;
+			double max = luts[i].max;
 			int digits = (int)min==min&&(int)max==max?0:2;
-			s += "  " + c + ": " + IJ.d2s(min,digits) + "-" + IJ.d2s(max,digits) + "\n";
+			s += "  " + (i+1) + ": " + IJ.d2s(min,digits) + "-" + IJ.d2s(max,digits) + "\n";
 		}
-		imp.setC(channel);
 		return s;
 	}
 	
