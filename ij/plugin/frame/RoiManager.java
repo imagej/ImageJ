@@ -24,7 +24,7 @@ import ij.plugin.OverlayLabels;
 import ij.util.*;
 import ij.macro.*;
 import ij.measure.*;
-import ij.text.TextWindow;
+import ij.plugin.OverlayCommands;
 
 /** This plugin implements the Analyze/Tools/ROI Manager command. */
 public class RoiManager extends PlugInFrame implements ActionListener, ItemListener, MouseListener, MouseWheelListener, ListSelectionListener {
@@ -228,9 +228,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			removeSliceInfo();
 		else if (command.equals("Labels..."))
 			labels();
-		else if (command.equals("List"))
-			listRois();
-		else if (command.equals("Interpolate ROIs"))
+		else if (command.equals("List")) {
+			Roi[] rois = getRoisAsArray();
+			OverlayCommands.listRois(rois);
+		} else if (command.equals("Interpolate ROIs"))
 			IJ.runPlugIn("ij.plugin.RoiInterpolator", "");
 		else if (command.equals("Help"))
 			help();
@@ -328,12 +329,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		label = getUniqueName(label);
 		listModel.addElement(label);
 		roi.setName(label);
+		setRoiPosition(imp, roi);
 		Roi roiCopy = (Roi)roi.clone();
 		if (lineWidth>1)
 			roiCopy.setStrokeWidth(lineWidth);
 		if (color!=null)
 			roiCopy.setStrokeColor(color);
-		setRoiPosition(imp, roiCopy);
 		rois.put(label, roiCopy);
 		updateShowAll();
 		if (record())
@@ -362,7 +363,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Adds the specified ROI to the list. The third argument ('n') will 
 		be used to form the first part of the ROI label if it is >= 0. */
 	public void add(ImagePlus imp, Roi roi, int n) {
-		if (roi==null) return;
+		if (roi==null)
+			return;
 		String label = roi.getName();
 		String label2 = label;
 		if (label==null)
@@ -493,10 +495,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			String name = (String) listModel.getElementAt(index);
 			rois.remove(name);
 			if (clone) {
+				setRoiPosition(imp, roi);
 				Roi roi2 = (Roi)roi.clone();
 				roi.setName(name);
 				roi2.setName(name);
-				setRoiPosition(imp, roi2);
 				rois.put(name, roi2);
 			} else
 				rois.put(name, roi);
@@ -2039,23 +2041,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		imp.draw();
 	}
 	
-	private void listRois() {
-		StringBuffer sb = new StringBuffer();
-		Roi[] rois = getRoisAsArray();
-		for (int i=0; i<rois.length; i++) {
-			Rectangle r = rois[i].getBounds();
-			String color = Colors.colorToString(rois[i].getStrokeColor());
-			int position = rois[i].getPosition();
-			int c = rois[i].getCPosition();
-			int z = rois[i].getZPosition();
-			int t = rois[i].getTPosition();
-			sb.append(i+"\t"+rois[i].getName()+"\t"+rois[i].getTypeAsString()+"\t"+(r.x+r.width/2)
-			+"\t"+(r.y+r.height/2)+"\t"+color+"\t"+position+"\t"+c+"\t"+z+"\t"+t+"\n");
-		}
-        String headings = "Index\tName\tType\tX\tY\tColor\tPosition\tC\tZ\tT";
-		new TextWindow("ROI List", headings, sb.toString(), 600, 400);
-	}
-
 	private boolean record() {
 		return Recorder.record && !IJ.isMacro();
 	}
