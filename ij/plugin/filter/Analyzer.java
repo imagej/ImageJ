@@ -689,7 +689,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			//	s = s.substring(0,len-4); 
 			Roi roi = imp.getRoi();
 			String roiName = roi!=null?roi.getName():null;
-			if (roiName!=null)
+			if (roiName!=null && roiName.length()<=20 && !roiName.endsWith(".tif"))
 				s += ":"+roiName;
 			if (imp.getStackSize()>1) {
 				ImageStack stack = imp.getStack();

@@ -59,7 +59,7 @@ public class RoiProperties {
 		Color fillColor = null;
 		double strokeWidth = 1.0;
 		String name= roi.getName();
-		boolean isRange = name!=null && name.startsWith("range: ");
+		boolean isRange = name!=null && name.startsWith("range:");
 		String nameLabel = isRange?"Range:":"Name:";
 		if (isRange) name = name.substring(7);
 		if (name==null) name = "";
@@ -92,14 +92,17 @@ public class RoiProperties {
 		String lc = Colors.hexToColor(linec);
 		if (lc!=null) linec = lc;
 		String fillc = fillColor!=null?"#"+Integer.toHexString(fillColor.getRGB()):"none";
-		if (IJ.isMacro()) fillc = "none";
+		if (IJ.isMacro()) {
+			fillc = "none";
+			setPositions = false;
+		}
 		int digits = (int)strokeWidth==strokeWidth?0:1;
 		GenericDialog gd = new GenericDialog(title);
 		if (showName) {
 			gd.addStringField(nameLabel, name, 15);
-			gd.addStringField("Position: ", position);
+			gd.addStringField("Position:", position);
 		}
-		gd.addStringField("Stroke color: ", linec);
+		gd.addStringField("Stroke color:", linec);
 		if (isText) {
 			gd.addNumericField("Font size:", strokeWidth, digits);
 			gd.addChoice("Justification:", justNames, justNames[justification]);
@@ -107,7 +110,7 @@ public class RoiProperties {
 			gd.addNumericField("Width:", strokeWidth, digits);
 		if (!isLine) {
 			gd.addMessage("");
-			gd.addStringField("Fill color: ", fillc);
+			gd.addStringField("Fill color:", fillc);
 		}
 		if (addToOverlay)
 			gd.addCheckbox("New overlay", false);

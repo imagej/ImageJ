@@ -228,10 +228,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			removeSliceInfo();
 		else if (command.equals("Labels..."))
 			labels();
-		else if (command.equals("List")) {
-			Roi[] rois = getRoisAsArray();
-			OverlayCommands.listRois(rois);
-		} else if (command.equals("Interpolate ROIs"))
+		else if (command.equals("List"))
+			listRois();
+		else if (command.equals("Interpolate ROIs"))
 			IJ.runPlugIn("ij.plugin.RoiInterpolator", "");
 		else if (command.equals("Help"))
 			help();
@@ -784,6 +783,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		if (record()) Recorder.record("roiManager", "Save", path);
 		return true;
+	}
+	
+	private void listRois() {
+		Roi[] rois = getRoisAsArray();
+		OverlayCommands.listRois(rois);
+		if (record())
+			Recorder.record("roiManager", "List");
 	}
 		
 	boolean measure(int mode) {
@@ -1739,6 +1745,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			ignoreInterrupts = false;
 		} else if (cmd.equals("remove slice info")) {
 			removeSliceInfo();
+		} else if (cmd.equals("list")) {
+			listRois();
 		} else
 			ok = false;
 		macro = false;
@@ -1840,7 +1848,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				roi.setPosition(0, imp.getSlice(), 0);
 			else if (imp.getNFrames()>1)
 				roi.setPosition(0, 0, imp.getFrame());
-		} else
+		} else if (imp.getStackSize()>1)
 			roi.setPosition(imp.getCurrentSlice());
 	}
 	
