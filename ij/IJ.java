@@ -179,14 +179,15 @@ public class IJ {
         
 	static Object runUserPlugIn(String commandName, String className, String arg, boolean createNewLoader) {
 		if (IJ.debugMode)
-			IJ.log("runUserPlugIn: "+className+argument(arg));
+			IJ.log("runUserPlugIn: "+className+", arg="+argument(arg));
 		if (applet!=null) return null;
 		if (checkForDuplicatePlugins) {
 			// check for duplicate classes and jars in the plugins folder
 			IJ.runPlugIn("ij.plugin.ClassChecker", "");
 			checkForDuplicatePlugins = false;
 		}
-		if (createNewLoader) classLoader = null;
+		if (createNewLoader)
+			classLoader = null;
 		ClassLoader loader = getClassLoader();
 		Object thePlugIn = null;
 		try { 
@@ -1934,7 +1935,8 @@ public class IJ {
 				if (home!=null) {
 					if (!home.endsWith(Prefs.separator)) home+=Prefs.separator;
 					pluginsDir = home+"plugins"+Prefs.separator;
-					if (!(new File(pluginsDir)).isDirectory()) pluginsDir = home;
+					if (!(new File(pluginsDir)).isDirectory())
+						pluginsDir = home;
 				}
 			}
 			if (pluginsDir==null)

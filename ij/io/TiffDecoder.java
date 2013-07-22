@@ -168,7 +168,7 @@ public class TiffDecoder {
 			sum += fi.blues[i];
 			j += 2;
 		}
-		if (sum!=0)
+		if (sum!=0 && fi.fileType==FileInfo.GRAY8)
 			fi.fileType = FileInfo.COLOR8;
 	}
 	
@@ -511,7 +511,7 @@ public class TiffDecoder {
 						fi.compression = FileInfo.LZW_WITH_DIFFERENCING;
 					break;
 				case COLOR_MAP: 
-					if (count==768 && fi.fileType==fi.GRAY8)
+					if (count==768)
 						getColorMap(lvalue, fi);
 					break;
 				case TILE_WIDTH:

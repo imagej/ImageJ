@@ -4,6 +4,7 @@ import ij.plugin.Colors;
 import ij.io.RoiDecoder;
 import ij.process.FloatPolygon;
 import ij.measure.*;
+import ij.util.Tools;
 import ij.plugin.filter.Analyzer;
 import java.awt.*;
 import java.util.*;
@@ -58,7 +59,7 @@ public class RoiProperties {
 		Color fillColor = null;
 		double strokeWidth = 1.0;
 		String name= roi.getName();
-		boolean isRange = name!=null && name.startsWith("range: ");
+		boolean isRange = name!=null && name.startsWith("range:");
 		String nameLabel = isRange?"Range:":"Name:";
 		if (isRange) name = name.substring(7);
 		if (name==null) name = "";
@@ -77,18 +78,31 @@ public class RoiProperties {
 			strokeWidth = font.getSize();
 			justification = troi.getJustification();
 		}
+		String position = ""+roi.getPosition();
+		int cpos = roi.getCPosition();
+		int zpos = roi.getZPosition();
+		int tpos = roi.getTPosition();
+		if (cpos>0 || zpos>0 || tpos>0)
+			position = cpos +","+zpos+","+tpos;
+		if (position.equals("0"))
+			position = "none";
 		String linec = strokeColor!=null?"#"+Integer.toHexString(strokeColor.getRGB()):"none";
 		if (linec.length()==9 && linec.startsWith("#ff"))
 			linec = "#"+linec.substring(3);
 		String lc = Colors.hexToColor(linec);
 		if (lc!=null) linec = lc;
 		String fillc = fillColor!=null?"#"+Integer.toHexString(fillColor.getRGB()):"none";
-		if (IJ.isMacro()) fillc = "none";
+		if (IJ.isMacro()) {
+			fillc = "none";
+			setPositions = false;
+		}
 		int digits = (int)strokeWidth==strokeWidth?0:1;
 		GenericDialog gd = new GenericDialog(title);
-		if (showName)
+		if (showName) {
 			gd.addStringField(nameLabel, name, 15);
-		gd.addStringField("Stroke color: ", linec);
+			gd.addStringField("Position:", position);
+		}
+		gd.addStringField("Stroke color:", linec);
 		if (isText) {
 			gd.addNumericField("Font size:", strokeWidth, digits);
 			gd.addChoice("Justification:", justNames, justNames[justification]);
@@ -96,7 +110,7 @@ public class RoiProperties {
 			gd.addNumericField("Width:", strokeWidth, digits);
 		if (!isLine) {
 			gd.addMessage("");
-			gd.addStringField("Fill color: ", fillc);
+			gd.addStringField("Fill color:", fillc);
 		}
 		if (addToOverlay)
 			gd.addCheckbox("New overlay", false);
@@ -111,10 +125,13 @@ public class RoiProperties {
 			gd.addCheckbox("List coordinates ("+n+")", listCoordinates);
 		}
 		gd.showDialog();
-		if (gd.wasCanceled()) return false;
+		if (gd.wasCanceled())
+			return false;
+		String position2 = "";
 		if (showName) {
 			name = gd.getNextString();
 			if (!isRange) roi.setName(name.length()>0?name:null);
+			position2 = gd.getNextString();
 		}
 		linec = gd.getNextString();
 		strokeWidth = gd.getNextNumber();
@@ -145,6 +162,8 @@ public class RoiProperties {
 				troi.setJustification(justification);
 		} else
 			roi.setStrokeWidth((float)strokeWidth);
+		if (showName)
+			setPosition(roi, position, position2);
 		roi.setStrokeColor(strokeColor);
 		roi.setFillColor(fillColor);
 		if (newOverlay) roi.setName("new-overlay");
@@ -168,6 +187,34 @@ public class RoiProperties {
 		//if (strokeWidth>1.0 && !roi.isDrawingTool())
 		//	Line.setWidth(1);
 		return true;
+	}
+	
+	private void setPosition(Roi roi, String pos1, String pos2) {
+		if (pos1.equals(pos2))
+			return;
+		if (pos2.equals("none") || pos2.equals("0")) {
+			roi.setPosition(0);
+			return;
+		}
+		String[] positions = Tools.split(pos2, " ,");
+		if (positions.length==1) {
+			double stackPos = Tools.parseDouble(positions[0]);
+			if (!Double.isNaN(stackPos))
+				roi.setPosition((int)stackPos);
+			return;
+		}
+		if (positions.length==3) {
+			int[] pos = new int[3];
+			for (int i=0; i<3; i++) {
+				double dpos = Tools.parseDouble(positions[i]);
+				if (Double.isNaN(dpos))
+					return;
+				else
+					pos[i] = (int)dpos;
+			}
+			roi.setPosition(pos[0], pos[1], pos[2]);
+			return;
+		}
 	}
 		
 	public boolean showImageDialog(String name) {

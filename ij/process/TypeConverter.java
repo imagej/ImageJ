@@ -101,6 +101,8 @@ public class TypeConverter {
 		
 		//convert to grayscale
 		double[] w = ColorProcessor.getWeightingFactors();
+		if (((ColorProcessor)ip).getRGBWeights()!=null)
+			w = ((ColorProcessor)ip).getRGBWeights();
 		double rw=w[0], gw=w[1], bw=w[2];
 		pixels8 = new byte[width*height];
 		for (int i=0; i < width*height; i++) {

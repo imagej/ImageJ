@@ -249,14 +249,19 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		associated ImageProcessor, then displays it. Does
 		nothing if there is no window associated with
 		this image (i.e. show() has not been called).*/
-	public void updateAndDraw() {
-		if (ip!=null) {
-			if (win!=null) {
-				win.getCanvas().setImageUpdated();
-				if (listeners.size()>0) notifyListeners(UPDATED);
+	public synchronized void updateAndDraw() {
+		if (stack!=null && currentSlice>=1 && currentSlice<=stack.getSize()) {
+			Object pixels = stack.getPixels(currentSlice);
+			if (ip!=null && pixels!=null && pixels!=ip.getPixels()) { // was stack updated?
+				ip.setSnapshotPixels(null);
+				ip.setPixels(pixels);
 			}
-			draw();
 		}
+		if (win!=null) {
+			win.getCanvas().setImageUpdated();
+			if (listeners.size()>0) notifyListeners(UPDATED);
+		}
+		draw();
 	}
 	
 	/** Updates this image from the pixel data in its 
@@ -598,6 +603,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	if (resetCurrentSlice) setCurrentSlice(newStackSize);
     	ImageProcessor ip = newStack.getProcessor(currentSlice);
     	boolean dimensionsChanged = width>0 && height>0 && (width!=ip.getWidth()||height!=ip.getHeight());
+    	if (this.stack==null)
+    	    newStack.viewers(+1);
     	this.stack = newStack;
     	setProcessor2(title, ip, newStack);
 		if (win==null) {
@@ -684,7 +691,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	
 	void setupProcessor() {
 		if (imageType==COLOR_RGB) {
-			if (ip == null || ip instanceof ByteProcessor)
+			if (ip==null || ip instanceof ByteProcessor)
 				ip = new ColorProcessor(getImage());
 		} else if (ip==null || (ip instanceof ColorProcessor))
 			ip = new ByteProcessor(getImage());
@@ -1688,10 +1695,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     				fi.fileType = FileInfo.COLOR8;
     			else
     				fi.fileType = FileInfo.GRAY8;
-				fi.lutSize = lut.getMapSize();
-				fi.reds = lut.getReds();
-				fi.greens = lut.getGreens();
-				fi.blues = lut.getBlues();
+    			addLut(lut, fi);
 				break;
 	    	case GRAY16:
 	    		if (compositeImage && fi.nImages==3) {
@@ -1701,9 +1705,19 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 						fi.fileType = fi.GRAY16_UNSIGNED;
 				} else
 					fi.fileType = fi.GRAY16_UNSIGNED;
+				if (!compositeImage) {
+    				lut = createLut();
+    				if (!lut.isGrayscale())
+    					addLut(lut, fi);
+				}
 				break;
 	    	case GRAY32:
 				fi.fileType = fi.GRAY32_FLOAT;
+				if (!compositeImage) {
+    				lut = createLut();
+    				if (!lut.isGrayscale())
+    					addLut(lut, fi);
+				}
 				break;
 	    	case COLOR_RGB:
 				fi.fileType = fi.RGB;
@@ -1712,6 +1726,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	}
     	return fi;
     }
+        
+	private void addLut(LookUpTable lut, FileInfo fi) {
+		fi.lutSize = lut.getMapSize();
+		fi.reds = lut.getReds();
+		fi.greens = lut.getGreens();
+		fi.blues = lut.getBlues();
+	}
         
     /** Returns the FileInfo object that was used to open this image.
     	Returns null for images created using the File/New command.
@@ -1749,7 +1770,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		ip = null;
 		if (roi!=null) roi.setImage(null);
 		roi = null;
-		if (stack!=null) {
+		if (stack!=null && stack.viewers(-1)<=0) {
 			Object[] arrays = stack.getImageArray();
 			if (arrays!=null) {
 				for (int i=0; i<arrays.length; i++)

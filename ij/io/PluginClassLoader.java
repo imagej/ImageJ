@@ -57,7 +57,7 @@ public class PluginClassLoader extends URLClassLoader {
 			if (f2.isDirectory())
 				addDirectory(f2);
 			else 
-				addJAR(f2);
+				addJar(f2);
 		}
 		addDirectory(f, "jars"); // add ImageJ/jars; requested by Wilhelm Burger
 	}
@@ -76,12 +76,13 @@ public class PluginClassLoader extends URLClassLoader {
 		for (int j=0; j<innerlist.length; j++) {
 			File g = new File(f,innerlist[j]);
 			if (g.isFile())
-				addJAR(g);
+				addJar(g);
 		}
 	}
 
-    private void addJAR(File f) {
+    private void addJar(File f) {
         if (f.getName().endsWith(".jar") || f.getName().endsWith(".zip")) {
+			if (IJ.debugMode) IJ.log("PluginClassLoader.addJar: "+f);
             try {
                 addURL(f.toURI().toURL());
             } catch (MalformedURLException e) {
