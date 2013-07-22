@@ -1727,12 +1727,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	return fi;
     }
         
-    private void addLut(LookUpTable lut, FileInfo fi) {
+	private void addLut(LookUpTable lut, FileInfo fi) {
 		fi.lutSize = lut.getMapSize();
 		fi.reds = lut.getReds();
 		fi.greens = lut.getGreens();
 		fi.blues = lut.getBlues();
-    }
+	}
         
     /** Returns the FileInfo object that was used to open this image.
     	Returns null for images created using the File/New command.
