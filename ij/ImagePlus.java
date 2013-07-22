@@ -1695,10 +1695,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     				fi.fileType = FileInfo.COLOR8;
     			else
     				fi.fileType = FileInfo.GRAY8;
-				fi.lutSize = lut.getMapSize();
-				fi.reds = lut.getReds();
-				fi.greens = lut.getGreens();
-				fi.blues = lut.getBlues();
+    			addLut(lut, fi);
 				break;
 	    	case GRAY16:
 	    		if (compositeImage && fi.nImages==3) {
@@ -1708,9 +1705,19 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 						fi.fileType = fi.GRAY16_UNSIGNED;
 				} else
 					fi.fileType = fi.GRAY16_UNSIGNED;
+				if (!compositeImage) {
+    				lut = createLut();
+    				if (!lut.isGrayscale())
+    					addLut(lut, fi);
+				}
 				break;
 	    	case GRAY32:
 				fi.fileType = fi.GRAY32_FLOAT;
+				if (!compositeImage) {
+    				lut = createLut();
+    				if (!lut.isGrayscale())
+    					addLut(lut, fi);
+				}
 				break;
 	    	case COLOR_RGB:
 				fi.fileType = fi.RGB;
@@ -1718,6 +1725,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			default:
     	}
     	return fi;
+    }
+        
+    private void addLut(LookUpTable lut, FileInfo fi) {
+		fi.lutSize = lut.getMapSize();
+		fi.reds = lut.getReds();
+		fi.greens = lut.getGreens();
+		fi.blues = lut.getBlues();
     }
         
     /** Returns the FileInfo object that was used to open this image.

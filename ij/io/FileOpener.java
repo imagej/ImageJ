@@ -455,7 +455,7 @@ public class FileOpener {
 
 	/** Returns an IndexColorModel for the image specified by this FileInfo. */
 	public ColorModel createColorModel(FileInfo fi) {
-		if (fi.fileType==FileInfo.COLOR8 && fi.lutSize>0)
+		if (fi.lutSize>0)
 			return new IndexColorModel(8, fi.lutSize, fi.reds, fi.greens, fi.blues);
 		else
 			return LookUpTable.createGrayscaleColorModel(fi.whiteIsZero);
