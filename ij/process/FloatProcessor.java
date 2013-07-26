@@ -434,6 +434,9 @@ public class FloatProcessor extends ImageProcessor {
 					case FILL:
 						v2 = fillColor;
 						break;
+					case SET:
+						v2 = c;
+						break;
 					case ADD:
 						v2 = v1 + c;
 						break;
@@ -490,6 +493,7 @@ public class FloatProcessor extends ImageProcessor {
 	public void invert() {process(INVERT, 0.0);}
 	public void add(int value) {process(ADD, value);}
 	public void add(double value) {process(ADD, value);}
+	public void set(double value) {process(SET, value);}
 	public void multiply(double value) {process(MULT, value);}
 	public void and(int value) {}
 	public void or(int value) {}

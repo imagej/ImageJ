@@ -106,6 +106,9 @@ public class Executer implements Runnable {
 				} else
 					IJ.log(s);
 			}
+		} finally {
+			if (thread!=null)
+				WindowManager.setTempCurrentImage(null);
 		}
 	}
 	

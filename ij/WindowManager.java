@@ -75,7 +75,7 @@ public class WindowManager {
 		image for this thread. Call again with a null
 		argument to revert to the previous active image. */
 	public static void setTempCurrentImage(ImagePlus img) {
-		//IJ.log("setTempImage: "+(img!=null?img.getTitle():"null ")+Thread.currentThread().hashCode());
+		//IJ.log("setTempImage: "+(img!=null?img.getTitle():"null")+" "+Thread.currentThread().hashCode());
 		if (img==null)
 			tempImageTable.remove(Thread.currentThread());
 		else

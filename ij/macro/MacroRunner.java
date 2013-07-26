@@ -152,6 +152,8 @@ public class MacroRunner implements Runnable {
 			if (e instanceof RuntimeException && msg!=null && e.getMessage().equals(Macro.MACRO_CANCELED))
 				return;
 			IJ.handleException(e);
+		} finally {
+			WindowManager.setTempCurrentImage(null);
 		}
 	}
 

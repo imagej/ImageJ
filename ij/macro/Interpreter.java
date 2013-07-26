@@ -1658,7 +1658,8 @@ public class Interpreter implements MacroConstants {
 		func.updateDisplay();
 		instance = null;
 		if (!calledMacro || batchMacro) {
-			if (batchMode) showingProgress = true;
+			if (batchMode)
+				showingProgress = true;
 			batchMode = false;
 			imageTable = null;
 			WindowManager.setTempCurrentImage(null);
@@ -1676,11 +1677,13 @@ public class Interpreter implements MacroConstants {
 		}
 		if (rgbWeights!=null)
 			ColorProcessor.setWeightingFactors(rgbWeights[0], rgbWeights[1], rgbWeights[2]);
-		if (func.writer!=null) func.writer.close();
+		if (func.writer!=null)
+			func.writer.close();
 		func.roiManager = null;
 		if (func.resultsPending) {
 			ResultsTable rt = ResultsTable.getResultsTable();
-			if (rt!=null && rt.getCounter()>0) rt.show("Results");
+			if (rt!=null && rt.getCounter()>0)
+				rt.show("Results");
 		}
 	}
 	
@@ -1731,7 +1734,8 @@ public class Interpreter implements MacroConstants {
 
 	static void setBatchMode(boolean b) {
 		batchMode = b;
-		if (b==false) imageTable = null;
+		if (b==false)
+			imageTable = null;
 	}
 
 	public static boolean isBatchMode() {
@@ -1787,9 +1791,14 @@ public class Interpreter implements MacroConstants {
 	public static ImagePlus getLastBatchModeImage() { 
 		if (!batchMode || imageTable==null)
 			return null; 
-		int size = imageTable.size(); 
-		if (size==0) return null; 
-		return (ImagePlus)imageTable.elementAt(size-1); 
+		ImagePlus imp2 = null;
+		try {
+			int size = imageTable.size(); 
+			if (size==0)
+				return null;
+			imp2 = (ImagePlus)imageTable.elementAt(size-1);
+		} catch(Exception e) { }
+		return imp2;
 	} 
  
  	/** The specified string, if not null, is added to strings passed to the run() method. */

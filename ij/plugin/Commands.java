@@ -123,11 +123,6 @@ public class Commands implements PlugIn {
 				}
 			}
     	}
-    	//Frame[] windows = WindowManager.getNonImageWindows();
-    	//for (int i=0; i<windows.length; i++) {
-    	//	if ((windows[i] instanceof PlugInFrame) && !(windows[i] instanceof Editor))
-    	//		((PlugInFrame)windows[i]).close();
-    	//}
 	}
 
 	void closeImage(ImagePlus imp) {

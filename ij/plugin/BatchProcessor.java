@@ -209,6 +209,8 @@ import java.util.Vector;
 			if (!(e instanceof RuntimeException && msg!=null && e.getMessage().equals(Macro.MACRO_CANCELED)))
 				IJ.handleException(e);
 			return false;
+		} finally {
+			WindowManager.setTempCurrentImage(null);
 		}
 		return true;
 	}
