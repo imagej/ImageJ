@@ -391,13 +391,15 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		return false;
 	}
 
+	/** Runs a Plugins/Macros menu command on the current thread. */
 	public static boolean runMacroCommand(String name) {
 		if (instance==null) return false;
 		if (name.startsWith(commandPrefixS))
 			name = name.substring(1);
 		for (int i=0; i<instance.nMacros; i++) {
 			if (name.equals(instance.macroNames[i])) {
-				new MacroRunner(instance.pgm, instance.macroStarts[i], name, (String)null);
+				MacroRunner mm = new MacroRunner();
+				mm.run(instance.pgm, instance.macroStarts[i], name);
 				return true;
 			}
 		}

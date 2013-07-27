@@ -547,7 +547,6 @@ public class ShortProcessor extends ImageProcessor {
 	public void add(int value) {process(ADD, value);}
 	public void add(double value) {process(ADD, value);}
 	public void set(double value) {process(SET, value);}
-	public void t(double value) {process(SET, value);}
 	public void multiply(double value) {process(MULT, value);}
 	public void and(int value) {process(AND, value);}
 	public void or(int value) {process(OR, value);}

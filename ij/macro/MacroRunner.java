@@ -116,6 +116,15 @@ public class MacroRunner implements Runnable {
 		}
 	}
 	
+	/** Runs a tokenized macro on the current thread. */
+	public void run(Program pgm, int address, String name) {
+		this.pgm = pgm;
+		this.address = address;
+		this.name = name;
+		this.argument = null;
+		run();
+	}
+
 	public Thread getThread() {
 		return thread;
 	}
@@ -153,7 +162,8 @@ public class MacroRunner implements Runnable {
 				return;
 			IJ.handleException(e);
 		} finally {
-			WindowManager.setTempCurrentImage(null);
+			if (thread!=null)
+				WindowManager.setTempCurrentImage(null);
 		}
 	}
 
