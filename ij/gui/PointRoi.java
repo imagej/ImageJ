@@ -59,7 +59,6 @@ public class PointRoi extends PolygonRoi {
 		if (imp!=null) imp.draw(x-5, y-5, width+10, height+10);
 		if (Recorder.record && !Recorder.scriptMode()) 
 			Recorder.record("makePoint", x, y);
-
 	}
 	
 	static float[] itof(int[] arr) {

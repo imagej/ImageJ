@@ -391,7 +391,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		return false;
 	}
 
-	/** Runs a Plugins/Macros menu command on the current thread. */
+	/** Runs a command in the Plugins/Macros submenu on the current thread. */
 	public static boolean runMacroCommand(String name) {
 		if (instance==null) return false;
 		if (name.startsWith(commandPrefixS))

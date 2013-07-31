@@ -5,15 +5,20 @@
 </head>
 <body>
 
-<li> <u>1.48b 26 July 2013</u>
+<li> <u>1.48b 31 July 2013</u>
 <ul>
 <li> Added the ImageProcessor.set(double) method, which is used by the
 <i>Process&gt;Macro&gt;Set</i> command.
+<li> Thanks to Eric Barnhill, added the HyperStackConverter.toHyperStack() method.
+A call to this method is generated if the recorder is running in script mode when the
+<i>Image&gt;Hyperstacks&gt;Stack to Hyperstack</i> command is used.
 <li> Thanks to Johannes Schindelin and Hans Wurscht, fixed a bug that sometimes caused
 memory used by images opened in batch mode macros to not be reclaimed
 (<a href="macros/GarbageCollectionTest.txt">test macro</a>).
 <li> Fixed a bug that caused run("Command") macro calls to run in a separate thread
 if "Command" was a macro installed in the <i>Plugins&gt;Macros</i> submenu.
+<li> Thanks to Jan Brocher, fixed a bug that caused <i>Image&gt;Overlay&gt;Flatten</i>
+to sometimes not work as expected with RGB stacks.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
