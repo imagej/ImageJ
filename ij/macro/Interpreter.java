@@ -899,6 +899,7 @@ public class Interpreter implements MacroConstants {
 		else if (token==WORD) {
 			Variable v2 = lookupVariable();
 			v.setArray(v2.getArray());
+			v.setArraySize(v2.getArraySize());
 		} else
 			error("Array expected");
 	}
