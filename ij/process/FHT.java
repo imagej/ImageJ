@@ -312,9 +312,9 @@ public class FHT extends FloatProcessor {
 
 		max = (float)Math.log(max);
 		min = (float)Math.log(min);
-		if (Float.isNaN(min) || max-min>30)
-			min = max - 30; //display range not more than approx e^30, roughly 1e13
-		scale = (float)(252.999/(max-min));
+		if (Float.isNaN(min) || max-min>50)
+			min = max - 50; //display range not more than approx e^50
+		scale = (float)(253.999/(max-min));
 
 		for (int row=0; row<maxN; row++) {
 			base = row*maxN;
@@ -323,7 +323,7 @@ public class FHT extends FloatProcessor {
 				r = ((float)Math.log(r)-min)*scale;
 				if (Float.isNaN(r) || r<0)
 					r = 0f;
-				ps[base+col] = (byte)(r+1.5); //0.5 for rounding, 1 is min value
+				ps[base+col] = (byte)(r+1f); //0.5 for rounding, 1 is min value
 			}
 		}
 		ImageProcessor ip = new ByteProcessor(maxN, maxN, ps, null);

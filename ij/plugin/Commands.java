@@ -91,7 +91,8 @@ public class Commands implements PlugIn {
 			closeImage(imp);
 	}
 
-	void closeAll() {
+	/** Closes all image windows, or returns 'false' if the user cancels the unsaved changes dialog box. */
+	public static boolean closeAll() {
     	int[] list = WindowManager.getIDList();
     	if (list!=null) {
     		int imagesWithChanges = 0;
@@ -113,7 +114,8 @@ public class Commands implements PlugIn {
 				gd.addMessage(msg+" with unsaved changes. If you\nclick \"OK\" "+pronoun
 					+" will be closed without being saved.");
 				gd.showDialog();
-				if (gd.wasCanceled()) return;
+				if (gd.wasCanceled())	
+					return false;
 			}
 			for (int i=0; i<list.length; i++) {
 				ImagePlus imp = WindowManager.getImage(list[i]);
@@ -123,6 +125,7 @@ public class Commands implements PlugIn {
 				}
 			}
     	}
+    	return true;
 	}
 
 	void closeImage(ImagePlus imp) {
@@ -146,8 +149,12 @@ public class Commands implements PlugIn {
 		if (applet!=null) {
 			IJ.run("URL...", "url="+IJ.URL+"/applet/StartupMacros.txt");
 		} else {
-			String path = IJ.getDirectory("macros")+"/StartupMacros.txt";
+			String path = IJ.getDirectory("macros")+"StartupMacros.txt";
 			File f = new File(path);
+			if (!f.exists()) {
+				path = IJ.getDirectory("macros")+"StartupMacros.ijm";
+				f = new File(path);
+			}
 			if (!f.exists())
 				IJ.error("\"StartupMacros.txt\" not found in ImageJ/macros/");
 			else

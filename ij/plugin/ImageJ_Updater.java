@@ -52,7 +52,8 @@ public class ImageJ_Updater implements PlugIn {
 		versions[count-1] = "daily build";
 		urls[count-1] = IJ.URL+"/ij.jar";
 		int choice = showDialog(versions);
-		if (choice==-1) return;
+		if (choice==-1 || !Commands.closeAll())
+			return;
 		if (!versions[choice].startsWith("daily") && versions[choice].compareTo("v1.39")<0
 		&& Menus.getCommands().get("ImageJ Updater")==null) {
 			String msg = "This command is not available in versions of ImageJ prior\n"+
