@@ -9,6 +9,10 @@ import ij.plugin.frame.RoiManager;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 
+/** This class interpolates between ROIs in the ROI Manager.
+ * @author Michael Doube
+ * @author Johannes Schindelin
+*/
 public class RoiInterpolator implements PlugIn {
 	int[][] idt;
 	int w, h;
@@ -85,12 +89,13 @@ public class RoiInterpolator implements PlugIn {
 			roi.setPosition(s+zmin);
 			Rectangle bounds = roi.getBounds();
 			roi.setLocation(bounds.x+xmin, bounds.y+ymin);
-			roiman.addRoi(roi);
+			roiman.addPositionedRoi(roi);
 		}
 		for (Roi roi : rois){
 			Rectangle bounds = roi.getBounds();
 			roi.setLocation(bounds.x+xmin, bounds.y+ymin);
 		}
+		roiman.runCommand("sort");
 		IJ.showStatus("ROIs interpolated");
 	}
 }

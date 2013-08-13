@@ -33,6 +33,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private static final int DRAW=0, FILL=1, LABEL=2;
 	private static final int SHOW_ALL=0, SHOW_NONE=1, LABELS=2, NO_LABELS=3;
 	private static final int MENU=0, COMMAND=1;
+	private static final int POSITIONED=-999;
 	private static int rows = 15;
 	private static int lastNonShiftClick = -1;
 	private static boolean allowMultipleSelections = true; 
@@ -231,13 +232,19 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (command.equals("List"))
 			listRois();
 		else if (command.equals("Interpolate ROIs"))
-			IJ.runPlugIn("ij.plugin.RoiInterpolator", "");
+			interpolateRois();
 		else if (command.equals("Help"))
 			help();
 		else if (command.equals("Options..."))
 			options();
 		else if (command.equals("\"Show All\" Color..."))
 			setShowAllColor();
+	}
+	
+	private void interpolateRois() {
+		IJ.runPlugIn("ij.plugin.RoiInterpolator", "");
+		if (record())
+			Recorder.record("roiManager", "Interpolate ROIs");
 	}
 
 	public void itemStateChanged(ItemEvent e) {
@@ -300,20 +307,32 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			color = roi.getStrokeColor();
 		else if (color==null && defaultColor!=null)
 			color = defaultColor;
+		boolean positioned = false;
+		if (lineWidth==POSITIONED) {
+			positioned = true;
+			lineWidth = -1;
+		}
 		if (lineWidth<0) {
 			int sw = (int)roi.getStrokeWidth();
 			lineWidth = sw>1?sw:defaultLineWidth;
 		}
 		if (lineWidth>100) lineWidth = 1;
 		int n = getCount();
+		int position = imp!=null&&positioned?roi.getPosition():0;
+		int saveCurrentSlice = imp!=null?imp.getCurrentSlice():0;
+		if (position>1 && position!=saveCurrentSlice)
+			imp.setSliceWithoutUpdate(position);
+		else
+			position = 0;
 		if (n>0 && !IJ.isMacro() && imp!=null) {
 			// check for duplicate
 			String label = (String)listModel.getElementAt(n-1);
 			Roi roi2 = (Roi)rois.get(label);
 			if (roi2!=null) {
 				int slice2 = getSliceNumber(roi2, label);
-				if (roi.equals(roi2) && (slice2==-1||slice2==imp.getCurrentSlice()) && imp.getID()==prevID && !Interpreter.isBatchMode()
-				&& (roi.getPosition()>0&&slice2==roi.getPosition())) {
+				if (roi.equals(roi2) && (slice2==-1||slice2==imp.getCurrentSlice()) && imp.getID()==prevID && !Interpreter.isBatchMode()) {
+					if (position>0)
+						imp.setSliceWithoutUpdate(saveCurrentSlice);
 					return false;
 				}
 			}
@@ -325,8 +344,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		String label = name!=null?name:getLabel(imp, roi, -1);
 		if (promptForName)
 			label = promptForName(label);
-		if (label==null)
+		if (label==null) {
+			if (position>0)
+				imp.setSliceWithoutUpdate(saveCurrentSlice);
 			return false;
+		}
 		label = getUniqueName(label);
 		listModel.addElement(label);
 		roi.setName(label);
@@ -340,7 +362,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		updateShowAll();
 		if (record())
 			recordAdd(defaultColor, defaultLineWidth);
+		if (position>0)
+			imp.setSliceWithoutUpdate(saveCurrentSlice);
 		return true;
+	}
+	
+	public void addPositionedRoi(Roi roi) {
+		int flag = roi!=null&&roi.getPosition()>0?POSITIONED:-1;
+		addRoi(roi, false, null, flag);
 	}
 	
 	void recordAdd(Color color, int lineWidth) {
@@ -1749,6 +1778,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			removeSliceInfo();
 		} else if (cmd.equals("list")) {
 			listRois();
+		} else if (cmd.equals("interpolate rois")) {
+			interpolateRois();
 		} else
 			ok = false;
 		macro = false;
