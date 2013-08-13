@@ -5,8 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.48b 6 August 2013</u>
+<li> <u>1.48b 13 August 2013</u>
 <ul>
+<li> Thanks to Norbert Vischer, submenus are now supported in the <i>Plugins&gt;Macros</i> menu
+(<a href="macros/examples/MacroSubMenus.txt">example</a>).
 <li> Added the ImageProcessor.set(double) method, which is used by the
 <i>Process&gt;Macro&gt;Set</i> command.
 <li> Thanks to Eric Barnhill, added the HyperStackConverter.toHyperStack() method.
@@ -28,6 +30,8 @@ it to incorrectly assign expanded arrays.
 to incorrectly display power spectra of RGB images.
 <li> Thanks to Alberto Duina, fixed a 1.48a regression that sometimes caused the 
 ImageJ.updateAndDraw() method to throw an exception.
+<li> Fixed a bug that caused the IJ.getImage() method to display a "...Macro cancelled" 
+error when using the "Compile and Run" command and no image was open.
 
 </ul> 
 

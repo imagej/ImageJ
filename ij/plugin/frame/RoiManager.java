@@ -308,12 +308,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int n = getCount();
 		if (n>0 && !IJ.isMacro() && imp!=null) {
 			// check for duplicate
-			String label = (String) listModel.getElementAt(n-1);
+			String label = (String)listModel.getElementAt(n-1);
 			Roi roi2 = (Roi)rois.get(label);
 			if (roi2!=null) {
 				int slice2 = getSliceNumber(roi2, label);
-				if (roi.equals(roi2) && (slice2==-1||slice2==imp.getCurrentSlice()) && imp.getID()==prevID && !Interpreter.isBatchMode())
+				if (roi.equals(roi2) && (slice2==-1||slice2==imp.getCurrentSlice()) && imp.getID()==prevID && !Interpreter.isBatchMode()
+				&& (roi.getPosition()>0&&slice2==roi.getPosition())) {
 					return false;
+				}
 			}
 		}
 		prevID = imp!=null?imp.getID():0;

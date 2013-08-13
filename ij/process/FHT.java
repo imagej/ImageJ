@@ -323,7 +323,7 @@ public class FHT extends FloatProcessor {
 				r = ((float)Math.log(r)-min)*scale;
 				if (Float.isNaN(r) || r<0)
 					r = 0f;
-				ps[base+col] = (byte)(r+1f); //0.5 for rounding, 1 is min value
+				ps[base+col] = (byte)(r+1f); // 1 is min value
 			}
 		}
 		ImageProcessor ip = new ByteProcessor(maxN, maxN, ps, null);

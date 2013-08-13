@@ -41,6 +41,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	private static String defaultDir, fileName;
 	private static MacroInstaller instance, listener;
 	private Thread macroToolThread;
+	private ArrayList<Menu> subMenus = new ArrayList();
 	
 	public void run(String path) {
 		if (path==null || path.equals(""))
@@ -61,6 +62,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	}
 			
 	void install() {
+		subMenus.clear();
 		if (text!=null) {
 			Tokenizer tok = new Tokenizer();
 			pgm = tok.tokenize(text);
@@ -119,10 +121,34 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 						count--;
 					} else if  (name.equals("Popup Menu"))
 						installPopupMenu(name, pgm);
-					else if (!name.endsWith("Tool Selected")){ 
+					else if (!name.endsWith("Tool Selected")) { 
 						if (macrosMenu!=null) {
 							addShortcut(name);
-							macrosMenu.add(new MenuItem(name));
+							int pos = name.indexOf(">");
+							boolean inSubMenu = name.startsWith("<") && (pos>1);
+							if (inSubMenu) {
+								Menu parent = macrosMenu;
+								Menu subMenu = null;
+								String parentStr = name.substring(1, pos).trim();
+								String childStr = name.substring(pos + 1).trim();
+								MenuItem mnuItem = new MenuItem();
+								mnuItem.setActionCommand(name);
+								mnuItem.setLabel(childStr);
+								for (int jj = 0; jj < subMenus.size(); jj++) {
+									String aName = subMenus.get(jj).getName();
+									if (aName.equals(parentStr))
+										subMenu = subMenus.get(jj);
+								}
+								if (subMenu==null) {
+									subMenu = new Menu(parentStr);
+									subMenu.setName(parentStr);
+									subMenu.addActionListener(this);
+									subMenus.add(subMenu);
+									parent.add(subMenu);
+								}
+								subMenu.add(mnuItem);
+							} else
+								macrosMenu.add(new MenuItem(name));
 						}
 					}
 					//IJ.log(count+" "+name+" "+macroStarts[count]);
