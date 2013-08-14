@@ -33,7 +33,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private static final int DRAW=0, FILL=1, LABEL=2;
 	private static final int SHOW_ALL=0, SHOW_NONE=1, LABELS=2, NO_LABELS=3;
 	private static final int MENU=0, COMMAND=1;
-	private static final int POSITIONED=-999;
+	private static final int IGNORE_POSITION=-999;
 	private static int rows = 15;
 	private static int lastNonShiftClick = -1;
 	private static boolean allowMultipleSelections = true; 
@@ -287,7 +287,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	boolean addRoi(boolean promptForName) {
-		return addRoi(null, promptForName, null, -1);
+		return addRoi(null, promptForName, null, IGNORE_POSITION);
 	}
 
 	boolean addRoi(Roi roi, boolean promptForName, Color color, int lineWidth) {
@@ -307,9 +307,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			color = roi.getStrokeColor();
 		else if (color==null && defaultColor!=null)
 			color = defaultColor;
-		boolean positioned = false;
-		if (lineWidth==POSITIONED) {
-			positioned = true;
+		boolean ignorePosition = false;
+		if (lineWidth==IGNORE_POSITION) {
+			ignorePosition = true;
 			lineWidth = -1;
 		}
 		if (lineWidth<0) {
@@ -318,9 +318,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		if (lineWidth>100) lineWidth = 1;
 		int n = getCount();
-		int position = imp!=null&&positioned?roi.getPosition():0;
+		int position = imp!=null&&!ignorePosition?roi.getPosition():0;
 		int saveCurrentSlice = imp!=null?imp.getCurrentSlice():0;
-		if (position>1 && position!=saveCurrentSlice)
+		if (position>0 && position!=saveCurrentSlice)
 			imp.setSliceWithoutUpdate(position);
 		else
 			position = 0;
@@ -366,12 +366,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			imp.setSliceWithoutUpdate(saveCurrentSlice);
 		return true;
 	}
-	
-	public void addPositionedRoi(Roi roi) {
-		int flag = roi!=null&&roi.getPosition()>0?POSITIONED:-1;
-		addRoi(roi, false, null, flag);
-	}
-	
+		
 	void recordAdd(Color color, int lineWidth) {
 		if (Recorder.scriptMode())
 			Recorder.recordCall("rm.addRoi(imp.getRoi());");

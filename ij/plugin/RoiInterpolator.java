@@ -89,7 +89,7 @@ public class RoiInterpolator implements PlugIn {
 			roi.setPosition(s+zmin);
 			Rectangle bounds = roi.getBounds();
 			roi.setLocation(bounds.x+xmin, bounds.y+ymin);
-			roiman.addPositionedRoi(roi);
+			roiman.addRoi(roi);
 		}
 		for (Roi roi : rois){
 			Rectangle bounds = roi.getBounds();
