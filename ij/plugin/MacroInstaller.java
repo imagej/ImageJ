@@ -131,8 +131,9 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 								Menu subMenu = null;
 								String parentStr = name.substring(1, pos).trim();
 								String childStr = name.substring(pos + 1).trim();
+								macroNames[count] = childStr;
 								MenuItem mnuItem = new MenuItem();
-								mnuItem.setActionCommand(name);
+								//mnuItem.setActionCommand(name);
 								mnuItem.setLabel(childStr);
 								for (int jj = 0; jj < subMenus.size(); jj++) {
 									String aName = subMenus.get(jj).getName();
@@ -419,10 +420,13 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 
 	/** Runs a command in the Plugins/Macros submenu on the current thread. */
 	public static boolean runMacroCommand(String name) {
-		if (instance==null) return false;
+		if (instance==null)
+			return false;
+		//IJ.log("runMacroCommand: "+name+" "+instance.nMacros);
 		if (name.startsWith(commandPrefixS))
 			name = name.substring(1);
 		for (int i=0; i<instance.nMacros; i++) {
+			//IJ.log("  "+i+" "+instance.macroNames[i]);
 			if (name.equals(instance.macroNames[i])) {
 				MacroRunner mm = new MacroRunner();
 				mm.run(instance.pgm, instance.macroStarts[i], name);
