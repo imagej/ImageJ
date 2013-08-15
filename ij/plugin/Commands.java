@@ -106,13 +106,13 @@ public class Commands implements PlugIn {
 				String pronoun = null;
 				if (imagesWithChanges==1) {
 					msg = "There is one image";
-					pronoun = "it";
+					pronoun = "It";
 				} else {
 					msg = "There are "+imagesWithChanges+" images";
-					pronoun = "they";
+					pronoun = "They";
 				}
-				gd.addMessage(msg+" with unsaved changes. If you\nclick \"OK\" "+pronoun
-					+" will be closed without being saved.");
+				gd.addMessage(msg+" with unsaved changes. "+pronoun
+					+" will\nbe closed without being saved if you click \"OK\".");
 				gd.showDialog();
 				if (gd.wasCanceled())	
 					return false;

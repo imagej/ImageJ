@@ -2030,11 +2030,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		the selection if <code>cut</code> is true. */
 	public void copy(boolean cut) {
 		Roi roi = getRoi();
-		if (roi!=null && !roi.isArea()) {
-			IJ.error("Cut/Copy", "The Cut and Copy commands require\n"
-				+"an area selection, or no selection.");
-			return;
-		}
+		if (roi!=null && !roi.isArea())
+			roi = null;
 		boolean batchMode = Interpreter.isBatchMode();
 		String msg = (cut)?"Cutt":"Copy";
 		if (!batchMode) IJ.showStatus(msg+ "ing...");
