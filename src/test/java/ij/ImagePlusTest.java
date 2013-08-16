@@ -2958,16 +2958,16 @@ public class ImagePlusTest {
 		assertNotNull(proc.getSnapshotPixels());
 
 		// cut == true, roi not an area
-		proc = new ColorProcessor(2,3,new int[] {1,2,3,4,5,6});
-		ip = new ImagePlus("Copier",proc);
-		ImagePlus.resetClipboard();
-		assertNull(ip.getRoi());
-		ip.setRoi(new Line(1,1,2,2));
-		assertNotNull(ip.getRoi());
-		assertNull(ImagePlus.getClipboard());
-		ip.copy(true);
-		assertNull(ImagePlus.getClipboard());
-		assertNull(proc.getSnapshotPixels());
+		//proc = new ColorProcessor(2,3,new int[] {1,2,3,4,5,6});
+		//ip = new ImagePlus("Copier",proc);
+		//ImagePlus.resetClipboard();
+		//assertNull(ip.getRoi());
+		//ip.setRoi(new Line(1,1,2,2));
+		//assertNotNull(ip.getRoi());
+		//assertNull(ImagePlus.getClipboard());
+		//ip.copy(true);
+		//assertNull(ImagePlus.getClipboard());
+		//assertNull(proc.getSnapshotPixels());
 
 		// cut == true, roi an area
 		proc = new ColorProcessor(2,3,new int[] {1,2,3,4,5,6});
@@ -2992,16 +2992,16 @@ public class ImagePlusTest {
 		assertNull(proc.getSnapshotPixels());
 
 		// cut == false, roi not an area
-		proc = new ColorProcessor(2,3,new int[] {1,2,3,4,5,6});
-		ip = new ImagePlus("Copier",proc);
-		ImagePlus.resetClipboard();
-		assertNull(ip.getRoi());
-		ip.setRoi(new Line(1,1,2,2));
-		assertNotNull(ip.getRoi());
-		assertNull(ImagePlus.getClipboard());
-		ip.copy(false);
-		assertNull(ImagePlus.getClipboard());
-		assertNull(proc.getSnapshotPixels());
+		//proc = new ColorProcessor(2,3,new int[] {1,2,3,4,5,6});
+		//ip = new ImagePlus("Copier",proc);
+		//ImagePlus.resetClipboard();
+		//assertNull(ip.getRoi());
+		//ip.setRoi(new Line(1,1,2,2));
+		//assertNotNull(ip.getRoi());
+		//assertNull(ImagePlus.getClipboard());
+		//ip.copy(false);
+		//assertNull(ImagePlus.getClipboard());
+		//assertNull(proc.getSnapshotPixels());
 
 		// cut == false, roi an area
 		proc = new ColorProcessor(2,3,new int[] {1,2,3,4,5,6});
