@@ -2954,8 +2954,8 @@ public class ImagePlusTest {
 		assertNull(ip.getRoi());
 		assertNull(ImagePlus.getClipboard());
 		ip.copy(true);
-		assertNotNull(ImagePlus.getClipboard());
-		assertNotNull(proc.getSnapshotPixels());
+		assertNull(ImagePlus.getClipboard()); // cut requires a selection
+		assertNull(proc.getSnapshotPixels());
 
 		// cut == true, roi not an area
 		//proc = new ColorProcessor(2,3,new int[] {1,2,3,4,5,6});
@@ -3060,12 +3060,12 @@ public class ImagePlusTest {
 		assertNull(ip.getRoi());
 		assertEquals(4,proc.get(1,1));
 		ip.copy(true);
-		assertNotNull(ImagePlus.getClipboard());
+		assertNull(ImagePlus.getClipboard());
 		assertFalse(ip.changes);
-		assertEquals(255,proc.get(1,1));
+		assertEquals(4,proc.get(1,1));
 		ip.paste();
-		assertTrue(ip.changes);
-		assertNotNull(ip.getRoi());
+		assertFalse(ip.changes);
+		assertNull(ip.getRoi());
 		//ip.getRoi().drawPixels();
 		//assertEquals(4,proc.get(1, 1));
 
