@@ -2032,8 +2032,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		Roi roi = getRoi();
 		if (roi!=null && !roi.isArea())
 			roi = null;
+		if (cut && roi==null && !IJ.isMacro()) {
+			IJ.error("Edit>Cut", "This command requires an area selection");
+			return;
+		}
 		boolean batchMode = Interpreter.isBatchMode();
-		String msg = (cut)?"Cutt":"Copy";
+		String msg = (cut)?"Cut":"Copy";
 		if (!batchMode) IJ.showStatus(msg+ "ing...");
 		ImageProcessor ip = getProcessor();
 		ImageProcessor ip2;	

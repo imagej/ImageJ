@@ -158,6 +158,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private int fontSize = nextFontSize;
 	private Color fontColor = nextFontColor;
 	private int lineWidth = nextLineWidth;
+	private boolean noThreshold;
 
 			
 	/** Constructs a ParticleAnalyzer.
@@ -574,7 +575,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		}
 		if (showProgress)
 			IJ.showProgress(1.0);
-		if (showResults && showResultsWindow)
+		if (showResults && showResultsWindow && rt.getCounter()>0)
 			rt.updateResults();
 		imp.deleteRoi();
 		ip.resetRoi();
@@ -753,6 +754,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		else
 			imageType = BYTE;
 		if (t1==ImageProcessor.NO_THRESHOLD) {
+			noThreshold = true;
 			ImageStatistics stats = imp.getStatistics();
 			if (imageType!=BYTE || (stats.histogram[0]+stats.histogram[255]!=stats.pixelCount)) {
 				IJ.error("Particle Analyzer",
@@ -1009,7 +1011,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				outputImage.show();
 		}
 		if (showResults && !processStack) {
-			if (showResultsWindow) {
+			if (showResultsWindow && rt.getCounter()>0) {
 				TextPanel tp = IJ.getTextPanel();
 				if (beginningCount>0 && tp!=null && tp.getLineCount()!=count)
 					rt.show("Results");
@@ -1018,6 +1020,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			Analyzer.lastParticle = Analyzer.getCounter()-1;
 		} else
 			Analyzer.firstParticle = Analyzer.lastParticle = 0;
+		if (showResults && rt.getCounter()==0 && !IJ.isMacro() && (!processStack||slice==imp.getStackSize())) {
+			int digits = (int)level1==level1&&(int)level2==level2?0:2;
+			String range = IJ.d2s(level1,digits)+"-"+IJ.d2s(level2,digits);
+			String assummed = noThreshold?"assumed":"";
+			IJ.showMessage("Particle Analyzer", "No particles were detected. The "+assummed+"\nthreshold ("+range+") may not be correct.");
+		}
 	}
 	
 	/** Returns the "Outlines", "Masks", "Elipses" or "Count Masks" image,
