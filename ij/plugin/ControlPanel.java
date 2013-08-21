@@ -117,12 +117,12 @@ public class ControlPanel implements PlugIn {
 		if(items==0) return;
 		for (int i=0; i<items; i++) {
 			MenuItem mItem = menu.getItem(i);
-			String label = mItem.getLabel();
+			String label = mItem.getActionCommand();
 			if (mItem instanceof Menu) {
 				DefaultMutableTreeNode subNode = new DefaultMutableTreeNode(label);
 				recurseSubMenu((Menu)mItem,subNode);
 				node.add(subNode);
-			} else if(mItem instanceof MenuItem) {
+			} else if (mItem instanceof MenuItem) {
 				if (!(label.equals("-"))) {
 					DefaultMutableTreeNode leaf = new DefaultMutableTreeNode(label);
 					node.add(leaf);

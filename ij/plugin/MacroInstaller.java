@@ -123,6 +123,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 						installPopupMenu(name, pgm);
 					else if (!name.endsWith("Tool Selected")) { 
 						if (macrosMenu!=null) {
+							addShortcut(name);
 							int pos = name.indexOf(">");
 							boolean inSubMenu = name.startsWith("<") && (pos>1);
 							if (inSubMenu) {
@@ -130,11 +131,9 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 								Menu subMenu = null;
 								String parentStr = name.substring(1, pos).trim();
 								String childStr = name.substring(pos + 1).trim();
-								macroNames[count] = childStr;
 								MenuItem mnuItem = new MenuItem();
-								//mnuItem.setActionCommand(name);
+								mnuItem.setActionCommand(name);
 								mnuItem.setLabel(childStr);
-								addShortcut(childStr);
 								for (int jj = 0; jj < subMenus.size(); jj++) {
 									String aName = subMenus.get(jj).getName();
 									if (aName.equals(parentStr))
@@ -148,10 +147,8 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 									parent.add(subMenu);
 								}
 								subMenu.add(mnuItem);
-							} else {
-								addShortcut(name);
+							} else
 								macrosMenu.add(new MenuItem(name));
-							}
 						}
 					}
 					//IJ.log(count+" "+name+" "+macroStarts[count]);

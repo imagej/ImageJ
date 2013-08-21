@@ -295,7 +295,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		int n=menu.getItemCount();
 		for (int i=0; i<n; ++i) {
 			MenuItem m=menu.getItem(i);
-			String label=m.getLabel();
+			String label=m.getActionCommand();
 			if (m instanceof Menu) {
 				Menu subMenu=(Menu)m;
 				parseMenu(path+">"+label,subMenu);
