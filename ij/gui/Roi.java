@@ -393,7 +393,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	 * of this selection that has points spaced 1.0 pixel apart.
 	 */
 	public FloatPolygon getInterpolatedPolygon() {
-		return getInterpolatedPolygon(getFloatPolygon(), 1.0, false);
+		return getInterpolatedPolygon(1.0, false);
 	}
 
 	/** Returns, as a FloatPolygon, an interpolated version of
@@ -402,12 +402,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	 * first smoothed using a 3 point running average.
 	 */
 	public FloatPolygon getInterpolatedPolygon(double interval, boolean smooth) {
-		return getInterpolatedPolygon(getFloatPolygon(), interval, smooth);
+		FloatPolygon p = (this instanceof Line)?((Line)this).getFloatPoints():getFloatPolygon();
+		return getInterpolatedPolygon(p, interval, smooth);
 	}
 
 	protected FloatPolygon getInterpolatedPolygon(FloatPolygon p, double interval, boolean smooth) {
-		double length = p.getLength(isLine());
-		int npoints2 = (int)((length*1.2)/interval);
+		boolean isLine = this.isLine();
+		double length = p.getLength(isLine);
+		int npoints2 = (int)((length*1.5)/interval);
 		float[] xpoints2 = new float[npoints2];
 		float[] ypoints2 = new float[npoints2];
 		xpoints2[0] = p.xpoints[0];
@@ -417,7 +419,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		double distance=0.0, distance2=0.0, dx=0.0, dy=0.0, xinc, yinc;
 		double x, y, lastx, lasty, x1, y1, x2=p.xpoints[0], y2=p.ypoints[0];
 		int npoints = p.npoints;
-		if (!isLine()) npoints++;
+		if (!isLine) npoints++;
 		for (int i=1; i<npoints; i++) {
 			x1=x2; y1=y2;
 			x=x1; y=y1;
@@ -434,15 +436,18 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			xinc = dx*inc/distance;
 			yinc = dy*inc/distance;
 			lastx=xpoints2[n-1]; lasty=ypoints2[n-1];
-			//n2 = (int)(dx/xinc);
 			n2 = (int)(distance/inc);
-			if (npoints==2) n2++;
+			int max = xpoints2.length-1;
+			if (npoints==2) {
+				n2 += 0.5/inc;
+				max++;
+			}
 			do {
 				dx = x-lastx;
 				dy = y-lasty;
 				distance2 = Math.sqrt(dx*dx+dy*dy);
 				//IJ.log(i+"   "+IJ.d2s(xinc,5)+"   "+IJ.d2s(yinc,5)+"   "+IJ.d2s(distance,2)+"   "+IJ.d2s(distance2,2)+"   "+IJ.d2s(x,2)+"   "+IJ.d2s(y,2)+"   "+IJ.d2s(lastx,2)+"   "+IJ.d2s(lasty,2)+"   "+n+"   "+n2);
-				if (distance2>=interval-inc/2.0 && n<xpoints2.length-1) {
+				if (distance2>=interval-inc/2.0 && n<max) {
 					xpoints2[n] = (float)x;
 					ypoints2[n] = (float)y;
 					//IJ.log("--- "+IJ.d2s(x,2)+"   "+IJ.d2s(y,2)+"  "+n);
