@@ -117,8 +117,13 @@ public class Filters3D implements PlugIn {
 	}
 	
 	private static void filterHyperstack(ImagePlus imp, int filter, float vx, float vy, float vz) {
-		if (imp.getNDimensions()>4 || imp.getNChannels()==1) {
-			IJ.error("1 channel and 5D hyperstacks are currently not supported");
+		if (imp.getNDimensions()>4) {
+			IJ.error("5D hyperstacks are currently not supported");
+			return;
+		}
+		if (imp.getNChannels()==1) {
+			ImageStack stack = filter(imp.getStack(), filter, vx, vy, vz);
+			imp.setStack(stack);
 			return;
 		}
         ImagePlus[] channels = ChannelSplitter.split(imp);
