@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.48b 22 August 2013</u>
+<li> <u>1.48b 25 August 2013</u>
 <ul>
 <li> Thanks to Michael Doube and Johannes Schindelin, added the "Interpolate ROIs" 
 command to the ROI Manager.
@@ -15,14 +15,14 @@ command to the ROI Manager.
 <i>Plugins&gt;New&gt;Plugin Filter</i> commands.
 <li> Rather than display an error message, the <i>Copy</i> and <i>Cut</i>
 commands now copy or cut the entire image when there is a line or point selection.
-<li> Added the ImageProcessor.set(double) method, which is used by the
+<li> Added the ImageProcessor.set(double) method, now used by the
 <i>Process&gt;Macro&gt;Set</i> command.
 <li> Thanks to Eric Barnhill, added the HyperStackConverter.toHyperStack() method.
-A call to this method is generated if the recorder is running in script mode when the
+A call to this method is generated if the recorder is running in script mode and the
 <i>Image&gt;Hyperstacks&gt;Stack to Hyperstack</i> command is used.
 <li> The <i>Plugins&gt;Macros&gt;StartupMacros</i> command works
 when the startup macros file is names StartupMacros.ijm.
-<li> The ImageConvert class works with stacks.
+<li> The ImageConverter class works with stacks.
 <li> Thanks to Johannes Schindelin and Hans Wurscht, fixed a bug that sometimes caused
 memory used by images opened in batch mode macros to not be reclaimed
 (<a href="macros/GarbageCollectionTest.txt">test macro</a>).
