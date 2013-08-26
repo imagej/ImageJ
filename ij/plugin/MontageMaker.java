@@ -167,7 +167,6 @@ public class MontageMaker implements PlugIn {
 		montage.setColor(bgColor);
 		montage.fill();
 		montage.setColor(fgColor);
-		Dimension screen = IJ.getScreenSize();
 		montage.setFont(new Font("SansSerif", Font.PLAIN, fontSize));
 		montage.setAntialiasedText(true);
 		ImageStack stack = imp.getStack();

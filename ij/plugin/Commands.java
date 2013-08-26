@@ -91,7 +91,8 @@ public class Commands implements PlugIn {
 			closeImage(imp);
 	}
 
-	void closeAll() {
+	/** Closes all image windows, or returns 'false' if the user cancels the unsaved changes dialog box. */
+	public static boolean closeAll() {
     	int[] list = WindowManager.getIDList();
     	if (list!=null) {
     		int imagesWithChanges = 0;
@@ -105,15 +106,16 @@ public class Commands implements PlugIn {
 				String pronoun = null;
 				if (imagesWithChanges==1) {
 					msg = "There is one image";
-					pronoun = "it";
+					pronoun = "It";
 				} else {
 					msg = "There are "+imagesWithChanges+" images";
-					pronoun = "they";
+					pronoun = "They";
 				}
-				gd.addMessage(msg+" with unsaved changes. If you\nclick \"OK\" "+pronoun
-					+" will be closed without being saved.");
+				gd.addMessage(msg+" with unsaved changes. "+pronoun
+					+" will\nbe closed without being saved if you click \"OK\".");
 				gd.showDialog();
-				if (gd.wasCanceled()) return;
+				if (gd.wasCanceled())	
+					return false;
 			}
 			for (int i=0; i<list.length; i++) {
 				ImagePlus imp = WindowManager.getImage(list[i]);
@@ -123,11 +125,7 @@ public class Commands implements PlugIn {
 				}
 			}
     	}
-    	//Frame[] windows = WindowManager.getNonImageWindows();
-    	//for (int i=0; i<windows.length; i++) {
-    	//	if ((windows[i] instanceof PlugInFrame) && !(windows[i] instanceof Editor))
-    	//		((PlugInFrame)windows[i]).close();
-    	//}
+    	return true;
 	}
 
 	void closeImage(ImagePlus imp) {
@@ -151,8 +149,12 @@ public class Commands implements PlugIn {
 		if (applet!=null) {
 			IJ.run("URL...", "url="+IJ.URL+"/applet/StartupMacros.txt");
 		} else {
-			String path = IJ.getDirectory("macros")+"/StartupMacros.txt";
+			String path = IJ.getDirectory("macros")+"StartupMacros.txt";
 			File f = new File(path);
+			if (!f.exists()) {
+				path = IJ.getDirectory("macros")+"StartupMacros.ijm";
+				f = new File(path);
+			}
 			if (!f.exists())
 				IJ.error("\"StartupMacros.txt\" not found in ImageJ/macros/");
 			else

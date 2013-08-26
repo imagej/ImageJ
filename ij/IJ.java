@@ -601,6 +601,8 @@ public class IJ {
 		If a macro is running, it is aborted. Writes to the Java  
 		console if ImageJ is not present. */
 	public static void error(String title, String msg) {
+		if (msg!=null && msg.endsWith(Macro.MACRO_CANCELED))
+			return;
 		String title2 = title!=null?title:"ImageJ";
 		boolean abortMacro = title!=null;
 		lastErrorMessage = msg;

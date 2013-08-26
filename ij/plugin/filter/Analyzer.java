@@ -689,7 +689,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			//	s = s.substring(0,len-4); 
 			Roi roi = imp.getRoi();
 			String roiName = roi!=null?roi.getName():null;
-			if (roiName!=null && !roiName.endsWith(".tif")) {
+			if (roiName!=null && !roiName.contains(".")) {
 				if (roiName.length()>20)
 					roiName = roiName.substring(0,17) + "...";
 				s += ":"+roiName;

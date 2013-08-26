@@ -51,7 +51,7 @@ public abstract class ImageProcessor implements Cloneable {
 	public static final int BLUR_MORE=0, FIND_EDGES=1, MEDIAN_FILTER=2, MIN=3, MAX=4, CONVOLVE=5;
 	static public final int RED_LUT=0, BLACK_AND_WHITE_LUT=1, NO_LUT_UPDATE=2, OVER_UNDER_LUT=3;
 	static final int INVERT=0, FILL=1, ADD=2, MULT=3, AND=4, OR=5,
-		XOR=6, GAMMA=7, LOG=8, MINIMUM=9, MAXIMUM=10, SQR=11, SQRT=12, EXP=13, ABS=14;
+		XOR=6, GAMMA=7, LOG=8, MINIMUM=9, MAXIMUM=10, SQR=11, SQRT=12, EXP=13, ABS=14, SET=15;
 	static final String WRONG_LENGTH = "width*height!=pixels.length";
 	
 	int fgColor = 0;
@@ -906,6 +906,9 @@ public abstract class ImageProcessor implements Cloneable {
 					break;
 				case FILL:
 					v = fgColor;
+					break;
+				case SET:
+					v = (int)value;
 					break;
 				case ADD:
 					v = i + (int)value;
@@ -1859,6 +1862,9 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Multiplies each pixel in the image or ROI by 'value'. */
 	public void multiply(double value) {process(MULT, value);}
 	
+	/** Assigns 'value' to each pixel in the image or ROI. */
+	public void set(double value) {process(SET, value);}
+
 	/** Binary AND of each pixel in the image or ROI with 'value'. */
 	public void and(int value) {process(AND, value);}
 

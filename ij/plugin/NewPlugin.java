@@ -119,9 +119,12 @@ public class NewPlugin implements PlugIn {
 				text += "public class "+className+" implements PlugIn {\n";
 				text += "\n";
 				text += "\tpublic void run(String arg) {\n";
-				if (methods.equals("plugin"))
-					text += "\t\tIJ.showMessage(\""+className+"\",\"Hello world!\");\n";
-				else
+				if (methods.equals("plugin")) {
+					text += "\t\tImagePlus imp = IJ.getImage();\n";
+					text += "\t\tIJ.run(imp, \"Invert\", \"\");\n";
+					text += "\t\tIJ.wait(1000);\n";
+					text += "\t\tIJ.run(imp, \"Invert\", \"\");\n";
+				} else
 					text += methods;
 				text += "\t}\n";
 				break;
@@ -138,10 +141,6 @@ public class NewPlugin implements PlugIn {
 				text += "\n";
 				text += "\tpublic void run(ImageProcessor ip) {\n";
 				text += "\t\tip.invert();\n";
-				text += "\t\timp.updateAndDraw();\n";
-				text += "\t\tIJ.wait(500);\n";
-				text += "\t\tip.invert();\n";
-				text += "\t\timp.updateAndDraw();\n";
 				text += "\t}\n";
 				break;
 			case PLUGIN_FRAME:

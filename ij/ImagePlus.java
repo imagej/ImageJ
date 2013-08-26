@@ -253,8 +253,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (stack!=null && currentSlice>=1 && currentSlice<=stack.getSize()) {
 			Object pixels = stack.getPixels(currentSlice);
 			if (ip!=null && pixels!=null && pixels!=ip.getPixels()) { // was stack updated?
-				ip.setSnapshotPixels(null);
-				ip.setPixels(pixels);
+				try {
+					ip.setPixels(pixels);
+					ip.setSnapshotPixels(null);
+				} catch(Exception e) {}
 			}
 		}
 		if (win!=null) {
@@ -1367,8 +1369,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			setCurrentSlice(n);
 			Object pixels = stack.getPixels(currentSlice);
 			if (ip!=null && pixels!=null) {
-				ip.setSnapshotPixels(null);
-				ip.setPixels(pixels);
+				try {
+					ip.setPixels(pixels);
+					ip.setSnapshotPixels(null);
+				} catch(Exception e) {}
 			} else
 				ip = stack.getProcessor(n);
 			if (win!=null && win instanceof StackWindow)
@@ -2026,13 +2030,14 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		the selection if <code>cut</code> is true. */
 	public void copy(boolean cut) {
 		Roi roi = getRoi();
-		if (roi!=null && !roi.isArea()) {
-			IJ.error("Cut/Copy", "The Cut and Copy commands require\n"
-				+"an area selection, or no selection.");
+		if (roi!=null && !roi.isArea())
+			roi = null;
+		if (cut && roi==null && !IJ.isMacro()) {
+			IJ.error("Edit>Cut", "This command requires an area selection");
 			return;
 		}
 		boolean batchMode = Interpreter.isBatchMode();
-		String msg = (cut)?"Cutt":"Copy";
+		String msg = (cut)?"Cut":"Copy";
 		if (!batchMode) IJ.showStatus(msg+ "ing...");
 		ImageProcessor ip = getProcessor();
 		ImageProcessor ip2;	

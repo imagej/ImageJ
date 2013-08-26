@@ -86,15 +86,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	 		}
 			ip.gamma(gammaValue);
 		} else if (arg.equals("set")) {
-	 		boolean rgb = ip instanceof ColorProcessor;
-			if (rgb) {
-				if (addValue>255.0) addValue=255.0;
-				if (addValue<0.0) addValue=0.0;
-				int ival = (int)addValue;
-	 			ip.setValue(ival + (ival<<8) + (ival<<16));
-			} else
-	 			ip.setValue(addValue);
-			ip.fill();
+			ip.set(addValue);
 		} else if (arg.equals("log")) {
 			ip.log();
 		} else if (arg.equals("exp")) {

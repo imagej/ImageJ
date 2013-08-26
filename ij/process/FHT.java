@@ -310,22 +310,20 @@ public class FHT extends FloatProcessor {
 			}
 		}
 
-		if (min<1.0)
-			min = 0f;
-		else
-			min = (float)Math.log(min);
 		max = (float)Math.log(max);
-		scale = (float)(253.0/(max-min));
+		min = (float)Math.log(min);
+		if (Float.isNaN(min) || max-min>50)
+			min = max - 50; //display range not more than approx e^50
+		scale = (float)(253.999/(max-min));
 
 		for (int row=0; row<maxN; row++) {
 			base = row*maxN;
 			for (int col=0; col<maxN; col++) {
 				r = fps[base+col];
-				if (r<1f)
+				r = ((float)Math.log(r)-min)*scale;
+				if (Float.isNaN(r) || r<0)
 					r = 0f;
-				else
-					r = (float)Math.log(r);
-				ps[base+col] = (byte)(((r-min)*scale+0.5)+1);
+				ps[base+col] = (byte)(r+1f); // 1 is min value
 			}
 		}
 		ImageProcessor ip = new ByteProcessor(maxN, maxN, ps, null);

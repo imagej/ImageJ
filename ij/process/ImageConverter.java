@@ -21,8 +21,10 @@ public class ImageConverter {
 
 	/** Converts this ImagePlus to 8-bit grayscale. */
 	public synchronized void convertToGray8() {
-		if (imp.getStackSize()>1)
-			throw new IllegalArgumentException("Unsupported conversion");
+		if (imp.getStackSize()>1) {
+			new StackConverter(imp).convertToGray8();
+			return;
+		}
 		ImageProcessor ip = imp.getProcessor();
 		if (type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32) {
 			imp.setProcessor(null, ip.convertToByte(doScaling));
@@ -50,6 +52,10 @@ public class ImageConverter {
 			return;
 		if (!(type==ImagePlus.GRAY8||type==ImagePlus.GRAY32||type==ImagePlus.COLOR_RGB))
 			throw new IllegalArgumentException("Unsupported conversion");
+		if (imp.getStackSize()>1) {
+			new StackConverter(imp).convertToGray16();
+			return;
+		}
 		ImageProcessor ip = imp.getProcessor();
 		imp.trimProcessor();
 		imp.setProcessor(null, ip.convertToShort(doScaling));
@@ -62,6 +68,10 @@ public class ImageConverter {
 			return;
 		if (!(type==ImagePlus.GRAY8||type==ImagePlus.GRAY16||type==ImagePlus.COLOR_RGB))
 			throw new IllegalArgumentException("Unsupported conversion");
+		if (imp.getStackSize()>1) {
+			new StackConverter(imp).convertToGray32();
+			return;
+		}
 		ImageProcessor ip = imp.getProcessor();
 		imp.trimProcessor();
 		Calibration cal = imp.getCalibration();
@@ -71,6 +81,10 @@ public class ImageConverter {
 
 	/** Converts this ImagePlus to RGB. */
 	public void convertToRGB() {
+		if (imp.getStackSize()>1) {
+			new StackConverter(imp).convertToRGB();
+			return;
+		}
 		ImageProcessor ip = imp.getProcessor();
 		imp.setProcessor(null, ip.convertToRGB());
 		imp.setCalibration(imp.getCalibration()); //update calibration
