@@ -1026,7 +1026,17 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		item = item.substring(1);
 		Interpreter interp = Interpreter.getInstance();
 		String s = interp!=null?interp.getStringVariable(item):null;
-		if (s!=null) item = s;
+		if (s==null) {
+			double value = interp!=null?interp.getVariable2(item):Double.NaN;
+			if (!Double.isNaN(value)) {
+				if ((int)value==value)
+					s = ""+(int)value;
+				else
+					s = ""+value;
+			}
+		}
+		if (s!=null)
+			item = s;
 		return item;
 	}
     
