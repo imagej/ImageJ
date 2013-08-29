@@ -5281,6 +5281,15 @@ public class Functions implements MacroConstants, Measurements {
 			}
 			imp.setRoi(roi, !Interpreter.isBatchMode());
 			return Double.NaN;
+		} else if (name.equals("moveSelection")) {
+			int index = (int)getFirstArg();
+			int x = (int)getNextArg();
+			int y = (int)getLastArg();
+			checkIndex(index, 0, size-1);
+			Roi roi = overlay.get(index);
+			roi.setLocation(x, y);
+			imp.draw();
+			return Double.NaN;
 		} else if (name.equals("setPosition")) {
 			int c=0, z=0, t=0;
 			int nargs = 1;

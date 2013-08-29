@@ -78,7 +78,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.48c";
-	public static final String BUILD = "2"; 
+	public static final String BUILD = "3"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -437,8 +437,8 @@ public class ImageJ extends Frame implements ActionListener,
 		
 		if (cmd==null) {
 			switch (keyChar) {
-				case '<': case ',': cmd="Previous Slice [<]"; break;
-				case '>': case '.': case ';': cmd="Next Slice [>]"; break;
+				case '<': case ',': if (isStack) cmd="Previous Slice [<]"; break;
+				case '>': case '.': case ';': if (isStack) cmd="Next Slice [>]"; break;
 				case '+': case '=': cmd="In [+]"; break;
 				case '-': cmd="Out [-]"; break;
 				case '/': cmd="Reslice [/]..."; break;
@@ -447,7 +447,7 @@ public class ImageJ extends Frame implements ActionListener,
 		}
 
 		if (cmd==null) {
-			switch(keyCode) {
+			switch (keyCode) {
 				case KeyEvent.VK_TAB: WindowManager.putBehind(); return;
 				case KeyEvent.VK_BACK_SPACE: // delete
 					if (deleteOverlayRoi(imp))
@@ -459,8 +459,8 @@ public class ImageJ extends Frame implements ActionListener,
 				case KeyEvent.VK_EQUALS: cmd="In [+]"; break;
 				case KeyEvent.VK_MINUS: cmd="Out [-]"; break;
 				case KeyEvent.VK_SLASH: case 0xbf: cmd="Reslice [/]..."; break;
-				case KeyEvent.VK_COMMA: case 0xbc: cmd="Previous Slice [<]"; break;
-				case KeyEvent.VK_PERIOD: case 0xbe: cmd="Next Slice [>]"; break;
+				case KeyEvent.VK_COMMA: case 0xbc: if (isStack) cmd="Previous Slice [<]"; break;
+				case KeyEvent.VK_PERIOD: case 0xbe: if (isStack) cmd="Next Slice [>]"; break;
 				case KeyEvent.VK_LEFT: case KeyEvent.VK_RIGHT: case KeyEvent.VK_UP: case KeyEvent.VK_DOWN: // arrow keys
 					if (imp==null) return;
 					Roi roi = imp.getRoi();
