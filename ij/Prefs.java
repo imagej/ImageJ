@@ -144,6 +144,8 @@ public class Prefs {
 	public static boolean enhancedLineTool;
 	/** Keep arrow selection after adding to overlay */
 	public static boolean keepArrowSelections;
+	/** Aways paint using double buffering, except on OS X */
+	public static boolean paintDoubleBuffered;
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);
