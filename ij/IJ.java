@@ -2012,6 +2012,8 @@ public class IJ {
 			exceptionHandler.handle(e);
 			return;
 		}
+		if (Macro.MACRO_CANCELED.equals(e.getMessage()))
+			return;
 		CharArrayWriter caw = new CharArrayWriter();
 		PrintWriter pw = new PrintWriter(caw);
 		e.printStackTrace(pw);

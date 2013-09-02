@@ -56,7 +56,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 			//boolean contextClassLoader = Thread.currentThread().getContextClassLoader()==IJ.getClassLoader();
 			if (IJ.debugMode) IJ.log("javac not found: ");
 			if (!checkForUpdateDone) {
-				checkForUpdate("/plugins/compiler/Compiler.jar", "1.47v");
+				checkForUpdate("/plugins/compiler/Compiler.jar", "1.48c");
 				checkForUpdateDone = true;
 			}
 			Object compiler = IJ.runPlugIn("Compiler", dir+name);
@@ -336,7 +336,9 @@ class PlugInExecuter implements Runnable {
 				IJ.error("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 		}
 		catch (Exception e) {
-			IJ.error(""+e);
+			//IJ.error(""+e);
+			IJ.handleException(e); //Marcel Boeglin 2013.09.01
+			//Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e); //IDE output
 		}
 	}
 	
