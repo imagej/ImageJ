@@ -181,10 +181,14 @@ public class SyncWindows extends PlugInFrame implements
 		if (cSlice.getState() && type==DisplayChangeEvent.Z) {
 			for (int n=0; n<vwins.size();++n) {
 				imp = getImageFromVector(n);
-				if (imp != null) {
+				if (imp!=null) {
 					iw = imp.getWindow();
-					if (!iw.equals(source))
-						imp.setZ(value);
+					if (!iw.equals(source)) {
+						if (imp.getNSlices()==1 && imp.getNFrames()>1)
+							imp.setT(value);
+						else
+							imp.setZ(value);
+					}
 				}
 			}
 		}
