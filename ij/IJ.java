@@ -608,12 +608,13 @@ public class IJ {
 		lastErrorMessage = msg;
 		if (redirectErrorMessages) {
 			IJ.log(title2 + ": " + msg);
-			if (abortMacro && (title.equals("Opener")||title.equals("Open URL")||title.equals("DicomDecoder")))
+			if (abortMacro && (title.contains("Open") ||title.contains("Reader")))
 				abortMacro = false;
 		} else
 			showMessage(title2, msg);
 		redirectErrorMessages = false;
-		if (abortMacro) Macro.abort();
+		if (abortMacro)
+			Macro.abort();
 	}
 
 	/** 
@@ -1910,11 +1911,13 @@ public class IJ {
 	/** Causes IJ.error() output to be temporarily redirected to the "Log" window. */
 	public static void redirectErrorMessages() {
 		redirectErrorMessages = true;
+		lastErrorMessage = null;
 	}
 	
 	/** Set 'true' and IJ.error() output will be temporarily redirected to the "Log" window. */
 	public static void redirectErrorMessages(boolean redirect) {
 		redirectErrorMessages = redirect;
+		lastErrorMessage = null;
 	}
 
 	/** Returns the state of the  'redirectErrorMessages' flag, which is set by File/Import/Image Sequence. */

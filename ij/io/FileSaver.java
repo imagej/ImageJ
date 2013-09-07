@@ -145,7 +145,7 @@ public class FileSaver {
 		 Equivalent to IJ.saveAsTiff(imp,path), which is more convenient. */
 	public boolean saveAsTiffStack(String path) {
 		if (fi.nImages==1)
-			{IJ.error("This is not a stack"); return false;}
+			{error("This is not a stack"); return false;}
 		boolean virtualStack = imp.getStack().isVirtual();
 		if (virtualStack)
 			fi.virtualStack = (VirtualStack)imp.getStack();
@@ -154,7 +154,7 @@ public class FileSaver {
 		if (virtualStack) {
 			FileInfo fi = imp.getOriginalFileInfo();
 			if (path!=null && path.equals(fi.directory+fi.fileName)) {
-				IJ.error("TIFF virtual stacks cannot be saved in place.");
+				error("TIFF virtual stacks cannot be saved in place.");
 				return false;
 			}
 			String[] labels = null;
@@ -560,7 +560,7 @@ public class FileSaver {
 		dialog. Returns false if the user selects cancel. */
 	public boolean saveAsLut() {
 		if (imp.getType()==ImagePlus.COLOR_RGB) {
-			IJ.error("RGB Images do not have a LUT.");
+			error("RGB Images do not have a LUT.");
 			return false;
 		}
 		String path = getPath("LUT", ".lut");
@@ -574,11 +574,11 @@ public class FileSaver {
 		LookUpTable lut = imp.createLut();
 		int mapSize = lut.getMapSize();
 		if (mapSize==0) {
-			IJ.error("RGB Images do not have a LUT.");
+			error("RGB Images do not have a LUT.");
 			return false;
 		}
 		if (mapSize<256) {
-			IJ.error("Cannot save LUTs with less than 256 entries.");
+			error("Cannot save LUTs with less than 256 entries.");
 			return false;
 		}
 		byte[] reds = lut.getReds(); 
@@ -647,7 +647,11 @@ public class FileSaver {
 		String msg = e.getMessage();
 		if (msg.length()>100)
 			msg = msg.substring(0, 100);
-		IJ.error("FileSaver", "An error occured writing the file.\n \n" + msg);
+		error("An error occured writing the file.\n \n" + msg);
+	}
+	
+	private void error(String msg) {
+		IJ.error("FileSaver", msg);
 	}
 
 	/** Returns a string containing information about the specified  image. */

@@ -312,7 +312,7 @@ public class Opener {
 					imp = new CompositeImage(imp, CompositeImage.COLOR);
 				fileType = wrap[0];
 				if (imp==null && fileType==UNKNOWN && IJ.getInstance()==null)
-					IJ.error("Unsupported format or not found");
+					IJ.error("Opener", "Unsupported format or not found");
 				return imp;
 			default:
 				return null;
@@ -754,7 +754,7 @@ public class Opener {
 		catch (IOException e) {
 			String msg = e.getMessage();
 			if (msg==null||msg.equals("")) msg = ""+e;
-			IJ.error("TiffDecoder", msg);
+			IJ.error("Open TIFF", msg);
 			return null;
 		}
 		if (info==null)
@@ -771,7 +771,7 @@ public class Opener {
 		catch (IOException e) {
 			String msg = e.getMessage();
 			if (msg==null||msg.equals("")) msg = ""+e;
-			IJ.error("TiffDecoder", msg);
+			IJ.error("Open TIFF", msg);
 			return null;
 		}
 		if (info==null) return null;
@@ -804,10 +804,10 @@ public class Opener {
 			if (IJ.debugMode) td.enableDebugging();
 			info = td.getTiffInfo();
 		} catch (FileNotFoundException e) {
-			IJ.error("TiffDecoder", "File not found: "+e.getMessage());
+			IJ.error("Open TIFF", "File not found: "+e.getMessage());
 			return null;
 		} catch (Exception e) {
-			IJ.error("TiffDecoder", ""+e);
+			IJ.error("Open TIFF", ""+e);
 			return null;
 		}
 		if (url!=null && info!=null && info.length==1 && info[0].inputStream!=null) {
@@ -817,7 +817,7 @@ public class Opener {
 			try {
 				info[0].inputStream = new URL(url).openStream();
 			} catch (Exception e) {
-				IJ.error("TiffDecoder", ""+e);
+				IJ.error("Open TIFF", ""+e);
 				return null;
 			}
 		}
@@ -853,12 +853,12 @@ public class Opener {
 				imp = dcm;
 			} else {
 				zis.close();
-				IJ.error("This ZIP archive does not appear to contain a \nTIFF (\".tif\") or DICOM (\".dcm\") file, or ROIs (\".roi\").");
+				IJ.error("Opener", "This ZIP archive does not appear to contain a \nTIFF (\".tif\") or DICOM (\".dcm\") file, or ROIs (\".roi\").");
 				return null;
 			}
 			zis.close();
 		} catch (Exception e) {
-			IJ.error("ZipDecoder", ""+e);
+			IJ.error("Opener", ""+e);
 			return null;
 		}
 		File f = new File(path);

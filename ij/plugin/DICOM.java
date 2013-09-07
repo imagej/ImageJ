@@ -94,13 +94,13 @@ public class DICOM extends ImagePlus implements PlugIn {
 			String msg = e.getMessage();
 			IJ.showStatus("");
 			if (msg.indexOf("EOF")<0&&showErrors) {
-				IJ.error("DicomDecoder", e.getClass().getName()+"\n \n"+msg);
+				IJ.error("DICOM Reader", e.getClass().getName()+"\n \n"+msg);
 				return;
 			} else if (!dd.dicmFound()&&showErrors) {
 				msg = "This does not appear to be a valid\n"
 				+ "DICOM file. It does not have the\n"
 				+ "characters 'DICM' at offset 128.";
-				IJ.error("DicomDecoder", msg);
+				IJ.error("DICOM Reader", msg);
 				return;
 			}
 		}
@@ -151,7 +151,7 @@ public class DICOM extends ImagePlus implements PlugIn {
 			setFileInfo(fi); // needed for revert
 			if (arg.equals("")) show();
 		} else if (showErrors)
-			IJ.error("DicomDecoder","Unable to decode DICOM header.");
+			IJ.error("DICOM Reader","Unable to decode DICOM header.");
 		IJ.showStatus("");
 	}
 

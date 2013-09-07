@@ -4874,11 +4874,11 @@ public class Functions implements MacroConstants, Measurements {
 				if ((int)v==v)
 					s = IJ.d2s(v,0);
 				else
-					s = ""+v;
+					s = ResultsTable.d2s(v,4);
 			}
 			sb.append(s);
 			if (i!=len-1)
-				sb.append(",");
+				sb.append(", ");
 		}
 		IJ.log(sb.toString());
 		return null;

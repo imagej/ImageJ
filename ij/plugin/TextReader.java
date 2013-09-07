@@ -75,7 +75,7 @@ public class TextReader implements PlugIn {
                 msg = ""+e;
 			IJ.showProgress(1.0);
             if (!hideErrorMessages) 
-            	IJ.error("TextReader", msg);
+            	IJ.error("Text Reader", msg);
             ip = null;
         }
         return ip;
