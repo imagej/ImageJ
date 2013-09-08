@@ -608,7 +608,7 @@ public class IJ {
 		lastErrorMessage = msg;
 		if (redirectErrorMessages) {
 			IJ.log(title2 + ": " + msg);
-			if (abortMacro && (title.contains("Open") ||title.contains("Reader")))
+			if (abortMacro && (title.contains("Open")||title.contains("Reader")))
 				abortMacro = false;
 		} else
 			showMessage(title2, msg);
