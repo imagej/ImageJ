@@ -247,6 +247,28 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 			return points;
     }
 
+    /** Finds the maxima in a 1D array. */
+    public static int[] findMaxima(double[] array, double tolerance) {
+    	int n = array.length;
+    	ImageProcessor ip = new FloatProcessor(n, 1, array);
+    	MaximumFinder mf = new MaximumFinder();
+    	Polygon p = mf.getMaxima(ip, tolerance, false);
+    	int[] maxima = new int[p.npoints];
+    	for (int i=0; i<maxima.length; i++)
+    		maxima[i] = p.xpoints[i];
+    	return maxima;
+     }
+
+    /** Finds the minima in a 1D array. */
+    public static int[] findMinima(double[] array, double tolerance) {
+    	int n = array.length;
+    	double[] array2 = new double[n];
+		for (int i=0; i<n; i++)
+			array2[i] = -array[i];
+		int[] minima = findMaxima(array2, tolerance);
+		return minima;
+     }
+
     /** Here the processing is done: Find the maxima of an image (does not find minima).
      * @param ip             The input image
      * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value
