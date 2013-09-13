@@ -179,11 +179,14 @@ public class ProfilePlot {
 			double[] values = line.getPixels();
 			if (values==null) return null;
 			if (cal!=null && cal.pixelWidth!=cal.pixelHeight) {
-				double dx = cal.pixelWidth*(line.x2 - line.x1);
-				double dy = cal.pixelHeight*(line.y2 - line.y1);
-				double length = Math.round(Math.sqrt(dx*dx + dy*dy));
-				if (values.length>1)
-					xInc = length/(values.length-1);
+				FloatPolygon p = line.getFloatPoints();
+				double dx = p.xpoints[1] - p.xpoints[0];
+				double dy = p.ypoints[1] - p.ypoints[0];
+				double pixelLength = Math.sqrt(dx*dx + dy*dy);
+				dx = cal.pixelWidth*dx;
+				dy = cal.pixelHeight*dy;
+				double calibratedLength = Math.sqrt(dx*dx + dy*dy);
+				xInc = calibratedLength * 1.0/pixelLength;
 			}
 			return values;
 	}

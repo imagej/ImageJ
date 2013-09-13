@@ -131,7 +131,7 @@ public class FolderOpener implements PlugIn {
 				}
 			}
 			if (width==0) {
-				IJ.error("Import Sequence", "This folder does not appear to contain\n"
+				IJ.error("Sequence Reader", "This folder does not appear to contain\n"
 				+ "any TIFF, JPEG, BMP, DICOM, GIF, FITS or PGM files.\n \n"
 				+ "   \""+directory+"\"");
 				return;
@@ -151,9 +151,9 @@ public class FolderOpener implements PlugIn {
  				}
   				if (filteredImages==0) {
   					if (isRegex)
-  						IJ.error("Import Sequence", "None of the file names contain the regular expression.");
+  						IJ.error("Sequence Reader", "None of the file names contain the regular expression.");
   					else
-   						IJ.error("Import Sequence", "None of the "+list.length+" files contain\n the string '"+filter+"' in their name.");
+   						IJ.error("Sequence Reader", "None of the "+list.length+" files contain\n the string '"+filter+"' in their name.");
  					return;
   				}
   				String[] list2 = new String[filteredImages];

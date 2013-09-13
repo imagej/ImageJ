@@ -51,6 +51,10 @@ public class Duplicator implements PlugIn, TextListener {
 			imp2 = run(imp);
 		else
 			imp2 = duplicateImage(imp);
+		if (imp2.getWidth()==0 || imp2.getHeight()==0) {
+			IJ.error("Duplicator", "Selection is outside the image");
+			return;
+		}
 		Calibration cal = imp2.getCalibration();
 		if (roi!=null && (cal.xOrigin!=0.0||cal.yOrigin!=0.0)) {
 			cal.xOrigin -= roi.getBounds().x;

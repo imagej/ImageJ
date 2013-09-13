@@ -175,7 +175,7 @@ public class Plot {
 		a = Tools.getMinMax(yValues);
 		yMin=a[0]; yMax=a[1];
 		fixedYScale = false;
-		nPoints = xValues.length;
+		nPoints = Math.min(xValues.length, yValues.length);
 		drawPending = true;
 	}
 
@@ -1132,7 +1132,7 @@ public class Plot {
 			ip.invert();
 		}
 		if ((IJ.macroRunning() && IJ.getInstance()==null) || Interpreter.isBatchMode()) {
-			ImagePlus imp = new ImagePlus(title, ip);
+			ImagePlus imp = getImagePlus();
 			WindowManager.setTempCurrentImage(imp);
 			imp.setProperty("XValues", xValues); //Allows values to be retrieved by 
 			imp.setProperty("YValues", yValues); // by Plot.getValues() macro function

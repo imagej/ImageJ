@@ -4856,6 +4856,10 @@ public class Functions implements MacroConstants, Measurements {
 			return printArray();
 		else if (name.equals("resample"))
 			return resampleArray();
+		else if (name.equals("findMaxima"))
+			return findArrayMaxima(false);
+		else if (name.equals("findMinima"))
+			return findArrayMaxima(true);
 		else
 			interp.error("Unrecognized Array function");
 		return null;
@@ -4874,11 +4878,11 @@ public class Functions implements MacroConstants, Measurements {
 				if ((int)v==v)
 					s = IJ.d2s(v,0);
 				else
-					s = ""+v;
+					s = ResultsTable.d2s(v,4);
 			}
 			sb.append(s);
 			if (i!=len-1)
-				sb.append(",");
+				sb.append(", ");
 		}
 		IJ.log(sb.toString());
 		return null;
@@ -5129,6 +5133,26 @@ public class Functions implements MacroConstants, Measurements {
 		return a;
 	}
 	
+	Variable[] findArrayMaxima(boolean minima) {
+		interp.getLeftParen();
+		Variable[] a = getArray();
+		double tolerance = getLastArg();
+		int n = a.length;
+		double[] d = new double[n];
+		for (int i=0; i<n; i++)
+			d[i] = a[i].getValue();
+		int[] maxima = null;
+		if (minima)
+			maxima = MaximumFinder.findMinima(d, tolerance);
+		else
+			maxima = MaximumFinder.findMaxima(d, tolerance);
+		int n2 = maxima.length;
+		Variable[] a2 = new Variable[n2];
+		for (int i=0; i<n2; i++)
+			a2[i] = new Variable(maxima[i]);
+		return a2;
+	}
+
 	double charCodeAt() {
 		String str = getFirstString();
 		int index = (int)getLastArg();
@@ -5280,6 +5304,15 @@ public class Functions implements MacroConstants, Measurements {
 					imp.setSlice(roi.getPosition());
 			}
 			imp.setRoi(roi, !Interpreter.isBatchMode());
+			return Double.NaN;
+		} else if (name.equals("moveSelection")) {
+			int index = (int)getFirstArg();
+			int x = (int)getNextArg();
+			int y = (int)getLastArg();
+			checkIndex(index, 0, size-1);
+			Roi roi = overlay.get(index);
+			roi.setLocation(x, y);
+			imp.draw();
 			return Double.NaN;
 		} else if (name.equals("setPosition")) {
 			int c=0, z=0, t=0;

@@ -84,10 +84,10 @@ public class ByteProcessor extends ImageProcessor {
 
 	/** Creates a ByteProcessor from an ImageProcessor. 16-bit and 32-bit
 	 * pixel data are scaled from min-max to 0-255 if 'scale' is true.
-	 * @see ImageProcessor#convertToByte
-	 * @see ImageProcessor#convertToShort
-	 * @see ImageProcessor#convertToFloat
-	 * @see ImageProcessor#convertToRGB
+	 * @see ImageProcessor#convertToByteProcessor
+	 * @see ImageProcessor#convertToShortProcessor
+	 * @see ImageProcessor#convertToFloatProcessor
+	 * @see ImageProcessor#convertToColorProcessor
 	*/
 	public ByteProcessor(ImageProcessor ip, boolean scale) {
 		ImageProcessor bp;

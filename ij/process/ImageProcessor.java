@@ -2123,6 +2123,66 @@ public abstract class ImageProcessor implements Cloneable {
 		return tc.convertToRGB();
 	}
 	
+	/** Returns an 8-bit version of this image as a ByteProcessor. 16-bit and 32-bit
+	 * pixel data are scaled from min-max to 0-255.
+	*/
+	public ByteProcessor convertToByteProcessor() {
+		return convertToByteProcessor(true);
+	}
+
+	/** Returns an 8-bit version of this image as a ByteProcessor. 16-bit and 32-bit
+	 * pixel data are scaled from min-max to 0-255 if 'scale' is true.
+	*/
+	public ByteProcessor convertToByteProcessor(boolean scale) {
+		ByteProcessor bp;
+		if (this instanceof ByteProcessor)
+			bp = (ByteProcessor)this.duplicate();
+		else
+			bp = (ByteProcessor)this.convertToByte(scale);
+		return bp;
+	}
+
+	/** Returns a 16-bit version of this image as a ShortProcessor. 32-bit
+	 * pixel data are scaled from min-max to 0-255.
+	*/
+	public ShortProcessor convertToShortProcessor() {
+		return convertToShortProcessor(true);
+	}
+
+	/** Returns a 16-bit version of this image as a ShortProcessor. 32-bit
+	 * pixel data are scaled from min-max to 0-255 if 'scale' is true.
+	*/
+	public ShortProcessor convertToShortProcessor(boolean scale) {
+		ShortProcessor sp;
+		if (this instanceof ShortProcessor)
+			sp = (ShortProcessor)this.duplicate();
+		else
+			sp = (ShortProcessor)this.convertToShort(scale);
+		return sp;
+	}
+
+	/** Returns a 32-bit float version of this image as a FloatProcessor. 
+		For byte and short images, converts using a calibration function 
+		if a calibration table has been set using setCalibrationTable(). */
+	public FloatProcessor convertToFloatProcessor() {
+		FloatProcessor fp;
+		if (this instanceof FloatProcessor)
+			fp = (FloatProcessor)this.duplicate();
+		else
+			fp = (FloatProcessor)this.convertToFloat();
+		return fp;
+	}
+	
+	/** Returns an RGB version of this image as a ColorProcessor. */
+	public ColorProcessor convertToColorProcessor() {
+		ColorProcessor cp;
+		if (this instanceof ColorProcessor)
+			cp = (ColorProcessor)this.duplicate();
+		else
+			cp = (ColorProcessor)this.convertToRGB();
+		return cp;
+	}
+	
 	/** Performs a convolution operation using the specified kernel. 
 	KernelWidth and kernelHeight must be odd. */
 	public abstract void convolve(float[] kernel, int kernelWidth, int kernelHeight);

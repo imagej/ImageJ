@@ -144,6 +144,8 @@ public class Prefs {
 	public static boolean enhancedLineTool;
 	/** Keep arrow selection after adding to overlay */
 	public static boolean keepArrowSelections;
+	/** Aways paint using double buffering, except on OS X */
+	public static boolean paintDoubleBuffered;
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);
@@ -414,7 +416,6 @@ public class Prefs {
 		//antialiasedText = (options&ANTIALIASING)!=0;
 		antialiasedText = false;
 		interpolateScaledImages = (options&INTERPOLATE)!=0;
-		open100Percent = (options&ONE_HUNDRED_PERCENT)!=0;
 		open100Percent = (options&ONE_HUNDRED_PERCENT)!=0;
 		blackBackground = (options&BLACK_BACKGROUND)!=0;
 		useJFileChooser = (options&JFILE_CHOOSER)!=0;

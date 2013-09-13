@@ -139,7 +139,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
     public void paint(Graphics g) {
 		Roi roi = imp.getRoi();
-		if (roi!=null || overlay!=null || showAllOverlay!=null) {
+		if (roi!=null || overlay!=null || showAllOverlay!=null || Prefs.paintDoubleBuffered) {
 			if (roi!=null) roi.updatePaste();
 			if (!IJ.isMacOSX() && imageWidth!=0) {
 				paintDoubleBuffered(g);
@@ -420,7 +420,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				drawOverlay(overlay, offScreenGraphics);
 			if (showAllOverlay!=null)
 				drawOverlay(showAllOverlay, offScreenGraphics);
-			if (roi!=null) drawRoi(roi, offScreenGraphics);
+			if (roi!=null)
+				drawRoi(roi, offScreenGraphics);
 			if (srcRect.width<imageWidth ||srcRect.height<imageHeight)
 				drawZoomIndicator(offScreenGraphics);
 			if (IJ.debugMode) showFrameRate(offScreenGraphics);
