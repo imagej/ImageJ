@@ -5,19 +5,19 @@
 </head>
 <body>
 
-<li> <u>1.48c 11 September 2013</u>
+<li> <u>1.48c 12 September 2013</u>
 <ul>
-<li> Thanks to Marcel Boeglin, plugins launched using the <i>Plugins&gt;Compile and Run</i>
-command now display a full stack trace when they throw an exception.
+<li> Thanks to Marcel Boeglin, plugins launched using <i>Plugins&gt;Compile and Run</i>
+now display a full stack trace if they throw an exception.
 <li> Thanks to Chris Coulon, the "<" and ">" keyboard shortcuts no longer display
 "There are no images open" and "Stack required" error messages.
 <li> Thanks to Norbert Vischer, the output of the Array.print() macro function
 is better formatted.
 <li> Thanks to Norbert Vischer, added the Array.findMaxima() and Array.findMinima()
-macro functions
-(<a href="../macros/FindMaxima1D.txt">examples</a>).
+macro functions and corresponding MaximumFinder.findMaxima() and MaximumFinder.findMinima()
+methods (<a href="macros/FindMaxima1D.txt">examples</a>).
 <li> Thanks to Volko Straub, added the Overlay.moveSelection(index,x,y) macro function
-(<a href="../macros/examples/MoveOverlaySelection.txt">example</a>).
+(<a href="macros/examples/MoveOverlaySelection.txt">example</a>).
 <li> Thanks to Wilhelm Burger, added convertToByteProcessor(), convertToShortProcessor(),
 convertToFloatProcessor() and convertToColorProcessor() methods to the ImageProcessor class.
 <li> Thanks to Arthur Edelstein, added the Prefs.paintDoubleBuffered flag.
@@ -33,7 +33,7 @@ macros to not be scaled.
 to not work as expected with c=1, z=1, t>1 stacks.
 <li> Thanks to Rainer Engel, fixed bugs that sometimes caused the IJ.redirectErrorMessages() macro 
 function to not prevent file read errors from aborting macros
-(<a href="../macros/examples/BatchMeasureWithRedirectedErrors.txt">example</a>).
+(<a href="macros/examples/BatchMeasureWithRedirectedErrors.txt">example</a>).
 <li> Thanks to Norbert Vischer, fixed a bug that caused <i>Image&gt;Duplicate</i>
 to throw an exception if there was a selection outside the image.
 

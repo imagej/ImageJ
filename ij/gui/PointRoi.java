@@ -2,7 +2,6 @@ package ij.gui;
 
 import java.awt.*;
 import java.awt.image.*;
-import java.util.Hashtable;
 import ij.*;
 import ij.process.*;
 import ij.measure.*;

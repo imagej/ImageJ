@@ -1,11 +1,4 @@
 package ij;
-
-import java.awt.*;
-import java.util.*;
-import java.awt.event.*;
-import java.io.*;
-import java.net.*;
-import java.awt.image.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.io.*;
@@ -16,6 +9,12 @@ import ij.text.*;
 import ij.macro.Interpreter;
 import ij.io.Opener;
 import ij.util.*;
+import java.awt.*;
+import java.util.*;
+import java.awt.event.*;
+import java.io.*;
+import java.net.*;
+import java.awt.image.*;
 import javax.swing.ImageIcon;
 
 /**
@@ -78,7 +77,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.48c";
-	public static final String BUILD = "12"; 
+	public static final String BUILD = ""; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);

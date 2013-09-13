@@ -4,6 +4,7 @@ import ij.*;
 import ij.gui.*;
 import ij.measure.*;
 import ij.process.*;
+import ij.util.Tools;
 import java.awt.*;
 import java.util.*;
 
@@ -229,6 +230,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         maxImp.setCalibration(cal);             //keep the spatial calibration
         maxImp.show();
      } //public void run
+     
 
     /** Finds the image maxima and returns them as a Polygon. There
      * is an example at http://imagej.nih.gov/ij/macros/js/FindMaxima.js.
@@ -247,28 +249,95 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 			return points;
     }
 
-    /** Finds the maxima in a 1D array. */
-    public static int[] findMaxima(double[] array, double tolerance) {
-    	int n = array.length;
-    	ImageProcessor ip = new FloatProcessor(n, 1, array);
-    	MaximumFinder mf = new MaximumFinder();
-    	Polygon p = mf.getMaxima(ip, tolerance, false);
-    	int[] maxima = new int[p.npoints];
-    	for (int i=0; i<maxima.length; i++)
-    		maxima[i] = p.xpoints[i];
-    	return maxima;
-     }
-
-    /** Finds the minima in a 1D array. */
-    public static int[] findMinima(double[] array, double tolerance) {
-    	int n = array.length;
-    	double[] array2 = new double[n];
-		for (int i=0; i<n; i++)
-			array2[i] = -array[i];
-		int[] minima = findMaxima(array2, tolerance);
-		return minima;
-     }
-
+	/**
+	* Calculates peak positions of 1D array N.Vischer, 13-sep-2013
+	*
+	* @param xx Array containing peaks. If includeEdge = false, a peak is only
+	* accepted if it is separated by two qualified valleys. If includeEdge =
+	* true, a peak is also accepted if separated by one qualified valley and by
+	* a border.
+	* @param tolerance Depth of a qualified valley must exceed tolerance.
+	* Tolerance must be >= 0. Flat tops are marked at their centers.
+	* @return Positions of peaks, sorted with decreasing amplitude
+	*/
+	public static int[] findMaxima(double[] xx, double tolerance) {
+		boolean includeEdge = true;
+		int len = xx.length;
+		if (len == 0)
+			return new int[0];
+		if (tolerance < 0)
+			tolerance = 0;
+		int[] maxPositions = new int[len];
+		double max = xx[0];
+		double min = xx[0];
+		int maxPos = 0;
+		int lastMaxPos = -1;
+		boolean leftValleyFound = includeEdge;
+		int maxCount = 0;
+		for (int jj = 1; jj < len; jj++) {
+			double val = xx[jj];
+			if (val > min + tolerance)
+				leftValleyFound = true;
+			if (val > max && leftValleyFound) {
+				max = val;
+				maxPos = jj;
+			}
+			if (leftValleyFound)
+				lastMaxPos = maxPos;
+			if (val < max - tolerance && leftValleyFound) {
+				maxPositions[maxCount] = maxPos;
+				maxCount++;
+				leftValleyFound = false;
+				min = val;
+				max = val;
+			}
+			if (val < min) {
+				min = val;
+				if (!leftValleyFound)
+					max = val;
+			}
+		}
+		if (includeEdge) {
+			if (maxCount > 0 && maxPositions[maxCount - 1] != lastMaxPos)
+				maxPositions[maxCount++] = lastMaxPos;
+			if (maxCount == 0 && max - min >= tolerance)
+				maxPositions[maxCount++] = lastMaxPos;
+		}
+		int[] cropped = new int[maxCount];
+		System.arraycopy(maxPositions, 0, cropped, 0, maxCount);
+		maxPositions = cropped;
+		double[] maxValues = new double[maxCount];
+		for (int jj = 0; jj < maxCount; jj++) {
+			int pos = maxPositions[jj];
+			double midPos = pos;
+			while (pos < len - 1 && xx[pos] == xx[pos + 1]) {
+				midPos += 0.5;
+				pos++;
+			}
+			maxPositions[jj] = (int) midPos;
+			maxValues[jj] = xx[maxPositions[jj]];
+		}
+		int[] rankPositions = Tools.rank(maxValues);
+		int[] returnArr = new int[maxCount];
+		for (int jj = 0; jj < maxCount; jj++) {
+			int pos = maxPositions[rankPositions[jj]];
+			returnArr[maxCount - jj - 1] = pos;//use descending order
+		}
+		return returnArr;
+	}
+	
+	/**
+	* Returns minimum positions of array xx, sorted with decreasing strength
+	*/
+	public static int[] findMinima(double[] xx, double tolerance) {
+		int len = xx.length;
+		double[] negArr = new double[len];
+		for (int jj = 0; jj < len; jj++)
+			negArr[jj] = -xx[jj];
+		int[] minPositions = findMaxima(negArr, tolerance);
+		return minPositions;
+	}
+	
     /** Here the processing is done: Find the maxima of an image (does not find minima).
      * @param ip             The input image
      * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value
