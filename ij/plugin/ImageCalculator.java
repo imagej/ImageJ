@@ -165,7 +165,10 @@ public class ImageCalculator implements PlugIn {
 			if (stackOp) params += " stack";
 			if (Recorder.scriptMode()) {
 				Recorder.recordCall("ImageCalculator", "ic = new ImageCalculator();");
+				Recorder.recordCall("ImagePlus", "imp1 = WindowManager.getImage(\""+img1.getTitle()+"\");");
+				Recorder.recordCall("ImagePlus", "imp2 = WindowManager.getImage(\""+img2.getTitle()+"\");");
 				Recorder.recordCall("ImagePlus", "imp3 = ic.run(\""+params+"\", imp1, imp2);");
+				Recorder.recordCall("imp3.show();");
 			} else
 				Recorder.record("imageCalculator", params, img1.getTitle(), img2.getTitle());
 			Recorder.setCommand(null); // don't record run(...)

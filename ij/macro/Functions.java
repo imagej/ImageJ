@@ -5134,18 +5134,26 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	Variable[] findArrayMaxima(boolean minima) {
+		boolean excludeOnEdges = false;
 		interp.getLeftParen();
 		Variable[] a = getArray();
-		double tolerance = getLastArg();
+		double tolerance = getNextArg();
+		if (interp.nextToken()==',') {
+			interp.getComma();
+			double arg = interp.getBooleanExpression();
+			interp.checkBoolean(arg);
+			excludeOnEdges = arg==0?false:true;
+		}
+		interp.getRightParen();
 		int n = a.length;
 		double[] d = new double[n];
 		for (int i=0; i<n; i++)
 			d[i] = a[i].getValue();
 		int[] maxima = null;
 		if (minima)
-			maxima = MaximumFinder.findMinima(d, tolerance);
+			maxima = MaximumFinder.findMinima(d, tolerance, excludeOnEdges);
 		else
-			maxima = MaximumFinder.findMaxima(d, tolerance);
+			maxima = MaximumFinder.findMaxima(d, tolerance, excludeOnEdges);
 		int n2 = maxima.length;
 		Variable[] a2 = new Variable[n2];
 		for (int i=0; i<n2; i++)
