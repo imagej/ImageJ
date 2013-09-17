@@ -106,7 +106,11 @@ public class Menus {
 		Menu newMenu = getMenu("File>New", true);
 		addPlugInItem(file, "Open...", "ij.plugin.Commands(\"open\")", KeyEvent.VK_O, false);
 		addPlugInItem(file, "Open Next", "ij.plugin.NextImageOpener", KeyEvent.VK_O, true);
-		getMenu("File>Open Samples", true);
+		Menu openSamples = getMenu("File>Open Samples", true);
+		if (!isFiji) {
+			openSamples.addSeparator();
+			addPlugInItem(openSamples, "Cache Sample Images ", "ij.plugin.URLOpener(\"cache\")", 0, false);
+		}
 		addOpenRecentSubMenu(file);
 		Menu importMenu = getMenu("File>Import", true);
 		file.addSeparator();

@@ -360,6 +360,9 @@ public class Opener {
 		must end in ".zip" and dicom file names must end in ".dcm". Returns an 
 		ImagePlus object if successful. */
 	public ImagePlus openURL(String url) {
+		ImagePlus imp = openCachedImage(url);
+		if (imp!=null)
+			return imp;
 		try {
 			String name = "";
 			int index = url.lastIndexOf('/');
@@ -374,7 +377,6 @@ public class Opener {
 			URL u = new URL(url);
 			IJ.showStatus(""+url);
 			String lurl = url.toLowerCase(Locale.US);
-			ImagePlus imp = null;
 			if (lurl.endsWith(".tif")) {
 				this.url = url;
 				imp = openTiff(u.openStream(), name);
@@ -408,6 +410,23 @@ public class Opener {
 		} 
 	}
 	
+	private ImagePlus openCachedImage(String url) {
+		if (url==null || !url.contains("ij/images"))
+			return null;
+		String ijDir = IJ.getDirectory("imagej");
+		if (ijDir==null)
+			return null;
+		int slash = url.lastIndexOf('/');
+		File file = new File(ijDir + "samples", url.substring(slash+1));
+		if (!file.exists())
+			return null;
+		ImagePlus imp = null;
+		try {
+			imp = IJ.openImage(file.getPath());
+		} catch(Exception e) {}
+		return imp;
+	}
+
 	/** Used by open() and IJ.open() to open text URLs. */
 	void openTextURL(String url) {
 		if (url.endsWith(".pdf")||url.endsWith(".zip"))
