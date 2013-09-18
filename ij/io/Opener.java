@@ -420,11 +420,7 @@ public class Opener {
 		File file = new File(ijDir + "samples", url.substring(slash+1));
 		if (!file.exists())
 			return null;
-		ImagePlus imp = null;
-		try {
-			imp = IJ.openImage(file.getPath());
-		} catch(Exception e) {}
-		return imp;
+		return IJ.openImage(file.getPath());
 	}
 
 	/** Used by open() and IJ.open() to open text URLs. */
