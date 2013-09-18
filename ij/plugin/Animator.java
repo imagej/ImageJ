@@ -246,62 +246,43 @@ public class Animator implements PlugIn {
 	}
 	
 	void nextSlice() {
-		if (!imp.lock())
-			return;
-		boolean hyperstack = imp.isDisplayedHyperStack();
-		int channels = imp.getNChannels();
-		int slices = imp.getNSlices();
-		int frames = imp.getNFrames();
-		if (hyperstack && frames>1 && !((slices>1||channels>1)&&(IJ.controlKeyDown()||IJ.spaceBarDown()||IJ.altKeyDown())) && !swin.getAnimate() ) {
-			int t = imp.getFrame() + 1;
-			if (t>frames) t = frames;
-			swin.setPosition(imp.getChannel(), imp.getSlice(), t);
-		} else if (hyperstack && slices>1 && !(channels>1&&IJ.altKeyDown())) {
-			int z = imp.getSlice() + 1;
-			if (z>slices) z = slices;
-			swin.setPosition(imp.getChannel(), z, imp.getFrame());
-		} else if (hyperstack && channels>1) {
-			int c = imp.getChannel() + 1;
-			if (c>channels) c = channels;
-			swin.setPosition(c, imp.getSlice(), imp.getFrame());
-		} else {
-			if (IJ.altKeyDown())
-				slice += 10;
-			else
-				slice++;
-			if (slice>nSlices)
-				slice = nSlices;
-			swin.showSlice(slice);
-		}
-		imp.updateStatusbarValue();
-		imp.unlock();
+		jumpSlice(1);
 	}
 	
 	
 	void previousSlice() {
+		jumpSlice(-1);
+	}	
+	
+	void jumpSlice(int pn) {
 		if (!imp.lock())
 			return;
 		boolean hyperstack = imp.isDisplayedHyperStack();
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
 		int frames = imp.getNFrames();
-		if (hyperstack && frames>1 && !((slices>1||channels>1)&&(IJ.controlKeyDown()||IJ.spaceBarDown()||IJ.altKeyDown())) && !swin.getAnimate() ) {
-			int t = imp.getFrame() - 1;
+		if (hyperstack && frames>1 && !((slices>1||channels>1)&&(IJ.controlKeyDown()||IJ.spaceBarDown()||IJ.altKeyDown()) || swin.getAnimate())){
+			int t = imp.getFrame() + pn;
+			if (t>frames) t = frames;
 			if (t<1) t = 1;
 			swin.setPosition(imp.getChannel(), imp.getSlice(), t);
-		} else if (hyperstack && slices>1 && !(channels>1&&IJ.altKeyDown())) {
-			int z = imp.getSlice() - 1;
+		} else if (hyperstack && slices>1 && !(channels>1&& (IJ.altKeyDown() || IJ.spaceBarDown()) || ((swin.getAnimate()|| IJ.controlKeyDown()) && frames==1)) ) {
+			int z = imp.getSlice() + pn;
+			if (z>slices) z = slices;
 			if (z<1) z = 1;
 			swin.setPosition(imp.getChannel(), z, imp.getFrame());
 		} else if (hyperstack && channels>1) {
-			int c = imp.getChannel() - 1;
+			int c = imp.getChannel() + pn;
+			if (c>channels) c = channels;
 			if (c<1) c = 1;
 			swin.setPosition(c, imp.getSlice(), imp.getFrame());
 		} else {
 			if (IJ.altKeyDown())
-				slice -= 10;
+				slice+=(pn*10);
 			else
-				slice--;
+				slice+=pn;
+			if (slice>nSlices)
+				slice = nSlices;
 			if (slice<1)
 				slice = 1;
 			swin.showSlice(slice);
