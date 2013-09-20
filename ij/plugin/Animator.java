@@ -261,6 +261,8 @@ public class Animator implements PlugIn {
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
 		int frames = imp.getNFrames();
+		if (swin.getAnimate() && (channels*slices*frames==Math.max(channels,Math.max(slices,frames))) )
+			{stopAnimation(); return;} //if only one dimension, stop animating
 		if (hyperstack && frames>1 && !((slices>1||channels>1)&&(IJ.controlKeyDown()||IJ.spaceBarDown()||IJ.altKeyDown()) || swin.getAnimate())){
 			int t = imp.getFrame() + pn;
 			if (t>frames) t = frames;
