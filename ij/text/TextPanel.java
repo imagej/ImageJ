@@ -12,6 +12,7 @@ import ij.measure.ResultsTable;
 import ij.util.Tools;
 import ij.plugin.frame.Recorder;
 import ij.gui.GenericDialog;
+import ij.macro.Interpreter;
 
 
 /**
@@ -553,7 +554,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			char[] chars = (char[])vData.elementAt(r);
 			lineWidth = Math.max(tc.fMetrics.charsWidth(chars,0,chars.length), iGridWidth);
 		}
-      	if(r>=0 && r<iRowCount && x<lineWidth) {
+      	if (r>=0 && r<iRowCount && x<lineWidth) {
 			selOrigin = r;
 			selStart = r;
 			selEnd = r;
@@ -566,6 +567,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		}
 		tc.repaint();
 		selLine=r;
+		if (Interpreter.getInstance()!=null)
+			Interpreter.getInstance().showArrayInspector(r);
 	}
 
 	void extendSelection(int x,int y) {

@@ -1038,6 +1038,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			debugWindow = null;
 		} else
 			debugWindow = interp.updateDebugWindow(interp.getVariables(), debugWindow);
+		if (debugWindow!=null) {
+			interp.updateArrayInspector();
+			if (!isActive())
+				toFront();
+		}
 		if (mode==Interpreter.STEP) {
 			step = false;
 			while (!step && !interp.done() && isVisible())
