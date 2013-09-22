@@ -4860,6 +4860,8 @@ public class Functions implements MacroConstants, Measurements {
 			return findArrayMaxima(false);
 		else if (name.equals("findMinima"))
 			return findArrayMaxima(true);
+		else if (name.equals("show"))
+			return showArray();
 		else
 			interp.error("Unrecognized Array function");
 		return null;
@@ -5161,6 +5163,30 @@ public class Functions implements MacroConstants, Measurements {
 		return a2;
 	}
 
+	Variable[] showArray() {
+		interp.getLeftParen();
+		int symbolTableAddress = pgm.code[interp.pc+1]>>TOK_SHIFT;
+		String arrayName = pgm.table[symbolTableAddress].str;
+		Variable[] a = getArray();
+		interp.getRightParen();
+		ResultsTable rt = new ResultsTable();
+		rt.showRowNumbers(false);
+		for (int i=0; i<a.length; i++) {
+			String s = a[i].getString();
+			if (s==null) {
+				double v = a[i].getValue();
+				if ((int)v==v)
+					s = IJ.d2s(v,0);
+				else
+					s = ResultsTable.d2s(v,4);
+			}
+			rt.setValue("Index", i, ""+i);
+			rt.setValue("Value", i, s);
+		}
+     	rt.show(arrayName);
+		return null;
+	}
+	
 	double charCodeAt() {
 		String str = getFirstString();
 		int index = (int)getLastArg();

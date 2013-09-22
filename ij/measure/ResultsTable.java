@@ -427,6 +427,8 @@ public class ResultsTable implements Cloneable {
 		int col = getColumnIndex(column);
 		if (col==COLUMN_NOT_FOUND)
 			col = getFreeColumn(column);
+		if (value!=null && value.contains("\n"))
+			value = value.replaceAll("\n", "\\\\n");
 		setValue(col, row, value);
 	}
 

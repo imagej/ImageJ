@@ -1962,7 +1962,7 @@ public class Interpreter implements MacroConstants {
 			if (var.getType()!=Variable.ARRAY && arrayWindow!=null)
 				arrayWindow.setVisible(false);
 			if (var.getType()==Variable.ARRAY) {
-				String headings = "index\tValue";
+				String headings = "Index\tValue";
 				if (arrayWindow==null)
 					arrayWindow = new TextWindow("Array", "", "", 170, 300);
 				arrayWindow.setVisible(true);
