@@ -60,8 +60,8 @@ public class Interpreter implements MacroConstants {
 	ImagePlus batchMacroImage;
 	
 	static TextWindow arrayWindow;
-    int inspectStkIndex = -1;
-    int inspectSymIndex = -1;
+	int inspectStkIndex = -1;
+	int inspectSymIndex = -1;
 
 
 	/** Interprets the specified string. */
@@ -1953,6 +1953,8 @@ public class Interpreter implements MacroConstants {
 	public void showArrayInspector(int stkPos) {
 		if (stack==null)
 			return;
+		int nFunctions = showDebugFunctions?3:0;
+		stkPos -= nFunctions;
 		if (stack.length>stkPos && stkPos>=0) {
 			Variable var = stack[stkPos];
 			if (var==null)
@@ -1976,13 +1978,14 @@ public class Interpreter implements MacroConstants {
 				arrayWindow.setTitle(title);
 				arrayWindow.rename(title);
 				String valueStr = "";
-				for (int jj = 0; jj < elements.length; jj++) {
+				for (int jj=0; jj<elements.length; jj++) {
 					Variable element = elements[jj];
-					if (element.getType() == Variable.STRING)
+					if (element.getType()==Variable.STRING) {
 						valueStr = elements[jj].getString();
-					if (element.getType() == Variable.VALUE) {
+						valueStr = valueStr.replaceAll("\n", "\\\\n");
+					} else if (element.getType()==Variable.VALUE) {
 						double v = elements[jj].getValue();
-						if ((int) v == v)
+						if ((int)v==v)
 							valueStr = IJ.d2s(v, 0);
 						else
 							valueStr = ResultsTable.d2s(v, 4);
@@ -2003,8 +2006,6 @@ public class Interpreter implements MacroConstants {
 		if (arrayWindow!=null && arrayWindow.isVisible()) {
 			for (int stkIndex=0; stkIndex<=topOfStack; stkIndex++) {
 				Variable var = stack[stkIndex];
-				if (var == null)
-					var = null;
 				int symIndex = var.symTabIndex;
 				if (inspectStkIndex==stkIndex && inspectSymIndex==symIndex && var.getType()==Variable.ARRAY) {
 					varExists = true;

@@ -567,7 +567,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		}
 		tc.repaint();
 		selLine=r;
-		if (Interpreter.getInstance()!=null)
+		if (Interpreter.getInstance()!=null && title.equals("Debug"))
 			Interpreter.getInstance().showArrayInspector(r);
 	}
 
