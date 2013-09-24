@@ -5164,26 +5164,61 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	Variable[] showArray() {
+		int maxLength = 0;
+		String title = "Arrays";
+		ArrayList arrays = new ArrayList();
+		ArrayList names = new ArrayList();
 		interp.getLeftParen();
-		int symbolTableAddress = pgm.code[interp.pc+1]>>TOK_SHIFT;
-		String arrayName = pgm.table[symbolTableAddress].str;
-		Variable[] a = getArray();
-		interp.getRightParen();
+		do {
+			if (isStringArg() && !isArrayArg())
+				title = getString();
+			else {
+				int symbolTableAddress = pgm.code[interp.pc+1]>>TOK_SHIFT;
+				names.add(pgm.table[symbolTableAddress].str);
+				Variable[] a = getArray();
+				arrays.add(a);
+				if (a.length>maxLength)
+					maxLength = a.length;
+			}
+			interp.getToken();
+		} while (interp.token==',');
+		if (interp.token!=')')
+			interp.error("')' expected");
+		int n = arrays.size();
+		if (n==1) {
+			if (title.equals("Arrays"))
+				title = (String)names.get(0);
+			names.set(0, "Value");
+		}
 		ResultsTable rt = new ResultsTable();
 		rt.showRowNumbers(false);
-		for (int i=0; i<a.length; i++) {
-			String s = a[i].getString();
-			if (s==null) {
-				double v = a[i].getValue();
-				if ((int)v==v)
-					s = IJ.d2s(v,0);
-				else
-					s = ResultsTable.d2s(v,4);
-			}
-			rt.setValue("Index", i, ""+i);
-			rt.setValue("Value", i, s);
+		if (title.contains("(no indexes)")) {
+			title = title.replace("(no indexes)", "");
+			title = title.trim();
+		} else {
+			for (int i=0; i<maxLength; i++)
+				rt.setValue("Index", i, ""+i);
 		}
-     	rt.show(arrayName);
+		for (int arr=0; arr<n; arr++) {
+			Variable[] a = (Variable[])arrays.get(arr);
+			String heading = (String)names.get(arr);
+			for (int i=0; i<maxLength; i++) {
+				if (i>=a.length) {
+					rt.setValue(heading, i, "");
+					continue;
+				}
+				String s = a[i].getString();
+				if (s==null) {
+					double v = a[i].getValue();
+					if ((int)v==v)
+						s = IJ.d2s(v,0);
+					else
+						s = ResultsTable.d2s(v,4);
+				}
+				rt.setValue(heading, i, s);
+			}
+		}
+     	rt.show(title);
 		return null;
 	}
 	

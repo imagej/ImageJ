@@ -427,8 +427,6 @@ public class ResultsTable implements Cloneable {
 		int col = getColumnIndex(column);
 		if (col==COLUMN_NOT_FOUND)
 			col = getFreeColumn(column);
-		if (value!=null && value.contains("\n"))
-			value = value.replaceAll("\n", "\\\\n");
 		setValue(col, row, value);
 	}
 
@@ -548,9 +546,12 @@ public class ResultsTable implements Cloneable {
 			if (stringColumn==null)
 				return string;
 			//IJ.log("getValueAsString2: "+column+ +row+" "+stringColumn.size());
-			if (row>=0 && row<stringColumn.size())
-				return (String)stringColumn.get(row);
-			else
+			if (row>=0 && row<stringColumn.size()) {
+				string = (String)stringColumn.get(row);
+				if (string!=null && string.contains("\n"))
+					string = string.replaceAll("\n", "\\\\n");
+				return string;
+			} else
 				return string;
 		} else
 			return n(value);
@@ -742,7 +743,8 @@ public class ResultsTable implements Cloneable {
 			if (frame!=null && frame instanceof TextWindow)
 				win = (TextWindow)frame;
 			else {
-				win = new TextWindow(windowTitle, "", 400, 300);
+				int width = getLastColumn()<=1?250:400;
+				win = new TextWindow(windowTitle, "", width, 300);
 				cloneNeeded = true;
 			}
 			tp = win.getTextPanel();
