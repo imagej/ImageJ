@@ -155,6 +155,10 @@ public class Commands implements PlugIn {
 				path = IJ.getDirectory("macros")+"StartupMacros.ijm";
 				f = new File(path);
 			}
+			if (!f.exists()) {
+				path = IJ.getDirectory("macros")+"StartupMacros.fiji.ijm";
+				f = new File(path);
+			}
 			if (!f.exists())
 				IJ.error("\"StartupMacros.txt\" not found in ImageJ/macros/");
 			else
