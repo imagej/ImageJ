@@ -740,9 +740,10 @@ public class ResultsTable implements Cloneable {
 		} else {
 			Frame frame = WindowManager.getFrame(windowTitle);
 			TextWindow win;
-			if (frame!=null && frame instanceof TextWindow)
+			if (frame!=null && frame instanceof TextWindow) {
 				win = (TextWindow)frame;
-			else {
+				win.toFront();
+			} else {
 				int width = getLastColumn()<=1?250:400;
 				win = new TextWindow(windowTitle, "", width, 300);
 				cloneNeeded = true;

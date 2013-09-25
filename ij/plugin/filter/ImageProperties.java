@@ -56,14 +56,14 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		gd.setInsets(0, 5, 0);
 		gd.addMessage("Note: c*z*t must equal "+stackSize, null, Color.darkGray);
 		gd.setInsets(15, 0, 0);
-		gd.addStringField("Unit of Length:", cal.getUnit());
-		gd.addNumericField("Pixel_Width:", cal.pixelWidth, digits, 8, null);
-		gd.addNumericField("Pixel_Height:", cal.pixelHeight, digits, 8, null);
-		gd.addNumericField("Voxel_Depth:", cal.pixelDepth, digits, 8, null);
+		gd.addStringField("Unit of length:", cal.getUnit());
+		gd.addNumericField("Pixel_width:", cal.pixelWidth, digits, 8, null);
+		gd.addNumericField("Pixel_height:", cal.pixelHeight, digits, 8, null);
+		gd.addNumericField("Voxel_depth:", cal.pixelDepth, digits, 8, null);
 		gd.setInsets(10, 0, 5);
 		double interval = cal.frameInterval;
 		String intervalStr = IJ.d2s(interval, (int)interval==interval?0:2) + " " + cal.getTimeUnit();
-		gd.addStringField("Frame Interval:", intervalStr);
+		gd.addStringField("Frame interval:", intervalStr);
 		String xo = cal.xOrigin==(int)cal.xOrigin?IJ.d2s(cal.xOrigin,0):IJ.d2s(cal.xOrigin,2);
 		String yo = cal.yOrigin==(int)cal.yOrigin?IJ.d2s(cal.yOrigin,0):IJ.d2s(cal.yOrigin,2);
 		String zo = "";
@@ -110,10 +110,10 @@ public class ImageProperties implements PlugInFilter, TextListener {
  		double pixelWidth = gd.getNextNumber();
  		double pixelHeight = gd.getNextNumber();
  		double pixelDepth = gd.getNextNumber();
-		//IJ.log(calPixelWidth+" "+calPixelHeight+" "+calPixelDepth);
- 		//if (calPixelWidth!=cal.pixelWidth) pixelWidth = calPixelWidth;
- 		//if (calPixelHeight!=cal.pixelHeight) pixelHeight = calPixelHeight;
- 		//if (calPixelDepth!=cal.pixelDepth) pixelDepth = calPixelDepth;
+		if (!unit.equals(cal.getUnit())) {
+			cal.setYUnit(null);
+			cal.setZUnit(null);
+		}
 		if (unit.equals("") || unit.equalsIgnoreCase("none") || pixelWidth==0.0) {
 			cal.setUnit(null);
 			cal.pixelWidth = 1.0;
@@ -198,14 +198,14 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			return MICROMETER;
 		else if (unit.equals("nm")||unit.startsWith("nano"))
 			return NANOMETER;
-		else if (unit.startsWith("meter"))
+		else if (unit.equals("m") || unit.startsWith("meter"))
 			return METER;
 		else if (unit.equals("km")||unit.startsWith("kilo"))
 			return KILOMETER;
 		else if (unit.equals("ft")||unit.equals("foot")||unit.equals("feet"))
 			return FOOT;
 		else if (unit.equals("mi")||unit.startsWith("mile"))
-			return MILLIMETER;
+			return MILE;
 		else
 			return OTHER_UNIT;
 	}

@@ -56,6 +56,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
     ResultsTable rt;
     boolean unsavedLines;
     String searchString;
+    Menu fileMenu;
+    boolean menusExtended;
 
   
 	/** Constructs a new TextPanel. */
@@ -90,6 +92,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			addPopupItem("Set Measurements...");
 			addPopupItem("Rename...");
 			addPopupItem("Duplicate...");
+			menusExtended = true;
 		}
 	}
 
@@ -503,7 +506,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			return;
 		if (title2==null) {
 			GenericDialog gd = new GenericDialog("Rename", tw);
-			gd.addStringField("Title:", "Results2", 20);
+			gd.addStringField("Title:", getNewTitle(title), 20);
 			gd.showDialog();
 			if (gd.wasCanceled())
 				return;
@@ -537,11 +540,23 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	void duplicate() {
 		if (rt==null) return;
 		ResultsTable rt2 = (ResultsTable)rt.clone();
-		String title2 = IJ.getString("Title:", "Results2");
+		String title2 = IJ.getString("Title:", getNewTitle(title));
 		if (!title2.equals("")) {
 			if (title2.equals("Results")) title2 = "Results2";
 			rt2.show(title2);
 		}
+	}
+	
+	private String getNewTitle(String oldTitle) {
+		if (oldTitle==null)
+			return "Table2";
+		String title2 = oldTitle;
+		if (title2.endsWith("-1") || title2.endsWith("-2"))
+			title2 = title2.substring(0,title.length()-2);
+		String title3 = title2+"-1";
+		if (title3.equals(oldTitle))
+			title3 = title2+"-2";
+        return title3;
 	}
 	
 	void select(int x,int y) {
@@ -790,17 +805,23 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			String lastLine = iRowCount>=2?getLine(iRowCount-2):null;
 			summarized = lastLine!=null && lastLine.startsWith("Max");
 		}
+		String fileName = null;
 		if (rt!=null && rt.getCounter()!=0 && !summarized) {
 			if (path==null || path.equals("")) {
 				IJ.wait(10);
 				String name = isResults?"Results":title;
 				SaveDialog sd = new SaveDialog("Save Results", name, Prefs.get("options.ext", ".xls"));
-				String file = sd.getFileName();
-				if (file==null) return false;
-				path = sd.getDirectory() + file;
+				fileName = sd.getFileName();
+				if (fileName==null) return false;
+				path = sd.getDirectory() + fileName;
 			}
 			try {
 				rt.saveAs(path);
+				TextWindow tw = getTextWindow();
+				if (fileName!=null && tw!=null && !"Results".equals(title)) {
+					tw.setTitle(fileName);
+					title = fileName;
+				}
 			} catch (IOException e) {
 				IJ.error(""+e);
 			}
@@ -903,11 +924,24 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	/** Sets the ResultsTable associated with this TextPanel. */
 	public void setResultsTable(ResultsTable rt) {
 		this.rt = rt;
+		if (!menusExtended)
+			extendMenus();
 	}
 	
 	/** Returns the ResultsTable associated with this TextPanel, or null. */
 	public ResultsTable getResultsTable() {
 		return rt;
+	}
+
+	private void extendMenus() {
+		pm.addSeparator();
+		addPopupItem("Rename...");
+		addPopupItem("Duplicate...");
+		if (fileMenu!=null) {
+			fileMenu.add("Rename...");
+			fileMenu.add("Duplicate...");
+		}
+		menusExtended = true;
 	}
 
 	public void scrollToTop() {

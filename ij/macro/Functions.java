@@ -5192,6 +5192,7 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		ResultsTable rt = new ResultsTable();
 		rt.showRowNumbers(false);
+		//rt.setPrecision(Analyzer.getPrecision());
 		if (title.contains("(no indexes)")) {
 			title = title.replace("(no indexes)", "");
 			title = title.trim();
@@ -5208,14 +5209,10 @@ public class Functions implements MacroConstants, Measurements {
 					continue;
 				}
 				String s = a[i].getString();
-				if (s==null) {
-					double v = a[i].getValue();
-					if ((int)v==v)
-						s = IJ.d2s(v,0);
-					else
-						s = ResultsTable.d2s(v,4);
-				}
-				rt.setValue(heading, i, s);
+				if (s!=null)
+					rt.setValue(heading, i, s);
+				else
+					rt.setValue(heading, i, a[i].getValue());
 			}
 		}
      	rt.show(title);

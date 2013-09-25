@@ -34,26 +34,28 @@ import java.util.Hashtable;
  *				either a linear slope or a factor that the full function is multiplied with.
  *	2012-10-07: added GAUSSIAN_NOOFFSET fit type
  *	2012-11-20: Bugfix: exception on Gaussian&Rodbard with initial params, bad initial params for Gaussian 
+ *  2013-09-24: Added "Exponential Recovery (no offset)" and "Chapman-Richards" (3-parameter) fit types.
  */
 
-public class CurveFitter implements UserFunction {
+public class CurveFitter implements UserFunction{
 	/** Constants for the built-in fit functions */
 	public static final int STRAIGHT_LINE=0, POLY2=1, POLY3=2, POLY4=3,
 	EXPONENTIAL=4, POWER=5, LOG=6, RODBARD=7, GAMMA_VARIATE=8, LOG2=9,
 	RODBARD2=10, EXP_WITH_OFFSET=11, GAUSSIAN=12, EXP_RECOVERY=13,
 	INV_RODBARD=14, EXP_REGRESSION=15, POWER_REGRESSION=16,
 	POLY5=17, POLY6=18, POLY7=19, POLY8=20,
-	GAUSSIAN_NOOFFSET=21;
+	GAUSSIAN_NOOFFSET=21, EXP_RECOVERY_NOOFFSET=22, CHAPMAN=23;
 
 	/** Nicer sequence of the built-in function types */
 	public static final int[] sortedTypes = { STRAIGHT_LINE, POLY2, POLY3, POLY4,
 			POLY5, POLY6, POLY7, POLY8,
 			POWER, POWER_REGRESSION,
-			EXPONENTIAL, EXP_REGRESSION, EXP_WITH_OFFSET, EXP_RECOVERY,
+			EXPONENTIAL, EXP_REGRESSION, EXP_WITH_OFFSET,
+			EXP_RECOVERY, EXP_RECOVERY_NOOFFSET,
 			LOG, LOG2,
-			RODBARD, RODBARD2, INV_RODBARD,
 			GAUSSIAN, GAUSSIAN_NOOFFSET,
-			GAMMA_VARIATE
+			RODBARD, RODBARD2, INV_RODBARD,
+			GAMMA_VARIATE,CHAPMAN
 	};
 
 	/** Names of the built-in fit functions */
@@ -63,7 +65,8 @@ public class CurveFitter implements UserFunction {
 	"Exponential with Offset","Gaussian", "Exponential Recovery",
 	"Inverse Rodbard", "Exponential (linear regression)", "Power (linear regression)",
 	"5th Degree Polynomial","6th Degree Polynomial","7th Degree Polynomial","8th Degree Polynomial",
-	"Gaussian (no offset)"
+	"Gaussian (no offset)", "Exponential Recovery (no offset)",
+	"Chapman-Richards"
 	}; // fList, doFit(), getNumParams() and makeInitialParamsAndVariations() must also be updated
 
 	/** Equations of the built-in fit functions */	
@@ -79,6 +82,8 @@ public class CurveFitter implements UserFunction {
 	"y = a+bx+cx^2+dx^3+ex^4+fx^5", "y = a+bx+cx^2+dx^3+ex^4+fx^5+gx^6",
 	"y = a+bx+cx^2+dx^3+ex^4+fx^5+gx^6+hx^7", "y = a+bx+cx^2+dx^3+ex^4+fx^5+gx^6+hx^7+ix^8",
 	"y = a*exp(-(x-b)*(x-b)/(2*c*c)))",							//GAUSSIAN_NOOFFSET
+	"y = a*(1-exp(-b*x))",                                      //EXP_RECOVERY_NOOFFSET
+	"y = a*(1-exp(-b*x))^c"									    //CHAPMAN
 	};
 
 	/** @deprecated, now in the Minimizer class (since ImageJ 1.46f).
@@ -144,7 +149,6 @@ public class CurveFitter implements UserFunction {
 	 *	getParams() to access the result.
 	 */
 	public void doFit(int fitType, boolean showSettings) {
-
 		if (!(fitType>=STRAIGHT_LINE && fitType<fitList.length || fitType==CUSTOM))
 			throw new IllegalArgumentException("Invalid fit type");
 		if (fitType==CUSTOM && macro==null && userFunction==null)
@@ -211,8 +215,9 @@ public class CurveFitter implements UserFunction {
 		customFormula = null;
 		customParamCount = 0;
 		Program pgm = (new Tokenizer()).tokenize(equation);
-		if (!pgm.hasWord("y")) return 0;
-		if (!pgm.hasWord("x")) return 0;
+		if (!pgm.hasWord("y") ||  !pgm.hasWord("x")) {
+		    return Minimizer.EQUATION_ERROR;
+		}
 		String[] params = {"a","b","c","d","e","f"};
 		for (int i=0; i<params.length; i++) {
 			if (pgm.hasWord(params[i]))
@@ -322,14 +327,16 @@ public class CurveFitter implements UserFunction {
 			case POLY8: return 9;
 			case EXPONENTIAL: case EXP_REGRESSION: return 2;
 			case POWER: case POWER_REGRESSION:	   return 2;
+			case EXP_RECOVERY_NOOFFSET: return 2;
 			case LOG:	return 2;
-			case RODBARD: case RODBARD2: case INV_RODBARD: case RODBARD_INTERNAL: return 4;
-			case GAMMA_VARIATE: return 4;
 			case LOG2:	return 3;
-			case EXP_WITH_OFFSET: return 3;
-			case GAUSSIAN: case GAUSSIAN_INTERNAL: return 4;
 			case GAUSSIAN_NOOFFSET: return 3;
 			case EXP_RECOVERY: return 3;
+			case CHAPMAN: return 3;
+			case EXP_WITH_OFFSET: return 3;
+			case RODBARD: case RODBARD2: case INV_RODBARD: case RODBARD_INTERNAL: return 4;
+			case GAMMA_VARIATE: return 4;
+			case GAUSSIAN: case GAUSSIAN_INTERNAL: return 4;
 			case CUSTOM: return customParamCount;
 		}
 		return 0;
@@ -383,6 +390,12 @@ public class CurveFitter implements UserFunction {
 				return p[0]*Math.exp(-p[1]*x)+p[2];
 			case EXP_RECOVERY:
 				return p[0]*(1-Math.exp(-p[1]*x))+p[2];
+			case EXP_RECOVERY_NOOFFSET:
+			    return p[0]*(1-Math.exp(-p[1]*x));
+			case CHAPMAN:                               // a*(1-exp(-b*x))^c
+				double value =  p[0]*(Math.pow((1-(Math.exp(-p[1]*x))), p[2]));
+			//	Log.e("test", "values = " + value);
+				return value;
 			case GAUSSIAN:
 				return p[0]+(p[1]-p[0])*Math.exp(-(x-p[2])*(x-p[2])/(2.0*p[3]*p[3]));
 			case GAUSSIAN_INTERNAL:						// replaces GAUSSIAN for the fitting process
@@ -660,6 +673,8 @@ public class CurveFitter implements UserFunction {
 				double fValue = f(params,xData[i]);
 				sumResidualsSqr += sqr(fValue-yData[i]);
 			}
+//IJ.log(IJ.d2s(params[0],3,5)+","+IJ.d2s(params[1],3,5)+": r="+IJ.d2s(sumResidualsSqr,3,5)+Thread.currentThread().getName() );
+
 		} else {	// handle simple linear dependencies by linear regression:
 			//if(getIterations()<1){String s="minimizerPar:";for(int ii=0;ii<=numParams;ii++)s+=" ["+ii+"]:"+IJ.d2s(params[ii],5,9);IJ.log(s);}
 			minimizerParamsToFullParams(params, true);
@@ -817,8 +832,11 @@ public class CurveFitter implements UserFunction {
 			initialParams = new double[numParams];
 		if (!hasInitialParamVariations)
 			initialParamVariations = new double[numParams];
-		if (fitType == CUSTOM)
-			return true; //no way to guess initial parameters & variations for an unknown formula
+		if (fitType == CUSTOM) {    // initial params should be specified anyhow, no way to guess them
+            for (int i=0; i<numParams; i++)
+                initialParams[i] = 1.;
+            return true;
+		}
 
 		// Calculate some things that might be useful for predicting parameters
 		double firstx = xData[0];
@@ -845,7 +863,7 @@ public class CurveFitter implements UserFunction {
 		double yIntercept = yMean - slope * xMean;
 
 		//We cannot fit the following cases because we would always get NaN function values
-		if (xMin < 0 && fitType==POWER) {
+		if (xMin < 0 && (fitType==POWER||fitType==CHAPMAN)) {
 			errorString = "Cannot fit "+fitList[fitType]+" when x<0";
 			return false;
 		} else if (xMin < 0 && xMax > 0 && fitType==RODBARD) {
@@ -863,8 +881,8 @@ public class CurveFitter implements UserFunction {
 
 				// also for the other cases, some initial parameters are unused; only to show them with 'showSettings'
 				case EXPONENTIAL:			// a*exp(bx)   assuming change by factor of e between xMin & xMax
-					initialParams[1] = 1./(xMax-xMin+1e-100) * Math.signum(yMean) * Math.signum(slope); //actually ignored, done by regression
-					initialParams[0] = yMean/Math.exp(initialParams[1]*xMean);
+					initialParams[1] = 1.0/(xMax-xMin+1e-100) * Math.signum(yMean) * Math.signum(slope);
+					initialParams[0] = yMean/Math.exp(initialParams[1]*xMean); //don't care, done by regression
 					break;
 				case EXP_WITH_OFFSET:		// a*exp(-bx) + c	assuming b>0, change by factor of e between xMin & xMax
 				case EXP_RECOVERY:			// a*(1-exp(-bx)) + c
@@ -873,6 +891,10 @@ public class CurveFitter implements UserFunction {
 							fitType==EXP_RECOVERY ? 1 : -1; // don't care, we will do this via regression
 					initialParams[2] = 0.5*yMean;			// don't care, we will do this via regression
 					break;
+				case EXP_RECOVERY_NOOFFSET: // a*(1-exp(-bx))
+				    initialParams[1] = 1.0/(xMax-xMin+1e-100) * Math.signum(yMean) * Math.signum(slope);
+				    initialParams[0] = yMean/Math.exp(initialParams[1]*xMean); //don't care, done by regression
+				    break;
 				case POWER:					// ax^b, assume linear for the beginning
 					initialParams[0] = yMean/(Math.abs(xMean+1e-100));	// don't care, we will do this via regression
 					initialParams[1] = 1.0;
@@ -922,7 +944,18 @@ public class CurveFitter implements UserFunction {
 					initialParams[1] = xOfMax;	  //actually don't care, we will do this via regression
 					initialParams[2] = 0.39894 * (xMax-xMin) * yMean/(yMax+1e-100);
 					break;			  
-				//case CUSTOM:				// initial params should be specified anyhow, otherwise use minimizer default
+				case CHAPMAN:                   // a*(1-exp(-b*x))^c
+					initialParams[0] = yMax;
+					initialParams[2] = 1.5; // just assuming any reasonable value
+					for (int i=1; i<numPoints; i++) //find when we reach 50% of maximum
+					    if (yData[i]>0.5*yMax) {  //approximately (1-exp(-1))^1.5 = 0.5
+					        initialParams[1] = 1./xData[i];
+					        break;
+					    }
+					if(Double.isNaN(initialParams[1]) || initialParams[1]>1000./xMax) //in case an outlier at the beginning has fooled us
+					    initialParams[1] = 10./xMax;
+					break;
+				//no case CUSTOM: here, was done above
 			}
 		}
 		if (!hasInitialParamVariations) {	// estimate initial range for parameters
@@ -940,6 +973,7 @@ public class CurveFitter implements UserFunction {
 				case EXP_RECOVERY:		 // a*(1-exp(-bx)) + c
 					initialParamVariations[1] = 0.1/(xMax-xMin+1e-100);
 					break;
+				// case CHAPMAN:            // a*(1-exp(-b*x))^c use default (10% of value) for b, c
 				// case POWER:				// ax^b; use default for b
 				// case LOG:				// a*ln(bx); use default for b
 				// case LOG2:				// y = a+b*ln(x-c); use default for c
@@ -994,6 +1028,12 @@ public class CurveFitter implements UserFunction {
 			case EXP_WITH_OFFSET:		// a*exp(-bx) + c
 			case EXP_RECOVERY:			// a*(1-exp(-bx)) + c
 				offsetParam = 2;
+				factorParam = 0;
+				break;
+			case EXP_RECOVERY_NOOFFSET:	// a*(1-exp(-bx))
+				factorParam = 0;
+				break;
+			case CHAPMAN:               // a*(1-exp(-b*x))^c
 				factorParam = 0;
 				break;
 			case POWER:					// ax^b

@@ -5,10 +5,16 @@
 </head>
 <body>
 
-<li> <u>1.48d 23 September 2013</u>
+<li> <u>1.48d 24 September 2013</u>
 <ul>
 <li> Thanks to Johannes Schindelin, added the
 <i>File&gt;Open Samples&gt;Cache Sample Images</i> command.
+<li> Thanks to Michael Schmid, added "Exponential Recovery (no offset)"
+and "Chapman-Richards" curve fitting options.
+<li> Thanks to Norbert Vischer, the File menu and popup menu of non-active results tables
+contain "Rename..." and "Duplicate..." commands and their titles change
+if they are saved using a different name.
+saved using a different name.
 <li> Thanks to Norbert Vischer, added the Array Inspector to the
 macro debugger
 (<a href="macros/TestArrayInspector.txt">test macro</a>).
@@ -30,6 +36,12 @@ inconsistent when using the <i>Measure</i> command after running the particle an
 function to not work in batch mode.
 <li> Thanks to Dimiter Prodanov, fixed a bug that could cause ImageJ to throw an 
 exception on startup.
+<li> Thanks to Barry DeZonia, fixed a bug that caused the ImageProperties.getUnitIndex()
+method to not work correctly when passed the string "mile".
+<li> Thanks to Barry DeZonia, fixed a bug that caused the <i>Image&gt;Properties</i>
+dialog to not reset the Y and Z units when the "Unit of length" was changed.
+<li> Thanks to Michael Schmid, fixed a 1.46f regression that caused some user-defined
+curve fits to fail.
 
 </ul> 
 
