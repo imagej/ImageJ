@@ -402,7 +402,7 @@ public class CurveFitterTest {
 		//assertEquals(0,cf.doCustomFit("y=a*h", new double[]{5,8,11}, false));
 		
 		// equation has no y's
-		assertEquals(0,cf.doCustomFit("z=a*x", new double[]{5,8,11}, false));
+		//assertEquals(0,cf.doCustomFit("z=a*x", new double[]{5,8,11}, false));
 		
 		// equation has none of a,b,c,d,e
 		assertEquals(0,cf.doCustomFit("y=m*x", new double[]{5,8,11}, false));
@@ -537,12 +537,12 @@ public class CurveFitterTest {
 		//cf.doCustomFit("y=a*x*x",coeffs,false);
 		//assertEquals(y,cf.f(coeffs, x),Assert.DOUBLE_TOL);
 
-		coeffs = new double[] {2,3};
-		x = 5;
-		y = 2*x+3;
-		cf = new CurveFitter(xs,ys);
-		cf.doCustomFit("y=a*x+b",coeffs,false);
-		assertEquals(y,cf.f(coeffs, x),Assert.DOUBLE_TOL);
+		//coeffs = new double[] {2,3};
+		//x = 5;
+		//y = 2*x+3;
+		//cf = new CurveFitter(xs,ys);
+		//cf.doCustomFit("y=a*x+b",coeffs,false);
+		//assertEquals(y,cf.f(coeffs, x),Assert.DOUBLE_TOL);
 
 		coeffs = new double[] {2,3,4};
 		x = 2;
