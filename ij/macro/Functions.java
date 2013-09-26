@@ -5191,15 +5191,21 @@ public class Functions implements MacroConstants, Measurements {
 			names.set(0, "Value");
 		}
 		ResultsTable rt = new ResultsTable();
-		rt.showRowNumbers(false);
 		//rt.setPrecision(Analyzer.getPrecision());
-		if (title.contains("(no indexes)")) {
-			title = title.replace("(no indexes)", "");
+		boolean showRowNumbers = false;
+		int openParenIndex = title.indexOf("(");
+		if (openParenIndex>=0) {
+			String options = title.substring(openParenIndex, title.length());
+			title = title.substring(0, openParenIndex);
 			title = title.trim();
-		} else {
-			for (int i=0; i<maxLength; i++)
-				rt.setValue("Index", i, ""+i);
+			showRowNumbers = options.contains("row") || options.contains("1");
+			if (!showRowNumbers && options.contains("index")) {
+				for (int i=0; i<maxLength; i++)
+					rt.setValue("Index", i, ""+i);
+			}
 		}
+		if (!showRowNumbers)
+			rt.showRowNumbers(false);
 		for (int arr=0; arr<n; arr++) {
 			Variable[] a = (Variable[])arrays.get(arr);
 			String heading = (String)names.get(arr);
