@@ -215,9 +215,8 @@ public class CurveFitter implements UserFunction{
 		customFormula = null;
 		customParamCount = 0;
 		Program pgm = (new Tokenizer()).tokenize(equation);
-		if (!pgm.hasWord("y") ||  !pgm.hasWord("x")) {
-		    return Minimizer.EQUATION_ERROR;
-		}
+		if (!pgm.hasWord("y") ||  !pgm.hasWord("x"))
+		    return 0; //Minimizer.EQUATION_ERROR
 		String[] params = {"a","b","c","d","e","f"};
 		for (int i=0; i<params.length; i++) {
 			if (pgm.hasWord(params[i]))
@@ -268,7 +267,7 @@ public class CurveFitter implements UserFunction{
 	 *							a few numbers controlling the minimizer.
 	 */
 	public void doCustomFit(UserFunction userFunction, int numParams, String formula,
-			double[] initialParams, double[] initialParamVariations, boolean showSettings) {
+		double[] initialParams, double[] initialParamVariations, boolean showSettings) {
 		this.userFunction = userFunction;
 		this.customParamCount = numParams;
 		this.initialParams = initialParams;
@@ -348,7 +347,7 @@ public class CurveFitter implements UserFunction{
 		if (fitType!=CUSTOM)
 			return f(fitType, p, x);
 		else {
-			if (macro == null) {	// function defined in plugin
+			if (macro==null) {	// function defined in plugin
 				return userFunction.userFunction(p, x);
 			} else {				// function defined in macro
 				macro.setVariable("x", x);
@@ -828,15 +827,17 @@ public class CurveFitter implements UserFunction{
 	private boolean makeInitialParamsAndVariations(int fitType) {
 		boolean hasInitialParams = initialParams != null;
 		boolean hasInitialParamVariations = initialParamVariations != null;
-		if (!hasInitialParams)
+		if (!hasInitialParams) {
 			initialParams = new double[numParams];
+			if (fitType==CUSTOM) {
+            	for (int i=0; i<numParams; i++)
+            		initialParams[i] = 1.0;
+            }
+		}
 		if (!hasInitialParamVariations)
 			initialParamVariations = new double[numParams];
-		if (fitType == CUSTOM) {    // initial params should be specified anyhow, no way to guess them
-            for (int i=0; i<numParams; i++)
-                initialParams[i] = 1.;
-            return true;
-		}
+		if (fitType==CUSTOM)
+            return true; // initial params should be specified anyhow, no way to guess them
 
 		// Calculate some things that might be useful for predicting parameters
 		double firstx = xData[0];
