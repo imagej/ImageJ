@@ -1952,7 +1952,8 @@ public class ImageProcessorTest
 	{
 		ColorProcessor testColorProcessor = new ColorProcessor( width, height, getRefImageArray() );
 		ImageProcessor testImageProcessor = testColorProcessor.convertToFloat();
-		testImageStats( testImageProcessor, "stats[count=64000, mean=71.654640625, min=0.0, max=248.0] 148.8276150772684 72.22557495294814 160.0 100.0");
+		//testImageStats( testImageProcessor, "stats[count=64000, mean=71.654640625, min=0.0, max=248.0] 148.8276150772684 72.22557495294814 160.0 100.0");
+		testImageStats( testImageProcessor, "stats[count=64000, mean=71.64940101852268, min=0.0, max=247.6666717529297] 148.83278391018192 72.21954665945063 160.0 100.0");
 	}
 
 	@Test
