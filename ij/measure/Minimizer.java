@@ -80,16 +80,13 @@ public class Minimizer {
     public final static int MAX_ITERATIONS_EXCEEDED = 4;
     /** Status returned: not two equal solutions after maximum number of restarts */
     public final static int MAX_RESTARTS_EXCEEDED = 5;
-    /** Bad equation; used by CurveFitter */
-    public final static int EQUATION_ERROR = 6;
     /** Strings describing the status codes */
     public final static String[] STATUS_STRING = { "Success",
             "Initialization failure; no result",
             "Aborted",
             "Re-initialization failure (inaccurate result?)",
             "Max. no. of iterations reached (inaccurate result?)",
-            "Max. no. of restarts reached (inaccurate result?)",
-            "Bad formula; should be y = function(x)"};
+            "Max. no. of restarts reached (inaccurate result?)"};
 
 
     private final static double C_REFLECTION  = 1.0;  // reflection coefficient

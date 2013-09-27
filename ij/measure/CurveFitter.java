@@ -216,7 +216,7 @@ public class CurveFitter implements UserFunction{
 		customParamCount = 0;
 		Program pgm = (new Tokenizer()).tokenize(equation);
 		if (!pgm.hasWord("y") ||  !pgm.hasWord("x"))
-		    return 0; //Minimizer.EQUATION_ERROR
+		    return 0;
 		String[] params = {"a","b","c","d","e","f"};
 		for (int i=0; i<params.length; i++) {
 			if (pgm.hasWord(params[i]))
@@ -834,10 +834,10 @@ public class CurveFitter implements UserFunction{
             		initialParams[i] = 1.0;
             }
 		}
+		if (fitType==CUSTOM)
+            return true; // no way to guess initial parameters or initialParamVariations
 		if (!hasInitialParamVariations)
 			initialParamVariations = new double[numParams];
-		if (fitType==CUSTOM)
-            return true; // initial params should be specified anyhow, no way to guess them
 
 		// Calculate some things that might be useful for predicting parameters
 		double firstx = xData[0];
