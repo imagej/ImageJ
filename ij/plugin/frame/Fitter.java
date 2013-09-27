@@ -89,7 +89,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
                 if (eqn==null) return false;
                 int params = cf.doCustomFit(eqn, null, settings.getState());
                 if (params==0) {
-                    IJ.log("Bad formula; should be:\n   y = function(x)");
+                    IJ.log("Bad formula; should be:\n   y = function(x)");
                     return false;
                 }
             } else
