@@ -719,21 +719,17 @@ public class Plot {
 			ip.drawString(IJ.d2s(xMin,digits), x, y);
 			ip.drawString(IJ.d2s(xMax,digits), x+frame.width-ip.getStringWidth(s)+6, y);
 		}
-		if(xLabelFont != font)
-		{
+		if (xLabelFont != font) {
 			ip.setFont(xLabelFont);
 			ip.drawString(xLabel, LEFT_MARGIN+(frame.width-ip.getStringWidth(xLabel))/2, y+3);
 			ip.setFont(font);
-		}
-		else 
+		} else 
 			ip.drawString(xLabel, LEFT_MARGIN+(frame.width-ip.getStringWidth(xLabel))/2, y+3);
-		if(yLabelFont != font)
-		{
+		if (yLabelFont != font) {
 			ip.setFont(yLabelFont);
 			drawYLabel(yLabel,LEFT_MARGIN-4,TOP_MARGIN,frame.height, fm);
 			ip.setFont(font);
-		}
-		else 
+		} else 
 			drawYLabel(yLabel,LEFT_MARGIN-4,TOP_MARGIN,frame.height, fm);
 	}
 
@@ -803,11 +799,10 @@ public class Plot {
 				i2 = (int)Math.floor(Math.max(xMin,xMax)/step+1.e-10);
 				for (int i=0; i<=(i2-i1); i++) {
 					int diff = i1+(1-i10)*10;
-					if((i+diff)%10>1)
-					{
+					if ((i+diff)%10>1) {
 						double v = (i-(i+diff)%10+10*Math.log10((i+diff)%10)+i1)*step;
 						int x = (int)Math.round((v - xMin)*xScale) + LEFT_MARGIN;
-						if(x < frame.width + LEFT_MARGIN) {
+						if (x < frame.width + LEFT_MARGIN) {
 							ip.drawLine(x, y1, x, y1+MINOR_TICK_LENGTH);
 							ip.drawLine(x, y2, x, y2-MINOR_TICK_LENGTH);
 						}
@@ -835,6 +830,15 @@ public class Plot {
 			if (digits > 5) digits = -3; // use scientific notation
 			int x1 = LEFT_MARGIN;
 			int x2 = LEFT_MARGIN+frame.width;
+			if (yMin==yMax && (flags&Y_NUMBERS)!=0) {
+				String s = IJ.d2s(yMin,digits);
+				int w = ip.getStringWidth(s);
+				if (w>maxNumWidth) maxNumWidth = w;
+				int y = TOP_MARGIN + frame.height;
+				ip.drawString(s, LEFT_MARGIN-w-4, y+fontMaxAscent/2+1);
+				drawYLabel(yLabel,LEFT_MARGIN-maxNumWidth-4,TOP_MARGIN,frame.height, ip.getFontMetrics());
+				return;
+			}
 			for (int i=0; i<=(i2-i1); i++) {
 				double v = (i+i1)*step;
 				int y = TOP_MARGIN + frame.height - (int)Math.round((v - yMin)*yScale);
@@ -884,8 +888,7 @@ public class Plot {
 				i2 = (int)Math.floor(Math.max(yMin,yMax)/step+1.e-10);
 				for (int i=0; i<=(i2-i1); i++) {
 					int diff = i1+(1-i10)*10;
-					if(i%10>1)
-					{
+					if(i%10>1) {
 						double v = (i-(i+diff)%10+10*Math.log10((i+diff)%10)+i1)*step;
 						int y = TOP_MARGIN + frame.height - (int)Math.round((v - yMin)*yScale);
 						if(y > TOP_MARGIN) {
@@ -921,25 +924,20 @@ public class Plot {
 			ip.drawString(s, x + frame.width-ip.getStringWidth(s)+6, y);
 		} else
 			y += fm.getAscent();							//space needed for x numbers
-		if(xLabelFont != font)
-		{
+		if (xLabelFont != font) {
 			ip.setFont(xLabelFont);
 			ip.drawString(xLabel, LEFT_MARGIN+(frame.width-ip.getStringWidth(xLabel))/2, y+6);
 			ip.setFont(font);
-		}
-		else 
+		} else 
 			ip.drawString(xLabel, LEFT_MARGIN+(frame.width-ip.getStringWidth(xLabel))/2, y+6);
-		if(xLabelFont != font)
-		{
+		if (xLabelFont != font) {
 			ip.setFont(xLabelFont);
 			if ((flags&Y_LOG_NUMBERS)!=0)
 				drawYLabel(yLabel,LEFT_MARGIN-maxNumWidth-20,TOP_MARGIN,frame.height, fm);
 			else
 				drawYLabel(yLabel,LEFT_MARGIN-maxNumWidth-4,TOP_MARGIN,frame.height, fm);
 			ip.setFont(font);
-		}
-		else
-		{
+		} else {
 			if ((flags&Y_LOG_NUMBERS)!=0)
 				drawYLabel(yLabel,LEFT_MARGIN-maxNumWidth-20,TOP_MARGIN,frame.height, fm);
 			else
@@ -999,6 +997,10 @@ public class Plot {
 		
 		if (drawPending) {
 			drawFloatPolyline(ip, ((flags&X_LOG_NUMBERS)!=0) ? arrayToLog(xValues) : xValues, ((flags&Y_LOG_NUMBERS)!=0) ? arrayToLog(yValues) : yValues, nPoints);
+			if (yMin==yMax) {
+				int yy = frame.y + frame.height-1;
+				ip.drawLine(frame.x, yy, frame.x+frame.width, yy);
+			}
 			if (this.errorBars != null)
 				drawErrorBars(xValues, yValues, errorBars);
 		}

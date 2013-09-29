@@ -1871,12 +1871,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private void setRoiPosition(ImagePlus imp, Roi roi) {
 		if (imp==null || roi==null)
 			return;
-		if (imp.isHyperStack()) {
-			if (imp.getNSlices()>1)
-				roi.setPosition(0, imp.getSlice(), 0);
-			else if (imp.getNFrames()>1)
-				roi.setPosition(0, 0, imp.getFrame());
-		} else if (imp.getStackSize()>1)
+		if (imp.isHyperStack())
+			roi.setPosition(imp.getChannel(), imp.getSlice(), imp.getFrame());
+		else if (imp.getStackSize()>1)
 			roi.setPosition(imp.getCurrentSlice());
 	}
 	
@@ -2071,8 +2068,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (imp==null)
 			return;
 		ImageCanvas ic = imp.getCanvas();
-		if (ic==null)
+		if (ic==null) {
+			imp.setOverlay(overlay);
 			return;
+		}
 		ic.setShowAllList(overlay);
 		imp.draw();
 	}

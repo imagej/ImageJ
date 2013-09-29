@@ -289,7 +289,6 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			if (i!=p.npoints-1) y.append(",");
 		}
 		String ypoints = y.toString();
-		
 		if (javaMode()) {
 			textArea.append("int[] xpoints = {"+xpoints+"};\n");
 			textArea.append("int[] ypoints = {"+ypoints+"};\n");
@@ -303,10 +302,17 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			case Roi.ANGLE: typeStr = "ANGLE"; break;
 		}
 		typeStr = "Roi."+typeStr;
-		if (type==Roi.POINT)
-			textArea.append("imp.setRoi(new PointRoi(xpoints,ypoints,"+p.npoints+"));\n");
-		else
-			textArea.append("imp.setRoi(new PolygonRoi(xpoints,ypoints,"+p.npoints+","+typeStr+"));\n");
+		if (javaMode()) {
+			if (type==Roi.POINT)
+				textArea.append("imp.setRoi(new PointRoi(xpoints,ypoints,"+p.npoints+"));\n");
+			else
+				textArea.append("imp.setRoi(new PolygonRoi(xpoints,ypoints,"+p.npoints+","+typeStr+"));\n");
+		} else {
+			if (type==Roi.POINT)
+				textArea.append("imp.setRoi(new PointRoi(xpoints,ypoints));\n");
+			else
+				textArea.append("imp.setRoi(new PolygonRoi(xpoints,ypoints,"+typeStr+"));\n");
+		}
 	}
 	
 	private static boolean javaMode() {
@@ -423,7 +429,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					;
 				else {
 					String prefix = "run(";
-					if (scriptMode) prefix = imageUpdated?"IJ.run(imp, ":"IJ.run(";
+					if (scriptMode)
+						prefix = imageUpdated?"IJ.run(imp, ":"IJ.run(";
 					textArea.append(prefix+"\""+name+"\", \""+commandOptions+"\");\n");
 					if (nonAscii(commandOptions))
 						textArea.append("  <<warning: the options string contains one or more non-ascii characters>>\n");

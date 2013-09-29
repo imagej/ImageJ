@@ -4860,6 +4860,8 @@ public class Functions implements MacroConstants, Measurements {
 			return findArrayMaxima(false);
 		else if (name.equals("findMinima"))
 			return findArrayMaxima(true);
+		else if (name.equals("show"))
+			return showArray();
 		else
 			interp.error("Unrecognized Array function");
 		return null;
@@ -5134,18 +5136,26 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	Variable[] findArrayMaxima(boolean minima) {
+		boolean excludeOnEdges = false;
 		interp.getLeftParen();
 		Variable[] a = getArray();
-		double tolerance = getLastArg();
+		double tolerance = getNextArg();
+		if (interp.nextToken()==',') {
+			interp.getComma();
+			double arg = interp.getBooleanExpression();
+			interp.checkBoolean(arg);
+			excludeOnEdges = arg==0?false:true;
+		}
+		interp.getRightParen();
 		int n = a.length;
 		double[] d = new double[n];
 		for (int i=0; i<n; i++)
 			d[i] = a[i].getValue();
 		int[] maxima = null;
 		if (minima)
-			maxima = MaximumFinder.findMinima(d, tolerance);
+			maxima = MaximumFinder.findMinima(d, tolerance, excludeOnEdges);
 		else
-			maxima = MaximumFinder.findMaxima(d, tolerance);
+			maxima = MaximumFinder.findMaxima(d, tolerance, excludeOnEdges);
 		int n2 = maxima.length;
 		Variable[] a2 = new Variable[n2];
 		for (int i=0; i<n2; i++)
@@ -5153,6 +5163,68 @@ public class Functions implements MacroConstants, Measurements {
 		return a2;
 	}
 
+	Variable[] showArray() {
+		int maxLength = 0;
+		String title = "Arrays";
+		ArrayList arrays = new ArrayList();
+		ArrayList names = new ArrayList();
+		interp.getLeftParen();
+		do {
+			if (isStringArg() && !isArrayArg())
+				title = getString();
+			else {
+				int symbolTableAddress = pgm.code[interp.pc+1]>>TOK_SHIFT;
+				names.add(pgm.table[symbolTableAddress].str);
+				Variable[] a = getArray();
+				arrays.add(a);
+				if (a.length>maxLength)
+					maxLength = a.length;
+			}
+			interp.getToken();
+		} while (interp.token==',');
+		if (interp.token!=')')
+			interp.error("')' expected");
+		int n = arrays.size();
+		if (n==1) {
+			if (title.equals("Arrays"))
+				title = (String)names.get(0);
+			names.set(0, "Value");
+		}
+		ResultsTable rt = new ResultsTable();
+		//rt.setPrecision(Analyzer.getPrecision());
+		boolean showRowNumbers = false;
+		int openParenIndex = title.indexOf("(");
+		if (openParenIndex>=0) {
+			String options = title.substring(openParenIndex, title.length());
+			title = title.substring(0, openParenIndex);
+			title = title.trim();
+			showRowNumbers = options.contains("row") || options.contains("1");
+			if (!showRowNumbers && options.contains("index")) {
+				for (int i=0; i<maxLength; i++)
+					rt.setValue("Index", i, ""+i);
+			}
+		}
+		if (!showRowNumbers)
+			rt.showRowNumbers(false);
+		for (int arr=0; arr<n; arr++) {
+			Variable[] a = (Variable[])arrays.get(arr);
+			String heading = (String)names.get(arr);
+			for (int i=0; i<maxLength; i++) {
+				if (i>=a.length) {
+					rt.setValue(heading, i, "");
+					continue;
+				}
+				String s = a[i].getString();
+				if (s!=null)
+					rt.setValue(heading, i, s);
+				else
+					rt.setValue(heading, i, a[i].getValue());
+			}
+		}
+     	rt.show(title);
+		return null;
+	}
+	
 	double charCodeAt() {
 		String str = getFirstString();
 		int index = (int)getLastArg();

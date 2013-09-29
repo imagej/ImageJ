@@ -31,17 +31,10 @@ public class PluginInstaller implements PlugIn {
 		byte[] data = null;
 		String name = path;
 		if (isURL) {
-			URL url = null;
-			try {
-				url = new URL(path);
-			} catch (Exception e) {
-				IJ.error(""+e);
-				return false;
-			}
 			int index = path.lastIndexOf("/");
 			if (index!=-1 && index<=path.length()-1)
-					name = path.substring(index+1);
-			data = download(url, name);
+				name = path.substring(index+1);
+			data = download(path, name);
 		} else {
 			File f = new File(path);
 			name = f.getName();
@@ -90,12 +83,20 @@ public class PluginInstaller implements PlugIn {
 		return true;
 	}
 
-	byte[] download(URL url, String name) {
+	public static byte[] download(String urlString, String name) {
+		URL url = null;
+		try {
+			url = new URL(urlString);
+		} catch (Exception e) {
+			IJ.log(""+e);
+		}
+		if (url==null) return null;
 		byte[] data;
 		try {
 			URLConnection uc = url.openConnection();
 			int len = uc.getContentLength();
-			IJ.showStatus("Downloading "+url.getFile());
+			if (name!=null)
+				IJ.showStatus("Downloading "+url.getFile());
 			InputStream in = uc.getInputStream();
 			data = new byte[len];
 			int n = 0;
@@ -105,14 +106,15 @@ public class PluginInstaller implements PlugIn {
 				if (count<0)
 					throw new EOFException();
 				n += count;
-				IJ.showStatus("Downloading "+name+" ("+(n/1024)+"/"+lenk+"k)");
+				if (name!=null)
+					IJ.showStatus("Downloading "+name+" ("+(n/1024)+"/"+lenk+"k)");
 				IJ.showProgress(n, len);
 			}
 			in.close();
 		} catch (IOException e) {
 			return null;
 		}
-		IJ.showStatus("");
+		if (name!=null) IJ.showStatus("");
 		return data;
 	}
 	

@@ -252,16 +252,16 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 	/**
 	* Calculates peak positions of 1D array N.Vischer, 13-sep-2013
 	*
-	* @param xx Array containing peaks. If includeEdge = false, a peak is only
-	* accepted if it is separated by two qualified valleys. If includeEdge =
-	* true, a peak is also accepted if separated by one qualified valley and by
-	* a border.
+	* @param xx Array containing peaks.
 	* @param tolerance Depth of a qualified valley must exceed tolerance.
 	* Tolerance must be >= 0. Flat tops are marked at their centers.
+	* @param  excludeOnEdges If 'true', a peak is only
+	* accepted if it is separated by two qualified valleys. If 'false', a peak
+	* is also accepted if separated by one qualified valley and by a border.
 	* @return Positions of peaks, sorted with decreasing amplitude
 	*/
-	public static int[] findMaxima(double[] xx, double tolerance) {
-		boolean includeEdge = true;
+	public static int[] findMaxima(double[] xx, double tolerance, boolean excludeOnEdges) {
+		boolean includeEdge = !excludeOnEdges;
 		int len = xx.length;
 		if (len == 0)
 			return new int[0];
@@ -329,12 +329,12 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 	/**
 	* Returns minimum positions of array xx, sorted with decreasing strength
 	*/
-	public static int[] findMinima(double[] xx, double tolerance) {
+	public static int[] findMinima(double[] xx, double tolerance, boolean includeEdges) {
 		int len = xx.length;
 		double[] negArr = new double[len];
 		for (int jj = 0; jj < len; jj++)
 			negArr[jj] = -xx[jj];
-		int[] minPositions = findMaxima(negArr, tolerance);
+		int[] minPositions = findMaxima(negArr, tolerance, includeEdges);
 		return minPositions;
 	}
 	

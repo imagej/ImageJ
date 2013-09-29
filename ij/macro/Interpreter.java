@@ -58,6 +58,12 @@ public class Interpreter implements MacroConstants {
 	static boolean showVariables;
 	boolean wasError;
 	ImagePlus batchMacroImage;
+	boolean inLoop;
+	
+	static TextWindow arrayWindow;
+	int inspectStkIndex = -1;
+	int inspectSymIndex = -1;
+
 
 	/** Interprets the specified string. */
 	public void run(String macro) {
@@ -223,6 +229,12 @@ public class Interpreter implements MacroConstants {
 				break;
 			case RETURN:
 				doReturn();
+				break;
+			case BREAK:
+				if (inLoop) throw new MacroException(BREAK);
+				break;
+			case CONTINUE:
+				if (inLoop) throw new MacroException(CONTINUE);
 				break;
 			case WORD:
 				doAssignment();
@@ -457,6 +469,7 @@ public class Interpreter implements MacroConstants {
 	void doFor() {
 		boolean saveLooseSyntax = looseSyntax;
 		looseSyntax = false;
+		inLoop = true;
 		getToken();
 		if (token!='(')
 			error("'(' expected");
@@ -495,9 +508,17 @@ public class Interpreter implements MacroConstants {
 			   }
 			}
 			startPC = pc;
-			if (cond==1)
-				doStatement();
-			else {
+			if (cond==1) {
+				try {
+					doStatement();
+				} catch(MacroException e) {
+					if (e.getType()==BREAK) {
+						pc = startPC;
+						skipStatement();
+						break;
+					}
+				}
+			} else {
 				skipStatement();
 				break;
 			}
@@ -510,20 +531,32 @@ public class Interpreter implements MacroConstants {
 			pc = condPC;
 		}
 		looseSyntax = saveLooseSyntax;
+		inLoop = false;
 	}
 
 	void doWhile() {
 		looseSyntax = false;
+		inLoop = true;
 		int savePC = pc;
 		boolean isTrue;
 		do {
 			pc = savePC;
 			isTrue = getBoolean();
-			if (isTrue)
-				doStatement();
-			else
+			if (isTrue) {
+				try {
+					doStatement();
+				} catch(MacroException e) {
+					if (e.getType()==BREAK) {
+						pc = savePC;
+						getBoolean();
+						skipStatement();
+						break;
+					}
+				}
+			} else
 				skipStatement();
 		} while (isTrue && !done);
+		inLoop = false;
 	}
 
 	void doDo() {
@@ -586,7 +619,7 @@ public class Interpreter implements MacroConstants {
 				getToken(); // skip 'while'
 				skipParens();
 				break;
-			case ';':
+			case BREAK: case CONTINUE: case ';':
 				break;
 			case '{':
 				putTokenBack();
@@ -1936,6 +1969,82 @@ public class Interpreter implements MacroConstants {
 			if (!Double.isNaN(value)) s=""+value;
 		}
 		return s;
+	}
+	
+	 /**
+	 * Shows array elements after clicking an array variable in Debug
+	 * window
+	 * N. Vischer 
+	 *
+	 * @param stkPos stack index of variable to be shown
+	 */
+	public void showArrayInspector(int stkPos) {
+		if (stack==null)
+			return;
+		int nFunctions = showDebugFunctions?3:0;
+		stkPos -= nFunctions;
+		if (stack.length>stkPos && stkPos>=0) {
+			Variable var = stack[stkPos];
+			if (var==null)
+				return;
+			if (var.getType()!=Variable.ARRAY && arrayWindow!=null)
+				arrayWindow.setVisible(false);
+			if (var.getType()==Variable.ARRAY) {
+				String headings = "Index\tValue";
+				if (arrayWindow==null)
+					arrayWindow = new TextWindow("Array", "", "", 170, 300);
+				arrayWindow.setVisible(true);
+				int symIndex = var.symTabIndex;
+				String arrName = pgm.table[symIndex].str;
+				inspectStkIndex = stkPos;
+				inspectSymIndex = symIndex;
+				TextPanel txtPanel = arrayWindow.getTextPanel();
+				txtPanel.clear();
+				txtPanel.setColumnHeadings(headings);
+				Variable[] elements = var.getArray();
+				String title = arrName + "[" + elements.length + "]";
+				arrayWindow.setTitle(title);
+				arrayWindow.rename(title);
+				String valueStr = "";
+				for (int jj=0; jj<elements.length; jj++) {
+					Variable element = elements[jj];
+					if (element.getType()==Variable.STRING) {
+						valueStr = elements[jj].getString();
+						valueStr = valueStr.replaceAll("\n", "\\\\n");
+					} else if (element.getType()==Variable.VALUE) {
+						double v = elements[jj].getValue();
+						if ((int)v==v)
+							valueStr = IJ.d2s(v, 0);
+						else
+							valueStr = ResultsTable.d2s(v, 4);
+					}
+					String ss = ("" + jj + "\t " + valueStr) + "\n";
+					arrayWindow.getTextPanel().append(ss);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Updates Array inspector if variable exists, otherwise closes
+	 * ArrayInspector
+	 */
+	public void updateArrayInspector() {
+		boolean varExists = false;
+		if (arrayWindow!=null && arrayWindow.isVisible()) {
+			for (int stkIndex=0; stkIndex<=topOfStack; stkIndex++) {
+				Variable var = stack[stkIndex];
+				int symIndex = var.symTabIndex;
+				if (inspectStkIndex==stkIndex && inspectSymIndex==symIndex && var.getType()==Variable.ARRAY) {
+					varExists = true;
+					break;
+				}
+			}
+			if (varExists)
+				showArrayInspector(inspectStkIndex);
+			else
+				arrayWindow.setVisible(false);
+		}
 	}
 
 } // class Interpreter

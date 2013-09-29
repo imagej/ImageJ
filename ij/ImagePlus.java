@@ -1253,12 +1253,15 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void setPosition(int channel, int slice, int frame) {
 		//IJ.log("setPosition: "+channel+"  "+slice+"  "+frame+"  "+noUpdateMode);
 		verifyDimensions();
-   		if (channel<1) channel = 1;
-    	if (channel>nChannels) channel = nChannels;
-    	if (slice<1) slice = 1;
-    	if (slice>nSlices) slice = nSlices;
-    	if (frame<1) frame = 1;
-    	if (frame>nFrames) frame = nFrames;
+   		if (channel<0) channel=0;
+    	if (slice<0) slice=0;
+    	if (frame<0) frame=0;
+    	if (channel==0) channel=getC();
+    	if (slice==0) slice=getZ();
+    	if (frame==0) frame=getT();
+    	if (channel>nChannels) channel=nChannels;
+    	if (slice>nSlices) slice=nSlices;
+    	if (frame>nFrames) frame=nFrames;
 		if (isDisplayedHyperStack())
 			((StackWindow)win).setPosition(channel, slice, frame);
 		else {
@@ -1419,6 +1422,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void setRoi(Roi newRoi, boolean updateDisplay) {
 		if (newRoi==null)
 			{deleteRoi(); return;}
+		if (Recorder.record) {
+			Recorder recorder = Recorder.getInstance();
+			if (recorder!=null) recorder.imageUpdated(this);
+		}
 		Rectangle bounds = newRoi.getBounds();
 		if (newRoi.isVisible()) {
 			if ((newRoi instanceof Arrow) && newRoi.getState()==Roi.CONSTRUCTING && bounds.width==0 && bounds.height==0) {

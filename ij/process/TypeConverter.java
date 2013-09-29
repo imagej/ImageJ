@@ -88,23 +88,16 @@ public class TypeConverter {
 
 	/** Converts a ColorProcessor to a ByteProcessor. 
 		The pixels are converted to grayscale using the formula
-		g=r/3+g/3+b/3. Call ColorProcessor.setWeightingFactors() 
+		g=r/3+g/3+b/3. Call ColorProcessor.setRGBWeights() 
 		to do weighted conversions. */
 	ByteProcessor convertRGBToByte() {
-		int c, r, g, b;
-		int[] pixels32;
-		byte[] pixels8;
-		Image img8;
-		
-		//get RGB pixels
-		pixels32 = (int[])ip.getPixels();
-		
-		//convert to grayscale
+		int[] pixels32 = (int[])ip.getPixels();
 		double[] w = ColorProcessor.getWeightingFactors();
 		if (((ColorProcessor)ip).getRGBWeights()!=null)
 			w = ((ColorProcessor)ip).getRGBWeights();
 		double rw=w[0], gw=w[1], bw=w[2];
-		pixels8 = new byte[width*height];
+		byte[] pixels8 = new byte[width*height];
+		int c, r, g, b;
 		for (int i=0; i < width*height; i++) {
 			c = pixels32[i];
 			r = (c&0xff0000)>>16;
@@ -112,10 +105,31 @@ public class TypeConverter {
 			b = c&0xff;
 			pixels8[i] = (byte)(r*rw + g*gw + b*bw + 0.5);
 		}
-		
 		return new ByteProcessor(width, height, pixels8, null);
 	}
 	
+	/** Converts a ColorProcessor to a FloatProcessor. 
+		The pixels are converted to grayscale using the formula
+		g=r/3+g/3+b/3. Call ColorProcessor.setRGBWeights() 
+		to do weighted conversions. */
+	FloatProcessor convertRGBToFloat() {
+		int[] pixels = (int[])ip.getPixels();
+		double[] w = ColorProcessor.getWeightingFactors();
+		if (((ColorProcessor)ip).getRGBWeights()!=null)
+			w = ((ColorProcessor)ip).getRGBWeights();
+		double rw=w[0], gw=w[1], bw=w[2];
+		float[] pixels32 = new float[width*height];
+		int c, r, g, b;
+		for (int i=0; i < width*height; i++) {
+			c = pixels[i];
+			r = (c&0xff0000)>>16;
+			g = (c&0xff00)>>8;
+			b = c&0xff;
+			pixels32[i] = (float)(r*rw + g*gw + b*bw);
+		}
+		return new FloatProcessor(width, height, pixels32);
+	}
+
 	/** Converts processor to a ShortProcessor. */
 	public ImageProcessor convertToShort() {
 		switch (type) {
@@ -182,8 +196,7 @@ public class TypeConverter {
 			case FLOAT:
 				return ip;
 			case RGB:
-				ip = convertRGBToByte();
-				return convertByteToFloat(null);
+				return convertRGBToFloat();
 			default:
 				return null;
 		}

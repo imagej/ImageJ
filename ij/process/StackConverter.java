@@ -134,7 +134,7 @@ public class StackConverter {
 	public void convertToGray32() {
 		if (type==ImagePlus.GRAY32)
 			return;
-		if (!(type==ImagePlus.GRAY8||type==ImagePlus.GRAY16))
+		if (!(type==ImagePlus.GRAY8||type==ImagePlus.GRAY16||type==ImagePlus.COLOR_RGB))
 			throw new IllegalArgumentException("Unsupported conversion");
 		ImageStack stack1 = imp.getStack();
 		ImageStack stack2 = new ImageStack(width, height);
@@ -158,6 +158,10 @@ public class StackConverter {
 		IJ.showProgress(1.0);
 		imp.setStack(null, stack2);
 		imp.setCalibration(imp.getCalibration()); //update calibration
+		if (type==ImagePlus.COLOR_RGB) {
+			imp.resetDisplayRange();
+			imp.updateAndDraw();
+		}
 	}
 
 	/** Converts the Stack to RGB. */
