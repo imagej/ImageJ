@@ -1253,18 +1253,18 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void setPosition(int channel, int slice, int frame) {
 		//IJ.log("setPosition: "+channel+"  "+slice+"  "+frame+"  "+noUpdateMode);
 		verifyDimensions();
-   		if (channel<0) channel = 0;
-    	if (channel>nChannels) channel = nChannels;
-    	if (slice<0) slice = 0;
-    	if (slice>nSlices) slice = nSlices;
-    	if (frame<0) frame = 0;
-    	if (frame>nFrames) frame = nFrames;
+   		if (channel<0) channel=0;
+    	if (slice<0) slice=0;
+    	if (frame<0) frame=0;
+    	if (channel==0) channel=getC();
+    	if (slice==0) slice=getZ();
+    	if (frame==0) frame=getT();
+    	if (channel>nChannels) channel=nChannels;
+    	if (slice>nSlices) slice=nSlices;
+    	if (frame>nFrames) frame=nFrames;
 		if (isDisplayedHyperStack())
-			((StackWindow)win).setPosition(channel==0?getC():channel, slice==0?getZ():slice, frame==0?getT():frame);
+			((StackWindow)win).setPosition(channel, slice, frame);
 		else {
-   			if (channel<1) channel = 1;
-    		if (slice<1) slice = 1;
-    		if (frame<1) frame = 1;
 			setSlice((frame-1)*nChannels*nSlices + (slice-1)*nChannels + channel);
 			updatePosition(channel, slice, frame);
 		}

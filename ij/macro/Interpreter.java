@@ -58,6 +58,7 @@ public class Interpreter implements MacroConstants {
 	static boolean showVariables;
 	boolean wasError;
 	ImagePlus batchMacroImage;
+	boolean inLoop;
 	
 	static TextWindow arrayWindow;
 	int inspectStkIndex = -1;
@@ -228,6 +229,12 @@ public class Interpreter implements MacroConstants {
 				break;
 			case RETURN:
 				doReturn();
+				break;
+			case BREAK:
+				if (inLoop) throw new MacroException(BREAK);
+				break;
+			case CONTINUE:
+				if (inLoop) throw new MacroException(CONTINUE);
 				break;
 			case WORD:
 				doAssignment();
@@ -462,6 +469,7 @@ public class Interpreter implements MacroConstants {
 	void doFor() {
 		boolean saveLooseSyntax = looseSyntax;
 		looseSyntax = false;
+		inLoop = true;
 		getToken();
 		if (token!='(')
 			error("'(' expected");
@@ -500,9 +508,17 @@ public class Interpreter implements MacroConstants {
 			   }
 			}
 			startPC = pc;
-			if (cond==1)
-				doStatement();
-			else {
+			if (cond==1) {
+				try {
+					doStatement();
+				} catch(MacroException e) {
+					if (e.getType()==BREAK) {
+						pc = startPC;
+						skipStatement();
+						break;
+					}
+				}
+			} else {
 				skipStatement();
 				break;
 			}
@@ -515,20 +531,32 @@ public class Interpreter implements MacroConstants {
 			pc = condPC;
 		}
 		looseSyntax = saveLooseSyntax;
+		inLoop = false;
 	}
 
 	void doWhile() {
 		looseSyntax = false;
+		inLoop = true;
 		int savePC = pc;
 		boolean isTrue;
 		do {
 			pc = savePC;
 			isTrue = getBoolean();
-			if (isTrue)
-				doStatement();
-			else
+			if (isTrue) {
+				try {
+					doStatement();
+				} catch(MacroException e) {
+					if (e.getType()==BREAK) {
+						pc = savePC;
+						getBoolean();
+						skipStatement();
+						break;
+					}
+				}
+			} else
 				skipStatement();
 		} while (isTrue && !done);
+		inLoop = false;
 	}
 
 	void doDo() {
@@ -591,7 +619,7 @@ public class Interpreter implements MacroConstants {
 				getToken(); // skip 'while'
 				skipParens();
 				break;
-			case ';':
+			case BREAK: case CONTINUE: case ';':
 				break;
 			case '{':
 				putTokenBack();
