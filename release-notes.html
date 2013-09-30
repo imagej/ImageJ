@@ -5,50 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.48d 28 September 2013</u>
+<li> <u>1.48e 30 September 2013</u>
 <ul>
-<li> Thanks to Johannes Schindelin, added the
-<i>File&gt;Open Samples&gt;Cache Sample Images</i> command.
-<li> Thanks to Stephan Saalfeld, <i>Image&gt;Type&gt;32-bit</i>
-now supports conversion of RGB stacks to float (32-bit) and
-RGB to float conversions are done directly.
-<li> Thanks to Michael Schmid, added "Exponential Recovery (no offset)"
-and "Chapman-Richards" curve fitting options.
-<li> The File menu and popup menu of non-active results tables
-now contain "Rename..." and "Duplicate..." commands.
-<li> The title of  a non-active results table changes
-if it is saved using a different name.
-<li> Thanks to Norbert Vischer, added the Array Inspector to the
-macro debugger
-(<a href="macros/TestArrayInspector.txt">test macro</a>).
-<li> In the macro language, 'break' and 'continue' statements 
-are supported in 'for' and 'while' loops.
-<li> Thanks to Norbert Vischer, added the Array.show() macro function
-(<a href="macros/Examples/ShowArrayDemo.txt">examples</a>).
-<li> Thanks to Dimiter Prodanov, fixed a bug that caused the Recorder to not generate 
-a plugin that would compile and run after recording <i>Process&gt;Image Caculator</i>.
-<li> Thanks to Jonas Ogaard, fixed a bug that sometimes caused an exception when
-drawing ROIs created with the brush selection tool.
-<li> Thanks to Dimiter Prodanov, fixed bugs that caused <i>Analyze&gt;Plot Profile</i>
-to not work correctly when the intensity was uniform.
-<li> Fixed a bug that caused the Recorder to not correctly record the polygon,
-segmented line and point tools in "JavaScript" mode.
-<li> Fixed a bug that caused the Recorder, when not in "Macro" mode, to sometimes 
-not correctly record commands in the <i>Edit&gt;Selection</i> menu.
-<li> Thanks to Eric Denarier, fixed a bug that could cause the Results window to become
-inconsistent when using the <i>Measure</i> command after running the particle analyzer.
-<li> Thanks to Guy Lyons, fixed a bug that caused the roiManager("Show All with labels") macro
-function to not work in batch mode.
-<li> Thanks to Dimiter Prodanov, fixed a bug that could cause ImageJ to throw an 
-exception on startup.
-<li> Thanks to Barry DeZonia, fixed a bug that caused the ImageProperties.getUnitIndex()
-method to not work correctly when passed the string "mile".
-<li> Thanks to Barry DeZonia, fixed a bug that caused the <i>Image&gt;Properties</i>
-dialog to not reset the Y and Z units when the "Unit of length" was changed.
-<li> Thanks to Michael Schmid, fixed a 1.46f regression that caused some user-defined
-curve fits to fail.
-<li> Fixed a 1.48 regression that caused the ROI Manager to not correctly 
-associate hyperstack ROIs to CZT positions.
+<li> Fixed a 1.48d regression the caused the "Simplex Fitting Options" dialog in
+<i>Analyze&gt;Tools&gt;Curve Fitting</i> to throw and exception when
+performing user-defined fits.
+<li> Thanks to Michael Schmid, fixed a curve fitting bug which could cause unintended
+values for the initial parameters (resulting in more iterations than necessary).
 
 </ul> 
 

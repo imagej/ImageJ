@@ -195,10 +195,16 @@ public class CurveFitter implements UserFunction{
 			if (numRegressionParams > 0)
 				minimizerParamsToFullParams(finalParams, false);
 		}
-		if (isModifiedFitType(fitType))
+		if (isModifiedFitType(fitType))         //params of actual fit to user params
 			postProcessModifiedFitType(fitType);
-		time = System.currentTimeMillis()-startTime;
 
+		switch (fitType) {		                //postprocessing for nicer output:
+		    case GAUSSIAN:                      //Gaussians: width (std deviation) should be >0
+                finalParams[3] = Math.abs(finalParams[3]); break;
+            case GAUSSIAN_NOOFFSET:
+                finalParams[2] = Math.abs(finalParams[2]); break;                
+		}
+		time = System.currentTimeMillis()-startTime;
 	}
 
 	/** Fit a function defined as a macro String like "y = a + b*x + c*x*x".
@@ -844,10 +850,10 @@ public class CurveFitter implements UserFunction{
 		double firsty = yData[0];
 		double lastx = xData[numPoints-1];
 		double lasty = yData[numPoints-1];
-		double xMin=firstx, xMax=firstx;
+		double xMin=firstx, xMax=firstx;    //with this initialization, the loop starts at 1, not 0
 		double yMin=firsty, yMax=firsty;
-		double xMean=0, yMean=0;
-		double xOfMax = xData[0];
+		double xMean=firstx, yMean=firsty;
+		double xOfMax = firstx;
 		for (int i=1; i<numPoints; i++) {
 			xMean += xData[i];
 			yMean += yData[i];
@@ -1162,6 +1168,8 @@ public class CurveFitter implements UserFunction{
 
 	/** Pop up a dialog allowing control over simplex starting parameters */
 	private void settingsDialog() {
+	    if (initialParamVariations == null)
+	        initialParamVariations = new double[numParams];
 		GenericDialog gd = new GenericDialog("Simplex Fitting Options");
 		gd.addMessage("Function name: " + getName() + "\n" +
 		"Formula: " + getFormula());
