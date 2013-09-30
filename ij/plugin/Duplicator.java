@@ -285,6 +285,10 @@ public class Duplicator implements PlugIn, TextListener {
 			Overlay overlay2 = cropOverlay(overlay, roi.getBounds());
 			imp2.setOverlay(overlay2);
 		}
+		if (imp2.getWidth()==0 || imp2.getHeight()==0) {
+			IJ.error("Duplicator", "Selection is outside the image");
+			return;
+		}
 		imp2.show();
 		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE && roi.getBounds().width==imp2.getWidth())
 			imp2.restoreRoi();

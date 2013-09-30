@@ -18,11 +18,11 @@ public interface MacroConstants {
 
 	// Keywords
 	static final String[] keywords = {"macro", "var", "if", "else", "while", "do", "for", "function",
-		"return", "true", "false", "PI", "NaN"};
+		"return", "true", "false", "PI", "NaN", "break", "continue"};
 	public static final int MACRO=200, VAR=201, IF=202, ELSE=203, WHILE=204, DO=205, FOR=206, FUNCTION=207,
-		RETURN=208, TRUE=209, FALSE=210, PI=211, NaN=212;;
+		RETURN=208, TRUE=209, FALSE=210, PI=211, NaN=212, BREAK=213, CONTINUE=214;
 	static final int[] keywordIDs = {MACRO, VAR, IF, ELSE, WHILE, DO, FOR, FUNCTION,
-		RETURN, TRUE, FALSE, PI, NaN};
+		RETURN, TRUE, FALSE, PI, NaN, BREAK, CONTINUE};
 
 	// Functions that don't return a value
 	static final int RUN=300, INVERT=301, SELECT=302, WAIT=303, BEEP=304, RESET_MIN_MAX=305, RESET_THRESHOLD=306,
