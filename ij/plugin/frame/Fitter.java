@@ -166,7 +166,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		plot.addPoints(x, y, PlotWindow.CIRCLE);
 		plot.setColor(Color.BLUE);
 
-        StringBuffer legend = new StringBuffer(100);
+		StringBuffer legend = new StringBuffer(100);
 		legend.append(cf.getName()); legend.append('\n');
 		legend.append(cf.getFormula()); legend.append('\n');
         double[] p = cf.getParams();
@@ -176,8 +176,8 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 			legend.append(pChar+" = "+IJ.d2s(p[i],5,9)+'\n');
 			pChar++;
         }
- 		legend.append("R^2 = "+IJ.d2s(cf.getRSquared(),4)); legend.append('\n');
- 		plot.addLabel(0.02, 0.1, legend.toString());
+		legend.append("R^2 = "+IJ.d2s(cf.getRSquared(),4)); legend.append('\n');
+		plot.addLabel(0.02, 0.1, legend.toString());
 		plot.setColor(Color.BLUE);
 		plot.show();									
 	}
@@ -199,13 +199,13 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		x = new double[n];
 		y = new double[n];
 		for (int i=0; i<n; i++) {
-		    String xString = st.nextToken();
-		    String yString = st.nextToken();
+			String xString = st.nextToken();
+			String yString = st.nextToken();
 			x[i] = Tools.parseDouble(xString);
 			y[i] = Tools.parseDouble(yString);
 			if (Double.isNaN(x[i]) || Double.isNaN(y[i])) {
-			    IJ.showStatus("Data error:  Bad number at "+i+": "+xString+" "+yString);
-			    return false;
+				IJ.showStatus("Data error:  Bad number at "+i+": "+xString+" "+yString);
+				return false;
 			}
 		}
 		return true;
@@ -243,7 +243,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		new ImagePlus(img.getTitle()+"-transformed", ip2).show();
 	}
 
-    void open() {
+	void open() {
 		OpenDialog od = new OpenDialog("Open Text File...", "");
 		String directory = od.getDirectory();
 		String name = od.getFileName();

@@ -9,6 +9,10 @@
 <ul>
 <li> Thanks to Michael Schmid, plots now use scientific notation for large numbers
 and the curve fitter no longer runs on the event queue and can be aborted.
+<li> Changed the ROI Manager's "Remove Slice Info" command to
+"Remove Positions...".
+<li> Line selections are always drawn offset 0.5 pixels down and to the right regardless
+of the "Sub-pixel resolution" option in <i>Edit&gt;Options&gt;Profile Plot Options</i>.
 <li> Fixed a 1.48d regression the caused the "Simplex Fitting Options" dialog in
 <i>Analyze&gt;Tools&gt;Curve Fitting</i> to throw and exception when
 performing user-defined fits.
@@ -20,6 +24,8 @@ work as expected when ImageJ was exited by clicking on the "ImageJ" window's the
 not open .lsm files using Bio-Formats when the LSM_Reader plugin was not installed.
 <li> Fixed bug in the new <i>File&gt;Open Samples&gt;Cache Sample Images</i> command 
 that caused it to throw an exception.
+<li> Thanks to Dimiter Prodanov, fixed a bug the caused the ImageProcessor.clone()
+method to not work as expected.
 
 </ul> 
 

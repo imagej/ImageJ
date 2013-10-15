@@ -112,7 +112,7 @@ public class Executer implements Runnable {
 		}
 	}
 	    
-    void runCommand(String cmd) {
+	void runCommand(String cmd) {
 		Hashtable table = Menus.getCommands();
 		String className = (String)table.get(cmd);
 		if (className!=null) {
