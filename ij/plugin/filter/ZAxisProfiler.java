@@ -68,6 +68,7 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 		int t = imp.getT();
 		int size = slices;
 		boolean timeProfile = slices==1 && frames>1;
+if (IJ.debugMode) IJ.log("getHyperstackProfile: "+c+" "+timeProfile);
 		if (slices>1 && frames>1) {
 			showingDialog = true;
 			GenericDialog gd = new GenericDialog("Profiler");
@@ -94,8 +95,10 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 		for (int i=1; i<=size; i++) {
 			if (timeProfile)
 				imp.setPositionWithoutUpdate(c, z, i);
-			else
+			else {
 				imp.setPositionWithoutUpdate(c, i, t);
+				if (IJ.debugMode) IJ.log("  setPosition: "+c+" "+i+" "+t);
+			}
 			ImageStatistics stats = imp.getStatistics(measurements);
 			analyzer.saveResults(stats, roi);
 			if (showResults)			

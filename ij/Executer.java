@@ -111,7 +111,7 @@ public class Executer implements Runnable {
 				WindowManager.setTempCurrentImage(null);
 		}
 	}
-	
+	    
     void runCommand(String cmd) {
 		Hashtable table = Menus.getCommands();
 		String className = (String)table.get(cmd);
@@ -192,6 +192,10 @@ public class Executer implements Runnable {
 	/** Removes the specified command listener. */
 	public static void removeCommandListener(CommandListener listener) {
 		listeners.removeElement(listener);
+	}
+	
+	public static int getListenerCount() {
+		return listeners.size();
 	}
 
 }

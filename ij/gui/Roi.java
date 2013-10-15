@@ -26,6 +26,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	static final int NO_MODS=0, ADD_TO_ROI=1, SUBTRACT_FROM_ROI=2; // modification states
 		
 	int startX, startY, x, y, width, height;
+	double startXD, startYD;
 	Rectangle2D.Double bounds;
 	double xd, yd, widthd, heightd;
 	int activeHandle;
@@ -170,6 +171,20 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		startX = x; startY = y;
 		oldX = x; oldY = y; oldWidth=0; oldHeight=0;
 		xd=x; yd=y;
+		if (bounds!=null) {
+			bounds.x = x;
+			bounds.y = y;
+		}
+	}
+	
+	/** Set the location of the ROI in image coordinates. */
+	public void setLocation(double x, double y) {
+		setLocation((int)x, (int)y);
+		if (bounds!=null) {
+			bounds.x = x;
+			bounds.y = y;
+		} else
+			bounds = new Rectangle2D.Double(x, y, 0.0, 0.0);
 	}
 	
 	public void setImage(ImagePlus imp) {
@@ -746,8 +761,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	void move(int sx, int sy) {
 		int xNew = ic.offScreenX(sx);
 		int yNew = ic.offScreenY(sy);
-		x += xNew - startX;
-		y += yNew - startY;
+		int dx = xNew - startX;
+		int dy = yNew - startY;
+		if (dx==0 && dy==0)
+			return;
+		x += dx;
+		y += dy;
+		if (bounds!=null) {
+			bounds.x += dx;
+			bounds.y += dy;
+		}
 		boolean isImageRoi = this instanceof ImageRoi;
 		if (clipboard==null && type==RECTANGLE && !isImageRoi) {
 			if (x<0) x=0; if (y<0) y=0;
@@ -767,7 +790,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		oldHeight=height;
 		if (isImageRoi) showStatus();
 		xd=x; yd=y;
-		bounds = null;
 	}
 
 	/** Nudge ROI one pixel on arrow key press. */
@@ -1053,6 +1075,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			state = MOVING;
 			startX = ic.offScreenX(sx);
 			startY = ic.offScreenY(sy);
+			startXD = ic.offScreenXD(sx);
+			startYD = ic.offScreenYD(sy);
 			//showStatus();
 		}
 	}
@@ -1678,6 +1702,24 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	public void mouseReleased(MouseEvent e) {
 		handleMouseUp(e.getX(), e.getY());
+	}
+
+	public double getXBase() {
+		if (bounds!=null)
+			return bounds.x;
+		else
+			return x;
+	}
+
+	public double getYBase() {
+		if (bounds!=null)
+			return bounds.y;
+		else
+			return y;
+	}
+	
+	public String getDebugInfo() {
+		return "";
 	}
 
 }

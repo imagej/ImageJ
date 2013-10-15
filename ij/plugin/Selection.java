@@ -411,6 +411,7 @@ public class Selection implements PlugIn, Measurements {
 		if (roi.getStroke()!=null)
 			p.setStrokeWidth(roi.getStrokeWidth());
 		p.setStrokeColor(roi.getStrokeColor());
+		p.setDrawOffset(roi.getDrawOffset());
 		p.setName(roi.getName());
 		imp.setRoi(p);
 		return p;
@@ -597,8 +598,13 @@ public class Selection implements PlugIn, Measurements {
 		Undo.setup(Undo.ROI, imp);
 		Roi roi2 = null;
 		if (roi.getType()==Roi.LINE) {
+			double width = roi.getStrokeWidth();
+			if (width<=1.0)
+				roi.setStrokeWidth(1.0000001);
 			FloatPolygon p = roi.getFloatPolygon();
+			roi.setStrokeWidth(width);
 			roi2 = new PolygonRoi(p, Roi.POLYGON);
+			roi2.setDrawOffset(roi.getDrawOffset());
 		} else {
 			ImageProcessor ip2 = new ByteProcessor(imp.getWidth(), imp.getHeight());
 			ip2.setColor(255);
@@ -697,7 +703,10 @@ public class Selection implements PlugIn, Measurements {
 			return false;
 		}
 		RoiProperties rp = new RoiProperties(title, roi);
-		return rp.showDialog();
+		boolean ok = rp.showDialog();
+		if (IJ.debugMode)
+			IJ.log(roi.getDebugInfo());
+		return ok;
 	}
 	
 	private void makeBand(ImagePlus imp) {

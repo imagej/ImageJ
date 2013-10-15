@@ -96,6 +96,7 @@ public class Plot {
 	private String yLabel;
 	private int flags;
 	private Font font       = new Font("Helvetica", Font.PLAIN, 12);
+	private Font fontMedium = new Font("Helvetica", Font.PLAIN, 10);
 	private Font fontSmall  = new Font("Helvetica", Font.PLAIN, 9 );
 	private Font xLabelFont = font;
 	private Font yLabelFont = font;
@@ -193,10 +194,18 @@ public class Plot {
 
 	/** Sets the x-axis and y-axis range. */
 	public void setLimits(double xMin, double xMax, double yMin, double yMax) {
-		this.xMin = ((flags&X_LOG_NUMBERS)!=0) ? Math.log10(xMin) : xMin;
-		this.xMax = ((flags&X_LOG_NUMBERS)!=0) ? Math.log10(xMax) : xMax;
-		this.yMin = ((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(yMin) : yMin;
-		this.yMax = ((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(yMax) : yMax;
+	    if ((flags&X_LOG_NUMBERS)!=0) {
+	        xMin = Math.log10(xMin);
+	        xMax = Math.log10(xMax);
+	    }
+	    if ((flags&Y_LOG_NUMBERS)!=0) {
+	        yMin = Math.log10(yMin);
+	        yMax = Math.log10(yMax);
+	    }
+	    if (!Double.isNaN(xMin)) this.xMin = xMin;  //ignore invalid ranges, esp in log scale
+	    if (!Double.isNaN(xMax)) this.xMax = xMax;
+	    if (!Double.isNaN(yMin)) this.yMin = yMin;
+	    if (!Double.isNaN(yMax)) this.yMax = yMax;
 		fixedYScale = true;
 		if (initialized) {
 			ip.setColor(Color.white);
@@ -656,9 +665,10 @@ public class Plot {
 		else
 			drawTicksEtc();
 	}
-	
+
+	// draw simple axis labels with min&max value only
 	void drawAxisLabels() {
-		int digits = getDigits(yMin, yMax);
+		int digits = getDigits(yMin, xMax, 0.001*(yMax-yMin), 8);
 		String s = IJ.d2s(yMax, digits);
 		int sw = ip.getStringWidth(s);
 		if ((flags&Y_LOG_NUMBERS)!=0) {
@@ -706,7 +716,7 @@ public class Plot {
 		FontMetrics fm = ip.getFontMetrics();
 		int x = LEFT_MARGIN;
 		int y = TOP_MARGIN + frame.height + fm.getAscent() + 6;
-		digits = getDigits(xMin, xMax);
+		digits = getDigits(xMin, xMax, 0.001*(xMax-xMin), 8);
 		if ((flags&X_LOG_NUMBERS)!=0) {
 			ip.setFont(fontSmall);
 			ip.drawString(IJ.d2s(xMin,digits), x-ip.getStringWidth(s)/2+6, y-7);
@@ -733,6 +743,7 @@ public class Plot {
 			drawYLabel(yLabel,LEFT_MARGIN-4,TOP_MARGIN,frame.height, fm);
 	}
 
+    //draw ticks, grid and axis label for each tick/grid line
 	void drawTicksEtc() {
 		int fontAscent = ip.getFontMetrics().getAscent();
 		int fontMaxAscent = ip.getFontMetrics().getMaxAscent();
@@ -750,9 +761,7 @@ public class Plot {
 				i1 = (int)Math.ceil (Math.min(xMin,xMax)/step-1.e-10);
 				i2 = (int)Math.floor(Math.max(xMin,xMax)/step+1.e-10);
 			}
-			int digits = -(int)Math.floor(Math.log10(step)+1e-6);
-			if (digits < 0) digits = 0;
-			if (digits > 5) digits = -3; // use scientific notation
+			int digits = getDigits(xMin, xMax, step, 7);
 			int y1 = TOP_MARGIN;
 			int y2 = TOP_MARGIN+frame.height;
 			int yNumbers = y2 + fontAscent + 7;
@@ -825,51 +834,59 @@ public class Plot {
 				i1 = (int)Math.ceil (Math.min(yMin,yMax)/step-1.e-10);
 				i2 = (int)Math.floor(Math.max(yMin,yMax)/step+1.e-10);
 			}
-			int digits = -(int)Math.floor(Math.log10(step)+1e-6);
-			if (digits < 0) digits = 0;
-			if (digits > 5) digits = -3; // use scientific notation
+			int digits = getDigits(yMin, yMax, step, 5);
 			int x1 = LEFT_MARGIN;
 			int x2 = LEFT_MARGIN+frame.width;
 			if (yMin==yMax && (flags&Y_NUMBERS)!=0) {
-				String s = IJ.d2s(yMin,digits);
+				String s = IJ.d2s(yMin,getDigits(yMin, 0.001*yMin, 5));
 				int w = ip.getStringWidth(s);
 				if (w>maxNumWidth) maxNumWidth = w;
 				int y = TOP_MARGIN + frame.height;
 				ip.drawString(s, LEFT_MARGIN-w-4, y+fontMaxAscent/2+1);
 				drawYLabel(yLabel,LEFT_MARGIN-maxNumWidth-4,TOP_MARGIN,frame.height, ip.getFontMetrics());
-				return;
 			}
-			for (int i=0; i<=(i2-i1); i++) {
-				double v = (i+i1)*step;
-				int y = TOP_MARGIN + frame.height - (int)Math.round((v - yMin)*yScale);
-				if ((flags&Y_GRID)!=0) {
-					ip.setColor(gridColor);
-					ip.drawLine(x1, y, x2, y);
-					ip.setColor(Color.black);
-				}
-				if ((flags&Y_TICKS)!=0) {
-					ip.drawLine(x1, y, x1+TICK_LENGTH, y);
-					ip.drawLine(x2, y, x2-TICK_LENGTH, y);
-				}
-				if ((flags&Y_NUMBERS)!=0) {
-					String s = IJ.d2s(v,digits);
-					int w = ip.getStringWidth(s);
-					if (w>maxNumWidth) maxNumWidth = w;
-					ip.drawString(s, LEFT_MARGIN-w-4, y+fontMaxAscent/2+1);
-				}
-				if ((flags&Y_LOG_NUMBERS)!=0) {
-					ip.setFont(fontSmall);
-					String s = IJ.d2s(v,digits);
-					int ws = ip.getStringWidth(s);
-					if (ws>maxNumWidth) maxNumWidth = ws;
-					ip.drawString(s, LEFT_MARGIN-ws-1, y+fontMaxAscent/2-8);
-					ip.setFont(font);
-					String t = "10";
-					int w = ip.getStringWidth(t);
-					if (w>maxNumWidth) maxNumWidth = w;
-					ip.drawString(t, LEFT_MARGIN-w-11, y+fontMaxAscent/2+2);
-				}				
+			else {
+			    ip.setFont(font);
+			    int w1 = ip.getStringWidth(IJ.d2s(yMin,digits));
+			    int w2 = ip.getStringWidth(IJ.d2s(yMax,digits));
+			    int wMax = Math.max(w1,w2);
+                //IJ.log(IJ.d2s(yMin,digits)+"w="+w1+","+IJ.d2s(yMax,digits)+"w="+w2+((wMax > LEFT_MARGIN-4)?"med":"norm"));
+			    if ((flags&Y_NUMBERS)!=0 && (flags&Y_LOG_NUMBERS)==0)
+			        if (wMax > LEFT_MARGIN-4)
+			            ip.setFont(fontMedium);  //small font if there is not enough space for the numbers
+                for (int i=0; i<=(i2-i1); i++) {
+                    double v = step==0 ? yMin : (i+i1)*step;
+                    int y = TOP_MARGIN + frame.height - (int)Math.round((v - yMin)*yScale);
+                    if ((flags&Y_GRID)!=0) {
+                        ip.setColor(gridColor);
+                        ip.drawLine(x1, y, x2, y);
+                        ip.setColor(Color.black);
+                    }
+                    if ((flags&Y_TICKS)!=0) {
+                        ip.drawLine(x1, y, x1+TICK_LENGTH, y);
+                        ip.drawLine(x2, y, x2-TICK_LENGTH, y);
+                    }
+                    if ((flags&Y_NUMBERS)!=0) {
+                        String s = IJ.d2s(v,digits);
+                        int w = ip.getStringWidth(s);
+                        if (w>maxNumWidth) maxNumWidth = w;
+                        ip.drawString(s, LEFT_MARGIN-w-4, y+fontMaxAscent/2+1);
+                    }
+                    if ((flags&Y_LOG_NUMBERS)!=0) {
+                        ip.setFont(fontSmall);
+                        String s = IJ.d2s(v,digits);
+                        int ws = ip.getStringWidth(s);
+                        if (ws>maxNumWidth) maxNumWidth = ws;
+                        ip.drawString(s, LEFT_MARGIN-ws-1, y+fontMaxAscent/2-8);
+                        ip.setFont(font);
+                        String t = "10";
+                        int w = ip.getStringWidth(t);
+                        if (w>maxNumWidth) maxNumWidth = w;
+                        ip.drawString(t, LEFT_MARGIN-w-11, y+fontMaxAscent/2+2);
+                    }				
+                }
 			}
+			ip.setFont(font);
 			if ((flags&Y_MINOR_TICKS)!=0  && (flags&Y_LOG_NUMBERS)==0) {
 				step /= 10;
 				i1 = (int)Math.ceil (Math.min(yMin,yMax)/step-1.e-10);
@@ -900,7 +917,7 @@ public class Plot {
 			}
 		}
 		if ((flags&(Y_NUMBERS+Y_LOG_NUMBERS))==0) {					//simply note y-axis min&max
-			int digits = getDigits(yMin, yMax);
+			int digits = getDigits(yMin, yMax, 0.001*(yMax-yMin), 6);
 			String s = IJ.d2s(yMax, digits);
 			int sw = ip.getStringWidth(s);
 			if ((sw+4)>LEFT_MARGIN)
@@ -917,8 +934,8 @@ public class Plot {
 		FontMetrics fm = ip.getFontMetrics();
 		int x = LEFT_MARGIN;
 		int y = TOP_MARGIN + frame.height + fm.getAscent() + 6;
-		if ((flags&X_NUMBERS)==0 && (flags&X_LOG_NUMBERS)==0) {				//simply note x-axis min&max
-			int digits = getDigits(xMin, xMax);
+		if ((flags&(X_NUMBERS+X_LOG_NUMBERS))==0) {				//simply note x-axis min&max
+			int digits = getDigits(xMin, xMax, 0.001*(xMax-xMin), 7);
 			ip.drawString(IJ.d2s(xMin,digits), x, y);
 			String s = IJ.d2s(xMax,digits);
 			ip.drawString(s, x + frame.width-ip.getStringWidth(s)+6, y);
@@ -961,29 +978,47 @@ public class Plot {
 			pixels[i] = (byte)255;
 		ip = new ByteProcessor(width, height, pixels, null);
 	}
-	
-	int getDigits(double n1, double n2) {
-		if (Math.round(n1)==n1 && Math.round(n2)==n2)
-			if(n1>10000)
-				return -3;
-			else
-				return 0;
-		else {
-			n1 = Math.abs(n1);
-			n2 = Math.abs(n2);
-			double n = n1<n2&&n1>0.0?n1:n2;
-			double diff = Math.abs(n2-n1);
-			if (diff>0.0 && diff<n) n = diff;
-			int digits = 1;
-			if (n<10.0) digits = 2;
-			if (n<0.01) digits = 3;
-			if (n<0.001) digits = 4;
-			if (n<0.0001) digits = -3; // use scientific notation
-			if (n>10000) digits = -3; // use scientific notation
-			return digits;
-		}
-	}
-	
+
+    // Number of digits to display the number n with resolution 'resolution';
+    // (if n is integer and small enough to display without scientific notation,
+    // no decimals are needed, irrespective of 'resolution')
+    // Scientific notation is used for more than 'maxDigits' (must be >=3), and indicated
+    // by a negative return value
+    int getDigits(double n, double resolution, int maxDigits) {
+        if (isInteger(n) && Math.abs(n) < Math.pow(10,maxDigits-1)-1)
+            return 0;
+        else
+            return getDigits2(n, resolution, maxDigits);
+    }
+
+    // Number of digits to display the range between n1 and n2 with resolution 'resolution';
+    // Scientific notation is used for more than 'maxDigits' (must be >=3), and indicated
+    // by a negative return value
+    int getDigits(double n1, double n2, double resolution, int maxDigits) {
+        if (n1==0 && n2==0) return 0;
+        return getDigits2(Math.max(Math.abs(n1),Math.abs(n2)), resolution, maxDigits);
+    }
+
+    int getDigits2(double n, double resolution, int maxDigits) {
+        int log10ofN = (int)Math.floor(Math.log10(Math.abs(n))+1e-7);
+        int digits = resolution != 0 ?
+                -(int)Math.floor(Math.log10(Math.abs(resolution))+1e-7) : 
+                Math.max(0, -log10ofN+maxDigits-2);
+        int sciDigits = -Math.max((log10ofN+digits),1);
+        //IJ.log("n="+(float)n+"digitsRaw="+digits+" log10ofN="+log10ofN+" sciDigits="+sciDigits);
+        if (digits < -2 && log10ofN >= maxDigits)
+            digits = sciDigits; //scientific notation for large numbers
+        else if (digits < 0)
+            digits = 0;
+        else if (digits > maxDigits-1 && log10ofN < -2)
+            digits = sciDigits; // scientific notation for small numbers
+        return digits;
+    }
+
+    boolean isInteger(double n) {
+        return n==Math.round(n);
+    }
+
 	/** Draws the plot specified in the constructor. */
 	public void draw() {
 		int x, y;
@@ -1088,22 +1123,23 @@ public class Plot {
 		String text = "";
 		if (!frame.contains(x, y))
 			return text;
+        double xv = Double.NaN, yv = Double.NaN;
 		if (fixedYScale || multiplePlots) { // display cursor location
-			double xv = (x-LEFT_MARGIN)/xScale + xMin;
-			double yv = (TOP_MARGIN+frameHeight-y)/yScale +yMin;
-			xv = ((flags&X_LOG_NUMBERS)!=0) ? Math.pow(10.0,xv) : xv;
-			yv = ((flags&Y_LOG_NUMBERS)!=0) ? Math.pow(10.0,yv) : yv;
-			text =	"X=" + IJ.d2s(xv,getDigits(xv,xv))+", Y=" + IJ.d2s(yv,getDigits(yv,yv));
+			xv = (x-LEFT_MARGIN)/xScale + xMin;
+			yv = (TOP_MARGIN+frameHeight-y)/yScale +yMin;
 		} else { // display x and f(x)
 			int index = (int)((x-frame.x)/((double)frame.width/nPoints));
-			if (index>0 && index<nPoints) {
-				double xv = xValues[index];
-				double yv = yValues[index];
-				xv = ((flags&X_LOG_NUMBERS)!=0) ? Math.pow(10.0,xv) : xv;
-				yv = ((flags&Y_LOG_NUMBERS)!=0) ? Math.pow(10.0,yv) : yv;
-				text = "X=" + IJ.d2s(xv,getDigits(xv,xv))+", Y=" + IJ.d2s(yv,getDigits(yv,yv));
+			if (index>=0 && index<nPoints) {
+				xv = xValues[index];
+				yv = yValues[index];
 			}
 		}
+        if (!Double.isNaN(xv)) {
+            xv = ((flags&X_LOG_NUMBERS)!=0) ? Math.pow(10.0,xv) : xv;
+            yv = ((flags&Y_LOG_NUMBERS)!=0) ? Math.pow(10.0,yv) : yv;
+            text =	"X=" + IJ.d2s(xv, getDigits(xv, 0.001*(xMax-xMin), 6))
+                    +", Y=" + IJ.d2s(yv, getDigits(yv, 0.001*(yMax-yMin), 6));
+        }
 		return text;
 	}
 	

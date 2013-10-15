@@ -2294,6 +2294,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	 * @see ij.gui.Roi#setLocation
 	 * @see ij.gui.Roi#setNonScalable
 	 */
+static int counter = 1;
 	public void setOverlay(Overlay overlay) {
 		ImageCanvas ic = getCanvas();
 		if (ic!=null) {

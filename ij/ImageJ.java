@@ -77,7 +77,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.48e";
-	public static final String BUILD = "3"; 
+	public static final String BUILD = "14"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -577,9 +577,12 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 
 	public void windowClosing(WindowEvent e) {
-		//doCommand("Quit");
-		quit();
-		windowClosed = true;
+		if (Executer.getListenerCount()>0)
+			doCommand("Quit");
+		else {
+			quit();
+			windowClosed = true;
+		}
 	}
 
 	public void windowActivated(WindowEvent e) {
