@@ -780,7 +780,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		startX = xNew;
 		startY = yNew;
 		updateClipRect();
-		if ((lineWidth>1 && isLine()) || ignoreClipRect)
+		if ((lineWidth>1 && isLine()) || ignoreClipRect || ((this instanceof PolygonRoi)&&((PolygonRoi)this).isSplineFit()))
 			imp.draw();
 		else
 			imp.draw(clipX, clipY, clipWidth, clipHeight);
