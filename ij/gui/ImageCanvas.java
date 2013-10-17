@@ -981,7 +981,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			return;
 		}
 		
-		if ((overlay!=null||showAllOverlay!=null) && ((e.isAltDown()&&!drawingTool())||e.isControlDown()||overOverlayLabel)) {
+		if ((overlay!=null||showAllOverlay!=null) && ((e.isAltDown()&&!drawingTool())
+		||(e.isControlDown()&&toolID!=Toolbar.OVAL)||overOverlayLabel)) {
 			if (activateOverlayRoi(ox, oy)) {
 				mousePressedX = mousePressedY = 0;
 				return;

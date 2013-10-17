@@ -13,6 +13,8 @@ and the curve fitter no longer runs on the event queue and can be aborted.
 "Remove Positions...".
 <li> Line selections are always drawn offset 0.5 pixels down and to the right regardless
 of the "Sub-pixel resolution" option in <i>Edit&gt;Options&gt;Profile Plot Options</i>.
+<li> The default "Fill with:" option in the <i>File&gt;New&gt;Image</i>
+dialog is now "Black".
 <li> Fixed a 1.48d regression the caused the "Simplex Fitting Options" dialog in
 <i>Analyze&gt;Tools&gt;Curve Fitting</i> to throw and exception when
 performing user-defined fits.
@@ -28,6 +30,9 @@ that caused it to throw an exception.
 method to not work as expected.
 <li> Thanks to Michael Schmid, fixed a bug that caused the spline fitter to sometimes
 not work as expected.
+<li> Thanks to David Bragason, fixed a bug that made it impossible to create a centered
+oval selection on Windows and Linux by holding down the control key if there was
+an underlying overlay.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
