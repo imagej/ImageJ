@@ -829,33 +829,33 @@ public class PolygonRoi extends Roi {
 		}
 		int nNodes = isLine() ? nPoints : nPoints+1;
 		double length = getUncalibratedLength();
-		float[] nodeLengths = new float[nNodes];
-		float runningLength = 0f;
-		nodeLengths[0] = 0f;				//independent coordinate for x & y-splines
+		float[] nodePositions = new float[nNodes];
+		float lastNodePosition = 0f;		//independent coordinate for x & y-splines,
+		nodePositions[0] = 0f;				//incremented by the sqrt of the distance between points
 		for (int i=1; i<nPoints; i++) {
 			float dx = xpf[i] - xpf[i-1];
 			float dy = ypf[i] - ypf[i-1];
-			float dLength = (float)Math.sqrt(dx*dx+dy*dy);
-			if (dLength < 1e-5) dLength = 0.00001f; //avoid numerical problems with duplicate points
-			runningLength += dLength;
-			nodeLengths[i] = runningLength;
+			float dLength = (float)Math.sqrt(Math.sqrt(dx*dx+dy*dy));
+			if (dLength < 0.001f) dLength = 0.001f; //avoid numerical problems with duplicate points
+			lastNodePosition += dLength;
+			nodePositions[i] = lastNodePosition;
 		}
 		if (!isLine()) {					//closed polygon: close the line
 			float dx = xpf[nPoints-1] - xpf[0];
 			float dy = ypf[nPoints-1] - ypf[0];
-			float dLength = (float)Math.sqrt(dx*dx+dy*dy);
-			if (dLength < 1e-5) dLength = 0.00001f;
-			runningLength += dLength;
-			nodeLengths[nNodes-1] = runningLength;
+			float dLength = (float)Math.sqrt(Math.sqrt(dx*dx+dy*dy));
+			if (dLength < 0.001f) dLength = 0.001f;
+			lastNodePosition += dLength;
+			nodePositions[nNodes-1] = lastNodePosition;
 			if (xpf.length < nNodes) enlargeArrays(nNodes);
 			xpf[nNodes-1] = xpf[0];
 			ypf[nNodes-1] = ypf[0];
 		}
-		SplineFitter sfx = new SplineFitter(nodeLengths, xpf, nNodes, !isLine());
-		SplineFitter sfy = new SplineFitter(nodeLengths, ypf, nNodes, !isLine());
+		SplineFitter sfx = new SplineFitter(nodePositions, xpf, nNodes, !isLine());
+		SplineFitter sfy = new SplineFitter(nodePositions, ypf, nNodes, !isLine());
 	   
 		// Evaluate the splines at all points
-		double scale = (double)runningLength/(splinePoints-1);
+		double scale = (double)lastNodePosition/(splinePoints-1);
 		float xs=0f, ys=0f;
 		float xmin=Float.MAX_VALUE, xmax=-xmin, ymin=xmin, ymax=xmax;
 		for(int i=0; i<splinePoints; i++) {
