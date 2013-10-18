@@ -147,6 +147,7 @@ public class GelAnalyzer implements PlugIn {
 		gd.addCheckbox("Uncalibrated OD", uncalibratedOD);
 		gd.addCheckbox("Label with percentages", labelWithPercentages);
 		gd.addCheckbox("Invert peaks", invertPeaks);
+		gd.addHelp(IJ.URL+"/docs/menus/analyze.html#gels");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;

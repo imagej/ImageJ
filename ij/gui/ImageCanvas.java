@@ -501,7 +501,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			return;
 		}
 		int id = Toolbar.getToolId();
-		switch (Toolbar.getToolId()) {
+		switch (id) {
 			case Toolbar.MAGNIFIER:
 				setCursor(moveCursor);
 				break;
@@ -981,13 +981,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			return;
 		}
 		
-		if ((overlay!=null||showAllOverlay!=null) && ((e.isAltDown()&&!drawingTool())
-		||(e.isControlDown()&&toolID!=Toolbar.OVAL)||overOverlayLabel)) {
-			if (activateOverlayRoi(ox, oy)) {
-				mousePressedX = mousePressedY = 0;
-				return;
-			}
-		}
 		mousePressedX = ox;
 		mousePressedY = oy;
 		mousePressedTime = System.currentTimeMillis();
@@ -1383,10 +1376,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public void mouseReleased(MouseEvent e) {
 		int ox = offScreenX(e.getX());
 		int oy = offScreenY(e.getY());
-		if ((overlay!=null||showAllOverlay!=null) && ox==mousePressedX && oy==mousePressedY
-		&& (System.currentTimeMillis()-mousePressedTime)>250L && !drawingTool()) {
-			if (activateOverlayRoi(ox,oy))
-				return;
+		if ((overlay!=null||showAllOverlay!=null) && ox==mousePressedX && oy==mousePressedY) {
+			boolean cmdDown = IJ.isMacOSX() && e.isMetaDown();
+			if (e.isAltDown()||e.isControlDown()||cmdDown||overOverlayLabel) {
+				if (activateOverlayRoi(ox, oy))
+					return;
+			} else if ((System.currentTimeMillis()-mousePressedTime)>250L && !drawingTool()) {
+				if (activateOverlayRoi(ox,oy))
+					return;
+			}
 		}
 
 		PlugInTool tool = Toolbar.getPlugInTool();
