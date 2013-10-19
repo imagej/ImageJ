@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.48e 18 October 2013</u>
+<li> <u>1.48e 19 October 2013</u>
 <ul>
 <li> Thanks to Michael Schmid, plots now use scientific notation for large numbers
 and the curve fitter no longer runs on the event queue and can be aborted.
@@ -13,6 +13,8 @@ and the curve fitter no longer runs on the event queue and can be aborted.
 "Remove Positions...".
 <li> Line selections are always drawn offset 0.5 pixels down and to the right regardless
 of the "Sub-pixel resolution" option in <i>Edit&gt;Options&gt;Profile Plot Options</i>.
+<li> Thanks to Miettinen Arttu, <i>File&gt;Import&gt;Raw</i> now decodes image dimensions
+embedded in file names (e.g., "name1_512x512.raw", "name2_256x256x256.raw").
 <li> The default "Fill with:" option in the <i>File&gt;New&gt;Image</i>
 dialog is now "Black".
 <li> Added a "Help" button to the <i>Analyze&gt;Gels&gt;Gel Analyzer Options</i>
@@ -34,6 +36,7 @@ method to not work as expected.
 not work as expected.
 <li> Thanks to David Bragason, fixed a bug that made it impossible to subtract from a
 selection or create a centered oval selection if there was an underlying overlay.
+<li> Fixed a bug that caused the bounding box of spline fit selections to be incorrect.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

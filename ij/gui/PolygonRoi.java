@@ -635,7 +635,7 @@ public class PolygonRoi extends Roi {
 		imp.draw(xmin2-m, ymin2-m, xmax2-xmin2+m*2, ymax2-ymin2+m*2);
 	}
 
-	void resetBoundingRect() {
+	private void resetBoundingRect() {
 		//IJ.log("resetBoundingRect");
 		if (xpf!=null) {
 			resetSubPixelBoundingRect();
@@ -667,8 +667,12 @@ public class PolygonRoi extends Roi {
 		bounds = null;
 	}
 	
-	void resetSubPixelBoundingRect() {
+	private void resetSubPixelBoundingRect() {
 		//IJ.log("resetSubPixelBoundingRect: "+state+" "+bounds);
+		if (xSpline!=null) {
+			resetSplineFitBoundingRect();
+			return;
+		}
 		float xbase = (float)getXBase();
 		float ybase = (float)getYBase();
 		float xpf0 = xpf[0];
@@ -690,11 +694,33 @@ public class PolygonRoi extends Roi {
 			xpf[i] -= xbase;
 			ypf[i] -= ybase;
 		}
-		if (xSpline!=null) {
-			for (int i=0; i<splinePoints; i++) {
-				xSpline[i] -= xpf0 - xpf[0];
-				ySpline[i] -= ypf0 - ypf[0];
-			}
+	}
+
+	private void resetSplineFitBoundingRect() {
+		float xbase = (float)getXBase();
+		float ybase = (float)getYBase();
+		float xSpline0 = xSpline[0];
+		float ySpline0 = ySpline[0];
+		for (int i=0; i<splinePoints; i++) {
+			xSpline[i] = xSpline[i]+xbase;
+			ySpline[i] = ySpline[i]+ybase;
+		}
+		FloatPolygon poly = new FloatPolygon(xSpline, ySpline, splinePoints);
+		Rectangle r = poly.getBounds();
+		x = r.x;;
+		y = r.y;
+		width = r.width;
+		height = r.height;
+		bounds = poly.getFloatBounds();
+		xbase = (float)bounds.x;
+		ybase = (float)bounds.y;
+		for (int i=0; i<splinePoints; i++) {
+			xSpline[i] -= xbase;
+			ySpline[i] -= ybase;
+		}
+		for (int i=0; i<nPoints; i++) {
+			xpf[i] -= xSpline0 - xSpline[0];
+			ypf[i] -= ySpline0 - ySpline[0];
 		}
 	}
 
@@ -961,7 +987,6 @@ public class PolygonRoi extends Roi {
 	protected void handleMouseUp(int sx, int sy) {
 		if (state==MOVING) {
 			state = NORMAL;
-			//resetBoundingRect();
 			return;
 		}				
 		if (state==MOVING_HANDLE) {
@@ -970,6 +995,8 @@ public class PolygonRoi extends Roi {
 			updateClipRect();
 			oldX=x; oldY=y;
 			oldWidth=width; oldHeight=height;
+			if (subPixelResolution())
+				resetBoundingRect();
 			return;
 		}		
 		if (state!=CONSTRUCTING)
@@ -1391,14 +1418,6 @@ public class PolygonRoi extends Roi {
 		return subPixel;
 	}
 
-	//public Polygon getConvexHull() {
-	//	FloatPolygon p = getFloatConvexHull();
-	//	if (p==null)
-	//		return null;
-	//	else
-	//		return new Polygon(toIntR(p.xpoints), toIntR(p.ypoints), p.npoints);
-	//}
-
 	/** Uses the gift wrap algorithm to find the 
 		convex hull and returns it as a Polygon. */
 	public Polygon getConvexHull() {
@@ -1556,21 +1575,7 @@ public class PolygonRoi extends Roi {
 	public void setDrawOffset(boolean drawOffset) {
 		this.drawOffset = drawOffset && subPixelResolution();
 	}
-	
-	/** Return this selection's bounding rectangle. */
-	public Rectangle getBounds() {
-		if (subPixelResolution() && state!=CONSTRUCTING)
-			resetBoundingRect();
-		return super.getBounds();
-	}
-	
-	/** Return this selection's bounding rectangle. */
-	public Rectangle2D.Double getFloatBounds() {
-		if (subPixelResolution())
-			resetBoundingRect();
-		return super.getFloatBounds();
-	}
-	
+		
 	public String getDebugInfo() {
 		String s = "ROI Debug Properties\n";
 		s += "	bounds: "+bounds+"\n";
