@@ -16,7 +16,8 @@ of the "Sub-pixel resolution" option in <i>Edit&gt;Options&gt;Profile Plot Optio
 <li> Thanks to Miettinen Arttu, <i>File&gt;Import&gt;Raw</i> now decodes image dimensions
 embedded in file names (e.g., "name1_512x512.raw", "name2_256x256x256.raw").
 <li> The default "Fill with:" option in the <i>File&gt;New&gt;Image</i>
-dialog is now "Black".
+dialog is now "Black" and the default foreground color is white and the default
+background color is black.
 <li> Added a "Help" button to the <i>Analyze&gt;Gels&gt;Gel Analyzer Options</i>
 dialog box.
 <li> Fixed a 1.48d regression the caused the "Simplex Fitting Options" dialog in
@@ -28,7 +29,7 @@ values for the initial parameters (resulting in more iterations than necessary).
 work as expected when ImageJ was exited by clicking on the "ImageJ" window's the close box.
 <li> Thanks to Pavol Bauer, fixed a bug that caused <i>Process&gt;Batch&gt;Macro</i> to
 not open .lsm files using Bio-Formats when the LSM_Reader plugin was not installed.
-<li> Fixed bug in the new <i>File&gt;Open Samples&gt;Cache Sample Images</i> command 
+<li> Fixed a bug in the new <i>File&gt;Open Samples&gt;Cache Sample Images</i> command 
 that caused it to throw an exception.
 <li> Thanks to Dimiter Prodanov, fixed a bug the caused the ImageProcessor.clone()
 method to not work as expected.

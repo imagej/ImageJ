@@ -254,11 +254,15 @@ public class ImportDialog {
 	
 	private void getDimensionsFromName(String name) {
 		if (name==null) return;
-		char[] name2 = new char[name.length()];
-		for (int i=0; i<name.length(); i++)  // change non-digits to spaces
-			name2[i] = Character.isDigit(name.charAt(i))?name.charAt(i):' ';
-		String name3 = new String(name2);
-		String[] numbers = Tools.split(name3);
+		int lastUnderscore = name.lastIndexOf("_");
+		String name2 = name;
+		if (lastUnderscore>=0)
+			name2 = name.substring(lastUnderscore);
+		char[] chars = new char[name2.length()];
+		for (int i=0; i<name2.length(); i++)  // change non-digits to spaces
+			chars[i] = Character.isDigit(name2.charAt(i))?name2.charAt(i):' ';
+		name2 = new String(chars);
+		String[] numbers = Tools.split(name2);
 		int n = numbers.length;
 		if (n<2 || n>3) return;
 		int w = (int)Tools.parseDouble(numbers[0],0);
@@ -291,10 +295,8 @@ public class ImportDialog {
 			choiceSelection = 7;	// 24-bit RGB
 		} else if (fileSize==imageSize)
 			choiceSelection = 0;	// 8-bit
-		if (name.endsWith("mm.raw"))
+		if (name.endsWith("be.raw"))
 			intelByteOrder = false;
-		else if (name.endsWith("ii.raw"))
-			intelByteOrder = true;
 	}
 	
 }
