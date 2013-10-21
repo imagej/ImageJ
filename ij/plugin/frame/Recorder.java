@@ -341,6 +341,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		key = trimKey(key);
 		path = fixPath(path);
 		path = addQuotes(path);
+		if (commandOptions!=null && commandOptions.contains(key+"="+path))
+			return; // don't record duplicate
 		checkForDuplicate(key+"=", path);
 		if (commandOptions==null)
 			commandOptions = key+"="+path;
