@@ -84,6 +84,7 @@ public class PluginInstaller implements PlugIn {
 	}
 
 	public static byte[] download(String urlString, String name) {
+		int maxLength = 52428800; //50MB
 		URL url = null;
 		try {
 			url = new URL(urlString);
@@ -92,29 +93,39 @@ public class PluginInstaller implements PlugIn {
 		}
 		if (url==null) return null;
 		byte[] data;
+		int n = 0;
+		boolean unknownLength = false;
 		try {
 			URLConnection uc = url.openConnection();
 			int len = uc.getContentLength();
+			unknownLength = len<0;
+			if (unknownLength) len = maxLength;
 			if (name!=null)
 				IJ.showStatus("Downloading "+url.getFile());
 			InputStream in = uc.getInputStream();
 			data = new byte[len];
-			int n = 0;
 			int lenk = len/1024;
-			while (n < len) {
-				int count = in.read(data, n, len - n);
+			while (n<len) {
+				int count = in.read(data, n, len-n);
 				if (count<0)
-					throw new EOFException();
+					break;
 				n += count;
 				if (name!=null)
 					IJ.showStatus("Downloading "+name+" ("+(n/1024)+"/"+lenk+"k)");
 				IJ.showProgress(n, len);
 			}
 			in.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
+			IJ.log(e+" "+urlString);
 			return null;
 		}
 		if (name!=null) IJ.showStatus("");
+		if (unknownLength) {
+			byte[] data2 = data;
+			data = new byte[n];
+			for (int i=0; i<n; i++)
+				data[i] = data2[i];
+		}
 		return data;
 	}
 	

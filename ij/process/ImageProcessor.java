@@ -2472,8 +2472,7 @@ public abstract class ImageProcessor implements Cloneable {
 		sliceNumber = slice;
 	}
 	
-	/** Returns a shallow copy of this ImageProcessor. */
-	public synchronized Object clone() {
+	public Object clone() {
 		try {
 			return super.clone();
 		} catch (CloneNotSupportedException e) {

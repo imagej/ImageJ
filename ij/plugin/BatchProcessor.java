@@ -3,7 +3,7 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.util.Tools;
-import ij.io.OpenDialog;
+import ij.io.*;
 import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.event.*;
@@ -161,6 +161,7 @@ import java.util.Vector;
 	void processFolder(String inputPath, String outputPath) {
 		String[] list = (new File(inputPath)).list();
 		int index = 0;
+		int startingCount = WindowManager.getImageCount();
 		for (int i=0; i<list.length; i++) {
 			if (IJ.escapePressed()) break;
 			String path = inputPath + list[i];
@@ -173,8 +174,12 @@ import java.util.Vector;
 			IJ.redirectErrorMessages(true);
 			ImagePlus imp = IJ.openImage(path);
 			IJ.redirectErrorMessages(false);
+			if (imp==null && WindowManager.getImageCount()>startingCount)
+				imp = WindowManager.getCurrentImage();
+			if (imp==null)
+				imp = Opener.openUsingBioFormats(path);
 			if (imp==null) {
-				IJ.log("IJ.openImage() returned null: "+path);
+				IJ.log("openImage() and openUsingBioFormats() returned null: "+path);
 				continue;
 			}
 			if (!macro.equals("")) {

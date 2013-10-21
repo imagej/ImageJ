@@ -60,6 +60,7 @@ import java.util.Hashtable;
  * 2012-11-20: mor tries to find initial params not leading to NaN
  * 2013-09-24: 50% higher maximum iteration count, and never uses more than 0.4*maxIter
  *             iterations per minimization to avoid trying too few sets of initial params
+ * 2013-10-13: setStatusAndEscape to show iterations and enable abort by ESC
  *
  */
 public class Minimizer {
@@ -114,6 +115,10 @@ public class Minimizer {
 	private boolean wasInitialized;         // initialization was successful at least once
     private double[] result;                // result data+function value
     private Vector<double[]> resultsVector; // holds several results if multiple tries; the best one is kept.
+    private String ijStatusString = null;   // shown together with iteration count in status, no display if null
+    private boolean checkEscape;            // whether to stop when Escape is pressed
+    private int nextIterationForStatus = 10;// next iteration when we should display the status
+    private long startTime;                 // of the whole minimization process
     /*private Hashtable<Thread, double[][]> simpTable =
             new Hashtable<Thread, double[][]>(); //for each thread, holds a reference to its simplex */
 
@@ -220,6 +225,8 @@ public class Minimizer {
                 }
             if (resultsVector.size() >= 2) return SUCCESS;  // if we have two (almost) equal results, it's enough
         } //for i <= maxRestarts
+        if (ijStatusString != null)
+            IJ.showStatus("");                      // reset status display
         return maxRestarts>0 ?
                 MAX_RESTARTS_EXCEEDED :             // number of restarts exceeded without two equal results
                 status;                             // if only one run was required, we can't have 2 equal results
@@ -382,10 +389,22 @@ public class Minimizer {
     }
 
     /** Aborts minimization. Calls to getParams() will return the best solution found so far.
-     *  This method may be called from the user-supplied target function, e.g. when it checks
-     *  for IJ.escapePressed(), allowing the user to abort a lengthy minimization. */
+     *  This method may be called from the user-supplied target function.
+     *  If displayStatusAndCheckEsc has been called before, the Minimizer itself checks for the ESC key.
+     */
     public void abort() {
         status = ABORTED;
+    }
+
+    /** Create output on the number of iterations in the ImageJ Status line, e.g.
+     *  "<ijStatusString> 50 (max 750); ESC to stop"
+     *  @param ijStatusString Displayed in the beginning of the status message. No display if null.
+     *  E.g. "Optimization: Iteration "
+     *  @param checkEscape When true, the Minimizer stops if escape is pressed and the status
+     *  becomes ABORTED. Note that checking for ESC does not work in the Event Queue thread. */
+    public void setStatusAndEsc(String ijStatusString, boolean checkEscape) {
+        this.ijStatusString = ijStatusString;
+        this.checkEscape = checkEscape;
     }
 
     /** Add a given number of extra elements to array of parameters (independent vaiables)
@@ -409,6 +428,8 @@ public class Minimizer {
             return;
         }
         wasInitialized = true;
+        if (startTime == 0)
+            startTime = System.currentTimeMillis();
         //if (IJ.debugMode) showSimplex(simp, seed+" Initialized:");
         int bestVertexNumber = minimize(simp);          // first minimization
         double bestValueSoFar = value(simp[bestVertexNumber]);
@@ -520,6 +541,23 @@ public class Minimizer {
                 status = MAX_ITERATIONS_EXCEEDED;
             if (status != SUCCESS)
                 break;
+            if ((ijStatusString != null || checkEscape) && totalNumIter > nextIterationForStatus) {
+                long time = System.currentTimeMillis();
+                nextIterationForStatus = totalNumIter + (int)(totalNumIter*500L/(time-startTime+1)); //next display 0.5 sec later
+                if (time - startTime > 1000L) {             // display status and check for ESC after the first second
+                    if (checkEscape && IJ.escapePressed()) {
+                        status = ABORTED;
+                        IJ.resetEscape();
+                        IJ.showStatus(ijStatusString+" ABORTED");
+                        break;
+                    }
+                    if (ijStatusString != null) {
+                        String statusString = ijStatusString+totalNumIter+" ("+maxIter+" max)";
+                        if (checkEscape) statusString += " ESC to stop";
+                        IJ.showStatus(statusString);
+                    }
+                }
+            }
         }
         //showSimplex(simp, "after "+totalNumIter+" iterations: value="+value(simp[best]));
         return best;
