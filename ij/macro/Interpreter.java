@@ -1976,13 +1976,13 @@ public class Interpreter implements MacroConstants {
 	 * window
 	 * N. Vischer 
 	 *
-	 * @param stkPos stack index of variable to be shown
+	 * @param row Debug window row of variable to be shown
 	 */
-	public void showArrayInspector(int stkPos) {
+	public void showArrayInspector(int row) {
 		if (stack==null)
 			return;
 		int nFunctions = showDebugFunctions?3:0;
-		stkPos -= nFunctions;
+		int stkPos = row - nFunctions;
 		if (stack.length>stkPos && stkPos>=0) {
 			Variable var = stack[stkPos];
 			if (var==null)
@@ -2041,7 +2041,7 @@ public class Interpreter implements MacroConstants {
 				}
 			}
 			if (varExists)
-				showArrayInspector(inspectStkIndex);
+				showArrayInspector(inspectStkIndex+(showDebugFunctions?3:0));
 			else
 				arrayWindow.setVisible(false);
 		}

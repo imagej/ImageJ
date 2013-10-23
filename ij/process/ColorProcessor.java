@@ -1353,5 +1353,12 @@ public class ColorProcessor extends ImageProcessor {
 		return 24;
 	}
 
+	public Object clone() {
+		ColorProcessor cp2 = (ColorProcessor)super.clone();
+		int[] pixels32 =(int[])getPixels();;
+		cp2.setPixels(pixels32.clone());
+		return cp2;
+	}
+
 }
 

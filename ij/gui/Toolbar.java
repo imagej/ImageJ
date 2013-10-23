@@ -84,8 +84,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private CheckboxMenuItem straightLineItem, polyLineItem, freeLineItem, arrowItem;
 	private String currentSet = "Startup Macros";
 
-	private static Color foregroundColor = Prefs.getColor(Prefs.FCOLOR,Color.black);
-	private static Color backgroundColor = Prefs.getColor(Prefs.BCOLOR,Color.white);
+	private static Color foregroundColor = Prefs.getColor(Prefs.FCOLOR,Color.white);
+	private static Color backgroundColor = Prefs.getColor(Prefs.BCOLOR,Color.black);
 	private static int ovalType = OVAL_ROI;
 	private static boolean multiPointMode = Prefs.multiPointMode;
 	private static boolean roundRectMode;

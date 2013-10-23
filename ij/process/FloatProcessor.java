@@ -1059,5 +1059,12 @@ public class FloatProcessor extends ImageProcessor {
 		return 32;
 	}
 
+	public Object clone() {
+		FloatProcessor fp2 = (FloatProcessor)super.clone();
+		float[] fpixels =(float[])getPixels();;
+		fp2.setPixels(fpixels.clone());
+		return fp2;
+	}
+
 }
 

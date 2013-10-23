@@ -238,6 +238,7 @@ public class RoiProperties {
 		if (roi==null) return;
 		boolean allIntegers = true;
 		FloatPolygon fp = roi.getFloatPolygon();
+		//FloatPolygon fp  = ((PolygonRoi)roi).getNonSplineFloatCoordinates();
 		ImagePlus imp = roi.getImage();
 		String title = "Coordinates";
 		if (imp!=null) {

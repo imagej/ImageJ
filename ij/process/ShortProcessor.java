@@ -1101,6 +1101,13 @@ public class ShortProcessor extends ImageProcessor {
 		return 16;
 	}
 
+	public Object clone() {
+		ShortProcessor sp2 = (ShortProcessor)super.clone();
+		short[] pixels16 =(short[])getPixels();;
+		sp2.setPixels(pixels16.clone());
+		return sp2;
+	}
+
 	/** Not implemented. */
 	public void medianFilter() {}
 	/** Not implemented. */

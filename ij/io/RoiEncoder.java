@@ -103,13 +103,9 @@ public class RoiEncoder {
 			y = p.ypoints;
 			if (roi.subPixelResolution()) {
 				FloatPolygon fp = null;
-				if (proi.isSplineFit()) {
-					fp = proi.getNonSplineFloatCoordinates();
-					for (int i=0; i<fp.npoints; i++) {
-						fp.xpoints[i] += r.x;
-						fp.ypoints[i] += r.y;
-					}
-				} else
+				if (proi.isSplineFit())
+					fp = proi.getNonSplineFloatPolygon();
+				else
 					fp = roi.getFloatPolygon();
 				if (n==fp.npoints) {
 					options |= RoiDecoder.SUB_PIXEL_RESOLUTION;

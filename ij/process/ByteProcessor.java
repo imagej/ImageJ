@@ -1258,5 +1258,12 @@ public class ByteProcessor extends ImageProcessor {
 		return pixels;
 	}
 
+	public Object clone() {
+		ByteProcessor bp2 = (ByteProcessor)super.clone();
+		byte[] pixels8 =(byte[])getPixels();;
+		bp2.setPixels(pixels8.clone());
+		return bp2;
+	}
+
 }
 

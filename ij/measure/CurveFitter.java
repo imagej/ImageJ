@@ -35,6 +35,7 @@ import java.util.Hashtable;
  *	2012-10-07: added GAUSSIAN_NOOFFSET fit type
  *	2012-11-20: Bugfix: exception on Gaussian&Rodbard with initial params, bad initial params for Gaussian 
  *  2013-09-24: Added "Exponential Recovery (no offset)" and "Chapman-Richards" (3-parameter) fit types.
+  * 2013-10-11: bugfixes, added setStatusAndEsc to show iterations and enable abort by ESC
  */
 
 public class CurveFitter implements UserFunction{
@@ -99,7 +100,7 @@ public class CurveFitter implements UserFunction{
 	private double[] xDataSave, yDataSave;	//saved original data after fitting modified data
 	private int numPoints;			// number of data points in actual fit
 	private double ySign = 0;		// remember sign of y data for power-law fit via regression
-	private double sumY = Double.NaN, sumY2 = Double.NaN; // sum(y), sum(y^2) of the data used for fitting
+	private double sumY = Double.NaN, sumY2 = Double.NaN;  // sum(y), sum(y^2) of the data used for fitting
 	private int numParams;			// number of parameters
 	private double[] initialParams; // user specified or estimated initial parameters
 	private double[] initialParamVariations; // estimate of range of parameters
@@ -113,8 +114,8 @@ public class CurveFitter implements UserFunction{
 	private Interpreter macro;		// holds macro with custom equation
 	private int macroStartProgramCounter;	 // equation in macro starts here
 	private int numRegressionParams;// number of parameters that can be calculated by linear regression
-	private int offsetParam = -1;	// parameter number: function has this parameter as offset
-	private int factorParam = -1;	// index of parameter that is slope or multiplicative factor of the function
+	private int offsetParam = -1;   // parameter number: function has this parameter as offset
+	private int factorParam = -1;   // index of parameter that is slope or multiplicative factor of the function
 	private boolean hasSlopeParam;	// whether the 'factorParam' is the slope of the function
 	private double[] finalParams;	// parameters obtained by fit
 	private boolean linearRegressionUsed;	// whether linear regression alone was used instead of the minimizer
@@ -124,7 +125,6 @@ public class CurveFitter implements UserFunction{
 	private String errorString;		// in case of error before invoking the minimizer
 	private static String[] sortedFitList; // names like fitList, but in more logical sequence
 	private static Hashtable<String, Integer> namesTable; // converts fitList String into number
-
 
 	/** Construct a new CurveFitter. */
 	public CurveFitter (double[] xData, double[] yData) {
@@ -579,6 +579,16 @@ public class CurveFitter implements UserFunction{
 		if (maxRelError < 1e-16) maxRelError = 1e-16;	// can't be less than numerical accuracy
 		this.maxRelError = maxRelError;
 	}
+
+    /** Create output on the number of iterations in the ImageJ Status line, e.g.
+     *  "<ijStatusString> 50 (max 750); ESC to stop"
+     *  @param ijStatusString Displayed in the beginning of the status message. No display if null.
+     *  E.g. "Curve Fit: Iteration "
+     *  @param checkEscape When true, the Minimizer stops if escape is pressed and the status
+     *  becomes ABORTED. Note that checking for ESC does not work in the Event Queue thread. */
+    public void setStatusAndEsc(String ijStatusString, boolean checkEscape) {
+        minimizer.setStatusAndEsc(ijStatusString, checkEscape);
+    }
 
 	/** Get number of iterations performed. Returns 1 in case the fit was done by linear regression only. */
 	public int getIterations() {

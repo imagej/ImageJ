@@ -19,6 +19,9 @@ public class SplineFitter {
 		initSpline(x, y, n);
 	}
 
+	/** For closed curves: the first and last y value should be identical;
+	 *	internally, a periodic continuation with a few will be used at both
+	 *	ends */
 	public SplineFitter(float[] x, float[] y, int n, boolean closed) {
 		initSpline(x, y, n, closed);
 	}
@@ -54,21 +57,25 @@ public class SplineFitter {
 	}
 
 	private void initSpline(float[] x, float[] y, int n, boolean closed) {
-		if (closed) {
+		if (closed) {					//add periodic continuation at both ends
 			extendBy = EXTEND_BY;
-			if (extendBy>n)
-				extendBy = n;
+			if (extendBy>=n)
+				extendBy = n - 1;
 			int n2 = n + 2*extendBy;
 			float[] xx = new float[n2];
 			float[] yy = new float[n2];
-			for (int i=0; i<n2; i++)
-				xx[i] = i;
-			for (int i=0; i<extendBy; i++)
-				yy[i] = y[n-(extendBy-i)];
-			for (int i=extendBy; i<extendBy+n; i++)
+			for (int i=0; i<extendBy; i++) {
+				xx[i] = x[n-(extendBy-i+1)] - x[n-1];
+				yy[i] = y[n-(extendBy-i+1)];
+			}
+			for (int i=extendBy; i<extendBy+n; i++) {
+				xx[i] = x[i-extendBy];
 				yy[i] = y[i-extendBy];
-			for (int i=extendBy+n; i<n2; i++)
-				yy[i] = y[i-(extendBy+n)];
+			}
+			for (int i=extendBy+n; i<n2; i++) {
+				xx[i] = x[i+1-(extendBy+n)] - x[0] + x[n-1];
+				yy[i] = y[i+1-(extendBy+n)];
+			}
 			n = n2;
 			x = xx;
 			y = yy;
@@ -98,7 +105,7 @@ public class SplineFitter {
 	/** Evalutes spline function at given point */
 	public double evalSpline(double xp) {
 		if (xpoints!=null)
-			return evalSpline(xpoints, ypoints, npoints, xp+extendBy);
+			return evalSpline(xpoints, ypoints, npoints, xp);
 		else
 			return evalSpline(ixpoints, iypoints, npoints, xp);
 	}

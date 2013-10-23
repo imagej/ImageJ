@@ -34,6 +34,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private static final int SHOW_ALL=0, SHOW_NONE=1, LABELS=2, NO_LABELS=3;
 	private static final int MENU=0, COMMAND=1;
 	private static final int IGNORE_POSITION=-999;
+	private static final int CHANNEL=0, SLICE=1, FRAME=2, SHOW_DIALOG=3;
 	private static int rows = 15;
 	private static int lastNonShiftClick = -1;
 	private static boolean allowMultipleSelections = true; 
@@ -159,7 +160,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("Multi Plot");
 		addPopupItem("Sort");
 		addPopupItem("Specify...");
-		addPopupItem("Remove Slice Info");
+		addPopupItem("Remove Positions...");
 		addPopupItem("Labels...");
 		addPopupItem("List");
 		addPopupItem("Interpolate ROIs");
@@ -225,8 +226,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			sort();
 		else if (command.equals("Specify..."))
 			specify();
-		else if (command.equals("Remove Slice Info"))
-			removeSliceInfo();
+		else if (command.equals("Remove Positions..."))
+			removePositions(SHOW_DIALOG);
 		else if (command.equals("Labels..."))
 			labels();
 		else if (command.equals("List"))
@@ -1397,25 +1398,74 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		runCommand("add");
 	}
 	
-	void removeSliceInfo() {
+	private static boolean channel=false, slice=true, frame=false;
+	
+	private void removePositions(int position) {
 		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
+		if (indexes.length==0)
+			return;
+		boolean removeChannels = position==CHANNEL;
+		boolean removeFrames = position==FRAME;
+		boolean removeSlices = !(removeChannels||removeFrames);
+		if (position==SHOW_DIALOG) {
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (imp!=null && !imp.isHyperStack())
+				{channel=false; slice=true; frame=false;}
+			Font font = new Font("SansSerif", Font.BOLD, 12);
+			GenericDialog gd = new GenericDialog("Remove");
+			gd.setInsets(5,15,0);
+			gd.addMessage("Remove positions for:      ", font);
+			gd.setInsets(6,25,0);
+			gd.addCheckbox("Channels:", channel);
+			gd.setInsets(0,25,0);
+			gd.addCheckbox("Slices:", slice);
+			gd.setInsets(0,25,0);
+			gd.addCheckbox("Frames:", frame);
+			gd.showDialog();
+			if (gd.wasCanceled())
+				return;
+			removeChannels = gd.getNextBoolean();
+			removeSlices = gd.getNextBoolean();
+			removeFrames = gd.getNextBoolean();
+			channel = removeChannels;
+			slice = removeSlices;
+			frame = removeFrames;
+		}
+		if (!removeChannels && !removeSlices && !removeFrames) {
+			slice = true;
+			return;
+		}
 		for (int i=0; i<indexes.length; i++) {
 			int index = indexes[i];
 			String name = (String) listModel.getElementAt(index);
+			Roi roi = (Roi)rois.get(name);
+			int c = roi.getCPosition();
+			int z = roi.getZPosition();
+			int t = roi.getTPosition();
+			if (c>0 || t>0) {
+				if (removeChannels) c = 0;
+				if (removeSlices) z = 0;
+				if (removeFrames) t = 0;
+				roi.setPosition(c, z, t);
+				continue;
+			}
 			int n = getSliceNumber(name);
 			if (n==-1) continue;
 			String name2 = name.substring(5, name.length());
 			name2 = getUniqueName(name2);
-			Roi roi = (Roi)rois.get(name);
 			rois.remove(name);
 			roi.setName(name2);
 			roi.setPosition(0);
 			rois.put(name2, roi);
 			listModel.setElementAt(name2, index);
 		}
-		if (record()) Recorder.record("roiManager", "Remove Slice Info");
+		if (record()) {
+			if (removeChannels) Recorder.record("roiManager", "Remove Channel Info");
+			if (removeSlices) Recorder.record("roiManager", "Remove Slice Info");
+			if (removeFrames) Recorder.record("roiManager", "Remove Frame Info");
+		}
 	}
 
 	private void help() {
@@ -1769,8 +1819,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			//	IJ.log(debug[i]);
 		} else if (cmd.equals("enable interrupts")) {
 			ignoreInterrupts = false;
+		} else if (cmd.equals("remove channel info")) {
+			removePositions(CHANNEL);
 		} else if (cmd.equals("remove slice info")) {
-			removeSliceInfo();
+			removePositions(SLICE);
+		} else if (cmd.equals("remove frame info")) {
+			removePositions(FRAME);
 		} else if (cmd.equals("list")) {
 			listRois();
 		} else if (cmd.equals("interpolate rois")) {
@@ -2060,7 +2114,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	private void removeOverlay(ImagePlus imp) {
-		if (imp!=null)
+		if (imp!=null && imp.getCanvas()!=null)
 			setOverlay(imp, null);
 	}
 	
