@@ -390,7 +390,7 @@ public class Plot {
 	/** Adds a set of points to the plot or adds a curve if shape is set to LINE.
 	 * @param x			the x-coodinates
 	 * @param y			the y-coodinates
-	 * @param z			the errorBars
+	 * @param errorBars			the errorBars
 	 * @param shape		CIRCLE, X, BOX, TRIANGLE, CROSS, DOT or LINE
 	 */
 	public void addPoints(double[] x, double[] y, double[] errorBars, int shape) {

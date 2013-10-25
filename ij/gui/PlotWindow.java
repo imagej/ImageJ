@@ -13,8 +13,9 @@ import ij.plugin.filter.Analyzer;
 import ij.measure.*;
 import ij.io.SaveDialog;
 
-/** This class implements the Analyze>Plot Profile command.
-* @authors Michael Schmid and Wayne Rasband
+/** This class implements the Analyze/Plot Profile command.
+* @author Michael Schmid and Wayne Rasband
+* @author Wayne Rasband
 */
 public class PlotWindow extends ImageWindow implements ActionListener, ClipboardOwner,
 	MouseListener, MouseMotionListener, KeyListener, ImageListener, Runnable {

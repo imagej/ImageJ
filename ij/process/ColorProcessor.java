@@ -505,7 +505,7 @@ public class ColorProcessor extends ImageProcessor {
 	}
 	
 	/** Sets the pixels of one color channel from a ByteProcessor.
-	*  @param channelNumber  Determines the color channel, 1=red, 2=green, 3=blue, 4=alpha
+	*  @param channel  Determines the color channel, 1=red, 2=green, 3=blue, 4=alpha
 	*  @param bp  The ByteProcessor where the image data are read from.
 	*/
 	public void setChannel(int channel, ByteProcessor bp) {
