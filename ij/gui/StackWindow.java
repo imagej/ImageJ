@@ -23,7 +23,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	public StackWindow(ImagePlus imp) {
 		this(imp, null);
 	}
-    
+	
     public StackWindow(ImagePlus imp, ImageCanvas ic) {
 		super(imp, ic);
 		addScrollbars(imp);
@@ -59,12 +59,12 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			nSlices = dim[3];
 			nFrames = dim[4];
 		}
-		//IJ.log("StackWindow: "+hyperStack+" "+nChannels+" "+nSlices+" "+nFrames);
 		if (nSlices==stackSize) hyperStack = false;
 		if (nChannels*nSlices*nFrames!=stackSize) hyperStack = false;
 		if (cSelector!=null||zSelector!=null||tSelector!=null)
 			removeScrollbars();
 		ImageJ ij = IJ.getInstance();
+		//IJ.log("StackWindow: "+hyperStack+" "+nChannels+" "+nSlices+" "+nFrames+" "+imp);
 		if (nChannels>1) {
 			cSelector = new ScrollbarWithLabel(this, 1, 1, 1, nChannels+1, 'c');
 			add(cSelector);
@@ -278,7 +278,11 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
     	int c = imp.getNChannels();
     	int z = imp.getNSlices();
     	int t = imp.getNFrames();
-    	if (c!=nChannels||z!=nSlices||t!=nFrames||c*z*t!=imp.getStackSize())
+		//IJ.log(c+" "+z+" "+t+" "+nChannels+" "+nSlices+" "+nFrames+" "+imp.getStackSize());
+		int size = imp.getStackSize();
+		if (c==size && c*z*t==size && nSlices==size && nChannels*nSlices*nFrames==size)
+			return true;
+    	if (c!=nChannels||z!=nSlices||t!=nFrames||c*z*t!=size)
     		return false;
     	else
     		return true;

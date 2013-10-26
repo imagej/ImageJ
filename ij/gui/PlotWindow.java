@@ -14,7 +14,7 @@ import ij.measure.*;
 import ij.io.SaveDialog;
 
 /** This class implements the Analyze/Plot Profile command.
-* @author Michael Schmid and Wayne Rasband
+* @author Michael Schmid
 * @author Wayne Rasband
 */
 public class PlotWindow extends ImageWindow implements ActionListener, ClipboardOwner,

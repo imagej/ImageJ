@@ -506,7 +506,19 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		ImageStack stack2 = imp.getStack();
 		if (imp.isHyperStack())
 			setOpenAsHyperStack(true);
+		LUT[] luts = null;
+		if (imp.isComposite() && this.isComposite()) {
+			if (((CompositeImage)imp).getMode()!=((CompositeImage)this).getMode())
+				((CompositeImage)this).setMode(((CompositeImage)imp).getMode());
+			luts = ((CompositeImage)imp).getLuts();
+		}
 		setStack(stack2, imp.getNChannels(), imp.getNSlices(), imp.getNFrames());
+		if (luts!=null) {
+			((CompositeImage)this).setLuts(luts);
+			updateAndDraw();
+		}
+		setCalibration(imp.getCalibration());
+		setProperty("Info", imp.getProperty("Info"));
 	}
 	
 	/** Replaces the ImageProcessor with the one specified and updates the
@@ -1589,25 +1601,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			saveRoi = (Roi)roi.clone();
 		}
 		
-		if (getStackSize()>1) {
-			revertStack(fi);
-			return;
-		}
-
 		trimProcessor();
-		if (isFileInfo && !(url!=null&&(fi.directory==null||fi.directory.equals(""))))
-			new FileOpener(fi).revertToSaved(this);
-		else if (url!=null) {
-			IJ.showStatus("Loading: " + url);
-	    	Opener opener = new Opener();
-	    	try {
-	    		ImagePlus imp = opener.openURL(url);
-	    		if (imp!=null)
-	     			setProcessor(null, imp.getProcessor());
-	    	} catch (Exception e) {} 
-			if (getType()==COLOR_RGB && getTitle().endsWith(".jpg"))
-				Opener.convertGrayJpegTo8Bits(this);
-		}
+		new FileOpener(fi).revertToSaved(this);
 		if (Prefs.useInvertingLut && getBitDepth()==8 && ip!=null && !ip.isInvertedLut()&& !ip.isColorLut())
 			invertLookupTable();
 		if (getProperty("FHT")!=null) {
