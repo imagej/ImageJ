@@ -5,15 +5,20 @@
 </head>
 <body>
 
-<li> <u>1.48f 26 October 2013</u>
+<li> <u>1.48f 28 October 2013</u>
 <ul>
-<li> Thanks to Vytas Bindokas, the Feret's diameter angle is between-90 and +90 degrees
+<li> Thanks to Vytas Bindokas, the reported Feret's diameter angle is now between -90 and +90 degrees
 and the "if (angle>90) angle+=180" correction is no longer needed
 (<a href="macros/DrawFeretDiameter.txt">Home</a>).
+<li> The Recorder now records <i>File&gt;Import&gt;Import URL</i> as
+open(url) (macro mode) or imp=IJ.openImage(url) (script or Java mode).
 <li> Thanks to Jan Eglinger, fixed a bug that caused the Recorder to
 record duplicate parameters when recording IJ.getFilePath().
-<li> Thanks to Ivan Micetic, fixed a bug that caused <i>File&gt>Revert</i>
+<li> Thanks to Ivan Micetic, fixed a bug that caused <i>File&gt;Revert</i>
 to not restore image properties and LUTs.
+<li> Thanks to Christophe Leterrier, fixed a v1.48a regression that caused
+selections names longer than 20 characters displayed in the results table
+to be truncated.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

@@ -274,19 +274,19 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		}
     }
     
-    public boolean validDimensions() {
-    	int c = imp.getNChannels();
-    	int z = imp.getNSlices();
-    	int t = imp.getNFrames();
+	public boolean validDimensions() {
+		int c = imp.getNChannels();
+		int z = imp.getNSlices();
+		int t = imp.getNFrames();
 		//IJ.log(c+" "+z+" "+t+" "+nChannels+" "+nSlices+" "+nFrames+" "+imp.getStackSize());
 		int size = imp.getStackSize();
 		if (c==size && c*z*t==size && nSlices==size && nChannels*nSlices*nFrames==size)
 			return true;
-    	if (c!=nChannels||z!=nSlices||t!=nFrames||c*z*t!=size)
-    		return false;
-    	else
-    		return true;
-    }
+		if (c!=nChannels||z!=nSlices||t!=nFrames||c*z*t!=size)
+			return false;
+		else
+			return true;
+	}
     
     public void setAnimate(boolean b) {
     	if (running2!=b && animationSelector!=null)
