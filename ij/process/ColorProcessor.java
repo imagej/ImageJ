@@ -840,10 +840,11 @@ public class ColorProcessor extends ImageProcessor {
 	}
 	
 	/** Returns a duplicate of this image. */ 
-	public synchronized ImageProcessor duplicate() { 
-		int[] pixels2 = new int[width*height]; 
-		System.arraycopy(pixels, 0, pixels2, 0, width*height); 
-		return new ColorProcessor(width, height, pixels2); 
+	public ImageProcessor duplicate() { 
+		ColorProcessor cp2 = (ColorProcessor)super.clone();
+		int[] pixels32 =(int[])getPixels();;
+		cp2.setPixels(pixels32.clone());
+		return cp2;
 	} 
 
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
@@ -1351,13 +1352,6 @@ public class ColorProcessor extends ImageProcessor {
 	
 	public int getBitDepth() {
 		return 24;
-	}
-
-	public Object clone() {
-		ColorProcessor cp2 = (ColorProcessor)super.clone();
-		int[] pixels32 =(int[])getPixels();;
-		cp2.setPixels(pixels32.clone());
-		return cp2;
 	}
 
 }

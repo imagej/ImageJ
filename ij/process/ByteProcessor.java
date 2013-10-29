@@ -166,11 +166,11 @@ public class ByteProcessor extends ImageProcessor {
 	}
 	
 	/** Returns a duplicate of this image. */ 
-	public synchronized ImageProcessor duplicate() { 
-		ImageProcessor ip2 = createProcessor(width, height); 
-		byte[] pixels2 = (byte[])ip2.getPixels(); 
-		System.arraycopy(pixels, 0, pixels2, 0, width*height); 
-		return ip2; 
+	public ImageProcessor duplicate() { 
+		ByteProcessor bp2 = (ByteProcessor)super.clone();
+		byte[] pixels8 =(byte[])getPixels();;
+		bp2.setPixels(pixels8.clone());
+		return bp2;
 	} 
 
 	/**Make a snapshot of the current image.*/
@@ -1256,13 +1256,6 @@ public class ByteProcessor extends ImageProcessor {
 	
 	byte[] create8BitImage() {
 		return pixels;
-	}
-
-	public Object clone() {
-		ByteProcessor bp2 = (ByteProcessor)super.clone();
-		byte[] pixels8 =(byte[])getPixels();;
-		bp2.setPixels(pixels8.clone());
-		return bp2;
 	}
 
 }
