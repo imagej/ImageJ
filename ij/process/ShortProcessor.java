@@ -917,7 +917,7 @@ public class ShortProcessor extends ImageProcessor {
 	/** Returns a duplicate of this image. */ 
 	public ImageProcessor duplicate() { 
 		ShortProcessor sp2 = (ShortProcessor)super.clone();
-		short[] pixels16 = (short[])getPixels();;
+		short[] pixels16 = (short[])getPixels();
 		sp2.setPixels(pixels16.clone());
 		return sp2;
 	} 

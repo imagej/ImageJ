@@ -842,7 +842,7 @@ public class ColorProcessor extends ImageProcessor {
 	/** Returns a duplicate of this image. */ 
 	public ImageProcessor duplicate() { 
 		ColorProcessor cp2 = (ColorProcessor)super.clone();
-		int[] pixels32 =(int[])getPixels();;
+		int[] pixels32 =(int[])getPixels();
 		cp2.setPixels(pixels32.clone());
 		return cp2;
 	} 

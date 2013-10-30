@@ -2477,7 +2477,9 @@ public abstract class ImageProcessor implements Cloneable {
 		sliceNumber = slice;
 	}
 	
-	/** Returns a shallow copy of this ImageProcessor, where the source and copy share the pixel data.
+	/** Returns a shallow copy of this ImageProcessor, where this 
+	* image and the copy share pixel data. Use the duplicate() method 
+	* to create a copy that does not share the pixel data.
 	* @see ImageProcessor#duplicate	
 	*/
 	public Object clone() {

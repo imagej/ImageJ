@@ -88,6 +88,8 @@ import javax.imageio.ImageIO;
  *		- added support for YV12, I420, NV12, NV21 (planar formats with 2x2 U and V subsampling)
  *	 2012-12-04
  *		- can read AVI-2 files with blank frames into a virtual stack
+ *	 2013-10-29
+ *		- can read MJPG files where the frames don't have the same pixel number as the overall video
  *
  * The AVI format looks like this:
  * RIFF AVI					RIFF HEADER, AVI CHUNK					
@@ -803,7 +805,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 				if (frameNumber >= firstFrame && dwSize>0) { //only valid frames (no blank frames)
 					frameInfos.add(new long[] {pos, dwSize, (long) frameNumber*dwMicroSecPerFrame});
 					//if (verbose)
-					//	  IJ.log("movie data "+frameNumber+" '"+fourccString(dwChunkId)+"' "+posSizeString(pos,dwSize)+timeString());
+					//IJ.log("movie data "+frameNumber+" '"+fourccString(dwChunkId)+"' "+posSizeString(pos,dwSize)+timeString());
 				}
 				frameNumber++;
 				if (frameNumber>lastFrameToRead) break;
@@ -1054,7 +1056,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 			throws Exception, IOException {
 		rFile.seek(filePos);
 		//if (verbose)
-		//	  IJ.log("virtual AVI: readFrame @"+posSizeString(filePos, size));
+		//IJ.log("virtual AVI: readFrame @"+posSizeString(filePos, size)+" varlength="+variableLength);
 		if (variableLength)					//JPEG or PNG-compressed frames
 			return readCompressedFrame(rFile, size);
 		else
@@ -1062,7 +1064,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	}
 
 	/** Reads a JPEG or PNG-compressed frame from a RandomAccessFile and
-	 *	returns the pixels array of the resulting image abd sets the
+	 *	returns the pixels array of the resulting image and sets the
 	 *	ColorModel cm (if appropriate) */
 	private Object readCompressedFrame (RandomAccessFile rFile, int size)
 			throws Exception, IOException {
@@ -1071,7 +1073,6 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 		if (bi==null) throw new Exception("can't read frame, ImageIO returns null");
 		int type = bi.getType();
 		ImageProcessor ip = null;
-		//IJ.log("BufferedImage Type="+type);
 		if (type==BufferedImage.TYPE_BYTE_GRAY) {
 			ip = new ByteProcessor(bi);
 		} else if (type==bi.TYPE_BYTE_INDEXED) {
@@ -1083,6 +1084,8 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 			ip = ip.convertToByte(false);
 		if (flipVertical)
 			ip.flipVertical();
+		if (ip.getWidth()!=dwWidth || ip.getHeight()!=biHeight)
+			ip = ip.resize(dwWidth, biHeight);
 		return ip.getPixels();
 	}
 

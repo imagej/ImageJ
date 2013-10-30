@@ -168,7 +168,7 @@ public class ByteProcessor extends ImageProcessor {
 	/** Returns a duplicate of this image. */ 
 	public ImageProcessor duplicate() { 
 		ByteProcessor bp2 = (ByteProcessor)super.clone();
-		byte[] pixels8 =(byte[])getPixels();;
+		byte[] pixels8 =(byte[])getPixels();
 		bp2.setPixels(pixels8.clone());
 		return bp2;
 	} 

@@ -732,7 +732,7 @@ public class FloatProcessor extends ImageProcessor {
 	/** Returns a duplicate of this image. */ 
 	public ImageProcessor duplicate() { 
 		FloatProcessor fp2 = (FloatProcessor)super.clone();
-		float[] fpixels = (float[])getPixels();;
+		float[] fpixels = (float[])getPixels();
 		fp2.setPixels(fpixels.clone());
 		return fp2;
 	} 
