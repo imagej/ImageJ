@@ -531,7 +531,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	* @param text1	initial contents of the first text area
 	* @param text2	initial contents of the second text area or null
 	* @param rows	the number of rows
-	* @param rows	the number of columns
+	* @param columns	the number of columns
 	*/
     public void addTextAreas(String text1, String text2, int rows, int columns) {
     	if (textArea1!=null) return;

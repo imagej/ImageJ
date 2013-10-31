@@ -13,8 +13,7 @@ import java.io.PrintStream;
  * for usage examples.
  *
  * @author Wilhelm Burger (wilbur at ieee.org)
- * @
- * @see Redirect_System_Streams (http://staff.fh-hagenberg.at/burger/imagej/)
+ * See Also: Redirect_System_Streams (http://staff.fh-hagenberg.at/burger/imagej/)
  */
 public class LogStream extends PrintStream {
 	

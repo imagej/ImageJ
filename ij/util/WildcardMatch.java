@@ -32,7 +32,7 @@ public class WildcardMatch {
 	 * the default of '?' for any single character match and '*' for any
 	 * amount of characters, including 0 characters.
 	 * @param singleChar The char used to match exactly ONE character.
-	 * @param multipleChar The char used to match any amount of characters
+	 * @param multipleChars The char used to match any amount of characters
 	 * including o characters.
 	 */
 	public void setWildcardChars(char singleChar, char multipleChars) {
@@ -86,7 +86,7 @@ public class WildcardMatch {
 
 	/**
 	 * Returns the current state of case sensitivity.
-	 * @returns true for case sensitive pattern matching, false otherwise.
+	 * @return true for case sensitive pattern matching, false otherwise.
 	 */
 	public boolean getCaseSensitive() {
 		return caseSensitive;

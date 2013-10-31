@@ -87,7 +87,7 @@ public class CurveFitter implements UserFunction{
 	"y = a*(1-exp(-b*x))^c"									    //CHAPMAN
 	};
 
-	/** @deprecated, now in the Minimizer class (since ImageJ 1.46f).
+	/** @deprecated now in the Minimizer class (since ImageJ 1.46f).
 	 *	(probably of not much value for anyone anyhow?) */
 	public static final int IterFactor = 500;
 
@@ -259,7 +259,7 @@ public class CurveFitter implements UserFunction{
 	 *							userFunction(params, x) method.
 	 *							This function must allow simultaneous calls in multiple threads.
 	 *	@param numParams		Number of parameters of the fit function.
-	 *	@params formula			A String describing the fit formula, may be null.
+	 *	@param formula			A String describing the fit formula, may be null.
 	 *	@param initialParams	Starting point for the parameters; may be null (than values
 	 *							of 0 are used). The fit function with these parameters must
 	 *							not return NaN for any of the data points given in the
@@ -1213,7 +1213,7 @@ public class CurveFitter implements UserFunction{
 	 /**
 	 * Gets index of highest value in an array.
 	 * 
-	 * @param			   Double array.
+	 * @param			   array the array.
 	 * @return			   Index of highest value.
 	 */
 	public static int getMax(double[] array) {

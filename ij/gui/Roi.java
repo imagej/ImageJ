@@ -302,7 +302,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		feretY = y1*ph;
 		dx=x2-x1; dy=y1-y2;
 		angle = (180.0/Math.PI)*Math.atan2(dy*ph, dx*pw);
-		if (angle<0) angle = 180.0 + angle;
+		//if (angle<0) angle = 180.0 + angle;
 		//breadth = getFeretBreadth(poly, angle, x1, y1, x2, y2);
 		double[] a = new double[5];
 		a[0] = diameter;
@@ -1311,15 +1311,17 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return  strokeColor;
 	}
 
-	/** Sets the color used to fill ROIs.
-	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
+	/** Sets the fill color used to display this ROI, or set to null to display it transparently.
+	 * @see #getFillColor
+	 * @see #setStrokeColor
 	 */
 	public void setFillColor(Color color) {
 		fillColor = color;
 	}
 
-	/** Returns the color used to fill this ROI, or null if it is not filled.
-	 * @see #getStrokeColor()
+	/** Returns the fill color used to display this ROI, or null if it is displayed transparently.
+	 * @see #setFillColor
+	 * @see #getStrokeColor
 	 */
 	public Color getFillColor() {
 		return fillColor;

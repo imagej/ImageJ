@@ -760,11 +760,10 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	/** Create a circular kernel (structuring element) of a given radius.
-	 *	@param radius:
+	 *	@param radius
 	 *	Radius = 0.5 includes the 4 neighbors of the pixel in the center,
 	 *	radius = 1 corresponds to a 3x3 kernel size.
-	 *	@param width: width of the roi (or image if roi width=image width) for filtering.
-	 *	@return:
+	 *	@return the circular kernel
 	 *	The output is an array that gives the length of each line of the structuring element
 	 *	(kernel) to the left (negative) and to the right (positive):
 	 *	[0] left in line 0, [1] right in line 0,

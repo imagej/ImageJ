@@ -341,6 +341,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		key = trimKey(key);
 		path = fixPath(path);
 		path = addQuotes(path);
+		if (commandOptions!=null && commandOptions.contains(key+"="+path))
+			return; // don't record duplicate
 		checkForDuplicate(key+"=", path);
 		if (commandOptions==null)
 			commandOptions = key+"="+path;
@@ -400,7 +402,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			||name.equals("Dilate")||name.equals("Skeletonize")))
 				setBlackBackground();
 			if (commandOptions!=null) {
-				if (name.equals("Open...")) {
+				if (name.equals("Open...") || name.equals("URL...")) {
 					String s = scriptMode?"imp = IJ.openImage":"open";
 					if (scriptMode && isTextOrTable(commandOptions))
 						s = "IJ.open";

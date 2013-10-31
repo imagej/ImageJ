@@ -10,36 +10,14 @@ import java.awt.geom.*;
 import java.util.*;
  
 /**
+ * This plugin projects dynamically orthogonal XZ and YZ views of a stack. 
+ * The output images are calibrated, which allows measurements to be performed more easily. 
  * 
-* @author Dimiter Prodanov
-* 		  IMEC
-* 
-* @acknowledgments Many thanks to Jerome Mutterer for the code contributions and testing.
-* 				   Thanks to Wayne Rasband for the code that properly handles the image magnification.
-* 		
-* @version 		1.2 28 April 2009
-* 					- added support for arrow keys
-* 					- fixed a bug in the cross position calculation
-* 					- added FocusListener behavior
-* 					- added support for magnification factors
-* 				1.1.6 31 March 2009
-* 					- added AdjustmentListener behavior thanks to Jerome Mutterer
-* 					- improved pane visualization
-* 					- added window rearrangement behavior. Initial code suggested by Jerome Mutterer
-* 					- bug fixes by Wayne Raspband
-* 				1.1 24 March 2009
-* 					- improved projection image resizing
-* 					- added ImageListener behaviors
-* 					- added check-ups
-* 					- improved pane updating
-* 				1.0.5 23 March 2009
-* 					- fixed pane updating issue
-* 				1.0 21 March 2009
-* 
-* @contents This plugin projects dynamically orthogonal XZ and YZ views of a stack. 
-* The output images are calibrated, which allows measurements to be performed more easily. 
-*/
-
+ * Many thanks to Jerome Mutterer for the code contributions and testing.
+ * Thanks to Wayne Rasband for the code that properly handles the image magnification.
+ * 		
+ * @author Dimiter Prodanov
+ */
 public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListener, KeyListener, ActionListener, 
 	ImageListener, WindowListener, AdjustmentListener, MouseWheelListener, FocusListener, CommandListener {
 

@@ -384,8 +384,13 @@ public abstract class ImageProcessor implements Cloneable {
 		value closest to the specified color. */
 	public abstract void setColor(Color color);
 
-	/** Sets the default fill/draw value. Use setValue() with float images. */
+	/** Sets the default fill/draw value. */
 	public void setColor(int value) {
+		setValue(value);
+	}
+
+	/** Sets the default fill/draw value. */
+	public void setColor(double value) {
 		setValue(value);
 	}
 
@@ -1988,7 +1993,7 @@ public abstract class ImageProcessor implements Cloneable {
 			aliasing artifacts; the kernel shape for averaging is determined by 
 			the interpolationMethod. False if subsampling without any averaging  
 			should be used on downsizing.  Has no effect on upsizing.
-		@ImageProcessor#setInterpolationMethod for setting the interpolation method
+		@see ImageProcessor#setInterpolationMethod
 		Author: Michael Schmid
 	*/
 	public ImageProcessor resize(int dstWidth, int dstHeight, boolean useAverging) {
@@ -2472,6 +2477,11 @@ public abstract class ImageProcessor implements Cloneable {
 		sliceNumber = slice;
 	}
 	
+	/** Returns a shallow copy of this ImageProcessor, where this 
+	* image and the copy share pixel data. Use the duplicate() method 
+	* to create a copy that does not share the pixel data.
+	* @see ImageProcessor#duplicate	
+	*/
 	public Object clone() {
 		try {
 			return super.clone();

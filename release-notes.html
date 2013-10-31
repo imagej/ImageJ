@@ -5,38 +5,24 @@
 </head>
 <body>
 
-<li> <u>1.48e 19 October 2013</u>
+<li> <u>1.48f 30 October 2013</u>
 <ul>
-<li> Thanks to Michael Schmid, plots now use scientific notation for large numbers
-and the curve fitter no longer runs on the event queue and can be aborted.
-<li> Changed the ROI Manager's "Remove Slice Info" command to
-"Remove Positions...".
-<li> Line selections are always drawn offset 0.5 pixels down and to the right regardless
-of the "Sub-pixel resolution" option in <i>Edit&gt;Options&gt;Profile Plot Options</i>.
-<li> Thanks to Miettinen Arttu, <i>File&gt;Import&gt;Raw</i> now decodes image dimensions
-embedded in file names (e.g., "name1_512x512.raw", "name2_256x256x256.raw").
-<li> The default "Fill with:" option in the <i>File&gt;New&gt;Image</i>
-dialog is now "Black".
-<li> Added a "Help" button to the <i>Analyze&gt;Gels&gt;Gel Analyzer Options</i>
-dialog box.
-<li> Fixed a 1.48d regression the caused the "Simplex Fitting Options" dialog in
-<i>Analyze&gt;Tools&gt;Curve Fitting</i> to throw and exception when
-performing user-defined fits.
-<li> Thanks to Michael Schmid, fixed a curve fitting bug which could cause unintended
-values for the initial parameters (resulting in more iterations than necessary).
-<li> Thanks to Peter Haub, fixed a bug that caused the CommandListener interface to not
-work as expected when ImageJ was exited by clicking on the "ImageJ" window's the close box.
-<li> Thanks to Pavol Bauer, fixed a bug that caused <i>Process&gt;Batch&gt;Macro</i> to
-not open .lsm files using Bio-Formats when the LSM_Reader plugin was not installed.
-<li> Fixed bug in the new <i>File&gt;Open Samples&gt;Cache Sample Images</i> command 
-that caused it to throw an exception.
-<li> Thanks to Dimiter Prodanov, fixed a bug the caused the ImageProcessor.clone()
-method to not work as expected.
-<li> Thanks to Michael Schmid, fixed a bug that caused the spline fitter to sometimes
-not work as expected.
-<li> Thanks to David Bragason, fixed a bug that made it impossible to subtract from a
-selection or create a centered oval selection if there was an underlying overlay.
-<li> Fixed a bug that caused the bounding box of spline fit selections to be incorrect.
+<li> Thanks to Vytas Bindokas, the reported Feret's diameter angle is now between -90 and +90 degrees
+and the "if (angle>90) angle+=180" correction is no longer needed
+(<a href="macros/DrawFeretDiameter.txt">Home</a>).
+<li> The Recorder now records <i>File&gt;Import&gt;Import URL</i> as
+open(url) (macro mode) or imp=IJ.openImage(url) (script or Java mode).
+<li> Thanks to Michael Schmid and Audrey O'Neill, ImageJ can now read MJPG-encoded
+files where the size of the JPEG frames differs from the size of the movie frames.
+<li> Thanks to Jan Eglinger, fixed a bug that caused the Recorder to
+record duplicate parameters when recording IJ.getFilePath().
+<li> Thanks to Ivan Micetic, fixed a bug that caused <i>File&gt;Revert</i>
+to not restore image properties and LUTs.
+<li> Thanks to Christophe Leterrier, fixed a v1.48a regression that caused
+selections names longer than 20 characters displayed in the results table
+to be truncated.
+<li> Thanks to Bill Heeschen, fixed a v1.48e regression that caused the
+<i>Process&gt;Filters&gt;Convolve</i> command to fail.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
