@@ -405,24 +405,24 @@ public class RoiTest {
 		// try a rectangle
 		roi = new Roi(2,8,14,33);
 		values = roi.getFeretValues();
-		Assert.assertDoubleArraysEqual(new double[]{35.84690,112.98872,14,2,8},
+		Assert.assertDoubleArraysEqual(new double[]{35.84690,-67.01128,14,2,8},
 										values, Assert.DOUBLE_TOL);
 		// try a polyline
 		roi = new PolygonRoi(new int[]{13,7,19,22},new int[]{11,14,8,16},4,Roi.POLYLINE);
 		values = roi.getFeretValues();
-		Assert.assertDoubleArraysEqual(new double[]{15.13275,172.40536,7.53998,7,14},
+		Assert.assertDoubleArraysEqual(new double[]{15.13275,-7.59464,7.53998,7,14},
 										values, Assert.DOUBLE_TOL);
 		
 		// try an oval
 		roi = new OvalRoi(4,22,88,27);
 		values = roi.getFeretValues();
-		Assert.assertDoubleArraysEqual(new double[]{88.14193,176.74805,27,4,33},
+		Assert.assertDoubleArraysEqual(new double[]{88.14193,-3.2519456,27,4,33},
 										values, Assert.DOUBLE_TOL);
 		
 		// try an angle
 		roi = new PolygonRoi(new int[]{1,4,9},new int[]{3,17,11},3,Roi.ANGLE);
 		values = roi.getFeretValues();
-		Assert.assertDoubleArraysEqual(new double[]{14.31782,102.09476,6.16189,1,3},
+		Assert.assertDoubleArraysEqual(new double[]{14.31782,-77.90524,6.16189,1,3},
 										values, Assert.DOUBLE_TOL);
 		
 		// try a point

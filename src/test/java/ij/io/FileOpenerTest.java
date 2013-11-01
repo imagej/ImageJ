@@ -456,7 +456,6 @@ public class FileOpenerTest {
 		FileInfo fi;
 		ImagePlus ip;
 		int origPix,newPix;
-
 		fi = new FileInfo();
 		fi.directory = DataConstants.DATA_DIR;
 		fi.fileName = fname;
@@ -519,9 +518,10 @@ public class FileOpenerTest {
 		expectSuccess("gray16.zip",FileInfo.ZIP_ARCHIVE,1,154,284);
 		expectSuccess("lena-std.png",FileInfo.IMAGEIO,1,154,284);
 		expectSuccess("01.dcm",FileInfo.DICOM,1,426,640);
+		expectSuccess("head8bit.tif",FileInfo.TIFF,1,228,256);
 
 		// unlike other formats tifs fall through to readPixels()
-		expectSuccessReadPixelsCase("head8bit.tif",FileInfo.TIFF,228,256);
+		//expectSuccessReadPixelsCase("head8bit.tif",FileInfo.TIFF,228,256);
 
 		// fall through case -> it calls readPixels()
 		expectSuccessReadPixelsCase("clown.raw",FileInfo.UNKNOWN,100,100);

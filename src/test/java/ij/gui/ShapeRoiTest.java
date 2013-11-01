@@ -181,9 +181,9 @@ public class ShapeRoiTest {
 	@Test
 	public void testGetFeretValues() {
 		// try various roi shapes
-		feretTest(new OvalRoi(0,0,5,10),new double[]{10.44031,106.69924,5.00000,1,0});
-		feretTest(new Roi(16,22,8,19),new double[]{20.61553,112.83365,8,0,0});
-		feretTest(new TextRoi(4,3,RoiHelpers.getCalibratedImagePlus()),new double[]{1.41421,135,1,0,0});
+		feretTest(new OvalRoi(0,0,5,10),new double[]{10.44031,-73.3007558,5.00000,1,0});
+		feretTest(new Roi(16,22,8,19),new double[]{20.61553,-67.1663458,8,0,0});
+		feretTest(new TextRoi(4,3,RoiHelpers.getCalibratedImagePlus()),new double[]{1.41421,-45,1,0,0});
 	}
 
 	private void convexHullTest(Roi roi, int x, int y, int w, int h)

@@ -3045,7 +3045,7 @@ public class ImagePlusTest {
 		ip.copy(true);
 		assertNotNull(ImagePlus.getClipboard());
 		assertFalse(ip.changes);
-		assertEquals(255,proc.get(1,1));
+		assertEquals(0,proc.get(1,1));
 		ip.paste();
 		assertTrue(ip.changes);
 		assertNotNull(ip.getRoi());
