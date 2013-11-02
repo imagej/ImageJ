@@ -520,9 +520,6 @@ public class FileOpenerTest {
 		expectSuccess("01.dcm",FileInfo.DICOM,1,426,640);
 		expectSuccess("head8bit.tif",FileInfo.TIFF,1,228,256);
 
-		// unlike other formats tifs fall through to readPixels()
-		//expectSuccessReadPixelsCase("head8bit.tif",FileInfo.TIFF,228,256);
-
 		// fall through case -> it calls readPixels()
 		expectSuccessReadPixelsCase("clown.raw",FileInfo.UNKNOWN,100,100);
 
