@@ -301,7 +301,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		feretY = y1*ph;
 		dx=x2-x1; dy=y1-y2;
 		angle = (180.0/Math.PI)*Math.atan2(dy*ph, dx*pw);
-		//if (angle<0) angle = 180.0 + angle;
+		if (angle<0.0)
+			angle += 180.0;
 		//breadth = getFeretBreadth(poly, angle, x1, y1, x2, y2);
 		double[] a = new double[5];
 		a[0] = diameter;

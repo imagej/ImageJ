@@ -1578,7 +1578,7 @@ public class PolygonRoi extends Roi {
 		super.setLocation(x, y);
 		if ((int)x!=x || (int)y!=y) {
 			subPixel = true;
-			if (xpf==null) {
+			if (xpf==null && xp!=null) {
 				xpf = toFloat(xp);
 				ypf = toFloat(yp);
 			}
