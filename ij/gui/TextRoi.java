@@ -1,9 +1,10 @@
 package ij.gui;
-import java.awt.*;
 import ij.*;
 import ij.process.*;
 import ij.util.*;
 import ij.macro.Interpreter;
+import java.awt.geom.Rectangle2D;
+import java.awt.*;
 
 
 /** This class is a rectangular ROI containing text. */
@@ -157,8 +158,8 @@ public class TextRoi extends Roi {
 		int descent = metrics.getDescent();
 		int i = 0;
 		int yy = 0;
-		int xi = (int)Math.round(xd);
-		int yi = (int)Math.round(yd);
+		int xi = (int)Math.round(getXBase());
+		int yi = (int)Math.round(getYBase());
 		while (i<MAX_LINES && theText[i]!=null) {
 			switch (justification) {
 				case LEFT:
@@ -186,10 +187,10 @@ public class TextRoi extends Roi {
 			updateBounds(g);
 		super.draw(g); // draw the rectangle
 		double mag = getMagnification();
-		int sx = screenXD(xd);
-		int sy = screenYD(yd);
-		int swidth = (int)(widthd*mag);
-		int sheight = (int)(heightd*mag);
+		int sx = screenXD(getXBase());
+		int sy = screenYD(getYBase());
+		int swidth = (int)((bounds!=null?bounds.width:width)*mag);
+		int sheight = (int)((bounds!=null?bounds.height:height)*mag);
 		Rectangle r = null;
 		r = g.getClipBounds();
 		g.setClip(sx, sy, swidth, sheight);
@@ -207,12 +208,14 @@ public class TextRoi extends Roi {
 		if (newFont || width==1)
 			updateBounds(g);
 		double mag = getMagnification();
-		int xi = (int)Math.round(xd);
-		int yi = (int)Math.round(yd);
+		int xi = (int)Math.round(getXBase());
+		int yi = (int)Math.round(getYBase());
+		double widthd = bounds!=null?bounds.width:width;
+		double heightd = bounds!=null?bounds.height:height;
 		int widthi = (int)Math.round(widthd);
 		int heighti = (int)Math.round(heightd);
-		int sx = nonScalable?xi:screenXD(xd);
-		int sy = nonScalable?yi:screenYD(yd);
+		int sx = nonScalable?xi:screenXD(getXBase());
+		int sy = nonScalable?yi:screenYD(getYBase());
 		int sw = nonScalable?widthi:(int)(getMagnification()*widthd);
 		int sh = nonScalable?heighti:(int)(getMagnification()*heightd);
 		Font font = getScaledFont();
@@ -390,10 +393,13 @@ public class TextRoi extends Roi {
 		int fontHeight = (int)(metrics.getHeight()/mag);
 		int descent = metrics.getDescent();
 		int i=0, nLines=0;
-		double oldXD = xd;
-		double oldYD = yd;
-		double oldWidthD = widthd;
-		double oldHeightD = heightd;
+		Rectangle2D.Double b = bounds;
+		if (b==null)
+			b = new Rectangle2D.Double(x, y, width, height);
+		double oldXD = b.x;
+		double oldYD = b.y;
+		double oldWidthD = b.width;
+		double oldHeightD = b.height;
 		double newWidth = 10;
 		while (i<MAX_LINES && theText[i]!=null) {
 			nLines++;
@@ -404,29 +410,29 @@ public class TextRoi extends Roi {
 		}
 		if (nullg) g.dispose();
 		newWidth += 2.0;
-		widthd = newWidth;
+		b.width = newWidth;
 		switch (justification) {
 			case LEFT:
 				if (xMax!=0 && x+newWidth>xMax && width!=1)
-					xd = xMax-width;
+					b.x = xMax-width;
 				break;
 			case CENTER:
-				xd = oldX+oldWidth/2.0 - newWidth/2.0;
+				b.x = oldX+oldWidth/2.0 - newWidth/2.0;
 				break;
 			case RIGHT:
-				xd = oldX+oldWidth - newWidth;
+				b.x = oldX+oldWidth - newWidth;
 				break;
 		}
-		heightd = nLines*fontHeight+2;
+		b.height = nLines*fontHeight+2;
 		if (yMax!=0) {
-			if (heightd>yMax)
-				heightd = yMax;
-			if (yd+heightd>yMax)
-				yd = yMax-height;
+			if (b.height>yMax)
+				b.height = yMax;
+			if (b.y+b.height>yMax)
+				b.y = yMax-height;
 		}
-		x=(int)xd; y=(int)yd;
-		width=(int)Math.ceil(widthd);
-		height=(int)Math.ceil(heightd);
+		x=(int)b.x; y=(int)b.y;
+		width=(int)Math.ceil(b.width);
+		height=(int)Math.ceil(b.height);
 		//IJ.log("adjustSize2: "+theText[0]+"  "+width+","+height);
 	}
 	

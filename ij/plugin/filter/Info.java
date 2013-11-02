@@ -24,8 +24,10 @@ public class Info implements PlugInFilter {
 		String info = getImageInfo(imp, ip);
 		if (info.indexOf("----")>0)
 			showInfo(info, 450, 500);
-		else
-			showInfo(info, 300, 300);
+		else {
+			int inc = info.contains("No Selection")?0:75;
+			showInfo(info, 300, 350+inc);
+		}
 	}
 
 	public String getImageInfo(ImagePlus imp, ImageProcessor ip) {
@@ -252,6 +254,15 @@ public class Info implements PlugInFilter {
 				s += "Path: " + fi.directory + fi.fileName + "\n";
 		}
 	    
+	    Overlay overlay = imp.getOverlay();
+		if (overlay!=null) {
+			String hidden = imp.getHideOverlay()?" (hidden) ":" ";
+			int n = overlay.size();
+			String items = n==1?" item\n":" items\n";
+			s += "Overlay" + hidden + "has " + n + items;
+		} else
+	    	s += "No Overlay\n";
+
 	    Roi roi = imp.getRoi();
 	    if (roi == null) {
 			if (cal.calibrated())

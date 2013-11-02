@@ -1574,6 +1574,17 @@ public class PolygonRoi extends Roi {
 		this.drawOffset = drawOffset && subPixelResolution();
 	}
 		
+	public void setLocation(double x, double y) {
+		super.setLocation(x, y);
+		if ((int)x!=x || (int)y!=y) {
+			subPixel = true;
+			if (xpf==null) {
+				xpf = toFloat(xp);
+				ypf = toFloat(yp);
+			}
+		}
+	}
+
 	public String getDebugInfo() {
 		String s = "ROI Debug Properties\n";
 		s += "	bounds: "+bounds+"\n";

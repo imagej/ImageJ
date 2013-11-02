@@ -1,5 +1,4 @@
 package ij.gui;
-
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
@@ -28,7 +27,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	int startX, startY, x, y, width, height;
 	double startXD, startYD;
 	Rectangle2D.Double bounds;
-	double xd, yd, widthd, heightd;
 	int activeHandle;
 	int state;
 	int modState = NO_MODS;
@@ -111,13 +109,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			g.dispose();
 		}
 		fillColor = defaultFillColor;
-		xd=x; yd=y; widthd=width; heightd=height;
 	}
 	
 	/** Creates a rounded rectangular ROI using double arguments. */
 	public Roi(double x, double y, double width, double height, int cornerDiameter) {
 		this((int)x, (int)y, (int)Math.ceil(width), (int)Math.ceil(height), cornerDiameter);
-		xd=x; yd=y; widthd=width; heightd=height;
+		bounds = new Rectangle2D.Double(x, y, width, height);
 		subPixel = true;
 	}
 
@@ -170,7 +167,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		this.y = y;
 		startX = x; startY = y;
 		oldX = x; oldY = y; oldWidth=0; oldHeight=0;
-		xd=x; yd=y;
 		if (bounds!=null) {
 			bounds.x = x;
 			bounds.y = y;
@@ -180,11 +176,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	/** Set the location of the ROI in image coordinates. */
 	public void setLocation(double x, double y) {
 		setLocation((int)x, (int)y);
+		if ((int)x==x && (int)y==y)
+			return;
 		if (bounds!=null) {
 			bounds.x = x;
 			bounds.y = y;
 		} else
-			bounds = new Rectangle2D.Double(x, y, 0.0, 0.0);
+			bounds = new Rectangle2D.Double(x, y, width, height);
+		subPixel = true;
 	}
 	
 	public void setImage(ImagePlus imp) {
@@ -386,17 +385,17 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			roi2.setLocation(x, y);
 			return roi2.getFloatPolygon();
 		}
-		if (subPixelResolution()) {
+		if (subPixelResolution() && bounds!=null) {
 			float[] xpoints = new float[4];
 			float[] ypoints = new float[4];
-			xpoints[0] = (float)xd;
-			ypoints[0] = (float)yd;
-			xpoints[1] = (float)(xd+widthd);
-			ypoints[1] = (float)yd;
-			xpoints[2] = (float)(xd+widthd);
-			ypoints[2] = (float)(yd+heightd);
-			xpoints[3] = (float)xd;
-			ypoints[3] = (float)(yd+heightd);
+			xpoints[0] = (float)bounds.x;
+			ypoints[0] = (float)bounds.y;
+			xpoints[1] = (float)(bounds.x+bounds.width);
+			ypoints[1] = (float)bounds.y;
+			xpoints[2] = (float)(bounds.x+bounds.width);
+			ypoints[2] = (float)(bounds.y+bounds.height);
+			xpoints[3] = (float)bounds.x;
+			ypoints[3] = (float)(bounds.y+bounds.height);
 			return new FloatPolygon(xpoints, ypoints);
 		} else {
 			Polygon p = getPolygon();
@@ -485,6 +484,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			r.setStroke(getStroke());
 			r.setFillColor(getFillColor());
 			r.imageID = getImageID();
+			if (bounds!=null)
+				r.bounds = (Rectangle2D.Double)bounds.clone();
 			return r;
 		}
 		catch (CloneNotSupportedException e) {return null;}
@@ -533,7 +534,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		oldY = y;
 		oldWidth = width;
 		oldHeight = height;
-		xd=x; yd=y; widthd=width; heightd=height;
+		bounds = null;
 	}
 
 	private void growConstrained(int xNew, int yNew) {
@@ -655,7 +656,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				height=1;
 				y=y2=yc;
 			}
-			xd=x; yd=y;
+			bounds = null;
 
 		}
 		
@@ -789,7 +790,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		oldWidth = width;
 		oldHeight=height;
 		if (isImageRoi) showStatus();
-		xd=x; yd=y;
+		bounds = null;
 	}
 
 	/** Nudge ROI one pixel on arrow key press. */
@@ -819,7 +820,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		updateClipRect();
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX = x; oldY = y;
-		xd=x; yd=y;
 		bounds = null;
 		showStatus();
 	}
@@ -914,11 +914,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		int sh = (int)(height*mag);
 		int sx1 = screenX(x);
 		int sy1 = screenY(y);
-		if (subPixelResolution()) {
-			sw = (int)(widthd*mag);
-			sh = (int)(heightd*mag);
-			sx1 = screenXD(xd);
-			sy1 = screenYD(yd);
+		if (subPixelResolution() && bounds!=null) {
+			sw = (int)(bounds.width*mag);
+			sh = (int)(bounds.height*mag);
+			sx1 = screenXD(bounds.x);
+			sy1 = screenYD(bounds.y);
 		}
 		int sx2 = sx1+sw/2;
 		int sy2 = sy1+sh/2;
@@ -1605,7 +1605,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return ic!=null;
 	}
 
-	/** Returns true if this is a PolygonRoi that supports sub-pixel resolution. */
+	/** Returns true if this is a slection that supports sub-pixel resolution. */
 	public boolean subPixelResolution() {
 		return subPixel;
 	}

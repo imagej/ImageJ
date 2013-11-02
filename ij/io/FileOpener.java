@@ -253,9 +253,51 @@ public class FileOpener {
 		if (fi.url!=null && !fi.url.equals("") && (fi.directory==null||fi.directory.equals("")))
 			path = fi.url;
 		IJ.showStatus("Loading: " + path);
-		ImagePlus imp2 = IJ.openImage(path);
+		ImagePlus imp2 = null;
+		if (!path.endsWith(".raw"))
+			imp2 = IJ.openImage(path);
 		if (imp2!=null)
 			imp.setImage(imp2);
+		else {
+			if (fi.nImages>1)
+				return;
+			Object pixels = readPixels(fi);
+			if (pixels==null) return;
+			ColorModel cm = createColorModel(fi);
+			ImageProcessor ip = null;
+			switch (fi.fileType) {
+				case FileInfo.GRAY8:
+				case FileInfo.COLOR8:
+				case FileInfo.BITMAP:
+					ip = new ByteProcessor(width, height, (byte[])pixels, cm);
+					imp.setProcessor(null, ip);
+					break;
+				case FileInfo.GRAY16_SIGNED:
+				case FileInfo.GRAY16_UNSIGNED:
+				case FileInfo.GRAY12_UNSIGNED:
+					ip = new ShortProcessor(width, height, (short[])pixels, cm);
+					imp.setProcessor(null, ip);
+					break;
+				case FileInfo.GRAY32_INT:
+				case FileInfo.GRAY32_FLOAT:
+					ip = new FloatProcessor(width, height, (float[])pixels, cm);
+					imp.setProcessor(null, ip);
+					break;
+				case FileInfo.RGB:
+				case FileInfo.BGR:
+				case FileInfo.ARGB:
+				case FileInfo.ABGR:
+				case FileInfo.RGB_PLANAR:
+					Image img = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(width, height, (int[])pixels, 0, width));
+					imp.setImage(img);
+					break;
+				case FileInfo.CMYK:
+					ip = new ColorProcessor(width, height, (int[])pixels);
+					ip.invert();
+					imp.setProcessor(null, ip);
+					break;
+			}
+		}
 	}
 	
 	void setCalibration(ImagePlus imp) {

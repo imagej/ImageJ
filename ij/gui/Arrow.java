@@ -149,6 +149,8 @@ public class Arrow extends Line {
 		if (style==NOTCHED) length*=0.74;
 		if (style==OPEN) length*=1.32;
 		if (length<0.0 || style==HEADLESS) length=0.0;
+		double x=getXBase();
+		double y=getYBase();
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
 		double dx=x2d-x1d, dy=y2d-y1d;
