@@ -160,7 +160,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 					if (crop && roi!=null) {
 						Overlay overlay = imp.getOverlay();
 						if (overlay!=null && !imp.getHideOverlay()) {
-							Overlay overlay2 = Duplicator.cropOverlay(overlay, roi.getBounds());
+							Overlay overlay2 = overlay.crop(roi.getBounds());
 							imp.setOverlay(overlay2);
 						}
 					}

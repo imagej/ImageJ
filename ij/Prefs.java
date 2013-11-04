@@ -589,12 +589,13 @@ public class Prefs {
 		bos.close();
 	}
 	
-	/** Returns the number of threads used by PlugInFilters to process stacks. */
+	/** Returns the number of threads used by PlugInFilters to process images and stacks. */
 	public static int getThreads() {
 		if (threads==0) {
 			threads = getInt(THREADS, 0);
 			int processors = Runtime.getRuntime().availableProcessors();
-			if (threads<1 || threads>processors) threads = processors;
+			if (threads<1 || threads>processors)
+				threads = processors;
 		}
 		return threads;
 	}

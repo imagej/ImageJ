@@ -402,7 +402,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			||name.equals("Dilate")||name.equals("Skeletonize")))
 				setBlackBackground();
 			if (commandOptions!=null) {
-				if (name.equals("Open...")) {
+				if (name.equals("Open...") || name.equals("URL...")) {
 					String s = scriptMode?"imp = IJ.openImage":"open";
 					if (scriptMode && isTextOrTable(commandOptions))
 						s = "IJ.open";

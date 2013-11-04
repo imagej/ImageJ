@@ -221,11 +221,11 @@ public class OvalRoi extends Roi {
 		int sh = (int)(height*mag);
 		int sx1 = screenX(x);
 		int sy1 = screenY(y);
-		if (subPixelResolution()) {
-			sw = (int)(widthd*mag);
-			sh = (int)(heightd*mag);
-			sx1 = screenXD(xd);
-			sy1 = screenYD(yd);
+		if (subPixelResolution() && bounds!=null) {
+			sw = (int)(bounds.width*mag);
+			sh = (int)(bounds.height*mag);
+			sx1 = screenXD(bounds.x);
+			sy1 = screenYD(bounds.y);
 		}
 		int sw2 = (int)(0.14645*width*mag);
 		int sh2 = (int)(0.14645*height*mag);

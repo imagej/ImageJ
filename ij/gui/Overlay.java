@@ -1,6 +1,7 @@
 package ij.gui;
 import java.awt.*;
 import java.util.Vector;
+import java.awt.geom.Rectangle2D;
 import ij.*;
 import ij.process.ImageProcessor;
 
@@ -110,13 +111,55 @@ public class Overlay {
 			rois[i].setFillColor(color);
 	}
 
-    /** Moves all the Rois in this overlay. */
-    public void translate(int dx, int dy) {
+	/** Moves all the ROIs in this overlay. */
+	public void translate(int dx, int dy) {
 		Roi[] rois = toArray();
 		for (int i=0; i<rois.length; i++) {
-			Rectangle r = rois[i].getBounds();
-			rois[i].setLocation(r.x+dx, r.y+dy);
+			Roi roi = rois[i];
+			if (roi.subPixelResolution()) {
+				Rectangle2D r = roi.getFloatBounds();
+				roi.setLocation(r.getX()+dx, r.getY()+dy);
+			} else {
+				Rectangle r = roi.getBounds();
+				roi.setLocation(r.x+dx, r.y+dy);
+			}
 		}
+	}
+
+	/** Moves all the Rois in this overlay.
+	* Marcel Boeglin, October 2013
+	*/
+	public void translate(double dx, double dy) {
+		Roi[] rois = toArray();
+		boolean intArgs = (int)dx==dx && (int)dy==dy;
+		for (int i=0; i<rois.length; i++) {
+			Roi roi = rois[i];
+			if (roi.subPixelResolution() || !intArgs) {
+				Rectangle2D r = roi.getFloatBounds();
+				roi.setLocation(r.getX()+dx, r.getY()+dy);
+			} else {
+				Rectangle r = roi.getBounds();
+				roi.setLocation(r.x+(int)dx, r.y+(int)dy);
+			}
+		}
+	}
+
+	/*
+	* Duplicate the elements of this overlay which  
+	* intersect with the rectangle 'bounds'.
+	* Author: Wilhelm Burger
+	*/
+	public Overlay crop(Rectangle bounds) {
+		Overlay overlay2 = new Overlay();
+		Roi[] allRois = toArray();
+		for (Roi roi: allRois) {
+			Rectangle roiBounds = roi.getBounds();
+			if (bounds.intersects(roiBounds))
+				overlay2.add((Roi)roi.clone());
+		}
+		if (bounds.x!=0 || bounds.y!=0)
+			overlay2.translate(-bounds.x, -bounds.y);
+		return overlay2;
 	}
 
     /** Returns the bounds of this overlay. */

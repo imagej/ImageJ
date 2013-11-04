@@ -62,6 +62,8 @@ public class Duplicator implements PlugIn, TextListener {
 		}
 		imp2.setTitle(newTitle);
 		imp2.show();
+		if (stackSize>1 && imp2.getStackSize()==stackSize)
+			imp2.setSlice(imp.getCurrentSlice());
 		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE && roi.getBounds().width==imp2.getWidth())
 			imp2.restoreRoi();
 	}
@@ -103,8 +105,7 @@ public class Duplicator implements PlugIn, TextListener {
 		if (overlay!=null && !imp.getHideOverlay()) {
 			if (rect==null)
 				rect = new Rectangle(0,0,imp.getWidth(),imp.getHeight());
-			Overlay overlay2 = cropOverlay(overlay, rect);
-			imp2.setOverlay(overlay2);
+			imp2.setOverlay(overlay.crop(rect));
 		}
 		return imp2;
 	}
@@ -128,11 +129,8 @@ public class Duplicator implements PlugIn, TextListener {
 			}
 		}
 		Overlay overlay = imp.getOverlay();
-		if (overlay!=null && !imp.getHideOverlay()) {
-            Rectangle r =  ip.getRoi();
-			Overlay overlay2 = cropOverlay(overlay, r);
-			imp2.setOverlay(overlay2);
-		}
+		if (overlay!=null && !imp.getHideOverlay())
+ 			imp2.setOverlay(overlay.crop(ip.getRoi()));
 		return imp2;
 	}
 	
@@ -281,9 +279,11 @@ public class Duplicator implements PlugIn, TextListener {
 		}
 		imp2.setTitle(newTitle);
 		Overlay overlay = imp.getOverlay();
-		if (overlay!=null && !imp.getHideOverlay() && roi!=null) {
-			Overlay overlay2 = cropOverlay(overlay, roi.getBounds());
-			imp2.setOverlay(overlay2);
+		if (overlay!=null && !imp.getHideOverlay()) {
+			if (roi!=null)
+				imp2.setOverlay(overlay.crop(roi.getBounds()));
+			else
+				imp2.setOverlay(overlay.duplicate());
 		}
 		if (imp2.getWidth()==0 || imp2.getHeight()==0) {
 			IJ.error("Duplicator", "Selection is outside the image");
@@ -292,6 +292,7 @@ public class Duplicator implements PlugIn, TextListener {
 		imp2.show();
 		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE && roi.getBounds().width==imp2.getWidth())
 			imp2.restoreRoi();
+		imp2.setPosition(imp.getC(), imp.getZ(), imp.getT());
 		if (IJ.isMacro()&&imp2.getWindow()!=null)
 			IJ.wait(50);
 	}
@@ -369,21 +370,8 @@ public class Duplicator implements PlugIn, TextListener {
 		return newTitle;
 	}
 	
-	/*
-	* Duplicate the elements of overlay 'overlay1' which  
-	* intersect with the rectangle 'imgBounds'.
-	* Author: Wilhelm Burger
-	*/
 	public static Overlay cropOverlay(Overlay overlay1, Rectangle imgBounds) {
-		Overlay overlay2 = new Overlay();
-		Roi[] allRois = overlay1.toArray();
-		for (Roi roi: allRois) {
-			Rectangle roiBounds = roi.getBounds();
-			if (imgBounds.intersects(roiBounds))
-				overlay2.add((Roi)roi.clone());
-		}
-		overlay2.translate(-imgBounds.x, -imgBounds.y);
-		return overlay2;
+		return overlay1.crop(imgBounds);
 	}
 
 	public void textValueChanged(TextEvent e) {

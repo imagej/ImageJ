@@ -15,6 +15,7 @@ import ij.util.*;
 import java.awt.event.*;
 import java.util.*;
 import java.awt.geom.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /** This is a Canvas used to display images in a Window. */
@@ -69,10 +70,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private boolean mouseExited = true;
 	private boolean customRoi;
 	private boolean drawNames;
-	
-	
+	private AtomicBoolean paintPending;
+
+		
 	public ImageCanvas(ImagePlus imp) {
 		this.imp = imp;
+		paintPending = new AtomicBoolean(false);
 		ij = IJ.getInstance();
 		int width = imp.getWidth();
 		int height = imp.getHeight();
@@ -133,6 +136,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		imageUpdated = true;
 	}
 
+	public void setPaintPending(boolean state) {
+		paintPending.set(state);
+	}
+	
+	public boolean getPaintPending() {
+		return paintPending.get();
+	}
+
 	public void update(Graphics g) {
 		paint(g);
 	}
@@ -143,6 +154,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (roi!=null) roi.updatePaste();
 			if (!IJ.isMacOSX() && imageWidth!=0) {
 				paintDoubleBuffered(g);
+				setPaintPending(false);
 				return;
 			}
 		}
@@ -166,6 +178,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (IJ.debugMode) showFrameRate(g);
 		}
 		catch(OutOfMemoryError e) {IJ.outOfMemory("Paint");}
+		setPaintPending(false);
     }
     
 	private void setInterpolation(Graphics g, boolean interpolate) {

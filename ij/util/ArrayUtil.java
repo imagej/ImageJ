@@ -84,11 +84,6 @@ public class ArrayUtil {
 		sorted = true;
 	}
 
-	/**
-	 *
-	 * @param val
-	 * @return
-	 */
 	public boolean isMaximum(double val) {
 		int i = 0;
 		boolean maxok = true;

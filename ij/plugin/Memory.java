@@ -27,7 +27,7 @@ public class Memory implements PlugIn {
 		String title = "Memory "+(IJ.is64Bit()?"(64-bit)":"(32-bit)");
 		GenericDialog gd = new GenericDialog(title);
 		gd.addNumericField("Maximum memory:", max, 0, 5, "MB");
-		gd.addNumericField("Parallel threads for stacks:", Prefs.getThreads(), 0, 5, "");
+		gd.addNumericField("Parallel threads:", Prefs.getThreads(), 0, 5, "");
 		gd.setInsets(12, 0, 0);
 		gd.addCheckbox("Keep multiple undo buffers", Prefs.keepUndoBuffers);
 		gd.setInsets(12, 0, 0);

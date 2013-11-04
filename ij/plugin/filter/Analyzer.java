@@ -690,8 +690,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 			Roi roi = imp.getRoi();
 			String roiName = roi!=null?roi.getName():null;
 			if (roiName!=null && !roiName.contains(".")) {
-				if (roiName.length()>20)
-					roiName = roiName.substring(0,17) + "...";
+				if (roiName.length()>30)
+					roiName = roiName.substring(0,27) + "...";
 				s += ":"+roiName;
 			}
 			if (imp.getStackSize()>1) {

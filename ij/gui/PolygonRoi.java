@@ -473,8 +473,6 @@ public class PolygonRoi extends Roi {
 	
 	void finishPolygon() {
 		if (xpf!=null) {
-			float xpf0 = xpf[0];
-			float ypf0 = ypf[0];
 			float xbase0 = (float)getXBase();
 			float ybase0 = (float)getYBase();
 			FloatPolygon poly = new FloatPolygon(xpf, ypf, nPoints);
@@ -675,8 +673,6 @@ public class PolygonRoi extends Roi {
 		}
 		float xbase = (float)getXBase();
 		float ybase = (float)getYBase();
-		float xpf0 = xpf[0];
-		float ypf0 = ypf[0];
 		for (int i=0; i<nPoints; i++) {
 			xpf[i] = xpf[i]+xbase;
 			ypf[i] = ypf[i]+ybase;
@@ -697,6 +693,8 @@ public class PolygonRoi extends Roi {
 	}
 
 	private void resetSplineFitBoundingRect() {
+		if (splinePoints==0)
+			return;
 		float xbase = (float)getXBase();
 		float ybase = (float)getYBase();
 		float xSpline0 = xSpline[0];
@@ -1576,6 +1574,17 @@ public class PolygonRoi extends Roi {
 		this.drawOffset = drawOffset && subPixelResolution();
 	}
 		
+	public void setLocation(double x, double y) {
+		super.setLocation(x, y);
+		if ((int)x!=x || (int)y!=y) {
+			subPixel = true;
+			if (xpf==null && xp!=null) {
+				xpf = toFloat(xp);
+				ypf = toFloat(yp);
+			}
+		}
+	}
+
 	public String getDebugInfo() {
 		String s = "ROI Debug Properties\n";
 		s += "	bounds: "+bounds+"\n";

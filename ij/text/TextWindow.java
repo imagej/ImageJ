@@ -32,7 +32,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	/**
 	Opens a new single-column text window.
 	@param title	the title of the window
-	@param str		the text initially displayed in the window
+	@param data		the text initially displayed in the window
 	@param width	the width of the window in pixels
 	@param height	the height of the window in pixels
 	*/
