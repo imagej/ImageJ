@@ -1811,7 +1811,7 @@ public class IJ {
 	 }
 
 	 /** Creates a new imagePlus. <code>Type</code> should contain "8-bit", "16-bit", "32-bit" or "RGB". 
-		 In addition, it can contain "white", "black" or "ramp" (the default is "white"). <code>Width</code> 
+		 In addition, it can contain "white", "black" or "ramp". <code>Width</code> 
 	 	and <code>height</code> specify the width and height of the image in pixels.  
 	 	<code>Depth</code> specifies the number of stack slices. */
 	 public static ImagePlus createImage(String title, String type, int width, int height, int depth) {
@@ -1883,7 +1883,7 @@ public class IJ {
 	 }
 	 
 	 /** Opens a new image. <code>Type</code> should contain "8-bit", "16-bit", "32-bit" or "RGB". 
-		In addition, it can contain "white", "black" or "ramp" (the default is "white"). <code>Width</code> 
+		In addition, it can contain "white", "black" or "ramp". <code>Width</code> 
 		and <code>height</code> specify the width and height of the image in pixels.  
 		<code>Depth</code> specifies the number of stack slices. */
 	public static void newImage(String title, String type, int width, int height, int depth) {

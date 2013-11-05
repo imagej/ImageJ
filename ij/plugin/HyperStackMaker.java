@@ -92,8 +92,10 @@ public class HyperStackMaker implements PlugIn {
 		int t = imp.getNFrames();
 		int yloc = 30;
 		ImageStack stack = imp.getStack();
+		Overlay overlay = new Overlay();
 		int n = stack.getSize();
 		int channel=1, slice=1, frame=1;
+		boolean hyperstack = imp.isHyperStack();
 		for (int i=1; i<=n; i++) {
 			IJ.showProgress(i, n);
 			ImageProcessor ip = stack.getProcessor(i);
@@ -104,15 +106,28 @@ public class HyperStackMaker implements PlugIn {
 			ip.setRoi(0, yloc+25, width, height-(yloc+25));
 			ip.fill();
 			ip.setColor(Color.white);
-			ip.setFont(new Font("SansSerif",Font.PLAIN,24));
-			ip.drawString("c="+IJ.pad(channel,3)+", z="+IJ.pad(slice,3)+", t="+IJ.pad(frame,3), 5, yloc);
-			if (i<=c) {
-				ip.setFont(new Font("SansSerif",Font.PLAIN,12));
+			Font font = new Font("SansSerif",Font.PLAIN,24);
+			ip.setFont(font);
+			String text = "c="+IJ.pad(channel,3)+", z="+IJ.pad(slice,3)+", t="+IJ.pad(frame,3);
+			if (!hyperstack)
+				text = IJ.pad(i,4);
+			TextRoi roi = new TextRoi(5, yloc-28, text, font);
+			roi.setStrokeColor(Color.white);
+			if (hyperstack || c>1)
+				roi.setPosition(channel, slice, frame);
+			else
+				roi.setPosition(i);
+			overlay.add(roi);
+			if (i==1 && hyperstack) {
 				String msg = "Press shift-z (Image>Color>Channels Tool)\n"+
 					"to open the \"Channels\" window, which will\n"+
 					"allow you switch to composite color mode\n"+
 					"and to enable/disable channels.\n";
-				ip.drawString(msg, 25, 80);
+				font = new Font("SansSerif", Font.PLAIN, imp.getWidth()>400?14:12);
+				roi = new TextRoi(25, 80, msg, font);
+				roi.setStrokeColor(Color.white);
+				roi.setPosition(0, 1, 1);
+				overlay.add(roi);
 			}
 			channel++;
 			if (channel>c) {
@@ -125,6 +140,7 @@ public class HyperStackMaker implements PlugIn {
 				}
 			}
 		}
+		imp.setOverlay(overlay);
 	}
 
 }

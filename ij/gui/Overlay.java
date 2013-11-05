@@ -150,6 +150,8 @@ public class Overlay {
 	* Author: Wilhelm Burger
 	*/
 	public Overlay crop(Rectangle bounds) {
+		if (bounds==null)
+			return duplicate();
 		Overlay overlay2 = new Overlay();
 		Roi[] allRois = toArray();
 		for (Roi roi: allRois) {
@@ -160,6 +162,57 @@ public class Overlay {
 		if (bounds.x!=0 || bounds.y!=0)
 			overlay2.translate(-bounds.x, -bounds.y);
 		return overlay2;
+	}
+
+	/** Removes ROIs having positions outside of the  
+	* interval defined by firstSlice and lastSlice.
+	* Marcel Boeglin, September 2013
+	*/
+	public void crop(int firstSlice, int lastSlice) {
+		for (int i=size()-1; i>=0; i--) {
+			Roi roi = get(i);
+			int position = roi.getPosition();
+			if (position>0) {
+				if (position<firstSlice || position>lastSlice)
+					remove(i);
+				else
+					roi.setPosition(position-firstSlice+1);
+			}
+		}
+	}
+
+	/** Removes ROIs having a C, Z or T coordinate outside the volume
+	* defined by firstC, lastC, firstZ, lastZ, firstT and lastT.
+	* Marcel Boeglin, September 2013
+	*/
+	public void crop(int firstC, int lastC, int firstZ, int lastZ, int firstT, int lastT) {
+		//IJ.log("Overlay.crop(int firstC, int lastC, int firstZ, int lastZ, int firstT, int lastT)");
+		int nc = lastC-firstC+1, nz = lastZ-firstZ+1, nt = lastT-firstT+1;
+		boolean toCStack = nz==1 && nt==1;
+		boolean toZStack = nt==1 && nc==1;
+		boolean toTStack = nc==1 && nz==1;
+		Roi roi;
+		int c, z, t, c2, z2, t2;
+		for (int i=size()-1; i>=0; i--) {
+			roi = get(i);
+			c = roi.getCPosition();
+			z = roi.getZPosition();
+			t = roi.getTPosition();
+			c2 = c-firstC+1;
+			z2 = z-firstZ+1;
+			t2 = t-firstT+1;
+			//IJ.log(roi.getName()+":    c-firstC+1 = "+c2+"    z-firstZ+1 = "+z2+"    t-firstT+1 = "+t2);
+			if (toCStack)
+				roi.setPosition(c2);
+			else if (toZStack)
+				roi.setPosition(z2);
+			else if (toTStack)
+				roi.setPosition(t2);
+			else
+				roi.setPosition(c2, z2, t2);
+			if ((c2<1||c2>nc) && c>0 || (z2<1||z2>nz) && z>0 || (t2<1||t2>nt) && t>0)
+				remove(i);
+		}
 	}
 
     /** Returns the bounds of this overlay. */
