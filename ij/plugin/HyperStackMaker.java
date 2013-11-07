@@ -123,7 +123,7 @@ public class HyperStackMaker implements PlugIn {
 					"to open the \"Channels\" window, which will\n"+
 					"allow you switch to composite color mode\n"+
 					"and to enable/disable channels.\n";
-				font = new Font("SansSerif", Font.PLAIN, imp.getWidth()>400?14:12);
+				font = new Font("SansSerif", Font.PLAIN, imp.getWidth()>399?14:12);
 				roi = new TextRoi(25, 80, msg, font);
 				roi.setStrokeColor(Color.white);
 				roi.setPosition(0, 1, 1);

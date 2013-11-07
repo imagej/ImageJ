@@ -186,7 +186,6 @@ public class Overlay {
 	* Marcel Boeglin, September 2013
 	*/
 	public void crop(int firstC, int lastC, int firstZ, int lastZ, int firstT, int lastT) {
-		//IJ.log("Overlay.crop(int firstC, int lastC, int firstZ, int lastZ, int firstT, int lastT)");
 		int nc = lastC-firstC+1, nz = lastZ-firstZ+1, nt = lastT-firstT+1;
 		boolean toCStack = nz==1 && nt==1;
 		boolean toZStack = nt==1 && nc==1;
@@ -201,7 +200,6 @@ public class Overlay {
 			c2 = c-firstC+1;
 			z2 = z-firstZ+1;
 			t2 = t-firstT+1;
-			//IJ.log(roi.getName()+":    c-firstC+1 = "+c2+"    z-firstZ+1 = "+z2+"    t-firstT+1 = "+t2);
 			if (toCStack)
 				roi.setPosition(c2);
 			else if (toZStack)

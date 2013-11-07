@@ -1501,6 +1501,8 @@ public class Functions implements MacroConstants, Measurements {
 				return ThresholdAdjuster.getMethod();
 			} else if (key.equals("threshold.mode")) {
 				return ThresholdAdjuster.getMode();
+			} else if (key.equals("window.type")) {
+				return getWindowType();
 			} else {
 				String value = "";
 				try {value = System.getProperty(key);}
@@ -1509,6 +1511,34 @@ public class Functions implements MacroConstants, Measurements {
 			}
 			return "";
 	}
+	
+	String getWindowType() {
+		Window win = WindowManager.getActiveWindow();
+		if (win==null)
+			return "";
+		String type = win.getClass().getName();
+		if (win instanceof TextWindow) {
+			TextPanel tp = ((TextWindow)win).getTextPanel();
+			if (tp.getColumnHeadings().isEmpty())
+				type = "Text";
+			else {
+				if (tp.getResultsTable()!=null)
+					type = "ResultsTable";
+				else
+					type = "Table";
+			}
+		} else if (type.equals("ij.gui.PlotWindow"))
+			type = "Plot";
+		else if (type.equals("ij.gui.HistogramWindow"))
+			type = "Histogram";
+		else if (win instanceof ij.gui.ImageWindow)
+			type = "Image";
+		else {
+			if (type.contains(".")) //strip off hierarchy
+				type = type.substring(type.lastIndexOf('.')+1);
+		}
+		return type;
+    }
 	
 	String getMetadataValue(String key) {
 		String metadata = getMetadataAsString();
