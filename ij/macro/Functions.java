@@ -1430,6 +1430,7 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	String getInfo(String key) {
+			key = key.toLowerCase(Locale.US);
 			int len = key.length();
 			if (len==9 && key.charAt(4)==',') {
 				String tag = DicomTools.getTag(getImage(), key);
@@ -1442,7 +1443,7 @@ public class Functions implements MacroConstants, Measurements {
 					return "";
 				else
 					return overlay.toString();
-			} else if (key.equals("log")||key.equals("Log")) {
+			} else if (key.equals("log")) {
 				String log = IJ.getLog();
 				return log!=null?log:"";
 			} else if (key.indexOf(".")==-1) {

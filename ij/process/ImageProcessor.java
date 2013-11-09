@@ -182,7 +182,7 @@ public abstract class ImageProcessor implements Cloneable {
 	
 	public void setLut(LUT lut) {
 		setColorModel(lut);
-		if (lut.min!=0.0||lut.max!=0.0)
+		if (lut!=null && (lut.min!=0.0||lut.max!=0.0))
 			setMinAndMax(lut.min, lut.max);
 	}
 
