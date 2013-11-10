@@ -1020,7 +1020,15 @@ public class ShortProcessor extends ImageProcessor {
 		System.arraycopy(pixels2, 0, pixels, 0, pixels.length);
 	}
 
-    public void noise(double range) {
+    /** Adds pseudorandom, Gaussian ("normally") distributed values, with
+    	mean 0.0 and the specified standard deviation, to this image or ROI. */
+    public void noise(double standardDeviation) {
+    	noise(standardDeviation, 0.0);
+    }
+
+    /** Adds pseudorandom, Gaussian ("normally") distributed values, with
+    	the specified standard deviation and mean, to this image or ROI. */
+    public void noise(double standardDeviation, double mean) {
 		Random rnd=new Random();
 		int v, ran;
 		boolean inRange;
@@ -1029,7 +1037,7 @@ public class ShortProcessor extends ImageProcessor {
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
 				inRange = false;
 				do {
-					ran = (int)Math.round(rnd.nextGaussian()*range);
+					ran = (int)Math.round(rnd.nextGaussian()*standardDeviation+mean);
 					v = (pixels[i] & 0xffff) + ran;
 					inRange = v>=0 && v<=65535;
 					if (inRange) pixels[i] = (short)v;
