@@ -1094,6 +1094,45 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return properties;
 	}
 		
+	/** Returns the value from the "Info" property string that is 
+		associated with 'key', or null if the key is not found. Works
+		with DICOM tags and Bio-Formats metadata. */
+	public String getInfo(String key) {
+		Object obj = getProperty("Info");
+		if (obj==null || key==null) return null;
+		String info = (String)obj;
+		String str = key+": ";
+		int index1 = info.indexOf(str);
+		if (index1==-1) {
+			if (key.length()==9 && key.charAt(4)==',') { // DICOM tag?
+				str = key+" ";
+				index1 = info.indexOf(str);
+			}
+			if (index1==-1) { // Bio-Formats metadata?
+				str = key+" = ";
+				index1 = info.indexOf(str);
+			}
+			if (index1==-1) return null;
+		}
+		index1 += str.length();
+		int index2 = info.indexOf("\n", index1);
+		if (index2==-1) index2=info.length();
+		String value = info.substring(index1, index2);
+		return value;
+	}
+
+	/** Returns the "Info" property string, or null if it is not found. */
+	public String getInfoProperty() {
+		String info = null;
+		Object obj = getProperty("Info");
+		if (obj!=null && (obj instanceof String)) {
+			info = (String)obj;
+			if (info.length()==0)
+				info = null;
+		}
+		return info;
+	}
+
 	/** Creates a LookUpTable object that corresponds to this image. */
     public LookUpTable createLut() {
 		ImageProcessor ip2 = getProcessor();

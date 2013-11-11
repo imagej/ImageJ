@@ -847,7 +847,15 @@ public class ByteProcessor extends ImageProcessor {
 		filter(MEDIAN_FILTER);
 	}
 
-    public void noise(double range) {
+    /** Adds pseudorandom, Gaussian ("normally") distributed values, with
+    	mean 0.0 and the specified standard deviation, to this image or ROI. */
+    public void noise(double standardDeviation) {
+    	noise(standardDeviation, 0.0);
+    }
+
+    /** Adds pseudorandom, Gaussian ("normally") distributed values, with
+    	the specified standard deviation and mean, to this image or ROI. */
+    public void noise(double standardDeviation, double mean) {
 		Random rnd=new Random();
 		int v, ran;
 		boolean inRange;
@@ -856,17 +864,14 @@ public class ByteProcessor extends ImageProcessor {
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
 				inRange = false;
 				do {
-					ran = (int)Math.round(rnd.nextGaussian()*range);
+					ran = (int)Math.round(rnd.nextGaussian()*standardDeviation+mean);
 					v = (pixels[i] & 0xff) + ran;
 					inRange = v>=0 && v<=255;
 					if (inRange) pixels[i] = (byte)v;
 				} while (!inRange);
 				i++;
 			}
-			if (y%20==0)
-				showProgress((double)(y-roiY)/roiHeight);
 		}
-		showProgress(1.0);
     }
 
 	/** Scales the image or selection using the specified scale factors.

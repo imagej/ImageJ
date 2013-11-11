@@ -130,6 +130,11 @@ public class FFT implements  PlugIn, Measurements {
             imp2.show();
             imp2.setProperty("FHT", fht);
             imp2.setCalibration(imp.getCalibration());
+            String properties = "Fast Hartley Transform\n";
+            properties += "width: "+fht.originalWidth + "\n";
+            properties += "height: "+fht.originalHeight + "\n";
+            properties += "bitdepth: "+fht.originalBitDepth + "\n";
+            imp2.setProperty("Info", properties);
         }
     }
     

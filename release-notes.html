@@ -5,14 +5,21 @@
 </head>
 <body>
 
-<li> <u>1.48g 2 November 2013</u>
+<li> <u>1.48g 10 November 2013</u>
 <ul>
+<li> Added a "Fill with" option of "Random" to the <i>File&gt;New&gt;Image</i> dialog box.
+<li> Thanks to Michael Schmid, <i>File&gt;Save As&gt;Tiff</i> and <i>File&gt;Save As&gt;ZIP</i>
+now save the FFT data of FFT windows, except for FFTs of RGB images.
+<li> The <i>File&gt;New&gt;Hyperstack</i> command now labels using an overlay.
 <li> The <i>Image&gt;Show Info</i> command displays overlay information.
+<li> Thanks to Michael Schmid, added the getInfo("window.type") macro function.
 <li> Thanks to Nico Stuurman, added setPaintPending() and getPaintPending()
-methods to the ImageCanvas class;
-<li> Thanks to Marcel Boeglin, added an Overlay.translate(double,double) method
-(<a href="macros/js/OverlayTranslationDemo.js">example</a>) and
-fixed bugs that caused <i>Image&gt;Crop</i> and <i>Image&gt;Duplicate</i> 
+methods to the ImageCanvas class.
+<li> Thanks to Marcel Boeglin, added translate(x,y)
+(<a href="macros/js/OverlayTranslationDemo.js">example</a>)
+crop(Rectangle), crop(firstSlice,lastSlice) and crop(firstC,lastC,firstZ,lastZ,firstT,lastT)
+methods to the Overlay class.
+<li> Thanks to Marcel Boeglin, fixed bugs that caused <i>Image&gt;Crop</i> and <i>Image&gt;Duplicate</i> 
 to sometimes not work correctly with images containing overlays.
 <li> Fixed a 1.48f regression that caused unexpected Feret's diameter angles
 to be returned.

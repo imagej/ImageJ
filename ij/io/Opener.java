@@ -12,6 +12,7 @@ import ij.text.TextWindow;
 import ij.util.Java2;
 import ij.measure.ResultsTable;
 import ij.macro.Interpreter;
+import ij.util.Tools;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
@@ -878,9 +879,11 @@ public class Opener {
 		}
 		File f = new File(path);
 		FileInfo fi = imp.getOriginalFileInfo();
-		fi.fileFormat = FileInfo.ZIP_ARCHIVE;
-		fi.fileName = f.getName();
-		fi.directory = f.getParent()+File.separator;
+		if (fi!=null) {
+			fi.fileFormat = FileInfo.ZIP_ARCHIVE;
+			fi.fileName = f.getName();
+			fi.directory = f.getParent()+File.separator;
+		}
 		return imp;
 	}
 	
@@ -960,7 +963,25 @@ public class Opener {
 		if (offsets!=null&&offsets.length>1 && offsets[offsets.length-1]<offsets[0])
 			ij.IJ.run(imp, "Flip Vertically", "stack");
 		imp = makeComposite(imp, info[0]);
-		return imp;
+		if (imp.getBitDepth()==32 && imp.getTitle().startsWith("FFT of"))
+			return openFFT(imp);
+		else
+			return imp;
+	}
+	
+	private ImagePlus openFFT(ImagePlus imp) {
+		ImageProcessor ip = imp.getProcessor();
+		FHT fht = new FHT(ip, true);
+		ImageProcessor ps = fht.getPowerSpectrum();
+		ImagePlus imp2 = new ImagePlus(imp.getTitle(), ps);
+		imp2.setProperty("FHT", fht);
+		imp2.setProperty("Info", imp.getProperty("Info"));
+		fht.originalWidth = (int)Tools.parseDouble(imp2.getInfo("width"),0);
+		fht.originalHeight = (int)Tools.parseDouble(imp2.getInfo("height"),0);
+		fht.originalBitDepth = (int)Tools.parseDouble(imp2.getInfo("bitdepth"),8);
+		fht.originalColorModel = ip.getColorModel();
+		imp2.setCalibration(imp.getCalibration());
+		return imp2;
 	}
 	
 	/** Attempts to open the specified ROI, returning null if unsuccessful. */

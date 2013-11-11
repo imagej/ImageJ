@@ -102,11 +102,8 @@ public class Duplicator implements PlugIn, TextListener {
 		if (imp.isHyperStack())
 			imp2.setOpenAsHyperStack(true);
 		Overlay overlay = imp.getOverlay();
-		if (overlay!=null && !imp.getHideOverlay()) {
-			if (rect==null)
-				rect = new Rectangle(0,0,imp.getWidth(),imp.getHeight());
+		if (overlay!=null && !imp.getHideOverlay())
 			imp2.setOverlay(overlay.crop(rect));
-		}
 		return imp2;
 	}
 	
@@ -129,8 +126,12 @@ public class Duplicator implements PlugIn, TextListener {
 			}
 		}
 		Overlay overlay = imp.getOverlay();
-		if (overlay!=null && !imp.getHideOverlay())
- 			imp2.setOverlay(overlay.crop(ip.getRoi()));
+		if (overlay!=null && !imp.getHideOverlay()) {
+			Overlay overlay2 = overlay.crop(ip.getRoi());
+ 			if (imp.getStackSize()>1)
+ 				overlay2.crop(imp.getCurrentSlice(), imp.getCurrentSlice());
+ 			imp2.setOverlay(overlay2);
+ 		}
 		return imp2;
 	}
 	
@@ -161,6 +162,12 @@ public class Duplicator implements PlugIn, TextListener {
 			imp2.setDimensions(1, 1, size);
 		else
 			imp2.setDimensions(1, size, 1);
+		Overlay overlay = imp.getOverlay();
+		if (overlay!=null && !imp.getHideOverlay()) {
+			Overlay overlay2 = overlay.crop(rect);
+			overlay2.crop(firstSlice, lastSlice);
+			imp2.setOverlay(overlay2);
+		}
    		if (Recorder.record&&isCommand)
    			Recorder.recordCall("imp = new Duplicator().run(imp, "+firstSlice+", "+lastSlice+");");
 		return imp2;
@@ -280,10 +287,9 @@ public class Duplicator implements PlugIn, TextListener {
 		imp2.setTitle(newTitle);
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && !imp.getHideOverlay()) {
-			if (roi!=null)
-				imp2.setOverlay(overlay.crop(roi.getBounds()));
-			else
-				imp2.setOverlay(overlay.duplicate());
+			Overlay overlay2 = overlay.crop(roi!=null?roi.getBounds():null);
+			overlay2.crop(firstC, lastC, firstZ, lastZ, firstT, lastT);
+			imp2.setOverlay(overlay2);
 		}
 		if (imp2.getWidth()==0 || imp2.getHeight()==0) {
 			IJ.error("Duplicator", "Selection is outside the image");
@@ -370,8 +376,8 @@ public class Duplicator implements PlugIn, TextListener {
 		return newTitle;
 	}
 	
-	public static Overlay cropOverlay(Overlay overlay1, Rectangle imgBounds) {
-		return overlay1.crop(imgBounds);
+	public static Overlay cropOverlay(Overlay overlay, Rectangle bounds) {
+		return overlay.crop(bounds);
 	}
 
 	public void textValueChanged(TextEvent e) {

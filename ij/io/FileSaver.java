@@ -94,8 +94,10 @@ public class FileSaver {
 	/** Saves the image in TIFF format using the specified path. Equivalent to
 		 IJ.saveAsTiff(imp,path), which is more convenient. */
 	public boolean saveAsTiff(String path) {
+		if (imp.getProperty("FHT")!=null && path.contains("FFT of "))
+			setupFFTSave();
 		fi.nImages = 1;
-		fi.info = getInfoProperty(imp);
+		fi.info = imp.getInfoProperty();
 		Object label = imp.getProperty("Label");
 		if (label!=null && (label instanceof String)) {
 			fi.sliceLabels = new String[1];
@@ -115,6 +117,20 @@ public class FileSaver {
 		}
 		updateImp(fi, FileInfo.TIFF);
 		return true;
+	}
+	
+	private void setupFFTSave() {
+		Object obj = imp.getProperty("FHT");
+		if (obj==null) return;
+		FHT fht = (obj instanceof FHT)?(FHT)obj:null;
+		if (fht==null) return;
+		if (fht.originalColorModel!=null)
+			fht.setColorModel(fht.originalColorModel);
+		ImagePlus imp2 = new ImagePlus(imp.getTitle(), fht);
+		imp2.setProperty("Info", imp.getProperty("Info"));
+		imp2.setCalibration(imp.getCalibration());
+		imp = imp2;
+		fi = imp.getFileInfo();
 	}
 	
 	public static byte[][] getOverlay(ImagePlus imp) {
@@ -149,7 +165,7 @@ public class FileSaver {
 		boolean virtualStack = imp.getStack().isVirtual();
 		if (virtualStack)
 			fi.virtualStack = (VirtualStack)imp.getStack();
-		fi.info = getInfoProperty(imp);
+		fi.info = imp.getInfoProperty();
 		fi.description = getDescriptionString();
 		if (virtualStack) {
 			FileInfo fi = imp.getOriginalFileInfo();
@@ -193,7 +209,7 @@ public class FileSaver {
 	public byte[] serialize() {
 		if (imp.getStack().isVirtual())
 			return null;
-		fi.info = getInfoProperty(imp);
+		fi.info = imp.getInfoProperty();
 		saveName = true;
 		fi.description = getDescriptionString();
 		saveName = false;
@@ -211,19 +227,6 @@ public class FileSaver {
 			return null;
 		}
 		return out.toByteArray();
-	}
-
-	private String getInfoProperty(ImagePlus imp) {
-		String info = null;
-		if (imp!=null) {
-			Object obj = imp.getProperty("Info");
-			if (obj!=null && (obj instanceof String)) {
-				info = (String)obj;
-				if (info.length()==0)
-					info = null;
-			}
-		}
-		return info;
 	}
 
 	public void saveDisplayRangesAndLuts(ImagePlus imp, FileInfo fi) {
@@ -260,6 +263,8 @@ public class FileSaver {
 	/** Save the image or stack in TIFF/ZIP format using the specified path. */
 	public boolean saveAsZip(String path) {
 		//fi.nImages = 1;
+		if (imp.getProperty("FHT")!=null && path.contains("FFT of "))
+			setupFFTSave();
 		if (!path.endsWith(".zip"))
 			path = path+".zip";
 		if (name==null)
@@ -269,7 +274,7 @@ public class FileSaver {
 		if (!name.endsWith(".tif"))
 			name = name+".tif";
 		fi.description = getDescriptionString();
-		fi.info = getInfoProperty(imp);
+		fi.info = imp.getInfoProperty();
 		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
 		fi.overlay = getOverlay(imp);
 		fi.sliceLabels = imp.getStack().getSliceLabels();
