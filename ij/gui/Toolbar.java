@@ -50,8 +50,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 	private static final int NUM_TOOLS = 23;
 	private static final int NUM_BUTTONS = 21;
-	private static final int SIZE = 26;
-	private static final int OFFSET = 5;
+	private static final int SIZE = 28;
+	private static final int OFFSET = 6;
 	private static final String BRUSH_SIZE = "toolbar.brush.size";
 	public static final String CORNER_DIAMETER = "toolbar.arc.size";
 	public static String TOOL_KEY = "toolbar.tool";
@@ -247,10 +247,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			case RECTANGLE:
 				xOffset = x; yOffset = y;
 				if (roundRectMode)
-					g.drawRoundRect(x+1, y+2, 15, 12, 8, 8);
+					g.drawRoundRect(x, y+1, 17, 13, 8, 8);
 				else
-					g.drawRect(x+1, y+2, 15, 12);
-				drawTriangle(15,14);
+					g.drawRect(x, y+1, 17, 13);
+				drawTriangle(16,15);
 				return;
 			case OVAL:
 				xOffset = x; yOffset = y;
@@ -265,8 +265,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					d(2,13); d(1,12); d(1,11); d(0,10); d(0,9); d(1,8); d(1,7);
 					d(6,2); d(7,2); d(8,1); d(10,1); d(11,0);
 				} else
-					g.drawOval(x+1, y+2, 15, 12);
-				drawTriangle(15,14);
+					g.drawOval(x, y+1, 17, 13);
+				drawTriangle(16,15);
 				return;
 			case POLYGON:
 				xOffset = x+1; yOffset = y+3;
@@ -355,7 +355,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				m(10,7); d(12,7); d(12,9);
 				m(8,7); d(2,13); d(2,15); d(4,15); d(11,8);
 				g.setColor(backgroundColor);
-				m(0,0); d(16,0); d(16,16); d(0,16); d(0,0);
+				m(-1,-1); d(18,-1); d(18,17); d(-1,17); d(-1,-1);
+				//m(0,0); d(16,0); d(16,16); d(0,16); d(0,0);
 				return;
 			case ANGLE:
 				xOffset = x+1; yOffset = y+2;

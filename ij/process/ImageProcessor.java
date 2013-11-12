@@ -57,7 +57,7 @@ public abstract class ImageProcessor implements Cloneable {
 	int fgColor = 0;
 	protected int lineWidth = 1;
 	protected int cx, cy; //current drawing coordinates
-	protected Font font;
+	protected Font font = ij.ImageJ.SansSerif12;
 	protected FontMetrics fontMetrics;
 	protected boolean antialiasedText;
 	protected boolean boldFont;
@@ -1178,8 +1178,6 @@ public abstract class ImageProcessor implements Cloneable {
 	private void setupFontMetrics() {
 		if (fmImage==null)
 			fmImage=new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-		if (font==null)
-			font = new Font("SansSerif", Font.PLAIN, 12);
 		if (fontMetrics==null) {
 			Graphics g = fmImage.getGraphics();
 			fontMetrics = g.getFontMetrics(font);
