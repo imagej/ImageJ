@@ -77,7 +77,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.48g";
-	public static final String BUILD = "20"; 
+	public static final String BUILD = "23"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -144,7 +144,6 @@ public class ImageJ extends Frame implements ActionListener,
 		Menus m = new Menus(this, applet);
 		String err2 = m.addMenuBar();
 		m.installPopupMenu(this);
-		//setLayout(new GridLayout(2, 1));
 		setLayout(new BorderLayout());
 		
 		// Tool bar
@@ -175,16 +174,13 @@ public class ImageJ extends Frame implements ActionListener,
  		
 		Point loc = getPreferredLocation();
 		Dimension tbSize = toolbar.getPreferredSize();
-		//int ijWidth = tbSize.width+10;
-		//int ijHeight = 100;
 		setCursor(Cursor.getDefaultCursor()); // work-around for JDK 1.1.8 bug
 		if (mode!=NO_SHOW) {
 			if (IJ.isWindows()) try {setIcon();} catch(Exception e) {}
-			//setBounds(loc.x, loc.y, ijWidth, ijHeight); // needed for pack to work
 			setLocation(loc.x, loc.y);
+			setResizable(!IJ.isMacOSX());
 			pack();
-			setResizable(!IJ.isMacintosh());
-			show();
+			setVisible(true);
 		}
 		if (err1!=null)
 			IJ.error(err1);
@@ -203,8 +199,6 @@ public class ImageJ extends Frame implements ActionListener,
 			IJ.runPlugIn("ij.plugin.DragAndDrop", "");
 		String str = m.getMacroCount()==1?" macro":" macros";
 		IJ.showStatus(version()+ m.getPluginCount() + " commands; " + m.getMacroCount() + str);
-		//if (applet==null && !embedded && Prefs.runSocketListener)
-		//	new SocketListener();
 		configureProxy();
 		if (applet==null)
 			loadCursors();
