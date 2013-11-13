@@ -211,7 +211,7 @@ public class Binner implements PlugIn {
 			}
 			pixels[mj] = 0;
 		}
-		float max = 0f;
+		float max = -Float.MAX_VALUE;
 		for (int j=0; j<shrinksize; j++) {
 			if (pixels[j]>max)
 				max = pixels[j];
@@ -233,7 +233,7 @@ public class Binner implements PlugIn {
 	}
 
 	private float getMax(ImageProcessor ip, int x, int y) {
-		float max = 0f;
+		float max = -Float.MAX_VALUE;
 		float pixel;
 		for (int y2=0; y2<yshrink; y2++) {
 			for (int x2=0;  x2<xshrink; x2++) {

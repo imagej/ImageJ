@@ -850,12 +850,6 @@ public class ByteProcessor extends ImageProcessor {
     /** Adds pseudorandom, Gaussian ("normally") distributed values, with
     	mean 0.0 and the specified standard deviation, to this image or ROI. */
     public void noise(double standardDeviation) {
-    	noise(standardDeviation, 0.0);
-    }
-
-    /** Adds pseudorandom, Gaussian ("normally") distributed values, with
-    	the specified standard deviation and mean, to this image or ROI. */
-    public void noise(double standardDeviation, double mean) {
 		Random rnd=new Random();
 		int v, ran;
 		boolean inRange;
@@ -864,7 +858,7 @@ public class ByteProcessor extends ImageProcessor {
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
 				inRange = false;
 				do {
-					ran = (int)Math.round(rnd.nextGaussian()*standardDeviation+mean);
+					ran = (int)Math.round(rnd.nextGaussian()*standardDeviation);
 					v = (pixels[i] & 0xff) + ran;
 					inRange = v>=0 && v<=255;
 					if (inRange) pixels[i] = (byte)v;

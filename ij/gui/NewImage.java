@@ -100,14 +100,6 @@ public class NewImage {
 		return true;
 	}
 
-	static ImagePlus createImagePlus() {
-		//ImagePlus imp = WindowManager.getCurrentImage();
-		//if (imp!=null)
-		//	return imp.createImagePlus();
-		//else
-		return new ImagePlus();
-	}
-	
 	static int getFill(int options) {
 		int fill = options&7; 
 		if (fill==OLD_FILL_WHITE)
@@ -142,11 +134,11 @@ public class NewImage {
 				}
 				break;
 			case FILL_RANDOM:
-				((ByteProcessor)ip).noise(31, 127.5);
+				ip.add(127);
+				ip.noise(31);
 				break;
 		}
-		ImagePlus imp = createImagePlus();
-		imp.setProcessor(title, ip);
+		ImagePlus imp = new ImagePlus(title, ip);
 		if (slices>1) {
 			boolean ok = createStack(imp, ip, slices, GRAY8, options);
 			if (!ok) imp = null;
@@ -183,20 +175,15 @@ public class NewImage {
 				}
 				break;
 			case FILL_RANDOM:
-				ImageProcessor rr = new ByteProcessor(width, height);
-				ImageProcessor gg = new ByteProcessor(width, height);
-				ImageProcessor bb = new ByteProcessor(width, height);
-				((ByteProcessor)rr).noise(31, 127.5);
-				((ByteProcessor)gg).noise(31, 127.5);
-				((ByteProcessor)bb).noise(31, 127.5);
-				byte[] R = (byte[])rr.getPixels();
-				byte[] G = (byte[])gg.getPixels();
-				byte[] B = (byte[])bb.getPixels();
-				ip.setRGB(R, G, B);
+				ByteProcessor rr = new ByteProcessor(width, height);
+				ByteProcessor gg = new ByteProcessor(width, height);
+				ByteProcessor bb = new ByteProcessor(width, height);
+				rr.add(127); gg.add(127); bb.add(127);
+				rr.noise(31); gg.noise(31); bb.noise(31);
+				ip.setChannel(1,rr); ip.setChannel(2,gg); ip.setChannel(3,bb);
 				break;
 		}
-		ImagePlus imp = createImagePlus();
-		imp.setProcessor(title, ip);
+		ImagePlus imp = new ImagePlus(title, ip);
 		if (slices>1) {
 			boolean ok = createStack(imp, ip, slices, RGB, options);
 			if (!ok) imp = null;
@@ -210,7 +197,7 @@ public class NewImage {
 		int size = getSize(width, height);
 		if (size<0) return null;
 		short[] pixels = new short[size];
-	    ImageProcessor ip = new ShortProcessor(width, height, pixels, null);
+		ImageProcessor ip = new ShortProcessor(width, height, pixels, null);
 		switch (fill) {
 			case FILL_WHITE: case FILL_BLACK:
 				break;
@@ -226,13 +213,13 @@ public class NewImage {
 				}
 				break;
 			case FILL_RANDOM:
-				((ShortProcessor)ip).noise(7940, 32767.5);
+				ip.add(32767);
+				ip.noise(7940);
 				break;
 		}
 	    if (fill==FILL_WHITE)
 	    	ip.invertLut();
-		ImagePlus imp = createImagePlus();
-		imp.setProcessor(title, ip);
+		ImagePlus imp = new ImagePlus(title, ip);
 		if (slices>1) {
 			boolean ok = createStack(imp, ip, slices, GRAY16, options);
 			if (!ok) imp = null;
@@ -254,7 +241,7 @@ public class NewImage {
 		int size = getSize(width, height);
 		if (size<0) return null;
 		float[] pixels = new float[size];
-	    ImageProcessor ip = new FloatProcessor(width, height, pixels, null);
+		ImageProcessor ip = new FloatProcessor(width, height, pixels, null);
 		switch (fill) {
 			case FILL_WHITE: case FILL_BLACK:
 				break;
@@ -275,8 +262,7 @@ public class NewImage {
 		}
 	    if (fill==FILL_WHITE)
 	    	ip.invertLut();
-		ImagePlus imp = createImagePlus();
-		imp.setProcessor(title, ip);
+		ImagePlus imp = new ImagePlus(title, ip);
 		if (slices>1) {
 			boolean ok = createStack(imp, ip, slices, GRAY32, options);
 			if (!ok) imp = null;

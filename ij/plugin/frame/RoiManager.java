@@ -595,7 +595,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 					if (hyperstack) {
 						if (imp.getNSlices()>1 && n<=imp.getNSlices())
 							imp.setPosition(imp.getC(),n,imp.getT());
-						else  if (imp.getNFrames()>1 && n<=imp.getNFrames())
+						else if (imp.getNFrames()>1 && n<=imp.getNFrames())
 							imp.setPosition(imp.getC(),imp.getZ(),n);
 						else
 							imp.setPosition(n);
