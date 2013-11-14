@@ -77,7 +77,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.48g";
-	public static final String BUILD = "27"; 
+	public static final String BUILD = "31"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -220,7 +220,6 @@ public class ImageJ extends Frame implements ActionListener,
 		Point hotSpot = new Point(width/2, height/2);
 		Cursor crosshairCursor = toolkit.createCustomCursor(image, hotSpot, "crosshair-cursor.gif");
 		ImageCanvas.setCursor(crosshairCursor, 0);
-		//IJ.log(width+" "+height+" "+toolkit.getBestCursorSize(width,height));
 	}
     	
 	void configureProxy() {
@@ -318,7 +317,6 @@ public class ImageJ extends Frame implements ActionListener,
 					imp = ((ImageCanvas)parent).getImage();
 			}
 			int flags = e.getModifiers();
-			//IJ.log(""+KeyEvent.getKeyModifiersText(flags));
 			hotkey = false;
 			actionPerformedTime = System.currentTimeMillis();
 			long ellapsedTime = actionPerformedTime-keyPressedTime;
@@ -635,7 +633,6 @@ public class ImageJ extends Frame implements ActionListener,
 		for (int i=0; i<nArgs; i++) {
 			String arg = args[i];
 			if (arg==null) continue;
-			//IJ.log(i+"  "+arg);
 			if (args[i].startsWith("-")) {
 				if (args[i].startsWith("-batch"))
 					noGUI = true;
@@ -760,14 +757,11 @@ public class ImageJ extends Frame implements ActionListener,
 			quitting = false;
 			return;
 		}
-		//IJ.log("savePreferences");
 		if (applet==null) {
 			saveWindowLocations();
 			Prefs.savePreferences();
 		}
 		IJ.cleanup();
-		//setVisible(false);
-		//IJ.log("dispose");
 		dispose();
 		if (exitWhenQuitting)
 			System.exit(0);

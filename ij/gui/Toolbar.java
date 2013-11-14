@@ -111,7 +111,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addMouseMotionListener(this);
 		instance = this;
 		names[NUM_TOOLS-1] = "\"More Tools\" menu (switch toolsets or add tools)";
-		icons[NUM_TOOLS-1] = "C900T1c12>T7c12>"; // ">>"
+		icons[NUM_TOOLS-1] = "C900T1c13>T7c13>"; // ">>"
 		addPopupMenus();
 	}
 
@@ -1483,6 +1483,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	/** Used by the MacroInstaller class to add a macro tool to the first
 		available toolbar slot, or to the last slot if the toolbar is full. */
 	public void addMacroTool(String name, MacroInstaller macroInstaller) {
+		String spare2Name = names[SPARE2];
 		this.macroInstaller = macroInstaller;
 		addingSingleTool = true;
 		int tool = addTool(name);
@@ -1498,7 +1499,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				else
 					installingStartupTool = false;
 			}
-			setPrefs(tool);
+			if ((tool-SPARE2)>0 || spare2Name==null)
+				setPrefs(tool);
 		}
 	}
 	
