@@ -2,7 +2,7 @@
     var luts = getLutMenu();
     var lCmds = newMenu("LUT Menu Tool", luts);
     
-    macro "LUT Menu Tool - C037T0b11LT6b09UTcb09T" {
+    macro "LUT Menu Tool - C037T0b11LT7b09UTeb09T" {
          cmd = getArgument();
   	  if (cmd!="-") run(cmd);
     }

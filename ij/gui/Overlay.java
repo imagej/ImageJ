@@ -1,6 +1,7 @@
 package ij.gui;
 import java.awt.*;
 import java.util.Vector;
+import java.awt.geom.Rectangle2D;
 import ij.*;
 import ij.process.ImageProcessor;
 
@@ -110,12 +111,105 @@ public class Overlay {
 			rois[i].setFillColor(color);
 	}
 
-    /** Moves all the Rois in this overlay. */
-    public void translate(int dx, int dy) {
+	/** Moves all the ROIs in this overlay. */
+	public void translate(int dx, int dy) {
 		Roi[] rois = toArray();
 		for (int i=0; i<rois.length; i++) {
-			Rectangle r = rois[i].getBounds();
-			rois[i].setLocation(r.x+dx, r.y+dy);
+			Roi roi = rois[i];
+			if (roi.subPixelResolution()) {
+				Rectangle2D r = roi.getFloatBounds();
+				roi.setLocation(r.getX()+dx, r.getY()+dy);
+			} else {
+				Rectangle r = roi.getBounds();
+				roi.setLocation(r.x+dx, r.y+dy);
+			}
+		}
+	}
+
+	/** Moves all the Rois in this overlay.
+	* Marcel Boeglin, October 2013
+	*/
+	public void translate(double dx, double dy) {
+		Roi[] rois = toArray();
+		boolean intArgs = (int)dx==dx && (int)dy==dy;
+		for (int i=0; i<rois.length; i++) {
+			Roi roi = rois[i];
+			if (roi.subPixelResolution() || !intArgs) {
+				Rectangle2D r = roi.getFloatBounds();
+				roi.setLocation(r.getX()+dx, r.getY()+dy);
+			} else {
+				Rectangle r = roi.getBounds();
+				roi.setLocation(r.x+(int)dx, r.y+(int)dy);
+			}
+		}
+	}
+
+	/*
+	* Duplicate the elements of this overlay which  
+	* intersect with the rectangle 'bounds'.
+	* Author: Wilhelm Burger
+	*/
+	public Overlay crop(Rectangle bounds) {
+		if (bounds==null)
+			return duplicate();
+		Overlay overlay2 = new Overlay();
+		Roi[] allRois = toArray();
+		for (Roi roi: allRois) {
+			Rectangle roiBounds = roi.getBounds();
+			if (bounds.intersects(roiBounds))
+				overlay2.add((Roi)roi.clone());
+		}
+		if (bounds.x!=0 || bounds.y!=0)
+			overlay2.translate(-bounds.x, -bounds.y);
+		return overlay2;
+	}
+
+	/** Removes ROIs having positions outside of the  
+	* interval defined by firstSlice and lastSlice.
+	* Marcel Boeglin, September 2013
+	*/
+	public void crop(int firstSlice, int lastSlice) {
+		for (int i=size()-1; i>=0; i--) {
+			Roi roi = get(i);
+			int position = roi.getPosition();
+			if (position>0) {
+				if (position<firstSlice || position>lastSlice)
+					remove(i);
+				else
+					roi.setPosition(position-firstSlice+1);
+			}
+		}
+	}
+
+	/** Removes ROIs having a C, Z or T coordinate outside the volume
+	* defined by firstC, lastC, firstZ, lastZ, firstT and lastT.
+	* Marcel Boeglin, September 2013
+	*/
+	public void crop(int firstC, int lastC, int firstZ, int lastZ, int firstT, int lastT) {
+		int nc = lastC-firstC+1, nz = lastZ-firstZ+1, nt = lastT-firstT+1;
+		boolean toCStack = nz==1 && nt==1;
+		boolean toZStack = nt==1 && nc==1;
+		boolean toTStack = nc==1 && nz==1;
+		Roi roi;
+		int c, z, t, c2, z2, t2;
+		for (int i=size()-1; i>=0; i--) {
+			roi = get(i);
+			c = roi.getCPosition();
+			z = roi.getZPosition();
+			t = roi.getTPosition();
+			c2 = c-firstC+1;
+			z2 = z-firstZ+1;
+			t2 = t-firstT+1;
+			if (toCStack)
+				roi.setPosition(c2);
+			else if (toZStack)
+				roi.setPosition(z2);
+			else if (toTStack)
+				roi.setPosition(t2);
+			else
+				roi.setPosition(c2, z2, t2);
+			if ((c2<1||c2>nc) && c>0 || (z2<1||z2>nz) && z>0 || (t2<1||t2>nt) && t>0)
+				remove(i);
 		}
 	}
 

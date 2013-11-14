@@ -57,7 +57,7 @@ public abstract class ImageProcessor implements Cloneable {
 	int fgColor = 0;
 	protected int lineWidth = 1;
 	protected int cx, cy; //current drawing coordinates
-	protected Font font;
+	protected Font font = ij.ImageJ.SansSerif12;
 	protected FontMetrics fontMetrics;
 	protected boolean antialiasedText;
 	protected boolean boldFont;
@@ -182,7 +182,7 @@ public abstract class ImageProcessor implements Cloneable {
 	
 	public void setLut(LUT lut) {
 		setColorModel(lut);
-		if (lut.min!=0.0||lut.max!=0.0)
+		if (lut!=null && (lut.min!=0.0||lut.max!=0.0))
 			setMinAndMax(lut.min, lut.max);
 	}
 
@@ -1178,8 +1178,6 @@ public abstract class ImageProcessor implements Cloneable {
 	private void setupFontMetrics() {
 		if (fmImage==null)
 			fmImage=new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-		if (font==null)
-			font = new Font("SansSerif", Font.PLAIN, 12);
 		if (fontMetrics==null) {
 			Graphics g = fmImage.getGraphics();
 			fontMetrics = g.getFontMetrics(font);
@@ -1952,10 +1950,9 @@ public abstract class ImageProcessor implements Cloneable {
 	/** A 3x3 median filter. Requires 8-bit or RGB image. */
 	public abstract void medianFilter();
 	
-    /** Adds random noise to the image or ROI.
-    	@param range	the range of random numbers
-    */
-    public abstract void noise(double range);
+    /** Adds pseudorandom, Gaussian ("normally") distributed values, with
+    	mean 0.0 and the specified standard deviation, to this image or ROI. */
+    public abstract void noise(double standardDeviation);
     
 	/** Creates a new processor containing an image
 		that corresponds to the current ROI. */

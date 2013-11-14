@@ -50,8 +50,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 	private static final int NUM_TOOLS = 23;
 	private static final int NUM_BUTTONS = 21;
-	private static final int SIZE = 26;
-	private static final int OFFSET = 5;
+	private static final int SIZE = 28;
+	private static final int OFFSET = 6;
 	private static final String BRUSH_SIZE = "toolbar.brush.size";
 	public static final String CORNER_DIAMETER = "toolbar.arc.size";
 	public static String TOOL_KEY = "toolbar.tool";
@@ -111,7 +111,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addMouseMotionListener(this);
 		instance = this;
 		names[NUM_TOOLS-1] = "\"More Tools\" menu (switch toolsets or add tools)";
-		icons[NUM_TOOLS-1] = "C900T1c12>T7c12>"; // ">>"
+		icons[NUM_TOOLS-1] = "C900T1c13>T7c13>"; // ">>"
 		addPopupMenus();
 	}
 
@@ -247,10 +247,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			case RECTANGLE:
 				xOffset = x; yOffset = y;
 				if (roundRectMode)
-					g.drawRoundRect(x+1, y+2, 15, 12, 8, 8);
+					g.drawRoundRect(x, y+1, 17, 13, 8, 8);
 				else
-					g.drawRect(x+1, y+2, 15, 12);
-				drawTriangle(15,14);
+					g.drawRect(x, y+1, 17, 13);
+				drawTriangle(16,15);
 				return;
 			case OVAL:
 				xOffset = x; yOffset = y;
@@ -265,19 +265,20 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					d(2,13); d(1,12); d(1,11); d(0,10); d(0,9); d(1,8); d(1,7);
 					d(6,2); d(7,2); d(8,1); d(10,1); d(11,0);
 				} else
-					g.drawOval(x+1, y+2, 15, 12);
-				drawTriangle(15,14);
+					g.drawOval(x, y+1, 17, 13);
+				drawTriangle(16,15);
 				return;
 			case POLYGON:
-				xOffset = x+1; yOffset = y+3;
-				m(4,0); d(14,0); d(14,1); d(10,5); d(10,6);
-				d(13,9); d(13,10); d(0,10); d(0,4); d(4,0);
+				xOffset = x+1; yOffset = y+2;
+				m(4,0); d(15,0); d(15,1); d(11,5); d(11,6);
+				d(14,10); d(14,11); d(0,11); d(0,4); d(4,0);
 				return;
 			case FREEROI:
-				xOffset = x+1; yOffset = y+3;
-				m(3,0); d(5,0); d(7,2); d(9,2); d(11,0); d(13,0); d(14,1); d(15,2);
-				d(15,4); d(14,5); d(14,6); d(12,8); d(11,8); d(10,9); d(9,9); d(8,10);
-				d(5,10); d(3,8); d(2,8); d(1,7); d(1,6); d(0,5); d(0,2); d(1,1); d(2,1);
+				xOffset = x+1; yOffset = y+2;
+				m(3,0); d(6,0); d(8,2); d(10,2); d(11,1); d(12,1); d(13,0); d(15,0);
+				d(16,1); d(17,2);  d(17,5); d(16,6); d(16,7);  d(15,8); d(13,10); d(12,10);
+				d(11,11); d(6,11); d(5,10); d(4,10); d(3,9);  d(2,9); d(1,8); d(1,7);
+				d(0,6); d(0,2); d(1,1); d(2,1);
 				return;
 			case LINE:
 				xOffset = x; yOffset = y;
@@ -285,8 +286,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					m(1,14); d(14,1); m(6,5); d(14,1); m(10,9); d(14,1); m(6,5); d(10,9);
 				} else {
 					m(0,12); d(17,3);
-					g.fillRect(x,y+11,2,2);
-					g.fillRect(x+17,y+2,2,2);
+					drawDot(0,11); drawDot(17,2);
 				}
 				drawTriangle(12,14);
 				return;
@@ -315,9 +315,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				drawTriangle(14,14);
 				return;
 			case WAND:
-				xOffset = x+2; yOffset = y+2;
+				xOffset = x+2; yOffset = y+1;
 				dot(4,0);  m(2,0); d(3,1); d(4,2);  m(0,0); d(1,1);
-				m(0,2); d(1,3); d(2,4);  dot(0,4); m(3,3); d(12,12);
+				m(0,2); d(1,3); d(2,4);  dot(0,4); m(3,3); d(13,13);
 				g.setColor(Roi.getColor());
 				m(1,2); d(3,2); m(2,1); d(2,3);
 				return;
@@ -355,12 +355,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				m(10,7); d(12,7); d(12,9);
 				m(8,7); d(2,13); d(2,15); d(4,15); d(11,8);
 				g.setColor(backgroundColor);
-				m(0,0); d(16,0); d(16,16); d(0,16); d(0,0);
+				m(-1,-1); d(18,-1); d(18,17); d(-1,17); d(-1,-1);
+				//m(0,0); d(16,0); d(16,16); d(0,16); d(0,0);
 				return;
 			case ANGLE:
-				xOffset = x+1; yOffset = y+2;
+				xOffset = x; yOffset = y+2;
 				m(0,11); d(11,0); m(0,11); d(15,11); 
 				m(10,11); d(10,8); m(9,7); d(9,6); dot(8,5);
+				drawDot(11,-1); drawDot(15,10);
 				return;
 		}
 	}
@@ -371,6 +373,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		m(0,0); d(4,0); m(1,1); d(3,1); dot(2,2);
 	}
 	
+	void drawDot(int x, int y) {
+		g.fillRect(xOffset+x, yOffset+y, 2, 2);
+	}
+
 	void drawPoint(int x, int y) {
 		g.setColor(toolColor);
 		m(x-2,y); d(x+2,y);
@@ -413,12 +419,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					}
 					break;
 				case 'T': // text (one character)
-					x2 = x+v();
+					x2 = x+v()-1;
 					y2 = y+v();
-					int size = v()*10+v();
+					int size = v()*10+v()+1;
 					char[] c = new char[1];
 					c[0] = pc<icon.length()?icon.charAt(pc++):'e';
-					g.setFont(new Font("SansSerif", Font.BOLD, size));
+					g.setFont(new Font("SansSerif", Font.PLAIN, size));
 					g.drawString(new String(c), x2, y2);
 					break;
 				default: break;
@@ -1477,6 +1483,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	/** Used by the MacroInstaller class to add a macro tool to the first
 		available toolbar slot, or to the last slot if the toolbar is full. */
 	public void addMacroTool(String name, MacroInstaller macroInstaller) {
+		String spare2Name = names[SPARE2];
 		this.macroInstaller = macroInstaller;
 		addingSingleTool = true;
 		int tool = addTool(name);
@@ -1492,7 +1499,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				else
 					installingStartupTool = false;
 			}
-			setPrefs(tool);
+			if ((tool-SPARE2)>0 || spare2Name==null)
+				setPrefs(tool);
 		}
 	}
 	

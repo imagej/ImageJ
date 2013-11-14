@@ -76,7 +76,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
-	public static final String VERSION = "1.48f";
+	public static final String VERSION = "1.48g";
 	public static final String BUILD = ""; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
@@ -111,7 +111,7 @@ public class ImageJ extends Frame implements ActionListener,
 	private boolean embedded;
 	private boolean windowClosed;
 	private static String commandName;
-	
+		
 	boolean hotkey;
 	
 	/** Creates a new ImageJ frame that runs as an application. */
@@ -144,12 +144,12 @@ public class ImageJ extends Frame implements ActionListener,
 		Menus m = new Menus(this, applet);
 		String err2 = m.addMenuBar();
 		m.installPopupMenu(this);
-		setLayout(new GridLayout(2, 1));
+		setLayout(new BorderLayout());
 		
 		// Tool bar
 		toolbar = new Toolbar();
 		toolbar.addKeyListener(this);
-		add(toolbar);
+		add("Center", toolbar);
 
 		// Status bar
 		statusBar = new Panel();
@@ -157,7 +157,7 @@ public class ImageJ extends Frame implements ActionListener,
 		statusBar.setForeground(Color.black);
 		statusBar.setBackground(backgroundColor);
 		statusLine = new Label();
-		statusLine.setFont(SansSerif12);
+		statusLine.setFont(new Font("SansSerif", Font.PLAIN, 13));
 		statusLine.addKeyListener(this);
 		statusLine.addMouseListener(this);
 		statusBar.add("Center", statusLine);
@@ -165,8 +165,7 @@ public class ImageJ extends Frame implements ActionListener,
 		progressBar.addKeyListener(this);
 		progressBar.addMouseListener(this);
 		statusBar.add("East", progressBar);
-		statusBar.setSize(toolbar.getPreferredSize());
-		add(statusBar);
+		add("South", statusBar);
 
 		IJ.init(this, applet);
  		addKeyListener(this);
@@ -175,16 +174,13 @@ public class ImageJ extends Frame implements ActionListener,
  		
 		Point loc = getPreferredLocation();
 		Dimension tbSize = toolbar.getPreferredSize();
-		int ijWidth = tbSize.width+10;
-		int ijHeight = 100;
 		setCursor(Cursor.getDefaultCursor()); // work-around for JDK 1.1.8 bug
 		if (mode!=NO_SHOW) {
 			if (IJ.isWindows()) try {setIcon();} catch(Exception e) {}
-			setBounds(loc.x, loc.y, ijWidth, ijHeight); // needed for pack to work
 			setLocation(loc.x, loc.y);
+			setResizable(!IJ.isMacOSX());
 			pack();
-			setResizable(!(IJ.isMacintosh() || IJ.isWindows())); // make resizable on Linux
-			show();
+			setVisible(true);
 		}
 		if (err1!=null)
 			IJ.error(err1);
@@ -203,8 +199,6 @@ public class ImageJ extends Frame implements ActionListener,
 			IJ.runPlugIn("ij.plugin.DragAndDrop", "");
 		String str = m.getMacroCount()==1?" macro":" macros";
 		IJ.showStatus(version()+ m.getPluginCount() + " commands; " + m.getMacroCount() + str);
-		//if (applet==null && !embedded && Prefs.runSocketListener)
-		//	new SocketListener();
 		configureProxy();
 		if (applet==null)
 			loadCursors();
@@ -226,7 +220,6 @@ public class ImageJ extends Frame implements ActionListener,
 		Point hotSpot = new Point(width/2, height/2);
 		Cursor crosshairCursor = toolkit.createCustomCursor(image, hotSpot, "crosshair-cursor.gif");
 		ImageCanvas.setCursor(crosshairCursor, 0);
-		//IJ.log(width+" "+height+" "+toolkit.getBestCursorSize(width,height));
 	}
     	
 	void configureProxy() {
@@ -324,7 +317,6 @@ public class ImageJ extends Frame implements ActionListener,
 					imp = ((ImageCanvas)parent).getImage();
 			}
 			int flags = e.getModifiers();
-			//IJ.log(""+KeyEvent.getKeyModifiersText(flags));
 			hotkey = false;
 			actionPerformedTime = System.currentTimeMillis();
 			long ellapsedTime = actionPerformedTime-keyPressedTime;
@@ -641,7 +633,6 @@ public class ImageJ extends Frame implements ActionListener,
 		for (int i=0; i<nArgs; i++) {
 			String arg = args[i];
 			if (arg==null) continue;
-			//IJ.log(i+"  "+arg);
 			if (args[i].startsWith("-")) {
 				if (args[i].startsWith("-batch"))
 					noGUI = true;
@@ -766,14 +757,11 @@ public class ImageJ extends Frame implements ActionListener,
 			quitting = false;
 			return;
 		}
-		//IJ.log("savePreferences");
 		if (applet==null) {
 			saveWindowLocations();
 			Prefs.savePreferences();
 		}
 		IJ.cleanup();
-		//setVisible(false);
-		//IJ.log("dispose");
 		dispose();
 		if (exitWhenQuitting)
 			System.exit(0);

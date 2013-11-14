@@ -12,7 +12,7 @@ import ij.process.*;
 public class NewImage {
 
 	public static final int GRAY8=0, GRAY16=1, GRAY32=2, RGB=3;
-	public static final int FILL_BLACK=1, FILL_RAMP=2, FILL_WHITE=4, CHECK_AVAILABLE_MEMORY=8;
+	public static final int FILL_BLACK=1, FILL_RAMP=2, FILL_RANDOM=3, FILL_WHITE=4, CHECK_AVAILABLE_MEMORY=8;
 	private static final int OLD_FILL_WHITE=0;
 	
     static final String TYPE = "new.type";
@@ -28,7 +28,7 @@ public class NewImage {
     private static int type = Prefs.getInt(TYPE, GRAY8);
     private static int fillWith = Prefs.getInt(FILL, FILL_BLACK);
     private static String[] types = {"8-bit", "16-bit", "32-bit", "RGB"};
-    private static String[] fill = {"White", "Black", "Ramp"};
+    private static String[] fill = {"White", "Black", "Ramp", "Random"};
     
 	
     public NewImage() {
@@ -100,19 +100,11 @@ public class NewImage {
 		return true;
 	}
 
-	static ImagePlus createImagePlus() {
-		//ImagePlus imp = WindowManager.getCurrentImage();
-		//if (imp!=null)
-		//	return imp.createImagePlus();
-		//else
-		return new ImagePlus();
-	}
-	
 	static int getFill(int options) {
 		int fill = options&7; 
 		if (fill==OLD_FILL_WHITE)
 			fill = FILL_WHITE;
-		if (fill==7||fill==6||fill==3||fill==5)
+		if (fill==7||fill==6||fill==5)
 			fill = FILL_BLACK;
 		return fill;
 	}
@@ -122,6 +114,7 @@ public class NewImage {
 		int size = getSize(width, height);
 		if (size<0) return null;
 		byte[] pixels = new byte[size];
+		ImageProcessor ip = new ByteProcessor(width, height, pixels, null);
 		switch (fill) {
 			case FILL_WHITE:
 				for (int i=0; i<width*height; i++)
@@ -140,10 +133,12 @@ public class NewImage {
 						pixels[offset++] = ramp[x];
 				}
 				break;
+			case FILL_RANDOM:
+				ip.add(127);
+				ip.noise(31);
+				break;
 		}
-		ImageProcessor ip = new ByteProcessor(width, height, pixels, null);
-		ImagePlus imp = createImagePlus();
-		imp.setProcessor(title, ip);
+		ImagePlus imp = new ImagePlus(title, ip);
 		if (slices>1) {
 			boolean ok = createStack(imp, ip, slices, GRAY8, options);
 			if (!ok) imp = null;
@@ -156,6 +151,7 @@ public class NewImage {
 		int size = getSize(width, height);
 		if (size<0) return null;
 		int[] pixels = new int[size];
+		ColorProcessor ip = new ColorProcessor(width, height, pixels);
 		switch (fill) {
 			case FILL_WHITE:
 				for (int i=0; i<width*height; i++)
@@ -178,10 +174,16 @@ public class NewImage {
 						pixels[offset++] = ramp[x];
 				}
 				break;
+			case FILL_RANDOM:
+				ByteProcessor rr = new ByteProcessor(width, height);
+				ByteProcessor gg = new ByteProcessor(width, height);
+				ByteProcessor bb = new ByteProcessor(width, height);
+				rr.add(127); gg.add(127); bb.add(127);
+				rr.noise(31); gg.noise(31); bb.noise(31);
+				ip.setChannel(1,rr); ip.setChannel(2,gg); ip.setChannel(3,bb);
+				break;
 		}
-		ImageProcessor ip = new ColorProcessor(width, height, pixels);
-		ImagePlus imp = createImagePlus();
-		imp.setProcessor(title, ip);
+		ImagePlus imp = new ImagePlus(title, ip);
 		if (slices>1) {
 			boolean ok = createStack(imp, ip, slices, RGB, options);
 			if (!ok) imp = null;
@@ -195,6 +197,7 @@ public class NewImage {
 		int size = getSize(width, height);
 		if (size<0) return null;
 		short[] pixels = new short[size];
+		ImageProcessor ip = new ShortProcessor(width, height, pixels, null);
 		switch (fill) {
 			case FILL_WHITE: case FILL_BLACK:
 				break;
@@ -209,12 +212,14 @@ public class NewImage {
 						pixels[offset++] = ramp[x];
 				}
 				break;
+			case FILL_RANDOM:
+				ip.add(32767);
+				ip.noise(7940);
+				break;
 		}
-	    ImageProcessor ip = new ShortProcessor(width, height, pixels, null);
 	    if (fill==FILL_WHITE)
 	    	ip.invertLut();
-		ImagePlus imp = createImagePlus();
-		imp.setProcessor(title, ip);
+		ImagePlus imp = new ImagePlus(title, ip);
 		if (slices>1) {
 			boolean ok = createStack(imp, ip, slices, GRAY16, options);
 			if (!ok) imp = null;
@@ -236,6 +241,7 @@ public class NewImage {
 		int size = getSize(width, height);
 		if (size<0) return null;
 		float[] pixels = new float[size];
+		ImageProcessor ip = new FloatProcessor(width, height, pixels, null);
 		switch (fill) {
 			case FILL_WHITE: case FILL_BLACK:
 				break;
@@ -250,17 +256,19 @@ public class NewImage {
 						pixels[offset++] = ramp[x];
 				}
 				break;
+			case FILL_RANDOM:
+				ip.noise(1);
+				break;
 		}
-	    ImageProcessor ip = new FloatProcessor(width, height, pixels, null);
 	    if (fill==FILL_WHITE)
 	    	ip.invertLut();
-		ImagePlus imp = createImagePlus();
-		imp.setProcessor(title, ip);
+		ImagePlus imp = new ImagePlus(title, ip);
 		if (slices>1) {
 			boolean ok = createStack(imp, ip, slices, GRAY32, options);
 			if (!ok) imp = null;
 		}
-		imp.getProcessor().setMinAndMax(0.0, 1.0); // default display range
+		if (fill!=FILL_RANDOM)
+			imp.getProcessor().setMinAndMax(0.0, 1.0); // default display range
 		return imp;
 	}
 
@@ -302,12 +310,12 @@ public class NewImage {
 	boolean showDialog() {
 		if (type<GRAY8|| type>RGB)
 			type = GRAY8;
-		if (fillWith<OLD_FILL_WHITE||fillWith>FILL_RAMP)
-			fillWith = OLD_FILL_WHITE;
+		if (fillWith<OLD_FILL_WHITE||fillWith>FILL_RANDOM)
+			fillWith = FILL_WHITE;
 		GenericDialog gd = new GenericDialog("New Image...", IJ.getInstance());
 		gd.addStringField("Name:", name, 12);
 		gd.addChoice("Type:", types, types[type]);
-		gd.addChoice("Fill With:", fill, fill[fillWith]);
+		gd.addChoice("Fill with:", fill, fill[fillWith]);
 		gd.addNumericField("Width:", width, 0, 5, "pixels");
 		gd.addNumericField("Height:", height, 0, 5, "pixels");
 		gd.addNumericField("Slices:", slices, 0, 5, "");

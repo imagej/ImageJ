@@ -704,12 +704,12 @@ public class FloatProcessor extends ImageProcessor {
 		}
 	}
 	
-	public void noise(double range) {
+	public void noise(double standardDeviation) {
 		Random rnd=new Random();
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int i = y * width + roiX;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
-				float RandomBrightness = (float)(rnd.nextGaussian()*range);
+				float RandomBrightness = (float)(rnd.nextGaussian()*standardDeviation);
 				pixels[i] = pixels[i] + RandomBrightness;
 				i++;
 			}
