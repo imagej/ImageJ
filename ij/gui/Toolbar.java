@@ -231,6 +231,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}    
 
 	private void drawButton(Graphics g, int tool) {
+		if (IJ.debugMode) IJ.log("drawButton: "+tool+" "+g);
 		if (g==null) return;
         int index = toolIndex(tool);
         fill3DRect(g, index * SIZE + 1, 1, SIZE, SIZE-1, !down[tool]);
@@ -834,6 +835,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (IJ.getInstance()!=null) {
 			Toolbar tb = getInstance();
 			Graphics g = tb.getGraphics();
+			if (IJ.debugMode) IJ.log("repaintTool: "+tool+" "+g);
 			if (g==null) return;
 			if (Prefs.antialiasedTools)
 				((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -1607,8 +1609,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	public void installStartupTools() {
+		if (IJ.debugMode) IJ.log("installStartupTools");
 		for (int i=0; i<=6; i++) {
 			String name = Prefs.get(TOOL_KEY + (i/10)%10 + i%10, "");
+			if (IJ.debugMode) IJ.log("  "+i+" "+name);
 			if (name.equals("")) continue;
 			installingStartupTool = true;
 			boolean ok = installBuiltinTool(name);
@@ -1624,6 +1628,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	private boolean installBuiltinTool(String label) {
+		if (IJ.debugMode) IJ.log("installBuiltinTool: "+label);
 		boolean ok = true;
 		PlugInTool tool = null;
 		if (label.startsWith("Arrow")) {
