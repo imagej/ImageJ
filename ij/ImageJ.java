@@ -77,7 +77,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.48h";
-	public static final String BUILD = "1"; 
+	public static final String BUILD = "3"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -189,7 +189,6 @@ public class ImageJ extends Frame implements ActionListener,
 			IJ.error(err2);
 			IJ.runPlugIn("ij.plugin.ClassChecker", "");
 		}
-		//m.installStartupMacroSet();
 		if (IJ.isMacintosh()&&applet==null) { 
 			Object qh = null; 
 			qh = IJ.runPlugIn("MacAdapter", ""); 
@@ -763,7 +762,8 @@ public class ImageJ extends Frame implements ActionListener,
 			Prefs.savePreferences();
 		}
 		IJ.cleanup();
-		dispose();
+		try {dispose();}
+		catch(Exception e) {System.out.println(""+e);}
 		if (exitWhenQuitting)
 			System.exit(0);
 	}

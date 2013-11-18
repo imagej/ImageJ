@@ -275,11 +275,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				d(14,10); d(14,11); d(0,11); d(0,4); d(4,0);
 				return;
 			case FREEROI:
-				xOffset = x+1; yOffset = y+2;
-				m(3,0); d(6,0); d(8,2); d(10,2); d(11,1); d(12,1); d(13,0); d(15,0);
-				d(16,1); d(17,2);  d(17,5); d(16,6); d(16,7);  d(15,8); d(13,10); d(12,10);
-				d(11,11); d(6,11); d(5,10); d(4,10); d(3,9);  d(2,9); d(1,8); d(1,7);
-				d(0,6); d(0,2); d(1,1); d(2,1);
+				xOffset = x; yOffset = y+2;
+				m(2,0); d(5,0); d(7,3); d(10,3); d(12,0); d(15,0); d(17,2); d(17,5); d(16,8); 
+				d(13,10); d(11,11); d(6,11); d(4,10); d(1,8); d(0,6); d(0,2); d(2,0); 
 				return;
 			case LINE:
 				xOffset = x; yOffset = y;
@@ -688,12 +686,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (!isValidTool(tool)) return;
 		String previousName = getToolName();
 		current = tool;
-		down[current] = true;
-		if (current!=previous)
-			down[previous] = false;
 		Graphics g = this.getGraphics();
 		if (g==null)
 			return;
+		down[current] = true;
+		if (current!=previous)
+			down[previous] = false;
 		if (Prefs.antialiasedTools) {
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

@@ -628,7 +628,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else if ("Macro Functions...".equals(what))
 			IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+"/developer/macro/functions.html");
 		else if ("Function Finder...".equals(what))
-			new FunctionFinder();
+			new FunctionFinder(this);
 		else if ("Evaluate JavaScript".equals(what))
 			evaluateJavaScript();
 		else if ("Evaluate BeanShell".equals(what))
