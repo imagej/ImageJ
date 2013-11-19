@@ -372,6 +372,16 @@ public class Interpreter implements MacroConstants {
 						pc = savePC;
 						args[count] = new Variable(0, getExpression(), null);
 					}
+				} else if (nextPlus=='+' && next==WORD) {
+					int savePC = pc;
+					getToken();
+					Variable v = lookupVariable();
+					boolean isString = v!=null && v.getType()==Variable.STRING;
+					pc = savePC;
+					if (isString)
+						args[count] = new Variable(0, 0.0, getString());
+					else
+						args[count] = new Variable(0, getExpression(), null);
 				} else
 					args[count] = new Variable(0, getExpression(), null);
 				count++;
@@ -425,7 +435,8 @@ public class Interpreter implements MacroConstants {
 					array = v.getArray();
 					if (array!=null) arraySize=v.getArraySize();
 					isString = v.getString()!=null;
-				}
+				} else if (v!=null && nextToken()=='+')
+					isString = v.getType()==Variable.STRING;
 			}
 			putTokenBack();
 			if (isString)

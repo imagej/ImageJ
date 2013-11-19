@@ -82,6 +82,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private boolean fixedLineEndings;
     private String downloadUrl;
     private boolean downloading;
+    private FunctionFinder functionFinder;
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -628,7 +629,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else if ("Macro Functions...".equals(what))
 			IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+"/developer/macro/functions.html");
 		else if ("Function Finder...".equals(what))
-			new FunctionFinder(this);
+			functionFinder = new FunctionFinder(this);
 		else if ("Evaluate JavaScript".equals(what))
 			evaluateJavaScript();
 		else if ("Evaluate BeanShell".equals(what))
@@ -779,6 +780,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			nWindows--;
 			instance = null;
 			changes = false;
+			if (functionFinder!=null)
+				functionFinder.close();
 		}
 	}
 

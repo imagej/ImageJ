@@ -52,7 +52,7 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 		dialog.setLayout(new BorderLayout());
 		dialog.addWindowListener(this);
 		Panel northPanel = new Panel();
-		prompt = new TextField("", 30);
+		prompt = new TextField("", 32);
 		prompt.addTextListener(this);
 		prompt.addKeyListener(this);
 		northPanel.add(prompt);
@@ -132,6 +132,10 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 	
 	protected void runFromLabel(String listLabel) {
 		edPaste(listLabel);
+		dialog.dispose();
+	}
+	
+	public void close() {
 		dialog.dispose();
 	}
 	
