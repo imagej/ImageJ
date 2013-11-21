@@ -18,7 +18,7 @@ public class SaltAndPepper implements PlugInFilter {
 	}
 
 	public int rand(int min, int max) {
-		return min + (int)(r.nextDouble()*(max-min));
+		return min + r.nextInt(max-min);
 	}
 
 	public void add(ImageProcessor ip, double percent) {
@@ -28,10 +28,9 @@ public class SaltAndPepper implements PlugInFilter {
 		int rx, ry;
 		int width = ip.getWidth();
 		int xmin = roi.x;
-		int xmax = roi.x+roi.width-1;
+		int xmax = roi.x+roi.width;
 		int ymin = roi.y;
-		int ymax = roi.y+roi.height-1;
-		
+		int ymax = roi.y+roi.height;
 		for (int i=0; i<n/2; i++) {
 			rx = rand(xmin, xmax);
 			ry = rand(ymin, ymax);
