@@ -235,13 +235,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (IJ.debugMode) IJ.log("drawButton: "+tool+" "+g);
 		if (g==null) return;
         int index = toolIndex(tool);
-        int x = index * SIZE + 1;
+        int x = index*SIZE + 1;
         if (tool>=SPARE2)
         	x -= SIZE-GAP_SIZE;
         if (tool!=SPARE1)
         	fill3DRect(g, x, 1, SIZE, SIZE-1, !down[tool]);
         g.setColor(toolColor);
-        x = index * SIZE + OFFSET;
+        x = index*SIZE + OFFSET;
         if (tool>=SPARE2)
         	x -= SIZE-GAP_SIZE;
 		int y = OFFSET;

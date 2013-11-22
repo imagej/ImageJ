@@ -1430,32 +1430,30 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	String getInfo(String key) {
-			key = key.toLowerCase(Locale.US);
-			int len = key.length();
-			if (len==9 && key.charAt(4)==',') {
-				String tag = DicomTools.getTag(getImage(), key);
-				return tag!=null?tag:"";
-			} else if (key.equals("command.name")) {
+			String lowercaseKey = key.toLowerCase(Locale.US);
+			int len = lowercaseKey.length();
+			if (lowercaseKey.equals("command.name")) {
 				return ImageJ.getCommandName();
-			} else if (key.equals("overlay")) {
+			} else if (lowercaseKey.equals("overlay")) {
 				Overlay overlay = getImage().getOverlay();
 				if (overlay==null)
 					return "";
 				else
 					return overlay.toString();
-			} else if (key.equals("log")) {
+			} else if (lowercaseKey.equals("log")) {
 				String log = IJ.getLog();
 				return log!=null?log:"";
 			} else if (key.indexOf(".")==-1) {
-				String value = getMetadataValue(key);
+				ImagePlus imp = getImage();
+				String value = imp.getInfo(key);
 				if (value!=null) return value;
-			} else if (key.equals("micrometer.abbreviation"))
+			} else if (lowercaseKey.equals("micrometer.abbreviation"))
 				return "\u00B5m";
-			else if (key.equals("image.subtitle")) {
+			else if (lowercaseKey.equals("image.subtitle")) {
 				ImagePlus imp = getImage();
 				ImageWindow win = imp.getWindow();
 				return win!=null?win.createSubtitle():"";
-			} else if (key.equals("slice.label")) {
+			} else if (lowercaseKey.equals("slice.label")) {
 				ImagePlus imp = getImage();
 				String label = null;
 				if (imp.getStackSize()==1)
@@ -1463,46 +1461,46 @@ public class Functions implements MacroConstants, Measurements {
 				else
 					label = imp.getStack().getShortSliceLabel(imp.getCurrentSlice());
 				return label!=null?label:"";
-			} else if (key.equals("window.contents")) {
+			} else if (lowercaseKey.equals("window.contents")) {
 				return getWindowContents();
-			} else if (key.equals("image.description")) {
+			} else if (lowercaseKey.equals("image.description")) {
 				String description = "";
 				FileInfo fi = getImage().getOriginalFileInfo();
 				if (fi!=null) description = fi.description;
 				if  (description==null) description = "";
 				return description;
-			} else if (key.equals("image.filename")) {
+			} else if (lowercaseKey.equals("image.filename")) {
 				String name= "";
 				FileInfo fi = getImage().getOriginalFileInfo();
 				if (fi!=null && fi.fileName!=null) name= fi.fileName;
 				return name;
-			} else if (key.equals("image.directory")) {
+			} else if (lowercaseKey.equals("image.directory")) {
 				String dir= "";
 				FileInfo fi = getImage().getOriginalFileInfo();
 				if (fi!=null && fi.directory!=null) dir= fi.directory;
 				return dir;
-			} else if (key.equals("selection.name")||key.equals("roi.name")) {
+			} else if (lowercaseKey.equals("selection.name")||lowercaseKey.equals("roi.name")) {
 				ImagePlus imp = getImage();
 				Roi roi = imp.getRoi();
 				String name = roi!=null?roi.getName():null;
 				return name!=null?name:"";
-			} else if (key.equals("selection.color")||key.equals("roi.color")) {
+			} else if (lowercaseKey.equals("selection.color")||lowercaseKey.equals("roi.color")) {
 				ImagePlus imp = getImage();
 				Roi roi = imp.getRoi();
 				if (roi==null)
 					interp.error("No selection");
 				Color color = roi.getStrokeColor();
 				return Colors.colorToString(color);
-			} else if (key.equals("font.name")) {
+			} else if (lowercaseKey.equals("font.name")) {
 				resetImage();
 				ImageProcessor ip = getProcessor();
 				setFont(ip);
 				return ip.getFont().getName();
-			} else if (key.equals("threshold.method")) {
+			} else if (lowercaseKey.equals("threshold.method")) {
 				return ThresholdAdjuster.getMethod();
-			} else if (key.equals("threshold.mode")) {
+			} else if (lowercaseKey.equals("threshold.mode")) {
 				return ThresholdAdjuster.getMode();
-			} else if (key.equals("window.type")) {
+			} else if (lowercaseKey.equals("window.type")) {
 				return getWindowType();
 			} else {
 				String value = "";
@@ -1540,41 +1538,7 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		return type;
     }
-	
-	String getMetadataValue(String key) {
-		String metadata = getMetadataAsString();
-		if (metadata==null) return null;
-		int index1 = metadata.indexOf(key+" =");
-		if (index1!=-1)
-			index1 += key.length() + 2;
-		else {
-			index1 = metadata.indexOf(key+":");
-			if (index1!=-1)
-				index1 += key.length() + 1;
-			else
-				return null;
-		}
-		int index2 = metadata.indexOf("\n", index1);
-		if (index2==-1) return null;
-		String value = metadata.substring(index1+1, index2);
-		if (value.startsWith(" ")) value = value.substring(1, value.length());
-		return value;
-	}
-	
-	String getMetadataAsString() {
-		ImagePlus imp = getImage();
-		String metadata = null;
-		if (imp.getStackSize()>1) {
-			ImageStack stack = imp.getStack();
-			String label = stack.getSliceLabel(imp.getCurrentSlice());
-			if (label!=null && label.indexOf('\n')>0)
-				metadata = label;
-		}
-		if (metadata==null)
-			metadata = (String)imp.getProperty("Info");
-		return metadata;
-	}
-
+		
 	String getWindowContents() {
 		Frame frame = WindowManager.getFrontWindow();
 		if (frame!=null && frame instanceof TextWindow) {

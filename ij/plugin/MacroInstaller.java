@@ -163,12 +163,12 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
             if (toolCount==1) 
                 tb.addMacroTool((String)tools.get(0), this);
             else {
-            	int index = 0;
-  				String firstTool = (String)tools.get(0);
-              	if (!firstTool.startsWith("Unused") && tools.size()<=7) {
-					tb.addMacroTool("Unused Tool", this, 0);
-            		index = 1;
-            	}
+                int index = 0;
+                String firstTool = (String)tools.get(0);
+                if (!firstTool.startsWith("Unused") && tools.size()<=7) {
+                    tb.addMacroTool("Unused Tool", this, 0);
+                    index = 1;
+                }
                 for (int i=0; i<tools.size(); i++)
                    tb.addMacroTool((String)tools.get(i), this, index++);
             }

@@ -1094,10 +1094,75 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return properties;
 	}
 		
+	/*
+	String getMetadataAsString() {
+		ImagePlus imp = getImage();
+		String metadata = null;
+		if (imp.getStackSize()>1) {
+			ImageStack stack = imp.getStack();
+			String label = stack.getSliceLabel(imp.getCurrentSlice());
+			if (label!=null && label.indexOf('\n')>0)
+				metadata = label;
+		}
+		if (metadata==null)
+			metadata = (String)imp.getProperty("Info");
+		return metadata;
+	}
+	*/
+
 	/** Returns the value from the "Info" property string that is 
 		associated with 'key', or null if the key is not found. Works
 		with DICOM tags and Bio-Formats metadata. */
 	public String getInfo(String key) {
+		String metadata = null;
+		if (getStackSize()>1) {
+			ImageStack stack = getStack();
+			String label = stack.getSliceLabel(getCurrentSlice());
+			if (label!=null && label.indexOf('\n')>0) {
+				String value = getInfo(key, label);
+				if (value!=null)
+					return value;
+			}
+		}
+		Object obj = getProperty("Info");
+		if (obj==null || key==null)
+			return null;
+		String info = (String)obj;
+		return getInfo(key, info);
+	}
+	
+	private String getInfo(String key, String info) {
+		int index1 = -1;
+		if (key.matches("[0-9]{4},[0-9]{4}")) // DICOM tag?
+			index1 = findKey(info, key+" ");
+		if (index1<0) // standard 'key: value' pair?
+			index1 = findKey(info, key+": ");
+		if (index1<0) // Bio-Formats metadata?
+			index1 = findKey(info, key+" = ");
+		if (index1<0) // otherwise not found
+			return null;
+		if (index1==info.length())
+			return ""; //empty value at the end
+		int index2 = info.indexOf("\n", index1);
+		if (index2==-1)
+			index2=info.length();
+		String value = info.substring(index1, index2);
+		return value;
+	}
+	
+	/** Find a key in a String (words merely ending with 'key' don't qualify).
+	* Ê@return index of first character after the key, or -1 if not found
+	*/
+	private int findKey(String s, String key) {
+		int i = s.indexOf(key);
+		if (i<0)
+			return -1; //key not found
+		if (i>0 && Character.isLetterOrDigit(s.charAt(i-1)))
+			return -1; //found only end of word
+		return i + key.length();
+	}
+		
+	public String getInfo2(String key) {
 		Object obj = getProperty("Info");
 		if (obj==null || key==null) return null;
 		String info = (String)obj;

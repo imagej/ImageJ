@@ -159,6 +159,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private Color fontColor = nextFontColor;
 	private int lineWidth = nextLineWidth;
 	private boolean noThreshold;
+	private boolean calledFromPlugin;
 
 			
 	/** Constructs a ParticleAnalyzer.
@@ -200,6 +201,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		nextFontSize = defaultFontSize;
 		nextFontColor = defaultFontColor;
 		nextLineWidth = 1;
+		calledFromPlugin = true;
 	}
 	
 	/** Constructs a ParticleAnalyzer using the default min and max circularity values (0 and 1). */
@@ -1020,7 +1022,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			Analyzer.lastParticle = Analyzer.getCounter()-1;
 		} else
 			Analyzer.firstParticle = Analyzer.lastParticle = 0;
-		if (showResults && rt.getCounter()==0 && !IJ.isMacro() && (!processStack||slice==imp.getStackSize())) {
+		if (showResults && rt.getCounter()==0 && !(IJ.isMacro()||calledFromPlugin) && (!processStack||slice==imp.getStackSize())) {
 			int digits = (int)level1==level1&&(int)level2==level2?0:2;
 			String range = IJ.d2s(level1,digits)+"-"+IJ.d2s(level2,digits);
 			String assummed = noThreshold?"assumed":"";
