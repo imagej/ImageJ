@@ -1902,7 +1902,7 @@ public class Interpreter implements MacroConstants {
 				if (imp!=null) title = imp.getTitle();
 			}
 			if (debugMode==STEP) System.gc();
-			variables[0] = "FreeMemory()\t" + IJ.freeMemory();
+			variables[0] = "Memory\t" + IJ.freeMemory();
 			variables[1] = "nImages()\t" + nImages;
 			variables[2] = "getTitle()\t" + (title!=null?"\""+title+"\"":"");
 		}

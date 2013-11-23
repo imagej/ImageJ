@@ -1094,38 +1094,23 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return properties;
 	}
 		
-	/*
-	String getMetadataAsString() {
-		ImagePlus imp = getImage();
-		String metadata = null;
-		if (imp.getStackSize()>1) {
-			ImageStack stack = imp.getStack();
-			String label = stack.getSliceLabel(imp.getCurrentSlice());
-			if (label!=null && label.indexOf('\n')>0)
-				metadata = label;
-		}
-		if (metadata==null)
-			metadata = (String)imp.getProperty("Info");
-		return metadata;
-	}
-	*/
-
 	/** Returns the value from the "Info" property string that is 
 		associated with 'key', or null if the key is not found. Works
 		with DICOM tags and Bio-Formats metadata. */
 	public String getInfo(String key) {
-		String metadata = null;
+		if (key==null)
+			return null;
 		if (getStackSize()>1) {
 			ImageStack stack = getStack();
 			String label = stack.getSliceLabel(getCurrentSlice());
-			if (label!=null && label.indexOf('\n')>0) {
+			if (label!=null && label.indexOf('\n')!=-1) {
 				String value = getInfo(key, label);
 				if (value!=null)
 					return value;
 			}
 		}
 		Object obj = getProperty("Info");
-		if (obj==null || key==null)
+		if (obj==null || !(obj instanceof String))
 			return null;
 		String info = (String)obj;
 		return getInfo(key, info);
@@ -1133,7 +1118,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	
 	private String getInfo(String key, String info) {
 		int index1 = -1;
-		if (key.matches("[0-9]{4},[0-9]{4}")) // DICOM tag?
+		if (key.length()==9 && key.matches("[0-9]{4},[0-9]{4}")) // DICOM tag?
 			index1 = findKey(info, key+" ");
 		if (index1<0) // standard 'key: value' pair?
 			index1 = findKey(info, key+": ");
@@ -1151,7 +1136,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 	
 	/** Find a key in a String (words merely ending with 'key' don't qualify).
-	* Ê@return index of first character after the key, or -1 if not found
+	* @return index of first character after the key, or -1 if not found
 	*/
 	private int findKey(String s, String key) {
 		int i = s.indexOf(key);
@@ -1162,30 +1147,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return i + key.length();
 	}
 		
-	public String getInfo2(String key) {
-		Object obj = getProperty("Info");
-		if (obj==null || key==null) return null;
-		String info = (String)obj;
-		String str = key+": ";
-		int index1 = info.indexOf(str);
-		if (index1==-1) {
-			if (key.length()==9 && key.charAt(4)==',') { // DICOM tag?
-				str = key+" ";
-				index1 = info.indexOf(str);
-			}
-			if (index1==-1) { // Bio-Formats metadata?
-				str = key+" = ";
-				index1 = info.indexOf(str);
-			}
-			if (index1==-1) return null;
-		}
-		index1 += str.length();
-		int index2 = info.indexOf("\n", index1);
-		if (index2==-1) index2=info.length();
-		String value = info.substring(index1, index2);
-		return value;
-	}
-
 	/** Returns the "Info" property string, or null if it is not found. */
 	public String getInfoProperty() {
 		String info = null;
