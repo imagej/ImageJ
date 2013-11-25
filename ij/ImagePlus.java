@@ -1103,7 +1103,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (getStackSize()>1) {
 			ImageStack stack = getStack();
 			String label = stack.getSliceLabel(getCurrentSlice());
-			if (label!=null && label.indexOf('\n')!=-1) {
+			if (label!=null && label.indexOf('\n')>0) {
 				String value = getInfo(key, label);
 				if (value!=null)
 					return value;
@@ -1142,9 +1142,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		int i = s.indexOf(key);
 		if (i<0)
 			return -1; //key not found
-		if (i>0 && Character.isLetterOrDigit(s.charAt(i-1)))
-			return -1; //found only end of word
-		return i + key.length();
+		while (i>0 && Character.isLetterOrDigit(s.charAt(i-1)))
+			i = s.indexOf(key, i+key.length());
+		if (i>=0)
+			return i + key.length();
+		else
+			return -1;
 	}
 		
 	/** Returns the "Info" property string, or null if it is not found. */

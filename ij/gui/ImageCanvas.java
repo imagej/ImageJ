@@ -1051,10 +1051,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				double tolerance = WandToolOptions.getTolerance();
 				int npoints = IJ.doWand(ox, oy, tolerance, mode);
 				if (Recorder.record && npoints>0) {
-					if (tolerance==0.0 && mode.equals("Legacy"))
-						Recorder.record("doWand", ox, oy);
-					else
-						Recorder.recordString("doWand("+ox+", "+oy+", "+tolerance+", \""+mode+"\");\n");
+					if (Recorder.scriptMode())
+						Recorder.recordCall("IJ.doWand(imp, "+ox+", "+oy+", "+tolerance+", \""+mode+"\");");
+					else {
+						if (tolerance==0.0 && mode.equals("Legacy"))
+							Recorder.record("doWand", ox, oy);
+						else
+							Recorder.recordString("doWand("+ox+", "+oy+", "+tolerance+", \""+mode+"\");\n");
+					}
 				}
 				break;
 			case Toolbar.OVAL:

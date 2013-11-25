@@ -53,7 +53,7 @@ public class Prefs {
 	public static final String vistaHint = "";  // no longer used
 
 	private static final int USE_SYSTEM_PROXIES=1<<0, USE_FILE_CHOOSER=1<<1,
-		SUBPIXEL_RESOLUTION=1<<2, ENHANCED_LINE_TOOL=1<<3;
+		SUBPIXEL_RESOLUTION=1<<2, ENHANCED_LINE_TOOL=1<<3, SKIP_RAW_DIALOG=1<<4;
 	public static final String OPTIONS2 = "prefs.options2";
     
 	/** file.separator system property */
@@ -146,6 +146,8 @@ public class Prefs {
 	public static boolean keepArrowSelections;
 	/** Aways paint using double buffering, except on OS X */
 	public static boolean paintDoubleBuffered;
+	/** Do not display dialog when opening .raw files */
+	public static boolean skipRawDialog;
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);
@@ -452,6 +454,7 @@ public class Prefs {
 		useFileChooser = (options2&USE_FILE_CHOOSER)!=0;
 		subPixelResolution = (options2&SUBPIXEL_RESOLUTION)!=0;
 		enhancedLineTool = (options2&ENHANCED_LINE_TOOL)!=0;
+		skipRawDialog = (options2&SKIP_RAW_DIALOG)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -475,7 +478,7 @@ public class Prefs {
 
 		int options2 = (useSystemProxies?USE_SYSTEM_PROXIES:0)
 			+ (useFileChooser?USE_FILE_CHOOSER:0) + (subPixelResolution?SUBPIXEL_RESOLUTION:0)
-			+ (enhancedLineTool?ENHANCED_LINE_TOOL:0);
+			+ (enhancedLineTool?ENHANCED_LINE_TOOL:0) + (skipRawDialog?SKIP_RAW_DIALOG:0);
 		prefs.put(OPTIONS2, Integer.toString(options2));
 	}
 

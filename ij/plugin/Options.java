@@ -89,11 +89,12 @@ public class Options implements PlugIn {
 		GenericDialog gd = new GenericDialog("I/O Options");
 		gd.addNumericField("JPEG quality (0-100):", FileSaver.getJpegQuality(), 0, 3, "");
 		gd.addNumericField("GIF and PNG transparent index:", Prefs.getTransparentIndex(), 0, 3, "");
-		gd.addStringField("File extension for tables (.txt, .xls or .csv):", Prefs.get("options.ext", ".txt"), 4);
+		gd.addStringField("File extension for tables (.txt, .xls or .csv):", Prefs.get("options.ext", ".csv"), 4);
 		gd.addCheckbox("Use JFileChooser to open/save", Prefs.useJFileChooser);
 		if (!IJ.isMacOSX())
 			gd.addCheckbox("Use_file chooser to import sequences", Prefs.useFileChooser);
 		gd.addCheckbox("Save TIFF and raw in Intel byte order", Prefs.intelByteOrder);
+		gd.addCheckbox("Skip dialog when opening .raw files", Prefs.skipRawDialog);
 		
 		gd.setInsets(15, 20, 0);
 		gd.addMessage("Results Table Options");
@@ -123,6 +124,7 @@ public class Options implements PlugIn {
 		if (!IJ.isMacOSX())
 			Prefs.useFileChooser = gd.getNextBoolean();
 		Prefs.intelByteOrder = gd.getNextBoolean();
+		Prefs.skipRawDialog = gd.getNextBoolean();
 		Prefs.copyColumnHeaders = gd.getNextBoolean();
 		Prefs.noRowNumbers = !gd.getNextBoolean();
 		Prefs.dontSaveHeaders = !gd.getNextBoolean();

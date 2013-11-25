@@ -347,7 +347,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		staticMaxSize = maxSize;
 		
 		minAndMax = Tools.split(gd.getNextString(), " -"); // min-max circularity
-		double minc = gd.parseDouble(minAndMax[0]);
+		double minc = minAndMax.length>=1?gd.parseDouble(minAndMax[0]):0.0;
 		double maxc = minAndMax.length==2?gd.parseDouble(minAndMax[1]):Double.NaN;
 		minCircularity = Double.isNaN(minc)?0.0:minc;
 		maxCircularity = Double.isNaN(maxc)?1.0:maxc;
