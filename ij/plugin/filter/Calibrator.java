@@ -190,7 +190,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			FileOpener.setShowConflictMessage(true);
 		if (function!=Calibration.NONE && showPlotFlag) {
 			if (curveFitter!=null)
-				Fitter.plot(curveFitter);
+				Fitter.plot(curveFitter, imp.getBitDepth()==8);
 			else
 				showPlot(x, y, cal, fitGoodness);
 		}

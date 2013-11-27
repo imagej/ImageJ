@@ -791,7 +791,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		oldWidth = width;
 		oldHeight=height;
 		if (isImageRoi) showStatus();
-		bounds = null;
+		if (bounds!=null) {
+			bounds.x = x;
+			bounds.y = y;
+		}
 	}
 
 	/** Nudge ROI one pixel on arrow key press. */

@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.48g 25 November 2013</u>
+<li> <u>1.48g 26 November 2013</u>
 <ul>
 <li> Replaced the blank "Unused Tool" slot in the toolbar with a 9 pixel gap.
 <li> Thanks to Sebastien Octeau, added the "Skip dialog when opening .raw file" option
@@ -16,6 +16,7 @@ is therefore easily copied to the clipboard.
 <li> Changed the default file extension for tables from ".txt" to ".csv" (comma-separated values).
 <li> Added "Insert", "Info" and "Close" buttons to the dialog opened by the
 macro editor's <i>Macros&gt;Function Finder</i> command.
+<li> The makeRectangle() and makeOval() macro functions support subpixel resolution.
 <li> Fixed a bug that caused toolbar icons to sometimes be drawn incorrectly.
 <li> Thanks to Michael Schmid, fixed a bug in <i>Process&gt;Noise&gt;Salt and Pepper</i> that
 caused it to omit the last column and row of the image.
@@ -26,6 +27,8 @@ as a function argument or used in a 'return' statement.
 analyser, when run from a plugin, to display a "No particles were detected..." dialog.
 <li> Thanks to Norbert Vischer, fixed a bug that caused an exception if the Size or
 Circularity fields in the particle analyzer dialog box were blank.
+<li> Fixed a bug that caused the wand tool to not be correctly recorded
+if the Recorder was not in "Macro" mode.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

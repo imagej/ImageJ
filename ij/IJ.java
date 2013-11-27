@@ -1034,6 +1034,14 @@ public class IJ {
 		}
 	}
 	
+	/** Creates a subpixel resolution rectangular selection. */
+	public static void makeRectangle(double x, double y, double width, double height) {
+		if (width<=0 || height<0)
+			getImage().deleteRoi();
+		else
+			getImage().setRoi(new Roi(x,y,width,height), !Interpreter.isBatchMode());
+	}
+
 	/** Creates an oval selection. Removes any existing 
 		selection if width or height are less than 1. */
 	public static void makeOval(int x, int y, int width, int height) {
@@ -1045,6 +1053,14 @@ public class IJ {
 		}
 	}
 	
+	/** Creates an subpixel resolution oval selection. */
+	public static void makeOval(double x, double y, double width, double height) {
+		if (width<=0 || height<0)
+			getImage().deleteRoi();
+		else
+			getImage().setRoi(new OvalRoi(x, y, width, height));
+	}
+
 	/** Creates a straight line selection. */
 	public static void makeLine(int x1, int y1, int x2, int y2) {
 		getImage().setRoi(new Line(x1, y1, x2, y2));

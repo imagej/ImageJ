@@ -724,8 +724,7 @@ public class Functions implements MacroConstants, Measurements {
 	void makeOval() {
 		Roi previousRoi = getImage().getRoi();
 		if (shiftKeyDown||altKeyDown) getImage().saveRoi();
-		IJ.makeOval((int)Math.round(getFirstArg()), (int)Math.round(getNextArg()),
-			(int)Math.round(getNextArg()), (int)Math.round(getLastArg()));
+		IJ.makeOval(getFirstArg(), getNextArg(), getNextArg(), getLastArg());
 		Roi roi = getImage().getRoi();
 		if (previousRoi!=null && roi!=null)
 			updateRoi(roi);
@@ -735,10 +734,10 @@ public class Functions implements MacroConstants, Measurements {
 	void makeRectangle() {
 		Roi previousRoi = getImage().getRoi();
 		if (shiftKeyDown||altKeyDown) getImage().saveRoi();
-		int x = (int)Math.round(getFirstArg());
-		int y = (int)Math.round(getNextArg());
-		int w = (int)Math.round(getNextArg());
-		int h = (int)Math.round(getNextArg());
+		double x = getFirstArg();
+		double y = getNextArg();
+		double w = getNextArg();
+		double h = getNextArg();
 		int arcSize = 0;
 		if (interp.nextToken()==',') {
 			interp.getComma();

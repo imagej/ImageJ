@@ -59,7 +59,7 @@ public class Line extends Roi {
 		type = LINE;
 		if (!(this instanceof Arrow) && lineWidth>1)
 			updateWideLine(lineWidth);
-		drawOffset = true;
+		drawOffset = Prefs.subPixelResolution;
 	}
 
 	/**
