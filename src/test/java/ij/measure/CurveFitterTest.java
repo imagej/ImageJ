@@ -224,7 +224,7 @@ public class CurveFitterTest {
 		assertEquals(CurveFitter.fList[7],"y = d+(a-d)/(1+(x/c)^b)");
 		assertEquals(CurveFitter.fList[8],"y = b*(x-a)^c*exp(-(x-a)/d)");
 		assertEquals(CurveFitter.fList[9],"y = a+b*ln(x-c)");
-		assertEquals(CurveFitter.fList[10],"x = d+(a-d)/(1+(y/c)^b)");
+		//assertEquals(CurveFitter.fList[10],"x = d+(a-d)/(1+(y/c)^b)");
 		assertEquals(CurveFitter.fList[11],"y = a*exp(-bx) + c");
 		assertEquals(CurveFitter.fList[12],"y = a + (b-a)*exp(-(x-c)*(x-c)/(2*d*d))");
 		assertEquals(CurveFitter.fList[13],"y = a*(1-exp(-b*x)) + c"); 
