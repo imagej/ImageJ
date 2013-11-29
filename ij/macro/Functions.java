@@ -269,6 +269,7 @@ public class Functions implements MacroConstants, Measurements {
 			case DEBUG: str = debug(); break;
 			case IJ_CALL: str = ijCall(); break;
 			case GET_RESULT_STRING: str = getResultString(); break;
+			case ROI: str = doRoi(); break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -1444,7 +1445,7 @@ public class Functions implements MacroConstants, Measurements {
 				return log!=null?log:"";
 			} else if (key.indexOf(".")==-1) {
 				ImagePlus imp = getImage();
-				String value = imp.getInfo(key);
+				String value = imp.getInfo(lowercaseKey);
 				if (value!=null) return value;
 			} else if (lowercaseKey.equals("micrometer.abbreviation"))
 				return "\u00B5m";
@@ -5653,6 +5654,53 @@ public class Functions implements MacroConstants, Measurements {
 			}
 		}
 	}
+	
+	String doRoi() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (interp.token!=WORD)
+			interp.error("Function name expected: ");
+		String name = interp.tokenString;
+		Roi roi = getImage().getRoi();
+		if (roi==null)
+			interp.error("No selection");
+		if (name.equals("getColor")) {
+			interp.getParens();
+			Color color = roi.getStrokeColor();
+			return Colors.colorToString(color);
+		} else if (name.equals("getFillColor")) {
+			interp.getParens();
+			Color color = roi.getFillColor();
+			return Colors.colorToString(color);
+		} else if (name.equals("getName")) {
+			interp.getParens();
+			String roiName = roi.getName();
+			return roiName!=null?roiName:"";
+		} else if (name.equals("getProperty")) {
+			String property = roi.getProperty(getStringArg());
+			return property!=null?property:"";
+		} else if (name.equals("getProperties")) {
+			interp.getParens();
+			String properties = roi.getProperties();
+			return properties!=null?properties:"";
+		} else if (name.equals("setProperty")) {
+			String value = "1";
+			interp.getLeftParen();
+			String key = getString();
+			if (interp.nextToken()==',') {
+				interp.getComma();
+				value = getString();
+			} 
+			interp.getRightParen();	
+			roi.setProperty(key, value);
+			return null;
+		} else
+			interp.error("Unrecognized Roi function");
+		return null;
+	}
+
 		
 } // class Functions
 

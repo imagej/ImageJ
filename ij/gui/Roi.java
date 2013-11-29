@@ -1,8 +1,4 @@
 package ij.gui;
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.event.*;
-import java.awt.geom.*;
 import ij.*;
 import ij.process.*;
 import ij.measure.*;
@@ -12,6 +8,12 @@ import ij.plugin.filter.ThresholdToSelection;
 import ij.plugin.RectToolOptions;
 import ij.macro.Interpreter;
 import ij.io.RoiDecoder;
+import java.awt.*;
+import java.util.*;
+import java.io.*;
+import java.awt.image.*;
+import java.awt.event.*;
+import java.awt.geom.*;
 
 /** A rectangular region of interest and superclass for the other ROI classes. */
 public class Roi extends Object implements Cloneable, java.io.Serializable {
@@ -69,6 +71,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	private Overlay prototypeOverlay;
 	private boolean subPixel;
 	private boolean activeOverlayRoi;
+	private Properties props;
+
 
 	/** Creates a rectangular ROI. */
 	public Roi(int x, int y, int width, int height) {
@@ -1691,6 +1695,63 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return temp;
 	}
 
+	public void setProperty(String key, String value) {
+		if (key==null) return;
+		if (props==null)
+			props = new Properties();
+		if (value==null || value.length()==0)
+			props.remove(key);
+		else
+			props.setProperty(key, value);
+	}
+	
+	public String getProperty(String property) {
+		if (props==null)
+			return null;
+		else
+			return props.getProperty(property);
+	}
+	
+	public void setProperties(String properties) {
+		if (props==null)
+			props = new Properties();
+		else
+			props.clear();
+		try {
+			InputStream is = new ByteArrayInputStream(properties.getBytes("utf-8"));
+			props.load(is);
+		} catch(Exception e) {
+			IJ.error(""+e);
+		}
+	}
+
+	public String getProperties() {
+		if (props==null)
+			return null;
+		Vector v = new Vector();
+		for (Enumeration en=props.keys(); en.hasMoreElements();)
+			v.addElement(en.nextElement());
+		String[] keys = new String[v.size()];
+		for (int i=0; i<keys.length; i++)
+			keys[i] = (String)v.elementAt(i);
+		Arrays.sort(keys);
+		StringBuffer sb = new StringBuffer();
+		for (int i=0; i<keys.length; i++) {
+			sb.append(keys[i]);
+			sb.append(": ");
+			sb.append(props.get(keys[i]));
+			sb.append("\n");
+		}
+		return sb.toString();
+	}
+	
+	public int getPropertyCount() {
+		if (props==null)
+			return 0;
+		else
+			return props.size();
+	}
+		
 	public String toString() {
 		return ("Roi["+getTypeAsString()+", x="+x+", y="+y+", width="+width+", height="+height+"]");
 	}

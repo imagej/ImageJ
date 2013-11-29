@@ -5,9 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.48g 26 November 2013</u>
+<li> <u>1.48g 28 November 2013</u>
 <ul>
 <li> Replaced the blank "Unused Tool" slot in the toolbar with a 9 pixel gap.
+<li> Thanks to Jerome Mutterer, added a "List properties" option to the
+<i>Edit&gt;Selection&gt;Properties</i> dialog box.
 <li> Thanks to Sebastien Octeau, added the "Skip dialog when opening .raw file" option
 to the <i>Edit&gt;Options&gt;Input/Output</i> dialog box.
 <li> Thanks to Norbert Vischer, the information shown in the <i>Help&gt;About ImageJ</i>
@@ -18,6 +20,9 @@ is therefore easily copied to the clipboard.
 macro editor's <i>Macros&gt;Function Finder</i> command.
 <li> Plots created by <i>Analyze&gt;Calibrate</i> always use an x range of 0-255 with 8-bit images.
 <li> The makeRectangle() and makeOval() macro functions support subpixel resolution.
+<li> Thanks to Jerome Mutterer, added getProperty(), setProperty() and getProperties() methods
+to the Roi class and Roi.getProperty(), Roi.setProperty() and Roi.getProperties() macro functions
+(<a href="macros/Roi_Properties_Test.txt">example</a>).
 <li> Fixed a bug that caused toolbar icons to sometimes be drawn incorrectly.
 <li> Thanks to Michael Schmid, fixed a bug in <i>Process&gt;Noise&gt;Salt and Pepper</i> that
 caused it to omit the last column and row of the image.

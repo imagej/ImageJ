@@ -1094,9 +1094,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return properties;
 	}
 		
-	/** Returns the value from the "Info" property string that is 
-		associated with 'key', or null if the key is not found. Works
-		with DICOM tags and Bio-Formats metadata. */
+	/** Returns the value from the "Info" property string associated 
+		with 'key', or null if the key is not found. Works with
+		DICOM tags and Bio-Formats metadata. */
 	public String getInfo(String key) {
 		if (key==null)
 			return null;

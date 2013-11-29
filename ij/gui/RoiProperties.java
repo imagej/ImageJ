@@ -6,6 +6,7 @@ import ij.process.FloatPolygon;
 import ij.measure.*;
 import ij.util.Tools;
 import ij.plugin.filter.Analyzer;
+import ij.text.TextWindow;
 import java.awt.*;
 import java.util.*;
 
@@ -21,7 +22,9 @@ public class RoiProperties {
 	private boolean existingOverlay;
 	private boolean setPositions;
 	private boolean listCoordinates;
+	private boolean listProperties;
 	private static final String[] justNames = {"Left", "Center", "Right"};
+	private int nProperties;
 
 	/** Constructs a ColorChooser using the specified title and initial color. */
 	public RoiProperties(String title, Roi roi) {
@@ -30,6 +33,7 @@ public class RoiProperties {
 		this.title = title;
 		showName = title.startsWith("Prop");
 		showListCoordinates = showName && title.endsWith(" ");
+		nProperties = showListCoordinates?roi.getPropertyCount():0;
 		addToOverlay = title.equals("Add to Overlay");
 		overlayOptions = title.equals("Overlay Options");
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -123,6 +127,12 @@ public class RoiProperties {
 		if (showListCoordinates) {
 			int n = roi.getFloatPolygon().npoints;
 			gd.addCheckbox("List coordinates ("+n+")", listCoordinates);
+			if (nProperties>0)
+				gd.addCheckbox("List properties ("+nProperties+")", listProperties);
+			else {
+				gd.setInsets(5,20,0);
+				gd.addMessage("No properties");
+			}
 		}
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -147,8 +157,11 @@ public class RoiProperties {
 			setPositions = gd.getNextBoolean();
 			roi.setPosition(setPositions?1:0);
 		}
-		if (showListCoordinates)
+		if (showListCoordinates) {
 			listCoordinates = gd.getNextBoolean();
+			if (nProperties>0)
+				listProperties = gd.getNextBoolean();
+		}
 		strokeColor = Colors.decode(linec, Roi.getColor());
 		fillColor = Colors.decode(fillc, null);
 		if (isText) {
@@ -184,6 +197,8 @@ public class RoiProperties {
 		}
 		if (listCoordinates)
 			listCoordinates(roi);
+		if (listProperties && nProperties>0)
+			listProperties(roi);
 		//if (strokeWidth>1.0 && !roi.isDrawingTool())
 		//	Line.setWidth(1);
 		return true;
@@ -271,4 +286,11 @@ public class RoiProperties {
 		rt.show("XY_"+title);
 	}
 	
+	void listProperties(Roi roi) {
+		String props = roi.getProperties();
+		if (props==null) return;
+		props = props.replaceAll(": ", "\t");
+		new TextWindow("Properties", "Key\tValue", props, 300, 300);
+	}
+
 }
