@@ -1445,7 +1445,7 @@ public class Functions implements MacroConstants, Measurements {
 				return log!=null?log:"";
 			} else if (key.indexOf(".")==-1) {
 				ImagePlus imp = getImage();
-				String value = imp.getInfo(lowercaseKey);
+				String value = imp.getInfo(key);
 				if (value!=null) return value;
 			} else if (lowercaseKey.equals("micrometer.abbreviation"))
 				return "\u00B5m";
@@ -5663,10 +5663,14 @@ public class Functions implements MacroConstants, Measurements {
 		if (interp.token!=WORD)
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
-		Roi roi = getImage().getRoi();
+		ImagePlus imp = getImage();
+		Roi roi = imp.getRoi();
 		if (roi==null)
 			interp.error("No selection");
-		if (name.equals("getColor")) {
+		if (name.equals("getBounds")) {
+			getBounds();
+			return null;
+		} else if (name.equals("getStrokeColor")) {
 			interp.getParens();
 			Color color = roi.getStrokeColor();
 			return Colors.colorToString(color);
@@ -5674,6 +5678,9 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getParens();
 			Color color = roi.getFillColor();
 			return Colors.colorToString(color);
+		} else if (name.equals("getCoordinates")) {
+			getCoordinates();
+			return null;
 		} else if (name.equals("getName")) {
 			interp.getParens();
 			String roiName = roi.getName();
@@ -5685,6 +5692,24 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getParens();
 			String properties = roi.getProperties();
 			return properties!=null?properties:"";
+		} else if (name.equals("setFillColor")) {
+			roi.setFillColor(Colors.decode(getStringArg(),null));
+			imp.draw();
+			return null;
+		} else if (name.equals("move")) {
+			setSelectionLocation();
+			return null;
+		} else if (name.equals("setName")) {
+			roi.setName(getStringArg());
+			return null;
+		} else if (name.equals("setStrokeColor")) {
+			roi.setStrokeColor(Colors.decode(getStringArg(),null));
+			imp.draw();
+			return null;
+		} else if (name.equals("setStrokeWidth")) {
+			roi.setStrokeWidth(getArg());
+			imp.draw();
+			return null;
 		} else if (name.equals("setProperty")) {
 			String value = "1";
 			interp.getLeftParen();
@@ -5696,6 +5721,10 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();	
 			roi.setProperty(key, value);
 			return null;
+		} else if (name.equals("getType")) {
+			interp.getParens();
+			String type = roi.getTypeAsString();
+			return type.toLowerCase(Locale.US);
 		} else
 			interp.error("Unrecognized Roi function");
 		return null;
