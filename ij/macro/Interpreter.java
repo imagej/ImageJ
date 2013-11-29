@@ -59,6 +59,7 @@ public class Interpreter implements MacroConstants {
 	boolean wasError;
 	ImagePlus batchMacroImage;
 	boolean inLoop;
+	static boolean tempShowMode;
 	
 	static TextWindow arrayWindow;
 	int inspectStkIndex = -1;
@@ -1784,7 +1785,7 @@ public class Interpreter implements MacroConstants {
 	}
 
 	public static boolean isBatchMode() {
-		return batchMode;
+		return batchMode && !tempShowMode;
 	}
 	
 	public static void addBatchModeImage(ImagePlus imp) {
@@ -2056,6 +2057,10 @@ public class Interpreter implements MacroConstants {
 			else
 				arrayWindow.setVisible(false);
 		}
+	}
+	
+	static void setTempShowMode(boolean mode) {
+		tempShowMode = mode;
 	}
 
 } // class Interpreter

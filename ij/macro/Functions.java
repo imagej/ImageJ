@@ -2710,14 +2710,25 @@ public class Functions implements MacroConstants, Measurements {
 		IJ.showProgress(0, 0);
 		ImagePlus imp2 = WindowManager.getCurrentImage();
 		WindowManager.setTempCurrentImage(null);
-		roiManager = null;
 		if (sarg==null) {  //false
 			interp.setBatchMode(false);
+			roiManager = null;
 			displayBatchModeImage(imp2);
+		} else if (sarg.equalsIgnoreCase("show")) {
+			Interpreter.setTempShowMode(true);
+			displayBatchModeImage(imp2);
+			Interpreter.removeBatchModeImage(imp2);
+			Interpreter.setTempShowMode(false);
+		} else if (sarg.equalsIgnoreCase("hide")) {
+			ImageWindow win = imp2.getWindow();
+			if (win!=null)
+				imp2.hide();
+			Interpreter.addBatchModeImage(imp2);
 		} else {
 			Vector v = Interpreter.imageTable;
 			if (v==null) return;
 			interp.setBatchMode(false);
+			roiManager = null;
 			for (int i=0; i<v.size(); i++) {
 				imp2 = (ImagePlus)v.elementAt(i);
 				if (imp2!=null) 
