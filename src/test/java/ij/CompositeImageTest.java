@@ -531,8 +531,8 @@ public class CompositeImageTest {
 		ci.setPosition(2, 1, 3);
 		ci.getProcessor().setMinAndMax(13, 200);
 		ci.updateImage();  // call to detect new channel case
-		assertEquals(0,ci.getProcessor().getMin(),Assert.DOUBLE_TOL);
-		assertEquals(255,ci.getProcessor().getMax(),Assert.DOUBLE_TOL);
+		assertEquals(13,ci.getProcessor().getMin(),Assert.DOUBLE_TOL);
+		assertEquals(200,ci.getProcessor().getMax(),Assert.DOUBLE_TOL);
 		assertEquals(120,ci.getProcessor(1).get(0, 0));
 		assertEquals(130,ci.getProcessor(2).get(0, 0));
 
