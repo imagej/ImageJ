@@ -2717,8 +2717,8 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (sarg.equalsIgnoreCase("show")) {
 			Interpreter.setTempShowMode(true);
 			displayBatchModeImage(imp2);
-			Interpreter.removeBatchModeImage(imp2);
 			Interpreter.setTempShowMode(false);
+			Interpreter.removeBatchModeImage(imp2);
 		} else if (sarg.equalsIgnoreCase("hide")) {
 			ImageWindow win = imp2.getWindow();
 			if (win!=null)
