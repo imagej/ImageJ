@@ -76,7 +76,9 @@ public class RoiDecoder {
 	public static final int IMAGE_OPACITY = 31;  //byte
 	public static final int IMAGE_SIZE = 32;  //int
 	public static final int FLOAT_STROKE_WIDTH = 36;  //float
-		
+	public static final int ROI_PROPS_OFFSET = 40;
+	public static final int ROI_PROPS_LENGTH = 44;
+
 	// subtypes
 	public static final int TEXT = 1;
 	public static final int ARROW = 2;
@@ -314,6 +316,12 @@ public class RoiDecoder {
 		if (version>=221 && subtype==IMAGE)
 			roi = getImageRoi(roi, imageOpacity, imageSize);
 
+		if (version>=224) {
+			String props = getRoiProps();
+			if (props!=null)
+				roi.setProperties(props);
+		}
+
 		roi.setPosition(position);
 		if (channel>0 || slice>0 || frame>0)
 			roi.setPosition(channel, slice, frame);
@@ -434,6 +442,22 @@ public class RoiDecoder {
 		for (int i=0; i<length; i++)
 			name[i] = (char)getShort(offset+i*2);
 		return new String(name);
+	}
+	
+	String getRoiProps() {
+		int hdr2Offset = getInt(HEADER2_OFFSET);
+		if (hdr2Offset==0)
+			return null;
+		int offset = getInt(hdr2Offset+ROI_PROPS_OFFSET);
+		int length = getInt(hdr2Offset+ROI_PROPS_LENGTH);
+		if (offset==0 || length==0)
+			return null;
+		if (offset+length*2>size)
+			return null;
+		char[] props = new char[length];
+		for (int i=0; i<length; i++)
+			props[i] = (char)getShort(offset+i*2);
+		return new String(props);
 	}
 
 	int getByte(int base) {

@@ -132,6 +132,10 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 	}
 	
 	public static void plot(CurveFitter cf) {
+		plot(cf, false);
+	}
+	
+	public static void plot(CurveFitter cf, boolean eightBitCalibrationPlot) {
 		double[] x = cf.getXPoints();
 		double[] y = cf.getYPoints();
 		if (cf.getParams().length<cf.getNumParams()) {
@@ -142,20 +146,26 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 			plot.show();
 			return;
 		}
+		int npoints = 100;
 		double[] a = Tools.getMinMax(x);
-		double xmin=a[0], xmax=a[1]; 
+		double xmin=a[0], xmax=a[1];
+		if (eightBitCalibrationPlot) {
+			npoints = 256;
+			xmin = 0;
+			xmax = 255;
+		}
 		a = Tools.getMinMax(y);
-		double ymin=a[0], ymax=a[1]; 
-		float[] px = new float[100];
-		float[] py = new float[100];
-		double inc = (xmax-xmin)/99.0;
+		double ymin=a[0], ymax=a[1];
+		float[] px = new float[npoints];
+		float[] py = new float[npoints];
+		double inc = (xmax-xmin)/(npoints-1);
 		double tmp = xmin;
-		for (int i=0; i<100; i++) {
+		for (int i=0; i<npoints; i++) {
 			px[i]=(float)tmp;
 			tmp += inc;
 		}
 		double[] params = cf.getParams();
-		for (int i=0; i<100; i++)
+		for (int i=0; i<npoints; i++)
 			py[i] = (float)cf.f(params, px[i]);
 		a = Tools.getMinMax(py);
 		ymin = Math.min(ymin, a[0]);

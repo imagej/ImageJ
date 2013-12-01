@@ -51,12 +51,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static final int NUM_TOOLS = 23;
 	private static final int NUM_BUTTONS = 21;
 	private static final int SIZE = 28;
+	private static final int GAP_SIZE = 9;
 	private static final int OFFSET = 6;
 	private static final String BRUSH_SIZE = "toolbar.brush.size";
 	public static final String CORNER_DIAMETER = "toolbar.arc.size";
 	public static String TOOL_KEY = "toolbar.tool";
 		
-	private Dimension ps = new Dimension(SIZE*NUM_BUTTONS, SIZE);
+	private Dimension ps = new Dimension(SIZE*NUM_BUTTONS-(SIZE-GAP_SIZE), SIZE);
 	private boolean[] down;
 	private static int current;
 	private int previous;
@@ -231,15 +232,22 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}    
 
 	private void drawButton(Graphics g, int tool) {
+		if (IJ.debugMode) IJ.log("drawButton: "+tool+" "+g);
 		if (g==null) return;
         int index = toolIndex(tool);
-        fill3DRect(g, index * SIZE + 1, 1, SIZE, SIZE-1, !down[tool]);
+        int x = index*SIZE + 1;
+        if (tool>=SPARE2)
+        	x -= SIZE-GAP_SIZE;
+        if (tool!=SPARE1)
+        	fill3DRect(g, x, 1, SIZE, SIZE-1, !down[tool]);
         g.setColor(toolColor);
-        int x = index * SIZE + OFFSET;
+        x = index*SIZE + OFFSET;
+        if (tool>=SPARE2)
+        	x -= SIZE-GAP_SIZE;
 		int y = OFFSET;
 		if (down[tool]) { x++; y++;}
 		this.g = g;
-		if (tool>=SPARE1 && tool<=SPARE9 && icons[tool]!=null) {
+		if (tool>=SPARE2 && tool<=SPARE9 && icons[tool]!=null) {
 			drawIcon(g, tool, x, y);
 			return;
 		}
@@ -274,11 +282,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				d(14,10); d(14,11); d(0,11); d(0,4); d(4,0);
 				return;
 			case FREEROI:
-				xOffset = x+1; yOffset = y+2;
-				m(3,0); d(6,0); d(8,2); d(10,2); d(11,1); d(12,1); d(13,0); d(15,0);
-				d(16,1); d(17,2);  d(17,5); d(16,6); d(16,7);  d(15,8); d(13,10); d(12,10);
-				d(11,11); d(6,11); d(5,10); d(4,10); d(3,9);  d(2,9); d(1,8); d(1,7);
-				d(0,6); d(0,2); d(1,1); d(2,1);
+				xOffset = x; yOffset = y+2;
+				m(2,0); d(5,0); d(7,3); d(10,3); d(12,0); d(15,0); d(17,2); d(17,5); d(16,8); 
+				d(13,10); d(11,11); d(6,11); d(4,10); d(1,8); d(0,6); d(0,2); d(2,0); 
 				return;
 			case LINE:
 				xOffset = x; yOffset = y;
@@ -687,12 +693,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (!isValidTool(tool)) return;
 		String previousName = getToolName();
 		current = tool;
-		down[current] = true;
-		if (current!=previous)
-			down[previous] = false;
 		Graphics g = this.getGraphics();
 		if (g==null)
 			return;
+		down[current] = true;
+		if (current!=previous)
+			down[previous] = false;
 		if (Prefs.antialiasedTools) {
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -834,6 +840,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (IJ.getInstance()!=null) {
 			Toolbar tb = getInstance();
 			Graphics g = tb.getGraphics();
+			if (IJ.debugMode) IJ.log("repaintTool: "+tool+" "+g);
 			if (g==null) return;
 			if (Prefs.antialiasedTools)
 				((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -866,8 +873,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
     }
 
-	// Returns the tool corresponding to the specified tool position index
-    int toolID(int index) {
+	// Returns the tool corresponding to the specified x coordinate
+	private int toolID(int x) {
+		if (x>SIZE*12+GAP_SIZE)
+			x -= GAP_SIZE;
+		int index = x/SIZE;
     	switch (index) {
 			case 0: return RECTANGLE;
 			case 1: return OVAL;
@@ -881,18 +891,19 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			case 9: return MAGNIFIER;
 			case 10: return HAND;
 			case 11: return DROPPER;
-			case 12: return SPARE1;
-			default: return index + 2;
+			default: return index + 3;
 		}
     }
+    
+	private boolean inGap(int x) {
+		return x>=(SIZE*12) && x<(SIZE*12+GAP_SIZE);
+ 	}
 
 	public void mousePressed(MouseEvent e) {
 		int x = e.getX();
- 		int newTool = 0;
-		for (int i=0; i<NUM_BUTTONS; i++) {
-			if (x>i*SIZE && x<i*SIZE+SIZE)
-				newTool = toolID(i);
-		}
+		if (inGap(x))
+			return;
+ 		int newTool = toolID(x);
 		if (newTool==SPARE9) {
 			showSwitchPopupMenu(e);
 			return;
@@ -908,7 +919,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			mpPrevious = current;
 			if (isMacroTool(newTool)) {
 				String name = names[newTool];
-				if (name.contains("Unused Tool"))
+				if (newTool==SPARE1 || name.contains("Unused Tool"))
 					return;
 				if (name.indexOf("Action Tool")!=-1) {
 					if (e.isPopupTrigger()||e.isMetaDown()) {
@@ -1362,8 +1373,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	public void mouseMoved(MouseEvent e) {
 		int x = e.getX();
-		x=toolID(x/SIZE);
-		showMessage(x);
+		if (inGap(x))
+			IJ.showStatus("");
+		else
+			showMessage(toolID(x));
 	}
 
 	/** Adds a tool to the toolbar. The 'toolTip' string is displayed in the status bar
@@ -1607,8 +1620,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	public void installStartupTools() {
+		if (IJ.debugMode) IJ.log("installStartupTools");
 		for (int i=0; i<=6; i++) {
 			String name = Prefs.get(TOOL_KEY + (i/10)%10 + i%10, "");
+			if (IJ.debugMode) IJ.log("  "+i+" "+name);
 			if (name.equals("")) continue;
 			installingStartupTool = true;
 			boolean ok = installBuiltinTool(name);
@@ -1624,6 +1639,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	private boolean installBuiltinTool(String label) {
+		if (IJ.debugMode) IJ.log("installBuiltinTool: "+label);
 		boolean ok = true;
 		PlugInTool tool = null;
 		if (label.startsWith("Arrow")) {

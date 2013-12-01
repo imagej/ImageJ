@@ -1176,7 +1176,7 @@ public class Opener {
 			return BMP;
 				
 		// RAW
-		if (name.endsWith(".raw"))
+		if (name.endsWith(".raw") && !Prefs.skipRawDialog)
 			return RAW;
 
 		return UNKNOWN;

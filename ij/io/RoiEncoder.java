@@ -15,7 +15,7 @@ import java.awt.geom.*;
 public class RoiEncoder {
 	static final int HEADER_SIZE = 64;
 	static final int HEADER2_SIZE = 64;
-	static final int VERSION = 223; // changed to 223 in v1.46b
+	static final int VERSION = 224; // changed to 224 : roi properties
 	private String path;
 	private OutputStream f;
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, 
@@ -23,6 +23,8 @@ public class RoiEncoder {
 	private byte[] data;
 	private String roiName;
 	private int roiNameSize;
+	private String roiProps;
+	private int roiPropsSize;
 	
 	/** Creates an RoiEncoder using the specified path. */
 	public RoiEncoder(String path) {
@@ -70,6 +72,12 @@ public class RoiEncoder {
 			roiNameSize = roiName.length()*2;
 		else
 			roiNameSize = 0;
+		
+		roiProps = roi.getProperties();
+		if (roiProps!=null)
+			roiPropsSize = roiProps.length()*2;
+		else
+			roiPropsSize = 0;
 
 		switch (roiType) {
 			case Roi.POLYGON: type=polygon; break;
@@ -118,7 +126,7 @@ public class RoiEncoder {
 			}
 		}
 		
-		data = new byte[HEADER_SIZE+HEADER2_SIZE+n*4+floatSize+roiNameSize];
+		data = new byte[HEADER_SIZE+HEADER2_SIZE+n*4+floatSize+roiNameSize+roiPropsSize];
 		data[0]=73; data[1]=111; data[2]=117; data[3]=116; // "Iout"
 		putShort(RoiDecoder.VERSION_OFFSET, VERSION);
 		data[RoiDecoder.TYPE] = (byte)type;
@@ -336,6 +344,9 @@ public class RoiEncoder {
 		if (roi.getStroke()==null)
 			strokeWidth = 0.0;
 		putFloat(hdr2Offset+RoiDecoder.FLOAT_STROKE_WIDTH, (float)strokeWidth);
+		if (roiPropsSize>0)
+			putProps(roi, hdr2Offset);
+
 	}
 
 	void putName(Roi roi, int hdr2Offset) {
@@ -345,6 +356,15 @@ public class RoiEncoder {
 		putInt(hdr2Offset+RoiDecoder.NAME_LENGTH, nameLength);
 		for (int i=0; i<nameLength; i++)
 			putShort(offset+i*2, roiName.charAt(i));
+	}
+
+	void putProps(Roi roi, int hdr2Offset) {
+		int offset = hdr2Offset+HEADER2_SIZE+roiNameSize;
+		int roiPropsLength = roiPropsSize/2;
+		putInt(hdr2Offset+RoiDecoder.ROI_PROPS_OFFSET, offset);
+		putInt(hdr2Offset+RoiDecoder.ROI_PROPS_LENGTH, roiPropsLength);
+		for (int i=0; i<roiPropsLength; i++)
+			putShort(offset+i*2, roiProps.charAt(i));
 	}
 
     void putByte(int base, int v) {

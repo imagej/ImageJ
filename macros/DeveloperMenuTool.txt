@@ -3,7 +3,7 @@
       "Macro Functions", "Startup Macros...", "Plugins", "Source Code", "Mailing List Archives", "-", "Record...", 
       "Capture Screen ", "Monitor Memory...", "List Commands...", "Control Panel...", "Search...", "Debug Mode"));
       
-   macro "Developer Menu Tool - C037T0b11DT9b09eTfb09v" {
+   macro "Developer Menu Tool - C037T0b11DT9b10eTfb10v" {
        cmd = getArgument();
        if (cmd=="ImageJ Website")
            run("URL...", "url=http://rsbweb.nih.gov/ij/");

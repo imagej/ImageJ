@@ -76,7 +76,7 @@ public class CurveFitter implements UserFunction{
 	"y = a+bx+cx^2+dx^3","y = a+bx+cx^2+dx^3+ex^4",
 	"y = a*exp(bx)","y = a*x^b", "y = a*ln(bx)",				//EXPONENTIAL,POWER,LOG
 	"y = d+(a-d)/(1+(x/c)^b)", "y = b*(x-a)^c*exp(-(x-a)/d)",	//RODBARD,GAMMA_VARIATE
-	"y = a+b*ln(x-c)", "x = d+(a-d)/(1+(y/c)^b)",				//LOG2,RODBARD2
+	"y = a+b*ln(x-c)", "x = d+(a-d)/(1+(y/c)^b) [y = c*((x-a)/(d-x))^(1/b)]",  //LOG2,RODBARD2
 	"y = a*exp(-bx) + c", "y = a + (b-a)*exp(-(x-c)*(x-c)/(2*d*d))", //EXP_WITH_OFFSET,GAUSSIAN
 	"y = a*(1-exp(-b*x)) + c", "y = c*((x-a)/(d-x))^(1/b)",		//EXP_RECOVERY, INV_RODBARD
 	"y = a*exp(bx)", "y = a*x^b",								//EXP_REGRESSION, POWER_REGRESSION

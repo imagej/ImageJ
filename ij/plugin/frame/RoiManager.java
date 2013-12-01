@@ -2013,7 +2013,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return;
 		int n = getCount();
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp==null)
+		if (imp==null || (imp.getCanvas()!=null && imp.getCanvas().getShowAllList()==null))
 			return;
 		if (n>0) {
 			GenericDialog gd = new GenericDialog("ROI Manager");

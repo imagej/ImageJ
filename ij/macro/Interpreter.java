@@ -59,6 +59,7 @@ public class Interpreter implements MacroConstants {
 	boolean wasError;
 	ImagePlus batchMacroImage;
 	boolean inLoop;
+	static boolean tempShowMode;
 	
 	static TextWindow arrayWindow;
 	int inspectStkIndex = -1;
@@ -372,6 +373,16 @@ public class Interpreter implements MacroConstants {
 						pc = savePC;
 						args[count] = new Variable(0, getExpression(), null);
 					}
+				} else if (nextPlus=='+' && next==WORD) {
+					int savePC = pc;
+					getToken();
+					Variable v = lookupVariable();
+					boolean isString = v!=null && v.getType()==Variable.STRING;
+					pc = savePC;
+					if (isString)
+						args[count] = new Variable(0, 0.0, getString());
+					else
+						args[count] = new Variable(0, getExpression(), null);
 				} else
 					args[count] = new Variable(0, getExpression(), null);
 				count++;
@@ -425,7 +436,8 @@ public class Interpreter implements MacroConstants {
 					array = v.getArray();
 					if (array!=null) arraySize=v.getArraySize();
 					isString = v.getString()!=null;
-				}
+				} else if (v!=null && nextToken()=='+')
+					isString = v.getType()==Variable.STRING;
 			}
 			putTokenBack();
 			if (isString)
@@ -1773,7 +1785,7 @@ public class Interpreter implements MacroConstants {
 	}
 
 	public static boolean isBatchMode() {
-		return batchMode;
+		return batchMode && !tempShowMode;
 	}
 	
 	public static void addBatchModeImage(ImagePlus imp) {
@@ -1891,7 +1903,7 @@ public class Interpreter implements MacroConstants {
 				if (imp!=null) title = imp.getTitle();
 			}
 			if (debugMode==STEP) System.gc();
-			variables[0] = "FreeMemory()\t" + IJ.freeMemory();
+			variables[0] = "Memory\t" + IJ.freeMemory();
 			variables[1] = "nImages()\t" + nImages;
 			variables[2] = "getTitle()\t" + (title!=null?"\""+title+"\"":"");
 		}
@@ -2045,6 +2057,10 @@ public class Interpreter implements MacroConstants {
 			else
 				arrayWindow.setVisible(false);
 		}
+	}
+	
+	static void setTempShowMode(boolean mode) {
+		tempShowMode = mode;
 	}
 
 } // class Interpreter
