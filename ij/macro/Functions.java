@@ -5349,6 +5349,8 @@ public class Functions implements MacroConstants, Measurements {
 			return overlay!=null && imp.getHideOverlay()?1.0:0.0;
 		else if (name.equals("addSelection"))
 			return overlayAddSelection(imp, overlay);
+		else if (name.equals("setPosition"))
+			return overlaySetPosition(overlay);
 		if (overlay==null)
 			interp.error("No overlay");
 		int size = overlay.size();
@@ -5393,22 +5395,6 @@ public class Functions implements MacroConstants, Measurements {
 			roi.setLocation(x, y);
 			imp.draw();
 			return Double.NaN;
-		} else if (name.equals("setPosition")) {
-			int c=0, z=0, t=0;
-			int nargs = 1;
-			int n = (int)getFirstArg();
-			if (interp.nextToken()==',') {
-				nargs = 3;
-				c = n;
-				z = (int)getNextArg();
-				t = (int)getLastArg();
-			} else
-				interp.getRightParen();
-			if (nargs==1 && size>0)
-				overlay.get(size-1).setPosition(n);
-			else if (nargs==3)
-				overlay.get(size-1).setPosition(c, z, t);
-			return Double.NaN;
 		} else
 			interp.error("Unrecognized function name");
 		return Double.NaN;
@@ -5448,6 +5434,31 @@ public class Functions implements MacroConstants, Measurements {
 			roi.setFillColor(Colors.decode(fillColor, Color.black));
 		overlay.add(roi);
 		imp.setOverlay(overlay);
+		return Double.NaN;
+	}
+	
+	double overlaySetPosition(Overlay overlay) {
+		int c=0, z=0, t=0;
+		int nargs = 1;
+		int n = (int)getFirstArg();
+		if (interp.nextToken()==',') {
+			nargs = 3;
+			c = n;
+			z = (int)getNextArg();
+			t = (int)getLastArg();
+		} else
+			interp.getRightParen();
+		if (overlay==null)
+			overlay = offscreenOverlay;
+		if (overlay==null)
+			interp.error("No overlay");
+		int size = overlay.size();
+		if (size==0)
+			return Double.NaN;
+		if (nargs==1)
+			overlay.get(size-1).setPosition(n);
+		else if (nargs==3)
+			overlay.get(size-1).setPosition(c, z, t);
 		return Double.NaN;
 	}
 

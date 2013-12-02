@@ -76,7 +76,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
-	public static final String VERSION = "1.48h";
+	public static final String VERSION = "1.48i";
 	public static final String BUILD = ""; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
@@ -150,7 +150,6 @@ public class ImageJ extends Frame implements ActionListener,
 		toolbar = new Toolbar();
 		toolbar.addKeyListener(this);
 		add("Center", toolbar);
-		m.installStartupMacroSet(); //add custom tools
 
 		// Status bar
 		statusBar = new Panel();
@@ -169,9 +168,10 @@ public class ImageJ extends Frame implements ActionListener,
 		add("South", statusBar);
 
 		IJ.init(this, applet);
- 		addKeyListener(this);
- 		addWindowListener(this);
+		addKeyListener(this);
+		addWindowListener(this);
 		setFocusTraversalKeysEnabled(false);
+		m.installStartupMacroSet(); //add custom tools
  		
 		Point loc = getPreferredLocation();
 		Dimension tbSize = toolbar.getPreferredSize();
