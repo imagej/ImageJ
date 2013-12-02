@@ -5,46 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.48h 30 November 2013</u>
+<li> <u>1.48i 1 December 2013</u>
 <ul>
-<li> Replaced the blank "Unused Tool" slot in the toolbar with a 9 pixel gap.
-<li> Thanks to Jerome Mutterer, added a "List properties" option to the
-<i>Edit&gt;Selection&gt;Properties</i> dialog box.
-<li> Thanks to Sebastien Octeau, added a "Skip dialog when opening .raw file" option
-to the <i>Edit&gt;Options&gt;Input/Output</i> dialog box.
-<li> Thanks to Norbert Vischer, the information shown in the <i>Help&gt;About ImageJ</i>
-window is displayed in a text window when you press "i" (<i>Image&gt;Show Info</i>) and
-is therefore easily copied to the clipboard.
-<li> Changed the default file extension for tables from ".txt" to ".csv" (comma-separated values).
-<li> Added "Insert", "Info" and "Close" buttons to the dialog opened by the
-macro editor's <i>Macros&gt;Function Finder</i> command.
-<li> Plots created by <i>Analyze&gt;Calibrate</i> always use an x range of 0-255 with 8-bit images.
-<li> The makeRectangle() and makeOval() macro functions support subpixel resolution.
-<li> Thanks to Jerome Mutterer, added getProperty(), setProperty() and getProperties() methods
-to the Roi class and Roi.getProperty(), Roi.setProperty() and Roi.getProperties() macro functions
-(<a href="macros/Roi_Properties_Test.txt">example</a>).
-<li> Thanks to Norbert Vischer, added setBatchMode("show") and setBatchMode("hide") macro functions.
-<li> Added Roi.getBounds(), Roi.getColor, Roi.getFillColor, Roi.getCoordinates(), Roi.getName,
-Roi.setFillColor(), Roi.setLocation(), Roi.setName(), Roi.setStrokeColor() and setStrokeWidth() macro functions
-(<a href="macros/examples/RoiFunctionsDemo.txt">example</a>).
-<li> Fixed a bug that caused toolbar icons to sometimes be drawn incorrectly.
-<li> Thanks to Michael Schmid, fixed a bug in <i>Process&gt;Noise&gt;Salt and Pepper</i> that
-caused it to omit the last column and row of the image.
-<li> Thanks to Michael Schmid, fixed bugs in the macro interpreter that caused expressions in
-the form s+"abc", where 's' is a string variable, to cause macros to abort when used
-as a function argument or used in a 'return' statement.
-<li> Thanks to Patrick Page-McCaw, fixed a bug that sometimes caused the particle
-analyser, when run from a plugin, to display a "No particles were detected..." dialog.
-<li> Thanks to Norbert Vischer, fixed a bug that caused an exception if the Size or
-Circularity fields in the particle analyzer dialog box were blank.
-<li> Fixed a bug that caused the wand tool to not be correctly recorded
-if the Recorder was not in "Macro" mode.
-<li> Thanks to Rainer Engel, fixed a bug that caused the particle analyzer 
-to sometimes unexpectedly add selections to overlays.
-<li> Thanks to Norbert Vischer, fixed a bug that caused the LUT to be
-incorrect after switching channels in a batch mode macro.
-<li> Fixed a bug that caused the ROI Manager to sometimes unexpectedly 
-display a "Save n ROIs as an overlay" message.
+<li> Thanks to Michael Cammer, fixed a bug that caused the Overlay.setPosition() macro
+function to not work as expected with the Overlay.drawSting() function.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
