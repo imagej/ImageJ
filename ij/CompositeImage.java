@@ -186,7 +186,7 @@ public class CompositeImage extends ImagePlus {
 		int redValue, greenValue, blueValue;
 		int ch = getChannel();
 		
-		//IJ.log("CompositeImage.updateImage: "+ch+"/"+nChannels+" "+currentSlice+" "+currentFrame);
+		//IJ.log("updateImage: "+ch+"/"+nChannels+" "+currentSlice+" "+currentFrame);
 		if (ch>nChannels) ch = nChannels;
 		boolean newChannel = false;
 		if (ch-1!=currentChannel) {

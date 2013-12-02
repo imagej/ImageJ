@@ -111,17 +111,20 @@ public interface MacroConstants {
 		FROM_CHAR_CODE=2006, GET_INFO=2007, GET_DIRECTORY=2008, GET_ARGUMENT=2009, GET_IMAGE_INFO=2010,
 		TO_LOWER_CASE=2011, TO_UPPER_CASE=2012, RUN_MACRO=2013, EVAL=2014, TO_STRING=2015, REPLACE=2016,
 		DIALOG=2017, GET_METADATA=2018, FILE=2019, SELECTION_NAME=2020, GET_VERSION=2021, GET_RESULT_LABEL=2022,
-		CALL=2023, STRING=2024, EXT=2025, EXEC=2026, LIST=2027, DEBUG=2028, IJ_CALL=2029, GET_RESULT_STRING=2030;
+		CALL=2023, STRING=2024, EXT=2025, EXEC=2026, LIST=2027, DEBUG=2028, IJ_CALL=2029, GET_RESULT_STRING=2030,
+		ROI=2031;
 	static final String[] stringFunctions = {"d2s", "toHex", "toBinary", "getTitle", "getString", "substring",
 		"fromCharCode", "getInfo", "getDirectory", "getArgument", "getImageInfo", 
 		"toLowerCase", "toUpperCase", "runMacro", "eval", "toString", "replace",
 		"Dialog", "getMetadata", "File", "selectionName", "getVersion", "getResultLabel",
-		"call", "String", "Ext", "exec", "List", "debug", "IJ", "getResultString"};
+		"call", "String", "Ext", "exec", "List", "debug", "IJ", "getResultString",
+		"Roi"};
 	static final int[] stringFunctionIDs = {D2S, TO_HEX, TO_BINARY, GET_TITLE, GET_STRING, SUBSTRING,
 		FROM_CHAR_CODE, GET_INFO, GET_DIRECTORY, GET_ARGUMENT, GET_IMAGE_INFO,
 		TO_LOWER_CASE, TO_UPPER_CASE, RUN_MACRO, EVAL, TO_STRING, REPLACE,
 		DIALOG, GET_METADATA, FILE, SELECTION_NAME, GET_VERSION, GET_RESULT_LABEL,
-		CALL, STRING, EXT, EXEC, LIST, DEBUG, IJ_CALL, GET_RESULT_STRING};
+		CALL, STRING, EXT, EXEC, LIST, DEBUG, IJ_CALL, GET_RESULT_STRING,
+		ROI};
 
 	// Array functions
 	static final int GET_PROFILE=3000, NEW_ARRAY=3001, SPLIT=3002, GET_FILE_LIST=3003,

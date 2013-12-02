@@ -291,6 +291,7 @@ public class Selection implements PlugIn, Measurements {
 		roi2.setStrokeColor(roi1.getStrokeColor());
 		if (roi1.getStroke()!=null)
 			roi2.setStroke(roi1.getStroke());
+		roi2.setDrawOffset(roi1.getDrawOffset());
 	}
 	
 	PolygonRoi trimPolygon(PolygonRoi roi, double length) {
