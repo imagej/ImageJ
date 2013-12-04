@@ -49,6 +49,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static final String[] builtInTools2 = {"Pixel Inspection Tool","Paintbrush Tool","Flood Fill Tool"};
 
 	private static final int NUM_TOOLS = 23;
+	private static final int MAX_EXTRA_TOOLS = 5;
+	private static final int MAX_TOOLS = NUM_TOOLS+MAX_EXTRA_TOOLS;
 	private static final int NUM_BUTTONS = 21;
 	private static final int SIZE = 28;
 	private static final int GAP_SIZE = 9;
@@ -67,10 +69,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private Graphics g;
 	private static Toolbar instance;
 	private int mpPrevious = RECTANGLE;
-	private String[] names = new String[NUM_TOOLS];
-	private String[] icons = new String[NUM_TOOLS];
-	private PlugInTool[] tools = new PlugInTool[NUM_TOOLS];
-    private PopupMenu[] menus = new PopupMenu[NUM_TOOLS];
+	private String[] names = new String[MAX_TOOLS];
+	private String[] icons = new String[MAX_TOOLS];
+	private PlugInTool[] tools = new PlugInTool[MAX_TOOLS];
+    private PopupMenu[] menus = new PopupMenu[MAX_TOOLS];
+    private int nExtraTools;
     private MacroInstaller macroInstaller;
     private boolean addingSingleTool;
     private boolean installingStartupTool;
@@ -103,7 +106,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private Color toolColor = new Color(0, 25, 45);
 
 	public Toolbar() {
-		down = new boolean[NUM_TOOLS];
+		down = new boolean[MAX_TOOLS];
 		resetButtons();
 		down[0] = true;
 		setForeground(Color.black);
@@ -111,8 +114,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		instance = this;
-		names[NUM_TOOLS-1] = "\"More Tools\" menu (switch toolsets or add tools)";
-		icons[NUM_TOOLS-1] = "C900T1c13>T7c13>"; // ">>"
+		names[getNumTools()-1] = "\"More Tools\" menu (switch toolsets or add tools)";
+		icons[getNumTools()-1] = "C900T1c13>T7c13>"; // ">>"
 		addPopupMenus();
 	}
 
@@ -186,7 +189,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		starts with the specified string, or -1 if the tool is not found. */
 	public int getToolId(String name) {
 		int tool =  -1;
-		for (int i=0; i<=SPARE9; i++) {
+		for (int i=0; i<getNumTools(); i++) {
 			if (names[i]!=null && names[i].startsWith(name)) {
 				tool = i;
 				break;
@@ -210,7 +213,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		for (int i=0; i<LINE; i++)
 			drawButton(g, i);
 		drawButton(g, lineType);
-		for (int i=POINT; i<NUM_TOOLS; i++)
+		for (int i=POINT; i<getNumTools(); i++)
 			drawButton(g, i);
 		//if (IJ.debugMode)
 		//	IJ.log("drawButtons: "+(System.currentTimeMillis()-start));
@@ -247,7 +250,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		int y = OFFSET;
 		if (down[tool]) { x++; y++;}
 		this.g = g;
-		if (tool>=SPARE2 && tool<=SPARE9 && icons[tool]!=null) {
+		if (tool>=SPARE2 && tool<=getNumTools() && icons[tool]!=null) {
 			drawIcon(g, tool, x, y);
 			return;
 		}
@@ -468,7 +471,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	private void showMessage(int tool) {
-		if (tool>=SPARE1 && tool<=SPARE9 && names[tool]!=null) {
+		if (tool>=SPARE1 && tool<getNumTools() && names[tool]!=null) {
 			String name = names[tool];
 			int index = name.indexOf("Action Tool");
 			if (index!=-1)
@@ -566,7 +569,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	private void resetButtons() {
-		for (int i=0; i<NUM_TOOLS; i++)
+		for (int i=0; i<getNumTools(); i++)
 			down[i] = false;
 	}
 
@@ -578,7 +581,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public boolean setTool(String name) {
 		if (name==null) return false;
 		if (name.indexOf(" Tool")!=-1) { // macro tool?
-			for (int i=SPARE1; i<=SPARE9; i++) {
+			for (int i=SPARE1; i<getNumTools(); i++) {
 				if (name.equals(names[i])) {
 					setTool(i);
 					return true;
@@ -644,7 +647,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	/** Returns the name of the current tool. */
 	public static String getToolName() {
 		String name = instance.getName(current);
-		if (current>=SPARE1 && current<=SPARE9 && instance.names[current]!=null)
+		if (current>=SPARE1 && current<instance.getNumTools() && instance.names[current]!=null)
 			name = instance.names[current];
 		return name!=null?name:"";
 	}
@@ -677,9 +680,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	public void setTool(int tool) {
-		if ((tool==current&&!(tool==RECTANGLE||tool==OVAL||tool==POINT)) || tool<0 || tool>=NUM_TOOLS-1)
+		if ((tool==current&&!(tool==RECTANGLE||tool==OVAL||tool==POINT)) || tool<0 || tool>=getNumTools()-1)
 			return;
-		if (tool==SPARE1||(tool>=SPARE2&&tool<=SPARE8)) {
+		if (tool==SPARE1)  //  "Unused" (blank) tool replaced with gap in 1.48h
+			tool = SPARE2;
+		if (tool>=SPARE2&&tool<=getNumTools()-2) {
 			if (names[tool]==null)
 				names[tool] = "Spare tool"; // enable tool
 			if (names[tool].indexOf("Action Tool")!=-1)
@@ -720,9 +725,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	boolean isValidTool(int tool) {
-		if (tool<0 || tool>=NUM_TOOLS)
+		if (tool<0 || tool>=getNumTools())
 			return false;
-		if ((tool==SPARE1||(tool>=SPARE2&&tool<=SPARE9)) && names[tool]==null)
+		if ((tool==SPARE1||(tool>=SPARE2&&tool<getNumTools())) && names[tool]==null)
 			return false;
 		return true;
 	}
@@ -751,11 +756,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	public static void setForegroundColor(Color c) {
-		if (c==null) return;
+		if (c==null || instance==null)
+			return;
 		foregroundColor = c;
 		repaintTool(DROPPER);
-		for (int i=SPARE2; i<=SPARE8; i++) {
-			if (instance!=null && instance.icons[i]!=null && instance.icons[i].contains("C123"))
+		for (int i=SPARE2; i<=instance.getNumTools()-2; i++) {
+			if (instance.icons[i]!=null && instance.icons[i].contains("C123"))
 				repaintTool(i);  // some of this tool's icon is drawn in the foreground color
 		}
 		if (!IJ.isMacro()) setRoiColor(c);
@@ -904,11 +910,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (inGap(x))
 			return;
  		int newTool = toolID(x);
-		if (newTool==SPARE9) {
+		if (newTool==getNumTools()-1) {
 			showSwitchPopupMenu(e);
 			return;
 		}
-		if (!isValidTool(newTool)) return;
+		if (!isValidTool(newTool))
+			return;
 		if (menus[newTool]!=null && menus[newTool].getItemCount()>0) {
             menus[newTool].show(e.getComponent(), e.getX(), e.getY());
 			return;
@@ -1161,12 +1168,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	boolean isMacroTool(int tool) {
-		return tool>=SPARE1 && tool<=SPARE9 && names[tool]!=null
+		return tool>=SPARE1 && tool<getNumTools() && names[tool]!=null
 			&& (tools[tool] instanceof MacroToolRunner||names[tool].equals("Unused Tool"));
 	}
 	
 	boolean isPlugInTool(int tool) {
-		return tool>=SPARE1 && tool<=SPARE9 && tools[tool]!=null;
+		return tool>=SPARE1 && tool<getNumTools() && tools[tool]!=null;
 	}
 
 	public void mouseReleased(MouseEvent e) {}
@@ -1352,7 +1359,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		String cmd = e.getActionCommand();
 		PopupMenu popup = (PopupMenu)item.getParent();
 		int tool = -1;
-		for (int i=SPARE1; i<NUM_TOOLS; i++) {
+		for (int i=SPARE1; i<getNumTools(); i++) {
 			if (popup==menus[i]) {
 				tool = i;
 				break;
@@ -1394,16 +1401,26 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				tool = SPARE1;
 		}
 		if (tool==-1) {
-			for (int i=SPARE2; i<=SPARE8; i++) {
+			for (int i=SPARE2; i<=getNumTools()-2; i++) {
 				if (names[i]==null || toolTip.startsWith(names[i])) {
 					tool = i;
 					break;
 				}			
 			}
 		}
+		if (tool==-1 &&  !addingSingleTool && (nExtraTools<MAX_EXTRA_TOOLS)) {
+			nExtraTools++;
+			names[getNumTools()-1] = names[getNumTools()-2];
+			icons[getNumTools()-1] = icons[getNumTools()-2];
+			names[getNumTools()-2] = null;
+			icons[getNumTools()-2] = null;
+			ps = new Dimension(SIZE*NUM_BUTTONS-(SIZE-GAP_SIZE)+nExtraTools*SIZE, SIZE);
+			IJ.getInstance().pack();
+			tool = getNumTools()-2;
+		}
 		if (tool==-1) {
 			if (addingSingleTool)
-				tool = SPARE8;
+				tool = getNumTools()-2;
 			else
 				return -1;
 		}
@@ -1462,6 +1479,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
     
 	/** Used by the MacroInstaller class to install a set of macro tools. */
 	public void addMacroTool(String name, MacroInstaller macroInstaller, int id) {
+		//IJ.log("addMacroTool: "+id+" "+name);
 		if (id==0)
 			resetTools();
 		if (name.endsWith(" Built-in Tool")) {
@@ -1484,7 +1502,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	private void resetTools() {
-		for (int i=SPARE1; i<NUM_TOOLS-1; i++) {
+		for (int i=SPARE1; i<getNumTools()-1; i++) {
 			names[i] = null;
 			tools[i] = null;
 			icons[i] = null;
@@ -1589,7 +1607,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	void runMacroTool(int id) {
-		if (tools[id]!=null)
+		if (id<getNumTools() && tools[id]!=null)
 			tools[id].runMacroTool(names[id]);
 	}
 	
@@ -1686,6 +1704,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		return customTool0.equals("") || Character.isDigit(customTool0.charAt(0));
 	}
 	
+	public int getNumTools() {
+		return NUM_TOOLS + nExtraTools;
+	}
+
 	//public void repaint() {
 	//	super.repaint();
 	//}

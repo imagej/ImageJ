@@ -1006,6 +1006,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (customRoi && overlay!=null)
 			return;
 
+		if (toolID>=Toolbar.SPARE2) {
+			if (tool!=null && "Arrow Tool".equals(tool.getToolName()))
+				handleRoiMouseDown(e);
+			else
+				Toolbar.getInstance().runMacroTool(toolID);
+			return;
+		}
+
 		switch (toolID) {
 			case Toolbar.MAGNIFIER:
 				if (IJ.shiftKeyDown())
@@ -1066,14 +1074,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					new RoiBrush();
 				else
 					handleRoiMouseDown(e);
-				break;
-			case Toolbar.SPARE1: case Toolbar.SPARE2: case Toolbar.SPARE3: 
-			case Toolbar.SPARE4: case Toolbar.SPARE5: case Toolbar.SPARE6:
-			case Toolbar.SPARE7: case Toolbar.SPARE8: case Toolbar.SPARE9:
-				if (tool!=null && "Arrow Tool".equals(tool.getToolName()))
-					handleRoiMouseDown(e);
-				else
-					Toolbar.getInstance().runMacroTool(toolID);
 				break;
 			default:  //selection tool
 				handleRoiMouseDown(e);
