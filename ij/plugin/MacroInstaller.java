@@ -160,19 +160,17 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		nMacros = count;
 		if (toolCount>0 && (isPluginsMacrosMenu||macrosMenu==null) && installTools) {
 			Toolbar tb = Toolbar.getInstance();
-            if (toolCount==1) 
-                tb.addMacroTool((String)tools.get(0), this);
-            else {
-                int index = 0;
-                String firstTool = (String)tools.get(0);
-                 if (!(firstTool.startsWith("Unused")||(toolCount>=7&&firstTool.startsWith("Abort Macro or Plugin")))) {
-                    tb.addMacroTool("Unused Tool", this, 0);
-                    index = 1;
-                }
-                for (int i=0; i<tools.size(); i++)
-                   tb.addMacroTool((String)tools.get(i), this, index++);
-            }
-			if (toolCount>1 && Toolbar.getToolId()>=Toolbar.SPARE2)
+			if (toolCount==1) 
+				tb.addMacroTool((String)tools.get(0), this);
+			else {
+				for (int i=0; i<tools.size(); i++) {
+					String toolName = (String)tools.get(i);
+					if (toolName.startsWith("Abort Macro or Plugin") && toolCount>6)
+						toolName = "Unused "+toolName;
+					tb.addMacroTool(toolName, this, i);
+				}
+			}
+			if (toolCount>1 && Toolbar.getToolId()>=Toolbar.CUSTOM1)
 				tb.setTool(Toolbar.RECTANGLE);
 			tb.repaint();
 		}

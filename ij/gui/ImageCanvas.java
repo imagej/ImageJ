@@ -524,7 +524,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			default:  //selection tool
 				PlugInTool tool = Toolbar.getPlugInTool();
 				boolean arrowTool = roi!=null && (roi instanceof Arrow) && tool!=null && "Arrow Tool".equals(tool.getToolName());
-				if ((id==Toolbar.SPARE1 || id>=Toolbar.SPARE2) && !arrowTool) {
+				if ((id>=Toolbar.CUSTOM1) && !arrowTool) {
 					if (Prefs.usePointerCursor)
 						setCursor(defaultCursor);
 					else
@@ -1006,7 +1006,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (customRoi && overlay!=null)
 			return;
 
-		if (toolID>=Toolbar.SPARE2) {
+		if (toolID>=Toolbar.CUSTOM1) {
 			if (tool!=null && "Arrow Tool".equals(tool.getToolName()))
 				handleRoiMouseDown(e);
 			else
