@@ -730,11 +730,11 @@ public class FloatProcessor extends ImageProcessor {
 	}
 	
 	/** Returns a duplicate of this image. */ 
-	public ImageProcessor duplicate() { 
-		FloatProcessor fp2 = (FloatProcessor)super.clone();
-		float[] fpixels = (float[])getPixels();
-		fp2.setPixels(fpixels.clone());
-		return fp2;
+	public synchronized ImageProcessor duplicate() { 
+		ImageProcessor ip2 = createProcessor(width, height); 
+		float[] pixels2 = (float[])ip2.getPixels(); 
+		System.arraycopy(pixels, 0, pixels2, 0, width*height); 
+		return ip2; 
 	} 
 
 	/** Scales the image or selection using the specified scale factors.

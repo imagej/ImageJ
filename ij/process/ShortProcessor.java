@@ -915,11 +915,11 @@ public class ShortProcessor extends ImageProcessor {
 	}
 	
 	/** Returns a duplicate of this image. */ 
-	public ImageProcessor duplicate() { 
-		ShortProcessor sp2 = (ShortProcessor)super.clone();
-		short[] pixels16 = (short[])getPixels();
-		sp2.setPixels(pixels16.clone());
-		return sp2;
+	public synchronized ImageProcessor duplicate() { 
+		ImageProcessor ip2 = createProcessor(width, height); 
+		short[] pixels2 = (short[])ip2.getPixels(); 
+		System.arraycopy(pixels, 0, pixels2, 0, width*height); 
+		return ip2; 
 	} 
 
 	/** Sets the foreground fill/draw color. */

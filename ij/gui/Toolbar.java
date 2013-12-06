@@ -26,7 +26,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public static final int POINT = 7, CROSSHAIR = 7;
 	public static final int WAND = 8;
 	public static final int TEXT = 9;
-	public static final int UNUSED= 10;
+	public static final int UNUSED = 10;
 	public static final int MAGNIFIER = 11;
 	public static final int HAND = 12;
 	public static final int DROPPER = 13;

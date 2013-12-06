@@ -153,12 +153,7 @@ public class Straightener implements PlugIn {
 			roi.removeSplineFit();
 		else
 			imp.draw();
-		int bitDepth = imp.getBitDepth();
-		if (bitDepth==8)
-			ip2 = ip2.convertToByte(false);
-		else if (bitDepth==16 && !imp.getCalibration().isSigned16Bit())
-			ip2 = ip2.convertToShort(false);
-		if (bitDepth!=24) {
+		if (imp.getBitDepth()!=24) {
 			ip2.setColorModel(ip.getColorModel());
 			ip2.resetMinAndMax();
 		}
@@ -173,10 +168,6 @@ public class Straightener implements PlugIn {
 		imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, 2, Roi.POLYLINE));
 		ImageProcessor ip2 = imp.getBitDepth()==24?straightenRGB(imp, width):straightenLine(imp, width);
 		imp.setRoi(roi);
-		if (imp.getBitDepth()==8)
-			ip2 = ip2.convertToByte(false);
-		else if (imp.getBitDepth()==16 && !imp.getCalibration().isSigned16Bit())
-			ip2 = ip2.convertToShort(false);
 		return ip2;
 	}
 	
@@ -223,7 +214,7 @@ public class Straightener implements PlugIn {
 		ImagePlus imp2 = new ImagePlus("temp", new ColorProcessor(img));
 		imp2.setRoi(imp.getRoi());
 		ImageProcessor ip2 = rotateLine(imp2, width);
-        return ip2;
+		return ip2;
 	}
 
 }
