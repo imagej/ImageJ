@@ -513,9 +513,11 @@ public class Opener {
 				}
 				byte[] bytes = out.toByteArray();
 				out.close();
-				DICOM dcm = new DICOM(new ByteArrayInputStream(bytes));
+				InputStream is = new ByteArrayInputStream(bytes);
+				DICOM dcm = new DICOM(is);
 				dcm.run(name);
 				imp2 = dcm;
+				is.close();
 			}
 			zis.closeEntry();
 			if (imp2==null) continue;
@@ -976,9 +978,9 @@ public class Opener {
 		ImagePlus imp2 = new ImagePlus(imp.getTitle(), ps);
 		imp2.setProperty("FHT", fht);
 		imp2.setProperty("Info", imp.getProperty("Info"));
-		fht.originalWidth = (int)Tools.parseDouble(imp2.getInfo("width"),0);
-		fht.originalHeight = (int)Tools.parseDouble(imp2.getInfo("height"),0);
-		fht.originalBitDepth = (int)Tools.parseDouble(imp2.getInfo("bitdepth"),8);
+		fht.originalWidth = (int)Tools.parseDouble(imp2.getProp("width"),0);
+		fht.originalHeight = (int)Tools.parseDouble(imp2.getProp("height"),0);
+		fht.originalBitDepth = (int)Tools.parseDouble(imp2.getProp("bitdepth"),8);
 		fht.originalColorModel = ip.getColorModel();
 		imp2.setCalibration(imp.getCalibration());
 		return imp2;

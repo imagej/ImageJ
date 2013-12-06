@@ -49,7 +49,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static final String[] builtInTools2 = {"Pixel Inspection Tool","Paintbrush Tool","Flood Fill Tool"};
 
 	private static final int NUM_TOOLS = 23;
-	private static final int MAX_EXTRA_TOOLS = 5;
+	private static final int MAX_EXTRA_TOOLS = 8;
 	private static final int MAX_TOOLS = NUM_TOOLS+MAX_EXTRA_TOOLS;
 	private static final int NUM_BUTTONS = 21;
 	private static final int SIZE = 28;
@@ -72,12 +72,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private String[] names = new String[MAX_TOOLS];
 	private String[] icons = new String[MAX_TOOLS];
 	private PlugInTool[] tools = new PlugInTool[MAX_TOOLS];
-    private PopupMenu[] menus = new PopupMenu[MAX_TOOLS];
-    private int nExtraTools;
-    private MacroInstaller macroInstaller;
-    private boolean addingSingleTool;
-    private boolean installingStartupTool;
-    private boolean doNotSavePrefs;
+	private PopupMenu[] menus = new PopupMenu[MAX_TOOLS];
+	private int nExtraTools;
+	private MacroInstaller macroInstaller;
+	private boolean addingSingleTool;
+	private boolean installingStartupTool;
+	private boolean doNotSavePrefs;
 	private int pc;
 	private String icon;
 	private int startupTime;
