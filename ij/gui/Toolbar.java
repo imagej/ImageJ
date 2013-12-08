@@ -269,28 +269,21 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			case OVAL:
 				xOffset = x; yOffset = y;
 				if (ovalType==BRUSH_ROI) {
-					m(9,2); d(13,2); d(13,2); d(15,5); d(15,8);
-					d(13,10); d(10,10); d(8,13); d(4,13); 
-					d(2,11);  d(2,7); d(4,5); d(7,5); d(9,2);
+					polyline(9,2,13,2,13,2,15,5,15,8,13,10,10,10,8,13,4,13,2,11,2,7,4,5,7,5,9,2);
 				} else if (ovalType==ELLIPSE_ROI) {
 					yOffset = y + 1;
-					m(11,0); d(13,0); d(14,1); d(15,1); d(16,2); d(17,3); d(17,7);
-					d(12,12); d(11,12); d(10,13); d(8,13); d(7,14); d(4,14); d(3,13);
-					d(2,13); d(1,12); d(1,11); d(0,10); d(0,9); d(1,8); d(1,7);
-					d(6,2); d(7,2); d(8,1); d(10,1); d(11,0);
+					polyline(11,0,13,0,14,1,15,1,16,2,17,3,17,7,12,12,11,12,10,13,8,13,7,14,4,14,3,13,2,13,1,12,1,11,0,10,0,9,1,8,1,7,6,2,7,2,8,1,10,1,11,0);
 				} else
 					g.drawOval(x, y+1, 17, 13);
 				drawTriangle(16,15);
 				return;
 			case POLYGON:
 				xOffset = x+1; yOffset = y+2;
-				m(4,0); d(15,0); d(15,1); d(11,5); d(11,6);
-				d(14,10); d(14,11); d(0,11); d(0,4); d(4,0);
+				polyline(4,0,15,0,15,1,11,5,11,6,14,10,14,11,0,11,0,4,4,0);
 				return;
 			case FREEROI:
 				xOffset = x; yOffset = y+2;
-				m(2,0); d(5,0); d(7,3); d(10,3); d(12,0); d(15,0); d(17,2); d(17,5); d(16,8); 
-				d(13,10); d(11,11); d(6,11); d(4,10); d(1,8); d(0,6); d(0,2); d(2,0); 
+				polyline(2,0,5,0,7,3,10,3,12,0,15,0,17,2,17,5,16,8,13,10,11,11,6,11,4,10,1,8,0,6,0,2,2,0); 
 				return;
 			case LINE:
 				xOffset = x; yOffset = y;
@@ -309,7 +302,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				return;
 			case FREELINE:
 				xOffset = x; yOffset = y;
-				m(16,4); d(14,6); d(12,6); d(9,3); d(8,3); d(6,7); d(2,11); d(1,11);
+				polyline(16,4,14,6,12,6,9,3,8,3,6,7,2,11,1,11);
 				drawTriangle(12,14);
 				return;
 			case POINT:
@@ -342,33 +335,27 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				return;
 			case MAGNIFIER:
 				xOffset = x+2; yOffset = y+2;
-				m(3,0); d(3,0); d(5,0); d(8,3); d(8,5); d(7,6); d(7,7);
-				d(6,7); d(5,8); d(3,8); d(0,5); d(0,3); d(3,0);
-				m(8,8); d(9,8); d(13,12); d(13,13); d(12,13); d(8,9); d(8,8);
+				polyline(3,0,3,0,5,0,8,3,8,5,7,6,7,7,6,7,5,8,3,8,0,5,0,3,3,0);
+				polyline(8,8,9,8,13,12,13,13,12,13,8,9,8,8);
 				return;
 			case HAND:
 				xOffset = x+1; yOffset = y+1;
-				m(5,14); d(2,11); d(2,10); d(0,8); d(0,7); d(1,6); d(2,6); d(4,8); 
-				d(4,6); d(3,5); d(3,4); d(2,3); d(2,2); d(3,1); d(4,1); d(5,2); d(5,3);
-				m(6,5); d(6,1); d(7,0); d(8,0); d(9,1); d(9,5);
-				m(9,1); d(11,1); d(12,2); d(12,6);
-				m(13,4); d(14,3); d(15,4); d(15,7); d(14,8);
-				d(14,10); d(13,11); d(13,12); d(12,13); d(12,14);
+				polyline(5,14,2,11,2,10,0,8,0,7,1,6,2,6,4,8,4,6,3,5,3,4,2,3,2,2,3,1,4,1,5,2,5,3);
+				polyline(6,5,6,1,7,0,8,0,9,1,9,5,9,1,11,1,12,2,12,6);
+				polyline(13,4,14,3,15,4,15,7,14,8,14,10,13,11,13,12,12,13,12,14);
 				return;
 			case DROPPER:
 				xOffset = x; yOffset = y;
 				g.setColor(foregroundColor);
-				//m(0,0); d(17,0); d(17,17); d(0,17); d(0,0);
 				m(12,2); d(14,2);
 				m(11,3); d(15,3);
 				m(11,4); d(15,4);
 				m(8,5); d(15,5);
 				m(9,6); d(14,6);
-				m(10,7); d(12,7); d(12,9);
-				m(8,7); d(2,13); d(2,15); d(4,15); d(11,8);
+				polyline(10,7,12,7,12,9);
+				polyline(8,7,2,13,2,15,4,15,11,8);
 				g.setColor(backgroundColor);
-				m(-1,-1); d(18,-1); d(18,17); d(-1,17); d(-1,-1);
-				//m(0,0); d(16,0); d(16,16); d(0,16); d(0,0);
+				polyline(-1,-1,18,-1,18,17,-1,17,-1,-1);
 				return;
 			case ANGLE:
 				xOffset = x; yOffset = y+2;
@@ -420,15 +407,26 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					break; 
 				case 'L': g.drawLine(x+v(), y+v(), x+v(), y+v()); break; // line
 				case 'D': g.fillRect(x+v(), y+v(), 1, 1); break; // dot
-				case 'P': // polyline
-					x1=x+v(); y1=y+v();
+				case 'P':// polyline
+					Polygon p = new Polygon();
+					p.addPoint(x+v(), y+v());
 					while (true) {
 						x2=v(); if (x2==0) break;
 						y2=v(); if (y2==0) break;
-						x2+=x; y2+=y;
-						g.drawLine(x1, y1, x2, y2);
-						x1=x2; y1=y2;
+						p.addPoint(x+x2, y+y2);
 					}
+					g.drawPolyline(p.xpoints, p.ypoints, p.npoints);
+					break;
+				case 'p':// polygon
+					p = new Polygon();
+					p.addPoint(x+v(), y+v());
+					while (true) {
+						x2=v(); y2=v();
+						if (x2==0 && y2==0 && p.npoints>2)
+							break;
+						p.addPoint(x+x2, y+y2);
+					}
+					g.drawPolygon(p.xpoints, p.ypoints, p.npoints);
 					break;
 				case 'T': // text (one character)
 					x2 = x+v()-1;
@@ -569,6 +567,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	private void dot(int x, int y) {
 		g.fillRect(x+xOffset, y+yOffset, 1, 1);
+	}
+	
+	private void polyline(int... values) {
+		Polygon p = new Polygon();
+		int n = values.length/2;
+		for (int i=0; i<n; i++)
+			p.addPoint(values[i*2]+xOffset, values[i*2+1]+yOffset);
+		g.drawPolyline(p.xpoints, p.ypoints, p.npoints);
 	}
 
 	private void resetButtons() {

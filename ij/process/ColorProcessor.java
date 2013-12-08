@@ -840,7 +840,7 @@ public class ColorProcessor extends ImageProcessor {
 	}
 	
 	/** Returns a duplicate of this image. */ 
-	public synchronized ImageProcessor duplicate() { 
+	public ImageProcessor duplicate() { 
 		int[] pixels2 = new int[width*height]; 
 		System.arraycopy(pixels, 0, pixels2, 0, width*height); 
 		return new ColorProcessor(width, height, pixels2); 

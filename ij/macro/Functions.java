@@ -2715,15 +2715,22 @@ public class Functions implements MacroConstants, Measurements {
 			roiManager = null;
 			displayBatchModeImage(imp2);
 		} else if (sarg.equalsIgnoreCase("show")) {
-			Interpreter.setTempShowMode(true);
-			displayBatchModeImage(imp2);
-			Interpreter.setTempShowMode(false);
-			Interpreter.removeBatchModeImage(imp2);
+			if (imp2!=null) {
+				Interpreter.setTempShowMode(true);
+				displayBatchModeImage(imp2);
+				Interpreter.setTempShowMode(false);
+				Interpreter.removeBatchModeImage(imp2);
+			}
 		} else if (sarg.equalsIgnoreCase("hide")) {
-			ImageWindow win = imp2.getWindow();
-			if (win!=null)
-				imp2.hide();
-			Interpreter.addBatchModeImage(imp2);
+			interp.setBatchMode(true);
+			if (imp2!=null) {
+				ImageWindow win = imp2.getWindow();
+				if (win!=null) {
+					imp2.hide();
+					Interpreter.addBatchModeImage(imp2);
+				}
+				IJ.selectWindow(imp2.getID());
+			}
 		} else {
 			Vector v = Interpreter.imageTable;
 			if (v==null) return;

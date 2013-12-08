@@ -386,15 +386,15 @@ public class OverlayCommands implements PlugIn {
 			String color = Colors.colorToString(rois[i].getStrokeColor());
 			double strokeWidth = rois[i].getStrokeWidth();
 			int digits = strokeWidth==(int)strokeWidth?0:1;
-			String width = IJ.d2s(strokeWidth,digits);
+			String sWidth = IJ.d2s(strokeWidth,digits);
 			int position = rois[i].getPosition();
 			int c = rois[i].getCPosition();
 			int z = rois[i].getZPosition();
 			int t = rois[i].getTPosition();
-			sb.append(i+"\t"+rois[i].getName()+"\t"+rois[i].getTypeAsString()+"\t"+(r.x+r.width/2)
-			+"\t"+(r.y+r.height/2)+"\t"+color+"\t"+width+"\t"+position+"\t"+c+"\t"+z+"\t"+t+"\n");
+			sb.append(i+"\t"+rois[i].getName()+"\t"+rois[i].getTypeAsString()+"\t"+r.x
+			+"\t"+r.y+"\t"+r.width+"\t"+r.height+"\t"+color+"\t"+sWidth+"\t"+position+"\t"+c+"\t"+z+"\t"+t+"\n");
 		}
-        String headings = "Index\tName\tType\tX\tY\tColor\tWidth\tPosition\tC\tZ\tT";
+        String headings = "Index\tName\tType\tX\tY\tWidth\tHeight\tColor\tLWidth\tPos\tC\tZ\tT";
 		new TextWindow("Overlay Elements", headings, sb.toString(), 600, 400);
 	}
 	
