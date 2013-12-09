@@ -148,6 +148,7 @@ public class Overlay {
 	* Duplicate the elements of this overlay which  
 	* intersect with the rectangle 'bounds'.
 	* Author: Wilhelm Burger
+	* Author: Marcel Boeglin
 	*/
 	public Overlay crop(Rectangle bounds) {
 		if (bounds==null)
@@ -159,8 +160,10 @@ public class Overlay {
 			if (bounds.intersects(roiBounds))
 				overlay2.add((Roi)roi.clone());
 		}
-		if (bounds.x!=0 || bounds.y!=0)
-			overlay2.translate(-bounds.x, -bounds.y);
+		int dx = bounds.x>0?bounds.x:0;
+		int dy = bounds.y>0?bounds.y:0;
+		if (dx>0 || dy>0)
+			overlay2.translate(-dx, -dy);
 		return overlay2;
 	}
 

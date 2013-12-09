@@ -207,7 +207,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	private void drawButtons(Graphics g) {
-		long start = IJ.debugMode?System.currentTimeMillis():0L;
+		//long start = System.currentTimeMillis();
 		if (Prefs.antialiasedTools) {
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -218,8 +218,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		drawButton(g, lineType);
 		for (int i=POINT; i<getNumTools(); i++)
 			drawButton(g, i);
-		//if (IJ.debugMode)
-		//	IJ.log("drawButtons: "+(System.currentTimeMillis()-start));
+		//IJ.log("drawButtons: "+(System.currentTimeMillis()-start));
 	}
 
 	private void fill3DRect(Graphics g, int x, int y, int width, int height, boolean raised) {
@@ -407,7 +406,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					break; 
 				case 'L': g.drawLine(x+v(), y+v(), x+v(), y+v()); break; // line
 				case 'D': g.fillRect(x+v(), y+v(), 1, 1); break; // dot
-				case 'P':// polyline
+				case 'P': // polyline
 					Polygon p = new Polygon();
 					p.addPoint(x+v(), y+v());
 					while (true) {
@@ -417,7 +416,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					}
 					g.drawPolyline(p.xpoints, p.ypoints, p.npoints);
 					break;
-				case 'p':// polygon
+				case 'p': // polygon
 					p = new Polygon();
 					p.addPoint(x+v(), y+v());
 					while (true) {
