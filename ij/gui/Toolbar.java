@@ -96,6 +96,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static int brushSize = (int)Prefs.get(BRUSH_SIZE, 15);
 	private static int arcSize = (int)Prefs.get(CORNER_DIAMETER, 20);
 	private int lineType = LINE;
+	private static boolean trakEM2Mode;
 	
 	private Color gray = ImageJ.backgroundColor;
 	private Color brighter = gray.brighter();
@@ -185,7 +186,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	/** Returns the ID of the current tool (Toolbar.RECTANGLE,
 		Toolbar.OVAL, etc.). */
 	public static int getToolId() {
-		return current;
+		int id = current;
+		if (trakEM2Mode) {
+			if (id==CUSTOM1)
+				id=UNUSED;
+			else if (id>=CUSTOM2)
+				id--;
+		}
+		return id;
 	}
 
 	/** Returns the ID of the tool whose name (the description displayed in the status bar)
@@ -1421,6 +1429,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				break;
 			}			
 		}
+		if (tool==CUSTOM1)
+			trakEM2Mode = toolTip.startsWith("Select and Transform Tool");
 		if (tool==-1 && (nExtraTools<MAX_EXTRA_TOOLS)) {
 			nExtraTools++;
 			names[getNumTools()-1] = names[getNumTools()-2];

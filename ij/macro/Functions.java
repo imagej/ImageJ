@@ -5784,6 +5784,8 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("getType")) {
 			interp.getParens();
 			String type = roi.getTypeAsString();
+			if (type.equals("Straight Line"))
+				type = "Line";
 			return type.toLowerCase(Locale.US);
 		} else
 			interp.error("Unrecognized Roi function");
