@@ -3920,10 +3920,30 @@ public class Functions implements MacroConstants, Measurements {
 	
 	void showText() {
 		String title = getFirstString();
-		String text = getLastString();
-		Editor ed = new Editor();
-		ed.setSize(350, 300);
-		ed.create(title, text);
+		String text = null;
+		if (interp.nextToken()==',')
+			text = getLastString();
+		else
+			interp.getRightParen();
+		if (text==null) {
+			text = title;
+			title = "Untitled";
+		}
+		Frame frame = WindowManager.getFrame(title);
+		Editor ed = null;
+		boolean useExisting = frame instanceof Editor;
+		if (useExisting) {
+			ed = (Editor)frame;
+			TextArea ta = ed.getTextArea();
+			ta.selectAll();
+			ta.replaceRange(text, ta.getSelectionStart(), ta.getSelectionEnd());
+		} else {
+			ed = new Editor();
+			ed.setSize(350, 300);
+			ed.create(title, text);
+		}
+		if (title.equals("Untitled") && text.contains("Test Action Tool"))
+			new MacroInstaller().installSingleTool(text);
 	}
 	
 	Variable[] newMenu() {
@@ -4052,11 +4072,18 @@ public class Functions implements MacroConstants, Measurements {
 			return resetBuffer();
 		else if (name.equals("buffer"))
 			return getBuffer();
+		else if (name.equals("show"))
+			return showString();
 		else
 			interp.error("Unrecognized String function");
 		return null;
 	}
 	
+	private String showString() {
+		showText();
+		return null;
+	}
+
 	private String getResultsHeadings() {
 		interp.getParens();
 		ResultsTable rt = ResultsTable.getResultsTable();
@@ -5699,6 +5726,10 @@ public class Functions implements MacroConstants, Measurements {
 		if (name.equals("getBounds")) {
 			getBounds();
 			return null;
+		} else if (name.equals("getDefaultColor")) {
+			interp.getParens();
+			Color color = Roi.getColor();
+			return Colors.colorToString(color);
 		} else if (name.equals("getStrokeColor")) {
 			interp.getParens();
 			Color color = roi.getStrokeColor();

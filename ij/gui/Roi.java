@@ -1599,7 +1599,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			case POLYLINE: s="Polyline"; break;
 			case FREELINE: s="Freeline"; break;
 			case ANGLE: s="Angle"; break;
-			case LINE: s="Straight Line"; break;
+			case LINE: s="Line"; break;
 			case OVAL: s="Oval"; break;
 			case COMPOSITE: s = "Composite"; break;
 			case POINT: s = "Point"; break;

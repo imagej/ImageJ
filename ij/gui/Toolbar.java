@@ -268,7 +268,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			case OVAL:
 				xOffset = x; yOffset = y;
 				if (ovalType==BRUSH_ROI) {
-					polyline(9,2,13,2,13,2,15,5,15,8,13,10,10,10,8,13,4,13,2,11,2,7,4,5,7,5,9,2);
+					yOffset = y - 1;
+					polyline(6,4,8,2,12,1,15,2,16,4,15,7,12,8,9,11,9,14,6,16,2,16,0,13,1,10,4,9,6,7,6,4);
 				} else if (ovalType==ELLIPSE_ROI) {
 					yOffset = y + 1;
 					polyline(11,0,13,0,14,1,15,1,16,2,17,3,17,7,12,12,11,12,10,13,8,13,7,14,4,14,3,13,2,13,1,12,1,11,0,10,0,9,1,8,1,7,6,2,7,2,8,1,10,1,11,0);
@@ -398,10 +399,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				case 'R': g.drawRect(x+v(), y+v(), v(), v()); break;  // rectangle
 				case 'F': g.fillRect(x+v(), y+v(), v(), v()); break;  // filled rectangle
 				case 'O': g.drawOval(x+v(), y+v(), v(), v()); break;  // oval
-				case 'o': g.fillOval(x+v(), y+v(), v(), v()); break;  // filled oval
+				case 'V': case 'o': g.fillOval(x+v(), y+v(), v(), v()); break;  // filled oval
 				case 'C': // set color
 					int v1=v(), v2=v(), v3=v();
-					Color color = v1==1&&v2==2&&v3==3?foregroundColor:new Color(v1*16,v2*16,v3*16);
+					int red=v1*16, green=v2*16, blue=v3*16;
+					if (red>255) red=255; if (green>255) green=255; if (blue>255) blue=255;
+					Color color = v1==1&&v2==2&&v3==3?foregroundColor:new Color(red,green,blue);
 					g.setColor(color);
 					break; 
 				case 'L': g.drawLine(x+v(), y+v(), x+v(), y+v()); break; // line
@@ -416,7 +419,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					}
 					g.drawPolyline(p.xpoints, p.ypoints, p.npoints);
 					break;
-				case 'p': // polygon
+				case 'G': // polygon
 					p = new Polygon();
 					p.addPoint(x+v(), y+v());
 					while (true) {
@@ -466,6 +469,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			case 'd': return 13;
 			case 'e': return 14;
 			case 'f': return 15;
+			case 'g': return 16;
+			case 'h': return 17;
 			default: return 0;
 		}
 	}

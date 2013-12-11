@@ -116,6 +116,18 @@ public class Colors implements PlugIn, ItemListener {
 		return color;
 	}
 
+	public static int getRed(String hexColor) {
+		return decode(hexColor, Color.black).getRed();
+	}
+
+	public static int getGreen(String hexColor) {
+		return decode(hexColor, Color.black).getGreen();
+	}
+
+	public static int getBlue(String hexColor) {
+		return decode(hexColor, Color.black).getBlue();
+	}
+
 	/** Converts a hex color (e.g., "ffff00") into "red", "green", "yellow", etc.
 		Returns null if the color is not one of the eight primary colors. */
 	public static String hexToColor(String hex) {
