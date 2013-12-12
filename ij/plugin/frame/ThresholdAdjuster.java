@@ -118,7 +118,8 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		c.gridwidth = 1;
 		c.weightx = IJ.isMacintosh()?10:0;
 		c.insets = new Insets(5, 0, 0, 10);
-		label1 = new Label("       ", Label.RIGHT);
+		String text = IJ.isMacOSX()?"000000":"00000000";
+		label1 = new Label(text, Label.RIGHT);
     	label1.setFont(font);
 		add(label1, c);
 		
@@ -141,7 +142,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(2, 0, 0, 10);
-		label2 = new Label("       ", Label.RIGHT);
+		label2 = new Label(text, Label.RIGHT);
     	label2.setFont(font);
 		add(label2, c);
 				
@@ -426,7 +427,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 				min = cal.getCValue((int)min);
 				max = cal.getCValue((int)max);
 			}
-			if (((int)min==min && (int)max==max) || (ip instanceof ShortProcessor)) {
+			if (((int)min==min && (int)max==max) || (ip instanceof ShortProcessor) || max>99999.0) {
 				label1.setText(""+(int)min);
 				label2.setText(""+(int)max);
 			} else {
