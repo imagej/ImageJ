@@ -8,7 +8,7 @@ import ij.io.*;
 import ij.gui.*;
 import ij.measure.*;
 import ij.plugin.filter.Analyzer;
-import ij.util.Tools;
+import ij.util.*;
 import ij.macro.Interpreter;
 import ij.plugin.frame.ContrastAdjuster;
 import ij.plugin.frame.Recorder;
@@ -1097,14 +1097,16 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Returns the value from the "Info" property string associated 
 		with 'key', or null if the key is not found. Works with
 		DICOM tags and Bio-Formats metadata. */
-	public String getInfo(String key) {
+	public String getProp(String key) {
 		if (key==null)
 			return null;
+		if (key.length()==9 && key.matches("[0-9]{4},[0-9]{4}")) // DICOM tag?
+			return DicomTools.getTag(this, key);
 		if (getStackSize()>1) {
 			ImageStack stack = getStack();
 			String label = stack.getSliceLabel(getCurrentSlice());
 			if (label!=null && label.indexOf('\n')>0) {
-				String value = getInfo(key, label);
+				String value = getProp(key, label);
 				if (value!=null)
 					return value;
 			}
@@ -1113,15 +1115,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (obj==null || !(obj instanceof String))
 			return null;
 		String info = (String)obj;
-		return getInfo(key, info);
+		return getProp(key, info);
 	}
 	
-	private String getInfo(String key, String info) {
+	private String getProp(String key, String info) {
 		int index1 = -1;
-		if (key.length()==9 && key.matches("[0-9]{4},[0-9]{4}")) // DICOM tag?
-			index1 = findKey(info, key+" ");
-		if (index1<0) // standard 'key: value' pair?
-			index1 = findKey(info, key+": ");
+		index1 = findKey(info, key+": "); // standard 'key: value' pair?
 		if (index1<0) // Bio-Formats metadata?
 			index1 = findKey(info, key+" = ");
 		if (index1<0) // otherwise not found

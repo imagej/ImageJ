@@ -17,7 +17,7 @@ public class OverlayCommands implements PlugIn {
 	
 	static {
 		defaultRoi = new Roi(0, 0, 1, 1);
-		defaultRoi.setStrokeColor(Roi.getColor());
+		//defaultRoi.setStrokeColor(Roi.getColor());
 		defaultRoi.setPosition(1); // set stacks positions by default
 	}
 
@@ -98,12 +98,15 @@ public class OverlayCommands implements PlugIn {
 		}
 		String name = roi.getName();
 		boolean newOverlay = name!=null && name.equals("new-overlay");
+		Roi roiClone = (Roi)roi.clone();
+		if (roi.getStrokeColor()==null)
+			roi.setStrokeColor(Roi.getColor());
 		if (overlay==null || newOverlay)
 			overlay = OverlayLabels.createOverlay();
 		overlay.add(roi);
 		if (!roi.isDrawingTool()) {
 			double dsw = defaultRoi.getStrokeWidth();
-			defaultRoi = (Roi)roi.clone();
+			defaultRoi = roiClone;
 			if (roi.isLine())
 				defaultRoi.setStrokeWidth(dsw);
 		}
@@ -362,8 +365,8 @@ public class OverlayCommands implements PlugIn {
 		//boolean tooWide = width>Math.max(bounds.width, bounds.height)/3.0;
 		//if (roi.getStroke()==null && width>1 && !tooWide)
 		//	roi.setStrokeWidth(Line.getWidth());
-		if (roi.getStrokeColor()==null)
-			roi.setStrokeColor(Roi.getColor());
+		//if (roi.getStrokeColor()==null)
+		//	roi.setStrokeColor(Roi.getColor());
 		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;
 		if (points) roi.setStrokeColor(Color.red);
 		roi.setPosition(defaultRoi.getPosition());
@@ -386,15 +389,15 @@ public class OverlayCommands implements PlugIn {
 			String color = Colors.colorToString(rois[i].getStrokeColor());
 			double strokeWidth = rois[i].getStrokeWidth();
 			int digits = strokeWidth==(int)strokeWidth?0:1;
-			String width = IJ.d2s(strokeWidth,digits);
+			String sWidth = IJ.d2s(strokeWidth,digits);
 			int position = rois[i].getPosition();
 			int c = rois[i].getCPosition();
 			int z = rois[i].getZPosition();
 			int t = rois[i].getTPosition();
-			sb.append(i+"\t"+rois[i].getName()+"\t"+rois[i].getTypeAsString()+"\t"+(r.x+r.width/2)
-			+"\t"+(r.y+r.height/2)+"\t"+color+"\t"+width+"\t"+position+"\t"+c+"\t"+z+"\t"+t+"\n");
+			sb.append(i+"\t"+rois[i].getName()+"\t"+rois[i].getTypeAsString()+"\t"+r.x
+			+"\t"+r.y+"\t"+r.width+"\t"+r.height+"\t"+color+"\t"+sWidth+"\t"+position+"\t"+c+"\t"+z+"\t"+t+"\n");
 		}
-        String headings = "Index\tName\tType\tX\tY\tColor\tWidth\tPosition\tC\tZ\tT";
+        String headings = "Index\tName\tType\tX\tY\tWidth\tHeight\tColor\tLWidth\tPos\tC\tZ\tT";
 		new TextWindow("Overlay Elements", headings, sb.toString(), 600, 400);
 	}
 	

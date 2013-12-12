@@ -119,6 +119,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				sizeToHeight = true;
 			if (newWidth<=0.0 && !constrain)  newWidth = 50;
 			if (newHeight<=0.0) newHeight = 50;
+			imp.setOverlay(null);
 		}
 		
 		if (!crop && constrain) {

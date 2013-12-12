@@ -246,7 +246,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	public void createMacro(String name, String text) {
 		create(name, text);
 	}
-
+	
 	void installMacros(String text, boolean installInPluginsMenu) {
 		String functions = Interpreter.getAdditionalFunctions();
 		if (functions!=null && text!=null) {
@@ -620,12 +620,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else if ("Run to Insertion Point".equals(what))
 			runToInsertionPoint();
 		else if ("Abort".equals(what) || "Abort Macro".equals(what)) {
-				Interpreter.abort();
-				IJ.beep();		
+			Interpreter.abort();
+			IJ.beep();		
 		} else if ("Evaluate Line".equals(what))
-				evaluateLine();
+			evaluateLine();
 		else if ("Install Macros".equals(what))
-				installMacros(ta.getText(), true);
+			installMacros(ta.getText(), true);
 		else if ("Macro Functions...".equals(what))
 			IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+"/developer/macro/functions.html");
 		else if ("Function Finder...".equals(what))
