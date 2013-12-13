@@ -247,6 +247,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private void drawButton(Graphics g, int tool) {
 		if (IJ.debugMode) IJ.log("drawButton: "+tool+" "+g);
 		if (g==null) return;
+		if (trakEM2Mode) {
+			if (tool==UNUSED)
+				tool = CUSTOM1;
+			else if (tool>=CUSTOM1)
+				tool++;
+		}
         int index = toolIndex(tool);
         int x = index*SIZE + 1;
         if (tool>=CUSTOM1)
@@ -427,7 +433,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					}
 					g.drawPolyline(p.xpoints, p.ypoints, p.npoints);
 					break;
-				case 'G': // polygon
+				case 'G': case 'H':// polygon or filled polygon
 					p = new Polygon();
 					p.addPoint(x+v(), y+v());
 					while (true) {
@@ -436,7 +442,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 							break;
 						p.addPoint(x+x2, y+y2);
 					}
-					g.drawPolygon(p.xpoints, p.ypoints, p.npoints);
+					if (command=='G')
+						g.drawPolygon(p.xpoints, p.ypoints, p.npoints);
+					else
+						g.fillPolygon(p.xpoints, p.ypoints, p.npoints);
 					break;
 				case 'T': // text (one character)
 					x2 = x+v()-1;
@@ -701,10 +710,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	public void setTool(int tool) {
-		if ((tool==current&&!(tool==RECTANGLE||tool==OVAL||tool==POINT)) || tool<0 || tool>=getNumTools()-1)
-			return;
 		if (tool==UNUSED)  //  "Unused" (blank) tool replaced with gap in 1.48h
 			tool = CUSTOM1;
+		else if (trakEM2Mode && tool>=CUSTOM1)
+			tool++;
+		if ((tool==current&&!(tool==RECTANGLE||tool==OVAL||tool==POINT)) || tool<0 || tool>=getNumTools()-1)
+			return;
 		if (tool>=CUSTOM1&&tool<=getNumTools()-2) {
 			if (names[tool]==null)
 				names[tool] = "Spare tool"; // enable tool
