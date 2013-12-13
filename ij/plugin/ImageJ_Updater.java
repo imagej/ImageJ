@@ -35,7 +35,7 @@ public class ImageJ_Updater implements PlugIn {
 			return;
 		}
 		String[] list = openUrlAsList(IJ.URL+"/download/jars/list.txt");
-		int count = list.length + 2;
+		int count = list.length + 3;
 		String[] versions = new String[count];
 		String[] urls = new String[count];
 		String uv = getUpgradeVersion();
@@ -43,36 +43,30 @@ public class ImageJ_Updater implements PlugIn {
 		versions[0] = "v"+uv;
 		urls[0] = IJ.URL+"/upgrade/ij.jar";
 		if (versions[0]==null) return;
-		for (int i=1; i<count-1; i++) {
+		for (int i=1; i<count-2; i++) {
 			String version = list[i-1];
 			versions[i] = version.substring(0,version.length()-1); // remove letter
 			urls[i] = IJ.URL+"/download/jars/ij"
 				+version.substring(1,2)+version.substring(3,6)+".jar";
 		}
+		versions[count-2] = "previous";
+		urls[count-2] = IJ.URL+"/upgrade/ij2.jar";
 		versions[count-1] = "daily build";
 		urls[count-1] = IJ.URL+"/ij.jar";
 		int choice = showDialog(versions);
 		if (choice==-1 || !Commands.closeAll())
 			return;
-		if (!versions[choice].startsWith("daily") && versions[choice].compareTo("v1.39")<0
-		&& Menus.getCommands().get("ImageJ Updater")==null) {
-			String msg = "This command is not available in versions of ImageJ prior\n"+
-			"to 1.39 so you will need to install the plugin version at\n"+
-			"<"+IJ.URL+"/plugins/imagej-updater.html>.";
-			if (!IJ.showMessageWithCancel("Update ImageJ", msg))
-				return;
-		}
+		//System.out.println("choice: "+choice);
+		//for (int i=0; i<urls.length; i++) System.out.println("  "+i+" "+urls[i]);
 		byte[] jar = getJar(urls[choice]);
 		if (jar==null) {
 			error("Unable to download ij.jar from "+urls[choice]);
 			return;
 		}
-		//file.renameTo(new File(file.getParent()+File.separator+"ij.bak"));
-		if (version().compareTo("1.37v")>=0)
-			Prefs.savePreferences();
-		// if (!renameJar(file)) return; // doesn't work on Vista
+		Prefs.savePreferences();
+		//System.out.println("saveJar: "+file);
 		saveJar(file, jar);
-		if (choice<count-1) // force macro Function Finder to download fresh list
+		if (choice<count-2) // force macro Function Finder to download fresh list
 			new File(IJ.getDirectory("macros")+"functions.html").delete();
 		System.exit(0);
 	}
@@ -129,8 +123,8 @@ public class ImageJ_Updater implements PlugIn {
 	}
 
 	byte[] getJar(String address) {
+		//System.out.println("getJar: "+address);
 		byte[] data;
-		boolean gte133 = version().compareTo("1.33u")>=0;
 		try {
 			URL url = new URL(address);
 			IJ.showStatus("Connecting to "+IJ.URL);
@@ -138,7 +132,6 @@ public class ImageJ_Updater implements PlugIn {
 			int len = uc.getContentLength();
 			if (len<=0)
 				return null;
-			String  name = address.endsWith("ij/ij.jar")?"daily build":"ij.jar";
 			IJ.showStatus("Downloading ij.jar ("+IJ.d2s((double)len/1048576,1)+"MB)");
 			InputStream in = uc.getInputStream();
 			data = new byte[len];
@@ -148,7 +141,7 @@ public class ImageJ_Updater implements PlugIn {
 				if (count<0)
 					throw new EOFException();
 	   			 n += count;
-				if (gte133) IJ.showProgress(n, len);
+				IJ.showProgress(n, len);
 			}
 			in.close();
 		} catch (IOException e) {
