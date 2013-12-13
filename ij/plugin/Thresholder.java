@@ -29,6 +29,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 	private static boolean staticUseLocal = true;
 	private static String staticMethod = methods[0];
 	private static String staticBackground = backgrounds[0];
+        private static boolean saveChoices = false;
 	private ImagePlus imp;
 	private Vector choices;
 
@@ -62,23 +63,32 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		}
 		if (thresholdSet)
 			useLocal = false;
-		GenericDialog gd = new GenericDialog("Convert Stack to Binary");
-		gd.addChoice("Method:", methods, method);
-		gd.addChoice("Background:", backgrounds, background);
-		gd.addCheckbox("Calculate threshold for each image", useLocal);
-		gd.addCheckbox("Black background (mask)", Prefs.blackBackground);
-		choices = gd.getChoices();
-		((Choice)choices.elementAt(0)).addItemListener(this);
-		((Choice)choices.elementAt(1)).addItemListener(this);
-		gd.showDialog();
-		if (gd.wasCanceled())
-			return;
-		this.imp = null;
-		method = gd.getNextChoice();
-		background = gd.getNextChoice();
-		useLocal = gd.getNextBoolean();
-		boolean saveBlackBackground = Prefs.blackBackground;
-		Prefs.blackBackground = gd.getNextBoolean();
+                
+                boolean saveBlackBackground = Prefs.blackBackground;
+                
+                if(!saveChoices){
+                    GenericDialog gd = new GenericDialog("Convert Stack to Binary");
+                    gd.addChoice("Method:", methods, method);
+                    gd.addChoice("Background:", backgrounds, background);
+                    gd.addCheckbox("Calculate threshold for each image", useLocal);
+                    gd.addCheckbox("Black background (mask)", Prefs.blackBackground);
+                    if(IJ.isMacro()){
+                        gd.addCheckbox("Remember choices for macro operations", saveChoices);
+                    }
+                    choices = gd.getChoices();
+                    ((Choice)choices.elementAt(0)).addItemListener(this);
+                    ((Choice)choices.elementAt(1)).addItemListener(this);
+                    gd.showDialog();
+                    if (gd.wasCanceled())
+                            return;
+
+                    this.imp = null;
+                    method = gd.getNextChoice();
+                    background = gd.getNextChoice();
+                    useLocal = gd.getNextBoolean();
+                    Prefs.blackBackground = gd.getNextBoolean();
+                    saveChoices = gd.getNextBoolean();
+                }
 		if (!IJ.isMacro()) {
 			staticMethod = method;
 			staticBackground = background;
