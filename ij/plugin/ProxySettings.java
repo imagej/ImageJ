@@ -10,7 +10,6 @@ import java.util.*;
 * 
 *     @author	Dimiter Prodanov
 */
-
 public class ProxySettings implements PlugIn {
 	private Properties props = System.getProperties();
 	private String proxyhost = Prefs.get("proxy.server", "");

@@ -158,6 +158,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private int fontSize = nextFontSize;
 	private Color fontColor = nextFontColor;
 	private int lineWidth = nextLineWidth;
+	private boolean noThreshold;
+	private boolean calledByPlugin;
 
 			
 	/** Constructs a ParticleAnalyzer.
@@ -199,6 +201,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		nextFontSize = defaultFontSize;
 		nextFontColor = defaultFontColor;
 		nextLineWidth = 1;
+		calledByPlugin = true;
 	}
 	
 	/** Constructs a ParticleAnalyzer using the default min and max circularity values (0 and 1). */
@@ -317,7 +320,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		labels[2]="Clear results"; states[2]=(options&CLEAR_WORKSHEET)!=0;
 		labels[3]="Include holes"; states[3]=(options&INCLUDE_HOLES)!=0;
 		labels[4]="Summarize"; states[4]=(options&DISPLAY_SUMMARY)!=0;
-		labels[5]="Record starts"; states[5]=(options&RECORD_STARTS)!=0;
+		labels[5]="Record starts"; states[5]=false;
 		labels[6]="Add to Manager"; states[6]=(options&ADD_TO_MANAGER)!=0;
 		labels[7]="In_situ Show"; states[7]=(options&IN_SITU_SHOW)!=0;
 		gd.addCheckboxGroup(4, 2, labels, states);
@@ -334,7 +337,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		else
 			unitSquared = cal.pixelWidth*cal.pixelHeight;
 		String[] minAndMax = Tools.split(size, " -");
-		double mins = gd.parseDouble(minAndMax[0]);
+		double mins = minAndMax.length>=1?gd.parseDouble(minAndMax[0]):0.0;
 		double maxs = minAndMax.length==2?gd.parseDouble(minAndMax[1]):Double.NaN;
 		minSize = Double.isNaN(mins)?DEFAULT_MIN_SIZE:mins/unitSquared;
 		maxSize = Double.isNaN(maxs)?DEFAULT_MAX_SIZE:maxs/unitSquared;
@@ -344,7 +347,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		staticMaxSize = maxSize;
 		
 		minAndMax = Tools.split(gd.getNextString(), " -"); // min-max circularity
-		double minc = gd.parseDouble(minAndMax[0]);
+		double minc = minAndMax.length>=1?gd.parseDouble(minAndMax[0]):0.0;
 		double maxc = minAndMax.length==2?gd.parseDouble(minAndMax[1]):Double.NaN;
 		minCircularity = Double.isNaN(minc)?0.0:minc;
 		maxCircularity = Double.isNaN(maxc)?1.0:maxc;
@@ -574,14 +577,14 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		}
 		if (showProgress)
 			IJ.showProgress(1.0);
-		if (showResults && showResultsWindow)
+		if (showResults && showResultsWindow && rt.getCounter()>0)
 			rt.updateResults();
 		imp.deleteRoi();
 		ip.resetRoi();
 		ip.reset();
 		if (displaySummary && IJ.getInstance()!=null)
 			updateSliceSummary();
-		if (addToManager && roiManager!=null)
+		if (addToManager && roiManager!=null && imp.getWindow()!=null)
 			roiManager.setEditMode(imp, true);
 		maxParticleCount = (particleCount > maxParticleCount) ? particleCount : maxParticleCount;
 		totalCount += particleCount;
@@ -597,7 +600,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			areas = new float[0];
 		String label = imp.getTitle();
 		if (slices>1) {
-			label = imp.getStack().getShortSliceLabel(slice);
+			if (processStack)
+				label = imp.getStack().getShortSliceLabel(slice);
+			else
+				label = imp.getStack().getShortSliceLabel(imp.getCurrentSlice());
 			label = label!=null&&!label.equals("")?label:""+slice;
 		}
 		String aLine = null;
@@ -616,6 +622,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		aLine = addMeans(aLine, areas.length>0?start:-1);
 		if (slices==1) {
 			Frame frame = WindowManager.getFrame("Summary");
+			if (frame!=null && (frame instanceof TextWindow) && summaryHdr.equals(prevHdr))
+				tw = (TextWindow)frame;
+		} else {
+			Frame frame = WindowManager.getFrame("Summary of "+imp.getTitle());
 			if (frame!=null && (frame instanceof TextWindow) && summaryHdr.equals(prevHdr))
 				tw = (TextWindow)frame;
 		}
@@ -746,6 +756,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		else
 			imageType = BYTE;
 		if (t1==ImageProcessor.NO_THRESHOLD) {
+			noThreshold = true;
 			ImageStatistics stats = imp.getStatistics();
 			if (imageType!=BYTE || (stats.histogram[0]+stats.histogram[255]!=stats.pixelCount)) {
 				IJ.error("Particle Analyzer",
@@ -1002,7 +1013,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				outputImage.show();
 		}
 		if (showResults && !processStack) {
-			if (showResultsWindow) {
+			if (showResultsWindow && rt.getCounter()>0) {
 				TextPanel tp = IJ.getTextPanel();
 				if (beginningCount>0 && tp!=null && tp.getLineCount()!=count)
 					rt.show("Results");
@@ -1011,6 +1022,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			Analyzer.lastParticle = Analyzer.getCounter()-1;
 		} else
 			Analyzer.firstParticle = Analyzer.lastParticle = 0;
+		if (showResults && rt.getCounter()==0 && !(IJ.isMacro()||calledByPlugin) && (!processStack||slice==imp.getStackSize())) {
+			int digits = (int)level1==level1&&(int)level2==level2?0:2;
+			String range = IJ.d2s(level1,digits)+"-"+IJ.d2s(level2,digits);
+			String assummed = noThreshold?"assumed":"";
+			IJ.showMessage("Particle Analyzer", "No particles were detected. The "+assummed+"\nthreshold ("+range+") may not be correct.");
+		}
 	}
 	
 	/** Returns the "Outlines", "Masks", "Elipses" or "Count Masks" image,

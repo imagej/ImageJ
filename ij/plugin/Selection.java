@@ -97,7 +97,7 @@ public class Selection implements PlugIn, Measurements {
 	Original code: Nikolai Chernov's MATLAB script for Newton-based Pratt fit.<br>
 	(http://www.math.uab.edu/~chernov/cl/MATLABcircle.html)<br>
 	Java version: https://github.com/mdoube/BoneJ/blob/master/src/org/doube/geometry/FitCircle.java<br>
-	@authors Nikolai Chernov, Michael Doube, Ved Sharma
+	Authors: Nikolai Chernov, Michael Doube, Ved Sharma
 	*/
 	void fitCircle(ImagePlus imp) {
 		Roi roi = imp.getRoi();
@@ -267,11 +267,11 @@ public class Selection implements PlugIn, Measurements {
 		int type = roi.isLine()?Roi.FREELINE:Roi.FREEROI;
 		if (t==Roi.POLYGON && interval>1.0)
 			type = Roi.POLYGON;
-		if ((t==Roi.RECTANGLE||t==Roi.OVAL||t==Roi.FREEROI) && interval>=5.0)
+		if ((t==Roi.RECTANGLE||t==Roi.OVAL||t==Roi.FREEROI) && interval>=8.0)
 			type = Roi.POLYGON;
-		if ((t==Roi.LINE||t==Roi.FREELINE) && interval>=5.0)
+		if ((t==Roi.LINE||t==Roi.FREELINE) && interval>=8.0)
 			type = Roi.POLYLINE;
-		if (t==Roi.POLYLINE && interval>=1.0)
+		if (t==Roi.POLYLINE && interval>=8.0)
 			type = Roi.POLYLINE;
 		ImageCanvas ic = imp.getCanvas();
 		if (poly.npoints<=150 && ic!=null && ic.getMagnification()>=12.0)
@@ -291,6 +291,7 @@ public class Selection implements PlugIn, Measurements {
 		roi2.setStrokeColor(roi1.getStrokeColor());
 		if (roi1.getStroke()!=null)
 			roi2.setStroke(roi1.getStroke());
+		roi2.setDrawOffset(roi1.getDrawOffset());
 	}
 	
 	PolygonRoi trimPolygon(PolygonRoi roi, double length) {
@@ -411,6 +412,7 @@ public class Selection implements PlugIn, Measurements {
 		if (roi.getStroke()!=null)
 			p.setStrokeWidth(roi.getStrokeWidth());
 		p.setStrokeColor(roi.getStrokeColor());
+		p.setDrawOffset(roi.getDrawOffset());
 		p.setName(roi.getName());
 		imp.setRoi(p);
 		return p;
@@ -597,8 +599,13 @@ public class Selection implements PlugIn, Measurements {
 		Undo.setup(Undo.ROI, imp);
 		Roi roi2 = null;
 		if (roi.getType()==Roi.LINE) {
+			double width = roi.getStrokeWidth();
+			if (width<=1.0)
+				roi.setStrokeWidth(1.0000001);
 			FloatPolygon p = roi.getFloatPolygon();
+			roi.setStrokeWidth(width);
 			roi2 = new PolygonRoi(p, Roi.POLYGON);
+			roi2.setDrawOffset(roi.getDrawOffset());
 		} else {
 			ImageProcessor ip2 = new ByteProcessor(imp.getWidth(), imp.getHeight());
 			ip2.setColor(255);
@@ -697,7 +704,10 @@ public class Selection implements PlugIn, Measurements {
 			return false;
 		}
 		RoiProperties rp = new RoiProperties(title, roi);
-		return rp.showDialog();
+		boolean ok = rp.showDialog();
+		if (IJ.debugMode)
+			IJ.log(roi.getDebugInfo());
+		return ok;
 	}
 	
 	private void makeBand(ImagePlus imp) {

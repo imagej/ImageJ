@@ -82,6 +82,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private boolean fixedLineEndings;
     private String downloadUrl;
     private boolean downloading;
+    private FunctionFinder functionFinder;
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -245,7 +246,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	public void createMacro(String name, String text) {
 		create(name, text);
 	}
-
+	
 	void installMacros(String text, boolean installInPluginsMenu) {
 		String functions = Interpreter.getAdditionalFunctions();
 		if (functions!=null && text!=null) {
@@ -619,16 +620,16 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else if ("Run to Insertion Point".equals(what))
 			runToInsertionPoint();
 		else if ("Abort".equals(what) || "Abort Macro".equals(what)) {
-				Interpreter.abort();
-				IJ.beep();		
+			Interpreter.abort();
+			IJ.beep();		
 		} else if ("Evaluate Line".equals(what))
-				evaluateLine();
+			evaluateLine();
 		else if ("Install Macros".equals(what))
-				installMacros(ta.getText(), true);
+			installMacros(ta.getText(), true);
 		else if ("Macro Functions...".equals(what))
 			IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+"/developer/macro/functions.html");
 		else if ("Function Finder...".equals(what))
-			new FunctionFinder();
+			functionFinder = new FunctionFinder(this);
 		else if ("Evaluate JavaScript".equals(what))
 			evaluateJavaScript();
 		else if ("Evaluate BeanShell".equals(what))
@@ -779,6 +780,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			nWindows--;
 			instance = null;
 			changes = false;
+			if (functionFinder!=null)
+				functionFinder.close();
 		}
 	}
 
@@ -1038,6 +1041,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			debugWindow = null;
 		} else
 			debugWindow = interp.updateDebugWindow(interp.getVariables(), debugWindow);
+		if (debugWindow!=null) {
+			interp.updateArrayInspector();
+			if (!isActive())
+				toFront();
+		}
 		if (mode==Interpreter.STEP) {
 			step = false;
 			while (!step && !interp.done() && isVisible())

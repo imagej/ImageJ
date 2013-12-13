@@ -86,6 +86,7 @@ public class JavaProperties implements PlugIn {
 		sb.append("\n");
 		sb.append("  Menus.getPlugInsPath: "+Menus.getPlugInsPath()+"\n");
 		sb.append("  Menus.getMacrosPath: "+Menus.getMacrosPath()+"\n");
+		sb.append("  Prefs.getImageJDir: "+Prefs.getImageJDir()+"\n");	
 		sb.append("  Prefs.getThreads: "+Prefs.getThreads()+cores());	
 		sb.append("  Prefs.open100Percent: "+Prefs.open100Percent+"\n");		
 		sb.append("  Prefs.blackBackground: "+Prefs.blackBackground+"\n");		

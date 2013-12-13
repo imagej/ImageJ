@@ -59,8 +59,7 @@ public class Line extends Roi {
 		type = LINE;
 		if (!(this instanceof Arrow) && lineWidth>1)
 			updateWideLine(lineWidth);
-		if (Prefs.subPixelResolution)
-			drawOffset = true;
+		drawOffset = Prefs.subPixelResolution;
 	}
 
 	/**
@@ -340,6 +339,8 @@ public class Line extends Roi {
 	/** Draws this line on the image. */
 	public void draw(Graphics g) {
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
+		double x = getXBase();
+		double y = getYBase();
 		g.setColor(color);
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
@@ -450,6 +451,8 @@ public class Line extends Roi {
 	 * @see #getFloatPoints
 	 */
 	public FloatPolygon getFloatPolygon() {
+		double x = getXBase();
+		double y = getYBase();
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		FloatPolygon p = new FloatPolygon();
 		if (getStrokeWidth()<=1) {
@@ -476,6 +479,8 @@ public class Line extends Roi {
 
 	public void drawPixels(ImageProcessor ip) {
 		ip.setLineWidth(1);
+		double x = getXBase();
+		double y = getYBase();
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		double offset = getOffset(0.5);
 		if (getStrokeWidth()<=1) {
@@ -593,6 +598,11 @@ public class Line extends Roi {
 	
 	public void setDrawOffset(boolean drawOffset) {
 		this.drawOffset = drawOffset;
+	}
+
+	/** Always returns true. */
+	public boolean subPixelResolution() {
+		return true;
 	}
 
 }

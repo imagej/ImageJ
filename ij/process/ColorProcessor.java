@@ -23,7 +23,8 @@ public class ColorProcessor extends ImageProcessor {
 	// Enable "Weighted RGB Conversion" in <i>Edit/Options/Conversions</i>
 	// to use 0.299, 0.587 and 0.114.
 	private static double rWeight=1d/3d, gWeight=1d/3d,	bWeight=1d/3d; 
-
+	private double[] weights; // Overrides rWeight, etc. when set by setWeights()
+	 
 	/**Creates a ColorProcessor from an AWT Image or BufferedImage. */
 	public ColorProcessor(Image img) {
 		width = img.getWidth(null);
@@ -387,7 +388,10 @@ public class ColorProcessor extends ImageProcessor {
 			int r = (c&0xff0000)>>16;
 			int g = (c&0xff00)>>8;
 			int b = c&0xff;
-			return (float)(r*rWeight + g*gWeight + b*bWeight);
+			if (weights!=null)
+				return (float)(r*weights[0] + g*weights[1] + b*weights[2]);
+			else
+				return (float)(r*rWeight + g*gWeight + b*bWeight);
 		}
 		else 
 			return 0;
@@ -501,7 +505,7 @@ public class ColorProcessor extends ImageProcessor {
 	}
 	
 	/** Sets the pixels of one color channel from a ByteProcessor.
-	*  @param channelNumber  Determines the color channel, 1=red, 2=green, 3=blue, 4=alpha
+	*  @param channel  Determines the color channel, 1=red, 2=green, 3=blue, 4=alpha
 	*  @param bp  The ByteProcessor where the image data are read from.
 	*/
 	public void setChannel(int channel, ByteProcessor bp) {
@@ -836,7 +840,7 @@ public class ColorProcessor extends ImageProcessor {
 	}
 	
 	/** Returns a duplicate of this image. */ 
-	public synchronized ImageProcessor duplicate() { 
+	public ImageProcessor duplicate() { 
 		int[] pixels2 = new int[width*height]; 
 		System.arraycopy(pixels, 0, pixels2, 0, width*height); 
 		return new ColorProcessor(width, height, pixels2); 
@@ -1154,6 +1158,9 @@ public class ColorProcessor extends ImageProcessor {
 	public int[] getHistogram() {
 		if (mask!=null)
 			return getHistogram(mask);
+		double rw=rWeight, gw=gWeight, bw=bWeight;
+		if (weights!=null)
+			{rw=weights[0]; gw=weights[1]; bw=weights[2];}
 		int c, r, g, b, v;
 		int[] histogram = new int[256];
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
@@ -1163,7 +1170,7 @@ public class ColorProcessor extends ImageProcessor {
 				r = (c&0xff0000)>>16;
 				g = (c&0xff00)>>8;
 				b = c&0xff;
-				v = (int)(r*rWeight + g*gWeight + b*bWeight + 0.5);
+				v = (int)(r*rw + g*gw + b*bw + 0.5);
 				histogram[v]++;
 			}
 		}
@@ -1174,6 +1181,9 @@ public class ColorProcessor extends ImageProcessor {
 	public int[] getHistogram(ImageProcessor mask) {
 		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
 			throw new IllegalArgumentException(maskSizeError(mask));
+		double rw=rWeight, gw=gWeight, bw=bWeight;
+		if (weights!=null)
+			{rw=weights[0]; gw=weights[1]; bw=weights[2];}
 		byte[] mpixels = (byte[])mask.getPixels();
 		int c, r, g, b, v;
 		int[] histogram = new int[256];
@@ -1186,7 +1196,7 @@ public class ColorProcessor extends ImageProcessor {
 					r = (c&0xff0000)>>16;
 					g = (c&0xff00)>>8;
 					b = c&0xff;
-					v = (int)(r*rWeight + g*gWeight + b*bWeight + 0.5);
+					v = (int)(r*rw + g*gw + b*bw + 0.5);
 					histogram[v]++;
 				}
 				i++;
@@ -1224,7 +1234,10 @@ public class ColorProcessor extends ImageProcessor {
 	/** Sets the weighting factors used by getPixelValue(), getHistogram()
 		and convertToByte() to do color conversions. The default values are
 		1/3, 1/3 and 1/3. Check "Weighted RGB Conversions" in
-		<i>Edit/Options/Conversions</i> to use 0.299, 0.587 and 0.114. */
+		<i>Edit/Options/Conversions</i> to use 0.299, 0.587 and 0.114.
+		@see #getWeightingFactors
+		@see #setRGBWeights
+	*/
 	public static void setWeightingFactors(double rFactor, double gFactor, double bFactor) {
 		rWeight = rFactor;
 		gWeight = gFactor;
@@ -1232,12 +1245,28 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 	/** Returns the three weighting factors used by getPixelValue(), 
-		getHistogram() and convertToByte() to do color conversions. */
+		getHistogram() and convertToByte() to do color conversions.
+		@see #setWeightingFactors
+		@see #getRGBWeights
+	*/
 	public static double[] getWeightingFactors() {
 		double[] weights = new double[3];
 		weights[0] = rWeight;
 		weights[1] = gWeight;
 		weights[2] = bWeight;
+		return weights;
+	}
+
+	/** This is a thread-safe (non-static) version of setWeightingFactors(). */
+	public void setRGBWeights(double rweight, double gweight, double bweight) {
+		weights = new double[3];
+		weights[0] = rweight;
+		weights[1] = gweight;
+		weights[2] = bweight;
+	}
+
+	/** Returns the values set by setRGBWeights(), or null if setRGBWeights() has not been called. */
+	public double[] getRGBWeights() {
 		return weights;
 	}
 

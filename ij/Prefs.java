@@ -53,7 +53,7 @@ public class Prefs {
 	public static final String vistaHint = "";  // no longer used
 
 	private static final int USE_SYSTEM_PROXIES=1<<0, USE_FILE_CHOOSER=1<<1,
-		SUBPIXEL_RESOLUTION=1<<2, ENHANCED_LINE_TOOL=1<<3;
+		SUBPIXEL_RESOLUTION=1<<2, ENHANCED_LINE_TOOL=1<<3, SKIP_RAW_DIALOG=1<<4;
 	public static final String OPTIONS2 = "prefs.options2";
     
 	/** file.separator system property */
@@ -142,6 +142,12 @@ public class Prefs {
 	public static boolean autoContrast;
 	/** Allow lines to be created with one click at start and another at the end */
 	public static boolean enhancedLineTool;
+	/** Keep arrow selection after adding to overlay */
+	public static boolean keepArrowSelections;
+	/** Aways paint using double buffering, except on OS X */
+	public static boolean paintDoubleBuffered;
+	/** Do not display dialog when opening .raw files */
+	public static boolean skipRawDialog;
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);
@@ -221,9 +227,19 @@ public class Prefs {
 		imagesURL = url;
 	}
 
-	/** Obsolete, replaced by IJ.getDirectory("imagej"). */
+	/** Obsolete, replaced by getImageJDir(), which, unlike this method, 
+		returns a path that ends with File.separator. */
 	public static String getHomeDir() {
 		return homeDir;
+	}
+
+	/** Returns the path, ending in File.separator, to the ImageJ directory. */
+	public static String getImageJDir() {
+		String path = Menus.getImageJPath();
+		if (path==null)
+			return homeDir + File.separator;
+		else
+			return path;
 	}
 
 	/** Gets the path to the directory where the 
@@ -403,7 +419,6 @@ public class Prefs {
 		antialiasedText = false;
 		interpolateScaledImages = (options&INTERPOLATE)!=0;
 		open100Percent = (options&ONE_HUNDRED_PERCENT)!=0;
-		open100Percent = (options&ONE_HUNDRED_PERCENT)!=0;
 		blackBackground = (options&BLACK_BACKGROUND)!=0;
 		useJFileChooser = (options&JFILE_CHOOSER)!=0;
 		weightedColor = (options&WEIGHTED)!=0;
@@ -439,6 +454,7 @@ public class Prefs {
 		useFileChooser = (options2&USE_FILE_CHOOSER)!=0;
 		subPixelResolution = (options2&SUBPIXEL_RESOLUTION)!=0;
 		enhancedLineTool = (options2&ENHANCED_LINE_TOOL)!=0;
+		skipRawDialog = (options2&SKIP_RAW_DIALOG)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -462,7 +478,7 @@ public class Prefs {
 
 		int options2 = (useSystemProxies?USE_SYSTEM_PROXIES:0)
 			+ (useFileChooser?USE_FILE_CHOOSER:0) + (subPixelResolution?SUBPIXEL_RESOLUTION:0)
-			+ (enhancedLineTool?ENHANCED_LINE_TOOL:0);
+			+ (enhancedLineTool?ENHANCED_LINE_TOOL:0) + (skipRawDialog?SKIP_RAW_DIALOG:0);
 		prefs.put(OPTIONS2, Integer.toString(options2));
 	}
 
@@ -576,12 +592,13 @@ public class Prefs {
 		bos.close();
 	}
 	
-	/** Returns the number of threads used by PlugInFilters to process stacks. */
+	/** Returns the number of threads used by PlugInFilters to process images and stacks. */
 	public static int getThreads() {
 		if (threads==0) {
 			threads = getInt(THREADS, 0);
 			int processors = Runtime.getRuntime().availableProcessors();
-			if (threads<1 || threads>processors) threads = processors;
+			if (threads<1 || threads>processors)
+				threads = processors;
 		}
 		return threads;
 	}

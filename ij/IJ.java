@@ -153,7 +153,7 @@ public class IJ {
 	public static Object runPlugIn(String commandName, String className, String arg) {
 		if (arg==null) arg = "";
 		if (IJ.debugMode)
-			IJ.log("runPlugin: "+className+" "+(!arg.contains("\n")?arg:""));
+			IJ.log("runPlugIn: "+className+argument(arg));
 		// Load using custom classloader if this is a user 
 		// plugin and we are not running as an applet
 		if (!className.startsWith("ij.") && applet==null)
@@ -178,14 +178,16 @@ public class IJ {
 	}
         
 	static Object runUserPlugIn(String commandName, String className, String arg, boolean createNewLoader) {
-		if (debugMode) IJ.log("runUserPlugIn: "+className+" "+arg);
+		if (IJ.debugMode)
+			IJ.log("runUserPlugIn: "+className+", arg="+argument(arg));
 		if (applet!=null) return null;
 		if (checkForDuplicatePlugins) {
 			// check for duplicate classes and jars in the plugins folder
 			IJ.runPlugIn("ij.plugin.ClassChecker", "");
 			checkForDuplicatePlugins = false;
 		}
-		if (createNewLoader) classLoader = null;
+		if (createNewLoader)
+			classLoader = null;
 		ClassLoader loader = getClassLoader();
 		Object thePlugIn = null;
 		try { 
@@ -201,8 +203,8 @@ public class IJ {
 		}
 		catch (NoClassDefFoundError e) {
 			int dotIndex = className.indexOf('.');
-			if (dotIndex >= 0)
-				return runUserPlugIn(commandName, className.substring(dotIndex + 1), arg, createNewLoader);
+			if (dotIndex>=0)
+				return runUserPlugIn(commandName, className.substring(dotIndex+1), arg, createNewLoader);
 			if (className.indexOf('_')!=-1 && !suppressPluginNotFoundError)
 				error("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 		}
@@ -213,6 +215,10 @@ public class IJ {
 		suppressPluginNotFoundError = false;
 		return thePlugIn;
 	} 
+	
+	private static String argument(String arg) {
+		return arg!=null && !arg.equals("") && !arg.contains("\n")?"(\""+arg+"\")":"";
+	}
 
 	static void wrongType(int capabilities, String cmd) {
 		String s = "\""+cmd+"\" requires an image of type:\n \n";
@@ -242,7 +248,7 @@ public class IJ {
 		GenericDialog and OpenDialog classes. Does not return until
 		the command has finished executing. */
 	public static void run(String command, String options) {
-		//IJ.log("run1: "+command+" "+Thread.currentThread().hashCode());
+		//IJ.log("run1: "+command+" "+Thread.currentThread().hashCode()+" "+options);
 		if (ij==null && Menus.getCommands()==null)
 			init();
 		Macro.abort = false;
@@ -416,6 +422,8 @@ public class IJ {
 			logPanel.setLine(line, s2);
 		} else if (s.equals("\\Clear")) {
 			logPanel.clear();
+		} else if (s.startsWith("\\Heading:")) {
+			logPanel.updateColumnHeadings(s.substring(10));
 		} else if (s.equals("\\Close")) {
 			Frame f = WindowManager.getFrame("Log");
 			if (f!=null && (f instanceof TextWindow))
@@ -593,17 +601,20 @@ public class IJ {
 		If a macro is running, it is aborted. Writes to the Java  
 		console if ImageJ is not present. */
 	public static void error(String title, String msg) {
+		if (msg!=null && msg.endsWith(Macro.MACRO_CANCELED))
+			return;
 		String title2 = title!=null?title:"ImageJ";
 		boolean abortMacro = title!=null;
 		lastErrorMessage = msg;
 		if (redirectErrorMessages) {
 			IJ.log(title2 + ": " + msg);
-			if (abortMacro && (title.equals("Opener")||title.equals("Open URL")||title.equals("DicomDecoder")))
+			if (abortMacro && (title.contains("Open")||title.contains("Reader")))
 				abortMacro = false;
 		} else
 			showMessage(title2, msg);
 		redirectErrorMessages = false;
-		if (abortMacro) Macro.abort();
+		if (abortMacro)
+			Macro.abort();
 	}
 
 	/** 
@@ -1036,6 +1047,14 @@ public class IJ {
 		}
 	}
 	
+	/** Creates a subpixel resolution rectangular selection. */
+	public static void makeRectangle(double x, double y, double width, double height) {
+		if (width<=0 || height<0)
+			getImage().deleteRoi();
+		else
+			getImage().setRoi(new Roi(x,y,width,height), !Interpreter.isBatchMode());
+	}
+
 	/** Creates an oval selection. Removes any existing 
 		selection if width or height are less than 1. */
 	public static void makeOval(int x, int y, int width, int height) {
@@ -1047,6 +1066,14 @@ public class IJ {
 		}
 	}
 	
+	/** Creates an subpixel resolution oval selection. */
+	public static void makeOval(double x, double y, double width, double height) {
+		if (width<=0 || height<0)
+			getImage().deleteRoi();
+		else
+			getImage().setRoi(new OvalRoi(x, y, width, height));
+	}
+
 	/** Creates a straight line selection. */
 	public static void makeLine(int x1, int y1, int x2, int y2) {
 		getImage().setRoi(new Line(x1, y1, x2, y2));
@@ -1481,7 +1508,7 @@ public class IJ {
 		else if (title2.equals("macros"))
 			return Menus.getMacrosPath();
 		else if (title2.equals("luts")) {
-			String ijdir = getIJDir();
+			String ijdir = Prefs.getImageJDir();
 			if (ijdir!=null)
 				return ijdir + "luts" + File.separator;
 			else
@@ -1489,9 +1516,9 @@ public class IJ {
 		} else if (title2.equals("home"))
 			return System.getProperty("user.home") + File.separator;
 		else if (title2.equals("startup"))
-			return Prefs.getHomeDir() + File.separator;
+			return Prefs.getImageJDir();
 		else if (title2.equals("imagej"))
-			return getIJDir();
+			return Prefs.getImageJDir();
 		else if (title2.equals("current") || title2.equals("default"))
 			return OpenDialog.getDefaultDirectory();
 		else if (title2.equals("temp")) {
@@ -1520,15 +1547,7 @@ public class IJ {
 		OpenDialog od = new OpenDialog(dialogTitle);
 		return od.getPath();
 	}
-	
-	private static String getIJDir() {
-		String path = Menus.getPlugInsPath();
-		if (path==null) return null;
-		String ijdir = (new File(path)).getParent();
-		if (ijdir!=null) ijdir += File.separator;
-		return ijdir;
-	}
-	
+		
 	/** Displays a file open dialog box and then opens the tiff, dicom, 
 		fits, pgm, jpeg, bmp, gif, lut, roi, or text file selected by 
 		the user. Displays an error message if the selected file is not
@@ -1821,27 +1840,60 @@ public class IJ {
 	 }
 
 	 /** Creates a new imagePlus. <code>Type</code> should contain "8-bit", "16-bit", "32-bit" or "RGB". 
-		 In addition, it can contain "white", "black" or "ramp" (the default is "white"). <code>Width</code> 
+		 In addition, it can contain "white", "black" or "ramp". <code>Width</code> 
 	 	and <code>height</code> specify the width and height of the image in pixels.  
 	 	<code>Depth</code> specifies the number of stack slices. */
 	 public static ImagePlus createImage(String title, String type, int width, int height, int depth) {
 		type = type.toLowerCase(Locale.US);
 		int bitDepth = 8;
-		if (type.indexOf("16")!=-1) bitDepth = 16;
-		if (type.indexOf("24")!=-1||type.indexOf("rgb")!=-1) bitDepth = 24;
-		if (type.indexOf("32")!=-1) bitDepth = 32;
+		if (type.contains("16")) bitDepth = 16;
+		if (type.contains("24")||type.contains("rgb")) bitDepth = 24;
+		if (type.contains("32")) bitDepth = 32;
 		int options = NewImage.FILL_WHITE;
 		if (bitDepth==16 || bitDepth==32)
 			options = NewImage.FILL_BLACK;
-		if (type.indexOf("white")!=-1)
+		if (type.contains("white"))
 			options = NewImage.FILL_WHITE;
-		else if (type.indexOf("black")!=-1)
+		else if (type.contains("black"))
 			options = NewImage.FILL_BLACK;
-		else if (type.indexOf("ramp")!=-1)
+		else if (type.contains("ramp"))
 			options = NewImage.FILL_RAMP;
+		else if (type.contains("random"))
+			options = NewImage.FILL_RANDOM;
 		options += NewImage.CHECK_AVAILABLE_MEMORY;
 		return NewImage.createImage(title, width, height, depth, bitDepth, options);
 	}
+
+	/** Creates a new hyperstack.
+	* @param title   image name
+	* @param type  "8-bit", "16-bit", "32-bit" or "RGB".  May also
+	* contain "white" , "black" (the default), "ramp", "composite-mode",
+	* "color-mode", "grayscale-mode or "label".
+	* @param width  image width in pixels
+	* @param height image height in pixels
+	* @param channels number of channels
+	* @param slices number of slices
+	* @param frames number of frames
+	*/
+	 public static ImagePlus createImage(String title, String type, int width, int height, int channels, int slices, int frames) {
+		if (type.contains("label"))
+	 		type += "ramp";
+		if (!(type.contains("white")||type.contains("ramp")))
+	 		type += "black";
+		ImagePlus imp = IJ.createImage(title, type, width, height, channels*slices*frames);
+		imp.setDimensions(channels, slices, frames);
+		int mode = CompositeImage.COLOR;
+		if (type.contains("composite"))
+			mode = CompositeImage.COMPOSITE;
+		if (type.contains("grayscale"))
+			mode = CompositeImage.GRAYSCALE;
+		if (channels>1 && imp.getBitDepth()!=24)
+			imp = new CompositeImage(imp, mode);
+		imp.setOpenAsHyperStack(true);
+		if (type.contains("label"))
+			HyperStackMaker.labelHyperstack(imp);
+		return imp;
+	 }
 
 	/** Creates a new hyperstack.
 	*  @param title   image name
@@ -1862,7 +1914,7 @@ public class IJ {
 	 }
 	 
 	 /** Opens a new image. <code>Type</code> should contain "8-bit", "16-bit", "32-bit" or "RGB". 
-		In addition, it can contain "white", "black" or "ramp" (the default is "white"). <code>Width</code> 
+		In addition, it can contain "white", "black" or "ramp". <code>Width</code> 
 		and <code>height</code> specify the width and height of the image in pixels.  
 		<code>Depth</code> specifies the number of stack slices. */
 	public static void newImage(String title, String type, int width, int height, int depth) {
@@ -1890,11 +1942,13 @@ public class IJ {
 	/** Causes IJ.error() output to be temporarily redirected to the "Log" window. */
 	public static void redirectErrorMessages() {
 		redirectErrorMessages = true;
+		lastErrorMessage = null;
 	}
 	
 	/** Set 'true' and IJ.error() output will be temporarily redirected to the "Log" window. */
 	public static void redirectErrorMessages(boolean redirect) {
 		redirectErrorMessages = redirect;
+		lastErrorMessage = null;
 	}
 
 	/** Returns the state of the  'redirectErrorMessages' flag, which is set by File/Import/Image Sequence. */
@@ -1917,7 +1971,8 @@ public class IJ {
 				if (home!=null) {
 					if (!home.endsWith(Prefs.separator)) home+=Prefs.separator;
 					pluginsDir = home+"plugins"+Prefs.separator;
-					if (!(new File(pluginsDir)).isDirectory()) pluginsDir = home;
+					if (!(new File(pluginsDir)).isDirectory())
+						pluginsDir = home;
 				}
 			}
 			if (pluginsDir==null)
@@ -1980,6 +2035,10 @@ public class IJ {
 		classLoader = loader;
 	}
 
+	public static void resetClassLoader() {
+		setClassLoader(null);
+	}
+
 	/** Displays a stack trace. Use the setExceptionHandler 
 		method() to override with a custom exception handler. */
 	public static void handleException(Throwable e) {
@@ -1987,6 +2046,8 @@ public class IJ {
 			exceptionHandler.handle(e);
 			return;
 		}
+		if (Macro.MACRO_CANCELED.equals(e.getMessage()))
+			return;
 		CharArrayWriter caw = new CharArrayWriter();
 		PrintWriter pw = new PrintWriter(caw);
 		e.printStackTrace(pw);

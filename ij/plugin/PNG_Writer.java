@@ -88,13 +88,10 @@ public class PNG_Writer implements PlugIn {
 	}
 
     void write16gs(ImagePlus imp, String path) throws Exception {
-        //IJ.showMessage("PNG Writer", "Writing " + imp.getBitDepth() + "bits\n \n");
 		int width = imp.getWidth();
 		int  height = imp.getHeight();
-		BufferedImage bi = new BufferedImage(
-                width, height, BufferedImage.TYPE_USHORT_GRAY);
-		Graphics2D g = (Graphics2D)bi.getGraphics();
-		g.drawImage(imp.getImage(), 0, 0, null);
+		ShortProcessor sp = (ShortProcessor)imp.getProcessor();
+		BufferedImage bi = sp.get16BitBufferedImage();
 		File f = new File(path);
 		ImageIO.write(bi, "png", f);
     }

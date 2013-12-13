@@ -26,6 +26,8 @@ public class TiffEncoder {
 	private int scaleSize;
 	private boolean littleEndian = ij.Prefs.intelByteOrder;
 	private byte buffer[] = new byte[8];
+	private int colorMapSize = 0;
+
 		
 	public TiffEncoder (FileInfo fi) {
 		this.fi = fi;
@@ -35,7 +37,6 @@ public class TiffEncoder {
 		nEntries = 9;
 		int bytesPerPixel = 1;
 		int bpsSize = 0;
-		int colorMapSize = 0;
 
 		switch (fi.fileType) {
 			case FileInfo.GRAY8:
@@ -45,11 +46,19 @@ public class TiffEncoder {
 			case FileInfo.GRAY16_SIGNED:
 				bitsPerSample = 16;
 				photoInterp = fi.whiteIsZero?0:1;
+				if (fi.lutSize>0) {
+					nEntries = 10;
+					colorMapSize = MAP_SIZE*2;
+				}
 				bytesPerPixel = 2;
 				break;
 			case FileInfo.GRAY32_FLOAT:
 				bitsPerSample = 32;
 				photoInterp = fi.whiteIsZero?0:1;
+				if (fi.lutSize>0) {
+					nEntries = 10;
+					colorMapSize = MAP_SIZE*2;
+				}
 				bytesPerPixel = 4;
 				break;
 			case FileInfo.RGB:
@@ -112,7 +121,7 @@ public class TiffEncoder {
 			writeDescription(out);
 		if (scaleSize>0)
 			writeScale(out);
-		if (fi.fileType==FileInfo.COLOR8)
+		if (colorMapSize>0)
 			writeColorMap(out);
 		if (metaDataSize>0)
 			writeMetaData(out);
@@ -290,7 +299,7 @@ public class TiffEncoder {
 			int format = TiffDecoder.FLOATING_POINT;
 			writeEntry(out, TiffDecoder.SAMPLE_FORMAT, 3, 1, format);
 		}
-		if (fi.fileType==FileInfo.COLOR8) {
+		if (colorMapSize>0) {
 			writeEntry(out, TiffDecoder.COLOR_MAP, 3, MAP_SIZE, tagDataOffset);
 			tagDataOffset += MAP_SIZE*2;
 		}

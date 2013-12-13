@@ -44,9 +44,11 @@ public class FreehandRoi extends PolygonRoi {
 		if (oy<0.0) oy = 0.0;
 		if (ox>xMax) ox = xMax;
 		if (oy>yMax) oy = yMax;
-		if (ox!=xpf[nPoints-1]+x || oy!=ypf[nPoints-1]+y) {
-			xpf[nPoints] = (float)(ox-x);
-			ypf[nPoints] = (float)(oy-y);
+		double xbase = getXBase();
+		double ybase = getYBase();
+		if (ox!=xpf[nPoints-1]+xbase || oy!=ypf[nPoints-1]+ybase) {
+			xpf[nPoints] = (float)(ox-xbase);
+			ypf[nPoints] = (float)(oy-ybase);
 			nPoints++;
 			if (nPoints==xpf.length)
 				enlargeArrays();

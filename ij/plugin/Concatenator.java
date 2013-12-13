@@ -16,7 +16,6 @@ import ij.plugin.filter.*;
  *  @author Jon Jackson j.jackson # ucl.ac.uk
  *  last modified June 29 2006
  */
-
 public class Concatenator implements PlugIn, ItemListener{
     public String pluginName =  "Concatenator";
     static boolean all_option = false;

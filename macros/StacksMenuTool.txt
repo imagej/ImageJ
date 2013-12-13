@@ -7,7 +7,7 @@
     "-", "T1 Head (2.4M, 16-bits)"));
 
   macro "Stacks Menu Tool - C037T0b11ST8b09tTcb09k" {
-      cmd = getArgument();
+     cmd = getArgument();
       if (cmd=="Images to Stack")
           run(cmd, " ");
       else if (cmd!="-")

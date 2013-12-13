@@ -5,68 +5,71 @@
   str = "";
   contents = true;
   ignore = false;
-  macros = false;
-  plugins = false;
-  scripts = false;
-  source = false;
+  search = "Macros";
+  firstLine = true;
   arg = getArgument;
   if (arg!="") {
       args = split(arg, "|");
-      if (args.length==7) {
+      if (args.length==4) {
           str = args[0];
           contents = parseInt(args[1]);
           ignore = parseInt(args[2]);
-          macros = parseInt(args[3]);
-          plugins= parseInt(args[4]);
-          scripts = parseInt(args[5]);
-          source = parseInt(args[6]);
+          search = args[3];
        }
   }
   extensions = newArray(".java", ".txt", ".ijm", ".js", ".py", ".rb", ".clj", ".bsh", ".html");
-  IJdir = getDirectory("startup");
-  scriptsExists = File.exists(IJdir+"scripts");
-  sourceExists = File.exists(IJdir+"source");
+  IJdir = getDirectory("imagej");
+
   Dialog.create("Search");
   Dialog.addString("_", str, 20);
+  items = newArray("Macros", "Scripts", "Java", "ImageJ folder", "Choose...");
+  Dialog.setInsets(2,20,0);
+  Dialog.addRadioButtonGroup("Search:", items, 5, 1, search);
+  Dialog.setInsets(0, 20, 0);
   Dialog.addCheckbox("Search_contents", contents);
   Dialog.addCheckbox("Ignore case", ignore);
-  Dialog.addCheckbox("Search_macros folder", macros);
-  Dialog.addCheckbox("Search_plugins folder", plugins);
-  if (scriptsExists)
-      Dialog.addCheckbox("Search_scripts folder", scripts);
-  if (sourceExists)
-      Dialog.addCheckbox("Search_source folder", source);
+  Dialog.setInsets(10, 0, 0);
+  Dialog.addMessage("In the Log window, to open a file,\ndouble-click on its file path.");
   Dialog.show();
   str = Dialog.getString();
   contents = Dialog.getCheckbox();
   ignore = Dialog.getCheckbox();
-  macros = Dialog.getCheckbox();
-  plugins = Dialog.getCheckbox();
+  search = Dialog.getRadioButton();
+  if (str=="")
+     exit("Search string is empty");
 
-  dir1=""; dir2=""; dir3=""; dir4="";
-  if (scriptsExists)
-      scripts = Dialog.getCheckbox();   
-  if (sourceExists)
-      source = Dialog.getCheckbox();
-  if (macros)
+  sourceExists = File.exists(IJdir+"source");
+  searchNames = false;
+  dir1=""; dir2=""; dir3="";
+  if (search=="Scripts") {
       dir1 = getDirectory("macros");   
-  else if (!plugins && !scripts && !source)
-      dir1 = getDirectory("Choose a Directory");
-  if (plugins)
       dir2 = getDirectory("plugins");     
-  if (scripts)     
-      dir3 = IJdir+"scripts"+"/";
-  if (source)
-      dir4 = IJdir+"source"+"/";
+      dir3 = IJdir+"scripts/";
+      extensions = newArray(".js", ".py", ".rb", ".clj", ".bsh");
+  } else if (search=="Java") {
+      dir1 = getDirectory("plugins"); 
+      if (sourceExists)
+         dir2 = IJdir+"source"+"/";
+      extensions = newArray(".java");
+  } else if (search=="ImageJ folder") {
+      dir1 = getDirectory("imagej");
+      searchNames = true;
+  } else if (search=="Choose...") {
+      dir1 = getDirectory("Choose a Directory");
+      searchNames = true;
+  } else {
+      dir1 = getDirectory("macros");   
+      dir2 = getDirectory("plugins");     
+      extensions = newArray(".txt", ".ijm");
+  }
   if (ignore)
       str = toLowerCase(str);
   count = 0;
   if (dir1!="") find(dir1);
   if (dir2!="") find(dir2);
   if (dir3!="") find(dir3);
-  if (dir4!="") find(dir4);
   if (indexOf(str, "|")==-1)
-      return ""+str+"|"+contents+"|"+ignore+"|"+macros+"|"+plugins+"|"+scripts+"|"+source;
+      return ""+str+"|"+contents+"|"+ignore+"|"+search;
   exit; 
 
   function find(dir) {
@@ -82,6 +85,8 @@
                   s2 = toLowerCase(s);
               if (indexOf(s2,str)!=-1) {
                   count++;
+                  if (firstLine)
+                      showMessageInHeader();
                   print("");
                   print(dir+list[i]);
                   lines = split(s, "\n");
@@ -95,21 +100,28 @@
                           n++;
                       }
                  } // for
-              } // if match
-          } else {
-              name = list[i];
-              if (ignore)
-                  name = toLowerCase(name);
-              if (indexOf(name,str)!=-1) { // string in name?
-                  print("");
-                  print(dir+list[i]);
-              }
-          }
+              } else
+                  searchName(list[i]);
+          } else if (searchNames || valid(list[i]))
+              searchName(list[i]);
       }
       if (count==1)
           showStatus("1 match");
       else
           showStatus(count+" matches");
+  }
+
+  function searchName(name) {
+      name2 = name;
+      if (ignore)
+          name2 = toLowerCase(name2);
+      if (indexOf(name2,str)!=-1) {
+          if (firstLine)
+              showMessageInHeader();
+          print("");
+          print(dir+name);
+          count++;
+      }
   }
 
   function valid(name) {
@@ -118,5 +130,10 @@
              return true;
       }
       return false;
+  }
+  
+  function showMessageInHeader() {
+      print("\\Heading: Double-click on a file name to open it");
+      firstLine = false;
   }
 

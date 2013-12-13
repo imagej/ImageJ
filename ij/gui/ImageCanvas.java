@@ -15,6 +15,7 @@ import ij.util.*;
 import java.awt.event.*;
 import java.util.*;
 import java.awt.geom.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /** This is a Canvas used to display images in a Window. */
@@ -69,10 +70,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private boolean mouseExited = true;
 	private boolean customRoi;
 	private boolean drawNames;
-	
-	
+	private AtomicBoolean paintPending;
+
+		
 	public ImageCanvas(ImagePlus imp) {
 		this.imp = imp;
+		paintPending = new AtomicBoolean(false);
 		ij = IJ.getInstance();
 		int width = imp.getWidth();
 		int height = imp.getHeight();
@@ -133,16 +136,25 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		imageUpdated = true;
 	}
 
+	public void setPaintPending(boolean state) {
+		paintPending.set(state);
+	}
+	
+	public boolean getPaintPending() {
+		return paintPending.get();
+	}
+
 	public void update(Graphics g) {
 		paint(g);
 	}
 
     public void paint(Graphics g) {
 		Roi roi = imp.getRoi();
-		if (roi!=null || overlay!=null || showAllOverlay!=null) {
+		if (roi!=null || overlay!=null || showAllOverlay!=null || Prefs.paintDoubleBuffered) {
 			if (roi!=null) roi.updatePaste();
 			if (!IJ.isMacOSX() && imageWidth!=0) {
 				paintDoubleBuffered(g);
+				setPaintPending(false);
 				return;
 			}
 		}
@@ -166,6 +178,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (IJ.debugMode) showFrameRate(g);
 		}
 		catch(OutOfMemoryError e) {IJ.outOfMemory("Paint");}
+		setPaintPending(false);
     }
     
 	private void setInterpolation(Graphics g, boolean interpolate) {
@@ -204,11 +217,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (label==null) return 0;
 		int slice = 0;
 		if (label.length()>=14 && label.charAt(4)=='-' && label.charAt(9)=='-')
-			slice = (int)Tools.parseDouble(label.substring(0,4),-1);
+			slice = (int)Tools.parseDouble(label.substring(0,4),0);
 		else if (label.length()>=17 && label.charAt(5)=='-' && label.charAt(11)=='-')
-			slice = (int)Tools.parseDouble(label.substring(0,5),-1);
+			slice = (int)Tools.parseDouble(label.substring(0,5),0);
 		else if (label.length()>=20 && label.charAt(6)=='-' && label.charAt(13)=='-')
-			slice = (int)Tools.parseDouble(label.substring(0,6),-1);
+			slice = (int)Tools.parseDouble(label.substring(0,6),0);
 		return slice;
 	}
 
@@ -263,6 +276,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				int position =  stackSize>1?roi.getPosition():0;
 				if (position==0 && stackSize>1)
 					position = getSliceNumber(roi.getName());
+				if (position>0 && imp.getCompositeMode()==CompositeImage.COMPOSITE)
+					position = 0;
 				//IJ.log(position+"  "+currentImage+" "+roiManagerShowAllMode);
 				if (position==0 || position==currentImage || roiManagerShowAllMode)
 					drawRoi(g, roi, drawLabels?i+LIST_OFFSET:-1);
@@ -418,7 +433,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				drawOverlay(overlay, offScreenGraphics);
 			if (showAllOverlay!=null)
 				drawOverlay(showAllOverlay, offScreenGraphics);
-			if (roi!=null) drawRoi(roi, offScreenGraphics);
+			if (roi!=null)
+				drawRoi(roi, offScreenGraphics);
 			if (srcRect.width<imageWidth ||srcRect.height<imageHeight)
 				drawZoomIndicator(offScreenGraphics);
 			if (IJ.debugMode) showFrameRate(offScreenGraphics);
@@ -498,7 +514,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			return;
 		}
 		int id = Toolbar.getToolId();
-		switch (Toolbar.getToolId()) {
+		switch (id) {
 			case Toolbar.MAGNIFIER:
 				setCursor(moveCursor);
 				break;
@@ -508,7 +524,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			default:  //selection tool
 				PlugInTool tool = Toolbar.getPlugInTool();
 				boolean arrowTool = roi!=null && (roi instanceof Arrow) && tool!=null && "Arrow Tool".equals(tool.getToolName());
-				if ((id==Toolbar.SPARE1 || id>=Toolbar.SPARE2) && !arrowTool) {
+				if ((id>=Toolbar.CUSTOM1) && !arrowTool) {
 					if (Prefs.usePointerCursor)
 						setCursor(defaultCursor);
 					else
@@ -978,12 +994,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			return;
 		}
 		
-		if ((overlay!=null||showAllOverlay!=null) && ((e.isAltDown()&&!drawingTool())||e.isControlDown()||overOverlayLabel)) {
-			if (activateOverlayRoi(ox, oy)) {
-				mousePressedX = mousePressedY = 0;
-				return;
-			}
-		}
 		mousePressedX = ox;
 		mousePressedY = oy;
 		mousePressedTime = System.currentTimeMillis();
@@ -995,6 +1005,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		if (customRoi && overlay!=null)
 			return;
+
+		if (toolID>=Toolbar.CUSTOM1) {
+			if (tool!=null && "Arrow Tool".equals(tool.getToolName()))
+				handleRoiMouseDown(e);
+			else
+				Toolbar.getInstance().runMacroTool(toolID);
+			return;
+		}
 
 		switch (toolID) {
 			case Toolbar.MAGNIFIER:
@@ -1041,10 +1059,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				double tolerance = WandToolOptions.getTolerance();
 				int npoints = IJ.doWand(ox, oy, tolerance, mode);
 				if (Recorder.record && npoints>0) {
-					if (tolerance==0.0 && mode.equals("Legacy"))
-						Recorder.record("doWand", ox, oy);
-					else
-						Recorder.recordString("doWand("+ox+", "+oy+", "+tolerance+", \""+mode+"\");\n");
+					if (Recorder.scriptMode())
+						Recorder.recordCall("IJ.doWand(imp, "+ox+", "+oy+", "+tolerance+", \""+mode+"\");");
+					else {
+						if (tolerance==0.0 && mode.equals("Legacy"))
+							Recorder.record("doWand", ox, oy);
+						else
+							Recorder.recordString("doWand("+ox+", "+oy+", "+tolerance+", \""+mode+"\");\n");
+					}
 				}
 				break;
 			case Toolbar.OVAL:
@@ -1052,14 +1074,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					new RoiBrush();
 				else
 					handleRoiMouseDown(e);
-				break;
-			case Toolbar.SPARE1: case Toolbar.SPARE2: case Toolbar.SPARE3: 
-			case Toolbar.SPARE4: case Toolbar.SPARE5: case Toolbar.SPARE6:
-			case Toolbar.SPARE7: case Toolbar.SPARE8: case Toolbar.SPARE9:
-				if (tool!=null && "Arrow Tool".equals(tool.getToolName()))
-					handleRoiMouseDown(e);
-				else
-					Toolbar.getInstance().runMacroTool(toolID);
 				break;
 			default:  //selection tool
 				handleRoiMouseDown(e);
@@ -1379,10 +1393,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public void mouseReleased(MouseEvent e) {
 		int ox = offScreenX(e.getX());
 		int oy = offScreenY(e.getY());
-		if ((overlay!=null||showAllOverlay!=null) && ox==mousePressedX && oy==mousePressedY
-		&& (System.currentTimeMillis()-mousePressedTime)>250L && !drawingTool()) {
-			if (activateOverlayRoi(ox,oy))
-				return;
+		if ((overlay!=null||showAllOverlay!=null) && ox==mousePressedX && oy==mousePressedY) {
+			boolean cmdDown = IJ.isMacOSX() && e.isMetaDown();
+			if (e.isAltDown()||e.isControlDown()||cmdDown||overOverlayLabel) {
+				if (activateOverlayRoi(ox, oy))
+					return;
+			} else if ((System.currentTimeMillis()-mousePressedTime)>250L && !drawingTool()) {
+				if (activateOverlayRoi(ox,oy))
+					return;
+			}
 		}
 
 		PlugInTool tool = Toolbar.getPlugInTool();

@@ -22,11 +22,6 @@ public class ThreadUtil {
 		}
 	}
 
-	/**
-	 * 
-	 * @param nb
-	 * @return
-	 */
 	public static Thread[] createThreadArray(int nb) {
 		if (nb == 0) {
 			nb = getNbCpus();
@@ -36,18 +31,10 @@ public class ThreadUtil {
 		return threads;
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
 	public static Thread[] createThreadArray() {
 		return createThreadArray(0);
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
 	public static int getNbCpus() {
 		return Runtime.getRuntime().availableProcessors();
 	}

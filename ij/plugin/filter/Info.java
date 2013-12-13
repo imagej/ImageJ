@@ -2,10 +2,11 @@ package ij.plugin.filter;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.text.*;
 import ij.measure.*;
 import ij.io.*;
 import ij.util.Tools;
+import ij.plugin.frame.Editor;
+import ij.text.TextWindow;
 import java.awt.*;
 import java.util.*;
 import java.lang.reflect.*;
@@ -23,8 +24,10 @@ public class Info implements PlugInFilter {
 		String info = getImageInfo(imp, ip);
 		if (info.indexOf("----")>0)
 			showInfo(info, 450, 500);
-		else
-			showInfo(info, 300, 300);
+		else {
+			int inc = info.contains("No Selection")?0:75;
+			showInfo(info, 300, 350+inc);
+		}
 	}
 
 	public String getImageInfo(ImagePlus imp, ImageProcessor ip) {
@@ -131,24 +134,31 @@ public class Info implements PlugInFilter {
 	    			lut = "grayscale " + lut;
 	    		if (imp.isInvertedLut())
 	    			lut = "inverting " + lut;
-	    		s += "(" + lut + ")\n";
-				s += "Display range: "+(int)ip.getMin()+"-"+(int)ip.getMax()+"\n";
-	    		break;
+				s += "(" + lut + ")\n";
+				if (imp.getNChannels()>1)
+					s += displayRanges(imp);
+				else
+					s += "Display range: "+(int)ip.getMin()+"-"+(int)ip.getMax()+"\n";
+				break;
 	    	case ImagePlus.GRAY16: case ImagePlus.GRAY32:
 	    		if (type==ImagePlus.GRAY16) {
 	    			String sign = cal.isSigned16Bit()?"signed":"unsigned";
 	    			s += "Bits per pixel: 16 ("+sign+")\n";
 	    		} else
 	    			s += "Bits per pixel: 32 (float)\n";
-				s += "Display range: ";
-				double min = ip.getMin();
-				double max = ip.getMax();
-	    		if (cal.calibrated()) {
-	    			min = cal.getCValue((int)min);
-	    			max = cal.getCValue((int)max);
-	    		}
-		    	s += IJ.d2s(min,digits) + " - " + IJ.d2s(max,digits) + "\n";
-	    		break;
+				if (imp.getNChannels()>1)
+					s += displayRanges(imp);
+				else {
+					s += "Display range: ";
+					double min = ip.getMin();
+					double max = ip.getMax();
+					if (cal.calibrated()) {
+						min = cal.getCValue((int)min);
+						max = cal.getCValue((int)max);
+					}
+					s += IJ.d2s(min,digits) + " - " + IJ.d2s(max,digits) + "\n";
+				}
+				break;
 	    	case ImagePlus.COLOR_256:
 	    		s += "Bits per pixel: 8 (color LUT)\n";
 	    		break;
@@ -244,6 +254,15 @@ public class Info implements PlugInFilter {
 				s += "Path: " + fi.directory + fi.fileName + "\n";
 		}
 	    
+	    Overlay overlay = imp.getOverlay();
+		if (overlay!=null) {
+			String hidden = imp.getHideOverlay()?" (hidden) ":" ";
+			int n = overlay.size();
+			String items = n==1?" item\n":" items\n";
+			s += "Overlay" + hidden + "has " + n + items;
+		} else
+	    	s += "No Overlay\n";
+
 	    Roi roi = imp.getRoi();
 	    if (roi == null) {
 			if (cal.calibrated())
@@ -301,6 +320,22 @@ public class Info implements PlugInFilter {
 		return s;
 	}
 	
+	private String displayRanges(ImagePlus imp) {
+		LUT[] luts = imp.getLuts();
+		if (luts==null)
+			return "";
+		String s = "Display ranges\n";
+		int n = luts.length;
+		if (n>7) n=7;
+		for (int i=0; i<n; i++) {
+			double min = luts[i].min;
+			double max = luts[i].max;
+			int digits = (int)min==min&&(int)max==max?0:2;
+			s += "  " + (i+1) + ": " + IJ.d2s(min,digits) + "-" + IJ.d2s(max,digits) + "\n";
+		}
+		return s;
+	}
+	
     String d2s(double n) {
 		return n==(int)n?Integer.toString((int)n):IJ.d2s(n);
 	}
@@ -317,6 +352,9 @@ public class Info implements PlugInFilter {
 
 	void showInfo(String info, int width, int height) {
 		new TextWindow("Info for "+imp.getTitle(), info, width, height);
+		//Editor ed = new Editor();
+		//ed.setSize(width, height);
+		//ed.create("Info for "+imp.getTitle(), info);
 	}
 	
 }

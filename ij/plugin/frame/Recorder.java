@@ -22,8 +22,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	/** Set this variable true to allow recording within IJ.run() calls. */
 	public static boolean recordInMacros;
 
-	private final static int MACRO=0, JAVASCRIPT=1, PLUGIN=2;
-	private final static String[] modes = {"Macro", "JavaScript", "Plugin"};
+	private final static int MACRO=0, JAVASCRIPT=1, BEANSHELL=2, JAVA=3;
+	private final static String[] modes = {"Macro", "JavaScript", "BeanShell", "Java"};
 	private Choice mode;
 	private Button makeMacro, help;
 	private TextField fileName;
@@ -61,7 +61,9 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		for (int i=0; i<modes.length; i++)
 			mode.addItem(modes[i]);
 		mode.addItemListener(this);
-		mode.select(Prefs.get("recorder.mode", modes[MACRO]));
+		String m = Prefs.get("recorder.mode", modes[MACRO]);
+		if (m.equals("Plugin")) m=modes[JAVA];
+		mode.select(m);
 		panel.add(mode);
 		panel.add(new Label("    Name:"));
 		fileName = new TextField(defaultName, 15);
@@ -287,7 +289,6 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			if (i!=p.npoints-1) y.append(",");
 		}
 		String ypoints = y.toString();
-		
 		if (javaMode()) {
 			textArea.append("int[] xpoints = {"+xpoints+"};\n");
 			textArea.append("int[] ypoints = {"+ypoints+"};\n");
@@ -301,14 +302,24 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			case Roi.ANGLE: typeStr = "ANGLE"; break;
 		}
 		typeStr = "Roi."+typeStr;
-		if (type==Roi.POINT)
-			textArea.append("imp.setRoi(new PointRoi(xpoints,ypoints,"+p.npoints+"));\n");
-		else
-			textArea.append("imp.setRoi(new PolygonRoi(xpoints,ypoints,"+p.npoints+","+typeStr+"));\n");
+		if (javaMode()) {
+			if (type==Roi.POINT)
+				textArea.append("imp.setRoi(new PointRoi(xpoints,ypoints,"+p.npoints+"));\n");
+			else
+				textArea.append("imp.setRoi(new PolygonRoi(xpoints,ypoints,"+p.npoints+","+typeStr+"));\n");
+		} else {
+			if (type==Roi.POINT)
+				textArea.append("imp.setRoi(new PointRoi(xpoints,ypoints));\n");
+			else
+				textArea.append("imp.setRoi(new PolygonRoi(xpoints,ypoints,"+typeStr+"));\n");
+		}
 	}
 	
 	private static boolean javaMode() {
-		return instance!=null && instance.mode.getSelectedItem().equals(modes[PLUGIN]);
+		if (instance==null)
+			return false;
+		String m = instance.mode.getSelectedItem();
+		return m.equals(modes[BEANSHELL]) || m.equals(modes[JAVA]);
 	}
 	
 	public static void recordOption(String key, String value) {
@@ -330,6 +341,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		key = trimKey(key);
 		path = fixPath(path);
 		path = addQuotes(path);
+		if (commandOptions!=null && commandOptions.contains(key+"="+path))
+			return; // don't record duplicate
 		checkForDuplicate(key+"=", path);
 		if (commandOptions==null)
 			commandOptions = key+"="+path;
@@ -389,7 +402,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			||name.equals("Dilate")||name.equals("Skeletonize")))
 				setBlackBackground();
 			if (commandOptions!=null) {
-				if (name.equals("Open...")) {
+				if (name.equals("Open...") || name.equals("URL...")) {
 					String s = scriptMode?"imp = IJ.openImage":"open";
 					if (scriptMode && isTextOrTable(commandOptions))
 						s = "IJ.open";
@@ -401,7 +414,9 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 							String s = scriptMode?"IJ.saveAs(imp, ":"saveAs(";
 							textArea.append(s+"\""+name+"\", \""+path+"\");\n");
 				} else if (name.equals("Image..."))
-					appendNewImage();
+					appendNewImage(false);
+				else if (name.equals("Hyperstack...")||name.equals("New Hyperstack..."))
+					appendNewImage(true);
 				else if (name.equals("Set Slice..."))
 					textArea.append((scriptMode?"imp.":"")+"setSlice("+strip(commandOptions)+");\n");
 				else if (name.equals("Rename..."))
@@ -416,7 +431,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					;
 				else {
 					String prefix = "run(";
-					if (scriptMode) prefix = imageUpdated?"IJ.run(imp, ":"IJ.run(";
+					if (scriptMode)
+						prefix = imageUpdated?"IJ.run(imp, ":"IJ.run(";
 					textArea.append(prefix+"\""+name+"\", \""+commandOptions+"\");\n");
 					if (nonAscii(commandOptions))
 						textArea.append("  <<warning: the options string contains one or more non-ascii characters>>\n");
@@ -485,17 +501,32 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			|| commandName.equals("Text... ");
 	}
 
-	static void appendNewImage() {
+	static void appendNewImage(boolean hyperstack) {
 		String options = getCommandOptions() + " ";
+		//IJ.log("appendNewImage: "+options);
 		String title = Macro.getValue(options, "name", "Untitled");
 		String type = Macro.getValue(options, "type", "8-bit");
 		String fill = Macro.getValue(options, "fill", "");
-		if (!fill.equals("")) type = type +" " + fill;
+		if (!fill.equals(""))
+			type = type +" " + fill.toLowerCase();
+		if (hyperstack) {
+			String mode = Macro.getValue(options, "display", "");
+			if (!mode.equals(""))
+				type = type +" " + mode.toLowerCase() + "-mode";
+			if (options.contains(" label"))
+				type = type +" label";
+		}
 		int width = (int)Tools.parseDouble(Macro.getValue(options, "width", "512"));
 		int height = (int)Tools.parseDouble(Macro.getValue(options, "height", "512"));
-		int depth= (int)Tools.parseDouble(Macro.getValue(options, "slices", "1"));
+		String d1= ", " + (int)Tools.parseDouble(Macro.getValue(options, "slices", "1"));
+		String d2="", d3="";
+		if (hyperstack) {
+			d1 = ", " + (int)Tools.parseDouble(Macro.getValue(options, "channels", "1"));
+			d2 = ", " + (int)Tools.parseDouble(Macro.getValue(options, "slices", "1"));
+			d3 = ", " + (int)Tools.parseDouble(Macro.getValue(options, "frames", "1"));
+		}
 		textArea.append((scriptMode?"imp = IJ.createImage":"newImage")
-			+"(\""+title+"\", "+"\""+type+"\", "+width+", "+height+", "+depth+");\n");
+			+"(\""+title+"\", "+"\""+type+"\", "+width+", "+height+d1+d2+d3+");\n");
 	}
 
 	static String strip(String value) {
@@ -535,10 +566,11 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
 		if (ed==null)
 			return;
-		boolean java = mode.getSelectedItem().equals(modes[PLUGIN]);
+		boolean java = mode.getSelectedItem().equals(modes[JAVA]);
+		boolean beanshell = mode.getSelectedItem().equals(modes[BEANSHELL]);
 		String name = fileName.getText();
 		int dotIndex = name.lastIndexOf(".");
-		if (scriptMode) { // JavaScript or Java
+		if (scriptMode) { // JavaScript, BeanShell or Java
 			if (dotIndex>=0) name = name.substring(0, dotIndex);
 			if (text.indexOf("rm.")!=-1) {
 				text = (java?"RoiManager ":"")+ "rm = RoiManager.getInstance();\n"
@@ -553,7 +585,9 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 				name += ".java";
 				createPlugin(text, name);
 				return;
-			} else
+			} else if (beanshell)
+				name += ".bsh";
+			else
 				name += ".js";
 		} else { // ImageJ macro
 			if (!name.endsWith(".txt")) {
@@ -614,11 +648,13 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	
 	void setFileName() {
 		String name = mode.getSelectedItem();
-		scriptMode = name.equals(modes[JAVASCRIPT])||name.equals(modes[PLUGIN]);
+		scriptMode = !name.equals(modes[MACRO]);
 		if (name.equals(modes[MACRO]))
 			fileName.setText("Macro.ijm");
 		else if (name.equals(modes[JAVASCRIPT]))
-			fileName.setText("script.js");
+			fileName.setText("Script.js");
+		else if (name.equals(modes[BEANSHELL]))
+			fileName.setText("Script.bsh");
 		else
 			fileName.setText("My_Plugin.java");
 		fgColorSet = bgColorSet = false;

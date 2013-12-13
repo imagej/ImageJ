@@ -58,6 +58,13 @@ public class Interpreter implements MacroConstants {
 	static boolean showVariables;
 	boolean wasError;
 	ImagePlus batchMacroImage;
+	boolean inLoop;
+	static boolean tempShowMode;
+	
+	static TextWindow arrayWindow;
+	int inspectStkIndex = -1;
+	int inspectSymIndex = -1;
+
 
 	/** Interprets the specified string. */
 	public void run(String macro) {
@@ -224,6 +231,12 @@ public class Interpreter implements MacroConstants {
 			case RETURN:
 				doReturn();
 				break;
+			case BREAK:
+				if (inLoop) throw new MacroException(BREAK);
+				break;
+			case CONTINUE:
+				if (inLoop) throw new MacroException(CONTINUE);
+				break;
 			case WORD:
 				doAssignment();
 				break;
@@ -360,6 +373,16 @@ public class Interpreter implements MacroConstants {
 						pc = savePC;
 						args[count] = new Variable(0, getExpression(), null);
 					}
+				} else if (nextPlus=='+' && next==WORD) {
+					int savePC = pc;
+					getToken();
+					Variable v = lookupVariable();
+					boolean isString = v!=null && v.getType()==Variable.STRING;
+					pc = savePC;
+					if (isString)
+						args[count] = new Variable(0, 0.0, getString());
+					else
+						args[count] = new Variable(0, getExpression(), null);
 				} else
 					args[count] = new Variable(0, getExpression(), null);
 				count++;
@@ -413,7 +436,8 @@ public class Interpreter implements MacroConstants {
 					array = v.getArray();
 					if (array!=null) arraySize=v.getArraySize();
 					isString = v.getString()!=null;
-				}
+				} else if (v!=null && nextToken()=='+')
+					isString = v.getType()==Variable.STRING;
 			}
 			putTokenBack();
 			if (isString)
@@ -457,6 +481,7 @@ public class Interpreter implements MacroConstants {
 	void doFor() {
 		boolean saveLooseSyntax = looseSyntax;
 		looseSyntax = false;
+		inLoop = true;
 		getToken();
 		if (token!='(')
 			error("'(' expected");
@@ -495,9 +520,17 @@ public class Interpreter implements MacroConstants {
 			   }
 			}
 			startPC = pc;
-			if (cond==1)
-				doStatement();
-			else {
+			if (cond==1) {
+				try {
+					doStatement();
+				} catch(MacroException e) {
+					if (e.getType()==BREAK) {
+						pc = startPC;
+						skipStatement();
+						break;
+					}
+				}
+			} else {
 				skipStatement();
 				break;
 			}
@@ -510,20 +543,32 @@ public class Interpreter implements MacroConstants {
 			pc = condPC;
 		}
 		looseSyntax = saveLooseSyntax;
+		inLoop = false;
 	}
 
 	void doWhile() {
 		looseSyntax = false;
+		inLoop = true;
 		int savePC = pc;
 		boolean isTrue;
 		do {
 			pc = savePC;
 			isTrue = getBoolean();
-			if (isTrue)
-				doStatement();
-			else
+			if (isTrue) {
+				try {
+					doStatement();
+				} catch(MacroException e) {
+					if (e.getType()==BREAK) {
+						pc = savePC;
+						getBoolean();
+						skipStatement();
+						break;
+					}
+				}
+			} else
 				skipStatement();
 		} while (isTrue && !done);
+		inLoop = false;
 	}
 
 	void doDo() {
@@ -586,7 +631,7 @@ public class Interpreter implements MacroConstants {
 				getToken(); // skip 'while'
 				skipParens();
 				break;
-			case ';':
+			case BREAK: case CONTINUE: case ';':
 				break;
 			case '{':
 				putTokenBack();
@@ -899,6 +944,7 @@ public class Interpreter implements MacroConstants {
 		else if (token==WORD) {
 			Variable v2 = lookupVariable();
 			v.setArray(v2.getArray());
+			v.setArraySize(v2.getArraySize());
 		} else
 			error("Array expected");
 	}
@@ -1417,8 +1463,12 @@ public class Interpreter implements MacroConstants {
 		Variable[] array = v.getArray();
 		if (array==null)
 			error("Array expected");
-		if (index<0 || index>=array.length)
-			error("Index ("+index+") out of 0-"+(array.length-1)+" range");
+		if (index<0 || index>=array.length) {
+			if (array.length==0)
+				error("Empty array");
+			else
+				error("Index ("+index+") out of 0-"+(array.length-1)+" range");
+		}
 		return array[index];
 	}
 	
@@ -1654,7 +1704,8 @@ public class Interpreter implements MacroConstants {
 		func.updateDisplay();
 		instance = null;
 		if (!calledMacro || batchMacro) {
-			if (batchMode) showingProgress = true;
+			if (batchMode)
+				showingProgress = true;
 			batchMode = false;
 			imageTable = null;
 			WindowManager.setTempCurrentImage(null);
@@ -1672,11 +1723,13 @@ public class Interpreter implements MacroConstants {
 		}
 		if (rgbWeights!=null)
 			ColorProcessor.setWeightingFactors(rgbWeights[0], rgbWeights[1], rgbWeights[2]);
-		if (func.writer!=null) func.writer.close();
+		if (func.writer!=null)
+			func.writer.close();
 		func.roiManager = null;
 		if (func.resultsPending) {
 			ResultsTable rt = ResultsTable.getResultsTable();
-			if (rt!=null && rt.getCounter()>0) rt.show("Results");
+			if (rt!=null && rt.getCounter()>0)
+				rt.show("Results");
 		}
 	}
 	
@@ -1727,11 +1780,12 @@ public class Interpreter implements MacroConstants {
 
 	static void setBatchMode(boolean b) {
 		batchMode = b;
-		if (b==false) imageTable = null;
+		if (b==false)
+			imageTable = null;
 	}
 
 	public static boolean isBatchMode() {
-		return batchMode;
+		return batchMode && !tempShowMode;
 	}
 	
 	public static void addBatchModeImage(ImagePlus imp) {
@@ -1783,9 +1837,14 @@ public class Interpreter implements MacroConstants {
 	public static ImagePlus getLastBatchModeImage() { 
 		if (!batchMode || imageTable==null)
 			return null; 
-		int size = imageTable.size(); 
-		if (size==0) return null; 
-		return (ImagePlus)imageTable.elementAt(size-1); 
+		ImagePlus imp2 = null;
+		try {
+			int size = imageTable.size(); 
+			if (size==0)
+				return null;
+			imp2 = (ImagePlus)imageTable.elementAt(size-1);
+		} catch(Exception e) { }
+		return imp2;
 	} 
  
  	/** The specified string, if not null, is added to strings passed to the run() method. */
@@ -1844,7 +1903,7 @@ public class Interpreter implements MacroConstants {
 				if (imp!=null) title = imp.getTitle();
 			}
 			if (debugMode==STEP) System.gc();
-			variables[0] = "FreeMemory()\t" + IJ.freeMemory();
+			variables[0] = "Memory\t" + IJ.freeMemory();
 			variables[1] = "nImages()\t" + nImages;
 			variables[2] = "getTitle()\t" + (title!=null?"\""+title+"\"":"");
 		}
@@ -1922,6 +1981,86 @@ public class Interpreter implements MacroConstants {
 			if (!Double.isNaN(value)) s=""+value;
 		}
 		return s;
+	}
+	
+	 /**
+	 * Shows array elements after clicking an array variable in Debug
+	 * window
+	 * N. Vischer 
+	 *
+	 * @param row Debug window row of variable to be shown
+	 */
+	public void showArrayInspector(int row) {
+		if (stack==null)
+			return;
+		int nFunctions = showDebugFunctions?3:0;
+		int stkPos = row - nFunctions;
+		if (stack.length>stkPos && stkPos>=0) {
+			Variable var = stack[stkPos];
+			if (var==null)
+				return;
+			if (var.getType()!=Variable.ARRAY && arrayWindow!=null)
+				arrayWindow.setVisible(false);
+			if (var.getType()==Variable.ARRAY) {
+				String headings = "Index\tValue";
+				if (arrayWindow==null)
+					arrayWindow = new TextWindow("Array", "", "", 170, 300);
+				arrayWindow.setVisible(true);
+				int symIndex = var.symTabIndex;
+				String arrName = pgm.table[symIndex].str;
+				inspectStkIndex = stkPos;
+				inspectSymIndex = symIndex;
+				TextPanel txtPanel = arrayWindow.getTextPanel();
+				txtPanel.clear();
+				txtPanel.setColumnHeadings(headings);
+				Variable[] elements = var.getArray();
+				String title = arrName + "[" + elements.length + "]";
+				arrayWindow.setTitle(title);
+				arrayWindow.rename(title);
+				String valueStr = "";
+				for (int jj=0; jj<elements.length; jj++) {
+					Variable element = elements[jj];
+					if (element.getType()==Variable.STRING) {
+						valueStr = elements[jj].getString();
+						valueStr = valueStr.replaceAll("\n", "\\\\n");
+					} else if (element.getType()==Variable.VALUE) {
+						double v = elements[jj].getValue();
+						if ((int)v==v)
+							valueStr = IJ.d2s(v, 0);
+						else
+							valueStr = ResultsTable.d2s(v, 4);
+					}
+					String ss = ("" + jj + "\t " + valueStr) + "\n";
+					arrayWindow.getTextPanel().append(ss);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Updates Array inspector if variable exists, otherwise closes
+	 * ArrayInspector
+	 */
+	public void updateArrayInspector() {
+		boolean varExists = false;
+		if (arrayWindow!=null && arrayWindow.isVisible()) {
+			for (int stkIndex=0; stkIndex<=topOfStack; stkIndex++) {
+				Variable var = stack[stkIndex];
+				int symIndex = var.symTabIndex;
+				if (inspectStkIndex==stkIndex && inspectSymIndex==symIndex && var.getType()==Variable.ARRAY) {
+					varExists = true;
+					break;
+				}
+			}
+			if (varExists)
+				showArrayInspector(inspectStkIndex+(showDebugFunctions?3:0));
+			else
+				arrayWindow.setVisible(false);
+		}
+	}
+	
+	static void setTempShowMode(boolean mode) {
+		tempShowMode = mode;
 	}
 
 } // class Interpreter

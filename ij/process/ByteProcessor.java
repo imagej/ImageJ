@@ -83,7 +83,12 @@ public class ByteProcessor extends ImageProcessor {
 	}
 
 	/** Creates a ByteProcessor from an ImageProcessor. 16-bit and 32-bit
-	     pixel data are scaled from min-max to 0-255 if 'scale' is true. */
+	 * pixel data are scaled from min-max to 0-255 if 'scale' is true.
+	 * @see ImageProcessor#convertToByteProcessor
+	 * @see ImageProcessor#convertToShortProcessor
+	 * @see ImageProcessor#convertToFloatProcessor
+	 * @see ImageProcessor#convertToColorProcessor
+	*/
 	public ByteProcessor(ImageProcessor ip, boolean scale) {
 		ImageProcessor bp;
 		if (ip instanceof ByteProcessor)
@@ -161,7 +166,7 @@ public class ByteProcessor extends ImageProcessor {
 	}
 	
 	/** Returns a duplicate of this image. */ 
-	public synchronized ImageProcessor duplicate() { 
+	public ImageProcessor duplicate() { 
 		ImageProcessor ip2 = createProcessor(width, height); 
 		byte[] pixels2 = (byte[])ip2.getPixels(); 
 		System.arraycopy(pixels, 0, pixels2, 0, width*height); 
@@ -842,7 +847,9 @@ public class ByteProcessor extends ImageProcessor {
 		filter(MEDIAN_FILTER);
 	}
 
-    public void noise(double range) {
+    /** Adds pseudorandom, Gaussian ("normally") distributed values, with
+    	mean 0.0 and the specified standard deviation, to this image or ROI. */
+    public void noise(double standardDeviation) {
 		Random rnd=new Random();
 		int v, ran;
 		boolean inRange;
@@ -851,17 +858,14 @@ public class ByteProcessor extends ImageProcessor {
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
 				inRange = false;
 				do {
-					ran = (int)Math.round(rnd.nextGaussian()*range);
+					ran = (int)Math.round(rnd.nextGaussian()*standardDeviation);
 					v = (pixels[i] & 0xff) + ran;
 					inRange = v>=0 && v<=255;
 					if (inRange) pixels[i] = (byte)v;
 				} while (!inRange);
 				i++;
 			}
-			if (y%20==0)
-				showProgress((double)(y-roiY)/roiHeight);
 		}
-		showProgress(1.0);
     }
 
 	/** Scales the image or selection using the specified scale factors.

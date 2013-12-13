@@ -94,10 +94,10 @@ public class FileSaver {
 	/** Saves the image in TIFF format using the specified path. Equivalent to
 		 IJ.saveAsTiff(imp,path), which is more convenient. */
 	public boolean saveAsTiff(String path) {
+		if (imp.getProperty("FHT")!=null && path.contains("FFT of "))
+			setupFFTSave();
 		fi.nImages = 1;
-		Object info = imp.getProperty("Info");
-		if (info!=null && (info instanceof String))
-			fi.info = (String)info;
+		fi.info = imp.getInfoProperty();
 		Object label = imp.getProperty("Label");
 		if (label!=null && (label instanceof String)) {
 			fi.sliceLabels = new String[1];
@@ -117,6 +117,20 @@ public class FileSaver {
 		}
 		updateImp(fi, FileInfo.TIFF);
 		return true;
+	}
+	
+	private void setupFFTSave() {
+		Object obj = imp.getProperty("FHT");
+		if (obj==null) return;
+		FHT fht = (obj instanceof FHT)?(FHT)obj:null;
+		if (fht==null) return;
+		if (fht.originalColorModel!=null)
+			fht.setColorModel(fht.originalColorModel);
+		ImagePlus imp2 = new ImagePlus(imp.getTitle(), fht);
+		imp2.setProperty("Info", imp.getProperty("Info"));
+		imp2.setCalibration(imp.getCalibration());
+		imp = imp2;
+		fi = imp.getFileInfo();
 	}
 	
 	public static byte[][] getOverlay(ImagePlus imp) {
@@ -147,18 +161,16 @@ public class FileSaver {
 		 Equivalent to IJ.saveAsTiff(imp,path), which is more convenient. */
 	public boolean saveAsTiffStack(String path) {
 		if (fi.nImages==1)
-			{IJ.error("This is not a stack"); return false;}
+			{error("This is not a stack"); return false;}
 		boolean virtualStack = imp.getStack().isVirtual();
 		if (virtualStack)
 			fi.virtualStack = (VirtualStack)imp.getStack();
-		Object info = imp.getProperty("Info");
-		if (info!=null && (info instanceof String))
-			fi.info = (String)info;
+		fi.info = imp.getInfoProperty();
 		fi.description = getDescriptionString();
 		if (virtualStack) {
 			FileInfo fi = imp.getOriginalFileInfo();
 			if (path!=null && path.equals(fi.directory+fi.fileName)) {
-				IJ.error("TIFF virtual stacks cannot be saved in place.");
+				error("TIFF virtual stacks cannot be saved in place.");
 				return false;
 			}
 			String[] labels = null;
@@ -197,9 +209,7 @@ public class FileSaver {
 	public byte[] serialize() {
 		if (imp.getStack().isVirtual())
 			return null;
-		Object info = imp.getProperty("Info");
-		if (info!=null && (info instanceof String))
-			fi.info = (String)info;
+		fi.info = imp.getInfoProperty();
 		saveName = true;
 		fi.description = getDescriptionString();
 		saveName = false;
@@ -253,6 +263,8 @@ public class FileSaver {
 	/** Save the image or stack in TIFF/ZIP format using the specified path. */
 	public boolean saveAsZip(String path) {
 		//fi.nImages = 1;
+		if (imp.getProperty("FHT")!=null && path.contains("FFT of "))
+			setupFFTSave();
 		if (!path.endsWith(".zip"))
 			path = path+".zip";
 		if (name==null)
@@ -262,9 +274,7 @@ public class FileSaver {
 		if (!name.endsWith(".tif"))
 			name = name+".tif";
 		fi.description = getDescriptionString();
-		Object info = imp.getProperty("Info");
-		if (info!=null && (info instanceof String))
-			fi.info = (String)info;
+		fi.info = imp.getInfoProperty();
 		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
 		fi.overlay = getOverlay(imp);
 		fi.sliceLabels = imp.getStack().getSliceLabels();
@@ -555,7 +565,7 @@ public class FileSaver {
 		dialog. Returns false if the user selects cancel. */
 	public boolean saveAsLut() {
 		if (imp.getType()==ImagePlus.COLOR_RGB) {
-			IJ.error("RGB Images do not have a LUT.");
+			error("RGB Images do not have a LUT.");
 			return false;
 		}
 		String path = getPath("LUT", ".lut");
@@ -569,11 +579,11 @@ public class FileSaver {
 		LookUpTable lut = imp.createLut();
 		int mapSize = lut.getMapSize();
 		if (mapSize==0) {
-			IJ.error("RGB Images do not have a LUT.");
+			error("RGB Images do not have a LUT.");
 			return false;
 		}
 		if (mapSize<256) {
-			IJ.error("Cannot save LUTs with less than 256 entries.");
+			error("Cannot save LUTs with less than 256 entries.");
 			return false;
 		}
 		byte[] reds = lut.getReds(); 
@@ -642,7 +652,11 @@ public class FileSaver {
 		String msg = e.getMessage();
 		if (msg.length()>100)
 			msg = msg.substring(0, 100);
-		IJ.error("FileSaver", "An error occured writing the file.\n \n" + msg);
+		error("An error occured writing the file.\n \n" + msg);
+	}
+	
+	private void error(String msg) {
+		IJ.error("FileSaver", msg);
 	}
 
 	/** Returns a string containing information about the specified  image. */

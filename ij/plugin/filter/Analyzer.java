@@ -689,8 +689,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 			//	s = s.substring(0,len-4); 
 			Roi roi = imp.getRoi();
 			String roiName = roi!=null?roi.getName():null;
-			if (roiName!=null)
+			if (roiName!=null && !roiName.contains(".")) {
+				if (roiName.length()>30)
+					roiName = roiName.substring(0,27) + "...";
 				s += ":"+roiName;
+			}
 			if (imp.getStackSize()>1) {
 				ImageStack stack = imp.getStack();
 				int currentSlice = imp.getCurrentSlice();
@@ -710,6 +713,15 @@ public class Analyzer implements PlugInFilter, Measurements {
 		int counter = rt.getCounter();
 		if (counter==1)
 			IJ.setColumnHeadings(rt.getColumnHeadings());
+		TextPanel tp = IJ.isResultsWindow()?IJ.getTextPanel():null;
+		int lineCount = tp!=null?IJ.getTextPanel().getLineCount():0;
+		if (counter>lineCount+1) { // delete rt rows added by particle analyzer
+			int n = counter - lineCount - 1;
+			int index = lineCount;
+			for (int i=0; i<n; i++)
+				rt.deleteRow(index);
+			counter = rt.getCounter();
+		}
 		IJ.write(rt.getRowAsString(counter-1));
 	}
 

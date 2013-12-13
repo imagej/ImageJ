@@ -55,7 +55,7 @@ public class Menus {
 	private static boolean isFiji;
 	private static Applet applet;
 	private Hashtable demoImagesTable = new Hashtable();
-	private static String pluginsPath, macrosPath;
+	private static String ImageJPath, pluginsPath, macrosPath;
 	private static Properties menus;
 	private static Properties menuSeparators;
 	private static Menu pluginsMenu, saveAsMenu, shortcutsMenu, utilitiesMenu, macrosMenu;
@@ -77,7 +77,7 @@ public class Menus {
 	private static Vector macroFiles;  // Macros and scripts in the plugins folder
 	private static int userPluginsIndex; // First user plugin or submenu in Plugins menu
 	private static boolean addSorted;
-	private static int defaultFontSize = IJ.isWindows()?14:0;
+	private static int defaultFontSize = IJ.isWindows()?15:0;
 	private static int fontSize = Prefs.getInt(Prefs.MENU_SIZE, defaultFontSize);
 	private static Font menuFont;
 
@@ -106,7 +106,11 @@ public class Menus {
 		Menu newMenu = getMenu("File>New", true);
 		addPlugInItem(file, "Open...", "ij.plugin.Commands(\"open\")", KeyEvent.VK_O, false);
 		addPlugInItem(file, "Open Next", "ij.plugin.NextImageOpener", KeyEvent.VK_O, true);
-		getMenu("File>Open Samples", true);
+		Menu openSamples = getMenu("File>Open Samples", true);
+		if (!isFiji) {
+			openSamples.addSeparator();
+			addPlugInItem(openSamples, "Cache Sample Images ", "ij.plugin.URLOpener(\"cache\")", 0, false);
+		}
 		addOpenRecentSubMenu(file);
 		Menu importMenu = getMenu("File>Import", true);
 		file.addSeparator();
@@ -343,7 +347,7 @@ public class Menus {
  			String name = list[i];
  			if (name.endsWith(".lut")) {
  				name = name.substring(0,name.length()-4);
- 				if (!isFiji)
+ 				if (!isFiji && name.contains("_") && !name.contains(" "))
  					name = name.replace("_", " ");
  				MenuItem item = new MenuItem(name);
 				submenu.add(item);
@@ -598,28 +602,28 @@ public class Menus {
 	}
     
     /** Install a plugin located in a JAR file. */
-    void installJarPlugin(String jar, String s) {
+	void installJarPlugin(String jar, String s) {
 		addSorted = false;
 		Menu menu;
-        if (s.startsWith("Plugins>")) {
+		s = s.trim();
+		if (s.startsWith("Plugins>")) {
 			int firstComma = s.indexOf(',');
 			if (firstComma==-1 || firstComma<=8)
 				menu = null;
 			else {
-        		String name = s.substring(8, firstComma);
+				String name = s.substring(8, firstComma);
 				menu = getPluginsSubmenu(name);
 			}
-        } else if (s.startsWith("\"") || s.startsWith("Plugins")) {
-        	String name = getSubmenuName(jar);
-        	if (name!=null)
-        		menu = getPluginsSubmenu(name);
-        	else
+		} else if (s.startsWith("\"") || s.startsWith("Plugins")) {
+			String name = getSubmenuName(jar);
+			if (name!=null)
+				menu = getPluginsSubmenu(name);
+			else
 				menu = pluginsMenu;
 			addSorted = true;
 		} else {
 			int firstQuote = s.indexOf('"');
-			String name = firstQuote < 0 ? s
-				: s.substring(0, firstQuote).trim();
+			String name = firstQuote<0 ? s : s.substring(0, firstQuote).trim();
 			int comma = name.indexOf(',');
 			if (comma >= 0)
 				name = name.substring(0, comma);
@@ -829,39 +833,69 @@ public class Menus {
 	}
 	
 	void setupPluginsAndMacrosPaths() {
-		pluginsPath = macrosPath = null;
-		String homeDir = Prefs.getHomeDir();
-		if (homeDir==null) return;
-		if (homeDir.endsWith("plugins"))
-			pluginsPath = homeDir+Prefs.separator;
+		ImageJPath = pluginsPath = macrosPath = null;
+		String currentDir = Prefs.getHomeDir(); // "user.dir"
+		if (currentDir==null)
+			return;
+		if (currentDir.endsWith("plugins"))
+			ImageJPath = pluginsPath = currentDir+File.separator;
 		else {
-			String property = System.getProperty("plugins.dir");
-			if (property!=null && (property.endsWith("/")||property.endsWith("\\")))
-				property = property.substring(0, property.length()-1);
-			String pluginsDir = property;
+			String pluginsDir = System.getProperty("plugins.dir");
+			if (pluginsDir!=null) {
+				if (pluginsDir.endsWith("/")||pluginsDir.endsWith("\\"))
+					pluginsDir = pluginsDir.substring(0, pluginsDir.length()-1);
+				if (pluginsDir.endsWith("/plugins")||pluginsDir.endsWith("\\plugins"))
+					pluginsDir = pluginsDir.substring(0, pluginsDir.length()-8);
+			}
 			if (pluginsDir==null)
-				pluginsDir = homeDir;
+				pluginsDir = currentDir;
 			else if (pluginsDir.equals("user.home")) {
 				pluginsDir = System.getProperty("user.home");
-				if (!(new File(pluginsDir+Prefs.separator+"plugins")).isDirectory())
-					pluginsDir = pluginsDir + Prefs.separator + "ImageJ";
-				property = null;
+				if (!(new File(pluginsDir+File.separator+"plugins")).isDirectory()) 
+					pluginsDir = pluginsDir + File.separator + "ImageJ";
 				// needed to run plugins when ImageJ launched using Java WebStart
-				if (applet==null) System.setSecurityManager(null);
+				if (applet==null)
+					System.setSecurityManager(null);
 				jnlp = true;
 			}
-			pluginsPath = pluginsDir+Prefs.separator+"plugins"+Prefs.separator;
-			if (property!=null&&!(new File(pluginsPath)).isDirectory())
-				pluginsPath = pluginsDir + Prefs.separator;
-			macrosPath = pluginsDir+Prefs.separator+"macros"+Prefs.separator;
+			pluginsPath = pluginsDir+File.separator+"plugins"+File.separator;
+			macrosPath = pluginsDir+File.separator+"macros"+File.separator;
+			ImageJPath = pluginsDir+File.separator;
 		}
-		File f = macrosPath!=null?new File(macrosPath):null;
-		if (f!=null && !f.isDirectory())
-			macrosPath = null;
-		f = pluginsPath!=null?new File(pluginsPath):null;
-		if (f==null || (f!=null && !f.isDirectory())) {
-			pluginsPath = null;
-			return;
+		File f = pluginsPath!=null?new File(pluginsPath):null;
+		if (f==null || !f.isDirectory()) {
+			ImageJPath = currentDir+File.separator;
+			pluginsPath = ImageJPath+"plugins"+File.separator;
+			f = new File(pluginsPath);
+			if (!f.isDirectory()) {
+				String altPluginsPath = System.getProperty("plugins.dir");
+				if (altPluginsPath!=null) {
+					f = new File(altPluginsPath);
+					if (!f.isDirectory())
+						altPluginsPath = null;
+					else {
+						ImageJPath = f.getParent() + File.separator;
+						pluginsPath = ImageJPath + f.getName() + File.separator;
+						macrosPath = ImageJPath+"macros"+File.separator;
+					}
+				}
+				if (altPluginsPath==null)
+					ImageJPath = pluginsPath = null;
+			}
+		}
+		f = macrosPath!=null?new File(macrosPath):null;
+		if (f!=null && !f.isDirectory()) {
+			macrosPath = currentDir+File.separator+"macros"+File.separator;
+			f = new File(macrosPath);
+			if (!f.isDirectory())
+				macrosPath = null;
+		}
+		if (IJ.debugMode) {
+			IJ.log("Menus.setupPluginsAndMacrosPaths");
+			IJ.log("   user.dir: "+currentDir);
+			IJ.log("   plugins.dir: "+System.getProperty("plugins.dir"));
+			IJ.log("   ImageJPath: "+ImageJPath);
+			IJ.log("   pluginsPath: "+pluginsPath);
 		}
 	}
 		
@@ -1122,6 +1156,11 @@ public class Menus {
 	}
 
 	
+	/** Use Prefs.getImageJDir() to get the path to the ImageJ directory. */
+	static String getImageJPath() {
+		return ImageJPath;
+	}
+
 	/** Returns the path to the user plugins directory or
 		null if the plugins directory was not found. */
 	public static String getPlugInsPath() {
@@ -1415,7 +1454,9 @@ public class Menus {
 		}
 
 		if (macrosPath==null) {
-			(new MacroInstaller()).installFromIJJar("/macros/StartupMacros.txt");
+			try {
+				(new MacroInstaller()).installFromIJJar("/macros/StartupMacros.txt");
+			} catch (Exception e) {}
 			return;
 		}
 		String path = macrosPath + "StartupMacros.txt";
@@ -1503,7 +1544,7 @@ public class Menus {
 		Menus m = new Menus(IJ.getInstance(), IJ.getApplet());
 		String err = m.addMenuBar();
 		if (err!=null) IJ.error(err);
-		IJ.setClassLoader(null);
+		IJ.resetClassLoader();
 		IJ.runPlugIn("ij.plugin.ClassChecker", "");
 		IJ.showStatus("Menus updated: "+m.nPlugins + " commands, " + m.nMacros + " macros");
 	}

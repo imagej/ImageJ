@@ -27,7 +27,7 @@ public class Memory implements PlugIn {
 		String title = "Memory "+(IJ.is64Bit()?"(64-bit)":"(32-bit)");
 		GenericDialog gd = new GenericDialog(title);
 		gd.addNumericField("Maximum memory:", max, 0, 5, "MB");
-		gd.addNumericField("Parallel threads for stacks:", Prefs.getThreads(), 0, 5, "");
+		gd.addNumericField("Parallel threads:", Prefs.getThreads(), 0, 5, "");
 		gd.setInsets(12, 0, 0);
 		gd.addCheckbox("Keep multiple undo buffers", Prefs.keepUndoBuffers);
 		gd.setInsets(12, 0, 0);
@@ -45,8 +45,10 @@ public class Memory implements PlugIn {
 		}
 		if (unableToSet && max2!=max)
 			{showError(); return;}
-		if (max2<256 && IJ.isMacOSX()) max2 = 256;
-		if (max2<32 && IJ.isWindows()) max2 = 32;
+		if (IJ.isMacOSX() && max2<256)
+			max2 = 256;
+		else if (max2<32)
+			max2 = 32;
 		if (max2==max) return;
 		int limit = IJ.isWindows()?1600:1700;
 		String OSXInfo = "";
@@ -126,7 +128,8 @@ public class Memory implements PlugIn {
 	}
 
 	long getMemorySetting(String file) {
-		String path = Prefs.getHomeDir()+File.separator+file;
+		String path = Prefs.getImageJDir() + file;
+		if (IJ.debugMode) IJ.log("getMemorySetting: "+path);
 		f = new File(path);
 		if (!f.exists()) {
 			fileMissing = true;

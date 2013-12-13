@@ -1,7 +1,3 @@
-/*
- * This plugin implements most of the 3D filters in the Process/Filters submenu.
- * @author Thomas Boudier
- */
 package ij.plugin;
 
 import ij.*;
@@ -9,8 +5,13 @@ import ij.process.*;
 import ij.gui.GenericDialog;
 import ij.util.ThreadUtil;
 import ij.plugin.RGBStackMerge;
+import ij.gui.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/*
+ * This plugin implements most of the 3D filters in the Process/Filters submenu.
+ * @author Thomas Boudier
+ */
 public class Filters3D implements PlugIn {
     public final static int MEAN=10, MEDIAN=11, MIN=12, MAX=13, VAR=14, MAXLOCAL=15;
 	private static float xradius = 2, yradius = 2, zradius = 2;
@@ -36,7 +37,7 @@ public class Filters3D implements PlugIn {
 		} else
 			return;
 		ImagePlus imp = IJ.getImage();
-		if (imp.isComposite() && imp.getNChannels() == imp.getStackSize()) {
+		if (imp.isComposite() && imp.getNChannels()==imp.getStackSize()) {
 			IJ.error(name, "Composite color images not supported");
 			return;
 		}
@@ -63,6 +64,10 @@ public class Filters3D implements PlugIn {
 	}
 
 	private void run(ImagePlus imp, int filter, float radX, float radY, float radZ) {
+		if (imp.isHyperStack()) {
+			filterHyperstack(imp, filter, radX, radY, radZ);
+			return;
+		}
 		ImageStack res = filter(imp.getStack(), filter, radX, radY, radZ);
 		imp.setStack(res);
 	}
@@ -111,6 +116,33 @@ public class Filters3D implements PlugIn {
 		return res;
 	}
 	
+	private static void filterHyperstack(ImagePlus imp, int filter, float vx, float vy, float vz) {
+		if (imp.getNDimensions()>4) {
+			IJ.error("5D hyperstacks are currently not supported");
+			return;
+		}
+		if (imp.getNChannels()==1) {
+			ImageStack stack = filter(imp.getStack(), filter, vx, vy, vz);
+			imp.setStack(stack);
+			return;
+		}
+        ImagePlus[] channels = ChannelSplitter.split(imp);
+        int n = channels.length;
+        for (int i=0; i<n; i++) {
+			ImageStack stack = filter(channels[i].getStack(), filter, vx, vy, vz);
+			channels[i].setStack(stack);
+		}
+		ImagePlus imp2 = RGBStackMerge.mergeChannels(channels, false);
+		imp.setImage(imp2);
+		//if (imp.isComposite()) {
+		//	CompositeImage ci = (CompositeImage)imp;
+		//	ci.reset();
+		//	ci.resetDisplayRanges();
+		//	ci.updateAllChannelsAndDraw();
+		//}
+		imp.setC(1);
+	}
+
 	private static ImageStack filterRGB(ImageStack rgb_in, int filter, float vx, float vy, float vz) {
         ImageStack[] channels = ChannelSplitter.splitRGB(rgb_in, false);
 		ImageStack red = filter(channels[0], filter, vx, vy, vz);

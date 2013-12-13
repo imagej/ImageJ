@@ -65,9 +65,12 @@ public class Straightener implements PlugIn {
 		ImageProcessor ip2;
 		if (imp.getBitDepth()==24 && roi.getType()!=Roi.LINE)
 			ip2 = straightenRGB(imp, width);
-		else if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE)
-			ip2 = straightenComposite(imp, width);
-		else if (roi.getType()==Roi.LINE)
+		else if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE) {
+			if (roi.getType()==Roi.LINE)
+				ip2 = rotateCompositeLine(imp, width);
+			else
+				ip2 = straightenComposite(imp, width);
+		} else if (roi.getType()==Roi.LINE)
 			ip2 = rotateLine(imp, width);
 		else
 			ip2 = straightenLine(imp, width);
@@ -154,10 +157,6 @@ public class Straightener implements PlugIn {
 			ip2.setColorModel(ip.getColorModel());
 			ip2.resetMinAndMax();
 		}
-		//if (distances!=null) {
-		//	distances.resetMinAndMax();
-		//	(new ImagePlus("Distances", distances)).show();
-		//}
 		return ip2;
 	}
 	
@@ -208,6 +207,14 @@ public class Straightener implements PlugIn {
 		ImageProcessor ip2 = straightenRGB(imp2, width);
         imp.setRoi(imp2.getRoi());
         return ip2;
+	}
+	
+	ImageProcessor rotateCompositeLine(ImagePlus imp, int width) {
+		Image img = imp.getImage();
+		ImagePlus imp2 = new ImagePlus("temp", new ColorProcessor(img));
+		imp2.setRoi(imp.getRoi());
+		ImageProcessor ip2 = rotateLine(imp2, width);
+		return ip2;
 	}
 
 }

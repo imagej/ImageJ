@@ -131,7 +131,7 @@ public class FolderOpener implements PlugIn {
 				}
 			}
 			if (width==0) {
-				IJ.error("Import Sequence", "This folder does not appear to contain\n"
+				IJ.error("Sequence Reader", "This folder does not appear to contain\n"
 				+ "any TIFF, JPEG, BMP, DICOM, GIF, FITS or PGM files.\n \n"
 				+ "   \""+directory+"\"");
 				return;
@@ -151,9 +151,9 @@ public class FolderOpener implements PlugIn {
  				}
   				if (filteredImages==0) {
   					if (isRegex)
-  						IJ.error("Import Sequence", "None of the file names contain the regular expression.");
+  						IJ.error("Sequence Reader", "None of the file names contain the regular expression.");
   					else
-   						IJ.error("Import Sequence", "None of the "+list.length+" files contain\n the string '"+filter+"' in their name.");
+   						IJ.error("Sequence Reader", "None of the "+list.length+" files contain\n the string '"+filter+"' in their name.");
  					return;
   				}
   				String[] list2 = new String[filteredImages];
@@ -331,8 +331,11 @@ public class FolderOpener implements PlugIn {
 					imp2.setCalibration(cal);
 				}
 			}
-			if (imp2.getStackSize()==1 && info1!=null)
-				imp2.setProperty("Info", info1);
+			if (imp2.getStackSize()==1) {
+				imp2.setProperty("Label", list[0]);
+				if (info1!=null)
+					imp2.setProperty("Info", info1);
+			}
 			if (arg==null && !saveImage) {
 				imp2.show();
 				if (stack.isVirtual()) {
@@ -463,7 +466,7 @@ public class FolderOpener implements PlugIn {
 	
 	/** Sorts file names containing numerical components.
 	* @see ij.util.StringSorter#sortNumerically
-	* @author Norbert Vischer
+	* Author: Norbert Vischer
 	*/
 	public String[] sortFileList(String[] list) {
 		return StringSorter.sortNumerically(list);

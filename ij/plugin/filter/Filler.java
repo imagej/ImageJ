@@ -97,7 +97,7 @@ public class Filler implements PlugInFilter, Measurements {
 			else
 				roi.drawPixels(ip);
 		} else
-	 		ip.fill(); // fill with foreground color
+			ip.fill(); // fill with foreground color
 	}
 	 			 		
 	/**

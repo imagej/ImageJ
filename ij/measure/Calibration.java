@@ -7,7 +7,8 @@ import ij.plugin.filter.Analyzer;
 public class Calibration implements Cloneable {
 
 	public static final int STRAIGHT_LINE=0,POLY2=1,POLY3=2,POLY4=3,
-		EXPONENTIAL=4,POWER=5,LOG=6,RODBARD=7,GAMMA_VARIATE=8, LOG2=9, RODBARD2=10;
+		EXPONENTIAL=4,POWER=5,LOG=6,RODBARD=7,GAMMA_VARIATE=8, LOG2=9, RODBARD2=10,
+		EXP_WITH_OFFSET=11, GAUSSIAN=12, EXP_RECOVERY=13;
 	public static final int NONE=20, UNCALIBRATED_OD=21, CUSTOM=22;
 	public static final String DEFAULT_VALUE_UNIT = "Gray Value";
 
@@ -229,7 +230,7 @@ public class Calibration implements Cloneable {
  	public void setFunction(int function, double[] coefficients, String unit, boolean zeroClip) {
  		if (function==NONE)
  			{disableDensityCalibration(); return;}
- 		if (coefficients==null && function>=STRAIGHT_LINE && function<=RODBARD2)
+ 		if (coefficients==null && function>=STRAIGHT_LINE && function<=EXP_RECOVERY)
  			return;
  		this.function = function;
  		this.coefficients = coefficients;
@@ -321,7 +322,7 @@ public class Calibration implements Cloneable {
  			cTable = new float[256];
 			for (int i=0; i<256; i++)
 				cTable[i] = (float)od(i);
-		} else if (function>=STRAIGHT_LINE && function<=RODBARD2 && coefficients!=null) {
+		} else if (function>=STRAIGHT_LINE && function<=EXP_RECOVERY && coefficients!=null) {
  			cTable = new float[256];
  			double value;
  			for (int i=0; i<256; i++) {
@@ -336,7 +337,7 @@ public class Calibration implements Cloneable {
   	}
 
  	void make16BitCTable() {
-		if (function>=STRAIGHT_LINE && function<=RODBARD2 && coefficients!=null) {
+		if (function>=STRAIGHT_LINE && function<=EXP_RECOVERY && coefficients!=null) {
  			cTable = new float[65536];
  			for (int i=0; i<65536; i++)
 				cTable[i] = (float)CurveFitter.f(function, coefficients, i);
@@ -358,7 +359,7 @@ public class Calibration implements Cloneable {
  	public double getCValue(int value) {
 		if (function==NONE)
 			return value;
-		if (function>=STRAIGHT_LINE && function<=RODBARD2 && coefficients!=null) {
+		if (function>=STRAIGHT_LINE && function<=EXP_RECOVERY && coefficients!=null) {
 			double v = CurveFitter.f(function, coefficients, value);
 			if (zeroClip && v<0.0)
 				return 0.0;
@@ -378,7 +379,7 @@ public class Calibration implements Cloneable {
 		if (function==NONE)
 			return value;
 		else {
-			if (function>=STRAIGHT_LINE && function<=RODBARD2 && coefficients!=null) {
+			if (function>=STRAIGHT_LINE && function<=EXP_RECOVERY && coefficients!=null) {
 				double 	v = CurveFitter.f(function, coefficients, value);
 				if (zeroClip && v<0.0)
 					return 0.0;
@@ -438,7 +439,7 @@ public class Calibration implements Cloneable {
  	
   	/** Returns true if this is a signed 16-bit image. */
  	public boolean isSigned16Bit() {
-		return (bitDepth==16 && function>=STRAIGHT_LINE && function<=RODBARD2 && coefficients!=null
+		return (bitDepth==16 && function>=STRAIGHT_LINE && function<=EXP_RECOVERY && coefficients!=null
 			&& coefficients[0]==-32768.0 && coefficients[1]==1.0);
  	}
  	

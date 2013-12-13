@@ -31,17 +31,10 @@ public class PluginInstaller implements PlugIn {
 		byte[] data = null;
 		String name = path;
 		if (isURL) {
-			URL url = null;
-			try {
-				url = new URL(path);
-			} catch (Exception e) {
-				IJ.error(""+e);
-				return false;
-			}
 			int index = path.lastIndexOf("/");
 			if (index!=-1 && index<=path.length()-1)
-					name = path.substring(index+1);
-			data = download(url, name);
+				name = path.substring(index+1);
+			data = download(path, name);
 		} else {
 			File f = new File(path);
 			name = f.getName();
@@ -90,29 +83,49 @@ public class PluginInstaller implements PlugIn {
 		return true;
 	}
 
-	byte[] download(URL url, String name) {
+	public static byte[] download(String urlString, String name) {
+		int maxLength = 52428800; //50MB
+		URL url = null;
+		try {
+			url = new URL(urlString);
+		} catch (Exception e) {
+			IJ.log(""+e);
+		}
+		if (url==null) return null;
 		byte[] data;
+		int n = 0;
+		boolean unknownLength = false;
 		try {
 			URLConnection uc = url.openConnection();
 			int len = uc.getContentLength();
-			IJ.showStatus("Downloading "+url.getFile());
+			unknownLength = len<0;
+			if (unknownLength) len = maxLength;
+			if (name!=null)
+				IJ.showStatus("Downloading "+url.getFile());
 			InputStream in = uc.getInputStream();
 			data = new byte[len];
-			int n = 0;
 			int lenk = len/1024;
-			while (n < len) {
-				int count = in.read(data, n, len - n);
+			while (n<len) {
+				int count = in.read(data, n, len-n);
 				if (count<0)
-					throw new EOFException();
+					break;
 				n += count;
-				IJ.showStatus("Downloading "+name+" ("+(n/1024)+"/"+lenk+"k)");
+				if (name!=null)
+					IJ.showStatus("Downloading "+name+" ("+(n/1024)+"/"+lenk+"k)");
 				IJ.showProgress(n, len);
 			}
 			in.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
+			IJ.log(e+" "+urlString);
 			return null;
 		}
-		IJ.showStatus("");
+		if (name!=null) IJ.showStatus("");
+		if (unknownLength) {
+			byte[] data2 = data;
+			data = new byte[n];
+			for (int i=0; i<n; i++)
+				data[i] = data2[i];
+		}
 		return data;
 	}
 	

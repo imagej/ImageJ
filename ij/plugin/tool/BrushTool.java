@@ -201,8 +201,9 @@ import java.util.Vector;
 			gd.addMessage("SHIFT for horizontal or vertical lines\n"+
 					"ALT to draw in background color\n"+
 					ctrlString+"-SHIFT-drag to change "+(isPencil ? "pencil" : "brush")+" width\n"+
-					ctrlString+"-(ALT) click to change foreground (background) color\n"+
-					"or use this dialog or the Color Picker (shift-k).", null, Color.darkGray);
+					ctrlString+"-(ALT) click to change foreground\n"+
+					"(background) color\n"+
+					"Or use this dialog or Color Picker (shift-k).", null, Color.darkGray);
 			gd.hideCancelButton();
 			gd.addHelp("");
 			gd.setHelpLabel("Undo");

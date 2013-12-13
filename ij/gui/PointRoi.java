@@ -29,6 +29,11 @@ public class PointRoi extends PolygonRoi {
 		width+=1; height+=1;
 	}
 
+	/** Creates a new PointRoi using the specified float arrays of offscreen coordinates. */
+	public PointRoi(float[] ox, float[] oy) {
+		this(ox, oy, ox.length);
+	}
+
 	/** Creates a new PointRoi from a FloatPolygon. */
 	public PointRoi(FloatPolygon poly) {
 		this(poly.xpoints, poly.ypoints, poly.npoints);
@@ -59,7 +64,6 @@ public class PointRoi extends PolygonRoi {
 		if (imp!=null) imp.draw(x-5, y-5, width+10, height+10);
 		if (Recorder.record && !Recorder.scriptMode()) 
 			Recorder.record("makePoint", x, y);
-
 	}
 	
 	static float[] itof(int[] arr) {

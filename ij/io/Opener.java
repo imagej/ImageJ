@@ -12,6 +12,7 @@ import ij.text.TextWindow;
 import ij.util.Java2;
 import ij.measure.ResultsTable;
 import ij.macro.Interpreter;
+import ij.util.Tools;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
@@ -312,7 +313,7 @@ public class Opener {
 					imp = new CompositeImage(imp, CompositeImage.COLOR);
 				fileType = wrap[0];
 				if (imp==null && fileType==UNKNOWN && IJ.getInstance()==null)
-					IJ.error("Unsupported format or not found");
+					IJ.error("Opener", "Unsupported format or not found");
 				return imp;
 			default:
 				return null;
@@ -360,6 +361,9 @@ public class Opener {
 		must end in ".zip" and dicom file names must end in ".dcm". Returns an 
 		ImagePlus object if successful. */
 	public ImagePlus openURL(String url) {
+		ImagePlus imp = openCachedImage(url);
+		if (imp!=null)
+			return imp;
 		try {
 			String name = "";
 			int index = url.lastIndexOf('/');
@@ -374,7 +378,6 @@ public class Opener {
 			URL u = new URL(url);
 			IJ.showStatus(""+url);
 			String lurl = url.toLowerCase(Locale.US);
-			ImagePlus imp = null;
 			if (lurl.endsWith(".tif")) {
 				this.url = url;
 				imp = openTiff(u.openStream(), name);
@@ -408,6 +411,19 @@ public class Opener {
 		} 
 	}
 	
+	private ImagePlus openCachedImage(String url) {
+		if (url==null || !url.contains("ij/images"))
+			return null;
+		String ijDir = IJ.getDirectory("imagej");
+		if (ijDir==null)
+			return null;
+		int slash = url.lastIndexOf('/');
+		File file = new File(ijDir + "samples", url.substring(slash+1));
+		if (!file.exists())
+			return null;
+		return IJ.openImage(file.getPath());
+	}
+
 	/** Used by open() and IJ.open() to open text URLs. */
 	void openTextURL(String url) {
 		if (url.endsWith(".pdf")||url.endsWith(".zip"))
@@ -497,9 +513,11 @@ public class Opener {
 				}
 				byte[] bytes = out.toByteArray();
 				out.close();
-				DICOM dcm = new DICOM(new ByteArrayInputStream(bytes));
+				InputStream is = new ByteArrayInputStream(bytes);
+				DICOM dcm = new DICOM(is);
 				dcm.run(name);
 				imp2 = dcm;
+				is.close();
 			}
 			zis.closeEntry();
 			if (imp2==null) continue;
@@ -754,7 +772,7 @@ public class Opener {
 		catch (IOException e) {
 			String msg = e.getMessage();
 			if (msg==null||msg.equals("")) msg = ""+e;
-			IJ.error("TiffDecoder", msg);
+			IJ.error("Open TIFF", msg);
 			return null;
 		}
 		if (info==null)
@@ -771,7 +789,7 @@ public class Opener {
 		catch (IOException e) {
 			String msg = e.getMessage();
 			if (msg==null||msg.equals("")) msg = ""+e;
-			IJ.error("TiffDecoder", msg);
+			IJ.error("Open TIFF", msg);
 			return null;
 		}
 		if (info==null) return null;
@@ -804,10 +822,10 @@ public class Opener {
 			if (IJ.debugMode) td.enableDebugging();
 			info = td.getTiffInfo();
 		} catch (FileNotFoundException e) {
-			IJ.error("TiffDecoder", "File not found: "+e.getMessage());
+			IJ.error("Open TIFF", "File not found: "+e.getMessage());
 			return null;
 		} catch (Exception e) {
-			IJ.error("TiffDecoder", ""+e);
+			IJ.error("Open TIFF", ""+e);
 			return null;
 		}
 		if (url!=null && info!=null && info.length==1 && info[0].inputStream!=null) {
@@ -817,7 +835,7 @@ public class Opener {
 			try {
 				info[0].inputStream = new URL(url).openStream();
 			} catch (Exception e) {
-				IJ.error("TiffDecoder", ""+e);
+				IJ.error("Open TIFF", ""+e);
 				return null;
 			}
 		}
@@ -853,19 +871,21 @@ public class Opener {
 				imp = dcm;
 			} else {
 				zis.close();
-				IJ.error("This ZIP archive does not appear to contain a \nTIFF (\".tif\") or DICOM (\".dcm\") file, or ROIs (\".roi\").");
+				IJ.error("Opener", "This ZIP archive does not appear to contain a \nTIFF (\".tif\") or DICOM (\".dcm\") file, or ROIs (\".roi\").");
 				return null;
 			}
 			zis.close();
 		} catch (Exception e) {
-			IJ.error("ZipDecoder", ""+e);
+			IJ.error("Opener", ""+e);
 			return null;
 		}
 		File f = new File(path);
 		FileInfo fi = imp.getOriginalFileInfo();
-		fi.fileFormat = FileInfo.ZIP_ARCHIVE;
-		fi.fileName = f.getName();
-		fi.directory = f.getParent()+File.separator;
+		if (fi!=null) {
+			fi.fileFormat = FileInfo.ZIP_ARCHIVE;
+			fi.fileName = f.getName();
+			fi.directory = f.getParent()+File.separator;
+		}
 		return imp;
 	}
 	
@@ -945,7 +965,25 @@ public class Opener {
 		if (offsets!=null&&offsets.length>1 && offsets[offsets.length-1]<offsets[0])
 			ij.IJ.run(imp, "Flip Vertically", "stack");
 		imp = makeComposite(imp, info[0]);
-		return imp;
+		if (imp.getBitDepth()==32 && imp.getTitle().startsWith("FFT of"))
+			return openFFT(imp);
+		else
+			return imp;
+	}
+	
+	private ImagePlus openFFT(ImagePlus imp) {
+		ImageProcessor ip = imp.getProcessor();
+		FHT fht = new FHT(ip, true);
+		ImageProcessor ps = fht.getPowerSpectrum();
+		ImagePlus imp2 = new ImagePlus(imp.getTitle(), ps);
+		imp2.setProperty("FHT", fht);
+		imp2.setProperty("Info", imp.getProperty("Info"));
+		fht.originalWidth = (int)Tools.parseDouble(imp2.getProp("width"),0);
+		fht.originalHeight = (int)Tools.parseDouble(imp2.getProp("height"),0);
+		fht.originalBitDepth = (int)Tools.parseDouble(imp2.getProp("bitdepth"),8);
+		fht.originalColorModel = ip.getColorModel();
+		imp2.setCalibration(imp.getCalibration());
+		return imp2;
 	}
 	
 	/** Attempts to open the specified ROI, returning null if unsuccessful. */
@@ -1140,7 +1178,7 @@ public class Opener {
 			return BMP;
 				
 		// RAW
-		if (name.endsWith(".raw"))
+		if (name.endsWith(".raw") && !Prefs.skipRawDialog)
 			return RAW;
 
 		return UNKNOWN;
@@ -1148,7 +1186,7 @@ public class Opener {
 
 	/** Returns an IndexColorModel for the image specified by this FileInfo. */
 	ColorModel createColorModel(FileInfo fi) {
-		if (fi.fileType==FileInfo.COLOR8 && fi.lutSize>0)
+		if (fi.lutSize>0)
 			return new IndexColorModel(8, fi.lutSize, fi.reds, fi.greens, fi.blues);
 		else
 			return LookUpTable.createGrayscaleColorModel(fi.whiteIsZero);

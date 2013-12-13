@@ -457,6 +457,7 @@ public class ShortProcessor extends ImageProcessor {
 		int min2 = (int)getMin() - offset;
 		int max2 = (int)getMax() - offset;
 		int fgColor2 = fgColor - offset;
+		int intValue = (int)value;
 		
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int i = y * width + roiX;
@@ -470,20 +471,23 @@ public class ShortProcessor extends ImageProcessor {
 					case FILL:
 						v2 = fgColor2;
 						break;
+					case SET:
+						v2 = intValue;
+						break;
 					case ADD:
-						v2 = v1 + (int)value;
+						v2 = v1 + intValue;
 						break;
 					case MULT:
 						v2 = (int)Math.round(v1*value);
 						break;
 					case AND:
-						v2 = v1 & (int)value;
+						v2 = v1 & intValue;
 						break;
 					case OR:
-						v2 = v1 | (int)value;
+						v2 = v1 | intValue;
 						break;
 					case XOR:
-						v2 = v1 ^ (int)value;
+						v2 = v1 ^ intValue;
 						break;
 					case GAMMA:
 						if (range<=0.0 || v1==min2)
@@ -512,13 +516,13 @@ public class ShortProcessor extends ImageProcessor {
 						break;
 					case MINIMUM:
 						if (v1<value)
-							v2 = (int)value;
+							v2 = intValue;
 						else
 							v2 = v1;
 						break;
 					case MAXIMUM:
 						if (v1>value)
-							v2 = (int)value;
+							v2 = intValue;
 						else
 							v2 = v1;
 						break;
@@ -542,6 +546,7 @@ public class ShortProcessor extends ImageProcessor {
 	
 	public void add(int value) {process(ADD, value);}
 	public void add(double value) {process(ADD, value);}
+	public void set(double value) {process(SET, value);}
 	public void multiply(double value) {process(MULT, value);}
 	public void and(int value) {process(AND, value);}
 	public void or(int value) {process(OR, value);}
@@ -910,7 +915,7 @@ public class ShortProcessor extends ImageProcessor {
 	}
 	
 	/** Returns a duplicate of this image. */ 
-	public synchronized ImageProcessor duplicate() { 
+	public ImageProcessor duplicate() { 
 		ImageProcessor ip2 = createProcessor(width, height); 
 		short[] pixels2 = (short[])ip2.getPixels(); 
 		System.arraycopy(pixels, 0, pixels2, 0, width*height); 
@@ -1015,7 +1020,9 @@ public class ShortProcessor extends ImageProcessor {
 		System.arraycopy(pixels2, 0, pixels, 0, pixels.length);
 	}
 
-    public void noise(double range) {
+    /** Adds pseudorandom, Gaussian ("normally") distributed values, with
+    	mean 0.0 and the specified standard deviation, to this image or ROI. */
+    public void noise(double standardDeviation) {
 		Random rnd=new Random();
 		int v, ran;
 		boolean inRange;
@@ -1024,7 +1031,7 @@ public class ShortProcessor extends ImageProcessor {
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
 				inRange = false;
 				do {
-					ran = (int)Math.round(rnd.nextGaussian()*range);
+					ran = (int)Math.round(rnd.nextGaussian()*standardDeviation);
 					v = (pixels[i] & 0xffff) + ran;
 					inRange = v>=0 && v<=65535;
 					if (inRange) pixels[i] = (short)v;

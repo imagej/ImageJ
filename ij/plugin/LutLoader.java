@@ -254,7 +254,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 	}
 	
 	private void error(String path) {
-		IJ.error("This is not an ImageJ or NIH Image LUT, a 768 byte \nraw LUT, or a LUT in text format.\n \n"+path);
+		IJ.error("LUT Reader", "This is not an ImageJ or NIH Image LUT, a 768 byte \nraw LUT, or a LUT in text format.\n \n"+path);
 	}
 
 	/** Opens an NIH Image LUT or a 768 byte binary LUT. */

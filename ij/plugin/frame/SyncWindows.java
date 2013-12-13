@@ -148,6 +148,8 @@ public class SyncWindows extends PlugInFrame implements
 	* Method to pass on changes of the z-slice of a stack.
 	*/
 	public void displayChanged(DisplayChangeEvent e) {
+		//if (e!=null) throw new IllegalArgumentException();
+		//IJ.log("displayChanged: "+e);
 		if (vwins == null) return;
 
 		Object source = e.getSource();
@@ -167,12 +169,10 @@ public class SyncWindows extends PlugInFrame implements
 		if (cChannel.getState() && type==DisplayChangeEvent.CHANNEL) {
 			for (int n=0; n<vwins.size();++n) {
 				imp = getImageFromVector(n);
-				if (imp != null) {
+				if (imp!=null) {
 					iw = imp.getWindow();
-					if( !iw.equals(source)) {
-						if (iw instanceof StackWindow)
-							((StackWindow)iw).setPosition(value, imp.getSlice(), imp.getFrame());
-					}
+					if (!iw.equals(source))
+						imp.setC(value);
 				}
 			}	
 		}		 
@@ -181,14 +181,13 @@ public class SyncWindows extends PlugInFrame implements
 		if (cSlice.getState() && type==DisplayChangeEvent.Z) {
 			for (int n=0; n<vwins.size();++n) {
 				imp = getImageFromVector(n);
-				if (imp != null) {
+				if (imp!=null) {
 					iw = imp.getWindow();
-					int stacksize = imp.getStackSize();
-					if (!iw.equals(source) && (iw instanceof StackWindow)) {
-						if (imp.getNChannels()==imp.getStackSize())
-							imp.setC(value);
+					if (!iw.equals(source)) {
+						if (imp.getNSlices()==1 && imp.getNFrames()>1)
+							imp.setT(value);
 						else
-							((StackWindow)iw).setPosition(imp.getChannel(), value, imp.getFrame());
+							imp.setZ(value);
 					}
 				}
 			}
@@ -198,12 +197,10 @@ public class SyncWindows extends PlugInFrame implements
 		if (cFrame.getState() && type==DisplayChangeEvent.T) {
 			for(int n=0; n<vwins.size();++n) {
 				imp = getImageFromVector(n);
-				if (imp != null) {
+				if (imp!=null) {
 					iw = imp.getWindow();
-					if (!iw.equals(source)) {
-						if (iw instanceof StackWindow)
-							((StackWindow)iw).setPosition(imp.getChannel(), imp.getSlice(), value);
-					}
+					if (!iw.equals(source))
+						imp.setT(value);
 				}
 			}   
 		}
@@ -1144,7 +1141,7 @@ class DisplayChangeEvent extends EventObject {
  * - Add the methods "add" and "remove" with the corresponding listener type.
  * <p>
  *
- * @author: code take from Sun's AWTEventMulticaster by J. Walter 2002-03-07
+ * @author code taken from Sun's AWTEventMulticaster by J. Walter 2002-03-07
  */
 
 class IJEventMulticaster extends AWTEventMulticaster implements DisplayChangeListener {

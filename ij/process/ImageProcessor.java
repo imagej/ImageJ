@@ -51,13 +51,13 @@ public abstract class ImageProcessor implements Cloneable {
 	public static final int BLUR_MORE=0, FIND_EDGES=1, MEDIAN_FILTER=2, MIN=3, MAX=4, CONVOLVE=5;
 	static public final int RED_LUT=0, BLACK_AND_WHITE_LUT=1, NO_LUT_UPDATE=2, OVER_UNDER_LUT=3;
 	static final int INVERT=0, FILL=1, ADD=2, MULT=3, AND=4, OR=5,
-		XOR=6, GAMMA=7, LOG=8, MINIMUM=9, MAXIMUM=10, SQR=11, SQRT=12, EXP=13, ABS=14;
+		XOR=6, GAMMA=7, LOG=8, MINIMUM=9, MAXIMUM=10, SQR=11, SQRT=12, EXP=13, ABS=14, SET=15;
 	static final String WRONG_LENGTH = "width*height!=pixels.length";
 	
 	int fgColor = 0;
 	protected int lineWidth = 1;
 	protected int cx, cy; //current drawing coordinates
-	protected Font font;
+	protected Font font = ij.ImageJ.SansSerif12;
 	protected FontMetrics fontMetrics;
 	protected boolean antialiasedText;
 	protected boolean boldFont;
@@ -124,7 +124,19 @@ public abstract class ImageProcessor implements Cloneable {
 	
     /** Returns the bit depth, 8, 16, 24 (RGB) or 32. RGB images actually use 32 bits per pixel. */
     public int getBitDepth() {
-    	return 0;
+    	Object pixels = getPixels();
+    	if (pixels==null)
+    		return 0;
+    	else if (pixels instanceof byte[])
+    		return 8;
+    	else if (pixels instanceof short[])
+    		return 16;
+    	else if (pixels instanceof int[])
+    		return 24;
+    	else if (pixels instanceof float[])
+    		return 32;
+    	else
+    		return 0;
     }
     
     /** Returns this processor's color model. For non-RGB processors,
@@ -170,7 +182,7 @@ public abstract class ImageProcessor implements Cloneable {
 	
 	public void setLut(LUT lut) {
 		setColorModel(lut);
-		if (lut.min!=0.0||lut.max!=0.0)
+		if (lut!=null && (lut.min!=0.0||lut.max!=0.0))
 			setMinAndMax(lut.min, lut.max);
 	}
 
@@ -372,8 +384,13 @@ public abstract class ImageProcessor implements Cloneable {
 		value closest to the specified color. */
 	public abstract void setColor(Color color);
 
-	/** Sets the default fill/draw value. Use setValue() with float images. */
+	/** Sets the default fill/draw value. */
 	public void setColor(int value) {
+		setValue(value);
+	}
+
+	/** Sets the default fill/draw value. */
+	public void setColor(double value) {
 		setValue(value);
 	}
 
@@ -895,6 +912,9 @@ public abstract class ImageProcessor implements Cloneable {
 				case FILL:
 					v = fgColor;
 					break;
+				case SET:
+					v = (int)value;
+					break;
 				case ADD:
 					v = i + (int)value;
 					break;
@@ -1158,8 +1178,6 @@ public abstract class ImageProcessor implements Cloneable {
 	private void setupFontMetrics() {
 		if (fmImage==null)
 			fmImage=new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-		if (font==null)
-			font = new Font("SansSerif", Font.PLAIN, 12);
 		if (fontMetrics==null) {
 			Graphics g = fmImage.getGraphics();
 			fontMetrics = g.getFontMetrics(font);
@@ -1847,6 +1865,9 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Multiplies each pixel in the image or ROI by 'value'. */
 	public void multiply(double value) {process(MULT, value);}
 	
+	/** Assigns 'value' to each pixel in the image or ROI. */
+	public void set(double value) {process(SET, value);}
+
 	/** Binary AND of each pixel in the image or ROI with 'value'. */
 	public void and(int value) {process(AND, value);}
 
@@ -1929,10 +1950,9 @@ public abstract class ImageProcessor implements Cloneable {
 	/** A 3x3 median filter. Requires 8-bit or RGB image. */
 	public abstract void medianFilter();
 	
-    /** Adds random noise to the image or ROI.
-    	@param range	the range of random numbers
-    */
-    public abstract void noise(double range);
+    /** Adds pseudorandom, Gaussian ("normally") distributed values, with
+    	mean 0.0 and the specified standard deviation, to this image or ROI. */
+    public abstract void noise(double standardDeviation);
     
 	/** Creates a new processor containing an image
 		that corresponds to the current ROI. */
@@ -1970,8 +1990,8 @@ public abstract class ImageProcessor implements Cloneable {
 			aliasing artifacts; the kernel shape for averaging is determined by 
 			the interpolationMethod. False if subsampling without any averaging  
 			should be used on downsizing.  Has no effect on upsizing.
-		@ImageProcessor#setInterpolationMethod for setting the interpolation method
-		@author Michael Schmid
+		@see ImageProcessor#setInterpolationMethod
+		Author: Michael Schmid
 	*/
 	public ImageProcessor resize(int dstWidth, int dstHeight, boolean useAverging) {
 		Rectangle r = getRoi();
@@ -2103,6 +2123,66 @@ public abstract class ImageProcessor implements Cloneable {
 	public ImageProcessor convertToRGB() {
 		TypeConverter tc = new TypeConverter(this, true);
 		return tc.convertToRGB();
+	}
+	
+	/** Returns an 8-bit version of this image as a ByteProcessor. 16-bit and 32-bit
+	 * pixel data are scaled from min-max to 0-255.
+	*/
+	public ByteProcessor convertToByteProcessor() {
+		return convertToByteProcessor(true);
+	}
+
+	/** Returns an 8-bit version of this image as a ByteProcessor. 16-bit and 32-bit
+	 * pixel data are scaled from min-max to 0-255 if 'scale' is true.
+	*/
+	public ByteProcessor convertToByteProcessor(boolean scale) {
+		ByteProcessor bp;
+		if (this instanceof ByteProcessor)
+			bp = (ByteProcessor)this.duplicate();
+		else
+			bp = (ByteProcessor)this.convertToByte(scale);
+		return bp;
+	}
+
+	/** Returns a 16-bit version of this image as a ShortProcessor. 32-bit
+	 * pixel data are scaled from min-max to 0-255.
+	*/
+	public ShortProcessor convertToShortProcessor() {
+		return convertToShortProcessor(true);
+	}
+
+	/** Returns a 16-bit version of this image as a ShortProcessor. 32-bit
+	 * pixel data are scaled from min-max to 0-255 if 'scale' is true.
+	*/
+	public ShortProcessor convertToShortProcessor(boolean scale) {
+		ShortProcessor sp;
+		if (this instanceof ShortProcessor)
+			sp = (ShortProcessor)this.duplicate();
+		else
+			sp = (ShortProcessor)this.convertToShort(scale);
+		return sp;
+	}
+
+	/** Returns a 32-bit float version of this image as a FloatProcessor. 
+		For byte and short images, converts using a calibration function 
+		if a calibration table has been set using setCalibrationTable(). */
+	public FloatProcessor convertToFloatProcessor() {
+		FloatProcessor fp;
+		if (this instanceof FloatProcessor)
+			fp = (FloatProcessor)this.duplicate();
+		else
+			fp = (FloatProcessor)this.convertToFloat();
+		return fp;
+	}
+	
+	/** Returns an RGB version of this image as a ColorProcessor. */
+	public ColorProcessor convertToColorProcessor() {
+		ColorProcessor cp;
+		if (this instanceof ColorProcessor)
+			cp = (ColorProcessor)this.duplicate();
+		else
+			cp = (ColorProcessor)this.convertToRGB();
+		return cp;
 	}
 	
 	/** Performs a convolution operation using the specified kernel. 
@@ -2394,8 +2474,12 @@ public abstract class ImageProcessor implements Cloneable {
 		sliceNumber = slice;
 	}
 	
-	/** Returns a shallow copy of this ImageProcessor. */
-	public synchronized Object clone() {
+	/** Returns a shallow copy of this ImageProcessor, where this 
+	* image and the copy share pixel data. Use the duplicate() method 
+	* to create a copy that does not share the pixel data.
+	* @see ImageProcessor#duplicate	
+	*/
+	public Object clone() {
 		try {
 			return super.clone();
 		} catch (CloneNotSupportedException e) {

@@ -24,7 +24,7 @@ popup12=Duplicate...
 
 # Plugins installed in the File/New submenu
 new01="Image...[n]",ij.plugin.Commands("new")
-new02="Hyperstack...",ij.plugin.HyperStackConverter("new")
+new02="Hyperstack...",ij.plugin.HyperStackMaker
 new03="Text Window[N]",ij.plugin.NewPlugin("text")
 new04="Internal Clipboard",ij.plugin.Clipboard("show")
 new05="System Clipboard[V]",ij.plugin.Clipboard("showsys")
@@ -171,7 +171,7 @@ tools_13="Stop Animation",ij.plugin.Animator("stop")
 tools_14="Animation Options...",ij.plugin.Animator("options")
 
 # Plugins installed in the Image/Hyperstacks submenu
-hyperstacks01="New Hyperstack...",ij.plugin.HyperStackConverter("new")
+hyperstacks01="New Hyperstack...",ij.plugin.HyperStackMaker
 hyperstacks02="Stack to Hyperstack...",ij.plugin.HyperStackConverter("stacktohs")
 hyperstacks03="Hyperstack to Stack",ij.plugin.HyperStackConverter("hstostack")
 hyperstacks04="Reduce Dimensionality...",ij.plugin.HyperStackReducer
@@ -206,9 +206,10 @@ overlay04="Show Overlay",ij.plugin.OverlayCommands("show")
 overlay05="From ROI Manager",ij.plugin.OverlayCommands("from")
 overlay06="To ROI Manager",ij.plugin.OverlayCommands("to")
 overlay07="Remove Overlay",ij.plugin.OverlayCommands("remove")
-overlay08="Flatten[F]",ij.plugin.OverlayCommands("flatten")
-overlay09="Labels...",ij.plugin.OverlayLabels
-overlay10="Overlay Options...",ij.plugin.OverlayCommands("options")
+overlay08="List Elements",ij.plugin.OverlayCommands("list")
+overlay09="Flatten[F]",ij.plugin.OverlayCommands("flatten")
+overlay10="Labels...",ij.plugin.OverlayLabels
+overlay11="Overlay Options...",ij.plugin.OverlayCommands("options")
 
 # Plugins installed in the Image/Lookup Tables submenu
 lookup01="Invert LUT",ij.plugin.LutLoader("invert")
@@ -324,8 +325,8 @@ filters17="Show Circular Masks...",ij.plugin.filter.RankFilters("masks")
 # Plugins installed in the File/Batch submenu
 batch01="Measure...",ij.plugin.BatchMeasure
 batch02="Convert...",ij.plugin.BatchConverter
-batch03="Macro... ",ij.plugin.BatchProcesser
-batch04="Virtual Stack...",ij.plugin.BatchProcesser("stack")
+batch03="Macro... ",ij.plugin.BatchProcessor
+batch04="Virtual Stack...",ij.plugin.BatchProcessor("stack")
 
 # Plugins installed in the Analyze/Gels submenu
 gels01="Select First Lane[1]",ij.plugin.GelAnalyzer("first")

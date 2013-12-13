@@ -32,7 +32,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	/**
 	Opens a new single-column text window.
 	@param title	the title of the window
-	@param str		the text initially displayed in the window
+	@param data		the text initially displayed in the window
 	@param width	the width of the window in pixels
 	@param height	the height of the window in pixels
 	*/
@@ -131,11 +131,15 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		}
 		m.addActionListener(this);
 		mb.add(m);
+		textPanel.fileMenu = m;
 		m = new Menu("Edit");
 		m.add(new MenuItem("Cut", new MenuShortcut(KeyEvent.VK_X)));
 		m.add(new MenuItem("Copy", new MenuShortcut(KeyEvent.VK_C)));
 		m.add(new MenuItem("Clear"));
 		m.add(new MenuItem("Select All", new MenuShortcut(KeyEvent.VK_A)));
+		m.addSeparator();
+		m.add(new MenuItem("Find...", new MenuShortcut(KeyEvent.VK_F)));
+		m.add(new MenuItem("Find Next", new MenuShortcut(KeyEvent.VK_G)));
 		m.addActionListener(this);
 		mb.add(m);
 		m = new Menu("Font");

@@ -194,8 +194,6 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		String name = null;
 		if (cmd.equals("Display LUTs"))
 			name = "ShowAllLuts.txt";
-		else if (cmd.equals("New Hyperstack...")||cmd.equals("Hyperstack..."))
-			name = "HyperStackMaker.txt";
 		else if (cmd.equals("Search..."))
 			name = "Search.txt";
 		if (name==null)
@@ -297,7 +295,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		int n=menu.getItemCount();
 		for (int i=0; i<n; ++i) {
 			MenuItem m=menu.getItem(i);
-			String label=m.getLabel();
+			String label=m.getActionCommand();
 			if (m instanceof Menu) {
 				Menu subMenu=(Menu)m;
 				parseMenu(path+">"+label,subMenu);
