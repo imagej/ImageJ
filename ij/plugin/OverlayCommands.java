@@ -387,6 +387,7 @@ public class OverlayCommands implements PlugIn {
 		for (int i=0; i<rois.length; i++) {
 			Rectangle r = rois[i].getBounds();
 			String color = Colors.colorToString(rois[i].getStrokeColor());
+			String fill = Colors.colorToString(rois[i].getFillColor());
 			double strokeWidth = rois[i].getStrokeWidth();
 			int digits = strokeWidth==(int)strokeWidth?0:1;
 			String sWidth = IJ.d2s(strokeWidth,digits);
@@ -395,9 +396,9 @@ public class OverlayCommands implements PlugIn {
 			int z = rois[i].getZPosition();
 			int t = rois[i].getTPosition();
 			sb.append(i+"\t"+rois[i].getName()+"\t"+rois[i].getTypeAsString()+"\t"+r.x
-			+"\t"+r.y+"\t"+r.width+"\t"+r.height+"\t"+color+"\t"+sWidth+"\t"+position+"\t"+c+"\t"+z+"\t"+t+"\n");
+			+"\t"+r.y+"\t"+r.width+"\t"+r.height+"\t"+color+"\t"+fill+"\t"+sWidth+"\t"+position+"\t"+c+"\t"+z+"\t"+t+"\n");
 		}
-        String headings = "Index\tName\tType\tX\tY\tWidth\tHeight\tColor\tLWidth\tPos\tC\tZ\tT";
+        String headings = "Index\tName\tType\tX\tY\tWidth\tHeight\tColor\tFill\tLWidth\tPos\tC\tZ\tT";
 		new TextWindow("Overlay Elements", headings, sb.toString(), 600, 400);
 	}
 	

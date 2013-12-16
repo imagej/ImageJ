@@ -5,28 +5,18 @@
 </head>
 <body>
 
-<li> <u>1.48j 11 December 2013</u>
+<li> <u>1.48k 15 December 2013</u>
 <ul>
-<li> The toolbar is now expandable, with support for up to 15 custom tools.
-<li> Added the String.show(string) and String.show(title,string) macro functions.
-<li> Added a 'G' (draw polygon) command to the macro tool icon generation
-language
-(<a href="macros/ConvertOverlayToIcon.txt">example</a>).
-<li> Thanks to Thomas Suchyna, the <i>Image&gt;Adjust&gt;Threshold</i>
-window is resizable on Linux and Windows.
-<li> Thanks to Norbert Vischer, fixed a bug that caused <i>Edit&gt;Selection&gt;Straighten</i>
-to throw an exception with composite color images with straight line selections.
-<li> Thanks to Marcel Boeglin, fixed a bug in the Overlay.crop() method that sometimes caused
- the cropped overlay to be shifted.
-<li> Thanks to Marcel Boeglin, fixed bugs in <i>Image&gt;Hyperstacks&gt;Reduce Dimensionality</i>
-that caused it to not work correctly with hyperstacks with an overlay and with one channel, non-composite
-hyperstacks with a color LUT.
-<li> Thanks to Mats Nilsson, and Johannes Schindelin, fixed a 1.48h regression that caused the
-getInfo(DICOM-tag) macro function to return empty strings or unexpected values.
-<li> Thanks to Dietmar Kunz, fixed a v1.48f regression that caused the ImageProcessor.duplicate()
-method to sometimes not work as expected.
-<li> Fixed a v1.48h regression that caused the "Select and Transform" tool in TrakEM2 to not work.
-
+<li> Added a "previous" choice to the <i>Help&gt;Update ImageJ</i> command.
+<li> Thanks to Marcel Boeglin, the <i>Image&gt;Stacks&gt;Z Project</i>,
+<i>Image&gt;Type&gt;RGB Color</i> and <i>Image&gt;Color&gt;Stack to RGB</i>
+commands now support overlays.
+<li> Added a TextRoi(x,y,width,height,string,font) constructor that us useful for
+creating centered and right-justified text selections.
+(<a href="macros/js/JustifiedText.js">example</a>).
+<li> Thanks to Marcel Boeglin, fixed a bug that caused right-justified
+text selections to not be correctly saved and/or retrieved.
+<li> Fixed a v1.48h regression that caused TrakEM2 tools to not work as expected.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
