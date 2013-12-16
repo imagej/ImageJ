@@ -96,17 +96,18 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static int brushSize = (int)Prefs.get(BRUSH_SIZE, 15);
 	private static int arcSize = (int)Prefs.get(CORNER_DIAMETER, 20);
 	private int lineType = LINE;
-	private static boolean trakEM2Mode;
+	private static boolean legacyMode;
 	
-	private Color gray = ImageJ.backgroundColor;
+	private Color gray = new Color(228,228,228);
 	private Color brighter = gray.brighter();
-	private Color darker = new Color(175, 175, 175);
+	private Color darker = new Color(180, 180, 180);
 	private Color evenDarker = new Color(110, 110, 110);
 	private Color triangleColor = new Color(150, 0, 0);
 	private Color toolColor = new Color(0, 25, 45);
 	
 	/** Obsolete public constants */
-	public static final int SPARE1=10, SPARE2=15, SPARE3=16, SPARE4=17, SPARE5=18, SPARE6=19, SPARE7=20, SPARE8=21, SPARE9=22;
+	public static final int SPARE1=UNUSED, SPARE2=CUSTOM1, SPARE3=CUSTOM2, SPARE4=CUSTOM3, 
+		SPARE5=CUSTOM4, SPARE6=CUSTOM5, SPARE7=CUSTOM6, SPARE8=CUSTOM7, SPARE9=22;
 
 
 	public Toolbar() {
@@ -114,7 +115,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		resetButtons();
 		down[0] = true;
 		setForeground(Color.black);
-		setBackground(gray);
+		setBackground(ImageJ.backgroundColor);
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		instance = this;
@@ -187,12 +188,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		Toolbar.OVAL, etc.). */
 	public static int getToolId() {
 		int id = current;
-		if (trakEM2Mode) {
+		if (legacyMode) {
 			if (id==CUSTOM1)
 				id=UNUSED;
 			else if (id>=CUSTOM2)
 				id--;
 		}
+		if (IJ.debugMode) IJ.log("Toolbar.getToolId: "+id);
 		return id;
 	}
 
@@ -215,7 +217,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	private void drawButtons(Graphics g) {
-		//long start = System.currentTimeMillis();
+		if (g==null)
+			return;
 		if (Prefs.antialiasedTools) {
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -226,7 +229,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		drawButton(g, lineType);
 		for (int i=POINT; i<getNumTools(); i++)
 			drawButton(g, i);
-		//IJ.log("drawButtons: "+(System.currentTimeMillis()-start));
 	}
 
 	private void fill3DRect(Graphics g, int x, int y, int width, int height, boolean raised) {
@@ -245,14 +247,16 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}    
 
 	private void drawButton(Graphics g, int tool) {
-		if (IJ.debugMode) IJ.log("drawButton: "+tool+" "+g);
 		if (g==null) return;
-		if (trakEM2Mode) {
+		if (legacyMode) {
 			if (tool==UNUSED)
 				tool = CUSTOM1;
 			else if (tool>=CUSTOM1)
 				tool++;
+			if ((tool==POLYLINE && lineType!=POLYLINE) || (tool==FREELINE && lineType!=FREELINE))
+				return;
 		}
+		if (IJ.debugMode) IJ.log("Toolbar.drawButton: "+tool);
         int index = toolIndex(tool);
         int x = index*SIZE + 1;
         if (tool>=CUSTOM1)
@@ -311,7 +315,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				return;
 			case POLYLINE:
 				xOffset = x; yOffset = y;
-				m(14,6); d(11,3); d(1,3); d(1,4); d(6,9); d(2,13);
+				polyline(15,6,11,2,1,2,1,3,7,9,2,14);
 				drawTriangle(12,14);
 				return;
 			case FREELINE:
@@ -604,7 +608,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	public void paint(Graphics g) {
-		if (null==g) return;
 		drawButtons(g);
 	}
 
@@ -712,8 +715,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public void setTool(int tool) {
 		if (tool==UNUSED)  //  "Unused" (blank) tool replaced with gap in 1.48h
 			tool = CUSTOM1;
-		else if (trakEM2Mode && tool>=CUSTOM1)
+		else if (legacyMode && tool>=CUSTOM1)
 			tool++;
+		if (IJ.debugMode) IJ.log("Toolbar.setTool: "+tool);
 		if ((tool==current&&!(tool==RECTANGLE||tool==OVAL||tool==POINT)) || tool<0 || tool>=getNumTools()-1)
 			return;
 		if (tool>=CUSTOM1&&tool<=getNumTools()-2) {
@@ -750,7 +754,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			String name = getName(current);
 			if (name!=null) Recorder.record("setTool", name);
 		}
-		if (IJ.isMacOSX())
+		if (legacyMode)
 			repaint();
 		if (!previousName.equals(getToolName()))
 			IJ.notifyEventListeners(IJEventListener.TOOL_CHANGED);
@@ -878,7 +882,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (IJ.getInstance()!=null) {
 			Toolbar tb = getInstance();
 			Graphics g = tb.getGraphics();
-			if (IJ.debugMode) IJ.log("repaintTool: "+tool+" "+g);
+			if (IJ.debugMode) IJ.log("Toolbar.repaintTool: "+tool+" "+g);
 			if (g==null) return;
 			if (Prefs.antialiasedTools)
 				((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -1429,7 +1433,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	/** Adds a tool to the toolbar. The 'toolTip' string is displayed in the status bar
 		 when the mouse is over the tool icon. The 'toolTip' string may include icon 
 		(http://imagej.nih.gov/ij/developer/macro/macros.html#tools).
-		Returns the tool ID, or -1 if all tools are in use. */
+		Returns the tool ID, or -1 if all tool slots are in use. */
 	public int addTool(String toolTip) {
 		int index = toolTip.indexOf('-');
 		boolean hasIcon = index>=0 && (toolTip.length()-index)>4;
@@ -1441,7 +1445,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			}			
 		}
 		if (tool==CUSTOM1)
-			trakEM2Mode = toolTip.startsWith("Select and Transform Tool");
+			legacyMode = toolTip.startsWith("Select and Transform Tool"); //TrakEM2
 		if (tool==-1 && (nExtraTools<MAX_EXTRA_TOOLS)) {
 			nExtraTools++;
 			names[getNumTools()-1] = names[getNumTools()-2];
@@ -1475,6 +1479,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
         	setTool(RECTANGLE);
         if (names[tool].endsWith(" Menu Tool"))
             installMenu(tool);
+        if (IJ.debugMode) IJ.log("Toolbar.addTool: "+tool+" "+toolTip);
 		return tool;
 	}
     
@@ -1674,7 +1679,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	public void installStartupTools() {
-		if (IJ.debugMode) IJ.log("installStartupTools");
+		if (IJ.debugMode) IJ.log("Toolbar.installStartupTools");
 		for (int i=0; i<=6; i++) {
 			String name = Prefs.get(TOOL_KEY + (i/10)%10 + i%10, "");
 			if (IJ.debugMode) IJ.log("  "+i+" "+name);
@@ -1693,7 +1698,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	private boolean installBuiltinTool(String label) {
-		if (IJ.debugMode) IJ.log("installBuiltinTool: "+label);
+		if (IJ.debugMode) IJ.log("Toolbar.installBuiltinTool: "+label);
 		boolean ok = true;
 		PlugInTool tool = null;
 		if (label.startsWith("Arrow")) {

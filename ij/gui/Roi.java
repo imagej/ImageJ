@@ -1602,8 +1602,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			case LINE: s="Straight Line"; break;
 			case OVAL: s="Oval"; break;
 			case COMPOSITE: s = "Composite"; break;
-			case POINT: s = "Point"; break;
-			default: s="Rectangle"; break;
+			case POINT: s="Point"; break;
+			default: s=(this instanceof TextRoi)?"Text":"Rectangle"; break;
 		}
 		return s;
 	}

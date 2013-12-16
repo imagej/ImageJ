@@ -6,6 +6,7 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 
 /*	ImageJ/NIH Image 64 byte ROI outline header
 	2 byte numbers are big-endian signed shorts
@@ -392,7 +393,9 @@ public class RoiDecoder {
 		Rectangle r = roi.getBounds();
 		int hdrSize = RoiEncoder.HEADER_SIZE;
 		int size = getInt(hdrSize);
-		int style = getInt(hdrSize+4);
+		int styleAndJustification = getInt(hdrSize+4);
+		int style = styleAndJustification&255;
+		int justification = styleAndJustification>>8;
 		int nameLength = getInt(hdrSize+8);
 		int textLength = getInt(hdrSize+12);
 		char[] name = new char[nameLength];
@@ -402,15 +405,16 @@ public class RoiDecoder {
 		for (int i=0; i<textLength; i++)
 			text[i] = (char)getShort(hdrSize+16+nameLength*2+i*2);
 		Font font = new Font(new String(name), style, size);
-		Roi roi2 = null;
+		TextRoi roi2 = null;
 		if (roi.subPixelResolution()) {
-			FloatPolygon fp = roi.getFloatPolygon();
-			roi2 = new TextRoi(fp.xpoints[0], fp.ypoints[0], new String(text), font);
+			Rectangle2D fb = roi.getFloatBounds();
+			roi2 = new TextRoi(fb.getX(), fb.getY(), fb.getWidth(), fb.getHeight(), new String(text), font);
 		} else
-			roi2 = new TextRoi(r.x, r.y, new String(text), font);
+			roi2 = new TextRoi(r.x, r.y, r.width, r.height, new String(text), font);
 		roi2.setStrokeColor(roi.getStrokeColor());
 		roi2.setFillColor(roi.getFillColor());
 		roi2.setName(getRoiName());
+		roi2.setJustification(justification);
 		return roi2;
 	}
 	

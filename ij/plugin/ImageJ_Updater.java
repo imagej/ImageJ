@@ -49,10 +49,10 @@ public class ImageJ_Updater implements PlugIn {
 			urls[i] = IJ.URL+"/download/jars/ij"
 				+version.substring(1,2)+version.substring(3,6)+".jar";
 		}
-		versions[count-2] = "previous";
-		urls[count-2] = IJ.URL+"/upgrade/ij2.jar";
-		versions[count-1] = "daily build";
-		urls[count-1] = IJ.URL+"/ij.jar";
+		versions[count-2] = "daily build";
+		urls[count-2] = IJ.URL+"/ij.jar";
+		versions[count-1] = "previous";
+		urls[count-1] = IJ.URL+"/upgrade/ij2.jar";
 		int choice = showDialog(versions);
 		if (choice==-1 || !Commands.closeAll())
 			return;

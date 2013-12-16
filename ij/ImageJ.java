@@ -77,8 +77,8 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.48k";
-	public static final String BUILD = "2"; 
-	public static Color backgroundColor = new Color(220,220,220); //224,226,235
+	public static final String BUILD = ""; 
+	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
 	/** Address of socket where Image accepts commands */
@@ -137,10 +137,11 @@ public class ImageJ extends Frame implements ActionListener,
 		embedded = applet==null && (mode==EMBEDDED||mode==NO_SHOW);
 		this.applet = applet;
 		String err1 = Prefs.load(this, applet);
-		if (IJ.isLinux()) {
-			backgroundColor = new Color(240,240,240);
-			setBackground(backgroundColor);
-		}
+		//if (IJ.isLinux()) {
+		//	backgroundColor = new Color(240,240,240);
+		//	setBackground(backgroundColor);
+		//}
+		setBackground(backgroundColor);
 		Menus m = new Menus(this, applet);
 		String err2 = m.addMenuBar();
 		m.installPopupMenu(this);
