@@ -59,9 +59,6 @@ public class RoiProperties {
 	
 	/** Displays the dialog box and returns 'false' if the user cancels it. */
 	public boolean showDialog() {
-		Color strokeColor = null;
-		Color fillColor = null;
-		double strokeWidth = 1.0;
 		String name= roi.getName();
 		boolean isRange = name!=null && name.startsWith("range:");
 		String nameLabel = isRange?"Range:":"Name:";
@@ -69,10 +66,9 @@ public class RoiProperties {
 		if (name==null) name = "";
 		if (!isRange && (roi instanceof ImageRoi) && !overlayOptions)
 			return showImageDialog(name);
-		if (roi.getStrokeColor()!=null) strokeColor = roi.getStrokeColor();
-		if (strokeColor==null) strokeColor = Roi.getColor();
-		if (roi.getFillColor()!=null) fillColor = roi.getFillColor();
-		strokeWidth = roi.getStrokeWidth();
+		Color strokeColor = roi.getStrokeColor();
+		Color fillColor = roi.getFillColor();
+		double strokeWidth = roi.getStrokeWidth();
 		boolean isText = roi instanceof TextRoi;
 		boolean isLine = roi.isLine();
 		int justification = TextRoi.LEFT;
@@ -90,12 +86,8 @@ public class RoiProperties {
 			position = cpos +","+zpos+","+tpos;
 		if (position.equals("0"))
 			position = "none";
-		String linec = strokeColor!=null?"#"+Integer.toHexString(strokeColor.getRGB()):"none";
-		if (linec.length()==9 && linec.startsWith("#ff"))
-			linec = "#"+linec.substring(3);
-		String lc = Colors.hexToColor(linec);
-		if (lc!=null) linec = lc;
-		String fillc = fillColor!=null?"#"+Integer.toHexString(fillColor.getRGB()):"none";
+		String linec = Colors.colorToString(strokeColor);
+		String fillc = Colors.colorToString(fillColor);
 		if (IJ.isMacro()) {
 			fillc = "none";
 			setPositions = false;
@@ -162,7 +154,7 @@ public class RoiProperties {
 			if (nProperties>0)
 				listProperties = gd.getNextBoolean();
 		}
-		strokeColor = Colors.decode(linec, Roi.getColor());
+		strokeColor = Colors.decode(linec, null);
 		fillColor = Colors.decode(fillc, null);
 		if (isText) {
 			TextRoi troi = (TextRoi)roi;

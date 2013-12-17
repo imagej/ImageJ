@@ -162,6 +162,19 @@ public class WindowManager {
 		return frames;
 	}
 
+	/** Returns an array containing the titles of the non-image Frames and Dialogs. */
+	public synchronized static String[] getNonImageTitles() {
+		ArrayList list = new ArrayList();
+		for (int i=0; i<nonImageList.size(); i++) {
+			Object win = nonImageList.elementAt(i);
+			String title = win instanceof Frame?((Frame)win).getTitle():((Dialog)win).getTitle();
+			list.add(title);
+		}
+		String[] titles = new String[list.size()];
+		list.toArray(titles);
+		return titles;
+	}
+
 	/** For IDs less than zero, returns the ImagePlus with the specified ID. 
 		Returns null if no open window has a matching ID or no images are open. 
 		For IDs greater than zero, returns the Nth ImagePlus. Returns null if 

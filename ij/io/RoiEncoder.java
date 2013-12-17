@@ -287,7 +287,7 @@ public class RoiEncoder {
 		Font font = roi.getCurrentFont();
 		String fontName = font.getName();
 		int size = font.getSize();
-		int style = font.getStyle();
+		int style = font.getStyle() + roi.getJustification()*256;
 		String text = roi.getText();
 		int fontNameLength = fontName.length();
 		int textLength = text.length();

@@ -44,7 +44,7 @@ public class TextRoi extends Roi {
 		init(text, null);
 	}
 
-	/** Creates a TextRoi with the specified location and Font.
+	/** Creates a TextRoi using the specified location and Font.
 	 * @see ij.gui.Roi#setStrokeColor
 	 * @see ij.gui.Roi#setNonScalable
 	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
@@ -54,12 +54,24 @@ public class TextRoi extends Roi {
 		init(text, font);
 	}
 
-	/** Creates a TextRoi with the specified sub-pixel location and Font. */
+	/** Creates a TextRoi using the specified sub-pixel location and Font. */
 	public TextRoi(double x, double y, String text, Font font) {
 		super(x, y, 1.0, 1.0);
 		init(text, font);
 	}
 
+	/** Creates a TextRoi using the specified location, size and Font.
+	public TextRoi(int x, int y, int width, int height, String text, Font font) {
+		super(x, y, width, height);
+		init(text, font);
+	}
+
+	/** Creates a TextRoi using the specified sub-pixel location, size and Font. */
+	public TextRoi(double x, double y, double width, double height, String text, Font font) {
+		super(x, y, width, height);
+		init(text, font);
+	}
+	
 	private void init(String text, Font font) {
 		String[] lines = Tools.split(text, "\n");
 		int count = Math.min(lines.length, MAX_LINES);
@@ -265,17 +277,17 @@ public class TextRoi extends Roi {
 	}
 	*/
 
-	/** Returns the name of the global font. */
+	/** Returns the name of the global (default) font. */
 	public static String getFont() {
 		return name;
 	}
 
-	/** Returns the global font size. */
+	/** Returns the global (default) font size. */
 	public static int getSize() {
 		return size;
 	}
 
-	/** Returns the global font style. */
+	/** Returns the global (default) font style. */
 	public static int getStyle() {
 		return style;
 	}
@@ -321,7 +333,7 @@ public class TextRoi extends Roi {
 		}
 	}
 	
-	/** Returns the value of the 'justification' instance variable (LEFT, CENTER or RIGHT). */
+	/** Returns the global ((default) 'justification' (LEFT, CENTER or RIGHT). */
 	public static int getGlobalJustification() {
 		return globalJustification;
 	}

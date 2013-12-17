@@ -84,7 +84,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 		ImageStack stack2 = imp2.getStack();
 		for (int c=1; c<=channels; c++) {
 			if (channels==1) c = c1;
-			LUT lut = imp.isComposite()?((CompositeImage)imp).getChannelLut():null;
+			LUT lut = imp.isComposite()?((CompositeImage)imp).getChannelLut():imp.getProcessor().getLut();
 			imp.setPositionWithoutUpdate(c, 1, 1);
 			ImageProcessor ip = imp.getProcessor();
 			double min = ip.getMin();
@@ -118,9 +118,36 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 		imp.setPosition(c1, z1, t1);
 		imp2.resetStack();
 		imp2.setPosition(1, 1, 1);
+		Overlay overlay = imp.getOverlay();
+		if (overlay!=null && !imp.getHideOverlay())
+			imp2.setOverlay(reduce(overlay));
 	}
 
-	boolean showDialog() {
+	//Added by Marcel Boeglin 2013.11.29
+	/** Returns a copy of 'overlay', limited to the dimensions of the reduced image. */
+	private Overlay reduce(Overlay overlay) {
+		int c1 = imp.getChannel();
+		int z1 = imp.getSlice();
+		int t1 = imp.getFrame();
+		Overlay overlay2 = overlay.duplicate();
+		if (channels2==1 && slices2==slices1 && frames2==frames1)
+			overlay2.crop(c1, c1, 1, slices1, 1, frames1);
+		else if (channels2==channels1 && slices2==1 && frames2==frames1)
+			overlay2.crop(1, channels1, z1, z1, 1, frames1);
+		else if (channels2==channels1 && slices2==slices1 && frames2==1)
+			overlay2.crop(1, channels1, 1, slices1, t1, t1);
+		else if (channels2==channels1 && slices2==1 && frames2==1)
+			overlay2.crop(1, channels1, z1, z1, t1, t1);
+		else if (channels2==1 && slices2==slices1 && frames2==1)
+			overlay2.crop(c1, c1, 1, slices1, t1, t1);
+		else if (channels2==1 && slices2==1 && frames2==frames1)
+			overlay2.crop(c1, c1, z1, z1, 1, frames1);
+		else if (channels2==1 && slices2==1 && frames2==1)
+			overlay2.crop(c1, c1, z1, z1, t1, t1);
+		return overlay2;
+	}
+    
+    boolean showDialog() {
 		GenericDialog gd = new GenericDialog("Reduce");
 		gd.setInsets(10, 20, 5);
 		gd.addMessage("Create image with:");

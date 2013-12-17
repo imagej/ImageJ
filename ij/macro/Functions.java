@@ -1445,7 +1445,7 @@ public class Functions implements MacroConstants, Measurements {
 				return log!=null?log:"";
 			} else if (key.indexOf(".")==-1) {
 				ImagePlus imp = getImage();
-				String value = imp.getInfo(key);
+				String value = imp.getProp(key);
 				if (value!=null) return value;
 			} else if (lowercaseKey.equals("micrometer.abbreviation"))
 				return "\u00B5m";
@@ -2644,9 +2644,10 @@ public class Functions implements MacroConstants, Measurements {
 		if (pattern != null) {//Norbert
 			WildcardMatch wm = new WildcardMatch();
 			wm.setCaseSensitive(false);
-			ImagePlus currentImp = WindowManager.getCurrentImage();
-			for (int img=WindowManager.getWindowCount(); img>0; img--) {
-				int id = WindowManager.getNthImageID(img);
+			ImagePlus currentImp = WindowManager.getCurrentImage();               
+			int[] ids = WindowManager.getIDList();
+			for (int img = ids.length-1; img >=0; img--) {
+				int id = ids[img];              
 				ImagePlus imp = WindowManager.getImage(id);
 				if (imp!=null) {
 					String title = imp.getTitle();
@@ -2715,25 +2716,35 @@ public class Functions implements MacroConstants, Measurements {
 			roiManager = null;
 			displayBatchModeImage(imp2);
 		} else if (sarg.equalsIgnoreCase("show")) {
-			Interpreter.setTempShowMode(true);
-			displayBatchModeImage(imp2);
-			Interpreter.setTempShowMode(false);
-			Interpreter.removeBatchModeImage(imp2);
+			if (imp2!=null) {
+				Interpreter.setTempShowMode(true);
+				displayBatchModeImage(imp2);
+				Interpreter.setTempShowMode(false);
+				Interpreter.removeBatchModeImage(imp2);
+			}
 		} else if (sarg.equalsIgnoreCase("hide")) {
-			ImageWindow win = imp2.getWindow();
-			if (win!=null)
-				imp2.hide();
-			Interpreter.addBatchModeImage(imp2);
+			interp.setBatchMode(true);
+			if (imp2!=null) {
+				ImageWindow win = imp2.getWindow();
+				if (win!=null) {
+					imp2.hide();
+					Interpreter.addBatchModeImage(imp2);
+				}
+				IJ.selectWindow(imp2.getID());
+			}
 		} else {
 			Vector v = Interpreter.imageTable;
 			if (v==null) return;
+			ImagePlus cImp = imp2;
 			interp.setBatchMode(false);
 			roiManager = null;
 			for (int i=0; i<v.size(); i++) {
 				imp2 = (ImagePlus)v.elementAt(i);
-				if (imp2!=null) 
+				if (imp2!=null && imp2!=cImp) {
 					displayBatchModeImage(imp2);
+				}
 			}
+			displayBatchModeImage(cImp);
 		}
 	}
 	
@@ -3914,10 +3925,30 @@ public class Functions implements MacroConstants, Measurements {
 	
 	void showText() {
 		String title = getFirstString();
-		String text = getLastString();
-		Editor ed = new Editor();
-		ed.setSize(350, 300);
-		ed.create(title, text);
+		String text = null;
+		if (interp.nextToken()==',')
+			text = getLastString();
+		else
+			interp.getRightParen();
+		if (text==null) {
+			text = title;
+			title = "Untitled";
+		}
+		Frame frame = WindowManager.getFrame(title);
+		Editor ed = null;
+		boolean useExisting = frame instanceof Editor;
+		if (useExisting) {
+			ed = (Editor)frame;
+			TextArea ta = ed.getTextArea();
+			ta.selectAll();
+			ta.replaceRange(text, ta.getSelectionStart(), ta.getSelectionEnd());
+		} else {
+			ed = new Editor();
+			ed.setSize(350, 300);
+			ed.create(title, text);
+		}
+		if (title.equals("Untitled") && text.contains("Test Action Tool"))
+			new MacroInstaller().installSingleTool(text);
 	}
 	
 	Variable[] newMenu() {
@@ -3999,12 +4030,10 @@ public class Functions implements MacroConstants, Measurements {
 				array[i] = new Variable(0, 0.0, (String)v.elementAt(i));
 			return array;
 		} else if (key.equals("window.titles")) {
-			Frame[] list = WindowManager.getNonImageWindows();
-			Variable[] array = new Variable[list.length];
-			for (int i=0; i<list.length; i++) {
-				Frame frame = list[i];
-				array[i] = new Variable(0, 0.0, frame.getTitle());
-			}
+			String[] titles = WindowManager.getNonImageTitles();
+			Variable[] array = new Variable[titles.length];
+			for (int i=0; i<titles.length; i++)
+				array[i] = new Variable(0, 0.0, titles[i]);
 			return array;
 		} else if (key.equals("threshold.methods")) {
 			String[] list = AutoThresholder.getMethods();
@@ -4046,11 +4075,18 @@ public class Functions implements MacroConstants, Measurements {
 			return resetBuffer();
 		else if (name.equals("buffer"))
 			return getBuffer();
+		else if (name.equals("show"))
+			return showString();
 		else
 			interp.error("Unrecognized String function");
 		return null;
 	}
 	
+	private String showString() {
+		showText();
+		return null;
+	}
+
 	private String getResultsHeadings() {
 		interp.getParens();
 		ResultsTable rt = ResultsTable.getResultsTable();
@@ -5693,6 +5729,10 @@ public class Functions implements MacroConstants, Measurements {
 		if (name.equals("getBounds")) {
 			getBounds();
 			return null;
+		} else if (name.equals("getDefaultColor")) {
+			interp.getParens();
+			Color color = Roi.getColor();
+			return Colors.colorToString(color);
 		} else if (name.equals("getStrokeColor")) {
 			interp.getParens();
 			Color color = roi.getStrokeColor();
@@ -5747,6 +5787,8 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("getType")) {
 			interp.getParens();
 			String type = roi.getTypeAsString();
+			if (type.equals("Straight Line"))
+				type = "Line";
 			return type.toLowerCase(Locale.US);
 		} else
 			interp.error("Unrecognized Roi function");
