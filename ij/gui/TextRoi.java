@@ -277,17 +277,17 @@ public class TextRoi extends Roi {
 	}
 	*/
 
-	/** Returns the name of the global font. */
+	/** Returns the name of the global (default) font. */
 	public static String getFont() {
 		return name;
 	}
 
-	/** Returns the global font size. */
+	/** Returns the global (default) font size. */
 	public static int getSize() {
 		return size;
 	}
 
-	/** Returns the global font style. */
+	/** Returns the global (default) font style. */
 	public static int getStyle() {
 		return style;
 	}
@@ -333,7 +333,7 @@ public class TextRoi extends Roi {
 		}
 	}
 	
-	/** Returns the global 'justification' value (LEFT, CENTER or RIGHT). */
+	/** Returns the global ((default) 'justification' (LEFT, CENTER or RIGHT). */
 	public static int getGlobalJustification() {
 		return globalJustification;
 	}

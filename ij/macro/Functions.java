@@ -2644,9 +2644,10 @@ public class Functions implements MacroConstants, Measurements {
 		if (pattern != null) {//Norbert
 			WildcardMatch wm = new WildcardMatch();
 			wm.setCaseSensitive(false);
-			ImagePlus currentImp = WindowManager.getCurrentImage();
-			for (int img=WindowManager.getWindowCount(); img>0; img--) {
-				int id = WindowManager.getNthImageID(img);
+			ImagePlus currentImp = WindowManager.getCurrentImage();               
+			int[] ids = WindowManager.getIDList();
+			for (int img = ids.length-1; img >=0; img--) {
+				int id = ids[img];              
 				ImagePlus imp = WindowManager.getImage(id);
 				if (imp!=null) {
 					String title = imp.getTitle();
@@ -2734,13 +2735,16 @@ public class Functions implements MacroConstants, Measurements {
 		} else {
 			Vector v = Interpreter.imageTable;
 			if (v==null) return;
+			ImagePlus cImp = imp2;
 			interp.setBatchMode(false);
 			roiManager = null;
 			for (int i=0; i<v.size(); i++) {
 				imp2 = (ImagePlus)v.elementAt(i);
-				if (imp2!=null) 
+				if (imp2!=null && imp2!=cImp) {
 					displayBatchModeImage(imp2);
+				}
 			}
+			displayBatchModeImage(cImp);
 		}
 	}
 	
@@ -4025,12 +4029,10 @@ public class Functions implements MacroConstants, Measurements {
 				array[i] = new Variable(0, 0.0, (String)v.elementAt(i));
 			return array;
 		} else if (key.equals("window.titles")) {
-			Frame[] list = WindowManager.getNonImageWindows();
-			Variable[] array = new Variable[list.length];
-			for (int i=0; i<list.length; i++) {
-				Frame frame = list[i];
-				array[i] = new Variable(0, 0.0, frame.getTitle());
-			}
+			String[] titles = WindowManager.getNonImageTitles();
+			Variable[] array = new Variable[titles.length];
+			for (int i=0; i<titles.length; i++)
+				array[i] = new Variable(0, 0.0, titles[i]);
 			return array;
 		} else if (key.equals("threshold.methods")) {
 			String[] list = AutoThresholder.getMethods();

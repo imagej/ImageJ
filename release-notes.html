@@ -5,18 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.48k 15 December 2013</u>
+<li> <u>1.48m 16 December 2013</u>
 <ul>
-<li> Added a "previous" choice to the <i>Help&gt;Update ImageJ</i> command.
-<li> Thanks to Marcel Boeglin, the <i>Image&gt;Stacks&gt;Z Project</i>,
-<i>Image&gt;Type&gt;RGB Color</i> and <i>Image&gt;Color&gt;Stack to RGB</i>
-commands now support overlays.
-<li> Added a TextRoi(x,y,width,height,string,font) constructor that us useful for
-creating centered and right-justified text selections.
-(<a href="macros/js/JustifiedText.js">example</a>).
-<li> Thanks to Marcel Boeglin, fixed a bug that caused right-justified
-text selections to not be correctly saved and/or retrieved.
-<li> Fixed a v1.48h regression that caused TrakEM2 tools to not work as expected.
+<li> Thanks to Norbert Vischer, fixed a bug that caused the close(wildcard) macro 
+function to not work with batch mode images.
+<li> Fixed a bug that caused the active batch mode image to sometimes not
+remain the active image after setBatchMode("exit and display");
+<li> Thanks to Kees Straatman, fixed a v1.47 regression that caused
+the getList("window.titles") macro function to not include the 
+Threshold and B&C windows.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

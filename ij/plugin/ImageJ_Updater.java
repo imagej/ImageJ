@@ -10,6 +10,7 @@ import java.lang.reflect.*;
 
 /** This plugin implements the Help/Update ImageJ command. */
 public class ImageJ_Updater implements PlugIn {
+	private String notes;
 
 	public void run(String arg) {
 		if (arg.equals("menus"))
@@ -23,7 +24,7 @@ public class ImageJ_Updater implements PlugIn {
 		}
 		int exclamation = ij_jar.indexOf('!');
 		ij_jar = ij_jar.substring(9, exclamation);
-		if (IJ.debugMode) IJ.log("Updater: "+ij_jar);
+		if (IJ.debugMode) IJ.log("Updater (jar loc): "+ij_jar);
 		File file = new File(ij_jar);
 		if (!file.exists()) {
 			error("File not found: "+file.getPath());
@@ -58,9 +59,15 @@ public class ImageJ_Updater implements PlugIn {
 			return;
 		//System.out.println("choice: "+choice);
 		//for (int i=0; i<urls.length; i++) System.out.println("  "+i+" "+urls[i]);
-		byte[] jar = getJar(urls[choice]);
+		String url2 = urls[choice];
+		if ("daily build".equals(versions[choice]) && notes!=null && notes.contains(" </title>")) {
+			String altDaily = openUrlAsString("http://wsr.imagej.net/download/version", 1);
+			if (altDaily!=null && altDaily.length()>0)
+				url2 = "http://wsr.imagej.net/download/ij.jar";
+		}
+		byte[] jar = getJar(url2);
 		if (jar==null) {
-			error("Unable to download ij.jar from "+urls[choice]);
+			error("Unable to download ij.jar from "+url2);
 			return;
 		}
 		Prefs.savePreferences();
@@ -90,7 +97,7 @@ public class ImageJ_Updater implements PlugIn {
 
 	String getUpgradeVersion() {
 		String url = IJ.URL+"/notes.html";
-		String notes = openUrlAsString(url, 20);
+		notes = openUrlAsString(url, 20);
 		if (notes==null) {
 			error("Unable to connect to "+IJ.URL+". You\n"
 				+"may need to use the Edit>Options>Proxy Settings\n"
@@ -130,9 +137,11 @@ public class ImageJ_Updater implements PlugIn {
 			IJ.showStatus("Connecting to "+IJ.URL);
 			URLConnection uc = url.openConnection();
 			int len = uc.getContentLength();
+			if (IJ.debugMode) IJ.log("Updater (url): "+ address + " "+ len);
 			if (len<=0)
 				return null;
-			IJ.showStatus("Downloading ij.jar ("+IJ.d2s((double)len/1048576,1)+"MB)");
+			String name = address.contains("wsr")?"daily build (":"ij.jar (";
+			IJ.showStatus("Downloading "+ name + IJ.d2s((double)len/1048576,1)+"MB)");
 			InputStream in = uc.getInputStream();
 			data = new byte[len];
 			int n = 0;
@@ -147,6 +156,7 @@ public class ImageJ_Updater implements PlugIn {
 		} catch (IOException e) {
 			return null;
 		}
+		if (IJ.debugMode) IJ.wait(10000);
 		return data;
 	}
 
