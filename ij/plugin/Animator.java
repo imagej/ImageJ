@@ -263,21 +263,22 @@ public class Animator implements PlugIn {
 		int frames = imp.getNFrames();
 		if (swin.getAnimate() && (channels*slices*frames==Math.max(channels,Math.max(slices,frames))) )
 			{stopAnimation(); return;} //if only one dimension, stop animating
-		if (hyperstack && frames>1 && !((slices>1||channels>1)&&(IJ.controlKeyDown()||IJ.spaceBarDown()||IJ.altKeyDown()) || swin.getAnimate())){
-			int t = imp.getFrame() + pn;
-			if (t>frames) t = frames;
-			if (t<1) t = 1;
-			swin.setPosition(imp.getChannel(), imp.getSlice(), t);
-		} else if (hyperstack && slices>1 && !(channels>1&& (IJ.altKeyDown() || IJ.spaceBarDown()) || ((swin.getAnimate()|| IJ.controlKeyDown()) && frames==1)) ) {
-			int z = imp.getSlice() + pn;
-			if (z>slices) z = slices;
-			if (z<1) z = 1;
-			swin.setPosition(imp.getChannel(), z, imp.getFrame());
-		} else if (hyperstack && channels>1) {
-			int c = imp.getChannel() + pn;
-			if (c>channels) c = channels;
-			if (c<1) c = 1;
-			swin.setPosition(c, imp.getSlice(), imp.getFrame());
+		if(hyperstack){
+			int c=imp.getChannel(); int z=imp.getSlice(); int t=imp.getFrame();
+			if (frames>1 && !((slices>1||channels>1)&&(IJ.controlKeyDown()||IJ.spaceBarDown()||IJ.altKeyDown()) || swin.getAnimate())){
+				t += pn;
+				if (t>frames) t = frames;
+				if (t<1) t = 1;
+			} else if (slices>1 && !(channels>1&& (IJ.altKeyDown() || IJ.spaceBarDown()) || ((swin.getAnimate()|| IJ.controlKeyDown()) && frames==1)) ) {
+				z += pn;
+				if (z>slices) z = slices;
+				if (z<1) z = 1;
+			} else if (channels>1) {
+				c += pn;
+				if (c>channels) c = channels;
+				if (c<1) c = 1;
+			}
+			swin.setPosition(c, z, t);
 		} else {
 			if (IJ.altKeyDown())
 				slice+=(pn*10);
