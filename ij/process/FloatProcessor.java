@@ -857,6 +857,8 @@ public class FloatProcessor extends ImageProcessor {
 
 	/** Creates a new FloatProcessor containing a scaled copy of this image or selection. */
 	public ImageProcessor resize(int dstWidth, int dstHeight) {
+		if ((width==1||height==1) && interpolationMethod!=NONE)
+			return resizeLinearly(dstWidth, dstHeight);
 		double srcCenterX = roiX + roiWidth/2.0;
 		double srcCenterY = roiY + roiHeight/2.0;
 		double dstCenterX = dstWidth/2.0;

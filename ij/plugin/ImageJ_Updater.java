@@ -59,15 +59,13 @@ public class ImageJ_Updater implements PlugIn {
 			return;
 		//System.out.println("choice: "+choice);
 		//for (int i=0; i<urls.length; i++) System.out.println("  "+i+" "+urls[i]);
-		String url2 = urls[choice];
-		if ("daily build".equals(versions[choice]) && notes!=null && notes.contains(" </title>")) {
-			String altDaily = openUrlAsString("http://wsr.imagej.net/download/version", 1);
-			if (altDaily!=null && altDaily.length()>0)
-				url2 = "http://wsr.imagej.net/download/ij.jar";
-		}
-		byte[] jar = getJar(url2);
+		byte[] jar = null;
+		if ("daily build".equals(versions[choice]) && notes!=null && notes.contains(" </title>"))
+			jar = getJar("http://wsr.imagej.net/download/daily-build/ij.jar");
+		if (jar==null)
+			jar = getJar(urls[choice]);
 		if (jar==null) {
-			error("Unable to download ij.jar from "+url2);
+			error("Unable to download ij.jar from "+urls[choice]);
 			return;
 		}
 		Prefs.savePreferences();
@@ -154,9 +152,10 @@ public class ImageJ_Updater implements PlugIn {
 			}
 			in.close();
 		} catch (IOException e) {
+			if (IJ.debugMode) IJ.log(""+e);
 			return null;
 		}
-		if (IJ.debugMode) IJ.wait(10000);
+		if (IJ.debugMode) IJ.wait(6000);
 		return data;
 	}
 

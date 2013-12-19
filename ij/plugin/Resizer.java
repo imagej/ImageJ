@@ -128,10 +128,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			else
 				newHeight = (int)Math.round(newWidth*(origHeight/origWidth));
 		}
-		if (ip.getWidth()==1 || ip.getHeight()==1)
-			ip.setInterpolationMethod(ImageProcessor.NONE);
-		else
-			ip.setInterpolationMethod(interpolationMethod);
+		ip.setInterpolationMethod(interpolationMethod);
 		if (!crop && stackSize==1)
 			Undo.setup(Undo.TYPE_CONVERSION, imp);
 			    	

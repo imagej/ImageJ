@@ -437,7 +437,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return img;
 	}
 		
-	/** Returns this image as a BufferedImage. */
+	/** Returns a copy of this image as an 8-bit or RGB BufferedImage. 
+	 * @see ij.process.ShortProcessor#get16BitBufferedImage
+	 */
 	public BufferedImage getBufferedImage() {
 		if (isComposite())
 			return (new ColorProcessor(getImage())).getBufferedImage();
@@ -1762,8 +1764,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	if (cal.calibrated()) {
     		fi.calibrationFunction = cal.getFunction();
      		fi.coefficients = cal.getCoefficients();
-    		fi.valueUnit = cal.getValueUnit();
 		}
+		if (cal.getFunction()!=Calibration.CUSTOM)
+			fi.valueUnit = cal.getValueUnit();
+
     	switch (imageType) {
 	    	case GRAY8: case COLOR_256:
     			LookUpTable lut = createLut();

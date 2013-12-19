@@ -2740,9 +2740,8 @@ public class Functions implements MacroConstants, Measurements {
 			roiManager = null;
 			for (int i=0; i<v.size(); i++) {
 				imp2 = (ImagePlus)v.elementAt(i);
-				if (imp2!=null && imp2!=cImp) {
+				if (imp2!=null && imp2!=cImp)
 					displayBatchModeImage(imp2);
-				}
 			}
 			displayBatchModeImage(cImp);
 		}

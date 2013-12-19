@@ -317,12 +317,16 @@ public class FileOpener {
 		}
 		
 		if (fi.valueUnit!=null) {
-			int f = fi.calibrationFunction;
-			if ((f>=Calibration.STRAIGHT_LINE && f<=Calibration.EXP_RECOVERY && fi.coefficients!=null)
-			|| f==Calibration.UNCALIBRATED_OD) {
-				boolean zeroClip = props!=null && props.getProperty("zeroclip", "false").equals("true");	
-				cal.setFunction(f, fi.coefficients, fi.valueUnit, zeroClip);
-				calibrated = true;
+			if (imp.getBitDepth()==32)
+				cal.setValueUnit(fi.valueUnit);
+			else {
+				int f = fi.calibrationFunction;
+				if ((f>=Calibration.STRAIGHT_LINE && f<=Calibration.EXP_RECOVERY && fi.coefficients!=null)
+				|| f==Calibration.UNCALIBRATED_OD) {
+					boolean zeroClip = props!=null && props.getProperty("zeroclip", "false").equals("true");	
+					cal.setFunction(f, fi.coefficients, fi.valueUnit, zeroClip);
+					calibrated = true;
+				}
 			}
 		}
 		

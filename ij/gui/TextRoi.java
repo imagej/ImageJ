@@ -333,7 +333,7 @@ public class TextRoi extends Roi {
 		}
 	}
 	
-	/** Returns the global ((default) 'justification' (LEFT, CENTER or RIGHT). */
+	/** Returns the global (default) justification (LEFT, CENTER or RIGHT). */
 	public static int getGlobalJustification() {
 		return globalJustification;
 	}

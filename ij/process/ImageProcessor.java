@@ -1012,6 +1012,15 @@ public abstract class ImageProcessor implements Cloneable {
 			data[i] = getPixel(x++, y);
 	}
 
+	/** Returns the pixel values along the horizontal line starting at (x,y). */
+	public float[] getRow(int x, int y, float[] data, int length) {
+		if (data==null)
+			data = new float[length];
+		for (int i=0; i<length; i++)
+			data[i] = getf(x++, y);
+		return data;
+	}
+
 	/** Returns the pixel values down the column starting at (x,y). */
 	public void getColumn(int x, int y, int[] data, int length) {
 		for (int i=0; i<length; i++)
@@ -1025,6 +1034,13 @@ public abstract class ImageProcessor implements Cloneable {
 			putPixel(x++, y, data[i]);
 	}
 	
+	/** Inserts the pixels contained in 'data' into a 
+		horizontal line starting at (x,y). */
+	public void putRow(int x, int y, float[] data, int length) {
+		for (int i=0; i<length; i++)
+			setf(x++, y, data[i]);
+	}
+
 	/** Inserts the pixels contained in 'data' into a 
 		column starting at (x,y). */
 	public void putColumn(int x, int y, int[] data, int length) {
@@ -2013,6 +2029,45 @@ public abstract class ImageProcessor implements Cloneable {
 		}
 	}
 	
+	/** Resizes images that have a width or height of one. */
+	protected ImageProcessor resizeLinearly(int width2, int height2) {
+		int bitDepth = getBitDepth();
+		ImageProcessor ip1 = this;
+		boolean rotate = width==1;
+		if (rotate) {
+			ip1=ip1.rotateLeft();
+			int w2 = width2;
+			width2 = height2;
+			height2 = w2;
+		}
+		ip1 = ip1.convertToFloat();
+		int width1 = ip1.getWidth();
+		int height1 = ip1.getHeight();
+		ImageProcessor ip2 = ip1.createProcessor(width2, height2);
+        double scale = (double)(width1-1)/(width2-1);
+		float[] data1 = new float[width1];
+		float[] data2 = new float[width2];
+        ip1.getRow(0, 0, data1, width1);
+		double fraction;
+		for (int x=0; x<width2; x++) {
+			int x1 = (int)(x*scale);
+			int x2 = x1+1;
+			if (x2==width1) x2=width1-1;
+			fraction = x*scale - x1;
+			//ij.IJ.log(x+" "+x1+" "+x2+" "+fraction+" "+width1+" "+width2);
+			data2[x] = (float)((1.0-fraction)*data1[x1] + fraction*data1[x2]);
+		}
+		for (int y=0; y<height2; y++)
+        	ip2.putRow(0, y, data2, width2);
+        if (bitDepth==8)
+			ip2 = ip2.convertToByte(false);
+		else if (bitDepth==16)
+			ip2 = ip2.convertToShort(false);
+		if (rotate)
+			ip2=ip2.rotateRight();
+        return ip2;
+	}
+
 	/** Returns a copy of this image that has been reduced in size using binning. */
 	public ImageProcessor bin(int shrinkFactor) {
 		return new Binner().shrink(this, shrinkFactor, shrinkFactor, 0);

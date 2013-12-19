@@ -162,7 +162,7 @@ public class WindowManager {
 		return frames;
 	}
 
-	/** Returns an array containing the titles of the non-image Frames and Dialogs. */
+	/** Returns an array containing the titles of non-image Frames and Dialogs. */
 	public synchronized static String[] getNonImageTitles() {
 		ArrayList list = new ArrayList();
 		for (int i=0; i<nonImageList.size(); i++) {
