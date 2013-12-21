@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.48m 18 December 2013</u>
+<li> <u>1.48m 20 December 2013</u>
 <ul>
 <li> <i>Image&gt;Scale</i> and <i>Image&gt;Adjust&gt;Size</i> no longer
 always use nearest neighbor interpolation when the image width or height is one
@@ -17,11 +17,16 @@ remain the active image after setBatchMode("exit and display");
 <li> Thanks to Kees Straatman, fixed a v1.47 regression that caused
 the getList("window.titles") macro function to not include the 
 Threshold and B&C windows.
-<li> Thanks to Michael Schmid, fixed a bug that cause the value unit of
+<li> Thanks to Michael Schmid, fixed a bug that caused the value unit of
 32-bit images to not be saved in the TIFF header.
 <li> Thanks to Christian Meggle, fixed a bug that caused the ImageProcessor.resize()
 method to throw an exception when the image width or height was one
 (<a href="macros/js/ColorGradient.js">test case</a>).
+<li> Thanks to Norbert Vischer, fixed a bug that cause the close("*") macro
+function to throw an exception if no images were open.
+<li> Thanks to Marcel Boeglin, fixed bugs that sometimes caused hyperstacks
+with overlays to not be correctly duplicated or cropped
+(<a href="macros/js/HyperstackCroppingBugs.js">test case</a>).
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

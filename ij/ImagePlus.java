@@ -1764,8 +1764,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	if (cal.calibrated()) {
     		fi.calibrationFunction = cal.getFunction();
      		fi.coefficients = cal.getCoefficients();
-		}
-		if (cal.getFunction()!=Calibration.CUSTOM)
+			fi.valueUnit = cal.getValueUnit();
+		} else if (!Calibration.DEFAULT_VALUE_UNIT.equals(cal.getValueUnit()))
 			fi.valueUnit = cal.getValueUnit();
 
     	switch (imageType) {

@@ -2029,7 +2029,7 @@ public abstract class ImageProcessor implements Cloneable {
 		}
 	}
 	
-	/** Resizes images that have a width or height of one. */
+	/** Use linear interpolation to resize images that have a width or height of one. */
 	protected ImageProcessor resizeLinearly(int width2, int height2) {
 		int bitDepth = getBitDepth();
 		ImageProcessor ip1 = this;

@@ -80,6 +80,12 @@ public class TextRoi extends Roi {
 		if (font==null) font = new Font(name, style, size);
 		instanceFont = font;
 		firstChar = false;
+		if (width==1 && height==1) {
+			ImageJ ij = IJ.getInstance();
+			Graphics g = ij!=null?ij.getGraphics():null;
+			if (g!=null)
+				updateBounds(g);
+		}
 		if (IJ.debugMode) IJ.log("TextRoi: "+theText[0]+"  "+getBounds());
 	}
 
@@ -392,14 +398,19 @@ public class TextRoi extends Roi {
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
 	void updateBounds(Graphics g) {
 		//IJ.log("adjustSize1: "+theText[0]+"  "+width+","+height);
-		if (ic==null || (theText[0]!=null && theText[0].equals(line1)))
+		if (theText[0]!=null && theText[0].equals(line1))
 			return;
-		double mag = ic.getMagnification();
+		double mag = ic!=null?ic.getMagnification():1.0;
 		if (nonScalable) mag = 1.0;
 		Font font = getScaledFont();
 		newFont = false;
 		boolean nullg = g==null;
-		if (nullg) g = ic.getGraphics();
+		if (nullg) {
+			if (ic!=null)
+				g = ic.getGraphics();
+			else
+				return;
+		}
 		Java2.setAntialiasedText(g, antialiased);
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = (int)(metrics.getHeight()/mag);

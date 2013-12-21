@@ -26,12 +26,8 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 		ImagePlus imp = IJ.getImage();
 		ImageProcessor ip = imp.getProcessor();
 		Roi roi = imp.getRoi();
-		if (roi==null && crop) {
-			IJ.error("Crop", "Area selection required");
-			return;
-		}
-		if (roi!=null && roi.isLine()) {
-			IJ.error("The Crop and Adjust>Size commands\ndo not work with line selections.");
+		if ((roi==null||!roi.isArea()) && crop) {
+			IJ.error(crop?"Crop":"Resize", "Area selection required");
 			return;
 		}
 		if (!imp.lock())
@@ -49,6 +45,8 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				ShapeRoi shape1 = new ShapeRoi(roi);
 				ShapeRoi shape2 = new ShapeRoi(new Roi(0, 0, w, h));
 				roi = shape2.and(shape1);
+				if (roi.getBounds().width==0 || roi.getBounds().height==0)
+					throw new IllegalArgumentException("Selection is outside the image");
 				if (restoreRoi) imp.setRoi(roi);
 			}
 		}
@@ -150,17 +148,17 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 						cal.yOrigin -= roi.getBounds().y;
 					}
 					imp.setStack(null, s2);
-					if (restoreRoi && roi!=null) {
-						roi.setLocation(0, 0);
-						imp.setRoi(roi);
-						imp.draw();
-					}
 					if (crop && roi!=null) {
 						Overlay overlay = imp.getOverlay();
 						if (overlay!=null && !imp.getHideOverlay()) {
 							Overlay overlay2 = overlay.crop(roi.getBounds());
 							imp.setOverlay(overlay2);
 						}
+					}
+					if (restoreRoi && roi!=null) {
+						roi.setLocation(0, 0);
+						imp.setRoi(roi);
+						imp.draw();
 					}
 				}
 				if (stackSize>1 && newSize<stackSize)

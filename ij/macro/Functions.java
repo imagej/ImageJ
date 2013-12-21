@@ -2646,6 +2646,10 @@ public class Functions implements MacroConstants, Measurements {
 			wm.setCaseSensitive(false);
 			ImagePlus currentImp = WindowManager.getCurrentImage();               
 			int[] ids = WindowManager.getIDList();
+			if (ids==null) {
+				resetImage();
+				return;
+			}
 			for (int img = ids.length-1; img >=0; img--) {
 				int id = ids[img];              
 				ImagePlus imp = WindowManager.getImage(id);
