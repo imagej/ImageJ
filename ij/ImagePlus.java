@@ -250,7 +250,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		nothing if there is no window associated with
 		this image (i.e. show() has not been called).*/
 	public synchronized void updateAndDraw() {
-		if (stack!=null && currentSlice>=1 && currentSlice<=stack.getSize()) {
+		if (stack!=null && !stack.isVirtual() && currentSlice>=1 && currentSlice<=stack.getSize()) {
 			Object pixels = stack.getPixels(currentSlice);
 			if (ip!=null && pixels!=null && pixels!=ip.getPixels()) { // was stack updated?
 				try {

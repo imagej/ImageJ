@@ -1004,8 +1004,8 @@ public class IJ {
 		    		int size = (stackSize*imp.getWidth()*imp.getHeight()*imp.getBytesPerPixel()+524288)/1048576;
 		    		String msg =
 						"Use the Process>Batch>Virtual Stack command\n"+
-						"to process a virtual stack ike this one or convert\n"+
-						"it to a normal stack using Image>Duplicate, which\n"+
+						"to process a virtual stack or convert it into a\n"+
+						"normal stack using Image>Duplicate, which\n"+
 						"will require "+size+"MB of additional memory.";
 		    		error(msg);
 					return PlugInFilter.DONE;
