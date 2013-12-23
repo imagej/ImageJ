@@ -2948,7 +2948,8 @@ public class Functions implements MacroConstants, Measurements {
 		Frame frame = WindowManager.getFrame(title);
 		if (frame==null) {
 			if (isCommand) {
-				interp.done = true;
+				//interp.done = true;
+				IJ.log("**MACRO ERROR: No window called "+title+" found**");
 				return;
 			} else
 				interp.error("Window not found");

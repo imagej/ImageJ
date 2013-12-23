@@ -1459,10 +1459,10 @@ public class Menus {
 			} catch (Exception e) {}
 			return;
 		}
-		String path = macrosPath + "StartupMacros.txt";
+		String path = macrosPath + "StartupMacros.ijm";
 		File f = new File(path);
 		if (!f.exists()) {
-			path = macrosPath + "StartupMacros.ijm";
+			path = macrosPath + "StartupMacros.txt";
 			f = new File(path);
 			if (!f.exists()) {
 				(new MacroInstaller()).installFromIJJar("/macros/StartupMacros.txt");
