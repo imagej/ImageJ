@@ -113,6 +113,7 @@ public class Plot {
 	private boolean multiplePlots;
 	private boolean drawPending;
 	private int sourceImageID;
+	private PlotMaker plotMaker;
 	
 	/** keeps a reference to all of the	 that is going to be plotted. */
 	ArrayList storedData;
@@ -1200,4 +1201,12 @@ public class Plot {
 		return sourceImageID;
 	}
 	
+	public void setPlotMaker(PlotMaker plotMaker) {
+		this.plotMaker = plotMaker;
+	}
+	
+	PlotMaker getPlotMaker() {
+		return plotMaker;
+	}
+
 }

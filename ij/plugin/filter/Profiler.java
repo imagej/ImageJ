@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 /** Implements the Analyze/Plot Profile and Edit/Options/Profile Plot Options commands. */
-public class Profiler implements PlugInFilter {
+public class Profiler implements PlugInFilter, PlotMaker {
 
 	ImagePlus imp;
 
@@ -18,8 +18,21 @@ public class Profiler implements PlugInFilter {
 	}
 
 	public void run(ImageProcessor ip) {
+		Plot plot = getPlot();
+		if (plot==null)
+			return;
+		plot.setPlotMaker(this);
+		plot.show();
+	}
+	
+	public Plot getPlot() {
 		boolean averageHorizontally = Prefs.verticalProfile || IJ.altKeyDown();
-		new ProfilePlot(imp, averageHorizontally).createWindow();
+		ProfilePlot pp = new ProfilePlot(imp, averageHorizontally);
+		return pp.getPlot();
+	}
+	
+	public ImagePlus getSourceImage() {
+		return imp;
 	}
 
 	public void doOptions() {

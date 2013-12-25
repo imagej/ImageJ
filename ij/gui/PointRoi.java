@@ -175,6 +175,10 @@ public class PointRoi extends PolygonRoi {
 	}
 
 	public ImageProcessor getMask() {
+		if (nPoints==1) {
+			cachedMask = null;
+			return null;
+		}
 		if (cachedMask!=null && cachedMask.getPixels()!=null)
 			return cachedMask;
 		ImageProcessor mask = new ByteProcessor(width, height);

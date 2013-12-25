@@ -57,6 +57,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	private Plot plot;
 	private String blankLabel = "                      ";
 	
+	private PlotMaker plotMaker;
 	private ImagePlus srcImp;		// the source image for live plotting
 	private Thread bgThread;		// thread for plotting (in the background)
 	private boolean doUpdate;	// tells the background thread to update
@@ -191,7 +192,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		copy = new Button("Copy...");
 		copy.addActionListener(this);
 		buttons.add(copy);
-		if (plot!=null && plot.getSourceImageID()!=0) {
+		if (plot!=null && plot.getPlotMaker()!=null) {
 			live = new Button("Live");
 			live.addActionListener(this);
 			buttons.add(live);
@@ -487,10 +488,12 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	}
 
 	private void enableLiveProfiling() {
-		if (plot!=null && bgThread==null && plot.getSourceImageID()!=0) {
-			int id = plot.getSourceImageID();
-			srcImp = WindowManager.getImage(id);
-			if (srcImp==null) return;
+		if (plotMaker==null)
+			plotMaker = plot!=null?plot.getPlotMaker():null;
+		if (plotMaker!=null && bgThread==null) {
+			srcImp = plotMaker.getSourceImage();
+			if (srcImp==null)
+				return;
 			bgThread = new Thread(this, "Live Profiler");
 			bgThread.setPriority(Math.max(bgThread.getPriority()-3, Thread.MIN_PRIORITY));
 			bgThread.start();
@@ -502,10 +505,10 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	}
 	
 	// these listeners are activated if the selection is changed in the source ImagePlus
-	public synchronized void mousePressed(MouseEvent e) { doUpdate = true; notify(); }   
-	public synchronized void mouseDragged(MouseEvent e) { doUpdate = true; notify(); }
-	public synchronized void mouseClicked(MouseEvent e) { doUpdate = true; notify(); }
-	public synchronized void keyPressed(KeyEvent e) { doUpdate = true; notify(); }
+	public synchronized void mousePressed(MouseEvent e) { doUpdate=true; notify(); }   
+	public synchronized void mouseDragged(MouseEvent e) { doUpdate=true; notify(); }
+	public synchronized void mouseClicked(MouseEvent e) { doUpdate=true; notify(); }
+	public synchronized void keyPressed(KeyEvent e) { doUpdate=true; notify(); }
 	
 	// unused listeners
 	public void mouseReleased(MouseEvent e) {}
@@ -534,6 +537,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			bgThread = null;
 			removeListeners();
 			srcImp = null;
+			plotMaker = null;
 		}
 	}
 	
@@ -541,7 +545,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	public void run() {
 		while (true) {
 			IJ.wait(50);	//delay to make sure the roi has been updated
-			Plot plot = getProfilePlot();
+			Plot plot = plotMaker.getPlot();
 			if (doUpdate && plot!=null) {
 				this.plot = plot;
 				ImageProcessor ip = plot.getProcessor();
@@ -577,7 +581,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	
 	private void removeListeners() {
 		//IJ.log("removeListeners");
-		if (srcImp==null) return;
+		if (srcImp==null)
+			return;
 		ImageCanvas ic = srcImp.getCanvas();
 		if (ic!=null) {
 			ic.removeMouseListener(this);
@@ -602,18 +607,21 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	}
 	
 	/** Get a source image profile plot. */
+	/*
 	private Plot getProfilePlot() {
-		if (srcImp==null || !isSelection())
+		if (srcImp==null || !isSelection() || plot==null)
 			return null;
 		Roi roi = srcImp.getRoi();
 		if (roi == null)
 			return null;
 		if (!(roi.isLine() || roi.getType()==Roi.RECTANGLE))
 			return null;
+		PlotMaker plotMaker = plot.getPlotMaker();
 		boolean averageHorizontally = Prefs.verticalProfile || IJ.altKeyDown();
 		ProfilePlot pp = new ProfilePlot(srcImp, averageHorizontally);
 		return pp.getPlot();
 	}
+	*/
 	
 }
 

@@ -8,11 +8,14 @@ import ij.util.Tools;
 import java.awt.Rectangle;
 
 /** Implements the Image/Stack/Plot Z-axis Profile command. */
-public class ZAxisProfiler implements PlugInFilter, Measurements  {
+public class ZAxisProfiler implements PlugInFilter, Measurements, PlotMaker  {
 	private static String[] choices = {"time", "z-axis"};
 	private static String choice = choices[0];
 	private boolean showingDialog;
 	private ImagePlus imp;
+	private boolean isPlotMaker;
+	private boolean timeProfile;
+	private boolean firstTime = true;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
@@ -29,6 +32,18 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 			IJ.error("ZAxisProfiler", "This command does not work with line selections.");
 			return;
 		}
+		isPlotMaker = roi!=null && !IJ.macroRunning();
+		Plot plot = getPlot();
+		if (plot!=null) {
+			if (isPlotMaker)
+				plot.setPlotMaker(this);
+			plot.show();
+		}
+	}
+		
+	public Plot getPlot() {
+		Roi roi = imp.getRoi();
+		ImageProcessor ip = imp.getProcessor();
 		double minThreshold = ip.getMinThreshold();
 		double maxThreshold = ip.getMaxThreshold();
 		float[] y;
@@ -37,13 +52,13 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 		else
 			y = getZAxisProfile(roi, minThreshold, maxThreshold);
 		if (y==null)
-			return;
+			return null;
 		float[] x = new float[y.length];
 		for (int i=0; i<x.length; i++)
 			x[i] = i+1;
 		String title;
 		if (roi!=null) {
-			Rectangle r = imp.getRoi().getBounds();
+			Rectangle r = roi.getBounds();
 			title = imp.getTitle()+"-"+r.x+"-"+r.y;
 		} else
 			title = imp.getTitle()+"-0-0";
@@ -56,9 +71,13 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 			double xmin=a[0]; double xmax=a[1];
 			plot.setLimits(xmin, xmax, ymin, ymax);
 		}
-		plot.show();
+		return plot;
 	}
-		
+	
+	public ImagePlus getSourceImage() {
+		return imp;
+	}
+
 	float[] getHyperstackProfile(Roi roi, double minThreshold, double maxThreshold) {
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
@@ -67,8 +86,10 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 		int z = imp.getZ();
 		int t = imp.getT();
 		int size = slices;
-		boolean timeProfile = slices==1 && frames>1;
-		if (slices>1 && frames>1) {
+		if (firstTime)
+			timeProfile = slices==1 && frames>1;
+		if (slices>1 && frames>1 && (!isPlotMaker ||firstTime)) {
+			firstTime = false;
 			showingDialog = true;
 			GenericDialog gd = new GenericDialog("Profiler");
 			gd.addChoice("Profile", choices, choice);
@@ -83,26 +104,34 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 		else
 			size = slices;
 		float[] values = new float[size];
+		Calibration cal = imp.getCalibration();
 		Analyzer analyzer = new Analyzer(imp);
 		int measurements = analyzer.getMeasurements();
-		boolean showResults = measurements!=0 && measurements!=LIMIT;
+		boolean showResults = !isPlotMaker && measurements!=0 && measurements!=LIMIT;
 		measurements |= MEAN;
 		if (showResults) {
 			if (!analyzer.resetCounter())
 				return null;
 		}
+		ImageStack stack = imp.getStack();
 		for (int i=1; i<=size; i++) {
+			int index = 1;
 			if (timeProfile)
-				imp.setPositionWithoutUpdate(c, z, i);
+				index = imp.getStackIndex(c, z, i);
 			else
-				imp.setPositionWithoutUpdate(c, i, t);
-			ImageStatistics stats = imp.getStatistics(measurements);
+				index = imp.getStackIndex(c, i, t);
+			ImageProcessor ip = stack.getProcessor(index);
+			if (minThreshold!=ImageProcessor.NO_THRESHOLD)
+				ip.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
+			ip.setRoi(roi);
+			ImageStatistics stats = ImageStatistics.getStatistics(ip, measurements, cal);
 			analyzer.saveResults(stats, roi);
-			if (showResults)			
-				analyzer.displayResults();
 			values[i-1] = (float)stats.mean;
 		}
-		imp.setPositionWithoutUpdate(c, z, t);
+		if (showResults) {
+			ResultsTable rt = Analyzer.getResultsTable();
+			rt.show("Results");
+		}
 		return values;
 	}
 
@@ -113,7 +142,7 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 		Calibration cal = imp.getCalibration();
 		Analyzer analyzer = new Analyzer(imp);
 		int measurements = analyzer.getMeasurements();
-		boolean showResults = measurements!=0 && measurements!=LIMIT;
+		boolean showResults = !isPlotMaker && measurements!=0 && measurements!=LIMIT;
 		boolean showingLabels = (measurements&LABELS)!=0 || (measurements&SLICE)!=0;
 		measurements |= MEAN;
 		if (showResults) {
@@ -129,9 +158,11 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 			ip.setRoi(roi);
 			ImageStatistics stats = ImageStatistics.getStatistics(ip, measurements, cal);
 			analyzer.saveResults(stats, roi);
-			if (showResults)			
-				analyzer.displayResults();
 			values[i-1] = (float)stats.mean;
+		}
+		if (showResults) {
+			ResultsTable rt = Analyzer.getResultsTable();
+			rt.show("Results");
 		}
 		if (showingLabels) imp.setSlice(current);
 		return values;

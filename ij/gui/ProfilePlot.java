@@ -106,7 +106,7 @@ public class ProfilePlot {
 		plot.show();
 	}
 	
-	Plot getPlot() {
+	public Plot getPlot() {
 		if (profile==null)
 			return null;
 		Dimension d = getPlotSize();
