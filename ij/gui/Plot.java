@@ -112,7 +112,6 @@ public class Plot {
 	private int plotHeight = PlotWindow.plotHeight;
 	private boolean multiplePlots;
 	private boolean drawPending;
-	private int sourceImageID;
 	private PlotMaker plotMaker;
 	
 	/** keeps a reference to all of the	 that is going to be plotted. */
@@ -1192,15 +1191,7 @@ public class Plot {
 		storedData.add(xvalues);
 		storedData.add(yvalues);
 	}
-	
-	void setSourceImageID(int id) {
-		sourceImageID = id;
-	}
-	
-	int getSourceImageID() {
-		return sourceImageID;
-	}
-	
+		
 	public void setPlotMaker(PlotMaker plotMaker) {
 		this.plotMaker = plotMaker;
 	}

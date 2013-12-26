@@ -7,8 +7,8 @@ import java.awt.event.*;
 
 /** Implements the Analyze/Plot Profile and Edit/Options/Profile Plot Options commands. */
 public class Profiler implements PlugInFilter, PlotMaker {
-
 	ImagePlus imp;
+	boolean firstTime = true;
 
 	public int setup(String arg, ImagePlus imp) {
 		if (arg.equals("set"))
@@ -19,6 +19,7 @@ public class Profiler implements PlugInFilter, PlotMaker {
 
 	public void run(ImageProcessor ip) {
 		Plot plot = getPlot();
+		firstTime = false;
 		if (plot==null)
 			return;
 		plot.setPlotMaker(this);
@@ -26,6 +27,12 @@ public class Profiler implements PlugInFilter, PlotMaker {
 	}
 	
 	public Plot getPlot() {
+		Roi roi = imp.getRoi();
+		if (roi==null || !(roi.isLine()||roi.getType()==Roi.RECTANGLE)) {
+			if (firstTime)
+				IJ.error("Line selection or rectangular selection required");
+			return null;
+		}
 		boolean averageHorizontally = Prefs.verticalProfile || IJ.altKeyDown();
 		ProfilePlot pp = new ProfilePlot(imp, averageHorizontally);
 		return pp.getPlot();

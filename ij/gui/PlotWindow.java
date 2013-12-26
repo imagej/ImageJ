@@ -522,8 +522,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	// This listener is called if the source image content is changed
 	public synchronized void imageUpdated(ImagePlus imp) {
 		if (imp==srcImp) { 
-			if (!isSelection())
-				IJ.run(imp, "Restore Selection", "");
 			doUpdate = true;
 			notify();
 		}
@@ -594,34 +592,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		live.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
 		live.setForeground(Color.black);
 	}
-	
-	/** Returns true if there is a straight line selection or rectangular selection */
-	private boolean isSelection() {
-		if (srcImp==null)
-			return false;
-		Roi roi = srcImp.getRoi();
-		if (roi==null)
-			return false;
-		int type = roi.getType();
-		return type==Roi.LINE || type==Roi.POLYLINE || type==Roi.RECTANGLE;
-	}
-	
-	/** Get a source image profile plot. */
-	/*
-	private Plot getProfilePlot() {
-		if (srcImp==null || !isSelection() || plot==null)
-			return null;
-		Roi roi = srcImp.getRoi();
-		if (roi == null)
-			return null;
-		if (!(roi.isLine() || roi.getType()==Roi.RECTANGLE))
-			return null;
-		PlotMaker plotMaker = plot.getPlotMaker();
-		boolean averageHorizontally = Prefs.verticalProfile || IJ.altKeyDown();
-		ProfilePlot pp = new ProfilePlot(srcImp, averageHorizontally);
-		return pp.getPlot();
-	}
-	*/
 	
 }
 
