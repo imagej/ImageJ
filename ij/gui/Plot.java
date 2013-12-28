@@ -350,7 +350,7 @@ public class Plot {
 			case CIRCLE: case X:  case BOX: case TRIANGLE: case CROSS: case DOT:
 				ip.setClipRect(frame);
 				for (int i=0; i<x.length; i++) {
-					int xt = ((flags&X_LOG_NUMBERS)!=0) ? LEFT_MARGIN + (int)((Math.log10(x[i])-xMin)*xScale)			   : LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
+					int xt = ((flags&X_LOG_NUMBERS)!=0) ? LEFT_MARGIN + (int)((Math.log10(x[i])-xMin)*xScale)	: LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
 					int yt = ((flags&Y_LOG_NUMBERS)!=0) ? TOP_MARGIN + frameHeight - (int)((Math.log10(y[i])-yMin)*yScale) : TOP_MARGIN + frameHeight - (int)((y[i]-yMin)*yScale);
 					drawShape(shape, xt, yt, markSize);
 				}
@@ -367,7 +367,8 @@ public class Plot {
 			nPoints = x.length;
 			drawPending = false;
 		}
-		store(x, y);
+		if (shape==DOT || shape==LINE || (yValues!=null&&yValues.length!=y.length))
+			store(x, y);
 	}
 
 	/** Adds a set of points to the plot using double arrays.
@@ -1187,11 +1188,11 @@ public class Plot {
 		
 	/** Stores plot	 into an ArrayList	to be used 
 		 when a plot window	 wants to 'createlist'. */
-	private void store(float[] xvalues, float[] yvalues){
+	private void store(float[] xvalues, float[] yvalues) {
 		storedData.add(xvalues);
 		storedData.add(yvalues);
 	}
-		
+	
 	public void setPlotMaker(PlotMaker plotMaker) {
 		this.plotMaker = plotMaker;
 	}

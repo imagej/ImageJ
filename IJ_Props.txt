@@ -97,7 +97,7 @@ selection24="Add to Manager[t]",ij.plugin.Selection("add")
 options01="Line Width...",ij.plugin.Options("line")
 options02="Input/Output...",ij.plugin.Options("io")
 options03="Fonts...",ij.plugin.frame.Fonts
-options04="Profile Plot Options...",ij.plugin.filter.Profiler("set")
+options04="Profile Plot Options...",ij.plugin.Profiler("set")
 options05="Rounded Rect Tool...",ij.plugin.RectToolOptions
 options06="Arrow Tool...",ij.plugin.ArrowToolOptions
 options07="Point Tool...",ij.plugin.Colors("point")
@@ -150,7 +150,7 @@ stacks10="Reslice [/]...",ij.plugin.Slicer
 stacks11="Orthogonal Views[H]",ij.plugin.Orthogonal_Views
 stacks12="Z Project...",ij.plugin.ZProjector
 stacks13="3D Project...",ij.plugin.Projector
-stacks14="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
+stacks14="Plot Z-axis Profile",ij.plugin.ZAxisProfiler
 stacks15="Label...",ij.plugin.filter.StackLabeler
 stacks16="Statistics",ij.plugin.Stack_Statistics
 
