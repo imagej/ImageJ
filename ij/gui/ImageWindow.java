@@ -1,5 +1,5 @@
 package ij.gui;
-
+  
 import java.awt.*;
 import java.awt.image.*;
 import java.util.Properties;
@@ -641,13 +641,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		getCanvas().fitToWindow();
 		pack();
 	}
-	
-	/** Overrides the setBounds() method in Component so
-		we can find out when the window is resized. */
-	//public void setBounds(int x, int y, int width, int height)	{
-	//	super.setBounds(x, y, width, height);
-	//	ic.resizeSourceRect(width, height);
-	//}
-	
+		
 } //class ImageWindow
 

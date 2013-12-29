@@ -64,7 +64,7 @@ public class ImageLayout implements LayoutManager {
     /** Lays out the container and calls ImageCanvas.resizeCanvas()
 		to adjust the image canvas size as needed. */
     public void layoutContainer(Container target) {
-		Insets insets = target.getInsets();
+ 		Insets insets = target.getInsets();
 		int nmembers = target.getComponentCount();
 		Dimension d;
 		int extraHeight = 0;

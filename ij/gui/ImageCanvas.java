@@ -615,7 +615,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		imp.setTitle(imp.getTitle());
 	}
 
-	/** Enlarge the canvas if the user enlarges the window. */
+	/** Resizes the canvas when the user resizes the window. */
 	void resizeCanvas(int width, int height) {
 		ImageWindow win = imp.getWindow();
 		//IJ.log("resizeCanvas: "+srcRect+" "+imageWidth+"  "+imageHeight+" "+width+"  "+height+" "+dstWidth+"  "+dstHeight+" "+win.maxBounds);
@@ -626,20 +626,18 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		if (IJ.altKeyDown())
 			{fitToWindow(); return;}
-		if (srcRect.width<imageWidth || srcRect.height<imageHeight) {
-			if (width>imageWidth*magnification)
-				width = (int)(imageWidth*magnification);
-			if (height>imageHeight*magnification)
-				height = (int)(imageHeight*magnification);
-			setDrawingSize(width, height);
-			srcRect.width = (int)(dstWidth/magnification);
-			srcRect.height = (int)(dstHeight/magnification);
-			if ((srcRect.x+srcRect.width)>imageWidth)
-				srcRect.x = imageWidth-srcRect.width;
-			if ((srcRect.y+srcRect.height)>imageHeight)
-				srcRect.y = imageHeight-srcRect.height;
-			repaint();
-		}
+		if (width>imageWidth*magnification)
+			width = (int)(imageWidth*magnification);
+		if (height>imageHeight*magnification)
+			height = (int)(imageHeight*magnification);
+		setDrawingSize(width, height);
+		srcRect.width = (int)(dstWidth/magnification);
+		srcRect.height = (int)(dstHeight/magnification);
+		if ((srcRect.x+srcRect.width)>imageWidth)
+			srcRect.x = imageWidth-srcRect.width;
+		if ((srcRect.y+srcRect.height)>imageHeight)
+			srcRect.y = imageHeight-srcRect.height;
+		repaint();
 		//IJ.log("resizeCanvas2: "+srcRect+" "+dstWidth+"  "+dstHeight+" "+width+"  "+height);
 	}
 	
