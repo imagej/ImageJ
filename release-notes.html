@@ -7,13 +7,13 @@
 
 <li> <u>1.48m 29 December 2013</u>
 <ul>
-<li> Thanks to Dimiter Prodanov, <i>Image&gt;Stacks&gt;Plot X-axis Profile</i>
+<li> Thanks to Dimiter Prodanov, <i>Image&gt;Stacks&gt;Plot Z-axis Profile</i>
 now supports "Live" profiling.
 <li> Thanks to "aschain", the channel-slice-frame priority used by the
 "&gt;" (<i>Next Slice</i>) and "&lt;" (<i>Previous Slice</i>) keyboard 
-shortcuts can reversed by enabling 
-"Reverse CZT order of "&gt;" and "&lt;" in <i>Edit&gt;Options&gt;Misc</i>
-and typing "&gt;" or "&lt;" no longer stops animation.
+shortcuts can be reversed by enabling 
+"Reverse CZT order of "&gt;" and "&lt;" in <i>Edit&gt;Options&gt;Misc</i>.
+Also, typing "&gt;" or "&lt;" no longer stops animation.
 <li> <i>Image&gt;Scale</i> and <i>Image&gt;Adjust&gt;Size</i> no longer
 always use nearest neighbor interpolation when the image width or height is one
 (<a href="macros/examples/ColorGradient.txt">example</a>).
@@ -21,9 +21,6 @@ always use nearest neighbor interpolation when the image width or height is one
 function to not work with batch mode images.
 <li> Fixed a bug that caused the active batch mode image to sometimes not
 remain the active image after setBatchMode("exit and display");
-<li> Thanks to Kees Straatman, fixed a v1.47 regression that caused
-the getList("window.titles") macro function to not include the 
-Threshold and B&C windows.
 <li> Thanks to Michael Schmid, fixed a bug that caused the value unit of
 32-bit images to not be saved in the TIFF header.
 <li> Thanks to Christian Meggle, fixed a bug that caused the ImageProcessor.resize()
@@ -36,10 +33,13 @@ with overlays to not be correctly duplicated or cropped
 (<a href="macros/js/HyperstackCroppingBugs.js">test case</a>).
 <li> Fixed a bug that caused the ImageProcessor.setRoi(Roi) method
 to sometimes not work as expected with single point selections.
-<li> Fixed a bug the caused the "List" option in plot windows to sometlimes
+<li> Fixed a bug that caused the "List" option in plot windows to sometlimes
 display duplicate arrays.
 <li> Thanks to Steffen Decker, fixed a bug that prevented images displayed at
-100% from being scrolled after making the window smaller.
+100% from being scrolled after after the window was reduced in size.
+<li> Thanks to Kees Straatman, fixed a v1.47 regression that caused
+the getList("window.titles") macro function to not include the 
+Threshold and B&C windows.
 <li> Thanks to Norbert Vischer, fixed a 1.48a regression that caused filters
 to not work on virtual stack slices.
 </ul> 
