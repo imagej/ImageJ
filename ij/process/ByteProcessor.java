@@ -398,20 +398,6 @@ public class ByteProcessor extends ImageProcessor {
 		raster = null;
 		image = null;
 	}
-
-	/*
-	public void getRow(int x, int y, int[] data, int length) {
-		int j = y*width+x;
-		for (int i=0; i<length; i++)
-			data[i] = pixels[j++];
-	}
-
-	public void putRow(int x, int y, int[] data, int length) {
-		int j = y*width+x;
-		for (int i=0; i<length; i++)
-			pixels[j++] = (byte)data[i];
-	}
-	*/
 	
 	/** Returns the smallest displayed pixel value. */
 	public double getMin() {
@@ -967,6 +953,8 @@ public class ByteProcessor extends ImageProcessor {
 	public ImageProcessor resize(int dstWidth, int dstHeight) {
 		if (roiWidth==dstWidth && roiHeight==dstHeight)
 			return crop();
+		if ((width==1||height==1) && interpolationMethod!=NONE)
+			return resizeLinearly(dstWidth, dstHeight);
 		double srcCenterX = roiX + roiWidth/2.0;
 		double srcCenterY = roiY + roiHeight/2.0;
 		double dstCenterX = dstWidth/2.0;

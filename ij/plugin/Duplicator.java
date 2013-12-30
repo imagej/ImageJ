@@ -51,21 +51,21 @@ public class Duplicator implements PlugIn, TextListener {
 			imp2 = run(imp);
 		else
 			imp2 = duplicateImage(imp);
-		if (imp2.getWidth()==0 || imp2.getHeight()==0) {
-			IJ.error("Duplicator", "Selection is outside the image");
-			return;
-		}
 		Calibration cal = imp2.getCalibration();
 		if (roi!=null && (cal.xOrigin!=0.0||cal.yOrigin!=0.0)) {
 			cal.xOrigin -= roi.getBounds().x;
 			cal.yOrigin -= roi.getBounds().y;
 		}
 		imp2.setTitle(newTitle);
+		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE) {
+			Roi roi2 = cropRoi(imp, roi);
+			roi2.setLocation(0, 0);
+			imp2.setRoi(roi2);
+		}
 		imp2.show();
 		if (stackSize>1 && imp2.getStackSize()==stackSize)
 			imp2.setSlice(imp.getCurrentSlice());
-		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE && roi.getBounds().width==imp2.getWidth())
-			imp2.restoreRoi();
+
 	}
                 
 	/** Returns a copy of the image, stack or hyperstack contained in the specified ImagePlus. */
@@ -76,8 +76,9 @@ public class Duplicator implements PlugIn, TextListener {
 			return duplicateImage(imp);
 		Rectangle rect = null;
 		Roi roi = imp.getRoi();
-		if (roi!=null && roi.isArea())
-			rect = roi.getBounds();
+		Roi roi2 = cropRoi(imp, roi);
+		if (roi2!=null && roi2.isArea())
+			rect = roi2.getBounds();
 		ImageStack stack = imp.getStack();
 		ImageStack stack2 = null;
 		for (int i=1; i<=stack.getSize(); i++) {
@@ -177,8 +178,9 @@ public class Duplicator implements PlugIn, TextListener {
 	public ImagePlus run(ImagePlus imp, int firstC, int lastC, int firstZ, int lastZ, int firstT, int lastT) {
 		Rectangle rect = null;
 		Roi roi = imp.getRoi();
-		if (roi!=null && roi.isArea())
-			rect = roi.getBounds();
+		Roi roi2 = cropRoi(imp, roi);
+		if (roi2!=null && roi2.isArea())
+			rect = roi2.getBounds();
 		ImageStack stack = imp.getStack();
 		ImageStack stack2 = null;
 		for (int t=firstT; t<=lastT; t++) {
@@ -214,6 +216,17 @@ public class Duplicator implements PlugIn, TextListener {
 			}
         }
 		imp2.setOpenAsHyperStack(true);
+		Calibration cal = imp2.getCalibration();
+		if (roi!=null && (cal.xOrigin!=0.0||cal.yOrigin!=0.0)) {
+			cal.xOrigin -= roi.getBounds().x;
+			cal.yOrigin -= roi.getBounds().y;
+		}
+		Overlay overlay = imp.getOverlay();
+		if (overlay!=null && !imp.getHideOverlay()) {
+			Overlay overlay2 = overlay.crop(roi2!=null?roi2.getBounds():null);
+			overlay2.crop(firstC, lastC, firstZ, lastZ, firstT, lastT);
+			imp2.setOverlay(overlay2);
+		}
    		if (Recorder.record&&isCommand)
    			Recorder.recordCall("imp = new Duplicator().run(imp, "+firstC+", "+lastC+", "+firstZ+", "+lastZ+", "+firstT+", "+lastT+");");
 		return imp2;
@@ -279,25 +292,17 @@ public class Duplicator implements PlugIn, TextListener {
 		}
 		imp2 = run(imp, firstC, lastC, firstZ, lastZ, firstT, lastT);
 		if (imp2==null) return;
-		Calibration cal = imp2.getCalibration();
-		if (roi!=null && (cal.xOrigin!=0.0||cal.yOrigin!=0.0)) {
-			cal.xOrigin -= roi.getBounds().x;
-			cal.yOrigin -= roi.getBounds().y;
-		}
 		imp2.setTitle(newTitle);
-		Overlay overlay = imp.getOverlay();
-		if (overlay!=null && !imp.getHideOverlay()) {
-			Overlay overlay2 = overlay.crop(roi!=null?roi.getBounds():null);
-			overlay2.crop(firstC, lastC, firstZ, lastZ, firstT, lastT);
-			imp2.setOverlay(overlay2);
-		}
 		if (imp2.getWidth()==0 || imp2.getHeight()==0) {
 			IJ.error("Duplicator", "Selection is outside the image");
 			return;
 		}
+		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE) {
+			Roi roi2 = cropRoi(imp, roi);
+			roi2.setLocation(0, 0);
+			imp2.setRoi(roi2);
+		}
 		imp2.show();
-		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE && roi.getBounds().width==imp2.getWidth())
-			imp2.restoreRoi();
 		imp2.setPosition(imp.getC(), imp.getZ(), imp.getT());
 		if (IJ.isMacro()&&imp2.getWindow()!=null)
 			IJ.wait(50);
@@ -376,6 +381,28 @@ public class Duplicator implements PlugIn, TextListener {
 		return newTitle;
 	}
 	
+	/*
+	* Returns the part of 'roi' overlaping 'imp'
+	* Author Marcel Boeglin 2013.12.15
+	*/
+	Roi cropRoi(ImagePlus imp, Roi roi) {
+		if (roi==null)
+			return null;
+		if (imp==null)
+			return roi;
+		Rectangle b = roi.getBounds();
+		int w = imp.getWidth();
+		int h = imp.getHeight();
+		if (b.x<0 || b.y<0 || b.x+b.width>w || b.y+b.height>h) {
+			ShapeRoi shape1 = new ShapeRoi(roi);
+			ShapeRoi shape2 = new ShapeRoi(new Roi(0, 0, w, h));
+			roi = shape2.and(shape1);
+		}
+		if (roi.getBounds().width==0 || roi.getBounds().height==0)
+			throw new IllegalArgumentException("Selection is outside the image");
+		return roi;
+	}
+
 	public static Overlay cropOverlay(Overlay overlay, Rectangle bounds) {
 		return overlay.crop(bounds);
 	}
@@ -384,6 +411,4 @@ public class Duplicator implements PlugIn, TextListener {
 		checkbox.setState(true);
 	}
 	
-
-
 }

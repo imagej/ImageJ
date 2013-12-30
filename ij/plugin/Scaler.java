@@ -44,7 +44,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			newWindow = true;
 			processStack = true;
 		}
-		if (ip.getWidth()>1 && ip.getHeight()>1)
+		if ((ip.getWidth()>1 && ip.getHeight()>1) || newWindow)
 			ip.setInterpolationMethod(interpolationMethod);
 		else
 			ip.setInterpolationMethod(ImageProcessor.NONE);

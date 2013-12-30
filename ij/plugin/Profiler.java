@@ -1,4 +1,4 @@
-package ij.plugin.filter;
+package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
@@ -6,20 +6,38 @@ import java.awt.*;
 import java.awt.event.*;
 
 /** Implements the Analyze/Plot Profile and Edit/Options/Profile Plot Options commands. */
-public class Profiler implements PlugInFilter {
-
+public class Profiler implements PlugIn, PlotMaker {
 	ImagePlus imp;
+	boolean firstTime = true;
 
-	public int setup(String arg, ImagePlus imp) {
+	public void run(String arg) {
 		if (arg.equals("set"))
-			{doOptions(); return DONE;}
-		this.imp = imp;
-		return DOES_ALL+NO_UNDO+NO_CHANGES+ROI_REQUIRED;
+			{doOptions(); return;}
+		imp = IJ.getImage();
+		Plot plot = getPlot();
+		firstTime = false;
+		if (plot==null)
+			return;
+		plot.setPlotMaker(this);
+		plot.show();
 	}
-
-	public void run(ImageProcessor ip) {
+	
+	public Plot getPlot() {
+		Roi roi = imp.getRoi();
+		if (roi==null && !firstTime)
+			IJ.run(imp, "Restore Selection", "");
+		if (roi==null || !(roi.isLine()||roi.getType()==Roi.RECTANGLE)) {
+			if (firstTime)
+				IJ.error("Plot Profile", "Line or rectangular selection required");
+			return null;
+		}
 		boolean averageHorizontally = Prefs.verticalProfile || IJ.altKeyDown();
-		new ProfilePlot(imp, averageHorizontally).createWindow();
+		ProfilePlot pp = new ProfilePlot(imp, averageHorizontally);
+		return pp.getPlot();
+	}
+	
+	public ImagePlus getSourceImage() {
+		return imp;
 	}
 
 	public void doOptions() {

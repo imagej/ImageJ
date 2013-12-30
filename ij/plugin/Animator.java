@@ -49,20 +49,27 @@ public class Animator implements PlugIn {
 			return;
 		}
 
-		if (swin.getAnimate()) // "stop", "next" and "previous" all stop animation
-			stopAnimation();
+		//if (swin.getAnimate()) // "stop", "next" and "previous" all stop animation
+		//	stopAnimation();
 
 		if (arg.equals("stop")) {
+			stopAnimation();
 			return;
 		}
 			
 		if (arg.equals("next")) {
-			nextSlice();
+			if (Prefs.reverseNextPreviousOrder)
+				changeSlice(1);
+			else
+				nextSlice();
 			return;
 		}
 		
 		if (arg.equals("previous")) {
-			previousSlice();
+			if (Prefs.reverseNextPreviousOrder)
+				changeSlice(-1);
+			else
+				previousSlice();
 			return;
 		}
 		
@@ -275,8 +282,7 @@ public class Animator implements PlugIn {
 		}
 		imp.updateStatusbarValue();
 		imp.unlock();
-	}
-	
+	}	
 	
 	void previousSlice() {
 		if (!imp.lock())
@@ -302,6 +308,46 @@ public class Animator implements PlugIn {
 				slice -= 10;
 			else
 				slice--;
+			if (slice<1)
+				slice = 1;
+			swin.showSlice(slice);
+		}
+		imp.updateStatusbarValue();
+		imp.unlock();
+	}
+
+	void changeSlice(int pn) {
+		if (!imp.lock())
+			return;
+		boolean hyperstack = imp.isDisplayedHyperStack();
+		int channels = imp.getNChannels();
+		int slices = imp.getNSlices();
+		int frames = imp.getNFrames();
+		if (swin.getAnimate() && (channels*slices*frames==Math.max(channels,Math.max(slices,frames))) )
+			{stopAnimation(); return;} //if only one dimension, stop animating
+		if(hyperstack){
+			int c=imp.getChannel(); int z=imp.getSlice(); int t=imp.getFrame();
+			if (frames>1 && !((slices>1||channels>1)&&(IJ.controlKeyDown()||IJ.spaceBarDown()||IJ.altKeyDown()) || swin.getAnimate())){
+				t += pn;
+				if (t>frames) t = frames;
+				if (t<1) t = 1;
+			} else if (slices>1 && !(channels>1&& (IJ.altKeyDown() || IJ.spaceBarDown()) || ((swin.getAnimate()|| IJ.controlKeyDown()) && frames==1)) ) {
+				z += pn;
+				if (z>slices) z = slices;
+				if (z<1) z = 1;
+			} else if (channels>1) {
+				c += pn;
+				if (c>channels) c = channels;
+				if (c<1) c = 1;
+			}
+			swin.setPosition(c, z, t);
+		} else {
+			if (IJ.altKeyDown())
+				slice+=(pn*10);
+			else
+				slice+=pn;
+			if (slice>nSlices)
+				slice = nSlices;
 			if (slice<1)
 				slice = 1;
 			swin.showSlice(slice);

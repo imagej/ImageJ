@@ -38,6 +38,7 @@ public class Options implements PlugIn {
 		if (!IJ.isMacOSX())
 			gd.addCheckbox("Run single instance listener", Prefs.runSocketListener);
 		gd.addCheckbox("Enhanced line tool", Prefs.enhancedLineTool);
+		gd.addCheckbox("Reverse CZT order of \">\" and \"<\"", Prefs.reverseNextPreviousOrder);
 		gd.addCheckbox("Debug mode", IJ.debugMode);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#misc");
 		gd.showDialog();
@@ -67,6 +68,7 @@ public class Options implements PlugIn {
 		if (!IJ.isMacOSX())
 			Prefs.runSocketListener = gd.getNextBoolean();
 		Prefs.enhancedLineTool = gd.getNextBoolean();
+		Prefs.reverseNextPreviousOrder = gd.getNextBoolean();
 		IJ.setDebugMode(gd.getNextBoolean());
 	}
 

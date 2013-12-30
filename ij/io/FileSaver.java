@@ -682,14 +682,18 @@ public class FileSaver {
 		}
 		if (fi.unit!=null)
 			sb.append("unit="+(fi.unit.equals("\u00B5m")?"um":fi.unit)+"\n");
-		if (fi.valueUnit!=null && fi.calibrationFunction!=Calibration.CUSTOM) {
-			sb.append("cf="+fi.calibrationFunction+"\n");
-			if (fi.coefficients!=null) {
-				for (int i=0; i<fi.coefficients.length; i++)
-					sb.append("c"+i+"="+fi.coefficients[i]+"\n");
+		int bitDepth = imp.getBitDepth();
+		if (fi.valueUnit!=null && (fi.calibrationFunction!=Calibration.CUSTOM||bitDepth==32)) {
+			if (bitDepth!=32) {
+				sb.append("cf="+fi.calibrationFunction+"\n");
+				if (fi.coefficients!=null) {
+					for (int i=0; i<fi.coefficients.length; i++)
+						sb.append("c"+i+"="+fi.coefficients[i]+"\n");
+				}
 			}
 			sb.append("vunit="+fi.valueUnit+"\n");
-			if (cal.zeroClip()) sb.append("zeroclip=true\n");
+			if (cal.zeroClip() && bitDepth!=32)
+				sb.append("zeroclip=true\n");
 		}
 		
 		// get stack z-spacing and fps

@@ -250,7 +250,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		nothing if there is no window associated with
 		this image (i.e. show() has not been called).*/
 	public synchronized void updateAndDraw() {
-		if (stack!=null && currentSlice>=1 && currentSlice<=stack.getSize()) {
+		if (stack!=null && !stack.isVirtual() && currentSlice>=1 && currentSlice<=stack.getSize()) {
 			Object pixels = stack.getPixels(currentSlice);
 			if (ip!=null && pixels!=null && pixels!=ip.getPixels()) { // was stack updated?
 				try {
@@ -437,7 +437,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return img;
 	}
 		
-	/** Returns this image as a BufferedImage. */
+	/** Returns a copy of this image as an 8-bit or RGB BufferedImage. 
+	 * @see ij.process.ShortProcessor#get16BitBufferedImage
+	 */
 	public BufferedImage getBufferedImage() {
 		if (isComposite())
 			return (new ColorProcessor(getImage())).getBufferedImage();
@@ -1762,8 +1764,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	if (cal.calibrated()) {
     		fi.calibrationFunction = cal.getFunction();
      		fi.coefficients = cal.getCoefficients();
-    		fi.valueUnit = cal.getValueUnit();
-		}
+			fi.valueUnit = cal.getValueUnit();
+		} else if (!Calibration.DEFAULT_VALUE_UNIT.equals(cal.getValueUnit()))
+			fi.valueUnit = cal.getValueUnit();
+
     	switch (imageType) {
 	    	case GRAY8: case COLOR_256:
     			LookUpTable lut = createLut();

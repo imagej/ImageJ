@@ -101,12 +101,11 @@ public class ProfilePlot {
 	/** Displays this profile plot in a window. */
 	public void createWindow() {
 		Plot plot = getPlot();
-		if (plot==null) return;
-		plot.setSourceImageID(imp.getID());
-		plot.show();
+		if (plot!=null)
+			plot.show();
 	}
 	
-	Plot getPlot() {
+	public Plot getPlot() {
 		if (profile==null)
 			return null;
 		Dimension d = getPlotSize();

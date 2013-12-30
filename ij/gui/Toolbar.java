@@ -194,7 +194,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			else if (id>=CUSTOM2)
 				id--;
 		}
-		if (IJ.debugMode) IJ.log("Toolbar.getToolId: "+id);
+		//if (IJ.debugMode) IJ.log("Toolbar.getToolId: "+id);
 		return id;
 	}
 
