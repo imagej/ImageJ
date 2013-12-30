@@ -71,6 +71,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private boolean customRoi;
 	private boolean drawNames;
 	private AtomicBoolean paintPending;
+	private boolean scaleToFit;
 
 		
 	public ImageCanvas(ImagePlus imp) {
@@ -624,7 +625,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				resetMaxBounds(); // Works around problem that prevented window from being larger than maximized size
 			resetMaxBoundsCount++;
 		}
-		if (IJ.altKeyDown())
+		if (scaleToFit || IJ.altKeyDown())
 			{fitToWindow(); return;}
 		if (width>imageWidth*magnification)
 			width = (int)(imageWidth*magnification);
@@ -1531,6 +1532,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		PlugInTool tool = Toolbar.getPlugInTool();
 		if (tool!=null)
 			tool.mouseClicked(imp, e);
+	}
+	
+	public void setScaleToFit(boolean scaleToFit) {
+		this.scaleToFit = scaleToFit;
+	}
+
+	public boolean getScaleToFit() {
+		return scaleToFit;
 	}
 
 }

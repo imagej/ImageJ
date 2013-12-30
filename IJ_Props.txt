@@ -195,7 +195,8 @@ zoom02="Out [-]",ij.plugin.Zoom("out")
 zoom03="Original Scale[4]",ij.plugin.Zoom("orig")
 zoom04="View 100%[5]",ij.plugin.Zoom("100%")
 zoom05="To Selection",ij.plugin.Zoom("to")
-zoom06="Set... ",ij.plugin.Zoom("set")
+zoom06="Scale to Fit",ij.plugin.Zoom("scale")
+zoom07="Set... ",ij.plugin.Zoom("set")
 #zoom07="Maximize",ij.plugin.Zoom("max")
 
 # Plugins installed in the Image/Overlay submenu

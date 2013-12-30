@@ -8,7 +8,7 @@ import java.awt.*;
 /** This plugin implements the commands in the Image/Zoom submenu. */
 public class Zoom implements PlugIn{
 
-	/** 'arg' must be "in", "out", "100%" or "orig". */
+	/** 'arg' must be "in", "out", "100%", "orig" or "scale". */
 	public void run(String arg) {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
@@ -41,7 +41,8 @@ public class Zoom implements PlugIn{
 			ImageWindow win = imp.getWindow();
 			win.setBounds(win.getMaximumBounds());
 			win.maximize();
-		}
+		} if (arg.equals("scale"))
+			scaleToFit(imp);
 	}
 	
 	void zoomToSelection(ImagePlus imp, ImageCanvas ic) {
@@ -101,6 +102,22 @@ public class Zoom implements PlugIn{
 		ic.setDrawingSize((int)w, (int)h);
 		win.pack();
 		ic.repaint();
+	}
+	
+	private void scaleToFit(ImagePlus imp) {
+		ImageCanvas ic = imp.getCanvas();
+		if (ic==null)
+			return;
+		if (ic.getScaleToFit()) {
+			ic.setScaleToFit(false);
+			ic.unzoom();
+			IJ.showStatus(imp.getTitle()+": exiting scale to fit mode (resize with 'alt' key to re-enable)");
+		} else {
+			ic.setScaleToFit(true);
+			ic.fitToWindow();
+			IJ.showStatus(imp.getTitle()+": resize window to scale (use 'alt' key as shortcut)");
+		}
+
 	}
 	
 }
