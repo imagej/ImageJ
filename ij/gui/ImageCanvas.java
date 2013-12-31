@@ -631,14 +631,17 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			width = (int)(imageWidth*magnification);
 		if (height>imageHeight*magnification)
 			height = (int)(imageHeight*magnification);
-		setDrawingSize(width, height);
-		srcRect.width = (int)(dstWidth/magnification);
-		srcRect.height = (int)(dstHeight/magnification);
-		if ((srcRect.x+srcRect.width)>imageWidth)
-			srcRect.x = imageWidth-srcRect.width;
-		if ((srcRect.y+srcRect.height)>imageHeight)
-			srcRect.y = imageHeight-srcRect.height;
-		repaint();
+		Dimension size = getSize();
+        if (srcRect.width<imageWidth || srcRect.height<imageHeight || width!=size.width || height!=size.height) {
+			setDrawingSize(width, height);
+			srcRect.width = (int)(dstWidth/magnification);
+			srcRect.height = (int)(dstHeight/magnification);
+			if ((srcRect.x+srcRect.width)>imageWidth)
+				srcRect.x = imageWidth-srcRect.width;
+			if ((srcRect.y+srcRect.height)>imageHeight)
+				srcRect.y = imageHeight-srcRect.height;
+			repaint();
+		}
 		//IJ.log("resizeCanvas2: "+srcRect+" "+dstWidth+"  "+dstHeight+" "+width+"  "+height);
 	}
 	
@@ -827,7 +830,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		} else {
 			srcRect = new Rectangle(0, 0, imageWidth, imageHeight);
 			setDrawingSize((int)(imageWidth*newMag), (int)(imageHeight*newMag));
-			//setDrawingSize(dstWidth/2, dstHeight/2);
 			setMagnification(newMag);
 			imp.getWindow().pack();
 		}
