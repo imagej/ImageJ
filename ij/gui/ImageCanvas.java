@@ -804,7 +804,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			setMaxBounds();
 			//IJ.log(newDstWidth+" "+dstWidth+" "+newDstHeight+" "+dstHeight);
 			if (newDstWidth<dstWidth || newDstHeight<dstHeight) {
-				//IJ.log("pack");
 				setDrawingSize(newDstWidth, newDstHeight);
 				imp.getWindow().pack();
 			} else
@@ -824,14 +823,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (r.x+w>imageWidth) r.x = imageWidth-w;
 			if (r.y+h>imageHeight) r.y = imageHeight-h;
 			srcRect = r;
+			setMagnification(newMag);
 		} else {
 			srcRect = new Rectangle(0, 0, imageWidth, imageHeight);
 			setDrawingSize((int)(imageWidth*newMag), (int)(imageHeight*newMag));
 			//setDrawingSize(dstWidth/2, dstHeight/2);
+			setMagnification(newMag);
 			imp.getWindow().pack();
 		}
 		//IJ.write(newMag + " " + srcRect.x+" "+srcRect.y+" "+srcRect.width+" "+srcRect.height+" "+dstWidth + " " + dstHeight);
-		setMagnification(newMag);
 		//IJ.write(srcRect.x + " " + srcRect.width + " " + dstWidth);
 		setMaxBounds();
 		repaint();

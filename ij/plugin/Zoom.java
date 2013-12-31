@@ -133,11 +133,11 @@ public class Zoom implements PlugIn{
 		if (ic.getScaleToFit()) {
 			ic.setScaleToFit(false);
 			ic.unzoom();
-			IJ.showStatus(imp.getTitle()+": exiting scale to fit mode (resize with 'alt' key to re-enable)");
+			IJ.showStatus("Exiting scale to fit mode (resize with 'alt' key to scale to fit)");
 		} else {
 			ic.setScaleToFit(true);
 			ic.fitToWindow();
-			IJ.showStatus(imp.getTitle()+": resize window to scale (use 'alt' key as shortcut)");
+			IJ.showStatus("Resize window to scale (use 'alt' key as shortcut)");
 		}
 
 	}
