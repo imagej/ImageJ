@@ -640,6 +640,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		getCanvas().fitToWindow();
 		pack();
 	}
-		
+			
 } //class ImageWindow
 
