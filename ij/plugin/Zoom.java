@@ -8,7 +8,6 @@ import java.awt.*;
 /** This plugin implements the commands in the Image/Zoom submenu. */
 public class Zoom implements PlugIn{
 
-	/** 'arg' must be "in", "out", "100%", "orig" or "scale". */
 	public void run(String arg) {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
@@ -71,18 +70,41 @@ public class Zoom implements PlugIn{
 	void setZoom(ImagePlus imp, ImageCanvas ic) {
 		int x = imp.getWidth()/2;
 		int y = imp.getHeight()/2;
+		Rectangle srcRect = ic.getSrcRect();
+		Roi roi = imp.getRoi();
+		boolean areaSelection = roi!=null && roi.isArea();
+		if (areaSelection) {
+			srcRect = roi.getBounds();
+			x = srcRect.x + srcRect.width/2;
+			y = srcRect.y + srcRect.height/2;
+		}
 		ImageWindow win = imp.getWindow();
 		GenericDialog gd = new GenericDialog("Set Zoom");
 		gd.addNumericField("Zoom:", ic.getMagnification() * 200, 0, 4, "%");
 		gd.addNumericField("X center:", x, 0, 5, "");
 		gd.addNumericField("Y center:", y, 0, 5, "");
+		gd.addNumericField("Width:", srcRect.width, 0, 5, "");
+		gd.addNumericField("Height:", srcRect.height, 0, 5, "");
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		double mag = gd.getNextNumber()/100.0;
 		x = (int)gd.getNextNumber();
 		y = (int)gd.getNextNumber();
+		int width = (int)gd.getNextNumber();
+		int height = (int)gd.getNextNumber();
 		if (x<0) x=0;
 		if (y<0) y=0;
+		String options = IJ.macroRunning()?Macro.getOptions():null;
+		boolean legacyMacro = areaSelection && options!=null && options.contains("x=") && !options.contains("width=");
+		if ((areaSelection||width!=srcRect.width||height!=srcRect.height) && !legacyMacro) {
+			if (areaSelection && roi.getType()==Roi.RECTANGLE)
+				imp.deleteRoi();
+			ic.setSourceRect(new Rectangle(x-width/2,y-height/2,width,height));
+			ic.setMagnification(mag);
+			Insets insets = win.getInsets();
+			win.setSize((int)(width*mag+10), (int)(height*mag+insets.top+10));
+			return;
+		}
 		if (x>=imp.getWidth()) x=imp.getWidth()-1;
 		if (y>=imp.getHeight()) y=imp.getHeight()-1;
 		if (mag<=0.0) mag = 1.0;
@@ -92,8 +114,8 @@ public class Zoom implements PlugIn{
 		Dimension screen = IJ.getScreenSize();
 		if (w>screen.width-20) w = screen.width - 20;  // does it fit?
 		if (h>screen.height-50) h = screen.height - 50;
-		int width = (int)(w/mag);
-		int height = (int)(h/mag);
+		width = (int)(w/mag);
+		height = (int)(h/mag);
 		x -= width/2;
 		y -= height/2;
 		if (x<0) x=0;
