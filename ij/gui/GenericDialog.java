@@ -430,8 +430,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     	int n = items.length;
      	panel.setLayout(new GridLayout(rows, columns, 0, 0));
 		CheckboxGroup cg = new CheckboxGroup();
-		for (int i=0; i<n; i++)
-			panel.add(new Checkbox(items[i],cg,items[i].equals(defaultItem)));
+		for (int i=0; i<n; i++) {
+			Checkbox cb = new Checkbox(items[i],cg,items[i].equals(defaultItem));
+			cb.addItemListener(this);
+			panel.add(cb);
+		}
 		if (radioButtonGroup==null)
 			radioButtonGroup = new Vector();
 		radioButtonGroup.addElement(cg);
@@ -1143,6 +1146,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		cbIndex = 0;
 		choiceIndex = 0;
 		textAreaIndex = 0;
+		radioButtonIndex = 0;
         invalidNumber = false;
 }
 

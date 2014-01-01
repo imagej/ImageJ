@@ -632,7 +632,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (height>imageHeight*magnification)
 			height = (int)(imageHeight*magnification);
 		Dimension size = getSize();
-        if (srcRect.width<imageWidth || srcRect.height<imageHeight || width!=size.width || height!=size.height) {
+		if (srcRect.width<imageWidth || srcRect.height<imageHeight || width!=size.width || height!=size.height) {
 			setDrawingSize(width, height);
 			srcRect.width = (int)(dstWidth/magnification);
 			srcRect.height = (int)(dstHeight/magnification);
