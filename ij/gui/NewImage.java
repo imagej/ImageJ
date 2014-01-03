@@ -158,8 +158,6 @@ public class NewImage {
 					pixels[i] = -1;
 				break;
 			case FILL_BLACK:
-				for (int i=0; i<width*height; i++)
-					pixels[i] = 0xff000000;
 				break;
 			case FILL_RAMP:
 				int r,g,b,offset;

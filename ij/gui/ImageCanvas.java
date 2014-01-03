@@ -72,6 +72,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private boolean drawNames;
 	private AtomicBoolean paintPending;
 	private boolean scaleToFit;
+	private boolean painted;
 
 		
 	public ImageCanvas(ImagePlus imp) {
@@ -150,6 +151,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
     public void paint(Graphics g) {
+    	painted = true;
 		Roi roi = imp.getRoi();
 		if (roi!=null || overlay!=null || showAllOverlay!=null || Prefs.paintDoubleBuffered) {
 			if (roi!=null) roi.updatePaste();
@@ -632,7 +634,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (height>imageHeight*magnification)
 			height = (int)(imageHeight*magnification);
 		Dimension size = getSize();
-		if (srcRect.width<imageWidth || srcRect.height<imageHeight || width!=size.width || height!=size.height) {
+		if (srcRect.width<imageWidth || srcRect.height<imageHeight || (painted&&(width!=size.width||height!=size.height))) {
 			setDrawingSize(width, height);
 			srcRect.width = (int)(dstWidth/magnification);
 			srcRect.height = (int)(dstHeight/magnification);

@@ -1140,15 +1140,15 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 	
     /** Reset the counters before reading the dialog parameters */
-    private void resetCounters() {
-        nfIndex = 0;        // prepare for readout
+	private void resetCounters() {
+		nfIndex = 0;        // prepare for readout
 		sfIndex = 0;
 		cbIndex = 0;
 		choiceIndex = 0;
 		textAreaIndex = 0;
 		radioButtonIndex = 0;
-        invalidNumber = false;
-}
+		invalidNumber = false;
+	}
 
 /** Returns the Vector containing the numeric TextFields. */
   	public Vector getNumericFields() {
