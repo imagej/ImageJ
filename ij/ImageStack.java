@@ -262,15 +262,15 @@ public class ImageStack {
 			throw new IllegalArgumentException(outOfRange+n);
 		if (nSlices==0)
 			return null;
-		if (stack[0]==null)
+		if (stack[n-1]==null)
 			throw new IllegalArgumentException("Pixel array is null");
-		if (stack[0] instanceof byte[])
+		if (stack[n-1] instanceof byte[])
 			ip = new ByteProcessor(width, height, null, cm);
-		else if (stack[0] instanceof short[])
+		else if (stack[n-1] instanceof short[])
 			ip = new ShortProcessor(width, height, null, cm);
-		else if (stack[0] instanceof int[])
+		else if (stack[n-1] instanceof int[])
 			ip = new ColorProcessor(width, height, null);
-		else if (stack[0] instanceof float[])
+		else if (stack[n-1] instanceof float[])
 			ip = new FloatProcessor(width, height, null, cm);		
 		else
 			throw new IllegalArgumentException("Unknown stack type");

@@ -36,6 +36,8 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 		channels1 = channels2 = imp.getNChannels();
 		slices1 = slices2 = imp.getNSlices();
 		frames1 = frames2 = imp.getNFrames();
+		int z0 = imp.getSlice();
+		int t0 = imp.getFrame();
 		if (!showDialog())
 			return;
 		//IJ.log("HyperStackReducer-2: "+keep+" "+channels2+" "+slices2+" "+frames2);
@@ -64,6 +66,8 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 			return;
 		}
 		imp2.show();
+		if (z0>1 || t0>1)
+			imp2.setPosition(1, z0, t0);
 		//IJ.log("HyperStackReducer-4");
 		if (!keep) {
 			imp.changes = false;
@@ -92,12 +96,9 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 			for (int z=1; z<=slices; z++) {
 				if (slices==1) z = z1;
 				for (int t=1; t<=frames; t++) {
-					//IJ.showProgress(i++, n);
 					if (frames==1) t = t1;
-					//ip = stack.getProcessor(n1);
-					imp.setPositionWithoutUpdate(c, z, t);
-					ip = imp.getProcessor();
 					int n1 = imp.getStackIndex(c, z, t);
+					ip = stack.getProcessor(n1);
 					String label = stack.getSliceLabel(n1);
 					int n2 = imp2.getStackIndex(c, z, t);
 					if (stack2.getPixels(n2)!=null)
