@@ -9,11 +9,13 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
     private Button yesB, noB, cancelB;
     private boolean cancelPressed, yesPressed;
 	private boolean firstPaint = true;
+        
+        protected Panel panel;
 
 	public YesNoCancelDialog(Frame parent, String title, String msg) {
 		super(parent, title, true);
 		setLayout(new BorderLayout());
-		Panel panel = new Panel();
+		panel = new Panel();
 		panel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 		MultiLineLabel message = new MultiLineLabel(msg);
 		message.setFont(new Font("Dialog", Font.PLAIN, 12));
@@ -47,12 +49,19 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
 			panel.add(noB);
 			panel.add(cancelB);
 		}
-		add("South", panel);
+		
+	}
+        
+        /**
+        *
+        */
+        public void showDialog(){
+             add("South", panel);
 		addWindowListener(this);
 		pack();
 		GUI.center(this);
-		show();
-	}
+		show(); 
+        }
     
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource()==cancelB)

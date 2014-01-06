@@ -995,11 +995,24 @@ public class IJ {
 			if (hideProcessStackDialog)
 				return flags;
 			String note = ((flags&PlugInFilter.NO_CHANGES)==0)?" There is\nno Undo if you select \"Yes\".":"";
- 			YesNoCancelDialog d = new YesNoCancelDialog(getInstance(),
+                        
+                        
+                        YesNoCancelDialog d = null;
+                        
+                        if(IJ.isMacro())
+                        d = new YesYesAllNoCancelDialog(getInstance(),
 				"Process Stack?", "Process all "+stackSize+" images?"+note);
-			if (d.cancelPressed())
+                        else
+                            d = new YesNoCancelDialog(getInstance(),
+				"Process Stack?", "Process all "+stackSize+" images?"+note);
+                            
+                        
+                        if(!YesYesAllNoCancelDialog.yestoallPressed)
+                        d.showDialog();
+                        
+			if (!YesYesAllNoCancelDialog.yestoallPressed && d.cancelPressed())
 				return PlugInFilter.DONE;
-			else if (d.yesPressed()) {
+			else if (YesYesAllNoCancelDialog.yestoallPressed || d.yesPressed()) {
 		    	if (imp.getStack().isVirtual() && ((flags&PlugInFilter.NO_CHANGES)==0)) {
 		    		int size = (stackSize*imp.getWidth()*imp.getHeight()*imp.getBytesPerPixel()+524288)/1048576;
 		    		String msg =
