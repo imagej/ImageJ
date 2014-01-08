@@ -77,7 +77,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.48p";
-	public static final String BUILD = "5"; 
+	public static final String BUILD = "7"; 
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -93,7 +93,7 @@ public class ImageJ extends Frame implements ActionListener,
 	/** Run embedded and invisible in another application. */
 	public static final int NO_SHOW = 2;
 	
-	/** Add to other options to run ImageJ in debug mode. */
+	/** Add DEBUG to mode to run ImageJ in debug mode. */
 	public static final int DEBUG = 256;
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
