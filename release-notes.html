@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.48p 8 January 2014</u>
+<li> <u>1.48p 9 January 2014</u>
 <ul>
 <li> <i>Image&gt;Color&gt;Split Channels</i> and
 <i>Image&gt;Hyperstacks&gt;Reduce Dimensionality</i> are faster
@@ -14,11 +14,15 @@ and preserve slice and frame positions.
 "Channels" window or resets the slice position.
 <li> The <i>Help&gt;Update ImageJ</i> dialog now appends the daily build number,
 if it exists, to the "You are currently running" version.
+<li> Added a "List thresholds" option to the <i>Process&gt;Binary&gt;Make Binary</i>
+dialog box.
 <li> The <i>Image&gt;Color&gt;Merge Channels</i> command no longer attempts
 to auto-fill its dialog unless there are images created by
-<i>Image&gt;Color&gt;Merge Channels</i>.
+<i>Image&gt;Color&gt;Split Channels</i>.
 <li> Added a DEBUG option to the ImageJ constructor. For example, a Java program can
 run ImageJ invisibly in debug mode using "new ImageJ(ImageJ.NO_SHOW+ImageJ.DEBUG)".
+<li> Thanks to Philippe Carl, added the
+GenericDialog.getRadioButtonGroups() method.
 <li> Thanks to Jon Nathan, fixed a bug that caused radio buttons in GenericDialogs
 to not generate dialogItemChanged events
 (<a href="plugins/radio-buttons/index.html">example</a>).
@@ -27,6 +31,8 @@ caused it to not correctly merge more than three RGB images and to ignore
 the "Make composite" option when merging RGB images.
 <li> Fixed a bug that caused <i>Image&gt;Stacks&gt;Z Project</i> to not correctly
 show progress when processing hyperstacks.
+<li> Fixed a bug that caused the getSelectionCoordinates() macro function
+to not work as expected with selections created using makeOval().
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

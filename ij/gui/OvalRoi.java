@@ -275,7 +275,7 @@ public class OvalRoi extends Roi {
 			updateFullWindow = true;
 	}		
 
-	/** Returns this OvalRoi as a polygon. */
+	/** Returns this OvalRoi as a Polygon. */
 	public Polygon getPolygon() {
 		ImageProcessor mask = getMask();
 		Wand wand = new Wand(mask);
@@ -286,6 +286,12 @@ public class OvalRoi extends Roi {
         }
 		return new Polygon(wand.xpoints, wand.ypoints, wand.npoints);
 	}		
+
+	/** Returns this OvalRoi as a FloatPolygon. */
+	public FloatPolygon getFloatPolygon() {
+		Polygon p = getPolygon();
+		return new FloatPolygon(toFloat(p.xpoints), toFloat(p.ypoints), p.npoints);
+	}
 
 	/** Tests if the specified point is inside the boundary of this OvalRoi.
 	* Authors: Barry DeZonia and Michael Schmid

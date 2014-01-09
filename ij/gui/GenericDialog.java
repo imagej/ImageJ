@@ -1150,7 +1150,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		invalidNumber = false;
 	}
 
-/** Returns the Vector containing the numeric TextFields. */
+	/** Returns the Vector containing the numeric TextFields. */
   	public Vector getNumericFields() {
   		return numberField;
   	}
@@ -1173,6 +1173,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
   	/** Returns the Vector containing the sliders (Scrollbars). */
   	public Vector getSliders() {
   		return slider;
+  	}
+
+  	/** Returns the Vector that contains the RadioButtonGroups. */
+  	public Vector getRadioButtonGroups() {
+  		return radioButtonGroup;
   	}
 
   	/** Returns a reference to textArea1. */

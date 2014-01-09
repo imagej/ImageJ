@@ -69,7 +69,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		gd.addChoice("Method:", methods, method);
 		gd.addChoice("Background:", backgrounds, background);
 		gd.addCheckbox("Calculate threshold for each image", useLocal);
-		gd.addCheckbox("Black background (mask)", Prefs.blackBackground);
+		gd.addCheckbox("Black background (of binary masks)", Prefs.blackBackground);
 		gd.addCheckbox("List thresholds", listThresholds);
 		choices = gd.getChoices();
 		((Choice)choices.elementAt(0)).addItemListener(this);
@@ -288,7 +288,8 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 					t1 = minValues[i-1] + (t1/255.0)*(maxValues[i-1]-minValues[i-1]);
 					t2 = minValues[i-1] + (t2/255.0)*(maxValues[i-1]-minValues[i-1]);
 				}
-				IJ.log("  "+i+": "+IJ.d2s(t1,1)+"-"+IJ.d2s(t2,1));
+				int digits = bitDepth==32?2:0;
+				IJ.log("  "+i+": "+IJ.d2s(t1,digits)+"-"+IJ.d2s(t2,digits));
 			}
 			int[] lut = new int[256];
 			for (int j=0; j<256; j++) {

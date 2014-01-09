@@ -222,9 +222,8 @@ public class RGBStackMerge implements PlugIn {
 	 
 	 private String[] getInitialNames(String[] titles) {
 	 	String[] names = new String[maxChannels];
-	 	for (int i=0; i<maxChannels; i++) {
+	 	for (int i=0; i<maxChannels; i++)
 	 		names[i] = getName(i+1, titles);
-	 	}
 	 	return names;
 	 }
 	 
