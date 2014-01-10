@@ -41,7 +41,7 @@ public class GenericDialog extends Dialog implements ActionListener, TextListene
 FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	public static final int MAX_SLIDERS = 25;
-	protected Vector numberField, stringField, checkbox, choice, slider, radioButtonGroup;
+	protected Vector numberField, stringField, checkbox, choice, slider, radioButtonGroups;
 	protected TextArea textArea1, textArea2;
 	protected Vector defaultValues,defaultText;
 	protected Component theLabel;
@@ -435,12 +435,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			cb.addItemListener(this);
 			panel.add(cb);
 		}
-		if (radioButtonGroup==null)
-			radioButtonGroup = new Vector();
-		radioButtonGroup.addElement(cg);
+		if (radioButtonGroups==null)
+			radioButtonGroups = new Vector();
+		radioButtonGroups.addElement(cg);
 		Insets insets = getInsets(5, 10, 0, 0);
 		if (label==null || label.equals("")) {
-			label = "rbg"+radioButtonGroup.size();
+			label = "rbg"+radioButtonGroups.size();
 			insets.top += 5;
 		} else {
 			setInsets(10, insets.left, 0);
@@ -1008,9 +1008,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     
   	/** Returns the selected item in the next radio button group. */
     public String getNextRadioButton() {
-		if (radioButtonGroup==null)
+		if (radioButtonGroups==null)
 			return null;
-		CheckboxGroup cg = (CheckboxGroup)(radioButtonGroup.elementAt(radioButtonIndex));
+		CheckboxGroup cg = (CheckboxGroup)(radioButtonGroups.elementAt(radioButtonIndex));
 		radioButtonIndex++;
 		Checkbox checkbox = cg.getSelectedCheckbox();
 		String item = "null";
@@ -1177,7 +1177,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
   	/** Returns the Vector that contains the RadioButtonGroups. */
   	public Vector getRadioButtonGroups() {
-  		return radioButtonGroup;
+  		return radioButtonGroups;
   	}
 
   	/** Returns a reference to textArea1. */
