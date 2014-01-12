@@ -1,0 +1,441 @@
+package ij.plugin;
+import ij.*;
+import java.awt.*;
+import java.awt.image.*;
+import java.awt.event.*;
+import java.io.*;
+import java.awt.datatransfer.*;
+import ij.gui.*;
+import ij.process.*;
+import ij.measure.Measurements;
+import ij.plugin.filter.Analyzer;
+import ij.text.TextWindow;
+import ij.measure.*;
+
+/** This plugin implements the Analyze/Tools/Calibration Bar command.
+	Bob Dougherty, OptiNav, Inc., 4/14/2002
+	Based largely on HistogramWindow.java by Wayne Rasband.
+	July 2002: Modified by Daniel Marsh and renamed CalibrationBar.
+	January 2013: Renamed ColorBar; displays calibration bar as an overlay.
+*/
+
+public class ColorBar implements PlugIn {
+	final static int BAR_LENGTH = 128;
+	final static int BAR_THICKNESS = 12;
+	final static int XMARGIN = 10;
+	final static int YMARGIN = 10;
+	final static int WIN_HEIGHT = BAR_LENGTH;
+	final static int BOX_PAD = 0;
+	static int nBins = 256;
+	static final String[] colors = {"White","Light Gray","Dark Gray","Black","Red","Green","Blue","Yellow","None"};
+	static final String[] locations = {"Upper Right","Lower Right","Lower Left", "Upper Left", "At Selection"};
+	static final int UPPER_RIGHT=0, LOWER_RIGHT=1, LOWER_LEFT=2, UPPER_LEFT=3, AT_SELECTION=4;
+
+	static String fillColor = colors[0];
+	static String textColor = colors[3];
+	static String location = locations[UPPER_RIGHT];
+	static double zoom = 1;
+	static int numLabels = 5;
+	static int fontSize = 12;
+	static int decimalPlaces = 0;
+	ImagePlus imp;
+	LiveDialog gd;
+
+	ImageStatistics stats;
+	Calibration cal;
+	int[] histogram;
+	LookUpTable lut;
+	Image img;
+	Button setup, redraw, insert, unInsert;
+	Checkbox ne,nw,se,sw;
+	CheckboxGroup locGroup;
+	Label value, note;
+	int newMaxCount;
+	boolean logScale;
+	int win_width;
+	int userPadding = 0;
+	int fontHeight = 0;
+	boolean boldText;
+	boolean flatten;
+	Object backupPixels;
+	byte[] byteStorage;
+	int[] intStorage;
+	short[] shortStorage;
+	float[] floatStorage;
+	String boxOutlineColor = colors[8];
+	String barOutlineColor = colors[3];
+	
+	ImageProcessor ip;
+	String[] fieldNames = null;
+	int insetPad;
+	boolean decimalPlacesChanged;
+
+	public void run(String arg) {
+		imp = IJ.getImage();
+		if (imp.getBitDepth()==24) {
+			IJ.error("RGB images are not supported");
+			return;
+		}
+		if (imp.getRoi()!=null)
+		location = locations[AT_SELECTION];
+		ImageCanvas ic = imp.getCanvas();
+		double mag = (ic!=null)?ic.getMagnification():1.0;
+		if (zoom<=1 && mag<1)
+			zoom = (double) 1.0/mag;
+		insetPad = imp.getWidth()/50;
+		if (insetPad<4)
+			insetPad = 4;
+		updateColorBar();
+		if (IJ.isMacro()) {
+			flatten = true;
+			fillColor = colors[0];
+			textColor = colors[3];
+			location = locations[UPPER_RIGHT];
+			zoom = 1;
+			numLabels = 5;
+			fontSize = 12;
+			decimalPlaces = 0;
+		}
+		if (!showDialog()) {
+			imp.setOverlay(null);
+			return;
+		}
+		updateColorBar();
+		if (flatten) {
+			ImagePlus imp2 = imp.flatten();
+			imp2.setTitle(imp.getTitle()+" with bar");
+			imp.setOverlay(null);
+			imp2.show();
+		}
+	}
+
+	private void updateColorBar() {
+		Roi roi = imp.getRoi();
+		if (roi!=null &&  location.equals(locations[AT_SELECTION])) {
+			Rectangle r = roi.getBounds();
+			drawBarAsOverlay(imp, r.x, r.y);
+		} else if ( location.equals(locations[UPPER_LEFT]))
+			drawBarAsOverlay(imp, insetPad, insetPad);
+		else if (location.equals(locations[UPPER_RIGHT])) {
+			calculateWidth();
+			drawBarAsOverlay(imp, imp.getWidth()-insetPad-win_width, insetPad);
+		} else if (location.equals(locations[LOWER_LEFT]) )
+			drawBarAsOverlay(imp, insetPad,imp.getHeight() - (int)(WIN_HEIGHT*zoom + 2*(int)(YMARGIN*zoom)) - (int)(insetPad*zoom));
+		else if(location.equals(locations[LOWER_RIGHT])) {
+			calculateWidth();
+			drawBarAsOverlay(imp, imp.getWidth()-win_width-insetPad,
+				 imp.getHeight() - (int)(WIN_HEIGHT*zoom + 2*(int)(YMARGIN*zoom)) - insetPad);
+		}
+		this.imp.updateAndDraw();
+	}
+
+	private boolean showDialog() {
+		gd = new LiveDialog("Calibration Bar");
+		gd.addChoice("Location:", locations, location);
+		gd.addChoice("Fill color: ", colors, fillColor);
+		gd.addChoice("Label color: ", colors, textColor);
+		gd.addNumericField("Number of labels:", numLabels, 0);
+		gd.addNumericField("Decimal places:", decimalPlaces, 0);
+		gd.addNumericField("Font size:", fontSize, 0);
+		gd.addNumericField("Zoom factor:", zoom, 1);
+		String[] labels = {"Bold text", "Overlay"};
+		boolean[] states = {boldText, !flatten};
+		gd.setInsets(10, 30, 0);
+		gd.addCheckboxGroup(1, 2, labels, states);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return false;
+		location = gd.getNextChoice();
+		fillColor = gd.getNextChoice();
+		textColor = gd.getNextChoice();
+		numLabels = (int)gd.getNextNumber();
+		decimalPlaces = (int)gd.getNextNumber();
+		fontSize = (int)gd.getNextNumber();
+		zoom = (double)gd.getNextNumber();
+		boldText = gd.getNextBoolean();
+		flatten = !gd.getNextBoolean();
+		return true;
+	}
+
+	private void drawBarAsOverlay(ImagePlus imp, int x, int y) {
+		Roi roi = imp.getRoi();
+		if (roi!=null)
+			imp.deleteRoi();
+		stats = imp.getStatistics(Measurements.MIN_MAX, nBins);
+		if (roi!=null)
+			imp.setRoi(roi);
+		histogram = stats.histogram;
+		lut = imp.createLut();
+		cal = imp.getCalibration();
+		Overlay overlay = new Overlay();
+
+		int maxTextWidth = addText(null, 0, 0);
+		win_width = (int)(XMARGIN*zoom) + 5 + (int)(BAR_THICKNESS*zoom) + maxTextWidth + (int)((XMARGIN/2)*zoom);
+		if (x==-1 && y==-1)
+			return;	 // return if calculating width
+
+		Color c = getColor(fillColor);
+		if (c!=null) {
+			Roi r = new Roi(x, y, win_width, (int)(WIN_HEIGHT*zoom + 2*(int)(YMARGIN*zoom)));
+			r.setFillColor(c);
+			overlay.add(r);
+		}
+		int xOffset = x;
+		int yOffset = y;
+		if (decimalPlaces == -1)
+			decimalPlaces = Analyzer.getPrecision();
+		x = (int)(XMARGIN*zoom) + xOffset;
+		y = (int)(YMARGIN*zoom) + yOffset;
+		addVerticalColorBar(overlay, x, y, (int)(BAR_THICKNESS*zoom), (int)(BAR_LENGTH*zoom) );
+		addText(overlay, x + (int)(BAR_THICKNESS*zoom), y);
+		c = getColor(boxOutlineColor);
+		/*
+		if (c!=null && !fillColor.equals("None")) {
+			int xbase = xOffset+BOX_PAD;
+			int ybase = yOffset+BOX_PAD;
+			int w = win_width-BOX_PAD;
+			int h = (int)(WIN_HEIGHT*zoom + 2*(int)(YMARGIN*zoom));
+			Roi r = new Roi(xbase, ybase, w, h);
+			r.setStrokeColor(c);
+			r.setStrokeWidth(1.0);
+			overlay.add(r);
+		}
+		*/
+		overlay.setIsCalibrationBar(true);
+		imp.setOverlay(overlay);
+	}
+
+	private void addVerticalColorBar(Overlay overlay, int x, int y, int thickness, int length) {
+		int width = thickness;
+		int height = length;
+		byte[] rLUT,gLUT,bLUT;
+		int mapSize = 0;
+		java.awt.image.ColorModel cm = lut.getColorModel();
+		if (cm instanceof IndexColorModel) {
+			IndexColorModel m = (IndexColorModel)cm;
+			mapSize = m.getMapSize();
+			rLUT = new byte[mapSize];
+			gLUT = new byte[mapSize];
+			bLUT = new byte[mapSize];
+			m.getReds(rLUT);
+			m.getGreens(gLUT);
+			m.getBlues(bLUT);
+		} else {
+			mapSize = 256;
+			rLUT = new byte[mapSize];
+			gLUT = new byte[mapSize];
+			bLUT = new byte[mapSize];
+			for (int i = 0; i < mapSize; i++) {
+				rLUT[i] = (byte)i;
+				gLUT[i] = (byte)i;
+				bLUT[i] = (byte)i;
+			}
+		}
+		double colors = mapSize;
+		int start = 0;
+		ImageProcessor ipOrig =imp.getProcessor();
+		if (ipOrig instanceof ByteProcessor) {
+			int min = (int)ipOrig.getMin();
+			if (min<0) min = 0;
+			int max = (int)ipOrig.getMax();
+			if (max>255) max = 255;
+			colors = max-min+1;
+			start = min;
+		}
+		for (int i = 0; i<(int)(BAR_LENGTH*zoom); i++) {
+			int iMap = start + (int)Math.round((i*colors)/(BAR_LENGTH*zoom));
+			if (iMap>=mapSize)
+				iMap =mapSize - 1;
+			int j = (int)(BAR_LENGTH*zoom) - i - 1;
+			Line line = new Line(x, j+y, thickness+x, j+y);
+			line.setStrokeColor(new Color(rLUT[iMap]&0xff, gLUT[iMap]&0xff, bLUT[iMap]&0xff));
+			line.setStrokeWidth(1.0);
+			overlay.add(line);
+		}
+
+		Color c = getColor(barOutlineColor);
+		if (c!=null) {
+			Roi r = new Roi(x, y, width, height);
+			r.setStrokeColor(c);
+			r.setStrokeWidth(1.0);
+			overlay.add(r);
+		}
+	}
+
+	private int addText(Overlay overlay, int x, int y) {
+
+		Color c = getColor(textColor);
+		if (c == null)
+			return 0;
+		double hmin = cal.getCValue(stats.histMin);
+		double hmax = cal.getCValue(stats.histMax);
+		double barStep = (double)(BAR_LENGTH*zoom) ;
+		if (numLabels > 2)
+			barStep /= (numLabels - 1);
+
+		int fontType = boldText?Font.BOLD:Font.PLAIN;
+		Font font = null;
+		if (fontSize<9)
+			font = new Font("SansSerif", fontType, 9);
+		else
+			font = new Font("SansSerif", fontType, (int)( fontSize*zoom));
+		TextRoi.setFont("SansSerif", font.getSize(), font.getStyle(), true);
+		int maxLength = 0;
+
+		//Blank offscreen image for font metrics
+		Image img = GUI.createBlankImage(128, 64);
+		Graphics g = img.getGraphics();
+		FontMetrics metrics = g.getFontMetrics(font);
+		fontHeight = metrics.getHeight();
+
+		for (int i = 0; i < numLabels; i++) {
+			double yLabelD = (int)(YMARGIN*zoom + BAR_LENGTH*zoom - i*barStep - 1);
+			int yLabel = (int)(Math.round( y + BAR_LENGTH*zoom - i*barStep - 1));
+			Calibration cal = imp.getCalibration();
+			//s = cal.getValueUnit();
+			ImageProcessor ipOrig = imp.getProcessor();
+			double min = ipOrig.getMin();
+			double max = ipOrig.getMax();
+			if (ipOrig instanceof ByteProcessor) {
+				if (min<0) min = 0;
+				if (max>255) max = 255;
+			}
+			double grayLabel = min + (max-min)/(numLabels-1) * i;
+			if (cal.calibrated()) {
+				grayLabel = cal.getCValue(grayLabel);
+				double cmin = cal.getCValue(min);
+				double cmax = cal.getCValue(max);
+				if (!decimalPlacesChanged && decimalPlaces==0 && ((int)cmax!=cmax||(int)cmin!=cmin))
+					decimalPlaces = 2;
+			}
+			if (overlay!=null) {
+				TextRoi label = new TextRoi(d2s(grayLabel), x + 5, yLabel + fontHeight/2);
+				label.setStrokeColor(c);
+				overlay.add(label);
+			}
+			int iLength = metrics.stringWidth(d2s(grayLabel));
+			if (iLength > maxLength)
+				maxLength = iLength;
+		}
+		return maxLength;
+	}
+
+	String d2s(double d) {
+			return IJ.d2s(d,decimalPlaces);
+	}
+
+	int getFontHeight() {
+		Image img = GUI.createBlankImage(64, 64); //dummy version to get fontHeight
+		Graphics g = img.getGraphics();
+		int fontType = boldText?Font.BOLD:Font.PLAIN;
+		Font font = new Font("SansSerif", fontType, (int) (fontSize*zoom) );
+		FontMetrics metrics = g.getFontMetrics(font);
+		return	metrics.getHeight();
+	}
+
+	Color getColor(String color) {
+		Color c = Color.white;
+		if (color.equals(colors[1]))
+			c = Color.lightGray;
+		else if (color.equals(colors[2]))
+			c = Color.darkGray;
+		else if (color.equals(colors[3]))
+			c = Color.black;
+		else if (color.equals(colors[4]))
+			c = Color.red;
+		else if (color.equals(colors[5]))
+			c = Color.green;
+		else if (color.equals(colors[6]))
+			c = Color.blue;
+		else if (color.equals(colors[7]))
+			c = Color.yellow;
+		else if (color.equals(colors[8]))
+			c = null;
+		return c;
+	}	 
+
+	void calculateWidth() {
+		drawBarAsOverlay(imp, -1, -1);
+	}
+		
+	class LiveDialog extends GenericDialog {
+
+		LiveDialog(String title) {
+			super(title);
+		}
+
+		public void textValueChanged(TextEvent e) {
+
+			if (fieldNames == null) {
+				fieldNames = new String[4];
+				for(int i=0;i<4;i++)
+					fieldNames[i] = ((TextField)numberField.elementAt(i)).getName();
+			}
+
+			TextField tf = (TextField)e.getSource();
+			String name = tf.getName();
+			String value = tf.getText();
+
+			if (value.equals(""))
+				return;
+
+			int i=0;
+			boolean needsRefresh = false;
+
+			if (name.equals(fieldNames[0])) {
+
+				i = getValue( value ).intValue() ;
+				if(i<1)
+					return;
+				else {
+					needsRefresh = true;
+					numLabels = i;
+				}
+			} else if (name.equals(fieldNames[1])) {
+				i = getValue( value ).intValue() ;
+				if (i<0)
+					return;
+				else {
+					needsRefresh = true;
+					decimalPlaces = i;
+					decimalPlacesChanged = true;
+				}
+
+			} else if (name.equals(fieldNames[2])) {
+				i = getValue( value ).intValue() ;
+				if(i<1)
+					return;
+				else {
+					needsRefresh = true;
+					fontSize = i;
+
+				}
+
+			} else if (name.equals(fieldNames[3])) {
+				double d = 0;
+				d = getValue( "0" + value ).doubleValue() ;
+				if(d<=0)
+					return;
+				else {
+					needsRefresh = true;
+					zoom = d;
+				}
+			}
+
+			if (needsRefresh)
+				updateColorBar();
+			return;
+		}
+
+		public void itemStateChanged(ItemEvent e) {
+			location = ( (Choice)(choice.elementAt(0)) ).getSelectedItem();
+			fillColor = ( (Choice)(choice.elementAt(1)) ).getSelectedItem();
+			textColor = ( (Choice)(choice.elementAt(2)) ).getSelectedItem();
+			boldText = ( (Checkbox)(checkbox.elementAt(0)) ).getState();
+			flatten = !( (Checkbox)(checkbox.elementAt(1)) ).getState();
+			updateColorBar();
+		}
+
+	} //LiveDialog inner class
+
+}

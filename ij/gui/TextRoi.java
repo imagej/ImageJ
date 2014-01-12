@@ -31,6 +31,7 @@ public class TextRoi extends Roi {
 	private boolean firstChar = true;
 	private boolean firstMouseUp = true;
 	private int cline = 0;
+	private boolean drawStringMode;
 
 	/** Creates a TextRoi.*/
 	public TextRoi(int x, int y, String text) {
@@ -38,6 +39,24 @@ public class TextRoi extends Roi {
 		init(text, null);
 	}
 	
+	/** This constructor is a drop-in replacement for Graphics.drawString().*/
+	public TextRoi(String text, int x, int y) {
+		super(x, y, 1, 1);
+		drawStringMode = true;
+		theText[0] = text;
+		instanceFont = new Font(name, style, size);
+		ImageJ ij = IJ.getInstance();
+		Graphics g = ij!=null?ij.getGraphics():null;
+		if (g==null) return;
+		FontMetrics metrics = g.getFontMetrics(instanceFont);
+		g.dispose();
+		bounds = null;
+		width = (int)stringWidth(theText[0],metrics,g);
+		height = (int)(metrics.getHeight());
+		this.x = x;
+		this.y = y - height;
+	}
+
 	/** Creates a TextRoi using sub-pixel coordinates.*/
 	public TextRoi(double x, double y, String text) {
 		super(x, y, 1.0, 1.0);
@@ -259,7 +278,10 @@ public class TextRoi extends Roi {
 		while (i<MAX_LINES && theText[i]!=null) {
 			switch (justification) {
 				case LEFT:
-					g.drawString(theText[i], sx, sy+fontHeight-descent);
+					if (drawStringMode)
+						g.drawString(theText[i], screenX(x), screenY(y+height));
+					else
+						g.drawString(theText[i], sx, sy+fontHeight-descent);
 					break;
 				case CENTER:
 					int tw = metrics.stringWidth(theText[i]);
@@ -398,7 +420,7 @@ public class TextRoi extends Roi {
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
 	void updateBounds(Graphics g) {
 		//IJ.log("adjustSize1: "+theText[0]+"  "+width+","+height);
-		if (theText[0]!=null && theText[0].equals(line1))
+		if ((theText[0]!=null && theText[0].equals(line1)) || drawStringMode)
 			return;
 		double mag = ic!=null?ic.getMagnification():1.0;
 		if (nonScalable) mag = 1.0;

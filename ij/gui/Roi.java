@@ -914,7 +914,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	public void draw(Graphics g) {
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		if (fillColor!=null) color = fillColor;
-		if (Interpreter.isBatchMode() && ic!=null && ic.getDisplayList()!=null && strokeColor==null && fillColor==null)
+		if (Interpreter.isBatchMode() && imp!=null && imp.getOverlay()!=null && strokeColor==null && fillColor==null)
 			return;
 		g.setColor(color);
 		mag = getMagnification();

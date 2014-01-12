@@ -835,8 +835,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			gd.addStringField("Find: ", searchString, 20);
 			String[] labels = {"Case Sensitive", "Whole Words"};
 			boolean[] states = {caseSensitive, wholeWords};
-			//boolean[] states = new boolean[2];
-			//states[0]=caseSensitive; states[1]=wholeWords;
 			gd.addCheckboxGroup(1, 2, labels, states);
 			gd.showDialog();
 			if (gd.wasCanceled())

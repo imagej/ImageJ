@@ -5,8 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.48p 10 January 2014</u>
+<li> <u>1.48p 11 January 2014</u>
 <ul>
+<li> Added an "Overlay" option to the <i>Analyze&gt;Tools&gt;Calibration Bar</i>
+dialog box.
 <li> <i>Image&gt;Color&gt;Split Channels</i> and
 <i>Image&gt;Hyperstacks&gt;Reduce Dimensionality</i> are faster
 and preserve slice and frame positions.  
@@ -23,6 +25,8 @@ to auto-fill its dialog unless there are images created by
 run ImageJ invisibly in debug mode using "new ImageJ(ImageJ.NO_SHOW+ImageJ.DEBUG)".
 <li> Thanks to Philippe Carl, added the
 GenericDialog.getRadioButtonGroups() method.
+<li> Added the TestRoi(String,int,int) constructor as a drop-in replacement
+for the Graphics.drawString() method.
 <li> Thanks to Jon Nathan, fixed a bug that caused radio buttons in GenericDialogs
 to not generate dialogItemChanged events
 (<a href="plugins/radio-buttons/index.html">example</a>).
@@ -37,7 +41,7 @@ to not work as expected with selections created using makeOval().
 to skip the first line of the text image if it consisted of all NaNs.
 <li> Thanks to Tiago Ferreira, fixed a bug that caused the particle analyzer to 
 sometimes unexpectedly display the Results table if "Stack position" was enabled in
-<i>Analyze&gt;Set Options</i>.
+<i>Analyze&gt;Set Measurements</i>.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

@@ -1042,6 +1042,10 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			IJ.beep();
 			IJ.showStatus("No image");
 			return;
+		} else if (imp.getOverlay()!=null && imp.getOverlay().isCalibrationBar()) {
+			IJ.beep();
+			IJ.showStatus("Has calibration bar");
+			return;
 		}
 		ip = imp.getProcessor();
 		if (RGBImage && !imp.lock())
