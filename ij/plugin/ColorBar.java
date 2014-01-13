@@ -77,7 +77,7 @@ public class ColorBar implements PlugIn {
 			return;
 		}
 		if (imp.getRoi()!=null)
-		location = locations[AT_SELECTION];
+			location = locations[AT_SELECTION];
 		ImageCanvas ic = imp.getCanvas();
 		double mag = (ic!=null)?ic.getMagnification():1.0;
 		if (zoom<=1 && mag<1)
@@ -102,6 +102,8 @@ public class ColorBar implements PlugIn {
 		}
 		updateColorBar();
 		if (flatten) {
+			imp.deleteRoi();
+		    IJ.wait(100);
 			ImagePlus imp2 = imp.flatten();
 			imp2.setTitle(imp.getTitle()+" with bar");
 			imp.setOverlay(null);

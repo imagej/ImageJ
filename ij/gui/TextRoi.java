@@ -420,7 +420,7 @@ public class TextRoi extends Roi {
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
 	void updateBounds(Graphics g) {
 		//IJ.log("adjustSize1: "+theText[0]+"  "+width+","+height);
-		if ((theText[0]!=null && theText[0].equals(line1)) || drawStringMode)
+		if ((theText[0]!=null&&theText[0].equals(line1)) || drawStringMode)
 			return;
 		double mag = ic!=null?ic.getMagnification():1.0;
 		if (nonScalable) mag = 1.0;
