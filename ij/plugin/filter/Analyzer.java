@@ -557,7 +557,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 				if (index<0 || !rt.columnExists(index)) update=true;
 				rt.addValue("Slice", imp!=null?imp.getCurrentSlice():1.0);
 			}
-			if (update && rt==systemRT) rt.update(measurements, imp, roi);
+			if (update && rt==systemRT && IJ.isResultsWindow())
+				rt.update(measurements, imp, roi);
 		}
 		if (roi!=null) {
 			if (roi.isLine()) {

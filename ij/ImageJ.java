@@ -76,7 +76,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
-	public static final String VERSION = "1.48o";
+	public static final String VERSION = "1.48p";
 	public static final String BUILD = ""; 
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
@@ -85,13 +85,16 @@ public class ImageJ extends Frame implements ActionListener,
 	public static final int DEFAULT_PORT = 57294;
 	
 	/** Run as normal application. */
-	public static final int STANDALONE=0;
+	public static final int STANDALONE = 0;
 	
 	/** Run embedded in another application. */
-	public static final int EMBEDDED=1;
+	public static final int EMBEDDED = 1;
 	
 	/** Run embedded and invisible in another application. */
-	public static final int NO_SHOW=2;
+	public static final int NO_SHOW = 2;
+	
+	/** Run ImageJ in debug mode. */
+	public static final int DEBUG = 256;
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
 	private static int port = DEFAULT_PORT;
@@ -134,13 +137,13 @@ public class ImageJ extends Frame implements ActionListener,
 		(non-standalone) version of ImageJ. */
 	public ImageJ(java.applet.Applet applet, int mode) {
 		super("ImageJ");
+		if ((mode&DEBUG)!=0)
+			IJ.setDebugMode(true);
+		mode = mode & 255;
+		if (IJ.debugMode) IJ.log("ImageJ starting in debug mode: "+mode);
 		embedded = applet==null && (mode==EMBEDDED||mode==NO_SHOW);
 		this.applet = applet;
 		String err1 = Prefs.load(this, applet);
-		//if (IJ.isLinux()) {
-		//	backgroundColor = new Color(240,240,240);
-		//	setBackground(backgroundColor);
-		//}
 		setBackground(backgroundColor);
 		Menus m = new Menus(this, applet);
 		String err2 = m.addMenuBar();

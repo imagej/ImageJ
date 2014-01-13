@@ -260,8 +260,10 @@ public class ZProjector implements PlugIn {
 
 		// Do the projection.
 		for(int n=startSlice; n<=stopSlice; n+=increment) {
-	    	IJ.showStatus("ZProjection " + color +": " + n + "/" + stopSlice);
-	    	IJ.showProgress(n-startSlice, stopSlice-startSlice);
+			if (!isHyperstack) {
+	    		IJ.showStatus("ZProjection " + color +": " + n + "/" + stopSlice);
+	    		IJ.showProgress(n-startSlice, stopSlice-startSlice);
+	    	}
 	    	projectSlice(stack.getPixels(n), rayFunc, ptype);
 		}
 
@@ -327,6 +329,8 @@ public class ZProjector implements PlugIn {
 		increment = channels;
 		boolean rgb = imp.getBitDepth()==24;
 		for (int frame=firstFrame; frame<=lastFrame; frame++) {
+			IJ.showStatus(""+ (frame-firstFrame) + "/" + (lastFrame-firstFrame));
+			IJ.showProgress(frame-firstFrame, lastFrame-firstFrame);
 			for (int channel=1; channel<=channels; channel++) {
 				startSlice = (frame-1)*channels*slices + (start-1)*channels + channel;
 				stopSlice = (frame-1)*channels*slices + (stop-1)*channels + channel;

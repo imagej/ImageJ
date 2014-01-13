@@ -41,7 +41,7 @@ public class GenericDialog extends Dialog implements ActionListener, TextListene
 FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	public static final int MAX_SLIDERS = 25;
-	protected Vector numberField, stringField, checkbox, choice, slider, radioButtonGroup;
+	protected Vector numberField, stringField, checkbox, choice, slider, radioButtonGroups;
 	protected TextArea textArea1, textArea2;
 	protected Vector defaultValues,defaultText;
 	protected Component theLabel;
@@ -430,14 +430,17 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     	int n = items.length;
      	panel.setLayout(new GridLayout(rows, columns, 0, 0));
 		CheckboxGroup cg = new CheckboxGroup();
-		for (int i=0; i<n; i++)
-			panel.add(new Checkbox(items[i],cg,items[i].equals(defaultItem)));
-		if (radioButtonGroup==null)
-			radioButtonGroup = new Vector();
-		radioButtonGroup.addElement(cg);
+		for (int i=0; i<n; i++) {
+			Checkbox cb = new Checkbox(items[i],cg,items[i].equals(defaultItem));
+			cb.addItemListener(this);
+			panel.add(cb);
+		}
+		if (radioButtonGroups==null)
+			radioButtonGroups = new Vector();
+		radioButtonGroups.addElement(cg);
 		Insets insets = getInsets(5, 10, 0, 0);
 		if (label==null || label.equals("")) {
-			label = "rbg"+radioButtonGroup.size();
+			label = "rbg"+radioButtonGroups.size();
 			insets.top += 5;
 		} else {
 			setInsets(10, insets.left, 0);
@@ -1005,9 +1008,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     
   	/** Returns the selected item in the next radio button group. */
     public String getNextRadioButton() {
-		if (radioButtonGroup==null)
+		if (radioButtonGroups==null)
 			return null;
-		CheckboxGroup cg = (CheckboxGroup)(radioButtonGroup.elementAt(radioButtonIndex));
+		CheckboxGroup cg = (CheckboxGroup)(radioButtonGroups.elementAt(radioButtonIndex));
 		radioButtonIndex++;
 		Checkbox checkbox = cg.getSelectedCheckbox();
 		String item = "null";
@@ -1137,16 +1140,17 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 	
     /** Reset the counters before reading the dialog parameters */
-    private void resetCounters() {
-        nfIndex = 0;        // prepare for readout
+	private void resetCounters() {
+		nfIndex = 0;        // prepare for readout
 		sfIndex = 0;
 		cbIndex = 0;
 		choiceIndex = 0;
 		textAreaIndex = 0;
-        invalidNumber = false;
-}
+		radioButtonIndex = 0;
+		invalidNumber = false;
+	}
 
-/** Returns the Vector containing the numeric TextFields. */
+	/** Returns the Vector containing the numeric TextFields. */
   	public Vector getNumericFields() {
   		return numberField;
   	}
@@ -1169,6 +1173,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
   	/** Returns the Vector containing the sliders (Scrollbars). */
   	public Vector getSliders() {
   		return slider;
+  	}
+
+  	/** Returns the Vector that contains the RadioButtonGroups. */
+  	public Vector getRadioButtonGroups() {
+  		return radioButtonGroups;
   	}
 
   	/** Returns a reference to textArea1. */

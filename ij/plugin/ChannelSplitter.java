@@ -13,9 +13,14 @@ public class ChannelSplitter implements PlugIn {
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
 		if (imp.isComposite()) {
+			int z = imp.getSlice();
+			int t = imp.getFrame();
 			ImagePlus[] channels = split(imp);
-			for (int i=0; i<channels.length; i++)
+			for (int i=0; i<channels.length; i++) {
 				channels[i].show();
+				if (z>1 || t>1)
+					channels[i].setPosition(1, z, t);
+			}
 			imp.changes = false;
 			imp.close();
 		} else if (imp.getType()==ImagePlus.COLOR_RGB)
@@ -28,20 +33,24 @@ public class ChannelSplitter implements PlugIn {
 		boolean keepSource = IJ.altKeyDown();
 		String title = imp.getTitle();
 		Calibration cal = imp.getCalibration();
+		int pos = imp.getCurrentSlice();
 		ImageStack[] channels = splitRGB(imp.getStack(), keepSource);
 		if (!keepSource)
 			{imp.unlock(); imp.changes=false; imp.close();}
 		ImagePlus rImp = new ImagePlus(title+" (red)", channels[0]);
 		rImp.setCalibration(cal);
 		rImp.show();
+		rImp.setSlice(pos);
 		if (IJ.isMacOSX()) IJ.wait(500);
 		ImagePlus gImp = new ImagePlus(title+" (green)", channels[1]);
 		gImp.setCalibration(cal);
 		gImp.show();
+		gImp.setSlice(pos);
 		if (IJ.isMacOSX()) IJ.wait(500);
 		ImagePlus bImp = new ImagePlus(title+" (blue)", channels[2]);
 		bImp.setCalibration(cal);
 		bImp.show();
+		bImp.setSlice(pos);
 	}
 
 	/** Splits the specified image into separate channels. */

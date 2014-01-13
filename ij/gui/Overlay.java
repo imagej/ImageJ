@@ -13,6 +13,7 @@ public class Overlay {
     private boolean drawBackgrounds;
     private Color labelColor;
     private Font labelFont;
+    private boolean isCalibrationBar;
     
     /** Constructs an empty Overlay. */
     public Overlay() {
@@ -306,6 +307,14 @@ public class Overlay {
     	//if (labelFont==null && labelFontSize!=0)
     	//	labelFont = new Font("SansSerif", Font.PLAIN, labelFontSize);
     	return labelFont;
+    }
+
+    public void setIsCalibrationBar(boolean b) {
+    	this.isCalibrationBar = b;
+    }
+    
+    public boolean isCalibrationBar() {
+    	return isCalibrationBar;
     }
 
     void setVector(Vector v) {list = v;}
