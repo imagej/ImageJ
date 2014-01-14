@@ -103,7 +103,7 @@ public class ColorBar implements PlugIn {
 		updateColorBar();
 		if (flatten) {
 			imp.deleteRoi();
-		    IJ.wait(100);
+			IJ.wait(100);
 			ImagePlus imp2 = imp.flatten();
 			imp2.setTitle(imp.getTitle()+" with bar");
 			imp.setOverlay(null);
@@ -251,7 +251,7 @@ public class ColorBar implements PlugIn {
 			int j = (int)(BAR_LENGTH*zoom) - i - 1;
 			Line line = new Line(x, j+y, thickness+x, j+y);
 			line.setStrokeColor(new Color(rLUT[iMap]&0xff, gLUT[iMap]&0xff, bLUT[iMap]&0xff));
-			line.setStrokeWidth(1.0);
+			line.setStrokeWidth(1.0001);
 			overlay.add(line);
 		}
 

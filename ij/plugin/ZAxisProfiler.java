@@ -43,7 +43,8 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker  {
 		double minThreshold = ip.getMinThreshold();
 		double maxThreshold = ip.getMaxThreshold();
 		float[] y;
-		if (imp.isHyperStack())
+		boolean hyperstack = imp.isHyperStack();
+		if (hyperstack)
 			y = getHyperstackProfile(roi, minThreshold, maxThreshold);
 		else
 			y = getZAxisProfile(roi, minThreshold, maxThreshold);
@@ -72,6 +73,27 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker  {
 			double xmin=a[0]; double xmax=a[1];
 			plot.setLimits(xmin, xmax, ymin, ymax);
 		}
+		if (!firstTime) {
+			int pos = imp.getCurrentSlice();
+			int size = imp.getStackSize();
+			if (hyperstack) {
+				if (timeProfile) {
+					pos = imp.getT();
+					size = imp.getNFrames();
+				} else {
+					pos = imp.getZ();
+					size = imp.getNSlices();
+				}
+			}
+			double xx = (pos-1.0)/(size-1.0);
+			if (xx==0.0)
+				plot.setLineWidth(2);
+			plot.setColor(Color.blue);
+			plot.drawNormalizedLine(xx, 0, xx, 1.0);
+			plot.setColor(Color.black);
+			plot.setLineWidth(1);
+		}
+		firstTime = false;
 		return plot;
 	}
 	
@@ -90,7 +112,6 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker  {
 		if (firstTime)
 			timeProfile = slices==1 && frames>1;
 		if (slices>1 && frames>1 && (!isPlotMaker ||firstTime)) {
-			firstTime = false;
 			showingDialog = true;
 			GenericDialog gd = new GenericDialog("Profiler");
 			gd.addChoice("Profile", choices, choice);

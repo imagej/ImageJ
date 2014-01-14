@@ -56,7 +56,12 @@ public class ChannelSplitter implements PlugIn {
 	/** Splits the specified image into separate channels. */
 	public static ImagePlus[] split(ImagePlus imp) {
 		if (imp.getType()==ImagePlus.COLOR_RGB) {
-			return null;
+			ImageStack[] stacks = splitRGB(imp.getStack(), true);
+			ImagePlus[] images = new ImagePlus[3];
+			images[0] = new ImagePlus("red", stacks[0]);
+			images[1] = new ImagePlus("green", stacks[1]);
+			images[2] = new ImagePlus("blue", stacks[2]);
+			return images;
 		}
 		int width = imp.getWidth();
 		int height = imp.getHeight();
