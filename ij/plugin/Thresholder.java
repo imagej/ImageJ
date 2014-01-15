@@ -237,7 +237,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		imp.setStack(null, stack);
 		if (imp.isComposite()) {
 			CompositeImage ci = (CompositeImage)imp;
-			ci.setMode(CompositeImage.GRAYSCALE);
+			ci.setMode(IJ.GRAYSCALE);
 			ci.resetDisplayRanges();
 			ci.updateAndDraw();
 		}
@@ -305,7 +305,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		imp.getProcessor().setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
 		if (imp.isComposite()) {
 			CompositeImage ci = (CompositeImage)imp;
-			ci.setMode(CompositeImage.GRAYSCALE);
+			ci.setMode(IJ.GRAYSCALE);
 			ci.resetDisplayRanges();
 			ci.updateAndDraw();
 		}

@@ -395,7 +395,8 @@ public class RoiDecoder {
 		int size = getInt(hdrSize);
 		int styleAndJustification = getInt(hdrSize+4);
 		int style = styleAndJustification&255;
-		int justification = styleAndJustification>>8;
+		int justification = (styleAndJustification>>8) & 3;
+		boolean drawStringMode = (styleAndJustification&1024)!=0;
 		int nameLength = getInt(hdrSize+8);
 		int textLength = getInt(hdrSize+12);
 		char[] name = new char[nameLength];
@@ -415,6 +416,7 @@ public class RoiDecoder {
 		roi2.setFillColor(roi.getFillColor());
 		roi2.setName(getRoiName());
 		roi2.setJustification(justification);
+		roi2.setDrawStringMode(drawStringMode);
 		return roi2;
 	}
 	

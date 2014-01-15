@@ -285,7 +285,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	ImageProcessor setup(ImagePlus imp) {
 		ImageProcessor ip;
 		int type = imp.getType();
-		if (type==ImagePlus.COLOR_RGB || (imp.isComposite()&&((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE))
+		if (type==ImagePlus.COLOR_RGB || (imp.isComposite()&&((CompositeImage)imp).getMode()==IJ.COMPOSITE))
 			return null;
 		ip = imp.getProcessor();
 		boolean minMaxChange = false;		

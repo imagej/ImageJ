@@ -4438,11 +4438,11 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Composite image required");
 		int m = -1;
 		if (mode.equals("composite"))
-			m = CompositeImage.COMPOSITE;
+			m = IJ.COMPOSITE;
 		else if (mode.equals("color"))
-			m = CompositeImage.COLOR;
+			m = IJ.COLOR;
 		else if (mode.startsWith("gray"))
-			m = CompositeImage.GRAYSCALE;
+			m = IJ.GRAYSCALE;
 		if (m==-1) 
 			interp.error("Invalid mode");
 		((CompositeImage)imp).setMode(m);
@@ -4465,7 +4465,7 @@ public class Functions implements MacroConstants, Measurements {
 		int current = imp.getCurrentSlice();
 		if (imp.isComposite()) {
 			CompositeImage ci = (CompositeImage)imp;
-			if (ci.getMode()==CompositeImage.COMPOSITE) {
+			if (ci.getMode()==IJ.COMPOSITE) {
 				ci.reset();
 				imp.updateAndDraw();
 				imp.repaintWindow();

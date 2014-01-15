@@ -225,7 +225,7 @@ public class StackConverter {
 		imp.setStack(null,stack2);
 		imp.setCalibration(cal);
 		imp.setDimensions(3, nSlices, 1);
-		CompositeImage ci = new CompositeImage(imp, CompositeImage.GRAYSCALE);
+		CompositeImage ci = new CompositeImage(imp, IJ.GRAYSCALE);
 		ci.show();
 		imp.hide();
 	}

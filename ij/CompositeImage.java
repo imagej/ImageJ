@@ -9,7 +9,7 @@ import java.awt.image.*;
 
 public class CompositeImage extends ImagePlus {
 
-	// Note: TRANSPARENT mode has not yet been implemented
+	/** Display modes (note: TRANSPARENT mode has not yet been implemented) */
 	public static final int COMPOSITE=1, COLOR=2, GRAYSCALE=3, TRANSPARENT=4;
 	public static final int MAX_CHANNELS = 7;
 	int[] rgbPixels;

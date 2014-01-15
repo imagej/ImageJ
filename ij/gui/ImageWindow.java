@@ -246,7 +246,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			Insets insets = super.getInsets();
 			if (imp.isComposite()) {
 				CompositeImage ci = (CompositeImage)imp;
-				if (ci.getMode()==CompositeImage.COMPOSITE) {
+				if (ci.getMode()==IJ.COMPOSITE) {
 					Color c = ci.getChannelColor();
 					if (Color.green.equals(c))
 						c = new Color(0,180,0);

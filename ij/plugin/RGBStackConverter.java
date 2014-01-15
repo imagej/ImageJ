@@ -115,7 +115,7 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null) {
 			int firstC = c1, lastC = c1, firstZ = z1, lastZ = z1, firstT = t1, lastT = t1;
-			if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE) {
+			if (imp.isComposite() && ((CompositeImage)imp).getMode()==IJ.COMPOSITE) {
 				firstC = 1;
 				lastC = imp.getNChannels();
 			}
@@ -131,7 +131,7 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 	}
 
 	void compositeImageToRGB(CompositeImage imp, String title) {
-		if (imp.getMode()==CompositeImage.COMPOSITE) {
+		if (imp.getMode()==IJ.COMPOSITE) {
 			ImagePlus imp2 = imp.createImagePlus();
 			imp.updateImage();
 			imp2.setProcessor(title, new ColorProcessor(imp.getImage()));

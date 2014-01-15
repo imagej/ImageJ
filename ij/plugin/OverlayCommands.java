@@ -82,7 +82,7 @@ public class OverlayCommands implements PlugIn {
 		int stackSize = imp.getStackSize();
 		if (setPos && stackSize>1) {
 			if (imp.isHyperStack()||imp.isComposite()) {
-				boolean compositeMode = imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE;
+				boolean compositeMode = imp.isComposite() && ((CompositeImage)imp).getMode()==IJ.COMPOSITE;
 				int channel = !compositeMode||imp.getNChannels()==stackSize?imp.getChannel():0;
 				if (imp.getNSlices()>1)
 					roi.setPosition(channel, imp.getSlice(), 0);

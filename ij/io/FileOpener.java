@@ -118,12 +118,12 @@ public class FileOpener {
         		if (planar)
         			imp.getProcessor().resetMinAndMax();
 				imp.setFileInfo(fi);
-				int mode = CompositeImage.COMPOSITE;
+				int mode = IJ.COMPOSITE;
 				if (fi.description!=null) {
 					if (fi.description.indexOf("mode=color")!=-1)
-					mode = CompositeImage.COLOR;
+					mode = IJ.COLOR;
 					else if (fi.description.indexOf("mode=gray")!=-1)
-					mode = CompositeImage.GRAYSCALE;
+					mode = IJ.GRAYSCALE;
 				}
         		imp = new CompositeImage(imp, mode);
         		if (!planar && fi.displayRanges==null) {

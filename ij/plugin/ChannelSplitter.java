@@ -81,7 +81,7 @@ public class ChannelSplitter implements PlugIn {
 			imp2.setDimensions(1, slices, frames);
 			imp2.setCalibration(imp.getCalibration());
 			reducer.reduce(imp2);
-			if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.GRAYSCALE)
+			if (imp.isComposite() && ((CompositeImage)imp).getMode()==IJ.GRAYSCALE)
 				IJ.run(imp2, "Grays", "");
 			if (imp2.getNDimensions()>3)
 				imp2.setOpenAsHyperStack(true);

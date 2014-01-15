@@ -38,13 +38,13 @@ public class URLOpener implements PlugIn {
 				WindowManager.checkForDuplicateName = true;
 				FileInfo fi = imp.getOriginalFileInfo();
 				if (fi!=null && fi.fileType==FileInfo.RGB48)
-					imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
+					imp = new CompositeImage(imp, IJ.COMPOSITE);
 				else if (imp.getNChannels()>1 && fi!=null && fi.description!=null && fi.description.indexOf("mode=")!=-1) {
-					int mode = CompositeImage.COLOR;
+					int mode = IJ.COLOR;
 					if (fi.description.indexOf("mode=composite")!=-1)
-						mode = CompositeImage.COMPOSITE;
+						mode = IJ.COMPOSITE;
 					else if (fi.description.indexOf("mode=gray")!=-1)
-						mode = CompositeImage.GRAYSCALE;
+						mode = IJ.GRAYSCALE;
 					imp = new CompositeImage(imp, mode);
 				}
 				if (fi!=null && (fi.url==null || fi.url.length()==0)) {
@@ -84,7 +84,7 @@ public class URLOpener implements PlugIn {
 			WindowManager.checkForDuplicateName = true;
 			FileInfo fi = imp.getOriginalFileInfo();
 			if (fi!=null && fi.fileType==FileInfo.RGB48)
-				imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
+				imp = new CompositeImage(imp, IJ.COMPOSITE);
 			imp.show(Opener.getLoadRate(startTime,imp));
 		}
 		IJ.register(URLOpener.class);  // keeps this class from being GC'd

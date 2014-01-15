@@ -2262,8 +2262,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return compositeImage && nChannels>=1 && imageType!=COLOR_RGB && (this instanceof CompositeImage);
 	}
 
-	/** Returns the composite display mode (CompositeImage.COMPOSITE, CompositeImage.COLOR
-		or CompositeImage.GRAYSCALE) if this is a CompositeImage, otherwise returns -1. */
+	/** Returns the display mode (IJ.COMPOSITE, IJ.COLOR
+		or IJ.GRAYSCALE) if this is a CompositeImage, otherwise returns -1. */
 	public int getCompositeMode() {
 		if (isComposite())
 			return ((CompositeImage)this).getMode();

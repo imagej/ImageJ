@@ -24,6 +24,9 @@ import java.net.*;
 /** This class consists of static utility methods. */
 public class IJ {
 
+	/** Image display modes */
+	public static final int COMPOSITE=1, COLOR=2, GRAYSCALE=3;
+	
 	public static final String URL = "http://imagej.nih.gov/ij";
 	public static final int ALL_KEYS = -1;
 	
@@ -982,7 +985,7 @@ public class IJ {
 		int stackSize = imp.getStackSize();
 		if (stackSize>1) {
 			String macroOptions = Macro.getOptions();
-			if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE) {
+			if (imp.isComposite() && ((CompositeImage)imp).getMode()==IJ.COMPOSITE) {
 				if (macroOptions==null || !macroOptions.contains("slice"))
 					return flags | PlugInFilter.DOES_STACKS;
 			}
@@ -1869,11 +1872,11 @@ public class IJ {
 	 		type += "black";
 		ImagePlus imp = IJ.createImage(title, type, width, height, channels*slices*frames);
 		imp.setDimensions(channels, slices, frames);
-		int mode = CompositeImage.COLOR;
+		int mode = IJ.COLOR;
 		if (type.contains("composite"))
-			mode = CompositeImage.COMPOSITE;
+			mode = IJ.COMPOSITE;
 		if (type.contains("grayscale"))
-			mode = CompositeImage.GRAYSCALE;
+			mode = IJ.GRAYSCALE;
 		if (channels>1 && imp.getBitDepth()!=24)
 			imp = new CompositeImage(imp, mode);
 		imp.setOpenAsHyperStack(true);
@@ -1895,7 +1898,7 @@ public class IJ {
 		ImagePlus imp = createImage(title, width, height, channels*slices*frames, bitdepth);
 		imp.setDimensions(channels, slices, frames);
 		if (channels>1 && bitdepth!=24)
-			imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
+			imp = new CompositeImage(imp, IJ.COMPOSITE);
 		imp.setOpenAsHyperStack(true);
 		return imp;
 	 }

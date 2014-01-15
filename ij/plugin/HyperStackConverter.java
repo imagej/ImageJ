@@ -66,12 +66,12 @@ public class HyperStackConverter implements PlugIn {
 			throw new IllegalArgumentException("Virtual stacks must by in XYCZT order");
 		(new HyperStackConverter()).shuffle(imp, intOrder);
 		ImagePlus imp2 = imp;
-		int intMode = CompositeImage.COMPOSITE;
+		int intMode = IJ.COMPOSITE;
 		if (mode!=null) {
 			if (mode.equalsIgnoreCase("color"))
-				intMode = CompositeImage.COLOR;
+				intMode = IJ.COLOR;
 			else if (mode.equalsIgnoreCase("grayscale"))
-				intMode = CompositeImage.GRAYSCALE;
+				intMode = IJ.GRAYSCALE;
 		}
 		if (c>1) {
 			LUT[] luts = imp.getLuts();

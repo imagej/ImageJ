@@ -3,7 +3,7 @@ import ij.*;
 import ij.process.*;
 import ij.util.*;
 import ij.macro.Interpreter;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.*;
 import java.awt.*;
 
 
@@ -32,6 +32,7 @@ public class TextRoi extends Roi {
 	private boolean firstMouseUp = true;
 	private int cline = 0;
 	private boolean drawStringMode;
+	private double angle;  // degrees
 
 	/** Creates a TextRoi.*/
 	public TextRoi(int x, int y, String text) {
@@ -39,12 +40,15 @@ public class TextRoi extends Roi {
 		init(text, null);
 	}
 	
-	/** This constructor is a drop-in replacement for Graphics.drawString().*/
-	public TextRoi(String text, int x, int y) {
+	/** Use this constructor as a drop-in replacement for Graphics.drawString().
+		Antialiasing is enabled by default. */
+	public TextRoi(String text, double x, double y, Font font) {
 		super(x, y, 1, 1);
 		drawStringMode = true;
 		theText[0] = text;
-		instanceFont = new Font(name, style, size);
+		instanceFont = font;
+		if (instanceFont==null)
+			instanceFont = new Font(name, style, size);
 		ImageJ ij = IJ.getInstance();
 		Graphics g = ij!=null?ij.getGraphics():null;
 		if (g==null) return;
@@ -53,8 +57,9 @@ public class TextRoi extends Roi {
 		bounds = null;
 		width = (int)stringWidth(theText[0],metrics,g);
 		height = (int)(metrics.getHeight());
-		this.x = x;
-		this.y = y - height;
+		this.x = (int)x;
+		this.y = (int)(y - height);
+		setAntialiased(true);
 	}
 
 	/** Creates a TextRoi using sub-pixel coordinates.*/
@@ -260,6 +265,18 @@ public class TextRoi extends Roi {
 		int fontHeight = metrics.getHeight();
 		int descent = metrics.getDescent();
 		g.setFont(font);
+		Graphics2D g2d = (Graphics2D)g;
+		AffineTransform at = null;
+		if (angle!=0.0) {
+			at = g2d.getTransform();
+			double cx=sx, cy=sy;
+			double theta = Math.toRadians(angle);
+			if (drawStringMode) {
+				cx = screenX(x);
+				cy = screenY(y+height);
+			}
+			g2d.rotate(-theta, cx, cy);
+		}
 		int i = 0;
 		if (fillColor!=null) {
 			if (getStrokeWidth()<10) {
@@ -271,7 +288,6 @@ public class TextRoi extends Roi {
 			Color c = g.getColor();
 			int alpha = fillColor.getAlpha();
  			g.setColor(fillColor);
- 			Graphics2D g2d = (Graphics2D)g;
 			g.fillRect(sx-5, sy-5, sw+10, sh+10);
 			g.setColor(c);
 		}
@@ -295,6 +311,8 @@ public class TextRoi extends Roi {
 			i++;
 			sy += fontHeight;
 		}
+		if (at!=null)  // restore transformation matrix used to rotate text
+			g2d.setTransform(at);
 	}
 
 	/*
@@ -567,6 +585,22 @@ public class TextRoi extends Roi {
 		for (int i=0; i<MAX_LINES; i++)
 			tr.theText[i] = theText[i];
 		return tr;
+	}
+	
+	public double getAngle() {
+		return angle;
+	}
+	
+	public void setAngle(double angle) {
+		this.angle = angle;
+	}
+
+	public boolean getDrawStringMode() {
+		return drawStringMode;
+	}
+	
+	public void setDrawStringMode(boolean drawStringMode) {
+		this.drawStringMode = drawStringMode;
 	}
         
 }
