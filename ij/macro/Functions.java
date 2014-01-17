@@ -5559,16 +5559,18 @@ public class Functions implements MacroConstants, Measurements {
 		addDrawingToOverlay(imp);
 		String text = getFirstString();
 		int x = (int)getNextArg();
-		int y = (int)getLastArg();
+		int y = (int)getNextArg();
+		double angle = 0.0;
+		if (interp.nextToken()==',')
+			angle = getLastArg();
+		else
+			interp.getRightParen();
 		Font font = this.font;
 		boolean nullFont = font==null;
 		if (nullFont)
 			font = imp.getProcessor().getFont();
-		FontMetrics metrics = imp.getProcessor().getFontMetrics();
-		int fontHeight = metrics.getHeight();
-		TextRoi roi = new TextRoi(x, y-fontHeight, text, font);
-		if (!nullFont)
-			roi.setAntialiased(antialiasedText);
+		TextRoi roi = new TextRoi(text, x, y, font);
+		roi.setAngle(angle);
 		addRoi(imp, roi);
 		return Double.NaN;
 	}

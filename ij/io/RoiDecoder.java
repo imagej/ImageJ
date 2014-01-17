@@ -312,7 +312,7 @@ public class RoiDecoder {
 		}
 		
 		if (version>=218 && subtype==TEXT)
-			roi = getTextRoi(roi);
+			roi = getTextRoi(roi, version);
 
 		if (version>=221 && subtype==IMAGE)
 			roi = getImageRoi(roi, imageOpacity, imageSize);
@@ -389,7 +389,7 @@ public class RoiDecoder {
 		return roi;
 	}
 	
-	Roi getTextRoi(Roi roi) {
+	Roi getTextRoi(Roi roi, int version) {
 		Rectangle r = roi.getBounds();
 		int hdrSize = RoiEncoder.HEADER_SIZE;
 		int size = getInt(hdrSize);
@@ -405,6 +405,7 @@ public class RoiDecoder {
 			name[i] = (char)getShort(hdrSize+16+i*2);
 		for (int i=0; i<textLength; i++)
 			text[i] = (char)getShort(hdrSize+16+nameLength*2+i*2);
+		double angle = version>=225?getFloat(hdrSize+16+nameLength*2+textLength*2):0f;
 		Font font = new Font(new String(name), style, size);
 		TextRoi roi2 = null;
 		if (roi.subPixelResolution()) {
@@ -417,6 +418,7 @@ public class RoiDecoder {
 		roi2.setName(getRoiName());
 		roi2.setJustification(justification);
 		roi2.setDrawStringMode(drawStringMode);
+		roi2.setAngle(angle);
 		return roi2;
 	}
 	

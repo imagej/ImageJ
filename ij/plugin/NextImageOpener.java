@@ -105,6 +105,7 @@ public class NextImageOpener implements PlugIn {
 			imp0.setCalibration(imp2.getCalibration());
 			imp0.setFileInfo(imp2.getOriginalFileInfo());
 			imp0.setProperty ("Info", imp2.getProperty ("Info"));
+			imp0.setOverlay(imp2.getOverlay());
 			ImageWindow win = imp0.getWindow();
 			if (win!=null) win.repaint();
 		}
