@@ -5390,6 +5390,8 @@ public class Functions implements MacroConstants, Measurements {
 			return overlayAddSelection(imp, overlay);
 		else if (name.equals("setPosition"))
 			return overlaySetPosition(overlay);
+		else if (name.equals("setFillColor"))
+			return overlaySetFillColor(overlay);
 		if (overlay==null)
 			interp.error("No overlay");
 		int size = overlay.size();
@@ -5501,6 +5503,20 @@ public class Functions implements MacroConstants, Measurements {
 		return Double.NaN;
 	}
 
+	double overlaySetFillColor(Overlay overlay) {
+        interp.getLeftParen();
+		Color color = getColor();
+        interp.getRightParen();
+		if (overlay==null)
+			overlay = offscreenOverlay;
+		if (overlay==null)
+			interp.error("No overlay");
+		int size = overlay.size();
+		if (size>0)
+			overlay.get(size-1).setFillColor(color);
+		return Double.NaN;
+	}
+
 	double overlayMoveTo() {
 		if (overlayPath==null) overlayPath = new GeneralPath();
 		interp.getLeftParen();
@@ -5570,6 +5586,8 @@ public class Functions implements MacroConstants, Measurements {
 		if (nullFont)
 			font = imp.getProcessor().getFont();
 		TextRoi roi = new TextRoi(text, x, y, font);
+		if (!nullFont && !antialiasedText)
+			roi.setAntialiased(false);
 		roi.setAngle(angle);
 		addRoi(imp, roi);
 		return Double.NaN;

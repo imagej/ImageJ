@@ -291,10 +291,10 @@ public class RoiEncoder {
 		int style = font.getStyle() + roi.getJustification()*256+drawStringMode;
 		String text = roi.getText();
 		float angle = (float)roi.getAngle();
-		int angleSize = 4;
+		int angleLength = 4;
 		int fontNameLength = fontName.length();
 		int textLength = text.length();
-		int textRoiDataLength = 16+fontNameLength*2+textLength*2 + angleSize;
+		int textRoiDataLength = 16+fontNameLength*2+textLength*2 + angleLength;
 		byte[] data2 = new byte[HEADER_SIZE+HEADER2_SIZE+textRoiDataLength+roiNameSize];
 		System.arraycopy(data, 0, data2, 0, HEADER_SIZE);
 		data = data2;
@@ -309,7 +309,7 @@ public class RoiEncoder {
 			putShort(HEADER_SIZE+16+fontNameLength*2+i*2, text.charAt(i));
 		int hdr2Offset = HEADER_SIZE+textRoiDataLength;
 		//ij.IJ.log("saveTextRoi: "+HEADER_SIZE+"  "+textRoiDataLength+"  "+fontNameLength+"  "+textLength);
-		putFloat(hdr2Offset-angleSize, angle);
+		putFloat(hdr2Offset-angleLength, angle);
 		putHeader2(roi, hdr2Offset);
 	}
 	

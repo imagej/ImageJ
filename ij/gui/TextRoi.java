@@ -40,8 +40,7 @@ public class TextRoi extends Roi {
 		init(text, null);
 	}
 	
-	/** Use this constructor as a drop-in replacement for Graphics.drawString().
-		Antialiasing is enabled by default. */
+	/** Use this constructor as a drop-in replacement for ImageProcessor.drawString(). */
 	public TextRoi(String text, double x, double y, Font font) {
 		super(x, y, 1, 1);
 		drawStringMode = true;
@@ -273,7 +272,7 @@ public class TextRoi extends Roi {
 			double theta = Math.toRadians(angle);
 			if (drawStringMode) {
 				cx = screenX(x);
-				cy = screenY(y+height);
+				cy = screenY(y+height-descent);
 			}
 			g2d.rotate(-theta, cx, cy);
 		}
@@ -288,14 +287,17 @@ public class TextRoi extends Roi {
 			Color c = g.getColor();
 			int alpha = fillColor.getAlpha();
  			g.setColor(fillColor);
-			g.fillRect(sx-5, sy-5, sw+10, sh+10);
+			if (drawStringMode)
+				g.fillRect(sx, sy, sw, sh);
+			else
+				g.fillRect(sx-5, sy-5, sw+10, sh+10);
 			g.setColor(c);
 		}
 		while (i<MAX_LINES && theText[i]!=null) {
 			switch (justification) {
 				case LEFT:
 					if (drawStringMode)
-						g.drawString(theText[i], screenX(x), screenY(y+height));
+						g.drawString(theText[i], screenX(x), screenY(y+height-descent));
 					else
 						g.drawString(theText[i], sx, sy+fontHeight-descent);
 					break;
@@ -593,6 +595,8 @@ public class TextRoi extends Roi {
 	
 	public void setAngle(double angle) {
 		this.angle = angle;
+		if (angle!=0.0)
+			setAntialiased(true);
 	}
 
 	public boolean getDrawStringMode() {
