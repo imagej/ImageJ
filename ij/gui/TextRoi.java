@@ -359,6 +359,8 @@ public class TextRoi extends Roi {
 	/** Sets the 'antialiased' instance variable. */
 	public void setAntialiased(boolean antialiased) {
 		this.antialiased = antialiased;
+		if (angle>0.0)
+			this.antialiased = true;
 	}
 	
 	/** Returns the state of the 'antialiased' instance variable. */

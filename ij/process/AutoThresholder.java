@@ -528,14 +528,14 @@ public class AutoThresholder {
 	}
 
 	int MinErrorI(int [] data ) {
-		  // Kittler and J. Illingworth, "Minimum error thresholding," Pattern Recognition, vol. 19, pp. 41-47, 1986.
-		 // C. A. Glasbey, "An analysis of histogram-based thresholding algorithms," CVGIP: Graphical Models and Image Processing, vol. 55, pp. 532-537, 1993.
+		// Kittler and J. Illingworth, "Minimum error thresholding," Pattern Recognition, vol. 19, pp. 41-47, 1986.
+		// C. A. Glasbey, "An analysis of histogram-based thresholding algorithms," CVGIP: Graphical Models and Image Processing, vol. 55, pp. 532-537, 1993.
 		// Ported to ImageJ plugin by G.Landini from Antti Niemisto's Matlab code (GPL)
 		// Original Matlab code Copyright (C) 2004 Antti Niemisto
 		// See http://www.cs.tut.fi/~ant/histthresh/ for an excellent slide presentation
 		// and the original Matlab code.
 
-		int threshold =  Mean(data); //Initial estimate for the threshold is found with the MEAN algorithm.
+		int threshold = Mean(data); //Initial estimate for the threshold is found with the MEAN algorithm.
 		int Tprev =-2;
 		double mu, nu, p, q, sigma2, tau2, w0, w1, w2, sqterm, temp;
 		//int counter=1;
@@ -564,13 +564,11 @@ public class AutoThresholder {
 			Tprev = threshold;
 			temp = (w1+Math.sqrt(sqterm))/w0;
 
-			if ( Double.isNaN(temp)) {
+			if (Double.isNaN(temp)) {
 				IJ.log ("MinError(I): NaN, not converging.");
 				threshold = Tprev;
-			}
-			else
+			} else
 				threshold =(int) Math.floor(temp);
-			//IJ.log("Iter: "+ counter+++"  t:"+threshold);
 		}
 		return threshold;
 	}

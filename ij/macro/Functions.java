@@ -5504,9 +5504,9 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	double overlaySetFillColor(Overlay overlay) {
-        interp.getLeftParen();
+		interp.getLeftParen();
 		Color color = getColor();
-        interp.getRightParen();
+		interp.getRightParen();
 		if (overlay==null)
 			overlay = offscreenOverlay;
 		if (overlay==null)
