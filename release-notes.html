@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.48q 22 January 2014</u>
+<li> <u>1.48q 24 January 2014</u>
 <ul>
 <li> Thanks to Michael Schmid, the <i>Edit&gt;Selection&gt;Specify</i> command
 adds a "Constrain square/circle" option, supports non-integer numbers and no
@@ -22,15 +22,17 @@ setProcessStack(boolean) and setUseStackHistogram(boolean) methods
 to ContrastEnhancer class.
 <li> Added the Overlay.setFillColor() macro function
 (<a href="macros/AddNamesToImportedStack.txt">example</a>).
-<li> Thanks to Mark Hiner, the CompositeImage onstructor no longer converts
-stacks to channels when the number of slices is less than 8 if
-the mode is IJ.GRAYSCALE.
+<li> Thanks to Mark Hiner, the CompositeImage constructor no longer converts
+stacks to channels when the number of slices is less than eight if
+the dimensions have been set or if the mode is IJ.GRAYSCALE.
 <li> Fixed a bug that caused horizontal and vertical lines in overlays
 in to be deleted  when duplicating or cropping images.
 <li> Thanks to Nicolas Brouilly, fixed a bug that caused scales greater than
 2,147,483 pixels/unit to be saved incorrectly in the TIFF header.
 <li> Fixed a bug that caused <i>File&gt;Open Next</i> to not work as
 expected with TIFF files with overlays.
+<li> Thanks to Norbert Vischer, fixed a bug that caused the close(wildcard) 
+macro function to sometimes not keep current image active.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

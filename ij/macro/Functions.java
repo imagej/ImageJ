@@ -2650,6 +2650,7 @@ public class Functions implements MacroConstants, Measurements {
 				resetImage();
 				return;
 			}
+			boolean currentImpClosed = false;
 			for (int img = ids.length-1; img >=0; img--) {
 				int id = ids[img];              
 				ImagePlus imp = WindowManager.getImage(id);
@@ -2668,11 +2669,13 @@ public class Functions implements MacroConstants, Measurements {
 						}
 						imp.changes = false;
 						imp.close();
+						if (imp==currentImp)
+							currentImpClosed = true;
 					}
 				}
 			}
-			if (currentImp!=null)
-				WindowManager.setCurrentWindow(currentImp.getWindow());
+			if (!currentImpClosed && currentImp!=null)
+				IJ.selectWindow(currentImp.getID());
 			resetImage();
 		} else {//Wayne
 			ImagePlus imp = getImage();

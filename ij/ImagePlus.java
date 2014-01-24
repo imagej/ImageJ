@@ -64,6 +64,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	protected int nChannels = 1;
 	protected int nSlices = 1;
 	protected int nFrames = 1;
+	protected boolean dimensionsSet;
 
 	private ImageJ ij = IJ.getInstance();
 	private String title;
@@ -956,6 +957,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (isComposite()) ((CompositeImage)this).reset();
 			new StackWindow(this);
 		}
+		dimensionsSet = true;
 		//IJ.log("setDimensions: "+ nChannels+"  "+nSlices+"  "+nFrames);
 	}
 	
