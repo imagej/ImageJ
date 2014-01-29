@@ -5,8 +5,9 @@
 </head>
 <body>
 
-<li> <u>1.48q 24 January 2014</u>
-<ul>
+<li> <u>1.48q 28 January 2014</u>
+<ul> With stacks and hyperstacks, <i>Image&gt;Overlay&gt;Flatten</i> now replaces 
+the active image with the flattened image and automatically converts to RGB.
 <li> Thanks to Michael Schmid, the <i>Edit&gt;Selection&gt;Specify</i> command
 adds a "Constrain square/circle" option, supports non-integer numbers and no
 longer moves the selection when 'Centered' or 'Scaled units' are checked.
@@ -25,6 +26,7 @@ to ContrastEnhancer class.
 <li> Thanks to Mark Hiner, the CompositeImage constructor no longer converts
 stacks to channels when the number of slices is less than eight if
 the dimensions have been set or if the mode is IJ.GRAYSCALE.
+<li> Thanks to Marcel Boeglin, added the ImagePlus.flattenStack() method.
 <li> Fixed a bug that caused horizontal and vertical lines in overlays
 in to be deleted  when duplicating or cropping images.
 <li> Thanks to Nicolas Brouilly, fixed a bug that caused scales greater than
@@ -33,6 +35,12 @@ in to be deleted  when duplicating or cropping images.
 expected with TIFF files with overlays.
 <li> Thanks to Norbert Vischer, fixed a bug that caused the close(wildcard) 
 macro function to sometimes not keep current image active.
+<li> Fixed a bug that caused the ImagePlus.hide() method to remove overlays.
+<li> Fixed a bug that caused macro run() calls using the keyword
+'stack' in the options string to fail after the "d" (Draw) or "f" (Fill)
+keyboard shortcuts had been used.
+<li> Thanks to Marcel Boeglin, fixed bugs that caused <i>Image&gt;Overlay&gt;Flatten</i>
+to not work correctly with hyperstacks and to not be correctly recorded.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

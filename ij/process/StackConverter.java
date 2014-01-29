@@ -5,6 +5,7 @@ import java.awt.image.*;
 import ij.*;
 import ij.gui.*;
 import ij.measure.*;
+import ij.plugin.RGBStackConverter;
 
 /** This class does stack type conversions. */
 public class StackConverter {
@@ -166,8 +167,10 @@ public class StackConverter {
 
 	/** Converts the Stack to RGB. */
 	public void convertToRGB() {
-		if (imp.isComposite())
-			throw new IllegalArgumentException("Use Image>Color>Stack to RGB");
+		if (imp.isComposite()) {
+			RGBStackConverter.convertToRGB(imp);
+			return;
+		}
 		ImageStack stack1 = imp.getStack();
 		ImageStack stack2 = new ImageStack(width, height);
 		String label;

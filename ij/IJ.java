@@ -980,8 +980,10 @@ public class IJ {
 		if the user selects "Cancel".
 	*/
 	public static int setupDialog(ImagePlus imp, int flags) {
-		if (imp==null || (ij!=null&&ij.hotkey))
+		if (imp==null || (ij!=null&&ij.hotkey)) {
+			if (ij!=null) ij.hotkey=false;
 			return flags;
+		}
 		int stackSize = imp.getStackSize();
 		if (stackSize>1) {
 			String macroOptions = Macro.getOptions();

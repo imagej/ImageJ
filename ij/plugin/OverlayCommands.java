@@ -3,6 +3,7 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.plugin.frame.RoiManager;
+import ij.plugin.frame.Recorder;
 import ij.macro.Interpreter;
 import ij.io.RoiDecoder;
 import ij.plugin.filter.PlugInFilter;
@@ -231,63 +232,43 @@ public class OverlayCommands implements PlugIn {
 
 	void flatten() {
 		ImagePlus imp = IJ.getImage();
-		int flags = imp.isComposite()?0:IJ.setupDialog(imp, 0);
+		int flags = IJ.setupDialog(imp, 0);
 		if (flags==PlugInFilter.DONE)
 			return;
-		else if (flags==PlugInFilter.DOES_STACKS)
+		else if (flags==PlugInFilter.DOES_STACKS) {
+			//Added by Marcel Boeglin 2014.01.24
+			if (!IJ.isJava16()) {
+				IJ.error("Flatten Stack", "Java 1.6 required to flatten a stack");
+				return;
+			}
 			flattenStack(imp);
-		else {
+			if (Recorder.record)
+				Recorder.recordCall("imp.flattenStack();");
+		} else {
 			ImagePlus imp2 = imp.flatten();
 			imp2.setTitle(WindowManager.getUniqueName(imp.getTitle()));
 			imp2.show();
+			if (Recorder.record) // Added by Marcel Boeglin 2014.01.12
+				Recorder.recordCall("imp2 = imp.flatten();");
 		}
 	}
-	
+
+
+	//Marcel Boeglin 2014.01.25
 	void flattenStack(ImagePlus imp) {
 		Overlay overlay = imp.getOverlay();
 		Overlay roiManagerOverlay = null;
-		boolean roiManagerShowAllMode = !Prefs.showAllSliceOnly;
 		ImageCanvas ic = imp.getCanvas();
 		if (ic!=null)
 			roiManagerOverlay = ic.getShowAllList();
-		if ((overlay==null&&roiManagerOverlay==null) || !IJ.isJava16() || imp.getBitDepth()!=24) {
-			IJ.error("Flatten Stack", "A stack in RGB format, an overlay and\nJava 1.6 are required to flatten a stack.");
+		//IJ.log("imp.getOverlay() = "+imp.getOverlay());
+		if (overlay==null && roiManagerOverlay==null && !imp.isComposite()) {
+			IJ.error("Flatten Stack", "An overlay is required.");
 			return;
 		}
-		imp.setOverlay(null);
-		if (roiManagerOverlay!=null) {
-			RoiManager rm = RoiManager.getInstance();
-			if (rm!=null)
-				rm.runCommand("show none");
-		}
-		ImageStack stack = imp.getStack();
-		int stackSize = stack.getSize();
-		for (int img=1; img<=stack.getSize(); img++) {
-			if (overlay!=null && overlay.size()>0)
-				flattenImage(stack, img, overlay.duplicate(), false);
-			if (roiManagerOverlay!=null && roiManagerOverlay.size()>0)
-				flattenImage(stack, img, roiManagerOverlay.duplicate(), roiManagerShowAllMode);
-		}
-		imp.setStack(stack);
+		imp.flattenStack();
 	}
 	
-	private void flattenImage(ImageStack stack, int img, Overlay overlay, boolean showAll) {
-		ImageProcessor ip = stack.getProcessor(img);
-		ImagePlus imp = new ImagePlus("temp", ip);
-		int width = imp.getWidth();
-		int height = imp.getHeight();
-		for (int i=0; i<overlay.size(); i++) {
-			Roi roi = overlay.get(i);
-			int position = roi.getPosition();
-			//IJ.log(img+" "+i+" "+position+" "+showAll+" "+overlay.size());
-			if (!(position==0 || position==img || showAll))
-				roi.setLocation(width, height);
-		}
-		imp.setOverlay(overlay);
-		ImagePlus imp2 = imp.flatten();
-		stack.setPixels(imp2.getProcessor().getPixels(),img);
-	}
-
 	void fromRoiManager() {
 		ImagePlus imp = IJ.getImage();
 		RoiManager rm = RoiManager.getInstance2();
@@ -303,7 +284,7 @@ public class OverlayCommands implements PlugIn {
 		rm.moveRoisToOverlay(imp);
 		imp.deleteRoi();
 	}
-	
+
 	void toRoiManager() {
 		ImagePlus imp = IJ.getImage();
 		Overlay overlay = imp.getOverlay();

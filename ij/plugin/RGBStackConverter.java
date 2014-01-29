@@ -12,9 +12,12 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 	private double imageSize;
 	private static boolean staticKeep = true;
 	private boolean keep;
+	private ImagePlus image;
 	
 	public void run(String arg) {
-		ImagePlus imp = IJ.getImage();
+		ImagePlus imp = image;
+		if (imp==null)
+			imp = IJ.getImage();
 		if (!IJ.isMacro()) keep = staticKeep;
 		CompositeImage cimg = imp.isComposite()?(CompositeImage)imp:null;
 		int size = imp.getStackSize();
@@ -45,6 +48,25 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 		imp.unlock();
 	}
 	
+	/** Converts the specified multi-channel (composite) image to RGB. */
+	public static void convertToRGB(ImagePlus imp) {
+		if (!imp.isComposite())
+			throw new IllegalArgumentException("Multi-channel image required");
+		RGBStackConverter converter = new RGBStackConverter();
+		ImageWindow win = imp.getWindow();
+		Point location = null;
+		if (win!=null) {
+			location = win.getLocation();
+			imp.hide();
+		}
+		converter.image = imp;
+		converter.run("");
+		if (win!=null) {
+			ImageWindow.setNextLocation(location);
+			imp.show();
+		}
+	}
+	
 	void compositeToRGB(CompositeImage imp, String title) {
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
@@ -63,14 +85,21 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 		int c1 = imp.getChannel();
 		int z1 = imp.getSlice();
 		int t2 = imp.getFrame();
-		if (!showDialog())
-			return;
+		if (image!=null) {
+			slices2 = slices1;
+			frames2 = frames1;
+			keep = false;
+		} else {
+			if (!showDialog())
+				return;
+		}
 		//IJ.log("HyperStackReducer-2: "+keep+" "+channels2+" "+slices2+" "+frames2);
 		String title2 = keep?WindowManager.getUniqueName(imp.getTitle()):imp.getTitle();
 		ImagePlus imp2 = imp.createHyperStack(title2, 1, slices2, frames2, 24);
 		convertHyperstack(imp, imp2);
 		if (imp.getWindow()==null && !keep) {
 			imp.setImage(imp2);
+			imp.setOverlay(imp2.getOverlay());
 			return;
 		}
 		imp2.setOpenAsHyperStack(slices2>1||frames2>1);
@@ -137,12 +166,17 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 			imp2.setProcessor(title, new ColorProcessor(imp.getImage()));
 			//Added by Marcel Boeglin 2013.09.26
 			Overlay overlay = imp.getOverlay();
+			Overlay overlay2 = null;
 			if (overlay!=null) {
-				Overlay overlay2 = overlay.duplicate();
+				overlay2 = overlay.duplicate();
 				overlay2.crop(1, imp.getNChannels());
 				imp2.setOverlay(overlay2);
 			}
-			imp2.show();
+			if (imp.getWindow()==null) {
+				imp.setImage(imp2);
+				imp.setOverlay(overlay2);
+			} else
+				imp2.show();
 			return;
 		}
 		ImageStack stack = new ImageStack(imp.getWidth(), imp.getHeight());
@@ -158,13 +192,19 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 		Object info = imp.getProperty("Info");
 		if (info!=null) imp2.setProperty("Info", info);
 		Overlay overlay = imp.getOverlay();
+		Overlay overlay2 = null;
 		if (overlay!=null) {
-			Overlay overlay2 = overlay.duplicate();
+			overlay2 = overlay.duplicate();
 			overlay2.crop(1, imp.getNChannels());
 			imp2.setOverlay(overlay2);
 		}
-		imp2.show();
-		imp2.setSlice(c);
+		if (imp.getWindow()==null) {
+			imp.setImage(imp2);
+			imp.setOverlay(overlay2);
+		} else {
+			imp2.show();
+			imp2.setSlice(c);
+		}
 	}
 
 	void sixteenBitsToRGB(ImagePlus imp) {
