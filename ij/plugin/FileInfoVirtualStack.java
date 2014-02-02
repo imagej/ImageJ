@@ -96,11 +96,11 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 					imp2.setOpenAsHyperStack(true);
 			}
 			if (channels>1 && fi.description!=null) {
-				int mode = CompositeImage.COMPOSITE;
+				int mode = IJ.COMPOSITE;
 				if (fi.description.indexOf("mode=color")!=-1)
-					mode = CompositeImage.COLOR;
+					mode = IJ.COLOR;
 				else if (fi.description.indexOf("mode=gray")!=-1)
-					mode = CompositeImage.GRAYSCALE;
+					mode = IJ.GRAYSCALE;
 				imp2 = new CompositeImage(imp2, mode);
 			}
 		}

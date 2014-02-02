@@ -158,6 +158,8 @@ public class Overlay {
 		Roi[] allRois = toArray();
 		for (Roi roi: allRois) {
 			Rectangle roiBounds = roi.getBounds();
+			if (roiBounds.width==0) roiBounds.width=1;
+			if (roiBounds.height==0) roiBounds.height=1;
 			if (bounds.intersects(roiBounds))
 				overlay2.add((Roi)roi.clone());
 		}

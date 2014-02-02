@@ -348,4 +348,16 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		return Math.sqrt((double)(h));
 	}
 	
+	public void setNormalize(boolean normalize) {
+		this.normalize = normalize;
+	}
+	
+	public void setProcessStack(boolean processStack) {
+		this.processStack = processStack;
+	}
+
+	public void setUseStackHistogram(boolean useStackHistogram) {
+		this.useStackHistogram = useStackHistogram;
+	}
+
 }

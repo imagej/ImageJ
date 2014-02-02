@@ -65,7 +65,7 @@ public class Straightener implements PlugIn {
 		ImageProcessor ip2;
 		if (imp.getBitDepth()==24 && roi.getType()!=Roi.LINE)
 			ip2 = straightenRGB(imp, width);
-		else if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE) {
+		else if (imp.isComposite() && ((CompositeImage)imp).getMode()==IJ.COMPOSITE) {
 			if (roi.getType()==Roi.LINE)
 				ip2 = rotateCompositeLine(imp, width);
 			else

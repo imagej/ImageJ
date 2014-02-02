@@ -15,8 +15,8 @@ public class CompositeConverter implements PlugIn {
 		ImagePlus imp = IJ.getImage();
 		if (imp.isComposite()) {
 			CompositeImage ci = (CompositeImage)imp;
-			if (ci.getMode()!=CompositeImage.COMPOSITE) {
-				ci.setMode(CompositeImage.COMPOSITE);
+			if (ci.getMode()!=IJ.COMPOSITE) {
+				ci.setMode(IJ.COMPOSITE);
 				ci.updateAndDraw();
 			}
 			return;
@@ -42,7 +42,7 @@ public class CompositeConverter implements PlugIn {
 				WindowManager.setCurrentWindow(imp2.getWindow());
 			} else {
 				if (arg!=null && arg.equals("color"))
-					((CompositeImage)imp2).setMode(CompositeImage.COLOR);
+					((CompositeImage)imp2).setMode(IJ.COLOR);
 				imp2.setZ(slice);
 				imp.close();
 			}
@@ -82,7 +82,7 @@ public class CompositeConverter implements PlugIn {
 		if (imp.getBitDepth()!=24)
 			throw new IllegalArgumentException("RGB image or stack required");
 		if (imp.getStackSize()==1)
-			return new CompositeImage(imp, CompositeImage.COMPOSITE);
+			return new CompositeImage(imp, IJ.COMPOSITE);
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		ImageStack stack1 = imp.getStack();
@@ -102,7 +102,7 @@ public class CompositeConverter implements PlugIn {
 		n *= 3;
 		ImagePlus imp2 = new ImagePlus(imp.getTitle(), stack2);
 		imp2.setDimensions(3, n/3, 1);
- 		imp2 = new CompositeImage(imp2, CompositeImage.COMPOSITE);
+ 		imp2 = new CompositeImage(imp2, IJ.COMPOSITE);
 		return imp2;
 	}
 

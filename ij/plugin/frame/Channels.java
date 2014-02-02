@@ -105,9 +105,9 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 			checkbox[i].setState(active[i]);
 		int index = 0;
 		switch (ci.getMode()) {
-			case CompositeImage.COMPOSITE: index=0; break;
-			case CompositeImage.COLOR: index=1; break;
-			case CompositeImage.GRAYSCALE: index=2; break;
+			case IJ.COMPOSITE: index=0; break;
+			case IJ.COLOR: index=1; break;
+			case IJ.GRAYSCALE: index=2; break;
 		}
 		choice.select(index);
 	}
@@ -157,9 +157,9 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 		if (source==choice) {
 			int index = ((Choice)source).getSelectedIndex();
 			switch (index) {
-				case 0: ci.setMode(CompositeImage.COMPOSITE); break;
-				case 1: ci.setMode(CompositeImage.COLOR); break;
-				case 2: ci.setMode(CompositeImage.GRAYSCALE); break;
+				case 0: ci.setMode(IJ.COMPOSITE); break;
+				case 1: ci.setMode(IJ.COLOR); break;
+				case 2: ci.setMode(IJ.GRAYSCALE); break;
 			}
 			ci.updateAndDraw();
 			if (Recorder.record) {
@@ -175,7 +175,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 			for (int i=0; i<checkbox.length; i++) {
 				Checkbox cb = (Checkbox)source;
 				if (cb==checkbox[i]) {
-					if (ci.getMode()==CompositeImage.COMPOSITE) {
+					if (ci.getMode()==IJ.COMPOSITE) {
 						boolean[] active = ci.getActiveChannels();
 						active[i] = cb.getState();
 						if (Recorder.record) {

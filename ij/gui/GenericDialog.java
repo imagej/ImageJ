@@ -317,7 +317,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
         if (previewCheckbox != null)
         	return;
     	ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null && imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE)
+		if (imp!=null && imp.isComposite() && ((CompositeImage)imp).getMode()==IJ.COMPOSITE)
 			return;
         this.pfr = pfr;
         addCheckbox(previewLabel, false, true);
@@ -333,7 +333,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
         if (previewCheckbox!=null)
         	return;
     	//ImagePlus imp = WindowManager.getCurrentImage();
-		//if (imp!=null && imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE)
+		//if (imp!=null && imp.isComposite() && ((CompositeImage)imp).getMode()==IJ.COMPOSITE)
 		//	return;
         previewLabel = label;
         this.pfr = pfr;

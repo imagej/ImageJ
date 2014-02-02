@@ -287,7 +287,7 @@ public class Opener {
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.PGM_Reader", path);
 				if (imp.getWidth()!=0) {
 					if (imp.getStackSize()==3 && imp.getBitDepth()==16)
-						imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
+						imp = new CompositeImage(imp, IJ.COMPOSITE);
 					return imp;
 				} else
 					return null;
@@ -310,7 +310,7 @@ public class Opener {
 				int[] wrap = new int[] {fileType};
 				imp = openWithHandleExtraFileTypes(path, wrap);
 				if (imp!=null && imp.getNChannels()>1)
-					imp = new CompositeImage(imp, CompositeImage.COLOR);
+					imp = new CompositeImage(imp, IJ.COLOR);
 				fileType = wrap[0];
 				if (imp==null && fileType==UNKNOWN && IJ.getInstance()==null)
 					IJ.error("Opener", "Unsupported format or not found");
@@ -753,7 +753,7 @@ public class Opener {
 			int stackSize = stack.getSize();
 			if (nChannels>1 && (stackSize%nChannels)==0) {
 				imp.setDimensions(nChannels, stackSize/nChannels, 1);
-				imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
+				imp = new CompositeImage(imp, IJ.COMPOSITE);
 				imp.setOpenAsHyperStack(true);
 			} else if (imp.getNChannels()>1)
 				imp = makeComposite(imp, fi);
@@ -914,12 +914,12 @@ public class Opener {
 		int c = imp.getNChannels();
 		boolean composite = c>1 && fi.description!=null && fi.description.indexOf("mode=")!=-1;
 		if (c>1 && (imp.getOpenAsHyperStack()||composite) && !imp.isComposite() && imp.getType()!=ImagePlus.COLOR_RGB) {
-			int mode = CompositeImage.COLOR;
+			int mode = IJ.COLOR;
 			if (fi.description!=null) {
 				if (fi.description.indexOf("mode=composite")!=-1)
-					mode = CompositeImage.COMPOSITE;
+					mode = IJ.COMPOSITE;
 				else if (fi.description.indexOf("mode=gray")!=-1)
-					mode = CompositeImage.GRAYSCALE;
+					mode = IJ.GRAYSCALE;
 			}
 			imp = new CompositeImage(imp, mode);
 		}
@@ -1215,7 +1215,7 @@ public class Opener {
 			isRGB48 = false;
 			int stackSize = imp.getStackSize();
 			imp.setDimensions(3, stackSize/3, 1);
-			imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
+			imp = new CompositeImage(imp, IJ.COMPOSITE);
 			imp.show();
 	}
 	

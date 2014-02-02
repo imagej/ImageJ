@@ -125,8 +125,8 @@ public class RGBStackMerge implements PlugIn {
 			if (img.isHyperStack()) {
 				if (img.isComposite()) {
 					CompositeImage ci = (CompositeImage)img;
-					if (ci.getMode()!=CompositeImage.COMPOSITE) {
-						ci.setMode(CompositeImage.COMPOSITE);
+					if (ci.getMode()!=IJ.COMPOSITE) {
+						ci.setMode(IJ.COMPOSITE);
 						img.updateAndDraw();
 						if (!IJ.isMacro()) IJ.run("Channels Tool...");
 						return;
@@ -315,7 +315,7 @@ public class RGBStackMerge implements PlugIn {
 			title = frames>1?"Merged":"Composite";
 		ImagePlus imp2 = new ImagePlus(title, stack2);
 		imp2.setDimensions(channels, slices, frames);
-		imp2 = new CompositeImage(imp2, CompositeImage.COMPOSITE);
+		imp2 = new CompositeImage(imp2, IJ.COMPOSITE);
 		boolean allGrayLuts = true;
 		for (int c=0; c<channels; c++) {
 			if (images[c].getProcessor().isColorLut()) {

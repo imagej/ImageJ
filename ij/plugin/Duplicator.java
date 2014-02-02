@@ -282,7 +282,7 @@ public class Duplicator implements PlugIn, TextListener {
 		if (!duplicateStack) {
 			int nChannels = imp.getNChannels();
 			boolean singleComposite = imp.isComposite() && nChannels==imp.getStackSize();
-			if (!singleComposite && nChannels>1 && imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE) {
+			if (!singleComposite && nChannels>1 && imp.isComposite() && ((CompositeImage)imp).getMode()==IJ.COMPOSITE) {
 				firstC = 1;
 				lastC = nChannels;
 			} else
