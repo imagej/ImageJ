@@ -16,10 +16,10 @@ import ij.measure.*;
 	Bob Dougherty, OptiNav, Inc., 4/14/2002
 	Based largely on HistogramWindow.java by Wayne Rasband.
 	July 2002: Modified by Daniel Marsh and renamed CalibrationBar.
-	January 2013: Renamed ColorBar; displays calibration bar as an overlay.
+	January 2013: Displays calibration bar as an overlay.
 */
 
-public class ColorBar implements PlugIn {
+public class CalibrationBar implements PlugIn {
 	final static int BAR_LENGTH = 128;
 	final static int BAR_THICKNESS = 12;
 	final static int XMARGIN = 10;

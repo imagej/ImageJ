@@ -345,7 +345,7 @@ tools03="Analyze Line Graph",ij.plugin.filter.LineGraphAnalyzer
 tools04="Curve Fitting...",ij.plugin.frame.Fitter
 tools05="ROI Manager...",ij.plugin.frame.RoiManager
 tools06="Scale Bar...",ij.plugin.ScaleBar
-tools07="Calibration Bar...",ij.plugin.ColorBar
+tools07="Calibration Bar...",ij.plugin.CalibrationBar
 tools08="Synchronize Windows",ij.plugin.frame.SyncWindows
 
 # Plugins installed in the Plugins menu
