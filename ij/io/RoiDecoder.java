@@ -119,6 +119,16 @@ public class RoiDecoder {
 		this.size = bytes.length;
 	}
 
+	/** Opens the Roi at the specified path. Returns null if there is an error. */
+	public static Roi open(String path) {
+		Roi roi = null;
+		RoiDecoder rd = new RoiDecoder(path);
+		try {
+			roi = rd.getRoi();
+		} catch (IOException e) { }
+		return roi;
+	}
+
 	/** Returns the ROI. */
 	public Roi getRoi() throws IOException {
 		if (path!=null) {

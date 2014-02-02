@@ -1802,6 +1802,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		else
 			return height;
 	}
+	
+	public void enableSubPixelResolution() {
+		bounds = new Rectangle2D.Double(getXBase(), getYBase(), getFloatWidth(), getFloatHeight());
+		subPixel = true;
+	}
 
 	public String getDebugInfo() {
 		return "";
