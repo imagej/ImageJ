@@ -5,15 +5,19 @@
 </head>
 <body>
 
-<li> <u>1.48r 2 February 2014</u>
+<li> <u>1.48r 4 February 2014</u>
 <ul>
 <li> Thanks to Aryeh Weiss, added the RoiEncoder.save() and RoiDecoder.open() methods
 (<a href="macros/js/SaveAndOpenRoi.js">example</a></ul>).
 <li> Thanks to Aryeh Weiss, fixed bugs that caused the recorder to not
 work as expected when using the ROI Manager to save a single ROI.
+<li> Thanks to Norbert Vischer, <i>Analyze&gt;Set Scale</i> no longer changes
+the voxel depth if it is set to a value other than 1.0 (the default value).
 <li> Thanks to Michael Kummer, fixed a bug that caused ROIs with widths or
 heights greater than 65535 to not be saved correcty.
 <li> Fixed a 1.48q reqression that caused CompositeImage unit test errors.
+<li> Thanks to Norbert Vischer, fixed a bug that caused voxel depths of
+zero to not be saved in the TIFF header.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
