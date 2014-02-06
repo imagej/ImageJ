@@ -194,9 +194,7 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Inverts the values in this image's LUT (indexed color model).
 		Does nothing if this is a ColorProcessor. */
 	public void invertLut() {
-		if (cm==null)
-			makeDefaultColorModel();
-    	IndexColorModel icm = (IndexColorModel)cm;
+		IndexColorModel icm = (IndexColorModel)getColorModel();
 		int mapSize = icm.getMapSize();
 		byte[] reds = new byte[mapSize];
 		byte[] greens = new byte[mapSize];
@@ -212,8 +210,10 @@ public abstract class ImageProcessor implements Cloneable {
 			greens2[i] = (byte)(greens[mapSize-i-1]&255);
 			blues2[i] = (byte)(blues[mapSize-i-1]&255);
 		}
-		ColorModel cm = new IndexColorModel(8, mapSize, reds2, greens2, blues2); 
+		ColorModel cm = new IndexColorModel(8, mapSize, reds2, greens2, blues2);
+		double min=getMin(), max=getMax();
 		setColorModel(cm);
+		setMinAndMax(min, max);
 	}
 
 	/** Returns the LUT index that's the best match for this color. */

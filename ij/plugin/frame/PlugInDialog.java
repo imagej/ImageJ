@@ -10,7 +10,7 @@ public class PlugInDialog extends Dialog implements PlugIn, WindowListener, Focu
 	String title;
 	
 	public PlugInDialog(String title) {
-		super(IJ.isJava16()?null:new Frame(), title);
+		super(IJ.isMacOSX()&&IJ.getInstance()!=null?IJ.getInstance():IJ.isJava16()?null:new Frame(), title);
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		this.title = title;
 		ImageJ ij = IJ.getInstance();
@@ -43,10 +43,11 @@ public class PlugInDialog extends Dialog implements PlugIn, WindowListener, Focu
     }
 
     public void windowActivated(WindowEvent e) {
-		//if (IJ.isMacintosh() && IJ.getInstance()!=null) {
-		//	IJ.wait(10); // may be needed for Java 1.4 on OS X
-		//	setMenuBar(Menus.getMenuBar());
-		//}
+    	ImageJ ij = IJ.getInstance();
+		if (IJ.isMacOSX() && ij!=null) {
+			IJ.wait(10); // may be needed for Java 1.4 on OS X
+			ij.setMenuBar(Menus.getMenuBar());
+		}
 		WindowManager.setWindow(this);
 	}
 
