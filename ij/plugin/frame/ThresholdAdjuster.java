@@ -69,10 +69,6 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			IJ.run(cimp, "Color Threshold...", "");
 			return;
 		}
-		if (IJ.isMacOSX()) {
-			ImageJ ij = IJ.getInstance();
-			if (ij!=null) ij.toFront();
-		}
 		if (instance!=null) {
 			instance.firstActivation = true;
 			instance.toFront();
@@ -449,29 +445,38 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	void updatePercentiles(ImagePlus imp, ImageProcessor ip) {
+		if (percentiles==null)
+			return;
 		ImageStatistics stats = plot.stats;
-        int minThresholdInt = (int)Math.round(minThreshold);
-        int maxThresholdInt = (int)Math.round(maxThreshold);
+		int minThresholdInt = (int)Math.round(minThreshold);
+		int maxThresholdInt = (int)Math.round(maxThreshold);
 		if (stats != null && stats.histogram != null && stats.histogram.length==256 &&
-				ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD &&
-				minThresholdInt>=0 && minThresholdInt<256 && maxThresholdInt>=0 && maxThresholdInt<256) {
-            int below = 0, inside = 0, above = 0;
-            for (int i=0; i<minThresholdInt; i++)
-				below += stats.histogram[i];
-            for (int i=minThresholdInt; i<=maxThresholdInt; i++)
-				inside += stats.histogram[i];
-            for (int i=maxThresholdInt+1; i<256; i++)
-				above += stats.histogram[i];
+		ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD &&
+		minThresholdInt>=0 && minThresholdInt<256 && maxThresholdInt>=0 && maxThresholdInt<256) {
+			int[] histogram = stats.histogram;
+			int below = 0, inside = 0, above = 0;
+			if (imp.getBitDepth()==16 && !entireStack(imp)) {
+				ip.setRoi(imp.getRoi());
+				histogram = ip.getHistogram();
+				minThresholdInt = (int)Math.round(ip.getMinThreshold());
+				maxThresholdInt = (int)Math.round(ip.getMaxThreshold());
+			}
+			for (int i=0; i<minThresholdInt; i++)
+				below += histogram[i];
+			for (int i=minThresholdInt; i<=maxThresholdInt; i++)
+				inside += histogram[i];
+			for (int i=maxThresholdInt+1; i<histogram.length; i++)
+				above += histogram[i];
 			int total = below + inside + above;
 			//IJ.log("<"+minThresholdInt+":"+below+" in:"+inside+"; >"+maxThresholdInt+":"+above+" sum="+total);
 			int digits = imp.getCalibration()!=null || (ip instanceof FloatProcessor) ?
-					Math.max(Analyzer.getPrecision(), 2) : 0;
-			if (mode == OVER_UNDER)
+			Math.max(Analyzer.getPrecision(), 2) : 0;
+			if (mode==OVER_UNDER)
 				percentiles.setText("below: "+IJ.d2s(100.*below/total)+" %,  above: "+IJ.d2s(100.*above/total)+" %");
 			else
 				percentiles.setText(IJ.d2s(100.*inside/total)+" %");
 		} else
-		    percentiles.setText("");
+			percentiles.setText("");
 	}
 
 	void updateLabels(ImagePlus imp, ImageProcessor ip) {

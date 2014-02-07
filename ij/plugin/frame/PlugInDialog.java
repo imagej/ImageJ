@@ -10,10 +10,12 @@ public class PlugInDialog extends Dialog implements PlugIn, WindowListener, Focu
 	String title;
 	
 	public PlugInDialog(String title) {
-		super(IJ.isMacOSX()&&IJ.getInstance()!=null?IJ.getInstance():IJ.isJava16()?null:new Frame(), title);
+		super(IJ.isMacOSX()?IJ.getInstance():IJ.isJava16()?null:new Frame(),title);
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		this.title = title;
 		ImageJ ij = IJ.getInstance();
+		if (IJ.isMacOSX() && ij!=null)
+			ij.toFront();  // needed for keyboard shortcuts to work
 		addWindowListener(this);
  		addFocusListener(this);
 		if (IJ.isLinux()) setBackground(ImageJ.backgroundColor);
@@ -43,7 +45,7 @@ public class PlugInDialog extends Dialog implements PlugIn, WindowListener, Focu
     }
 
     public void windowActivated(WindowEvent e) {
-    	ImageJ ij = IJ.getInstance();
+		ImageJ ij = IJ.getInstance();
 		if (IJ.isMacOSX() && ij!=null) {
 			IJ.wait(10); // may be needed for Java 1.4 on OS X
 			ij.setMenuBar(Menus.getMenuBar());

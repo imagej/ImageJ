@@ -1812,8 +1812,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return "";
 	}
 
-	// Returns a hashcode for this ROI that typically changes 
-	// if it is moved,  even though is still the same object.
+	/** Returns a hashcode for this Roi that typically changes 
+		if it is moved,  even though it is still the same object. */
 	public int getHashCode() {
 		return hashCode() ^ (new Double(getXBase()).hashCode()) ^
 			Integer.rotateRight(new Double(getYBase()).hashCode(),16);
