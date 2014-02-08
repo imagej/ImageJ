@@ -72,7 +72,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		if (instance!=null) {
 			instance.firstActivation = true;
 			instance.toFront();
-			setup(cimp, true);
+			instance.setup(cimp, true);
 			return;
 		}
 		
