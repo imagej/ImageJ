@@ -455,17 +455,19 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		minThresholdInt>=0 && minThresholdInt<256 && maxThresholdInt>=0 && maxThresholdInt<256) {
 			int[] histogram = stats.histogram;
 			int below = 0, inside = 0, above = 0;
+			int minValue=0, maxValue=255;
 			if (imp.getBitDepth()==16 && !entireStack(imp)) {
 				ip.setRoi(imp.getRoi());
 				histogram = ip.getHistogram();
 				minThresholdInt = (int)Math.round(ip.getMinThreshold());
 				maxThresholdInt = (int)Math.round(ip.getMaxThreshold());
+				minValue=(int)ip.getMin(); maxValue=(int)ip.getMax();
 			}
-			for (int i=0; i<minThresholdInt; i++)
+			for (int i=minValue; i<minThresholdInt; i++)
 				below += histogram[i];
 			for (int i=minThresholdInt; i<=maxThresholdInt; i++)
 				inside += histogram[i];
-			for (int i=maxThresholdInt+1; i<histogram.length; i++)
+			for (int i=maxThresholdInt+1; i<maxValue; i++)
 				above += histogram[i];
 			int total = below + inside + above;
 			//IJ.log("<"+minThresholdInt+":"+below+" in:"+inside+"; >"+maxThresholdInt+":"+above+" sum="+total);

@@ -5,11 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.48r 7 February 2014</u>
+<li> <u>1.48r 9 February 2014</u>
 <ul>
 <li> Thanks to Michael Schmid, the <i>Image&gt;Adjust&gt;Threshold</i> widget
 displays the percentile of thresholded pixels and has other improvements
 (<a href="docs/thresholder148r.html">details</a>).
+<li> With text selections, the <i>Edit&gt;Selection&gt;Properties</i> dialog
+adds an "Angle:" field.
 <li> Thanks to Michael Schmid, the <i>Edit&gt;Crop</i> command is undoable.
 <li> Thanks to Aryeh Weiss, added the RoiEncoder.save() and RoiDecoder.open() methods
 (<a href="macros/js/SaveAndOpenRoi.js">example</a></ul>).
@@ -25,6 +27,8 @@ zero to not be saved in the TIFF header.
 <li> Thanks to Michael Schmid, fixed bugs that caused the ImageJ menus to disappear
 on Macs when using the "Threshold", "B&C", "Channels", "CP" (Color Picker)
 and "Command Finder" widgets.
+<li> Fixed a bug that caused the text tool to draw the text outline in the foreground
+color instead of the selection color.
 <li> Fixed a 1.48r regression that could cause <i>Image&gt;Adjust&gt;Threshold</i>
 to throw an exception.
 </ul>

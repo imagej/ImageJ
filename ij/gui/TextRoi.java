@@ -226,17 +226,24 @@ public class TextRoi extends Roi {
 		if (Interpreter.isBatchMode() && ic!=null && ic.getDisplayList()!=null) return;
 		if (newFont || width==1)
 			updateBounds(g);
+		Color c = getStrokeColor();
+		setStrokeColor(getColor());
 		super.draw(g); // draw the rectangle
+		setStrokeColor(c);
 		double mag = getMagnification();
 		int sx = screenXD(getXBase());
 		int sy = screenYD(getYBase());
 		int swidth = (int)((bounds!=null?bounds.width:width)*mag);
 		int sheight = (int)((bounds!=null?bounds.height:height)*mag);
 		Rectangle r = null;
-		r = g.getClipBounds();
-		g.setClip(sx, sy, swidth, sheight);
-		drawText(g);
-		if (r!=null) g.setClip(r.x, r.y, r.width, r.height);
+		if (angle!=0.0)
+			drawText(g);
+		else {
+			r = g.getClipBounds();
+			g.setClip(sx, sy, swidth, sheight);
+			drawText(g);
+			if (r!=null) g.setClip(r.x, r.y, r.width, r.height);
+		}
 	}
 	
 	public void drawOverlay(Graphics g) {
