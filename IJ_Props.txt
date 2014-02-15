@@ -5,7 +5,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.47
+# Version 1.48
 
 # Commands installed in the right-click popup menu
 # Overridden in StartupMacros
@@ -96,7 +96,7 @@ selection24="Add to Manager[t]",ij.plugin.Selection("add")
 # Plugins installed in the Edit/Options submenu
 options01="Line Width...",ij.plugin.Options("line")
 options02="Input/Output...",ij.plugin.Options("io")
-options03="Fonts...",ij.plugin.frame.Fonts
+options03="Fonts...",ij.plugin.Text
 options04="Profile Plot Options...",ij.plugin.Profiler("set")
 options05="Rounded Rect Tool...",ij.plugin.RectToolOptions
 options06="Arrow Tool...",ij.plugin.ArrowToolOptions

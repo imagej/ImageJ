@@ -73,12 +73,14 @@ public class RoiProperties {
 		boolean isLine = roi.isLine();
 		int justification = TextRoi.LEFT;
 		double angle = 0.0;
+		boolean antialias = true;
 		if (isText) {
 			TextRoi troi = (TextRoi)roi;
 			Font font = troi.getCurrentFont();
 			strokeWidth = font.getSize();
 			angle = troi.getAngle();
 			justification = troi.getJustification();
+			antialias = troi.getAntialiased();
 		}
 		String position = ""+roi.getPosition();
 		int cpos = roi.getCPosition();
@@ -105,6 +107,7 @@ public class RoiProperties {
 			gd.addNumericField("Font size:", strokeWidth, digits, 4, "points");
 			digits = (int)angle==angle?0:1;
 			gd.addNumericField("Angle:", angle, digits, 4, "degrees");
+			gd.setInsets(0, 0, 0);
 			gd.addChoice("Justification:", justNames, justNames[justification]);
 		} else {
 			gd.addStringField("Stroke color:", linec);
@@ -122,6 +125,8 @@ public class RoiProperties {
 			}
 			gd.addCheckbox("Set stack positions", setPositions);
 		}
+		if (isText)
+			gd.addCheckbox("Antialiased text", antialias);
 		if (showListCoordinates) {
 			int n = roi.getFloatPolygon().npoints;
 			gd.addCheckbox("List coordinates ("+n+")", listCoordinates);
@@ -157,6 +162,8 @@ public class RoiProperties {
 			setPositions = gd.getNextBoolean();
 			roi.setPosition(setPositions?1:0);
 		}
+		if (isText)
+			antialias = gd.getNextBoolean();
 		if (showListCoordinates) {
 			listCoordinates = gd.getNextBoolean();
 			if (nProperties>0)
@@ -174,6 +181,7 @@ public class RoiProperties {
 			troi.setAngle(angle);
 			if (justification!=troi.getJustification())
 				troi.setJustification(justification);
+			troi.setAntialiased(antialias);
 		} else
 			roi.setStrokeWidth((float)strokeWidth);
 		if (showName)

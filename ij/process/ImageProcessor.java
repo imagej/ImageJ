@@ -1902,8 +1902,11 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Performs gamma correction of the image or ROI. */
 	public void gamma(double value) {process(GAMMA, value);}
 	
-	/** Performs a log transform on the image or ROI. */
+	/** Does a natural logarithmic (base e) transform of the image or ROI. */
 	public void log() {process(LOG, 0.0);}
+
+	/** Does a natural logarithmic (base e) transform of the image or ROI. */
+	public void ln() {log();}
 
 	/** Performs a exponential transform on the image or ROI. */
 	public void exp() {process(EXP, 0.0);}

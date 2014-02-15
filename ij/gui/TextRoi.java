@@ -24,6 +24,7 @@ public class TextRoi extends Roi {
 	private static boolean newFont = true;
 	private static boolean antialiasedText = true; // global flag used by text tool
 	private static int globalJustification;
+	private static Color defaultFillColor;
 	private int justification;
 	private boolean antialiased = antialiasedText;
 	private static boolean recordSetFont = true;
@@ -139,6 +140,7 @@ public class TextRoi extends Roi {
 		instanceFont = new Font(name, style, size);
 		justification = globalJustification;
 		setStrokeColor(Toolbar.getForegroundColor());
+		setFillColor(defaultFillColor);
 	}
 
 	/** This method is used by the text tool to add typed
@@ -285,11 +287,11 @@ public class TextRoi extends Roi {
 		}
 		int i = 0;
 		if (fillColor!=null) {
-			if (getStrokeWidth()<10) {
-				Color saveFillColor = fillColor;
-				setStrokeWidth(10);
-				fillColor = saveFillColor;
-			}
+			//if (getStrokeWidth()<10) {
+			//	Color saveFillColor = fillColor;
+			//	setStrokeWidth(10);
+			//	fillColor = saveFillColor;
+			//}
 			updateBounds(g);
 			Color c = g.getColor();
 			int alpha = fillColor.getAlpha();
@@ -432,6 +434,16 @@ public class TextRoi extends Roi {
 				imp.draw();
 			}
 		}
+	}
+
+	/** Sets the default fill (background) color. */
+	public static void setDefaultFillColor(Color fillColor) {
+		defaultFillColor = fillColor;
+	}
+
+	/** Returns the default fill (background) color, or null. */
+	public static Color setDefaultFillColor() {
+		return defaultFillColor;
 	}
 
 	protected void handleMouseUp(int screenX, int screenY) {

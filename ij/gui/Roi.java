@@ -949,8 +949,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				if (!overlay && isActiveOverlayRoi()) {
 					g.setColor(Color.cyan);
 					g.drawRect(sx1, sy1, sw, sh);
-				} else
-					g.fillRect(sx1, sy1, sw, sh);
+				} else {
+					if (!(this instanceof TextRoi))
+						g.fillRect(sx1, sy1, sw, sh);
+					else
+						g.drawRect(sx1, sy1, sw, sh);
+				}
 			} else
 				g.drawRect(sx1, sy1, sw, sh);
 		}
