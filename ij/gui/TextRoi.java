@@ -16,6 +16,7 @@ public class TextRoi extends Roi {
 	private static final String line1 = "Enter text, then press";
 	private static final String line2 = "ctrl+b to add to overlay";
 	private static final String line3 = "or ctrl+d to draw.";
+	private static final String line1a = "Enter text...";
 	private String[] theText = new String[MAX_LINES];
 	private static String name = "SansSerif";
 	private static int style = Font.PLAIN;
@@ -34,6 +35,8 @@ public class TextRoi extends Roi {
 	private int cline = 0;
 	private boolean drawStringMode;
 	private double angle;  // degrees
+	private static double defaultAngle;
+	private static boolean firstTime = true;
 
 	/** Creates a TextRoi.*/
 	public TextRoi(int x, int y, String text) {
@@ -129,18 +132,24 @@ public class TextRoi extends Roi {
             mag = 1.0;
         if (size<(12/mag))
         	size = (int)(12/mag);
-		theText[0] = line1;
-		theText[1] = line2;
-		theText[2] = line3;
+        if (firstTime) {
+			theText[0] = line1;
+			theText[1] = line2;
+			theText[2] = line3;
+			firstTime = false;
+		} else
+			theText[0] = line1a;
 		if (previousRoi!=null && (previousRoi instanceof TextRoi)) {
 			firstMouseUp = false;
-			//IJ.write(""+previousRoi.getBounds());
 			previousRoi = null;
 		}
 		instanceFont = new Font(name, style, size);
 		justification = globalJustification;
 		setStrokeColor(Toolbar.getForegroundColor());
-		setFillColor(defaultFillColor);
+		if (WindowManager.getWindow("Fonts")!=null) {
+			setFillColor(defaultFillColor);
+			setAngle(defaultAngle);
+		}
 	}
 
 	/** This method is used by the text tool to add typed
@@ -161,8 +170,11 @@ public class TextRoi extends Roi {
 			else if (cline>0) {
 				theText[cline] = null;
 				cline--;
-						}
-			imp.draw(clipX, clipY, clipWidth, clipHeight);
+			}
+			if (angle!=0.0)
+				imp.draw();
+			else
+				imp.draw(clipX, clipY, clipWidth, clipHeight);
 			firstChar = false;
 			return;
 		} else if ((int)c=='\n') {
@@ -296,10 +308,8 @@ public class TextRoi extends Roi {
 			Color c = g.getColor();
 			int alpha = fillColor.getAlpha();
  			g.setColor(fillColor);
-			if (drawStringMode)
-				g.fillRect(sx, sy, sw, sh);
-			else
-				g.fillRect(sx-5, sy-5, sw+10, sh+10);
+			g.fillRect(sx, sy, sw, sh);
+			//g.fillRect(sx-5, sy-5, sw+10, sh+10);
 			g.setColor(c);
 		}
 		while (i<MAX_LINES && theText[i]!=null) {
@@ -325,14 +335,6 @@ public class TextRoi extends Roi {
 		if (at!=null)  // restore transformation matrix used to rotate text
 			g2d.setTransform(at);
 	}
-
-	/*
-	void handleMouseUp(int screenX, int screenY) {
-		if (width<size || height<size)
-			grow(x+Math.max(size*5,width), y+Math.max((int)(size*1.5),height));
-		super.handleMouseUp(screenX, screenY);
-	}
-	*/
 
 	/** Returns the name of the global (default) font. */
 	public static String getFont() {
@@ -441,27 +443,26 @@ public class TextRoi extends Roi {
 		defaultFillColor = fillColor;
 	}
 
-	/** Returns the default fill (background) color, or null. */
-	public static Color setDefaultFillColor() {
-		return defaultFillColor;
+	/** Sets the default angle. */
+	public static void setDefaultAngle(double angle) {
+		defaultAngle = angle;
 	}
 
 	protected void handleMouseUp(int screenX, int screenY) {
 		super.handleMouseUp(screenX, screenY);
+		if (width<size || height<size) 
+			grow(x+Math.max(size*5,width), y+Math.max((int)(size*1.5),height));
 		if (firstMouseUp) {
 			updateBounds(null);
 			updateText();
 			firstMouseUp = false;
-		} else {
-			if (width<5 || height<5)
-				imp.deleteRoi();
 		}
 	}
 	
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
 	void updateBounds(Graphics g) {
 		//IJ.log("adjustSize1: "+theText[0]+"  "+width+","+height);
-		if ((theText[0]!=null&&theText[0].equals(line1)) || drawStringMode)
+		if ((theText[0]!=null&&(theText[0].equals(line1)||theText[0].equals(line1a))) || drawStringMode)
 			return;
 		double mag = ic!=null?ic.getMagnification():1.0;
 		if (nonScalable) mag = 1.0;
@@ -525,7 +526,10 @@ public class TextRoi extends Roi {
 	void updateText() {
 		if (imp!=null) {
 			updateClipRect();
-			imp.draw(clipX, clipY, clipWidth, clipHeight);
+			if (angle!=0.0)
+				imp.draw();
+			else
+				imp.draw(clipX, clipY, clipWidth, clipHeight);
 		}
 	}
 

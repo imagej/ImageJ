@@ -2,7 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 
 /** This plugin implements the Edit/Options/Fonts command and 
 	the dialog displayed when you double click on the text tool. */
@@ -28,12 +28,12 @@ public class Text implements PlugIn, DialogListener {
 	}
 				
 	void showDialog() {
-		if (!Toolbar.getToolName().equals("text"))
-			IJ.setTool("text");
 		ImagePlus imp = WindowManager.getCurrentImage();
 		Roi roi = imp!=null?imp.getRoi():null;
 		TextRoi textRoi = roi!=null&&(roi instanceof TextRoi)?(TextRoi)roi:null;
 		String fillc = "none";
+		TextRoi.setDefaultFillColor(null);
+		TextRoi.setDefaultAngle(0.0);
 		if (textRoi!=null) {
 			Font font = textRoi.getCurrentFont();
 			fontSize = font.getSize();
@@ -46,7 +46,7 @@ public class Text implements PlugIn, DialogListener {
 			antialiased = textRoi.getAntialiased();
 		}
 		colorName = Colors.getColorName(color, "red");
-		gd = new NonBlockingGenericDialog("Text Tool");
+		gd = new NonBlockingGenericDialog("Fonts");
 		gd.addChoice("Font:", getFonts(), font);
 		gd.addChoice("Style:", styles, styles[style]);
 		gd.addChoice("Justification:", justifications, justifications[justification]);
@@ -103,6 +103,7 @@ public class Text implements PlugIn, DialogListener {
 		TextRoi.setGlobalJustification(justification);
 		Color fillColor = Colors.decode(fillc,null);
 		TextRoi.setDefaultFillColor(fillColor);
+		TextRoi.setDefaultAngle(angle);
 		if (textRoi!=null) {
 			textRoi.setAngle(angle);
 			textRoi.setJustification(justification);
