@@ -6,11 +6,12 @@ import ij.io.*;
 import ij.plugin.filter.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Vector;
+import java.util.*;
 
 /** This plugin implements most of the Edit/Options/Colors command. */
 public class Colors implements PlugIn, ItemListener {
 	public static final String[] colors = {"red","green","blue","magenta","cyan","yellow","orange","black","white"};
+	private static final String[] colors2 = {"Red","Green","Blue","Magenta","Cyan","Yellow","Orange","Black","White"};
 	private Choice fchoice, bchoice, schoice;
 	private Color fc2, bc2, sc2;
 
@@ -84,6 +85,7 @@ public class Colors implements PlugIn, ItemListener {
 	
 	public static Color getColor(String name, Color defaultColor) {
 		if (name==null) return defaultColor;
+		name = name.toLowerCase(Locale.US);
 		Color c = defaultColor;
 		if (name.equals(colors[0])) c = Color.red;
 		else if (name.equals(colors[1])) c = Color.green;
@@ -224,6 +226,17 @@ public class Colors implements PlugIn, ItemListener {
 			if (imp!=null) imp.draw();
 			Toolbar.getInstance().repaint();
 		}
+	}
+	
+	public static String[] getColors(String... moreColors) {
+		ArrayList names = new ArrayList();
+		for (String arg: moreColors) {
+			if (arg!=null && arg.length()>0 && (!Character.isLetter(arg.charAt(0))||arg.equals("None")))
+				names.add(arg);
+		}
+		for (String arg: colors2)
+			names.add(arg);
+		return (String[])names.toArray(new String[names.size()]);
 	}
 
 }

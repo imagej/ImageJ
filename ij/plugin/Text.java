@@ -18,7 +18,7 @@ public class Text implements PlugIn, DialogListener {
 	private int angle;
 	private boolean antialiased = TextRoi.isAntialiased();
 	private Color color = Toolbar.getForegroundColor();
-	private String colorName = Colors.getColorName(color, "red");
+	private String colorName;
 
  	public void run(String arg) {
  		if (gd!=null && gd.isVisible())
@@ -31,7 +31,7 @@ public class Text implements PlugIn, DialogListener {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		Roi roi = imp!=null?imp.getRoi():null;
 		TextRoi textRoi = roi!=null&&(roi instanceof TextRoi)?(TextRoi)roi:null;
-		String fillc = "none";
+		String fillc = "None";
 		TextRoi.setDefaultFillColor(null);
 		TextRoi.setDefaultAngle(0.0);
 		if (textRoi!=null) {
@@ -45,15 +45,15 @@ public class Text implements PlugIn, DialogListener {
 			fillc = Colors.colorToString(textRoi.getFillColor());
 			antialiased = textRoi.getAntialiased();
 		}
-		colorName = Colors.getColorName(color, "red");
+		colorName = Colors.colorToString(color);
 		gd = new NonBlockingGenericDialog("Fonts");
 		gd.addChoice("Font:", getFonts(), font);
 		gd.addChoice("Style:", styles, styles[style]);
 		gd.addChoice("Just:", justifications, justifications[justification]);
-		gd.addChoice("Color:", Colors.colors, colorName);
+		gd.addChoice("Color:", Colors.getColors(colorName), colorName);
+		gd.addChoice("Bkgd:", Colors.getColors("None",!"None".equals(fillc)?fillc:null), fillc);
 		gd.addSlider("Size:", 9, 350, fontSize);
 		gd.addSlider("Angle:", -180, 180, angle);
-		gd.addStringField("Bkgd:", fillc);
 		gd.addCheckbox("Antialiased text", antialiased);
 		Point loc = Prefs.getLocation(LOC_KEY);
 		if (loc!=null) {
@@ -90,18 +90,18 @@ public class Text implements PlugIn, DialogListener {
 		style = gd.getNextChoiceIndex();
 		justification = gd.getNextChoiceIndex();
 		String colorName2 = gd.getNextChoice();
+		String fillc = gd.getNextChoice();
 		fontSize = (int)gd.getNextNumber();
 		angle = (int)gd.getNextNumber();
-		String fillc = gd.getNextString();
 		antialiased = gd.getNextBoolean();
 		if (colorName!=null && !colorName2.equals(colorName)) {
-			Color color = Colors.getColor(colorName2, Color.black);
+			Color color = Colors.decode(colorName2, null);
 			Toolbar.setForegroundColor(color);
 			colorName = colorName2;
 		}
 		TextRoi.setFont(font, fontSize, style, antialiased);
 		TextRoi.setGlobalJustification(justification);
-		Color fillColor = Colors.decode(fillc,null);
+		Color fillColor = Colors.decode(fillc, null);
 		TextRoi.setDefaultFillColor(fillColor);
 		TextRoi.setDefaultAngle(angle);
 		if (textRoi!=null) {

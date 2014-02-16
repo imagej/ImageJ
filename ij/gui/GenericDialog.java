@@ -484,7 +484,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		thisChoice.addItemListener(this);
 		for (int i=0; i<items.length; i++)
 			thisChoice.addItem(items[i]);
-		thisChoice.select(defaultItem);
+		if (defaultItem!=null)
+			thisChoice.select(defaultItem);
+		else
+			thisChoice.select(0);
 		c.gridx = 1; c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
 		grid.setConstraints(thisChoice, c);
