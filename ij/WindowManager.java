@@ -447,7 +447,13 @@ public class WindowManager {
 			if (title.equals(winTitle))
 				return (Frame)win;
 		}
-		return getImageWindow(title);
+		Frame frame = getImageWindow(title);
+		if (frame==null) {
+			Window win = getWindow(title);
+			if (win!=null)
+				frame = new Frame("Proxy");
+		}
+		return frame;
     }
     
     private static Frame getImageWindow(String title) {

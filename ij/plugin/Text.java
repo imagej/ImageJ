@@ -49,11 +49,11 @@ public class Text implements PlugIn, DialogListener {
 		gd = new NonBlockingGenericDialog("Fonts");
 		gd.addChoice("Font:", getFonts(), font);
 		gd.addChoice("Style:", styles, styles[style]);
-		gd.addChoice("Justification:", justifications, justifications[justification]);
+		gd.addChoice("Just:", justifications, justifications[justification]);
 		gd.addChoice("Color:", Colors.colors, colorName);
 		gd.addSlider("Size:", 9, 350, fontSize);
 		gd.addSlider("Angle:", -180, 180, angle);
-		gd.addStringField("Fill color:", fillc);
+		gd.addStringField("Bkgd:", fillc);
 		gd.addCheckbox("Antialiased text", antialiased);
 		Point loc = Prefs.getLocation(LOC_KEY);
 		if (loc!=null) {
@@ -76,7 +76,7 @@ public class Text implements PlugIn, DialogListener {
 		names.add("Monospaced");
 		for (int i=0; i<fonts.length; i++) {
 			String f = fonts[i];
-			if (!(f.equals("SansSerif")||f.equals("Serif")||f.equals("Monospaced")))
+			if (f.length()<=20 && !(f.equals("SansSerif")||f.equals("Serif")||f.equals("Monospaced")))
 				names.add(f);
 		}
 		return (String[])names.toArray(new String[names.size()]);

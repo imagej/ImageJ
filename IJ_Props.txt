@@ -96,7 +96,7 @@ selection24="Add to Manager[t]",ij.plugin.Selection("add")
 # Plugins installed in the Edit/Options submenu
 options01="Line Width...",ij.plugin.Options("line")
 options02="Input/Output...",ij.plugin.Options("io")
-options03="Fonts...",ij.plugin.Text
+options03="Fonts...",ij.plugin.SimpleCommands("fonts")
 options04="Profile Plot Options...",ij.plugin.Profiler("set")
 options05="Rounded Rect Tool...",ij.plugin.RectToolOptions
 options06="Arrow Tool...",ij.plugin.ArrowToolOptions

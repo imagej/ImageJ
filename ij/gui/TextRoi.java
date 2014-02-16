@@ -126,13 +126,13 @@ public class TextRoi extends Roi {
 
 	public TextRoi(int x, int y, ImagePlus imp) {
 		super(x, y, imp);
-        ImageCanvas ic = imp.getCanvas();
-        double mag = getMagnification();
-        if (mag>1.0)
-            mag = 1.0;
-        if (size<(12/mag))
-        	size = (int)(12/mag);
-        if (firstTime) {
+		ImageCanvas ic = imp.getCanvas();
+		double mag = getMagnification();
+		if (mag>1.0)
+			mag = 1.0;
+		if (size<(12/mag))
+			size = (int)(12/mag);
+		if (firstTime) {
 			theText[0] = line1;
 			theText[1] = line2;
 			theText[2] = line3;
@@ -450,12 +450,15 @@ public class TextRoi extends Roi {
 
 	protected void handleMouseUp(int screenX, int screenY) {
 		super.handleMouseUp(screenX, screenY);
-		if (width<size || height<size) 
-			grow(x+Math.max(size*5,width), y+Math.max((int)(size*1.5),height));
+		//if (width<size || height<size) 
+		//	grow(x+Math.max(size*5,width), y+Math.max((int)(size*1.5),height));
 		if (firstMouseUp) {
 			updateBounds(null);
 			updateText();
 			firstMouseUp = false;
+		} else {
+			if (width<5 || height<5)
+			imp.deleteRoi();
 		}
 	}
 	

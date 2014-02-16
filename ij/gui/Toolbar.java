@@ -1062,7 +1062,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					IJ.doCommand("Wand Tool...");
 					break;
 				case TEXT:
-					IJ.doCommand("Fonts...");
+					IJ.run("Fonts...");
 					break;
 				case DROPPER:
 					IJ.doCommand("Color Picker...");
