@@ -238,50 +238,6 @@ public class TextRoiTest {
 		t.setCurrentFont(font2);
 		assertEquals(font2,t.getCurrentFont());
 	}
-
-    /*
-    @Test
-    public void testGetMacroCode() {
-        // save static values to avoid side effects later
-        String savedFontName = TextRoi.getFont();
-        int savedSize = TextRoi.getSize();
-        int savedStyle = TextRoi.getStyle();
-
-        ImageProcessor proc = new ShortProcessor(104,77,new short[104*77],null);
-        Font font = new Font("Goudaland",44,15);
-        t = new TextRoi(0,1500,"Glaphound",font);
-        TextRoi.setFont("Hork",64,Font.BOLD+Font.ITALIC,false);
-        
-        // this next test broken apart since font metrics change for diff platforms
-        String tmp = t.getMacroCode(proc);
-        assertTrue(tmp.indexOf("setFont(\"Hork\", 64, \"plain\");\nmakeText(\"Glaphound\", 0, ") == 0);
-        assertTrue(tmp.indexOf(");\n//drawString(\"Glaphound\", 0, ") == 59);
-        assertTrue(tmp.indexOf(");\n",60)==95);
-
-        // this next test broken apart since font metrics change for diff platforms
-        tmp = t.getMacroCode(proc);
-        assertTrue(tmp.indexOf("makeText(\"Glaphound\", 0, ") == 0);
-        assertTrue(tmp.indexOf(");\n//drawString(\"Glaphound\", 0, ") == 29);
-        assertTrue(tmp.indexOf(");\n",30)==65);
-        
-        TextRoi.setFont("Glook",32,Font.PLAIN,true);
-
-        // this next test broken apart since font metrics change for diff platforms
-        tmp = t.getMacroCode(proc);
-        assertTrue(tmp.indexOf("setFont(\"Glook\", 32, \" antialiased\");\nmakeText(\"Glaphound\", 0, ")==0);
-        assertTrue(tmp.indexOf(");\n//drawString(\"Glaphound\", 0, ")==67);
-        assertTrue(tmp.indexOf(");\n",68) == 103);
-        
-        // this next test broken apart since font metrics change for diff platforms
-        tmp = t.getMacroCode(proc);
-        assertTrue(tmp.indexOf("makeText(\"Glaphound\", 0, ") == 0);
-        assertTrue(tmp.indexOf(");\n//drawString(\"Glaphound\", 0, ") == 29);
-        assertTrue(tmp.indexOf(");\n",30)==65);
-
-        // restore so we don't mess up other tests
-        TextRoi.setFont(savedFontName,savedSize,savedStyle);
-    }
-    */
     
 	@Test
 	public void testGetText() {
