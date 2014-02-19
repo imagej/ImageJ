@@ -251,25 +251,4 @@ public class TextRoiTest {
 		assertEquals("Weekend\nweather\n\n",t.getText());
 	}
 
-    @Test
-    public void testRecordSetFont() {
-        t = new TextRoi(-1,19,"Klezmer");
-        
-        String tmp = t.getMacroCode(new ByteProcessor(2,2,new byte[2*2],null));
-        assertTrue(tmp.indexOf("setFont(\"SansSerif\", 18, \" antialiased\");\nmakeText(\"Klezmer\", -1, ") == 0);
-        assertTrue(tmp.indexOf(");\n//drawString(\"Klezmer\", -1, ") == 68);
-        assertTrue(tmp.indexOf(");\n",69) == 101);
-        
-        tmp = t.getMacroCode(new ByteProcessor(2,2,new byte[2*2],null));
-        assertTrue(tmp.indexOf("makeText(\"Klezmer\", -1, ") == 0);
-        assertTrue(tmp.indexOf(");\n//drawString(\"Klezmer\", -1, ") == 26);
-        assertTrue(tmp.indexOf(");\n",27) == 59);
-        
-        TextRoi.recordSetFont();
-        
-        tmp = t.getMacroCode(new ByteProcessor(2,2,new byte[2*2],null));
-        assertTrue(tmp.indexOf("setFont(\"SansSerif\", 18, \" antialiased\");\nmakeText(\"Klezmer\", -1, ") == 0);
-        assertTrue(tmp.indexOf(");\n//drawString(\"Klezmer\", -1, ") == 68);
-        assertTrue(tmp.indexOf(");\n",69) == 101);
-    }
 }
