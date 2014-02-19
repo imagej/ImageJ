@@ -1809,6 +1809,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			return height;
 	}
 	
+	/** Overridden by PolygonRoi (angle between first two points), TextRoi (text angle) and Line (line angle). */
+	public double getAngle() {
+		return 0.0;
+	}
+	
 	public void enableSubPixelResolution() {
 		bounds = new Rectangle2D.Double(getXBase(), getYBase(), getFloatWidth(), getFloatHeight());
 		subPixel = true;

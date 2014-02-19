@@ -5,34 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.48r 18 February 2014</u>
+<li> <u>1.48s 19 February 2014</u>
 <ul>
-<li> Added "Angle", "Color" and "Bkdg" (background color) choices to the dialog displayed when you 
-double click on the text tool or use the <i>Edit&gt;Options&gt;Fonts</i> command.
-<li> Thanks to Michael Schmid, the <i>Image&gt;Adjust&gt;Threshold</i> dialog
-displays the percentile of thresholded pixels, along with other improvements
-(<a href="docs/thresholder148r.html">details</a>).
-<li> With text selections, the <i>Edit&gt;Selection&gt;Properties</i> dialog
-adds a "Angle:" field and a "Antialiased text" checkbox.
-<li> Improved text tool recording.
-<li> NonBlockingGenericDialogs are added to the Window menu.
-<li> Thanks to Michael Schmid, the <i>Edit&gt;Crop</i> command is undoable.
-<li> Thanks to Aryeh Weiss, added the RoiEncoder.save() and RoiDecoder.open() methods
-(<a href="macros/js/SaveAndOpenRoi.js">example</a>).
-<li> Thanks to Aryeh Weiss, fixed bugs that caused the recorder to not
-work as expected when using the ROI Manager to save a single ROI.
-<li> Thanks to Norbert Vischer, <i>Analyze&gt;Set Scale</i> no longer changes
-the voxel depth if it is set to a value other than 1.0 (the default value).
-<li> Thanks to Michael Kummer, fixed a bug that caused ROIs with widths or
-heights greater than 65535 to not be saved correcty.
-<li> Fixed a 1.48q reqression that caused CompositeImage unit test errors.
-<li> Thanks to Norbert Vischer, fixed a bug that caused voxel depths of
-zero to not be saved in the TIFF header.
-<li> Thanks to Michael Schmid, fixed bugs that caused the ImageJ menus to disappear
-on Macs when using the "Threshold", "B&C", "Channels", "CP" (Color Picker)
-and "Command Finder" dialogs.
-<li> Fixed a bug that caused the text tool to draw the text outline in the foreground
-color instead of the selection color.
+<li> When creating a straight line selection, the angle displayed in the status
+bar is now calculated using sub-pixel resolution.
+<li> Thanks to Matt Smith, fixed a bug that could cause a deadlock 
+when using the stack window scrollbar to move throuh the slices.
+<li> Thanks to Gabriel Landini, fixed a 1.48r regression that caused the
+<i>Image&gt;Adjust&gt;Threshold</i> dialog to throw an exception when if it was
+activated when already open.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

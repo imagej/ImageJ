@@ -196,7 +196,11 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		int max = zSelector.getMaximum();
 		if (max!=(stackSize+1))
 			zSelector.setMaximum(stackSize+1);
-		zSelector.setValue(imp.getCurrentSlice());
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				zSelector.setValue(imp.getCurrentSlice());
+			}
+		});
 	}
 	
 	public void run() {
