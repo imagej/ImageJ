@@ -35,6 +35,17 @@ public class RoiEncoder {
 	public RoiEncoder(OutputStream f) {
 		this.f = f;
 	}
+	
+	/** Saves the specified ROI as a file, returning 'true' if successful. */
+	public static boolean save(Roi roi, String path) {
+		RoiEncoder re = new RoiEncoder(path);
+		try {
+			re.write(roi);
+		} catch (IOException e) {
+			return false;
+		}
+		return true;
+	}
 
 	/** Save the Roi to the file of stream. */
 	public void write(Roi roi) throws IOException {
@@ -64,6 +75,9 @@ public class RoiEncoder {
 	}
 
 	void write(Roi roi, OutputStream f) throws IOException {
+		Rectangle r = roi.getBounds();
+		if (r.width>65535||r.height>65535||r.x>65535||r.y>65535)
+			roi.enableSubPixelResolution();
 		int roiType = roi.getType();
 		int type = rect;
 		int options = 0;
@@ -102,7 +116,6 @@ public class RoiEncoder {
 		int[] x=null, y=null;
 		float[] xf=null, yf=null;
 		int floatSize = 0;
-		Rectangle r = roi.getBounds();
 		if (roi instanceof PolygonRoi) {
 			PolygonRoi proi = (PolygonRoi)roi;
 			Polygon p = proi.getNonSplineCoordinates();

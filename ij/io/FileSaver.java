@@ -706,7 +706,7 @@ public class FileSaver {
 		if (!cal.getTimeUnit().equals("sec"))
 			sb.append("tunit="+cal.getTimeUnit()+"\n");
 		if (fi.nImages>1) {
-			if (fi.pixelDepth!=0.0 && fi.pixelDepth!=1.0)
+			if (fi.pixelDepth!=1.0)
 				sb.append("spacing="+fi.pixelDepth+"\n");
 			if (cal.fps!=0.0) {
 				if ((int)cal.fps==cal.fps)

@@ -773,6 +773,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		} catch (IOException e) {
 			IJ.error("ROI Manager", e.getMessage());
 		}
+		if (record()) {
+			String path = dir+name2;
+			if (Recorder.scriptMode())
+				Recorder.recordCall("IJ.saveAs(imp, \"Selection\", \""+path+"\");");
+			else
+				Recorder.record("saveAs", "Selection", path);
+		}
 		return true;
 	}
 

@@ -6,11 +6,12 @@ import ij.io.*;
 import ij.plugin.filter.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Vector;
+import java.util.*;
 
 /** This plugin implements most of the Edit/Options/Colors command. */
 public class Colors implements PlugIn, ItemListener {
 	public static final String[] colors = {"red","green","blue","magenta","cyan","yellow","orange","black","white"};
+	private static final String[] colors2 = {"Red","Green","Blue","Magenta","Cyan","Yellow","Orange","Black","White"};
 	private Choice fchoice, bchoice, schoice;
 	private Color fc2, bc2, sc2;
 
@@ -84,6 +85,7 @@ public class Colors implements PlugIn, ItemListener {
 	
 	public static Color getColor(String name, Color defaultColor) {
 		if (name==null) return defaultColor;
+		name = name.toLowerCase(Locale.US);
 		Color c = defaultColor;
 		if (name.equals(colors[0])) c = Color.red;
 		else if (name.equals(colors[1])) c = Color.green;
@@ -146,12 +148,40 @@ public class Colors implements PlugIn, ItemListener {
 		return color;
 	}
 	
+	/** Converts a hex color (e.g., "ffff00") into "Red", "Green", "Yellow", etc.
+		Returns null if the color is not one of the eight primary colors. */
+	public static String hexToColor2(String hex) {
+		if (hex==null) return null;
+		if (hex.startsWith("#"))
+			hex = hex.substring(1);
+		String color = null;
+		if (hex.equals("ff0000")) color = "Red";
+		else if (hex.equals("00ff00")) color = "Green";
+		else if (hex.equals("0000ff")) color = "Blue";
+		else if (hex.equals("000000")) color = "Black";
+		else if (hex.equals("ffffff")) color = "White";
+		else if (hex.equals("ffff00")) color = "Yellow";
+		else if (hex.equals("00ffff")) color = "Cyan";
+		else if (hex.equals("ff00ff")) color = "Magenta";
+		else if (hex.equals("ffc800")) color = "Orange";
+		return color;
+	}
+
 	/** Converts a Color into a string ("red", "green", #aa55ff, etc.). */
 	public static String colorToString(Color color) {
 		String str = color!=null?"#"+Integer.toHexString(color.getRGB()):"none";
 		if (str.length()==9 && str.startsWith("#ff"))
 			str = "#"+str.substring(3);
 		String str2 = hexToColor(str);
+		return str2!=null?str2:str;
+	}
+
+	/** Converts a Color into a string ("Red", "Green", #aa55ff, etc.). */
+	public static String colorToString2(Color color) {
+		String str = color!=null?"#"+Integer.toHexString(color.getRGB()):"None";
+		if (str.length()==9 && str.startsWith("#ff"))
+			str = "#"+str.substring(3);
+		String str2 = hexToColor2(str);
 		return str2!=null?str2:str;
 	}
 
@@ -224,6 +254,17 @@ public class Colors implements PlugIn, ItemListener {
 			if (imp!=null) imp.draw();
 			Toolbar.getInstance().repaint();
 		}
+	}
+	
+	public static String[] getColors(String... moreColors) {
+		ArrayList names = new ArrayList();
+		for (String arg: moreColors) {
+			if (arg!=null && arg.length()>0 && (!Character.isLetter(arg.charAt(0))||arg.equals("None")))
+				names.add(arg);
+		}
+		for (String arg: colors2)
+			names.add(arg);
+		return (String[])names.toArray(new String[names.size()]);
 	}
 
 }

@@ -1585,6 +1585,14 @@ public class PolygonRoi extends Roi {
 		}
 	}
 
+	public void enableSubPixelResolution() {
+		super.enableSubPixelResolution();
+		if (xpf==null) {
+			xpf = toFloat(xp);
+			ypf = toFloat(yp);
+		}
+	}
+
 	public String getDebugInfo() {
 		String s = "ROI Debug Properties\n";
 		s += "	bounds: "+bounds+"\n";

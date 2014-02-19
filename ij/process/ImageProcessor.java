@@ -194,9 +194,7 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Inverts the values in this image's LUT (indexed color model).
 		Does nothing if this is a ColorProcessor. */
 	public void invertLut() {
-		if (cm==null)
-			makeDefaultColorModel();
-    	IndexColorModel icm = (IndexColorModel)cm;
+		IndexColorModel icm = (IndexColorModel)getColorModel();
 		int mapSize = icm.getMapSize();
 		byte[] reds = new byte[mapSize];
 		byte[] greens = new byte[mapSize];
@@ -212,8 +210,10 @@ public abstract class ImageProcessor implements Cloneable {
 			greens2[i] = (byte)(greens[mapSize-i-1]&255);
 			blues2[i] = (byte)(blues[mapSize-i-1]&255);
 		}
-		ColorModel cm = new IndexColorModel(8, mapSize, reds2, greens2, blues2); 
+		ColorModel cm = new IndexColorModel(8, mapSize, reds2, greens2, blues2);
+		double min=getMin(), max=getMax();
 		setColorModel(cm);
+		setMinAndMax(min, max);
 	}
 
 	/** Returns the LUT index that's the best match for this color. */
@@ -1902,8 +1902,11 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Performs gamma correction of the image or ROI. */
 	public void gamma(double value) {process(GAMMA, value);}
 	
-	/** Performs a log transform on the image or ROI. */
+	/** Does a natural logarithmic (base e) transform of the image or ROI. */
 	public void log() {process(LOG, 0.0);}
+
+	/** Does a natural logarithmic (base e) transform of the image or ROI. */
+	public void ln() {log();}
 
 	/** Performs a exponential transform on the image or ROI. */
 	public void exp() {process(EXP, 0.0);}

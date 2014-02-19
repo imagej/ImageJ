@@ -72,11 +72,15 @@ public class RoiProperties {
 		boolean isText = roi instanceof TextRoi;
 		boolean isLine = roi.isLine();
 		int justification = TextRoi.LEFT;
+		double angle = 0.0;
+		boolean antialias = true;
 		if (isText) {
 			TextRoi troi = (TextRoi)roi;
 			Font font = troi.getCurrentFont();
 			strokeWidth = font.getSize();
+			angle = troi.getAngle();
 			justification = troi.getJustification();
+			antialias = troi.getAntialiased();
 		}
 		String position = ""+roi.getPosition();
 		int cpos = roi.getCPosition();
@@ -98,12 +102,17 @@ public class RoiProperties {
 			gd.addStringField(nameLabel, name, 15);
 			gd.addStringField("Position:", position);
 		}
-		gd.addStringField("Stroke color:", linec);
 		if (isText) {
-			gd.addNumericField("Font size:", strokeWidth, digits);
+			gd.addStringField("Font color:", linec);
+			gd.addNumericField("Font size:", strokeWidth, digits, 4, "points");
+			digits = (int)angle==angle?0:1;
+			gd.addNumericField("Angle:", angle, digits, 4, "degrees");
+			gd.setInsets(0, 0, 0);
 			gd.addChoice("Justification:", justNames, justNames[justification]);
-		} else
+		} else {
+			gd.addStringField("Stroke color:", linec);
 			gd.addNumericField("Width:", strokeWidth, digits);
+		}
 		if (!isLine) {
 			gd.addMessage("");
 			gd.addStringField("Fill color:", fillc);
@@ -116,6 +125,8 @@ public class RoiProperties {
 			}
 			gd.addCheckbox("Set stack positions", setPositions);
 		}
+		if (isText)
+			gd.addCheckbox("Antialiased text", antialias);
 		if (showListCoordinates) {
 			int n = roi.getFloatPolygon().npoints;
 			gd.addCheckbox("List coordinates ("+n+")", listCoordinates);
@@ -137,8 +148,10 @@ public class RoiProperties {
 		}
 		linec = gd.getNextString();
 		strokeWidth = gd.getNextNumber();
-		if (isText)
+		if (isText) {
+			angle = gd.getNextNumber();
 			justification = gd.getNextChoiceIndex();
+		}
 		if (!isLine)
 			fillc = gd.getNextString();
 		boolean applyToOverlay = false;
@@ -149,6 +162,8 @@ public class RoiProperties {
 			setPositions = gd.getNextBoolean();
 			roi.setPosition(setPositions?1:0);
 		}
+		if (isText)
+			antialias = gd.getNextBoolean();
 		if (showListCoordinates) {
 			listCoordinates = gd.getNextBoolean();
 			if (nProperties>0)
@@ -163,8 +178,10 @@ public class RoiProperties {
 				font = new Font(font.getName(), font.getStyle(), (int)strokeWidth);
 				troi.setCurrentFont(font);
 			}
+			troi.setAngle(angle);
 			if (justification!=troi.getJustification())
 				troi.setJustification(justification);
+			troi.setAntialiased(antialias);
 		} else
 			roi.setStrokeWidth((float)strokeWidth);
 		if (showName)

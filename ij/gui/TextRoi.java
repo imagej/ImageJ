@@ -3,6 +3,8 @@ import ij.*;
 import ij.process.*;
 import ij.util.*;
 import ij.macro.Interpreter;
+import ij.plugin.frame.Recorder;
+import ij.plugin.Colors;
 import java.awt.geom.*;
 import java.awt.*;
 
@@ -16,6 +18,7 @@ public class TextRoi extends Roi {
 	private static final String line1 = "Enter text, then press";
 	private static final String line2 = "ctrl+b to add to overlay";
 	private static final String line3 = "or ctrl+d to draw.";
+	private static final String line1a = "Enter text...";
 	private String[] theText = new String[MAX_LINES];
 	private static String name = "SansSerif";
 	private static int style = Font.PLAIN;
@@ -24,15 +27,17 @@ public class TextRoi extends Roi {
 	private static boolean newFont = true;
 	private static boolean antialiasedText = true; // global flag used by text tool
 	private static int globalJustification;
+	private static Color defaultFillColor;
 	private int justification;
 	private boolean antialiased = antialiasedText;
-	private static boolean recordSetFont = true;
 	private double previousMag;
 	private boolean firstChar = true;
 	private boolean firstMouseUp = true;
 	private int cline = 0;
 	private boolean drawStringMode;
 	private double angle;  // degrees
+	private static double defaultAngle;
+	private static boolean firstTime = true;
 
 	/** Creates a TextRoi.*/
 	public TextRoi(int x, int y, String text) {
@@ -122,23 +127,30 @@ public class TextRoi extends Roi {
 
 	public TextRoi(int x, int y, ImagePlus imp) {
 		super(x, y, imp);
-        ImageCanvas ic = imp.getCanvas();
-        double mag = getMagnification();
-        if (mag>1.0)
-            mag = 1.0;
-        if (size<(12/mag))
-        	size = (int)(12/mag);
-		theText[0] = line1;
-		theText[1] = line2;
-		theText[2] = line3;
+		ImageCanvas ic = imp.getCanvas();
+		double mag = getMagnification();
+		if (mag>1.0)
+			mag = 1.0;
+		if (size<(12/mag))
+			size = (int)(12/mag);
+		if (firstTime) {
+			theText[0] = line1;
+			theText[1] = line2;
+			theText[2] = line3;
+			firstTime = false;
+		} else
+			theText[0] = line1a;
 		if (previousRoi!=null && (previousRoi instanceof TextRoi)) {
 			firstMouseUp = false;
-			//IJ.write(""+previousRoi.getBounds());
 			previousRoi = null;
 		}
 		instanceFont = new Font(name, style, size);
 		justification = globalJustification;
 		setStrokeColor(Toolbar.getForegroundColor());
+		if (WindowManager.getWindow("Fonts")!=null) {
+			setFillColor(defaultFillColor);
+			setAngle(defaultAngle);
+		}
 	}
 
 	/** This method is used by the text tool to add typed
@@ -159,8 +171,11 @@ public class TextRoi extends Roi {
 			else if (cline>0) {
 				theText[cline] = null;
 				cline--;
-						}
-			imp.draw(clipX, clipY, clipWidth, clipHeight);
+			}
+			if (angle!=0.0)
+				imp.draw();
+			else
+				imp.draw(clipX, clipY, clipWidth, clipHeight);
 			firstChar = false;
 			return;
 		} else if ((int)c=='\n') {
@@ -226,17 +241,24 @@ public class TextRoi extends Roi {
 		if (Interpreter.isBatchMode() && ic!=null && ic.getDisplayList()!=null) return;
 		if (newFont || width==1)
 			updateBounds(g);
+		Color c = getStrokeColor();
+		setStrokeColor(getColor());
 		super.draw(g); // draw the rectangle
+		setStrokeColor(c);
 		double mag = getMagnification();
 		int sx = screenXD(getXBase());
 		int sy = screenYD(getYBase());
 		int swidth = (int)((bounds!=null?bounds.width:width)*mag);
 		int sheight = (int)((bounds!=null?bounds.height:height)*mag);
 		Rectangle r = null;
-		r = g.getClipBounds();
-		g.setClip(sx, sy, swidth, sheight);
-		drawText(g);
-		if (r!=null) g.setClip(r.x, r.y, r.width, r.height);
+		if (angle!=0.0)
+			drawText(g);
+		else {
+			r = g.getClipBounds();
+			g.setClip(sx, sy, swidth, sheight);
+			drawText(g);
+			if (r!=null) g.setClip(r.x, r.y, r.width, r.height);
+		}
 	}
 	
 	public void drawOverlay(Graphics g) {
@@ -278,19 +300,17 @@ public class TextRoi extends Roi {
 		}
 		int i = 0;
 		if (fillColor!=null) {
-			if (getStrokeWidth()<10) {
-				Color saveFillColor = fillColor;
-				setStrokeWidth(10);
-				fillColor = saveFillColor;
-			}
+			//if (getStrokeWidth()<10) {
+			//	Color saveFillColor = fillColor;
+			//	setStrokeWidth(10);
+			//	fillColor = saveFillColor;
+			//}
 			updateBounds(g);
 			Color c = g.getColor();
 			int alpha = fillColor.getAlpha();
  			g.setColor(fillColor);
-			if (drawStringMode)
-				g.fillRect(sx, sy, sw, sh);
-			else
-				g.fillRect(sx-5, sy-5, sw+10, sh+10);
+			g.fillRect(sx, sy, sw, sh);
+			//g.fillRect(sx-5, sy-5, sw+10, sh+10);
 			g.setColor(c);
 		}
 		while (i<MAX_LINES && theText[i]!=null) {
@@ -316,14 +336,6 @@ public class TextRoi extends Roi {
 		if (at!=null)  // restore transformation matrix used to rotate text
 			g2d.setTransform(at);
 	}
-
-	/*
-	void handleMouseUp(int screenX, int screenY) {
-		if (width<size || height<size)
-			grow(x+Math.max(size*5,width), y+Math.max((int)(size*1.5),height));
-		super.handleMouseUp(screenX, screenY);
-	}
-	*/
 
 	/** Returns the name of the global (default) font. */
 	public static String getFont() {
@@ -409,7 +421,6 @@ public class TextRoi extends Roi {
 	/** Sets the font face, size, style and antialiasing mode that will 
 		be used by TextROIs interactively created using the text tool. */
 	public static void setFont(String fontName, int fontSize, int fontStyle, boolean antialiased) {
-		recordSetFont = true;
 		name = fontName;
 		size = fontSize;
 		style = fontStyle;
@@ -427,22 +438,33 @@ public class TextRoi extends Roi {
 		}
 	}
 
+	/** Sets the default fill (background) color. */
+	public static void setDefaultFillColor(Color fillColor) {
+		defaultFillColor = fillColor;
+	}
+
+	/** Sets the default angle. */
+	public static void setDefaultAngle(double angle) {
+		defaultAngle = angle;
+	}
+
 	protected void handleMouseUp(int screenX, int screenY) {
 		super.handleMouseUp(screenX, screenY);
+		//if (width<size || height<size) 
+		//	grow(x+Math.max(size*5,width), y+Math.max((int)(size*1.5),height));
 		if (firstMouseUp) {
 			updateBounds(null);
 			updateText();
 			firstMouseUp = false;
 		} else {
 			if (width<5 || height<5)
-				imp.deleteRoi();
+			imp.deleteRoi();
 		}
 	}
 	
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
 	void updateBounds(Graphics g) {
-		//IJ.log("adjustSize1: "+theText[0]+"  "+width+","+height);
-		if ((theText[0]!=null&&theText[0].equals(line1)) || drawStringMode)
+		if (firstChar || drawStringMode)
 			return;
 		double mag = ic!=null?ic.getMagnification():1.0;
 		if (nonScalable) mag = 1.0;
@@ -506,7 +528,10 @@ public class TextRoi extends Roi {
 	void updateText() {
 		if (imp!=null) {
 			updateClipRect();
-			imp.draw(clipX, clipY, clipWidth, clipHeight);
+			if (angle!=0.0)
+				imp.draw();
+			else
+				imp.draw(clipX, clipY, clipWidth, clipHeight);
 		}
 	}
 
@@ -515,9 +540,24 @@ public class TextRoi extends Roi {
 		return r.getWidth();
 	}
 	
-	public String getMacroCode(ImageProcessor ip) {
+	/** Returns code needed by Recorder for recording the "Draw" and "Add Selection..." commands. */
+	public String getMacroCode(String cmd, ImagePlus imp) {
 		String code = "";
-		if (recordSetFont) {
+		boolean script = Recorder.scriptMode();
+		boolean addSelection = cmd.startsWith("Add");
+		if (script && !addSelection)
+			code += "ip = imp.getProcessor();\n";
+		if (script) {
+			String str = "Font.PLAIN";
+			if (style==Font.BOLD)
+				str =  "Font.BOLD";
+			else if (style==Font.ITALIC)
+				str =  "Font.ITALIC";
+			code += "font = new Font(\""+name+"\", "+str+", "+size+");\n";
+			if (addSelection)
+				return getAddSelectionScript(code);
+			code += "ip.setFont(font);\n";
+		} else {
 			String options = "";
 			if (style==Font.BOLD)
 				options += "bold";
@@ -528,19 +568,51 @@ public class TextRoi extends Roi {
 			if (options.equals(""))
 				options = "plain";
 			code += "setFont(\""+name+"\", "+size+", \""+options+"\");\n";
-			recordSetFont = false;
 		}
+		ImageProcessor ip = imp.getProcessor();
+		ip.setFont(new Font(name, style, size));
 		FontMetrics metrics = ip.getFontMetrics();
 		int fontHeight = metrics.getHeight();
+		if (script)
+			code += "ip.setColor(new Color("+getColorArgs(getStrokeColor())+"));\n";
+		else
+			code += "setColor(\""+Colors.colorToString(getStrokeColor())+"\");\n";
+		if (addSelection) {
+			code += "Overlay.drawString(\""+text()+"\", "+x+", "+(y+fontHeight)+", "+getAngle()+");\n";
+			code += "Overlay.show();\n";
+		} else {
+			code += (script?"ip.":"")+"drawString(\""+text()+"\", "+x+", "+(y+fontHeight)+");\n";
+			if (script)
+				code += "imp.updateAndDraw();\n";
+			else
+				code += "//makeText(\""+text()+"\", "+x+", "+(y+fontHeight)+");\n";
+		}
+		return (code);
+	}
+	
+	private String text() {
 		String text = "";
 		for (int i=0; i<MAX_LINES; i++) {
 			if (theText[i]==null) break;
 			text += theText[i];
 			if (theText[i+1]!=null) text += "\\n";
 		}
-		code += "makeText(\""+text+"\", "+x+", "+(y+fontHeight)+");\n";
-		code += "//drawString(\""+text+"\", "+x+", "+(y+fontHeight)+");\n";
-		return (code);
+		return text;
+	}
+	
+	private String getAddSelectionScript(String code) {
+		code += "roi = new TextRoi("+x+", "+y+", \""+text()+"\", font);\n";
+		code += "roi.setStrokeColor(new Color("+getColorArgs(getStrokeColor())+"));\n";
+		if (getFillColor()!=null)
+			code += "roi.setFillColor(new Color("+getColorArgs(getFillColor())+"));\n";
+		if (getAngle()!=0.0)
+			code += "roi.setAngle("+getAngle()+");\n";
+		code += "overlay.add(roi);\n";
+		return code;
+	}
+	
+	private String getColorArgs(Color c) {
+		return IJ.d2s(c.getRed()/255.0,2)+", "+IJ.d2s(c.getGreen()/255.0,2)+", "+IJ.d2s(c.getBlue()/255.0,2);
 	}
 	
 	public String getText() {
@@ -550,10 +622,6 @@ public class TextRoi extends Roi {
 			text += theText[i]+"\n";
 		}
 		return text;
-	}
-	
-	public static void recordSetFont() {
-		recordSetFont = true;
 	}
 	
 	public boolean isDrawingTool() {

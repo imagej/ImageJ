@@ -191,11 +191,11 @@ import java.util.Vector;
 
 		public void showDialog() {
 			Color color = Toolbar.getForegroundColor();
-			String colorName = Colors.getColorName(color, "red");
+			String colorName = Colors.colorToString2(color);
 			String name = isPencil?"Pencil":"Brush";
 			gd = new NonBlockingGenericDialog(name+" Options");
 			gd.addSlider(name+" width:", 1, 50, width);
-			gd.addChoice("Color:", Colors.colors, colorName);
+			gd.addChoice("Color:", Colors.getColors(colorName), colorName);
 			gd.setInsets(10, 10, 0);
 			String ctrlString = IJ.isMacintosh()? "CMD":"CTRL";
 			gd.addMessage("SHIFT for horizontal or vertical lines\n"+
@@ -229,7 +229,7 @@ import java.util.Vector;
 			if (gd.invalidNumber() || width<0)
 				width = (int)Prefs.get(widthKey, 1);
 			String colorName = gd.getNextChoice();
-			Color color = Colors.getColor(colorName, Color.white);
+			Color color = Colors.decode(colorName, null);
 			Toolbar.setForegroundColor(color);
 			Prefs.set(widthKey, width);
 			return true;

@@ -90,7 +90,8 @@ public class ScaleDialog implements PlugInFilter {
 		} else {
 			if (gd.scaleChanged || IJ.macroRunning()) {
 				cal.pixelWidth = known/measured;
-				cal.pixelDepth = cal.pixelWidth;
+				if (cal.pixelDepth==1.0)
+					cal.pixelDepth = cal.pixelWidth;
 			}
 			if (aspectRatio!=0.0)
 				cal.pixelHeight = cal.pixelWidth*aspectRatio;

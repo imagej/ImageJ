@@ -785,6 +785,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		}
 		startX = xNew;
 		startY = yNew;
+		if ((this instanceof TextRoi) && ((TextRoi)this).getAngle()!=0.0)
+			ignoreClipRect = true;
 		updateClipRect();
 		if ((lineWidth>1 && isLine()) || ignoreClipRect || ((this instanceof PolygonRoi)&&((PolygonRoi)this).isSplineFit()))
 			imp.draw();
@@ -947,8 +949,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				if (!overlay && isActiveOverlayRoi()) {
 					g.setColor(Color.cyan);
 					g.drawRect(sx1, sy1, sw, sh);
-				} else
-					g.fillRect(sx1, sy1, sw, sh);
+				} else {
+					if (!(this instanceof TextRoi))
+						g.fillRect(sx1, sy1, sw, sh);
+					else
+						g.drawRect(sx1, sy1, sw, sh);
+				}
 			} else
 				g.drawRect(sx1, sy1, sw, sh);
 		}
@@ -1802,9 +1808,21 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		else
 			return height;
 	}
+	
+	public void enableSubPixelResolution() {
+		bounds = new Rectangle2D.Double(getXBase(), getYBase(), getFloatWidth(), getFloatHeight());
+		subPixel = true;
+	}
 
 	public String getDebugInfo() {
 		return "";
+	}
+
+	/** Returns a hashcode for this Roi that typically changes 
+		if it is moved,  even though it is still the same object. */
+	public int getHashCode() {
+		return hashCode() ^ (new Double(getXBase()).hashCode()) ^
+			Integer.rotateRight(new Double(getYBase()).hashCode(),16);
 	}
 
 }

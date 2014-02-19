@@ -554,8 +554,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				IJ.showStatus("Wand (tracing) tool");
 				return;
 			case TEXT:
-				IJ.showStatus("Text tool");
-				TextRoi.recordSetFont();
+				IJ.showStatus("Text tool (double-click to configure)");
 				return;
 			case MAGNIFIER:
 				IJ.showStatus("Magnifying glass (or use \"+\" and \"-\" keys)");
@@ -1062,7 +1061,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					IJ.doCommand("Wand Tool...");
 					break;
 				case TEXT:
-					IJ.doCommand("Fonts...");
+					IJ.run("Fonts...");
 					break;
 				case DROPPER:
 					IJ.doCommand("Color Picker...");

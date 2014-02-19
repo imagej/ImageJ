@@ -484,7 +484,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		thisChoice.addItemListener(this);
 		for (int i=0; i<items.length; i++)
 			thisChoice.addItem(items[i]);
-		thisChoice.select(defaultItem);
+		if (defaultItem!=null)
+			thisChoice.select(defaultItem);
+		else
+			thisChoice.select(0);
 		c.gridx = 1; c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
 		grid.setConstraints(thisChoice, c);
@@ -635,7 +638,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		// slider
 		pc.gridx = 0; pc.gridy = 0;
 		pc.gridwidth = 1;
-		pc.ipadx = 75;
+		pc.ipadx = 85;
 		pc.anchor = GridBagConstraints.WEST;
 		pgrid.setConstraints(s, pc);
 		panel.add(s);
