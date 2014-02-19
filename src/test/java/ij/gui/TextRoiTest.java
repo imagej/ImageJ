@@ -239,6 +239,7 @@ public class TextRoiTest {
 		assertEquals(font2,t.getCurrentFont());
 	}
 
+    /*
     @Test
     public void testGetMacroCode() {
         // save static values to avoid side effects later
@@ -280,6 +281,7 @@ public class TextRoiTest {
         // restore so we don't mess up other tests
         TextRoi.setFont(savedFontName,savedSize,savedStyle);
     }
+    */
     
 	@Test
 	public void testGetText() {
