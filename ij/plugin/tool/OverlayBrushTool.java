@@ -194,11 +194,11 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 
 		public void showDialog() {
 			Color color = Toolbar.getForegroundColor();
-			String colorName = Colors.getColorName(color, "red");
+			String colorName = Colors.colorToString2(color);
 			gd = new NonBlockingGenericDialog("Overlay Brush Options");
 			gd.addSlider("Brush width (pixels):", 0, 50, width);
 			gd.addSlider("Transparency (%):", 0, 100, transparency);
-			gd.addChoice("Color:", Colors.colors, colorName);
+			gd.addChoice("Color:", Colors.getColors(colorName), colorName);
 			gd.setInsets(10, 0, 0);
 			String ctrlString = IJ.isMacintosh()? "CMD":"CTRL";
 			gd.addMessage("SHIFT for horizontal or vertical lines\n"+
@@ -240,7 +240,7 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 			if (gd.invalidNumber() || transparency<0 || transparency>100)
 				transparency = 100;
 			String colorName = gd.getNextChoice();
-			Color color = Colors.getColor(colorName, Color.black);
+			Color color = Colors.decode(colorName, null);
 			Toolbar.setForegroundColor(color);
 			Prefs.set(WIDTH_KEY, width);
 			return true;

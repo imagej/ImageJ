@@ -5,19 +5,20 @@
 </head>
 <body>
 
-<li> <u>1.48r 15 February 2014</u>
+<li> <u>1.48r 18 February 2014</u>
 <ul>
-<li> Added "Angle", "Color" and "Fill color" choices to the dialog displayed when you 
-double click on text tool or use the <i>Edit&gt;Options&gt;Fonts</i> command.
-<li> Thanks to Michael Schmid, the <i>Image&gt;Adjust&gt;Threshold</i> widget
-displays the percentile of thresholded pixels and has other improvements
+<li> Added "Angle", "Color" and "Bkdg" (background color) choices to the dialog displayed when you 
+double click on the text tool or use the <i>Edit&gt;Options&gt;Fonts</i> command.
+<li> Thanks to Michael Schmid, the <i>Image&gt;Adjust&gt;Threshold</i> dialog
+displays the percentile of thresholded pixels, along with other improvements
 (<a href="docs/thresholder148r.html">details</a>).
 <li> With text selections, the <i>Edit&gt;Selection&gt;Properties</i> dialog
 adds a "Angle:" field and a "Antialiased text" checkbox.
+<li> Improved text tool recording.
 <li> NonBlockingGenericDialogs are added to the Window menu.
 <li> Thanks to Michael Schmid, the <i>Edit&gt;Crop</i> command is undoable.
 <li> Thanks to Aryeh Weiss, added the RoiEncoder.save() and RoiDecoder.open() methods
-(<a href="macros/js/SaveAndOpenRoi.js">example</a></ul>).
+(<a href="macros/js/SaveAndOpenRoi.js">example</a>).
 <li> Thanks to Aryeh Weiss, fixed bugs that caused the recorder to not
 work as expected when using the ROI Manager to save a single ROI.
 <li> Thanks to Norbert Vischer, <i>Analyze&gt;Set Scale</i> no longer changes
@@ -29,12 +30,9 @@ heights greater than 65535 to not be saved correcty.
 zero to not be saved in the TIFF header.
 <li> Thanks to Michael Schmid, fixed bugs that caused the ImageJ menus to disappear
 on Macs when using the "Threshold", "B&C", "Channels", "CP" (Color Picker)
-and "Command Finder" widgets.
+and "Command Finder" dialogs.
 <li> Fixed a bug that caused the text tool to draw the text outline in the foreground
 color instead of the selection color.
-<li> Fixed a 1.48r regression that could cause <i>Image&gt;Adjust&gt;Threshold</i>
-to throw an exception.
-<li> Fixed a 1.48r regression that could cause the FigureJ plugin to hang.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

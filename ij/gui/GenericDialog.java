@@ -638,7 +638,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		// slider
 		pc.gridx = 0; pc.gridy = 0;
 		pc.gridwidth = 1;
-		pc.ipadx = 90;
+		pc.ipadx = 85;
 		pc.anchor = GridBagConstraints.WEST;
 		pgrid.setConstraints(s, pc);
 		panel.add(s);

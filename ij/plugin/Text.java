@@ -42,18 +42,18 @@ public class Text implements PlugIn, DialogListener {
 			justification = textRoi.getJustification();
 			Color c = textRoi.getStrokeColor();
 			if (c!=null) color=c;
-			fillc = Colors.colorToString(textRoi.getFillColor());
+			fillc = Colors.colorToString2(textRoi.getFillColor());
 			antialiased = textRoi.getAntialiased();
 		}
-		colorName = Colors.colorToString(color);
+		colorName = Colors.colorToString2(color);
 		gd = new NonBlockingGenericDialog("Fonts");
 		gd.addChoice("Font:", getFonts(), font);
 		gd.addChoice("Style:", styles, styles[style]);
 		gd.addChoice("Just:", justifications, justifications[justification]);
 		gd.addChoice("Color:", Colors.getColors(colorName), colorName);
 		gd.addChoice("Bkgd:", Colors.getColors("None",!"None".equals(fillc)?fillc:null), fillc);
-		gd.addSlider("Size:", 9, 350, fontSize);
-		gd.addSlider("Angle:", -180, 180, angle);
+		gd.addSlider("Size:", 9, 200, fontSize);
+		gd.addSlider("Angle:", -90, 90, angle);
 		gd.addCheckbox("Antialiased text", antialiased);
 		Point loc = Prefs.getLocation(LOC_KEY);
 		if (loc!=null) {

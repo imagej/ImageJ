@@ -3,6 +3,8 @@ import ij.*;
 import ij.process.*;
 import ij.util.*;
 import ij.macro.Interpreter;
+import ij.plugin.frame.Recorder;
+import ij.plugin.Colors;
 import java.awt.geom.*;
 import java.awt.*;
 
@@ -28,7 +30,6 @@ public class TextRoi extends Roi {
 	private static Color defaultFillColor;
 	private int justification;
 	private boolean antialiased = antialiasedText;
-	private static boolean recordSetFont = true;
 	private double previousMag;
 	private boolean firstChar = true;
 	private boolean firstMouseUp = true;
@@ -420,7 +421,6 @@ public class TextRoi extends Roi {
 	/** Sets the font face, size, style and antialiasing mode that will 
 		be used by TextROIs interactively created using the text tool. */
 	public static void setFont(String fontName, int fontSize, int fontStyle, boolean antialiased) {
-		recordSetFont = true;
 		name = fontName;
 		size = fontSize;
 		style = fontStyle;
@@ -464,8 +464,7 @@ public class TextRoi extends Roi {
 	
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
 	void updateBounds(Graphics g) {
-		//IJ.log("adjustSize1: "+theText[0]+"  "+width+","+height);
-		if ((theText[0]!=null&&(theText[0].equals(line1)||theText[0].equals(line1a))) || drawStringMode)
+		if (firstChar || drawStringMode)
 			return;
 		double mag = ic!=null?ic.getMagnification():1.0;
 		if (nonScalable) mag = 1.0;
@@ -541,9 +540,24 @@ public class TextRoi extends Roi {
 		return r.getWidth();
 	}
 	
-	public String getMacroCode(ImageProcessor ip) {
+	/** Returns code needed by Recorder for recording the "Draw" and "Add Selection..." commands. */
+	public String getMacroCode(String cmd, ImagePlus imp) {
 		String code = "";
-		if (recordSetFont) {
+		boolean script = Recorder.scriptMode();
+		boolean addSelection = cmd.startsWith("Add");
+		if (script && !addSelection)
+			code += "ip = imp.getProcessor();\n";
+		if (script) {
+			String str = "Font.PLAIN";
+			if (style==Font.BOLD)
+				str =  "Font.BOLD";
+			else if (style==Font.ITALIC)
+				str =  "Font.ITALIC";
+			code += "font = new Font(\""+name+"\", "+str+", "+size+");\n";
+			if (addSelection)
+				return getAddSelectionScript(code);
+			code += "ip.setFont(font);\n";
+		} else {
 			String options = "";
 			if (style==Font.BOLD)
 				options += "bold";
@@ -554,19 +568,51 @@ public class TextRoi extends Roi {
 			if (options.equals(""))
 				options = "plain";
 			code += "setFont(\""+name+"\", "+size+", \""+options+"\");\n";
-			recordSetFont = false;
 		}
+		ImageProcessor ip = imp.getProcessor();
+		ip.setFont(new Font(name, style, size));
 		FontMetrics metrics = ip.getFontMetrics();
 		int fontHeight = metrics.getHeight();
+		if (script)
+			code += "ip.setColor(new Color("+getColorArgs(getStrokeColor())+"));\n";
+		else
+			code += "setColor(\""+Colors.colorToString(getStrokeColor())+"\");\n";
+		if (addSelection) {
+			code += "Overlay.drawString(\""+text()+"\", "+x+", "+(y+fontHeight)+", "+getAngle()+");\n";
+			code += "Overlay.show();\n";
+		} else {
+			code += (script?"ip.":"")+"drawString(\""+text()+"\", "+x+", "+(y+fontHeight)+");\n";
+			if (script)
+				code += "imp.updateAndDraw();\n";
+			else
+				code += "//makeText(\""+text()+"\", "+x+", "+(y+fontHeight)+");\n";
+		}
+		return (code);
+	}
+	
+	private String text() {
 		String text = "";
 		for (int i=0; i<MAX_LINES; i++) {
 			if (theText[i]==null) break;
 			text += theText[i];
 			if (theText[i+1]!=null) text += "\\n";
 		}
-		code += "makeText(\""+text+"\", "+x+", "+(y+fontHeight)+");\n";
-		code += "//drawString(\""+text+"\", "+x+", "+(y+fontHeight)+");\n";
-		return (code);
+		return text;
+	}
+	
+	private String getAddSelectionScript(String code) {
+		code += "roi = new TextRoi("+x+", "+y+", \""+text()+"\", font);\n";
+		code += "roi.setStrokeColor(new Color("+getColorArgs(getStrokeColor())+"));\n";
+		if (getFillColor()!=null)
+			code += "roi.setFillColor(new Color("+getColorArgs(getFillColor())+"));\n";
+		if (getAngle()!=0.0)
+			code += "roi.setAngle("+getAngle()+");\n";
+		code += "overlay.add(roi);\n";
+		return code;
+	}
+	
+	private String getColorArgs(Color c) {
+		return IJ.d2s(c.getRed()/255.0,2)+", "+IJ.d2s(c.getGreen()/255.0,2)+", "+IJ.d2s(c.getBlue()/255.0,2);
 	}
 	
 	public String getText() {
@@ -576,10 +622,6 @@ public class TextRoi extends Roi {
 			text += theText[i]+"\n";
 		}
 		return text;
-	}
-	
-	public static void recordSetFont() {
-		recordSetFont = true;
 	}
 	
 	public boolean isDrawingTool() {
