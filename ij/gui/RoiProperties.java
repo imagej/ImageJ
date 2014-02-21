@@ -112,7 +112,7 @@ public class RoiProperties {
 			gd.addChoice("Justification:", justNames, justNames[justification]);
 		} else {
 			if (isPoint)
-				gd.addStringField("Marker color:", linec);
+				gd.addStringField("Stroke (marker) color:", linec);
 			else {
 				gd.addStringField("Stroke color:", linec);
 				gd.addNumericField("Width:", strokeWidth, digits);
@@ -120,7 +120,7 @@ public class RoiProperties {
 		}
 		if (!isLine) {
 			if (isPoint) 
-				gd.addStringField("Cross color:", fillc);
+				gd.addStringField("Fill (cross) color:", fillc);
 			else {
 				gd.addMessage("");
 				gd.addStringField("Fill color:", fillc);

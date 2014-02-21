@@ -12,8 +12,8 @@ import ij.util.Java2;
 
 /** This class represents a collection of points. */
 public class PointRoi extends PolygonRoi {
-	public static final String SIZE_KEY = "point.size";
 	public static final String[] sizes = {"Small", "Median", "Large"};
+	private static final String SIZE_KEY = "point.size";
 	private static final int SMALL=3, MEDIAN=5, LARGE=7;
 	private static int markerSize = SMALL;
 	private static Font font;
@@ -22,7 +22,7 @@ public class PointRoi extends PolygonRoi {
 	private boolean hideLabels;
 	
 	static {
-		setDefaultMarkerSize(Prefs.get(SIZE_KEY, sizes[0]));
+		setDefaultMarkerSize(Prefs.get(SIZE_KEY, sizes[1]));
 	}
 	
 	/** Creates a new PointRoi using the specified int arrays of offscreen coordinates. */
@@ -69,7 +69,8 @@ public class PointRoi extends PolygonRoi {
 		super(makeXArray(sx, imp), makeYArray(sy, imp), 1, POINT);
 		setImage(imp);
 		width=1; height=1;
-		if (imp!=null) imp.draw(x-5, y-5, width+10, height+10);
+		if (imp!=null)
+			imp.draw(x-10, y-10, 20, 20);
 		if (Recorder.record && !Recorder.scriptMode()) 
 			Recorder.record("makePoint", x, y);
 	}

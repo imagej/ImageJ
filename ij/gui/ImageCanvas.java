@@ -1398,7 +1398,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int oy = offScreenY(e.getY());
 		if ((overlay!=null||showAllOverlay!=null) && ox==mousePressedX && oy==mousePressedY) {
 			boolean cmdDown = IJ.isMacOSX() && e.isMetaDown();
-			if (e.isAltDown()||e.isControlDown()||cmdDown||overOverlayLabel) {
+			Roi roi = imp.getRoi();
+			if (roi!=null && roi.getBounds().width==0)
+				roi=null;
+			if ((e.isAltDown()||e.isControlDown()||cmdDown||overOverlayLabel) && roi==null) {
 				if (activateOverlayRoi(ox, oy))
 					return;
 			} else if ((System.currentTimeMillis()-mousePressedTime)>250L && !drawingTool()) {
