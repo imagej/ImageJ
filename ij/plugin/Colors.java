@@ -12,7 +12,7 @@ import java.util.*;
 public class Colors implements PlugIn, ItemListener {
 	public static final String[] colors = {"red","green","blue","magenta","cyan","yellow","orange","black","white"};
 	private static final String[] colors2 = {"Red","Green","Blue","Magenta","Cyan","Yellow","Orange","Black","White"};
-	private Choice fchoice, bchoice, schoice;
+	private Choice fchoice, bchoice, schoice, mchoice;
 	private Color fc2, bc2, sc2;
 
  	public void run(String arg) {
@@ -205,23 +205,33 @@ public class Colors implements PlugIn, ItemListener {
 			ImagePlus imp = WindowManager.getCurrentImage();
 			if (imp!=null && imp.getRoi()!=null) imp.draw();
 			Toolbar.getInstance().repaint();
+		} else if (choice==mchoice) {
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (imp!=null && imp.getRoi()!=null) {
+				PointRoi.setDefaultMarkerSize(item);
+				imp.draw();
+			}
 		}
 	}
 	
 	// Point tool options
 	void pointToolOptions() {
 		boolean saveNoPointLabels = Prefs.noPointLabels;
+		String markerSize = PointRoi.getDefaultMarkerSize();
 		Color sc =Roi.getColor();
 		String sname = getColorName(sc, "yellow");
 		GenericDialog gd = new GenericDialog("Point Tool");
-		gd.addNumericField("Mark Width:", Analyzer.markWidth, 0, 2, "pixels");
-		gd.addCheckbox("Auto-Measure", Prefs.pointAutoMeasure);
-		gd.addCheckbox("Auto-Next Slice", Prefs.pointAutoNextSlice);
+		gd.addNumericField("Mark width:", Analyzer.markWidth, 0, 2, "pixels");
+		gd.addCheckbox("Auto-measure", Prefs.pointAutoMeasure);
+		gd.addCheckbox("Auto-next slice", Prefs.pointAutoNextSlice);
 		gd.addCheckbox("Add to ROI Manager", Prefs.pointAddToManager);
-		gd.addCheckbox("Label Points", !Prefs.noPointLabels);
-		gd.addChoice("Selection Color:", colors, sname);
+		gd.addCheckbox("Label points", !Prefs.noPointLabels);
+		gd.addChoice("Marker size:", PointRoi.sizes, markerSize);
+		gd.addChoice("Selection color:", colors, sname);
 		Vector choices = gd.getChoices();
-		schoice = (Choice)choices.elementAt(0);
+		mchoice = (Choice)choices.elementAt(0);
+		mchoice.addItemListener(this);
+		schoice = (Choice)choices.elementAt(1);
 		schoice.addItemListener(this);
 		gd.showDialog();
 		if (gd.wasCanceled()) {
@@ -240,6 +250,8 @@ public class Colors implements PlugIn, ItemListener {
 		Prefs.pointAutoNextSlice = gd.getNextBoolean();
 		Prefs.pointAddToManager = gd.getNextBoolean();
 		Prefs.noPointLabels = !gd.getNextBoolean();
+		String markerSize2 = gd.getNextChoice();
+		PointRoi.setDefaultMarkerSize(markerSize2);
 		sname = gd.getNextChoice();
 		sc2 = getColor(sname, Color.yellow);
 		if (Prefs.pointAutoNextSlice&&!Prefs.pointAddToManager)

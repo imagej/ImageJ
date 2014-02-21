@@ -71,6 +71,7 @@ public class RoiProperties {
 		double strokeWidth = roi.getStrokeWidth();
 		boolean isText = roi instanceof TextRoi;
 		boolean isLine = roi.isLine();
+		boolean isPoint = roi instanceof PointRoi;
 		int justification = TextRoi.LEFT;
 		double angle = 0.0;
 		boolean antialias = true;
@@ -110,12 +111,20 @@ public class RoiProperties {
 			gd.setInsets(0, 0, 0);
 			gd.addChoice("Justification:", justNames, justNames[justification]);
 		} else {
-			gd.addStringField("Stroke color:", linec);
-			gd.addNumericField("Width:", strokeWidth, digits);
+			if (isPoint)
+				gd.addStringField("Marker color:", linec);
+			else {
+				gd.addStringField("Stroke color:", linec);
+				gd.addNumericField("Width:", strokeWidth, digits);
+			}
 		}
 		if (!isLine) {
-			gd.addMessage("");
-			gd.addStringField("Fill color:", fillc);
+			if (isPoint) 
+				gd.addStringField("Cross color:", fillc);
+			else {
+				gd.addMessage("");
+				gd.addStringField("Fill color:", fillc);
+			}
 		}
 		if (addToOverlay)
 			gd.addCheckbox("New overlay", false);
@@ -147,7 +156,8 @@ public class RoiProperties {
 			position2 = gd.getNextString();
 		}
 		linec = gd.getNextString();
-		strokeWidth = gd.getNextNumber();
+		if (!isPoint)
+			strokeWidth = gd.getNextNumber();
 		if (isText) {
 			angle = gd.getNextNumber();
 			justification = gd.getNextChoiceIndex();

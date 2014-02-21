@@ -12,10 +12,18 @@ import ij.util.Java2;
 
 /** This class represents a collection of points. */
 public class PointRoi extends PolygonRoi {
+	public static final String SIZE_KEY = "point.size";
+	public static final String[] sizes = {"Small", "Median", "Large"};
+	private static final int SMALL=3, MEDIAN=5, LARGE=7;
+	private static int markerSize = SMALL;
 	private static Font font;
 	private static int fontSize = 9;
 	private double saveMag;
 	private boolean hideLabels;
+	
+	static {
+		setDefaultMarkerSize(Prefs.get(SIZE_KEY, sizes[0]));
+	}
 	
 	/** Creates a new PointRoi using the specified int arrays of offscreen coordinates. */
 	public PointRoi(int[] ox, int[] oy, int points) {
@@ -100,11 +108,8 @@ public class PointRoi extends PolygonRoi {
 	
 	/** Draws the points on the image. */
 	public void draw(Graphics g) {
-		//IJ.log("draw: " + nPoints+"  "+width+"  "+height);
 		updatePolygon();
-		//IJ.log("draw: "+ xpf[0]+" "+ypf[0]+" "+xp2[0]+" "+yp2[0]);
 		if (ic!=null) mag = ic.getMagnification();
-		int size2 = HANDLE_SIZE/2;
 		if (!Prefs.noPointLabels && !hideLabels && nPoints>1) {
 			fontSize = 9;
 			if (mag>1.0)
@@ -118,22 +123,32 @@ public class PointRoi extends PolygonRoi {
 			saveMag = mag;
 		}
 		for (int i=0; i<nPoints; i++)
-			drawPoint(g, xp2[i]-size2, yp2[i]-size2, i+1);
-		//showStatus();
+			drawPoint(g, xp2[i], yp2[i], i+1);
 		if (updateFullWindow)
 			{updateFullWindow = false; imp.draw();}
 	}
 
 	void drawPoint(Graphics g, int x, int y, int n) {
 		g.setColor(fillColor!=null?fillColor:Color.white);
-		g.drawLine(x-4, y+2, x+8, y+2);
-		g.drawLine(x+2, y-4, x+2, y+8);
-		g.setColor(strokeColor!=null?strokeColor:ROIColor);
-		g.fillRect(x+1,y+1,3,3);
+		if (markerSize>3) {
+			int size=markerSize, size2=size/2;
+			g.drawLine(x-(size+2), y, x+size+2, y);
+			g.drawLine(x, y-(size+2), x, y+size+2);
+			g.setColor(strokeColor!=null?strokeColor:ROIColor);
+			g.fillRect(x-size2, y-size2, size, size);
+			g.setColor(Color.black);
+			g.drawOval(x-(size2+1), y-(size2+1), size+1, size+1);
+		} else {
+			x-=2; y-=2;
+			g.drawLine(x-4, y+2, x+8, y+2);
+			g.drawLine(x+2, y-4, x+2, y+8);
+			g.setColor(strokeColor!=null?strokeColor:ROIColor);
+			g.fillRect(x+1,y+1,3,3);
+			g.setColor(Color.black);
+			g.drawRect(x, y, 4, 4);
+		}
 		if (!Prefs.noPointLabels && !hideLabels && nPoints>1)
 			g.drawString(""+n, x+6, y+fontSize+4);
-		g.setColor(Color.black);
-		g.drawRect(x, y, 4, 4);
 	}
 
 	public void drawPixels(ImageProcessor ip) {
@@ -151,6 +166,8 @@ public class PointRoi extends PolygonRoi {
 		PointRoi p = new PointRoi(poly.xpoints, poly.ypoints, poly.npoints);
 		p.setHideLabels(hideLabels);
 		IJ.showStatus("count="+poly.npoints);
+		p.setStrokeColor(getStrokeColor());
+		p.setFillColor(getFillColor());
 		return p;
 	}
 	
@@ -195,6 +212,27 @@ public class PointRoi extends PolygonRoi {
 	
 	public void setHideLabels(boolean hideLabels) {
 		this.hideLabels = hideLabels;
+	}
+
+	public static void setDefaultMarkerSize(String size) {
+		boolean set = false;
+		if (sizes[0].equals(size)) {
+			markerSize=SMALL; set=true;
+		} else if (sizes[1].equals(size)) {
+			markerSize=MEDIAN; set=true;
+		} else if (sizes[2].equals(size)) {
+			markerSize=LARGE; set=true;
+		}
+		if (set) Prefs.set(SIZE_KEY, size);
+	}
+	
+	public static String getDefaultMarkerSize() {
+		switch (markerSize) {
+			case SMALL: return sizes[0];
+			case MEDIAN: return sizes[1];
+			case LARGE: return sizes[2];
+		}
+		return null;
 	}
 
 	/** Always returns true. */
