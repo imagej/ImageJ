@@ -1051,11 +1051,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					showAngleDialog();
 					break;
 				case POINT:
-					if (multiPointMode) {
-						if (imp!=null && imp.getRoi()!=null)
-							IJ.doCommand("Add Selection...");
-					} else
-						IJ.doCommand("Point Tool...");
+					IJ.doCommand("Point Tool...");
 					break;
 				case WAND:
 					IJ.doCommand("Wand Tool...");

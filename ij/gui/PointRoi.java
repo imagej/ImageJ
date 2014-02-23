@@ -1,10 +1,10 @@
 package ij.gui;
-
 import java.awt.*;
 import java.awt.image.*;
 import ij.*;
 import ij.process.*;
 import ij.measure.*;
+import ij.plugin.Colors;
 import ij.plugin.filter.Analyzer;
 import java.awt.event.KeyEvent;
 import ij.plugin.frame.Recorder;
@@ -14,15 +14,18 @@ import ij.util.Java2;
 public class PointRoi extends PolygonRoi {
 	public static final String[] sizes = {"Small", "Median", "Large"};
 	private static final String SIZE_KEY = "point.size";
+	private static final String CROSS_COLOR_KEY = "point.cross.color";
 	private static final int SMALL=3, MEDIAN=5, LARGE=7;
 	private static int markerSize = SMALL;
 	private static Font font;
+	private static Color defaultCrossColor = Color.white;
 	private static int fontSize = 9;
 	private double saveMag;
 	private boolean hideLabels;
 	
 	static {
 		setDefaultMarkerSize(Prefs.get(SIZE_KEY, sizes[1]));
+		setDefaultCrossColor(Colors.getColor(Prefs.get(CROSS_COLOR_KEY, "white"),null));
 	}
 	
 	/** Creates a new PointRoi using the specified int arrays of offscreen coordinates. */
@@ -130,26 +133,22 @@ public class PointRoi extends PolygonRoi {
 	}
 
 	void drawPoint(Graphics g, int x, int y, int n) {
-		g.setColor(fillColor!=null?fillColor:Color.white);
-		if (markerSize>3) {
-			int size=markerSize, size2=size/2;
+		Color cc = fillColor!=null?fillColor:defaultCrossColor;
+		int size=markerSize, size2=size/2;
+		if (cc!=null) {
+			g.setColor(cc);
 			g.drawLine(x-(size+2), y, x+size+2, y);
 			g.drawLine(x, y-(size+2), x, y+size+2);
-			g.setColor(strokeColor!=null?strokeColor:ROIColor);
-			g.fillRect(x-size2, y-size2, size, size);
-			g.setColor(Color.black);
-			g.drawOval(x-(size2+1), y-(size2+1), size+1, size+1);
-		} else {
-			x-=2; y-=2;
-			g.drawLine(x-4, y+2, x+8, y+2);
-			g.drawLine(x+2, y-4, x+2, y+8);
-			g.setColor(strokeColor!=null?strokeColor:ROIColor);
-			g.fillRect(x+1,y+1,3,3);
-			g.setColor(Color.black);
-			g.drawRect(x, y, 4, 4);
 		}
-		if (!Prefs.noPointLabels && !hideLabels && nPoints>1)
-			g.drawString(""+n, x+6, y+fontSize+4);
+		if (!Prefs.noPointLabels && !hideLabels && nPoints>1) {
+			if (cc==null)
+				g.setColor(strokeColor!=null?strokeColor:ROIColor);
+			g.drawString(""+n, x+4, y+fontSize+2);
+		}
+		g.setColor(strokeColor!=null?strokeColor:ROIColor);
+		g.fillRect(x-size2, y-size2, size, size);
+		g.setColor(Color.black);
+		g.drawOval(x-(size2+1), y-(size2+1), size+1, size+1);
 	}
 
 	public void drawPixels(ImageProcessor ip) {
@@ -234,6 +233,16 @@ public class PointRoi extends PolygonRoi {
 			case LARGE: return sizes[2];
 		}
 		return null;
+	}
+
+	public static void setDefaultCrossColor(Color color) {
+		if (defaultCrossColor!=color)
+			Prefs.set(CROSS_COLOR_KEY, Colors.getColorName(color, "None"));
+		defaultCrossColor = color;
+	}
+	
+	public static Color getDefaultCrossColor() {
+		return defaultCrossColor;
 	}
 
 	/** Always returns true. */

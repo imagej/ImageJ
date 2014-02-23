@@ -12,14 +12,11 @@ import java.util.*;
 public class Colors implements PlugIn, ItemListener {
 	public static final String[] colors = {"red","green","blue","magenta","cyan","yellow","orange","black","white"};
 	private static final String[] colors2 = {"Red","Green","Blue","Magenta","Cyan","Yellow","Orange","Black","White"};
-	private Choice fchoice, bchoice, schoice, mchoice;
+	private Choice fchoice, bchoice, schoice;
 	private Color fc2, bc2, sc2;
 
  	public void run(String arg) {
- 		if (arg.equals("point"))
- 			pointToolOptions();
- 		else
-			showDialog();
+		showDialog();
 	}
 
 	void showDialog() {
@@ -71,15 +68,27 @@ public class Colors implements PlugIn, ItemListener {
 	public static String getColorName(Color c, String defaultName) {
 		if (c==null) return defaultName;
 		String name = defaultName;
-		if (c.equals(Color.red)) name = colors[0];
-		else if (c.equals(Color.green)) name = colors[1];
-		else if (c.equals(Color.blue)) name = colors[2];
-		else if (c.equals(Color.magenta)) name = colors[3];
-		else if (c.equals(Color.cyan)) name = colors[4];
-		else if (c.equals(Color.yellow)) name = colors[5];
-		else if (c.equals(Color.orange)) name = colors[6];
-		else if (c.equals(Color.black)) name = colors[7];
-		else if (c.equals(Color.white)) name = colors[8];
+		if (name!=null && name.length()>0 && Character.isUpperCase(name.charAt(0))) {
+			if (c.equals(Color.red)) name = colors2[0];
+			else if (c.equals(Color.green)) name = colors2[1];
+			else if (c.equals(Color.blue)) name = colors2[2];
+			else if (c.equals(Color.magenta)) name = colors2[3];
+			else if (c.equals(Color.cyan)) name = colors2[4];
+			else if (c.equals(Color.yellow)) name = colors2[5];
+			else if (c.equals(Color.orange)) name = colors2[6];
+			else if (c.equals(Color.black)) name = colors2[7];
+			else if (c.equals(Color.white)) name = colors2[8];
+		} else {
+			if (c.equals(Color.red)) name = colors[0];
+			else if (c.equals(Color.green)) name = colors[1];
+			else if (c.equals(Color.blue)) name = colors[2];
+			else if (c.equals(Color.magenta)) name = colors[3];
+			else if (c.equals(Color.cyan)) name = colors[4];
+			else if (c.equals(Color.yellow)) name = colors[5];
+			else if (c.equals(Color.orange)) name = colors[6];
+			else if (c.equals(Color.black)) name = colors[7];
+			else if (c.equals(Color.white)) name = colors[8];
+		}
 		return name;
 	}
 	
@@ -204,66 +213,6 @@ public class Colors implements PlugIn, ItemListener {
 			Roi.setColor(color);
 			ImagePlus imp = WindowManager.getCurrentImage();
 			if (imp!=null && imp.getRoi()!=null) imp.draw();
-			Toolbar.getInstance().repaint();
-		} else if (choice==mchoice) {
-			ImagePlus imp = WindowManager.getCurrentImage();
-			if (imp!=null && imp.getRoi()!=null) {
-				PointRoi.setDefaultMarkerSize(item);
-				imp.draw();
-			}
-		}
-	}
-	
-	// Point tool options
-	void pointToolOptions() {
-		boolean saveNoPointLabels = Prefs.noPointLabels;
-		String markerSize = PointRoi.getDefaultMarkerSize();
-		Color sc =Roi.getColor();
-		String sname = getColorName(sc, "yellow");
-		GenericDialog gd = new GenericDialog("Point Tool");
-		gd.addNumericField("Mark width:", Analyzer.markWidth, 0, 2, "pixels");
-		gd.addCheckbox("Auto-measure", Prefs.pointAutoMeasure);
-		gd.addCheckbox("Auto-next slice", Prefs.pointAutoNextSlice);
-		gd.addCheckbox("Add to ROI Manager", Prefs.pointAddToManager);
-		gd.addCheckbox("Label points", !Prefs.noPointLabels);
-		gd.addChoice("Marker size:", PointRoi.sizes, markerSize);
-		gd.addChoice("Selection color:", colors, sname);
-		Vector choices = gd.getChoices();
-		mchoice = (Choice)choices.elementAt(0);
-		mchoice.addItemListener(this);
-		schoice = (Choice)choices.elementAt(1);
-		schoice.addItemListener(this);
-		gd.showDialog();
-		if (gd.wasCanceled()) {
-			if (sc2!=sc) {
-				Roi.setColor(sc);
-				ImagePlus imp = WindowManager.getCurrentImage();
-				if (imp!=null && imp.getRoi()!=null) imp.draw();
-				Toolbar.getInstance().repaint();
-			}
-			return;
-		}
-		int width = (int)gd.getNextNumber();
-		if (width<0) width = 0;
-		Analyzer.markWidth = width;
-		Prefs.pointAutoMeasure = gd.getNextBoolean();
-		Prefs.pointAutoNextSlice = gd.getNextBoolean();
-		Prefs.pointAddToManager = gd.getNextBoolean();
-		Prefs.noPointLabels = !gd.getNextBoolean();
-		String markerSize2 = gd.getNextChoice();
-		PointRoi.setDefaultMarkerSize(markerSize2);
-		sname = gd.getNextChoice();
-		sc2 = getColor(sname, Color.yellow);
-		if (Prefs.pointAutoNextSlice&&!Prefs.pointAddToManager)
-			Prefs.pointAutoMeasure = true;
-		if (Prefs.noPointLabels!=saveNoPointLabels) {
-			ImagePlus imp = WindowManager.getCurrentImage();
-			if (imp!=null) imp.draw();
-		}
-		if (sc2!=sc) {
-			Roi.setColor(sc2);
-			ImagePlus imp = WindowManager.getCurrentImage();
-			if (imp!=null) imp.draw();
 			Toolbar.getInstance().repaint();
 		}
 	}
