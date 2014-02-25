@@ -204,7 +204,7 @@ public class Concatenator implements PlugIn, ItemListener{
             for (int f=1; f<=frames; f++) {
                 for (int s=1; s<=slices; s++) {
                     for (int c=1; c<=channels; c++) {
-                        int index = (f-1)*channels*s + (s-1)*channels + c;
+                        int index = (f-1)*channels*slices + (s-1)*channels + c;
                         ImageProcessor ip = stack.getProcessor(index);
                         if (keep)
                             ip = ip.duplicate();

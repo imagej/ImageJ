@@ -5,20 +5,25 @@
 </head>
 <body>
 
-<li> <u>1.48s 22 February 2014</u>
+<li> <u>1.48s 25 February 2014</u>
 <ul>
 <li> Thanks to Philippe Gendre, added a "Marker size:" menu
 to the <i>Edit&gt;Options&gt;Point Tool</i> dialog box. The choices are
-"Small", "Median" (the default) and "Large".
+"Tiny", "Small" (the default), "Median" and "Large".
 <li> When creating a straight line selection, the angle displayed in the status
 bar is now calculated using sub-pixel resolution.
 <li> Thanks to Matt Smith, fixed a bug that could cause a deadlock 
 when using the stack window scrollbar to move throuh the slices.
+<li> Thanks to Jiri Janacek, fixed a bug that caused alt-click removal of
+a point selection to fail if the point was over an overlay element.
+<li> Thanks to Aaron Schain, fixed a bug that caused
+<i>Image&gt;Stacks&gt;Tools&gt;Concatenate</i> to sometimes not work
+as expected with hyperstacks.
 <li> Thanks to Gabriel Landini, fixed a 1.48r regression that caused the
 <i>Image&gt;Adjust&gt;Threshold</i> dialog to throw an exception if it was
 activated when already open.
-<li> Thanks to Jiri Janacek, fixed a bug that caused alt-click removal of
-a point selection to fail if the point was over an overlay element.
+<i> Thanks to John Lim, fixed a 1.48q regression that caused the run("RGB Color") macro 
+function to not work as expected with composite color images in batch mode macros.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

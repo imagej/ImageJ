@@ -511,6 +511,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			return;
 		}
 		String hint = " (right click to switch)";
+		String hint2 = " (right click to switch; double click to configure)";
 		switch (tool) {
 			case RECTANGLE:
 				if (roundRectMode)
@@ -546,9 +547,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				return;
 			case POINT:
 				if (multiPointMode)
-					IJ.showStatus("Point or *multi-point* selections"+hint);
+					IJ.showStatus("*Multi-point* or point"+hint2);
 				else
-					IJ.showStatus("*Point* or multi-point selections"+hint);
+					IJ.showStatus("*Point* or multi-point"+hint2);
 				return;
 			case WAND:
 				IJ.showStatus("Wand (tracing) tool");

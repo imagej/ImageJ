@@ -27,7 +27,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		gd.setInsets(5,0,2);
 		gd.addChoice("Selection color:", Colors.getColors(), sname);
 		gd.setInsets(0,0,2);
-		gd.addChoice("Cross & label color:", Colors.getColors("None"), cname);
+		gd.addChoice("Cross color:", Colors.getColors("None"), cname);
 		gd.addChoice("Marker size:", PointRoi.sizes, markerSize);
 		if (!multipointTool) {
 			gd.addNumericField("Mark width:", Analyzer.markWidth, 0, 2, "pixels");

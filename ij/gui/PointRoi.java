@@ -12,20 +12,20 @@ import ij.util.Java2;
 
 /** This class represents a collection of points. */
 public class PointRoi extends PolygonRoi {
-	public static final String[] sizes = {"Small", "Median", "Large"};
+	public static final String[] sizes = {"Tiny", "Small", "Median", "Large"};
 	private static final String SIZE_KEY = "point.size";
 	private static final String CROSS_COLOR_KEY = "point.cross.color";
-	private static final int SMALL=3, MEDIAN=5, LARGE=7;
+	private static final int TINY=1, SMALL=3, MEDIAN=5, LARGE=7;
 	private static int markerSize = SMALL;
 	private static Font font;
-	private static Color defaultCrossColor = Color.white;
+	private static Color defaultCrossColor = Color.red;
 	private static int fontSize = 9;
 	private double saveMag;
 	private boolean hideLabels;
 	
 	static {
 		setDefaultMarkerSize(Prefs.get(SIZE_KEY, sizes[1]));
-		setDefaultCrossColor(Colors.getColor(Prefs.get(CROSS_COLOR_KEY, "white"),null));
+		setDefaultCrossColor(Colors.getColor(Prefs.get(CROSS_COLOR_KEY, "red"),null));
 	}
 	
 	/** Creates a new PointRoi using the specified int arrays of offscreen coordinates. */
@@ -140,15 +140,14 @@ public class PointRoi extends PolygonRoi {
 			g.drawLine(x-(size+2), y, x+size+2, y);
 			g.drawLine(x, y-(size+2), x, y+size+2);
 		}
-		if (!Prefs.noPointLabels && !hideLabels && nPoints>1) {
-			if (cc==null)
-				g.setColor(strokeColor!=null?strokeColor:ROIColor);
-			g.drawString(""+n, x+4, y+fontSize+2);
-		}
 		g.setColor(strokeColor!=null?strokeColor:ROIColor);
 		g.fillRect(x-size2, y-size2, size, size);
-		g.setColor(Color.black);
-		g.drawOval(x-(size2+1), y-(size2+1), size+1, size+1);
+		if (!Prefs.noPointLabels && !hideLabels && nPoints>1)
+			g.drawString(""+n, x+4, y+fontSize+2);
+		if (markerSize>TINY) {
+			g.setColor(Color.black);
+			g.drawOval(x-(size2+1), y-(size2+1), size+1, size+1);
+		}
 	}
 
 	public void drawPixels(ImageProcessor ip) {
@@ -217,10 +216,12 @@ public class PointRoi extends PolygonRoi {
 	public static void setDefaultMarkerSize(String size) {
 		boolean set = false;
 		if (sizes[0].equals(size)) {
-			markerSize=SMALL; set=true;
+			markerSize=TINY; set=true;
 		} else if (sizes[1].equals(size)) {
-			markerSize=MEDIAN; set=true;
+			markerSize=SMALL; set=true;
 		} else if (sizes[2].equals(size)) {
+			markerSize=MEDIAN; set=true;
+		} else if (sizes[3].equals(size)) {
 			markerSize=LARGE; set=true;
 		}
 		if (set) Prefs.set(SIZE_KEY, size);
@@ -228,9 +229,10 @@ public class PointRoi extends PolygonRoi {
 	
 	public static String getDefaultMarkerSize() {
 		switch (markerSize) {
-			case SMALL: return sizes[0];
-			case MEDIAN: return sizes[1];
-			case LARGE: return sizes[2];
+			case TINY: return sizes[0];
+			case SMALL: return sizes[1];
+			case MEDIAN: return sizes[2];
+			case LARGE: return sizes[3];
 		}
 		return null;
 	}

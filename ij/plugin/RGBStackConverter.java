@@ -172,7 +172,7 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 				overlay2.crop(1, imp.getNChannels());
 				imp2.setOverlay(overlay2);
 			}
-			if (imp.getWindow()==null) {
+			if (image!=null && imp.getWindow()==null) {
 				imp.setImage(imp2);
 				imp.setOverlay(overlay2);
 			} else
@@ -198,7 +198,7 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 			overlay2.crop(1, imp.getNChannels());
 			imp2.setOverlay(overlay2);
 		}
-		if (imp.getWindow()==null) {
+		if (image!=null && imp.getWindow()==null) {
 			imp.setImage(imp2);
 			imp.setOverlay(overlay2);
 		} else {
