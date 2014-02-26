@@ -15,6 +15,7 @@ import java.awt.*;
 public class OverlayCommands implements PlugIn {
 	private static int opacity = 100;
 	private static Roi defaultRoi;
+	private static boolean zeroTransparent;
 	
 	static {
 		defaultRoi = new Roi(0, 0, 1, 1);
@@ -146,6 +147,10 @@ public class OverlayCommands implements PlugIn {
 			index = 1;
 
 		String title = createImageRoi?"Create Image ROI":"Add Image...";
+		if (IJ.isMacro()) {
+			opacity = 100;
+			zeroTransparent = false;
+		}
 		GenericDialog gd = new GenericDialog(title);
 		if (createImageRoi)
 			gd.addChoice("Image:", titles, titles[index]);
@@ -155,6 +160,7 @@ public class OverlayCommands implements PlugIn {
 			gd.addNumericField("Y location:", y, 0);
 		}
 		gd.addNumericField("Opacity (0-100%):", opacity, 0);
+		gd.addCheckbox("Zero transparent", zeroTransparent);
 		//gd.addCheckbox("Create image selection", createImageRoi);
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -165,6 +171,7 @@ public class OverlayCommands implements PlugIn {
 			y = (int)gd.getNextNumber();
 		}
 		opacity = (int)gd.getNextNumber();
+		zeroTransparent = gd.getNextBoolean();
 		//createImageRoi = gd.getNextBoolean();
 		ImagePlus overlay = WindowManager.getImage(wList[index]);
 		if (wList.length==2) {
@@ -189,7 +196,9 @@ public class OverlayCommands implements PlugIn {
 		}	
 		roi = new ImageRoi(x, y, overlay.getProcessor());
 		roi.setName(overlay.getShortTitle());
-		if (opacity!=100) ((ImageRoi)roi).setOpacity(opacity/100.0);
+		if (opacity!=100)
+			((ImageRoi)roi).setOpacity(opacity/100.0);
+		((ImageRoi)roi).setZeroTransparent(zeroTransparent);
 		if (createImageRoi)
 			imp.setRoi(roi);
 		else {

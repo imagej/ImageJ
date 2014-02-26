@@ -18,14 +18,14 @@ public class PointRoi extends PolygonRoi {
 	private static final int TINY=1, SMALL=3, MEDIAN=5, LARGE=7;
 	private static int markerSize = SMALL;
 	private static Font font;
-	private static Color defaultCrossColor = Color.red;
+	private static Color defaultCrossColor = Color.white;
 	private static int fontSize = 9;
 	private double saveMag;
 	private boolean hideLabels;
 	
 	static {
 		setDefaultMarkerSize(Prefs.get(SIZE_KEY, sizes[1]));
-		setDefaultCrossColor(Colors.getColor(Prefs.get(CROSS_COLOR_KEY, "red"),null));
+		setDefaultCrossColor(Colors.getColor(Prefs.get(CROSS_COLOR_KEY, "white"),null));
 	}
 	
 	/** Creates a new PointRoi using the specified int arrays of offscreen coordinates. */
