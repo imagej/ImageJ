@@ -5,14 +5,17 @@
 </head>
 <body>
 
-<li> <u>1.48s 26 February 2014</u>
+<li> <u>1.48s 27 February 2014</u>
 <ul>
 <li> Thanks to Philippe Gendre, added a "Marker size:" menu
 to the <i>Edit&gt;Options&gt;Point Tool</i> dialog box. The choices are
-"Tiny", "Small" (the default), "Median" and "Large".
+"Tiny", "Small" (the default), "Mediam" and "Large".
 <li> Thanks to Jeremy Sword, added a "Zero transparent" option to the
 <i>Edit&gt;Selection&gt;Image to Selection</i> and <i>Image&gt;Overlay&gt;Add Image</i>
 commands.
+<li> The recorder no longer records default options (e.g., 'size=0-Infinity') when recording
+<i>Analyze&gt;Analyze Particles</i>, <i>File&gt;Import&gt;Image Sequence</i> and
+<i>Image&gt;Stacks&gt;Z Project</i>.
 <li> When creating a straight line selection, the angle displayed in the status
 bar is now calculated using sub-pixel resolution.
 <li> Thanks to Matt Smith, fixed a bug that could cause a deadlock 
@@ -24,6 +27,8 @@ a point selection to fail if the point was over an overlay element.
 as expected with hyperstacks.
 <li> Thanks to Stoyan Pavlov, fixed a bug in the Roi Manager that caused ROIs
 to not be updated after changing the position in the More&gt;&gt;Properties dialog box.
+<li> Thanks to Josh Balsam, fixed a bug in <i>Image&gt;Stacks&gt;Tools&gt;Concatenate</i>
+that caused it to not work in batch mode macros.
 <li> Thanks to Gabriel Landini, fixed a 1.48r regression that caused the
 <i>Image&gt;Adjust&gt;Threshold</i> dialog to throw an exception if it was
 activated when already open.

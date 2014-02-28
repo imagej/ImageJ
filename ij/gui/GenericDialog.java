@@ -43,7 +43,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	public static final int MAX_SLIDERS = 25;
 	protected Vector numberField, stringField, checkbox, choice, slider, radioButtonGroups;
 	protected TextArea textArea1, textArea2;
-	protected Vector defaultValues,defaultText;
+	protected Vector defaultValues,defaultText,defaultStrings;
 	protected Component theLabel;
 	private Button cancel, okay, no, help;
 	private String okLabel = "  OK  ";
@@ -78,6 +78,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     private boolean centerDialog = true;
     private String helpURL;
     private String yesLabel, noLabel;
+    private boolean smartRecording;
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
     	image window as the parent frame or the ImageJ frame if no image windows
@@ -223,6 +224,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		boolean custom = customInsets;
 		if (stringField==null) {
 			stringField = new Vector(4);
+			defaultStrings = new Vector(4);
 			c.insets = getInsets(5, 0, 5, 0);
 		} else
 			c.insets = getInsets(0, 0, 5, 0);
@@ -248,6 +250,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		tf.setEditable(true);
 		add(tf);
 		stringField.addElement(tf);
+		defaultStrings.addElement(defaultText);
 		if (Recorder.record || macro)
 			saveLabel(tf, label);
 		y++;
@@ -715,6 +718,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     	helpLabel = label;
     }
 
+    /** Unchanged parameters are not recorder in 'smart recording' mode. */
+    public void setSmartRecording(boolean smartRecording) {
+    	this.smartRecording = smartRecording;
+    }
+
     /** Make this a "Yes No Cancel" dialog. */
     public void enableYesNoCancel() {
     	enableYesNoCancel(" Yes ", " No ");
@@ -797,9 +805,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		String originalText = (String)defaultText.elementAt(nfIndex);
 		double defaultValue = ((Double)(defaultValues.elementAt(nfIndex))).doubleValue();
 		double value;
-		if (theText.equals(originalText))
+		boolean skipRecording = false;
+		if (theText.equals(originalText)) {
 			value = defaultValue;
-		else {
+			if (smartRecording) skipRecording=true;
+		} else {
 			Double d = getValue(theText);
 			if (d!=null)
 				value = d.doubleValue();
@@ -821,8 +831,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
                 }
 			}
 		}
-		if (recorderOn)
+		if (recorderOn && !skipRecording) {
 			recordOption(tf, trim(theText));
+		}
 		nfIndex++;
 		return value;
     }
@@ -907,7 +918,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			String s = theText;
 			if (s!=null&&s.length()>=3&&Character.isLetter(s.charAt(0))&&s.charAt(1)==':'&&s.charAt(2)=='\\')
 				s = s.replaceAll("\\\\", "\\\\\\\\");  // replace "\" with "\\" in Windows file paths
-			recordOption(tf, s);
+			if (!smartRecording || !s.equals((String)defaultStrings.elementAt(sfIndex)))
+				recordOption(tf, s);
 		}
 		sfIndex++;
 		return theText;

@@ -77,7 +77,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.48s";
-	public static final String BUILD = "16"; 
+	public static final String BUILD = "20"; 
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -253,7 +253,6 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 	
 	public Point getPreferredLocation() {
-		if (!IJ.isJava14()) return new Point(0, 0);
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		Rectangle maxBounds = ge.getMaximumWindowBounds();
 		int ijX = Prefs.getInt(IJ_X,-99);

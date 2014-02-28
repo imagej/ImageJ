@@ -139,7 +139,8 @@ public class SubstackMaker implements PlugIn {
 			// next three lines for updating the scroll bar
 			ImageWindow win = imp.getWindow();
 			StackWindow swin = (StackWindow) win;
-			swin.updateSliceSelector();
+			if (swin!=null)
+				swin.updateSliceSelector();
 		}
 		ImagePlus impSubstack = imp.createImagePlus();
 		impSubstack.setStack(stackTitle, stack2);
@@ -170,7 +171,8 @@ public class SubstackMaker implements PlugIn {
 			// next three lines for updating the scroll bar
 			ImageWindow win = imp.getWindow();
 			StackWindow swin = (StackWindow) win;
-			swin.updateSliceSelector();
+			if (swin!=null)
+				swin.updateSliceSelector();
 		}
 		ImagePlus substack = imp.createImagePlus();
 		substack.setStack(title, stack2);

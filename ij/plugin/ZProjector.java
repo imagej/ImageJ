@@ -129,13 +129,16 @@ public class ZProjector implements PlugIn {
 			stopSlice  = stackSize;
 			
 		// Build control dialog
-		GenericDialog gd = buildControlDialog(startSlice,stopSlice); 
+		GenericDialog gd = buildControlDialog(startSlice,stopSlice);
+		gd.setSmartRecording(true);
 		gd.showDialog(); 
-		if(gd.wasCanceled()) return; 
+		if (gd.wasCanceled()) return; 
 
 		if (!imp.lock()) return;   // exit if in use
 		long tstart = System.currentTimeMillis();
-		setStartSlice((int)gd.getNextNumber()); 
+		//gd.setRecordDefault(""+startSlice);
+		setStartSlice((int)gd.getNextNumber());
+		//gd.setRecordDefault(""+stopSlice);
 		setStopSlice((int)gd.getNextNumber()); 
 		method = gd.getNextChoiceIndex();
 		Prefs.set(METHOD_KEY, method);
