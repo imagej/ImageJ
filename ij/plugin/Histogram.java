@@ -67,7 +67,7 @@ public class Histogram implements PlugIn, TextListener {
  		}
  		int iyMax = (int)Tools.parseDouble(yMax, 0.0);
  		boolean customHistogram = (bitDepth==8||bitDepth==24) && (!(xMin==0.0&&xMax==0.0)||nBins!=256||iyMax>0);
-//ImageWindow.centerNextImage();
+		ImageWindow.centerNextImage();
  		if (stackHistogram || customHistogram) {
  			ImagePlus imp2 = imp;
  			if (customHistogram && !stackHistogram && imp.getStackSize()>1)

@@ -132,10 +132,10 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		interval = Tools.parseDouble(intAndUnit[0]);
 		cal.frameInterval = Double.isNaN(interval)?0.0:interval;
 		String timeUnit = intAndUnit.length>=2?intAndUnit[1]:"sec";
-        if (timeUnit.equals("sec")&&cal.frameInterval<=2.0&&cal.frameInterval>=1.0/30.0)
-        	cal.fps = 1.0/cal.frameInterval;
-        if (timeUnit.equals("usec"))
-            timeUnit = IJ.micronSymbol + "sec";
+		if (timeUnit.equals("sec")&&cal.frameInterval<=2.0&&cal.frameInterval>=1.0/30.0)
+			cal.fps = 1.0/cal.frameInterval;
+		if (timeUnit.equals("usec"))
+			timeUnit = IJ.micronSymbol + "sec";
 		cal.setTimeUnit(timeUnit);
 
 		gd.setSmartRecording(cal.xOrigin==0&&cal.yOrigin==0&&cal.zOrigin==0);

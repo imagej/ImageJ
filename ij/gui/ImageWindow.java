@@ -139,8 +139,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		Rectangle maxWindow = getMaxWindow(0,0);
-		//if (maxWindow.x==maxWindow.width)  // work around for Linux bug
-		//	maxWindow = new Rectangle(0, maxWindow.y, maxWindow.width, maxWindow.height);
 		if (WindowManager.getWindowCount()<=1)
 			xbase = -1;
 		if (width>maxWindow.width/2 && xbase>maxWindow.x+5+XINC*6)
@@ -194,7 +192,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	Rectangle getMaxWindow(int xloc, int yloc) {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		Rectangle bounds = ge.getMaximumWindowBounds();
-		//bounds.x=960; bounds.y=0; bounds.width=960; bounds.height=1200;
 		if (IJ.debugMode) IJ.log("getMaxWindow: "+bounds+"  "+xloc+","+yloc);
 		if (xloc>bounds.x+bounds.width || yloc>bounds.y+bounds.height) {
 			Rectangle bounds2 = getSecondaryMonitorBounds(ge, xloc, yloc);

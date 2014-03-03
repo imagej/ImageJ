@@ -34,7 +34,7 @@ public class Menus {
 	public static final char TOOLS_MENU = 't';
 	public static final char UTILITIES_MENU = 'u';
 		
-	public static final int WINDOW_MENU_ITEMS = 5; // fixed items at top of Window menu
+	public static final int WINDOW_MENU_ITEMS = 6; // fixed items at top of Window menu
 	
 	public static final int NORMAL_RETURN = 0;
 	public static final int COMMAND_IN_USE = -1;
@@ -212,6 +212,8 @@ public class Menus {
 
 		Menu window = getMenu("Window");
 		addPlugInItem(window, "Show All", "ij.plugin.WindowOrganizer(\"show\")", KeyEvent.VK_CLOSE_BRACKET, false);
+		String key = IJ.isWindows()?"enter":"return";
+		addPlugInItem(window, "Show ImageJ ["+key+"]", "ij.plugin.WindowOrganizer(\"imagej\")", 0, false);
 		addPlugInItem(window, "Put Behind [tab]", "ij.plugin.Commands(\"tab\")", 0, false);
 		addPlugInItem(window, "Cascade", "ij.plugin.WindowOrganizer(\"cascade\")", 0, false);
 		addPlugInItem(window, "Tile", "ij.plugin.WindowOrganizer(\"tile\")", 0, false);

@@ -14,16 +14,20 @@ public class GUI {
 		}
 	}
 
-	/** Positions the specified window in the center of the screen. */
-	public static void center(Window w) {
-		Dimension screen = IJ.getScreenSize();
-		Dimension window = w.getSize();
+	/** Positions the specified window in the center of the primary screen. */
+	public static void center(Window win) {
+		if (win==null)
+			return;
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		Rectangle bounds = ge.getMaximumWindowBounds();
+		Dimension window= win.getSize();
 		if (window.width==0)
 			return;
-		int left = screen.width/2-window.width/2;
-		int top = (screen.height-window.height)/4;
-		if (top<0) top = 0;
-		w.setLocation(left, top);
+		int left = bounds.x + (bounds.width-window.width)/2;
+		if (left<bounds.x) left=bounds.x;
+		int top = bounds.y + (bounds.height-window.height)/4;
+		if (top<bounds.y) top=bounds.y;
+		win.setLocation(left, top);
 	}
 	
     static private Frame frame;

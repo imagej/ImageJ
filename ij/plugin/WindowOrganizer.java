@@ -11,6 +11,8 @@ public class WindowOrganizer implements PlugIn {
 	private int titlebarHeight = IJ.isMacintosh()?40:20;
 
 	public void run(String arg) {
+		if (arg.equals("imagej"))
+			{showImageJ(); return;}
 		int[] wList = WindowManager.getIDList();
 		if (arg.equals("show"))
 			{showAll(wList); return;}
@@ -149,6 +151,12 @@ public class WindowOrganizer implements PlugIn {
 		}
 	}
 	
+	void showImageJ() {
+		ImageJ ij = IJ.getInstance();
+		if (ij!=null)
+			ij.toFront();
+	}
+
 	void showAll(int[] wList) {
 		if (wList!=null) {
 			for (int i=0; i<wList.length; i++) {

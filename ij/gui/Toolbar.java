@@ -256,7 +256,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			if ((tool==POLYLINE && lineType!=POLYLINE) || (tool==FREELINE && lineType!=FREELINE))
 				return;
 		}
-		if (IJ.debugMode) IJ.log("Toolbar.drawButton: "+tool);
+		//if (IJ.debugMode) IJ.log("Toolbar.drawButton: "+tool);
         int index = toolIndex(tool);
         int x = index*SIZE + 1;
         if (tool>=CUSTOM1)

@@ -21,14 +21,18 @@ public class NonBlockingGenericDialog extends GenericDialog {
 
 	public synchronized void actionPerformed(ActionEvent e) {
 		super.actionPerformed(e);
-		if (!isVisible())
+		if (!isVisible()) {
+			WindowManager.removeWindow(this);
 			notify();
+		}
 	}
 	
 	public synchronized void keyPressed(KeyEvent e) {
 		super.keyPressed(e);
-		if (wasOKed() || wasCanceled())
+		if (wasOKed() || wasCanceled()) {
+			WindowManager.removeWindow(this);
 			notify();
+		}
 	}
 
     public synchronized void windowClosing(WindowEvent e) {

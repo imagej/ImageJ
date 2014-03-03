@@ -108,6 +108,9 @@ public class JavaProperties implements PlugIn {
 		sb.append("  Sample images dir: "+Prefs.getImagesURL()+"\n");
 		Dimension d = IJ.getScreenSize();
 		sb.append("  Screen size: " + d.width + "x" + d.height+"\n");
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		String b = ge.getMaximumWindowBounds().toString();
+		sb.append("  Maximum window bounds: " + b.substring(19, b.length()-1)+"\n");
 		System.gc();
 		sb.append("  Memory in use: "+IJ.freeMemory()+"\n");	
 		doFullDump();
