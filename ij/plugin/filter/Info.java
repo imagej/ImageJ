@@ -253,13 +253,20 @@ public class Info implements PlugInFilter {
 			else if (fi.directory!=null && fi.fileName!=null)
 				s += "Path: " + fi.directory + fi.fileName + "\n";
 		}
+		
+		ImageWindow win = imp.getWindow();
+		if (win!=null) {
+			Point loc = win.getLocation();
+			Dimension screen = IJ.getScreenSize();
+			s += "Screen location: "+loc.x+","+loc.y+" ("+screen.width+"x"+screen.height+")\n";
+		}
 	    
 	    Overlay overlay = imp.getOverlay();
 		if (overlay!=null) {
-			String hidden = imp.getHideOverlay()?" (hidden) ":" ";
+			String hidden = imp.getHideOverlay()?" (hidden)":" ";
 			int n = overlay.size();
-			String items = n==1?" item\n":" items\n";
-			s += "Overlay" + hidden + "has " + n + items;
+			String elements = n==1?" element":" elements";
+			s += "Overlay: " + n + elements + (imp.getHideOverlay()?" (hidden)":"") + "\n";
 		} else
 	    	s += "No Overlay\n";
 

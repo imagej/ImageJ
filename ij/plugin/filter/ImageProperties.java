@@ -126,6 +126,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			cal.pixelDepth = pixelDepth;
 		}
 
+		gd.setSmartRecording(interval==0);
 		String frameInterval = validateInterval(gd.getNextString());
 		String[] intAndUnit = Tools.split(frameInterval, " -");
 		interval = Tools.parseDouble(intAndUnit[0]);
@@ -137,7 +138,9 @@ public class ImageProperties implements PlugInFilter, TextListener {
             timeUnit = IJ.micronSymbol + "sec";
 		cal.setTimeUnit(timeUnit);
 
+		gd.setSmartRecording(cal.xOrigin==0&&cal.yOrigin==0&&cal.zOrigin==0);
         String[] origin = Tools.split(gd.getNextString(), " ,");
+		gd.setSmartRecording(false);
 		double x = Tools.parseDouble(origin[0]);
 		double y = origin.length>=2?Tools.parseDouble(origin[1]):Double.NaN;
 		double z = origin.length>=3?Tools.parseDouble(origin[2]):Double.NaN;

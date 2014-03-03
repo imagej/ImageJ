@@ -136,9 +136,7 @@ public class ZProjector implements PlugIn {
 
 		if (!imp.lock()) return;   // exit if in use
 		long tstart = System.currentTimeMillis();
-		//gd.setRecordDefault(""+startSlice);
 		setStartSlice((int)gd.getNextNumber());
-		//gd.setRecordDefault(""+stopSlice);
 		setStopSlice((int)gd.getNextNumber()); 
 		method = gd.getNextChoiceIndex();
 		Prefs.set(METHOD_KEY, method);

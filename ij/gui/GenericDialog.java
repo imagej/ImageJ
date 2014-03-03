@@ -1012,7 +1012,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 					item = s;
 			}
 		}	
-		if (recorderOn) {
+		if (recorderOn && !(smartRecording&&index==0)) {
 			String item = thisChoice.getSelectedItem();
 			if (!(item.equals("*None*")&&getTitle().equals("Merge Channels")))
 				recordOption(thisChoice, thisChoice.getSelectedItem());
