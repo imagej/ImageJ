@@ -213,7 +213,7 @@ public class Menus {
 		Menu window = getMenu("Window");
 		addPlugInItem(window, "Show All", "ij.plugin.WindowOrganizer(\"show\")", KeyEvent.VK_CLOSE_BRACKET, false);
 		String key = IJ.isWindows()?"enter":"return";
-		addPlugInItem(window, "Show ImageJ ["+key+"]", "ij.plugin.WindowOrganizer(\"imagej\")", 0, false);
+		addPlugInItem(window, "Main Window ["+key+"]", "ij.plugin.WindowOrganizer(\"imagej\")", 0, false);
 		addPlugInItem(window, "Put Behind [tab]", "ij.plugin.Commands(\"tab\")", 0, false);
 		addPlugInItem(window, "Cascade", "ij.plugin.WindowOrganizer(\"cascade\")", 0, false);
 		addPlugInItem(window, "Tile", "ij.plugin.WindowOrganizer(\"tile\")", 0, false);

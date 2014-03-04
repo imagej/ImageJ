@@ -5,10 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.48s 3 March 2014</u>
+<li> <u>1.48s 4 March 2014</u>
 <ul>
-<li> Added the <i>Window&gt;Show ImageJ [return]</i>
-menu command. On Windows, the command is <i>Show ImageJ [enter]</i>.
+<li> Thanks to Johannes Schindelin, added the <i>Window&gt;Main Window [return]</i>
+menu command. On Windows, the command is <i>Main Window [enter]</i>.
 <li> Thanks to Philippe Gendre, added a "Marker size:" menu
 to the <i>Edit&gt;Options&gt;Point Tool</i> dialog box. The choices are
 "Tiny", "Small" (the default), "Mediam" and "Large".
@@ -20,6 +20,8 @@ commands.
 <i>Image&gt;Stacks&gt;Z Project</i>.
 <li> <i>Image&gt;Show Info</i> displays the image's screen location and,
 in parentheses, the screen dimensions.
+<li> <i>Plugins&gt;Utilities&gt;ImageJ Properties</i> displays "Max window bounds"
+and the bounds of all monitors on systems with multiple monitors.
 <li> When creating a straight line selection, the angle displayed in the status
 bar is now calculated using sub-pixel resolution.
 <li> Added the GenericDialog.setSmartRecording() method, which allows plugins
@@ -36,11 +38,11 @@ to not be updated after changing the position in the More&gt;&gt;Properties dial
 <li> Thanks to Josh Balsam, fixed a bug in <i>Image&gt;Stacks&gt;Tools&gt;Make Substack</i>
 that caused it to not work in batch mode macros.
 <li> Thanks to Ryota Homma, fixed a bug that caused NonBlockingGenericDialogs to
-not be removed from the Window menu when the dialog is closed.
+not be removed from the Window menu when the dialog was closed.
 <li> Thanks to Gabriel Landini, fixed a 1.48r regression that caused the
 <i>Image&gt;Adjust&gt;Threshold</i> dialog to throw an exception if it was
 activated when already open.
-<i> Thanks to John Lim, fixed a 1.48q regression that caused the run("RGB Color") macro 
+<li> Thanks to John Lim, fixed a 1.48q regression that caused the run("RGB Color") macro 
 function to not work as expected with composite color images in batch mode macros.
 </ul>
 

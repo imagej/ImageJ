@@ -9,11 +9,11 @@ public class NonBlockingGenericDialog extends GenericDialog {
 	public NonBlockingGenericDialog(String title) {
 		super(title, null);
 		setModal(false);
-		WindowManager.addWindow(this);
 	}
 
 	public synchronized void showDialog() {
 		super.showDialog();
+		WindowManager.addWindow(this);
 		try {
 			wait();
 		} catch (InterruptedException e) { }
