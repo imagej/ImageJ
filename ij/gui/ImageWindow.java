@@ -212,9 +212,11 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			GraphicsDevice gd = gs[j];
 			GraphicsConfiguration[] gc = gd.getConfigurations();
 			for (int i=0; i<gc.length; i++) {
-				bounds = gc[i].getBounds();
-				if (bounds!=null && bounds.contains(xloc, yloc))
+				Rectangle bounds2 = gc[i].getBounds();
+				if (bounds2!=null && bounds2.contains(xloc, yloc)) {
+					bounds = bounds2;
 					break;
+				}
 			}
 		}		
 		if (IJ.debugMode) IJ.log("getSecondaryMonitorBounds: "+bounds);

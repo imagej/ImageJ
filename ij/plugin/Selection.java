@@ -755,7 +755,10 @@ public class Selection implements PlugIn, Measurements {
 		ImagePlus edm = new ImagePlus("mask", mask);
 		boolean saveBlackBackground = Prefs.blackBackground;
 		Prefs.blackBackground = false;
+		int saveType = EDM.getOutputType();
+		EDM.setOutputType(EDM.BYTE_OVERWRITE);
 		IJ.run(edm, "Distance Map", "");
+		EDM.setOutputType(saveType);
 		Prefs.blackBackground = saveBlackBackground;
 		ip = edm.getProcessor();
 		ip.setThreshold(0, n, ImageProcessor.NO_LUT_UPDATE);
