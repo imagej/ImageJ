@@ -1981,6 +1981,9 @@ public class IJ {
 	
 	/** Returns the size, in pixels, of the primary display. */
 	public static Dimension getScreenSize() {
+		Rectangle bounds = GUI.getModifiedMaxWindowBounds();
+		if (bounds!=null)
+			return new Dimension(bounds.width, bounds.height);
 		if (isWindows())  // GraphicsEnvironment.getConfigurations is *very* slow on Windows
 			return Toolkit.getDefaultToolkit().getScreenSize();
 		if (GraphicsEnvironment.isHeadless())
@@ -1990,7 +1993,7 @@ public class IJ {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] gd = ge.getScreenDevices();
 		GraphicsConfiguration[] gc = gd[0].getConfigurations();
-		Rectangle bounds = gc[0].getBounds();
+		bounds = gc[0].getBounds();
 		if ((bounds.x==0&&bounds.y==0) || (IJ.isLinux()&&gc.length>1))
 			return new Dimension(bounds.width, bounds.height);
 		else

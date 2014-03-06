@@ -129,17 +129,20 @@ public class JavaProperties implements PlugIn {
 		int max = 10;
 		String[] str = new String[max];
 		int n = 0;
+		Rectangle bounds2 = null;
 		GraphicsDevice[] gs = ge.getScreenDevices();
 		for (int j=0; j<gs.length; j++) {
 			GraphicsDevice gd = gs[j];
 			GraphicsConfiguration[] gc = gd.getConfigurations();
 			for (int i=0; i<gc.length; i++) {
 				Rectangle bounds = gc[i].getBounds();
-				if (bounds!=null && n<max)
+				if (bounds!=null && !bounds.equals(bounds2) && n<max) {
 					str[n++] = toString(bounds);
+					bounds2 = bounds;
+				}
 			}
 		}
-		if (n>1 && n<max) {
+		if (n>1) {
 			for (int i=0; i<n; i++)
 				sb.append("  Monitor"+(i+1)+": " + str[i] + "\n");
 		}

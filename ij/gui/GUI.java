@@ -6,6 +6,7 @@ import ij.*;
 public class GUI {
 	private static Color lightGray = new Color(240,240,240);
 	private static boolean isWindows8;
+	private static Rectangle modifiedBounds;
 
 	static {
 		if (IJ.isWindows()) {
@@ -30,10 +31,13 @@ public class GUI {
 	}
 	
 	public static Rectangle getMaxWindowBounds() {
+		if (GraphicsEnvironment.isHeadless())
+			return new Rectangle(0,0,0,0);
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		Rectangle bounds = ge.getMaximumWindowBounds();
+		modifiedBounds = null;
 		if (bounds.x>300)
-			bounds = getPrimaryMonitor(ge, bounds);
+			bounds = getLeftMostMonitor(ge, bounds);
 		if (bounds.x<0 || bounds.x>300 || bounds.width<300) {
 			Dimension screen = IJ.getScreenSize();
 			bounds = new Rectangle(0, 0, screen.width, screen.height);
@@ -42,7 +46,11 @@ public class GUI {
 		return bounds;
 	}
 
-	private static Rectangle getPrimaryMonitor(GraphicsEnvironment ge, Rectangle bounds) {
+	public static Rectangle getModifiedMaxWindowBounds() {
+		return modifiedBounds;
+	}
+
+	private static Rectangle getLeftMostMonitor(GraphicsEnvironment ge, Rectangle bounds) {
 		GraphicsDevice[] gs = ge.getScreenDevices();
 		Rectangle bounds2 = null;
 		for (int j=0; j<gs.length; j++) {
@@ -55,7 +63,10 @@ public class GUI {
 			}
 		}
 		if (IJ.debugMode) IJ.log("getPrimaryMonitor: "+bounds2);
-		bounds = bounds2!=null?bounds2:bounds;
+		if (bounds2!=null) {
+			bounds = bounds2;
+			modifiedBounds = bounds2;
+		}
 		return bounds;
 	}
 
