@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.text.*;
 import ij.io.OpenDialog;
+import ij.gui.GUI;
 import java.awt.*;
 import java.util.*;
 import java.applet.Applet;
@@ -106,15 +107,54 @@ public class JavaProperties implements PlugIn {
 		sb.append("  Prefs dir: "+Prefs.getPrefsDir()+"\n");
 		sb.append("  Current dir: "+OpenDialog.getDefaultDirectory()+"\n");
 		sb.append("  Sample images dir: "+Prefs.getImagesURL()+"\n");
+		sb.append("  Memory in use: "+IJ.freeMemory()+"\n");	
 		Dimension d = IJ.getScreenSize();
 		sb.append("  Screen size: " + d.width + "x" + d.height+"\n");
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		String b1 = toString(GUI.getMaxWindowBounds());
+		String b2 = toString(ge.getMaximumWindowBounds());
+		if (!b2.equals(b1))
+			b1 += " (" + b2 + ")";
+		sb.append("  Max window bounds: " + b1 + "\n");
+		listMonitors(ge, sb);
 		System.gc();
-		sb.append("  Memory in use: "+IJ.freeMemory()+"\n");	
 		doFullDump();
 		if (IJ.getInstance()==null)
 			IJ.log(new String(sb));
 		else
 			new TextWindow("Properties", new String(sb), 400, 500);
+	}
+	
+	private void listMonitors(GraphicsEnvironment ge, StringBuffer sb) {
+		int max = 10;
+		String[] str = new String[max];
+		int n = 0;
+		Rectangle bounds2 = null;
+		GraphicsDevice[] gs = ge.getScreenDevices();
+		for (int j=0; j<gs.length; j++) {
+			GraphicsDevice gd = gs[j];
+			GraphicsConfiguration[] gc = gd.getConfigurations();
+			for (int i=0; i<gc.length; i++) {
+				Rectangle bounds = gc[i].getBounds();
+				if (bounds!=null && !bounds.equals(bounds2) && n<max) {
+					str[n++] = toString(bounds);
+					bounds2 = bounds;
+				}
+			}
+		}
+		if (n>1) {
+			Rectangle ub = GUI.getUnionOfBounds();
+			if (ub!=null)
+				sb.append("  Union of bounds: " + toString(ub) + "\n");
+			for (int i=0; i<n; i++)
+				sb.append("  Monitor"+(i+1)+": " + str[i] + "\n");
+		}
+	}
+
+	private String toString(Rectangle r) {
+		if (r==null) return "";
+		String s = r.toString();
+		return s.substring(19, s.length()-1);
 	}
 	
 	String cores() {

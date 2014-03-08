@@ -764,8 +764,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			r1.height = newHeight+insets.top+insets.bottom+10;
 			if (win instanceof StackWindow) r1.height+=20;
 		} else {
-			r1.width = r1.width - dstWidth + newWidth+10;
-			r1.height = r1.height - dstHeight + newHeight+10;
+			r1.width = r1.width - dstWidth + newWidth;
+			r1.height = r1.height - dstHeight + newHeight;
 		}
 		Rectangle max = win.getMaxWindow(r1.x, r1.y);
 		boolean fitsHorizontally = r1.x+r1.width<max.x+max.width;
@@ -1398,7 +1398,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int oy = offScreenY(e.getY());
 		if ((overlay!=null||showAllOverlay!=null) && ox==mousePressedX && oy==mousePressedY) {
 			boolean cmdDown = IJ.isMacOSX() && e.isMetaDown();
-			if (e.isAltDown()||e.isControlDown()||cmdDown||overOverlayLabel) {
+			Roi roi = imp.getRoi();
+			if (roi!=null && roi.getBounds().width==0)
+				roi=null;
+			if ((e.isAltDown()||e.isControlDown()||cmdDown||overOverlayLabel) && roi==null) {
 				if (activateOverlayRoi(ox, oy))
 					return;
 			} else if ((System.currentTimeMillis()-mousePressedTime)>250L && !drawingTool()) {

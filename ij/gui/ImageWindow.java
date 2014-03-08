@@ -138,16 +138,14 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	private void setLocationAndSize(boolean updating) {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
-		Rectangle maxWindow = getMaxWindow(0,0);
-		//if (maxWindow.x==maxWindow.width)  // work around for Linux bug
-		//	maxWindow = new Rectangle(0, maxWindow.y, maxWindow.width, maxWindow.height);
+		Rectangle maxWindow = getMaxWindow(0, 0);
 		if (WindowManager.getWindowCount()<=1)
 			xbase = -1;
 		if (width>maxWindow.width/2 && xbase>maxWindow.x+5+XINC*6)
 			xbase = -1;
 		if (xbase==-1) {
 			count = 0;
-			xbase = maxWindow.x + 5;
+			xbase = maxWindow.x + (maxWindow.width>1800?24:12);
 			if (width*2<=maxWindow.width)
 				xbase = maxWindow.x+maxWindow.width/2-width/2;
 			ybase = maxWindow.y;
@@ -167,7 +165,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		int sliderHeight = (this instanceof StackWindow)?20:0;
 		int screenHeight = maxWindow.y+maxWindow.height-sliderHeight;
 		double mag = 1;
-		while (xbase+XINC*4+width*mag>maxWindow.x+maxWindow.width || ybase+height*mag>=screenHeight) {
+		while (xbase+width*mag>maxWindow.x+maxWindow.width || ybase+height*mag>=screenHeight) {
 			//IJ.log(mag+"  "+xbase+"  "+width*mag+"  "+maxWindow.width);
 			double mag2 = ImageCanvas.getLowerZoomLevel(mag);
 			if (mag2==mag) break;
@@ -190,14 +188,11 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		} else 
 			pack();
 	}
-				
+					
 	Rectangle getMaxWindow(int xloc, int yloc) {
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		Rectangle bounds = ge.getMaximumWindowBounds();
-		//bounds.x=960; bounds.y=0; bounds.width=960; bounds.height=1200;
-		if (IJ.debugMode) IJ.log("getMaxWindow: "+bounds+"  "+xloc+","+yloc);
+		Rectangle bounds = GUI.getMaxWindowBounds();
 		if (xloc>bounds.x+bounds.width || yloc>bounds.y+bounds.height) {
-			Rectangle bounds2 = getSecondaryMonitorBounds(ge, xloc, yloc);
+			Rectangle bounds2 = getSecondaryMonitorBounds(xloc, yloc);
 			if (bounds2!=null) return bounds2;
 		}
 		Dimension ijSize = ij!=null?ij.getSize():new Dimension(0,0);
@@ -208,20 +203,23 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		return bounds;
 	}
 	
-	private Rectangle getSecondaryMonitorBounds(GraphicsEnvironment ge, int xloc, int yloc) {
-		//IJ.log("getSecondaryMonitorBounds "+wb);
+	private Rectangle getSecondaryMonitorBounds(int xloc, int yloc) {
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] gs = ge.getScreenDevices();
+		Rectangle bounds = null;
 		for (int j=0; j<gs.length; j++) {
 			GraphicsDevice gd = gs[j];
 			GraphicsConfiguration[] gc = gd.getConfigurations();
 			for (int i=0; i<gc.length; i++) {
-				Rectangle bounds = gc[i].getBounds();
-				//IJ.log(j+" "+i+" "+bounds+"  "+bounds.contains(wb.x, wb.y));
-				if (bounds!=null && bounds.contains(xloc, yloc))
-					return bounds;
+				Rectangle bounds2 = gc[i].getBounds();
+				if (bounds2!=null && bounds2.contains(xloc, yloc)) {
+					bounds = bounds2;
+					break;
+				}
 			}
 		}		
-		return null;
+		if (IJ.debugMode) IJ.log("getSecondaryMonitorBounds: "+bounds);
+		return bounds;
 	}
 	
 	public double getInitialMagnification() {

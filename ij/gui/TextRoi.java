@@ -540,7 +540,7 @@ public class TextRoi extends Roi {
 		return r.getWidth();
 	}
 	
-	/** Returns code needed by Recorder for recording the "Draw" and "Add Selection..." commands. */
+	/** Used by the Recorder for recording the text tool. */
 	public String getMacroCode(String cmd, ImagePlus imp) {
 		String code = "";
 		boolean script = Recorder.scriptMode();

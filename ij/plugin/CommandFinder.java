@@ -437,7 +437,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 		contentPane.add(southPanel, BorderLayout.SOUTH);
 
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension screenSize = IJ.getScreenSize();
 
 		frame.pack();
 

@@ -300,6 +300,8 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	ImageProcessor setup(ImagePlus imp, boolean enableAutoThreshold) {
+		if (imp==null)
+			return null;
 		ImageProcessor ip;
 		int type = imp.getType();
 		if (type==ImagePlus.COLOR_RGB || (imp.isComposite()&&((CompositeImage)imp).getMode()==IJ.COMPOSITE))

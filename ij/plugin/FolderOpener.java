@@ -365,6 +365,7 @@ public class FolderOpener implements PlugIn {
 		gd.addCheckbox("Use virtual stack", openAsVirtualStack);
 		gd.addMessage("10000 x 10000 x 1000 (100.3MB)");
 		gd.addHelp(IJ.URL+"/docs/menus/file.html#seq1");
+		gd.setSmartRecording(true);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;

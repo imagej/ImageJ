@@ -119,6 +119,7 @@ public class ImageRoi extends Roi {
 		ImagePlus imp = new ImagePlus("", img);
 		ImageRoi roi2 = new ImageRoi(x, y, imp.getProcessor());
 		roi2.setOpacity(getOpacity());
+		roi2.setZeroTransparent(zeroTransparent);
 		return roi2;
 	}
 

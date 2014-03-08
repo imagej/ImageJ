@@ -1121,6 +1121,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Font font = null;
 		int justification = TextRoi.LEFT;
 		double opacity = -1;
+		int position = -1;
+		int cpos=-1, zpos=-1, tpos=-1;
 		if (showDialog) {
 			String label = (String) listModel.getElementAt(indexes[0]);
 			rpRoi = (Roi)rois.get(label);
@@ -1142,6 +1144,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			color =	 rpRoi.getStrokeColor();
 			fillColor =	 rpRoi.getFillColor();
 			defaultColor = color;
+			position = rpRoi.getPosition();
+			cpos = rpRoi.getCPosition();
+			zpos = rpRoi.getZPosition();
+			tpos = rpRoi.getTPosition();
 			if (rpRoi instanceof TextRoi) {
 				font = ((TextRoi)rpRoi).getCurrentFont();
 				justification = ((TextRoi)rpRoi).getJustification();
@@ -1159,18 +1165,23 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		for (int i=0; i<n; i++) {
 			String label = (String) listModel.getElementAt(indexes[i]);
 			Roi roi = (Roi)rois.get(label);
+			if (roi==null) continue;
 			//IJ.log("set "+color+"	 "+lineWidth+"	"+fillColor);
 			if (color!=null) roi.setStrokeColor(color);
 			if (lineWidth>=0) roi.setStrokeWidth(lineWidth);
 			roi.setFillColor(fillColor);
-			if (roi!=null && (roi instanceof TextRoi)) {
+			if (cpos>0 || zpos>0 || tpos>0)
+				roi.setPosition(cpos, zpos, tpos);
+			else if (position!=-1)
+				roi.setPosition(position);
+			if (roi instanceof TextRoi) {
 				roi.setImage(imp);
 				if (font!=null)
 					((TextRoi)roi).setCurrentFont(font);
 				((TextRoi)roi).setJustification(justification);
 				roi.setImage(null);
 			}
-			if (roi!=null && (roi instanceof ImageRoi) && opacity!=-1)
+			if ((roi instanceof ImageRoi) && opacity!=-1)
 				((ImageRoi)roi).setOpacity(opacity);
 		}
 		if (rpRoi!=null && rpName!=null && !rpRoi.getName().equals(rpName))

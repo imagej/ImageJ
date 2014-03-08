@@ -329,6 +329,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (gd.wasCanceled())
 			return false;
 			
+		gd.setSmartRecording(minSize==0.0&&maxSize==Double.POSITIVE_INFINITY);
 		String size = gd.getNextString(); // min-max size
 		if (scaled)
 			pixelUnits = gd.getNextBoolean();
@@ -346,6 +347,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		staticMinSize = minSize;
 		staticMaxSize = maxSize;
 		
+		gd.setSmartRecording(minCircularity==0.0&&maxCircularity==1.0);
 		minAndMax = Tools.split(gd.getNextString(), " -"); // min-max circularity
 		double minc = minAndMax.length>=1?gd.parseDouble(minAndMax[0]):0.0;
 		double maxc = minAndMax.length==2?gd.parseDouble(minAndMax[1]):Double.NaN;
@@ -362,7 +364,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			canceled = true;
 			return false;
 		}
+		gd.setSmartRecording(true);
 		showChoice = gd.getNextChoiceIndex();
+		gd.setSmartRecording(false);
 		staticShowChoice = showChoice;
 		if (gd.getNextBoolean())
 			options |= SHOW_RESULTS; else options &= ~SHOW_RESULTS;

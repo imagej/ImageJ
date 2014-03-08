@@ -9,11 +9,11 @@ public class NonBlockingGenericDialog extends GenericDialog {
 	public NonBlockingGenericDialog(String title) {
 		super(title, null);
 		setModal(false);
-		WindowManager.addWindow(this);
 	}
 
 	public synchronized void showDialog() {
 		super.showDialog();
+		WindowManager.addWindow(this);
 		try {
 			wait();
 		} catch (InterruptedException e) { }
@@ -33,9 +33,13 @@ public class NonBlockingGenericDialog extends GenericDialog {
 
     public synchronized void windowClosing(WindowEvent e) {
 		super.windowClosing(e);
-		WindowManager.removeWindow(this);
 		if (wasOKed() || wasCanceled())
 			notify();
     }
+    
+	public void dispose() {
+		super.dispose();
+		WindowManager.removeWindow(this);
+	}
 
 }

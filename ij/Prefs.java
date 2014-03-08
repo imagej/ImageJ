@@ -573,7 +573,11 @@ public class Prefs {
 		double yloc = Tools.parseDouble(value.substring(index+1));
 		if (Double.isNaN(yloc)) return null;
 		Point p = new Point((int)xloc, (int)yloc);
-		Dimension screen = IJ.getScreenSize();
+		Dimension screen = null;
+		if (IJ.debugMode)
+			screen = Toolkit.getDefaultToolkit().getScreenSize();
+		else
+			screen = IJ.getScreenSize();
 		if (p.x>screen.width-100 || p.y>screen.height-40)
 			return null;
 		else
