@@ -1981,7 +1981,7 @@ public class IJ {
 	
 	/** Returns the size, in pixels, of the primary display. */
 	public static Dimension getScreenSize() {
-		Rectangle bounds = GUI.getModifiedMaxWindowBounds();
+		Rectangle bounds = GUI.getZeroBasedMaxBounds();
 		if (bounds!=null)
 			return new Dimension(bounds.width, bounds.height);
 		if (isWindows())  // GraphicsEnvironment.getConfigurations is *very* slow on Windows

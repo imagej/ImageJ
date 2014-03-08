@@ -145,7 +145,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			xbase = -1;
 		if (xbase==-1) {
 			count = 0;
-			xbase = maxWindow.x + 5;
+			xbase = maxWindow.x + (maxWindow.width>1800?24:12);
 			if (width*2<=maxWindow.width)
 				xbase = maxWindow.x+maxWindow.width/2-width/2;
 			ybase = maxWindow.y;
@@ -165,7 +165,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		int sliderHeight = (this instanceof StackWindow)?20:0;
 		int screenHeight = maxWindow.y+maxWindow.height-sliderHeight;
 		double mag = 1;
-		while (xbase+XINC*4+width*mag>maxWindow.x+maxWindow.width || ybase+height*mag>=screenHeight) {
+		while (xbase+width*mag>maxWindow.x+maxWindow.width || ybase+height*mag>=screenHeight) {
 			//IJ.log(mag+"  "+xbase+"  "+width*mag+"  "+maxWindow.width);
 			double mag2 = ImageCanvas.getLowerZoomLevel(mag);
 			if (mag2==mag) break;
@@ -191,7 +191,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 					
 	Rectangle getMaxWindow(int xloc, int yloc) {
 		Rectangle bounds = GUI.getMaxWindowBounds();
-		if (IJ.debugMode) IJ.log("getMaxWindow: "+bounds+"  "+xloc+","+yloc);
 		if (xloc>bounds.x+bounds.width || yloc>bounds.y+bounds.height) {
 			Rectangle bounds2 = getSecondaryMonitorBounds(xloc, yloc);
 			if (bounds2!=null) return bounds2;

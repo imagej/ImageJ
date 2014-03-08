@@ -144,13 +144,15 @@ public class JavaProperties implements PlugIn {
 		}
 		if (n>1) {
 			Rectangle ub = GUI.getUnionOfBounds();
-			sb.append("  Union of bounds: " + toString(ub) + "\n");
+			if (ub!=null)
+				sb.append("  Union of bounds: " + toString(ub) + "\n");
 			for (int i=0; i<n; i++)
 				sb.append("  Monitor"+(i+1)+": " + str[i] + "\n");
 		}
 	}
 
 	private String toString(Rectangle r) {
+		if (r==null) return "";
 		String s = r.toString();
 		return s.substring(19, s.length()-1);
 	}
