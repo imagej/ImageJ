@@ -150,6 +150,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		m.add(new MenuItem("Go to Line...", new MenuShortcut(KeyEvent.VK_L)));
 		m.addSeparator();
 		m.add(new MenuItem("Select All", new MenuShortcut(KeyEvent.VK_A)));
+		m.add(new MenuItem("Balance", new MenuShortcut(KeyEvent.VK_B,false)));
 		m.add(new MenuItem("Zap Gremlins"));
 		m.add(new MenuItem("Copy to Image Info"));
 		m.addActionListener(this);
@@ -208,7 +209,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			macrosMenu.add(new MenuItem("Function Finder...", new MenuShortcut(KeyEvent.VK_F, true)));
 			macrosMenu.addSeparator();
 			macrosMenu.add(new MenuItem("Evaluate JavaScript", new MenuShortcut(KeyEvent.VK_J, false)));
-			macrosMenu.add(new MenuItem("Evaluate BeanShell", new MenuShortcut(KeyEvent.VK_B, false)));
+			macrosMenu.add(new MenuItem("Evaluate BeanShell", new MenuShortcut(KeyEvent.VK_B, true)));
 			macrosMenu.add(new MenuItem("Evaluate Python", new MenuShortcut(KeyEvent.VK_P, false)));
 			macrosMenu.add(new MenuItem("Show Log Window", new MenuShortcut(KeyEvent.VK_L, true)));
 			macrosMenu.addSeparator();
@@ -656,6 +657,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			find(searchString);
 		else if ("Go to Line...".equals(what))
 			gotoLine();
+		else if ("Balance".equals(what))
+			balance();
 		else if ("Zap Gremlins".equals(what))
 			zapGremlins();
 		else if ("Make Text Larger".equals(what))
@@ -901,6 +904,73 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		lineNumber = n;
 	}
 	
+	void balance() {
+		String text = ta.getText();
+		char[] chars = new char[text.length()];
+		chars = text.toCharArray();
+		int position = ta.getCaretPosition();
+		
+		int count = 0;
+		int start = -1;
+		for (int i=position-1; i>=0; i--) {
+			if (chars[i]==')' ) count++;
+			if (chars[i]=='(' && count==0) {
+				start = i;
+				break;
+			}
+			if (count>0&&chars[i]=='(' ) count--;
+		}
+		int end = -1;
+		if (start>=0) {
+			count = 0;
+			for (int i=start+1; i<chars.length; i++) {
+				if (chars[i]=='(' ) count++;
+				if (chars[i]==')' && count==0) {
+					end = i;
+					break;
+				}
+				if (count>0&&chars[i]==')' ) count--;
+			}
+			if (end>0) {
+				ta.setSelectionStart(start);
+				ta.setSelectionEnd(end+1);
+				return;
+			}
+		}
+
+		count = 0;
+		start = -1;
+		for (int i=position-1; i>=0; i--) {
+			if (chars[i]=='}' ) count++;
+			if (chars[i]=='{' && count==0) {
+				start = i;
+				break;
+			}
+			if (count>0&&chars[i]=='{' ) count--;
+		}
+		if (start==-1) {
+			IJ.beep();
+			return;
+		}
+		count = 0;
+		end = -1;
+		for (int i=start+1; i<chars.length; i++) {
+			if (chars[i]=='{' ) count++;
+			if (chars[i]=='}' && count==0) {
+				end = i;
+				break;
+			}
+			if (count>0&&chars[i]=='}' ) count--;
+		}
+		if (end==-1) {
+			IJ.beep();
+			return;
+		}
+		ta.setSelectionStart(start);
+		ta.setSelectionEnd(end+1);
+		IJ.showStatus(chars.length+" "+position+" "+ start + " " + end);
+	}
+
 	void zapGremlins() {
 		String text = ta.getText();
 		char[] chars = new char[text.length()];
