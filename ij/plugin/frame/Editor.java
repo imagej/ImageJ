@@ -83,6 +83,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private String downloadUrl;
     private boolean downloading;
     private FunctionFinder functionFinder;
+    private String undo1, undo2;
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -121,14 +122,16 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		mb.add(m);
 		
 		m = new Menu("Edit");
-		String key = IJ.isMacintosh()?"  Cmd ":"  Ctrl+";
-		MenuItem item = new MenuItem("Undo"+key+"Z");
-		item.setEnabled(false);
+		//String key = IJ.isMacintosh()?"  Cmd ":"  Ctrl+";
+		//MenuItem item = new MenuItem("Undo"+key+"Z");
+		//item.setEnabled(false);
+		MenuItem item = new MenuItem("Undo",new MenuShortcut(KeyEvent.VK_Z));
 		m.add(item);
 		m.addSeparator();
 		boolean shortcutsBroken = IJ.isWindows()
 			&& (System.getProperty("java.version").indexOf("1.1.8")>=0
 			||System.getProperty("java.version").indexOf("1.5.")>=0);
+shortcutsBroken = false;
 		if (shortcutsBroken)
 			item = new MenuItem("Cut  Ctrl+X");
 		else
@@ -529,8 +532,23 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			sb.append(c);
 		 }
 		return sb.toString();
-  }	   
+	}	   
 
+	void undo(ActionEvent e) {
+		if (IJ.debugMode) IJ.log("Undo: "+e.getModifiers());
+		if (IJ.isWindows() && e.getModifiers()!=0) {
+			KeyEvent event = new KeyEvent(this, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_Z, 'z');
+			Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(event);
+		} else {
+			int position = ta.getCaretPosition();
+			if (undo1!=null) {
+				ta.setText(undo1);
+				if (position<=undo1.length())
+					ta.setCaretPosition(position);
+			}
+		}
+	}
+	
 	boolean copy() { 
 		String s; 
 		s = ta.getSelectedText();
@@ -641,6 +659,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			showLogWindow();
 		else if ("Print...".equals(what))
 			print();
+		else if (what.equals("Undo"))
+		   undo(e);
 		else if (what.equals("Paste"))
 			paste();
 		else if (what.equals("Copy"))
@@ -742,7 +762,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		}
 	}
 
-	public void textValueChanged(TextEvent evt) {
+	public void textValueChanged(TextEvent e) {
+		if (IJ.debugMode) IJ.log("textValueChanged");
+		String text = ta.getText();
+		//if (undo2==null || text.length()!=undo2.length()+1 || text.charAt(text.length()-1)=='\n')
+		undo1 = undo2;
+		undo2 = text;
 		if (isMacroWindow) return;
 		// first few textValueChanged events may be bogus
 		eventCount++;
@@ -909,6 +934,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		char[] chars = new char[text.length()];
 		chars = text.toCharArray();
 		int position = ta.getCaretPosition();
+		if (position==0) {
+			IJ.error("Balance", "This command locates the pair of curly braces or\nparentheses that surround the insertion point.");
+			return;
+		}
 		
 		int count = 0;
 		int start = -1;
