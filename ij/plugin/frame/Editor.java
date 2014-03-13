@@ -83,7 +83,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private String downloadUrl;
     private boolean downloading;
     private FunctionFinder functionFinder;
-    private String undo1, undo2;
+    private ArrayList undoBuffer = new ArrayList();
+    private boolean performingUndo;
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -534,18 +535,17 @@ shortcutsBroken = false;
 		return sb.toString();
 	}	   
 
-	void undo(ActionEvent e) {
-		if (IJ.debugMode) IJ.log("Undo: "+e.getModifiers());
-		if (IJ.isWindows() && e.getModifiers()!=0) {
-			KeyEvent event = new KeyEvent(this, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_Z, 'z');
-			Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(event);
-		} else {
-			int position = ta.getCaretPosition();
-			if (undo1!=null) {
-				ta.setText(undo1);
-				if (position<=undo1.length())
-					ta.setCaretPosition(position);
-			}
+	void undo() {
+		if (IJ.debugMode) IJ.log("Undo1: "+undoBuffer.size());
+		int position = ta.getCaretPosition();
+		if (undoBuffer.size()>1) {
+			undoBuffer.remove(undoBuffer.size()-1);
+			String text = (String)undoBuffer.get(undoBuffer.size()-1);
+			performingUndo = true;
+			ta.setText(text);
+			if (position<=text.length())
+				ta.setCaretPosition(position);
+			if (IJ.debugMode) IJ.log("Undo2: "+undoBuffer.size()+" "+text);
 		}
 	}
 	
@@ -660,7 +660,7 @@ shortcutsBroken = false;
 		else if ("Print...".equals(what))
 			print();
 		else if (what.equals("Undo"))
-		   undo(e);
+		   undo();
 		else if (what.equals("Paste"))
 			paste();
 		else if (what.equals("Copy"))
@@ -763,11 +763,23 @@ shortcutsBroken = false;
 	}
 
 	public void textValueChanged(TextEvent e) {
-		if (IJ.debugMode) IJ.log("textValueChanged");
+		if (IJ.debugMode) IJ.log("textValueChanged1: "+undoBuffer.size());
 		String text = ta.getText();
 		//if (undo2==null || text.length()!=undo2.length()+1 || text.charAt(text.length()-1)=='\n')
-		undo1 = undo2;
-		undo2 = text;
+		int length = 0;
+		if (!performingUndo) {
+			for (int i=0; i<undoBuffer.size(); i++)
+				length += ((String)undoBuffer.get(i)).length();
+			if (length<2000000)
+				undoBuffer.add(text);
+			else {
+				for (int i=1; i<undoBuffer.size(); i++)
+					undoBuffer.set(i-1, undoBuffer.get(i));
+				undoBuffer.set(undoBuffer.size()-1, text);
+			}
+			if (IJ.debugMode) IJ.log("textValueChanged2: "+undoBuffer.size()+" "+text);
+		}
+		performingUndo = false;
 		if (isMacroWindow) return;
 		// first few textValueChanged events may be bogus
 		eventCount++;
