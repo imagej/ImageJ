@@ -48,7 +48,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	static final String DEFAULT_DIR= "editor.dir";
 	private TextArea ta;
 	private String path;
-	private boolean changes;
+	protected boolean changes;
 	private static String searchString = "";
 	private static boolean caseSensitive = Prefs.get(CASE_SENSITIVE, true);
 	private static int lineNumber = 1;
@@ -117,6 +117,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		m.add(new MenuItem("Open...", new MenuShortcut(KeyEvent.VK_O)));
 		m.add(new MenuItem("Save", new MenuShortcut(KeyEvent.VK_S)));
 		m.add(new MenuItem("Save As..."));
+		m.add(new MenuItem("Revert"));
 		m.add(new MenuItem("Print..."));
 		m.addActionListener(this);
 		fileMenu = m;
@@ -268,6 +269,7 @@ shortcutsBroken = false;
 		dontShowWindow = installer.isAutoRunAndHide();
 	}
 		
+	/** Opens a file and replaces the text (if any) by the contents of the file. */
 	public void open(String dir, String name) {
 		path = dir+name;
 		File file = new File(path);
@@ -282,6 +284,10 @@ shortcutsBroken = false;
 					sb.append(s+"\n");
 			}
 			r.close();
+			if (ta!=null && ta.getText().length()>0) {
+				ta.setText("");  //delete previous contents (if any)
+				eventCount = 0;
+			}
 			create(name, new String(sb));
 			changes = false;
 		}
@@ -657,6 +663,8 @@ shortcutsBroken = false;
 			evaluateScript(".py");
 		else if ("Show Log Window".equals(what))
 			showLogWindow();
+		else if ("Revert".equals(what))
+			revert();
 		else if ("Print...".equals(what))
 			print();
 		else if (what.equals("Undo"))
@@ -852,6 +860,21 @@ shortcutsBroken = false;
 		}
 	}
 	
+	protected void revert() {
+		if (!changes)
+			return;
+		String title = getTitle();
+		if (path==null || !(new File(path).exists()) || !path.endsWith(title)) {
+			IJ.showStatus("Cannot revert, no file "+getTitle());
+			return;
+		}
+		if (!IJ.showMessageWithCancel("Revert?", "Revert to saved version of\n\""+getTitle()+"\"?"))
+			return;
+		String directory = path.substring(0, path.length()-title.length());
+		open(directory, title);
+		undoBuffer = new ArrayList();
+	}
+
 	/** Changes a plugins class name to reflect a new file name. */
 	public void updateClassName(String oldName, String newName) {
 		if (newName.indexOf("_")<0)
