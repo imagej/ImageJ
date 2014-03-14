@@ -180,6 +180,8 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
         FloatProcessor fp = null;
         for (int channelNumber=0; channelNumber<ip.getNChannels(); channelNumber++) {
             fp = ip.toFloat(channelNumber, fp);
+            if ((ip instanceof FloatProcessor) && ip.getSnapshotPixels()==null)
+                fp.snapshot();  //float images need a snapshot to subtract
             if (useParaboloid)
                 slidingParaboloidFloatBackground(fp, (float)radius, invert, doPresmooth, correctCorners);
             else

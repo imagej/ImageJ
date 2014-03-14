@@ -562,20 +562,20 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
         return kernel;
     }
 
-    /** Set the processed pixels above and below the roi rectangle back to their
-     * previous value (i.e., snapshot buffer). This is necessary since ImageJ
-     * only restores out-of-roi pixels inside the enclosing rectangle of the roi
-     * (If the roi is non-rectangular and the SUPPORTS_MASKING flag is set).
-     * @param ip The image to be processed
-     * @param radius The range above and below the roi that should be processed
-     */    
-    public static void resetOutOfRoi(ImageProcessor ip, int radius) {
-        Rectangle roi = ip.getRoi();
-        int width = ip.getWidth();
-        int height = ip.getHeight();
-        Object pixels = ip.getPixels();
-        Object snapshot = ip.getSnapshotPixels();
-        if (snapshot!=null) {
+	/** Set the processed pixels above and below the roi rectangle back to their
+	* previous value (i.e., snapshot buffer). This is necessary since ImageJ
+	* only restores out-of-roi pixels inside the enclosing rectangle of the roi
+	* (If the roi is non-rectangular and the SUPPORTS_MASKING flag is set).
+	* @param ip The image to be processed
+	* @param radius The range above and below the roi that should be processed
+	*/    
+	public static void resetOutOfRoi(ImageProcessor ip, int radius) {
+		Rectangle roi = ip.getRoi();
+		int width = ip.getWidth();
+		int height = ip.getHeight();
+		Object pixels = ip.getPixels();
+		Object snapshot = ip.getSnapshotPixels();
+		if (snapshot!=null) {
 			int y0 = roi.y-radius;    // the first line that should be reset
 			if (y0<0) y0 = 0;
 			for (int y=y0,p=width*y+roi.x; y<roi.y; y++,p+=width)
@@ -584,8 +584,8 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
 			if (yEnd>height) yEnd = height;
 			for (int y=roi.y+roi.height,p=width*y+roi.x; y<yEnd; y++,p+=width)
 				System.arraycopy(snapshot, p, pixels, p, roi.width);
-        }
-    }
+		}
+	}
     
     private void showProgress(double percent) {
     	if (noProgress) return;

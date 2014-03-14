@@ -2427,11 +2427,9 @@ public class Functions implements MacroConstants, Measurements {
 			} else
 				IJ.open(path);
 			if (path!=null&&!path.equals("")) {
-				int index = path.lastIndexOf('/');
-				if (index==-1)
-					index = path.lastIndexOf('\\');
-				String name = index>=0&&index<path.length()?path.substring(index+1):path;
-				OpenDialog.setLastName(name);
+				File f = new File(path);
+				OpenDialog.setLastDirectory(f.getParent()+File.separator);
+				OpenDialog.setLastName(f.getName());
 			}
 		}
 		resetImage();
