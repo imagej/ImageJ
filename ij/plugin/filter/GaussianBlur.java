@@ -575,14 +575,16 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
         int height = ip.getHeight();
         Object pixels = ip.getPixels();
         Object snapshot = ip.getSnapshotPixels();
-        int y0 = roi.y-radius;              // the first line that should be reset
-        if (y0<0) y0 = 0;
-        for (int y=y0,p=width*y+roi.x; y<roi.y; y++,p+=width)
-            System.arraycopy(snapshot, p, pixels, p, roi.width);
-        int yEnd = roi.y+roi.height+radius; // the last line + 1 that should be reset
-        if (yEnd > height) yEnd = height;
-        for (int y=roi.y+roi.height,p=width*y+roi.x; y<yEnd; y++,p+=width)
-            System.arraycopy(snapshot, p, pixels, p, roi.width);
+        if (snapshot!=null) {
+			int y0 = roi.y-radius;    // the first line that should be reset
+			if (y0<0) y0 = 0;
+			for (int y=y0,p=width*y+roi.x; y<roi.y; y++,p+=width)
+				System.arraycopy(snapshot, p, pixels, p, roi.width);
+			int yEnd = roi.y+roi.height+radius; // the last line + 1 that should be reset
+			if (yEnd>height) yEnd = height;
+			for (int y=roi.y+roi.height,p=width*y+roi.x; y<yEnd; y++,p+=width)
+				System.arraycopy(snapshot, p, pixels, p, roi.width);
+        }
     }
     
     private void showProgress(double percent) {
