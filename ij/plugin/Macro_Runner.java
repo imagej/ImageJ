@@ -58,42 +58,69 @@ public class Macro_Runner implements PlugIn {
         
 	/** Opens and runs the specified macro or script on the current
 		thread. The file is assumed to be in the ImageJ/macros folder
-		unless 'name' is a full path. ".txt"  is added if 'name' does not
-		have an extension. The macro or script can use the getArgument()
-		function to retrieve the string argument.
+		unless 'name' is a full path. If no extension, looks for files with
+		".ijm" or ".txt extensions. The macro or script can use the
+		getArgument() function to retrieve the string argument.
     */
 	public String runMacroFile(String name, String arg) {
 		if (arg==null) arg = "";
 		if (name.startsWith("ij.jar:"))
 			return runMacroFromIJJar(name, arg);
-        if (name.indexOf(".")==-1) name = name + ".txt";
-		String name2 = name;
         boolean fullPath = name.startsWith("/") || name.startsWith("\\") || name.indexOf(":\\")==1;
+		String path = name;
+		boolean exists = false;
         if (!fullPath) {
         	String macrosDir = Menus.getMacrosPath();
         	if (macrosDir!=null)
-        		name2 = Menus.getMacrosPath() + name;
+        		path = Menus.getMacrosPath() + name;
         }
-		File file = new File(name2);
-		int size = (int)file.length();
-		if (size<=0 && !fullPath && name2.endsWith(".txt")) {
-			String name3 = name2.substring(0, name2.length()-4)+".ijm";
-			file = new File(name3);
-			size = (int)file.length();
-			if (size>0) name2 = name3;
+		File f = new File(path);
+		if (f.getName().contains("."))
+			exists = f.exists();
+		if (!exists && !fullPath && !f.getName().contains(".")) {
+			String path2 = path+".txt";
+			f = new File(path2);
+			exists = f.exists();
+			if (exists)
+				path = path2;
+			else {
+				path2 = path+".ijm";
+				f = new File(path2);
+				exists = f.exists();
+				if (exists) path = path2;
+			}
 		}
-		if (size<=0 && !fullPath) {
-			file = new File(System.getProperty("user.dir") + File.separator + name);
-			size = (int)file.length();
-			//IJ.log("runMacroFile: "+file.getAbsolutePath()+"  "+name+"  "+size);
+		if (!exists && !fullPath) {
+			f = new File(path);
+			exists = f.exists();
 		}
-		if (size<=0) {
-            IJ.error("RunMacro", "Macro or script not found:\n \n"+name2);
+		if (!exists && !fullPath) {
+			String path2 = System.getProperty("user.dir") + File.separator + name;
+			f = new File(path2);
+			exists = f.exists();
+			if (!exists && !f.getName().contains(".")) {
+				String path3 = path2 +".txt";
+				f = new File(path3);
+				exists = f.exists();
+				if (exists)
+					path = path3;
+				else {
+					path3 = path2+".ijm";
+					f = new File(path3);
+					exists = f.exists();
+					if (exists) path = path3;
+				}
+			}
+		}
+		if (IJ.debugMode) IJ.log("runMacro: "+path+" ("+name+")");
+		if (!exists || f==null) {
+            IJ.error("RunMacro", "Macro or script not found:\n \n"+path);
 			return null;
 		}
 		try {
+			int size = (int)f.length();
 			byte[] buffer = new byte[size];
-			FileInputStream in = new FileInputStream(file);
+			FileInputStream in = new FileInputStream(f);
 			in.read(buffer, 0, size);
 			String macro = new String(buffer, 0, size, "ISO8859_1");
 			in.close();

@@ -117,8 +117,7 @@ public class IJ {
 
 	/** Runs the specified macro or script file in the current thread.
 		The file is assumed to be in the macros folder
- 		unless <code>name</code> is a full path. ".txt"  is
-    	added if <code>name</code> does not have an extension.
+ 		unless <code>name</code> is a full path.
 		The optional string argument (<code>arg</code>) can be retrieved in the called 
 		macro or script (v1.42k or later) using the getArgument() function. 
 		Returns any string value returned by the macro, or null. Scripts always return null.

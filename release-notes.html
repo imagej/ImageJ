@@ -5,20 +5,24 @@
 </head>
 <body>
 
-<li> <u>1.48t 14 March 2014</u>
+<li> <u>1.48t 15 March 2014</u>
 <ul>
 <li> Thanks to Michael Schmid, added a <i>File&gt;Revert</i>
 command to the text editor.
 <li> Fixed the <i>Undo</i> command in the text editor and added
 the <i>Edit&gt;Balance</i> command, which locates the pair of curly 
 braces or parentheses that surround the insertion point.
-<li> Thanks to Nico Stuurman, fixed a bug that could cause
-<i>Process&gt;Filters&gt;Gaussian Blur</i> to throw an exception.
+<li> Thanks to Nico Stuurman, fixed a bug that caused the
+GaussianBlur.blurGaussian() method to throw an exception
+if the image had an ROI.
 <li> Thanks to Michael Schmid, fixed a bug that could cause the
 BackgroundSubtracter#rollingBallBackground() method to throw an
 exception when called with a FloatProcessor.
-<li> Thanks to Carne Draug, fixed a bug that caused the FIle.directory macro
-function to not return the expected value after calling open(path).
+<li> Thanks to Carn&euml; Draug and Johannes Schindelin, fixed a bug that 
+caused the File.directory  macro function to not return the expected
+value after calling open(path).
+<li> Thanks to Carn&euml; Draug, fixed a bug that precluded running 
+macro files without extensions from the command line.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

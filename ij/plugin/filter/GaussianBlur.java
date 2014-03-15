@@ -45,6 +45,7 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
     private int nChannels = 1;        // The number of color channels
     private int pass;                        // Current pass
     private boolean noProgress;      // Do not show progress bar
+    private boolean calledAsPlugin;
     
     /** Method to return types supported
      * @param arg unused
@@ -65,6 +66,7 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
     /** Ask the user for the parameters
      */
     public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
+        calledAsPlugin = true;;
         String options = Macro.getOptions();
         boolean oldMacro = false;
         nChannels = imp.getProcessor().getNChannels();
@@ -142,15 +144,17 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
         return true;
     }
 
-    /** Gaussian Filtering of an ImageProcessor. If filtering is not applied to the
-     *  full image height, the ImageProcessor must have a valid snapshot.
+    /** Gaussian Filtering of an ImageProcessor
      * @param ip       The ImageProcessor to be filtered.
      * @param sigmaX   Standard deviation of the Gaussian in x direction (pixels)
      * @param sigmaY   Standard deviation of the Gaussian in y direction (pixels)
      * @param accuracy Accuracy of kernel, should not be above 0.02. Better (lower)
-     *                 accuracy needs slightly more computing time.
+     *    accuracy needs slightly more computing time.
      */
     public void blurGaussian(ImageProcessor ip, double sigmaX, double sigmaY, double accuracy) {
+        boolean hasRoi = ip.getRoi().height!=ip.getHeight() && sigmaX>0 && sigmaY>0;
+        if (hasRoi && !calledAsPlugin)
+        	ip.snapshot();
         if (nPasses<=1)
             nPasses = ip.getNChannels() * (sigmaX>0 && sigmaY>0 ? 2 : 1);
         FloatProcessor fp = null;
@@ -161,7 +165,7 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
             if (Thread.currentThread().isInterrupted()) return;
             ip.setPixels(i, fp);
         }
-        if (ip.getRoi().height!=ip.getHeight() && sigmaX>0 && sigmaY>0)
+        if (hasRoi)
             resetOutOfRoi(ip, (int)Math.ceil(5*sigmaY)); // reset out-of-Rectangle pixels above and below roi
         return;
     }
@@ -575,16 +579,14 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
 		int height = ip.getHeight();
 		Object pixels = ip.getPixels();
 		Object snapshot = ip.getSnapshotPixels();
-		if (snapshot!=null) {
-			int y0 = roi.y-radius;    // the first line that should be reset
-			if (y0<0) y0 = 0;
-			for (int y=y0,p=width*y+roi.x; y<roi.y; y++,p+=width)
-				System.arraycopy(snapshot, p, pixels, p, roi.width);
-			int yEnd = roi.y+roi.height+radius; // the last line + 1 that should be reset
-			if (yEnd>height) yEnd = height;
-			for (int y=roi.y+roi.height,p=width*y+roi.x; y<yEnd; y++,p+=width)
-				System.arraycopy(snapshot, p, pixels, p, roi.width);
-		}
+		int y0 = roi.y-radius;    // the first line that should be reset
+		if (y0<0) y0 = 0;
+		for (int y=y0,p=width*y+roi.x; y<roi.y; y++,p+=width)
+			System.arraycopy(snapshot, p, pixels, p, roi.width);
+		int yEnd = roi.y+roi.height+radius; // the last line + 1 that should be reset
+		if (yEnd>height) yEnd = height;
+		for (int y=roi.y+roi.height,p=width*y+roi.x; y<yEnd; y++,p+=width)
+			System.arraycopy(snapshot, p, pixels, p, roi.width);
 	}
     
     private void showProgress(double percent) {
