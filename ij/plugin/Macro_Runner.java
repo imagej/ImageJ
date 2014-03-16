@@ -58,8 +58,7 @@ public class Macro_Runner implements PlugIn {
         
 	/** Opens and runs the specified macro or script on the current
 		thread. The file is assumed to be in the ImageJ/macros folder
-		unless 'name' is a full path. If no extension, looks for files with
-		".ijm" or ".txt extensions. The macro or script can use the
+		unless 'name' is a full path. The macro or script can use the
 		getArgument() function to retrieve the string argument.
     */
 	public String runMacroFile(String name, String arg) {
@@ -75,9 +74,10 @@ public class Macro_Runner implements PlugIn {
         		path = Menus.getMacrosPath() + name;
         }
 		File f = new File(path);
-		if (f.getName().contains("."))
+		boolean hasExtension = f.getName().contains(".");
+		if (hasExtension)
 			exists = f.exists();
-		if (!exists && !fullPath && !f.getName().contains(".")) {
+		if (!exists && !fullPath && !hasExtension) {
 			String path2 = path+".txt";
 			f = new File(path2);
 			exists = f.exists();
@@ -87,18 +87,16 @@ public class Macro_Runner implements PlugIn {
 				path2 = path+".ijm";
 				f = new File(path2);
 				exists = f.exists();
-				if (exists) path = path2;
+				if (exists) path=path2;
 			}
 		}
-		if (!exists && !fullPath) {
+		if (!exists) {
 			f = new File(path);
 			exists = f.exists();
 		}
 		if (!exists && !fullPath) {
 			String path2 = System.getProperty("user.dir") + File.separator + name;
-			f = new File(path2);
-			exists = f.exists();
-			if (!exists && !f.getName().contains(".")) {
+			if (!hasExtension) {
 				String path3 = path2 +".txt";
 				f = new File(path3);
 				exists = f.exists();
@@ -108,8 +106,13 @@ public class Macro_Runner implements PlugIn {
 					path3 = path2+".ijm";
 					f = new File(path3);
 					exists = f.exists();
-					if (exists) path = path3;
+					if (exists) path=path3;
 				}
+			}
+			if (!exists) {
+				f = new File(path2);
+				exists = f.exists();
+				if (exists) path=path2;
 			}
 		}
 		if (IJ.debugMode) IJ.log("runMacro: "+path+" ("+name+")");

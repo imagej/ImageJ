@@ -1236,9 +1236,15 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
         }
     }
     
-    /** Display dialog centered on the primary screen? */
+    /** Display dialog centered on the primary screen. */
     public void centerDialog(boolean b) {
     	centerDialog = b;
+    }
+
+    /* Display the dialog at the specified location. */
+    public void setLocation(int x, int y) {
+    	super.setLocation(x, y);
+    	centerDialog = false;
     }
 
     protected void setup() {

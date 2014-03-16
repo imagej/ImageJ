@@ -964,10 +964,11 @@ shortcutsBroken = false;
 		lineNumber = n;
 	}
 	
-	void balance() {
+	private void balance() {
 		String text = ta.getText();
 		char[] chars = new char[text.length()];
 		chars = text.toCharArray();
+		removeComments(chars);
 		int position = ta.getCaretPosition();
 		if (position==0) {
 			IJ.error("Balance", "This command locates the pair of curly braces or\nparentheses that surround the insertion point.");
@@ -1033,6 +1034,24 @@ shortcutsBroken = false;
 		ta.setSelectionStart(start);
 		ta.setSelectionEnd(end+1);
 		IJ.showStatus(chars.length+" "+position+" "+ start + " " + end);
+	}
+	
+	private void removeComments(char[] chars) {
+		int n = chars.length;
+		boolean inSlashSlashComment = false;
+		boolean inSlashStarComment = false;
+		for (int i=0; i<n-1; i++) {
+			if (chars[i]=='/' && chars[i+1]=='/')
+				inSlashSlashComment = true;
+			if (chars[i]=='\n' )
+				inSlashSlashComment = false;
+			if (chars[i]=='/' && chars[i+1]=='*')
+				inSlashStarComment = true;
+			if (chars[i]=='*' && chars[i+1]=='/')
+				inSlashStarComment = false;
+			if (inSlashSlashComment||inSlashStarComment)
+				chars[i] = ' ';
+		}
 	}
 
 	void zapGremlins() {
