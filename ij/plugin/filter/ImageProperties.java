@@ -141,7 +141,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		gd.setSmartRecording(cal.xOrigin==0&&cal.yOrigin==0&&cal.zOrigin==0);
         String[] origin = Tools.split(gd.getNextString(), " ,");
 		gd.setSmartRecording(false);
-		double x = Tools.parseDouble(origin[0]);
+		double x = origin.length>=1?Tools.parseDouble(origin[0]):Double.NaN;
 		double y = origin.length>=2?Tools.parseDouble(origin[1]):Double.NaN;
 		double z = origin.length>=3?Tools.parseDouble(origin[2]):Double.NaN;
 		cal.xOrigin= Double.isNaN(x)?0.0:x;

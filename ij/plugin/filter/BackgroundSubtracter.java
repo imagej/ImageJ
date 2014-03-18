@@ -738,9 +738,11 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
 
 
     public void setNPasses(int nPasses) {
-        if (isRGB && separateColors) nPasses *= 3;
+        if (isRGB && separateColors)
+        	nPasses *= 3;
+        if (useParaboloid)
+        	nPasses*= (doPresmooth) ? DIRECTION_PASSES+2 : DIRECTION_PASSES;
         this.nPasses = nPasses;
-        if (useParaboloid) nPasses*= (doPresmooth) ? DIRECTION_PASSES+2 : DIRECTION_PASSES;
         pass = 0;
     }
 

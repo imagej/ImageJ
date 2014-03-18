@@ -51,15 +51,31 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker  {
 		if (y==null)
 			return null;
 		float[] x = new float[y.length];
-		for (int i=0; i<x.length; i++)
-			x[i] = i+1;
+		
+		String xAxisLabel = showingDialog&&choice.equals(choices[0])?"Frame":"Slice";
+		Calibration cal = imp.getCalibration();
+		if (cal.scaled()) {
+			float c=1.0f;
+			if (timeProfile) {
+				c = (float) cal.frameInterval;
+				xAxisLabel = "["+cal.getTimeUnit()+"]";
+			} else {
+				c = (float) cal.pixelDepth;
+				xAxisLabel = "["+cal.getZUnit()+"]";
+			}
+			for (int i=0; i<x.length; i++)
+				x[i] = i*c;
+		} else {
+			for (int i=0; i<x.length; i++)
+				x[i] = i+1;
+		}
 		String title;
 		if (roi!=null) {
 			Rectangle r = roi.getBounds();
 			title = imp.getTitle()+"-"+r.x+"-"+r.y;
 		} else
 			title = imp.getTitle()+"-0-0";
-		String xAxisLabel = showingDialog&&choice.equals(choices[0])?"Frame":"Slice";
+		//String xAxisLabel = showingDialog&&choice.equals(choices[0])?"Frame":"Slice";
 		Plot plot = new Plot(title, xAxisLabel, "Mean", x, y);
 		if (x.length<=60) {
 			plot.setColor(Color.red);
@@ -102,7 +118,6 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker  {
 	}
 
 	private float[] getHyperstackProfile(Roi roi, double minThreshold, double maxThreshold) {
-		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
 		int frames = imp.getNFrames();
 		int c = imp.getC();
@@ -128,11 +143,11 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker  {
 		float[] values = new float[size];
 		Calibration cal = imp.getCalibration();
 		Analyzer analyzer = new Analyzer(imp);
-		int measurements = analyzer.getMeasurements();
+		int measurements = Analyzer.getMeasurements();
 		boolean showResults = !isPlotMaker && measurements!=0 && measurements!=LIMIT;
 		measurements |= MEAN;
 		if (showResults) {
-			if (!analyzer.resetCounter())
+			if (!Analyzer.resetCounter())
 				return null;
 		}
 		ImageStack stack = imp.getStack();
@@ -159,16 +174,21 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker  {
 
 	private float[] getZAxisProfile(Roi roi, double minThreshold, double maxThreshold) {
 		ImageStack stack = imp.getStack();
+		if (firstTime) {
+			int slices = imp.getNSlices();
+			int frames = imp.getNFrames();
+			timeProfile = slices==1 && frames>1;
+		}
 		int size = stack.getSize();
 		float[] values = new float[size];
 		Calibration cal = imp.getCalibration();
 		Analyzer analyzer = new Analyzer(imp);
-		int measurements = analyzer.getMeasurements();
+		int measurements = Analyzer.getMeasurements();
 		boolean showResults = !isPlotMaker && measurements!=0 && measurements!=LIMIT;
 		boolean showingLabels = firstTime && showResults && ((measurements&LABELS)!=0 || (measurements&SLICE)!=0);
 		measurements |= MEAN;
 		if (showResults) {
-			if (!analyzer.resetCounter())
+			if (!Analyzer.resetCounter())
 				return null;
 		}
 		int current = imp.getCurrentSlice();
