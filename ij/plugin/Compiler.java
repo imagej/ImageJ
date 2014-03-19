@@ -18,14 +18,14 @@ import java.util.Locale;
 /** Compiles and runs plugins using the javac compiler. */
 public class Compiler implements PlugIn, FilenameFilter {
 
-	private static final int TARGET14=0, TARGET15=1, TARGET16=2,  TARGET17=3;
-	private static final String[] targets = {"1.4", "1.5", "1.6", "1.7"};
+	private static final int TARGET14=0, TARGET15=1, TARGET16=2,  TARGET17=3,  TARGET18=4;
+	private static final String[] targets = {"1.4", "1.5", "1.6", "1.7", "1.8"};
 	private static final String TARGET_KEY = "javac.target";
 	private static CompilerTool compilerTool;
 	private static String dir, name;
 	private static Editor errors;
 	private static boolean generateDebuggingInfo;
-	private static int target = (int)Prefs.get(TARGET_KEY, TARGET15);	
+	private static int target = (int)Prefs.get(TARGET_KEY, TARGET16);	
 	private static boolean checkForUpdateDone;
 
 	public void run(String arg) {
@@ -276,12 +276,14 @@ public class Compiler implements PlugIn, FilenameFilter {
 	}
 	
 	void validateTarget() {
-		if (target<0 || target>TARGET17)
+		if (target<0 || target>TARGET18)
+			target = TARGET16;
+		if (target>TARGET15 && !(IJ.isJava16()||IJ.isJava17()||IJ.isJava18()))
 			target = TARGET15;
-		if ((target>TARGET16&&!IJ.isJava17()) || (target>TARGET15&&!IJ.isJava16()))
-			target = TARGET15;
-		if (!IJ.isJava15())
-			target = TARGET14;
+		if (target>TARGET16 && !(IJ.isJava17()||IJ.isJava18()))
+			target = TARGET16;
+		if (target>TARGET17 && !IJ.isJava18())
+			target = TARGET17;
 		Prefs.set(TARGET_KEY, target);
 	}
 	
