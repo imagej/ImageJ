@@ -4,7 +4,7 @@ import ij.process.*;
 import ij.gui.*;
 import java.awt.*;
 
-/** This plugin implements the Image/Flatten, Plugins/Utilities/Capture Screen
+/** This plugin implements the Plugins/Utilities/Capture Screen
     and Plugins/Utilities/Capture Image commands. */
 public class ScreenGrabber implements PlugIn {
 
@@ -16,21 +16,6 @@ public class ScreenGrabber implements PlugIn {
 			imp2 = captureScreen();
 		if (imp2!=null)
 			imp2.show();
-		/*
-		if (imp2==null) return;
-		if (arg.equals("flatten")) {
-			ImagePlus imp = WindowManager.getCurrentImage();
-			if (imp==null) return;
-			if (imp.isHyperStack() || imp.isComposite())
-				imp2.show();
-			else {
-				Undo.setup(Undo.TYPE_CONVERSION, imp);
-				imp.setProcessor(null, imp2.getProcessor());
-				imp.deleteRoi();
-			}
-		} else
-			imp2.show();
-		*/
 	}
     
 	/** Captures the entire screen and returns it as an ImagePlus. */
@@ -53,27 +38,28 @@ public class ScreenGrabber implements PlugIn {
 			IJ.noImage();
 			return null;
 		}
+		ImageWindow win = imp.getWindow();
+		if (win==null) return null;
+		win.toFront();
+		IJ.wait(500);
+		Point loc = win.getLocation();
+		ImageCanvas ic = win.getCanvas();
+		Rectangle bounds = ic.getBounds();
+		loc.x += bounds.x;
+		loc.y += bounds.y;
+		Rectangle r = new Rectangle(loc.x, loc.y, bounds.width, bounds.height);
 		ImagePlus imp2 = null;
+		Image img = null;
+		ic.hideZoomIndicator(true);
 		try {
-			ImageWindow win = imp.getWindow();
-			if (win==null) return null;
-			win.toFront();
-			IJ.wait(500);
-			Point loc = win.getLocation();
-			ImageCanvas ic = win.getCanvas();
-			Rectangle bounds = ic.getBounds();
-			loc.x += bounds.x;
-			loc.y += bounds.y;
-			Rectangle r = new Rectangle(loc.x, loc.y, bounds.width, bounds.height);
 			Robot robot = new Robot();
-			ic.setHideZoomIndicator(true);
-			Image img = robot.createScreenCapture(r);
-			ic.setHideZoomIndicator(false);
-			if (img!=null) {
-				String title = WindowManager.getUniqueName(imp.getTitle());
-				imp2 = new ImagePlus(title, img);
-			}
-		} catch(Exception e) {}
+			img = robot.createScreenCapture(r);
+		} catch(Exception e) { }
+		ic.hideZoomIndicator(false);
+		if (img!=null) {
+			String title = WindowManager.getUniqueName(imp.getTitle());
+			imp2 = new ImagePlus(title, img);
+		}
 		return imp2;
 	}
 
