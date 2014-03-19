@@ -73,6 +73,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private AtomicBoolean paintPending;
 	private boolean scaleToFit;
 	private boolean painted;
+	private boolean hideZoomIndicator;
 
 		
 	public ImageCanvas(ImagePlus imp) {
@@ -384,6 +385,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	} 
 
 	void drawZoomIndicator(Graphics g) {
+		if (hideZoomIndicator)
+			return;
 		int x1 = 10;
 		int y1 = 10;
 		double aspectRatio = (double)imageHeight/imageWidth;
@@ -1547,6 +1550,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	public boolean getScaleToFit() {
 		return scaleToFit;
+	}
+	
+	public void setHideZoomIndicator(boolean hideZoomIndicator) {
+		this.hideZoomIndicator = hideZoomIndicator;
+		repaint();
 	}
 
 }

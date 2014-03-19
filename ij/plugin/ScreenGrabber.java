@@ -66,7 +66,9 @@ public class ScreenGrabber implements PlugIn {
 			loc.y += bounds.y;
 			Rectangle r = new Rectangle(loc.x, loc.y, bounds.width, bounds.height);
 			Robot robot = new Robot();
+			ic.setHideZoomIndicator(true);
 			Image img = robot.createScreenCapture(r);
+			ic.setHideZoomIndicator(false);
 			if (img!=null) {
 				String title = WindowManager.getUniqueName(imp.getTitle());
 				imp2 = new ImagePlus(title, img);
