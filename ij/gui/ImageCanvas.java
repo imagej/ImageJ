@@ -1552,9 +1552,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return scaleToFit;
 	}
 	
-	public void hideZoomIndicator(boolean hide) {
+	public boolean hideZoomIndicator(boolean hide) {
+		boolean hidden = this.hideZoomIndicator;
 		this.hideZoomIndicator = hide;
 		repaint();
+		return hidden;
 	}
 
 }

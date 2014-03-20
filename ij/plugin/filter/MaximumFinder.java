@@ -36,6 +36,8 @@ import java.util.*;
  *                     Maximum points encoded in long array for sorting instead of separete objects that need gc
  *                     New output type 'List'
  * version 22-May-2011 Bugfix: Maximum search in EDM and float images with large dynamic range could omit maxima
+ * version 13-Sep-2013 added the findMaxima() and findMinima() functions for arrays (Norbert Vischer)
+ * version 20-Mar-2014 Watershed segmentation of EDM with tolerance>=1.0 does not kill fine particles
  */
 
 public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
@@ -339,6 +341,10 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 	}
 	
     /** Here the processing is done: Find the maxima of an image (does not find minima).
+     *
+     * LIMITATIONS:          With outputType=SEGMENTED (watershed segmentation), some segmentation lines
+     *                       may be improperly placed if local maxima are suppressed by the tolerance.
+     *
      * @param ip             The input image
      * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value
      *                       from the ridge to a higher maximum
@@ -347,7 +353,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
      * @param outputType     What to mark in output image: SINGLE_POINTS, IN_TOLERANCE or SEGMENTED.
      *                       No output image is created for output types POINT_SELECTION, LIST and COUNT.
      * @param excludeOnEdges Whether to exclude edge maxima
-     * @param isEDM          Whether the image is a float Euclidian Distance Map
+     * @param isEDM          Whether the image is a float Euclidian Distance Map.
      * @return               A new byteProcessor with a normal (uninverted) LUT where the marked points
      *                       are set to 255 (Background 0). Pixels outside of the roi of the input ip are not set.
      *                       Returns null if outputType does not require an output or if cancelled by escape
@@ -509,6 +515,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
    void analyzeAndMarkMaxima(ImageProcessor ip, ByteProcessor typeP, long[] maxPoints, boolean excludeEdgesNow,
         boolean isEDM, float globalMin, double tolerance, int outputType, float maxSortingError) {
         byte[] types =  (byte[])typeP.getPixels();
+        float[] edmPixels = isEDM ? (float[])ip.getPixels() : null;
         int nMax = maxPoints.length;
         int [] pList = new int[width*height];       //here we enter points starting from a maximum
         Vector xyVector = null;
@@ -550,6 +557,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                     for (int d=0; d<8; d++) {       //analyze all neighbors (in 8 directions) at the same level
                         int offset2 = offset+dirOffset[d];
                         if ((isInner || isWithin(x, y, d)) && (types[offset2]&LISTED)==0) {
+                        if (isEDM && edmPixels[offset2]<=0) continue;   //ignore the background (non-particles)
                             if ((types[offset2]&PROCESSED)!=0) {
                                 maxPossible = false; //we have reached a point processed previously, thus it is no maximum now
                                 //if(x0<25&&y0<20)IJ.write("x0,y0="+x0+","+y0+":stop at processed neighbor from x,y="+x+","+y+", dir="+d);

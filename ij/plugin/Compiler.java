@@ -33,8 +33,12 @@ public class Compiler implements PlugIn, FilenameFilter {
 			edit();
 		else if (arg.equals("options"))
 			showDialog();
-		else
-			compileAndRun(arg);
+		else {
+			if (arg!=null && arg.length()>0 && !arg.endsWith(".java"))
+				IJ.error("Compiler", "File name must end with \".java\"");
+			else
+				compileAndRun(arg);
+		}
 	 }
 	 
 	void edit() {
