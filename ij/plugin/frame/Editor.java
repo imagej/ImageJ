@@ -964,79 +964,108 @@ shortcutsBroken = false;
 		lineNumber = n;
 	}
 	
-	private void balance() {
+	private void balance() {//modified: N.Vischer
 		String text = ta.getText();
 		char[] chars = new char[text.length()];
 		chars = text.toCharArray();
-		removeComments(chars);
+		maskComments(chars);
+		maskQuotes(chars);
 		int position = ta.getCaretPosition();
-		if (position==0) {
-			IJ.error("Balance", "This command locates the pair of curly braces or\nparentheses that surround the insertion point.");
+		if (position == 0) {
+			IJ.error("Balance", "This command locates the pair of brackets, curly braces or\nparentheses that surround the insertion point.");
 			return;
 		}
-		
-		int count = 0;
 		int start = -1;
-		for (int i=position-1; i>=0; i--) {
-			if (chars[i]==')' ) count++;
-			if (chars[i]=='(' && count==0) {
-				start = i;
-				break;
-			}
-			if (count>0&&chars[i]=='(' ) count--;
-		}
-		int end = -1;
-		if (start>=0) {
-			count = 0;
-			for (int i=start+1; i<chars.length; i++) {
-				if (chars[i]=='(' ) count++;
-				if (chars[i]==')' && count==0) {
-					end = i;
+		int stop = -1;
+		String leftBows = "";
+		for (int i = position -1 ; i >= 0; i--) {
+			char ch = chars[i];
+			if ("({[]})".indexOf(ch) >= 0) {
+				leftBows += ch;
+				leftBows = leftBows.replace("][", "");//skip nested pairs
+				leftBows = leftBows.replace(")(", "");
+				leftBows = leftBows.replace("}{", "");
+				if (leftBows.equals ("[") || leftBows.equals ("{") || leftBows.equals ("(")) {
+					start = i;
 					break;
 				}
-				if (count>0&&chars[i]==')' ) count--;
-			}
-			if (end>0) {
-				ta.setSelectionStart(start);
-				ta.setSelectionEnd(end+1);
-				return;
 			}
 		}
-
-		count = 0;
-		start = -1;
-		for (int i=position-1; i>=0; i--) {
-			if (chars[i]=='}' ) count++;
-			if (chars[i]=='{' && count==0) {
-				start = i;
-				break;
+		String rightBows = "";
+		for (int i = position ; i < chars.length; i++) {
+			char ch = chars[i];
+			if ("({[]})".indexOf(ch) >= 0) {
+				rightBows += ch;
+				rightBows = rightBows.replace("[]", "");//skip nested pairs
+				rightBows = rightBows.replace("()", "");
+				rightBows = rightBows.replace("{}", "");
+				String pair = leftBows + rightBows;
+				if (pair.length() == 2 && "[] {} ()".indexOf(pair) >=0) {
+					stop = i;
+					break;
+				}
 			}
-			if (count>0&&chars[i]=='{' ) count--;
 		}
-		if (start==-1) {
-			IJ.beep();
-			return;
-		}
-		count = 0;
-		end = -1;
-		for (int i=start+1; i<chars.length; i++) {
-			if (chars[i]=='{' ) count++;
-			if (chars[i]=='}' && count==0) {
-				end = i;
-				break;
-			}
-			if (count>0&&chars[i]=='}' ) count--;
-		}
-		if (end==-1) {
+		if (start == -1 || stop == -1) {
 			IJ.beep();
 			return;
 		}
 		ta.setSelectionStart(start);
-		ta.setSelectionEnd(end+1);
-		IJ.showStatus(chars.length+" "+position+" "+ start + " " + end);
+		ta.setSelectionEnd(stop + 1);
+		IJ.showStatus(chars.length + " " + position + " " + start + " " + stop);
+	}
+
+   // replaces contents of comments with blanks
+	private void maskComments(char[] chars) {
+		int n = chars.length;
+		boolean inSlashSlashComment = false;
+		boolean inSlashStarComment = false;
+		for (int i=0; i<n-1; i++) {
+			if (chars[i]=='/' && chars[i+1]=='/')
+				inSlashSlashComment = true;
+			if (chars[i]=='\n' )
+				inSlashSlashComment = false;
+			if (chars[i]=='/' && chars[i+1]=='*')
+				inSlashStarComment = true;
+			if (chars[i]=='*' && chars[i+1]=='/')
+				inSlashStarComment = false;
+			if (inSlashSlashComment||inSlashStarComment)
+				chars[i] = ' ';
+		}
+	}
+
+	// replaces contents of single and double quotes with blanks - N. Vischer
+	private void maskQuotes(char[] chars) {
+		int n = chars.length;
+		char quote = '\'';//single quote
+		for (int loop = 1; loop <= 2; loop++) {
+			if (loop == 2)
+				quote = '"';//double quote
+			boolean inQuotes = false;
+			int startMask = 0;
+			int stopMask = 0;
+			for (int i = 0; i < n - 1; i++) {
+				boolean escaped = i > 0 && chars[i - 1] == '\\';
+				if (chars[i] == '\n')
+					inQuotes = false;
+				if (chars[i] == quote && !escaped) {
+					if (!inQuotes) {
+						startMask = i;
+						inQuotes = true;
+					} else {
+						stopMask = i;
+						for (int jj = startMask; jj <= stopMask; jj++) {
+							chars[jj] = ' ';
+						}
+						inQuotes = false;
+					}
+				}
+			}
+		}
 	}
 	
-	private void removeComments(char[] chars) {
+   //replaces contents of comments with blanks
+	private void rmaskComments(char[] chars) {
 		int n = chars.length;
 		boolean inSlashSlashComment = false;
 		boolean inSlashStarComment = false;
