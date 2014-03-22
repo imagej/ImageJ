@@ -582,30 +582,30 @@ public class Plot {
 	/* Draws a line using the coordinate system defined by setLimits(). */
 	public void drawLine(double x1, double y1, double x2, double y2) {
 		setup();
-		int ix1 = LEFT_MARGIN + (int)Math.round((x1-xMin)*xScale);
-		int iy1 = TOP_MARGIN + frameHeight - (int)Math.round((y1-yMin)*yScale);
-		int ix2 = LEFT_MARGIN + (int)Math.round((x2-xMin)*xScale);
-		int iy2 = TOP_MARGIN + frameHeight - (int)Math.round((y2-yMin)*yScale);
+		int ix1 = ((flags&X_LOG_NUMBERS)!=0) ? LEFT_MARGIN + (int)Math.round((Math.log10(x1)-xMin)*xScale) : LEFT_MARGIN + (int)Math.round((x1-xMin)*xScale);
+		int iy1 = ((flags&Y_LOG_NUMBERS)!=0) ? TOP_MARGIN  + frameHeight - (int)Math.round((Math.log10(y1)-yMin)*yScale): TOP_MARGIN  + frameHeight - (int)Math.round((y1-yMin)*yScale);
+		int ix2 = ((flags&X_LOG_NUMBERS)!=0) ? LEFT_MARGIN + (int)Math.round((Math.log10(x2)-xMin)*xScale) : LEFT_MARGIN + (int)Math.round((x2-xMin)*xScale);
+		int iy2 = ((flags&Y_LOG_NUMBERS)!=0) ? TOP_MARGIN  + frameHeight - (int)Math.round((Math.log10(y2)-yMin)*yScale): TOP_MARGIN  + frameHeight - (int)Math.round((y2-yMin)*yScale);
 		ip.drawLine(ix1, iy1, ix2, iy2);
 	}
 
 	/* Draws a line using a normalized 0-1, 0-1 coordinate system. */
 	public void drawNormalizedLine(double x1, double y1, double x2, double y2) {
 		setup();
-		int ix1 = LEFT_MARGIN + (int)(x1*frameWidth);
-		int iy1 = TOP_MARGIN + (int)(y1*frameHeight);
-		int ix2 = LEFT_MARGIN + (int)(x2*frameWidth);
-		int iy2 = TOP_MARGIN + (int)(y2*frameHeight);
+		int ix1 = ((flags&X_LOG_NUMBERS)!=0) ? LEFT_MARGIN + (int)(Math.log10(x1)*frameWidth) : LEFT_MARGIN + (int)(x1*frameWidth);
+		int iy1 = ((flags&Y_LOG_NUMBERS)!=0) ? TOP_MARGIN  + (int)(Math.log10(y1)*frameHeight): TOP_MARGIN  + (int)(y1*frameHeight);
+		int ix2 = ((flags&X_LOG_NUMBERS)!=0) ? LEFT_MARGIN + (int)(Math.log10(x2)*frameWidth) : LEFT_MARGIN + (int)(x2*frameWidth);
+		int iy2 = ((flags&Y_LOG_NUMBERS)!=0) ? TOP_MARGIN  + (int)(Math.log10(y2)*frameHeight): TOP_MARGIN  + (int)(y2*frameHeight);
 		ip.drawLine(ix1, iy1, ix2, iy2);
 	}
 
 	/* Draws a line using the coordinate system defined by setLimits(). */
 	public void drawDottedLine(double x1, double y1, double x2, double y2, int step) {
 		setup();
-		int ix1 = LEFT_MARGIN + (int)Math.round((x1-xMin)*xScale);
-		int iy1 = TOP_MARGIN + frameHeight - (int)Math.round((y1-yMin)*yScale);
-		int ix2 = LEFT_MARGIN + (int)Math.round((x2-xMin)*xScale);
-		int iy2 = TOP_MARGIN + frameHeight - (int)Math.round((y2-yMin)*yScale);
+		int ix1 = ((flags&X_LOG_NUMBERS)!=0) ? LEFT_MARGIN + (int)Math.round((Math.log10(x1)-xMin)*xScale) : LEFT_MARGIN + (int)Math.round((x1-xMin)*xScale);
+		int iy1 = ((flags&Y_LOG_NUMBERS)!=0) ? TOP_MARGIN  + frameHeight - (int)Math.round((Math.log10(y1)-yMin)*yScale): TOP_MARGIN + frameHeight - (int)Math.round((y1-yMin)*yScale);
+		int ix2 = ((flags&X_LOG_NUMBERS)!=0) ? LEFT_MARGIN + (int)Math.round((Math.log10(x2)-xMin)*xScale) : LEFT_MARGIN + (int)Math.round((x2-xMin)*xScale);
+		int iy2 = ((flags&Y_LOG_NUMBERS)!=0) ? TOP_MARGIN  + frameHeight - (int)Math.round((Math.log10(y2)-yMin)*yScale): TOP_MARGIN + frameHeight - (int)Math.round((y2-yMin)*yScale);
 		for(int i = ix1; i <= ix2; i = i + step)
 			for(int j = iy1; j <= iy2; j = j + step)
 				ip.drawDot(i, j);
