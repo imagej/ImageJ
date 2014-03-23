@@ -349,11 +349,8 @@ public class Plot {
 		switch(shape) {
 			case CIRCLE: case X:  case BOX: case TRIANGLE: case CROSS: case DOT:
 				ip.setClipRect(frame);
-				for (int i=0; i<x.length; i++) {
-					int xt = ((flags&X_LOG_NUMBERS)!=0) ? LEFT_MARGIN + (int)((Math.log10(x[i])-xMin)*xScale)	: LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
-					int yt = ((flags&Y_LOG_NUMBERS)!=0) ? TOP_MARGIN + frameHeight - (int)((Math.log10(y[i])-yMin)*yScale) : TOP_MARGIN + frameHeight - (int)((y[i]-yMin)*yScale);
-					drawShape(shape, xt, yt, markSize);
-				}
+				for (int i=0; i<x.length; i++)
+					drawShape(shape, scaleX(x[i]), scaleY(y[i]), markSize);
 				ip.setClipRect(null);
 				break;
 			case LINE:
@@ -582,13 +579,9 @@ public class Plot {
 	/* Draws a line using the coordinate system defined by setLimits(). */
 	public void drawLine(double x1, double y1, double x2, double y2) {
 		setup();
-		int ix1 = ((flags&X_LOG_NUMBERS)!=0) ? LEFT_MARGIN + (int)Math.round((Math.log10(x1)-xMin)*xScale) : LEFT_MARGIN + (int)Math.round((x1-xMin)*xScale);
-		int iy1 = ((flags&Y_LOG_NUMBERS)!=0) ? TOP_MARGIN  + frameHeight - (int)Math.round((Math.log10(y1)-yMin)*yScale): TOP_MARGIN  + frameHeight - (int)Math.round((y1-yMin)*yScale);
-		int ix2 = ((flags&X_LOG_NUMBERS)!=0) ? LEFT_MARGIN + (int)Math.round((Math.log10(x2)-xMin)*xScale) : LEFT_MARGIN + (int)Math.round((x2-xMin)*xScale);
-		int iy2 = ((flags&Y_LOG_NUMBERS)!=0) ? TOP_MARGIN  + frameHeight - (int)Math.round((Math.log10(y2)-yMin)*yScale): TOP_MARGIN  + frameHeight - (int)Math.round((y2-yMin)*yScale);
-		ip.drawLine(ix1, iy1, ix2, iy2);
+		ip.drawLine(scaleX(x1), scaleY(y1), scaleX(x2), scaleY(y2));
 	}
-
+	
 	/* Draws a line using a normalized 0-1, 0-1 coordinate system. */
 	public void drawNormalizedLine(double x1, double y1, double x2, double y2) {
 		setup();
@@ -602,13 +595,21 @@ public class Plot {
 	/* Draws a line using the coordinate system defined by setLimits(). */
 	public void drawDottedLine(double x1, double y1, double x2, double y2, int step) {
 		setup();
-		int ix1 = ((flags&X_LOG_NUMBERS)!=0) ? LEFT_MARGIN + (int)Math.round((Math.log10(x1)-xMin)*xScale) : LEFT_MARGIN + (int)Math.round((x1-xMin)*xScale);
-		int iy1 = ((flags&Y_LOG_NUMBERS)!=0) ? TOP_MARGIN  + frameHeight - (int)Math.round((Math.log10(y1)-yMin)*yScale): TOP_MARGIN + frameHeight - (int)Math.round((y1-yMin)*yScale);
-		int ix2 = ((flags&X_LOG_NUMBERS)!=0) ? LEFT_MARGIN + (int)Math.round((Math.log10(x2)-xMin)*xScale) : LEFT_MARGIN + (int)Math.round((x2-xMin)*xScale);
-		int iy2 = ((flags&Y_LOG_NUMBERS)!=0) ? TOP_MARGIN  + frameHeight - (int)Math.round((Math.log10(y2)-yMin)*yScale): TOP_MARGIN + frameHeight - (int)Math.round((y2-yMin)*yScale);
+		int ix1 = scaleX(x1);
+		int iy1 = scaleY(y1);
+		int ix2 = scaleX(x2);
+		int iy2 = scaleY(y2);
 		for(int i = ix1; i <= ix2; i = i + step)
 			for(int j = iy1; j <= iy2; j = j + step)
 				ip.drawDot(i, j);
+	}
+
+	private int  scaleX(double x) {
+		return ((flags&X_LOG_NUMBERS)!=0)?LEFT_MARGIN+(int)Math.round((Math.log10(x)-xMin)*xScale):LEFT_MARGIN+(int)Math.round((x-xMin)*xScale);
+	}
+
+	private int  scaleY(double y) {
+		return ((flags&Y_LOG_NUMBERS)!=0)?TOP_MARGIN +frameHeight-(int)Math.round((Math.log10(y)-yMin)*yScale): TOP_MARGIN+frameHeight-(int)Math.round((y-yMin)*yScale)	;
 	}
 
 	/** Sets the font. */
@@ -1060,7 +1061,7 @@ public class Plot {
 			ypoints[0] = TOP_MARGIN + frame.height - (int)(((((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(y[i]) : y[i])-yMin-(((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(e[i]) : e[i]))*yScale);
 			ypoints[1] = TOP_MARGIN + frame.height - (int)(((((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(y[i]) : y[i])-yMin+(((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(e[i]) : e[i]))*yScale);
 			ypoints[0] = (ypoints[0]>TOP_MARGIN + frame.height) ? TOP_MARGIN + frame.height : ypoints[0];
-			ypoints[1] = (ypoints[1]<TOP_MARGIN				  ) ? TOP_MARGIN				: ypoints[1];
+			ypoints[1] = (ypoints[1]<TOP_MARGIN) ? TOP_MARGIN	 : ypoints[1];
 			drawPolyline(ip, xpoints,ypoints, 2, false);
 		}
 	}
