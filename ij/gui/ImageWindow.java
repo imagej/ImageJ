@@ -16,6 +16,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 
 	public static final int MIN_WIDTH = 128;
 	public static final int MIN_HEIGHT = 32;
+	private static final String LOC_KEY = "image.loc";
 	
 	protected ImagePlus imp;
 	protected ImageJ ij;
@@ -28,6 +29,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	Rectangle maxWindowBounds; // largest possible window on this screen
 	Rectangle maxBounds; // Size of this window after it is maximized
 	long setMaxBoundsTime;
+	private boolean firstSmallWindow;
 
 	private static final int XINC = 8;
 	private static final int YINC = 12;
@@ -146,9 +148,19 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (xbase==-1) {
 			count = 0;
 			xbase = maxWindow.x + (maxWindow.width>1800?24:12);
-			if (width*2<=maxWindow.width)
-				xbase = maxWindow.x+maxWindow.width/2-width/2;
-			ybase = maxWindow.y;
+			if (width*2<=maxWindow.width) {
+				Point loc = Prefs.getLocation(LOC_KEY);
+				if (loc!=null) {
+					xbase = loc.x;
+					ybase = loc.y;
+				} else {
+					xbase = maxWindow.x+maxWindow.width/2-width/2;
+					ybase = maxWindow.y;
+				}
+				firstSmallWindow = true;
+				if (IJ.debugMode) IJ.log("ImageWindow.xbase: "+xbase+" "+loc);
+			} else
+				ybase = maxWindow.y;
 			xloc = xbase;
 			yloc = ybase;
 		}
@@ -365,6 +377,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		closed = true;
 		if (WindowManager.getWindowCount()==0)
 			{xloc = 0; yloc = 0;}
+		if (firstSmallWindow)
+			Prefs.saveLocation(LOC_KEY, getLocation());
 		WindowManager.removeWindow(this);
 		//setVisible(false);
 		if (ij!=null && ij.quitting())  // this may help avoid thread deadlocks

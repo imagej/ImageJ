@@ -1555,7 +1555,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public boolean hideZoomIndicator(boolean hide) {
 		boolean hidden = this.hideZoomIndicator;
 		this.hideZoomIndicator = hide;
+		setPaintPending(true);
 		repaint();
+		long t0 = System.currentTimeMillis();
+		while(getPaintPending() && (System.currentTimeMillis()-t0)<250L)
+			IJ.wait(1);
 		return hidden;
 	}
 

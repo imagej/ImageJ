@@ -605,11 +605,17 @@ public class Plot {
 	}
 
 	private int  scaleX(double x) {
-		return ((flags&X_LOG_NUMBERS)!=0)?LEFT_MARGIN+(int)Math.round((Math.log10(x)-xMin)*xScale):LEFT_MARGIN+(int)Math.round((x-xMin)*xScale);
+		if ((flags&X_LOG_NUMBERS)!=0)
+			return LEFT_MARGIN+(int)Math.round((Math.log10(x)-xMin)*xScale);
+		else
+			return LEFT_MARGIN+(int)Math.round((x-xMin)*xScale);
 	}
 
 	private int  scaleY(double y) {
-		return ((flags&Y_LOG_NUMBERS)!=0)?TOP_MARGIN +frameHeight-(int)Math.round((Math.log10(y)-yMin)*yScale): TOP_MARGIN+frameHeight-(int)Math.round((y-yMin)*yScale)	;
+		if ((flags&Y_LOG_NUMBERS)!=0)
+			return TOP_MARGIN +frameHeight-(int)Math.round((Math.log10(y)-yMin)*yScale);
+		else
+			return TOP_MARGIN+frameHeight-(int)Math.round((y-yMin)*yScale)	;
 	}
 
 	/** Sets the font. */
