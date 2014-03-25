@@ -446,8 +446,10 @@ public class ResultsTable implements Cloneable {
 			for (int i=size; i<row; i++)
 				stringColumn.add(i, "");
 		}
-		//IJ.log("setStringValue: size="+stringColumn.size()+", row= "+row+", value= "+value);
-		stringColumn.add(row, value);
+		if (row==stringColumn.size())
+			stringColumn.add(row, value);
+		else
+			stringColumn.set(row, value);
 	}
 
 	/** Returns a tab or comma delimited string containing the column headings. */
