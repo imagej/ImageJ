@@ -755,6 +755,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (previousRoi!=null && roi!=null)
 			updateRoi(roi);
 		resetImage();
+		IJ.setKeyUp(IJ.ALL_KEYS);
 	}
 	
 	ImagePlus getImage() {

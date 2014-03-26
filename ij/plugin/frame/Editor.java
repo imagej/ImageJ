@@ -964,7 +964,8 @@ shortcutsBroken = false;
 		lineNumber = n;
 	}
 	
-	private void balance() {//modified: N.Vischer
+	//extracts  characters  "({[]})" as string and removes inner pairs
+	private void balance() { //modified: N.Vischer
 		String text = ta.getText();
 		char[] chars = new char[text.length()];
 		chars = text.toCharArray();
@@ -981,10 +982,10 @@ shortcutsBroken = false;
 		for (int i = position -1 ; i >= 0; i--) {
 			char ch = chars[i];
 			if ("({[]})".indexOf(ch) >= 0) {
-				leftBows += ch;
-				leftBows = leftBows.replace("][", "");//skip nested pairs
-				leftBows = leftBows.replace(")(", "");
-				leftBows = leftBows.replace("}{", "");
+				leftBows = ch + leftBows;
+				leftBows = leftBows.replace("[]", "");//skip nested pairs
+				leftBows = leftBows.replace("()", "");
+				leftBows = leftBows.replace("{}", "");
 				if (leftBows.equals ("[") || leftBows.equals ("{") || leftBows.equals ("(")) {
 					start = i;
 					break;
@@ -1000,7 +1001,7 @@ shortcutsBroken = false;
 				rightBows = rightBows.replace("()", "");
 				rightBows = rightBows.replace("{}", "");
 				String pair = leftBows + rightBows;
-				if (pair.length() == 2 && "[] {} ()".indexOf(pair) >=0) {
+				if (pair.equals("[]") ||  pair.equals("{}") || pair.equals("()")) {
 					stop = i;
 					break;
 				}
@@ -1015,7 +1016,7 @@ shortcutsBroken = false;
 		IJ.showStatus(chars.length + " " + position + " " + start + " " + stop);
 	}
 
-   // replaces contents of comments with blanks
+	// replaces contents of comments with blanks
 	private void maskComments(char[] chars) {
 		int n = chars.length;
 		boolean inSlashSlashComment = false;
@@ -1025,10 +1026,12 @@ shortcutsBroken = false;
 				inSlashSlashComment = true;
 			if (chars[i]=='\n' )
 				inSlashSlashComment = false;
-			if (chars[i]=='/' && chars[i+1]=='*')
-				inSlashStarComment = true;
-			if (chars[i]=='*' && chars[i+1]=='/')
-				inSlashStarComment = false;
+			if (!inSlashSlashComment){
+				if (chars[i]=='/' && chars[i+1]=='*')
+					inSlashStarComment = true;
+				if (chars[i]=='*' && chars[i+1]=='/')
+					inSlashStarComment = false;
+			}
 			if (inSlashSlashComment||inSlashStarComment)
 				chars[i] = ' ';
 		}
