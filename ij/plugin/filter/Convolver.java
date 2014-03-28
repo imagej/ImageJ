@@ -85,7 +85,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 			IJ.showStatus("Convolve: "+kw+"x"+kh+" kernel");
 			return true;
 		} else
-			return !gd.getPreviewCheckbox().getState();
+			return !(gd.getPreviewCheckbox()!=null && gd.getPreviewCheckbox().getState());
     }
     
     boolean decodeKernel(String text) {

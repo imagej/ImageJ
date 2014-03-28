@@ -170,7 +170,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
             useMinThreshold = false;
             ((Checkbox)(checkboxes.elementAt(1))).setState(false); //reset "Above Lower Threshold" checkbox
         }
-        if (!gd.getPreviewCheckbox().getState())
+        if (!(gd.getPreviewCheckbox()!=null&&gd.getPreviewCheckbox().getState()))
             messageArea.setText("");        // no "nnn Maxima" message when not previewing
         return (!gd.invalidNumber());
     } // public boolean DialogItemChanged

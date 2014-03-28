@@ -1080,7 +1080,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Returns the string value from the "Info" property string  
 	* associated with 'key', or null if the key is not found. 
 	* Works with DICOM tags and Bio-Formats metadata.
-	* @see #getValue
 	*/
 	public String getProp(String key) {
 		if (key==null)
@@ -1103,15 +1102,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return getProp(key, info);
 	}
 	
-	/** Returns the numeric value from the "Info" property string  
-	* associated with 'key', or NaN if the key is not found or the
-	* value associated with the key is not numeric. Works with
-	* DICOM tags and Bio-Formats metadata.
-	* @see #getProp
-	*/
-	public double getValue(String key) {
-		return Tools.parseDouble(getProp(key));
-	}
+	//public double getValue(String key) {
+	//	return Tools.parseDouble(getProp(key));
+	//}
 	
 	private String getProp(String key, String info) {
 		int index1 = -1;
@@ -1158,7 +1151,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	/** Returns the property associated with 'key', or null if it is not found.
 	* @see #getProp
-	* @see #getValue
 	*/
 	public Object getProperty(String key) {
 		if (properties==null)

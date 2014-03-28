@@ -5,15 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.48t 26 March 2014</u>
+<li> <u>1.48t 28 March 2014</u>
 <ul>
 <li> Thanks to Ted Toal, holding down the alt key prevents the '+' command
 (Image>Zoom>In) from enlarging the window.
 <li> ImageJ remembers the location of the first small image opened.
 <li> Thanks to Norbert Vischer, <i>Plugins&gt;Utilities&gt;Capture Image</i>
-now hides the zoom indicator.
+hides the zoom indicator.
 <li> Thanks to Dimiter Proanov, <i>Image&gt;Stacks&gt;Plot Z-axis Profile</i>
-now displays the plot in calibrated units.
+displays the plot in calibrated units.
 <li> Thanks to Michael Schmid, added a <i>File&gt;Revert</i>
 command to the text editor.
 <li> Fixed the <i>Undo</i> command in the text editor and added
@@ -23,6 +23,8 @@ braces or parentheses that surround the insertion point.
 command handles '{' and '}' in comments and quotes, handles '[' and ']' brackets,
 handles escaped characters and detects errors if nested pairs are not balanced.
 <li> The <i>Edit&gt;Options&gt;Compiler</i> command now supports Java 1.8.
+<li> Thanks to Lorenz Maier, the run("Macro...", options) function now works 
+when the options string starts with "v=" instead of "code=v=".
 <li> Thanks to Nico Stuurman, fixed a bug that caused the
 GaussianBlur.blurGaussian() method to throw an exception
 if the image had an ROI.
@@ -51,6 +53,10 @@ to not work in batch mode macros.
 it to not work as expected when changing a string value in the Results table.
 <li> Thanks to Norbert Vischer, fixed a bug that sometimes caused the getProfile() and 
 run("Plot Profile") macro functions to not work as expected.
+<li> Thanks to Lorenz Maier, fixed a bug that could cause <i>Process&gt;Math&gt;Macro</i>
+to throw a null pointer exception.
+<li> Thanks to Michael Schmid, fixed a bug that caused <i>Process&gt;Math&gt;Gamma</i>
+to not check for invalid gamma values in preview mode.
 <li> Thanks to Ilan Tal, fixed a regression that caused the "B&C" and "Threshold" windows
 to not remember their positions when the "ImageJ" window was closed.
 </ul>
