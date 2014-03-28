@@ -2065,7 +2065,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			overlay.add(roi);
 		}
 		imp.setOverlay(overlay);
-		setOverlay(imp, null);
+		if (imp.getCanvas()!=null)
+			setOverlay(imp, null);
 	}
 	
 	public void mousePressed (MouseEvent e) {

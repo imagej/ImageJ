@@ -48,7 +48,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	static final String DEFAULT_DIR= "editor.dir";
 	private TextArea ta;
 	private String path;
-	private boolean changes;
+	protected boolean changes;
 	private static String searchString = "";
 	private static boolean caseSensitive = Prefs.get(CASE_SENSITIVE, true);
 	private static int lineNumber = 1;
@@ -83,6 +83,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private String downloadUrl;
     private boolean downloading;
     private FunctionFinder functionFinder;
+    private ArrayList undoBuffer = new ArrayList();
+    private boolean performingUndo;
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -115,20 +117,23 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		m.add(new MenuItem("Open...", new MenuShortcut(KeyEvent.VK_O)));
 		m.add(new MenuItem("Save", new MenuShortcut(KeyEvent.VK_S)));
 		m.add(new MenuItem("Save As..."));
+		m.add(new MenuItem("Revert"));
 		m.add(new MenuItem("Print..."));
 		m.addActionListener(this);
 		fileMenu = m;
 		mb.add(m);
 		
 		m = new Menu("Edit");
-		String key = IJ.isMacintosh()?"  Cmd ":"  Ctrl+";
-		MenuItem item = new MenuItem("Undo"+key+"Z");
-		item.setEnabled(false);
+		//String key = IJ.isMacintosh()?"  Cmd ":"  Ctrl+";
+		//MenuItem item = new MenuItem("Undo"+key+"Z");
+		//item.setEnabled(false);
+		MenuItem item = new MenuItem("Undo",new MenuShortcut(KeyEvent.VK_Z));
 		m.add(item);
 		m.addSeparator();
 		boolean shortcutsBroken = IJ.isWindows()
 			&& (System.getProperty("java.version").indexOf("1.1.8")>=0
 			||System.getProperty("java.version").indexOf("1.5.")>=0);
+shortcutsBroken = false;
 		if (shortcutsBroken)
 			item = new MenuItem("Cut  Ctrl+X");
 		else
@@ -150,6 +155,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		m.add(new MenuItem("Go to Line...", new MenuShortcut(KeyEvent.VK_L)));
 		m.addSeparator();
 		m.add(new MenuItem("Select All", new MenuShortcut(KeyEvent.VK_A)));
+		m.add(new MenuItem("Balance", new MenuShortcut(KeyEvent.VK_B,false)));
 		m.add(new MenuItem("Zap Gremlins"));
 		m.add(new MenuItem("Copy to Image Info"));
 		m.addActionListener(this);
@@ -208,7 +214,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			macrosMenu.add(new MenuItem("Function Finder...", new MenuShortcut(KeyEvent.VK_F, true)));
 			macrosMenu.addSeparator();
 			macrosMenu.add(new MenuItem("Evaluate JavaScript", new MenuShortcut(KeyEvent.VK_J, false)));
-			macrosMenu.add(new MenuItem("Evaluate BeanShell", new MenuShortcut(KeyEvent.VK_B, false)));
+			macrosMenu.add(new MenuItem("Evaluate BeanShell", new MenuShortcut(KeyEvent.VK_B, true)));
 			macrosMenu.add(new MenuItem("Evaluate Python", new MenuShortcut(KeyEvent.VK_P, false)));
 			macrosMenu.add(new MenuItem("Show Log Window", new MenuShortcut(KeyEvent.VK_L, true)));
 			macrosMenu.addSeparator();
@@ -263,6 +269,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		dontShowWindow = installer.isAutoRunAndHide();
 	}
 		
+	/** Opens a file and replaces the text (if any) by the contents of the file. */
 	public void open(String dir, String name) {
 		path = dir+name;
 		File file = new File(path);
@@ -277,6 +284,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 					sb.append(s+"\n");
 			}
 			r.close();
+			if (ta!=null && ta.getText().length()>0) {
+				ta.setText("");  //delete previous contents (if any)
+				eventCount = 0;
+			}
 			create(name, new String(sb));
 			changes = false;
 		}
@@ -528,8 +539,22 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			sb.append(c);
 		 }
 		return sb.toString();
-  }	   
+	}	   
 
+	void undo() {
+		if (IJ.debugMode) IJ.log("Undo1: "+undoBuffer.size());
+		int position = ta.getCaretPosition();
+		if (undoBuffer.size()>1) {
+			undoBuffer.remove(undoBuffer.size()-1);
+			String text = (String)undoBuffer.get(undoBuffer.size()-1);
+			performingUndo = true;
+			ta.setText(text);
+			if (position<=text.length())
+				ta.setCaretPosition(position);
+			if (IJ.debugMode) IJ.log("Undo2: "+undoBuffer.size()+" "+text);
+		}
+	}
+	
 	boolean copy() { 
 		String s; 
 		s = ta.getSelectedText();
@@ -638,8 +663,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			evaluateScript(".py");
 		else if ("Show Log Window".equals(what))
 			showLogWindow();
+		else if ("Revert".equals(what))
+			revert();
 		else if ("Print...".equals(what))
 			print();
+		else if (what.equals("Undo"))
+		   undo();
 		else if (what.equals("Paste"))
 			paste();
 		else if (what.equals("Copy"))
@@ -656,6 +685,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			find(searchString);
 		else if ("Go to Line...".equals(what))
 			gotoLine();
+		else if ("Balance".equals(what))
+			balance();
 		else if ("Zap Gremlins".equals(what))
 			zapGremlins();
 		else if ("Make Text Larger".equals(what))
@@ -739,7 +770,24 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		}
 	}
 
-	public void textValueChanged(TextEvent evt) {
+	public void textValueChanged(TextEvent e) {
+		if (IJ.debugMode) IJ.log("textValueChanged1: "+undoBuffer.size());
+		String text = ta.getText();
+		//if (undo2==null || text.length()!=undo2.length()+1 || text.charAt(text.length()-1)=='\n')
+		int length = 0;
+		if (!performingUndo) {
+			for (int i=0; i<undoBuffer.size(); i++)
+				length += ((String)undoBuffer.get(i)).length();
+			if (length<2000000)
+				undoBuffer.add(text);
+			else {
+				for (int i=1; i<undoBuffer.size(); i++)
+					undoBuffer.set(i-1, undoBuffer.get(i));
+				undoBuffer.set(undoBuffer.size()-1, text);
+			}
+			if (IJ.debugMode) IJ.log("textValueChanged2: "+undoBuffer.size()+" "+text);
+		}
+		performingUndo = false;
 		if (isMacroWindow) return;
 		// first few textValueChanged events may be bogus
 		eventCount++;
@@ -812,6 +860,21 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		}
 	}
 	
+	protected void revert() {
+		if (!changes)
+			return;
+		String title = getTitle();
+		if (path==null || !(new File(path).exists()) || !path.endsWith(title)) {
+			IJ.showStatus("Cannot revert, no file "+getTitle());
+			return;
+		}
+		if (!IJ.showMessageWithCancel("Revert?", "Revert to saved version of\n\""+getTitle()+"\"?"))
+			return;
+		String directory = path.substring(0, path.length()-title.length());
+		open(directory, title);
+		undoBuffer = new ArrayList();
+	}
+
 	/** Changes a plugins class name to reflect a new file name. */
 	public void updateClassName(String oldName, String newName) {
 		if (newName.indexOf("_")<0)
@@ -901,6 +964,128 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		lineNumber = n;
 	}
 	
+	//extracts  characters  "({[]})" as string and removes inner pairs
+	private void balance() { //modified: N.Vischer
+		String text = ta.getText();
+		char[] chars = new char[text.length()];
+		chars = text.toCharArray();
+		maskComments(chars);
+		maskQuotes(chars);
+		int position = ta.getCaretPosition();
+		if (position == 0) {
+			IJ.error("Balance", "This command locates the pair of brackets, curly braces or\nparentheses that surround the insertion point.");
+			return;
+		}
+		int start = -1;
+		int stop = -1;
+		String leftBows = "";
+		for (int i = position -1 ; i >= 0; i--) {
+			char ch = chars[i];
+			if ("({[]})".indexOf(ch) >= 0) {
+				leftBows = ch + leftBows;
+				leftBows = leftBows.replace("[]", "");//skip nested pairs
+				leftBows = leftBows.replace("()", "");
+				leftBows = leftBows.replace("{}", "");
+				if (leftBows.equals ("[") || leftBows.equals ("{") || leftBows.equals ("(")) {
+					start = i;
+					break;
+				}
+			}
+		}
+		String rightBows = "";
+		for (int i = position ; i < chars.length; i++) {
+			char ch = chars[i];
+			if ("({[]})".indexOf(ch) >= 0) {
+				rightBows += ch;
+				rightBows = rightBows.replace("[]", "");//skip nested pairs
+				rightBows = rightBows.replace("()", "");
+				rightBows = rightBows.replace("{}", "");
+				String pair = leftBows + rightBows;
+				if (pair.equals("[]") ||  pair.equals("{}") || pair.equals("()")) {
+					stop = i;
+					break;
+				}
+			}
+		}
+		if (start == -1 || stop == -1) {
+			IJ.beep();
+			return;
+		}
+		ta.setSelectionStart(start);
+		ta.setSelectionEnd(stop + 1);
+		IJ.showStatus(chars.length + " " + position + " " + start + " " + stop);
+	}
+
+	// replaces contents of comments with blanks
+	private void maskComments(char[] chars) {
+		int n = chars.length;
+		boolean inSlashSlashComment = false;
+		boolean inSlashStarComment = false;
+		for (int i=0; i<n-1; i++) {
+			if (chars[i]=='/' && chars[i+1]=='/')
+				inSlashSlashComment = true;
+			if (chars[i]=='\n' )
+				inSlashSlashComment = false;
+			if (!inSlashSlashComment){
+				if (chars[i]=='/' && chars[i+1]=='*')
+					inSlashStarComment = true;
+				if (chars[i]=='*' && chars[i+1]=='/')
+					inSlashStarComment = false;
+			}
+			if (inSlashSlashComment||inSlashStarComment)
+				chars[i] = ' ';
+		}
+	}
+
+	// replaces contents of single and double quotes with blanks - N. Vischer
+	private void maskQuotes(char[] chars) {
+		int n = chars.length;
+		char quote = '\'';//single quote
+		for (int loop = 1; loop <= 2; loop++) {
+			if (loop == 2)
+				quote = '"';//double quote
+			boolean inQuotes = false;
+			int startMask = 0;
+			int stopMask = 0;
+			for (int i = 0; i < n - 1; i++) {
+				boolean escaped = i > 0 && chars[i - 1] == '\\';
+				if (chars[i] == '\n')
+					inQuotes = false;
+				if (chars[i] == quote && !escaped) {
+					if (!inQuotes) {
+						startMask = i;
+						inQuotes = true;
+					} else {
+						stopMask = i;
+						for (int jj = startMask; jj <= stopMask; jj++) {
+							chars[jj] = ' ';
+						}
+						inQuotes = false;
+					}
+				}
+			}
+		}
+	}
+	
+   //replaces contents of comments with blanks
+	private void rmaskComments(char[] chars) {
+		int n = chars.length;
+		boolean inSlashSlashComment = false;
+		boolean inSlashStarComment = false;
+		for (int i=0; i<n-1; i++) {
+			if (chars[i]=='/' && chars[i+1]=='/')
+				inSlashSlashComment = true;
+			if (chars[i]=='\n' )
+				inSlashSlashComment = false;
+			if (chars[i]=='/' && chars[i+1]=='*')
+				inSlashStarComment = true;
+			if (chars[i]=='*' && chars[i+1]=='/')
+				inSlashStarComment = false;
+			if (inSlashSlashComment||inSlashStarComment)
+				chars[i] = ' ';
+		}
+	}
+
 	void zapGremlins() {
 		String text = ta.getText();
 		char[] chars = new char[text.length()];

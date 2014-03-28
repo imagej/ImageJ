@@ -62,6 +62,8 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
     private int nPasses = DIRECTION_PASSES;
     private int pass;
     private int flags = DOES_ALL|FINAL_PROCESSING|KEEP_PREVIEW|PARALLELIZE_STACKS;
+    private boolean calledAsPlugin;
+
 
     public int setup(String arg, ImagePlus imp) {
         if (arg.equals("final")) {
@@ -73,6 +75,7 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
 
     public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
         isRGB = imp.getProcessor() instanceof ColorProcessor;
+        calledAsPlugin = true;
         String options = Macro.getOptions();
         if  (options!=null)
             Macro.setOptions(options.replaceAll("white", "light"));
@@ -180,6 +183,8 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
         FloatProcessor fp = null;
         for (int channelNumber=0; channelNumber<ip.getNChannels(); channelNumber++) {
             fp = ip.toFloat(channelNumber, fp);
+            if ((ip instanceof FloatProcessor) && !calledAsPlugin && !createBackground)
+                fp.snapshot();  //float images need a snapshot to subtract
             if (useParaboloid)
                 slidingParaboloidFloatBackground(fp, (float)radius, invert, doPresmooth, correctCorners);
             else
@@ -733,9 +738,11 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
 
 
     public void setNPasses(int nPasses) {
-        if (isRGB && separateColors) nPasses *= 3;
+        if (isRGB && separateColors)
+        	nPasses *= 3;
+        if (useParaboloid)
+        	nPasses*= (doPresmooth) ? DIRECTION_PASSES+2 : DIRECTION_PASSES;
         this.nPasses = nPasses;
-        if (useParaboloid) nPasses*= (doPresmooth) ? DIRECTION_PASSES+2 : DIRECTION_PASSES;
         pass = 0;
     }
 

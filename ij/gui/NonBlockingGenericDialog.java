@@ -13,7 +13,8 @@ public class NonBlockingGenericDialog extends GenericDialog {
 
 	public synchronized void showDialog() {
 		super.showDialog();
-		WindowManager.addWindow(this);
+		if (!IJ.macroRunning())
+			WindowManager.addWindow(this);
 		try {
 			wait();
 		} catch (InterruptedException e) { }

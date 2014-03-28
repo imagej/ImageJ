@@ -58,7 +58,7 @@ public class Duplicator implements PlugIn, TextListener {
 		}
 		imp2.setTitle(newTitle);
 		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE) {
-			Roi roi2 = cropRoi(imp, roi);
+			Roi roi2 = (Roi)cropRoi(imp, roi).clone();
 			roi2.setLocation(0, 0);
 			imp2.setRoi(roi2);
 		}
@@ -298,7 +298,7 @@ public class Duplicator implements PlugIn, TextListener {
 			return;
 		}
 		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE) {
-			Roi roi2 = cropRoi(imp, roi);
+			Roi roi2 = (Roi)cropRoi(imp, roi).clone();
 			roi2.setLocation(0, 0);
 			imp2.setRoi(roi2);
 		}

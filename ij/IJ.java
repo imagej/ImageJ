@@ -44,7 +44,7 @@ public class IJ {
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
 	private static String osname, osarch;
-	private static boolean isMac, isWin, isJava2, isJava14, isJava15, isJava16, isJava17, isLinux, is64Bit;
+	private static boolean isMac, isWin, isJava2, isJava14, isJava15, isJava16, isJava17, isJava18, isLinux, is64Bit;
 	private static boolean controlDown, altDown, spaceDown, shiftDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
@@ -72,6 +72,7 @@ public class IJ {
 			isJava15 = version.compareTo("1.4")>0;
 			isJava16 = version.compareTo("1.5")>0;
 			isJava17 = version.compareTo("1.6")>0;
+			isJava18 = version.compareTo("1.7")>0;
 		}
 	}
 			
@@ -117,8 +118,7 @@ public class IJ {
 
 	/** Runs the specified macro or script file in the current thread.
 		The file is assumed to be in the macros folder
- 		unless <code>name</code> is a full path. ".txt"  is
-    	added if <code>name</code> does not have an extension.
+ 		unless <code>name</code> is a full path.
 		The optional string argument (<code>arg</code>) can be retrieved in the called 
 		macro or script (v1.42k or later) using the getArgument() function. 
 		Returns any string value returned by the macro, or null. Scripts always return null.
@@ -946,6 +946,11 @@ public class IJ {
 	/** Returns true if ImageJ is running on a Java 1.7 or greater JVM. */
 	public static boolean isJava17() {
 		return isJava17;
+	}
+
+	/** Returns true if ImageJ is running on a Java 1.8 or greater JVM. */
+	public static boolean isJava18() {
+		return isJava18;
 	}
 
 	/** Returns true if ImageJ is running on Linux. */

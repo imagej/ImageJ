@@ -73,6 +73,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private AtomicBoolean paintPending;
 	private boolean scaleToFit;
 	private boolean painted;
+	private boolean hideZoomIndicator;
 
 		
 	public ImageCanvas(ImagePlus imp) {
@@ -384,6 +385,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	} 
 
 	void drawZoomIndicator(Graphics g) {
+		if (hideZoomIndicator)
+			return;
 		int x1 = 10;
 		int y1 = 10;
 		double aspectRatio = (double)imageHeight/imageWidth;
@@ -753,7 +756,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 	
 	protected Dimension canEnlarge(int newWidth, int newHeight) {
-		//if ((flags&Event.CTRL_MASK)!=0 || IJ.controlKeyDown()) return null;
+		if (IJ.altKeyDown())
+			return null;
 		ImageWindow win = imp.getWindow();
 		if (win==null) return null;
 		Rectangle r1 = win.getBounds();
@@ -1547,6 +1551,17 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	public boolean getScaleToFit() {
 		return scaleToFit;
+	}
+	
+	public boolean hideZoomIndicator(boolean hide) {
+		boolean hidden = this.hideZoomIndicator;
+		this.hideZoomIndicator = hide;
+		setPaintPending(true);
+		repaint();
+		long t0 = System.currentTimeMillis();
+		while(getPaintPending() && (System.currentTimeMillis()-t0)<250L)
+			IJ.wait(1);
+		return hidden;
 	}
 
 }

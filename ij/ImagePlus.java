@@ -1076,34 +1076,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			getLocalCalibration().setImage(this);
 		}
     }
-
-	/** Adds a key-value pair to this image's properties. The key
-		is removed from the properties table if value is null. */
-	public void setProperty(String key, Object value) {
-		if (properties==null)
-			properties = new Properties();
-		if (value==null)
-			properties.remove(key);
-		else
-			properties.put(key, value);
-	}
 		
-	/** Returns the property associated with 'key'. May return null. */
-	public Object getProperty(String key) {
-		if (properties==null)
-			return null;
-		else
-			return properties.get(key);
-	}
-	
-	/** Returns this image's Properties. May return null. */
-	public Properties getProperties() {
-			return properties;
-	}
-		
-	/** Returns the value from the "Info" property string associated 
-		with 'key', or null if the key is not found. Works with
-		DICOM tags and Bio-Formats metadata. */
+	/** Returns the string value from the "Info" property string  
+	* associated with 'key', or null if the key is not found. 
+	* Works with DICOM tags and Bio-Formats metadata.
+	*/
 	public String getProp(String key) {
 		if (key==null)
 			return null;
@@ -1124,6 +1101,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		String info = (String)obj;
 		return getProp(key, info);
 	}
+	
+	//public double getValue(String key) {
+	//	return Tools.parseDouble(getProp(key));
+	//}
 	
 	private String getProp(String key, String info) {
 		int index1 = -1;
@@ -1168,6 +1149,31 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return info;
 	}
 
+	/** Returns the property associated with 'key', or null if it is not found.
+	* @see #getProp
+	*/
+	public Object getProperty(String key) {
+		if (properties==null)
+			return null;
+		else
+			return properties.get(key);
+	}
+	
+	/** Adds a key-value pair to this image's properties. The key
+		is removed from the properties table if value is null. */
+	public void setProperty(String key, Object value) {
+		if (properties==null)
+			properties = new Properties();
+		if (value==null)
+			properties.remove(key);
+		else
+			properties.put(key, value);
+	}
+		
+	/** Returns this image's Properties. May return null. */
+	public Properties getProperties() {
+			return properties;
+	}
 	/** Creates a LookUpTable object that corresponds to this image. */
     public LookUpTable createLut() {
 		ImageProcessor ip2 = getProcessor();
