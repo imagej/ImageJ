@@ -14,7 +14,6 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	private ImagePlus imp;
 	private boolean canceled;	
 	private double lower=-1.0, upper=-1.0;
-	 
 	private static double addValue = 25;
 	private static double mulValue = 1.25;
 	private static double minValue = 0;
@@ -125,7 +124,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	}
 	
 	boolean previewing() {
-		return gd!=null && gd.getPreviewCheckbox()!=null && gd.getPreviewCheckbox().getState();
+		return gd!=null && gd.isPreviewActive();
 	}
  
  	boolean isFloat(ImageProcessor ip) {

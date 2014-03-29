@@ -5,60 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.48t 28 March 2014</u>
+<li> <u>1.48u 29 March 2014</u>
 <ul>
-<li> Thanks to Ted Toal, holding down the alt key prevents the '+' command
-(Image>Zoom>In) from enlarging the window.
-<li> ImageJ remembers the location of the first small image opened.
-<li> Thanks to Norbert Vischer, <i>Plugins&gt;Utilities&gt;Capture Image</i>
-hides the zoom indicator.
-<li> Thanks to Dimiter Proanov, <i>Image&gt;Stacks&gt;Plot Z-axis Profile</i>
-displays the plot in calibrated units.
-<li> Thanks to Michael Schmid, added a <i>File&gt;Revert</i>
-command to the text editor.
-<li> Fixed the <i>Undo</i> command in the text editor and added
-the <i>Edit&gt;Balance</i> command, which locates the pair of curly 
-braces or parentheses that surround the insertion point.
-<li> Thanks to Norbert Vischer, the text editor's <i>Edit&gt;Balance</i> 
-command handles '{' and '}' in comments and quotes, handles '[' and ']' brackets,
-handles escaped characters and detects errors if nested pairs are not balanced.
-<li> The <i>Edit&gt;Options&gt;Compiler</i> command now supports Java 1.8.
-<li> Thanks to Lorenz Maier, the run("Macro...", options) function now works 
-when the options string starts with "v=" instead of "code=v=".
-<li> Thanks to Nico Stuurman, fixed a bug that caused the
-GaussianBlur.blurGaussian() method to throw an exception
-if the image had an ROI.
-<li> Thanks to Michael Schmid, fixed a bug that could cause the
-BackgroundSubtracter#rollingBallBackground() method to throw an
-exception when called with a FloatProcessor.
-<li> Thanks to Carn&euml; Draug and Johannes Schindelin, fixed a bug that 
-caused the File.directory  macro function to not return the expected
-value after calling open(path).
-<li> Thanks to Carn&euml; Draug, fixed a bug that precluded running 
-macro files without extensions from the command line.
-<li> Thanks to Bill Heeschen, fixed a bug that caused <i>Image&gtDuplicate</i>
-to shift any non-rectangular selection in the source image to x=0, y=0.
-<li> Thanks to Jochen Cammin, fixed a bug in <i>File&gt;Import&gt;Raw</i>
-that caused it to only load the first slice from each file when
-"Open all files in folder" was checked.
-<li> Thanks to Julio Buonfigli, fixed a bug that caused the <i>File&gt;Compile and Run</i>
-command in the text editor to throw an exception if the file name did not end in ".java".
-<li> Thanks to Philippe Carl, fixed bugs that caused the drawLine(), drawNormalizedLine()
-and drawDottedLine() methods of the Plot class to not work with log plots.
-<li> Thanks to Norbert Vischer, fixed a bug in <i>Image&gt;Zoom&gt;Set</i> that caused
-it to not correctly set the window size of stacks with selections.
-<li> Thanks to Eric Denarier, fixed a bug that caused <i>Image&gt;Overlay&gt;From ROI Manager</i>
-to not work in batch mode macros.
-<li> Thanks to Ted Toal, fixed a bug in the setResult() macro function that caused
-it to not work as expected when changing a string value in the Results table.
-<li> Thanks to Norbert Vischer, fixed a bug that sometimes caused the getProfile() and 
-run("Plot Profile") macro functions to not work as expected.
-<li> Thanks to Lorenz Maier, fixed a bug that could cause <i>Process&gt;Math&gt;Macro</i>
-to throw a null pointer exception.
-<li> Thanks to Michael Schmid, fixed a bug that caused <i>Process&gt;Math&gt;Gamma</i>
-to not check for invalid gamma values in preview mode.
-<li> Thanks to Ilan Tal, fixed a regression that caused the "B&C" and "Threshold" windows
-to not remember their positions when the "ImageJ" window was closed.
+<li> Added getStringProperty(key) and getNumericProperty(key) methods to the ImagePlus class.
+<li> Thanks to Johannes Schindelin, added the GenericDialog#isPreviewActive() method.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

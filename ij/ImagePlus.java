@@ -1077,11 +1077,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
     }
 		
-	/** Returns the string value from the "Info" property string  
-	* associated with 'key', or null if the key is not found. 
-	* Works with DICOM tags and Bio-Formats metadata.
+ 	/** Returns the string value from the "Info" property string  
+	 * associated with 'key', or null if the key is not found. 
+	 * Works with DICOM tags and Bio-Formats metadata.
+	 * @see #getNumericProperty
+	 * @see #getInfoProperty
 	*/
-	public String getProp(String key) {
+	public String getStringProperty(String key) {
 		if (key==null)
 			return null;
 		if (key.length()==9 && key.matches("[0-9]{4},[0-9]{4}")) // DICOM tag?
@@ -1090,7 +1092,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			ImageStack stack = getStack();
 			String label = stack.getSliceLabel(getCurrentSlice());
 			if (label!=null && label.indexOf('\n')>0) {
-				String value = getProp(key, label);
+				String value = getStringProperty(key, label);
 				if (value!=null)
 					return value;
 			}
@@ -1099,14 +1101,26 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (obj==null || !(obj instanceof String))
 			return null;
 		String info = (String)obj;
-		return getProp(key, info);
+		return getStringProperty(key, info);
 	}
 	
-	//public double getValue(String key) {
-	//	return Tools.parseDouble(getProp(key));
-	//}
+	/** Returns the numeric value from the "Info" property string  
+	 * associated with 'key', or NaN if the key is not found or the
+	 * value associated with the key is not numeric. Works with
+	 * DICOM tags and Bio-Formats metadata.
+	 * @see #getStringProperty
+	 * @see #getInfoProperty
+	*/
+	public double getNumericProperty(String key) {
+		return Tools.parseDouble(getStringProperty(key));
+	}
+
+	/** Obsolete */
+	public String getProp(String key) {
+		return getStringProperty(key);
+	}
 	
-	private String getProp(String key, String info) {
+	private String getStringProperty(String key, String info) {
 		int index1 = -1;
 		index1 = findKey(info, key+": "); // standard 'key: value' pair?
 		if (index1<0) // Bio-Formats metadata?
@@ -1150,7 +1164,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	/** Returns the property associated with 'key', or null if it is not found.
-	* @see #getProp
+	 * @see #getStringProperty
+	 * @see #getNumericProperty
+	 * @see #getInfoProperty
 	*/
 	public Object getProperty(String key) {
 		if (properties==null)
