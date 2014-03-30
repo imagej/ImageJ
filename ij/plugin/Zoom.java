@@ -68,63 +68,86 @@ public class Zoom implements PlugIn{
 	/** Based on Albert Cardona's ZoomExact plugin:
 		http://albert.rierol.net/software.html */
 	void setZoom(ImagePlus imp, ImageCanvas ic) {
-		int x = imp.getWidth()/2;
-		int y = imp.getHeight()/2;
+		int width = imp.getWidth();
+		int height = imp.getHeight();
+		int x =width/2;
+		int y = height/2;
 		Rectangle srcRect = ic.getSrcRect();
 		Roi roi = imp.getRoi();
-		boolean areaSelection = roi!=null && roi.isArea();
-		if (areaSelection) {
-			srcRect = roi.getBounds();
-			x = srcRect.x + srcRect.width/2;
-			y = srcRect.y + srcRect.height/2;
+		boolean areaSelection = false;
+		if (roi!=null) {
+			Rectangle bounds = roi.getBounds();
+			x = bounds.x + bounds.width/2;
+			y = bounds.y + bounds.height/2;
+			areaSelection = roi.isArea();
+			if (areaSelection)
+				srcRect = bounds;
 		}
 		ImageWindow win = imp.getWindow();
 		GenericDialog gd = new GenericDialog("Set Zoom");
 		gd.addNumericField("Zoom:", ic.getMagnification() * 200, 0, 4, "%");
 		gd.addNumericField("X center:", x, 0, 5, "");
 		gd.addNumericField("Y center:", y, 0, 5, "");
-		gd.addNumericField("Width:", srcRect.width, 0, 5, "");
-		gd.addNumericField("Height:", srcRect.height, 0, 5, "");
+		if (areaSelection) {
+			gd.addNumericField("Width:", srcRect.width, 0, 5, "");
+			gd.addNumericField("Height:", srcRect.height, 0, 5, "");
+		}
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		double mag = gd.getNextNumber()/100.0;
 		x = (int)gd.getNextNumber();
 		y = (int)gd.getNextNumber();
-		int width = (int)gd.getNextNumber();
-		int height = (int)gd.getNextNumber();
+		int srcWidth = srcRect.width;
+		int srcHeight = srcRect.height;
+		if (areaSelection) {
+			srcWidth = (int)gd.getNextNumber();
+			srcHeight = (int)gd.getNextNumber();
+		}
 		if (x<0) x=0;
 		if (y<0) y=0;
 		String options = IJ.macroRunning()?Macro.getOptions():null;
 		boolean legacyMacro = areaSelection && options!=null && options.contains("x=") && !options.contains("width=");
-		if ((areaSelection||width!=srcRect.width||height!=srcRect.height) && !legacyMacro) {
+		if ((areaSelection||srcWidth!=srcRect.width||srcHeight!=srcRect.height) && !legacyMacro) {
 			if (areaSelection && roi.getType()==Roi.RECTANGLE)
 				imp.deleteRoi();
-			ic.setSourceRect(new Rectangle(x-width/2,y-height/2,width,height));
+			ic.setSourceRect(new Rectangle(x-srcWidth/2,y-srcHeight/2,srcWidth,srcHeight));
 			ic.setMagnification(mag);
 			Insets insets = win.getInsets();
 			int margins = IJ.isMacOSX()?10:14;
 			int stackInset = (imp.getNDimensions()-2)*15;
-			win.setSize((int)(width*mag+insets.right+insets.left+margins), (int)(height*mag+insets.top+insets.bottom+margins+stackInset));
+			win.setSize((int)(srcWidth*mag+insets.right+insets.left+margins), (int)(srcHeight*mag+insets.top+insets.bottom+margins+stackInset));
 			return;
 		}
-		if (x>=imp.getWidth()) x=imp.getWidth()-1;
-		if (y>=imp.getHeight()) y=imp.getHeight()-1;
+		if (x>=width) x=width-1;
+		if (y>=height) y=height-1;
 		if (mag<=0.0) mag = 1.0;
-		win.getCanvas().setMagnification(mag);
-		double w = imp.getWidth()*mag;
-		double h = imp.getHeight()*mag;
-		Rectangle r = GUI.getMaxWindowBounds();
-		if (w>r.width-20) w = r.width-20;  // does it fit?
-		if (h>r.height-50) h = r.height-50;
-		width = (int)(w/mag);
-		height = (int)(h/mag);
-		x -= width/2;
-		y -= height/2;
-		if (x<0) x=0;
-		if (y<0) y=0;
-		ic.setSourceRect(new Rectangle(x, y, width, height));
-		ic.setDrawingSize((int)w, (int)h);
-		win.pack();
+		ic.setMagnification(mag);
+		double newWidth = width*mag;
+		double newHeight = height*mag;
+		Dimension size = ic.getSize();
+		if (newWidth>=size.width && newHeight>=size.height) {
+			srcWidth = (int)Math.round(size.width/mag);
+			srcHeight = (int)Math.round(size.height/mag);
+			if ((int)(srcWidth*mag)<size.width)
+				srcWidth++;
+			if ((int)(srcHeight*mag)<size.height)
+				srcHeight++;
+			x = x-srcWidth/2;
+			y = y-srcHeight/2;
+			if (x+srcWidth>width)
+				x = width - srcWidth;
+			if (y+srcHeight>height)
+				y = height - srcHeight;
+			if (x<0) x=0;
+			if (y<0) y=0;
+			ic.setSourceRect(new Rectangle(x, y, srcWidth, srcHeight));
+		} else {
+			srcWidth = width;
+			srcHeight = height;
+			ic.setSourceRect(new Rectangle(0, 0, srcWidth, srcHeight));
+			ic.setDrawingSize((int)newWidth, (int)newHeight);
+			win.pack();
+		}
 		ic.repaint();
 	}
 	

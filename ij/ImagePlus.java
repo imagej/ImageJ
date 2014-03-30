@@ -1115,7 +1115,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return Tools.parseDouble(getStringProperty(key));
 	}
 
-	/** Obsolete */
+	/**
+	 * @deprecated
+	 * @see #getStringProperty
+	*/
 	public String getProp(String key) {
 		return getStringProperty(key);
 	}

@@ -116,6 +116,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	public void setSourceRect(Rectangle r) {
+		//if (IJ.debugMode) IJ.log("setSourceRect: "+magnification+" "+r+" "+getSize());
 		srcRect = r;
 	}
 
