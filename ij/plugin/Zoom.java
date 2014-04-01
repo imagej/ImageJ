@@ -70,7 +70,7 @@ public class Zoom implements PlugIn{
 	void setZoom(ImagePlus imp, ImageCanvas ic) {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
-		int x =width/2;
+		int x = width/2;
 		int y = height/2;
 		Rectangle srcRect = ic.getSrcRect();
 		Roi roi = imp.getRoi();

@@ -116,7 +116,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	public void setSourceRect(Rectangle r) {
-		//if (IJ.debugMode) IJ.log("setSourceRect: "+magnification+" "+r+" "+getSize());
 		srcRect = r;
 	}
 
@@ -367,8 +366,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		boolean drawingList = index >= LIST_OFFSET;
 		if (drawingList) index -= LIST_OFFSET;
 		String label = "" + (index+1);
-		if (drawNames && roi.getName()!=null)
+		if (drawNames)
 			label = roi.getName();
+		if (label==null)
+			return;
 		FontMetrics metrics = g.getFontMetrics();
 		int w = metrics.stringWidth(label);
 		x = x + width/2 - w/2;

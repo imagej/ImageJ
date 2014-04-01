@@ -104,9 +104,18 @@ public class Analyzer implements PlugInFilter, Measurements {
 			else
 				roi.setPosition(imp.getCurrentSlice());
 		}
-		//if (rt.getCounter()==1)
-		//	RoiProperties.setShowLabels(true);
-		IJ.run(imp, "Add Selection...", "");
+		if (roi.getName()==null)
+			roi.setName(""+rt.getCounter());
+		roi.setIgnoreClipRect(true);
+		Overlay overlay = imp.getOverlay();
+		if (overlay==null)
+			overlay = new Overlay();
+		if (!overlay.getDrawNames())
+			overlay.drawNames(true);
+		overlay.setLabelColor(Color.white);
+		overlay.drawBackgrounds(true);
+		overlay.add((Roi)roi.clone());
+		imp.setOverlay(overlay);
 	}
 
 	void doSetDialog() {
