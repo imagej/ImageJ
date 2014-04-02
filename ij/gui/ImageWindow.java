@@ -150,7 +150,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			xbase = maxWindow.x + (maxWindow.width>1800?24:12);
 			if (width*2<=maxWindow.width) {
 				Point loc = Prefs.getLocation(LOC_KEY);
-				if (loc!=null) {
+				if (loc!=null && loc.x+width<maxWindow.width && loc.y+height<maxWindow.height) {
 					xbase = loc.x;
 					ybase = loc.y;
 				} else {

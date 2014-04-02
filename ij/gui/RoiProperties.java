@@ -104,7 +104,7 @@ public class RoiProperties {
 			gd.addStringField("Position:", position);
 		}
 		if (isText) {
-			gd.addStringField("Font color:", linec);
+			gd.addStringField("Stroke color:", linec);
 			gd.addNumericField("Font size:", strokeWidth, digits, 4, "points");
 			digits = (int)angle==angle?0:1;
 			gd.addNumericField("Angle:", angle, digits, 4, "degrees");
@@ -218,8 +218,6 @@ public class RoiProperties {
 			listCoordinates(roi);
 		if (listProperties && nProperties>0)
 			listProperties(roi);
-		//if (strokeWidth>1.0 && !roi.isDrawingTool())
-		//	Line.setWidth(1);
 		return true;
 	}
 	

@@ -63,7 +63,8 @@ public class OverlayCommands implements PlugIn {
 			gd.addCheckbox("Remove existing overlay", false);
 			gd.showDialog();
 			if (gd.wasCanceled()) return;
-			if (gd.getNextBoolean()) imp.setOverlay(null);
+			if (gd.getNextBoolean())
+				imp.setOverlay(null);
 			return;
  		}
 		if (roi==null) {
@@ -106,12 +107,12 @@ public class OverlayCommands implements PlugIn {
 		if (overlay==null || newOverlay)
 			overlay = OverlayLabels.createOverlay();
 		overlay.add(roi);
-		if (!roi.isDrawingTool()) {
-			double dsw = defaultRoi.getStrokeWidth();
-			defaultRoi = roiClone;
-			if (roi.isLine())
-				defaultRoi.setStrokeWidth(dsw);
-		}
+		//if (!roi.isDrawingTool()) {
+		//	double dsw = defaultRoi.getStrokeWidth();
+		//	defaultRoi = roiClone;
+		//	if (roi.isLine())
+		//		defaultRoi.setStrokeWidth(dsw);
+		//}
 		defaultRoi.setPosition(setPos?1:0);
 		imp.setOverlay(overlay);
 		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow&&!Prefs.keepArrowSelections))
@@ -161,7 +162,6 @@ public class OverlayCommands implements PlugIn {
 		}
 		gd.addNumericField("Opacity (0-100%):", opacity, 0);
 		gd.addCheckbox("Zero transparent", zeroTransparent);
-		//gd.addCheckbox("Create image selection", createImageRoi);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -172,7 +172,6 @@ public class OverlayCommands implements PlugIn {
 		}
 		opacity = (int)gd.getNextNumber();
 		zeroTransparent = gd.getNextBoolean();
-		//createImageRoi = gd.getNextBoolean();
 		ImagePlus overlay = WindowManager.getImage(wList[index]);
 		if (wList.length==2) {
 			ImagePlus i1 = WindowManager.getImage(wList[0]);
@@ -276,7 +275,6 @@ public class OverlayCommands implements PlugIn {
 
 	//Marcel Boeglin 2014.01.25
 	void flattenStack(ImagePlus imp) {
-		//IJ.log("imp.getOverlay() = "+imp.getOverlay());
 		imp.flattenStack();
 	}
 	
