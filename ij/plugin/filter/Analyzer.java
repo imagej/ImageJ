@@ -408,11 +408,6 @@ public class Analyzer implements PlugInFilter, Measurements {
 			double[] values = profile.getProfile();
 			if (values==null) return;
 			ip2 = new FloatProcessor(values.length, 1, values);
-			if (straightLine) {
-				Line l = (Line)roi;
-				if ((l.y1==l.y2||l.x1==l.x2)&&l.x1==l.x1d&& l.y1==l.y1d&& l.x2==l.x2d&& l.y2==l.y2d)
-					ip2.setRoi(0, 0, ip2.getWidth()-1, 1);
-			}
 		}
 		ImageStatistics stats = ImageStatistics.getStatistics(ip2, AREA+MEAN+STD_DEV+MODE+MIN_MAX, imp2.getCalibration());
 		if (saveR!=null) ip2.setRoi(saveR);

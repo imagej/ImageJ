@@ -19,7 +19,6 @@ public class OverlayCommands implements PlugIn {
 	
 	static {
 		defaultRoi = new Roi(0, 0, 1, 1);
-		//defaultRoi.setStrokeColor(Roi.getColor());
 		defaultRoi.setPosition(1); // set stacks positions by default
 	}
 
@@ -107,12 +106,6 @@ public class OverlayCommands implements PlugIn {
 		if (overlay==null || newOverlay)
 			overlay = OverlayLabels.createOverlay();
 		overlay.add(roi);
-		//if (!roi.isDrawingTool()) {
-		//	double dsw = defaultRoi.getStrokeWidth();
-		//	defaultRoi = roiClone;
-		//	if (roi.isLine())
-		//		defaultRoi.setStrokeWidth(dsw);
-		//}
 		defaultRoi.setPosition(setPos?1:0);
 		imp.setOverlay(overlay);
 		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow&&!Prefs.keepArrowSelections))
@@ -350,13 +343,6 @@ public class OverlayCommands implements PlugIn {
 			if (roi.getFillColor()==null)
 				roi.setFillColor(defaultRoi.getFillColor());
 		}
-		//int width = Line.getWidth();
-		//Rectangle bounds = roi.getBounds();
-		//boolean tooWide = width>Math.max(bounds.width, bounds.height)/3.0;
-		//if (roi.getStroke()==null && width>1 && !tooWide)
-		//	roi.setStrokeWidth(Line.getWidth());
-		//if (roi.getStrokeColor()==null)
-		//	roi.setStrokeColor(Roi.getColor());
 		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;
 		if (points) roi.setStrokeColor(Color.red);
 		roi.setPosition(defaultRoi.getPosition());
