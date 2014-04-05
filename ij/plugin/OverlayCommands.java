@@ -239,7 +239,7 @@ public class OverlayCommands implements PlugIn {
 			ImageCanvas ic = imp.getCanvas();
 			if (ic!=null)
 				roiManagerOverlay = ic.getShowAllList();
-			if (overlay==null && roiManagerOverlay==null && !imp.isComposite()) {
+			if (overlay==null && roiManagerOverlay==null && !imp.isComposite() && !(IJ.macroRunning()&&imp.getStackSize()==1)) {
 				IJ.error("Flatten", "Overlay or multi-channel image required");
 				return;
 			}

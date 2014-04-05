@@ -93,6 +93,7 @@ public class NewImage {
 			IJ.outOfMemory(imp.getTitle());
 			stack.trim();
 		}
+		IJ.showStatus("");
 		if (bigStack)
 			IJ.showProgress(nSlices, nSlices);
 		if (stack.getSize()>1)
