@@ -697,6 +697,20 @@ public class ImageJ extends Frame implements ActionListener,
 		if (IJ.debugMode && IJ.getInstance()==null)
 			new JavaProperties().run("");
 		if (noGUI) System.exit(0);
+
+		// Handle virtual machine shutdown.  Save window locations and preferences.
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			public void run() {
+				ImageJ instance = IJ.getInstance();
+				if(instance != null) {
+					if(instance.applet == null) {
+						Prefs.savePreferences();
+						instance.saveWindowLocations();
+					}
+					instance.quit();
+				}
+			}
+		});
 	}
 		
 	// Is there another instance of ImageJ? If so, send it the arguments and quit.
