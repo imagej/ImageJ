@@ -703,7 +703,7 @@ public class ImageJ extends Frame implements ActionListener,
 			public void run() {
 				ImageJ instance = IJ.getInstance();
 				if(instance != null) {
-					if(instance.applet == null) {
+					if(instance.applet != null) {
 						Prefs.savePreferences();
 						instance.saveWindowLocations();
 					}
