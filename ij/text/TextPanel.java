@@ -174,10 +174,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
   
 	/** Adds a single line to the end of this TextPanel. */
-	public void appendLine(String data) {
+	public void appendLine(String text) {
 		if (vData==null)
 			setColumnHeadings("");
-		char[] chars = data.toCharArray();
+		char[] chars = text.toCharArray();
 		vData.addElement(chars);
 		iRowCount++;
 		if (isShowing()) {
@@ -191,22 +191,14 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 	
 	/** Adds one or more lines to the end of this TextPanel. */
-	public void append(String data) {
-		if (data==null) data="null";
+	public void append(String text) {
+		if (text==null) text="null";
 		if (vData==null)
 			setColumnHeadings("");
-		while (true) {
-			int p=data.indexOf('\n');
-			if (p<0) {
-				appendWithoutUpdate(data);
-				break;
-			}
-			appendWithoutUpdate(data.substring(0,p));
-			data = data.substring(p+1);
-			if (data.equals("")) 
-				break;
-		}
-		if (isShowing()) {  // && !(ij.macro.Interpreter.isBatchMode()&&title.equals("Results"))
+		String[] lines = text.split("\n");
+		for (int i=0; i<lines.length; i++)
+			appendWithoutUpdate(lines[i]);
+		if (isShowing()) {
 			updateDisplay();
 			unsavedLines = true;
 		}

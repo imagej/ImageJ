@@ -10,6 +10,7 @@ import ij.plugin.filter.PlugInFilter;
 import ij.text.TextWindow;
 import ij.measure.ResultsTable;
 import java.awt.*;
+import java.util.ArrayList;
 
 /** This plugin implements the commands in the Image/Overlay menu. */
 public class OverlayCommands implements PlugIn {
@@ -359,7 +360,7 @@ public class OverlayCommands implements PlugIn {
 	}
 	
 	public static void listRois(Roi[] rois) {
-		StringBuffer sb = new StringBuffer();
+		ArrayList list = new ArrayList();
 		for (int i=0; i<rois.length; i++) {
 			Rectangle r = rois[i].getBounds();
 			String color = Colors.colorToString(rois[i].getStrokeColor());
@@ -371,11 +372,11 @@ public class OverlayCommands implements PlugIn {
 			int c = rois[i].getCPosition();
 			int z = rois[i].getZPosition();
 			int t = rois[i].getTPosition();
-			sb.append(i+"\t"+rois[i].getName()+"\t"+rois[i].getTypeAsString()+"\t"+r.x
-			+"\t"+r.y+"\t"+r.width+"\t"+r.height+"\t"+color+"\t"+fill+"\t"+sWidth+"\t"+position+"\t"+c+"\t"+z+"\t"+t+"\n");
+			list.add(i+"\t"+rois[i].getName()+"\t"+rois[i].getTypeAsString()+"\t"+r.x
+			+"\t"+r.y+"\t"+r.width+"\t"+r.height+"\t"+color+"\t"+fill+"\t"+sWidth+"\t"+position+"\t"+c+"\t"+z+"\t"+t);
 		}
         String headings = "Index\tName\tType\tX\tY\tWidth\tHeight\tColor\tFill\tLWidth\tPos\tC\tZ\tT";
-		new TextWindow("Overlay Elements", headings, sb.toString(), 600, 400);
+		new TextWindow("Overlay Elements", headings, list, 600, 400);
 	}
 	
 }

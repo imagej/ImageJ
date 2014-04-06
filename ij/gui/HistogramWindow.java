@@ -5,6 +5,7 @@ import java.awt.image.*;
 import java.awt.event.*;
 import java.io.*;
 import java.awt.datatransfer.*;
+import java.util.ArrayList;
 import ij.*;
 import ij.process.*;
 import ij.measure.*;
@@ -388,16 +389,16 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 	
 	protected void showList() {
-		StringBuffer sb = new StringBuffer();
+		ArrayList list = new ArrayList();
         String vheading = stats.binSize==1.0?"value":"bin start";
 		if (cal.calibrated() && !cal.isSigned16Bit()) {
 			for (int i=0; i<stats.nBins; i++)
-				sb.append(i+"\t"+ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]+"\n");
-			TextWindow tw = new TextWindow(getTitle(), "level\t"+vheading+"\tcount", sb.toString(), 200, 400);
+				list.add(i+"\t"+ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]);
+			TextWindow tw = new TextWindow(getTitle(), "level\t"+vheading+"\tcount", list, 200, 400);
 		} else {
 			for (int i=0; i<stats.nBins; i++)
-				sb.append(ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]+"\n");
-			TextWindow tw = new TextWindow(getTitle(), vheading+"\tcount", sb.toString(), 200, 400);
+				list.add(ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]);
+			TextWindow tw = new TextWindow(getTitle(), vheading+"\tcount", list, 200, 400);
 		}
 	}
 	

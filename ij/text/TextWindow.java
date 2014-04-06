@@ -1,13 +1,13 @@
 package ij.text;
-
-import java.awt.*;
-import java.io.*;
-import java.awt.event.*;
 import ij.*;
 import ij.io.*;
 import ij.gui.*;
 import ij.plugin.filter.Analyzer;
 import ij.macro.Interpreter;
+import java.awt.*;
+import java.io.*;
+import java.awt.event.*;
+import java.util.ArrayList;
 
 /** Uses a TextPanel to displays text in a window.
 	@see TextPanel
@@ -30,34 +30,54 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	MenuBar mb;
  
 	/**
-	Opens a new single-column text window.
-	@param title	the title of the window
-	@param data		the text initially displayed in the window
-	@param width	the width of the window in pixels
-	@param height	the height of the window in pixels
+	* Opens a new single-column text window.
+	* @param title	the title of the window
+	* @param text		the text initially displayed in the window
+	* @param width	the width of the window in pixels
+	* @param height	the height of the window in pixels
 	*/
-	public TextWindow(String title, String data, int width, int height) {
-		this(title, "", data, width, height);
+	public TextWindow(String title, String text, int width, int height) {
+		this(title, "", text, width, height);
 	}
 
 	/**
-	Opens a new multi-column text window.
-	@param title	the title of the window
-	@param headings	the tab-delimited column headings
-	@param data		the text initially displayed in the window
-	@param width	the width of the window in pixels
-	@param height	the height of the window in pixels
+	* Opens a new multi-column text window.
+	* @param title	title of the window
+	* @param headings	the tab-delimited column headings
+	* @param text		text initially displayed in the window
+	* @param width	width of the window in pixels
+	* @param height	height of the window in pixels
 	*/
-	public TextWindow(String title, String headings, String data, int width, int height) {
+	public TextWindow(String title, String headings, String text, int width, int height) {
 		super(title);
+		textPanel = new TextPanel(title);
+		textPanel.setColumnHeadings(headings);
+		if (text!=null && !text.equals(""))
+			textPanel.append(text);
+		create(title, textPanel, width, height);
+	}
+
+	/**
+	* Opens a new multi-column text window.
+	* @param title	title of the window
+	* @param headings	tab-delimited column headings
+	* @param text		ArrayList containing the text to be displayed in the window
+	* @param width	width of the window in pixels
+	* @param height	height of the window in pixels
+	*/
+	public TextWindow(String title, String headings, ArrayList text, int width, int height) {
+		super(title);
+		textPanel = new TextPanel(title);
+		textPanel.setColumnHeadings(headings);
+		if (text!=null)
+			textPanel.append(text);
+		create(title, textPanel, width, height);
+	}
+
+	private void create(String title, TextPanel textPanel, int width, int height) {
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		if (IJ.isLinux()) setBackground(ImageJ.backgroundColor);
-		textPanel = new TextPanel(title);
-		textPanel.setTitle(title);
 		add("Center", textPanel);
-		textPanel.setColumnHeadings(headings);
-		if (data!=null && !data.equals(""))
-			textPanel.append(data);
 		addKeyListener(textPanel);
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null) {
@@ -72,7 +92,6 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
  		addMenuBar();
 		setFont();
 		WindowManager.addWindow(this);
-		
 		Point loc=null;
 		int w=0, h=0;
 		if (title.equals("Results")) {
@@ -99,11 +118,10 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	}
 
 	/**
-	Opens a new text window containing the contents
-	of a text file.
-	@param path		the path to the text file
-	@param width	the width of the window in pixels
-	@param height	the height of the window in pixels
+	* Opens a new text window containing the contents of a text file.
+	* @param path		the path to the text file
+	* @param width	the width of the window in pixels
+	* @param height	the height of the window in pixels
 	*/
 	public TextWindow(String path, int width, int height) {
 		super("");
