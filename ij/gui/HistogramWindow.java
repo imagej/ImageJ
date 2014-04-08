@@ -390,7 +390,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	
 	protected void showList() {
 		ArrayList list = new ArrayList();
-        String vheading = stats.binSize==1.0?"value":"bin start";
+		String vheading = stats.binSize==1.0?"value":"bin start";
 		if (cal.calibrated() && !cal.isSigned16Bit()) {
 			for (int i=0; i<stats.nBins; i++)
 				list.add(i+"\t"+ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]);

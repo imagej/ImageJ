@@ -1,6 +1,7 @@
 package ij.gui;
 import ij.*;
 import java.awt.event.*;
+import java.awt.EventQueue;
 
 /** This is an extension of GenericDialog that is non-model.
  *	@author Johannes Schindelin
@@ -13,8 +14,16 @@ public class NonBlockingGenericDialog extends GenericDialog {
 
 	public synchronized void showDialog() {
 		super.showDialog();
-		if (!IJ.macroRunning())
-			WindowManager.addWindow(this);
+		if (!IJ.macroRunning()) { // add to Window menu on event dispatch thread
+			final NonBlockingGenericDialog thisDialog = this;
+			try {
+				EventQueue.invokeAndWait(new Runnable() {
+					public void run() {
+						WindowManager.addWindow(thisDialog);
+					}
+				});
+			} catch (Exception e) { }
+		}
 		try {
 			wait();
 		} catch (InterruptedException e) { }

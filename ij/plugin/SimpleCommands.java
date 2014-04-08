@@ -39,12 +39,15 @@ public class SimpleCommands implements PlugIn {
 			resultsToImage();
 		else if (arg.equals("display"))
 			IJ.runMacroFile("ij.jar:ShowAllLuts", null);
-		else if (arg.equals("fonts")) {
-			Thread t = new Thread(new Runnable() {
-				public void run() {IJ.runPlugIn("ij.plugin.Text", "");}
-			});
-			t.start();
-		}
+		else if (arg.equals("fonts"))
+			showFonts();
+	}
+	
+	private synchronized void showFonts() {
+		Thread t = new Thread(new Runnable() {
+			public void run() {IJ.runPlugIn("ij.plugin.Text", "");}
+		});
+		t.start();
 	}
 
 	private void reset() {

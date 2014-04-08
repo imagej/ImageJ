@@ -20,14 +20,14 @@ public class Text implements PlugIn, DialogListener {
 	private Color color = Toolbar.getForegroundColor();
 	private String colorName;
 
- 	public void run(String arg) {
+ 	public synchronized void run(String arg) {
  		if (gd!=null && gd.isVisible())
  			gd.toFront();
  		else
 			showDialog();
 	}
 				
-	void showDialog() {
+	private synchronized void showDialog() {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		Roi roi = imp!=null?imp.getRoi():null;
 		TextRoi textRoi = roi!=null&&(roi instanceof TextRoi)?(TextRoi)roi:null;

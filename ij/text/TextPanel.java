@@ -84,6 +84,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	/** Constructs a new TextPanel. */
 	public TextPanel(String title) {
 		this();
+		this.title = title;
 		if (title.equals("Results")) {
 			pm.addSeparator();
 			addPopupItem("Clear Results");
@@ -570,12 +571,12 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			selOrigin = r;
 			if (r>=iRowCount)
 				selOrigin = iRowCount-1;
-			//System.out.println("select: "+selOrigin);
 		}
 		tc.repaint();
 		selLine=r;
-		if (Interpreter.getInstance()!=null && title.equals("Debug"))
-			Interpreter.getInstance().showArrayInspector(r);
+		Interpreter interp = Interpreter.getInstance();
+		if (interp!=null && title.equals("Debug"))
+			interp.showArrayInspector(r);
 	}
 
 	void extendSelection(int x,int y) {
@@ -583,7 +584,6 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if(iRowHeight==0 || x>d.width || y>d.height)
 			return;
      	int r=(y/iRowHeight)-1+iFirstRow;
-		//System.out.println(r+"  "+selOrigin);
      	if(r>=0 && r<iRowCount) {
 			if (r<selOrigin) {
 				selStart = r;
