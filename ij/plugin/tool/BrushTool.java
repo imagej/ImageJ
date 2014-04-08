@@ -214,7 +214,9 @@ import java.util.Vector;
 				gd.centerDialog(false);
 				gd.setLocation (loc);
 			}
+			WindowManager.addWindow(gd);
 			gd.showDialog();
+			WindowManager.removeWindow(gd);
 			Prefs.saveLocation(LOC_KEY, gd.getLocation());
 			gd = null;
 		}

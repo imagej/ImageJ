@@ -2045,8 +2045,9 @@ public class Interpreter implements MacroConstants {
 				}
 				txtPanel.append(newText);
 				txtPanel.scrollToTop();
+				if (editor!=null)
+					editor.toFront();
 				//n__  scroll position should not change during single-stepping
-				//n__  macro text should be in front, not arrayInspector 
 			}
 		}
 	}

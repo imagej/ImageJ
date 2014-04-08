@@ -27,7 +27,7 @@ public class Text implements PlugIn, DialogListener {
 			showDialog();
 	}
 				
-	private synchronized void showDialog() {
+	private void showDialog() {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		Roi roi = imp!=null?imp.getRoi():null;
 		TextRoi textRoi = roi!=null&&(roi instanceof TextRoi)?(TextRoi)roi:null;
@@ -67,7 +67,9 @@ public class Text implements PlugIn, DialogListener {
 		gd.addDialogListener(this);
 		gd.setOKLabel("Close");
 		gd.hideCancelButton();
+		WindowManager.addWindow(gd);
 		gd.showDialog();
+		WindowManager.removeWindow(gd);
 		Prefs.saveLocation(LOC_KEY, gd.getLocation());
 	}
 

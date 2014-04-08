@@ -14,16 +14,6 @@ public class NonBlockingGenericDialog extends GenericDialog {
 
 	public synchronized void showDialog() {
 		super.showDialog();
-		if (!IJ.macroRunning()) { // add to Window menu on event dispatch thread
-			final NonBlockingGenericDialog thisDialog = this;
-			try {
-				EventQueue.invokeAndWait(new Runnable() {
-					public void run() {
-						WindowManager.addWindow(thisDialog);
-					}
-				});
-			} catch (Exception e) { }
-		}
 		try {
 			wait();
 		} catch (InterruptedException e) { }
@@ -49,7 +39,6 @@ public class NonBlockingGenericDialog extends GenericDialog {
     
 	public void dispose() {
 		super.dispose();
-		WindowManager.removeWindow(this);
 	}
 
 }

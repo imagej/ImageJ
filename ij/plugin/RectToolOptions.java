@@ -45,7 +45,9 @@ public class RectToolOptions implements PlugIn, DialogListener {
 		gd.addStringField("Color: ", strokec);
 		gd.addStringField("Fill color: ", fillc);
 		gd.addDialogListener(this);
+		WindowManager.addWindow(gd);
 		gd.showDialog();
+		WindowManager.removeWindow(gd);
 	}
 
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
