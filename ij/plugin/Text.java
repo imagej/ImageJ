@@ -67,9 +67,7 @@ public class Text implements PlugIn, DialogListener {
 		gd.addDialogListener(this);
 		gd.setOKLabel("Close");
 		gd.hideCancelButton();
-		WindowManager.addWindow(gd);
 		gd.showDialog();
-		WindowManager.removeWindow(gd);
 		Prefs.saveLocation(LOC_KEY, gd.getLocation());
 	}
 

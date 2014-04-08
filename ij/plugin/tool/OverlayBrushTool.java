@@ -216,9 +216,7 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 				gd.centerDialog(false);
 				gd.setLocation (loc);
 			}
-			WindowManager.addWindow(gd);
 			gd.showDialog();
-			WindowManager.removeWindow(gd);
 			Prefs.saveLocation(LOC_KEY, gd.getLocation());
 			if (IJ.debugMode) IJ.log("Options: false");
 			gd = null;
