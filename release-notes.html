@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.48u 7 April 2014</u>
+<li> <u>1.48u 9 April 2014</u>
 <ul>
 <li> Selections added to the overlay by the <i>Measure</i> command when "Add to Overlay"
 is enabled in the <i>Set Measurements</i> dialog are labeled with the measurement number.
@@ -21,13 +21,15 @@ and <i>Measure</i> commands to be inconsistent with horizontal or vertical one
 pixel wide straight line selections.
 <li> Thanks to Gabriel Landini, fixed a bug that could cause the Results table 
 to be displayed very slowly on Java 1.7 and Java 1.8.
+<li> Thanks to Burni, fixed a bug that prevented the ImageWindow.setNextLocation() method
+from working with windows normally centered on the screen, such as plot windows.
 <li> Fixed a v1.48 regression that caused the run("Add Selection...", options) 
 macro function to not work as expected with text selections.
 <li> Thanks to  Johannes Schindelin, fixed a v1.48r regression that caused the
 "Fonts" dialog to be displayed multiple times or incorrectly if you double-clicked
 the text tool icon multiple times.
-<li> Thanks to  Johannes Schindelin, Gabriel Landini and Volker Baecker, fixed a v1.48r
-regression that could cause NonBlockingGenericDialogs to deadlock.
+<li> Thanks to Johannes Schindelin, Gabriel Landini and Volker Baecker, fixed a v1.48r
+regression on Linux that caused ImageJ to freeze when opening a NonBlockingGenericDialog.
 
 </ul>
 

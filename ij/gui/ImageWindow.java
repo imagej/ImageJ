@@ -122,7 +122,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 				if (img!=null) 
 					try {setIconImage(img);} catch (Exception e) {}
 			}
-			if (centerOnScreen) {
+			if (centerOnScreen && nextLocation==null) {
 				GUI.center(this);
 				centerOnScreen = false;
 			} else if (nextLocation!=null) {
@@ -486,19 +486,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	public Component add(Component comp) {
 		comp = super.add(comp);
 		maxBounds = getMaximumBounds();
-		//if (!IJ.isLinux()) {
-			setMaximizedBounds(maxBounds);
-			setMaxBoundsTime = System.currentTimeMillis();
-		//}
+		setMaximizedBounds(maxBounds);
+		setMaxBoundsTime = System.currentTimeMillis();
 		return comp;
 	}
-	
-	//public void setMaximizedBounds(Rectangle r) {
-	//	super.setMaximizedBounds(r);
-	//	IJ.log("setMaximizedBounds: "+r+" "+getMaximizedBounds());
-	//	if (getMaximizedBounds().x==0)
-	//		throw new IllegalArgumentException("");
-	//}
 	
 	public void maximize() {
 		if (maxBounds==null)

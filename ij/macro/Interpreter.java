@@ -2026,6 +2026,7 @@ public class Interpreter implements MacroConstants {
 					if (element.getType()==Variable.STRING) {
 						valueStr = elements[jj].getString();
 						valueStr = valueStr.replaceAll("\n", "\\\\n");
+						valueStr += " ";  // avoid empty string
 					} else if (element.getType()==Variable.VALUE) {
 						double v = elements[jj].getValue();
 						if ((int)v==v)
