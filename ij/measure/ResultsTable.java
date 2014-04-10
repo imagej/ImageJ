@@ -759,10 +759,9 @@ public class ResultsTable implements Cloneable {
 		int n = getCounter();
 		if (n>0) {
 			if (tp.getLineCount()>0) tp.clear();
-			StringBuilder sb = new StringBuilder(n*tableHeadings.length());
 			for (int i=0; i<n; i++)
-				sb.append(getRowAsString(i)+"\n");
-			tp.append(new String(sb));
+				tp.appendWithoutUpdate(getRowAsString(i));
+			tp.updateDisplay();
 		}
 		if (newWindow) tp.scrollToTop();
 	}

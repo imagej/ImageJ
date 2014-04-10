@@ -122,13 +122,12 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 				if (img!=null) 
 					try {setIconImage(img);} catch (Exception e) {}
 			}
-			if (centerOnScreen) {
-				GUI.center(this);
-				centerOnScreen = false;
-			} else if (nextLocation!=null) {
+			if (nextLocation!=null)
 				setLocation(nextLocation);
-				nextLocation = null;
-			}
+			else if (centerOnScreen && nextLocation==null)
+				GUI.center(this);
+			nextLocation = null;
+			centerOnScreen = false;
 			if (Interpreter.isBatchMode() || (IJ.getInstance()==null&&this instanceof HistogramWindow)) {
 				WindowManager.setTempCurrentImage(imp);
 				Interpreter.addBatchModeImage(imp);
@@ -150,7 +149,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			xbase = maxWindow.x + (maxWindow.width>1800?24:12);
 			if (width*2<=maxWindow.width) {
 				Point loc = Prefs.getLocation(LOC_KEY);
-				if (loc!=null) {
+				if (loc!=null && loc.x+width<maxWindow.width && loc.y+height<maxWindow.height) {
 					xbase = loc.x;
 					ybase = loc.y;
 				} else {
@@ -486,19 +485,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	public Component add(Component comp) {
 		comp = super.add(comp);
 		maxBounds = getMaximumBounds();
-		//if (!IJ.isLinux()) {
-			setMaximizedBounds(maxBounds);
-			setMaxBoundsTime = System.currentTimeMillis();
-		//}
+		setMaximizedBounds(maxBounds);
+		setMaxBoundsTime = System.currentTimeMillis();
 		return comp;
 	}
-	
-	//public void setMaximizedBounds(Rectangle r) {
-	//	super.setMaximizedBounds(r);
-	//	IJ.log("setMaximizedBounds: "+r+" "+getMaximizedBounds());
-	//	if (getMaximizedBounds().x==0)
-	//		throw new IllegalArgumentException("");
-	//}
 	
 	public void maximize() {
 		if (maxBounds==null)

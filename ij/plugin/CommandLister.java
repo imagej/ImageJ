@@ -63,11 +63,9 @@ public class CommandLister implements PlugIn {
 		String[] list = new String[v.size()];
 		v.copyInto((String[])list);
 		StringSorter.sort(list);
-		StringBuffer sb = new StringBuffer();
-		for (int i=0; i<list.length; i++) {
-			sb.append(list[i]);
-			sb.append("\n");
-		}
-		TextWindow tw = new TextWindow(title, headings, sb.toString(), 600, 500);
+		ArrayList list2 = new ArrayList();
+		for (int i=0; i<list.length; i++)
+			list2.add(list[i]);
+		TextWindow tw = new TextWindow(title, headings, list2, 600, 500);
 	}
 }

@@ -2002,27 +2002,31 @@ public class Interpreter implements MacroConstants {
 			if (var.getType()!=Variable.ARRAY && arrayWindow!=null)
 				arrayWindow.setVisible(false);
 			if (var.getType()==Variable.ARRAY) {
-				String headings = "Index\tValue";
+				String headings = "Index\t*\tValue";
 				if (arrayWindow==null)
 					arrayWindow = new TextWindow("Array", "", "", 170, 300);
 				arrayWindow.setVisible(true);
-				int symIndex = var.symTabIndex;
+ 				int symIndex = var.symTabIndex;
 				String arrName = pgm.table[symIndex].str;
 				inspectStkIndex = stkPos;
 				inspectSymIndex = symIndex;
 				TextPanel txtPanel = arrayWindow.getTextPanel();
+				String oldText = txtPanel.getText();//n__ possible NullPointer at ij.text.TextPanel.getText(TextPanel.java:875) vData == null
+				String[] oldLines = oldText.split("\n");
 				txtPanel.clear();
 				txtPanel.setColumnHeadings(headings);
 				Variable[] elements = var.getArray();
 				String title = arrName + "[" + elements.length + "]";
 				arrayWindow.setTitle(title);
 				arrayWindow.rename(title);
+				String newText = "";
 				String valueStr = "";
 				for (int jj=0; jj<elements.length; jj++) {
 					Variable element = elements[jj];
 					if (element.getType()==Variable.STRING) {
 						valueStr = elements[jj].getString();
 						valueStr = valueStr.replaceAll("\n", "\\\\n");
+						valueStr += " ";  // avoid empty string
 					} else if (element.getType()==Variable.VALUE) {
 						double v = elements[jj].getValue();
 						if ((int)v==v)
@@ -2030,9 +2034,21 @@ public class Interpreter implements MacroConstants {
 						else
 							valueStr = ResultsTable.d2s(v, 4);
 					}
-					String ss = ("" + jj + "\t " + valueStr) + "\n";
-					arrayWindow.getTextPanel().append(ss);
+						String flag = " ";
+						if (oldLines.length > jj + 1){
+							String [] parts = oldLines[jj+1].split("\t");
+							String oldValue = parts[2];
+							if (!valueStr.equals(oldValue))
+									flag ="*";
+						}
+					String ss = ("" + jj + "\t" + flag +"\t" + valueStr) + "\n";
+					newText += ss;
 				}
+				txtPanel.append(newText);
+				txtPanel.scrollToTop();
+				if (editor!=null)
+					editor.toFront();
+				//n__  scroll position should not change during single-stepping
 			}
 		}
 	}
@@ -2044,7 +2060,7 @@ public class Interpreter implements MacroConstants {
 	public void updateArrayInspector() {
 		boolean varExists = false;
 		if (arrayWindow!=null && arrayWindow.isVisible()) {
-			for (int stkIndex=0; stkIndex<=topOfStack; stkIndex++) {
+ 			for (int stkIndex=0; stkIndex<=topOfStack; stkIndex++) {
 				Variable var = stack[stkIndex];
 				int symIndex = var.symTabIndex;
 				if (inspectStkIndex==stkIndex && inspectSymIndex==symIndex && var.getType()==Variable.ARRAY) {
@@ -2054,8 +2070,10 @@ public class Interpreter implements MacroConstants {
 			}
 			if (varExists)
 				showArrayInspector(inspectStkIndex+(showDebugFunctions?3:0));
-			else
+			else{
 				arrayWindow.setVisible(false);
+				arrayWindow.getTextPanel().clear();
+			}
 		}
 	}
 	

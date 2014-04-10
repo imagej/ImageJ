@@ -844,14 +844,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (imp.getStackSize()>1)
 			Analyzer.setMeasurements(measurements|Measurements.SLICE);
 		int currentSlice = imp.getCurrentSlice();
+		Analyzer.setMeasurements(measurements&(~Measurements.ADD_TO_OVERLAY));
 		for (int i=0; i<indexes.length; i++) {
 			if (restore(getImage(), indexes[i], !allSliceOne))
 				IJ.run("Measure");
 			else
 				break;
 		}
-		imp.setSlice(currentSlice);
 		Analyzer.setMeasurements(measurements);
+		imp.setSlice(currentSlice);
 		if (indexes.length>1)
 			IJ.run("Select None");
 		if (record()) Recorder.record("roiManager", "Measure");

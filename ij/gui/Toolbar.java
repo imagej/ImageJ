@@ -1081,13 +1081,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			if (list==null) return;
 		} else
 			list = new String[0];
-        boolean stackTools = false;
-		for (int i=0; i<list.length; i++) {
-            if (list[i].equals("Stack Tools.txt")) {
-                stackTools = true;
-                break;
-            }
-		}
 		switchPopup.removeAll();
         path = IJ.getDirectory("macros") + "StartupMacros.txt";
 		f = new File(path);
@@ -1095,7 +1088,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
             addItem("Startup Macros");
         else
             addItem("StartupMacros*");
-		if (!stackTools) addItem("Stack Tools*");
  		for (int i=0; i<list.length; i++) {
 			String name = list[i];
 			if (name.startsWith(".") || name.endsWith(" Tool"))

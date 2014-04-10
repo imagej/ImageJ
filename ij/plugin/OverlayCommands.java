@@ -10,6 +10,7 @@ import ij.plugin.filter.PlugInFilter;
 import ij.text.TextWindow;
 import ij.measure.ResultsTable;
 import java.awt.*;
+import java.util.ArrayList;
 
 /** This plugin implements the commands in the Image/Overlay menu. */
 public class OverlayCommands implements PlugIn {
@@ -19,7 +20,6 @@ public class OverlayCommands implements PlugIn {
 	
 	static {
 		defaultRoi = new Roi(0, 0, 1, 1);
-		//defaultRoi.setStrokeColor(Roi.getColor());
 		defaultRoi.setPosition(1); // set stacks positions by default
 	}
 
@@ -63,7 +63,8 @@ public class OverlayCommands implements PlugIn {
 			gd.addCheckbox("Remove existing overlay", false);
 			gd.showDialog();
 			if (gd.wasCanceled()) return;
-			if (gd.getNextBoolean()) imp.setOverlay(null);
+			if (gd.getNextBoolean())
+				imp.setOverlay(null);
 			return;
  		}
 		if (roi==null) {
@@ -106,12 +107,6 @@ public class OverlayCommands implements PlugIn {
 		if (overlay==null || newOverlay)
 			overlay = OverlayLabels.createOverlay();
 		overlay.add(roi);
-		if (!roi.isDrawingTool()) {
-			double dsw = defaultRoi.getStrokeWidth();
-			defaultRoi = roiClone;
-			if (roi.isLine())
-				defaultRoi.setStrokeWidth(dsw);
-		}
 		defaultRoi.setPosition(setPos?1:0);
 		imp.setOverlay(overlay);
 		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow&&!Prefs.keepArrowSelections))
@@ -161,7 +156,6 @@ public class OverlayCommands implements PlugIn {
 		}
 		gd.addNumericField("Opacity (0-100%):", opacity, 0);
 		gd.addCheckbox("Zero transparent", zeroTransparent);
-		//gd.addCheckbox("Create image selection", createImageRoi);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -172,7 +166,6 @@ public class OverlayCommands implements PlugIn {
 		}
 		opacity = (int)gd.getNextNumber();
 		zeroTransparent = gd.getNextBoolean();
-		//createImageRoi = gd.getNextBoolean();
 		ImagePlus overlay = WindowManager.getImage(wList[index]);
 		if (wList.length==2) {
 			ImagePlus i1 = WindowManager.getImage(wList[0]);
@@ -247,7 +240,7 @@ public class OverlayCommands implements PlugIn {
 			ImageCanvas ic = imp.getCanvas();
 			if (ic!=null)
 				roiManagerOverlay = ic.getShowAllList();
-			if (overlay==null && roiManagerOverlay==null && !imp.isComposite()) {
+			if (overlay==null && roiManagerOverlay==null && !imp.isComposite() && !(IJ.macroRunning()&&imp.getStackSize()==1)) {
 				IJ.error("Flatten", "Overlay or multi-channel image required");
 				return;
 			}
@@ -276,7 +269,6 @@ public class OverlayCommands implements PlugIn {
 
 	//Marcel Boeglin 2014.01.25
 	void flattenStack(ImagePlus imp) {
-		//IJ.log("imp.getOverlay() = "+imp.getOverlay());
 		imp.flattenStack();
 	}
 	
@@ -352,13 +344,6 @@ public class OverlayCommands implements PlugIn {
 			if (roi.getFillColor()==null)
 				roi.setFillColor(defaultRoi.getFillColor());
 		}
-		//int width = Line.getWidth();
-		//Rectangle bounds = roi.getBounds();
-		//boolean tooWide = width>Math.max(bounds.width, bounds.height)/3.0;
-		//if (roi.getStroke()==null && width>1 && !tooWide)
-		//	roi.setStrokeWidth(Line.getWidth());
-		//if (roi.getStrokeColor()==null)
-		//	roi.setStrokeColor(Roi.getColor());
 		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;
 		if (points) roi.setStrokeColor(Color.red);
 		roi.setPosition(defaultRoi.getPosition());
@@ -375,7 +360,7 @@ public class OverlayCommands implements PlugIn {
 	}
 	
 	public static void listRois(Roi[] rois) {
-		StringBuffer sb = new StringBuffer();
+		ArrayList list = new ArrayList();
 		for (int i=0; i<rois.length; i++) {
 			Rectangle r = rois[i].getBounds();
 			String color = Colors.colorToString(rois[i].getStrokeColor());
@@ -387,11 +372,11 @@ public class OverlayCommands implements PlugIn {
 			int c = rois[i].getCPosition();
 			int z = rois[i].getZPosition();
 			int t = rois[i].getTPosition();
-			sb.append(i+"\t"+rois[i].getName()+"\t"+rois[i].getTypeAsString()+"\t"+r.x
-			+"\t"+r.y+"\t"+r.width+"\t"+r.height+"\t"+color+"\t"+fill+"\t"+sWidth+"\t"+position+"\t"+c+"\t"+z+"\t"+t+"\n");
+			list.add(i+"\t"+rois[i].getName()+"\t"+rois[i].getTypeAsString()+"\t"+r.x
+			+"\t"+r.y+"\t"+r.width+"\t"+r.height+"\t"+color+"\t"+fill+"\t"+sWidth+"\t"+position+"\t"+c+"\t"+z+"\t"+t);
 		}
         String headings = "Index\tName\tType\tX\tY\tWidth\tHeight\tColor\tFill\tLWidth\tPos\tC\tZ\tT";
-		new TextWindow("Overlay Elements", headings, sb.toString(), 600, 400);
+		new TextWindow("Overlay Elements", headings, list, 600, 400);
 	}
 	
 }

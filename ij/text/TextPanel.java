@@ -84,6 +84,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	/** Constructs a new TextPanel. */
 	public TextPanel(String title) {
 		this();
+		this.title = title;
 		if (title.equals("Results")) {
 			pm.addSeparator();
 			addPopupItem("Clear Results");
@@ -174,10 +175,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
   
 	/** Adds a single line to the end of this TextPanel. */
-	public void appendLine(String data) {
+	public void appendLine(String text) {
 		if (vData==null)
 			setColumnHeadings("");
-		char[] chars = data.toCharArray();
+		char[] chars = text.toCharArray();
 		vData.addElement(chars);
 		iRowCount++;
 		if (isShowing()) {
@@ -191,22 +192,14 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 	
 	/** Adds one or more lines to the end of this TextPanel. */
-	public void append(String data) {
-		if (data==null) data="null";
+	public void append(String text) {
+		if (text==null) text="null";
 		if (vData==null)
 			setColumnHeadings("");
-		while (true) {
-			int p=data.indexOf('\n');
-			if (p<0) {
-				appendWithoutUpdate(data);
-				break;
-			}
-			appendWithoutUpdate(data.substring(0,p));
-			data = data.substring(p+1);
-			if (data.equals("")) 
-				break;
-		}
-		if (isShowing()) {  // && !(ij.macro.Interpreter.isBatchMode()&&title.equals("Results"))
+		String[] lines = text.split("\n");
+		for (int i=0; i<lines.length; i++)
+			appendWithoutUpdate(lines[i]);
+		if (isShowing()) {
 			updateDisplay();
 			unsavedLines = true;
 		}
@@ -578,12 +571,12 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			selOrigin = r;
 			if (r>=iRowCount)
 				selOrigin = iRowCount-1;
-			//System.out.println("select: "+selOrigin);
 		}
 		tc.repaint();
 		selLine=r;
-		if (Interpreter.getInstance()!=null && title.equals("Debug"))
-			Interpreter.getInstance().showArrayInspector(r);
+		Interpreter interp = Interpreter.getInstance();
+		if (interp!=null && title.equals("Debug"))
+			interp.showArrayInspector(r);
 	}
 
 	void extendSelection(int x,int y) {
@@ -591,7 +584,6 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if(iRowHeight==0 || x>d.width || y>d.height)
 			return;
      	int r=(y/iRowHeight)-1+iFirstRow;
-		//System.out.println(r+"  "+selOrigin);
      	if(r>=0 && r<iRowCount) {
 			if (r<selOrigin) {
 				selStart = r;

@@ -977,10 +977,10 @@ public class Opener {
 		ImageProcessor ps = fht.getPowerSpectrum();
 		ImagePlus imp2 = new ImagePlus(imp.getTitle(), ps);
 		imp2.setProperty("FHT", fht);
-		imp2.setProperty("Info", imp.getProperty("Info"));
-		fht.originalWidth = (int)Tools.parseDouble(imp2.getProp("width"),0);
-		fht.originalHeight = (int)Tools.parseDouble(imp2.getProp("height"),0);
-		fht.originalBitDepth = (int)Tools.parseDouble(imp2.getProp("bitdepth"),8);
+		imp2.setProperty("Info", imp.getInfoProperty());
+		fht.originalWidth = (int)imp2.getNumericProperty("width");
+		fht.originalHeight = (int)imp2.getNumericProperty("height");
+		fht.originalBitDepth = (int)imp2.getNumericProperty("bitdepth");
 		fht.originalColorModel = ip.getColorModel();
 		imp2.setCalibration(imp.getCalibration());
 		return imp2;
