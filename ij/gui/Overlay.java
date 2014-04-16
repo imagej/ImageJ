@@ -66,9 +66,13 @@ public class Overlay {
     	list.clear();
     }
 
-    /** Returns the Roi with the specified index. */
+    /** Returns the Roi with the specified index or null if the index is invalid. */
     public Roi get(int index) {
-    	return (Roi)list.get(index);
+    	try {
+    		return (Roi)list.get(index);
+    	} catch(Exception e) {
+    		return null;
+    	}
     }
     
     /** Returns the index of the Roi with the specified name, or -1 if not found. */

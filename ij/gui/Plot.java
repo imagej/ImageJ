@@ -1185,7 +1185,6 @@ public class Plot {
 			Interpreter.addBatchModeImage(imp);
 			return null;
 		}
-		ImageWindow.centerNextImage();
 		PlotWindow pw = new PlotWindow(this);
 		ImagePlus imp = pw.getImagePlus();
 		if (IJ.isMacro() && imp!=null) // wait for plot to be displayed

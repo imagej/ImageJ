@@ -124,7 +124,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			}
 			if (nextLocation!=null)
 				setLocation(nextLocation);
-			else if (centerOnScreen && nextLocation==null)
+			else if (centerOnScreen)
 				GUI.center(this);
 			nextLocation = null;
 			centerOnScreen = false;
