@@ -23,7 +23,7 @@ public interface PlugInFilter {
 	public int setup(String arg, ImagePlus imp);
 
 	/** Filters use this method to process the image. If the
-	 	SUPPORTS_STACKS flag was set, it is called for each slice in
+	 	DOES_STACKS flag was set, it is called for each slice in
 	 	a stack. With CONVERT_TO_FLOAT, the filter is called with
         the image data converted to a FloatProcessor (3 times per
         image for RGB images).
