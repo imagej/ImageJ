@@ -62,7 +62,7 @@ public class CommandLister implements PlugIn {
 	void showList(String title, String headings, Vector v) {
 		String[] list = new String[v.size()];
 		v.copyInto((String[])list);
-		StringSorter.sort(list);
+		Arrays.sort(list, String.CASE_INSENSITIVE_ORDER);
 		ArrayList list2 = new ArrayList();
 		for (int i=0; i<list.length; i++)
 			list2.add(list[i]);
