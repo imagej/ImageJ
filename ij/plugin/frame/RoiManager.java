@@ -353,8 +353,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		label = getUniqueName(label);
 		listModel.addElement(label);
 		roi.setName(label);
-		setRoiPosition(imp, roi);
 		Roi roiCopy = (Roi)roi.clone();
+		setRoiPosition(imp, roiCopy);
 		if (lineWidth>1)
 			roiCopy.setStrokeWidth(lineWidth);
 		if (color!=null)
@@ -521,8 +521,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			String name = (String) listModel.getElementAt(index);
 			rois.remove(name);
 			if (clone) {
-				setRoiPosition(imp, roi);
 				Roi roi2 = (Roi)roi.clone();
+				setRoiPosition(imp, roi2);
 				roi.setName(name);
 				roi2.setName(name);
 				rois.put(name, roi2);

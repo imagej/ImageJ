@@ -3896,6 +3896,8 @@ public class Functions implements MacroConstants, Measurements {
 			Analyzer.setMeasurement(LABELS, state);
 		else if (arg1.startsWith("limit to"))
 			Analyzer.setMeasurement(LIMIT, state);
+		else if (arg1.startsWith("add to"))
+			Analyzer.setMeasurement(ADD_TO_OVERLAY, state);
 		else if (arg1.equals("area"))
 			Analyzer.setMeasurement(AREA, state);
 		else if (arg1.equals("mean"))

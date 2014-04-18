@@ -31,8 +31,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	long setMaxBoundsTime;
 	private boolean firstSmallWindow;
 
-	private static final int XINC = 8;
-	private static final int YINC = 12;
+	private static final int XINC = 12;
+	private static final int YINC = 16;
 	private static final int TEXT_GAP = 10;
 	private static int xbase = -1;
 	private static int ybase;
@@ -149,7 +149,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			xbase = maxWindow.x + (maxWindow.width>1800?24:12);
 			if (width*2<=maxWindow.width) {
 				Point loc = Prefs.getLocation(LOC_KEY);
-				if (loc!=null && loc.x+width<maxWindow.width && loc.y+height<maxWindow.height) {
+				if (loc!=null && loc.x<maxWindow.width*2/3 && loc.y<maxWindow.height/3) {
 					xbase = loc.x;
 					ybase = loc.y;
 				} else {
