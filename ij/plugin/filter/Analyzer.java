@@ -98,6 +98,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		Roi roi = imp.getRoi();
 		if (roi==null)
 			return;
+		roi = (Roi)roi.clone();
 		if (imp.getStackSize()>1) {
 			if (imp.isHyperStack()||imp.isComposite())
 				roi.setPosition(0, imp.getSlice(), imp.getFrame());
@@ -114,7 +115,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			overlay.drawNames(true);
 		overlay.setLabelColor(Color.white);
 		overlay.drawBackgrounds(true);
-		overlay.add((Roi)roi.clone());
+		overlay.add(roi);
 		imp.setOverlay(overlay);
 	}
 

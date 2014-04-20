@@ -118,6 +118,8 @@ public class PluginInstaller implements PlugIn {
 		} catch (Exception e) {
 			IJ.log(e+" "+urlString);
 			return null;
+		} finally {
+			IJ.showProgress(1.0);
 		}
 		if (name!=null) IJ.showStatus("");
 		if (unknownLength) {

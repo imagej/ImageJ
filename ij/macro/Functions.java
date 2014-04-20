@@ -3896,6 +3896,8 @@ public class Functions implements MacroConstants, Measurements {
 			Analyzer.setMeasurement(LABELS, state);
 		else if (arg1.startsWith("limit to"))
 			Analyzer.setMeasurement(LIMIT, state);
+		else if (arg1.startsWith("add to"))
+			Analyzer.setMeasurement(ADD_TO_OVERLAY, state);
 		else if (arg1.equals("area"))
 			Analyzer.setMeasurement(AREA, state);
 		else if (arg1.equals("mean"))
@@ -5368,6 +5370,8 @@ public class Functions implements MacroConstants, Measurements {
 			return hideOverlay(imp);
 		else if (name.equals("remove"))
 			return removeOverlay(imp);
+		else if (name.equals("clear"))
+			return clearOverlay(imp);
 		else if (name.equals("paste")) {
 			interp.getParens();
 			if (overlayClipboard==null)
@@ -5610,7 +5614,7 @@ public class Functions implements MacroConstants, Measurements {
 
 	void addRoi(ImagePlus imp, Roi roi){
 		Overlay overlay = imp.getOverlay();
-		if (overlay==null) {
+		if (overlay==null || overlay.size()==0) {
 			if (offscreenOverlay==null)
 				offscreenOverlay = new Overlay();
 			overlay = offscreenOverlay;
@@ -5628,13 +5632,13 @@ public class Functions implements MacroConstants, Measurements {
 			imp.setOverlay(offscreenOverlay);
 			offscreenOverlay = null;
 		} else
-			IJ.run(imp, "Show Overlay", "");
+			imp.setHideOverlay(false);
 		return Double.NaN;
 	}
 	
 	double hideOverlay(ImagePlus imp) {
 		interp.getParens();
-		IJ.run(imp, "Hide Overlay", "");
+		imp.setHideOverlay(true);
 		return Double.NaN;
 	}
 
@@ -5645,6 +5649,15 @@ public class Functions implements MacroConstants, Measurements {
 		return Double.NaN;
 	}
 	
+	double clearOverlay(ImagePlus imp) {
+		interp.getParens();
+		offscreenOverlay = null;
+		Overlay overlay = imp.getOverlay();
+		if (overlay!=null)
+			overlay.clear();
+		return Double.NaN;
+	}
+
 	final double selectionContains() {
 		int x = (int)Math.round(getFirstArg());
 		int y = (int)Math.round(getLastArg());

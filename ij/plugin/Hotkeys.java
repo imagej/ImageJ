@@ -98,7 +98,7 @@ public class Hotkeys implements PlugIn {
 		}
 		String[] list = new String[v.size()];
 		v.copyInto((String[])list);
-		StringSorter.sort(list);
+		Arrays.sort(list, String.CASE_INSENSITIVE_ORDER);
 		return list;
 	}
 	
@@ -142,7 +142,7 @@ public class Hotkeys implements PlugIn {
 			return null;
 		String[] list = new String[v.size()];
 		v.copyInto((String[])list);
-		StringSorter.sort(list);
+		Arrays.sort(list, String.CASE_INSENSITIVE_ORDER);
 		return list;
 	}
 	

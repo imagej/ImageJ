@@ -16,21 +16,20 @@ public interface PlugInFilter {
 		This method should return a flag word that specifies the
 		filters capabilities.
         <p>
-        For Plugin-filters specifying the FINAL_PROCESSING flag,
+        For Plugin-filters specifying the {@link #FINAL_PROCESSING} flag,
         the setup method will be called again, this time with
         arg = "final" after all other processing is done.
      */
 	public int setup(String arg, ImagePlus imp);
 
 	/** Filters use this method to process the image. If the
-	 	SUPPORTS_STACKS flag was set, it is called for each slice in
-	 	a stack. With CONVERT_TO_FLOAT, the filter is called with
+	 	{@link #DOES_STACKS} flag was set, it is called for each slice in
+	 	a stack. With {@link #CONVERT_TO_FLOAT}, the filter is called with
         the image data converted to a FloatProcessor (3 times per
-        image for RGB images).
-        ImageJ will lock the image before calling
+        image for RGB images). ImageJ will lock the image before calling
 		this method and unlock it when the filter is finished.
-        For PlugInFilters specifying the NO_IMAGE_REQUIRED flag
-        and not the DONE flag, run(ip) is called once with the
+        For PlugInFilters specifying the {@link #NO_IMAGE_REQUIRED} flag
+        and not the {@link #DONE} flag, run(ip) is called once with the
         argument <code>null</code>.
      */
 	public void run(ImageProcessor ip);

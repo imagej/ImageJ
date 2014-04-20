@@ -5,32 +5,20 @@
 </head>
 <body>
 
-<li> <u>1.48u 9 April 2014</u>
+<li> <u>1.48v 18 April 2014</u>
 <ul>
-<li> Selections added to the overlay by the <i>Measure</i> command when "Add to Overlay"
-is enabled in the <i>Set Measurements</i> dialog are labeled with the measurement number.
-<li> Thanks to Ted Toal, <i>Image&gt;Zoom&gt;Set</i> sets the zoom center
-based on a point selection and it no longer enlarges the window.
-<li> Thanks to Norbert Vischer, the macro debugger's 
-Array Inspector now flags array value changes.
-<li> Added getStringProperty(key) and getNumericProperty(key) methods to the ImagePlus class.
-<li> Added a TextWindow constructor that accepts an ArrayList.
-<li> Thanks to Johannes Schindelin, added the GenericDialog#isPreviewActive() method.
-<li> Thanks to Herbie Gluender, fixed a bug that caused the output of the <i>Plot Profile</i>
-and <i>Measure</i> commands to be inconsistent with horizontal or vertical one
-pixel wide straight line selections.
-<li> Thanks to Gabriel Landini, fixed a bug that could cause the Results table 
-to be displayed very slowly on Java 1.7 and Java 1.8.
-<li> Thanks to Burni, fixed a bug that prevented the ImageWindow.setNextLocation() method
-from working with windows normally centered on the screen, such as plot windows.
-<li> Fixed a v1.48 regression that caused the run("Add Selection...", options) 
-macro function to not work as expected with text selections.
-<li> Thanks to  Johannes Schindelin, fixed a v1.48r regression that caused the
-"Fonts" dialog to be displayed multiple times or incorrectly if you double-clicked
-the text tool icon multiple times.
-<li> Thanks to Johannes Schindelin, Gabriel Landini and Volker Baecker, fixed a v1.48r
-regression on Linux that caused ImageJ to freeze when opening a NonBlockingGenericDialog.
-
+<li> Plot and Histogram windows are no longer centered on the screen.
+<li> Added the Overlay.clear and setOption("Add to overlay",boolean) macro functions.
+<li> Thanks to David Knecht, commands listed in the
+<i>Plugins&gt;Shortcuts&gt;List Shortcuts</i> and <i>Plugins&gt;Shortcuts&gt;Create Shortcut</i>
+dialogs are sorted with case ignored.
+<li> Thanks to Denis Roussel, changed incorrect Javadoc reference in
+PlugInFilter.java from SUPPORTS_STACKS to DOES_STACKS.
+<li> Thanks to Johannes Schindelin, added @link tags to the PlugInFilter.java Javadocs.
+<li> Fixed a bug that caused the progress bar to not terminate when dragging
+a jar file to the "ImageJ" window.
+<li> Fixed a bug that caused the roiManager("add") macro function to unexpectedly
+set the stack position of the source selection.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
