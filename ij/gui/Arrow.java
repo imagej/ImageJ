@@ -308,6 +308,28 @@ public class Arrow extends Line {
 	public void setStyle(int style) {
 		this.style = style;
 	}
+	
+	/* Set the style, where 'style' is "filled", "notched", "open", "headless" or "bar",
+		with optionial modifiers of "outline", "double", "small", "medium" and "large". */
+	public void setStyle(String style) {
+		style = style.toLowerCase();
+		int newStyle = Arrow.FILLED;
+		if (style.contains("notched"))
+			newStyle = Arrow.NOTCHED;
+		else if (style.contains("open"))
+			newStyle = Arrow.OPEN;
+		else if (style.contains("headless"))
+			newStyle = Arrow.HEADLESS;
+		else if (style.contains("bar"))
+			newStyle = Arrow.BAR;
+		setStyle(newStyle);
+		setOutline(style.contains("outline"));
+		setDoubleHeaded(style.contains("double"));
+		if (style.contains("small"))
+			setHeadSize(5);
+		else if (style.contains("large"))
+			setHeadSize(15);
+	}
 
 	public int getStyle() {
 		return style;

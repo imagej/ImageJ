@@ -101,6 +101,7 @@ public class Functions implements MacroConstants, Measurements {
 			case SET_BACKGROUND: setBackgroundColor(); break;
 			case SET_COLOR: setColor(); break;
 			case MAKE_LINE: makeLine(); break;
+			case MAKE_ARROW: makeArrow(); break;
 			case MAKE_OVAL: makeOval(); break;
 			case MAKE_RECTANGLE: makeRectangle(); break;
 			case DUMP: interp.dump(); break;
@@ -720,6 +721,20 @@ public class Functions implements MacroConstants, Measurements {
 			getImage().setRoi(new PolygonRoi(x, y, n, Roi.POLYLINE));
 		}
 		resetImage(); 
+	}
+
+	void makeArrow() {
+		String options = "";
+		double x1 = getFirstArg();
+		double y1 = getNextArg();
+		double x2 = getNextArg();
+		double y2 = getNextArg();
+		if (interp.nextToken()==',')
+			options = getNextString();
+		interp.getRightParen();
+		Arrow arrow = new Arrow(x1, y1, x2, y2);
+		arrow.setStyle(options);
+		getImage().setRoi(arrow);
 	}
 
 	void makeOval() {

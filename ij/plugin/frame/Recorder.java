@@ -209,8 +209,36 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 				recordString("imp.setRoi(new OvalRoi("+a1+", "+a2+", "+a3+", "+a4+"));\n");
 			else if (method.equals("makeLine"))
 				recordString("imp.setRoi(new Line("+a1+", "+a2+", "+a3+", "+a4+"));\n");
-		} else
+			else if (method.equals("makeArrow"))
+				recordString("imp.setRoi(new Arrow("+a1+", "+a2+", "+a3+", "+a4+"));\n");
+		} else {
+			if (method.equals("makeArrow")) {
+				ImagePlus imp = WindowManager.getCurrentImage();
+				Roi roi = imp!=null?imp.getRoi():null;
+				if (roi!=null && (roi instanceof Line)) {
+					Arrow arrow = (Arrow)roi;
+					String options = Arrow.styles[arrow.getStyle()];
+					if (arrow.getOutline())
+						options += " outline";
+					if (arrow.getDoubleHeaded())
+						options += " double";
+					if (arrow.getHeadSize()<=5)
+						options += " small";
+					else if (arrow.getHeadSize()>=15)
+						options += " large";
+					options = options.toLowerCase();
+					int strokeWidth = (int)arrow.getStrokeWidth();
+					textArea.append(method+"("+a1+", "+a2+", "+a3+", "+a4+", \""+options+"\");\n");
+					if (strokeWidth!=1)
+						textArea.append("Roi.setStrokeWidth("+strokeWidth+");\n");
+					Color color = arrow.getStrokeColor();
+					if (color!=null)
+						textArea.append("Roi.setStrokeColor(\""+Colors.colorToString(color)+"\");\n");
+					return;
+				}
+			}
 			textArea.append(method+"("+a1+", "+a2+", "+a3+", "+a4+");\n");
+		}
 	}
 
 	public static void record(String method, int a1, int a2, int a3, int a4, int a5) {
