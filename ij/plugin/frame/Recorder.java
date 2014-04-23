@@ -676,6 +676,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 
 	public void itemStateChanged(ItemEvent e) {
 		setFileName();
+		Prefs.set("recorder.mode", mode.getSelectedItem());
 	}
 	
 	void setFileName() {
@@ -726,7 +727,6 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		textArea = null;
 		commandName = null;
 		instance = null;	
-		Prefs.set("recorder.mode", mode.getSelectedItem());
 	}
 
 	public String getText() {

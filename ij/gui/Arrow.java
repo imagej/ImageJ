@@ -310,7 +310,7 @@ public class Arrow extends Line {
 	}
 	
 	/* Set the style, where 'style' is "filled", "notched", "open", "headless" or "bar",
-		with optionial modifiers of "outline", "double", "small", "medium" and "large". */
+		plus optionial modifiers of "outline", "double", "small", "medium" and "large". */
 	public void setStyle(String style) {
 		style = style.toLowerCase();
 		int newStyle = Arrow.FILLED;
