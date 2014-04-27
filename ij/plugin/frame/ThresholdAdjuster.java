@@ -645,7 +645,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
  		try {
  			if (imp.getBitDepth()==32) {
 				GenericDialog gd = new GenericDialog("NaN Backround");
-				gd.addCheckbox("Set Background Pixels to NaN", backgroundToNaN);
+				gd.addCheckbox("Set background pixels to NaN", backgroundToNaN);
 				gd.showDialog();
 				if (gd.wasCanceled()) {
  					runThresholdCommand();

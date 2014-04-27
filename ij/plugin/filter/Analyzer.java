@@ -117,6 +117,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		overlay.drawBackgrounds(true);
 		overlay.add(roi);
 		imp.setOverlay(overlay);
+		if (roi.getType()==Roi.COMPOSITE && Toolbar.getToolId()==Toolbar.OVAL && Toolbar.getBrushSize()>0)
+			imp.deleteRoi();  // delete ROIs created with the selection brush tool
 	}
 
 	void doSetDialog() {

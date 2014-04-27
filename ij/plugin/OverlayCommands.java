@@ -109,7 +109,8 @@ public class OverlayCommands implements PlugIn {
 		overlay.add(roi);
 		defaultRoi.setPosition(setPos?1:0);
 		imp.setOverlay(overlay);
-		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow&&!Prefs.keepArrowSelections))
+		boolean brushRoi = roi.getType()==Roi.COMPOSITE && Toolbar.getToolId()==Toolbar.OVAL && Toolbar.getBrushSize()>0;
+		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow&&!Prefs.keepArrowSelections) || brushRoi)
 			imp.deleteRoi();
 		Undo.setup(Undo.OVERLAY_ADDITION, imp);
 	}

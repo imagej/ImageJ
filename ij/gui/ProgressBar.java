@@ -59,7 +59,7 @@ public class ProgressBar extends Canvas {
      * positive argument as sub-ordinate processes that are displayed as moving dot.
      */
     public void show(double progress) {
-        show(percent, false);
+        show(progress, false);
     }
 
     /**

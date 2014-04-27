@@ -857,13 +857,16 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 
 	/** Returns all the text as a string. */
-	public String getText() {
+	public synchronized String getText() {
+		if (vData==null)
+			return "";
 		StringBuffer sb = new StringBuffer();
 		if (labels!=null && !labels.equals("")) {
 			sb.append(labels);
 			sb.append('\n');
 		}
 		for (int i=0; i<iRowCount; i++) {
+			if (vData==null) break;
 			char[] chars = (char[])(vData.elementAt(i));
 			sb.append(chars);
 			sb.append('\n');
