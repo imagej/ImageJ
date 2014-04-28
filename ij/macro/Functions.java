@@ -4362,6 +4362,8 @@ public class Functions implements MacroConstants, Measurements {
 			setActiveChannels(imp, getStringArg());
 		else if (name.equals("getActiveChannels"))
 			getActiveChannels(imp);
+		else if (name.equals("toggleChannel"))
+			toggleChannel(imp, (int)getArg());
 		else if (name.equals("swap"))
 			swapStackImages(imp);
 		else if (name.equals("getStatistics"))
@@ -4449,6 +4451,17 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		Variable channels = getVariableArg();
 		channels.setString(new String(chars));
+	}
+
+	void toggleChannel(ImagePlus imp, int channel) {
+		if (!imp.isComposite())
+			interp.error("Composite image required");
+		if (channel<1 || channel>imp.getNChannels())
+			interp.error("Invalid channel: "+channel);
+		boolean[] active = ((CompositeImage)imp).getActiveChannels();
+		active[channel-1] = active[channel-1]?false:true;
+		imp.updateAndDraw();
+		Channels.updateChannels();
 	}
 
 	void setDisplayMode(ImagePlus imp, String mode) {
