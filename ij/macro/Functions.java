@@ -4458,6 +4458,8 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Composite image required");
 		if (channel<1 || channel>imp.getNChannels())
 			interp.error("Invalid channel: "+channel);
+		if (((CompositeImage)imp).getMode()!=IJ.COMPOSITE)
+			((CompositeImage)imp).setMode(IJ.COMPOSITE);
 		boolean[] active = ((CompositeImage)imp).getActiveChannels();
 		active[channel-1] = active[channel-1]?false:true;
 		imp.updateAndDraw();

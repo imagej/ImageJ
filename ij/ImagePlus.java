@@ -1086,7 +1086,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public String getStringProperty(String key) {
 		if (key==null)
 			return null;
-		if (key.length()==9 && key.matches("[0-9]{4},[0-9]{4}")) // DICOM tag?
+		if (isDicomTag(key))
 			return DicomTools.getTag(this, key);
 		if (getStackSize()>1) {
 			ImageStack stack = getStack();
@@ -1102,6 +1102,18 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return null;
 		String info = (String)obj;
 		return getStringProperty(key, info);
+	}
+	
+	private boolean isDicomTag(String key) {
+		if (key.length()!=9 || key.charAt(4)!=',')
+			return false;
+		key = key.toLowerCase();
+		for (int i=0; i<9; i++) {
+			char c = i!=4?key.charAt(i):'0';
+			if (!(Character.isDigit(c)||(c=='a'||c=='b'||c=='c'||c=='d'||c=='e'||c=='f')))
+				return false;
+		}
+		return true;
 	}
 	
 	/** Returns the numeric value from the "Info" property string  
