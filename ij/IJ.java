@@ -59,6 +59,8 @@ public class IJ {
 	private static Hashtable commandTable;
 	private static Vector eventListeners = new Vector();
 	private static String lastErrorMessage;
+	private static Properties properties;
+
 			
 	static {
 		osname = System.getProperty("os.name");
@@ -2088,4 +2090,24 @@ public class IJ {
 		}
 	}
 
+	/** Adds a key-value pair to the ImageJ Properties. The key
+		is removed from the properties table if value is null. */
+	public static void setProperty(String key, Object value) {
+		if (properties==null)
+			properties = new Properties();
+		if (value==null)
+			properties.remove(key);
+		else
+			properties.put(key, value);
+	}
+
+	/** Returns the object associated with 'key' in the
+		 ImageJ Properties, or null if it is not found. */
+	public static Object getProperty(String key) {
+		if (properties==null)
+			return null;
+		else
+			return properties.get(key);
+	}
+	
 }
