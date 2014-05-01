@@ -265,7 +265,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 	public static int[] findMaxima(double[] xx, double tolerance, boolean excludeOnEdges) {
 		boolean includeEdge = !excludeOnEdges;
 		int len = xx.length;
-		if (len == 0)
+		if (len<2)
 			return new int[0];
 		if (tolerance < 0)
 			tolerance = 0;

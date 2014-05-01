@@ -2090,8 +2090,9 @@ public class IJ {
 		}
 	}
 
-	/** Adds a key-value pair to the ImageJ Properties. The key
-		is removed from the properties table if value is null. */
+	/** Adds a key-value pair to IJ.properties. The key
+	* and value are removed if 'value' is null.
+	*/
 	public static void setProperty(String key, Object value) {
 		if (properties==null)
 			properties = new Properties();
@@ -2101,8 +2102,9 @@ public class IJ {
 			properties.put(key, value);
 	}
 
-	/** Returns the object associated with 'key' in the
-		 ImageJ Properties, or null if it is not found. */
+	/** Returns the object in IJ.properties associated
+	*  with 'key', or null if 'key' is not found.
+	*/
 	public static Object getProperty(String key) {
 		if (properties==null)
 			return null;
