@@ -5,7 +5,7 @@ import ij.io.FileSaver;
 import java.awt.*;
 import java.awt.image.*;
 
-/** An ImageRoi is an Roi that displays an image as an overlay. 
+/** An ImageRoi is an Roi that overlays an image. 
 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 */
 public class ImageRoi extends Roi {
@@ -14,6 +14,7 @@ public class ImageRoi extends Roi {
 	private double opacity = 1.0;
 	private double angle = 0.0;
 	private boolean zeroTransparent;
+	private ImageProcessor ip;
 
 	/** Creates a new ImageRoi from a BufferedImage.*/
 	public ImageRoi(int x, int y, BufferedImage bi) {
@@ -26,6 +27,7 @@ public class ImageRoi extends Roi {
 	public ImageRoi(int x, int y, ImageProcessor ip) {
 		super(x, y, ip.getWidth(), ip.getHeight());
 		img = ip.createImage();
+		this.ip = ip;
 		setStrokeColor(Color.black);
 	}
 		
@@ -93,7 +95,7 @@ public class ImageRoi extends Roi {
 
 	public void setZeroTransparent(boolean zeroTransparent) {
 		if (this.zeroTransparent!=zeroTransparent) {
-			ImageProcessor ip = makeZeroTransparent(new ColorProcessor(img), zeroTransparent);
+			ip = makeZeroTransparent(new ColorProcessor(img), zeroTransparent);
 			img = ip.createImage();
 		}
 		this.zeroTransparent = zeroTransparent;
@@ -122,11 +124,19 @@ public class ImageRoi extends Roi {
 		roi2.setZeroTransparent(zeroTransparent);
 		return roi2;
 	}
+	
+	public ImageProcessor getProcessor() {
+		if (ip!=null)
+			return ip;
+		else {
+			ip = new ColorProcessor(img);
+			return ip;
+		}
+	}
 
-	//public void setImage(ImagePlus imp) {
-	//	ij.IJ.log("draw "+ic+"  "+img);
-	//	super.setImage(imp);
-	//	if (imp==null) img = null;
-	//}
+	public void setProcessor(ImageProcessor ip) {
+		img = ip.createImage();
+		this.ip = ip;
+	}
 
 }
