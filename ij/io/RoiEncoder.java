@@ -211,7 +211,7 @@ public class RoiEncoder {
 		if (n==0 && roi instanceof TextRoi)
 			saveTextRoi((TextRoi)roi);
 		else if (n==0 && roi instanceof ImageRoi)
-			saveImageRoi((ImageRoi)roi);
+			options = saveImageRoi((ImageRoi)roi, options);
 		else
 			putHeader2(roi, HEADER_SIZE+n*4+floatSize);
 			
@@ -326,7 +326,7 @@ public class RoiEncoder {
 		putHeader2(roi, hdr2Offset);
 	}
 	
-	void saveImageRoi(ImageRoi roi) {
+	private int saveImageRoi(ImageRoi roi, int options) {
 		byte[] bytes = roi.getSerializedImage();
 		int imageSize = bytes.length;
 		byte[] data2 = new byte[HEADER_SIZE+HEADER2_SIZE+imageSize+roiNameSize];
@@ -339,7 +339,11 @@ public class RoiEncoder {
 		double opacity = roi.getOpacity();
 		putByte(hdr2Offset+RoiDecoder.IMAGE_OPACITY, (int)(opacity*255.0));
 		putInt(hdr2Offset+RoiDecoder.IMAGE_SIZE, imageSize);
+		if (roi.getZeroTransparent())
+			options |= RoiDecoder.ZERO_TRANSPARENT;
+		putShort(RoiDecoder.OPTIONS, options);
 		putHeader2(roi, hdr2Offset);
+		return options;
 	}
 
 	void putHeader2(Roi roi, int hdr2Offset) {
