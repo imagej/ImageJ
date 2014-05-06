@@ -1,6 +1,7 @@
 package ij.gui;
 import ij.*;
 import ij.plugin.Colors;
+import ij.plugin.OverlayCommands;
 import ij.io.RoiDecoder;
 import ij.process.FloatPolygon;
 import ij.measure.*;
@@ -218,6 +219,12 @@ public class RoiProperties {
 			listCoordinates(roi);
 		if (listProperties && nProperties>0)
 			listProperties(roi);
+		if (addToOverlay) {
+			Roi defaultRoi = OverlayCommands.getDefaultRoi();
+			defaultRoi.setStrokeColor(strokeColor);
+			defaultRoi.setStrokeWidth(strokeWidth);
+			defaultRoi.setFillColor(fillColor);
+		}
 		return true;
 	}
 	

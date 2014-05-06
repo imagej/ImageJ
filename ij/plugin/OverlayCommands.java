@@ -380,4 +380,8 @@ public class OverlayCommands implements PlugIn {
 		new TextWindow("Overlay Elements", headings, list, 600, 400);
 	}
 	
+	public static Roi getDefaultRoi() {
+		return defaultRoi;
+	}
+	
 }

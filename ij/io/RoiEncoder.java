@@ -341,7 +341,6 @@ public class RoiEncoder {
 		putInt(hdr2Offset+RoiDecoder.IMAGE_SIZE, imageSize);
 		if (roi.getZeroTransparent())
 			options |= RoiDecoder.ZERO_TRANSPARENT;
-		putShort(RoiDecoder.OPTIONS, options);
 		putHeader2(roi, hdr2Offset);
 		return options;
 	}
