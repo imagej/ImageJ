@@ -37,6 +37,12 @@ public class RoiProperties {
 		addToOverlay = title.equals("Add to Overlay");
 		overlayOptions = title.equals("Overlay Options");
 		ImagePlus imp = WindowManager.getCurrentImage();
+		if (overlayOptions) {
+			Overlay overlay = imp!=null?imp.getOverlay():null;
+			setPositions = roi.getPosition()!=0;
+			if (overlay!=null)
+				existingOverlay = true;
+		}
 		this.roi = roi;
 	}
 	
