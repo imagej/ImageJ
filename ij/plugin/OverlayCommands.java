@@ -98,6 +98,9 @@ public class OverlayCommands implements PlugIn {
 		if (IJ.altKeyDown() || (IJ.macroRunning() && Macro.getOptions()!=null)) {
 			RoiProperties rp = new RoiProperties("Add to Overlay", roi);
 			if (!rp.showDialog()) return;
+			defaultRoi.setStrokeColor(roi.getStrokeColor());
+			defaultRoi.setStrokeWidth(roi.getStrokeWidth());
+			defaultRoi.setFillColor(roi.getFillColor());
 		}
 		String name = roi.getName();
 		boolean newOverlay = name!=null && name.equals("new-overlay");
@@ -378,10 +381,6 @@ public class OverlayCommands implements PlugIn {
 		}
         String headings = "Index\tName\tType\tX\tY\tWidth\tHeight\tColor\tFill\tLWidth\tPos\tC\tZ\tT";
 		new TextWindow("Overlay Elements", headings, list, 600, 400);
-	}
-	
-	public static Roi getDefaultRoi() {
-		return defaultRoi;
 	}
 	
 }
