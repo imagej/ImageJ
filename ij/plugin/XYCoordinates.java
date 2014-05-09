@@ -23,7 +23,9 @@ public class XYCoordinates implements PlugIn {
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
 		Roi roi = imp.getRoi();
-		if (roi!=null && roi.isArea()) {
+		String options = Macro.getOptions();
+		boolean legacyMacro = IJ.isMacro() && options!=null && options.contains("background=");
+		if (roi!=null && roi.isArea() && !legacyMacro) {
 			saveSelectionCoordinates(imp);
 			return;
 		}
@@ -148,13 +150,20 @@ public class XYCoordinates implements PlugIn {
 		ImageProcessor mask = roi.getMask();
 		Rectangle r = roi.getBounds();
 		ResultsTable rt = new ResultsTable();
+		boolean rgb = imp.getBitDepth()==24;
 		for (int y=0; y<r.height; y++) {
 			for (int x=0; x<r.width; x++) {
 				if (mask.getPixel(x,y)!=0) {
 					rt.incrementCounter();
 					rt.addValue("X", r.x+x);
 					rt.addValue("Y", r.y+y);
-					rt.addValue("Value", ip.getPixelValue(r.x+x,r.y+y));
+					if (rgb) {
+						int c = ip.getPixel(r.x+x,r.y+y);
+						rt.addValue("Red", (c&0xff0000)>>16);
+						rt.addValue("Green", (c&0xff00)>>8);
+						rt.addValue("Blue", c&0xff);
+					} else
+						rt.addValue("Value", ip.getPixelValue(r.x+x,r.y+y));
 				}
 			}
 		}
