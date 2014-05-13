@@ -101,6 +101,10 @@ public class ImageRoi extends Roi {
 		this.zeroTransparent = zeroTransparent;
 	}
 	
+	public boolean getZeroTransparent() {
+		return zeroTransparent;
+	}
+
 	private ImageProcessor makeZeroTransparent(ImageProcessor ip, boolean transparent) {
 		if (transparent) {
 			ip.setColorModel(new DirectColorModel(32,0x00ff0000,0x0000ff00,0x000000ff,0xff000000));
