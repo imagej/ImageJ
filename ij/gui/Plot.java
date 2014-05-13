@@ -582,13 +582,16 @@ public class Plot {
 		ip.drawLine(scaleX(x1), scaleY(y1), scaleX(x2), scaleY(y2));
 	}
 	
-	/* Draws a line using a normalized 0-1, 0-1 coordinate system. */
+	/** Draws a line using a normalized 0-1, 0-1 coordinate system,
+	Ê* with (0,0) at the top left and (1,1) at the lower right corner.
+	Ê* This is the same coordinate system used by addLabel(x,y,label).
+	Ê*/
 	public void drawNormalizedLine(double x1, double y1, double x2, double y2) {
 		setup();
-		int ix1 = ((flags&X_LOG_NUMBERS)!=0) ? LEFT_MARGIN + (int)(Math.log10(x1)*frameWidth) : LEFT_MARGIN + (int)(x1*frameWidth);
-		int iy1 = ((flags&Y_LOG_NUMBERS)!=0) ? TOP_MARGIN  + (int)(Math.log10(y1)*frameHeight): TOP_MARGIN  + (int)(y1*frameHeight);
-		int ix2 = ((flags&X_LOG_NUMBERS)!=0) ? LEFT_MARGIN + (int)(Math.log10(x2)*frameWidth) : LEFT_MARGIN + (int)(x2*frameWidth);
-		int iy2 = ((flags&Y_LOG_NUMBERS)!=0) ? TOP_MARGIN  + (int)(Math.log10(y2)*frameHeight): TOP_MARGIN  + (int)(y2*frameHeight);
+		int ix1 = LEFT_MARGIN + (int)(x1*frameWidth);
+		int iy1 = TOP_MARGIN  + (int)(y1*frameHeight);
+		int ix2 = LEFT_MARGIN + (int)(x2*frameWidth);
+		int iy2 = TOP_MARGIN  + (int)(y2*frameHeight);
 		ip.drawLine(ix1, iy1, ix2, iy2);
 	}
 
