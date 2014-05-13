@@ -86,7 +86,7 @@ import java.util.Vector;
 	}
 	
 	private void checkForOverlay(ImagePlus imp) {
-		if (paintOnOverlay && (overlayImage==null||getOverlayImage(imp)==null)) {
+		if (paintOnOverlay && (overlayImage==null|getOverlayImage(imp)==null)) {
 			ImageProcessor overlayIP = new ColorProcessor(imp.getWidth(), imp.getHeight());
 			ImageRoi imageRoi = new ImageRoi(0, 0, overlayIP);
   			//imageRoi.setOpacity(1.0-transparency/100.0);
