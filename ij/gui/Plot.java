@@ -583,9 +583,9 @@ public class Plot {
 	}
 	
 	/** Draws a line using a normalized 0-1, 0-1 coordinate system,
-	Ê* with (0,0) at the top left and (1,1) at the lower right corner.
-	Ê* This is the same coordinate system used by addLabel(x,y,label).
-	Ê*/
+	 * with (0,0) at the top left and (1,1) at the lower right corner.
+	 * This is the same coordinate system used by addLabel(x,y,label).
+	 */
 	public void drawNormalizedLine(double x1, double y1, double x2, double y2) {
 		setup();
 		int ix1 = LEFT_MARGIN + (int)(x1*frameWidth);

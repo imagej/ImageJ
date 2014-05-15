@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.49a 13 May 2014</u>
+<li> <u>1.49a 15 May 2014</u>
 <ul>
 <li> Thanks to Kenneth Sloan, added a "Paint on overlay" option to
 the built in brush tool's options dialog. Add the built in brush tool
@@ -14,7 +14,7 @@ to the toolbar by selecting "Brush" from the toolbar's ">>" menu.
 saves the coordinates and values of pixels inside selections to a .csv file.
 <li> Thanks to Volker Wirth, added a "Title:" field to the dialog displayed
 by <i>Edit&gt;Selection&gt;Straighten</i> when the line width is
-greater than one or when processing a stack.
+one or when processing a stack.
 <li> Selections created by the selection brush tool are 
 deleted after they are added to an overlay.
 <li> Thanks to Jon Harman, <i>Plugins&gt;Install</i> recognizes .zip files.
@@ -25,12 +25,14 @@ deleted after they are added to an overlay.
 <li> Thanks to Norbert Vischer, the showProgress(progress) macro function displays 
 subordinate progress bars as moving dots when 'progress' is negative
 (<a href="macros/examples/DualProgressDemo.txt">macro example</a>,
-<a href="macros/examples/DualProgressDemo.js">script example</a>).
+<a href="macros/js/DualProgressDemo.js">script example</a>).
+<li> Thanks to Messaoudi Cedric, <i>Edit&gt;Options&gt;Memory & Threads</i>
+no longer limits the number of threads to 32.
 <li> Thanks to Wilhelm Burger, added the IJ.setProperty(String,Object)
 and IJ.getProperty(String) methods, which are useful for passing
 data between plugins.
 <li> Thanks to Stephan Preibisch, added the MultiLineLabel#setText() method
-(example).
+(<a href="plugins/examples/Dialog_Test.java">example</a>).
 <li> Fixed a bug that caused the recording mode to not
 be saved when quitting ImageJ with the Recorder open.
 <li> Thanks to Mats Nilsson, fixed a bug that caused the getInfo() macro 
@@ -49,7 +51,7 @@ record the <i>Process&gt;Binary&gt;Convert to Mask</i> command.
 that caused it to fail with extened StackWindows with custom controls.
 <li> Thanks to Philippe Carl, fixed a v1.48t regression that caused the
 Plot#drawNormalizedLine() method to not work with log plots.
-</ul>
+</ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
 </body>
