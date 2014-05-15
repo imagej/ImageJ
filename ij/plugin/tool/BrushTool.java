@@ -27,7 +27,9 @@ import java.util.Vector;
 	private Overlay overlay;
 	private Options options;
 	private GenericDialog gd;
-
+	private ImageRoi overlayImage;
+	private boolean paintOnOverlay;
+	//private int transparency;
 
 	public void run(String arg) {
 		isPencil = "pencil".equals(arg);
@@ -42,7 +44,11 @@ import java.util.Vector;
 		int y = ic.offScreenY(e.getY());
 		xStart = x;
 		yStart = y;
-		ip = imp.getProcessor();
+		checkForOverlay(imp);
+		if (overlayImage!=null)
+			ip = overlayImage.getProcessor();
+		else
+			ip = imp.getProcessor();
 		int ctrlMask = IJ.isMacintosh() ? InputEvent.META_MASK : InputEvent.CTRL_MASK;
 		int resizeMask = InputEvent.SHIFT_MASK | ctrlMask;
 		if ((e.getModifiers() & resizeMask) == resizeMask) {
@@ -61,15 +67,52 @@ import java.util.Vector;
 		ip.snapshot();
 		Undo.setup(Undo.FILTER, imp);
 		ip.setLineWidth(width);
-		if (e.isAltDown())
-			ip.setColor(Toolbar.getBackgroundColor());
-		else
+		if (e.isAltDown()) {
+			if (overlayImage!=null)
+				ip.setColor(0); //erase
+			else
+				ip.setColor(Toolbar.getBackgroundColor());
+		} else
 			ip.setColor(Toolbar.getForegroundColor());
 		ip.moveTo(x, y);
 		if (!e.isShiftDown()) {
 			ip.lineTo(x, y);
-			imp.updateAndDraw();
+			if (overlayImage!=null) {
+				overlayImage.setProcessor(ip);
+				imp.draw();
+			} else
+				imp.updateAndDraw();
 		}
+	}
+	
+	private void checkForOverlay(ImagePlus imp) {
+		if (paintOnOverlay && (overlayImage==null||getOverlayImage(imp)==null)) {
+			ImageProcessor overlayIP = new ColorProcessor(imp.getWidth(), imp.getHeight());
+			ImageRoi imageRoi = new ImageRoi(0, 0, overlayIP);
+  			//imageRoi.setOpacity(1.0-transparency/100.0);
+			imageRoi.setZeroTransparent(true);
+			Overlay overlay = new Overlay(imageRoi);
+			imp.setOverlay(overlay);
+			overlayImage = imageRoi;
+			return;
+		}
+		overlayImage = null;
+		if (!paintOnOverlay)
+			return;
+		overlayImage = getOverlayImage(imp);
+	}
+
+	private ImageRoi getOverlayImage(ImagePlus imp) {
+		Overlay overlay = imp.getOverlay();
+		if (overlay==null)
+			return null;
+		Roi roi = overlay.size()>0?overlay.get(0):null;
+		if (roi==null||!(roi instanceof ImageRoi))
+			return null;
+		Rectangle bounds = roi.getBounds();
+		if (bounds.x!=0||bounds.y!=0||bounds.width!=imp.getWidth()||bounds.height!=imp.getHeight())
+			return null;
+		return (ImageRoi)roi;
 	}
 
 	public void mouseDragged(ImagePlus imp, MouseEvent e) {
@@ -99,7 +142,11 @@ import java.util.Vector;
 			mode = UNCONSTRAINED;
 		}
 		ip.lineTo(x, y);
-		imp.updateAndDraw();
+		if (overlayImage!=null) {
+			overlayImage.setProcessor(ip);
+			imp.draw();
+		} else
+			imp.updateAndDraw();
 	}
 
 	public void mouseReleased(ImagePlus imp, MouseEvent e) {
@@ -133,7 +180,6 @@ import java.util.Vector;
 			imp.setOverlay(overlay);
 		}
 		IJ.showStatus((isPencil?"Pencil":"Brush")+" width: "+ width);
-
 	}
 	
 	public void showOptionsDialog() {
@@ -195,15 +241,17 @@ import java.util.Vector;
 			String name = isPencil?"Pencil":"Brush";
 			gd = new NonBlockingGenericDialog(name+" Options");
 			gd.addSlider(name+" width:", 1, 50, width);
+			//gd.addSlider("Transparency (%):", 0, 100, transparency);
 			gd.addChoice("Color:", Colors.getColors(colorName), colorName);
+			gd.addCheckbox("Paint on overlay", paintOnOverlay);
 			gd.setInsets(10, 10, 0);
 			String ctrlString = IJ.isMacintosh()? "CMD":"CTRL";
 			gd.addMessage("SHIFT for horizontal or vertical lines\n"+
-					"ALT to draw in background color\n"+
+					"ALT to draw in background color (or\n"+
+					"to erase if painting on overlay)\n"+
 					ctrlString+"-SHIFT-drag to change "+(isPencil ? "pencil" : "brush")+" width\n"+
 					ctrlString+"-(ALT) click to change foreground\n"+
-					"(background) color\n"+
-					"Or use this dialog or Color Picker (shift-k).", null, Color.darkGray);
+					"(background) color, or use Color Picker", null, Color.darkGray);
 			gd.hideCancelButton();
 			gd.addHelp("");
 			gd.setHelpLabel("Undo");
@@ -228,7 +276,11 @@ import java.util.Vector;
 			width = (int)gd.getNextNumber();
 			if (gd.invalidNumber() || width<0)
 				width = (int)Prefs.get(widthKey, 1);
+			//transparency = (int)gd.getNextNumber();
+			//if (gd.invalidNumber() || transparency<0 || transparency>100)
+			//	transparency = 100;
 			String colorName = gd.getNextChoice();
+			paintOnOverlay = gd.getNextBoolean();
 			Color color = Colors.decode(colorName, null);
 			Toolbar.setForegroundColor(color);
 			Prefs.set(widthKey, width);

@@ -10,7 +10,7 @@ import java.util.*;
 /** Installs plugins dragged and dropped on the "ImageJ" window, or plugins,
 	macros or scripts opened using the Plugins/Install command. */
 public class PluginInstaller implements PlugIn {
-	public static final String[] validExtensions = {".txt",".ijm",".js",".bsh",".class",".jar",".java",".py"};
+	public static final String[] validExtensions = {".txt",".ijm",".js",".bsh",".class",".jar",".zip",".java",".py"};
 
 	public void run(String arg) {
 		OpenDialog od = new OpenDialog("Install Plugin, Macro or Script...", arg);
@@ -44,6 +44,13 @@ public class PluginInstaller implements PlugIn {
 			return false;
 		if (name.endsWith(".txt") && !name.contains("_"))
 			name = name.substring(0,name.length()-4) + ".ijm";
+		if (name.endsWith(".zip")) {
+			if (!name.contains("_")) {
+				IJ.error("Plugin Installer", "No underscore in file name:\n \n  "+name);
+				return false;
+			}
+			name = name.substring(0,name.length()-4) + ".jar";
+		}
 		String dir = null;
 		boolean isLibrary = name.endsWith(".jar") && !name.contains("_");
 		if (isLibrary) {

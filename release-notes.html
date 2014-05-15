@@ -5,20 +5,50 @@
 </head>
 <body>
 
-<li> <u>1.48v 18 April 2014</u>
+<li> <u>1.49a 13 May 2014</u>
 <ul>
-<li> Plot and Histogram windows are no longer centered on the screen.
-<li> Added the Overlay.clear and setOption("Add to overlay",boolean) macro functions.
-<li> Thanks to David Knecht, commands listed in the
-<i>Plugins&gt;Shortcuts&gt;List Shortcuts</i> and <i>Plugins&gt;Shortcuts&gt;Create Shortcut</i>
-dialogs are sorted with case ignored.
-<li> Thanks to Denis Roussel, changed incorrect Javadoc reference in
-PlugInFilter.java from SUPPORTS_STACKS to DOES_STACKS.
-<li> Thanks to Johannes Schindelin, added @link tags to the PlugInFilter.java Javadocs.
-<li> Fixed a bug that caused the progress bar to not terminate when dragging
-a jar file to the "ImageJ" window.
-<li> Fixed a bug that caused the roiManager("add") macro function to unexpectedly
-set the stack position of the source selection.
+<li> Thanks to Kenneth Sloan, added a "Paint on overlay" option to
+the built in brush tool's options dialog. Add the built in brush tool
+to the toolbar by selecting "Brush" from the toolbar's ">>" menu.
+<li> Thanks to Daniel Pensold, <i>Analyze&gt;Tools&gt;Save XY Coordinates</i>
+saves the coordinates and values of pixels inside selections to a .csv file.
+<li> Thanks to Volker Wirth, added a "Title:" field to the dialog displayed
+by <i>Edit&gt;Selection&gt;Straighten</i> when the line width is
+greater than one or when processing a stack.
+<li> Selections created by the selection brush tool are 
+deleted after they are added to an overlay.
+<li> Thanks to Jon Harman, <i>Plugins&gt;Install</i> recognizes .zip files.
+<li> Thanks to Jerome Mutterer, added the makeArrow() macro function
+(<a href="macros/examples/Arrows.txt">example</a>).
+<li> Thanks to Federico Luzzati, added the Stack.toggleChannel() macro function
+(<a href="macros/ToggleChannels.txt">example</a>).
+<li> Thanks to Norbert Vischer, the showProgress(progress) macro function displays 
+subordinate progress bars as moving dots when 'progress' is negative
+(<a href="macros/examples/DualProgressDemo.txt">macro example</a>,
+<a href="macros/examples/DualProgressDemo.js">script example</a>).
+<li> Thanks to Wilhelm Burger, added the IJ.setProperty(String,Object)
+and IJ.getProperty(String) methods, which are useful for passing
+data between plugins.
+<li> Thanks to Stephan Preibisch, added the MultiLineLabel#setText() method
+(<a href="plugins/examples/Dialog_Test.java">example</a>).
+<li> Fixed a bug that caused the recording mode to not
+be saved when quitting ImageJ with the Recorder open.
+<li> Thanks to Mats Nilsson, fixed a bug that caused the getInfo() macro 
+function and ImagePlus#getStringProperty() method to not work with 
+DICOM tags containing letters.
+<li> Thanks to Norbert Vischer, fixed a bug the caused the Array.findMaxima()
+macro function to throw an exception when the array length was one.
+<li> Fixed a bug that caused images with overlays containing black transparent
+images to not be correctly saved and restored.
+<li> Thanks to Jan Brocher, fixed a v1.48 regression that caused changes made in the
+<i>Image&gt;Overlay&gt;Add to Overlay</i> dialog (displayed when you press alt+b)
+to not be remembered.
+<li> Thanks to Kees Straatman, fixed a bug that caused the recorder to incorrectly
+record the <i>Process&gt;Binary&gt;Convert to Mask</i> command.
+<li> Thanks to Chris Weisiger, fixed a bug in <i>Image&gt;Stacks&gt;Othogonal Views</i>
+that caused it to fail with extened StackWindows with custom controls.
+<li> Thanks to Philippe Carl, fixed a v1.48t regression that caused the
+Plot#drawNormalizedLine() method to not work with log plots.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

@@ -136,9 +136,6 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		win.addWindowListener (this);  
 		win.addMouseWheelListener(this);
 		win.addFocusListener(this);
-		Component[] c = win.getComponents();
-		//IJ.log(c[1].toString());
-		((ScrollbarWithLabel) c[1]).addAdjustmentListener (this);
 		ImagePlus.addImageListener(this);
 		Executer.addCommandListener(this);
 	}
@@ -570,8 +567,6 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		win.removeWindowListener(this);
 		win.removeMouseWheelListener(this);
 		win.removeFocusListener(this);
-		Component[] c = win.getComponents();
-		((ScrollbarWithLabel) c[1]).removeAdjustmentListener (this);
 		win.setResizable(true);
 		instance = null;
 		previousID = imp.getID();

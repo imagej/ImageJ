@@ -98,6 +98,9 @@ public class OverlayCommands implements PlugIn {
 		if (IJ.altKeyDown() || (IJ.macroRunning() && Macro.getOptions()!=null)) {
 			RoiProperties rp = new RoiProperties("Add to Overlay", roi);
 			if (!rp.showDialog()) return;
+			defaultRoi.setStrokeColor(roi.getStrokeColor());
+			defaultRoi.setStrokeWidth(roi.getStrokeWidth());
+			defaultRoi.setFillColor(roi.getFillColor());
 		}
 		String name = roi.getName();
 		boolean newOverlay = name!=null && name.equals("new-overlay");
@@ -109,7 +112,8 @@ public class OverlayCommands implements PlugIn {
 		overlay.add(roi);
 		defaultRoi.setPosition(setPos?1:0);
 		imp.setOverlay(overlay);
-		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow&&!Prefs.keepArrowSelections))
+		boolean brushRoi = roi.getType()==Roi.COMPOSITE && Toolbar.getToolId()==Toolbar.OVAL && Toolbar.getBrushSize()>0;
+		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow&&!Prefs.keepArrowSelections) || brushRoi)
 			imp.deleteRoi();
 		Undo.setup(Undo.OVERLAY_ADDITION, imp);
 	}

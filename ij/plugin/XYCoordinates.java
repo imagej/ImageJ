@@ -8,6 +8,7 @@ import ij.*;
 import ij.process.*;
 import ij.io.*;
 import ij.gui.*;
+import ij.measure.ResultsTable;
 
 
 /** Writes the XY coordinates and pixel values of all non-background pixels
@@ -21,6 +22,13 @@ public class XYCoordinates implements PlugIn {
 
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
+		Roi roi = imp.getRoi();
+		String options = Macro.getOptions();
+		boolean legacyMacro = IJ.isMacro() && options!=null && options.contains("background=");
+		if (roi!=null && roi.isArea() && !legacyMacro) {
+			saveSelectionCoordinates(imp);
+			return;
+		}
 		ImageProcessor ip = imp.getProcessor();
 		int width = imp.getWidth();
 		int height = imp.getHeight();
@@ -42,8 +50,9 @@ public class XYCoordinates implements PlugIn {
 			"This plugin writes to a text file the XY coordinates and\n"
 			+ "pixel value of all non-background pixels. Backround\n"
 			+ "defaults to be the value of the pixel in the upper\n"
-			+ "left corner of the image.\n"
-			+ bg;
+			+ "left corner of the image.\n \n"
+			+ "If there is a selection, this dialog is skipped and the\n"
+			+ "coordinates and values of pixels in the selection are saved.\n";
 				
 		GenericDialog gd = new GenericDialog("Save XY Coordinates");
 		gd.setInsets(0, 20, 0);
@@ -128,6 +137,42 @@ public class XYCoordinates implements PlugIn {
 		IJ.showProgress(1.0);
 		IJ.showStatus("");
 		pw.close();
+	}
+	
+	private void saveSelectionCoordinates(ImagePlus imp) {
+		SaveDialog sd = new SaveDialog("Save Coordinates as Text...", imp.getTitle(), ".csv");
+		String name = sd.getFileName();
+		if (name == null)
+			return;
+		String dir = sd.getDirectory();
+		Roi roi = imp.getRoi();
+		ImageProcessor ip = imp.getProcessor();
+		ImageProcessor mask = roi.getMask();
+		Rectangle r = roi.getBounds();
+		ResultsTable rt = new ResultsTable();
+		boolean rgb = imp.getBitDepth()==24;
+		for (int y=0; y<r.height; y++) {
+			for (int x=0; x<r.width; x++) {
+				if (mask.getPixel(x,y)!=0) {
+					rt.incrementCounter();
+					rt.addValue("X", r.x+x);
+					rt.addValue("Y", r.y+y);
+					if (rgb) {
+						int c = ip.getPixel(r.x+x,r.y+y);
+						rt.addValue("Red", (c&0xff0000)>>16);
+						rt.addValue("Green", (c&0xff00)>>8);
+						rt.addValue("Blue", c&0xff);
+					} else
+						rt.addValue("Value", ip.getPixelValue(r.x+x,r.y+y));
+				}
+			}
+		}
+		//rt.show("Results");
+		try {
+			rt.saveAs(dir+name);
+		} catch (IOException e) {
+			IJ.error(""+e);
+		}
 	}
 
 }

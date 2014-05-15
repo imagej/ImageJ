@@ -243,7 +243,7 @@ public class Opener {
 	
 	/** Opens the specified file and adds it to the File/Open Recent menu.
 		Returns true if the file was opened successfully.  */
-	public	boolean openAndAddToRecent(String path) {
+	public boolean openAndAddToRecent(String path) {
 		open(path);
 		if (!error)
 			Menus.addOpenRecentItem(path);

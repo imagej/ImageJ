@@ -21,14 +21,17 @@ public class Straightener implements PlugIn {
 		boolean isMacro = IJ.macroRunning() && Macro.getOptions()!=null;
 		int stackSize = imp.getStackSize();
 		if (stackSize==1) processStack = false;
+		String newTitle = WindowManager.getUniqueName(imp.getTitle());
 		if (width<=1 || isMacro || stackSize>1) {
 			if (width<=1) width = 20;
 			GenericDialog gd = new GenericDialog("Straightener");
+			gd.addStringField("Title:", newTitle, 15);
 			gd.addNumericField("Line Width:", width, 0, 3, "pixels");
 			if (stackSize>1)
 				gd.addCheckbox("Process Entire Stack", processStack);
 			gd.showDialog();
 			if (gd.wasCanceled()) return;
+			newTitle = gd.getNextString();
 			width = (int)gd.getNextNumber();
 			Line.setWidth(width);
 			if (stackSize>1)
@@ -42,10 +45,10 @@ public class Straightener implements PlugIn {
 		ImagePlus imp2 = null;
 		if (processStack) {
 			ImageStack stack2 = straightenStack(imp, roi, width);
-			imp2 = new ImagePlus(WindowManager.getUniqueName(imp.getTitle()), stack2);
+			imp2 = new ImagePlus(newTitle, stack2);
 		} else {
 			ip2 = straighten(imp, roi, width);
-			imp2 = new ImagePlus(WindowManager.getUniqueName(imp.getTitle()), ip2);
+			imp2 = new ImagePlus(newTitle, ip2);
 		}
 		if (imp2==null)
 			return;

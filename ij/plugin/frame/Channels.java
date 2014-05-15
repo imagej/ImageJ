@@ -183,6 +183,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 							for (int c=0; c<ci.getNChannels(); c++)
 								str += active[c]?"1":"0";
 							Recorder.record("Stack.setActiveChannels", str);
+							Recorder.record("//Stack.toggleChannel", imp.getChannel());
 						}
 					} else {
 						imp.setPosition(i+1, imp.getSlice(), imp.getFrame());

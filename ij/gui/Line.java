@@ -88,7 +88,7 @@ public class Line extends Roi {
 		if (imp==null) return;
 		imp.draw(clipX-5, clipY-5, clipWidth+10, clipHeight+10);
 		if (Recorder.record)
-			Recorder.record("makeLine", x1, y1, x2, y2);
+			Recorder.record("makeArrow", x1, y1, x2, y2);
 		if (getLength()==0.0)
 			imp.deleteRoi();
 	}

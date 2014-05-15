@@ -96,6 +96,7 @@ public class RoiDecoder {
 	public static final int OVERLAY_BOLD = 64;
 	public static final int SUB_PIXEL_RESOLUTION = 128;
 	public static final int DRAW_OFFSET = 256;
+	public static final int ZERO_TRANSPARENT = 512;
 	
 	// types
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6,
@@ -325,7 +326,7 @@ public class RoiDecoder {
 			roi = getTextRoi(roi, version);
 
 		if (version>=221 && subtype==IMAGE)
-			roi = getImageRoi(roi, imageOpacity, imageSize);
+			roi = getImageRoi(roi, imageOpacity, imageSize, options);
 
 		if (version>=224) {
 			String props = getRoiProps();
@@ -432,7 +433,7 @@ public class RoiDecoder {
 		return roi2;
 	}
 	
-	Roi getImageRoi(Roi roi, int opacity, int size) {
+	Roi getImageRoi(Roi roi, int opacity, int size, int options) {
 		if (size<=0)
 			return roi;
 		Rectangle r = roi.getBounds();
@@ -442,6 +443,8 @@ public class RoiDecoder {
 		ImagePlus imp = new Opener().deserialize(bytes);
 		ImageRoi roi2 = new ImageRoi(r.x, r.y, imp.getProcessor());
 		roi2.setOpacity(opacity/255.0);
+		if ((options&ZERO_TRANSPARENT)!=0)
+			roi2.setZeroTransparent(true);
 		return roi2;
 	}
 
