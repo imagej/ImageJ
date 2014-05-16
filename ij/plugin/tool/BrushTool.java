@@ -29,6 +29,7 @@ import java.util.Vector;
 	private GenericDialog gd;
 	private ImageRoi overlayImage;
 	private boolean paintOnOverlay;
+	private static BrushTool brushInstance;
 	//private int transparency;
 
 	public void run(String arg) {
@@ -36,6 +37,8 @@ import java.util.Vector;
 		widthKey = isPencil ? PENCIL_WIDTH_KEY : BRUSH_WIDTH_KEY;
 		width = (int)Prefs.get(widthKey, isPencil ? 1 : 5);
 		Toolbar.addPlugInTool(this);
+		if (!isPencil)
+			brushInstance = this;
 	}
 
 	public void mousePressed(ImagePlus imp, MouseEvent e) {
@@ -58,8 +61,8 @@ import java.util.Vector;
 		} else if ((e.getModifiers() & ctrlMask) != 0) {
 			boolean altKeyDown = (e.getModifiers() & InputEvent.ALT_MASK) != 0;
 			ic.setDrawingColor(x, y, altKeyDown); //pick color from image (ignore overlay)
-			if (!altKeyDown && gd != null)
-				options.setColor(Toolbar.getForegroundColor());
+			if (!altKeyDown)
+				setColor(Toolbar.getForegroundColor());
 			mode = IDLE;
 			return;
 		}
@@ -157,12 +160,34 @@ import java.util.Vector;
 			}
 			overlay = null;
 			if (e.isShiftDown()) {
-				if (gd!=null)
-					options.setWidth(width);
+				setWidth(width);
 				Prefs.set(widthKey, width);
 			}
 		}
 	}
+
+	private void setWidth(int width) {
+		if (gd==null)
+			return;
+		Vector numericFields = gd.getNumericFields();
+		TextField widthField  = (TextField)numericFields.elementAt(0);
+		widthField.setText(""+width);
+		Vector sliders = gd.getSliders();
+		Scrollbar sb = (Scrollbar)sliders.elementAt(0);
+		sb.setValue(width);
+	}
+			
+	private void setColor(Color c) {
+		if (gd==null)
+			return;
+		String name = Colors.colorToString2(c);
+		if (name.length()>0) {
+			Vector choices = gd.getChoices();
+			Choice ch = (Choice)choices.elementAt(0);
+			ch.select(name);
+		}
+	}
+
 
 	private void showToolSize(int deltaWidth, ImagePlus imp) {
 		if (deltaWidth !=0) {
@@ -217,24 +242,6 @@ import java.util.Vector;
 			showDialog();
 		}
 		
-		void setWidth(int width) {
-			Vector numericFields = gd.getNumericFields();
-			TextField widthField  = (TextField)numericFields.elementAt(0);
-			widthField.setText(""+width);
-			Vector sliders = gd.getSliders();
-			Scrollbar sb = (Scrollbar)sliders.elementAt(0);
-			sb.setValue(width);
-		}
-
-		void setColor(Color c) {
-			String name = Colors.getColorName(c, "");
-			if (name.length() > 0) {
-				Vector choices = gd.getChoices();
-				Choice ch = (Choice)choices.elementAt(0);
-				ch.select(name);
-			}
-		}
-
 		public void showDialog() {
 			Color color = Toolbar.getForegroundColor();
 			String colorName = Colors.colorToString2(color);
@@ -285,6 +292,14 @@ import java.util.Vector;
 			Toolbar.setForegroundColor(color);
 			Prefs.set(widthKey, width);
 			return true;
+		}
+	}
+	
+	public static void setBrushWidth(int width) {
+		if (brushInstance!=null) {
+			Color c = Toolbar.getForegroundColor();
+			brushInstance.setWidth(width);
+			Toolbar.setForegroundColor(c);
 		}
 	}
 
