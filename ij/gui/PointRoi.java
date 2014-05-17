@@ -12,10 +12,10 @@ import ij.util.Java2;
 
 /** This class represents a collection of points. */
 public class PointRoi extends PolygonRoi {
-	public static final String[] sizes = {"Tiny", "Small", "Mediam", "Large"};
+	public static final String[] sizes = {"Tiny", "Small", "Medium", "Large"};
 	private static final String SIZE_KEY = "point.size";
 	private static final String CROSS_COLOR_KEY = "point.cross.color";
-	private static final int TINY=1, SMALL=3, MEDIAM=5, LARGE=7;
+	private static final int TINY=1, SMALL=3, MEDIUM=5, LARGE=7;
 	private static int markerSize = SMALL;
 	private static Font font;
 	private static Color defaultCrossColor = Color.white;
@@ -220,7 +220,7 @@ public class PointRoi extends PolygonRoi {
 		} else if (sizes[1].equals(size)) {
 			markerSize=SMALL; set=true;
 		} else if (sizes[2].equals(size)) {
-			markerSize=MEDIAM; set=true;
+			markerSize=MEDIUM; set=true;
 		} else if (sizes[3].equals(size)) {
 			markerSize=LARGE; set=true;
 		}
@@ -231,7 +231,7 @@ public class PointRoi extends PolygonRoi {
 		switch (markerSize) {
 			case TINY: return sizes[0];
 			case SMALL: return sizes[1];
-			case MEDIAM: return sizes[2];
+			case MEDIUM: return sizes[2];
 			case LARGE: return sizes[3];
 		}
 		return null;
