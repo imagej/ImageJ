@@ -247,6 +247,8 @@ public class GelAnalyzer implements PlugIn {
 			if (overlay==null) {
 				overlay = new Overlay();
 				overlay.drawLabels(true);
+				overlay.setLabelColor(Color.white);
+				overlay.drawBackgrounds(true);
 			}
 			overlay.add(new Roi(rect.x, rect.y, rect.width, rect.height, null));
 			gel.setOverlay(overlay);
