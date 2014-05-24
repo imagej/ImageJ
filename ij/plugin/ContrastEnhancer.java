@@ -32,8 +32,10 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 			equalize(imp);
 		else
 			stretchHistogram(imp, saturated);
-		if (normalize)
-			imp.getProcessor().resetMinAndMax();
+		if (normalize) {
+			ImageProcessor ip = imp.getProcessor();
+			ip.setMinAndMax(0,ip.getBitDepth()==32?1.0:ip.maxValue());
+		}
 		imp.updateAndDraw();
 	}
 
@@ -83,8 +85,6 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		if (saturated>100.0) saturated = 100;
 		if (processStack && !equalize)
 			normalize = true;
-		//if (normalize)
-		//	useStackHistogram = false;
 		gEqualize=equalize; gNormalize=normalize;
 		return true;
 	}
@@ -223,8 +223,6 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 			{max2 = 65535; range=65536;}
 		else if (ip instanceof FloatProcessor)
 			normalizeFloat(ip, min, max);
-		
-		//double scale = range/max-min);
 		int[] lut = new int[range];
 		for (int i=0; i<range; i++) {
 			if (i<=min)
