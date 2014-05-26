@@ -304,7 +304,7 @@ public class ImageStack {
 		return cm;
 	}
 	
-	/** Returns true if this is a 3-slice RGB stack. */
+	/** Returns true if this is a 3-slice, 8-bit RGB stack. */
 	public boolean isRGB() {
     	if (nSlices==3 && (stack[0] instanceof byte[]) && getSliceLabel(1)!=null && getSliceLabel(1).equals("Red"))	
 			return true;

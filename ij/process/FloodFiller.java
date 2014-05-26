@@ -137,6 +137,11 @@ public class FloodFiller {
 		//if (count>100) return;
 		int width = ip.getWidth();
 		int height = ip.getHeight();
+		//IJ.log("ff: "+x+" "+y+" "+level1+" "+level2+" "+ip+" "+mask+" "+bounds);
+		if (x==0&&y==0&&level1==0.0&&level2==255.0&&ip.getBitDepth()==8) {
+			ip.fill();
+			return;
+		}
 		mask.setColor(0);
 		mask.fill();
 		mask.setColor(255);
