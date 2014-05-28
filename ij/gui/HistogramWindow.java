@@ -533,7 +533,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			imageUpdated(srcImp);
 	}
 
-	// these listeners are activated if there are in the source ImagePlus
+	// these listeners are activated if they are in the source ImagePlus
 	public synchronized void mousePressed(MouseEvent e) { doUpdate=true; notify(); }   
 	public synchronized void mouseDragged(MouseEvent e) { doUpdate=true; notify(); }
 	public synchronized void mouseClicked(MouseEvent e) { doUpdate=true; notify(); }
