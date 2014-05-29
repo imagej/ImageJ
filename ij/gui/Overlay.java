@@ -30,22 +30,7 @@ public class Overlay {
     public void add(Roi roi) {
     	list.add(roi);
     }
-    
-    /* Adds a Shape to this Overlay. */
-    //public void add(Shape shape, Color color, BasicStroke stroke) {
-	//	Roi roi = new ShapeRoi(shape);
-	//	roi.setStrokeColor(color);
-	//	roi.setStroke(stroke);
-    //	list.add(roi);
-    //}
-
-    /* Adds a String to this Overlay. */
-    //public void add(String text, int x, int y, Color color, Font font) {
-	//	TextRoi roi = new TextRoi(x, y-font.getSize(), text, font);
-	//	roi.setStrokeColor(color);
-	//	list.add(roi);
-    //}
-    
+        
     /** Adds an Roi to this Overlay. */
     public void addElement(Roi roi) {
     	list.add(roi);
@@ -158,7 +143,7 @@ public class Overlay {
 	public Overlay crop(Rectangle bounds) {
 		if (bounds==null)
 			return duplicate();
-		Overlay overlay2 = new Overlay();
+		Overlay overlay2 = create();
 		Roi[] allRois = toArray();
 		for (Roi roi: allRois) {
 			Rectangle roiBounds = roi.getBounds();
@@ -244,20 +229,9 @@ public class Overlay {
 	}
 	*/
 
-    /** Draws outlines of the Rois in this Overlay on the specified
-    	ImageProcessor using the current color and line width of 'ip'. */
-    //public void draw(ImageProcessor ip) {
-	//	Roi[] rois = toArray();
-	//	for (int i=0; i<rois.length; i++)
-	//		rois[i].drawPixels(ip);
-	//}
-	
-	/** Returns a clone of this Overlay. */
-	public Overlay duplicate() {
-		Roi[] rois = toArray();
+	/** Returns a new Overlay that has the same properties as this one. */
+	public Overlay create() {
 		Overlay overlay2 = new Overlay();
-		for (int i=0; i<rois.length; i++)
-			overlay2.add((Roi)rois[i].clone());
 		overlay2.drawLabels(label);
 		overlay2.drawNames(drawNames);
 		overlay2.drawBackgrounds(drawBackgrounds);
@@ -265,7 +239,16 @@ public class Overlay {
 		overlay2.setLabelFont(labelFont);
 		return overlay2;
 	}
-
+	
+	/** Returns a clone of this Overlay. */
+	public Overlay duplicate() {
+		Roi[] rois = toArray();
+		Overlay overlay2 = create();
+		for (int i=0; i<rois.length; i++)
+			overlay2.add((Roi)rois[i].clone());
+		return overlay2;
+	}
+	
 	public String toString() {
     	return list.toString();
     }

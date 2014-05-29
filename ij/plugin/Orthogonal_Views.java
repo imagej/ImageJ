@@ -110,7 +110,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			thread = new Thread(this, "Orthogonal Views");
 			thread.start();
 			IJ.wait(100);
-				update();
+			update();
 		} else
 			dispose();
 	}

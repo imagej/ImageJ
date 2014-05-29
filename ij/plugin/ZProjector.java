@@ -298,7 +298,7 @@ public class ZProjector implements PlugIn {
 	//Added by Marcel Boeglin 2013.09.23
 	private Overlay projectStackRois(Overlay overlay) {
 		if (overlay==null) return null;
-		Overlay overlay2 = new Overlay();
+		Overlay overlay2 = overlay.create();
 		Roi roi;
 		int s;
 		for (Roi r : overlay.toArray()) {
@@ -369,7 +369,7 @@ public class ZProjector implements PlugIn {
         if (overlay==null) return null;
 		int frames = projImage.getNFrames();
 		int t1 = imp.getFrame();
-        Overlay overlay2 = new Overlay();
+        Overlay overlay2 = overlay.create();
         Roi roi;
         int c, z, t;
 		for (Roi r : overlay.toArray()) {
@@ -394,7 +394,7 @@ public class ZProjector implements PlugIn {
 		int channels = projImage.getNChannels();
 		int slices = 1;
 		int frames = projImage.getNFrames();
-		Overlay overlay2 = new Overlay();
+		Overlay overlay2 = overlay.create();
 		Roi roi;
 		int c, z, t;
 		int size = channels * slices * frames;

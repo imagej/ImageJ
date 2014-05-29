@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.49b 28 May 2014</u>
+<li> <u>1.49b 29 May 2014</u>
 <ul>
 <li> Thanks to Jeff Spector, <i>Image&gt;Stacks&gt;Reslice</i> can now create
 multichannel kymographs from time-lapse 4D hyperstacks (c>1,z=1,t>1) .
@@ -14,6 +14,8 @@ paintbrush tool can be set using macros
 (<a href="macros/BrushToolMacros.txt">example</a>).
 <li> The Gel Analyzer now labels each lane with a white number
 on a black background.
+<li> The "Fixed y-axis scale" option in the <i>Edit&gt;Options&gt;Profile Plot Options</i>
+dialog is no longer saved in the preferences file.
 <li> Thanks to Gabriel Landini, the <i>Plugins&gt;Compile and Run</i>
 command compiles plugins that us the 3D Viewer.
 (<a href="https://gist.github.com/ctrueden/fe00e8dd2034f37273f0">example</a>).
@@ -34,6 +36,9 @@ to hang when processing an 8-bit image and the threshold was set to 0-255.
 <li> Thanks to Marcel Austenfeld, fixed a bug that caused
 <i>Image&gt;Stacks&gt;Orthogonal Views</i> to sometimes freeze and/or 
 throw a StackOverflow exception when dragging in the "XZ" or "YZ" windows.
+<li> Fixed bugs related to cropping and projecting stacks with labeled overlays.
+<li> Thanks to Christophe Deroulers, fixed a v1.49a regression that
+sometimes caused progress bars to not work as expected.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

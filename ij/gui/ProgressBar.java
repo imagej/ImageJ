@@ -117,7 +117,7 @@ public class ProgressBar extends Canvas {
      */
     public void show(int currentIndex, int finalIndex) {
         boolean wasNegative = currentIndex < 0;
-        double progress = ((double) Math.abs(finalIndex) + 1.0) / Math.abs(finalIndex);
+        double progress = ((double) Math.abs(currentIndex) + 1.0) / Math.abs(finalIndex);
         if (wasNegative) {
             progress = -progress;
         }

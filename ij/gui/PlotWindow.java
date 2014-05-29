@@ -36,8 +36,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	private static final int WIDTH = 450;
 	private static final int HEIGHT = 200;
 	
-	private static final String MIN = "pp.min";
-	private static final String MAX = "pp.max";
 	private static final String PLOT_WIDTH = "pp.width";
 	private static final String PLOT_HEIGHT = "pp.height";
 	private static final String OPTIONS = "pp.options";
@@ -462,10 +460,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	public static void savePreferences(Properties prefs) {
 		double min = ProfilePlot.getFixedMin();
 		double max = ProfilePlot.getFixedMax();
-		if (!(min==0.0&&max==0.0) && min<max) {
-			prefs.put(MIN, Double.toString(min));
-			prefs.put(MAX, Double.toString(max));
-		}
 		if (plotWidth!=WIDTH || plotHeight!=HEIGHT) {
 			prefs.put(PLOT_WIDTH, Integer.toString(plotWidth));
 			prefs.put(PLOT_HEIGHT, Integer.toString(plotHeight));
