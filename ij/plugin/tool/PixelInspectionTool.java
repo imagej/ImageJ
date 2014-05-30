@@ -314,8 +314,9 @@ class PixelInspector extends PlugInFrame
 	}
 
 	synchronized void update(int whichUpdate) {
-		if (nextUpdate < whichUpdate) nextUpdate = whichUpdate;
-		notify();								//wake up the background thread
+		if (nextUpdate < whichUpdate)
+			nextUpdate = whichUpdate;
+		notify();		//wake up the background thread
 	}
 
 	// the background thread for updating the table

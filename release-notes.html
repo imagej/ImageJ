@@ -5,51 +5,43 @@
 </head>
 <body>
 
-<li> <u>1.49a 13 May 2014</u>
+<li> <u>1.49b 30 May 2014</u>
 <ul>
-<li> Thanks to Kenneth Sloan, added a "Paint on overlay" option to
-the built in brush tool's options dialog. Add the built in brush tool
-to the toolbar by selecting "Brush" from the toolbar's ">>" menu.
-<li> Thanks to Daniel Pensold, <i>Analyze&gt;Tools&gt;Save XY Coordinates</i>
-saves the coordinates and values of pixels inside selections to a .csv file.
-<li> Thanks to Volker Wirth, added a "Title:" field to the dialog displayed
-by <i>Edit&gt;Selection&gt;Straighten</i> when the line width is
-greater than one or when processing a stack.
-<li> Selections created by the selection brush tool are 
-deleted after they are added to an overlay.
-<li> Thanks to Jon Harman, <i>Plugins&gt;Install</i> recognizes .zip files.
-<li> Thanks to Jerome Mutterer, added the makeArrow() macro function
-(<a href="macros/examples/Arrows.txt">example</a>).
-<li> Thanks to Federico Luzzati, added the Stack.toggleChannel() macro function
-(<a href="macros/ToggleChannels.txt">example</a>).
-<li> Thanks to Norbert Vischer, the showProgress(progress) macro function displays 
-subordinate progress bars as moving dots when 'progress' is negative
-(<a href="macros/examples/DualProgressDemo.txt">macro example</a>,
-<a href="macros/examples/DualProgressDemo.js">script example</a>).
-<li> Thanks to Wilhelm Burger, added the IJ.setProperty(String,Object)
-and IJ.getProperty(String) methods, which are useful for passing
-data between plugins.
-<li> Thanks to Stephan Preibisch, added the MultiLineLabel#setText() method
-(<a href="plugins/examples/Dialog_Test.java">example</a>).
-<li> Fixed a bug that caused the recording mode to not
-be saved when quitting ImageJ with the Recorder open.
-<li> Thanks to Mats Nilsson, fixed a bug that caused the getInfo() macro 
-function and ImagePlus#getStringProperty() method to not work with 
-DICOM tags containing letters.
-<li> Thanks to Norbert Vischer, fixed a bug the caused the Array.findMaxima()
-macro function to throw an exception when the array length was one.
-<li> Fixed a bug that caused images with overlays containing black transparent
-images to not be correctly saved and restored.
-<li> Thanks to Jan Brocher, fixed a v1.48 regression that caused changes made in the
-<i>Image&gt;Overlay&gt;Add to Overlay</i> dialog (displayed when you press alt+b)
-to not be remembered.
-<li> Thanks to Kees Straatman, fixed a bug that caused the recorder to incorrectly
-record the <i>Process&gt;Binary&gt;Convert to Mask</i> command.
-<li> Thanks to Chris Weisiger, fixed a bug in <i>Image&gt;Stacks&gt;Othogonal Views</i>
-that caused it to fail with extened StackWindows with custom controls.
-<li> Thanks to Philippe Carl, fixed a v1.48t regression that caused the
-Plot#drawNormalizedLine() method to not work with log plots.
-</ul>
+<li> Thanks to Jeff Spector, <i>Image&gt;Stacks&gt;Reslice</i> can now create
+multichannel kymographs from time-lapse 4D hyperstacks (c>1,z=1,t>1) .
+<li> Thanks to Kenneth Sloan, the width and color of the
+paintbrush tool can be set using macros
+(<a href="macros/BrushToolMacros.txt">example</a>).
+<li> The Gel Analyzer now labels each lane with a white number
+on a black background.
+<li> The "Fixed y-axis scale" option in the <i>Edit&gt;Options&gt;Profile Plot Options</i>
+dialog is no longer saved in the preferences file.
+<li> Thanks to Gabriel Landini, the <i>Plugins&gt;Compile and Run</i>
+command compiles plugins that us the 3D Viewer.
+(<a href="https://gist.github.com/ctrueden/fe00e8dd2034f37273f0">example</a>).
+<li> Thanks to Christopher Coulon, fixed a bug that caused
+<i>Image&gt;Overlay&gt;Flatten</i> to not transfer metadata
+to the output image.
+<li> Thanks to Jeremy Walker, fixed a v1.47o regression that caused 
+the getResult() macro function to not be able retrieve numbers added
+as strings to the results table using setResult().
+<li> Thanks to Christophe Leterrier, fixed a bug that caused
+<i>Process&gt;Enhance Contrast</i> to sometimes not correctly
+set the display range of stacks when "Normalize" was enabled.
+<li> Thanks to Sidnei Paciornik, fixed a bug that caused the "n_situ" particle
+analyzer option to not work as expected when analyzing a single stack image
+(<a href="macros/CustomStackThreshold.txt">example</a>).
+<li> Thanks to Sidnei Paciornik, fixed a bug that caused the particle analyzer
+to hang when processing an 8-bit image and the threshold was set to 0-255.
+<li> Thanks to Marcel Austenfeld, fixed a bug that caused
+<i>Image&gt;Stacks&gt;Orthogonal Views</i> to sometimes freeze and/or 
+throw a StackOverflow exception when dragging in the "XZ" or "YZ" windows.
+<li> Fixed bugs related to cropping and projecting stacks with labeled overlays.
+<li> Thanks to Tara Ficken, fixed bugs that caused some float and int32 TIFFS to
+be read incorrectly.
+<li> Thanks to Christophe Deroulers, fixed a v1.49a regression that
+sometimes caused progress bars to not work as expected.
+</ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
 </body>

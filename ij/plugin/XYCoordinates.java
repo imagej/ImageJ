@@ -153,7 +153,7 @@ public class XYCoordinates implements PlugIn {
 		boolean rgb = imp.getBitDepth()==24;
 		for (int y=0; y<r.height; y++) {
 			for (int x=0; x<r.width; x++) {
-				if (mask.getPixel(x,y)!=0) {
+				if (mask==null || mask.getPixel(x,y)!=0) {
 					rt.incrementCounter();
 					rt.addValue("X", r.x+x);
 					rt.addValue("Y", r.y+y);

@@ -1101,8 +1101,15 @@ public class Functions implements MacroConstants, Measurements {
 		int col = rt.getColumnIndex(column);
 		if (!rt.columnExists(col))
 			return Double.NaN;
-		else
-   			return rt.getValueAsDouble(col, row);
+		else {
+			double value = rt.getValueAsDouble(col, row);
+			if (Double.isNaN(value)) {
+				String s = rt.getStringValue(col, row);
+				if (s!=null && !s.equals("NaN"))
+					value = Tools.parseDouble(s);
+			}
+   			return value;
+   		}
 	}
 
 	String getResultString() {

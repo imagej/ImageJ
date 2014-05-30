@@ -558,6 +558,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		}
 		roiType = Wand.allPoints()?Roi.FREEROI:Roi.TRACED_ROI;
 
+		boolean done = false;
 		for (int y=r.y; y<(r.y+r.height); y++) {
 			offset = y*width;
 			for (int x=r.x; x<(r.x+r.width); x++) {
@@ -567,8 +568,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 					value = ip.getPixel(x, y);
 				else
 					value = ip.getPixelValue(x, y);
-				if (value>=level1 && value<=level2)
+				if (value>=level1 && value<=level2 && !done) {
 					analyzeParticle(x, y, imp, ip);
+					done = level1==0.0&&level2==255.0&&imp.getBitDepth()==8;
+				}
 			}
 			if (showProgress && ((y%inc)==0))
 				IJ.showProgress((double)(y-r.y)/r.height);
@@ -1012,7 +1015,11 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			if (inSituShow) {
 				if (imp.getStackSize()==1)
 					Undo.setup(Undo.TRANSFORM, imp);
-				imp.setStack(null, outputImage.getStack());
+				ImageStack outputStack = outputImage.getStack();
+				if (imp.getStackSize()>1 && outputStack.getSize()==1 && imp.getBitDepth()==8)
+					imp.setProcessor(outputStack.getProcessor(1));
+				else
+					imp.setStack(null, outputStack);
 			} else if (!hideOutputImage)
 				outputImage.show();
 		}

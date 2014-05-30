@@ -2394,7 +2394,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		g.drawImage(getImage(), 0, 0, null);
 		ic2.paint(g);
 		imp2.flatteningCanvas = null;
-		return new ImagePlus("Flat_"+getTitle(), new ColorProcessor(bi));
+		ImagePlus imp3 = new ImagePlus("Flat_"+getTitle(), new ColorProcessor(bi));
+		imp3.copyScale(this);
+		imp3.setProperty("Info", getProperty("Info"));
+		return imp3;
 	}
 	
 	/** Flattens all slices of this stack or HyperStack.<br>
