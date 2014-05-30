@@ -5,14 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.49b 29 May 2014</u>
+<li> <u>1.49b 30 May 2014</u>
 <ul>
 <li> Thanks to Jeff Spector, <i>Image&gt;Stacks&gt;Reslice</i> can now create
 multichannel kymographs from time-lapse 4D hyperstacks (c>1,z=1,t>1) .
 <li> Thanks to Kenneth Sloan, the width and color of the
 paintbrush tool can be set using macros
 (<a href="macros/BrushToolMacros.txt">example</a>).
-<li> The Gel Analyzer now labels each lane with a white number
+<li> The Gel Analyzer now labels lanes with a white number
 on a black background.
 <li> The "Fixed y-axis scale" option in the <i>Edit&gt;Options&gt;Profile Plot Options</i>
 dialog is no longer saved in the preferences file.
@@ -22,9 +22,6 @@ command compiles plugins that us the 3D Viewer.
 <li> Thanks to Christopher Coulon, fixed a bug that caused
 <i>Image&gt;Overlay&gt;Flatten</i> to not transfer metadata
 to the output image.
-<li> Thanks to Jeremy Walker, fixed a v1.47o regression that caused 
-the getResult() macro function to not be able retrieve numbers added
-as strings to the results table using setResult().
 <li> Thanks to Christophe Leterrier, fixed a bug that caused
 <i>Process&gt;Enhance Contrast</i> to sometimes not correctly
 set the display range of stacks when "Normalize" was enabled.
@@ -35,8 +32,13 @@ analyzer option to not work as expected when analyzing a single stack image
 to hang when processing an 8-bit image and the threshold was set to 0-255.
 <li> Thanks to Marcel Austenfeld, fixed a bug that caused
 <i>Image&gt;Stacks&gt;Orthogonal Views</i> to sometimes freeze and/or 
-throw a StackOverflow exception when dragging in the "XZ" or "YZ" windows.
+throw a StackOverflow exception when the user dragged in the "XZ" or "YZ" windows.
 <li> Fixed bugs related to cropping and projecting stacks with labeled overlays.
+<li> Thanks to Tara Ficken, fixed bugs that caused some float and int32 TIFFs to
+be read incorrectly.
+<li> Thanks to Jeremy Walker, fixed a v1.47o regression that caused 
+the getResult() macro function to not be able retrieve numbers added
+as strings to the results table.
 <li> Thanks to Christophe Deroulers, fixed a v1.49a regression that
 sometimes caused progress bars to not work as expected.
 </ul> 

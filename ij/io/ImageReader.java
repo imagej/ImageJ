@@ -197,7 +197,7 @@ public class ImageReader {
 	}
 
 	float[] read32bitImage(InputStream in) throws IOException {
-		if (fi.compression>FileInfo.COMPRESSION_NONE)
+		if (fi.compression>FileInfo.COMPRESSION_NONE || (fi.stripOffsets!=null&&fi.stripOffsets.length>1))
 			return readCompressed32bitImage(in);
 		int pixelsRead;
 		byte[] buffer = new byte[bufferSize];
@@ -285,12 +285,22 @@ public class ImageReader {
 			if (fi.intelByteOrder) {
 				for (int i=base,j=0; i<pmax; i++,j+=4) {
 					tmp = (int)(((byteArray[j+3]&0xff)<<24) | ((byteArray[j+2]&0xff)<<16) | ((byteArray[j+1]&0xff)<<8) | (byteArray[j]&0xff));
-					pixels[i] = Float.intBitsToFloat(tmp);
+					if (fi.fileType==FileInfo.GRAY32_FLOAT)
+						pixels[i] = Float.intBitsToFloat(tmp);
+					else if (fi.fileType==FileInfo.GRAY32_UNSIGNED)
+						pixels[i] = (float)(tmp&0xffffffffL);
+					else
+						pixels[i] = tmp;
 				}
 			} else {
 				for (int i=base,j=0; i<pmax; i++,j+=4) {
 					tmp = (int)(((byteArray[j]&0xff)<<24) | ((byteArray[j+1]&0xff)<<16) | ((byteArray[j+2]&0xff)<<8) | (byteArray[j+3]&0xff));
-					pixels[i] = Float.intBitsToFloat(tmp);
+					if (fi.fileType==FileInfo.GRAY32_FLOAT)
+						pixels[i] = Float.intBitsToFloat(tmp);
+					else if (fi.fileType==FileInfo.GRAY32_UNSIGNED)
+						pixels[i] = (float)(tmp&0xffffffffL);
+					else
+						pixels[i] = tmp;
 				}
 			}
 			if (fi.compression==FileInfo.LZW_WITH_DIFFERENCING) {

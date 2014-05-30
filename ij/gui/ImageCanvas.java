@@ -356,7 +356,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		double mag = getMagnification();
 		int width = (int)(r.width*mag);
 		int height = (int)(r.height*mag);
-		int size = width>40 && height>40?12:9;
+		int size = width>40 || height>40?12:9;
 		if (font!=null) {
 			g.setFont(font);
 			size = font.getSize();
