@@ -45,6 +45,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	private static boolean summarized;
 	private static boolean switchingModes;
 	private static boolean showMin = true;
+	private static boolean showAngle = true;
 	
 	public Analyzer() {
 		rt = systemRT;
@@ -107,6 +108,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if (roi.getName()==null)
 			roi.setName(""+rt.getCounter());
+		//roi.setName(IJ.getString("Label:", "m"+rt.getCounter()));
 		roi.setIgnoreClipRect(true);
 		Overlay overlay = imp.getOverlay();
 		if (overlay==null)
@@ -570,7 +572,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (roi!=null) {
 			if (roi.isLine()) {
 				rt.addValue("Length", roi.getLength());
-				if (roi.getType()==Roi.LINE) {
+				if (roi.getType()==Roi.LINE && showAngle) {
 					double angle = 0.0;
 					Line l = (Line)roi;
 					angle = roi.getAngle(l.x1, l.y1, l.x2, l.y2);
@@ -904,8 +906,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 
 	public static void setOption(String option, boolean b) {
-		if (option.indexOf("min")!=-1)
+		if (option.contains("min"))
 			showMin = b;
+		else if (option.contains("angle"))
+			showAngle = b;
 	}
 	
 	public static void setResultsTable(ResultsTable rt) {
@@ -920,6 +924,6 @@ public class Analyzer implements PlugInFilter, Measurements {
 		umeans = null;
 		unsavedMeasurements = false;
 	}
-
+	
 }
 	

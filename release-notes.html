@@ -5,12 +5,17 @@
 </head>
 <body>
 
-<li> <u>1.49c 31 May 2014</u>
+<li> <u>1.49c 3 June 2014</u>
 <ul>
 <li> Selections added to an overlay by the <i>Measure</i> command are
-removed when the correspionding rows in the Results table is cleared.
-<li> The <i>Analyze&gt;Label</i> command displays a dialog box that suggests
+removed when the correspionding rows in the Results table are cleared.
+<li> The <i>Analyze&gt;Label</i> command now displays a dialog box that suggests
 using the "Add to manager" option in <i>Analyze&gt;Set Measurements</i>.
+<li> Added the setOption("ShowAngle",boolean) macro function, which determines
+whether or not "Angle" is reported when measuring straight line lengths.
+<li> Thanks to Nicolas Casadei,  fixed a bug that caused macros to not reset the
+"escapePressed" flag, which could cause "INTERRUPTED" to be displayed in
+the status bar and the macro to not work as expected.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
