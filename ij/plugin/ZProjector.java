@@ -70,13 +70,13 @@ public class ZProjector implements PlugIn {
     }
 
     public void setStartSlice(int slice) {
-		if(imp==null || slice < 1 || slice > imp.getStackSize())
+		if (imp==null || slice < 1 || slice > imp.getStackSize())
 	    	return; 
 		startSlice = slice; 
     }
 
     public void setStopSlice(int slice) {
-		if(imp==null || slice < 1 || slice > imp.getStackSize())
+		if (imp==null || slice < 1 || slice > imp.getStackSize())
 	    	return; 
 		stopSlice = slice; 
     }
@@ -315,6 +315,7 @@ public class ZProjector implements PlugIn {
 	public void doHyperStackProjection(boolean allTimeFrames) {
 		int start = startSlice;
 		int stop = stopSlice;
+IJ.log("doHyperStackProjection: "+start+" "+stop);
 		int firstFrame = 1;
 		int lastFrame = imp.getNFrames();
 		if (!allTimeFrames)

@@ -5371,6 +5371,12 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();
 		else
 			arg2 = getLastString();
+		if (resultsPending) {
+			ResultsTable rt = Analyzer.getResultsTable();
+			if (rt!=null && rt.getCounter()>0)
+				rt.show("Results");
+			resultsPending = false;
+		}
 		if (arg2!=null)
 			IJ.renameResults(arg1, arg2);
 		else
