@@ -315,7 +315,6 @@ public class ZProjector implements PlugIn {
 	public void doHyperStackProjection(boolean allTimeFrames) {
 		int start = startSlice;
 		int stop = stopSlice;
-IJ.log("doHyperStackProjection: "+start+" "+stop);
 		int firstFrame = 1;
 		int lastFrame = imp.getNFrames();
 		if (!allTimeFrames)

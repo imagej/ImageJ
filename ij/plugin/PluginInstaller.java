@@ -98,6 +98,7 @@ public class PluginInstaller implements PlugIn {
 		} catch (Exception e) {
 			IJ.log(""+e);
 		}
+		if (IJ.debugMode) IJ.log("Downloading: "+urlString+"  " +url);
 		if (url==null) return null;
 		byte[] data;
 		int n = 0;

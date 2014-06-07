@@ -13,7 +13,9 @@ removed when the correspionding rows in the Results table are cleared.
 using the "Add to manager" option in <i>Analyze&gt;Set Measurements</i>.
 <li> Added the setOption("ShowAngle",boolean) macro function, which determines
 whether or not "Angle" is reported when measuring straight line lengths.
-<li> Thanks to Nicolas Casadei,  fixed a bug that caused macros to not reset the
+<li> Thanks to Philippe Mailly, adds a public multiMeasure() method to the
+ROI Manager and upgrades the recorder to support this method.
+<li> Thanks to Nicolas Casadei, fixed a bug that caused macros to not reset the
 "escapePressed" flag, which sometimes caused "INTERRUPTED" to be displayed in
 the status bar and the macro to not work as expected.
 <li> Thanks to Christian Renicke, fixed a bug that caused the <i>Brightness/Contrast</i>
@@ -21,7 +23,7 @@ and <i>Color Balance</i> tools to not work as expected on RGB stacks after an
 "Apply" operation.
 <li> Thanks to Matthew Pearson, fixed a bug in the IJ.renameResults() macro 
 function that caused it to sometimes not work as expected if a column
-had been add using setResult().
+had been added using setResult() calls.
 
 </ul> 
 
