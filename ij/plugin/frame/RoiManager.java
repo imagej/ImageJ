@@ -83,7 +83,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		list = new JList();
 		listModel = new DefaultListModel();
 		list.setModel(listModel);
-
 	}
 
 	void showWindow() {
@@ -630,9 +629,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;
 	}
 	
-	boolean restoreWithoutUpdate(int index) {
+	private boolean restoreWithoutUpdate(ImagePlus imp, int index) {
 		noUpdateMode = true;
-		return restore(getImage(), index, false);
+		if (imp==null)
+			imp = getImage();
+		return restore(imp, index, false);
 	}
 	
 	/** Returns the slice number associated with the specified name,
@@ -855,13 +856,18 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;
 	}	
 	
+	/** This method measures the selected ROIs, or all ROIs if
+	 * none are selected, on all the slices of a stack and returns
+	 * a ResultsTable arranged with one row per slice.
+	 * @see <a href="http://imagej.nih.gov/ij/macros/js/MultiMeasureDemo.js">JavaScript example</a>
+	*/
 	public ResultsTable multiMeasure(ImagePlus imp) {
 		ResultsTable rt = multiMeasure(imp, getIndexes(), imp.getStackSize(), false);
 		imp.deleteRoi();
 		return rt;
 	}
 	
-	/* This method performs measurements for several ROI's in a stack
+	/** This method performs measurements for several ROI's in a stack
 		and arranges the results with one line per slice.  By constast, the 
 		measure() method produces several lines per slice.	The results 
 		from multiMeasure() may be easier to import into a spreadsheet 
@@ -887,7 +893,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			GenericDialog gd = new GenericDialog("Multi Measure");
 			if (nSlices>1)
 				gd.addCheckbox("Measure all "+nSlices+" slices", measureAll);
-			gd.addCheckbox("One Row Per Slice", onePerSlice);
+			gd.addCheckbox("One row per slice", onePerSlice);
 			gd.addCheckbox("Append results", appendResults);
 			int columns = getColumnCount(imp, measurements)*indexes.length;
 			String str = nSlices==1?"this option":"both options";
@@ -913,7 +919,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			for (int slice=1; slice<=nSlices; slice++) {
 				if (nSlices>1) imp.setSliceWithoutUpdate(slice);
 				for (int i=0; i<indexes.length; i++) {
-					if (restoreWithoutUpdate(indexes[i]))
+					if (restoreWithoutUpdate(imp, indexes[i]))
 						analyzer.measure();
 					else
 						break;
@@ -959,7 +965,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				rtMulti.addLabel("Label", imp.getTitle());
 			int roiIndex = 0;
 			for (int i=0; i<indexes.length; i++) {
-				if (restoreWithoutUpdate(indexes[i])) {
+				if (restoreWithoutUpdate(imp, indexes[i])) {
 					roiIndex++;
 					aSys.measure();
 					for (int j=0; j<=rtSys.getLastColumn(); j++){
@@ -1826,11 +1832,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			select(-1);
 			IJ.wait(50);
 		} else if (cmd.equals("reset")) {
-			if (IJ.isMacOSX() && IJ.isMacro())
-				ignoreInterrupts = true;
-			listModel.clear();
-			rois.clear();
-			updateShowAll();
+			reset();
 		} else if (cmd.equals("debug")) {
 			//IJ.log("Debug: "+debugCount);
 			//for (int i=0; i<debugCount; i++)
@@ -1904,6 +1906,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return true;
 		}
 		return false;
+	}
+	
+	/** Clears this RoiManager so that it contains no ROIs. */
+	public void reset() {
+		if (IJ.isMacOSX() && IJ.isMacro())
+			ignoreInterrupts = true;
+		listModel.clear();
+		rois.clear();
+		updateShowAll();
 	}
 	
 	private boolean save(String name, boolean saveSelected) {
@@ -2119,7 +2130,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return list.getSelectedIndices();
 	}
 	
-	/** Returns an array of the selected indexes or all indexes of non are selected. */
+	/** Returns an array of the selected indexes or all indexes if none are selected. */
 	public int[] getIndexes() {
 		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)

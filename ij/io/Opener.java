@@ -5,6 +5,7 @@ import ij.process.*;
 import ij.plugin.frame.*;
 import ij.plugin.DICOM;
 import ij.plugin.AVI_Reader;
+import ij.plugin.GIF_Reader;
 import ij.plugin.SimpleCommands;
 import ij.plugin.HyperStackConverter;
 import ij.plugin.PluginInstaller;
@@ -291,8 +292,11 @@ public class Opener {
 					return imp;
 				} else
 					return null;
-			case JPEG: case GIF:
+			case JPEG:
 				imp = openJpegOrGif(directory, name);
+				if (imp!=null&&imp.getWidth()!=0) return imp; else return null;
+			case GIF:
+				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.GIF_Reader", path);
 				if (imp!=null&&imp.getWidth()!=0) return imp; else return null;
 			case PNG: 
 				imp = openUsingImageIO(directory+name);
