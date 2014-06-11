@@ -5,14 +5,18 @@
 </head>
 <body>
 
-<li> <u>1.49c 7 June 2014</u>
+<li> <u>1.49c 10 June 2014</u>
 <ul>
 <li> Selections added to an overlay by the <i>Measure</i> command are
 removed when the correspionding rows in the Results table are cleared.
+<li> Animated GIFs can now be opened using <i>File&gt;Open</i>
+and drag and drop.
+<li> Overlays are rendered when saving images as GIFs or stacks as animated GIFs.
 <li> The <i>Analyze&gt;Label</i> command now displays a dialog box that suggests
 using the "Add to manager" option in <i>Analyze&gt;Set Measurements</i>.
 <li> Added the setOption("ShowAngle",boolean) macro function, which determines
 whether or not "Angle" is reported when measuring straight line lengths.
+<li> Added the IJ.getFullVersion() macro function.
 <li> Thanks to Philippe Mailly, added a public multiMeasure() method to the
 ROI Manager and upgraded the recorder to support this method
 (<a href="macros/js/MultiMeasureDemo">example</a>).
@@ -25,6 +29,8 @@ and <i>Color Balance</i> tools to not work as expected on RGB stacks after an
 <li> Thanks to Matthew Pearson, fixed a bug in the IJ.renameResults() macro 
 function that caused it to sometimes not work as expected if a column
 had been added using setResult() calls.
+<li> Thanks to Tiago Ferreira, fixed a v1.48m regression that sometimes caused the "List..." 
+button in plot windows to sometimes display an empty table.
 
 </ul> 
 

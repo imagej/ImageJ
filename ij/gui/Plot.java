@@ -113,6 +113,7 @@ public class Plot {
 	private boolean multiplePlots;
 	private boolean drawPending;
 	private PlotMaker plotMaker;
+	private float[] previousYValues;
 	
 	/** keeps a reference to all of the	 that is going to be plotted. */
 	ArrayList storedData;
@@ -357,15 +358,27 @@ public class Plot {
 				drawFloatPolyline(ip, ((flags&X_LOG_NUMBERS)!=0) ? arrayToLog(x) : x, ((flags&Y_LOG_NUMBERS)!=0) ? arrayToLog(y) : y, x.length);
 				break;
 		}
-		multiplePlots = true;
+		boolean noPrimaryPlot = false;
 		if (xValues==null || xValues.length==0) {
 			xValues = x;
 			yValues = y;
 			nPoints = x.length;
 			drawPending = false;
+			noPrimaryPlot = true;
 		}
-		if (shape==DOT || shape==LINE || (yValues!=null&&yValues.length!=y.length))
+		if (shape==DOT || shape==LINE || !duplicate(y,previousYValues))
 			store(x, y);
+		previousYValues = y;
+	}
+	
+	private boolean duplicate(float[] current, float[] previous) {
+		if (current==null || previous==null || current.length!=previous.length)
+			return false;
+		for (int i=0; i<current.length; i++) {
+			if (current[i]!=previous[i])
+				return false;
+		}
+		return true;
 	}
 
 	/** Adds a set of points to the plot using double arrays.
@@ -835,7 +848,7 @@ public class Plot {
 			double step = Math.abs(Math.max(frame.height/MAX_INTERVALS, MIN_Y_GRIDWIDTH)/yScale); //the smallest allowable increment
 			step = niceNumber(step);
 			int i1, i2;
-			if ((flags&X_FORCE2GRID)!=0) {
+			if ((flags&Y_FORCE2GRID)!=0) {
 				i1 = (int)Math.floor(Math.min(yMin,yMax)/step+1.e-10);	//this also allows for inverted xMin, xMax
 				i2 = (int)Math.ceil (Math.max(yMin,yMax)/step-1.e-10);
 				yMin = i1*step;
