@@ -358,13 +358,12 @@ public class Plot {
 				drawFloatPolyline(ip, ((flags&X_LOG_NUMBERS)!=0) ? arrayToLog(x) : x, ((flags&Y_LOG_NUMBERS)!=0) ? arrayToLog(y) : y, x.length);
 				break;
 		}
-		boolean noPrimaryPlot = false;
+		multiplePlots = true;
 		if (xValues==null || xValues.length==0) {
 			xValues = x;
 			yValues = y;
 			nPoints = x.length;
 			drawPending = false;
-			noPrimaryPlot = true;
 		}
 		if (shape==DOT || shape==LINE || !duplicate(y,previousYValues))
 			store(x, y);

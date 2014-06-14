@@ -28,7 +28,7 @@ public class StackWriter implements PlugIn {
 
 	public void run(String arg) {
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp==null || (imp!=null && imp.getStackSize()<2)) {
+		if (imp==null || (imp!=null && imp.getStackSize()<2&&!IJ.isMacro())) {
 			IJ.error("Stack Writer", "This command requires a stack.");
 			return;
 		}

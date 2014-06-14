@@ -1649,8 +1649,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		this.ignoreClipRect = ignoreClipRect;
 	}
 
+	/** Returns 'true' if this ROI is displayed and is also in an overlay. */
 	public final boolean isActiveOverlayRoi() {
-		if (imp==null)
+		if (imp==null || this!=imp.getRoi())
 			return false;
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && overlay.contains(this))
