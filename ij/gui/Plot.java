@@ -1147,7 +1147,7 @@ public class Plot {
 		if (!frame.contains(x, y))
 			return text;
 		double xv = Double.NaN, yv = Double.NaN;
-		if (fixedYScale || multiplePlots) { // display cursor location
+		if (multiplePlots) { // display cursor location
 			xv = (x-LEFT_MARGIN)/xScale + xMin;
 			yv = (TOP_MARGIN+frameHeight-y)/yScale +yMin;
 		} else { // display x and f(x)
