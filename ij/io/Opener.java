@@ -425,6 +425,8 @@ public class Opener {
 		File file = new File(ijDir + "samples", url.substring(slash+1));
 		if (!file.exists())
 			return null;
+		if (url.endsWith(".gif"))  // ij.plugin.GIF_Reader does not correctly handle inverting LUTs
+			return openJpegOrGif(file.getParent()+File.separator, file.getName());
 		return IJ.openImage(file.getPath());
 	}
 
