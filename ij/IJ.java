@@ -7,6 +7,7 @@ import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.util.Tools;
 import ij.plugin.frame.Recorder;
+import ij.plugin.frame.ThresholdAdjuster;
 import ij.macro.Interpreter;
 import ij.measure.Calibration;
 import ij.measure.ResultsTable;
@@ -1178,6 +1179,7 @@ public class IJ {
 		if (mode != ImageProcessor.NO_LUT_UPDATE) {
 			img.getProcessor().setLutAnimation(true);
 			img.updateAndDraw();
+			ThresholdAdjuster.update();
 		}
 	}
 
@@ -1247,6 +1249,7 @@ public class IJ {
 		ip.resetThreshold();
 		ip.setLutAnimation(true);
 		img.updateAndDraw();
+		ThresholdAdjuster.update();
 	}
 	
 	/** For IDs less than zero, activates the image with the specified ID.
