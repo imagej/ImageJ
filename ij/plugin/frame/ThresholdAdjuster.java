@@ -608,6 +608,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		IJ.wait(500);
 		ip.setThreshold(level1, level2, lutColor);
 		ip.setSnapshotPixels(null); // disable undo
+		previousImageID = 0;
 		setup(imp, false);
 		if (Recorder.record) {
 			if (imp.getBitDepth()==32) {

@@ -401,7 +401,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			imp.setDisplayRange(min, max);
 		if (!rgb)
 			imp.getProcessor().setSnapshotPixels(null); // disable undo
-
 	}
 
 	void updatePlot() {
