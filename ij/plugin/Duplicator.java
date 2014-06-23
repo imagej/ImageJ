@@ -84,7 +84,7 @@ public class Duplicator implements PlugIn, TextListener {
 		int n = stack.getSize();
 		for (int i=1; i<=n; i++) {
 			if (stack.isVirtual())
-				IJ.showStatus("duplicating: "+i+"/"+n);
+				IJ.showStatus("Duplicating: "+i+"/"+n);
 			ImageProcessor ip2 = stack.getProcessor(i);
 			ip2.setRoi(rect);
 			ip2 = ip2.crop();
@@ -149,7 +149,7 @@ public class Duplicator implements PlugIn, TextListener {
 		ImageStack stack2 = null;
 		for (int i=firstSlice; i<=lastSlice; i++) {
 			if (stack.isVirtual())
-				IJ.showStatus("duplicating: "+i+"/"+lastSlice);
+				IJ.showStatus("Duplicating: "+i+"/"+lastSlice);
 			ImageProcessor ip2 = stack.getProcessor(i);
 			ip2.setRoi(rect);
 			ip2 = ip2.crop();
