@@ -448,7 +448,9 @@ public class ImageReader {
 		boolean cmyk = fi.fileType==FileInfo.CMYK;
 		boolean differencing = fi.compression == FileInfo.LZW_WITH_DIFFERENCING;
 		for (int i=0; i<fi.stripOffsets.length; i++) {
-			if (i > 0) {
+			if (in instanceof RandomAccessStream)
+				((RandomAccessStream)in).seek(fi.stripOffsets[i]);
+			else if (i > 0) {
 				long skip = (fi.stripOffsets[i]&0xffffffffL) - (fi.stripOffsets[i-1]&0xffffffffL) - fi.stripLengths[i-1];
 				if (skip > 0L) in.skip(skip);
 			}

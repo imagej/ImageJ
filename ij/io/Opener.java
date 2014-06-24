@@ -1210,7 +1210,7 @@ public class Opener {
 				return null;
 			else {
 				InputStream is = new FileInputStream(f);
-				if (fi.compression>=FileInfo.LZW)
+				if (fi.compression>=FileInfo.LZW || (fi.stripOffsets!=null&&fi.stripOffsets.length>1))
 					is = new RandomAccessStream(is);
 				return is;
 			}
