@@ -1987,7 +1987,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (imp==null)
 			imp = WindowManager.getCurrentImage();
 		if (imp!=null)
-			restore(imp, index, true);	
+			restore(imp, index, true);
 		if (mm) list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 	}
 	
@@ -2184,11 +2184,16 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return;
 		}
 		int[] selected = list.getSelectedIndices();
-		if (selected.length==0)
+		if (selected.length==0) {
+			imageID = 0;
 			return;
+		}
 		if (WindowManager.getCurrentImage()!=null) {
-			if (selected.length==1)
-				restore(getImage(), selected[0], true);
+			if (selected.length==1) {
+				ImagePlus imp = getImage();
+				restore(imp, selected[0], true);
+				imageID = imp!=null?imp.getID():0;
+			}
 			if (record()) {
 				String arg = Arrays.toString(selected);
 				if (!arg.startsWith("[") || !arg.endsWith("]"))
@@ -2217,6 +2222,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
     		if (imageID!=0 && imp.getID()!=imageID) {
     			showAll(SHOW_NONE);
 				showAllCheckbox.setState(false);
+				select(-1);
+				imageID = 0;
     		}
     	}
 	}

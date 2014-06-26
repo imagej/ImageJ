@@ -805,6 +805,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	/** Nudge ROI one pixel on arrow key press. */
 	public void nudge(int key) {
+		if (WindowManager.getActiveWindow() instanceof ij.plugin.frame.RoiManager)
+			return;
 		switch(key) {
 			case KeyEvent.VK_UP:
 				y--;
