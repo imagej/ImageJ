@@ -294,6 +294,8 @@ class DicomDecoder {
 		int pos = 0;
 		while (pos<length) {
 			int count = f.read(buf, pos, length-pos);
+			if (count==-1)
+				throw new IOException("unexpected EOF");
 			pos += count;
 		}
 		location += length;
@@ -302,7 +304,8 @@ class DicomDecoder {
   
 	int getByte() throws IOException {
 		int b = f.read();
-		if (b ==-1) throw new IOException("unexpected EOF");
+		if (b ==-1)
+			throw new IOException("unexpected EOF");
 		++location;
 		return b;
 	}
@@ -494,11 +497,13 @@ class DicomDecoder {
 			IJ.log("DicomDecoder: decoding "+fileName);
 		}
 		
-		skipCount = (long)ID_OFFSET;
-		while (skipCount > 0) skipCount -= f.skip( skipCount );
-		location += ID_OFFSET;
+		int[] bytes = new int[ID_OFFSET];
+		for (int i=0; i<ID_OFFSET; i++)
+			bytes[i] = getByte();
 		
 		if (!getString(4).equals(DICM)) {
+			if (!((bytes[0]==8||bytes[0]==2) && bytes[1]==0 && bytes[3]==0))
+				throw new IOException("This is not a DICOM or ACR/NEMA file");
 			if (inputStream==null) f.close();
 			if (inputStream!=null)
 				f.reset();
