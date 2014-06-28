@@ -340,7 +340,22 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 		return minPositions;
 	}
 	
-    /** Here the processing is done: Find the maxima of an image (does not find minima).
+     /** Find the maxima of an image.
+     * @param ip             The input image
+     * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value
+     *                       from the ridge to a higher maximum
+     * @param outputType     What to mark in output image: SINGLE_POINTS, IN_TOLERANCE or SEGMENTED.
+     *                       No output image is created for output types POINT_SELECTION, LIST and COUNT.
+     * @param excludeOnEdges Whether to exclude edge maxima
+     * @return               A new byteProcessor with a normal (uninverted) LUT where the marked points
+     *                       are set to 255 (Background 0). Pixels outside of the roi of the input ip are not set.
+     *                       Returns null if outputType does not require an output or if cancelled by escape
+     */
+    public ByteProcessor findMaxima(ImageProcessor ip, double tolerance, int outputType, boolean excludeOnEdges) {
+    	return findMaxima(ip, tolerance, ImageProcessor.NO_THRESHOLD, outputType, excludeOnEdges, false);
+    }
+
+   /** Here the processing is done: Find the maxima of an image (does not find minima).
      *
      * LIMITATIONS:          With outputType=SEGMENTED (watershed segmentation), some segmentation lines
      *                       may be improperly placed if local maxima are suppressed by the tolerance.

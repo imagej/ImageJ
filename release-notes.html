@@ -5,10 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.49c 26 June 2014</u>
+<li> <u>1.49c 27 June 2014</u>
 <ul>
 <li> Selections added to an overlay by the <i>Measure</i> command are
-removed when the correspionding rows in the Results table are cleared.
+removed when the corresponding rows in the Results table are cleared.
 <li> Animated GIFs can now be opened using <i>File&gt;Open</i>
 and drag and drop.
 <li> Overlays are rendered when saving images as GIFs or stacks as animated GIFs.
@@ -22,7 +22,7 @@ whether or not "Angle" is reported when measuring straight line lengths.
 <li> Added the IJ.getFullVersion() macro function.
 <li> Thanks to Philippe Mailly, added a public multiMeasure() method to the
 ROI Manager and upgraded the recorder to support this method
-(<a href="macros/js/MultiMeasureDemo">example</a>).
+(<a href="macros/js/MultiMeasureDemo.js">example</a>).
 <li> Thanks to Nicolas Casadei, fixed a bug that caused macros to not reset the
 "escapePressed" flag, which sometimes caused "INTERRUPTED" to be displayed in
 the status bar and the macro to not work as expected.
@@ -35,7 +35,7 @@ had been added using setResult() calls.
 <li> Thanks to Bryan Callahan and Curtis Rueden, fixed a bug that caused the
 run("Profile Plot Options...","...") macro function to throw an exception in Fiji headless mode.
 <li> Thanks to Neil Fazel, fixed a bug that caused <i>Analyze&gt;Plot Profile</i> to not correctly
-display plot x and y coordinates at the bottom of the plot window when fixed y-axis scale was used.
+display plot x and y coordinates at the bottom of the plot window when a fixed y-axis scale was used.
 <li> Thanks to Antoine Vandecreme, fixed a bug that caused ImageJ to incorrectly
 open non-8bit TIFFs that were missing the BitsPerSample tag.
 <li> Thanks to Norbert Vischer, fixed a bug in <i>Image&gt;Show Info</i>
@@ -49,11 +49,13 @@ macro function to not work in headless mode.
 <li> Thanks to Tara Ficken and Simon Runde, fixed bugs that 
 sometimes caused ImageJ to incorrectly import TIFF stacks.
 <li> Thanks to Philippe Carl, fixed ROI Manager bugs that caused it to unexpectedly move
-selections when using the arrow keys and to not deselect when switching between image.
+selections when using the arrow keys, and to not deselect when switching between images.
 <li> Thanks to Tiago Ferreira, fixed a v1.48m regression that sometimes caused the "List..." 
 button in plot windows to display an empty table.
 <li> Thanks to Gabriel Landini, fixed a v1.49 regression that caused cached versions
 of the blobs.gif sample image to open without an inverting LUT.
+<li> Thanks to Kees Straatman, fixed a regression that caused the straight line
+tool to not be recorded.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
