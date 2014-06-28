@@ -71,14 +71,6 @@ public class ProfilePlot {
 		else
 			magnification = 1.0;
 	}
-
-	//void calibrate(Calibration cal) {
-	//	float[] cTable = cal.getCTable();
-	//	if (cTable!=null)
-	//		for ()
-	//			profile[i] = profile[i];
-	//	
-	//}
 	
 	/** Returns the size of the plot that createWindow() creates. */
 	public Dimension getPlotSize() {
@@ -108,7 +100,6 @@ public class ProfilePlot {
 	public Plot getPlot() {
 		if (profile==null)
 			return null;
-		Dimension d = getPlotSize();
 		String xLabel = "Distance ("+units+")";
   		int n = profile.length;
   		if (xValues==null) {

@@ -300,7 +300,10 @@ public class FileSaver {
 	public static boolean okForGif(ImagePlus imp) {
 		int type = imp.getType();
 		if (type==ImagePlus.COLOR_RGB) {
-			IJ.error("To save as Gif, the image must be converted to \"8-bit Color\".");
+			String msg = "To save as GIF, the image ";
+			if (imp.getStackSize()>1)
+				msg = "To save as Animated GIF, the stack ";
+			IJ.error(msg+"must be converted to 8-bit\nindexed color by the Image>Type>8-bit Color command.");
 			return false;
 		} else
 			return true;

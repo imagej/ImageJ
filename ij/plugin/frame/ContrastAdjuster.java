@@ -401,7 +401,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			imp.setDisplayRange(min, max);
 		if (!rgb)
 			imp.getProcessor().setSnapshotPixels(null); // disable undo
-
 	}
 
 	void updatePlot() {
@@ -722,6 +721,8 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		imp.setStack(null, stack);
 		imp.setSlice(current);
 		imp.changes = true;
+		previousImageID = 0;
+		setup();
 		if (Recorder.record) {
 			if (Recorder.scriptMode())
 				Recorder.recordCall("IJ.run(imp, \"Apply LUT\", \"stack\");");

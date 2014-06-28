@@ -1714,7 +1714,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			roi.endPaste();
 			saveRoi = (Roi)roi.clone();
 		}
-		
 		trimProcessor();
 		new FileOpener(fi).revertToSaved(this);
 		if (Prefs.useInvertingLut && getBitDepth()==8 && ip!=null && !ip.isInvertedLut()&& !ip.isColorLut())

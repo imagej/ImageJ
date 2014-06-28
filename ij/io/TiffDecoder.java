@@ -362,6 +362,7 @@ public class TiffDecoder {
 		if ((ifdCount%50)==0 && ifdCount>0)
 			ij.IJ.showStatus("Opening IFDs: "+ifdCount);
 		FileInfo fi = new FileInfo();
+		fi.fileType = FileInfo.BITMAP;  //BitsPerSample defaults to 1
 		for (int i=0; i<nEntries; i++) {
 			tag = getShort();
 			fieldType = getShort();
@@ -745,7 +746,6 @@ public class TiffDecoder {
 	public FileInfo[] getTiffInfo() throws IOException {
 		long ifdOffset;
 		Vector info;
-				
 		if (in==null)
 			in = new RandomAccessStream(new RandomAccessFile(new File(directory, name), "r"));
 		info = new Vector();

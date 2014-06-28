@@ -74,6 +74,7 @@ public class Interpreter implements MacroConstants {
 			else
 				macro = macro + additionalFunctions;
 		}
+		IJ.resetEscape();
 		Tokenizer tok = new Tokenizer();
 		Program pgm = tok.tokenize(macro);
 		if (pgm.hasVars && pgm.hasFunctions)

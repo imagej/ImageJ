@@ -1089,16 +1089,6 @@ public class PolygonRoi extends Roi {
 		return handle;
 	}
 
-	/** Override Roi.nudge() to support splines. */
-	//public void nudge(int key) {
-	//	super.nudge(key);
-	//	if (xSpline!=null) {
-	//		fitSpline();
-	//		updateFullWindow = true;
-	//		imp.draw();
-	//	}
-	//}
-
 	public ImageProcessor getMask() {
 		if (cachedMask!=null && cachedMask.getPixels()!=null
 		&& cachedMask.getWidth()==width && cachedMask.getHeight()==height)

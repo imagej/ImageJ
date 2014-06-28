@@ -997,6 +997,7 @@ public class ShapeRoi extends Roi {
 	public void draw(Graphics g) {
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		boolean isActiveOverlayRoi = !overlay && isActiveOverlayRoi();
+		//IJ.log("draw: "+overlay+"  "+isActiveOverlayRoi);
 		if (isActiveOverlayRoi)
 			color = Color.cyan;
 		if (fillColor!=null) color = fillColor;

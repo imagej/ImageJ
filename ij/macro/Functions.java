@@ -5359,6 +5359,8 @@ public class Functions implements MacroConstants, Measurements {
 			{interp.getParens(); IJ.redirectErrorMessages(); return null;}
 		else if (name.equals("renameResults"))
 			renameResults();
+		else if (name.equals("getFullVersion"))
+			{interp.getParens(); return ""+IJ.getFullVersion();}
 		else
 			interp.error("Unrecognized IJ function name");
 		return null;
@@ -5371,6 +5373,12 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();
 		else
 			arg2 = getLastString();
+		if (resultsPending) {
+			ResultsTable rt = Analyzer.getResultsTable();
+			if (rt!=null && rt.getCounter()>0)
+				rt.show("Results");
+			resultsPending = false;
+		}
 		if (arg2!=null)
 			IJ.renameResults(arg1, arg2);
 		else

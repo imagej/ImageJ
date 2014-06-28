@@ -573,6 +573,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	* @param defaultValue  the initial value of the slider
 	*/
 	public void addSlider(String label, double minValue, double maxValue, double defaultValue) {
+		if (defaultValue<minValue) defaultValue=minValue;
+		if (defaultValue>maxValue) defaultValue=maxValue;
 		int columns = 4;
 		int digits = 0;
 		double scale = 1.0;

@@ -194,7 +194,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			else if (id>=CUSTOM2)
 				id--;
 		}
-		//if (IJ.debugMode) IJ.log("Toolbar.getToolId: "+id);
 		return id;
 	}
 
@@ -256,7 +255,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			if ((tool==POLYLINE && lineType!=POLYLINE) || (tool==FREELINE && lineType!=FREELINE))
 				return;
 		}
-		//if (IJ.debugMode) IJ.log("Toolbar.drawButton: "+tool);
         int index = toolIndex(tool);
         int x = index*SIZE + 1;
         if (tool>=CUSTOM1)
@@ -792,16 +790,18 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	public static void setForegroundColor(Color c) {
-		if (c==null || instance==null)
+		if (c==null)
 			return;
 		foregroundColor = c;
+		IJ.notifyEventListeners(IJEventListener.FOREGROUND_COLOR_CHANGED);
+		if (instance==null)
+			return;
 		repaintTool(DROPPER);
 		for (int i=CUSTOM1; i<=instance.getNumTools()-2; i++) {
 			if (instance.icons[i]!=null && instance.icons[i].contains("C123"))
 				repaintTool(i);  // some of this tool's icon is drawn in the foreground color
 		}
 		if (!IJ.isMacro()) setRoiColor(c);
-		IJ.notifyEventListeners(IJEventListener.FOREGROUND_COLOR_CHANGED);
 	}
 
 	public static Color getBackgroundColor() {
@@ -1506,7 +1506,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
     
 	/** Used by the MacroInstaller class to install a set of macro tools. */
 	public void addMacroTool(String name, MacroInstaller macroInstaller, int id) {
-		//IJ.log("addMacroTool: "+id+" "+name);
 		if (id==0) {
 			resetTools();
 			if (name.startsWith("Unused"))

@@ -5,6 +5,7 @@ import ij.process.*;
 import ij.plugin.frame.*;
 import ij.plugin.DICOM;
 import ij.plugin.AVI_Reader;
+import ij.plugin.GIF_Reader;
 import ij.plugin.SimpleCommands;
 import ij.plugin.HyperStackConverter;
 import ij.plugin.PluginInstaller;
@@ -291,8 +292,11 @@ public class Opener {
 					return imp;
 				} else
 					return null;
-			case JPEG: case GIF:
+			case JPEG:
 				imp = openJpegOrGif(directory, name);
+				if (imp!=null&&imp.getWidth()!=0) return imp; else return null;
+			case GIF:
+				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.GIF_Reader", path);
 				if (imp!=null&&imp.getWidth()!=0) return imp; else return null;
 			case PNG: 
 				imp = openUsingImageIO(directory+name);
@@ -421,6 +425,8 @@ public class Opener {
 		File file = new File(ijDir + "samples", url.substring(slash+1));
 		if (!file.exists())
 			return null;
+		if (url.endsWith(".gif"))  // ij.plugin.GIF_Reader does not correctly handle inverting LUTs
+			return openJpegOrGif(file.getParent()+File.separator, file.getName());
 		return IJ.openImage(file.getPath());
 	}
 
@@ -1204,7 +1210,7 @@ public class Opener {
 				return null;
 			else {
 				InputStream is = new FileInputStream(f);
-				if (fi.compression>=FileInfo.LZW)
+				if (fi.compression>=FileInfo.LZW || (fi.stripOffsets!=null&&fi.stripOffsets.length>1))
 					is = new RandomAccessStream(is);
 				return is;
 			}

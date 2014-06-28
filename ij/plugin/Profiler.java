@@ -63,13 +63,10 @@ public class Profiler implements PlugIn, PlotMaker {
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
-		Dimension screen = IJ.getScreenSize();
 		int w = (int)gd.getNextNumber();
 		int h = (int)gd.getNextNumber();
 		if (w<100) w = 100;
-		if (w>screen.width-140) w = screen.width-140;
 		if (h<50) h = 50;
-		if (h>screen.height-300) h = screen.height-300;
 		PlotWindow.plotWidth = w;
 		PlotWindow.plotHeight = h;
 		ymin = gd.getNextNumber();

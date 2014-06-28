@@ -117,6 +117,10 @@ public class Filler implements PlugInFilter, Measurements {
  	}
 
 	public void label(ImageProcessor ip) {
+		if (!IJ.isMacro()) {
+			IJ.error("Label", "To label a selection, enable \"Add to overlay\" in Analyze>\nSet Measurements and press 'm' (Analyze>Measure).");
+			return;
+		}
 		if (Analyzer.getCounter()==0) {
 			IJ.error("Label", "Measurement counter is zero");
 			return;

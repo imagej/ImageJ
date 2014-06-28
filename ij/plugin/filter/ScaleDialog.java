@@ -47,13 +47,13 @@ public class ScaleDialog implements PlugInFilter {
 				known = 1.0;
 			}
 			double dscale = measured/known;
-			digits = Tools.getDecimalPlaces(dscale, dscale);
+			digits = Tools.getDecimalPlaces(dscale);
 			unit = cal.getUnit();
 			scale = IJ.d2s(dscale, digits)+" pixels/"+unit;
 			aspectRatio = cal.pixelHeight/cal.pixelWidth;
 		}
 		
-		digits = Tools.getDecimalPlaces(measured, measured);
+		digits = Tools.getDecimalPlaces(measured);
 		int asDigits = aspectRatio==1.0?1:3;
 		SetScaleDialog gd = new SetScaleDialog("Set Scale", scale, length);
 		gd.addNumericField("Distance in pixels:", measured, digits, 8, null);
@@ -164,7 +164,7 @@ class SetScaleDialog extends GenericDialog {
  			theScale = NO_SCALE;
  		else {
  			double scale = measured/known;
-			int digits = Tools.getDecimalPlaces(scale, scale);
+			int digits = Tools.getDecimalPlaces(scale);
  			theScale = IJ.d2s(scale,digits)+(scale==1.0?" pixel/":" pixels/")+unit;
  		}
  		setScale(theScale);

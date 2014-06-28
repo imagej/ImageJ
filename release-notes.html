@@ -5,42 +5,57 @@
 </head>
 <body>
 
-<li> <u>1.49b 30 May 2014</u>
+<li> <u>1.49c 27 June 2014</u>
 <ul>
-<li> Thanks to Jeff Spector, <i>Image&gt;Stacks&gt;Reslice</i> can now create
-multichannel kymographs from time-lapse 4D hyperstacks (c>1,z=1,t>1) .
-<li> Thanks to Kenneth Sloan, the width and color of the
-paintbrush tool can be set using macros
-(<a href="macros/BrushToolMacros.txt">example</a>).
-<li> The Gel Analyzer now labels each lane with a white number
-on a black background.
-<li> The "Fixed y-axis scale" option in the <i>Edit&gt;Options&gt;Profile Plot Options</i>
-dialog is no longer saved in the preferences file.
-<li> Thanks to Gabriel Landini, the <i>Plugins&gt;Compile and Run</i>
-command compiles plugins that us the 3D Viewer.
-(<a href="https://gist.github.com/ctrueden/fe00e8dd2034f37273f0">example</a>).
-<li> Thanks to Christopher Coulon, fixed a bug that caused
-<i>Image&gt;Overlay&gt;Flatten</i> to not transfer metadata
-to the output image.
-<li> Thanks to Jeremy Walker, fixed a v1.47o regression that caused 
-the getResult() macro function to not be able retrieve numbers added
-as strings to the results table using setResult().
-<li> Thanks to Christophe Leterrier, fixed a bug that caused
-<i>Process&gt;Enhance Contrast</i> to sometimes not correctly
-set the display range of stacks when "Normalize" was enabled.
-<li> Thanks to Sidnei Paciornik, fixed a bug that caused the "n_situ" particle
-analyzer option to not work as expected when analyzing a single stack image
-(<a href="macros/CustomStackThreshold.txt">example</a>).
-<li> Thanks to Sidnei Paciornik, fixed a bug that caused the particle analyzer
-to hang when processing an 8-bit image and the threshold was set to 0-255.
-<li> Thanks to Marcel Austenfeld, fixed a bug that caused
-<i>Image&gt;Stacks&gt;Orthogonal Views</i> to sometimes freeze and/or 
-throw a StackOverflow exception when dragging in the "XZ" or "YZ" windows.
-<li> Fixed bugs related to cropping and projecting stacks with labeled overlays.
-<li> Thanks to Tara Ficken, fixed bugs that caused some float and int32 TIFFS to
-be read incorrectly.
-<li> Thanks to Christophe Deroulers, fixed a v1.49a regression that
-sometimes caused progress bars to not work as expected.
+<li> Selections added to an overlay by the <i>Measure</i> command are
+removed when the correspionding rows in the Results table are cleared.
+<li> Animated GIFs can now be opened using <i>File&gt;Open</i>
+and drag and drop.
+<li> Overlays are rendered when saving images as GIFs or stacks as animated GIFs.
+<li> The <i>Analyze&gt;Label</i> command now displays a dialog box that suggests
+using the "Add to manager" option in <i>Analyze&gt;Set Measurements</i>.
+<li> Thanks to Lars Damgaard, the run("Image Sequence... ", "...") macro function
+(File>Save As>Image Sequence) works with single images.
+<li> When duplicating virtual stacks, progress information is displayed in the status bar.
+<li> Added the setOption("ShowAngle",boolean) macro function, which determines
+whether or not "Angle" is reported when measuring straight line lengths.
+<li> Added the IJ.getFullVersion() macro function.
+<li> Thanks to Philippe Mailly, added a public multiMeasure() method to the
+ROI Manager and upgraded the recorder to support this method
+(<a href="macros/js/MultiMeasureDemo">example</a>).
+<li> Thanks to Nicolas Casadei, fixed a bug that caused macros to not reset the
+"escapePressed" flag, which sometimes caused "INTERRUPTED" to be displayed in
+the status bar and the macro to not work as expected.
+<li> Thanks to Christian Renicke, fixed a bug that caused the <i>Brightness/Contrast</i>
+and <i>Color Balance</i> tools to not work as expected on RGB stacks after an
+"Apply" operation.
+<li> Thanks to Matthew Pearson, fixed a bug in the IJ.renameResults() macro 
+function that caused it to sometimes not work as expected if a column
+had been added using setResult() calls.
+<li> Thanks to Bryan Callahan and Curtis Rueden, fixed a bug that caused the
+run("Profile Plot Options...","...") macro function to throw an exception in Fiji headless mode.
+<li> Thanks to Neil Fazel, fixed a bug that caused <i>Analyze&gt;Plot Profile</i> to not correctly
+display plot x and y coordinates at the bottom of the plot window when fixed y-axis scale was used.
+<li> Thanks to Antoine Vandecreme, fixed a bug that caused ImageJ to incorrectly
+open non-8bit TIFFs that were missing the BitsPerSample tag.
+<li> Thanks to Norbert Vischer, fixed a bug in <i>Image&gt;Show Info</i>
+that caused it to display the pixel size using inadequate precision.
+<li> Thanks to Philippe Carl, fixed a bug in the setThreshold() macro function
+that caused it to not update the "Threshold" window.
+<li> Thanks to Philippe Carl, fixed a bug in the "Threshold" window's "Set" option
+that caused the plot and scrollbars to not be updated.
+<li> Thanks to Grimper, fixed a bug that caused the setForegroundColor() 
+macro function to not work in headless mode.
+<li> Thanks to Tara Ficken and Simon Runde, fixed bugs that 
+sometimes caused ImageJ to incorrectly import TIFF stacks.
+<li> Thanks to Philippe Carl, fixed ROI Manager bugs that caused it to unexpectedly move
+selections when using the arrow keys and to not deselect when switching between image.
+<li> Thanks to Tiago Ferreira, fixed a v1.48m regression that sometimes caused the "List..." 
+button in plot windows to display an empty table.
+<li> Thanks to Gabriel Landini, fixed a v1.49 regression that caused cached versions
+of the blobs.gif sample image to open without an inverting LUT.
+<li> Thanks to Kees Straatman, fixed a regression that caused the straight line
+tool to not be recorded.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
