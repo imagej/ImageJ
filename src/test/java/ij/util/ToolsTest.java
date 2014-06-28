@@ -242,44 +242,44 @@ public class ToolsTest {
 
 	@Test
 	public void testGetDecimalPlaces() {
-		assertEquals(2,Tools.getDecimalPlaces(Double.MAX_VALUE, Double.MAX_VALUE));
-		assertEquals(7,Tools.getDecimalPlaces(Double.MIN_VALUE, Double.MIN_VALUE));
-		assertEquals(2,Tools.getDecimalPlaces(Double.NaN, Double.NaN));
-		assertEquals(7,Tools.getDecimalPlaces(Double.MAX_VALUE, Double.MIN_VALUE));
-		assertEquals(2,Tools.getDecimalPlaces(Double.MAX_VALUE, Double.NaN));
-		assertEquals(2,Tools.getDecimalPlaces(Double.MIN_VALUE, Double.NaN));
+		assertEquals(-2,Tools.getDecimalPlaces(Double.MAX_VALUE, Double.MAX_VALUE));
+		assertEquals(-2,Tools.getDecimalPlaces(Double.MIN_VALUE, Double.MIN_VALUE));
+		assertEquals(0,Tools.getDecimalPlaces(Double.NaN, Double.NaN));
+		assertEquals(-2,Tools.getDecimalPlaces(Double.MAX_VALUE, Double.MIN_VALUE));
+		assertEquals(0,Tools.getDecimalPlaces(Double.MAX_VALUE, Double.NaN));
+		assertEquals(0,Tools.getDecimalPlaces(Double.MIN_VALUE, Double.NaN));
 		assertEquals(0,Tools.getDecimalPlaces(0.0, 0.0));
 		assertEquals(0,Tools.getDecimalPlaces(88.0, 88.0));
 		assertEquals(0,Tools.getDecimalPlaces(-3.0, -3.0));
 		assertEquals(0,Tools.getDecimalPlaces(-3.0, 3.0));
-		assertEquals(3,Tools.getDecimalPlaces(17.1, 4.1));
-		assertEquals(3,Tools.getDecimalPlaces(4.1, 17.1));
-		assertEquals(3,Tools.getDecimalPlaces(0.0, 1.4));
-		assertEquals(7,Tools.getDecimalPlaces(1.4, 0.0));
-		assertEquals(3,Tools.getDecimalPlaces(0.25, 1000.25));
-		assertEquals(3,Tools.getDecimalPlaces(1000.25, 0.25));
-		assertEquals(3,Tools.getDecimalPlaces(-0.25, -1000.25));
-		assertEquals(3,Tools.getDecimalPlaces(-1000.25, -0.25));
-		assertEquals(3,Tools.getDecimalPlaces(0.6, 100000.6));
-		assertEquals(3,Tools.getDecimalPlaces(-100000.6, -0.6));
-		assertEquals(3,Tools.getDecimalPlaces(3.2, 7.55));
-		assertEquals(3,Tools.getDecimalPlaces(7.55, 3.2));
-		assertEquals(3,Tools.getDecimalPlaces(1001.25,983.7563));
-		assertEquals(3,Tools.getDecimalPlaces(983.7563, 1001.25));
-		assertEquals(2,Tools.getDecimalPlaces(1000.4, 2444.0));
-		assertEquals(3,Tools.getDecimalPlaces(99.4, 200.1));
-		assertEquals(4,Tools.getDecimalPlaces(0.05, 200.1));
-		assertEquals(5,Tools.getDecimalPlaces(0.005, 200.1));
-		assertEquals(6,Tools.getDecimalPlaces(0.0005, 200.1));
-		assertEquals(7,Tools.getDecimalPlaces(0.00005, 200.1));
-		assertEquals(7,Tools.getDecimalPlaces(0.0000001, 200.1));
-		assertEquals(2,Tools.getDecimalPlaces(1000.4, 1444.0));
-		assertEquals(3,Tools.getDecimalPlaces(1000.4, 1001.45));
-		assertEquals(4,Tools.getDecimalPlaces(1000.4, 1000.45));
-		assertEquals(5,Tools.getDecimalPlaces(1000.4, 1000.405));
-		assertEquals(6,Tools.getDecimalPlaces(1000.4, 1000.4005));
-		assertEquals(7,Tools.getDecimalPlaces(1000.4, 1000.40005));
-		assertEquals(7,Tools.getDecimalPlaces(1000.4, 1000.400005));
+		assertEquals(1,Tools.getDecimalPlaces(17.1, 4.1));
+		assertEquals(1,Tools.getDecimalPlaces(4.1, 17.1));
+		assertEquals(1,Tools.getDecimalPlaces(0.0, 1.4));
+		assertEquals(1,Tools.getDecimalPlaces(1.4, 0.0));
+		assertEquals(2,Tools.getDecimalPlaces(0.25, 1000.25));
+		assertEquals(2,Tools.getDecimalPlaces(1000.25, 0.25));
+		assertEquals(2,Tools.getDecimalPlaces(-0.25, -1000.25));
+		assertEquals(2,Tools.getDecimalPlaces(-1000.25, -0.25));
+		assertEquals(1,Tools.getDecimalPlaces(0.6, 100000.6));
+		assertEquals(1,Tools.getDecimalPlaces(-100000.6, -0.6));
+		assertEquals(2,Tools.getDecimalPlaces(3.2, 7.55));
+		assertEquals(2,Tools.getDecimalPlaces(7.55, 3.2));
+		assertEquals(4,Tools.getDecimalPlaces(1001.25,983.7563));
+		assertEquals(4,Tools.getDecimalPlaces(983.7563, 1001.25));
+		assertEquals(1,Tools.getDecimalPlaces(1000.4, 2444.0));
+		assertEquals(1,Tools.getDecimalPlaces(99.4, 200.1));
+		assertEquals(2,Tools.getDecimalPlaces(0.05, 200.1));
+		assertEquals(3,Tools.getDecimalPlaces(0.005, 200.1));
+		assertEquals(-2,Tools.getDecimalPlaces(0.0005, 200.1));
+		assertEquals(-2,Tools.getDecimalPlaces(0.00005, 200.1));
+		assertEquals(-2,Tools.getDecimalPlaces(0.0000001, 200.1));
+		assertEquals(1,Tools.getDecimalPlaces(1000.4, 1444.0));
+		assertEquals(2,Tools.getDecimalPlaces(1000.4, 1001.45));
+		assertEquals(2,Tools.getDecimalPlaces(1000.4, 1000.45));
+		assertEquals(3,Tools.getDecimalPlaces(1000.4, 1000.405));
+		assertEquals(4,Tools.getDecimalPlaces(1000.4, 1000.4005));
+		assertEquals(4,Tools.getDecimalPlaces(1000.4, 1000.40005));
+		assertEquals(4,Tools.getDecimalPlaces(1000.4, 1000.400005));
 	}
 
 	// should ideally do a comparison between our split and String.split(regex)
