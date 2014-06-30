@@ -49,7 +49,13 @@ public class TextRoi extends Roi {
 	public TextRoi(String text, double x, double y, Font font) {
 		super(x, y, 1, 1);
 		drawStringMode = true;
-		theText[0] = text;
+		if (text!=null && text.contains("\n")) {
+			String[] lines = Tools.split(text, "\n");
+			int count = Math.min(lines.length, MAX_LINES);
+			for (int i=0; i<count; i++)
+				theText[i] = lines[i];
+		} else
+			theText[0] = text;
 		instanceFont = font;
 		if (instanceFont==null)
 			instanceFont = new Font(name, style, size);
@@ -300,25 +306,21 @@ public class TextRoi extends Roi {
 		}
 		int i = 0;
 		if (fillColor!=null) {
-			//if (getStrokeWidth()<10) {
-			//	Color saveFillColor = fillColor;
-			//	setStrokeWidth(10);
-			//	fillColor = saveFillColor;
-			//}
 			updateBounds(g);
 			Color c = g.getColor();
 			int alpha = fillColor.getAlpha();
  			g.setColor(fillColor);
 			g.fillRect(sx, sy, sw, sh);
-			//g.fillRect(sx-5, sy-5, sw+10, sh+10);
 			g.setColor(c);
 		}
+		int y2 = y;
 		while (i<MAX_LINES && theText[i]!=null) {
 			switch (justification) {
 				case LEFT:
-					if (drawStringMode)
-						g.drawString(theText[i], screenX(x), screenY(y+height-descent));
-					else
+					if (drawStringMode) {
+						g.drawString(theText[i], screenX(x), screenY(y2+height-descent));
+						y2 += fontHeight/mag;
+					} else
 						g.drawString(theText[i], sx, sy+fontHeight-descent);
 					break;
 				case CENTER:

@@ -305,6 +305,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			double cwidth = imp.getWidth()*cal.pixelWidth;
 			double cheight = imp.getHeight()*cal.pixelHeight;
 			int digits = Tools.getDecimalPlaces(cwidth, cheight);
+			if (digits>2) digits=2;
 			if (unitsMatch) {
 				s += IJ.d2s(cwidth,digits) + "x" + IJ.d2s(cheight,digits)
 					+ " " + cal.getUnits() + " (" + imp.getWidth() + "x" + imp.getHeight() + "); ";

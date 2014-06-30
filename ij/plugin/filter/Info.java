@@ -94,27 +94,37 @@ public class Info implements PlugInFilter {
     	int frames = imp.getNFrames();
 		int digits = imp.getBitDepth()==32?4:0;
 		int dp, dp2;
+		boolean nonUniformUnits = !cal.getXUnit().equals(cal.getYUnit());
+		String xunit = cal.getXUnit();
+		String yunit = cal.getYUnit();
+		String zunit = cal.getZUnit();
 		if (cal.scaled()) {
-			String unit = cal.getUnit();
-			String units = cal.getUnits();
+			String xunits = cal.getUnits();
+			String yunits = xunits;
+			String zunits = xunits;
+			if (nonUniformUnits) {
+				xunits = xunit;
+				yunits = yunit;
+				zunits = zunit;
+			}
 			double pw = imp.getWidth()*cal.pixelWidth;
 			double ph = imp.getHeight()*cal.pixelHeight;
 	    	dp = Tools.getDecimalPlaces(pw, ph);
-	    	s += "Width:  "+IJ.d2s(pw,dp)+" " + units+" ("+imp.getWidth()+")\n";
-	    	s += "Height:  "+IJ.d2s(ph,dp)+" " + units+" ("+imp.getHeight()+")\n";
+	    	s += "Width:  "+IJ.d2s(pw,dp)+" " + xunits+" ("+imp.getWidth()+")\n";
+	    	s += "Height:  "+IJ.d2s(ph,dp)+" " + yunits+" ("+imp.getHeight()+")\n";
 	    	if (slices>1) {
 				double pd = slices*cal.pixelDepth;
 				dp = Tools.getDecimalPlaces(pw, pd);
-	    		s += "Depth:  "+IJ.d2s(pd,dp)+" " + units+" ("+slices+")\n";
+	    		s += "Depth:  "+IJ.d2s(pd,dp)+" " + zunits+" ("+slices+")\n";
 	    	}
 	    	double xResolution = 1.0/cal.pixelWidth;
 	    	double yResolution = 1.0/cal.pixelHeight;
 	    	int places = Tools.getDecimalPlaces(xResolution, yResolution);
 	    	if (xResolution==yResolution)
-	    		s += "Resolution:  "+IJ.d2s(xResolution,places) + " pixels per "+unit+"\n";
+	    		s += "Resolution:  "+IJ.d2s(xResolution,places) + " pixels per "+xunit+"\n";
 	    	else {
-	    		s += "X Resolution:  "+IJ.d2s(xResolution,places) + " pixels per "+unit+"\n";
-	    		s += "Y Resolution:  "+IJ.d2s(yResolution,places) + " pixels per "+unit+"\n";
+	    		s += "X Resolution:  "+IJ.d2s(xResolution,places) + " pixels per "+xunit+"\n";
+	    		s += "Y Resolution:  "+IJ.d2s(yResolution,places) + " pixels per "+yunit+"\n";
 	    	}
 	    } else {
 	    	s += "Width:  " + imp.getWidth() + " pixels\n";
@@ -123,11 +133,17 @@ public class Info implements PlugInFilter {
 	    		s += "Depth:  " + slices + " pixels\n";
 	    }
     	if (stackSize>1) {
+    		String vunit = cal.getUnit()+"^3";
+    		if (nonUniformUnits)
+    			vunit = "("+xunit+" x "+yunit+" x "+zunit+")";
 	    	dp = Tools.getDecimalPlaces(cal.pixelWidth, cal.pixelDepth);
-	    	s += "Voxel size: "+IJ.d2s(cal.pixelWidth,dp)+"x"+IJ.d2s(cal.pixelHeight,dp)+"x"+IJ.d2s(cal.pixelDepth,dp)+" "+cal.getUnit()+"\n";
+	    	s += "Voxel size: "+IJ.d2s(cal.pixelWidth,dp)+"x"+IJ.d2s(cal.pixelHeight,dp)+"x"+IJ.d2s(cal.pixelDepth,dp)+" "+vunit+"\n";
 	    } else {
+    		String punit = cal.getUnit()+"^2";
+    		if (nonUniformUnits)
+    			punit = "("+xunit+" x "+yunit+")";
 	    	dp = Tools.getDecimalPlaces(cal.pixelWidth, cal.pixelHeight);
-	    	s += "Pixel size: "+IJ.d2s(cal.pixelWidth,dp)+"x"+IJ.d2s(cal.pixelHeight,dp)+" "+cal.getUnit()+"\n";
+	    	s += "Pixel size: "+IJ.d2s(cal.pixelWidth,dp)+"x"+IJ.d2s(cal.pixelHeight,dp)+" "+punit+"\n";
 	    }
 
 	    s += "ID: "+imp.getID()+"\n";
