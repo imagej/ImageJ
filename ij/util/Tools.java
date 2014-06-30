@@ -123,6 +123,8 @@ import java.util.Comparator;
 		return parseDouble(s, Double.NaN);
 	}
 	
+	/** Returns the number of decimal places needed to display a 
+		number, or -2 if exponential notation should be used. */
 	public static int getDecimalPlaces(double n) {
 		if ((int)n==n)
 			return 0;
@@ -138,12 +140,15 @@ import java.util.Comparator;
 		return digits;
 	}
 	
-	/** Returns the number of decimal places need to display two numbers. */
+	/** Returns the number of decimal places needed to display two numbers,
+		or -2 if exponential notation should be used. */
 	public static int getDecimalPlaces(double n1, double n2) {
 		if ((int)n1==n1 && (int)n2==n2)
 			return 0;
 		int digits = getDecimalPlaces(n1);
 		int digits2 = getDecimalPlaces(n2);
+		if (digits<=0 || digits2<=0)
+			return digits;
 		if (digits2>digits)
 			digits = digits2;
 		return digits;

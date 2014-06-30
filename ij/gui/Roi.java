@@ -92,7 +92,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		if (width>xMax) width = xMax;
 		if (height>yMax) height = yMax;
 		this.cornerDiameter = cornerDiameter;
-		//setLocation(x, y);
 		this.x = x;
 		this.y = y;
 		startX = x; startY = y;

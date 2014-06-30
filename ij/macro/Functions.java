@@ -2465,6 +2465,7 @@ public class Functions implements MacroConstants, Measurements {
 		String color = null;
 		double lineWidth = 1.0;
 		int index=0;
+		double dx=0.0, dy=0.0;
 		double countOrIndex=Double.NaN;
 		boolean twoArgCommand = cmd.equals("open")||cmd.equals("save")||cmd.equals("rename")
 			||cmd.equals("set color")||cmd.equals("set fill color")||cmd.equals("set line width")
@@ -2492,6 +2493,9 @@ public class Functions implements MacroConstants, Measurements {
 				index = (int)interp.getExpression();
 				interp.getRightParen();
 			}
+		} else if (cmd.equals("translate")) {
+			dx = getNextArg();
+			dy = getLastArg();
 		} else
 			interp.getRightParen();
 		if (RoiManager.getInstance()==null&&roiManager==null) {
@@ -2521,7 +2525,10 @@ public class Functions implements MacroConstants, Measurements {
 			countOrIndex = rm.getCount();
 		else if (cmd.equals("index"))
 			countOrIndex = rm.getSelectedIndex();
-		else {
+		else if (cmd.equals("translate")) {
+			rm.translate(dx, dy);
+			return Double.NaN;
+		} else {
 			if (!rm.runCommand(cmd))
 				interp.error("Invalid ROI Manager command");
 		}

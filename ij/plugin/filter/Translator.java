@@ -31,8 +31,8 @@ public class Translator implements ExtendedPlugInFilter, DialogListener {
 		this.pfr = pfr;
 		int digits = xOffset==(int)xOffset&&yOffset==(int)yOffset?1:3;
 		gd = new GenericDialog("Translate");
-		gd.addNumericField("X Offset (pixels): ", xOffset, digits, 8, "");
-		gd.addNumericField("Y Offset (pixels): ", yOffset, digits, 8, "");
+		gd.addNumericField("X offset (pixels): ", xOffset, digits, 8, "");
+		gd.addNumericField("Y offset (pixels): ", yOffset, digits, 8, "");
 		gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
