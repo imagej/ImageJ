@@ -1525,6 +1525,8 @@ public class Functions implements MacroConstants, Measurements {
 				return ThresholdAdjuster.getMode();
 			} else if (lowercaseKey.equals("window.type")) {
 				return getWindowType();
+			} else if (lowercaseKey.equals("window.title")||lowercaseKey.equals("window.name")) {
+				return getWindowTitle();
 			} else {
 				String value = "";
 				try {value = System.getProperty(key);}
@@ -1534,7 +1536,20 @@ public class Functions implements MacroConstants, Measurements {
 			return "";
 	}
 	
-	String getWindowType() {
+	private String getWindowTitle() {
+		Window win = WindowManager.getActiveWindow();
+		if (IJ.debugMode) IJ.log("getWindowTitle: "+win);
+		if (win==null)
+			return "";
+		else if (win instanceof Frame)
+			return ((Frame)win).getTitle();
+		else if (win instanceof Dialog)
+			return ((Dialog)win).getTitle();
+		else
+			return "";
+	}
+
+	private String getWindowType() {
 		Window win = WindowManager.getActiveWindow();
 		if (win==null)
 			return "";

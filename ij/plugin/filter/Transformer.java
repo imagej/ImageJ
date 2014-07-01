@@ -62,7 +62,7 @@ public class Transformer implements PlugInFilter {
 	    	double pixelWidth = cal.pixelWidth;
 	    	cal.pixelWidth = cal.pixelHeight;
 	    	cal.pixelHeight = pixelWidth;
-	    	if (!cal.getXUnit().equals(cal.getYUnit())) {
+			if (!cal.getXUnit().equals(cal.getYUnit())) {
 				String xUnit = cal.getXUnit();
 				cal.setXUnit(cal.getYUnit());
 				cal.setYUnit(xUnit);
