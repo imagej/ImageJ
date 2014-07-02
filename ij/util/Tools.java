@@ -148,6 +148,11 @@ import java.util.Comparator;
 		int digits = getDecimalPlaces(n1);
 		int digits2 = getDecimalPlaces(n2);
 		if (digits<=0 || digits2<=0)
+		if (digits==0)
+			return digits2;
+		if (digits2==0)
+			return digits;
+		if (digits<0 || digits2<0)
 			return digits;
 		if (digits2>digits)
 			digits = digits2;
