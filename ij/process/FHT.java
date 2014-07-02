@@ -11,7 +11,6 @@ by Arlo Reeves (http://imagej.nih.gov/ij/docs/ImageFFT/).
 The Fast Hartley Transform was restricted by U.S. Patent No. 4,646,256, 
 but was placed in the public domain by Stanford University in 1995 
 and is now freely available.
- 
 */
 public class FHT extends FloatProcessor {
 	private boolean isFrequencyDomain;
@@ -82,6 +81,37 @@ public class FHT extends FloatProcessor {
 	//	isFrequencyDomain = true;
 	//}
 
+	/** Performs an optimized 1D Fast Hartley Transform (FHT) of an array.
+	 *  Array size must be a power of 2.
+	 *  Note that all amplitudes in the output 'x' are multiplied by the array length.
+	 *  Therefore, to get the power spectrum, for 1 <=i < N/2, use
+	 *  ps[i] = (x[i]*x[i]+x[maxN-i]*x[maxN-i])/(maxN*maxN), where maxN is the array length.
+	 *  To get the real part of the complex FFT, for i=0 use x[0]/maxN,
+	 *  and for i>0, use (x[i]+x[maxN-i])/(2*maxN).
+	 *  The imaginary part of the complex FFT, with i>0, is given by (x[i]-x[maxN-i])/(2*maxN)
+	 *  The coefficients of cosine and sine are like the real and imaginary values above,
+	 *  but you have to divide by maxN instead of 2*maxN.
+	 */
+	public void transform1D(float[] x) {
+		int n = x.length;
+		if (S==null || n!=maxN) {
+			if (!isPowerOf2(n))
+				throw new IllegalArgumentException("Not power of 2 length: "+n);
+			initializeTables(n);
+		}
+		dfht3(x, 0, false, n);
+	}
+
+    /** Performs an inverse 1D Fast Hartley Transform (FHT) of an array */
+	public void inverseTransform1D(float[] fht) {
+		int n = fht.length;
+		if (S==null || n!=maxN) {
+			if (!isPowerOf2(n))
+				throw new IllegalArgumentException("Not power of 2 length: "+n);
+			initializeTables(n);
+		}
+		dfht3(fht, 0, true, n);
+	}
 
 	void transform(boolean inverse) {
 		//IJ.log("transform: "+maxN+" "+inverse);
@@ -96,6 +126,8 @@ public class FHT extends FloatProcessor {
 	}
 	
 	void initializeTables(int maxN) {
+	    if (maxN>0x40000000)
+	        throw new  IllegalArgumentException("Too large for FHT:  "+maxN+" >2^30");
 		makeSinCosTables(maxN);
 		makeBitReverseTable(maxN);
 		tempArr = new float[maxN];
@@ -161,7 +193,14 @@ public class FHT extends FloatProcessor {
 			IJ.showProgress(percent);
 	}
 	
-	/** Performs an optimized 1D FHT. */
+	/** Performs an optimized 1D FHT of an array or part of an array.
+	 *  @param x        Input array; will be overwritten by the output in the range given by base and maxN.
+	 *  @param base     First index from where data of the input array should be read.
+	 *  @param inverse  True for inverse transform.
+	 *  @param maxN     Length of data that should be transformed; this must be always
+	 *                  the same for a given FHT object.
+	 *  Note that all amplitudes in the output 'x' are multiplied by maxN.
+	 */
 	public void dfht3(float[] x, int base, boolean inverse, int maxN) {
 		int i, stage, gpNum, gpIndex, gpSize, numGps, Nlog2;
 		int bfNum, numBfs;
@@ -253,9 +292,7 @@ public class FHT extends FloatProcessor {
 	}
 	
 	int log2 (int x) {
-		int count = 15;
-		if (x>32768)
-			count = 31;
+		int count = 31;
 		while (!btst(x, count))
 			count--;
 		return count;
@@ -263,7 +300,6 @@ public class FHT extends FloatProcessor {
 
 	
 	private boolean btst (int  x, int bit) {
-		//int mask = 1;
 		return ((x & (1<<bit)) != 0);
 	}
 
@@ -279,7 +315,7 @@ public class FHT extends FloatProcessor {
 		for (int i=0; i<=bitlen; i++)
 			if ((x & (1<<i)) !=0)
 				temp  |= (1<<(bitlen-i-1));
-		return temp & 0x0000ffff;
+		return temp;
 	}
 
 	private int bset (int x, int bit) {
@@ -424,7 +460,7 @@ public class FHT extends FloatProcessor {
  		}
 	}
 
-	float sqr(float x) {
+	private float sqr(float x) {
 		return x*x;
 	}
 
@@ -557,6 +593,12 @@ public class FHT extends FloatProcessor {
 		return fht;
 	}
 		
+	public static boolean isPowerOf2(int n) {
+		int i=2;
+		while(i<n) i *= 2;
+		return i==n;
+	}
+
 	/** Returns a string containing information about this FHT. */
 	public String toString() {
 		return "FHT, " + getWidth() + "x"+getHeight() + ", fd=" + isFrequencyDomain;
