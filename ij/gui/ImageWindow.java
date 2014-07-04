@@ -310,8 +310,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 				s += IJ.d2s(cwidth,digits) + "x" + IJ.d2s(cheight,digits)
 					+ " " + cal.getUnits() + " (" + imp.getWidth() + "x" + imp.getHeight() + "); ";
 			} else {
-				s += IJ.d2s(cwidth,d(cwidth)) + " " + cal.getXUnit() + " x "
-					+ IJ.d2s(cheight,d(cheight)) + " " + cal.getYUnit()
+				s += d2s(cwidth) + " " + cal.getXUnit() + " x "
+					+ d2s(cheight) + " " + cal.getYUnit()
 					+ " (" + imp.getWidth() + "x" + imp.getHeight() + "); ";
 			}
     	} else
@@ -350,10 +350,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
      	return s+"; "+s2+s3;
     }
     
-    private int d(double n) {
+    private String d2s(double n) {
 		int digits = Tools.getDecimalPlaces(n);
 		if (digits>2) digits=2;
-		return digits;
+		return IJ.d2s(n,digits);
     }
 
     public void paint(Graphics g) {

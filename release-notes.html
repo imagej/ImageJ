@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.49d 2 July 2014</u>
+<li> <u>1.49d 4 July 2014</u>
 <ul>
 <li> Thanks to Alan Brooks, non-uniform x and y units are now displayed
 in the image subtitle
@@ -13,6 +13,9 @@ in the image subtitle
 <i>Image&gt;Show Info</i> window and are supported by
 the <i>Rotate Right</i> and <i>Rotate Left</i> commands.
 <li> Added a "Translate" command to the ROI Manager.
+<li> <i>Plugins&gt;Install</i> now installs tools with names ending in "Tool.txt",
+"Tool.ijm" and Tool.class" in the toolbar and saves a copy of the tool in
+the plugins/Tools folder.
 <li> Thanks to Neil Fazel, the Overlay.drawString() macro function supports multiline strings.
 <li> Thanks to Michael Schmid, added the getInfo("window.title") macro function.
 <li> Thanks to Michael Schmid, added the FHT#transform1D() and 
@@ -20,6 +23,8 @@ FHT#inverseTransform1D()methods
 (<a href="plugins/examples/Dynamic_Power_Spectrum.java">example</a).
 <li> Thanks to David Gauntt, fixed bugs that could cause the DicomDecoder#getFileInfo()
 method to hang when attempting to open non-DICOM files.
+<li> Thanks to Andrew Porter, fixed a v1.49 regression that caused some imported 
+TIFF stacks to open incorrectly.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

@@ -28,6 +28,9 @@ public class PluginInstaller implements PlugIn {
 	
 	public boolean install(String path) {
 		boolean isURL = path.startsWith("http://");
+		String lcPath = path.toLowerCase();
+		boolean isMacroTool = lcPath.endsWith("tool.ijm") || lcPath.endsWith("tool.txt");
+		boolean isPluginTool = lcPath.endsWith("tool.class") || lcPath.endsWith("tool.jar");
 		byte[] data = null;
 		String name = path;
 		if (isURL) {
@@ -62,6 +65,14 @@ public class PluginInstaller implements PlugIn {
 					dir = Menus.getPlugInsPath();
 			}
 		}
+		if (isMacroTool || isPluginTool) {
+			dir = Menus.getPlugInsPath()+"Tools" + File.separator;
+			File f = new File(dir);
+			if (!f.exists()) {
+				boolean ok = f.mkdir();
+				if (!ok) dir=null;
+			}
+		}
 		if (dir==null) {
 			SaveDialog sd = new SaveDialog("Save Plugin, Macro or Script...", Menus.getPlugInsPath(), name, null);
 			String name2 = sd.getFileName();
@@ -74,7 +85,16 @@ public class PluginInstaller implements PlugIn {
 			return false;
 		if (name.endsWith(".java"))
 			IJ.runPlugIn("ij.plugin.Compiler", dir+name);
+		if (isMacroTool)
+			IJ.runPlugIn("ij.plugin.MacroInstaller", dir+name);
 		Menus.updateImageJMenus();
+		if (isPluginTool) {
+			name = name.replaceAll("_"," ");
+			if (name.endsWith(".class")) {
+				name = name.substring(0,name.length()-6);
+				IJ.run(name);
+			}
+		}
 		return true;
 	}
 	
