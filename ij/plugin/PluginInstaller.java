@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.io.*;
+import ij.macro.*;
 import java.io.*;
 import java.net.URL;
 import java.net.*;
@@ -29,8 +30,9 @@ public class PluginInstaller implements PlugIn {
 	public boolean install(String path) {
 		boolean isURL = path.startsWith("http://");
 		String lcPath = path.toLowerCase();
-		boolean isMacroTool = lcPath.endsWith("tool.ijm") || lcPath.endsWith("tool.txt");
-		boolean isPluginTool = lcPath.endsWith("tool.class") || lcPath.endsWith("tool.jar");
+		boolean isTool = lcPath.endsWith("tool.ijm") || lcPath.endsWith("tool.txt")
+			|| lcPath.endsWith("tool.class") || lcPath.endsWith("tool.jar");
+		boolean isMacro = lcPath.endsWith(".txt") || lcPath.endsWith(".ijm");
 		byte[] data = null;
 		String name = path;
 		if (isURL) {
@@ -65,12 +67,17 @@ public class PluginInstaller implements PlugIn {
 					dir = Menus.getPlugInsPath();
 			}
 		}
-		if (isMacroTool || isPluginTool) {
+		if (isTool) {
 			dir = Menus.getPlugInsPath()+"Tools" + File.separator;
 			File f = new File(dir);
 			if (!f.exists()) {
 				boolean ok = f.mkdir();
 				if (!ok) dir=null;
+			}
+			if (dir!=null && isMacro) {
+				String name2 = getToolName(data);
+				if (name2!=null)
+					name = name2;
 			}
 		}
 		if (dir==null) {
@@ -85,17 +92,47 @@ public class PluginInstaller implements PlugIn {
 			return false;
 		if (name.endsWith(".java"))
 			IJ.runPlugIn("ij.plugin.Compiler", dir+name);
-		if (isMacroTool)
-			IJ.runPlugIn("ij.plugin.MacroInstaller", dir+name);
 		Menus.updateImageJMenus();
-		if (isPluginTool) {
-			name = name.replaceAll("_"," ");
-			if (name.endsWith(".class")) {
+		if (isTool) {
+			if (isMacro)
+				IJ.runPlugIn("ij.plugin.Macro_Runner", "Tools/"+name);
+			else if (name.endsWith(".class")) {
+				name = name.replaceAll("_"," ");
 				name = name.substring(0,name.length()-6);
 				IJ.run(name);
 			}
 		}
 		return true;
+	}
+	
+	private String getToolName(byte[] data) {
+		String text = new String(data);
+		String name = null;
+		Tokenizer tok = new Tokenizer();
+		Program pgm = tok.tokenize(text);
+		int[] code = pgm.getCode();
+		Symbol[] symbolTable = pgm.getSymbolTable();
+		for (int i=0; i<code.length; i++) {
+			int token = code[i]&MacroConstants.TOK_MASK;
+			if (token==MacroConstants.MACRO) {
+				int nextToken = code[i+1]&MacroConstants.TOK_MASK;
+				if (nextToken==MacroConstants.STRING_CONSTANT) {
+					int address = code[i+1]>>MacroConstants.TOK_SHIFT;
+					Symbol symbol = symbolTable[address];
+					name = symbol.str;
+					break;
+				}
+			}
+		}
+		if (name==null)
+			return null;
+		int index = name.indexOf("Tool");
+		if (index==-1)
+			return null;
+		name = name.substring(0, index+4);
+		name = name.replaceAll(" ","_");
+		name = name + ".ijm";
+		return name;
 	}
 	
 	boolean savePlugin(File f, byte[] data) {

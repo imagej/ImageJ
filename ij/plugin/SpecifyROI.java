@@ -111,8 +111,11 @@ public class SpecifyROI implements PlugIn, DialogListener {
 		gd.addCheckbox("Oval", oval);
 		gd.addCheckbox("Constrain square/circle", square);
 		gd.addCheckbox("Centered",centered);
-		if (cal.scaled())
-			gd.addCheckbox("Scaled units ("+cal.getUnits()+")", scaledUnits);
+		if (cal.scaled()) {
+			boolean unitsMatch = cal.getXUnit().equals(cal.getYUnit());
+			String units = unitsMatch ? cal.getUnits() : cal.getXUnit()+" x "+cal.getYUnit();
+			gd.addCheckbox("Scaled units ("+units+")", scaledUnits);
+		}
 		fields = gd.getNumericFields();
 		gd.addDialogListener(this);
 		gd.showDialog();

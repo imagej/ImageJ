@@ -306,14 +306,16 @@ public class SurfacePlotter implements PlugIn {
 		ip2.drawString(s, (int) p1x-18-w, (int) p1y +h/2);
 		
 		//x-axis
-		s = (double) Math.round(roi.height*cal.pixelHeight*10)/10+" "+cal.getUnits();
+		boolean unitsMatch = cal.getXUnit().equals(cal.getYUnit());
+		String xunits = unitsMatch ? cal.getUnits() : cal.getYUnit(); // why swapped?
+		s = (double) Math.round(roi.height*cal.pixelHeight*10)/10+" "+xunits;
 		w =  ip2.getFontMetrics().stringWidth(s);
 		drawAxis(ip2, (int) p1x, (int) p1y, (int) p2x, (int) p2y, s, 10, -1, 1, 1);
 
 		//y-axis
-		s =  (double) Math.round(roi.width*cal.pixelWidth*10)/10+" "+cal.getUnits();
+		String yunits = unitsMatch ? cal.getUnits() : cal.getXUnit(); // why swapped?
+		s = (double) Math.round(roi.width*cal.pixelWidth*10)/10+" "+yunits;
 		w =  ip2.getFontMetrics().stringWidth(s);
-		//drawAxis(ip2, (int) p2x, (int) p2y, (int) p3x, (int) p3y, s, 10, 1 , 1, -1);
 		drawAxis(ip2, (int) p2x, (int) p2y, (int) p3x, (int) p3y, s, 10, 1, -1, 1);
 
 	}

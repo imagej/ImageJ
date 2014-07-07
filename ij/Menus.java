@@ -1546,6 +1546,7 @@ public class Menus {
 		Menus m = new Menus(IJ.getInstance(), IJ.getApplet());
 		String err = m.addMenuBar();
 		if (err!=null) IJ.error(err);
+		m.installStartupMacroSet();
 		IJ.resetClassLoader();
 		IJ.runPlugIn("ij.plugin.ClassChecker", "");
 		IJ.showStatus("Menus updated: "+m.nPlugins + " commands, " + m.nMacros + " macros");

@@ -5,7 +5,7 @@ public interface MacroConstants {
 	// In the tokenized macro, the token and optional symbol table address 
 	// are packed into a single 32-bit int. The token is stored in the right-most 
 	// 12 bits and the address in the remaining 24 bits. 
-	static final int TOK_SHIFT=12, TOK_MASK=0xfff;
+	public static final int TOK_SHIFT=12, TOK_MASK=0xfff;
 
 	static final int PLUS_PLUS=1, MINUS_MINUS=2, EQ=3, NEQ=4, GT=5, GTE=6, LT=7, LTE=8,
 		PLUS_EQUAL=9, MINUS_EQUAL=10, MUL_EQUAL=11, DIV_EQUAL=12, LOGICAL_AND=13, LOGICAL_OR=14,

@@ -5,13 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.49d 4 July 2014</u>
+<li> <u>1.49d 6 July 2014</u>
 <ul>
-<li> Thanks to Alan Brooks, non-uniform x and y units are now displayed
+<li> Thanks to Alan Brooks, non-uniform x and y units are now used
 in the image subtitle
-(<a href="macros/js/NonUniformUnits.js">example</a>), displayed in the
-<i>Image&gt;Show Info</i> window and are supported by
-the <i>Rotate Right</i> and <i>Rotate Left</i> commands.
+(<a href="macros/js/NonUniformUnits.js">example</a>) and by the
+<i>Show Info</i>, <i>Specify</i>, <i>Rotate Right</i>, <i>Rotate Left</i>
+and <i>Surface Plot</i> commands.
 <li> Added a "Translate" command to the ROI Manager.
 <li> <i>Plugins&gt;Install</i> now installs tools with names ending in "Tool.txt",
 "Tool.ijm" and Tool.class" in the toolbar and saves a copy of the tool in
@@ -23,6 +23,8 @@ FHT#inverseTransform1D()methods
 (<a href="plugins/examples/Dynamic_Power_Spectrum.java">example</a).
 <li> Thanks to David Gauntt, fixed bugs that could cause the DicomDecoder#getFileInfo()
 method to hang when attempting to open non-DICOM files.
+<li> Fixed a bug that caused <i>Help&gt;Refresh Menus</i> and <i>Plugins&gt;Install</i>
+to delete macros installed in the <i>Plugins&gt;Macros</i> menu.
 <li> Thanks to Andrew Porter, fixed a v1.49 regression that caused some imported 
 TIFF stacks to open incorrectly.
 </ul> 
