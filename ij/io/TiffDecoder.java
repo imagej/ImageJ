@@ -745,10 +745,9 @@ public class TiffDecoder {
 		
 	public FileInfo[] getTiffInfo() throws IOException {
 		long ifdOffset;
-		Vector info;
+		ArrayList list = new ArrayList();
 		if (in==null)
 			in = new RandomAccessStream(new RandomAccessFile(new File(directory, name), "r"));
-		info = new Vector();
 		ifdOffset = OpenImageFileHeader();
 		if (ifdOffset<0L) {
 			in.close();
@@ -759,7 +758,7 @@ public class TiffDecoder {
 			in.seek(ifdOffset);
 			FileInfo fi = OpenIFD();
 			if (fi!=null) {
-				info.addElement(fi);
+				list.add(fi);
 				ifdOffset = ((long)getInt())&0xffffffffL;
 			} else
 				ifdOffset = 0L;
@@ -769,28 +768,27 @@ public class TiffDecoder {
 					ifdOffset = 0L;
 			}
 		}
-		if (info.size()==0) {
+		if (list.size()==0) {
 			in.close();
 			return null;
 		} else {
-			FileInfo[] fi = new FileInfo[info.size()];
-			info.copyInto((Object[])fi);
-			if (debugMode) fi[0].debugInfo = dInfo;
+			FileInfo[] info = (FileInfo[])list.toArray(new FileInfo[list.size()]);
+			if (debugMode) info[0].debugInfo = dInfo;
 			if (url!=null) {
 				in.seek(0);
-				fi[0].inputStream = in;
+				info[0].inputStream = in;
 			} else
 				in.close();
-			if (fi[0].info==null)
-				fi[0].info = tiffMetadata;
+			if (info[0].info==null)
+				info[0].info = tiffMetadata;
 			if (debugMode) {
-				int n = fi.length;
-				fi[0].debugInfo += "number of images: "+ n + "\n";
-				fi[0].debugInfo += "offset to first image: "+fi[0].getOffset()+ "\n";
-				fi[0].debugInfo += "gap between images: "+getGapInfo(fi) + "\n";
-				fi[0].debugInfo += "little-endian byte order: "+fi[0].intelByteOrder + "\n";
+				int n = info.length;
+				info[0].debugInfo += "number of IFDs: "+ n + "\n";
+				info[0].debugInfo += "offset to first image: "+info[0].getOffset()+ "\n";
+				info[0].debugInfo += "gap between images: "+getGapInfo(info) + "\n";
+				info[0].debugInfo += "little-endian byte order: "+info[0].intelByteOrder + "\n";
 			}
-			return fi;
+			return info;
 		}
 	}
 	

@@ -9,7 +9,7 @@ import ij.io.*;
 import ij.measure.*;
 import ij.plugin.frame.*;
 import ij.macro.Interpreter;
-import ij.util.Java2;
+import ij.util.*;
 
 /** A frame for displaying images. */
 public class ImageWindow extends Frame implements FocusListener, WindowListener, WindowStateListener, MouseWheelListener {
@@ -301,8 +301,19 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
     	int type = imp.getType();
     	Calibration cal = imp.getCalibration();
     	if (cal.scaled()) {
-    		s += IJ.d2s(imp.getWidth()*cal.pixelWidth,2) + "x" + IJ.d2s(imp.getHeight()*cal.pixelHeight,2)
- 			+ " " + cal.getUnits() + " (" + imp.getWidth() + "x" + imp.getHeight() + "); ";
+			boolean unitsMatch = cal.getXUnit().equals(cal.getYUnit());
+			double cwidth = imp.getWidth()*cal.pixelWidth;
+			double cheight = imp.getHeight()*cal.pixelHeight;
+			int digits = Tools.getDecimalPlaces(cwidth, cheight);
+			if (digits>2) digits=2;
+			if (unitsMatch) {
+				s += IJ.d2s(cwidth,digits) + "x" + IJ.d2s(cheight,digits)
+					+ " " + cal.getUnits() + " (" + imp.getWidth() + "x" + imp.getHeight() + "); ";
+			} else {
+				s += d2s(cwidth) + " " + cal.getXUnit() + " x "
+					+ d2s(cheight) + " " + cal.getYUnit()
+					+ " (" + imp.getWidth() + "x" + imp.getHeight() + "); ";
+			}
     	} else
     		s += imp.getWidth() + "x" + imp.getHeight() + " pixels; ";
 		double size = ((double)imp.getWidth()*imp.getHeight()*imp.getStackSize())/1024.0;
@@ -337,6 +348,12 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
     		{s2=IJ.d2s(size/1048576.0,1); s3="GB";}
     	if (s2.endsWith(".0")) s2 = s2.substring(0, s2.length()-2);
      	return s+"; "+s2+s3;
+    }
+    
+    private String d2s(double n) {
+		int digits = Tools.getDecimalPlaces(n);
+		if (digits>2) digits=2;
+		return IJ.d2s(n,digits);
     }
 
     public void paint(Graphics g) {

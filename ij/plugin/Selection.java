@@ -691,7 +691,9 @@ public class Selection implements PlugIn, Measurements {
 				}
 			}
 		}
+		rm.allowRecording(true);
 		rm.runCommand("add");
+		rm.allowRecording(false);
 		IJ.setKeyUp(IJ.ALL_KEYS);
 	}
 	

@@ -94,27 +94,34 @@ public class Info implements PlugInFilter {
     	int frames = imp.getNFrames();
 		int digits = imp.getBitDepth()==32?4:0;
 		int dp, dp2;
+		boolean nonUniformUnits = !cal.getXUnit().equals(cal.getYUnit());
+		String xunit = cal.getXUnit();
+		String yunit = cal.getYUnit();
+		String zunit = cal.getZUnit();
 		if (cal.scaled()) {
-			String unit = cal.getUnit();
-			String units = cal.getUnits();
+			String xunits = cal.getUnits();
+			String yunits = xunits;
+			String zunits = xunits;
+			if (nonUniformUnits) {
+				xunits = xunit;
+				yunits = yunit;
+				zunits = zunit;
+			}
 			double pw = imp.getWidth()*cal.pixelWidth;
 			double ph = imp.getHeight()*cal.pixelHeight;
-	    	dp = Tools.getDecimalPlaces(pw, ph);
-	    	s += "Width:  "+IJ.d2s(pw,dp)+" " + units+" ("+imp.getWidth()+")\n";
-	    	s += "Height:  "+IJ.d2s(ph,dp)+" " + units+" ("+imp.getHeight()+")\n";
+	    	s += "Width:  "+d2s(pw)+" " + xunits+" ("+imp.getWidth()+")\n";
+	    	s += "Height:  "+d2s(ph)+" " + yunits+" ("+imp.getHeight()+")\n";
 	    	if (slices>1) {
 				double pd = slices*cal.pixelDepth;
-				dp = Tools.getDecimalPlaces(pw, pd);
-	    		s += "Depth:  "+IJ.d2s(pd,dp)+" " + units+" ("+slices+")\n";
+	    		s += "Depth:  "+d2s(pd)+" " + zunits+" ("+slices+")\n";
 	    	}
 	    	double xResolution = 1.0/cal.pixelWidth;
 	    	double yResolution = 1.0/cal.pixelHeight;
-	    	int places = Tools.getDecimalPlaces(xResolution, yResolution);
 	    	if (xResolution==yResolution)
-	    		s += "Resolution:  "+IJ.d2s(xResolution,places) + " pixels per "+unit+"\n";
+	    		s += "Resolution:  "+d2s(xResolution) + " pixels per "+xunit+"\n";
 	    	else {
-	    		s += "X Resolution:  "+IJ.d2s(xResolution,places) + " pixels per "+unit+"\n";
-	    		s += "Y Resolution:  "+IJ.d2s(yResolution,places) + " pixels per "+unit+"\n";
+	    		s += "X Resolution:  "+d2s(xResolution) + " pixels per "+xunit+"\n";
+	    		s += "Y Resolution:  "+d2s(yResolution) + " pixels per "+yunit+"\n";
 	    	}
 	    } else {
 	    	s += "Width:  " + imp.getWidth() + " pixels\n";
@@ -123,11 +130,16 @@ public class Info implements PlugInFilter {
 	    		s += "Depth:  " + slices + " pixels\n";
 	    }
     	if (stackSize>1) {
-	    	dp = Tools.getDecimalPlaces(cal.pixelWidth, cal.pixelDepth);
-	    	s += "Voxel size: "+IJ.d2s(cal.pixelWidth,dp)+"x"+IJ.d2s(cal.pixelHeight,dp)+"x"+IJ.d2s(cal.pixelDepth,dp)+" "+cal.getUnit()+"\n";
+    		String vunit = cal.getUnit()+"^3";
+    		if (nonUniformUnits)
+    			vunit = "("+xunit+" x "+yunit+" x "+zunit+")";
+	    	s += "Voxel size: "+d2s(cal.pixelWidth)+"x"+d2s(cal.pixelHeight)+"x"+d2s(cal.pixelDepth)+" "+vunit+"\n";
 	    } else {
+    		String punit = cal.getUnit()+"^2";
+    		if (nonUniformUnits)
+    			punit = "("+xunit+" x "+yunit+")";
 	    	dp = Tools.getDecimalPlaces(cal.pixelWidth, cal.pixelHeight);
-	    	s += "Pixel size: "+IJ.d2s(cal.pixelWidth,dp)+"x"+IJ.d2s(cal.pixelHeight,dp)+" "+cal.getUnit()+"\n";
+	    	s += "Pixel size: "+d2s(cal.pixelWidth)+"x"+d2s(cal.pixelHeight)+" "+punit+"\n";
 	    }
 
 	    s += "ID: "+imp.getID()+"\n";
@@ -166,7 +178,7 @@ public class Info implements PlugInFilter {
 						min = cal.getCValue((int)min);
 						max = cal.getCValue((int)max);
 					}
-					s += IJ.d2s(min,digits) + " - " + IJ.d2s(max,digits) + "\n";
+					s += d2s(min) + " - " + d2s(max) + "\n";
 				}
 				break;
 	    	case ImagePlus.COLOR_256:
@@ -218,13 +230,11 @@ public class Info implements PlugInFilter {
 	    else {
 	    	double lower = ip.getMinThreshold();
 	    	double upper = ip.getMaxThreshold();
-			int places = digits;
 			if (cal.calibrated()) {
 				lower = cal.getCValue((int)lower);
 				upper = cal.getCValue((int)upper);
-				places = cal.isSigned16Bit()?0:4;
 			}
-			s += "Threshold: "+IJ.d2s(lower,places)+"-"+IJ.d2s(upper,places)+"\n";
+			s += "Threshold: "+d2s(lower)+"-"+d2s(upper)+"\n";
 		}
 		ImageCanvas ic = imp.getCanvas();
     	double mag = ic!=null?ic.getMagnification():1.0;
@@ -347,16 +357,11 @@ public class Info implements PlugInFilter {
 		for (int i=0; i<n; i++) {
 			double min = luts[i].min;
 			double max = luts[i].max;
-			int digits = (int)min==min&&(int)max==max?0:2;
-			s += "  " + (i+1) + ": " + IJ.d2s(min,digits) + "-" + IJ.d2s(max,digits) + "\n";
+			s += "  " + (i+1) + ": " + d2s(min) + "-" + d2s(max) + "\n";
 		}
 		return s;
 	}
 	
-    String d2s(double n) {
-		return n==(int)n?Integer.toString((int)n):IJ.d2s(n);
-	}
-
 	// returns a Y coordinate based on the "Invert Y Coodinates" flag
 	int yy(int y, ImagePlus imp) {
 		return Analyzer.updateY(y, imp.getHeight());
@@ -374,4 +379,8 @@ public class Info implements PlugInFilter {
 		//ed.create("Info for "+imp.getTitle(), info);
 	}
 	
+    private String d2s(double n) {
+		return IJ.d2s(n,Tools.getDecimalPlaces(n));
+    }
+
 }

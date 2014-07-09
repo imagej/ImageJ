@@ -150,7 +150,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		addPoints(Tools.toFloat(x), Tools.toFloat(y), shape);
 	}
 	
-	/** Adds error bars to the plot. */
+	/** Adds horizontal error bars to the plot. */
 	public void addErrorBars(float[] errorBars) {
 		plot.addErrorBars(errorBars);
 	}
@@ -251,7 +251,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			{imp.changes=false; close();}
 	}
 	
-	/** creates the headings corresponding to the showlist funcion*/
+	/** Creates the headings corresponding to the showlist funcion*/
 	private String createHeading(){
 		String head = "";
 		int sets = plot.storedData.size()/2;
@@ -259,8 +259,14 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			head += sets==1?"X\tY\t":"X0\tY0\t";
 		else
 			head += sets==1?"Y0\t":"Y0\t";
-		if (plot.errorBars!=null)
-			head += "ERR\t";
+		if (plot.errorBars!=null) {
+			if (plot.xErrorBars!=null)
+				head += "Y_ERR\t";
+			else
+				head += "ERR\t";
+		}
+		if (plot.xErrorBars!=null)
+			head += "X_ERR\t";
 		for (int j = 1; j<sets; j++){
 			if (saveXValues || sets>1)
 				head += "X" + j + "\tY" + j + "\t";
@@ -284,17 +290,23 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		
 		/** stores the values that will be displayed*/
 		ArrayList displayed = new ArrayList(plot.storedData);
-		boolean eb_test = false;
+		boolean ex_test = false;
+		boolean ey_test = false;
 		
-		/** includes error bars.*/
+		// includes vertical error bars
 		if (plot.errorBars !=null)
 			displayed.add(2, plot.errorBars);
+			
+		// includes horizontal error bars
+		if (plot.xErrorBars !=null)
+			displayed.add(3, plot.xErrorBars);
 					
 		StringBuffer sb = new StringBuffer();
 		String v;
 		int n = displayed.size();
 		for (int i = 0; i<max; i++) {
-			eb_test = plot.errorBars != null;
+			ey_test = plot.errorBars  != null;
+			ex_test = plot.xErrorBars != null;
 			for (int j = 0; j<n;) {
 				int xdigits = 0;
 				if (saveXValues || n>2) {
@@ -313,13 +325,21 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 				sb.append(v);
 				sb.append("\t");
 				j++;
-				if (eb_test){
+				if (ey_test){
 					column = (float[])displayed.get(j);
 					v = i<column.length?IJ.d2s(column[i],ydigits):"";
 					sb.append(v);
 					sb.append("\t");
 					j++;
-					eb_test=false;
+					ey_test=false;
+				}
+				if (ex_test){
+					column = (float[])displayed.get(j);
+					v = i<column.length?IJ.d2s(column[i],ydigits):"";
+					sb.append(v);
+					sb.append("\t");
+					j++;
+					ex_test=false;
 				}
 			}
 			sb.append("\n");

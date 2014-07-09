@@ -689,10 +689,8 @@ public class Opener {
 						IJ.showProgress(1.0);
 						return null;
 					}
-					if (info[i].compression>=FileInfo.LZW) {
-						fi.stripOffsets = info[i].stripOffsets;
-						fi.stripLengths = info[i].stripLengths;
-					}
+					fi.stripOffsets = info[i].stripOffsets;
+					fi.stripLengths = info[i].stripLengths;
 					int bpp = info[i].getBytesPerPixel();
 					if (info[i].samplesPerPixel>1 && !(bpp==3||bpp==4||bpp==6)) {
 						nChannels = fi.samplesPerPixel;
@@ -774,8 +772,9 @@ public class Opener {
 		TiffDecoder td = new TiffDecoder(directory, name);
 		if (IJ.debugMode) td.enableDebugging();
 		FileInfo[] info=null;
-		try {info = td.getTiffInfo();}
-		catch (IOException e) {
+		try {
+			info = td.getTiffInfo();
+		} catch (IOException e) {
 			String msg = e.getMessage();
 			if (msg==null||msg.equals("")) msg = ""+e;
 			IJ.error("Open TIFF", msg);

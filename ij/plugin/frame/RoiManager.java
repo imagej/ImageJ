@@ -5,6 +5,7 @@ import java.io.*;
 import java.util.*;
 import java.awt.List;
 import java.util.zip.*;
+import java.awt.geom.*;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
@@ -65,8 +66,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private boolean appendResults;
 	private ResultsTable mmResults;
 	private int imageID;
-	
-	
+	private boolean allowRecording;
+		
 	public RoiManager() {
 		super("ROI Manager");
 		if (instance!=null) {
@@ -163,6 +164,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("Labels...");
 		addPopupItem("List");
 		addPopupItem("Interpolate ROIs");
+		addPopupItem("Translate...");
 		addPopupItem("Help");
 		addPopupItem("Options...");
 		add(pm);
@@ -179,6 +181,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (label==null)
 			return;
 		String command = label;
+		allowRecording = true;
 		if (command.equals("Add [t]"))
 			runCommand("add");
 		else if (command.equals("Update"))
@@ -233,12 +236,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			listRois();
 		else if (command.equals("Interpolate ROIs"))
 			interpolateRois();
+		else if (command.equals("Translate..."))
+			translate();
 		else if (command.equals("Help"))
 			help();
 		else if (command.equals("Options..."))
 			options();
 		else if (command.equals("\"Show All\" Color..."))
 			setShowAllColor();
+		allowRecording = false;
 	}
 	
 	private void interpolateRois() {
@@ -1917,6 +1923,45 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		updateShowAll();
 	}
 	
+	private void translate() {
+		double dx = 10.0;
+		double dy = 10.0;
+		GenericDialog gd = new GenericDialog("Translate");
+		gd.addNumericField("X offset (pixels): ", dx, 0);
+		gd.addNumericField("Y offset (pixels): ", dy, 0);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		dx = gd.getNextNumber();
+		dy = gd.getNextNumber();
+		translate(dx, dy);
+		if (record()) {
+			if (Recorder.scriptMode())
+				Recorder.recordCall("rm.translate("+dx+", "+dy+");");
+			else
+				Recorder.record("roiManager", "translate", (int)dx, (int)dy);
+		}
+	}
+
+	/** Moves the selected ROIs or all the ROIs if none are selected. */
+	public void translate(double dx, double dy) {
+		Roi[] rois = getSelectedRoisAsArray();
+		for (int i=0; i<rois.length; i++) {
+			Roi roi = rois[i];
+			Rectangle2D r = roi.getFloatBounds();
+			roi.setLocation(r.getX()+dx, r.getY()+dy);
+		}
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) {
+			Roi roi = imp.getRoi();
+			if (roi!=null) {
+				Rectangle2D r = roi.getFloatBounds();
+				roi.setLocation(r.getX()+dx, r.getY()+dy);
+			}
+			imp.draw();
+		}
+	}
+
 	private boolean save(String name, boolean saveSelected) {
 		if (!name.endsWith(".zip") && !name.equals(""))
 			return error("Name must end with '.zip'");
@@ -2167,7 +2212,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	private boolean record() {
-		return Recorder.record && !IJ.isMacro();
+		return Recorder.record && allowRecording && !IJ.isMacro();
+	}
+
+	public void allowRecording(boolean allow) {
+		this.allowRecording = allow;
 	}
 
 	public void mouseReleased (MouseEvent e) {}

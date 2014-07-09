@@ -148,6 +148,7 @@ public class ImageReader {
 	}
 	
 	short[] readCompressed16bitImage(InputStream in) throws IOException {
+		if (IJ.debugMode) IJ.log("ImageReader.read16bit, offset="+fi.stripOffsets[0]);
 		short[] pixels = new short[nPixels];
 		int base = 0;
 		short last = 0;

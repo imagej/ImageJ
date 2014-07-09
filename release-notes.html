@@ -5,57 +5,33 @@
 </head>
 <body>
 
-<li> <u>1.49c 27 June 2014</u>
+<li> <u>1.49d 9 July 2014</u>
 <ul>
-<li> Selections added to an overlay by the <i>Measure</i> command are
-removed when the correspionding rows in the Results table are cleared.
-<li> Animated GIFs can now be opened using <i>File&gt;Open</i>
-and drag and drop.
-<li> Overlays are rendered when saving images as GIFs or stacks as animated GIFs.
-<li> The <i>Analyze&gt;Label</i> command now displays a dialog box that suggests
-using the "Add to manager" option in <i>Analyze&gt;Set Measurements</i>.
-<li> Thanks to Lars Damgaard, the run("Image Sequence... ", "...") macro function
-(File>Save As>Image Sequence) works with single images.
-<li> When duplicating virtual stacks, progress information is displayed in the status bar.
-<li> Added the setOption("ShowAngle",boolean) macro function, which determines
-whether or not "Angle" is reported when measuring straight line lengths.
-<li> Added the IJ.getFullVersion() macro function.
-<li> Thanks to Philippe Mailly, added a public multiMeasure() method to the
-ROI Manager and upgraded the recorder to support this method
-(<a href="macros/js/MultiMeasureDemo">example</a>).
-<li> Thanks to Nicolas Casadei, fixed a bug that caused macros to not reset the
-"escapePressed" flag, which sometimes caused "INTERRUPTED" to be displayed in
-the status bar and the macro to not work as expected.
-<li> Thanks to Christian Renicke, fixed a bug that caused the <i>Brightness/Contrast</i>
-and <i>Color Balance</i> tools to not work as expected on RGB stacks after an
-"Apply" operation.
-<li> Thanks to Matthew Pearson, fixed a bug in the IJ.renameResults() macro 
-function that caused it to sometimes not work as expected if a column
-had been added using setResult() calls.
-<li> Thanks to Bryan Callahan and Curtis Rueden, fixed a bug that caused the
-run("Profile Plot Options...","...") macro function to throw an exception in Fiji headless mode.
-<li> Thanks to Neil Fazel, fixed a bug that caused <i>Analyze&gt;Plot Profile</i> to not correctly
-display plot x and y coordinates at the bottom of the plot window when fixed y-axis scale was used.
-<li> Thanks to Antoine Vandecreme, fixed a bug that caused ImageJ to incorrectly
-open non-8bit TIFFs that were missing the BitsPerSample tag.
-<li> Thanks to Norbert Vischer, fixed a bug in <i>Image&gt;Show Info</i>
-that caused it to display the pixel size using inadequate precision.
-<li> Thanks to Philippe Carl, fixed a bug in the setThreshold() macro function
-that caused it to not update the "Threshold" window.
-<li> Thanks to Philippe Carl, fixed a bug in the "Threshold" window's "Set" option
-that caused the plot and scrollbars to not be updated.
-<li> Thanks to Grimper, fixed a bug that caused the setForegroundColor() 
-macro function to not work in headless mode.
-<li> Thanks to Tara Ficken and Simon Runde, fixed bugs that 
-sometimes caused ImageJ to incorrectly import TIFF stacks.
-<li> Thanks to Philippe Carl, fixed ROI Manager bugs that caused it to unexpectedly move
-selections when using the arrow keys and to not deselect when switching between image.
-<li> Thanks to Tiago Ferreira, fixed a v1.48m regression that sometimes caused the "List..." 
-button in plot windows to display an empty table.
-<li> Thanks to Gabriel Landini, fixed a v1.49 regression that caused cached versions
-of the blobs.gif sample image to open without an inverting LUT.
-<li> Thanks to Kees Straatman, fixed a regression that caused the straight line
-tool to not be recorded.
+<li> Thanks to Philippe Carl and Neil Fazel, horizontal error bars can
+now be added to plots
+(<a href="macros/examples/ErrorBars.txt">example</a>).
+<li> Thanks to Alan Brooks, non-uniform x and y units are now used
+in the image subtitle
+(<a href="macros/js/NonUniformUnits.js">example</a>) and by the
+<i>Show Info</i>, <i>Specify</i>, <i>Rotate Right</i>, <i>Rotate Left</i>
+and <i>Surface Plot</i> commands.
+<li> Added a "Translate" command to the ROI Manager.
+<li> <i>Plugins&gt;Install</i> now installs tools with names ending in "Tool.txt",
+"Tool.ijm" and Tool.class" in the toolbar and saves a copy of the tool in
+the plugins/Tools folder.
+<li> Thanks to Neil Fazel, the Overlay.drawString() macro function supports multiline strings.
+<li> Thanks to Michael Schmid, added the getInfo("window.title") macro function.
+<li> Thanks to Michael Schmid, added the FHT#transform1D() and 
+FHT#inverseTransform1D()methods
+(<a href="plugins/examples/Dynamic_Power_Spectrum.java">example</a).
+<li> Thanks to David Gauntt, fixed bugs that could cause the DicomDecoder#getFileInfo()
+method to hang when attempting to open non-DICOM files.
+<li> Fixed a bug that caused <i>Help&gt;Refresh Menus</i> and <i>Plugins&gt;Install</i>
+to delete macros installed in the <i>Plugins&gt;Macros</i> menu.
+<li> Thanks to Jan Brocher, fixed a bug that caused RoiManager methods called from
+plugins to be recorded.
+<li> Thanks to Andrew Porter, fixed a v1.49 regression that caused some imported 
+TIFF stacks to open incorrectly.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
