@@ -2036,10 +2036,12 @@ public class Functions implements MacroConstants, Measurements {
 				what = Plot.CROSS;		
 			else if (arg.indexOf("dot")!=-1)
 				what = Plot.DOT;		
-			else if (arg.indexOf("x")!=-1)
-				what = Plot.X;
+			else if (arg.indexOf("xerror")!=-1)
+				what = -2;
 			else if (arg.indexOf("error")!=-1)
 				what = -1;
+			else if (arg.indexOf("x")!=-1)
+				what = Plot.X;
 		    addToPlot(what); 
 		    return;
 		} else if (name.startsWith("setLineWidth")) {
@@ -2190,6 +2192,8 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getRightParen();
 		if (what==-1)
 			plot.addErrorBars(y);
+		else if (what==-2)
+			plot.addHorizontalErrorBars(y);
 		else if (errorBars)
 			plot.addPoints(x, y, e, what);
 		else
