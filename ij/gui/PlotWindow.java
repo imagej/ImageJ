@@ -150,7 +150,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		addPoints(Tools.toFloat(x), Tools.toFloat(y), shape);
 	}
 	
-	/** Adds horizontal error bars to the plot. */
+	/** Adds vertical error bars to the plot. */
 	public void addErrorBars(float[] errorBars) {
 		plot.addErrorBars(errorBars);
 	}
