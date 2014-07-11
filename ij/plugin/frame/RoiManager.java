@@ -2036,6 +2036,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (mm) list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 	}
 	
+	public void selectAndMakeVisible(ImagePlus imp, int index) {
+		select(imp, index);
+		list.ensureIndexIsVisible(index);
+	}
+	
 	public void select(int index, boolean shiftKeyDown, boolean altKeyDown) {
 		if (!(shiftKeyDown||altKeyDown))
 			select(index);

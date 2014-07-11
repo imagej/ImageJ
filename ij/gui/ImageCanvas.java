@@ -1499,9 +1499,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int index = rm.getRoiIndex(roi);
 		if (index<0)
 			return false;
-		rm.select(imp, index);
-		if (delete)
+		if (delete) {
+			rm.select(imp, index);
 			rm.runCommand("delete");
+		} else
+			rm.selectAndMakeVisible(imp, index);
 		return true;
     }
     
