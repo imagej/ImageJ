@@ -24,6 +24,8 @@ public abstract class PlugInTool implements PlugIn {
 	public void mouseEntered(ImagePlus imp, MouseEvent e) {e.consume();}
 
 	public void mouseExited(ImagePlus imp, MouseEvent e) {e.consume();}
+	
+	public void showPopupMenu(MouseEvent e, Toolbar tb) { }
 
 	/** Return the tool name. */
 	public String getToolName() {

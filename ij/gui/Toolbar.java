@@ -1017,6 +1017,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				String name = names[current].endsWith(" ")?names[current]:names[current]+" ";
 				tools[current].runMacroTool(name+"Options");
 			}
+			if (isPlugInTool(current) && isRightClick) {
+				tools[current].showPopupMenu(e, this);
+			}
 		} else { //double click
 			if (isMacroTool(current)) {
 				String name = names[current].endsWith(" ")?names[current]:names[current]+" ";
