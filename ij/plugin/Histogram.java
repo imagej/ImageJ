@@ -113,10 +113,10 @@ public class Histogram implements PlugIn, TextListener {
 		int digits = 2;
 		if (xMin==(int)xMin && xMax==(int)xMax)
 			digits = 0;
-		gd.addNumericField("X_Min:", xMin, digits, fwidth, null);
-		gd.addNumericField("X_Max:", xMax, digits, fwidth, null);
+		gd.addNumericField("X_min:", xMin, digits, fwidth, null);
+		gd.addNumericField("X_max:", xMax, digits, fwidth, null);
 		gd.setInsets(15, 0, 10);
-		gd.addStringField("Y_Max:", yMax, 6);
+		gd.addStringField("Y_max:", yMax, 6);
 		if (stackSize>1)
 			gd.addCheckbox("Stack histogram", stackHistogram);
 		

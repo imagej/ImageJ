@@ -5,18 +5,22 @@
 </head>
 <body>
 
-<li> <u>1.49e 13 July 2014</u>
+<li> <u>1.49e 15 July 2014</u>
 <ul>
 <li> Added the <i>Edit&gt;Options&gt;Startup</i> command.
 <li> Thanks to Philippe Carl, the ROI Manager now insures that a selection
 activated by clicking on its label in the image is made visible in the list.
-<li> Thanks to Ilan Tal, plugin tools now support right-click popup menus.
+<li> Thanks to Ilan Tal, plugin tools can now have right-click popup menus.
 <li> Thanks to Neil Fazel, fixed a bug that caused error bars added using the
 Plot.add() macro function to not appear if the data points were added using Plot.add()
 (<a href="macros/examples/ErrorBars2.txt">example</a>).
 <li> Thanks to Marc Lartaud and Michael Schmid, fixed a bug that caused
 Feret's diameter of selections created with the selection brush tool on spatially
 calibrated images to be reported in pixels.
+<li> Thanks to Vytas Bindokas, fixed a bug that caused <i>Edit&gt;Selection&gt;Create Mask</i>
+to create a blank mask when it was used with a thresholded image in "select all" mode.
+<li> Thanks to Gilles Carpentier, fixed a v1.48 regression that caused IJ.log("\n") to not
+add a blank line to the Log window.
 </ul> 
 <a href="http://imagej.nih.gov/ij">Home</a>
 </body>

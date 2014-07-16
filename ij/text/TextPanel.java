@@ -196,6 +196,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if (text==null) text="null";
 		if (vData==null)
 			setColumnHeadings("");
+		if (text.length()==1 && text.equals("\n"))
+			text = "";
 		String[] lines = text.split("\n");
 		for (int i=0; i<lines.length; i++)
 			appendWithoutUpdate(lines[i]);
