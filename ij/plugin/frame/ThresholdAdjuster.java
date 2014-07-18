@@ -439,9 +439,16 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	void updatePlot(ImageProcessor ip) {
-		plot.minThreshold = ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD ?
-				-1 : (int)Math.round(minThreshold);
-		plot.maxThreshold = (int)Math.round(maxThreshold);
+		int min = (int)Math.round(minThreshold);
+		if (min<0) min=0;
+ 		if (min>255) min=255;
+ 		if (ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD)
+			min = -1; 
+ 		int max = (int)Math.round(maxThreshold);
+ 		if (max<0) max=0;
+ 		if (max>255) max=255;
+		plot.minThreshold = min;
+		plot.maxThreshold = max;
 		plot.mode = mode;
 		plot.repaint();
 	}
@@ -603,8 +610,10 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		ip.resetMinAndMax();
 		double minValue = ip.getMin();
 		double maxValue = ip.getMax();
-		if (level1<minValue) level1 = minValue;
-		if (level2>maxValue) level2 = maxValue;
+		if (imp.getStackSize()==1) {
+			if (level1<minValue) level1 = minValue;
+			if (level2>maxValue) level2 = maxValue;
+		}
 		IJ.wait(500);
 		ip.setThreshold(level1, level2, lutColor);
 		ip.setSnapshotPixels(null); // disable undo
@@ -937,21 +946,21 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 		}
 		g.setColor(Color.black);
  		g.drawRect(0, 0, WIDTH+1, HEIGHT+1);
- 		if (minThreshold>=0 && minThreshold<=255 && maxThreshold>=0 && maxThreshold<=255) {
-			if (mode==ThresholdAdjuster.OVER_UNDER) {
-				g.setColor(Color.blue);
-	 			g.drawRect(0, 0, minThreshold, HEIGHT+1);
-	 			g.drawRect(0, 1, minThreshold, 1);
-	 			g.setColor(Color.green);
-	 			g.drawRect(maxThreshold+2, 0, WIDTH-maxThreshold-1, HEIGHT+1);
-	 			g.drawLine(maxThreshold+2, 1, WIDTH+1,1);
-				return;
-			}
-			if (mode==ThresholdAdjuster.RED)
-				g.setColor(Color.red);
- 			g.drawRect(minThreshold+1, 0, maxThreshold-minThreshold, HEIGHT+1);
-	 		g.drawLine(minThreshold+1, 1, maxThreshold+1, 1);
- 		}
+ 		if (minThreshold==-1)
+ 			return;
+		if (mode==ThresholdAdjuster.OVER_UNDER) {
+			g.setColor(Color.blue);
+			g.drawRect(0, 0, minThreshold, HEIGHT+1);
+			g.drawRect(0, 1, minThreshold, 1);
+			g.setColor(Color.green);
+			g.drawRect(maxThreshold+2, 0, WIDTH-maxThreshold-1, HEIGHT+1);
+			g.drawLine(maxThreshold+2, 1, WIDTH+1,1);
+			return;
+		}
+		if (mode==ThresholdAdjuster.RED)
+			g.setColor(Color.red);
+		g.drawRect(minThreshold+1, 0, maxThreshold-minThreshold, HEIGHT+1);
+		g.drawLine(minThreshold+1, 1, maxThreshold+1, 1);
      }
 
 	public void mousePressed(MouseEvent e) {}

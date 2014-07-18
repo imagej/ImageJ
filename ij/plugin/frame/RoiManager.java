@@ -2219,6 +2219,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private boolean record() {
 		return Recorder.record && allowRecording && !IJ.isMacro();
 	}
+	
+	private boolean recordInEvent() {
+		return Recorder.record && !IJ.isMacro();
+	}
 
 	public void allowRecording(boolean allow) {
 		this.allowRecording = allow;
@@ -2233,7 +2237,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (e.getValueIsAdjusting())
 			return;
 		if (getCount()==0) {
-			if (record())
+			if (recordInEvent())
 				Recorder.record("roiManager", "Deselect");
 			return;
 		}
@@ -2248,7 +2252,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				restore(imp, selected[0], true);
 				imageID = imp!=null?imp.getID():0;
 			}
-			if (record()) {
+			if (recordInEvent()) {
 				String arg = Arrays.toString(selected);
 				if (!arg.startsWith("[") || !arg.endsWith("]"))
 					return;
