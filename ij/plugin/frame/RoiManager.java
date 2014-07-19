@@ -205,7 +205,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (command.equals("Draw"))
 			drawOrFill(DRAW);
 		else if (command.equals("Deselect"))
-			select(-1);
+			deselect();
 		else if (command.equals(moreButtonLabel)) {
 			Point ploc = panel.getLocation();
 			Point bloc = moreButton.getLocation();
@@ -1835,7 +1835,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (Interpreter.isBatchMode()) IJ.wait(250);
 		} else if (cmd.equals("deselect")||cmd.indexOf("all")!=-1) {
 			if (IJ.isMacOSX()) ignoreInterrupts = true;
-			select(-1);
+			deselect();
 			IJ.wait(50);
 		} else if (cmd.equals("reset")) {
 			reset();
@@ -2011,13 +2011,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Assigns the ROI at the specified index to 'imp'. */
 	public void select(ImagePlus imp, int index) {
 		selectedIndexes = null;
-		int n = getCount();
 		if (index<0) {
-			for (int i=0; i<n; i++)
-				list.clearSelection();
-			if (record()) Recorder.record("roiManager", "Deselect");
+			deselect();
 			return;
 		}
+		int n = getCount();
 		if (index>=n) return;
 		boolean mm = list.getSelectionMode() == ListSelectionModel.MULTIPLE_INTERVAL_SELECTION;
 		if (mm) list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -2058,29 +2056,20 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 	}
 	
+	public void deselect() {
+		int n = getCount();
+		for (int i=0; i<n; i++)
+			list.clearSelection();
+		if (record()) Recorder.record("roiManager", "Deselect");
+		return;
+	}
+
 	public void setEditMode(ImagePlus imp, boolean editMode) {
 		showAllCheckbox.setState(editMode);
 		labelsCheckbox.setState(editMode);
 		showAll(editMode?LABELS:SHOW_NONE);
 	}
 	
-	/*
-	void selectAll() {
-		boolean allSelected = true;
-		int count = getCount();
-		for (int i=0; i<count; i++) {
-			if (!list.isIndexSelected(i))
-				allSelected = false;
-		}
-		if (allSelected)
-			select(-1);
-		else {
-			for (int i=0; i<count; i++)
-				if (!list.isSelected(i)) list.select(i);
-		}
-	}
-	*/
-
 	/** Overrides PlugInFrame.close(). */
 	public void close() {
 		super.close();
@@ -2280,7 +2269,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
     		if (imageID!=0 && imp.getID()!=imageID) {
     			showAll(SHOW_NONE);
 				showAllCheckbox.setState(false);
-				select(-1);
+				deselect();
 				imageID = 0;
     		}
     	}

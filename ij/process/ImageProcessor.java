@@ -431,12 +431,10 @@ public abstract class ImageProcessor implements Cloneable {
 		this.minThreshold = minThreshold;
 		this.maxThreshold = maxThreshold;
 		lutUpdateMode = lutUpdate;
-
 		if (minThreshold==NO_THRESHOLD) {
 			resetThreshold();
 			return;
 		}
-
 		if (lutUpdate==NO_LUT_UPDATE)
 			return;
 		if (rLUT1==null) {
@@ -463,34 +461,20 @@ public abstract class ImageProcessor implements Cloneable {
 					bLUT2[i] = bLUT1[i];
 				}
 			}
-
 		else if (lutUpdate==BLACK_AND_WHITE_LUT) {
 			// updated in v1.43i by Gabriel Lindini to use blackBackground setting
-
 			byte  foreground = Prefs.blackBackground?(byte)255:(byte)0;
-
 			byte background = (byte)(255 - foreground);
-
 			for (int i=0; i<256; i++) {
-
 				if (i>=t1 && i<=t2) {
-
 					rLUT2[i] = foreground;
-
 					gLUT2[i] = foreground;
-
 					bLUT2[i] = foreground;
-
 				} else {
-
 					rLUT2[i] = background;
-
 					gLUT2[i] =background;
-
 					bLUT2[i] =background;
-
 				}
-
 			}
 		} else {
 			for (int i=0; i<256; i++) {
@@ -498,7 +482,6 @@ public abstract class ImageProcessor implements Cloneable {
 					rLUT2[i] = rLUT1[i];
 					gLUT2[i] = gLUT1[i];
 					bLUT2[i] = bLUT1[i];
-
 				} else if (i>t2) {
 					rLUT2[i] = (byte)overRed;
 					gLUT2[i] = (byte)overGreen;
@@ -510,7 +493,6 @@ public abstract class ImageProcessor implements Cloneable {
 				}
 			}
 		}
-
 		cm = new IndexColorModel(8, 256, rLUT2, gLUT2, bLUT2);
 		newPixels = true;
 		source = null;
