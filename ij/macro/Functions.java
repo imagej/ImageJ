@@ -1350,8 +1350,13 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();
 		else
 			s2 = getLastString();
-		if (s1==null) return null;
-		String[] strings = (s2==null||s2.equals(""))?Tools.split(s1):Tools.split(s1, s2);
+		if (s1==null)
+			return null;
+		String[] strings = null;
+		if (s2!=null && s2.equals(","))
+			strings = s1.split(",");
+		else 
+			strings = (s2==null||s2.equals(""))?Tools.split(s1):Tools.split(s1, s2);
     	Variable[] array = new Variable[strings.length];
     	for (int i=0; i<strings.length; i++)
     		array[i] = new Variable(0, 0.0, strings[i]);

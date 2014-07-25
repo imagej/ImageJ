@@ -9,7 +9,7 @@ import java.util.Vector;
 
 /** This plugin implements the Edit/Options/Startup command. */
 	public class Startup implements PlugIn, ItemListener {
-		private static String KEY = "startup.macro";
+		private static String NAME = "RunAtStartup.ijm";
 		private GenericDialog gd;
 		private static final String[] code = {
 			"[Select from list]",
@@ -33,30 +33,15 @@ import java.util.Vector;
 	}
 	
 	public String getStartupMacro() {
-		StringBuilder sb = new StringBuilder();
-		originalLength = 0;
-		for (int i=0; i<100; i++) {
-			String line = Prefs.get(KEY+(i/10)%10+i%10, null);
-			if (line==null)
-				break;
-			else {
-				originalLength++;
-				sb.append(line);
-				sb.append("\n");
-			}
-		}
-		return sb.toString();
+		String macro = IJ.openAsString(IJ.getDirectory("macros")+NAME);
+		if (macro==null || macro.startsWith("Error:"))
+			return null;
+		else
+			return macro;
 	}
 		
 	private void saveStartupMacro(String macro) {
-		String[] lines = macro.split("\n");
-		int n = Math.max(lines.length, originalLength);
-		for (int i=0; i<n; i++) {
-			if (i<lines.length)
-				Prefs.set(KEY+(i/10)%10+i%10, lines[i]);
-			else
-				Prefs.set(KEY+(i/10)%10+i%10, null);
-		}
+		IJ.saveString(macro, IJ.getDirectory("macros")+NAME);
 	}
 
 	private boolean showDialog() {

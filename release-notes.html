@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.49e 18 July 2014</u>
+<li> <u>1.49e 24 July 2014</u>
 <ul>
 <li> Added the <i>Edit&gt;Options&gt;Startup</i> command.
 <li> Thanks to Philippe Carl, the ROI Manager now insures that a selection
@@ -23,11 +23,14 @@ calibrated images to be reported in pixels.
 to create a blank mask when it was used with a thresholded image in "select all" mode.
 <li> Thanks to Nikolaus Szeverenyi, fixed a bug that caused upper threshold values
 entered into the <i>Image&gt;Adjust&gt;Threshold</i> "Set" dialog to be reset to the
-highest pixel value in the image. 
+highest pixel value in the image.
+<li> Thanks to Gabriel Schweighause, fixed a bug that caused the split() macro function
+to not correctly parse CSV (coma separated) files with "empty" cells.
 <li> Thanks to Gilles Carpentier, fixed a v1.48 regression that caused IJ.log("\n") to not
 add a blank line to the Log window.
 <li> Thanks to Christophe Deroulers, fixed a v1.49c regression that caused
 ROI Manager list selections to not be recorded.
+<li> parsing tables with "empty" cells from csv-files does not work
 </ul> 
 <a href="http://imagej.nih.gov/ij">Home</a>
 </body>
