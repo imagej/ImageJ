@@ -652,7 +652,7 @@ shortcutsBroken = false;
 		else if ("Install Macros".equals(what))
 			installMacros(ta.getText(), true);
 		else if ("Macro Functions...".equals(what))
-			IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+"/developer/macro/functions.html");
+			showMacroFunctions();
 		else if ("Function Finder...".equals(what))
 			functionFinder = new FunctionFinder(this);
 		else if ("Evaluate JavaScript".equals(what))
@@ -710,6 +710,15 @@ shortcutsBroken = false;
 		}
 	}
 	
+	private void showMacroFunctions() {
+		String url= "/developer/macro/functions.html";
+		String selText = ta.getSelectedText().replace("\n", " ");
+		String[] selectedWords = Tools.split(selText, "/,(,[\"\'&+");
+		if (selectedWords.length==1 && selectedWords[0].length()>0) 
+			url += "#" +selectedWords[0];//append selection as hash tag
+		IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+url);
+	}
+
 	final void runToInsertionPoint() {
 		Interpreter interp = Interpreter.getInstance();
 		if (interp==null)
