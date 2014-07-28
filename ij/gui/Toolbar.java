@@ -1570,18 +1570,27 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (doNotSavePrefs)
 			return;
 		boolean ok = isBuiltInTool(names[id]);
+		String prefsName = instance.names[id];
 		if (!ok) {
 			Hashtable commands = Menus.getCommands();
 			String name = names[id];
 			if (name.endsWith("Menu Tool"))
 				name = name.substring(0, name.length()-5);
 			ok = commands!=null && commands.get(name)!=null;
+			if (!ok) { // is there a hint in parens?
+				int i = name.indexOf(" (");
+				if (i>0) {
+					name = name.substring(0, i);
+					ok = commands!=null && commands.get(name)!=null;
+					if (ok) prefsName=name;
+				}
+			}
 		}
 		if (!ok)
 			return;
 		int index = id - CUSTOM1;
 		String key = TOOL_KEY + (index/10)%10 + index%10;
-		Prefs.set(key, instance.names[id]);
+		Prefs.set(key, prefsName);
 	}
 	
 	private boolean isBuiltInTool(String name) {
