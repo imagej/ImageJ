@@ -57,8 +57,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected double asp_bk; //saves aspect ratio if resizing takes roi very small
 	protected ImageProcessor cachedMask;
 	protected Color handleColor = Color.white;
-	protected Color  strokeColor;
-	protected Color instanceColor; //obsolete; replaced by  strokeColor
+	protected Color	 strokeColor;
+	protected Color instanceColor; //obsolete; replaced by	strokeColor
 	protected Color fillColor;
 	protected BasicStroke stroke;
 	protected boolean nonScalable;
@@ -424,59 +424,160 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return getInterpolatedPolygon(p, interval, smooth);
 	}
 
+	 /**
+	 * Returns, as a FloatPolygon, an interpolated version of this selection
+	 * with points spaced abs('interval') pixels apart. If 'smooth' is true, traced
+	 * and freehand selections are first smoothed using a 3 point running
+	 * average. 
+	 * If 'interval' is negative, the program is allowed to decrease abs('interval') 
+	 * so that the last segment will hit the end point
+	 */
 	protected FloatPolygon getInterpolatedPolygon(FloatPolygon p, double interval, boolean smooth) {
+		boolean allowToAdjust = interval < 0;
+		interval = Math.abs(interval);
 		boolean isLine = this.isLine();
 		double length = p.getLength(isLine);
-		int npoints2 = (int)((length*1.5)/interval);
-		float[] xpoints2 = new float[npoints2];
-		float[] ypoints2 = new float[npoints2];
-		xpoints2[0] = p.xpoints[0];
-		ypoints2[0] = p.ypoints[0];
-		int n=1, n2;
-		double inc = 0.01;
-		double distance=0.0, distance2=0.0, dx=0.0, dy=0.0, xinc, yinc;
-		double x, y, lastx, lasty, x1, y1, x2=p.xpoints[0], y2=p.ypoints[0];
+ 
 		int npoints = p.npoints;
-		if (!isLine) npoints++;
-		for (int i=1; i<npoints; i++) {
-			x1=x2; y1=y2;
-			x=x1; y=y1;
-			if (i<p.npoints) {
-				x2=p.xpoints[i];
-				y2=p.ypoints[i];
-			} else {
-				x2=p.xpoints[0];
-				y2=p.ypoints[0];
-			}
-			dx = x2-x1;
-			dy = y2-y1;
-			distance = Math.sqrt(dx*dx+dy*dy);
-			xinc = dx*inc/distance;
-			yinc = dy*inc/distance;
-			lastx=xpoints2[n-1]; lasty=ypoints2[n-1];
-			n2 = (int)(distance/inc);
-			int max = xpoints2.length-1;
-			if (npoints==2) {
-				n2 += 0.5/inc;
-				max++;
-			}
-			do {
-				dx = x-lastx;
-				dy = y-lasty;
-				distance2 = Math.sqrt(dx*dx+dy*dy);
-				//IJ.log(i+"   "+IJ.d2s(xinc,5)+"   "+IJ.d2s(yinc,5)+"   "+IJ.d2s(distance,2)+"   "+IJ.d2s(distance2,2)+"   "+IJ.d2s(x,2)+"   "+IJ.d2s(y,2)+"   "+IJ.d2s(lastx,2)+"   "+IJ.d2s(lasty,2)+"   "+n+"   "+n2);
-				if (distance2>=interval-inc/2.0 && n<max) {
-					xpoints2[n] = (float)x;
-					ypoints2[n] = (float)y;
-					//IJ.log("--- "+IJ.d2s(x,2)+"   "+IJ.d2s(y,2)+"  "+n);
-					n++;
-					lastx=x; lasty=y;
-				}
-				x += xinc;
-				y += yinc;
-			} while (--n2>0);
+		if (!isLine) {//**append (and later remove) closing point to end of array
+			npoints++;
+			p.xpoints = java.util.Arrays.copyOf(p.xpoints, npoints);
+			p.xpoints[npoints - 1] = p.xpoints[0];
+			p.ypoints = java.util.Arrays.copyOf(p.ypoints, npoints);
+			p.ypoints[npoints - 1] = p.ypoints[0];
 		}
-		return new FloatPolygon(xpoints2, ypoints2, n);
+		int npoints2 = (int) (10 + (length * 1.5) / interval);//allow some headroom
+
+		double tryInterval = interval;
+		double minDiff = 1e9;
+		double bestInterval = 0;
+		int srcPtr = 0;//index of source polygon
+		int destPtr = 0;//index of destination polygon
+		double[] destXArr = new double[npoints2];
+		double[] destYArr = new double[npoints2];
+		int nTrials = 50;
+		int trial = 0;
+		while (trial <= nTrials) {
+			destXArr[0] = p.xpoints[0];
+			destYArr[0] = p.ypoints[0];
+			srcPtr = 0;
+			destPtr = 0;
+			double xA = p.xpoints[0];//start of current segment
+			double yA = p.ypoints[0];
+
+			while (srcPtr < npoints - 1) {//collect vertices
+				double xC = destXArr[destPtr];//center circle
+				double yC = destYArr[destPtr];
+				double xB = p.xpoints[srcPtr + 1];//end of current segment
+				double yB = p.ypoints[srcPtr + 1];
+				double[] intersections = lineCircleIntersection(xA, yA, xB, yB, xC, yC, tryInterval, true);
+				if (intersections.length >= 2) {
+					xA = intersections[0];//only use first of two intersections
+					yA = intersections[1];
+					destPtr++;
+					destXArr[destPtr] = xA;
+					destYArr[destPtr] = yA;
+				} else {
+					srcPtr++;//no intersection found, pick next segment
+					xA = p.xpoints[srcPtr];
+					yA = p.ypoints[srcPtr];
+				}
+			}
+			destPtr++;
+			destXArr[destPtr] = p.xpoints[npoints - 1];
+			destYArr[destPtr] = p.ypoints[npoints - 1];
+			destPtr++;
+			if (!allowToAdjust) {
+				if (isLine)
+					destPtr--;
+				break;
+			}
+
+			int nSegments = destPtr - 1;
+			double dx = destXArr[destPtr - 2] - destXArr[destPtr - 1];
+			double dy = destYArr[destPtr - 2] - destYArr[destPtr - 1];
+			double lastSeg = Math.sqrt(dx * dx + dy * dy);
+
+			double diff = lastSeg - tryInterval;//always <= 0
+			if (Math.abs(diff) < minDiff) {
+				minDiff = Math.abs(diff);
+				bestInterval = tryInterval;
+			}
+			double feedBackFactor = 0.66;//factor <1: applying soft successive approximation
+			tryInterval = tryInterval + feedBackFactor * diff / nSegments;
+			//stop if tryInterval < 80% of interval, OR if last segment differs < 0.05 pixels
+			if ((tryInterval < 0.8 * interval || Math.abs(diff) < 0.05 || trial == nTrials - 1) && trial < nTrials) {
+				trial = nTrials;//run one more loop with bestInterval to get best polygon
+				tryInterval = bestInterval;
+			} else
+				trial++;
+		}
+		if (!isLine) //**remove closing point from end of array
+			destPtr--;
+		float[] xPoints = new float[destPtr];
+		float[] yPoints = new float[destPtr];
+		for (int jj = 0; jj < destPtr; jj++) {
+			xPoints[jj] = (float) destXArr[jj];
+			yPoints[jj] = (float) destYArr[jj];
+		}
+		FloatPolygon fPoly = new FloatPolygon(xPoints, yPoints);
+		return fPoly;
+	}
+	
+	/**
+	 * <pre>
+	 * Calculates intersections of a line segment with a circle
+	 * Author N.Vischer
+	 * ax, ay, bx, by: points A and B of line segment
+	 * cx, cy, rad: Circle center and radius.
+	 * ignoreOutside: if true, ignores intersections outside the line segment A-B
+	 * @Returns an array of 0, 2 or 4 coordinates (for 0, 1, or 2 intersection
+	 * points). If two intersection points are returned, they are listed in travel
+	 * direction A->B
+	 * </pre>
+	 */
+	public static double[] lineCircleIntersection(double ax, double ay, double bx, double by, double cx, double cy, double rad, boolean ignoreOutside) {
+		//rotates & translates points A, B and C, creating new points A2, B2 and C2.
+		//A2 is then on origin, and B2 is on positive x-axis 
+		
+		double dxAC = cx - ax;
+		double dyAC = cy - ay;
+		double lenAC = Math.sqrt(dxAC * dxAC + dyAC * dyAC);
+
+		double dxAB = bx - ax;
+		double dyAB = by - ay;
+
+		//calculate B2 and C2:
+		double xB2 = Math.sqrt(dxAB * dxAB + dyAB * dyAB);
+
+		double phi1 = Math.atan2(dyAB, dxAB);//amount of rotation
+		double phi2 = Math.atan2(dyAC, dxAC);
+		double phi3 = phi1 - phi2;
+		double xC2 = lenAC * Math.cos(phi3);
+		double yC2 = lenAC * Math.sin(phi3);//rotation & translation is done
+		if (Math.abs(yC2) > rad)
+			return new double[0];//no intersection found
+		double halfChord = Math.sqrt(rad * rad - yC2 * yC2);
+		double sectOne = xC2 - halfChord;//first intersection point, still on x axis
+		double sectTwo = xC2 + halfChord;//second intersection point, still on x axis
+		double[] xyCoords = new double[4];
+		int ptr = 0;
+		if ((sectOne >= 0 && sectOne <= xB2) || !ignoreOutside) {
+			double sectOneX = Math.cos(phi1) * sectOne + ax;//undo rotation and translation
+			double sectOneY = Math.sin(phi1) * sectOne + ay;
+			xyCoords[ptr++] = sectOneX;
+			xyCoords[ptr++] = sectOneY;
+		}
+		if ((sectTwo >= 0 && sectTwo <= xB2) || !ignoreOutside) {
+			double sectTwoX = Math.cos(phi1) * sectTwo + ax;//undo rotation and translation
+			double sectTwoY = Math.sin(phi1) * sectTwo + ay;
+			xyCoords[ptr++] = sectTwoX;
+			xyCoords[ptr++] = sectTwoY;
+		}
+		if (halfChord == 0 && ptr > 2) //tangent line returns only one intersection
+			ptr = 2;
+		xyCoords = java.util.Arrays.copyOf(xyCoords,ptr);
+		return xyCoords;
 	}
 
 	/** Returns a copy of this roi. See Thinking is Java by Bruce Eckel
@@ -1022,7 +1123,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	*/
 	public void drawPixels() {
 		if (imp!=null)
-			drawPixels(imp.getProcessor());	
+			drawPixels(imp.getProcessor()); 
 	}
 
 	/** Draws the selection outline on the specified ImageProcessor.
@@ -1056,7 +1157,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return rr.contains(x, y);
 	}
 		
-	/** Returns a handle number if the specified screen coordinates are  
+	/** Returns a handle number if the specified screen coordinates are	 
 		inside or near a handle, otherwise returns -1. */
 	public int isHandle(int sx, int sy) {
 		if (clipboard!=null || ic==null) return -1;
@@ -1127,33 +1228,33 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		modifyRoi();
 	}
 
-    void modifyRoi() {
-    	if (previousRoi==null || previousRoi.modState==NO_MODS || imp==null)
-    		return;
-		//IJ.log("modifyRoi: "+ type+"  "+modState+" "+previousRoi.type+"  "+previousRoi.modState);
-    	if (type==POINT || previousRoi.getType()==POINT) {
-    		if (type==POINT && previousRoi.getType()==POINT)
-    			addPoint();
-    		else if (isArea() && previousRoi.getType()==POINT && previousRoi.modState==SUBTRACT_FROM_ROI)
-    			subtractPoints();
-    		return;
-    	}
+	void modifyRoi() {
+		if (previousRoi==null || previousRoi.modState==NO_MODS || imp==null)
+			return;
+		//IJ.log("modifyRoi: "+ type+"	"+modState+" "+previousRoi.type+"  "+previousRoi.modState);
+		if (type==POINT || previousRoi.getType()==POINT) {
+			if (type==POINT && previousRoi.getType()==POINT)
+				addPoint();
+			else if (isArea() && previousRoi.getType()==POINT && previousRoi.modState==SUBTRACT_FROM_ROI)
+				subtractPoints();
+			return;
+		}
 		Roi previous = (Roi)previousRoi.clone();
 		previous.modState = NO_MODS;
-        ShapeRoi s1  = null;
-        ShapeRoi s2 = null;
-        if (previousRoi instanceof ShapeRoi)
-            s1 = (ShapeRoi)previousRoi;
-        else
-            s1 = new ShapeRoi(previousRoi);
-        if (this instanceof ShapeRoi)
-            s2 = (ShapeRoi)this;
-        else
-            s2 = new ShapeRoi(this);
-        if (previousRoi.modState==ADD_TO_ROI)
-        	s1.or(s2);
-        else
-        	s1.not(s2);
+		ShapeRoi s1	 = null;
+		ShapeRoi s2 = null;
+		if (previousRoi instanceof ShapeRoi)
+			s1 = (ShapeRoi)previousRoi;
+		else
+			s1 = new ShapeRoi(previousRoi);
+		if (this instanceof ShapeRoi)
+			s2 = (ShapeRoi)this;
+		else
+			s2 = new ShapeRoi(this);
+		if (previousRoi.modState==ADD_TO_ROI)
+			s1.or(s2);
+		else
+			s1.not(s2);
 		previousRoi.modState = NO_MODS;
 		Roi[] rois = s1.getRois();
 		if (rois.length==0) return;
@@ -1168,9 +1269,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			roi2.copyAttributes(previousRoi);
 		imp.setRoi(roi2);
 		previousRoi = previous;
-    }
-    
-    void addPoint() {
+	}
+	
+	void addPoint() {
 		if (!(type==POINT && previousRoi.getType()==POINT)) {
 			modState = NO_MODS;
 			imp.draw();
@@ -1181,9 +1282,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		Rectangle r = getBounds();
 		FloatPolygon poly = getFloatPolygon();
 		imp.setRoi(p1.addPoint(poly.xpoints[0], poly.ypoints[0]));
-    }
-    
-    void subtractPoints() {
+	}
+	
+	void subtractPoints() {
 		previousRoi.modState = NO_MODS;
 		PointRoi p1 = (PointRoi)previousRoi;
 		PointRoi p2 = p1.subtractPoints(this);
@@ -1191,22 +1292,22 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			imp.setRoi(p1.subtractPoints(this));
 		else
 			imp.deleteRoi();
-    }
+	}
 
-    /** If 'add' is true, adds this selection to the previous one. If 'subtract' is true, subtracts 
-    	it from the previous selection. Called by the IJ.doWand() method, and the makeRectangle(), 
-    	makeOval(), makePolygon() and makeSelection() macro functions. */
-    public void update(boolean add, boolean subtract) {
-     	if (previousRoi==null) return;
-    	if (add) {
+	/** If 'add' is true, adds this selection to the previous one. If 'subtract' is true, subtracts 
+		it from the previous selection. Called by the IJ.doWand() method, and the makeRectangle(), 
+		makeOval(), makePolygon() and makeSelection() macro functions. */
+	public void update(boolean add, boolean subtract) {
+		if (previousRoi==null) return;
+		if (add) {
 			previousRoi.modState = ADD_TO_ROI;
-   			modifyRoi();
+			modifyRoi();
 		} else if (subtract) {
 			previousRoi.modState = SUBTRACT_FROM_ROI;
-   			modifyRoi();
+			modifyRoi();
 		} else
 			previousRoi.modState = NO_MODS;
-     }
+	 }
 
 	protected void showStatus() {
 		if (imp==null) return;
@@ -1327,7 +1428,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	 * @see #setStrokeColor(Color)
 	 */
 	public Color getStrokeColor() {
-		return  strokeColor;
+		return	strokeColor;
 	}
 
 	/** Sets the fill color used to display this ROI, or set to null to display it transparently.
@@ -1355,7 +1456,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 	
 	/** Copy the attributes (outline color, fill color, outline width) 
-		of  'roi2' to the this selection. */
+		of	'roi2' to the this selection. */
 	public void copyAttributes(Roi roi2) {
 		this. strokeColor = roi2. strokeColor;
 		this.fillColor = roi2.fillColor;
@@ -1377,9 +1478,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	public void setLineWidth(int width) {
 		setStrokeWidth(width) ;
 	}
-        
+		
 	public void updateWideLine(float width) {
-		//IJ.log("updateWideLine "+isLine()+"  "+isDrawingTool()+"  "+getType());
+		//IJ.log("updateWideLine "+isLine()+"  "+isDrawingTool()+"	"+getType());
 		if (isLine()) {
 			wideLine = true;
 			setStrokeWidth(width);
@@ -1390,7 +1491,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		}
 	}
 
-    /** Set 'nonScalable' true to have TextRois in a display 
+	/** Set 'nonScalable' true to have TextRois in a display 
 		list drawn at a fixed location and size. */
 	public void setNonScalable(boolean nonScalable) {
 		this.nonScalable = nonScalable;
@@ -1585,21 +1686,21 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 
 	/** Returns 'true' if this is a line selection. */
-    public boolean isLine() {
-        return type>=LINE && type<=FREELINE;
-    }
-    
+	public boolean isLine() {
+		return type>=LINE && type<=FREELINE;
+	}
+	
 	/** Returns 'true' if this is an ROI primarily used from drawing
 		(e.g., TextRoi or Arrow). */
-    public boolean isDrawingTool() {
-        //return cornerDiameter>0;
-        return false;
-    }
-    
-    protected double getMagnification() {
-    	return ic!=null?ic.getMagnification():1.0;
-    }
-    
+	public boolean isDrawingTool() {
+		//return cornerDiameter>0;
+		return false;
+	}
+	
+	protected double getMagnification() {
+		return ic!=null?ic.getMagnification():1.0;
+	}
+	
 	/** Convenience method that converts Roi type to a human-readable form. */
 	public String getTypeAsString() {
 		String s="";
@@ -1662,8 +1763,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return overlay!=null && overlay.contains(this);
 	}
 
-    /** Checks whether two rectangles are equal. */
-    public boolean equals(Object obj) {
+	/** Checks whether two rectangles are equal. */
+	public boolean equals(Object obj) {
 		if (obj instanceof Roi) {
 			Roi roi2 = (Roi)obj;
 			if (type!=roi2.getType()) return false;
@@ -1672,7 +1773,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			return true;
 		} else
 			return false;
-    }
+	}
 
 	protected int screenX(int ox) {return ic!=null?ic.screenX(ox):ox;}
 	protected int screenY(int oy) {return ic!=null?ic.screenY(oy):oy;}
@@ -1833,7 +1934,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 
 	/** Returns a hashcode for this Roi that typically changes 
-		if it is moved,  even though it is still the same object. */
+		if it is moved,	 even though it is still the same object. */
 	public int getHashCode() {
 		return hashCode() ^ (new Double(getXBase()).hashCode()) ^
 			Integer.rotateRight(new Double(getYBase()).hashCode(),16);

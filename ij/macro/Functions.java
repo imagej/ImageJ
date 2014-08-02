@@ -1353,14 +1353,25 @@ public class Functions implements MacroConstants, Measurements {
 		if (s1==null)
 			return null;
 		String[] strings = null;
-		if (s2!=null && s2.equals(","))
-			strings = s1.split(",");
-		else 
+		if (s1.length()>0 && s2!=null && s2.length()==1 && !s2.equals(" ")) {
+			if (isSpecialCharacter(s2))
+				s2 = "\\"+s2;
+			strings = s1.split(s2,-1);
+		} else 
 			strings = (s2==null||s2.equals(""))?Tools.split(s1):Tools.split(s1, s2);
     	Variable[] array = new Variable[strings.length];
     	for (int i=0; i<strings.length; i++)
     		array[i] = new Variable(0, 0.0, strings[i]);
     	return array;
+	}
+	
+	private boolean isSpecialCharacter(String s) {
+		final String[] specialCharacters = {"[","\\","^","$",".","|","?","*","+","(",")"};
+		for (int i=0; i<specialCharacters.length; i++) {
+			if (s.equals(specialCharacters[i]))
+				return true;
+		}
+		return false;
 	}
 
 	Variable[] getFileList() {

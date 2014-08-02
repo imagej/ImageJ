@@ -14,6 +14,7 @@ import java.util.Vector;
 		private static final String[] code = {
 			"[Select from list]",
 			"Black background",
+			"Debug mode",
 			"10-bit (0-1023) range",
 			"12-bit (0-4095) range"
 		};
@@ -46,7 +47,7 @@ import java.util.Vector;
 
 	private boolean showDialog() {
 		gd = new GenericDialog("Startup Macro");
-		String text = "Macro code contained in the following text\narea will be executed when ImageJ starts up.";
+		String text = "Macro code contained in this text area\nexecutes when ImageJ starts up.";
 		Font font = new Font("SansSerif", Font.PLAIN, 14);
 		gd.setInsets(5,15,0);
 		gd.addMessage(text, font);
@@ -77,8 +78,10 @@ import java.util.Vector;
 		if (item.equals(code[1]))
 			statement = "setOption(\"BlackBackground\", true);\n";
 		else if (item.equals(code[2]))
-			statement = "call(\"ij.ImagePlus.setDefault16bitRange\", 10);\n";
+			statement = "setOption(\"DebugMode\", true);\n";
 		else if (item.equals(code[3]))
+			statement = "call(\"ij.ImagePlus.setDefault16bitRange\", 10);\n";
+		else if (item.equals(code[4]))
 			statement = "call(\"ij.ImagePlus.setDefault16bitRange\", 12);\n";
 		if (statement!=null) {
 			TextArea ta = gd.getTextArea1();

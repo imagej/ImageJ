@@ -22,6 +22,8 @@ public class Selection implements PlugIn, Measurements {
 	private static Color linec, fillc;
 	private static int lineWidth = 1;
 	private static boolean smooth;
+	private static boolean adjust;
+
 	
 
 	public void run(String arg) {
@@ -256,13 +258,16 @@ public class Selection implements PlugIn, Measurements {
 		GenericDialog gd = new GenericDialog("Interpolate");
 		gd.addNumericField("Interval:", 1.0, 1, 4, "pixel");
 		gd.addCheckbox("Smooth", IJ.isMacro()?false:smooth);
+		gd.addCheckbox("Adjust interval to match", IJ.isMacro()?false:adjust);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		double interval = gd.getNextNumber();
 		smooth = gd.getNextBoolean();
 		Undo.setup(Undo.ROI, imp);
-		FloatPolygon poly = roi.getInterpolatedPolygon(interval, smooth);
+		adjust = gd.getNextBoolean();
+		int sign = adjust ? -1 : 1;
+		FloatPolygon poly = roi.getInterpolatedPolygon(sign*interval, smooth);
 		int t = roi.getType();
 		int type = roi.isLine()?Roi.FREELINE:Roi.FREEROI;
 		if (t==Roi.POLYGON && interval>1.0)

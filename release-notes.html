@@ -5,14 +5,17 @@
 </head>
 <body>
 
-<li> <u>1.49e 27 July 2014</u>
+<li> <u>1.49e 2 August 2014</u>
 <ul>
 <li> Added the <i>Edit&gt;Options&gt;Startup</i> command.
+<li> Thanks to Norbert Vischer, added an "Adjust interval to match" option
+to the <i>Edit&gt;Selection&gt;Interpolate</i> dialog. This option adjusts the
+interval so that the steps between the first and last point are equidistant.
 <li> Thanks to Philippe Carl, the ROI Manager now insures that a selection
 activated by clicking on its label in the image is made visible in the list.
 <li> Thanks to Ilan Tal, plugin tools can now have right-click popup menus.
-<li> Thanks to Norbert Vischer, you can now select a function name in the
-macro editor and use the <i>Macros&gt;Macro Functions</i> to
+<li> Thanks to Norbert Vischer, you can select a function name in the
+macro editor and use <i>Macros&gt;Macro Functions</i> to
 get a description of that function.
 <li> Thanks to Christophe Deroulers, added a deselect() method to the
 RoiManager class.
@@ -27,15 +30,17 @@ to create a blank mask when it was used with a thresholded image in "select all"
 <li> Thanks to Nikolaus Szeverenyi, fixed a bug that caused upper threshold values
 entered into the <i>Image&gt;Adjust&gt;Threshold</i> "Set" dialog to be reset to the
 highest pixel value in the image.
-<li> Thanks to Gabriel Schweighause, fixed a bug that caused the split() macro function
-to not correctly parse CSV (coma separated) files with "empty" cells.
+<li> Thanks to Gabriel Schweighause and Michael Schmid, fixed a bug that caused
+the split() macro function, when using single character delimiters, to not correctly
+parse strings with empty cells.
 <li> Thanks to Ilan Tal, fixed a bug that caused plugin tools with hints in parenthesis
 to not be installed when ImageJ restarted.
 <li> Thanks to Gilles Carpentier, fixed a v1.48 regression that caused IJ.log("\n") to not
 add a blank line to the Log window.
 <li> Thanks to Christophe Deroulers, fixed a v1.49c regression that caused
 ROI Manager list selections to not be recorded.
-</ul> 
+</ul>
+
 <a href="http://imagej.nih.gov/ij">Home</a>
 </body>
 </html>
