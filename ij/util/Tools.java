@@ -87,6 +87,8 @@ import java.util.Comparator;
 	
 	/** Converts carriage returns to line feeds. */
 	public static String fixNewLines(String s) {
+		if (s==null)
+			return null;
 		char[] chars = s.toCharArray();
 		for (int i=0; i<chars.length; i++)
 			{if (chars[i]=='\r') chars[i] = '\n';}

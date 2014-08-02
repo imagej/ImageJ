@@ -409,19 +409,6 @@ public class Plot {
 		drawVerticalErrorBars(Tools.toFloat(x), Tools.toFloat(y), Tools.toFloat(errorBars));
 	}
 
-	/** Adds a set of points to the plot or adds a curve if shape is set to LINE.
-	 * @param x					the x-coodinates
-	 * @param y					the y-coodinates
-	 * @param xErrorBars 	the vertical error bars
-	 * @param yErrorBars	the horizontal error bars
-	 * @param shape			CIRCLE, X, BOX, TRIANGLE, CROSS, DOT or LINE
-	 */
-	public void addPoints(double[] x, double[] y, double[] xErrorBars, double[] yErrorBars, int shape) {
-		addPoints(Tools.toFloat(x), Tools.toFloat(y), shape);
-		drawVerticalErrorBars(Tools.toFloat(x), Tools.toFloat(y), Tools.toFloat(xErrorBars));
-		drawHorizontalErrorBars(Tools.toFloat(x), Tools.toFloat(y), Tools.toFloat(yErrorBars));
-	}
-
 	/** Adds a set of points to the plot using double ArrayLists.
 	 * Must be called before the plot is displayed. */	
 	public void addPoints(ArrayList x, ArrayList y, ArrayList z, int shape) {
@@ -536,7 +523,10 @@ public class Plot {
 
 	/** Adds vertical error bars to the plot. */
 	public void addErrorBars(float[] errorBars) {
-		this.errorBars = errorBars;
+		if (!drawPending && xValues!=null && yValues!=null)
+			drawVerticalErrorBars(xValues, yValues, errorBars);
+		else
+			this.errorBars = errorBars;
 	}
 	
 	/** Adds vertical error bars to the plot. */
@@ -551,7 +541,10 @@ public class Plot {
 
 	/** Adds  horizontal error bars to the plot. */
 	public void addHorizontalErrorBars(double[] errorBars) {
-		xErrorBars = Tools.toFloat(errorBars);
+		if (!drawPending && xValues!=null && yValues!=null)
+			drawHorizontalErrorBars(xValues, yValues, Tools.toFloat(errorBars));
+		else
+			xErrorBars = Tools.toFloat(errorBars);
 	}
 
 	/** Draws text at the specified location, where (0,0)
@@ -1099,9 +1092,9 @@ public class Plot {
 		int[] xpoints = new int[2];
 		int[] ypoints = new int[2];
 		for (int i=0; i<nPoints2; i++) {
-			xpoints[0] = xpoints[1] = LEFT_MARGIN  + (int)(((((flags&X_LOG_NUMBERS)!=0) ? Math.log10(x[i]) : x[i])-xMin)*xScale);
-			ypoints[0] = TOP_MARGIN + frame.height - (int)(((((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(y[i]) : y[i])-yMin-(((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(e[i]) : e[i]))*yScale);
-			ypoints[1] = TOP_MARGIN + frame.height - (int)(((((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(y[i]) : y[i])-yMin+(((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(e[i]) : e[i]))*yScale);
+			xpoints[0] = xpoints[1] = LEFT_MARGIN  + (int)(((((flags&X_LOG_NUMBERS)!=0) ? Math.log10(x[i]) : x[i])-xMin)*xScale+0.5);
+			ypoints[0] = TOP_MARGIN + frame.height - (int)(((((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(y[i]) : y[i])-yMin-(((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(e[i]) : e[i]))*yScale+0.5);
+			ypoints[1] = TOP_MARGIN + frame.height - (int)(((((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(y[i]) : y[i])-yMin+(((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(e[i]) : e[i]))*yScale+0.5);
 			ypoints[0] = (ypoints[0]>TOP_MARGIN + frame.height) ? TOP_MARGIN + frame.height : ypoints[0];
 			ypoints[1] = (ypoints[1]<TOP_MARGIN) ? TOP_MARGIN : ypoints[1];
 			drawPolyline(ip, xpoints,ypoints, 2, false);
@@ -1115,9 +1108,9 @@ public class Plot {
 		int[] xpoints = new int[2];
 		int[] ypoints = new int[2];
 		for (int i=0; i<nPoints2; i++) {
-			xpoints[0] = LEFT_MARGIN  + (int)(((((flags&X_LOG_NUMBERS)!=0) ? Math.log10(x[i]) : x[i])-xMin-(((flags&X_LOG_NUMBERS)!=0) ? Math.log10(e[i]) : e[i]))*xScale);
-			xpoints[1] = LEFT_MARGIN  + (int)(((((flags&X_LOG_NUMBERS)!=0) ? Math.log10(x[i]) : x[i])-xMin+(((flags&X_LOG_NUMBERS)!=0) ? Math.log10(e[i]) : e[i]))*xScale);
-			ypoints[0] = ypoints[1] = TOP_MARGIN + frame.height - (int)(((((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(y[i]) : y[i])-yMin)*yScale);
+			xpoints[0] = LEFT_MARGIN  + (int)(((((flags&X_LOG_NUMBERS)!=0) ? Math.log10(x[i]) : x[i])-xMin-(((flags&X_LOG_NUMBERS)!=0) ? Math.log10(e[i]) : e[i]))*xScale+0.5);
+			xpoints[1] = LEFT_MARGIN  + (int)(((((flags&X_LOG_NUMBERS)!=0) ? Math.log10(x[i]) : x[i])-xMin+(((flags&X_LOG_NUMBERS)!=0) ? Math.log10(e[i]) : e[i]))*xScale+0.5);
+			ypoints[0] = ypoints[1] = TOP_MARGIN + frame.height - (int)(((((flags&Y_LOG_NUMBERS)!=0) ? Math.log10(y[i]) : y[i])-yMin)*yScale+0.5);
 			xpoints[0] = (xpoints[0]<LEFT_MARGIN) ? LEFT_MARGIN : xpoints[0];
 			xpoints[1] = (xpoints[1]>LEFT_MARGIN+frame.width) ? LEFT_MARGIN+frame.width : xpoints[1];
 			drawPolyline(ip, xpoints, ypoints, 2, false);

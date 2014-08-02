@@ -626,21 +626,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		defaultValues.addElement(new Double(defaultValue/scale));
 		defaultText.addElement(tf.getText());
 		tf.setEditable(true);
-		//if (firstNumericField && firstSlider) tf.selectAll();
 		firstSlider = false;
 		
     	Panel panel = new Panel();
 		GridBagLayout pgrid = new GridBagLayout();
 		GridBagConstraints pc  = new GridBagConstraints();
 		panel.setLayout(pgrid);
-		// label
-		//pc.insets = new Insets(5, 0, 0, 0);
-		//pc.gridx = 0; pc.gridy = 0;
-		//pc.gridwidth = 1;
-		//pc.anchor = GridBagConstraints.EAST;
-		//pgrid.setConstraints(theLabel, pc);
-		//panel.add(theLabel);
-		// slider
 		pc.gridx = 0; pc.gridy = 0;
 		pc.gridwidth = 1;
 		pc.ipadx = 85;

@@ -594,8 +594,10 @@ public class ShapeRoi extends Roi {
 	/** Caculates "Feret" (maximum caliper width) and "MinFeret" (minimum caliper width). */	
 	public double[] getFeretValues() {
 		Roi[] rois = getRois();
-		if (rois!=null && rois.length==1)
+		if (rois!=null && rois.length==1) {
+			rois[0].setImage(imp);
 			return rois[0].getFeretValues();
+		}
 		double min=Double.MAX_VALUE, diameter=0.0, angle=0.0;
 		int p1=0, p2=0;
 		double pw=1.0, ph=1.0;

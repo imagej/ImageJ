@@ -9,6 +9,7 @@ import ij.text.*;
 import ij.macro.Interpreter;
 import ij.io.Opener;
 import ij.util.*;
+import ij.macro.MacroRunner;
 import java.awt.*;
 import java.util.*;
 import java.awt.event.*;
@@ -76,7 +77,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
-	public static final String VERSION = "1.49d";
+	public static final String VERSION = "1.49e";
 	public static final String BUILD = ""; 
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
@@ -176,6 +177,7 @@ public class ImageJ extends Frame implements ActionListener,
 		addWindowListener(this);
 		setFocusTraversalKeysEnabled(false);
 		m.installStartupMacroSet(); //add custom tools
+		runStartupMacro();
  		
 		Point loc = getPreferredLocation();
 		Dimension tbSize = toolbar.getPreferredSize();
@@ -206,6 +208,12 @@ public class ImageJ extends Frame implements ActionListener,
 		configureProxy();
 		if (applet==null)
 			loadCursors();
+ 	}
+ 	
+ 	private void runStartupMacro() {
+ 		String macro = (new Startup()).getStartupMacro();
+ 		if (macro!=null && macro.length()>4)
+ 			new MacroRunner(macro);
  	}
  	
  	private void loadCursors() {

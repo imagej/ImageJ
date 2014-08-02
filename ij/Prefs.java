@@ -493,7 +493,10 @@ public class Prefs {
 	public static void set(String key, String text) {
 		if (key.indexOf('.')<1)
 			throw new IllegalArgumentException("Key must have a prefix");
-		ijPrefs.put(KEY_PREFIX+key, text);
+		if (text==null)
+			ijPrefs.remove(KEY_PREFIX+key);
+		else
+			ijPrefs.put(KEY_PREFIX+key, text);
 	}
 
 	/** Saves <code>value</code> in the preferences file using 

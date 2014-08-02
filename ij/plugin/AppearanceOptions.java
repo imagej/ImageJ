@@ -4,8 +4,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.io.*;
 import ij.plugin.filter.*;
-import ij.plugin.frame.LineWidthAdjuster;
-import ij.plugin.frame.ContrastAdjuster;
+import ij.plugin.frame.*;
 import ij.measure.Calibration;
 import java.awt.*;
 
@@ -75,6 +74,14 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 				"The \"Use inverting lookup table\" option is set. Newly opened\n"+
 				"8-bit images will use an inverting LUT (white=0, black=255).");
 		}
+		int range = ImagePlus.getDefault16bitRange();
+		if (range>0 && Recorder.record) {
+			if (Recorder.scriptMode())
+				Recorder.recordCall("ImagePlus.setDefault16bitRange("+range+");");
+			else
+				Recorder.recordString("call(\"ij.ImagePlus.setDefault16bitRange\", "+range+");\n");
+		}
+
 	}
 	
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
