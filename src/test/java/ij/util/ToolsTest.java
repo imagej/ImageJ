@@ -246,8 +246,8 @@ public class ToolsTest {
 		assertEquals(-2,Tools.getDecimalPlaces(Double.MIN_VALUE, Double.MIN_VALUE));
 		assertEquals(0,Tools.getDecimalPlaces(Double.NaN, Double.NaN));
 		assertEquals(-2,Tools.getDecimalPlaces(Double.MAX_VALUE, Double.MIN_VALUE));
-		assertEquals(0,Tools.getDecimalPlaces(Double.MAX_VALUE, Double.NaN));
-		assertEquals(0,Tools.getDecimalPlaces(Double.MIN_VALUE, Double.NaN));
+		assertEquals(-2,Tools.getDecimalPlaces(Double.MAX_VALUE, Double.NaN));
+		assertEquals(-2,Tools.getDecimalPlaces(Double.MIN_VALUE, Double.NaN));
 		assertEquals(0,Tools.getDecimalPlaces(0.0, 0.0));
 		assertEquals(0,Tools.getDecimalPlaces(88.0, 88.0));
 		assertEquals(0,Tools.getDecimalPlaces(-3.0, -3.0));

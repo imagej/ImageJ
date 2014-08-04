@@ -87,25 +87,6 @@ public class ExecuterTest {
 	}
 
 	@Test
-	public void testExecuterString() {
-
-		// pass in null
-		ex = new Executer(null);
-		assertNotNull(ex);
-		assertNull(Executer.getCommand());
-
-		// pass in empty string
-		ex = new Executer("");
-		assertNotNull(ex);
-		assertNull(Executer.getCommand());
-
-		// pass in something legit
-		ex = new Executer("VisitHookahBarn");
-		assertNotNull(ex);
-		assertNull(Executer.getCommand());
-	}
-
-	@Test
 	public void testExecuterStringImagePlus() {
 		ImagePlus ignored = null;
 		FakeListener listener;
