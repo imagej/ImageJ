@@ -1353,9 +1353,8 @@ public class Functions implements MacroConstants, Measurements {
 		if (s1==null)
 			return null;
 		String[] strings = null;
-		if (s1.length()>0 && s2!=null && s2.length()==1 && !s2.equals(" ")) {
-			if (isSpecialCharacter(s2))
-				s2 = "\\"+s2;
+		if (s1.length()>0 && s2!=null && s2.length()>=2 && s2.startsWith("(")&&s2.endsWith(")")) {
+			s2 = s2.substring(1,s2.length()-1);
 			strings = s1.split(s2,-1);
 		} else 
 			strings = (s2==null||s2.equals(""))?Tools.split(s1):Tools.split(s1, s2);
