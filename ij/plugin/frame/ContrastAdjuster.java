@@ -617,11 +617,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			imp.unlock();
 			return;
 		}
-		if (imp.isComposite()) {
-			imp.unlock();
-			((CompositeImage)imp).updateAllChannelsAndDraw();
-			return;
-		}
 		if (imp.getType()!=ImagePlus.GRAY8) {
 			IJ.beep();
 			IJ.showStatus("Apply requires an 8-bit grayscale image or an RGB stack");
@@ -640,7 +635,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 				table[i] = (int)(((double)(i-min)/(max-min))*255);
 		}
 		ip.setRoi(imp.getRoi());
-		if (imp.getStackSize()>1) {
+		if (imp.getStackSize()>1 && !imp.isComposite()) {
 			ImageStack stack = imp.getStack();
 			YesNoCancelDialog d = new YesNoCancelDialog(new Frame(),
 				"Entire Stack?", "Apply LUT to all "+stack.getSize()+" slices in the stack?");

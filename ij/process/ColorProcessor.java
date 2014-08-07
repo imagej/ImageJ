@@ -905,6 +905,8 @@ public class ColorProcessor extends ImageProcessor {
 		@see ImageProcessor#setInterpolate
 	*/
 	public ImageProcessor resize(int dstWidth, int dstHeight) {
+		if (roiWidth==dstWidth && roiHeight==dstHeight)
+			return crop();
 		if (interpolationMethod!=NONE && (width==1||height==1)) {
 				ByteProcessor r2 = (ByteProcessor)getChannel(1,null).resizeLinearly(dstWidth, dstHeight);
 				ByteProcessor g2 = (ByteProcessor)getChannel(2,null).resizeLinearly(dstWidth, dstHeight);
