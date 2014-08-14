@@ -758,7 +758,8 @@ public class ResultsTable implements Cloneable {
 			tp = win.getTextPanel();
 			tp.setColumnHeadings(tableHeadings);
 			newWindow = tp.getLineCount()==0;
-			autoFormat = false;
+			if (!windowTitle.startsWith("Summary"))
+				autoFormat = false;
 		}
 		tp.setResultsTable(cloneNeeded?(ResultsTable)this.clone():this);
 		int n = getCounter();

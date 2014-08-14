@@ -658,9 +658,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (win==null) return;
 		Rectangle bounds = win.getBounds();
 		Insets insets = win.getInsets();
-		int sliderHeight = (win instanceof StackWindow)?20:0;
-		double xmag = (double)(bounds.width-10)/srcRect.width;
-		double ymag = (double)(bounds.height-(10+insets.top+sliderHeight))/srcRect.height;
+		int sliderHeight = win.getSliderHeight();
+		double xmag = (double)(bounds.width-(insets.left+insets.right+ImageWindow.HGAP*2))/srcRect.width;
+		double ymag = (double)(bounds.height-(ImageWindow.VGAP*2+insets.top+insets.bottom+sliderHeight))/srcRect.height;
 		setMagnification(Math.min(xmag, ymag));
 		int width=(int)(imageWidth*magnification);
 		int height=(int)(imageHeight*magnification);
@@ -767,9 +767,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		Insets insets = win.getInsets();
 		Point loc = getLocation();
 		if (loc.x>insets.left+5 || loc.y>insets.top+5) {
-			r1.width = newWidth+insets.left+insets.right+10;
-			r1.height = newHeight+insets.top+insets.bottom+10;
-			if (win instanceof StackWindow) r1.height+=20;
+			r1.width = newWidth+insets.left+insets.right+ImageWindow.HGAP*2;
+			r1.height = newHeight+insets.top+insets.bottom+ImageWindow.VGAP*2+win.getSliderHeight();
 		} else {
 			r1.width = r1.width - dstWidth + newWidth;
 			r1.height = r1.height - dstHeight + newHeight;

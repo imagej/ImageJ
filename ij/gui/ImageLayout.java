@@ -6,15 +6,13 @@ import ij.*;
 images. It's based on FlowLayout, but with vertical and centered flow. */
 public class ImageLayout implements LayoutManager {
 
-    int hgap;
-    int vgap;
+    int hgap = ImageWindow.HGAP;
+    int vgap = ImageWindow.VGAP;
 	ImageCanvas ic;
 
-    /** Creates a new ImageLayout with center alignment and 5 pixel horizontal and vertical gaps. */
+    /** Creates a new ImageLayout with center alignment. */
     public ImageLayout(ImageCanvas ic) {
     	this.ic = ic;
-		this.hgap = 5;
-		this.vgap = 5;
     }
 
     /** Not used by this class. */
@@ -71,7 +69,7 @@ public class ImageLayout implements LayoutManager {
 		for (int i=1; i<nmembers; i++) {
 			Component m = target.getComponent(i);
 			d = m.getPreferredSize();
-			extraHeight += d.height;
+			extraHeight += d.height+vgap;
 		}
 		d = target.getSize();
 		int preferredImageWidth = d.width - (insets.left + insets.right + hgap*2);
