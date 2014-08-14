@@ -123,6 +123,11 @@ public class ResultsTable implements Cloneable {
 		return counter;
 	}
 	
+	/** Returns the size of this ResultsTable. */
+	public int size() {
+		return counter;
+	}
+
 	/** Adds a value to the end of the given column. Counter must be >0.*/
 	public void addValue(int column, double value) {
 		if (column>=maxColumns)
