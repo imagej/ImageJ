@@ -92,7 +92,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private static int staticOptions = Prefs.getInt(OPTIONS,CLEAR_WORKSHEET);
 	private static String[] showStrings = {"Nothing", "Outlines", "Bare Outlines", "Ellipses", "Masks", "Count Masks", "Overlay Outlines", "Overlay Masks"};
 	private static double staticMinCircularity=0.0, staticMaxCircularity=1.0;
-	private static String prevHdr;
 		
 	protected static final int NOTHING=0, OUTLINES=1, BARE_OUTLINES=2, ELLIPSES=3, MASKS=4, ROI_MASKS=5,
 		OVERLAY_OUTLINES=6, OVERLAY_MASKS=7;
@@ -107,7 +106,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		addToManager, inSituShow;
 		
 	private boolean showResultsWindow = true;
-	private String summaryHdr = "Slice\tCount\tTotal Area\tAverage Size\t%Area";
 	private double level1, level2;
 	private double minSize, maxSize;
 	private double minCircularity, maxCircularity;
@@ -126,7 +124,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private int particleCount;
 	private int maxParticleCount = 0;
 	private int totalCount;
-	private TextWindow tw;
+	private ResultsTable summaryTable;
 	private Wand wand;
 	private int imageType, imageType2;
 	private boolean roiNeedsImage;
@@ -602,6 +600,27 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	
 	void updateSliceSummary() {
 		int slices = imp.getStackSize();
+		if (slices==1) {
+			Frame frame = WindowManager.getFrame("Summary");
+			if (frame!=null && (frame instanceof TextWindow)) {
+				TextWindow tw = (TextWindow)frame;
+				ResultsTable table = tw.getTextPanel().getResultsTable();
+				if (table!= null)
+					summaryTable = table;
+			}
+		} else {
+			Frame frame = WindowManager.getFrame("Summary of "+imp.getTitle());
+			if (frame!=null && (frame instanceof TextWindow)) {
+				TextWindow tw = (TextWindow)frame;
+				ResultsTable table = tw.getTextPanel().getResultsTable();
+				if (table!= null)
+					summaryTable = table;
+			}
+		}
+		if (summaryTable==null) {
+			summaryTable = new ResultsTable();
+			summaryTable.showRowNumbers(false);
+		}
 		float[] areas = rt.getColumn(ResultsTable.AREA);
 		if (areas==null)
 			areas = new float[0];
@@ -613,7 +632,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				label = imp.getStack().getShortSliceLabel(imp.getCurrentSlice());
 			label = label!=null&&!label.equals("")?label:""+slice;
 		}
-		String aLine = null;
+		summaryTable.incrementCounter();
+		summaryTable.addValue("Slice", label);
+
 		double sum = 0.0;
 		int start = areas.length-particleCount;
 		if (start<0)
@@ -622,89 +643,62 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			sum += areas[i];
 		int places = Analyzer.getPrecision();
 		Calibration cal = imp.getCalibration();
-		String total = "\t"+ResultsTable.d2s(sum,places);
-		String average = "\t"+ResultsTable.d2s(sum/particleCount,places);
-		String fraction = "\t"+ResultsTable.d2s(sum*100.0/totalArea,places);
-		aLine = label+"\t"+particleCount+total+average+fraction;
-		aLine = addMeans(aLine, areas.length>0?start:-1);
-		if (slices==1) {
-			Frame frame = WindowManager.getFrame("Summary");
-			if (frame!=null && (frame instanceof TextWindow) && summaryHdr.equals(prevHdr))
-				tw = (TextWindow)frame;
-		} else {
-			Frame frame = WindowManager.getFrame("Summary of "+imp.getTitle());
-			if (frame!=null && (frame instanceof TextWindow) && summaryHdr.equals(prevHdr))
-				tw = (TextWindow)frame;
-		}
-		if (tw==null) {
-			String title = slices==1?"Summary":"Summary of "+imp.getTitle();
-			tw = new TextWindow(title, summaryHdr, aLine, 450, 300);
-			prevHdr = summaryHdr;
-		} else
-			tw.append(aLine);
+		summaryTable.addValue("Count", particleCount);
+		summaryTable.addValue("Total Area", sum);
+		summaryTable.addValue("Average Size", sum/particleCount);
+		summaryTable.addValue("%Area", sum*100.0/totalArea);
+		addMeans(areas.length>0?start:-1);
+		String title = slices==1?"Summary":"Summary of "+imp.getTitle();
+		summaryTable.show(title);
 	}
 
-	String addMeans(String line, int start) {
-		if ((measurements&MEAN)!=0) line=addMean(ResultsTable.MEAN, line, start);
-		if ((measurements&MODE)!=0) line=addMean(ResultsTable.MODE, line, start);
+ 	void addMeans(int start) {
+		if ((measurements&MEAN)!=0) addMean(ResultsTable.MEAN, start);
+		if ((measurements&MODE)!=0) addMean(ResultsTable.MODE, start);
 		if ((measurements&PERIMETER)!=0)
-			line=addMean(ResultsTable.PERIMETER, line, start);
+			addMean(ResultsTable.PERIMETER, start);
 		if ((measurements&ELLIPSE)!=0) {
-			line=addMean(ResultsTable.MAJOR, line, start);
-			line=addMean(ResultsTable.MINOR, line, start);
-			line=addMean(ResultsTable.ANGLE, line, start);
+			addMean(ResultsTable.MAJOR, start);
+			addMean(ResultsTable.MINOR, start);
+			addMean(ResultsTable.ANGLE, start);
 		}
 		if ((measurements&SHAPE_DESCRIPTORS)!=0) {
-			line=addMean(ResultsTable.CIRCULARITY, line, start);
-			line=addMean(ResultsTable.SOLIDITY, line, start);
+			addMean(ResultsTable.CIRCULARITY, start);
+			addMean(ResultsTable.SOLIDITY, start);
 		}
 		if ((measurements&FERET)!=0) {
-			line=addMean(ResultsTable.FERET, line, start);
-			line=addMean(ResultsTable.FERET_X, line, start);
-			line=addMean(ResultsTable.FERET_Y, line, start);
-			line=addMean(ResultsTable.FERET_ANGLE, line, start);
-			line=addMean(ResultsTable.MIN_FERET, line, start);
+			addMean(ResultsTable.FERET, start);
+			addMean(ResultsTable.FERET_X, start);
+			addMean(ResultsTable.FERET_Y, start);
+			addMean(ResultsTable.FERET_ANGLE, start);
+			addMean(ResultsTable.MIN_FERET, start);
 		}
 		if ((measurements&INTEGRATED_DENSITY)!=0)
-			line=addMean(ResultsTable.INTEGRATED_DENSITY, line, start);
+			addMean(ResultsTable.INTEGRATED_DENSITY, start);
 		if ((measurements&MEDIAN)!=0)
-			line=addMean(ResultsTable.MEDIAN, line, start);
+			addMean(ResultsTable.MEDIAN, start);
 		if ((measurements&SKEWNESS)!=0)
-			line=addMean(ResultsTable.SKEWNESS, line, start);
+			addMean(ResultsTable.SKEWNESS, start);
 		if ((measurements&KURTOSIS)!=0)
-			line=addMean(ResultsTable.KURTOSIS, line, start);
-		return line;
+			addMean(ResultsTable.KURTOSIS, start);
 	}
 
-	private String addMean(int column, String line, int start) {
-		if (start==-1) {
-			line += "\tNaN";
-			summaryHdr += "\t"+ResultsTable.getDefaultHeading(column);
-		} else {
+	private void addMean(int column, int start) {
+		double value = Double.NaN;
+		if (start!=-1) {
 			float[] c = column>=0?rt.getColumn(column):null;
 			if (c!=null) {
 				ImageProcessor ip = new FloatProcessor(c.length, 1, c, null);
-				if (ip==null) return line;
+				if (ip==null) return;
 				ip.setRoi(start, 0, ip.getWidth()-start, 1);
 				ip = ip.crop();
 				ImageStatistics stats = new FloatStatistics(ip);
 				if (stats==null)
-					return line;
-				line += n(stats.mean);
-			} else
-				line += "\tNaN";
-			summaryHdr += "\t"+rt.getColumnHeading(column);
+					return;
+				value = stats.mean;
+			}
 		}
-		return line;
-	}
-
-	String n(double n) {
-		String s;
-		if (Math.round(n)==n)
-			s = ResultsTable.d2s(n,0);
-		else
-			s = ResultsTable.d2s(n, Analyzer.getPrecision());
-		return "\t"+s;
+		summaryTable.addValue(ResultsTable.getDefaultHeading(column), value);
 	}
 
 	boolean eraseOutsideRoi(ImageProcessor ip, Rectangle r, ImageProcessor mask) {

@@ -370,13 +370,13 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 		ImageProcessor xzPlane1 = ip.createProcessor(width, depth);
 		xzPlane1.setInterpolationMethod(interpolationMethod);
 		ImageProcessor xzPlane2;		
-		Object xypixels1 = xzPlane1.getPixels();
+		Object xzpixels1 = xzPlane1.getPixels();
 		IJ.showStatus("Z Scaling...");
 		for (int y=0; y<height; y++) {
 			IJ.showProgress(y, height-1);
-			for (int z=0; z<depth; z++) {
+			for (int z=0; z<depth; z++) { // get xz plane at y
 				Object pixels1 = stack1.getPixels(z+1);
-				System.arraycopy(pixels1, y*width, xypixels1, z*width, width);
+				System.arraycopy(pixels1, y*width, xzpixels1, z*width, width);
 			}
 			xzPlane2 = xzPlane1.resize(width, newDepth, averageWhenDownsizing);
 			Object xypixels2 = xzPlane2.getPixels();
@@ -426,6 +426,10 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
         if (newConstrain && newConstrain!=constrain)
         	updateFields();
         constrain = newConstrain;
+	}
+	
+	public void setAverageWhenDownsizing(boolean averageWhenDownsizing) {
+		this. averageWhenDownsizing = averageWhenDownsizing;
 	}
 
 }

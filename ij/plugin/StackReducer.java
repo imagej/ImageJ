@@ -5,7 +5,7 @@ import ij.gui.*;
 import ij.measure.Calibration;
 import java.awt.*;
 
-/** This plugin implements the Image/Stacks/Misc/Reduce command. */
+/** This plugin implements the Image/Stacks/Tools/Reduce command. */
 public class StackReducer implements PlugIn {
 	ImagePlus imp;
 	private static int factor = 2;

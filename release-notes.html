@@ -5,41 +5,27 @@
 </head>
 <body>
 
-<li> <u>1.49e 2 August 2014</u>
+<li> <u>1.49f 14 August 2014</u>
 <ul>
-<li> Added the <i>Edit&gt;Options&gt;Startup</i> command.
-<li> Thanks to Norbert Vischer, added an "Adjust interval to match" option
-to the <i>Edit&gt;Selection&gt;Interpolate</i> dialog, which fits equidistant
-steps between first and last point by adjusting the interval.
-<li> Thanks to Philippe Carl, the ROI Manager now insures that a selection
-activated by clicking on its label in the image is made visible in the list.
-<li> Thanks to Ilan Tal, plugin tools can now have right-click popup menus.
-<li> Thanks to Norbert Vischer, you can select a function name in the
-macro editor and use <i>Macros&gt;Macro Functions</i> to
-get a description of that function.
-<li> Thanks to Christophe Deroulers, added a deselect() method to the
-RoiManager class.
-<li> Thanks to Neil Fazel, fixed a bug that caused error bars added using the
-Plot.add() macro function to not appear if the data points were added using Plot.add()
-(<a href="macros/examples/ErrorBars2.txt">example</a>).
-<li> Thanks to Marc Lartaud and Michael Schmid, fixed a bug that caused
-Feret's diameter of selections created with the selection brush tool on spatially
-calibrated images to be reported in pixels.
-<li> Thanks to Vytas Bindokas, fixed a bug that caused <i>Edit&gt;Selection&gt;Create Mask</i>
-to create a blank mask when it was used with a thresholded image in "select all" mode.
-<li> Thanks to Nikolaus Szeverenyi, fixed a bug that caused upper threshold values
-entered into the <i>Image&gt;Adjust&gt;Threshold</i> "Set" dialog to be reset to the
-highest pixel value in the image.
-<li> Thanks to Gabriel Schweighause and Michael Schmid, fixed a bug that caused
-the split() macro function, when using single character delimiters, to not correctly
-parse strings with empty cells.
-<li> Thanks to Ilan Tal, fixed a bug that caused plugin tools with hints in parenthesis
-to not be installed when ImageJ restarted.
-<li> Thanks to Gilles Carpentier, fixed a v1.48 regression that caused IJ.log("\n") to not
-add a blank line to the Log window.
-<li> Thanks to Christophe Deroulers, fixed a v1.49c regression that caused
-ROI Manager list selections to not be recorded.
-</ul> 
+<li> Thanks to George H, the particle analyzer's "Summary" window has an
+associated ResultsTable and has "Rename" and "Duplicate" commands in its
+File and contextual (right-click) menus.
+(<a href="macros/examples/SummarizeStack.txt">macro example</a>,
+<a href="macros/js/SummarizeStack.js">JavaScript example</a>).
+<li> Thanks to Gabriel Schweighause and Michael Schmid, the second argument (delimiters) 
+of the split() macro function can be a regular expression enclosed in parentheses.
+<li> Thanks to Aaron Schain, fixed bugs that caused layout problems when 
+resizing hyperstacks, especially when "Scale to Fit" resizing by
+holding down the alt key.
+<li> Thanks to Gilles Carpentier, fixed a 1.49e regression that caused
+the split() macro function to sometimes not behave as expected.
+<li> Thanks to Biafra Ahanonu, fixed a 1.47 regression in the <i>Image&gt;Scale</i> command
+that caused unwanted cross-talk in the x,y plane when downsampling in z.
+<li> Thanks to Olivier Burri, fixed a regression that sometimes caused
+<i>Image&gt;Stacks&gt;Add Slice</i> to throw an exception when adding a channel
+to a hyperstack.
+</ul>
+
 <a href="http://imagej.nih.gov/ij">Home</a>
 </body>
 </html>

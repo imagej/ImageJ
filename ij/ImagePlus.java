@@ -658,16 +658,21 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (resetCurrentSlice) setSlice(currentSlice);
     }
     
-	public void setStack(ImageStack stack, int nChannels, int nSlices, int nFrames) {
-		if (nChannels*nSlices*nFrames!=stack.getSize())
+	public void setStack(ImageStack newStack, int channels, int slices, int frames) {
+		if (newStack==null || channels*slices*frames!=newStack.getSize())
 			throw new IllegalArgumentException("channels*slices*frames!=stackSize");
 		int channelsBefore = this.nChannels;
-		this.nChannels = nChannels;
-		this.nSlices = nSlices;
-		this.nFrames = nFrames;
-		setStack(null, stack);
-		if (channelsBefore!=nChannels && isComposite())
-			((CompositeImage)this).setChannelsUpdated();
+		if (IJ.debugMode) IJ.log("setStack: "+newStack.getSize()+" "+channels+" ("+channelsBefore+") "+slices+" "+frames+" "+isComposite());
+		this.nChannels = channels;
+		this.nSlices = slices;
+		this.nFrames = frames;
+		if (channelsBefore!=channels && isComposite()) {
+			ImageStack stack2 = this.stack;
+			this.stack = newStack;
+			((CompositeImage)this).reset();
+			this.stack = stack2;
+		}
+		setStack(null, newStack);
 	}
 
 	/**	Saves this image's FileInfo so it can be later
