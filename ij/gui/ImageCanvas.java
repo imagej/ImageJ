@@ -444,7 +444,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				drawOverlay(showAllOverlay, offScreenGraphics);
 			if (roi!=null)
 				drawRoi(roi, offScreenGraphics);
-			if (srcRect.width<imageWidth ||srcRect.height<imageHeight)
+			if (srcRect.width<imageWidth || srcRect.height<imageHeight)
 				drawZoomIndicator(offScreenGraphics);
 			if (IJ.debugMode) showFrameRate(offScreenGraphics);
 			g.drawImage(offScreenImage, 0, 0, null);

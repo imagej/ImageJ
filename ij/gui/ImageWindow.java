@@ -595,19 +595,36 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	public void windowIconified(WindowEvent e) {}	
 	public void windowOpened(WindowEvent e) {}
 	
-	public void mouseWheelMoved(MouseWheelEvent event) {
-		int rotation = event.getWheelRotation();
+	public void mouseWheelMoved(MouseWheelEvent e) {
+		int rotation = e.getWheelRotation();
+		int amount = e.getScrollAmount();
+		boolean ctrl = (e.getModifiers()&Event.CTRL_MASK)!=0;
+		if (amount<1) amount=1;
+		if (IJ.debugMode) {
+			IJ.log("mouseWheelMoved: "+e);
+			IJ.log("  type: "+e.getScrollType());
+			IJ.log("  ctrl: "+ctrl);
+			IJ.log("  rotation: "+rotation);
+			IJ.log("  amount: "+amount);
+		}
+		if (rotation==0)
+			return;
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		Rectangle srcRect = ic.getSrcRect();
 		int xstart = srcRect.x;
 		int ystart = srcRect.y;
-		if (IJ.spaceBarDown() || srcRect.height==height) {
-			srcRect.x += rotation*Math.max(width/200, 1);
+		if (ctrl || IJ.shiftKeyDown()) {
+			if (rotation<0)
+				IJ.run("In");
+			else
+				IJ.run("Out");
+		} else if (IJ.spaceBarDown() || srcRect.height==height) {
+			srcRect.x += rotation*amount*Math.max(width/200, 1);
 			if (srcRect.x<0) srcRect.x = 0;
 			if (srcRect.x+srcRect.width>width) srcRect.x = width-srcRect.width;
 		} else {
-			srcRect.y += rotation*Math.max(height/200, 1);
+			srcRect.y += rotation*amount*Math.max(height/200, 1);
 			if (srcRect.y<0) srcRect.y = 0;
 			if (srcRect.y+srcRect.height>height) srcRect.y = height-srcRect.height;
 		}
