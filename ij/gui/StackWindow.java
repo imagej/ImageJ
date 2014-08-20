@@ -157,9 +157,19 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	public void actionPerformed(ActionEvent e) {
 	}
 
-	public void mouseWheelMoved(MouseWheelEvent event) {
+	public void mouseWheelMoved(MouseWheelEvent e) {
 		synchronized(this) {
-			int rotation = event.getWheelRotation();
+			int rotation = e.getWheelRotation();
+			boolean ctrl = (e.getModifiers()&Event.CTRL_MASK)!=0;
+			if ((ctrl || IJ.shiftKeyDown()) && ic!=null) {
+				int ox = ic.offScreenX(e.getX());
+				int oy = ic.offScreenY(e.getX());
+				if (rotation<0)
+					ic.zoomIn(ox,oy);
+				else
+					ic.zoomOut(ox,oy);
+				return;
+			}
 			if (hyperStack) {
 				if (rotation>0)
 					IJ.run(imp, "Next Slice [>]", "");

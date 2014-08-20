@@ -595,11 +595,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	public void windowIconified(WindowEvent e) {}	
 	public void windowOpened(WindowEvent e) {}
 	
-	public void mouseWheelMoved(MouseWheelEvent e) {
+	public synchronized void mouseWheelMoved(MouseWheelEvent e) {
 		int rotation = e.getWheelRotation();
 		int amount = e.getScrollAmount();
 		boolean ctrl = (e.getModifiers()&Event.CTRL_MASK)!=0;
-		if (amount<1) amount=1;
 		if (IJ.debugMode) {
 			IJ.log("mouseWheelMoved: "+e);
 			IJ.log("  type: "+e.getScrollType());
@@ -607,6 +606,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			IJ.log("  rotation: "+rotation);
 			IJ.log("  amount: "+amount);
 		}
+		if (amount<1) amount=1;
 		if (rotation==0)
 			return;
 		int width = imp.getWidth();
@@ -614,11 +614,16 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		Rectangle srcRect = ic.getSrcRect();
 		int xstart = srcRect.x;
 		int ystart = srcRect.y;
-		if (ctrl || IJ.shiftKeyDown()) {
+		if ((ctrl || IJ.shiftKeyDown()) && ic!=null) {
+			int ox = ic.offScreenX(e.getX());
+			int oy = ic.offScreenY(e.getX());
+			if (IJ.debugMode)
+				IJ.log("  x,y: "+ox+","+oy);
 			if (rotation<0)
-				IJ.run("In");
+				ic.zoomIn(ox,oy);
 			else
-				IJ.run("Out");
+				ic.zoomOut(ox,oy);
+			return;
 		} else if (IJ.spaceBarDown() || srcRect.height==height) {
 			srcRect.x += rotation*amount*Math.max(width/200, 1);
 			if (srcRect.x<0) srcRect.x = 0;
