@@ -161,7 +161,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		synchronized(this) {
 			int rotation = e.getWheelRotation();
 			boolean ctrl = (e.getModifiers()&Event.CTRL_MASK)!=0;
-			if ((ctrl || IJ.shiftKeyDown()) && ic!=null) {
+			if ((ctrl||IJ.shiftKeyDown()) && ic!=null) {
 				int ox = ic.offScreenX(e.getX());
 				int oy = ic.offScreenY(e.getX());
 				if (rotation<0)

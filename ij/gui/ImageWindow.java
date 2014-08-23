@@ -614,7 +614,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		Rectangle srcRect = ic.getSrcRect();
 		int xstart = srcRect.x;
 		int ystart = srcRect.y;
-		if ((ctrl || IJ.shiftKeyDown()) && ic!=null) {
+		if ((ctrl||IJ.shiftKeyDown()) && ic!=null) {
 			int ox = ic.offScreenX(e.getX());
 			int oy = ic.offScreenY(e.getX());
 			if (IJ.debugMode)

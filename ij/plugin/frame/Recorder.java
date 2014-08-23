@@ -460,31 +460,33 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					;
 				else {
 					String prefix = "run(";
-					if (scriptMode)
-						prefix = imageUpdated?"IJ.run(imp, ":"IJ.run(";
+					if (scriptMode) {
+						boolean addImp = imageUpdated || (WindowManager.getCurrentImage()!=null
+							&&(name.equals("Properties... ")||name.equals("Fit Spline")));
+						prefix = addImp?"IJ.run(imp, ":"IJ.run(";
+					}
 					textArea.append(prefix+"\""+name+"\", \""+commandOptions+"\");\n");
 					if (nonAscii(commandOptions))
 						textArea.append("  <<warning: the options string contains one or more non-ascii characters>>\n");
 				}
 			} else {
+				ImagePlus imp = WindowManager.getCurrentImage();
+				Roi roi = imp!=null?imp.getRoi():null;
 				if (name.equals("Threshold...") || name.equals("Fonts...") || name.equals("Brightness/Contrast..."))
 					textArea.append((scriptMode?"//IJ.":"//")+"run(\""+name+"\");\n");
 				else if (name.equals("Start Animation [\\]"))
 					textArea.append("doCommand(\"Start Animation [\\\\]\");\n");
 				else if (name.equals("Add to Manager"))
 					;
-				else if (name.equals("Draw") || name.equals("Add Selection...") ) {
-					ImagePlus imp = WindowManager.getCurrentImage();
-					Roi roi = imp!=null?imp.getRoi():null;
-					if (roi!=null && (roi instanceof TextRoi))
-						textArea.append(((TextRoi)roi).getMacroCode(name, imp));
-					else
-						textArea.append("run(\""+name+"\");\n");
-				} else {
+				else if (roi!=null && (roi instanceof TextRoi) && (name.equals("Draw")||name.equals("Add Selection...")))
+					textArea.append(((TextRoi)roi).getMacroCode(name, imp));
+				else {
 					if (IJ.altKeyDown() && (name.equals("Open Next")||name.equals("Plot Profile")))
 						textArea.append("setKeyDown(\"alt\"); ");
 					if (scriptMode) {
-						String prefix = imageUpdated||name.equals("Select None")?"IJ.run(imp, ":"IJ.run(";
+						boolean addImp = imageUpdated ||
+							(imp!=null&&(name.equals("Select None")||name.equals("Draw")||name.equals("Fit Spline")||name.equals("Add Selection...")));
+						String prefix = addImp?"IJ.run(imp, ":"IJ.run(";
 						textArea.append(prefix+"\""+name+"\", \"\");\n");
 					} else
 						textArea.append("run(\""+name+"\");\n");
