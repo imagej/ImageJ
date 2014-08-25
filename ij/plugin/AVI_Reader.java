@@ -281,7 +281,10 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	 *	retrieved with getImagePlus().
 	 */
 	public void run (String arg) {
-		OpenDialog	od = new OpenDialog("Select AVI File", arg);	//file dialog
+		String options = IJ.isMacro()?Macro.getOptions():null;
+		if (options!=null && options.contains("select=") && !options.contains("open="))
+			Macro.setOptions(options.replaceAll("select=", "open="));
+		OpenDialog	od = new OpenDialog("Open AVI File", arg);
 		String fileName = od.getFileName();
 		if (fileName == null) return;
 		String fileDir = od.getDirectory();
@@ -468,6 +471,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 		gd.addCheckbox("Use Virtual Stack", isVirtual);
 		gd.addCheckbox("Convert to Grayscale", convertToGray);
 		gd.addCheckbox("Flip Vertical", flipVertical);
+		gd.setSmartRecording(true);
 		gd.showDialog();
 		if (gd.wasCanceled()) return false;
 		firstFrame = (int)gd.getNextNumber();

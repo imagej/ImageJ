@@ -146,6 +146,8 @@ public class RoiProperties {
 				gd.addMessage("No properties");
 			}
 		}
+		if (showName && "".equals(name) && "none".equals(position) && "none".equals(fillc))
+			gd.setSmartRecording(true);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;

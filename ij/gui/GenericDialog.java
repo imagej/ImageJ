@@ -43,7 +43,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	public static final int MAX_SLIDERS = 25;
 	protected Vector numberField, stringField, checkbox, choice, slider, radioButtonGroups;
 	protected TextArea textArea1, textArea2;
-	protected Vector defaultValues,defaultText,defaultStrings;
+	protected Vector defaultValues,defaultText,defaultStrings,defaultChoiceIndexes;
 	protected Component theLabel;
 	private Button cancel, okay, no, help;
 	private String okLabel = "  OK  ";
@@ -477,6 +477,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.gridwidth = 1;
 		if (choice==null) {
 			choice = new Vector(4);
+			defaultChoiceIndexes = new Vector(4);
 			c.insets = getInsets(5, 0, 5, 0);
 		} else
 			c.insets = getInsets(0, 0, 5, 0);
@@ -496,6 +497,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		grid.setConstraints(thisChoice, c);
 		add(thisChoice);
 		choice.addElement(thisChoice);
+		int index = thisChoice.getSelectedIndex();
+		defaultChoiceIndexes.addElement(new Integer(index));
 		if (Recorder.record || macro)
 			saveLabel(thisChoice, label);
 		y++;
@@ -1005,10 +1008,13 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 					item = s;
 			}
 		}	
-		if (recorderOn && !(smartRecording&&index==0)) {
-			String item = thisChoice.getSelectedItem();
-			if (!(item.equals("*None*")&&getTitle().equals("Merge Channels")))
-				recordOption(thisChoice, thisChoice.getSelectedItem());
+		if (recorderOn) {
+			int defaultIndex = ((Integer)(defaultChoiceIndexes.elementAt(choiceIndex))).intValue();
+			if (!(smartRecording&&index==defaultIndex)) {
+				String item = thisChoice.getSelectedItem();
+				if (!(item.equals("*None*")&&getTitle().equals("Merge Channels")))
+					recordOption(thisChoice, thisChoice.getSelectedItem());
+			}
 		}
 		choiceIndex++;
 		return index;

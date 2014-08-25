@@ -362,7 +362,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			canceled = true;
 			return false;
 		}
-		gd.setSmartRecording(true);
+		gd.setSmartRecording(showChoice==0);
 		showChoice = gd.getNextChoiceIndex();
 		gd.setSmartRecording(false);
 		staticShowChoice = showChoice;

@@ -95,6 +95,10 @@ public class TiffDecoder {
 		else
 			return ((b1 << 24) + (b2 << 16) + (b3 << 8) + b4);
 	}
+	
+	final long getUnsignedInt() throws IOException {
+		return (long)getInt()&0xffffffffL;
+	}
 
 	final int getShort() throws IOException {
 		int b1 = in.read();
@@ -341,13 +345,11 @@ public class TiffDecoder {
 	double getRational(long loc) throws IOException {
 		long saveLoc = in.getLongFilePointer();
 		in.seek(loc);
-		int numerator = getInt();
-		int denominator = getInt();
+		double numerator = getUnsignedInt();
+		double denominator = getUnsignedInt();
 		in.seek(saveLoc);
-		//System.out.println("numerator: "+numerator);
-		//System.out.println("denominator: "+denominator);
-		if (denominator!=0)
-			return (double)numerator/denominator;
+		if (denominator!=0.0)
+			return numerator/denominator;
 		else
 			return 0.0;
 	}

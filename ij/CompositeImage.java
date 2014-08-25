@@ -123,6 +123,11 @@ public class CompositeImage extends ImagePlus {
 	}
 
 	void setup(int channels, ImageStack stack2) {
+		if (stack2!=null && stack2.getSize()>0 && (stack2.getProcessor(1) instanceof ColorProcessor)) { // RGB?
+			cip = null;
+			lut = null;
+			return;
+		}
 		setupLuts(channels);
 		if (mode==COMPOSITE) {
 			cip = new ImageProcessor[channels];

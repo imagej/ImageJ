@@ -16,9 +16,9 @@ import ij.measure.ResultsTable;
 	the pixel in the upper left corner of the image. */
 public class XYCoordinates implements PlugIn {
 
-	static boolean processStack;
-	static boolean invertY;
-	static boolean suppress;
+	private static boolean processStack;
+	private static boolean invertY;
+	private static boolean suppress;
 
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
@@ -105,6 +105,7 @@ public class XYCoordinates implements PlugIn {
 		int c,r,g,b;
 		int type = imp.getType();
 		ImageStack stack = imp.getStack();
+		boolean nanBackground = Double.isNaN(background);
 		for (int z=0; z<slices; z++) {
 			if (slices>1) ip = stack.getProcessor(z+1);
 			String zstr = slices>1?z+"\t":"";
@@ -112,7 +113,7 @@ public class XYCoordinates implements PlugIn {
 				int y = invertY?i:height-1-i;
 				for (int x=0; x<width; x++) {
 					v = ip.getPixelValue(x,y);
-					if (v!=background) {
+					if (v!=background && !(nanBackground&&Double.isNaN(v))) {
 						if (type==ImagePlus.GRAY32)
 							pw.println(x+"\t"+(invertY?y:height-1-y)+"\t"+zstr+v);
 						else if (rgb) {

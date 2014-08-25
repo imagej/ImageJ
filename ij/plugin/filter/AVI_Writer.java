@@ -35,7 +35,7 @@ public class AVI_Writer implements PlugInFilter {
     private final static int FOURCC_00dc = 0x63643030;    //'00dc' compressed frame
 
     //compression options: dialog parameters
-    private static int      compressionIndex = 2; //0=none, 1=PNG, 2=JPEG
+    private int      compressionIndex = 2; //0=none, 1=PNG, 2=JPEG
     private static int      jpegQuality = 90;    //0 is worst, 100 best (not currently used)
     private final static String[] COMPRESSION_STRINGS = new String[] {"Uncompressed", "PNG", "JPEG"};
     private final static int[] COMPRESSION_TYPES = new int[] {NO_COMPRESSION, PNG_COMPRESSION, JPEG_COMPRESSION};
@@ -95,8 +95,10 @@ public class AVI_Writer implements PlugInFilter {
         gd.showDialog();                            // user input (or reading from macro) happens here
         if (gd.wasCanceled())                       // dialog cancelled?
             return false;
+        gd.setSmartRecording(compressionIndex==2);
         compressionIndex = gd.getNextChoiceIndex();
         //jpegQuality = (int)gd.getNextNumber();
+        gd.setSmartRecording(fps==7.0);
         fps = gd.getNextNumber();
         if (fps<=0.5) fps = 0.5;
         //if (fps>60.0) fps = 60.0;
