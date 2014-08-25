@@ -17,10 +17,11 @@ public class StackWriter implements PlugIn {
 
 	//private static String defaultDirectory = null;
 	private static String[] choices = {"BMP",  "FITS", "GIF", "JPEG", "PGM", "PNG", "Raw", "Text", "TIFF",  "ZIP"};
-	private static String fileType = "TIFF";
-	private static int ndigits = 4;
-	private static boolean useLabels;
-	private static boolean firstTime = true;
+	private static String staticFileType = "TIFF";
+	private String fileType = "TIFF";
+	private int ndigits = 4;
+	private boolean useLabels;
+	private boolean firstTime = true;
 	private int startAt;
 	private boolean hyperstack;
 	private int[] dim;
@@ -52,6 +53,8 @@ public class StackWriter implements PlugIn {
 		}
 		
 		GenericDialog gd = new GenericDialog("Save Image Sequence");
+		if (!IJ.isMacro())
+			fileType = staticFileType;
 		gd.addChoice("Format:", choices, fileType);
 		gd.addStringField("Name:", name, 12);
 		if (!hyperstack)
@@ -59,10 +62,13 @@ public class StackWriter implements PlugIn {
 		gd.addNumericField("Digits (1-8):", ndigits, 0);
 		if (!hyperstack)
 			gd.addCheckbox("Use slice labels as file names", useLabels);
+		gd.setSmartRecording(true);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		fileType = gd.getNextChoice();
+		if (!IJ.isMacro())
+			staticFileType = fileType;
 		name = gd.getNextString();
 		if (!hyperstack)
 			startAt = (int)gd.getNextNumber();

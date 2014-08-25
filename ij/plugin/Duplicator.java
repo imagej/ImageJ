@@ -243,8 +243,9 @@ public class Duplicator implements PlugIn, TextListener {
 		GenericDialog gd = new GenericDialog(title);
 		gd.addStringField(prompt, defaultString, duplicateSubstack?15:20);
 		if (stackSize>1) {
+			boolean duplicate = duplicateStack && !IJ.isMacro();
 			String msg = duplicateSubstack?"Duplicate stack":"Duplicate entire stack";
-			gd.addCheckbox(msg, duplicateStack||imp.isComposite());
+			gd.addCheckbox(msg, duplicate||imp.isComposite());
 			if (duplicateSubstack) {
 				gd.setInsets(2, 30, 3);
 				gd.addStringField("Range:", "1-"+stackSize);
@@ -255,6 +256,7 @@ public class Duplicator implements PlugIn, TextListener {
 			}
 		} else
 			duplicateStack = false;
+		gd.setSmartRecording(true);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return null;
@@ -321,7 +323,7 @@ public class Duplicator implements PlugIn, TextListener {
 		GenericDialog gd = new GenericDialog("Duplicate");
 		gd.addStringField("Title:", newTitle, 15);
 		gd.setInsets(12, 20, 8);
-		gd.addCheckbox("Duplicate hyperstack", duplicateStack||composite);
+		gd.addCheckbox("Duplicate hyperstack", (duplicateStack&&!IJ.isMacro())||composite);
 		int nRangeFields = 0;
 		if (nChannels>1) {
 			gd.setInsets(2, 30, 3);
@@ -345,6 +347,7 @@ public class Duplicator implements PlugIn, TextListener {
 			rangeFields[i].addTextListener(this);
 		}
 		checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
+		gd.setSmartRecording(true);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return null;

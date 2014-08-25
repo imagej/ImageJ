@@ -462,7 +462,9 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					String prefix = "run(";
 					if (scriptMode) {
 						boolean addImp = imageUpdated || (WindowManager.getCurrentImage()!=null
-							&&(name.equals("Properties... ")||name.equals("Fit Spline")));
+							&&(name.equals("Properties... ")||name.equals("Fit Spline")||commandOptions.contains("save=")));
+						if (commandOptions.contains("open="))
+							addImp = false;
 						prefix = addImp?"IJ.run(imp, ":"IJ.run(";
 					}
 					textArea.append(prefix+"\""+name+"\", \""+commandOptions+"\");\n");
