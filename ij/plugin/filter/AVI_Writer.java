@@ -97,8 +97,8 @@ public class AVI_Writer implements PlugInFilter {
             return false;
         gd.setSmartRecording(compressionIndex==2);
         compressionIndex = gd.getNextChoiceIndex();
+        gd.setSmartRecording(false);
         //jpegQuality = (int)gd.getNextNumber();
-        gd.setSmartRecording(fps==7.0);
         fps = gd.getNextNumber();
         if (fps<=0.5) fps = 0.5;
         //if (fps>60.0) fps = 60.0;
