@@ -1688,12 +1688,32 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			if (!ok) {
 				if (name.endsWith("Menu Tool"))
 					name = name.substring(0, name.length()-5);
-				Hashtable commands = Menus.getCommands();
-				if (commands!=null && commands.get(name)!=null)
-					IJ.run(name);
+				ok = installToolsetTool(name);
+				if (!ok) {  // install tool in plugins/Tools
+					Hashtable commands = Menus.getCommands();
+					if (commands!=null && commands.get(name)!=null)
+						IJ.run(name);
+				}
 			}
 			installingStartupTool = false;
 		}
+	}
+	
+	// install tool from ImageJ/macros/toolsets
+	private boolean installToolsetTool(String name) {
+		String path = IJ.getDirectory("macros")+"toolsets"+File.separator+name+".ijm";
+		if (!((new File(path)).exists())) {
+			name = name.replaceAll(" ", "_");
+			path = IJ.getDirectory("macros")+"toolsets"+File.separator+name+".ijm";
+			if (!((new File(path)).exists()))
+				return false;
+		}
+		try {
+			new MacroInstaller().run(path);
+		} catch(Exception e) {
+			return false;
+		}
+		return true;
 	}
 	
 	private boolean installBuiltinTool(String label) {

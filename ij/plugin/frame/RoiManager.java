@@ -1721,7 +1721,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	/** Returns the ROIs as an array. */
-	public Roi[] getRoisAsArray() {
+	public synchronized Roi[] getRoisAsArray() {
 		int n = getCount();
 		Roi[] array = new Roi[n];
 		for (int i=0; i<n; i++) {
