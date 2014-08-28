@@ -1572,22 +1572,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		boolean ok = isBuiltInTool(names[id]);
 		String prefsName = instance.names[id];
 		if (!ok) {
-			Hashtable commands = Menus.getCommands();
 			String name = names[id];
-			if (name.endsWith("Menu Tool"))
-				name = name.substring(0, name.length()-5);
-			ok = commands!=null && commands.get(name)!=null;
-			if (!ok) { // is there a hint in parens?
-				int i = name.indexOf(" (");
-				if (i>0) {
-					name = name.substring(0, i);
-					ok = commands!=null && commands.get(name)!=null;
-					if (ok) prefsName=name;
-				}
+			int i = name.indexOf(" (");  // remove any hint in parens
+			if (i>0) {
+				name = name.substring(0, i);
+				prefsName=name;
 			}
 		}
-		if (!ok)
-			return;
 		int index = id - CUSTOM1;
 		String key = TOOL_KEY + (index/10)%10 + index%10;
 		Prefs.set(key, prefsName);
@@ -1705,14 +1696,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (!((new File(path)).exists())) {
 			name = name.replaceAll(" ", "_");
 			path = IJ.getDirectory("macros")+"toolsets"+File.separator+name+".ijm";
-			if (!((new File(path)).exists()))
-				return false;
 		}
-		try {
-			new MacroInstaller().run(path);
-		} catch(Exception e) {
+		String text = IJ.openAsString(path);
+		if (text==null || text.startsWith("Error"))
 			return false;
-		}
+		new MacroInstaller().installSingleTool(text);
 		return true;
 	}
 	
