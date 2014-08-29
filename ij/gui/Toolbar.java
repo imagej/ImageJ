@@ -184,8 +184,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		add(switchPopup);
 	}
 	
-	/** Returns the ID of the current tool (Toolbar.RECTANGLE,
-		Toolbar.OVAL, etc.). */
+	/** Returns the ID of the current tool (Toolbar.RECTANGLE, Toolbar.OVAL, etc.). */
 	public static int getToolId() {
 		int id = current;
 		if (legacyMode) {
@@ -499,7 +498,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			String name = names[tool];
 			int index = name.indexOf("Action Tool");
 			if (index!=-1)
-				name = name.substring(0, index);
+				name = name.replace("Action Tool", "Tool");
 			else {
 				index = name.indexOf("Menu Tool");
 				if (index!=-1)
@@ -1261,7 +1260,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			String label = item.getLabel();
 			String cmd = item.getActionCommand();
 			boolean isTool = cmd.equals("Tool") || cmd.equals("Plugin Tool");
-			if (!(label.equals("Help...")||label.equals("Remove Custom Tools")) && !isTool)
+			if (!(label.equals("Help...")||label.equals("Remove Custom Tools")) && !isTool && !label.endsWith("Tool") && !label.endsWith("Tool "))
 				currentSet = label;
 			if (isTool) {
 				if (cmd.equals("Tool")) // built in tool
@@ -1317,9 +1316,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
                 	installStartupMacros();
                 	return;
                 } else if (label.endsWith(" "))
-                    path = IJ.getDirectory("macros")+"toolsets/"+label.substring(0, label.length()-1)+".ijm";
+                    path = IJ.getDirectory("macros")+"toolsets"+File.separator+label.substring(0, label.length()-1)+".ijm";
                 else
-                    path = IJ.getDirectory("macros")+"toolsets/"+label+".txt";
+                    path = IJ.getDirectory("macros")+"toolsets"+File.separator+label+".txt";
                 try {
                     if (IJ.shiftKeyDown()) {
                         IJ.open(path);
@@ -1479,7 +1478,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
         Hashtable h = pgm.getMenus();
         if (h==null) return;
         String[] commands = (String[])h.get(names[tool]);
-        if (commands==null) return;
+        if (commands==null)
+        	return;
 		if (menus[tool]==null) {
 			menus[tool] = new PopupMenu("");
 			if (Menus.getFontSize()!=0)
@@ -1677,10 +1677,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			installingStartupTool = true;
 			boolean ok = installBuiltinTool(name);
 			if (!ok) {
-				if (name.endsWith("Menu Tool"))
-					name = name.substring(0, name.length()-5);
 				ok = installToolsetTool(name);
 				if (!ok) {  // install tool in plugins/Tools
+					if (name.endsWith("Menu Tool"))
+						name = name.substring(0, name.length()-5);
 					Hashtable commands = Menus.getCommands();
 					if (commands!=null && commands.get(name)!=null)
 						IJ.run(name);

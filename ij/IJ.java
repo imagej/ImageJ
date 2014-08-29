@@ -1084,13 +1084,29 @@ public class IJ {
 		getImage().setRoi(new Line(x1, y1, x2, y2));
 	}
 
-	/** Creates a point selection. */
+	/** Creates a point selection using integer coordinates.. */
 	public static void makePoint(int x, int y) {
 		ImagePlus img = getImage();
 		Roi roi = img.getRoi();
 		if (shiftKeyDown() && roi!=null && roi.getType()==Roi.POINT) {
 			Polygon p = roi.getPolygon();
 			p.addPoint(x, y);
+			img.setRoi(new PointRoi(p.xpoints, p.ypoints, p.npoints));
+			IJ.setKeyUp(KeyEvent.VK_SHIFT);
+		} else if (altKeyDown() && roi!=null && roi.getType()==Roi.POINT) {
+			((PolygonRoi)roi).deleteHandle(x, y);
+			IJ.setKeyUp(KeyEvent.VK_ALT);
+		} else
+			img.setRoi(new PointRoi(x, y));
+	}
+	
+	/** Creates a point selection using floating point coordinates. */
+	public static void makePoint(double x, double y) {
+		ImagePlus img = getImage();
+		Roi roi = img.getRoi();
+		if (shiftKeyDown() && roi!=null && roi.getType()==Roi.POINT) {
+			Polygon p = roi.getPolygon();
+			p.addPoint((int)Math.round(x), (int)Math.round(y));
 			img.setRoi(new PointRoi(p.xpoints, p.ypoints, p.npoints));
 			IJ.setKeyUp(KeyEvent.VK_SHIFT);
 		} else if (altKeyDown() && roi!=null && roi.getType()==Roi.POINT) {

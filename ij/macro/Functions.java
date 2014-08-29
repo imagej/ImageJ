@@ -4752,9 +4752,12 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void makePoint() {
-		int x = (int)getFirstArg();
-		int y = (int)getLastArg();
-		IJ.makePoint(x, y);
+		double x = getFirstArg();
+		double y = getLastArg();
+		if ((int)x==(int)y)
+			IJ.makePoint((int)x, (int)y);
+		else
+			IJ.makePoint(x, y);
 		resetImage(); 
 	}
 
