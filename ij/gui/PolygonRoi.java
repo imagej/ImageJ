@@ -99,6 +99,7 @@ public class PolygonRoi extends Roi {
 			Prefs.pointAutoMeasure = false;
 			Prefs.pointAutoNextSlice = false;
 			Prefs.pointAddToManager = false;
+			Prefs.pointAddToOverlay = false;
 			userCreated = true;
 		}
 		if (lineWidth>1 && isLine())

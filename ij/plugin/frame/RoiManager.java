@@ -1130,6 +1130,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		double opacity = -1;
 		int position = -1;
 		int cpos=-1, zpos=-1, tpos=-1;
+		int pointType = -1;
+		int pointSize = -1;
 		if (showDialog) {
 			String label = (String) listModel.getElementAt(indexes[0]);
 			rpRoi = (Roi)rois.get(label);
@@ -1161,6 +1163,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			}
 			if (rpRoi instanceof ImageRoi)
 				opacity = ((ImageRoi)rpRoi).getOpacity();
+			if (rpRoi instanceof PointRoi) {
+				pointType = ((PointRoi)rpRoi).getPointType();
+				pointSize = ((PointRoi)rpRoi).getSize();
+			}
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (n==getCount() && n>1 && !IJ.isMacro()) {
@@ -1190,6 +1196,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			}
 			if ((roi instanceof ImageRoi) && opacity!=-1)
 				((ImageRoi)roi).setOpacity(opacity);
+			if (roi instanceof PointRoi) {
+				if (pointType!=-1) ((PointRoi)roi).setPointType(pointType);
+				if (pointSize!=-1) ((PointRoi)roi).setSize(pointSize);
+			}
 		}
 		if (rpRoi!=null && rpName!=null && !rpRoi.getName().equals(rpName))
 			rename(rpRoi.getName());

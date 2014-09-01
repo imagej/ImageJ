@@ -3,6 +3,7 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.plugin.filter.Analyzer;
+import ij.measure.Measurements;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -22,17 +23,17 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		String sname = Colors.getColorName(sc, "Yellow");
 		Color cc =PointRoi.getDefaultCrossColor();
 		String cname = Colors.getColorName(cc, "None");
-		String markerSize = PointRoi.getDefaultMarkerSize();
+		String type = PointRoi.types[PointRoi.getDefaultType()];
+		String size = PointRoi.sizes[PointRoi.getDefaultSize()];
 		GenericDialog gd = new GenericDialog("Point Tool");
 		gd.setInsets(5,0,2);
-		gd.addChoice("Selection color:", Colors.getColors(), sname);
-		gd.setInsets(0,0,2);
-		gd.addChoice("Cross color:", Colors.getColors("None"), cname);
-		gd.addChoice("Marker size:", PointRoi.sizes, markerSize);
+		gd.addChoice("Type:", PointRoi.types, type);
+		gd.addChoice("Size:", PointRoi.sizes, size);
+		gd.addChoice("Color:", Colors.getColors(), sname);
 		if (!multipointTool) {
-			gd.addNumericField("Mark width:", Analyzer.markWidth, 0, 2, "pixels");
 			gd.addCheckbox("Auto-measure", Prefs.pointAutoMeasure);
 			gd.addCheckbox("Auto-next slice", Prefs.pointAutoNextSlice);
+			gd.addCheckbox("Add_to overlay", Prefs.pointAddToOverlay);
 			gd.addCheckbox("Add to ROI Manager", Prefs.pointAddToManager);
 		}
 		gd.addCheckbox("Label points", !Prefs.noPointLabels);
@@ -44,6 +45,16 @@ public class PointToolOptions implements PlugIn, DialogListener {
 	
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
 		boolean redraw = false;
+		int index = gd.getNextChoiceIndex();
+		if (index!=PointRoi.getDefaultType()) {
+			PointRoi.setDefaultType(index);
+			redraw = true;
+		}
+		index = gd.getNextChoiceIndex();
+		if (index!=PointRoi.getDefaultSize()) {
+			PointRoi.setDefaultSize(index);
+			redraw = true;
+		}
 		String selectionColor = gd.getNextChoice();
 		Color sc = Colors.getColor(selectionColor, Color.yellow);
 		if (sc!=Roi.getColor()) {
@@ -51,23 +62,13 @@ public class PointToolOptions implements PlugIn, DialogListener {
 			redraw = true;
 			Toolbar.getInstance().repaint();
 		}
-		String crossColor = gd.getNextChoice();
-		Color cc = Colors.getColor(crossColor, null);
-		if (cc!=PointRoi.getDefaultCrossColor())
-			redraw = true;
-		PointRoi.setDefaultCrossColor(cc);
-		String markerSize = gd.getNextChoice();
-		if (!markerSize.equals(PointRoi.getDefaultMarkerSize())) {
-			PointRoi.setDefaultMarkerSize(markerSize);
-			redraw = true;
-		}
 		if (!multipointTool) {
-			int width = (int)gd.getNextNumber();
-			if (width<0) width = 0;
-			Analyzer.markWidth = width;
 			Prefs.pointAutoMeasure = gd.getNextBoolean();
 			Prefs.pointAutoNextSlice = gd.getNextBoolean();
+			Prefs.pointAddToOverlay = gd.getNextBoolean();
 			Prefs.pointAddToManager = gd.getNextBoolean();
+			if (Prefs.pointAddToOverlay)
+				Prefs.pointAddToManager = false;
 			if (Prefs.pointAutoNextSlice&&!Prefs.pointAddToManager)
 				Prefs.pointAutoMeasure = true;
 		}

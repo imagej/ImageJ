@@ -15,7 +15,7 @@ import java.awt.geom.*;
 public class RoiEncoder {
 	static final int HEADER_SIZE = 64;
 	static final int HEADER2_SIZE = 64;
-	static final int VERSION = 225; // changed to 225 : TextRoi angle saved
+	static final int VERSION = 226; // v1.49h (point type and size)
 	private String path;
 	private OutputStream f;
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, 
@@ -188,6 +188,12 @@ public class RoiEncoder {
 			}
 		}
 		
+		if (roi instanceof PointRoi) {
+			PointRoi point = (PointRoi)roi;
+			putByte(RoiDecoder.POINT_TYPE, point.getPointType());
+			putShort(RoiDecoder.STROKE_WIDTH, point.getSize());
+		}
+
 		if (roi instanceof EllipseRoi) {
 			putShort(RoiDecoder.SUBTYPE, RoiDecoder.ELLIPSE);
 			double[] p = ((EllipseRoi)roi).getParams();
@@ -197,6 +203,8 @@ public class RoiEncoder {
 			putFloat(RoiDecoder.Y2, (float)p[3]);
 			putFloat(RoiDecoder.ELLIPSE_ASPECT_RATIO, (float)p[4]);
 		}
+		
+		
 
 		// save stroke width, stroke color and fill color (1.43i or later)
 		if (VERSION>=218) {
