@@ -27,7 +27,7 @@ public class PointRoi extends PolygonRoi {
 	private static Color defaultCrossColor = Color.white;
 	private static int fontSize = 9;
 	private double saveMag;
-	private boolean hideLabels;
+	private boolean showLabels;
 	private int type = HYBRID;
 	private int size = SMALL;
 	
@@ -82,6 +82,7 @@ public class PointRoi extends PolygonRoi {
 		width=1; height=1;
 		type = defaultType;
 		size = defaultSize;
+		showLabels = !Prefs.noPointLabels;
 		if (imp!=null)
 			imp.draw(x-10, y-10, 20, 20);
 		if (Recorder.record && !Recorder.scriptMode()) 
@@ -123,7 +124,7 @@ public class PointRoi extends PolygonRoi {
 	public void draw(Graphics g) {
 		updatePolygon();
 		if (ic!=null) mag = ic.getMagnification();
-		if (!Prefs.noPointLabels && !hideLabels && nPoints>1) {
+		if (showLabels && nPoints>1) {
 			fontSize = 9;
 			if (mag>1.0)
 				fontSize = (int)(((mag-1.0)/3.0+1.0)*9.0);
@@ -175,7 +176,7 @@ public class PointRoi extends PolygonRoi {
 			else
 				g.fillRect(x-size2, y-size2, size, size);
 		}
-		if (!Prefs.noPointLabels && !hideLabels && nPoints>1) {
+		if (showLabels && nPoints>1) {
 			if (!colorSet)
 				g.setColor(strokeColor!=null?strokeColor:ROIColor);
 			g.drawString(""+n, x+4, y+fontSize+2);
@@ -212,7 +213,7 @@ public class PointRoi extends PolygonRoi {
 		FloatPolygon poly = getFloatPolygon();
 		poly.addPoint(x, y);
 		PointRoi p = new PointRoi(poly.xpoints, poly.ypoints, poly.npoints);
-		p.setHideLabels(hideLabels);
+		p.setShowLabels(showLabels);
 		IJ.showStatus("count="+poly.npoints);
 		p.setStrokeColor(getStrokeColor());
 		p.setFillColor(getFillColor());
@@ -260,17 +261,8 @@ public class PointRoi extends PolygonRoi {
 		return false;
 	}
 	
-	public void setHideLabels(boolean hideLabels) {
-		this.hideLabels = hideLabels;
-	}
-
-	/** Deprecated */
-	public static void setDefaultMarkerSize(String size) {
-	}
-	
-	/** Deprecated */
-	public static String getDefaultMarkerSize() {
-		return sizes[defaultSize];
+	public void setShowLabels(boolean showLabels) {
+		this.showLabels = showLabels;
 	}
 
 	public static void setDefaultType(int type) {
@@ -373,6 +365,20 @@ public class PointRoi extends PolygonRoi {
 			return ("Roi[Points, count="+nPoints+"]");
 		else
 			return ("Roi[Point, x="+x+", y="+y+"]");
+	}
+
+	/** @deprecated */
+	public void setHideLabels(boolean hideLabels) {
+		this.showLabels = !hideLabels;
+	}
+	
+	/** @deprecated */
+	public static void setDefaultMarkerSize(String size) {
+	}
+	
+	/** @deprecated */
+	public static String getDefaultMarkerSize() {
+		return sizes[defaultSize];
 	}
 
 }

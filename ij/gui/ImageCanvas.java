@@ -351,7 +351,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     
 	void drawRoiLabel(Graphics g, int index, Roi roi) {
 		boolean pointRoi = roi instanceof PointRoi;
-		int pointSize = 0;
 		Rectangle r = roi.getBounds();
 		int x = screenX(r.x);
 		int y = screenY(r.y);
@@ -359,6 +358,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int width = (int)(r.width*mag);
 		int height = (int)(r.height*mag);
 		int size = width>40 || height>40?12:9;
+		int pointSize = 0;
+		int crossSize = 0;
 		if (pointRoi) {
 			pointSize = ((PointRoi)roi).getSize();
 			switch (pointSize) {
@@ -366,6 +367,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				case 2: case 3: size=10; break;
 				case 4: size=12; break;
 			}
+			crossSize = pointSize + 10 + 2*pointSize;
 		}
 		if (font!=null) {
 			g.setFont(font);
@@ -386,8 +388,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		x = x + width/2 - w/2;
 		y = y + height/2 + Math.max(size/2,6);
 		int h = metrics.getAscent() + metrics.getDescent();
-		int xoffset = 0;
-		int yoffset = 0;
+		int xoffset=0, yoffset=0;
 		if (pointRoi) {
 			xoffset = 6 + pointSize;
 			yoffset = h - 6 + pointSize;
@@ -396,10 +397,21 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			g.setColor(bgColor);
 			g.fillRoundRect(x-1+xoffset, y-h+2+yoffset, w+1, h-3, 5, 5);
 		}
-		if (labelRects!=null && index<labelRects.length)
-			labelRects[index] = new Rectangle(x-1, y-h+2, w+1, h);
+		if (labelRects!=null && index<labelRects.length) {
+			if (pointRoi) {
+				int x2 = screenX(r.x);
+				int y2 = screenY(r.y);
+				int crossSize2 = crossSize/2;
+				labelRects[index] = new Rectangle(x2-crossSize2, y2-crossSize2, crossSize, crossSize);
+			} else
+				labelRects[index] = new Rectangle(x-3, y-h+1, w+4, h);
+		}
 		g.setColor(labelColor);
 		g.drawString(label, x+xoffset, y-2+yoffset);
+//if (labelRects!=null && index<labelRects.length) {
+//r = labelRects[index];
+//g.drawRect(r.x,r.y,r.width,r.height);
+//}
 		g.setColor(defaultColor);
 	} 
 
@@ -1019,6 +1031,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			return;
 		}
 		
+		if ((overlay!=null||showAllOverlay!=null)) {
+			if (overOverlayLabel) {
+				if (activateOverlayRoi(ox, oy)) {
+					return;
+				}
+			} 
+		}
+		
 		mousePressedX = ox;
 		mousePressedY = oy;
 		mousePressedTime = System.currentTimeMillis();
@@ -1423,7 +1443,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			Roi roi = imp.getRoi();
 			if (roi!=null && roi.getBounds().width==0)
 				roi=null;
-			if ((e.isAltDown()||e.isControlDown()||cmdDown||overOverlayLabel) && roi==null) {
+			if ((e.isAltDown()||e.isControlDown()||cmdDown) && roi==null) {
 				if (activateOverlayRoi(ox, oy))
 					return;
 			} else if ((System.currentTimeMillis()-mousePressedTime)>250L && !drawingTool()) {

@@ -669,7 +669,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                 }
                 if (imp!=null) {
                 	PointRoi points = new PointRoi(xpoints, ypoints, npoints);
-                	points.setHideLabels(true);
                 	imp.setRoi(points);
                 }
                 points = new Polygon(xpoints, ypoints, npoints);

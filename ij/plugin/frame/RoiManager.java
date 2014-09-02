@@ -1838,6 +1838,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		} else if (cmd.equals("show all with labels")) {
 			labelsCheckbox.setState(true);
 			showAll(LABELS);
+			showAllCheckbox.setState(true);
 			if (Interpreter.isBatchMode()) IJ.wait(250);
 		} else if (cmd.equals("show all without labels")) {
 			labelsCheckbox.setState(false);

@@ -530,36 +530,6 @@ public class PolygonRoi extends Roi {
 		}
 	}
 	
-	/*
-	void move(int sx, int sy) {
-		int xNew = ic.offScreenX(sx);
-		int yNew = ic.offScreenY(sy);
-		x += xNew - startX;
-		y += yNew - startY;
-		startX = xNew;
-		startY = yNew;
-		if (bounds!=null) {
-			double xdNew = ic.offScreenXD(sx);
-			double ydNew = ic.offScreenYD(sy);
-			bounds.x += xdNew - startXD;
-			bounds.y += ydNew - startYD;
-			startXD = xdNew;
-			startYD = ydNew;
-			x = (int)bounds.x;
-			y = (int)bounds.y;
-		}
-		updateClipRect();
-		if ((lineWidth>1 && isLine()) || ignoreClipRect)
-			imp.draw();
-		else
-			imp.draw(clipX, clipY, clipWidth, clipHeight);
-		oldX = x;
-		oldY = y;
-		oldWidth = width;
-		oldHeight=height;
-	}
-	*/
-
 	protected void moveHandle(int sx, int sy) {
 		if (clipboard!=null) return;
 		int ox = ic.offScreenX(sx);

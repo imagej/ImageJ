@@ -1638,7 +1638,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 						IJ.run(this, "Add Selection...", "");
 					Overlay overlay2 = getOverlay();
 					if (overlay2!=null)
-						overlay2.drawLabels(!Prefs.noPointLabels);
+						overlay2.drawLabels(true);
 					Prefs.pointAddToManager = false;
 				}
 				if (Prefs.pointAutoMeasure || (Prefs.pointAutoNextSlice&&!Prefs.pointAddToManager))
@@ -1646,8 +1646,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				if (Prefs.pointAddToManager) {
 					IJ.run(this, "Add to Manager ", "");
 					ImageCanvas ic = getCanvas();
-					if (ic!=null && ic.getShowAllList()==null)
-						ic.setShowAllROIs(true);
+					if (ic!=null) {
+						RoiManager rm = RoiManager.getInstance();
+						if (rm!=null)
+							rm.runCommand("show all with labels");
+					}
 				}
 				if (Prefs.pointAutoNextSlice && getStackSize()>1) {
 					IJ.run(this, "Next Slice [>]", "");

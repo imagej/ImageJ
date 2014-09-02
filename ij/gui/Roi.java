@@ -885,7 +885,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		}
 		startX = xNew;
 		startY = yNew;
-		if ((this instanceof TextRoi) && ((TextRoi)this).getAngle()!=0.0)
+		if (type==POINT || ((this instanceof TextRoi) && ((TextRoi)this).getAngle()!=0.0))
+			ignoreClipRect = true;
+		if (this instanceof PointRoi)
 			ignoreClipRect = true;
 		updateClipRect();
 		if ((lineWidth>1 && isLine()) || ignoreClipRect || ((this instanceof PolygonRoi)&&((PolygonRoi)this).isSplineFit()))
