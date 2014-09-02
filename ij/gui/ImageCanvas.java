@@ -408,10 +408,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		g.setColor(labelColor);
 		g.drawString(label, x+xoffset, y-2+yoffset);
-//if (labelRects!=null && index<labelRects.length) {
-//r = labelRects[index];
-//g.drawRect(r.x,r.y,r.width,r.height);
-//}
 		g.setColor(defaultColor);
 	} 
 
@@ -1031,12 +1027,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			return;
 		}
 		
-		if ((overlay!=null||showAllOverlay!=null)) {
-			if (overOverlayLabel) {
-				if (activateOverlayRoi(ox, oy)) {
-					return;
-				}
-			} 
+		if (overOverlayLabel && (overlay!=null||showAllOverlay!=null)) {
+			if (activateOverlayRoi(ox, oy))
+				return;
 		}
 		
 		mousePressedX = ox;

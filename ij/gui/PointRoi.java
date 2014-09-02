@@ -146,11 +146,18 @@ public class PointRoi extends PolygonRoi {
 		int size2=size/2;
 		boolean colorSet = false;
 		Graphics2D g2d = (Graphics2D)g;
+		Color color = strokeColor!=null?strokeColor:ROIColor;
+		if (!overlay && isActiveOverlayRoi()) {
+			if (color==Color.cyan)
+				color = Color.magenta;
+			else
+				color = Color.cyan;
+		}
 		if (type==HYBRID || type==CROSSHAIR) {
 			if (type==HYBRID)
 				g.setColor(Color.white);
 			else {
-				g.setColor(strokeColor!=null?strokeColor:ROIColor);
+				g.setColor(color);
 				colorSet = true;
 			}
 			if (size>LARGE)
@@ -162,7 +169,7 @@ public class PointRoi extends PolygonRoi {
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		if (type==HYBRID || type==DOT) { 
 			if (!colorSet) {
-				g.setColor(strokeColor!=null?strokeColor:ROIColor);
+				g.setColor(color);
 				colorSet = true;
 			}
 			if (size>LARGE)
@@ -178,7 +185,7 @@ public class PointRoi extends PolygonRoi {
 		}
 		if (showLabels && nPoints>1) {
 			if (!colorSet)
-				g.setColor(strokeColor!=null?strokeColor:ROIColor);
+				g.setColor(color);
 			g.drawString(""+n, x+4, y+fontSize+2);
 		}
 		if ((size>TINY||type==DOT) && (type==HYBRID||type==DOT)) {
