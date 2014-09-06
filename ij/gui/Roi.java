@@ -929,8 +929,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 					x = xMax-width;
 				break;
 		}
+		if (type==POINT)
 		updateClipRect();
-		imp.draw(clipX, clipY, clipWidth, clipHeight);
+		if (type==POINT)
+			imp.draw();
+		else
+			imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX = x; oldY = y;
 		bounds = null;
 		showStatus();

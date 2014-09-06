@@ -18,6 +18,12 @@ public class PointToolOptions implements PlugIn, DialogListener {
  	}
 		
 	void showDialog() {
+		String options = IJ.isMacro()?Macro.getOptions():null;
+		if (options!=null) {
+			options = options.replace("selection=", "color=");
+			options = options.replace("marker=", "size=");
+			Macro.setOptions(options);
+		}
 		multipointTool = IJ.getToolName().equals("multipoint");
 		Color sc =Roi.getColor();
 		String sname = Colors.getColorName(sc, "Yellow");
@@ -28,8 +34,8 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		GenericDialog gd = new GenericDialog("Point Tool");
 		gd.setInsets(5,0,2);
 		gd.addChoice("Type:", PointRoi.types, type);
-		gd.addChoice("Size:", PointRoi.sizes, size);
 		gd.addChoice("Color:", Colors.getColors(), sname);
+		gd.addChoice("Size:", PointRoi.sizes, size);
 		if (!multipointTool) {
 			gd.addCheckbox("Auto-measure", Prefs.pointAutoMeasure);
 			gd.addCheckbox("Auto-next slice", Prefs.pointAutoNextSlice);
@@ -45,22 +51,25 @@ public class PointToolOptions implements PlugIn, DialogListener {
 	
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
 		boolean redraw = false;
+		// type
 		int index = gd.getNextChoiceIndex();
 		if (index!=PointRoi.getDefaultType()) {
 			PointRoi.setDefaultType(index);
 			redraw = true;
 		}
-		index = gd.getNextChoiceIndex();
-		if (index!=PointRoi.getDefaultSize()) {
-			PointRoi.setDefaultSize(index);
-			redraw = true;
-		}
+		// color
 		String selectionColor = gd.getNextChoice();
 		Color sc = Colors.getColor(selectionColor, Color.yellow);
 		if (sc!=Roi.getColor()) {
 			Roi.setColor(sc);
 			redraw = true;
 			Toolbar.getInstance().repaint();
+		}
+		// size
+		index = gd.getNextChoiceIndex();
+		if (index!=PointRoi.getDefaultSize()) {
+			PointRoi.setDefaultSize(index);
+			redraw = true;
 		}
 		if (!multipointTool) {
 			Prefs.pointAutoMeasure = gd.getNextBoolean();

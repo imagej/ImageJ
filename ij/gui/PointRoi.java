@@ -200,7 +200,7 @@ public class PointRoi extends PolygonRoi {
 		if (type==CIRCLE) {
 			int csize = size + 2;
 			int csize2 = csize/2;
-			g.setColor(strokeColor!=null?strokeColor:ROIColor);
+			g.setColor(color);
 			if (size>LARGE)
 				g2d.setStroke(twoPixelsWide);
 			g.drawOval(x-(csize2+1), y-(csize2+1), csize+1, csize+1);
@@ -270,6 +270,10 @@ public class PointRoi extends PolygonRoi {
 	
 	public void setShowLabels(boolean showLabels) {
 		this.showLabels = showLabels;
+	}
+
+	public boolean getShowLabels() {
+		return showLabels;
 	}
 
 	public static void setDefaultType(int type) {

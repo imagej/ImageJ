@@ -743,9 +743,14 @@ public class PolygonRoi extends Roi {
 			if (i!=pointToDelete)
 				points2.addPoint(points.xpoints[i], points.ypoints[i]);
 		}
-		if (type==POINT)
-			imp.setRoi(new PointRoi(points2.xpoints, points2.ypoints, points2.npoints));
-		else {
+		if (type==POINT) {
+			PointRoi roi1 = (PointRoi)this;
+			PointRoi roi2 = new PointRoi(points2.xpoints, points2.ypoints, points2.npoints);
+			roi2.setPointType(roi1.getPointType());
+			roi2.setSize(roi1.getSize());
+			roi2.setShowLabels(roi1.getShowLabels());
+			imp.setRoi(roi2);
+		} else {
 			if (subPixelResolution()) {
 				Roi roi2 = new PolygonRoi(points2, type);
 				roi2.setDrawOffset(getDrawOffset());
