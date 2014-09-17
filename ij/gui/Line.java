@@ -341,6 +341,13 @@ public class Line extends Roi {
 	/** Draws this line on the image. */
 	public void draw(Graphics g) {
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
+		boolean isActiveOverlayRoi = !overlay && isActiveOverlayRoi();
+		if (isActiveOverlayRoi) {
+			if (color==Color.cyan)
+				color = Color.magenta;
+			else
+				color = Color.cyan;
+		}
 		double x = getXBase();
 		double y = getYBase();
 		g.setColor(color);
@@ -354,7 +361,7 @@ public class Line extends Roi {
 		int sx3 = sx1 + (sx2-sx1)/2;
 		int sy3 = sy1 + (sy2-sy1)/2;
 		Graphics2D g2d = (Graphics2D)g;
-		if (stroke!=null)
+		if (stroke!=null && !isActiveOverlayRoi) 
 			g2d.setStroke(getScaledStroke());
 		g.drawLine(sx1, sy1, sx2, sy2);
 		if (wideLine && !overlay) {

@@ -61,6 +61,7 @@ import java.util.Hashtable;
  * 2013-09-24: 50% higher maximum iteration count, and never uses more than 0.4*maxIter
  *             iterations per minimization to avoid trying too few sets of initial params
  * 2013-10-13: setStatusAndEscape to show iterations and enable abort by ESC
+ * 2014-09-16: normalization bug fixed. makeNewParamVariations checks for paramResolutions
  *
  */
 public class Minimizer {
@@ -697,8 +698,6 @@ public class Minimizer {
      */
     private boolean initializeSimplex(double[][] simp, double[] paramVariations, Random random) {
         double[] variations = new double[numParams];    // improved values of parameter variations
-        double smallestRange = Double.MAX_VALUE;
-        double largestRange = 0;
         for (int i=0; i<numParams; i++) {
             double range = paramVariations!=null && i<paramVariations.length ?
                     paramVariations[i] : 0.1 * Math.abs(simp[0][i]); // if nothing else given, based on initial parameter
@@ -707,10 +706,8 @@ public class Minimizer {
             if (Math.abs(range/simp[0][i])<1e-10)
                 range = Math.abs(simp[0][i]*1e-10); //range must be more than very last digits
             variations[i] = range;
-            if (range < smallestRange) smallestRange = range;
-            if (range > largestRange) largestRange = range;
+            //IJ.log("param#"+i+" variation="+(float)variations[i]);
         }
-        //IJ.log("smallestR="+smallestRange+" largestR="+largestRange);
         final int maxAttempts = 100*numParams;  //max number of attempts to find params that do not lead to NaN
         for (int v=1; v<numVertices; v++) {
             int numTries = 0;
@@ -718,37 +715,33 @@ public class Minimizer {
                 if (numTries++ > maxAttempts)
                     return false;
                 // Create a vector orthogonal to all others in a coordinate system where every value is
-                // normalized to its respective variations value.
+                // normalized to its respective variations value. We first use this coordinate system where
+                // every parameter is in the [-1, +1] range.
                 // Don't orthogonalize after getting only NaN function values in many attempts; it might be
                 // easier to find viable parameters without normalization.
                 for (int i=0; i<numParams; i++)
-                    simp[v][i] = variations[i]*(random.nextFloat() - 0.5);
-                if (numTries < maxAttempts/2 &&    // (don't orthogonalize if finding valid params was very difficult
-                        largestRange < smallestRange*1e16) {   //... or if orthogonalization won't work due to extremely different parameter ranges
-                    for (int v1=1; v1<v; v1++) {    // to avoid a degenerate simplex, make orthogonal to all others
+                    simp[v][i] = 2*random.nextFloat() - 1.0;
+                if (numTries < maxAttempts/3)       // (don't orthogonalize if finding valid params was very difficult
+                    //IJ.log("orthogonalize vertex "+v);
+                    for (int v2=1; v2<v; v2++) {    // to avoid a degenerate simplex, make orthogonal to all others
                         double lengthSqr = 0;
                         double innerProduct = 0;
                         for (int i=0; i<numParams; i++) {
-                            double x = (simp[v1][i] - simp[0][i])/variations[i];
-                            lengthSqr += x*x;
-                            innerProduct += x*simp[v][i]/variations[i];
+                            double x2 = (simp[v2][i] - simp[0][i])/variations[i]; // convert to [-1, +1] range
+                            lengthSqr += x2*x2;
+                            innerProduct += x2*simp[v][i];
                         }
-                        for (int i=0; i<numParams; i++)
-                            simp[v][i] -= (simp[v1][i] - simp[0][i])/variations[i] * innerProduct/lengthSqr;
+                        for (int i=0; i<numParams; i++)     //subtract component parallel to the other vector
+                            simp[v][i] -= ((simp[v2][i] - simp[0][i])/variations[i])*(innerProduct/lengthSqr);
                     }
-                } //else IJ.log("no orthogonalization v#"+v);
-                double sumSqr = 0;        // normalize the 'try vector' to desired parameter variation range
-                for (int i=0; i<numParams; i++) {
-                    double ratio = simp[v][i] / variations[i];
-                    sumSqr += ratio*ratio;
-                }
-                double nonZeroRandom = -1 + 1.8*random.nextFloat();
-                if (nonZeroRandom > -0.1)
-                    nonZeroRandom += 0.2;   //random number between -1..-0.1 or +0.1..1
-                double normalizationFactor = nonZeroRandom/(Math.sqrt(sumSqr));
+                double sumSqr = 0;              // normalize the 'excursion vector' to length = 1
                 for (int i=0; i<numParams; i++)
-                    simp[v][i] = simp[0][i] + simp[v][i]*normalizationFactor;
-                //IJ.log("[0] var="+paramVariations[0]+"simp0="+simp[0][0]+" rand="+IJ.d2s(nonZeroRandom,4)+" simpV="+simp[v][0]);
+                    sumSqr += simp[v][i]*simp[v][i];
+                if (sumSqr < 1e-14) continue;   // bad luck with random numbers, excursion vector almost zero
+                if (numTries > 2 && sumSqr > 1e-6)
+                    sumSqr = 1;                 // don't normalize if attempts with normalized were unsuccessful
+                for (int i=0; i<numParams; i++)
+                    simp[v][i] = simp[0][i] + simp[v][i]/Math.sqrt(sumSqr)*variations[i];
                 evaluate(simp[v]);
             } while (Double.isNaN(value(simp[v])) && (status == SUCCESS || status == REINITIALIZATION_FAILURE));
         }
@@ -794,9 +787,12 @@ public class Minimizer {
         logTypicalRelativeVariation /= numParams;
         double typicalRelativeVariation = Math.exp(logTypicalRelativeVariation);
         final double WORST_RATIO = 1e-3;        //parameter variation should not be lower than typical value by more than this
-        for (int i=0; i<numParams; i++)
+        for (int i=0; i<numParams; i++) {
             if (paramVariations[i]<relatedTo[i] && paramVariations[i]/relatedTo[i] < typicalRelativeVariation*WORST_RATIO)
                 paramVariations[i] = relatedTo[i]*typicalRelativeVariation*WORST_RATIO;
+            if (paramResolutions != null && paramVariations[i] < 10*paramResolutions[i])
+                paramVariations[i] = 10*paramResolutions[i];// parameter variation must be well above numeric noise limit
+        }
         return paramVariations;
     }
 

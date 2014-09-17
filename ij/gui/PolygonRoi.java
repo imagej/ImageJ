@@ -198,7 +198,7 @@ public class PolygonRoi extends Roi {
 		Color color =  strokeColor!=null?strokeColor:ROIColor;
 		boolean hasHandles = xSpline!=null||type==POLYGON||type==POLYLINE||type==ANGLE;
 		boolean isActiveOverlayRoi = !overlay && isActiveOverlayRoi();
-		if (isActiveOverlayRoi && !hasHandles) {
+		if (isActiveOverlayRoi) {
 			if (color==Color.cyan)
 				color = Color.magenta;
 			else
@@ -548,7 +548,7 @@ public class PolygonRoi extends Roi {
 			fitSpline(splinePoints);
 			imp.draw();
 		} else {
-			if (!subPixelResolution())
+			if (!subPixelResolution() || (type==POINT&&nPoints==1))
 				resetBoundingRect();
 			if (type==POINT && width==0 && height==0)
 				{width=1; height=1;}

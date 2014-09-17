@@ -152,6 +152,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
     public void paint(Graphics g) {
+    	if (IJ.debugMode) IJ.log("paint");
 		painted = true;
 		Roi roi = imp.getRoi();
 		if (roi!=null || overlay!=null || showAllOverlay!=null || Prefs.paintDoubleBuffered) {
@@ -238,7 +239,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (labelColor==null) labelColor = Color.white;
 		initGraphics(overlay, g, labelColor, Roi.getColor());
 		int n = overlay.size();
-		if (IJ.debugMode) IJ.log("paint: drawing "+n+" overlay ROIs");
+		if (IJ.debugMode) IJ.log("drawOverlay: "+n);
 		int currentImage = imp!=null?imp.getCurrentSlice():-1;
 		int stackSize = imp.getStackSize();
 		if (stackSize==1)
@@ -406,6 +407,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			} else
 				labelRects[index] = new Rectangle(x-3, y-h+1, w+4, h);
 		}
+		//if (IJ.debugMode && index==0) IJ.log("drawRoiLabel: "+drawingList+" "+label+" "+x+" "+y);
 		g.setColor(labelColor);
 		g.drawString(label, x+xoffset, y-2+yoffset);
 		g.setColor(defaultColor);
