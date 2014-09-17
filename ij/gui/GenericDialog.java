@@ -916,6 +916,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				s = s.replaceAll("\\\\", "\\\\\\\\");  // replace "\" with "\\" in Windows file paths
 			if (!smartRecording || !s.equals((String)defaultStrings.elementAt(sfIndex)))
 				recordOption(tf, s);
+			else if (Recorder.getCommandOptions()==null)
+				Recorder.recordOption(" ");
 		}
 		sfIndex++;
 		return theText;
