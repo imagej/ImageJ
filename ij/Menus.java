@@ -52,7 +52,6 @@ public class Menus {
 	private static PopupMenu popup;
 
 	private static ImageJ ij;
-	private static boolean isFiji;
 	private static Applet applet;
 	private Hashtable demoImagesTable = new Hashtable();
 	private static String ImageJPath, pluginsPath, macrosPath;
@@ -86,7 +85,6 @@ public class Menus {
 	Menus(ImageJ ijInstance, Applet appletInstance) {
 		ij = ijInstance;
 		String title = ij!=null?ij.getTitle():null;
-		isFiji = title!=null && title.contains("Fiji");
 		applet = appletInstance;
 		instance = this;
 	}
@@ -107,10 +105,8 @@ public class Menus {
 		addPlugInItem(file, "Open...", "ij.plugin.Commands(\"open\")", KeyEvent.VK_O, false);
 		addPlugInItem(file, "Open Next", "ij.plugin.NextImageOpener", KeyEvent.VK_O, true);
 		Menu openSamples = getMenu("File>Open Samples", true);
-		if (!isFiji) {
-			openSamples.addSeparator();
-			addPlugInItem(openSamples, "Cache Sample Images ", "ij.plugin.URLOpener(\"cache\")", 0, false);
-		}
+		openSamples.addSeparator();
+		addPlugInItem(openSamples, "Cache Sample Images ", "ij.plugin.URLOpener(\"cache\")", 0, false);
 		addOpenRecentSubMenu(file);
 		Menu importMenu = getMenu("File>Import", true);
 		file.addSeparator();
@@ -349,7 +345,7 @@ public class Menus {
  			String name = list[i];
  			if (name.endsWith(".lut")) {
  				name = name.substring(0,name.length()-4);
- 				if (!isFiji && name.contains("_") && !name.contains(" "))
+ 				if (name.contains("_") && !name.contains(" "))
  					name = name.replace("_", " ");
  				MenuItem item = new MenuItem(name);
 				submenu.add(item);
@@ -992,8 +988,8 @@ public class Menus {
 	}
 	
 	private static boolean validMacroName(String name, boolean hasUnderscore) {
-		return (hasUnderscore&&name.endsWith(".txt"))||name.endsWith(".ijm")||name.endsWith(".js")
-			||(name.endsWith(".bsh")&&!isFiji)||(name.endsWith(".py")&&!isFiji);
+		return (hasUnderscore&&name.endsWith(".txt")) || name.endsWith(".ijm")
+			|| name.endsWith(".js") || name.endsWith(".bsh") || name.endsWith(".py");
 	}
 	
 	/** Installs a plugin in the Plugins menu using the class name,

@@ -885,7 +885,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		}
 		startX = xNew;
 		startY = yNew;
-		if ((this instanceof TextRoi) && ((TextRoi)this).getAngle()!=0.0)
+		if (type==POINT || ((this instanceof TextRoi) && ((TextRoi)this).getAngle()!=0.0))
 			ignoreClipRect = true;
 		updateClipRect();
 		if ((lineWidth>1 && isLine()) || ignoreClipRect || ((this instanceof PolygonRoi)&&((PolygonRoi)this).isSplineFit()))
@@ -929,8 +929,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 					x = xMax-width;
 				break;
 		}
+		if (type==POINT)
 		updateClipRect();
-		imp.draw(clipX, clipY, clipWidth, clipHeight);
+		if (type==POINT)
+			imp.draw();
+		else
+			imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX = x; oldY = y;
 		bounds = null;
 		showStatus();
@@ -1231,11 +1235,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	void modifyRoi() {
 		if (previousRoi==null || previousRoi.modState==NO_MODS || imp==null)
 			return;
-		//IJ.log("modifyRoi: "+ type+"	"+modState+" "+previousRoi.type+"  "+previousRoi.modState);
 		if (type==POINT || previousRoi.getType()==POINT) {
-			if (type==POINT && previousRoi.getType()==POINT)
+			if (type==POINT && previousRoi.getType()==POINT) {
 				addPoint();
-			else if (isArea() && previousRoi.getType()==POINT && previousRoi.modState==SUBTRACT_FROM_ROI)
+			} else if (isArea() && previousRoi.getType()==POINT && previousRoi.modState==SUBTRACT_FROM_ROI)
 				subtractPoints();
 			return;
 		}
@@ -1259,7 +1262,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		Roi[] rois = s1.getRois();
 		if (rois.length==0) return;
 		int type2 = rois[0].getType();
-		//IJ.log(rois.length+" "+type2);
 		Roi roi2 = null;
 		if (rois.length==1 && (type2==POLYGON||type2==FREEROI))
 			roi2 = rois[0];
@@ -1325,8 +1327,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			size = ", w="+IJ.d2s(width*cal.pixelWidth)+", h="+IJ.d2s(height*cal.pixelHeight);
 		else
 			size = ", w="+width+", h="+height;
-		//size += ", ar="+IJ.d2s((double)width/height,2);
-		//IJ.log("showStatus: "+state+" "+type);
 		IJ.showStatus(imp.getLocationAsString(x,y)+size+value);
 	}
 		

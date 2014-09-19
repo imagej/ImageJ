@@ -130,14 +130,15 @@ public class ZProjector implements PlugIn {
 			
 		// Build control dialog
 		GenericDialog gd = buildControlDialog(startSlice,stopSlice);
-		gd.setSmartRecording(true);
 		gd.showDialog(); 
 		if (gd.wasCanceled()) return; 
 
 		if (!imp.lock()) return;   // exit if in use
 		long tstart = System.currentTimeMillis();
+		gd.setSmartRecording(true);
 		setStartSlice((int)gd.getNextNumber());
 		setStopSlice((int)gd.getNextNumber()); 
+		gd.setSmartRecording(false);
 		method = gd.getNextChoiceIndex();
 		Prefs.set(METHOD_KEY, method);
 		if (isHyperstack) {
@@ -251,27 +252,31 @@ public class ZProjector implements PlugIn {
 		// more general use of ImageProcessor's getPixelValue and
 		// putPixel methods.
 		int ptype; 
-		if(stack.getProcessor(1) instanceof ByteProcessor) ptype = BYTE_TYPE; 
-		else if(stack.getProcessor(1) instanceof ShortProcessor) ptype = SHORT_TYPE; 
-		else if(stack.getProcessor(1) instanceof FloatProcessor) ptype = FLOAT_TYPE; 
+		if (stack.getProcessor(1) instanceof ByteProcessor) ptype = BYTE_TYPE; 
+		else if (stack.getProcessor(1) instanceof ShortProcessor) ptype = SHORT_TYPE; 
+		else if (stack.getProcessor(1) instanceof FloatProcessor) ptype = FLOAT_TYPE; 
 		else {
 	    	IJ.error("Z Project", "Non-RGB stack required"); 
 	    	return; 
 		}
 
-		// Do the projection.
-		for(int n=startSlice; n<=stopSlice; n+=increment) {
+		// Do the projection
+		int sliceCount = 0;
+		for (int n=startSlice; n<=stopSlice; n+=increment) {
 			if (!isHyperstack) {
 	    		IJ.showStatus("ZProjection " + color +": " + n + "/" + stopSlice);
 	    		IJ.showProgress(n-startSlice, stopSlice-startSlice);
 	    	}
 	    	projectSlice(stack.getPixels(n), rayFunc, ptype);
+	    	sliceCount++;
 		}
 
 		// Finish up projection.
 		if (method==SUM_METHOD) {
+			if (imp.getCalibration().isSigned16Bit())
+				fp.subtract(sliceCount*32768.0);
 			fp.resetMinAndMax();
-			projImage = new ImagePlus(makeTitle(),fp); 
+			projImage = new ImagePlus(makeTitle(), fp);
 		} else if (method==SD_METHOD) {
 			rayFunc.postProcess();
 			fp.resetMinAndMax();

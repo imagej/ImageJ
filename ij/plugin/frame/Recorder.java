@@ -373,11 +373,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (commandOptions!=null && commandOptions.contains(key+"="+path))
 			return; // don't record duplicate
 		checkForDuplicate(key+"=", path);
-		if (commandOptions==null)
+		if (commandOptions==null || commandOptions==" ")
 			commandOptions = key+"="+path;
 		else
 			commandOptions += " "+key+"="+path;
-		//IJ.log("recordPath: "+key+"="+path);
 	}
 
 	public static void recordOption(String key) {
@@ -387,7 +386,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		else {
 			key = trimKey(key);
 			checkForDuplicate(" "+key, "");
-			if (commandOptions==null)
+			if (commandOptions==null || commandOptions==" ")
 				commandOptions = key;
 			else
 				commandOptions += " "+key;

@@ -60,6 +60,7 @@ public class RoiDecoder {
 	public static final int OPTIONS = 50;
 	public static final int ARROW_STYLE = 52;
 	public static final int ELLIPSE_ASPECT_RATIO = 52;
+	public static final int POINT_TYPE= 52;
 	public static final int ARROW_HEAD_SIZE = 53;
 	public static final int ROUNDED_RECT_ARC_SIZE = 54;
 	public static final int POSITION = 56;
@@ -277,6 +278,10 @@ public class RoiDecoder {
 							roi = new PointRoi(xf, yf, n);
 						else
 							roi = new PointRoi(x, y, n);
+						if (version>=226) {
+							((PointRoi)roi).setPointType(getByte(POINT_TYPE));
+							((PointRoi)roi).setSize(getShort(STROKE_WIDTH));
+						}
 						break;
 					}
 					int roiType;

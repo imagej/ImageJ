@@ -112,16 +112,19 @@ public class RoiProperties {
 			gd.addChoice("Justification:", justNames, justNames[justification]);
 		} else {
 			if (isPoint)
-				gd.addStringField("Stroke (marker) color:", linec);
+				gd.addStringField("Stroke (point) color:", linec);
 			else {
 				gd.addStringField("Stroke color:", linec);
 				gd.addNumericField("Width:", strokeWidth, digits);
 			}
 		}
 		if (!isLine) {
-			if (isPoint) 
-				gd.addStringField("Fill (cross) color:", fillc);
-			else {
+			if (isPoint) {
+				int index = ((PointRoi)roi).getPointType();
+				gd.addChoice("Point type:", PointRoi.types, PointRoi.types[index]);
+				index = ((PointRoi)roi).getSize();
+				gd.addChoice("Size:", PointRoi.sizes, PointRoi.sizes[index]);
+			} else {
 				gd.addMessage("");
 				gd.addStringField("Fill color:", fillc);
 			}
@@ -164,8 +167,15 @@ public class RoiProperties {
 			angle = gd.getNextNumber();
 			justification = gd.getNextChoiceIndex();
 		}
-		if (!isLine)
-			fillc = gd.getNextString();
+		if (!isLine) {
+			if (isPoint) {
+				int index = gd.getNextChoiceIndex();
+				((PointRoi)roi).setPointType(index);
+				index = gd.getNextChoiceIndex();
+				((PointRoi)roi).setSize(index);
+			} else
+				fillc = gd.getNextString();
+		}
 		boolean applyToOverlay = false;
 		boolean newOverlay = addToOverlay?gd.getNextBoolean():false;
 		if (overlayOptions) {
