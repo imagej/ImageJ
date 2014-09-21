@@ -954,6 +954,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				roi2.setStrokeWidth(lineWidth);
 			if (showChoice==OVERLAY_MASKS)
 				roi2.setFillColor(Color.cyan);
+			if (processStack)
+				roi2.setPosition(slice);
 			overlay.add(roi2);
 		} else {
 			Rectangle r = roi.getBounds();
@@ -992,7 +994,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		int count = rt.getCounter();
 		// if (count==0) return;
 		boolean lastSlice = !processStack||slice==imp.getStackSize();
-		if ((showChoice==OVERLAY_OUTLINES||showChoice==OVERLAY_MASKS) && slice==1 && count>0)
+		if ((showChoice==OVERLAY_OUTLINES||showChoice==OVERLAY_MASKS) && count>0 && (!processStack||slice==imp.getStackSize()))
 			imp.setOverlay(overlay);
 		else if (outlines!=null && lastSlice) {
 			String title = imp!=null?imp.getTitle():"Outlines";
