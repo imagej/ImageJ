@@ -344,11 +344,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		"Save changes?" dialog, first set the public 'changes' variable to false. */
 	public void close() {
 		ImageWindow win = getWindow();
-		if (win!=null) {
-			//if (IJ.isWindows() && IJ.isJava14())
-			//	changes = false; // avoid 'save changes?' dialog and potential Java 1.5 deadlocks
+		if (win!=null)
 			win.close();
-		} else {
+		else {
             if (WindowManager.getCurrentImage()==this)
                 WindowManager.setTempCurrentImage(null);
 			deleteRoi(); //save any ROI so it can be restored later

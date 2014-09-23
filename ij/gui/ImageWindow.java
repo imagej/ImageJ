@@ -398,7 +398,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (firstSmallWindow)
 			Prefs.saveLocation(LOC_KEY, getLocation());
 		WindowManager.removeWindow(this);
-		//setVisible(false);
 		if (ij!=null && ij.quitting())  // this may help avoid thread deadlocks
 			return true;
 		dispose();
