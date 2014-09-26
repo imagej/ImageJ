@@ -168,7 +168,7 @@ import java.util.Vector;
 			if (IJ.debugMode) IJ.log(i+": "+path);
 			if ((new File(path)).isDirectory())
 				continue;
-			if (list[i].startsWith(".")||list[i].endsWith(".avi")||list[i].endsWith(".AVI"))
+			if (list[i].startsWith(".")||list[i].endsWith(".avi")||list[i].endsWith(".AVI") || list[i].equals("Thumbs.db"))
 				continue;
 			IJ.showProgress(i+1, list.length);
 			IJ.redirectErrorMessages(true);
