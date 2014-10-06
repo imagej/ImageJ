@@ -767,20 +767,6 @@ public class IJ {
 			return "3.4e38";
 		double np = n;
 		if (n<0.0) np = -n;
-		if (df==null) {
-			dfs = new DecimalFormatSymbols(Locale.US);
-			df = new DecimalFormat[10];
-			df[0] = new DecimalFormat("0", dfs);
-			df[1] = new DecimalFormat("0.0", dfs);
-			df[2] = new DecimalFormat("0.00", dfs);
-			df[3] = new DecimalFormat("0.000", dfs);
-			df[4] = new DecimalFormat("0.0000", dfs);
-			df[5] = new DecimalFormat("0.00000", dfs);
-			df[6] = new DecimalFormat("0.000000", dfs);
-			df[7] = new DecimalFormat("0.0000000", dfs);
-			df[8] = new DecimalFormat("0.00000000", dfs);
-			df[9] = new DecimalFormat("0.000000000", dfs);
-		}
 		if (decimalPlaces<0) {
 			decimalPlaces = -decimalPlaces;
 			if (decimalPlaces>9) decimalPlaces=9;
@@ -800,6 +786,20 @@ public class IJ {
 		}
 		if (decimalPlaces<0) decimalPlaces = 0;
 		if (decimalPlaces>9) decimalPlaces = 9;
+		if (df==null) {
+			dfs = new DecimalFormatSymbols(Locale.US);
+			df = new DecimalFormat[10];
+			df[0] = new DecimalFormat("0", dfs);
+			df[1] = new DecimalFormat("0.0", dfs);
+			df[2] = new DecimalFormat("0.00", dfs);
+			df[3] = new DecimalFormat("0.000", dfs);
+			df[4] = new DecimalFormat("0.0000", dfs);
+			df[5] = new DecimalFormat("0.00000", dfs);
+			df[6] = new DecimalFormat("0.000000", dfs);
+			df[7] = new DecimalFormat("0.0000000", dfs);
+			df[8] = new DecimalFormat("0.00000000", dfs);
+			df[9] = new DecimalFormat("0.000000000", dfs);
+		}
 		return df[decimalPlaces].format(n);
 	}
 

@@ -1161,7 +1161,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		ByteProcessor mask = new ByteProcessor(bi);
 		ip.setRoi(x-margin, y-margin, width+margin*2+1, height+margin*2+1);
 		ip.fill(mask);
-		ip.resetRoi();
 	}
 	
 	public boolean contains(int x, int y) {
