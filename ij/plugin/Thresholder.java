@@ -72,8 +72,10 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		gd.addCheckbox("Black background (of binary masks)", Prefs.blackBackground);
 		gd.addCheckbox("List thresholds", listThresholds);
 		choices = gd.getChoices();
-		((Choice)choices.elementAt(0)).addItemListener(this);
-		((Choice)choices.elementAt(1)).addItemListener(this);
+		if (choices!=null) {
+			((Choice)choices.elementAt(0)).addItemListener(this);
+			((Choice)choices.elementAt(1)).addItemListener(this);
+		}
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;

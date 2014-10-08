@@ -173,7 +173,7 @@ public class AutoThresholder {
 		return b;
 	}
 
-	int Intermodes(int [] data ) {
+	int Intermodes(int[] data ) {
 		// J. M. S. Prewitt and M. L. Mendelsohn, "The analysis of cell images," in
 		// Annals of the New York Academy of Sciences, vol. 128, pp. 1035-1053, 1966.
 		// ported to ImageJ plugin by G.Landini from Antti Niemisto's Matlab code (GPL)
@@ -189,9 +189,9 @@ public class AutoThresholder {
 		// flat valleys are unsuitable for this method.
 		
 		int minbin=-1, maxbin=-1;
-		for (int i=0; i<256; i++)
+		for (int i=0; i<data.length; i++)
 			if (data[i]>0) maxbin = i;
-		for (int i=255; i>=0; i--)
+		for (int i=data.length-1; i>=0; i--)
 			if (data[i]>0) minbin = i;
 		int length = (maxbin-minbin)+1;
 		double [] hist = new double[length];
@@ -202,14 +202,14 @@ public class AutoThresholder {
 		int threshold=-1;
 		while (!bimodalTest(hist) ) {
 			 //smooth with a 3 point running mean filter
-			double previous = 0, current = 0, next = hist[0];
-			for (int i = 0; i < length - 1; i++) {
+			double previous=0, current=0, next=hist[0];
+			for (int i=0; i<length-1; i++) {
 				previous = current;
 				current = next;
 				next = hist[i + 1];
-				hist[i] = (previous + current + next) / 3;
+				hist[i] = (previous+current+next)/3;
 			}
-			hist[length - 1] = (current + next) / 3;
+			hist[length-1] = (current+next)/3;
 			iter++;
 			if (iter>10000) {
 				threshold = -1;

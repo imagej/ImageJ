@@ -55,8 +55,10 @@ import java.util.Vector;
 		gd.addTextAreas(macro, null, 12, 50);
 		gd.addChoice("Add code:", code, code[0]);
 		Vector choices = gd.getChoices();
-		Choice choice = (Choice)choices.elementAt(0);
-		choice.addItemListener(this);
+		if (choices!=null) {
+			Choice choice = (Choice)choices.elementAt(0);
+			choice.addItemListener(this);
+		}
 		gd.showDialog();
 		macro = gd.getNextText();
 		return !gd.wasCanceled();

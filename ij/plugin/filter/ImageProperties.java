@@ -75,14 +75,18 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		gd.setInsets(5, 20, 0);
 		gd.addCheckbox("Global", global1);
 		nfields = gd.getNumericFields();
-		pixelWidthField  = (TextField)nfields.elementAt(3);
-		pixelHeightField  = (TextField)nfields.elementAt(4);
-		pixelDepthField  = (TextField)nfields.elementAt(5);
-        for (int i=0; i<nfields.size(); i++)
-            ((TextField)nfields.elementAt(i)).addTextListener(this);
+		if (nfields!=null) {
+			pixelWidthField  = (TextField)nfields.elementAt(3);
+			pixelHeightField  = (TextField)nfields.elementAt(4);
+			pixelDepthField  = (TextField)nfields.elementAt(5);
+			for (int i=0; i<nfields.size(); i++)
+            	((TextField)nfields.elementAt(i)).addTextListener(this);
+        }
         sfields = gd.getStringFields();
-        for (int i=0; i<sfields.size(); i++)
-            ((TextField)sfields.elementAt(i)).addTextListener(this);
+        if (sfields!=null) {
+        	for (int i=0; i<sfields.size(); i++)
+            	((TextField)sfields.elementAt(i)).addTextListener(this);
+        }
 		calUnit = cal.getUnit();
 		calPixelWidth = cal.pixelWidth;
 		calPixelHeight = cal.pixelHeight;

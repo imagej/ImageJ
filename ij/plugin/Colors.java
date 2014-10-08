@@ -31,12 +31,14 @@ public class Colors implements PlugIn, ItemListener {
 		gd.addChoice("Background:", colors, bname);
 		gd.addChoice("Selection:", colors, sname);
 		Vector choices = gd.getChoices();
-		fchoice = (Choice)choices.elementAt(0);
-		bchoice = (Choice)choices.elementAt(1);
-		schoice = (Choice)choices.elementAt(2);
-		fchoice.addItemListener(this);
-		bchoice.addItemListener(this);
-		schoice.addItemListener(this);
+		if (choices!=null) {
+			fchoice = (Choice)choices.elementAt(0);
+			bchoice = (Choice)choices.elementAt(1);
+			schoice = (Choice)choices.elementAt(2);
+			fchoice.addItemListener(this);
+			bchoice.addItemListener(this);
+			schoice.addItemListener(this);
+		}
 		
 		gd.showDialog();
 		if (gd.wasCanceled()) {
