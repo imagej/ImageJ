@@ -244,40 +244,19 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			
 	/** shows the data of the backing plot in a Textwindow with columns */
 	void showList(){
-		String headings = createHeading();
-		String data = createData();
-		TextWindow tw = new TextWindow("Plot Values", headings, data, 230, 400);
-		if (autoClose)
-			{imp.changes=false; close();}
+		ResultsTable rt = getResultsTable();
+		rt.show("Plot Values");
+		if (autoClose) {
+			imp.changes=false;
+			close();
+		}
 	}
 	
-	/** Creates the headings corresponding to the showlist funcion*/
-	private String createHeading(){
-		String head = "";
-		int sets = plot.storedData.size()/2;
-		if (saveXValues || sets>1)
-			head += sets==1?"X\tY\t":"X0\tY0\t";
-		else
-			head += sets==1?"Y0\t":"Y0\t";
-		if (plot.errorBars!=null) {
-			if (plot.xErrorBars!=null)
-				head += "Y_ERR\t";
-			else
-				head += "ERR\t";
-		}
-		if (plot.xErrorBars!=null)
-			head += "X_ERR\t";
-		for (int j = 1; j<sets; j++){
-			if (saveXValues || sets>1)
-				head += "X" + j + "\tY" + j + "\t";
-			else
-				head += "Y" + j + "\t";
-		}
-		return head;
-	}
-	
-	/** creates the data that fills the showList() function values */
-	private String createData(){
+	/** Returns the plot values as a ResultsTable. */
+	public ResultsTable getResultsTable() {
+		ResultsTable rt = new ResultsTable();
+		rt.showRowNumbers(false);
+		String[] headings = getHeadings();
 		int max = 0;
 		
 		/** find the longest x-value data set */
@@ -288,60 +267,117 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			max = s>max?s:max;
 		}
 		
-		/** stores the values that will be displayed*/
-		ArrayList displayed = new ArrayList(plot.storedData);
+		// store values that will be saved
+		ArrayList data = new ArrayList(plot.storedData);
 		boolean ex_test = false;
 		boolean ey_test = false;
 		
 		// includes vertical error bars
 		if (plot.errorBars !=null)
-			displayed.add(2, plot.errorBars);
+			data.add(2, plot.errorBars);
 			
 		// includes horizontal error bars
 		if (plot.xErrorBars !=null)
-			displayed.add(3, plot.xErrorBars);
+			data.add(3, plot.xErrorBars);
 					
-		StringBuffer sb = new StringBuffer();
-		String v;
-		int n = displayed.size();
-		for (int i = 0; i<max; i++) {
-			ey_test = plot.errorBars  != null;
-			ex_test = plot.xErrorBars != null;
-			for (int j = 0; j<n;) {
-				int xdigits = 0;
-				if (saveXValues || n>2) {
-					column = (float[])displayed.get(j);
-					xdigits = getPrecision(column);
-					v = i<column.length?IJ.d2s(column[i],xdigits):"";
-					sb.append(v);
-					sb.append("\t");
+		boolean skipDuplicates = skipDuplicateXColumns();
+		int n = data.size();
+		for (int i=0; i<max; i++) {
+			ey_test = plot.errorBars!=null;
+			ex_test = plot.xErrorBars!=null;
+			for (int j=0; j<n;) {
+				if ((saveXValues||n>2) && !(j>1&&skipDuplicates)) {
+					column = (float[])data.get(j);
+					if (i<column.length)
+						rt.setValue(headings[j], i, column[i]);
 				}
 				j++;
-				column = (float[])displayed.get(j);
-				int ydigits = xdigits;
-				if (ydigits==0)
-					ydigits = getPrecision(column);
-				v = i<column.length?IJ.d2s(column[i],ydigits):"";
-				sb.append(v);
-				sb.append("\t");
+				column = (float[])data.get(j);
+				if (i<column.length)
+					rt.setValue(headings[j], i, column[i]);
 				j++;
 				if (ey_test){
-					column = (float[])displayed.get(j);
-					v = i<column.length?IJ.d2s(column[i],ydigits):"";
-					sb.append(v);
-					sb.append("\t");
+					column = (float[])data.get(j);
+					if (i<column.length)
+						rt.setValue(headings[j], i, column[i]);
 					j++;
 					ey_test=false;
 				}
 				if (ex_test){
-					column = (float[])displayed.get(j);
-					v = i<column.length?IJ.d2s(column[i],ydigits):"";
-					sb.append(v);
-					sb.append("\t");
+					column = (float[])data.get(j);
+					if (i<column.length)
+						rt.setValue(headings[j], i, column[i]);
 					j++;
 					ex_test=false;
 				}
 			}
+		}
+		return rt;
+	}
+	
+	private boolean skipDuplicateXColumns() {
+		ArrayList data = plot.storedData;
+		int sets = data.size()/2;
+		if (sets<2)
+			return false;
+		float[] x0 = (float[])data.get(0);
+		for (int i=1; i<sets; i++) {
+			if (!equals(x0,(float[])data.get(i*2)))
+				return false;
+		}
+		return true;
+	}
+	
+	private boolean equals(float[] a1, float[] a2) {
+		if (a1.length!=a2.length)
+			return false;
+		for (int i=0; i<a1.length; i++) {
+			if (a1[i]!=a2[i])
+				return false;
+		}
+		return true;
+	}
+
+	private String[] getHeadings() {
+		ArrayList headings = new ArrayList();
+		int sets = plot.storedData.size()/2;
+		if (saveXValues || sets>1) {
+			if (sets==1) {
+				headings.add("X");
+				headings.add("Y");
+			} else {
+				headings.add("X0");
+				headings.add("Y0");
+			}
+		} else {
+			headings.add("X0");
+			headings.add("Y0");
+		}
+		if (plot.errorBars!=null) {
+			if (plot.xErrorBars!=null)
+				headings.add("Y_ERR");
+			else
+				headings.add("ERR");
+		}
+		if (plot.xErrorBars!=null)
+			headings.add("X_ERR");
+		for (int j = 1; j<sets; j++) {
+			if (saveXValues || sets>1) {
+				headings.add("X"+j);
+				headings.add("Y" + j);
+			} else
+				headings.add("Y" + j);
+		}
+		return (String[])headings.toArray(new String[headings.size()]);
+	}
+		
+	/** creates the data that fills the showList() function values */
+	private String getValuesAsString(){
+		ResultsTable rt = getResultsTable();
+		int n = rt.size();
+		StringBuffer sb = new StringBuffer();
+		for (int i=0; i<rt.size(); i++) {
+			sb.append(rt.getRowAsString(i));
 			sb.append("\n");
 		}
 		return sb.toString();
@@ -364,7 +400,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		}
 		IJ.wait(250);  // give system time to redraw ImageJ window
 		IJ.showStatus("Saving plot values...");
-		pw.print(createData());
+		pw.print(getValuesAsString());
 		pw.close();
 		if (autoClose)
 			{imp.changes=false; close();}
@@ -446,29 +482,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	public float[] getYValues() {
 		return plot.yValues;
 	}
-	
-	/** Returns the X and Y plot values as a ResultsTable. */
-	public ResultsTable getResultsTable() {
-		int sets = plot.storedData.size()/2;
-		int max = 0;
-		for(int i = 0; i<plot.storedData.size(); i+=2) {
-			float[] column = (float[])plot.storedData.get(i);
-			int s = column.length;
-			if (column.length>max) max=column.length;
-		}
-		ResultsTable rt = new ResultsTable();
-		for (int row=0; row<max; row++) {
-			rt.incrementCounter();
-			for (int i=0; i<sets; i++) {
-				float[] x = (float[])plot.storedData.get(i*2);
-				float[] y = (float[])plot.storedData.get(i*2+1);
-				if (row<x.length) rt.addValue("x"+i, x[row]);
-				if (row<y.length) rt.addValue("y"+i, y[row]);
-			}
-		}
-		return rt;
-	}
-	
+		
 	/** Draws a new plot in this window. */
 	public void drawPlot(Plot plot) {
 		this.plot = plot;

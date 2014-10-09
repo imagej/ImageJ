@@ -80,7 +80,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			pixelHeightField  = (TextField)nfields.elementAt(4);
 			pixelDepthField  = (TextField)nfields.elementAt(5);
 			for (int i=0; i<nfields.size(); i++)
-            	((TextField)nfields.elementAt(i)).addTextListener(this);
+				((TextField)nfields.elementAt(i)).addTextListener(this);
         }
         sfields = gd.getStringFields();
         if (sfields!=null) {
