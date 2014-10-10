@@ -31,12 +31,14 @@ public class FreehandRoi extends PolygonRoi {
 			xp[nPoints] = ox-x;
 			yp[nPoints] = oy-y;
 			nPoints++;
+			if (IJ.altKeyDown())
+				wipeBack();
 			if (nPoints==xp.length)
 				enlargeArrays();
 			drawLine();
 		}
 	}
-
+              
 	private void growFloat(int sx, int sy) {
 		double ox = ic.offScreenXD(sx);
 		double oy = ic.offScreenYD(sy);
@@ -80,6 +82,8 @@ public class FreehandRoi extends PolygonRoi {
 			double mag = ic.getMagnification();
 			if (mag<1.0) margin = (int)(margin/mag);
 		}
+		if (IJ.altKeyDown())
+			margin += 20; // for wipeBack
 		imp.draw(xmin-margin, ymin-margin, (xmax-xmin)+margin*2, (ymax-ymin)+margin*2);
 	}
 

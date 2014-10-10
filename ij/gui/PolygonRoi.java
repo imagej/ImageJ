@@ -379,6 +379,8 @@ public class PolygonRoi extends Roi {
 			imp.draw();
 			return;
 		}
+		if (IJ.altKeyDown())
+			wipeBack();
 		drawRubberBand(sx, sy);
 		degrees = Double.NaN;
 		double len = -1;
@@ -421,6 +423,49 @@ public class PolygonRoi extends Roi {
 		IJ.showStatus(imp.getLocationAsString(ox,oy) + length + angle);
 	}
 
+	//Mouse behaves like an eraser when moved backwards with alt key down.
+	//Within correction circle, all vertices with sharp angles are removed.
+	//Norbert Vischer
+	protected void wipeBack() {
+		double correctionRadius = 20;
+		if (ic!=null)
+			correctionRadius /= ic.getMagnification();
+		boolean found = false;
+		int p3 = nPoints - 1;
+		int p1 = p3;
+		while (p1 > 0 && !found) {
+			p1--;
+			double dx = xp[p3] - xp[p1];
+			double dy = yp[p3] - yp[p1];
+			double dist = Math.sqrt(dx * dx + dy * dy);
+			if (dist > correctionRadius)
+				found = true;
+		}
+		//examine all angles p1-p2-p3
+		boolean killed = false;
+		int safety = 10;
+		do {
+			killed = false;
+			safety--;
+			for (int p2 = p1 + 1; p2 < p3; p2++) {
+				double dx1 = xp[p2] - xp[p1];
+				double dy1 = yp[p2] - yp[p1];
+				double dx2 = xp[p3] - xp[p1];
+				double dy2 = yp[p3] - yp[p1];
+				double kk = 1;//allowed sharpness
+				if (this instanceof FreehandRoi)
+					kk = 0.8;
+				if ((dx1 * dx1 + dy1 * dy1) > kk * (dx2 * dx2 + dy2 * dy2)) {
+					xp[p2] = xp[p3];//replace sharp vertex with end point, 
+					yp[p2] = yp[p3];
+					p3 = p2;
+					nPoints = p2 + 1; //shorten array
+					killed = true;
+				}
+			}
+		} while (killed && safety > 0);
+	}
+           
 	void drawRubberBand(int sx, int sy) {
 		double oxd = ic!=null?ic.offScreenXD(sx):sx;
 		double oyd = ic!=null?ic.offScreenYD(sy):sy;
@@ -458,6 +503,8 @@ public class PolygonRoi extends Roi {
 			if (mag<1.0) margin = (int)(margin/mag);
 		}
 		margin = (int)(margin+getStrokeWidth());
+		if (IJ.altKeyDown())
+			margin+=20;
 		if (xpf!=null) {
 			xpf[nPoints-1] = (float)(oxd-getXBase());
 			ypf[nPoints-1] = (float)(oyd-getYBase());

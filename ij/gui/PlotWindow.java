@@ -290,16 +290,23 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 					column = (float[])data.get(j);
 					if (i<column.length)
 						rt.setValue(headings[j], i, column[i]);
+					else
+						rt.setValue(headings[j], i, Double.NaN);
 				}
 				j++;
 				column = (float[])data.get(j);
 				if (i<column.length)
 					rt.setValue(headings[j], i, column[i]);
+				else
+					rt.setValue(headings[j], i, Double.NaN);
 				j++;
 				if (ey_test){
 					column = (float[])data.get(j);
 					if (i<column.length)
 						rt.setValue(headings[j], i, column[i]);
+					else
+						rt.setValue(headings[j], i, Double.NaN);
+
 					j++;
 					ey_test=false;
 				}
@@ -307,6 +314,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 					column = (float[])data.get(j);
 					if (i<column.length)
 						rt.setValue(headings[j], i, column[i]);
+					else
+						rt.setValue(headings[j], i, Double.NaN);
+
 					j++;
 					ex_test=false;
 				}
