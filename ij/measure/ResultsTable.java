@@ -49,6 +49,7 @@ public class ResultsTable implements Cloneable {
 	private int lastColumn = -1;
 	private	StringBuilder sb;
 	private int precision = 3;
+	private int[] decimalPlaces;
 	private String rowLabelHeading = "";
 	private char delimiter = '\t';
 	private boolean headingSet; 
@@ -560,10 +561,23 @@ public class ResultsTable implements Cloneable {
 				return string;
 			} else
 				return string;
-		} else
-			return n(value);
+		} else {
+			if (decimalPlaces!=null && column<decimalPlaces.length)
+				return d2s(value, decimalPlaces[column]);
+			else
+				return n(value);
+		}
 	}
 	
+	private String n(double n) {
+		String s;
+		if (autoFormat && (int)n==n && precision>=0)
+			s = d2s(n, 0);
+		
+			s = d2s(n, precision);
+		return s;
+	}
+		
 	/**
 	* @deprecated
 	* replaced by addValue(String,double) and setValue(String,int,double)
@@ -590,19 +604,16 @@ public class ResultsTable implements Cloneable {
 		this.precision = decimalPlaces;
 	}
 	
+	/** Sets the decimal places (digits to the right of 
+		decimal point)  for each column. */
+	public void setPrecision(int[] decimalPlaces) {
+		this.decimalPlaces = decimalPlaces;
+	}
+
 	public void showRowNumbers(boolean showNumbers) {
 		showRowNumbers = showNumbers;
 	}
 
-	String n(double n) {
-		String s;
-		if (autoFormat && Math.round(n)==n && precision>=0)
-			s = d2s(n, 0);
-		else
-			s = d2s(n, precision);
-		return s;
-	}
-		
 	private static DecimalFormat[] df;
 	private static DecimalFormat[] sf;
 	private static DecimalFormatSymbols dfs;

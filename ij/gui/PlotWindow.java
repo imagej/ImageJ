@@ -322,6 +322,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 				}
 			}
 		}
+		if (getPrecision((float[])data.get(0))==0)
+			rt.setPrecision(new int[1]);
 		return rt;
 	}
 	
