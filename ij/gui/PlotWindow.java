@@ -291,21 +291,21 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 					if (i<column.length)
 						rt.setValue(headings[j], i, column[i]);
 					else
-						rt.setValue(headings[j], i, Double.NaN);
+						rt.setValue(headings[j], i, "");
 				}
 				j++;
 				column = (float[])data.get(j);
 				if (i<column.length)
 					rt.setValue(headings[j], i, column[i]);
 				else
-					rt.setValue(headings[j], i, Double.NaN);
+					rt.setValue(headings[j], i, "");
 				j++;
 				if (ey_test){
 					column = (float[])data.get(j);
 					if (i<column.length)
 						rt.setValue(headings[j], i, column[i]);
 					else
-						rt.setValue(headings[j], i, Double.NaN);
+						rt.setValue(headings[j], i, "");
 
 					j++;
 					ey_test=false;
@@ -315,15 +315,18 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 					if (i<column.length)
 						rt.setValue(headings[j], i, column[i]);
 					else
-						rt.setValue(headings[j], i, Double.NaN);
+						rt.setValue(headings[j], i, "");
 
 					j++;
 					ex_test=false;
 				}
 			}
 		}
-		if (getPrecision((float[])data.get(0))==0)
-			rt.setPrecision(new int[1]);
+		int nColumns = rt.getLastColumn() + 1;
+		int[] decimalPlaces = new int[nColumns];
+		for (int i=0; i<nColumns; i++)
+			decimalPlaces[i] = getPrecision(rt.getColumn(i));
+		rt.setDecimalPlaces(decimalPlaces);
 		return rt;
 	}
 	
@@ -463,7 +466,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			digits = setDigits;
 		boolean realValues = false;
 		for (int i=0; i<values.length; i++) {
-			if ((int)values[i]!=values[i]) {
+			if ((int)values[i]!=values[i] && !Float.isNaN(values[i])) {
 				realValues = true;
 				break;
 			}

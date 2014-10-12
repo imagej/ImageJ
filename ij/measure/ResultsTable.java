@@ -573,7 +573,7 @@ public class ResultsTable implements Cloneable {
 		String s;
 		if (autoFormat && (int)n==n && precision>=0)
 			s = d2s(n, 0);
-		
+		else
 			s = d2s(n, precision);
 		return s;
 	}
@@ -600,13 +600,19 @@ public class ResultsTable implements Cloneable {
 
 	/** Sets the decimal places (digits to the right of decimal point)
 		that are used when this table is displayed. */
-	public void setPrecision(int decimalPlaces) {
-		this.precision = decimalPlaces;
+	public synchronized void setPrecision(int precision) {
+		this.precision = precision;
+		if (decimalPlaces!=null) {
+			for (int i=0; i<decimalPlaces.length; i++) {
+				if (decimalPlaces[i]>0)
+					decimalPlaces[i] = precision;
+					
+			}
+		}
 	}
 	
-	/** Sets the decimal places (digits to the right of 
-		decimal point)  for each column. */
-	public void setPrecision(int[] decimalPlaces) {
+	/** Sets the decimal places for the first decimalPlaces.length columns. */
+	public synchronized void setDecimalPlaces(int[] decimalPlaces) {
 		this.decimalPlaces = decimalPlaces;
 	}
 
@@ -700,6 +706,8 @@ public class ResultsTable implements Cloneable {
 		lastColumn = -1;
 		rowLabels = null;
 		stringColumns = null;
+		decimalPlaces = null;
+		autoFormat = true;
 	}
 	
 	/** Returns the index of the last used column, or -1 if no columns are used. */
