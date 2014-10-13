@@ -25,6 +25,7 @@ public class ResultsTable implements Cloneable {
 	public static final int COLUMN_NOT_FOUND = -1;
 	public static final int COLUMN_IN_USE = -2;
 	public static final int TABLE_FULL = -3; // no longer used
+	public static final short AUTO_FORMAT = Short.MIN_VALUE;
 	
 	public static final int AREA=0, MEAN=1, STD_DEV=2, MODE=3, MIN=4, MAX=5,
 		X_CENTROID=6, Y_CENTROID=7, X_CENTER_OF_MASS=8, Y_CENTER_OF_MASS=9,
@@ -43,18 +44,17 @@ public class ResultsTable implements Cloneable {
 	private int maxColumns = MAX_COLUMNS; // will be increased as needed
 	private String[] headings = new String[maxColumns];
 	private boolean[] keep = new boolean[maxColumns];
+	private short[] decimalPlaces = new short[maxColumns];
 	private int counter;
 	private double[][] columns = new double[maxColumns][];
 	private String[] rowLabels;
 	private int lastColumn = -1;
 	private	StringBuilder sb;
-	private int precision = 3;
-	private int[] decimalPlaces;
+	private short precision = 3;
 	private String rowLabelHeading = "";
 	private char delimiter = '\t';
 	private boolean headingSet; 
 	private boolean showRowNumbers = true;
-	private boolean autoFormat = true;
 	private Hashtable stringColumns;
 
 
@@ -64,8 +64,10 @@ public class ResultsTable implements Cloneable {
 	public ResultsTable() {
 		int p = Analyzer.getPrecision();
 		if (p>precision)
-			setPrecision(p);
-	}
+			precision = (short)p;
+		for (int i=0; i<decimalPlaces.length; i++)
+			decimalPlaces[i] = AUTO_FORMAT;
+	} 
 	
 	/** Returns the ResultsTable used by the Measure command. This
 		table must be displayed in the "Results" window. */
@@ -116,6 +118,11 @@ public class ResultsTable implements Cloneable {
 		boolean[] tmp3 = new boolean[maxColumns*2];
 		System.arraycopy(keep, 0, tmp3, 0, maxColumns);
 		keep = tmp3;
+		short[] tmp4 = new short[maxColumns*2];
+		for (int i=0; i<tmp4.length; i++)
+			tmp4[i] = AUTO_FORMAT;
+		System.arraycopy(decimalPlaces, 0, tmp4, 0, maxColumns);
+		decimalPlaces = tmp4;
 		maxColumns *= 2;
 	}
 	
@@ -144,6 +151,10 @@ public class ResultsTable implements Cloneable {
 			if (column>lastColumn) lastColumn = column;
 		}
 		columns[column][counter-1] = value;
+		if (counter<25) {
+			if ((int)value!=value)
+				decimalPlaces[column] = (short)precision;
+		}
 	}
 	
 	/** Adds a value to the end of the given column. If the column
@@ -562,16 +573,16 @@ public class ResultsTable implements Cloneable {
 			} else
 				return string;
 		} else {
-			if (decimalPlaces!=null && column<decimalPlaces.length)
-				return d2s(value, decimalPlaces[column]);
-			else
+			if (decimalPlaces[column]==AUTO_FORMAT)
 				return n(value);
+			else
+				return d2s(value, decimalPlaces[column]);
 		}
 	}
 	
 	private String n(double n) {
 		String s;
-		if (autoFormat && (int)n==n && precision>=0)
+		if ((int)n==n && precision>=0)
 			s = d2s(n, 0);
 		else
 			s = d2s(n, precision);
@@ -601,19 +612,19 @@ public class ResultsTable implements Cloneable {
 	/** Sets the decimal places (digits to the right of decimal point)
 		that are used when this table is displayed. */
 	public synchronized void setPrecision(int precision) {
-		this.precision = precision;
-		if (decimalPlaces!=null) {
+		this.precision = (short)precision;
+		if (this==Analyzer.getResultsTable()) {
 			for (int i=0; i<decimalPlaces.length; i++) {
-				if (decimalPlaces[i]>0)
-					decimalPlaces[i] = precision;
-					
+				if (!(decimalPlaces[i]==AUTO_FORMAT||decimalPlaces[i]==0))
+					decimalPlaces[i] = (short)precision;
 			}
 		}
 	}
 	
-	/** Sets the decimal places for the first decimalPlaces.length columns. */
-	public synchronized void setDecimalPlaces(int[] decimalPlaces) {
-		this.decimalPlaces = decimalPlaces;
+	public void setDecimalPlaces(int column, int digits) {
+		if ((column<0) || (column>=headings.length))
+			throw new IllegalArgumentException("Column out of range: "+column);
+		decimalPlaces[column] = (short)digits;
 	}
 
 	public void showRowNumbers(boolean showNumbers) {
@@ -702,12 +713,11 @@ public class ResultsTable implements Cloneable {
 			columns[i] = null;
 			headings[i] = null;
 			keep[i] = false;
+			decimalPlaces[i] = AUTO_FORMAT;
 		}
 		lastColumn = -1;
 		rowLabels = null;
 		stringColumns = null;
-		decimalPlaces = null;
-		autoFormat = true;
 	}
 	
 	/** Returns the index of the last used column, or -1 if no columns are used. */
@@ -778,7 +788,7 @@ public class ResultsTable implements Cloneable {
 			tp.setColumnHeadings(tableHeadings);
 			newWindow = tp.getLineCount()==0;
 			if (!windowTitle.startsWith("Summary"))
-				autoFormat = false;
+				setPrecision(precision);
 		}
 		tp.setResultsTable(cloneNeeded?(ResultsTable)this.clone():this);
 		int n = getCounter();

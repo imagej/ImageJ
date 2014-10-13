@@ -323,10 +323,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			}
 		}
 		int nColumns = rt.getLastColumn() + 1;
-		int[] decimalPlaces = new int[nColumns];
 		for (int i=0; i<nColumns; i++)
-			decimalPlaces[i] = getPrecision(rt.getColumn(i));
-		rt.setDecimalPlaces(decimalPlaces);
+			rt.setDecimalPlaces(i, getPrecision(rt.getColumn(i)));
 		return rt;
 	}
 	
