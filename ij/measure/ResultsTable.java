@@ -181,7 +181,7 @@ public class ResultsTable implements Cloneable {
 		if (index==COLUMN_NOT_FOUND)
 			index = getFreeColumn(column);
 		addValue(index, Double.NaN);
-		setValue(column, getCounter()-1, value);
+		setValue(column, size()-1, value);
 		keep[index] = true;
 	}
 
@@ -265,7 +265,7 @@ public class ResultsTable implements Cloneable {
 			}
 		}
 		if (columns==0) return null;
-		int rows = getCounter();
+		int rows = size();
 		if (rows==0) return null;
 		fp = new FloatProcessor(columns, rows);
 		for (int x=0; x<columns; x++) {
@@ -332,7 +332,7 @@ public class ResultsTable implements Cloneable {
 	/**	Returns the value of the given column and row, where
 		column must be less than or equal the value returned by
 		getLastColumn() and row must be greater than or equal
-		zero and less than the value returned by getCounter(). */
+		zero and less than the value returned by size(). */
 	public double getValueAsDouble(int column, int row) {
 		if (column>=maxColumns || row>=counter)
 			throw new IllegalArgumentException("Index out of range: "+column+","+row);
@@ -351,11 +351,11 @@ public class ResultsTable implements Cloneable {
 
 	/**	Returns the value of the specified column and row, where
 		column is the column heading and row is a number greater
-		than or equal zero and less than value returned by getCounter(). 
+		than or equal zero and less than value returned by size(). 
 		Throws an IllegalArgumentException if this ResultsTable
 		does not have a column with the specified heading. */
 	public double getValue(String column, int row) {
-		if (row<0 || row>=getCounter())
+		if (row<0 || row>=size())
 			throw new IllegalArgumentException("Row out of range");
 		int col = getColumnIndex(column);
 		if (col==COLUMN_NOT_FOUND)
@@ -366,9 +366,9 @@ public class ResultsTable implements Cloneable {
 
 	/** Returns the string value of the given column and row,
 		where row must be greater than or equal zero
-		and less than the value returned by getCounter(). */
+		and less than the value returned by size(). */
 	public String getStringValue(String column, int row) {
-		if (row<0 || row>=getCounter())
+		if (row<0 || row>=size())
 			throw new IllegalArgumentException("Row out of range");
 		int col = getColumnIndex(column);
 		if (col==COLUMN_NOT_FOUND)
@@ -379,7 +379,7 @@ public class ResultsTable implements Cloneable {
 	/** Returns the string value of the given column and row, where
 		column must be less than or equal the value returned by
 		getLastColumn() and row must be greater than or equal
-		zero and less than the value returned by getCounter(). */
+		zero and less than the value returned by size(). */
 	public String getStringValue(int column, int row) {
 		if (column>=maxColumns || row>=counter)
 			throw new IllegalArgumentException("Index out of range: "+column+","+row);
@@ -390,7 +390,7 @@ public class ResultsTable implements Cloneable {
 
 	/**	 Returns the label of the specified row. Returns null if the row does not have a label. */
 	public String getLabel(int row) {
-		if (row<0 || row>=getCounter())
+		if (row<0 || row>=size())
 			throw new IllegalArgumentException("Row out of range");
 		String label = null;
 		if (rowLabels!=null && rowLabels[row]!=null)
@@ -573,10 +573,11 @@ public class ResultsTable implements Cloneable {
 			} else
 				return string;
 		} else {
-			if (decimalPlaces[column]==AUTO_FORMAT)
+			int places = decimalPlaces[column];
+			if (places==AUTO_FORMAT)
 				return n(value);
 			else
-				return d2s(value, decimalPlaces[column]);
+				return d2s(value, places);
 		}
 	}
 	
@@ -762,16 +763,16 @@ public class ResultsTable implements Cloneable {
 			tp = IJ.getTextPanel();
 			if (tp==null) return;
 			newWindow = tp.getLineCount()==0;
-			if (!newWindow && tp.getLineCount()==getCounter()-1 && ResultsTable.getResultsTable()==this
+			if (!newWindow && tp.getLineCount()==size()-1 && ResultsTable.getResultsTable()==this
 			&& tp.getColumnHeadings().equals(tableHeadings)) {
-				String s = getRowAsString(getCounter()-1);
+				String s = getRowAsString(size()-1);
 				tp.append(s);
 				return;
 			}
 			IJ.setColumnHeadings(tableHeadings);
 			if (this!=Analyzer.getResultsTable())
 				Analyzer.setResultsTable(this);
-			if (getCounter()>0)
+			if (size()>0)
 				Analyzer.setUnsavedMeasurements(true);
 		} else {
 			Frame frame = WindowManager.getFrame(windowTitle);
@@ -787,11 +788,9 @@ public class ResultsTable implements Cloneable {
 			tp = win.getTextPanel();
 			tp.setColumnHeadings(tableHeadings);
 			newWindow = tp.getLineCount()==0;
-			if (!windowTitle.startsWith("Summary"))
-				setPrecision(precision);
 		}
 		tp.setResultsTable(cloneNeeded?(ResultsTable)this.clone():this);
-		int n = getCounter();
+		int n = size();
 		if (n>0) {
 			if (tp.getLineCount()>0) tp.clear();
 			for (int i=0; i<n; i++)
@@ -835,7 +834,7 @@ public class ResultsTable implements Cloneable {
 			rowLabels = new String[maxRows];
 			rowLabelHeading = "Label";
 		}
-		if (getCounter()>0) show("Results");
+		if (size()>0) show("Results");
 	}
 	
 	int getMaxColumns() {
@@ -951,7 +950,7 @@ public class ResultsTable implements Cloneable {
 	     Displays a file save dialog if 'path' is empty or null. Does nothing if the
 	     table is empty. */
 	public void saveAs(String path) throws IOException {
-		if (getCounter()==0 && lastColumn<0) return;
+		if (size()==0 && lastColumn<0) return;
 		if (path==null || path.equals("")) {
 			SaveDialog sd = new SaveDialog("Save Results", "Results", Prefs.get("options.ext", ".xls"));
 			String file = sd.getFileName();
@@ -970,7 +969,7 @@ public class ResultsTable implements Cloneable {
 			String headings = getColumnHeadings();
 			pw.println(headings);
 		}
-		for (int i=0; i<getCounter(); i++)
+		for (int i=0; i<size(); i++)
 			pw.println(getRowAsString(i));
 		showRowNumbers = saveShowRowNumbers;
 		pw.close();

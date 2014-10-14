@@ -1729,7 +1729,7 @@ public class Interpreter implements MacroConstants {
 		func.roiManager = null;
 		if (func.resultsPending) {
 			ResultsTable rt = ResultsTable.getResultsTable();
-			if (rt!=null && rt.getCounter()>0)
+			if (rt!=null && rt.size()>0)
 				rt.show("Results");
 		}
 	}
