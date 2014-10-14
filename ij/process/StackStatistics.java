@@ -14,6 +14,7 @@ public class StackStatistics extends ImageStatistics {
 
 	public StackStatistics(ImagePlus imp, int nBins, double histMin, double histMax) {
 		int bits = imp.getBitDepth();
+		stackStatistics = true;
 		if ((bits==8||bits==24) && nBins==256 && histMin==0.0 && histMax==256.0)
 			sum8BitHistograms(imp);
 		else if (bits==16 && nBins==256 && histMin==0.0 && histMax==0.0 && !imp.getCalibration().calibrated())

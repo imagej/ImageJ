@@ -54,11 +54,12 @@ public class ColorPicker extends PlugInDialog {
 }
 
 class ColorGenerator extends ColorProcessor {
-    int w, h;
-    int[] colors = {0xff0000, 0x00ff00, 0x0000ff, 0xffffff, 0x00ffff, 0xff00ff, 0xffff00, 0x000000};
+    private int w, h;
+    private int[] colors = {0xff0000, 0x00ff00, 0x0000ff, 0xffffff, 0x00ffff, 0xff00ff, 0xffff00, 0x000000};
 
     public ColorGenerator(int width, int height, int[] pixels) {
         super(width, height, pixels);
+        setAntialiasedText(true);
     }
     
     void drawColors(int colorWidth, int colorHeight, int columns, int rows) {
@@ -74,8 +75,8 @@ class ColorGenerator extends ColorProcessor {
         
         int x = 1;
         int y = 0;
-        refreshBackground();
-        refreshForeground();
+        refreshBackground(false);
+        refreshForeground(false);
 
         Color c;
         float hue, saturation=1f, brightness=1f;
@@ -106,27 +107,40 @@ class ColorGenerator extends ColorProcessor {
         fill();
     }
 
-    public void refreshBackground() {
+    public void refreshBackground(boolean backgroundInFront) {
         //Boundary for Background Selection
         setColor(0x444444);
         drawRect((w*2)-12, 276, (w*2)+4, (h*2)+4);
         setColor(0x999999);
         drawRect((w*2)-11, 277, (w*2)+2, (h*2)+2);
         setRoi((w*2)-10, 278, w*2, h*2);//Paints the Background Color
-        setColor(Toolbar.getBackgroundColor());
+        Color bg = Toolbar.getBackgroundColor();
+        setColor(bg);
         fill();
+        if (backgroundInFront)
+        	drawLabel("B", bg, w*4-18, 278+h*2);
     }
 
-    public void refreshForeground() {
+    public void refreshForeground(boolean backgroundInFront) {
         //Boundary for Foreground Selection
         setColor(0x444444);
         drawRect(8, 266, (w*2)+4, (h*2)+4);
         setColor(0x999999);
         drawRect(9, 267, (w*2)+2, (h*2)+2);
         setRoi(10, 268, w*2, h*2); //Paints the Foreground Color
-        setColor(Toolbar.getForegroundColor());
+        Color fg = Toolbar.getForegroundColor();
+        setColor(fg);
         fill();
+        if (backgroundInFront)
+        	drawLabel("F", fg, 12, 268+14);
     }
+    
+    private void drawLabel(String label, Color c, int x, int y) {
+		int intensity = (c.getRed()+c.getGreen()+c.getBlue())/3;
+		c = intensity<128?Color.white:Color.black;
+		setColor(c);
+		drawString(label, x, y);
+	}
 
 	void drawSpectrum(double h) {
 		Color c;
@@ -251,13 +265,13 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener{
 		} else if ((background1Rect.contains(x,y)) || (background2Rect.contains(x,y))) {
 			background = true;
 			if (doubleClick) editColor();
-			ip.refreshForeground();
-			ip.refreshBackground();
+			ip.refreshForeground(background);
+			ip.refreshBackground(background);
 		} else if ((foreground1Rect.contains(x,y)) || (foreground2Rect.contains(x,y))) {
 			background = false;
 			if (doubleClick) editColor();
-			ip.refreshBackground();
-			ip.refreshForeground();
+			ip.refreshBackground(background);
+			ip.refreshForeground(background);
 		} else {
 			//IJ.log(" " + difference + " " + doubleClick);
 			if (doubleClick)
@@ -266,11 +280,11 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener{
 				setDrawingColor(x, y, background); 
 		}
 		if (background) {
-			ip.refreshForeground();
-			ip.refreshBackground();
+			ip.refreshForeground(background);
+			ip.refreshBackground(background);
 		} else {
-			ip.refreshBackground();
-			ip.refreshForeground();
+			ip.refreshBackground(background);
+			ip.refreshForeground(background);
 		}
 		repaint();
 	}
@@ -321,8 +335,8 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener{
 	}
 	
 	public void refreshColors() {
-		ip.refreshBackground();
-		ip.refreshForeground();
+		ip.refreshBackground(false);
+		ip.refreshForeground(false);
 		repaint();
 	}
 
@@ -331,7 +345,6 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener{
 	public void mouseClicked(MouseEvent e) {}
 	public void mouseEntered(MouseEvent e) {}
 	public void mouseDragged(MouseEvent e) {}
-
 
 }
 

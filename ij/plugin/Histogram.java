@@ -121,10 +121,12 @@ public class Histogram implements PlugIn, TextListener {
 			gd.addCheckbox("Stack histogram", stackHistogram);
 		
 		Vector numbers = gd.getNumericFields();
-		minField = (TextField)numbers.elementAt(1);
-		minField.addTextListener(this);
-		maxField = (TextField)numbers.elementAt(2);
-		maxField.addTextListener(this);
+		if (numbers!=null) {
+			minField = (TextField)numbers.elementAt(1);
+			minField.addTextListener(this);
+			maxField = (TextField)numbers.elementAt(2);
+			maxField.addTextListener(this);
+		}
 		checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
 		gd.showDialog();
 		if (gd.wasCanceled())

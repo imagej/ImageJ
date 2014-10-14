@@ -710,7 +710,7 @@ shortcutsBroken = false;
 		}
 	}
 	
-	private void showMacroFunctions() {
+	protected void showMacroFunctions() {
 		String url= "/developer/macro/functions.html";
 		String selText = ta.getSelectedText().replace("\n", " ");
 		String[] selectedWords = Tools.split(selText, "/,(,[\"\'&+");

@@ -16,13 +16,14 @@ public class ChannelSplitter implements PlugIn {
 			int z = imp.getSlice();
 			int t = imp.getFrame();
 			ImagePlus[] channels = split(imp);
+			imp.changes = false;
+			imp.setIgnoreFlush(true);
+			imp.close();
 			for (int i=0; i<channels.length; i++) {
 				channels[i].show();
 				if (z>1 || t>1)
 					channels[i].setPosition(1, z, t);
 			}
-			imp.changes = false;
-			imp.close();
 		} else if (imp.getType()==ImagePlus.COLOR_RGB)
 			splitRGB(imp);
 		else 

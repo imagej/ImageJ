@@ -14,13 +14,14 @@ import java.util.Arrays;
  */
  // Version 2012-07-15 M. Schmid:	Fixes a bug that could cause preview not to work correctly
  // Version 2012-12-23 M. Schmid:	Test for inverted LUT only once (not in each slice)
+ // Version 2014-10-10 M. Schmid:   Fixes a bug that caused Threshold=0 when calling from API
 
 public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 	public static final int	 MEAN=0, MIN=1, MAX=2, VARIANCE=3, MEDIAN=4, OUTLIERS=5, DESPECKLE=6, REMOVE_NAN=7,
 			OPEN=8, CLOSE=9;
-	private static int HIGHEST_FILTER = CLOSE;
-	private static final int BRIGHT_OUTLIERS = 0, DARK_OUTLIERS = 1;
+	public static final int BRIGHT_OUTLIERS = 0, DARK_OUTLIERS = 1;
 	private static final String[] outlierStrings = {"Bright","Dark"};
+	private static int HIGHEST_FILTER = CLOSE;
 	// Filter parameters
 	private double radius;
 	private double threshold;
@@ -428,7 +429,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 			int cacheLineP = cacheWidth * (y % cacheHeight) + kRadius;	//points to pixel (roi.x, y)
 			filterLine(values, width, cache, cachePointers, kNPoints, cacheLineP, roi, y,	// F I L T E R
 					sums, medianBuf1, medianBuf2, minMaxOutliersSign, maxValue, isFloat, filterType,
-					smallKernel, sumFilter, minOrMax, minOrMaxOrOutliers);
+					smallKernel, sumFilter, minOrMax, minOrMaxOrOutliers, threshold);
 			if (!isFloat)		//Float images: data are written already during 'filterLine'
 				writeLineToPixels(values, pixels, roi.x+y*width, roi.width, colorChannel);	// W R I T E
 			//IJ.log("thread "+threadNumber+" @y="+y+" line done");
@@ -452,7 +453,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 
 	private void filterLine(float[] values, int width, float[] cache, int[] cachePointers, int kNPoints, int cacheLineP, Rectangle roi, int y,
 			double[] sums, float[] medianBuf1, float[] medianBuf2, float minMaxOutliersSign, float maxValue, boolean isFloat, int filterType,
-			boolean smallKernel, boolean sumFilter, boolean minOrMax, boolean minOrMaxOrOutliers) {
+			boolean smallKernel, boolean sumFilter, boolean minOrMax, boolean minOrMaxOrOutliers, float threshold) {
 			int valuesP = isFloat ? roi.x+y*width : 0;
 			float max = 0f;
 			float median = Float.isNaN(cache[cacheLineP]) ? 0 : cache[cacheLineP];	// a first guess

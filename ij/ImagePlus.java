@@ -283,18 +283,24 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return getProcessor();
 	}
 		
-	/* The CompositeImage class overrides this method  to
-		return, as an array, copies of this image's channel LUTs. */
+	/* Returns an array containing the lookup tables used by this image,
+		one per channel, or an empty array if this is an RGB image. */
+	/**  Returns an array containing the lookup tables used by this image,
+	 * one per channel, or an empty array if this is an RGB image.
+	 * @see #getNChannels
+	 * @see #isComposite
+	 * @see #getCompositeMode
+	*/
 	public LUT[] getLuts() {
-		return null;
-		//ImageProcessor ip = getProcessor();
-		//ColorModel cm = ip.getColorModel();
-		//if (cm instanceof IndexColorModel) {
-		//	LUT[] luts = new LUT[1];
-		//	luts[0] = new LUT((IndexColorModel)cm, ip.getMin(), ip.getMax());
-		//	return luts;
-		//} else
-		//	return null;
+		ImageProcessor ip2 = getProcessor();
+		if (ip2==null)
+			return new LUT[0];
+		LUT lut = ip2.getLut();
+		if (lut==null)
+			return new LUT[0];
+		LUT[] luts = new LUT[1];
+		luts[0] = lut;
+		return luts;
 	}
 
 	/** Calls draw to draw the image and also repaints the
@@ -344,11 +350,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		"Save changes?" dialog, first set the public 'changes' variable to false. */
 	public void close() {
 		ImageWindow win = getWindow();
-		if (win!=null) {
-			//if (IJ.isWindows() && IJ.isJava14())
-			//	changes = false; // avoid 'save changes?' dialog and potential Java 1.5 deadlocks
+		if (win!=null)
 			win.close();
-		} else {
+		else {
             if (WindowManager.getCurrentImage()==this)
                 WindowManager.setTempCurrentImage(null);
 			deleteRoi(); //save any ROI so it can be restored later

@@ -44,7 +44,6 @@ public class CalibrationBar implements PlugIn {
 	ImageStatistics stats;
 	Calibration cal;
 	int[] histogram;
-	LookUpTable lut;
 	Image img;
 	Button setup, redraw, insert, unInsert;
 	Checkbox ne,nw,se,sw;
@@ -76,8 +75,10 @@ public class CalibrationBar implements PlugIn {
 			IJ.error("Calibration Bar", "RGB and composite images are not supported");
 			return;
 		}
-		if (imp.getRoi()!=null)
+		if (imp.getRoi()!=null && imp.getRoi().isArea())
 			location = locations[AT_SELECTION];
+		else if (location.equals(locations[AT_SELECTION]))
+			location = locations[UPPER_RIGHT];
 		ImageCanvas ic = imp.getCanvas();
 		double mag = (ic!=null)?ic.getMagnification():1.0;
 		if (zoom<=1 && mag<1)
@@ -167,7 +168,6 @@ public class CalibrationBar implements PlugIn {
 		if (roi!=null)
 			imp.setRoi(roi);
 		histogram = stats.histogram;
-		lut = imp.createLut();
 		cal = imp.getCalibration();
 		Overlay overlay = new Overlay();
 
@@ -191,18 +191,6 @@ public class CalibrationBar implements PlugIn {
 		addVerticalColorBar(overlay, x, y, (int)(BAR_THICKNESS*zoom), (int)(BAR_LENGTH*zoom) );
 		addText(overlay, x + (int)(BAR_THICKNESS*zoom), y);
 		c = getColor(boxOutlineColor);
-		/*
-		if (c!=null && !fillColor.equals("None")) {
-			int xbase = xOffset+BOX_PAD;
-			int ybase = yOffset+BOX_PAD;
-			int w = win_width-BOX_PAD;
-			int h = (int)(WIN_HEIGHT*zoom + 2*(int)(YMARGIN*zoom));
-			Roi r = new Roi(xbase, ybase, w, h);
-			r.setStrokeColor(c);
-			r.setStrokeWidth(1.0);
-			overlay.add(r);
-		}
-		*/
 		overlay.setIsCalibrationBar(true);
 		if (imp.getCompositeMode()>0) {
 			for (int i=0; i<overlay.size(); i++)
@@ -216,7 +204,7 @@ public class CalibrationBar implements PlugIn {
 		int height = length;
 		byte[] rLUT,gLUT,bLUT;
 		int mapSize = 0;
-		java.awt.image.ColorModel cm = lut.getColorModel();
+		java.awt.image.ColorModel cm = imp.getProcessor().getCurrentColorModel();
 		if (cm instanceof IndexColorModel) {
 			IndexColorModel m = (IndexColorModel)cm;
 			mapSize = m.getMapSize();

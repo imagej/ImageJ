@@ -1082,13 +1082,6 @@ public class ShapeRoi extends Roi {
 			return null;
 		if (cachedMask!=null && cachedMask.getPixels()!=null)
 			return cachedMask;
-		//Rectangle r = getBounds();
-		//if (r.x<0 || r.y<0) {
-		//	if (r.x<0) r.x = 0;
-		//	if (r.y<0) r.y = 0;
-		//	ShapeRoi clipRect = new ShapeRoi(new Roi(r.x,r.y,r.width,r.height));
-		//	setShape(getShape(this.or(clipRect)));
-		//}
 		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
 		Graphics2D g2d = bi.createGraphics();
 		g2d.setColor(Color.white);

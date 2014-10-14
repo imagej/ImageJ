@@ -25,6 +25,7 @@ public class ResultsTable implements Cloneable {
 	public static final int COLUMN_NOT_FOUND = -1;
 	public static final int COLUMN_IN_USE = -2;
 	public static final int TABLE_FULL = -3; // no longer used
+	public static final short AUTO_FORMAT = Short.MIN_VALUE;
 	
 	public static final int AREA=0, MEAN=1, STD_DEV=2, MODE=3, MIN=4, MAX=5,
 		X_CENTROID=6, Y_CENTROID=7, X_CENTER_OF_MASS=8, Y_CENTER_OF_MASS=9,
@@ -43,17 +44,17 @@ public class ResultsTable implements Cloneable {
 	private int maxColumns = MAX_COLUMNS; // will be increased as needed
 	private String[] headings = new String[maxColumns];
 	private boolean[] keep = new boolean[maxColumns];
+	private short[] decimalPlaces = new short[maxColumns];
 	private int counter;
 	private double[][] columns = new double[maxColumns][];
 	private String[] rowLabels;
 	private int lastColumn = -1;
 	private	StringBuilder sb;
-	private int precision = 3;
+	private short precision = 3;
 	private String rowLabelHeading = "";
 	private char delimiter = '\t';
 	private boolean headingSet; 
 	private boolean showRowNumbers = true;
-	private boolean autoFormat = true;
 	private Hashtable stringColumns;
 
 
@@ -63,8 +64,10 @@ public class ResultsTable implements Cloneable {
 	public ResultsTable() {
 		int p = Analyzer.getPrecision();
 		if (p>precision)
-			setPrecision(p);
-	}
+			precision = (short)p;
+		for (int i=0; i<decimalPlaces.length; i++)
+			decimalPlaces[i] = AUTO_FORMAT;
+	} 
 	
 	/** Returns the ResultsTable used by the Measure command. This
 		table must be displayed in the "Results" window. */
@@ -115,6 +118,11 @@ public class ResultsTable implements Cloneable {
 		boolean[] tmp3 = new boolean[maxColumns*2];
 		System.arraycopy(keep, 0, tmp3, 0, maxColumns);
 		keep = tmp3;
+		short[] tmp4 = new short[maxColumns*2];
+		for (int i=0; i<tmp4.length; i++)
+			tmp4[i] = AUTO_FORMAT;
+		System.arraycopy(decimalPlaces, 0, tmp4, 0, maxColumns);
+		decimalPlaces = tmp4;
 		maxColumns *= 2;
 	}
 	
@@ -143,6 +151,10 @@ public class ResultsTable implements Cloneable {
 			if (column>lastColumn) lastColumn = column;
 		}
 		columns[column][counter-1] = value;
+		if (counter<25) {
+			if ((int)value!=value)
+				decimalPlaces[column] = (short)precision;
+		}
 	}
 	
 	/** Adds a value to the end of the given column. If the column
@@ -169,7 +181,7 @@ public class ResultsTable implements Cloneable {
 		if (index==COLUMN_NOT_FOUND)
 			index = getFreeColumn(column);
 		addValue(index, Double.NaN);
-		setValue(column, getCounter()-1, value);
+		setValue(column, size()-1, value);
 		keep[index] = true;
 	}
 
@@ -253,7 +265,7 @@ public class ResultsTable implements Cloneable {
 			}
 		}
 		if (columns==0) return null;
-		int rows = getCounter();
+		int rows = size();
 		if (rows==0) return null;
 		fp = new FloatProcessor(columns, rows);
 		for (int x=0; x<columns; x++) {
@@ -320,7 +332,7 @@ public class ResultsTable implements Cloneable {
 	/**	Returns the value of the given column and row, where
 		column must be less than or equal the value returned by
 		getLastColumn() and row must be greater than or equal
-		zero and less than the value returned by getCounter(). */
+		zero and less than the value returned by size(). */
 	public double getValueAsDouble(int column, int row) {
 		if (column>=maxColumns || row>=counter)
 			throw new IllegalArgumentException("Index out of range: "+column+","+row);
@@ -339,11 +351,11 @@ public class ResultsTable implements Cloneable {
 
 	/**	Returns the value of the specified column and row, where
 		column is the column heading and row is a number greater
-		than or equal zero and less than value returned by getCounter(). 
+		than or equal zero and less than value returned by size(). 
 		Throws an IllegalArgumentException if this ResultsTable
 		does not have a column with the specified heading. */
 	public double getValue(String column, int row) {
-		if (row<0 || row>=getCounter())
+		if (row<0 || row>=size())
 			throw new IllegalArgumentException("Row out of range");
 		int col = getColumnIndex(column);
 		if (col==COLUMN_NOT_FOUND)
@@ -354,9 +366,9 @@ public class ResultsTable implements Cloneable {
 
 	/** Returns the string value of the given column and row,
 		where row must be greater than or equal zero
-		and less than the value returned by getCounter(). */
+		and less than the value returned by size(). */
 	public String getStringValue(String column, int row) {
-		if (row<0 || row>=getCounter())
+		if (row<0 || row>=size())
 			throw new IllegalArgumentException("Row out of range");
 		int col = getColumnIndex(column);
 		if (col==COLUMN_NOT_FOUND)
@@ -367,7 +379,7 @@ public class ResultsTable implements Cloneable {
 	/** Returns the string value of the given column and row, where
 		column must be less than or equal the value returned by
 		getLastColumn() and row must be greater than or equal
-		zero and less than the value returned by getCounter(). */
+		zero and less than the value returned by size(). */
 	public String getStringValue(int column, int row) {
 		if (column>=maxColumns || row>=counter)
 			throw new IllegalArgumentException("Index out of range: "+column+","+row);
@@ -378,7 +390,7 @@ public class ResultsTable implements Cloneable {
 
 	/**	 Returns the label of the specified row. Returns null if the row does not have a label. */
 	public String getLabel(int row) {
-		if (row<0 || row>=getCounter())
+		if (row<0 || row>=size())
 			throw new IllegalArgumentException("Row out of range");
 		String label = null;
 		if (rowLabels!=null && rowLabels[row]!=null)
@@ -560,10 +572,24 @@ public class ResultsTable implements Cloneable {
 				return string;
 			} else
 				return string;
-		} else
-			return n(value);
+		} else {
+			int places = decimalPlaces[column];
+			if (places==AUTO_FORMAT)
+				return n(value);
+			else
+				return d2s(value, places);
+		}
 	}
 	
+	private String n(double n) {
+		String s;
+		if ((int)n==n && precision>=0)
+			s = d2s(n, 0);
+		else
+			s = d2s(n, precision);
+		return s;
+	}
+		
 	/**
 	* @deprecated
 	* replaced by addValue(String,double) and setValue(String,int,double)
@@ -586,23 +612,26 @@ public class ResultsTable implements Cloneable {
 
 	/** Sets the decimal places (digits to the right of decimal point)
 		that are used when this table is displayed. */
-	public void setPrecision(int decimalPlaces) {
-		this.precision = decimalPlaces;
+	public synchronized void setPrecision(int precision) {
+		this.precision = (short)precision;
+		if (this==Analyzer.getResultsTable()) {
+			for (int i=0; i<decimalPlaces.length; i++) {
+				if (!(decimalPlaces[i]==AUTO_FORMAT||decimalPlaces[i]==0))
+					decimalPlaces[i] = (short)precision;
+			}
+		}
 	}
 	
+	public void setDecimalPlaces(int column, int digits) {
+		if ((column<0) || (column>=headings.length))
+			throw new IllegalArgumentException("Column out of range: "+column);
+		decimalPlaces[column] = (short)digits;
+	}
+
 	public void showRowNumbers(boolean showNumbers) {
 		showRowNumbers = showNumbers;
 	}
 
-	String n(double n) {
-		String s;
-		if (autoFormat && Math.round(n)==n && precision>=0)
-			s = d2s(n, 0);
-		else
-			s = d2s(n, precision);
-		return s;
-	}
-		
 	private static DecimalFormat[] df;
 	private static DecimalFormat[] sf;
 	private static DecimalFormatSymbols dfs;
@@ -616,20 +645,6 @@ public class ResultsTable implements Cloneable {
 			return "3.4e38";
 		double np = n;
 		if (n<0.0) np = -n;
-		if (df==null) {
-			dfs = new DecimalFormatSymbols(Locale.US);
-			df = new DecimalFormat[10];
-			df[0] = new DecimalFormat("0", dfs);
-			df[1] = new DecimalFormat("0.0", dfs);
-			df[2] = new DecimalFormat("0.00", dfs);
-			df[3] = new DecimalFormat("0.000", dfs);
-			df[4] = new DecimalFormat("0.0000", dfs);
-			df[5] = new DecimalFormat("0.00000", dfs);
-			df[6] = new DecimalFormat("0.000000", dfs);
-			df[7] = new DecimalFormat("0.0000000", dfs);
-			df[8] = new DecimalFormat("0.00000000", dfs);
-			df[9] = new DecimalFormat("0.000000000", dfs);
-		}
 		if ((np<0.001 && np!=0.0 && np<1.0/Math.pow(10,decimalPlaces)) || np>999999999999d || decimalPlaces<0) {
 			if (decimalPlaces<0) {
 				decimalPlaces = -decimalPlaces;
@@ -652,6 +667,20 @@ public class ResultsTable implements Cloneable {
 		}
 		if (decimalPlaces<0) decimalPlaces = 0;
 		if (decimalPlaces>9) decimalPlaces = 9;
+		if (df==null) {
+			dfs = new DecimalFormatSymbols(Locale.US);
+			df = new DecimalFormat[10];
+			df[0] = new DecimalFormat("0", dfs);
+			df[1] = new DecimalFormat("0.0", dfs);
+			df[2] = new DecimalFormat("0.00", dfs);
+			df[3] = new DecimalFormat("0.000", dfs);
+			df[4] = new DecimalFormat("0.0000", dfs);
+			df[5] = new DecimalFormat("0.00000", dfs);
+			df[6] = new DecimalFormat("0.000000", dfs);
+			df[7] = new DecimalFormat("0.0000000", dfs);
+			df[8] = new DecimalFormat("0.00000000", dfs);
+			df[9] = new DecimalFormat("0.000000000", dfs);
+		}
 		return df[decimalPlaces].format(n);
 	}
 
@@ -685,6 +714,7 @@ public class ResultsTable implements Cloneable {
 			columns[i] = null;
 			headings[i] = null;
 			keep[i] = false;
+			decimalPlaces[i] = AUTO_FORMAT;
 		}
 		lastColumn = -1;
 		rowLabels = null;
@@ -733,16 +763,16 @@ public class ResultsTable implements Cloneable {
 			tp = IJ.getTextPanel();
 			if (tp==null) return;
 			newWindow = tp.getLineCount()==0;
-			if (!newWindow && tp.getLineCount()==getCounter()-1 && ResultsTable.getResultsTable()==this
+			if (!newWindow && tp.getLineCount()==size()-1 && ResultsTable.getResultsTable()==this
 			&& tp.getColumnHeadings().equals(tableHeadings)) {
-				String s = getRowAsString(getCounter()-1);
+				String s = getRowAsString(size()-1);
 				tp.append(s);
 				return;
 			}
 			IJ.setColumnHeadings(tableHeadings);
 			if (this!=Analyzer.getResultsTable())
 				Analyzer.setResultsTable(this);
-			if (getCounter()>0)
+			if (size()>0)
 				Analyzer.setUnsavedMeasurements(true);
 		} else {
 			Frame frame = WindowManager.getFrame(windowTitle);
@@ -758,11 +788,9 @@ public class ResultsTable implements Cloneable {
 			tp = win.getTextPanel();
 			tp.setColumnHeadings(tableHeadings);
 			newWindow = tp.getLineCount()==0;
-			if (!windowTitle.startsWith("Summary"))
-				autoFormat = false;
 		}
 		tp.setResultsTable(cloneNeeded?(ResultsTable)this.clone():this);
-		int n = getCounter();
+		int n = size();
 		if (n>0) {
 			if (tp.getLineCount()>0) tp.clear();
 			for (int i=0; i<n; i++)
@@ -806,7 +834,7 @@ public class ResultsTable implements Cloneable {
 			rowLabels = new String[maxRows];
 			rowLabelHeading = "Label";
 		}
-		if (getCounter()>0) show("Results");
+		if (size()>0) show("Results");
 	}
 	
 	int getMaxColumns() {
@@ -922,7 +950,7 @@ public class ResultsTable implements Cloneable {
 	     Displays a file save dialog if 'path' is empty or null. Does nothing if the
 	     table is empty. */
 	public void saveAs(String path) throws IOException {
-		if (getCounter()==0 && lastColumn<0) return;
+		if (size()==0 && lastColumn<0) return;
 		if (path==null || path.equals("")) {
 			SaveDialog sd = new SaveDialog("Save Results", "Results", Prefs.get("options.ext", ".xls"));
 			String file = sd.getFileName();
@@ -941,7 +969,7 @@ public class ResultsTable implements Cloneable {
 			String headings = getColumnHeadings();
 			pw.println(headings);
 		}
-		for (int i=0; i<getCounter(); i++)
+		for (int i=0; i<size(); i++)
 			pw.println(getRowAsString(i));
 		showRowNumbers = saveShowRowNumbers;
 		pw.close();

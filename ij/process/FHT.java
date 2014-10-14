@@ -70,16 +70,88 @@ public class FHT extends FloatProcessor {
 		transform(true);
 	}
 	
-	/** Returns an inverse transform of this image, which is assumed to be in the frequency domain. */ 
-	//public FloatProcessor getInverseTransform() {
-	//	if (!isFrequencyDomain) {
-	//		throw new  IllegalArgumentException("Frequency domain image required");
-	//	snapshot();
-	//	transform(true);
-	//	FloatProcessor fp = this.duplicate();
-	//	reset();
-	//	isFrequencyDomain = true;
-	//}
+	public static int NO_WINDOW=0, HAMMING=1, HANN=2, FLATTOP=3; // fourier1D window function types
+
+	/** Calculates the Fourier amplitudes of an array, based on a 1D Fast Hartley Transform.
+	* With no Window function, if the array size is a power of 2, the input function
+	* should be either periodic or the data at the beginning and end of the array should
+	* approach the same value (the periodic continuation should be smooth).
+	* With no Window function, if the array size is not a power of 2, the
+	* data should decay towards 0 at the beginning and end of the array.
+	* For data that do not fulfill these conditions, a window function can be used to
+	* avoid artifacts from the edges. See http://en.wikipedia.org/wiki/Window_function.
+	*
+	* Supported window functions: Hamming, Hann ("raised cosine"), flat-top. Flat-top
+	* refers to the HFT70 function in the report cited below, it is named for its
+	* response in the frequency domain: a single-frequency sinewave becomes a peak with
+	* a short plateau of 3 roughly equal Fourier amplitudes. It is optimized for
+	* measuring amplitudes of signals with well-separated sharp frequencies.
+	* All window functions will reduce the frequency resolution; this is especially
+	* pronounced for the flat-top window.
+	*
+	* Normalization is done such that the peak height in the Fourier transform
+	* (roughly) corresponds to the RMS amplitude of a sinewave (i.e., amplitude/sqrt(2)),
+	* and the first Fourier amplitude corresponds to DC component (average value of
+	* the data). If the sine frequency falls between two discrete frequencies of the
+	* Fourier transform, peak heights can deviate from the true RMS amplitude by up to
+	* approx. 36, 18, 15, and 0.1% for no window function, Hamming, Hann and flat-top
+	* window functions, respectively.
+	* When calculating the power spectrum from the square of the output, note that the
+	* result is quantitative only if the input array size is a power of 2; then the
+	* spectral density of the power spectrum must be divided by 1.3628 for the Hamming,
+	* 1.5 for the Hann, and 3.4129 for the flat-top window.
+	*
+	* For more details about window functions, see:
+	* G. Heinzel, A. Rdiger, and R. Schilling
+	* Spectrum and spectral density estimation by the discrete Fourier transform (DFT),
+	* including a comprehensive list of window functions and some new flat-top windows.
+	* Technical Report, MPI f. Gravitationsphysik, Hannover, 2002; http://edoc.mpg.de/395068
+	*
+	* @param data Input array; its size need not be a power of 2. The input is not modified..
+	* @param windowType may be NO_WINDOW, then the input array is used as it is.
+	* Otherwise, it is multiplied by a window function, which can be HAMMING, HANN or
+	* FLATTOP.
+	* @return Array with the result, i.e., the RMS amplitudes for each frequency.
+	* The output array size is half the size of the 2^n-sized array used for the FHT;
+	* array element [0]corresponds to frequency zero (the "DC component"). The first
+	* nonexisting array element, result[result.length] would correspond to a frequency
+	* of 1 cycle per 2 input points, i.e., the Nyquist frequency. In other words, if
+	* the spacing of the input data points is dx, results[i] corresponds to a frequency
+	* of i/(2*results.length*dx).
+	*/
+	public float[] fourier1D(float[] data, int windowType) {
+		int n = data.length;
+		int size = 2;
+		while (size<n) size *= 2; // find power of 2 where the data fit
+		float[] y = new float[size]; // leave the original data untouched, work on a copy
+		System.arraycopy(data, 0, y, 0, n); // pad to 2^n-size
+		double sum = 0;
+		if (windowType != NO_WINDOW) {
+			for (int x=0; x<n; x++) { //calculate non-normalized window function
+				double z = (x + 0.5) * (2 * Math.PI / n);
+				double w = 0;
+				if (windowType == HAMMING)
+					w = 0.54 - 0.46 * Math.cos(z);
+				else if (windowType == HANN)
+					w = 1. - Math.cos(z);
+				else if (windowType == FLATTOP)
+					w = 1. - 1.90796 * Math.cos(z) + 1.07349 * Math.cos(2*z) - 0.18199 * Math.cos(3*z);
+				else
+					throw new IllegalArgumentException("Invalid Fourier Window Type");
+				y[x] *= w;
+				sum += w;
+			}
+		} else
+			sum = n;
+		for (int x=0; x<n; x++) //normalize
+			y[x] *= (1./sum);
+		transform1D(y); //transform
+		float[] result = new float[size/2];
+		result[0] = (float)Math.sqrt(y[0]*y[0]);
+		for (int x=1; x<size/2; x++)
+			result[x] = (float)Math.sqrt(y[x]*y[x]+y[size-x]*y[size-x]);
+		return result;
+	}
 
 	/** Performs an optimized 1D Fast Hartley Transform (FHT) of an array.
 	 *  Array size must be a power of 2.

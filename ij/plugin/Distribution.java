@@ -26,7 +26,7 @@ public class Distribution implements PlugIn, TextListener {
 
 	public void run(String arg) {
 		ResultsTable rt=ResultsTable.getResultsTable();
-		int count = rt.getCounter();
+		int count = rt.size();
 		if (count==0) {
 			IJ.error("Distribution", "The \"Results\" table is empty");
 			return;
@@ -52,11 +52,15 @@ public class Distribution implements PlugIn, TextListener {
 		gd.addStringField ("and range:", range);
 
 		Vector v = gd.getNumericFields();
-		nBinsField = (TextField)v.elementAt(0);
-		nBinsField.addTextListener(this);
+		if (v!=null) {
+			nBinsField = (TextField)v.elementAt(0);
+			nBinsField.addTextListener(this);
+		}
 		v = gd.getStringFields();
-		rangeField = (TextField)v.elementAt(0);
-		rangeField.addTextListener(this);
+		if (v!=null) {
+			rangeField = (TextField)v.elementAt(0);
+			rangeField.addTextListener(this);
+		}
 		checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
 		gd.showDialog();
 		if (gd.wasCanceled())

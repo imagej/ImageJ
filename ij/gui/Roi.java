@@ -929,7 +929,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 					x = xMax-width;
 				break;
 		}
-		if (type==POINT)
 		updateClipRect();
 		if (type==POINT)
 			imp.draw();
@@ -1140,7 +1139,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		if (getStrokeWidth()>1f)
 			ip.setLineWidth((int)Math.round(getStrokeWidth()));
 		if (cornerDiameter>0)
-			(new ShapeRoi(new RoundRectangle2D.Float(x, y, width, height, cornerDiameter, cornerDiameter))).drawPixels(ip);
+			drawRoundedRect(ip);
 		else {
 			if (ip.getLineWidth()==1)
 				ip.drawRect(x, y, width+1, height+1);
@@ -1150,6 +1149,18 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		ip.setLineWidth(saveWidth);
 		if (Line.getWidth()>1 || getStrokeWidth()>1)
 			updateFullWindow = true;
+	}
+	
+	private void drawRoundedRect(ImageProcessor ip) {
+		int margin = (int)getStrokeWidth()/2;
+		BufferedImage bi = new BufferedImage(width+margin*2+1, height+margin*2+1, BufferedImage.TYPE_BYTE_GRAY);
+		Graphics2D g = bi.createGraphics();
+		if (stroke!=null)
+			g.setStroke(stroke);
+		g.drawRoundRect(margin, margin, width, height, cornerDiameter, cornerDiameter);
+		ByteProcessor mask = new ByteProcessor(bi);
+		ip.setRoi(x-margin, y-margin, width+margin*2+1, height+margin*2+1);
+		ip.fill(mask);
 	}
 	
 	public boolean contains(int x, int y) {

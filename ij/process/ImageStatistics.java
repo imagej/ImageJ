@@ -38,6 +38,8 @@ public class ImageStatistics implements Measurements {
 	public double areaFraction;
 	/** Used internally by AnalyzeParticles */
 	public int xstart, ystart;
+	/** Used by HistogramWindow */
+	public boolean stackStatistics;
 	
 	public double histMin;
 	public double histMax;

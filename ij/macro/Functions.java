@@ -4986,9 +4986,40 @@ public class Functions implements MacroConstants, Measurements {
 			return findArrayMaxima(true);
 		else if (name.equals("show"))
 			return showArray();
+		else if (name.equals("fourier"))
+			return fourierArray();
 		else
 			interp.error("Unrecognized Array function");
 		return null;
+	}
+	
+	Variable[] fourierArray() {
+		interp.getLeftParen();
+		Variable[] a = getArray();
+		int windowType = FHT.NO_WINDOW;
+		if (interp.nextToken()==',') {
+			interp.getComma();
+			String windowS = getString().toLowerCase();
+			if (windowS.equals("hamming"))
+				windowType = FHT.HAMMING;
+			else if (windowS.startsWith("hann")) //sometimes also called 'Hanning'
+				windowType = FHT.HANN;
+			else if (windowS.startsWith("flat"))
+				windowType = FHT.FLATTOP;
+			else if (!windowS.startsWith("no"))
+				interp.error("Invalid Fourier window '"+windowType+"'");
+		}
+		interp.getRightParen();
+		int n = a.length;
+		float[] data = new float[n];
+		for (int i=0; i<n; i++)
+			data[i] = (float)a[i].getValue();
+		float[] result = new FHT().fourier1D(data, windowType);
+		int n2 = result.length;
+		Variable[] a2 = new Variable[n2];
+		for (int i=0; i<n2; i++)
+			a2[i] = new Variable(result[i]);
+		return a2;
 	}
 	
 	Variable[] printArray() {

@@ -47,6 +47,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	private boolean doUpdate;	// tells background thread to update
 	private int channel;				// RGB channel
 	private String blankLabel;
+	private boolean stackHistogram;
 	    
 	/** Displays a histogram using the title "Histogram of ImageName". */
 	public HistogramWindow(ImagePlus imp) {
@@ -108,6 +109,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 
 	/** Draws the histogram using the specified title and ImageStatistics. */
 	public void showHistogram(ImagePlus imp, ImageStatistics stats) {
+		stackHistogram = stats.stackStatistics;
 		if (list==null)
 			setup(imp);
 		this.stats = stats;
@@ -153,10 +155,12 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		log = new TrimmedButton("Log", trim);
 		log.addActionListener(this);
 		buttons.add(log);
-		live = new TrimmedButton("Live", trim);
-		live.addActionListener(this);
-		buttons.add(live);
-		if (imp!=null && isRGB) {
+		if (!stackHistogram) {
+			live = new TrimmedButton("Live", trim);
+			live.addActionListener(this);
+			buttons.add(live);
+		}
+		if (imp!=null && isRGB && !stackHistogram) {
 			rgb = new TrimmedButton("RGB", trim);
 			rgb.addActionListener(this);
 			buttons.add(rgb);
@@ -609,9 +613,11 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		ic.addMouseMotionListener(this);
 		ic.addKeyListener(this);
 		srcImp.addImageListener(this);
-		Font font = live.getFont();
-		live.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
-		live.setForeground(Color.red);
+		if (live!=null) {
+			Font font = live.getFont();
+			live.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
+			live.setForeground(Color.red);
+		}
 	}
 	
 	private void removeListeners() {
@@ -624,9 +630,11 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			ic.removeKeyListener(this);
 		}
 		srcImp.removeImageListener(this);
-		Font font = live.getFont();
-		live.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
-		live.setForeground(Color.black);
+		if (live!=null) {
+			Font font = live.getFont();
+			live.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
+			live.setForeground(Color.black);
+		}
 	}
 
 }

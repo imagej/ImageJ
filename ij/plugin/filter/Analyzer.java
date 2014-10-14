@@ -107,7 +107,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 				roi.setPosition(imp.getCurrentSlice());
 		}
 		if (roi.getName()==null)
-			roi.setName(""+rt.getCounter());
+			roi.setName(""+rt.size());
 		//roi.setName(IJ.getString("Label:", "m"+rt.getCounter()));
 		roi.setIgnoreClipRect(true);
 		Overlay overlay = imp.getOverlay();
@@ -201,7 +201,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (prec!=precision || notationChanged) {
 			precision = prec;
 			rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
-			if (rt.getCounter()>0)
+			if (rt.size()>0)
 				rt.show("Results");
 		}
 	}
@@ -261,7 +261,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	
 	boolean reset() {
 		boolean ok = true;
-		if (rt.getCounter()>0)
+		if (rt.size()>0)
 			ok = resetCounter();
 		if (ok && rt.getColumnHeading(ResultsTable.LAST_HEADING)==null)
 			rt.setDefaultHeadings();
@@ -337,7 +337,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 	
 	void measurePoint(Roi roi) {
-		if (rt.getCounter()>0) {
+		if (rt.size()>0) {
 			if (!IJ.isResultsWindow()) reset();
 			int index = rt.getColumnIndex("X");
 			if (index<0 || !rt.columnExists(index)) {
@@ -358,7 +358,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 	
 	void measureAngle(Roi roi) {
-		if (rt.getCounter()>0) {
+		if (rt.size()>0) {
 			if (!IJ.isResultsWindow()) reset();
 			int index = rt.getColumnIndex("Angle");
 			if (index<0 || !rt.columnExists(index)) {
@@ -378,7 +378,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			imp2.setRoi(roi);
 		else
 			imp2 = imp;
-		if (rt.getCounter()>0) {
+		if (rt.size()>0) {
 			if (!IJ.isResultsWindow()) reset();
 			boolean update = false;
 			int index = rt.getColumnIndex("Length");
@@ -478,6 +478,12 @@ public class Analyzer implements PlugInFilter, Measurements {
 				rt.addValue(ResultsTable.ASPECT_RATIO, isArea?stats.major/stats.minor:0.0);
 				rt.addValue(ResultsTable.ROUNDNESS, isArea?4.0*stats.area/(Math.PI*stats.major*stats.major):0.0);
 				rt.addValue(ResultsTable.SOLIDITY, isArea?stats.pixelCount/convexArea:Double.NaN);
+				if (rt.size()==1) {
+					rt.setDecimalPlaces(ResultsTable.CIRCULARITY, precision);
+					rt.setDecimalPlaces(ResultsTable.ASPECT_RATIO, precision);
+					rt.setDecimalPlaces(ResultsTable.ROUNDNESS, precision);
+					rt.setDecimalPlaces(ResultsTable.SOLIDITY, precision);
+				}
 				//rt.addValue(ResultsTable.CONVEXITY, getConvexPerimeter(roi, ch)/perimeter);
 			}
 		}
@@ -588,9 +594,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 	
 	private void clearSummary() {
-		if (summarized && rt.getCounter()>=4 && "Max".equals(rt.getLabel(rt.getCounter()-1))) {
+		if (summarized && rt.size()>=4 && "Max".equals(rt.getLabel(rt.size()-1))) {
 			for (int i=0; i<4; i++)
-				rt.deleteRow(rt.getCounter()-1);
+				rt.deleteRow(rt.size()-1);
 			rt.show("Results");
 			summarized = false;
 		}
@@ -760,7 +766,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	public void summarize() {
 		if (summarized)
 			return;
-		int n = rt.getCounter();
+		int n = rt.size();
 		if (n<2)
 			return;
 		String[] headings = rt.getHeadings();
@@ -802,7 +808,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 
 	/** Returns the current measurement count. */
 	public static int getCounter() {
-		return systemRT.getCounter();
+		return systemRT.size();
 	}
 
 	/** Sets the measurement counter to zero. Displays a dialog that

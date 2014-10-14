@@ -228,8 +228,8 @@ public class ByteProcessor extends ImageProcessor {
 		return snapshotPixels;
 	}
 
-	/** Fills pixels that are within roi and part of the mask.
-		Does nothing if the mask is not the same size as the ROI. */
+	/** Sets pixels that are within roi and part of the mask to the foreground
+		color. Does nothing if the mask is not the same size as the ROI. */
 	public void fill(ImageProcessor mask) {
 		if (mask==null)
 			{fill(); return;}

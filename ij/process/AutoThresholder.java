@@ -173,7 +173,7 @@ public class AutoThresholder {
 		return b;
 	}
 
-	int Intermodes(int [] data ) {
+	int Intermodes(int[] data ) {
 		// J. M. S. Prewitt and M. L. Mendelsohn, "The analysis of cell images," in
 		// Annals of the New York Academy of Sciences, vol. 128, pp. 1035-1053, 1966.
 		// ported to ImageJ plugin by G.Landini from Antti Niemisto's Matlab code (GPL)
@@ -187,36 +187,47 @@ public class AutoThresholder {
 		// Threshold t is (j+k)/2.
 		// Images with histograms having extremely unequal peaks or a broad and
 		// flat valleys are unsuitable for this method.
-		double [] iHisto = new double [256];
-		int iter =0;
+		
+		int minbin=-1, maxbin=-1;
+		for (int i=0; i<data.length; i++)
+			if (data[i]>0) maxbin = i;
+		for (int i=data.length-1; i>=0; i--)
+			if (data[i]>0) minbin = i;
+		int length = (maxbin-minbin)+1;
+		double [] hist = new double[length];
+		for (int i=minbin; i<=maxbin; i++)
+			hist[i-minbin] = data[i];
+			
+		int iter = 0;
 		int threshold=-1;
-		for (int i=0; i<256; i++)
-			iHisto[i]=(double) data[i];
-
-		while (!bimodalTest(iHisto) ) {
+		while (!bimodalTest(hist) ) {
 			 //smooth with a 3 point running mean filter
-			for (int i=1; i<255; i++)
-				iHisto[i]= (iHisto[i-1] + iHisto[i] + iHisto[i+1])/3;
-			iHisto[0] = (iHisto[0]+iHisto[1])/3; //0 outside
-			iHisto[255] = (iHisto[254]+iHisto[255])/3; //0 outside
+			double previous=0, current=0, next=hist[0];
+			for (int i=0; i<length-1; i++) {
+				previous = current;
+				current = next;
+				next = hist[i + 1];
+				hist[i] = (previous+current+next)/3;
+			}
+			hist[length-1] = (current+next)/3;
 			iter++;
 			if (iter>10000) {
 				threshold = -1;
-				IJ.log("Intermodes: threshold not found after 10000 iterations.");
+				IJ.log("Intermodes Threshold not found after 10000 iterations.");
 				return threshold;
 			}
 		}
 
 		// The threshold is the mean between the two peaks.
 		int tt=0;
-		for (int i=1; i<255; i++) {
-			if (iHisto[i-1] < iHisto[i] && iHisto[i+1] < iHisto[i]){
+		for (int i=1; i<length - 1; i++) {
+			if (hist[i-1] < hist[i] && hist[i+1] < hist[i]){
 				tt += i;
 				//IJ.log("mode:" +i);
 			}
 		}
 		threshold = (int) Math.floor(tt/2.0);
-		return threshold;
+		return threshold+minbin;
 	}
 
 	int IsoData(int[] data ) {
