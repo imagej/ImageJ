@@ -342,9 +342,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	}
 	
 	private boolean equals(float[] a1, float[] a2) {
-		if (a1.length!=a2.length)
+		if (a1.length<a2.length)
 			return false;
-		for (int i=0; i<a1.length; i++) {
+		for (int i=0; i<a2.length; i++) {
 			if (a1[i]!=a2[i])
 				return false;
 		}

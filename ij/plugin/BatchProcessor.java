@@ -41,6 +41,7 @@ import java.util.Vector;
 		private ImagePlus virtualStack;
 		private ImagePlus outputImage;
 		private boolean errorDisplayed;
+		private String filter;
 
 	public void run(String arg) {
 		if (arg.equals("stack")) {
@@ -107,6 +108,8 @@ import java.util.Vector;
 		gd.addChoice("Output Format:", formats, format);
 		gd.setInsets(0, 0, 5);
 		gd.addChoice("Add Macro Code:", code, code[0]);
+		if (virtualStack==null)
+			gd.addStringField("File name contains:", "", 10);
 		gd.setInsets(15, 10, 0);
 		Dimension screen = IJ.getScreenSize();
 		gd.addTextAreas(macro, null, screen.width<=600?10:15, 60);
@@ -117,6 +120,8 @@ import java.util.Vector;
 		choice.addItemListener(this);
 		gd.showDialog();
 		format = gd.getNextChoice();
+		if (virtualStack==null)
+			filter = gd.getNextString();
 		macro = gd.getNextText();
 		return !gd.wasCanceled();
 	}
@@ -160,6 +165,9 @@ import java.util.Vector;
 	
 	void processFolder(String inputPath, String outputPath) {
 		String[] list = (new File(inputPath)).list();
+		list = FolderOpener.getFilteredList(list, filter, "Batch Processor");
+		if (list==null)
+			return;
 		int index = 0;
 		int startingCount = WindowManager.getImageCount();
 		for (int i=0; i<list.length; i++) {
