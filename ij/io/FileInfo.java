@@ -177,15 +177,15 @@ public class FileInfo implements Cloneable {
     	return
     		"name=" + fileName
 			+ ", dir=" + directory
-			+ ", url=" + url
 			+ ", width=" + width
 			+ ", height=" + height
 			+ ", nImages=" + nImages
-			+ ", type=" + getType()
-			+ ", format=" + fileFormat
 			+ ", offset=" + getOffset()
-			+ ", whiteZero=" + (whiteIsZero?"t":"f")
-			+ ", Intel=" + (intelByteOrder?"t":"f")
+			+ ", type=" + getType()
+			+ ", byteOrder=" + (intelByteOrder?"little":"big")
+			+ ", format=" + fileFormat
+			+ ", url=" + url
+			+ ", whiteIsZero=" + (whiteIsZero?"t":"f")
 			+ ", lutSize=" + lutSize
 			+ ", comp=" + compression
 			+ ", ranges=" + (displayRanges!=null?""+displayRanges.length/2:"null")
@@ -200,7 +200,7 @@ public class FileInfo implements Cloneable {
 			case GRAY32_INT: return "int";
 			case GRAY32_UNSIGNED: return "uint";
 			case GRAY32_FLOAT: return "float";
-			case COLOR8: return "byte+lut";
+			case COLOR8: return "byte(lut)";
 			case RGB: return "RGB";
 			case RGB_PLANAR: return "RGB(p)";
 			case RGB48: return "RGB48";

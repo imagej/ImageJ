@@ -2151,8 +2151,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     			String s = (int)value==value?IJ.d2s(value,0)+".0":IJ.d2s(value,4,7);
     			return(", value=" + s);
 			case COLOR_RGB:
-				//String hex = Colors.colorToString(new Color(v[0],v[1],v[2]));
-    			return(", value=" + IJ.pad(v[0],3) + "," + IJ.pad(v[1],3) + "," + IJ.pad(v[2],3));
+				String hex = Colors.colorToString(new Color(v[0],v[1],v[2]));
+				return(", value=" + IJ.pad(v[0],3) + "," + IJ.pad(v[1],3) + "," + IJ.pad(v[2],3) + " ("+hex + ")");
     		default: return("");
 		}
     }
