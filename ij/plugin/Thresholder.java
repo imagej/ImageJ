@@ -103,7 +103,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 	void applyThreshold(ImagePlus imp) {
 		imp.deleteRoi();
 		ImageProcessor ip = imp.getProcessor();
-		ip.resetBinaryThreshold();
+		ip.resetBinaryThreshold();  // remove invisible threshold set by MakeBinary and Convert to Mask
 		int type = imp.getType();
 		if (type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32) {
 			applyShortOrFloatThreshold(imp);

@@ -561,7 +561,7 @@ public class Selection implements PlugIn, Measurements {
 		IJ.run("Duplicate...", "title=mask");
 		ImagePlus imp2 = WindowManager.getCurrentImage();
 		ImageProcessor ip2 = imp2.getProcessor();
-		ip2.setThreshold(t1, t2, ImageProcessor.NO_LUT_UPDATE);
+		ip2.setThreshold(t1, t2, ip2.getLutUpdateMode());
 		IJ.run("Convert to Mask");
 	}
 

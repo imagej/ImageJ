@@ -696,7 +696,6 @@ public abstract class ImageProcessor implements Cloneable {
 		@see ImageProcessor#setBinaryThreshold	
 	*/
 	public void resetBinaryThreshold() {
-ij.IJ.log("resetBinaryThreshold: "+minThreshold+" "+maxThreshold+" "+lutUpdateMode);
 		if (minThreshold==maxThreshold && lutUpdateMode==NO_LUT_UPDATE)
 			resetThreshold();
 	}
