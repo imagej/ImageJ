@@ -450,10 +450,7 @@ public class FloatProcessor extends ImageProcessor {
 							v2 = (float)Math.exp(c*Math.log(v1));
 						break;
 					case LOG:
-						if (v1<=0f)
-							v2 = 0f;
-						else
-							v2 = (float)Math.log(v1);
+						v2 = (float)Math.log(v1);
 						break;
 					case EXP:
 						v2 = (float)Math.exp(v1);

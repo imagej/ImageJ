@@ -115,7 +115,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 
     public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
         ImageProcessor ip = imp.getProcessor();
-        ip.resetBinaryThreshold(); // remove invisible threshold set by MakeBinary and Convert to Mask
+        ip.resetBinaryThreshold(); // remove any invisible threshold set by Make Binary or Convert to Mask
         thresholded = ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD;
         GenericDialog gd = new GenericDialog(command);
         int digits = (ip instanceof FloatProcessor)?2:0;
