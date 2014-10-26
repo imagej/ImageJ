@@ -560,10 +560,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	void setProcessor2(String title, ImageProcessor ip, ImageStack newStack) {
 		//IJ.log("setProcessor2: "+ip+" "+this.ip+" "+newStack);
 		if (title!=null) setTitle(title);
-		if (ip!=null & this.ip!=null && getWindow()!=null)
+		if (ip==null)
+			return;
+		if (this.ip!=null && getWindow()!=null)
 			notifyListeners(UPDATED);
 		this.ip = ip;
-		if (ij!=null) ip.setProgressBar(ij.getProgressBar());
+		if (ij!=null)
+			ip.setProgressBar(ij.getProgressBar());
         int stackSize = 1;
 		if (stack!=null) {
 			stackSize = stack.getSize();
@@ -2151,8 +2154,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     			String s = (int)value==value?IJ.d2s(value,0)+".0":IJ.d2s(value,4,7);
     			return(", value=" + s);
 			case COLOR_RGB:
-				//String hex = Colors.colorToString(new Color(v[0],v[1],v[2]));
-    			return(", value=" + IJ.pad(v[0],3) + "," + IJ.pad(v[1],3) + "," + IJ.pad(v[2],3));
+				String hex = Colors.colorToString(new Color(v[0],v[1],v[2]));
+				return(", value=" + IJ.pad(v[0],3) + "," + IJ.pad(v[1],3) + "," + IJ.pad(v[2],3) + " ("+hex + ")");
     		default: return("");
 		}
     }

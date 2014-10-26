@@ -296,7 +296,8 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener{
 		int r = (p&0xff0000)>>16;
 		int g = (p&0xff00)>>8;
 		int b = p&0xff;
-		IJ.showStatus("red="+pad(r)+", green="+pad(g)+", blue="+pad(b));
+		String hex = Colors.colorToString(new Color(r,g,b));
+		IJ.showStatus("red="+pad(r)+", green="+pad(g)+", blue="+pad(b)+" ("+hex+")");
 
 	}
 

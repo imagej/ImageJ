@@ -286,7 +286,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			ey_test = plot.errorBars!=null;
 			ex_test = plot.xErrorBars!=null;
 			for (int j=0; j<n;) {
-				if ((saveXValues||n>2) && !(j>1&&skipDuplicates)) {
+				if (saveXValues && !(j>1&&skipDuplicates)) {
 					column = (float[])data.get(j);
 					if (i<column.length)
 						rt.setValue(headings[j], i, column[i]);

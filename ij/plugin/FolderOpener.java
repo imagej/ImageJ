@@ -23,7 +23,6 @@ public class FolderOpener implements PlugIn {
 	private double scale = 100.0;
 	private int n, start, increment;
 	private String filter;
-	private boolean isRegex;
 	private String legacyRegex;
 	private FileInfo fi;
 	private String info1;
@@ -136,34 +135,13 @@ public class FolderOpener implements PlugIn {
 				+ "   \""+directory+"\"");
 				return;
 			}
-
-			if (filter!=null && (filter.equals("") || filter.equals("*")))
-				filter = null;
-			if (filter!=null) {
-				int filteredImages = 0;
-  				for (int i=0; i<list.length; i++) {
-					if (isRegex && containsRegex(list[i],filter))
-						filteredImages++;
-					else if (list[i].contains(filter))
-						filteredImages++;
- 					else
- 						list[i] = null;
- 				}
-  				if (filteredImages==0) {
-  					if (isRegex)
-  						IJ.error("Sequence Reader", "None of the file names contain the regular expression.");
-  					else
-   						IJ.error("Sequence Reader", "None of the "+list.length+" files contain\n the string '"+filter+"' in their name.");
- 					return;
-  				}
-  				String[] list2 = new String[filteredImages];
-  				int j = 0;
-  				for (int i=0; i<list.length; i++) {
- 					if (list[i]!=null)
- 						list2[j++] = list[i];
- 				}
-  				list = list2;
-  			}
+			String pluginName = "Sequence Reader";
+			if (legacyRegex!=null)
+				pluginName += "(legacy)";
+			list = getFilteredList(list, filter, pluginName);
+			if (list==null)
+				return;
+			IJ.showStatus("");
 			if (sortFileNames)
 				list = StringSorter.sortNumerically(list);
 
@@ -273,7 +251,6 @@ public class FolderOpener implements PlugIn {
 						ip = ip.resize((int)(width*scale/100.0), (int)(height*scale/100.0));
 					if (ip.getMin()<min) min = ip.getMin();
 					if (ip.getMax()>max) max = ip.getMax();
-					//if (depth>1) label2 = null;
 					if (openAsVirtualStack) {
 						if (slice==1)
 							((VirtualStack)stack).addSlice(list[i]);
@@ -288,7 +265,6 @@ public class FolderOpener implements PlugIn {
 					break;
 				if (IJ.escapePressed())
 					{IJ.beep(); break;}
-				//System.gc();
 			}
 		} catch(OutOfMemoryError e) {
 			IJ.outOfMemory("FolderOpener");
@@ -378,11 +354,8 @@ public class FolderOpener implements PlugIn {
 		if (scale<5.0) scale = 5.0;
 		if (scale>100.0) scale = 100.0;
 		filter = gd.getNextString();
-		filter = checkForRegex(filter);
-		if (legacyRegex!=null) {
-			filter = legacyRegex;
-			isRegex = true;
-		}
+		if (legacyRegex!=null)
+			filter = "("+legacyRegex+")";
 		convertToRGB = gd.getNextBoolean();
 		sortFileNames = gd.getNextBoolean();
 		openAsVirtualStack = gd.getNextBoolean();
@@ -394,22 +367,56 @@ public class FolderOpener implements PlugIn {
 		}
 		return true;
 	}
-
-	private String checkForRegex(String filter) {
+	
+	public static String[] getFilteredList(String[] list, String filter, String title) {
+		boolean isRegex = false;
+		if (filter!=null && (filter.equals("") || filter.equals("*")))
+			filter = null;
+		if (list==null || filter==null)
+			return list;
+		if (title==null) {
+			String[] list2 = new String[list.length];
+			for (int i=0; i<list.length; i++)
+				list2[i] = list[i];
+			list = list2;
+		}
 		if (filter.length()>=2 && filter.startsWith("(")&&filter.endsWith(")")) {
 			filter = filter.substring(1,filter.length()-1);
 			isRegex = true;
-		} else
-			isRegex = false;
-		IJ.showStatus("");
-		return filter;
+		}
+		int filteredImages = 0;
+		for (int i=0; i<list.length; i++) {
+			if (isRegex && containsRegex(list[i],filter,title!=null&&title.contains("(legacy)")))
+				filteredImages++;
+			else if (list[i].contains(filter))
+				filteredImages++;
+			else
+				list[i] = null;
+		}
+		if (filteredImages==0) {
+			if (title!=null) {
+				if (isRegex)
+					IJ.error(title, "None of the file names contain the regular expression '"+filter+"'.");
+				else
+					IJ.error(title, "None of the "+list.length+" files contain '"+filter+"' in the name.");
+			}
+			return null;
+		}
+		String[] list2 = new String[filteredImages];
+		int j = 0;
+		for (int i=0; i<list.length; i++) {
+			if (list[i]!=null)
+				list2[j++] = list[i];
+		}
+		list = list2;
+		return list;
 	}
 	
-	private boolean containsRegex(String name, String regex) {
+	private static boolean containsRegex(String name, String regex, boolean legacy) {
 		boolean contains = false;
 		try {
-			if (legacyRegex!=null)
-				contains = name.matches(filter);
+			if (legacy)
+				contains = name.matches(regex);
 			else
 				contains = name.replaceAll(regex,"").length()!=name.length();
 			IJ.showStatus("");
@@ -519,17 +526,14 @@ public class FolderOpener implements PlugIn {
 			if (inc<1) inc = 1;
 			TextField tf = (TextField)stringField.elementAt(0);
 			String filter = tf.getText();
-			filter = checkForRegex(filter);
-			if (!filter.equals("") && !filter.equals("*")) {
-				int n2 = 0;
-				for (int i=0; i<list.length; i++) {
-					if (isRegex && containsRegex(list[i],filter))
-						n2++;
-					else if (list[i].indexOf(filter)>=0)
-						n2++;
-				}
-				if (n2<n) n = n2;
-			}
+			int n3 = Integer.MAX_VALUE;
+			String[] filteredList = getFilteredList(list, filter, null);
+			if (filteredList!=null)
+				n3 = filteredList.length;
+			else
+				n3 = 0;
+			if (n3<n)
+				n = n3;
 			switch (imp.getType()) {
 				case ImagePlus.GRAY16:
 					bytesPerPixel=2;break;

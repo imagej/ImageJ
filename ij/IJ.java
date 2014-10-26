@@ -771,6 +771,8 @@ public class IJ {
 			decimalPlaces = -decimalPlaces;
 			if (decimalPlaces>9) decimalPlaces=9;
 			if (sf==null) {
+				if (dfs==null)
+					dfs = new DecimalFormatSymbols(Locale.US);
 				sf = new DecimalFormat[10];
 				sf[1] = new DecimalFormat("0.0E0",dfs);
 				sf[2] = new DecimalFormat("0.00E0",dfs);

@@ -140,7 +140,6 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
                 ip.reset();
                 return;
             }
-            if (nPasses<=1) IJ.showProgress(i+1, iterations);
             if (mode.equals("erode"))
                 ((ByteProcessor)ip).erode(count, background);
             else

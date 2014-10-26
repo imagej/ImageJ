@@ -825,7 +825,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 	}
 
-	/** Returns the size of the brush tool, or 0 if the brush tool is not enabled. */
+	/** Returns the size of the selection brush tool, or 0 if the brush tool is not enabled. */
 	public static int getBrushSize() {
 		if (ovalType==BRUSH_ROI)
 			return brushSize;
@@ -833,7 +833,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			return 0;
 	}
 
-	/** Set the size of the brush tool, in pixels. */
+	/** Set the size of the selection brush tool, in pixels. */
 	public static void setBrushSize(int size) {
 		brushSize = size;
 		if (brushSize<1) brushSize = 1;

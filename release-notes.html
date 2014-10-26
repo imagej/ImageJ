@@ -5,43 +5,25 @@
 </head>
 <body>
 
-<li> <u>1.49i 13 October 2014</u>
+<li> <u>1.49i 23 October 2014</u>
 <ul>
-<li> Impoved Results table auto-formatting.
-<li> Thanks to Norbert Vischer, the mouse behaves like an eraser 
-if the alt key is held down while creating a polygon, freehand,
-polyline, freeline or angle selection.
-<li> Thanks to Stamatis Pagakis, duplicate x columns in profile plot
-results tables are no longer repeated
-(<a href="macros/RGB_Profile_Plot.txt">example</a>).
-<li> The "Live" and "RGB" buttons are no longer added to stack histogram windows.
-<li> Thanks to Norbert Vischer, when the color picker background
-panel is in front, it is labeled "B" and the foreground
-panel is labeled "F".
-<li> Thanks to Michael Schmid, added the Array.fourier() macro function
-and FHT.fourier1D() method
-(<a href="macros/examples/TestArrayFourier.txt">example</a>).
-<li> Added the ResultsTable.setDecimalPlaces(column,digits) method.
-<li> Thanks to Matt Pearson, fixed a bug that caused the particle analyzer to not work
-as expected when processing stacks using "Overlay Outlines" or "Overlay Masks".
-<li> Thanks to Matt Pearson, fixed a bug that sometimes caused the wrong image
-to be activated after using the <i>Split Channels</i> command in a macro not
-running in batch mode.
-<li> Thanks to Christian Tischer and Kota Miura, fixed a bug that caused the
-BatchProcessor to not ignore hidden Thumbs.db files.
-<li> Thanks to Christian Tischer, fixed a bug that caused calibration bars to not
-be displayed correctly on contrast enhanced 8-bit images.
-<li> Thanks to Bill Christens-Barry, fixed a bug that caused rounded
-rectangle selections to not be drawn correctly.
-<li> Thanks to Gadea Mata, fixed a bug that caused the "Intermodes" thresholding
-method to sometimes not work as expected.
-<li> Thanks to Konrad Rokicki, fixed bugs that could cause
-Fiji headless mode exceptions.
-<li> Thanks to Philippe Gendre and Michael Schmid, fixed a bug that caused the
-RankFilters.rank(ip,radius,filterType,whichOutliers,threshold)
-method to ignore the 'threshold' argument.
-<li> Thanks to Neil Fazel, fixed a v1.49h regression that caused selections
-moved using the arrow keys to not be drawn correctly.
+<li> Thanks to Ulf Dittmer, pixel hex values are displayed in the status
+bar when the cursor is moved over RGB images and over the color picker.
+<li> Thanks to Ved Sharma, added a "File name contains" option to the
+<i>Process&gt;Batch&gt;Macro</i> dialog box. As with 
+<i>File&gt;Import&gt;Image Sequence</i>, regular expressions must 
+be enclosed in parenthesis.
+<li> Thanks to Stamatis Pagakis, the "Do not save X values" option in the
+<i>Edit&gt;Options&gt;Profile Plot Options</i> dialog now works with
+multiple plots.
+<li> Thanks to Michael Schmid, fixed a bug that caused the setThreshold(t1,t2)
+macro function, when t1 and t2 were equal, to not work as expected when used
+with the <i>Create Mask</i> command.
+<li> Thanks to Matthew Taylor, fixed a bug that caused
+<i>Process&gt;Math&gt;Log</i> and the log() macro function to not
+correctly process values less than or equal to zero in 32 bit images.
+<li> Thanks to Robert Atwood, fixed a v1.49i regression that could cause
+the <i>Measure</i> command to throw an exception.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
