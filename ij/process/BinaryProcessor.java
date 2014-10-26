@@ -19,8 +19,6 @@ public class BinaryProcessor extends ByteProcessor {
 	
 	void process(int type, int count) {
 		int p1, p2, p3, p4, p5, p6, p7, p8, p9;
-		int inc = roiHeight/25;
-		if (inc<1) inc = 1;
 		int bgColor = 255;
 		if (parent.isInvertedLut())
 			bgColor = 0;
@@ -58,10 +56,7 @@ public class BinaryProcessor extends ByteProcessor {
 				
 				pixels[offset++] = (byte)v;
 			}
-			if (y%inc==0)
-				parent.showProgress((double)(y-roiY)/roiHeight);
 		}
-		parent.hideProgress();
 	}
 
 	// 2012/09/16: 3,0 1->0

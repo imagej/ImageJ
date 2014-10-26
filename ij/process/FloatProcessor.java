@@ -682,7 +682,6 @@ public class FloatProcessor extends ImageProcessor {
 					} else
 						pixels[index++] = 0;
 				}
-				showProgress((double)(y-roiY)/roiHeight);
 			}
 		}
 	}

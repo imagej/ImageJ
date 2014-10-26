@@ -30,6 +30,8 @@ public class Translator implements ExtendedPlugInFilter, DialogListener {
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
 		this.pfr = pfr;
 		int digits = xOffset==(int)xOffset&&yOffset==(int)yOffset?1:3;
+		if (IJ.isMacro())
+			interpolationMethod = ImageProcessor.NONE;
 		gd = new GenericDialog("Translate");
 		gd.addNumericField("X offset (pixels): ", xOffset, digits, 8, "");
 		gd.addNumericField("Y offset (pixels): ", yOffset, digits, 8, "");

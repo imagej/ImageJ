@@ -560,10 +560,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	void setProcessor2(String title, ImageProcessor ip, ImageStack newStack) {
 		//IJ.log("setProcessor2: "+ip+" "+this.ip+" "+newStack);
 		if (title!=null) setTitle(title);
-		if (ip!=null & this.ip!=null && getWindow()!=null)
+		if (ip==null)
+			return;
+		if (this.ip!=null && getWindow()!=null)
 			notifyListeners(UPDATED);
 		this.ip = ip;
-		if (ij!=null) ip.setProgressBar(ij.getProgressBar());
+		if (ij!=null)
+			ip.setProgressBar(ij.getProgressBar());
         int stackSize = 1;
 		if (stack!=null) {
 			stackSize = stack.getSize();
