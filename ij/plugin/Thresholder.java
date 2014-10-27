@@ -37,12 +37,10 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 	public void run(String arg) {
 		convertToMask = arg.equals("mask");
 		skipDialog = arg.equals("skip") || convertToMask;
-		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp==null)
-			{IJ.noImage(); return;}
+		ImagePlus imp = IJ.getImage();
 		if (imp.getStackSize()==1) {
 			Undo.setup(Undo.COMPOUND_FILTER, imp);
-			applyThreshold(imp);
+			applyThreshold(imp, true);
 			Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
 		} else
 			convertStack(imp);
@@ -63,44 +61,64 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			if (!thresholdSet)
 				updateThreshold(imp);
 		}
-		if (thresholdSet)
-			useLocal = listThresholds = false;
-		GenericDialog gd = new GenericDialog("Convert Stack to Binary");
-		gd.addChoice("Method:", methods, method);
-		gd.addChoice("Background:", backgrounds, background);
-		gd.addCheckbox("Calculate threshold for each image", useLocal);
-		gd.addCheckbox("Black background (of binary masks)", Prefs.blackBackground);
-		gd.addCheckbox("List thresholds", listThresholds);
-		choices = gd.getChoices();
-		if (choices!=null) {
-			((Choice)choices.elementAt(0)).addItemListener(this);
-			((Choice)choices.elementAt(1)).addItemListener(this);
-		}
-		gd.showDialog();
-		if (gd.wasCanceled())
-			return;
-		this.imp = null;
-		method = gd.getNextChoice();
-		background = gd.getNextChoice();
-		useLocal = gd.getNextBoolean();
 		boolean saveBlackBackground = Prefs.blackBackground;
-		Prefs.blackBackground = gd.getNextBoolean();
-		listThresholds = gd.getNextBoolean();
-		if (!IJ.isMacro()) {
-			staticMethod = method;
-			staticBackground = background;
-			staticUseLocal = useLocal;
-			staticListThresholds = listThresholds;
+		boolean sliceOnly = false;
+		if (thresholdSet) {
+			useLocal = false;
+			listThresholds = false;
+			skipDialog = true;
+			GenericDialog gd = new GenericDialog("Convert Stack to Binary");
+			boolean eightBit = imp.getBitDepth()==8;
+			if (eightBit)
+				gd.addCheckbox("Stack (convert entire stack)", true);
+			else
+				gd.addMessage("With 16 and 32 bit stacks, the\nentire stack is converted to binary.");
+			gd.addCheckbox("Black background (of binary masks)", Prefs.blackBackground);
+			choices = gd.getChoices();
+			gd.showDialog();
+			if (gd.wasCanceled())
+				return;
+			this.imp = null;
+			if (eightBit)
+				sliceOnly = !gd.getNextBoolean();;
+			Prefs.blackBackground = gd.getNextBoolean();
+		} else {
+			GenericDialog gd = new GenericDialog("Convert Stack to Binary");
+			gd.addChoice("Method:", methods, method);
+			gd.addChoice("Background:", backgrounds, background);
+			gd.addCheckbox("Calculate threshold for each image", useLocal);
+			gd.addCheckbox("Black background (of binary masks)", Prefs.blackBackground);
+			gd.addCheckbox("List thresholds", listThresholds);
+			choices = gd.getChoices();
+			if (choices!=null) {
+				((Choice)choices.elementAt(0)).addItemListener(this);
+				((Choice)choices.elementAt(1)).addItemListener(this);
+			}
+			gd.showDialog();
+			if (gd.wasCanceled())
+				return;
+			this.imp = null;
+			method = gd.getNextChoice();
+			background = gd.getNextChoice();
+			useLocal = gd.getNextBoolean();
+			Prefs.blackBackground = gd.getNextBoolean();
+			listThresholds = gd.getNextBoolean();
+			if (!IJ.isMacro()) {
+				staticMethod = method;
+				staticBackground = background;
+				staticUseLocal = useLocal;
+				staticListThresholds = listThresholds;
+			}
 		}
 		Undo.reset();
 		if (useLocal)
 			convertStackToBinary(imp);
 		else
-			applyThreshold(imp);
+			applyThreshold(imp, sliceOnly);
 		Prefs.blackBackground = saveBlackBackground; 
 	}
 
-	void applyThreshold(ImagePlus imp) {
+	private void applyThreshold(ImagePlus imp, boolean sliceOnly) {
 		imp.deleteRoi();
 		ImageProcessor ip = imp.getProcessor();
 		ip.resetBinaryThreshold();  // remove any invisible threshold set by Make Binary or Convert to Mask
@@ -115,10 +133,11 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		autoThreshold = saveMinThreshold==ImageProcessor.NO_THRESHOLD;
 					
 		boolean useBlackAndWhite = true;
-		boolean noArgMacro =IJ.macroRunning() && Macro.getOptions()==null;
+		String options = Macro.getOptions();
+		boolean modernMacro = options==null || !(options.contains("thresholded")||options.contains("remaining"));
 		if (skipDialog)
 			fill1 = fill2 = useBlackAndWhite = true;
-		else if (!(autoThreshold||noArgMacro)) {
+		else if (!autoThreshold && !modernMacro) {
 			GenericDialog gd = new GenericDialog("Make Binary");
 			gd.addCheckbox("Thresholded pixels to foreground color", fill1);
 			gd.addCheckbox("Remaining pixels to background color", fill2);
@@ -176,7 +195,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 				lut[i] = fill2?bcolor:(byte)i;
 			}
 		}
-		if (imp.getStackSize()>1)
+		if (imp.getStackSize()>1 && !sliceOnly)
 			new StackProcessor(imp.getStack(), ip).applyTable(lut);
 		else
 			ip.applyTable(lut);
@@ -193,6 +212,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			imp.getProcessor().setThreshold(fcolor, fcolor, ImageProcessor.NO_LUT_UPDATE);
 		imp.updateAndRepaintWindow();
 		imp.unlock();
+IJ.log("Thresholder: "+autoThreshold+" "+minThreshold+"-"+maxThreshold);
 	}
 	
 	void applyShortOrFloatThreshold(ImagePlus imp) {

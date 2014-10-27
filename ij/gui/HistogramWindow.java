@@ -304,12 +304,25 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		if (maxCount==0) maxCount = 1;
 		frame = new Rectangle(XMARGIN, YMARGIN, HIST_WIDTH, HIST_HEIGHT);
 		ip.drawRect(frame.x-1, frame.y, frame.width+2, frame.height+1);
-		int index, y;
-		for (int i = 0; i<HIST_WIDTH; i++) {
-			index = (int)(i*(double)histogram.length/HIST_WIDTH); 
-			y = (int)(((double)HIST_HEIGHT*(double)histogram[index])/maxCount);
-			if (y>HIST_HEIGHT) y = HIST_HEIGHT;
-			ip.drawLine(i+XMARGIN, YMARGIN+HIST_HEIGHT, i+XMARGIN, YMARGIN+HIST_HEIGHT-y);
+		if (histogram.length<=HIST_WIDTH) {
+			int index, y;
+			for (int i=0; i<HIST_WIDTH; i++) {
+				index = (int)(i*(double)histogram.length/HIST_WIDTH); 
+				y = (int)(((double)HIST_HEIGHT*(double)histogram[index])/maxCount);
+				if (y>HIST_HEIGHT) y = HIST_HEIGHT;
+				ip.drawLine(i+XMARGIN, YMARGIN+HIST_HEIGHT, i+XMARGIN, YMARGIN+HIST_HEIGHT-y);
+			}
+		} else {
+			double xscale = (double)HIST_WIDTH/histogram.length; 
+			for (int i=0; i<histogram.length; i++) {
+				long value = histogram[i];
+				if (value>0L) {
+					int y = (int)(((double)HIST_HEIGHT*(double)value)/maxCount);
+					if (y>HIST_HEIGHT) y = HIST_HEIGHT;
+					int x = (int)(i*xscale)+XMARGIN;
+					ip.drawLine(x, YMARGIN+HIST_HEIGHT, x, YMARGIN+HIST_HEIGHT-y);
+				}
+			}
 		}
 	}
 		
@@ -318,13 +331,26 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		ip.drawRect(frame.x-1, frame.y, frame.width+2, frame.height+1);
 		double max = Math.log(maxCount);
 		ip.setColor(Color.gray);
-		int index, y;
-		for (int i = 0; i<HIST_WIDTH; i++) {
-			index = (int)(i*(double)histogram.length/HIST_WIDTH); 
-			y = histogram[index]==0?0:(int)(HIST_HEIGHT*Math.log(histogram[index])/max);
-			if (y>HIST_HEIGHT)
-				y = HIST_HEIGHT;
-			ip.drawLine(i+XMARGIN, YMARGIN+HIST_HEIGHT, i+XMARGIN, YMARGIN+HIST_HEIGHT-y);
+		if (histogram.length<=HIST_WIDTH) {
+			int index, y;
+			for (int i = 0; i<HIST_WIDTH; i++) {
+				index = (int)(i*(double)histogram.length/HIST_WIDTH); 
+				y = histogram[index]==0?0:(int)(HIST_HEIGHT*Math.log(histogram[index])/max);
+				if (y>HIST_HEIGHT)
+					y = HIST_HEIGHT;
+				ip.drawLine(i+XMARGIN, YMARGIN+HIST_HEIGHT, i+XMARGIN, YMARGIN+HIST_HEIGHT-y);
+			}
+		} else {
+			double xscale = (double)HIST_WIDTH/histogram.length; 
+			for (int i=0; i<histogram.length; i++) {
+				long value = histogram[i];
+				if (value>0L) {
+					int y = (int)(HIST_HEIGHT*Math.log(value)/max);
+					if (y>HIST_HEIGHT) y = HIST_HEIGHT;
+					int x = (int)(i*xscale)+XMARGIN;
+					ip.drawLine(x, YMARGIN+HIST_HEIGHT, x, YMARGIN+HIST_HEIGHT-y);
+				}
+			}
 		}
 		ip.setColor(Color.black);
 	}

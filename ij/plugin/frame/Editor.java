@@ -389,9 +389,11 @@ shortcutsBroken = false;
 			text = ta.getSelectedText();
 		if (text.equals("")) return;
 		text = getJSPrefix("") + text;
-		if (IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit()))
+		if ((IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit())) && !IJ.isJava18()) {
+			// Use JavaScript engine built into Java 6 and Java 7.
+			// Can't use incompatible Nashorn engine in Java 8 and later.
 			IJ.runPlugIn("JavaScriptEvaluator", text);
-		else {
+		} else {
 			Object js = IJ.runPlugIn("JavaScript", text);
 			if (js==null)
 				download("/download/tools/JavaScript.jar");
