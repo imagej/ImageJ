@@ -418,18 +418,34 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		return ip.getStringWidth(d2s(d));
 	}
 	
-	protected void showList() {
-		ArrayList list = new ArrayList();
+	/** Returns the histogram values as a ResultsTable. */
+	public ResultsTable getResultsTable() {
+		ResultsTable rt = new ResultsTable();
+		rt.showRowNumbers(false);
 		String vheading = stats.binSize==1.0?"value":"bin start";
 		if (cal.calibrated() && !cal.isSigned16Bit()) {
-			for (int i=0; i<stats.nBins; i++)
-				list.add(i+"\t"+ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]);
-			TextWindow tw = new TextWindow(getTitle(), "level\t"+vheading+"\tcount", list, 200, 400);
+			for (int i=0; i<stats.nBins; i++) {
+				rt.setValue("level", i, i);
+				rt.setValue(vheading, i, cal.getCValue(stats.histMin+i*stats.binSize));
+				rt.setValue("count", i, histogram[i]);
+			}
+			rt.setDecimalPlaces(0, 0);
+			rt.setDecimalPlaces(1, digits);
+			rt.setDecimalPlaces(2, 0);
 		} else {
-			for (int i=0; i<stats.nBins; i++)
-				list.add(ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]);
-			TextWindow tw = new TextWindow(getTitle(), vheading+"\tcount", list, 200, 400);
+			for (int i=0; i<stats.nBins; i++) {
+				rt.setValue(vheading, i, cal.getCValue(stats.histMin+i*stats.binSize));
+				rt.setValue("count", i, histogram[i]);
+			}
+			rt.setDecimalPlaces(0, digits);
+			rt.setDecimalPlaces(1, 0);
 		}
+		return rt;
+	}
+
+	protected void showList() {
+		ResultsTable rt = getResultsTable();
+		rt.show(getTitle());
 	}
 	
 	protected void copyToClipboard() {
