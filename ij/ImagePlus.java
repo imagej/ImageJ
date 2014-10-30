@@ -1672,6 +1672,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void deleteRoi() {
 		if (roi!=null) {
 			saveRoi();
+			RoiManager rm = RoiManager.getInstance();
+			if (rm!=null)
+				rm.deselect(roi);
 			roi = null;
 			if (ip!=null)
 				ip.resetRoi();
