@@ -20,6 +20,7 @@ public class Undo {
 	public static final int TRANSFORM = 6;
 	public static final int OVERLAY_ADDITION = 7;
 	public static final int ROI = 8;
+	public static final int MACRO = 9;
 	
 	private static int whatToUndo = NOTHING;
 	private static int imageID;
@@ -50,7 +51,11 @@ public class Undo {
 			ipCopy = imp.getProcessor();
 			calCopy = (Calibration)imp.getCalibration().clone();
 		} else if (what==TRANSFORM) {	
+			if (!IJ.macroRunning())
+				impCopy = new ImagePlus(imp.getTitle(), imp.getProcessor().duplicate());
+		} else if (what==MACRO) {	
 			impCopy = new ImagePlus(imp.getTitle(), imp.getProcessor().duplicate());
+			what = TRANSFORM;
 		} else if (what==COMPOUND_FILTER) {
 			ImageProcessor ip = imp.getProcessor();
 			if (ip!=null)
@@ -105,10 +110,6 @@ public class Undo {
 		switch (whatToUndo) {
 			case FILTER:
 				ImageProcessor ip = imp.getProcessor();
-				//if (lutCopy!=null) {
-				//	ip.setLut(lutCopy);
-				//	IJ.log("lutCopy2: "+lutCopy);
-				//}
 				if (ip!=null) {
 					if (!IJ.macroRunning()) {
 						ip.swapPixelArrays();
@@ -136,13 +137,8 @@ public class Undo {
 				}
 				break;
 			case TRANSFORM:
-				if (impCopy!=null) {
-					if (swapImages(impCopy, imp)) {
-						imp.updateAndDraw();
-						return;
-					} else
-						imp.setProcessor(impCopy.getTitle(), impCopy.getProcessor());
-				}
+				if (impCopy!=null)
+					imp.setProcessor(impCopy.getTitle(), impCopy.getProcessor());
 				break;
 			case PASTE:
 				Roi roi = imp.getRoi();

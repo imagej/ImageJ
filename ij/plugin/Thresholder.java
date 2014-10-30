@@ -40,9 +40,8 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			showLegacyDialog = false;
 		ImagePlus imp = IJ.getImage();
 		if (imp.getStackSize()==1) {
-			Undo.setup(Undo.COMPOUND_FILTER, imp);
+			Undo.setup(Undo.TRANSFORM, imp);
 			applyThreshold(imp, false);
-			Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
 		} else
 			convertStack(imp);
 	}

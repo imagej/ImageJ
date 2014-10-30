@@ -142,7 +142,7 @@ public class Functions implements MacroConstants, Measurements {
 			case SET_Z_COORDINATE: setZCoordinate(); break;
 			case GET_THRESHOLD: getThreshold(); break;
 			case GET_PIXEL_SIZE: getPixelSize(); break;
-			case SETUP_UNDO: interp.getParens(); Undo.setup(Undo.TRANSFORM, getImage()); break;
+			case SETUP_UNDO: interp.getParens(); Undo.setup(Undo.MACRO, getImage()); break;
 			case SAVE_SETTINGS: saveSettings(); break;
 			case RESTORE_SETTINGS: restoreSettings(); break;
 			case SET_KEY_DOWN: setKeyDown(); break;
