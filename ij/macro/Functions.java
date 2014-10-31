@@ -4925,21 +4925,21 @@ public class Functions implements MacroConstants, Measurements {
 			else
 				return null;
 		}
-		if (interp.editor==null && !(arg.equals("throw")||arg.equals("dump"))) {
+		if (interp.getDebugger()==null && !(arg.equals("throw")||arg.equals("dump"))) {
 			Editor ed = Editor.getInstance();
 			if (ed==null)
 				interp.error("Macro editor not available");
 			else
-				interp.setEditor(ed);
+				interp.setDebugger(ed);
 		}
 		if (arg.equals("run"))
-			interp.setDebugMode(Interpreter.RUN);
+			interp.setDebugMode(Debugger.RUN_TO_COMPLETION);
 		else if (arg.equals("break"))
-			interp.setDebugMode(Interpreter.STEP);
+			interp.setDebugMode(Debugger.STEP);
 		else if (arg.equals("trace"))
-			interp.setDebugMode(Interpreter.TRACE);
+			interp.setDebugMode(Debugger.TRACE);
 		else if (arg.indexOf("fast")!=-1)
-			interp.setDebugMode(Interpreter.FAST_TRACE);
+			interp.setDebugMode(Debugger.FAST_TRACE);
 		else if (arg.equals("dump"))
 			interp.dump();
 		else if (arg.indexOf("throw")!=-1)
