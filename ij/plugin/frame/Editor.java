@@ -392,7 +392,7 @@ shortcutsBroken = false;
 		if ((IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit())) && !IJ.isJava18()) {
 			// Use JavaScript engine built into Java 6 and Java 7.
 			// Can't use incompatible Nashorn engine in Java 8 and later.
-			IJ.runPlugIn("JavaScriptEvaluator", text);
+			IJ.runPlugIn("ij.plugin.JavaScriptEvaluator", text);
 		} else {
 			Object js = IJ.runPlugIn("JavaScript", text);
 			if (js==null)
