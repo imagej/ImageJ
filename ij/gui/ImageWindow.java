@@ -187,7 +187,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		
 		if (mag<1.0) {
 			initialMagnification = mag;
-			ic.setDrawingSize((int)(width*mag), (int)(height*mag));
+			ic.setSize((int)(width*mag), (int)(height*mag));
 		}
 		ic.setMagnification(mag);
 		if (y+height*mag>screenHeight)
@@ -520,9 +520,9 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (IJ.debugMode) IJ.log("maximize: "+mag+" "+ic.getMagnification()+" "+maxBounds);
 		setSize(getMaximizedBounds().width, getMaximizedBounds().height);
 		if (mag>ic.getMagnification() || aspectRatio<0.5 || aspectRatio>2.0) {
+			ic.setSize((int)(width*mag), (int)(height*mag));
+			ic.setSourceRect(new Rectangle(0, 0, width, height));
 			ic.setMagnification2(mag);
-			ic.setSrcRect(new Rectangle(0, 0, width, height));
-			ic.setDrawingSize((int)(width*mag), (int)(height*mag));
 			validate();
 			unzoomWhenMinimizing = true;
 		} else

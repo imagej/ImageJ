@@ -112,10 +112,13 @@ public class Zoom implements PlugIn{
 		if ((areaSelection||smallImage||srcWidth!=srcRect.width||srcHeight!=srcRect.height) && !legacyMacro) {
 			if (areaSelection && roi.getType()==Roi.RECTANGLE)
 				imp.deleteRoi();
+			Insets insets = win.getInsets();
+			int canvasWidth = (int)(srcWidth*mag+insets.right+insets.left+ImageWindow.HGAP*2);
+			int canvasHeight = (int)(srcHeight*mag+insets.top+insets.bottom+ImageWindow.VGAP*2+win.getSliderHeight());
 			ic.setSourceRect(new Rectangle(x-srcWidth/2,y-srcHeight/2,srcWidth,srcHeight));
 			ic.setMagnification(mag);
-			Insets insets = win.getInsets();
-			win.setSize((int)(srcWidth*mag+insets.right+insets.left+ImageWindow.HGAP*2), (int)(srcHeight*mag+insets.top+insets.bottom+ImageWindow.VGAP*2+win.getSliderHeight()));return;
+			win.setSize(canvasWidth, canvasHeight);
+			return;
 		}
 		if (x>=width) x=width-1;
 		if (y>=height) y=height-1;
@@ -143,8 +146,8 @@ public class Zoom implements PlugIn{
 		} else {
 			srcWidth = width;
 			srcHeight = height;
+			ic.setSize((int)newWidth, (int)newHeight);
 			ic.setSourceRect(new Rectangle(0, 0, srcWidth, srcHeight));
-			ic.setDrawingSize((int)newWidth, (int)newHeight);
 			win.pack();
 		}
 		ic.repaint();

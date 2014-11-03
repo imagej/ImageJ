@@ -75,7 +75,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private boolean scaleToFit;
 	private boolean painted;
 	private boolean hideZoomIndicator;
-
 		
 	public ImageCanvas(ImagePlus imp) {
 		this.imp = imp;
@@ -86,7 +85,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		imageWidth = width;
 		imageHeight = height;
 		srcRect = new Rectangle(0, 0, imageWidth, imageHeight);
-		setDrawingSize(imageWidth, (int)(imageHeight));
+		setSize(imageWidth, imageHeight);
 		magnification = 1.0;
  		addMouseListener(this);
  		addMouseMotionListener(this);
@@ -101,7 +100,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		imageWidth = width;
 		imageHeight = height;
 		srcRect = new Rectangle(0, 0, imageWidth, imageHeight);
-		setDrawingSize(imageWidth, (int)imageHeight);
+		setSize(imageWidth, imageHeight);
 		magnification = 1.0;
 	}
 
@@ -113,27 +112,63 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			return;
 		srcRect = new Rectangle(ic.srcRect.x, ic.srcRect.y, ic.srcRect.width, ic.srcRect.height);
 		setMagnification(ic.magnification);
-		setDrawingSize(ic.dstWidth, ic.dstHeight);
+		setSize(ic.dstWidth, ic.dstHeight);
 	}
 
 	public void setSourceRect(Rectangle r) {
-		srcRect = r;
+		if (r==null)
+			return;
+		if (r.x<0) r.x = 0;
+		if (r.y<0) r.y = 0;
+		if (r.width<1)
+			r.width = 1;
+		if (r.height<1)
+			r.height = 1;
+		if (r.width>imageWidth)
+			r.width = imageWidth;
+		if (r.height>imageHeight)
+			r.height = imageHeight;
+		if (r.x+r.width>imageWidth)
+			r.x = imageWidth-r.width;
+		if (r.y+r.height>imageHeight)
+			r.y = imageHeight-r.height;
+		if (srcRect==null)
+			srcRect = new Rectangle(r.x, r.y, r.width, r.height);
+		else {
+			srcRect.x = r.x;
+			srcRect.y = r.y;
+			srcRect.width = r.width;
+			srcRect.height = r.height;
+		}
+		if (dstWidth==0) {
+			Dimension size = getSize();
+			dstWidth = size.width;
+			dstHeight = size.height;
+		}
+		magnification = (double)dstWidth/srcRect.width;
+		imp.setTitle(imp.getTitle());
+		if (IJ.debugMode) IJ.log("setSourceRect: "+magnification+" "+(int)(srcRect.height*magnification+0.5)+" "+dstHeight+" "+srcRect);
 	}
 
 	void setSrcRect(Rectangle srcRect) {
-		this.srcRect = srcRect;
+		setSourceRect(srcRect);
 	}
 		
 	public Rectangle getSrcRect() {
 		return srcRect;
 	}
 	
+	/** Obsolete; replaced by setSize() */
 	public void setDrawingSize(int width, int height) {
-	    dstWidth = width;
-	    dstHeight = height;
 		setSize(dstWidth, dstHeight);
 	}
 		
+	public void setSize(int width, int height) {
+		super.setSize(width, height);
+	    dstWidth = width;
+	    dstHeight = height;
+	}
+
 	/** ImagePlus.updateAndDraw calls this method to force the paint()
 		method to update the image from the ImageProcessor. */
 	public void setImageUpdated() {
@@ -172,7 +207,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			setInterpolation(g, Prefs.interpolateScaledImages);
 			Image img = imp.getImage();
 			if (img!=null)
- 				g.drawImage(img, 0, 0, (int)(srcRect.width*magnification), (int)(srcRect.height*magnification),
+ 				g.drawImage(img, 0, 0, (int)(srcRect.width*magnification+0.5), (int)(srcRect.height*magnification+0.5),
 				srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
 			if (overlay!=null)
 				drawOverlay(overlay, g);
@@ -446,8 +481,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	// Use double buffer to reduce flicker when drawing complex ROIs.
 	// Author: Erik Meijering
 	void paintDoubleBuffered(Graphics g) {
-		final int srcRectWidthMag = (int)(srcRect.width*magnification);
-		final int srcRectHeightMag = (int)(srcRect.height*magnification);
+		final int srcRectWidthMag = (int)(srcRect.width*magnification+0.5);
+		final int srcRectHeightMag = (int)(srcRect.height*magnification+0.5);
 		if (offScreenImage==null || offScreenWidth!=srcRectWidthMag || offScreenHeight!=srcRectHeightMag) {
 			offScreenImage = createImage(srcRectWidthMag, srcRectHeightMag);
 			offScreenWidth = srcRectWidthMag;
@@ -668,7 +703,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			height = (int)(imageHeight*magnification);
 		Dimension size = getSize();
 		if (srcRect.width<imageWidth || srcRect.height<imageHeight || (painted&&(width!=size.width||height!=size.height))) {
-			setDrawingSize(width, height);
+			setSize(width, height);
 			srcRect.width = (int)(dstWidth/magnification);
 			srcRect.height = (int)(dstHeight/magnification);
 			if ((srcRect.x+srcRect.width)>imageWidth)
@@ -693,7 +728,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int height=(int)(imageHeight*magnification);
 		if (width==dstWidth&&height==dstHeight) return;
 		srcRect=new Rectangle(0,0,imageWidth, imageHeight);
-		setDrawingSize(width, height);
+		setSize(width, height);
 		getParent().doLayout();
 	}
     
@@ -754,7 +789,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int newHeight = (int)(imageHeight*newMag);
 		Dimension newSize = canEnlarge(newWidth, newHeight);
 		if (newSize!=null) {
-			setDrawingSize(newSize.width, newSize.height);
+			setSize(newSize.width, newSize.height);
 			if (newSize.width!=newWidth || newSize.height!=newHeight)
 				adjustSourceRect(newMag, sx, sy);
 			else
@@ -842,7 +877,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			setMaxBounds();
 			//IJ.log(newDstWidth+" "+dstWidth+" "+newDstHeight+" "+dstHeight);
 			if (newDstWidth<dstWidth || newDstHeight<dstHeight) {
-				setDrawingSize(newDstWidth, newDstHeight);
+				setSize(newDstWidth, newDstHeight);
 				imp.getWindow().pack();
 			} else
 				repaint();
@@ -864,7 +899,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			setMagnification(newMag);
 		} else {
 			srcRect = new Rectangle(0, 0, imageWidth, imageHeight);
-			setDrawingSize((int)(imageWidth*newMag), (int)(imageHeight*newMag));
+			setSize((int)(imageWidth*newMag), (int)(imageHeight*newMag));
 			setMagnification(newMag);
 			imp.getWindow().pack();
 		}
@@ -881,7 +916,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			return;
 		srcRect = new Rectangle(0, 0, imageWidth, imageHeight);
 		ImageWindow win = imp.getWindow();
-		setDrawingSize((int)(imageWidth*imag), (int)(imageHeight*imag));
+		setSize((int)(imageWidth*imag), (int)(imageHeight*imag));
 		setMagnification(imag);
         setMaxBounds();
 		win.pack();
