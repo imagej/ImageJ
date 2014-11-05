@@ -160,13 +160,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	
 	/** Obsolete; replaced by setSize() */
 	public void setDrawingSize(int width, int height) {
+		dstWidth = width;
+		dstHeight = height;
 		setSize(dstWidth, dstHeight);
 	}
 		
 	public void setSize(int width, int height) {
 		super.setSize(width, height);
-	    dstWidth = width;
-	    dstHeight = height;
+		dstWidth = width;
+		dstHeight = height;
 	}
 
 	/** ImagePlus.updateAndDraw calls this method to force the paint()

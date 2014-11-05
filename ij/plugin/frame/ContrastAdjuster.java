@@ -842,6 +842,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 				for (int c=1; c<=channels; c++) {
 					imp.setPositionWithoutUpdate(c, imp.getSlice(), imp.getFrame());
 					imp.setDisplayRange(min, max);
+					//IJ.log("setDisplayRange: "+c+" "+min+" "+max);
 				}
 				((CompositeImage)imp).reset();
 				imp.setPosition(channel, imp.getSlice(), imp.getFrame());
