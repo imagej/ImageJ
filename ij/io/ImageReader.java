@@ -576,7 +576,7 @@ public class ImageReader {
 	Object readRGB48(InputStream in) throws IOException {
 		if (fi.compression>FileInfo.COMPRESSION_NONE)
 			return readCompressedRGB48(in);
-		int channels = 3;
+		int channels = fi.samplesPerPixel;
 		short[][] stack = new short[channels][nPixels];
 		DataInputStream dis = new DataInputStream(in);
 		int pixel = 0;

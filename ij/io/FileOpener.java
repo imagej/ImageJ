@@ -109,12 +109,17 @@ public class FileOpener {
 				boolean planar = fi.fileType==FileInfo.RGB48_PLANAR;
 				Object[] pixelArray = (Object[])readPixels(fi);
 				if (pixelArray==null) return null;
+				int nChannels = 3;
 				ImageStack stack = new ImageStack(width, height);
 				stack.addSlice("Red", pixelArray[0]);
 				stack.addSlice("Green", pixelArray[1]);
 				stack.addSlice("Blue", pixelArray[2]);
+				if (fi.samplesPerPixel==4 && pixelArray.length==4) {
+					stack.addSlice("Gray", pixelArray[3]);
+					nChannels = 4;
+				}
         		imp = new ImagePlus(fi.fileName, stack);
-        		imp.setDimensions(3, 1, 1);
+        		imp.setDimensions(nChannels, 1, 1);
         		if (planar)
         			imp.getProcessor().resetMinAndMax();
 				imp.setFileInfo(fi);

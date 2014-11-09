@@ -431,24 +431,27 @@ public class TiffDecoder {
 								fi.fileType = FileInfo.BITMAP;
 							else
 								error("Unsupported BitsPerSample: " + value);
-						} else if (count==3) {
+						} else if (count>1) {
 							long saveLoc = in.getLongFilePointer();
 							in.seek(lvalue);
 							int bitDepth = getShort();
-							if (!(bitDepth==8||bitDepth==16))
-								error("ImageJ can only open 8 and 16 bit/channel RGB images ("+bitDepth+")");
-							if (bitDepth==16)
-								fi.fileType = FileInfo.RGB48;
+							if (bitDepth==8)
+								fi.fileType = FileInfo.GRAY8;
+							else if (bitDepth==16)
+								fi.fileType = FileInfo.GRAY16_UNSIGNED;
+							else
+								error("ImageJ can only open 8 and 16 bit/channel images ("+bitDepth+")");
 							in.seek(saveLoc);
 						}
 						break;
 				case SAMPLES_PER_PIXEL:
 					fi.samplesPerPixel = value;
 					if (value==3 && fi.fileType!=FileInfo.RGB48)
-						fi.fileType = fi.fileType==FileInfo.GRAY16_UNSIGNED?FileInfo.RGB48:FileInfo.RGB;
-					else if (value==4 && fi.fileType==FileInfo.GRAY8) {
+						fi.fileType = (fi.fileType==FileInfo.GRAY16_UNSIGNED)?FileInfo.RGB48:FileInfo.RGB;
+					else if (value==4 && fi.fileType==FileInfo.GRAY8)
 						fi.fileType = photoInterp==5?FileInfo.CMYK:FileInfo.ARGB;
-					}
+					else if (value==4 && fi.fileType==FileInfo.GRAY16_UNSIGNED)
+						fi.fileType = FileInfo.RGB48;
 					break;
 				case ROWS_PER_STRIP:
 					fi.rowsPerStrip = value;
@@ -478,9 +481,7 @@ public class TiffDecoder {
 							 fi.fileType = FileInfo.GRAY16_UNSIGNED;
 					else if (value==2 && fi.fileType==FileInfo.RGB)
 						fi.fileType = FileInfo.RGB_PLANAR;
-					else if (value==1 && fi.samplesPerPixel==4) {
-						fi.fileType = photoInterp==5?FileInfo.CMYK:FileInfo.ARGB;
-					} else if (value!=2 && !((fi.samplesPerPixel==1)||(fi.samplesPerPixel==3))) {
+					else if (value!=2 && !(fi.samplesPerPixel==1||fi.samplesPerPixel==3||fi.samplesPerPixel==4)) {
 						String msg = "Unsupported SamplesPerPixel: " + fi.samplesPerPixel;
 						error(msg);
 					}
