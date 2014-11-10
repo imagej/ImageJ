@@ -3,6 +3,7 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.text.*;
+import ij.measure.Calibration;
 import java.awt.*;
 import java.io.*;
 
@@ -29,16 +30,34 @@ public class FFTMath implements PlugIn {
             IJ.noImage();
             return false;
         }
-        String[] titles = new String[wList.length];
+        int nGoodImages = 0;
         for (int i=0; i<wList.length; i++) {
             ImagePlus imp = WindowManager.getImage(wList[i]);
-            if (imp!=null)
-                titles[i] = imp.getTitle();
+            if (imp == null || imp.getWidth() != imp.getHeight() || !FHT.isPowerOf2(imp.getWidth()))
+                wList[i] = 0;               //mark images that are not a power of 2
             else
-                titles[i] = "";
+                nGoodImages++;
         }
-        if (index1>=titles.length)index1 = 0;
-        if (index2>=titles.length)index2 = 0;
+        if (nGoodImages == 0) {
+        	IJ.error("FFT Math", "Images must be a power of 2 size (256x256, 512x512, etc.)");
+        	return false;
+        }
+        int[] wList2 = new int[nGoodImages];
+        String[] titles = new String[nGoodImages];
+        for (int i=0, i2=0; i<wList.length; i++) {
+            if (wList[i] == 0) continue;    //ignore this image, not power of 2
+            wList2[i2] = wList[i];
+            ImagePlus imp = WindowManager.getImage(wList2[i2]);
+            if (imp!=null)
+                titles[i2] = imp.getTitle();
+            else
+                titles[i2] = "";
+            i2++;
+        }
+        if (index1>=wList2.length) index1 = 0;
+        if (index2>=wList2.length) index2 = 0;
+        if (WindowManager.getImage(title)!=null)
+            title = WindowManager.getUniqueName(title);
         GenericDialog gd = new GenericDialog("FFT Math");
         gd.addChoice("Image1: ", titles, titles[index1]);
         gd.addChoice("Operation:", ops, ops[operation]);
@@ -54,10 +73,8 @@ public class FFTMath implements PlugIn {
         index2 = gd.getNextChoiceIndex();
         title = gd.getNextString();
         doInverse = gd.getNextBoolean();
-        String title1 = titles[index1];
-        String title2 = titles[index2];
-        imp1 = WindowManager.getImage(wList[index1]);
-        imp2 = WindowManager.getImage(wList[index2]);
+        imp1 = WindowManager.getImage(wList2[index1]);
+        imp2 = WindowManager.getImage(wList2[index2]);
         return true;
    }
     
@@ -115,6 +132,7 @@ public class FFTMath implements PlugIn {
 				result = h1.divide(h2); 
 				break;
 		}
+		ImagePlus imp3 = null;
 		if (doInverse) {
 			IJ.showStatus("Inverse transform");
 			result.inverseTransform();
@@ -122,16 +140,24 @@ public class FFTMath implements PlugIn {
 			result.swapQuadrants();
 			IJ.showStatus("Display image");
 			result.resetMinAndMax();
-        	new ImagePlus(title, result).show();
+			imp3 = new ImagePlus(title, result);
 		} else {
 			IJ.showStatus("Power spectrum");
 			ImageProcessor ps = result.getPowerSpectrum();
-			ImagePlus imp3 = new ImagePlus(title, ps.convertToFloat());
+			imp3 = new ImagePlus(title, ps.convertToFloat());
 			result.quadrantSwapNeeded = true;
 			imp3.setProperty("FHT", result);
-        	imp3.show();
 		}
+		Calibration cal1 = imp1.getCalibration();
+		Calibration cal2 = imp2.getCalibration();
+		Calibration cal3 = cal1.scaled() ? cal1 : cal2;
+		if (cal1.scaled() && cal2.scaled() && !cal1.equals(cal2))
+			cal3 = null;                //can't decide between different calibrations
+		imp3.setCalibration(cal3);
+		cal3 = imp3.getCalibration();   //imp3 has a copy, which we may modify
+		cal3.disableDensityCalibration();
+		imp3.show();
 		IJ.showProgress(1.0);
     }
- 
+
 }

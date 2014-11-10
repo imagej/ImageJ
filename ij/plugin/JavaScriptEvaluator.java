@@ -1,14 +1,12 @@
-import ij.plugin.*;
+package ij.plugin;
 import ij.*;
 import ij.plugin.frame.Editor;
 import javax.script.*;
 
 /** Implements the macro editor's Macros/Evaluate JavaScript command 
-    on Linux and Windows systems running Java 1.6 or later. This command is
-    implemented as a separately compilable plugin so that the ImageJ core
-    can continue to be compiled using Java 1.4 and Java 1.5. The JavaScript
-    plugin at <http://rsb.info.nih.gov/ij/plugins/download/misc/JavaScript.java>
-    is used to evaluate JavaScript on Macs and on systems running versions
+    on systems running Java 1.6 or later. The JavaScript plugin at
+    <http://rsb.info.nih.gov/ij/plugins/download/misc/JavaScript.java>
+    is used to evaluate JavaScript on systems running versions
     of Java earlier than 1.6. */
 public class JavaScriptEvaluator implements PlugIn, Runnable  {
 	private Thread thread;
@@ -41,6 +39,12 @@ public class JavaScriptEvaluator implements PlugIn, Runnable  {
 			ScriptEngine engine = scriptEngineManager.getEngineByName("ECMAScript");
 			if (engine == null)
 				{IJ.error("Could not find JavaScript engine"); return;}
+			engine.eval("function load(path) {\n"
+				+ "  importClass(Packages.sun.org.mozilla.javascript.internal.Context);\n"
+				+ "  importClass(Packages.java.io.FileReader);\n"
+				+ "  var cx = Context.getCurrentContext();\n"
+				+ "  cx.evaluateReader(this, new FileReader(path), path, 1, null);\n"
+				+ "}");
 			result = engine.eval(script);
 		} catch(Throwable e) {
 			String msg = e.getMessage();
@@ -48,7 +52,7 @@ public class JavaScriptEvaluator implements PlugIn, Runnable  {
 				msg = msg.substring(47, msg.length());
 			if (msg.startsWith("sun.org.mozilla.javascript.internal.EvaluatorException"))
 				msg = "Error"+msg.substring(54, msg.length());
-			if (msg.indexOf("Macro canceled")==-1)
+			if (!msg.contains("Macro canceled"))
 				IJ.log(msg);
 		}
 	}

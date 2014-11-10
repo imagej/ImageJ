@@ -133,7 +133,7 @@ public class MacroRunner implements Runnable {
 		Interpreter interp = new Interpreter();
 		interp.argument = argument;
 		if (editor!=null)
-			interp.setEditor(editor);
+			interp.setDebugger(editor);
 		try {
 			if (pgm==null)
 				interp.run(macro);

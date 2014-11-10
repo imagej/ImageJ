@@ -304,12 +304,25 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		if (maxCount==0) maxCount = 1;
 		frame = new Rectangle(XMARGIN, YMARGIN, HIST_WIDTH, HIST_HEIGHT);
 		ip.drawRect(frame.x-1, frame.y, frame.width+2, frame.height+1);
-		int index, y;
-		for (int i = 0; i<HIST_WIDTH; i++) {
-			index = (int)(i*(double)histogram.length/HIST_WIDTH); 
-			y = (int)(((double)HIST_HEIGHT*(double)histogram[index])/maxCount);
-			if (y>HIST_HEIGHT) y = HIST_HEIGHT;
-			ip.drawLine(i+XMARGIN, YMARGIN+HIST_HEIGHT, i+XMARGIN, YMARGIN+HIST_HEIGHT-y);
+		if (histogram.length<=HIST_WIDTH) {
+			int index, y;
+			for (int i=0; i<HIST_WIDTH; i++) {
+				index = (int)(i*(double)histogram.length/HIST_WIDTH); 
+				y = (int)(((double)HIST_HEIGHT*(double)histogram[index])/maxCount);
+				if (y>HIST_HEIGHT) y = HIST_HEIGHT;
+				ip.drawLine(i+XMARGIN, YMARGIN+HIST_HEIGHT, i+XMARGIN, YMARGIN+HIST_HEIGHT-y);
+			}
+		} else {
+			double xscale = (double)HIST_WIDTH/histogram.length; 
+			for (int i=0; i<histogram.length; i++) {
+				long value = histogram[i];
+				if (value>0L) {
+					int y = (int)(((double)HIST_HEIGHT*(double)value)/maxCount);
+					if (y>HIST_HEIGHT) y = HIST_HEIGHT;
+					int x = (int)(i*xscale)+XMARGIN;
+					ip.drawLine(x, YMARGIN+HIST_HEIGHT, x, YMARGIN+HIST_HEIGHT-y);
+				}
+			}
 		}
 	}
 		
@@ -318,13 +331,26 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		ip.drawRect(frame.x-1, frame.y, frame.width+2, frame.height+1);
 		double max = Math.log(maxCount);
 		ip.setColor(Color.gray);
-		int index, y;
-		for (int i = 0; i<HIST_WIDTH; i++) {
-			index = (int)(i*(double)histogram.length/HIST_WIDTH); 
-			y = histogram[index]==0?0:(int)(HIST_HEIGHT*Math.log(histogram[index])/max);
-			if (y>HIST_HEIGHT)
-				y = HIST_HEIGHT;
-			ip.drawLine(i+XMARGIN, YMARGIN+HIST_HEIGHT, i+XMARGIN, YMARGIN+HIST_HEIGHT-y);
+		if (histogram.length<=HIST_WIDTH) {
+			int index, y;
+			for (int i = 0; i<HIST_WIDTH; i++) {
+				index = (int)(i*(double)histogram.length/HIST_WIDTH); 
+				y = histogram[index]==0?0:(int)(HIST_HEIGHT*Math.log(histogram[index])/max);
+				if (y>HIST_HEIGHT)
+					y = HIST_HEIGHT;
+				ip.drawLine(i+XMARGIN, YMARGIN+HIST_HEIGHT, i+XMARGIN, YMARGIN+HIST_HEIGHT-y);
+			}
+		} else {
+			double xscale = (double)HIST_WIDTH/histogram.length; 
+			for (int i=0; i<histogram.length; i++) {
+				long value = histogram[i];
+				if (value>0L) {
+					int y = (int)(HIST_HEIGHT*Math.log(value)/max);
+					if (y>HIST_HEIGHT) y = HIST_HEIGHT;
+					int x = (int)(i*xscale)+XMARGIN;
+					ip.drawLine(x, YMARGIN+HIST_HEIGHT, x, YMARGIN+HIST_HEIGHT-y);
+				}
+			}
 		}
 		ip.setColor(Color.black);
 	}
@@ -392,18 +418,34 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		return ip.getStringWidth(d2s(d));
 	}
 	
-	protected void showList() {
-		ArrayList list = new ArrayList();
+	/** Returns the histogram values as a ResultsTable. */
+	public ResultsTable getResultsTable() {
+		ResultsTable rt = new ResultsTable();
+		rt.showRowNumbers(false);
 		String vheading = stats.binSize==1.0?"value":"bin start";
 		if (cal.calibrated() && !cal.isSigned16Bit()) {
-			for (int i=0; i<stats.nBins; i++)
-				list.add(i+"\t"+ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]);
-			TextWindow tw = new TextWindow(getTitle(), "level\t"+vheading+"\tcount", list, 200, 400);
+			for (int i=0; i<stats.nBins; i++) {
+				rt.setValue("level", i, i);
+				rt.setValue(vheading, i, cal.getCValue(stats.histMin+i*stats.binSize));
+				rt.setValue("count", i, histogram[i]);
+			}
+			rt.setDecimalPlaces(0, 0);
+			rt.setDecimalPlaces(1, digits);
+			rt.setDecimalPlaces(2, 0);
 		} else {
-			for (int i=0; i<stats.nBins; i++)
-				list.add(ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]);
-			TextWindow tw = new TextWindow(getTitle(), vheading+"\tcount", list, 200, 400);
+			for (int i=0; i<stats.nBins; i++) {
+				rt.setValue(vheading, i, cal.getCValue(stats.histMin+i*stats.binSize));
+				rt.setValue("count", i, histogram[i]);
+			}
+			rt.setDecimalPlaces(0, digits);
+			rt.setDecimalPlaces(1, 0);
 		}
+		return rt;
+	}
+
+	protected void showList() {
+		ResultsTable rt = getResultsTable();
+		rt.show(getTitle());
 	}
 	
 	protected void copyToClipboard() {

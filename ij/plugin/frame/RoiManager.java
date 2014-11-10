@@ -495,7 +495,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 						delete = true;
 				}
 				if (delete) {
-					rois.remove((String) listModel.getElementAt(i));
+					rois.remove((String)listModel.getElementAt(i));
 					listModel.remove(i);
 				}
 			}
@@ -523,7 +523,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (index<0 && !showingAll)
 			return error("Exactly one item in the list must be selected.");
 		if (index>=0) {
-			String name = (String) listModel.getElementAt(index);
+			String name = (String)listModel.getElementAt(index);
 			rois.remove(name);
 			if (clone) {
 				Roi roi2 = (Roi)roi.clone();
@@ -2073,6 +2073,18 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			list.clearSelection();
 		if (record()) Recorder.record("roiManager", "Deselect");
 		return;
+	}
+	
+	/** Deselect the specified ROI if it is the only selected ROI. */
+	public void deselect(Roi roi) {
+		int[] indexes = getSelectedIndexes();
+		if (indexes.length==1) {
+			String label = (String)listModel.getElementAt(indexes[0]);
+			if (label.equals(roi.getName())) {
+				deselect();
+				repaint();
+			}
+		}
 	}
 
 	public void setEditMode(ImagePlus imp, boolean editMode) {

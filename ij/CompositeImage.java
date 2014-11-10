@@ -169,6 +169,8 @@ public class CompositeImage extends ImagePlus {
 	
 	public void resetDisplayRanges() {
 		int channels = getNChannels();
+		if (lut==null)
+			setupLuts(channels);
 		ImageStack stack2 = getImageStack();
 		if (lut==null || channels!=lut.length || channels>stack2.getSize() || channels>MAX_CHANNELS)
 			return;

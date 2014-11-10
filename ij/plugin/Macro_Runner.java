@@ -235,7 +235,7 @@ public class Macro_Runner implements PlugIn {
 	public String runJavaScript(String script, String arg) {
 		Object js = null;
 		if (IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit()))
-			js = IJ.runPlugIn("JavaScriptEvaluator", "");
+			js = IJ.runPlugIn("ij.plugin.JavaScriptEvaluator", "");
 		else {
 			js = IJ.runPlugIn("JavaScript", "");
 			if (js==null) {

@@ -548,7 +548,14 @@ public class Selection implements PlugIn, Measurements {
 		ip.setRoi(roi);
 		ip.setValue(255);
 		ip.fill(ip.getMask());
-		maskImp.updateAndDraw();
+		Calibration cal = imp.getCalibration();
+		if (cal.scaled()) {
+			Calibration cal2 = maskImp.getCalibration();
+			cal2.pixelWidth = cal.pixelWidth;
+			cal2.pixelHeight = cal.pixelHeight;
+			cal2.setUnit(cal.getUnit());
+		}
+		maskImp.updateAndRepaintWindow();
 		Prefs.useInvertingLut = useInvertingLut;
 	}
 	

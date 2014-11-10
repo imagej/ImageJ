@@ -17,7 +17,7 @@ import ij.io.SaveDialog;
 
 /** This is a simple TextArea based editor for editing and compiling plugins. */
 public class Editor extends PlugInFrame implements ActionListener, ItemListener,
-	TextListener, ClipboardOwner, MacroConstants, Runnable {
+	TextListener, ClipboardOwner, MacroConstants, Runnable, Debugger {
 	
 	/** ImportPackage statements added in front of scripts. Contains no 
 	newlines so that lines numbers in error messages are not changed. */
@@ -389,9 +389,11 @@ shortcutsBroken = false;
 			text = ta.getSelectedText();
 		if (text.equals("")) return;
 		text = getJSPrefix("") + text;
-		if (IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit()))
-			IJ.runPlugIn("JavaScriptEvaluator", text);
-		else {
+		if ((IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit())) && !IJ.isJava18()) {
+			// Use JavaScript engine built into Java 6 and Java 7.
+			// Can't use incompatible Nashorn engine in Java 8 and later.
+			IJ.runPlugIn("ij.plugin.JavaScriptEvaluator", text);
+		} else {
 			Object js = IJ.runPlugIn("JavaScript", text);
 			if (js==null)
 				download("/download/tools/JavaScript.jar");
@@ -619,7 +621,6 @@ shortcutsBroken = false;
 		String what = e.getActionCommand();
 		int flags = e.getModifiers();
 		boolean altKeyDown = (flags & Event.ALT_MASK)!=0;
-		if (IJ.debugMode) IJ.log("actionPerformed: "+e);
 		
 		if ("Save".equals(what))
 			save();
@@ -635,13 +636,13 @@ shortcutsBroken = false;
 				enableDebugging();
 				runMacro(true);
 		} else if ("Step".equals(what))
-			setDebugMode(Interpreter.STEP);
+			setDebugMode(STEP);
 		else if ("Trace".equals(what))
-			setDebugMode(Interpreter.TRACE);
+			setDebugMode(TRACE);
 		else if ("Fast Trace".equals(what))
-			setDebugMode(Interpreter.FAST_TRACE);
+			setDebugMode(FAST_TRACE);
 		else if ("Run".equals(what))
-			setDebugMode(Interpreter.RUN);
+			setDebugMode(RUN_TO_COMPLETION);
 		else if ("Run to Insertion Point".equals(what))
 			runToInsertionPoint();
 		else if ("Abort".equals(what) || "Abort Macro".equals(what)) {
@@ -725,8 +726,7 @@ shortcutsBroken = false;
 			IJ.beep();
 		else {
 			runToLine = getCurrentLine();
-			//IJ.log("runToLine: "+runToLine);
-			setDebugMode(Interpreter.RUN_TO_CARET);
+			setDebugMode(RUN_TO_CARET);
 		}
 	}
 		
@@ -760,7 +760,7 @@ shortcutsBroken = false;
 	final void enableDebugging() {
 			step = true;
 			Interpreter interp = Interpreter.getInstance();
-			if (interp!=null && interp.getEditor()==this) {
+			if (interp!=null && interp.getDebugger()==this) {
 				interp.abort();
 				IJ.wait(100);
 			}
@@ -774,13 +774,14 @@ shortcutsBroken = false;
 		step = true;
 		Interpreter interp = Interpreter.getInstance();
 		if (interp!=null) {
-			interp.setEditor(this);
+			if (interp.getDebugger()==null)
+				fixLineEndings();
+			interp.setDebugger(this);
 			interp.setDebugMode(mode);
 		}
 	}
 
 	public void textValueChanged(TextEvent e) {
-		if (IJ.debugMode) IJ.log("textValueChanged1: "+undoBuffer.size());
 		String text = ta.getText();
 		//if (undo2==null || text.length()!=undo2.length()+1 || text.charAt(text.length()-1)=='\n')
 		int length = 0;
@@ -794,7 +795,6 @@ shortcutsBroken = false;
 					undoBuffer.set(i-1, undoBuffer.get(i));
 				undoBuffer.set(undoBuffer.size()-1, text);
 			}
-			if (IJ.debugMode) IJ.log("textValueChanged2: "+undoBuffer.size()+" "+text);
 		}
 		performingUndo = false;
 		if (isMacroWindow) return;
@@ -1114,7 +1114,6 @@ shortcutsBroken = false;
 			if (!inQuotes && c!='\n' && c!='\t' && (c<32||c>127)) {
 				count++;
 				chars[i] = ' ';
-				//IJ.log(""+(0+c));
 			}
 		}
 		if (count>0) {
@@ -1186,21 +1185,20 @@ shortcutsBroken = false;
 	public int debug(Interpreter interp, int mode) {
 		if (IJ.debugMode)
 			IJ.log("debug: "+interp.getLineNumber()+"  "+mode+"  "+interp);
-		if (mode==Interpreter.RUN)
+		if (mode==RUN_TO_COMPLETION)
 			return 0;
 		if (!isVisible()) { // abort macro if user closes window
 			interp.abortMacro();
 			return 0;
 		}
-		if (!isActive())
-			toFront();
+		toFront();
 		int n = interp.getLineNumber();
 		if (n==previousLine)
 			{previousLine=0; return 0;}
 		previousLine = n;
-		if (mode==Interpreter.RUN_TO_CARET) {
+		if (mode==RUN_TO_CARET) {
 			if (n==runToLine) {
-				mode = Interpreter.STEP;
+				mode = STEP;
 				interp.setDebugMode(mode);
 			} else
 				return 0;
@@ -1229,21 +1227,20 @@ shortcutsBroken = false;
 			return 0; // skip code added with Interpreter.setAdditionalFunctions()
 		ta.select(debugStart, debugEnd);
 		if (debugWindow!=null && !debugWindow.isShowing()) {
-			interp.setEditor(null);
+			interp.setDebugger(null);
 			debugWindow = null;
 		} else
 			debugWindow = interp.updateDebugWindow(interp.getVariables(), debugWindow);
 		if (debugWindow!=null) {
 			interp.updateArrayInspector();
-			if (!isActive())
-				toFront();
+			toFront();
 		}
-		if (mode==Interpreter.STEP) {
+		if (mode==STEP) {
 			step = false;
 			while (!step && !interp.done() && isVisible())
 				IJ.wait(5);
 		} else {
-			if (mode==Interpreter.FAST_TRACE)
+			if (mode==FAST_TRACE)
 				IJ.wait(5);
 			else
 				IJ.wait(150);

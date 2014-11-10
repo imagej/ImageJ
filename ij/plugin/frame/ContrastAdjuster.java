@@ -399,8 +399,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			imp.setDisplayRange(min, max, channels);
 		else
 			imp.setDisplayRange(min, max);
-		if (!rgb)
-			imp.getProcessor().setSnapshotPixels(null); // disable undo
 	}
 
 	void updatePlot() {
@@ -844,6 +842,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 				for (int c=1; c<=channels; c++) {
 					imp.setPositionWithoutUpdate(c, imp.getSlice(), imp.getFrame());
 					imp.setDisplayRange(min, max);
+					//IJ.log("setDisplayRange: "+c+" "+min+" "+max);
 				}
 				((CompositeImage)imp).reset();
 				imp.setPosition(channel, imp.getSlice(), imp.getFrame());

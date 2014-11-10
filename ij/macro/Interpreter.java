@@ -15,7 +15,6 @@ import java.io.PrintWriter;
 /** This is the recursive descent parser/interpreter for the ImageJ macro language. */
 public class Interpreter implements MacroConstants {
 
-	public static final int NONE=0, STEP=1, TRACE=2, FAST_TRACE=3, RUN=4, RUN_TO_CARET=5;  // debugging modes
 	static final int STACK_SIZE=1000;
 	static final int MAX_ARGS=20;
 
@@ -52,8 +51,8 @@ public class Interpreter implements MacroConstants {
 	double[] rgbWeights;
 	boolean inPrint;
 	static String additionalFunctions;
-	Editor editor;
-	int debugMode = NONE;
+	Debugger debugger;
+	int debugMode = Debugger.NOT_DEBUGGING;
 	boolean showDebugFunctions;
 	static boolean showVariables;
 	boolean wasError;
@@ -217,8 +216,8 @@ public class Interpreter implements MacroConstants {
 
 	final void doStatement() {
 		getToken();
-		if (debugMode!=NONE && editor!=null && !done && token!=';' && token!=FUNCTION)
-			editor.debug(this, debugMode);
+		if (debugMode!=Debugger.NOT_DEBUGGING && debugger!=null && !done && token!=';' && token!=FUNCTION)
+			debugger.debug(this, debugMode);
 		switch (token) {
 			case VAR:
 				doVar();
@@ -1874,16 +1873,19 @@ public class Interpreter implements MacroConstants {
 		return interp!=null && isBatchMode() && interp.func.roiManager!=null;
 	}
 	
-	public void setEditor(Editor ed) {
-		if (ed!=null&&editor==null)
-			ed.fixLineEndings();
-		editor = ed;
-		if (ed!=null)
-			debugMode = STEP;
+	public void setDebugger(Debugger debugger) {
+		this.debugger = debugger;
+		if (debugger!=null)
+			debugMode = Debugger.STEP;
 		else
-			debugMode = NONE;
+			debugMode = Debugger.NOT_DEBUGGING;
 	}
 	
+	// Returns the Debugger (editor), if any, associated with this macro. */
+	public Debugger getDebugger() {
+		return debugger;
+	}
+
 	public void setDebugMode(int mode) {
 		debugMode = mode;
 	}
@@ -1903,7 +1905,7 @@ public class Interpreter implements MacroConstants {
 				ImagePlus imp = WindowManager.getCurrentImage();
 				if (imp!=null) title = imp.getTitle();
 			}
-			if (debugMode==STEP) System.gc();
+			if (debugMode==Debugger.STEP) System.gc();
 			variables[0] = "Memory\t" + IJ.freeMemory();
 			variables[1] = "nImages()\t" + nImages;
 			variables[2] = "getTitle()\t" + (title!=null?"\""+title+"\"":"");
@@ -1922,11 +1924,6 @@ public class Interpreter implements MacroConstants {
 	// Returns 'true' if this macro has finished or if it was aborted. */
 	public boolean done() {
 		return done;
-	}
-
-	// Returns the Editor, if any, associated with this macro. */
-	public Editor getEditor() {
-		return editor;
 	}
 
 	// Returns 'true' if this macro generated an error and was aborted. */
@@ -2047,8 +2044,8 @@ public class Interpreter implements MacroConstants {
 				}
 				txtPanel.append(newText);
 				txtPanel.scrollToTop();
-				if (editor!=null)
-					editor.toFront();
+				if (debugger!=null && (debugger instanceof Window))
+					((Window)debugger).toFront();
 				//n__  scroll position should not change during single-stepping
 			}
 		}
