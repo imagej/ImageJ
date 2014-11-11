@@ -99,7 +99,7 @@ public class ImageReader {
 	
 	/** Reads a 16-bit image. Signed pixels are converted to unsigned by adding 32768. */
 	short[] read16bitImage(InputStream in) throws IOException {
-		if (fi.compression>FileInfo.COMPRESSION_NONE || (fi.stripOffsets!=null&&fi.stripOffsets.length>1))
+		if (fi.compression>FileInfo.COMPRESSION_NONE || (fi.stripOffsets!=null&&fi.stripOffsets.length>1) && fi.fileType!=FileInfo.RGB48_PLANAR)
 			return readCompressed16bitImage(in);
 		int pixelsRead;
 		byte[] buffer = new byte[bufferSize];
@@ -661,13 +661,10 @@ public class ImageReader {
 	}
 
 	Object readRGB48Planar(InputStream in) throws IOException {
-		short[] red = read16bitImage(in);
-		short[] green = read16bitImage(in);
-		short[] blue = read16bitImage(in);
-		Object[] stack = new Object[3];
-		stack[0] = red;
-		stack[1] = green;
-		stack[2] = blue;
+		int channels = fi.samplesPerPixel;
+		Object[] stack = new Object[channels];
+		for (int i=0; i<channels; i++) 
+			stack[i] = read16bitImage(in);
 		return stack;
 	}
 

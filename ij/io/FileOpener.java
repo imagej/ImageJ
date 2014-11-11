@@ -132,12 +132,18 @@ public class FileOpener {
 				}
         		imp = new CompositeImage(imp, mode);
         		if (!planar && fi.displayRanges==null) {
-        			for (int c=1; c<=3; c++) {
-        				imp.setPosition(c, 1, 1);
-        				imp.setDisplayRange(minValue, maxValue);
-        			}
-       				imp.setPosition(1, 1, 1);
+        			if (nChannels==4)
+        				((CompositeImage)imp).resetDisplayRanges();
+        			else {
+						for (int c=1; c<=3; c++) {
+							imp.setPosition(c, 1, 1);
+							imp.setDisplayRange(minValue, maxValue);
+						}
+						imp.setPosition(1, 1, 1);
+       				}
         		}
+        		if (fi.whiteIsZero) // cmyk?
+        			IJ.run(imp, "Invert", "");
 				break;
 		}
 		imp.setFileInfo(fi);

@@ -5,38 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.49k 8 November 2014</u>
+<li> <u>1.49k 10 November 2014</u>
 <ul>
-<li> Thanks to Hermann-Josef Roeser, the <i>Histogram</i> command does a better
-job of plotting histograms with more than 256 bins. To get a dialog that allows
-you to specify the number of bins, run the Histogram command by pressing alt-h.
-<li> Thanks to Michael Schmid, the <i>Process&gt;FFT&gt;FD Math</i> command
-limits the image choices to power of 2 sizes and spatially calibrates
-the output image, which now has a unique name. 
-<li> The table created by clicking on "List" in histogram windows is now a results table.
-<li> Thanks to Michael Schmid, the contrast adjuster no longer disables undo.
-<li> On Java 8, ImageJ uses the Rhino JavaScript engine instead
-of the built in, but incompatible, Nashorn engine.
-<li> Thanks to Christophe Leterrier and Johannes Schindelin, the JavaScript 
-interpreter now supports the load() function.
-<li> Thanks to Philippe Carl, an ROI selected in the ROI Manager 
-is deselected when it is removed from the image.
-<li> Thanks to Thomas Templier, the ImageCanvas.setSourceRect() method
-now sets the magnification and is more robust
-<a href="macros/js/SetSourceRectDemo.js">JavaScript example</a>).
-<li> Thanks to Johannes Schindelin, added the ij.macro.Debugger interface.
-<li> Thanks to Glen MacDonald, fixed several bugs in the <i>Make Binary</i>
-and <i>Convert to Mask</i> commands.
-<li> Thanks to Gerhard Hahm, fixed a bug that caused the imageCalculator()
-macro function to not select the first (output) image in batch mode macros.
-<li> Thanks to Johan, fixed a bug that caused the calibration to not be updated
-after updating an existing plot window using the Plot.update() macro function.
-<li> Thanks to Michael Schmid, fixed a bug that caused
-<i>Edit&gt;Selection&gt;Create Mask</i> to not maintain the spatial 
-calibration when converting selections into masks. 
-<li> Thanks to Hermann-Josef Roeser, fixed a bug that caused ImageJ to not
-correctly open 16-bit, 4 sample per pixel TIFFs created by VueScan.
-
+<li> Fixed a bug that caused ImageJ to incorrectly read 3 and 4 channel
+16-bit planar TIFFs.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

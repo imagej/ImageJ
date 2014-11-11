@@ -446,12 +446,17 @@ public class TiffDecoder {
 						break;
 				case SAMPLES_PER_PIXEL:
 					fi.samplesPerPixel = value;
-					if (value==3 && fi.fileType!=FileInfo.RGB48)
-						fi.fileType = (fi.fileType==FileInfo.GRAY16_UNSIGNED)?FileInfo.RGB48:FileInfo.RGB;
+					if (value==3 && fi.fileType==FileInfo.GRAY8)
+						fi.fileType = FileInfo.RGB;
+					else if (value==3 && fi.fileType==FileInfo.GRAY16_UNSIGNED)
+						fi.fileType = FileInfo.RGB48;
 					else if (value==4 && fi.fileType==FileInfo.GRAY8)
 						fi.fileType = photoInterp==5?FileInfo.CMYK:FileInfo.ARGB;
-					else if (value==4 && fi.fileType==FileInfo.GRAY16_UNSIGNED)
+					else if (value==4 && fi.fileType==FileInfo.GRAY16_UNSIGNED) {
 						fi.fileType = FileInfo.RGB48;
+						if (photoInterp==5)  //assume cmyk
+							fi.whiteIsZero = true;
+					}
 					break;
 				case ROWS_PER_STRIP:
 					fi.rowsPerStrip = value;
@@ -478,7 +483,7 @@ public class TiffDecoder {
 					break;
 				case PLANAR_CONFIGURATION:  // 1=chunky, 2=planar
 					if (value==2 && fi.fileType==FileInfo.RGB48)
-							 fi.fileType = FileInfo.GRAY16_UNSIGNED;
+							 fi.fileType = FileInfo.RGB48_PLANAR;
 					else if (value==2 && fi.fileType==FileInfo.RGB)
 						fi.fileType = FileInfo.RGB_PLANAR;
 					else if (value!=2 && !(fi.samplesPerPixel==1||fi.samplesPerPixel==3||fi.samplesPerPixel==4)) {
