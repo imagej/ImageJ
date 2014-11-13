@@ -11,6 +11,7 @@ public class Calibration implements Cloneable {
 		EXP_WITH_OFFSET=11, GAUSSIAN=12, EXP_RECOVERY=13;
 	public static final int NONE=20, UNCALIBRATED_OD=21, CUSTOM=22;
 	public static final String DEFAULT_VALUE_UNIT = "Gray Value";
+	private static final int UNKNOWN = 0;
 
 	/** Pixel width in 'unit's */
 	public double pixelWidth = 1.0;
@@ -73,7 +74,7 @@ public class Calibration implements Cloneable {
 	private float[] cTable;
 	
 	private boolean invertedLut;
-	private int bitDepth = 8;
+	private int bitDepth = UNKNOWN;
 	private boolean zeroClip;
 	private boolean invertY;
 
@@ -249,7 +250,7 @@ public class Calibration implements Cloneable {
  		if (newBitDepth==16 && imp.getLocalCalibration().isSigned16Bit()) {
 			double[] coeff = new double[2]; coeff[0] = -32768.0; coeff[1] = 1.0;
  			setFunction(Calibration.STRAIGHT_LINE, coeff, DEFAULT_VALUE_UNIT);
-		} else if (newBitDepth!=bitDepth || type==ImagePlus.GRAY32 || type==ImagePlus.COLOR_RGB) {
+		} else if ((newBitDepth!=bitDepth&&bitDepth!=UNKNOWN) || type==ImagePlus.GRAY32 || type==ImagePlus.COLOR_RGB) {
 			String saveUnit = valueUnit;
 			disableDensityCalibration();
 			if (type==ImagePlus.GRAY32) valueUnit = saveUnit;
@@ -302,8 +303,16 @@ public class Calibration implements Cloneable {
 	/** Sets the calibration table. With 8-bit images, the table must 
 		have a length of 256. With 16-bit images, it must be 65536. */
  	public void setCTable(float[] table, String unit) {
- 		if (table==null)
- 			{disableDensityCalibration(); return;}
+ 		if (table==null) {
+ 			disableDensityCalibration();
+ 			return;
+ 		}
+ 		if (bitDepth==UNKNOWN) {
+ 			if (table.length==256)
+ 				bitDepth = 8;
+ 			else if (table.length==65536)
+ 				bitDepth = 16;
+ 		}
  		if (bitDepth==16 && table.length!=65536)
  			throw new IllegalArgumentException("Table.length!=65536");
  		cTable = table;
@@ -316,6 +325,8 @@ public class Calibration implements Cloneable {
  	void makeCTable() {
  		if (bitDepth==16)
  			{make16BitCTable(); return;}
+ 		if (bitDepth==UNKNOWN)
+ 			bitDepth = 8;
  		if (bitDepth!=8)
  			return;
  		if (function==UNCALIBRATED_OD) {

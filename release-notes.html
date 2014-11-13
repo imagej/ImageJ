@@ -5,12 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.49m 12 November 2014</u>
+<li> <u>1.49m 13 November 2014</u>
 <ul>
 <li> Fixed a bug that caused ImageJ to incorrectly read 3 and 4 channel
 16-bit planar TIFFs.
+<li> Thanks to Dawid Krzempek and Michael Schmid, fixed bugs that caused
+the setFunction() and setCTable() methods of the Calibration class
+to not sometimes not work as expected.
 <li> Fixed a 1.49k regression that could cause the imageCalculator() macro
-function to fail in batch mode.
+function to fail when processing stacks in batch mode macros.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
