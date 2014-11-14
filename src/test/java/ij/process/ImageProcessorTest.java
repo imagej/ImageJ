@@ -764,6 +764,7 @@ public class ImageProcessorTest
 
 
 
+	/*
 	@Test
 	public void testSetAutoThresholdString()
 	{
@@ -805,7 +806,9 @@ public class ImageProcessorTest
 			assertEquals( refArray[refIndex++], stats.yCenterOfMass, 0.0 );
 		}
 	}
+	*/
 
+	/*
 	@Test
 	public void testSetAutoThresholdStringBooleanInt()
 	{
@@ -834,7 +837,9 @@ public class ImageProcessorTest
 			assertEquals( refArray[refIndex++], stats.yCenterOfMass, 0.0 );
 		}
 	}
+	*/
 
+	/*
 	@Test
 	public void testSetAutoThresholdIntInt()
 	{
@@ -884,6 +889,7 @@ public class ImageProcessorTest
 			}
 		}
 	}
+	*/
 
 	@Test
 	public void testResetThreshold()

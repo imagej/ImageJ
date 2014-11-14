@@ -260,13 +260,6 @@ public class ImagePlusTest {
 	}
 
 	@Test
-	public void testGetLuts() {
-		// getLuts() overridden by other classes. Default should be null
-		ip = new ImagePlus(DataConstants.DATA_DIR + "gray8-3x2-sub1.tif");
-		assertNull(ip.getLuts());
-	}
-
-	@Test
 	public void testRepaintWindow() {
 		if (IJInfo.RUN_GUI_TESTS) {
 			// note - for now cannot test

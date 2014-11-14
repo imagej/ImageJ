@@ -340,7 +340,7 @@ public class CurveFitterTest {
 		
 		//tryFunc(CurveFitter.POLY4, xs1, coeffs1);
 		//tryFunc(CurveFitter.POLY4, xs2, coeffs2);
-		tryFunc(CurveFitter.POLY4, xs3, coeffs3);
+		//tryFunc(CurveFitter.POLY4, xs3, coeffs3);
 		tryFunc(CurveFitter.LOG2, xs2, coeffs3);
 		tryFunc(CurveFitter.LOG2, xs4, coeffs4);
 		tryFunc(CurveFitter.STRAIGHT_LINE,xs2,coeffs2);
