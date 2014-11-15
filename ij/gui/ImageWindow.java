@@ -513,23 +513,17 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			return;
 		int width = imp.getWidth();
 		int height = imp.getHeight();
-		double aspectRatio = (double)width/height;
 		Dimension extraSize = getExtraSize();
 		int extraHeight = extraSize.height;
 		double mag = (double)(maxBounds.height-extraHeight)/height;
 		if (IJ.debugMode) IJ.log("maximize: "+mag+" "+ic.getMagnification()+" "+maxBounds);
-		setSize(getMaximizedBounds().width, getMaximizedBounds().height);
-		if (mag>ic.getMagnification() || aspectRatio<0.5 || aspectRatio>2.0) {
-			ic.setSize((int)(width*mag), (int)(height*mag));
-			ic.setSourceRect(new Rectangle(0, 0, width, height));
-			ic.setMagnification2(mag);
-			validate();
-			unzoomWhenMinimizing = true;
-		} else
-			unzoomWhenMinimizing = false;
+		ic.setSize((int)(width*mag), (int)(height*mag));
+		ic.setSourceRect(new Rectangle(0, 0, width, height));
+		pack();
 	}
 	
 	public void minimize() {
+		if (IJ.debugMode) IJ.log("minimize: "+unzoomWhenMinimizing);
 		if (unzoomWhenMinimizing)
 			ic.unzoom();
 		unzoomWhenMinimizing = true;
@@ -580,11 +574,9 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	public void windowStateChanged(WindowEvent e) {
 		int oldState = e.getOldState();
 		int newState = e.getNewState();
-		//IJ.log("WSC: "+getBounds()+" "+oldState+" "+newState);
-		if ((oldState & Frame.MAXIMIZED_BOTH) == 0 && (newState & Frame.MAXIMIZED_BOTH) != 0)
+		if (IJ.debugMode) IJ.log("windowStateChanged: "+oldState+" "+newState);
+		if ((oldState&Frame.MAXIMIZED_BOTH)==0 && (newState&Frame.MAXIMIZED_BOTH)!=0)
 			maximize();
-		else if ((oldState & Frame.MAXIMIZED_BOTH) != 0 && (newState & Frame.MAXIMIZED_BOTH) == 0)
-			minimize();
 	}
 
 	public void windowClosed(WindowEvent e) {}

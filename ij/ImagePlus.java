@@ -283,8 +283,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return getProcessor();
 	}
 		
-	/* Returns an array containing the lookup tables used by this image,
-		one per channel, or an empty array if this is an RGB image. */
 	/**  Returns an array containing the lookup tables used by this image,
 	 * one per channel, or an empty array if this is an RGB image.
 	 * @see #getNChannels
