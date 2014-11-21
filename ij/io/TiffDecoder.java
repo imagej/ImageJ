@@ -789,12 +789,15 @@ public class TiffDecoder {
 				in.close();
 			if (info[0].info==null)
 				info[0].info = tiffMetadata;
+			FileInfo fi = info[0];
+			if (fi.fileType==FileInfo.GRAY16_UNSIGNED && fi.description==null)
+				fi.lutSize = 0; // ignore troublesome non-ImageJ 16-bit LUTs
 			if (debugMode) {
 				int n = info.length;
-				info[0].debugInfo += "number of IFDs: "+ n + "\n";
-				info[0].debugInfo += "offset to first image: "+info[0].getOffset()+ "\n";
-				info[0].debugInfo += "gap between images: "+getGapInfo(info) + "\n";
-				info[0].debugInfo += "little-endian byte order: "+info[0].intelByteOrder + "\n";
+				fi.debugInfo += "number of IFDs: "+ n + "\n";
+				fi.debugInfo += "offset to first image: "+fi.getOffset()+ "\n";
+				fi.debugInfo += "gap between images: "+getGapInfo(info) + "\n";
+				fi.debugInfo += "little-endian byte order: "+fi.intelByteOrder + "\n";
 			}
 			return info;
 		}
