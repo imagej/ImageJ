@@ -57,11 +57,17 @@ public class Opener {
 	public Opener() {
 	}
 
-	/** Displays a file open dialog box and then opens the tiff, dicom, 
-		fits, pgm, jpeg, bmp, gif, lut, roi, or text file selected by 
-		the user. Displays an error message if the selected file is not
-		in one of the supported formats. This is the method that
-		ImageJ's File/Open command uses to open files. */
+	/**
+	 * Displays a file open dialog box and then opens the tiff, dicom, 
+	 * fits, pgm, jpeg, bmp, gif, lut, roi, or text file selected by 
+	 * the user. Displays an error message if the selected file is not
+	 * in one of the supported formats. This is the method that
+	 * ImageJ's File/Open command uses to open files.
+	 * @see ij.IJ#open()
+	 * @see ij.IJ#open(String)
+	 * @see ij.IJ#openImage()
+	 * @see ij.IJ#openImage(String)
+	*/
 	public void open() {
 		OpenDialog od = new OpenDialog("Open", "");
 		String directory = od.getDirectory();
@@ -118,9 +124,13 @@ public class Opener {
 		}
 	}
 
-	/** Opens and displays a tiff, dicom, fits, pgm, jpeg, bmp, gif, lut, 
-		roi, or text file. Displays an error message if the specified file
-		is not in one of the supported formats. */
+	/**
+	 * Opens and displays a tiff, dicom, fits, pgm, jpeg, bmp, gif, lut, 
+	 * roi, or text file. Displays an error message if the specified file
+	 * is not in one of the supported formats.
+	 * @see ij.IJ#open(String)
+	 * @see ij.IJ#openImage(String)
+	*/
 	public void open(String path) {
 		boolean isURL = path.indexOf("://")>0;
 		if (isURL && isText(path)) {
@@ -214,6 +224,39 @@ public class Opener {
 		}
 	}
 	
+	/**
+	 * Attempts to open the specified file as a tiff, bmp, dicom, fits,
+	 * pgm, gif or jpeg. Displays a file open dialog if 'path' is null or
+	 * an empty string. Returns an ImagePlus object if successful.
+	 * @see ij.IJ#openImage(String)
+	 * @see ij.IJ#openImage()
+	*/
+	public ImagePlus openImage(String path) {
+		if (path==null || path.equals(""))
+			path = getPath();
+		if (path==null) return null;
+		ImagePlus img = null;
+		if (path.indexOf("://")>0)
+			img = openURL(path);
+		else
+			img = openImage(getDir(path), getName(path));
+		return img;
+	}
+	
+	/**
+	 * Open the nth image of the specified tiff stack.
+	 * @see ij.IJ#openImage(String,int)
+	*/
+	public ImagePlus openImage(String path, int n) {
+		if (path==null || path.equals(""))
+			path = getPath();
+		if (path==null) return null;
+		int type = getFileType(path);
+		if (type!=TIFF)
+			throw new IllegalArgumentException("TIFF file require");
+		return openTiff(path, n);
+	}
+
 	public static String getLoadRate(double time, ImagePlus imp) {
 		time = (System.currentTimeMillis()-time)/1000.0;
 		double mb = imp.getWidth()*imp.getHeight()*imp.getStackSize();
@@ -251,10 +294,13 @@ public class Opener {
 		return error;
 	}
 
-	/** Attempts to open the specified file as a tiff, bmp, dicom, fits,
-		pgm, gif or jpeg image. Returns an ImagePlus object if successful.
-		Modified by Gregory Jefferis to call HandleExtraFileTypes plugin if 
-		the file type is unrecognised. */
+	/**
+	 * Attempts to open the specified file as a tiff, bmp, dicom, fits,
+	 * pgm, gif or jpeg image. Returns an ImagePlus object if successful.
+	 * Modified by Gregory Jefferis to call HandleExtraFileTypes plugin if 
+	 * the file type is unrecognised.
+	 * @see ij.IJ#openImage(String)
+	*/
 	public ImagePlus openImage(String directory, String name) {
 		ImagePlus imp;
 		FileOpener.setSilentMode(silentMode);
@@ -324,32 +370,6 @@ public class Opener {
 		}
 	}
 	
-	/** Attempts to open the specified file as a tiff, bmp, dicom, fits,
-		pgm, gif or jpeg. Displays a file open dialog if 'path' is null or
-		an empty string. Returns an ImagePlus object if successful. */
-	public ImagePlus openImage(String path) {
-		if (path==null || path.equals(""))
-			path = getPath();
-		if (path==null) return null;
-		ImagePlus img = null;
-		if (path.indexOf("://")>0)
-			img = openURL(path);
-		else
-			img = openImage(getDir(path), getName(path));
-		return img;
-	}
-	
-	/** Open the nth image of the specified tiff stack. */
-	public ImagePlus openImage(String path, int n) {
-		if (path==null || path.equals(""))
-			path = getPath();
-		if (path==null) return null;
-		int type = getFileType(path);
-		if (type!=TIFF)
-			throw new IllegalArgumentException("TIFF file require");
-		return openTiff(path, n);
-	}
-
 	String getPath() {
 		OpenDialog od = new OpenDialog("Open", "");
 		String dir = od.getDirectory();
@@ -360,10 +380,13 @@ public class Opener {
 			return dir+name;
 	}
 
-	/** Attempts to open the specified url as a tiff, zip compressed tiff, 
-		dicom, gif or jpeg. Tiff file names must end in ".tif", ZIP file names 
-		must end in ".zip" and dicom file names must end in ".dcm". Returns an 
-		ImagePlus object if successful. */
+	/**
+	 * Attempts to open the specified url as a tiff, zip compressed tiff, 
+	 * dicom, gif or jpeg. Tiff file names must end in ".tif", ZIP file names 
+	 * must end in ".zip" and dicom file names must end in ".dcm". Returns an 
+	 * ImagePlus object if successful.
+	 * @see ij.IJ#openImage(String)
+	*/
 	public ImagePlus openURL(String url) {
 		ImagePlus imp = openCachedImage(url);
 		if (imp!=null)
