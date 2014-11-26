@@ -197,7 +197,7 @@ public class ImageCalculator implements PlugIn {
 		ImageWindow win = img1.getWindow();
 		if (win!=null)
 			WindowManager.setCurrentWindow(win);
-		else if (Interpreter.isBatchMode())
+		else if (Interpreter.isBatchMode() && !createWindow)
 			IJ.selectWindow(img1.getID());
 		Undo.reset();
 		ImageStack stack1 = img1.getStack();
@@ -234,7 +234,7 @@ public class ImageCalculator implements PlugIn {
 			ImageWindow win = img1.getWindow();
 			if (win!=null)
 				WindowManager.setCurrentWindow(win);
-			else if (Interpreter.isBatchMode())
+			else if (Interpreter.isBatchMode() && !createWindow)
 				IJ.selectWindow(img1.getID());
 			ip1.snapshot();
 			Undo.setup(Undo.FILTER, img1);

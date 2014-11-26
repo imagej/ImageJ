@@ -21,23 +21,29 @@ public class GIF_Reader extends ImagePlus implements PlugIn {
 		int status = d.read(dir+name);
 		int n = d.getFrameCount();
 		ImageStack stack = null;
-		for (int i=0; i < n; i++) {
-			ImageProcessor frame = d.getFrame(i);
-			if (i==0)
-				stack = new ImageStack(frame.getWidth(), frame.getHeight());
-			int t = d.getDelay(i);	// display duration of frame in milliseconds
-			stack.addSlice(null, frame);
-		}
-		if (stack!=null) {
+		if (n==1) {
+			Image img = Toolkit.getDefaultToolkit().createImage(dir+name);
+			setImage(img);
+			setTitle(name);
+		} else {
+			for (int i=0; i < n; i++) {
+				ImageProcessor frame = d.getFrame(i);
+				if (i==0)
+					stack = new ImageStack(frame.getWidth(), frame.getHeight());
+				int t = d.getDelay(i);	// display duration of frame in milliseconds
+				stack.addSlice(null, frame);
+			}
+			if (stack==null)
+				return;
 			setStack(name, stack);
 			if (getType()==COLOR_RGB)
 				Opener.convertGrayJpegTo8Bits(this);
-			FileInfo fi = new FileInfo();
-			fi.fileFormat = fi.GIF_OR_JPG;
-			fi.fileName = name;
-			fi.directory = dir;
-			setFileInfo(fi);
 		}
+		FileInfo fi = new FileInfo();
+		fi.fileFormat = fi.GIF_OR_JPG;
+		fi.fileName = name;
+		fi.directory = dir;
+		setFileInfo(fi);
 	}
 
 }

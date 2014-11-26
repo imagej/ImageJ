@@ -142,6 +142,8 @@ public class FileOpener {
 						imp.setPosition(1, 1, 1);
        				}
         		}
+        		if (fi.whiteIsZero) // cmyk?
+        			IJ.run(imp, "Invert", "");
 				break;
 		}
 		imp.setFileInfo(fi);

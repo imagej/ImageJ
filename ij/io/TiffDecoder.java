@@ -446,12 +446,17 @@ public class TiffDecoder {
 						break;
 				case SAMPLES_PER_PIXEL:
 					fi.samplesPerPixel = value;
-					if (value==3 && fi.fileType!=FileInfo.RGB48)
-						fi.fileType = (fi.fileType==FileInfo.GRAY16_UNSIGNED)?FileInfo.RGB48:FileInfo.RGB;
+					if (value==3 && fi.fileType==FileInfo.GRAY8)
+						fi.fileType = FileInfo.RGB;
+					else if (value==3 && fi.fileType==FileInfo.GRAY16_UNSIGNED)
+						fi.fileType = FileInfo.RGB48;
 					else if (value==4 && fi.fileType==FileInfo.GRAY8)
 						fi.fileType = photoInterp==5?FileInfo.CMYK:FileInfo.ARGB;
-					else if (value==4 && fi.fileType==FileInfo.GRAY16_UNSIGNED)
+					else if (value==4 && fi.fileType==FileInfo.GRAY16_UNSIGNED) {
 						fi.fileType = FileInfo.RGB48;
+						if (photoInterp==5)  //assume cmyk
+							fi.whiteIsZero = true;
+					}
 					break;
 				case ROWS_PER_STRIP:
 					fi.rowsPerStrip = value;
@@ -478,7 +483,7 @@ public class TiffDecoder {
 					break;
 				case PLANAR_CONFIGURATION:  // 1=chunky, 2=planar
 					if (value==2 && fi.fileType==FileInfo.RGB48)
-							 fi.fileType = FileInfo.GRAY16_UNSIGNED;
+							 fi.fileType = FileInfo.RGB48_PLANAR;
 					else if (value==2 && fi.fileType==FileInfo.RGB)
 						fi.fileType = FileInfo.RGB_PLANAR;
 					else if (value!=2 && !(fi.samplesPerPixel==1||fi.samplesPerPixel==3||fi.samplesPerPixel==4)) {
@@ -784,12 +789,15 @@ public class TiffDecoder {
 				in.close();
 			if (info[0].info==null)
 				info[0].info = tiffMetadata;
+			FileInfo fi = info[0];
+			if (fi.fileType==FileInfo.GRAY16_UNSIGNED && fi.description==null)
+				fi.lutSize = 0; // ignore troublesome non-ImageJ 16-bit LUTs
 			if (debugMode) {
 				int n = info.length;
-				info[0].debugInfo += "number of IFDs: "+ n + "\n";
-				info[0].debugInfo += "offset to first image: "+info[0].getOffset()+ "\n";
-				info[0].debugInfo += "gap between images: "+getGapInfo(info) + "\n";
-				info[0].debugInfo += "little-endian byte order: "+info[0].intelByteOrder + "\n";
+				fi.debugInfo += "number of IFDs: "+ n + "\n";
+				fi.debugInfo += "offset to first image: "+fi.getOffset()+ "\n";
+				fi.debugInfo += "gap between images: "+getGapInfo(info) + "\n";
+				fi.debugInfo += "little-endian byte order: "+fi.intelByteOrder + "\n";
 			}
 			return info;
 		}

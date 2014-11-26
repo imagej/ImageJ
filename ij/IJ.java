@@ -1604,7 +1604,9 @@ public class IJ {
 		Calls HandleExtraFileTypes plugin if the file type is not recognised.
 		Displays a file open dialog if 'path' is null or an empty string.
 		Note that 'path' can also be a URL. Some reader plugins, including
-		the Bio-Formats plugin, display the image and return null. */
+		the Bio-Formats plugin, display the image and return null.
+		Use IJ.open() to display a file open dialog box.
+	*/
 	public static ImagePlus openImage(String path) {
 		return (new Opener()).openImage(path);
 	}
