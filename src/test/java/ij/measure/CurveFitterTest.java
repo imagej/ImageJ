@@ -313,9 +313,9 @@ public class CurveFitterTest {
 		//else
 		//	yVals = getNoisyYValues(func, xVals, coeffs, percent);
 		
-		yVals = getYValues(func, xVals, coeffs);
+		//yVals = getYValues(func, xVals, coeffs);
 		
-		tryFit(func,xVals,yVals,coeffs,0);
+		//tryFit(func,xVals,yVals,coeffs,0);
 	}
 	
 	@Test
