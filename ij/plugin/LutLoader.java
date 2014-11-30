@@ -223,6 +223,27 @@ public class LutLoader extends ImagePlus implements PlugIn {
 		}
 	}
 	
+	/** Opens an NIH Image LUT, 768 byte binary LUT or text LUT and returns it as a LUT object. */
+	public static LUT openLut(String path) {
+		FileInfo fi = new FileInfo();
+		fi.reds = new byte[256]; 
+		fi.greens = new byte[256]; 
+		fi.blues = new byte[256];
+		fi.lutSize = 256;
+		int nColors = 0;
+		OpenDialog od = new OpenDialog("Open LUT...", path);
+		fi.directory = od.getDirectory();
+		fi.fileName = od.getFileName();
+		if (fi.fileName==null)
+			return null;
+		LutLoader loader = new LutLoader();
+		boolean ok = loader.openLut(fi);
+		if (ok)
+			return new LUT(fi.reds, fi.greens, fi.blues);
+		else
+			return null;
+	}
+	
 	/** Opens an NIH Image LUT, 768 byte binary LUT or text LUT from a file or URL. */
 	boolean openLut(FileInfo fi) {
 		//IJ.showStatus("Opening: " + fi.directory + fi.fileName);

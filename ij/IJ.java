@@ -252,7 +252,10 @@ public class IJ {
 	
     /** Runs an ImageJ command, with options that are passed to the
 		GenericDialog and OpenDialog classes. Does not return until
-		the command has finished executing. */
+		the command has finished executing. To generate run() calls,
+		start the recorder (Plugins/Macro/Record) and run commands
+		from the ImageJ menu bar.
+	*/
 	public static void run(String command, String options) {
 		//IJ.log("run1: "+command+" "+Thread.currentThread().hashCode()+" "+options);
 		if (ij==null && Menus.getCommands()==null)
@@ -315,7 +318,9 @@ public class IJ {
 			return command;
 	}
 
-	/** Runs an ImageJ command using the specified image and options. */
+	/** Runs an ImageJ command using the specified image and options.
+		To generate run() calls, start the recorder (Plugins/Macro/Record)
+		and run commands from the ImageJ menu bar.*/
 	public static void run(ImagePlus imp, String command, String options) {
 		if (imp!=null) {
 			ImagePlus temp = WindowManager.getTempCurrentImage();
