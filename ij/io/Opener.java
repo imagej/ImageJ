@@ -1049,7 +1049,9 @@ public class Opener {
 		return null;
 	}
 
-	/** Opens a lookup table (LUT) and returns it as a LUT object, or returns null if there is an error. */
+	/** Opens a lookup table (LUT) and returns it as a LUT object, or returns null if there is an error.
+	 * @see ij.ImagePlus#setLut
+	*/
 	public static LUT openLut(String path) {
 		return LutLoader.openLut(path);
 	}

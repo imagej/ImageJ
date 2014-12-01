@@ -223,7 +223,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 		}
 	}
 	
-	/** Opens an NIH Image LUT, 768 byte binary LUT or text LUT and returns it as a LUT object. */
+	/** Opens a LUT and returns it as a LUT object. */
 	public static LUT openLut(String path) {
 		FileInfo fi = new FileInfo();
 		fi.reds = new byte[256]; 

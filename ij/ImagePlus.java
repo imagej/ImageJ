@@ -2514,6 +2514,17 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		stack.setPixels(imp2.getProcessor().getPixels(), slice);
 	}
 
+	/** Assigns a LUT (lookup table) to this image.
+	 * @see ij.io.Opener#openLut
+	*/
+	public void setLut(LUT lut) {
+		ImageProcessor ip2 = getProcessor();
+		if (ip2!=null && lut!=null) {
+			ip2.setLut(lut);
+			setProcessor(ip2);
+		}
+	}
+
 	/** Installs a list of ROIs that will be drawn on this image as a non-destructive overlay.
 	 * @see ij.gui.Roi#setStrokeColor
 	 * @see ij.gui.Roi#setStrokeWidth

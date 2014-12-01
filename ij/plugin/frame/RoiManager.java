@@ -1872,6 +1872,16 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return ok;
 	}
 
+	/** Using the specified image, runs the ROI Manager "Add", "Add & Draw", "Update",
+		"Delete", "Measure", "Draw", "Show All", "Show None", "Fill", "Deselect", "Select All", 
+		"Combine", "AND", "XOR", "Split", "Sort" or "Multi Measure" command. */
+	public boolean runCommand(ImagePlus imp, String cmd) {
+		WindowManager.setTempCurrentImage(imp);
+		boolean ok = runCommand(cmd);
+		WindowManager.setTempCurrentImage(null);
+		return ok;
+	}
+
 	/** Executes the ROI Manager "Open", "Save" or "Rename" command. Returns false if 
 	<code>cmd</code> is not "Open", "Save" or "Rename", or if an error occurs. */
 	public boolean runCommand(String cmd, String name) {

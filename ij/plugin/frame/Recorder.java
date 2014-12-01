@@ -432,9 +432,20 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			if (commandOptions!=null) {
 				if (name.equals("Open...") || name.equals("URL...")) {
 					String s = scriptMode?"imp = IJ.openImage":"open";
-					if (scriptMode && isTextOrTable(commandOptions))
-						s = "IJ.open";
-					textArea.append(s+"(\""+strip(commandOptions)+"\");\n");
+					String path = strip(commandOptions);
+					boolean openingLut = false;
+					if (scriptMode) {
+						if (isTextOrTable(commandOptions))
+							s = "IJ.open";
+						else if (path!=null && path.endsWith(".lut")) {
+							s = "lut = Opener.openLut";
+							openingLut = true;
+						}
+					}
+					textArea.append(s+"(\""+path+"\");\n");
+					ImagePlus imp = WindowManager.getCurrentImage();
+					if (openingLut && imp!=null && !imp.getTitle().endsWith(".lut"))
+						textArea.append("imp.setLut(lut);\n");
 				} else if (isSaveAs()) {
 							if (name.endsWith("..."))
 									name= name.substring(0, name.length()-3);
@@ -640,15 +651,20 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		StringTokenizer st = new StringTokenizer(text, "\n");
 		int n = st.countTokens();
 		boolean impDeclared = false;
+		boolean lutDeclared = false;
 		String line;
 		StringBuffer sb = new StringBuffer();
-		for(int i=0; i<n; i++) {
+		for (int i=0; i<n; i++) {
 			line = st.nextToken();
 			if (line!=null && line.length()>3) {
 				sb.append("\t\t");
 				if (line.startsWith("imp =") && !impDeclared) {
 					sb.append("ImagePlus ");
 					impDeclared = true;
+				}
+				if (line.startsWith("lut =") && !lutDeclared) {
+					sb.append("LUT ");
+					lutDeclared = true;
 				}
 				sb.append(line);
 				sb.append('\n');
