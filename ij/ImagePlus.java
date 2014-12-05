@@ -10,14 +10,8 @@ import ij.measure.*;
 import ij.plugin.filter.Analyzer;
 import ij.util.*;
 import ij.macro.Interpreter;
-import ij.plugin.frame.ContrastAdjuster;
-import ij.plugin.frame.RoiManager;
-import ij.plugin.frame.Recorder;
-import ij.plugin.Converter;
-import ij.plugin.Duplicator;
-import ij.plugin.RectToolOptions;
-import ij.plugin.Colors;
-import ij.plugin.ContrastEnhancer;
+import ij.plugin.*;
+import ij.plugin.frame.*;
 
 
 /**
@@ -1528,6 +1522,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			}
 			if (imageType==COLOR_RGB)
 				ContrastAdjuster.update();
+			else if (imageType==GRAY16 || imageType==GRAY32)
+				ThresholdAdjuster.update();
 			if (!noUpdateMode)
 				updateAndRepaintWindow();
 			else
@@ -2091,12 +2087,14 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	String getFFTLocation(int x, int y, Calibration cal) {
 		double center = width/2.0;
 		double r = Math.sqrt((x-center)*(x-center) + (y-center)*(y-center));
-		if (r<1.0) r = 1.0;
+		if (r<1.0) r=1.0;
 		double theta = Math.atan2(y-center, x-center);
 		theta = theta*180.0/Math.PI;
-		if (theta<0) theta = 360.0+theta;
+		if (theta<0) theta=360.0+theta;
 		String s = "r=";
-		if (cal.scaled())
+		if (r<1.0)
+			return s+"Infinity/c"; //origin ('DC offset'), no angle
+		else if (cal.scaled()) 
 			s += IJ.d2s((width/r)*cal.pixelWidth,2) + " " + cal.getUnit() + "/c (" + IJ.d2s(r,0) + ")";
 		else
 			s += IJ.d2s(width/r,2) + " p/c (" + IJ.d2s(r,0) + ")";
@@ -2108,8 +2106,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     public String getLocationAsString(int x, int y) {
 		Calibration cal = getCalibration();
 		if (getProperty("FHT")!=null)
-			return getFFTLocation(x, height-y-1, cal);
-		//y = Analyzer.updateY(y, height);
+			return getFFTLocation(x, height-y, cal);
 		if (!IJ.altKeyDown()) {
 			String s = " x="+d2s(cal.getX(x)) + ", y=" + d2s(cal.getY(y,height));
 			if (getStackSize()>1) {

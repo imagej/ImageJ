@@ -1229,7 +1229,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 					Recorder.record("makeRectangle", x, y, width, height);
 				else {
 					if (Recorder.scriptMode())
-						Recorder.recordCall("imp.setRoi(new Roi("+x+", "+y+", "+width+", "+height+", "+cornerDiameter+"));");
+						Recorder.recordCall("imp.setRoi(new Roi("+x+","+y+","+width+","+height+","+cornerDiameter+"));");
 					else
 						Recorder.record("makeRectangle", x, y, width, height, cornerDiameter);
 				}

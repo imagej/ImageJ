@@ -16,8 +16,10 @@ public class JavaScriptEvaluator implements PlugIn, Runnable  {
 	// run script in separate thread
 	public void run(String script) {
 		if (script.equals("")) return;
-		if (!IJ.isJava16())
-			{IJ.error("Java 1.6 or later required"); return;}
+		if (!IJ.isJava16()) {
+			IJ.error("Java 1.6 or later required");
+			return;
+		}
 		this.script = script;
 		thread = new Thread(this, "JavaScript"); 
 		thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));

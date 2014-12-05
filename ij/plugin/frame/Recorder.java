@@ -139,7 +139,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		boolean sw = method.equals("selectWindow");
 		if (textArea!=null && !(scriptMode&&sw||commandName!=null&&sw)) {
 			if (scriptMode && method.equals("roiManager"))
-				textArea.append("rm.runCommand(\""+arg+"\");\n");
+				textArea.append("rm.runCommand(imp,\""+arg+"\");\n");
 			else if (scriptMode && method.equals("run"))
 				textArea.append("IJ."+method+"(\""+arg+"\");\n");
 			else {
@@ -203,13 +203,13 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (textArea==null) return;
 		if (scriptMode&&method.startsWith("make")) {
 			if (method.equals("makeRectangle"))
-				recordString("imp.setRoi("+a1+", "+a2+", "+a3+", "+a4+");\n");
+				recordString("imp.setRoi("+a1+","+a2+","+a3+","+a4+");\n");
 			else if (method.equals("makeOval"))
-				recordString("imp.setRoi(new OvalRoi("+a1+", "+a2+", "+a3+", "+a4+"));\n");
+				recordString("imp.setRoi(new OvalRoi("+a1+","+a2+","+a3+","+a4+"));\n");
 			else if (method.equals("makeLine"))
-				recordString("imp.setRoi(new Line("+a1+", "+a2+", "+a3+", "+a4+"));\n");
+				recordString("imp.setRoi(new Line("+a1+","+a2+","+a3+","+a4+"));\n");
 			else if (method.equals("makeArrow"))
-				recordString("imp.setRoi(new Arrow("+a1+", "+a2+", "+a3+", "+a4+"));\n");
+				recordString("imp.setRoi(new Arrow("+a1+","+a2+","+a3+","+a4+"));\n");
 		} else {
 			if (method.equals("makeArrow")) {
 				ImagePlus imp = WindowManager.getCurrentImage();

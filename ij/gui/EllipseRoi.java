@@ -102,7 +102,7 @@ public class EllipseRoi extends PolygonRoi {
 				double x2 = xpf[handle[0]]+x;
 				double y2 = ypf[handle[0]]+y;
  				if (Recorder.scriptMode())
-					Recorder.recordCall("imp.setRoi(new EllipseRoi("+x1+", "+y1+", "+x2+", "+y2+", "+IJ.d2s(aspectRatio,2)+"));");
+					Recorder.recordCall("imp.setRoi(new EllipseRoi("+x1+","+y1+","+x2+","+y2+","+IJ.d2s(aspectRatio,2)+"));");
 				else
 					Recorder.record("makeEllipse", (int)x1, (int)y1, (int)x2, (int)y2, aspectRatio);
 			}

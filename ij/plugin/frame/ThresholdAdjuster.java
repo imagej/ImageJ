@@ -264,7 +264,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	public void imageUpdated(ImagePlus imp) {
-		if (imp.getID() == previousImageID && Thread.currentThread() != thread)
+		if (imp.getID()==previousImageID && Thread.currentThread()!=thread)
 			imageWasUpdated = true;
 	}
 
@@ -300,6 +300,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	ImageProcessor setup(ImagePlus imp, boolean enableAutoThreshold) {
+		if (IJ.debugMode) IJ.log("ThresholdAdjuster.setup: "+enableAutoThreshold);
 		if (imp==null)
 			return null;
 		ImageProcessor ip;
@@ -328,11 +329,12 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			maxThreshold = ip.getMaxThreshold();
 			boolean isThresholded = minThreshold != ImageProcessor.NO_THRESHOLD
 					&& ip.getCurrentColorModel() != ip.getColorModel(); //does not work???
-			//IJ.log("Changed: min/max:"+minMaxChange +" id:"+ (id!=previousImageID)+" type:"+(type!=previousImageType)+" updated:"+imageWasUpdated+". isThresh="+isThresholded);
-			//IJ.log(minThreshold+"..."+maxThreshold);
-            //Undo.reset(); removed 2014-02-06 M. Schmid - why was it there?
-            if (not8Bits && minMaxChange && !isThresholded)
-                ip.resetMinAndMax();        //imp.updateAndDraw() is below
+			if (not8Bits && minMaxChange) {
+                double max1 = ip.getMax();
+                ip.resetMinAndMax();
+                if (maxThreshold==max1)
+                	maxThreshold = ip.getMax();
+			}
 			ImageStatistics stats = plot.setHistogram(imp, entireStack(imp));
 			if (stats == null)
 				return null;
@@ -790,6 +792,8 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			ThresholdAdjuster ta = ((ThresholdAdjuster)instance);
 			ImagePlus imp = WindowManager.getCurrentImage();
 			if (imp!=null && ta.previousImageID==imp.getID()) {
+				if ((imp.getCurrentSlice()!=ta.previousSlice) && ta.entireStack(imp))
+					return;
 				ta.previousImageID = 0;
 				ta.setup(imp, false);
 			}
@@ -838,6 +842,7 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
     }
 
 	ImageStatistics setHistogram(ImagePlus imp, boolean entireStack) {
+		if (IJ.debugMode) IJ.log("ThresholdAdjuster:setHistogram: "+entireStack+" "+entireStack2);
 		double mean = entireStack?imp.getProcessor().getStatistics().mean:0.0;
 		if (entireStack && stats!=null && imp.getID()==imageID2 
 		&& entireStack==entireStack2 && mean==mean2)
@@ -882,6 +887,7 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 		ip.setRoi(roi);
 		if (stats==null)
 			stats = ImageStatistics.getStatistics(ip, AREA+MIN_MAX+MODE, null);
+		if (IJ.debugMode) IJ.log("  stats: "+stats);
 		int maxCount2 = 0;
 		histogram = stats.histogram;
 		originalModeCount = histogram[stats.mode];
