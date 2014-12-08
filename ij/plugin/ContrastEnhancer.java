@@ -123,7 +123,6 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 	public void stretchHistogram(ImageProcessor ip, double saturated, ImageStatistics stats) {
 		int[] a = getMinAndMax(ip, saturated, stats);
 		int hmin=a[0], hmax=a[1];
-		//IJ.log(hmin+" "+hmax+" "+threshold);
 		if (hmax>hmin) {
 			double min = stats.histMin+hmin*stats.binSize;
 			double max = stats.histMin+hmax*stats.binSize;

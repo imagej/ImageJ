@@ -330,10 +330,10 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			boolean isThresholded = minThreshold != ImageProcessor.NO_THRESHOLD
 					&& ip.getCurrentColorModel() != ip.getColorModel(); //does not work???
 			if (not8Bits && minMaxChange) {
-                double max1 = ip.getMax();
-                ip.resetMinAndMax();
-                if (maxThreshold==max1)
-                	maxThreshold = ip.getMax();
+				double max1 = ip.getMax();
+				ip.resetMinAndMax();
+				if (maxThreshold==max1)
+					maxThreshold = ip.getMax();
 			}
 			ImageStatistics stats = plot.setHistogram(imp, entireStack(imp));
 			if (stats == null)

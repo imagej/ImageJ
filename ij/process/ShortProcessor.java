@@ -989,6 +989,52 @@ public class ShortProcessor extends ImageProcessor {
 		return histogram;
 	}
 
+	int[] getHistogram2() {
+		if (mask!=null)
+			return getHistogram2(mask);
+		int[] histogram = getHistogramArray();
+		for (int y=roiY; y<(roiY+roiHeight); y++) {
+			int i = y*width + roiX;
+			for (int x=roiX; x<(roiX+roiWidth); x++)
+					histogram[pixels[i++]&0xffff]++;
+		}
+		return histogram;
+	}
+
+	private int[] getHistogram2(ImageProcessor mask) {
+		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
+			throw new IllegalArgumentException(maskSizeError(mask));
+		byte[] mpixels = (byte[])mask.getPixels();
+		int[] histogram = getHistogramArray();
+		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
+			int i = y * width + roiX;
+			int mi = my * roiWidth;
+			for (int x=roiX; x<(roiX+roiWidth); x++) {
+				if (mpixels[mi++]!=0)
+					histogram[pixels[i]&0xffff]++;
+				i++;
+			}
+		}
+		return histogram;
+	}
+
+	private int[] getHistogramArray() {
+		int max = 0;
+		int value;
+		for (int y=roiY; y<(roiY+roiHeight); y++) {
+			int i = y*width + roiX;
+			for (int x=roiX; x<(roiX+roiWidth); x++) {
+				value = pixels[i++]&0xffff;
+				if (value>max)
+					max = value;
+			}
+		}
+		int size = max + 1;
+		if (size<256)
+			size = 256;
+		return new int[size];
+	}
+
 	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {
 		if (minThreshold==NO_THRESHOLD)
 			{resetThreshold(); return;}

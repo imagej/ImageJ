@@ -25,8 +25,10 @@ public class ShortStatistics extends ImageStatistics {
 			{minThreshold=0; maxThreshold=65535;}
 		else
 			{minThreshold=(int)minT; maxThreshold=(int)ip.getMaxThreshold();}
-		int[] hist = ip.getHistogram(); // 65536 bin histogram
-		histogram16 =hist;
+		int[] hist = (ip instanceof ShortProcessor)?((ShortProcessor)ip).getHistogram2():ip.getHistogram();
+		if (maxThreshold>hist.length-1)
+			maxThreshold = hist.length-1;
+		histogram16 = hist;
 		float[] cTable = cal!=null?cal.getCTable():null;
 		getRawMinAndMax(hist, minThreshold, maxThreshold);
 		histMin = min;
@@ -50,7 +52,7 @@ public class ShortStatistics extends ImageStatistics {
 
 	void getRawMinAndMax(int[] hist, int minThreshold, int maxThreshold) {
 		int min = minThreshold;
-		while ((hist[min]==0) && (min<65535))
+		while ((hist[min]==0) && (min<hist.length-1))
 			min++;
 		this.min = min;
 		int max = maxThreshold;

@@ -2087,13 +2087,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	String getFFTLocation(int x, int y, Calibration cal) {
 		double center = width/2.0;
 		double r = Math.sqrt((x-center)*(x-center) + (y-center)*(y-center));
-		if (r<1.0) r=1.0;
 		double theta = Math.atan2(y-center, x-center);
 		theta = theta*180.0/Math.PI;
 		if (theta<0) theta=360.0+theta;
 		String s = "r=";
 		if (r<1.0)
-			return s+"Infinity/c"; //origin ('DC offset'), no angle
+			return s+"Infinity/c (0)"; //origin ('DC offset'), no angle
 		else if (cal.scaled()) 
 			s += IJ.d2s((width/r)*cal.pixelWidth,2) + " " + cal.getUnit() + "/c (" + IJ.d2s(r,0) + ")";
 		else

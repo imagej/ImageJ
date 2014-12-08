@@ -54,8 +54,6 @@ public class FloatStatistics extends ImageStatistics {
 		// Find image min and max
 		double roiMin = Double.MAX_VALUE;
 		double roiMax = -Double.MAX_VALUE;
-		double roiMin2 = Double.MAX_VALUE;
-		double roiMax2 = -Double.MAX_VALUE;
 		for (int y=ry, my=0; y<(ry+rh); y++, my++) {
 			int i = y * width + rx;
 			int mi = my * rw;
