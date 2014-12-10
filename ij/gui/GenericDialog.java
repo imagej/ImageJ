@@ -1316,7 +1316,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		IJ.setKeyDown(keyCode); 
 		if (keyCode==KeyEvent.VK_ENTER && textArea1==null) {
 			wasOKed = true;
-			if (IJ.isMacOSX()&&IJ.isJava15())
+			if (IJ.isMacOSX())
 				accessTextFields();
 			dispose();
 		} else if (keyCode==KeyEvent.VK_ESCAPE) { 

@@ -992,11 +992,11 @@ public class ShortProcessor extends ImageProcessor {
 	int[] getHistogram2() {
 		if (mask!=null)
 			return getHistogram2(mask);
-		int[] histogram = getHistogramArray();
+		int[] histogram = makeHistogramArray();
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
-			int i = y*width + roiX;
-			for (int x=roiX; x<(roiX+roiWidth); x++)
-					histogram[pixels[i++]&0xffff]++;
+			int index = y*width + roiX;
+			for (int i=0; i<roiWidth; i++)
+					histogram[pixels[index++]&0xffff]++;
 		}
 		return histogram;
 	}
@@ -1005,26 +1005,26 @@ public class ShortProcessor extends ImageProcessor {
 		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
 			throw new IllegalArgumentException(maskSizeError(mask));
 		byte[] mpixels = (byte[])mask.getPixels();
-		int[] histogram = getHistogramArray();
+		int[] histogram = makeHistogramArray();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
-			int i = y * width + roiX;
+			int index = y * width + roiX;
 			int mi = my * roiWidth;
-			for (int x=roiX; x<(roiX+roiWidth); x++) {
+			for (int i=0; i<roiWidth; i++) {
 				if (mpixels[mi++]!=0)
-					histogram[pixels[i]&0xffff]++;
-				i++;
+					histogram[pixels[index]&0xffff]++;
+				index++;
 			}
 		}
 		return histogram;
 	}
 
-	private int[] getHistogramArray() {
+	private int[] makeHistogramArray() {
 		int max = 0;
 		int value;
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
-			int i = y*width + roiX;
-			for (int x=roiX; x<(roiX+roiWidth); x++) {
-				value = pixels[i++]&0xffff;
+			int index = y*width + roiX;
+			for (int i=0; i<roiWidth; i++) {
+				value = pixels[index++]&0xffff;
 				if (value>max)
 					max = value;
 			}

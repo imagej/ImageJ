@@ -44,13 +44,7 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 			GUI.center(this);
 		else
 			setLocation(xloc, yloc);
-		if (IJ.isJava15()) try {
-			// Call setAlwaysOnTop() using reflection so this class can be compiled with Java 1.4
-			Class windowClass = Class.forName("java.awt.Window");
-			Method setAlwaysOnTop = windowClass.getDeclaredMethod("setAlwaysOnTop", new Class[] {Boolean.TYPE});
-			Object[] arglist = new Object[1]; arglist[0]=new Boolean(true);
-			setAlwaysOnTop.invoke(this, arglist);
-		} catch (Exception e) { }
+		setAlwaysOnTop(true);
 	}
 	
 	public WaitForUserDialog(String text) {

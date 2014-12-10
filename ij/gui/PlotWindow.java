@@ -553,7 +553,14 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	public synchronized void mousePressed(MouseEvent e) { doUpdate=true; notify(); }   
 	public synchronized void mouseDragged(MouseEvent e) { doUpdate=true; notify(); }
 	public synchronized void mouseClicked(MouseEvent e) { doUpdate=true; notify(); }
-	public synchronized void keyPressed(KeyEvent e) { doUpdate=true; notify(); }
+	
+	public synchronized void keyPressed(KeyEvent e) {
+		int key = e.getKeyCode();
+		if (key==KeyEvent.VK_LEFT||key==KeyEvent.VK_RIGHT||key==KeyEvent.VK_UP||key==KeyEvent.VK_DOWN) {
+			doUpdate=true;
+			notify();
+		}
+	}
 	
 	// unused listeners
 	public void mouseReleased(MouseEvent e) {}

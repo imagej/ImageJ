@@ -118,14 +118,12 @@ public class Compiler implements PlugIn, FilenameFilter {
 		Vector options = new Vector();
 		if (generateDebuggingInfo)
 			options.addElement("-g");
-		if (IJ.isJava15()) {
-			validateTarget();
-			options.addElement("-source");
-			options.addElement(targets[target]);
-			options.addElement("-target");
-			options.addElement(targets[target]);
-			options.addElement("-Xlint:unchecked");
-		}
+		validateTarget();
+		options.addElement("-source");
+		options.addElement(targets[target]);
+		options.addElement("-target");
+		options.addElement(targets[target]);
+		options.addElement("-Xlint:unchecked");
 		options.addElement("-deprecation");
 		options.addElement("-classpath");
 		options.addElement(classpath);
