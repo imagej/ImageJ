@@ -78,7 +78,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.49n";
-	public static final String BUILD = "8"; 
+	public static final String BUILD = "9"; 
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -630,8 +630,8 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 
 	public static void main(String args[]) {
-		if (System.getProperty("java.version").substring(0,3).compareTo("1.5")<0) {
-			javax.swing.JOptionPane.showMessageDialog(null,"ImageJ "+VERSION+" requires Java 1.5 or later.");
+		if (System.getProperty("java.version").substring(0,3).compareTo("1.6")<0) {
+			javax.swing.JOptionPane.showMessageDialog(null,"ImageJ "+VERSION+" requires Java 1.6 or later.");
 			System.exit(0);
 		}
 		boolean noGUI = false;
