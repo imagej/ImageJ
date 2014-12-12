@@ -198,7 +198,7 @@ public class ImageCalculator implements PlugIn {
 		if (win!=null)
 			WindowManager.setCurrentWindow(win);
 		else if (Interpreter.isBatchMode() && !createWindow && WindowManager.getImage(img1.getID())!=null)
-				IJ.selectWindow(img1.getID());
+			IJ.selectWindow(img1.getID());
 		Undo.reset();
 		ImageStack stack1 = img1.getStack();
 		StackProcessor sp = new StackProcessor(stack1, img1.getProcessor());
