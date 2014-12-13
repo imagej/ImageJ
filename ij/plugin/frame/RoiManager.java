@@ -2085,7 +2085,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return;
 	}
 	
-	/** Deselect the specified ROI if it is the only selected ROI. */
+	/** Deselect the specified ROI if it is the only one selected. */
 	public void deselect(Roi roi) {
 		int[] indexes = getSelectedIndexes();
 		if (indexes.length==1) {
