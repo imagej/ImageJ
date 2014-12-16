@@ -15,9 +15,14 @@ public class MeasurementsWriter implements PlugIn {
 	
 	public boolean save(String path) {
 		Frame frame = WindowManager.getFrontWindow();
-		if (frame!=null && (frame instanceof TextWindow)) {
-			TextWindow tw = (TextWindow)frame;
-			return tw.getTextPanel().saveAs(path);
+		if (frame!=null && (frame instanceof TextWindow) && ((TextWindow)frame).getTextPanel().getResultsTable()!=null) {
+			ResultsTable rt = ((TextWindow)frame).getTextPanel().getResultsTable();
+			try {
+				rt.saveAs(path);
+			} catch (IOException e) {
+				return false;
+			}
+			return true;
 		} else if (IJ.isResultsWindow()) {
 			TextPanel tp = IJ.getTextPanel();
 			if (tp!=null) {
@@ -28,9 +33,14 @@ public class MeasurementsWriter implements PlugIn {
 			ResultsTable rt = ResultsTable.getResultsTable();
 			if (rt==null || rt.getCounter()==0) {
 				frame = WindowManager.getFrame("Results");
-				if (frame==null || !(frame instanceof TextWindow))
-					return false;
-				else {
+				if (frame==null || !(frame instanceof TextWindow)) {
+					frame = WindowManager.getFrontWindow();
+					if (frame!=null && (frame instanceof TextWindow)) {
+						TextWindow tw = (TextWindow)frame;
+						return tw.getTextPanel().saveAs(path);
+					} else
+						return false;
+				} else {
 					TextWindow tw = (TextWindow)frame;
 					return tw.getTextPanel().saveAs(path);
 				}
