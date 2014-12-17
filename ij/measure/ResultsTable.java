@@ -950,7 +950,19 @@ public class ResultsTable implements Cloneable {
 	/** Saves this ResultsTable as a tab or comma delimited text file. The table
 	     is saved as a CSV (comma-separated values) file if 'path' ends with ".csv".
 	     Displays a file save dialog if 'path' is empty or null. Does nothing if the
-	     table is empty. */
+	     table is empty. Displays an error message and returns 'false' if there is
+	     an error. */
+	public boolean save(String path) {
+		try {
+			saveAs(path);
+			return true;
+		} catch (IOException e) {
+			delimiter = '\t';
+			IJ.error("Save As>Results", ""+"Error saving results:\n   "+e.getMessage());
+			return false;
+		}
+	}
+
 	public void saveAs(String path) throws IOException {
 		if (size()==0 && lastColumn<0) return;
 		if (path==null || path.equals("")) {

@@ -17,18 +17,11 @@ public class MeasurementsWriter implements PlugIn {
 		Frame frame = WindowManager.getFrontWindow();
 		if (frame!=null && (frame instanceof TextWindow) && ((TextWindow)frame).getTextPanel().getResultsTable()!=null) {
 			ResultsTable rt = ((TextWindow)frame).getTextPanel().getResultsTable();
-			try {
-				rt.saveAs(path);
-			} catch (IOException e) {
-				return false;
-			}
-			return true;
-		} else if (IJ.isResultsWindow()) {
+			return rt.save(path);
+		} else if (IJ.isResultsWindow() && IJ.getTextPanel()!=null) {
 			TextPanel tp = IJ.getTextPanel();
-			if (tp!=null) {
-				if (!tp.saveAs(path))
-					return false;
-			}
+			ResultsTable rt = tp.getResultsTable();
+			return rt.save(path);
 		} else {
 			ResultsTable rt = ResultsTable.getResultsTable();
 			if (rt==null || rt.getCounter()==0) {
@@ -51,13 +44,8 @@ public class MeasurementsWriter implements PlugIn {
 				if (file == null) return false;
 				path = sd.getDirectory() + file;
 			}
-			try {
-				rt.saveAs(path);
-			} catch (IOException e) {
-				IJ.error(""+e);
-			}
+			return rt.save(path);
 		}
-		return true;
 	}
 
 }
