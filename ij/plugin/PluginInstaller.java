@@ -28,7 +28,7 @@ public class PluginInstaller implements PlugIn {
 	}
 	
 	public boolean install(String path) {
-		boolean isURL = path.startsWith("http://");
+		boolean isURL = path.contains("://");
 		String lcPath = path.toLowerCase();
 		boolean isTool = lcPath.endsWith("tool.ijm") || lcPath.endsWith("tool.txt")
 			|| lcPath.endsWith("tool.class") || lcPath.endsWith("tool.jar");
