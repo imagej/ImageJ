@@ -281,6 +281,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return 0;
 	}
 	
+	/** Controls which channels in a composite color image are displayed, 
+		where 'channels' is a list of ones and zeros that specify the channels to
+		display. For example, "101" causes channels 1 and 3 to be displayed. */ 
 	public void setActiveChannels(String channels) {
 		if (!(this instanceof CompositeImage))
 			return;

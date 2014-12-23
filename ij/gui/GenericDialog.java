@@ -663,7 +663,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
     /** Adds a Panel to the dialog. */
     public void addPanel(Panel panel) {
-    	addPanel(panel , GridBagConstraints.WEST, new Insets(5, 0, 0, 0));
+    	addPanel(panel , GridBagConstraints.WEST, getInsets(5,0,0,0));
     }
 
     /** Adds a Panel to the dialog with custom contraint and insets. The
@@ -678,6 +678,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		add(panel);
 		y++;
     }
+    
+	/** Adds an image to the dialog. */
+    public void addImage(ImagePlus image) {
+    	addPanel(new ImagePanel(image));
+    }
+
     
     /** Set the insets (margins), in pixels, that will be 
     	used for the next component added to the dialog.
