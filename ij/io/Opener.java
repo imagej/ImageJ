@@ -455,6 +455,10 @@ public class Opener {
 		if (url.endsWith(".pdf")||url.endsWith(".zip"))
 			return;
 		String text = IJ.openUrlAsString(url);
+		if (text!=null && text.startsWith("<Error: ")) {
+			IJ.error("Open Text URL", text);
+			return;
+		}
 		String name = url.substring(7);
 		int index = name.lastIndexOf("/");
 		int len = name.length();

@@ -4400,7 +4400,7 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("getDisplayMode"))
 			getDisplayMode(imp);
 		else if (name.equals("setActiveChannels"))
-			setActiveChannels(imp, getStringArg());
+			imp.setActiveChannels(getStringArg());
 		else if (name.equals("getActiveChannels"))
 			getActiveChannels(imp);
 		else if (name.equals("toggleChannel"))
@@ -4463,20 +4463,6 @@ public class Functions implements MacroConstants, Measurements {
 		}
 	}
 	
-	void setActiveChannels(ImagePlus imp, String channels) {
-		if (!imp.isComposite())
-			interp.error("Composite image required");
-		boolean[] active = ((CompositeImage)imp).getActiveChannels();
-		for (int i=0; i<active.length; i++) {
-			boolean b = false;
-			if (channels.length()>i && channels.charAt(i)=='1')
-				b = true;
-			active[i] = b;
-		}
-		imp.updateAndDraw();
-		Channels.updateChannels();
-	}
-
 	void getActiveChannels(ImagePlus imp) {
 		if (!imp.isComposite())
 			interp.error("Composite image required");

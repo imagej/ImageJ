@@ -164,12 +164,21 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 			ci.updateAndDraw();
 			if (Recorder.record) {
 				String mode = null;
-				switch (index) {
-					case 0: mode="composite"; break;
-					case 1: mode="color"; break;
-					case 2: mode="grayscale"; break;
+				if (Recorder.scriptMode()) {
+					switch (index) {
+						case 0: mode="IJ.COMPOSITE"; break;
+						case 1: mode="IJ.COLOR"; break;
+						case 2: mode="IJ.GRAYSCALE"; break;
+					}
+					Recorder.recordCall("imp.setDisplayMode("+mode+");");
+				} else {
+					switch (index) {
+						case 0: mode="composite"; break;
+						case 1: mode="color"; break;
+						case 2: mode="grayscale"; break;
+					}
+					Recorder.record("Stack.setDisplayMode", mode);
 				}
-				Recorder.record("Stack.setDisplayMode", mode);
 			}
 		} else if (source instanceof Checkbox) {
 			for (int i=0; i<checkbox.length; i++) {
@@ -182,13 +191,19 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 							String str = "";
 							for (int c=0; c<ci.getNChannels(); c++)
 								str += active[c]?"1":"0";
-							Recorder.record("Stack.setActiveChannels", str);
-							Recorder.record("//Stack.toggleChannel", imp.getChannel());
+							if (Recorder.scriptMode())
+								Recorder.recordCall("imp.setActiveChannels(\""+str+"\");");
+							else
+								Recorder.record("Stack.setActiveChannels", str);
 						}
 					} else {
 						imp.setPosition(i+1, imp.getSlice(), imp.getFrame());
-						if (Recorder.record)
-							Recorder.record("Stack.setChannel", i+1);
+						if (Recorder.record) {
+							if (Recorder.scriptMode())
+								Recorder.recordCall("imp.setC("+(i+1)+");");
+							else
+								Recorder.record("Stack.setChannel", i+1);
+						}
 					}
 					ci.updateAndDraw();
 					return;
