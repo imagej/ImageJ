@@ -44,7 +44,8 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 			GUI.center(this);
 		else
 			setLocation(xloc, yloc);
-		setAlwaysOnTop(true);
+		if (IJ.isJava16())
+			setAlwaysOnTop(true);
 	}
 	
 	public WaitForUserDialog(String text) {

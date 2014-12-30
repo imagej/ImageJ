@@ -106,14 +106,18 @@ public class FileSaver {
 		fi.description = getDescriptionString();
 		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
 		fi.overlay = getOverlay(imp);
+		DataOutputStream out = null;
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
-			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
+			out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
 			file.write(out);
 			out.close();
 		} catch (IOException e) {
 			showErrorMessage(e);
 			return false;
+		} finally {
+			if (out!=null)
+				try {out.close();} catch (IOException e) {}
 		}
 		updateImp(fi, FileInfo.TIFF);
 		return true;
@@ -190,15 +194,18 @@ public class FileSaver {
 		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
 		fi.overlay = getOverlay(imp);
 		if (imp.isComposite()) saveDisplayRangesAndLuts(imp, fi);
+		DataOutputStream out = null;
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
-			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
+			out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
 			file.write(out);
 			out.close();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			showErrorMessage(e);
 			return false;
+		} finally {
+			if (out!=null)
+				try {out.close();} catch (IOException e) {}
 		}
 		updateImp(fi, FileInfo.TIFF);
 		return true;
@@ -225,6 +232,9 @@ public class FileSaver {
 			out.close();
 		} catch (IOException e) {
 			return null;
+		} finally {
+			if (out!=null)
+				try {out.close();} catch (IOException e) {}
 		}
 		return out.toByteArray();
 	}
@@ -281,9 +291,10 @@ public class FileSaver {
 		if (imp.isComposite()) saveDisplayRangesAndLuts(imp, fi);
 		if (fi.nImages>1 && imp.getStack().isVirtual())
 			fi.virtualStack = (VirtualStack)imp.getStack();
+		DataOutputStream out = null;
 		try {
 			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path));
-			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(zos));
+			out = new DataOutputStream(new BufferedOutputStream(zos));
         	zos.putNextEntry(new ZipEntry(name));
 			TiffEncoder te = new TiffEncoder(fi);
 			te.write(out);
@@ -292,6 +303,9 @@ public class FileSaver {
 		catch (IOException e) {
 			showErrorMessage(e);
 			return false;
+		} finally {
+			if (out!=null)
+				try {out.close();} catch (IOException e) {}
 		}
 		updateImp(fi, FileInfo.TIFF);
 		return true;
@@ -465,6 +479,7 @@ public class FileSaver {
 		boolean signed16Bit = false;
 		short[] pixels = null;
 		int n = 0;
+		OutputStream out = null;
 		try {
 			signed16Bit = imp.getCalibration().isSigned16Bit();
 			if (signed16Bit) {
@@ -474,13 +489,16 @@ public class FileSaver {
 					pixels[i] = (short)(pixels[i]-32768);
 			}
 			ImageWriter file = new ImageWriter(fi);
-			OutputStream out = new BufferedOutputStream(new FileOutputStream(path));
+			out = new BufferedOutputStream(new FileOutputStream(path));
 			file.write(out);
 			out.close();
 		}
 		catch (IOException e) {
 			showErrorMessage(e);
 			return false;
+		} finally {
+			if (out!=null)
+				try {out.close();} catch (IOException e) {}
 		}
 		if (signed16Bit) {
 			for (int i=0; i<n; i++)
@@ -503,6 +521,7 @@ public class FileSaver {
 			fi.virtualStack = (VirtualStack)imp.getStack();
 			if (imp.getProperty("AnalyzeFormat")!=null) fi.fileName="FlipTheseImages";
 		}
+		OutputStream out = null;
 		try {
 			signed16Bit = imp.getCalibration().isSigned16Bit();
 			if (signed16Bit && !virtualStack) {
@@ -515,13 +534,15 @@ public class FileSaver {
 				}
 			}
 			ImageWriter file = new ImageWriter(fi);
-			OutputStream out = new BufferedOutputStream(new FileOutputStream(path));
+			out = new BufferedOutputStream(new FileOutputStream(path));
 			file.write(out);
 			out.close();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			showErrorMessage(e);
 			return false;
+		} finally {
+			if (out!=null)
+				try {out.close();} catch (IOException e) {}
 		}
 		if (signed16Bit) {
 			for (int slice=0; slice<fi.nImages; slice++) {
@@ -545,6 +566,7 @@ public class FileSaver {
 	
 	/** Save the image as tab-delimited text using the specified path. */
 	public boolean saveAsText(String path) {
+		DataOutputStream out = null;
 		try {
 			Calibration cal = imp.getCalibration();
 			int precision = Analyzer.getPrecision();
@@ -553,13 +575,15 @@ public class FileSaver {
 			if (scientificNotation)
 				precision = -precision;
 			TextEncoder file = new TextEncoder(imp.getProcessor(), cal, precision);
-			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
+			out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
 			file.write(out);
 			out.close();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			showErrorMessage(e);
 			return false;
+		} finally {
+			if (out!=null)
+				try {out.close();} catch (IOException e) {}
 		}
 		return true;
 	}
@@ -603,15 +627,19 @@ public class FileSaver {
 		fi.height = 1;
 		fi.pixels = pixels;
 
+		OutputStream out = null;
 		try {
 			ImageWriter file = new ImageWriter(fi);
-			OutputStream out = new FileOutputStream(path);
+			out = new FileOutputStream(path);
 			file.write(out);
 			out.close();
 		}
 		catch (IOException e) {
 			showErrorMessage(e);
 			return false;
+		} finally {
+			if (out!=null)
+				try {out.close();} catch (IOException e) {}
 		}
 		return true;
 	}

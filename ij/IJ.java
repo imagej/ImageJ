@@ -45,7 +45,7 @@ public class IJ {
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
 	private static String osname, osarch;
-	private static boolean isMac, isWin, isJava17, isJava18, isLinux, is64Bit;
+	private static boolean isMac, isWin, isJava16, isJava17, isJava18, isLinux, is64Bit;
 	private static boolean controlDown, altDown, spaceDown, shiftDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
@@ -70,6 +70,7 @@ public class IJ {
 		isLinux = osname.startsWith("Linux");
 		String version = System.getProperty("java.version").substring(0,3);
 		if (version.compareTo("2.9")<=0) {  // JVM on Sharp Zaurus PDA claims to be "3.1"!
+			isJava16 = version.compareTo("1.5")>0;
 			isJava17 = version.compareTo("1.6")>0;
 			isJava18 = version.compareTo("1.7")>0;
 		}
@@ -944,9 +945,9 @@ public class IJ {
 		return true;
 	}
 
-	/** Always returns true. */
+	/** Returns true if ImageJ is running on a Java 1.6 or greater JVM. */
 	public static boolean isJava16() {
-		return true;
+		return isJava16;
 	}
 
 	/** Returns true if ImageJ is running on a Java 1.7 or greater JVM. */

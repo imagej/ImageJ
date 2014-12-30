@@ -148,6 +148,8 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			function = choiceIndex - 1;
 			x = getData(xText);
 			y = getData(yText);
+			if (!validateXValues(imp, x))
+				return;
 			if (!cal.calibrated() || y.length!=0 || function!=oldFunction) {
 				parameters = doCurveFitting(x, y, function);
 				if (parameters==null) { //minimization failed
@@ -194,6 +196,24 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			else
 				showPlot(x, y, cal, fitGoodness);
 		}
+	}
+	
+	private boolean validateXValues(ImagePlus imp, double[] x) {
+		int bitDepth = imp.getBitDepth();
+		if (bitDepth==32 || x==null)
+			return true;
+		int max = 255;
+		if (bitDepth==16)
+			max = 65535;
+		for (int i=0; i<x.length; i++) {
+			if (x[i]<0 || x[i]>max) {
+			    String title = (bitDepth==8?"8-bit":"16-bit") + " Calibration";
+				String msg = "Measured (uncalibrated) values in the left\ncolumn must be in the range 0-";
+				IJ.error(title, msg+max+".");
+				return false;
+			}
+		}
+		return true;
 	}
 
 	double[] doCurveFitting(double[] x, double[] y, int fitType) {
