@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
 
-/** This class is an extended ImageWindow used to display image stacks. */
+/** This class is an extended ImageWindow that displays stacks and hyperstacks. */
 public class StackWindow extends ImageWindow implements Runnable, AdjustmentListener, ActionListener, MouseWheelListener {
 
 	protected Scrollbar sliceSelector; // for backward compatibity with Image5D

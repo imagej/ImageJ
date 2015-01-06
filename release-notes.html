@@ -5,8 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.49o 30 December 2014</u>
+<li> <u>1.49o 6 December 2014</u>
 <ul>
+<li> The measured values (left column) in the <i>Analyze&gt;Calibrate</i> dialog
+are now validated. With 8-bit images, the values must be in the 0-255 range. With
+16-bit images, they must be in the 0-65535 range.
 <li> Thanks to Xavier Colome, added the GenericDialog.addImage(ImagePlus) method.
 <li> Added the setDisplayMode(), getDisplayMode() and setActiveChannels()
 methods to the ImagePlus class.
@@ -18,6 +21,12 @@ fail when downloading .jar files from https servers.
 not be correctly recorded except in "Macro" mode.
 <li> Thanks to Cong-Xin Qiu, fixed bugs in the FileSaver class that caused
 files to not be properly closed when errors occured.
+<li> Thanks to William Nicolas, fixed a bug that caused the waitForUser() 
+dialog to be closed when the active image was closed.
+<li> Thanks to Marius Krause, fixed a bug that caused the
+File>Save As>Image Sequence command to not save overlays
+when saving in TIFF format.
+
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

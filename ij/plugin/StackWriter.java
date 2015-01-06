@@ -135,8 +135,8 @@ public class StackWriter implements PlugIn {
 		}
 		if (directory==null)
 			return;
-		
-		boolean isOverlay = imp.getOverlay()!=null && !imp.getHideOverlay();
+		Overlay overlay = imp.getOverlay();
+		boolean isOverlay = overlay!=null && !imp.getHideOverlay();
 		if (!(format.equals("jpeg")||format.equals("png")))
 			isOverlay = false;
 		ImageStack stack = imp.getStack();
@@ -190,6 +190,19 @@ public class StackWriter implements PlugIn {
 			}
 			if (Recorder.record)
 				Recorder.disablePathRecording();
+			if (overlay!=null && format.equals("tiff")) {
+				Overlay overlay2 = overlay.duplicate();
+				overlay2.crop(i, i);
+				if (overlay2.size()>0) {
+					for (int j=0; j<overlay2.size(); j++) {
+						Roi roi = overlay2.get(j);
+						int pos = roi.getPosition();
+						if (pos==1)
+							roi.setPosition(i);
+					}
+					imp2.setOverlay(overlay2);
+				}
+			}
 			IJ.saveAs(imp2, format, path);
 		}
 		imp.unlock();

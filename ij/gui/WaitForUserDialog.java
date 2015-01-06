@@ -18,7 +18,9 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 	private boolean escPressed;
 	
 	public WaitForUserDialog(String title, String text) {
-		super(getFrame(), title, false);
+		super(IJ.getInstance(), title, false);
+		if (text!=null && text.startsWith("IJ: "))
+			text = text.substring(4);
 		label = new MultiLineLabel(text, 175);
 		if (!IJ.isLinux()) label.setFont(new Font("SansSerif", Font.PLAIN, 14));
 		if (IJ.isMacOSX()) {
@@ -61,17 +63,10 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 		}
 	}
 	
-	static Frame getFrame() {
-		Frame win = WindowManager.getCurrentWindow();
-		if (win==null) win = IJ.getInstance();
-		return win;
-	}
-
     public void close() {
         synchronized(this) { notify(); }
         xloc = getLocation().x;
         yloc = getLocation().y;
-		//setVisible(false);
 		dispose();
     }
 
