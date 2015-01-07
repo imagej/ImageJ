@@ -58,10 +58,18 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker  {
 			float c=1.0f;
 			if (timeProfile) {
 				c = (float) cal.frameInterval;
-				xAxisLabel = "["+cal.getTimeUnit()+"]";
+				boolean zeroInterval = c==0;
+				if (zeroInterval)
+					c = 1;
+				String timeUnit = zeroInterval?"Frame":"["+cal.getTimeUnit()+"]";
+				xAxisLabel = timeUnit;
 			} else {
 				c = (float) cal.pixelDepth;
-				xAxisLabel = "["+cal.getZUnit()+"]";
+				boolean zeroDepth = c==0;
+				if (zeroDepth)
+					c = 1;
+				String depthUnit = zeroDepth?"Slice":"["+cal.getZUnit()+"]";
+				xAxisLabel = depthUnit;
 			}
 			for (int i=0; i<x.length; i++)
 				x[i] = i*c;
