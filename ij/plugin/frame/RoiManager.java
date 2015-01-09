@@ -699,7 +699,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	// Modified on 2005/11/15 by Ulrik Stervbo to only read .roi files and to not empty the current list
 	void openZip(String path) { 
 		ZipInputStream in = null; 
-		ByteArrayOutputStream out; 
+		ByteArrayOutputStream out = null; 
 		int nRois = 0; 
 		try { 
 			in = new ZipInputStream(new FileInputStream(path)); 
@@ -727,7 +727,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				entry = in.getNextEntry(); 
 			} 
 			in.close(); 
-		} catch (IOException e) {error(e.toString());} 
+		} catch (IOException e) {
+			error(e.toString());
+		} finally {
+			if (in!=null)
+				try {in.close();} catch (IOException e) {}
+			if (out!=null)
+				try {out.close();} catch (IOException e) {}
+		}
 		if(nRois==0)
 				error("This ZIP archive does not appear to contain \".roi\" files");
 		updateShowAll();
@@ -800,9 +807,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			String dir = sd.getDirectory();
 			path = dir+name;
 		}
+		DataOutputStream out = null;
 		try {
 			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path));
-			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(zos));
+			out = new DataOutputStream(new BufferedOutputStream(zos));
 			RoiEncoder re = new RoiEncoder(out);
 			for (int i=0; i<indexes.length; i++) {
 				String label = (String) listModel.getElementAt(indexes[i]);
@@ -815,10 +823,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				out.flush();
 			}
 			out.close();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			error(""+e);
 			return false;
+		} finally {
+			if (out!=null)
+				try {out.close();} catch (IOException e) {}
 		}
 		if (record()) Recorder.record("roiManager", "Save", path);
 		return true;
