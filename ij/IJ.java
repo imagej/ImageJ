@@ -1618,6 +1618,11 @@ public class IJ {
 		return (new Opener()).openImage(path, n);
 	}
 
+	/** Opens the specified tiff file as a virtual stack. */
+	public static ImagePlus openVirtual(String path) {
+		return FileInfoVirtualStack.openVirtual(path);
+	}
+
 	/** Opens an image using a file open dialog and returns it as an ImagePlus object. */
 	public static ImagePlus openImage() {
 		return openImage(null);

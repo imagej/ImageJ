@@ -446,6 +446,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					ImagePlus imp = WindowManager.getCurrentImage();
 					if (openingLut && imp!=null && !imp.getTitle().endsWith(".lut"))
 						textArea.append("imp.setLut(lut);\n");
+				} else if (name.equals("TIFF Virtual Stack...") && scriptMode) {
+					String s = "imp = IJ.openVirtual";
+					String path = strip(commandOptions);
+					textArea.append(s+"(\""+path+"\");\n");
 				} else if (isSaveAs()) {
 							if (name.endsWith("..."))
 									name= name.substring(0, name.length()-3);
@@ -622,7 +626,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			}
 			if (text.contains("overlay.add"))
 				text = (java?"Overlay ":"") + "overlay = new Overlay();\n" + text;
-			if ((text.contains("imp.")||text.contains("(imp")||text.contains("overlay.add")) && !text.contains("IJ.openImage") && !text.contains("IJ.createImage"))
+			if ((text.contains("imp.")||text.contains("(imp")||text.contains("overlay.add")) && !text.contains("IJ.openImage")
+			&& !text.contains("IJ.openVirtual") && !text.contains("IJ.createImage"))
 				text = (java?"ImagePlus ":"") + "imp = IJ.getImage();\n" + text;
 			if (text.contains("overlay.add"))
 				text = text + "imp.setOverlay(overlay);\n";
