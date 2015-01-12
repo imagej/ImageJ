@@ -350,7 +350,9 @@ public class Opener {
 			case ZIP:
 				return openZip(path);
 			case AVI:
-				AVI_Reader reader = (AVI_Reader)IJ.runPlugIn("ij.plugin.AVI_Reader", path);
+				AVI_Reader reader = new AVI_Reader();
+				reader.displayDialog(!IJ.macroRunning());
+				reader.run(path);
 				return reader.getImagePlus();
 			case UNKNOWN: case TEXT:
 				// Call HandleExtraFileTypes plugin to see if it can handle unknown format

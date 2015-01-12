@@ -233,6 +233,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	private	 boolean		   verbose = IJ.debugMode;
 	private	 long			   startTime;
 	private	 boolean		   aborting;
+	private boolean displayDialog = true;
 
 	//From AVI Header Chunk
 	private	 int			   dwMicroSecPerFrame;
@@ -295,7 +296,8 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 			error(exceptionMessage(e));
 			return;
 		}
-		if (!showDialog(fileName)) return;							//ask for parameters
+		if (displayDialog && !showDialog(fileName))
+			return;  //ask for parameters
 		try {
 			ImageStack stack = makeStack(path, firstFrame, lastFrame, isVirtual, convertToGray, flipVertical);	//read data
 		} catch (Exception e) {
@@ -1516,4 +1518,9 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 			readableSize += HUFFMAN_LENGTH;
 		}
 	}
+	
+	public void displayDialog(boolean displayDialog) {
+		this.displayDialog = displayDialog;
+	}
+	
 }

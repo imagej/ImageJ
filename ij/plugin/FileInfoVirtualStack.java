@@ -21,7 +21,8 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		info = new FileInfo[1];
 		info[0] = fi;
 		ImagePlus imp = open();
-		imp.show();
+		if (imp!=null)
+			imp.show();
 	}
 
 	/* Constructs a FileInfoVirtualStack from a FileInfo 
@@ -30,7 +31,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		info = new FileInfo[1];
 		info[0] = fi;
 		ImagePlus imp = open();
-		if (show)
+		if (imp!=null && show)
 			imp.show();
 	}
 
@@ -54,7 +55,8 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 			return;
 		init(dir, name);
 		ImagePlus imp = open();
-		imp.show();
+		if (imp!=null)
+			imp.show();
 	}
 	
 	private void init(String dir, String name) {

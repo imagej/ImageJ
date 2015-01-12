@@ -410,11 +410,11 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
     
     void updateFields() {
 		if (sizeToHeight) {
-			newWidth = (int)(newHeight*(origWidth/origHeight));
+			newWidth = (int)Math.round(newHeight*(origWidth/origHeight));
 			TextField widthField = (TextField)fields.elementAt(0);
 			widthField.setText(""+newWidth);
 		} else {
-			newHeight = (int)(newWidth*(origHeight/origWidth));
+			newHeight = (int)Math.round(newWidth*(origHeight/origWidth));
 			TextField heightField = (TextField)fields.elementAt(1);
 			heightField.setText(""+newHeight);
 		}
