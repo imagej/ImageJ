@@ -41,16 +41,16 @@ public class HTMLDialog extends JDialog implements ActionListener, KeyListener, 
 		if (message==null) message = "";
 		editorPane = new JEditorPane("text/html","");
 		editorPane.setEditable(false);
-        HTMLEditorKit kit = new HTMLEditorKit();
-        editorPane.setEditorKit(kit);
-        StyleSheet styleSheet = kit.getStyleSheet();
-        styleSheet.addRule("body{font-family:Verdana,sans-serif; font-size:11.5pt; margin:5px 10px 5px 10px;}"); //top right bottom left
-        styleSheet.addRule("h1{font-size:18pt;}");
-        styleSheet.addRule("h2{font-size:15pt;}");
-        styleSheet.addRule("dl dt{font-face:bold;}");
-        editorPane.setText(message);    //display the html text with the above style
-        editorPane.getActionMap().put("insert-break", new AbstractAction(){		        
-		        public void actionPerformed(ActionEvent e) {}		
+		HTMLEditorKit kit = new HTMLEditorKit();
+		editorPane.setEditorKit(kit);
+		StyleSheet styleSheet = kit.getStyleSheet();
+		styleSheet.addRule("body{font-family:Verdana,sans-serif; font-size:11.5pt; margin:5px 10px 5px 10px;}"); //top right bottom left
+		styleSheet.addRule("h1{font-size:18pt;}");
+		styleSheet.addRule("h2{font-size:15pt;}");
+		styleSheet.addRule("dl dt{font-face:bold;}");
+		editorPane.setText(message);    //display the html text with the above style
+		editorPane.getActionMap().put("insert-break", new AbstractAction(){
+				public void actionPerformed(ActionEvent e) {}		
 		}); //suppress beep on <ENTER> key
 		JScrollPane scrollPane = new JScrollPane(editorPane);
 		container.add(scrollPane);
@@ -64,6 +64,14 @@ public class HTMLDialog extends JDialog implements ActionListener, KeyListener, 
 		container.add(panel, "South");
 		setForeground(Color.black);
 		pack();
+		Dimension screenD = IJ.getScreenSize();
+		Dimension dialogD = getSize();
+		int maxWidth = (int)(Math.min(0.70*screenD.width, 800)); //max 70% of screen width, but not more than 800 pxl
+		if (maxWidth>400 && dialogD.width>maxWidth)
+			dialogD.width = maxWidth;
+		if (dialogD.height > 0.80*screenD.height && screenD.height>400)  //max 80% of screen height
+			dialogD.height = (int)(0.80*screenD.height);
+		setSize(dialogD);
 		GUI.center(this);
 		if (!modal) WindowManager.addWindow(this);
 		show();
@@ -78,10 +86,10 @@ public class HTMLDialog extends JDialog implements ActionListener, KeyListener, 
 		ij.IJ.setKeyDown(keyCode);
 		escapePressed = keyCode==KeyEvent.VK_ESCAPE;
 		if (keyCode==KeyEvent.VK_C) {
-		    if (editorPane.getSelectedText()==null || editorPane.getSelectedText().length()==0)
-		        editorPane.selectAll();
-		    editorPane.copy();
-		    editorPane.select(0,0);
+			if (editorPane.getSelectedText()==null || editorPane.getSelectedText().length()==0)
+				editorPane.selectAll();
+			editorPane.copy();
+			editorPane.select(0,0);
 		} else if (keyCode==KeyEvent.VK_ENTER || keyCode==KeyEvent.VK_W || escapePressed)
 			dispose();
 	}
@@ -97,18 +105,18 @@ public class HTMLDialog extends JDialog implements ActionListener, KeyListener, 
 		return escapePressed;
 	}
 
-    public void hyperlinkUpdate(HyperlinkEvent e) {
-        if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-            String url = e.getDescription(); //getURL does not work for relative links within document such as "#top"
-            if (url==null) return;
-            if (url.startsWith("#"))
-                editorPane.scrollToReference(url.substring(1));
-            else {
-                String macro = "run('URL...', 'url="+url+"');";
-			    new MacroRunner(macro);
+	public void hyperlinkUpdate(HyperlinkEvent e) {
+		if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+			String url = e.getDescription(); //getURL does not work for relative links within document such as "#top"
+			if (url==null) return;
+			if (url.startsWith("#"))
+				editorPane.scrollToReference(url.substring(1));
+			else {
+				String macro = "run('URL...', 'url="+url+"');";
+				new MacroRunner(macro);
 			}
-        }
-    }
+		}
+	}
 
 	public void dispose() {
 		super.dispose();

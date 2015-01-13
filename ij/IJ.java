@@ -205,9 +205,12 @@ public class IJ {
 				error("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 		}
 		catch (NoClassDefFoundError e) {
-			//int dotIndex = className.indexOf('.');
-			//if (dotIndex>=0)
-			//	return runUserPlugIn(commandName, className.substring(dotIndex+1), arg, createNewLoader);
+			int dotIndex = className.indexOf('.');
+			if (dotIndex>=0 && className.contains("_")) {
+				// rerun plugin after removing folder name
+				if (debugMode) IJ.log("runUserPlugIn: rerunning "+className);
+				return runUserPlugIn(commandName, className.substring(dotIndex+1), arg, createNewLoader);
+			}
 			if (className.contains("_") && !suppressPluginNotFoundError)
 				error("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 		}
