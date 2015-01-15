@@ -69,21 +69,23 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private boolean allowRecording;
 		
 	public RoiManager() {
-		super("ROI Manager");
-		if (instance!=null) {
-			WindowManager.toFront(instance);
-			return;
-		}
-		instance = this;
-		list = new JList();
-		showWindow();
+		this(false);
 	}
 	
 	public RoiManager(boolean hideWindow) {
 		super("ROI Manager");
 		list = new JList();
-		listModel = new DefaultListModel();
-		list.setModel(listModel);
+		if (!hideWindow) {
+			if (instance!=null) {
+				WindowManager.toFront(instance);
+				return;
+			}
+			instance = this;
+			showWindow();
+		} else {
+			listModel = new DefaultListModel();
+			list.setModel(listModel);
+		}
 	}
 
 	void showWindow() {
