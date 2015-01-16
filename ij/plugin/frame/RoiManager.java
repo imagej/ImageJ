@@ -68,6 +68,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private int imageID;
 	private boolean allowRecording;
 		
+	/* Constructs and displays an ROIManager. */
 	public RoiManager() {
 		super("ROI Manager");
 		if (instance!=null) {
@@ -79,7 +80,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		showWindow();
 	}
 	
-	public RoiManager(boolean hideWindow) {
+	/* Constructs an ROIManager without displaying it. */
+	public RoiManager(boolean b) {
 		super("ROI Manager");
 		list = new JList();
 		listModel = new DefaultListModel();

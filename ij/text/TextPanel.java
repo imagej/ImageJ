@@ -968,7 +968,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	public void scrollToTop() {
 		sbVert.setValue(0);
 		iY = 0;
-		for(int i=0;i<iColCount;i++)
+		for (int i=0;i<iColCount;i++)
 			tc.calcAutoWidth(i);
 		adjustHScroll();
 		tc.repaint();
@@ -979,5 +979,5 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			vData.removeAllElements();
 		vData = null;
 	}
-
+	
 }
