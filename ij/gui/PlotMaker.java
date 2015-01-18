@@ -8,7 +8,7 @@ public interface PlotMaker {
    /** Returns a profile plot. */
    public Plot getPlot();
    
-   /** Returns the ImagePlus that generates the profile plots. */
+   /** Returns the ImagePlus used to generate the profile plots. */
    public ImagePlus getSourceImage();
 
 }

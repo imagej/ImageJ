@@ -18,7 +18,7 @@ import ij.io.SaveDialog;
 * @author Wayne Rasband
 */
 public class PlotWindow extends ImageWindow implements ActionListener, ClipboardOwner,
-	MouseListener, MouseMotionListener, KeyListener, ImageListener, Runnable {
+	MouseListener, MouseMotionListener, KeyListener, ImageListener, CommandListener, Runnable {
 
 	/** Display points using a circle 5 pixels in diameter. */
 	public static final int CIRCLE = 0;
@@ -562,6 +562,22 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		}
 	}
 	
+	public synchronized String commandExecuting(String command) {
+		if (srcImp!=null && srcImp.getStackSize()>1 && command.equals("Select None") || command.equals("Select All")) {
+			ImagePlus cimg = WindowManager.getCurrentImage();
+			if (srcImp!=cimg)
+				return command;
+			if (command.equals("Select None"))
+				srcImp.deleteRoi();
+			else
+				srcImp.setRoi(new Roi(0,0,srcImp.getWidth(),srcImp.getHeight()));
+			doUpdate=true;
+			notify();
+			return null;
+		} else
+			return command;
+	}
+
 	// unused listeners
 	public void mouseReleased(MouseEvent e) {}
 	public void mouseExited(MouseEvent e) {}
@@ -616,7 +632,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	}
 		
 	private void createListeners() {
-		//IJ.log("createListeners");
+		if (IJ.debugMode) IJ.log("PlotWindow.createListeners");
 		if (srcImp==null) return;
 		ImageCanvas ic = srcImp.getCanvas();
 		if (ic==null) return;
@@ -624,13 +640,14 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		ic.addMouseMotionListener(this);
 		ic.addKeyListener(this);
 		srcImp.addImageListener(this);
+		Executer.addCommandListener(this);
 		Font font = live.getFont();
 		live.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
 		live.setForeground(Color.red);
 	}
 	
 	private void removeListeners() {
-		//IJ.log("removeListeners");
+		if (IJ.debugMode) IJ.log("PlotWindow.removeListeners");
 		if (srcImp==null)
 			return;
 		ImageCanvas ic = srcImp.getCanvas();
@@ -640,6 +657,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			ic.removeKeyListener(this);
 		}
 		srcImp.removeImageListener(this);
+		Executer.removeCommandListener(this);
 		Font font = live.getFont();
 		live.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
 		live.setForeground(Color.black);

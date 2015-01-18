@@ -41,11 +41,7 @@ public class MeasurementsWriter implements PlugIn {
 				if (file == null) return false;
 				path = sd.getDirectory() + file;
 			}
-			try {
-				rt.saveAs(path);
-			} catch (IOException e) {
-				IJ.error(""+e);
-			}
+			return rt.save(path);
 		}
 		return true;
 	}
