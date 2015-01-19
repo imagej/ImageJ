@@ -1059,6 +1059,7 @@ public class PolygonRoi extends Roi {
 					enlargeArrays();
 			}
 			//if (lineWidth>1) fitSpline();
+			notifyListeners(RoiListener.EXTENDED);
 		}
 	}
 

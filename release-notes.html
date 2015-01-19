@@ -5,16 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.49o 17 January 2015</u>
+<li> <u>1.49o 18 January 2015</u>
 <ul>
 <li> Michael Schmid extended the HTMLDialog class to support more text
 (wrapping lines, scrollbar) and hypertext links. This allows for longer
 GenericDialog help messages and "About this Plugin" dialogs
 (example).
-<li> Thanks to Michael Schmid, "Live" mode plots created by the
-<i>Image&gt;Stacks&gt;Plot Z-axis Profile</i> command
-now work with the "a" (Select All) and "shift-a" ("Select None")
-keyboard commands.
+<li> Thanks to Michael Schmid, "Live" mode plots created by
+<i>Image&gt;Stacks&gt;Plot Z-axis Profile</i> are now updated
+when you use a command in the <i>Edit&gt;Selection</i> menu.
 <li> When opening AVI files, the open() macro function no longer
 displays a dialog box. To open an AVI as a virtual stack, use
 run("AVI...", "open=file_path use").
@@ -26,6 +25,7 @@ are now validated. With 8-bit images, the values must be in the 0-255 range. Wit
 <li> Thanks to Xavier Colome, added the GenericDialog.addImage(ImagePlus) method.
 <li> Added the setDisplayMode(), getDisplayMode() and setActiveChannels()
 methods to the ImagePlus class.
+<li> Thanks to Michael Schmid, added the RoiListener interface.
 <li> Thanks to Neil Fazel, fixed a bug the caused the ROI Manager's
 <i>More&gt;&gt;Remove Positions</i> command to sometimes not work as expected.
 <li> Thanks to Norbert Vischer, fixed a bug that caused the open() macro function to

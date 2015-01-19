@@ -17,8 +17,8 @@ import ij.io.SaveDialog;
 * @author Michael Schmid
 * @author Wayne Rasband
 */
-public class PlotWindow extends ImageWindow implements ActionListener, ClipboardOwner,
-	MouseListener, MouseMotionListener, KeyListener, ImageListener, CommandListener, Runnable {
+public class PlotWindow extends ImageWindow implements ActionListener, 
+	ClipboardOwner, ImageListener, RoiListener, Runnable {
 
 	/** Display points using a circle 5 pixels in diameter. */
 	public static final int CIRCLE = 0;
@@ -549,45 +549,19 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			imageUpdated(srcImp);
 	}
 	
-	// these listeners are activated if the selection is changed in the source ImagePlus
-	public synchronized void mousePressed(MouseEvent e) { doUpdate=true; notify(); }   
-	public synchronized void mouseDragged(MouseEvent e) { doUpdate=true; notify(); }
-	public synchronized void mouseClicked(MouseEvent e) { doUpdate=true; notify(); }
-	
-	public synchronized void keyPressed(KeyEvent e) {
-		int key = e.getKeyCode();
-		if (key==KeyEvent.VK_LEFT||key==KeyEvent.VK_RIGHT||key==KeyEvent.VK_UP||key==KeyEvent.VK_DOWN) {
+	public synchronized void roiModified(ImagePlus img, int id) {
+		if (IJ.debugMode) IJ.log("PlotWindow.roiModified: "+img+"  "+id);
+		if (img==srcImp) {
 			doUpdate=true;
 			notify();
 		}
 	}
 	
-	public synchronized String commandExecuting(String command) {
-		if (srcImp!=null && srcImp.getStackSize()>1 && command.equals("Select None") || command.equals("Select All")) {
-			ImagePlus cimg = WindowManager.getCurrentImage();
-			if (srcImp!=cimg)
-				return command;
-			if (command.equals("Select None"))
-				srcImp.deleteRoi();
-			else
-				srcImp.setRoi(new Roi(0,0,srcImp.getWidth(),srcImp.getHeight()));
-			doUpdate=true;
-			notify();
-			return null;
-		} else
-			return command;
+	// Unused
+	public void imageOpened(ImagePlus imp) {
 	}
 
-	// unused listeners
-	public void mouseReleased(MouseEvent e) {}
-	public void mouseExited(MouseEvent e) {}
-	public void mouseEntered(MouseEvent e) {}
-	public void mouseMoved(MouseEvent e) {}
-	public void keyTyped(KeyEvent e) {}
-	public void keyReleased(KeyEvent e) {}
-	public void imageOpened(ImagePlus imp) {}
-	
-	// This listener is called if the source image content is changed
+	// This method is called if the source image content is changed
 	public synchronized void imageUpdated(ImagePlus imp) {
 		if (imp==srcImp) { 
 			doUpdate = true;
@@ -633,14 +607,10 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		
 	private void createListeners() {
 		if (IJ.debugMode) IJ.log("PlotWindow.createListeners");
-		if (srcImp==null) return;
-		ImageCanvas ic = srcImp.getCanvas();
-		if (ic==null) return;
-		ic.addMouseListener(this);
-		ic.addMouseMotionListener(this);
-		ic.addKeyListener(this);
-		srcImp.addImageListener(this);
-		Executer.addCommandListener(this);
+		if (srcImp==null)
+			return;
+		ImagePlus.addImageListener(this);
+		Roi.addRoiListener(this);
 		Font font = live.getFont();
 		live.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
 		live.setForeground(Color.red);
@@ -650,14 +620,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		if (IJ.debugMode) IJ.log("PlotWindow.removeListeners");
 		if (srcImp==null)
 			return;
-		ImageCanvas ic = srcImp.getCanvas();
-		if (ic!=null) {
-			ic.removeMouseListener(this);
-			ic.removeMouseMotionListener(this);
-			ic.removeKeyListener(this);
-		}
-		srcImp.removeImageListener(this);
-		Executer.removeCommandListener(this);
+		ImagePlus.removeImageListener(this);
+		Roi.removeRoiListener(this);
 		Font font = live.getFont();
 		live.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
 		live.setForeground(Color.black);

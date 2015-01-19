@@ -24,8 +24,8 @@ public class Profiler implements PlugIn, PlotMaker {
 	
 	public Plot getPlot() {
 		Roi roi = imp.getRoi();
-		if (roi==null && !firstTime)
-			IJ.run(imp, "Restore Selection", "");
+		//if (roi==null && !firstTime)
+		//	IJ.run(imp, "Restore Selection", "");
 		if (roi==null || !(roi.isLine()||roi.getType()==Roi.RECTANGLE)) {
 			if (firstTime)
 				IJ.error("Plot Profile", "Line or rectangular selection required");

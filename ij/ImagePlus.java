@@ -1617,6 +1617,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 		roi.setImage(this);
 		if (updateDisplay) draw();
+		roi.notifyListeners(RoiListener.CREATED);
 	}
 	
 	/** Creates a rectangular selection. */
@@ -1707,6 +1708,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				if (rm!=null)
 					rm.deselect(roi);
 			}
+			roi.notifyListeners(RoiListener.DELETED);
 			roi = null;
 			if (ip!=null)
 				ip.resetRoi();
@@ -2343,7 +2345,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public static void removeImageListener(ImageListener listener) {
 		listeners.removeElement(listener);
 	}
-	
+		
 	/** Returns 'true' if the image is locked. */
 	public boolean isLocked() {
 		return locked;
