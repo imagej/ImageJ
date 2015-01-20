@@ -1744,6 +1744,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				else if (r.width==width && r.height==height) // is it the same size as the image
 					roi.setLocation(0, 0);
 				draw();
+				roi.notifyListeners(RoiListener.CREATED);
 			}
 		}
 	}

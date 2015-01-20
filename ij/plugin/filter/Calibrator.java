@@ -40,7 +40,9 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	private String sumResiduals, fitGoodness;
 	private Button open, save;
 	private GenericDialog gd;
-	private boolean showPlotFlag = true;
+	private static boolean showPlotFlagSaved = true;
+	private boolean showPlotFlag;
+	private static String unitSaved = Calibration.DEFAULT_VALUE_UNIT;
 	private CurveFitter curveFitter;
 	
 	public int setup(String arg, ImagePlus imp) {
@@ -73,6 +75,8 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		oldFunction = function;
 		double[] p = cal.getCoefficients();
 		unit = cal.getValueUnit();
+		if (unit == Calibration.DEFAULT_VALUE_UNIT)
+		    unit = unitSaved;
 		if (function==Calibration.NONE)
 			defaultChoice=NONE;
 		else if (function<nFits&&function==Calibration.STRAIGHT_LINE&&p!=null&& p[0]==255.0&&p[1]==-1.0)
@@ -96,7 +100,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		//gd.addMessage("Left column contains uncalibrated measured values,\n right column contains known values (e.g., OD).");
 		gd.addPanel(makeButtonPanel(gd));
 		gd.addCheckbox("Global calibration", IJ.isMacro()?false:global1);
-		gd.addCheckbox("Show plot", IJ.isMacro()?false:showPlotFlag);
+		gd.addCheckbox("Show plot", IJ.isMacro()?false:showPlotFlagSaved);
 		//gd.addCheckbox("Show Simplex Settings", showSettings);
 		gd.addHelp(IJ.URL+"/docs/menus/analyze.html#cal");
 		gd.showDialog();
@@ -110,6 +114,8 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			global2 = gd.getNextBoolean();
 			showPlotFlag = gd.getNextBoolean();
 			//showSettings = gd.getNextBoolean();
+			showPlotFlagSaved = showPlotFlag;
+			unitSaved = unit;
 			return true;
 		}
 	}

@@ -33,6 +33,17 @@ import java.util.Comparator;
 		return new String(buf9);
 	}
 		
+	/** Converts an int to a zero-padded hex string of fixed length 'digits'. 
+	 *  If the number is too high, it gets truncated, keeping only the lowest 'digits' characters. */
+	public static String int2hex(int i, int digits) {
+		char[] buf = new char[digits];
+		for (int pos=buf.length-1; pos>=0; pos--) {
+			buf[pos] = hexDigits[i&0xf];
+			i >>>= 4;
+		}
+		return new String(buf);
+	}
+
 	public static double[] getMinMax(double[] a) {
 		double min = Double.MAX_VALUE;
 		double max = -Double.MAX_VALUE;

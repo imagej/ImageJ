@@ -636,7 +636,6 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 	
 	private void createListeners() {
-		//IJ.log("createListeners");
 		if (srcImp==null)
 			return;
 		ImagePlus.addImageListener(this);
@@ -649,11 +648,10 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 	
 	private void removeListeners() {
-		//IJ.log("removeListeners");
 		if (srcImp==null)
 			return;
 		ImagePlus.removeImageListener(this);
-		Roi.addRoiListener(this);
+		Roi.removeRoiListener(this);
 		if (live!=null) {
 			Font font = live.getFont();
 			live.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));

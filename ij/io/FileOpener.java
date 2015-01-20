@@ -359,6 +359,8 @@ public class FileOpener {
 		cal.loop = getBoolean(props, "loop");
 		cal.frameInterval = getDouble(props,"finterval");
 		cal.setTimeUnit(props.getProperty("tunit", "sec"));
+		cal.setYUnit(props.getProperty("yunit"));
+		cal.setZUnit(props.getProperty("zunit"));
 
 		double displayMin = getDouble(props,"min");
 		double displayMax = getDouble(props,"max");
