@@ -568,6 +568,7 @@ public class PolygonRoi extends Roi {
 			Recorder.recordRoi(getPolygon(), type);
 		if (type!=POINT) modifyRoi();
 		LineWidthAdjuster.update();
+		notifyListeners(RoiListener.COMPLETED);
 	}
 	
 	public void exitConstructingMode() {

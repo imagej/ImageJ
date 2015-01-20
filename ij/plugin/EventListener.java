@@ -68,7 +68,16 @@ public class EventListener implements PlugIn, IJEventListener, ImageListener, Ro
 	}
 	
 	public  void roiModified(ImagePlus img, int id) {
-		IJ.log("ROI Modified: "+(img!=null?img.getTitle():"")+"  "+id);
+		String type = "UNKNOWN";
+		switch (id) {
+			case CREATED: type="CREATED"; break;
+			case MOVED: type="MOVED"; break;
+			case MODIFIED: type="MODIFIED"; break;
+			case EXTENDED: type="EXTENDED"; break;
+			case COMPLETED: type="COMPLETED"; break;
+			case DELETED: type="DELETED"; break;
+		}
+		IJ.log("ROI Modified: "+(img!=null?img.getTitle():"")+", "+type);
 	}
 
 
