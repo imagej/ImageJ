@@ -55,7 +55,7 @@ public class Undo {
 				impCopy = new ImagePlus(imp.getTitle(), imp.getProcessor().duplicate());
 		} else if (what==MACRO) {	
 			impCopy = new ImagePlus(imp.getTitle(), imp.getProcessor().duplicate());
-			what = TRANSFORM;
+			whatToUndo = TRANSFORM;
 		} else if (what==COMPOUND_FILTER) {
 			ImageProcessor ip = imp.getProcessor();
 			if (ip!=null)
