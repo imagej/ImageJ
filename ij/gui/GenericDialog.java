@@ -1442,6 +1442,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			new MacroRunner(macro);
 		}
 	}
+	
+	protected boolean isMacro() {
+		return macro;
+	}
     
     public void windowActivated(WindowEvent e) {}
     public void windowOpened(WindowEvent e) {}
