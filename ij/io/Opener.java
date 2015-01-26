@@ -648,10 +648,10 @@ public class Opener {
 		return imp;
 	}
 
-	/** If the specified image is grayscale, convert it to 8-bits. */
+	/** Converts the specified RGB image to 8-bits If the 3 channels are identical. */
 	public static void convertGrayJpegTo8Bits(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
-		if (ip.isGrayscale()) {
+		if (ip.getBitDepth()==24 && ip.isGrayscale()) {
 			IJ.showStatus("Converting to 8-bit grayscale");
 			new ImageConverter(imp).convertToGray8();
 		}

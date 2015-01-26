@@ -61,49 +61,48 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			listThresholds = staticListThresholds;
 			if (!thresholdSet)
 				updateThreshold(imp);
+		} else {
+			String macroOptions = Macro.getOptions();
+			if (macroOptions!=null && macroOptions.indexOf("slice ")!=-1)
+				Macro.setOptions(macroOptions.replaceAll("slice ", "only "));
+			useLocal = false;
 		}
 		boolean saveBlackBackground = Prefs.blackBackground;
 		boolean oneSlice = false;
-		if (thresholdSet) {
+		GenericDialog gd = new GenericDialog("Convert Stack to Binary");
+		gd.addChoice("Method:", methods, method);
+		gd.addChoice("Background:", backgrounds, background);
+		gd.addCheckbox("Calculate threshold for each image", useLocal);
+		gd.addCheckbox("Only convert current image", oneSlice);
+		gd.addCheckbox("Black background (of binary masks)", Prefs.blackBackground);
+		gd.addCheckbox("List thresholds", listThresholds);
+		choices = gd.getChoices();
+		if (choices!=null) {
+			((Choice)choices.elementAt(0)).addItemListener(this);
+			((Choice)choices.elementAt(1)).addItemListener(this);
+		}
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		this.imp = null;
+		method = gd.getNextChoice();
+		background = gd.getNextChoice();
+		useLocal = gd.getNextBoolean();
+		oneSlice = gd.getNextBoolean();
+		Prefs.blackBackground = gd.getNextBoolean();
+		listThresholds = gd.getNextBoolean();
+		if (!IJ.isMacro()) {
+			staticMethod = method;
+			staticBackground = background;
+			staticUseLocal = useLocal;
+			staticListThresholds = listThresholds;
+		}
+		if (oneSlice) {
 			useLocal = false;
 			listThresholds = false;
-			int rtn = IJ.setupDialog(imp, 0);
-			if (rtn==PlugInFilter.DONE)
-				return;
-			if (rtn==PlugInFilter.DOES_STACKS)
-				oneSlice = false;
-			else
-				oneSlice = true;
 			if (oneSlice && imp.getBitDepth()!=8) {
 				IJ.error("Thresholder", "8-bit stack required to process a single slice.");
 				return;
-			}
-		} else {
-			GenericDialog gd = new GenericDialog("Convert Stack to Binary");
-			gd.addChoice("Method:", methods, method);
-			gd.addChoice("Background:", backgrounds, background);
-			gd.addCheckbox("Calculate threshold for each image", useLocal);
-			gd.addCheckbox("Black background (of binary masks)", Prefs.blackBackground);
-			gd.addCheckbox("List thresholds", listThresholds);
-			choices = gd.getChoices();
-			if (choices!=null) {
-				((Choice)choices.elementAt(0)).addItemListener(this);
-				((Choice)choices.elementAt(1)).addItemListener(this);
-			}
-			gd.showDialog();
-			if (gd.wasCanceled())
-				return;
-			this.imp = null;
-			method = gd.getNextChoice();
-			background = gd.getNextChoice();
-			useLocal = gd.getNextBoolean();
-			Prefs.blackBackground = gd.getNextBoolean();
-			listThresholds = gd.getNextBoolean();
-			if (!IJ.isMacro()) {
-				staticMethod = method;
-				staticBackground = background;
-				staticUseLocal = useLocal;
-				staticListThresholds = listThresholds;
 			}
 		}
 		Undo.reset();
