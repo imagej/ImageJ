@@ -46,7 +46,8 @@ public class Zoom implements PlugIn{
 	
 	void zoomToSelection(ImagePlus imp, ImageCanvas ic) {
 		Roi roi = imp.getRoi();
-		ic.unzoom();
+		if (!IJ.altKeyDown())
+			ic.unzoom();
 		if (roi==null) return;
 		Rectangle w = imp.getWindow().getBounds();
 		Rectangle r = roi.getBounds();
@@ -56,7 +57,7 @@ public class Zoom implements PlugIn{
 		int x = r.x+r.width/2;
 		int y = r.y+r.height/2;
 		mag = ic.getHigherZoomLevel(mag);
-		while(r.width*mag<w.width - marginw && r.height*mag<w.height - marginh) {
+		while (r.width*mag<w.width-marginw && r.height*mag<w.height-marginh) {
 			ic.zoomIn(ic.screenX(x), ic.screenY(y));
 			double cmag = ic.getMagnification();
 			if (cmag==32.0) break;

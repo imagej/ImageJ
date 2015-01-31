@@ -318,7 +318,7 @@ public class OverlayCommands implements PlugIn {
 		rm.runCommand("reset");
 		rm.setEditMode(imp, false);
 		for (int i=0; i<overlay.size(); i++)
-			rm.add(imp, overlay.get(i), i);
+			rm.add(imp, overlay.get(i), i+1);
 		rm.setEditMode(imp, true);
 		rm.runCommand("show all");
 		imp.setOverlay(null);

@@ -396,6 +396,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Adds the specified ROI to the list. The third argument ('n') will 
 		be used to form the first part of the ROI label if it is >= 0. */
 	public void add(ImagePlus imp, Roi roi, int n) {
+		if (IJ.debugMode && n<3 && roi!=null) IJ.log("RoiManager.add: "+n+" "+roi.getName());
 		if (roi==null)
 			return;
 		String label = roi.getName();

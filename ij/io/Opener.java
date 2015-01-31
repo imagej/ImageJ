@@ -648,7 +648,7 @@ public class Opener {
 		return imp;
 	}
 
-	/** Converts the specified RGB image to 8-bits If the 3 channels are identical. */
+	/** Converts the specified RGB image to 8-bits if the 3 channels are identical. */
 	public static void convertGrayJpegTo8Bits(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
 		if (ip.getBitDepth()==24 && ip.isGrayscale()) {
