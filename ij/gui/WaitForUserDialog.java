@@ -56,7 +56,6 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 
 	public void show() {
 		super.show();
-		//IJ.beep();
 		synchronized(this) {  //wait for OK
 			try {wait();}
 			catch(InterruptedException e) {return;}

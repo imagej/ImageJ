@@ -39,14 +39,20 @@ public class ImagesToStack implements PlugIn {
 		}
 
 		int count = 0;
+		int stackCount = 0;
 		image = new ImagePlus[wList.length];
 		for (int i=0; i<wList.length; i++) {
 			ImagePlus imp = WindowManager.getImage(wList[i]);
 			if (imp.getStackSize()==1)
 				image[count++] = imp;
+			else
+				stackCount++;
 		}		
 		if (count<2) {
-			IJ.error("Images to Stack", "There must be at least two open images.");
+			String msg = "";
+			if (stackCount>1)
+			msg = "\n \nUse the Image>Stacks>Tools>Concatenate\ncommand to combine stacks.";
+			IJ.error("Images to Stack", "There must be at least two open 2D images."+msg);
 			return;
 		}
 
