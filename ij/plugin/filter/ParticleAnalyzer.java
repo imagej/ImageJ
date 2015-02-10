@@ -591,8 +591,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		ip.reset();
 		if (displaySummary && IJ.getInstance()!=null)
 			updateSliceSummary();
-		if (addToManager && roiManager!=null && imp.getWindow()!=null)
-			roiManager.setEditMode(imp, true);
+		if (addToManager && roiManager!=null) {
+			if (imp.getWindow()!=null)
+				roiManager.setEditMode(imp, true);
+			else
+				roiManager.runCommand("show all with labels");
+		}
 		maxParticleCount = (particleCount > maxParticleCount) ? particleCount : maxParticleCount;
 		totalCount += particleCount;
 		if (!canceled)

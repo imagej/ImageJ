@@ -64,7 +64,7 @@ public class TextReader implements PlugIn {
             	if (i<pixels.length && Float.isNaN(pixels[i]))
             		firstRowNaNCount++;
             }
-            if (firstRowNaNCount==width && !"NaN".equals(firstTok)) { // assume first row is header
+            if (firstRowNaNCount==width && !("NaN".equals(firstTok)||"nan".equals(firstTok))) { // assume first row is header
             	ip.setRoi(0, 1, width, lines-1);
             	ip = ip.crop();
             }
