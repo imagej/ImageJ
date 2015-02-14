@@ -257,9 +257,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 	public void itemStateChanged(ItemEvent e) {
 		Object source = e.getSource();
+		boolean showAllMode = showAllCheckbox.getState();
 		if (source==showAllCheckbox) {
-			if (firstTime)
+			if (firstTime) {
 				labelsCheckbox.setState(true);
+				if (Recorder.record) {
+					if (showAllMode)
+						Recorder.record("roiManager", "Show All");
+				}
+			}
+			if (!showAllMode)
+				Recorder.record("roiManager", "Show None");
 			showAll(showAllCheckbox.getState()?SHOW_ALL:SHOW_NONE);
 			firstTime = false;
 			return;
@@ -269,10 +277,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				showAllCheckbox.setState(true);
 			boolean editState = labelsCheckbox.getState();
 			boolean showAllState = showAllCheckbox.getState();
-			if (!showAllState && !editState)
+			if (!showAllState && !editState) {
 				showAll(SHOW_NONE);
-			else {
+				if (Recorder.record)
+					Recorder.record("roiManager", "Show None");
+			} else {
 				showAll(editState?LABELS:NO_LABELS);
+				if (Recorder.record && editState)
+					Recorder.record("roiManager", "Show All with labels");
 				if (editState) showAllCheckbox.setState(true);
 			}
 			firstTime = false;
@@ -1601,15 +1613,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		boolean showAll = mode==SHOW_ALL;
 		if (showAll)
 			imageID = imp.getID();
-		if (mode==LABELS) {
+		if (mode==LABELS || mode==NO_LABELS)
 			showAll = true;
-			if (record())
-				Recorder.record("roiManager", "Show All with labels");
-		} else if (mode==NO_LABELS) {
-			showAll = true;
-			if (record())
-				Recorder.record("roiManager", "Show All without labels");
-		}
 		if (showAll) imp.deleteRoi();
 		Roi[] rois = getRoisAsArray();
 		if (mode==SHOW_NONE) {
@@ -1621,8 +1626,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				overlay.add(rois[i]);
 			setOverlay(imp, overlay);
 		}
-		if (record())
-			Recorder.record("roiManager", showAll?"Show All":"Show None");
 	}
 
 	void updateShowAll() {
@@ -2079,10 +2082,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (!(shiftKeyDown||altKeyDown))
 			select(index);
 		ImagePlus imp = IJ.getImage();
-		if (imp==null) return;
+		if (imp==null)
+			return;
 		Roi previousRoi = imp.getRoi();
-		if (previousRoi==null)
-			{select(index); return;}
+		if (previousRoi==null) {
+			select(index);
+			return;
+		}
 		Roi.previousRoi = (Roi)previousRoi.clone();
 		String label = (String) listModel.getElementAt(index);
 		Roi roi = (Roi)rois.get(label);
@@ -2286,6 +2292,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (WindowManager.getCurrentImage()!=null) {
 			if (selected.length==1) {
 				ImagePlus imp = getImage();
+				if (imp!=null) {
+					Roi roi = imp.getRoi();
+					if (roi!=null)
+						Roi.previousRoi = (Roi)roi.clone();
+				}
 				restore(imp, selected[0], true);
 				imageID = imp!=null?imp.getID():0;
 			}

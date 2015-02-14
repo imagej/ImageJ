@@ -1292,8 +1292,10 @@ public class IJ {
             WindowManager.setWindow(null);
 		} else {
 			ImageWindow win = imp.getWindow();
-			win.toFront();
-			WindowManager.setWindow(win);
+			if (win!=null) {
+				win.toFront();
+				WindowManager.setWindow(win);
+			}
 			long start = System.currentTimeMillis();
 			// timeout after 2 seconds unless current thread is event dispatch thread
 			String thread = Thread.currentThread().getName();
@@ -1303,7 +1305,7 @@ public class IJ {
 				imp = WindowManager.getCurrentImage();
 				if (imp!=null && imp.getID()==id)
 					return; // specified image is now active
-				if ((System.currentTimeMillis()-start)>timeout) {
+				if ((System.currentTimeMillis()-start)>timeout && win!=null) {
 					WindowManager.setCurrentWindow(win);
 					return;
 				}
