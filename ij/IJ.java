@@ -212,7 +212,7 @@ public class IJ {
 				return runUserPlugIn(commandName, className.substring(dotIndex+1), arg, createNewLoader);
 			}
 			if (className.contains("_") && !suppressPluginNotFoundError)
-				error("Plugin or class not found: \"" + className + "\"\n(" + e+")");
+				error("Run User Plugin", "Class not found while attempting to run \"" + className + "\"\n \n   " + e);
 		}
 		catch (InstantiationException e) {error("Unable to load plugin (ins)");}
 		catch (IllegalAccessException e) {error("Unable to load plugin, possibly \nbecause it is not public.");}
@@ -360,7 +360,8 @@ public class IJ {
 	
 	/**Displays a message in the ImageJ status bar.*/
 	public static void showStatus(String s) {
-		if (ij!=null) ij.showStatus(s);
+		if (ij!=null)
+			ij.showStatus(s);
 		ImagePlus imp = WindowManager.getCurrentImage();
 		ImageCanvas ic = imp!=null?imp.getCanvas():null;
 		if (ic!=null)

@@ -187,10 +187,8 @@ public class FileOpener {
 			InputStream is = createInputStream(fi);
 			if (is==null) return null;
 			IJ.resetEscape();
-			int inc = fi.nImages/40;
-			if (inc<1) inc=1;
 			for (int i=1; i<=fi.nImages; i++) {
-				if (!silentMode && (i%inc)==0)
+				if (!silentMode)
 					IJ.showStatus("Reading: " + i + "/" + fi.nImages);
 				if (IJ.escapePressed()) {
 					IJ.beep();
@@ -202,7 +200,7 @@ public class FileOpener {
 				if (pixels==null) break;
 				stack.addSlice(null, pixels);
 				skip = fi.gapBetweenImages;
-				if (!silentMode && (i%inc)==0)
+				if (!silentMode)
 					IJ.showProgress(i, fi.nImages);
 			}
 			is.close();
