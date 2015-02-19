@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.49p 17 February 2015</u>
+<li> <u>1.49p 19 February 2015</u>
 <ul>
 <li> Stacks open and save in less time.
 <li> Thanks to Ferdinando Pucci, the <i>Image&gt;Stacks&gt;Tools&gt;Concatenate</i>
@@ -17,12 +17,14 @@ suggest using <i>Image&gt;Stacks&gt;Tools&gt;Concatenate</i> if the user
 attempts to combine two or more stacks.
 <li> The IJ.showStatus() method is up to a 1000 times faster
 (<a href="../plugins/examples/Show_Progress_Test.java">example</a>).
-<li> ImageJ displays a better error message when running a plugin with
+<li> ImageJ displays a better error message when attempting to run a plugin with
 a missing library.
 <li> Added the getList("image.titles") macro function.
 <li> Thanks to Norbert Vischer, added the Roi.setPolygonSplineAnchors(),
 Roi.setPolylineSplineAnchors() and Roi.getSplineAnchors() macro functions
 (<a href="macros/examples/GetSetAnchors.txt">example</a>).
+<li> Thanks to Philippe Carl,  added the RoiManager.isSelected() method
+(<a href="macros/js/RoiManagerShowSelected.js">JavaScript example</a>).
 <li> Thanks to Philippe Carl, fixed a bug that caused plugins using the
 NonBlockingGenericDialog to hang when they were called using the
 run() macro function.
