@@ -208,14 +208,16 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	
 	/** Updates the stack scrollbar. */
 	public void updateSliceSelector() {
-		if (hyperStack || zSelector==null) return;
+		if (hyperStack || zSelector==null || imp==null)
+			return;
 		int stackSize = imp.getStackSize();
 		int max = zSelector.getMaximum();
 		if (max!=(stackSize+1))
 			zSelector.setMaximum(stackSize+1);
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				zSelector.setValue(imp.getCurrentSlice());
+				if (imp!=null)
+					zSelector.setValue(imp.getCurrentSlice());
 			}
 		});
 	}

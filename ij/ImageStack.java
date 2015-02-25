@@ -306,18 +306,17 @@ public class ImageStack {
 	
 	/** Returns true if this is a 3-slice, 8-bit RGB stack. */
 	public boolean isRGB() {
-    	if (nSlices==3 && (stack[0] instanceof byte[]) && getSliceLabel(1)!=null && getSliceLabel(1).equals("Red"))	
-			return true;
-		else
-			return false;
+    	return nSlices==3 && (stack[0] instanceof byte[]) && getSliceLabel(1)!=null && getSliceLabel(1).equals("Red");
 	}
 	
 	/** Returns true if this is a 3-slice HSB stack. */
 	public boolean isHSB() {
-    	if (nSlices==3 && getSliceLabel(1)!=null && getSliceLabel(1).equals("Hue"))	
-			return true;
-		else
-			return false;
+    	return nSlices==3 && getSliceLabel(1)!=null && getSliceLabel(1).equals("Hue");
+	}
+
+	/** Returns true if this is a Lab stack. */
+	public boolean isLab() {
+    	return nSlices==3 && getSliceLabel(1)!=null && getSliceLabel(1).equals("L*");	
 	}
 
 	/** Returns true if this is a virtual (disk resident) stack. 

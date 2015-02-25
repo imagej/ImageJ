@@ -666,7 +666,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (resetCurrentSlice) setSlice(currentSlice);
 			return;
 		}
-		boolean invalidDimensions = (isDisplayedHyperStack()||isComposite()) && !((StackWindow)win).validDimensions();
+		boolean invalidDimensions = (isDisplayedHyperStack()||isComposite()) && (win instanceof StackWindow) && !((StackWindow)win).validDimensions();
 		if (newStackSize>1 && !(win instanceof StackWindow)) {
 			if (isDisplayedHyperStack())
 				setOpenAsHyperStack(true);

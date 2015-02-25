@@ -48,7 +48,7 @@ public class Menus {
 	private static Menus instance;
 	private static MenuBar mbar;
 	private static CheckboxMenuItem gray8Item,gray16Item,gray32Item,
-			color256Item,colorRGBItem,RGBStackItem,HSBStackItem;
+			color256Item,colorRGBItem,RGBStackItem,HSBStackItem,LabStackItem;
 	private static PopupMenu popup;
 
 	private static ImageJ ij;
@@ -147,6 +147,7 @@ public class Menus {
 			imageType.add(new MenuItem("-"));
 			RGBStackItem = addCheckboxItem(imageType, "RGB Stack", "ij.plugin.Converter(\"RGB Stack\")");
 			HSBStackItem = addCheckboxItem(imageType, "HSB Stack", "ij.plugin.Converter(\"HSB Stack\")");
+			LabStackItem = addCheckboxItem(imageType, "Lab Stack", "ij.plugin.Converter(\"Lab Stack\")");
 			image.add(imageType);
 			
 		image.addSeparator();
@@ -1068,7 +1069,7 @@ public class Menus {
 		return nPlugins;
 	}
 		
-	static final int RGB_STACK=10, HSB_STACK=11;
+	static final int RGB_STACK=10, HSB_STACK=11, LAB_STACK=12;
 	
 	/** Updates the Image/Type and Window menus. */
 	public static void updateMenus() {
@@ -1080,14 +1081,19 @@ public class Menus {
 		colorRGBItem.setState(false);
 		RGBStackItem.setState(false);
 		HSBStackItem.setState(false);
+		LabStackItem.setState(false);
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
 			return;
     	int type = imp.getType();
      	if (imp.getStackSize()>1) {
     		ImageStack stack = imp.getStack();
-    		if (stack.isRGB()) type = RGB_STACK;
-    		else if (stack.isHSB()) type = HSB_STACK;
+    		if (stack.isRGB())
+    			type = RGB_STACK;
+    		else if (stack.isHSB())
+    			type = HSB_STACK;
+    		else if (stack.isLab())
+    			type = LAB_STACK;
     	}
 		if (type==ImagePlus.GRAY8) {
 			ImageProcessor ip = imp.getProcessor();
@@ -1117,6 +1123,9 @@ public class Menus {
 				break;
     		case HSB_STACK:
 				HSBStackItem.setState(true);
+				break;
+    		case LAB_STACK:
+				LabStackItem.setState(true);
 				break;
 		}
 		

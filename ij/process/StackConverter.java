@@ -233,6 +233,15 @@ public class StackConverter {
 		imp.hide();
 	}
 
+	/** Converts the stack (which must be RGB) to a 3 channel 
+		Lab hyperstack. */
+	public void convertToLabHyperstack() {
+		if (type!=ImagePlus.COLOR_RGB)
+			throw new IllegalArgumentException("RGB stack required");
+		if (imp!=null)
+			throw new IllegalArgumentException("Stacks currently not supported");
+	}
+
 	/** Converts the stack to 8-bits indexed color. 'nColors' must
 		be greater than 1 and less than or equal to 256. */
 	public void convertToIndexedColor(int nColors) {
