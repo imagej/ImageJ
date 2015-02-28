@@ -149,10 +149,12 @@ public class ImageConverter {
   		ImageWindow win = imp.getWindow();
 		if (win!=null)
 			loc = win.getLocation();
-		imp.hide();
-  		imp2.copyAttributes(imp);
 		ImageWindow.setNextLocation(loc);
 		imp2.show();
+		imp.hide();
+  		imp2.copyAttributes(imp);
+  		imp.changes = false;
+  		imp.close();
 	}
 
 	/** Converts a 2 or 3 slice 8-bit stack to RGB. */
@@ -206,6 +208,7 @@ public class ImageConverter {
 			throw new IllegalArgumentException("3-slice 32-bit stack required");
 		ColorSpaceConverter converter = new ColorSpaceConverter();
 		ImagePlus imp2 = converter.LabToRGB(imp);
+		imp2.setCalibration(imp.getCalibration());
 		imp.setImage(imp2);
 	}
 
