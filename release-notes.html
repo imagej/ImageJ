@@ -5,49 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.49p 28 February 2015</u>
+<li> <u>1.49p 5 March 2015</u>
 <ul>
-<li> Added the <i>Image&gt;Type&gt;Lab Stack</i> command, which converts an RGB image
-into a L*a*b* stack using code from Duane Schwartzwald's
-(<a href="plugins/color-space-converter.html">Color Space Converter</a> plugin.
-<li> Stacks open and save in less time due to much faster IJ.showProgress() method.
-<li> Thanks to Ferdinando Pucci, the <i>Image&gt;Stacks&gt;Tools&gt;Concatenate</i>
-command works with images that differ in width or height.
-<li> The <i>Image&gt;Overlay&gt;To ROI Manager</i> command
-starts numbering at 1 instead of 0.
-<li> Thanks to Curtis Rueden, <i>Image&gt;Stacks&gt;Images to Stack</i>
-suggest using <i>Image&gt;Stacks&gt;Tools&gt;Concatenate</i> if the user
-attempts to combine two or more stacks.
-<li> The IJ.showStatus() method is up to a 1000 times faster
-(<a href="plugins/examples/Show_Progress_Test.java">example</a>).
-<li> ImageJ displays a better error message when attempting to run a plugin with
-a missing library.
-<li> Added the getList("image.titles") macro function.
-<li> Thanks to Norbert Vischer, added the Roi.setPolygonSplineAnchors(),
-Roi.setPolylineSplineAnchors() and Roi.getSplineAnchors() macro functions
-(<a href="macros/examples/GetSetAnchors.txt">example</a>).
-<li> Thanks to Philippe Carl,  added the RoiManager.isSelected() method
-(<a href="macros/js/RoiManagerShowSelected.js">JavaScript example</a>).
-<li> Thanks to Philippe Carl, fixed a bug that caused plugins using the
-NonBlockingGenericDialog to hang when they were called using the
-run() macro function.
-<li> Thanks to Matt Jackson, fixed a bug that caused the <i>Image&gt;Zoom&gt;To Selection</i>
-command to sometimes not work as expected (window does not expand) when the alt key is down.
-<li> Thanks to Analia Lourenço, fixed a bug that caused ROI Manager outlines
-created by the particle analyzer to not be displayed in batch mode macros.
-<li> Thanks to Neil Fazel, fixed a bug that caused <i>File&gt;Import&gt;Text Image</i>
-to not correctly open files containing "nan" (lower case "NaN") values.
-<li> Thanks to Philippe Carl, fixed a bug that caused the
-<i>Edit&gt;Selection&gt;Restore Selection</i> command to
-not work as expected after making a selection in the ROI Manager.
-<li> Thanks to Ilan Tal, fixed a bug that could cause the "Close All" command to
-throw an exception and cause ImageJ to hang.
-<li> Thanks to Leon Espinosa, fixed a 1.49k regression in the behavior, when
-processing stacks, of the <i>Process&gt;Binary&gt;Convert to Mask</i>
-command the and "Threshold" widget's "Apply" option.
-<li> Thanks to Philippe Carl, fixed a regression that caused the "Show All" and "Labels"
-buttons to not be recorded.
-
+<li> Thanks to Chris Pudney and Michael Schmid, fixed a bug that caused the
+PARALLELIZE_IMAGES flag of the PlugInFilter interface to return incorrect ROIs
+when using non-rectangular masks.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

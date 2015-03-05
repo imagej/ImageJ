@@ -326,8 +326,8 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 		}
 		if (IJ.debugMode)
 			IJ.log("  main thread "+y1+"-"+(roi.y+roi.height));
-		ip.setRoi(new Rectangle(roi.x, y1, roi.width, roi.y+roi.height-y1));
-		((PlugInFilter)theFilter).run(ip);	// the current thread does the rest
+		Rectangle roi2 = new Rectangle(roi.x, y1, roi.width, roi.y+roi.height-y1);
+		((PlugInFilter)theFilter).run(duplicateProcessor(ip, roi2)); 	// current thread does the rest
 		pass++;
 		if (roisForThread != null) {
 			for (Enumeration<Thread> en = roisForThread.keys(); en.hasMoreElements();) {
