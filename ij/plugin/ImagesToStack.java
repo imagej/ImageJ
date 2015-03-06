@@ -21,6 +21,7 @@ public class ImagesToStack implements PlugIn {
 	private int maxWidth, maxHeight;
 	private int minWidth, minHeight;
 	private int minSize, maxSize;
+	private boolean allInvertedLuts;
 	private Calibration cal2;
 	private int stackType;
 	private ImagePlus[] image;
@@ -118,6 +119,7 @@ public class ImagesToStack implements PlugIn {
 		if (fi!=null && fi.directory==null) fi = null;
 		for (int i=0; i<count; i++) {
 			ImageProcessor ip = image[i].getProcessor();
+			boolean invertedLut = ip.isInvertedLut();
 			if (ip==null) break;
 			if (ip.getMin()<min) min = ip.getMin();
 			if (ip.getMax()>max) max = ip.getMax();
@@ -136,6 +138,11 @@ public class ImagesToStack implements PlugIn {
             	case 32: ip = ip.convertToFloat(); break;
             	case rgb: ip = ip.convertToRGB(); break;
             	default: break;
+            }
+            if (invertedLut && !allInvertedLuts) {
+            	if (keep)
+            		ip = ip.duplicate();
+            	ip.invert();
             }
             if (ip.getWidth()!=width||ip.getHeight()!=height) {
  				switch (method) {
@@ -164,6 +171,8 @@ public class ImagesToStack implements PlugIn {
             } else if (keep)
             	ip = ip.duplicate();
             stack.addSlice(label, ip);
+            if (i==0 && invertedLut && !allInvertedLuts)
+            	stack.setColorModel(null);
             if (!keep) {
 				image[i].changes = false;
 				image[i].close();
@@ -194,11 +203,14 @@ public class ImagesToStack implements PlugIn {
 		minWidth = Integer.MAX_VALUE;
 		minHeight = Integer.MAX_VALUE;
 		minSize = Integer.MAX_VALUE;
+		allInvertedLuts = true;
 		maxSize = 0;
 		for (int i=0; i<count; i++) {
 			if (exclude(image[i].getTitle())) continue;
 			if (image[i].getType()==ImagePlus.COLOR_256)
 				stackType = rgb;
+			if (!image[i].getProcessor().isInvertedLut())
+				allInvertedLuts = false;
 			int type = image[i].getBitDepth();
 			if (type==24) type = rgb;
 			if (type>stackType) stackType = type;
