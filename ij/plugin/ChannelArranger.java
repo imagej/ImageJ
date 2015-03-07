@@ -63,10 +63,33 @@ public class ChannelArranger implements PlugIn, TextListener {
 			if (!IJ.showMessageWithCancel("Reduce Number of Channels?", msg))
 				return;
 		}
-		ImagePlus[] channels = ChannelSplitter.split(imp);
-		ImagePlus[] channels2 = new ImagePlus[nChannels2];
+		Point location = imp.getWindow()!=null?imp.getWindow().getLocation():null;
+		int[] newOrder2 = new int[nChannels2];
 		for (int i=0; i<nChannels2; i++)
-			channels2[i] = channels[newOrder.charAt(i)-48-1];
+			newOrder2[i] = newOrder.charAt(i)-48;
+		ImagePlus imp2 = run(imp, newOrder2);
+		imp2.copyAttributes(imp);
+		if (location!=null)
+			ImageWindow.setNextLocation(location);
+		imp2.changes = true;
+		imp2.show();
+	}
+	
+	public static ImagePlus run(ImagePlus imp, int[] newOrder) {
+		int channel = imp.getChannel();
+		int slice = imp.getSlice();
+		int frame = imp.getFrame();
+		ImagePlus[] channels = ChannelSplitter.split(imp);
+		int nChannels2 = newOrder.length;
+		if (nChannels2>channels.length)
+			nChannels2 = channels.length;
+		ImagePlus[] channels2 = new ImagePlus[nChannels2];
+		for (int i=0; i<nChannels2; i++) {
+			int index = newOrder[i]-1;
+			if (index<0 || index>=channels.length)
+				throw new IllegalArgumentException("value out of range:"+newOrder[i]);
+			channels2[i] = channels[index];
+		}
 		ImagePlus imp2 = null;
 		if (nChannels2==1)
 			imp2 = channels2[0];
@@ -77,22 +100,27 @@ public class ChannelArranger implements PlugIn, TextListener {
 			mode2 = ((CompositeImage)imp).getMode();
 		if (imp2.isComposite())
 			((CompositeImage)imp2).setMode(mode2);
-			
-		int[] stackPos = thumbNails.getStackPos();
-		String digit = ""+stackPos[0];
-		int currentCh = newOrder.indexOf(digit)+1;
-		int currentSlc = stackPos[1];
-		int currentFrm = stackPos[2];
-		imp2.setPosition(currentCh, currentSlc, currentFrm);//accepts currentCh out of range       
-
-		Point location = imp.getWindow()!=null?imp.getWindow().getLocation():null;
-		imp.changes = false;
-		imp.close();
-		imp2.copyAttributes(imp);
-		if (location!=null)
-			ImageWindow.setNextLocation(location);
-		imp2.changes = true;
-		imp2.show();
+		if (channel<=nChannels2) {
+			int channel2 = newOrder[channel-1];
+			imp2.setPosition(channel2, slice, frame);
+		}
+		Overlay overlay = imp.getOverlay();
+		if (overlay!=null) {
+			for (int i=0; i<overlay.size(); i++) {
+				Roi roi = overlay.get(i);
+				int c = roi.getCPosition();
+				int z = roi.getZPosition();
+				int t = roi.getTPosition();
+				if (c>=1 && c<=nChannels2)
+					roi.setPosition(newOrder[c-1], z, t);
+			}
+			imp2.setOverlay(overlay);
+		}
+		if (imp.getWindow()!=null) {
+			imp.changes = false;
+			imp.close();
+		}
+		return imp2;
 	}
 
 	public void textValueChanged(TextEvent e) {
