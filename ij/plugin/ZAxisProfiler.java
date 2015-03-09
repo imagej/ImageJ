@@ -1,4 +1,5 @@
 package ij.plugin;
+import ij.plugin.*;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
@@ -8,7 +9,7 @@ import ij.util.Tools;
 import java.awt.*;
 
 /** Implements the Image/Stack/Plot Z-axis Profile command. */
-public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker  {
+public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 	private static String[] choices = {"time", "z-axis"};
 	private static String choice = choices[0];
 	private boolean showingDialog;
@@ -28,7 +29,7 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker  {
 			IJ.error("ZAxisProfiler", "This command does not work with line selections.");
 			return;
 		}
-		isPlotMaker = roi!=null && !IJ.macroRunning();
+		isPlotMaker = /*roi!=null &&*/ !IJ.macroRunning();
 		Plot plot = getPlot();
 		if (plot!=null) {
 			if (isPlotMaker)
@@ -55,16 +56,26 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker  {
 		String xAxisLabel = showingDialog&&choice.equals(choices[0])?"Frame":"Slice";
 		Calibration cal = imp.getCalibration();
 		if (cal.scaled()) {
-			float c=1.0f;
+			double c = 1.0f;
+			double origin = 0;
 			if (timeProfile) {
 				c = (float) cal.frameInterval;
-				xAxisLabel = "["+cal.getTimeUnit()+"]";
+				boolean zeroInterval = c==0;
+				if (zeroInterval)
+					c = 1;
+				String timeUnit = zeroInterval?"Frame":"["+cal.getTimeUnit()+"]";
+				xAxisLabel = timeUnit;
 			} else {
 				c = (float) cal.pixelDepth;
-				xAxisLabel = "["+cal.getZUnit()+"]";
+				boolean zeroDepth = c==0;
+				if (zeroDepth)
+					c = 1;
+				origin = cal.zOrigin;
+				String depthUnit = zeroDepth?"Slice":"["+cal.getZUnit()+"]";
+				xAxisLabel = depthUnit;
 			}
 			for (int i=0; i<x.length; i++)
-				x[i] = i*c;
+				x[i] = (float)((i-cal.zOrigin)*c);
 		} else {
 			for (int i=0; i<x.length; i++)
 				x[i] = i+1;

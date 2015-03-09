@@ -40,6 +40,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected static int pasteMode = Blitter.COPY;
 	protected static int lineWidth = 1;
 	protected static Color defaultFillColor;
+	private static Vector listeners = new Vector();
 	
 	protected int type;
 	protected int xMax, yMax;
@@ -677,9 +678,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		if (width > 7 && height > 7) {
 			asp = (double)width/(double)height;
 			asp_bk = asp;
-		} else {
+		} else
 			asp = asp_bk;
-		}
 		
 		switch (activeHandle) {
 			case 0:
@@ -717,7 +717,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		   {height=1; y=y2;}
 		
 		if (center) {
-			switch(activeHandle){
+			switch (activeHandle){
 				case 0:
 					width=(xc-x)*2;
 					height=(yc-y)*2;
@@ -778,7 +778,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				height=1;
 				y=y2=yc;
 			}
-			switch(activeHandle){
+			switch (activeHandle) {
 				case 0:
 					x=x2-width;
 					y=y2-height;
@@ -804,7 +804,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 					x=x2-width;
 					break;
 			}
-			if (center){
+			if (center) {
 				x=xc-width/2;
 				y=yc-height/2;
 			}
@@ -814,7 +814,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			if (activeHandle==1 || activeHandle==5) width=(int)Math.rint((double)height*asp);
 			else height=(int)Math.rint((double)width/asp);
 			
-			switch(activeHandle){
+			switch (activeHandle){
 				case 0:
 					x=x2-width;
 					y=y2-height;
@@ -840,7 +840,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 					x=x2-width;
 					break;
 			}
-			if (center){
+			if (center) {
 				x=xc-width/2;
 				y=yc-height/2;
 			}
@@ -937,6 +937,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		oldX = x; oldY = y;
 		bounds = null;
 		showStatus();
+		notifyListeners(RoiListener.MOVED);
 	}
 	
 	/** Nudge lower right corner of rectangular and oval ROIs by
@@ -1010,6 +1011,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			default:
 				break;
 		}
+		notifyListeners(state==MOVING?RoiListener.MOVED:RoiListener.MODIFIED);
 	}
 
 	int getHandleSize() {
@@ -1229,7 +1231,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 					Recorder.record("makeRectangle", x, y, width, height);
 				else {
 					if (Recorder.scriptMode())
-						Recorder.recordCall("imp.setRoi(new Roi("+x+", "+y+", "+width+", "+height+", "+cornerDiameter+"));");
+						Recorder.recordCall("imp.setRoi(new Roi("+x+","+y+","+width+","+height+","+cornerDiameter+"));");
 					else
 						Recorder.record("makeRectangle", x, y, width, height, cornerDiameter);
 				}
@@ -1949,6 +1951,23 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	public int getHashCode() {
 		return hashCode() ^ (new Double(getXBase()).hashCode()) ^
 			Integer.rotateRight(new Double(getYBase()).hashCode(),16);
+	}
+	
+	public void notifyListeners(int id) {
+		synchronized (listeners) {
+			for (int i=0; i<listeners.size(); i++) {
+				RoiListener listener = (RoiListener)listeners.elementAt(i);
+				listener.roiModified(imp, id);
+			}
+		}
+	}
+
+	public static void addRoiListener(RoiListener listener) {
+		listeners.addElement(listener);
+	}
+	
+	public static void removeRoiListener(RoiListener listener) {
+		listeners.removeElement(listener);
 	}
 
 }

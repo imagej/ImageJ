@@ -11,9 +11,9 @@ import ij.gui.*;
 import ij.measure.ResultsTable;
 
 
-/** Writes the XY coordinates and pixel values of all non-background pixels
-	to a tab-delimited text file. Backround is assumed to be the value of
-	the pixel in the upper left corner of the image. */
+/** Writes the XY coordinates and pixel values of all non-background 
+	pixels to a tab-delimited text file. Backround is assumed to be the 
+	value of the pixel in the upper left corner of the image. */
 public class XYCoordinates implements PlugIn {
 
 	private static boolean processStack;
@@ -95,7 +95,7 @@ public class XYCoordinates implements PlugIn {
 			pw = new PrintWriter(bos);
 		}
 		catch (IOException e) {
-			IJ.write("" + e);
+			IJ.error("Save XY Coordinates", "Error saving coordinates:\n   "+e.getMessage());
 			return;
 		}
 
@@ -168,12 +168,7 @@ public class XYCoordinates implements PlugIn {
 				}
 			}
 		}
-		//rt.show("Results");
-		try {
-			rt.saveAs(dir+name);
-		} catch (IOException e) {
-			IJ.error(""+e);
-		}
+		rt.save(dir+name);
 	}
 
 }

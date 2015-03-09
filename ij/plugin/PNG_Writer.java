@@ -88,8 +88,6 @@ public class PNG_Writer implements PlugIn {
 	}
 
     void write16gs(ImagePlus imp, String path) throws Exception {
-		int width = imp.getWidth();
-		int  height = imp.getHeight();
 		ShortProcessor sp = (ShortProcessor)imp.getProcessor();
 		BufferedImage bi = sp.get16BitBufferedImage();
 		File f = new File(path);

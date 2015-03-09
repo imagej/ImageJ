@@ -31,7 +31,7 @@ public class ImageStatistics implements Measurements {
 	public double minor;
 	/** Angle in degrees of fitted ellipse */
 	public double angle;
-	/** 65536 element histogram (16-bit images only) */
+	/** Bin width 1 histogram of 16-bit images */
 	public int[] histogram16;
 	/** Long histogram; use getHIstogram() to retrieve. */
 	protected long[] longHistogram;

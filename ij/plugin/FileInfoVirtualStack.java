@@ -20,7 +20,9 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 	public FileInfoVirtualStack(FileInfo fi) {
 		info = new FileInfo[1];
 		info[0] = fi;
-		open(true);
+		ImagePlus imp = open();
+		if (imp!=null)
+			imp.show();
 	}
 
 	/* Constructs a FileInfoVirtualStack from a FileInfo 
@@ -28,23 +30,46 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 	public FileInfoVirtualStack(FileInfo fi, boolean show) {
 		info = new FileInfo[1];
 		info[0] = fi;
-		open(show);
+		ImagePlus imp = open();
+		if (imp!=null && show)
+			imp.show();
+	}
+
+	/** Opens the specified tiff file as a virtual stack. */
+	public static ImagePlus openVirtual(String path) {
+		OpenDialog  od = new OpenDialog("Open TIFF", path);
+		String name = od.getFileName();
+		String  dir = od.getDirectory();
+		if (name==null)
+			return null;
+		FileInfoVirtualStack stack = new FileInfoVirtualStack();
+		stack.init(dir, name);
+		return stack.open();
 	}
 
 	public void run(String arg) {
 		OpenDialog  od = new OpenDialog("Open TIFF", arg);
 		String name = od.getFileName();
-		if (name==null) return;
+		String  dir = od.getDirectory();
+		if (name==null)
+			return;
+		init(dir, name);
+		ImagePlus imp = open();
+		if (imp!=null)
+			imp.show();
+	}
+	
+	private void init(String dir, String name) {
 		if (name.endsWith(".zip")) {
 			IJ.error("Virtual Stack", "ZIP compressed stacks not supported");
 			return;
 		}
-		String  dir = od.getDirectory();
 		TiffDecoder td = new TiffDecoder(dir, name);
 		if (IJ.debugMode) td.enableDebugging();
 		IJ.showStatus("Decoding TIFF header...");
-		try {info = td.getTiffInfo();}
-		catch (IOException e) {
+		try {
+			info = td.getTiffInfo();
+		} catch (IOException e) {
 			String msg = e.getMessage();
 			if (msg==null||msg.equals("")) msg = ""+e;
 			IJ.error("TiffDecoder", msg);
@@ -56,10 +81,9 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		}
 		if (IJ.debugMode)
 			IJ.log(info[0].debugInfo);
-		open(true);
 	}
-	
-	void open(boolean show) {
+		
+	private ImagePlus open() {
 		FileInfo fi = info[0];
 		int n = fi.nImages;
 		if (info.length==1 && n>1) {
@@ -74,10 +98,8 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		nImages = info.length;
 		FileOpener fo = new FileOpener(info[0] );
 		ImagePlus imp = fo.open(false);
-		if (nImages==1 && fi.fileType==FileInfo.RGB48) {
-			if (show) imp.show();
-			return;
-		}
+		if (nImages==1 && fi.fileType==FileInfo.RGB48)
+			return imp;
 		Properties props = fo.decodeDescriptionString(fi);
 		ImagePlus imp2 = new ImagePlus(fi.fileName, this);
 		imp2.setFileInfo(fi);
@@ -104,7 +126,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 				imp2 = new CompositeImage(imp2, mode);
 			}
 		}
-		if (show) imp2.show();
+		return imp2;
 	}
 
 	int getInt(Properties props, String key) {

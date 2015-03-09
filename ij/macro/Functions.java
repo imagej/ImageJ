@@ -3292,13 +3292,13 @@ public class Functions implements MacroConstants, Measurements {
 		v3.setValue(w);
 		v4.setValue(h);
 	}
-	
+		
 	String doDialog() {
 		interp.getToken();
 		if (interp.token!='.')
 			interp.error("'.' expected");
 		interp.getToken();
-		if (!(interp.token==WORD || interp.token==STRING_FUNCTION || interp.token==NUMERIC_FUNCTION))
+		if (!(interp.token==WORD || interp.token==STRING_FUNCTION || interp.token==NUMERIC_FUNCTION || interp.token==PREDEFINED_FUNCTION))
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
 		try {
@@ -3361,6 +3361,8 @@ public class Functions implements MacroConstants, Measurements {
 				gd.addChoice(prompt, choices, defaultChoice);
 			} else if (name.equals("setInsets")) {
 				gd.setInsets((int)getFirstArg(), (int)getNextArg(), (int)getLastArg());
+			} else if (name.equals("setLocation")) {
+				gd.setLocation((int)getFirstArg(), (int)getLastArg());
 			} else if (name.equals("show")) {
 				interp.getParens();
 				gd.showDialog();
@@ -3531,7 +3533,7 @@ public class Functions implements MacroConstants, Measurements {
 		ColorProcessor.setWeightingFactors(r, g, b);
 	}
 
-	void makePolygon() {
+	private void makePolygon() {
 		int max = 200;
 		int[] x = new int[max];
 		int[] y = new int[max];
@@ -4091,6 +4093,12 @@ public class Functions implements MacroConstants, Measurements {
 			for (int i=0; i<array.length; i++)
 				array[i] = new Variable(0, 0.0, (String)v.elementAt(i));
 			return array;
+		} else if (key.equals("image.titles")) {
+			String[] titles = WindowManager.getImageTitles();
+			Variable[] array = new Variable[titles.length];
+			for (int i=0; i<titles.length; i++)
+				array[i] = new Variable(0, 0.0, titles[i]);
+			return array;
 		} else if (key.equals("window.titles")) {
 			String[] titles = WindowManager.getNonImageTitles();
 			Variable[] array = new Variable[titles.length];
@@ -4227,6 +4235,7 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	public static void registerExtensions(MacroExtension extensions) {
+		if (IJ.debugMode) IJ.log("registerExtensions");
 		Interpreter interp = Interpreter.getInstance();
 		if (interp==null) {
 			IJ.error("Macro must be running to install macro extensions");
@@ -4234,8 +4243,10 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		interp.pgm.extensionRegistry = new Hashtable();
 		ExtensionDescriptor[] descriptors = extensions.getExtensionFunctions();
-		for (int i=0; i<descriptors.length; ++i)
+		for (int i=0; i<descriptors.length; ++i) {
 			interp.pgm.extensionRegistry.put(descriptors[i].name, descriptors[i]);
+			if (IJ.debugMode) IJ.log("  "+i+" "+descriptors[i].name);
+		}
 	}
 	
 	String doExt() {
@@ -4400,7 +4411,7 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("getDisplayMode"))
 			getDisplayMode(imp);
 		else if (name.equals("setActiveChannels"))
-			setActiveChannels(imp, getStringArg());
+			imp.setActiveChannels(getStringArg());
 		else if (name.equals("getActiveChannels"))
 			getActiveChannels(imp);
 		else if (name.equals("toggleChannel"))
@@ -4463,20 +4474,6 @@ public class Functions implements MacroConstants, Measurements {
 		}
 	}
 	
-	void setActiveChannels(ImagePlus imp, String channels) {
-		if (!imp.isComposite())
-			interp.error("Composite image required");
-		boolean[] active = ((CompositeImage)imp).getActiveChannels();
-		for (int i=0; i<active.length; i++) {
-			boolean b = false;
-			if (channels.length()>i && channels.charAt(i)=='1')
-				b = true;
-			active[i] = b;
-		}
-		imp.updateAndDraw();
-		Channels.updateChannels();
-	}
-
 	void getActiveChannels(ImagePlus imp) {
 		if (!imp.isComposite())
 			interp.error("Composite image required");
@@ -5873,6 +5870,10 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
 		ImagePlus imp = getImage();
+		if (name.equals("setPolygonSplineAnchors"))
+			return setSplineAnchors(imp, false);
+		else if (name.equals("setPolylineSplineAnchors"))
+			return setSplineAnchors(imp, true);
 		Roi roi = imp.getRoi();
 		if (roi==null)
 			interp.error("No selection");
@@ -5944,10 +5945,56 @@ public class Functions implements MacroConstants, Measurements {
 			if (type.equals("Straight Line"))
 				type = "Line";
 			return type.toLowerCase(Locale.US);
-		} else
+		} else if (name.equals("getSplineAnchors"))
+			return getSplineAnchors(roi);
+		else
 			interp.error("Unrecognized Roi function");
 		return null;
 	}
+	
+	private String getSplineAnchors(Roi roi) {
+		Variable xCoordinates = getFirstArrayVariable();
+		Variable yCoordinates = getLastArrayVariable();
+		Variable[] xa=null, ya=null;
+		FloatPolygon fp = null;
+		if (roi instanceof PolygonRoi)
+			fp = ((PolygonRoi)roi).getNonSplineFloatPolygon();
+		else
+			fp = roi.getFloatPolygon();
+		if (fp!=null) {
+			xa = new Variable[fp.npoints];
+			ya = new Variable[fp.npoints];
+			for (int i=0; i<fp.npoints; i++)
+				xa[i] = new Variable(fp.xpoints[i]);
+			for (int i=0; i<fp.npoints; i++)
+				ya[i] = new Variable(fp.ypoints[i]);
+		}
+		xCoordinates.setArray(xa);
+		yCoordinates.setArray(ya);
+		return null;
+	}
 		
+	private String setSplineAnchors(ImagePlus imp, boolean polyline) {
+		double[] x = getFirstArray();
+		int n = x.length;		
+		double[] y = getLastArray();
+		if (y.length!=n)
+			interp.error("Arrays are not the same length");
+		float[] xcoord = new float[n];
+		float[] ycoord = new float[n];
+		for (int i=0; i<n; i++) {
+			xcoord[i] = (float)x[i];
+			ycoord[i] = (float)y[i];
+		}
+		Roi roi = null;
+		if (polyline)
+			roi = new PolygonRoi(xcoord, ycoord, n, PolygonRoi.POLYLINE);
+		else
+			roi = new PolygonRoi(xcoord, ycoord, n, PolygonRoi.POLYGON);
+		((PolygonRoi)roi).fitSpline();
+		imp.setRoi(roi);
+		return null;
+	}
+
 } // class Functions
 

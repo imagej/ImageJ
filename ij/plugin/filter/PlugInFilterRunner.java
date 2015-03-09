@@ -15,6 +15,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 	private ImagePlus imp;
 	private int flags;							// the flags returned by the PlugInFilter
 	private boolean snapshotDone;		// whether the ImageProcessor has a snapshot already
+	private Overlay originalOverlay;		// overlay before pressing 'preview', to revert
 	private boolean previewCheckboxOn;			// the state of the preview checkbox (true = on)
 	private boolean bgPreviewOn;		// tells the background thread that preview is allowed
 	private boolean bgKeepPreview;		// tells the background thread to keep the result of preview
@@ -476,6 +477,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 		Thread thread = Thread.currentThread();
 		ImageProcessor ip = imp.getProcessor();
 		Roi originalRoi = imp.getRoi();
+		originalOverlay = imp.getOverlay();
 		FloatProcessor fp = null;
 		prepareProcessor(ip, imp);
 		announceSliceNumber(imp.getCurrentSlice());
@@ -551,6 +553,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 				interruptRoiThreads(roisForThread);
 		}
 		waitForPreviewDone();
+		imp.setOverlay(originalOverlay);
 	}
 
 	/** stop the background process responsible for preview and wait until the preview thread has finished */

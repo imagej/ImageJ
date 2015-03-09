@@ -28,7 +28,7 @@ public class PluginInstaller implements PlugIn {
 	}
 	
 	public boolean install(String path) {
-		boolean isURL = path.startsWith("http://");
+		boolean isURL = path.contains("://");
 		String lcPath = path.toLowerCase();
 		boolean isTool = lcPath.endsWith("tool.ijm") || lcPath.endsWith("tool.txt")
 			|| lcPath.endsWith("tool.class") || lcPath.endsWith("tool.jar");
@@ -150,17 +150,14 @@ public class PluginInstaller implements PlugIn {
 	public static byte[] download(String urlString, String name) {
 		int maxLength = 52428800; //50MB
 		URL url = null;
+		boolean unknownLength = false;
+		byte[] data = null;;
+		int n = 0;
 		try {
 			url = new URL(urlString);
-		} catch (Exception e) {
-			IJ.log(""+e);
-		}
-		if (IJ.debugMode) IJ.log("Downloading: "+urlString+"  " +url);
-		if (url==null) return null;
-		byte[] data;
-		int n = 0;
-		boolean unknownLength = false;
-		try {
+			if (IJ.debugMode) IJ.log("Downloading: "+urlString+"  " +url);
+			if (url==null)
+				return null;
 			URLConnection uc = url.openConnection();
 			int len = uc.getContentLength();
 			unknownLength = len<0;
@@ -181,7 +178,10 @@ public class PluginInstaller implements PlugIn {
 			}
 			in.close();
 		} catch (Exception e) {
-			IJ.log(e+" "+urlString);
+			String msg = "" + e;
+			if (!msg.contains("://"))
+				msg += "\n   "+urlString;
+			IJ.error("Plugin Installer", msg);
 			return null;
 		} finally {
 			IJ.showProgress(1.0);

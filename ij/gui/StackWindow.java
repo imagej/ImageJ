@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
 
-/** This class is an extended ImageWindow used to display image stacks. */
+/** This class is an extended ImageWindow that displays stacks and hyperstacks. */
 public class StackWindow extends ImageWindow implements Runnable, AdjustmentListener, ActionListener, MouseWheelListener {
 
 	protected Scrollbar sliceSelector; // for backward compatibity with Image5D
@@ -208,14 +208,16 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	
 	/** Updates the stack scrollbar. */
 	public void updateSliceSelector() {
-		if (hyperStack || zSelector==null) return;
+		if (hyperStack || zSelector==null || imp==null)
+			return;
 		int stackSize = imp.getStackSize();
 		int max = zSelector.getMaximum();
 		if (max!=(stackSize+1))
 			zSelector.setMaximum(stackSize+1);
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				zSelector.setValue(imp.getCurrentSlice());
+				if (imp!=null)
+					zSelector.setValue(imp.getCurrentSlice());
 			}
 		});
 	}

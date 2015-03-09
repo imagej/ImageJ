@@ -203,24 +203,19 @@ public class TypeConverter {
 	}
 
 	/** Converts a ByteProcessor to a FloatProcessor. Applies a
-		calibration function if the calibration table is not null.
-		@see ImageProcessor.setCalibrationTable
+	 * calibration function if the 'cTable' is not null.
+	 * @see ImageProcessor.setCalibrationTable
 	 */
 	FloatProcessor convertByteToFloat(float[] cTable) {
-		if (!ip.isDefaultLut() && !ip.isColorLut() && !ip.isInvertedLut()) {
-			// apply custom LUT
-			ip = convertToRGB();
-			ip = convertRGBToByte();
-			return (FloatProcessor)convertByteToFloat(null);
-		}
+		int n = width*height;
 		byte[] pixels8 = (byte[])ip.getPixels();
-		float[] pixels32 = new float[width*height];
+		float[] pixels32 = new float[n];
 		int value;
 		if (cTable!=null && cTable.length==256) {
-			for (int i=0; i<width*height; i++)
+			for (int i=0; i<n; i++)
 				pixels32[i] = cTable[pixels8[i]&255];
 		} else {
-			for (int i=0; i<width*height; i++)
+			for (int i=0; i<n; i++)
 				pixels32[i] = pixels8[i]&255;
 		}
 	    ColorModel cm = ip.getColorModel();

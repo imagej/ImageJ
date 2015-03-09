@@ -837,15 +837,11 @@ public class TextPanel extends Panel implements AdjustmentListener,
 				if (fileName==null) return false;
 				path = sd.getDirectory() + fileName;
 			}
-			try {
-				rt.saveAs(path);
-				TextWindow tw = getTextWindow();
-				if (fileName!=null && tw!=null && !"Results".equals(title)) {
-					tw.setTitle(fileName);
-					title = fileName;
-				}
-			} catch (IOException e) {
-				IJ.error(""+e);
+			rt.save(path);
+			TextWindow tw = getTextWindow();
+			if (fileName!=null && tw!=null && !"Results".equals(title)) {
+				tw.setTitle(fileName);
+				title = fileName;
 			}
 		} else {
 			if (path.equals("")) {
@@ -865,7 +861,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 				pw = new PrintWriter(bos);
 			}
 			catch (IOException e) {
-				//IJ.write("" + e);
+				IJ.error("Save As>Text", e.getMessage());
 				return true;
 			}
 			save(pw);
@@ -972,7 +968,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	public void scrollToTop() {
 		sbVert.setValue(0);
 		iY = 0;
-		for(int i=0;i<iColCount;i++)
+		for (int i=0;i<iColCount;i++)
 			tc.calcAutoWidth(i);
 		adjustHScroll();
 		tc.repaint();
@@ -983,5 +979,5 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			vData.removeAllElements();
 		vData = null;
 	}
-
+	
 }

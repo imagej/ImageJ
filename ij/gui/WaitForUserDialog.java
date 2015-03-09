@@ -18,7 +18,9 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 	private boolean escPressed;
 	
 	public WaitForUserDialog(String title, String text) {
-		super(getFrame(), title, false);
+		super(IJ.getInstance(), title, false);
+		if (text!=null && text.startsWith("IJ: "))
+			text = text.substring(4);
 		label = new MultiLineLabel(text, 175);
 		if (!IJ.isLinux()) label.setFont(new Font("SansSerif", Font.PLAIN, 14));
 		if (IJ.isMacOSX()) {
@@ -44,13 +46,8 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 			GUI.center(this);
 		else
 			setLocation(xloc, yloc);
-		if (IJ.isJava15()) try {
-			// Call setAlwaysOnTop() using reflection so this class can be compiled with Java 1.4
-			Class windowClass = Class.forName("java.awt.Window");
-			Method setAlwaysOnTop = windowClass.getDeclaredMethod("setAlwaysOnTop", new Class[] {Boolean.TYPE});
-			Object[] arglist = new Object[1]; arglist[0]=new Boolean(true);
-			setAlwaysOnTop.invoke(this, arglist);
-		} catch (Exception e) { }
+		if (IJ.isJava16())
+			setAlwaysOnTop(true);
 	}
 	
 	public WaitForUserDialog(String text) {
@@ -59,24 +56,16 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 
 	public void show() {
 		super.show();
-		//IJ.beep();
 		synchronized(this) {  //wait for OK
 			try {wait();}
 			catch(InterruptedException e) {return;}
 		}
 	}
 	
-	static Frame getFrame() {
-		Frame win = WindowManager.getCurrentWindow();
-		if (win==null) win = IJ.getInstance();
-		return win;
-	}
-
     public void close() {
         synchronized(this) { notify(); }
         xloc = getLocation().x;
         yloc = getLocation().y;
-		//setVisible(false);
 		dispose();
     }
 

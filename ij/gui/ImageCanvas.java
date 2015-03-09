@@ -190,7 +190,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
     public void paint(Graphics g) {
-		if (IJ.debugMode) IJ.log("paint: "+imp.getImage());
+		if (IJ.debugMode) IJ.log("ImageCanvas.paint: "+imp);
 		painted = true;
 		Roi roi = imp.getRoi();
 		if (roi!=null || overlay!=null || showAllOverlay!=null || Prefs.paintDoubleBuffered) {

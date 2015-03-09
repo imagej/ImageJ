@@ -7,6 +7,7 @@ import java.awt.EventQueue;
  *	@author Johannes Schindelin
  */
 public class NonBlockingGenericDialog extends GenericDialog {
+
 	public NonBlockingGenericDialog(String title) {
 		super(title, null);
 		setModal(false);
@@ -14,6 +15,8 @@ public class NonBlockingGenericDialog extends GenericDialog {
 
 	public synchronized void showDialog() {
 		super.showDialog();
+		if (isMacro())
+			return;
 		if (!IJ.macroRunning()) { // add to Window menu on event dispatch thread
 			final NonBlockingGenericDialog thisDialog = this;
 			EventQueue.invokeLater(new Runnable() {

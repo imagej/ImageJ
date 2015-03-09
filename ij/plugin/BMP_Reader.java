@@ -36,7 +36,7 @@ public class BMP_Reader extends ImagePlus implements PlugIn {
                         IJ.error("BMP Reader", msg);
                         return;
                 } finally {
-					if( is!=null) {
+					if (is!=null) {
 						try {
 							is.close();
 						} catch (IOException e) {}

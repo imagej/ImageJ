@@ -64,9 +64,7 @@ public class PNM_Writer implements PlugIn {
 					+ "\n# Written by ImageJ PNM Writer\n"
 					+ w + " " + h + "\n255\n");
 			if (isGray)
-				output.write(
-					(byte[])ip.getPixels(),
-					0, w * h);
+				output.write((byte[])ip.getPixels(), 0, w*h);
 			else {
 				byte[] pixels = new byte[w * h * 3];
 				ColorProcessor proc =

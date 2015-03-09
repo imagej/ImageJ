@@ -158,6 +158,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private int lineWidth = nextLineWidth;
 	private boolean noThreshold;
 	private boolean calledByPlugin;
+	private boolean hyperstack;
 
 			
 	/** Constructs a ParticleAnalyzer.
@@ -435,6 +436,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			roiManager = staticRoiManager;
 			staticRoiManager = null;
 		}
+		hyperstack = imp.isHyperStack();
 		if (staticResultsTable!=null) {
 			rt = staticResultsTable;
 			staticResultsTable = null;
@@ -589,8 +591,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		ip.reset();
 		if (displaySummary && IJ.getInstance()!=null)
 			updateSliceSummary();
-		if (addToManager && roiManager!=null && imp.getWindow()!=null)
-			roiManager.setEditMode(imp, true);
+		if (addToManager && roiManager!=null) {
+			if (imp.getWindow()!=null)
+				roiManager.setEditMode(imp, true);
+			else
+				roiManager.runCommand("show all with labels");
+		}
 		maxParticleCount = (particleCount > maxParticleCount) ? particleCount : maxParticleCount;
 		totalCount += particleCount;
 		if (!canceled)
@@ -911,8 +917,14 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				if (resetCounter)
 					roiManager.runCommand("reset");
 			}
-			if (imp.getStackSize()>1)
-				roi.setPosition(imp.getCurrentSlice());
+			if (imp.getStackSize()>1) {
+				int n = imp.getCurrentSlice();
+				if (hyperstack) {
+					int[] pos = imp.convertIndexToPosition(n);
+					roi.setPosition(pos[0],pos[1],pos[2]);
+				} else
+					roi.setPosition(n);
+			}
 			if (lineWidth!=1)
 				roi.setStrokeWidth(lineWidth);
 			roiManager.add(imp, roi, rt.getCounter());
@@ -954,8 +966,13 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				roi2.setStrokeWidth(lineWidth);
 			if (showChoice==OVERLAY_MASKS)
 				roi2.setFillColor(Color.cyan);
-			if (processStack)
-				roi2.setPosition(slice);
+			if (processStack) {
+				if (hyperstack) {
+					int[] pos = imp.convertIndexToPosition(slice);
+					roi2.setPosition(pos[0],pos[1],pos[2]);
+				} else
+					roi2.setPosition(slice);
+			}
 			overlay.add(roi2);
 		} else {
 			Rectangle r = roi.getBounds();

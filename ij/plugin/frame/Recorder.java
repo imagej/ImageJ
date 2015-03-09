@@ -139,7 +139,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		boolean sw = method.equals("selectWindow");
 		if (textArea!=null && !(scriptMode&&sw||commandName!=null&&sw)) {
 			if (scriptMode && method.equals("roiManager"))
-				textArea.append("rm.runCommand(\""+arg+"\");\n");
+				textArea.append("rm.runCommand(imp,\""+arg+"\");\n");
 			else if (scriptMode && method.equals("run"))
 				textArea.append("IJ."+method+"(\""+arg+"\");\n");
 			else {
@@ -203,13 +203,13 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (textArea==null) return;
 		if (scriptMode&&method.startsWith("make")) {
 			if (method.equals("makeRectangle"))
-				recordString("imp.setRoi("+a1+", "+a2+", "+a3+", "+a4+");\n");
+				recordString("imp.setRoi("+a1+","+a2+","+a3+","+a4+");\n");
 			else if (method.equals("makeOval"))
-				recordString("imp.setRoi(new OvalRoi("+a1+", "+a2+", "+a3+", "+a4+"));\n");
+				recordString("imp.setRoi(new OvalRoi("+a1+","+a2+","+a3+","+a4+"));\n");
 			else if (method.equals("makeLine"))
-				recordString("imp.setRoi(new Line("+a1+", "+a2+", "+a3+", "+a4+"));\n");
+				recordString("imp.setRoi(new Line("+a1+","+a2+","+a3+","+a4+"));\n");
 			else if (method.equals("makeArrow"))
-				recordString("imp.setRoi(new Arrow("+a1+", "+a2+", "+a3+", "+a4+"));\n");
+				recordString("imp.setRoi(new Arrow("+a1+","+a2+","+a3+","+a4+"));\n");
 		} else {
 			if (method.equals("makeArrow")) {
 				ImagePlus imp = WindowManager.getCurrentImage();
@@ -432,9 +432,24 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			if (commandOptions!=null) {
 				if (name.equals("Open...") || name.equals("URL...")) {
 					String s = scriptMode?"imp = IJ.openImage":"open";
-					if (scriptMode && isTextOrTable(commandOptions))
-						s = "IJ.open";
-					textArea.append(s+"(\""+strip(commandOptions)+"\");\n");
+					String path = strip(commandOptions);
+					boolean openingLut = false;
+					if (scriptMode) {
+						if (isTextOrTable(commandOptions))
+							s = "IJ.open";
+						else if (path!=null && path.endsWith(".lut")) {
+							s = "lut = Opener.openLut";
+							openingLut = true;
+						}
+					}
+					textArea.append(s+"(\""+path+"\");\n");
+					ImagePlus imp = WindowManager.getCurrentImage();
+					if (openingLut && imp!=null && !imp.getTitle().endsWith(".lut"))
+						textArea.append("imp.setLut(lut);\n");
+				} else if (name.equals("TIFF Virtual Stack...") && scriptMode) {
+					String s = "imp = IJ.openVirtual";
+					String path = strip(commandOptions);
+					textArea.append(s+"(\""+path+"\");\n");
 				} else if (isSaveAs()) {
 							if (name.endsWith("..."))
 									name= name.substring(0, name.length()-3);
@@ -473,7 +488,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			} else {
 				ImagePlus imp = WindowManager.getCurrentImage();
 				Roi roi = imp!=null?imp.getRoi():null;
-				if (name.equals("Threshold...") || name.equals("Fonts...") || name.equals("Brightness/Contrast..."))
+				if (name.equals("Threshold...") || name.equals("Fonts...") || name.equals("Brightness/Contrast...") || name.equals("Channels Tool..."))
 					textArea.append((scriptMode?"//IJ.":"//")+"run(\""+name+"\");\n");
 				else if (name.equals("Start Animation [\\]"))
 					textArea.append("doCommand(\"Start Animation [\\\\]\");\n");
@@ -611,7 +626,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			}
 			if (text.contains("overlay.add"))
 				text = (java?"Overlay ":"") + "overlay = new Overlay();\n" + text;
-			if ((text.contains("imp.")||text.contains("(imp")||text.contains("overlay.add")) && !text.contains("IJ.openImage") && !text.contains("IJ.createImage"))
+			if ((text.contains("imp.")||text.contains("(imp")||text.contains("overlay.add")) && !text.contains("IJ.openImage")
+			&& !text.contains("IJ.openVirtual") && !text.contains("IJ.createImage"))
 				text = (java?"ImagePlus ":"") + "imp = IJ.getImage();\n" + text;
 			if (text.contains("overlay.add"))
 				text = text + "imp.setOverlay(overlay);\n";
@@ -640,15 +656,20 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		StringTokenizer st = new StringTokenizer(text, "\n");
 		int n = st.countTokens();
 		boolean impDeclared = false;
+		boolean lutDeclared = false;
 		String line;
 		StringBuffer sb = new StringBuffer();
-		for(int i=0; i<n; i++) {
+		for (int i=0; i<n; i++) {
 			line = st.nextToken();
 			if (line!=null && line.length()>3) {
 				sb.append("\t\t");
 				if (line.startsWith("imp =") && !impDeclared) {
 					sb.append("ImagePlus ");
 					impDeclared = true;
+				}
+				if (line.startsWith("lut =") && !lutDeclared) {
+					sb.append("LUT ");
+					lutDeclared = true;
 				}
 				sb.append(line);
 				sb.append('\n');

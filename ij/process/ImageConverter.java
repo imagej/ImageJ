@@ -125,7 +125,6 @@ public class ImageConverter {
 	public void convertToHSB() {
 		if (type!=ImagePlus.COLOR_RGB)
 			throw new IllegalArgumentException("Image must be RGB");
-
 		//convert to hue, saturation and brightness
 		//IJ.showProgress(0.1);
 		ColorProcessor cp;
@@ -140,6 +139,24 @@ public class ImageConverter {
 		//IJ.showProgress(1.0);
 	}
 	
+	/** Converts an RGB image to a Lab stack. */
+	public void convertToLab() {
+		if (type!=ImagePlus.COLOR_RGB)
+			throw new IllegalArgumentException("Image must be RGB");
+		ColorSpaceConverter converter = new ColorSpaceConverter();
+  		ImagePlus imp2 = converter.RGBToLab(imp);
+  		Point loc = null;
+  		ImageWindow win = imp.getWindow();
+		if (win!=null)
+			loc = win.getLocation();
+		ImageWindow.setNextLocation(loc);
+		imp2.show();
+		imp.hide();
+  		imp2.copyAttributes(imp);
+  		imp.changes = false;
+  		imp.close();
+	}
+
 	/** Converts a 2 or 3 slice 8-bit stack to RGB. */
 	public void convertRGBStackToRGB() {
 		int stackSize = imp.getStackSize();
@@ -185,6 +202,16 @@ public class ImageConverter {
 			imp.setTitle(imp.getTitle());
 	}
 	
+	/** Converts a Lab stack to RGB. */
+	public void convertLabToRGB() {
+		if (imp.getStackSize()!=3)
+			throw new IllegalArgumentException("3-slice 32-bit stack required");
+		ColorSpaceConverter converter = new ColorSpaceConverter();
+		ImagePlus imp2 = converter.LabToRGB(imp);
+		imp2.setCalibration(imp.getCalibration());
+		imp.setImage(imp2);
+	}
+
 	/** Converts an RGB image to 8-bits indexed color. 'nColors' must
 		be greater than 1 and less than or equal to 256. */
 	public void convertRGBtoIndexedColor(int nColors) {

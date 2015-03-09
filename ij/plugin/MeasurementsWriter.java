@@ -15,7 +15,7 @@ public class MeasurementsWriter implements PlugIn {
 	
 	public boolean save(String path) {
 		Frame frame = WindowManager.getFrontWindow();
-		if (frame!=null && (frame instanceof TextWindow)) {
+		if (frame!=null && (frame instanceof TextWindow) && !"Log".equals(frame.getTitle())) {
 			TextWindow tw = (TextWindow)frame;
 			return tw.getTextPanel().saveAs(path);
 		} else if (IJ.isResultsWindow()) {
@@ -41,11 +41,7 @@ public class MeasurementsWriter implements PlugIn {
 				if (file == null) return false;
 				path = sd.getDirectory() + file;
 			}
-			try {
-				rt.saveAs(path);
-			} catch (IOException e) {
-				IJ.error(""+e);
-			}
+			return rt.save(path);
 		}
 		return true;
 	}

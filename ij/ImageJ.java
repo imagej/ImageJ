@@ -17,6 +17,8 @@ import java.io.*;
 import java.net.*;
 import java.awt.image.*;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+
 
 /**
 This frame is the main ImageJ class.
@@ -77,7 +79,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
-	public static final String VERSION = "1.49m";
+	public static final String VERSION = "1.49p";
 	public static final String BUILD = ""; 
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
@@ -104,7 +106,7 @@ public class ImageJ extends Frame implements ActionListener,
 	private Toolbar toolbar;
 	private Panel statusBar;
 	private ProgressBar progressBar;
-	private Label statusLine;
+	private JLabel statusLine;
 	private boolean firstTime = true;
 	private java.applet.Applet applet; // null if not running as an applet
 	private Vector classes = new Vector();
@@ -161,7 +163,7 @@ public class ImageJ extends Frame implements ActionListener,
 		statusBar.setLayout(new BorderLayout());
 		statusBar.setForeground(Color.black);
 		statusBar.setBackground(backgroundColor);
-		statusLine = new Label();
+		statusLine = new JLabel();
 		statusLine.setFont(new Font("SansSerif", Font.PLAIN, 13));
 		statusLine.addKeyListener(this);
 		statusLine.addMouseListener(this);

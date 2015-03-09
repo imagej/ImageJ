@@ -568,6 +568,7 @@ public class PolygonRoi extends Roi {
 			Recorder.recordRoi(getPolygon(), type);
 		if (type!=POINT) modifyRoi();
 		LineWidthAdjuster.update();
+		notifyListeners(RoiListener.COMPLETED);
 	}
 	
 	public void exitConstructingMode() {
@@ -1059,6 +1060,7 @@ public class PolygonRoi extends Roi {
 					enlargeArrays();
 			}
 			//if (lineWidth>1) fitSpline();
+			notifyListeners(RoiListener.EXTENDED);
 		}
 	}
 

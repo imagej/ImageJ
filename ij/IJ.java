@@ -45,7 +45,7 @@ public class IJ {
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
 	private static String osname, osarch;
-	private static boolean isMac, isWin, isJava2, isJava14, isJava15, isJava16, isJava17, isJava18, isLinux, is64Bit;
+	private static boolean isMac, isWin, isJava16, isJava17, isJava18, isLinux, is64Bit;
 	private static boolean controlDown, altDown, spaceDown, shiftDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
@@ -70,9 +70,6 @@ public class IJ {
 		isLinux = osname.startsWith("Linux");
 		String version = System.getProperty("java.version").substring(0,3);
 		if (version.compareTo("2.9")<=0) {  // JVM on Sharp Zaurus PDA claims to be "3.1"!
-			isJava2 = version.compareTo("1.1")>0;
-			isJava14 = version.compareTo("1.3")>0;
-			isJava15 = version.compareTo("1.4")>0;
 			isJava16 = version.compareTo("1.5")>0;
 			isJava17 = version.compareTo("1.6")>0;
 			isJava18 = version.compareTo("1.7")>0;
@@ -204,15 +201,18 @@ public class IJ {
 				new PlugInFilterRunner(thePlugIn, commandName, arg);
 		}
 		catch (ClassNotFoundException e) {
-			if (className.indexOf('_')!=-1 && !suppressPluginNotFoundError)
+			if (className.contains("_")  && !suppressPluginNotFoundError)
 				error("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 		}
 		catch (NoClassDefFoundError e) {
 			int dotIndex = className.indexOf('.');
-			if (dotIndex>=0)
+			if (dotIndex>=0 && className.contains("_")) {
+				// rerun plugin after removing folder name
+				if (debugMode) IJ.log("runUserPlugIn: rerunning "+className);
 				return runUserPlugIn(commandName, className.substring(dotIndex+1), arg, createNewLoader);
-			if (className.indexOf('_')!=-1 && !suppressPluginNotFoundError)
-				error("Plugin or class not found: \"" + className + "\"\n(" + e+")");
+			}
+			if (className.contains("_") && !suppressPluginNotFoundError)
+				error("Run User Plugin", "Class not found while attempting to run \"" + className + "\"\n \n   " + e);
 		}
 		catch (InstantiationException e) {error("Unable to load plugin (ins)");}
 		catch (IllegalAccessException e) {error("Unable to load plugin, possibly \nbecause it is not public.");}
@@ -252,7 +252,10 @@ public class IJ {
 	
     /** Runs an ImageJ command, with options that are passed to the
 		GenericDialog and OpenDialog classes. Does not return until
-		the command has finished executing. */
+		the command has finished executing. To generate run() calls,
+		start the recorder (Plugins/Macro/Record) and run commands
+		from the ImageJ menu bar.
+	*/
 	public static void run(String command, String options) {
 		//IJ.log("run1: "+command+" "+Thread.currentThread().hashCode()+" "+options);
 		if (ij==null && Menus.getCommands()==null)
@@ -315,7 +318,9 @@ public class IJ {
 			return command;
 	}
 
-	/** Runs an ImageJ command using the specified image and options. */
+	/** Runs an ImageJ command using the specified image and options.
+		To generate run() calls, start the recorder (Plugins/Macro/Record)
+		and run commands from the ImageJ menu bar.*/
 	public static void run(ImagePlus imp, String command, String options) {
 		if (imp!=null) {
 			ImagePlus temp = WindowManager.getTempCurrentImage();
@@ -355,7 +360,8 @@ public class IJ {
 	
 	/**Displays a message in the ImageJ status bar.*/
 	public static void showStatus(String s) {
-		if (ij!=null) ij.showStatus(s);
+		if (ij!=null)
+			ij.showStatus(s);
 		ImagePlus imp = WindowManager.getCurrentImage();
 		ImageCanvas ic = imp!=null?imp.getCanvas():null;
 		if (ic!=null)
@@ -930,17 +936,17 @@ public class IJ {
 	
 	/** Always returns true. */
 	public static boolean isJava2() {
-		return isJava2;
+		return true;
 	}
 	
-	/** Returns true if ImageJ is running on a Java 1.4 or greater JVM. */
+	/** Always returns true. */
 	public static boolean isJava14() {
-		return isJava14;
+		return true;
 	}
 
-	/** Returns true if ImageJ is running on a Java 1.5 or greater JVM. */
+	/** Always returns true. */
 	public static boolean isJava15() {
-		return isJava15;
+		return true;
 	}
 
 	/** Returns true if ImageJ is running on a Java 1.6 or greater JVM. */
@@ -1287,8 +1293,10 @@ public class IJ {
             WindowManager.setWindow(null);
 		} else {
 			ImageWindow win = imp.getWindow();
-			win.toFront();
-			WindowManager.setWindow(win);
+			if (win!=null) {
+				win.toFront();
+				WindowManager.setWindow(win);
+			}
 			long start = System.currentTimeMillis();
 			// timeout after 2 seconds unless current thread is event dispatch thread
 			String thread = Thread.currentThread().getName();
@@ -1298,7 +1306,7 @@ public class IJ {
 				imp = WindowManager.getCurrentImage();
 				if (imp!=null && imp.getID()==id)
 					return; // specified image is now active
-				if ((System.currentTimeMillis()-start)>timeout) {
+				if ((System.currentTimeMillis()-start)>timeout && win!=null) {
 					WindowManager.setCurrentWindow(win);
 					return;
 				}
@@ -1614,6 +1622,11 @@ public class IJ {
 	/** Opens the nth image of the specified tiff stack. */
 	public static ImagePlus openImage(String path, int n) {
 		return (new Opener()).openImage(path, n);
+	}
+
+	/** Opens the specified tiff file as a virtual stack. */
+	public static ImagePlus openVirtual(String path) {
+		return FileInfoVirtualStack.openVirtual(path);
 	}
 
 	/** Opens an image using a file open dialog and returns it as an ImagePlus object. */
