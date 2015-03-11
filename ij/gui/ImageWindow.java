@@ -375,7 +375,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		running = running2 = false;
 		boolean virtual = imp.getStackSize()>1 && imp.getStack().isVirtual();
 		if (isRunning) IJ.wait(500);
-		if (ij==null || IJ.getApplet()!=null || Interpreter.isBatchMode() || IJ.macroRunning() || virtual)
+		if (ij==null || ij.quitMacro() || IJ.getApplet()!=null || Interpreter.isBatchMode() || IJ.macroRunning() || virtual)
 			imp.changes = false;
 		if (imp.changes) {
 			String msg;

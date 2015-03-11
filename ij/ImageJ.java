@@ -80,7 +80,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.49q";
-	public static final String BUILD = "4"; 
+	public static final String BUILD = "5"; 
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -112,6 +112,7 @@ public class ImageJ extends Frame implements ActionListener,
 	private Vector classes = new Vector();
 	private boolean exitWhenQuitting;
 	private boolean quitting;
+	private boolean quitMacro;
 	private long keyPressedTime, actionPerformedTime;
 	private String lastKeyCommand;
 	private boolean embedded;
@@ -611,6 +612,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Called by ImageJ when the user selects Quit. */
 	public void quit() {
+		quitMacro = IJ.macroRunning();
 		Thread thread = new Thread(this, "Quit");
 		thread.setPriority(Thread.NORM_PRIORITY);
 		thread.start();
@@ -622,6 +624,11 @@ public class ImageJ extends Frame implements ActionListener,
 		return quitting;
 	}
 	
+	/** Returns true if ImageJ is quitting as a result of a run("Quit") macro call. */
+	public boolean quitMacro() {
+		return quitting && quitMacro;
+	}
+
 	/** Called once when ImageJ quits. */
 	public void savePreferences(Properties prefs) {
 		Point loc = getLocation();

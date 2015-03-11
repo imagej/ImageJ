@@ -75,11 +75,26 @@ public class ChannelArranger implements PlugIn, TextListener {
 		imp2.show();
 	}
 	
-	public static ImagePlus run(ImagePlus imp, int[] newOrder) {
-		int channel = imp.getChannel();
-		int slice = imp.getSlice();
-		int frame = imp.getFrame();
-		ImagePlus[] channels = ChannelSplitter.split(imp);
+	/** Changes the order of the channels in a hyperstack.
+		@param img source hyperstack
+		@param newOrder the new channel order
+		@return a hyperstack with channels in the specified order
+		<p>
+		The following example opens the FluorescentCells sample  
+		image and reverses the order of the channels.
+		<pre>
+		ImagePlus img = IJ.openImage("http://imagej.nih.gov/ij/images/FluorescentCells.zip");
+		int[] order = {3,2,1};
+		ImagePlus img2 = ChannelArranger.run(img, order);
+		img2.setDisplayMode(IJ.COLOR);
+		img2.show();
+		</pre>
+	*/
+	public static ImagePlus run(ImagePlus img, int[] newOrder) {
+		int channel = img.getChannel();
+		int slice = img.getSlice();
+		int frame = img.getFrame();
+		ImagePlus[] channels = ChannelSplitter.split(img);
 		int nChannels2 = newOrder.length;
 		if (nChannels2>channels.length)
 			nChannels2 = channels.length;
@@ -90,21 +105,21 @@ public class ChannelArranger implements PlugIn, TextListener {
 				throw new IllegalArgumentException("value out of range:"+newOrder[i]);
 			channels2[i] = channels[index];
 		}
-		ImagePlus imp2 = null;
+		ImagePlus img2 = null;
 		if (nChannels2==1)
-			imp2 = channels2[0];
+			img2 = channels2[0];
 		else
-			imp2 = RGBStackMerge.mergeChannels(channels2, false);
+			img2 = RGBStackMerge.mergeChannels(channels2, false);
 		int mode2 = IJ.COLOR;
-		if (imp.isComposite())
-			mode2 = ((CompositeImage)imp).getMode();
-		if (imp2.isComposite())
-			((CompositeImage)imp2).setMode(mode2);
+		if (img.isComposite())
+			mode2 = ((CompositeImage)img).getMode();
+		if (img2.isComposite())
+			((CompositeImage)img2).setMode(mode2);
 		if (channel<=nChannels2) {
 			int channel2 = newOrder[channel-1];
-			imp2.setPosition(channel2, slice, frame);
+			img2.setPosition(channel2, slice, frame);
 		}
-		Overlay overlay = imp.getOverlay();
+		Overlay overlay = img.getOverlay();
 		if (overlay!=null) {
 			for (int i=0; i<overlay.size(); i++) {
 				Roi roi = overlay.get(i);
@@ -114,13 +129,13 @@ public class ChannelArranger implements PlugIn, TextListener {
 				if (c>=1 && c<=nChannels2)
 					roi.setPosition(newOrder[c-1], z, t);
 			}
-			imp2.setOverlay(overlay);
+			img2.setOverlay(overlay);
 		}
-		if (imp.getWindow()!=null) {
-			imp.changes = false;
-			imp.close();
+		if (img.getWindow()!=null) {
+			img.changes = false;
+			img.close();
 		}
-		return imp2;
+		return img2;
 	}
 
 	public void textValueChanged(TextEvent e) {
