@@ -473,7 +473,6 @@ public class FileSaver {
 	}
 	
 	/** Save the image as raw data using the specified path. */
-	/** Save the image as raw data using the specified path. */
 	public boolean saveAsRaw(String path) {
 		fi.nImages = 1;
 		fi.intelByteOrder = Prefs.intelByteOrder;

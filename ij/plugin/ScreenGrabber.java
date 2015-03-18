@@ -5,7 +5,9 @@ import ij.gui.*;
 import java.awt.*;
 
 /** This plugin implements the Plugins/Utilities/Capture Screen
-    and Plugins/Utilities/Capture Image commands. */
+    and Plugins/Utilities/Capture Image commands. Note that these
+    commands may not work on Linux if windows translucency or 
+    special effects are enabled in the windows manager. */
 public class ScreenGrabber implements PlugIn {
 
 	public void run(String arg) {

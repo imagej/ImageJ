@@ -53,10 +53,8 @@ public class Memory implements PlugIn {
 		int limit = IJ.isWindows()?1600:1700;
 		String OSXInfo = "";
 		if (IJ.isMacOSX())
-			OSXInfo = "\n \nOn Max OS X, use\n"
-				+"/Applications/Utilities/Java/Java Preferences\n"
-				+"to switch to a 64-bit version of Java. You may\n"
-				+"also need to run \"ImageJ64\" instead of \"ImageJ\".";
+			OSXInfo = "\n \nOn Max OS X, you should run \"ImageJ64\"\n"
+				+"instead of \"ImageJ\".";
 		if (max2>=limit && !IJ.is64Bit()) {
 			if (!IJ.showMessageWithCancel(title, 
 			"Note: setting the memory limit to a value\n"

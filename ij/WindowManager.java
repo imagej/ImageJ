@@ -386,7 +386,7 @@ public class WindowManager {
 		while (imageList.size()>0) {
 			if (!((ImageWindow)imageList.elementAt(0)).close())
 				return false;
-			if (!quitMacro())
+			if (!quittingViaMacro())
 				IJ.wait(100);
 		}
 		Frame[] nonImages = getNonImageWindows();
@@ -396,7 +396,7 @@ public class WindowManager {
 				((Editor)frame).close();
 				if (((Editor)frame).fileChanged())
 					return false;
-				if (!quitMacro())
+				if (!quittingViaMacro())
 					IJ.wait(100);
 			}
 		}
@@ -417,9 +417,9 @@ public class WindowManager {
 		return true;
     }
     
-    private static boolean quitMacro() {
+    private static boolean quittingViaMacro() {
     	ImageJ ij = IJ.getInstance();
-    	return ij!=null && ij.quitMacro();
+    	return ij!=null && ij.quittingViaMacro();
     }
     
 	/** Activates the next image window on the window list. */

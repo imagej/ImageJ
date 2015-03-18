@@ -289,14 +289,14 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		} else {
 			String label = (String)imp.getProperty("Label");
 			if (label!=null) {
-			int newline = label.indexOf('\n');
-			if (newline>0)
-				label = label.substring(0, newline);
-			int len = label.length();
-			if (len>4 && label.charAt(len-4)=='.' && !Character.isDigit(label.charAt(len-1)))
-				label = label.substring(0,len-4);
-			if (label.length()>60)
-				label = label.substring(0, 60);
+				int newline = label.indexOf('\n');
+				if (newline>0)
+					label = label.substring(0, newline);
+				int len = label.length();
+				if (len>4 && label.charAt(len-4)=='.' && !Character.isDigit(label.charAt(len-1)))
+					label = label.substring(0,len-4);
+				if (label.length()>60)
+					label = label.substring(0, 60);
 				s = label + "; ";
 			}
 		}
@@ -375,7 +375,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		running = running2 = false;
 		boolean virtual = imp.getStackSize()>1 && imp.getStack().isVirtual();
 		if (isRunning) IJ.wait(500);
-		if (ij==null || ij.quitMacro() || IJ.getApplet()!=null || Interpreter.isBatchMode() || IJ.macroRunning() || virtual)
+		if (ij==null || ij.quittingViaMacro() || IJ.getApplet()!=null || Interpreter.isBatchMode() || IJ.macroRunning() || virtual)
 			imp.changes = false;
 		if (imp.changes) {
 			String msg;

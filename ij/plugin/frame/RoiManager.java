@@ -905,7 +905,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	/** This method performs measurements for several ROI's in a stack
-		and arranges the results with one line per slice.  By constast, the 
+		and arranges the results with one line per slice.  By contrast, the 
 		measure() method produces several lines per slice.	The results 
 		from multiMeasure() may be easier to import into a spreadsheet 
 		program for plotting or additional analysis. Based on the multi() 
@@ -924,8 +924,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (cmd!=null)
 			appendResults = cmd.contains("append")?true:false;
 		if (IJ.isMacro()) {
-			if (nSlices>1) measureAll = true;
-			onePerSlice = true;
+			if (cmd.startsWith("multi-measure")) {
+				measureAll = cmd.contains(" measure") && nSlices>1;
+				onePerSlice = cmd.contains(" one");
+				appendResults = cmd.contains(" append");
+			} else {
+				if (nSlices>1)
+					measureAll = true;
+				onePerSlice = true;
+			}
 		} else {
 			GenericDialog gd = new GenericDialog("Multi Measure");
 			if (nSlices>1)
@@ -963,23 +970,33 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				}
 			}
 			rt.show("Results");
-			if (nSlices>1) imp.setSlice(currentSlice);
-			return true;
+			if (nSlices>1)
+				imp.setSlice(currentSlice);
+		} else {
+			ResultsTable rtMulti = multiMeasure(imp, indexes, nSlices, appendResults);
+			mmResults = (ResultsTable)rtMulti.clone();
+			rtMulti.show("Results");
+			imp.setSlice(currentSlice);
+			if (indexes.length>1)
+				IJ.run("Select None");
 		}
-
-		ResultsTable rtMulti = multiMeasure(imp, indexes, nSlices, appendResults);
-		mmResults = (ResultsTable)rtMulti.clone();
-		rtMulti.show("Results");
-		imp.setSlice(currentSlice);
-		if (indexes.length>1)
-			IJ.run("Select None");
 		if (record()) {
 			if (Recorder.scriptMode()) {
 				Recorder.recordCall("rt = rm.multiMeasure(imp);");
 				Recorder.recordCall("rt.show(\"Results\");");
 			} else {
-				String arg = appendResults?" append":"";
-				Recorder.record("roiManager", "Multi Measure"+arg);
+				if ((nSlices==1||measureAll) && onePerSlice && !appendResults)
+					Recorder.record("roiManager", "Multi Measure");
+				else {
+					String options = "";
+					if (measureAll)
+						options += " measure_all";
+					if (onePerSlice)
+						options += " one";
+					if (appendResults)
+						options += " append";
+					Recorder.record("roiManager", "multi-measure"+options);
+				}
 			}
 		}
 		return true;
@@ -1845,7 +1862,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			split();
 		else if (cmd.equals("sort"))
 			sort();
-		else if (cmd.startsWith("multi measure"))
+		else if (cmd.startsWith("multi measure") || cmd.startsWith("multi-measure"))
 			multiMeasure(cmd);
 		else if (cmd.equals("multi plot"))
 			multiPlot();

@@ -322,6 +322,8 @@ public class IJ {
 		To generate run() calls, start the recorder (Plugins/Macro/Record)
 		and run commands from the ImageJ menu bar.*/
 	public static void run(ImagePlus imp, String command, String options) {
+		if (ij==null && Menus.getCommands()==null)
+			init();
 		if (imp!=null) {
 			ImagePlus temp = WindowManager.getTempCurrentImage();
 			WindowManager.setTempCurrentImage(imp);
@@ -1590,7 +1592,8 @@ public class IJ {
 		With 1.41k or later, opens images specified by a URL.
 		*/
 	public static void open(String path) {
-		if (ij==null && Menus.getCommands()==null) init();
+		if (ij==null && Menus.getCommands()==null)
+			init();
 		Opener o = new Opener();
 		macroRunning = true;
 		if (path==null || path.equals(""))		
@@ -1602,7 +1605,8 @@ public class IJ {
 		
 	/** Opens and displays the nth image in the specified tiff stack. */
 	public static void open(String path, int n) {
-		if (ij==null && Menus.getCommands()==null) init();
+		if (ij==null && Menus.getCommands()==null)
+			init();
 		ImagePlus imp = openImage(path, n);
 		if (imp!=null) imp.show();
 	}
@@ -1696,8 +1700,10 @@ public class IJ {
 		"jpeg", "gif", "zip", "raw", "avi", "bmp", "fits", "pgm", "png", 
 		"text image", "lut", "selection" or "xy Coordinates". */
  	public static void saveAs(ImagePlus imp, String format, String path) {
-		if (format==null) return;
-		if (path!=null && path.length()==0) path = null;
+		if (format==null)
+			return;
+		if (path!=null && path.length()==0)
+			path = null;
 		format = format.toLowerCase(Locale.US);
 		if (format.indexOf("tif")!=-1) {
 			saveAsTiff(imp, path);
