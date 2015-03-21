@@ -46,12 +46,18 @@ Version 10-Jan-2008
 */
 public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListener {
     /* parameters from the dialog: */
-    private static double radius = 50;  // default rolling ball radius
-    private static boolean lightBackground = Prefs.get("bs.background", true);
-    private static boolean separateColors; // whether to create a separate background for each color channel
-    private static boolean createBackground;   // don't subtract background (e.g., for processing the background before subtracting)
-    private static boolean useParaboloid; // use "Sliding Paraboloid" instead of rolling ball algorithm
-    private static boolean doPresmooth = true; // smoothen the image before creating the background
+    private static double staticRadius = 50;  // default rolling ball radius
+    private static boolean staticLightBackground = Prefs.get("bs.background", true);
+    private static boolean staticSeparateColors; // whether to create a separate background for each color channel
+    private static boolean staticCreateBackground;   // don't subtract background (e.g., for processing the background before subtracting)
+    private static boolean staticUseParaboloid; // use "Sliding Paraboloid" instead of rolling ball algorithm
+    private static boolean staticDoPresmooth = true; // smoothen the image before creating the background
+    private double radius = staticRadius;
+    private boolean lightBackground = staticLightBackground;
+    private boolean separateColors = staticSeparateColors;
+    private boolean createBackground = staticCreateBackground;
+    private boolean useParaboloid = staticUseParaboloid;
+    private boolean doPresmooth = staticDoPresmooth;
     /* more class variables */
     private boolean isRGB;              // whether we have an RGB image
     private boolean previewing;
@@ -77,8 +83,15 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
         isRGB = imp.getProcessor() instanceof ColorProcessor;
         calledAsPlugin = true;
         String options = Macro.getOptions();
-        if  (options!=null)
+        if  (options!=null) {  //macro
             Macro.setOptions(options.replaceAll("white", "light"));
+            radius = 50;  // default rolling ball radius
+            lightBackground = false;
+            separateColors = false;
+            createBackground = false;
+            useParaboloid = false;
+            doPresmooth = true;
+        }
         GenericDialog gd = new GenericDialog(command);
         gd.addNumericField("Rolling ball radius:", radius, 1, 6, "pixels");
         gd.addCheckbox("Light background", lightBackground);
@@ -94,9 +107,17 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
         previewing = false;
         if (gd.wasCanceled()) return DONE;
         IJ.register(this.getClass());       //protect static class variables (filter parameters) from garbage collection
-        Prefs.set("bs.background", lightBackground);
         if ((imp.getProcessor() instanceof FloatProcessor) && !createBackground)
             flags |= SNAPSHOT;              //FloatProcessors need the original to subtract it from the background
+        if  (options==null) { // not a macro
+            staticRadius = radius;
+            staticLightBackground = lightBackground;
+            staticSeparateColors = separateColors;
+            staticCreateBackground = createBackground;
+            staticUseParaboloid = useParaboloid;
+            staticDoPresmooth = doPresmooth;
+            Prefs.set("bs.background", lightBackground);
+        }
         return IJ.setupDialog(imp, flags);  //ask whether to process all slices of stack (if a stack)
     }
 

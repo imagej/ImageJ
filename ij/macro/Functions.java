@@ -5890,6 +5890,8 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("copy")) {
 			interp.getParens();
 			roiClipboard = getImage().getRoi();
+			if (roiClipboard!=null)
+				roiClipboard = (Roi)roiClipboard.clone();
 			return null;
 		} else if (name.equals("getBounds")) {
 			getBounds();
