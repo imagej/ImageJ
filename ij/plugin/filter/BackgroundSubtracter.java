@@ -85,7 +85,7 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
         String options = Macro.getOptions();
         if  (options!=null) {  //macro
             Macro.setOptions(options.replaceAll("white", "light"));
-            radius = 50;  // default rolling ball radius
+            radius = 50;
             lightBackground = false;
             separateColors = false;
             createBackground = false;
@@ -289,8 +289,6 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
             showProgress(0.5);
             filter3x3(fp, MEAN);                    //smoothing to remove noise
             pass++;
-            //IJ.log("shiftBy="+shiftBy);
-            //new ImagePlus("preprocessed",fp.duplicate()).show();        
         }
         if (correctCorners)
             correctCorners(fp, coeff2, cache, nextPoint);   //modify corner data, avoids subtracting corner particles
@@ -477,8 +475,6 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
             correctedEdges[0] = value0 + coeff6*(dx*dx*dx*dx*dx*dx - 1f) + coeff2*firstCorner*firstCorner;
             dx = (lastCorner-mid)*2f/(lastCorner-firstCorner);
             correctedEdges[1] = value0 + (length-1)*slope + coeff6*(dx*dx*dx*dx*dx*dx - 1f) + coeff2*(length-1-lastCorner)*(length-1-lastCorner);
-            //IJ.log("edge corr: corners@"+firstCorner+","+lastCorner+":"+v1+","+v2);
-            //IJ.log("from "+cache[0]+","+cache[length-1]+" to linear:"+(v1-firstCorner*slope)+","+(v2+(length-1-lastCorner)*slope)+";full:"+correctedEdges[0]+","+correctedEdges[1]);
         }
         return correctedEdges;
     } //void lineSlideParabola
@@ -515,10 +511,6 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
         corners[2] += correctedEdges[0];
         correctedEdges = lineSlideParabola(pixels, width*height-1, -1-width, diagLength, coeff2diag, cache, nextPoint, correctedEdges);
         corners[3] += correctedEdges[0];
-        //IJ.log("corner 00:"+pixels[0]+"->"+(corners[0]/3));
-        //IJ.log("corner 01:"+pixels[width-1]+"->"+(corners[1]/3));
-        //IJ.log("corner 10:"+pixels[(height-1)*width]+"->"+(corners[2]/3));
-        //IJ.log("corner 11:"+pixels[width*height-1]+"->"+(corners[3]/3));
         if (pixels[0] > corners[0]/3) pixels[0] = corners[0]/3;
         if (pixels[width-1] > corners[1]/3) pixels[width-1] = corners[1]/3;
         if (pixels[(height-1)*width] > corners[2]/3) pixels[(height-1)*width] = corners[2]/3;
@@ -713,7 +705,6 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
             smallIndices[i] = smallIndex;
             float distance = (i + 0.5f)/shrinkFactor - (smallIndex + 0.5f); //distance of pixel centers (in smallImage pixels)
             weights[i] = 1f - distance;
-            //if(i<12)IJ.log("i,sI="+i+","+smallIndex+", weight="+weights[i]);
         }
     }
 
@@ -833,8 +824,6 @@ class RollingBall {
                 data[p] = temp>0. ? (float)(Math.sqrt(temp)) : 0f;
                 //-Float.MAX_VALUE might be better than 0f, but gives different results than earlier versions
             }
-        //IJ.log(ballradius+"\t"+smallballradius+"\t"+width); //###
-        //IJ.log("half patch width="+halfWidth+", size="+data.length);
     }
 
 }
