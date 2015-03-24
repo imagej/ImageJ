@@ -2412,14 +2412,14 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 	
     /** Set the default 16-bit display range, where 'bitDepth' must be 0 (auto-scaling), 
-    	8 (0-255), 10 (0-1023), 12 (0-4095, 15 (0-32767) or 16 (0-65535). */
+    	8 (0-255), 10 (0-1023), 12 (0-4095, 14 (0-16383), 15 (0-32767) or 16 (0-65535). */
     public static void setDefault16bitRange(int bitDepth) {
-    	if (!(bitDepth==8 || bitDepth==10 || bitDepth==12 || bitDepth==15 || bitDepth==16))
+    	if (!(bitDepth==8 || bitDepth==10 || bitDepth==12 || bitDepth==14 || bitDepth==15 || bitDepth==16))
     		bitDepth = 0;
     	default16bitDisplayRange = bitDepth;
     }
     
-    /** Returns the default 16-bit display range, 0 (auto-scaling), 8, 10, 12, 15 or 16. */
+    /** Returns the default 16-bit display range, 0 (auto-scaling), 8, 10, 12, 14, 15 or 16. */
     public static int getDefault16bitRange() {
     	return default16bitDisplayRange;
     }

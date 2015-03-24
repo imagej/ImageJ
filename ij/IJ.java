@@ -1571,6 +1571,12 @@ public class IJ {
 		}
 	}
 	
+	/** Alias for getDirectory(). */
+	public static String getDir(String title) {
+		return getDirectory(title);
+	}
+
+	
 	/** Displays an open file dialog and returns the path to the
 		choosen file, or returns null if the dialog is canceled. */
 	public static String getFilePath(String dialogTitle) {

@@ -682,8 +682,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 		
 	void setMagnification2(double magnification) {
-		if (magnification>32.0) magnification = 32.0;
-		if (magnification<0.03125) magnification = 0.03125;
+		if (magnification>32.0)
+			magnification = 32.0;
+		if (magnification<zoomLevels[0])
+			magnification = zoomLevels[0];
 		this.magnification = magnification;
 		imp.setTitle(imp.getTitle());
 	}
@@ -761,10 +763,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public static double getLowerZoomLevel(double currentMag) {
 		double newMag = zoomLevels[0];
 		for (int i=0; i<zoomLevels.length; i++) {
-		if (zoomLevels[i] < currentMag)
-			newMag = zoomLevels[i];
-		else
-			break;
+			if (zoomLevels[i] < currentMag)
+				newMag = zoomLevels[i];
+			else
+				break;
 		}
 		return newMag;
 	}
@@ -854,7 +856,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		larger and centering it on (x,y). If we can't make it larger,  
 		then make the window smaller.*/
 	public void zoomOut(int x, int y) {
-		if (magnification<=0.03125)
+		if (magnification<=zoomLevels[0])
 			return;
 		double oldMag = magnification;
 		double newMag = getLowerZoomLevel(magnification);

@@ -231,10 +231,10 @@ public class LutLoader extends ImagePlus implements PlugIn {
 		fi.blues = new byte[256];
 		fi.lutSize = 256;
 		int nColors = 0;
-    	if (pathOrURL.contains("://")) {
-    		fi.url = pathOrURL;
-    		fi.fileName = "";
-    	} else {
+		if (pathOrURL.contains("://")) {
+			fi.url = pathOrURL;
+			fi.fileName = "";
+		} else {
 			OpenDialog od = new OpenDialog("Open LUT...", pathOrURL);
 			fi.directory = od.getDirectory();
 			fi.fileName = od.getFileName();
@@ -250,7 +250,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 	}
 	
 	/** Opens an NIH Image LUT, 768 byte binary LUT or text LUT from a file or URL. */
-	public boolean openLut(FileInfo fi) {
+	boolean openLut(FileInfo fi) {
 		//IJ.showStatus("Opening: " + fi.directory + fi.fileName);
 		boolean isURL = fi.url!=null && !fi.url.equals("");
 		int length = 0;
