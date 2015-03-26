@@ -149,12 +149,6 @@ public class TypeConverter {
 
 	/** Converts a ByteProcessor to a ShortProcessor. */
 	ShortProcessor convertByteToShort() {
-		if (!ip.isDefaultLut() && !ip.isColorLut() && !ip.isInvertedLut()) {
-			// apply custom LUT
-			ip = convertToRGB();
-			ip = convertRGBToByte();
-			return (ShortProcessor)convertByteToShort();
-		}
 		byte[] pixels8 = (byte[])ip.getPixels();
 		short[] pixels16 = new short[width * height];
 		for (int i=0,j=0; i<width*height; i++)
