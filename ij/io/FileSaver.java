@@ -771,6 +771,11 @@ public class FileSaver {
 			sb.append("zorigin="+cal.zOrigin+"\n");
 		if (cal.info!=null && cal.info.length()<=64 && cal.info.indexOf('=')==-1 && cal.info.indexOf('\n')==-1)
 			appendEscapedLine(sb, "info="+cal.info);
+			
+		// get invertY flag
+		if (cal.getInvertY())
+			sb.append("inverty=true\n");
+
 		if (saveName)
 			appendEscapedLine(sb, "name="+imp.getTitle());
 		sb.append((char)0);

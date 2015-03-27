@@ -472,6 +472,11 @@ public class Calibration implements Cloneable {
  		invertY = invertYCoordinates;
  	}
  	
+ 	/** Returns the 'invertY' flag. */
+ 	public boolean getInvertY() {
+ 		return invertY;
+ 	}
+
  	/** Set the default state of the animation "Loop back and forth" flag */
 	public static void setLoopBackAndForth(boolean loop) {
  		loopBackAndForth = loop;

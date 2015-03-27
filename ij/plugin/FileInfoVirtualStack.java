@@ -44,7 +44,10 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 			return null;
 		FileInfoVirtualStack stack = new FileInfoVirtualStack();
 		stack.init(dir, name);
-		return stack.open();
+		if (stack.info==null)
+			return null;
+		else
+			return stack.open();
 	}
 
 	public void run(String arg) {
@@ -54,6 +57,8 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		if (name==null)
 			return;
 		init(dir, name);
+		if (info==null)
+			return;
 		ImagePlus imp = open();
 		if (imp!=null)
 			imp.show();

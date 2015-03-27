@@ -5,10 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.49q 26 March 2015</u>
+<li> <u>1.49q 27 March 2015</u>
 <ul>
 <li> The <i>File&gt;New&gt;Hyperstack</i> command embeds the 
 channel, slice, frame and stack index into the pixel data.
+<li> Thanks to Michael Schmid and Michael Doube, the 'invertY' calibration
+flag is now saved in TIFF headers.
 <li> The options in the ROI Manager's "Multi Measure" command are now recorded
 when the Recorder is in "Macro" mode.
 <li> The <i>Image&gt;Color&gt;Merge Channels</i> command now deletes the source
@@ -35,6 +37,12 @@ to not be displayed correctly because the minimum zoom of 3.1% was not low
 enough.
 <li> Thanks to Kees Straatman, fixed a bug that sometimes caused 8-bit images
 to be incorrectly converted to 16-bits.
+<li> Thanks to Christophe Deroulers, fixed a bug that sometimes caused
+the ROI Manager's "Translate" command to not work as expected.
+<li> Fixed a bug that caused the IJ.openVirtual() method to throw an
+exception if the file was not found.
+<li> Thanks to Curtis Rueden, fixed a StackOverflowError that sometimes
+occurred when ImageJ started up on systems with three monitors.
 <li> Thanks to Jorge Valero, fixed a 1.49n regression that caused an exception
 when measuring an area out of the threshold limits in a 16 bit image and 
 "Limit to threshold" was enabled in "Set Measurements".
