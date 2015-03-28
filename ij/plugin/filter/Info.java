@@ -145,6 +145,8 @@ public class Info implements PlugInFilter {
 	    s += "ID: "+imp.getID()+"\n";
 	    String zOrigin = stackSize>1||cal.zOrigin!=0.0?","+d2s(cal.zOrigin):"";
 	    s += "Coordinate origin:  " + d2s(cal.xOrigin)+","+d2s(cal.yOrigin)+zOrigin+"\n";
+	    if (cal.getInvertY())
+	    	s += "Inverted y coordinates\n";
 	    int type = imp.getType();
     	switch (type) {
 	    	case ImagePlus.GRAY8:
@@ -226,7 +228,7 @@ public class Info implements PlugInFilter {
 		}
 
 		if (ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD)
-	    	s += "No Threshold\n";
+	    	s += "No threshold\n";
 	    else {
 	    	double lower = ip.getMinThreshold();
 	    	double upper = ip.getMaxThreshold();
@@ -244,7 +246,7 @@ public class Info implements PlugInFilter {
 	    if (cal.calibrated()) {
 	    	s += " \n";
 	    	int curveFit = cal.getFunction();
-			s += "Calibration Function: ";
+			s += "Calibration function: ";
 			if (curveFit==Calibration.UNCALIBRATED_OD)
 				s += "Uncalibrated OD\n";	    	
 			else if (curveFit==Calibration.CUSTOM)
@@ -288,15 +290,15 @@ public class Info implements PlugInFilter {
 			String elements = n==1?" element":" elements";
 			s += "Overlay: " + n + elements + (imp.getHideOverlay()?" (hidden)":"") + "\n";
 		} else
-	    	s += "No Overlay\n";
+	    	s += "No overlay\n";
 
 	    Roi roi = imp.getRoi();
 	    if (roi == null) {
 			if (cal.calibrated())
 	    		s += " \n";
-	    	s += "No Selection\n";
+	    	s += "No selection\n";
 	    } else if (roi instanceof EllipseRoi) {
-	    	s += "\nElliptical Selection\n";
+	    	s += "\nElliptical selection\n";
 	    	double[] p = ((EllipseRoi)roi).getParams();
 			double dx = p[2] - p[0];
 			double dy = p[3] - p[1];

@@ -49,6 +49,7 @@ public class Functions implements MacroConstants, Measurements {
     boolean resultsPending;
     Overlay offscreenOverlay;
     Overlay overlayClipboard;
+    Roi roiClipboard;
     GeneralPath overlayPath;
     boolean overlayDrawLabels;
 
@@ -5870,7 +5871,12 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
 		ImagePlus imp = getImage();
-		if (name.equals("setPolygonSplineAnchors"))
+		if (name.equals("paste")) {
+			interp.getParens();
+			if (roiClipboard!=null)
+				getImage().setRoi((Roi)roiClipboard.clone());
+			return null;
+		} else if (name.equals("setPolygonSplineAnchors"))
 			return setSplineAnchors(imp, false);
 		else if (name.equals("setPolylineSplineAnchors"))
 			return setSplineAnchors(imp, true);
@@ -5881,6 +5887,12 @@ public class Functions implements MacroConstants, Measurements {
 			int x = (int)Math.round(getFirstArg());
 			int y = (int)Math.round(getLastArg());
 			return roi.contains(x,y)?"1":"0";
+		} else if (name.equals("copy")) {
+			interp.getParens();
+			roiClipboard = getImage().getRoi();
+			if (roiClipboard!=null)
+				roiClipboard = (Roi)roiClipboard.clone();
+			return null;
 		} else if (name.equals("getBounds")) {
 			getBounds();
 			return null;

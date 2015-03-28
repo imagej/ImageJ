@@ -87,7 +87,9 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
         if ( Prefs.blackBackground!=bb)
         	ThresholdAdjuster.update();
         Prefs.padEdges = gd.getNextBoolean();
+        gd.setSmartRecording(EDM.getOutputType()==0);
         EDM.setOutputType(gd.getNextChoiceIndex());
+        gd.setSmartRecording(false);
         boolean isInvalid = gd.invalidNumber();
         if (iterations<1) {iterations = 1; isInvalid = true;}
         if (iterations>MAX_ITERATIONS) {iterations = MAX_ITERATIONS; isInvalid = true;}

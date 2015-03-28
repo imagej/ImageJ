@@ -224,18 +224,23 @@ public class LutLoader extends ImagePlus implements PlugIn {
 	}
 	
 	/** Opens a LUT and returns it as a LUT object. */
-	public static LUT openLut(String path) {
+	public static LUT openLut(String pathOrURL) {
 		FileInfo fi = new FileInfo();
 		fi.reds = new byte[256]; 
 		fi.greens = new byte[256]; 
 		fi.blues = new byte[256];
 		fi.lutSize = 256;
 		int nColors = 0;
-		OpenDialog od = new OpenDialog("Open LUT...", path);
-		fi.directory = od.getDirectory();
-		fi.fileName = od.getFileName();
-		if (fi.fileName==null)
-			return null;
+		if (pathOrURL.contains("://")) {
+			fi.url = pathOrURL;
+			fi.fileName = "";
+		} else {
+			OpenDialog od = new OpenDialog("Open LUT...", pathOrURL);
+			fi.directory = od.getDirectory();
+			fi.fileName = od.getFileName();
+			if (fi.fileName==null)
+				return null;
+		}
 		LutLoader loader = new LutLoader();
 		boolean ok = loader.openLut(fi);
 		if (ok)
@@ -269,7 +274,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 			if (size==0)
 				error(path);
 		} catch (IOException e) {
-			IJ.error(e.getMessage());
+			IJ.error("LUT Loader", ""+e);
 		}
 		return size==256;
 	}

@@ -155,7 +155,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 			xmax = 255;
 		}
 		a = Tools.getMinMax(y);
-		double ymin=a[0], ymax=a[1];
+		double ymin=a[0], ymax=a[1]; //y range of data points
 		float[] px = new float[npoints];
 		float[] py = new float[npoints];
 		double inc = (xmax-xmin)/(npoints-1);
@@ -168,8 +168,9 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		for (int i=0; i<npoints; i++)
 			py[i] = (float)cf.f(params, px[i]);
 		a = Tools.getMinMax(py);
-		ymin = Math.min(ymin, a[0]);
-		ymax = Math.max(ymax, a[1]);
+		double dataRange = ymax - ymin;
+		ymin = Math.max(ymin - dataRange, Math.min(ymin, a[0])); //expand y range for curve, but not too much
+		ymax = Math.min(ymax + dataRange, Math.max(ymax, a[1]));
 		Plot plot = new Plot(cf.getFormula(),"X","Y",px,py);
 		plot.setLimits(xmin, xmax, ymin, ymax);
 		plot.setColor(Color.RED);

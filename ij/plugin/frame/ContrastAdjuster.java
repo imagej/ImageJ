@@ -17,7 +17,8 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	ActionListener, AdjustmentListener, ItemListener {
 
 	public static final String LOC_KEY = "b&c.loc";
-	public static final String[] sixteenBitRanges = {"Automatic", "8-bit (0-255)", "10-bit (0-1023)", "12-bit (0-4095)", "15-bit (0-32767)", "16-bit (0-65535)"};
+	public static final String[] sixteenBitRanges = {"Automatic", "8-bit (0-255)", "10-bit (0-1023)",
+		"12-bit (0-4095)", "14-bit (0-16383)", "15-bit (0-32767)", "16-bit (0-65535)"};
 	static final int AUTO_THRESHOLD = 5000;
 	static final String[] channelLabels = {"Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "All"};
 	static final String[] altChannelLabels = {"Channel 1", "Channel 2", "Channel 3", "Channel 4", "Channel 5", "Channel 6", "All"};
@@ -920,8 +921,9 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		if (range==8) index = 1;
 		else if (range==10) index = 2;
 		else if (range==12) index = 3;
-		else if (range==15) index = 4;
-		else if (range==16) index = 5;
+		else if (range==14) index = 4;
+		else if (range==15) index = 5;
+		else if (range==16) index = 6;
 		return index;
 	}
 
@@ -930,10 +932,15 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		if (index==1) range = 8;
 		else if (index==2) range = 10;
 		else if (index==3) range = 12;
-		else if (index==4) range = 15;
-		else if (index==5) range = 16;
+		else if (index==4) range = 14;
+		else if (index==5) range = 15;
+		else if (index==6) range = 16;
 		ImagePlus.setDefault16bitRange(range);
 		return range;
+	}
+	
+	public static String[] getSixteenBitRanges() {
+		return sixteenBitRanges;
 	}
 
 	void setWindowLevel(ImagePlus imp, ImageProcessor ip) {

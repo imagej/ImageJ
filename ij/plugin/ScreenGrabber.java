@@ -5,7 +5,9 @@ import ij.gui.*;
 import java.awt.*;
 
 /** This plugin implements the Plugins/Utilities/Capture Screen
-    and Plugins/Utilities/Capture Image commands. */
+    and Plugins/Utilities/Capture Image commands. Note that these
+    commands may not work on Linux if windows translucency or 
+    special effects are enabled in the windows manager. */
 public class ScreenGrabber implements PlugIn {
 
 	public void run(String arg) {
@@ -51,6 +53,7 @@ public class ScreenGrabber implements PlugIn {
 		ImagePlus imp2 = null;
 		Image img = null;
 		boolean wasHidden = ic.hideZoomIndicator(true);
+		IJ.wait(250);
 		try {
 			Robot robot = new Robot();
 			img = robot.createScreenCapture(r);

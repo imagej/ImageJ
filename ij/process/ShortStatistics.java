@@ -44,16 +44,22 @@ public class ShortStatistics extends ImageStatistics {
 			calculateMoments(ip, minThreshold, maxThreshold, cTable);
 		if ((mOptions&MIN_MAX)!=0 && cTable!=null)
 			getCalibratedMinAndMax(hist, (int)min, (int)max, cTable);
-		if ((mOptions&MEDIAN)!=0)
-			calculateMedian(hist, minThreshold, maxThreshold, cal);
+		if ((mOptions&MEDIAN)!=0) {
+			if (pixelCount>0)
+				calculateMedian(hist, minThreshold, maxThreshold, cal);
+			else
+				median = Double.NaN;
+		}
 		if ((mOptions&AREA_FRACTION)!=0)
 			calculateAreaFraction(ip, hist);
 	}
 
 	void getRawMinAndMax(int[] hist, int minThreshold, int maxThreshold) {
 		int min = minThreshold;
-		while ((hist[min]==0) && (min<hist.length-1))
-			min++;
+		if (min<hist.length) {
+			while ((hist[min]==0) && (min<hist.length-1))
+				min++;
+		}
 		this.min = min;
 		int max = maxThreshold;
 		while ((hist[max]==0) && (max>0))

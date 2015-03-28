@@ -1058,8 +1058,8 @@ public class Opener {
 	/** Opens a lookup table (LUT) and returns it as a LUT object, or returns null if there is an error.
 	 * @see ij.ImagePlus#setLut
 	*/
-	public static LUT openLut(String path) {
-		return LutLoader.openLut(path);
+	public static LUT openLut(String filePathOrUrl) {
+		return LutLoader.openLut(filePathOrUrl);
 	}
 
 	/** Opens a tab or comma delimited text file in the Results window. */

@@ -63,36 +63,79 @@ public class ChannelArranger implements PlugIn, TextListener {
 			if (!IJ.showMessageWithCancel("Reduce Number of Channels?", msg))
 				return;
 		}
-		ImagePlus[] channels = ChannelSplitter.split(imp);
-		ImagePlus[] channels2 = new ImagePlus[nChannels2];
-		for (int i=0; i<nChannels2; i++)
-			channels2[i] = channels[newOrder.charAt(i)-48-1];
-		ImagePlus imp2 = null;
-		if (nChannels2==1)
-			imp2 = channels2[0];
-		else
-			imp2 = RGBStackMerge.mergeChannels(channels2, false);
-		int mode2 = IJ.COLOR;
-		if (imp.isComposite())
-			mode2 = ((CompositeImage)imp).getMode();
-		if (imp2.isComposite())
-			((CompositeImage)imp2).setMode(mode2);
-			
-		int[] stackPos = thumbNails.getStackPos();
-		String digit = ""+stackPos[0];
-		int currentCh = newOrder.indexOf(digit)+1;
-		int currentSlc = stackPos[1];
-		int currentFrm = stackPos[2];
-		imp2.setPosition(currentCh, currentSlc, currentFrm);//accepts currentCh out of range       
-
 		Point location = imp.getWindow()!=null?imp.getWindow().getLocation():null;
-		imp.changes = false;
-		imp.close();
+		int[] newOrder2 = new int[nChannels2];
+		for (int i=0; i<nChannels2; i++)
+			newOrder2[i] = newOrder.charAt(i)-48;
+		ImagePlus imp2 = run(imp, newOrder2);
 		imp2.copyAttributes(imp);
 		if (location!=null)
 			ImageWindow.setNextLocation(location);
 		imp2.changes = true;
 		imp2.show();
+	}
+	
+	/** Changes the order of the channels in a hyperstack.
+		@param img source hyperstack
+		@param newOrder the new channel order
+		@return a hyperstack with channels in the specified order
+		<p>
+		The following example opens the FluorescentCells sample  
+		image and reverses the order of the channels.
+		<pre>
+		ImagePlus img = IJ.openImage("http://imagej.nih.gov/ij/images/FluorescentCells.zip");
+		int[] order = {3,2,1};
+		ImagePlus img2 = ChannelArranger.run(img, order);
+		img2.setDisplayMode(IJ.COLOR);
+		img2.show();
+		</pre>
+	*/
+	public static ImagePlus run(ImagePlus img, int[] newOrder) {
+		int channel = img.getChannel();
+		int slice = img.getSlice();
+		int frame = img.getFrame();
+		ImagePlus[] channels = ChannelSplitter.split(img);
+		int nChannels2 = newOrder.length;
+		if (nChannels2>channels.length)
+			nChannels2 = channels.length;
+		ImagePlus[] channels2 = new ImagePlus[nChannels2];
+		for (int i=0; i<nChannels2; i++) {
+			int index = newOrder[i]-1;
+			if (index<0 || index>=channels.length)
+				throw new IllegalArgumentException("value out of range:"+newOrder[i]);
+			channels2[i] = channels[index];
+		}
+		ImagePlus img2 = null;
+		if (nChannels2==1)
+			img2 = channels2[0];
+		else
+			img2 = RGBStackMerge.mergeChannels(channels2, false);
+		int mode2 = IJ.COLOR;
+		if (img.isComposite())
+			mode2 = ((CompositeImage)img).getMode();
+		if (img2.isComposite())
+			((CompositeImage)img2).setMode(mode2);
+		if (channel<=nChannels2) {
+			int channel2 = newOrder[channel-1];
+			img2.setPosition(channel2, slice, frame);
+		}
+		Overlay overlay = img.getOverlay();
+		if (overlay!=null) {
+			for (int i=0; i<overlay.size(); i++) {
+				Roi roi = overlay.get(i);
+				int c = roi.getCPosition();
+				int z = roi.getZPosition();
+				int t = roi.getTPosition();
+				if (c>=1 && c<=nChannels2)
+					roi.setPosition(newOrder[c-1], z, t);
+			}
+			img2.setOverlay(overlay);
+		}
+		if (img.getWindow()!=null) {
+			img.changes = false;
+			img.close();
+		}
+		return img2;
 	}
 
 	public void textValueChanged(TextEvent e) {

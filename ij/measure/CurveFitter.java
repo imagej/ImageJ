@@ -35,7 +35,8 @@ import java.util.Hashtable;
  *	2012-10-07: added GAUSSIAN_NOOFFSET fit type
  *	2012-11-20: Bugfix: exception on Gaussian&Rodbard with initial params, bad initial params for Gaussian 
  *  2013-09-24: Added "Exponential Recovery (no offset)" and "Chapman-Richards" (3-parameter) fit types.
-  * 2013-10-11: bugfixes, added setStatusAndEsc to show iterations and enable abort by ESC
+ *  2013-10-11: bugfixes, added setStatusAndEsc to show iterations and enable abort by ESC
+ *  2015-03-26: bugfix, did not use linear regression for RODBARD
  */
 
 public class CurveFitter implements UserFunction{
@@ -688,8 +689,7 @@ public class CurveFitter implements UserFunction{
 				double fValue = f(params,xData[i]);
 				sumResidualsSqr += sqr(fValue-yData[i]);
 			}
-//IJ.log(IJ.d2s(params[0],3,5)+","+IJ.d2s(params[1],3,5)+": r="+IJ.d2s(sumResidualsSqr,3,5)+Thread.currentThread().getName() );
-
+            //IJ.log(IJ.d2s(params[0],3,5)+","+IJ.d2s(params[1],3,5)+": r="+IJ.d2s(sumResidualsSqr,3,5)+Thread.currentThread().getName() );
 		} else {	// handle simple linear dependencies by linear regression:
 			//if(getIterations()<1){String s="minimizerPar:";for(int ii=0;ii<=numParams;ii++)s+=" ["+ii+"]:"+IJ.d2s(params[ii],5,9);IJ.log(s);}
 			minimizerParamsToFullParams(params, true);
@@ -933,7 +933,7 @@ public class CurveFitter implements UserFunction{
 					break;
 				case INV_RODBARD: case RODBARD2: // c*((x-a)/(d-x))^(1/b)
 					initialParams[0] = xMin - 0.1 * (xMax-xMin);
-					initialParams[1] = 1.0;
+					initialParams[1] = slope >= 0 ? 1.0 : -1.0;
 					initialParams[2] = yMax;	// don't care, we will do this via regression
 					initialParams[3] = xMax + (xMax - xMin);
 					break;
@@ -1099,8 +1099,8 @@ public class CurveFitter implements UserFunction{
 
 	/** returns whether this a fit type that acutally fits modified data with a modified function */
 	private boolean isModifiedFitType(int fitType) {
-		return fitType == POWER_REGRESSION || fitType == EXP_REGRESSION || fitType == RODBARD2	||
-				fitType == GAUSSIAN;
+		return fitType == POWER_REGRESSION || fitType == EXP_REGRESSION || fitType == RODBARD	||
+				fitType == RODBARD2	|| fitType == GAUSSIAN;
 	}
 
 	/** For fits don't use the original data, prepare modified data and fit type.

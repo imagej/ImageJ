@@ -102,6 +102,11 @@ public class SubstackMaker implements PlugIn {
 	}
 	
 	String showDialog() {
+		String options = Macro.getOptions();
+		if  (options!=null && !options.contains("slices=")) {
+			Macro.setOptions(options.replace("channels=", "slices="));
+			Macro.setOptions(options.replace("frames=", "slices="));
+		}
 		GenericDialog gd = new GenericDialog("Substack Maker");
 		gd.setInsets(10,45,0);
 		gd.addMessage("Enter a range (e.g. 2-14), a range with increment\n(e.g. 1-100-2) or a list (e.g. 7,9,25,27)", null, Color.darkGray);

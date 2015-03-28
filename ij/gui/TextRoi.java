@@ -120,7 +120,6 @@ public class TextRoi extends Roi {
 			if (g!=null)
 				updateBounds(g);
 		}
-		if (IJ.debugMode) IJ.log("TextRoi: "+theText[0]+"  "+getBounds());
 	}
 
 	/** @deprecated */

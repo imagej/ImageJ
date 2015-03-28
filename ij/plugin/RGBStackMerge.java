@@ -200,6 +200,13 @@ public class RGBStackMerge implements PlugIn {
 				break;
 			}
 		}
+		if (fourOrMoreChannelRGB) {
+			if (imp2.getNSlices()==1&&imp2.getNFrames()==1) {
+				imp2 = imp2.flatten();
+				imp2.setTitle("RGB");
+			}
+		}
+		imp2.show();
 		if (!keep) {
 			for (int i=0; i<maxChannels; i++) {
 				if (images[i]!=null) {
@@ -208,16 +215,6 @@ public class RGBStackMerge implements PlugIn {
 				}
 			}
 		}
-		if (fourOrMoreChannelRGB) {
-			if (imp2.getNSlices()==1&&imp2.getNFrames()==1) {
-				imp2 = imp2.flatten();
-				imp2.setTitle("RGB");
-			} //else {
-			//	imp2.setTitle("RGB");
-			//	IJ.run(imp2, "RGB Color", "slices");
-			//}
-		}
-		imp2.show();
 	 }
 	 
 	 private String[] getInitialNames(String[] titles) {

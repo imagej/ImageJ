@@ -353,6 +353,7 @@ public class FileOpener {
 		cal.xOrigin = getDouble(props,"xorigin");
 		cal.yOrigin = getDouble(props,"yorigin");
 		cal.zOrigin = getDouble(props,"zorigin");
+		cal.setInvertY(getBoolean(props, "inverty"));
 		cal.info = props.getProperty("info");		
 				
 		cal.fps = getDouble(props,"fps");
