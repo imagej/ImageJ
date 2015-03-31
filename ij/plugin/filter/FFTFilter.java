@@ -405,6 +405,8 @@ public class FFTFilter implements  PlugInFilter, Measurements {
 	}	
 
 	boolean showBandpassDialog(ImagePlus imp) {
+		if (imp.getCompositeMode()==IJ.COMPOSITE)
+			processStack = true;
 		GenericDialog gd = new GenericDialog("FFT Bandpass Filter");
 		gd.addNumericField("Filter_large structures down to", filterLargeDia, 0, 4, "pixels");
 		gd.addNumericField("Filter_small structures up to", filterSmallDia, 0, 4, "pixels");

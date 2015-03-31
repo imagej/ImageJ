@@ -140,4 +140,14 @@ public class GUI {
 		}
     }
     
+    public static boolean showCompositeAdvisory(ImagePlus imp, String title) {
+    	if (imp==null || imp.getCompositeMode()!=IJ.COMPOSITE || imp.getNChannels()==1 || IJ.macroRunning())
+    		return true;
+    	String msg = "Channel "+imp.getC()+" of this color composite image will be processed.";
+		GenericDialog gd = new GenericDialog(title);
+		gd.addMessage(msg);
+		gd.showDialog();
+		return !gd.wasCanceled();
+	}
+
 }

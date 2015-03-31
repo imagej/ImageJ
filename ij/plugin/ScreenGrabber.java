@@ -53,6 +53,7 @@ public class ScreenGrabber implements PlugIn {
 		ImagePlus imp2 = null;
 		Image img = null;
 		boolean wasHidden = ic.hideZoomIndicator(true);
+		IJ.wait(250);
 		try {
 			Robot robot = new Robot();
 			img = robot.createScreenCapture(r);

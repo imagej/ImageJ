@@ -160,7 +160,7 @@ public class CurveFitter implements UserFunction{
 		numParams = getNumParams();
 		if (fitType != CUSTOM)
 			getOffsetAndFactorParams();
-        //IJ.log("special params: off="+offsetParam+(hasSlopeParam ? " slo=" : " fac=")+factorParam+" numPar="+numParams+" numRegressPar="+numRegressionParams);
+		//IJ.log("special params: off="+offsetParam+(hasSlopeParam ? " slo=" : " fac=")+factorParam+" numPar="+numParams+" numRegressPar="+numRegressionParams);
 		calculateSumYandY2();					// sumY, sumY2 needed for regression, abs Error; R, goodness of modified fit functions
 		long startTime = System.currentTimeMillis();
 		if (this.fitType == STRAIGHT_LINE) {	// no minimizer needed
@@ -691,7 +691,7 @@ public class CurveFitter implements UserFunction{
 			}
             //IJ.log(IJ.d2s(params[0],3,5)+","+IJ.d2s(params[1],3,5)+": r="+IJ.d2s(sumResidualsSqr,3,5)+Thread.currentThread().getName() );
 		} else {	// handle simple linear dependencies by linear regression:
-            //if(getIterations()<1){String s="minimizerPar:";for(int ii=0;ii<=numParams;ii++)s+=" ["+ii+"]:"+IJ.d2s(params[ii],5,9);IJ.log(s);}
+			//if(getIterations()<1){String s="minimizerPar:";for(int ii=0;ii<=numParams;ii++)s+=" ["+ii+"]:"+IJ.d2s(params[ii],5,9);IJ.log(s);}
 			minimizerParamsToFullParams(params, true);
 			doRegression(params);
 			sumResidualsSqr = fullParamsToMinimizerParams(params);
