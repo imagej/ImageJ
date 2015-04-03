@@ -25,11 +25,7 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 			return;
 		}
 		Roi roi = imp.getRoi();
-		if (roi!=null && roi.isLine()) {
-			IJ.error("ZAxisProfiler", "This command does not work with line selections.");
-			return;
-		}
-		isPlotMaker = /*roi!=null &&*/ !IJ.macroRunning();
+		isPlotMaker = !IJ.macroRunning();
 		Plot plot = getPlot();
 		if (plot!=null) {
 			if (isPlotMaker)
@@ -202,6 +198,7 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 			if (!Analyzer.resetCounter())
 				return null;
 		}
+		boolean isLine = roi!=null && roi.isLine();
 		int current = imp.getCurrentSlice();
 		for (int i=1; i<=size; i++) {
 			if (showingLabels)
@@ -210,7 +207,11 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 			if (minThreshold!=ImageProcessor.NO_THRESHOLD)
 				ip.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
 			ip.setRoi(roi);
-			ImageStatistics stats = ImageStatistics.getStatistics(ip, measurements, cal);
+			ImageStatistics stats = null;
+			if (isLine)
+				stats = getLineStatistics(roi, ip, measurements, cal);
+			else
+				stats = ImageStatistics.getStatistics(ip, measurements, cal);
 			analyzer.saveResults(stats, roi);
 			values[i-1] = (float)stats.mean;
 		}
@@ -221,6 +222,15 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 		if (showingLabels)
 			imp.setSlice(current);
 		return values;
+	}
+	
+	private ImageStatistics getLineStatistics(Roi roi, ImageProcessor ip, int measurements, Calibration cal) {
+		ImagePlus imp = new ImagePlus("", ip);
+		imp.setRoi(roi);
+		ProfilePlot profile = new ProfilePlot(imp);
+		double[] values = profile.getProfile();
+		ImageProcessor ip2 = new FloatProcessor(values.length, 1, values);
+		return ImageStatistics.getStatistics(ip2, measurements, cal);
 	}
 	
 }

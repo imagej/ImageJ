@@ -1386,7 +1386,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
      *  of the PlugInFilter for preview is avoided in that case.
      */
     private void notifyListeners(AWTEvent e) {
-        if (dialogListeners == null) return;
+        if (dialogListeners==null)
+        	return;
         boolean everythingOk = true;
         for (int i=0; everythingOk && i<dialogListeners.size(); i++)
             try {
@@ -1398,11 +1399,13 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
                 IJ.log("ERROR: "+err+"\nin DialogListener of "+dialogListeners.elementAt(i)+
                 "\nat "+(err.getStackTrace()[0])+"\nfrom "+(err.getStackTrace()[1]));  //requires Java 1.4
             }
-        boolean workaroundOSXbug = IJ.isMacOSX() && !okay.isEnabled() && everythingOk;
+        boolean workaroundOSXbug = IJ.isMacOSX() && okay!=null && !okay.isEnabled() && everythingOk;
         if (previewCheckbox!=null)
             previewCheckbox.setEnabled(everythingOk);
-        okay.setEnabled(everythingOk);
-        if (workaroundOSXbug) repaint(); // OSX 10.4 bug delays update of enabled until the next input
+        if (okay!=null)
+            okay.setEnabled(everythingOk);
+        if (workaroundOSXbug)
+        	repaint(); // OSX 10.4 bug delays update of enabled until the next input
     }
 
 	public void paint(Graphics g) {
