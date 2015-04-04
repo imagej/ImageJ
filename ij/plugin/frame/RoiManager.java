@@ -201,9 +201,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			measure(MENU);
 		else if (command.equals("Open..."))
 			open(null);
-		else if (command.equals("Save..."))
-			save();
-		else if (command.equals("Fill"))
+		else if (command.equals("Save...")) {
+			Thread t1 = new Thread(new Runnable() {
+				public void run() {save();}
+			});  
+			t1.start();
+		} else if (command.equals("Fill"))
 			drawOrFill(FILL);
 		else if (command.equals("Draw"))
 			drawOrFill(DRAW);
@@ -829,11 +832,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			path = dir+name;
 		}
 		DataOutputStream out = null;
+		IJ.showStatus("Saving "+indexes.length+" ROIs "+" to "+path);
+		long t0 = System.currentTimeMillis();
 		try {
 			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path));
 			out = new DataOutputStream(new BufferedOutputStream(zos));
 			RoiEncoder re = new RoiEncoder(out);
 			for (int i=0; i<indexes.length; i++) {
+				IJ.showProgress(i, indexes.length);
 				String label = (String) listModel.getElementAt(indexes[i]);
 				Roi roi = (Roi)rois.get(label);
 				if (IJ.debugMode) IJ.log("saveMultiple: "+i+"  "+label+"  "+roi);
@@ -851,7 +857,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (out!=null)
 				try {out.close();} catch (IOException e) {}
 		}
-		if (record()) Recorder.record("roiManager", "Save", path);
+		double time = (System.currentTimeMillis()-t0)/1000.0;
+		IJ.showProgress(1.0);
+		IJ.showStatus(IJ.d2s(time,3)+" seconds, "+indexes.length+" ROIs, "+path);
+		if (record())
+			Recorder.record("roiManager", "Save", path);
 		return true;
 	}
 	

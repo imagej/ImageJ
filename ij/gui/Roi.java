@@ -673,7 +673,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		int oy = ic.offScreenY(sy);
 		if (ox<0) ox=0; if (oy<0) oy=0;
 		if (ox>xMax) ox=xMax; if (oy>yMax) oy=yMax;
-		//IJ.log("moveHandle: "+activeHandle+" "+ox+" "+oy);
 		int x1=x, y1=y, x2=x1+width, y2=y+height, xc=x+width/2, yc=y+height/2;
 		if (width > 7 && height > 7) {
 			asp = (double)width/(double)height;
@@ -970,8 +969,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		showStatus();
 	}
 	
-	protected void updateClipRect() {
 	// Finds the union of current and previous roi
+	protected void updateClipRect() {
 		clipX = (x<=oldX)?x:oldX;
 		clipY = (y<=oldY)?y:oldY;
 		clipWidth = ((x+width>=oldX+oldWidth)?x+width:oldX+oldWidth) - clipX + 1;
@@ -986,7 +985,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		m = (int)(m+getStrokeWidth()*2);
 		clipX-=m; clipY-=m;
 		clipWidth+=m*2; clipHeight+=m*2;
-		//if (IJ.debugMode) IJ.log("updateClipRect: "+m+"  "+clipX+" "+clipY+" "+clipWidth+" "+clipHeight);
 	 }
 	 
 	protected int clipRectMargin() {
@@ -1353,6 +1351,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	
 	public void startPaste(ImagePlus clipboard) {
 		IJ.showStatus("Pasting...");
+		IJ.wait(10);
 		this.clipboard = clipboard;
 		imp.getProcessor().snapshot();
 		updateClipRect();
@@ -1493,7 +1492,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 		
 	public void updateWideLine(float width) {
-		//IJ.log("updateWideLine "+isLine()+"  "+isDrawingTool()+"	"+getType());
 		if (isLine()) {
 			wideLine = true;
 			setStrokeWidth(width);

@@ -194,7 +194,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		painted = true;
 		Roi roi = imp.getRoi();
 		if (roi!=null || overlay!=null || showAllOverlay!=null || Prefs.paintDoubleBuffered) {
-			if (roi!=null) roi.updatePaste();
+			if (roi!=null)
+				roi.updatePaste();
 			if (!IJ.isMacOSX() && imageWidth!=0) {
 				paintDoubleBuffered(g);
 				setPaintPending(false);
