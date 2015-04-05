@@ -835,7 +835,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		IJ.showStatus("Saving "+indexes.length+" ROIs "+" to "+path);
 		long t0 = System.currentTimeMillis();
 		try {
-			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path));
+			ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
 			out = new DataOutputStream(new BufferedOutputStream(zos));
 			RoiEncoder re = new RoiEncoder(out);
 			for (int i=0; i<indexes.length; i++) {
@@ -860,7 +860,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		double time = (System.currentTimeMillis()-t0)/1000.0;
 		IJ.showProgress(1.0);
 		IJ.showStatus(IJ.d2s(time,3)+" seconds, "+indexes.length+" ROIs, "+path);
-		if (record())
+		if (Recorder.record && !IJ.isMacro())
 			Recorder.record("roiManager", "Save", path);
 		return true;
 	}
