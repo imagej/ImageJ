@@ -473,6 +473,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 				else if (name.equals("Run...")) // Plugins>Macros>Run
 					;
 				else {
+					if (name.equals("Calibrate...")&&commandOptions.startsWith("function=None"))
+						commandOptions = commandOptions.substring(0,13);
 					String prefix = "run(";
 					if (scriptMode) {
 						boolean addImp = imageUpdated || (WindowManager.getCurrentImage()!=null
