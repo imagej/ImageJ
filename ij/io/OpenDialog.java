@@ -214,7 +214,7 @@ import javax.swing.filechooser.*;
 	/** Sets the current working directory. */
 	public static void setDefaultDirectory(String defaultDir) {
 		defaultDirectory = defaultDir;
-		if (!defaultDirectory.endsWith(File.separator))
+		if (!defaultDirectory.endsWith(File.separator) && !defaultDirectory.endsWith("/"))
 			defaultDirectory = defaultDirectory + File.separator;
 	}
 	
