@@ -1643,10 +1643,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			case Toolbar.RECTANGLE:
 				int cornerDiameter = Toolbar.getRoundRectArcSize();
 				roi = new Roi(sx, sy, this, cornerDiameter);
-				//if (cornerDiameter>0) {
-				//	roi.setStrokeColor(Toolbar.getForegroundColor());
-				//	roi.setStrokeWidth(RectToolOptions.getDefaultStrokeWidth());
-				//}
 				break;
 			case Toolbar.OVAL:
 				if (Toolbar.getOvalToolType()==Toolbar.ELLIPSE_ROI)

@@ -219,7 +219,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			else
 				systemMeasurements &= ~list[i];
 		}
-		if ((oldMeasurements&(~LIMIT)&(~SCIENTIFIC_NOTATION))!=(systemMeasurements&(~LIMIT)&(~SCIENTIFIC_NOTATION))&&IJ.isResultsWindow()) {
+		if ((oldMeasurements&(~SCIENTIFIC_NOTATION))!=(systemMeasurements&(~SCIENTIFIC_NOTATION))&&IJ.isResultsWindow()) {
 				rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
 				clearSummary();
 				rt.update(systemMeasurements, imp, null);
@@ -231,7 +231,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	/** Measures the image or selection and adds the results to the default results table. */
 	public void measure() {
 		String lastHdr = rt.getColumnHeading(ResultsTable.LAST_HEADING);
-		if (lastHdr==null || lastHdr.charAt(0)!='S') {
+		if (lastHdr==null || lastHdr.charAt(0)!='M') {
 			if (!reset()) return;
 		}
 		firstParticle = lastParticle = 0;
@@ -590,6 +590,15 @@ public class Analyzer implements PlugInFilter, Measurements {
 				rt.addValue("Angle", angle);
 			} else if (roi.getType()==Roi.POINT)
 				savePoints(roi);
+		}
+		if ((measurements&LIMIT)!=0 && imp.getBitDepth()!=24) {
+			ImageProcessor ip = imp.getProcessor();
+			double min = ip.getMinThreshold();
+			double max = ip.getMaxThreshold();
+			if (min==ImageProcessor.NO_THRESHOLD)
+				min = max = Double.NaN;
+			rt.addValue(ResultsTable.MIN_THRESHOLD, min);
+			rt.addValue(ResultsTable.MAX_THRESHOLD, max);
 		}
 	}
 	
