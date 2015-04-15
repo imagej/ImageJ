@@ -21,7 +21,6 @@ public class ImageWriter {
 		int bytesWritten = 0;
 		int size = fi.width*fi.height;
 		int count = 8192;
-		
 		while (bytesWritten<size) {
 			if ((bytesWritten + count)>size)
 				count = size - bytesWritten;
@@ -260,6 +259,8 @@ public class ImageWriter {
 				throw new IOException("ImageWriter: fi.pixels==null");
 		if (fi.nImages>1 && fi.virtualStack==null && !(fi.pixels instanceof Object[]))
 				throw new IOException("ImageWriter: fi.pixels not a stack");
+		if (fi.width*fi.height*fi.getBytesPerPixel()<26214400)
+			showProgressBar = false; // don't show progress bar if image<25MB
 		switch (fi.fileType) {
 			case FileInfo.GRAY8:
 			case FileInfo.COLOR8:

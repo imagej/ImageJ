@@ -69,28 +69,22 @@ public class ProgressBar extends Canvas {
      */
     public void show(double progress, boolean showInBatchMode) {
         boolean finished = false;
-        if (progress <= - 1) {
+        if (progress<=-1)
             finished = true;
-        }
-        if (!dualDisplay && progress >= 1) {
+        if (!dualDisplay && progress >= 1)
             finished = true;
-        }
-
         if (!finished) {
             if (progress < 0) {
                 slowX = -progress;
                 fastX = 0.0;
                 dualDisplay = true;
-            } else if (dualDisplay) {
+            } else if (dualDisplay)
                 fastX = progress;
-            }
-            if (!dualDisplay) {
+            if (!dualDisplay)
                 slowX = progress;
-            }
         }
-        if (!showInBatchMode && (batchMode || Interpreter.isBatchMode())) {
+        if (!showInBatchMode && (batchMode || Interpreter.isBatchMode()))
             return;
-        }
         if (finished) {//clear the progress bar
             slowX = 0.0;
             fastX = 0.0;
@@ -100,9 +94,8 @@ public class ProgressBar extends Canvas {
             return;
         }
         long time = System.currentTimeMillis();
-        if (time - lastTime < 90 && progress != 1.0) {
+        if (time-lastTime<90 && progress!=1.0)
             return;
-        }
         lastTime = time;
         showBar = true;
         repaint();
@@ -118,12 +111,10 @@ public class ProgressBar extends Canvas {
     public void show(int currentIndex, int finalIndex) {
         boolean wasNegative = currentIndex < 0;
         double progress = ((double) Math.abs(currentIndex) + 1.0) / Math.abs(finalIndex);
-        if (wasNegative) {
+        if (wasNegative)
             progress = -progress;
-        }
-        if (finalIndex == 0) {
+        if (finalIndex == 0)
             progress = -1;
-        }
         show(progress);
     }
 
@@ -134,7 +125,6 @@ public class ProgressBar extends Canvas {
     public void paint(Graphics g) {
         if (showBar) {
             fill3DRect(g, x - 1, y - 1, width + 1, height + 1);
-
             drawBar(g);
         } else {
             g.setColor(backgroundColor);
@@ -149,9 +139,8 @@ public class ProgressBar extends Canvas {
         if (dualDisplay && fastX > 0) {
             int dotPos = (int) (width * fastX);
             g.setColor(Color.BLACK);
-            if (dotPos > 1 && dotPos < width - 7) {
+            if (dotPos > 1 && dotPos < width - 7)
                 g.fillOval(dotPos, y + 3, 7, 7);
-            }
         }
     }
 
