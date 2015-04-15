@@ -49,6 +49,7 @@ import java.io.*;
 		IJ.resetEscape();
 		Opener opener = new Opener();
 		opener.setSilentMode(true);
+		long t0 = System.currentTimeMillis();
 		for (int i=0; i<list.length; i++) {
 			if (IJ.escapePressed())
 				break;
@@ -85,17 +86,18 @@ import java.io.*;
 				else
 					IJ.run(imp, "8-bit", "");
 			}
+			String path2 = outputPath+list[i];
 			if (format.equals("TIFF"))
-				(new FileSaver(imp)).saveAsTiff(path);
+				(new FileSaver(imp)).saveAsTiff(path2);
 			else if (format.equals("JPEG"))
-				(new FileSaver(imp)).saveAsJpeg(path);
+				(new FileSaver(imp)).saveAsJpeg(path2);
 			else if (format.equals("PNG"))
-				(new FileSaver(imp)).saveAsPng(path);
+				(new FileSaver(imp)).saveAsPng(path2);
 			else
-				IJ.saveAs(imp, format, outputPath+list[i]);
+				IJ.saveAs(imp, format, path2);
 			imp.close();
 		}
-		IJ.showStatus("");
+		IJ.showStatus(list.length+" files converted in "+IJ.d2s((System.currentTimeMillis()-t0)/1000.0,2)+" seconds");
 		IJ.showProgress(1,1);
 		Prefs.set("batch.input", inputDir.getText());
 		Prefs.set("batch.output", outputDir.getText());
