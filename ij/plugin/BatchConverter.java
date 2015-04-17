@@ -78,7 +78,9 @@ import java.io.*;
 				int height = (int)(scale*imp.getHeight());
 				ImageProcessor ip = imp.getProcessor();
 				ip.setInterpolationMethod(interpolationMethod);
+				ip.setProgressBar(null);
 				imp.setProcessor(null, ip.resize(width,height,averageWhenDownSizing));
+				ip = null;
 			}
 			if (format.equals("8-bit TIFF") || format.equals("GIF")) {
 				if (imp.getBitDepth()==24)
@@ -96,6 +98,7 @@ import java.io.*;
 			else
 				IJ.saveAs(imp, format, path2);
 			imp.close();
+			imp = null;
 		}
 		IJ.showStatus(list.length+" files converted in "+IJ.d2s((System.currentTimeMillis()-t0)/1000.0,2)+" seconds");
 		IJ.showProgress(1,1);

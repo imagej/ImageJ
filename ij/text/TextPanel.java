@@ -832,7 +832,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			if (path==null || path.equals("")) {
 				IJ.wait(10);
 				String name = isResults?"Results":title;
-				SaveDialog sd = new SaveDialog("Save Results", name, Prefs.get("options.ext", ".xls"));
+				SaveDialog sd = new SaveDialog("Save Results", name, Prefs.get("options.ext", ".csv"));
 				fileName = sd.getFileName();
 				if (fileName==null) return false;
 				path = sd.getDirectory() + fileName;
@@ -848,7 +848,6 @@ public class TextPanel extends Panel implements AdjustmentListener,
 				IJ.wait(10);
 				boolean hasHeadings = !getColumnHeadings().equals("");
 				String ext = isResults||hasHeadings?Prefs.get("options.ext", ".xls"):".txt";
-				if (ext.equals(".csv")) ext = ".txt";
 				SaveDialog sd = new SaveDialog("Save as Text", title, ext);
 				String file = sd.getFileName();
 				if (file == null) return false;
