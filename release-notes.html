@@ -5,34 +5,35 @@
 </head>
 <body>
 
-<li> <u>1.49r 16 April 2015</u>
+<li> <u>1.49r 21 April 2015</u>
 <ul>
 <li> Thanks to Jerome Mutterer, measurements done using the 
 <i>Set Measurements</i> "Limit to threshold" option add two
 columns ("MinThr" and "MaxThr") to the Results table.
-<li> Thanks to Nicolas Brouilly, a progress by is displayed when large 
+<li> Thanks to Nicolas Brouilly, a progress bar is displayed when large 
 images are resized.
 <li> The <i>Image&gt;Show Info</i> command (press "i" as a shortcut) displays
 additional information, including the ImageJ version, java version, OS version,
 memory in use and the image size.
 <li> The ROI Manager's "Save..." command is faster and displays a progress bar.
-<li> The <i>Image&gt;Stacks&gt;Make Montage</i> command creates higher 
-quality montages by downsizing images using bilinear interpolation and averaging.
+<li> The quality of montages created by <i>Image&gt;Stacks&gt;Make Montage</i>
+ is better due to use of bilinear interpolation and averaging when reducing.
 <li> Added an "Average when reducing" option to the 
 <i>Process&gt;Batch&gt;Convert</i> dialog box.
 <li> Thanks to Norbert Vischer, the macro editor aborts any existing macro
 before running or debugging another one.
 <li> The <i>Image&gt;Stacks&gt;Plot Z-axis Profile</i> command
 now works with line selections.
+<li> The macro editor replaces right curly quotes with standard double quotes.
 <li> Thanks to Jan Eglinger, fixed a bug that caused an exception
 to be thrown when selecting an image from the Window menu.
 <li> Thanks to Daisuke Kinose, fixed a bug that caused GenericDialogs
-without "OK" buttons to throw an exception.
-<li> Thanks to Norbert Vischer, fixed a bug that caused a pasted image selection
-to sometimes become permanent before it can moved.
+without "OK" buttons to throw exceptions.
+<li> Thanks to Norbert Vischer, fixed a bug that caused pasted image selections
+to sometimes become permanent before they could be moved.
 <li> Thanks to Michael Schmid, fixed a bug that caused the
-OpenDialog.setDefaultDirectory() method that caused it to not work as
-expected on Windows with file paths that end in slashes instead of backslashes.
+OpenDialog.setDefaultDirectory() method to not work as
+expected on Windows with file paths that ended in slashes instead of backslashes.
 <li> Thanks to Jurriaan Holzenspies, fixed a bug that caused an exception to
 be thrown when measuring the perimeter of selections created by the
 Edit>Selection>Make Rectangular Selection Rounded command in Fiji.
@@ -40,12 +41,14 @@ Edit>Selection>Make Rectangular Selection Rounded command in Fiji.
 progress bar to not work.
 <li> Thanks to Tomm, fixed a bug the caused the saveAs("Text",filepath)
 macro function to not work as expected if 'filepath' ended in ".csv".
+<li> Thanks to Bill Heeschen, fixed a bug that caused macro 'break' and 'continue'
+statements to not work as expected in 'for' and 'while' loops with inner loops.
 <li> Thanks to Gilles Carpentier, fixed a 1.49q regression that caused
 the <i>File&gt;Import&gt;Image Sequence</i> command to ignore
 overlays.
 <li> Thanks to Vassilis Kehayas, fixed a 1.45 regression that caused the Histogram
 command to loss the ability to generate stack histograms of composite color stacks.
-/ul>
+</ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
 </body>

@@ -14,7 +14,6 @@ public class Tokenizer implements MacroConstants {
 
     /** Uses a StreamTokenizer to convert an ImageJ macro file into a token stream. */
     public Program tokenize(String program) {
-        //IJ.showStatus("tokenizing");
         if (program.contains("/*") && program.contains("*/"))
             program = addSpacesToEmptyLines(program);
         st = new StreamTokenizer(new StringReader(program));
@@ -147,9 +146,6 @@ public class Tokenizer implements MacroConstants {
 						st.pushBack();
 					break;
 				default:
-					//char s[] = new char[1];
-					//s[0] = (char)token;
-					//ret = new String(s);
             }
             tokenString = ret;
         } catch (Exception e) {

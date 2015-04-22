@@ -524,7 +524,7 @@ public class TiffDecoder {
 						getColorMap(lvalue, fi);
 					break;
 				case TILE_WIDTH:
-					error("ImageJ cannot open tiled TIFFs");
+					error("ImageJ cannot open tiled TIFFs.\nTry using the Bio-Formats plugin.");
 					break;
 				case SAMPLE_FORMAT:
 					if (fi.fileType==FileInfo.GRAY32_INT && value==FLOATING_POINT)
