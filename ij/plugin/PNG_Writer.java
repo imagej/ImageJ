@@ -17,9 +17,10 @@ public class PNG_Writer implements PlugIn {
 
     public void run(String path) {
         imp = WindowManager.getCurrentImage();
-        if (imp==null)
-        	{IJ.noImage(); return;}
-
+        if (imp==null) {
+        	IJ.noImage();
+        	return;
+        }
         if (path.equals("")) {
             SaveDialog sd = new SaveDialog("Save as PNG...", imp.getTitle(), ".png");
             String name = sd.getFileName();
@@ -28,7 +29,6 @@ public class PNG_Writer implements PlugIn {
             String dir = sd.getDirectory();
             path = dir + name;
         }
-
         try {
             writeImage(imp, path, Prefs.getTransparentIndex());
         } catch (Exception e) {

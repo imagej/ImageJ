@@ -958,7 +958,7 @@ public class ColorProcessor extends ImageProcessor {
 	}
 	
 	/** Uses averaging to creates a new ColorProcessor containing 
-		a downsized copy  of this image or selection. */
+		a downsized copy of this image or selection. */
 	public ImageProcessor makeThumbnail(int width2, int height2, double smoothFactor) {
 		return resize(width2, height2, true);
 	}

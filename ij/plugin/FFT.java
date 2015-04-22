@@ -41,6 +41,10 @@ public class FFT implements  PlugIn, Measurements {
             if (doFFT) arg="fft"; else return;
         }
         imp = IJ.getImage();
+        if (arg.equals("fft") && imp.isComposite()) {
+        	if (!GUI.showCompositeAdvisory(imp,"FFT"))
+        		return;
+        }
         if (arg.equals("redisplay"))
             {redisplayPowerSpectrum(); return;}
         if (arg.equals("swap"))

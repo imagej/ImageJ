@@ -176,8 +176,11 @@ public class MontageMaker implements PlugIn {
 	    int slice = first;
 		while (slice<=last) {
 			aSlice = stack.getProcessor(slice);
-			if (scale!=1.0)
-				aSlice = aSlice.resize(width, height);
+			if (scale!=1.0) {
+				aSlice.setInterpolationMethod(ImageProcessor.BILINEAR);
+				boolean averageWhenDownSizing = width<200;
+				aSlice = aSlice.resize(width, height, averageWhenDownSizing);
+			}
 			montage.insert(aSlice, x, y);
 			String label = stack.getShortSliceLabel(slice);
 			if (borderWidth>0) drawBorder(montage, x, y, width, height, borderWidth);

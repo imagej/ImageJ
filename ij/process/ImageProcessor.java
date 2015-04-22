@@ -2009,13 +2009,20 @@ public abstract class ImageProcessor implements Cloneable {
 		else {  //downsizing with averaging in at least one direction: convert to float
 			ImageProcessor ip2 = createProcessor(dstWidth, dstHeight);
 			FloatProcessor fp = null;
-			for (int channelNumber=0; channelNumber<getNChannels(); channelNumber++) {
+			int channels = getNChannels();
+			boolean showStatus = getProgressIncrement(width,height)>0;
+			boolean showProgress = showStatus && channels>1;
+			if (showProgress) showProgress(0.15);
+			for (int channelNumber=0; channelNumber<channels; channelNumber++) {
 				fp = toFloat(channelNumber, fp);
 				fp.setInterpolationMethod(interpolationMethod);
 				fp.setRoi(getRoi());
-				FloatProcessor fp2 = fp.downsize(dstWidth, dstHeight);
+				String msg = showStatus?" ("+(channelNumber+1)+"/"+channels+")":null;
+				FloatProcessor fp2 = fp.downsize(dstWidth, dstHeight, msg);
 				ip2.setPixels(channelNumber, fp2);
+			    if (showProgress) showProgress(0.40+0.25*channelNumber);
 			}
+			if (showProgress) showProgress(1.0);
 			return ip2;
 		}
 	}
@@ -2541,5 +2548,20 @@ public abstract class ImageProcessor implements Cloneable {
 	public Overlay getOverlay() {
 		return overlay;
 	}
-
+	
+	protected int getProgressIncrement(int w, int h) {
+		if (progressBar==null)
+			return 0;
+		int inc = 0;
+		int threshold = 15000000;
+		if (interpolationMethod==BICUBIC)
+			threshold = 5000000;
+		boolean isBig = w*h>threshold;
+		if (isBig) {
+			inc = h/30;
+			if (inc<1) inc=1;
+		}
+		return inc;
+	}
+	
 }

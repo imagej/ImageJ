@@ -85,6 +85,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private FunctionFinder functionFinder;
     private ArrayList undoBuffer = new ArrayList();
     private boolean performingUndo;
+    private boolean checkForCurlyQuotes;
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -246,6 +247,7 @@ shortcutsBroken = false;
 			dontShowWindow = false;
 		}
 		WindowManager.setWindow(this);
+		checkForCurlyQuotes = true;
 		changes = false;
 	}
 
@@ -374,6 +376,25 @@ shortcutsBroken = false;
 			text = ta.getText();
 		else
 			text = ta.getSelectedText();
+		Interpreter instance = Interpreter.getInstance();
+		if (instance!=null) { // abort any currently running macro
+			instance.abortMacro();
+			long t0 = System.currentTimeMillis();
+			while (Interpreter.getInstance()!=null && (System.currentTimeMillis()-t0)<3000L)
+				IJ.wait(10);
+		}
+		if (checkForCurlyQuotes && text.contains("\u201D")) {
+			text = text.replaceAll("\u201D", "\"");  // replace right curly quotes with standard quotes
+			if (start==end)
+				ta.setText(text);
+			else {
+				String text2 = ta.getText();
+				text2 = text2.replaceAll("\u201D", "\"");
+				ta.setText(text2);
+			}
+			changes = true;
+			checkForCurlyQuotes = false;
+		}
 		new MacroRunner(text, debug?this:null);
 	}
 	
@@ -599,6 +620,7 @@ shortcutsBroken = false;
 		ta.replaceRange(s, start, end);
 		if (IJ.isMacOSX())
 			ta.setCaretPosition(start+s.length());
+		checkForCurlyQuotes = true;
 	}
 
 	void copyToInfo() { 
@@ -759,11 +781,6 @@ shortcutsBroken = false;
 
 	final void enableDebugging() {
 			step = true;
-			Interpreter interp = Interpreter.getInstance();
-			if (interp!=null && interp.getDebugger()==this) {
-				interp.abort();
-				IJ.wait(100);
-			}
 			int start = ta.getSelectionStart();
 			int end = ta.getSelectionEnd();
 			if (start==debugStart && end==debugEnd)

@@ -45,7 +45,7 @@ public class Info implements PlugInFilter {
 		}
 		String info = getInfo(imp, ip);
 		if (infoProperty!=null)
-			return infoProperty + "\n------------------------\n" + info;
+			return infoProperty + "\n------------------------------------------------------\n" + info;
 		else
 			return info;		
 	}
@@ -85,7 +85,9 @@ public class Info implements PlugInFilter {
 	}
 
 	String getInfo(ImagePlus imp, ImageProcessor ip) {
-		String s = new String("\n");
+		String s = new String("");
+		if (IJ.getInstance()!=null)
+			s += IJ.getInstance().getInfo()+"\n \n";
 		s += "Title: " + imp.getTitle() + "\n";
 		Calibration cal = imp.getCalibration();
     	int stackSize = imp.getStackSize();
@@ -115,6 +117,7 @@ public class Info implements PlugInFilter {
 				double pd = slices*cal.pixelDepth;
 	    		s += "Depth:  "+d2s(pd)+" " + zunits+" ("+slices+")\n";
 	    	}
+			s += "Size:  "+ImageWindow.getImageSize(imp)+"\n";
 	    	double xResolution = 1.0/cal.pixelWidth;
 	    	double yResolution = 1.0/cal.pixelHeight;
 	    	if (xResolution==yResolution)
@@ -128,6 +131,7 @@ public class Info implements PlugInFilter {
 	    	s += "Height:  " + imp.getHeight() + " pixels\n";
 	    	if (stackSize>1)
 	    		s += "Depth:  " + slices + " pixels\n";
+			s += "Size:  "+ImageWindow.getImageSize(imp)+"\n";
 	    }
     	if (stackSize>1) {
     		String vunit = cal.getUnit()+"^3";
@@ -143,10 +147,6 @@ public class Info implements PlugInFilter {
 	    }
 
 	    s += "ID: "+imp.getID()+"\n";
-	    String zOrigin = stackSize>1||cal.zOrigin!=0.0?","+d2s(cal.zOrigin):"";
-	    s += "Coordinate origin:  " + d2s(cal.xOrigin)+","+d2s(cal.yOrigin)+zOrigin+"\n";
-	    if (cal.getInvertY())
-	    	s += "Inverted y coordinates\n";
 	    int type = imp.getType();
     	switch (type) {
 	    	case ImagePlus.GRAY8:
@@ -282,7 +282,14 @@ public class Info implements PlugInFilter {
 			Dimension screen = IJ.getScreenSize();
 			s += "Screen location: "+loc.x+","+loc.y+" ("+screen.width+"x"+screen.height+")\n";
 		}
-	    
+		
+		String zOrigin = stackSize>1||cal.zOrigin!=0.0?","+d2s(cal.zOrigin):"";
+		String origin = d2s(cal.xOrigin)+","+d2s(cal.yOrigin)+zOrigin;
+		if (!origin.equals("0,0") || cal.getInvertY())
+	    	s += "Coordinate origin:  "+origin+"\n";
+	    if (cal.getInvertY())
+	    	s += "Inverted y coordinates\n";
+
 	    Overlay overlay = imp.getOverlay();
 		if (overlay!=null) {
 			String hidden = imp.getHideOverlay()?" (hidden)":" ";

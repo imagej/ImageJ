@@ -34,11 +34,11 @@ public class ResultsTable implements Cloneable {
 		INTEGRATED_DENSITY=20, MEDIAN=21, SKEWNESS=22, KURTOSIS=23, 
 		AREA_FRACTION=24, RAW_INTEGRATED_DENSITY=25, CHANNEL=26, SLICE=27, FRAME=28, 
 		FERET_X=29, FERET_Y=30, FERET_ANGLE=31, MIN_FERET=32, ASPECT_RATIO=33,
-		ROUNDNESS=34, SOLIDITY=35, LAST_HEADING=35;
+		ROUNDNESS=34, SOLIDITY=35, MIN_THRESHOLD=36, MAX_THRESHOLD=37, LAST_HEADING=37;
 	private static final String[] defaultHeadings = {"Area","Mean","StdDev","Mode","Min","Max",
 		"X","Y","XM","YM","Perim.","BX","BY","Width","Height","Major","Minor","Angle",
 		"Circ.", "Feret", "IntDen", "Median","Skew","Kurt", "%Area", "RawIntDen", "Ch", "Slice", "Frame", 
-		 "FeretX", "FeretY", "FeretAngle", "MinFeret", "AR", "Round", "Solidity"};
+		 "FeretX", "FeretY", "FeretAngle", "MinFeret", "AR", "Round", "Solidity", "MinThr", "MaxThr"};
 
 	private int maxRows = 100; // will be increased as needed
 	private int maxColumns = MAX_COLUMNS; // will be increased as needed
@@ -152,7 +152,7 @@ public class ResultsTable implements Cloneable {
 		}
 		columns[column][counter-1] = value;
 		if (counter<25) {
-			if ((int)value!=value)
+			if ((int)value!=value && !Double.isNaN(value))
 				decimalPlaces[column] = (short)precision;
 		}
 	}

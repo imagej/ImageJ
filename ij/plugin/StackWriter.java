@@ -190,6 +190,7 @@ public class StackWriter implements PlugIn {
 			}
 			if (Recorder.record)
 				Recorder.disablePathRecording();
+			imp2.setOverlay(null);
 			if (overlay!=null && format.equals("tiff")) {
 				Overlay overlay2 = overlay.duplicate();
 				overlay2.crop(i, i);

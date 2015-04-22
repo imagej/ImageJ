@@ -867,11 +867,13 @@ public class FloatProcessor extends ImageProcessor {
 			dstCenterX += xScale/2.0;
 			dstCenterY += yScale/2.0;
 		}
+		int inc = getProgressIncrement(dstWidth,dstHeight);
 		ImageProcessor ip2 = createProcessor(dstWidth, dstHeight);
 		float[] pixels2 = (float[])ip2.getPixels();
 		double xs, ys;
 		if (interpolationMethod==BICUBIC) {
 			for (int y=0; y<=dstHeight-1; y++) {
+				if (inc>0&&y%inc==0) showProgress((double)y/dstHeight);
 				ys = (y-dstCenterY)/yScale + srcCenterY;
 				int index = y*dstWidth;
 				for (int x=0; x<=dstWidth-1; x++) {
@@ -884,6 +886,7 @@ public class FloatProcessor extends ImageProcessor {
 			double ylimit = height-1.0, ylimit2 = height-1.001;
 			int index1, index2;
 			for (int y=0; y<=dstHeight-1; y++) {
+				if (inc>0&&y%inc==0) showProgress((double)y/dstHeight);
 				ys = (y-dstCenterY)/yScale + srcCenterY;
 				if (interpolationMethod==BILINEAR) {
 					if (ys<0.0) ys = 0.0;
@@ -902,15 +905,20 @@ public class FloatProcessor extends ImageProcessor {
 				}
 			}
 		}
+		if (inc>0) showProgress(1.0);
 		return ip2;
 	}
 	
-	FloatProcessor downsize(int dstWidth, int dstHeight) {
+	FloatProcessor downsize(int dstWidth, int dstHeight, String msg) {
 		FloatProcessor ip2 = this;
+		if (msg!=null)
+			ij.IJ.showStatus("downsizing in x"+msg);
 		if (dstWidth<roiWidth) {	  //downsizing in x
 			ip2 = ip2.downsize1D(dstWidth, roiHeight, true);
 			ip2.setRoi(0, 0, dstWidth, roiHeight);	//prepare roi for resizing in y
 		}
+		if (msg!=null)
+			ij.IJ.showStatus("downsizing in y"+msg);
 		if (dstHeight<roiHeight)	  //downsizing in y
 			ip2 = ip2.downsize1D(ip2.getRoi().width, dstHeight, false);
 		if (ip2.getWidth()!=dstWidth || ip2.getHeight()!=dstHeight)

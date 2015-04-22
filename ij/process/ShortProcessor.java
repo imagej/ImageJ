@@ -866,11 +866,13 @@ public class ShortProcessor extends ImageProcessor {
 			dstCenterX += xScale/2.0;
 			dstCenterY += yScale/2.0;
 		}
+		int inc = getProgressIncrement(dstWidth,dstHeight);
 		ImageProcessor ip2 = createProcessor(dstWidth, dstHeight);
 		short[] pixels2 = (short[])ip2.getPixels();
 		double xs, ys;
 		if (interpolationMethod==BICUBIC) {
 			for (int y=0; y<=dstHeight-1; y++) {
+				if (inc>0&&y%inc==0) showProgress((double)y/dstHeight);
 				ys = (y-dstCenterY)/yScale + srcCenterY;
 				int index2 = y*dstWidth;
 				for (int x=0; x<=dstWidth-1; x++) {
@@ -885,6 +887,7 @@ public class ShortProcessor extends ImageProcessor {
 			double ylimit = height-1.0, ylimit2 = height-1.001;
 			int index1, index2;
 			for (int y=0; y<=dstHeight-1; y++) {
+				if (inc>0&&y%inc==0) showProgress((double)y/dstHeight);
 				ys = (y-dstCenterY)/yScale + srcCenterY;
 				if (interpolationMethod==BILINEAR) {
 					if (ys<0.0) ys = 0.0;
@@ -903,6 +906,7 @@ public class ShortProcessor extends ImageProcessor {
 				}
 			}
 		}
+		if (inc>0) showProgress(1.0);
 		return ip2;
 	}
 

@@ -6,8 +6,8 @@ import ij.text.*;
 import ij.plugin.frame.Editor;
 import java.awt.*;
 
-/** This plugin implements the File/Save As/Text command. What it does
-	is save the contents of TextWindows (e.g., "Log" and "Results"). */
+/** This plugin implements the File/Save As/Text command, which saves the
+	contents of Editor windows and TextWindows (e.g., "Log" and "Results"). */
 public class TextWriter implements PlugIn {
     
 	public void run(String arg) {

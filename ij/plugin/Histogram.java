@@ -37,7 +37,7 @@ public class Histogram implements PlugIn, TextListener {
  				return;
  		} else {
  			int stackSize = imp.getStackSize();
- 			boolean noDialog = stackSize==1 || imp.isComposite();
+ 			boolean noDialog = stackSize==1;
  			if (stackSize==3) {
  				ImageStack stack = imp.getStack();
  				String label1 = stack.getSliceLabel(1);

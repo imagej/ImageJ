@@ -967,10 +967,12 @@ public class ByteProcessor extends ImageProcessor {
 		}
 		ImageProcessor ip2 = createProcessor(dstWidth, dstHeight);
 		byte[] pixels2 = (byte[])ip2.getPixels();
+		int inc = getProgressIncrement(dstWidth,dstHeight);
 		double xs, ys;
 		int index1, index2;
 		if (interpolationMethod==BICUBIC) {
 			for (int y=0; y<=dstHeight-1; y++) {
+				if (inc!=0&&y%inc==0) showProgress((double)y/dstHeight);
 				ys = (y-dstCenterY)/yScale + srcCenterY;
 				index1 = width*(int)ys;
 				index2 = y*dstWidth;
@@ -986,6 +988,7 @@ public class ByteProcessor extends ImageProcessor {
 			double xlimit = width-1.0, xlimit2 = width-1.001;
 			double ylimit = height-1.0, ylimit2 = height-1.001;
 			for (int y=0; y<=dstHeight-1; y++) {
+				if (inc!=0&&y%inc==0) showProgress((double)y/dstHeight);
 				ys = (y-dstCenterY)/yScale + srcCenterY;
 				if (interpolationMethod==BILINEAR) {
 					if (ys<0.0) ys = 0.0;
@@ -1004,6 +1007,7 @@ public class ByteProcessor extends ImageProcessor {
 				}
 			}
 		}
+		if (inc!=0) showProgress(1.0);
 		return ip2;
 	}
 

@@ -1536,7 +1536,16 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				stack.setPixels(ip.getPixels(),currentSlice);
 			ip = getProcessor();
 			setCurrentSlice(n);
-			Object pixels = stack.getPixels(currentSlice);
+			Object pixels = null;
+			Overlay overlay2 = null;
+			if (stack.isVirtual() && !(stack instanceof FileInfoVirtualStack)) {
+				ImageProcessor ip2 = stack.getProcessor(currentSlice);
+				overlay2 = ip2.getOverlay();
+				if (overlay2!=null || getOverlay()!=null)
+					setOverlay(overlay2);
+				pixels = ip2.getPixels();
+			} else
+				pixels = stack.getPixels(currentSlice);
 			if (ip!=null && pixels!=null) {
 				try {
 					ip.setPixels(pixels);
@@ -1550,11 +1559,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				(new ContrastEnhancer()).stretchHistogram(ip,0.35,ip.getStatistics());
 				ContrastAdjuster.update();
 				//IJ.showStatus(n+": min="+ip.getMin()+", max="+ip.getMax());
-			}
-			if (stack.isVirtual() && ip!=null) {
-				Overlay overlay2 = ip.getOverlay();
-				if (overlay2!=null)
-					setOverlay(overlay2);
 			}
 			if (imageType==COLOR_RGB)
 				ContrastAdjuster.update();
@@ -1639,10 +1643,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			case Toolbar.RECTANGLE:
 				int cornerDiameter = Toolbar.getRoundRectArcSize();
 				roi = new Roi(sx, sy, this, cornerDiameter);
-				//if (cornerDiameter>0) {
-				//	roi.setStrokeColor(Toolbar.getForegroundColor());
-				//	roi.setStrokeWidth(RectToolOptions.getDefaultStrokeWidth());
-				//}
 				break;
 			case Toolbar.OVAL:
 				if (Toolbar.getOvalToolType()==Toolbar.ELLIPSE_ROI)

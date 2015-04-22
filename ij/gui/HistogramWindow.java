@@ -267,18 +267,23 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			for(int i=0; i<width; i++)
 				pixels[i+width*j] = (float)(xMin+i*(xMax-xMin)/(width - 1));
 		}
+		double min = ipSource.getMin();
+		double max = ipSource.getMax();
 		if (!(ipSource instanceof ColorProcessor)) {
 			ColorModel cm = null;
-			if (imp.isComposite())
-				cm = ((CompositeImage)imp).getChannelLut();
-			else if (ipSource.getMinThreshold()==ImageProcessor.NO_THRESHOLD)
+			if (imp.isComposite()) {
+				if (stats!=null && stats.pixelCount>ipSource.getPixelCount()) { // stack histogram
+					cm = LUT.createLutFromColor(Color.white);
+					min = stats.min;
+					max = stats.max;
+				} else
+					cm = ((CompositeImage)imp).getChannelLut();
+			} else if (ipSource.getMinThreshold()==ImageProcessor.NO_THRESHOLD)
 				cm = ipSource.getColorModel();
 			else
 				cm = ipSource.getCurrentColorModel();
 			ipRamp = new FloatProcessor(width, height, pixels, cm);
 		}
-		double min = ipSource.getMin();
-		double max = ipSource.getMax();
 		ipRamp.setMinAndMax(min,max);
 		ImageProcessor bar = null;
 		if (ip instanceof ColorProcessor)

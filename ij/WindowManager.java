@@ -521,7 +521,8 @@ public class WindowManager {
 		int start = Menus.WINDOW_MENU_ITEMS+Menus.windowMenuItems2;
 		for (int j=start; j<n; j++) {
 			MenuItem mi = Menus.window.getItem(j);
-			((CheckboxMenuItem)mi).setState((j-start)==index);						
+			if (mi instanceof CheckboxMenuItem)
+				((CheckboxMenuItem)mi).setState((j-start)==index);						
 		}
 	}
     
