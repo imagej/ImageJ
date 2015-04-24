@@ -494,7 +494,12 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					textArea.append((scriptMode?"//IJ.":"//")+"run(\""+name+"\");\n");
 				else if (name.equals("Start Animation [\\]"))
 					textArea.append("doCommand(\"Start Animation [\\\\]\");\n");
-				else if (name.equals("Add to Manager"))
+				else if (name.equals("Split Channels") && scriptMode) {
+					String text = "channels = ChannelSplitter.split(imp);\n";
+					if (javaMode())
+						text = "ImagePlus[] " + text;
+					textArea.append(text);
+				} else if (name.equals("Add to Manager"))
 					;
 				else if (roi!=null && (roi instanceof TextRoi) && (name.equals("Draw")||name.equals("Add Selection...")))
 					textArea.append(((TextRoi)roi).getMacroCode(name, imp));
