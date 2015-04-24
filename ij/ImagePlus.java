@@ -155,10 +155,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (locked) {
 			IJ.beep();
 			IJ.showStatus("\"" + title + "\" is locked");
-			//if (IJ.macroRunning()) {
-			//	IJ.error("Image is locked");
-			//	Macro.abort();
-			//}
 			return false;
         } else {
         	locked = true;
@@ -196,7 +192,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			double progress;
 			waitStart = System.currentTimeMillis();
 			while (!imageLoaded && !errorLoadingImage) {
-				//IJ.showStatus(imageUpdateY+" "+imageUpdateW);
 				IJ.wait(30);
 				if (imageUpdateW>1) {
 					progress = (double)imageUpdateY/imageUpdateW;
@@ -307,7 +302,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	/** Returns a reference to the current ImageProcessor. The
-		CompositeImage class overrides this method so it returns
+		CompositeImage class overrides this method to return
 		the processor associated with the current channel. */
 	public ImageProcessor getChannelProcessor() {
 		return getProcessor();
@@ -1553,6 +1548,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				} catch(Exception e) {}
 			} else
 				ip = stack.getProcessor(n);
+			if (compositeImage && getCompositeMode()==IJ.COMPOSITE && ip!=null)
+				ip.setLut(((CompositeImage)this).getChannelLut(currentSlice));
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
 			if ((Prefs.autoContrast||IJ.shiftKeyDown()) && nChannels==1 && imageType!=COLOR_RGB) {
