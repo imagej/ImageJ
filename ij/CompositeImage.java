@@ -122,15 +122,6 @@ public class CompositeImage extends ImagePlus {
 			return getProcessor();
 	}
 
-	/*
-	ImageProcessor getCompositeProcessor() {
-		if (cip!=null && currentChannel!=-1)
-			return cip[currentChannel];
-		else
-			return null;
-	}
-	*/
-
 	void setup(int channels, ImageStack stack2) {
 		if (stack2!=null && stack2.getSize()>0 && (stack2.getProcessor(1) instanceof ColorProcessor)) { // RGB?
 			cip = null;

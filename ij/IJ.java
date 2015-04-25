@@ -1679,16 +1679,23 @@ public class IJ {
 	}
 
 	/** Saves the specified image, lookup table or selection to the specified file path. 
-		The file path must end with ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", 
-		".fits", ".pgm", ".png", ".lut", ".roi" or ".txt". */
+		The file path should end with ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", 
+		".fits", ".pgm", ".png", ".lut", ".roi" or ".txt". The specified image is saved in 
+		TIFF format if there is no extension. */
 	public static void save(ImagePlus imp, String path) {
+		ImagePlus imp2 = imp;
+		if (imp2==null)
+			imp2 = WindowManager.getCurrentImage();
 		int dotLoc = path.lastIndexOf('.');
+		if (dotLoc==-1 && imp2!=null) {
+			path = path + ".tif"; // save as TIFF if file name does not have an extension
+			dotLoc = path.lastIndexOf('.');
+		}
 		if (dotLoc!=-1) {
-			ImagePlus imp2 = imp;
-			if (imp2==null) imp2 = WindowManager.getCurrentImage();
 			String title = imp2!=null?imp2.getTitle():null;
 			saveAs(imp, path.substring(dotLoc+1), path);
-			if (title!=null) imp2.setTitle(title);
+			if (title!=null)
+				imp2.setTitle(title);
 		} else
 			error("The file path passed to IJ.save() method or save()\nmacro function is missing the required extension.\n \n\""+path+"\"");
 	}
