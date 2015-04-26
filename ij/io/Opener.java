@@ -816,8 +816,9 @@ public class Opener {
 		TiffDecoder td = new TiffDecoder(getDir(path), getName(path));
 		if (IJ.debugMode) td.enableDebugging();
 		FileInfo[] info=null;
-		try {info = td.getTiffInfo();}
-		catch (IOException e) {
+		try {
+			info = td.getTiffInfo();
+		} catch (IOException e) {
 			String msg = e.getMessage();
 			if (msg==null||msg.equals("")) msg = ""+e;
 			IJ.error("Open TIFF", msg);
@@ -842,6 +843,17 @@ public class Opener {
 		}
 		FileOpener fo = new FileOpener(fi);
 		return fo.open(false);
+	}
+
+	/** Returns the FileInfo of the specified TIFF file. */
+	public FileInfo[] getTiffFileInfo(String path) {
+		TiffDecoder td = new TiffDecoder(getDir(path), getName(path));
+		if (IJ.debugMode) td.enableDebugging();
+		try {
+			return td.getTiffInfo();
+		} catch (IOException e) {
+			return null;
+		}
 	}
 
 	/** Attempts to open the specified inputStream as a

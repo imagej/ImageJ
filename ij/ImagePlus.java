@@ -1548,8 +1548,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				} catch(Exception e) {}
 			} else
 				ip = stack.getProcessor(n);
-			if (compositeImage && getCompositeMode()==IJ.COMPOSITE && ip!=null)
-				ip.setLut(((CompositeImage)this).getChannelLut(currentSlice));
+			if (compositeImage && getCompositeMode()==IJ.COMPOSITE && ip!=null) {
+				int channel = getC();
+				if (channel>0 && channel<=getNChannels())
+					ip.setLut(((CompositeImage)this).getChannelLut(channel));
+			}
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
 			if ((Prefs.autoContrast||IJ.shiftKeyDown()) && nChannels==1 && imageType!=COLOR_RGB) {

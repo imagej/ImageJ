@@ -118,6 +118,9 @@ public class FolderOpener implements PlugIn {
 					height = imp.getHeight();
 					bitDepth = imp.getBitDepth();
 					fi = imp.getOriginalFileInfo();
+					ImageProcessor ip = imp.getProcessor();
+					min = ip.getMin();
+					max = ip.getMax();
 					if (arg==null) {
 						if (!showDialog(imp, list))
 							return;
@@ -155,6 +158,7 @@ public class FolderOpener implements PlugIn {
 			int counter = 0;
 			ImagePlus imp = null;
 			boolean firstMessage = true;
+			boolean fileInfoStack = false;
 			for (int i=start-1; i<list.length; i++) {
 				if ((counter++%increment)!=0)
 					continue;
@@ -164,8 +168,10 @@ public class FolderOpener implements PlugIn {
 				if ("RoiSet.zip".equals(list[i])) {
 					IJ.open(directory+list[i]);
 					imp = null;
-				} else if (!openAsVirtualStack||stack==null)
+				} else if (!openAsVirtualStack||stack==null) {
 					imp = opener.openImage(directory, list[i]);
+					stackSize = imp!=null?imp.getStackSize():1;
+				}
 				IJ.redirectErrorMessages(false);
 				if (imp!=null && stack==null) {
 					width = imp.getWidth();
@@ -175,7 +181,11 @@ public class FolderOpener implements PlugIn {
 					if (convertToRGB) bitDepth = 24;
 					ColorModel cm = imp.getProcessor().getColorModel();
 					if (openAsVirtualStack) {
-						stack = new VirtualStack(width, height, cm, directory);
+						if (stackSize>1) {
+							stack = new FileInfoVirtualStack();
+							fileInfoStack = true;
+						} else
+							stack = new VirtualStack(width, height, cm, directory);
 						((VirtualStack)stack).setBitDepth(bitDepth);
 					} else if (scale<100.0)						
 						stack = new ImageStack((int)(width*scale/100.0), (int)(height*scale/100.0), cm);
@@ -185,7 +195,6 @@ public class FolderOpener implements PlugIn {
 				}
 				if (imp==null)
 					continue;
-				stackSize = imp.getStackSize();
 				if (imp.getWidth()!=width || imp.getHeight()!=height) {
 					IJ.log(list[i] + ": wrong size; "+width+"x"+height+" expected, "+imp.getWidth()+"x"+imp.getHeight()+" found");
 					continue;
@@ -211,18 +220,25 @@ public class FolderOpener implements PlugIn {
 						overlay.add(roi);
 					}
 				}
-				for (int slice=1; slice<=stackSize; slice++) {
-					ImageProcessor ip = inputStack.getProcessor(slice);
-					String label2 = label;
-					if (stackSize>1) {
-						String sliceLabel = inputStack.getSliceLabel(slice);
-						if (sliceLabel!=null)
-							label2=sliceLabel;
-						else if (label2!=null && !label2.equals(""))
-							label2 += ":"+slice;
-					}
-					int bitDepth2 = imp.getBitDepth();
-					if (!openAsVirtualStack) {
+				
+				if (openAsVirtualStack) { 
+					if (fileInfoStack)
+						openAsFileInfoStack((FileInfoVirtualStack)stack, directory+list[i]);
+					else
+						((VirtualStack)stack).addSlice(list[i]);
+				} else {
+					for (int slice=1; slice<=stackSize; slice++) {
+						int bitDepth2 = imp.getBitDepth();
+						String label2 = label;
+						ImageProcessor ip = null;
+						if (stackSize>1) {
+							String sliceLabel = inputStack.getSliceLabel(slice);
+							if (sliceLabel!=null)
+								label2=sliceLabel;
+							else if (label2!=null && !label2.equals(""))
+								label2 += ":"+slice;
+						}
+						ip = inputStack.getProcessor(slice);
 						if (convertToRGB) {
 							ip = ip.convertToRGB();
 							bitDepth2 = 24;
@@ -243,23 +259,15 @@ public class FolderOpener implements PlugIn {
 							IJ.log(list[i] + ": wrong bit depth; "+bitDepth+" expected, "+bitDepth2+" found");
 							break;
 						}
-					}
-					if (slice==1) count++;
-					IJ.showStatus(count+"/"+n);
-					IJ.showProgress(count, n);
-					if (scale<100.0)
-						ip = ip.resize((int)(width*scale/100.0), (int)(height*scale/100.0));
-					if (ip.getMin()<min) min = ip.getMin();
-					if (ip.getMax()>max) max = ip.getMax();
-					if (openAsVirtualStack) {
-						if (slice==1)
-							((VirtualStack)stack).addSlice(list[i]);
-						else if (slice==2 && firstMessage) {
-							IJ.log(list[i] + " ["+stackSize+"]: only the first slice will be used in virtual stack");
-							firstMessage = false;
-						}
-					} else
+						if (scale<100.0)
+							ip = ip.resize((int)(width*scale/100.0), (int)(height*scale/100.0));
+						if (ip.getMin()<min) min = ip.getMin();
+						if (ip.getMax()>max) max = ip.getMax();
 						stack.addSlice(label2, ip);
+						if (slice==1) count++;
+						IJ.showStatus(count+"/"+n);
+						IJ.showProgress(count, n);
+					}
 				}
 				if (count>=n)
 					break;
@@ -324,6 +332,23 @@ public class FolderOpener implements PlugIn {
 				image = imp2;
 		}
 		IJ.showProgress(1.0);
+	}
+	
+	private void openAsFileInfoStack(FileInfoVirtualStack stack, String path) {
+		FileInfo[] info = new Opener().getTiffFileInfo(path);
+		if (info==null || info.length==0)
+			return;
+		int n =info[0].nImages;
+		if (info.length==1 && n>1) {
+			long size = fi.width*fi.height*fi.getBytesPerPixel();
+			for (int i=0; i<n; i++) {
+				FileInfo fi = (FileInfo)info[0].clone();
+				fi.nImages = 1;
+				fi.longOffset = fi.getOffset() + i*(size + fi.gapBetweenImages);
+				stack.addImage(fi);
+			}
+		} else
+			stack.addImage(info[0]);
 	}
 	
 	boolean showDialog(ImagePlus imp, String[] list) {
