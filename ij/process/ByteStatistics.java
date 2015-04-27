@@ -19,10 +19,13 @@ public class ByteStatistics extends ImageStatistics {
 		setup(ip, cal);
 		double minT = ip.getMinThreshold();
 		int minThreshold,maxThreshold;
-		if ((mOptions&LIMIT)==0 || minT==ImageProcessor.NO_THRESHOLD)
-			{minThreshold=0; maxThreshold=255;}
-		else
-			{minThreshold=(int)minT; maxThreshold=(int)ip.getMaxThreshold();}
+		if ((mOptions&LIMIT)==0 || minT==ImageProcessor.NO_THRESHOLD) {
+			minThreshold=0;
+			maxThreshold=255;
+		} else {
+			minThreshold = (int)minT;
+			maxThreshold = (int)ip.getMaxThreshold();
+		}
 		float[] cTable = cal!=null?cal.getCTable():null;
 		if (cTable!=null)
 			getCalibratedStatistics(minThreshold,maxThreshold,cTable);
