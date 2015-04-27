@@ -28,6 +28,7 @@ public class FolderOpener implements PlugIn {
 	private String info1;
 	private ImagePlus image;
 	private boolean saveImage;
+	private long t0;
 	
 	/** Opens the images in the specified directory as a stack. Displays
 		directory chooser and options dialogs if the argument is null. */
@@ -47,17 +48,18 @@ public class FolderOpener implements PlugIn {
 	}
 
 	public void run(String arg) {
+		boolean isMacro = Macro.getOptions()!=null;
 		String directory = null;
 		if (arg!=null && !arg.equals("")) {
 			directory = arg;
 		} else {
-			if (!IJ.macroRunning()) {
+			if (!isMacro) {
 				sortFileNames = staticSortFileNames;
 				openAsVirtualStack = staticOpenAsVirtualStack;
 			}
 			arg = null;
 			String title = "Open Image Sequence...";
-			String macroOptions = IJ.macroRunning()?Macro.getOptions():null;
+			String macroOptions = Macro.getOptions();
 			if (macroOptions!=null) {
 				directory = Macro.getValue(macroOptions, title, null);
 				if (directory!=null) {
@@ -106,37 +108,37 @@ public class FolderOpener implements PlugIn {
 		boolean allSameCalibration = true;
 		IJ.resetEscape();		
 		Overlay overlay = null;
+		n = list.length;
+		start = 1;
+		increment = 1;
 		try {
-			for (int i=0; i<list.length; i++) {
-				Opener opener = new Opener();
-				opener.setSilentMode(true);
-				IJ.redirectErrorMessages(true);
-				ImagePlus imp = opener.openImage(directory, list[i]);
-				IJ.redirectErrorMessages(false);
-				if (imp!=null) {
-					width = imp.getWidth();
-					height = imp.getHeight();
-					bitDepth = imp.getBitDepth();
-					fi = imp.getOriginalFileInfo();
-					ImageProcessor ip = imp.getProcessor();
-					min = ip.getMin();
-					max = ip.getMax();
-					if (arg==null) {
-						if (!showDialog(imp, list))
-							return;
-					} else {
-						n = list.length;
-						start = 1;
-						increment = 1;
+			if (isMacro) {
+				if (!showDialog(null, list))
+					return;
+			} else {
+				for (int i=0; i<list.length; i++) {
+					Opener opener = new Opener();
+					opener.setSilentMode(true);
+					IJ.redirectErrorMessages(true);
+					ImagePlus imp = opener.openImage(directory, list[i]);
+					IJ.redirectErrorMessages(false);
+					if (imp!=null) {
+						width = imp.getWidth();
+						height = imp.getHeight();
+						bitDepth = imp.getBitDepth();
+						if (arg==null) {
+							if (!showDialog(imp, list))
+								return;
+						}
+						break;
 					}
-					break;
 				}
-			}
-			if (width==0) {
-				IJ.error("Sequence Reader", "This folder does not appear to contain\n"
-				+ "any TIFF, JPEG, BMP, DICOM, GIF, FITS or PGM files.\n \n"
-				+ "   \""+directory+"\"");
-				return;
+				if (width==0) {
+					IJ.error("Sequence Reader", "This folder does not appear to contain\n"
+					+ "any TIFF, JPEG, BMP, DICOM, GIF, FITS or PGM files.\n \n"
+					+ "   \""+directory+"\"");
+					return;
+				}
 			}
 			String pluginName = "Sequence Reader";
 			if (legacyRegex!=null)
@@ -145,6 +147,7 @@ public class FolderOpener implements PlugIn {
 			if (list==null)
 				return;
 			IJ.showStatus("");
+			t0 = System.currentTimeMillis();
 			if (sortFileNames)
 				list = StringSorter.sortNumerically(list);
 
@@ -177,6 +180,10 @@ public class FolderOpener implements PlugIn {
 					width = imp.getWidth();
 					height = imp.getHeight();
 					bitDepth = imp.getBitDepth();
+					fi = imp.getOriginalFileInfo();
+					ImageProcessor ip = imp.getProcessor();
+					min = ip.getMin();
+					max = ip.getMax();
 					cal = imp.getCalibration();
 					if (convertToRGB) bitDepth = 24;
 					ColorModel cm = imp.getProcessor().getColorModel();
@@ -264,12 +271,12 @@ public class FolderOpener implements PlugIn {
 						if (ip.getMin()<min) min = ip.getMin();
 						if (ip.getMax()>max) max = ip.getMax();
 						stack.addSlice(label2, ip);
-						if (slice==1) count++;
-						IJ.showStatus(count+"/"+n);
-						IJ.showProgress(count, n);
 					}
 				}
-				if (count>=n)
+				count++;
+				IJ.showStatus(count+"/"+n);
+				IJ.showProgress(count, n);
+				if (count>=n) 
 					break;
 				if (IJ.escapePressed())
 					{IJ.beep(); break;}
@@ -321,7 +328,8 @@ public class FolderOpener implements PlugIn {
 					imp2.setProperty("Info", info1);
 			}
 			if (arg==null && !saveImage) {
-				imp2.show();
+				String time = (System.currentTimeMillis()-t0)/1000.0 + " seconds";
+				imp2.show(time);
 				if (stack.isVirtual()) {
 					overlay = stack.getProcessor(1).getOverlay();
 					if (overlay!=null)
@@ -335,7 +343,7 @@ public class FolderOpener implements PlugIn {
 	}
 	
 	private void openAsFileInfoStack(FileInfoVirtualStack stack, String path) {
-		FileInfo[] info = new Opener().getTiffFileInfo(path);
+		FileInfo[] info = Opener.getTiffFileInfo(path);
 		if (info==null || info.length==0)
 			return;
 		int n =info[0].nImages;
@@ -533,6 +541,8 @@ public class FolderOpener implements PlugIn {
 		}
 	
 		void setStackInfo() {
+			if (imp==null)
+				return;
 			int width = imp.getWidth();
 			int height = imp.getHeight();
 			int depth = imp.getStackSize();
@@ -543,7 +553,6 @@ public class FolderOpener implements PlugIn {
 			double scale = getNumber(numberField.elementAt(3));
 			if (scale<5.0) scale = 5.0;
 			if (scale>100.0) scale = 100.0;
-			
 			if (n<1) n = fileCount;
 			if (start<1 || start>fileCount) start = 1;
 			if (start+n-1>fileCount)

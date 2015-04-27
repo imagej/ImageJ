@@ -846,8 +846,9 @@ public class Opener {
 	}
 
 	/** Returns the FileInfo of the specified TIFF file. */
-	public FileInfo[] getTiffFileInfo(String path) {
-		TiffDecoder td = new TiffDecoder(getDir(path), getName(path));
+	public static FileInfo[] getTiffFileInfo(String path) {
+		Opener o = new Opener();
+		TiffDecoder td = new TiffDecoder(o.getDir(path), o.getName(path));
 		if (IJ.debugMode) td.enableDebugging();
 		try {
 			return td.getTiffInfo();
