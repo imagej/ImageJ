@@ -246,7 +246,7 @@ public abstract class ImageProcessor implements Cloneable {
     	for (int i=0; i<mapSize; i++) {
 			r2 = rLUT[i]&0xff; g2 = gLUT[i]&0xff; b2 = bLUT[i]&0xff;
     		distance = (r2-r1)*(r2-r1)+(g2-g1)*(g2-g1)+(b2-b1)*(b2-b1);
-			//ij.IJ.write(i+" "+minIndex+" "+distance+" "+(rLUT[i]&255));
+			//ij.IJ.log("  "+i+" "+minIndex+" "+distance+"   "+(rLUT[i]&255)+" "+(gLUT[i]&255)+" "+(bLUT[i]&255));
     		if (distance<minDistance) {
     			minDistance = distance;
     			minIndex = i;

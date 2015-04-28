@@ -591,15 +591,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 			} else if (roi.getType()==Roi.POINT)
 				savePoints(roi);
 		}
-		if ((measurements&LIMIT)!=0 && imp.getBitDepth()!=24) {
-			ImageProcessor ip = imp.getProcessor();
-			double min = ip.getMinThreshold();
-			double max = ip.getMaxThreshold();
-			if (min==ImageProcessor.NO_THRESHOLD)
-				min = max = Double.NaN;
-			rt.addValue(ResultsTable.MIN_THRESHOLD, min);
-			rt.addValue(ResultsTable.MAX_THRESHOLD, max);
-		}
+		//if ((measurements&LIMIT)!=0 && imp.getBitDepth()!=24) {
+		//	rt.addValue(ResultsTable.MIN_THRESHOLD, stats.lowerThreshold);
+		//	rt.addValue(ResultsTable.MAX_THRESHOLD, stats.upperThreshold);
+		//}
 	}
 	
 	private void clearSummary() {
@@ -622,33 +617,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		return (Math.abs(carea/2.0));
 	}
-	
-	/*
-	final double getConvexPerimeter(Roi roi, Polygon ch) {
-		if (roi==null || ch==null || !(roi instanceof PolygonRoi))
-			return 0.0;
-		int[] xp = ((PolygonRoi)roi).getXCoordinates();
-		int[] yp = ((PolygonRoi)roi).getYCoordinates();
-		int n = ((PolygonRoi)roi).getNCoordinates();
-		double perim = getPerimeter(xp, yp, n);
-		double convexPerim = getPerimeter(ch.xpoints, ch.ypoints, ch.npoints);
-		return convexPerim;
-	}
-	
-	final double getPerimeter(int[] xp, int yp[], int n) {
-		double dx, dy, perim=0.0;
-		for (int i=0; i<n-1; i++) {
-			dx = xp[i+1]-xp[i];
-			dy = yp[i+1]-yp[i];
-			perim += Math.sqrt(dx*dx+dy*dy);
-		}
-		dx = xp[n-1] - xp[0];
-		dy = yp[n-1] - yp[0];
-		perim += Math.sqrt(dx*dx+dy*dy);
-		return perim;
-	}
-	*/
-	
+		
 	void savePoints(Roi roi) {
 		if (imp==null) {
 			rt.addValue("X", 0.0);

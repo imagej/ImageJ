@@ -112,7 +112,7 @@ public class HyperStackMaker implements PlugIn {
 			ip.setColor(Color.white);
 			Font font = new Font("SansSerif",Font.PLAIN,24);
 			ip.setFont(font);
-			String text = "c="+IJ.pad(channel,3)+", z="+IJ.pad(slice,3)+", t="+IJ.pad(frame,3);
+			String text = "c="+IJ.pad(channel,3)+", z="+IJ.pad(slice,3)+", t="+IJ.pad(frame,3)+", i="+IJ.pad(i,4);
 			if (!hyperstack)
 				text = IJ.pad(i,4);
 			TextRoi roi = new TextRoi(5, yloc-28, text, font);
@@ -122,6 +122,7 @@ public class HyperStackMaker implements PlugIn {
 			else
 				roi.setPosition(i);
 			overlay.add(roi);
+			ip.drawString(text, 5, yloc+27);
 			
 			// embed channel, slice, frame and stack index into pixel data
 			yloc += 30;;

@@ -384,11 +384,14 @@ shortcutsBroken = false;
 				IJ.wait(10);
 		}
 		if (checkForCurlyQuotes && text.contains("\u201D")) {
-			text = text.replaceAll("\u201D", "\"");  // replace right curly quotes with standard quotes
+			// replace curly quotes with standard quotes
+ 			text = text.replaceAll("\u201C", "\""); 
+			text = text.replaceAll("\u201D", "\"");
 			if (start==end)
 				ta.setText(text);
 			else {
 				String text2 = ta.getText();
+ 				text2 = text2.replaceAll("\u201C", "\""); 
 				text2 = text2.replaceAll("\u201D", "\"");
 				ta.setText(text2);
 			}

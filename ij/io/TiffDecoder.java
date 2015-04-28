@@ -771,10 +771,8 @@ public class TiffDecoder {
 			} else
 				ifdOffset = 0L;
 			if (debugMode && ifdCount<10) dInfo += "  nextIFD=" + ifdOffset + "\n";
-			if (fi!=null) {
-				if (fi.nImages>1) // ignore extra IFDs in ImageJ and NIH Image stacks
-					ifdOffset = 0L;
-			}
+			if (fi!=null && fi.nImages>1)
+				ifdOffset = 0L;   // ignore extra IFDs in ImageJ and NIH Image stacks
 		}
 		if (list.size()==0) {
 			in.close();

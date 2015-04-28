@@ -216,6 +216,10 @@ public class FloatStatistics extends ImageStatistics {
 	}
 	
 	void getMedian(ImageProcessor ip, double minThreshold, double maxThreshold) {
+		if (pixelCount==0) {
+			median = Double.NaN;
+			return;
+		}
 		float[] pixels = (float[])ip.getPixels();
 		float[] pixels2 = new float[pixelCount];
 		byte[] mask = ip.getMaskArray();

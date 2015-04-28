@@ -820,7 +820,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	int counter = 0;
 	
 	void analyzeParticle(int x, int y, ImagePlus imp, ImageProcessor ip) {
-		//Wand wand = new Wand(ip);
 		ImageProcessor ip2 = redirectIP!=null?redirectIP:ip;
 		wand.autoOutline(x, y, level1, level2, wandMode);
 		if (wand.npoints==0)
@@ -861,7 +860,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			double perimeter = roi.getLength();
 			double circularity = perimeter==0.0?0.0:4.0*Math.PI*(stats.pixelCount/(perimeter*perimeter));
 			if (circularity>1.0) circularity = 1.0;
-			//IJ.log(circularity+"	"+perimeter+"  "+stats.area);
 			if (circularity<minCircularity || circularity>maxCircularity) include = false;
 		}
 		if (stats.pixelCount>=minSize && stats.pixelCount<=maxSize && include) {

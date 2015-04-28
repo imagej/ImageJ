@@ -83,8 +83,13 @@ public class PointRoi extends PolygonRoi {
 		type = defaultType;
 		size = defaultSize;
 		showLabels = !Prefs.noPointLabels;
-		if (imp!=null)
-			imp.draw(x-10, y-10, 20, 20);
+		if (imp!=null) {
+			int r = 10;
+			double mag = ic!=null?ic.getMagnification():1;
+			if (mag<1)
+				r = (int)(r/mag);
+			imp.draw(x-r, y-r, 2*r, 2*r);
+		}
 		if (Recorder.record && !Recorder.scriptMode()) 
 			Recorder.record("makePoint", x, y);
 	}
@@ -138,8 +143,10 @@ public class PointRoi extends PolygonRoi {
 		}
 		for (int i=0; i<nPoints; i++)
 			drawPoint(g, xp2[i], yp2[i], i+1);
-		if (updateFullWindow)
-			{updateFullWindow = false; imp.draw();}
+		if (updateFullWindow) {
+			updateFullWindow = false;
+			imp.draw();
+		}
 	}
 
 	void drawPoint(Graphics g, int x, int y, int n) {

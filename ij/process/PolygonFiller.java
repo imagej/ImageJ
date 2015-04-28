@@ -81,22 +81,6 @@ public class PolygonFiller {
 		for (int i=0; i<edges; i++)
 			sedge[i] = i;
 		activeEdges = 0;
-		//quickSort(sedge);
-	}
-
-
-	/** Currently not used since searching the entire edge table
-		does not seem to take a significant amount of time. */
-	void addToSortedTable(int edge) {
-		int index = 0;
-		while (index<edges && ey1[edges]>ey1[sedge[index]]) {
-			index++;
-		}
-		for (int i=edges-1; i>=index; i--) {
-			sedge[i+1] = sedge[i];
-			//IJ.log((i+1)+"="+i);
-		}
-		sedge[index] = edges;
 	}
 
 	/** Fills the polygon using the ImageProcessor's current drawing color. */
@@ -206,26 +190,5 @@ public class PolygonFiller {
 			IJ.log(i+"	"+ex[index]+"  "+ey1[index]+"  "+ey2[index] );
 		}
 	}
-
-	/*
-	void quickSort(int[] a) {
-		quickSort(a, 0, a.length-1);
-	}
-	
-	void quickSort(int[] a, int from, int to) {
-		int i=from, j=to;
-		int center = a[(from+to)/2];
-		do {
-			//while ( i < to && center.compareTo(a[i]) > 0 ) i++;
-			while (i<to && ey1[center]>ey1[a[i]]) j--;
-			//while ( j > from && center.compareTo(a[j]) < 0 ) j--;
-			while (j>from && ey1[center]<ey1[a[j]]) j--;
-			if (i < j) {int temp = a[i]; a[i] = a[j]; a[j] = temp;}
-			if (i <= j) { i++; j--; }
-		} while(i <= j);
-		if (from < j) quickSort(a, from, j);
-		if (i < to) quickSort(a,  i, to);
-	}
-	*/
 
 }
