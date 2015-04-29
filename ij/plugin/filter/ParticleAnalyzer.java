@@ -504,14 +504,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		}
 		calibration = redirectImp!=null?redirectImp.getCalibration():imp.getCalibration();
 		
-		if (rt==null) {
+		if (measurements==0)
+			measurements = Analyzer.getMeasurements();
+		measurements &= ~LIMIT;	 // ignore "Limit to Threshold"
+		if (rt==null)
 			rt = Analyzer.getResultsTable();
-			analyzer = new Analyzer(imp);
-		} else {
-			if (measurements==0)
-				measurements = Analyzer.getMeasurements();
-			analyzer = new Analyzer(imp, measurements, rt);
-		}
+		analyzer = new Analyzer(imp, measurements, rt);
 		if (resetCounter && slice==1) {
 			if (!Analyzer.resetCounter())
 				return false;
@@ -542,11 +540,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		ImageWindow win = imp.getWindow();
 		if (win!=null)
 			win.running = true;
-		if (measurements==0)
-			measurements = Analyzer.getMeasurements();
 		if (showChoice==ELLIPSES)
 			measurements |= ELLIPSE;
-		measurements &= ~LIMIT;	 // ignore "Limit to Threshold"
 		roiNeedsImage = (measurements&PERIMETER)!=0 || (measurements&SHAPE_DESCRIPTORS)!=0 || (measurements&FERET)!=0;
 		particleCount = 0;
 		wand = new Wand(ip);
