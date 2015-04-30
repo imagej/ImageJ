@@ -1054,8 +1054,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int x = e.getX();
 		int y = e.getY();
 		flags = e.getModifiers();
-		//IJ.log("Mouse pressed: " + e.isPopupTrigger() + "  " + ij.modifiers(flags));		
-		//if (toolID!=Toolbar.MAGNIFIER && e.isPopupTrigger()) {
 		if (toolID!=Toolbar.MAGNIFIER && (e.isPopupTrigger()||(!IJ.isMacintosh()&&(flags&Event.META_MASK)!=0))) {
 			handlePopupMenu(e);
 			return;
@@ -1214,39 +1212,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			tool.mouseExited(imp, e);
 			if (e.isConsumed()) return;
 		}
-		//autoScroll(e);
 		ImageWindow win = imp.getWindow();
 		if (win!=null)
 			setCursor(defaultCursor);
 		IJ.showStatus("");
 		mouseExited = true;
 	}
-
-	/*
-	public void autoScroll(MouseEvent e) {
-		Roi roi = imp.getRoi();
-		if (roi==null || roi.getState()!=roi.CONSTRUCTING || srcRect.width>=imageWidth || srcRect.height>=imageHeight
-		|| !(roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE || roi.getType()==Roi.ANGLE))
-			return;
-		int sx = e.getX();
-		int sy = e.getY();
-		xMouseStart = srcRect.x+srcRect.width/2;
-		yMouseStart = srcRect.y+srcRect.height/2;
-		Rectangle r = roi.getBounds();
-		Dimension size = getSize();
-		int deltax=0, deltay=0;
-		if (sx<0)
-			deltax = srcRect.width/4;
-		else if (sx>size.width)
-			deltax = -srcRect.width/4;
-		if (sy<0)
-			deltay = srcRect.height/4;
-		else if (sy>size.height)
-			deltay = -srcRect.height/4;
-		//IJ.log("autoscroll: "+sx+" "+sy+" "+deltax+" "+deltay+" "+r);
-		scroll(screenX(xMouseStart+deltax), screenY(yMouseStart+deltay));
-	}
-	*/
 
 	public void mouseDragged(MouseEvent e) {
 		int x = e.getX();

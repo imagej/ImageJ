@@ -615,14 +615,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		int xstart = srcRect.x;
 		int ystart = srcRect.y;
 		if ((ctrl||IJ.shiftKeyDown()) && ic!=null) {
-			int ox = ic.offScreenX(e.getX());
-			int oy = ic.offScreenY(e.getX());
-			if (IJ.debugMode)
-				IJ.log("  x,y: "+ox+","+oy);
 			if (rotation<0)
-				ic.zoomIn(ox,oy);
+				IJ.doCommand("In [+]");
 			else
-				ic.zoomOut(ox,oy);
+				IJ.doCommand("Out [-]");
 			return;
 		} else if (IJ.spaceBarDown() || srcRect.height==height) {
 			srcRect.x += rotation*amount*Math.max(width/200, 1);
