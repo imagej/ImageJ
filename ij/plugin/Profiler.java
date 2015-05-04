@@ -49,15 +49,21 @@ public class Profiler implements PlugIn, PlotMaker {
 		GenericDialog gd = new GenericDialog("Profile Plot Options", IJ.getInstance());
 		gd.addNumericField("Width (pixels):", PlotWindow.plotWidth, 0);
 		gd.addNumericField("Height (pixels):", PlotWindow.plotHeight, 0);
+		gd.addNumericField("Font Size:", PlotWindow.fontSize, 0);
+		gd.setInsets(10,20,0); //distance to previous
+		gd.addCheckbox("Fixed y-axis scale", fixedScale);
 		gd.addNumericField("Minimum Y:", ymin, 2);
 		gd.addNumericField("Maximum Y:", ymax, 2);
-		gd.addCheckbox("Fixed y-axis scale", fixedScale);
+		gd.setInsets(5,20,0); //distance to previous
+		gd.addCheckbox("Draw grid lines", !PlotWindow.noGridLines);
+		gd.addCheckbox("Draw_ticks", !PlotWindow.noTicks);
+		gd.setInsets(10,20,0); //distance to previous
 		gd.addCheckbox("Do not save x-values", !PlotWindow.saveXValues);
 		gd.addCheckbox("Auto-close", PlotWindow.autoClose);
-		gd.addCheckbox("Vertical profile", Prefs.verticalProfile);
 		gd.addCheckbox("List values", PlotWindow.listValues);
+		gd.setInsets(10,20,0); //distance to previous
+		gd.addCheckbox("Vertical profile", Prefs.verticalProfile);
 		gd.addCheckbox("Interpolate line profiles", PlotWindow.interpolate);
-		gd.addCheckbox("Draw grid lines", !PlotWindow.noGridLines);
 		gd.addCheckbox("Sub-pixel resolution", Prefs.subPixelResolution);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#plot-options");
 		gd.showDialog();
@@ -65,19 +71,29 @@ public class Profiler implements PlugIn, PlotMaker {
 			return;
 		int w = (int)gd.getNextNumber();
 		int h = (int)gd.getNextNumber();
-		if (w<100) w = 100;
-		if (h<50) h = 50;
-		PlotWindow.plotWidth = w;
-		PlotWindow.plotHeight = h;
+		if (w<Plot.MIN_FRAMEWIDTH) w = Plot.MIN_FRAMEWIDTH;
+		if (h<Plot.MIN_FRAMEHEIGHT) h = Plot.MIN_FRAMEHEIGHT;
+		if (!gd.invalidNumber()) {
+			PlotWindow.plotWidth = w;
+			PlotWindow.plotHeight = h;
+		}
+		int fontSize = (int)gd.getNextNumber();
+		if (fontSize < 9) fontSize = 9;
+		if (fontSize > 28) fontSize = 28;
+		if (!gd.invalidNumber())
+			PlotWindow.fontSize = fontSize;
+		fixedScale = gd.getNextBoolean();
 		ymin = gd.getNextNumber();
 		ymax = gd.getNextNumber();
-		fixedScale = gd.getNextBoolean();
+		PlotWindow.noGridLines = !gd.getNextBoolean();
+		PlotWindow.noTicks = !gd.getNextBoolean();
+		//data options
 		PlotWindow.saveXValues = !gd.getNextBoolean();
 		PlotWindow.autoClose = gd.getNextBoolean();
-		Prefs.verticalProfile = gd.getNextBoolean();
 		PlotWindow.listValues = gd.getNextBoolean();
+		//profile options
+		Prefs.verticalProfile = gd.getNextBoolean();
 		PlotWindow.interpolate = gd.getNextBoolean();
-		PlotWindow.noGridLines = !gd.getNextBoolean();
 		Prefs.subPixelResolution = gd.getNextBoolean();
 		if (!fixedScale && !wasFixedScale && (ymin!=0.0 || ymax!=0.0))
 			fixedScale = true;
@@ -94,4 +110,3 @@ public class Profiler implements PlugIn, PlotMaker {
 	}
 		
 }
-

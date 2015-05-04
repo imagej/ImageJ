@@ -77,8 +77,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		boolean openAsHyperStack = imp.getOpenAsHyperStack();
 		ij = IJ.getInstance();
 		this.imp = imp;
-		if (ic==null)
-			{ic=new ImageCanvas(imp); newCanvas=true;}
+		if (ic==null) {
+			ic = (this instanceof PlotWindow) ? new PlotCanvas(imp) : new ImageCanvas(imp);
+			newCanvas=true;
+		}
 		this.ic = ic;
 		ImageWindow previousWindow = imp.getWindow();
 		setLayout(new ImageLayout(ic));
@@ -102,7 +104,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 				ic.update(previousWindow.getCanvas());
 			Point loc = previousWindow.getLocation();
 			setLocation(loc.x, loc.y);
-			if (!(this instanceof StackWindow)) {
+			if (!(this instanceof StackWindow || this instanceof PlotWindow)) { //layout now unless components will be added later
 				pack();
 				show();
 			}
@@ -615,10 +617,13 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		int xstart = srcRect.x;
 		int ystart = srcRect.y;
 		if ((ctrl||IJ.shiftKeyDown()) && ic!=null) {
+			Point loc = ic.getCursorLoc();
+			int x = ic.screenX(loc.x);
+			int y = ic.screenY(loc.y);
 			if (rotation<0)
-				IJ.doCommand("In [+]");
+				ic.zoomIn(x, y);
 			else
-				IJ.doCommand("Out [-]");
+				ic.zoomOut(x, y);
 			return;
 		} else if (IJ.spaceBarDown() || srcRect.height==height) {
 			srcRect.x += rotation*amount*Math.max(width/200, 1);

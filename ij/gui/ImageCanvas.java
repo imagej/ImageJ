@@ -28,7 +28,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	protected static Cursor crosshairCursor = new Cursor(Cursor.CROSSHAIR_CURSOR);
 
 	public static boolean usePointer = Prefs.usePointerCursor;
-	
+
 	protected ImagePlus imp;
 	protected boolean imageUpdated;
 	protected Rectangle srcRect;
@@ -54,7 +54,16 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     private int mousePressedX, mousePressedY;
     private long mousePressedTime;
     private boolean overOverlayLabel;
-		
+
+    /** If the mouse moves less than this in screen pixels, successive zoom operations are on the same image pixel */
+	protected final static int MAX_MOUSEMOVE_ZOOM = 10;
+	/** Screen coordinates where the last zoom operation was done (initialized to impossible value) */
+	protected int lastZoomSX = -9999999;
+	protected int lastZoomSY = -9999999;
+	/** Image (=offscreen) coordinates where the cursor was moved to for zooming */
+	protected int zoomTargetOX = -1;
+	protected int zoomTargetOY;
+
 	protected ImageJ ij;
 	protected double magnification;
 	protected int dstWidth, dstHeight;
@@ -783,12 +792,20 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return newMag;
 	}
 
-	/** Zooms in by making the window bigger. If it can't
-		be made bigger, then make the source rectangle 
-		(srcRect) smaller and center it at (sx,sy). Note that
-		sx and sy are screen coordinates. */
+	/** Zooms in by making the window bigger. If it can't be made bigger, then makes 
+		the source rectangle (srcRect) smaller and centers it on the position in the
+		image where the cursor was when zooming has started.
+		Note that sx and sy are screen coordinates. */
 	public void zoomIn(int sx, int sy) {
 		if (magnification>=32) return;
+	    boolean mouseMoved = sqr(sx-lastZoomSX) + sqr(sy-lastZoomSY) > MAX_MOUSEMOVE_ZOOM*MAX_MOUSEMOVE_ZOOM;
+		lastZoomSX = sx;
+		lastZoomSY = sy;
+		if (mouseMoved || zoomTargetOX<0) {
+		    boolean cursorInside = sx >= 0 && sy >= 0 && sx < dstWidth && sy < dstHeight;
+		    zoomTargetOX = offScreenX(cursorInside ? sx : dstWidth/2); //where to zoom, offscreen (image) coordinates
+		    zoomTargetOY = offScreenY(cursorInside ? sy : dstHeight/2);
+		}
 		double newMag = getHigherZoomLevel(magnification);
 		int newWidth = (int)(imageWidth*newMag);
 		int newHeight = (int)(imageHeight*newMag);
@@ -796,25 +813,24 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (newSize!=null) {
 			setSize(newSize.width, newSize.height);
 			if (newSize.width!=newWidth || newSize.height!=newHeight)
-				adjustSourceRect(newMag, sx, sy);
+				adjustSourceRect(newMag, zoomTargetOX, zoomTargetOY);
 			else
 				setMagnification(newMag);
 			imp.getWindow().pack();
-		} else
-			adjustSourceRect(newMag, sx, sy);
+		} else // can't enlarge window
+			adjustSourceRect(newMag, zoomTargetOX, zoomTargetOY);
 		repaint();
 		if (srcRect.width<imageWidth || srcRect.height<imageHeight)
 			resetMaxBounds();
 	}
-	
+
+	/** Centers the viewable area on offscreen (image) coordinates x, y */
 	void adjustSourceRect(double newMag, int x, int y) {
 		//IJ.log("adjustSourceRect1: "+newMag+" "+dstWidth+"  "+dstHeight);
 		int w = (int)Math.round(dstWidth/newMag);
 		if (w*newMag<dstWidth) w++;
 		int h = (int)Math.round(dstHeight/newMag);
 		if (h*newMag<dstHeight) h++;
-		x = offScreenX(x);
-		y = offScreenY(y);
 		Rectangle r = new Rectangle(x-w/2, y-h/2, w, h);
 		if (r.x<0) r.x = 0;
 		if (r.y<0) r.y = 0;
@@ -824,7 +840,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		setMagnification(newMag);
 		//IJ.log("adjustSourceRect2: "+srcRect+" "+dstWidth+"  "+dstHeight);
 	}
-	
+
+    /** Returns the size to which the window can be enlarged, or null if it can't be enlarged.
+     *  <code>newWidth, newHeight</code> is the size needed for showing the full image
+     *  at the magnification needed */
 	protected Dimension canEnlarge(int newWidth, int newHeight) {
 		if (IJ.altKeyDown())
 			return null;
@@ -852,13 +871,22 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		else
 			return null;
 	}
-		
+
 	/**Zooms out by making the source rectangle (srcRect)  
 		larger and centering it on (x,y). If we can't make it larger,  
-		then make the window smaller.*/
-	public void zoomOut(int x, int y) {
+		then make the window smaller. Note that
+		sx and sy are screen coordinates. */
+	public void zoomOut(int sx, int sy) {
 		if (magnification<=zoomLevels[0])
 			return;
+	    boolean mouseMoved = sqr(sx-lastZoomSX) + sqr(sy-lastZoomSY) > MAX_MOUSEMOVE_ZOOM*MAX_MOUSEMOVE_ZOOM;
+		lastZoomSX = sx;
+		lastZoomSY = sy;
+		if (mouseMoved || zoomTargetOX<0) {
+		    boolean cursorInside = sx >= 0 && sy >= 0 && sx < dstWidth && sy < dstHeight;
+		    zoomTargetOX = offScreenX(cursorInside ? sx : dstWidth/2); //where to zoom, offscreen (image) coordinates
+		    zoomTargetOY = offScreenY(cursorInside ? sy : dstHeight/2);
+		}
 		double oldMag = magnification;
 		double newMag = getLowerZoomLevel(magnification);
 		double srcRatio = (double)srcRect.width/srcRect.height;
@@ -868,19 +896,21 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			double scale = oldMag/newMag;
 			int newSrcWidth = (int)Math.round(srcRect.width*scale);
 			int newSrcHeight = (int)Math.round(srcRect.height*scale);
-			if (newSrcWidth>imageWidth) newSrcWidth=imageWidth;
+			if (newSrcWidth>imageWidth) newSrcWidth=imageWidth; 
 			if (newSrcHeight>imageHeight) newSrcHeight=imageHeight;
 			int newSrcX = srcRect.x - (newSrcWidth - srcRect.width)/2;
 			int newSrcY = srcRect.y - (newSrcHeight - srcRect.height)/2;
+			if (newSrcX + newSrcWidth > imageWidth) newSrcX = imageWidth - newSrcWidth;
+			if (newSrcY + newSrcHeight > imageHeight) newSrcY = imageHeight - newSrcHeight;
 			if (newSrcX<0) newSrcX = 0;
 			if (newSrcY<0) newSrcY = 0;
 			srcRect = new Rectangle(newSrcX, newSrcY, newSrcWidth, newSrcHeight);
-			//IJ.log(newMag+" "+srcRect+" "+dstWidth+" "+dstHeight);
+            //IJ.log(newMag+" "+srcRect+" "+dstWidth+" "+dstHeight);
 			int newDstWidth = (int)(srcRect.width*newMag);
 			int newDstHeight = (int)(srcRect.height*newMag);
 			setMagnification(newMag);
 			setMaxBounds();
-			//IJ.log(newDstWidth+" "+dstWidth+" "+newDstHeight+" "+dstHeight);
+            //IJ.log(newDstWidth+" "+dstWidth+" "+newDstHeight+" "+dstHeight);
 			if (newDstWidth<dstWidth || newDstHeight<dstHeight) {
 				setSize(newDstWidth, newDstHeight);
 				imp.getWindow().pack();
@@ -893,9 +923,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (w*newMag<dstWidth) w++;
 			int h = (int)Math.round(dstHeight/newMag);
 			if (h*newMag<dstHeight) h++;
-			x = offScreenX(x);
-			y = offScreenY(y);
-			Rectangle r = new Rectangle(x-w/2, y-h/2, w, h);
+			Rectangle r = new Rectangle(zoomTargetOX-w/2, zoomTargetOY-h/2, w, h);
 			if (r.x<0) r.x = 0;
 			if (r.y<0) r.y = 0;
 			if (r.x+w>imageWidth) r.x = imageWidth-w;
@@ -913,6 +941,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		setMaxBounds();
 		repaint();
 	}
+
+    int sqr(int x) {
+        return x*x;
+    }
 
 	/** Implements the Image/Zoom/Original Scale command. */
 	public void unzoom() {
@@ -1054,6 +1086,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int x = e.getX();
 		int y = e.getY();
 		flags = e.getModifiers();
+		//IJ.log("Mouse pressed: " + e.isPopupTrigger() + "  " + ij.modifiers(flags));		
+		//if (toolID!=Toolbar.MAGNIFIER && e.isPopupTrigger()) {
 		if (toolID!=Toolbar.MAGNIFIER && (e.isPopupTrigger()||(!IJ.isMacintosh()&&(flags&Event.META_MASK)!=0))) {
 			handlePopupMenu(e);
 			return;
