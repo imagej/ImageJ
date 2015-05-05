@@ -29,14 +29,15 @@ public class StackConverter {
 		ImageProcessor ip = imp.getProcessor();
 		boolean colorLut = ip.isColorLut();
 		boolean pseudoColorLut = colorLut && ip.isPseudoColorLut();
-		if (type==ImagePlus.GRAY8 && pseudoColorLut) {
-			boolean invertedLut = ip.isInvertedLut();
+		boolean composite = imp.isComposite();
+		if (type==ImagePlus.GRAY8 && pseudoColorLut && !composite) {
+ 			boolean invertedLut = ip.isInvertedLut();
 			ip.setColorModel(LookUpTable.createGrayscaleColorModel(invertedLut));
 			stack1.setColorModel(ip.getColorModel());
 	    	imp.updateAndDraw();
 			return;
 		}
-		if (type==ImagePlus.COLOR_RGB || type==ImagePlus.COLOR_256 || colorLut) {
+		if (!composite && (type==ImagePlus.COLOR_RGB||type==ImagePlus.COLOR_256||colorLut)) {
 			convertRGBToGray8();
 			imp.setSlice(currentSlice);
 			return;
@@ -49,7 +50,7 @@ public class StackConverter {
 		double max = ip.getMax();
 	    int inc = nSlices/20;
 	    if (inc<1) inc = 1;
-	    LUT[] luts = imp.isComposite()?((CompositeImage)imp).getLuts():null;
+	    LUT[] luts = composite?((CompositeImage)imp).getLuts():null;
 		for(int i=1; i<=nSlices; i++) {
 			label = stack1.getSliceLabel(1);
 			ip = stack1.getProcessor(1);

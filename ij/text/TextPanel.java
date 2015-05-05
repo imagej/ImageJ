@@ -58,6 +58,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
     String searchString;
     Menu fileMenu;
     boolean menusExtended;
+    boolean saveAsCSV;
 
   
 	/** Constructs a new TextPanel. */
@@ -805,13 +806,19 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	/** Writes all the text in this TextPanel to a file. */
 	public void save(PrintWriter pw) {
 		resetSelection();
-		if (labels!=null && !labels.equals(""))
-			pw.println(labels);
+		if (labels!=null && !labels.equals("")) {
+			String labels2 = labels;
+			if (saveAsCSV)
+				labels2 = labels2.replaceAll("\t",",");
+			pw.println(labels2);
+		}
 		for (int i=0; i<iRowCount; i++) {
 			char[] chars = (char[])(vData.elementAt(i));
 			String s = new String(chars);
 			if (s.endsWith("\t"))
 				s = s.substring(0, s.length()-1);
+			if (saveAsCSV)
+				s = s.replaceAll("\t",",");
 			pw.println(s);
 		}
 		unsavedLines = false;
@@ -832,7 +839,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			if (path==null || path.equals("")) {
 				IJ.wait(10);
 				String name = isResults?"Results":title;
-				SaveDialog sd = new SaveDialog("Save Results", name, Prefs.get("options.ext", ".csv"));
+				SaveDialog sd = new SaveDialog("Save Results", name, Prefs.defaultResultsExtension());
 				fileName = sd.getFileName();
 				if (fileName==null) return false;
 				path = sd.getDirectory() + fileName;
@@ -847,10 +854,11 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			if (path.equals("")) {
 				IJ.wait(10);
 				boolean hasHeadings = !getColumnHeadings().equals("");
-				String ext = isResults||hasHeadings?Prefs.get("options.ext", ".xls"):".txt";
+				String ext = isResults||hasHeadings?Prefs.defaultResultsExtension():".txt";
 				SaveDialog sd = new SaveDialog("Save as Text", title, ext);
 				String file = sd.getFileName();
-				if (file == null) return false;
+				if (file==null)
+					return false;
 				path = sd.getDirectory() + file;
 			}
 			PrintWriter pw = null;
@@ -863,7 +871,9 @@ public class TextPanel extends Panel implements AdjustmentListener,
 				IJ.error("Save As>Text", e.getMessage());
 				return true;
 			}
+			saveAsCSV = path.endsWith(".csv");
 			save(pw);
+			saveAsCSV = false;
 			pw.close();
 		}
 		if (isResults) {
