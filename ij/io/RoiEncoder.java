@@ -261,7 +261,7 @@ public class RoiEncoder {
 		if (shapeArray==null) return;
 		BufferedOutputStream bout = new BufferedOutputStream(f);
 		Rectangle r = roi.getBounds();
-		data  = new byte[HEADER_SIZE+HEADER2_SIZE+shapeArray.length*4+roiNameSize];
+		data  = new byte[HEADER_SIZE+HEADER2_SIZE+shapeArray.length*4+roiNameSize+roiPropsSize];
 		data[0]=73; data[1]=111; data[2]=117; data[3]=116; // "Iout"
 		
 		putShort(RoiDecoder.VERSION_OFFSET, VERSION);
@@ -316,7 +316,7 @@ public class RoiEncoder {
 		int fontNameLength = fontName.length();
 		int textLength = text.length();
 		int textRoiDataLength = 16+fontNameLength*2+textLength*2 + angleLength;
-		byte[] data2 = new byte[HEADER_SIZE+HEADER2_SIZE+textRoiDataLength+roiNameSize];
+		byte[] data2 = new byte[HEADER_SIZE+HEADER2_SIZE+textRoiDataLength+roiNameSize+roiPropsSize];
 		System.arraycopy(data, 0, data2, 0, HEADER_SIZE);
 		data = data2;
 		putShort(RoiDecoder.SUBTYPE, RoiDecoder.TEXT);
@@ -337,7 +337,7 @@ public class RoiEncoder {
 	private int saveImageRoi(ImageRoi roi, int options) {
 		byte[] bytes = roi.getSerializedImage();
 		int imageSize = bytes.length;
-		byte[] data2 = new byte[HEADER_SIZE+HEADER2_SIZE+imageSize+roiNameSize];
+		byte[] data2 = new byte[HEADER_SIZE+HEADER2_SIZE+imageSize+roiNameSize+roiPropsSize];
 		System.arraycopy(data, 0, data2, 0, HEADER_SIZE);
 		data = data2;
 		putShort(RoiDecoder.SUBTYPE, RoiDecoder.IMAGE);
