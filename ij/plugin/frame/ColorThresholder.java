@@ -1285,73 +1285,22 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		}
 	}
 
+	/** Returns Lab in 3 byte arrays. */
 	public void getLab(ImageProcessor ip, byte[] L, byte[] a, byte[] b) {
-		// Returns Lab in 3 byte arrays.
-		//http://www.brucelindbloom.com/index.html?WorkingSpaceInfo.html#Specifications
-		//http://www.easyrgb.com/math.php?MATH=M7#text7
-		int c, x, y, i=0;
-		double rf, gf, bf;
-		double X, Y, Z, fX, fY, fZ;
-		double La, aa, bb;
-		double ot=1/3.0, cont = 16/116.0;
-
-		int width=ip.getWidth();
-		int height=ip.getHeight();
-
-		for(y=0;y<height; y++) {
-			for (x=0; x< width;x++){
-				c = ip.getPixel(x,y);
-
-				// RGB to XYZ
-				rf = ((c&0xff0000)>>16)/255.0; //R 0..1
-				gf = ((c&0x00ff00)>>8)/255.0; //G 0..1
-				bf = ( c&0x0000ff)/255.0; //B 0..1
-
-				// gamma = 1.0?
-				//white reference D65 PAL/SECAM
-				X = 0.430587 * rf + 0.341545 * gf + 0.178336 * bf;
-				Y = 0.222021 * rf + 0.706645 * gf + 0.0713342* bf;
-				Z = 0.0201837* rf + 0.129551 * gf + 0.939234 * bf;
-
-				// XYZ to Lab
-				if ( X > 0.008856 )
-					fX =  Math.pow(X, ot);
-				else
-					fX = ( 7.78707 * X ) + cont;
-					//7.7870689655172
-
-				if ( Y > 0.008856 )
-					fY = Math.pow(Y, ot);
-				else
-					fY = ( 7.78707 * Y ) + cont;
-
-				if ( Z > 0.008856 )
-					fZ =  Math.pow(Z, ot);
-				else
-					fZ = ( 7.78707 * Z ) + cont;
-
-				La = ( 116 * fY ) - 16;
-				aa = 500 * ( fX - fY );
-				bb = 200 * ( fY - fZ );
-
-				// rescale
-				La = (int) (La * 2.55);
-				aa = (int) (Math.floor((1.0625 * aa + 128) + 0.5));
-				bb = (int) (Math.floor((1.0625 * bb + 128) + 0.5));
-
-				//hsb = Color.RGBtoHSB(r, g, b, hsb);
-				// a* and b* range from -120 to 120 in the 8 bit space
-
-				//L[i] = (byte)((int)(La*2.55) & 0xff);
-				//a[i] = (byte)((int)(Math.floor((1.0625 * aa + 128) + 0.5)) & 0xff);
-				//b[i] = (byte)((int)(Math.floor((1.0625 * bb + 128) + 0.5)) & 0xff);
-
-				L[i] = (byte)((int)(La<0?0:(La>255?255:La)) & 0xff);
-				a[i] = (byte)((int)(aa<0?0:(aa>255?255:aa)) & 0xff);
-				b[i] = (byte)((int)(bb<0?0:(bb>255?255:bb)) & 0xff);
-				i++;
-			}
+		ColorSpaceConverter converter = new ColorSpaceConverter();
+		int[] pixels = (int[])ip.getPixels();
+		for (int i=0; i<pixels.length; i++) {
+			double[] values = converter.RGBtoLAB(pixels[i]);
+			int L1 = (int) Math.round((values[0] / 125.0) * 245.0);
+			int a1 = (int) Math.round(((values[1] + 125.0) / 250.0) * 245.0);
+			int b1 = (int) Math.round(((values[2] + 125.0) / 250.0) * 245.0);
+			L[i] = (byte)((int)(L1<0?0:(L1>255?255:L1)) & 0xff);
+			a[i] = (byte)((int)(a1<0?0:(a1>255?255:a1)) & 0xff);
+			b[i] = (byte)((int)(b1<0?0:(b1>255?255:b1)) & 0xff);
 		}
+ColorProcessor cp = new ColorProcessor(ip.getWidth(),ip.getHeight());
+cp.setRGB(L,a,b);
+new ImagePlus("lab",cp).show();
 	}
 	
 	public void getYUV(ImageProcessor ip, byte[] Y, byte[] U, byte[] V) {

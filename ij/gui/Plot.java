@@ -481,6 +481,7 @@ public class Plot implements Cloneable {
 				xValues[i] = i;
 		}
 		allPlotObjects.add(new PlotObject(xValues, yValues, yErrorBars, shape, currentLineWidth, currentColor, currentColor2, label));
+		if (plotDrawn) updateImage();
 	}
 	/** Adds a set of points to the plot or adds a curve if shape is set to LINE.
 	 * @param x			the x coordinates
@@ -1115,7 +1116,7 @@ public class Plot implements Cloneable {
 		frameHeight = sc(plotHeight);
 		int width  = frameWidth + leftMargin + rightMargin;
 		int height = frameHeight + topMargin + bottomMargin;
-		if (ip == null || width != ip.getWidth() || height != ip.getHeight()) {
+		if (ip == null || width != ip.getWidth() || height != ip.getHeight() || (isColor && (ip instanceof ByteProcessor))) {
 			if (isColor) {
 				ip = new ColorProcessor(width, height);
 			} else {
