@@ -1284,9 +1284,9 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		int[] pixels = (int[])ip.getPixels();
 		for (int i=0; i<pixels.length; i++) {
 			double[] values = converter.RGBtoLAB(pixels[i]);
-			int L1 = (int) Math.round((values[0] / 125.0) * 245.0);
-			int a1 = (int) Math.round(((values[1] + 125.0) / 250.0) * 245.0);
-			int b1 = (int) Math.round(((values[2] + 125.0) / 250.0) * 245.0);
+			int L1 = (int) (values[0] * 2.55);
+			int a1 = (int) (Math.floor((1.0625 * values[1] + 128) + 0.5));
+			int b1 = (int) (Math.floor((1.0625 * values[2] + 128) + 0.5));
 			L[i] = (byte)((int)(L1<0?0:(L1>255?255:L1)) & 0xff);
 			a[i] = (byte)((int)(a1<0?0:(a1>255?255:a1)) & 0xff);
 			b[i] = (byte)((int)(b1<0?0:(b1>255?255:b1)) & 0xff);

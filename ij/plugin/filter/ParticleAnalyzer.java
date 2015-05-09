@@ -217,8 +217,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		this.arg = arg;
 		this.imp = imp;
 		IJ.register(ParticleAnalyzer.class);
-		if (imp==null)
-			{IJ.noImage();return DONE;}
+		if (imp==null) {
+			IJ.noImage();
+			return DONE;
+		}
 		if (imp.getBitDepth()==24 && !isThresholdedRGB(imp)) {
 			IJ.error("Particle Analyzer",
 			"RGB images must be thresholded using\n"
@@ -510,7 +512,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (rt==null)
 			rt = Analyzer.getResultsTable();
 		analyzer = new Analyzer(imp, measurements, rt);
-		if (resetCounter && slice==1) {
+		if (resetCounter && slice==1 && rt.getCounter()>0) {
 			if (!Analyzer.resetCounter())
 				return false;
 		}
@@ -741,8 +743,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		ip.setRoi(r.x+r.width, 0, width-(r.x+r.width), height);
 		ip.fill();
 		ip.resetRoi();
-		//IJ.log("erase: "+fillColor+"	"+level1+"	"+level2+"	"+excludeEdgeParticles);
-		//(new ImagePlus("ip2", ip.duplicate())).show();
 		return true;
 	}
 
@@ -941,7 +941,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	}
 
 	void drawFilledParticle(ImageProcessor ip, Roi roi, ImageProcessor mask) {
-		//IJ.write(roi.getBounds()+" "+mask.length);
 		ip.setRoi(roi.getBounds());
 		ip.fill(mask);
 	}
