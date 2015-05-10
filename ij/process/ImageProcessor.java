@@ -1071,8 +1071,8 @@ public abstract class ImageProcessor implements Cloneable {
 		int absdx = dx>=0?dx:-dx;
 		int absdy = dy>=0?dy:-dy;
 		int n = absdy>absdx?absdy:absdx;
-		double xinc = (double)dx/n;
-		double yinc = (double)dy/n;
+		double xinc = dx!=0 ? (double)dx/n : 0; //single point (dx=dy=n=0): avoid division by zero
+		double yinc = dy!=0 ? (double)dy/n : 0;
 		double x = cx;
 		double y = cy;
 		cx = x2; cy = y2;       //keep end point as starting for the next lineTo

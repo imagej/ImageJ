@@ -1249,10 +1249,12 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			originalImage.setProcessor(ip.duplicate());
 			imp.setProperty("OriginalImage", originalImage);
 		}
-		int[] restore = (int[])originalImage.getProcessor().getPixels();
-		int[] pixels = (int[])ip.getPixels();
-		for (int i=0; i<numPixels; i++)
-			pixels[i] = restore[i];
+		if (originalImage.getBitDepth()==24) {
+			int[] restore = (int[])originalImage.getProcessor().getPixels();
+			int[] pixels = (int[])ip.getPixels();
+			for (int i=0; i<numPixels; i++)
+				pixels[i] = restore[i];
+		}
 	}
 
     public void windowActivated(WindowEvent e) {
