@@ -953,6 +953,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	
 	/** Sets the ResultsTable associated with this TextPanel. */
 	public void setResultsTable(ResultsTable rt) {
+		if (IJ.debugMode) IJ.log("setResultsTable: "+rt);
 		this.rt = rt;
 		if (!menusExtended)
 			extendMenus();
@@ -960,9 +961,33 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	
 	/** Returns the ResultsTable associated with this TextPanel, or null. */
 	public ResultsTable getResultsTable() {
+		if (IJ.debugMode) IJ.log("getResultsTable: "+rt);
 		return rt;
 	}
 
+	/** Returns the ResultsTable associated with this TextPanel, or
+		attempts to create one and returns the created table. */
+	public ResultsTable getOrCreateResultsTable() {
+		if ((rt==null||rt.size()==0) && iRowCount>0 && labels!=null && !labels.equals("")) {
+			String tmpDir = IJ.getDir("temp");
+			if (tmpDir==null) {
+				if (IJ.debugMode) IJ.log("getOrCreateResultsTable: tmpDir null");
+				return null;
+			}
+			String path = tmpDir+"temp-table.csv";
+			saveAs(path);
+			try {
+				rt = ResultsTable.open(path);
+				new File(path).delete();
+			} catch (Exception e) {
+				rt = null;
+				if (IJ.debugMode) IJ.log("getOrCreateResultsTable: "+e);
+			}
+		}
+		if (IJ.debugMode) IJ.log("getOrCreateResultsTable: "+rt);
+		return rt;
+	}
+	
 	private void extendMenus() {
 		pm.addSeparator();
 		addPopupItem("Rename...");

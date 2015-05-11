@@ -240,7 +240,6 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 				Undo.setup(Undo.TRANSFORM, imp);
 			}
 		}
-		int fg = Prefs.blackBackground?0xffffffff:0xff000000;
 		return maskIP;
 	}
 	

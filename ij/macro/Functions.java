@@ -1097,10 +1097,8 @@ public class Functions implements MacroConstants, Measurements {
 			row = (int)interp.getExpression();
 		}
 		interp.getRightParen();
-		ResultsTable rt = Analyzer.getResultsTable();
+		ResultsTable rt = getResultsTable(true);
 		int counter = rt.getCounter();
-		if (counter==0)
-			interp.error("\"Results\" table empty");
 		if (row==-1) row = counter-1;
 		if (row<0 || row>=counter)
 			interp.error("Row ("+row+") out of range");
@@ -1127,10 +1125,8 @@ public class Functions implements MacroConstants, Measurements {
 			row = (int)interp.getExpression();
 		}
 		interp.getRightParen();
-		ResultsTable rt = Analyzer.getResultsTable();
+		ResultsTable rt = getResultsTable(true);
 		int counter = rt.getCounter();
-		if (counter==0)
-			interp.error("\"Results\" table empty");
 		if (row==-1) row = counter-1;
 		if (row<0 || row>=counter)
 			interp.error("Row ("+row+") out of range");
@@ -1143,14 +1139,28 @@ public class Functions implements MacroConstants, Measurements {
 
 	String getResultLabel() {
 		int row = (int)getArg();
-		ResultsTable rt = Analyzer.getResultsTable();
+		ResultsTable rt = getResultsTable(true);
 		int counter = rt.getCounter();
-		if (counter==0)
-			interp.error("\"Results\" table empty");
 		if (row<0 || row>=counter)
 			interp.error("Row ("+row+") out of range");
 		String label = rt.getLabel(row);
 		return label!=null?label:"";
+	}
+
+	private ResultsTable getResultsTable(boolean reportErrors) {
+		ResultsTable rt = Analyzer.getResultsTable();
+		int counter = rt.getCounter();
+		if (counter==0) {
+			Frame frame = WindowManager.getFrontWindow();
+			if (frame!=null && (frame instanceof TextWindow)) {
+				TextPanel tp = ((TextWindow)frame).getTextPanel();
+				rt = tp.getOrCreateResultsTable();
+				counter = rt!=null?rt.getCounter():0;
+			}
+		}
+		if (counter==0 && reportErrors)
+			interp.error("No results found");
+		return rt;
 	}
 
 	void setResult() {
@@ -4519,6 +4529,9 @@ public class Functions implements MacroConstants, Measurements {
 			if (roi==null)
 				interp.error("No selection");
 			return roi.getStrokeWidth();
+		} else if (key.equals("results.count")) {
+			ResultsTable rt = getResultsTable(false);
+			return rt!=null?rt.getCounter():0;
 		} else {
 			interp.error("Invalid key");
 			return 0.0;
