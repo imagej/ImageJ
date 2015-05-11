@@ -1149,16 +1149,16 @@ public class Functions implements MacroConstants, Measurements {
 
 	private ResultsTable getResultsTable(boolean reportErrors) {
 		ResultsTable rt = Analyzer.getResultsTable();
-		int counter = rt.getCounter();
-		if (counter==0) {
+		int size = rt.size();
+		if (size==0) {
 			Frame frame = WindowManager.getFrontWindow();
 			if (frame!=null && (frame instanceof TextWindow)) {
 				TextPanel tp = ((TextWindow)frame).getTextPanel();
 				rt = tp.getOrCreateResultsTable();
-				counter = rt!=null?rt.getCounter():0;
+				size = rt!=null?rt.size():0;
 			}
 		}
-		if (counter==0 && reportErrors)
+		if (size==0 && reportErrors)
 			interp.error("No results found");
 		return rt;
 	}
@@ -4531,7 +4531,7 @@ public class Functions implements MacroConstants, Measurements {
 			return roi.getStrokeWidth();
 		} else if (key.equals("results.count")) {
 			ResultsTable rt = getResultsTable(false);
-			return rt!=null?rt.getCounter():0;
+			return rt!=null?rt.size():0;
 		} else {
 			interp.error("Invalid key");
 			return 0.0;
