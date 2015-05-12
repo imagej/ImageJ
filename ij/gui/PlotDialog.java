@@ -24,7 +24,7 @@ public class PlotDialog {
 	//saved dialog options: legend
 	private static int legendPosNumber = 0;
 	private static boolean bottomUp;
-	private static boolean eraseBackground;
+	private static boolean transparentBackground;
 	//saved dialog options: Axis labels
 	private static String xLabel, yLabel;
 	private static float plotFontSize;
@@ -182,21 +182,21 @@ public class PlotDialog {
 			String labels = plot.getDataLabels();
 			int nLines = labels.split("\n", -1).length;
 			gd.addTextAreas(labels, null, Math.min(nLines+1, 20), 40);
-			gd.addChoice("Legend Position", LEGEND_POSITIONS, LEGEND_POSITIONS[legendPosNumber]);
-			gd.addCheckbox("Bottom-To-Top", bottomUp);
-			gd.addCheckbox("Erase Background", eraseBackground);
+			gd.addChoice("Legend position", LEGEND_POSITIONS, LEGEND_POSITIONS[legendPosNumber]);
+			gd.addCheckbox("Transparent background", transparentBackground);
+			gd.addCheckbox("Bottom-to-top", bottomUp);
 			gd.showDialog();
 			if (gd.wasCanceled()) return;
 
 			labels = gd.getNextText();
 			legendPosNumber = gd.getNextChoiceIndex();
 			int flags = LEGEND_POSITION_N[legendPosNumber];
+			transparentBackground = gd.getNextBoolean();
 			bottomUp = gd.getNextBoolean();
-			eraseBackground = gd.getNextBoolean();
 			if (bottomUp)
 				flags |= Plot.LEGEND_BOTTOM_UP;
-			if (eraseBackground)
-				flags |= Plot.LEGEND_ERASE;
+			if (transparentBackground)
+				flags |= Plot.LEGEND_TRANSPARENT;
 			plot.setColor(Color.black);
 			plot.setLineWidth(1);
 			plot.setLegend(labels, flags);
@@ -210,7 +210,7 @@ public class PlotDialog {
 				} else {
 					String options = LEGEND_POSITIONS[legendPosNumber];
 					if (bottomUp) options+=" Bottom-To-Top";
-					if (eraseBackground) options+=" Erase";
+					if (transparentBackground) options+=" Transparent";
 					Recorder.recordString("Plot.setLegend(\""+labels.replaceAll("\n","\\\\n")+"\", \""+options+"\");\n");
 				}
 			}
@@ -218,15 +218,15 @@ public class PlotDialog {
 			String title = plot.getTitle() +"_HiRes";
 			title = WindowManager.makeUniqueName(title);
 			gd.addStringField("Title: ", title, 20);
-			gd.addNumericField("Scale Factor", hiResFactor, 1);
-			gd.addCheckbox("Anti-aliased Font", hiResAntiAliased);
+			gd.addNumericField("Scale factor", hiResFactor, 1);
+			gd.addCheckbox("Disable anti-aliased text", !hiResAntiAliased);
 			gd.showDialog();
 			if (gd.wasCanceled()) return;
 			title = gd.getNextString();
 			double scale = gd.getNextNumber();
 			if (!gd.invalidNumber() && scale>0) //more range checking is done in Plot.setScale
 				hiResFactor = (float)scale;
-			hiResAntiAliased = gd.getNextBoolean();
+			hiResAntiAliased = !gd.getNextBoolean();
 			final ImagePlus hiresImp = plot.makeHighResolution(title, hiResFactor, hiResAntiAliased, /*showIt=*/true);
 			/** The following command is needed to have the high-resolution plot as front window. Otherwise, as the
 			 *	dialog is owned by the original PlotWindow, the WindowManager will see the original plot as active,
@@ -234,7 +234,7 @@ public class PlotDialog {
 			EventQueue.invokeLater(new Runnable() {public void run() {IJ.selectWindow(hiresImp.getID());}});
 
 			if (Recorder.record) {
-				String options = hiResAntiAliased ? "antialiased" : "";
+				String options = !hiResAntiAliased ? "disable" : "";
 				if (options.length() > 0)
 					options = ",\""+options+"\"";
 				Recorder.recordString("Plot.makeHighResolution(\""+title+"\","+hiResFactor+options+");\n");

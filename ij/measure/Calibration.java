@@ -98,7 +98,7 @@ public class Calibration implements Cloneable {
 	
 	/** Sets the default length unit (e.g. "mm", "inch"). */
 	public void setUnit(String unit) {
-		this.unit = sanitizeUnit(unit );
+		this.unit = sanitizeUnit(unit);
 		units = null;
 	}
  	

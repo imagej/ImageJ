@@ -2319,8 +2319,8 @@ public class Functions implements MacroConstants, Measurements {
 				flags |= Plot.BOTTOM_RIGHT;
 			if (options.indexOf("bottom-to-top") >= 0)
 				flags |= Plot.LEGEND_BOTTOM_UP;
-			if (options.indexOf("erase") >= 0)
-				flags |= Plot.LEGEND_ERASE;
+			if (options.indexOf("transparent") >= 0)
+				flags |= Plot.LEGEND_TRANSPARENT;
 		} else
 			interp.getRightParen();
 		plot.setColor(Color.BLACK);
@@ -2343,11 +2343,11 @@ public class Functions implements MacroConstants, Measurements {
 	void makeHighResolution(Plot plot) {
 		String title = getFirstString();
 		double scale = getNextArg();
-		boolean antialiasedText = false;
+		boolean antialiasedText = true;
 		if (interp.nextToken()!=')') {
 			String options = getLastString().toLowerCase();
-			if (options.indexOf("anti")!=-1)
-				antialiasedText = true;
+			if (options.indexOf("disable")!=-1)
+				antialiasedText = false;
 		} else
 			interp.getRightParen();
 		plot.makeHighResolution(title, (float)scale, antialiasedText, true);

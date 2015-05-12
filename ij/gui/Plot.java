@@ -32,7 +32,7 @@ public class Plot implements Cloneable {
 	/** Legend has its curves in bottom-to-top sequence (otherwise top to bottom) */
 	public static final int LEGEND_BOTTOM_UP = 0x100;
 	/** Legend erases background (otherwise transparent) */
-	public static final int LEGEND_ERASE = 0x200;
+	public static final int LEGEND_TRANSPARENT = 0x200;
 	/** Display points using a circle (5 pixels in diameter if line thickness<=1, otherwise 7). */
 	public static final int CIRCLE = 0;
 	/** Display points using an X-shaped mark. */
@@ -2095,7 +2095,7 @@ public class Plot implements Cloneable {
 
 		ip.setColor(Color.white);
 		ip.setLineWidth(1);
-		if (legendObject.hasFlag(LEGEND_ERASE)) {
+		if (!legendObject.hasFlag(LEGEND_TRANSPARENT)) {
 			ip.setRoi(x0, y0, width, height);
 			ip.fill();
 		} else if (hasFlag(X_GRID | Y_GRID)) {	//erase grid

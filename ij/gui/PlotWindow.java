@@ -520,7 +520,7 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 			IJ.error("Plot has no data");
 			return;
 		}
-		SaveDialog sd = new SaveDialog("Save as Text", "Values", ".txt");
+		SaveDialog sd = new SaveDialog("Save as Text", "Values", Prefs.defaultResultsExtension());
 		String name = sd.getFileName();
 		if (name==null) return;
 		String directory = sd.getDirectory();
