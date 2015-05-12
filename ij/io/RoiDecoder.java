@@ -202,6 +202,11 @@ public class RoiDecoder {
 			if (channel>0 || slice>0 || frame>0)
 				roi.setPosition(channel, slice, frame);
 			decodeOverlayOptions(roi, version, options, overlayLabelColor, overlayFontSize);
+			if (version>=224) {
+				String props = getRoiProps();
+				if (props!=null)
+					roi.setProperties(props);
+			}
 			return roi;
 		}
 

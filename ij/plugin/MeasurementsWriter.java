@@ -36,7 +36,7 @@ public class MeasurementsWriter implements PlugIn {
 				}
 			}
 			if (path.equals("")) {
-				SaveDialog sd = new SaveDialog("Save as Text", "Results", Prefs.get("options.ext", ".xls"));
+				SaveDialog sd = new SaveDialog("Save as Text", "Results", Prefs.defaultResultsExtension());
 				String file = sd.getFileName();
 				if (file == null) return false;
 				path = sd.getDirectory() + file;

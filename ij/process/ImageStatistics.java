@@ -40,7 +40,10 @@ public class ImageStatistics implements Measurements {
 	public int xstart, ystart;
 	/** Used by HistogramWindow */
 	public boolean stackStatistics;
-	
+	/** Minimum threshold when "Limit to threshold" enabled */
+	public double lowerThreshold = Double.NaN;	
+	/** Maximum threshold when "Limit to threshold" enabled */
+	public double upperThreshold = Double.NaN;	
 	public double histMin;
 	public double histMax;
 	public int histYMax;

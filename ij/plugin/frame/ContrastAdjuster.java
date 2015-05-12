@@ -616,22 +616,32 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			imp.unlock();
 			return;
 		}
-		if (imp.getType()!=ImagePlus.GRAY8) {
+		int bitDepth = imp.getBitDepth();
+		if (bitDepth==32) {
 			IJ.beep();
-			IJ.showStatus("Apply requires an 8-bit grayscale image or an RGB stack");
+			IJ.showStatus("\"Apply\" does not work with 32-bit images");
 			imp.unlock();
 			return;
 		}
-		int[] table = new int[256];
+		int range = 256;
+		if (bitDepth==16) {
+			range = 65536;
+			int defaultRange = imp.getDefault16bitRange();
+			if (defaultRange>0)
+				range = (int)Math.pow(2,defaultRange)-1;
+		}
+		int tableSize = bitDepth==16?65536:256;
+		int[] table = new int[tableSize];
 		int min = (int)imp.getDisplayRangeMin();
 		int max = (int)imp.getDisplayRangeMax();
-		for (int i=0; i<256; i++) {
+		if (IJ.debugMode) IJ.log("Apply: mapping "+min+"-"+max+" to 0-"+(range-1));
+		for (int i=0; i<tableSize; i++) {
 			if (i<=min)
 				table[i] = 0;
 			else if (i>=max)
-				table[i] = 255;
+				table[i] = range-1;
 			else
-				table[i] = (int)(((double)(i-min)/(max-min))*255);
+				table[i] = (int)(((double)(i-min)/(max-min))*range);
 		}
 		ip.setRoi(imp.getRoi());
 		if (imp.getStackSize()>1 && !imp.isComposite()) {

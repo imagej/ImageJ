@@ -217,8 +217,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		this.arg = arg;
 		this.imp = imp;
 		IJ.register(ParticleAnalyzer.class);
-		if (imp==null)
-			{IJ.noImage();return DONE;}
+		if (imp==null) {
+			IJ.noImage();
+			return DONE;
+		}
 		if (imp.getBitDepth()==24 && !isThresholdedRGB(imp)) {
 			IJ.error("Particle Analyzer",
 			"RGB images must be thresholded using\n"
@@ -504,15 +506,13 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		}
 		calibration = redirectImp!=null?redirectImp.getCalibration():imp.getCalibration();
 		
-		if (rt==null) {
+		if (measurements==0)
+			measurements = Analyzer.getMeasurements();
+		measurements &= ~LIMIT;	 // ignore "Limit to Threshold"
+		if (rt==null)
 			rt = Analyzer.getResultsTable();
-			analyzer = new Analyzer(imp);
-		} else {
-			if (measurements==0)
-				measurements = Analyzer.getMeasurements();
-			analyzer = new Analyzer(imp, measurements, rt);
-		}
-		if (resetCounter && slice==1) {
+		analyzer = new Analyzer(imp, measurements, rt);
+		if (resetCounter && slice==1 && rt.getCounter()>0) {
 			if (!Analyzer.resetCounter())
 				return false;
 		}
@@ -542,11 +542,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		ImageWindow win = imp.getWindow();
 		if (win!=null)
 			win.running = true;
-		if (measurements==0)
-			measurements = Analyzer.getMeasurements();
 		if (showChoice==ELLIPSES)
 			measurements |= ELLIPSE;
-		measurements &= ~LIMIT;	 // ignore "Limit to Threshold"
 		roiNeedsImage = (measurements&PERIMETER)!=0 || (measurements&SHAPE_DESCRIPTORS)!=0 || (measurements&FERET)!=0;
 		particleCount = 0;
 		wand = new Wand(ip);
@@ -746,8 +743,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		ip.setRoi(r.x+r.width, 0, width-(r.x+r.width), height);
 		ip.fill();
 		ip.resetRoi();
-		//IJ.log("erase: "+fillColor+"	"+level1+"	"+level2+"	"+excludeEdgeParticles);
-		//(new ImagePlus("ip2", ip.duplicate())).show();
 		return true;
 	}
 
@@ -946,7 +941,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	}
 
 	void drawFilledParticle(ImageProcessor ip, Roi roi, ImageProcessor mask) {
-		//IJ.write(roi.getBounds()+" "+mask.length);
 		ip.setRoi(roi.getBounds());
 		ip.fill(mask);
 	}

@@ -1062,29 +1062,54 @@ public abstract class ImageProcessor implements Cloneable {
 
 	/** Draws a line from the current drawing location to (x2,y2). */
 	public void lineTo(int x2, int y2) {
+		int xMin = clipXMin-lineWidth/2-1;  //need not draw dots outside of this rect
+		int xMax = clipXMax+lineWidth/2+1;
+		int yMin = clipYMin-lineWidth/2-1;
+		int yMax = clipYMax+lineWidth/2+1;
 		int dx = x2-cx;
 		int dy = y2-cy;
 		int absdx = dx>=0?dx:-dx;
 		int absdy = dy>=0?dy:-dy;
 		int n = absdy>absdx?absdy:absdx;
-		double xinc = (double)dx/n;
-		double yinc = (double)dy/n;
+		double xinc = dx!=0 ? (double)dx/n : 0; //single point (dx=dy=n=0): avoid division by zero
+		double yinc = dy!=0 ? (double)dy/n : 0;
 		double x = cx;
 		double y = cy;
-		n++;
-		cx = x2; cy = y2;
-		if (n>1000000) return;
-		do {
+		cx = x2; cy = y2;       //keep end point as starting for the next lineTo
+		int i1 = 0;
+		if (dx>0)
+			i1 = Math.max(i1, (int)((xMin-x)/xinc));
+		else if (dx<0)
+			i1 = Math.max(i1, (int)((xMax-x)/xinc));
+		else if (x<xMin || x>xMax)
+			return; // vertical line outside y range
+		if (dy>0)
+			i1 = Math.max(i1, (int)((yMin-y)/yinc));
+		else if (dy<0)
+			i1 = Math.max(i1, (int)((yMax-y)/yinc));
+		else if (y<yMin || y>yMax)
+			return; // horizontal line outside y range
+		int i2 = n;
+		if (dx>0)
+			i2 = Math.min(i2, (int)((xMax-x)/xinc));
+		else if (dx<0)
+			i2 = Math.min(i2, (int)((xMin-x)/xinc));
+		if (dy>0)
+			i2 = Math.min(i2, (int)((yMax-y)/yinc));
+		else if (dy<0)
+			i2 = Math.min(i2, (int)((yMin-y)/yinc));
+		x += i1*xinc;
+		y += i1*yinc;
+		for (int i=i1; i<=i2; i++) {
 			if (lineWidth==1)
 				drawPixel((int)Math.round(x), (int)Math.round(y));
 			else if (lineWidth==2)
 				drawDot2((int)Math.round(x), (int)Math.round(y));
 			else
-				drawDot((int)x, (int)y);
+				drawDot((int)Math.round(x), (int)Math.round(y));
 			x += xinc;
 			y += yinc;
-		} while (--n>0);
-		//if (lineWidth>2) resetRoi();
+		}
 	}
 		
 	/** Draws a line from (x1,y1) to (x2,y2). */
@@ -1219,7 +1244,7 @@ public abstract class ImageProcessor implements Cloneable {
 		int descent = metrics.getDescent();
 		g.setFont(font);
 
-		if (antialiasedText && cxx>=00 && cy-h>=0) {
+		if (antialiasedText && cxx>=0 && cy-h>=0) {
 			Java2.setAntialiasedText(g, true);
 			setRoi(cxx, cy-h, w, h);
 			ImageProcessor ip = crop();

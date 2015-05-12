@@ -96,16 +96,11 @@ public class Calibration implements Cloneable {
 		return pixelWidth!=1.0 || pixelHeight!=1.0 || pixelDepth!=1.0 || !unit.equals("pixel");
 	}
 	
-   	/** Sets the default length unit (e.g. "mm", "inch"). */
- 	public void setUnit(String unit) {
- 		if (unit==null || unit.equals(""))
- 			this.unit = "pixel";
- 		else {
- 			if (unit.equals("um")) unit = "\u00B5m";
- 			this.unit = unit;
- 		}
- 		units = null;
- 	}
+	/** Sets the default length unit (e.g. "mm", "inch"). */
+	public void setUnit(String unit) {
+		this.unit = sanitizeUnit(unit);
+		units = null;
+	}
  	
    	/** Sets the X length unit. */
  	public void setXUnit(String unit) {
@@ -114,12 +109,20 @@ public class Calibration implements Cloneable {
 
    	/** Sets the Y length unit. */
  	public void setYUnit(String unit) {
- 		yunit = unit;
+		yunit = sanitizeUnit(unit);
 	}
 
    	/** Sets the Z length unit. */
  	public void setZUnit(String unit) {
- 		zunit = unit;
+		zunit = sanitizeUnit(unit );
+	}
+
+	private static String sanitizeUnit(String unit) {
+		if (unit==null || unit.equals(""))
+			return "pixel";
+		else if (unit.equals("um"))
+			unit = "\u00B5m";
+		return unit;
 	}
 
  	/** Returns the default length unit (e.g. "micron", "inch"). */

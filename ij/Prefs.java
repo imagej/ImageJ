@@ -634,5 +634,9 @@ public class Prefs {
 		return ijPrefs;
 	}
 	
+	public static String defaultResultsExtension() {
+		return get("options.ext", ".xls");
+	}
+		
 }
 

@@ -122,7 +122,7 @@ public class CompositeImage extends ImagePlus {
 			return getProcessor();
 	}
 
-	void setup(int channels, ImageStack stack2) {
+	synchronized void setup(int channels, ImageStack stack2) {
 		if (stack2!=null && stack2.getSize()>0 && (stack2.getProcessor(1) instanceof ColorProcessor)) { // RGB?
 			cip = null;
 			lut = null;

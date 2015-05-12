@@ -170,6 +170,16 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		} else
 			convertToMask = true;
 
+		if (type==ImagePlus.COLOR_RGB) {
+			ImageProcessor ip2 = updateColorThresholdedImage(imp);
+			if (ip2!=null) {
+				imp.setProcessor(ip2);
+				autoThreshold =false;
+				saveMinThreshold = 255;
+				saveMaxThreshold = 255;
+				type = ImagePlus.GRAY8;
+			}
+		}
 		if (type!=ImagePlus.GRAY8)
 			convertToByte(imp);
 		ip = imp.getProcessor();
@@ -213,6 +223,24 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		}
 		imp.updateAndRepaintWindow();
 		imp.unlock();
+	}
+	
+	private ImageProcessor updateColorThresholdedImage(ImagePlus imp) {
+		Object mask = imp.getProperty("Mask");
+		if (mask==null || !(mask instanceof ByteProcessor))
+			return null;
+		ImageProcessor maskIP = (ImageProcessor)mask;
+		if (maskIP.getWidth()!=imp.getWidth() || maskIP.getHeight()!=imp.getHeight())
+			return null;
+		Object originalImage = imp.getProperty("OriginalImage");
+		if (originalImage!=null && (originalImage instanceof ImagePlus)) {
+			ImagePlus imp2 = (ImagePlus)originalImage;
+			if (imp2.getBitDepth()==24 && imp2.getWidth()==imp.getWidth() && imp2.getHeight()==imp.getHeight()) {
+				imp.setProcessor(imp2.getProcessor());
+				Undo.setup(Undo.TRANSFORM, imp);
+			}
+		}
+		return maskIP;
 	}
 	
 	private void applyShortOrFloatThreshold(ImagePlus imp) {

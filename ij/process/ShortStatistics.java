@@ -21,10 +21,19 @@ public class ShortStatistics extends ImageStatistics {
 		nBins = 256;
 		double minT = ip.getMinThreshold();
 		int minThreshold,maxThreshold;
-		if ((mOptions&LIMIT)==0 || minT==ImageProcessor.NO_THRESHOLD)
-			{minThreshold=0; maxThreshold=65535;}
-		else
-			{minThreshold=(int)minT; maxThreshold=(int)ip.getMaxThreshold();}
+		boolean limitToThreshold = (mOptions&LIMIT)!=0;
+		if (!limitToThreshold || minT==ImageProcessor.NO_THRESHOLD) {
+			minThreshold=0;
+			maxThreshold=65535;
+		} else {
+			minThreshold=(int)minT;
+			maxThreshold=(int)ip.getMaxThreshold();
+		}
+		if (limitToThreshold) {
+			lowerThreshold = minThreshold;
+			upperThreshold = maxThreshold;
+		}
+
 		int[] hist = (ip instanceof ShortProcessor)?((ShortProcessor)ip).getHistogram2():ip.getHistogram();
 		if (maxThreshold>hist.length-1)
 			maxThreshold = hist.length-1;
