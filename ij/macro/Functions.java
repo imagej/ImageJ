@@ -2051,8 +2051,8 @@ public class Functions implements MacroConstants, Measurements {
 			} else
 				currentPlot.setFrozen(getBooleanArg());
 			return;
-		}  else if (name.equals("setLegend")) {
-			setPlotLegend(currentPlot);
+		}  else if (name.equals("addLegend") || name.equals("setLegend")) {
+			addPlotLegend(currentPlot);
 			return;
 		}  else if (name.equals("makeHighResolution")) {
 			makeHighResolution(currentPlot);
@@ -2106,26 +2106,7 @@ public class Functions implements MacroConstants, Measurements {
 			return;
 		} else if (name.equals("add")) {
 			String arg = getFirstString();
-			arg = arg.toLowerCase(Locale.US);
-			int what = Plot.CIRCLE;
-			if (arg.indexOf("curve")!=-1 || arg.indexOf("line")!=-1)
-				what = Plot.LINE;
-			if (arg.indexOf("connected")!=-1)
-				what = Plot.CONNECTED_CIRCLES;
-			else if (arg.indexOf("box")!=-1)
-				what = Plot.BOX;
-			else if (arg.indexOf("triangle")!=-1)
-				what = Plot.TRIANGLE;
-			else if (arg.indexOf("cross")!=-1)
-				what = Plot.CROSS;		
-			else if (arg.indexOf("dot")!=-1)
-				what = Plot.DOT;		
-			else if (arg.indexOf("xerror")!=-1)
-				what = -2;
-			else if (arg.indexOf("error")!=-1)
-				what = -1;
-			else if (arg.indexOf("x")!=-1)
-				what = Plot.X;
+			int what = Plot.getShape(arg);
 			addToPlot(what); 
 			return;
 		} else
@@ -2304,28 +2285,16 @@ public class Functions implements MacroConstants, Measurements {
 		plot.useTemplate(templatePlot);
 	}
 
-	void setPlotLegend(Plot plot) {
+	void addPlotLegend(Plot plot) {
 		String labels = getFirstString();
-		int flags = Plot.AUTO_POSITION;
-		if (interp.nextToken()!=')') {
-			String options = getLastString().toLowerCase();
-			if (options.indexOf("top-left") >= 0)
-				flags |= Plot.TOP_LEFT;
-			else if (options.indexOf("top-right") >= 0)
-				flags |= Plot.TOP_RIGHT;
-			else if (options.indexOf("bottom-left") >= 0)
-				flags |= Plot.BOTTOM_LEFT;
-			else if (options.indexOf("bottom-right") >= 0)
-				flags |= Plot.BOTTOM_RIGHT;
-			if (options.indexOf("bottom-to-top") >= 0)
-				flags |= Plot.LEGEND_BOTTOM_UP;
-			if (options.indexOf("transparent") >= 0)
-				flags |= Plot.LEGEND_TRANSPARENT;
-		} else
+		String options = null;
+		if (interp.nextToken()!=')')
+			options = getLastString();
+		else
 			interp.getRightParen();
 		plot.setColor(Color.BLACK);
 		plot.setLineWidth(1);
-		plot.setLegend(labels, flags);
+		plot.addLegend(labels, options);
 	}
 
 	void getPlotLimits(Plot plot) {
