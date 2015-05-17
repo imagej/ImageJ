@@ -89,6 +89,8 @@ import java.util.Comparator;
 	
 	/** Converts the double array 'a' to a float array. */
 	public static float[] toFloat(double[] a) {
+		if (a==null)
+			return null;
 		int len = a.length;
 		float[] f = new float[len];
 		for (int i=0; i<len; i++)

@@ -2106,7 +2106,7 @@ public class Functions implements MacroConstants, Measurements {
 			return;
 		} else if (name.equals("add")) {
 			String arg = getFirstString();
-			int what = Plot.getShape(arg);
+			int what = Plot.toShape(arg);
 			addToPlot(what); 
 			return;
 		} else

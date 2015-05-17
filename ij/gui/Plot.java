@@ -499,11 +499,16 @@ public class Plot implements Cloneable {
 		addPoints(Tools.toFloat(x), Tools.toFloat(y), shape);
 	}
 	
+	/** This a version of addPoints that works with JavaScript. */
+	public void addPoints(String dummy, float[] x, float[] y, int shape) {
+		addPoints(x, y, shape);
+	}
+
 	public void add(String shape, double[] x, double[] y) {
-		addPoints(Tools.toFloat(x), Tools.toFloat(y), getShape(shape));
+		addPoints(Tools.toFloat(x), Tools.toFloat(y), null, toShape(shape), null);
 	}
 	
-	public static int getShape(String str) {
+	public static int toShape(String str) {
 		str = str.toLowerCase(Locale.US);
 		int shape = Plot.CIRCLE;
 		if (str.contains("curve") || str.contains("line"))
