@@ -22,7 +22,7 @@ public class ThresholdToSelection implements PlugInFilter {
 	float min, max;
 	int w, h;
 	boolean showStatus;
-
+	
 	public void run(ImageProcessor ip) {
 		showStatus = true;
 		image.setRoi(convert(ip));

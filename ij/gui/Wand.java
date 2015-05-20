@@ -1,6 +1,7 @@
 package ij.gui;
 import ij.*;
 import ij.process.*;
+import ij.plugin.WandToolOptions;
 import java.awt.*;
 
 /** This class implements ImageJ's wand (tracing) tool.
@@ -118,6 +119,7 @@ public class Wand {
     public void autoOutline(int startX, int startY, double tolerance, int mode) {
         if (startX<0 || startX>=width || startY<0 || startY>=height) return;
         if (fpixels!=null && Float.isNaN(getPixel(startX, startY))) return;
+        WandToolOptions.setStart(startX, startY);
         exactPixelValue = tolerance==0;
         boolean thresholdMode = (mode & THRESHOLDED_MODE) != 0;
         boolean legacyMode = (mode & LEGACY_MODE) != 0 && tolerance == 0;
