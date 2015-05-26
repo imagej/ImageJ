@@ -527,7 +527,7 @@ public class Selection implements PlugIn, Measurements {
 		boolean useInvertingLut = Prefs.useInvertingLut;
 		Prefs.useInvertingLut = false;
 		boolean selectAll = roi!=null && roi.getType()==Roi.RECTANGLE && roi.getBounds().width==imp.getWidth()
-			&& roi.getBounds().height==imp.getHeight() && imp.getProcessor().getMinThreshold()!=ImageProcessor.NO_THRESHOLD;
+			&& roi.getBounds().height==imp.getHeight() && imp.isThreshold();
 		if (roi==null || !(roi.isArea()||roi.getType()==Roi.POINT) || selectAll) {
 			createMaskFromThreshold(imp);
 			Prefs.useInvertingLut = useInvertingLut;

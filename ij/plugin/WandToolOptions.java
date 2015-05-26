@@ -31,12 +31,16 @@ public class WandToolOptions implements PlugIn, DialogListener {
  			sliderMax = imp.getProcessor().getMax();
  			if (depth==32) sliderMax+=0.0000000001;
  		}
- 		showCheckbox = imp!=null && imp.getBitDepth()!=24 && WindowManager.getFrame("Threshold")==null;
+ 		showCheckbox = imp!=null && depth!=24 && WindowManager.getFrame("Threshold")==null
+ 			&& !imp.isThreshold();
 		GenericDialog gd = new GenericDialog("Wand Tool");
-		gd.addChoice("Mode:", modes, mode);
 		gd.addSlider("Tolerance: ", 0, sliderMax, tolerance);
-		if (showCheckbox)
+		gd.addChoice("Mode:", modes, mode);
+		if (showCheckbox) {
 			gd.addCheckbox("Enable Thresholding", false);
+			gd.setInsets(2,0,0);
+			gd.addMessage("Thresholded objects are traced and \"Tolerance\"\nis ignored when thresholding is enabled.");
+		}
 		gd.addDialogListener(this); 
 		gd.showDialog();
 	}
@@ -44,8 +48,8 @@ public class WandToolOptions implements PlugIn, DialogListener {
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
 		if (gd.wasCanceled())
 			return false;
-		mode = gd.getNextChoice();
 		tolerance = gd.getNextNumber();
+		mode = gd.getNextChoice();
 		if (showCheckbox) {
 			if (gd.getNextBoolean()) {
 				imp.deleteRoi();

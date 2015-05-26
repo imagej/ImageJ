@@ -56,6 +56,7 @@ public class ResultsTable implements Cloneable {
 	private boolean headingSet; 
 	private boolean showRowNumbers = true;
 	private Hashtable stringColumns;
+	private boolean NaNEmptyCells;
 
 
 	/** Constructs an empty ResultsTable with the counter=0, no columns
@@ -96,6 +97,8 @@ public class ResultsTable implements Cloneable {
 			for (int i=0; i<=lastColumn; i++) {
 				if (columns[i]!=null) {
 					double[] tmp = new double[maxRows*2];
+					if (NaNEmptyCells)
+						Arrays.fill(tmp, maxRows, tmp.length, Double.NaN);
 					System.arraycopy(columns[i], 0, tmp, 0, maxRows);
 					columns[i] = tmp;
 				}
@@ -146,6 +149,8 @@ public class ResultsTable implements Cloneable {
 			throw new IllegalArgumentException("Counter==0");
 		if (columns[column]==null) {
 			columns[column] = new double[maxRows];
+			if (NaNEmptyCells)
+				Arrays.fill(columns[column], Double.NaN);
 			if (headings[column]==null)
 				headings[column] = "---";
 			if (column>lastColumn) lastColumn = column;
@@ -315,6 +320,8 @@ public class ResultsTable implements Cloneable {
 		for(int i=0; i<headings.length; i++) {
 			if (headings[i]==null) {
 				columns[i] = new double[maxRows];
+				if (NaNEmptyCells)
+					Arrays.fill(columns[i], Double.NaN);
 				headings[i] = heading;
 				if (i>lastColumn) lastColumn = i;
 				return i;
@@ -325,6 +332,8 @@ public class ResultsTable implements Cloneable {
 		addColumns();
 		lastColumn++;
 		columns[lastColumn] = new double[maxRows];
+		if (NaNEmptyCells)
+			Arrays.fill(columns[lastColumn], Double.NaN);
 		headings[lastColumn] = heading;
 		return lastColumn;
 	}
@@ -428,6 +437,8 @@ public class ResultsTable implements Cloneable {
 		}
 		if (columns[column]==null) {
 			columns[column] = new double[maxRows];
+			if (NaNEmptyCells)
+				Arrays.fill(columns[column], Double.NaN);
 			if (column>lastColumn) lastColumn = column;
 		}
 		columns[column][row] = value;
@@ -598,8 +609,11 @@ public class ResultsTable implements Cloneable {
 		if ((column<0) || (column>=headings.length))
 			throw new IllegalArgumentException("Column out of range: "+column);
 		headings[column] = heading;
-		if (columns[column]==null)
+		if (columns[column]==null) {
 			columns[column] = new double[maxRows];
+			if (NaNEmptyCells)
+				Arrays.fill(columns[column], Double.NaN);
+		}
 		if (column>lastColumn) lastColumn = column;
 		headingSet = true;
 	}
@@ -626,6 +640,11 @@ public class ResultsTable implements Cloneable {
 		if ((column<0) || (column>=headings.length))
 			throw new IllegalArgumentException("Column out of range: "+column);
 		decimalPlaces[column] = (short)digits;
+	}
+
+	/** Set 'true' to initially fill data arrays with NaNs instead of zeros. */
+	public void setNaNEmptyCells(boolean NaNEmptyCells) {
+		this.NaNEmptyCells = NaNEmptyCells;
 	}
 
 	public void showRowNumbers(boolean showNumbers) {
@@ -825,6 +844,8 @@ public class ResultsTable implements Cloneable {
 			//IJ.log(i+"  "+rt2.getColumn(i)+"  "+columns[i]+"  "+rt2.getColumnHeading(i)+"  "+getColumnHeading(i));
 			if (rt2.getColumn(i)!=null && columns[i]==null) {
 				columns[i] = new double[maxRows];
+				if (NaNEmptyCells)
+					Arrays.fill(columns[i], Double.NaN);
 				headings[i] = rt2.getColumnHeading(i);
 				if (i>lastColumn) lastColumn = i;
 			} else if (rt2.getColumn(i)==null && columns[i]!=null && !keep[i])

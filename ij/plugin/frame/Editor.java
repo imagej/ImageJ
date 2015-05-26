@@ -10,7 +10,6 @@ import ij.util.Tools;
 import ij.text.*;
 import ij.macro.*;
 import ij.plugin.MacroInstaller;
-import ij.plugin.NewPlugin;
 import ij.plugin.Commands;
 import ij.plugin.Macro_Runner;
 import ij.io.SaveDialog;
@@ -134,7 +133,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		boolean shortcutsBroken = IJ.isWindows()
 			&& (System.getProperty("java.version").indexOf("1.1.8")>=0
 			||System.getProperty("java.version").indexOf("1.5.")>=0);
-shortcutsBroken = false;
+		shortcutsBroken = false;
 		if (shortcutsBroken)
 			item = new MenuItem("Cut  Ctrl+X");
 		else
@@ -175,6 +174,24 @@ shortcutsBroken = false;
 		m.add(monospaced);
 		m.add(new MenuItem("Save Settings"));
 		m.addActionListener(this);
+		mb.add(m);
+		
+		m = new Menu("Templates");
+		Menu submenu = new Menu("Macro");
+		submenu.add(new MenuItem("Hello World"));
+		submenu.add(new MenuItem("Tool"));
+		submenu.addActionListener(this);
+		m.add(submenu);
+		submenu = new Menu("Java");
+		submenu.add(new MenuItem("Plugin"));
+		submenu.add(new MenuItem("Plugin Filter"));
+		submenu.add(new MenuItem("Plugin Frame"));
+		submenu.add(new MenuItem("Plugin Tool"));
+		submenu.addActionListener(this);
+		m.add(submenu);
+		submenu = new Menu("JavaScript");
+		submenu.addActionListener(this);
+		m.add(submenu);
 		mb.add(m);
 	}
 			
@@ -727,6 +744,18 @@ shortcutsBroken = false;
 			IJ.open();
 		else if (what.equals("Copy to Image Info"))
 			copyToInfo();
+		else if ("Hello World".equals(what))
+			openTemplate("Hello_World.ijm");
+		else if ("Tool".equals(what))
+			openTemplate("Circle_Tool.txt");
+		else if ("Plugin".equals(what))
+			openTemplate("My_Plugin.src");
+		else if ("Plugin Filter".equals(what))
+			openTemplate("Filter_Plugin.src");
+		else if ("Plugin Frame".equals(what))
+			openTemplate("Plugin_Frame.src");
+		else if ("Plugin Tool".equals(what))
+			openTemplate("Prototype_Tool.src");
 		else {
 			if (altKeyDown) {
 				enableDebugging();
@@ -736,6 +765,25 @@ shortcutsBroken = false;
 		}
 	}
 	
+	private void openTemplate(String name) {
+		int rows = 24;
+		int columns = 70;
+		int options = MENU_BAR;
+		String text = null;
+		Editor ed = new Editor(rows, columns, 0, options);
+		text = Tools.openFromIJJarAsString("/macros/"+name);
+		if (text==null)
+			return;
+		if (name.endsWith(".src"))
+			name = name.substring(0,name.length()-4) + ".java";
+		if (ta!=null && ta.getText().length()==0 && !name.endsWith(".java")) {
+			ta.setText(text);
+			ta.setCaretPosition(0);
+			setTitle(name);
+		} else
+			ed.create(name, text);
+	}
+
 	protected void showMacroFunctions() {
 		String url= "/developer/macro/functions.html";
 		String selText = ta.getSelectedText().replace("\n", " ");

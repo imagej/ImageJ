@@ -198,7 +198,7 @@ public class Concatenator implements PlugIn, ItemListener{
 			if (cal2.pixelWidth!=cal.pixelWidth 
 			|| cal2.pixelHeight!=cal.pixelHeight 
 			|| cal2.pixelDepth != cal.pixelDepth)
-				keepCalibration=false;
+				keepCalibration = false;
 			if (images[i].getWidth()>maxWidth)
 				maxWidth = images[i].getWidth();
 			if (images[i].getHeight()>maxHeight)
