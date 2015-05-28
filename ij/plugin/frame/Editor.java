@@ -179,6 +179,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		m = new Menu("Templates");
 		Menu submenu = new Menu("Macro");
 		submenu.add(new MenuItem("Hello World"));
+		submenu.add(new MenuItem("Process Folder"));
 		submenu.add(new MenuItem("Tool"));
 		submenu.addActionListener(this);
 		m.add(submenu);
@@ -746,6 +747,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			copyToInfo();
 		else if ("Hello World".equals(what))
 			openTemplate("Hello_World.ijm");
+		else if ("Process Folder".equals(what))
+			openTemplate("Batch_Process_Folder.ijm");
 		else if ("Tool".equals(what))
 			openTemplate("Circle_Tool.txt");
 		else if ("Plugin".equals(what))
