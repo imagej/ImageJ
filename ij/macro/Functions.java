@@ -5120,6 +5120,8 @@ public class Functions implements MacroConstants, Measurements {
 			return getRankPositions();
 		else if (name.equals("getStatistics"))
 			return getArrayStatistics();
+		else if (name.equals("getSequence"))
+			return getSequence();
 		else if (name.equals("fill"))
 			return fillArray();
 		else if (name.equals("reverse")||name.equals("invert"))
@@ -5381,6 +5383,14 @@ public class Functions implements MacroConstants, Measurements {
 		return a;
 	}
 
+	Variable[] getSequence() {
+		int n = (int)getArg();
+		Variable[] a = new Variable[n];
+		for (int i=0; i<n; i++)
+			a[i] = new Variable(i);
+		return a;
+	}
+	
 	Variable[] fillArray() {
 		interp.getLeftParen();
 		Variable[] a = getArray();
