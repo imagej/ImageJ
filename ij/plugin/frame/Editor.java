@@ -178,24 +178,31 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		
 		m = new Menu("Templates");
 		Menu submenu = new Menu("Macro");
-		submenu.add(new MenuItem("Hello World"));
-		submenu.add(new MenuItem("Dialog Box"));
-		submenu.add(new MenuItem("Example Plot"));
-		submenu.add(new MenuItem("Process Folder"));
-		submenu.add(new MenuItem("Tool"));
+		addTemplate(submenu, "Hello World", "Hello_World.ijm");
+		addTemplate(submenu, "Dialog Box", "Dialog_Box.ijm");
+		addTemplate(submenu, "Example Plot", "Example_Plot.ijm");
+		addTemplate(submenu, "Process Folder", "Batch_Process_Folder.ijm");
+		addTemplate(submenu, "Tool", "Circle_Tool.ijm");
 		submenu.addActionListener(this);
 		m.add(submenu);
 		submenu = new Menu("Java");
-		submenu.add(new MenuItem("Plugin"));
-		submenu.add(new MenuItem("Plugin Filter"));
-		submenu.add(new MenuItem("Plugin Frame"));
-		submenu.add(new MenuItem("Plugin Tool"));
+		addTemplate(submenu, "Plugin", "My_Plugin.java");
+		addTemplate(submenu, "Plugin Filter", "Filter_Plugin.java");
+		addTemplate(submenu, "Plugin Frame", "Plugin_Frame.java");
+		addTemplate(submenu, "Plugin Tool", "Prototype_Tool.java");
 		submenu.addActionListener(this);
 		m.add(submenu);
 		submenu = new Menu("JavaScript");
+		addTemplate(submenu, "Example Plot", "Example_Plot.js");
 		submenu.addActionListener(this);
 		m.add(submenu);
 		mb.add(m);
+	}
+	
+	private void addTemplate(Menu menu, String label, String command) {
+		MenuItem item = new MenuItem(label);
+		menu.add(item);
+		item.setActionCommand(command);
 	}
 			
 	public void positionWindow() {
@@ -747,24 +754,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			IJ.open();
 		else if (what.equals("Copy to Image Info"))
 			copyToInfo();
-		else if ("Hello World".equals(what))
-			openTemplate("Hello_World.ijm");
-		else if ("Dialog Box".equals(what))
-			openTemplate("Dialog_Box.ijm");
-		else if ("Example Plot".equals(what))
-			openTemplate("Example_Plot.ijm");
-		else if ("Process Folder".equals(what))
-			openTemplate("Batch_Process_Folder.ijm");
-		else if ("Tool".equals(what))
-			openTemplate("Circle_Tool.txt");
-		else if ("Plugin".equals(what))
-			openTemplate("My_Plugin.src");
-		else if ("Plugin Filter".equals(what))
-			openTemplate("Filter_Plugin.src");
-		else if ("Plugin Frame".equals(what))
-			openTemplate("Plugin_Frame.src");
-		else if ("Plugin Tool".equals(what))
-			openTemplate("Prototype_Tool.src");
+		else if (what.endsWith(".ijm") || what.endsWith(".java") || what.endsWith(".js"))
+			openTemplate(what);
 		else {
 			if (altKeyDown) {
 				enableDebugging();
@@ -780,12 +771,18 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		int options = MENU_BAR;
 		String text = null;
 		Editor ed = new Editor(rows, columns, 0, options);
-		text = Tools.openFromIJJarAsString("/macros/"+name);
-		if (text==null)
+		String dir = "Macro/";
+		if (name.endsWith(".java"))
+			dir = "Java/";
+		else if (name.endsWith(".js"))
+			dir = "JavaScript/";
+		String url = "http://wsr.imagej.net/download/Templates/"+dir+name;
+		text = IJ.openUrlAsString(url);
+		if (text.startsWith("<Error: ")) {
+			IJ.error("Open Template", text);
 			return;
-		if (name.endsWith(".src"))
-			name = name.substring(0,name.length()-4) + ".java";
-		if (ta!=null && ta.getText().length()==0 && !name.endsWith(".java")) {
+		}
+		if (ta!=null && ta.getText().length()==0 && !(name.endsWith(".java")||name.endsWith(".js"))) {
 			ta.setText(text);
 			ta.setCaretPosition(0);
 			setTitle(name);

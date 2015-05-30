@@ -698,6 +698,10 @@ public class Plot implements Cloneable {
 			isColor = true;
 	}
 	
+	public void setColor(String c1, String c2) {
+		setColor(Colors.getColor(c1,Color.black), Colors.getColor(c2,Color.black));
+	}
+
 	/** Changes the line width for the next objects that will be added to the plot. */
 	public void setLineWidth(int lineWidth) {
 		currentLineWidth = lineWidth;

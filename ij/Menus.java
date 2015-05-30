@@ -227,6 +227,7 @@ public class Menus {
 		addPlugInItem(help, "Plugins...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/plugins\")", 0, false);
 		addPlugInItem(help, "Macros...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/macros/\")", 0, false);
 		addPlugInItem(help, "Macro Functions...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/developer/macro/functions.html\")", 0, false);
+		addPlugInItem(help, "Templates...", "ij.plugin.BrowserLauncher(\"http://wsr.imagej.net/download/Templates/\")", 0, false);
 		help.addSeparator();
 		addPlugInItem(help, "Update ImageJ...", "ij.plugin.ImageJ_Updater", 0, false);
 		addPlugInItem(help, "Refresh Menus", "ij.plugin.ImageJ_Updater(\"menus\")", 0, false);
