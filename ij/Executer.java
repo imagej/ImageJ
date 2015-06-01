@@ -3,6 +3,7 @@ import ij.util.Tools;
 import ij.text.TextWindow;
 import ij.plugin.MacroInstaller;
 import ij.plugin.frame.Recorder;
+import ij.plugin.frame.Editor;
 import ij.io.OpenDialog;
 import java.io.*;
 import java.util.*;
@@ -139,10 +140,51 @@ public class Executer implements Runnable {
 			// is it in the File>Open Recent menu?
 			if (openRecent(cmd))
 				return;
+			// is it a template in Help>Templates menu?
+			if (openTemplate(cmd))
+				return;
 			IJ.error("Unrecognized command: \"" + cmd+"\"");
 	 	}
     }
     
+	private boolean openTemplate(String name) {
+		boolean isMacro = name.endsWith(".ijm");
+		boolean isJava = name.endsWith(".java");
+		boolean isJavaScript = name.endsWith(".js");
+		boolean isBeanShell = name.endsWith(".bsh");
+		if (!(isMacro||isJava||isJavaScript||isBeanShell))
+			return false;
+		boolean run = !isJava && (IJ.shiftKeyDown() || IJ.controlKeyDown() || IJ.altKeyDown());
+		int rows = 24;
+		int columns = 70;
+		int options = Editor.MENU_BAR;
+		String text = null;
+		Editor ed = new Editor(rows, columns, 0, options);
+		String dir = "Macro/";
+		if (isJava)
+			dir = "Java/";
+		else if (isJavaScript)
+			dir = "JavaScript/";
+		else if (isBeanShell)
+			dir = "BeanShell/";
+		String url = "http://wsr.imagej.net/download/Templates/"+dir+name;
+		text = IJ.openUrlAsString(url);
+		if (text.startsWith("<Error: ")) {
+			IJ.error("Open Template", text);
+			return true;
+		}
+		ed.create(name, text);
+		if (run) {
+			if (isJavaScript)
+				ed.evaluateScript(".js");
+			else if (isBeanShell)
+				ed.evaluateScript(".bsh");
+			else
+				IJ.runMacro(text);
+		}
+		return true;
+	}
+
     /** Opens a .lut file from the ImageJ/luts directory and returns 'true' if successful. */
     public static boolean loadLut(String name) {
 		String path = IJ.getDirectory("luts")+name.replace(" ","_")+".lut";

@@ -176,34 +176,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		m.addActionListener(this);
 		mb.add(m);
 		
-		m = new Menu("Templates");
-		Menu submenu = new Menu("Macro");
-		addTemplate(submenu, "Hello World", "Hello_World.ijm");
-		addTemplate(submenu, "Dialog Box", "Dialog_Box.ijm");
-		addTemplate(submenu, "Example Plot", "Example_Plot.ijm");
-		addTemplate(submenu, "Process Folder", "Batch_Process_Folder.ijm");
-		addTemplate(submenu, "Tool", "Circle_Tool.ijm");
-		submenu.addActionListener(this);
-		m.add(submenu);
-		submenu = new Menu("Java");
-		addTemplate(submenu, "Plugin", "My_Plugin.java");
-		addTemplate(submenu, "Plugin Filter", "Filter_Plugin.java");
-		addTemplate(submenu, "Plugin Frame", "Plugin_Frame.java");
-		addTemplate(submenu, "Plugin Tool", "Prototype_Tool.java");
-		submenu.addActionListener(this);
-		m.add(submenu);
-		submenu = new Menu("JavaScript");
-		addTemplate(submenu, "Example Plot", "Example_Plot.js");
-		submenu.addActionListener(this);
-		m.add(submenu);
+		m = Menus.getTemplatesMenu(this);
 		mb.add(m);
-	}
-	
-	private void addTemplate(Menu menu, String label, String command) {
-		MenuItem item = new MenuItem(label);
-		menu.add(item);
-		item.setActionCommand(command);
-	}
+	}			
 			
 	public void positionWindow() {
 		Dimension screen = IJ.getScreenSize();
@@ -451,10 +426,14 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		}
 	}
 
-	void evaluateScript(String ext) {
+	public void evaluateScript(String ext) {
 		if (downloading) {
 			IJ.beep();
 			IJ.showStatus("Download in progress");
+			return;
+		}
+		if (ext.endsWith(".js")) {
+			evaluateJavaScript();
 			return;
 		}
 		if (!getTitle().endsWith(ext))
@@ -754,8 +733,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			IJ.open();
 		else if (what.equals("Copy to Image Info"))
 			copyToInfo();
-		else if (what.endsWith(".ijm") || what.endsWith(".java") || what.endsWith(".js"))
-			openTemplate(what);
+		else if (what.endsWith(".ijm") || what.endsWith(".java") || what.endsWith(".js") || what.endsWith(".bsh"))
+			openTemplate(what, e);
 		else {
 			if (altKeyDown) {
 				enableDebugging();
@@ -765,31 +744,49 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		}
 	}
 	
-	private void openTemplate(String name) {
+	private void openTemplate(String name, ActionEvent e) {
+		boolean isJava = name.endsWith(".java");
+		boolean isJavaScript = name.endsWith(".js");
+		boolean isBeanShell = name.endsWith(".bsh");
+		int flags = e.getModifiers();
+		boolean shift = (flags & KeyEvent.SHIFT_MASK) != 0;
+		boolean control = (flags & KeyEvent.CTRL_MASK) != 0;
+		boolean alt = (flags & KeyEvent.ALT_MASK) != 0;
+		boolean run = !isJava && (shift || control || alt);
 		int rows = 24;
 		int columns = 70;
 		int options = MENU_BAR;
 		String text = null;
 		Editor ed = new Editor(rows, columns, 0, options);
 		String dir = "Macro/";
-		if (name.endsWith(".java"))
+		if (isJava)
 			dir = "Java/";
-		else if (name.endsWith(".js"))
+		else if (isJavaScript)
 			dir = "JavaScript/";
+		else if (isBeanShell)
+			dir = "BeanShell/";
 		String url = "http://wsr.imagej.net/download/Templates/"+dir+name;
 		text = IJ.openUrlAsString(url);
 		if (text.startsWith("<Error: ")) {
 			IJ.error("Open Template", text);
 			return;
 		}
-		if (ta!=null && ta.getText().length()==0 && !(name.endsWith(".java")||name.endsWith(".js"))) {
+		if (ta!=null && ta.getText().length()==0 && !(isJava||isJavaScript||isBeanShell)) {
 			ta.setText(text);
 			ta.setCaretPosition(0);
 			setTitle(name);
 		} else
 			ed.create(name, text);
+		if (run) {
+			if (isJavaScript)
+				ed.evaluateJavaScript();
+			else if (isBeanShell)
+				ed.evaluateScript(".bsh");
+			else
+				IJ.runMacro(text);
+		}
 	}
-
+	
 	protected void showMacroFunctions() {
 		String url= "/developer/macro/functions.html";
 		String selText = ta.getSelectedText().replace("\n", " ");

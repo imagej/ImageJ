@@ -227,7 +227,8 @@ public class Menus {
 		addPlugInItem(help, "Plugins...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/plugins\")", 0, false);
 		addPlugInItem(help, "Macros...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/macros/\")", 0, false);
 		addPlugInItem(help, "Macro Functions...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/developer/macro/functions.html\")", 0, false);
-		addPlugInItem(help, "Templates...", "ij.plugin.BrowserLauncher(\"http://wsr.imagej.net/download/Templates/\")", 0, false);
+		Menu templatesMenu = getTemplatesMenu(ij);
+		help.add(templatesMenu);
 		help.addSeparator();
 		addPlugInItem(help, "Update ImageJ...", "ij.plugin.ImageJ_Updater", 0, false);
 		addPlugInItem(help, "Refresh Menus", "ij.plugin.ImageJ_Updater(\"menus\")", 0, false);
@@ -256,6 +257,46 @@ public class Menus {
 		return error;
 	}
 	
+	public static Menu getTemplatesMenu(ActionListener listener) {
+		Menu menu = new Menu("Templates");
+		Menu submenu = new Menu("Macro");
+		addTemplate(submenu, "Hello World", "Hello_World.ijm");
+		addTemplate(submenu, "Dialog Box", "Dialog_Box.ijm");
+		addTemplate(submenu, "Example Plot", "Example_Plot.ijm");
+		addTemplate(submenu, "Semi-log Plot", "Semi-log_Plot.ijm");
+		addTemplate(submenu, "Arrow Plot", "Arrow_Plot.ijm");
+		addTemplate(submenu, "Process Folder", "Batch_Process_Folder.ijm");
+		addTemplate(submenu, "Tool", "Circle_Tool.ijm");
+		submenu.addActionListener(listener);
+		menu.add(submenu);
+		submenu = new Menu("Java");
+		addTemplate(submenu, "Plugin", "My_Plugin.java");
+		addTemplate(submenu, "Plugin Filter", "Filter_Plugin.java");
+		addTemplate(submenu, "Plugin Frame", "Plugin_Frame.java");
+		addTemplate(submenu, "Plugin Tool", "Prototype_Tool.java");
+		submenu.addActionListener(listener);
+		menu.add(submenu);
+		submenu = new Menu("JavaScript");
+		addTemplate(submenu, "Example Plot", "Example_Plot.js");
+		addTemplate(submenu, "Semi-log Plot", "Semi-log_Plot.js");
+		addTemplate(submenu, "Arrow Plot", "Arrow_Plot.js");
+		submenu.addActionListener(listener);
+		menu.add(submenu);
+		submenu = new Menu("BeanShell");
+		addTemplate(submenu, "Example Plot", "Example_Plot.bsh");
+		addTemplate(submenu, "Semi-log Plot", "Semi-log_Plot.bsh");
+		addTemplate(submenu, "Arrow Plot", "Arrow_Plot.bsh");
+		submenu.addActionListener(listener);
+		menu.add(submenu);
+		return menu;
+	}
+	
+	private static void addTemplate(Menu menu, String label, String command) {
+		MenuItem item = new MenuItem(label);
+		menu.add(item);
+		item.setActionCommand(command);
+	}
+
 	void addOpenRecentSubMenu(Menu menu) {
 		openRecentMenu = getMenu("File>Open Recent");
  		for (int i=0; i<MAX_OPEN_RECENT_ITEMS; i++) {
