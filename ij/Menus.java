@@ -227,8 +227,8 @@ public class Menus {
 		addPlugInItem(help, "Plugins...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/plugins\")", 0, false);
 		addPlugInItem(help, "Macros...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/macros/\")", 0, false);
 		addPlugInItem(help, "Macro Functions...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/developer/macro/functions.html\")", 0, false);
-		Menu templatesMenu = getTemplatesMenu(ij);
-		help.add(templatesMenu);
+		Menu examplesMenu = getExamplesMenu(ij);
+		help.add(examplesMenu);
 		help.addSeparator();
 		addPlugInItem(help, "Update ImageJ...", "ij.plugin.ImageJ_Updater", 0, false);
 		addPlugInItem(help, "Refresh Menus", "ij.plugin.ImageJ_Updater(\"menus\")", 0, false);
@@ -257,41 +257,48 @@ public class Menus {
 		return error;
 	}
 	
-	public static Menu getTemplatesMenu(ActionListener listener) {
-		Menu menu = new Menu("Templates");
+	public static Menu getExamplesMenu(ActionListener listener) {
+		Menu menu = new Menu("Examples");
 		Menu submenu = new Menu("Macro");
-		addTemplate(submenu, "Hello World", "Hello_World.ijm");
-		addTemplate(submenu, "Dialog Box", "Dialog_Box.ijm");
-		addTemplate(submenu, "Example Plot", "Example_Plot.ijm");
-		addTemplate(submenu, "Semi-log Plot", "Semi-log_Plot.ijm");
-		addTemplate(submenu, "Arrow Plot", "Arrow_Plot.ijm");
-		addTemplate(submenu, "Process Folder", "Batch_Process_Folder.ijm");
-		addTemplate(submenu, "Tool", "Circle_Tool.ijm");
+		addExample(submenu, "Hello World", "Hello_World.ijm");
+		addExample(submenu, "Dialog Box", "Dialog_Box.ijm");
+		addExample(submenu, "Example Plot", "Example_Plot.ijm");
+		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.ijm");
+		addExample(submenu, "Arrow Plot", "Arrow_Plot.ijm");
+		addExample(submenu, "Process Folder", "Batch_Process_Folder.ijm");
+		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.ijm");
+		addExample(submenu, "Overlay", "Overlay.ijm");
+		addExample(submenu, "Stack Overlay", "Stack_Overlay.ijm");
+		addExample(submenu, "Tool", "Circle_Tool.ijm");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("Java");
-		addTemplate(submenu, "Plugin", "My_Plugin.java");
-		addTemplate(submenu, "Plugin Filter", "Filter_Plugin.java");
-		addTemplate(submenu, "Plugin Frame", "Plugin_Frame.java");
-		addTemplate(submenu, "Plugin Tool", "Prototype_Tool.java");
+		addExample(submenu, "Plugin", "My_Plugin.java");
+		addExample(submenu, "Plugin Filter", "Filter_Plugin.java");
+		addExample(submenu, "Plugin Frame", "Plugin_Frame.java");
+		addExample(submenu, "Plugin Tool", "Prototype_Tool.java");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("JavaScript");
-		addTemplate(submenu, "Example Plot", "Example_Plot.js");
-		addTemplate(submenu, "Semi-log Plot", "Semi-log_Plot.js");
-		addTemplate(submenu, "Arrow Plot", "Arrow_Plot.js");
+		addExample(submenu, "Example Plot", "Example_Plot.js");
+		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.js");
+		addExample(submenu, "Arrow Plot", "Arrow_Plot.js");
+		addExample(submenu, "Overlay", "Overlay.js");
+		addExample(submenu, "Stack Overlay", "Stack_Overlay.js");
+		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.js");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("BeanShell");
-		addTemplate(submenu, "Example Plot", "Example_Plot.bsh");
-		addTemplate(submenu, "Semi-log Plot", "Semi-log_Plot.bsh");
-		addTemplate(submenu, "Arrow Plot", "Arrow_Plot.bsh");
+		addExample(submenu, "Example Plot", "Example_Plot.bsh");
+		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.bsh");
+		addExample(submenu, "Arrow Plot", "Arrow_Plot.bsh");
+		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.bsh");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		return menu;
 	}
 	
-	private static void addTemplate(Menu menu, String label, String command) {
+	private static void addExample(Menu menu, String label, String command) {
 		MenuItem item = new MenuItem(label);
 		menu.add(item);
 		item.setActionCommand(command);

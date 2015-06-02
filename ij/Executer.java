@@ -140,14 +140,14 @@ public class Executer implements Runnable {
 			// is it in the File>Open Recent menu?
 			if (openRecent(cmd))
 				return;
-			// is it a template in Help>Templates menu?
-			if (openTemplate(cmd))
+			// is it an example in Help>Examples menu?
+			if (openExample(cmd))
 				return;
 			IJ.error("Unrecognized command: \"" + cmd+"\"");
 	 	}
     }
     
-	private boolean openTemplate(String name) {
+	private boolean openExample(String name) {
 		boolean isMacro = name.endsWith(".ijm");
 		boolean isJava = name.endsWith(".java");
 		boolean isJavaScript = name.endsWith(".js");
@@ -167,10 +167,10 @@ public class Executer implements Runnable {
 			dir = "JavaScript/";
 		else if (isBeanShell)
 			dir = "BeanShell/";
-		String url = "http://wsr.imagej.net/download/Templates/"+dir+name;
+		String url = "http://wsr.imagej.net/download/Examples/"+dir+name;
 		text = IJ.openUrlAsString(url);
 		if (text.startsWith("<Error: ")) {
-			IJ.error("Open Template", text);
+			IJ.error("Open Example", text);
 			return true;
 		}
 		ed.create(name, text);

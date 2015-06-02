@@ -442,6 +442,10 @@ public class ResultsTable implements Cloneable {
 			if (column>lastColumn) lastColumn = column;
 		}
 		columns[column][row] = value;
+		if (counter<25) {
+			if ((int)value!=value && !Double.isNaN(value))
+				decimalPlaces[column] = (short)precision;
+		}
 	}
 
 	/** Sets the string value of the given column and row, where

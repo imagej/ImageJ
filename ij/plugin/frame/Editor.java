@@ -176,7 +176,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		m.addActionListener(this);
 		mb.add(m);
 		
-		m = Menus.getTemplatesMenu(this);
+		m = Menus.getExamplesMenu(this);
 		mb.add(m);
 	}			
 			
@@ -734,7 +734,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else if (what.equals("Copy to Image Info"))
 			copyToInfo();
 		else if (what.endsWith(".ijm") || what.endsWith(".java") || what.endsWith(".js") || what.endsWith(".bsh"))
-			openTemplate(what, e);
+			openExample(what, e);
 		else {
 			if (altKeyDown) {
 				enableDebugging();
@@ -744,7 +744,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		}
 	}
 	
-	private void openTemplate(String name, ActionEvent e) {
+	private void openExample(String name, ActionEvent e) {
 		boolean isJava = name.endsWith(".java");
 		boolean isJavaScript = name.endsWith(".js");
 		boolean isBeanShell = name.endsWith(".bsh");
@@ -765,10 +765,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			dir = "JavaScript/";
 		else if (isBeanShell)
 			dir = "BeanShell/";
-		String url = "http://wsr.imagej.net/download/Templates/"+dir+name;
+		String url = "http://wsr.imagej.net/download/Examples/"+dir+name;
 		text = IJ.openUrlAsString(url);
 		if (text.startsWith("<Error: ")) {
-			IJ.error("Open Template", text);
+			IJ.error("Open Example", text);
 			return;
 		}
 		if (ta!=null && ta.getText().length()==0 && !(isJava||isJavaScript||isBeanShell)) {
