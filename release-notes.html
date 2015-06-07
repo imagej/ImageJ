@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.49u 5 June 2015</u>
+<li> <u>1.49u 6 June 2015</u>
 <ul>
 <li> Added the <i>Help&gt;Examples</i> sub-menu and a <i>Examples</i>
 menu to the text editor. When opening an example macro or script, hold the shift, 
@@ -24,7 +24,10 @@ command maintains hyperstack calibration.
 setColor(String) and getPlot() methods to the Plot class.
 <li> Added the ImagePlus.isThreshold() and ResultsTable.setNaNEmptyCells() methods.
 <li> Thanks to Kerry Krugh, <i>Image&gt;Show Info</i> now displays
-the first 60 characters UN (Unknown) Value Representation DICOM tags.
+the first 60 characters of UN (Unknown) Value Representation DICOM tags.
+<li> Thanks to Megan Hagenauer, fixed a bug that cause the <i>Analyze&gt;Measure</i>
+command to not work as expected with line selections when "Limit to threshold" was
+enabled in <i>Analyze&gt;SetMeasurements</i>.
 <li> Thanks to Laurent Gelman, fixed a 1.49t regression that caused the
 <i>Image&gt;Adjust&gt;Canvas Size</i> command to not work as
 expected with plot windows.

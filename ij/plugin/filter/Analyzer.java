@@ -398,10 +398,12 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		boolean straightLine = roi.getType()==Roi.LINE;
 		int lineWidth = (int)Math.round(roi.getStrokeWidth());
-		ImageProcessor ip2;
+		ImageProcessor ip2 = imp2.getProcessor();
+		double minThreshold = ip2.getMinThreshold();
+		double maxThreshold = ip2.getMaxThreshold();
+		int limit = (Analyzer.getMeasurements()&LIMIT)!=0?LIMIT:0;
 		Rectangle saveR = null;
 		if (straightLine && lineWidth>1) {
-			ip2 = imp2.getProcessor();
 			saveR = ip2.getRoi();
 			ip2.setRoi(roi.getPolygon());
 		} else if (lineWidth>1) {
@@ -417,7 +419,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 			if (values==null) return;
 			ip2 = new FloatProcessor(values.length, 1, values);
 		}
-		ImageStatistics stats = ImageStatistics.getStatistics(ip2, AREA+MEAN+STD_DEV+MODE+MIN_MAX, imp2.getCalibration());
+		if (limit!=0)
+			ip2.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
+		ImageStatistics stats = ImageStatistics.getStatistics(ip2, AREA+MEAN+STD_DEV+MODE+MIN_MAX+limit, imp2.getCalibration());
 		if (saveR!=null) ip2.setRoi(saveR);
 		if ((roi instanceof Line) && (measurements&CENTROID)!=0) {
 			FloatPolygon p = ((Line)roi).getFloatPoints();
