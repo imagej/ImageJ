@@ -144,6 +144,7 @@ import java.util.Vector;
 			yStart = y;
 			mode = UNCONSTRAINED;
 		}
+		ip.setLineWidth(width);
 		ip.lineTo(x, y);
 		if (overlayImage!=null) {
 			overlayImage.setProcessor(ip);
