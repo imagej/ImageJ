@@ -27,10 +27,8 @@ public class ByteStatistics extends ImageStatistics {
 			minThreshold = (int)minT;
 			maxThreshold = (int)ip.getMaxThreshold();
 		}
-		if (limitToThreshold) {
-			lowerThreshold = minThreshold;
-			upperThreshold = maxThreshold;
-		}
+		if (limitToThreshold)
+			saveThreshold(minThreshold, maxThreshold, cal);
 		float[] cTable = cal!=null?cal.getCTable():null;
 		if (cTable!=null)
 			getCalibratedStatistics(minThreshold,maxThreshold,cTable);

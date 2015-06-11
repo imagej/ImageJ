@@ -29,10 +29,8 @@ public class FloatStatistics extends ImageStatistics {
 			minThreshold=minT;
 			maxThreshold=ip.getMaxThreshold();
 		}
-		if (limitToThreshold) {
-			lowerThreshold = minThreshold;
-			upperThreshold = maxThreshold;
-		}
+		if (limitToThreshold)
+			saveThreshold(minThreshold, maxThreshold, cal);
 		getStatistics(ip, minThreshold, maxThreshold);
 		if ((mOptions&MODE)!=0)
 			getMode();

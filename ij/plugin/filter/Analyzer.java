@@ -402,24 +402,46 @@ public class Analyzer implements PlugInFilter, Measurements {
 		double minThreshold = ip2.getMinThreshold();
 		double maxThreshold = ip2.getMaxThreshold();
 		int limit = (Analyzer.getMeasurements()&LIMIT)!=0?LIMIT:0;
+		boolean calibrated = imp2.getCalibration().calibrated();
 		Rectangle saveR = null;
 		if (straightLine && lineWidth>1) {
 			saveR = ip2.getRoi();
 			ip2.setRoi(roi.getPolygon());
+		} else if (lineWidth>1 && calibrated && limit!=0) {
+			Calibration cal = imp2.getCalibration().copy();
+			imp2.getCalibration().disableDensityCalibration();
+			ip2 = (new Straightener()).straightenLine(imp2, lineWidth);
+			imp2.setCalibration(cal);
+			ip2 = convertToOriginalDepth(imp2, ip2);
+			ip2.setCalibrationTable(cal.getCTable());
 		} else if (lineWidth>1) {
-			if ((measurements&AREA)!=0 || (measurements&MEAN)!=0)
+			if ((measurements&AREA)!=0 || (measurements&MEAN)!=0 || calibrated) {
 				ip2 = (new Straightener()).straightenLine(imp2, lineWidth);
-			else {
+				if (limit!=0)
+					ip2 = convertToOriginalDepth(imp2, ip2);
+			} else {
 				saveResults(new ImageStatistics(), roi);
 				return;
 			}
+		} else if (calibrated && limit!=0) {
+			Calibration cal = imp2.getCalibration().copy();
+			imp2.getCalibration().disableDensityCalibration();
+			ProfilePlot profile = new ProfilePlot(imp2);
+			imp2.setCalibration(cal);
+			double[] values = profile.getProfile();
+			if (values==null) return;
+			ip2 = new FloatProcessor(values.length, 1, values);
+			ip2 = convertToOriginalDepth(imp2, ip2);
+			ip2.setCalibrationTable(cal.getCTable());
 		} else {
 			ProfilePlot profile = new ProfilePlot(imp2);
 			double[] values = profile.getProfile();
 			if (values==null) return;
 			ip2 = new FloatProcessor(values.length, 1, values);
+			if (limit!=0)
+				ip2 = convertToOriginalDepth(imp2, ip2);
 		}
-		if (limit!=0)
+		if (limit!=0 && minThreshold!=ImageProcessor.NO_THRESHOLD)
 			ip2.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
 		ImageStatistics stats = ImageStatistics.getStatistics(ip2, AREA+MEAN+STD_DEV+MODE+MIN_MAX+limit, imp2.getCalibration());
 		if (saveR!=null) ip2.setRoi(saveR);
@@ -435,6 +457,15 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		saveResults(stats, roi);
 	}
+	
+	private ImageProcessor convertToOriginalDepth(ImagePlus imp, ImageProcessor ip) {
+		if (imp.getBitDepth()==8)
+			ip = ip.convertToByte(false);
+		else if (imp.getBitDepth()==16)
+			ip = ip.convertToShort(false);
+		return ip;
+	}
+
 	
 	/** Saves the measurements specified in the "Set Measurements" dialog,
 		or by calling setMeasurements(), in the default results table.
