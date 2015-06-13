@@ -152,7 +152,8 @@ public class Executer implements Runnable {
 		boolean isJava = name.endsWith(".java");
 		boolean isJavaScript = name.endsWith(".js");
 		boolean isBeanShell = name.endsWith(".bsh");
-		if (!(isMacro||isJava||isJavaScript||isBeanShell))
+		boolean isPython = name.endsWith(".py");
+		if (!(isMacro||isJava||isJavaScript||isBeanShell||isPython))
 			return false;
 		boolean run = !isJava && (IJ.shiftKeyDown() || IJ.controlKeyDown() || IJ.altKeyDown());
 		int rows = 24;
@@ -167,6 +168,8 @@ public class Executer implements Runnable {
 			dir = "JavaScript/";
 		else if (isBeanShell)
 			dir = "BeanShell/";
+		else if (isPython)
+			dir = "Python/";
 		String url = "http://wsr.imagej.net/download/Examples/"+dir+name;
 		text = IJ.openUrlAsString(url);
 		if (text.startsWith("<Error: ")) {
@@ -179,6 +182,8 @@ public class Executer implements Runnable {
 				ed.evaluateScript(".js");
 			else if (isBeanShell)
 				ed.evaluateScript(".bsh");
+			else if (isPython)
+				ed.evaluateScript(".py");
 			else
 				IJ.runMacro(text);
 		}

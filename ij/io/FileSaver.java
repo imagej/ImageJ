@@ -95,9 +95,10 @@ public class FileSaver {
 	/** Saves the image in TIFF format using the specified path. Equivalent to
 		 IJ.saveAsTiff(imp,path), which is more convenient. */
 	public boolean saveAsTiff(String path) {
+		if (fi.nImages>1)
+			return saveAsTiffStack(path);
 		if (imp.getProperty("FHT")!=null && path.contains("FFT of "))
 			setupFFTSave();
-		fi.nImages = 1;
 		fi.info = imp.getInfoProperty();
 		Object label = imp.getProperty("Label");
 		if (label!=null && (label instanceof String)) {

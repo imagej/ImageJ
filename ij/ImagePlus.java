@@ -1850,6 +1850,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	fi.width = width;
     	fi.height = height;
     	fi.nImages = getStackSize();
+
     	if (compositeImage)
     		fi.nImages = getImageStackSize();
     	fi.whiteIsZero = isInvertedLut();

@@ -261,6 +261,7 @@ public class Menus {
 		Menu menu = new Menu("Examples");
 		Menu submenu = new Menu("Macro");
 		addExample(submenu, "Hello World", "Hello_World.ijm");
+		addExample(submenu, "Synthetic Image", "Synthetic_Image.ijm");
 		addExample(submenu, "Dialog Box", "Dialog_Box.ijm");
 		addExample(submenu, "Example Plot", "Example_Plot.ijm");
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.ijm");
@@ -273,6 +274,7 @@ public class Menus {
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("Java");
+		addExample(submenu, "Synthetic Image", "Synthetic_Image.java");
 		addExample(submenu, "Plugin", "My_Plugin.java");
 		addExample(submenu, "Plugin Filter", "Filter_Plugin.java");
 		addExample(submenu, "Plugin Frame", "Plugin_Frame.java");
@@ -280,6 +282,7 @@ public class Menus {
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("JavaScript");
+		addExample(submenu, "Synthetic Image", "Synthetic_Image.js");
 		addExample(submenu, "Example Plot", "Example_Plot.js");
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.js");
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.js");
@@ -289,10 +292,15 @@ public class Menus {
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("BeanShell");
+		addExample(submenu, "Synthetic Image", "Synthetic_Image.bsh");
 		addExample(submenu, "Example Plot", "Example_Plot.bsh");
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.bsh");
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.bsh");
 		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.bsh");
+		submenu.addActionListener(listener);
+		menu.add(submenu);
+		submenu = new Menu("Python");
+		addExample(submenu, "Synthetic Image", "Synthetic_Image.py");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		return menu;

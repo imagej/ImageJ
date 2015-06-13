@@ -733,7 +733,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			IJ.open();
 		else if (what.equals("Copy to Image Info"))
 			copyToInfo();
-		else if (what.endsWith(".ijm") || what.endsWith(".java") || what.endsWith(".js") || what.endsWith(".bsh"))
+		else if (what.endsWith(".ijm") || what.endsWith(".java") || what.endsWith(".js") || what.endsWith(".bsh") || what.endsWith(".py"))
 			openExample(what, e);
 		else {
 			if (altKeyDown) {
@@ -748,6 +748,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		boolean isJava = name.endsWith(".java");
 		boolean isJavaScript = name.endsWith(".js");
 		boolean isBeanShell = name.endsWith(".bsh");
+		boolean isPython = name.endsWith(".py");
 		int flags = e.getModifiers();
 		boolean shift = (flags & KeyEvent.SHIFT_MASK) != 0;
 		boolean control = (flags & KeyEvent.CTRL_MASK) != 0;
@@ -765,13 +766,15 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			dir = "JavaScript/";
 		else if (isBeanShell)
 			dir = "BeanShell/";
+		else if (isPython)
+			dir = "Python/";
 		String url = "http://wsr.imagej.net/download/Examples/"+dir+name;
 		text = IJ.openUrlAsString(url);
 		if (text.startsWith("<Error: ")) {
 			IJ.error("Open Example", text);
 			return;
 		}
-		if (ta!=null && ta.getText().length()==0 && !(isJava||isJavaScript||isBeanShell)) {
+		if (ta!=null && ta.getText().length()==0 && !(isJava||isJavaScript||isBeanShell||isPython)) {
 			ta.setText(text);
 			ta.setCaretPosition(0);
 			setTitle(name);
@@ -782,6 +785,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				ed.evaluateJavaScript();
 			else if (isBeanShell)
 				ed.evaluateScript(".bsh");
+			else if (isPython)
+				ed.evaluateScript(".py");
 			else
 				IJ.runMacro(text);
 		}
