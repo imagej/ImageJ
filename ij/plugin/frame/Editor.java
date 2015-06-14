@@ -10,7 +10,6 @@ import ij.util.Tools;
 import ij.text.*;
 import ij.macro.*;
 import ij.plugin.MacroInstaller;
-import ij.plugin.NewPlugin;
 import ij.plugin.Commands;
 import ij.plugin.Macro_Runner;
 import ij.io.SaveDialog;
@@ -134,7 +133,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		boolean shortcutsBroken = IJ.isWindows()
 			&& (System.getProperty("java.version").indexOf("1.1.8")>=0
 			||System.getProperty("java.version").indexOf("1.5.")>=0);
-shortcutsBroken = false;
+		shortcutsBroken = false;
 		if (shortcutsBroken)
 			item = new MenuItem("Cut  Ctrl+X");
 		else
@@ -176,7 +175,10 @@ shortcutsBroken = false;
 		m.add(new MenuItem("Save Settings"));
 		m.addActionListener(this);
 		mb.add(m);
-	}
+		
+		m = Menus.getExamplesMenu(this);
+		mb.add(m);
+	}			
 			
 	public void positionWindow() {
 		Dimension screen = IJ.getScreenSize();
@@ -424,10 +426,14 @@ shortcutsBroken = false;
 		}
 	}
 
-	void evaluateScript(String ext) {
+	public void evaluateScript(String ext) {
 		if (downloading) {
 			IJ.beep();
 			IJ.showStatus("Download in progress");
+			return;
+		}
+		if (ext.endsWith(".js")) {
+			evaluateJavaScript();
 			return;
 		}
 		if (!getTitle().endsWith(ext))
@@ -727,12 +733,62 @@ shortcutsBroken = false;
 			IJ.open();
 		else if (what.equals("Copy to Image Info"))
 			copyToInfo();
+		else if (what.endsWith(".ijm") || what.endsWith(".java") || what.endsWith(".js") || what.endsWith(".bsh") || what.endsWith(".py"))
+			openExample(what, e);
 		else {
 			if (altKeyDown) {
 				enableDebugging();
 				installer.runMacro(what, this);
 			} else
 				installer.runMacro(what, null);
+		}
+	}
+	
+	private void openExample(String name, ActionEvent e) {
+		boolean isJava = name.endsWith(".java");
+		boolean isJavaScript = name.endsWith(".js");
+		boolean isBeanShell = name.endsWith(".bsh");
+		boolean isPython = name.endsWith(".py");
+		int flags = e.getModifiers();
+		boolean shift = (flags & KeyEvent.SHIFT_MASK) != 0;
+		boolean control = (flags & KeyEvent.CTRL_MASK) != 0;
+		boolean alt = (flags & KeyEvent.ALT_MASK) != 0;
+		boolean run = !isJava && (shift || control || alt);
+		int rows = 24;
+		int columns = 70;
+		int options = MENU_BAR;
+		String text = null;
+		Editor ed = new Editor(rows, columns, 0, options);
+		String dir = "Macro/";
+		if (isJava)
+			dir = "Java/";
+		else if (isJavaScript)
+			dir = "JavaScript/";
+		else if (isBeanShell)
+			dir = "BeanShell/";
+		else if (isPython)
+			dir = "Python/";
+		String url = "http://wsr.imagej.net/download/Examples/"+dir+name;
+		text = IJ.openUrlAsString(url);
+		if (text.startsWith("<Error: ")) {
+			IJ.error("Open Example", text);
+			return;
+		}
+		if (ta!=null && ta.getText().length()==0 && !(isJava||isJavaScript||isBeanShell||isPython)) {
+			ta.setText(text);
+			ta.setCaretPosition(0);
+			setTitle(name);
+		} else
+			ed.create(name, text);
+		if (run) {
+			if (isJavaScript)
+				ed.evaluateJavaScript();
+			else if (isBeanShell)
+				ed.evaluateScript(".bsh");
+			else if (isPython)
+				ed.evaluateScript(".py");
+			else
+				IJ.runMacro(text);
 		}
 	}
 	

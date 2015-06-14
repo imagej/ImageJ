@@ -302,6 +302,13 @@ class DicomDecoder {
 		return new String(buf);
 	}
   
+	String getUNString(int length) throws IOException {
+		String s = getString(length);
+		if (s!=null && s.length()>60)
+			s = s.substring(0,60);
+		return s;
+	}
+
 	int getByte() throws IOException {
 		int b = f.read();
 		if (b ==-1)
@@ -769,6 +776,9 @@ class DicomDecoder {
 			case AE: case AS: case AT: case CS: case DA: case DS: case DT:  case IS: case LO: 
 			case LT: case PN: case SH: case ST: case TM: case UI:
 				value = getString(elementLength);
+				break;
+			case UN:
+				value = getUNString(elementLength);
 				break;
 			case US:
 				if (elementLength==2)

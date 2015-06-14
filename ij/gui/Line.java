@@ -617,5 +617,13 @@ public class Line extends Roi {
 	public boolean subPixelResolution() {
 		return true;
 	}
+	
+	public void setLocation(int x, int y) {
+		super.setLocation(x, y);
+		double xx = getXBase();
+		double yy = getYBase();
+		x1d=xx+x1R; y1d=yy+y1R; x2d=xx+x2R; y2d=yy+y2R;
+		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
+	}
 
 }

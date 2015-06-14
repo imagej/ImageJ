@@ -227,6 +227,8 @@ public class Menus {
 		addPlugInItem(help, "Plugins...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/plugins\")", 0, false);
 		addPlugInItem(help, "Macros...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/macros/\")", 0, false);
 		addPlugInItem(help, "Macro Functions...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/developer/macro/functions.html\")", 0, false);
+		Menu examplesMenu = getExamplesMenu(ij);
+		help.add(examplesMenu);
 		help.addSeparator();
 		addPlugInItem(help, "Update ImageJ...", "ij.plugin.ImageJ_Updater", 0, false);
 		addPlugInItem(help, "Refresh Menus", "ij.plugin.ImageJ_Updater(\"menus\")", 0, false);
@@ -255,6 +257,61 @@ public class Menus {
 		return error;
 	}
 	
+	public static Menu getExamplesMenu(ActionListener listener) {
+		Menu menu = new Menu("Examples");
+		Menu submenu = new Menu("Macro");
+		addExample(submenu, "Hello World", "Hello_World.ijm");
+		addExample(submenu, "Synthetic Image", "Synthetic_Image.ijm");
+		addExample(submenu, "Dialog Box", "Dialog_Box.ijm");
+		addExample(submenu, "Example Plot", "Example_Plot.ijm");
+		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.ijm");
+		addExample(submenu, "Arrow Plot", "Arrow_Plot.ijm");
+		addExample(submenu, "Process Folder", "Batch_Process_Folder.ijm");
+		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.ijm");
+		addExample(submenu, "Overlay", "Overlay.ijm");
+		addExample(submenu, "Stack Overlay", "Stack_Overlay.ijm");
+		addExample(submenu, "Tool", "Circle_Tool.ijm");
+		submenu.addActionListener(listener);
+		menu.add(submenu);
+		submenu = new Menu("Java");
+		addExample(submenu, "Synthetic Image", "Synthetic_Image.java");
+		addExample(submenu, "Plugin", "My_Plugin.java");
+		addExample(submenu, "Plugin Filter", "Filter_Plugin.java");
+		addExample(submenu, "Plugin Frame", "Plugin_Frame.java");
+		addExample(submenu, "Plugin Tool", "Prototype_Tool.java");
+		submenu.addActionListener(listener);
+		menu.add(submenu);
+		submenu = new Menu("JavaScript");
+		addExample(submenu, "Synthetic Image", "Synthetic_Image.js");
+		addExample(submenu, "Example Plot", "Example_Plot.js");
+		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.js");
+		addExample(submenu, "Arrow Plot", "Arrow_Plot.js");
+		addExample(submenu, "Overlay", "Overlay.js");
+		addExample(submenu, "Stack Overlay", "Stack_Overlay.js");
+		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.js");
+		submenu.addActionListener(listener);
+		menu.add(submenu);
+		submenu = new Menu("BeanShell");
+		addExample(submenu, "Synthetic Image", "Synthetic_Image.bsh");
+		addExample(submenu, "Example Plot", "Example_Plot.bsh");
+		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.bsh");
+		addExample(submenu, "Arrow Plot", "Arrow_Plot.bsh");
+		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.bsh");
+		submenu.addActionListener(listener);
+		menu.add(submenu);
+		submenu = new Menu("Python");
+		addExample(submenu, "Synthetic Image", "Synthetic_Image.py");
+		submenu.addActionListener(listener);
+		menu.add(submenu);
+		return menu;
+	}
+	
+	private static void addExample(Menu menu, String label, String command) {
+		MenuItem item = new MenuItem(label);
+		menu.add(item);
+		item.setActionCommand(command);
+	}
+
 	void addOpenRecentSubMenu(Menu menu) {
 		openRecentMenu = getMenu("File>Open Recent");
  		for (int i=0; i<MAX_OPEN_RECENT_ITEMS; i++) {

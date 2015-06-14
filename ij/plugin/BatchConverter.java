@@ -88,15 +88,7 @@ import java.io.*;
 				else
 					IJ.run(imp, "8-bit", "");
 			}
-			String path2 = outputPath+list[i];
-			if (format.equals("TIFF"))
-				(new FileSaver(imp)).saveAsTiff(path2);
-			else if (format.equals("JPEG"))
-				(new FileSaver(imp)).saveAsJpeg(path2);
-			else if (format.equals("PNG"))
-				(new FileSaver(imp)).saveAsPng(path2);
-			else
-				IJ.saveAs(imp, format, path2);
+			IJ.saveAs(imp, format, outputPath+list[i]);
 			imp.close();
 			imp = null;
 		}

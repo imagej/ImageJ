@@ -52,7 +52,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			return;
 		}
 		showLegacyDialog = false;
-		boolean thresholdSet = imp.getProcessor().getMinThreshold()!=ImageProcessor.NO_THRESHOLD;
+		boolean thresholdSet = imp.isThreshold();
 		this.imp = imp;
 		if (!IJ.isMacro()) {
 			method = staticMethod;

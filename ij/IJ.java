@@ -236,10 +236,14 @@ public class IJ {
 		error(s);
 	}
 	
-    /** Starts executing a menu command in a separete thread and returns immediately. */
+    /** Runs a menu command on a separete thread and returns immediately. */
 	public static void doCommand(String command) {
-		if (ij!=null)
-			ij.doCommand(command);
+		new Executer(command, null);
+	}
+	
+    /** Runs a menu command on a separete thread, using the specified image. */
+	public static void doCommand(ImagePlus imp, String command) {
+		new Executer(command, imp);
 	}
 	
     /** Runs an ImageJ command. Does not return until 

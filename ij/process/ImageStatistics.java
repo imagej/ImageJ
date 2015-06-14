@@ -277,5 +277,14 @@ public class ImageStatistics implements Measurements {
 	public String toString() {
 		return "stats[count="+pixelCount+", mean="+mean+", min="+min+", max="+max+"]";
 	}
+	
+	protected void saveThreshold(double minThreshold, double maxThreshold, Calibration cal) {
+		if (cal!=null) {
+			minThreshold = cal.getCValue(minThreshold);
+			maxThreshold = cal.getCValue(maxThreshold);
+		}
+		lowerThreshold = minThreshold;
+		upperThreshold = maxThreshold;
+	}
 
 }

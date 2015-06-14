@@ -349,6 +349,14 @@ public class CurveFitter implements UserFunction{
 	}
 
 	/** Returns the formula value for parameters 'p' at 'x'.
+	 *	Do not use before 'doFit', because the fit function would be undefined. */
+	public final double f(double x) {
+		if (finalParams==null)
+			finalParams = minimizer.getParams();
+		return f(finalParams, x);
+	}
+
+	/** Returns the formula value for parameters 'p' at 'x'.
 	 *	Do not use before 'doFit', because the fit function would be undefined.	 */
 	public final double f(double[] p, double x) {
 		if (fitType!=CUSTOM)

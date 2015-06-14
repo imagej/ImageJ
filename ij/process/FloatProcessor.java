@@ -487,7 +487,12 @@ public class FloatProcessor extends ImageProcessor {
 		}
 	}
 
-	public void invert() {process(INVERT, 0.0);}
+	/** Each pixel in the image is inverted using p=max-(p-min), where 'min'
+		and 'max' are the display range limits set using setMinAndMax(). */
+	public void invert() {
+		process(INVERT, 0.0);
+	}
+	
 	public void add(int value) {process(ADD, value);}
 	public void add(double value) {process(ADD, value);}
 	public void set(double value) {process(SET, value);}

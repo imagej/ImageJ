@@ -202,16 +202,17 @@ public class PlotDialog {
 			plot.setLegend(labels, flags);
 			plot.updateImage();
 			if (Recorder.record) {
+				String options = LEGEND_POSITIONS[legendPosNumber];
+				if (bottomUp) options+=" Bottom-To-Top";
+				if (transparentBackground) options+=" Transparent";
+				labels = labels.replaceAll("\n","\\\\n");
 				if (Recorder.scriptMode()) {
 					Recorder.recordCall("//plot = IJ.getImage().getProperty(Plot.PROPERTY_KEY);");
 					Recorder.recordCall("plot.setColor(Color.black);");
 					Recorder.recordCall("plot.setLineWidth(1);");
-					Recorder.recordCall("plot.setLegend(\""+labels.replaceAll("\n","\\\\n")+"\", 0x"+Integer.toHexString(flags)+");");
+					Recorder.recordCall("plot.addLegend(\""+labels+"\", \""+options+"\");");
 				} else {
-					String options = LEGEND_POSITIONS[legendPosNumber];
-					if (bottomUp) options+=" Bottom-To-Top";
-					if (transparentBackground) options+=" Transparent";
-					Recorder.recordString("Plot.setLegend(\""+labels.replaceAll("\n","\\\\n")+"\", \""+options+"\");\n");
+					Recorder.recordString("Plot.addLegend(\""+labels+"\", \""+options+"\");\n");
 				}
 			}
 		} else if (dialogType == HI_RESOLUTION) {

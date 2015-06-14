@@ -2411,6 +2411,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			ip.resetMinAndMax();
 	}
 	
+	/** Returns 'true' if this image is thresholded. */
+	public boolean isThreshold() {
+		return ip!=null && ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD;
+	}
+
     /** Set the default 16-bit display range, where 'bitDepth' must be 0 (auto-scaling), 
     	8 (0-255), 10 (0-1023), 12 (0-4095, 14 (0-16383), 15 (0-32767) or 16 (0-65535). */
     public static void setDefault16bitRange(int bitDepth) {

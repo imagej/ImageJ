@@ -25,7 +25,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	private static final int[] list = {AREA,MEAN,STD_DEV,MODE,MIN_MAX,
 		CENTROID,CENTER_OF_MASS,PERIMETER,RECT,ELLIPSE,SHAPE_DESCRIPTORS, FERET,
 		INTEGRATED_DENSITY,MEDIAN,SKEWNESS,KURTOSIS,AREA_FRACTION,STACK_POSITION,
-		LIMIT,LABELS,INVERT_Y,SCIENTIFIC_NOTATION,ADD_TO_OVERLAY};
+		LIMIT,LABELS,INVERT_Y,SCIENTIFIC_NOTATION,ADD_TO_OVERLAY,NaN_EMPTY_CELLS};
 
 	private static final String MEASUREMENTS = "measurements";
 	private static final String MARK_WIDTH = "mark.width";
@@ -51,6 +51,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		rt = systemRT;
 		rt.showRowNumbers(true);
 		rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
+		rt.setNaNEmptyCells((systemMeasurements&NaN_EMPTY_CELLS)!=0);
 		measurements = systemMeasurements;
 	}
 	
@@ -69,6 +70,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (rt==null)
 			rt = new ResultsTable();
 		rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
+		rt.setNaNEmptyCells((systemMeasurements&NaN_EMPTY_CELLS)!=0);
 		this.rt = rt;
 	}
 	
@@ -169,13 +171,14 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels[17]="Stack position"; states[17]=(systemMeasurements&STACK_POSITION)!=0;
 		gd.setInsets(0, 0, 0);
 		gd.addCheckboxGroup(10, 2, labels, states);
-		labels = new String[5];
-		states = new boolean[5];
+		labels = new String[6];
+		states = new boolean[6];
 		labels[0]="Limit to threshold"; states[0]=(systemMeasurements&LIMIT)!=0;
 		labels[1]="Display label"; states[1]=(systemMeasurements&LABELS)!=0;
 		labels[2]="Invert Y coordinates"; states[2]=(systemMeasurements&INVERT_Y)!=0;
 		labels[3]="Scientific notation"; states[3]=(systemMeasurements&SCIENTIFIC_NOTATION)!=0;;
 		labels[4]="Add to overlay"; states[4]=(systemMeasurements&ADD_TO_OVERLAY)!=0;;
+		labels[5]="NaN empty cells"; states[5]=(systemMeasurements&NaN_EMPTY_CELLS)!=0;;
 		gd.setInsets(0, 0, 0);
 		gd.addCheckboxGroup(3, 2, labels, states);
 		gd.setInsets(15, 0, 0);
@@ -395,26 +398,52 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		boolean straightLine = roi.getType()==Roi.LINE;
 		int lineWidth = (int)Math.round(roi.getStrokeWidth());
-		ImageProcessor ip2;
+		ImageProcessor ip2 = imp2.getProcessor();
+		double minThreshold = ip2.getMinThreshold();
+		double maxThreshold = ip2.getMaxThreshold();
+		int limit = (Analyzer.getMeasurements()&LIMIT)!=0?LIMIT:0;
+		boolean calibrated = imp2.getCalibration().calibrated();
 		Rectangle saveR = null;
 		if (straightLine && lineWidth>1) {
-			ip2 = imp2.getProcessor();
 			saveR = ip2.getRoi();
 			ip2.setRoi(roi.getPolygon());
+		} else if (lineWidth>1 && calibrated && limit!=0) {
+			Calibration cal = imp2.getCalibration().copy();
+			imp2.getCalibration().disableDensityCalibration();
+			ip2 = (new Straightener()).straightenLine(imp2, lineWidth);
+			imp2.setCalibration(cal);
+			ip2 = convertToOriginalDepth(imp2, ip2);
+			ip2.setCalibrationTable(cal.getCTable());
 		} else if (lineWidth>1) {
-			if ((measurements&AREA)!=0 || (measurements&MEAN)!=0)
+			if ((measurements&AREA)!=0 || (measurements&MEAN)!=0 || calibrated) {
 				ip2 = (new Straightener()).straightenLine(imp2, lineWidth);
-			else {
+				if (limit!=0)
+					ip2 = convertToOriginalDepth(imp2, ip2);
+			} else {
 				saveResults(new ImageStatistics(), roi);
 				return;
 			}
+		} else if (calibrated && limit!=0) {
+			Calibration cal = imp2.getCalibration().copy();
+			imp2.getCalibration().disableDensityCalibration();
+			ProfilePlot profile = new ProfilePlot(imp2);
+			imp2.setCalibration(cal);
+			double[] values = profile.getProfile();
+			if (values==null) return;
+			ip2 = new FloatProcessor(values.length, 1, values);
+			ip2 = convertToOriginalDepth(imp2, ip2);
+			ip2.setCalibrationTable(cal.getCTable());
 		} else {
 			ProfilePlot profile = new ProfilePlot(imp2);
 			double[] values = profile.getProfile();
 			if (values==null) return;
 			ip2 = new FloatProcessor(values.length, 1, values);
+			if (limit!=0)
+				ip2 = convertToOriginalDepth(imp2, ip2);
 		}
-		ImageStatistics stats = ImageStatistics.getStatistics(ip2, AREA+MEAN+STD_DEV+MODE+MIN_MAX, imp2.getCalibration());
+		if (limit!=0 && minThreshold!=ImageProcessor.NO_THRESHOLD)
+			ip2.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
+		ImageStatistics stats = ImageStatistics.getStatistics(ip2, AREA+MEAN+STD_DEV+MODE+MIN_MAX+limit, imp2.getCalibration());
 		if (saveR!=null) ip2.setRoi(saveR);
 		if ((roi instanceof Line) && (measurements&CENTROID)!=0) {
 			FloatPolygon p = ((Line)roi).getFloatPoints();
@@ -428,6 +457,15 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		saveResults(stats, roi);
 	}
+	
+	private ImageProcessor convertToOriginalDepth(ImagePlus imp, ImageProcessor ip) {
+		if (imp.getBitDepth()==8)
+			ip = ip.convertToByte(false);
+		else if (imp.getBitDepth()==16)
+			ip = ip.convertToShort(false);
+		return ip;
+	}
+
 	
 	/** Saves the measurements specified in the "Set Measurements" dialog,
 		or by calling setMeasurements(), in the default results table.
@@ -903,6 +941,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (rt==null)
 			rt = new ResultsTable();
 		rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
+		rt.setNaNEmptyCells((systemMeasurements&NaN_EMPTY_CELLS)!=0);
 		systemRT = rt;
 		summarized = false;
 		umeans = null;

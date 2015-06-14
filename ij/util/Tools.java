@@ -89,6 +89,8 @@ import java.util.Comparator;
 	
 	/** Converts the double array 'a' to a float array. */
 	public static float[] toFloat(double[] a) {
+		if (a==null)
+			return null;
 		int len = a.length;
 		float[] f = new float[len];
 		for (int i=0; i<len; i++)
@@ -250,7 +252,7 @@ import java.util.Comparator;
 		return indexes2;
 	}
 	
-	/** Opens a text file in ij.jar as a String (example path: "/macros/Macro_Tool.txt"). */
+	/** Opens a text file in ij.jar as a String (example path: "/macros/Circle_Tool.txt"). */
 	public static String openFromIJJarAsString(String path) {
 		return (new ij.plugin.MacroInstaller()).openFromIJJar(path);
 	}
