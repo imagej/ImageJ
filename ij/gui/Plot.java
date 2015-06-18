@@ -837,14 +837,16 @@ public class Plot implements Cloneable {
 	/** Returns the plot as an ImagePlus.
 	 *	If an ImagePlus for this plot already exists, displays the plot in that ImagePlus and returns it. */
 	public ImagePlus getImagePlus() {
-		if (plotDrawn) updateImage();
-		else draw();
+		if (plotDrawn)
+			updateImage();
+		else
+			draw();
 		if (imp != null) {
 			if (imp.getProcessor() != ip) imp.setProcessor(ip);
 			return imp;
 		}
 		ImagePlus imp = new ImagePlus(title, ip);
-		imp.setGlobalCalibration(null);
+		imp.setIgnoreGlobalCalibration(true);
 		Calibration cal = imp.getCalibration();
 		adjustCalibration(cal);
 		if (this.imp == null)
@@ -861,8 +863,8 @@ public class Plot implements Cloneable {
 			this.imp.setProperty(PROPERTY_KEY, null);
 		this.imp = imp;
 		if (imp != null) {
+			imp.setIgnoreGlobalCalibration(true);
 			adjustCalibration(imp.getCalibration());
-			imp.setGlobalCalibration(null);
 			imp.setProperty(PROPERTY_KEY, this);
 		}
 	}
@@ -988,7 +990,7 @@ public class Plot implements Cloneable {
 		Calibration cal = hiresImp.getCalibration();
 		hiresPlot.adjustCalibration(cal);
 		if (showIt) {
-			hiresImp.setGlobalCalibration(null);
+			hiresImp.setIgnoreGlobalCalibration(true);
 			hiresImp.show();
 		}
 		hiresPlot.dispose(); //after drawing, we don't need the plot of the high-resolution image any more

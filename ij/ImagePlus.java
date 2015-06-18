@@ -89,6 +89,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	private boolean hideOverlay;
 	private static int default16bitDisplayRange;
 	private boolean antialiasRendering = true;
+	private boolean ignoreGlobalCalibration;
 	
 
     /** Constructs an uninitialized ImagePlus. */
@@ -1850,7 +1851,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	fi.width = width;
     	fi.height = height;
     	fi.nImages = getStackSize();
-
     	if (compositeImage)
     		fi.nImages = getImageStackSize();
     	fi.whiteIsZero = isInvertedLut();
@@ -2066,7 +2066,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Returns this image's calibration. */
 	public Calibration getCalibration() {
 		//IJ.log("getCalibration: "+globalCalibration+" "+calibration);
-		if (globalCalibration!=null) {
+		if (globalCalibration!=null && !ignoreGlobalCalibration) {
 			Calibration gc = globalCalibration.copy();
 			gc.setImage(this);
 			return gc;
@@ -2090,7 +2090,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
     /** Sets the system-wide calibration. */
     public void setGlobalCalibration(Calibration global) {
-		//IJ.log("setGlobalCalibration ("+getTitle()+"): "+global);
+		//IJ.log("setGlobalCalibration: "+calibration);
 		if (global==null)
 			globalCalibration = null;
 		else
@@ -2108,6 +2108,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (calibration==null)
 			calibration = new Calibration(this);
 		return calibration;
+	}
+	
+	public void setIgnoreGlobalCalibration(boolean ignoreGlobalCalibration) {
+		this.ignoreGlobalCalibration = ignoreGlobalCalibration;
 	}
 
     /** Displays the cursor coordinates and pixel value in the status bar.

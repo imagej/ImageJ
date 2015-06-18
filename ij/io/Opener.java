@@ -584,12 +584,17 @@ public class Opener {
 	}
 
 	ImagePlus openPngUsingURL(String title, URL url) {
-		if (url==null) return null;
+		if (url==null)
+			return null;
+		//System.setProperty("jsse.enableSNIExtension","false");
 		Image img = null;
 		try {
-			img = ImageIO.read(url);
+			InputStream in = url.openStream();
+			img = ImageIO.read(in);
+		} catch (FileNotFoundException e) {
+			IJ.error("Open PNG Using URL", ""+e);
 		} catch (IOException e) {
-			IJ.log(""+e);
+			IJ.handleException(e);
 		}
 		if (img!=null) {
 			ImagePlus imp = new ImagePlus(title, img);

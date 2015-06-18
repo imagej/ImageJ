@@ -481,7 +481,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 				below += histogram[i];
 			for (int i=minThresholdInt; i<=maxThresholdInt; i++)
 				inside += histogram[i];
-			for (int i=maxThresholdInt+1; i<maxValue; i++)
+			for (int i=maxThresholdInt+1; i<=maxValue; i++)
 				above += histogram[i];
 			int total = below + inside + above;
 			//IJ.log("<"+minThresholdInt+":"+below+" in:"+inside+"; >"+maxThresholdInt+":"+above+" sum="+total);

@@ -519,11 +519,14 @@ public class Functions implements MacroConstants, Measurements {
 	Variable[] getArray() {
 		interp.getToken();
 		boolean newArray = interp.token==ARRAY_FUNCTION && pgm.table[interp.tokenAddress].type==NEW_ARRAY;
-		if (!(interp.token==WORD||newArray))
+		boolean arrayFunction = interp.token==ARRAY_FUNCTION && pgm.table[interp.tokenAddress].type==ARRAY_FUNC;
+		if (!(interp.token==WORD||newArray||arrayFunction))
 			interp.error("Array expected");
 		Variable[] a;
 		if (newArray)
 			a = getArrayFunction(NEW_ARRAY);
+		else if (arrayFunction)
+			a = getArrayFunction(ARRAY_FUNC);
 		else {
 			Variable v = interp.lookupVariable();
 			a= v.getArray();
@@ -5177,11 +5180,18 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	Variable[] printArray() {
+		String prefix = null;
 		interp.getLeftParen();
+		if (!isArrayArg() && isStringArg()) {
+			prefix = getString();
+			interp.getComma();
+		}
 		Variable[] a = getArray();
 		interp.getRightParen();
 		int len = a.length;
 		StringBuffer sb = new StringBuffer(len);
+		if (prefix!=null)
+			sb.append(prefix+" ");
 		for (int i=0; i<len; i++) {
 			String s = a[i].getString();
 			if (s==null) {
