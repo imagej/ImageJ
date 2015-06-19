@@ -109,12 +109,18 @@ public class Calibration implements Cloneable {
 
    	/** Sets the Y length unit. */
  	public void setYUnit(String unit) {
-		yunit = sanitizeUnit(unit);
+ 		if (unit==null || unit.equals(""))
+ 			yunit = null;
+ 		else
+			yunit = sanitizeUnit(unit);
 	}
 
    	/** Sets the Z length unit. */
  	public void setZUnit(String unit) {
-		zunit = sanitizeUnit(unit );
+ 		if (unit==null || unit.equals(""))
+ 			zunit = null;
+ 		else
+			zunit = sanitizeUnit(unit );
 	}
 
 	private static String sanitizeUnit(String unit) {
