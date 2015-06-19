@@ -2609,16 +2609,22 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	void open() {
+		File f = null;
 		interp.getLeftParen();
 		if (interp.nextToken()==')') {
 			interp.getRightParen();
 			IJ.open();
 		} else {
 			double n = Double.NaN;
+			String options = null;
 			String path = getString();
+			f = new File(path);
 			if (interp.nextToken()==',') {
 				interp.getComma();
-				n = interp.getExpression();
+				if (isStringArg())
+					options = getString();
+				else
+					n = interp.getExpression();
 			}
 			interp.getRightParen();
 			if (!Double.isNaN(n)) {
@@ -2629,10 +2635,17 @@ public class Functions implements MacroConstants, Measurements {
 					if (msg!=null&&msg.indexOf("canceled")==-1)
 						interp.error(""+msg);
 				}
-			} else
-				IJ.open(path);
-			if (path!=null&&!path.equals("")) {
-				File f = new File(path);
+			} else {
+				if (f!=null&&f.isDirectory()) {
+					FolderOpener fo = new FolderOpener();
+					if (options!=null && options.contains("virtual"))
+						fo.openAsVirtualStack(true);
+					ImagePlus imp = fo.openFolder(path);
+					if (imp!=null) imp.show();
+				} else
+					IJ.open(path);
+			}
+			if (path!=null&&!path.equals("")&&f!=null) {
 				OpenDialog.setLastDirectory(f.getParent()+File.separator);
 				OpenDialog.setLastName(f.getName());
 			}
