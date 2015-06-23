@@ -48,11 +48,10 @@ public class RGBStackMerge implements PlugIn {
 		boolean keep = staticKeep;
 		ignoreLuts = staticIgnoreLuts;
 		
-		if (IJ.isMacro())
+		String options = Macro.getOptions();
+		boolean macro = IJ.macroRunning() && options!=null;
+		if (macro) {
 			createComposite = keep = ignoreLuts = false;
-		boolean macro = IJ.macroRunning();
-		String options = IJ.isMacro()?Macro.getOptions():null;
-		if (options!=null) {
 			options = options.replaceAll("red=", "c1=");
 			options = options.replaceAll("green=", "c2=");
 			options = options.replaceAll("blue=", "c3=");
@@ -61,13 +60,13 @@ public class RGBStackMerge implements PlugIn {
 		}
 
 		GenericDialog gd = new GenericDialog("Merge Channels");
-		gd.addChoice("C1 (red):", titles, names[0]);
-		gd.addChoice("C2 (green):", titles, names[1]);
-		gd.addChoice("C3 (blue):", titles, names[2]);
-		gd.addChoice("C4 (gray):", titles, names[3]);
-		gd.addChoice("C5 (cyan):", titles, names[4]);
-		gd.addChoice("C6 (magenta):", titles, names[5]);
-		gd.addChoice("C7 (yellow):", titles, names[6]);
+		gd.addChoice("C1 (red):", titles, macro?none:names[0]);
+		gd.addChoice("C2 (green):", titles, macro?none:names[1]);
+		gd.addChoice("C3 (blue):", titles, macro?none:names[2]);
+		gd.addChoice("C4 (gray):", titles, macro?none:names[3]);
+		gd.addChoice("C5 (cyan):", titles, macro?none:names[4]);
+		gd.addChoice("C6 (magenta):", titles, macro?none:names[5]);
+		gd.addChoice("C7 (yellow):", titles, macro?none:names[6]);
 
 		gd.addCheckbox("Create composite", createComposite);
 		gd.addCheckbox("Keep source images", keep);
@@ -82,7 +81,7 @@ public class RGBStackMerge implements PlugIn {
 		createComposite = gd.getNextBoolean();
 		keep = gd.getNextBoolean();
 		ignoreLuts = gd.getNextBoolean();
-		if (!IJ.isMacro()) {
+		if (!macro) {
 			staticCreateComposite = createComposite;
 			staticKeep = keep;
 			staticIgnoreLuts = ignoreLuts;
@@ -159,7 +158,6 @@ public class RGBStackMerge implements PlugIn {
 		ImageStack[] stacks = new ImageStack[maxChannels];
 		for (int i=0; i<maxChannels; i++)
 			stacks[i] = images[i]!=null?images[i].getStack():null;
-		String macroOptions = Macro.getOptions();
 		ImagePlus imp2;
 		boolean fourOrMoreChannelRGB = false;
 		for (int i=3; i<maxChannels; i++) {
