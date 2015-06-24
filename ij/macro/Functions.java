@@ -519,11 +519,14 @@ public class Functions implements MacroConstants, Measurements {
 	Variable[] getArray() {
 		interp.getToken();
 		boolean newArray = interp.token==ARRAY_FUNCTION && pgm.table[interp.tokenAddress].type==NEW_ARRAY;
-		if (!(interp.token==WORD||newArray))
+		boolean arrayFunction = interp.token==ARRAY_FUNCTION && pgm.table[interp.tokenAddress].type==ARRAY_FUNC;
+		if (!(interp.token==WORD||newArray||arrayFunction))
 			interp.error("Array expected");
 		Variable[] a;
 		if (newArray)
 			a = getArrayFunction(NEW_ARRAY);
+		else if (arrayFunction)
+			a = getArrayFunction(ARRAY_FUNC);
 		else {
 			Variable v = interp.lookupVariable();
 			a= v.getArray();
@@ -2606,16 +2609,22 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	void open() {
+		File f = null;
 		interp.getLeftParen();
 		if (interp.nextToken()==')') {
 			interp.getRightParen();
 			IJ.open();
 		} else {
 			double n = Double.NaN;
+			String options = null;
 			String path = getString();
+			f = new File(path);
 			if (interp.nextToken()==',') {
 				interp.getComma();
-				n = interp.getExpression();
+				if (isStringArg())
+					options = getString();
+				else
+					n = interp.getExpression();
 			}
 			interp.getRightParen();
 			if (!Double.isNaN(n)) {
@@ -2626,10 +2635,17 @@ public class Functions implements MacroConstants, Measurements {
 					if (msg!=null&&msg.indexOf("canceled")==-1)
 						interp.error(""+msg);
 				}
-			} else
-				IJ.open(path);
-			if (path!=null&&!path.equals("")) {
-				File f = new File(path);
+			} else {
+				if (f!=null&&f.isDirectory()) {
+					FolderOpener fo = new FolderOpener();
+					if (options!=null && options.contains("virtual"))
+						fo.openAsVirtualStack(true);
+					ImagePlus imp = fo.openFolder(path);
+					if (imp!=null) imp.show();
+				} else
+					IJ.open(path);
+			}
+			if (path!=null&&!path.equals("")&&f!=null) {
 				OpenDialog.setLastDirectory(f.getParent()+File.separator);
 				OpenDialog.setLastName(f.getName());
 			}
@@ -5177,11 +5193,18 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	Variable[] printArray() {
+		String prefix = null;
 		interp.getLeftParen();
+		if (!isArrayArg() && isStringArg()) {
+			prefix = getString();
+			interp.getComma();
+		}
 		Variable[] a = getArray();
 		interp.getRightParen();
 		int len = a.length;
 		StringBuffer sb = new StringBuffer(len);
+		if (prefix!=null)
+			sb.append(prefix+" ");
 		for (int i=0; i<len; i++) {
 			String s = a[i].getString();
 			if (s==null) {

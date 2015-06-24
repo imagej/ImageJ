@@ -1595,9 +1595,16 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
 			Overlay overlay = imp.getOverlay();
-			if (overlay!=null)
+			if (overlay==null) {
+				ImageCanvas ic = imp.getCanvas();
+				if (ic!=null)
+					overlay = ic.getShowAllList();
+			}
+			if (overlay!=null) {
 				overlay.drawNames(Prefs.useNamesAsLabels);
-			imp.draw();
+				setOverlay(imp, overlay);
+			} else
+				imp.draw();
 		}
 		if (record()) {
 			Recorder.record("roiManager", "Associate", Prefs.showAllSliceOnly?"true":"false");

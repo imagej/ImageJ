@@ -175,6 +175,19 @@ public class WindowManager {
 		return frames;
 	}
 
+	/** Returns an array containing a list of the non-image Frames and Dialogs. */
+	public synchronized static Window[] getAllNonImageWindows() {
+		ArrayList list = new ArrayList();
+		for (int i=0; i<nonImageList.size(); i++) {
+			Object win = nonImageList.elementAt(i);
+			if (win instanceof Window)
+				list.add(win);
+		}
+		Window[] windows = new Window[list.size()];
+		list.toArray(windows);
+		return windows;
+	}
+
 	/** Returns an array containing the titles of non-image Frames and Dialogs. */
 	public synchronized static String[] getNonImageTitles() {
 		ArrayList list = new ArrayList();

@@ -484,8 +484,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 						prefix = addImp?"IJ.run(imp, ":"IJ.run(";
 					}
 					textArea.append(prefix+"\""+name+"\", \""+commandOptions+"\");\n");
-					if (nonAscii(commandOptions))
-						textArea.append("  <<warning: the options string contains one or more non-ascii characters>>\n");
+					if (nonAscii(commandOptions)) {
+						if (commandOptions!=null && !commandOptions.contains("="+IJ.micronSymbol+"m"))
+							textArea.append("  <<warning: the options string contains one or more non-ascii characters>>\n");
+					}
 				}
 			} else {
 				ImagePlus imp = WindowManager.getCurrentImage();

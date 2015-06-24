@@ -299,7 +299,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			slice = imp.getSlice();
 			frame = imp.getFrame();
 		}
-		drawNames = overlay.getDrawNames();
+		drawNames = overlay.getDrawNames() && overlay.getDrawLabels();
 		boolean drawLabels = drawNames || overlay.getDrawLabels();
 		if (drawLabels)
 			labelRects = new Rectangle[n];

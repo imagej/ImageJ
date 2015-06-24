@@ -16,7 +16,7 @@ import javax.swing.filechooser.*;
  	/** Display a dialog using the specified title. */
  	public DirectoryChooser(String title) {
  		this.title = title;
-		if (IJ.isMacOSX() && !IJ.isJava17())
+		if (IJ.isMacOSX())
 			getDirectoryUsingFileDialog(title);
  		else {
 			String macroOptions = Macro.getOptions();
