@@ -1204,7 +1204,7 @@ public class IJ {
 		}
 		Calibration cal = img.getCalibration();
 		lowerThreshold = cal.getRawValue(lowerThreshold); 
-		upperThreshold = cal.getRawValue(upperThreshold); 
+		upperThreshold = cal.getRawValue(upperThreshold);
 		img.getProcessor().setThreshold(lowerThreshold, upperThreshold, mode);
 		if (mode!=ImageProcessor.NO_LUT_UPDATE && img.getWindow()!=null) {
 			img.getProcessor().setLutAnimation(true);

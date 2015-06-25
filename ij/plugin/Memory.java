@@ -52,9 +52,6 @@ public class Memory implements PlugIn {
 		if (max2==max) return;
 		int limit = IJ.isWindows()?1600:1700;
 		String OSXInfo = "";
-		if (IJ.isMacOSX())
-			OSXInfo = "\n \nOn Max OS X, you should run \"ImageJ64\"\n"
-				+"instead of \"ImageJ\".";
 		if (max2>=limit && !IJ.is64Bit()) {
 			if (!IJ.showMessageWithCancel(title, 
 			"Note: setting the memory limit to a value\n"
@@ -62,8 +59,7 @@ public class Memory implements PlugIn {
 			+"may cause ImageJ to fail to start. The title of\n"
 			+"the Edit>Options>Memory & Threads dialog\n"
 			+"box changes to \"Memory (64-bit)\" when ImageJ\n"
-			+"is running on a 64-bit version of Java."
-			+ OSXInfo));
+			+"is running on a 64-bit version of Java."));
 				return;
 		}
 		try {
@@ -96,11 +92,12 @@ public class Memory implements PlugIn {
 		if (IJ.getApplet()!=null) return 0L;
 		long max = 0L;
 		if (IJ.isMacOSX()) {
-			if (IJ.is64Bit())
-				max = getMemorySetting("ImageJ64.app/Contents/Info.plist");
-			if (max==0L) {
-				max = getMemorySetting("ImageJ.app/Contents/Info.plist");
-			}
+			String appPath = System.getProperty("java.class.path");
+			if (appPath==null) return 0L;
+			int index = appPath.indexOf(".app/");
+			if (index==-1) return 0L;
+			appPath = appPath.substring(0,index+5);
+			max = getMemorySetting(appPath+"Contents/Info.plist");
 		} else
 			max = getMemorySetting("ImageJ.cfg");		
 		return max;
@@ -126,7 +123,7 @@ public class Memory implements PlugIn {
 	}
 
 	long getMemorySetting(String file) {
-		String path = Prefs.getImageJDir() + file;
+		String path = file.startsWith("/")?file:Prefs.getImageJDir()+file;
 		if (IJ.debugMode) IJ.log("getMemorySetting: "+path);
 		f = new File(path);
 		if (!f.exists()) {
