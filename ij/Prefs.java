@@ -153,6 +153,7 @@ public class Prefs {
 	public static boolean skipRawDialog;
 	/** Reverse channel-slice-frame priority used by Next Slice and Previous Slice commands. */
 	public static boolean reverseNextPreviousOrder;
+	
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);

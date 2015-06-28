@@ -474,9 +474,12 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 				ip.setRoi(imp.getRoi());
 				histogram = ip.getHistogram();
 				minThresholdInt = (int)Math.round(ip.getMinThreshold());
+				if (minThresholdInt<0) minThresholdInt=0;
 				maxThresholdInt = (int)Math.round(ip.getMaxThreshold());
+				if (maxThresholdInt>65535) maxThresholdInt=65535;
 				minValue=(int)ip.getMin(); maxValue=(int)ip.getMax();
 			}
+IJ.log(minValue+" "+minThresholdInt);
 			for (int i=minValue; i<minThresholdInt; i++)
 				below += histogram[i];
 			for (int i=minThresholdInt; i<=maxThresholdInt; i++)
@@ -627,7 +630,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		if (Recorder.record) {
 			if (imp.getBitDepth()==32) {
 				if (Recorder.scriptMode())
-					Recorder.recordCall("IJ.setThreshold("+ip.getMinThreshold()+", "+ip.getMaxThreshold()+");");
+					Recorder.recordCall("IJ.setThreshold(imp, "+IJ.d2s(ip.getMinThreshold(),4)+", "+IJ.d2s(ip.getMaxThreshold(),4)+");");
 				else
 					Recorder.record("setThreshold", ip.getMinThreshold(), ip.getMaxThreshold());
 			} else {
@@ -636,11 +639,19 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 				if (cal.isSigned16Bit()) {
 					min = (int)cal.getCValue(level1);
 					max = (int)cal.getCValue(level2);
+					if (Recorder.scriptMode())
+						Recorder.recordCall("IJ.setThreshold(imp, "+min+", "+max+");");
+					else
+						Recorder.record("setThreshold", min, max);
 				}
 				if (Recorder.scriptMode())
-					Recorder.recordCall("IJ.setThreshold(imp, "+min+", "+max+");");
-				else
-					Recorder.record("setThreshold", min, max);
+					Recorder.recordCall("IJ.setRawThreshold(imp, "+min+", "+max+", null);");
+				else {
+					if (cal.calibrated())
+						Recorder.record("setThreshold", min, max, "raw");
+					else
+						Recorder.record("setThreshold", min, max);
+				}
 			}
 		}
 	}

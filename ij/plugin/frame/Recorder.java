@@ -178,6 +178,11 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		textArea.append(method+"("+a1+", "+a2+");\n");
 	}
 
+	public static void record(String method, int a1, int a2, String a3) {
+		if (textArea==null) return;
+		textArea.append(method+"("+a1+", "+a2+", \""+a3+"\");\n");
+	}
+
 	public static void record(String method, double a1, double a2) {
 		if (textArea==null) return;
 		int places = Math.abs(a1)<0.0001||Math.abs(a2)<0.0001?9:4;
