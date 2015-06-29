@@ -1590,7 +1590,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void setRoi(Roi newRoi) {
 		setRoi(newRoi, true);
 	}
-
+	
 	/** Assigns 'newRoi'  to this image and displays it if 'updateDisplay' is true. */
 	public void setRoi(Roi newRoi, boolean updateDisplay) {
 		if (newRoi==null)
@@ -1622,7 +1622,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 		roi.setImage(this);
 		if (updateDisplay) draw();
-		roi.notifyListeners(RoiListener.CREATED);
+		//roi.notifyListeners(RoiListener.CREATED);
 	}
 	
 	/** Creates a rectangular selection. */

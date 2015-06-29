@@ -479,7 +479,6 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 				if (maxThresholdInt>65535) maxThresholdInt=65535;
 				minValue=(int)ip.getMin(); maxValue=(int)ip.getMax();
 			}
-IJ.log(minValue+" "+minThresholdInt);
 			for (int i=minValue; i<minThresholdInt; i++)
 				below += histogram[i];
 			for (int i=minThresholdInt; i<=maxThresholdInt; i++)

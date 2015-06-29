@@ -22,7 +22,7 @@ public class Profiler implements PlugIn, PlotMaker {
 		plot.show();
 	}
 	
-	public Plot getPlot() {
+public Plot getPlot() {
 		Roi roi = imp.getRoi();
 		//if (roi==null && !firstTime)
 		//	IJ.run(imp, "Restore Selection", "");
