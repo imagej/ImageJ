@@ -1379,14 +1379,8 @@ public class Menus {
 	* @return				returns an error code(NORMAL_RETURN,COMMAND_IN_USE_ERROR, etc.)
 	*/
 	public static int installPlugin(String plugin, char menuCode, String command, String shortcut, ImageJ ij) {
-		if (command.equals("")) { //uninstall
-			//Object o = pluginsPrefs.remove(plugin);
-			//if (o==null)
-			//	return NOT_INSTALLED;
-			//else
-				return NORMAL_RETURN;
-		}
-		
+		if (command.equals("")) //uninstall
+			return NORMAL_RETURN;
 		if (commandInUse(command))
 			return COMMAND_IN_USE;
 		if (!validShortcut(shortcut))

@@ -14,8 +14,8 @@ public class Hotkeys implements PlugIn {
 	private static String shortcut = "";
 
 	public void run(String arg) {
-		if (arg.equals("install"))
-			installHotkey();
+		if (arg.equals("install") || arg.equals("install2"))
+			installHotkey(arg);
 		else if (arg.equals("remove"))
 			removeHotkey();
 		else {
@@ -25,16 +25,32 @@ public class Hotkeys implements PlugIn {
 		IJ.register(Hotkeys.class);
 	}
 
-	void installHotkey() {
-		String[] commands = getAllCommands();
+	void installHotkey(String arg) {
+		boolean byName = arg.equals("install2");
+		String[] commands = byName?null:getAllCommands();
 		String[] shortcuts = getAvailableShortcuts();
 		GenericDialog gd = new GenericDialog("Create Shortcut");
-		gd.addChoice("Command:", commands, command);
+		if (byName)
+			gd.addStringField("Command:", "", 20);
+		else
+			gd.addChoice("Command:", commands, command);
 		gd.addChoice("Shortcut:", shortcuts, shortcuts[0]);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
-		command = gd.getNextChoice();
+		if (byName) {
+			command = gd.getNextString();
+			Hashtable cmds = Menus.getCommands();
+			if (cmds==null || cmds.get(command)==null) {
+				if (cmds.get(command)==null)
+					command = command+" ";
+				if (cmds.get(command)==null) {
+					IJ.error("Command not found:\n \n   "+ "\""+command+"\"");
+					return;
+				}
+			}
+		} else
+			command = gd.getNextChoice();
 		shortcut = gd.getNextChoice();
 		String plugin = "ij.plugin.Hotkeys("+"\""+command+"\")";
 		int err = Menus.installPlugin(plugin,Menus.SHORTCUTS_MENU,"*"+command,shortcut,IJ.getInstance());
@@ -57,12 +73,12 @@ public class Hotkeys implements PlugIn {
 	void removeHotkey() {
 		String[] commands = getInstalledCommands();
 		if (commands==null) {
-			IJ.showMessage("Remove...", "No installed commands found.");
+			IJ.showMessage("Remove...", "No shortcuts found.");
 			return;
 		}
 		GenericDialog gd = new GenericDialog("Remove");
-		gd.addChoice("Command:", commands, "");
-		gd.addMessage("The command is not removed\nuntil ImageJ is restarted.");
+		gd.addChoice("Shortcut:", commands, "");
+		gd.addMessage("The shortcut is not removed\nuntil ImageJ is restarted.");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
