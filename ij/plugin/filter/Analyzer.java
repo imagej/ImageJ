@@ -404,6 +404,13 @@ public class Analyzer implements PlugInFilter, Measurements {
 		int limit = (Analyzer.getMeasurements()&LIMIT)!=0?LIMIT:0;
 		boolean calibrated = imp2.getCalibration().calibrated();
 		Rectangle saveR = null;
+		Calibration globalCal = calibrated?imp2.getGlobalCalibration():null;
+		Calibration localCal = null;
+		if (globalCal!=null) {
+			imp2.setGlobalCalibration(null);
+			localCal = imp2.getCalibration().copy();
+			imp2.setCalibration(globalCal);
+		}
 		if (straightLine && lineWidth>1) {
 			saveR = ip2.getRoi();
 			ip2.setRoi(roi.getPolygon());
@@ -456,6 +463,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 			}
 		}
 		saveResults(stats, roi);
+		if (globalCal!=null && localCal!=null) {
+			imp2.setGlobalCalibration(globalCal);
+			imp2.setCalibration(localCal);
+		}
 	}
 	
 	private ImageProcessor convertToOriginalDepth(ImagePlus imp, ImageProcessor ip) {
