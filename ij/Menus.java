@@ -1428,7 +1428,7 @@ public class Menus {
 		return NORMAL_RETURN;
 	}
 	
-	/** Deletes a command installed by installPlugin. */
+	/** Deletes a command installed by Plugins/Shortcuts/Add Shortcut. */
 	public static int uninstallPlugin(String command) {
 		boolean found = false;
 		for (Enumeration en=pluginsPrefs.elements(); en.hasMoreElements();) {

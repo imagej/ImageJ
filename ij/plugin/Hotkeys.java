@@ -29,7 +29,8 @@ public class Hotkeys implements PlugIn {
 		boolean byName = arg.equals("install2");
 		String[] commands = byName?null:getAllCommands();
 		String[] shortcuts = getAvailableShortcuts();
-		GenericDialog gd = new GenericDialog("Create Shortcut");
+		String nCommands = commands!=null?" ("+commands.length+")":"";
+		GenericDialog gd = new GenericDialog("Add Shortcut"+nCommands);
 		if (byName)
 			gd.addStringField("Command:", "", 20);
 		else
@@ -42,11 +43,16 @@ public class Hotkeys implements PlugIn {
 			command = gd.getNextString();
 			Hashtable cmds = Menus.getCommands();
 			if (cmds==null || cmds.get(command)==null) {
+				String command2 = command;
 				if (cmds.get(command)==null)
 					command = command+" ";
 				if (cmds.get(command)==null) {
-					IJ.error("Command not found:\n \n   "+ "\""+command+"\"");
-					return;
+					command = command2 + "...";
+					if (cmds.get(command)==null) {
+						command = command2;
+						IJ.error("Command not found:\n \n   "+ "\""+command+"\"");
+						return;
+					}
 				}
 			}
 		} else
@@ -85,7 +91,7 @@ public class Hotkeys implements PlugIn {
 		command = gd.getNextChoice();
 		int err = Menus.uninstallPlugin(command);
 		boolean removed = true;
-		if(err==Menus.COMMAND_NOT_FOUND)
+		if (err==Menus.COMMAND_NOT_FOUND)
 			removed = deletePlugin(command);
 		if (removed) {
 			IJ.showStatus("\""+command + "\" removed; ImageJ restart required");

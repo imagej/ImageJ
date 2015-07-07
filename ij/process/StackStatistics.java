@@ -8,19 +8,23 @@ import java.awt.*;
 /** Statistics, including the histogram, of a stack. */
 public class StackStatistics extends ImageStatistics {
 	
+	/** Creates a StackStatistics object from a stack, using 256 
+		histogram bins and the entire stack pixel value range. */
 	public StackStatistics(ImagePlus imp) {
 		this(imp, 256, 0.0, 0.0);
 	}
 
-	public StackStatistics(ImagePlus imp, int nBins, double histMin, double histMax) {
+	/** Creates a StackStatistics object from a stack, using the specified 
+		histogram bin count and x-axis range (pixel value tange). */
+	public StackStatistics(ImagePlus imp, int nBins, double xMin, double xMax) {
 		int bits = imp.getBitDepth();
 		stackStatistics = true;
-		if ((bits==8||bits==24) && nBins==256 && histMin==0.0 && histMax==256.0)
+		if ((bits==8||bits==24) && nBins==256 && xMin==0.0 && xMax==256.0)
 			sum8BitHistograms(imp);
-		else if (bits==16 && nBins==256 && histMin==0.0 && histMax==0.0 && !imp.getCalibration().calibrated())
+		else if (bits==16 && nBins==256 && xMin==0.0 && xMax==0.0 && !imp.getCalibration().calibrated())
 			sum16BitHistograms(imp);
 		else
-			doCalculations(imp, nBins, histMin, histMax);
+			doCalculations(imp, nBins, xMin, xMax);
 	}
 
     void doCalculations(ImagePlus imp,  int bins, double histogramMin, double histogramMax) {

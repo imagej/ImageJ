@@ -374,8 +374,8 @@ macros05="Record...",ij.plugin.frame.Recorder
 macros06=-
 
 # Plugins installed in the Plugins/Shortcuts submenu
-shortcuts01="Create Shortcut... ",ij.plugin.Hotkeys("install")
-shortcuts02="Create Shortcut by Name... ",ij.plugin.Hotkeys("install2")
+shortcuts01="Add Shortcut... ",ij.plugin.Hotkeys("install")
+shortcuts02="Add Shortcut by Name... ",ij.plugin.Hotkeys("install2")
 shortcuts03="Remove Shortcut...",ij.plugin.Hotkeys("remove")
 shortcuts04="List Shortcuts...",ij.plugin.CommandLister("shortcuts")
 shortcuts05=-
