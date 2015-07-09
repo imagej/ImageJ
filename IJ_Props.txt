@@ -155,6 +155,11 @@ stacks14="Plot Z-axis Profile",ij.plugin.ZAxisProfiler
 stacks15="Label...",ij.plugin.filter.StackLabeler
 stacks16="Statistics",ij.plugin.Stack_Statistics
 
+# Plugins installed in the Image/Stacks/Animation submenu
+animation_01="Start Animation [\\]",ij.plugin.Animator("start")
+animation_02="Stop Animation",ij.plugin.Animator("stop")
+animation_03="Animation Options...",ij.plugin.Animator("options")
+
 # Plugins installed in the Image/Stacks/Tools submenu
 tools_01="Combine...",ij.plugin.StackCombiner
 tools_02="Concatenate...",ij.plugin.Concatenator
@@ -166,10 +171,6 @@ tools_07="Make Substack...",ij.plugin.SubstackMaker
 tools_08="Grouped Z Project...",ij.plugin.GroupedZProjector
 tools_09="Set Label...",ij.plugin.SimpleCommands("set")
 tools_10="Remove Slice Labels",ij.plugin.SimpleCommands("remove")
-tools_11=-
-tools_12="Start Animation [\\]",ij.plugin.Animator("start")
-tools_13="Stop Animation",ij.plugin.Animator("stop")
-tools_14="Animation Options...",ij.plugin.Animator("options")
 
 # Plugins installed in the Image/Hyperstacks submenu
 hyperstacks01="New Hyperstack...",ij.plugin.HyperStackMaker

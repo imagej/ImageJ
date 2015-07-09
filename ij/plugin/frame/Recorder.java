@@ -508,6 +508,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					textArea.append(text);
 				} else if (name.equals("Add to Manager"))
 					;
+				else if (name.equals("Find Commands..."))
+					;
 				else if (roi!=null && (roi instanceof TextRoi) && (name.equals("Draw")||name.equals("Add Selection...")))
 					textArea.append(((TextRoi)roi).getMacroCode(name, imp));
 				else {

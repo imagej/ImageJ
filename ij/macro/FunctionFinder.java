@@ -10,10 +10,10 @@ import java.util.Iterator;
 import java.util.Set;
 
 /** This class implements the text editor's Macros/Find Functions command.
-It was written by jerome.mutterer at ibmp.fr, and is based on Mark Longair's CommandFinder plugin.
+	It was written by jerome.mutterer at ibmp.fr, and is based on Mark Longair's CommandFinder plugin.
 */
 public class FunctionFinder implements TextListener,  WindowListener, KeyListener, ItemListener, ActionListener {
-	private Dialog dialog;
+	private static Dialog dialog;
 	private TextField prompt;
 	private List functions;
 	private Button insertButton, infoButton, closeButton;
@@ -21,13 +21,15 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 	private Editor editor;
 	
 	public FunctionFinder(Editor editor) {
+		
 		this.editor = editor;
+		
 		String exists = IJ.runMacro("return File.exists(getDirectory('macros')+'functions.html');");
 		if (exists=="0")	{
 			String installLocalMacroFunctionsFile = "functions = File.openUrlAsString('"+IJ.URL+"/developer/macro/functions.html');\n"+
-					"f = File.open(getDirectory('macros')+'functions.html');\n"+
-					"print (f, functions);\n"+
-					"File.close(f);";
+			"f = File.open(getDirectory('macros')+'functions.html');\n"+
+			"print (f, functions);\n"+
+			"File.close(f);";
 			try { IJ.runMacro(installLocalMacroFunctionsFile);
 			} catch (Throwable e) { IJ.error("Problem downloading functions.html"); return;}
 		}
@@ -48,32 +50,33 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 		}
 		
 		ImageJ imageJ = IJ.getInstance();
-		dialog = new Dialog(imageJ, "Built-in Functions");
-		dialog.setLayout(new BorderLayout());
-		dialog.addWindowListener(this);
-		Panel northPanel = new Panel();
-		prompt = new TextField("", 32);
-		prompt.addTextListener(this);
-		prompt.addKeyListener(this);
-		northPanel.add(prompt);
-		dialog.add(northPanel, BorderLayout.NORTH);
-		functions = new List(12);
-		functions.addKeyListener(this);
-		populateList("");
-		dialog.add(functions, BorderLayout.CENTER);
-		Panel buttonPanel = new Panel();
-		//panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		insertButton = new Button("Insert");
-		insertButton.addActionListener(this);
-		buttonPanel.add(insertButton);
-		infoButton = new Button("Info");
-		infoButton.addActionListener(this);
-		buttonPanel.add(infoButton);
-		closeButton = new Button("Close");
-		closeButton.addActionListener(this);
-		buttonPanel.add(closeButton);
-		dialog.add(buttonPanel, BorderLayout.SOUTH);
-		dialog.pack();
+		if (dialog==null) {
+			dialog = new Dialog(imageJ, "Built-in Functions");
+			dialog.setLayout(new BorderLayout());
+			dialog.addWindowListener(this);
+			Panel northPanel = new Panel();
+			prompt = new TextField("", 32);
+			prompt.addTextListener(this);
+			prompt.addKeyListener(this);
+			northPanel.add(prompt);
+			dialog.add(northPanel, BorderLayout.NORTH);
+			functions = new List(12);
+			functions.addKeyListener(this);
+			populateList("");
+			dialog.add(functions, BorderLayout.CENTER);
+			Panel buttonPanel = new Panel();
+			insertButton = new Button("Insert");
+			insertButton.addActionListener(this);
+			buttonPanel.add(insertButton);
+			infoButton = new Button("Info");
+			infoButton.addActionListener(this);
+			buttonPanel.add(infoButton);
+			closeButton = new Button("Close");
+			closeButton.addActionListener(this);
+			buttonPanel.add(closeButton);
+			dialog.add(buttonPanel, BorderLayout.SOUTH);
+			dialog.pack();
+		}	
 		
 		Frame frame = WindowManager.getFrontWindow();
 		if (frame==null) return;
@@ -84,11 +87,11 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 		dialog.setVisible(true);
 		dialog.toFront();
 	}
-
+	
 	public FunctionFinder() {
 		this(null);
 	}
-
+	
 	public void populateList(String matchingSubstring) {
 		String substring = matchingSubstring.toLowerCase();
 		functions.removeAll();
@@ -106,16 +109,13 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 	}
 	
 	public void edPaste(String arg) {
-		Frame frame = editor;
-		if (frame!=null && !frame.isVisible())
-			frame = null;
-		if (frame==null) {
-			frame = WindowManager.getFrontWindow();
-			if (!(frame instanceof Editor))
-				return;
-		}
+		Frame frame = WindowManager.getFrontWindow();
+		if (!(frame instanceof Editor))
+			return;
+		
 		try {
 			TextArea ta = ((Editor)frame).getTextArea();
+			editor = (Editor)frame;
 			int start = ta.getSelectionStart( );
 			int end = ta.getSelectionEnd( );
 			try {
@@ -132,11 +132,16 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 	
 	protected void runFromLabel(String listLabel) {
 		edPaste(listLabel);
-		dialog.dispose();
+		closeAndRefocus();
 	}
 	
 	public void close() {
+		closeAndRefocus();
+	}
+	
+	public void closeAndRefocus() {
 		dialog.dispose();
+		if (editor!=null) editor.toFront();
 	}
 	
 	public void keyPressed(KeyEvent ke) {
@@ -154,7 +159,7 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 				if(items>0)
 					functions.select(functions.getItemCount()-1);
 			} else if (key==KeyEvent.VK_ESCAPE) {
-				dialog.dispose();
+				closeAndRefocus();
 			} else if (key==KeyEvent.VK_DOWN)  {
 				functions.requestFocus();
 				if (items>0)
@@ -166,6 +171,9 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 				if (selected!=null)
 					edPaste(selected);
 			}
+			else if (key==KeyEvent.VK_ESCAPE) {
+				closeAndRefocus();
+			}
 		}
 	}
 	
@@ -176,7 +184,7 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 	public void textValueChanged(TextEvent te) {
 		populateList(prompt.getText());
 	}
-		
+	
 	public void actionPerformed(ActionEvent e) {
 		Object b = e.getSource();
 		if (b==insertButton) {
@@ -197,11 +205,11 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 			}
 			IJ.runPlugIn("ij.plugin.BrowserLauncher", url);
 		} else if (b==closeButton)
-			dialog.dispose();
+		closeAndRefocus();
 	}
-
+	
 	public void windowClosing(WindowEvent e) {
-		dialog.dispose();
+		closeAndRefocus();
 	}
 	
 	public void windowActivated(WindowEvent e) { }
@@ -211,4 +219,3 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 	public void windowIconified(WindowEvent e) { }
 	public void windowDeiconified(WindowEvent e) { }
 }
-

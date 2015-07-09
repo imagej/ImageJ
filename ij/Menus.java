@@ -156,6 +156,7 @@ public class Menus {
 		addPlugInItem(image, "Properties...", "ij.plugin.filter.ImageProperties", KeyEvent.VK_P, true);
 		getMenu("Image>Color", true);
 		getMenu("Image>Stacks", true);
+		getMenu("Image>Stacks>Animation_", true);
 		getMenu("Image>Stacks>Tools_", true);
 		Menu hyperstacksMenu = getMenu("Image>Hyperstacks", true);
 		image.addSeparator();
@@ -260,8 +261,7 @@ public class Menus {
 	public static Menu getExamplesMenu(ActionListener listener) {
 		Menu menu = new Menu("Examples");
 		Menu submenu = new Menu("Macro");
-		addExample(submenu, "Hello World", "Hello_World.ijm");
-		addExample(submenu, "Synthetic Image", "Synthetic_Image.ijm");
+		addExample(submenu, "Sphere", "Sphere.ijm");
 		addExample(submenu, "Dialog Box", "Dialog_Box.ijm");
 		addExample(submenu, "Example Plot", "Example_Plot.ijm");
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.ijm");
@@ -275,7 +275,7 @@ public class Menus {
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("JavaScript");
-		addExample(submenu, "Synthetic Image", "Synthetic_Image.js");
+		addExample(submenu, "Sphere", "Sphere.js");
 		addExample(submenu, "Example Plot", "Example_Plot.js");
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.js");
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.js");
@@ -285,7 +285,7 @@ public class Menus {
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("BeanShell");
-		addExample(submenu, "Synthetic Image", "Synthetic_Image.bsh");
+		addExample(submenu, "Sphere", "Sphere.bsh");
 		addExample(submenu, "Example Plot", "Example_Plot.bsh");
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.bsh");
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.bsh");
@@ -293,14 +293,14 @@ public class Menus {
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("Python");
-		addExample(submenu, "Synthetic Image", "Synthetic_Image.py");
+		addExample(submenu, "Sphere", "Sphere.py");
 		addExample(submenu, "Animated Gaussian Blur", "Animated_Gaussian_Blur.py");
 		addExample(submenu, "Rotational Animation.py", "Rotational_Animation.py");
 		addExample(submenu, "Overlay", "Overlay.py");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("Java");
-		addExample(submenu, "Synthetic Image", "Synthetic_Image.java");
+		addExample(submenu, "Sphere", "Sphere_.java");
 		addExample(submenu, "Plugin", "My_Plugin.java");
 		addExample(submenu, "Plugin Filter", "Filter_Plugin.java");
 		addExample(submenu, "Plugin Frame", "Plugin_Frame.java");
@@ -1423,7 +1423,6 @@ public class Menus {
 		item.addActionListener(ij);
 		pluginsTable.put(command, plugin);
 		shortcut = code>0 && !functionKey?"["+shortcut+"]":"";
-		//IJ.write("installPlugin: "+menuCode+",\""+command+shortcut+"\","+plugin);
 		pluginsPrefs.addElement(menuCode+",\""+command+shortcut+"\","+plugin);
 		return NORMAL_RETURN;
 	}
@@ -1433,8 +1432,8 @@ public class Menus {
 		boolean found = false;
 		for (Enumeration en=pluginsPrefs.elements(); en.hasMoreElements();) {
 			String cmd = (String)en.nextElement();
-			if (cmd.indexOf(command)>0) {
-				pluginsPrefs.removeElement((Object)cmd);
+			if (cmd.contains(command)) {
+				boolean ok = pluginsPrefs.removeElement((Object)cmd);
 				found = true;
 				break;
 			}

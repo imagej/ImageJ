@@ -77,36 +77,42 @@ public class Hotkeys implements PlugIn {
 	}
 	
 	void removeHotkey() {
-		String[] commands = getInstalledCommands();
-		if (commands==null) {
+		String[] shortcuts = getShortcuts();
+		if (shortcuts==null) {
 			IJ.showMessage("Remove...", "No shortcuts found.");
 			return;
 		}
 		GenericDialog gd = new GenericDialog("Remove");
-		gd.addChoice("Shortcut:", commands, "");
-		gd.addMessage("The shortcut is not removed\nuntil ImageJ is restarted.");
+		gd.addChoice("Shortcut:", shortcuts, "");
+		if (shortcuts.length>1)
+			gd.addCheckbox("Remove all "+shortcuts.length+" shortcuts", false);
+		gd.addMessage("Shortcuts are not removed\nuntil ImageJ is restarted.");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		command = gd.getNextChoice();
-		int err = Menus.uninstallPlugin(command);
-		boolean removed = true;
-		if (err==Menus.COMMAND_NOT_FOUND)
-			removed = deletePlugin(command);
-		if (removed) {
-			IJ.showStatus("\""+command + "\" removed; ImageJ restart required");
-		} else
-			IJ.showStatus("\""+command + "\" not removed");
-	}
-
-	boolean deletePlugin(String command) {
-		String plugin = (String)Menus.getCommands().get(command);
-		String name = plugin+".class";
-		File file = new File(Menus.getPlugInsPath(), name);
-		if (file==null || !file.exists())
-			return false;
+		boolean removeAll = false;
+		if (shortcuts.length>1)
+			removeAll = gd.getNextBoolean();
+		if (removeAll) {
+			boolean ok = IJ.showMessageWithCancel("Remove", "Remove all "+shortcuts.length+" shortcuts?");
+			if (!ok)
+				return;
+			command = "";
+		} else {
+			shortcuts = new String[1];
+			shortcuts[0] = command;
+		}
+		int count = 0;
+		for (int i=0; i<shortcuts.length; i++) {
+			int err = Menus.uninstallPlugin(shortcuts[i]);
+			if (err==Menus.NORMAL_RETURN)
+				count++;
+		}
+		if (count==0)
+			IJ.showStatus("No shortcuts removed");
 		else
-			return IJ.showMessageWithCancel("Delete Plugin?", "Permanently delete \""+name+"\"?");
+			IJ.showStatus(count+" shortcut"+(count>1?"s":"")+" removed; ImageJ restart required");
 	}
 	
 	String[] getAllCommands() {
@@ -152,7 +158,7 @@ public class Hotkeys implements PlugIn {
 		return list;
 	}
 
-	String[] getInstalledCommands() {
+	String[] getShortcuts() {
 		Vector v = new Vector();
 		Hashtable commandTable = Menus.getCommands();
 		for (Enumeration en=commandTable.keys(); en.hasMoreElements();) {
