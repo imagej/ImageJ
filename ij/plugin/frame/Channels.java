@@ -113,7 +113,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 	}
 	
 	public static void updateChannels() {
-		if (instance!=null)
+		if (instance!=null && !(IJ.isMacOSX()&&IJ.isJava18()))
 			instance.update();
 	}
 	
