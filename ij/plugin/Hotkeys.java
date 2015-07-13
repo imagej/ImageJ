@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.util.*;
+import ij.measure.ResultsTable;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
@@ -18,6 +19,8 @@ public class Hotkeys implements PlugIn {
 			installHotkey(arg);
 		else if (arg.equals("remove"))
 			removeHotkey();
+		else if (arg.equals("list"))
+			listCommands();
 		else {
 			Executer e = new Executer(arg);
 			e.run();
@@ -115,6 +118,18 @@ public class Hotkeys implements PlugIn {
 			IJ.showStatus(count+" shortcut"+(count>1?"s":"")+" removed; ImageJ restart required");
 	}
 	
+	private void listCommands() {
+		String[] commands = getAllCommands();
+		Hashtable classes = Menus.getCommands();
+		ResultsTable rt = new ResultsTable();
+		for (int i=0; i<commands.length; i++) {
+			rt.incrementCounter();
+			rt.addValue("Command", commands[i]);
+			rt.addValue("Plugin", (String)classes.get(commands[i]));
+		}
+		rt.show("Commands");
+	}
+
 	String[] getAllCommands() {
 		Vector v = new Vector();
 		Hashtable commandTable = Menus.getCommands();

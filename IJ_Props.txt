@@ -378,8 +378,9 @@ macros06=-
 shortcuts01="Add Shortcut... ",ij.plugin.Hotkeys("install")
 shortcuts02="Add Shortcut by Name... ",ij.plugin.Hotkeys("install2")
 shortcuts03="Remove Shortcut...",ij.plugin.Hotkeys("remove")
-shortcuts04="List Shortcuts...",ij.plugin.CommandLister("shortcuts")
-shortcuts05=-
+shortcuts04="List Shortcuts",ij.plugin.CommandLister("shortcuts")
+shortcuts05="List Commands",ij.plugin.Hotkeys("list")
+shortcuts06=-
 
 # Plugins installed in the Plugins/Utilities submenu
 utilities01="Control Panel...[U]",ij.plugin.ControlPanel
@@ -391,8 +392,8 @@ utilities06=-
 utilities07="Capture Screen[G]",ij.plugin.ScreenGrabber
 utilities08="Capture Image",ij.plugin.ScreenGrabber("image")
 utilities09=-
-utilities10="ImageJ Properties...",ij.plugin.JavaProperties
-utilities11="Threads...",ij.plugin.ThreadLister
+utilities10="ImageJ Properties",ij.plugin.JavaProperties
+utilities11="Threads",ij.plugin.ThreadLister
 utilities12="Benchmark",ij.plugin.filter.Benchmark
 utilities13="Reset...",ij.plugin.SimpleCommands("reset")
 

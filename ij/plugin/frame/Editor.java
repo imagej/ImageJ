@@ -85,6 +85,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private ArrayList undoBuffer = new ArrayList();
     private boolean performingUndo;
     private boolean checkForCurlyQuotes;
+    private boolean useNashorn;
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -414,6 +415,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else
 			text = ta.getSelectedText();
 		if (text.equals("")) return;
+		if (useNashorn) {
+			IJ.runPlugIn("ij.plugin.JavaScriptEvaluator", text);
+			return;
+		}
 		text = getJSPrefix("") + text;
 		if ((IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit())) && !IJ.isJava18()) {
 			// Use JavaScript engine built into Java 6 and Java 7.

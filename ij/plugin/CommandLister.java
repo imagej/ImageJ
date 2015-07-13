@@ -6,7 +6,8 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 
-/** Lists ImageJ commands or keyboard shortcuts in a text window. */
+/** This class is used by the Plugins/Shortcuts/List Shortcuts 
+	command to display a list keyboard shortcuts. */
 public class CommandLister implements PlugIn {
 
 	public void run(String arg) {
@@ -19,11 +20,13 @@ public class CommandLister implements PlugIn {
 	public void listCommands() {
 		Hashtable commands = Menus.getCommands();
 		Vector v = new Vector();
+		int index = 1;
 		for (Enumeration en=commands.keys(); en.hasMoreElements();) {
 			String command = (String)en.nextElement();
-			v.addElement(command+"\t"+(String)commands.get(command));
+			v.addElement(index+"\t"+command+"\t"+(String)commands.get(command));
+			index++;
 		}
-		showList("Commands", "Command\tPlugin", v);
+		showList("Commands", " \tCommand\tPlugin", v);
 	}
 
 	public void listShortcuts() {
