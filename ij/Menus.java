@@ -1492,14 +1492,6 @@ public class Menus {
 			code = KeyEvent.VK_A+c-97;
 		else if (c>=48&&c<=57) //0-9
 			code = KeyEvent.VK_0+c-48;
-		//else {
-		//	switch (c) {
-		//		case 43: code = KeyEvent.VK_PLUS; break;
-		//		case 45: code = KeyEvent.VK_MINUS; break;
-		//		//case 92: code = KeyEvent.VK_BACK_SLASH; break;
-		//		default: return 0;
-		//	}
-		//}
 		return code;
 	}
 	
@@ -1554,6 +1546,7 @@ public class Menus {
 			return false;
 	}
 
+	/** Returns 'true' if this keyboard shortcut is in use. */
 	public static boolean shortcutInUse(String shortcut) {
 		int code = convertShortcutToCode(shortcut);
 		if (shortcuts.get(new Integer(code))!=null)

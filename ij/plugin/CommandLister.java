@@ -26,18 +26,31 @@ public class CommandLister implements PlugIn {
 			v.addElement(index+"\t"+command+"\t"+(String)commands.get(command));
 			index++;
 		}
-		showList("Commands", " \tCommand\tPlugin", v);
+		String[] list = new String[v.size()];
+		v.copyInto((String[])list);
+		showList("Commands", " \tCommand\tPlugin", list);
 	}
 
 	public void listShortcuts() {
-		Hashtable shortcuts = Menus.getShortcuts();
+		String[] shortcuts = getShortcuts();
+		for (int i=0; i<shortcuts.length; i++) {
+			if (shortcuts[i].contains("\t^"))
+				shortcuts[i] += " (macro)";
+		}
+		showList("Keyboard Shortcuts", "Shortcut\tCommand", shortcuts);
+	}
+	
+	public String[] getShortcuts() {
 		Vector v = new Vector();
+		Hashtable shortcuts = Menus.getShortcuts();
 		addShortcutsToVector(shortcuts, v);
 		Hashtable macroShortcuts = Menus.getMacroShortcuts();
 		addShortcutsToVector(macroShortcuts, v);
-		showList("Keyboard Shortcuts", "Hot Key\tCommand", v);
+		String[] list = new String[v.size()];
+		v.copyInto((String[])list);
+		return list;
 	}
-	
+
 	void addShortcutsToVector(Hashtable shortcuts, Vector v) {
 		for (Enumeration en=shortcuts.keys(); en.hasMoreElements();) {
 			Integer key = (Integer)en.nextElement();
@@ -62,9 +75,7 @@ public class CommandLister implements PlugIn {
 		}
 	}
 
-	void showList(String title, String headings, Vector v) {
-		String[] list = new String[v.size()];
-		v.copyInto((String[])list);
+	void showList(String title, String headings, String[] list) {
 		Arrays.sort(list, String.CASE_INSENSITIVE_ORDER);
 		ArrayList list2 = new ArrayList();
 		for (int i=0; i<list.length; i++)

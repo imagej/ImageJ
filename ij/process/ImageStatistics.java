@@ -5,10 +5,15 @@ import java.awt.*;
 /** Statistics, including the histogram, of an image or selection. */
 public class ImageStatistics implements Measurements {
 
+	/** Use getHIstogram() to get histogram as long array. */
 	public int[] histogram;
+	/** Int pixel count (limited to 2^31-1) */
 	public int pixelCount;
+	/** Long pixel count */
 	public long longPixelCount;
+	/** Int mode (limited to 2^31-1) */
 	public int mode;
+	/** Double mode*/
 	public double dmode;
 	public double area;
 	public double min;

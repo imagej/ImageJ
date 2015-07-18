@@ -34,14 +34,15 @@ public class Hotkeys implements PlugIn {
 		String[] shortcuts = getAvailableShortcuts();
 		String nCommands = commands!=null?" ("+commands.length+")":"";
 		GenericDialog gd = new GenericDialog("Add Shortcut"+nCommands);
+		gd.addChoice("Shortcut:", shortcuts, shortcuts[0]);
 		if (byName)
 			gd.addStringField("Command:", "", 20);
 		else
 			gd.addChoice("Command:", commands, command);
-		gd.addChoice("Shortcut:", shortcuts, shortcuts[0]);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
+		shortcut = gd.getNextChoice();
 		if (byName) {
 			command = gd.getNextString();
 			Hashtable cmds = Menus.getCommands();
@@ -60,7 +61,6 @@ public class Hotkeys implements PlugIn {
 			}
 		} else
 			command = gd.getNextChoice();
-		shortcut = gd.getNextChoice();
 		String plugin = "ij.plugin.Hotkeys("+"\""+command+"\")";
 		int err = Menus.installPlugin(plugin,Menus.SHORTCUTS_MENU,"*"+command,shortcut,IJ.getInstance());
 		switch (err) {
@@ -71,7 +71,7 @@ public class Hotkeys implements PlugIn {
 				IJ.showMessage(TITLE, "The shortcut must be a single character or F1-F24.");
 				break;
 			case Menus.SHORTCUT_IN_USE:
-				IJ.showMessage("The \""+shortcut+"\" shortcut is already being used.");
+				IJ.showMessage("The \""+shortcut+"\" shortcut is in use.");
 				break;
 			default:
 				shortcut = "";
@@ -147,7 +147,7 @@ public class Hotkeys implements PlugIn {
 	
 	String[] getAvailableShortcuts() {
 		Vector v = new Vector();
-		Hashtable shortcuts = Menus.getShortcuts();
+		String[] existingShortcuts = (new CommandLister()).getShortcuts();
 		for (char c = '0'; c<='9'; c++) {
 			String shortcut = ""+c;
 			if (!Menus.shortcutInUse(shortcut))
