@@ -1573,7 +1573,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			labelsCheckbox.setState(true);
 			showAll(LABELS);
 		}
-		IJ.doCommand("Labels...");
+		IJ.run("Labels...");
+		Overlay defaultOverlay = OverlayLabels.createOverlay();
+		Prefs.useNamesAsLabels = defaultOverlay.getDrawNames();
 	}
 
 	private void options() {
