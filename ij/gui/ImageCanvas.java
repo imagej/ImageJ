@@ -399,6 +399,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     }
     
 	void drawRoiLabel(Graphics g, int index, Roi roi) {
+		if (roi.isCursor())
+			return;
 		boolean pointRoi = roi instanceof PointRoi;
 		Rectangle r = roi.getBounds();
 		int x = screenX(r.x);

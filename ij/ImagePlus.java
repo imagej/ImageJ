@@ -2637,7 +2637,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public boolean getHideOverlay() {
 		return hideOverlay;
 	}
-	
+		
 	/** Enable/disable use of antialiasing by the flatten() method. */
 	public void setAntialiasRendering(boolean antialiasRendering) {
 		this.antialiasRendering = antialiasRendering;
