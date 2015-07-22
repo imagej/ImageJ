@@ -92,7 +92,17 @@ public class ChannelSplitter implements PlugIn {
 		return (ImagePlus[])images.toArray(array);
 	}
 	
+	/** Returns, as an ImageStack, the specified channel, where 'c' must be greater 
+		than zero and less than or equal to the number of channels in the image. */
 	public static ImageStack getChannel(ImagePlus imp, int c) {
+		if (imp.getBitDepth()==24) { // RGB?
+			if (c<1 || c>3)
+				throw new IllegalArgumentException("Channel must be 1,2 or 3");
+			ImageStack[] channels = splitRGB(imp.getStack(), true);
+			return channels[c-1];
+		}
+		if (c<1 || c>imp.getNChannels())
+			throw new IllegalArgumentException("Channel less than 1 or greater than "+imp.getNChannels());
 		ImageStack stack1 = imp.getStack();
 		ImageStack stack2 = new ImageStack(imp.getWidth(), imp.getHeight());
 		for (int t=1; t<=imp.getNFrames(); t++) {

@@ -1590,7 +1590,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void setRoi(Roi newRoi) {
 		setRoi(newRoi, true);
 	}
-
+	
 	/** Assigns 'newRoi'  to this image and displays it if 'updateDisplay' is true. */
 	public void setRoi(Roi newRoi, boolean updateDisplay) {
 		if (newRoi==null)
@@ -1622,7 +1622,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 		roi.setImage(this);
 		if (updateDisplay) draw();
-		roi.notifyListeners(RoiListener.CREATED);
+		//roi.notifyListeners(RoiListener.CREATED);
 	}
 	
 	/** Creates a rectangular selection. */
@@ -2156,7 +2156,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		Calibration cal = getCalibration();
 		if (getProperty("FHT")!=null)
 			return getFFTLocation(x, height-y, cal);
-		if (!IJ.altKeyDown()) {
+		if (!(IJ.altKeyDown()||IJ.shiftKeyDown())) {
 			String s = " x="+d2s(cal.getX(x)) + ", y=" + d2s(cal.getY(y,height));
 			if (getStackSize()>1) {
 				int z = isDisplayedHyperStack()?getSlice()-1:getCurrentSlice()-1;
@@ -2637,7 +2637,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public boolean getHideOverlay() {
 		return hideOverlay;
 	}
-	
+		
 	/** Enable/disable use of antialiasing by the flatten() method. */
 	public void setAntialiasRendering(boolean antialiasRendering) {
 		this.antialiasRendering = antialiasRendering;

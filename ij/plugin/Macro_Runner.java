@@ -234,9 +234,11 @@ public class Macro_Runner implements PlugIn {
 		as a string, the last expression evaluated by the script. */
 	public String runJavaScript(String script, String arg) {
 		Object js = null;
-		if (IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit()))
+		if ((IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit())) && !IJ.isJava18()) {
+			// Use JavaScript engine built into Java 6 and Java 7.
+			// Can't use incompatible Nashorn engine in Java 8 and later.
 			js = IJ.runPlugIn("ij.plugin.JavaScriptEvaluator", "");
-		else {
+		} else {
 			js = IJ.runPlugIn("JavaScript", "");
 			if (js==null) {
 				boolean ok = downloadJar("/download/tools/JavaScript.jar");

@@ -18,7 +18,6 @@ public class Selection implements PlugIn, Measurements {
 	private float[] kernel = {1f, 1f, 1f, 1f, 1f};
 	private float[] kernel3 = {1f, 1f, 1f};
 	private static int bandSize = 15; // pixels
-	private static boolean nonScalable;
 	private static Color linec, fillc;
 	private static int lineWidth = 1;
 	private static boolean smooth;

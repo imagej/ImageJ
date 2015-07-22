@@ -155,6 +155,11 @@ stacks14="Plot Z-axis Profile",ij.plugin.ZAxisProfiler
 stacks15="Label...",ij.plugin.filter.StackLabeler
 stacks16="Statistics",ij.plugin.Stack_Statistics
 
+# Plugins installed in the Image/Stacks/Animation submenu
+animation_01="Start Animation [\\]",ij.plugin.Animator("start")
+animation_02="Stop Animation",ij.plugin.Animator("stop")
+animation_03="Animation Options...",ij.plugin.Animator("options")
+
 # Plugins installed in the Image/Stacks/Tools submenu
 tools_01="Combine...",ij.plugin.StackCombiner
 tools_02="Concatenate...",ij.plugin.Concatenator
@@ -166,10 +171,6 @@ tools_07="Make Substack...",ij.plugin.SubstackMaker
 tools_08="Grouped Z Project...",ij.plugin.GroupedZProjector
 tools_09="Set Label...",ij.plugin.SimpleCommands("set")
 tools_10="Remove Slice Labels",ij.plugin.SimpleCommands("remove")
-tools_11=-
-tools_12="Start Animation [\\]",ij.plugin.Animator("start")
-tools_13="Stop Animation",ij.plugin.Animator("stop")
-tools_14="Animation Options...",ij.plugin.Animator("options")
 
 # Plugins installed in the Image/Hyperstacks submenu
 hyperstacks01="New Hyperstack...",ij.plugin.HyperStackMaker
@@ -374,11 +375,12 @@ macros05="Record...",ij.plugin.frame.Recorder
 macros06=-
 
 # Plugins installed in the Plugins/Shortcuts submenu
-shortcuts01="List Shortcuts...",ij.plugin.CommandLister("shortcuts")
-shortcuts02="Create Shortcut... ",ij.plugin.Hotkeys("install")
-shortcuts03="Install Plugin...",ij.plugin.Installer
-shortcuts04="Remove...",ij.plugin.Hotkeys("remove")
-shortcuts05=-
+shortcuts01="Add Shortcut... ",ij.plugin.Hotkeys("install")
+shortcuts02="Add Shortcut by Name... ",ij.plugin.Hotkeys("install2")
+shortcuts03="Remove Shortcut...",ij.plugin.Hotkeys("remove")
+shortcuts04="List Shortcuts",ij.plugin.CommandLister("shortcuts")
+shortcuts05="List Commands",ij.plugin.Hotkeys("list")
+shortcuts06=-
 
 # Plugins installed in the Plugins/Utilities submenu
 utilities01="Control Panel...[U]",ij.plugin.ControlPanel
@@ -390,8 +392,8 @@ utilities06=-
 utilities07="Capture Screen[G]",ij.plugin.ScreenGrabber
 utilities08="Capture Image",ij.plugin.ScreenGrabber("image")
 utilities09=-
-utilities10="ImageJ Properties...",ij.plugin.JavaProperties
-utilities11="Threads...",ij.plugin.ThreadLister
+utilities10="ImageJ Properties",ij.plugin.JavaProperties
+utilities11="Threads",ij.plugin.ThreadLister
 utilities12="Benchmark",ij.plugin.filter.Benchmark
 utilities13="Reset...",ij.plugin.SimpleCommands("reset")
 

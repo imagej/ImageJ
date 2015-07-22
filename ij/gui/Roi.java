@@ -73,6 +73,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	private boolean subPixel;
 	private boolean activeOverlayRoi;
 	private Properties props;
+	private boolean isCursor;
 
 
 	/** Creates a rectangular ROI. */
@@ -1939,13 +1940,21 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		bounds = new Rectangle2D.Double(getXBase(), getYBase(), getFloatWidth(), getFloatHeight());
 		subPixel = true;
 	}
+	
+	public void setIsCursor(boolean isCursor) {
+		this.isCursor = isCursor;
+	}
+
+	public boolean isCursor() {
+		return isCursor;
+	}
 
 	public String getDebugInfo() {
 		return "";
 	}
 
 	/** Returns a hashcode for this Roi that typically changes 
-		if it is moved,	 even though it is still the same object. */
+		if it is moved, even though it is still the same object. */
 	public int getHashCode() {
 		return hashCode() ^ (new Double(getXBase()).hashCode()) ^
 			Integer.rotateRight(new Double(getYBase()).hashCode(),16);

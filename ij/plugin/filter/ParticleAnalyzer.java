@@ -252,6 +252,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (imp.getType()==ImagePlus.COLOR_RGB) {
 			ip = (ImageProcessor)imp.getProperty("Mask");
 			ip.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
+			ip.setRoi(imp.getRoi());
 		}		
 		if (!analyze(imp, ip))
 			canceled = true;

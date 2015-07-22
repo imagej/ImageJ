@@ -806,7 +806,9 @@ public class ResultsTable implements Cloneable {
 				win = (TextWindow)frame;
 				win.toFront();
 			} else {
-				int width = getLastColumn()<=1?250:400;
+				int width = getLastColumn()<=0?250:400;
+				if (showRowNumbers)
+					width += 50;
 				win = new TextWindow(windowTitle, "", width, 300);
 				cloneNeeded = true;
 			}

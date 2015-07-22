@@ -263,6 +263,8 @@ public class PolygonRoi extends Roi {
 	}
 	
 	private void drawSpline(Graphics g, float[] xpoints, float[] ypoints, int npoints, boolean closed, boolean fill, boolean isActiveOverlayRoi) {
+		if (xpoints==null || xpoints.length==0)
+			return;
 		double srcx=0.0, srcy=0.9, mag=1.0;
 		if (ic!=null) {
 			Rectangle srcRect = ic.getSrcRect();

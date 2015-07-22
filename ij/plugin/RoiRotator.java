@@ -8,6 +8,7 @@ import java.awt.geom.*;
 /** This plugin implements the Edit/Selection/Rotate command. */
 public class RoiRotator implements PlugIn {
 	private static double defaultAngle = 15;
+	private static boolean rotateAroundImageCenter;
 
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
@@ -26,7 +27,14 @@ public class RoiRotator implements PlugIn {
 			imp.draw();
 			return;
 		}
-		Roi roi2 = rotate(roi, angle);
+		Rectangle r = roi.getBounds();
+		double xcenter = r.x+r.width/2.0;
+		double ycenter = r.y+r.height/2.0;
+		if (rotateAroundImageCenter) {
+			xcenter = imp.getWidth()/2.0;
+			ycenter = imp.getHeight()/2.0;
+		}
+		Roi roi2 = rotate(roi, angle, xcenter, ycenter);
 		if (roi2==null)
 			return;
 		Undo.setup(Undo.ROI, imp);
@@ -40,21 +48,28 @@ public class RoiRotator implements PlugIn {
 		int decimalPlaces = 0;
 		if ((int)angle!=angle)
 			decimalPlaces = 2;
+		if (Macro.getOptions()!=null)
+			rotateAroundImageCenter = false;
 		gd.addNumericField("Angle:", angle, decimalPlaces, 3, "degrees");
+		gd.addCheckbox("Rotate around image center", rotateAroundImageCenter);
 		gd.setInsets(5, 0, 0);
 		gd.addMessage("Enter negative angle to \nrotate counter-clockwise", null, Color.darkGray);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return Double.NaN;
-		else
-			return gd.getNextNumber();
+		rotateAroundImageCenter = gd.getNextBoolean();
+		return gd.getNextNumber();
 	}
 	
 	public static Roi rotate(Roi roi, double angle) {
-		double theta = -angle*Math.PI/180.0;
 		Rectangle r = roi.getBounds();
 		double xcenter = r.x+r.width/2.0;
 		double ycenter = r.y+r.height/2.0;
+		return rotate(roi, angle, xcenter, ycenter);
+	}
+
+	public static Roi rotate(Roi roi, double angle, double xcenter, double ycenter) {
+		double theta = -angle*Math.PI/180.0;
 		if (roi instanceof ShapeRoi)
 			return rotateShape((ShapeRoi)roi, -theta, xcenter, ycenter);
 		FloatPolygon poly = roi.getFloatPolygon();

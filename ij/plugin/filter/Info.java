@@ -232,11 +232,13 @@ public class Info implements PlugInFilter {
 	    else {
 	    	double lower = ip.getMinThreshold();
 	    	double upper = ip.getMaxThreshold();
+	    	String uncalibrated = "";
 			if (cal.calibrated()) {
+				uncalibrated = " ("+(int)lower+"-"+(int)upper+")";
 				lower = cal.getCValue((int)lower);
 				upper = cal.getCValue((int)upper);
 			}
-			s += "Threshold: "+d2s(lower)+"-"+d2s(upper)+"\n";
+			s += "Threshold: "+d2s(lower)+"-"+d2s(upper)+uncalibrated+"\n";
 		}
 		ImageCanvas ic = imp.getCanvas();
     	double mag = ic!=null?ic.getMagnification():1.0;

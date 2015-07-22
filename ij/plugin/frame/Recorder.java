@@ -178,6 +178,11 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		textArea.append(method+"("+a1+", "+a2+");\n");
 	}
 
+	public static void record(String method, int a1, int a2, String a3) {
+		if (textArea==null) return;
+		textArea.append(method+"("+a1+", "+a2+", \""+a3+"\");\n");
+	}
+
 	public static void record(String method, double a1, double a2) {
 		if (textArea==null) return;
 		int places = Math.abs(a1)<0.0001||Math.abs(a2)<0.0001?9:4;
@@ -502,6 +507,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 						text = "ImagePlus[] " + text;
 					textArea.append(text);
 				} else if (name.equals("Add to Manager"))
+					;
+				else if (name.equals("Find Commands..."))
 					;
 				else if (roi!=null && (roi instanceof TextRoi) && (name.equals("Draw")||name.equals("Add Selection...")))
 					textArea.append(((TextRoi)roi).getMacroCode(name, imp));

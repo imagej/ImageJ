@@ -1009,7 +1009,7 @@ public class ShapeRoi extends Roi {
 		AffineTransform aTx = (((Graphics2D)g).getDeviceConfiguration()).getDefaultTransform();
 		Graphics2D g2d = (Graphics2D)g;
 		if (stroke!=null && !isActiveOverlayRoi)
-			g2d.setStroke(ic!=null&&ic.getCustomRoi()?stroke:getScaledStroke());
+			g2d.setStroke((ic!=null&&ic.getCustomRoi())||isCursor()?stroke:getScaledStroke());
 		mag = getMagnification();
 		int basex=0, basey=0;
 		if (ic!=null) {

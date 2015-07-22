@@ -4,6 +4,7 @@ import ij.gui.*;
 import ij.measure.Calibration;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.*;
 import java.util.*;
 
 
@@ -227,14 +228,12 @@ public class SyncWindows extends PlugInFrame implements
 		ImageCanvas ic;
 		Point p;
 		Point oldp;
-		Rectangle rect;
 
 		oldX = x; oldY = y;
 		x = e.getX();
 		y = e.getY();
 
 		p = new Point(x, y);
-		rect = boundingRect(x,y,oldX,oldY);
 
 		// get ImageCanvas that received event
 		ImageCanvas icc = (ImageCanvas) e.getSource();
@@ -254,20 +253,16 @@ public class SyncWindows extends PlugInFrame implements
 				if (cCoords.getState() && iw != iwc) {
 					p = getMatchingCoords(ic, icc, x, y);
 					oldp = getMatchingCoords(ic, icc, oldX, oldY);
-					rect = boundingRect(p.x, p.y, oldp.x, oldp.y);
 				} else {
 					p.x = x;
 					p.y = y;
-					rect = boundingRect(x,y,oldX,oldY);
 				}
 
 				// For PolygonRoi the cursor would overwrite the indicator lines.
 				Roi roi = imp.getRoi();
-				if (! (roi != null && roi instanceof PolygonRoi && roi.getState() == Roi.CONSTRUCTING) ) {
-					drawSyncCursor(ic,rect, p.x, p.y);
-				}
-
-				if(iw != iwc)
+				if (! (roi != null && roi instanceof PolygonRoi && roi.getState() == Roi.CONSTRUCTING) )
+					drawSyncCursor(imp, p.x, p.y);
+				if (iw != iwc)
 					ic.mouseMoved(adaptEvent(e, ic, p));	   
 			}		   
 		}
@@ -288,14 +283,12 @@ public class SyncWindows extends PlugInFrame implements
 		ImageCanvas ic;
 		Point p;
 		Point oldp;
-		Rectangle rect;
 
 		oldX = x; oldY = y;
 		x = e.getX();
 		y = e.getY();
 
 		p = new Point(x, y);
-		rect = boundingRect(x,y,oldX,oldY);
 
 		// get ImageCanvas that received event
 		ImageCanvas icc = (ImageCanvas) e.getSource();
@@ -316,16 +309,14 @@ public class SyncWindows extends PlugInFrame implements
 				if (cCoords.getState() && iw != iwc) {
 					p = getMatchingCoords(ic, icc, x, y);
 					oldp = getMatchingCoords(ic, icc, oldX, oldY);
-					rect = boundingRect(p.x, p.y, oldp.x, oldp.y);
 				} else {
 					p = new Point(x, y);
-					rect = boundingRect(x,y,oldX,oldY);
 				}
 
 				// For PolygonRoi the cursor would overwrite the indicator lines.
 				Roi roi = imp.getRoi();
 				if (! (roi != null && roi instanceof PolygonRoi && roi.getState() == Roi.CONSTRUCTING) )
-					drawSyncCursor(ic,rect, p.x, p.y);
+					drawSyncCursor(imp, p.x, p.y);
 
 				if(iw != iwc)
 					ic.mouseDragged(adaptEvent(e, ic, p));
@@ -429,10 +420,8 @@ public class SyncWindows extends PlugInFrame implements
 		ImageWindow iw;
 		ImageCanvas ic;
 		Point p;
-		Rectangle rect;
 
 		p = new Point(x,y);
-		rect = boundingRect(x,y,x,y);
 
 		// get ImageCanvas that received event
 		ImageCanvas icc = (ImageCanvas) e.getSource();
@@ -448,26 +437,15 @@ public class SyncWindows extends PlugInFrame implements
 				iw = imp.getWindow();
 				ic = iw.getCanvas();
 				
-				if (cCoords.getState() && iw != iwc) {
+				if (cCoords.getState() && iw != iwc)
 					p = getMatchingCoords(ic, icc, x, y);
-					rect = boundingRect(p.x, p.y, p.x, p.y);
-				} else {
+				else {
 					p.x = x;
 					p.y = y;
-					rect = boundingRect(x,y,x,y);
 				}
 
-				// Repaint to get rid of cursor.
-				Graphics g = ic.getGraphics();
-				try {
-					g.setClip(rect.x,rect.y,rect.width,rect.height);
-					ic.paint(g);
-				} finally {
-					// free up graphics resources
-					g.dispose();
-				}
-
-				if(iw != iwc)
+				setCursor(imp, null);
+				if (iw != iwc)
 					ic.mouseExited(adaptEvent(e, ic, p));					 
 			}
 		}
@@ -536,8 +514,6 @@ public class SyncWindows extends PlugInFrame implements
 		int xloc = e.getX();
 		int yloc = e.getY();
 		Point p = new Point(xloc, yloc);
-		Rectangle rect = boundingRect(xloc, yloc, xloc, yloc);
-
 
 		// get ImageCanvas that received event
 		ImageCanvas icc = (ImageCanvas) e.getSource();
@@ -553,16 +529,14 @@ public class SyncWindows extends PlugInFrame implements
 				iw = imp.getWindow();
 				ic = iw.getCanvas();
 
-				if (cCoords.getState()) {
+				if (cCoords.getState())
 					p = getMatchingCoords(ic, icc, xloc, yloc);
-					rect = boundingRect(p.x, p.y, p.x, p.y);
-				}
 
 				// Redraw to make sure sync cursor is drawn.
 				// For PolygonRoi the cursor would overwrite the indicator lines.
 				Roi roi = imp.getRoi();
 				if (! (roi != null && roi instanceof PolygonRoi && roi.getState() == Roi.CONSTRUCTING) )
-					drawSyncCursor(ic,rect, p.x, p.y);
+					drawSyncCursor(imp, p.x, p.y);
 				if(iw != iwc)
 					ic.mouseReleased(adaptEvent(e, ic, p));
 			}
@@ -901,33 +875,47 @@ public class SyncWindows extends PlugInFrame implements
 		}
 	}
 
-	// --------------------------------------------------
 	/** Draw cursor that indicates windows are synchronized. */
-	private void drawSyncCursor(ImageCanvas ic, Rectangle rect,
-				int x, int y) {
-		int xpSZ = x+SZ;
-		int xmSZ = x-SZ;
-		int ypSZ = y+SZ;
-		int ymSZ = y-SZ;
-		int xp2 = x+2;
-		int xm2 = x-2;
-		int yp2 = y+2;
-		int ym2 = y-2;
-		Graphics g = ic.getGraphics();
+	private void drawSyncCursor(ImagePlus imp, int x, int y) {
+		ImageCanvas ic = imp.getCanvas();
+		if (ic==null) return;
+		double xpSZ = ic.offScreenXD(x+SZ);
+		double xmSZ = ic.offScreenXD(x-SZ);
+		double ypSZ = ic.offScreenYD(y+SZ);
+		double ymSZ = ic.offScreenYD(y-SZ);
+		double xp2 = ic.offScreenXD(x+2);
+		double xm2 = ic.offScreenXD(x-2);
+		double yp2 = ic.offScreenYD(y+2);
+		double ym2 = ic.offScreenYD(y-2);
+		GeneralPath path = new GeneralPath();
+		path.moveTo(xmSZ, ymSZ); path.lineTo(xm2, ym2);
+		path.moveTo(xpSZ, ypSZ); path.lineTo(xp2, yp2);
+		path.moveTo(xpSZ, ymSZ); path.lineTo(xp2, ym2);
+		path.moveTo(xmSZ, ypSZ); path.lineTo(xm2, yp2);
+		setCursor(imp, new ShapeRoi(path));
+	}
 
-		try {
-			g.setClip(rect.x,rect.y,rect.width,rect.height);
-			ic.paint(g);
-			g.setColor(Color.red);
-//			  g.drawRect(x-SZ,y-SZ,RSZ,RSZ);
-			g.drawLine(xmSZ, ymSZ, xm2, ym2);
-			g.drawLine(xpSZ, ypSZ, xp2, yp2);
-			g.drawLine(xpSZ, ymSZ, xp2, ym2);
-			g.drawLine(xmSZ, ypSZ, xm2, yp2);
-		}
-		finally {
-			// free up graphics resources
-			g.dispose();
+	public synchronized void setCursor(ImagePlus imp, Roi cursor) {
+		Overlay overlay2 = imp.getOverlay();
+		if (overlay2!=null) {
+			for (int i = overlay2.size()-1; i>=0; i--) {
+				Roi roi2 = overlay2.get(i);
+				if (roi2.isCursor()) 
+					overlay2.remove(i);
+			}
+			if (cursor==null) {
+				imp.setOverlay(overlay2);
+				return;
+			}
+		} else
+			overlay2 = new Overlay();
+		if (cursor!=null) {
+			overlay2.add(cursor);
+			cursor.setStrokeColor(Color.red);
+			cursor.setStrokeWidth(2);
+			cursor.setNonScalable(true);
+			cursor.setIsCursor(true);
+			imp.setOverlay(overlay2);
 		}
 	}
 
@@ -1179,22 +1167,3 @@ class IJEventMulticaster extends AWTEventMulticaster implements DisplayChangeLis
 		return (DisplayChangeListener)removeInternal(l, oldl);
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

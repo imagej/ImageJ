@@ -645,7 +645,7 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 			imageUpdated(srcImp);
 	}
 
-	/** For live plots, update the plot if the ROI of the source image is changed */
+	/** For live plots, update the plot if the ROI of the source image changes */
 	public synchronized void roiModified(ImagePlus img, int id) {
 		if (IJ.debugMode) IJ.log("PlotWindow.roiModified: "+img+"  "+id);
 		if (img==srcImp) {
