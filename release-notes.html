@@ -5,43 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.50a 21 July 2015</u>
+<li> <u>1.50b 23 July 2015</u>
 <ul>
-<li> Thanks to Gerald Torgersen, added the
-<i>Plugins&gt;Shortcuts&gt;Add Shortcut by Name</i>
-command and removed the obsolete
-<i>Plugins&gt;Shortcuts&gt;Install Plugin</i> command.
-<li> Thanks to SyntonicC, add a "Rotate around image center"
-option to the <i>Edit&gt;Selection&gt;Rotate</i> command.
-<li> Thanks to Thomas Julou, cursor coordinates are displayed
-in pixels in the status bar if either the alt or shift keys are down.
-<li> Thanks to Radoslaw Ejsmont, the ChannelSplitter.getChannel() method
-works with RGB images and stacks and it throws an illegal argument
-exception if the channel argument is out of range.
-<li> Added the setThreshold(lower,upper,"raw") macro function
-and the IJ.setRawThreshold(imp,lower,upper,mode) method.
-<li> Fixed a bug that caused JavaScripts to sometimes unexpectadly display
-values in the Log window on Java 8.
-<li> Fixed a bug that caused the eval("js",code) macro function to
-fail on Java 8.
-<li> Fixed a bug that sometimes caused the setThreshold() macro function
-to throw an exception with 16-bit images.
-<li> Thanks to Megan Hagenauer, fixed a bug that caused incorrect line
-selection measurements on density calibrated (global) images.
-<li> Thanks to Jerome Mutterer, fixed bugs that caused a new dialog
-to be opened each time you pressed shift-ctrl-f in an editor window
-to open the macro function finder and caused focus to be lost when
-you closed the dialog.
-<li> Thanks to Michael Schmid, fixed a bug that caused the particle analyzer
-to ignore selections on RGB images.
-<li> Worked around a Java 8 bug on Macs that caused ImageJ to freeze when
-changing the display mode in the "Channels" dialog.
-<li> Thanks to Takashi Abe, worked around a Java 8 bug that caused
-mirrored cursors in synched windows to not be visible.
-<li> Thanks to Thorsten Wagner, fixed a bug that caused the "Use names as labels"
-setting in the ROI Manager's <i>More&gt;&gt;Labels</i> dialog to not be persistent.
-<li> Thanks to Jerome Mutterer, fixed a 1.49o regression that caused live profile
-plots of wide lines to flicker.
+<li> Thanks to Xiuxia Zhang, the <i>Process&gt;Batch&gt;Convert</i> command
+and IJ.openImage(path) method work with text images.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

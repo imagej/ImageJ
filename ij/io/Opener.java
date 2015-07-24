@@ -103,7 +103,11 @@ public class Opener {
 		if (!silentMode)
 			IJ.showStatus("Opening: " + path);
 		long start = System.currentTimeMillis();
-		ImagePlus imp = openImage(path);
+		ImagePlus imp = null;
+		if (path.endsWith(".txt"))
+			fileType = JAVA_OR_TEXT;
+		else
+			imp = openImage(path);
 		if (imp==null && isURL)
 			return;
 		if (imp!=null) {
@@ -354,6 +358,11 @@ public class Opener {
 				reader.displayDialog(!IJ.macroRunning());
 				reader.run(path);
 				return reader.getImagePlus();
+			case JAVA_OR_TEXT:
+				if (name.endsWith(".txt"))
+					return openTextImage(directory,name);
+				else
+					return null;
 			case UNKNOWN: case TEXT:
 				// Call HandleExtraFileTypes plugin to see if it can handle unknown format
 				int[] wrap = new int[] {fileType};
@@ -377,6 +386,14 @@ public class Opener {
 			return null;
 		else
 			return dir+name;
+	}
+
+    /** Opens the specified text file as a float image. */
+    public ImagePlus openTextImage(String dir, String name) {
+    	String path = dir+name;
+		TextReader tr = new TextReader();
+		ImageProcessor ip = tr.open(path);
+		return ip!=null?new ImagePlus(name,ip):null;
 	}
 
 	/**

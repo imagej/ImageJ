@@ -6,6 +6,7 @@ import ij.*;
 import ij.io.*;
 import ij.process.*;
 import ij.util.Tools;
+import ij.plugin.frame.Recorder;
 
 
 /** This plugin opens a tab or comma delimeted text file as an image.
@@ -23,6 +24,8 @@ public class TextReader implements PlugIn {
             ImageProcessor ip = open(path);
             if (ip!=null)
                 new ImagePlus(name, ip).show();
+			if (Recorder.record && Recorder.scriptMode())
+				Recorder.recordCall("imp = IJ.openImage(\""+path+"\");");
         }
     }
     
