@@ -1974,7 +1974,7 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		Roi roi = null;
 		if (roiType==Roi.LINE) {
-			if (xcoord.length!=2)
+			if (!(xcoord!=null&&xcoord.length==2||xfcoord!=null&&xfcoord.length==2))
 				interp.error("2 element arrays expected");
 			if (floatCoordinates)
 				roi = new Line(xfcoord[0], yfcoord[0], xfcoord[1], yfcoord[1]);

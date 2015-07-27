@@ -9,6 +9,9 @@
 <ul>
 <li> Thanks to Xiuxia Zhang, the <i>Process&gt;Batch&gt;Convert</i> command
 and IJ.openImage(path) method work with text images.
+<li> Thanks to Jochen Reichel, fixed a bug that caused the
+makeSelection("line", xpoints, ypoints) macro function to throw 
+an exception if either array contained a non-integer value.
 <li> Thanks to Michael Cammer, fixed a v1.44 regression that caused the setLineWidth()
 macro function to sometimes not work as expected if the global line width set in the
 <i>Edit&gt;Options&gt;Line Width</i> dialog was not 1.
