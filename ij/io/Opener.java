@@ -388,9 +388,9 @@ public class Opener {
 			return dir+name;
 	}
 
-    /** Opens the specified text file as a float image. */
-    public ImagePlus openTextImage(String dir, String name) {
-    	String path = dir+name;
+	/** Opens the specified text file as a float image. */
+	public ImagePlus openTextImage(String dir, String name) {
+		String path = dir+name;
 		TextReader tr = new TextReader();
 		ImageProcessor ip = tr.open(path);
 		return ip!=null?new ImagePlus(name,ip):null;

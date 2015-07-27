@@ -18,16 +18,16 @@ public class TextReader implements PlugIn {
     boolean hideErrorMessages;
     String firstTok;
     
-    public void run(String arg) {
-        if (showDialog()) {
-            IJ.showStatus("Opening: " + path);
-            ImageProcessor ip = open(path);
-            if (ip!=null)
-                new ImagePlus(name, ip).show();
+	public void run(String arg) {
+		if (showDialog()) {
+			IJ.showStatus("Opening: " + path);
+			ImageProcessor ip = open(path);
+			if (ip!=null)
+				new ImagePlus(name, ip).show();
 			if (Recorder.record && Recorder.scriptMode())
 				Recorder.recordCall("imp = IJ.openImage(\""+path+"\");");
-        }
-    }
+		}
+	}
     
     boolean showDialog() {
         OpenDialog od = new OpenDialog("Open Text Image...", null);

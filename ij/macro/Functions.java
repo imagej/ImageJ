@@ -28,6 +28,7 @@ public class Functions implements MacroConstants, Measurements {
     boolean updateNeeded;
     boolean autoUpdate = true;
     ImageProcessor defaultIP;
+    ImagePlus defaultImp;
     int imageType;
     boolean colorSet, fontSet;
     Color defaultColor;
@@ -787,10 +788,12 @@ public class Functions implements MacroConstants, Measurements {
 		if (imp.getWindow()==null && IJ.getInstance()!=null && !interp.isBatchMode() && WindowManager.getTempCurrentImage()==null)
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 		defaultIP = null;
+		defaultImp = imp;
 		return imp;
 	}
 	
 	void resetImage() {
+		defaultImp = null;
 		defaultIP = null;
 		colorSet = fontSet = false;
 		lineWidth = 1;
@@ -951,7 +954,9 @@ public class Functions implements MacroConstants, Measurements {
 
 	void updateAndDraw() {
 		if (autoUpdate) {
-			ImagePlus imp = getImage();
+			ImagePlus imp = defaultImp;
+			if (imp==null)
+				imp = getImage();
 			imp.updateChannelAndDraw();
 			imp.changes = true;
 		} else
