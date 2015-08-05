@@ -262,6 +262,20 @@ public class Analyzer implements PlugInFilter, Measurements {
 		saveResults(stats, roi);
 	}
 	
+	/*
+	void showHeadings() {
+		String[] headings = rt.getHeadings();
+		int columns = headings.length;
+		if (columns==0)
+			return;
+		IJ.log("Headings: "+headings.length+" "+rt.getColumnHeading(ResultsTable.LAST_HEADING));
+		for (int i=0; i<columns; i++) {
+			if (headings[i]!=null)
+				IJ.log("   "+i+" "+headings[i]+" "+rt.getColumnIndex(headings[i]));
+		}
+	}
+	*/
+	
 	boolean reset() {
 		boolean ok = true;
 		if (rt.size()>0)
