@@ -212,7 +212,7 @@ overlay07="Remove Overlay",ij.plugin.OverlayCommands("remove")
 overlay08="List Elements",ij.plugin.OverlayCommands("list")
 overlay09="Flatten[F]",ij.plugin.OverlayCommands("flatten")
 overlay10="Labels...",ij.plugin.OverlayLabels
-overlay11="Overlay Options...",ij.plugin.OverlayCommands("options")
+overlay11="Overlay Options...[Y]",ij.plugin.OverlayCommands("options")
 
 # Plugins installed in the Image/Lookup Tables submenu
 lookup01="Invert LUT",ij.plugin.LutLoader("invert")
