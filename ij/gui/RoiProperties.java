@@ -133,10 +133,20 @@ public class RoiProperties {
 		if (overlayOptions) {
 			gd.addCheckbox("Set stack positions", setPositions);
 			if (overlay!=null) {
-				gd.addCheckbox("Apply to current overlay", false);
+				int size = overlay.size();
+				gd.setInsets(15,20,0);
+				if (imp!=null && imp.getHideOverlay())
+					gd.addMessage("Current overlay is hidden", null, Color.darkGray);
+				else
+					gd.addMessage("Current overlay has "+size+" element"+(size>1?"s":""), null, Color.darkGray);
+				gd.setInsets(0,30,0);
+				gd.addCheckbox("Apply", false);
+				gd.setInsets(0,30,0);
 				gd.addCheckbox("Show labels", overlay.getDrawLabels());
-				gd.addCheckbox("Remove overlay", false);
-			}
+				gd.setInsets(0,30,0);
+				gd.addCheckbox("Hide", imp!=null?imp.getHideOverlay():false);
+			} else
+				gd.addMessage("No overlay", null, Color.darkGray);
 		}
 		if (isText)
 			gd.addCheckbox("Antialiased text", antialias);
@@ -184,13 +194,17 @@ public class RoiProperties {
 			if (overlay!=null) {
 				applyToOverlay = gd.getNextBoolean();
 				boolean labels = gd.getNextBoolean();
-				boolean removeOverlay = gd.getNextBoolean();
-				if (removeOverlay && imp!=null)
-					imp.setOverlay(null);
-				else {
+				boolean hideOverlay = gd.getNextBoolean();
+				if (hideOverlay && imp!=null) {
+					if (!imp.getHideOverlay())
+						imp.setHideOverlay(true);
+				} else {
 					overlay.drawLabels(labels);
+					overlay.drawBackgrounds(true);
+					if (imp.getHideOverlay())
+						imp.setHideOverlay(false);
 					if (!applyToOverlay && imp!=null)
-					imp.draw();
+						imp.draw();
 				}
 			}
 			roi.setPosition(setPositions?1:0);

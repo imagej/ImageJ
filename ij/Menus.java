@@ -271,7 +271,7 @@ public class Menus {
 		addExample(submenu, "Overlay", "Overlay.ijm");
 		addExample(submenu, "Stack Overlay", "Stack_Overlay.ijm");
 		addExample(submenu, "Array Functions", "Array_Functions.ijm");
-		addExample(submenu, "Dual Progress Demo", "Dual_Progress_Demo.ijm");
+		addExample(submenu, "Dual Progress Bars", "Dual_Progress_Bars.ijm");
 		addExample(submenu, "Grab Viridis Colormap", "Grab_Viridis_Colormap.ijm");
 		addExample(submenu, "Tool", "Circle_Tool.ijm");
 		submenu.addActionListener(listener);
@@ -285,7 +285,7 @@ public class Menus {
 		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.js");
 		addExample(submenu, "Overlay", "Overlay.js");
 		addExample(submenu, "Stack Overlay", "Stack_Overlay.js");
-		addExample(submenu, "Dual Progress Demo", "Dual_Progress_Demo.js");
+		addExample(submenu, "Dual Progress Bars", "Dual_Progress_Bars.js");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("BeanShell");
