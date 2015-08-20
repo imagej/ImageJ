@@ -111,7 +111,7 @@ public class Menus {
 		Menu importMenu = getMenu("File>Import", true);
 		file.addSeparator();
 		addPlugInItem(file, "Close", "ij.plugin.Commands(\"close\")", KeyEvent.VK_W, false);
-		addPlugInItem(file, "Close All", "ij.plugin.Commands(\"close-all\")", 0, false);
+		addPlugInItem(file, "Close All", "ij.plugin.Commands(\"close-all\")", KeyEvent.VK_W, true);
 		addPlugInItem(file, "Save", "ij.plugin.Commands(\"save\")", KeyEvent.VK_S, false);
 		saveAsMenu = getMenu("File>Save As", true);
 		addPlugInItem(file, "Revert", "ij.plugin.Commands(\"revert\")", KeyEvent.VK_R,  false);
@@ -268,6 +268,7 @@ public class Menus {
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.ijm");
 		addExample(submenu, "Process Folder", "Batch_Process_Folder.ijm");
 		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.ijm");
+		addExample(submenu, "Non-numeric Table", "Non-numeric_Table.ijm");
 		addExample(submenu, "Overlay", "Overlay.ijm");
 		addExample(submenu, "Stack Overlay", "Stack_Overlay.ijm");
 		addExample(submenu, "Array Functions", "Array_Functions.ijm");
@@ -283,6 +284,7 @@ public class Menus {
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.js");
 		addExample(submenu, "Process Folder", "Batch_Process_Folder.js");
 		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.js");
+		addExample(submenu, "Non-numeric Table", "Non-numeric_Table.js");
 		addExample(submenu, "Overlay", "Overlay.js");
 		addExample(submenu, "Stack Overlay", "Stack_Overlay.js");
 		addExample(submenu, "Dual Progress Bars", "Dual_Progress_Bars.js");
