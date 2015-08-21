@@ -107,7 +107,7 @@ public class Plot implements Cloneable {
 	public static final int TOP_MARGIN = 13;
 	/** The default margin width below the plot frame
 	 *	@deprecated Not a fixed value any more, use getDrawingFrame() to get the drawing area */
-	public static final int BOTTOM_MARGIN = 37;
+	public static final int BOTTOM_MARGIN = 42;
 	/** minimum width of frame area in plot */
 	public static final int MIN_FRAMEWIDTH = 160;
 	/** minimum width of frame area in plot */
