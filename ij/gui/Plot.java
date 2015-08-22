@@ -815,6 +815,8 @@ public class Plot implements Cloneable {
 	public void setLimitsToFit(boolean updateImg) {
 		saveMinMax();
 		currentMinMax = getMinAndMax(true, 0xff);
+		if (Double.isNaN(defaultMinMax[0]))
+			System.arraycopy(currentMinMax, 0, defaultMinMax, 0, currentMinMax.length);
 		if (plotDrawn && updateImg) updateImage();
 	}
 
@@ -1327,7 +1329,6 @@ public class Plot implements Cloneable {
 	 *	Array elements returned are xMin, xMax, yMin, yMax. Also sets enlargeRange to tell which limits should be enlarged
 	 *	beyond the minimum or maximum of the data */
 	double[] getMinAndMax(boolean allObjects, int axisFlags) {
-		//IJ.log("getMinAndMax flags="+axisFlags+" x0="+(float)defaultMinMax[0]+" y0="+defaultMinMax[2]);
 		double[] allMinMax = new double[]{Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE};
 		for (int i=0; i<allMinMax.length; i++)
 			if (((axisFlags>>i/2) & 1)==0)	  //keep default min & max for this axis
