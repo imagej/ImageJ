@@ -314,15 +314,16 @@ filters05="Minimum...",ij.plugin.filter.RankFilters("min")
 filters06="Maximum...",ij.plugin.filter.RankFilters("max")
 filters07="Unsharp Mask...",ij.plugin.filter.UnsharpMask
 filters08="Variance...",ij.plugin.filter.RankFilters("variance")
-filters09=-
-filters10="Gaussian Blur 3D...",ij.plugin.GaussianBlur3D
-filters11="Median 3D...",ij.plugin.Filters3D("median")
-filters12="Mean 3D...",ij.plugin.Filters3D("mean")
-filters13="Minimum 3D...",ij.plugin.Filters3D("min")
-filters14="Maximum 3D...",ij.plugin.Filters3D("max")
-filters15="Variance 3D...",ij.plugin.Filters3D("var")
-filters16=-
-filters17="Show Circular Masks...",ij.plugin.filter.RankFilters("masks")
+filters09="LoG...",ij.plugin.filter.LoG
+filters10=-
+filters11="Gaussian Blur 3D...",ij.plugin.GaussianBlur3D
+filters12="Median 3D...",ij.plugin.Filters3D("median")
+filters13="Mean 3D...",ij.plugin.Filters3D("mean")
+filters14="Minimum 3D...",ij.plugin.Filters3D("min")
+filters15="Maximum 3D...",ij.plugin.Filters3D("max")
+filters16="Variance 3D...",ij.plugin.Filters3D("var")
+filters17=-
+filters18="Show Circular Masks...",ij.plugin.filter.RankFilters("masks")
 
 
 # Plugins installed in the File/Batch submenu
