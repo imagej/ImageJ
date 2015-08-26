@@ -21,6 +21,7 @@ public class MemoryMonitor extends PlugInFrame {
  	private double defaultMax = 15*1204*1024; // 15MB
 	private double max = defaultMax;
 	private long maxMemory = IJ.maxMemory();
+	private boolean done;
 
 	public MemoryMonitor() {
 		super("Memory");
@@ -32,7 +33,7 @@ public class MemoryMonitor extends PlugInFrame {
 		WindowManager.addWindow(this);
 		
 		setLayout(new BorderLayout());
-		Canvas ic = new Canvas();
+		Canvas ic = new PlotCanvas();
 		ic.setSize(WIDTH, HEIGHT);
 		add(ic);
 		setResizable(false);
@@ -48,8 +49,6 @@ public class MemoryMonitor extends PlugInFrame {
 		g.setColor(Color.white);
 		g.fillRect(0, 0, WIDTH, HEIGHT);
 		g.setFont(new Font("SansSerif",Font.PLAIN,12));
-		Graphics icg = ic.getGraphics();
-		icg.drawImage(image, 0, 0, null);
 		show();
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null) {
@@ -59,10 +58,10 @@ public class MemoryMonitor extends PlugInFrame {
 		}
 		mem = new double[WIDTH+1];
 		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-       	while (true) {
+       	while (!done) {
 			updatePlot();
          	addText();
-			icg.drawImage(image, 0, 0, null);
+			ic.repaint();
         	IJ.wait(50);
        		frames++;
 		}
@@ -113,6 +112,21 @@ public class MemoryMonitor extends PlugInFrame {
 	 	super.close();
 		instance = null;
 		Prefs.saveLocation(LOC_KEY, getLocation());
+		done = true;
 	}
+	
+	class PlotCanvas extends Canvas {
+	
+		public void update(Graphics g) {
+			paint(g);
+		}
+		
+		public void paint(Graphics g) {
+			g.drawImage(image, 0, 0, null);
+		}
+		
+	} 
 
 }
+
+

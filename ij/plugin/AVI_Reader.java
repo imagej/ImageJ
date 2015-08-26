@@ -193,7 +193,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	//static versions of dialog parameters that will be remembered
 	private static boolean	   staticConvertToGray;
 	private static boolean	   staticFlipVertical;
-	private static boolean	   staticIsVirtual;
+	private static boolean	   staticIsVirtual = true;
 	//dialog parameters
 	private int				   firstFrame = 1;		//the first frame to read
 	private int				   lastFrame = 0;		//the last frame to read; 0 means 'read all'

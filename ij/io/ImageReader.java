@@ -364,7 +364,7 @@ public class ImageReader {
 	int[] readChunkyRGB(InputStream in) throws IOException {
 		if (fi.compression==FileInfo.JPEG)
 			return readJPEG(in);
-		else if (fi.compression>FileInfo.COMPRESSION_NONE)
+		else if (fi.compression>FileInfo.COMPRESSION_NONE || (fi.stripOffsets!=null&&fi.stripOffsets.length>1))
 			return readCompressedChunkyRGB(in);
 		int pixelsRead;
 		bufferSize = 24*width;

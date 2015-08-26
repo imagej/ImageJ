@@ -140,8 +140,10 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 	}
 	
 	public void closeAndRefocus() {
-		dialog.dispose();
-		if (editor!=null) editor.toFront();
+		if (dialog!=null)
+			dialog.dispose();
+		if (editor!=null)
+			editor.toFront();
 	}
 	
 	public void keyPressed(KeyEvent ke) {

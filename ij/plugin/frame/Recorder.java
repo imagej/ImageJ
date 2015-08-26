@@ -477,6 +477,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					;
 				else if (name.equals("Run...")) // Plugins>Macros>Run
 					;
+				else if (scriptMode && name.equals("Text Image... ")) // File>Import>Text Image
+					;
 				else {
 					if (name.equals("Calibrate...")&&commandOptions.startsWith("function=None"))
 						commandOptions = commandOptions.substring(0,13);

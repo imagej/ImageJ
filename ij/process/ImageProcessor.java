@@ -2518,8 +2518,12 @@ public abstract class ImageProcessor implements Cloneable {
 		useBicubic = b;
 	}
 	
-	/* Calculates and returns statistics (area, mean, std-dev, mode, min, max,
-		centroid, center of mass, 256 bin histogram) for this image or ROI. */
+	/** Calculates and returns statistics (area, mean, std-dev, mode, min, max,
+	 * centroid, center of mass, 256 bin histogram) for this image or ROI. Use the
+	 * setRoi(Roi) method to limit statistics to a non-rectangular area.
+	 * @see ImageProcessor#setRoi	
+	 * @see ImageStatistics	
+	*/
 	public ImageStatistics getStatistics() {
 		// 127 = AREA+MEAN+STD_DEV+MODE+MIN_MAX+CENTROID+CENTER_OF_MASS
 		return ImageStatistics.getStatistics(this, 127, null);

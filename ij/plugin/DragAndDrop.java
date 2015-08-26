@@ -167,11 +167,16 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 				if (null == f) return;
 				String path = f.getCanonicalPath();
 				if (f.exists()) {
-					if (f.isDirectory())
-						openDirectory(f, path);
-					else {
+					if (f.isDirectory()) {
+						if (openAsVirtualStack)
+							IJ.run("Image Sequence...", "open=[" + path + "] sort use");
+						else
+							openDirectory(f, path);
+					} else {
 						if (openAsVirtualStack && (path.endsWith(".tif")||path.endsWith(".TIF")))
 							(new FileInfoVirtualStack()).run(path);
+						else if (openAsVirtualStack && (path.endsWith(".avi")||path.endsWith(".AVI")))
+							IJ.run("AVI...", "open=["+path+"] use");
 						else
 							(new Opener()).openAndAddToRecent(path);
 						OpenDialog.setLastDirectory(f.getParent()+File.separator);
@@ -204,7 +209,8 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 			gd.addCheckbox("Use Virtual Stack", virtualStack);
 			gd.enableYesNoCancel();
 			gd.showDialog();
-			if (gd.wasCanceled()) return;
+			if (gd.wasCanceled())
+				return;
 			if (gd.wasOKed()) {
 				convertToRGB = gd.getNextBoolean();
 				virtualStack = gd.getNextBoolean();

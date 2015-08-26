@@ -520,17 +520,9 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	}
 	
 	public void maximize() {
-		if (maxBounds==null)
-			return;
-		int width = imp.getWidth();
-		int height = imp.getHeight();
-		Dimension extraSize = getExtraSize();
-		int extraHeight = extraSize.height;
-		double mag = (double)(maxBounds.height-extraHeight)/height;
-		if (IJ.debugMode) IJ.log("maximize: "+mag+" "+ic.getMagnification()+" "+maxBounds);
-		ic.setSize((int)(width*mag), (int)(height*mag));
-		ic.setSourceRect(new Rectangle(0, 0, width, height));
-		pack();
+		Rectangle rect = getMaximumBounds();
+		if (IJ.debugMode) IJ.log("maximize: "+rect);
+		setLocationAndSize(rect.x, rect.y, rect.width, rect.height);
 	}
 	
 	public void minimize() {
