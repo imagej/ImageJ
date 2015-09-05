@@ -1823,8 +1823,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				shift = false;
 				alt = false;
 			}
-			//setRoiPosition();
 			add(shift, alt);
+			if (IJ.isJava18()&&IJ.isMacOSX())
+				repaint();
 		} else if (cmd.equals("add & draw"))
 			addAndDraw(false);
 		else if (cmd.equals("update"))
@@ -2202,6 +2203,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			select(index);
 			if (IJ.isWindows())
 				list.requestFocusInWindow();
+			if (IJ.isJava18()&&IJ.isMacOSX())
+				repaint();
 		}
 	}
 	

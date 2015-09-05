@@ -5,43 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.50b 26 August 2015</u>
+<li> <u>1.50c 5 September 2015</u>
 <ul>
-<li> Folders and AVI files dropped on the toolbar's "&gt;&gt;" icon open as virtual stacks.
-<li> Thanks to Jerome Mutterer, added the <i>Help&gt;Examples&gt;Macro&gt;Grab Viridis Colormap</i>
-example macro.
-<li> Thanks to Norbert Vischer, added the  "Dual Progress Demo" example macro and JavaScript
-to the <i>Help&gt;Examples&gt;</i> menu.
-<li> Added the  "Non-numeric Table" example macro and JavaScript
-to the <i>Help&gt;Examples&gt;</i> menu.
-<li> Added the  "Image with Overlay" example image
-to the <i>File&gt;Open Samples&gt;</i> menu.
-<li> Thanks to Xiuxia Zhang, the <i>Process&gt;Batch&gt;Convert</i> command
-and IJ.openImage(path) method work with text images.
-<li> The <i>Image&gt;Overlay&gt;Overlay Options</i> command uses the
-'Y' keyboard shortcut and it adds "Show labels" and "Hide" checkboxes to
-its dialog box if the current image has an ovelay.
-<li> Assigned the 'W'' shortcut to the <i>File&gt;Close All</i> command.
-<li> The "Use virtual stack" option in the AVI Reader is set by default. 
-<li> Thanks to Jochen Reichel, fixed a bug that caused the
-makeSelection("line", xpoints, ypoints) macro function to throw 
-an exception if either array contained a non-integer value.
-<li> Thanks to Aryeh Weiss, worked around a Java 8 bug that caused the
-<i>Memory Monitor</i> to fail.
-<li> Thanks to Hermann-Josef Roser, fixed a bug that caused some imported RGB
-TIFFs to be read incorrectly.
-<li> Thanks to Michael Cammer, fixed a v1.44 regression that caused the setLineWidth()
-macro function to sometimes not work as expected if the global line width set in the
-<i>Edit&gt;Options&gt;Line Width</i> dialog was not 1.
-<li> Thanks to Aryeh Weiss, worked around a Java 8 bug on Macs that sometimes caused
-ImageJ to freeze when clicking on "Show All" in the "ROI Manager" dialog.
-<li> Thanks to Michael Entrup, fixed a bug that caused the x-axis label of plots
-to be cut off on Windows.
-<li> Thanks to Ved Sharma, fixed a bug that caused the macro code
-"if (false) Array.invert(a);" to generate an error.
-<li> Thanks to John Wolodzko, fixed a bug that caused the Plot.setLimitsToFit() macro
-function to sometimes not work as expected.
-
+<li> Worked around Java 8 bugs that caused the 't' shortcut
+(<i>Edit&gt;Selection&gt;Add to Manager</i>) and ROI Manager
+mouse wheel scrolling to not work as expected on OS X.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
