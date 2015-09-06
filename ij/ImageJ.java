@@ -80,7 +80,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.50c";
-	public static final String BUILD = "1"; 
+	public static final String BUILD = "3"; 
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -188,7 +188,8 @@ public class ImageJ extends Frame implements ActionListener,
 		if (mode!=NO_SHOW) {
 			if (IJ.isWindows()) try {setIcon();} catch(Exception e) {}
 			setLocation(loc.x, loc.y);
-			setResizable(!IJ.isMacOSX());
+			//setResizable(!IJ.isMacOSX());
+			setResizable(false);
 			pack();
 			setVisible(true);
 		}
@@ -470,6 +471,12 @@ public class ImageJ extends Frame implements ActionListener,
 					Roi roi = imp.getRoi();
 					if (IJ.shiftKeyDown()&&imp==Orthogonal_Views.getImage())
 						return;
+					if (IJ.isMacOSX() && IJ.isJava18()) {
+						RoiManager rm = RoiManager.getInstance();
+						boolean rmActive = rm!=null && rm==WindowManager.getActiveWindow();
+						if (rmActive && (keyCode==KeyEvent.VK_DOWN||keyCode==KeyEvent.VK_UP))
+						  rm.repaint();
+					}
 					boolean stackKey = imp.getStackSize()>1 && (roi==null||IJ.shiftKeyDown());
 					boolean zoomKey = roi==null || IJ.shiftKeyDown() || IJ.controlKeyDown();
 					if (stackKey && keyCode==KeyEvent.VK_RIGHT)
