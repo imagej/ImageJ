@@ -18,6 +18,7 @@ public class ColorProcessor extends ImageProcessor {
 	private int min=0, max=255;
 	private WritableRaster rgbRaster;
 	private SampleModel rgbSampleModel;
+	private boolean caSnapshot;
 	
 	// Weighting factors used by getPixelValue(), getHistogram() and convertToByte().
 	// Enable "Weighted RGB Conversion" in <i>Edit/Options/Conversions</i>
@@ -196,6 +197,7 @@ public class ColorProcessor extends ImageProcessor {
 		if (snapshotPixels==null || (snapshotPixels!=null && snapshotPixels.length!=pixels.length))
 			snapshotPixels = new int[width * height];
 		System.arraycopy(pixels, 0, snapshotPixels, 0, width*height);
+		caSnapshot = false;
 	}
 
 
@@ -222,22 +224,37 @@ public class ColorProcessor extends ImageProcessor {
 			}
 		}
 	}
+	
+	/** Used by the ContrastAdjuster */
+	public void caSnapshot(boolean set) {
+		caSnapshot = set;
+	}
 
+	/** Used by the ContrastAdjuster */
+	public boolean caSnapshot() {
+		return caSnapshot;
+	}
+	
 	/** Swaps the pixel and snapshot (undo) arrays. */
 	public void swapPixelArrays() {
-		if (snapshotPixels==null) return;	
+		if (snapshotPixels==null)
+			return;	
 		int pixel;
 		for (int i=0; i<pixels.length; i++) {
 			pixel = pixels[i];
 			pixels[i] = snapshotPixels[i];
 			snapshotPixels[i] = pixel;
 		}
+		caSnapshot = false;
 	}
 
 	public void setSnapshotPixels(Object pixels) {
+		if (caSnapshot && pixels==null)
+			return;
 		snapshotPixels = (int[])pixels;
 		snapshotWidth=width;
 		snapshotHeight=height;
+		caSnapshot = false;
 	}
 
 	/** Returns a reference to the snapshot pixel array. Used by the ContrastAdjuster. */
@@ -415,9 +432,11 @@ public class ColorProcessor extends ImageProcessor {
 	public void setPixels(Object pixels) {
 		this.pixels = (int[])pixels;
 		resetPixels(pixels);
-		if (pixels==null) snapshotPixels = null;
+		if (pixels==null)
+			snapshotPixels = null;
 		rgbRaster = null;
 		image = null;
+		caSnapshot = false;
 	}
 
 
