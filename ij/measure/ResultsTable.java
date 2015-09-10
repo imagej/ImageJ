@@ -197,7 +197,10 @@ public class ResultsTable implements Cloneable {
 		addLabel(rowLabelHeading, label);
 	}
 
-	/** Adds a label to the beginning of the current row. Counter must be >0. */
+	/**
+	 * @deprecated
+	 * Replaced by setValue(String,int,String)
+	*/
 	public void addLabel(String columnHeading, String label) {
 		if (counter==0)
 			throw new IllegalArgumentException("Counter==0");
@@ -607,7 +610,7 @@ public class ResultsTable implements Cloneable {
 		
 	/**
 	* @deprecated
-	* replaced by addValue(String,double) and setValue(String,int,double)
+	* Replaced by addValue(String,double) and setValue(String,int,double)
 	*/
 	public void setHeading(int column, String heading) {
 		if ((column<0) || (column>=headings.length))
@@ -923,8 +926,8 @@ public class ResultsTable implements Cloneable {
 		int firstRow = allNumericHeadings?0:1;
 		boolean labels = firstColumn==1 && headings[1].equals("Label");
 		int type=getTableType(path, lines, firstRow, cellSeparator);
-		if (!labels && (type==1||type==2))
-			labels = true;
+		//if (!labels && (type==1||type==2))
+		//	labels = true;
 		int labelsIndex = (type==2)?0:1;
 		if (lines[0].startsWith("\t")) {
 			String[] headings2 = new String[headings.length+1];
