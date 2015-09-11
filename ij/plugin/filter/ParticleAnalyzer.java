@@ -510,8 +510,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (measurements==0)
 			measurements = Analyzer.getMeasurements();
 		measurements &= ~LIMIT;	 // ignore "Limit to Threshold"
-		if (rt==null)
-			rt = Analyzer.getResultsTable();
+		if (rt==null) {
+			if (!showResults && (WindowManager.getFrame("Results")!=null))
+				rt = new ResultsTable();
+			else
+				rt = Analyzer.getResultsTable();
+		}
 		analyzer = new Analyzer(imp, measurements, rt);
 		if (resetCounter && slice==1 && rt.getCounter()>0) {
 			if (!Analyzer.resetCounter())
