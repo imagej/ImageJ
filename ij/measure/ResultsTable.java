@@ -5,7 +5,7 @@ import ij.text.*;
 import ij.process.*;
 import ij.gui.Roi;
 import ij.util.Tools;
-import ij.io.SaveDialog;
+import ij.io.*;
 import java.awt.*;
 import java.text.*;
 import java.util.*;
@@ -26,6 +26,7 @@ public class ResultsTable implements Cloneable {
 	public static final int COLUMN_IN_USE = -2;
 	public static final int TABLE_FULL = -3; // no longer used
 	public static final short AUTO_FORMAT = Short.MIN_VALUE;
+	private static final char commaSubstitute = 0x08B3;
 	
 	public static final int AREA=0, MEAN=1, STD_DEV=2, MODE=3, MIN=4, MAX=5,
 		X_CENTROID=6, Y_CENTROID=7, X_CENTER_OF_MASS=8, Y_CENTER_OF_MASS=9,
@@ -57,6 +58,7 @@ public class ResultsTable implements Cloneable {
 	private boolean showRowNumbers = true;
 	private Hashtable stringColumns;
 	private boolean NaNEmptyCells;
+	private boolean quoteCommas;
 
 
 	/** Constructs an empty ResultsTable with the counter=0, no columns
@@ -566,7 +568,12 @@ public class ResultsTable implements Cloneable {
 		}
 		for (int i=0; i<=lastColumn; i++) {
 			if (columns[i]!=null) {
-				sb.append(getValueAsString(i,row));
+				String value = getValueAsString(i,row);
+				if (quoteCommas) {
+					if (value.contains(","))
+						value = "\""+value+"\"";
+				}
+				sb.append(value);
 				if (i!=lastColumn)
 					sb.append(delimiter);
 			}
@@ -898,16 +905,31 @@ public class ResultsTable implements Cloneable {
 	*/
 	public static ResultsTable open(String path) throws IOException {
 		final String lineSeparator =  "\n";
-		final String cellSeparator =  ",\t";
-		String text =IJ.openAsString(path);
+		if (path==null || path.equals("")) {
+			OpenDialog od = new OpenDialog("Open Table", "");
+			String dir = od.getDirectory();
+			String name = od.getFileName();
+			if (name==null)
+				return null;
+			path = dir+name;
+		}
+		String text = IJ.openAsString(path);
 		if (text==null)
 			return null;
 		if (text.startsWith("Error:"))
 			throw new IOException("Error opening "+path);
-		String[] lines = Tools.split(text, lineSeparator);
+		boolean csv = path.endsWith(".csv") || path.endsWith(".CSV");
+		String cellSeparator =  csv?",":"\t";
+		boolean commasReplaced = false;
+		if (csv && text.contains("\"")) {
+			text = replaceQuotedCommas(text);
+			commasReplaced = true;
+		}
+		String commaSubstitute2 = ""+commaSubstitute;
+		String[] lines = text.split(lineSeparator);
 		if (lines.length==0)
 			throw new IOException("Table is empty or invalid");
-		String[] headings = Tools.split(lines[0], cellSeparator);
+		String[] headings = lines[0].split(cellSeparator);
 		if (headings.length==1)
 			throw new IOException("This is not a tab or comma delimited text file.");
 		int numbersInHeadings = 0;
@@ -921,8 +943,13 @@ public class ResultsTable implements Cloneable {
 				headings[i] = "C"+(i+1);
 		}
 		int firstColumn = headings[0].equals(" ")?1:0;
-		for (int i=0; i<headings.length; i++)
+		for (int i=0; i<headings.length; i++) {
 			headings[i] = headings[i].trim();
+			if (commasReplaced) {
+				if (headings[i].startsWith("\"") && headings[i].endsWith("\""))
+					headings[i] = headings[i].substring(1, headings[i].length()-1);
+			}
+		}
 		int firstRow = allNumericHeadings?0:1;
 		boolean labels = firstColumn==1 && headings[1].equals("Label");
 		int type=getTableType(path, lines, firstRow, cellSeparator);
@@ -940,15 +967,21 @@ public class ResultsTable implements Cloneable {
 		ResultsTable rt = new ResultsTable();
 		for (int i=firstRow; i<lines.length; i++) {
 			rt.incrementCounter();
-			String[] items=Tools.split(lines[i], cellSeparator);
+			String[] items=lines[i].split(cellSeparator);
 			for (int j=firstColumn; j<items.length; j++) {
 				if (j==labelsIndex&&labels)
 					rt.addLabel(headings[labelsIndex], items[labelsIndex]);
 				else if (j<headings.length) {
 					double value = Tools.parseDouble(items[j]);
-					if (Double.isNaN(value))
-						rt.addValue(headings[j], items[j]);
-					else
+					if (Double.isNaN(value)) {
+						String item = items[j];
+						if (commasReplaced) {
+							item = item.replaceAll(commaSubstitute2, ",");
+							if (item.startsWith("\"") && item.endsWith("\""))
+								item = item.substring(1, item.length()-1);
+						}
+						rt.addValue(headings[j], item);
+					} else
 						rt.addValue(headings[j], value);
 				}
 			}
@@ -958,7 +991,7 @@ public class ResultsTable implements Cloneable {
 	
 	private static int getTableType(String path, String[] lines, int firstRow, String cellSeparator) {
 		if (lines.length<2) return 0;
-		String[] items=Tools.split(lines[1], cellSeparator);
+		String[] items=lines[1].split(cellSeparator);
 		int nonNumericCount = 0;
 		int nonNumericIndex = 0;
 		for (int i=0; i<items.length; i++) {
@@ -975,6 +1008,18 @@ public class ResultsTable implements Cloneable {
 		if (nonNumericCount==1 && nonNumericIndex==0)
 			return 2; // assume this is an ImageJ Results table without row numbers and with row labels
 		return 3;
+	}
+	
+	private static String replaceQuotedCommas(String text) {
+		char[] c = text.toCharArray();
+		boolean inQuotes = false;
+		for (int i=0; i<c.length; i++) {
+			if (c[i]=='"')
+				inQuotes = !inQuotes;
+			if (inQuotes && c[i]==',')
+				c[i] = commaSubstitute;
+		}
+		return new String(c);
 	}
 	
 	/** Saves this ResultsTable as a tab or comma delimited text file. The table
@@ -1001,7 +1046,8 @@ public class ResultsTable implements Cloneable {
 			if (file==null) return;
 			path = sd.getDirectory() + file;
 		}
-		delimiter = path.endsWith(".csv")?',':'\t';
+		boolean csv = path.endsWith(".csv") || path.endsWith(".CSV");
+		delimiter = csv?',':'\t';
 		PrintWriter pw = null;
 		FileOutputStream fos = new FileOutputStream(path);
 		BufferedOutputStream bos = new BufferedOutputStream(fos);
@@ -1013,8 +1059,10 @@ public class ResultsTable implements Cloneable {
 			String headings = getColumnHeadings();
 			pw.println(headings);
 		}
+		quoteCommas = csv?true:false;
 		for (int i=0; i<size(); i++)
 			pw.println(getRowAsString(i));
+		quoteCommas = false;
 		showRowNumbers = saveShowRowNumbers;
 		pw.close();
 		delimiter = '\t';

@@ -208,6 +208,11 @@ public class ImageStack {
 		return nSlices;
 	}
 
+	/** Returns the number of slices in this stack. */
+	public int size() {
+		return nSlices;
+	}
+
 	/** Returns the slice labels as an array of Strings. Note
 		that the size of the returned array may be greater than
 		the number of slices currently in the stack. Returns null
