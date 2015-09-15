@@ -90,7 +90,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private static double staticMaxSize = DEFAULT_MAX_SIZE;
 	private static boolean pixelUnits;
 	private static int staticOptions = Prefs.getInt(OPTIONS,CLEAR_WORKSHEET);
-	private static String[] showStrings = {"Nothing", "Outlines", "Bare Outlines", "Ellipses", "Masks", "Count Masks", "Overlay Outlines", "Overlay Masks"};
+	private static String[] showStrings = {"Nothing", "Outlines", "Bare Outlines", "Ellipses", "Masks", "Count Masks", "Overlay", "Overlay Masks"};
 	private static double staticMinCircularity=0.0, staticMaxCircularity=1.0;
 		
 	protected static final int NOTHING=0, OUTLINES=1, BARE_OUTLINES=2, ELLIPSES=3, MASKS=4, ROI_MASKS=5,
@@ -264,6 +264,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	
 	/** Displays a modal options dialog. */
 	public boolean showDialog() {
+IJ.log("showDialog");
 		Calibration cal = imp!=null?imp.getCalibration():(new Calibration());
 		double unitSquared = cal.pixelWidth*cal.pixelHeight;
 		if (pixelUnits)
@@ -403,13 +404,17 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 
 	boolean updateMacroOptions() {
 		String options = Macro.getOptions();
+		options = options.replace("show=[Overlay Outlines]", "show=Overlay");
+		Macro.setOptions(options);
 		int index = options.indexOf("maximum=");
-		if (index==-1) return false;
+		if (index==-1)
+			return false;
 		index +=8;
 		int len = options.length();
 		while (index<len-1 && options.charAt(index)!=' ')
 			index++;
-		if (index==len-1) return false;
+		if (index==len-1)
+			return false;
 		int min = (int)Tools.parseDouble(Macro.getValue(options, "minimum", "1"));
 		int max = (int)Tools.parseDouble(Macro.getValue(options, "maximum", "999999"));
 		options = "size="+min+"-"+max+options.substring(index, len);

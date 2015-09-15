@@ -27,9 +27,9 @@ public class RoiRotator implements PlugIn {
 			imp.draw();
 			return;
 		}
-		Rectangle r = roi.getBounds();
-		double xcenter = r.x+r.width/2.0;
-		double ycenter = r.y+r.height/2.0;
+		FloatPolygon center = roi.getRotationCenter();
+		double xcenter = center.xpoints[0];
+		double ycenter = center.ypoints[0];
 		if (rotateAroundImageCenter) {
 			xcenter = imp.getWidth()/2.0;
 			ycenter = imp.getHeight()/2.0;
@@ -37,6 +37,8 @@ public class RoiRotator implements PlugIn {
 		Roi roi2 = rotate(roi, angle, xcenter, ycenter);
 		if (roi2==null)
 			return;
+		if (!rotateAroundImageCenter)
+			roi2.setRotationCenter(xcenter,ycenter);
 		Undo.setup(Undo.ROI, imp);
 		roi = (Roi)roi.clone();
 		imp.setRoi(roi2);
@@ -62,9 +64,9 @@ public class RoiRotator implements PlugIn {
 	}
 	
 	public static Roi rotate(Roi roi, double angle) {
-		Rectangle r = roi.getBounds();
-		double xcenter = r.x+r.width/2.0;
-		double ycenter = r.y+r.height/2.0;
+		FloatPolygon center = roi.getRotationCenter();
+		double xcenter = center.xpoints[0];
+		double ycenter = center.ypoints[0];
 		return rotate(roi, angle, xcenter, ycenter);
 	}
 

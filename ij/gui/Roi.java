@@ -74,6 +74,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	private boolean activeOverlayRoi;
 	private Properties props;
 	private boolean isCursor;
+	private double xcenter = Double.NaN;
+	private double ycenter;
 
 
 	/** Creates a rectangular ROI. */
@@ -1951,6 +1953,22 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	public String getDebugInfo() {
 		return "";
+	}
+	
+	public FloatPolygon getRotationCenter() {
+		FloatPolygon p = new FloatPolygon();
+		Rectangle2D r = getFloatBounds();
+		if (Double.isNaN(xcenter)) {
+			xcenter = r.getX()+r.getWidth()/2.0;
+			ycenter = r.getY()+r.getHeight()/2.0;
+		}
+		p.addPoint(xcenter,ycenter);
+		return p;
+	}
+
+	public void setRotationCenter(double x, double y) {
+		xcenter = x;
+		ycenter = y;
 	}
 
 	/** Returns a hashcode for this Roi that typically changes 
