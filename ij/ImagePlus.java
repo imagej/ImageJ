@@ -2458,6 +2458,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			}
 		}
 		Overlay overlay2 = getOverlay();
+		if (overlay2!=null && imp2.getRoi()!=null)
+			imp2.deleteRoi();
 		ic2.setOverlay(overlay2);
 		ImageCanvas ic = getCanvas();
 		if (ic!=null)

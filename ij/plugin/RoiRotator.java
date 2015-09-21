@@ -67,7 +67,9 @@ public class RoiRotator implements PlugIn {
 		FloatPolygon center = roi.getRotationCenter();
 		double xcenter = center.xpoints[0];
 		double ycenter = center.ypoints[0];
-		return rotate(roi, angle, xcenter, ycenter);
+		Roi roi2 = rotate(roi, angle, xcenter, ycenter);
+		roi2.setRotationCenter(xcenter,ycenter);
+		return roi2;
 	}
 
 	public static Roi rotate(Roi roi, double angle, double xcenter, double ycenter) {
