@@ -396,7 +396,10 @@ public class Prefs {
 				if (!f.exists()) f.mkdir(); // create .imagej directory
 			}
 			if (resetPreferences) {
-				new File(path).delete();
+				File f = new File(path);
+				if (!f.exists())
+					IJ.error("Edit>Options>Reset", "Unable to reset preferences. File not found at\n"+path);
+				boolean rtn = f.delete();
 				resetPreferences = false;
 			} else
 				savePrefs(prefs, path);

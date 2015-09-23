@@ -1456,9 +1456,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			labels[i] = (String)listModel.get(i);
 		int[] indices = Tools.rank(labels);
 		Roi[] rois2 = getRoisAsArray();
+		listModel.removeAllElements();
+		rois.clear();
 		for (int i=0; i<labels.length; i++) {
-			listModel.set(indices[i], labels[i]);
-			rois.set(indices[i], rois2[i]);
+			listModel.addElement(labels[indices[i]]);
+			rois.add(rois2[indices[i]]);
 		}
 		if (record()) Recorder.record("roiManager", "Sort");
 	}
