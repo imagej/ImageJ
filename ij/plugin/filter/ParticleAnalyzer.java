@@ -264,7 +264,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	
 	/** Displays a modal options dialog. */
 	public boolean showDialog() {
-IJ.log("showDialog");
 		Calibration cal = imp!=null?imp.getCalibration():(new Calibration());
 		double unitSquared = cal.pixelWidth*cal.pixelHeight;
 		if (pixelUnits)

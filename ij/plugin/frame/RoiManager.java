@@ -76,6 +76,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			WindowManager.toFront(instance);
 			return;
 		}
+		if (IJ.isMacro() && Interpreter.getBatchModeRoiManager()!=null)
+			return;
 		instance = this;
 		list = new JList();
 		showWindow();

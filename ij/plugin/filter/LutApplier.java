@@ -16,11 +16,8 @@ public class LutApplier implements PlugInFilter {
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
-		int baseOptions = DOES_8G+DOES_8C+DOES_RGB+SUPPORTS_MASKING;
-		if (imp!=null && imp.getType()==ImagePlus.COLOR_RGB)
-			return baseOptions+NO_UNDO;
-		else
-			return baseOptions;
+		int baseOptions = DOES_8G+DOES_8C+DOES_16+DOES_RGB;
+		return baseOptions;
 	}
 
 	public void run(ImageProcessor ip) {
@@ -33,9 +30,10 @@ public class LutApplier implements PlugInFilter {
 			IJ.runPlugIn("ij.plugin.Thresholder", "skip");
             return;
         }
-		min = (int)ip.getMin();
-		max = (int)ip.getMax();
-		if (min==0 && max==255) {
+		min = (int)imp.getDisplayRangeMin();
+		max = (int)imp.getDisplayRangeMax();
+		int depth = imp.getBitDepth();
+		if ((depth==8||depth==24) && min==0 && max==255) {
 				IJ.error("Apply LUT", "The display range must first be updated\n"
                 +"using Image>Adjust>Brightness/Contrast\n"
                 +"or threshold levels defined using\n"
@@ -49,39 +47,62 @@ public class LutApplier implements PlugInFilter {
 				ip.reset();
 				Undo.setup(Undo.TRANSFORM, imp);
 				ip.setMinAndMax(min, max);
-				//ip.snapshot();
 			}
-			if (canceled) ip.reset();
+			((ColorProcessor)ip).caSnapshot(false);
 			resetContrastAdjuster();
 			return;
 		}
 		ip.resetMinAndMax();
-		int[] table = new int[256];
-		for (int i=0; i<256; i++) {
+		int range = 256;
+		if (depth==16) {
+			range = 65536;
+			int defaultRange = imp.getDefault16bitRange();
+			if (defaultRange>0)
+				range = (int)Math.pow(2,defaultRange)-1;
+		}
+		int tableSize = depth==16?65536:256;
+		int[] table = new int[tableSize];
+		for (int i=0; i<tableSize; i++) {
 			if (i<=min)
 				table[i] = 0;
 			else if (i>=max)
-				table[i] = 255;
+				table[i] = range-1;
 			else
-				table[i] = (int)(((double)(i-min)/(max-min))*255);
+				table[i] = (int)(((double)(i-min)/(max-min))*range);
 		}
+		ImageProcessor mask = imp.getMask();
 		if (imp.getStackSize()>1) {
 			ImageStack stack = imp.getStack();
-			
 			int flags = IJ.setupDialog(imp, 0);
-			if (flags==PlugInFilter.DONE)
-				{ip.setMinAndMax(min, max); return;}
+			if (flags==PlugInFilter.DONE) {
+				ip.setMinAndMax(min, max);
+				return;
+			}
 			if (flags==PlugInFilter.DOES_STACKS) {
-				new StackProcessor(stack, ip).applyTable(table);
+				int current = imp.getCurrentSlice();
+				for (int i=1; i<=imp.getStackSize(); i++) {
+					imp.setSlice(i);
+					ip = imp.getProcessor();
+					if (mask!=null) ip.snapshot();
+					ip.applyTable(table);
+					ip.reset(mask);
+				}
+				imp.setSlice(current);
 				Undo.reset();
-			} else
+			} else {
 				ip.applyTable(table);
-		} else
+				ip.reset(mask);
+			}
+		} else {
 			ip.applyTable(table);
+			ip.reset(mask);
+		}
+		if (depth==16)
+			imp.setDisplayRange(0,range-1);
 		resetContrastAdjuster();
 	}
 	
-	void resetContrastAdjuster() {
+	private void resetContrastAdjuster() {
 		ContrastAdjuster.update();
 	}
 
