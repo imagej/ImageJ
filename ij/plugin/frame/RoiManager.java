@@ -76,6 +76,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			WindowManager.toFront(instance);
 			return;
 		}
+		if (IJ.isMacro() && Interpreter.getBatchModeRoiManager()!=null)
+			return;
 		instance = this;
 		list = new JList();
 		showWindow();
@@ -1456,9 +1458,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			labels[i] = (String)listModel.get(i);
 		int[] indices = Tools.rank(labels);
 		Roi[] rois2 = getRoisAsArray();
+		listModel.removeAllElements();
+		rois.clear();
 		for (int i=0; i<labels.length; i++) {
-			listModel.set(indices[i], labels[i]);
-			rois.set(indices[i], rois2[i]);
+			listModel.addElement(labels[indices[i]]);
+			rois.add(rois2[indices[i]]);
 		}
 		if (record()) Recorder.record("roiManager", "Sort");
 	}
@@ -1823,8 +1827,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				shift = false;
 				alt = false;
 			}
-			//setRoiPosition();
 			add(shift, alt);
+			if (IJ.isJava18()&&IJ.isMacOSX())
+				repaint();
 		} else if (cmd.equals("add & draw"))
 			addAndDraw(false);
 		else if (cmd.equals("update"))
@@ -2202,6 +2207,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			select(index);
 			if (IJ.isWindows())
 				list.requestFocusInWindow();
+			if (IJ.isJava18()&&IJ.isMacOSX())
+				repaint();
 		}
 	}
 	
