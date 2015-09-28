@@ -210,7 +210,7 @@ public class ImageStack {
 
 	/** Returns the number of slices in this stack. */
 	public int size() {
-		return nSlices;
+		return getSize();
 	}
 
 	/** Returns the slice labels as an array of Strings. Note
