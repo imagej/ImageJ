@@ -758,7 +758,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		boolean shift = (flags & KeyEvent.SHIFT_MASK) != 0;
 		boolean control = (flags & KeyEvent.CTRL_MASK) != 0;
 		boolean alt = (flags & KeyEvent.ALT_MASK) != 0;
-		boolean run = !isJava && (shift || control || alt);
+		boolean run = !isJava && (Prefs.autoRunExamples||shift||control||alt);
 		int rows = 24;
 		int columns = 70;
 		int options = MENU_BAR;

@@ -313,6 +313,11 @@ public class Menus {
 		addExample(submenu, "Plugin Tool", "Prototype_Tool.java");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
+		menu.addSeparator();
+		CheckboxMenuItem item = new CheckboxMenuItem("Autorun");
+		menu.add(item);
+		item.addItemListener(ij);
+		item.setState(Prefs.autoRunExamples);
 		return menu;
 	}
 	
