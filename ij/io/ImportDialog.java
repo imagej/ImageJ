@@ -30,25 +30,36 @@ public class ImportDialog {
 	static final int OPEN_ALL = 4;
 	
     // default settings
-    private static int choiceSelection = Prefs.getInt(TYPE,0);
-    private static int width = Prefs.getInt(WIDTH,512);
-    private static int height = Prefs.getInt(HEIGHT,512);
-    private static long offset = Prefs.getInt(OFFSET,0);
-    private static int nImages = Prefs.getInt(N,1);
-    private static int gapBetweenImages = Prefs.getInt(GAP,0);
+    private static int sChoiceSelection = Prefs.getInt(TYPE,0);
+    private static int sWidth = Prefs.getInt(WIDTH,512);
+    private static int sHeight = Prefs.getInt(HEIGHT,512);
+    private static long sOffset = Prefs.getInt(OFFSET,0);
+    private static int sNImages = Prefs.getInt(N,1);
+    private static int sGapBetweenImages = Prefs.getInt(GAP,0);
+    private static boolean sWhiteIsZero;
+    private static boolean sIntelByteOrder;
+    private static boolean sVirtual;
+    private int choiceSelection = sChoiceSelection;
+    private int width = sWidth;
+    private int height = sHeight;
+    private long offset = sOffset;
+    private int nImages = sNImages;
+    private int gapBetweenImages = sGapBetweenImages;
+    private boolean whiteIsZero = sWhiteIsZero;
+    private boolean intelByteOrder = sIntelByteOrder;
+    private boolean virtual = sVirtual;
+
 	private static int options;
-    private static boolean whiteIsZero,intelByteOrder;
-    private static boolean virtual;
-    private boolean openAll;
     private static FileInfo lastFileInfo;
+    private boolean openAll;
     private static String[] types = {"8-bit", "16-bit Signed", "16-bit Unsigned",
 		"32-bit Signed", "32-bit Unsigned", "32-bit Real", "64-bit Real", "24-bit RGB", 
 		"24-bit RGB Planar", "24-bit BGR", "24-bit Integer", "32-bit ARGB", "32-bit ABGR", "1-bit Bitmap"};
     	
     static {
     	options = Prefs.getInt(OPTIONS,0);
-    	whiteIsZero = (options&WHITE_IS_ZERO)!=0;
-    	intelByteOrder = (options&INTEL_BYTE_ORDER)!=0;
+    	sWhiteIsZero = (options&WHITE_IS_ZERO)!=0;
+    	sIntelByteOrder = (options&INTEL_BYTE_ORDER)!=0;
     }
 	
     public ImportDialog(String fileName, String directory) {
@@ -61,6 +72,13 @@ public class ImportDialog {
 	}
 
 	boolean showDialog() {
+		boolean macro = Macro.getOptions()!=null;
+		if (macro) {
+			width = height = 512;
+			offset = gapBetweenImages = 0;
+			nImages = 1;
+			whiteIsZero = intelByteOrder = virtual = false;
+		}
 		if (choiceSelection>=types.length)
 			choiceSelection = 0;
 		getDimensionsFromName(fileName);
@@ -79,9 +97,12 @@ public class ImportDialog {
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
+		gd.setSmartRecording(true);
 		choiceSelection = gd.getNextChoiceIndex();
+		gd.setSmartRecording(false);
 		width = (int)gd.getNextNumber();
 		height = (int)gd.getNextNumber();
+		gd.setSmartRecording(true);
 		offset = (long)gd.getNextNumber();
 		nImages = (int)gd.getNextNumber();
 		gapBetweenImages = (int)gd.getNextNumber();
@@ -90,6 +111,17 @@ public class ImportDialog {
 		openAll = gd.getNextBoolean();
 		virtual = gd.getNextBoolean();
 		IJ.register(ImportDialog.class);
+		if (!macro) {
+			sChoiceSelection = choiceSelection;
+			sWidth = width;
+			sHeight = height;
+			sOffset = offset;
+			sNImages = nImages;
+			sGapBetweenImages = gapBetweenImages;
+			sWhiteIsZero = whiteIsZero;
+			sIntelByteOrder = intelByteOrder;
+			sVirtual = virtual;
+		}
 		return true;
 	}
 	
@@ -240,16 +272,16 @@ public class ImportDialog {
 
 	/** Called once when ImageJ quits. */
 	public static void savePreferences(Properties prefs) {
-		prefs.put(TYPE, Integer.toString(choiceSelection));
-		prefs.put(WIDTH, Integer.toString(width));
-		prefs.put(HEIGHT, Integer.toString(height));
-		prefs.put(OFFSET, Integer.toString(offset>2147483647?0:(int)offset));
-		prefs.put(N, Integer.toString(nImages));
-		prefs.put(GAP, Integer.toString(gapBetweenImages));
+		prefs.put(TYPE, Integer.toString(sChoiceSelection));
+		prefs.put(WIDTH, Integer.toString(sWidth));
+		prefs.put(HEIGHT, Integer.toString(sHeight));
+		prefs.put(OFFSET, Integer.toString(sOffset>2147483647?0:(int)sOffset));
+		prefs.put(N, Integer.toString(sNImages));
+		prefs.put(GAP, Integer.toString(sGapBetweenImages));
 		int options = 0;
-		if (whiteIsZero)
+		if (sWhiteIsZero)
 			options |= WHITE_IS_ZERO;
-		if (intelByteOrder)
+		if (sIntelByteOrder)
 			options |= INTEL_BYTE_ORDER;
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
