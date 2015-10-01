@@ -80,7 +80,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.50d";
-	public static final String BUILD = "2";
+	public static final String BUILD = "4";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -319,6 +319,11 @@ public class ImageJ extends Frame implements ActionListener,
 		if ((e.getSource() instanceof MenuItem)) {
 			MenuItem item = (MenuItem)e.getSource();
 			String cmd = e.getActionCommand();
+			Frame frame = WindowManager.getFrontWindow();
+			if (frame!=null && (frame instanceof Fitter)) {
+				((Fitter)frame).actionPerformed(e);
+				return;
+			}
 			commandName = cmd;
 			ImagePlus imp = null;
 			if (item.getParent()==Menus.getOpenRecentMenu()) {
@@ -546,7 +551,7 @@ public class ImageJ extends Frame implements ActionListener,
 	
 	private boolean ignoreArrowKeys(ImagePlus imp) {
 		Frame frame = WindowManager.getFrontWindow();
-		String title = frame.getTitle();
+		String title = frame!=null?frame.getTitle():null;
 		if (title!=null && title.equals("ROI Manager"))
 			return true;
 		// Control Panel?

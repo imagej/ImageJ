@@ -3,8 +3,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.io.*;
+import java.awt.datatransfer.*;	
 import ij.*;
-import ij.plugin.*;
+import ij.plugin.PlugIn;
 import ij.plugin.frame.*;
 import ij.text.*;
 import ij.gui.*;
@@ -20,7 +21,7 @@ import ij.measure.*;
  *
  * 2013-10-01: fit not in EventQueue, setStatusAndEsc, error if nonnumeric data
  */
-public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionListener, KeyListener {
+public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionListener, KeyListener, ClipboardOwner {
 
 	Choice fit;
 	Button doIt, open, apply;
@@ -288,6 +289,17 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 	}
 	
 	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() instanceof MenuItem) {
+			String cmd = e.getActionCommand();
+			if (cmd==null) return;
+			if (cmd.equals("Cut"))
+				cut();
+			else if (cmd.equals("Copy"))
+				copy();
+			else if (cmd.equals("Paste"))
+				paste();
+			return;
+		}
 		try {
             if (e.getSource()==doIt) {
                 final int fitType = CurveFitter.getFitCode(fit.getSelectedItem());
@@ -330,5 +342,44 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
             IJ.getInstance().keyPressed(e);
     }
+    
+	private boolean copy() { 
+		String s = textArea.getSelectedText();
+		Clipboard clip = getToolkit().getSystemClipboard();
+		if (clip!=null) {
+			StringSelection cont = new StringSelection(s);
+			clip.setContents(cont,this);
+			return true;
+		} else
+			return false;
+	}
+ 
+	  
+	private void cut() {
+		if (copy()) {
+			int start = textArea.getSelectionStart();
+			int end = textArea.getSelectionEnd();
+			textArea.replaceRange("", start, end);
+		}	
+	}
+
+	private void paste() {
+		String s;
+		s = textArea.getSelectedText();
+		Clipboard clipboard = getToolkit( ). getSystemClipboard(); 
+		Transferable clipData = clipboard.getContents(s);
+		try {
+			s = (String)(clipData.getTransferData(DataFlavor.stringFlavor));
+		} catch  (Exception e)  {
+			s  = e.toString( );
+		}
+		int start = textArea.getSelectionStart( );
+		int end = textArea.getSelectionEnd( );
+		textArea.replaceRange(s, start, end);
+		if (IJ.isMacOSX())
+			textArea.setCaretPosition(start+s.length());
+    }
+    
+	public void lostOwnership (Clipboard clip, Transferable cont) {}
 
 }
