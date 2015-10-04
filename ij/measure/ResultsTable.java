@@ -385,8 +385,15 @@ public class ResultsTable implements Cloneable {
 		if (row<0 || row>=size())
 			throw new IllegalArgumentException("Row out of range");
 		int col = getColumnIndex(column);
-		if (col==COLUMN_NOT_FOUND)
-			throw new IllegalArgumentException("\""+column+"\" column not found");
+		if (col==COLUMN_NOT_FOUND) {
+			String label = null;
+			if ("Label".equals(column))
+				label = getLabel(row);
+			if (label!=null)
+				return label;
+			else
+				throw new IllegalArgumentException("\""+column+"\" column not found");
+		}
 		return getStringValue(col, row);
 	}
 
