@@ -5,7 +5,7 @@ import java.awt.geom.Rectangle2D;
 import ij.*;
 import ij.process.ImageProcessor;
 
-/** An Overlay is a list of Rois that can be drawn non-destructively on an Image. */
+/** An Overlay is a list of ROIs that can be drawn non-destructively on an Image. */
 public class Overlay {
 	private Vector list;
     private boolean label;
@@ -20,38 +20,53 @@ public class Overlay {
     	list = new Vector();
     }
     
-    /** Constructs an Overlay and adds the specified Roi. */
+    /** Constructs an Overlay and adds the specified ROI. */
     public Overlay(Roi roi) {
     	list = new Vector();
     	list.add(roi);
     }
 
-    /** Adds an Roi to this Overlay. */
+    /** Adds an ROI to this Overlay. */
     public void add(Roi roi) {
     	list.add(roi);
     }
         
-    /** Adds an Roi to this Overlay. */
+    /** Adds an ROI to this Overlay using the specified name. */
+	public void add(Roi roi, String name) {
+		roi.setName(name);
+		add(roi);
+	}
+
+    /** Adds an ROI to this Overlay. */
     public void addElement(Roi roi) {
     	list.add(roi);
     }
 
-    /** Removes the Roi with the specified index from this Overlay. */
+    /** Removes the ROI with the specified index from this Overlay. */
     public void remove(int index) {
     	list.remove(index);
     }
     
-    /** Removes the specified Roi from this Overlay. */
+    /** Removes the specified ROI from this Overlay. */
     public void remove(Roi roi) {
     	list.remove(roi);
     }
 
-   /** Removes all the Rois in this Overlay. */
+    /** Removes all ROIs that have the specified name. */
+	public void remove(String name) {
+		if (name==null) return;
+		for (int i=size()-1; i>=0; i--) {
+			if (name.equals(get(i).getName()))
+				remove(i);
+		}
+	}
+
+   /** Removes all the ROIs in this Overlay. */
     public void clear() {
     	list.clear();
     }
 
-    /** Returns the Roi with the specified index or null if the index is invalid. */
+    /** Returns the ROI with the specified index or null if the index is invalid. */
     public Roi get(int index) {
     	try {
     		return (Roi)list.get(index);
@@ -60,7 +75,7 @@ public class Overlay {
     	}
     }
     
-    /** Returns the index of the Roi with the specified name, or -1 if not found. */
+    /** Returns the index of the ROI with the specified name, or -1 if not found. */
     public int getIndex(String name) {
     	if (name==null) return -1;
     	Roi[] rois = toArray();
@@ -71,30 +86,30 @@ public class Overlay {
 		return -1;
     }
     
-    /** Returns 'true' if this Overlay contains the specified Roi. */
+    /** Returns 'true' if this Overlay contains the specified ROI. */
     public boolean contains(Roi roi) {
     	return list.contains(roi);
     }
 
-    /** Returns the number of Rois in this Overlay. */
+    /** Returns the number of ROIs in this Overlay. */
     public int size() {
     	return list.size();
     }
     
-    /** Returns on array containing the Rois in this Overlay. */
+    /** Returns on array containing the ROIs in this Overlay. */
     public Roi[] toArray() {
     	Roi[] array = new Roi[list.size()];
     	return (Roi[])list.toArray(array);
     }
     
-    /** Sets the stroke color of all the Rois in this overlay. */
+    /** Sets the stroke color of all the ROIs in this overlay. */
     public void setStrokeColor(Color color) {
 		Roi[] rois = toArray();
 		for (int i=0; i<rois.length; i++)
 			rois[i].setStrokeColor(color);
 	}
 
-    /** Sets the fill color of all the Rois in this overlay. */
+    /** Sets the fill color of all the ROIs in this overlay. */
     public void setFillColor(Color color) {
 		Roi[] rois = toArray();
 		for (int i=0; i<rois.length; i++)
@@ -116,7 +131,7 @@ public class Overlay {
 		}
 	}
 
-	/** Moves all the Rois in this overlay.
+	/** Moves all the ROIs in this overlay.
 	* Marcel Boeglin, October 2013
 	*/
 	public void translate(double dx, double dy) {

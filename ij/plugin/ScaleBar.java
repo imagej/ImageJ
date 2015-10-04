@@ -126,8 +126,9 @@ public class ScaleBar implements PlugIn {
 		if (gd.wasCanceled()) {
 			imp.getProcessor().reset();
 			imp.updateAndDraw();
-			if (showingOverlay) {
-				removeScaleBar(imp.getOverlay());
+			Overlay overlay = imp.getOverlay();
+			if (showingOverlay && overlay!=null) {
+				overlay.remove(ROI_NAME);
 				imp.draw();
 			}
 			return false;
@@ -168,7 +169,7 @@ public class ScaleBar implements PlugIn {
 		if (overlay==null)
 			overlay = new Overlay();
 		else
-			removeScaleBar(overlay);
+			overlay.remove(ROI_NAME);
 		Color color = getColor();
 		Color bcolor = getBColor();
 		int x = xloc;
@@ -196,15 +197,15 @@ public class ScaleBar implements PlugIn {
 			h = h+ margin*2;
 			Roi background = new Roi(x2, y2, w, h);
 			background.setFillColor(bcolor);
-			add(overlay, background);
+			overlay.add(background, ROI_NAME);
 		}
 		Roi bar = new Roi(x, y, barWidthInPixels, barHeightInPixels);
 		bar.setFillColor(color);
-		add(overlay, bar);
+		overlay.add(bar, ROI_NAME);
 		if (!hideText) {
 			TextRoi text = new TextRoi(x+xoffset, y+barHeightInPixels, label, font);
 			text.setStrokeColor(color);
-			add(overlay, text);
+			overlay.add(text, ROI_NAME);
 		}
 		imp.setOverlay(overlay);
 		showingOverlay = true;
@@ -251,21 +252,6 @@ public class ScaleBar implements PlugIn {
 			ip.drawString(label, x+xoffset, y+yoffset);
 		drawnScaleBar = true;
 	}
-
-	private void removeScaleBar(Overlay overlay) {
-		if (overlay!=null) {
-			for (int i=overlay.size()-1; i>=0; i--) {
-				if (ROI_NAME.equals(overlay.get(i).getName()))
-					overlay.remove(i);
-			}
-		}
-	}
-	
-	private void add(Overlay overlay, Roi roi) {
-		roi.setName(ROI_NAME);
-		overlay.add(roi);
-	}
-
 
 	String getLength(double barWidth) {
 		int digits = (int)barWidth==barWidth?0:1;

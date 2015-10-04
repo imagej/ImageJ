@@ -99,8 +99,11 @@ public class CalibrationBar implements PlugIn {
 			decimalPlaces = 0;
 		}
 		if (!showDialog()) {
-			removeCalibrationBar(imp.getOverlay());
-			imp.draw();
+			Overlay overlay = imp.getOverlay();
+			if (overlay!=null) {
+				overlay.remove(ROI_NAME);
+				imp.draw();
+			}
 			return;
 		}
 		updateColorBar();
@@ -109,8 +112,11 @@ public class CalibrationBar implements PlugIn {
 			IJ.wait(100);
 			ImagePlus imp2 = imp.flatten();
 			imp2.setTitle(imp.getTitle()+" with bar");
-			removeCalibrationBar(imp.getOverlay());
-			imp.draw();
+			Overlay overlay = imp.getOverlay();
+			if (overlay!=null) {
+				overlay.remove(ROI_NAME);
+				imp.draw();
+			}
 			imp2.show();
 		}
 	}
@@ -176,7 +182,7 @@ public class CalibrationBar implements PlugIn {
 		if (overlay==null)
 			overlay = new Overlay();
 		else
-			removeCalibrationBar(overlay);
+			overlay.remove(ROI_NAME);
 		int maxTextWidth = addText(null, 0, 0);
 		win_width = (int)(XMARGIN*zoom) + 5 + (int)(BAR_THICKNESS*zoom) + maxTextWidth + (int)((XMARGIN/2)*zoom);
 		if (x==-1 && y==-1)
@@ -186,7 +192,7 @@ public class CalibrationBar implements PlugIn {
 		if (c!=null) {
 			Roi r = new Roi(x, y, win_width, (int)(WIN_HEIGHT*zoom + 2*(int)(YMARGIN*zoom)));
 			r.setFillColor(c);
-			add(overlay, r);
+			overlay.add(r, ROI_NAME);
 		}
 		int xOffset = x;
 		int yOffset = y;
@@ -205,15 +211,6 @@ public class CalibrationBar implements PlugIn {
 		imp.setOverlay(overlay);
 	}
 	
-	private void removeCalibrationBar(Overlay overlay) {
-		if (overlay!=null) {
-			for (int i=overlay.size()-1; i>=0; i--) {
-				if (ROI_NAME.equals(overlay.get(i).getName()))
-					overlay.remove(i);
-			}
-		}
-	}
-
 	private void addVerticalColorBar(Overlay overlay, int x, int y, int thickness, int length) {
 		int width = thickness;
 		int height = length;
@@ -259,7 +256,7 @@ public class CalibrationBar implements PlugIn {
 			Line line = new Line(x, j+y, thickness+x, j+y);
 			line.setStrokeColor(new Color(rLUT[iMap]&0xff, gLUT[iMap]&0xff, bLUT[iMap]&0xff));
 			line.setStrokeWidth(1.0001);
-			add(overlay, line);
+			overlay.add(line, ROI_NAME);
 		}
 
 		Color c = getColor(barOutlineColor);
@@ -267,7 +264,7 @@ public class CalibrationBar implements PlugIn {
 			Roi r = new Roi(x, y, width, height);
 			r.setStrokeColor(c);
 			r.setStrokeWidth(1.0);
-			add(overlay, r);
+			overlay.add(r, ROI_NAME);
 		}
 	}
 
@@ -319,7 +316,7 @@ public class CalibrationBar implements PlugIn {
 			if (overlay!=null) {
 				TextRoi label = new TextRoi(d2s(grayLabel), x + 5, yLabel + fontHeight/2, font);
 				label.setStrokeColor(c);
-				add(overlay, label);
+				overlay.add(label, ROI_NAME);
 			}
 			int iLength = metrics.stringWidth(d2s(grayLabel));
 			if (iLength > maxLength)
@@ -328,11 +325,6 @@ public class CalibrationBar implements PlugIn {
 		return maxLength;
 	}
 	
-	private void add(Overlay overlay, Roi roi) {
-		roi.setName(ROI_NAME);
-		overlay.add(roi);
-	}
-
 	String d2s(double d) {
 			return IJ.d2s(d,decimalPlaces);
 	}
