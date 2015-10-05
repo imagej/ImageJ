@@ -79,8 +79,8 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
-	public static final String VERSION = "1.50c";
-	public static final String BUILD = "1"; 
+	public static final String VERSION = "1.50d";
+	public static final String BUILD = "8";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -188,7 +188,7 @@ public class ImageJ extends Frame implements ActionListener,
 		if (mode!=NO_SHOW) {
 			if (IJ.isWindows()) try {setIcon();} catch(Exception e) {}
 			setLocation(loc.x, loc.y);
-			setResizable(!IJ.isMacOSX());
+			setResizable(false);
 			pack();
 			setVisible(true);
 		}
@@ -319,6 +319,11 @@ public class ImageJ extends Frame implements ActionListener,
 		if ((e.getSource() instanceof MenuItem)) {
 			MenuItem item = (MenuItem)e.getSource();
 			String cmd = e.getActionCommand();
+			Frame frame = WindowManager.getFrontWindow();
+			if (frame!=null && (frame instanceof Fitter)) {
+				((Fitter)frame).actionPerformed(e);
+				return;
+			}
 			commandName = cmd;
 			ImagePlus imp = null;
 			if (item.getParent()==Menus.getOpenRecentMenu()) {
@@ -350,7 +355,9 @@ public class ImageJ extends Frame implements ActionListener,
 		MenuItem item = (MenuItem)e.getSource();
 		MenuComponent parent = (MenuComponent)item.getParent();
 		String cmd = e.getItem().toString();
-		if ((Menu)parent==Menus.window)
+		if ("Autorun".equals(cmd)) // Examples>Autorun
+			Prefs.autoRunExamples = e.getStateChange()==1;
+		else if ((Menu)parent==Menus.window)
 			WindowManager.activateWindow(cmd, item);
 		else
 			doCommand(cmd);
@@ -470,6 +477,12 @@ public class ImageJ extends Frame implements ActionListener,
 					Roi roi = imp.getRoi();
 					if (IJ.shiftKeyDown()&&imp==Orthogonal_Views.getImage())
 						return;
+					if (IJ.isMacOSX() && IJ.isJava18()) {
+						RoiManager rm = RoiManager.getInstance();
+						boolean rmActive = rm!=null && rm==WindowManager.getActiveWindow();
+						if (rmActive && (keyCode==KeyEvent.VK_DOWN||keyCode==KeyEvent.VK_UP))
+						  rm.repaint();
+					}
 					boolean stackKey = imp.getStackSize()>1 && (roi==null||IJ.shiftKeyDown());
 					boolean zoomKey = roi==null || IJ.shiftKeyDown() || IJ.controlKeyDown();
 					if (stackKey && keyCode==KeyEvent.VK_RIGHT)
@@ -538,7 +551,7 @@ public class ImageJ extends Frame implements ActionListener,
 	
 	private boolean ignoreArrowKeys(ImagePlus imp) {
 		Frame frame = WindowManager.getFrontWindow();
-		String title = frame.getTitle();
+		String title = frame!=null?frame.getTitle():null;
 		if (title!=null && title.equals("ROI Manager"))
 			return true;
 		// Control Panel?

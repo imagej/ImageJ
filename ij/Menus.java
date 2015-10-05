@@ -313,6 +313,11 @@ public class Menus {
 		addExample(submenu, "Plugin Tool", "Prototype_Tool.java");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
+		menu.addSeparator();
+		CheckboxMenuItem item = new CheckboxMenuItem("Autorun");
+		menu.add(item);
+		item.addItemListener(ij);
+		item.setState(Prefs.autoRunExamples);
 		return menu;
 	}
 	
@@ -645,16 +650,14 @@ public class Menus {
 			String jar = (String)jarFiles.elementAt(i);
 			InputStream is = getConfigurationFile(jar);
             if (is==null) continue;
-            int maxEntries = 100;
-            String[] entries = new String[maxEntries];
-            int nEntries=0;
+            ArrayList entries = new ArrayList(20);
             LineNumberReader lnr = new LineNumberReader(new InputStreamReader(is));
             try {
                 while(true) {
                     String s = lnr.readLine();
-                    if (s==null || nEntries==maxEntries-1) break;
+                    if (s==null) break;
 					if (s.length()>=3 && !s.startsWith("#"))
-						entries[nEntries++] = s;
+						entries.add(s);
 	            }
             }
             catch (IOException e) {}
@@ -662,8 +665,8 @@ public class Menus {
 				try {if (lnr!=null) lnr.close();}
 				catch (IOException e) {}
 			}
-			for (int j=0; j<nEntries; j++)
-				installJarPlugin(jar, entries[j]);
+			for (int j=0; j<entries.size(); j++)
+				installJarPlugin(jar, (String)entries.get(j));
 		}		
 	}
     

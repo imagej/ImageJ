@@ -438,7 +438,8 @@ public class ShapeRoi extends Roi {
 	 * @return an array of ij.gui.Roi objects.
 	 */
 	public Roi[] getRois () {
-		if (shape==null) return new Roi[0];
+		if (shape==null)
+			return new Roi[0];
 		if (savedRois!=null)
 			return getSavedRois();
 		Vector rois = new Vector();
