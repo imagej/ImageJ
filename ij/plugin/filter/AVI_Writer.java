@@ -13,15 +13,39 @@ import javax.imageio.ImageIO;
 /**
 This plugin implements the File/Save As/AVI command.
 Supported formats:
-  Uncompressed 8-bit (gray or indexed color), 24-bit (RGB)
-  JPEG and PNG compression
+  Uncompressed 8-bit (gray or indexed color), 24-bit (RGB),
+  JPEG and PNG compression of individual frames
   16-bit and 32-bit (float) images are converted to 8-bit
 The plugin is based on the FileAvi class written by William Gandler,
 part of Matthew J. McAuliffe's MIPAV program, available from
 http://mipav.cit.nih.gov/.
 2008-06-05: Support for jpeg and png-compressed output and
 composite images by Michael Schmid.
+2015-09-26: Writes AVI 2.0 if file the size would be above approx. 0.9 GB
+
+* The AVI format written looks like this:
+* RIFF AVI            RIFF HEADER, AVI CHUNK					
+*   | LIST hdrl       MAIN AVI HEADER
+*   | | avih          AVI HEADER
+*   | | LIST strl     STREAM LIST(s) (One per stream)
+*   | | | strh        STREAM HEADER (Required after above; fourcc type is 'vids' for video stream)
+*   | | | strf        STREAM FORMAT (for video: BitMapInfo; may also contain palette)
+*   | | | strn        STREAM NAME
+*   | | | indx        MAIN 'AVI 2.0' INDEX of 'ix00' indices
+*   | LIST movi       MOVIE DATA (maximum approx. 0.95 GB)
+*   | | 00db or 00dc  FRAME (b=uncompressed, c=compressed)
+*   | | 00db or 00dc  FRAME
+*   | | ...
+*   | | ix00          AVI 2.0-style index of frames within this 'movi' list
+* RIFF AVIX	          Only if required by size (this is AVI 2.0 extension)
+*   | LIST movi       MOVIE DATA (maximum approx. 0.95 GB)
+*   | | 00db or 00dc  FRAME
+*   | | ...
+*   | | ix00          AVI 2.0-style index of frames within this 'movi' list
+* RIFF AVIX	          further chunks, each approx 0.95 GB (AVI 2.0)
+* ...
 */
+
 public class AVI_Writer implements PlugInFilter {
     //four-character codes for compression
     // Note: byte sequence in four-cc is reversed - ints in Intel (little endian) byte order.
@@ -29,11 +53,11 @@ public class AVI_Writer implements PlugInFilter {
     // (even not by MediaPlayer, even though these codes are specified by Microsoft).
     public final static int  NO_COMPRESSION   = 0;            //no compression, also named BITMAPINFO.BI_RGB
     public final static int  JPEG_COMPRESSION = 0x47504a4d;   //'MJPG' JPEG compression of individual frames
-    //public final static int JPEG_COMPRESSION = 0x6765706a;   //'jpeg' JPEG compression of individual frames
-    public final static int     PNG_COMPRESSION  = 0x20676e70; //'png ' PNG compression of individual frames
-    private final static int FOURCC_00db = 0x62643030;    //'00db' uncompressed frame
-    private final static int FOURCC_00dc = 0x63643030;    //'00dc' compressed frame
-
+    public final static int  PNG_COMPRESSION  = 0x20676e70;   //'png ' PNG compression of individual frames
+    private final static int FOURCC_00db = 0x62643030;        //'00db' uncompressed frame
+    private final static int FOURCC_00dc = 0x63643030;        //'00dc' compressed frame
+    private final static int MAX_INDX_SIZE = 3072;            //max length of index of indices 'indx'
+    private final static int JUNK_SIZE_THRESHOLD = 950*1024*1024;   //if size exceeds this, makes a new RIFF AVIX chunk
     //compression options: dialog parameters
     private int      compressionIndex = 2; //0=none, 1=PNG, 2=JPEG
     private static int      jpegQuality = 90;    //0 is worst, 100 best (not currently used)
@@ -47,13 +71,19 @@ public class AVI_Writer implements PlugInFilter {
     private int             bytesPerPixel;  //8 or 24
     private int             frameDataSize;  //in bytes (uncompressed)
     private int             biCompression;  //compression type (0, 'JPEG, 'PNG')
-    private int             linePad;        //padding of data lines in bytes to reach 4*n length
+    private int             linePad;        //no. of bytes to add for padding of data lines to 4*n length
     private byte[]          bufferWrite;    //output buffer for image data
     private BufferedImage   bufferedImage;  //data source for writing compressed images
     private RaOutputStream  raOutputStream; //output stream for writing compressed images
     private long[]          sizePointers =  //a stack of the pointers to the chunk sizes (pointers are
                                 new long[5];//  remembered to write the sizes later, when they are known)
     private int             stackPointer;   //points to first free position in sizePointers stack
+    private int             endHeadPointer; //position of first 'movi' chunk, i.e., end of the space reserved for indx
+    // AVI-2 related:
+    private long            pointer2indx;   //points to main index-of-indices 'indx'
+    private int             nIndxEntries=0; //number of 'indx' entries
+    private long            pointer2indxNEntriesInUse;  //points to 'nEntriesInUse' of 'indx'
+    private long            pointer2indxNextEntry;   //points to next free slot of 'indx'
 
     public int setup(String arg, ImagePlus imp) {
         this.imp = imp;
@@ -159,6 +189,10 @@ public class AVI_Writer implements PlugInFilter {
             linePad = 4 - minLineLength%4; //uncompressed lines written must be a multiple of 4 bytes
         frameDataSize = (bytesPerPixel*xDim+linePad)*yDim;
         int microSecPerFrame = (int)Math.round((1.0/getFrameRate(imp))*1.0e6);
+        int dwChunkId = biCompression==NO_COMPRESSION ? FOURCC_00db : FOURCC_00dc;
+        long sizeEstimate = bytesPerPixel*xDim*yDim*(long)zDim;
+        int nAvixChunksEstimate = (int)(sizeEstimate/JUNK_SIZE_THRESHOLD);  //estimated number of AVIX junks
+        endHeadPointer = 4096+((nAvixChunksEstimate*16+1000)/1024)*1024;       //reserve plenty of space for 'indx'
 
         //  W r i t e   A V I   f i l e   h e a d e r
         writeString("RIFF");    // signature
@@ -246,94 +280,148 @@ public class AVI_Writer implements PlugInFilter {
         writeString("strn");    // Use 'strn' to provide a zero terminated text string describing the stream
         writeInt(16);           // length of the strn sub-CHUNK (must be even)
         writeString("ImageJ AVI     \0"); //must be 16 bytes as given above (including the terminating 0 byte)
+        pointer2indx = raFile.getFilePointer();
+        writeString("indx");    // 'indx' chunk type: Index of indices
+        chunkSizeHere();        // size of 'indx' (nesting level 3)
+        writeShort(4);          // wLongsPerEntry = 4 ('Longs' are 32-bit here!)
+        writeByte(0);           // bIndexSubType=0
+        writeByte(0);           // bIndexType=0: AVI_INDEX_OF_INDEXES
+        pointer2indxNEntriesInUse = raFile.getFilePointer();
+        writeInt(0);            // nEntriesInUse, will be filled in later
+        writeInt(dwChunkId);    // dwChunkId, '00dc' or '00db'
+        writeInt(0); writeInt(0); writeInt(0); // dwReserved[3]
+        pointer2indxNextEntry = raFile.getFilePointer();
+        chunkEndWriteSize();    //'indx' chunk finished (nesting level 3), will be modified by writeMainIndxEntry
+        writeString("JUNK");    // write a JUNK chunk for padding (will be moved and shortened by writeMainIndxEntry)
+        chunkSizeHere();        // size of 'JUNK' for padding (nesting level 3)
+        raFile.seek(endHeadPointer);      // we continue here
+        chunkEndWriteSize();    // 'JUNK' finished (nesting level 3)
         chunkEndWriteSize();    // LIST 'strl' finished (nesting level 2)
         chunkEndWriteSize();    // LIST 'hdrl' finished (nesting level 1)
-        writeString("JUNK");    // write a JUNK chunk for padding
-        chunkSizeHere();        // size of 'strf' chunk (nesting level 1)
-        raFile.seek(4096/*2048*/);      // we continue here
-        chunkEndWriteSize();    // 'JUNK' finished (nesting level 1)
-        
-        writeString("LIST");    // the second LIST chunk, which contains the actual data
-        chunkSizeHere();        // size of LIST (nesting level 1)
-        long moviPointer = raFile.getFilePointer();
-        writeString("movi");    // Write LIST type 'movi'
 
         //  P r e p a r e   f o r   w r i t i n g   d a t a
         if (biCompression == NO_COMPRESSION)
             bufferWrite = new byte[frameDataSize];
         else
             raOutputStream = new RaOutputStream(raFile); //needed for writing compressed formats
-        int dataSignature = biCompression==NO_COMPRESSION ? FOURCC_00db : FOURCC_00dc;
-        int maxChunkLength = 0;                 // needed for dwSuggestedBufferSize
+        //int maxChunkLength = 0;                 // needed for dwSuggestedBufferSize
         int[] dataChunkOffset = new int[zDim];  // remember chunk positions...
         int[] dataChunkLength = new int[zDim];  // ... and sizes for the index
 
-        //  W r i t e   f r a m e   d a t a
-        for (int z=0; z<zDim; z++) {
-            IJ.showProgress(z, zDim);
-            IJ.showStatus(z+"/"+zDim);
-            ImageProcessor ip = null;      // get the image to write ...
-            if (isComposite || isHyperstack || isOverlay) {
-				if (saveFrames)
-					imp.setPositionWithoutUpdate(channel, slice, z+1);
-				else if (saveSlices)
-					imp.setPositionWithoutUpdate(channel, z+1, frame);
-				else if (saveChannels)
-					imp.setPositionWithoutUpdate(z+1, slice, frame);
-				ImagePlus imp2 = imp;
-				if (isOverlay) {
-					if (!(saveFrames||saveSlices||saveChannels))
-						imp.setSliceWithoutUpdate(z+1);
-					imp2 = imp.flatten();
-				}
-				ip = new ColorProcessor(imp2.getImage());
-            } else
-                ip = zDim==1 ? imp.getProcessor() : imp.getStack().getProcessor(z+1);
-            int chunkPointer = (int)raFile.getFilePointer();
-            writeInt(dataSignature);        // start writing chunk: '00db' or '00dc'
-            chunkSizeHere();                // size of '00db' or '00dc' chunk (nesting level 2)
-            if (biCompression == NO_COMPRESSION) {
-                if (bytesPerPixel==1)
-                    writeByteFrame(ip);
-                else
-                    writeRGBFrame(ip);
-            } else
-                writeCompressedFrame(ip);
-            dataChunkOffset[z] = (int)(chunkPointer - moviPointer);
-            dataChunkLength[z] = (int)(raFile.getFilePointer() - chunkPointer - 8); //size excludes '00db' and size fields
-            if (maxChunkLength < dataChunkLength[z]) maxChunkLength = dataChunkLength[z];
-            chunkEndWriteSize();            // '00db' or '00dc' chunk finished (nesting level 2)
-            //if (IJ.escapePressed()) {
-            //    IJ.showStatus("Save as Avi INTERRUPTED");
-            //    break;
-            //}
-        }
-        chunkEndWriteSize();                // LIST 'movi' finished (nesting level 1)
-		if (isComposite || isHyperstack)
-			imp.setPosition(channel, slice, frame);
+        int currentFilePart = 0;// 0 is inside RIFF AVI (AVI 1.0 compatible), >0 is RIFF AVIX (data chunk of AVI 2.0)
 
-        //  W r i t e   I n d e x
-        writeString("idx1");    // Write the idx1 chunk
-        chunkSizeHere();        // size of 'idx1' chunk (nesting level 1)
-        for (int z = 0; z < zDim; z++) {
-            writeInt(dataSignature);// ckid field: '00db' or '00dc'
-            writeInt(0x10);     // flags: select AVIIF_KEYFRAME
-                         // AVIIF_KEYFRAME 0x00000010
-                         // The flag indicates key frames in the video sequence.
-                         // Key frames do not need previous video information to be decompressed.
-                         // AVIIF_NOTIME 0x00000100 The CHUNK does not influence video timing (for
-                         //   example a palette change CHUNK).
-                         // AVIIF_LIST 0x00000001 marks a LIST CHUNK.
-                         // AVIIF_TWOCC 2L
-                         // AVIIF_COMPUSE 0x0FFF0000 These bits are for compressor use.
-             writeInt(dataChunkOffset[z]); // offset to the chunk
-                         // offset can be relative to file start or 'movi'
-             writeInt(dataChunkLength[z]); // length of the chunk.
-        }  // for (z = 0; z < zDim; z++)
-        chunkEndWriteSize();    // 'idx1' finished (nesting level 1)
-        chunkEndWriteSize();    // 'RIFF' File finished (nesting level 0)
+        //  W r i t e   f r a m e   d a t a   a n d   i n d i c e s
+        int iFrame = 0;
+        while (iFrame < zDim) {
+            if (currentFilePart > 0) {  // open new RIFF AVIX chunk
+                writeString("RIFF");
+                chunkSizeHere();        // size of chunk (nesting level 0)
+                writeString("AVIX");    // RIFF type
+                //IJ.log("AVIX starts at iFrame="+iFrame);
+            }
+            writeString("LIST");        // this LIST chunk contains the AVI-2 style index and the actual data
+            chunkSizeHere();            // size of LIST (nesting level 1)
+            long moviPointer = raFile.getFilePointer();
+            writeString("movi");        // write LIST type 'movi'
+
+            int firstFrameInChunk = iFrame;
+
+            //   W r i t e   s i n g l e   f r a m e
+            while (iFrame<zDim) {
+                if (iFrame %10==0) {
+                    IJ.showProgress(iFrame, zDim);
+                    IJ.showStatus(iFrame+"/"+zDim);
+                }
+                ImageProcessor ip = null;      // get the image to write ...
+                if (isComposite || isHyperstack || isOverlay) {
+                    if (saveFrames)
+                        imp.setPositionWithoutUpdate(channel, slice, iFrame+1);
+                    else if (saveSlices)
+                        imp.setPositionWithoutUpdate(channel, iFrame+1, frame);
+                    else if (saveChannels)
+                        imp.setPositionWithoutUpdate(iFrame+1, slice, frame);
+                    ImagePlus imp2 = imp;
+                    if (isOverlay) {
+                        if (!(saveFrames||saveSlices||saveChannels))
+                            imp.setSliceWithoutUpdate(iFrame+1);
+                        imp2 = imp.flatten();
+                    }
+                    ip = new ColorProcessor(imp2.getImage());
+                } else
+                    ip = zDim==1 ? imp.getProcessor() : imp.getStack().getProcessor(iFrame+1);
+                int chunkPointer = (int)raFile.getFilePointer();
+                writeInt(dwChunkId);            // start writing chunk: '00db' or '00dc'
+                chunkSizeHere();                // size of '00db' or '00dc' chunk (nesting level 2)
+                if (biCompression == NO_COMPRESSION) {
+                    if (bytesPerPixel==1)
+                        writeByteFrame(ip);
+                    else
+                        writeRGBFrame(ip);
+                } else
+                    writeCompressedFrame(ip);
+                dataChunkOffset[iFrame] = (int)(chunkPointer - moviPointer);
+                dataChunkLength[iFrame] = (int)(raFile.getFilePointer() - chunkPointer - 8); //size excludes '00db' and size fields
+                chunkEndWriteSize();            // '00db' or '00dc' chunk finished (nesting level 2)
+                //if (IJ.escapePressed()) {
+                //    IJ.showStatus("Save as Avi INTERRUPTED");
+                //    break;
+                //}
+                iFrame++;
+                if (raFile.getFilePointer() - moviPointer > JUNK_SIZE_THRESHOLD)
+                    break;                      // make sure we don't get over 1GB
+            } // while (iFrame<zDim)
+            int nFramesInChunk = iFrame - firstFrameInChunk;
+
+            //  W r i t e   A V I - 2   I n d e x
+            long ix00pointer = raFile.getFilePointer();
+            writeString("ix00");        // AVI 2.0 style index of frames within the chunk
+            chunkSizeHere();            // size of ix00 chunk (nesting level 2)
+            writeShort(2);              // wLongsPerEntry = 2 ('Longs' are 32-bit here!)
+            writeByte(0);               // bIndexSubType=0
+            writeByte(1);               // bIndexType=1: AVI_INDEX_OF_CHUNKS
+            writeInt(nFramesInChunk);   // nEntriesInUse
+            writeInt(dwChunkId);        // dwChunkId, '00dc' or '00db'
+            writeLong(moviPointer);     // qwBaseOffset
+            writeInt(0);                // dwReserved, first two are qwBaseOffset?
+            for (int z=firstFrameInChunk; z<iFrame; z++) {
+                writeInt(dataChunkOffset[z]);
+                writeInt(dataChunkLength[z]);
+            }
+            //IJ.log("write ix00: frames "+firstFrameInChunk+"-"+(iFrame-1)+" offset "+Long.toHexString(dataChunkOffset[firstFrameInChunk])+"-"+Long.toHexString(dataChunkOffset[iFrame-1]));
+            //enter this ix00 index to index of indices:
+            writeMainIndxEntry(ix00pointer, (int)(raFile.getFilePointer()-ix00pointer), nFramesInChunk);
+
+            chunkEndWriteSize();        // 'ix00' finished (nesting level 2)
+            chunkEndWriteSize();        // LIST 'movi' finished (nesting level 1)
+
+            //  W r i t e   A V I - 1   I n d e x
+            if (currentFilePart == 0) {
+                writeString("idx1");    // Write the idx1 chunk
+                chunkSizeHere();        // size of 'idx1' chunk (nesting level 1)
+                for (int z = 0; z < iFrame; z++) {
+                    writeInt(dwChunkId);// ckid field: '00db' or '00dc'
+                    writeInt(0x10);     // flags: select AVIIF_KEYFRAME
+                                 // AVIIF_KEYFRAME 0x00000010
+                                 // The flag indicates key frames in the video sequence.
+                                 // Key frames do not need previous video information to be decompressed.
+                                 // AVIIF_NOTIME 0x00000100 The CHUNK does not influence video timing (for
+                                 //   example a palette change CHUNK).
+                                 // AVIIF_LIST 0x00000001 marks a LIST CHUNK.
+                                 // AVIIF_TWOCC 2L
+                                 // AVIIF_COMPUSE 0x0FFF0000 These bits are for compressor use.
+                     writeInt(dataChunkOffset[z]); // offset to the chunk
+                                 // offset can be relative to file start or 'movi'
+                     writeInt(dataChunkLength[z]); // length of the chunk.
+                }  // for (z = 0; z < zDim; z++)
+                chunkEndWriteSize();    // 'idx1' finished (nesting level 1)
+            }
+            chunkEndWriteSize();    // 'RIFF' File finished (nesting level 0)
+            currentFilePart++;
+        } //while (iFrame < zDim)
         raFile.close();
         IJ.showProgress(1.0);
+		if (isComposite || isHyperstack)
+			imp.setPosition(channel, slice, frame);
     }
 
     /** Reserve space to write the size of chunk and remember the position
@@ -356,6 +444,30 @@ public class AVI_Writer implements PlugInFilter {
         writeInt((int)(position - (sizePointers[stackPointer]+4)));
         raFile.seek(((position+1)/2)*2);    //pad to 2-byte boundary
         //IJ.log("chunk at 0x"+Long.toHexString(sizePointers[stackPointer]-4)+"-0x"+Long.toHexString(position));
+    }
+
+    /** Enter a local index 'ix00' to 'indx', the index of indices */
+    private void writeMainIndxEntry(long ix00pointer, int dwSize, int nFrames) throws IOException {
+        if (pointer2indxNextEntry + 16 + 8 > MAX_INDX_SIZE) {
+            raFile.close();
+            throw new RuntimeException("AVI_Writer ERROR: Index Size Overflow");
+        }
+        long savePosition = raFile.getFilePointer();
+        raFile.seek(pointer2indxNextEntry);
+        writeLong(ix00pointer);
+        writeInt(dwSize);
+        writeInt(nFrames);
+        pointer2indxNextEntry += 16;
+        nIndxEntries++;
+        writeString("JUNK");        // write a JUNK chunk for padding
+        chunkSizeHere();            // size of 'JUNK' for padding goes here
+        raFile.seek(endHeadPointer);// end of the padded range
+        chunkEndWriteSize();        // 'JUNK' finished (nesting level 3)
+        raFile.seek(pointer2indx+4);
+        writeInt((int)(pointer2indxNextEntry - pointer2indx)); //write new size of 'indx'
+        raFile.seek(pointer2indxNEntriesInUse);
+        writeInt(nIndxEntries);     //write new number of 'indx' entries
+        raFile.seek(savePosition);
     }
 
     /** Write Grayscale (or indexed color) data. Lines are  
@@ -450,6 +562,16 @@ public class AVI_Writer implements PlugInFilter {
         raFile.write(bytes);
     }
 
+    /** Write 8-byte int with Intel (little-endian) byte order
+     * (note: RandomAccessFile.writeInt has other byte order than AVI) */
+    private void writeLong(long v) throws IOException {
+        for (int i=0; i<8; i++) {
+            raFile.write((int)(v & 0xFFL));
+            v = v>>>8;
+        }
+        //IJ.log("long: 0x"+Long.toHexString(v)+"="+v);
+    }
+
     /** Write 4-byte int with Intel (little-endian) byte order
      * (note: RandomAccessFile.writeInt has other byte order than AVI) */
     private void writeInt(int v) throws IOException {
@@ -465,6 +587,11 @@ public class AVI_Writer implements PlugInFilter {
     private void writeShort(int v) throws IOException {
         raFile.write(v & 0xFF);
         raFile.write((v >>> 8) & 0xFF);
+    }
+
+    /** Write a byte */
+    private void writeByte(int v) throws IOException {
+        raFile.write(v & 0xFF);
     }
 
     /** An output stream directed to a RandomAccessFile (starting at the current position) */

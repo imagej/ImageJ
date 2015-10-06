@@ -26,7 +26,7 @@ public class CalibrationBar implements PlugIn {
 	final static int YMARGIN = 10;
 	final static int WIN_HEIGHT = BAR_LENGTH;
 	final static int BOX_PAD = 0;
-	final static String ROI_NAME = "|CB|";
+	final static String CALIBRATION_BAR = "|CB|";
 	static int nBins = 256;
 	static final String[] colors = {"White","Light Gray","Dark Gray","Black","Red","Green","Blue","Yellow","None"};
 	static final String[] locations = {"Upper Right","Lower Right","Lower Left", "Upper Left", "At Selection"};
@@ -101,7 +101,7 @@ public class CalibrationBar implements PlugIn {
 		if (!showDialog()) {
 			Overlay overlay = imp.getOverlay();
 			if (overlay!=null) {
-				overlay.remove(ROI_NAME);
+				overlay.remove(CALIBRATION_BAR);
 				imp.draw();
 			}
 			return;
@@ -114,7 +114,7 @@ public class CalibrationBar implements PlugIn {
 			imp2.setTitle(imp.getTitle()+" with bar");
 			Overlay overlay = imp.getOverlay();
 			if (overlay!=null) {
-				overlay.remove(ROI_NAME);
+				overlay.remove(CALIBRATION_BAR);
 				imp.draw();
 			}
 			imp2.show();
@@ -182,7 +182,7 @@ public class CalibrationBar implements PlugIn {
 		if (overlay==null)
 			overlay = new Overlay();
 		else
-			overlay.remove(ROI_NAME);
+			overlay.remove(CALIBRATION_BAR);
 		int maxTextWidth = addText(null, 0, 0);
 		win_width = (int)(XMARGIN*zoom) + 5 + (int)(BAR_THICKNESS*zoom) + maxTextWidth + (int)((XMARGIN/2)*zoom);
 		if (x==-1 && y==-1)
@@ -192,7 +192,7 @@ public class CalibrationBar implements PlugIn {
 		if (c!=null) {
 			Roi r = new Roi(x, y, win_width, (int)(WIN_HEIGHT*zoom + 2*(int)(YMARGIN*zoom)));
 			r.setFillColor(c);
-			overlay.add(r, ROI_NAME);
+			overlay.add(r, CALIBRATION_BAR);
 		}
 		int xOffset = x;
 		int yOffset = y;
@@ -256,7 +256,7 @@ public class CalibrationBar implements PlugIn {
 			Line line = new Line(x, j+y, thickness+x, j+y);
 			line.setStrokeColor(new Color(rLUT[iMap]&0xff, gLUT[iMap]&0xff, bLUT[iMap]&0xff));
 			line.setStrokeWidth(1.0001);
-			overlay.add(line, ROI_NAME);
+			overlay.add(line, CALIBRATION_BAR);
 		}
 
 		Color c = getColor(barOutlineColor);
@@ -264,7 +264,7 @@ public class CalibrationBar implements PlugIn {
 			Roi r = new Roi(x, y, width, height);
 			r.setStrokeColor(c);
 			r.setStrokeWidth(1.0);
-			overlay.add(r, ROI_NAME);
+			overlay.add(r, CALIBRATION_BAR);
 		}
 	}
 
@@ -316,7 +316,7 @@ public class CalibrationBar implements PlugIn {
 			if (overlay!=null) {
 				TextRoi label = new TextRoi(d2s(grayLabel), x + 5, yLabel + fontHeight/2, font);
 				label.setStrokeColor(c);
-				overlay.add(label, ROI_NAME);
+				overlay.add(label, CALIBRATION_BAR);
 			}
 			int iLength = metrics.stringWidth(d2s(grayLabel));
 			if (iLength > maxLength)

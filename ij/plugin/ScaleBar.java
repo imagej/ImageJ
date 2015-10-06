@@ -17,7 +17,7 @@ public class ScaleBar implements PlugIn {
 	static final String[] colors = {"White","Black","Light Gray","Gray","Dark Gray","Red","Green","Blue","Yellow"};
 	static final String[] bcolors = {"None","Black","White","Dark Gray","Gray","Light Gray","Yellow","Blue","Green","Red"};
 	static final String[] checkboxLabels = {"Bold Text", "Hide Text", "Serif Font", "Overlay"};
-	final static String ROI_NAME = "|SB|";
+	final static String SCALE_BAR = "|SB|";
 	static double barWidth;
 	static int defaultBarHeight = 4;
 	static int barHeightInPixels = defaultBarHeight;
@@ -128,7 +128,7 @@ public class ScaleBar implements PlugIn {
 			imp.updateAndDraw();
 			Overlay overlay = imp.getOverlay();
 			if (showingOverlay && overlay!=null) {
-				overlay.remove(ROI_NAME);
+				overlay.remove(SCALE_BAR);
 				imp.draw();
 			}
 			return false;
@@ -169,7 +169,7 @@ public class ScaleBar implements PlugIn {
 		if (overlay==null)
 			overlay = new Overlay();
 		else
-			overlay.remove(ROI_NAME);
+			overlay.remove(SCALE_BAR);
 		Color color = getColor();
 		Color bcolor = getBColor();
 		int x = xloc;
@@ -197,15 +197,15 @@ public class ScaleBar implements PlugIn {
 			h = h+ margin*2;
 			Roi background = new Roi(x2, y2, w, h);
 			background.setFillColor(bcolor);
-			overlay.add(background, ROI_NAME);
+			overlay.add(background, SCALE_BAR);
 		}
 		Roi bar = new Roi(x, y, barWidthInPixels, barHeightInPixels);
 		bar.setFillColor(color);
-		overlay.add(bar, ROI_NAME);
+		overlay.add(bar, SCALE_BAR);
 		if (!hideText) {
 			TextRoi text = new TextRoi(x+xoffset, y+barHeightInPixels, label, font);
 			text.setStrokeColor(color);
-			overlay.add(text, ROI_NAME);
+			overlay.add(text, SCALE_BAR);
 		}
 		imp.setOverlay(overlay);
 		showingOverlay = true;
