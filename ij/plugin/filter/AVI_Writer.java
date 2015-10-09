@@ -21,7 +21,7 @@ part of Matthew J. McAuliffe's MIPAV program, available from
 http://mipav.cit.nih.gov/.
 2008-06-05: Support for jpeg and png-compressed output and
 composite images by Michael Schmid.
-2015-09-26: Writes AVI 2.0 if file the size would be above approx. 0.9 GB
+2015-09-28: Writes AVI 2.0 if the file size would be above approx. 0.9 GB
 
 * The AVI format written looks like this:
 * RIFF AVI            RIFF HEADER, AVI CHUNK					
@@ -384,8 +384,8 @@ public class AVI_Writer implements PlugInFilter {
             writeLong(moviPointer);     // qwBaseOffset
             writeInt(0);                // dwReserved, first two are qwBaseOffset?
             for (int z=firstFrameInChunk; z<iFrame; z++) {
-                writeInt(dataChunkOffset[z]);
-                writeInt(dataChunkLength[z]);
+                writeInt(dataChunkOffset[z]+8); //note: AVI--2 index points to chunk data, not chunk header
+                writeInt(dataChunkLength[z]);   //length without chunk header
             }
             //IJ.log("write ix00: frames "+firstFrameInChunk+"-"+(iFrame-1)+" offset "+Long.toHexString(dataChunkOffset[firstFrameInChunk])+"-"+Long.toHexString(dataChunkOffset[iFrame-1]));
             //enter this ix00 index to index of indices:
@@ -409,9 +409,9 @@ public class AVI_Writer implements PlugInFilter {
                                  // AVIIF_LIST 0x00000001 marks a LIST CHUNK.
                                  // AVIIF_TWOCC 2L
                                  // AVIIF_COMPUSE 0x0FFF0000 These bits are for compressor use.
-                     writeInt(dataChunkOffset[z]); // offset to the chunk
+                     writeInt(dataChunkOffset[z]); // offset to the chunk header (not data)
                                  // offset can be relative to file start or 'movi'
-                     writeInt(dataChunkLength[z]); // length of the chunk.
+                     writeInt(dataChunkLength[z]); // length without chunk header
                 }  // for (z = 0; z < zDim; z++)
                 chunkEndWriteSize();    // 'idx1' finished (nesting level 1)
             }

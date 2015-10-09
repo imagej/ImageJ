@@ -5,14 +5,16 @@
 </head>
 <body>
 
-<li> <u>1.50d 6 October 2015</u>
+<li> <u>1.50d 9 October 2015</u>
 <ul>
 <li> The <i>File&gt;Import&gt;Raw</i> command now
 uses "smart recording" (default options are not recorded).
 <li> Added the <i>Help&gt;Examples&gt;Autorun</i> checkbox menu item.
 <li> Thanks to Michael Schmid, the AVI Reader now opens most oversized (>4GB)
 ImageJ AVI 1 files and the AVI Writer uses the AVI 2 format, which is AVI 1 
-compatible for files up to approx 0.9 GB in size.
+compatible for files up to approx 0.9 GB in size. Use the 
+<a href="plugins/virtual-test-stack/index.html">Virtual Test Stack</a>
+plugin to create multi-gigabyte test stacks.
 <li> Added the add(Roi,name) and remove(name) methods to the Overlay class.
 <li> Thanks to Kota Miura, worked around Java 8 bugs that caused cut, copy and paste
 to not work in the curve fitter (<i>Analyze&gt;Tools&gt;Curve Fitting</i>).
@@ -20,6 +22,9 @@ to not work in the curve fitter (<i>Analyze&gt;Tools&gt;Curve Fitting</i>).
 command to ignore the "z=" option when run from a macro.
 <li> Thanks to Stein Rorvik, fixed a bug that caused calibration bars
 (<i>Analyze&gt;Tools&gt;Calibration Bar</i>) to remove existing overlays.
+<li> Fixed a bug that caused the <i>Process&gt;Math&gt;Macro</i>
+command to not work correctly with 16-bit and 32-bit images if the
+macro code called the getPixel() function.
 
 </ul>
 
