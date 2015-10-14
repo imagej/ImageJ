@@ -815,6 +815,22 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		return method;
 	}
 	
+	/** Sets the method ("Default", "Huang", etc). */
+	public static void setMethod(String thresholdingMethod) {
+		boolean valid = false;
+		for (int i=0; i<methodNames.length; i++) {
+			if (methodNames[i].equals(thresholdingMethod)) {
+				valid = true;
+				break;
+			}
+		}
+		if (valid) {
+			method = thresholdingMethod;
+			if (instance!=null)
+				instance.methodChoice.select(method);
+		}
+	}
+	
 	/** Returns the current mode ("Red","B&W" or"Over/Under"). */
 	public static String getMode() {
 		return modes[mode];

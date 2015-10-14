@@ -99,10 +99,10 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 	}
 	
 	/** Display the next WaitForUser dialog at the specified location. */
-    public static void setNextLocation(int x, int y) {
-    	xloc = x;
-    	yloc = y;
-    }
+	public static void setNextLocation(int x, int y) {
+		xloc = x;
+		yloc = y;
+	}
 
 
 }

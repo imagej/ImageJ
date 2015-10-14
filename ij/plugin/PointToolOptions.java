@@ -11,10 +11,16 @@ import java.util.*;
 
 /** This plugin implements the Edit/Options/Point Tool command. */
 public class PointToolOptions implements PlugIn, DialogListener {
-	boolean multipointTool;
+	public static final String[] counters = {"Default","1","2","3","4","5","6","7","8"};
+	private static GenericDialog gd = null;
+	private boolean multipointTool;
 
  	public void run(String arg) {
- 		showDialog();
+ 		if (gd!=null && gd.isVisible()) {
+ 			gd.toFront();
+ 			update();
+ 		} else
+ 			showDialog();
  	}
 		
 	void showDialog() {
@@ -31,7 +37,10 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		String cname = Colors.getColorName(cc, "None");
 		String type = PointRoi.types[PointRoi.getDefaultType()];
 		String size = PointRoi.sizes[PointRoi.getDefaultSize()];
-		GenericDialog gd = new GenericDialog("Point Tool");
+		if (multipointTool)
+			gd = new NonBlockingGenericDialog("Point Tool");
+		else
+			gd = new GenericDialog("Point Tool");
 		gd.setInsets(5,0,2);
 		gd.addChoice("Type:", PointRoi.types, type);
 		gd.addChoice("Color:", Colors.getColors(), sname);
@@ -42,7 +51,14 @@ public class PointToolOptions implements PlugIn, DialogListener {
 			gd.addCheckbox("Add_to overlay", Prefs.pointAddToOverlay);
 			gd.addCheckbox("Add to ROI Manager", Prefs.pointAddToManager);
 		}
+		gd.setInsets(5, 20, 0);
 		gd.addCheckbox("Label points", !Prefs.noPointLabels);
+		if (multipointTool) {
+			gd.setInsets(15,0,5);
+			gd.addChoice("Counter:", counters, counters[0]);
+			gd.setInsets(2, 75, 0);
+			gd.addMessage(getCount()+"    ");
+		}
 		gd.addDialogListener(this);
 		gd.showDialog();
 		if (gd.wasCanceled()) {
@@ -95,6 +111,24 @@ public class PointToolOptions implements PlugIn, DialogListener {
 			}
 		}
 		return true;
+    }
+    
+    private static int getCount() {
+    	int count = 0;
+    	ImagePlus imp = WindowManager.getCurrentImage();
+    	if (imp!=null) {
+    		Roi roi = imp.getRoi();
+    		if (roi==null)
+    			return 0;
+    		if (roi!=null && (roi instanceof PointRoi))
+    			count = ((PointRoi)roi).getNCoordinates();
+    	}
+    	return count;
+    }
+    
+    public static void update() {
+    	if (gd!=null && gd.isVisible())
+			((Label)gd.getMessage()).setText(""+getCount());
     }
     			
 }

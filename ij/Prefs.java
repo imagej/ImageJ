@@ -422,7 +422,7 @@ public class Prefs {
 	}
 
 	static void loadOptions() {
-		int defaultOptions = ANTIALIASING+AVOID_RESLICE_INTERPOLATION+ANTIALIASED_TOOLS
+		int defaultOptions = ANTIALIASING+AVOID_RESLICE_INTERPOLATION+ANTIALIASED_TOOLS+MULTI_POINT_MODE
 			+(!IJ.isMacOSX()?RUN_SOCKET_LISTENER:0);
 		int options = getInt(OPTIONS, defaultOptions);
 		usePointerCursor = (options&USE_POINTER)!=0;

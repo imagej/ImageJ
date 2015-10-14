@@ -5,6 +5,7 @@ import ij.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.Colors;
+import ij.plugin.PointToolOptions;
 import ij.plugin.filter.Analyzer;
 import java.awt.event.KeyEvent;
 import ij.plugin.frame.Recorder;
@@ -26,10 +27,10 @@ public class PointRoi extends PolygonRoi {
 	private static Font font;
 	private static Color defaultCrossColor = Color.white;
 	private static int fontSize = 9;
-	private double saveMag;
 	private boolean showLabels;
 	private int type = HYBRID;
 	private int size = SMALL;
+	//private ArrayList counters;
 	
 	static {
 		setDefaultType((int)Prefs.get(TYPE_KEY, HYBRID));
@@ -130,16 +131,15 @@ public class PointRoi extends PolygonRoi {
 		updatePolygon();
 		if (ic!=null) mag = ic.getMagnification();
 		if (showLabels && nPoints>1) {
-			fontSize = 9;
+			fontSize = 8;
+			fontSize += convertSizeToIndex(size);
 			if (mag>1.0)
 				fontSize = (int)(((mag-1.0)/3.0+1.0)*9.0);
 			if (fontSize>18) fontSize = 18;
-			if (font==null || mag!=saveMag)
-				font = new Font("SansSerif", Font.PLAIN, fontSize);
+			font = new Font("SansSerif", Font.PLAIN, fontSize);
 			g.setFont(font);
 			if (fontSize>9)
 				Java2.setAntialiasedText(g, true);
-			saveMag = mag;
 		}
 		for (int i=0; i<nPoints; i++)
 			drawPoint(g, xp2[i], yp2[i], i+1);
@@ -147,6 +147,7 @@ public class PointRoi extends PolygonRoi {
 			updateFullWindow = false;
 			imp.draw();
 		}
+		PointToolOptions.update();
 	}
 
 	void drawPoint(Graphics g, int x, int y, int n) {

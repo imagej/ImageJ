@@ -1324,7 +1324,9 @@ public class PolygonRoi extends Roi {
 		return degrees;
 	}
 	
-	/** Returns the number of XY coordinates. */
+	/** Returns the number of points that define this PolygonRoi.
+		@see #getNonSplineCoordinates
+	*/
 	public int getNCoordinates() {
 		if (xSpline!=null)
 			return splinePoints;
