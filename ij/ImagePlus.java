@@ -1671,7 +1671,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				break;
 			case Toolbar.POINT:
 				roi = new PointRoi(sx, sy, this);
-				PointToolOptions.update();
 				if (Prefs.pointAddToOverlay) {
 					int measurements = Analyzer.getMeasurements();
 					if (!(Prefs.pointAutoMeasure && (measurements&Measurements.ADD_TO_OVERLAY)!=0))
@@ -1715,12 +1714,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 					rm.deselect(roi);
 			}
 			roi.notifyListeners(RoiListener.DELETED);
-			boolean pointRoi = roi instanceof PointRoi;
+			if (roi instanceof PointRoi)
+				((PointRoi)roi).resetCounters();
 			roi = null;
 			if (ip!=null)
 				ip.resetRoi();
-			if (pointRoi)
-				PointToolOptions.update();
 			draw();
 		}
 	}

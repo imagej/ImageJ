@@ -11,7 +11,6 @@ import java.util.*;
 
 /** This plugin implements the Edit/Options/Point Tool command. */
 public class PointToolOptions implements PlugIn, DialogListener {
-	public static final String[] counters = {"Default","1","2","3","4","5","6","7","8"};
 	private static GenericDialog gd = null;
 	private boolean multipointTool;
 
@@ -55,7 +54,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		gd.addCheckbox("Label points", !Prefs.noPointLabels);
 		if (multipointTool) {
 			gd.setInsets(15,0,5);
-			gd.addChoice("Counter:", counters, counters[0]);
+			gd.addChoice("Counter:", PointRoi.counterChoices, PointRoi.counterChoices[0]);
 			gd.setInsets(2, 75, 0);
 			gd.addMessage(getCount()+"    ");
 		}
@@ -101,6 +100,10 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		if (noPointLabels!=Prefs.noPointLabels)
 			redraw = true;
 		Prefs.noPointLabels = noPointLabels;
+		if (multipointTool) {
+			PointRoi.setCounter(gd.getNextChoiceIndex());
+			update();
+		}
 		if (redraw) {
 			ImagePlus imp = WindowManager.getCurrentImage();
 			if (imp!=null) {
@@ -121,7 +124,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
     		if (roi==null)
     			return 0;
     		if (roi!=null && (roi instanceof PointRoi))
-    			count = ((PointRoi)roi).getNCoordinates();
+    			count = ((PointRoi)roi).getCount(PointRoi.getCounter());
     	}
     	return count;
     }

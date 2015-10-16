@@ -810,12 +810,12 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		}
     }
 
-	/** Returns the current method ("Default", "Huang", etc). */
+	/** Returns the current thresholding method ("Default", "Huang", etc). */
 	public static String getMethod() {
 		return method;
 	}
 	
-	/** Sets the method ("Default", "Huang", etc). */
+	/** Sets the thresholding method ("Default", "Huang", etc). */
 	public static void setMethod(String thresholdingMethod) {
 		boolean valid = false;
 		for (int i=0; i<methodNames.length; i++) {

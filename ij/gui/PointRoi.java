@@ -27,10 +27,15 @@ public class PointRoi extends PolygonRoi {
 	private static Font font;
 	private static Color defaultCrossColor = Color.white;
 	private static int fontSize = 9;
+	public static final String[] counterChoices = {"Default","1","2","3","4","5","6","7","8","9"};
+	private Color[] colors = {Color.yellow,Color.magenta,Color.cyan,Color.orange,Color.green,Color.blue,
+		Color.white,Color.darkGray,Color.pink,Color.lightGray};
 	private boolean showLabels;
 	private int type = HYBRID;
 	private int size = SMALL;
-	//private ArrayList counters;
+	private static int currentCounter;
+	private short[] counters;
+	private int[] count = new int[counterChoices.length];
 	
 	static {
 		setDefaultType((int)Prefs.get(TYPE_KEY, HYBRID));
@@ -91,6 +96,8 @@ public class PointRoi extends PolygonRoi {
 				r = (int)(r/mag);
 			imp.draw(x-r, y-r, 2*r, 2*r);
 		}
+		incrementCounter();
+		enlargeArrays(50);
 		if (Recorder.record && !Recorder.scriptMode()) 
 			Recorder.record("makePoint", x, y);
 	}
@@ -161,6 +168,8 @@ public class PointRoi extends PolygonRoi {
 			else
 				color = Color.cyan;
 		}
+		if (counters!=null) 
+			color = colors[counters[n-1]];
 		if (type==HYBRID || type==CROSSHAIR) {
 			if (type==HYBRID)
 				g.setColor(Color.white);
@@ -191,10 +200,13 @@ public class PointRoi extends PolygonRoi {
 			else
 				g.fillRect(x-size2, y-size2, size, size);
 		}
-		if (showLabels && nPoints>1) {
+		if (showLabels && nPoints>1 && counters==null) {
 			if (!colorSet)
 				g.setColor(color);
 			g.drawString(""+n, x+4, y+fontSize+2);
+		} else if (counters!=null) {
+			g.setColor(colors[counters[n-1]]);
+			g.drawString(""+counters[n-1], x+4, y+fontSize+2);
 		}
 		if ((size>TINY||type==DOT) && (type==HYBRID||type==DOT)) {
 			g.setColor(Color.black);
@@ -224,22 +236,40 @@ public class PointRoi extends PolygonRoi {
 	}
 	
 	/** Returns a copy of this PointRoi with a point at (x,y) added. */
-	public PointRoi addPoint(double x, double y) {
-		FloatPolygon poly = getFloatPolygon();
-		poly.addPoint(x, y);
-		PointRoi p = new PointRoi(poly.xpoints, poly.ypoints, poly.npoints);
-		p.setShowLabels(showLabels);
-		IJ.showStatus("count="+poly.npoints);
-		p.setStrokeColor(getStrokeColor());
-		p.setFillColor(getFillColor());
-		p.setPointType(getPointType());
-		p.setSize(getSize());
-		return p;
+	public void addPoint(double ox, double oy) {
+		if (nPoints==xpf.length)
+			return;
+		double xbase = getXBase();
+		double ybase = getYBase();
+		xpf[nPoints] = (float)(ox-xbase);
+		ypf[nPoints] = (float)(oy-ybase);
+		xp2[nPoints] = (int)ox;
+		yp2[nPoints] = (int)oy;
+		nPoints++;
+		if (nPoints==xpf.length)
+			enlargeArrays();
+		incrementCounter();
 	}
 	
-	public PointRoi addPoint(int x, int y) {
-		return addPoint((double)x, (double)y);
+	private void incrementCounter() {
+		count[currentCounter]++;
+		if (currentCounter!=0) {
+			if (counters==null)
+				counters = new short[5000];
+			counters[nPoints-1] = (short)currentCounter;
+		}
 	}
+	
+	public void resetCounters() {
+		for (int i=0; i<count.length; i++)
+			count[i] = 0;
+		counters = null;
+		PointToolOptions.update();
+	}
+	
+	//public PointRoi addPoint(int x, int y) {
+	//	return addPoint((double)x, (double)y);
+	//}
 	
 	/** Subtract the points that intersect the specified ROI and return 
 		the result. Returns null if there are no resulting points. */
@@ -384,6 +414,18 @@ public class PointRoi extends PolygonRoi {
 			return ("Roi[Points, count="+nPoints+"]");
 		else
 			return ("Roi[Point, x="+x+", y="+y+"]");
+	}
+	
+	public static void setCounter(int counter) {
+		currentCounter = counter;
+	}
+
+	public static int getCounter() {
+		return currentCounter;
+	}
+
+	public int getCount(int counter) {
+		return count[counter];
 	}
 
 	/** @deprecated */
