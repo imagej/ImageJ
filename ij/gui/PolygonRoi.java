@@ -779,37 +779,41 @@ public class PolygonRoi extends Roi {
 	}
 
 	public void deleteHandle(double ox, double oy) {
-		if (imp==null) return;
-		if (nPoints<=1)
-			{imp.deleteRoi(); return;}
-		boolean splineFit = xSpline != null;
-		xSpline = null;
+		if (imp==null)
+			return;
+		if (nPoints<=1) {
+			imp.deleteRoi();
+			return;
+		}
+		boolean splineFit = xSpline!=null;
+		if (splineFit)
+			removeSplineFit();
 		FloatPolygon points = getFloatPolygon();
-		modState = NO_MODS;
-		if (previousRoi!=null) previousRoi.modState = NO_MODS;
 		int pointToDelete = getClosestPoint(ox, oy, points);
-		FloatPolygon points2 = new FloatPolygon();
-		for (int i=0; i<points.npoints; i++) {
-			if (i!=pointToDelete)
-				points2.addPoint(points.xpoints[i], points.ypoints[i]);
+		deletePoint(pointToDelete);
+		if (splineFit) 
+			fitSpline(splinePoints);
+		imp.draw();
+	}
+	
+	protected void deletePoint(int index) {
+		if (index<0 || index>=nPoints)
+			return;
+		for (int i=index; i<nPoints-1; i++) {
+			if (xp!=null) {
+				xp[i] = xp[i+1];
+				yp[i] = yp[i+1];
+			}
+			if (xp2!=null) {
+				xp2[i] = xp2[i+1];
+				yp2[i] = yp2[i+1];
+			}
+			if (xpf!=null) {
+				xpf[i] = xpf[i+1];
+				ypf[i] = ypf[i+1];
+			}
 		}
-		if (type==POINT) {
-			PointRoi roi1 = (PointRoi)this;
-			PointRoi roi2 = new PointRoi(points2.xpoints, points2.ypoints, points2.npoints);
-			roi2.setPointType(roi1.getPointType());
-			roi2.setSize(roi1.getSize());
-			roi2.setShowLabels(roi1.getShowLabels());
-			imp.setRoi(roi2);
-		} else {
-			if (subPixelResolution()) {
-				Roi roi2 = new PolygonRoi(points2, type);
-				roi2.setDrawOffset(getDrawOffset());
-				imp.setRoi(roi2);
-			} else
-				imp.setRoi(new PolygonRoi(toInt(points2.xpoints), toInt(points2.ypoints), points2.npoints, type));
-			if (splineFit) 
-				((PolygonRoi)imp.getRoi()).fitSpline(splinePoints);
-		}
+		nPoints--;
 	}
 	
 	void addHandle(double ox, double oy) {

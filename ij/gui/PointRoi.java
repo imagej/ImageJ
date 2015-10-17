@@ -200,13 +200,15 @@ public class PointRoi extends PolygonRoi {
 			else
 				g.fillRect(x-size2, y-size2, size, size);
 		}
-		if (showLabels && nPoints>1 && counters==null) {
-			if (!colorSet)
-				g.setColor(color);
-			g.drawString(""+n, x+4, y+fontSize+2);
-		} else if (counters!=null) {
-			g.setColor(colors[counters[n-1]]);
-			g.drawString(""+counters[n-1], x+4, y+fontSize+2);
+		if (showLabels) {
+			if (nPoints>1 && counters==null) {
+				if (!colorSet)
+					g.setColor(color);
+				g.drawString(""+n, x+4, y+fontSize+2);
+			} else if (counters!=null) {
+				g.setColor(colors[counters[n-1]]);
+				g.drawString(""+counters[n-1], x+4, y+fontSize+2);
+			}
 		}
 		if ((size>TINY||type==DOT) && (type==HYBRID||type==DOT)) {
 			g.setColor(Color.black);
@@ -251,6 +253,15 @@ public class PointRoi extends PolygonRoi {
 		incrementCounter();
 	}
 	
+	protected void deletePoint(int index) {
+		super.deletePoint(index);
+		if (index>=0 && index<=nPoints && counters!=null) {
+			count[counters[index]]--;
+			for (int i=index; i<nPoints; i++)
+				counters[i] = counters[i+1];
+		}
+	}
+
 	private void incrementCounter() {
 		count[currentCounter]++;
 		if (currentCounter!=0) {
