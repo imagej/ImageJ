@@ -35,7 +35,8 @@ public class PointRoi extends PolygonRoi {
 	private int size = SMALL;
 	private static int currentCounter;
 	private short[] counters;
-	private int[] count = new int[counterChoices.length];
+	private int[] counts = new int[counterChoices.length];
+	ResultsTable rt;
 	
 	static {
 		setDefaultType((int)Prefs.get(TYPE_KEY, HYBRID));
@@ -256,31 +257,31 @@ public class PointRoi extends PolygonRoi {
 	protected void deletePoint(int index) {
 		super.deletePoint(index);
 		if (index>=0 && index<=nPoints && counters!=null) {
-			count[counters[index]]--;
+			counts[counters[index]]--;
 			for (int i=index; i<nPoints; i++)
 				counters[i] = counters[i+1];
+			if (rt!=null && WindowManager.getFrame("Counts")!=null)
+				displayCounts();
 		}
 	}
 
 	private void incrementCounter() {
-		count[currentCounter]++;
+		counts[currentCounter]++;
 		if (currentCounter!=0) {
 			if (counters==null)
 				counters = new short[5000];
 			counters[nPoints-1] = (short)currentCounter;
 		}
+		if (rt!=null && WindowManager.getFrame("Counts")!=null)
+			displayCounts();
 	}
 	
 	public void resetCounters() {
-		for (int i=0; i<count.length; i++)
-			count[i] = 0;
+		for (int i=0; i<counts.length; i++)
+			counts[i] = 0;
 		counters = null;
 		PointToolOptions.update();
 	}
-	
-	//public PointRoi addPoint(int x, int y) {
-	//	return addPoint((double)x, (double)y);
-	//}
 	
 	/** Subtract the points that intersect the specified ROI and return 
 		the result. Returns null if there are no resulting points. */
@@ -436,7 +437,17 @@ public class PointRoi extends PolygonRoi {
 	}
 
 	public int getCount(int counter) {
-		return count[counter];
+		return counts[counter];
+	}
+
+	public void displayCounts() {
+		rt = new ResultsTable();
+		for (int i=0; i<counts.length; i++) {
+			rt.setValue("Counter", i, i);
+			rt.setValue("Count", i, counts[i]);
+		}
+		rt.showRowNumbers(false);
+		rt.show("Counts");
 	}
 
 	/** @deprecated */

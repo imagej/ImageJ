@@ -765,7 +765,7 @@ public class PolygonRoi extends Roi {
 			return;
 		int ox=ic.offScreenX(sx), oy=ic.offScreenY(sy);
 		double oxd=ic.offScreenXD(sx), oyd=ic.offScreenYD(sy);
-		if (IJ.altKeyDown() && !(nPoints<=3 && type!=POINT)) {
+		if ((IJ.altKeyDown()||IJ.controlKeyDown()) && !(nPoints<=3 && type!=POINT)) {
 			deleteHandle(oxd, oyd); 
 			return;
 		} else if (IJ.shiftKeyDown() && type!=POINT) {
