@@ -63,7 +63,8 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		gd.addCheckbox("Label points", !Prefs.noPointLabels);
 		if (multipointTool) {
 			gd.setInsets(15,0,5);
-			gd.addChoice("Counter:", PointRoi.counterChoices, PointRoi.counterChoices[0]);
+			String[] choices =  PointRoi.getCounterChoices();
+			gd.addChoice("Counter:", choices, choices[0]);
 			gd.setInsets(2, 75, 0);
 			gd.addMessage(getCount()+"    ");
 		}

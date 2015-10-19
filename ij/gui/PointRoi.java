@@ -7,9 +7,10 @@ import ij.measure.*;
 import ij.plugin.Colors;
 import ij.plugin.PointToolOptions;
 import ij.plugin.filter.Analyzer;
-import java.awt.event.KeyEvent;
 import ij.plugin.frame.Recorder;
 import ij.util.Java2; 
+import java.awt.event.KeyEvent;
+import java.util.Random;
 
 /** This class represents a collection of points. */
 public class PointRoi extends PolygonRoi {
@@ -27,15 +28,16 @@ public class PointRoi extends PolygonRoi {
 	private static Font font;
 	private static Color defaultCrossColor = Color.white;
 	private static int fontSize = 9;
-	public static final String[] counterChoices = {"Default","1","2","3","4","5","6","7","8","9"};
-	private Color[] colors = {Color.yellow,Color.magenta,Color.cyan,Color.orange,Color.green,Color.blue,
-		Color.white,Color.darkGray,Color.pink,Color.lightGray};
+	private static final int MAX_COUNTERS = 100;
+	private static String[] counterChoices;
+	private static Color[] colors;
 	private boolean showLabels;
 	private int type = HYBRID;
 	private int size = SMALL;
 	private static int currentCounter;
-	private short[] counters;
-	private int[] counts = new int[counterChoices.length];
+	private static int nCounters = 1;
+	private int[] counters;
+	private int[] counts = new int[MAX_COUNTERS];
 	ResultsTable rt;
 	
 	static {
@@ -169,8 +171,8 @@ public class PointRoi extends PolygonRoi {
 			else
 				color = Color.cyan;
 		}
-		if (counters!=null) 
-			color = colors[counters[n-1]];
+		if (counters!=null)
+			color = getColor(counters[n-1]);
 		if (type==HYBRID || type==CROSSHAIR) {
 			if (type==HYBRID)
 				g.setColor(Color.white);
@@ -207,7 +209,7 @@ public class PointRoi extends PolygonRoi {
 					g.setColor(color);
 				g.drawString(""+n, x+4, y+fontSize+2);
 			} else if (counters!=null) {
-				g.setColor(colors[counters[n-1]]);
+				g.setColor(getColor(counters[n-1]));
 				g.drawString(""+counters[n-1], x+4, y+fontSize+2);
 			}
 		}
@@ -260,19 +262,24 @@ public class PointRoi extends PolygonRoi {
 			counts[counters[index]]--;
 			for (int i=index; i<nPoints; i++)
 				counters[i] = counters[i+1];
-			if (rt!=null && WindowManager.getFrame("Counts")!=null)
+			if (rt!=null && WindowManager.getFrame(getCountsTitle())!=null)
 				displayCounts();
 		}
 	}
 
-	private void incrementCounter() {
+	private synchronized void incrementCounter() {
 		counts[currentCounter]++;
 		if (currentCounter!=0) {
 			if (counters==null)
-				counters = new short[5000];
-			counters[nPoints-1] = (short)currentCounter;
+				counters = new int[nPoints*2];
+			counters[nPoints-1] = currentCounter;
+			if (nPoints+1==counters.length) {
+				int[] temp = new int[counters.length*2];
+				System.arraycopy(counters, 0, temp, 0, counters.length);
+				counters = temp;
+			}
 		}
-		if (rt!=null && WindowManager.getFrame("Counts")!=null)
+		if (rt!=null && WindowManager.getFrame(getCountsTitle())!=null)
 			displayCounts();
 	}
 	
@@ -430,6 +437,8 @@ public class PointRoi extends PolygonRoi {
 	
 	public static void setCounter(int counter) {
 		currentCounter = counter;
+		if (currentCounter>nCounters-1 && nCounters<MAX_COUNTERS)
+			nCounters = currentCounter + 1;
 	}
 
 	public static int getCounter() {
@@ -442,12 +451,47 @@ public class PointRoi extends PolygonRoi {
 
 	public void displayCounts() {
 		rt = new ResultsTable();
-		for (int i=0; i<counts.length; i++) {
+		for (int i=0; i<nCounters; i++) {
 			rt.setValue("Counter", i, i);
 			rt.setValue("Count", i, counts[i]);
 		}
 		rt.showRowNumbers(false);
-		rt.show("Counts");
+		rt.show(getCountsTitle());
+	}
+	
+	private String getCountsTitle() {
+		return "Counts_"+(imp!=null?imp.getTitle():"");
+	}
+	
+	public synchronized static String[] getCounterChoices() {
+		if (counterChoices==null) {
+			counterChoices = new String[MAX_COUNTERS];
+			counterChoices[0] = "Default";
+			for (int i=1; i<MAX_COUNTERS; i++)
+				counterChoices[i] = ""+i;
+		}
+		return counterChoices;
+	}
+	
+	private static Color getColor(int index) {
+		if (colors==null) {
+			colors = new Color[MAX_COUNTERS];
+			colors[0]=Color.yellow; colors[1]=Color.magenta; colors[2]=Color.cyan;
+			colors[3]=Color.orange; colors[4]=Color.green; colors[5]=Color.blue;
+			colors[6]=Color.white; colors[7]=Color.darkGray; colors[8]=Color.pink;
+			colors[9]=Color.lightGray;
+		}
+		if (colors[index]!=null)
+			return colors[index];
+		else {
+			Random ran = new Random();
+			float r = (float)ran.nextDouble();
+			float g = (float)ran.nextDouble();
+			float b = (float)ran.nextDouble();
+			Color c = new Color(r, g, b);
+			colors[index] = c;
+			return c;
+		}
 	}
 
 	/** @deprecated */

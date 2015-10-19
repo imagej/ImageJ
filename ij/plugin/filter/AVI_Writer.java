@@ -464,7 +464,7 @@ public class AVI_Writer implements PlugInFilter {
         raFile.seek(endHeadPointer);// end of the padded range
         chunkEndWriteSize();        // 'JUNK' finished (nesting level 3)
         raFile.seek(pointer2indx+4);
-        writeInt((int)(pointer2indxNextEntry - pointer2indx)); //write new size of 'indx'
+        writeInt((int)(pointer2indxNextEntry - pointer2indx - 8)); //write new size of 'indx'
         raFile.seek(pointer2indxNEntriesInUse);
         writeInt(nIndxEntries);     //write new number of 'indx' entries
         raFile.seek(savePosition);

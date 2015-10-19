@@ -821,7 +821,7 @@ public class ResultsTable implements Cloneable {
 			TextWindow win;
 			if (frame!=null && frame instanceof TextWindow) {
 				win = (TextWindow)frame;
-				if (!"Counts".equals(windowTitle))
+				if (windowTitle==null || !windowTitle.startsWith("Counts_"))
 					win.toFront();
 			} else {
 				int width = getLastColumn()<=0?250:400;
