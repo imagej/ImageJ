@@ -240,10 +240,14 @@ public class PointRoi extends PolygonRoi {
 		}
 	}
 	
-	/** Returns a copy of this PointRoi with a point at (x,y) added. */
+	/** Adds a point to this PointRoi. */
 	public void addPoint(double ox, double oy) {
 		if (nPoints==xpf.length)
-			return;
+			enlargeArrays();
+		addPoint2(ox, oy);
+	}
+	
+	private void addPoint2(double ox, double oy) {
 		double xbase = getXBase();
 		double ybase = getYBase();
 		xpf[nPoints] = (float)(ox-xbase);
@@ -251,11 +255,9 @@ public class PointRoi extends PolygonRoi {
 		xp2[nPoints] = (int)ox;
 		yp2[nPoints] = (int)oy;
 		nPoints++;
-		if (nPoints==xpf.length)
-			enlargeArrays();
 		incrementCounter();
 	}
-	
+
 	protected void deletePoint(int index) {
 		super.deletePoint(index);
 		if (index>=0 && index<=nPoints && counters!=null) {
@@ -447,6 +449,26 @@ public class PointRoi extends PolygonRoi {
 
 	public int getCount(int counter) {
 		return counts[counter];
+	}
+	
+	public int[] getCounters() {
+		return counters;
+	}
+
+	public void setCounters(int[] counters) {
+		if (counters!=null) {
+			this.counters = new int[counters.length*2];
+			for (int i=0; i<counters.length; i++) {
+				int counter = counters[i];
+				this.counters[i] = counter;
+				if (counter<counts.length) {
+					counts[counter]++;
+					if (counter>nCounters-1)
+						nCounters = counter + 1;
+				}
+			}
+			IJ.setTool("multi-point");
+		}
 	}
 
 	public void displayCounts() {

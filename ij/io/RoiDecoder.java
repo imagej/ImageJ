@@ -80,6 +80,7 @@ public class RoiDecoder {
 	public static final int FLOAT_STROKE_WIDTH = 36;  //float
 	public static final int ROI_PROPS_OFFSET = 40;
 	public static final int ROI_PROPS_LENGTH = 44;
+	public static final int COUNTERS_OFFSET = 48;
 
 	// subtypes
 	public static final int TEXT = 1;
@@ -287,6 +288,7 @@ public class RoiDecoder {
 							((PointRoi)roi).setPointType(getByte(POINT_TYPE));
 							((PointRoi)roi).setSize(getShort(STROKE_WIDTH));
 						}
+						((PointRoi)roi).setShowLabels(!ij.Prefs.noPointLabels);
 						break;
 					}
 					int roiType;
@@ -342,6 +344,12 @@ public class RoiDecoder {
 			String props = getRoiProps();
 			if (props!=null)
 				roi.setProperties(props);
+		}
+
+		if (version>=227) {
+			int[] counters = getPointCounters(n);
+			if (counters!=null && (roi instanceof PointRoi))
+				((PointRoi)roi).setCounters(counters);
 		}
 
 		roi.setPosition(position);
@@ -490,6 +498,20 @@ public class RoiDecoder {
 			props[i] = (char)getShort(offset+i*2);
 		return new String(props);
 	}
+	
+	int[] getPointCounters(int n) {
+		int hdr2Offset = getInt(HEADER2_OFFSET);
+		if (hdr2Offset==0)
+			return null;
+		int offset = getInt(hdr2Offset+COUNTERS_OFFSET);
+		if (offset==0)
+			return null;
+		int[] counters = new int[n];
+		for (int i=0; i<n; i++)
+			counters[i] = getShort(offset+i*2);
+		return counters;
+	}
+
 
 	int getByte(int base) {
 		return data[base]&255;

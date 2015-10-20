@@ -15,10 +15,13 @@ public class PointToolOptions implements PlugIn, DialogListener {
 	private boolean multipointTool;
 	
 	private static final String help = "<html>"
-	+"<h2>Point Tool</h2>"
+	+"<h1>Point Tool</h1>"
 	+"<font size=+1>"
-	+"Alt-click, or control-click, on a point to delete it.<br>"
-	+"Press 'y' (Edit&gt;Selection&gt;Properties) to display the counts.<br>"
+	+"<ul>"
+	+"<li> Alt-click, or control-click, on a point to delete it.<br>"
+	+"<li> Press 'y' (<i>Edit&gt;Selection&gt;Properties</i>) to display<br>the counts in a results table.<br>"
+	+"<li> Use <i>File&gt;Save As&gt;Tiff</i> or <i>File&gt;Save As&gt;Selection</i><br>to save the points and counts.<br>"
+	+"</ul>"
 	+" <br>"
 	+"</font>";
 
