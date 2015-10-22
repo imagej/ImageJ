@@ -28,17 +28,17 @@ public class PointRoi extends PolygonRoi {
 	private static Font font;
 	private static Color defaultCrossColor = Color.white;
 	private static int fontSize = 9;
-	private static final int MAX_COUNTERS = 100;
+	public static final int MAX_COUNTERS = 100;
 	private static String[] counterChoices;
 	private static Color[] colors;
 	private boolean showLabels;
 	private int type = HYBRID;
 	private int size = SMALL;
-	private static int currentCounter;
-	private static int nCounters = 1;
+	private int counter;
+	private int nCounters = 1;
 	private int[] counters;
 	private int[] counts = new int[MAX_COUNTERS];
-	ResultsTable rt;
+	private ResultsTable rt;
 	
 	static {
 		setDefaultType((int)Prefs.get(TYPE_KEY, HYBRID));
@@ -270,11 +270,11 @@ public class PointRoi extends PolygonRoi {
 	}
 
 	private synchronized void incrementCounter() {
-		counts[currentCounter]++;
-		if (currentCounter!=0) {
+		counts[counter]++;
+		if (counter!=0) {
 			if (counters==null)
 				counters = new int[nPoints*2];
-			counters[nPoints-1] = currentCounter;
+			counters[nPoints-1] = counter;
 			if (nPoints+1==counters.length) {
 				int[] temp = new int[counters.length*2];
 				System.arraycopy(counters, 0, temp, 0, counters.length);
@@ -437,14 +437,14 @@ public class PointRoi extends PolygonRoi {
 			return ("Roi[Point, x="+x+", y="+y+"]");
 	}
 	
-	public static void setCounter(int counter) {
-		currentCounter = counter;
-		if (currentCounter>nCounters-1 && nCounters<MAX_COUNTERS)
-			nCounters = currentCounter + 1;
+	public void setCounter(int counter) {
+		this.counter = counter;
+		if (counter>nCounters-1 && nCounters<MAX_COUNTERS)
+			nCounters = counter + 1;
 	}
 
-	public static int getCounter() {
-		return currentCounter;
+	public int getCounter() {
+		return this.counter;
 	}
 
 	public int getCount(int counter) {
@@ -459,7 +459,7 @@ public class PointRoi extends PolygonRoi {
 		if (counters!=null) {
 			this.counters = new int[counters.length*2];
 			for (int i=0; i<counters.length; i++) {
-				int counter = counters[i];
+				int counter = counters[i]&0xffff;
 				this.counters[i] = counter;
 				if (counter<counts.length) {
 					counts[counter]++;

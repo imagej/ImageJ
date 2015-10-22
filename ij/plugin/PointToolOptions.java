@@ -67,9 +67,9 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		if (multipointTool) {
 			gd.setInsets(15,0,5);
 			String[] choices =  PointRoi.getCounterChoices();
-			gd.addChoice("Counter:", choices, choices[0]);
+			gd.addChoice("Counter:", choices, choices[getCounter()]);
 			gd.setInsets(2, 75, 0);
-			gd.addMessage(getCount()+"    ");
+			gd.addMessage(getCount(getCounter())+"    ");
 		}
 		gd.addHelp(help);
 		gd.addDialogListener(this);
@@ -116,8 +116,8 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		Prefs.noPointLabels = noPointLabels;
 		if (multipointTool) {
 			int counter = gd.getNextChoiceIndex();
-			if (counter!=PointRoi.getCounter()) {
-				PointRoi.setCounter(counter);
+			if (counter!=getCounter()) {
+				setCounter(counter);
 				redraw = true;
 			}
 		}
@@ -133,7 +133,27 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		return true;
     }
     
-    private static int getCount() {
+    private static int getCounter() {
+    	int counter = 0;
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) {
+			Roi roi = imp.getRoi();
+			if (roi instanceof PointRoi)
+				counter = ((PointRoi)roi).getCounter();
+		}
+		return counter;
+    }
+    
+    private static void setCounter(int counter) {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) {
+			Roi roi = imp.getRoi();
+			if (roi instanceof PointRoi)
+				((PointRoi)roi).setCounter(counter);
+		}
+    }
+
+    private static int getCount(int counter) {
     	int count = 0;
     	ImagePlus imp = WindowManager.getCurrentImage();
     	if (imp!=null) {
@@ -141,14 +161,19 @@ public class PointToolOptions implements PlugIn, DialogListener {
     		if (roi==null)
     			return 0;
     		if (roi!=null && (roi instanceof PointRoi))
-    			count = ((PointRoi)roi).getCount(PointRoi.getCounter());
+				count = ((PointRoi)roi).getCount(counter);
     	}
     	return count;
     }
     
     public static void update() {
-    	if (gd!=null && gd.isShowing())
-			((Label)gd.getMessage()).setText(""+getCount());
+    	if (gd!=null && gd.isShowing()) {
+			Vector choices = gd.getChoices();
+			Choice choice = (Choice)choices.elementAt(3);
+			int counter = getCounter();
+			choice.select(counter);
+			((Label)gd.getMessage()).setText(""+getCount(counter));
+		}
     }
     			
 }

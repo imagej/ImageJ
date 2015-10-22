@@ -506,9 +506,11 @@ public class RoiDecoder {
 		int offset = getInt(hdr2Offset+COUNTERS_OFFSET);
 		if (offset==0)
 			return null;
+		if (offset+n*4>data.length)
+			return null;
 		int[] counters = new int[n];
 		for (int i=0; i<n; i++)
-			counters[i] = getShort(offset+i*2);
+			counters[i] = getInt(offset+i*4);
 		return counters;
 	}
 
