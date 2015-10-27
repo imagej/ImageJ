@@ -128,8 +128,8 @@ public class PointRoiTest {
 		
 		p = new PointRoi(poly);
 		assertFalse(p.contains(x,y));
-		tmp = p.addPoint(x,y);
-		assertTrue(tmp.contains(x,y));
+		p.addPoint(x,y);
+		assertTrue(p.contains(x,y));
 	}
 
 	// helper

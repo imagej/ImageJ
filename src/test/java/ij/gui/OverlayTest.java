@@ -125,7 +125,7 @@ public class OverlayTest {
 		assertEquals(1,o.size());
 		
 		// try null ref
-		o.remove(null);
+		o.remove((Roi) null);
 		assertEquals(1,o.size());
 
 		// try bad obj ref
