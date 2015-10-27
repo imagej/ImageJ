@@ -654,7 +654,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			} else if (roi.getType()==Roi.POINT)
 				savePoints(roi);
 		}
-		if ((measurements&LIMIT)!=0 && imp.getBitDepth()!=24) {
+		if ((measurements&LIMIT)!=0 && imp!=null && imp.getBitDepth()!=24) {
 			rt.addValue(ResultsTable.MIN_THRESHOLD, stats.lowerThreshold);
 			rt.addValue(ResultsTable.MAX_THRESHOLD, stats.upperThreshold);
 		}

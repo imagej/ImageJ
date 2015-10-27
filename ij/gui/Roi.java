@@ -1295,9 +1295,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		}
 		previousRoi.modState = NO_MODS;
 		PointRoi p1 = (PointRoi)previousRoi;
-		Rectangle r = getBounds();
 		FloatPolygon poly = getFloatPolygon();
-		imp.setRoi(p1.addPoint(poly.xpoints[0], poly.ypoints[0]));
+		p1.addPoint(poly.xpoints[0], poly.ypoints[0]);
+		imp.setRoi(p1);
 	}
 	
 	void subtractPoints() {

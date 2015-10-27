@@ -155,7 +155,7 @@ public class Executer implements Runnable {
 		boolean isPython = name.endsWith(".py");
 		if (!(isMacro||isJava||isJavaScript||isBeanShell||isPython))
 			return false;
-		boolean run = !isJava && (IJ.shiftKeyDown() || IJ.controlKeyDown() || IJ.altKeyDown());
+		boolean run = !isJava && (Prefs.autoRunExamples||IJ.shiftKeyDown()||IJ.controlKeyDown()||IJ.altKeyDown());
 		int rows = 24;
 		int columns = 70;
 		int options = Editor.MENU_BAR;

@@ -22,6 +22,7 @@ public class ThresholdToSelection implements PlugInFilter {
 	float min, max;
 	int w, h;
 	boolean showStatus;
+	final static double PROGRESS_FRACTION_OUTLINING = 0.9;  //fraction of progress bar for the first phase (tracing outlines)
 	
 	public void run(ImageProcessor ip) {
 		showStatus = true;
@@ -283,19 +284,27 @@ public class ThresholdToSelection implements PlugInFilter {
 					}
 				}
 			}
-			if (showStatus && (y&progressInc)==0)
-				IJ.showProgress(y + 1, h + 1);
+			if (y%progressInc==0) {
+				if (Thread.currentThread().isInterrupted()) return null;
+				if (showStatus)
+					IJ.showProgress(y*(PROGRESS_FRACTION_OUTLINING/h));
+			}
 		}
 
-		//IJ.showStatus("Creating GeneralPath");
+		if (showStatus) IJ.showStatus("Converting threshold to selection...");
 		GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
-		for (int i = 0; i < polygons.size(); i++)
+		progressInc = Math.max(polygons.size()/10, 1);
+		for (int i = 0; i < polygons.size(); i++) {
 			path.append((Polygon)polygons.get(i), false);
+			if (Thread.currentThread().isInterrupted()) return null;
+			if (showStatus && i%progressInc==0)
+				IJ.showProgress(PROGRESS_FRACTION_OUTLINING + i*(1.-PROGRESS_FRACTION_OUTLINING)/polygons.size());
+		}
 
 		ShapeRoi shape = new ShapeRoi(path);
 		Roi roi = shape!=null?shape.shapeToRoi():null; // try to convert to non-composite ROI
 		if (showStatus)
-			IJ.showProgress(1,1);
+			IJ.showProgress(1.0);
 		if (roi!=null)
 			return roi;
 		else
@@ -306,5 +315,9 @@ public class ThresholdToSelection implements PlugInFilter {
 		image = imp;
 		return DOES_8G | DOES_16 | DOES_32 | NO_CHANGES;
 	}
-}
 
+	/** Determines whether to show status messages and a progress bar */
+	public void showStatus(boolean showStatus) {
+		this.showStatus = showStatus;
+	}
+}

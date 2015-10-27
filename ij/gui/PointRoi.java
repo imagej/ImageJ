@@ -5,10 +5,12 @@ import ij.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.Colors;
+import ij.plugin.PointToolOptions;
 import ij.plugin.filter.Analyzer;
-import java.awt.event.KeyEvent;
 import ij.plugin.frame.Recorder;
 import ij.util.Java2; 
+import java.awt.event.KeyEvent;
+import java.util.Random;
 
 /** This class represents a collection of points. */
 public class PointRoi extends PolygonRoi {
@@ -26,10 +28,17 @@ public class PointRoi extends PolygonRoi {
 	private static Font font;
 	private static Color defaultCrossColor = Color.white;
 	private static int fontSize = 9;
-	private double saveMag;
+	public static final int MAX_COUNTERS = 100;
+	private static String[] counterChoices;
+	private static Color[] colors;
 	private boolean showLabels;
 	private int type = HYBRID;
 	private int size = SMALL;
+	private int counter;
+	private int nCounters = 1;
+	private int[] counters;
+	private int[] counts = new int[MAX_COUNTERS];
+	private ResultsTable rt;
 	
 	static {
 		setDefaultType((int)Prefs.get(TYPE_KEY, HYBRID));
@@ -90,6 +99,8 @@ public class PointRoi extends PolygonRoi {
 				r = (int)(r/mag);
 			imp.draw(x-r, y-r, 2*r, 2*r);
 		}
+		incrementCounter();
+		enlargeArrays(50);
 		if (Recorder.record && !Recorder.scriptMode()) 
 			Recorder.record("makePoint", x, y);
 	}
@@ -130,16 +141,15 @@ public class PointRoi extends PolygonRoi {
 		updatePolygon();
 		if (ic!=null) mag = ic.getMagnification();
 		if (showLabels && nPoints>1) {
-			fontSize = 9;
+			fontSize = 8;
+			fontSize += convertSizeToIndex(size);
 			if (mag>1.0)
 				fontSize = (int)(((mag-1.0)/3.0+1.0)*9.0);
 			if (fontSize>18) fontSize = 18;
-			if (font==null || mag!=saveMag)
-				font = new Font("SansSerif", Font.PLAIN, fontSize);
+			font = new Font("SansSerif", Font.PLAIN, fontSize);
 			g.setFont(font);
 			if (fontSize>9)
 				Java2.setAntialiasedText(g, true);
-			saveMag = mag;
 		}
 		for (int i=0; i<nPoints; i++)
 			drawPoint(g, xp2[i], yp2[i], i+1);
@@ -147,6 +157,7 @@ public class PointRoi extends PolygonRoi {
 			updateFullWindow = false;
 			imp.draw();
 		}
+		PointToolOptions.update();
 	}
 
 	void drawPoint(Graphics g, int x, int y, int n) {
@@ -160,6 +171,8 @@ public class PointRoi extends PolygonRoi {
 			else
 				color = Color.cyan;
 		}
+		if (counters!=null)
+			color = getColor(counters[n-1]);
 		if (type==HYBRID || type==CROSSHAIR) {
 			if (type==HYBRID)
 				g.setColor(Color.white);
@@ -190,10 +203,15 @@ public class PointRoi extends PolygonRoi {
 			else
 				g.fillRect(x-size2, y-size2, size, size);
 		}
-		if (showLabels && nPoints>1) {
-			if (!colorSet)
-				g.setColor(color);
-			g.drawString(""+n, x+4, y+fontSize+2);
+		if (showLabels) {
+			if (nPoints>1 && counters==null) {
+				if (!colorSet)
+					g.setColor(color);
+				g.drawString(""+n, x+4, y+fontSize+2);
+			} else if (counters!=null) {
+				g.setColor(getColor(counters[n-1]));
+				g.drawString(""+counters[n-1], x+4, y+fontSize+2);
+			}
 		}
 		if ((size>TINY||type==DOT) && (type==HYBRID||type==DOT)) {
 			g.setColor(Color.black);
@@ -222,22 +240,56 @@ public class PointRoi extends PolygonRoi {
 		}
 	}
 	
-	/** Returns a copy of this PointRoi with a point at (x,y) added. */
-	public PointRoi addPoint(double x, double y) {
-		FloatPolygon poly = getFloatPolygon();
-		poly.addPoint(x, y);
-		PointRoi p = new PointRoi(poly.xpoints, poly.ypoints, poly.npoints);
-		p.setShowLabels(showLabels);
-		IJ.showStatus("count="+poly.npoints);
-		p.setStrokeColor(getStrokeColor());
-		p.setFillColor(getFillColor());
-		p.setPointType(getPointType());
-		p.setSize(getSize());
-		return p;
+	/** Adds a point to this PointRoi. */
+	public void addPoint(double ox, double oy) {
+		if (nPoints==xpf.length)
+			enlargeArrays();
+		addPoint2(ox, oy);
 	}
 	
-	public PointRoi addPoint(int x, int y) {
-		return addPoint((double)x, (double)y);
+	private void addPoint2(double ox, double oy) {
+		double xbase = getXBase();
+		double ybase = getYBase();
+		xpf[nPoints] = (float)(ox-xbase);
+		ypf[nPoints] = (float)(oy-ybase);
+		xp2[nPoints] = (int)ox;
+		yp2[nPoints] = (int)oy;
+		nPoints++;
+		incrementCounter();
+	}
+
+	protected void deletePoint(int index) {
+		super.deletePoint(index);
+		if (index>=0 && index<=nPoints && counters!=null) {
+			counts[counters[index]]--;
+			for (int i=index; i<nPoints; i++)
+				counters[i] = counters[i+1];
+			if (rt!=null && WindowManager.getFrame(getCountsTitle())!=null)
+				displayCounts();
+		}
+	}
+
+	private synchronized void incrementCounter() {
+		counts[counter]++;
+		if (counter!=0) {
+			if (counters==null)
+				counters = new int[nPoints*2];
+			counters[nPoints-1] = counter;
+			if (nPoints+1==counters.length) {
+				int[] temp = new int[counters.length*2];
+				System.arraycopy(counters, 0, temp, 0, counters.length);
+				counters = temp;
+			}
+		}
+		if (rt!=null && WindowManager.getFrame(getCountsTitle())!=null)
+			displayCounts();
+	}
+	
+	public void resetCounters() {
+		for (int i=0; i<counts.length; i++)
+			counts[i] = 0;
+		counters = null;
+		PointToolOptions.update();
 	}
 	
 	/** Subtract the points that intersect the specified ROI and return 
@@ -383,6 +435,85 @@ public class PointRoi extends PolygonRoi {
 			return ("Roi[Points, count="+nPoints+"]");
 		else
 			return ("Roi[Point, x="+x+", y="+y+"]");
+	}
+	
+	public void setCounter(int counter) {
+		this.counter = counter;
+		if (counter>nCounters-1 && nCounters<MAX_COUNTERS)
+			nCounters = counter + 1;
+	}
+
+	public int getCounter() {
+		return this.counter;
+	}
+
+	public int getCount(int counter) {
+		return counts[counter];
+	}
+	
+	public int[] getCounters() {
+		return counters;
+	}
+
+	public void setCounters(int[] counters) {
+		if (counters!=null) {
+			this.counters = new int[counters.length*2];
+			for (int i=0; i<counters.length; i++) {
+				int counter = counters[i]&0xffff;
+				this.counters[i] = counter;
+				if (counter<counts.length) {
+					counts[counter]++;
+					if (counter>nCounters-1)
+						nCounters = counter + 1;
+				}
+			}
+			IJ.setTool("multi-point");
+		}
+	}
+
+	public void displayCounts() {
+		rt = new ResultsTable();
+		for (int i=0; i<nCounters; i++) {
+			rt.setValue("Counter", i, i);
+			rt.setValue("Count", i, counts[i]);
+		}
+		rt.showRowNumbers(false);
+		rt.show(getCountsTitle());
+	}
+	
+	private String getCountsTitle() {
+		return "Counts_"+(imp!=null?imp.getTitle():"");
+	}
+	
+	public synchronized static String[] getCounterChoices() {
+		if (counterChoices==null) {
+			counterChoices = new String[MAX_COUNTERS];
+			counterChoices[0] = "Default";
+			for (int i=1; i<MAX_COUNTERS; i++)
+				counterChoices[i] = ""+i;
+		}
+		return counterChoices;
+	}
+	
+	private static Color getColor(int index) {
+		if (colors==null) {
+			colors = new Color[MAX_COUNTERS];
+			colors[0]=Color.yellow; colors[1]=Color.magenta; colors[2]=Color.cyan;
+			colors[3]=Color.orange; colors[4]=Color.green; colors[5]=Color.blue;
+			colors[6]=Color.white; colors[7]=Color.darkGray; colors[8]=Color.pink;
+			colors[9]=Color.lightGray;
+		}
+		if (colors[index]!=null)
+			return colors[index];
+		else {
+			Random ran = new Random();
+			float r = (float)ran.nextDouble();
+			float g = (float)ran.nextDouble();
+			float b = (float)ran.nextDouble();
+			Color c = new Color(r, g, b);
+			colors[index] = c;
+			return c;
+		}
 	}
 
 	/** @deprecated */
