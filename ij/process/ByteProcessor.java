@@ -937,8 +937,6 @@ public class ByteProcessor extends ImageProcessor {
 		double yFraction = y - ybase;
 		int offset = ybase * width + xbase;
 		int lowerLeft = pixels[offset]&255;
-		//if ((xbase>=(width-1))||(ybase>=(height-1)))
-		//	return lowerLeft;
 		int lowerRight = pixels[offset + 1]&255;
 		int upperRight = pixels[offset + width + 1]&255;
 		int upperLeft = pixels[offset + width]&255;
@@ -962,8 +960,8 @@ public class ByteProcessor extends ImageProcessor {
 		double xScale = (double)dstWidth/roiWidth;
 		double yScale = (double)dstHeight/roiHeight;
 		if (interpolationMethod!=NONE) {
-			dstCenterX += xScale/2.0;
-			dstCenterY += yScale/2.0;
+			dstCenterX += xScale/4.0;
+			dstCenterY += yScale/4.0;
 		}
 		ImageProcessor ip2 = createProcessor(dstWidth, dstHeight);
 		byte[] pixels2 = (byte[])ip2.getPixels();

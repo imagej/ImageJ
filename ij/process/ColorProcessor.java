@@ -945,8 +945,8 @@ public class ColorProcessor extends ImageProcessor {
 		double xlimit = width-1.0, xlimit2 = width-1.001;
 		double ylimit = height-1.0, ylimit2 = height-1.001;
 		if (interpolationMethod==BILINEAR) {
-			dstCenterX += xScale/2.0;
-			dstCenterY += yScale/2.0;
+			dstCenterX += xScale/4.0;
+			dstCenterY += yScale/4.0;
 		}
 		ImageProcessor ip2 = createProcessor(dstWidth, dstHeight);
 		int[] pixels2 = (int[])ip2.getPixels();
