@@ -1729,7 +1729,7 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Uses the current interpolation method (bilinear or bicubic)
 		to find the pixel value at real coordinates (x,y). */
 	public abstract double getInterpolatedPixel(double x, double y);
-
+	
 	/** Uses the current interpolation method to find the pixel value at real coordinates (x,y).
 		For RGB images, the argb values are packed in an int. For float images,
 		the value must be converted using Float.intBitsToFloat().  Returns zero
@@ -1804,19 +1804,6 @@ public abstract class ImageProcessor implements Cloneable {
 			z = -a*x*x*x + 5.0*a*x*x - 8.0*a*x + 4.0*a;
 		return z;
 	}	
-
-	/*
-		// a = 0.5
-	double cubic2(double x) {
-		if (x < 0) x = -x;
-		double z = 0;
-		if (x < 1)
-			z = 1.5*x*x*x + -2.5*x*x + 1.0;
-		else if (x < 2)
-			z = -0.5*x*x*x + 2.5*x*x - 4.0*x + 2.0;
-		return z;
-	}
-	*/	
 
 	private final double getInterpolatedEdgeValue(double x, double y) {
 		int xbase = (int)x;

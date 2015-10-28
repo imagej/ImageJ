@@ -863,8 +863,8 @@ public class ShortProcessor extends ImageProcessor {
 		double xScale = (double)dstWidth/roiWidth;
 		double yScale = (double)dstHeight/roiHeight;
 		if (interpolationMethod!=NONE) {
-			dstCenterX += xScale/4.0;
-			dstCenterY += yScale/4.0;
+			if (dstWidth!=width) dstCenterX+=xScale/4.0;
+			if (dstHeight!=height) dstCenterY+=yScale/4.0;
 		}
 		int inc = getProgressIncrement(dstWidth,dstHeight);
 		ImageProcessor ip2 = createProcessor(dstWidth, dstHeight);
