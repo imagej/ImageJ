@@ -1290,7 +1290,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		boolean multiPointMode = roi!=null && (roi instanceof PointRoi) && handle==-1
 			&& Toolbar.getToolId()==Toolbar.POINT && Toolbar.getMultiPointMode();
 		if (multiPointMode) {
-			((PointRoi)roi).addPoint(offScreenXD(sx), offScreenYD(sy));
+			((PointRoi)roi).addPoint(imp, offScreenXD(sx), offScreenYD(sy));
 			imp.setRoi(roi);
 			return;
 		}

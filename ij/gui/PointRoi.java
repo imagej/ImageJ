@@ -37,8 +37,10 @@ public class PointRoi extends PolygonRoi {
 	private int counter;
 	private int nCounters = 1;
 	private int[] counters;
+	private int[] positions;
 	private int[] counts = new int[MAX_COUNTERS];
 	private ResultsTable rt;
+	private long lastPointTime;
 	
 	static {
 		setDefaultType((int)Prefs.get(TYPE_KEY, HYBRID));
@@ -99,7 +101,7 @@ public class PointRoi extends PolygonRoi {
 				r = (int)(r/mag);
 			imp.draw(x-r, y-r, 2*r, 2*r);
 		}
-		incrementCounter();
+		incrementCounter(imp);
 		enlargeArrays(50);
 		if (Recorder.record && !Recorder.scriptMode()) 
 			Recorder.record("makePoint", x, y);
@@ -151,8 +153,13 @@ public class PointRoi extends PolygonRoi {
 			if (fontSize>9)
 				Java2.setAntialiasedText(g, true);
 		}
-		for (int i=0; i<nPoints; i++)
-			drawPoint(g, xp2[i], yp2[i], i+1);
+		int slice = imp!=null&&positions!=null&&imp.getStackSize()>1?imp.getCurrentSlice():0;
+		if (!Prefs.usePointPositions)
+			slice = 0;
+		for (int i=0; i<nPoints; i++) {
+			if (slice==0 || slice==positions[i])
+				drawPoint(g, xp2[i], yp2[i], i+1);
+		}
 		if (updateFullWindow) {
 			updateFullWindow = false;
 			imp.draw();
@@ -241,13 +248,13 @@ public class PointRoi extends PolygonRoi {
 	}
 	
 	/** Adds a point to this PointRoi. */
-	public void addPoint(double ox, double oy) {
+	public void addPoint(ImagePlus imp, double ox, double oy) {
 		if (nPoints==xpf.length)
 			enlargeArrays();
-		addPoint2(ox, oy);
+		addPoint2(imp, ox, oy);
 	}
 	
-	private void addPoint2(double ox, double oy) {
+	private void addPoint2(ImagePlus imp, double ox, double oy) {
 		double xbase = getXBase();
 		double ybase = getYBase();
 		xpf[nPoints] = (float)(ox-xbase);
@@ -255,30 +262,43 @@ public class PointRoi extends PolygonRoi {
 		xp2[nPoints] = (int)ox;
 		yp2[nPoints] = (int)oy;
 		nPoints++;
-		incrementCounter();
+		incrementCounter(imp);
+		lastPointTime = System.currentTimeMillis();
 	}
 
 	protected void deletePoint(int index) {
 		super.deletePoint(index);
 		if (index>=0 && index<=nPoints && counters!=null) {
 			counts[counters[index]]--;
-			for (int i=index; i<nPoints; i++)
+			for (int i=index; i<nPoints; i++) {
 				counters[i] = counters[i+1];
+				positions[i] = positions[i+1];
+			}
 			if (rt!=null && WindowManager.getFrame(getCountsTitle())!=null)
 				displayCounts();
 		}
 	}
 
-	private synchronized void incrementCounter() {
+	private synchronized void incrementCounter(ImagePlus imp) {
 		counts[counter]++;
-		if (counter!=0) {
-			if (counters==null)
+		boolean isStack = imp!=null && imp.getStackSize()>1;
+		if (counter!=0 || isStack) {
+			if (counters==null) {
 				counters = new int[nPoints*2];
+				positions = new int[nPoints*2];
+			}
 			counters[nPoints-1] = counter;
+			if (imp!=null)
+				positions[nPoints-1] = imp.getCurrentSlice();
+			//if (positions[nPoints-1]==0 || positions[nPoints-1]==1 || counters[nPoints-1]==0)
+			//	IJ.log("incrementCounter: "+nPoints+" "+" "+positions[nPoints-1]+" "+counters[nPoints-1]+" "+imp);
 			if (nPoints+1==counters.length) {
 				int[] temp = new int[counters.length*2];
 				System.arraycopy(counters, 0, temp, 0, counters.length);
 				counters = temp;
+				temp = new int[counters.length*2];
+				System.arraycopy(positions, 0, temp, 0, positions.length);
+				positions = temp;
 			}
 		}
 		if (rt!=null && WindowManager.getFrame(getCountsTitle())!=null)
@@ -289,6 +309,7 @@ public class PointRoi extends PolygonRoi {
 		for (int i=0; i<counts.length; i++)
 			counts[i] = 0;
 		counters = null;
+		positions = null;
 		PointToolOptions.update();
 	}
 	
@@ -479,8 +500,22 @@ public class PointRoi extends PolygonRoi {
 		}
 		rt.showRowNumbers(false);
 		rt.show(getCountsTitle());
+		if (IJ.debugMode) debug();
 	}
 	
+	private void debug() {
+		FloatPolygon p = getFloatPolygon();
+		ResultsTable rt = new ResultsTable();
+		for (int i=0; i<nPoints; i++) {
+			rt.setValue("Counter", i, counters[i]);
+			rt.setValue("Position", i, positions[i]);
+			rt.setValue("X", i, p.xpoints[i]);
+			rt.setValue("Y", i, p.ypoints[i]);
+		}
+		rt.showRowNumbers(false);
+		rt.show(getCountsTitle());
+	}
+
 	private String getCountsTitle() {
 		return "Counts_"+(imp!=null?imp.getTitle():"");
 	}
@@ -514,6 +549,29 @@ public class PointRoi extends PolygonRoi {
 			colors[index] = c;
 			return c;
 		}
+	}
+
+	/** Returns a point index if it has been at least one second since
+		the last point was added and the specified screen coordinates are	 
+		inside or near a point, otherwise returns -1. */
+	public int isHandle(int sx, int sy) {
+		if ((System.currentTimeMillis()-lastPointTime)<1000L)
+			return -1;
+		int size = HANDLE_SIZE+this.size;
+		int halfSize = size/2;
+		int handle = -1;
+		int sx2, sy2;
+		int slice = Prefs.usePointPositions&&positions!=null&&imp!=null&&imp.getStackSize()>1?imp.getCurrentSlice():0;
+		for (int i=0; i<nPoints; i++) {
+			if (slice!=0 && slice!=positions[i])
+				continue;
+			sx2 = xp2[i]-halfSize; sy2=yp2[i]-halfSize;
+			if (sx>=sx2 && sx<=sx2+size && sy>=sy2 && sy<=sy2+size) {
+				handle = i;
+				break;
+			}
+		}
+		return handle;
 	}
 
 	/** @deprecated */

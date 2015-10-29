@@ -65,6 +65,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		gd.setInsets(5, 20, 0);
 		gd.addCheckbox("Label points", !Prefs.noPointLabels);
 		if (multipointTool) {
+			gd.addCheckbox("Use stack positions", Prefs.usePointPositions);
 			gd.setInsets(15,0,5);
 			String[] choices =  PointRoi.getCounterChoices();
 			gd.addChoice("Counter:", choices, choices[getCounter()]);
@@ -115,6 +116,10 @@ public class PointToolOptions implements PlugIn, DialogListener {
 			redraw = true;
 		Prefs.noPointLabels = noPointLabels;
 		if (multipointTool) {
+			boolean usePointPositions = gd.getNextBoolean();
+			if (usePointPositions!=Prefs.usePointPositions)
+				redraw = true;
+			Prefs.usePointPositions = usePointPositions;
 			int counter = gd.getNextChoiceIndex();
 			if (counter!=getCounter()) {
 				setCounter(counter);
