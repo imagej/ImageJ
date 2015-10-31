@@ -185,7 +185,7 @@ public class ByteProcessor extends ImageProcessor {
 	/** Reset the image from snapshot.*/
 	public void reset() {
 		if (snapshotPixels!=null)
-        	System.arraycopy(snapshotPixels,0,pixels,0,width*height);
+			System.arraycopy(snapshotPixels,0,pixels,0,width*height);
 	}
 	
 	/** Swaps the pixel and snapshot (undo) arrays. */

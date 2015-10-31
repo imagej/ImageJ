@@ -127,48 +127,44 @@ public class PointToolOptions implements PlugIn, DialogListener {
 			}
 		}
 		if (redraw) {
-			ImagePlus imp = WindowManager.getCurrentImage();
-			if (imp!=null) {
-				Roi roi = imp.getRoi();
-				if (roi instanceof PointRoi)
-					((PointRoi)roi).setShowLabels(!Prefs.noPointLabels);
-				imp.draw();
+     		PointRoi roi = getPointRoi();
+     		if (roi!=null) {
+				roi.setShowLabels(!Prefs.noPointLabels);
+				ImagePlus imp = roi.getImage();
+				if (imp!=null) imp.draw();
 			}
 		}
 		return true;
     }
     
     private static int getCounter() {
-    	int counter = 0;
-		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null) {
-			Roi roi = imp.getRoi();
-			if (roi instanceof PointRoi)
-				counter = ((PointRoi)roi).getCounter();
-		}
-		return counter;
+     	PointRoi roi = getPointRoi();
+     	return roi!=null?roi.getCounter():0;
     }
     
     private static void setCounter(int counter) {
-		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null) {
-			Roi roi = imp.getRoi();
-			if (roi instanceof PointRoi)
-				((PointRoi)roi).setCounter(counter);
-		}
+    	PointRoi roi = getPointRoi();
+		if (roi!=null)
+			roi.setCounter(counter);
+		PointRoi.setDefaultCounter(counter);
+    }
+    
+    private static PointRoi getPointRoi() {
+    	ImagePlus imp = WindowManager.getCurrentImage();
+    	if (imp==null)
+    		return null;
+		Roi roi = imp.getRoi();
+		if (roi==null)
+			return null;
+		if (roi instanceof PointRoi)
+			return (PointRoi)roi;
+		else
+			return null;
     }
 
     private static int getCount(int counter) {
-    	int count = 0;
-    	ImagePlus imp = WindowManager.getCurrentImage();
-    	if (imp!=null) {
-    		Roi roi = imp.getRoi();
-    		if (roi==null)
-    			return 0;
-    		if (roi!=null && (roi instanceof PointRoi))
-				count = ((PointRoi)roi).getCount(counter);
-    	}
-    	return count;
+     	PointRoi roi = getPointRoi();
+     	return roi!=null?roi.getCount(counter):0;
     }
     
     public static void update() {
@@ -176,8 +172,9 @@ public class PointToolOptions implements PlugIn, DialogListener {
 			Vector choices = gd.getChoices();
 			Choice choice = (Choice)choices.elementAt(3);
 			int counter = getCounter();
+			int count = getCount(counter);
 			choice.select(counter);
-			((Label)gd.getMessage()).setText(""+getCount(counter));
+			((Label)gd.getMessage()).setText(""+count);
 		}
     }
     			

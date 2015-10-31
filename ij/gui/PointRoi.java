@@ -34,10 +34,11 @@ public class PointRoi extends PolygonRoi {
 	private boolean showLabels;
 	private int type = HYBRID;
 	private int size = SMALL;
+	private static int defaultCounter;
 	private int counter;
 	private int nCounters = 1;
-	private int[] counters;
-	private int[] positions;
+	private short[] counters;
+	private short[] positions;
 	private int[] counts = new int[MAX_COUNTERS];
 	private ResultsTable rt;
 	private long lastPointTime;
@@ -101,6 +102,7 @@ public class PointRoi extends PolygonRoi {
 				r = (int)(r/mag);
 			imp.draw(x-r, y-r, 2*r, 2*r);
 		}
+		setCounter(defaultCounter);
 		incrementCounter(imp);
 		enlargeArrays(50);
 		if (Recorder.record && !Recorder.scriptMode()) 
@@ -284,19 +286,19 @@ public class PointRoi extends PolygonRoi {
 		boolean isStack = imp!=null && imp.getStackSize()>1;
 		if (counter!=0 || isStack) {
 			if (counters==null) {
-				counters = new int[nPoints*2];
-				positions = new int[nPoints*2];
+				counters = new short[nPoints*2];
+				positions = new short[nPoints*2];
 			}
-			counters[nPoints-1] = counter;
+			counters[nPoints-1] = (short)counter;
 			if (imp!=null)
-				positions[nPoints-1] = imp.getCurrentSlice();
+				positions[nPoints-1] = (short)imp.getCurrentSlice();
 			//if (positions[nPoints-1]==0 || positions[nPoints-1]==1 || counters[nPoints-1]==0)
 			//	IJ.log("incrementCounter: "+nPoints+" "+" "+positions[nPoints-1]+" "+counters[nPoints-1]+" "+imp);
 			if (nPoints+1==counters.length) {
-				int[] temp = new int[counters.length*2];
+				short[] temp = new short[counters.length*2];
 				System.arraycopy(counters, 0, temp, 0, counters.length);
 				counters = temp;
-				temp = new int[counters.length*2];
+				temp = new short[counters.length*2];
 				System.arraycopy(positions, 0, temp, 0, positions.length);
 				positions = temp;
 			}
@@ -465,23 +467,40 @@ public class PointRoi extends PolygonRoi {
 	}
 
 	public int getCounter() {
-		return this.counter;
+		return counter;
+	}
+
+	public static void setDefaultCounter(int counter) {
+		defaultCounter = counter;
 	}
 
 	public int getCount(int counter) {
-		return counts[counter];
+		if (counter==0 && counters==null)
+			return nPoints;
+		else
+			return counts[counter];
 	}
 	
 	public int[] getCounters() {
-		return counters;
+		if (counters==null)
+			return null;
+		int[] temp = new int[nPoints];
+		for (int i=0; i<nPoints; i++) {
+			temp[i] = (counters[i]&0xff) + ((positions[i]&0xffff)<<8);
+		}
+		return temp;
 	}
 
 	public void setCounters(int[] counters) {
 		if (counters!=null) {
-			this.counters = new int[counters.length*2];
-			for (int i=0; i<counters.length; i++) {
-				int counter = counters[i]&0xffff;
-				this.counters[i] = counter;
+			int n = counters.length;
+			this.counters = new short[n*2];
+			this.positions = new short[n*2];
+			for (int i=0; i<n; i++) {
+				int counter = counters[i]&0xff;
+				int position = (counters[i]>>8)&0xffff;
+				this.counters[i] = (short)counter;
+				this.positions[i] = (short)position;
 				if (counter<counts.length) {
 					counts[counter]++;
 					if (counter>nCounters-1)
