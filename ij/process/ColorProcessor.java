@@ -202,9 +202,8 @@ public class ColorProcessor extends ImageProcessor {
 
 
 	public void reset() {
-		if (snapshotPixels==null)
-			return;
-		System.arraycopy(snapshotPixels, 0, pixels, 0, width*height);
+		if (snapshotPixels!=null)
+			System.arraycopy(snapshotPixels, 0, pixels, 0, width*height);
 	}
 
 

@@ -478,8 +478,14 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	/** Restore image outside non-rectangular roi. */
   	void doMasking(ImagePlus imp, ImageProcessor ip) {
 		ImageProcessor mask = imp.getMask();
-		if (mask!=null)
+		if (mask!=null) {
+			Rectangle r = ip.getRoi();
+			if (mask.getWidth()!=r.width||mask.getHeight()!=r.height) {
+				ip.setRoi(imp.getRoi());
+				mask = ip.getMask();
+			}
 			ip.reset(mask);
+		}
 	}
 
 	void adjustMin(ImagePlus imp, ImageProcessor ip, double minvalue) {
@@ -657,13 +663,13 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 				imp.setSlice(current);
 				option = "stack";
 			} else {
-				if (ip.getMask()!=null) ip.snapshot();
+				ip.snapshot();
 				ip.applyTable(table);
 				ip.reset(ip.getMask());
 				option = "slice";
 			}
 		} else {
-			if (ip.getMask()!=null) ip.snapshot();
+			ip.snapshot();
 			ip.applyTable(table);
 			ip.reset(ip.getMask());
 		}

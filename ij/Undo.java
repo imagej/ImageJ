@@ -37,7 +37,7 @@ public class Undo {
 			reset();
 			return;
 		}
-		//IJ.log(imp.getTitle() + ": set up undo (" + what + ")");
+		if (IJ.debugMode) IJ.log("Undo.setup: "+what+" "+imp);
 		if (what==FILTER && whatToUndo==COMPOUND_FILTER)
 				return;
 		if (what==COMPOUND_FILTER_DONE) {
@@ -91,13 +91,13 @@ public class Undo {
 		calCopy = null;
 		roiCopy = null;
 		lutCopy = null;
-		//IJ.log("Undo: reset");
+		if (IJ.debugMode) IJ.log("Undo.reset");
 	}
 	
 
 	public static void undo() {
 		ImagePlus imp = WindowManager.getCurrentImage();
-		//IJ.log(imp.getTitle() + ": undo (" + whatToUndo + ")  "+(imageID!=imp.getID()));
+		if (IJ.debugMode) IJ.log("Undo.undo: "+ whatToUndo+" "+imp+" "+imageID);
 		if (imp==null || imageID!=imp.getID()) {
 			if (imp!=null && !IJ.macroRunning()) { // does image still have an undo buffer?
 				ImageProcessor ip2 = imp.getProcessor();

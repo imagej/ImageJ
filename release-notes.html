@@ -5,11 +5,18 @@
 </head>
 <body>
 
-<li> <u>1.50d 27 October 2015</u>
+<li> <u>1.50e 30 October 2015</u>
 <ul>
+<li> Added a "Show all" checkbox to the multi-point tool options dialog box.
 <li> Thanks to Jan Eglinger, fixed a bug that caused <i>Image&gt;Adjust&gt;Size</i>, 
 when using  bilinear or bicubic interpolation, to shift positions of pixels by 1.0 in X,
 0.5 in Y and 0.5 in Z.
+<li> Thanks to Michael Schmid, fixed a bug that caused the
+<i>Brightness/Contrast</i> adjuster's "Apply" function to not be
+undoable for full images or rectangular selections with 8-bit and 16-bit images.
+<li> Thanks to Michael Schmid, fixed a bug that caused the
+<i>Brightness/Contrast</i> adjuster to hang with RGB images
+when there was a non-rectangular selection extending beyond image boundary.
 
 </ul>
 

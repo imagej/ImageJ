@@ -54,7 +54,7 @@ public class Prefs {
 
 	private static final int USE_SYSTEM_PROXIES=1<<0, USE_FILE_CHOOSER=1<<1,
 		SUBPIXEL_RESOLUTION=1<<2, ENHANCED_LINE_TOOL=1<<3, SKIP_RAW_DIALOG=1<<4,
-		REVERSE_NEXT_PREVIOUS_ORDER=1<<5, AUTO_RUN_EXAMPLES=1<<6, USE_POINT_POSITIONS=1<<7;
+		REVERSE_NEXT_PREVIOUS_ORDER=1<<5, AUTO_RUN_EXAMPLES=1<<6, SHOW_ALL_POINTS=1<<7;
 	public static final String OPTIONS2 = "prefs.options2";
     
 	/** file.separator system property */
@@ -155,8 +155,8 @@ public class Prefs {
 	public static boolean reverseNextPreviousOrder;
 	/** Automatically run examples in Help/Examples menu. */
 	public static boolean autoRunExamples = true;
-	/** Use stack positions when displaying points. */
-	public static boolean usePointPositions;
+	/** Ignore stack positions when displaying points. */
+	public static boolean showAllPoints;
 	
 
 	static Properties ijPrefs = new Properties();
@@ -466,7 +466,7 @@ public class Prefs {
 		skipRawDialog = (options2&SKIP_RAW_DIALOG)!=0;
 		reverseNextPreviousOrder = (options2&REVERSE_NEXT_PREVIOUS_ORDER)!=0;
 		autoRunExamples = (options2&AUTO_RUN_EXAMPLES)!=0;
-		usePointPositions = (options2&USE_POINT_POSITIONS)!=0;
+		showAllPoints = (options2&SHOW_ALL_POINTS)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -492,7 +492,7 @@ public class Prefs {
 			+ (useFileChooser?USE_FILE_CHOOSER:0) + (subPixelResolution?SUBPIXEL_RESOLUTION:0)
 			+ (enhancedLineTool?ENHANCED_LINE_TOOL:0) + (skipRawDialog?SKIP_RAW_DIALOG:0)
 			+ (reverseNextPreviousOrder?REVERSE_NEXT_PREVIOUS_ORDER:0)
-			+ (autoRunExamples?AUTO_RUN_EXAMPLES:0) + (usePointPositions?USE_POINT_POSITIONS:0);
+			+ (autoRunExamples?AUTO_RUN_EXAMPLES:0) + (showAllPoints?SHOW_ALL_POINTS:0);
 		prefs.put(OPTIONS2, Integer.toString(options2));
 	}
 

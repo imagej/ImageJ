@@ -154,7 +154,7 @@ public class PointRoi extends PolygonRoi {
 				Java2.setAntialiasedText(g, true);
 		}
 		int slice = imp!=null&&positions!=null&&imp.getStackSize()>1?imp.getCurrentSlice():0;
-		if (!Prefs.usePointPositions)
+		if (Prefs.showAllPoints)
 			slice = 0;
 		for (int i=0; i<nPoints; i++) {
 			if (slice==0 || slice==positions[i])
@@ -561,7 +561,7 @@ public class PointRoi extends PolygonRoi {
 		int halfSize = size/2;
 		int handle = -1;
 		int sx2, sy2;
-		int slice = Prefs.usePointPositions&&positions!=null&&imp!=null&&imp.getStackSize()>1?imp.getCurrentSlice():0;
+		int slice = !Prefs.showAllPoints&&positions!=null&&imp!=null&&imp.getStackSize()>1?imp.getCurrentSlice():0;
 		for (int i=0; i<nPoints; i++) {
 			if (slice!=0 && slice!=positions[i])
 				continue;
