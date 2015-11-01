@@ -291,7 +291,7 @@ public class PointRoi extends PolygonRoi {
 			}
 			counters[nPoints-1] = (short)counter;
 			if (imp!=null)
-				positions[nPoints-1] = (short)imp.getCurrentSlice();
+					positions[nPoints-1] = imp.getStackSize()>1?(short)imp.getCurrentSlice():0;
 			//if (positions[nPoints-1]==0 || positions[nPoints-1]==1 || counters[nPoints-1]==0)
 			//	IJ.log("incrementCounter: "+nPoints+" "+" "+positions[nPoints-1]+" "+counters[nPoints-1]+" "+imp);
 			if (nPoints+1==counters.length) {
@@ -513,10 +513,38 @@ public class PointRoi extends PolygonRoi {
 
 	public void displayCounts() {
 		rt = new ResultsTable();
-		for (int i=0; i<nCounters; i++) {
-			rt.setValue("Counter", i, i);
-			rt.setValue("Count", i, counts[i]);
+		int firstSlice = Integer.MAX_VALUE;
+		for (int i=0; i<nPoints; i++) {
+			if (positions[i]>0 && positions[i]<firstSlice)
+				firstSlice = positions[i];
 		}
+		if (firstSlice==Integer.MAX_VALUE)
+			firstSlice = 0;
+		int lastSlice = 0;
+		if (firstSlice>0) {
+			for (int i=0; i<nPoints; i++) {
+				if (positions[i]>lastSlice)
+					lastSlice = positions[i];
+			}
+		}
+		int row = 0;
+		if (firstSlice>0) {
+			for (int slice=firstSlice; slice<=lastSlice; slice++) {
+				rt.setValue("Slice", row, slice);
+				for (int counter=0; counter<nCounters; counter++) {
+					int count = 0;
+					for (int i=0; i<nPoints; i++) {
+						if (slice==positions[i] && counter==counters[i])
+							count++;
+					}
+					rt.setValue("Ctr "+counter, row, count);
+				}
+				row++;
+			}
+		}
+		rt.setValue("Slice", row, "Total");
+		for (int i=0; i<nCounters; i++)
+			rt.setValue("Ctr "+i, row, counts[i]);
 		rt.showRowNumbers(false);
 		rt.show(getCountsTitle());
 		if (IJ.debugMode) debug();
