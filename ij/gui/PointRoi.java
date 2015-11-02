@@ -512,6 +512,28 @@ public class PointRoi extends PolygonRoi {
 	}
 
 	public void displayCounts() {
+		ImagePlus imp = getImage();
+		boolean isHyperstack = false;
+		int nChannels = 1;
+		int nSlices = 1;
+		int nFrames = 1;
+		String firstColumnHdr = "Slice";
+		if (imp!=null && (imp.isComposite()||imp.isHyperStack())) {
+			isHyperstack = true;
+			nChannels = imp.getNChannels();
+			nSlices = imp.getNSlices();
+			nFrames = imp.getNFrames();
+			int nDimensions = 2;
+			if (nChannels>1) nDimensions++;
+			if (nSlices>1) nDimensions++;
+			if (nFrames>1) nDimensions++;
+			if (nDimensions==3) {
+				isHyperstack = false;
+				if (nChannels>1)
+					firstColumnHdr = "Channel";
+			} else
+				firstColumnHdr = "Image";
+		}
 		rt = new ResultsTable();
 		int firstSlice = Integer.MAX_VALUE;
 		for (int i=0; i<nPoints; i++) {
@@ -530,7 +552,16 @@ public class PointRoi extends PolygonRoi {
 		int row = 0;
 		if (firstSlice>0) {
 			for (int slice=firstSlice; slice<=lastSlice; slice++) {
-				rt.setValue("Slice", row, slice);
+				rt.setValue(firstColumnHdr, row, slice);
+				if (isHyperstack) {
+					int[] position = imp.convertIndexToPosition(slice);
+					if (nChannels>1)
+						rt.setValue("Channel", row, position[0]);
+					if (nSlices>1)
+						rt.setValue("Slice", row, position[1]);
+					if (nFrames>1)
+						rt.setValue("Frame", row, position[2]);
+				}
 				for (int counter=0; counter<nCounters; counter++) {
 					int count = 0;
 					for (int i=0; i<nPoints; i++) {
@@ -542,7 +573,7 @@ public class PointRoi extends PolygonRoi {
 				row++;
 			}
 		}
-		rt.setValue("Slice", row, "Total");
+		rt.setValue(firstColumnHdr, row, "Total");
 		for (int i=0; i<nCounters; i++)
 			rt.setValue("Ctr "+i, row, counts[i]);
 		rt.showRowNumbers(false);
@@ -570,8 +601,7 @@ public class PointRoi extends PolygonRoi {
 	public synchronized static String[] getCounterChoices() {
 		if (counterChoices==null) {
 			counterChoices = new String[MAX_COUNTERS];
-			counterChoices[0] = "Default";
-			for (int i=1; i<MAX_COUNTERS; i++)
+			for (int i=0; i<MAX_COUNTERS; i++)
 				counterChoices[i] = ""+i;
 		}
 		return counterChoices;
