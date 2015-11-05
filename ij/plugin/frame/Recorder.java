@@ -284,8 +284,16 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		recordCall(javaMode()?className+" "+call:call);
 	}
 
+	public static void recordRoi(Roi roi) {
+		if (roi==null)
+			return;
+		Polygon polygon = roi.getPolygon();
+		recordRoi(polygon, roi.getType());
+	}
+
 	public static void recordRoi(Polygon p, int type) {
-		if (textArea==null) return;
+		if (textArea==null)
+			return;
 		if (scriptMode)
 			{recordScriptRoi(p,type); return;}
 		if (type==Roi.ANGLE||type==Roi.POINT) {
@@ -299,7 +307,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			String typeStr= type==Roi.ANGLE?"angle":"point";
 			textArea.append("makeSelection(\""+typeStr+"\","+xarr+","+yarr+");\n");
 		} else {
-			String method = type==Roi.POLYGON?"makePolygon":"makeLine";
+			String method = type>=Roi.LINE && type<=Roi.FREELINE?"makeLine":"makePolygon";
 			StringBuffer args = new StringBuffer();
 			for (int i=0; i<p.npoints; i++) {
 				args.append(p.xpoints[i]+",");
