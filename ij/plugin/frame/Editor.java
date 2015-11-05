@@ -1268,15 +1268,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			IJ.log("debug: "+interp.getLineNumber()+"  "+mode+"  "+interp);
 		if (mode==RUN_TO_COMPLETION)
 			return 0;
-		if (!isVisible()) { // abort macro if user closes window
-			interp.abortMacro();
-			return 0;
-		}
-		toFront();
 		int n = interp.getLineNumber();
-		if (n==previousLine)
-			{previousLine=0; return 0;}
-		previousLine = n;
 		if (mode==RUN_TO_CARET) {
 			if (n==runToLine) {
 				mode = STEP;
@@ -1284,6 +1276,19 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			} else
 				return 0;
 		}
+		if (!isVisible()) { // abort macro if user closes window
+			interp.abortMacro();
+			return 0;
+		}
+		if (n==previousLine) {
+			previousLine=0;
+			return 0;
+		}
+		Window win = WindowManager.getActiveWindow();
+		if (win!=this)
+			IJ.wait(50);
+		toFront();
+		previousLine = n;
 		String text = ta.getText();
 		if (IJ.isWindows())
 			text = text.replaceAll("\r\n", "\n");
