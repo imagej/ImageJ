@@ -2263,7 +2263,7 @@ public abstract class ImageProcessor implements Cloneable {
 		threshold(getAutoThreshold());
 	}
 
-	/**	Returns a pixel value (threshold) that can be used to divide the image into objects 
+	/** Returns a pixel value (threshold) that can be used to divide the image into objects 
 		and background. It does this by taking a test threshold and computing the average 
 		of the pixels at or below the threshold and pixels above. It then computes the average
 		of those two, increments the threshold, and repeats the process. Incrementing stops 

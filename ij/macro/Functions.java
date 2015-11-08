@@ -2016,6 +2016,9 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("getValues")) {
 			getPlotValues();
 			return;
+		} else if (name.equals("showValues")) {
+			showPlotValues();
+			return;
 		}
 		// the following commands work with a plot under construction or an image with a plot created previously
 		Plot currentPlot = plot;
@@ -2155,6 +2158,19 @@ public class Functions implements MacroConstants, Measurements {
 			ya[i] = new Variable(yvalues[i]);
 		xvar.setArray(xa);
 		yvar.setArray(ya);
+	}
+
+	void showPlotValues() {
+		interp.getParens();
+		ImagePlus imp = getImage();
+		ImageWindow win = imp.getWindow();
+		if (win==null || !(win instanceof PlotWindow)) {
+			interp.error("No plot window");
+			return;
+		}
+		PlotWindow pw = (PlotWindow)win;
+		ResultsTable rt = pw.getResultsTable();
+		rt.show("Results");
 	}
 
 	void newPlot() {

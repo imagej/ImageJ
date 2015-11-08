@@ -180,7 +180,7 @@ public class PointRoi extends PolygonRoi {
 			else
 				color = Color.cyan;
 		}
-		if (counters!=null)
+		if (nCounters>1 && counters!=null)
 			color = getColor(counters[n-1]);
 		if (type==HYBRID || type==CROSSHAIR) {
 			if (type==HYBRID)
@@ -213,7 +213,7 @@ public class PointRoi extends PolygonRoi {
 				g.fillRect(x-size2, y-size2, size, size);
 		}
 		if (showLabels) {
-			if (nPoints>1 && counters==null) {
+			if (nPoints>1 && nCounters==1) {
 				if (!colorSet)
 					g.setColor(color);
 				g.drawString(""+n, x+4, y+fontSize+2);
@@ -510,7 +510,14 @@ public class PointRoi extends PolygonRoi {
 			IJ.setTool("multi-point");
 		}
 	}
-
+	
+	public int getPointPosition(int index) {
+		if (positions!=null && index<nPoints)
+			return positions[index];
+		else
+			return 0;
+	}
+	
 	public void displayCounts() {
 		ImagePlus imp = getImage();
 		boolean isHyperstack = false;

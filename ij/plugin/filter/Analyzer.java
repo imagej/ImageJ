@@ -355,7 +355,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 	
 	void measurePoint(Roi roi) {
 		if (rt.size()>0) {
-			if (!IJ.isResultsWindow()) reset();
+			if (!IJ.isResultsWindow())
+				reset();
 			int index = rt.getColumnIndex("X");
 			if (index<0 || !rt.columnExists(index)) {
 				clearSummary();
@@ -365,11 +366,23 @@ public class Analyzer implements PlugInFilter, Measurements {
 		FloatPolygon p = roi.getFloatPolygon();
 		ImagePlus imp2 = isRedirectImage()?getRedirectImageOrStack(imp):null;
 		if (imp2==null) imp2 = imp;
+		ImageStack stack = null;
+		if (imp2.getStackSize()>1)
+			stack = imp2.getStack();
 		for (int i=0; i<p.npoints; i++) {
-			ImageProcessor ip = imp2.getProcessor();
+			int position = 0;
+			if (roi instanceof PointRoi)
+				position = ((PointRoi)roi).getPointPosition(i);
+			ImageProcessor ip = null;
+			if (stack!=null && position>0 && position<=stack.size())
+				ip = stack.getProcessor(position);
+			else
+				ip = imp2.getProcessor();
 			ip.setRoi((int)p.xpoints[i], (int)p.ypoints[i], 1, 1);
 			ImageStatistics stats = ImageStatistics.getStatistics(ip, measurements, imp2.getCalibration());
-			saveResults(stats, new PointRoi(p.xpoints[i], p.ypoints[i]));
+			PointRoi point = new PointRoi(p.xpoints[i], p.ypoints[i]);
+			point.setPosition(position);
+			saveResults(stats, point);
 			if (i!=p.npoints-1) displayResults();
 		}
 	}
@@ -708,15 +721,28 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		rt.addValue("X", cal.getX(x));
 		rt.addValue("Y", cal.getY(y, imp.getHeight()));
+		int position = roi.getPosition();
 		if (imp.isHyperStack() || imp.isComposite()) {
+			int channel = imp.getChannel();
+			int slice = imp.getSlice();
+			int frame = imp.getFrame();
+			if (position>0) {
+				int[] pos = imp.convertIndexToPosition(position);
+				channel = pos[0];
+				slice = pos[1];
+				frame = pos[2];
+			}
 			if (imp.getNChannels()>1)
-				rt.addValue("Ch", imp.getChannel());
+				rt.addValue("Ch", channel);
 			if (imp.getNSlices()>1)
-				rt.addValue("Slice", imp.getSlice());
+				rt.addValue("Slice", slice);
 			if (imp.getNFrames()>1)
-				rt.addValue("Frame", imp.getFrame());
-		} else if (imp.getStackSize()>1)
-			rt.addValue("Slice", cal.getZ(imp.getCurrentSlice()));
+				rt.addValue("Frame", frame);
+		} else if (imp.getStackSize()>1) {
+			if (position==0)
+				position = imp.getCurrentSlice();
+			rt.addValue("Slice", position);
+		}
 		if (imp.getProperty("FHT")!=null) {
 			double center = imp.getWidth()/2.0;
 			y = imp.getHeight()-y-1;
@@ -728,8 +754,6 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addValue("R", (imp.getWidth()/r)*cal.pixelWidth);
 			rt.addValue("Theta", theta);
 		}
-		//if ((measurements&MEAN)==0)
-		//	rt.addValue("Mean", value);
 	}
 
 	String getFileName() {
