@@ -173,6 +173,7 @@ public class FileOpenerTest {
 		info = new FileInfo();
 		info.fileName = "head8bit.tif";
 		info.fileType = FileInfo.RGB48_PLANAR;
+		info.samplesPerPixel = 3;
 		info.height = 256;
 		info.width = 38;
 		info.directory = DataConstants.DATA_DIR;

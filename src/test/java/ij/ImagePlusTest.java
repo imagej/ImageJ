@@ -2873,7 +2873,7 @@ public class ImagePlusTest {
 		ip.setCalibration(cal);
 		ip.setProperty("FHT","ForThisCodeAnythingWillDo");
 		str = ip.getLocationAsString(220, 150);
-		assertEquals("r=0.21 OrcNoses/c (265), theta= 325.29",str.substring(0, str.length()-1));  // ignore degree symbol - hudson dislikes
+		assertEquals("r=0.21 OrcNoses/c (265), theta= 325.47",str.substring(0, str.length()-1));  // ignore degree symbol - hudson dislikes
 
 		// Test alt key down cases
 		IJ.setKeyDown(KeyEvent.VK_ALT);
