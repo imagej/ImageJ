@@ -24,6 +24,8 @@ undoable for full images or rectangular selections with 8-bit and 16-bit images.
 when there was a non-rectangular selection extending beyond image boundary.
 <li> Thanks to Bob Hamilton, fixed bugs that caused the <i>Run to Insertion Point</e>
 macro debugger command to fail and the debugger to sometimes behave erratically.
+<li> Thanks to David Gault, fixed a potential memory leak by adding a close()
+method to the CompositeImage class.
 <li> Thanks to Saibal Mitra, fixed a v1.50d regression that caused the
 <i>Process&gt;Math&gt;Macro</i> command to not work correctly with 32-bit images.
 <li> Thanks to Michael Schmid, fixed a v1.49 regression that caused NaN values to

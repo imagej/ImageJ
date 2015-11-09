@@ -620,6 +620,32 @@ public class CompositeImage extends ImagePlus {
 		return customLuts && mode!=GRAYSCALE;
 	}
 	
+	public void close() {
+		super.close();
+		rgbPixels = null;
+		imageSource = null;
+		awtImage = null;
+		rgbRaster = null;
+		rgbSampleModel = null;
+		rgbImage = null;
+		rgbCM = null;
+		if (cip!=null) {
+			for (int i=0; i<cip.length; i++)
+				cip[i] = null;
+			cip = null;
+		}
+		if (lut!=null) {
+			for (int i=0; i<lut.length; i++)
+				lut[i] = null;
+			lut = null;
+		}
+		if (channelLuts!=null) {
+			for (int i = 0; i < channelLuts.length; i++)
+				channelLuts[i] = null;
+			channelLuts = null;
+		}
+	}
+
 	/** Deprecated */
 	public synchronized void setChannelsUpdated() {
 		if (cip!=null) {
