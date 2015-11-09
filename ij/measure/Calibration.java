@@ -80,7 +80,7 @@ public class Calibration implements Cloneable {
 
 	/** Constructs a new Calibration object using the default values. */ 
 	public Calibration(ImagePlus imp) {
-		if (imp!=null) {
+		if (imp!=null && imp.getProcessor()!=null) {
 			bitDepth = imp.getBitDepth();
 			invertedLut = imp.isInvertedLut();
 		}

@@ -648,6 +648,7 @@ public class ResultsTable implements Cloneable {
 	/** Sets the decimal places (digits to the right of decimal point)
 		that are used when this table is displayed. */
 	public synchronized void setPrecision(int precision) {
+		if (precision>9) precision=9;
 		this.precision = (short)precision;
 		if (this==Analyzer.getResultsTable()) {
 			for (int i=0; i<decimalPlaces.length; i++) {
