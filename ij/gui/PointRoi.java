@@ -267,6 +267,12 @@ public class PointRoi extends PolygonRoi {
 		incrementCounter(imp);
 		lastPointTime = System.currentTimeMillis();
 	}
+	
+	/** @deprecated */
+	public PointRoi addPoint(double x, double y) {
+		addPoint(null, x, y);
+		return this;
+	}
 
 	protected void deletePoint(int index) {
 		super.deletePoint(index);
