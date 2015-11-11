@@ -171,10 +171,12 @@ public class PointToolOptions implements PlugIn, DialogListener {
     public static void update() {
     	if (gd!=null && gd.isShowing()) {
 			Vector choices = gd.getChoices();
-			Choice choice = (Choice)choices.elementAt(3);
+			if (choices==null || choices.size()<4)
+				return;
+			Choice counterChoice = (Choice)choices.elementAt(3);
 			int counter = getCounter();
 			int count = getCount(counter);
-			choice.select(counter);
+			counterChoice.select(counter);
 			((Label)gd.getMessage()).setText(""+count);
 		}
     }

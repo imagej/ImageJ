@@ -640,7 +640,7 @@ public class CompositeImage extends ImagePlus {
 			lut = null;
 		}
 		if (channelLuts!=null) {
-			for (int i = 0; i < channelLuts.length; i++)
+			for (int i=0; i<channelLuts.length; i++)
 				channelLuts[i] = null;
 			channelLuts = null;
 		}

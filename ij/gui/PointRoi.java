@@ -102,7 +102,7 @@ public class PointRoi extends PolygonRoi {
 				r = (int)(r/mag);
 			imp.draw(x-r, y-r, 2*r, 2*r);
 		}
-		setCounter(defaultCounter);
+		setCounter(Toolbar.getMultiPointMode()?defaultCounter:0);
 		incrementCounter(imp);
 		enlargeArrays(50);
 		if (Recorder.record && !Recorder.scriptMode()) 
@@ -147,8 +147,6 @@ public class PointRoi extends PolygonRoi {
 		if (showLabels && nPoints>1) {
 			fontSize = 8;
 			fontSize += convertSizeToIndex(size);
-			if (mag>1.0)
-				fontSize = (int)(((mag-1.0)/3.0+1.0)*9.0);
 			if (fontSize>18) fontSize = 18;
 			font = new Font("SansSerif", Font.PLAIN, fontSize);
 			g.setFont(font);
@@ -212,8 +210,8 @@ public class PointRoi extends PolygonRoi {
 			else
 				g.fillRect(x-size2, y-size2, size, size);
 		}
-		if (showLabels) {
-			if (nPoints>1 && nCounters==1) {
+		if (showLabels && nPoints>1) {
+			if (nCounters==1) {
 				if (!colorSet)
 					g.setColor(color);
 				g.drawString(""+n, x+4, y+fontSize+2);
@@ -268,9 +266,9 @@ public class PointRoi extends PolygonRoi {
 		lastPointTime = System.currentTimeMillis();
 	}
 	
-	/** @deprecated */
+	/** Adds a point to this PointRoi. */
 	public PointRoi addPoint(double x, double y) {
-		addPoint(null, x, y);
+		addPoint(getImage(), x, y);
 		return this;
 	}
 
@@ -526,64 +524,66 @@ public class PointRoi extends PolygonRoi {
 	
 	public void displayCounts() {
 		ImagePlus imp = getImage();
-		boolean isHyperstack = false;
-		int nChannels = 1;
-		int nSlices = 1;
-		int nFrames = 1;
 		String firstColumnHdr = "Slice";
-		if (imp!=null && (imp.isComposite()||imp.isHyperStack())) {
-			isHyperstack = true;
-			nChannels = imp.getNChannels();
-			nSlices = imp.getNSlices();
-			nFrames = imp.getNFrames();
-			int nDimensions = 2;
-			if (nChannels>1) nDimensions++;
-			if (nSlices>1) nDimensions++;
-			if (nFrames>1) nDimensions++;
-			if (nDimensions==3) {
-				isHyperstack = false;
-				if (nChannels>1)
-					firstColumnHdr = "Channel";
-			} else
-				firstColumnHdr = "Image";
-		}
 		rt = new ResultsTable();
-		int firstSlice = Integer.MAX_VALUE;
-		for (int i=0; i<nPoints; i++) {
-			if (positions[i]>0 && positions[i]<firstSlice)
-				firstSlice = positions[i];
-		}
-		if (firstSlice==Integer.MAX_VALUE)
-			firstSlice = 0;
-		int lastSlice = 0;
-		if (firstSlice>0) {
-			for (int i=0; i<nPoints; i++) {
-				if (positions[i]>lastSlice)
-					lastSlice = positions[i];
-			}
-		}
 		int row = 0;
-		if (firstSlice>0) {
-			for (int slice=firstSlice; slice<=lastSlice; slice++) {
-				rt.setValue(firstColumnHdr, row, slice);
-				if (isHyperstack) {
-					int[] position = imp.convertIndexToPosition(slice);
+		if (imp!=null && imp.getStackSize()>1 && positions!=null) {
+			int nChannels = 1;
+			int nSlices = 1;
+			int nFrames = 1;
+			boolean isHyperstack = false;
+			if (imp.isComposite() || imp.isHyperStack()) {
+				isHyperstack = true;
+				nChannels = imp.getNChannels();
+				nSlices = imp.getNSlices();
+				nFrames = imp.getNFrames();
+				int nDimensions = 2;
+				if (nChannels>1) nDimensions++;
+				if (nSlices>1) nDimensions++;
+				if (nFrames>1) nDimensions++;
+				if (nDimensions==3) {
+					isHyperstack = false;
 					if (nChannels>1)
-						rt.setValue("Channel", row, position[0]);
-					if (nSlices>1)
-						rt.setValue("Slice", row, position[1]);
-					if (nFrames>1)
-						rt.setValue("Frame", row, position[2]);
+						firstColumnHdr = "Channel";
+				} else
+					firstColumnHdr = "Image";
+			}
+			int firstSlice = Integer.MAX_VALUE;
+			for (int i=0; i<nPoints; i++) {
+				if (positions[i]>0 && positions[i]<firstSlice)
+					firstSlice = positions[i];
+			}
+			if (firstSlice==Integer.MAX_VALUE)
+				firstSlice = 0;
+			int lastSlice = 0;
+			if (firstSlice>0) {
+				for (int i=0; i<nPoints; i++) {
+					if (positions[i]>lastSlice)
+						lastSlice = positions[i];
 				}
-				for (int counter=0; counter<nCounters; counter++) {
-					int count = 0;
-					for (int i=0; i<nPoints; i++) {
-						if (slice==positions[i] && counter==counters[i])
-							count++;
+			}
+			if (firstSlice>0) {
+				for (int slice=firstSlice; slice<=lastSlice; slice++) {
+					rt.setValue(firstColumnHdr, row, slice);
+					if (isHyperstack) {
+						int[] position = imp.convertIndexToPosition(slice);
+						if (nChannels>1)
+							rt.setValue("Channel", row, position[0]);
+						if (nSlices>1)
+							rt.setValue("Slice", row, position[1]);
+						if (nFrames>1)
+							rt.setValue("Frame", row, position[2]);
 					}
-					rt.setValue("Ctr "+counter, row, count);
+					for (int counter=0; counter<nCounters; counter++) {
+						int count = 0;
+						for (int i=0; i<nPoints; i++) {
+							if (slice==positions[i] && counter==counters[i])
+								count++;
+						}
+						rt.setValue("Ctr "+counter, row, count);
+					}
+					row++;
 				}
-				row++;
 			}
 		}
 		rt.setValue(firstColumnHdr, row, "Total");
