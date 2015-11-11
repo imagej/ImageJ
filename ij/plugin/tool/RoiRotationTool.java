@@ -45,11 +45,10 @@ public class RoiRotationTool extends PlugInTool {
 		if (defaultRotationMode == UPDOWNROTATION){
 			centerX = imp.getWidth()/2;
 			centerY = imp.getHeight()/2;
-		}
-		else{
-			Rectangle bounds = roi.getBounds();
-			centerX = bounds.x + bounds.width/2;
-			centerY = bounds.y + bounds.height/2;
+		} else {
+			double[] centroid = roi.getCentroid();
+			centerX = (int)Math.round(centroid[0]);
+			centerY = (int)Math.round(centroid[1]);
 		}
 	}
 	
@@ -142,6 +141,6 @@ public class RoiRotationTool extends PlugInTool {
 		
 		imp2.draw();
 	}
-
+	
 }
 
