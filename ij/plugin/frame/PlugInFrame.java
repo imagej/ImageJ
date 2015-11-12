@@ -43,10 +43,8 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
     }
 
     public void windowActivated(WindowEvent e) {
-		if (IJ.isMacintosh() && IJ.getInstance()!=null) {
-			IJ.wait(10); // may be needed for Java 1.4 on OS X
-			setMenuBar(Menus.getMenuBar());
-		}
+		if (IJ.isMacintosh())
+			WindowManager.setMacMenuBar(this);
 		WindowManager.setWindow(this);
 	}
 

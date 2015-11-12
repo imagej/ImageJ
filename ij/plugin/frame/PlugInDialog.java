@@ -16,7 +16,7 @@ public class PlugInDialog extends Dialog implements PlugIn, WindowListener, Focu
 		ImageJ ij = IJ.getInstance();
 		if (IJ.isMacOSX() && ij!=null) {
 			ij.toFront(); // needed for keyboard shortcuts to work
-			ij.setMenuBar(Menus.getMenuBar());
+			WindowManager.setMacMenuBar(ij);
 		}
 		addWindowListener(this);
  		addFocusListener(this);
@@ -47,11 +47,9 @@ public class PlugInDialog extends Dialog implements PlugIn, WindowListener, Focu
     }
 
     public void windowActivated(WindowEvent e) {
-		ImageJ ij = IJ.getInstance();
-		if (IJ.isMacOSX() && ij!=null) {
-			IJ.wait(10); // may be needed for Java 1.4 on OS X
-			ij.setMenuBar(Menus.getMenuBar());
-		}
+    	ImageJ ij = IJ.getInstance();
+		if (IJ.isMacOSX() && ij!=null)
+			WindowManager.setMacMenuBar(ij);
 		WindowManager.setWindow(this);
 	}
 

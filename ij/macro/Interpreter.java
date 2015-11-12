@@ -1738,6 +1738,15 @@ public class Interpreter implements MacroConstants {
 			if (rt!=null && rt.size()>0)
 				rt.show("Results");
 		}
+		if (IJ.isMacOSX()) {
+			Window win = WindowManager.getActiveWindow();
+			if (win!=null) {
+				if (win instanceof Frame)
+					WindowManager.setMacMenuBar((Frame)win);
+				else if (IJ.getInstance()!=null)
+					WindowManager.setMacMenuBar(IJ.getInstance());
+			}
+		}
 	}
 	
 	/** Aborts currently running macro. */
