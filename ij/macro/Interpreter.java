@@ -60,6 +60,8 @@ public class Interpreter implements MacroConstants {
 	boolean inLoop;
 	int loopDepth;
 	static boolean tempShowMode;
+	boolean waitingForUser;
+
 	
 	static TextWindow arrayWindow;
 	int inspectStkIndex = -1;
@@ -1740,12 +1742,8 @@ public class Interpreter implements MacroConstants {
 		}
 		if (IJ.isMacOSX()) {
 			Window win = WindowManager.getActiveWindow();
-			if (win!=null) {
-				if (win instanceof Frame)
-					WindowManager.setMacMenuBar((Frame)win);
-				else if (IJ.getInstance()!=null)
-					WindowManager.setMacMenuBar(IJ.getInstance());
-			}
+			if (win!=null && (win instanceof ImageWindow))
+				WindowManager.setDefaultMenuBar((Frame)win);
 		}
 	}
 	
@@ -2089,6 +2087,10 @@ public class Interpreter implements MacroConstants {
 	
 	static void setTempShowMode(boolean mode) {
 		tempShowMode = mode;
+	}
+	
+	public boolean waitingForUser() {
+		return waitingForUser;
 	}
 
 } // class Interpreter

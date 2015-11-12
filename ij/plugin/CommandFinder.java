@@ -482,7 +482,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 	public void windowActivated(WindowEvent e) {
 		if (IJ.isMacOSX() && frame!=null)
-			WindowManager.setMacMenuBar(frame);
+			WindowManager.setDefaultMenuBar(frame);
 	}
 	
 	public void windowDeactivated(WindowEvent e) { }

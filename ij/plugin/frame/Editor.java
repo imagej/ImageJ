@@ -895,6 +895,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	/** Override windowActivated in PlugInFrame to
 		prevent Mac menu bar from being installed. */
 	public void windowActivated(WindowEvent e) {
+			if (IJ.debugMode) IJ.log("Editor.windowActivated");
 			WindowManager.setWindow(this);
 			instance = this;
 	}

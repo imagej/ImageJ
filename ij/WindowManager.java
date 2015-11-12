@@ -571,9 +571,12 @@ public class WindowManager {
 		frame.toFront();
 	}
 	
-	public static void setMacMenuBar(Frame frame) {
+	public static void setDefaultMenuBar(Frame frame) {
 		ImageJ ij = IJ.getInstance();
-		if (ij!=null && !ij.quitting() && !IJ.isMacro()) {
+		Interpreter interp = Interpreter.getInstance();
+		boolean macroRunning = interp!=null && !interp.waitingForUser() && !Interpreter.isBatchMode();
+		if (IJ.debugMode) IJ.log("setDefaultMenuBar: "+macroRunning);
+		if (ij!=null && !ij.quitting() && !macroRunning) {
 			IJ.wait(10); // may be needed for Java 1.4 on OS X
 			frame.setMenuBar(Menus.getMenuBar());
 		}
