@@ -100,6 +100,10 @@ public class Executer implements Runnable {
 						s = e + "\n \nThis plugin requires Java 1.7 or later.";
 						w=700; h=150;
 					}
+					if (s.indexOf("version 52.0")!=-1) {
+						s = e + "\n \nThis plugin requires Java 1.8 or later.";
+						w=700; h=150;
+					}
 				}
 				if (IJ.getInstance()!=null) {
 					s = IJ.getInstance().getInfo()+"\n \n"+s;

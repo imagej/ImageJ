@@ -1741,10 +1741,10 @@ public class Interpreter implements MacroConstants {
 			if (rt!=null && rt.size()>0)
 				rt.show("Results");
 		}
-		if (IJ.isMacOSX() && selectCount>0) {
-			Window win = WindowManager.getActiveWindow();
-			if (win!=null && (win instanceof ImageWindow))
-				Menus.setImageJMenuBar((Frame)win);
+		if (IJ.isMacOSX() && selectCount>0 && debugger==null) {
+			Frame frame = WindowManager.getFrontWindow();
+			if (frame!=null && (frame instanceof ImageWindow))
+				Menus.setImageJMenuBar(frame);
 		}
 	}
 	
