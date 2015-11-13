@@ -4,6 +4,7 @@ import ij.util.*;
 import ij.gui.ImageWindow;
 import ij.plugin.MacroInstaller;
 import ij.gui.Toolbar;
+import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
@@ -1612,4 +1613,14 @@ public class Menus {
 		IJ.runPlugIn("ij.plugin.ClassChecker", "");
 		IJ.showStatus("Menus updated: "+m.nPlugins + " commands, " + m.nMacros + " macros");
 	}
+	
+	public static void setImageJMenuBar(Frame frame) {
+		ImageJ ij = IJ.getInstance();
+		if (ij!=null && !ij.quitting() && !Interpreter.nonBatchMacroRunning()) {
+			IJ.wait(10); // may be needed for Java 1.4 on OS X
+			frame.setMenuBar(getMenuBar());
+		}
+		
+	}
+
 }
