@@ -1615,20 +1615,4 @@ public class Menus {
 		IJ.showStatus("Menus updated: "+m.nPlugins + " commands, " + m.nMacros + " macros");
 	}
 	
-	public static void setImageJMenuBar(Frame frame) {
-		ImageJ ij = IJ.getInstance();
-		boolean setMenuBar = true;
-		ImagePlus imp = null;
-		if (frame instanceof ImageWindow) {
-			imp = ((ImageWindow)frame).getImagePlus();
-			if (imp!=null)
-				setMenuBar = imp.setIJMenuBar();
-		}
-		if (ij!=null && !ij.quitting() && !Interpreter.nonBatchMacroRunning() && setMenuBar) {
-			IJ.wait(10); // may be needed for Java 1.4 on OS X
-			frame.setMenuBar(getMenuBar());
-		}
-		if (imp!=null) imp.setIJMenuBar(true);
-	}
-
 }

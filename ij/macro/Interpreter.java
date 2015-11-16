@@ -1744,7 +1744,7 @@ public class Interpreter implements MacroConstants {
 		if (IJ.isMacOSX() && selectCount>0 && debugger==null) {
 			Frame frame = WindowManager.getFrontWindow();
 			if (frame!=null && (frame instanceof ImageWindow))
-				Menus.setImageJMenuBar(frame);
+				ImageWindow.setImageJMenuBar((ImageWindow)frame);
 		}
 	}
 	

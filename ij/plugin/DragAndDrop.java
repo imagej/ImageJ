@@ -224,8 +224,10 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 					if (!names[k].startsWith(".")) {
 						IJ.redirectErrorMessages(true);
 						ImagePlus imp = IJ.openImage(path+names[k]);
-						imp.setIJMenuBar(k==names.length-1);
-						imp.show();
+						if (imp!=null) {
+							imp.setIJMenuBar(k==names.length-1);
+							imp.show();
+						}
 						IJ.redirectErrorMessages(false);
 					}
 				}

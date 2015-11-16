@@ -278,6 +278,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	public void open(String dir, String name) {
 		path = dir+name;
 		File file = new File(path);
+		if (!file.exists()) {
+			IJ.error("File not found: "+path);
+			return;
+		}
 		try {
 			StringBuffer sb = new StringBuffer(5000);
 			BufferedReader r = new BufferedReader(new FileReader(file));

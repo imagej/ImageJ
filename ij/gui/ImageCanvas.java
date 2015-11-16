@@ -1073,7 +1073,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	public void mousePressed(MouseEvent e) {
-		//if (ij==null) return;
 		showCursorStatus = true;
 		int toolID = Toolbar.getToolId();
 		ImageWindow win = imp.getWindow();

@@ -20,6 +20,7 @@ public class ChannelSplitter implements PlugIn {
 			imp.setIgnoreFlush(true);
 			imp.close();
 			for (int i=0; i<channels.length; i++) {
+				channels[i].setIJMenuBar(i==channels.length-1);
 				channels[i].show();
 				if (z>1 || t>1)
 					channels[i].setPosition(1, z, t);
@@ -40,11 +41,13 @@ public class ChannelSplitter implements PlugIn {
 			{imp.unlock(); imp.changes=false; imp.close();}
 		ImagePlus rImp = new ImagePlus(title+" (red)", channels[0]);
 		rImp.setCalibration(cal);
+		rImp.setIJMenuBar(false);
 		rImp.show();
 		rImp.setSlice(pos);
 		if (IJ.isMacOSX()) IJ.wait(500);
 		ImagePlus gImp = new ImagePlus(title+" (green)", channels[1]);
 		gImp.setCalibration(cal);
+		gImp.setIJMenuBar(false);
 		gImp.show();
 		gImp.setSlice(pos);
 		if (IJ.isMacOSX()) IJ.wait(500);

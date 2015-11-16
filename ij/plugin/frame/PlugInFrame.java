@@ -43,9 +43,8 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
     }
 
     public void windowActivated(WindowEvent e) {
-		if (IJ.debugMode) IJ.log("PlugInFrame.windowActivated");
 		if (IJ.isMacintosh())
-			Menus.setImageJMenuBar(this);
+			this.setMenuBar(Menus.getMenuBar());
 		WindowManager.setWindow(this);
 	}
 

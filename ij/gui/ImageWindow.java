@@ -548,7 +548,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	public void windowActivated(WindowEvent e) {
 		if (IJ.debugMode) IJ.log("windowActivated: "+imp.getTitle());
 		if (IJ.isMacOSX())
-			Menus.setImageJMenuBar(this);
+			setImageJMenuBar(this);
 		if (imp==null)
 			return;
 		ImageJ ij = IJ.getInstance();
@@ -687,7 +687,19 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	public int getSliderHeight() {
 		return sliderHeight;
 	}
-
+	
+	public static void setImageJMenuBar(ImageWindow win) {
+		ImageJ ij = IJ.getInstance();
+		boolean setMenuBar = true;
+		ImagePlus imp = win.getImagePlus();
+		if (imp!=null)
+			setMenuBar = imp.setIJMenuBar();
+		if (ij!=null && !ij.quitting() && !Interpreter.nonBatchMacroRunning() && setMenuBar) {
+			IJ.wait(10); // may be needed for Java 1.4 on OS X
+			win.setMenuBar(Menus.getMenuBar());
+		}
+		if (imp!=null) imp.setIJMenuBar(true);
+	}
 			
 } //class ImageWindow
 
