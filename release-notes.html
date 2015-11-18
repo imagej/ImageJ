@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.50e 16 November 2015</u>
+<li> <u>1.50e 17 November 2015</u>
 <ul>
 <li> On Macs, thanks to Curtis Rueden and Brandon Hurr, the <i>Stack to Images</i>,
 <i>Window&gt;Tile</i> and <i>Window&gt;Cascade</i> commands, and non-batch mode
@@ -15,6 +15,9 @@ macros that process multiple images, run faster
 displays useful information.
 <li> Thanks to Peter Haub, the <i>Selection Rotator</i> tool, available in
 the toolbar's "&gt;&gt;" menu, now rotates about the selection centroid and is recordable.
+<li> Thanks to Anton Jormescu and John Wolodzko, you can again change the views in
+<i>Image&gt;Stacks&gt;Orthoganal Views</i> by clicking, but not
+dragging, in the XZ and YZ planes.
 <li> Added a "Show all" checkbox and a "Help" button to the multi-point
 tool options dialog box.
 <li> Thanks to John Wolodzko, added the Plot.showValues macro function,
@@ -33,8 +36,13 @@ when there was a non-rectangular selection extending beyond image boundary.
 macro debugger command to fail and the debugger to sometimes behave erratically.
 <li> Thanks to David Gault, fixed a potential memory leak by adding a close()
 method to the CompositeImage class.
-<li> Thanks to Jan Eglinger, fixed a bug the the "d" (<i>Draw</i>) keyboard shortcut 
-to not be correctly recorded.
+<li> Thanks to Jan Eglinger, fixed a bug with the "d" (<i>Draw</i>) keyboard shortcut 
+that caused it to not be correctly recorded.
+<li> Thanks to Anton Jormescu, fixed a bug in the
+<i>Image&gt;Stack&gt;Tools&gt;Grouped Z Project</i> command
+that changed the Z and T dimensions of the original stack, which caused
+the <i>Duplicate</i> and <i>Synchronize Windows</i> commands to not
+work as expected.
 <li> Thanks to Saibal Mitra, fixed a v1.50d regression that caused the
 <i>Process&gt;Math&gt;Macro</i> command to not work correctly with 32-bit images.
 <li> Thanks to Michael Schmid, fixed a v1.49 regression that caused NaN values to
