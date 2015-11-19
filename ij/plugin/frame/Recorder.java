@@ -809,5 +809,12 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			recordString("setOption(\"BlackBackground\", "+bb+");\n");
 		bbSet = true;
 	}
-
+	
+	/** Override windowActivated in PlugInFrame. */
+	public void windowActivated(WindowEvent e) {
+		if (IJ.isMacintosh() && !IJ.isJava17())
+			this.setMenuBar(Menus.getMenuBar());
+		WindowManager.setWindow(this);
+	}
+	
 }

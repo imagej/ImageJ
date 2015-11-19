@@ -49,7 +49,6 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
 	}
 
 	public void focusGained(FocusEvent e) {
-		//IJ.log("PlugInFrame: focusGained");
 		WindowManager.setWindow(this);
 	}
 
