@@ -46,7 +46,7 @@ public class RoiRotationTool extends PlugInTool {
 			centerX = imp.getWidth()/2;
 			centerY = imp.getHeight()/2;
 		} else {
-			double[] centroid = roi.getCentroid();
+			double[] centroid = roi.getContourCentroid();
 			centerX = (int)Math.round(centroid[0]);
 			centerY = (int)Math.round(centroid[1]);
 		}

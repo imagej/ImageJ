@@ -16,7 +16,6 @@ import java.awt.event.*;
 import java.util.*;
 import java.awt.geom.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-//import javax.swing.JPanel;
 
 
 /** This is a Canvas used to display images in a Window. */
