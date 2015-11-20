@@ -22,6 +22,13 @@
 		<imagej1.version>RELEASE</imagej1.version>
 	</properties>
 
+	<repositories>
+		<repository>
+			<id>imagej.public</id>
+			<url>http://maven.imagej.net/content/groups/public</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>net.imagej</groupId>
@@ -60,12 +67,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<repositories>
-		<repository>
-			<id>imagej.public</id>
-			<url>http://maven.imagej.net/content/groups/public</url>
-		</repository>
-	</repositories>
-
 </project>
