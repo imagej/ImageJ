@@ -8,6 +8,7 @@ import ij.process.*;
 import ij.io.*;
 import ij.measure.*;
 import ij.plugin.frame.*;
+import ij.plugin.PointToolOptions;
 import ij.macro.Interpreter;
 import ij.util.*;
 
@@ -546,15 +547,18 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 
 	public void windowActivated(WindowEvent e) {
 		if (IJ.debugMode) IJ.log("windowActivated: "+imp.getTitle());
+		if (IJ.isMacOSX())
+			setImageJMenuBar(this);
+		if (imp==null)
+			return;
 		ImageJ ij = IJ.getInstance();
-		boolean quitting = ij!=null && ij.quitting();
-		if (IJ.isMacintosh() && ij!=null && !quitting) {
-			IJ.wait(10); // may be needed for Java 1.4 on OS X
-			setMenuBar(Menus.getMenuBar());
-		}
-		if (imp==null) return;
-		if (!closed && !quitting && !Interpreter.isBatchMode())
+		if (!closed && !ij.quitting() && !Interpreter.isBatchMode())
 			WindowManager.setCurrentWindow(this);
+		if (imp.isComposite())
+			Channels.updateChannels();
+		Roi roi = imp.getRoi();
+		if (roi!=null && (roi instanceof PointRoi))
+			PointToolOptions.update();
 		if (imp.isComposite())
 			Channels.updateChannels();
 		imp.setActivated(); // notify ImagePlus that image has been activated
@@ -683,7 +687,19 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	public int getSliderHeight() {
 		return sliderHeight;
 	}
-
+	
+	public static void setImageJMenuBar(ImageWindow win) {
+		ImageJ ij = IJ.getInstance();
+		boolean setMenuBar = true;
+		ImagePlus imp = win.getImagePlus();
+		if (imp!=null)
+			setMenuBar = imp.setIJMenuBar();
+		if (ij!=null && !ij.quitting() && !Interpreter.nonBatchMacroRunning() && setMenuBar) {
+			IJ.wait(10); // may be needed for Java 1.4 on OS X
+			win.setMenuBar(Menus.getMenuBar());
+		}
+		if (imp!=null) imp.setIJMenuBar(true);
+	}
 			
 } //class ImageWindow
 

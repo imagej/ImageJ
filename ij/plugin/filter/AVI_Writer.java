@@ -61,7 +61,7 @@ public class AVI_Writer implements PlugInFilter {
     //compression options: dialog parameters
     private int      compressionIndex = 2; //0=none, 1=PNG, 2=JPEG
     private static int      jpegQuality = 90;    //0 is worst, 100 best (not currently used)
-    private final static String[] COMPRESSION_STRINGS = new String[] {"Uncompressed", "PNG", "JPEG"};
+    private final static String[] COMPRESSION_STRINGS = new String[] {"None", "PNG", "JPEG"};
     private final static int[] COMPRESSION_TYPES = new int[] {NO_COMPRESSION, PNG_COMPRESSION, JPEG_COMPRESSION};
 
     private ImagePlus imp;
@@ -114,24 +114,23 @@ public class AVI_Writer implements PlugInFilter {
 
     private boolean showDialog(ImagePlus imp) {
     	String options = Macro.getOptions();
-    	if (options!=null && options.indexOf("compression=")==-1)
-    		Macro.setOptions("compression=Uncompressed "+options);
+    	if (options!=null) {
+    		if (!options.contains("compression="))
+    			options = "compression=JPEG "+options;
+    		options = options.replace("compression=Uncompressed", "compression=None");
+    		Macro.setOptions(options);
+    	}
   		double fps = getFrameRate(imp);
  		int decimalPlaces = (int) fps == fps?0:1;
         GenericDialog gd = new GenericDialog("Save as AVI...");
         gd.addChoice("Compression:", COMPRESSION_STRINGS, COMPRESSION_STRINGS[compressionIndex]);
-        //gd.addNumericField("JPEG Quality (0-100):", jpegQuality, 0, 3, "");
 		gd.addNumericField("Frame Rate:", fps, decimalPlaces, 3, "fps");
         gd.showDialog();                            // user input (or reading from macro) happens here
         if (gd.wasCanceled())                       // dialog cancelled?
             return false;
-        gd.setSmartRecording(compressionIndex==2);
         compressionIndex = gd.getNextChoiceIndex();
-        gd.setSmartRecording(false);
-        //jpegQuality = (int)gd.getNextNumber();
         fps = gd.getNextNumber();
         if (fps<=0.5) fps = 0.5;
-        //if (fps>60.0) fps = 60.0;
 		imp.getCalibration().fps = fps;
 		return true;
     }

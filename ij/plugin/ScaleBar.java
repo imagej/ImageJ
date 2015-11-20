@@ -107,7 +107,7 @@ public class ScaleBar implements PlugIn {
 			boldText = hideText = serifFont = createOverlay = false;
 		else
 			updateScalebar();
-		GenericDialog gd = new BarDialog("ScaleBar Plus");
+		GenericDialog gd = new BarDialog("Scale Bar");
 		gd.addNumericField("Width in "+units+": ", barWidth, digits);
 		gd.addNumericField("Height in pixels: ", barHeightInPixels, 0);
 		gd.addNumericField("Font size: ", fontSize, 0);

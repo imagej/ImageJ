@@ -2094,7 +2094,7 @@ public class Plot implements Cloneable {
 			x2 = scaleX(x[i]);
 			y2 = scaleY(y[i]);
 			isNaN2 = Float.isNaN(x[i]) || Float.isNaN(y[i]) || (logXAxis && x[i]<=0) || (logYAxis && y[i]<=0);
-			if (!isNaN1 && !isNaN1)
+			if (!isNaN1 && !isNaN2)
 				ip.drawLine(x1, y1, x2, y2);
 		}
 	}

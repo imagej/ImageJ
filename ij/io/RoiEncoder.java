@@ -145,7 +145,7 @@ public class RoiEncoder {
 		if (roi instanceof PointRoi) {
 			counters = ((PointRoi)roi).getCounters();
 			if (counters!=null && counters.length>=n)
-				countersSize = n*8;
+				countersSize = n*4;
 		}
 		
 		data = new byte[HEADER_SIZE+HEADER2_SIZE+n*4+floatSize+roiNameSize+roiPropsSize+countersSize];

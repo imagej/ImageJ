@@ -2,10 +2,10 @@ package ij;
 import ij.plugin.Converter;
 import ij.plugin.frame.Recorder;
 import ij.plugin.frame.Editor; 
-import ij.macro.Interpreter;
 import ij.text.TextWindow;
 import ij.plugin.frame.PlugInFrame;
 import ij.util.Tools;
+import ij.macro.Interpreter;
 import java.awt.*;
 import java.util.*;
 import ij.gui.*;
@@ -570,5 +570,5 @@ public class WindowManager {
 			frame.setState(Frame.NORMAL);
 		frame.toFront();
 	}
-    
+	    
 }

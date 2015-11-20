@@ -278,6 +278,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	public void open(String dir, String name) {
 		path = dir+name;
 		File file = new File(path);
+		if (!file.exists()) {
+			IJ.error("File not found: "+path);
+			return;
+		}
 		try {
 			StringBuffer sb = new StringBuffer(5000);
 			BufferedReader r = new BufferedReader(new FileReader(file));
@@ -895,6 +899,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	/** Override windowActivated in PlugInFrame to
 		prevent Mac menu bar from being installed. */
 	public void windowActivated(WindowEvent e) {
+			if (IJ.debugMode) IJ.log("Editor.windowActivated");
 			WindowManager.setWindow(this);
 			instance = this;
 	}
@@ -1268,15 +1273,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			IJ.log("debug: "+interp.getLineNumber()+"  "+mode+"  "+interp);
 		if (mode==RUN_TO_COMPLETION)
 			return 0;
-		if (!isVisible()) { // abort macro if user closes window
-			interp.abortMacro();
-			return 0;
-		}
-		toFront();
 		int n = interp.getLineNumber();
-		if (n==previousLine)
-			{previousLine=0; return 0;}
-		previousLine = n;
 		if (mode==RUN_TO_CARET) {
 			if (n==runToLine) {
 				mode = STEP;
@@ -1284,6 +1281,19 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			} else
 				return 0;
 		}
+		if (!isVisible()) { // abort macro if user closes window
+			interp.abortMacro();
+			return 0;
+		}
+		if (n==previousLine) {
+			previousLine=0;
+			return 0;
+		}
+		Window win = WindowManager.getActiveWindow();
+		if (win!=this)
+			IJ.wait(50);
+		toFront();
+		previousLine = n;
 		String text = ta.getText();
 		if (IJ.isWindows())
 			text = text.replaceAll("\r\n", "\n");

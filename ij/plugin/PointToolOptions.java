@@ -20,6 +20,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
 	+"<ul>"
 	+"<li> Alt-click, or control-click, on a point to delete it.<br>"
 	+"<li> Press 'y' (<i>Edit&gt;Selection&gt;Properties</i>) to display<br>the counts in a results table.<br>"
+	+"<li> Press 'm' (<i>Analyze&gt;Measure</i>) to display the<br>point stack positions in the results table.<br>"
 	+"<li> Use <i>File&gt;Save As&gt;Tiff</i> or <i>File&gt;Save As&gt;Selection</i><br>to save the points and counts.<br>"
 	+"</ul>"
 	+" <br>"
@@ -65,6 +66,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		gd.setInsets(5, 20, 0);
 		gd.addCheckbox("Label points", !Prefs.noPointLabels);
 		if (multipointTool) {
+			gd.addCheckbox("Show all", Prefs.showAllPoints);
 			gd.setInsets(15,0,5);
 			String[] choices =  PointRoi.getCounterChoices();
 			gd.addChoice("Counter:", choices, choices[getCounter()]);
@@ -115,6 +117,10 @@ public class PointToolOptions implements PlugIn, DialogListener {
 			redraw = true;
 		Prefs.noPointLabels = noPointLabels;
 		if (multipointTool) {
+			boolean showAllPoints = gd.getNextBoolean();
+			if (showAllPoints!=Prefs.showAllPoints)
+				redraw = true;
+			Prefs.showAllPoints = showAllPoints;
 			int counter = gd.getNextChoiceIndex();
 			if (counter!=getCounter()) {
 				setCounter(counter);
@@ -122,57 +128,56 @@ public class PointToolOptions implements PlugIn, DialogListener {
 			}
 		}
 		if (redraw) {
-			ImagePlus imp = WindowManager.getCurrentImage();
-			if (imp!=null) {
-				Roi roi = imp.getRoi();
-				if (roi instanceof PointRoi)
-					((PointRoi)roi).setShowLabels(!Prefs.noPointLabels);
-				imp.draw();
+     		PointRoi roi = getPointRoi();
+     		if (roi!=null) {
+				roi.setShowLabels(!Prefs.noPointLabels);
+				ImagePlus imp = roi.getImage();
+				if (imp!=null) imp.draw();
 			}
 		}
 		return true;
     }
     
     private static int getCounter() {
-    	int counter = 0;
-		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null) {
-			Roi roi = imp.getRoi();
-			if (roi instanceof PointRoi)
-				counter = ((PointRoi)roi).getCounter();
-		}
-		return counter;
+     	PointRoi roi = getPointRoi();
+     	return roi!=null?roi.getCounter():0;
     }
     
     private static void setCounter(int counter) {
-		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null) {
-			Roi roi = imp.getRoi();
-			if (roi instanceof PointRoi)
-				((PointRoi)roi).setCounter(counter);
-		}
+    	PointRoi roi = getPointRoi();
+		if (roi!=null)
+			roi.setCounter(counter);
+		PointRoi.setDefaultCounter(counter);
+    }
+    
+    private static PointRoi getPointRoi() {
+    	ImagePlus imp = WindowManager.getCurrentImage();
+    	if (imp==null)
+    		return null;
+		Roi roi = imp.getRoi();
+		if (roi==null)
+			return null;
+		if (roi instanceof PointRoi)
+			return (PointRoi)roi;
+		else
+			return null;
     }
 
     private static int getCount(int counter) {
-    	int count = 0;
-    	ImagePlus imp = WindowManager.getCurrentImage();
-    	if (imp!=null) {
-    		Roi roi = imp.getRoi();
-    		if (roi==null)
-    			return 0;
-    		if (roi!=null && (roi instanceof PointRoi))
-				count = ((PointRoi)roi).getCount(counter);
-    	}
-    	return count;
+     	PointRoi roi = getPointRoi();
+     	return roi!=null?roi.getCount(counter):0;
     }
     
     public static void update() {
     	if (gd!=null && gd.isShowing()) {
 			Vector choices = gd.getChoices();
-			Choice choice = (Choice)choices.elementAt(3);
+			if (choices==null || choices.size()<4)
+				return;
+			Choice counterChoice = (Choice)choices.elementAt(3);
 			int counter = getCounter();
-			choice.select(counter);
-			((Label)gd.getMessage()).setText(""+getCount(counter));
+			int count = getCount(counter);
+			counterChoice.select(counter);
+			((Label)gd.getMessage()).setText(""+count);
 		}
     }
     			

@@ -7,6 +7,7 @@ import ij.io.*;
 import ij.util.Tools;
 import ij.plugin.frame.Editor;
 import ij.text.TextWindow;
+import ij.macro.Interpreter;
 import java.awt.*;
 import java.util.*;
 import java.lang.reflect.*;
@@ -17,17 +18,31 @@ public class Info implements PlugInFilter {
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
-		return DOES_ALL+NO_CHANGES;
+		if (imp==null) {
+			showInfo();
+			return DONE;
+		} else
+			return DOES_ALL+NO_CHANGES;
 	}
 
 	public void run(ImageProcessor ip) {
 		String info = getImageInfo(imp, ip);
-		if (info.indexOf("----")>0)
+		if (info.contains("----"))
 			showInfo(info, 450, 500);
 		else {
 			int inc = info.contains("No Selection")?0:75;
 			showInfo(info, 300, 350+inc);
 		}
+	}
+	
+	public void showInfo() {
+		String s = new String("");
+		if (IJ.getInstance()!=null)
+			s += IJ.getInstance().getInfo()+"\n \n";
+		s += "No images are open\n";
+		Dimension screen = IJ.getScreenSize();
+		s += "Screen size: "+screen.width+"x"+screen.height+"\n";
+		new TextWindow("Info", s, 600, 300);
 	}
 
 	public String getImageInfo(ImagePlus imp, ImageProcessor ip) {
@@ -300,6 +315,10 @@ public class Info implements PlugInFilter {
 			s += "Overlay: " + n + elements + (imp.getHideOverlay()?" (hidden)":"") + "\n";
 		} else
 	    	s += "No overlay\n";
+
+		Interpreter interp = Interpreter.getInstance();
+		if (interp!=null)
+			s += "Macro is running"+(Interpreter.isBatchMode()?" in batch mode":"")+"\n";
 
 	    Roi roi = imp.getRoi();
 	    if (roi == null) {

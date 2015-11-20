@@ -245,14 +245,14 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			yz_image.show();
 			ImageCanvas ic = yz_image.getCanvas();
 			ic.addKeyListener(this);
-			//ic.addMouseListener(this);
+			ic.addMouseListener(this);
 			//ic.addMouseMotionListener(this);
 			ic.setCustomRoi(true);
 			//yz_image.getWindow().addMouseWheelListener(this);
 			yzID = yz_image.getID();
 		} else {
 			ImageCanvas ic = yz_image.getWindow().getCanvas();
-			//ic.addMouseListener(this);
+			ic.addMouseListener(this);
 			//ic.addMouseMotionListener(this);
 			ic.setCustomRoi(true);
 		}
@@ -260,14 +260,14 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			xz_image.show();
 			ImageCanvas ic = xz_image.getCanvas();
 			ic.addKeyListener(this);
-			//ic.addMouseListener(this);
+			ic.addMouseListener(this);
 			//ic.addMouseMotionListener(this);
 			ic.setCustomRoi(true);
 			//xz_image.getWindow().addMouseWheelListener(this);
 			xzID = xz_image.getID();
 		} else {
 			ImageCanvas ic = xz_image.getWindow().getCanvas();
-			//ic.addMouseListener(this);
+			ic.addMouseListener(this);
 			//ic.addMouseMotionListener(this);
 			ic.setCustomRoi(true);
 		}

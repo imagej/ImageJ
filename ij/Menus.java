@@ -4,6 +4,7 @@ import ij.util.*;
 import ij.gui.ImageWindow;
 import ij.plugin.MacroInstaller;
 import ij.gui.Toolbar;
+import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
@@ -267,6 +268,7 @@ public class Menus {
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.ijm");
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.ijm");
 		addExample(submenu, "Process Folder", "Batch_Process_Folder.ijm");
+		addExample(submenu, "OpenDialog Demo", "OpenDialog_Demo.ijm");
 		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.ijm");
 		addExample(submenu, "Non-numeric Table", "Non-numeric_Table.ijm");
 		addExample(submenu, "Overlay", "Overlay.ijm");
@@ -1612,4 +1614,5 @@ public class Menus {
 		IJ.runPlugIn("ij.plugin.ClassChecker", "");
 		IJ.showStatus("Menus updated: "+m.nPlugins + " commands, " + m.nMacros + " macros");
 	}
+	
 }

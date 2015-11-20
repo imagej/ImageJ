@@ -577,6 +577,7 @@ public class ImageReader {
 		if (fi.compression>FileInfo.COMPRESSION_NONE)
 			return readCompressedRGB48(in);
 		int channels = fi.samplesPerPixel;
+		if (channels==1) channels=3;
 		short[][] stack = new short[channels][nPixels];
 		DataInputStream dis = new DataInputStream(in);
 		int pixel = 0;
@@ -662,6 +663,7 @@ public class ImageReader {
 
 	Object readRGB48Planar(InputStream in) throws IOException {
 		int channels = fi.samplesPerPixel;
+		if (channels==1) channels=3;
 		Object[] stack = new Object[channels];
 		for (int i=0; i<channels; i++) 
 			stack[i] = read16bitImage(in);

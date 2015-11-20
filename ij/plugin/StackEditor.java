@@ -277,6 +277,7 @@ public class StackEditor implements PlugIn {
 			String info = stack.getSliceLabel(i);
 			if (info!=null && !info.equals(label))
 				imp2.setProperty("Info", info);
+			imp2.setIJMenuBar(i==size);
 			imp2.show();
 		}
 		imp.changes = false;

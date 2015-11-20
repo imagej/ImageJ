@@ -109,6 +109,8 @@ public class WindowOrganizer implements PlugIn {
 				while (win.getSize().width*0.85>=tileWidth && canvas.getMagnification()>0.03125)
 					canvas.zoomOut(0, 0);
 				win.toFront();
+				ImagePlus imp = win.getImagePlus();
+				if (imp!=null) imp.setIJMenuBar(i==nPics-1);
 			}
 			hloc += tileWidth + GAP;
 		}
@@ -149,6 +151,8 @@ public class WindowOrganizer implements PlugIn {
 			win.toFront();
 				x += XOFFSET;
 			y += YOFFSET;
+			ImagePlus imp = win.getImagePlus();
+			if (imp!=null) imp.setIJMenuBar(i==wList.length-1);
 		}
 	}
 	

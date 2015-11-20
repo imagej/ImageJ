@@ -1,4 +1,3 @@
-
 /* 
  * This plugin implements the "Selection Rotator" tool, which 
  * can be used to interactively rotate selections.
@@ -6,15 +5,13 @@
  * @author: 	Peter Haub, Oct. 2015, phaub@dipsystems.de
  */
 
-
 package ij.plugin.tool;
 import ij.*;
 import ij.gui.*;
 import ij.plugin.RoiRotator;
 import ij.plugin.tool.PlugInTool;
-
-import java.awt.Event;
-import java.awt.Rectangle;
+import ij.plugin.frame.Recorder;
+import java.awt.*;
 import java.awt.event.*;
 
 public class RoiRotationTool extends PlugInTool {
@@ -48,11 +45,10 @@ public class RoiRotationTool extends PlugInTool {
 		if (defaultRotationMode == UPDOWNROTATION){
 			centerX = imp.getWidth()/2;
 			centerY = imp.getHeight()/2;
-		}
-		else{
-			Rectangle bounds = roi.getBounds();
-			centerX = bounds.x + bounds.width/2;
-			centerY = bounds.y + bounds.height/2;
+		} else {
+			double[] centroid = roi.getContourCentroid();
+			centerX = (int)Math.round(centroid[0]);
+			centerY = (int)Math.round(centroid[1]);
 		}
 	}
 	
@@ -70,12 +66,23 @@ public class RoiRotationTool extends PlugInTool {
 			rotateRoi(e.getX(), e.getY());
 	}
 		
+	public void mouseReleased(ImagePlus imp, MouseEvent e) {
+		if (Recorder.record) {
+			Roi roi = imp.getRoi();
+			int n = roi.getPolygon().npoints;
+			if (n<=20 && roi.getType()!=Roi.LINE)
+				Recorder.recordRoi(roi);
+			else if (n>20)
+				Recorder.recordString("// Selection has "+n+" points, too many to record.\n");
+		}
+	}
+
 	public void showOptionsDialog() {
 		IJ.log("PlugInTool MouseRoiRotator Peter Haub dipsystems.de 10'2015");
 	}
 
 	public String getToolName() {
-		return "Selection Rotator (press alt key to move)";
+		return "Selection Rotator (press alt or shift to move)";
 	}
 	
 	public String getToolIcon() {
@@ -134,6 +141,6 @@ public class RoiRotationTool extends PlugInTool {
 		
 		imp2.draw();
 	}
-
+	
 }
 

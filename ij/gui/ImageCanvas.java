@@ -1073,7 +1073,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	public void mousePressed(MouseEvent e) {
-		//if (ij==null) return;
 		showCursorStatus = true;
 		int toolID = Toolbar.getToolId();
 		ImageWindow win = imp.getWindow();
@@ -1290,7 +1289,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		boolean multiPointMode = roi!=null && (roi instanceof PointRoi) && handle==-1
 			&& Toolbar.getToolId()==Toolbar.POINT && Toolbar.getMultiPointMode();
 		if (multiPointMode) {
-			((PointRoi)roi).addPoint(offScreenXD(sx), offScreenYD(sy));
+			((PointRoi)roi).addPoint(imp, offScreenXD(sx), offScreenYD(sy));
 			imp.setRoi(roi);
 			return;
 		}

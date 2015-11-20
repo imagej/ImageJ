@@ -90,6 +90,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	private static int default16bitDisplayRange;
 	private boolean antialiasRendering = true;
 	private boolean ignoreGlobalCalibration;
+	public boolean setIJMenuBar = true;
 	
 
     /** Constructs an uninitialized ImagePlus. */
@@ -2660,6 +2661,14 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
     public String toString() {
     	return "img["+getTitle()+" ("+width+"x"+height+"x"+getNChannels()+"x"+getNSlices()+"x"+getNFrames()+")]";
+    }
+    
+    public void setIJMenuBar(boolean b) {
+    	setIJMenuBar = b;
+    }
+    
+    public boolean setIJMenuBar() {
+    	return setIJMenuBar;
     }
     
 }

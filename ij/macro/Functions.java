@@ -94,7 +94,7 @@ public class Functions implements MacroConstants, Measurements {
 	void doFunction(int type) {
 		switch (type) {
 			case RUN: doRun(); break;
-			case SELECT: IJ.selectWindow(getStringArg()); resetImage(); break;
+			case SELECT: IJ.selectWindow(getStringArg()); resetImage(); interp.selectCount++; break;
 			case WAIT: IJ.wait((int)getArg()); break;
 			case BEEP: interp.getParens(); IJ.beep(); break;
 			case RESET_MIN_MAX: interp.getParens(); IJ.resetMinAndMax(); resetImage(); break;
@@ -2016,6 +2016,9 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("getValues")) {
 			getPlotValues();
 			return;
+		} else if (name.equals("showValues")) {
+			showPlotValues();
+			return;
 		}
 		// the following commands work with a plot under construction or an image with a plot created previously
 		Plot currentPlot = plot;
@@ -2155,6 +2158,19 @@ public class Functions implements MacroConstants, Measurements {
 			ya[i] = new Variable(yvalues[i]);
 		xvar.setArray(xa);
 		yvar.setArray(ya);
+	}
+
+	void showPlotValues() {
+		interp.getParens();
+		ImagePlus imp = getImage();
+		ImageWindow win = imp.getWindow();
+		if (win==null || !(win instanceof PlotWindow)) {
+			interp.error("No plot window");
+			return;
+		}
+		PlotWindow pw = (PlotWindow)win;
+		ResultsTable rt = pw.getResultsTable();
+		rt.show("Results");
 	}
 
 	void newPlot() {
@@ -2816,6 +2832,7 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();
 		}
 		resetImage();
+		interp.selectCount++;
 	}
 	
 	void selectImage(String title) {
@@ -4808,7 +4825,9 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		waitForUserDialog = new WaitForUserDialog(title, text);
 		Interpreter instance = Interpreter.getInstance();
+		interp.waitingForUser = true;
 		waitForUserDialog.show();
+		interp.waitingForUser = false;
 		Interpreter.setInstance(instance); // works around bug caused by use of drawing tools
 		if (waitForUserDialog.escPressed())
 			throw new RuntimeException(Macro.MACRO_CANCELED);
