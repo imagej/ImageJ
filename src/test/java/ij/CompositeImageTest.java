@@ -258,7 +258,7 @@ public class CompositeImageTest {
 
 		// not rgb but have a stack: size == 1 should work as of 1.44o
 		try {
-			st = new ImageStack(10,15);
+			st = new ImageStack(2,2);
 			st.addSlice("Uno",new byte[]{1,2,3,4});
 			ip = new ImagePlus("Giles",st);
 			ci = new CompositeImage(ip,CompositeImage.COLOR);
