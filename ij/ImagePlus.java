@@ -1081,8 +1081,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	return imageType;
     }
 
-    /** Returns the bit depth, 8, 16, 24 (RGB) or 32. RGB images actually use 32 bits per pixel. */
+    /** Returns the bit depth, 8, 16, 24 (RGB) or 32, or 0 if the bit depth 
+    	is unknown. RGB images actually use 32 bits per pixel. */
     public int getBitDepth() {
+    	if (imageType==GRAY8 && ip==null && img==null)
+    		return 0;
     	int bitDepth = 0;
     	switch (imageType) {
 	    	case GRAY8: case COLOR_256: bitDepth=8; break;
@@ -2082,7 +2085,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
    /** Sets this image's calibration. */
     public void setCalibration(Calibration cal) {
-		//IJ.write("setCalibration: "+cal);
 		if (cal==null)
 			calibration = null;
 		else {

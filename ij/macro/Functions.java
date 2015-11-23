@@ -1141,8 +1141,15 @@ public class Functions implements MacroConstants, Measurements {
 		int col = rt.getColumnIndex(column);
 		if (rt.columnExists(col))
 			return rt.getStringValue(col, row);
-		else
-			return "null";
+		else {
+			String label = null;
+			if ("Label".equals(column))
+				label = rt.getLabel(row);
+			if (label!=null)
+				return label;
+			else
+				return "null";
+		}
 	}
 
 	String getResultLabel() {
@@ -1152,7 +1159,12 @@ public class Functions implements MacroConstants, Measurements {
 		if (row<0 || row>=counter)
 			interp.error("Row ("+row+") out of range");
 		String label = rt.getLabel(row);
-		return label!=null?label:"";
+		if (label!=null)
+			return label;
+		else {
+			label = rt.getStringValue("Label", row);
+			return label!=null?label:"";
+		}
 	}
 
 	private ResultsTable getResultsTable(boolean reportErrors) {

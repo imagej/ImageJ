@@ -41,6 +41,8 @@ public class Info implements PlugInFilter {
 			s += IJ.getInstance().getInfo()+"\n \n";
 		s += "No images are open\n";
 		Dimension screen = IJ.getScreenSize();
+		s += "ImageJ home: "+IJ.getDir("imagej")+"\n";
+		s += "Java home: "+System.getProperty("java.home")+"\n";
 		s += "Screen size: "+screen.width+"x"+screen.height+"\n";
 		new TextWindow("Info", s, 600, 300);
 	}

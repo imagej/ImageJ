@@ -650,11 +650,9 @@ public class ResultsTable implements Cloneable {
 	public synchronized void setPrecision(int precision) {
 		if (precision>9) precision=9;
 		this.precision = (short)precision;
-		if (this==Analyzer.getResultsTable()) {
-			for (int i=0; i<decimalPlaces.length; i++) {
-				if (!(decimalPlaces[i]==AUTO_FORMAT||decimalPlaces[i]==0))
-					decimalPlaces[i] = (short)precision;
-			}
+		for (int i=0; i<decimalPlaces.length; i++) {
+			if (!(decimalPlaces[i]==AUTO_FORMAT||decimalPlaces[i]==0))
+				decimalPlaces[i] = (short)precision;
 		}
 	}
 	

@@ -5,57 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.50e 19 November 2015</u>
+<li> <u>1.50f 23 November 2015</u>
 <ul>
-<li> Thanks to Curtis Rueden and Brandon Hurr, the <i>Stack to Images</i>,
-<i>Window&gt;Tile</i> and <i>Window&gt;Cascade</i> commands, and non-batch mode
-macros that process multiple images, run faster on Macs
-(<a href="macros/SetMenuBarBenchmark.txt">test macro</a>).
-<li> Pressing "i" (<i>Image&gt;Show Info</i>) when no images are open now
-displays useful information instead of a "No images are open" error.
-<li> Added a "Show all" checkbox and a "Help" button to the multi-point
-tool's options dialog box.
-<li> Thanks to Peter Haub, the <i>Selection Rotator</i> tool, available in
-the toolbar's "&gt;&gt;" menu, now rotates about the selection centroid and is recordable.
-<li> Thanks to Radoslaw Ejsmont, ImageJ's directory chooser, on Mac OS X, now uses the
-JFileChooser when the "Use JFileChoose to open/save" option is enabled in
-<i>Edit&gt;Options&gt;Input/Output</i>. Unlike the native directory chooser,
-JFileChooser still has a title bar on OS X 10.11 (El Capitan).
-<li> Thanks to Anton Jormescu and John Wolodzko, you can again change the views in
-<i>Image&gt;Stacks&gt;Orthoganal Views</i> by clicking, but not
-dragging, in the YZ and XZ planes.
-<li> Thanks to John Wolodzko, added the Plot.showValues macro function,
-which displays plot window values in the Results table.
-<li> Thanks to Peter Haub, added the Roi.getContourCentroid() method.
-<li> Thanks to Jan Eglinger, fixed a bug that caused <i>Image&gt;Adjust&gt;Size</i>, 
-when using  bilinear or bicubic interpolation, to shift positions of pixels by 1.0 in X,
-0.5 in Y and 0.5 in Z.
-<li> Thanks to Michael Schmid, fixed a bug that caused the
-<i>Brightness/Contrast</i> adjuster's "Apply" function to not be
-undoable for full images or rectangular selections with 8-bit and 16-bit images.
-<li> Thanks to Michael Schmid, fixed a bug that caused the
-<i>Brightness/Contrast</i> adjuster to hang with RGB images
-when there was a non-rectangular selection extending beyond image boundary.
-<li> Thanks to Bob Hamilton, fixed bugs that caused the <i>Run to Insertion Point</i>
-macro debugger command to fail and the debugger to sometimes behave erratically.
-<li> Thanks to David Gault, fixed a memory leak when closing composite color images.
-<li> Thanks to Jan Eglinger, fixed a bug with the "d" (<i>Draw</i>) keyboard shortcut 
-that caused it to not be correctly recorded.
-<li> Thanks to Anton Jormescu, fixed a bug in the
-<i>Image&gt;Stack&gt;Tools&gt;Grouped Z Project</i> command
-that changed the Z and T dimensions of the original stack, which caused
-the <i>Duplicate</i> and <i>Synchronize Windows</i> commands to not
-work as expected.
-<li> Thanks to Carl Vandewater, fixed a bug that could cause
-<i>Image&gt;Color&gt;Merge Channels</i> to throw an exception
-when an input file name was shorter than three characters.
-<li> Thanks to Till Bretschneider, fixed a bug on OS X and Java 8 that
-caused copying of text from the macro recorder to fail.
-<li> Thanks to Saibal Mitra, fixed a v1.50d regression that caused the
-<i>Process&gt;Math&gt;Macro</i> command to not work correctly with 32-bit images.
-<li> Thanks to Michael Schmid, fixed a v1.49 regression that caused NaN values to
-not be correctly handled in plots.
-
+<li> Thanks to Nicolas Stifani, fixed bugs that could cause the 
+getResultLabel(row) and getResultString("Label",row) to fail.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
