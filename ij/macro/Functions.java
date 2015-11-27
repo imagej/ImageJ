@@ -1145,10 +1145,7 @@ public class Functions implements MacroConstants, Measurements {
 			String label = null;
 			if ("Label".equals(column))
 				label = rt.getLabel(row);
-			if (label!=null)
-				return label;
-			else
-				return "null";
+			return label!=null?label:"null";
 		}
 	}
 
