@@ -47,7 +47,9 @@ public class MontageMaker implements PlugIn {
 			if (ci.getMode()!=mode)
 				ci.setMode(mode);
 			imp.setPosition(channel, imp.getSlice(), imp.getFrame());
+			Calibration cal = imp.getCalibration();
 			imp = new ImagePlus(imp.getTitle(), stack);
+			imp.setCalibration(cal);
 		}
 		makeMontage(imp);
 		imp.updateImage();
@@ -235,6 +237,7 @@ public class MontageMaker implements PlugIn {
 			montages[i] = makeMontage2(channels[i], columns, rows, scale, 1, last, inc, borderWidth, labels);
 		}
 		ImagePlus montage = (new RGBStackMerge()).mergeHyperstacks(montages, false);
+		montage.setCalibration(montages[0].getCalibration());
 		montage.setTitle("Montage");
 		return montage;
 	}
