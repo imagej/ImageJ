@@ -2,16 +2,16 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import ij.measure.*;
+import ij.util.Tools;
 import java.awt.*;
 import java.awt.geom.*;
 import java.util.*;
-import ij.measure.*;
 
 /** This class implements the Analyze/Tools/Grid command. */
 public class Grid implements PlugIn, DialogListener {
-	private static final String TYPE = "grid.type";
-	private static final String COLOR = "grid.color";
-	private static final String BOLD = "grid.bold";
+	private static final String OPTIONS = "grid.options";
+	private static final String GRID = "|GRID|";
 	private static double crossSize = 0.1;
 	private static String[] colors = {"Red","Green","Blue","Magenta","Cyan","Yellow","Orange","Black","White"};
 	private final static int LINES=0, HLINES=1, CROSSES=2, POINTS=3, CIRCLES=4, NONE=4;
@@ -24,26 +24,23 @@ public class Grid implements PlugIn, DialogListener {
 	private double pixelWidth=1.0, pixelHeight=1.0;
 	private String units = "pixels";
 	private boolean isMacro;
+	private Roi gridOnEntry;
 
-	private static String staticType = Prefs.get(TYPE, "types[LINES]");
-	private static double staticAreaPerPoint;
-	private static String staticColor = Prefs.get(COLOR, "Cyan");
-	private static boolean staticBold = Prefs.get(BOLD, false);
-	private static boolean staticRandomOffset;
-
-	private String type = staticType;
-	private double areaPerPoint = staticAreaPerPoint;
-	private static String color = staticColor;
-	private static boolean bold = staticBold;
-	private static boolean randomOffset = staticRandomOffset;
+	private String type = types[LINES];
+	private double areaPerPoint;
+	private static double saveAreaPerPoint;
+	private String color = "Cyan";
+	private boolean bold;
+	private boolean randomOffset;
 
 	public void run(String arg) {
 		imp = IJ.getImage();
-		if (showDialog() && !isMacro) {
-			Prefs.set(TYPE, type);
-			Prefs.set(COLOR, color);
-			Prefs.set(BOLD, bold);
-		}
+		Overlay overlay = imp.getOverlay();
+		int index = overlay!=null?overlay.getIndex(GRID):-1;
+		if (index>=0)
+			gridOnEntry = overlay.get(index);
+		if (showDialog() && !isMacro)
+			saveSettings();
 	}
 		
 	// http://stackoverflow.com/questions/30654203/how-to-create-a-circle-using-generalpath-and-apache-poi
@@ -115,9 +112,16 @@ public class Grid implements PlugIn, DialogListener {
 	}
 
 	void drawGrid(Shape shape) {
-		if (shape==null)
-			imp.setOverlay(null);
-		else {
+		if (shape==null) {
+			Overlay overlay = imp.getOverlay();
+			if (overlay!=null) {
+				if (overlay.size()>1) {
+					overlay.remove(GRID);
+					imp.draw();
+				} else
+					imp.setOverlay(null);
+			}
+		} else {
 			Roi roi = new ShapeRoi(shape);
 			roi.setStrokeColor(Colors.getColor(color,Color.cyan));
 			if (bold && linesV*linesH<5000) {
@@ -129,19 +133,20 @@ public class Grid implements PlugIn, DialogListener {
 				roi.setStrokeWidth(width);
 			}
 			IJ.showStatus(linesV*linesH+" nodes");
-			imp.setOverlay(new Overlay(roi));
+			Overlay overlay = imp.getOverlay();
+			if (overlay!=null)
+				overlay.remove(GRID);
+			else
+				overlay = new Overlay();
+			overlay.add(roi, GRID);
+			imp.setOverlay(overlay);
 		}
 	}
 
 	private boolean showDialog() {
 		isMacro = Macro.getOptions()!=null;
-		if (isMacro) {
-			type = Prefs.get(TYPE, "types[LINES]");
-			areaPerPoint = 0.0;
-			color = Prefs.get(COLOR, "Cyan");
-			bold = false;
-			randomOffset = false;
-		}
+		if (!isMacro)
+			getSettings();
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		Calibration cal = imp.getCalibration();
@@ -169,18 +174,16 @@ public class Grid implements PlugIn, DialogListener {
 		dialogItemChanged(gd, null);
 		gd.showDialog();
 		if (gd.wasCanceled()) {
-			drawGrid(null);
+			Overlay overlay = imp.getOverlay();
+			if (overlay!=null && gridOnEntry!=null) {
+				overlay.remove(GRID);
+				overlay.add(gridOnEntry);
+				imp.draw();
+			} else
+				drawGrid(null);
 			return false;
-		} else {
-			if (!isMacro) {
-				staticType = type;
-				staticAreaPerPoint = areaPerPoint;
-				staticColor = color;
-				staticBold = bold;
-				staticRandomOffset = randomOffset;
-			}
+		} else
 			return true;
-		}
 	}
 
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
@@ -235,6 +238,26 @@ public class Grid implements PlugIn, DialogListener {
 			drawCircles(0.1);
 		else
 			drawGrid(null);
+	}
+	
+	private void getSettings() {
+		String prefs = Prefs.get(OPTIONS, "Lines,Cyan,-");
+		String[] options = Tools.split(prefs, ",");
+		if (options.length>=3) {
+			type = options[0];
+			if ("None".equals(type))
+				type = types[LINES];
+			areaPerPoint = saveAreaPerPoint;
+			color = options[1];
+			bold = options[2].contains("bold");
+			randomOffset = options[2].contains("random");
+		}
+	}
+	
+	private void saveSettings() {
+		String options = type+","+color+","+(bold?"bold":"")+" "+(randomOffset?"random":"");
+		Prefs.set(OPTIONS, options);
+		saveAreaPerPoint = areaPerPoint;
 	}
 
 }

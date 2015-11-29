@@ -4265,6 +4265,8 @@ public class Functions implements MacroConstants, Measurements {
 			state = getProcessor().isBinary();
 		else if (arg.indexOf("grayscale")!=-1)
 			state = getProcessor().isGrayscale();
+		else if (arg.indexOf("orthoviews")!=-1)
+			state = Orthogonal_Views.getInstance()!=null;
 		else if (arg.indexOf("animated")!=-1) {
 			ImageWindow win = getImage().getWindow();
 			state = win!=null && (win instanceof StackWindow) && ((StackWindow)win).getAnimate();
@@ -4576,8 +4578,11 @@ public class Functions implements MacroConstants, Measurements {
 		String name = interp.tokenString;
 		if (name.equals("isHyperstack")||name.equals("isHyperStack"))
 			return getImage().isHyperStack()?1.0:0.0;
-		else if (name.equals("getDimensions"))
-			{getDimensions(); return Double.NaN;}
+		else if (name.equals("getDimensions")) {
+			getDimensions();
+			return Double.NaN;
+		} else if (name.equals("setOrthoViews"))
+			return setOrthoViews();
 		ImagePlus imp = getImage();
 		if (name.equals("setPosition"))
 			{setPosition(imp); return Double.NaN;}
@@ -4624,6 +4629,16 @@ public class Functions implements MacroConstants, Measurements {
 			getStackStatistics(imp, true);
 		else
 			interp.error("Unrecognized Stack function");
+		return Double.NaN;
+	}
+	
+	private double setOrthoViews() { 
+		int x = (int)getFirstArg();
+		int y = (int)getNextArg();
+		int z = (int)getLastArg();
+		Orthogonal_Views orthoViews = Orthogonal_Views.getInstance();
+		if (orthoViews!=null)
+			orthoViews.setCrossLoc(x, y, z);
 		return Double.NaN;
 	}
 	
