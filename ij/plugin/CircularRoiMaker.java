@@ -6,6 +6,7 @@ import java.awt.*;
 
 /** This class implements the Process/FFT/Make Circular Selection command. */
 public class CircularRoiMaker implements PlugIn, DialogListener {
+	private static double saveRadius;
 	private double xcenter, ycenter, radius;
 	private boolean bAbort;
 	private ImagePlus imp;
@@ -18,10 +19,16 @@ public class CircularRoiMaker implements PlugIn, DialogListener {
 		int height = imp.getHeight();
 		xcenter = width/2;
 		ycenter = height/2;
-		radius = width/4;
+		boolean macro = Macro.getOptions()!=null;
+		radius = !macro&&saveRadius!=0.0?saveRadius:width/4;
+		if (radius>width/2)
+			radius = width/2;
 		if (radius>height/2)
 			radius = height/2;
 		showDialog();
+		if (!macro)
+			saveRadius = radius;
+
 	}
 	
 	private void showDialog() {

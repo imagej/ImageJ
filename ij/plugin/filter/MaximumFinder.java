@@ -684,6 +684,8 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                 rt.show("Results");
             } else if (outputType==COUNT) {
                 ResultsTable rt = ResultsTable.getResultsTable();
+                if (!IJ.isResultsWindow())
+                	rt = new ResultsTable();
                 rt.incrementCounter();
                 rt.setValue("Count", rt.getCounter()-1, npoints);
                 int measurements = Analyzer.getMeasurements();
