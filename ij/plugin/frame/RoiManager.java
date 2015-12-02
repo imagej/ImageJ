@@ -1723,8 +1723,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	 * @see #getRoisAsArray
 	*/
 	public Hashtable getROIs() {
-		//return rois;
-		return null;
+		Roi[] rois = getRoisAsArray();
+		Hashtable ht = new Hashtable();
+		for (int i=0; i<rois.length; i++)
+			ht.put((String)listModel.getElementAt(i), rois[i]);
+		return ht;
 	}
 
 	/** Obsolete
