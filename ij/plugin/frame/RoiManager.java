@@ -69,7 +69,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private boolean allowRecording;
 	private boolean recordShowAll = true;
 		
-	/* Constructs and displays an ROIManager. */
+	/** Opens the "ROI Manager" window, or activates it if it is already open.
+	 * @see #getRoiManager
+	*/
 	public RoiManager() {
 		super("ROI Manager");
 		if (instance!=null) {
@@ -326,6 +328,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	boolean addRoi(Roi roi, boolean promptForName, Color color, int lineWidth) {
+		if (listModel==null)
+			IJ.log("<<Error: Uninitialized RoiManager>>");
 		ImagePlus imp = roi==null?getImage():WindowManager.getCurrentImage();
 		if (roi==null) {
 			if (imp==null)
@@ -1701,8 +1705,18 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			ignoreInterrupts = false;
 	}
 	
-	/** Returns a reference to the ROI Manager
-		or null if it is not open. */
+	/** Returns a reference to the ROI Manager and opens
+		 the "ROI Manager" window if it is not already open. */
+	public static RoiManager getRoiManager() {
+		if (instance!=null)
+			return (RoiManager)instance;
+		else
+			return new RoiManager();
+	}
+
+	/** Returns a reference to the ROI Manager, or null if it is not open.
+	 * @see #getRoiManager
+	*/
 	public static RoiManager getInstance() {
 		return (RoiManager)instance;
 	}
@@ -1715,7 +1729,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			rm = Interpreter.getBatchModeRoiManager();
 		return rm;
 	}
-
 
 	/** Obsolete
 	 * @deprecated

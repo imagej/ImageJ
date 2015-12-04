@@ -477,7 +477,8 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	}
 	
 	private void closeWindow() {
-		frame.dispose();
+		if (frame!=null)
+			frame.dispose();
 	}
 
 	public void windowActivated(WindowEvent e) {
