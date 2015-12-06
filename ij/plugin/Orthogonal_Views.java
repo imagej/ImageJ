@@ -56,32 +56,24 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	 
 	public void run(String arg) {
 		imp = IJ.getImage();
-		boolean notStack = imp.getStackSize()==1;
+		boolean isStack = imp.getStackSize()>1;
 		hyperstack = imp.isHyperStack();
 		if ((hyperstack||imp.isComposite()) && imp.getNSlices()<=1)
-			notStack = true;
-			
-		if (instance!=null) {
-			ImageWindow win = instance.imp!=null?instance.imp.getWindow():null;
-			if (win!=null) win.toFront();
-			return;
-		}
-
-		/*
+			isStack = false;
 		if (instance!=null) {
 			if (imp==instance.imp) {
 				instance.dispose();
 				return;
-			} else if (notStack)
-				return;
-			else {
+			} else if (isStack) {
 				instance.dispose();
 				if (IJ.isMacro()) IJ.wait(1000);
+			} else {
+				ImageWindow win = instance.imp!=null?instance.imp.getWindow():null;
+				if (win!=null) win.toFront();
+				return;
 			}
 		}
-		*/
-		
-		if (notStack) {
+		if (!isStack) {
 			IJ.error("Othogonal Views", "This command requires a stack, or a hypertack with Z>1.");
 			return;
 		}
@@ -573,6 +565,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 				ic.setCustomRoi(false);
 			}
 		}
+		xz_image.changes = false;
+		xz_image.close();
 		yz_image.setOverlay(null);
 		ImageWindow win2 = yz_image.getWindow();
 		if (win2!=null) {
@@ -585,6 +579,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 				ic.setCustomRoi(false);
 			}
 		}
+		yz_image.changes = false;
+		yz_image.close();
 		ImagePlus.removeImageListener(this);
 		Executer.removeCommandListener(this);
 		win.removeWindowListener(this);
@@ -782,7 +778,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	}
 
 	public void imageClosed(ImagePlus imp) {
-		dispose();
+		if (!done)
+			dispose();
 	}
 
 	public void imageOpened(ImagePlus imp) {
@@ -840,7 +837,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	}
 
 	public void windowClosing(WindowEvent e) {
-		dispose();		
+		if (!done)
+			dispose();		
 	}
 
 	public void windowDeactivated(WindowEvent e) {
@@ -886,11 +884,9 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			return null;
 	}
 	
- 	public static String getImageName() {
-		if (instance!=null && instance.imp!=null)
-			return instance.imp.getTitle();
-		else
-			return "null";
+	public static int getImageID() {
+		ImagePlus img = getImage();
+		return img!=null?img.getID():0;
 	}
 
  	public static void stop() {

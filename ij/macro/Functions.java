@@ -4579,6 +4579,13 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("getDimensions")) {
 			getDimensions();
 			return Double.NaN;
+		} else if (name.equals("stopOrthoViews")) {
+			interp.getParens(); 
+			Orthogonal_Views.stop();
+			return Double.NaN;
+		} else if (name.equals("getOrthoViewsID")) {
+			interp.getParens(); 
+			return Orthogonal_Views.getImageID();
 		} else if (name.equals("setOrthoViews"))
 			return setOrthoViews();
 		ImagePlus imp = getImage();

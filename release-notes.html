@@ -5,17 +5,16 @@
 </head>
 <body>
 
-<li> <u>1.50f 4 December 2015</u>
+<li> <u>1.50f 5 December 2015</u>
 <ul>
 <li> Added the <i>Analyze&gt;Tools&gt;Grid</i> command, which
 creates a non-destructive grid of lines, crosses, circles or points on the current image.
 <li> Thanks to Michael Elbaum, added the <i>Process&gt;FFT&gt;Make Circular Selection</i>
 command.
 <li> Thanks to Norbert Vischer, added the Stack.setOrthoViews(x,y,z), 
-call("ij.plugin.Orthogonal_Views.getImageName”) and
-call("ij.plugin.Orthogonal_Views.stop") macro functions
-(<a href="macros/OrthogonalViews.txt">example</a>).
-<li> Thanks to Gabriel Landini, added the ImageProcessor.drawLine4(x1,y1,x2,y3,color)
+Stack.getOrthoViewsID() and Stack.stopOrthoViews() macro functions
+(<a href="macros/OrthogonalViewsDemo.txt">example</a>).
+<li> Thanks to Gabriel Landini, added the ImageProcessor.drawLine4(x1,y1,x2,y2)
 method, which draws 4-connected lines.
 <li> Added the static RoiManager.getRoiManager() method, which returns a
 reference to the ROI Manager and opens the "ROI Manager" window if

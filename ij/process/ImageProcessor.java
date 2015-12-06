@@ -1122,25 +1122,25 @@ public abstract class ImageProcessor implements Cloneable {
 		Based on code from http://stackoverflow.com/questions/5186939/algorithm-for-drawing-a-4-connected-line<br>
 		Author: Gabriel Landini (G.Landini at bham.ac.uk)
 	*/
-	 public void drawLine4(int x1, int y1, int x2, int y3, int color) {
-		int dx = Math.abs(x1 - x0);
-		int dy = Math.abs(y1 - y0);
-		int sgnX = x0 < x1 ? 1 : -1;
-		int sgnY = y0 < y1 ? 1 : -1;
+	 public void drawLine4(int x1, int y1, int x2, int y2) {
+		int dx = Math.abs(x2 - x1);
+		int dy = Math.abs(y2 - y1);
+		int sgnX = x1 < x2 ? 1 : -1;
+		int sgnY = y1 < y2 ? 1 : -1;
 		int e = 0;
 		for (int i=0; i < dx+dy; i++) {
-			putPixel(x0, y0, color);
+			putPixel(x1, y1, fgColor);
 			int e1 = e + dy;
 			int e2 = e - dx;
 			if (Math.abs(e1) < Math.abs(e2)) {
-				x0 += sgnX;
+				x1 += sgnX;
 				e = e1;
 			} else {
-				y0 += sgnY;
+				y1 += sgnY;
 				e = e2;
 			}
 		}
-		putPixel(x1, y1, color);
+		putPixel(x2, y2, fgColor);
 	}
 
 	/** Draws a rectangle. */
