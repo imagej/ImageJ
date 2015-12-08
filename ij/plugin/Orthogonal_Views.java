@@ -167,10 +167,12 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			cal_yz.pixelHeight=o_height;
 		}
 		yz_image.setCalibration(cal_yz);
+		yz_image.setIJMenuBar(false);
 		cal_xz.setUnit(unit);
 		cal_xz.pixelWidth=o_width;
 		cal_xz.pixelHeight=o_depth/az;
 		xz_image.setCalibration(cal_xz);
+		xz_image.setIJMenuBar(false);
 	}
 
 	private void updateMagnification(int x, int y) {

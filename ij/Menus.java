@@ -82,6 +82,7 @@ public class Menus {
 	private static Font menuFont;
 
 	static boolean jnlp; // true when using Java WebStart
+	public static int setMenuBarCount;
 		
 	Menus(ImageJ ijInstance, Applet appletInstance) {
 		ij = ijInstance;
@@ -249,8 +250,10 @@ public class Menus {
 
 		if (fontSize!=0)
 			mbar.setFont(getFont());
-		if (ij!=null)
+		if (ij!=null) {
 			ij.setMenuBar(mbar);
+			Menus.setMenuBarCount++;
+		}
 		
 		if (pluginError!=null)
 			error = error!=null?error+="\n"+pluginError:pluginError;

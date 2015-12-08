@@ -694,9 +694,13 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		ImagePlus imp = win.getImagePlus();
 		if (imp!=null)
 			setMenuBar = imp.setIJMenuBar();
+		MenuBar mb = Menus.getMenuBar();
+		if (mb!=null && mb==win.getMenuBar())
+			setMenuBar = false;
 		if (ij!=null && !ij.quitting() && !Interpreter.nonBatchMacroRunning() && setMenuBar) {
 			IJ.wait(10); // may be needed for Java 1.4 on OS X
-			win.setMenuBar(Menus.getMenuBar());
+			win.setMenuBar(mb);
+			Menus.setMenuBarCount++;
 		}
 		if (imp!=null) imp.setIJMenuBar(true);
 	}

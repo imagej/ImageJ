@@ -44,6 +44,8 @@ public class Info implements PlugInFilter {
 		s += "ImageJ home: "+IJ.getDir("imagej")+"\n";
 		s += "Java home: "+System.getProperty("java.home")+"\n";
 		s += "Screen size: "+screen.width+"x"+screen.height+"\n";
+		if (IJ.isMacOSX())
+			s += "SetMenuBarCount: "+Menus.setMenuBarCount+"\n";
 		new TextWindow("Info", s, 600, 300);
 	}
 
@@ -301,6 +303,8 @@ public class Info implements PlugInFilter {
 			Dimension screen = IJ.getScreenSize();
 			s += "Screen location: "+loc.x+","+loc.y+" ("+screen.width+"x"+screen.height+")\n";
 		}
+		if (IJ.isMacOSX())
+			s += "SetMenuBarCount: "+Menus.setMenuBarCount+"\n";
 		
 		String zOrigin = stackSize>1||cal.zOrigin!=0.0?","+d2s(cal.zOrigin):"";
 		String origin = d2s(cal.xOrigin)+","+d2s(cal.yOrigin)+zOrigin;
