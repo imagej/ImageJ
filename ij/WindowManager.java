@@ -98,7 +98,7 @@ public class WindowManager {
 			return currentWindow.getImagePlus();
 		else if (frontWindow!=null && (frontWindow instanceof ImageWindow))
 			return frontWindow!=null?((ImageWindow)frontWindow).getImagePlus():null;
-		else 	if (imageList.size()>0) {	
+		else if (imageList.size()>0) {	
 			ImagePlus imp = getFocusManagerActiveImage();
 			if (imp!=null)
 				return imp;

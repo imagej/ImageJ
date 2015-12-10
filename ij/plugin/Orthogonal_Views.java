@@ -698,7 +698,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 					imageStack = null;
 			}
 		}
-		ImageStack is=imageStack;
+		ImageStack is = imageStack;
 		if (is==null)
 			is = imageStack = getStack();
 		double arat=az/ax;

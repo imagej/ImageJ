@@ -2090,9 +2090,17 @@ public class Interpreter implements MacroConstants {
 		tempShowMode = mode;
 	}
 	
+	private static Interpreter lastInterp;
+	
 	public static boolean nonBatchMacroRunning() {
 		Interpreter interp = getInstance();
-		return interp!=null && !interp.waitingForUser && interp.debugger==null && interp.selectCount>0 && !isBatchMode();
+		if (interp==null)
+			return false;
+		int count =  interp.selectCount;
+		if (interp==lastInterp)
+			interp.selectCount++;
+		lastInterp = interp;
+		return !interp.waitingForUser && interp.debugger==null && count>0 && !isBatchMode();
 	}
 
 } // class Interpreter

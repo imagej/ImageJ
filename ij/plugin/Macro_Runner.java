@@ -12,6 +12,7 @@ import java.lang.reflect.*;
 /** This class runs macros and scripts installed in the Plugins menu as well as
 	macros and scripts opened using the Plugins/Macros/Run command. */
 public class Macro_Runner implements PlugIn {
+	private static String filePath;
 	
 	/** Opens and runs the specified macro file (.txt or .ijm) or script file (.js, .bsh or .py)  
 		on the current thread. Displays a file open dialog if <code>name</code> 
@@ -120,6 +121,7 @@ public class Macro_Runner implements PlugIn {
             IJ.error("RunMacro", "Macro or script not found:\n \n"+path);
 			return null;
 		}
+		filePath = path;
 		try {
 			int size = (int)f.length();
 			byte[] buffer = new byte[size];
@@ -329,6 +331,11 @@ public class Macro_Runner implements PlugIn {
 				IJ.error("Unable to download "+name+" from "+IJ.URL+url);
 		}
 		return ok;
+	}
+	
+	/** Returns the file path of the most recently loaded macro or script. */
+	public static String getFilePath() {
+		return filePath;
 	}
 
 }
