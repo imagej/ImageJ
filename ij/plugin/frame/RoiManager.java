@@ -446,9 +446,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	boolean isStandardName(String name) {
-		if (name==null) return false;
-		boolean isStandard = false;
+		if (name==null)
+			return false;
 		int len = name.length();
+		if (len<9 || (len>0 && !Character.isDigit(name.charAt(0))))
+			return false;
+		boolean isStandard = false;
 		if (len>=14 && name.charAt(4)=='-' && name.charAt(9)=='-' )
 			isStandard = true;
 		else if (len>=17 && name.charAt(5)=='-' && name.charAt(11)=='-' )

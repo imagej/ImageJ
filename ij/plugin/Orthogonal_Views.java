@@ -52,6 +52,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private Rectangle startingSrcRect;
 	private boolean done;
 	private boolean initialized;
+	private boolean sliceSet;
 	private Thread thread;
 
 	 
@@ -324,10 +325,12 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
  				xzWin.setLocation(xyX,xyY+xyWin.getHeight());
  			if (firstTime) {
  				imp.getWindow().toFront();
- 				if (hyperstack)
- 					imp.setPosition(imp.getChannel(), imp.getNSlices()/2, imp.getFrame());
- 				else
- 					imp.setSlice(imp.getNSlices()/2);
+ 				if (!sliceSet) {
+					if (hyperstack)
+						imp.setPosition(imp.getChannel(), imp.getNSlices()/2, imp.getFrame());
+					else
+						imp.setSlice(imp.getNSlices()/2);
+ 				}
  				firstTime = false;
  			}
 		}
@@ -940,6 +943,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 				imp.setPosition(imp.getChannel(), slice, imp.getFrame());
 			else
 				imp.setSlice(slice);
+			sliceSet = true;
 		}
 		while (!initialized) {
 			IJ.wait(10);
