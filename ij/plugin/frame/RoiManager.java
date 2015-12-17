@@ -449,7 +449,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (name==null)
 			return false;
 		int len = name.length();
-		if (len<9 || (len>0 && !Character.isDigit(name.charAt(0))))
+		if (len<9 || (len>0&&!Character.isDigit(name.charAt(0))))
 			return false;
 		boolean isStandard = false;
 		if (len>=14 && name.charAt(4)=='-' && name.charAt(9)=='-' )

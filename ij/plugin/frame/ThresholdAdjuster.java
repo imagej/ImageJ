@@ -66,7 +66,14 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		super("Threshold");
 		ImagePlus cimp = WindowManager.getCurrentImage();
 		if (cimp!=null && cimp.getBitDepth()==24) {
-			IJ.run(cimp, "Color Threshold...", "");
+			IJ.error("Threshold Adjuster",
+				"Image>Adjust>Threshold only works with grayscale images.\n"
+				+"What you can do:\n"
+				+"   Image>Type>8-bit (convert to grayscale)\n"
+				+"   Image>Type>RGB Stack (convert to RGB stack)\n"
+				+"   Image>Type>HSB Stack (convert to HSB stack)\n"
+				+"   Image>Color>Split Channels (convert to 3 grayscale images)\n"
+				+"   Image>Adjust>Color Threshold (do color thresholding)\n");
 			return;
 		}
 		if (instance!=null) {
