@@ -370,6 +370,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 	
 	final void runMacro(boolean debug) {
+		if (path!=null)
+			Macro_Runner.setFilePath(path);
 		if (getTitle().endsWith(".js"))
 			{evaluateJavaScript(); return;}
 		else if (getTitle().endsWith(".bsh"))

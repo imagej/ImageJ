@@ -338,4 +338,8 @@ public class Macro_Runner implements PlugIn {
 		return filePath;
 	}
 
+	public static void setFilePath(String path) {
+		filePath = path;
+	}
+
 }
