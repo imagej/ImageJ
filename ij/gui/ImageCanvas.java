@@ -551,18 +551,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
         return new Dimension(dstWidth, dstHeight);
     }
 
-    int count;
-    
-    /*
-    public Graphics getGraphics() {
-     	Graphics g = super.getGraphics();
-		IJ.write("getGraphics: "+count++);
-		if (IJ.altKeyDown())
-			throw new IllegalArgumentException("");
-    	return g;
-    }
-    */
-
 	/** Returns the current cursor location in image coordinates. */
 	public Point getCursorLoc() {
 		return new Point(xMouse, yMouse);
@@ -1086,8 +1074,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int x = e.getX();
 		int y = e.getY();
 		flags = e.getModifiers();
-		//IJ.log("Mouse pressed: " + e.isPopupTrigger() + "  " + ij.modifiers(flags));		
-		//if (toolID!=Toolbar.MAGNIFIER && e.isPopupTrigger()) {
+		
 		if (toolID!=Toolbar.MAGNIFIER && (e.isPopupTrigger()||(!IJ.isMacintosh()&&(flags&Event.META_MASK)!=0))) {
 			handlePopupMenu(e);
 			return;
@@ -1132,12 +1119,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				if (IJ.shiftKeyDown())
 					zoomToSelection(ox, oy);
 				else if ((flags & (Event.ALT_MASK|Event.META_MASK|Event.CTRL_MASK))!=0) {
-					//IJ.run("Out");
 					zoomOut(x, y);
 					if (getMagnification()<1.0)
 						imp.repaintWindow();
 				} else {
-					//IJ.run("In");
 	 				zoomIn(x, y);
 					if (getMagnification()<=1.0)
 						imp.repaintWindow();

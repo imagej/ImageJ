@@ -1576,10 +1576,10 @@ public class Functions implements MacroConstants, Measurements {
 				try {
 					value = System.getProperty(key);
 				} catch (Exception e) {};
-					if (value==null)
-						return("Invalid key");
-					else
-						return value;
+				if (value==null)
+					return("Invalid key");
+				else
+					return value;
 			}
 			return "";
 	}
