@@ -35,6 +35,7 @@ import java.util.Properties;
  *	@author Johannes Schindelin
  */
 public class OtherInstance {
+	private static final String DELIMETER = "~!~";
 
 	interface ImageJInstance extends Remote {
 		void sendArgument(String arg) throws RemoteException;
@@ -51,12 +52,10 @@ public class OtherInstance {
 				String name = cmd.substring(6);
 				String name2 = name;
 				String arg = null;
-				if (name2.endsWith(")")) {
-					int index = name2.lastIndexOf("(");
-					if (index>0) {
-						name = name2.substring(0, index);
-						arg = name2.substring(index+1, name2.length()-1);
-					}
+				int index = name2.indexOf(DELIMETER);
+				if (index!=-1) {
+					name = name2.substring(0, index);
+					arg = name2.substring(index+DELIMETER.length(), name2.length());
 				}
 				IJ.runMacroFile(name, arg);
 			} else if (cmd.startsWith("run "))
@@ -143,7 +142,7 @@ public class OtherInstance {
 					cmd = "macro " + arg;
 					macros++;
 				} else if (arg.startsWith("-macro") && i+1<args.length) {
-					String macroArg = i+2<args.length?"("+args[i+2]+")":"";
+					String macroArg = i+2<args.length?DELIMETER+args[i+2]:"";
 					cmd = "macro " + args[i+1] + macroArg;
 					instance.sendArgument(cmd);
 					break;

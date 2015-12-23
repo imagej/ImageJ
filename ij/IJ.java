@@ -922,13 +922,12 @@ public class IJ {
 		if (imp!=null) {
 			ImageCanvas ic = imp.getCanvas();
 			if (ic!=null && imp.getCalibration().scaled()) {
+				Point p = ic.getCursorLoc();
 				Roi roi = imp.getRoi();
-				if (roi!=null)
+				if (roi!=null && roi.contains(p.x,p.y))
 					roi.showStatus();
-				else {
-					Point p = ic.getCursorLoc();
+				else
 					imp.mouseMoved(p.x, p.y);
-				}
 			}
 		}
 	}
