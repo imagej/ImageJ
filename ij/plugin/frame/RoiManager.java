@@ -476,7 +476,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (xs.length()>digits) digits = xs.length();
 		String ys = "" + yc;
 		if (ys.length()>digits) digits = ys.length();
-		if (digits==4 && imp!=null && imp.getStackSize()>=10000) digits = 5;
+		if (digits==4 && imp!=null && (imp.getStackSize()>=10000||imp.getHeight()>=10000))
+			digits = 5;
 		xs = "000000" + xc;
 		ys = "000000" + yc;
 		String label = ys.substring(ys.length()-digits) + "-" + xs.substring(xs.length()-digits);
@@ -2313,7 +2314,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public void allowRecording(boolean allow) {
 		this.allowRecording = allow;
 	}
-
+	
 	public void mouseReleased (MouseEvent e) {}
 	public void mouseClicked (MouseEvent e) {}
 	public void mouseEntered (MouseEvent e) {}

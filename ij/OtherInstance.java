@@ -35,7 +35,7 @@ import java.util.Properties;
  *	@author Johannes Schindelin
  */
 public class OtherInstance {
-	private static final String DELIMETER = "~!~";
+	private static final String DELIMETER = "~!~"; // Separates macro name and argument
 
 	interface ImageJInstance extends Remote {
 		void sendArgument(String arg) throws RemoteException;
