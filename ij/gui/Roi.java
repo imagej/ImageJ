@@ -1325,7 +1325,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			previousRoi.modState = NO_MODS;
 	 }
 
-	public void showStatus() {
+	protected void showStatus() {
 		if (imp==null)
 			return;
 		String value;
@@ -1339,7 +1339,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		Calibration cal = imp.getCalibration();
 		String size;
 		if (cal.scaled() && !(IJ.altKeyDown()||(state==NORMAL&&IJ.shiftKeyDown())))
-			size = ", w="+IJ.d2s(width*cal.pixelWidth)+", h="+IJ.d2s(height*cal.pixelHeight);
+			size = ", w="+IJ.d2s(width*cal.pixelWidth)+" ("+width+"), h="+IJ.d2s(height*cal.pixelHeight)+" ("+height+")";
 		else
 			size = ", w="+width+", h="+height;
 		IJ.showStatus(imp.getLocationAsString(x,y)+size+value);
