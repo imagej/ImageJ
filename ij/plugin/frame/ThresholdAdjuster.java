@@ -301,6 +301,12 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			mode = modeChoice.getSelectedIndex();
 			setLutColor(mode);
 			doStateChange = true;
+			if (Recorder.record) {
+				if (Recorder.scriptMode())
+					Recorder.recordCall("ThresholdAdjuster.setMode(\""+modes[mode]+"\");");
+				else
+					Recorder.recordString("call(\"ij.plugin.frame.ThresholdAdjuster.setMode\", \""+modes[mode]+"\");\n");
+			}
 		} else
 			doAutoAdjust = true;
 		notify();
@@ -842,6 +848,27 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	public static String getMode() {
 		return modes[mode];
 	}
+	
+	/** Sets the current mode ("Red","B&W" or"Over/Under"). */
+	public static void setMode(String tmode) {
+		if (instance!=null) synchronized (instance) {
+			ThresholdAdjuster ta = ((ThresholdAdjuster)instance);
+			if (modes[0].equals(tmode))
+				mode = 0;
+			else if (modes[1].equals(tmode))
+				mode = 1;
+			else if (modes[2].equals(tmode))
+				mode = 2;
+			else
+				return;
+			ta.setLutColor(mode);
+			ta.doStateChange = true;
+			ta.modeChoice.select(mode);
+			ta.notify();
+		}
+	}
+
+
 
 } // ThresholdAdjuster class
 

@@ -5,46 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.50f 3 January 2016</u>
+<li> <u>1.50g 9 January 2016</u>
 <ul>
-<li> Added the <i>Analyze&gt;Tools&gt;Grid</i> command, which
-creates a non-destructive grid of lines, crosses, circles or points on the current image.
-<li> Thanks to Michael Elbaum, added the <i>Process&gt;FFT&gt;Make Circular Selection</i>
-command.
-<li> Thanks to Daniel Chung, text images can now be opened by dragging and dropping
-them on the "&gt;&gt;" icon in the toolbar.
-<li> Thanks to Stein Rorvik, with spatially calibrated images, the raw width and height 
-are shown in parenthesis as a selection is being created.
-<li> Thanks to Sho Fujisawa, the ROI Manager uses 5 digits for y-coordinates 
-in ROI names if the image height is greater than 9999 pixels.
-<li> Thanks to Norbert Vischer, added the Stack.setOrthoViews(x,y,z), 
-Stack.getOrthoViewsID() and Stack.stopOrthoViews() macro functions
-(<a href="macros/OrthogonalViewsDemo.txt">example</a>).
-<li> Thanks to Stein Rorvik, added the getInfo("macro.filepath") macro function.
-<li> Thanks to Norbert Vischer, <i>Image&gt;Stacks&gt;Orthoganal Views</i>
-is faster and more reliable when working with hyperstacks.
-<li> The getInfo(key) macro function returns "Invalid key" if a value
-associated with the key is not found.
-<li> Thanks to Gabriel Landini, added the ImageProcessor.drawLine4(x1,y1,x2,y2)
-method, which draws 4-connected lines.
-<li> Added the static RoiManager.getRoiManager() method, which returns a
-reference to the ROI Manager and opens the "ROI Manager" window if
-it is not already open.
-<li> Thanks to Nicolas Stifani, fixed bugs that could cause the 
-getResultLabel(row) and getResultString("Label",row) macro functions to fail.
-<li> Thanks to MartinH, fixed a bug that caused montages created using
-<i>Image&gt;Stacks&gt;Make Montage</i> to lose their pixel dimensions.
-<li> Thanks to Norbert Vischer, fixed a bug that caused the Pixel 
-Inspector tool to not work correctly with blank 32-bit images.
-<li> Thanks Kees Straatman, fixed a bug that caused <i>Process&gt;Find Maxima</i>,
-with "Count" output, to sometimes display unwanted results.
-<li> Thanks to Romain Guiet, fixed a bug in the ROI Manager that caused it
-to ignore an ROI name if the name was 9 character in length and it had a "-" 
-in the middle.
-<li> Thanks to Stein Rorvik,  fixed a bug that caused macros run from the command
-line to fail if the argument contained parenthesis.
-<li> Fixed a 1.50c regression that caused the deprecated RoiManager.getROIs() 
-method to return null.
+<li> Thanks to Mike Davidson, added the call("ij.plugin.frame.ThresholdAdjuster.setMode",mode)
+macro function and the ThresholdAdjuster.setMode(mode) method, where 'mode' is
+"Red", "B&W" or "Over/Under".
+<li> Fixed a bug that caused the <i>Compile and Run</i> command to fail on Java 8
+when compiling plugins with errors. 
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
