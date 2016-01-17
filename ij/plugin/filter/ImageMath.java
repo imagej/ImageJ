@@ -169,7 +169,8 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 			lower = ip.getMinThreshold();
 			upper = ip.getMaxThreshold();
 			if (lower==ImageProcessor.NO_THRESHOLD || !(ip instanceof FloatProcessor)) {
-				IJ.error("Thresholded 32-bit float image required");
+				String title = imp!=null?"\n\""+imp.getTitle()+"\"":"";
+				IJ.error("NaN Backround", "Thresholded 32-bit float image required:"+title);
 				canceled = true;
 				return;
 			}

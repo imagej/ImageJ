@@ -375,11 +375,6 @@ abstract class CompilerTool {
 	public static class LegacyCompilerTool extends CompilerTool {
 		protected static Class javacC;
 
-		boolean areErrors(String s) {
-			boolean errors = s != null && s.length() > 0;
-			return errors;
-		}
-
 		public boolean compile(List sources, List options, StringWriter log) {
 			if (IJ.debugMode) IJ.log("Compiler: using com.sun.tools.javac");
 			try {
@@ -395,7 +390,7 @@ abstract class CompilerTool {
 				Method compile = javacC.getMethod("compile", compileTypes);
 				Object result = compile.invoke(javac, new Object[] { args, printer });
 				printer.flush();
-				return Integer.valueOf(0).equals(result) | areErrors(log.toString());
+				return Integer.valueOf(0).equals(result);
 			} catch (Exception e) {
 				e.printStackTrace(new PrintWriter(log));
 			}

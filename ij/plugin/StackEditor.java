@@ -261,6 +261,7 @@ public class StackEditor implements PlugIn {
 		Calibration cal = imp.getCalibration();
 		CompositeImage cimg = imp.isComposite()?(CompositeImage)imp:null;
 		if (imp.getNChannels()!=imp.getStackSize()) cimg = null;
+		Overlay overlay = imp.getOverlay();
 		for (int i=1; i<=size; i++) {
 			String label = stack.getShortSliceLabel(i);
 			String title = label!=null&&!label.equals("")?label:getTitle(imp, i);
@@ -278,6 +279,18 @@ public class StackEditor implements PlugIn {
 			if (info!=null && !info.equals(label))
 				imp2.setProperty("Info", info);
 			imp2.setIJMenuBar(i==size);
+			if (overlay!=null) {
+				Overlay overlay2 = new Overlay();
+				for (int j=0; j<overlay.size(); j++) {
+					Roi roi = overlay.get(j);
+					if (roi.getPosition()==i) {
+						roi.setPosition(0);
+						overlay2.add((Roi)roi.clone());
+					}
+				}
+				if (overlay2.size()>0)
+					imp2.setOverlay(overlay2);
+			}
 			imp2.show();
 		}
 		imp.changes = false;

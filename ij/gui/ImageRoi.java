@@ -122,8 +122,9 @@ public class ImageRoi extends Roi {
 	}
 
 	public synchronized Object clone() {
+		ImageRoi roi2 = (ImageRoi)super.clone();
 		ImagePlus imp = new ImagePlus("", img);
-		ImageRoi roi2 = new ImageRoi(x, y, imp.getProcessor());
+		roi2.setProcessor(imp.getProcessor());
 		roi2.setOpacity(getOpacity());
 		roi2.setZeroTransparent(zeroTransparent);
 		return roi2;
@@ -141,6 +142,8 @@ public class ImageRoi extends Roi {
 	public void setProcessor(ImageProcessor ip) {
 		img = ip.createImage();
 		this.ip = ip;
+		width = ip.getWidth();
+		height = ip.getHeight();
 	}
 
 }

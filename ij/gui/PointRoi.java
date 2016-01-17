@@ -376,11 +376,13 @@ public class PointRoi extends PolygonRoi {
 		return defaultType;
 	}
 	
+	/** Sets the point type (0=hybrid, 1=crosshair, 2=dot, 3=circle). */
 	public void setPointType(int type) {
 		if (type>=0 && type<types.length)
 			this.type = type;
 	}
 
+	/** Returns the point type (0=hybrid, 1=crosshair, 2=dot, 3=circle). */
 	public int getPointType() {
 		return type;
 	}
@@ -400,11 +402,13 @@ public class PointRoi extends PolygonRoi {
 		return convertSizeToIndex(defaultSize);
 	}
 
-	public void setSize(int index) {
-		if (index>=0 && index<sizes.length)
-			this.size = convertIndexToSize(index);
+	/** Sets the point size, where 'size' is 0-4. */
+	public void setSize(int size) {
+		if (size>=0 && size<sizes.length)
+			this.size = convertIndexToSize(size);
 	}
 
+	/** Returns the point size (0-4). */
 	public int getSize() {
 		return convertSizeToIndex(size);
 	}
