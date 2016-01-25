@@ -61,6 +61,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 					overlay = null;
 				if (overlay!=null && overlay.size()!=1)
 					overlay = null;
+				if (overlay!=null)
+					overlay = overlay.duplicate();
 				scale(ip, overlay);
 			}
 		}
@@ -85,6 +87,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		Overlay overlay = imp.getOverlay();
 		if (imp.getHideOverlay())
 			overlay = null;
+		if (overlay!=null)
+			overlay = overlay.duplicate();
 		Overlay overlay2 = new Overlay();
 		for (int i=1; i<=nSlices; i++) {
 			IJ.showStatus("Scale: " + i + "/" + nSlices);

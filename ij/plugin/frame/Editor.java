@@ -37,7 +37,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"importPackage(java.util);"+
 		"importPackage(java.io);"+
 		"function print(s) {IJ.log(s);};";
-		
+
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
 	public static final int MONOSPACED=1, MENU_BAR=2;
 	public static final int MACROS_MENU_ITEMS = 12;
@@ -85,7 +85,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private ArrayList undoBuffer = new ArrayList();
     private boolean performingUndo;
     private boolean checkForCurlyQuotes;
-    private boolean useNashorn;
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -420,15 +419,13 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			text = ta.getText();
 		else
 			text = ta.getSelectedText();
-		if (text.equals("")) return;
-		if (useNashorn) {
-			IJ.runPlugIn("ij.plugin.JavaScriptEvaluator", text);
+		if (text.equals(""))
 			return;
-		}
 		text = getJSPrefix("") + text;
-		if ((IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit())) && !IJ.isJava18()) {
-			// Use JavaScript engine built into Java 6 and Java 7.
-			// Can't use incompatible Nashorn engine in Java 8 and later.
+		if (IJ.isJava18())
+			text = "load(\"nashorn:mozilla_compat.js\");" + text;
+		if ((IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit()))) {
+			// Use JavaScript engine built into Java 6 and later.
 			IJ.runPlugIn("ij.plugin.JavaScriptEvaluator", text);
 		} else {
 			Object js = IJ.runPlugIn("JavaScript", text);

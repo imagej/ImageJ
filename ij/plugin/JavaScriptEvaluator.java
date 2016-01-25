@@ -39,14 +39,18 @@ public class JavaScriptEvaluator implements PlugIn, Runnable  {
 		try {
 			ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
 			ScriptEngine engine = scriptEngineManager.getEngineByName("ECMAScript");
-			if (engine == null)
-				{IJ.error("Could not find JavaScript engine"); return;}
-			engine.eval("function load(path) {\n"
-				+ "  importClass(Packages.sun.org.mozilla.javascript.internal.Context);\n"
-				+ "  importClass(Packages.java.io.FileReader);\n"
-				+ "  var cx = Context.getCurrentContext();\n"
-				+ "  cx.evaluateReader(this, new FileReader(path), path, 1, null);\n"
-				+ "}");
+			if (engine == null) {
+				IJ.error("Could not find JavaScript engine");
+				return;
+			}
+			if (!IJ.isJava18()) {
+				engine.eval("function load(path) {\n"
+					+ "  importClass(Packages.sun.org.mozilla.javascript.internal.Context);\n"
+					+ "  importClass(Packages.java.io.FileReader);\n"
+					+ "  var cx = Context.getCurrentContext();\n"
+					+ "  cx.evaluateReader(this, new FileReader(path), path, 1, null);\n"
+					+ "}");
+			}
 			result = engine.eval(script);
 		} catch(Throwable e) {
 			String msg = e.getMessage();

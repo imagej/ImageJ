@@ -1377,8 +1377,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 	}
 
-	/** Returns the current stack index (one-based) or 1 if
-		this is a single image. */
+	/** Returns the current stack index (one-based) or 1 if this is a single image. */
 	public int getCurrentSlice() {
 		if (currentSlice<1) setCurrentSlice(1);
 		if (currentSlice>getStackSize())

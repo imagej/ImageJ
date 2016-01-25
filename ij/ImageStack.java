@@ -344,7 +344,11 @@ public class ImageStack {
 		return ("stack["+getWidth()+"x"+getHeight()+"x"+getSize()+v+"]");
 	}
 	
-	/** Returns, as a double, the specified voxel. */
+	/** Returns, as a double, the specified voxel. Use the
+	 * ImagePlus.getStackIndex() method to convert a C,Z,T
+	 * hyperstack position (one-based) into a z index (zero-based).
+	 * @see ij.ImagePlus#getStackIndex
+	*/
 	public final double getVoxel(int x, int y, int z) {
 		if (x>=0 && x<width && y>=0 && y<height && z>=0 && z<nSlices) {
 			switch (type) {
