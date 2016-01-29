@@ -1624,7 +1624,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				ip.resetRoi();
 		}
 		roi.setImage(this);
-		if (updateDisplay) draw();
+		if (updateDisplay)
+			draw();
 		//roi.notifyListeners(RoiListener.CREATED);
 	}
 	

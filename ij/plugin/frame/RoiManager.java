@@ -657,8 +657,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				roi2.setLocation(r1.x+r1.width/2-r2.width/2, r1.y+r1.height/2-r2.height/2);
 			}
 		}
-		if (r.x>=width || r.y>=height || (r.x+r.width)<0 || (r.y+r.height)<0)
-			roi2.setLocation((width-r.width)/2, (height-r.height)/2);
+		if (r.x>=width || r.y>=height || (r.x+r.width)<0 || (r.y+r.height)<0) {
+			if (roi2.getType()!=Roi.POINT)
+				roi2.setLocation((width-r.width)/2, (height-r.height)/2);
+		}
 		if (noUpdateMode) {
 			imp.setRoi(roi2, false);
 			noUpdateMode = false;

@@ -54,11 +54,13 @@ public class JavaScriptEvaluator implements PlugIn, Runnable  {
 			result = engine.eval(script);
 		} catch(Throwable e) {
 			String msg = e.getMessage();
+			if (msg==null)
+				msg = "";
 			if (msg.startsWith("sun.org.mozilla.javascript.internal.EcmaError: "))
 				msg = msg.substring(47, msg.length());
 			if (msg.startsWith("sun.org.mozilla.javascript.internal.EvaluatorException"))
 				msg = "Error"+msg.substring(54, msg.length());
-			if (!msg.contains("Macro canceled"))
+			if (msg.length()>0 && !msg.contains("Macro canceled"))
 				IJ.log(msg);
 		}
 	}

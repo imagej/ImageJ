@@ -1956,6 +1956,24 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return "";
 	}
 	
+	public ImageStatistics getStatistics() {
+		ImageProcessor ip = getMask();
+		Rectangle r = getBounds();
+		if (ip==null)
+			ip = new ByteProcessor(r.width, r.height);
+		Roi roi = (Roi)this.clone();
+		roi.setLocation(0.0, 0.0);
+		ip.setRoi(roi);
+		int params = Measurements.AREA+Measurements.CENTROID+Measurements.ELLIPSE
+			+Measurements.ELLIPSE+Measurements.CIRCULARITY+Measurements.SHAPE_DESCRIPTORS
+			+Measurements.PERIMETER+Measurements.RECT;
+		ImageStatistics stats = ImageStatistics.getStatistics(ip, params, null);
+		stats.mean = stats.min = stats.max = Double.NaN;
+		stats.xCentroid += r.x;
+		stats.yCentroid += r.y;
+		return stats;
+	}
+
 	public FloatPolygon getRotationCenter() {
 		FloatPolygon p = new FloatPolygon();
 		Rectangle2D r = getFloatBounds();
