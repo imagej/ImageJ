@@ -48,7 +48,8 @@ public class Executer implements Runnable {
 	}
 
 	public void run() {
-		if (command==null) return;
+		if (command==null)
+			return;
 		if (listeners.size()>0) synchronized (listeners) {
 			for (int i=0; i<listeners.size(); i++) {
 				CommandListener listener = (CommandListener)listeners.elementAt(i);

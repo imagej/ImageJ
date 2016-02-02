@@ -64,7 +64,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private boolean firstTime = true;
 	private int[] selectedIndexes;
 	private boolean appendResults;
-	private ResultsTable mmResults;
+	private static ResultsTable mmResults;
 	private int imageID;
 	private boolean allowRecording;
 	private boolean recordShowAll = true;
@@ -897,7 +897,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	 * @see <a href="http://imagej.nih.gov/ij/macros/js/MultiMeasureDemo.js">JavaScript example</a>
 	*/
 	public ResultsTable multiMeasure(ImagePlus imp) {
-		ResultsTable rt = multiMeasure(imp, getIndexes(), imp.getStackSize(), false);
+		Roi[] rois = getSelectedRoisAsArray();
+		ResultsTable rt = multiMeasure(imp, rois, false);
 		imp.deleteRoi();
 		return rt;
 	}
@@ -971,12 +972,18 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (nSlices>1)
 				imp.setSlice(currentSlice);
 		} else {
-			ResultsTable rtMulti = multiMeasure(imp, indexes, nSlices, appendResults);
-			mmResults = (ResultsTable)rtMulti.clone();
-			rtMulti.show("Results");
-			imp.setSlice(currentSlice);
-			if (indexes.length>1)
-				IJ.run("Select None");
+			Roi[] rois = getSelectedRoisAsArray();
+			if ("".equals(cmd)) { // run More>>Multi Measure command in separate thread
+				MultiMeasureRunner mmr = new MultiMeasureRunner();
+				mmr.multiMeasure(imp, rois, appendResults);
+			} else {
+				ResultsTable rtMulti = multiMeasure(imp, rois, appendResults);
+				mmResults = (ResultsTable)rtMulti.clone();
+				rtMulti.show("Results");
+				imp.setSlice(currentSlice);
+				if (indexes.length>1)
+					IJ.run("Select None");
+			}
 		}
 		if (record()) {
 			if (Recorder.scriptMode()) {
@@ -1000,7 +1007,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;
 	}
 	
-	private ResultsTable multiMeasure(ImagePlus imp, int[] indexes, int nSlices, boolean appendResults) {
+	private static ResultsTable multiMeasure(ImagePlus imp, Roi[] rois, boolean appendResults) {
+		int nSlices = imp.getNSlices();
 		Analyzer aSys = new Analyzer(imp); // System Analyzer
 		ResultsTable rtSys = Analyzer.getResultsTable();
 		ResultsTable rtMulti = new ResultsTable();
@@ -1016,26 +1024,25 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if ((Analyzer.getMeasurements()&Measurements.LABELS)!=0)
 				rtMulti.addLabel("Label", imp.getTitle());
 			int roiIndex = 0;
-			for (int i=0; i<indexes.length; i++) {
-				if (restoreWithoutUpdate(imp, indexes[i])) {
-					roiIndex++;
-					aSys.measure();
-					for (int j=0; j<=rtSys.getLastColumn(); j++){
-						float[] col = rtSys.getColumn(j);
-						String head = rtSys.getColumnHeading(j);
-						String suffix = ""+roiIndex;
-						Roi roi = imp.getRoi();
-						if (roi!=null) {
-							String name = roi.getName();
-							if (name!=null && name.length()>0 && (name.length()<9||!Character.isDigit(name.charAt(0))))
-								suffix = "("+name+")";
-						}
-						if (head!=null && col!=null && !head.equals("Slice"))
-							rtMulti.addValue(head+suffix, rtSys.getValue(j,rtSys.getCounter()-1));
+			for (int i=0; i<rois.length; i++) {
+				imp.setRoi(rois[i]);
+				roiIndex++;
+				aSys.measure();
+				for (int j=0; j<=rtSys.getLastColumn(); j++){
+					float[] col = rtSys.getColumn(j);
+					String head = rtSys.getColumnHeading(j);
+					String suffix = ""+roiIndex;
+					Roi roi = imp.getRoi();
+					if (roi!=null) {
+						String name = roi.getName();
+						if (name!=null && name.length()>0 && (name.length()<9||!Character.isDigit(name.charAt(0))))
+							suffix = "("+name+")";
 					}
-				} else
-					break;
+					if (head!=null && col!=null && !head.equals("Slice"))
+						rtMulti.addValue(head+suffix, rtSys.getValue(j,rtSys.getCounter()-1));
+				}
 			}
+			if (nSlices>1) IJ.showProgress(slice,nSlices);
 		}
 		return rtMulti;
 	}
@@ -2380,6 +2387,34 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
     		}
     	}
 	}
+	
+	// This class runs the "Multi Measure" command in a separate thread
+	private class MultiMeasureRunner implements Runnable  {
+		private Thread thread;
+		private ImagePlus imp;
+		private Roi[] rois;
+		private boolean appendResults;
+		
+		public void multiMeasure(ImagePlus imp, Roi[] rois, boolean appendResults) {
+			this.imp = imp;
+			this.rois = rois;
+			this.appendResults = appendResults;
+			thread = new Thread(this, "MultiMeasure"); 
+			thread.start();
+		}
+	
+		public void run() {
+			int currentSlice = imp.getCurrentSlice();
+			ResultsTable rtMulti = RoiManager.multiMeasure(imp, rois, appendResults);
+			mmResults = (ResultsTable)rtMulti.clone();
+			rtMulti.show("Results");
+			imp.setSlice(currentSlice);
+			if (rois.length>1)
+				IJ.run("Select None");
+		}
+		
+	}
+
 
 }
 
