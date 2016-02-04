@@ -668,6 +668,27 @@ public class PointRoi extends PolygonRoi {
 		return handle;
 	}
 
+	/** Returns a copy of this PointRoi. */
+	public synchronized Object clone() {
+		PointRoi r = (PointRoi)super.clone();
+		if (counters!=null) {
+			r.counters = new short[counters.length];
+			for (int i=0; i<counters.length; i++)
+				r.counters[i] = counters[i];
+		}
+		if (positions!=null) {
+			r.positions = new short[positions.length];
+			for (int i=0; i<positions.length; i++)
+				r.positions[i] = positions[i];
+		}
+		if (counts!=null) {
+			r.counts = new int[counts.length];
+			for (int i=0; i<counts.length; i++)
+				r.counts[i] = counts[i];
+		}
+		return r;
+	}
+
 	/** @deprecated */
 	public void setHideLabels(boolean hideLabels) {
 		this.showLabels = !hideLabels;
