@@ -234,20 +234,79 @@ public class Plot implements Cloneable {
 		return imp == null ? title : imp.getTitle();
 	}
 
-	/** Sets the x-axis and y-axis range. Updates the image if existing. */
+    //n__ begin setLimits
+    /**
+     * Sets the x-axis and y-axis range. Updates the image if existing.
+     * Accepts NaN values to indicate auto-range
+     */
+    public void setLimits(double xMin, double xMax, double yMin, double yMax) {
+        boolean containsNaN = (Double.isNaN(xMin + xMax + yMin + yMax));
+        if (containsNaN && allPlotObjects.isEmpty())//can't apply auto-range without data
+            return;
+        boolean[] auto = new boolean[4];
+        double[] range = {xMin, xMax, yMin, yMax};
+        if (containsNaN) {
+            double[] extrema = getMinAndMax(true, 0xff);
 
-	public void setLimits(double xMin, double xMax, double yMin, double yMax) {
-		defaultMinMax[0] = xMin;
-		defaultMinMax[1] = xMax;
-		defaultMinMax[2] = yMin;
-		defaultMinMax[3] = yMax;
-		enlargeRange = null;
-		ignoreForce2Grid = true;
-		if (plotDrawn)
-			setLimitsToDefaults(true);
-	}
+            for (int jj = 0; jj < 4; jj++)
+                if (Double.isNaN(range[jj])) {
+                    range[jj] = extrema[jj];
+                    auto[jj] = true;
+                }
+            double left = range[0];
+            double right = range[1];
+            double bottom = range[2];
+            double top = range[3];
+            
+            //set semi-auto to full-auto if it would result in reverse axis direction
+            if ((auto[0] || auto[1]) && (left >= right)) {
+                left = extrema[0];
+                right = extrema[1];
+                auto[0] = true;
+                auto[1] = true;
+            }
+            if ((auto[2] || auto[3]) && (bottom >= top)) {
+                bottom = extrema[2];
+                top = extrema[3];
+                auto[2] = true;
+                auto[3] = true;
+            }    
+            //Add 3% extra space to automatic borders
+            double extraXLin = (right - left) * 0.03;
+            double extraYLin = (top - bottom) * 0.03;
+            double extraXLog = (Math.log(right) - Math.log(left)) * 0.03;
+            double extraYLog = (Math.log(top) - Math.log(bottom)) * 0.03;
 
-	/** Returns the current limits as an array xMin, xMax, yMin, yMax.
+            boolean isLogX = hasFlag(X_LOG_NUMBERS);
+            boolean isLogY = hasFlag(Y_LOG_NUMBERS);
+
+            if (auto[0] && !isLogX)
+                range[0] = left - extraXLin;//extra space (linear)
+            if (auto[1] && !isLogX)
+                range[1] = right + extraXLin;
+            if (auto[2] && !isLogY)
+                range[2] = bottom - extraYLin;
+            if (auto[3] && !isLogY)
+                range[3] = top + extraYLin;
+
+            if (auto[0] && isLogX)
+                range[0] = Math.exp(Math.log(left) - extraXLog);//extra space (log)
+            if (auto[1] && isLogX)
+                range[1] = Math.exp(Math.log(right) + extraXLog);
+            if (auto[2] && isLogY)
+                range[2] = Math.exp(Math.log(bottom) - extraYLog);
+            if (auto[3] && isLogY)
+                range[3] = Math.exp(Math.log(top) + extraYLog);
+        }
+        defaultMinMax = range;//change pointer of defaultMinMax
+        enlargeRange = null;
+        ignoreForce2Grid = true;
+        if (plotDrawn)
+            setLimitsToDefaults(true);
+    }
+    //n__ end setLimits
+   
+    /** Returns the current limits as an array xMin, xMax, yMin, yMax.
 	 *	Note that future versions might return a longer array (e.g. for y2 axis limits) */
 	public double[] getLimits() {
 		return new double[] {xMin, xMax, yMin, yMax};
@@ -1440,32 +1499,43 @@ public class Plot implements Cloneable {
 		updateImage();
 	}
 
-	/** Zooms in or out when the user clicks one of the overlay arrows at the axes.
-	 *	Index numbers start with 0 at the 'down' arrow of the lower side of the x axis
-	 *	and end with the up arrow at the upper side of the y axis. */
-	void zoomOnRangeArrow(int arrowIndex) {
-		int axisIndex = (arrowIndex / 4) * 2;  //0 for x, 2 for y
-		double min = axisIndex==0 ? xMin : yMin;
-		double max = axisIndex==0 ? xMax : yMax;
-		double range = max - min;
-		boolean isMin = (arrowIndex % 4) < 2;
-		boolean shrinkRange = arrowIndex % 4 == 1 || arrowIndex % 4 == 2;
-		double factor = Math.sqrt(2);
-		if (shrinkRange) factor = 1.0/factor;
-		if (isMin)
-			min = max - range*factor;
-		else
-			max = min + range*factor;
-		boolean logAxis = axisIndex==0 ? logXAxis : logYAxis;
-		if (logAxis) {
-			min = Math.pow(10, min);
-			max = Math.pow(10, max);
-		}
-		currentMinMax[axisIndex] = min;
-		currentMinMax[axisIndex+1] = max;
-		updateImage();
-	}
+    //n__ begin zoomOnRangeArrow
+    /**
+     * Zooms in or out when the user clicks one of the overlay arrows at the
+     * axes. Index numbers start with 0 at the 'down' arrow of the lower side of
+     * the x axis and end with the up arrow at the upper side of the y axis.
+     */
+    void zoomOnRangeArrow(int arrowIndex) {
+        if (arrowIndex < 8) {//0..7 = arrows, 8 = Reset Range
+            int axisIndex = (arrowIndex / 4) * 2;  //0 for x, 2 for y
+            double min = axisIndex == 0 ? xMin : yMin;
+            double max = axisIndex == 0 ? xMax : yMax;
+            double range = max - min;
+            boolean isMin = (arrowIndex % 4) < 2;
+            boolean shrinkRange = arrowIndex % 4 == 1 || arrowIndex % 4 == 2;
+            double factor = Math.sqrt(2);
+            if (shrinkRange)
+                factor = 1.0 / factor;
+            if (isMin)
+                min = max - range * factor;
+            else
+                max = min + range * factor;
+            boolean logAxis = axisIndex == 0 ? logXAxis : logYAxis;
+            if (logAxis) {
+                min = Math.pow(10, min);
+                max = Math.pow(10, max);
+            }
+            currentMinMax[axisIndex] = min;
+            currentMinMax[axisIndex + 1] = max;
+        }
 
+        if (arrowIndex == 8)
+            setLimitsToDefaults(false);
+        updateImage();
+    }
+//n__ end zoomOnRangeArrow
+    
+    
 	/** Zooms in or out on a point x, y in screen coordinates. If x>0, default in both directions,
 	 *	if the cursor is below the x axis, only in x direction, if the cursor is left of the y axis, only in y direction.
 	 *	If x < 0, zooms on center; if x == ZOOM_AS_PREVIOUS, zooms on the center of the previous zoom

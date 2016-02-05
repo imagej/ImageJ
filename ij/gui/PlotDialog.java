@@ -50,16 +50,17 @@ public class PlotDialog {
 			boolean livePlot = plot.plotMaker != null;
 			int xDigits = plot.logXAxis ? -2 : Plot.getDigits(currentMinMax[0], currentMinMax[1], 0.005*Math.abs(currentMinMax[1]-currentMinMax[0]), 6);
 			int yDigits = plot.logYAxis ? -2 : Plot.getDigits(currentMinMax[2], currentMinMax[3], 0.005*Math.abs(currentMinMax[3]-currentMinMax[2]), 6);
-			gd.addNumericField("X_From", currentMinMax[0], xDigits);
-			gd.addNumericField("X_To", currentMinMax[1], xDigits);
+			gd.addNumericField("X_From*", currentMinMax[0], xDigits);
+			gd.addNumericField("X_To*", currentMinMax[1], xDigits);
 			gd.setInsets(0, 20, 0); //top, left, bottom
 			if (livePlot) gd.addCheckbox("Fix_X Range While Live", (plot.templateFlags&Plot.X_RANGE)!=0);
 			gd.addCheckbox("Log_X Axis", (plot.hasFlag(Plot.X_LOG_NUMBERS)));
 			gd.setInsets(20, 0, 3); //top, left, bottom
-			gd.addNumericField("Y_From", currentMinMax[2], yDigits);
-			gd.addNumericField("Y_To", currentMinMax[3], yDigits);
+			gd.addNumericField("Y_From*", currentMinMax[2], yDigits);
+			gd.addNumericField("Y_To*", currentMinMax[3], yDigits);
 			if (livePlot) gd.addCheckbox("Fix_Y Range While Live", (plot.templateFlags&Plot.Y_RANGE)!=0);
 			gd.addCheckbox("Log_Y Axis", (plot.hasFlag(Plot.Y_LOG_NUMBERS)));
+                        gd.addMessage("*Enter 'NaN' for automatic range", new Font("SansSerif", Font.PLAIN, 12));        //n__ PlotDialog
 			gd.showDialog();
 			if (gd.wasCanceled()) return;
 
@@ -83,7 +84,7 @@ public class PlotDialog {
 				currentMinMax[3] = linYMax;
 			}
 			if (errorWhat.length()>0) {
-				IJ.error("Invalid Input", errorWhat+" Range remains unchanged");
+				IJ.error("Invalid Input", "Invalid " + errorWhat+ ": Ranges remain unchanged");
 				return;
 			}
 			if (livePlot) plot.templateFlags = setFlag(plot.templateFlags, Plot.X_RANGE, gd.getNextBoolean());
@@ -92,19 +93,24 @@ public class PlotDialog {
 			boolean yLog = gd.getNextBoolean();
 			plot.setAxisXLog(xLog);
 			plot.setAxisYLog(yLog);
+                        //n__ begin PlotDialog
+                        plot.setLimits(linXMin, linXMax, linYMin, linYMax);
 			plot.updateImage();
 			if (Recorder.record) {
 				if (Recorder.scriptMode()) {
 					Recorder.recordCall("//plot = IJ.getImage().getProperty(Plot.PROPERTY_KEY)");
 					Recorder.recordCall("plot.setAxisXLog("+xLog+");");
 					Recorder.recordCall("plot.setAxisYLog("+yLog+");");
-					Recorder.recordCall("plot.setLimits("+IJ.d2s(currentMinMax[0],xDigits)+","+IJ.d2s(currentMinMax[1],xDigits)+","+IJ.d2s(currentMinMax[2],yDigits)+","+IJ.d2s(currentMinMax[3],yDigits)+");");
+					//Recorder.recordCall("plot.setLimits("+IJ.d2s(currentMinMax[0],xDigits)+","+IJ.d2s(currentMinMax[1],xDigits)+","+IJ.d2s(currentMinMax[2],yDigits)+","+IJ.d2s(currentMinMax[3],yDigits)+");");
+					Recorder.recordCall("plot.setLimits("+IJ.d2s(linXMin,xDigits)+","+IJ.d2s(linXMax,xDigits)+","+IJ.d2s(linYMin,yDigits)+","+IJ.d2s(linYMax,yDigits)+");");
 				} else {
 					Recorder.recordString("Plot.setLogScaleX("+xLog+");\n");
 					Recorder.recordString("Plot.setLogScaleY("+yLog+");\n");
-					Recorder.recordString("Plot.setLimits("+IJ.d2s(currentMinMax[0],xDigits)+","+IJ.d2s(currentMinMax[1],xDigits)+","+IJ.d2s(currentMinMax[2],yDigits)+","+IJ.d2s(currentMinMax[3],yDigits)+");\n");
+					//Recorder.recordString("Plot.setLimits("+IJ.d2s(currentMinMax[0],xDigits)+","+IJ.d2s(currentMinMax[1],xDigits)+","+IJ.d2s(currentMinMax[2],yDigits)+","+IJ.d2s(currentMinMax[3],yDigits)+");\n");
+					Recorder.recordString("Plot.setLimits("+IJ.d2s(linXMin,xDigits)+","+IJ.d2s(linXMax,xDigits)+","+IJ.d2s(linYMin,yDigits)+","+IJ.d2s(linYMax,yDigits)+");\n");
 				}
 			}
+                        //n__ end PlotDialog
 		} else if (dialogType == AXIS_OPTIONS) {
 			int flags = plot.getFlags();
 			int columns = 2;
