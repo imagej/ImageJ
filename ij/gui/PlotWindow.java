@@ -291,7 +291,7 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 		menuItems[FREEZE] = addPopupItem(popupMenu, "Freeze Plot", true);
 		menuItems[HI_RESOLUTION] = addPopupItem(popupMenu, "High-Resolution Plot...");
 		popupMenu.addSeparator();
-		menuItems[PROFILE_PLOT_OPTIONS] = addPopupItem(popupMenu, "Profile & Plot Options...");
+		menuItems[PROFILE_PLOT_OPTIONS] = addPopupItem(popupMenu, "Profile Plot Options...");
 		return popupMenu;
 	}
 

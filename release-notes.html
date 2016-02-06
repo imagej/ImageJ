@@ -5,10 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.50g 4 February 2016</u>
+<li> <u>1.50g 5 February 2016</u>
 <ul>
 <li> Thanks to Norbert Vischer, plot windows now have an "R" (Reset Range)
- button to the in lower left corner.
+ button to the in lower left corner and, in the <i>More&gt;&gt;Set Limits</i>
+ dialog, numeric fields can be left empty for automatic range calculation.
 <li> Thanks to Dorai Iyer, multi-point selections are constrained
  to a horizontal or vertical line if the shift key is down.
 <li> Thanks to Michael Schmid, the ROI Manager's "Multi Measure" command
@@ -21,8 +22,6 @@ and stacks that have image overlays.
 are no longer moved when they are outside the image boundary.
 <li> Thanks to Christophe Leterrier, ImageJ now uses the
 Nashorn JavaScript engine when running on Java 8.
-<li> Thanks to Norbert Vischer, the Plot.setLimits() macro function
-accepts 'NaN' as a limit, causing that limit to be calculated automatically.
 <li> Thanks to Mike Davidson, added the call("ij.plugin.frame.ThresholdAdjuster.setMode",mode)
 macro function and the ThresholdAdjuster.setMode(mode) method, where 'mode' is
 "Red", "B&W" or "Over/Under".
@@ -30,6 +29,9 @@ macro function and the ThresholdAdjuster.setMode(mode) method, where 'mode' is
 when compiling plugins with errors. 
 <li> Thanks to Jan Eglinger, fixed a bug that caused an exception when
 saving multi-point selections.
+<li> Thanks to Rajeev Chaudhary, fixed a bug that caused the <i>Edit&gt;Copy<i>
+and <i>Edit&gt;Copy to System<i> commands to not correctly handle images
+with overlays.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
