@@ -315,7 +315,7 @@ public class Plot implements Cloneable {
 	/** Sets the canvas size in unscaled pixels and sets the scale to 1.0.
 	 * If the scale remains 1.0, this will be the size of the resulting ImageProcessor.
 	 * When not called, the canvas size is adjusted for the plot frame size specified
-	 * in Edit>Options>Profile Plot Options. */
+	 * in Edit>Options>Plots. */
 	public void setSize(int width, int height) {
 		//IJ.log("setSize "+width+"x"+height+ " old: "+ip);
 		if (ip != null && width == ip.getWidth() && height == ip.getHeight()) return;
@@ -828,7 +828,7 @@ public class Plot implements Cloneable {
 
 	/** Sets the xLabelFont; must not be mull. If this method is not used, the last setFont
 	 *	of setFontSize call before displaying the plot determines the font, or if neither
-	 *	was called, the font size of the Profile Plot Options is used. */
+	 *	was called, the font size of the Plot Options is used. */
 	public void setXLabelFont(Font font) {
 		xLabelFont = font;
 	}

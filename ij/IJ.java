@@ -327,6 +327,7 @@ public class IJ {
 			commandTable.put("XY Coodinates... ", "XY Coordinates... ");
 			commandTable.put("Statistics...", "Statistics");
 			commandTable.put("Channels Tool... ", "Channels Tool...");
+			commandTable.put("Profile Plot Options...", "Plots...");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)

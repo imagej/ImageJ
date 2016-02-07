@@ -119,7 +119,7 @@ public class PlotCanvas extends ImageCanvas {
 	}
 
 	/** Implements the Image/Zoom/View 100% command: Sets the original frame size as specified
-	 *	in Profile Plot Options (unless the plot is frozen) */
+	 *	in Edit/Options/Plots (unless the plot is frozen) */
 	public void zoom100Percent() {
 		if (plot == null || plot.isFrozen()) {
 			super.zoom100Percent();
