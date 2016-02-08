@@ -32,8 +32,8 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 	public static final int CROSS = Plot.CROSS;
 	/** Connect points with solid lines. */
 	public static final int LINE = Plot.LINE;
-	/** Save x-values only. To set, use Edit/Options/Plots. */
-	public static boolean saveXValues;
+	/** List or Save first X column. */
+	public static boolean saveXValues = true;
 	/** Automatically close window after saving values. To set, use Edit/Options/Plots. */
 	public static boolean autoClose;
 	/** Display the XY coordinates in a separate window. To set, use Edit/Options/Plots. */
@@ -96,7 +96,6 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 	// static initializer
 	static {
 		options = Prefs.getInt(OPTIONS, SAVE_X_VALUES);
-		saveXValues = (options&SAVE_X_VALUES)!=0;
 		autoClose = (options&AUTO_CLOSE)!=0;
 		listValues = (options&LIST_VALUES)!=0;
 		plotWidth = Prefs.getInt(PREFS_WIDTH, WIDTH);
@@ -631,7 +630,6 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 			prefs.put(PREFS_FONT_SIZE, Integer.toString(fontSize));
 		}
 		int options = 0;
-		if (saveXValues) options |= SAVE_X_VALUES;
 		if (autoClose && !listValues) options |= AUTO_CLOSE;
 		if (listValues) options |= LIST_VALUES;
 		if (!interpolate) options |= INTERPOLATE; // true=0, false=1

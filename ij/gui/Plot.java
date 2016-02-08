@@ -2413,6 +2413,11 @@ public class Plot implements Cloneable {
 		return labels;
 	}
 
+	/** Creates a ResultsTable with the plot data. Returns an empty table if no data. */
+	public ResultsTable getResultsTable() {
+		return getResultsTable(true);
+	}
+
 	/** Creates a ResultsTable with the data of the plot. Returns an empty table if no data. 
 	 *	Does not write the first x column if writeFirstXColumn is false.
 	 *	x columns equal to the first x column are never written, independent of writeFirstXColumn */
@@ -2434,12 +2439,11 @@ public class Plot implements Cloneable {
 		int dataSetNumber = 0;
 		int arrowsNumber = 0;
 		PlotObject firstXYobject = null;
-		boolean isFirstXYobject;
 		for (PlotObject plotObject : allPlotObjects) {
 			if (plotObject.type==PlotObject.XY_DATA) {
 				boolean sameX =	 firstXYobject != null && Arrays.equals(firstXYobject.xValues, plotObject.xValues);
 				boolean sameXY = sameX && Arrays.equals(firstXYobject.yValues, plotObject.yValues); //ignore duplicates (e.g. Markers plus Curve)
-				boolean writeX = (firstXYobject==null && writeFirstXColumn) || !sameX;
+				boolean writeX = firstXYobject==null?writeFirstXColumn:!sameX;
 				addToLists(headings, data, plotObject, dataSetNumber, writeX, /*writeY=*/!sameXY, nDataSets>1);
 				if (firstXYobject == null) firstXYobject = plotObject;
 				dataSetNumber++;
