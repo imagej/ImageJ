@@ -32,7 +32,7 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 	public static final int CROSS = Plot.CROSS;
 	/** Connect points with solid lines. */
 	public static final int LINE = Plot.LINE;
-	/** List or Save first X column. */
+	/** Write first X column when listing or saving. */
 	public static boolean saveXValues = true;
 	/** Automatically close window after saving values. To set, use Edit/Options/Plots. */
 	public static boolean autoClose;

@@ -47,8 +47,6 @@ public Plot getPlot() {
 		boolean wasFixedScale = fixedScale;
 		
 		GenericDialog gd = new GenericDialog("Plot Options", IJ.getInstance());
-		gd.setInsets(0,0,0);
-		gd.addMessage("General Options", new Font("SansSerif", Font.BOLD, 14));
 		gd.addNumericField("Width:", PlotWindow.plotWidth, 0);
 		gd.addNumericField("Height:", PlotWindow.plotHeight, 0);
 		gd.addNumericField("Font Size:", PlotWindow.fontSize, 0);
@@ -58,8 +56,8 @@ public Plot getPlot() {
 		gd.addCheckbox("Auto-close", PlotWindow.autoClose);
 		gd.addCheckbox("List values", PlotWindow.listValues);
 		
-		gd.setInsets(20,0,0);
-		gd.addMessage("Profile Plot Options", new Font("SansSerif", Font.BOLD, 14));
+		gd.setInsets(15,0,0);
+		gd.addMessage("--------Profile Plot Options--------");
 		gd.setInsets(5,20,0);
 		gd.addCheckbox("Fixed y-axis scale", fixedScale);
 		gd.addNumericField("Minimum Y:", ymin, 2);

@@ -905,20 +905,18 @@ public class Plot implements Cloneable {
 		if (imp != null) {
 			if (imp.getProcessor() != ip) imp.setProcessor(ip);
 			return imp;
-		}
-		ImagePlus imp = new ImagePlus(title, ip);
-		imp.setIgnoreGlobalCalibration(true);
-		Calibration cal = imp.getCalibration();
-		adjustCalibration(cal);
-		if (this.imp == null)
-			this.imp = imp;
-		imp.setProperty(PROPERTY_KEY, this);
-		return imp;
+		} else {
+		    ImagePlus imp = new ImagePlus(title, ip);
+		    setImagePlus(imp);
+    		return imp;
+    	}
 	}
 
 	/** Sets the ImagePlus where the plot will be displayed. If the ImagePlus is not
 	 *	known otherwise (e.g. from getImagePlus), this is needed for changes such as
-	 *	zooming in to work correctly. It also sets the calibration of the ImagePlus. */
+	 *	zooming in to work correctly. It also sets the calibration of the ImagePlus.
+	 *  The ImagePlus is not displayed or updated.
+	 *  'imp' may be null to disconnect the plot from its ImagePlus */
 	public void setImagePlus(ImagePlus imp) {
 		if (this.imp != null)
 			this.imp.setProperty(PROPERTY_KEY, null);
@@ -948,7 +946,9 @@ public class Plot implements Cloneable {
 			yScale = Double.POSITIVE_INFINITY;
 	}
 
-	/** Displays the plot in a PlotWindow and returns a reference to the PlotWindow. */
+	/** Displays the plot in a PlotWindow and returns a reference to the PlotWindow.
+	 *  Note that the PlotWindow might get closed immediately if its 'listValues' and 'autoClose'
+	 *  flags are set */
 	public PlotWindow show() {
 		if ((IJ.macroRunning() && IJ.getInstance()==null) || Interpreter.isBatchMode()) {
 			imp = getImagePlus();
@@ -965,13 +965,10 @@ public class Plot implements Cloneable {
 			if (win instanceof PlotWindow && win.isVisible()) {
 				updateImage();			// show in existing window
 				return (PlotWindow)win;
-			}
+			} else
+				setImagePlus(null);
 		}
-		PlotWindow pw = new PlotWindow(this);
-		if (imp == null)
-			imp.setProperty(PROPERTY_KEY, null);
-		imp = pw.getImagePlus();
-		imp.setProperty(PROPERTY_KEY, this);
+		PlotWindow pw = new PlotWindow(this);       //note: this may set imp to null if pw has listValues and autoClose are set
 		if (IJ.isMacro() && imp!=null) // wait for plot to be displayed
 			IJ.selectWindow(imp.getID());
 		return pw;
