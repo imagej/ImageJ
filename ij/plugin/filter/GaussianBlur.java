@@ -144,6 +144,15 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
         return true;
     }
 
+   /** Gaussian Filtering of an ImageProcessor
+     * @param ip       The ImageProcessor to be filtered.
+     * @param sigma   Standard deviation of the Gaussian (pixels)
+     */
+    public void blurGaussian(ImageProcessor ip, double sigma) {
+        double accuracy = (ip instanceof ByteProcessor||ip instanceof ColorProcessor)?0.002:0.0002;
+		blurGaussian(ip, sigma, sigma, accuracy);
+	}
+
     /** Gaussian Filtering of an ImageProcessor
      * @param ip       The ImageProcessor to be filtered.
      * @param sigmaX   Standard deviation of the Gaussian in x direction (pixels)

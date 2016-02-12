@@ -2543,11 +2543,10 @@ public abstract class ImageProcessor implements Cloneable {
 	
 	/** Blurs the image by convolving with a Gaussian function. */
 	public void blurGaussian(double sigma) {
-		double accuracy = getBitDepth()==8||getBitDepth()==24?0.002:0.0002;
 		resetRoi();
 		GaussianBlur gb = new GaussianBlur();
 		gb.showProgress(false);
-        gb.blurGaussian(this, sigma, sigma, accuracy);
+        gb.blurGaussian(this, sigma);
 	}
 
 	/** Uses the Process/Math/Macro command to apply macro code to this image. */

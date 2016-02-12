@@ -823,7 +823,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		IJ.showStatus("Saving "+indexes.length+" ROIs "+" to "+path);
 		long t0 = System.currentTimeMillis();
 		String[] names = new String[listModel.size()];
-    	for (int i=0; i<listModel.size(); i++)
+		for (int i=0; i<listModel.size(); i++)
 			names[i] = (String)listModel.getElementAt(i);
 		try {
 			ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
@@ -856,33 +856,33 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;
 	}
 	
-    String getUniqueName(String[] names, int index) {
+	String getUniqueName(String[] names, int index) {
 		String name = names[index];
-        int n = 1;
-        int index2 = getIndex(names, index, name);
-        while (index2!=-1) {
+		int n = 1;
+		int index2 = getIndex(names, index, name);
+		while (index2!=-1) {
 			index2 = getIndex(names, index, name);
-            if (index2!=-1) {
-                int lastDash = name.lastIndexOf("-");
-                if (lastDash!=-1 && name.length()-lastDash<5)
-                    name = name.substring(0, lastDash);
-                name = name+"-"+n;
-                n++;
-            }
+			if (index2!=-1) {
+				int lastDash = name.lastIndexOf("-");
+				if (lastDash!=-1 && name.length()-lastDash<5)
+					name = name.substring(0, lastDash);
+				name = name+"-"+n;
+				n++;
+			}
 			index2 = getIndex(names, index, name);
-        }
-        names[index] = name;
-        return name;
-    }
+		}
+		names[index] = name;
+		return name;
+	}
     
-    private int getIndex(String[] names, int index, String name) {
-    	int index2 = -1;
-    	for (int i=0; i<names.length; i++) {
+	private int getIndex(String[] names, int index, String name) {
+		int index2 = -1;
+		for (int i=0; i<names.length; i++) {
 			if (i!=index && names[i].equals(name))
-				return i;
+			return i;
 		}
 		return index2;
-    }
+	}
 
 	private void listRois() {
 		Roi[] list = getRoisAsArray();

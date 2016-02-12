@@ -51,10 +51,12 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	GridBagConstraints c;
 	int y = 0;
 	boolean windowLevel, balance;
-	Font monoFont = new Font("Monospaced", Font.PLAIN, 12);
+	Font monoFont = new Font("Monospaced", Font.PLAIN, 11);
 	Font sanFont = ImageJ.SansSerif12;
 	int channels = 7; // RGB
 	Choice choice;
+	private String blankMinLabel = "-------";
+	private String blankMaxLabel = "--------";
 
 	public ContrastAdjuster() {
 		super("B&C");
@@ -107,13 +109,17 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			c.insets = new Insets(0, 10, 0, 10);
 			gridbag.setConstraints(panel, c);
 			panel.setLayout(new BorderLayout());
-			minLabel = new Label("      ", Label.LEFT);
+			minLabel = new Label(blankMinLabel, Label.LEFT);
 			minLabel.setFont(monoFont);
+			if (IJ.debugMode) minLabel.setBackground(Color.yellow);
 			panel.add("West", minLabel);
-			maxLabel = new Label("      " , Label.RIGHT);
+			maxLabel = new Label(blankMaxLabel, Label.RIGHT);
 			maxLabel.setFont(monoFont);
+			if (IJ.debugMode) maxLabel.setBackground(Color.yellow);
 			panel.add("East", maxLabel);
 			add(panel);
+			blankMinLabel = "       ";
+			blankMaxLabel = "        ";
 		}
 
 		// min slider
@@ -419,16 +425,29 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			if (type!=ImagePlus.GRAY16)
 				realValue = true;
 		}
-		int digits = realValue?2:0;
 		if (windowLevel) {
-			//IJ.log(min+" "+max);
+			int digits = realValue?2:0;
 			double window = max-min;
 			double level = min+(window)/2.0;
 			windowLabel.setText(IJ.d2s(window, digits));
 			levelLabel.setText(IJ.d2s(level, digits));
 		} else {
-			minLabel.setText(IJ.d2s(min, digits));
-			maxLabel.setText(IJ.d2s(max, digits));
+			int digits = realValue?4:0;
+			if (realValue) {
+				double s = min<0||max<0?0.1:1.0;
+				double amin = Math.abs(min);
+				double amax = Math.abs(max);
+				if (amin>99.0*s||amax>99.0*s) digits = 3;
+				if (amin>999.0*s||amax>999.0*s) digits = 2;
+				if (amin>9999.0*s||amax>9999.0*s) digits = 1;
+				if (amin>99999.0*s||amax>99999.0*s) digits = 0;
+				if (amin>9999999.0*s||amax>9999999.0*s) digits = -2;
+			}
+			String minString = IJ.d2s(min, min==0.0?0:digits) + blankMinLabel;
+			minLabel.setText(minString.substring(0,blankMinLabel.length()));
+			String maxString = blankMaxLabel + IJ.d2s(max, digits);
+			maxString = maxString.substring(maxString.length()-blankMaxLabel.length(), maxString.length());
+			maxLabel.setText(maxString);
 		}
 	}
 
