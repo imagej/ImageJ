@@ -190,8 +190,9 @@ public class AVI_Writer implements PlugInFilter {
         int microSecPerFrame = (int)Math.round((1.0/getFrameRate(imp))*1.0e6);
         int dwChunkId = biCompression==NO_COMPRESSION ? FOURCC_00db : FOURCC_00dc;
         long sizeEstimate = bytesPerPixel*xDim*yDim*(long)zDim;
+        //boolean writeAVI2index = true;//frameDataSize*zDim > 1000000000;
         int nAvixChunksEstimate = (int)(sizeEstimate/JUNK_SIZE_THRESHOLD);  //estimated number of AVIX junks
-        endHeadPointer = 4096+((nAvixChunksEstimate*16+1000)/1024)*1024;       //reserve plenty of space for 'indx'
+        endHeadPointer = 4096+((nAvixChunksEstimate*16+1000)/1024)*1024;    //reserve plenty of space for 'indx'
 
         //  W r i t e   A V I   f i l e   h e a d e r
         writeString("RIFF");    // signature
@@ -205,7 +206,7 @@ public class AVI_Writer implements PlugInFilter {
                                 // the first 8 bytes for avihSignature and the length
         writeInt(microSecPerFrame); // dwMicroSecPerFrame - Write the microseconds per frame
         writeInt(0);            // dwMaxBytesPerSec (maximum data rate of the file in bytes per second)
-        writeInt(0);            // dwReserved1 - Reserved1 field set to zero
+        writeInt(0);            // dwPaddingGranularity (for header length?), previously dwReserved1, usually set to zero.
         writeInt(0x10);         // dwFlags - just set the bit for AVIF_HASINDEX
                                 //   10H AVIF_HASINDEX: The AVI file has an idx1 chunk containing
                                 //   an index at the end of the file.  For good performance, all
@@ -310,6 +311,7 @@ public class AVI_Writer implements PlugInFilter {
         int currentFilePart = 0;// 0 is inside RIFF AVI (AVI 1.0 compatible), >0 is RIFF AVIX (data chunk of AVI 2.0)
 
         //  W r i t e   f r a m e   d a t a   a n d   i n d i c e s
+        boolean writeAVI2index = false; // see whether we need an AVI2 index (large files only)
         int iFrame = 0;
         while (iFrame < zDim) {
             if (currentFilePart > 0) {  // open new RIFF AVIX chunk
@@ -372,25 +374,29 @@ public class AVI_Writer implements PlugInFilter {
             int nFramesInChunk = iFrame - firstFrameInChunk;
 
             //  W r i t e   A V I - 2   I n d e x
-            long ix00pointer = raFile.getFilePointer();
-            writeString("ix00");        // AVI 2.0 style index of frames within the chunk
-            chunkSizeHere();            // size of ix00 chunk (nesting level 2)
-            writeShort(2);              // wLongsPerEntry = 2 ('Longs' are 32-bit here!)
-            writeByte(0);               // bIndexSubType=0
-            writeByte(1);               // bIndexType=1: AVI_INDEX_OF_CHUNKS
-            writeInt(nFramesInChunk);   // nEntriesInUse
-            writeInt(dwChunkId);        // dwChunkId, '00dc' or '00db'
-            writeLong(moviPointer);     // qwBaseOffset
-            writeInt(0);                // dwReserved, first two are qwBaseOffset?
-            for (int z=firstFrameInChunk; z<iFrame; z++) {
-                writeInt(dataChunkOffset[z]+8); //note: AVI--2 index points to chunk data, not chunk header
-                writeInt(dataChunkLength[z]);   //length without chunk header
-            }
-            //IJ.log("write ix00: frames "+firstFrameInChunk+"-"+(iFrame-1)+" offset "+Long.toHexString(dataChunkOffset[firstFrameInChunk])+"-"+Long.toHexString(dataChunkOffset[iFrame-1]));
-            //enter this ix00 index to index of indices:
-            writeMainIndxEntry(ix00pointer, (int)(raFile.getFilePointer()-ix00pointer), nFramesInChunk);
+            if (iFrame < zDim)
+                writeAVI2index = true;      //can't write everything the first time? Then we need the AVI 2 format.
+            if (writeAVI2index) {
+                long ix00pointer = raFile.getFilePointer();
+                writeString("ix00");        // AVI 2.0 style index of frames within the chunk
+                chunkSizeHere();            // size of ix00 chunk (nesting level 2)
+                writeShort(2);              // wLongsPerEntry = 2 ('Longs' are 32-bit here!)
+                writeByte(0);               // bIndexSubType=0
+                writeByte(1);               // bIndexType=1: AVI_INDEX_OF_CHUNKS
+                writeInt(nFramesInChunk);   // nEntriesInUse
+                writeInt(dwChunkId);        // dwChunkId, '00dc' or '00db'
+                writeLong(moviPointer);     // qwBaseOffset
+                writeInt(0);                // dwReserved, first two are qwBaseOffset?
+                for (int z=firstFrameInChunk; z<iFrame; z++) {
+                    writeInt(dataChunkOffset[z]+8); //note: AVI--2 index points to chunk data, not chunk header
+                    writeInt(dataChunkLength[z]);   //length without chunk header
+                }
+                //IJ.log("write ix00: frames "+firstFrameInChunk+"-"+(iFrame-1)+" offset "+Long.toHexString(dataChunkOffset[firstFrameInChunk])+"-"+Long.toHexString(dataChunkOffset[iFrame-1]));
+                //enter this ix00 index to index of indices:
+                writeMainIndxEntry(ix00pointer, (int)(raFile.getFilePointer()-ix00pointer), nFramesInChunk);
 
-            chunkEndWriteSize();        // 'ix00' finished (nesting level 2)
+                chunkEndWriteSize();        // 'ix00' finished (nesting level 2)
+            }
             chunkEndWriteSize();        // LIST 'movi' finished (nesting level 1)
 
             //  W r i t e   A V I - 1   I n d e x
@@ -417,6 +423,15 @@ public class AVI_Writer implements PlugInFilter {
             chunkEndWriteSize();    // 'RIFF' File finished (nesting level 0)
             currentFilePart++;
         } //while (iFrame < zDim)
+
+        if (!writeAVI2index) {      //delete main AVI 2 index prepared previously
+            raFile.seek(pointer2indx);
+            writeString("JUNK");        // overwrite 'indx'
+            chunkSizeHere();            // size of 'JUNK' for padding goes here
+            raFile.seek(endHeadPointer);// end of the padded range
+            chunkEndWriteSize();        // 'JUNK' finished              
+        }
+
         raFile.close();
         IJ.showProgress(1.0);
 		if (isComposite || isHyperstack)
