@@ -1118,6 +1118,31 @@ public abstract class ImageProcessor implements Cloneable {
 		lineTo(x2, y2);
 	}
 
+	/* Draws a line using the Bresenham's algorithm that is 4-connected instead of 8-connected.<br>
+		Based on code from http://stackoverflow.com/questions/5186939/algorithm-for-drawing-a-4-connected-line<br>
+		Author: Gabriel Landini (G.Landini at bham.ac.uk)
+	*/
+	 public void drawLine4(int x1, int y1, int x2, int y2) {
+		int dx = Math.abs(x2 - x1);
+		int dy = Math.abs(y2 - y1);
+		int sgnX = x1 < x2 ? 1 : -1;
+		int sgnY = y1 < y2 ? 1 : -1;
+		int e = 0;
+		for (int i=0; i < dx+dy; i++) {
+			putPixel(x1, y1, fgColor);
+			int e1 = e + dy;
+			int e2 = e - dx;
+			if (Math.abs(e1) < Math.abs(e2)) {
+				x1 += sgnX;
+				e = e1;
+			} else {
+				y1 += sgnY;
+				e = e2;
+			}
+		}
+		putPixel(x2, y2, fgColor);
+	}
+
 	/** Draws a rectangle. */
 	public void drawRect(int x, int y, int width, int height) {
 		if (width<1 || height<1)
@@ -2518,11 +2543,10 @@ public abstract class ImageProcessor implements Cloneable {
 	
 	/** Blurs the image by convolving with a Gaussian function. */
 	public void blurGaussian(double sigma) {
-		double accuracy = getBitDepth()==8||getBitDepth()==24?0.002:0.0002;
 		resetRoi();
 		GaussianBlur gb = new GaussianBlur();
 		gb.showProgress(false);
-        gb.blurGaussian(this, sigma, sigma, accuracy);
+        gb.blurGaussian(this, sigma);
 	}
 
 	/** Uses the Process/Math/Macro command to apply macro code to this image. */

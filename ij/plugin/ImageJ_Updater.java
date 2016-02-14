@@ -104,7 +104,7 @@ public class ImageJ_Updater implements PlugIn {
 		}
 		int index = notes.indexOf("Version ");
 		if (index==-1) {
-			error("Release notes are not in the expected format");
+			error( "The \"News\" page on the ImageJ website is not\nin the expected format or it was not found.");
 			return null;
 		}
 		String version = notes.substring(index+8, index+13);

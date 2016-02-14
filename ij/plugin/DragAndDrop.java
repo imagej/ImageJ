@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.io.*;
+import ij.process.ImageProcessor;
 import java.io.*;
 import java.awt.Point;
 import java.awt.datatransfer.*;
@@ -177,7 +178,11 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 							(new FileInfoVirtualStack()).run(path);
 						else if (openAsVirtualStack && (path.endsWith(".avi")||path.endsWith(".AVI")))
 							IJ.run("AVI...", "open=["+path+"] use");
-						else
+						else if (openAsVirtualStack && (path.endsWith(".txt"))) {
+							ImageProcessor ip = (new TextReader()).open(path);
+							if (ip!=null)
+								new ImagePlus(f.getName(),ip).show();
+						} else
 							(new Opener()).openAndAddToRecent(path);
 						OpenDialog.setLastDirectory(f.getParent()+File.separator);
 						OpenDialog.setLastName(f.getName());

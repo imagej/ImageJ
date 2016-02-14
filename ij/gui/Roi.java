@@ -1326,7 +1326,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	 }
 
 	protected void showStatus() {
-		if (imp==null) return;
+		if (imp==null)
+			return;
 		String value;
 		if (state!=CONSTRUCTING && (type==RECTANGLE||type==POINT) && width<=25 && height<=25) {
 			ImageProcessor ip = imp.getProcessor();
@@ -1337,8 +1338,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			value = "";
 		Calibration cal = imp.getCalibration();
 		String size;
-		if (cal.scaled() && !IJ.altKeyDown())
-			size = ", w="+IJ.d2s(width*cal.pixelWidth)+", h="+IJ.d2s(height*cal.pixelHeight);
+		if (cal.scaled() && !(IJ.altKeyDown()||(state==NORMAL&&IJ.shiftKeyDown())))
+			size = ", w="+IJ.d2s(width*cal.pixelWidth)+" ("+width+"), h="+IJ.d2s(height*cal.pixelHeight)+" ("+height+")";
 		else
 			size = ", w="+width+", h="+height;
 		IJ.showStatus(imp.getLocationAsString(x,y)+size+value);
@@ -1955,6 +1956,24 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return "";
 	}
 	
+	public ImageStatistics getStatistics() {
+		ImageProcessor ip = getMask();
+		Rectangle r = getBounds();
+		if (ip==null)
+			ip = new ByteProcessor(r.width, r.height);
+		Roi roi = (Roi)this.clone();
+		roi.setLocation(0.0, 0.0);
+		ip.setRoi(roi);
+		int params = Measurements.AREA+Measurements.CENTROID+Measurements.ELLIPSE
+			+Measurements.ELLIPSE+Measurements.CIRCULARITY+Measurements.SHAPE_DESCRIPTORS
+			+Measurements.PERIMETER+Measurements.RECT;
+		ImageStatistics stats = ImageStatistics.getStatistics(ip, params, null);
+		stats.mean = stats.min = stats.max = Double.NaN;
+		stats.xCentroid += r.x;
+		stats.yCentroid += r.y;
+		return stats;
+	}
+
 	public FloatPolygon getRotationCenter() {
 		FloatPolygon p = new FloatPolygon();
 		Rectangle2D r = getFloatBounds();

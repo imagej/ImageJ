@@ -51,21 +51,31 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private static int previousID, previousX, previousY;
 	private Rectangle startingSrcRect;
 	private boolean done;
+	private boolean initialized;
+	private boolean sliceSet;
 	private Thread thread;
 
 	 
 	public void run(String arg) {
 		imp = IJ.getImage();
-		if (instance!=null) {
-			instance.dispose();
-			return;
-		}
-		if (imp.getStackSize()==1) {
-			IJ.error("Othogonal Views", "This command requires a stack.");
-			return;
-		}
+		boolean isStack = imp.getStackSize()>1;
 		hyperstack = imp.isHyperStack();
-		if ((hyperstack||imp.isComposite()) && imp.getNSlices()<=1) {
+		if ((hyperstack||imp.isComposite()) && imp.getNSlices()<=1)
+			isStack = false;
+		if (instance!=null) {
+			if (imp==instance.imp) {
+				instance.dispose();
+				return;
+			} else if (isStack) {
+				instance.dispose();
+				if (IJ.isMacro()) IJ.wait(1000);
+			} else {
+				ImageWindow win = instance.imp!=null?instance.imp.getWindow():null;
+				if (win!=null) win.toFront();
+				return;
+			}
+		}
+		if (!isStack) {
 			IJ.error("Othogonal Views", "This command requires a stack, or a hypertack with Z>1.");
 			return;
 		}
@@ -75,11 +85,11 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		if (yz_image==null || yz_image.getHeight()!=imp.getHeight() || yz_image.getBitDepth()!=yzBitDepth)
 			yz_image = new ImagePlus();
 		xz_image = WindowManager.getImage(xzID);
-		//if (xz_image!=null) IJ.log(imp+"  "+xz_image+"  "+xz_image.getHeight()+"  "+imp.getHeight()+"  "+xz_image.getBitDepth()+"  "+yzBitDepth);
 		if (xz_image==null || xz_image.getWidth()!=imp.getWidth() || xz_image.getBitDepth()!=yzBitDepth)
 			xz_image = new ImagePlus();
 		instance = this;
-		ImageProcessor ip = hyperstack?new ColorProcessor(imp.getImage()):imp.getProcessor();
+		int mode = imp.getCompositeMode();
+		ImageProcessor ip = mode==IJ.COMPOSITE?new ColorProcessor(imp.getImage()):imp.getProcessor();
 		min = ip.getMin();
 		max = ip.getMax();
 		cal=this.imp.getCalibration();
@@ -118,18 +128,34 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private ImageStack getStack() {
 		if (imp.isHyperStack()) {
 			int slices = imp.getNSlices();
-			ImageStack stack = new ImageStack(imp.getWidth(), imp.getHeight());
-			int c=imp.getChannel(), z=imp.getSlice(), t=imp.getFrame();
-			for (int i=1; i<=slices; i++) {
-				imp.setPositionWithoutUpdate(c, i, t);
-				stack.addSlice(null, new ColorProcessor(imp.getImage()));
+			int c=imp.getChannel();
+			int z=imp.getSlice();
+			int t=imp.getFrame();
+			int mode = imp.getCompositeMode();
+			rgb = mode==IJ.COMPOSITE;
+			ColorModel cm = rgb?null:imp.getProcessor().getColorModel();
+			//IJ.log("getStack; "+c+" "+currentChannel+" "+fp1);
+			if (cm!=null && fp1!=null && fp1.getBitDepth()!=24) {
+				fp1.setColorModel(cm);
+				fp2.setColorModel(cm);
 			}
-			imp.setPosition(c, z, t);
+			ImageStack stack = imp.getStack();
+			ImageStack stack2 = new ImageStack(imp.getWidth(), imp.getHeight());
+			for (int i=1; i<=slices; i++) {
+				if (rgb) {
+					imp.setPositionWithoutUpdate(c, i, t);
+					stack2.addSlice(null, new ColorProcessor(imp.getImage()));
+				} else {
+					int index = imp.getStackIndex(c, i, t);
+					stack2.addSlice(null, stack.getProcessor(index));
+				}
+			}
+			if (rgb)
+				imp.setPosition(c, z, t);
 			currentChannel = c;
 			currentFrame = t;
-			if (imp.isComposite())
-				currentMode = ((CompositeImage)imp).getMode();
-			return stack;
+			currentMode = mode;
+			return stack2;
 		} else
 			return imp.getStack();
 	}
@@ -159,10 +185,12 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			cal_yz.pixelHeight=o_height;
 		}
 		yz_image.setCalibration(cal_yz);
+		yz_image.setIJMenuBar(false);
 		cal_xz.setUnit(unit);
 		cal_xz.pixelWidth=o_width;
 		cal_xz.pixelHeight=o_depth/az;
 		xz_image.setCalibration(cal_xz);
+		xz_image.setIJMenuBar(false);
 	}
 
 	private void updateMagnification(int x, int y) {
@@ -189,7 +217,6 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
         double yz_mag = yz_ic.getMagnification();
 		zcoord = (int)(arat*z);
         while (yz_mag<magnification) {
-        	//IJ.log(magnification+"  "+yz_mag+"  "+zcoord+"  "+y+"  "+x);
         	yz_ic.zoomIn(yz_ic.screenX(zcoord), yz_ic.screenY(y));
         	yz_mag = yz_ic.getMagnification();
         }
@@ -229,7 +256,6 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			height2 = (int)Math.round(fp2.getHeight()*az);
 			title = "ZY ";
 		}
-		//IJ.log("updateViews "+width2+" "+height2+" "+arat+" "+ay+" "+fp2);
 		if (width2!=fp2.getWidth()||height2!=fp2.getHeight()) {
 			fp2.setInterpolate(true);
 			ImageProcessor sfp2=fp2.resize(width2, height2);
@@ -299,10 +325,12 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
  				xzWin.setLocation(xyX,xyY+xyWin.getHeight());
  			if (firstTime) {
  				imp.getWindow().toFront();
- 				if (hyperstack)
- 					imp.setPosition(imp.getChannel(), imp.getNSlices()/2, imp.getFrame());
- 				else
- 					imp.setSlice(imp.getNSlices()/2);
+ 				if (!sliceSet) {
+					if (hyperstack)
+						imp.setPosition(imp.getChannel(), imp.getNSlices()/2, imp.getFrame());
+					else
+						imp.setSlice(imp.getNSlices()/2);
+ 				}
  				firstTime = false;
  			}
 		}
@@ -321,7 +349,6 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		double brat=1.0;//az/ay;
 		int za=(int)(ds*arat);
 		int zb=(int)(ds*brat);
-		//IJ.log("za: "+za +" zb: "+zb);
 		
 		if (ip instanceof FloatProcessor) {
 			fp1=new FloatProcessor(width,za);
@@ -347,7 +374,6 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 				fp2=new ShortProcessor(height,zb);
 			else
 				fp2=new ShortProcessor(zb,height);
-			//IJ.log("createProcessors "+rotateYZ+"  "+height+"   "+zb+"  "+fp2);
 			return true;
 		}
 		
@@ -534,7 +560,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		path.moveTo(x, 0f);
 		path.lineTo(x, height);	
 	}
-	      
+	
 	void dispose() {
 		synchronized(this) {
 			done = true;
@@ -557,6 +583,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 				ic.setCustomRoi(false);
 			}
 		}
+		xz_image.changes = false;
+		xz_image.close();
 		yz_image.setOverlay(null);
 		ImageWindow win2 = yz_image.getWindow();
 		if (win2!=null) {
@@ -569,6 +597,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 				ic.setCustomRoi(false);
 			}
 		}
+		yz_image.changes = false;
+		yz_image.close();
 		ImagePlus.removeImageListener(this);
 		Executer.removeCommandListener(this);
 		win.removeWindowListener(this);
@@ -669,21 +699,25 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	}
 	
 	private void exec() {
-		if (canvas==null) return;
+		if (canvas==null)
+			return;
 		int width=imp.getWidth();
 		int height=imp.getHeight();
 		if (hyperstack) {
-			int c = imp.getChannel();
-			int t = imp.getFrame();
-			if (c!=currentChannel || t!=currentFrame)
-				imageStack = null;
+			int mode = IJ.COMPOSITE;
 			if (imp.isComposite()) {
-				int mode = ((CompositeImage)imp).getMode();
+				mode = ((CompositeImage)imp).getMode();
 				if (mode!=currentMode)
 					imageStack = null;
 			}
+			if (imageStack!=null) {
+				int c = imp.getChannel();
+				int t = imp.getFrame();
+				if ((mode!=IJ.COMPOSITE&&c!=currentChannel) || t!=currentFrame)
+					imageStack = null;
+			}
 		}
-		ImageStack is=imageStack;
+		ImageStack is = imageStack;
 		if (is==null)
 			is = imageStack = getStack();
 		double arat=az/ax;
@@ -696,11 +730,13 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		updateViews(p, is);
 		GeneralPath path = new GeneralPath();
 		drawCross(imp, p, path);
-		imp.setOverlay(path, color, new BasicStroke(1));
+		if (!done)
+			imp.setOverlay(path, color, new BasicStroke(1));
 		canvas.setCustomRoi(true);
 		updateCrosses(p.x, p.y, arat, brat);
 		if (syncZoom) updateMagnification(p.x, p.y);
 		arrangeWindows(sticky);
+		initialized = true;
 	}
 
 	private void updateCrosses(int x, int y, double arat, double brat) {
@@ -714,7 +750,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		p=new Point (x, zcoord);
 		GeneralPath path = new GeneralPath();
 		drawCross(xz_image, p, path);
-		xz_image.setOverlay(path, color, new BasicStroke(1));
+		if (!done)
+			xz_image.setOverlay(path, color, new BasicStroke(1));
 		if (rotateYZ) {
 			if (flipXZ)
 				zcoord=(int)Math.round(brat*(z-zlice));
@@ -727,7 +764,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		}
 		path = new GeneralPath();
 		drawCross(yz_image, p, path);
-		yz_image.setOverlay(path, color, new BasicStroke(1));
+		if (!done)
+			yz_image.setOverlay(path, color, new BasicStroke(1));
 		IJ.showStatus(imp.getLocationAsString(crossLoc.x, crossLoc.y));
 	}
 
@@ -762,7 +800,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	}
 
 	public void imageClosed(ImagePlus imp) {
-		dispose();
+		if (!done)
+			dispose();
 	}
 
 	public void imageOpened(ImagePlus imp) {
@@ -820,7 +859,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	}
 
 	public void windowClosing(WindowEvent e) {
-		dispose();		
+		if (!done)
+			dispose();		
 	}
 
 	public void windowDeactivated(WindowEvent e) {
@@ -866,6 +906,16 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			return null;
 	}
 	
+	public static int getImageID() {
+		ImagePlus img = getImage();
+		return img!=null?img.getID():0;
+	}
+
+ 	public static void stop() {
+		if (instance!=null)
+			instance.dispose();
+	}
+
 	public static synchronized boolean isOrthoViewsImage(ImagePlus imp) {
 		if (imp==null || instance==null)
 			return false;
@@ -887,10 +937,17 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	
 	public void setCrossLoc(int x, int y, int z) {
 		crossLoc.setLocation(x, y);
-		if (hyperstack)
-			imp.setPosition(imp.getChannel(), z+1, imp.getFrame());
-		else
-			imp.setSlice(z+1);
+		int slice = z+1;
+		if (slice!=imp.getSlice()) {
+			if (hyperstack)
+				imp.setPosition(imp.getChannel(), slice, imp.getFrame());
+			else
+				imp.setSlice(slice);
+			sliceSet = true;
+		}
+		while (!initialized) {
+			IJ.wait(10);
+		}
 		update();
 	}
 	

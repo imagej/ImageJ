@@ -5,58 +5,43 @@
 </head>
 <body>
 
-<li> <u>1.50e 19 November 2015</u>
+<li> <u>1.50g 12 February 2016</u>
 <ul>
-<li> On Macs, thanks to Curtis Rueden and Brandon Hurr, the <i>Stack to Images</i>,
-<i>Window&gt;Tile</i> and <i>Window&gt;Cascade</i> commands, and non-batch mode
-macros that process multiple images, run faster
-(<a href="macros/SetMenuBarBenchmark.txt">test macro</a>).
-<li> Pressing "i" (<i>Image&gt;Show Info</i>) when no images are open now
-displays useful information.
-<li> Thanks to Peter Haub, the <i>Selection Rotator</i> tool, available in
-the toolbar's "&gt;&gt;" menu, now rotates about the selection centroid and is recordable.
-<li> Thanks to Radoslaw Ejsmont, ImageJ's directory chooser, on Mac OS X, now uses the
-JFileChooser when the "Use JFileChoose to open/save" option is enabled in
-<i>Edit&gt;Options&gt;Input/Output</i>. Unlike the native directory chooser,
-JFileChooser still has a title bar on OS X 10.11 (El Capitan).
-<li> Thanks to Anton Jormescu and John Wolodzko, you can again change the views in
-<i>Image&gt;Stacks&gt;Orthoganal Views</i> by clicking, but not
-dragging, in the XZ and YZ planes.
-<li> Added a "Show all" checkbox and a "Help" button to the multi-point
-tool options dialog box.
-<li> Thanks to John Wolodzko, added the Plot.showValues macro function,
-which displays plot window values in the Results table.
-<li> Thanks to Peter Haub, added the Roi.getCentroid() method.
-<li> Thanks to Jan Eglinger, fixed a bug that caused <i>Image&gt;Adjust&gt;Size</i>, 
-when using  bilinear or bicubic interpolation, to shift positions of pixels by 1.0 in X,
-0.5 in Y and 0.5 in Z.
-<li> Thanks to Michael Schmid, fixed a bug that caused the
-<i>Brightness/Contrast</i> adjuster's "Apply" function to not be
-undoable for full images or rectangular selections with 8-bit and 16-bit images.
-<li> Thanks to Michael Schmid, fixed a bug that caused the
-<i>Brightness/Contrast</i> adjuster to hang with RGB images
-when there was a non-rectangular selection extending beyond image boundary.
-<li> Thanks to Bob Hamilton, fixed bugs that caused the <i>Run to Insertion Point</i>
-macro debugger command to fail and the debugger to sometimes behave erratically.
-<li> Thanks to David Gault, fixed a potential memory leak by adding a close()
-method to the CompositeImage class.
-<li> Thanks to Jan Eglinger, fixed a bug with the "d" (<i>Draw</i>) keyboard shortcut 
-that caused it to not be correctly recorded.
-<li> Thanks to Anton Jormescu, fixed a bug in the
-<i>Image&gt;Stack&gt;Tools&gt;Grouped Z Project</i> command
-that changed the Z and T dimensions of the original stack, which caused
-the <i>Duplicate</i> and <i>Synchronize Windows</i> commands to not
-work as expected.
-<li> Thanks to Carl Vandewater, fixed a bug that could cause
-<i>Image&gt;Color&gt;Merge Channels</i> to throw an exception
-when an input file name was shorter than three characters.
-<li> Thanks to Till Bretschneider, fixed a bug on OS X and Java 8 that
-caused copying of text from the macro recorder to fail.
-<li> Thanks to Saibal Mitra, fixed a v1.50d regression that caused the
-<i>Process&gt;Math&gt;Macro</i> command to not work correctly with 32-bit images.
-<li> Thanks to Michael Schmid, fixed a v1.49 regression that caused NaN values to
-not be correctly handled in plots.
-
+<li> Thanks to Norbert Vischer, plot windows now have an "R" (Reset Range)
+ button to the in lower left corner and, in the <i>More&gt;&gt;Set Limits</i>
+ dialog, numeric fields can be left empty for automatic range calculation.
+ <li> Thanks to Michael Schmid, changed the name of the <i>Profile Plot Options<i>
+ command to <i>Plots<i> and organized the dialog into two sections:
+ "General Options" and "Profile Plot Options".
+<li> Thanks to Dorai Iyer, multi-point selections are constrained
+ to a horizontal or vertical line if the shift key is down.
+<li> Thanks to Michael Schmid, the ROI Manager's "Multi Measure" command
+displays a progress bar when "One row per slice" is checked.
+<li> <li>Thanks to Stefan Worz, the <i>Image&gt;Duplicate<i>, <i>Image&gt;Scale<i>,
+<i>Image&gt;Adjust&gt;Size<i>, <i>Image&gt;Stacks&gt;Stack to Images<i>
+and <i>Image&gt;Stacks&gt;Images to Stack<i> commands work with images
+and stacks that have image overlays.
+<li> Thanks to Christian Irgens, points selections selected in the ROI Manager
+are no longer moved when they are outside the image boundary.
+<li> Thanks to Christophe Leterrier, ImageJ now uses the
+Nashorn JavaScript engine when running on Java 8.
+<li> Thanks to Mike Davidson, added the call("ij.plugin.frame.ThresholdAdjuster.setMode",mode)
+macro function and the ThresholdAdjuster.setMode(mode) method, where 'mode' is
+"Red", "B&W" or "Over/Under".
+<li> Fixed a bug that caused the <i>Compile and Run</i> command to fail on Java 8
+when compiling plugins with errors. 
+<li> Thanks to Jan Eglinger, fixed a bug that caused an exception when
+saving multi-point selections.
+<li> Thanks to Rajeev Chaudhary, fixed a bug that caused the <i>Edit&gt;Copy<i>
+and <i>Edit&gt;Copy to System<i> commands to not correctly handle images
+with overlays.
+<li> Thanks to Dan White, fixed a bug that caused the Brightness/Contrast tool
+to not correctly display min and max values greater than 99999.
+<li> Thanks to Marc Lartaud, fixed a v1.50c regression that caused the More&gt;&gt;Save
+command in the ROI Manager to fail when there were duplicate ROI names.
+<li> Thanks to Michael Schmid and Dan White, fixed a 1.50d regression that caused
+the <i>File&gt;Save As&gt;AVI<i> command to create files that could not by opened
+by the Windows Media Player.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

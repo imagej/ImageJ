@@ -12,6 +12,7 @@ import java.lang.reflect.*;
 /** This class runs macros and scripts installed in the Plugins menu as well as
 	macros and scripts opened using the Plugins/Macros/Run command. */
 public class Macro_Runner implements PlugIn {
+	private static String filePath;
 	
 	/** Opens and runs the specified macro file (.txt or .ijm) or script file (.js, .bsh or .py)  
 		on the current thread. Displays a file open dialog if <code>name</code> 
@@ -120,6 +121,7 @@ public class Macro_Runner implements PlugIn {
             IJ.error("RunMacro", "Macro or script not found:\n \n"+path);
 			return null;
 		}
+		filePath = path;
 		try {
 			int size = (int)f.length();
 			byte[] buffer = new byte[size];
@@ -234,9 +236,8 @@ public class Macro_Runner implements PlugIn {
 		as a string, the last expression evaluated by the script. */
 	public String runJavaScript(String script, String arg) {
 		Object js = null;
-		if ((IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit())) && !IJ.isJava18()) {
-			// Use JavaScript engine built into Java 6 and Java 7.
-			// Can't use incompatible Nashorn engine in Java 8 and later.
+		if ((IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit()))) {
+			// Use JavaScript engine built into Java 6 and later.
 			js = IJ.runPlugIn("ij.plugin.JavaScriptEvaluator", "");
 		} else {
 			js = IJ.runPlugIn("JavaScript", "");
@@ -247,6 +248,8 @@ public class Macro_Runner implements PlugIn {
 			}
 		}
 		script = Editor.getJSPrefix(arg)+script;
+		if (IJ.isJava18())
+			script = "load(\"nashorn:mozilla_compat.js\");" + script;
 		if (js!=null)
 			return runScript(js, script, arg);
 		else
@@ -294,7 +297,7 @@ public class Macro_Runner implements PlugIn {
 			return null;
 	}
 	
-	/** Runs a Prython script on the current thread, passing a string argument, 
+	/** Runs a Python script on the current thread, passing a string argument, 
 		which the script can retrieve using the getArgument() function. Returns,
 		as a string, the value of the variable 'result'. For example, a Python script  
 		containing the line "result=123" will return the string "123".
@@ -329,6 +332,15 @@ public class Macro_Runner implements PlugIn {
 				IJ.error("Unable to download "+name+" from "+IJ.URL+url);
 		}
 		return ok;
+	}
+	
+	/** Returns the file path of the most recently loaded macro or script. */
+	public static String getFilePath() {
+		return filePath;
+	}
+
+	public static void setFilePath(String path) {
+		filePath = path;
 	}
 
 }

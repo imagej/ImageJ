@@ -63,7 +63,7 @@ public class PluginClassLoader extends URLClassLoader {
 	}
 
 	private void addDirectory(File f) {
-		if (IJ.debugMode) IJ.log("PluginClassLoader.addDirectory: "+f);
+		//if (IJ.debugMode) IJ.log("PluginClassLoader.addDirectory: "+f);
 		try {
 			// Add first level subdirectories to search path
 			addURL(f.toURI().toURL());
@@ -82,7 +82,7 @@ public class PluginClassLoader extends URLClassLoader {
 
     private void addJar(File f) {
         if (f.getName().endsWith(".jar") || f.getName().endsWith(".zip")) {
-			if (IJ.debugMode) IJ.log("PluginClassLoader.addJar: "+f);
+			//if (IJ.debugMode) IJ.log("PluginClassLoader.addJar: "+f);
             try {
                 addURL(f.toURI().toURL());
             } catch (MalformedURLException e) {

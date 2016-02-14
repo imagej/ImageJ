@@ -22,11 +22,11 @@ public class PointToolOptions implements PlugIn, DialogListener {
 	+"<li> Press 'y' (<i>Edit&gt;Selection&gt;Properties</i>) to display<br>the counts in a results table.<br>"
 	+"<li> Press 'm' (<i>Analyze&gt;Measure</i>) to display the<br>point stack positions in the results table.<br>"
 	+"<li> Use <i>File&gt;Save As&gt;Tiff</i> or <i>File&gt;Save As&gt;Selection</i><br>to save the points and counts.<br>"
+	+"<li> Hold the shift key down and points will be<br>constrained to a horizontal or vertical line.<br>"
 	+"</ul>"
 	+" <br>"
 	+"</font>";
-
-
+ 
  	public void run(String arg) {
  		if (gd!=null && gd.isShowing()) {
  			gd.toFront();

@@ -143,6 +143,7 @@ public class RoiEncoder {
 		}
 		
 		if (roi instanceof PointRoi) {
+			countersSize = 0;
 			counters = ((PointRoi)roi).getCounters();
 			if (counters!=null && counters.length>=n)
 				countersSize = n*4;

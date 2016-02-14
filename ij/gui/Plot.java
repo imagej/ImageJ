@@ -234,20 +234,79 @@ public class Plot implements Cloneable {
 		return imp == null ? title : imp.getTitle();
 	}
 
-	/** Sets the x-axis and y-axis range. Updates the image if existing. */
+    //n__ begin setLimits
+    /**
+     * Sets the x-axis and y-axis range. Updates the image if existing.
+     * Accepts NaN values to indicate auto-range
+     */
+    public void setLimits(double xMin, double xMax, double yMin, double yMax) {
+        boolean containsNaN = (Double.isNaN(xMin + xMax + yMin + yMax));
+        if (containsNaN && allPlotObjects.isEmpty())//can't apply auto-range without data
+            return;
+        boolean[] auto = new boolean[4];
+        double[] range = {xMin, xMax, yMin, yMax};
+        if (containsNaN) {
+            double[] extrema = getMinAndMax(true, 0xff);
 
-	public void setLimits(double xMin, double xMax, double yMin, double yMax) {
-		defaultMinMax[0] = xMin;
-		defaultMinMax[1] = xMax;
-		defaultMinMax[2] = yMin;
-		defaultMinMax[3] = yMax;
-		enlargeRange = null;
-		ignoreForce2Grid = true;
-		if (plotDrawn)
-			setLimitsToDefaults(true);
-	}
+            for (int jj = 0; jj < 4; jj++)
+                if (Double.isNaN(range[jj])) {
+                    range[jj] = extrema[jj];
+                    auto[jj] = true;
+                }
+            double left = range[0];
+            double right = range[1];
+            double bottom = range[2];
+            double top = range[3];
+            
+            //set semi-auto to full-auto if it would result in reverse axis direction
+            if ((auto[0] || auto[1]) && (left >= right)) {
+                left = extrema[0];
+                right = extrema[1];
+                auto[0] = true;
+                auto[1] = true;
+            }
+            if ((auto[2] || auto[3]) && (bottom >= top)) {
+                bottom = extrema[2];
+                top = extrema[3];
+                auto[2] = true;
+                auto[3] = true;
+            }    
+            //Add 3% extra space to automatic borders
+            double extraXLin = (right - left) * 0.03;
+            double extraYLin = (top - bottom) * 0.03;
+            double extraXLog = (Math.log(right) - Math.log(left)) * 0.03;
+            double extraYLog = (Math.log(top) - Math.log(bottom)) * 0.03;
 
-	/** Returns the current limits as an array xMin, xMax, yMin, yMax.
+            boolean isLogX = hasFlag(X_LOG_NUMBERS);
+            boolean isLogY = hasFlag(Y_LOG_NUMBERS);
+
+            if (auto[0] && !isLogX)
+                range[0] = left - extraXLin;//extra space (linear)
+            if (auto[1] && !isLogX)
+                range[1] = right + extraXLin;
+            if (auto[2] && !isLogY)
+                range[2] = bottom - extraYLin;
+            if (auto[3] && !isLogY)
+                range[3] = top + extraYLin;
+
+            if (auto[0] && isLogX)
+                range[0] = Math.exp(Math.log(left) - extraXLog);//extra space (log)
+            if (auto[1] && isLogX)
+                range[1] = Math.exp(Math.log(right) + extraXLog);
+            if (auto[2] && isLogY)
+                range[2] = Math.exp(Math.log(bottom) - extraYLog);
+            if (auto[3] && isLogY)
+                range[3] = Math.exp(Math.log(top) + extraYLog);
+        }
+        defaultMinMax = range;//change pointer of defaultMinMax
+        enlargeRange = null;
+        ignoreForce2Grid = true;
+        if (plotDrawn)
+            setLimitsToDefaults(true);
+    }
+    //n__ end setLimits
+   
+    /** Returns the current limits as an array xMin, xMax, yMin, yMax.
 	 *	Note that future versions might return a longer array (e.g. for y2 axis limits) */
 	public double[] getLimits() {
 		return new double[] {xMin, xMax, yMin, yMax};
@@ -256,7 +315,7 @@ public class Plot implements Cloneable {
 	/** Sets the canvas size in unscaled pixels and sets the scale to 1.0.
 	 * If the scale remains 1.0, this will be the size of the resulting ImageProcessor.
 	 * When not called, the canvas size is adjusted for the plot frame size specified
-	 * in Edit>Options>Profile Plot Options. */
+	 * in Edit>Options>Plots. */
 	public void setSize(int width, int height) {
 		//IJ.log("setSize "+width+"x"+height+ " old: "+ip);
 		if (ip != null && width == ip.getWidth() && height == ip.getHeight()) return;
@@ -769,7 +828,7 @@ public class Plot implements Cloneable {
 
 	/** Sets the xLabelFont; must not be mull. If this method is not used, the last setFont
 	 *	of setFontSize call before displaying the plot determines the font, or if neither
-	 *	was called, the font size of the Profile Plot Options is used. */
+	 *	was called, the font size of the Plot Options is used. */
 	public void setXLabelFont(Font font) {
 		xLabelFont = font;
 	}
@@ -846,20 +905,18 @@ public class Plot implements Cloneable {
 		if (imp != null) {
 			if (imp.getProcessor() != ip) imp.setProcessor(ip);
 			return imp;
-		}
-		ImagePlus imp = new ImagePlus(title, ip);
-		imp.setIgnoreGlobalCalibration(true);
-		Calibration cal = imp.getCalibration();
-		adjustCalibration(cal);
-		if (this.imp == null)
-			this.imp = imp;
-		imp.setProperty(PROPERTY_KEY, this);
-		return imp;
+		} else {
+		    ImagePlus imp = new ImagePlus(title, ip);
+		    setImagePlus(imp);
+    		return imp;
+    	}
 	}
 
 	/** Sets the ImagePlus where the plot will be displayed. If the ImagePlus is not
 	 *	known otherwise (e.g. from getImagePlus), this is needed for changes such as
-	 *	zooming in to work correctly. It also sets the calibration of the ImagePlus. */
+	 *	zooming in to work correctly. It also sets the calibration of the ImagePlus.
+	 *  The ImagePlus is not displayed or updated.
+	 *  'imp' may be null to disconnect the plot from its ImagePlus */
 	public void setImagePlus(ImagePlus imp) {
 		if (this.imp != null)
 			this.imp.setProperty(PROPERTY_KEY, null);
@@ -889,7 +946,9 @@ public class Plot implements Cloneable {
 			yScale = Double.POSITIVE_INFINITY;
 	}
 
-	/** Displays the plot in a PlotWindow and returns a reference to the PlotWindow. */
+	/** Displays the plot in a PlotWindow and returns a reference to the PlotWindow.
+	 *  Note that the PlotWindow might get closed immediately if its 'listValues' and 'autoClose'
+	 *  flags are set */
 	public PlotWindow show() {
 		if ((IJ.macroRunning() && IJ.getInstance()==null) || Interpreter.isBatchMode()) {
 			imp = getImagePlus();
@@ -906,13 +965,10 @@ public class Plot implements Cloneable {
 			if (win instanceof PlotWindow && win.isVisible()) {
 				updateImage();			// show in existing window
 				return (PlotWindow)win;
-			}
+			} else
+				setImagePlus(null);
 		}
-		PlotWindow pw = new PlotWindow(this);
-		if (imp == null)
-			imp.setProperty(PROPERTY_KEY, null);
-		imp = pw.getImagePlus();
-		imp.setProperty(PROPERTY_KEY, this);
+		PlotWindow pw = new PlotWindow(this);       //note: this may set imp to null if pw has listValues and autoClose are set
 		if (IJ.isMacro() && imp!=null) // wait for plot to be displayed
 			IJ.selectWindow(imp.getID());
 		return pw;
@@ -1440,32 +1496,43 @@ public class Plot implements Cloneable {
 		updateImage();
 	}
 
-	/** Zooms in or out when the user clicks one of the overlay arrows at the axes.
-	 *	Index numbers start with 0 at the 'down' arrow of the lower side of the x axis
-	 *	and end with the up arrow at the upper side of the y axis. */
-	void zoomOnRangeArrow(int arrowIndex) {
-		int axisIndex = (arrowIndex / 4) * 2;  //0 for x, 2 for y
-		double min = axisIndex==0 ? xMin : yMin;
-		double max = axisIndex==0 ? xMax : yMax;
-		double range = max - min;
-		boolean isMin = (arrowIndex % 4) < 2;
-		boolean shrinkRange = arrowIndex % 4 == 1 || arrowIndex % 4 == 2;
-		double factor = Math.sqrt(2);
-		if (shrinkRange) factor = 1.0/factor;
-		if (isMin)
-			min = max - range*factor;
-		else
-			max = min + range*factor;
-		boolean logAxis = axisIndex==0 ? logXAxis : logYAxis;
-		if (logAxis) {
-			min = Math.pow(10, min);
-			max = Math.pow(10, max);
-		}
-		currentMinMax[axisIndex] = min;
-		currentMinMax[axisIndex+1] = max;
-		updateImage();
-	}
+    //n__ begin zoomOnRangeArrow
+    /**
+     * Zooms in or out when the user clicks one of the overlay arrows at the
+     * axes. Index numbers start with 0 at the 'down' arrow of the lower side of
+     * the x axis and end with the up arrow at the upper side of the y axis.
+     */
+    void zoomOnRangeArrow(int arrowIndex) {
+        if (arrowIndex < 8) {//0..7 = arrows, 8 = Reset Range
+            int axisIndex = (arrowIndex / 4) * 2;  //0 for x, 2 for y
+            double min = axisIndex == 0 ? xMin : yMin;
+            double max = axisIndex == 0 ? xMax : yMax;
+            double range = max - min;
+            boolean isMin = (arrowIndex % 4) < 2;
+            boolean shrinkRange = arrowIndex % 4 == 1 || arrowIndex % 4 == 2;
+            double factor = Math.sqrt(2);
+            if (shrinkRange)
+                factor = 1.0 / factor;
+            if (isMin)
+                min = max - range * factor;
+            else
+                max = min + range * factor;
+            boolean logAxis = axisIndex == 0 ? logXAxis : logYAxis;
+            if (logAxis) {
+                min = Math.pow(10, min);
+                max = Math.pow(10, max);
+            }
+            currentMinMax[axisIndex] = min;
+            currentMinMax[axisIndex + 1] = max;
+        }
 
+        if (arrowIndex == 8)
+            setLimitsToDefaults(false);
+        updateImage();
+    }
+//n__ end zoomOnRangeArrow
+    
+    
 	/** Zooms in or out on a point x, y in screen coordinates. If x>0, default in both directions,
 	 *	if the cursor is below the x axis, only in x direction, if the cursor is left of the y axis, only in y direction.
 	 *	If x < 0, zooms on center; if x == ZOOM_AS_PREVIOUS, zooms on the center of the previous zoom
@@ -2343,6 +2410,11 @@ public class Plot implements Cloneable {
 		return labels;
 	}
 
+	/** Creates a ResultsTable with the plot data. Returns an empty table if no data. */
+	public ResultsTable getResultsTable() {
+		return getResultsTable(true);
+	}
+
 	/** Creates a ResultsTable with the data of the plot. Returns an empty table if no data. 
 	 *	Does not write the first x column if writeFirstXColumn is false.
 	 *	x columns equal to the first x column are never written, independent of writeFirstXColumn */
@@ -2364,12 +2436,11 @@ public class Plot implements Cloneable {
 		int dataSetNumber = 0;
 		int arrowsNumber = 0;
 		PlotObject firstXYobject = null;
-		boolean isFirstXYobject;
 		for (PlotObject plotObject : allPlotObjects) {
 			if (plotObject.type==PlotObject.XY_DATA) {
 				boolean sameX =	 firstXYobject != null && Arrays.equals(firstXYobject.xValues, plotObject.xValues);
 				boolean sameXY = sameX && Arrays.equals(firstXYobject.yValues, plotObject.yValues); //ignore duplicates (e.g. Markers plus Curve)
-				boolean writeX = (firstXYobject==null && writeFirstXColumn) || !sameX;
+				boolean writeX = firstXYobject==null?writeFirstXColumn:!sameX;
 				addToLists(headings, data, plotObject, dataSetNumber, writeX, /*writeY=*/!sameXY, nDataSets>1);
 				if (firstXYobject == null) firstXYobject = plotObject;
 				dataSetNumber++;

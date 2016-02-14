@@ -16,7 +16,6 @@ import java.awt.event.*;
 import java.util.*;
 import java.awt.geom.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-//import javax.swing.JPanel;
 
 
 /** This is a Canvas used to display images in a Window. */
@@ -552,18 +551,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
         return new Dimension(dstWidth, dstHeight);
     }
 
-    int count;
-    
-    /*
-    public Graphics getGraphics() {
-     	Graphics g = super.getGraphics();
-		IJ.write("getGraphics: "+count++);
-		if (IJ.altKeyDown())
-			throw new IllegalArgumentException("");
-    	return g;
-    }
-    */
-
 	/** Returns the current cursor location in image coordinates. */
 	public Point getCursorLoc() {
 		return new Point(xMouse, yMouse);
@@ -1087,8 +1074,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int x = e.getX();
 		int y = e.getY();
 		flags = e.getModifiers();
-		//IJ.log("Mouse pressed: " + e.isPopupTrigger() + "  " + ij.modifiers(flags));		
-		//if (toolID!=Toolbar.MAGNIFIER && e.isPopupTrigger()) {
+		
 		if (toolID!=Toolbar.MAGNIFIER && (e.isPopupTrigger()||(!IJ.isMacintosh()&&(flags&Event.META_MASK)!=0))) {
 			handlePopupMenu(e);
 			return;
@@ -1133,12 +1119,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				if (IJ.shiftKeyDown())
 					zoomToSelection(ox, oy);
 				else if ((flags & (Event.ALT_MASK|Event.META_MASK|Event.CTRL_MASK))!=0) {
-					//IJ.run("Out");
 					zoomOut(x, y);
 					if (getMagnification()<1.0)
 						imp.repaintWindow();
 				} else {
-					//IJ.run("In");
 	 				zoomIn(x, y);
 					if (getMagnification()<=1.0)
 						imp.repaintWindow();
@@ -1289,7 +1273,21 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		boolean multiPointMode = roi!=null && (roi instanceof PointRoi) && handle==-1
 			&& Toolbar.getToolId()==Toolbar.POINT && Toolbar.getMultiPointMode();
 		if (multiPointMode) {
-			((PointRoi)roi).addPoint(imp, offScreenXD(sx), offScreenYD(sy));
+			double oxd = offScreenXD(sx);
+			double oyd = offScreenXD(sy);
+			if (e.isShiftDown()) {
+				FloatPolygon points = roi.getFloatPolygon();
+				if (points.npoints>0) {
+					double x0 = points.xpoints[0];
+					double y0 = points.ypoints[0];
+					double slope = Math.abs((oxd-x0)/(oyd-y0));
+					if (slope>=1.0)
+						oyd = points.ypoints[0];
+					else
+						oxd = points.xpoints[0];
+				}
+			}
+			((PointRoi)roi).addPoint(imp, oxd, oyd);
 			imp.setRoi(roi);
 			return;
 		}
