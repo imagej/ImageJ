@@ -5,44 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.50g 13 February 2016</u>
+<li> <u>1.50h 16 February 2016</u>
 <ul>
-<li> Thanks to Norbert Vischer, added an "R" (Reset Range) button to the
-lower left corner of plot windows, and, in the <i>More&gt;&gt;Set Limits</i>
-dialog, numeric fields can be left empty for
-automatic range calculation.
- <li> Thanks to Michael Schmid, changed the name of the <i>Profile Plot Options</i>
- command to <i>Plots</i> and created a "Profile Plot Options" section
-at the bottom of the dialog.
-<li> Thanks to Dorai Iyer, multi-point selections are constrained
- to a horizontal or vertical line when the shift key is down.
-<li> Thanks to Michael Schmid, the ROI Manager's "Multi Measure" command
-displays a progress bar when "One row per slice" is checked.
-<li>Thanks to Stefan Worz, the <i>Image&gt;Duplicate</i>, <i>Image&gt;Scale</i>,
-<i>Image&gt;Adjust&gt;Size</i>, <i>Image&gt;Stacks&gt;Stack to Images</i>
-and <i>Image&gt;Stacks&gt;Images to Stack</i> commands no longer ignore
-image overlays.
-<li> Thanks to Christian Irgens, points selections selected in the ROI Manager
-are no longer moved when they are outside the image boundary.
-<li> Thanks to Christophe Leterrier, ImageJ now uses the
-Nashorn JavaScript engine when running on Java 8.
-<li> Thanks to Mike Davidson, added the call("ij.plugin.frame.ThresholdAdjuster.setMode",mode)
-macro function and the ThresholdAdjuster.setMode(mode) method, where 'mode' is
-"Red", "B&W" or "Over/Under".
-<li> Fixed a bug that caused the <i>Compile and Run</i> command to fail on Java 8
-when compiling plugins with errors. 
-<li> Thanks to Jan Eglinger, fixed a bug that caused an exception when
-saving multi-point selections.
-<li> Thanks to Rajeev Chaudhary, fixed a bug that caused the <i>Edit&gt;Copy</i>
-and <i>Edit&gt;Copy to System</i> commands to not correctly handle images
-with overlays.
-<li> Thanks to Dan White, fixed a bug that caused the Brightness/Contrast tool
-to not correctly display min and max values greater than 99999.
-<li> Thanks to Marc Lartaud, fixed a v1.50c regression that caused the More&gt;&gt;Save
-command in the ROI Manager to fail if there were duplicate ROI names.
-<li> Thanks to Michael Schmid and Dan White, fixed a 1.50d regression that caused
-the <i>File&gt;Save As&gt;AVI</i> command to create files that could not by opened
-by the Windows Media Player.
+<li> Thanks to Norbert Vischer, the Dialog.addNumber("Prompt:",NaN)
+function now creates a blank field instead of showing "NaN".
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

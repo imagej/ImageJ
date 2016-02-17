@@ -154,7 +154,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 		if (IJ.isWindows()) columns -= 2;
 		if (columns<1) columns = 1;
-		TextField tf = new TextField(IJ.d2s(defaultValue, digits), columns);
+		String defaultString = IJ.d2s(defaultValue, digits);
+		if (Double.isNaN(defaultValue))
+		defaultString = "";
+		TextField tf = new TextField(defaultString, columns);
 		if (IJ.isLinux()) tf.setBackground(Color.white);
 		tf.addActionListener(this);
 		tf.addTextListener(this);
