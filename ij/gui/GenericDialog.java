@@ -156,7 +156,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		if (columns<1) columns = 1;
 		String defaultString = IJ.d2s(defaultValue, digits);
 		if (Double.isNaN(defaultValue))
-		defaultString = "";
+			defaultString = "";
 		TextField tf = new TextField(defaultString, columns);
 		if (IJ.isLinux()) tf.setBackground(Color.white);
 		tf.addActionListener(this);
