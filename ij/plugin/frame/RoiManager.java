@@ -1039,7 +1039,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	private static ResultsTable multiMeasure(ImagePlus imp, Roi[] rois, boolean appendResults) {
-		int nSlices = imp.getNSlices();
+		int nSlices = imp.getStackSize();
 		Analyzer aSys = new Analyzer(imp); // System Analyzer
 		ResultsTable rtSys = Analyzer.getResultsTable();
 		ResultsTable rtMulti = new ResultsTable();
