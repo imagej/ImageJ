@@ -220,9 +220,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Point ploc = panel.getLocation();
 			Point bloc = moreButton.getLocation();
 			pm.show(this, ploc.x, bloc.y);
-		} else if (command.equals("OR (Combine)"))
-			combine();
-		else if (command.equals("Split"))
+		} else if (command.equals("OR (Combine)")) {
+			new MacroRunner("roiManager(\"Combine\");");
+			if (Recorder.record) Recorder.record("roiManager", "Combine");
+		} else if (command.equals("Split"))
 			split();
 		else if (command.equals("AND"))
 			and();
@@ -1331,7 +1332,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return labelsCheckbox.getState();
 	}
 
-	void combine() {
+	private synchronized void combine() {
 		ImagePlus imp = getImage();
 		if (imp==null) return;
 		int[] indexes = getSelectedIndexes();
@@ -1353,13 +1354,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			combinePoints(imp, indexes);
 		else
 			combineRois(imp, indexes);
-		if (record()) Recorder.record("roiManager", "Combine");
 	}
 	
-	void combineRois(ImagePlus imp, int[] indexes) {
+	private void combineRois(ImagePlus imp, int[] indexes) {
 		ShapeRoi s1=null, s2=null;
 		ImageProcessor ip = null;
 		for (int i=0; i<indexes.length; i++) {
+			IJ.showProgress(i, indexes.length-1);
 			Roi roi = (Roi)rois.get(indexes[i]);
 			if (!roi.isArea()) {
 				if (ip==null)
