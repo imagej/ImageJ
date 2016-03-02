@@ -1332,36 +1332,39 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return labelsCheckbox.getState();
 	}
 
-	private synchronized void combine() {
+	private void combine() {
 		ImagePlus imp = getImage();
-		if (imp==null) return;
-		int[] indexes = getSelectedIndexes();
-		if (indexes.length==1) {
+		if (imp==null)
+			return;
+		Roi[] rois = getSelectedRoisAsArray();
+		if (rois.length==1) {
 			error("More than one item must be selected, or none");
 			return;
 		}
-		if (indexes.length==0)
-			indexes = getAllIndexes();
 		int nPointRois = 0;
-		for (int i=0; i<indexes.length; i++) {
-			Roi roi = (Roi)rois.get(indexes[i]);
-			if (roi.getType()==Roi.POINT)
+		for (int i=0; i<rois.length; i++) {
+			if (rois[i].getType()==Roi.POINT)
 				nPointRois++;
 			else
 				break;
 		}
-		if (nPointRois==indexes.length)
-			combinePoints(imp, indexes);
+		if (nPointRois==rois.length)
+			combinePoints(imp, rois);
 		else
-			combineRois(imp, indexes);
+			combineRois(imp, rois);
 	}
 	
-	private void combineRois(ImagePlus imp, int[] indexes) {
+	private void combineRois(ImagePlus imp, Roi[] rois) {
+		IJ.resetEscape();
 		ShapeRoi s1=null, s2=null;
 		ImageProcessor ip = null;
-		for (int i=0; i<indexes.length; i++) {
-			IJ.showProgress(i, indexes.length-1);
-			Roi roi = (Roi)rois.get(indexes[i]);
+		for (int i=0; i<rois.length; i++) {
+			IJ.showProgress(i, rois.length-1);
+			if (IJ.escapePressed()) {
+				IJ.showProgress(1.0);
+				return;
+			}
+			Roi roi = rois[i];
 			if (!roi.isArea()) {
 				if (ip==null)
 					ip = new ByteProcessor(imp.getWidth(), imp.getHeight());
@@ -1402,16 +1405,16 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return tts.convert(ip);
 	}
 
-	void combinePoints(ImagePlus imp, int[] indexes) {
-		int n = indexes.length;
+	void combinePoints(ImagePlus imp, Roi[] rois) {
+		int n = rois.length;
 		Polygon[] p = new Polygon[n];
 		int points = 0;
 		for (int i=0; i<n; i++) {
-			Roi roi = (Roi)rois.get(indexes[i]);
-			p[i] = roi.getPolygon();
+			p[i] = rois[i].getPolygon();
 			points += p[i].npoints;
 		}
-		if (points==0) return;
+		if (points==0)
+			return;
 		int[] xpoints = new int[points];
 		int[] ypoints = new int[points];
 		int index = 0;
