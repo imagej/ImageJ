@@ -1274,7 +1274,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			&& Toolbar.getToolId()==Toolbar.POINT && Toolbar.getMultiPointMode();
 		if (multiPointMode) {
 			double oxd = offScreenXD(sx);
-			double oyd = offScreenXD(sy);
+			double oyd = offScreenYD(sy);
 			if (e.isShiftDown()) {
 				FloatPolygon points = roi.getFloatPolygon();
 				if (points.npoints>0) {

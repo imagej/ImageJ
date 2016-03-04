@@ -1005,7 +1005,7 @@ public class Plot implements Cloneable {
 	public boolean isFrozen() {
 		return frozen;
 	}
-
+	
 	/** Draws the plot again, ignored if the plot has not been drawn before or the plot is frozen
 	 *	If the ImagePlus exist, updates it and its calibration. */
 	public void updateImage() {
