@@ -38,10 +38,9 @@ public class Clipboard implements PlugIn, Transferable {
 	
 	void copy(boolean cut) {
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null) {
-			imp = flatten(imp);
+		if (imp!=null)
 	 		imp.copy(cut);
-	 	} else
+	 	else
 	 		IJ.noImage();
 	}
 	

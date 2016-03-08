@@ -245,7 +245,9 @@ public class Info implements PlugInFilter {
 				s += "  Composite mode: \"" + mode + "\"\n";
 			}
 		}
-
+		
+		if (imp.isLocked())
+	    	s += "**Locked**\n";
 		if (ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD)
 	    	s += "No threshold\n";
 	    else {

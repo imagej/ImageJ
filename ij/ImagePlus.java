@@ -157,6 +157,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (locked) {
 			IJ.beep();
 			IJ.showStatus("\"" + title + "\" is locked");
+			if (IJ.macroRunning())
+				IJ.wait(500);
 			return false;
         } else {
         	locked = true;
@@ -1522,8 +1524,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	 * @see #setT
 	 */
 	public synchronized void setSlice(int n) {
-		if (stack==null || (n==currentSlice&&ip!=null)) {
-			if (!noUpdateMode)
+		if (stack==null || (n==currentSlice&&ip!=null) || isLocked()) {
+			if (isLocked()) {
+				IJ.beep();
+				IJ.showStatus("Image is locked");
+			} else if (!noUpdateMode)
 				updateAndRepaintWindow();
 			return;
 		}

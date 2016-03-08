@@ -19,7 +19,8 @@ public class Converter implements PlugIn {
 			else if (imp.lock()) {
 				convert(arg);
 				imp.unlock();
-			}
+			} else 
+				IJ.log("<<Converter: image is locked ("+imp+")>>");
 		} else
 			IJ.noImage();
 	}
