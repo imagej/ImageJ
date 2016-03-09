@@ -1524,11 +1524,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	 * @see #setT
 	 */
 	public synchronized void setSlice(int n) {
-		if (stack==null || (n==currentSlice&&ip!=null) || isLocked()) {
-			if (isLocked()) {
-				IJ.beep();
-				IJ.showStatus("Image is locked");
-			} else if (!noUpdateMode)
+		if (stack==null || (n==currentSlice&&ip!=null)) {
+			if (!noUpdateMode)
 				updateAndRepaintWindow();
 			return;
 		}

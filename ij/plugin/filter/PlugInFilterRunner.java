@@ -54,7 +54,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 		if (imp != null) {
 			roi = imp.getRoi();
 			if (roi!=null) roi.endPaste();				// prepare the image: finish previous paste operation (if any)
-			if ((flags&PlugInFilter.NO_CHANGES)==0 && !imp.lock())
+			if (!imp.lock())
 				return;					// exit if image is in use
 			nPasses = ((flags&PlugInFilter.CONVERT_TO_FLOAT)!=0) ? imp.getProcessor().getNChannels():1;
 		}
@@ -80,7 +80,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 			}
 		} // if ExtendedPlugInFilter
 		if ((flags&PlugInFilter.DONE)!=0) {
-			if (imp != null && (flags&PlugInFilter.NO_CHANGES)==0)
+			if (imp != null)
 				imp.unlock();
 			return;
 		} else if (imp==null) {
@@ -173,8 +173,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 			win.running = false;
 			win.running2 = false;
 		}
-		if ((flags&PlugInFilter.NO_CHANGES)==0)
-			imp.unlock();
+		imp.unlock();
 	}
 
 	/** Process a stack or part of it. The slice given by class variable

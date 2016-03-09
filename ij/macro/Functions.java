@@ -1640,8 +1640,8 @@ public class Functions implements MacroConstants, Measurements {
 	
 	String getImageInfo() {		
 		ImagePlus imp = getImage();
-		Info infoPlugin = new Info();
-		return infoPlugin.getImageInfo(imp, getProcessor());
+		ImageInfo infoPlugin = new ImageInfo();
+		return infoPlugin.getImageInfo(imp);
 	}
 
 	public String getDirectory() {

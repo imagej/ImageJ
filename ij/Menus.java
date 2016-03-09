@@ -154,7 +154,7 @@ public class Menus {
 			
 		image.addSeparator();
 		getMenu("Image>Adjust", true);
-		addPlugInItem(image, "Show Info...", "ij.plugin.filter.Info", KeyEvent.VK_I, false);
+		addPlugInItem(image, "Show Info...", "ij.plugin.ImageInfo", KeyEvent.VK_I, false);
 		addPlugInItem(image, "Properties...", "ij.plugin.filter.ImageProperties", KeyEvent.VK_P, true);
 		getMenu("Image>Color", true);
 		getMenu("Image>Stacks", true);
