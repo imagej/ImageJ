@@ -22,11 +22,6 @@ public class RoiRotator implements PlugIn {
 			return;
 		if (!IJ.macroRunning())
 			defaultAngle = angle;
-		if (roi instanceof ImageRoi) {
-			((ImageRoi)roi).rotate(angle);
-			imp.draw();
-			return;
-		}
 		FloatPolygon center = roi.getRotationCenter();
 		double xcenter = center.xpoints[0];
 		double ycenter = center.ypoints[0];
@@ -35,7 +30,7 @@ public class RoiRotator implements PlugIn {
 			ycenter = imp.getHeight()/2.0;
 		}
 		Roi roi2 = rotate(roi, angle, xcenter, ycenter);
-		if (roi2==null)
+		if (roi2==null && (roi instanceof ImageRoi))
 			return;
 		if (!rotateAroundImageCenter)
 			roi2.setRotationCenter(xcenter,ycenter);
@@ -64,6 +59,10 @@ public class RoiRotator implements PlugIn {
 	}
 	
 	public static Roi rotate(Roi roi, double angle) {
+		if (roi instanceof ImageRoi) {
+			((ImageRoi)roi).rotate(angle);
+			return roi;
+		}
 		FloatPolygon center = roi.getRotationCenter();
 		double xcenter = center.xpoints[0];
 		double ycenter = center.ypoints[0];

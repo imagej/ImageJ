@@ -37,7 +37,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"importPackage(java.util);"+
 		"importPackage(java.io);"+
 		"function print(s) {IJ.log(s);};";
-		
+
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
 	public static final int MONOSPACED=1, MENU_BAR=2;
 	public static final int MACROS_MENU_ITEMS = 12;
@@ -85,7 +85,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private ArrayList undoBuffer = new ArrayList();
     private boolean performingUndo;
     private boolean checkForCurlyQuotes;
-    private boolean useNashorn;
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -278,6 +277,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	public void open(String dir, String name) {
 		path = dir+name;
 		File file = new File(path);
+		if (!file.exists()) {
+			IJ.error("File not found: "+path);
+			return;
+		}
 		try {
 			StringBuffer sb = new StringBuffer(5000);
 			BufferedReader r = new BufferedReader(new FileReader(file));
@@ -360,12 +363,14 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			save();
 			String text = ta.getText();
 			if (text.contains("implements PlugInFilter") && text.contains("IJ.run("))
-				IJ.log("Plugins that call IJ.run() should probably implement PlugIn, not PlugInFilter.");
+				IJ.log("<<Plugins that call IJ.run() should probably implement PlugIn, not PlugInFilter.>>");
 			IJ.runPlugIn("ij.plugin.Compiler", path);
 		}
 	}
 	
 	final void runMacro(boolean debug) {
+		if (path!=null)
+			Macro_Runner.setFilePath(path);
 		if (getTitle().endsWith(".js"))
 			{evaluateJavaScript(); return;}
 		else if (getTitle().endsWith(".bsh"))
@@ -414,15 +419,13 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			text = ta.getText();
 		else
 			text = ta.getSelectedText();
-		if (text.equals("")) return;
-		if (useNashorn) {
-			IJ.runPlugIn("ij.plugin.JavaScriptEvaluator", text);
+		if (text.equals(""))
 			return;
-		}
 		text = getJSPrefix("") + text;
-		if ((IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit())) && !IJ.isJava18()) {
-			// Use JavaScript engine built into Java 6 and Java 7.
-			// Can't use incompatible Nashorn engine in Java 8 and later.
+		if (IJ.isJava18())
+			text = "load(\"nashorn:mozilla_compat.js\");" + text;
+		if ((IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit()))) {
+			// Use JavaScript engine built into Java 6 and later.
 			IJ.runPlugIn("ij.plugin.JavaScriptEvaluator", text);
 		} else {
 			Object js = IJ.runPlugIn("JavaScript", text);
@@ -895,6 +898,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	/** Override windowActivated in PlugInFrame to
 		prevent Mac menu bar from being installed. */
 	public void windowActivated(WindowEvent e) {
+			if (IJ.debugMode) IJ.log("Editor.windowActivated");
 			WindowManager.setWindow(this);
 			instance = this;
 	}
@@ -1268,15 +1272,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			IJ.log("debug: "+interp.getLineNumber()+"  "+mode+"  "+interp);
 		if (mode==RUN_TO_COMPLETION)
 			return 0;
-		if (!isVisible()) { // abort macro if user closes window
-			interp.abortMacro();
-			return 0;
-		}
-		toFront();
 		int n = interp.getLineNumber();
-		if (n==previousLine)
-			{previousLine=0; return 0;}
-		previousLine = n;
 		if (mode==RUN_TO_CARET) {
 			if (n==runToLine) {
 				mode = STEP;
@@ -1284,6 +1280,19 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			} else
 				return 0;
 		}
+		if (!isVisible()) { // abort macro if user closes window
+			interp.abortMacro();
+			return 0;
+		}
+		if (n==previousLine) {
+			previousLine=0;
+			return 0;
+		}
+		Window win = WindowManager.getActiveWindow();
+		if (win!=this)
+			IJ.wait(50);
+		toFront();
+		previousLine = n;
 		String text = ta.getText();
 		if (IJ.isWindows())
 			text = text.replaceAll("\r\n", "\n");

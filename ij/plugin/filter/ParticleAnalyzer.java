@@ -515,9 +515,15 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			measurements = Analyzer.getMeasurements();
 		measurements &= ~LIMIT;	 // ignore "Limit to Threshold"
 		if (rt==null) {
-			if (!showResults && (WindowManager.getFrame("Results")!=null))
+			Frame table = WindowManager.getFrame("Results");
+			if (!showResults && table!=null) {
 				rt = new ResultsTable();
-			else
+				if (resetCounter && table instanceof TextWindow) {
+					IJ.run("Clear Results");
+					((TextWindow)table).close();
+					rt = Analyzer.getResultsTable();
+				}
+			} else
 				rt = Analyzer.getResultsTable();
 		}
 		analyzer = new Analyzer(imp, measurements, rt);

@@ -327,6 +327,7 @@ public class IJ {
 			commandTable.put("XY Coodinates... ", "XY Coordinates... ");
 			commandTable.put("Statistics...", "Statistics");
 			commandTable.put("Channels Tool... ", "Channels Tool...");
+			commandTable.put("Profile Plot Options...", "Plots...");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)
@@ -604,7 +605,7 @@ public class IJ {
 		Writes to the Java console if ImageJ is not present. */
 	public static void showMessage(String title, String msg) {
 		if (ij!=null) {
-			if (msg!=null && msg.startsWith("<html>")) {
+			if (msg!=null && (msg.startsWith("<html>")||msg.startsWith("<HTML>"))) {
 				HTMLDialog hd = new HTMLDialog(title, msg);
 				if (isMacro() && hd.escapePressed())
 					throw new RuntimeException(Macro.MACRO_CANCELED);

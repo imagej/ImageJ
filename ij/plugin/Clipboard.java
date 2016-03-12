@@ -44,6 +44,22 @@ public class Clipboard implements PlugIn, Transferable {
 	 		IJ.noImage();
 	}
 	
+	private ImagePlus flatten(ImagePlus imp) {
+		if (imp.getOverlay()!=null && !imp.getHideOverlay() && !imp.isHyperStack()) {
+			ImagePlus imp2 = imp;
+			Roi roi = imp.getRoi();
+			if (imp.getStackSize()>1) {
+				imp.deleteRoi();
+				int slice = imp.getCurrentSlice();
+				imp = new Duplicator().run(imp, slice, slice);
+			}
+			imp = imp.flatten();
+			imp.setRoi(roi);
+			imp2.setRoi(roi);
+		}
+		return imp;
+	}
+	
 	void paste() {
 		if (ImagePlus.getClipboard()==null)
 			showSystemClipboard();
@@ -124,6 +140,7 @@ public class Clipboard implements PlugIn, Transferable {
 			throw new UnsupportedFlavorException(flavor);
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
+			imp = flatten(imp);
 			ImageProcessor ip;
 			if (imp.isComposite()) {
 				ip = new ColorProcessor(imp.getImage());

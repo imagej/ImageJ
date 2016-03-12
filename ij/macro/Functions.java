@@ -94,7 +94,7 @@ public class Functions implements MacroConstants, Measurements {
 	void doFunction(int type) {
 		switch (type) {
 			case RUN: doRun(); break;
-			case SELECT: IJ.selectWindow(getStringArg()); resetImage(); break;
+			case SELECT: IJ.selectWindow(getStringArg()); resetImage(); interp.selectCount++; break;
 			case WAIT: IJ.wait((int)getArg()); break;
 			case BEEP: interp.getParens(); IJ.beep(); break;
 			case RESET_MIN_MAX: interp.getParens(); IJ.resetMinAndMax(); resetImage(); break;
@@ -1141,8 +1141,12 @@ public class Functions implements MacroConstants, Measurements {
 		int col = rt.getColumnIndex(column);
 		if (rt.columnExists(col))
 			return rt.getStringValue(col, row);
-		else
-			return "null";
+		else {
+			String label = null;
+			if ("Label".equals(column))
+				label = rt.getLabel(row);
+			return label!=null?label:"null";
+		}
 	}
 
 	String getResultLabel() {
@@ -1152,7 +1156,12 @@ public class Functions implements MacroConstants, Measurements {
 		if (row<0 || row>=counter)
 			interp.error("Row ("+row+") out of range");
 		String label = rt.getLabel(row);
-		return label!=null?label:"";
+		if (label!=null)
+			return label;
+		else {
+			label = rt.getStringValue("Label", row);
+			return label!=null?label:"";
+		}
 	}
 
 	private ResultsTable getResultsTable(boolean reportErrors) {
@@ -1559,11 +1568,18 @@ public class Functions implements MacroConstants, Measurements {
 				return getWindowType();
 			} else if (lowercaseKey.equals("window.title")||lowercaseKey.equals("window.name")) {
 				return getWindowTitle();
+			} else if (lowercaseKey.equals("macro.filepath")) {
+				String path = Macro_Runner.getFilePath();
+				return path!=null?path:"null";
 			} else {
 				String value = "";
-				try {value = System.getProperty(key);}
-				catch (Exception e) {};
-				return value!=null?value:"";
+				try {
+					value = System.getProperty(key);
+				} catch (Exception e) {};
+				if (value==null)
+					return("Invalid key");
+				else
+					return value;
 			}
 			return "";
 	}
@@ -1624,8 +1640,8 @@ public class Functions implements MacroConstants, Measurements {
 	
 	String getImageInfo() {		
 		ImagePlus imp = getImage();
-		Info infoPlugin = new Info();
-		return infoPlugin.getImageInfo(imp, getProcessor());
+		ImageInfo infoPlugin = new ImageInfo();
+		return infoPlugin.getImageInfo(imp);
 	}
 
 	public String getDirectory() {
@@ -2016,6 +2032,9 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("getValues")) {
 			getPlotValues();
 			return;
+		} else if (name.equals("showValues")) {
+			showPlotValues();
+			return;
 		}
 		// the following commands work with a plot under construction or an image with a plot created previously
 		Plot currentPlot = plot;
@@ -2155,6 +2174,19 @@ public class Functions implements MacroConstants, Measurements {
 			ya[i] = new Variable(yvalues[i]);
 		xvar.setArray(xa);
 		yvar.setArray(ya);
+	}
+
+	void showPlotValues() {
+		interp.getParens();
+		ImagePlus imp = getImage();
+		ImageWindow win = imp.getWindow();
+		if (win==null || !(win instanceof PlotWindow)) {
+			interp.error("No plot window");
+			return;
+		}
+		PlotWindow pw = (PlotWindow)win;
+		ResultsTable rt = pw.getResultsTable();
+		rt.show("Results");
 	}
 
 	void newPlot() {
@@ -2816,6 +2848,7 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();
 		}
 		resetImage();
+		interp.selectCount++;
 	}
 	
 	void selectImage(String title) {
@@ -4550,8 +4583,18 @@ public class Functions implements MacroConstants, Measurements {
 		String name = interp.tokenString;
 		if (name.equals("isHyperstack")||name.equals("isHyperStack"))
 			return getImage().isHyperStack()?1.0:0.0;
-		else if (name.equals("getDimensions"))
-			{getDimensions(); return Double.NaN;}
+		else if (name.equals("getDimensions")) {
+			getDimensions();
+			return Double.NaN;
+		} else if (name.equals("stopOrthoViews")) {
+			interp.getParens(); 
+			Orthogonal_Views.stop();
+			return Double.NaN;
+		} else if (name.equals("getOrthoViewsID")) {
+			interp.getParens(); 
+			return Orthogonal_Views.getImageID();
+		} else if (name.equals("setOrthoViews"))
+			return setOrthoViews();
 		ImagePlus imp = getImage();
 		if (name.equals("setPosition"))
 			{setPosition(imp); return Double.NaN;}
@@ -4598,6 +4641,16 @@ public class Functions implements MacroConstants, Measurements {
 			getStackStatistics(imp, true);
 		else
 			interp.error("Unrecognized Stack function");
+		return Double.NaN;
+	}
+	
+	private double setOrthoViews() { 
+		int x = (int)getFirstArg();
+		int y = (int)getNextArg();
+		int z = (int)getLastArg();
+		Orthogonal_Views orthoViews = Orthogonal_Views.getInstance();
+		if (orthoViews!=null)
+			orthoViews.setCrossLoc(x, y, z);
 		return Double.NaN;
 	}
 	
@@ -4791,7 +4844,8 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	void waitForUser() {
-		if (waitForUserDialog!=null && waitForUserDialog.isVisible())
+		IJ.wait(50);
+		if (waitForUserDialog!=null && waitForUserDialog.isShowing())
 			interp.error("Duplicate call");
 		String title = "Action Required";
 		String text = "   Click \"OK\" to continue     ";
@@ -4807,7 +4861,9 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		waitForUserDialog = new WaitForUserDialog(title, text);
 		Interpreter instance = Interpreter.getInstance();
+		interp.waitingForUser = true;
 		waitForUserDialog.show();
+		interp.waitingForUser = false;
 		Interpreter.setInstance(instance); // works around bug caused by use of drawing tools
 		if (waitForUserDialog.escPressed())
 			throw new RuntimeException(Macro.MACRO_CANCELED);

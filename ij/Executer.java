@@ -48,7 +48,8 @@ public class Executer implements Runnable {
 	}
 
 	public void run() {
-		if (command==null) return;
+		if (command==null)
+			return;
 		if (listeners.size()>0) synchronized (listeners) {
 			for (int i=0; i<listeners.size(); i++) {
 				CommandListener listener = (CommandListener)listeners.elementAt(i);
@@ -100,6 +101,10 @@ public class Executer implements Runnable {
 						s = e + "\n \nThis plugin requires Java 1.7 or later.";
 						w=700; h=150;
 					}
+					if (s.indexOf("version 52.0")!=-1) {
+						s = e + "\n \nThis plugin requires Java 1.8 or later.";
+						w=700; h=150;
+					}
 				}
 				if (IJ.getInstance()!=null) {
 					s = IJ.getInstance().getInfo()+"\n \n"+s;
@@ -143,7 +148,12 @@ public class Executer implements Runnable {
 			// is it an example in Help>Examples menu?
 			if (openExample(cmd))
 				return;
-			IJ.error("Unrecognized command: \"" + cmd+"\"");
+			if ("Auto Threshold".equals(cmd)&&(String)table.get("Auto Threshold...")!=null)
+				runCommand("Auto Threshold...");
+			else if ("Enhance Local Contrast (CLAHE)".equals(cmd)&&(String)table.get("CLAHE ")!=null)
+				runCommand("CLAHE ");
+			else
+				IJ.error("Unrecognized command: \"" + cmd+"\"");
 	 	}
     }
     

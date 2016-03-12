@@ -46,22 +46,23 @@ public Plot getPlot() {
 		boolean fixedScale = ymin!=0.0 || ymax!=0.0;
 		boolean wasFixedScale = fixedScale;
 		
-		GenericDialog gd = new GenericDialog("Profile Plot Options", IJ.getInstance());
-		gd.addNumericField("Width (pixels):", PlotWindow.plotWidth, 0);
-		gd.addNumericField("Height (pixels):", PlotWindow.plotHeight, 0);
+		GenericDialog gd = new GenericDialog("Plot Options", IJ.getInstance());
+		gd.addNumericField("Width:", PlotWindow.plotWidth, 0);
+		gd.addNumericField("Height:", PlotWindow.plotHeight, 0);
 		gd.addNumericField("Font Size:", PlotWindow.fontSize, 0);
-		gd.setInsets(10,20,0); //distance to previous
-		gd.addCheckbox("Fixed y-axis scale", fixedScale);
-		gd.addNumericField("Minimum Y:", ymin, 2);
-		gd.addNumericField("Maximum Y:", ymax, 2);
 		gd.setInsets(5,20,0); //distance to previous
 		gd.addCheckbox("Draw grid lines", !PlotWindow.noGridLines);
 		gd.addCheckbox("Draw_ticks", !PlotWindow.noTicks);
-		gd.setInsets(10,20,0); //distance to previous
-		gd.addCheckbox("Do not save x-values", !PlotWindow.saveXValues);
 		gd.addCheckbox("Auto-close", PlotWindow.autoClose);
 		gd.addCheckbox("List values", PlotWindow.listValues);
-		gd.setInsets(10,20,0); //distance to previous
+		
+		gd.setInsets(15,0,0);
+		gd.addMessage("--------Profile Plot Options--------");
+		gd.setInsets(5,20,0);
+		gd.addCheckbox("Fixed y-axis scale", fixedScale);
+		gd.addNumericField("Minimum Y:", ymin, 2);
+		gd.addNumericField("Maximum Y:", ymax, 2);
+		gd.setInsets(10,20,0);
 		gd.addCheckbox("Vertical profile", Prefs.verticalProfile);
 		gd.addCheckbox("Interpolate line profiles", PlotWindow.interpolate);
 		gd.addCheckbox("Sub-pixel resolution", Prefs.subPixelResolution);
@@ -82,15 +83,15 @@ public Plot getPlot() {
 		if (fontSize > 28) fontSize = 28;
 		if (!gd.invalidNumber())
 			PlotWindow.fontSize = fontSize;
-		fixedScale = gd.getNextBoolean();
-		ymin = gd.getNextNumber();
-		ymax = gd.getNextNumber();
 		PlotWindow.noGridLines = !gd.getNextBoolean();
 		PlotWindow.noTicks = !gd.getNextBoolean();
 		//data options
-		PlotWindow.saveXValues = !gd.getNextBoolean();
 		PlotWindow.autoClose = gd.getNextBoolean();
 		PlotWindow.listValues = gd.getNextBoolean();
+		//profile plot options
+		fixedScale = gd.getNextBoolean();
+		ymin = gd.getNextNumber();
+		ymax = gd.getNextNumber();
 		//profile options
 		Prefs.verticalProfile = gd.getNextBoolean();
 		PlotWindow.interpolate = gd.getNextBoolean();

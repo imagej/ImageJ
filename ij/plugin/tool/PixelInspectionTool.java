@@ -444,6 +444,8 @@ class PixelInspector extends PlugInFrame
 			double[] minmax = Tools.getMinMax(data);
 			double maxDataValue = Math.max(Math.abs(minmax[0]), Math.abs(minmax[1]));
 			digits = (int)(6-Math.log(maxDataValue)/Math.log(10));
+			if (maxDataValue==0.0)
+				digits = 6;
 			expMode = digits<-1 || digits>7;
 			if (Math.min(minmax[0], minmax[1]) < 0)
 				digits--; //more space needed for minus sign

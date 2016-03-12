@@ -44,7 +44,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public static final int OVAL_ROI=0, ELLIPSE_ROI=1, BRUSH_ROI=2;
 	
 	private static final String[] builtInTools = {"Arrow","Brush","Developer Menu","Flood Filler",
-		"LUT Menu","Overlay Brush","Pencil","Pixel Inspector","Spray Can","Stacks Menu"};
+		"LUT Menu","Overlay Brush","Pencil","Pixel Inspector","Selection Rotator", "Spray Can","Stacks Menu"};
 	private static final String[] builtInTools2 = {"Pixel Inspection Tool","Paintbrush Tool","Flood Fill Tool"};
 
 	private static final int NUM_TOOLS = 23;
@@ -1723,6 +1723,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		} else if (label.startsWith("Pencil")) {
 			tool = new ij.plugin.tool.BrushTool();
 			if (tool!=null) tool.run("pencil");
+		} else if (label.startsWith("Selection Rotator")) {
+			tool = new ij.plugin.tool.RoiRotationTool();
+			if (tool!=null) tool.run("");
 		} else if (label.startsWith("Flood Fill")) {
 			(new MacroInstaller()).installFromIJJar("/macros/FloodFillTool.txt");
 		} else if (label.startsWith("Spray Can")) {

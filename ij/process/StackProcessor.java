@@ -110,6 +110,7 @@ public class StackProcessor {
 	public ImageStack resize(int newWidth, int newHeight, boolean averageWhenDownsizing) {
 	    ImageStack stack2 = new ImageStack(newWidth, newHeight);
  		ImageProcessor ip2;
+ 		Rectangle roi = ip!=null?ip.getRoi():null;
     	if (ip==null)
     		ip = stack.getProcessor(1).duplicate();
 		try {

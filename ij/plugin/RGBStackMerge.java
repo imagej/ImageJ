@@ -230,8 +230,11 @@ public class RGBStackMerge implements PlugIn {
 		for (int i=titles.length-1; i>=0; i--) {
 			if (titles!=null && titles[i].startsWith(str) && (firstChannelName==null||titles[i].contains(firstChannelName))) {
 				name = titles[i];
-	 			if (channel==1)
+	 			if (channel==1) {
+	 				if (name==null || name.length()<3)
+	 					return none;
 	 				firstChannelName = name.substring(3);
+	 			}
 				break;
 			}
 		}

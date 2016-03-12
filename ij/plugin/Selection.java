@@ -711,6 +711,10 @@ public class Selection implements PlugIn, Measurements {
 	}
 	
 	boolean setProperties(String title, Roi roi) {
+		if ((roi instanceof PointRoi) && Toolbar.getMultiPointMode()) {
+			((PointRoi)roi).displayCounts();
+			return true;
+		}
 		Frame f = WindowManager.getFrontWindow();
 		if (f!=null && f.getTitle().indexOf("3D Viewer")!=-1)
 			return false;

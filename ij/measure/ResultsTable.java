@@ -648,12 +648,11 @@ public class ResultsTable implements Cloneable {
 	/** Sets the decimal places (digits to the right of decimal point)
 		that are used when this table is displayed. */
 	public synchronized void setPrecision(int precision) {
+		if (precision>9) precision=9;
 		this.precision = (short)precision;
-		if (this==Analyzer.getResultsTable()) {
-			for (int i=0; i<decimalPlaces.length; i++) {
-				if (!(decimalPlaces[i]==AUTO_FORMAT||decimalPlaces[i]==0))
-					decimalPlaces[i] = (short)precision;
-			}
+		for (int i=0; i<decimalPlaces.length; i++) {
+			if (!(decimalPlaces[i]==AUTO_FORMAT||decimalPlaces[i]==0))
+				decimalPlaces[i] = (short)precision;
 		}
 	}
 	
@@ -821,7 +820,8 @@ public class ResultsTable implements Cloneable {
 			TextWindow win;
 			if (frame!=null && frame instanceof TextWindow) {
 				win = (TextWindow)frame;
-				win.toFront();
+				if (windowTitle==null || !windowTitle.startsWith("Counts_"))
+					win.toFront();
 			} else {
 				int width = getLastColumn()<=0?250:400;
 				if (showRowNumbers)

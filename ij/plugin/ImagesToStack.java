@@ -117,6 +117,7 @@ public class ImagesToStack implements PlugIn {
 		ImageStack stack = new ImageStack(width, height);
 		FileInfo fi = image[0].getOriginalFileInfo();
 		if (fi!=null && fi.directory==null) fi = null;
+		Overlay overlay = new Overlay();
 		for (int i=0; i<count; i++) {
 			ImageProcessor ip = image[i].getProcessor();
 			boolean invertedLut = ip.isInvertedLut();
@@ -168,8 +169,18 @@ public class ImagesToStack implements PlugIn {
 						ip = ip.resize(width, height);
 						break;
 				}
-			} else if (keep)
-				ip = ip.duplicate();
+			} else {
+				if (keep)
+					ip = ip.duplicate();
+				Overlay overlay2 = image[i].getOverlay();
+				if (overlay2!=null) {
+					for (int j=0; j<overlay2.size(); j++) {
+						Roi roi = overlay2.get(j);
+						roi.setPosition(i+1);
+						overlay.add((Roi)roi.clone());
+					}
+				}
+			}
 			stack.addSlice(label, ip);
 			if (i==0 && invertedLut && !allInvertedLuts)
 				stack.setColorModel(null);
@@ -189,6 +200,8 @@ public class ImagesToStack implements PlugIn {
 			fi.nImages = imp.getStackSize();
 			imp.setFileInfo(fi);
 		}
+		if (overlay.size()>0)
+			imp.setOverlay(overlay);
 		imp.show();
 	}
 	

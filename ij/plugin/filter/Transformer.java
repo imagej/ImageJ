@@ -44,7 +44,7 @@ public class Transformer implements PlugInFilter {
 			if (arg.equals("right")) {
 	    		s2 = sp.rotateRight();
 	    		if (transformOrigin) {
-	    			double xOrigin = imp.getWidth()-1 - cal.yOrigin;
+	    			double xOrigin = imp.getHeight()-1 - cal.yOrigin;
 	    			double yOrigin = cal.xOrigin;
 	    			cal.xOrigin = xOrigin;
 	    			cal.yOrigin = yOrigin;
@@ -53,7 +53,7 @@ public class Transformer implements PlugInFilter {
 	    		s2 = sp.rotateLeft();
 	    		if (transformOrigin) {
 	    			double xOrigin = cal.yOrigin;
-	    			double yOrigin = imp.getHeight()-1 - cal.xOrigin;
+	    			double yOrigin = imp.getWidth()-1 - cal.xOrigin;
 	    			cal.xOrigin = xOrigin;
 	    			cal.yOrigin = yOrigin;
 	    		}

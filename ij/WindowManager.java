@@ -2,10 +2,10 @@ package ij;
 import ij.plugin.Converter;
 import ij.plugin.frame.Recorder;
 import ij.plugin.frame.Editor; 
-import ij.macro.Interpreter;
 import ij.text.TextWindow;
 import ij.plugin.frame.PlugInFrame;
 import ij.util.Tools;
+import ij.macro.Interpreter;
 import java.awt.*;
 import java.util.*;
 import ij.gui.*;
@@ -98,11 +98,25 @@ public class WindowManager {
 			return currentWindow.getImagePlus();
 		else if (frontWindow!=null && (frontWindow instanceof ImageWindow))
 			return frontWindow!=null?((ImageWindow)frontWindow).getImagePlus():null;
-		else 	if (imageList.size()>0) {	
+		else if (imageList.size()>0) {	
+			ImagePlus imp = getFocusManagerActiveImage();
+			if (imp!=null)
+				return imp;
 			ImageWindow win = (ImageWindow)imageList.elementAt(imageList.size()-1);
 			return win.getImagePlus();
 		} else
 			return Interpreter.getLastBatchModeImage(); 
+	}
+	
+	private static ImagePlus getFocusManagerActiveImage() {
+		if (IJ.isMacro())
+			return null;
+		KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+		Window win = kfm.getActiveWindow();
+		ImagePlus imp = null;
+		if (win!=null && (win instanceof ImageWindow))
+			imp = ((ImageWindow)win).getImagePlus();
+		return imp;
 	}
 
 	/** Returns the number of open image windows. */
@@ -570,5 +584,5 @@ public class WindowManager {
 			frame.setState(Frame.NORMAL);
 		frame.toFront();
 	}
-    
+	    
 }
