@@ -1541,8 +1541,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			}
 			if (imp!=null && imp.isHyperStack()) {
 				channel = slice = frame = false;
-				int nSlices = imp.getNSlices();
-				int nFrames = imp.getNFrames();
 				if (imp.getNSlices()>1)
 					slice = true;
 				if (imp.getNFrames()>1 && imp.getNSlices()==1)

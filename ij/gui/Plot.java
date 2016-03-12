@@ -177,6 +177,7 @@ public class Plot implements Cloneable {
 	private int currentJustification = LEFT;
 	private boolean ignoreForce2Grid;				// after explicit setting of range (limits), ignore 'FORCE2GRID' flags
 	//private boolean snapToMinorGrid;				// snap to grid when zooming to selection
+	private Color backgroundColor;
 	
 	/** Construct a new PlotWindow.
 	 *	Note that the data xValues, yValues passed with the constructor are plotted last,
@@ -757,8 +758,20 @@ public class Plot implements Cloneable {
 			isColor = true;
 	}
 	
+	/** Sets the drawing color for the next objects that will be added to the plot. */
 	public void setColor(String c1, String c2) {
 		setColor(Colors.getColor(c1,Color.black), Colors.getColor(c2,Color.black));
+	}
+
+	/** Set the plot frame background color. */
+	public void setBackgroundColor(Color c) {
+		backgroundColor = c;
+		isColor = true;
+	}
+
+	/** Set the plot frame background color. */
+	public void setBackgroundColor(String c) {
+		setBackgroundColor(Colors.getColor(c,Color.white));
 	}
 
 	/** Changes the line width for the next objects that will be added to the plot. */
@@ -1256,11 +1269,17 @@ public class Plot implements Cloneable {
 		else
 			Arrays.fill((byte[])(ip.getPixels()), invertedLut ? (byte)0 : (byte)0xff);
 
-		ip.setColor(Color.black);
 		ip.setFont(scFont(defaultFont));
 		ip.setLineWidth(sc(1));
 		ip.setAntialiasedText(antialiasedText);
 		frame = new Rectangle(leftMargin, topMargin, frameWidth+1, frameHeight+1);
+		if (backgroundColor!=null) {
+			ip.setColor(backgroundColor);
+			ip.setRoi(frame);
+			ip.fill();
+			ip.resetRoi();
+		}
+		ip.setColor(Color.black);
 		return ip;
 	}
 

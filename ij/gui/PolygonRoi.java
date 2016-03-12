@@ -429,6 +429,8 @@ public class PolygonRoi extends Roi {
 	//Within correction circle, all vertices with sharp angles are removed.
 	//Norbert Vischer
 	protected void wipeBack() {
+		if (previousRoi!=null && previousRoi.modState==SUBTRACT_FROM_ROI)
+			return;
 		double correctionRadius = 20;
 		if (ic!=null)
 			correctionRadius /= ic.getMagnification();

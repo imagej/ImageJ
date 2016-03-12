@@ -2087,6 +2087,9 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("setColor")) {
 			setPlotColor(currentPlot);
 			return;
+		} else if (name.equals("setBackgroundColor")) {
+			setPlotBackgroundColor(currentPlot);
+			return;
 		} else if (name.equals("setFontSize")) {
 			setPlotFontSize(currentPlot, false);
 			return;
@@ -2273,6 +2276,13 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		plot.setColor(color, color2);
 		interp.getRightParen();
+	}
+
+	void setPlotBackgroundColor(Plot plot) {
+		interp.getLeftParen();
+		Color color = getColor();
+		interp.getRightParen();
+		plot.setBackgroundColor(color);
 	}
 
 	void setPlotFontSize(Plot plot, boolean forAxisLabels) {
