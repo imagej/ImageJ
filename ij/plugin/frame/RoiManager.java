@@ -1534,10 +1534,20 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		boolean removeChannels = position==CHANNEL;
 		boolean removeFrames = position==FRAME;
 		boolean removeSlices = !(removeChannels||removeFrames);
+		ImagePlus imp = WindowManager.getCurrentImage();
 		if (position==SHOW_DIALOG) {
-			ImagePlus imp = WindowManager.getCurrentImage();
-			if (imp!=null && !imp.isHyperStack())
-				{channel=false; slice=true; frame=false;}
+			if (imp!=null && !imp.isHyperStack()) {
+				channel=false; slice=true; frame=false;
+			}
+			if (imp!=null && imp.isHyperStack()) {
+				channel = slice = frame = false;
+				int nSlices = imp.getNSlices();
+				int nFrames = imp.getNFrames();
+				if (imp.getNSlices()>1)
+					slice = true;
+				if (imp.getNFrames()>1 && imp.getNSlices()==1)
+					frame = true;
+			}
 			Font font = new Font("SansSerif", Font.BOLD, 12);
 			GenericDialog gd = new GenericDialog("Remove");
 			gd.setInsets(5,15,0);
@@ -1554,9 +1564,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			removeChannels = gd.getNextBoolean();
 			removeSlices = gd.getNextBoolean();
 			removeFrames = gd.getNextBoolean();
-			channel = removeChannels;
-			slice = removeSlices;
-			frame = removeFrames;
 		}
 		if (!removeChannels && !removeSlices && !removeFrames) {
 			slice = true;
@@ -1565,6 +1572,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		for (int i=0; i<indexes.length; i++) {
 			int index = indexes[i];
 			Roi roi = (Roi)rois.get(index);
+			String name = (String)listModel.getElementAt(index);
+			int n = getSliceNumber(name);
+			if (n>0) {
+				String name2 = name.substring(5, name.length());
+				roi.setName(name2);
+				rois.set(index, roi);
+				listModel.setElementAt(name2, index);
+			}
 			int c = roi.getCPosition();
 			int z = roi.getZPosition();
 			int t = roi.getTPosition();
@@ -1573,19 +1588,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				if (removeSlices) z = 0;
 				if (removeFrames) t = 0;
 				roi.setPosition(c, z, t);
-				continue;
-			}
-			String name = (String) listModel.getElementAt(index);
-			int n = getSliceNumber(name);
-			if (n==-1) {
+			} else
 				roi.setPosition(0);
-				continue;
-			}
-			String name2 = name.substring(5, name.length());
-			roi.setName(name2);
-			rois.set(index, roi);
-			listModel.setElementAt(name2, index);
 		}
+		if (imp!=null)
+			imp.draw();
 		if (record()) {
 			if (removeChannels) Recorder.record("roiManager", "Remove Channel Info");
 			if (removeSlices) Recorder.record("roiManager", "Remove Slice Info");

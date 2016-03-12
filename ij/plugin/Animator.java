@@ -85,6 +85,9 @@ public class Animator implements PlugIn {
 	}
 
 	void startAnimation() {
+		if (imp.isLocked()) {
+			return;
+		}
 		int first=firstFrame, last=lastFrame;
 		if (first<1 || first>nSlices || last<1 || last>nSlices)
 			{first=1; last=nSlices;}

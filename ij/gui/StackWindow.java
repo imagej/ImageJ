@@ -293,7 +293,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			int s = this.slice;
 			this.slice = 0;
 			if (s!=imp.getCurrentSlice())
-				setSlice(imp,s);
+				imp.setSlice(s);
 		}
     }
     
