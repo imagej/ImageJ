@@ -90,9 +90,7 @@ public class SimpleCommands implements PlugIn {
 		GenericDialog gd = new GenericDialog("Rename");
 		gd.addStringField("Title:", imp.getTitle(), 30);
 		gd.showDialog();
-		if (gd.wasCanceled())
-			return;
-		else
+		if (!gd.wasCanceled())
 			imp.setTitle(gd.getNextString());
 	}
 		

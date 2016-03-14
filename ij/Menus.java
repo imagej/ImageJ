@@ -1297,18 +1297,8 @@ public class Menus {
 	static synchronized void addWindowMenuItem(ImagePlus imp) {
 		if (ij==null) return;
 		String name = imp.getTitle();
-		int size = (imp.getWidth()*imp.getHeight()*imp.getStackSize())/1024;
-		switch (imp.getType()) {
-			case ImagePlus.GRAY32: case ImagePlus.COLOR_RGB: // 32-bit
-				size *=4;
-				break;
-			case ImagePlus.GRAY16:  // 16-bit
-				size *= 2;
-				break;
-			default: // 8-bit
-				;
-		}
-		CheckboxMenuItem item = new CheckboxMenuItem(name + " " + size + "K");
+		String size = ImageWindow.getImageSize(imp);
+		CheckboxMenuItem item = new CheckboxMenuItem(name+" "+size);
 		item.setActionCommand("" + imp.getID());
 		window.add(item);
 		item.addItemListener(ij);
@@ -1317,7 +1307,8 @@ public class Menus {
 	/** Removes the specified item from the Window menu. */
 	static synchronized void removeWindowMenuItem(int index) {
 		//IJ.log("removeWindowMenuItem: "+index+" "+windowMenuItems2+" "+window.getItemCount());
-		if (ij==null) return;
+		if (ij==null)
+			return;
 		try {
 			if (index>=0 && index<window.getItemCount()) {
 				window.remove(WINDOW_MENU_ITEMS+index);
@@ -1334,27 +1325,33 @@ public class Menus {
 
 	/** Changes the name of an item in the Window menu. */
 	public static synchronized void updateWindowMenuItem(String oldLabel, String newLabel) {
+		updateWindowMenuItem(null, oldLabel, newLabel);
+	}
+
+	/** Changes the name of an item in the Window menu. */
+	public static synchronized void updateWindowMenuItem(ImagePlus imp, String oldLabel, String newLabel) {
 		if (oldLabel==null || oldLabel.equals(newLabel))
 			return;
 		int first = WINDOW_MENU_ITEMS;
-		int last = window.getItemCount()-1;
-		//IJ.write("updateWindowMenuItem: "+" "+first+" "+last+" "+oldLabel+" "+newLabel);
+		int count = window.getItemCount();
 		try {  // workaround for Linux/Java 5.0/bug
-			for (int i=first; i<=last; i++) {
+			for (int i=first; i<count; i++) {
 				MenuItem item = window.getItem(i);
-				//IJ.write(i+" "+item.getLabel()+" "+newLabel);
 				String label = item.getLabel();
-				if (item!=null && label.startsWith(oldLabel)) {
-					if (label.endsWith("K")) {
-						int index = label.lastIndexOf(' ');
-						if (index>-1)
-							newLabel += label.substring(index, label.length());
-					}
-					item.setLabel(newLabel);
+				if (imp!=null) {  //remove size (e.g. " 24MB")
+					int index = label.lastIndexOf(" ");
+					if (index>-1)
+						label = label.substring(0, index);
+				}
+				if (item!=null && label.equals(oldLabel)) {
+					String size = "";
+					if (imp!=null)
+						size =  " " + ImageWindow.getImageSize(imp);
+					item.setLabel(newLabel+size);
 					return;
 				}
 			}
-		} catch (NullPointerException e) {}
+		} catch (Exception e) {}
 	}
 	
 	/** Adds a file path to the beginning of the File/Open Recent submenu. */
