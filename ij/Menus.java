@@ -1330,7 +1330,7 @@ public class Menus {
 
 	/** Changes the name of an item in the Window menu. */
 	public static synchronized void updateWindowMenuItem(ImagePlus imp, String oldLabel, String newLabel) {
-		if (oldLabel==null || oldLabel.equals(newLabel))
+		if (oldLabel==null || newLabel==null)
 			return;
 		int first = WINDOW_MENU_ITEMS;
 		int count = window.getItemCount();

@@ -552,7 +552,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (imp==null)
 			return;
 		ImageJ ij = IJ.getInstance();
-		if (!closed && !ij.quitting() && !Interpreter.isBatchMode())
+		if (ij!=null && !closed && !ij.quitting() && !Interpreter.isBatchMode())
 			WindowManager.setCurrentWindow(this);
 		if (imp.isComposite())
 			Channels.updateChannels();

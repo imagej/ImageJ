@@ -14,11 +14,13 @@ public class Converter implements PlugIn {
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
-			if (imp.isComposite() && arg.equals("RGB Color") && !imp.getStack().isRGB() && !imp.getStack().isHSB() && !imp.getStack().isLab())
+			if (imp.isComposite() && arg.equals("RGB Color") && !imp.getStack().isRGB() && !imp.getStack().isHSB() && !imp.getStack().isLab()) {
 				(new RGBStackConverter()).run("");
-			else if (imp.lock()) {
+				imp.setTitle(imp.getTitle()); // updates size in Window menu
+			} else if (imp.lock()) {
 				convert(arg);
 				imp.unlock();
+				imp.setTitle(imp.getTitle());
 			} else 
 				IJ.log("<<Converter: image is locked ("+imp+")>>");
 		} else
