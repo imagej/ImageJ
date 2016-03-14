@@ -1199,25 +1199,6 @@ public class CalibrationTest {
 
 	@Test
 	public void testToString() {
-
-		assertEquals("w=1.0, h=1.0, d=1.0, unit=pixel, f=20, nc=null, table=null, vunit=Gray Value",c.toString());
-		
-		// change all key values
-		c.pixelWidth = 2.7;
-		c.pixelHeight = 7.4;
-		c.pixelDepth = 4.1;
-		c.setUnit("centaurs");
-		c.setFunction(Calibration.POLY4, new double[]{1,2,3}, "matchboxCars");
-		// we won't set cTable
-		c.setValueUnit("griffons");
-		
-		// include some fields that shouldn't make a difference
-		c.frameInterval = 5;
-		c.loop = false;
-		c.xOrigin = 45;
-		c.info = "Ziggy Stardust";
-
-		assertEquals("w=2.7, h=7.4, d=4.1, unit=centaurs, f=3, nc=3, table=null, vunit=griffons",c.toString());
 	}
 
 }

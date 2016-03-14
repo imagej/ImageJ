@@ -1131,6 +1131,7 @@ public class ResultsTableTest {
 		assertEquals("1\t10.000000000",r.getRowAsString(0));
 
 		// try reasonable values
+System.out.println("version: "+ij.IJ.getVersion());
 		r.setPrecision(0);
 		assertEquals("1\t10",r.getRowAsString(0));
 		r.setPrecision(1);
