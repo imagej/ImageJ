@@ -8,12 +8,18 @@
     they can be selected by selecting with the mouse and clicking
     "Run"; alternatively hitting the up or down arrows will move the
     keyboard focus to the list and the selected command can be run
-    with Enter.  Double-clicking on a command in the list should
-    also run the appropriate command.
+    with Enter. When the list has focus, it is also possible to use
+    keyboard "scrolling": E.g., pressing "H" will select the first
+    command starting with the char "H". Pressing "H" again will select
+    the next row starting with the char "H", etc., looping between all
+    "H" starting commands. Double-clicking on a command in the list
+    should also run the appropriate command.
 
     @author Mark Longair <mark-imagej@longair.net>
     @author Johannes Schindelin <johannes.schindelin@gmx.de>
     @author Curtis Rueden <ctrueden@wisc.edu>
+    @author Tiago Ferreira <tiago.ferreira@mail.mcgill.ca>
+
  */
 
 package ij.plugin;
@@ -267,6 +273,13 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 				int row = table.getSelectedRow();
 				if (row>=0)
 					runCommand(tableModel.getCommand(row));
+			/* Loop through the list using the arrow keys */
+			} else if (key == KeyEvent.VK_UP) {
+				if (table.getSelectedRow() == 0)
+					table.setRowSelectionInterval(tableModel.getRowCount() - 1, tableModel.getRowCount() - 1);
+			} else if (key == KeyEvent.VK_DOWN) {
+				if (table.getSelectedRow() == tableModel.getRowCount() - 1)
+					table.setRowSelectionInterval(0, 0);
 			}
 		}
 	}
@@ -327,10 +340,25 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		}
 	}
 
-	public void run(String ignored) {
+	/**
+	 * Displays the Command Finder dialog. If a Command Finder window is
+	 * already being displayed and <tt>initialSearch</tt> contains a valid
+	 * query, it will be closed and a new one displaying the new search
+	 * will be rebuilt at the same screen location.
+	 *
+	 * @param initialSearch
+	 *            The search string that populates Command Finder's search
+	 *            field. It is ignored if contains an invalid query (ie, if
+	 *            it is either <tt>null</tt> or <tt>empty</tt>).
+	 */
+	public void run(String initialSearch) {
 		if (frame!=null) {
-			WindowManager.toFront(frame);
-			return;
+			if (initialSearch!=null && !initialSearch.isEmpty()) {
+				frame.dispose(); // Rebuild dialog with new search string
+			} else {
+				WindowManager.toFront(frame);
+				return;
+			}
 		}
 		commandsHash = new Hashtable();
 
@@ -387,8 +415,8 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		closeCheckBox = new JCheckBox("Close window after running command", closeWhenRunning);
 		closeCheckBox.addItemListener(this);
 
-		JPanel northPanel = new JPanel();
-		northPanel.add(new JLabel("Search:"));
+		JPanel northPanel = new JPanel(new BorderLayout());
+		northPanel.add(new JLabel(" Search:"), BorderLayout.WEST);
 		prompt = new JTextField("", 20);
 		prompt.getDocument().addDocumentListener(new PromptDocumentListener());
 		prompt.addKeyListener(this);
@@ -407,8 +435,46 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		table.addKeyListener(this);
 		table.addMouseListener(this);
 
+		// Auto-scroll table using keystrokes
+		table.addKeyListener(new KeyAdapter() {
+			public void keyTyped(final KeyEvent evt) {
+				if (evt.isControlDown() || evt.isMetaDown())
+					return;
+				final int nRows = tableModel.getRowCount();
+				final char ch = Character.toLowerCase(evt.getKeyChar());
+				if (!Character.isLetterOrDigit(ch)) {
+					return; // Ignore searches for non alpha-numeric characters
+				}
+				final int sRow = table.getSelectedRow();
+				for (int row = (sRow+1) % nRows; row != sRow; row = (row+1) % nRows) {
+					final String rowData = tableModel.getValueAt(row, 0).toString();
+					final char rowCh = Character.toLowerCase(rowData.charAt(0));
+					if (ch == rowCh) {
+						table.setRowSelectionInterval(row, row);
+						table.scrollRectToVisible(table.getCellRect(row, 0, true));
+						break;
+					}
+				}
+			}
+		});
+
+		// List the most useful shortcuts in a tooltip. Tooltips
+		// can be an annoyance so we'll increase delay times
+		ToolTipManager ttm = ToolTipManager.sharedInstance();
+		ttm.setInitialDelay(2 * ttm.getInitialDelay());
+		ttm.setReshowDelay(2 * ttm.getReshowDelay());
+		ttm.setDismissDelay(2 * ttm.getDismissDelay());
+		table.setToolTipText("<html>Shortcuts:<br>"
+				+ "&emsp;&uarr; &darr;&ensp; Select items<br>"
+				+ "&emsp;&crarr;&emsp; Open item<br>"
+				+ "&ensp;A-Z&ensp; Alphabetic scroll<br>"
+				+ "&emsp;&#9003;&emsp;Activate search field</html>");
+
 		scrollPane = new JScrollPane(table);
-		populateList("");
+		if (initialSearch==null)
+			initialSearch = "";
+		prompt.setText(initialSearch);
+		populateList(initialSearch);
 		contentPane.add(scrollPane, BorderLayout.CENTER);
 
 		runButton = new JButton("Run");
@@ -424,7 +490,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		JPanel southPanel = new JPanel();
 		southPanel.setLayout(new BorderLayout());
 
-		JPanel optionsPanel = new JPanel();
+		JPanel optionsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
 		optionsPanel.add(closeCheckBox);
 
 		JPanel buttonsPanel = new JPanel();

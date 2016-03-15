@@ -5,24 +5,31 @@
 </head>
 <body>
 
-<li> <u>1.50h 13 March 2016</u>
+<li> <u>1.50h 14 March 2016</u>
 <ul>
-<li> Thanks to Ajay Sood, the ROI Manager's "OR (Combine)" command now
+<li> Thanks to Tiago Ferreira, improved the Command Finder
+(<i>Plugins&gt;Utilities&gt;Find Commands</i>).
+<ul>
+<li> Resizable and reduced screen "footprint"
+<li> Auto-scrolling using keystrokes
+<li> Tooltip that hints at navigation shortcuts
+<li> Scriptable
+</ul>
+<li> Thanks to Ajay Sood, the ROI Manager's <i>OR (Combine)</i> command now
 uses a progress bar and runs on a separate thread.
 <li> Thanks to Philippe Carl, the Converter class, which mplements the commands
 in the <i>Image&gt;Type</i> submenu, now displays a messaged in the "Log"
 window if the image is locked. This error is typically caused by plugins that
-call IJ.run() methods and mistakenly implement the PlugInFilter interface.
+mistakenly implement the PlugInFilter interface and call IJ.run() methods.
 <li> Thanks to Norbert Vischer, the <i>Window&gt;Tile</i> command
-displays an errow message if there is an unfrozen plot window open. Use
-the <i>More&gt;&gt;Freeze Plot</i> command or PlotWindow.freeze(true) method
-to freeze a plot wondow.
-<li> The size shown in the <i>Window</i> menu is updated when
-an image is converted to a different type.
+displays an errow message if there is an unfrozen plot window open.
+To freeze a plot wondow, use the <i>More&gt;&gt;Freeze Plot</i> command.
+<li> Thanks to Gabriel Landini, the image size shown in the <i>Window</i>
+menu is updated when the image is converted to a different type.
 <li> Thanks to Norbert Vischer, the Dialog.addNumber("Prompt:",NaN)
 function now creates a blank field instead of showing "NaN".
 <li> Thanks to Norbert Vischer, added the Plot.setBackgroundColor() 
-macro function (PlotBackgroundColorDemo.txt).
+macro function (<a href="macros/examples/PlotBackgroundColorDemo.txt">example</a>).
 <li> Added the ij.plugin.ImageInfo class as a replacement for ij.plugin.filter.info.
 <li> Thanks to Jeff Hanson, fixed a bug that caused the showMessage()
 macro function to work with the &lt;html&gt; tag but not with &lt;HTML&gt;.
