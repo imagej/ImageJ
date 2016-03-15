@@ -39,6 +39,10 @@ public class WindowOrganizer implements PlugIn {
 			ImageWindow win = getWindow(wList[i]);
 			if (win==null)
 				continue;
+			if (win instanceof PlotWindow && !((PlotWindow)win).getPlot().isFrozen()) {
+				IJ.error("Tile", "Unfrozen plot windows cannot be tiled.");
+				return;
+			}
 			Dimension d = win.getSize();
 			int w = d.width;
 			int h = d.height + titlebarHeight;

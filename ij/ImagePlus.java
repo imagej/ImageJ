@@ -157,6 +157,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (locked) {
 			IJ.beep();
 			IJ.showStatus("\"" + title + "\" is locked");
+			if (IJ.macroRunning())
+				IJ.wait(500);
 			return false;
         } else {
         	locked = true;
@@ -918,7 +920,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return;
     	if (win!=null) {
     		if (ij!=null)
-				Menus.updateWindowMenuItem(this.title, title);
+				Menus.updateWindowMenuItem(this, this.title, title);
 			String virtual = stack!=null && stack.isVirtual()?" (V)":"";
 			String global = getGlobalCalibration()!=null?" (G)":"";
 			String scale = "";

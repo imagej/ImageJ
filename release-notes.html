@@ -5,43 +5,48 @@
 </head>
 <body>
 
-<li> <u>1.50g 12 February 2016</u>
+<li> <u>1.50h 13 March 2016</u>
 <ul>
-<li> Thanks to Norbert Vischer, plot windows now have an "R" (Reset Range)
- button to the in lower left corner and, in the <i>More&gt;&gt;Set Limits</i>
- dialog, numeric fields can be left empty for automatic range calculation.
- <li> Thanks to Michael Schmid, changed the name of the <i>Profile Plot Options<i>
- command to <i>Plots<i> and organized the dialog into two sections:
- "General Options" and "Profile Plot Options".
-<li> Thanks to Dorai Iyer, multi-point selections are constrained
- to a horizontal or vertical line if the shift key is down.
-<li> Thanks to Michael Schmid, the ROI Manager's "Multi Measure" command
-displays a progress bar when "One row per slice" is checked.
-<li> <li>Thanks to Stefan Worz, the <i>Image&gt;Duplicate<i>, <i>Image&gt;Scale<i>,
-<i>Image&gt;Adjust&gt;Size<i>, <i>Image&gt;Stacks&gt;Stack to Images<i>
-and <i>Image&gt;Stacks&gt;Images to Stack<i> commands work with images
-and stacks that have image overlays.
-<li> Thanks to Christian Irgens, points selections selected in the ROI Manager
-are no longer moved when they are outside the image boundary.
-<li> Thanks to Christophe Leterrier, ImageJ now uses the
-Nashorn JavaScript engine when running on Java 8.
-<li> Thanks to Mike Davidson, added the call("ij.plugin.frame.ThresholdAdjuster.setMode",mode)
-macro function and the ThresholdAdjuster.setMode(mode) method, where 'mode' is
-"Red", "B&W" or "Over/Under".
-<li> Fixed a bug that caused the <i>Compile and Run</i> command to fail on Java 8
-when compiling plugins with errors. 
-<li> Thanks to Jan Eglinger, fixed a bug that caused an exception when
-saving multi-point selections.
-<li> Thanks to Rajeev Chaudhary, fixed a bug that caused the <i>Edit&gt;Copy<i>
-and <i>Edit&gt;Copy to System<i> commands to not correctly handle images
-with overlays.
-<li> Thanks to Dan White, fixed a bug that caused the Brightness/Contrast tool
-to not correctly display min and max values greater than 99999.
-<li> Thanks to Marc Lartaud, fixed a v1.50c regression that caused the More&gt;&gt;Save
-command in the ROI Manager to fail when there were duplicate ROI names.
-<li> Thanks to Michael Schmid and Dan White, fixed a 1.50d regression that caused
-the <i>File&gt;Save As&gt;AVI<i> command to create files that could not by opened
-by the Windows Media Player.
+<li> Thanks to Ajay Sood, the ROI Manager's "OR (Combine)" command now
+uses a progress bar and runs on a separate thread.
+<li> Thanks to Philippe Carl, the Converter class, which mplements the commands
+in the <i>Image&gt;Type</i> submenu, now displays a messaged in the "Log"
+window if the image is locked. This error is typically caused by plugins that
+call IJ.run() methods and mistakenly implement the PlugInFilter interface.
+<li> Thanks to Norbert Vischer, the <i>Window&gt;Tile</i> command
+displays an errow message if there is an unfrozen plot window open. Use
+the <i>More&gt;&gt;Freeze Plot</i> command or PlotWindow.freeze(true) method
+to freeze a plot wondow.
+<li> The size shown in the <i>Window</i> menu is updated when
+an image is converted to a different type.
+<li> Thanks to Norbert Vischer, the Dialog.addNumber("Prompt:",NaN)
+function now creates a blank field instead of showing "NaN".
+<li> Thanks to Norbert Vischer, added the Plot.setBackgroundColor() 
+macro function (PlotBackgroundColorDemo.txt).
+<li> Added the ij.plugin.ImageInfo class as a replacement for ij.plugin.filter.info.
+<li> Thanks to Jeff Hanson, fixed a bug that caused the showMessage()
+macro function to work with the &lt;html&gt; tag but not with &lt;HTML&gt;.
+<li> Thanks to Arttu Miettinen, fixed a bug that could cause image corruption
+if the slice selector scrollbar was used while a stack operation was being performed.
+<li> Thanks to Ryota Homma, fixed a bug that caused the ROI Manager's
+<i>More&gt;Remove Positions</i> command to fail.
+<li> Thanks to Gabriel Landini, fixed a bug that caused the
+<i>Image&gt;Rename</i> command to sometimes not
+correctly update the <i>Window</i> menu.
+<li> Thanks to Herbie Gluender, fixed a v1.50f regression that caused the
+<i>Process&gt;FFT&gt;Swap Quadrants</i> command to disappear.
+<li> Thanks to S. Rothery, fixed a 1.50f regression that caused the
+<i>Multi Measure</i> command in the ROI Manager to not work correctly
+with hyperstacks.
+<li> Thanks to Mark Hiner, fixed a 1.50d regression that caused
+the multi-point tool to not correctly place points on zoomed images.
+<li> Thanks to Gilles Carpentier, fixed a 1.50g regression that caused
+macros that used the run("Copy") function on images with overlays to
+not work as expected.
+<li> Thanks to Ryota Homma, fixed a 1.49i regression that caused
+selection subtraction by drawing with the alt key down to not
+work reliably.
+
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

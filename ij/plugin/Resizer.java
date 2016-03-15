@@ -30,8 +30,10 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			IJ.error(crop?"Crop":"Resize", "Area selection required");
 			return;
 		}
-		if (!imp.lock())
+		if (!imp.lock()) {
+			IJ.log("<<Resizer: image is locked ("+imp+")>>");
 			return;
+		}
 		Rectangle r = ip.getRoi();
 		origWidth = r.width;;
 		origHeight = r.height;

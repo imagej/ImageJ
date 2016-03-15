@@ -26,7 +26,7 @@ public class ScaleBar implements PlugIn {
 	static String bcolor = bcolors[0];
 	static boolean boldText = true;
 	static boolean hideText;
-	static boolean createOverlay = true;
+	static boolean createOverlay;
 	static int defaultFontSize = 14;
 	static int fontSize;
 	static boolean labelAll;

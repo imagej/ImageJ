@@ -752,6 +752,13 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 		return plot;
 	}
 	
+	/** Freezes the active plot window. */
+	public static void freeze() {
+		Window win = WindowManager.getActiveWindow();
+		if (win!=null && (win instanceof PlotWindow))
+			((PlotWindow)win).getPlot().setFrozen(true);
+	}
+	
 }
 
 
