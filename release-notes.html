@@ -5,55 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.50h 14 March 2016</u>
+<li> <u>1.50i 16 March 2016</u>
 <ul>
-<li> Thanks to Tiago Ferreira, improved the Command Finder
-(<i>Plugins&gt;Utilities&gt;Find Commands</i>).
-<ul>
-<li> Resizable and reduced screen "footprint"
-<li> Auto-scrolling using keystrokes
-<li> Tooltip that hints at navigation shortcuts
-<li> Scriptable
-</ul>
-<li> Thanks to Ajay Sood, the ROI Manager's <i>OR (Combine)</i> command now
-uses a progress bar and runs on a separate thread.
-<li> Thanks to Philippe Carl, the Converter class, which mplements the commands
-in the <i>Image&gt;Type</i> submenu, now displays a messaged in the "Log"
-window if the image is locked. This error is typically caused by plugins that
-mistakenly implement the PlugInFilter interface and call IJ.run() methods.
-<li> Thanks to Norbert Vischer, the <i>Window&gt;Tile</i> command
-displays an errow message if there is an unfrozen plot window open.
-To freeze a plot wondow, use the <i>More&gt;&gt;Freeze Plot</i> command.
-<li> Thanks to Gabriel Landini, the image size shown in the <i>Window</i>
-menu is updated when the image is converted to a different type.
-<li> Thanks to Norbert Vischer, the Dialog.addNumber("Prompt:",NaN)
-function now creates a blank field instead of showing "NaN".
-<li> Thanks to Norbert Vischer, added the Plot.setBackgroundColor() 
-macro function (<a href="macros/examples/PlotBackgroundColorDemo.txt">example</a>).
-<li> Added the ij.plugin.ImageInfo class as a replacement for ij.plugin.filter.info.
-<li> Thanks to Jeff Hanson, fixed a bug that caused the showMessage()
-macro function to work with the &lt;html&gt; tag but not with &lt;HTML&gt;.
-<li> Thanks to Arttu Miettinen, fixed a bug that could cause image corruption
-if the slice selector scrollbar was used while a stack operation was being performed.
-<li> Thanks to Ryota Homma, fixed a bug that caused the ROI Manager's
-<i>More&gt;Remove Positions</i> command to fail.
-<li> Thanks to Gabriel Landini, fixed a bug that caused the
-<i>Image&gt;Rename</i> command to sometimes not
-correctly update the <i>Window</i> menu.
-<li> Thanks to Herbie Gluender, fixed a v1.50f regression that caused the
-<i>Process&gt;FFT&gt;Swap Quadrants</i> command to disappear.
-<li> Thanks to S. Rothery, fixed a 1.50f regression that caused the
-<i>Multi Measure</i> command in the ROI Manager to not work correctly
-with hyperstacks.
-<li> Thanks to Mark Hiner, fixed a 1.50d regression that caused
-the multi-point tool to not correctly place points on zoomed images.
-<li> Thanks to Gilles Carpentier, fixed a 1.50g regression that caused
-macros that used the run("Copy") function on images with overlays to
-not work as expected.
-<li> Thanks to Ryota Homma, fixed a 1.49i regression that caused
-selection subtraction by drawing with the alt key down to not
-work reliably.
-
+<li> The File.openUrlAsString() macro function and IJ.openUrlAsString() method
+can now open URLs that start with "https://", but only on Java 8.
+<li> Thanks to Nicolas Cedilnik and Mark Hiner, fixed a bug that could cause an
+exception when saving a virtual stack.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

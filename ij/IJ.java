@@ -20,6 +20,7 @@ import java.applet.Applet;
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
+import javax.net.ssl.*;
 
 
 /** This class consists of static utility methods. */
@@ -63,6 +64,7 @@ public class IJ {
 	private static Properties properties;	private static DecimalFormat[] df;
 	private static DecimalFormat[] sf;
 	private static DecimalFormatSymbols dfs;
+	private static boolean trustManagerCreated;
 			
 	static {
 		osname = System.getProperty("os.name");
@@ -1671,6 +1673,32 @@ public class IJ {
 		Returns "<Error: message>" if there an error, including
 		host or file not found. */
 	public static String openUrlAsString(String url) {
+		
+		if (!trustManagerCreated && url!=null && url.startsWith("https:")) {
+			// Create a new trust manager that trust all certificates
+			// http://stackoverflow.com/questions/10135074/download-file-from-https-server-using-java
+			trustManagerCreated = true;
+			TrustManager[] trustAllCerts = new TrustManager[] {
+				new X509TrustManager() {
+					public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+						return null;
+					}
+					public void checkClientTrusted (java.security.cert.X509Certificate[] certs, String authType) {
+					}
+					public void checkServerTrusted (java.security.cert.X509Certificate[] certs, String authType) {
+					}
+				}
+			};
+			// Activate the new trust manager
+			try {
+				SSLContext sc = SSLContext.getInstance("SSL");
+				sc.init(null, trustAllCerts, new java.security.SecureRandom());
+				HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+			} catch (Exception e) {
+				IJ.log(""+e);
+			}
+		}
+		
 		StringBuffer sb = null;
 		url = url.replaceAll(" ", "%20");
 		try {

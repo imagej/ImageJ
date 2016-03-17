@@ -166,16 +166,18 @@ public class FileSaver {
 	/** Saves the stack as a multi-image TIFF using the specified path.
 		 Equivalent to IJ.saveAsTiff(imp,path), which is more convenient. */
 	public boolean saveAsTiffStack(String path) {
-		if (fi.nImages==1)
-			{error("This is not a stack"); return false;}
+		if (fi.nImages==1) {
+			error("This is not a stack");
+			return false;
+		}
 		boolean virtualStack = imp.getStack().isVirtual();
 		if (virtualStack)
 			fi.virtualStack = (VirtualStack)imp.getStack();
 		fi.info = imp.getInfoProperty();
 		fi.description = getDescriptionString();
 		if (virtualStack) {
-			FileInfo fi = imp.getOriginalFileInfo();
-			if (path!=null && path.equals(fi.directory+fi.fileName)) {
+			FileInfo ofi = imp.getOriginalFileInfo();
+			if (path!=null && ofi!=null && path.equals(ofi.directory+ofi.fileName)) {
 				error("TIFF virtual stacks cannot be saved in place.");
 				return false;
 			}
@@ -190,7 +192,7 @@ public class FileSaver {
 					labels = new String[vs.getSize()];
 				labels[i-1] = label;
 			}
-			this.fi.sliceLabels = labels;
+			fi.sliceLabels = labels;
 		} else
 			fi.sliceLabels = imp.getStack().getSliceLabels();
 		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
