@@ -91,6 +91,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	private boolean antialiasRendering = true;
 	private boolean ignoreGlobalCalibration;
 	public boolean setIJMenuBar = true;
+	public boolean typeSet;
 	
 
     /** Constructs an uninitialized ImagePlus. */
@@ -1086,7 +1087,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     /** Returns the bit depth, 8, 16, 24 (RGB) or 32, or 0 if the bit depth 
     	is unknown. RGB images actually use 32 bits per pixel. */
     public int getBitDepth() {
-    	if (imageType==GRAY8 && ip==null && img==null)
+    	if (imageType==GRAY8 && ip==null && img==null && !typeSet)
     		return 0;
     	int bitDepth = 0;
     	switch (imageType) {
@@ -1112,6 +1113,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     		return;
     	int previousType = imageType;
     	imageType = type;
+    	typeSet = true;
 		if (imageType!=previousType) {
 			if (win!=null)
 				Menus.updateMenus();
