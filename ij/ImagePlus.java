@@ -1108,18 +1108,18 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	}
 	}
 
-    protected void setType(int type) {
-    	if ((type<0) || (type>COLOR_RGB))
-    		return;
-    	int previousType = imageType;
-    	imageType = type;
-    	typeSet = true;
+	protected void setType(int type) {
+		if ((type<0) || (type>COLOR_RGB))
+			return;
+		int previousType = imageType;
+		imageType = type;
+		typeSet = true;
 		if (imageType!=previousType) {
 			if (win!=null)
 				Menus.updateMenus();
 			getLocalCalibration().setImage(this);
 		}
-    }
+	}
 		
  	/** Returns the string value from the "Info" property string  
 	 * associated with 'key', or null if the key is not found. 

@@ -1705,8 +1705,8 @@ public class IJ {
 			URL u = new URL(url);
 			URLConnection uc = u.openConnection();
 			long len = uc.getContentLength();
-			if (len>1048576L)
-				return "<Error: file is larger than 1MB>";
+			if (len>5242880L)
+				return "<Error: file is larger than 5MB>";
 			InputStream in = u.openStream();
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			sb = new StringBuffer() ;
