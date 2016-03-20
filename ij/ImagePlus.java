@@ -2111,6 +2111,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return globalCalibration;
     }
 
+    /** This is a version of getGlobalCalibration() that can be called from a static context. */
+    public static Calibration getStaticGlobalCalibration() {
+			return globalCalibration;
+    }
+
 	/** Returns this image's local calibration, ignoring 
 		the "Global" calibration flag. */
 	public Calibration getLocalCalibration() {
