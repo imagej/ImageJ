@@ -10,12 +10,16 @@ import java.lang.reflect.*;
 
 /** This plugin implements the Help/Update ImageJ command. */
 public class ImageJ_Updater implements PlugIn {
+	private static final String URL = "http://wsr.imagej.net/download";
 	private String notes;
 
 	public void run(String arg) {
-		if (arg.equals("menus"))
-			{updateMenus(); return;}
-		if (IJ.getApplet()!=null) return;
+		if (arg.equals("menus")) {
+			updateMenus();
+			return;
+		}
+		if (IJ.getApplet()!=null)
+			return;
 		URL url = getClass().getResource("/ij/IJ.class");
 		String ij_jar = url == null ? null : url.toString().replaceAll("%20", " ");
 		if (ij_jar==null || !ij_jar.startsWith("jar:file:")) {
@@ -35,41 +39,33 @@ public class ImageJ_Updater implements PlugIn {
 			error(msg);
 			return;
 		}
-		String[] list = openUrlAsList(IJ.URL+"/download/jars/list.txt");
-		int count = list.length + 3;
+		String[] list = openUrlAsList(URL+"/jars/list.txt");
+		int count = list.length + 2;
 		String[] versions = new String[count];
 		String[] urls = new String[count];
-		String uv = getUpgradeVersion();
-		if (uv==null) return;
-		versions[0] = "v"+uv;
-		urls[0] = IJ.URL+"/upgrade/ij.jar";
-		if (versions[0]==null) return;
+		versions[0] = list[0];
+		urls[0] = URL+"/jars/ij.jar";
 		for (int i=1; i<count-2; i++) {
-			String version = list[i-1];
+			String version = list[i];
 			versions[i] = version.substring(0,version.length()-1); // remove letter
-			urls[i] = IJ.URL+"/download/jars/ij"
-				+version.substring(1,2)+version.substring(3,6)+".jar";
+			urls[i] = URL+"/jars/ij"+version.substring(1,2)+version.substring(3,6)+".jar";
 		}
 		versions[count-2] = "daily build";
-		urls[count-2] = IJ.URL+"/ij.jar";
+		urls[count-2] = URL+"/daily-build/ij.jar";
 		versions[count-1] = "previous";
-		urls[count-1] = IJ.URL+"/upgrade/ij2.jar";
+		urls[count-1] = URL+"/jars/ij2.jar";
+		//for (int i=0; i<count; i++)
+		//	IJ.log(i+" "+versions[i]+"  "+urls[i]);
 		int choice = showDialog(versions);
 		if (choice==-1 || !Commands.closeAll())
 			return;
-		//System.out.println("choice: "+choice);
-		//for (int i=0; i<urls.length; i++) System.out.println("  "+i+" "+urls[i]);
 		byte[] jar = null;
-		if ("daily build".equals(versions[choice]) && notes!=null && notes.contains(" </title>"))
-			jar = getJar("http://wsr.imagej.net/download/daily-build/ij.jar");
-		if (jar==null)
-			jar = getJar(urls[choice]);
+		jar = getJar(urls[choice]);
 		if (jar==null) {
 			error("Unable to download ij.jar from "+urls[choice]);
 			return;
 		}
 		Prefs.savePreferences();
-		//System.out.println("saveJar: "+file);
 		saveJar(file, jar);
 		if (choice<count-2) // force macro Function Finder to download fresh list
 			new File(IJ.getDirectory("macros")+"functions.html").delete();
@@ -77,7 +73,7 @@ public class ImageJ_Updater implements PlugIn {
 	}
 
 	int showDialog(String[] versions) {
-		GenericDialog gd = new GenericDialog("ImageJ Updater");
+		GenericDialog gd = new GenericDialog("ImageJ Updater 2");
 		gd.addChoice("Upgrade To:", versions, versions[0]);
 		String msg = 
 			"You are currently running v"+ImageJ.VERSION+ImageJ.BUILD+".\n"+
@@ -91,24 +87,6 @@ public class ImageJ_Updater implements PlugIn {
 			return -1;
 		else
 			return gd.getNextChoiceIndex();
-	}
-
-	String getUpgradeVersion() {
-		String url = IJ.URL+"/notes.html";
-		notes = openUrlAsString(url, 20);
-		if (notes==null) {
-			error("Unable to connect to "+IJ.URL+". You\n"
-				+"may need to use the Edit>Options>Proxy Settings\n"
-				+"command to configure ImageJ to use a proxy server.");
-			return null;
-		}
-		int index = notes.indexOf("Version ");
-		if (index==-1) {
-			error( "The \"News\" page on the ImageJ website is not\nin the expected format or it was not found.");
-			return null;
-		}
-		String version = notes.substring(index+8, index+13);
-		return version;
 	}
 
 	String openUrlAsString(String address, int maxLines) {
@@ -128,7 +106,6 @@ public class ImageJ_Updater implements PlugIn {
 	}
 
 	byte[] getJar(String address) {
-		//System.out.println("getJar: "+address);
 		byte[] data;
 		try {
 			URL url = new URL(address);
@@ -138,7 +115,7 @@ public class ImageJ_Updater implements PlugIn {
 			if (IJ.debugMode) IJ.log("Updater (url): "+ address + " "+ len);
 			if (len<=0)
 				return null;
-			String name = address.contains("wsr")?"daily build (":"ij.jar (";
+			String name = address.contains("daily")?"daily build (":"ij.jar (";
 			IJ.showStatus("Downloading "+ name + IJ.d2s((double)len/1048576,1)+"MB)");
 			InputStream in = uc.getInputStream();
 			data = new byte[len];

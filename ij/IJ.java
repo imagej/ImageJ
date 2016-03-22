@@ -21,6 +21,8 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
 import javax.net.ssl.*;
+import java.security.cert.*;
+import java.security.KeyStore;
 
 
 /** This class consists of static utility methods. */
@@ -1673,11 +1675,11 @@ public class IJ {
 		Returns "<Error: message>" if there an error, including
 		host or file not found. */
 	public static String openUrlAsString(String url) {
-		if (!trustManagerCreated && url!=null && url.contains("nih.gov"))
-			trustAllCerts();
+		//if (!trustManagerCreated && url.contains("nih.gov")) trustAllCerts();
 		StringBuffer sb = null;
 		url = url.replaceAll(" ", "%20");
 		try {
+			//if (url.contains("nih.gov")) addRootCA();
 			URL u = new URL(url);
 			URLConnection uc = u.openConnection();
 			long len = uc.getContentLength();
@@ -1699,6 +1701,23 @@ public class IJ {
 			return "";
 	}
 	
+	/* 
+	public static void addRootCA() throws Exception {
+		String path = "/Users/wayne/Downloads/Certificates/lets-encrypt-x1-cross-signed.pem";
+		InputStream fis = new BufferedInputStream(new FileInputStream(path));
+		Certificate ca = CertificateFactory.getInstance("X.509").generateCertificate(fis);
+		KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+		ks.load(null, null);
+		ks.setCertificateEntry(Integer.toString(1), ca);
+		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+		tmf.init(ks);
+		SSLContext ctx = SSLContext.getInstance("TLS");
+		ctx.init(null, tmf.getTrustManagers(), null); 
+		HttpsURLConnection.setDefaultSSLSocketFactory(ctx.getSocketFactory());
+	}
+	*/
+	
+	/*
 	// Create a new trust manager that trust all certificates
 	// http://stackoverflow.com/questions/10135074/download-file-from-https-server-using-java
 	private static void trustAllCerts() {
@@ -1723,6 +1742,7 @@ public class IJ {
 			IJ.log(""+e);
 		}
 	}
+	*/
 
 	/** Saves the current image, lookup table, selection or text window to the specified file path. 
 		The path must end in ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", ".fits", ".pgm", ".png", ".lut", ".roi" or ".txt".  */
