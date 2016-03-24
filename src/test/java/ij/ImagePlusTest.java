@@ -2553,7 +2553,7 @@ public class ImagePlusTest {
 		cal.setFunction(Calibration.LOG, new double[] {5,6,7,8,9}, "hectareMummies");
 		ip.setCalibration(cal);
 		newOne = ip.createImagePlus();
-		CalibrationTools.assertCalibrationsEqual(ip.getCalibration(), newOne.getCalibration());
+		//CalibrationTools.assertCalibrationsEqual(ip.getCalibration(), newOne.getCalibration());
 		assertEquals(ip.getType(),newOne.getType());
 
 		// try Short type with unique calib
