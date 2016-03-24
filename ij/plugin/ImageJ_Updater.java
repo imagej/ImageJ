@@ -136,23 +136,6 @@ public class ImageJ_Updater implements PlugIn {
 		return data;
 	}
 
-	/*Changes the name of ij.jar to ij-old.jar
-	boolean renameJar(File f) {
-		File backup = new File(Prefs.getImageJDir() + "ij-old.jar");
-		if (backup.exists()) {
-			if (!backup.delete()) {
-				error("Unable to delete backup: "+backup.getPath());
-				return false;
-			}
-		}
-		if (!f.renameTo(backup)) {
-			error("Unable to rename to ij-old.jar: "+f.getPath());
-			return false;
-		}
-		return true;
-	}
-	*/
-
 	void saveJar(File f, byte[] data) {
 		try {
 			FileOutputStream out = new FileOutputStream(f);
@@ -183,25 +166,6 @@ public class ImageJ_Updater implements PlugIn {
 		return lines;
 	}
 
-	// Use reflection to get version since early versions
-	// of ImageJ do not have the IJ.getVersion() method.
-	/*
-	String version() {
-		String version = "";
-		try {
-			Class ijClass = ImageJ.class;
-			Field field = ijClass.getField("VERSION");
-			version = (String)field.get(ijClass);
-		} catch (Exception ex) {}
-		return version;
-	}
-	*/
-
-	boolean isMac() {
-		String osname = System.getProperty("os.name");
-		return osname.startsWith("Mac");
-	}
-	
 	void error(String msg) {
 		IJ.error("ImageJ Updater", msg);
 	}

@@ -427,6 +427,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	public ResultsTable getResultsTable() {
 		ResultsTable rt = new ResultsTable();
 		rt.showRowNumbers(false);
+		rt.setPrecision(digits);
 		String vheading = stats.binSize==1.0?"value":"bin start";
 		if (cal.calibrated() && !cal.isSigned16Bit()) {
 			for (int i=0; i<stats.nBins; i++) {
@@ -434,16 +435,11 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 				rt.setValue(vheading, i, cal.getCValue(stats.histMin+i*stats.binSize));
 				rt.setValue("count", i, histogram[i]);
 			}
-			rt.setDecimalPlaces(0, 0);
-			rt.setDecimalPlaces(1, digits);
-			rt.setDecimalPlaces(2, 0);
 		} else {
 			for (int i=0; i<stats.nBins; i++) {
 				rt.setValue(vheading, i, cal.getCValue(stats.histMin+i*stats.binSize));
 				rt.setValue("count", i, histogram[i]);
 			}
-			rt.setDecimalPlaces(0, digits);
-			rt.setDecimalPlaces(1, 0);
 		}
 		return rt;
 	}
