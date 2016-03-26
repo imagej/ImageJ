@@ -404,6 +404,8 @@ public class Opener {
 	 * @see ij.IJ#openImage(String)
 	*/
 	public ImagePlus openURL(String url) {
+		url = updateUrl(url);
+		if (IJ.debugMode) IJ.log("OpenURL: "+url);
 		ImagePlus imp = openCachedImage(url);
 		if (imp!=null)
 			return imp;
@@ -454,8 +456,18 @@ public class Opener {
 		} 
 	}
 	
+	/** Can't open imagej.nih.gov URLs due to encryption so redirect to mirror.nih.net. */
+	public static String updateUrl(String url) {
+		if (url==null || !url.contains("nih.gov"))
+			return url;
+		url = url.replace("imagej.nih.gov/ij", "mirror.imagej.net");
+		url = url.replace("rsb.info.nih.gov/ij", "mirror.imagej.net");
+		url = url.replace("rsbweb.nih.gov/ij", "mirror.imagej.net");
+		return url;
+	}
+	
 	private ImagePlus openCachedImage(String url) {
-		if (url==null || !url.contains("ij/images"))
+		if (url==null || !url.contains("/images"))
 			return null;
 		String ijDir = IJ.getDirectory("imagej");
 		if (ijDir==null)

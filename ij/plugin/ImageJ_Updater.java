@@ -10,7 +10,7 @@ import java.lang.reflect.*;
 
 /** This plugin implements the Help/Update ImageJ command. */
 public class ImageJ_Updater implements PlugIn {
-	private static final String URL = "http://wsr.imagej.net/download";
+	private static final String URL = "http://wsr.imagej.net";
 	private String notes;
 
 	public void run(String arg) {
@@ -51,7 +51,7 @@ public class ImageJ_Updater implements PlugIn {
 			urls[i] = URL+"/jars/ij"+version.substring(1,2)+version.substring(3,6)+".jar";
 		}
 		versions[count-2] = "daily build";
-		urls[count-2] = URL+"/daily-build/ij.jar";
+		urls[count-2] = URL+"/download/daily-build/ij.jar";
 		versions[count-1] = "previous";
 		urls[count-1] = URL+"/jars/ij2.jar";
 		//for (int i=0; i<count; i++)

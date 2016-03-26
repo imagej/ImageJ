@@ -1676,6 +1676,8 @@ public class IJ {
 		host or file not found. */
 	public static String openUrlAsString(String url) {
 		//if (!trustManagerCreated && url.contains("nih.gov")) trustAllCerts();
+		url = Opener.updateUrl(url);
+		if (debugMode) log("OpenUrlAsString: "+url);
 		StringBuffer sb = null;
 		url = url.replaceAll(" ", "%20");
 		try {
