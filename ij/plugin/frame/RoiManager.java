@@ -604,6 +604,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;
 	}
 	
+	public void rename(int index, String newName) {
+		if (index<0 || index>=getCount())
+			throw new IllegalArgumentException("Index out of range: "+index);
+		Roi roi = (Roi)rois.get(index);
+		roi.setName(newName);
+		listModel.setElementAt(newName, index);
+	}
+
 	String promptForName(String name) {
 		GenericDialog gd = new GenericDialog("ROI Manager");
 		gd.addStringField("Rename As:", name, 20);
@@ -2214,6 +2222,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public void close() {
 		super.close();
 		instance = null;
+		mmResults = null;
 		Prefs.saveLocation(LOC_KEY, getLocation());
 		if (!showAllCheckbox.getState() || IJ.macroRunning())
 			return;

@@ -648,6 +648,8 @@ public class ShapeRoi extends Roi {
 	/**Returns the perimeter if this ShapeRoi can be decomposed 
 		into simple ROIs, otherwise returns zero. */
 	public double getLength() {
+		if (width==0 && height==0)
+			return 0.0;
 		double length = 0.0;
 		Roi[] rois = getRois();
 		ImagePlus imp2 = getImage();

@@ -5,48 +5,26 @@
 </head>
 <body>
 
-<li> <u>1.50h 13 March 2016</u>
+<li> <u>1.50i 25 March 2016</u>
 <ul>
-<li> Thanks to Ajay Sood, the ROI Manager's "OR (Combine)" command now
-uses a progress bar and runs on a separate thread.
-<li> Thanks to Philippe Carl, the Converter class, which mplements the commands
-in the <i>Image&gt;Type</i> submenu, now displays a messaged in the "Log"
-window if the image is locked. This error is typically caused by plugins that
-call IJ.run() methods and mistakenly implement the PlugInFilter interface.
-<li> Thanks to Norbert Vischer, the <i>Window&gt;Tile</i> command
-displays an errow message if there is an unfrozen plot window open. Use
-the <i>More&gt;&gt;Freeze Plot</i> command or PlotWindow.freeze(true) method
-to freeze a plot wondow.
-<li> The size shown in the <i>Window</i> menu is updated when
-an image is converted to a different type.
-<li> Thanks to Norbert Vischer, the Dialog.addNumber("Prompt:",NaN)
-function now creates a blank field instead of showing "NaN".
-<li> Thanks to Norbert Vischer, added the Plot.setBackgroundColor() 
-macro function (PlotBackgroundColorDemo.txt).
-<li> Added the ij.plugin.ImageInfo class as a replacement for ij.plugin.filter.info.
-<li> Thanks to Jeff Hanson, fixed a bug that caused the showMessage()
-macro function to work with the &lt;html&gt; tag but not with &lt;HTML&gt;.
-<li> Thanks to Arttu Miettinen, fixed a bug that could cause image corruption
-if the slice selector scrollbar was used while a stack operation was being performed.
-<li> Thanks to Ryota Homma, fixed a bug that caused the ROI Manager's
-<i>More&gt;Remove Positions</i> command to fail.
-<li> Thanks to Gabriel Landini, fixed a bug that caused the
-<i>Image&gt;Rename</i> command to sometimes not
-correctly update the <i>Window</i> menu.
-<li> Thanks to Herbie Gluender, fixed a v1.50f regression that caused the
-<i>Process&gt;FFT&gt;Swap Quadrants</i> command to disappear.
-<li> Thanks to S. Rothery, fixed a 1.50f regression that caused the
-<i>Multi Measure</i> command in the ROI Manager to not work correctly
-with hyperstacks.
-<li> Thanks to Mark Hiner, fixed a 1.50d regression that caused
-the multi-point tool to not correctly place points on zoomed images.
-<li> Thanks to Gilles Carpentier, fixed a 1.50g regression that caused
-macros that used the run("Copy") function on images with overlays to
-not work as expected.
-<li> Thanks to Ryota Homma, fixed a 1.49i regression that caused
-selection subtraction by drawing with the alt key down to not
-work reliably.
-
+<li> The ImageJ website
+(<a href="http://imagej.nih.gov/ij">imagej.nih.gov/ij</a>)
+will soon start using encryption incompatible
+with Java so sample images and updates are now downloaded from
+<a href="http://wsr.imagej.net">wsr.imagej.net</a>
+and URLs used to open images and text files 
+are redirected to
+<a href="http://mirror.imagej.net">mirror.imagej.net</a>.
+<li> Thanks to Thorsten Wagner, added the is("global calibration") macro function.
+<li> Thanks to Philippe Carl, added the RoiManager.rename(index,name) method.
+<li> Thanks to Nicolas Cedilnik and Mark Hiner, fixed a bug that could cause an
+exception when saving a virtual stack.
+<li> Thanks to Kees Straatman, fixed a bug that caused the ROI Manager's "Multi Measure"
+command to sometimes not work as expected when the "append" option was used.
+<li> Fixed a bug that caused the "Decimal Places" field in the <i>Analyze&gt;Set Measurements</i>
+dialog to be ignored after the value was set to zero.
+<li> Thanks to Stein Rorvik, fixed a 1.50d regression that caused duplicated images
+to lose their density calibration.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

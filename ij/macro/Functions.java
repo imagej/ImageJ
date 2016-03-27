@@ -4282,6 +4282,8 @@ public class Functions implements MacroConstants, Measurements {
 			state = getProcessor().isBinary();
 		else if (arg.indexOf("grayscale")!=-1)
 			state = getProcessor().isGrayscale();
+		else if (arg.startsWith("global"))
+			state = ImagePlus.getStaticGlobalCalibration()!=null;
 		else if (arg.indexOf("animated")!=-1) {
 			ImageWindow win = getImage().getWindow();
 			state = win!=null && (win instanceof StackWindow) && ((StackWindow)win).getAnimate();

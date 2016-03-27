@@ -651,7 +651,7 @@ public class ResultsTable implements Cloneable {
 		if (precision>9) precision=9;
 		this.precision = (short)precision;
 		for (int i=0; i<decimalPlaces.length; i++) {
-			if (!(decimalPlaces[i]==AUTO_FORMAT||decimalPlaces[i]==0))
+			if (decimalPlaces[i]!=AUTO_FORMAT)
 				decimalPlaces[i] = (short)precision;
 		}
 	}

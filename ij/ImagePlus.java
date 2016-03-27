@@ -91,6 +91,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	private boolean antialiasRendering = true;
 	private boolean ignoreGlobalCalibration;
 	public boolean setIJMenuBar = true;
+	public boolean typeSet;
 	
 
     /** Constructs an uninitialized ImagePlus. */
@@ -1086,7 +1087,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     /** Returns the bit depth, 8, 16, 24 (RGB) or 32, or 0 if the bit depth 
     	is unknown. RGB images actually use 32 bits per pixel. */
     public int getBitDepth() {
-    	if (imageType==GRAY8 && ip==null && img==null)
+    	if (imageType==GRAY8 && ip==null && img==null && !typeSet)
     		return 0;
     	int bitDepth = 0;
     	switch (imageType) {
@@ -1107,17 +1108,18 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	}
 	}
 
-    protected void setType(int type) {
-    	if ((type<0) || (type>COLOR_RGB))
-    		return;
-    	int previousType = imageType;
-    	imageType = type;
+	protected void setType(int type) {
+		if ((type<0) || (type>COLOR_RGB))
+			return;
+		int previousType = imageType;
+		imageType = type;
+		typeSet = true;
 		if (imageType!=previousType) {
 			if (win!=null)
 				Menus.updateMenus();
 			getLocalCalibration().setImage(this);
 		}
-    }
+	}
 		
  	/** Returns the string value from the "Info" property string  
 	 * associated with 'key', or null if the key is not found. 
@@ -2106,6 +2108,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     
     /** Returns the system-wide calibration, or null. */
     public Calibration getGlobalCalibration() {
+			return globalCalibration;
+    }
+
+    /** This is a version of getGlobalCalibration() that can be called from a static context. */
+    public static Calibration getStaticGlobalCalibration() {
 			return globalCalibration;
     }
 
