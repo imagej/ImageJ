@@ -97,15 +97,16 @@ public class ImportDialog {
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
-		gd.setSmartRecording(true);
 		choiceSelection = gd.getNextChoiceIndex();
-		gd.setSmartRecording(false);
 		width = (int)gd.getNextNumber();
 		height = (int)gd.getNextNumber();
-		gd.setSmartRecording(true);
+		gd.setSmartRecording(offset==0);
 		offset = (long)gd.getNextNumber();
+		gd.setSmartRecording(nImages==1);
 		nImages = (int)gd.getNextNumber();
+		gd.setSmartRecording(gapBetweenImages==0);
 		gapBetweenImages = (int)gd.getNextNumber();
+		gd.setSmartRecording(false);
 		whiteIsZero = gd.getNextBoolean();
 		intelByteOrder = gd.getNextBoolean();
 		openAll = gd.getNextBoolean();

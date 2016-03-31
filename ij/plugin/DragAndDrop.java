@@ -147,6 +147,12 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 			Iterator iterator = this.iterator;
 			while(iterator.hasNext()) {
 				Object obj = iterator.next();
+				String str = ""+obj;
+				if (str!=null && str.startsWith("https:/")) {
+					if (!str.startsWith("https://"))
+						str = str.replace("https:/", "http://");
+					obj = str;
+				}
 				if (obj!=null && (obj instanceof String))
 					openURL((String)obj);
 				else
