@@ -155,8 +155,10 @@ public class FFT implements  PlugIn, Measurements {
             fht.originalWidth = originalWidth;
             fht.originalHeight = originalHeight;
         }
-        fht.originalBitDepth = imp.getBitDepth();
-        fht.originalColorModel = ip.getColorModel();
+        int bitDepth = imp.getBitDepth();
+        fht.originalBitDepth = bitDepth;
+        if (bitDepth!=24)
+        	fht.originalColorModel = ip.getColorModel();
         return fht;
     }
     
