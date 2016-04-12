@@ -368,7 +368,7 @@ public class ImageStack {
 				default: return Double.NaN;
 			}
 		} else
-			return Double.NaN;
+			throw new IndexOutOfBoundsException();
 	}
 		
 	/* Sets the value of the specified voxel. */

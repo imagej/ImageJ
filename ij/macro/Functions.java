@@ -6174,6 +6174,9 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("getCoordinates")) {
 			getCoordinates();
 			return null;
+		} else if (name.equals("getContainedPoints")) {
+			getContainedPoints(roi);
+			return null;
 		} else if (name.equals("getName")) {
 			interp.getParens();
 			String roiName = roi.getName();
@@ -6227,6 +6230,20 @@ public class Functions implements MacroConstants, Measurements {
 		return null;
 	}
 	
+	private void getContainedPoints(Roi roi) {
+		Variable xCoordinates = getFirstArrayVariable();
+		Variable yCoordinates = getLastArrayVariable();
+		Point2D.Float[] points = roi.getContainedFloatPoints();
+		Variable[] xa = new Variable[points.length];
+		Variable[] ya = new Variable[points.length];
+		for (int i=0; i<points.length; i++) {
+			xa[i] = new Variable(points[i].x);
+			ya[i] = new Variable(points[i].y);
+		}
+		xCoordinates.setArray(xa);
+		yCoordinates.setArray(ya);
+	}
+
 	private String getSplineAnchors(Roi roi) {
 		Variable xCoordinates = getFirstArrayVariable();
 		Variable yCoordinates = getLastArrayVariable();
@@ -6270,6 +6287,6 @@ public class Functions implements MacroConstants, Measurements {
 		imp.setRoi(roi);
 		return null;
 	}
-
+	
 } // class Functions
 

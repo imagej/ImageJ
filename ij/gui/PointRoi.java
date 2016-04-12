@@ -11,6 +11,7 @@ import ij.plugin.frame.Recorder;
 import ij.util.Java2; 
 import java.awt.event.KeyEvent;
 import java.util.Random;
+import java.awt.geom.Point2D;
 
 /** This class represents a collection of points. */
 public class PointRoi extends PolygonRoi {
@@ -674,6 +675,15 @@ public class PointRoi extends PolygonRoi {
 		Point[] points = new Point[p.npoints];
 		for (int i=0; i<p.npoints; i++)
 			points[i] = new Point(p.xpoints[i],p.ypoints[i]);
+		return points;
+	}
+
+	/** Returns the points as an array of float points. */
+	public Point2D.Float[] getContainedFloatPoints() {
+		FloatPolygon p = getFloatPolygon();
+		Point2D.Float[] points = new Point2D.Float[p.npoints];
+		for (int i=0; i<p.npoints; i++)
+			points[i] = new Point2D.Float(p.xpoints[i],p.ypoints[i]);
 		return points;
 	}
 

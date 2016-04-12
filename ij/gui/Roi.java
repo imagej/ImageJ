@@ -549,6 +549,27 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return (Point[])points.toArray(new Point[points.size()]);
 	}
 	
+	/** Returns the coordinates of the pixels inside this ROI as an array of float points. */
+	public Point2D.Float[] getContainedFloatPoints() {
+		if (isLine()) {
+			FloatPolygon p = getInterpolatedPolygon();
+			Point2D.Float[] points = new Point2D.Float[p.npoints];
+			for (int i=0; i<p.npoints; i++)
+				points[i] = new Point2D.Float(p.xpoints[i],p.ypoints[i]);
+			return points;
+		}
+		ImageProcessor mask = getMask();
+		Rectangle bounds = getBounds();
+		ArrayList points = new ArrayList();
+		for (int y=0; y<bounds.height; y++) {
+			for (int x=0; x<bounds.width; x++) {
+				if (mask==null || mask.getPixel(x,y)!=0)
+					points.add(new Point2D.Float(this.x+x,this.y+y));
+			}
+		}
+		return (Point2D.Float[])points.toArray(new Point2D.Float[points.size()]);
+	}
+
 	/**
 	 * <pre>
 	 * Calculates intersections of a line segment with a circle
