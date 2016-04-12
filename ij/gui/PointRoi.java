@@ -667,6 +667,15 @@ public class PointRoi extends PolygonRoi {
 		}
 		return handle;
 	}
+	
+	/** Returns the points as an array of Points. */
+	public Point[] getContainedPoints() {
+		Polygon p = getPolygon();
+		Point[] points = new Point[p.npoints];
+		for (int i=0; i<p.npoints; i++)
+			points[i] = new Point(p.xpoints[i],p.ypoints[i]);
+		return points;
+	}
 
 	/** Returns a copy of this PointRoi. */
 	public synchronized Object clone() {
