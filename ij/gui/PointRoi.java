@@ -1,6 +1,4 @@
 package ij.gui;
-import java.awt.*;
-import java.awt.image.*;
 import ij.*;
 import ij.process.*;
 import ij.measure.*;
@@ -9,8 +7,10 @@ import ij.plugin.PointToolOptions;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
 import ij.util.Java2; 
+import java.awt.*;
+import java.awt.image.*;
 import java.awt.event.KeyEvent;
-import java.util.Random;
+import java.util.*;
 import java.awt.geom.Point2D;
 
 /** This class represents a collection of points. */
@@ -685,6 +685,11 @@ public class PointRoi extends PolygonRoi {
 		for (int i=0; i<p.npoints; i++)
 			points[i] = new Point2D.Float(p.xpoints[i],p.ypoints[i]);
 		return points;
+	}
+
+	@Override
+	public Iterator<Point> iterator() {
+		return Arrays.stream(getContainedPoints()).iterator();
 	}
 
 	/** Returns a copy of this PointRoi. */

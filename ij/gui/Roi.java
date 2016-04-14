@@ -15,8 +15,19 @@ import java.awt.image.*;
 import java.awt.event.*;
 import java.awt.geom.*;
 
-/** A rectangular region of interest and superclass for the other ROI classes. */
-public class Roi extends Object implements Cloneable, java.io.Serializable {
+/** 
+ * A rectangular region of interest and superclass for the other ROI classes. 
+ * 
+ * This class implements {@code Iterable<Point>} and can thus be
+ * used to iterate over the contained coordinates. Usage example: 
+ * <pre>
+ * Roi roi = ...;
+ * for (Point p : roi) {
+ *   // process p
+ * }
+ * </pre>
+ */
+public class Roi extends Object implements Cloneable, java.io.Serializable, Iterable<Point> {
 
 	public static final int CONSTRUCTING=0, MOVING=1, RESIZING=2, NORMAL=3, MOVING_HANDLE=4; // States
 	public static final int RECTANGLE=0, OVAL=1, POLYGON=2, FREEROI=3, TRACED_ROI=4, LINE=5, 
@@ -2080,6 +2091,91 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	
 	public static void removeRoiListener(RoiListener listener) {
 		listeners.removeElement(listener);
+	}
+	
+	
+	/**
+	 * Required by the {@link Interable} interface.
+	 * Author: Wilhelm Burger
+	 */
+	public Iterator<Point> iterator() {
+		if (isLine())
+			return new RoiPointsIteratorLine();
+		else
+			return new RoiPointsIteratorMask();
+	}
+	
+	private class RoiPointsIteratorLine implements Iterator<Point> {
+		private final FloatPolygon p;
+		private int next = 0;
+		
+		RoiPointsIteratorLine() {
+			p = getInterpolatedPolygon();
+		}
+		
+		@Override
+		public boolean hasNext() {
+			return next < p.npoints;
+		}
+
+		@Override
+		public Point next() {
+			if (hasNext()) {
+				Point pnt = new Point((int) Math.round(p.xpoints[next]), (int) Math.round(p.ypoints[next]));
+				next++;
+				return pnt;
+			}
+			else {
+				throw new NoSuchElementException();
+			}
+		}
+	}
+	
+	private class RoiPointsIteratorMask implements Iterator<Point> {
+		private final ImageProcessor mask;
+		private final Rectangle bounds;
+		private final int n;
+		private int next;
+		
+		RoiPointsIteratorMask() {
+			mask = getMask();
+			bounds = getBounds();
+			n = bounds.width * bounds.height;
+			findNext(0);	// sets next
+		}
+
+		@Override
+		public boolean hasNext() {
+			return next < n;
+		}
+
+		@Override
+		public Point next() {
+			if (next >= n) {
+				throw new NoSuchElementException();
+			}
+			int u = next % bounds.width;
+			int v = next / bounds.width;
+			Point pnt = new Point(Roi.this.x + u, Roi.this.y + v);
+			findNext(next + 1);
+			return pnt;
+		}
+		
+		// finds the next element (from start incl.), sets next
+		private void findNext(int start) {
+			if (mask == null) {
+				next = start;
+			}
+			else {
+				next = n;
+				for (int i = start; i < n; i++) {
+					if (mask.get(i) != 0) {
+						next = i;
+						break;
+					}
+				}
+			}
+		}
 	}
 
 }
