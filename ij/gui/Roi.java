@@ -2093,7 +2093,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		listeners.removeElement(listener);
 	}
 	
-	
 	/**
 	 * Required by the {@link Interable} interface.
 	 * @author Wilhelm Burger
