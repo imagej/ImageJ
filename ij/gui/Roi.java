@@ -2093,10 +2093,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		listeners.removeElement(listener);
 	}
 	
-	
 	/**
 	 * Required by the {@link Interable} interface.
-	 * Author: Wilhelm Burger
+	 * @author Wilhelm Burger
 	 */
 	public Iterator<Point> iterator() {
 		if (isLine())
@@ -2105,14 +2104,19 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			return new RoiPointsIteratorMask();
 	}
 	
+
+	/**
+	 * Custom iterator over points contained in a straight line-type {@link Roi}.
+	 * @author W. Burger
+	 */
 	private class RoiPointsIteratorLine implements Iterator<Point> {
 		private final FloatPolygon p;
 		private int next = 0;
-		
+
 		RoiPointsIteratorLine() {
 			p = getInterpolatedPolygon();
 		}
-		
+
 		@Override
 		public boolean hasNext() {
 			return next < p.npoints;
@@ -2120,17 +2124,20 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 
 		@Override
 		public Point next() {
-			if (hasNext()) {
-				Point pnt = new Point((int) Math.round(p.xpoints[next]), (int) Math.round(p.ypoints[next]));
-				next++;
-				return pnt;
-			}
-			else {
+			if (next >= p.npoints) {
 				throw new NoSuchElementException();
 			}
+			int u = (int) Math.round(p.xpoints[next]);
+			int v = (int) Math.round(p.ypoints[next]);
+			next = next + 1;
+			return new Point(u, v);
 		}
 	}
 	
+	/**
+	 * Custom iterator over points contained in a mask-backed {@link Roi}.
+	 * @author W. Burger
+	 */
 	private class RoiPointsIteratorMask implements Iterator<Point> {
 		private final ImageProcessor mask;
 		private final Rectangle bounds;
@@ -2156,12 +2163,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			}
 			int u = next % bounds.width;
 			int v = next / bounds.width;
-			Point pnt = new Point(Roi.this.x + u, Roi.this.y + v);
 			findNext(next + 1);
-			return pnt;
+			return new Point(Roi.this.x + u, Roi.this.y + v);
 		}
 		
-		// finds the next element (from start incl.), sets next
+		// finds the next element (from start), sets next
 		private void findNext(int start) {
 			if (mask == null) {
 				next = start;

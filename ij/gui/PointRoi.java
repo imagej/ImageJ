@@ -687,9 +687,31 @@ public class PointRoi extends PolygonRoi {
 		return points;
 	}
 
-	@Override
-	public Iterator<Point> iterator() {
-		return Arrays.stream(getContainedPoints()).iterator();
+	/**
+	 * Custom iterator for points contained in a {@link PointRoi}.
+	 * @author W. Burger
+	 */
+	public Iterator<Point> iterator() {	
+		return new Iterator<Point>() {
+			final Point[] pnts = getContainedPoints();
+			final int n = pnts.length;
+			int next = (n == 0) ? 1 : 0;
+			
+			@Override
+			public boolean hasNext() {
+				return next < n;
+			}
+
+			@Override
+			public Point next() {
+				if (next >= n) {
+					throw new NoSuchElementException();
+				}
+				Point pnt = pnts[next];
+				next = next + 1;
+				return pnt;
+			}
+		};
 	}
 
 	/** Returns a copy of this PointRoi. */
