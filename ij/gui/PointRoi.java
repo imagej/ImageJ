@@ -678,13 +678,9 @@ public class PointRoi extends PolygonRoi {
 		return points;
 	}
 
-	/** Returns the points as an array of float points. */
-	public Point2D.Float[] getContainedFloatPoints() {
-		FloatPolygon p = getFloatPolygon();
-		Point2D.Float[] points = new Point2D.Float[p.npoints];
-		for (int i=0; i<p.npoints; i++)
-			points[i] = new Point2D.Float(p.xpoints[i],p.ypoints[i]);
-		return points;
+	/** Returns the points as a FloatPolygon. */
+	public FloatPolygon getContainedFloatPoints() {
+		return getFloatPolygon();
 	}
 
 	/**

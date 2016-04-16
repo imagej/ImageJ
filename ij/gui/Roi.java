@@ -539,7 +539,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		return fPoly;
 	}
 	
-	/** Returns the coordinates of the pixels inside this ROI as an array of Points. */
+	/** Returns the coordinates of the pixels inside this ROI as an array of Points.
+	 * @see #getContainedFloatPoints()
+	 * @see #Iterator()
+	 */
 	public Point[] getContainedPoints() {
 		if (isLine()) {
 			FloatPolygon p = getInterpolatedPolygon();
@@ -560,25 +563,23 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		return (Point[])points.toArray(new Point[points.size()]);
 	}
 	
-	/** Returns the coordinates of the pixels inside this ROI as an array of float points. */
-	public Point2D.Float[] getContainedFloatPoints() {
-		if (isLine()) {
-			FloatPolygon p = getInterpolatedPolygon();
-			Point2D.Float[] points = new Point2D.Float[p.npoints];
-			for (int i=0; i<p.npoints; i++)
-				points[i] = new Point2D.Float(p.xpoints[i],p.ypoints[i]);
-			return points;
-		}
+	/** Returns the coordinates of the pixels inside this ROI as a FloatPolygon.
+	 * @see #getContainedPoints()
+	 * @see #Iterator()
+	 */
+	public FloatPolygon getContainedFloatPoints() {
+		if (isLine())
+			return getInterpolatedPolygon();
 		ImageProcessor mask = getMask();
 		Rectangle bounds = getBounds();
-		ArrayList points = new ArrayList();
+		FloatPolygon points = new FloatPolygon();
 		for (int y=0; y<bounds.height; y++) {
 			for (int x=0; x<bounds.width; x++) {
 				if (mask==null || mask.getPixel(x,y)!=0)
-					points.add(new Point2D.Float(this.x+x,this.y+y));
+					points.addPoint((float)(this.x+x),(float)(this.y+y));
 			}
 		}
-		return (Point2D.Float[])points.toArray(new Point2D.Float[points.size()]);
+		return points;
 	}
 
 	/**
@@ -2095,6 +2096,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	
 	/**
 	 * Required by the {@link Interable} interface.
+	 * Use to iterate over the contained coordinates. Usage example: 
+	 * <pre>
+	 * for (Point p : roi) {
+	 *   // process p
+	 * }
+	 * </pre>
+	 * @see #getContainedPoints()
+	 * @see #getContainedFloatPoints()
 	 * @author Wilhelm Burger
 	 */
 	public Iterator<Point> iterator() {

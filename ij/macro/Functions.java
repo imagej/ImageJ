@@ -6233,12 +6233,12 @@ public class Functions implements MacroConstants, Measurements {
 	private void getContainedPoints(Roi roi) {
 		Variable xCoordinates = getFirstArrayVariable();
 		Variable yCoordinates = getLastArrayVariable();
-		Point2D.Float[] points = roi.getContainedFloatPoints();
-		Variable[] xa = new Variable[points.length];
-		Variable[] ya = new Variable[points.length];
-		for (int i=0; i<points.length; i++) {
-			xa[i] = new Variable(points[i].x);
-			ya[i] = new Variable(points[i].y);
+		FloatPolygon points = roi.getContainedFloatPoints();
+		Variable[] xa = new Variable[points.npoints];
+		Variable[] ya = new Variable[points.npoints];
+		for (int i=0; i<points.npoints; i++) {
+			xa[i] = new Variable(points.xpoints[i]);
+			ya[i] = new Variable(points.ypoints[i]);
 		}
 		xCoordinates.setArray(xa);
 		yCoordinates.setArray(ya);
