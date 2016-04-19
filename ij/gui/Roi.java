@@ -6,6 +6,7 @@ import ij.plugin.frame.Recorder;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.filter.ThresholdToSelection;
 import ij.plugin.RectToolOptions;
+import ij.plugin.Selection;
 import ij.macro.Interpreter;
 import ij.io.RoiDecoder;
 import java.awt.*;
@@ -568,15 +569,20 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	 * @see #Iterator()
 	 */
 	public FloatPolygon getContainedFloatPoints() {
-		if (isLine())
-			return getInterpolatedPolygon();
-		ImageProcessor mask = getMask();
-		Rectangle bounds = getBounds();
+		Roi roi2 = this;
+		if (isLine()) {
+			if (getStrokeWidth()<=1)
+				return roi2.getInterpolatedPolygon();
+			else
+				roi2 = Selection.lineToArea(this);
+		}
+		ImageProcessor mask = roi2.getMask();
+		Rectangle bounds = roi2.getBounds();
 		FloatPolygon points = new FloatPolygon();
-		for (int y=0; y<bounds.height; y++) {
-			for (int x=0; x<bounds.width; x++) {
+		for (int y=0; y<mask.getHeight(); y++) {
+			for (int x=0; x<mask.getWidth(); x++) {
 				if (mask==null || mask.getPixel(x,y)!=0)
-					points.addPoint((float)(this.x+x),(float)(this.y+y));
+					points.addPoint((float)(bounds.x+x),(float)(bounds.y+y));
 			}
 		}
 		return points;

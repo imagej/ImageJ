@@ -11,6 +11,7 @@ import ij.gui.Roi;
 import ij.gui.ShapeRoi;
 import ij.gui.Overlay;
 import ij.Prefs;
+import ij.measure.Measurements;
 
 /**
 This abstract class is the superclass for classes that process
@@ -24,7 +25,7 @@ some basic methods to manipulate it.
 @see ij.ImagePlus
 @see ij.ImageStack
 */
-public abstract class ImageProcessor implements Cloneable {
+public abstract class ImageProcessor implements Measurements, Cloneable {
 
 	/** Value of pixels included in masks. */
 	public static final int BLACK = 0xFF000000;
@@ -2530,17 +2531,19 @@ public abstract class ImageProcessor implements Cloneable {
 		useBicubic = b;
 	}
 	
-	/** Calculates and returns statistics (area, mean, std-dev, mode, min, max,
-	 * centroid, center of mass, 256 bin histogram) for this image or ROI. Use the
+	/** Calculates and returns statistics for this image or ROI. Use the
 	 * setRoi(Roi) method to limit statistics to a non-rectangular area.
 	 * @see ImageProcessor#setRoi	
 	 * @see ImageStatistics	
 	*/
 	public ImageStatistics getStatistics() {
-		// 127 = AREA+MEAN+STD_DEV+MODE+MIN_MAX+CENTROID+CENTER_OF_MASS
-		return ImageStatistics.getStatistics(this, 127, null);
+		int measurements = AREA+MEAN+STD_DEV+MODE+MIN_MAX+
+		CENTROID+CENTER_OF_MASS+PERIMETER+RECT+
+		ELLIPSE+SHAPE_DESCRIPTORS+FERET+INTEGRATED_DENSITY+
+		MEDIAN+SKEWNESS+KURTOSIS+AREA_FRACTION;
+		return ImageStatistics.getStatistics(this, measurements, null);
 	}
-	
+		
 	/** Blurs the image by convolving with a Gaussian function. */
 	public void blurGaussian(double sigma) {
 		resetRoi();
