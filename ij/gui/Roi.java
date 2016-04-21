@@ -2113,7 +2113,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	 * @author Wilhelm Burger
 	 */
 	public Iterator<Point> iterator() {
-		if (isLine())
+		if (isLine() && getStrokeWidth()<=1.0)
 			return new RoiPointsIteratorLine();
 		else
 			return new RoiPointsIteratorMask();
@@ -2134,18 +2134,17 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 
 		@Override
 		public boolean hasNext() {
-			return next < p.npoints;
+			return next<p.npoints;
 		}
 
 		@Override
 		public Point next() {
-			if (next >= p.npoints) {
+			if (next >= p.npoints)
 				throw new NoSuchElementException();
-			}
-			int u = (int) Math.round(p.xpoints[next]);
-			int v = (int) Math.round(p.ypoints[next]);
+			int x = (int)Math.round(p.xpoints[next]);
+			int y = (int)Math.round(p.ypoints[next]);
 			next = next + 1;
-			return new Point(u, v);
+			return new Point(x, y);
 		}
 	}
 	
@@ -2156,12 +2155,23 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	private class RoiPointsIteratorMask implements Iterator<Point> {
 		private final ImageProcessor mask;
 		private final Rectangle bounds;
+		private final int xbase, ybase;
 		private final int n;
 		private int next;
 		
 		RoiPointsIteratorMask() {
-			mask = getMask();
-			bounds = getBounds();
+			if (isLine()) {
+				Roi roi2 = Selection.lineToArea(Roi.this);
+				mask = roi2.getMask();
+				bounds = roi2.getBounds();
+				xbase = roi2.x;
+				ybase = roi2.y;
+			} else {
+				mask = getMask();
+				bounds = getBounds();
+				xbase = Roi.this.x;
+				ybase = Roi.this.y;
+			}
 			n = bounds.width * bounds.height;
 			findNext(0);	// sets next
 		}
@@ -2173,24 +2183,22 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 
 		@Override
 		public Point next() {
-			if (next >= n) {
+			if (next >= n)
 				throw new NoSuchElementException();
-			}
-			int u = next % bounds.width;
-			int v = next / bounds.width;
-			findNext(next + 1);
-			return new Point(Roi.this.x + u, Roi.this.y + v);
+			int x = next % bounds.width;
+			int y = next / bounds.width;
+			findNext(next+1);
+			return new Point(xbase+x, ybase+y);
 		}
 		
 		// finds the next element (from start), sets next
 		private void findNext(int start) {
-			if (mask == null) {
+			if (mask == null)
 				next = start;
-			}
 			else {
 				next = n;
-				for (int i = start; i < n; i++) {
-					if (mask.get(i) != 0) {
+				for (int i=start; i<n; i++) {
+					if (mask.get(i)!=0) {
 						next = i;
 						break;
 					}
