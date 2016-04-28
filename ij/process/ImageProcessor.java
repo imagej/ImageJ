@@ -2526,6 +2526,11 @@ public abstract class ImageProcessor implements Measurements, Cloneable {
 		return false;
 	}
 
+	/** Returns 'true' if this is a signed 16-bit image. */
+	public boolean isSigned16Bit() {
+		return false;
+	}
+
 	/* This method is experimental and may be removed. */
 	public static void setUseBicubic(boolean b) {
 		useBicubic = b;

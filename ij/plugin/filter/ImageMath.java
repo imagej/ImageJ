@@ -318,6 +318,21 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 				}
 			}
 			if (hasGetPixel) System.arraycopy(pixels2, 0, pixels1, 0, w*h);
+		} else if (bitDepth==16 && ip.isSigned16Bit()) {
+			for (int y=r.y; y<(r.y+r.height); y++) {
+				if (showProgress && y%inc==0)
+					IJ.showProgress(y-r.y, r.height);
+				interp.setVariable("y", y);
+				for (int x=r.x; x<(r.x+r.width); x++) {
+					v = ip.getPixelValue(x, y);
+					interp.setVariable("v", v);
+					if (hasX) interp.setVariable("x", x);
+					if (hasA) interp.setVariable("a", getA((h-y-1)-h2, x-w2));
+					if (hasD) interp.setVariable("d", getD(x-w2,y-h2));
+					interp.run(PCStart);
+					ip.putPixelValue(x, y, interp.getVariable("v"));
+				}
+			}
 		} else if (bitDepth==16) {
 			short[] pixels1 = (short[])ip.getPixels();
 			short[] pixels2 = pixels1;
