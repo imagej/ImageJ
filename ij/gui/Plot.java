@@ -38,6 +38,8 @@ public class Plot implements Cloneable {
 	public static final int CIRCLE = 0;
 	/** Display points using an X-shaped mark. */
 	public static final int X = 1;
+	/** Connect points with solid lines. */
+	public static final int LINE = 2;
 	/** Display points using a square box-shaped mark. */
 	public static final int BOX = 3;
 	/** Display points using an tiangular mark. */
@@ -46,10 +48,15 @@ public class Plot implements Cloneable {
 	public static final int CROSS = 5;
 	/** Display points using a single pixel. */
 	public static final int DOT = 6;
-	/** Connect points with solid lines. */
-	public static final int LINE = 2;
 	/** Draw black lines between the dots and a circle with the given color at each dot */
-	public static final int CONNECTED_CIRCLES = 7;	
+	public static final int CONNECTED_CIRCLES = 7;
+	/** Names for the shapes as an array */
+	final static String[] SHAPE_NAMES = new String[] {
+			"Circle", "X", "Line", "Box", "Triangle", "+", "Dot", "Connected Circles"};
+	/** Names in nicely sorting order for menus */
+	final static String[] SORTED_SHAPES = new String[] {
+			SHAPE_NAMES[LINE], SHAPE_NAMES[CONNECTED_CIRCLES], SHAPE_NAMES[CIRCLE], SHAPE_NAMES[BOX], SHAPE_NAMES[TRIANGLE],
+			SHAPE_NAMES[CROSS], SHAPE_NAMES[X], SHAPE_NAMES[DOT] };
 	/** flag for numeric labels of x-axis ticks */
 	public static final int X_NUMBERS = 0x1;
 	/** flag for numeric labels of x-axis ticks */
@@ -567,7 +574,8 @@ public class Plot implements Cloneable {
 	public void add(String shape, double[] x, double[] y) {
 		addPoints(Tools.toFloat(x), Tools.toFloat(y), null, toShape(shape), null);
 	}
-	
+
+	/** Returns the number for a given plot symbol shape, -1 for xError and -2 for yError (all case-insensitive) */
 	public static int toShape(String str) {
 		str = str.toLowerCase(Locale.US);
 		int shape = Plot.CIRCLE;
@@ -579,7 +587,7 @@ public class Plot implements Cloneable {
 			shape = Plot.BOX;
 		else if (str.contains("triangle"))
 			shape = Plot.TRIANGLE;
-		else if (str.contains("cross"))
+		else if (str.contains("cross") || str.contains("+"))
 			shape = Plot.CROSS;		
 		else if (str.contains("dot"))
 			shape = Plot.DOT;		
@@ -734,9 +742,8 @@ public class Plot implements Cloneable {
 	 *	The frame and labels are always drawn in black. */
 	public void setColor(Color c) {
 		currentColor = c;
-		if (c.getRed() != c.getGreen() || c.getGreen() != c.getBlue())
-			isColor = true;
 		currentColor2 = null;
+		checkForColor(c);
 	}
 	
 	public void setColor(String color) {
@@ -753,9 +760,8 @@ public class Plot implements Cloneable {
 	public void setColor(Color c, Color c2) {
 		currentColor = c;
 		currentColor2 = c2;
-		if (c.getRed() != c.getGreen() || c.getGreen() != c.getBlue() || (c2 != null && (
-				c2.getRed() != c2.getGreen() || c2.getGreen() != c2.getBlue())))
-			isColor = true;
+		checkForColor(c);
+		checkForColor(c2);
 	}
 	
 	/** Sets the drawing color for the next objects that will be added to the plot. */
@@ -766,7 +772,7 @@ public class Plot implements Cloneable {
 	/** Set the plot frame background color. */
 	public void setBackgroundColor(Color c) {
 		backgroundColor = c;
-		isColor = true;
+		checkForColor(c);
 	}
 
 	/** Set the plot frame background color. */
@@ -873,6 +879,89 @@ public class Plot implements Cloneable {
 	public float[] getYValues() {
 		PlotObject p = getMainCurveObject();
 		return p==null ? null : p.yValues;
+	}
+
+	/** Get an array with human-readable designations of the PlotObjects (curves, labels, ...)
+	 *  in the sequence they are plotted (i.e., foreground last). **/
+	public String[] getPlotObjectDesignations() {
+	    int nObjects = allPlotObjects.size();
+		String[] names = new String[nObjects];
+		if (names.length == 0) return names;
+		String[] labels = null;
+		if (legend != null && legend.label != null)
+			labels = legend.label.split("[\t\n]");
+		int iData = 1, iArrow = 1, iLine = 1, iText = 1;                        //Human readable counters of each object type
+		int firstObject = allPlotObjects.get(0).hasFlag(PlotObject.CONSTRUCTOR_DATA) ? 1 : 0; //PlotObject passed with constructor is plotted last
+		for (int i=0, p=firstObject; i<nObjects; i++, p++) {
+			if (p >= allPlotObjects.size()) p = 0;                              //might be PlotObject passed with Constructor
+			PlotObject plotObject = allPlotObjects.get(p);
+			int type = plotObject.type;
+			String label = plotObject.label;
+			switch (type) {
+				case PlotObject.XY_DATA:
+					names[i] = "Data Set "+iData+": "+(labels!=null && labels.length>=iData ?
+							labels[iData-1] : "(" + plotObject.yValues.length + " data points)");
+					iData++;
+					break;
+				case PlotObject.ARROWS:
+					names[i] = "Arrow Set "+iArrow+" ("+ plotObject.xValues.length + ")";
+					iArrow++;
+					break;
+				case PlotObject.LINE: case PlotObject.NORMALIZED_LINE: case PlotObject.DOTTED_LINE:
+					String detail = "";
+					if (type == PlotObject.DOTTED_LINE) detail = "dotted ";
+					if (plotObject.x ==plotObject.xEnd) detail += "vertical";
+					else if (plotObject.y ==plotObject.yEnd) detail += "horizontal";
+					if (detail.length()>0) detail = " ("+detail.trim()+")";
+					names[i] = "Straight Line "+iLine+detail;
+					iLine++;
+					break;
+				case PlotObject.LABEL: case PlotObject.NORMALIZED_LABEL:
+				    String text = plotObject.label.replaceAll("\n"," ");
+				    if (text.length()>45) text = text.substring(0, 40)+"...";
+					names[i] = "Text "+iText+": \""+text+'"';
+					iText++;
+					break;
+			}
+		}
+		return names;
+	}
+
+	/** Get the style of the i-th PlotObject (curve, label, ...) in the sequence
+	 *  they are plotted (i.e., foreground last), as String with comma delimiters:
+	 *  Main Color, Secondary Color (or "none"), Line Width [, Symbol shape for XY_DATA] **/
+	public String getPlotObjectStyles(int i) {
+		if (allPlotObjects.get(0).hasFlag(PlotObject.CONSTRUCTOR_DATA)) i++;
+		if (i == allPlotObjects.size()) i = 0;                      //PlotObject passed with Constructor (#0) is last
+		PlotObject plotObject = allPlotObjects.get(i);
+	    String styleString = Colors.colorToString(plotObject.color) + "," +
+				Colors.colorToString(plotObject.color2) + "," +
+				plotObject.lineWidth;
+		if (plotObject.type == PlotObject.XY_DATA)
+			styleString += ","+SHAPE_NAMES[plotObject.shape];
+		return styleString;
+	}
+
+	/** Set the style of the i-th PlotObject (curve, label, ...) in the sequence
+	 *  they are plotted (i.e., foreground last), from a String with comma delimiters:
+	 *  Main Color, Secondary Color (or "none"), Line Width [, Symbol shape for XY_DATA] **/
+	public void setPlotObjectStyles(int i, String styleString) {
+		if (allPlotObjects.get(0).hasFlag(PlotObject.CONSTRUCTOR_DATA)) i++;
+		if (i == allPlotObjects.size()) i = 0;                      //PlotObject passed with Constructor (#0) is last
+		PlotObject plotObject = allPlotObjects.get(i);
+		String[] items = styleString.split(",");
+		plotObject.color = Colors.decode(items[0].trim(), plotObject.color);
+		plotObject.color2 = Colors.decode(items[1].trim(), null);
+		checkForColor(plotObject.color);
+		checkForColor(plotObject.color2);
+		float lineWidth = plotObject.lineWidth;
+		if (items.length >= 3) try {
+			plotObject.lineWidth = Float.parseFloat(items[2].trim());
+		} catch (NumberFormatException e) {};
+		if (items.length >= 4)
+			plotObject.shape = toShape(items[3].trim());
+		updateImage();
+		return;
 	}
 
 	/** Sets the plot range to the initial value determined from minima&maxima or given by setLimits.
@@ -1177,6 +1266,13 @@ public class Plot implements Cloneable {
 	Font scFont(Font font) {
 		float size = font.getSize2D();
 		return scale==1 ? font : font.deriveFont(size*scale);
+	}
+
+	/** Converts the plot to color if the given color requires it */
+	void checkForColor(Color c) {
+		if (c == null) return;
+		if (c.getRed() != c.getGreen() || c.getGreen() != c.getBlue())
+			isColor = true;
 	}
 
 	/** Draws the plot contents (all PlotObjects and the frame and legend), without axes etc. */

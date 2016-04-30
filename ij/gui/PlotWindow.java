@@ -10,6 +10,7 @@ import ij.process.*;
 import ij.util.*;
 import ij.text.TextWindow;
 import ij.plugin.filter.Analyzer;
+import ij.plugin.filter.PlugInFilterRunner;
 import ij.measure.*;
 import ij.io.SaveDialog;
 
@@ -262,15 +263,15 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 
 	//names for popupMenu items
 	private static int COPY=0, COPY_ALL=1, SET_RANGE=2, PREV_RANGE=3, RESET_RANGE=4, FIT_RANGE=5,
-			ZOOM_SELECTION=6, AXIS_OPTIONS=7, LEGEND=8, RESET_PLOT=9, FREEZE=10, HI_RESOLUTION=11,
-			PROFILE_PLOT_OPTIONS=12;
+			ZOOM_SELECTION=6, AXIS_OPTIONS=7, LEGEND=8, STYLE=9, RESET_PLOT=10, FREEZE=11, HI_RESOLUTION=12,
+			PROFILE_PLOT_OPTIONS=13;
 	//the following commands are disabled when the plot is frozen
 	private static int[] DISABLED_WHEN_FROZEN = new int[]{SET_RANGE, PREV_RANGE, RESET_RANGE,
-			FIT_RANGE, ZOOM_SELECTION, AXIS_OPTIONS, LEGEND, RESET_PLOT};
+			FIT_RANGE, ZOOM_SELECTION, AXIS_OPTIONS, LEGEND, STYLE, RESET_PLOT};
 	/** Prepares and returns the popupMenu of the More>> button*/
 	PopupMenu getPopupMenu() {
 		popupMenu = new PopupMenu();
-		menuItems = new MenuItem[13];
+		menuItems = new MenuItem[14];
 		menuItems[COPY] = addPopupItem(popupMenu, "Copy 1st Data Set");
 		menuItems[COPY_ALL] = addPopupItem(popupMenu, "Copy All Data");
 		popupMenu.addSeparator();
@@ -282,6 +283,7 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 		popupMenu.addSeparator();
 		menuItems[AXIS_OPTIONS] = addPopupItem(popupMenu, "Axis Options...");
 		menuItems[LEGEND] = addPopupItem(popupMenu, "Legend...");
+		menuItems[STYLE] = addPopupItem(popupMenu, "Contents Style...");
 		menuItems[RESET_PLOT] = addPopupItem(popupMenu, "Reset Format");
 		menuItems[FREEZE] = addPopupItem(popupMenu, "Freeze Plot", true);
 		menuItems[HI_RESOLUTION] = addPopupItem(popupMenu, "High-Resolution Plot...");
@@ -309,6 +311,7 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 
 	/** Called if user has activated a button or popup menu item */
 	public void actionPerformed(ActionEvent e) {
+		try {
 		Object b = e.getSource();
 		if (b==live)
 			toggleLiveProfiling();
@@ -342,6 +345,8 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 			new PlotDialog(plot, PlotDialog.AXIS_OPTIONS).showDialog(this);
 		else if (b==menuItems[LEGEND])
 			new PlotDialog(plot, PlotDialog.LEGEND).showDialog(this);
+		else if (b==menuItems[STYLE])
+			new PlotContentsStyleDialog(plot).showDialog(this);
 		else if (b==menuItems[RESET_PLOT]) {
 			plot.setFont(Font.PLAIN, Prefs.getInt(PREFS_FONT_SIZE, FONT_SIZE));
 			plot.setAxisLabelFont(Font.PLAIN, Prefs.getInt(PREFS_FONT_SIZE, FONT_SIZE));
@@ -352,6 +357,7 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 		else if (b==menuItems[PROFILE_PLOT_OPTIONS])
 			IJ.doCommand("Plots...");
 		ic.requestFocus();	//have focus on the canvas, not the button, so that pressing the space bar allows panning
+		} catch (Exception ex) { IJ.handleException(ex); }
 	}
 
 	/** Called if the user activates/deactivates a CheckboxMenuItem */
@@ -760,5 +766,4 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 	}
 	
 }
-
 

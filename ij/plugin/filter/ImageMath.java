@@ -318,7 +318,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 				}
 			}
 			if (hasGetPixel) System.arraycopy(pixels2, 0, pixels1, 0, w*h);
-		} else if (bitDepth==16 && ip.isSigned16Bit()) {
+		} else if (ip.isSigned16Bit()) {
 			for (int y=r.y; y<(r.y+r.height); y++) {
 				if (showProgress && y%inc==0)
 					IJ.showProgress(y-r.y, r.height);
