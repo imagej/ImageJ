@@ -1179,7 +1179,7 @@ public class Interpreter implements MacroConstants {
 		WindowManager.setTempCurrentImage(null);
 		wasError = true;
 		instance = null;
-		if (showMessage) {
+		if (showMessage && message!=null) {
 			String line = getErrorLine();
 			done = true;
 			if (line.length()>120)
