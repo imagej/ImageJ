@@ -219,11 +219,6 @@ public class ShortProcessor extends ImageProcessor {
 		return snapshotPixels;
 	}
 
-	/* Obsolete. */
-	//public boolean isUnsigned() {
-	//	return true;
-	//}
-
 	/** Returns the smallest displayed pixel value. */
 	public double getMin() {
 		if (!minMaxSet) findMinAndMax();
@@ -453,7 +448,7 @@ public class ShortProcessor extends ImageProcessor {
 		int v1, v2;
 		double range = getMax()-getMin();
 		//boolean resetMinMax = roiWidth==width && roiHeight==height && !(op==FILL);
-		int offset = cTable!=null&&cTable[0]==-32768f?32768:0; // signed images have 32768 offset
+		int offset = isSigned16Bit()?32768:0;
 		int min2 = (int)getMin() - offset;
 		int max2 = (int)getMax() - offset;
 		int fgColor2 = fgColor - offset;
@@ -705,7 +700,7 @@ public class ShortProcessor extends ImageProcessor {
 		double xlimit = width-1.0, xlimit2 = width-1.001;
 		double ylimit = height-1.0, ylimit2 = height-1.001;
 		// zero is 32768 for signed images
-		int background = cTable!=null && cTable[0]==-32768?32768:0; 
+		int background = isSigned16Bit()?32768:0; 
 		
 		if (interpolationMethod==BICUBIC) {
 			for (int y=roiY; y<(roiY + roiHeight); y++) {
@@ -938,7 +933,7 @@ public class ShortProcessor extends ImageProcessor {
 			setValue(bestIndex);
 			setMinAndMax(0.0,255.0);
 		} else if (bestIndex==0 && getMin()>0.0 && (color.getRGB()&0xffffff)==0) {
-			if (cTable!=null&&cTable[0]==-32768f) // signed image
+			if (isSigned16Bit())
 				setValue(32768);
 			else
 				setValue(0.0);
@@ -1155,6 +1150,11 @@ public class ShortProcessor extends ImageProcessor {
 
 	public int getBitDepth() {
 		return 16;
+	}
+
+	/** Returns 'true' if this is a signed 16-bit image. */
+	public boolean isSigned16Bit() {
+		return cTable!=null && cTable[0]==-32768f && cTable[1]==-32767f;
 	}
 
 	/** Not implemented. */

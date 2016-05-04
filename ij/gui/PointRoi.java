@@ -1,6 +1,4 @@
 package ij.gui;
-import java.awt.*;
-import java.awt.image.*;
 import ij.*;
 import ij.process.*;
 import ij.measure.*;
@@ -9,8 +7,11 @@ import ij.plugin.PointToolOptions;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
 import ij.util.Java2; 
+import java.awt.*;
+import java.awt.image.*;
 import java.awt.event.KeyEvent;
-import java.util.Random;
+import java.util.*;
+import java.awt.geom.Point2D;
 
 /** This class represents a collection of points. */
 public class PointRoi extends PolygonRoi {
@@ -666,6 +667,49 @@ public class PointRoi extends PolygonRoi {
 			}
 		}
 		return handle;
+	}
+	
+	/** Returns the points as an array of Points. */
+	public Point[] getContainedPoints() {
+		Polygon p = getPolygon();
+		Point[] points = new Point[p.npoints];
+		for (int i=0; i<p.npoints; i++)
+			points[i] = new Point(p.xpoints[i],p.ypoints[i]);
+		return points;
+	}
+
+	/** Returns the points as a FloatPolygon. */
+	public FloatPolygon getContainedFloatPoints() {
+		return getFloatPolygon();
+	}
+
+	/**
+	 * Custom iterator for points contained in a {@link PointRoi}.
+	 * @author W. Burger
+	 */
+	public Iterator<Point> iterator() {	
+		return new Iterator<Point>() {
+			final Point[] pnts = getContainedPoints();
+			final int n = pnts.length;
+			int next = (n == 0) ? 1 : 0;
+			@Override
+			public boolean hasNext() {
+				return next < n;
+			}
+			@Override
+			public Point next() {
+				if (next >= n) {
+					throw new NoSuchElementException();
+				}
+				Point pnt = pnts[next];
+				next = next + 1;
+				return pnt;
+			}
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException();
+			}
+		};
 	}
 
 	/** Returns a copy of this PointRoi. */

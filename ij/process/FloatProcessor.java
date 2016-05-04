@@ -76,6 +76,7 @@ public class FloatProcessor extends ImageProcessor {
 				pixels[i++] = (float)array[x][y];
 			}
 		}
+		resetRoi();
 	}
 
 	/**
@@ -731,7 +732,7 @@ public class FloatProcessor extends ImageProcessor {
 	}
 	
 	/** Returns a duplicate of this image. */ 
-	public ImageProcessor duplicate() { 
+	public ImageProcessor duplicate() {
 		ImageProcessor ip2 = createProcessor(width, height); 
 		float[] pixels2 = (float[])ip2.getPixels(); 
 		System.arraycopy(pixels, 0, pixels2, 0, width*height); 

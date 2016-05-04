@@ -130,7 +130,7 @@ public class FileSaver {
 		if (obj==null) return;
 		FHT fht = (obj instanceof FHT)?(FHT)obj:null;
 		if (fht==null) return;
-		if (fht.originalColorModel!=null)
+		if (fht.originalColorModel!=null && fht.originalBitDepth!=24)
 			fht.setColorModel(fht.originalColorModel);
 		ImagePlus imp2 = new ImagePlus(imp.getTitle(), fht);
 		imp2.setProperty("Info", imp.getProperty("Info"));

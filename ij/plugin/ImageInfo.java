@@ -241,6 +241,16 @@ public class ImageInfo implements PlugIn {
 				String mode = ((CompositeImage)imp).getModeAsString();
 				s += "  Composite mode: \"" + mode + "\"\n";
 			}
+			if (stack.isVirtual()) {
+				String stackType = "virtual";
+				if (stack instanceof AVI_Reader)
+					stackType += " (AVI Reader)";
+				if (stack instanceof FileInfoVirtualStack)
+					stackType += " (FileInfoVirtualStack)";
+				if (stack instanceof ListVirtualStack)
+					stackType += " (ListVirtualStack)";
+				s += "Stack type: " + stackType+ "\n";
+			}
 		}
 		
 		if (imp.isLocked())

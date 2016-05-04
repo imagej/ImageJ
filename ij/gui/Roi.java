@@ -6,6 +6,7 @@ import ij.plugin.frame.Recorder;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.filter.ThresholdToSelection;
 import ij.plugin.RectToolOptions;
+import ij.plugin.Selection;
 import ij.macro.Interpreter;
 import ij.io.RoiDecoder;
 import java.awt.*;
@@ -15,8 +16,19 @@ import java.awt.image.*;
 import java.awt.event.*;
 import java.awt.geom.*;
 
-/** A rectangular region of interest and superclass for the other ROI classes. */
-public class Roi extends Object implements Cloneable, java.io.Serializable {
+/** 
+ * A rectangular region of interest and superclass for the other ROI classes. 
+ * 
+ * This class implements {@code Iterable<Point>} and can thus be
+ * used to iterate over the contained coordinates. Usage example: 
+ * <pre>
+ * Roi roi = ...;
+ * for (Point p : roi) {
+ *   // process p
+ * }
+ * </pre>
+ */
+public class Roi extends Object implements Cloneable, java.io.Serializable, Iterable<Point> {
 
 	public static final int CONSTRUCTING=0, MOVING=1, RESIZING=2, NORMAL=3, MOVING_HANDLE=4; // States
 	public static final int RECTANGLE=0, OVAL=1, POLYGON=2, FREEROI=3, TRACED_ROI=4, LINE=5, 
@@ -528,6 +540,54 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return fPoly;
 	}
 	
+	/** Returns the coordinates of the pixels inside this ROI as an array of Points.
+	 * @see #getContainedFloatPoints()
+	 * @see #Iterator()
+	 */
+	public Point[] getContainedPoints() {
+		if (isLine()) {
+			FloatPolygon p = getInterpolatedPolygon();
+			Point[] points = new Point[p.npoints];
+			for (int i=0; i<p.npoints; i++)
+				points[i] = new Point((int)Math.round(p.xpoints[i]),(int)Math.round(p.ypoints[i]));
+			return points;
+		}
+		ImageProcessor mask = getMask();
+		Rectangle bounds = getBounds();
+		ArrayList points = new ArrayList();
+		for (int y=0; y<bounds.height; y++) {
+			for (int x=0; x<bounds.width; x++) {
+				if (mask==null || mask.getPixel(x,y)!=0)
+					points.add(new Point(this.x+x,this.y+y));
+			}
+		}
+		return (Point[])points.toArray(new Point[points.size()]);
+	}
+	
+	/** Returns the coordinates of the pixels inside this ROI as a FloatPolygon.
+	 * @see #getContainedPoints()
+	 * @see #Iterator()
+	 */
+	public FloatPolygon getContainedFloatPoints() {
+		Roi roi2 = this;
+		if (isLine()) {
+			if (getStrokeWidth()<=1)
+				return roi2.getInterpolatedPolygon();
+			else
+				roi2 = Selection.lineToArea(this);
+		}
+		ImageProcessor mask = roi2.getMask();
+		Rectangle bounds = roi2.getBounds();
+		FloatPolygon points = new FloatPolygon();
+		for (int y=0; y<mask.getHeight(); y++) {
+			for (int x=0; x<mask.getWidth(); x++) {
+				if (mask==null || mask.getPixel(x,y)!=0)
+					points.addPoint((float)(bounds.x+x),(float)(bounds.y+y));
+			}
+		}
+		return points;
+	}
+
 	/**
 	 * <pre>
 	 * Calculates intersections of a line segment with a circle
@@ -2038,6 +2098,124 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	
 	public static void removeRoiListener(RoiListener listener) {
 		listeners.removeElement(listener);
+	}
+	
+	/**
+	 * Required by the {@link Interable} interface.
+	 * Use to iterate over the contained coordinates. Usage example: 
+	 * <pre>
+	 * for (Point p : roi) {
+	 *   // process p
+	 * }
+	 * </pre>
+	 * @see #getContainedPoints()
+	 * @see #getContainedFloatPoints()
+	 * @author Wilhelm Burger
+	 */
+	public Iterator<Point> iterator() {
+		if (isLine() && getStrokeWidth()<=1.0)
+			return new RoiPointsIteratorLine();
+		else
+			return new RoiPointsIteratorMask();
+	}
+	
+
+	/**
+	 * Custom iterator over points contained in a straight line-type {@link Roi}.
+	 * @author W. Burger
+	 */
+	private class RoiPointsIteratorLine implements Iterator<Point> {
+		private final FloatPolygon p;
+		private int next = 0;
+
+		RoiPointsIteratorLine() {
+			p = getInterpolatedPolygon();
+		}
+
+		@Override
+		public boolean hasNext() {
+			return next<p.npoints;
+		}
+
+		@Override
+		public Point next() {
+			if (next >= p.npoints)
+				throw new NoSuchElementException();
+			int x = (int)Math.round(p.xpoints[next]);
+			int y = (int)Math.round(p.ypoints[next]);
+			next = next + 1;
+			return new Point(x, y);
+		}
+		
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+
+	}
+	
+	/**
+	 * Custom iterator over points contained in a mask-backed {@link Roi}.
+	 * @author W. Burger
+	 */
+	private class RoiPointsIteratorMask implements Iterator<Point> {
+		private final ImageProcessor mask;
+		private final Rectangle bounds;
+		private final int xbase, ybase;
+		private final int n;
+		private int next;
+		
+		RoiPointsIteratorMask() {
+			if (isLine()) {
+				Roi roi2 = Selection.lineToArea(Roi.this);
+				mask = roi2.getMask();
+				bounds = roi2.getBounds();
+				xbase = roi2.x;
+				ybase = roi2.y;
+			} else {
+				mask = getMask();
+				bounds = getBounds();
+				xbase = Roi.this.x;
+				ybase = Roi.this.y;
+			}
+			n = bounds.width * bounds.height;
+			findNext(0);	// sets next
+		}
+
+		@Override
+		public boolean hasNext() {
+			return next < n;
+		}
+
+		@Override
+		public Point next() {
+			if (next >= n)
+				throw new NoSuchElementException();
+			int x = next % bounds.width;
+			int y = next / bounds.width;
+			findNext(next+1);
+			return new Point(xbase+x, ybase+y);
+		}
+		
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+		
+		// finds the next element (from start), sets next
+		private void findNext(int start) {
+			if (mask == null)
+				next = start;
+			else {
+				next = n;
+				for (int i=start; i<n; i++) {
+					if (mask.get(i)!=0) {
+						next = i;
+						break;
+					}
+				}
+			}
+		}
 	}
 
 }

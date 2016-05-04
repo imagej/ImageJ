@@ -29,7 +29,10 @@ public class StackCombiner implements PlugIn {
 		imp1.close();
 		imp2.changes = false;
 		imp2.close();
-		new ImagePlus("Combined Stacks", stack3).show();
+		ImagePlus imp3 = imp1.createImagePlus();
+		imp3.setStack(stack3);
+		imp3.setTitle("Combined Stacks");
+		imp3.show();
 	}
 	
 	public ImageStack combineHorizontally(ImageStack stack1, ImageStack stack2) {
