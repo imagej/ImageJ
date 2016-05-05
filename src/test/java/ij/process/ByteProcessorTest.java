@@ -746,7 +746,7 @@ public class ByteProcessorTest {
 		//get the image
 		BufferedImage testImage = byteProcessor.getBufferedImage();
 		ByteProcessor tbp = new ByteProcessor(testImage);
-		testImageStats( tbp, "stats[count=0, mean=NaN, min=255.0, max=0.0] NaN NaN NaN NaN");
+		testImageStats( tbp, "stats[count=58368, mean=45.3469880756579, min=0.0, max=255.0] 125.60450794974938 112.74068266250771 128.0 114.0");
 
 	}
 
