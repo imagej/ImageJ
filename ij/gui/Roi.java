@@ -1581,13 +1581,17 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public void setStrokeWidth(float width) {
 		if (width<0f)
 			width = 0f;
+		boolean notify = listeners.size()>0 && isLine() && getStrokeWidth()!=width;
 		if (width==0)
 			stroke = null;
 		else if (wideLine)
 			this.stroke = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
 		else
 			this.stroke = new BasicStroke(width);
-		if (width>1f) fillColor = null;
+		if (width>1f)
+			fillColor = null;
+		if (notify)
+			notifyListeners(RoiListener.MODIFIED);
 	}
 
 	/** This is a version of setStrokeWidth() that accepts a double argument. */
@@ -2146,6 +2150,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			next = next + 1;
 			return new Point(x, y);
 		}
+		
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+
 	}
 	
 	/**
@@ -2189,6 +2199,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			int y = next / bounds.width;
 			findNext(next+1);
 			return new Point(xbase+x, ybase+y);
+		}
+		
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
 		}
 		
 		// finds the next element (from start), sets next

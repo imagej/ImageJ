@@ -692,12 +692,10 @@ public class PointRoi extends PolygonRoi {
 			final Point[] pnts = getContainedPoints();
 			final int n = pnts.length;
 			int next = (n == 0) ? 1 : 0;
-			
 			@Override
 			public boolean hasNext() {
 				return next < n;
 			}
-
 			@Override
 			public Point next() {
 				if (next >= n) {
@@ -706,6 +704,10 @@ public class PointRoi extends PolygonRoi {
 				Point pnt = pnts[next];
 				next = next + 1;
 				return pnt;
+			}
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException();
 			}
 		};
 	}
