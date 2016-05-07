@@ -26,6 +26,7 @@ package ij.plugin;
 import ij.*;
 import ij.text.*;
 import ij.plugin.frame.Editor;
+import ij.gui.HTMLDialog;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -45,7 +46,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	private static JFrame frame;
 	private JTextField prompt;
 	private JScrollPane scrollPane;
-	private JButton runButton, sourceButton, closeButton;
+	private JButton runButton, sourceButton, closeButton, helpButton;
 	private JCheckBox closeCheckBox;
 	private Hashtable commandsHash;
 	private String [] commands;
@@ -131,6 +132,13 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 			showSource(tableModel.getCommand(row));
 		} else if (source == closeButton) {
 			closeWindow();
+		} else if (source == helpButton) {
+			String text = "<html>Shortcuts:<br>"
+				+ "&emsp;&uarr; &darr;&ensp; Select items<br>"
+				+ "&emsp;&crarr;&emsp; Open item<br>"
+				+ "&ensp;A-Z&ensp; Alphabetic scroll<br>"
+				+ "&emsp;&#9003;&emsp;Activate search field</html>";
+			new HTMLDialog("", text);
 		}
 	}
 
@@ -458,18 +466,6 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 			}
 		});
 
-		// List the most useful shortcuts in a tooltip. Tooltips
-		// can be an annoyance so we'll increase delay times
-		ToolTipManager ttm = ToolTipManager.sharedInstance();
-		ttm.setInitialDelay(2 * ttm.getInitialDelay());
-		ttm.setReshowDelay(2 * ttm.getReshowDelay());
-		ttm.setDismissDelay(2 * ttm.getDismissDelay());
-		table.setToolTipText("<html>Shortcuts:<br>"
-				+ "&emsp;&uarr; &darr;&ensp; Select items<br>"
-				+ "&emsp;&crarr;&emsp; Open item<br>"
-				+ "&ensp;A-Z&ensp; Alphabetic scroll<br>"
-				+ "&emsp;&#9003;&emsp;Activate search field</html>");
-
 		scrollPane = new JScrollPane(table);
 		if (initialSearch==null)
 			initialSearch = "";
@@ -480,12 +476,15 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		runButton = new JButton("Run");
 		sourceButton = new JButton("Source");
 		closeButton = new JButton("Close");
+		helpButton = new JButton("Help");
 		runButton.addActionListener(this);
 		sourceButton.addActionListener(this);
 		closeButton.addActionListener(this);
+		helpButton.addActionListener(this);
 		runButton.addKeyListener(this);
 		sourceButton.addKeyListener(this);
 		closeButton.addKeyListener(this);
+		helpButton.addKeyListener(this);
 
 		JPanel southPanel = new JPanel();
 		southPanel.setLayout(new BorderLayout());
@@ -497,6 +496,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		buttonsPanel.add(runButton);
 		buttonsPanel.add(sourceButton);
 		buttonsPanel.add(closeButton);
+		buttonsPanel.add(helpButton);
 
 		southPanel.add(optionsPanel, BorderLayout.CENTER);
 		southPanel.add(buttonsPanel, BorderLayout.SOUTH);
