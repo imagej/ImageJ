@@ -15,6 +15,7 @@ import ij.macro.Interpreter;
 /** This plugin implements ImageJ's Analyze/Measure and Analyze/Set Measurements commands. */
 public class Analyzer implements PlugInFilter, Measurements {
 	
+	private static boolean drawLabels = true;
 	private String arg;
 	private ImagePlus imp;
 	private ResultsTable rt;
@@ -115,6 +116,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		Overlay overlay = imp.getOverlay();
 		if (overlay==null)
 			overlay = new Overlay();
+		if (drawLabels)
+			overlay.drawLabels(true);
 		if (!overlay.getDrawNames())
 			overlay.drawNames(true);
 		overlay.setLabelColor(Color.white);
@@ -920,9 +923,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 
 	/** Sets the specified system-wide measurement option. */
 	public static void setMeasurement(int option, boolean state) {
-			if (state)
+			if (state) {
 				systemMeasurements |= option;
-			else
+				if ((option&ADD_TO_OVERLAY)!=0)
+					drawLabels = true;
+			} else
 				systemMeasurements &= ~option;
 	}
 
@@ -995,6 +1000,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 		summarized = false;
 		umeans = null;
 		unsavedMeasurements = false;
+	}
+	
+	public static void drawLabels(boolean b) {
+		drawLabels = b;
 	}
 	
 }

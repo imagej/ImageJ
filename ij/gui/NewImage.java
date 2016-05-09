@@ -22,8 +22,8 @@ public class NewImage {
 	static final String SLICES = "new.slices";
 
     private static String name = "Untitled";
-    private static int width = Prefs.getInt(WIDTH, 400);
-    private static int height = Prefs.getInt(HEIGHT, 400);
+    private static int width = Prefs.getInt(WIDTH, 512);
+    private static int height = Prefs.getInt(HEIGHT, 512);
     private static int slices = Prefs.getInt(SLICES, 1);
     private static int type = Prefs.getInt(TYPE, GRAY8);
     private static int fillWith = Prefs.getInt(FILL, FILL_BLACK);

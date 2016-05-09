@@ -11,7 +11,6 @@ import ij.gui.Roi;
 import ij.gui.ShapeRoi;
 import ij.gui.Overlay;
 import ij.Prefs;
-import ij.measure.Measurements;
 
 /**
 This abstract class is the superclass for classes that process
@@ -25,7 +24,7 @@ some basic methods to manipulate it.
 @see ij.ImagePlus
 @see ij.ImageStack
 */
-public abstract class ImageProcessor implements Measurements, Cloneable {
+public abstract class ImageProcessor implements Cloneable {
 
 	/** Value of pixels included in masks. */
 	public static final int BLACK = 0xFF000000;
@@ -2163,6 +2162,20 @@ public abstract class ImageProcessor implements Measurements, Cloneable {
 	*/
 	public abstract int[] getHistogram();
 	
+	/** Returns the histogram of the image or ROI, using the specified number of bins. */
+	public int[] getHistogram(int nBins) {
+		ImageProcessor ip;
+		if (((this instanceof ByteProcessor)||(this instanceof ColorProcessor)) && nBins!=256)
+			ip = convertToShort(false);
+		else
+			ip = this;
+		ip.setHistogramSize(nBins);
+		ip.setHistogramRange(0.0, 0.0);
+		ImageStatistics stats = ImageStatistics.getStatistics(ip);
+		ip.setHistogramSize(256);
+		return stats.histogram;
+	}
+	
 	/** Erodes the image or ROI using a 3x3 maximum filter. Requires 8-bit or RGB image. */
 	public abstract void erode();
 	
@@ -2542,11 +2555,7 @@ public abstract class ImageProcessor implements Measurements, Cloneable {
 	 * @see ImageStatistics	
 	*/
 	public ImageStatistics getStatistics() {
-		int measurements = AREA+MEAN+STD_DEV+MODE+MIN_MAX+
-		CENTROID+CENTER_OF_MASS+PERIMETER+RECT+
-		ELLIPSE+SHAPE_DESCRIPTORS+FERET+INTEGRATED_DENSITY+
-		MEDIAN+SKEWNESS+KURTOSIS+AREA_FRACTION;
-		return ImageStatistics.getStatistics(this, measurements, null);
+		return ImageStatistics.getStatistics(this);
 	}
 		
 	/** Blurs the image by convolving with a Gaussian function. */

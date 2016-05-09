@@ -46,13 +46,17 @@ public class FileOpener {
 		if (IJ.debugMode) IJ.log("FileInfo: "+fi);
 	}
 	
+	/** Opens the image and returns it has an ImagePlus object. */
+	public ImagePlus openImage() {
+		return open(false);
+	}
+
 	/** Opens the image and displays it. */
 	public void open() {
 		open(true);
 	}
 	
-	/** Opens the image. Displays it if 'show' is
-	true. Returns an ImagePlus object if successful. */
+	/** Obsolete, replaced by openImage() and open(). */
 	public ImagePlus open(boolean show) {
 
 		ImagePlus imp=null;

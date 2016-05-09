@@ -820,42 +820,38 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return mask;
 	}
 
-	/** Returns an ImageStatistics object generated using the standard
-		measurement options (area, mean, mode, min and max).
-		This plugin demonstrates how get the area, mean and max of the
+	/** Returns an ImageStatistics object generated using all
+		measurement options. This code demonstrates how
+		to get the area, mean, max and median of the
 		current image or selection:
 		<pre>
-   public class Get_Statistics implements PlugIn {
-      public void run(String arg) {
-         ImagePlus imp = IJ.getImage();
-         ImageStatistics stats = imp.getStatistics();
+         imp = IJ.getImage();
+         stats = imp.getStatistics();
          IJ.log("Area: "+stats.area);
          IJ.log("Mean: "+stats.mean);
          IJ.log("Max: "+stats.max);
-      }
-   }
+         IJ.log("Median: "+stats.median);
 		</pre>
 		@see ij.process.ImageStatistics
 		@see ij.process.ImageStatistics#getStatistics
 		*/
 	public ImageStatistics getStatistics() {
-		return getStatistics(AREA+MEAN+MODE+MIN_MAX);
+		return getStatistics(ALL_STATS);
 	}
 	
+	/** Returns an ImageStatistics object generated using all 
+		measurement options and ignoring calibration. */
+	public ImageStatistics getRawStatistics() {
+		setupProcessor();
+		if (roi!=null && roi.isArea())
+			ip.setRoi(roi);
+		else
+			ip.resetRoi();
+		return ImageStatistics.getStatistics(ip);
+	}
+
 	/** Returns an ImageStatistics object generated using the
-		specified measurement options. This plugin demonstrates how
-		get the area and centroid of the current selection:
-		<pre>
-   public class Get_Statistics implements PlugIn, Measurements {
-      public void run(String arg) {
-         ImagePlus imp = IJ.getImage();
-         ImageStatistics stats = imp.getStatistics(MEDIAN+CENTROID);
-         IJ.log("Median: "+stats.median);
-         IJ.log("xCentroid: "+stats.xCentroid);
-         IJ.log("yCentroid: "+stats.yCentroid);
-      }
-   }
-		</pre>
+		specified measurement options.
 		@see ij.process.ImageStatistics
 		@see ij.measure.Measurements
 	*/

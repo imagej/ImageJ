@@ -4945,11 +4945,7 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getParens();
 		props.clear();
 		ImagePlus imp = getImage();
-		int measurements = AREA+MEAN+STD_DEV+MODE+MIN_MAX+
-			CENTROID+CENTER_OF_MASS+PERIMETER+RECT+
-			ELLIPSE+SHAPE_DESCRIPTORS+FERET+INTEGRATED_DENSITY+
-			MEDIAN+SKEWNESS+KURTOSIS+AREA_FRACTION;
-		ImageStatistics stats = imp.getStatistics(measurements);
+		ImageStatistics stats = imp.getStatistics();
 		ResultsTable rt = new ResultsTable();
 		Analyzer analyzer = new Analyzer(imp, measurements, rt);
 		analyzer.saveResults(stats, imp.getRoi());

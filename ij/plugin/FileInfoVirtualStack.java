@@ -102,7 +102,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		}
 		nImages = info.length;
 		FileOpener fo = new FileOpener(info[0] );
-		ImagePlus imp = fo.open(false);
+		ImagePlus imp = fo.openImage();
 		if (nImages==1 && fi.fileType==FileInfo.RGB48)
 			return imp;
 		Properties props = fo.decodeDescriptionString(fi);
@@ -177,11 +177,11 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		if (IJ.debugMode) {
 			long t0 = System.currentTimeMillis();
 			FileOpener fo = new FileOpener(info[n-1]);
-			imp = fo.open(false);
+			imp = fo.openImage();
 			IJ.log("FileInfoVirtualStack: "+n+", offset="+info[n-1].getOffset()+", "+(System.currentTimeMillis()-t0)+"ms");
 		} else {
 			FileOpener fo = new FileOpener(info[n-1]);
-			imp = fo.open(false);
+			imp = fo.openImage();
 		}
 		if (imp!=null)
 			return imp.getProcessor();

@@ -64,6 +64,10 @@ public class ImageStatistics implements Measurements {
 	EllipseFitter ef;
 
 	
+	public static ImageStatistics getStatistics(ImageProcessor ip) {
+		return getStatistics(ip, ALL_STATS, null);
+	}
+
 	public static ImageStatistics getStatistics(ImageProcessor ip, int mOptions, Calibration cal) {
 		Object pixels = ip.getPixels();
 		if (pixels instanceof byte[])

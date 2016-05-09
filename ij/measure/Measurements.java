@@ -11,5 +11,11 @@ public interface Measurements {
 		
 	/** Maximum number of calibration standard (20) */
 	public static final int MAX_STANDARDS = 20;
-
+	
+	/** All measurement options */
+	public static final int ALL_STATS = AREA+MEAN+STD_DEV+MODE+MIN_MAX+
+		CENTROID+CENTER_OF_MASS+PERIMETER+RECT+
+		ELLIPSE+SHAPE_DESCRIPTORS+FERET+INTEGRATED_DENSITY+
+		MEDIAN+SKEWNESS+KURTOSIS+AREA_FRACTION;
+		
 }

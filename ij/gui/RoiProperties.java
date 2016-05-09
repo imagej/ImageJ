@@ -200,6 +200,7 @@ public class RoiProperties {
 						imp.setHideOverlay(true);
 				} else {
 					overlay.drawLabels(labels);
+					Analyzer.drawLabels(labels);
 					overlay.drawBackgrounds(true);
 					if (imp.getHideOverlay())
 						imp.setHideOverlay(false);
