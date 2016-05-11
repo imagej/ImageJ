@@ -579,8 +579,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		ImageProcessor mask = roi2.getMask();
 		Rectangle bounds = roi2.getBounds();
 		FloatPolygon points = new FloatPolygon();
-		for (int y=0; y<mask.getHeight(); y++) {
-			for (int x=0; x<mask.getWidth(); x++) {
+		for (int y=0; y<bounds.height; y++) {
+			for (int x=0; x<bounds.width; x++) {
 				if (mask==null || mask.getPixel(x,y)!=0)
 					points.addPoint((float)(bounds.x+x),(float)(bounds.y+y));
 			}

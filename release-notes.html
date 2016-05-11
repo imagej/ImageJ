@@ -5,17 +5,27 @@
 </head>
 <body>
 
-<li> <u>1.51b 9 May 2016</u>
+<li> <u>1.51b 11 May 2016</u>
 <ul>
 <li> Thanks to Ralph Albuquerque, the "Add to overlay" option  
 in <i>Analyze&gt;Set Measurements</i> now causes the
 overlay elements to be labeled by default.
 <li> Thanks to Curtis Rueden, replaced the Command Finder tooltips, which
 could cause an exception, with a "Help" button.
+<li> Added the ImagePlus.getRawStatistics(), ImageStatistics.getStatistics(ip)
+and ImageProcessor.getHistogram(nbins) methods.
 <li> Thanks to Jerome Mutterer, fixed a bug that caused Roi change listeners
 to not be notified when a line's width was adjusted and a bug that caused
 <i>Analyze&gt;Measure</i> to report incorrect values for 'min' and 'max'
 when "Limit to threshold" was enabled and 'area' was zero.
+<li> Fixed a bug that made it impossible to unset "Show labels"
+in the <i>Image&gt;Overlay&gt;Labels</i> dialog box
+if "Use names as labels" was enabled.
+<li> Thanks to Jerome Mutterer, fixed a bug that caused 
+the Roi.getContainedPoints() macro function and
+Roi.getContainedFloatPoints() method to throw
+an exception with rectangular selections.
+
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
