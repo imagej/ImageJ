@@ -104,14 +104,16 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 				stack2.addSlice(label, ip2);
 			if (overlay!=null) {
 				Roi roi = overlay.get(i-1);
-				Rectangle bounds = roi.getBounds();
-				if (roi instanceof ImageRoi && bounds.x==0 && bounds.y==0) {
-					ImageRoi iroi = (ImageRoi)roi;
-					ImageProcessor processor = iroi.getProcessor();
-					processor.setInterpolationMethod(method);
-					processor =processor.resize(newWidth, newHeight, averageWhenDownsizing);
-					iroi.setProcessor(processor);
-					overlay2.add(iroi);
+				if (roi!=null) {
+					Rectangle bounds = roi.getBounds();
+					if (roi instanceof ImageRoi && bounds.x==0 && bounds.y==0) {
+						ImageRoi iroi = (ImageRoi)roi;
+						ImageProcessor processor = iroi.getProcessor();
+						processor.setInterpolationMethod(method);
+						processor =processor.resize(newWidth, newHeight, averageWhenDownsizing);
+						iroi.setProcessor(processor);
+						overlay2.add(iroi);
+					}
 				}
 			}
 			IJ.showProgress(i, nSlices);
