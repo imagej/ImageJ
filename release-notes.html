@@ -5,10 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.51b 11 May 2016</u>
+<li> <u>1.51b 19 May 2016</u>
 <ul>
 <li> Thanks to Ralph Albuquerque, the "Add to overlay" option  
-in <i>Analyze&gt;Set Measurements</i> now causes the
+in <i>Analyze&gt;Set M9easurements</i> now causes the
 overlay elements to be labeled by default.
 <li> Thanks to Curtis Rueden, replaced the Command Finder tooltips, which
 could cause an exception, with a "Help" button.
@@ -25,6 +25,13 @@ if "Use names as labels" was enabled.
 the Roi.getContainedPoints() macro function and
 Roi.getContainedFloatPoints() method to throw
 exceptions with rectangular selections.
+<li> Thanks to Ezemiron, fixed a bug that caused the
+<i>Image&gt;Scale</i> command to throw an exception
+when processing a stack with an overlay.
+<li> Thanks to Curtis Rueden, fixed bugs that caused
+<i>Image&gt;Overlay&gt;Add Image</i> to not set
+the stack position and <i>Image&gt;Scale</i> to
+not correctly scale ImageRois in overlays.
 
 </ul>
 

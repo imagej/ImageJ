@@ -84,12 +84,6 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		int method = interpolationMethod;
 		if (w==1 || h==1)
 			method = ImageProcessor.NONE;
-		Overlay overlay = imp.getOverlay();
-		if (imp.getHideOverlay())
-			overlay = null;
-		if (overlay!=null)
-			overlay = overlay.duplicate();
-		Overlay overlay2 = new Overlay();
 		for (int i=1; i<=nSlices; i++) {
 			IJ.showStatus("Scale: " + i + "/" + nSlices);
 			ip1 = stack1.getProcessor(i);
@@ -102,20 +96,6 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			ip2 = ip1.resize(newWidth, newHeight, averageWhenDownsizing);
 			if (ip2!=null)
 				stack2.addSlice(label, ip2);
-			if (overlay!=null) {
-				Roi roi = overlay.get(i-1);
-				if (roi!=null) {
-					Rectangle bounds = roi.getBounds();
-					if (roi instanceof ImageRoi && bounds.x==0 && bounds.y==0) {
-						ImageRoi iroi = (ImageRoi)roi;
-						ImageProcessor processor = iroi.getProcessor();
-						processor.setInterpolationMethod(method);
-						processor =processor.resize(newWidth, newHeight, averageWhenDownsizing);
-						iroi.setProcessor(processor);
-						overlay2.add(iroi);
-					}
-				}
-			}
 			IJ.showProgress(i, nSlices);
 		}
 		imp2.setStack(title, stack2);
@@ -124,8 +104,27 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			cal.pixelWidth *= 1.0/xscale;
 			cal.pixelHeight *= 1.0/yscale;
 		}
-		if (overlay2.size()>0)
-			imp2.setOverlay(overlay2);
+		Overlay overlay = imp.getOverlay();
+		if (imp.getHideOverlay())
+			overlay = null;
+		if (overlay!=null) {
+			overlay = overlay.duplicate();
+			Overlay overlay2 = new Overlay();
+			for (int i=0; i<overlay.size(); i++) {
+				Roi roi = overlay.get(i);
+				Rectangle bounds = roi.getBounds();
+				if (roi instanceof ImageRoi && bounds.x==0 && bounds.y==0) {
+					ImageRoi iroi = (ImageRoi)roi;
+					ImageProcessor processor = iroi.getProcessor();
+					processor.setInterpolationMethod(method);
+					processor = processor.resize(newWidth, newHeight, averageWhenDownsizing);
+					iroi.setProcessor(processor);
+					overlay2.add(iroi);
+				}
+			}
+			if (overlay2.size()>0)
+				imp2.setOverlay(overlay2);
+		}
 		IJ.showProgress(1.0);
 		int[] dim = imp.getDimensions();
 		imp2.setDimensions(dim[2], dim[3], dim[4]);
