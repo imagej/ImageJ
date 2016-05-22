@@ -79,6 +79,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     private String helpURL;
     private String yesLabel, noLabel;
     private boolean smartRecording;
+    private Vector imagePanels;
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
     	image window as the parent frame or the ImageJ frame if no image windows
@@ -684,7 +685,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     
 	/** Adds an image to the dialog. */
     public void addImage(ImagePlus image) {
-    	addPanel(new ImagePanel(image));
+    	ImagePanel imagePanel = new ImagePanel(image);
+    	addPanel(imagePanel);
+    	if (imagePanels==null)
+    		imagePanels = new Vector();
+    	imagePanels.add(imagePanel);
     }
 
     
@@ -1410,6 +1415,14 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
         if (workaroundOSXbug)
         	repaint(); // OSX 10.4 bug delays update of enabled until the next input
     }
+
+	public void repaint() {
+		super.repaint();
+		if (imagePanels!=null) {
+			for (int i=0; i<imagePanels.size(); i++)
+				((ImagePanel)imagePanels.get(i)).repaint();
+		}
+	}
 
 	public void paint(Graphics g) {
 		super.paint(g);

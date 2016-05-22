@@ -25,7 +25,7 @@ public class GelAnalyzer implements PlugIn {
 	static int[] x = new int[MAX_LANES+1];
 	static PlotsCanvas plotsCanvas;
 	static ImageProcessor ipLanes;
-	static ImagePlus  gel;
+	static ImagePlus gel;
 	static int plotHeight;
 	static int options = (int)Prefs.get(OPTIONS, PERCENT+INVERT);
 	static boolean uncalibratedOD = (options&OD)!=0;
@@ -243,7 +243,8 @@ public class GelAnalyzer implements PlugIn {
 	}
 	
 	void updateRoiList(Rectangle rect) {
-			if (gel==null) return;
+			if (gel==null)
+				return;
 			if (overlay==null) {
 				overlay = new Overlay();
 				overlay.drawLabels(true);
@@ -465,6 +466,10 @@ public class GelAnalyzer implements PlugIn {
 		IJ.showMessage("Gel Analyzer", msg);
 	}
 
+	public static ImagePlus getGelImage() {
+		return gel;
+	}
+
 }
 
 
@@ -642,6 +647,6 @@ class PlotsCanvas extends ImageCanvas {
 					 +IJ.d2s(((m-a)/m)*100, 4));
 		}
 	}
-
+	
 }
 

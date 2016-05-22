@@ -5,13 +5,19 @@
 </head>
 <body>
 
-<li> <u>1.51b 19 May 2016</u>
+<li> <u>1.51b 21 May 2016</u>
 <ul>
 <li> Thanks to Ralph Albuquerque, the "Add to overlay" option  
-in <i>Analyze&gt;Set M9easurements</i> now causes the
+in <i>Analyze&gt;Set Measurements</i> now causes the
 overlay elements to be labeled by default.
 <li> Thanks to Curtis Rueden, replaced the Command Finder tooltips, which
 could cause an exception, with a "Help" button.
+<li> Thanks to Alex Doe, the GenericDialog.repaint() method now
+repaints images that have been added to the dialog
+(<a href="macros/js/DialogImageDemo.js">example</a>).
+<li> Thanks to Joe Pickard, the backspace (delete) key is ignored in 
+the Gel Analyzer to prevent inadvertent erasure of the contents of
+the selection rectangle.
 <li> Added the ImagePlus.getRawStatistics(), ImageStatistics.getStatistics(ip)
 and ImageProcessor.getHistogram(nbins) methods.
 <li> Thanks to Jerome Mutterer, fixed a bug that caused Roi change listeners
