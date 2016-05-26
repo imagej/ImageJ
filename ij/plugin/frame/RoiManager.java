@@ -507,7 +507,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	boolean delete(boolean replacing) {
 		int count = getCount();
 		if (count==0)
-			return error("The list is empty.");
+			return error("The ROI Manager is empty.");
 		int index[] = getSelectedIndexes();
 		if (index.length==0 || (replacing&&count>1)) {
 			String msg = "Delete all items on the list?";

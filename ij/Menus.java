@@ -293,6 +293,7 @@ public class Menus {
 		addExample(submenu, "Overlay", "Overlay.js");
 		addExample(submenu, "Stack Overlay", "Stack_Overlay.js");
 		addExample(submenu, "Dual Progress Bars", "Dual_Progress_Bars.js");
+		addExample(submenu, "Gamma Adjuster", "Gamma_Adjuster.js");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("BeanShell");
@@ -316,6 +317,7 @@ public class Menus {
 		addExample(submenu, "Plugin Filter", "Filter_Plugin.java");
 		addExample(submenu, "Plugin Frame", "Plugin_Frame.java");
 		addExample(submenu, "Plugin Tool", "Prototype_Tool.java");
+		addExample(submenu, "Gamma Adjuster", "Gamma_Adjuster.java");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		menu.addSeparator();
