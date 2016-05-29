@@ -1266,6 +1266,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     	super.setLocation(x, y);
     	centerDialog = false;
     }
+    
+    public void setDefaultString(int index, String str) {
+    	if (defaultStrings!=null && index>=0 && index<defaultStrings.size())
+    		defaultStrings.set(index, str);
+    }
 
     protected void setup() {
 	}

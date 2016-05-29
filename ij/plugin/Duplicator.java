@@ -18,28 +18,35 @@ import ij.measure.Calibration;
    img2.show();
 </pre>
 */
-public class Duplicator implements PlugIn, TextListener {
+public class Duplicator implements PlugIn, TextListener, ItemListener {
 	private static boolean duplicateStack;
 	private boolean duplicateSubstack;
 	private int first, last;
 	private Checkbox checkbox;
-	private TextField rangeField;
+	private TextField titleField, rangeField;
 	private TextField[] rangeFields;
 	private int firstC, lastC, firstZ, lastZ, firstT, lastT;
 	private boolean isCommand;
+	private String defaultTitle;
+	private String sliceLabel;
+	private ImagePlus imp;
+	private boolean legacyMacro;
+	private boolean titleChanged;
+	private GenericDialog gd;
 
 	public void run(String arg) {
 		isCommand = true;
-		ImagePlus imp = IJ.getImage();
+		imp = IJ.getImage();
 		int stackSize = imp.getStackSize();
 		String title = imp.getTitle();
 		String newTitle = WindowManager.getUniqueName(title);
+		defaultTitle = newTitle;
 		if (!IJ.altKeyDown()||stackSize>1) {
 			if (imp.isHyperStack() || imp.isComposite()) {
 				duplicateHyperstack(imp, newTitle);
 				return;
 			} else
-				newTitle = showDialog(imp, "Duplicate...", "Title: ", newTitle);
+				newTitle = showDialog(imp, "Duplicate...", "Title: ");
 		}
 		if (newTitle==null)
 			return;
@@ -237,22 +244,33 @@ public class Duplicator implements PlugIn, TextListener {
 		return imp2;
 	}
 
-	String showDialog(ImagePlus imp, String title, String prompt, String defaultString) {
+	String showDialog(ImagePlus imp, String dialogTitle, String prompt) {
 		int stackSize = imp.getStackSize();
 		duplicateSubstack = stackSize>1 && (stackSize==imp.getNSlices()||stackSize==imp.getNFrames());
-		GenericDialog gd = new GenericDialog(title);
-		gd.addStringField(prompt, defaultString, duplicateSubstack?15:20);
+		String options = Macro.getOptions();
+		boolean isMacro = options!=null;
+		boolean duplicate = stackSize>1 && (duplicateStack||imp.isComposite()) && options!=null;
+		legacyMacro = options!=null && (options.contains("duplicate")||!options.contains("use"));
+		String title = getTitle();
+		if (title==null) title=defaultTitle;
+		GenericDialog gd = new GenericDialog(dialogTitle);
+		this.gd = gd;
+		gd.addStringField(prompt, title, duplicateSubstack?15:20);
 		if (stackSize>1) {
-			boolean duplicate = duplicateStack && !IJ.isMacro();
 			String msg = duplicateSubstack?"Duplicate stack":"Duplicate entire stack";
-			gd.addCheckbox(msg, duplicate||imp.isComposite());
+			gd.addCheckbox(msg, duplicate);
 			if (duplicateSubstack) {
 				gd.setInsets(2, 30, 3);
 				gd.addStringField("Range:", "1-"+stackSize);
-				Vector v = gd.getStringFields();
-				rangeField = (TextField)v.elementAt(1);
-				rangeField.addTextListener(this);
-				checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
+				if (!isMacro) {
+					checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
+					checkbox.addItemListener(this);
+					Vector v = gd.getStringFields();
+					titleField = (TextField)v.elementAt(0);
+					rangeField = (TextField)v.elementAt(1);
+					titleField.addTextListener(this);
+					rangeField.addTextListener(this);
+				}
 			}
 		} else
 			duplicateStack = false;
@@ -275,6 +293,25 @@ public class Duplicator implements PlugIn, TextListener {
 			} else {
 				first = 1;
 				last = stackSize;
+			}
+		}
+		if (Recorder.record && titleField!=null && titleField.getText().equals(sliceLabel))
+			Recorder.recordOption("use");
+		return title;
+	}
+	
+	private String getTitle() {
+		if (titleChanged)
+			return null;
+		String title = defaultTitle;
+		if (imp.getStackSize()>1 && !legacyMacro && (checkbox==null||!checkbox.getState())) {
+			ImageStack stack = imp.getStack();
+			String label = stack.getShortSliceLabel(imp.getCurrentSlice());
+			if (label!=null && label.length()==0)
+				label = null;
+			if (label!=null) {
+				title = label;
+				sliceLabel = label;
 			}
 		}
 		return title;
@@ -416,7 +453,22 @@ public class Duplicator implements PlugIn, TextListener {
 	}
 
 	public void textValueChanged(TextEvent e) {
-		checkbox.setState(true);
+		if (IJ.debugMode) IJ.log("Duplicator.textValueChanged: "+e);
+		if (e.getSource()==titleField && !titleField.getText().equals(getTitle()))
+			titleChanged = true;
+		else if (e.getSource()==rangeField)
+			checkbox.setState(true);
 	}
+	
+	public void itemStateChanged(ItemEvent e) {
+		if (titleField!=null) {
+			String title = getTitle();
+			if (title!=null && !title.equals(titleField.getText())) {
+				titleField.setText(title);
+				if (gd!=null) gd.setDefaultString(0, title);
+			}
+		}
+	}
+
 	
 }
