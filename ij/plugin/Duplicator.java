@@ -20,6 +20,7 @@ import ij.measure.Calibration;
 */
 public class Duplicator implements PlugIn, TextListener, ItemListener {
 	private static boolean duplicateStack;
+	private boolean duplicateStack2;
 	private boolean duplicateSubstack;
 	private int first, last;
 	private Checkbox checkbox;
@@ -72,7 +73,6 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		imp2.show();
 		if (stackSize>1 && imp2.getStackSize()==stackSize)
 			imp2.setSlice(imp.getCurrentSlice());
-
 	}
                 
 	/** Returns a copy of the image, stack or hyperstack contained in the specified ImagePlus. */
@@ -249,16 +249,16 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		duplicateSubstack = stackSize>1 && (stackSize==imp.getNSlices()||stackSize==imp.getNFrames());
 		String options = Macro.getOptions();
 		boolean isMacro = options!=null;
-		boolean duplicate = stackSize>1 && (duplicateStack||imp.isComposite()) && options!=null;
+		duplicateStack2 = stackSize>1 && duplicateStack && !isMacro;
 		legacyMacro = options!=null && (options.contains("duplicate")||!options.contains("use"));
-		String title = getTitle();
+		String title = getNewTitle();
 		if (title==null) title=defaultTitle;
 		GenericDialog gd = new GenericDialog(dialogTitle);
 		this.gd = gd;
 		gd.addStringField(prompt, title, duplicateSubstack?15:20);
 		if (stackSize>1) {
 			String msg = duplicateSubstack?"Duplicate stack":"Duplicate entire stack";
-			gd.addCheckbox(msg, duplicate);
+			gd.addCheckbox(msg, duplicateStack2);
 			if (duplicateSubstack) {
 				gd.setInsets(2, 30, 3);
 				gd.addStringField("Range:", "1-"+stackSize);
@@ -280,8 +280,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			return null;
 		title = gd.getNextString();
 		if (stackSize>1) {
-			duplicateStack = gd.getNextBoolean();
-			if (duplicateStack && duplicateSubstack) {
+			duplicateStack2 = gd.getNextBoolean();
+			if (duplicateStack2 && duplicateSubstack) {
 				String[] range = Tools.split(gd.getNextString(), " -");
 				double d1 = gd.parseDouble(range[0]);
 				double d2 = range.length==2?gd.parseDouble(range[1]):Double.NaN;
@@ -295,16 +295,18 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 				last = stackSize;
 			}
 		}
+		if (!isMacro)
+			duplicateStack = duplicateStack2;
 		if (Recorder.record && titleField!=null && titleField.getText().equals(sliceLabel))
 			Recorder.recordOption("use");
 		return title;
 	}
 	
-	private String getTitle() {
+	private String getNewTitle() {
 		if (titleChanged)
 			return null;
 		String title = defaultTitle;
-		if (imp.getStackSize()>1 && !legacyMacro && (checkbox==null||!checkbox.getState())) {
+		if (imp.getStackSize()>1 && !duplicateStack2 && !legacyMacro && (checkbox==null||!checkbox.getState())) {
 			ImageStack stack = imp.getStack();
 			String label = stack.getShortSliceLabel(imp.getCurrentSlice());
 			if (label!=null && label.length()==0)
@@ -323,6 +325,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			return;
 		ImagePlus imp2 = null;
 		Roi roi = imp.getRoi();
+		duplicateStack2 = duplicateStack;
 		if (!duplicateStack) {
 			int nChannels = imp.getNChannels();
 			boolean singleComposite = imp.isComposite() && nChannels==imp.getStackSize();
@@ -454,15 +457,16 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 
 	public void textValueChanged(TextEvent e) {
 		if (IJ.debugMode) IJ.log("Duplicator.textValueChanged: "+e);
-		if (e.getSource()==titleField && !titleField.getText().equals(getTitle()))
+		if (e.getSource()==titleField && !titleField.getText().equals(getNewTitle()))
 			titleChanged = true;
 		else if (e.getSource()==rangeField)
 			checkbox.setState(true);
 	}
 	
 	public void itemStateChanged(ItemEvent e) {
+		duplicateStack2 = checkbox.getState();
 		if (titleField!=null) {
-			String title = getTitle();
+			String title = getNewTitle();
 			if (title!=null && !title.equals(titleField.getText())) {
 				titleField.setText(title);
 				if (gd!=null) gd.setDefaultString(0, title);

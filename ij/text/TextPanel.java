@@ -745,7 +745,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 
 	/** Deletes all the lines. */
-	public void clear() {
+	public synchronized void clear() {
 		if (vData==null) return;
 		vData.removeAllElements();
 		iRowCount = 0;

@@ -123,7 +123,7 @@ class TextCanvas extends Canvas {
 		gImage.drawLine(0,0,iWidth,0);
 	}
 	
-	char[] getChars(int column, int row) {
+	synchronized char[] getChars(int column, int row) {
 		if (tp==null || tp.vData==null)
 			return null;
 		if (row>=tp.vData.size())
@@ -132,13 +132,8 @@ class TextCanvas extends Canvas {
 		if (chars.length==0)
 			return null;
 		
-		if (tp.iColCount==1) {
-	    	//for (int i=0; i<chars.length; i++) {
-	    	//	if (chars[i]<' ')
-	    	//		chars[i] = ' ';
-	    	//}
+		if (tp.iColCount==1)
 	    	return chars;
-	    }
 	    
 	    int start = 0;
 	    int tabs = 0;
