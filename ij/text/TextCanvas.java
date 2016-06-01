@@ -32,16 +32,16 @@ class TextCanvas extends Canvas {
 	}
   
 	public void paint(Graphics g) {
-		if(tp==null || g==null) return;
+		if (tp==null || g==null) return;
 		Dimension d = getSize();
 		int iWidth = d.width;
 		int iHeight = d.height;
 		
-		if(iWidth<=0 || iHeight<=0) return;
+		if (iWidth<=0 || iHeight<=0) return;
 		g.setColor(Color.lightGray);
-		if(iImage==null)
+		if (iImage==null)
 			makeImage(iWidth,iHeight);
-		if(tp.iRowHeight==0 || (tp.iColWidth[0]==0&&tp.iRowCount>0)) {
+		if (tp.iRowHeight==0 || (tp.iColWidth[0]==0&&tp.iRowCount>0)) {
 			tp.iRowHeight=fMetrics.getHeight()+2;
 			for(int i=0;i<tp.iColCount;i++)
 				calcAutoWidth(i);
@@ -54,15 +54,15 @@ class TextCanvas extends Canvas {
 			drawColumnLabels(iWidth);
 		int y=tp.iRowHeight+1-tp.iY;
 		int j=0;
-		while(y<tp.iRowHeight+1) {
+		while (y<tp.iRowHeight+1) {
 			j++;
 			y+=tp.iRowHeight;
 		}
 		tp.iFirstRow=j;
 		y=tp.iRowHeight+1;
-		for(;y<iHeight && j<tp.iRowCount;j++,y+=tp.iRowHeight) {
+		for (;y<iHeight && j<tp.iRowCount; j++,y+=tp.iRowHeight) {
 			int x=-tp.iX;
-			for(int i=0;i<tp.iColCount;i++) {
+			for (int i=0;i<tp.iColCount;i++) {
 				int w=tp.iColWidth[i];
 				Color b=Color.white,t=Color.black;
 				if(j>=tp.selStart && j<=tp.selEnd) {
@@ -133,7 +133,7 @@ class TextCanvas extends Canvas {
 			return null;
 		
 		if (tp.iColCount==1)
-	    	return chars;
+			return chars;
 	    
 	    int start = 0;
 	    int tabs = 0;
