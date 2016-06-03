@@ -193,6 +193,8 @@ public class ImageStack {
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
 		stack[n-1] = pixels;
+		if (type==UNKNOWN)
+			setType(pixels);
 	}
 	
 	/** Returns the stack as an array of 1D pixel arrays. Note

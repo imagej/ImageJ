@@ -309,7 +309,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		if (!macroRunning)
 			((Checkbox)checkboxes.elementAt(2)).addItemListener(this);
 		message = (Label)gd.getMessage();
-        gd.addHelp(IJ.URL+"/docs/menus/image.html#reslice");
+		gd.addHelp(IJ.URL+"/docs/menus/image.html#reslice");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
