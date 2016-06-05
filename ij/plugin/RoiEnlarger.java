@@ -64,7 +64,7 @@ public class RoiEnlarger implements PlugIn {
 			return roi;
 		int type = roi.getType();
 		int n = (int)Math.round(pixels);
-		if (type==0 || type==1)
+		if (type==Roi.RECTANGLE || type==Roi.OVAL)
 			return enlargeRectOrOval(roi, n);
 		if (n>255)
 			n = 255;

@@ -793,7 +793,7 @@ public class IJ {
 			return "3.4e38";
 		double np = n;
 		if (n<0.0) np = -n;
-		if (decimalPlaces<0) synchronized (IJ.class) {
+		if (decimalPlaces<0) synchronized(IJ.class) {
 			decimalPlaces = -decimalPlaces;
 			if (decimalPlaces>9) decimalPlaces=9;
 			if (sf==null) {
