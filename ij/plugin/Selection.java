@@ -544,8 +544,8 @@ public class Selection implements PlugIn, Measurements {
 			maskImp.show();
 		}
 		ImageProcessor ip = maskImp.getProcessor();
-		ip.setValue(255);
 		ip.setRoi(roi);
+		ip.setValue(255);
 		ip.fill(ip.getMask());
 		Calibration cal = imp.getCalibration();
 		if (cal.scaled()) {

@@ -1224,6 +1224,7 @@ public abstract class ImageProcessor implements Cloneable {
 			}
 			setRoi(xmin, ymin, lineWidth, lineWidth);
 			fill(dotMask);
+			resetRoi();
 		}
 	}
 	
