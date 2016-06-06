@@ -146,13 +146,17 @@ public class Commands implements PlugIn {
 	// Plugins>Macros>Open Startup Macros command
 	void openStartupMacros() {
 		Applet applet = IJ.getApplet();
-		if (applet!=null) {
+		if (applet!=null)
 			IJ.run("URL...", "url="+IJ.URL+"/applet/StartupMacros.txt");
-		} else {
+		else {
 			String path = IJ.getDirectory("macros")+"StartupMacros.txt";
 			File f = new File(path);
 			if (!f.exists()) {
 				path = IJ.getDirectory("macros")+"StartupMacros.ijm";
+				f = new File(path);
+			}
+			if (!f.exists()) {
+				path = IJ.getDirectory("macros")+"StartupMacros.fiji.ijm";
 				f = new File(path);
 			}
 			if (!f.exists())

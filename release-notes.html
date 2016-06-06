@@ -5,67 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.51b 6 June 2016</u>
+<li> <u>1.51c 6 June 2016</u>
 <ul>
-<li> Thanks to Gabriel Landini, when using <i>Image&gt;Duplicate</i> to
-duplicate a single slice of a stack, the title of the resulting 
-image is derived from the slice label.
-<li> Added the <i>Help&gt;Examples&gt;JavaScript&gt;Gamma Adjuster</i>
-example script, which demonstrates how to interactively update an image 
-that has been added to a GenericDialog.
-<li> Thanks to Ralph Albuquerque, the "Add to overlay" option  
-in <i>Analyze&gt;Set Measurements</i> now causes the
-overlay elements to be labeled by default.
-<li> Thanks to Curtis Rueden, replaced the Command Finder tooltips, which
-could cause an exception, with a "Help" button.
-<li> Thanks to Alex Doe, the GenericDialog.repaint() method now
-repaints images that have been added to the dialog
-(<a href="macros/js/Dialog_Gamma_Adjuster.js">example</a>).
-<li> Thanks to Joe Pickard, the backspace (delete) key is ignored in 
-the Gel Analyzer to prevent inadvertent erasure of the contents of
-the selection rectangle.
-<li> Added the ImagePlus.getRawStatistics(), ImageStatistics.getStatistics(ip)
-and ImageProcessor.getHistogram(nbins) methods.
-<li> Thanks to Jerome Mutterer, fixed a bug that caused Roi change listeners
-to not be notified when a line's width was adjusted and a bug that caused
-<i>Analyze&gt;Measure</i> to report incorrect values for 'min' and 'max'
-when "Limit to threshold" was enabled and 'area' was zero.
-<li> Fixed a bug that made it impossible to unset "Show labels"
-in the <i>Image&gt;Overlay&gt;Labels</i> dialog box
-if "Use names as labels" was enabled.
-<li> Thanks to Jerome Mutterer, fixed a bug that caused 
-the Roi.getContainedPoints() macro function and
-Roi.getContainedFloatPoints() method to throw
-exceptions with rectangular selections.
-<li> Thanks to Ezemiron, fixed a bug that caused the
-<i>Image&gt;Scale</i> command to throw an exception
-when processing a stack with an overlay.
-<li> Thanks to Curtis Rueden, fixed bugs that caused
-<i>Image&gt;Overlay&gt;Add Image</i> to not set
-the stack position and <i>Image&gt;Scale</i> to
-not correctly scale ImageRois in overlays.
-<li> Thanks to Robert Haase, fixed a bug that caused the
-<i>Edit&gt;Selection&gt;Create Selection</i> command to
-throw an exception on Java 8 if there were no thresholded pixels.
-<li> Thanks to Ondrej Sebesta, fixed a bug that caused the
-<i>File&gt;Open Next</i> command to sometimes incorrectly
- preserve the isHyperstack flag.
-<li> Thanks to Ondrej Sebesta, fixed a bug that caused macro
-code recorded by the <i>Plugins&gt;Shortcuts&gt;Add Shortcut</i>
-command to not work as expected if the command name
-contained brackets (e.g., "In [+]").
-<li> Thanks to Arttu Miettinen, fixed a bug that caused garbage results
-when perfprming multiple simultaneous reslice operations.
-<li> Thanks to Elton Rexhepaj, fixed a bug that caused the ChannelSplitter
-to create ImageStacks with non-working getVoxel() methods.
-<li> Thanks to Arttu Miettinen, fixed a bug that could cause
-the IJ.d2s() method to throw an exception.
-<li> Thanks to Wilhelm Burger, fixed a bug that caused the ImageProcessor.drawDot()
-method to not remove the ROI that it sets.
-<li> Thanks to Matthias Kirsch and Curtis Rueden, fixed 1.50d regressions
- that caused the <i>Edit&gt;Selection&gt;Create Selection</i> and
-<i>Edit&gt;Selection&gt;Enlarge</i> commands to not work 
-correctly with multi-point selections.
+<li> Thanks to A Schain, the <i>Plugins&gt;Macros&gt;Startup Macros</i> 
+command opens StartupMacros.fiji.ijm if StartupMacros.txt or
+StartupMacros.ijm are not found.
 
 </ul>
 
