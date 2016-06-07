@@ -134,14 +134,6 @@ public class Macro {
 			else
 				return options.substring(1, index);
 		} else {
-			//if (options.indexOf('=')==-1) {
-			//	options = options.trim();
-			//	IJ.log("getValue: "+key+"  |"+options+"|");
-			//	if (options.length()>0)
-			//		return options;
-			//	else
-			//		return defaultValue;
-			//}
 			index = options.indexOf(" ");
 			if (index<0)
 				return defaultValue;

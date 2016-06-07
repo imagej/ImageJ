@@ -4947,7 +4947,7 @@ public class Functions implements MacroConstants, Measurements {
 		ImagePlus imp = getImage();
 		ImageStatistics stats = imp.getStatistics();
 		ResultsTable rt = new ResultsTable();
-		Analyzer analyzer = new Analyzer(imp, measurements, rt);
+		Analyzer analyzer = new Analyzer(imp, ALL_STATS, rt);
 		analyzer.saveResults(stats, imp.getRoi());
 		for (int i=0; i<=rt.getLastColumn(); i++) {
 			if (rt.columnExists(i)) {
