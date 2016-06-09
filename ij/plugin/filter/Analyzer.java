@@ -489,7 +489,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			if (imp2!=null) {
 				Calibration cal = imp.getCalibration();
 				stats.xCentroid = cal.getX(stats.xCentroid);
-				stats.yCentroid = cal.getY(stats.yCentroid);
+				stats.yCentroid = cal.getY(stats.yCentroid, imp2.getHeight());
 			}
 		}
 		saveResults(stats, roi);
@@ -576,7 +576,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 				Calibration cal = imp!=null?imp.getCalibration():null;
 				if (cal!=null) {
 					rx = cal.getX(rx);
-					ry = cal.getY(ry);
+					ry = cal.getY(ry, imp.getHeight());
 					rw *= cal.pixelWidth;
 					rh *= cal.pixelHeight;
 				}
