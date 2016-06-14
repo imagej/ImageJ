@@ -2472,8 +2472,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			imp2.deleteRoi();
 		ic2.setOverlay(overlay2);
 		ImageCanvas ic = getCanvas();
-		if (ic!=null)
+		if (ic!=null) {
 			ic2.setShowAllList(ic.getShowAllList());
+			ic2.setFlattenScale(1.0/ic.getMagnification());
+		}
 		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = (Graphics2D)bi.getGraphics();
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,

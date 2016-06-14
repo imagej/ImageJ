@@ -243,16 +243,14 @@ public class OverlayCommands implements PlugIn {
 
 	void flatten() {
 		ImagePlus imp = IJ.getImage();
-		if (imp.getStackSize()>1 || imp.getBitDepth()==24) {
-			Overlay overlay = imp.getOverlay();
-			Overlay roiManagerOverlay = null;
-			ImageCanvas ic = imp.getCanvas();
-			if (ic!=null)
-				roiManagerOverlay = ic.getShowAllList();
-			if (overlay==null && roiManagerOverlay==null && !imp.isComposite() && !(IJ.macroRunning()&&imp.getStackSize()==1)) {
-				IJ.error("Flatten", "Overlay or multi-channel image required");
-				return;
-			}
+		Overlay overlay = imp.getOverlay();
+		Overlay roiManagerOverlay = null;
+		ImageCanvas ic = imp.getCanvas();
+		if (ic!=null)
+			roiManagerOverlay = ic.getShowAllList();
+		if (overlay==null && imp.getRoi()==null && roiManagerOverlay==null && !imp.isComposite() && !IJ.macroRunning()) {
+			IJ.error("Flatten", "Overlay, selection or multi-channel image required");
+			return;
 		}
 		int flags = IJ.setupDialog(imp, 0);
 		if (flags==PlugInFilter.DONE)
@@ -261,6 +259,10 @@ public class OverlayCommands implements PlugIn {
 			//Added by Marcel Boeglin 2014.01.24
 			if (!IJ.isJava16()) {
 				IJ.error("Flatten Stack", "Java 1.6 required to flatten a stack");
+				return;
+			}
+			if (overlay==null && roiManagerOverlay==null && !imp.isComposite()) {
+				IJ.error("Flatten", "Overlay or multi-channel image required");
 				return;
 			}
 			flattenStack(imp);

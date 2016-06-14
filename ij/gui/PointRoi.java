@@ -43,6 +43,7 @@ public class PointRoi extends PolygonRoi {
 	private int[] counts = new int[MAX_COUNTERS];
 	private ResultsTable rt;
 	private long lastPointTime;
+	private double scale;
 	
 	static {
 		setDefaultType((int)Prefs.get(TYPE_KEY, HYBRID));
@@ -91,6 +92,7 @@ public class PointRoi extends PolygonRoi {
 	/** Creates a new PointRoi using the specified screen coordinates. */
 	public PointRoi(int sx, int sy, ImagePlus imp) {
 		super(makeXArray(sx, imp), makeYArray(sy, imp), 1, POINT);
+		defaultCounter = 0;
 		setImage(imp);
 		width=1; height=1;
 		type = defaultType;
@@ -144,11 +146,16 @@ public class PointRoi extends PolygonRoi {
 	/** Draws the points on the image. */
 	public void draw(Graphics g) {
 		updatePolygon();
-		if (ic!=null) mag = ic.getMagnification();
+		scale = ic!=null?ic.getFlattenScale():1.0;
+		if (type!=CIRCLE) scale=1.0;
 		if (showLabels && nPoints>1) {
 			fontSize = 8;
 			fontSize += convertSizeToIndex(size);
-			if (fontSize>18) fontSize = 18;
+			if (fontSize>18)
+				fontSize = 18;
+			double scale2 = 0.7*scale;
+			if (scale2<1.0) scale2=1.0;
+			fontSize = (int)Math.round(fontSize*scale2);
 			font = new Font("SansSerif", Font.PLAIN, fontSize);
 			g.setFont(font);
 			if (fontSize>9)
@@ -179,7 +186,7 @@ public class PointRoi extends PolygonRoi {
 			else
 				color = Color.cyan;
 		}
-		if (nCounters>1 && counters!=null)
+		if (nCounters>1 && counters!=null && n<=counters.length)
 			color = getColor(counters[n-1]);
 		if (type==HYBRID || type==CROSSHAIR) {
 			if (type==HYBRID)
@@ -212,10 +219,13 @@ public class PointRoi extends PolygonRoi {
 				g.fillRect(x-size2, y-size2, size, size);
 		}
 		if (showLabels && nPoints>1) {
+			int offset = (int)Math.round(0.4*size*scale);
+			if (offset<1) offset=1;
+			offset++;
 			if (nCounters==1) {
 				if (!colorSet)
 					g.setColor(color);
-				g.drawString(""+n, x+4, y+fontSize+2);
+				g.drawString(""+n, x+offset, y+offset+fontSize);
 			} else if (counters!=null) {
 				g.setColor(getColor(counters[n-1]));
 				g.drawString(""+counters[n-1], x+4, y+fontSize+2);
@@ -231,12 +241,13 @@ public class PointRoi extends PolygonRoi {
 				g.drawOval(x-(size2+1), y-(size2+1), size+1, size+1);
 		}
 		if (type==CIRCLE) {
-			int csize = size + 2;
-			int csize2 = csize/2;
+			int scaledSize = (int)Math.round((size+1)*scale);
 			g.setColor(color);
-			if (size>LARGE)
+			if (scale!=1.0)
+				g2d.setStroke(new BasicStroke((float)scale*(size>LARGE?2:1)));
+			else if (size>LARGE)
 				g2d.setStroke(twoPixelsWide);
-			g.drawOval(x-(csize2+1), y-(csize2+1), csize+1, csize+1);
+			g.drawOval(x-scaledSize/2, y-scaledSize/2, scaledSize, scaledSize);
 		}
 	}
 	
