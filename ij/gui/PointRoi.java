@@ -146,8 +146,9 @@ public class PointRoi extends PolygonRoi {
 	/** Draws the points on the image. */
 	public void draw(Graphics g) {
 		updatePolygon();
-		scale = ic!=null?ic.getFlattenScale():1.0;
-		if (type!=CIRCLE) scale=1.0;
+		//scale = ic!=null?ic.getMagnification():1.0;
+		//if (type!=CIRCLE) scale=1.0;
+		scale = 1.0;
 		if (showLabels && nPoints>1) {
 			fontSize = 8;
 			fontSize += convertSizeToIndex(size);
@@ -228,7 +229,7 @@ public class PointRoi extends PolygonRoi {
 				g.drawString(""+n, x+offset, y+offset+fontSize);
 			} else if (counters!=null) {
 				g.setColor(getColor(counters[n-1]));
-				g.drawString(""+counters[n-1], x+4, y+fontSize+2);
+				g.drawString(""+counters[n-1], x+offset, y+offset+fontSize);
 			}
 		}
 		if ((size>TINY||type==DOT) && (type==HYBRID||type==DOT)) {

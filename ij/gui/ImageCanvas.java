@@ -1637,14 +1637,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return scaleToFit;
 	}
 	
-	public void setFlattenScale(double flattenScale) {
-		this.flattenScale = flattenScale;
-	}
-
-	public double getFlattenScale() {
-		return flattenScale;
-	}
-
 	public boolean hideZoomIndicator(boolean hide) {
 		boolean hidden = this.hideZoomIndicator;
 		if (!(srcRect.width<imageWidth||srcRect.height<imageHeight))
