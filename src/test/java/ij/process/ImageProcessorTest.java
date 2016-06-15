@@ -1319,7 +1319,7 @@ public class ImageProcessorTest
 		p.addPoint(0, 0); p.addPoint(width, 0); p.addPoint(0, height);
 
 		testColorProcessor.drawDot(width/2, height/2);
-		testImageStats( testColorProcessor, "stats[count=1, mean=0.0, min=0.0, max=0.0] NaN NaN 160.5 100.5");
+		testImageStats( testColorProcessor, "stats[count=64000, mean=71.651484375, min=0.0, max=248.0] 148.83226908320938 72.21829875763213 160.0 100.0");
 	}
 
 	/* Removed 7-21-10

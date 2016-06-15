@@ -827,16 +827,6 @@ public class ImagePlusTest {
 	}
 
 	@Test
-	public void testGetStatistics() {
-		ImageStatistics expected,actual;
-		proc = new ByteProcessor(1,3,new byte[] {1,2,3},new IndexColorModel(8,1,new byte[]{1},new byte[]{2},new byte[]{3}));
-		ip = new ImagePlus("HilarityEnsues",proc);
-		expected = ip.getStatistics(Measurements.AREA + Measurements.MEAN + Measurements.MODE + Measurements.MIN_MAX);
-		actual = ip.getStatistics();
-		assertTrue(imageStatsEquals(expected,actual));
-	}
-
-	@Test
 	public void testGetStatisticsInt() {
 		ImageStatistics expected,actual;
 
