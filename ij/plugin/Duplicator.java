@@ -26,7 +26,6 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 	private TextField titleField, rangeField;
 	private TextField[] rangeFields;
 	private int firstC, lastC, firstZ, lastZ, firstT, lastT;
-	private boolean isCommand;
 	private String defaultTitle;
 	private String sliceLabel;
 	private ImagePlus imp;
@@ -35,7 +34,6 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 	private GenericDialog gd;
 
 	public void run(String arg) {
-		isCommand = true;
 		imp = IJ.getImage();
 		int stackSize = imp.getStackSize();
 		String title = imp.getTitle();
@@ -58,7 +56,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		else if (duplicateStack || imp.getStackSize()==1)
 			imp2 = run(imp);
 		else
-			imp2 = duplicateImage(imp);
+			imp2 = crop(imp);
 		Calibration cal = imp2.getCalibration();
 		if (roi!=null && (cal.xOrigin!=0.0||cal.yOrigin!=0.0)) {
 			cal.xOrigin -= roi.getBounds().x;
@@ -75,12 +73,12 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			imp2.setSlice(imp.getCurrentSlice());
 	}
                 
-	/** Returns a copy of the image, stack or hyperstack contained in the specified ImagePlus. */
+	/** Returns a copy of the image, stack or hyperstack contained in the specified ImagePlus.
+	* @see ij.ImagePlus#duplicate
+	*/
 	public ImagePlus run(ImagePlus imp) {
-   		if (Recorder.record&&isCommand)
-   			Recorder.recordCall("imp = new Duplicator().run(imp);");
 		if (imp.getStackSize()==1)
-			return duplicateImage(imp);
+			return crop(imp);
 		Rectangle rect = null;
 		Roi roi = imp.getRoi();
 		Roi roi2 = cropRoi(imp, roi);
@@ -115,10 +113,15 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && !imp.getHideOverlay())
 			imp2.setOverlay(overlay.crop(rect));
+   		if (Recorder.record)
+   			Recorder.recordCall("imp2 = imp.duplicate();");
 		return imp2;
 	}
 	
-	ImagePlus duplicateImage(ImagePlus imp) {
+	/** Returns a copy the current stack image, cropped if there is a selection.
+	* @see ij.ImagePlus#crop
+	*/
+	public ImagePlus crop(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
 		ImageProcessor ip2 = ip.crop();
 		ImagePlus imp2 = imp.createImagePlus();
@@ -143,6 +146,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
  				overlay2.crop(imp.getCurrentSlice(), imp.getCurrentSlice());
  			imp2.setOverlay(overlay2);
  		}
+   		if (Recorder.record)
+   			Recorder.recordCall("imp2 = imp.crop();");
 		return imp2;
 	}
 	
@@ -181,8 +186,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			overlay2.crop(firstSlice, lastSlice);
 			imp2.setOverlay(overlay2);
 		}
-   		if (Recorder.record&&isCommand)
-   			Recorder.recordCall("imp = new Duplicator().run(imp, "+firstSlice+", "+lastSlice+");");
+   		if (Recorder.record)
+   			Recorder.recordCall("imp2 = new Duplicator().run(imp, "+firstSlice+", "+lastSlice+");");
 		return imp2;
 	}
 
@@ -239,8 +244,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			overlay2.crop(firstC, lastC, firstZ, lastZ, firstT, lastT);
 			imp2.setOverlay(overlay2);
 		}
-   		if (Recorder.record&&isCommand)
-   			Recorder.recordCall("imp = new Duplicator().run(imp, "+firstC+", "+lastC+", "+firstZ+", "+lastZ+", "+firstT+", "+lastT+");");
+   		if (Recorder.record)
+   			Recorder.recordCall("imp2 = new Duplicator().run(imp, "+firstC+", "+lastC+", "+firstZ+", "+lastZ+", "+firstT+", "+lastT+");");
 		return imp2;
 	}
 

@@ -83,7 +83,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private boolean scaleToFit;
 	private boolean painted;
 	private boolean hideZoomIndicator;
-	private double flattenScale = 1.0;
 		
 	public ImageCanvas(ImagePlus imp) {
 		this.imp = imp;
