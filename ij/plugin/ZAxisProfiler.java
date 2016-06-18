@@ -25,7 +25,8 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 			return;
 		}
 		Roi roi = imp.getRoi();
-		isPlotMaker = !IJ.macroRunning();
+		//isPlotMaker = !IJ.macroRunning();
+		isPlotMaker = true;
 		Plot plot = getPlot();
 		if (plot!=null) {
 			if (isPlotMaker)

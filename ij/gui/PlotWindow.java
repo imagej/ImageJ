@@ -652,6 +652,16 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 		else
 			enableLiveProfiling();
 	}
+	
+	/*
+	public static void setLiveMode(Boolean set) {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		ImageWindow win = imp!=null?imp.getWindow():null;
+		PlotWindow pw = win!=null && (win instanceof PlotWindow)?(PlotWindow)win:null;
+		if (pw!=null && pw.live.getForeground()!=Color.red)
+			pw.enableLiveProfiling();
+	}
+	*/
 
 	private void enableLiveProfiling() {
 		if (plotMaker==null)
