@@ -1616,6 +1616,7 @@ public class PolygonRoi extends Roi {
 			xpf = toFloat(xp);
 			ypf = toFloat(yp);
 		}
+		subPixel = true;
 	}
 
 	public String getDebugInfo() {
