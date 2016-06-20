@@ -78,12 +78,24 @@ public class NewImage {
 					IJ.showProgress(i, nSlices);
 				Object pixels2 = null;
 				switch (type) {
-					case GRAY8: pixels2 = new byte[width*height]; break;
-					case GRAY16: pixels2 = new short[width*height]; break;
-					case GRAY32: pixels2 = new float[width*height]; break;
-					case RGB: pixels2 = new int[width*height]; break;
+					case GRAY8: pixels2 = new byte[width*height];
+						if (fill==FILL_RANDOM)
+							fillRandomByte(new ByteProcessor(width,height,(byte[])pixels2));
+						break;
+					case GRAY16: pixels2 = new short[width*height];
+						if (fill==FILL_RANDOM)
+							fillRandomShort(new ShortProcessor(width,height,(short[])pixels2,null));
+						break;
+					case GRAY32: pixels2 = new float[width*height];
+						if (fill==FILL_RANDOM)
+							fillRandomFloat(new FloatProcessor(width,height,(float[])pixels2,null));
+						break;
+					case RGB: pixels2 = new int[width*height];
+						if (fill==FILL_RANDOM)
+							fillRandomRGB(new ColorProcessor(width,height,(int[])pixels2));
+						break;
 				}
-				if (fill!=FILL_BLACK || type==RGB)
+				if ((fill==FILL_WHITE||fill==FILL_RAMP) || ((type==RGB)&&(fill!=FILL_RANDOM)))
 					System.arraycopy(ip.getPixels(), 0, pixels2, 0, width*height);
 				stack.addSlice(null, pixels2);
 				if (IJ.escapePressed()) {IJ.beep(); break;};
@@ -135,8 +147,7 @@ public class NewImage {
 				}
 				break;
 			case FILL_RANDOM:
-				ip.add(127);
-				ip.noise(31);
+				fillRandomByte(ip);
 				break;
 		}
 		ImagePlus imp = new ImagePlus(title, ip);
@@ -145,6 +156,11 @@ public class NewImage {
 			if (!ok) imp = null;
 		}
 		return imp;
+	}
+	
+	private static void fillRandomByte(ImageProcessor ip) {
+		ip.add(127);
+		ip.noise(31);
 	}
 
 	public static ImagePlus createRGBImage(String title, int width, int height, int slices, int options) {
@@ -176,12 +192,7 @@ public class NewImage {
 				}
 				break;
 			case FILL_RANDOM:
-				ByteProcessor rr = new ByteProcessor(width, height);
-				ByteProcessor gg = new ByteProcessor(width, height);
-				ByteProcessor bb = new ByteProcessor(width, height);
-				rr.add(127); gg.add(127); bb.add(127);
-				rr.noise(31); gg.noise(31); bb.noise(31);
-				ip.setChannel(1,rr); ip.setChannel(2,gg); ip.setChannel(3,bb);
+				fillRandomRGB(ip);
 				break;
 		}
 		ImagePlus imp = new ImagePlus(title, ip);
@@ -192,6 +203,15 @@ public class NewImage {
 		return imp;
 	}
 	
+	private static void fillRandomRGB(ColorProcessor ip) {
+		ByteProcessor rr = new ByteProcessor(width, height);
+		ByteProcessor gg = new ByteProcessor(width, height);
+		ByteProcessor bb = new ByteProcessor(width, height);
+		rr.add(127); gg.add(127); bb.add(127);
+		rr.noise(31); gg.noise(31); bb.noise(31);
+		ip.setChannel(1,rr); ip.setChannel(2,gg); ip.setChannel(3,bb);
+	}
+
 	/** Creates an unsigned short image. */
 	public static ImagePlus createShortImage(String title, int width, int height, int slices, int options) {
 		int fill = getFill(options);
@@ -214,8 +234,7 @@ public class NewImage {
 				}
 				break;
 			case FILL_RANDOM:
-				ip.add(32767);
-				ip.noise(7940);
+				fillRandomShort(ip);
 				break;
 		}
 	    if (fill==FILL_WHITE)
@@ -227,6 +246,11 @@ public class NewImage {
 		}
 		imp.getProcessor().setMinAndMax(0, 65535); // default display range
 		return imp;
+	}
+
+	private static void fillRandomShort(ImageProcessor ip) {
+		ip.add(32767);
+		ip.noise(7940);
 	}
 
 	/**
@@ -258,7 +282,7 @@ public class NewImage {
 				}
 				break;
 			case FILL_RANDOM:
-				ip.noise(1);
+				fillRandomFloat(ip);
 				break;
 		}
 	    if (fill==FILL_WHITE)
@@ -271,6 +295,10 @@ public class NewImage {
 		if (fill!=FILL_RANDOM)
 			imp.getProcessor().setMinAndMax(0.0, 1.0); // default display range
 		return imp;
+	}
+
+	private static void fillRandomFloat(ImageProcessor ip) {
+		ip.noise(1);
 	}
 
 	private static int getSize(int width, int height) {
