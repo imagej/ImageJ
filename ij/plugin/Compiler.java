@@ -15,8 +15,8 @@ import javax.tools.*;
 /** Compiles and runs plugins using the javac compiler. */
 public class Compiler implements PlugIn, FilenameFilter {
 
-	private static final int TARGET14=0, TARGET15=1, TARGET16=2,  TARGET17=3,  TARGET18=4;
-	private static final String[] targets = {"1.4", "1.5", "1.6", "1.7", "1.8"};
+	private static final int TARGET14=0, TARGET15=1, TARGET16=2,  TARGET17=3,  TARGET18=4, TARGET19=5;
+	private static final String[] targets = {"1.4", "1.5", "1.6", "1.7", "1.8", "1.9"};
 	private static final String TARGET_KEY = "javac.target";
 	private static CompilerTool compilerTool;
 	private static String dir, name;
@@ -274,19 +274,18 @@ public class Compiler implements PlugIn, FilenameFilter {
 	}
 	
 	void validateTarget() {
-		if (target<0 || target>TARGET18)
+		if (target<TARGET16 || target>TARGET19)
 			target = TARGET16;
-		if (target>TARGET15 && !(IJ.isJava16()||IJ.isJava17()||IJ.isJava18()))
-			target = TARGET15;
-		if (target>TARGET16 && !(IJ.isJava17()||IJ.isJava18()))
+		if (target>TARGET16 && !(IJ.isJava17()||IJ.isJava18()||IJ.isJava19()))
 			target = TARGET16;
-		if (target>TARGET17 && !IJ.isJava18())
+		if (target>TARGET17 && !(IJ.isJava18()||IJ.isJava19()))
 			target = TARGET17;
+		if (target>TARGET18 && !IJ.isJava19())
+			target = TARGET18;
 		Prefs.set(TARGET_KEY, target);
 	}
 	
 }
-
 
 class PlugInExecuter implements Runnable {
 	private String plugin;

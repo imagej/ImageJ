@@ -306,20 +306,9 @@ public class OverlayCommands implements PlugIn {
 			IJ.error("Overlay required");
 			return;
 		}
-		RoiManager rm = RoiManager.getInstance();
-		if (rm==null) {
-			if (Macro.getOptions()!=null && Interpreter.isBatchMode())
-				rm = Interpreter.getBatchModeRoiManager();
-			if (rm==null) {
-				Frame frame = WindowManager.getFrame("ROI Manager");
-				if (frame==null)
-					IJ.run("ROI Manager...");
-				frame = WindowManager.getFrame("ROI Manager");
-				if (frame==null || !(frame instanceof RoiManager))
-					return;
-				rm = (RoiManager)frame;
-			}
-		}
+		RoiManager rm = RoiManager.getInstance2();
+		if (rm==null)
+			rm = new RoiManager();
 		if (overlay.size()>=4 && overlay.get(3).getPosition()!=0)
 			Prefs.showAllSliceOnly = true;
 		rm.runCommand("reset");

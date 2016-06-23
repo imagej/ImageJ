@@ -755,6 +755,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (previousRoi!=null && roi!=null)
 			updateRoi(roi);
 		resetImage();
+		shiftKeyDown = altKeyDown = false;
 	}
 	
 	void makeRectangle() {
@@ -780,6 +781,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (previousRoi!=null && roi!=null)
 			updateRoi(roi);
 		resetImage();
+		shiftKeyDown = altKeyDown = false;
 		IJ.setKeyUp(IJ.ALL_KEYS);
 	}
 	
@@ -2016,6 +2018,7 @@ public class Functions implements MacroConstants, Measurements {
 				updateRoi(roi); 
 		}
 		updateNeeded = false;
+		shiftKeyDown = altKeyDown = false;
 	}
 
 	void doPlot() {
@@ -3776,6 +3779,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (previousRoi!=null && roi!=null)
 			updateRoi(roi); 
 		resetImage(); 
+		shiftKeyDown = altKeyDown = false;
 	}
 	
 	void updateRoi(Roi roi) {
@@ -4995,7 +4999,8 @@ public class Functions implements MacroConstants, Measurements {
 			IJ.makePoint((int)x, (int)y);
 		else
 			IJ.makePoint(x, y);
-		resetImage(); 
+		resetImage();
+		shiftKeyDown = altKeyDown = false;
 	}
 
 	void makeText() {
@@ -5028,6 +5033,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (previousRoi!=null && roi!=null)
 			updateRoi(roi);
 		resetImage();
+		shiftKeyDown = altKeyDown = false;
 	}
 	
 	double fit() {

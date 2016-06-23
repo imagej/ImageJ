@@ -48,7 +48,7 @@ public class IJ {
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
 	private static String osname, osarch;
-	private static boolean isMac, isWin, isJava16, isJava17, isJava18, isLinux, is64Bit;
+	private static boolean isMac, isWin, isJava16, isJava17, isJava18, isJava19, isLinux, is64Bit;
 	private static boolean controlDown, altDown, spaceDown, shiftDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
@@ -78,6 +78,7 @@ public class IJ {
 			isJava16 = version.compareTo("1.5")>0;
 			isJava17 = version.compareTo("1.6")>0;
 			isJava18 = version.compareTo("1.7")>0;
+			isJava19 = version.compareTo("1.8")>0;
 		}
 		dfs = new DecimalFormatSymbols(Locale.US);
 		df = new DecimalFormat[10];
@@ -981,6 +982,11 @@ public class IJ {
 	/** Returns true if ImageJ is running on a Java 1.8 or greater JVM. */
 	public static boolean isJava18() {
 		return isJava18;
+	}
+
+	/** Returns true if ImageJ is running on a Java 1.9 or greater JVM. */
+	public static boolean isJava19() {
+		return isJava19;
 	}
 
 	/** Returns true if ImageJ is running on Linux. */
