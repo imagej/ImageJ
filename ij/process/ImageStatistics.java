@@ -64,8 +64,10 @@ public class ImageStatistics implements Measurements {
 	EllipseFitter ef;
 
 	
+	/* Get uncalibrated statistics, including histogram, area, mean, 
+		min and max, standard deviation, mode and median. */
 	public static ImageStatistics getStatistics(ImageProcessor ip) {
-		return getStatistics(ip, ALL_STATS, null);
+		return getStatistics(ip, AREA+MEAN+STD_DEV+MODE+MIN_MAX+RECT+MEDIAN, null);
 	}
 
 	public static ImageStatistics getStatistics(ImageProcessor ip, int mOptions, Calibration cal) {

@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.51e 23 June 2016</u>
+<li> <u>1.51e 24 June 2016</u>
 <ul>
 <li> Thanks to Patrick Darby Parker, plot windows created by macros 
 calling run("Plot Z-axis Profile") now include a "Live" button.
@@ -17,6 +17,11 @@ coordinates greater 65535 to be corrupted when saved and reopened.
 new "Random" stacks to be copies of the first slice.
 <li> Thanks to Ondrej Sebesta, fixed a bug that caused the roiManager("Select",index)
 macro function to fail if setKeyDown("Shift") was previously called.
+<li> Thanks to Marcel, fixed a bug that caused the "Propagate to all open images" option
+in the "Set" dialog of the <i>Image&gt;Adjust&gt;Window/Level</i> widget to fail.
+<li> Thanks to Gabriel Landini, fixed a v1.51d regression that caused the 
+ImagePlus.getStatistics() method to me much slower.
+
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

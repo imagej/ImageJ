@@ -1021,7 +1021,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			updateScrollBars(null, false);
 			if (RGBImage) doMasking(imp, ip);
 			if (propagate)
-				IJ.runMacroFile("ij.jar:PropagateMinAndMax");
+				propagate(imp);
 			if (Recorder.record) {
 				if (imp.getBitDepth()==32)
 					recordSetMinAndMax(min, max);
