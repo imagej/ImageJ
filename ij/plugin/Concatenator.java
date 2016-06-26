@@ -6,6 +6,7 @@ import ij.gui.*;
 import java.awt.*;
 import ij.measure.*;
 import ij.plugin.filter.*;
+import ij.plugin.frame.Recorder;
 import java.awt.event.*;
 import java.util.*;
 import java.lang.*;
@@ -61,13 +62,40 @@ public class Concatenator implements PlugIn, ItemListener{
 	}
 	
 	/** Concatenate two images or stacks. */
-	public ImagePlus concatenate(ImagePlus imp1, ImagePlus imp2, boolean keep) {
-		images = new ImagePlus[2];
-		images[0] = imp1;
-		images[1] = imp2;
-		return concatenate(images, keep);
+	public static ImagePlus run(ImagePlus img1, ImagePlus img2) {
+		ImagePlus[] images = new ImagePlus[2];
+		images[0]=img1; images[1]=img2;
+		return (new Concatenator()).concatenate(images, false);
 	}
-	
+
+	/** Concatenate three images or stacks. */
+	public static ImagePlus run(ImagePlus img1, ImagePlus img2, ImagePlus img3) {
+		ImagePlus[] images = new ImagePlus[3];
+		images[0]=img1; images[1]=img2;  images[2]=img3;
+		return (new Concatenator()).concatenate(images, false);
+	}
+
+	/** Concatenate four images or stacks. */
+	public static ImagePlus run(ImagePlus img1, ImagePlus img2, ImagePlus img3, ImagePlus img4) {
+		ImagePlus[] images = new ImagePlus[4];
+		images[0]=img1; images[1]=img2;  images[2]=img3; images[2]=img4;
+		return (new Concatenator()).concatenate(images, false);
+	}
+
+	/** Concatenate five images or stacks. */
+	public static ImagePlus run(ImagePlus img1, ImagePlus img2, ImagePlus img3, ImagePlus img4, ImagePlus img5) {
+		ImagePlus[] images = new ImagePlus[5];
+		images[0]=img1; images[1]=img2;  images[2]=img3; images[2]=img4; images[5]=img5;
+		return (new Concatenator()).concatenate(images, false);
+	}
+
+	/*
+	// Why does this not work with Java 6?
+	public static ImagePlus run(ImagePlus... args) {
+		return (new Concatenator()).concatenate(args, false);
+	}
+	*/
+
 	/** Concatenate two or more images or stacks. */
 	public ImagePlus concatenate(ImagePlus[] ims, boolean keepIms) {
 		images = ims;
@@ -84,6 +112,14 @@ public class Concatenator implements PlugIn, ItemListener{
 		batch = true;
 		newImp = createHypervol();
 		return newImp;
+	}
+	
+	/** Concatenate two images or stacks. */
+	public ImagePlus concatenate(ImagePlus imp1, ImagePlus imp2, boolean keep) {
+		images = new ImagePlus[2];
+		images[0] = imp1;
+		images[1] = imp2;
+		return concatenate(images, keep);
 	}
 	
 	ImagePlus createHypervol() {
@@ -147,6 +183,12 @@ public class Concatenator implements PlugIn, ItemListener{
 		if (im4D) {
 			imp.setDimensions(1, stackSize, imp.getStackSize()/stackSize);
 			imp.setOpenAsHyperStack(true);
+		}
+		if (Recorder.scriptMode()) {
+			String args = "imp1";
+			for (int i=1; i<images.length; i++)
+				args += ", imp"+(i+1);
+			Recorder.recordCall("imp"+(images.length+1)+" = Concatenator.run("+args+");");
 		}
 		return imp;
 	}

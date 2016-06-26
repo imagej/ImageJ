@@ -167,10 +167,8 @@ public class Compiler implements PlugIn, FilenameFilter {
 		if (f!=null)  // add directory containing file to classpath
 			sb.append(File.pathSeparator + f.getParent());
 		String pluginsDir = Menus.getPlugInsPath();
-		if (pluginsDir!=null) {
+		if (pluginsDir!=null)
 			addJars(pluginsDir, sb);
-			//addJars2(pluginsDir, sb);
-		}
 		return sb.toString();
 	 }
 	 
@@ -196,29 +194,6 @@ public class Compiler implements PlugIn, FilenameFilter {
 		}
 	}
 	
-	// Add jar files in ImageJ/jars
-	/*
-	void addJars2(String path, StringBuffer sb) {
-		File f = new File(path);
-		if (!f.exists() || !f.isDirectory())
-			return;
-		String imageJDir = f.getParent();
-		if (imageJDir==null)
-			return;
-		String jarsDir = imageJDir+File.separator+"jars";
-		f = new File(jarsDir);
-		String[] list = null;
-		if (f.exists() && f.isDirectory())
-			list = f.list();
-		if (list!=null) {
-			for (int i=0; i<list.length; i++) {
-				if (list[i].endsWith(".jar"))
-					sb.append(File.pathSeparator+jarsDir+File.separator+list[i]);
-			}
-		}
-	}
-	*/
-
 	void showErrors(String s) {
 		if (errors==null || !errors.isVisible()) {
 			errors = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
