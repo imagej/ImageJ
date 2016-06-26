@@ -820,8 +820,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return mask;
 	}
 
-	/** Get statistics, including histogram, area, mean,
-		 min and max, standard deviation, mode and median.
+	/** Get statistics for this image or ROI, including 
+		 histogram, area, mean, min and max, standard
+		 deviation, mode and median.
 		This code demonstrates how to get the area, mean
 		max and median of the current image or selection:
 		<pre>
@@ -839,8 +840,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return getStatistics(AREA+MEAN+STD_DEV+MODE+MIN_MAX+RECT+MEDIAN);
 	}
 	
-	/* Get uncalibrated statistics, including histogram, area, mean,
-		 min and max, standard deviation, mode and median. */
+	/* Get uncalibrated statistics for this image or ROI,
+		including histogram, area, mean, min and max, 
+		standard deviation, mode and median. */
 	public ImageStatistics getRawStatistics() {
 		setupProcessor();
 		if (roi!=null && roi.isArea())

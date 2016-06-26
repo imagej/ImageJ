@@ -125,7 +125,6 @@ public class Compiler implements PlugIn, FilenameFilter {
 		Vector sources = new Vector();
 		sources.add(path);
 		
-		/*
 		if (IJ.debugMode) {
 			StringBuilder builder = new StringBuilder();
 			builder.append("javac");
@@ -139,7 +138,6 @@ public class Compiler implements PlugIn, FilenameFilter {
 			}
 			IJ.log(builder.toString());
 		}
-		*/
 		
 		boolean errors = true;
 		String s = "not compiled";
@@ -169,8 +167,10 @@ public class Compiler implements PlugIn, FilenameFilter {
 		if (f!=null)  // add directory containing file to classpath
 			sb.append(File.pathSeparator + f.getParent());
 		String pluginsDir = Menus.getPlugInsPath();
-		if (pluginsDir!=null)
+		if (pluginsDir!=null) {
 			addJars(pluginsDir, sb);
+			//addJars2(pluginsDir, sb);
+		}
 		return sb.toString();
 	 }
 	 
@@ -180,20 +180,45 @@ public class Compiler implements PlugIn, FilenameFilter {
 		File f = new File(path);
 		if (f.exists() && f.isDirectory())
 			list = f.list();
-		if (list==null) return;
+		if (list==null)
+			return;
+		boolean isJarsFolder = path.endsWith("jars");
 		if (!path.endsWith(File.separator))
 			path += File.separator;
 		for (int i=0; i<list.length; i++) {
 			File f2 = new File(path+list[i]);
 			if (f2.isDirectory())
 				addJars(path+list[i], sb);
-			else if (list[i].endsWith(".jar")&&(list[i].indexOf("_")==-1||list[i].equals("loci_tools.jar")||list[i].contains("3D_Viewer"))) {
+			else if (list[i].endsWith(".jar")&&(!list[i].contains("_")||isJarsFolder||list[i].equals("loci_tools.jar"))) {
 				sb.append(File.pathSeparator+path+list[i]);
-				//if (IJ.debugMode) IJ.log("javac classpath: "+path+list[i]);
+				//IJ.log("javac classpath: "+path+list[i]);
 			}
 		}
 	}
 	
+	// Add jar files in ImageJ/jars
+	/*
+	void addJars2(String path, StringBuffer sb) {
+		File f = new File(path);
+		if (!f.exists() || !f.isDirectory())
+			return;
+		String imageJDir = f.getParent();
+		if (imageJDir==null)
+			return;
+		String jarsDir = imageJDir+File.separator+"jars";
+		f = new File(jarsDir);
+		String[] list = null;
+		if (f.exists() && f.isDirectory())
+			list = f.list();
+		if (list!=null) {
+			for (int i=0; i<list.length; i++) {
+				if (list[i].endsWith(".jar"))
+					sb.append(File.pathSeparator+jarsDir+File.separator+list[i]);
+			}
+		}
+	}
+	*/
+
 	void showErrors(String s) {
 		if (errors==null || !errors.isVisible()) {
 			errors = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
