@@ -833,6 +833,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
          IJ.log("Max: "+stats.max);
          IJ.log("Median: "+stats.median);
 		</pre>
+		@see #getRawStatistics
 		@see ij.process.ImageStatistics
 		@see ij.process.ImageStatistics#getStatistics
 		*/
@@ -840,16 +841,15 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return getStatistics(AREA+MEAN+STD_DEV+MODE+MIN_MAX+RECT+MEDIAN);
 	}
 	
-	/* Get uncalibrated statistics for this image or ROI,
-		including histogram, area, mean, min and max, 
-		standard deviation, mode and median. */
+	/* Returns uncalibrated statistics for this image or ROI, including
+		256 bin histogram, pixelCount, mean, mode, min and max. */
 	public ImageStatistics getRawStatistics() {
 		setupProcessor();
 		if (roi!=null && roi.isArea())
 			ip.setRoi(roi);
 		else
 			ip.resetRoi();
-		return ImageStatistics.getStatistics(ip);
+		return ImageStatistics.getStatistics(ip, AREA+MEAN+MODE+MIN_MAX, null);
 	}
 
 	/** Returns an ImageStatistics object generated using the

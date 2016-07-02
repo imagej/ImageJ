@@ -38,6 +38,8 @@ public class Concatenator implements PlugIn, ItemListener{
 	private int stackSize;
 	private double min = 0, max = Float.MAX_VALUE;
 	private int maxWidth, maxHeight;
+	private boolean showingDialog;
+
 	
 	/** Optional string argument sets the name dialog boxes if called from another plugin. */
 	public void run(String arg) {
@@ -151,7 +153,10 @@ public class Concatenator implements PlugIn, ItemListener{
 				}
 				
 				// Safety Checks
-				if (currentImp.getNSlices() != stackSize && im4D) {
+				boolean unequalSizes = currentImp.getNSlices()!=stackSize;
+				if (unequalSizes && !showingDialog)
+					im4D = false;
+				if (unequalSizes && im4D) {
 					IJ.error(pluginName, "Cannot create 4D image because stack sizes are not equal.");
 					return null;
 				}
@@ -305,6 +310,7 @@ public class Concatenator implements PlugIn, ItemListener{
 		batch = Interpreter.isBatchMode();
 		macro = macro || (IJ.isMacro()&&Macro.getOptions()!=null);
 		im4D = Menus.commandInUse("Stack to Image5D") && ! batch;
+		showingDialog = Macro.getOptions()==null;
 		if (macro) {
 			String options = Macro.getOptions();
 			if (options.contains("stack1")&&options.contains("stack2"))
@@ -447,6 +453,7 @@ public class Concatenator implements PlugIn, ItemListener{
 	
 	public void setIm5D(boolean bool) {
 		im4D_option = bool;
+		im4D = bool;
 	}
 	
 	private void findMaxDimensions(ImagePlus[] images) {

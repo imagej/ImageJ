@@ -40,6 +40,10 @@ public class ImageJ_Updater implements PlugIn {
 			return;
 		}
 		String[] list = openUrlAsList(URL+"/jars/list.txt");
+		if (list==null || list.length==0) {
+			error("Error opening "+URL+"/jars/list.txt");
+			return;
+		}
 		int count = list.length + 2;
 		String[] versions = new String[count];
 		String[] urls = new String[count];

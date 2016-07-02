@@ -533,7 +533,7 @@ class PlotsCanvas extends ImageCanvas {
 			counter = 0;
 			return;
 		}
-		ImageStatistics s = imp.getStatistics();
+		ImageStatistics stats = imp.getStatistics();
 		if (counter==0) {
 			rt = ResultsTable.getResultsTable();
 			rt.reset();
@@ -541,10 +541,10 @@ class PlotsCanvas extends ImageCanvas {
 		//IJ.setColumnHeadings(" \tArea");
 		double perimeter = roi.getLength();
 		String error = "";
-		double circularity = 4.0*Math.PI*(s.pixelCount/(perimeter*perimeter));
+		double circularity = 4.0*Math.PI*(stats.pixelCount/(perimeter*perimeter));
 		if (circularity<0.025)
 			error = " (error?)";
-		double area = s.pixelCount+perimeter/2.0; // add perimeter/2 to account area under border
+		double area = stats.pixelCount+perimeter/2.0; // add perimeter/2 to account area under border
 		Calibration cal = imp.getCalibration();
 		area = area*cal.pixelWidth*cal.pixelHeight;
 		rect[counter] = roi.getBounds();

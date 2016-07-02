@@ -554,8 +554,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null && !closed && !ij.quitting() && !Interpreter.isBatchMode())
 			WindowManager.setCurrentWindow(this);
-		if (imp.isComposite())
-			Channels.updateChannels();
 		Roi roi = imp.getRoi();
 		if (roi!=null && (roi instanceof PointRoi))
 			PointToolOptions.update();
