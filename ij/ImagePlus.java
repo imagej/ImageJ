@@ -1542,7 +1542,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (stack.isVirtual() && !((stack instanceof FileInfoVirtualStack)||(stack instanceof AVI_Reader))) {
 				ImageProcessor ip2 = stack.getProcessor(currentSlice);
 				overlay2 = ip2.getOverlay();
-				if (overlay2!=null || getOverlay()!=null)
+				if (overlay2!=null)
 					setOverlay(overlay2);
 				pixels = ip2.getPixels();
 			} else
