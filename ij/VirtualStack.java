@@ -16,7 +16,6 @@ public class VirtualStack extends ImageStack {
 	private String[] labels;
 	private int bitDepth;
 	private ImageProcessor ip;
-	private boolean noBackingStore;
 	
 	/** Default constructor. */
 	public VirtualStack() { }
@@ -30,19 +29,18 @@ public class VirtualStack extends ImageStack {
 		//IJ.log("VirtualStack: "+path);
 	}
 
-	/** Creates a virtual stack with no backing store.
-		This example creates a one million slice virtual
-		stack that uses just 1MB of RAM:
-		<pre>
-        stack = new VirtualStack(1024,1024,1000000);
-        new ImagePlus("No Backing Store Virtual Stack",stack).show();
-		</pre>
+	/** Creates a virtual stack with no backing storage.
+	This example creates a one million slice virtual
+	stack that uses just 1MB of RAM:
+	<pre>
+    stack = new VirtualStack(1024,1024,1000000);
+    new ImagePlus("No Backing Store Virtual Stack",stack).show();
+	</pre>
 	*/
 	public VirtualStack(int width, int height, int slices) {
 		super(width, height, null);
 		nSlices = slices;
 		bitDepth = 8;
-		noBackingStore = true;
 	}
 
 	 /** Adds an image to the end of the stack. */
@@ -176,7 +174,7 @@ public class VirtualStack extends ImageStack {
 
 	/** Returns the label of the Nth image. */
 	public String getSliceLabel(int n) {
-		if (noBackingStore)
+		if (labels==null)
 			return null;
 		String label = labels[n-1];
 		if (label==null)
