@@ -123,9 +123,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		setSize(ic.dstWidth, ic.dstHeight);
 	}
 
+	/** Sets the region of the image (in pixels) to be displayed. */
 	public void setSourceRect(Rectangle r) {
 		if (r==null)
 			return;
+		r = new Rectangle(r.x, r.y, r.width, r.height);
 		if (r.x<0) r.x = 0;
 		if (r.y<0) r.y = 0;
 		if (r.width<1)
@@ -141,7 +143,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (r.y+r.height>imageHeight)
 			r.y = imageHeight-r.height;
 		if (srcRect==null)
-			srcRect = new Rectangle(r.x, r.y, r.width, r.height);
+			srcRect = r;
 		else {
 			srcRect.x = r.x;
 			srcRect.y = r.y;
