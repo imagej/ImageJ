@@ -78,6 +78,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 				Prefs.saveLocation(LOC_KEY, ca.getLocation());
 				ca.close();
 			} else {
+				ImageJ ij = IJ.getInstance();
 				instance.toFront();
 				return;
 			}

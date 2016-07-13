@@ -128,6 +128,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (r==null)
 			return;
 		r = new Rectangle(r.x, r.y, r.width, r.height);
+		imageWidth = imp.getWidth();
+		imageHeight = imp.getHeight();
 		if (r.x<0) r.x = 0;
 		if (r.y<0) r.y = 0;
 		if (r.width<1)
