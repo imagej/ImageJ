@@ -2688,7 +2688,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     }
     
     public boolean setIJMenuBar() {
-    	return setIJMenuBar;
+    	return setIJMenuBar && !Prefs.disableSetMenuBar;
     }
     
 }

@@ -157,6 +157,8 @@ public class Prefs {
 	public static boolean autoRunExamples = true;
 	/** Ignore stack positions when displaying points. */
 	public static boolean showAllPoints;
+	/** Do not set the Mac MenuBar. */
+	public static boolean disableSetMenuBar;
 	
 
 	static Properties ijPrefs = new Properties();

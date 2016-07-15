@@ -5,8 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.51e 12 July 2016</u>
+<li> <u>1.51e 15 July 2016</u>
 <ul>
+<li> When running Java 8 on OS X, the menu bar is not set when an image
+is activated if the setMenuBar() method takes more than one second. 
+This prevents ImageJ from becoming unresponsive due to the setMenuBar()
+becoming slower and slower over time. To recover the menu bar, click on
+the "ImageJ" window or press return, the shortcut for the
+Window>Main Window command.
 <li> Thanks to Patrick Darby Parker, plot windows created by macros 
 calling run("Plot Z-axis Profile") now include a "Live" button.
 <li> Thanks to Philippe Carl, the <i>Plugins&gt;Compile and Run</i> command

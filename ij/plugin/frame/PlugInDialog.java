@@ -46,12 +46,12 @@ public class PlugInDialog extends Dialog implements PlugIn, WindowListener, Focu
 		WindowManager.removeWindow(this);
     }
 
-    public void windowActivated(WindowEvent e) {
-    	ImageJ ij = IJ.getInstance();
+	public void windowActivated(WindowEvent e) {
+		ImageJ ij = IJ.getInstance();
 		//IJ.log("MenuBar: "+ij.getMenuBar());
 		if (IJ.isMacOSX() && ij!=null && !(this instanceof ThresholdAdjuster))
 			ij.toFront();
-        WindowManager.setWindow(this);
+		WindowManager.setWindow(this);
 	}
 
 	public void focusGained(FocusEvent e) {

@@ -697,8 +697,13 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			setMenuBar = false;
 		if (ij!=null && !ij.quitting() && !Interpreter.nonBatchMacroRunning() && setMenuBar) {
 			IJ.wait(10); // may be needed for Java 1.4 on OS X
+			long t0 = System.currentTimeMillis();
 			win.setMenuBar(mb);
+			long time = System.currentTimeMillis()-t0;
 			Menus.setMenuBarCount++;
+			if (IJ.debugMode) IJ.log("setMenuBar: "+time+"ms ("+Menus.setMenuBarCount+")");
+			if (time>1000L && IJ.isJava18())
+				Prefs.disableSetMenuBar = true;
 		}
 		if (imp!=null) imp.setIJMenuBar(true);
 	}

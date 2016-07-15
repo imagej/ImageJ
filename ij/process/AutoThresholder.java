@@ -628,11 +628,9 @@ public class AutoThresholder {
 		int iter =0;
 		int threshold = -1;
 		double [] iHisto = new double [256];
-
 		for (int i=0; i<256; i++)
 			iHisto[i]=(double) data[i];
-
-		double [] tHisto = iHisto;
+		double [] tHisto = new double[iHisto.length] ;
 
 		while (!bimodalTest(iHisto) ) {
 			 //smooth with a 3 point running mean filter
@@ -640,7 +638,7 @@ public class AutoThresholder {
 				tHisto[i]= (iHisto[i-1] + iHisto[i] +iHisto[i+1])/3;
 			tHisto[0] = (iHisto[0]+iHisto[1])/3; //0 outside
 			tHisto[255] = (iHisto[254]+iHisto[255])/3; //0 outside
-			iHisto = tHisto;
+			System.arraycopy(tHisto, 0, iHisto, 0, iHisto.length) ;
 			iter++;
 			if (iter>10000) {
 				threshold = -1;

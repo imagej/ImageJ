@@ -5,7 +5,6 @@ import ij.gui.*;
 import ij.io.Opener;
 import ij.text.TextWindow;
 import ij.measure.ResultsTable;
-import ij.plugin.frame.ContrastAdjuster;
 import java.awt.Frame;
 
 /** This plugin implements the Plugins/Utilities/Unlock, Image/Rename
