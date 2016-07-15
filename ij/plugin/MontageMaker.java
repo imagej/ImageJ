@@ -87,7 +87,7 @@ public class MontageMaker implements PlugIn {
 			}
 			saveStackSize = nSlices;
 			
-			GenericDialog gd = new GenericDialog("Make Montage", IJ.getInstance());
+			GenericDialog gd = new GenericDialog("Make Montage");
 			gd.addNumericField("Columns:", columns, 0);
 			gd.addNumericField("Rows:", rows, 0);
 			gd.addNumericField("Scale factor:", scale, 2);

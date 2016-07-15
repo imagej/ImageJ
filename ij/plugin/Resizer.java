@@ -72,7 +72,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				newWidth = (int)origWidth;
 				newHeight = (int)origHeight;
 			}
-			GenericDialog gd = new GenericDialog("Resize", IJ.getInstance());
+			GenericDialog gd = new GenericDialog("Resize");
 			gd.addNumericField("Width (pixels):", newWidth, 0);
 			gd.addNumericField("Height (pixels):", newHeight, 0);
 			if (imp.isHyperStack()) {

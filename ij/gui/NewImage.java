@@ -341,7 +341,7 @@ public class NewImage {
 			type = GRAY8;
 		if (fillWith<OLD_FILL_WHITE||fillWith>FILL_RANDOM)
 			fillWith = FILL_WHITE;
-		GenericDialog gd = new GenericDialog("New Image...", IJ.getInstance());
+		GenericDialog gd = new GenericDialog("New Image...");
 		gd.addStringField("Name:", name, 12);
 		gd.addChoice("Type:", types, types[type]);
 		gd.addChoice("Fill with:", fill, fill[fillWith]);

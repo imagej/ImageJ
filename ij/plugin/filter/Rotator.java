@@ -111,7 +111,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 				macroOptions = macroOptions+" interpolation=None";
 			Macro.setOptions(macroOptions);
 		}
-		gd = new GenericDialog("Rotate", IJ.getInstance());
+		gd = new GenericDialog("Rotate");
 		gd.addNumericField("Angle (degrees):", angle, (int)angle==angle?1:2);
 		gd.addNumericField("Grid Lines:", gridLines, 0);
 		gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);

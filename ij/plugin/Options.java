@@ -29,7 +29,7 @@ public class Options implements PlugIn {
 	// Miscellaneous Options
 	void miscOptions() {
 		String key = IJ.isMacintosh()?"command":"control";
-		GenericDialog gd = new GenericDialog("Miscellaneous Options", IJ.getInstance());
+		GenericDialog gd = new GenericDialog("Miscellaneous Options");
 		gd.addStringField("Divide by zero value:", ""+FloatBlitter.divideByZeroValue, 10);
 		gd.addCheckbox("Use pointer cursor", Prefs.usePointerCursor);
 		gd.addCheckbox("Hide \"Process Stack?\" dialog", IJ.hideProcessStackDialog);

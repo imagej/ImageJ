@@ -214,7 +214,7 @@ public class ZProjector implements PlugIn {
 	@param start starting slice to display
 	@param stop last slice */
     protected GenericDialog buildControlDialog(int start, int stop) {
-		GenericDialog gd = new GenericDialog("ZProjection",IJ.getInstance()); 
+		GenericDialog gd = new GenericDialog("ZProjection"); 
 		gd.addNumericField("Start slice:",startSlice,0/*digits*/); 
 		gd.addNumericField("Stop slice:",stopSlice,0/*digits*/);
 		gd.addChoice("Projection type", METHODS, METHODS[method]); 

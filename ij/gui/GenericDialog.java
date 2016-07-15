@@ -86,8 +86,20 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     	are open. Dialog parameters are recorded by ImageJ's command recorder but
     	this requires that the first word of each label be unique. */
 	public GenericDialog(String title) {
-		this(title, WindowManager.getCurrentImage()!=null?
-			(Frame)WindowManager.getCurrentImage().getWindow():IJ.getInstance()!=null?IJ.getInstance():new Frame());
+		this(title, getParentFrame());
+	}
+	
+	private static Frame getParentFrame() {
+		Frame parent = WindowManager.getCurrentImage()!=null?
+			(Frame)WindowManager.getCurrentImage().getWindow():IJ.getInstance()!=null?IJ.getInstance():new Frame();
+		if (IJ.isMacOSX() && IJ.isJava18()) {
+			ImageJ ij = IJ.getInstance();
+			if (ij!=null && ij.isActive())
+				parent = ij;
+			else
+				parent = null;
+		}
+		return parent;
 	}
 
     /** Creates a new GenericDialog using the specified title and parent frame. */

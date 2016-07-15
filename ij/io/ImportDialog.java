@@ -82,7 +82,7 @@ public class ImportDialog {
 		if (choiceSelection>=types.length)
 			choiceSelection = 0;
 		getDimensionsFromName(fileName);
-		GenericDialog gd = new GenericDialog("Import>Raw...", IJ.getInstance());
+		GenericDialog gd = new GenericDialog("Import>Raw...");
 		gd.addChoice("Image type:", types, types[choiceSelection]);
 		gd.addNumericField("Width:", width, 0, 6, "pixels");
 		gd.addNumericField("Height:", height, 0, 6, "pixels");

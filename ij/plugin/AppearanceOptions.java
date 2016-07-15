@@ -27,7 +27,7 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 		
 	void showDialog() {
 		String[] ranges = ContrastAdjuster.getSixteenBitRanges();
-		GenericDialog gd = new GenericDialog("Appearance", IJ.getInstance());
+		GenericDialog gd = new GenericDialog("Appearance");
 		gd.addCheckbox("Interpolate zoomed images", Prefs.interpolateScaledImages);
 		gd.addCheckbox("Open images at 100%", Prefs.open100Percent);
 		gd.addCheckbox("Black canvas", Prefs.blackCanvas);

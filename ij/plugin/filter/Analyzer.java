@@ -151,7 +151,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (macroOptions!=null && macroOptions.indexOf("slice ")!=-1)
 			Macro.setOptions(macroOptions.replaceAll("slice ", "stack "));
 
- 		GenericDialog gd = new GenericDialog("Set Measurements", IJ.getInstance());
+ 		GenericDialog gd = new GenericDialog("Set Measurements");
 		String[] labels = new String[18];
 		boolean[] states = new boolean[18];
 		labels[0]="Area"; states[0]=(systemMeasurements&AREA)!=0;

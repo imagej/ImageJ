@@ -47,7 +47,7 @@ public class FractalBoxCounter implements PlugInFilter {
 
 	public void run(ImageProcessor ip) {
 
-		GenericDialog gd = new GenericDialog("Fractal Box Counter", IJ.getInstance());
+		GenericDialog gd = new GenericDialog("Fractal Box Counter");
 		gd.addStringField("Box Sizes:", sizes, 20);
 		gd.addCheckbox("Black Background", blackBackground);
 

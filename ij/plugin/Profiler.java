@@ -46,7 +46,7 @@ public Plot getPlot() {
 		boolean fixedScale = ymin!=0.0 || ymax!=0.0;
 		boolean wasFixedScale = fixedScale;
 		
-		GenericDialog gd = new GenericDialog("Plot Options", IJ.getInstance());
+		GenericDialog gd = new GenericDialog("Plot Options");
 		gd.addNumericField("Width:", PlotWindow.plotWidth, 0);
 		gd.addNumericField("Height:", PlotWindow.plotHeight, 0);
 		gd.addNumericField("Font Size:", PlotWindow.fontSize, 0);
