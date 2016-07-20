@@ -248,8 +248,8 @@ public class OverlayCommands implements PlugIn {
 		ImageCanvas ic = imp.getCanvas();
 		if (ic!=null)
 			roiManagerOverlay = ic.getShowAllList();
-		if (overlay==null && imp.getRoi()==null && roiManagerOverlay==null && !imp.isComposite() && !IJ.macroRunning()) {
-			IJ.error("Flatten", "Overlay, selection or multi-channel image required");
+		if (imp.getBitDepth()==24 && overlay==null && imp.getRoi()==null && roiManagerOverlay==null && !imp.isComposite() && !IJ.macroRunning()) {
+			IJ.error("Flatten", "Overlay or selection required to flatten RGB image");
 			return;
 		}
 		int flags = IJ.setupDialog(imp, 0);

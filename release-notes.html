@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.51e 15 July 2016</u>
+<li> <u>1.51e 20 July 2016</u>
 <ul>
 <li> When running Java 8 on OS X, the menu bar is not set when an image
 is activated if the setMenuBar() method takes more than one second. 
@@ -13,6 +13,8 @@ This prevents ImageJ from becoming unresponsive due to the setMenuBar()
 becoming slower and slower over time. To recover the menu bar, click on
 the "ImageJ" window or press return, the shortcut for the
 Window>Main Window command.
+<li> Thanks to Gabriel Landini, when selecting rectangular ROI handles, the
+buffer zone is larger on screens wider than 1280 pixels.
 <li> Thanks to Patrick Darby Parker, plot windows created by macros 
 calling run("Plot Z-axis Profile") now include a "Live" button.
 <li> Thanks to Philippe Carl, the <i>Plugins&gt;Compile and Run</i> command
@@ -47,6 +49,9 @@ on Mac OS X to disappear when cliking on the "B&C" window to activate it.
 ImagePlus.getStatistics() method to be much slower.
 <li> Thanks to Jean-Yves Tineves, fixed a v1.47 regression that caused
 overlays to not work with custom virtual stacks.
+<li> Thanks to jbrazill and Jan Eglinger, fixed a regression that caused the
+<i>Image&gt;Overlay&gt;Flatten</i> command to not
+work with non-RGB images without a selection of overlay.
 
 </ul>
 
