@@ -45,6 +45,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	private static int count;
 	private static boolean centerOnScreen;
 	private static Point nextLocation;
+	public static long setMenuBarTime;
 	
     private int textGap = centerOnScreen?0:TEXT_GAP;
 	
@@ -695,15 +696,17 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		MenuBar mb = Menus.getMenuBar();
 		if (mb!=null && mb==win.getMenuBar())
 			setMenuBar = false;
-		if (ij!=null && !ij.quitting() && !Interpreter.nonBatchMacroRunning() && setMenuBar) {
+		setMenuBarTime = 0L;
+		if (setMenuBar && ij!=null && !ij.quitting() && !Interpreter.nonBatchMacroRunning()) {
 			IJ.wait(10); // may be needed for Java 1.4 on OS X
 			long t0 = System.currentTimeMillis();
 			win.setMenuBar(mb);
 			long time = System.currentTimeMillis()-t0;
+			setMenuBarTime = time;
 			Menus.setMenuBarCount++;
 			if (IJ.debugMode) IJ.log("setMenuBar: "+time+"ms ("+Menus.setMenuBarCount+")");
-			if (time>1500L && IJ.isJava18())
-				Prefs.disableSetMenuBar = true;
+			if (time>2000L)
+				Prefs.setIJMenuBar = false;
 		}
 		if (imp!=null) imp.setIJMenuBar(true);
 	}

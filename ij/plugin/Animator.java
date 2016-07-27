@@ -100,8 +100,10 @@ public class Animator implements PlugIn {
 		Calibration cal = imp.getCalibration();
 		if (cal.fps!=0.0)
 			animationRate = cal.fps;
-		if (animationRate<0.1)
+		if (animationRate<0.1) {
 			animationRate = 1.0;
+			cal.fps = animationRate;
+		}
 		int frames = imp.getNFrames();
 		int slices = imp.getNSlices();
 		

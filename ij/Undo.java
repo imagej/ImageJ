@@ -91,7 +91,7 @@ public class Undo {
 		calCopy = null;
 		roiCopy = null;
 		lutCopy = null;
-		if (IJ.debugMode) IJ.log("Undo.reset");
+		//if (IJ.debugMode) IJ.log("Undo.reset");
 	}
 	
 

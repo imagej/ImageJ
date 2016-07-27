@@ -5,14 +5,19 @@
 </head>
 <body>
 
-<li> <u>1.51e 20 July 2016</u>
+<li> <u>1.51e 27 July 2016</u>
 <ul>
-<li> When running Java 8 on OS X, the menu bar is not set when an image
-is activated if the setMenuBar() method takes more than one second. 
-This prevents ImageJ from becoming unresponsive due to the setMenuBar()
-becoming slower and slower over time. To recover the menu bar, click on
+<li> Added the "Don't set Mac menu bar" option to the
+<i>Edit&gt;Option&gt;Misc</i> dialog. When this option
+is set, ImageJ does not set the ImageJ menu bar when
+image windows are activated.  To recover the menu bar, click on
 the "ImageJ" window or press return, the shortcut for the
 Window>Main Window command.
+<li> When running Java 8 on OS X, the "Don't set Mac menu bar" option
+in <i>Edit&gt;Option&gt;Misc</i> is automatically set when it the
+setMenuBar() method takes more than two seconds.
+This prevents ImageJ from becoming unresponsive due to setMenuBar()
+becoming slower and slower over time.
 <li> Thanks to Gabriel Landini, when selecting rectangular ROI handles, the
 buffer zone is larger on screens wider than 1280 pixels.
 <li> Thanks to Patrick Darby Parker, plot windows created by macros 
@@ -45,6 +50,8 @@ was greater than 0.
 method to sometimes modify the Rectangle passed to it.
 <li> Thanks to Michael Schmid, fixed a bug that caused the ImageJ menu bar
 on Mac OS X to disappear when cliking on the "B&C" window to activate it.
+<li> Thanks to Stefan Helfrich, fixed a bug that caused inconsistent handling
+of the animation rate if it was set to less than 0.1 fps.
 <li> Thanks to Gabriel Landini, fixed a v1.51d regression that caused the 
 ImagePlus.getStatistics() method to be much slower.
 <li> Thanks to Jean-Yves Tineves, fixed a v1.47 regression that caused

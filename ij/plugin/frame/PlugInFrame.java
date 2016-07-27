@@ -43,7 +43,7 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
     }
 
     public void windowActivated(WindowEvent e) {
-		if (IJ.isMacintosh() && !Prefs.disableSetMenuBar) {
+		if (Prefs.setIJMenuBar) {
 			this.setMenuBar(Menus.getMenuBar());
 			Menus.setMenuBarCount++;
 		}

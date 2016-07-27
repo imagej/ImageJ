@@ -41,8 +41,8 @@ public class ImageInfo implements PlugIn {
 		s += "Java home: "+System.getProperty("java.home")+"\n";
 		s += "Screen size: "+screen.width+"x"+screen.height+"\n";
 		if (IJ.isMacOSX()) {
-			String disabled = Prefs.disableSetMenuBar?" (disabled)":"";
-			s += "SetMenuBarCount: "+Menus.setMenuBarCount+disabled+"\n";
+			String time = " ("+ImageWindow.setMenuBarTime+"ms)";
+			s += "SetMenuBarCount: "+Menus.setMenuBarCount+time+"\n";
 		}
 		new TextWindow("Info", s, 600, 300);
 	}
@@ -315,8 +315,8 @@ public class ImageInfo implements PlugIn {
 			s += "Screen location: "+loc.x+","+loc.y+" ("+screen.width+"x"+screen.height+")\n";
 		}
 		if (IJ.isMacOSX()) {
-			String disabled = Prefs.disableSetMenuBar?" (disabled)":"";
-			s += "SetMenuBarCount: "+Menus.setMenuBarCount+disabled+"\n";
+			String time = " ("+ImageWindow.setMenuBarTime+"ms)";
+			s += "SetMenuBarCount: "+Menus.setMenuBarCount+time+"\n";
 		}
 		
 		String zOrigin = stackSize>1||cal.zOrigin!=0.0?","+d2s(cal.zOrigin):"";

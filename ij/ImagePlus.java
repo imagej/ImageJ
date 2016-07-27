@@ -90,7 +90,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	private static int default16bitDisplayRange;
 	private boolean antialiasRendering = true;
 	private boolean ignoreGlobalCalibration;
-	public boolean setIJMenuBar = true;
+	public boolean setIJMenuBar = Prefs.setIJMenuBar;
 	public boolean typeSet;
 	
 
@@ -444,6 +444,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				if (c>1 || z>1 || t>1)
 					setPosition(c, z, t);
 			}
+			if (setIJMenuBar)
+				IJ.wait(25);
 			notifyListeners(OPENED);
 		}
 	}
@@ -2688,7 +2690,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     }
     
     public boolean setIJMenuBar() {
-    	return setIJMenuBar && !Prefs.disableSetMenuBar;
+    	return setIJMenuBar && Prefs.setIJMenuBar;
     }
     
 }

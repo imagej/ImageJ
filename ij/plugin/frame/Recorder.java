@@ -442,6 +442,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			if (!bbSet && (name.equals("Make Binary")||name.equals("Convert to Mask")||name.equals("Erode")
 			||name.equals("Dilate")||name.equals("Skeletonize")))
 				setBlackBackground();
+			if (name.equals("Add Shortcut by Name... "))
+				name = "Add Shortcut... ";
 			if (commandOptions!=null) {
 				if (name.equals("Open...") || name.equals("URL...")) {
 					String s = scriptMode?"imp = IJ.openImage":"open";
