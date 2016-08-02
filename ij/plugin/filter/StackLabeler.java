@@ -209,8 +209,9 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 			}
 		}
 		int frame = image;
+		int[] pos = new int[]{0, 0, 0};
 		if (imp.isHyperStack()) {
-			int[] pos = imp.convertIndexToPosition(image);
+			pos = imp.convertIndexToPosition(image);
 			if (imp.getNFrames()>1)
 				frame = pos[2];
 			else if (imp.getNSlices()>1)
@@ -232,7 +233,10 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 				Roi roi = new TextRoi(xloc, y-yoffset, s, font);
 				roi.setStrokeColor(color);
 				roi.setNonScalable(true);
-				roi.setPosition(image);
+				if (imp.isHyperStack())
+					roi.setPosition(pos[0], pos[1], pos[2]);
+				else
+					roi.setPosition(image);
 				overlay.add(roi);
 			}
 			if (image==imp.getStackSize()||previewing)
