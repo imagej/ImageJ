@@ -5,63 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.51e 5 August 2016</u>
+<li> <u>1.51f 13 August 2016</u>
 <ul>
-<li> Added a "Don't set Mac menu bar" option to the
-<i>Edit&gt;Option&gt;Misc</i> dialog. When this option
-is set, ImageJ does not set the ImageJ menu bar when
-image windows are activated.
-This may prevent ImageJ from becoming unresponsive due to setMenuBar()
-becoming slower and slower over time. To recover the menu bar, click on
-the "ImageJ" window or press return, the shortcut for the
-Window>Main Window command.
-<li> When running Java 8 on OS X, the "Don't set Mac menu bar" option
-in <i>Edit&gt;Option&gt;Misc</i> is automatically set when it the
-setMenuBar() method takes more than two seconds.
-<li> Thanks to Gabriel Landini, when selecting rectangular ROI handles, the
-buffer zone is larger on screens wider than 1280 pixels.
-<li> Thanks to Patrick Darby Parker, plot windows created by macros 
-calling run("Plot Z-axis Profile") now include a "Live" button.
-<li> Thanks to Philippe Carl, the <i>Plugins&gt;Compile and Run</i> command
-adds jar files in the plugins/jars folder with "_" in their names to the javac classpath.
-<li> Added the ImagePlus.crop() method
-(<a href="macros/js/Duplication_Demo.js">example</a>).
-<li> Thanks to Jean-Yves Tineves, added the VirtualStack(width,height,slices)
-constructor that creates a virtual stack with no backing store
-(<a href="macros/js/NoBackingStoreVirtualStack.js">example</a>).
-<li> Thanks to Ignacio Garcia Gonzalez, fixed a bug that caused ROIs with
-coordinates greater 65535 to be corrupted when saved and reopened.
-<li> Thanks to Jens Kriese, fixed a bug that caused the slices of 
-new "Random" stacks to be copies of the first slice.
-<li> Thanks to Ondrej Sebesta, fixed a bug that caused the roiManager("Select",index)
-macro function to fail if setKeyDown("Shift") was previously called.
-<li> Thanks to Marcel, fixed a bug that caused the "Propagate to all open images" option
-in the "Set" dialog of the <i>Image&gt;Adjust&gt;Window/Level</i> widget to fail.
-<li> Thanks to Philippe Carl, fixed a bug that caused the
-<i>Image&gt;Stacks&gt;Tools&gt;Concatenate</i> command
-to not be correctly recorded when the Recorder was not in "Macro" mode.
-<li> Thanks to Jan Eglinger, fixed a bug that caused the
-<i>Image&gt;Color&gt;Channels Tool</i> widget to not work
-as expected in "Color" mode when using Java 8 on Mac OS X.
-<li> Thanks to Steve, fixed a bug in the <i>Image&gt;Stacks&gt;Make Montage</i>
-command that caused it to not work as expected if "Border width"
-was greater than 0.
-<li> Thanks to Michael Schmid, fixed a bug that caused the ImageCanvas.setSourceRect()
-method to sometimes modify the Rectangle passed to it.
-<li> Thanks to Michael Schmid, fixed a bug that caused the ImageJ menu bar
-on Mac OS X to disappear when cliking on the "B&C" window to activate it.
-<li> Thanks to Stefan Helfrich, fixed a bug that caused inconsistent handling
-of the animation rate if it was set to less than 0.1 fps.
-<li> Thanks to Stefan Helfrich, fixed a bug that caused the
-<i>Image&gt;Stacks&gt;Label</i> command to not work as
-expected with hyperstacks if the "Use overlay" option was enabled.
-<li> Thanks to Gabriel Landini, fixed a v1.51d regression that caused the 
-ImagePlus.getStatistics() method to be much slower.
-<li> Thanks to Jean-Yves Tineves, fixed a v1.47 regression that caused
-overlays to not work with custom virtual stacks.
-<li> Thanks to jbrazill and Jan Eglinger, fixed a regression that caused the
-<i>Image&gt;Overlay&gt;Flatten</i> command to not
-work with non-RGB images without a selection or overlay.
+<li> Thanks to 'mls' and Jan Eglinger,  the <i>Image&gt;Stacks&gt;Tools&gt;Combine</i>
+command now works with hyperstacks.
 
 </ul>
 

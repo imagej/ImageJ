@@ -20,8 +20,18 @@ public class StackCombiner implements PlugIn {
 	public void run(String arg) {
 		if (!showDialog())
 			return;
-		if (imp1.getType()!=imp2.getType() || imp1.isHyperStack() || imp2.isHyperStack())
-			{error(); return;}
+		if (imp1.getType()!=imp2.getType()) {
+			error();
+			return;
+		}
+		int[] dim1 = imp1.getDimensions();
+		int[] dim2 = imp2.getDimensions();
+		if (imp1.isHyperStack() || imp2.isHyperStack()) {
+			if (dim1[2]!=dim2[2] || dim1[3]!=dim2[3] || dim1[4]!=dim2[4]) {
+				IJ.error("StackCombiner", "Hyperstacks must have identical CZT dimensions");	
+				return;
+			}
+		}
 		ImageStack stack1 = imp1.getStack();
 		ImageStack stack2 = imp2.getStack();
 		ImageStack stack3 = vertical?combineVertically(stack1, stack2):combineHorizontally(stack1, stack2);
@@ -31,6 +41,12 @@ public class StackCombiner implements PlugIn {
 		imp2.close();
 		ImagePlus imp3 = imp1.createImagePlus();
 		imp3.setStack(stack3);
+		if (imp1.isHyperStack())
+			imp3.setDimensions(dim1[2],dim1[3],dim1[4]);
+		if (imp1.isComposite()) {
+			imp3 = new CompositeImage(imp3, imp1.getCompositeMode());
+			imp3.setDimensions(dim1[2],dim1[3],dim1[4]);
+		}
 		imp3.setTitle("Combined Stacks");
 		imp3.show();
 	}
@@ -65,7 +81,7 @@ public class StackCombiner implements PlugIn {
 				ip3.insert(stack2.getProcessor(1),w1,0);
 				stack2.deleteSlice(1);
 			}
-		stack3.addSlice(null, ip3);
+			stack3.addSlice(null, ip3);
 		}
 		return stack3;
 	}
@@ -135,7 +151,7 @@ public class StackCombiner implements PlugIn {
 
 	
 	void error() {
-		IJ.showMessage("StackCombiner", "This command requires two stacks\n"
+		IJ.error("StackCombiner", "This command requires two stacks\n"
 			+"that are the same data type.");
 	}
 
