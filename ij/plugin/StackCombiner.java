@@ -20,7 +20,7 @@ public class StackCombiner implements PlugIn {
 	public void run(String arg) {
 		if (!showDialog())
 			return;
-		if (imp1.getType()!=imp2.getType()) {
+		if (imp1.getBitDepth()!=imp2.getBitDepth()) {
 			error();
 			return;
 		}

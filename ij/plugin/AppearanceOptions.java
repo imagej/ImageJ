@@ -15,7 +15,6 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 	private boolean black = Prefs.blackCanvas;
 	private boolean noBorder = Prefs.noBorder;
 	private boolean inverting = Prefs.useInvertingLut;
-	private boolean antialiased = Prefs.antialiasedTools;
 	private int rangeIndex = ContrastAdjuster.get16bitRangeIndex();
 	private LUT[] luts = getLuts();
 	private int setMenuSize = Menus.getFontSize();
@@ -33,22 +32,19 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 		gd.addCheckbox("Black canvas", Prefs.blackCanvas);
 		gd.addCheckbox("No image border", Prefs.noBorder);
 		gd.addCheckbox("Use inverting lookup table", Prefs.useInvertingLut);
-		gd.addCheckbox("Antialiased tool icons", Prefs.antialiasedTools);
 		gd.addCheckbox("Auto contrast stacks (or use shift key)", Prefs.autoContrast);
+		gd.addCheckbox("IJ window always on top", Prefs.alwaysOnTop);
 		gd.addChoice("16-bit range:", ranges, ranges[rangeIndex]);
 		gd.addNumericField("Menu font size:", Menus.getFontSize(), 0, 3, "points");
         gd.addHelp(IJ.URL+"/docs/menus/edit.html#appearance");
         gd.addDialogListener(this);
 		gd.showDialog();
 		if (gd.wasCanceled()) {
-			if (antialiased!=Prefs.antialiasedTools)
-				Toolbar.getInstance().repaint();
 			Prefs.interpolateScaledImages = interpolate;
 			Prefs.open100Percent = open100;
 			Prefs.blackCanvas = black;
 			Prefs.noBorder = noBorder;
 			Prefs.useInvertingLut = inverting;
-			Prefs.antialiasedTools = antialiased;
 			if (redrawn) draw();
 			if (repainted) repaintWindow();
 			Prefs.open100Percent = open100;
@@ -91,11 +87,9 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 		boolean blackCanvas = gd.getNextBoolean();
 		boolean noBorder = gd.getNextBoolean();
 		Prefs.useInvertingLut = gd.getNextBoolean();
-		boolean antialiasedTools = gd.getNextBoolean();
-		boolean toolbarChange = antialiasedTools!=Prefs.antialiasedTools;
-		Prefs.antialiasedTools = antialiasedTools;
+		boolean alwaysOnTop = Prefs.alwaysOnTop;
 		Prefs.autoContrast = gd.getNextBoolean();
-		if (toolbarChange) Toolbar.getInstance().repaint();
+		Prefs.alwaysOnTop = gd.getNextBoolean();
 		setMenuSize = (int)gd.getNextNumber();
 		if (interpolate!=Prefs.interpolateScaledImages) {
 			Prefs.interpolateScaledImages = interpolate;
@@ -108,6 +102,10 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 		if (noBorder!=Prefs.noBorder) {
 			Prefs.noBorder = noBorder;
 			repaintWindow();
+		}
+		if (alwaysOnTop!=Prefs.alwaysOnTop) {
+			ImageJ ij = IJ.getInstance();
+			if (ij!=null) ij.setAlwaysOnTop(Prefs.alwaysOnTop);
 		}
 		int rangeIndex2 = gd.getNextChoiceIndex();
 		int range1 = ImagePlus.getDefault16bitRange();

@@ -545,6 +545,8 @@ public class RoiDecoder {
 	/** Opens an ROI from a byte array. */
 	public static Roi openFromByteArray(byte[] bytes) {
 		Roi roi = null;
+		if (bytes==null || bytes.length==0)
+			return roi;
 		try {
 			RoiDecoder decoder = new RoiDecoder(bytes, null);
 			roi = decoder.getRoi();

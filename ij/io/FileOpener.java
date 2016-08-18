@@ -166,10 +166,13 @@ public class FileOpener {
 	
 	void setOverlay(ImagePlus imp, byte[][] rois) {
 		Overlay overlay = new Overlay();
+		Overlay proto = null;
 		for (int i=0; i<rois.length; i++) {
 			Roi roi = RoiDecoder.openFromByteArray(rois[i]);
-			if (i==0) {
-				Overlay proto = roi.getPrototypeOverlay();
+			if (roi==null)
+				continue;
+			if (proto==null) {
+				proto = roi.getPrototypeOverlay();
 				overlay.drawLabels(proto.getDrawLabels());
 				overlay.drawNames(proto.getDrawNames());
 				overlay.drawBackgrounds(proto.getDrawBackgrounds());

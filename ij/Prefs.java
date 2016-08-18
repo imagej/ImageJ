@@ -83,7 +83,7 @@ public class Prefs {
 	public static boolean requireControlKey;
 	/** Open 8-bit images with inverting LUT so 0 is white and 255 is black. */
 	public static boolean useInvertingLut;
-	/** Draw tool icons using antialiasing. */
+	/** Draw tool icons using antialiasing (always true). */
 	public static boolean antialiasedTools = true;
 	/** Export TIFF and Raw using little-endian byte order. */
 	public static boolean intelByteOrder;
@@ -159,6 +159,8 @@ public class Prefs {
 	public static boolean showAllPoints;
 	/** Set MenuBar on Macs running Java 8. */
 	public static boolean setIJMenuBar = IJ.isMacOSX();
+	/** "ImageJ" window is always on top. */
+	public static boolean alwaysOnTop;
 	
 
 	static Properties ijPrefs = new Properties();

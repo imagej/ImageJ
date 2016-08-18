@@ -362,6 +362,8 @@ public class OverlayCommands implements PlugIn {
 	public static void listRois(Roi[] rois) {
 		ArrayList list = new ArrayList();
 		for (int i=0; i<rois.length; i++) {
+			if (rois[i]==null)
+				continue;
 			Rectangle r = rois[i].getBounds();
 			String color = Colors.colorToString(rois[i].getStrokeColor());
 			String fill = Colors.colorToString(rois[i].getFillColor());

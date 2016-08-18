@@ -4949,7 +4949,7 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getParens();
 		props.clear();
 		ImagePlus imp = getImage();
-		ImageStatistics stats = imp.getStatistics();
+		ImageStatistics stats = imp.getStatistics(ALL_STATS);
 		ResultsTable rt = new ResultsTable();
 		Analyzer analyzer = new Analyzer(imp, ALL_STATS, rt);
 		analyzer.saveResults(stats, imp.getRoi());

@@ -707,6 +707,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			if (IJ.debugMode) IJ.log("setMenuBar: "+time+"ms ("+Menus.setMenuBarCount+")");
 			if (time>2000L)
 				Prefs.setIJMenuBar = false;
+		} else {
+			//if (ij!=null) ij.toFront();
 		}
 		if (imp!=null) imp.setIJMenuBar(true);
 	}
