@@ -36,8 +36,8 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 		gd.addCheckbox("IJ window always on top", Prefs.alwaysOnTop);
 		gd.addChoice("16-bit range:", ranges, ranges[rangeIndex]);
 		gd.addNumericField("Menu font size:", Menus.getFontSize(), 0, 3, "points");
-        gd.addHelp(IJ.URL+"/docs/menus/edit.html#appearance");
-        gd.addDialogListener(this);
+		gd.addHelp(IJ.URL+"/docs/menus/edit.html#appearance");
+		gd.addDialogListener(this);
 		gd.showDialog();
 		if (gd.wasCanceled()) {
 			Prefs.interpolateScaledImages = interpolate;
