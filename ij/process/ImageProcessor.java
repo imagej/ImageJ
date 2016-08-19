@@ -2550,8 +2550,10 @@ public abstract class ImageProcessor implements Cloneable {
 		useBicubic = b;
 	}
 	
-	/** Calculates and returns statistics for this image or ROI. Use the
-	 * setRoi(Roi) method to limit statistics to a non-rectangular area.
+	/** Calculates and returns uncalibrated statistics for this image or ROI,
+	 * including histogram, area, mean, min and max, standard deviation,
+	 * mode and median. Use the setRoi(Roi) method to limit statistics to
+	 * a non-rectangular area.
 	 * @see ImageProcessor#setRoi	
 	 * @see ImageStatistics	
 	*/

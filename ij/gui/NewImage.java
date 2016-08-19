@@ -43,7 +43,8 @@ public class NewImage {
 		if (type==GRAY16) bytesPerPixel = 2;
 		else if (type==GRAY32||type==RGB) bytesPerPixel = 4;
 		long size = (long)width*height*nSlices*bytesPerPixel;
-		boolean bigStack = size/(1024*1024)>=50;
+		int sizeThreshold = fill==FILL_RANDOM?10:250;
+		boolean bigStack = size/(1024*1024)>=sizeThreshold;
 		String size2 = size/(1024*1024)+"MB ("+width+"x"+height+"x"+nSlices+")";
 		if ((options&CHECK_AVAILABLE_MEMORY)!=0) {
 			long max = IJ.maxMemory(); // - 100*1024*1024;
@@ -69,7 +70,8 @@ public class NewImage {
 		ImageStack stack = imp.createEmptyStack();
 		int inc = nSlices/40;
 		if (inc<1) inc = 1;
-		IJ.showStatus("Allocating "+size2+". Press 'Esc' to abort.");
+		if (bigStack)
+			IJ.showStatus("Allocating "+size2+". Press 'Esc' to abort.");
 		IJ.resetEscape();
 		try {
 			stack.addSlice(null, ip);
