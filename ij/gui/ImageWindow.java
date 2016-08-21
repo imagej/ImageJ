@@ -468,10 +468,12 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	}
 	
 	public Rectangle getMaximumBounds() {
+		Rectangle maxWindow = GUI.getMaxWindowBounds();
+		if (imp==null)
+			return maxWindow;
 		double width = imp.getWidth();
 		double height = imp.getHeight();
 		double iAspectRatio = width/height;
-		Rectangle maxWindow = GUI.getMaxWindowBounds();
 		maxWindowBounds = maxWindow;
 		if (iAspectRatio/((double)maxWindow.width/maxWindow.height)>0.75) {
 			maxWindow.y += 22;  // uncover ImageJ menu bar
