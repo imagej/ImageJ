@@ -301,9 +301,10 @@ public class PointRoi extends PolygonRoi {
 	}
 
 	private synchronized void incrementCounter(ImagePlus imp) {
+		//IJ.log("incrementCounter: "+nPoints+" "+counter+" "+(counters!=null?""+counters.length:"null"));
 		counts[counter]++;
 		boolean isStack = imp!=null && imp.getStackSize()>1;
-		if (counter!=0 || isStack) {
+		if (counter!=0 || isStack || counters!=null) {
 			if (counters==null) {
 				counters = new short[nPoints*2];
 				positions = new short[nPoints*2];
@@ -506,6 +507,7 @@ public class PointRoi extends PolygonRoi {
 	public int[] getCounters() {
 		if (counters==null)
 			return null;
+		//IJ.log("getCounters: "+nPoints+counters.length);
 		int[] temp = new int[nPoints];
 		for (int i=0; i<nPoints; i++) {
 			temp[i] = (counters[i]&0xff) + ((positions[i]&0xffff)<<8);

@@ -40,6 +40,8 @@ public class AutoThresholder {
 	/** Calculates and returns a threshold using the specified
 		method and 256 bin histogram. */
 	public int getThreshold(Method method, int[] histogram) {
+		if (histogram==null)
+			throw new IllegalArgumentException("Histogram is null");
 		if (histogram.length!=256)
 			throw new IllegalArgumentException("Histogram length not 256");
 		int threshold = 0;

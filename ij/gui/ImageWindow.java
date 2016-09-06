@@ -144,6 +144,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
      }
     
 	private void setLocationAndSize(boolean updating) {
+		if (imp==null)
+			return;
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		Rectangle maxWindow = getMaxWindow(0, 0);
@@ -246,6 +248,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	/** Override Container getInsets() to make room for some text above the image. */
 	public Insets getInsets() {
 		Insets insets = super.getInsets();
+		if (imp==null)
+			return insets;
 		double mag = ic.getMagnification();
 		int extraWidth = (int)((MIN_WIDTH - imp.getWidth()*mag)/2.0);
 		if (extraWidth<0) extraWidth = 0;
@@ -257,6 +261,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 
     /** Draws the subtitle. */
     public void drawInfo(Graphics g) {
+    	if (imp==null)
+    		return;
         if (textGap!=0) {
 			Insets insets = super.getInsets();
 			if (imp.isComposite()) {
@@ -276,6 +282,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
     /** Creates the subtitle. */
     public String createSubtitle() {
     	String s="";
+    	if (imp==null)
+    		return s;
     	int nSlices = imp.getStackSize();
     	if (nSlices>1) {
     		ImageStack stack = imp.getStack();

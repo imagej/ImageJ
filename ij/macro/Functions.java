@@ -4946,12 +4946,21 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void setMeasurements() {
-		interp.getParens();
+		String arg = "";
+		if (interp.nextToken()=='(') {
+			interp.getLeftParen();
+			if (interp.nextToken() != ')')
+				arg = getString().toLowerCase(Locale.US);
+			interp.getRightParen();
+		}
 		props.clear();
 		ImagePlus imp = getImage();
-		ImageStatistics stats = imp.getStatistics(ALL_STATS);
+		int measurements = ALL_STATS;
+		if (arg.contains("limit"))
+			measurements += LIMIT;
+		ImageStatistics stats = imp.getStatistics(measurements);
 		ResultsTable rt = new ResultsTable();
-		Analyzer analyzer = new Analyzer(imp, ALL_STATS, rt);
+		Analyzer analyzer = new Analyzer(imp, measurements, rt);
 		analyzer.saveResults(stats, imp.getRoi());
 		for (int i=0; i<=rt.getLastColumn(); i++) {
 			if (rt.columnExists(i)) {
