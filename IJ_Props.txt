@@ -123,6 +123,8 @@ adjust05="Color Threshold...",ij.plugin.frame.ColorThresholder
 adjust06="Size...",ij.plugin.Resizer
 adjust07="Canvas Size...",ij.plugin.CanvasResizer
 adjust08="Line Width... ",ij.plugin.frame.LineWidthAdjuster
+adjust09="Coordinates...",ij.plugin.Coordinates
+
 
 # Plugins installed in the Image/Color submenu
 color01="Split Channels",ij.plugin.ChannelSplitter

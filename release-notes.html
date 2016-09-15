@@ -5,8 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.51g 8 September 2016</u>
+<li> <u>1.51g 14 September 2016</u>
 <ul>
+<li> Thanks to Michael Schmid, added the <i>Image&gt;Adjust&gt;Coordinates</i>
+command, which allows the user to set the corner coordinates of the selection bounds
+or the full image. This modifies the image scale (pixelWidth, pixelHeight) and the xOrigin, yOrigin.
+If a single point is selected, the coordinates of the point can be specified, which only
+sets xOrigin and yOrigin. The units for x and y can be also selected.
 <li> Thanks to Thomas Boudier, when creating a new stack, a status message 
 and progress bar are only displayed when the stack is 250 MB or larger.
 <li> Thanks to Norbert Vischer, added the List.setMeasurements("limit")
@@ -18,7 +23,7 @@ selection positions to the overlay.
 sometimes fail when using multiple counters.
 <li> Thanks to Curtis Rueden, fixed bugs that caused the 
 "Run single instance listener" option in <i>Edit&gt;Options&gt;Misc</i>
-to sometimes not working as expected.
+to not work as expected.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
