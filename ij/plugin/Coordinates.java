@@ -16,9 +16,20 @@ import java.awt.geom.Rectangle2D;
  */
  
 public class Coordinates implements PlugIn, DialogListener {
+
+	private static final String help = "<html>"
+	+"<h1>Image&gt;Adjust&gt;Coordinates</h1>"
+	+"<font size=+1>"
+	+"This command allows the user to set the corner coordinates of<br>the selection bounds "
+	+"or the full image. This modifies the image<br>scale (<i>pixelWidth</i>, <i>pixelHeight</i>) and <i>xOrigin</i> and <i>yOrigin</i>. "
+	+"If a<br>single point is selected, the coordinates of the point can be<br>specified, which only "
+	+"sets <i>xOrigin</i> and <i>yOrigin</i>. The units for X<br>and Y can be also selected.<br> "
+	+"</font>";
+
 	private final static String SAME_AS_X = "<same as x unit>";
 	private final static int IMAGE = 0, ROI_BOUNDS = 1, POINT = 2;  //mode: coordinates of what to specify
 	private int mode = IMAGE;
+
 
     public void run(String arg) {
     	ImagePlus imp = IJ.getImage();
@@ -40,18 +51,19 @@ public class Coordinates implements PlugIn, DialogListener {
     		title = "Point Coordinates";
         GenericDialog gd = new GenericDialog(title);
         if (mode == POINT) {
-			gd.addNumericField("X", cal.getX(bounds.x), 2, 8, "");
-			gd.addNumericField("Y", cal.getY(bounds.y, imageHeight), 2, 8, "");
+			gd.addNumericField("X:", cal.getX(bounds.x), 2, 8, "");
+			gd.addNumericField("Y:", cal.getY(bounds.y, imageHeight), 2, 8, "");
         } else {
-			gd.addNumericField("Left", cal.getX(bounds.x), 2, 8, "");
-			gd.addNumericField("Right", cal.getX(bounds.x+bounds.width), 2, 8, "");
-			gd.addNumericField("Top", cal.getY(bounds.y, imageHeight), 2, 8, "");
-			gd.addNumericField("Bottom", cal.getY(bounds.y+bounds.height, imageHeight), 2, 8, "");
+			gd.addNumericField("Left:", cal.getX(bounds.x), 2, 8, "");
+			gd.addNumericField("Right:", cal.getX(bounds.x+bounds.width), 2, 8, "");
+			gd.addNumericField("Top:", cal.getY(bounds.y, imageHeight), 2, 8, "");
+			gd.addNumericField("Bottom:", cal.getY(bounds.y+bounds.height, imageHeight), 2, 8, "");
 		}
 		String xUnit = cal.getUnit();
 		String yUnit = cal.getYUnit();
-        gd.addStringField("X_unit", xUnit, 18);
-        gd.addStringField("Y_unit", yUnit.equals(xUnit) ? SAME_AS_X : yUnit, 18);
+        gd.addStringField("X_unit:", xUnit, 18);
+        gd.addStringField("Y_unit:", yUnit.equals(xUnit) ? SAME_AS_X : yUnit, 18);
+		gd.addHelp(help);
         gd.addDialogListener(this);
         gd.showDialog();
         if (gd.wasCanceled())
