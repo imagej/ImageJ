@@ -5799,6 +5799,8 @@ public class Functions implements MacroConstants, Measurements {
 			int index = (int)getArg();
 			checkIndex(index, 0, size-1);
 			Roi roi = overlay.get(index);
+			if (roi==null)
+				return Double.NaN;;
 			if (imp.getStackSize()>1) {
 				if (imp.isHyperStack()) {
 					int c = roi.getCPosition();
@@ -5813,7 +5815,9 @@ public class Functions implements MacroConstants, Measurements {
 				} else if (roi.getPosition()>0)
 					imp.setSlice(roi.getPosition());
 			}
-			imp.setRoi(roi, !Interpreter.isBatchMode());
+			Rectangle bounds = roi.getBounds();
+			if (bounds.width>0 || bounds.height>0 || roi.getType()==Roi.POINT || roi.getType()==Roi.LINE)
+				imp.setRoi(roi, !Interpreter.isBatchMode());
 			return Double.NaN;
 		} else if (name.equals("moveSelection")) {
 			int index = (int)getFirstArg();

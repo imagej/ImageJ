@@ -27,33 +27,33 @@ public class Coordinates implements PlugIn, DialogListener {
 	+"</font>";
 
 	private final static String SAME_AS_X = "<same as x unit>";
-	private final static int IMAGE = 0, ROI_BOUNDS = 1, POINT = 2;  //mode: coordinates of what to specify
+	private final static int IMAGE = 0, ROI_BOUNDS = 1, POINT = 2;	//mode: coordinates of what to specify
 	private int mode = IMAGE;
 
 
-    public void run(String arg) {
-    	ImagePlus imp = IJ.getImage();
-    	int imageHeight = imp.getHeight();
-    	Calibration cal = imp.getCalibration();
-    	Roi roi = imp.getRoi();
-    	Rectangle2D.Double bounds = null;
-    	if (roi != null) {
-    		bounds = roi.getFloatBounds();
-    		if (bounds.width==0 && bounds.height==0)
-    			mode = POINT;
-    		else
-    			mode = ROI_BOUNDS;
-    	} else {	//no Roi, use image bounds
-    		bounds = new Rectangle2D.Double(0, 0, imp.getWidth(), imp.getHeight());
-    	}
-    	String title = (mode==IMAGE ? "Image" : "Selection") +" Coordinates";
-    	if (mode == POINT)
-    		title = "Point Coordinates";
-        GenericDialog gd = new GenericDialog(title);
-        if (mode == POINT) {
+	public void run(String arg) {
+		ImagePlus imp = IJ.getImage();
+		int imageHeight = imp.getHeight();
+		Calibration cal = imp.getCalibration();
+		Roi roi = imp.getRoi();
+		Rectangle2D.Double bounds = null;
+		if (roi != null) {
+			bounds = roi.getFloatBounds();
+			if (bounds.width==0 && bounds.height==0)
+				mode = POINT;
+			else
+				mode = ROI_BOUNDS;
+		} else {	//no Roi, use image bounds
+			bounds = new Rectangle2D.Double(0, 0, imp.getWidth(), imp.getHeight());
+		}
+		String title = (mode==IMAGE ? "Image" : "Selection") +" Coordinates";
+		if (mode == POINT)
+			title = "Point Coordinates";
+		GenericDialog gd = new GenericDialog(title);
+		if (mode == POINT) {
 			gd.addNumericField("X:", cal.getX(bounds.x), 2, 8, "");
 			gd.addNumericField("Y:", cal.getY(bounds.y, imageHeight), 2, 8, "");
-        } else {
+		} else {
 			gd.addNumericField("Left:", cal.getX(bounds.x), 2, 8, "");
 			gd.addNumericField("Right:", cal.getX(bounds.x+bounds.width), 2, 8, "");
 			gd.addNumericField("Top:", cal.getY(bounds.y, imageHeight), 2, 8, "");
@@ -61,14 +61,14 @@ public class Coordinates implements PlugIn, DialogListener {
 		}
 		String xUnit = cal.getUnit();
 		String yUnit = cal.getYUnit();
-        gd.addStringField("X_unit:", xUnit, 18);
-        gd.addStringField("Y_unit:", yUnit.equals(xUnit) ? SAME_AS_X : yUnit, 18);
+		gd.addStringField("X_unit:", xUnit, 18);
+		gd.addStringField("Y_unit:", yUnit.equals(xUnit) ? SAME_AS_X : yUnit, 18);
 		gd.addHelp(help);
-        gd.addDialogListener(this);
-        gd.showDialog();
-        if (gd.wasCanceled())
+		gd.addDialogListener(this);
+		gd.showDialog();
+		if (gd.wasCanceled())
 			return;
-        if (mode == POINT) {
+		if (mode == POINT) {
 			double x = gd.getNextNumber();
 			double y = gd.getNextNumber();
 			if (gd.invalidNumber()) {
@@ -102,8 +102,8 @@ public class Coordinates implements PlugIn, DialogListener {
 	}
 
 	// In interactive mode, disable 'ok' in case of input errors (bad numbers, zero range or inverted x)
-    public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
-        if (mode == POINT) {
+	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
+		if (mode == POINT) {
 			gd.getNextNumber();
 			gd.getNextNumber();
 			return (!gd.invalidNumber());
@@ -118,7 +118,7 @@ public class Coordinates implements PlugIn, DialogListener {
 
 	// Calculates pixel offset from scaled coordinates of a point with given pixel position
 	private double coordinate2offset(double coordinate, double pixelPos, double pixelSize) {
-		return  pixelPos - coordinate/pixelSize;
+		return	pixelPos - coordinate/pixelSize;
 	}
 
 }

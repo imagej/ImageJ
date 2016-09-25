@@ -223,6 +223,7 @@ public class ShapeRoi extends Roi {
 		setShape(new GeneralPath(at.createTransformedShape(a1)));
 		x = r.x;
 		y = r.y;
+		cachedMask = null;
 		return this;
 	}
 

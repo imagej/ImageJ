@@ -562,9 +562,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	* @param columns	the number of columns
 	*/
     public void addTextAreas(String text1, String text2, int rows, int columns) {
-    	if (textArea1!=null) return;
-    	Panel panel = new Panel();
-    	Font font = new Font("SansSerif", Font.PLAIN, 14);
+		if (textArea1!=null) return;
+		Panel panel = new Panel();
+		Font font = new Font("SansSerif", Font.PLAIN, 14);
 		textArea1 = new TextArea(text1,rows,columns,TextArea.SCROLLBARS_NONE);
 		if (IJ.isLinux()) textArea1.setBackground(Color.white);
 		textArea1.setFont(font);

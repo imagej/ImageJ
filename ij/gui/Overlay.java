@@ -23,12 +23,14 @@ public class Overlay {
     /** Constructs an Overlay and adds the specified ROI. */
     public Overlay(Roi roi) {
     	list = new Vector();
-    	list.add(roi);
+    	if (roi!=null)
+    		list.add(roi);
     }
 
     /** Adds an ROI to this Overlay. */
     public void add(Roi roi) {
-    	list.add(roi);
+    	if (roi!=null)
+    		list.add(roi);
     }
         
     /** Adds an ROI to this Overlay using the specified name. */
@@ -39,7 +41,8 @@ public class Overlay {
 
     /** Adds an ROI to this Overlay. */
     public void addElement(Roi roi) {
-    	list.add(roi);
+    	if (roi!=null)
+    		list.add(roi);
     }
 
     /** Removes the ROI with the specified index from this Overlay. */
