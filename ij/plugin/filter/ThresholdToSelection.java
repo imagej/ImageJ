@@ -2,7 +2,7 @@
  * This plugin implements the Edit/Selection/Create Selection command.
  * It is based on a proposal by Tom Larkworthy.
  * Written and public domained in June 2006 by Johannes E. Schindelin
- */
+*/
 package ij.plugin.filter;
 import ij.IJ;
 import ij.ImagePlus;
@@ -29,12 +29,15 @@ public class ThresholdToSelection implements PlugInFilter {
 		image.setRoi(convert(ip));
 	}
 	
+	/** Returns a selection created from the thresholded pixels in the
+		specified image, or null if there are no thresholded pixels. */
 	public static Roi run(ImagePlus imp) {
 		ThresholdToSelection tts = new ThresholdToSelection();
-		tts.image = imp;
 		return tts.convert(imp.getProcessor());
 	}
 	
+	/** Returns a selection created from the thresholded pixels in the
+		specified image, or null if there are no thresholded pixels. */
 	public Roi convert(ImageProcessor ip) {
 		this.ip = ip;
 		min = (float)ip.getMinThreshold();
@@ -290,7 +293,9 @@ public class ThresholdToSelection implements PlugInFilter {
 					IJ.showProgress(y*(PROGRESS_FRACTION_OUTLINING/h));
 			}
 		}
-
+		
+		if (polygons.size()==0)
+			return null;
 		if (showStatus) IJ.showStatus("Converting threshold to selection...");
 		GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
 		progressInc = Math.max(polygons.size()/10, 1);

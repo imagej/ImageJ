@@ -88,6 +88,8 @@ public class RoiEnlarger implements PlugIn {
 		Prefs.blackBackground = bb;
 		ip.setThreshold(0, n, ImageProcessor.NO_LUT_UPDATE);
 		Roi roi2 = (new ThresholdToSelection()).convert(ip);
+		if (roi2==null)
+			return roi;
 		roi2.setLocation(bounds.x-n, bounds.y-n);
 		roi2.setStrokeColor(roi.getStrokeColor());
 		if (roi.getStroke()!=null)
@@ -121,14 +123,11 @@ public class RoiEnlarger implements PlugIn {
 		boolean bb = Prefs.blackBackground;
 		Prefs.blackBackground = true;
 		new EDM().toEDM(ip);
-		//ImagePlus imp = new ImagePlus("ip", ip);
-		//Roi roi3 = (Roi)roi.clone();
-		//roi3.setLocation(1, 1);
-		//imp.setRoi(roi3);
-		//imp.show();
 		Prefs.blackBackground = bb;
 		ip.setThreshold(n+1, 255, ImageProcessor.NO_LUT_UPDATE);
 		Roi roi2 = (new ThresholdToSelection()).convert(ip);
+		if (roi2==null)
+			return roi;
 		Rectangle bounds2 = roi2.getBounds();
 		if (bounds2.width<=0 && bounds2.height<=0)
 			return roi;

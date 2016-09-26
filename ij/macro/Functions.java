@@ -5815,9 +5815,7 @@ public class Functions implements MacroConstants, Measurements {
 				} else if (roi.getPosition()>0)
 					imp.setSlice(roi.getPosition());
 			}
-			Rectangle bounds = roi.getBounds();
-			if (bounds.width>0 || bounds.height>0 || roi.getType()==Roi.POINT || roi.getType()==Roi.LINE)
-				imp.setRoi(roi, !Interpreter.isBatchMode());
+			imp.setRoi(roi, !Interpreter.isBatchMode());
 			return Double.NaN;
 		} else if (name.equals("moveSelection")) {
 			int index = (int)getFirstArg();

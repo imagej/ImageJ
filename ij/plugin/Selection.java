@@ -641,6 +641,8 @@ public class Selection implements PlugIn, Measurements {
 			ip2.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
 			ThresholdToSelection tts = new ThresholdToSelection();
 			roi2 = tts.convert(ip2);
+			if (roi2==null)
+				return roi;
 			if (bounds.x==0&&bounds.y==0)
 				roi2.setLocation(0, 0);
 			else

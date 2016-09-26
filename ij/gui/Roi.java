@@ -402,8 +402,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		if (cornerDiameter>0) {
 			ImageProcessor ip = getMask();
 			Roi roi2 = (new ThresholdToSelection()).convert(ip);
-			roi2.setLocation(x, y);
-			return roi2.getFloatPolygon();
+			if (roi2!=null) {
+				roi2.setLocation(x, y);
+				return roi2.getFloatPolygon();
+			}
 		}
 		if (subPixelResolution() && bounds!=null) {
 			float[] xpoints = new float[4];

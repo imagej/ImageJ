@@ -1377,6 +1377,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				if (ip==null)
 					ip = new ByteProcessor(imp.getWidth(), imp.getHeight());
 				roi = convertLineToPolygon(roi, ip);
+				if (roi==null) continue;
 			}
 			if (s1==null) {
 				if (roi instanceof ShapeRoi)
