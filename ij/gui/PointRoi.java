@@ -44,6 +44,7 @@ public class PointRoi extends PolygonRoi {
 	private ResultsTable rt;
 	private long lastPointTime;
 	private double scale;
+	private int[] counterInfo;
 	
 	static {
 		setDefaultType((int)Prefs.get(TYPE_KEY, HYBRID));
@@ -507,11 +508,9 @@ public class PointRoi extends PolygonRoi {
 	public int[] getCounters() {
 		if (counters==null)
 			return null;
-		//IJ.log("getCounters: "+nPoints+counters.length);
 		int[] temp = new int[nPoints];
-		for (int i=0; i<nPoints; i++) {
+		for (int i=0; i<nPoints; i++)
 			temp[i] = (counters[i]&0xff) + ((positions[i]&0xffff)<<8);
-		}
 		return temp;
 	}
 
@@ -746,6 +745,14 @@ public class PointRoi extends PolygonRoi {
 				r.counts[i] = counts[i];
 		}
 		return r;
+	}
+	
+	public void setCounterInfo(int[] info) {
+		counterInfo = info;
+	}
+
+	public int[] getCounterInfo() {
+		return counterInfo;
 	}
 
 	/** @deprecated */
