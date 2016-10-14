@@ -286,12 +286,17 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 	
 	void handleDoubleClick() {
-		if (selStart<0 || selStart!=selEnd || iColCount!=1) return;
+		boolean overlayList = "Overlay Elements".equals(title);
+		if (selStart<0 || selStart!=selEnd || (iColCount!=1&&!overlayList)) return;
 		boolean doubleClick = System.currentTimeMillis()-mouseDownTime<=DOUBLE_CLICK_THRESHOLD;
 		mouseDownTime = System.currentTimeMillis();
 		if (doubleClick) {
 			char[] chars = (char[])(vData.elementAt(selStart));
 			String s = new String(chars);
+			if (overlayList) {
+				handleDoubleClickInOverlayList(s);
+				return;
+			}
 			int index = s.indexOf(": ");
 			if (index>-1 && !s.endsWith(": "))
 				s = s.substring(index+2); // remove sequence number added by ListFilesRecursively
@@ -302,6 +307,19 @@ public class TextPanel extends Panel implements AdjustmentListener,
 				thread.start();
 			}
 		}
+	}
+	
+	private void handleDoubleClickInOverlayList(String s) {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp==null)
+			return;
+		Overlay overlay = imp.getOverlay();
+		if (overlay==null)
+			return;
+		String[] columns = s.split("\t");
+		int index = (int)Tools.parseDouble(columns[0]);
+		Roi roi = overlay.get(index);
+		imp.setRoi(roi);
 	}
 	
     /** For better performance, open double-clicked files on 

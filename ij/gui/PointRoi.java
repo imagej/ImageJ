@@ -505,6 +505,14 @@ public class PointRoi extends PolygonRoi {
 			return counts[counter];
 	}
 	
+	/** Returns the counter assocated with the specified point. */
+	public int getCounter(int index) {
+		if (counters==null || index>=counters.length)
+			return 0;
+		else
+			return counters[index];
+	}
+
 	public int[] getCounters() {
 		if (counters==null)
 			return null;

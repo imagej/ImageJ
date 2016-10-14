@@ -730,7 +730,7 @@ public class Selection implements PlugIn, Measurements {
 	}
 	
 	boolean setProperties(String title, Roi roi) {
-		if ((roi instanceof PointRoi) && Toolbar.getMultiPointMode()) {
+		if ((roi instanceof PointRoi) && Toolbar.getMultiPointMode() && !IJ.altKeyDown()) {
 			((PointRoi)roi).displayCounts();
 			return true;
 		}

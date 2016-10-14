@@ -161,6 +161,8 @@ public class Prefs {
 	public static boolean setIJMenuBar = IJ.isMacOSX();
 	/** "ImageJ" window is always on top. */
 	public static boolean alwaysOnTop;
+	/** Display length of line selections. */
+	public static boolean labelLines = true;
 	
 
 	static Properties ijPrefs = new Properties();
