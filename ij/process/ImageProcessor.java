@@ -1204,6 +1204,7 @@ public abstract class ImageProcessor implements Cloneable {
 		double r = lineWidth/2.0;
 		int xmin=(int)(xcenter-r+0.5), ymin=(int)(ycenter-r+0.5);
 		int xmax=xmin+lineWidth, ymax=ymin+lineWidth;
+		//if (xcenter<clipXMin || ycenter<clipYMin || xcenter>clipXMax || ycenter>clipYMax ) {
 		if (xmin<clipXMin || ymin<clipYMin || xmax>clipXMax || ymax>clipYMax ) {
 			// draw edge dot
 			double r2 = r*r;
@@ -1224,7 +1225,9 @@ public abstract class ImageProcessor implements Cloneable {
 			}
 			setRoi(xmin, ymin, lineWidth, lineWidth);
 			fill(dotMask);
-			resetRoi();
+			roiX=0; roiY=0; roiWidth=width; roiHeight=height;
+			xMin=1; xMax=width-2; yMin=1; yMax=height-2;
+			mask=null;
 		}
 	}
 	
@@ -2361,10 +2364,10 @@ public abstract class ImageProcessor implements Cloneable {
 		The clipping rectangle is reset by passing a null argument or by calling resetRoi(). */
 	public void setClipRect(Rectangle clipRect) {
 		if (clipRect==null) {
-			clipXMin=0; 
-			clipXMax=width-1; 
-			clipYMin=0; 
-			clipYMax=height-1; 
+			clipXMin = 0; 
+			clipXMax = width-1; 
+			clipYMin = 0; 
+			clipYMax = height-1; 
 		} else {
 			clipXMin = clipRect.x; 
 			clipXMax = clipRect.x + clipRect.width - 1; 
