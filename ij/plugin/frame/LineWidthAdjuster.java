@@ -58,7 +58,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		
 		c.gridx = 2;
 		c.insets = new Insets(margin, 25, margin, 5);
-		checkbox = new Checkbox("Spline Fit", isSplineFit());
+		checkbox = new Checkbox("Spline fit", isSplineFit());
 		checkbox.addItemListener(this);
 		panel.add(checkbox);
 		
@@ -173,10 +173,15 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 			{checkbox.setState(false); return;};;
 		PolygonRoi poly = (PolygonRoi)roi;
 		boolean splineFit = poly.isSplineFit();
-		if (selected && !splineFit)
-			{poly.fitSpline(); imp.draw();}
-		else if (!selected && splineFit)
-			{poly.removeSplineFit(); imp.draw();}
+		if (selected && !splineFit) {
+			poly.fitSpline();
+			Prefs.splineFitLines = true;
+			imp.draw();
+		} else if (!selected && splineFit) {
+			poly.removeSplineFit();
+			Prefs.splineFitLines = false;
+			imp.draw();
+		}
 	}
 	
 	public static void update() {

@@ -516,7 +516,7 @@ public class PolygonRoi extends Roi {
 			xp[nPoints-1] = ox-x;
 			yp[nPoints-1] = oy-y;
 		}
-		if (type==POLYLINE && subPixelResolution()) {
+		if (type==POLYLINE && Prefs.splineFitLines) {
 			fitSpline();
 			imp.draw();
 		} else

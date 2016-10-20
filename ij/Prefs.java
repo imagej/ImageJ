@@ -161,6 +161,9 @@ public class Prefs {
 	public static boolean setIJMenuBar = IJ.isMacOSX();
 	/** "ImageJ" window is always on top. */
 	public static boolean alwaysOnTop;
+	/** Automatically spline fit line selections */
+	public static boolean splineFitLines;
+
 	
 
 	static Properties ijPrefs = new Properties();
