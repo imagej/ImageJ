@@ -96,7 +96,6 @@ public Plot getPlot() {
 		Prefs.verticalProfile = gd.getNextBoolean();
 		PlotWindow.interpolate = gd.getNextBoolean();
 		Prefs.subPixelResolution = gd.getNextBoolean();
-		Prefs.splineFitLines = Prefs.subPixelResolution;
 		if (!fixedScale && !wasFixedScale && (ymin!=0.0 || ymax!=0.0))
 			fixedScale = true;
 		if (!fixedScale) {

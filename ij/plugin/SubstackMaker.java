@@ -157,8 +157,9 @@ public class SubstackMaker implements PlugIn {
 		ImageStack stack = imp.getStack();
 		ImageStack stack2 = null;
 		Roi roi = imp.getRoi();
+		boolean showProgress = stack.getSize()>400 || stack.isVirtual();
 		for (int i= first, j=0; i<= last; i+=inc) {
-			//IJ.log(first+" "+last+" "+inc+" "+i);
+			if (showProgress) IJ.showProgress(i,last);
 			int currSlice = i-j;
 			ImageProcessor ip2 = stack.getProcessor(currSlice);
 			ip2.setRoi(roi);

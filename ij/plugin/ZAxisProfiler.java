@@ -159,7 +159,10 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 				return null;
 		}
 		ImageStack stack = imp.getStack();
+		boolean showProgress = size>400 || stack.isVirtual();
 		for (int i=1; i<=size; i++) {
+			if (showProgress)
+				IJ.showProgress(i,size);
 			int index = 1;
 			if (timeProfile)
 				index = imp.getStackIndex(c, z, i);
@@ -188,6 +191,7 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 			timeProfile = slices==1 && frames>1;
 		}
 		int size = stack.getSize();
+		boolean showProgress = size>400 || stack.isVirtual();
 		float[] values = new float[size];
 		Calibration cal = imp.getCalibration();
 		Analyzer analyzer = new Analyzer(imp);
@@ -202,6 +206,8 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 		boolean isLine = roi!=null && roi.isLine();
 		int current = imp.getCurrentSlice();
 		for (int i=1; i<=size; i++) {
+			if (showProgress)
+				IJ.showProgress(i,size);
 			if (showingLabels)
 				imp.setSlice(i);
 			ImageProcessor ip = stack.getProcessor(i);
