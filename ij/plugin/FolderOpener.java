@@ -212,7 +212,7 @@ public class FolderOpener implements PlugIn {
 					if (info!=null)
 						label += "\n" + info;
 				}
-				if (imp.getCalibration().pixelWidth!=cal.pixelWidth)
+				if (Math.abs(imp.getCalibration().pixelWidth-cal.pixelWidth)>0.0000000001)
 					allSameCalibration = false;
 				ImageStack inputStack = imp.getStack();
 				Overlay overlay2 = imp.getOverlay();
@@ -304,12 +304,6 @@ public class FolderOpener implements PlugIn {
 				}
 				if (cal.pixelWidth!=1.0 && cal.pixelDepth==1.0)
 					cal.pixelDepth = cal.pixelWidth;
-				if (cal.pixelWidth<=0.0001 && cal.getUnit().equals("cm")) {
-					cal.pixelWidth *= 10000.0;
-					cal.pixelHeight *= 10000.0;
-					cal.pixelDepth *= 10000.0;
-					cal.setUnit("um");
-				}
 				imp2.setCalibration(cal);
 			}
 			if (info1!=null && info1.lastIndexOf("7FE0,0010")>0) {

@@ -327,6 +327,13 @@ public class FileOpener {
 		Calibration cal = imp.getCalibration();
 		boolean calibrated = false;
 		if (fi.pixelWidth>0.0 && fi.unit!=null) {
+			if (fi.pixelWidth<=0.0001 && fi.unit.equals("cm")) {
+				fi.pixelWidth *= 10000.0;
+				fi.pixelHeight *= 10000.0;
+				if (fi.pixelDepth!=1.0)
+					fi.pixelDepth *= 10000.0;
+				fi.unit = "um";
+			}
 			cal.pixelWidth = fi.pixelWidth;
 			cal.pixelHeight = fi.pixelHeight;
 			cal.pixelDepth = fi.pixelDepth;
