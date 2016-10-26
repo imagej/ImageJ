@@ -4200,6 +4200,8 @@ public class Functions implements MacroConstants, Measurements {
 			Prefs.useJFileChooser = state;
 		else if (arg1.startsWith("auto"))
 			Prefs.autoContrast = state;
+		else if (arg1.equals("antialiasedtext"))
+			TextRoi.setAntialiasedText(state);
 		else
 			interp.error("Invalid option");
 	}

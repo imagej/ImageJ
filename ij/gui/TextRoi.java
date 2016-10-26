@@ -364,11 +364,16 @@ public class TextRoi extends Roi {
 		return instanceFont;
 	}
 	
-	/** Returns the state of global 'antialiasedText' variable, which is used by the "Fonts" widget. */
+	/** Returns the state of the global 'antialiasedText' variable, which is used by the "Fonts" widget. */
 	public static boolean isAntialiased() {
 		return antialiasedText;
 	}
 
+	/** Sets the state of the global 'antialiasedText' variable. */
+	public static void setAntialiasedText(boolean antialiased) {
+		antialiasedText = antialiased;
+	}
+	
 	/** Sets the 'antialiased' instance variable. */
 	public void setAntialiased(boolean antialiased) {
 		this.antialiased = antialiased;
