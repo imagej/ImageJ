@@ -572,10 +572,10 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                     for (int d=0; d<8; d++) {       //analyze all neighbors (in 8 directions) at the same level
                         int offset2 = offset+dirOffset[d];
                         if ((isInner || isWithin(x, y, d)) && (types[offset2]&LISTED)==0) {
-                        if (isEDM && edmPixels[offset2]<=0) continue;   //ignore the background (non-particles)
+                            if (isEDM && edmPixels[offset2]<=0)
+                                continue;   //ignore the background (non-particles)
                             if ((types[offset2]&PROCESSED)!=0) {
                                 maxPossible = false; //we have reached a point processed previously, thus it is no maximum now
-                                //if(x0<25&&y0<20)IJ.write("x0,y0="+x0+","+y0+":stop at processed neighbor from x,y="+x+","+y+", dir="+d);
                                 break;
                             }
                             int x2 = x+DIR_X_OFFSET[d];
