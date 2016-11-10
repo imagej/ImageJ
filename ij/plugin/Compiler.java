@@ -199,8 +199,12 @@ public class Compiler implements PlugIn, FilenameFilter {
 			errors = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
 			errors.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		}
-		if (errors!=null)
+		if (errors!=null) {
+			ImageJ ij = IJ.getInstance();
+			if (ij!=null)
+				s = ij.getInfo()+"\n \n"+s;
 			errors.display("Errors", s);
+		}
 		IJ.showStatus("done (errors)");
 	}
 

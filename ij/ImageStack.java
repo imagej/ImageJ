@@ -103,7 +103,7 @@ public class ImageStack {
 		the string 'sliceLabel' as the slice metadata. */
 	public void addSlice(String sliceLabel, ImageProcessor ip) {
 		if (ip.getWidth()!=width || ip.getHeight()!=height)
-			throw new IllegalArgumentException("Dimensions do not match");
+			throw new IllegalArgumentException("ImageStack.addSlice(): dimensions do not match");
 		if (nSlices==0) {
 			cm = ip.getColorModel();
 			min = ip.getMin();
