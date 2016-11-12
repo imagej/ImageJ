@@ -824,7 +824,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	/** Get statistics for this image or ROI, including 
 		 histogram, area, mean, min and max, standard
-		 deviation, mode and median.
+		 deviation and mode.
 		This code demonstrates how to get the area, mean
 		max and median of the current image or selection:
 		<pre>
@@ -833,16 +833,21 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
          IJ.log("Area: "+stats.area);
          IJ.log("Mean: "+stats.mean);
          IJ.log("Max: "+stats.max);
-         IJ.log("Median: "+stats.median);
 		</pre>
+		@see #getAllStatistics
 		@see #getRawStatistics
 		@see ij.process.ImageStatistics
 		@see ij.process.ImageStatistics#getStatistics
 		*/
 	public ImageStatistics getStatistics() {
-		return getStatistics(AREA+MEAN+STD_DEV+MODE+MIN_MAX+RECT+MEDIAN);
+		return getStatistics(AREA+MEAN+STD_DEV+MODE+MIN_MAX+RECT);
 	}
 	
+	/** Gets the complete statistics for this image or ROI, with "Limit to threshold" set. */
+	public ImageStatistics getAllStatistics() {
+		return getStatistics(ALL_STATS+LIMIT);
+	}
+
 	/* Returns uncalibrated statistics for this image or ROI, including
 		256 bin histogram, pixelCount, mean, mode, min and max. */
 	public ImageStatistics getRawStatistics() {

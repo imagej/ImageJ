@@ -946,7 +946,7 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 		if (roi!=null && !roi.isArea()) roi = null;
 		ip.setRoi(roi);
 		if (stats==null)
-			stats = ImageStatistics.getStatistics(ip, AREA+MIN_MAX+MODE, null);
+			stats = ip.getStatistics();
 		if (IJ.debugMode) IJ.log("  stats: "+stats);
 		int maxCount2 = 0;
 		histogram = stats.histogram;

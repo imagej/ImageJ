@@ -11,6 +11,7 @@ import ij.gui.Roi;
 import ij.gui.ShapeRoi;
 import ij.gui.Overlay;
 import ij.Prefs;
+import ij.measure.Measurements;
 
 /**
 This abstract class is the superclass for classes that process
@@ -2555,15 +2556,21 @@ public abstract class ImageProcessor implements Cloneable {
 	
 	/** Calculates and returns uncalibrated statistics for this image or ROI,
 	 * including histogram, area, mean, min and max, standard deviation,
-	 * mode and median. Use the setRoi(Roi) method to limit statistics to
+	 * and mode. Use the setRoi(Roi) method to limit statistics to
 	 * a non-rectangular area.
-	 * @see ImageProcessor#setRoi	
+	 * @see #setRoi	
+	 * @see #getAllStatistics	
 	 * @see ImageStatistics	
 	*/
 	public ImageStatistics getStatistics() {
 		return ImageStatistics.getStatistics(this);
 	}
 		
+	/** Calculates and returns complete uncalibrated statistics for this image or ROI. */
+	public ImageStatistics getAllStatistics() {
+		return ImageStatistics.getStatistics(this, Measurements.ALL_STATS, null);
+	}
+
 	/** Blurs the image by convolving with a Gaussian function. */
 	public void blurGaussian(double sigma) {
 		resetRoi();

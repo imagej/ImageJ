@@ -5,44 +5,9 @@
 </head>
 <body>
 
-<li> <u>1.51h 9 November 2016</u>
+<li> <u>1.51h 12 November 2016</u>
 <ul>
-<li> Thanks to Stein Rorvik, the <i>Image&gt;Stacks&gt;Z-axis Profile</i> and
-<i>Image&gt;Stacks&gt;Tools&gt;Make Substack</i> commands
-display a progress bar if the stack has more than 400 slices or
-is a virtual stack.
-<li> Thanks to Christiane, the Results table, for each point in a multi-point selection,
-displays the counter associated with the point and the count for that counter.
-<li> A selection in an overlay can be activated by double clicking the corresponding
-row in the <i>Image&gt;Overlay&gt;List Elements</i> list.
-<li> Thanks to Michael Schmid, added the Prefs.splineFitLines flag, set by the
-"Spline fit" checkbox in the "Line Width" dialog, opened
-by double clicking on the line tool icon.
-<li> Thanks to Thorsten Wagner, TIFF files with cm units are now
-converted to &#181;m units if the pixel width is less than 0.0001 cm.
-In earlier versions of ImageJ they were only converted when
-importing an image sequence as a virtual stack.
-<li> Thanks to Gilles Carpentier, error messages displayed by the
-<i>Plugins&gt;Compile and Run</i> command now include 
-ImageJ, Java and OS version information.
-<li> Thanks to Stein Rorvik, added the setOption("AntialiasedText",boolean) macro
-function and the TextRoi.setAntialiasedText(boolean) method, which control
-the "Antialiased text" option in the <i>Edit&gt;Options&gt;Fonts</i> dialog.
-<li> Thanks to Avital Steinberg, fixed a bug that caused the
-ImageProcessor.getStatistics() method to sometimes not work
-as expected with ShapeRois.
-<li> Thanks to krami79, fixed a bug that could cause an exception
-when closing a live plot window.
-<li> Thanks to Jan Eglinger, fixed a bug that could cause pugins and scripts
-using the GenericDialog.getMessage() method to throw an exception.
-<li> Thanks to Norbert Vischer, fixed a bug that caused dots in 
-plots to be drawn outside the frame.
-<li> Thanks to Ron Paletzki, fixed a bug that caused <i>Image&gt;Scale</i>
-and <i>Image&gt;Adjust&gt;Size</i> to not work as expected with
-z scale factors less than 0.5 when Interpolation was set to None.
-<li> Thanks to Gilles Carpentier, fixed a 1.50i regression that caused
-the <i>Edit&gt;Selection&gt;Enlarge</i> command to sometimes not
-work as expected when shrinking very small selections.
+<li> Added the ImagePlus.getAllStatistics() and ImageProcessor.getAllStatistics() methods.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
