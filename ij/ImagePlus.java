@@ -822,7 +822,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return mask;
 	}
 
-	/** Get statistics for this image or ROI, including 
+	/** Get calibrated statistics for this image or ROI, including 
 		 histogram, area, mean, min and max, standard
 		 deviation and mode.
 		This code demonstrates how to get the area, mean
@@ -843,7 +843,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return getStatistics(AREA+MEAN+STD_DEV+MODE+MIN_MAX+RECT);
 	}
 	
-	/** Gets the complete statistics for this image or ROI, with "Limit to threshold" set. */
+	/** Gets the complete calibrated statistics for this image or ROI, with "Limit to threshold" set. */
 	public ImageStatistics getAllStatistics() {
 		return getStatistics(ALL_STATS+LIMIT);
 	}
