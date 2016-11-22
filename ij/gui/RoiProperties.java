@@ -24,6 +24,7 @@ public class RoiProperties {
 	private boolean setPositions;
 	private boolean listCoordinates;
 	private boolean listProperties;
+	private boolean showPointCounts;
 	private static final String[] justNames = {"Left", "Center", "Right"};
 	private int nProperties;
 
@@ -151,8 +152,13 @@ public class RoiProperties {
 		if (isText)
 			gd.addCheckbox("Antialiased text", antialias);
 		if (showListCoordinates) {
+			if ((roi instanceof PointRoi) && Toolbar.getMultiPointMode())
+				showPointCounts = true;
 			int n = roi.getFloatPolygon().npoints;
-			gd.addCheckbox("List coordinates ("+n+")", listCoordinates);
+			if (showPointCounts)
+				gd.addCheckbox("Show point counts (shortcut: alt+y)", listCoordinates);
+			else
+				gd.addCheckbox("List coordinates ("+n+")", listCoordinates);
 			if (nProperties>0)
 				gd.addCheckbox("List properties ("+nProperties+")", listProperties);
 			else {
@@ -248,8 +254,12 @@ public class RoiProperties {
 			}
 			imp.draw();
 		}
-		if (listCoordinates)
-			listCoordinates(roi);
+		if (listCoordinates) {
+			if (showPointCounts && (roi instanceof PointRoi))
+				((PointRoi)roi).displayCounts();
+			else
+				listCoordinates(roi);
+		}
 		if (listProperties && nProperties>0)
 			listProperties(roi);
 		return true;

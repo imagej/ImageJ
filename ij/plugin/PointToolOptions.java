@@ -19,7 +19,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
 	+"<font size=+1>"
 	+"<ul>"
 	+"<li> Alt-click, or control-click, on a point to delete it.<br>"
-	+"<li> Press 'y' (<i>Edit&gt;Selection&gt;Properties</i>) to display<br>the counts in a results table.<br>"
+	+"<li> Press 'alt+y' (<i>Edit&gt;Selection&gt;Properties</i> plus<br>alt key) to display the counts in a results table.<br>"
 	+"<li> Press 'm' (<i>Analyze&gt;Measure</i>) to list the counter<br>and stack position associated with each point.<br>"
 	+"<li> Use <i>File&gt;Save As&gt;Tiff</i> or <i>File&gt;Save As&gt;Selection</i><br>to save the points and counts.<br>"
 	+"<li> Hold the shift key down and points will be<br>constrained to a horizontal or vertical line.<br>"
