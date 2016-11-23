@@ -17,6 +17,20 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 	private boolean isPlotMaker;
 	private boolean timeProfile;
 	private boolean firstTime = true;
+	private String options;
+	
+	public static Plot getPlot(ImagePlus imp) {
+		return getPlot(imp, "time");
+	}
+
+	public static Plot getPlot(ImagePlus imp, String options) {
+		ZAxisProfiler zap = new ZAxisProfiler();
+		zap.imp = imp;
+		zap.options = options;
+		zap.isPlotMaker = true;
+		Plot plot = zap.getPlot();
+		return plot;
+	}
 
 	public void run(String arg) {
 		imp = IJ.getImage();
@@ -24,8 +38,6 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 			IJ.error("ZAxisProfiler", "This command requires a stack.");
 			return;
 		}
-		Roi roi = imp.getRoi();
-		//isPlotMaker = !IJ.macroRunning();
 		isPlotMaker = true;
 		Plot plot = getPlot();
 		if (plot!=null) {
@@ -134,7 +146,7 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 		int size = slices;
 		if (firstTime)
 			timeProfile = slices==1 && frames>1;
-		if (slices>1 && frames>1 && (!isPlotMaker ||firstTime)) {
+		if (options==null && slices>1 && frames>1 && (!isPlotMaker ||firstTime)) {
 			showingDialog = true;
 			GenericDialog gd = new GenericDialog("Profiler");
 			gd.addChoice("Profile", choices, choice);
@@ -144,6 +156,8 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 			choice = gd.getNextChoice();
 			timeProfile = choice.equals(choices[0]);
 		}
+		if (options!=null)
+			timeProfile = frames>1 && !options.contains("z");
 		if (timeProfile)
 			size = frames;
 		else
