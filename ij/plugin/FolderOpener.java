@@ -33,8 +33,17 @@ public class FolderOpener implements PlugIn {
 	/** Opens the images in the specified directory as a stack. Displays
 		directory chooser and options dialogs if the argument is null. */
 	public static ImagePlus open(String path) {
+		return open(path, null);
+	}
+
+	/** Opens the images in the specified directory as a stack. Opens
+		the images as a virtual stack if the 'options' string contains
+		"virtual". Displays directory chooser and options dialogs if the
+		the 'path' argument is null. */
+	public static ImagePlus open(String path, String options) {
 		FolderOpener fo = new FolderOpener();
 		fo.saveImage = true;
+		fo.openAsVirtualStack = options!=null && options.contains("virtual");
 		fo.run(path);
 		return fo.image;
 	}

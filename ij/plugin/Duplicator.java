@@ -146,8 +146,12 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
  				overlay2.crop(imp.getCurrentSlice(), imp.getCurrentSlice());
  			imp2.setOverlay(overlay2);
  		}
-   		if (Recorder.record)
-   			Recorder.recordCall("imp2 = imp.crop();");
+   		if (Recorder.record) {
+   			if (imp.getStackSize()==1)
+   				Recorder.recordCall("imp2 = imp.duplicate();");
+   			else
+   				Recorder.recordCall("imp2 = imp.crop();");
+   		}
 		return imp2;
 	}
 	

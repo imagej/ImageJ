@@ -8,7 +8,9 @@ import ij.plugin.filter.Analyzer;
 import ij.util.Tools;
 import java.awt.*;
 
-/** Implements the Image/Stack/Plot Z-axis Profile command. */
+/** Implements the Image/Stacks/Plot Z-axis Profile command, 
+	which plots the selection mean gray value versus slice number.
+*/
 public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 	private static String[] choices = {"time", "z-axis"};
 	private static String choice = choices[0];
@@ -19,14 +21,17 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 	private boolean firstTime = true;
 	private String options;
 	
+	/** Returns a Plot of the selection mean gray value versus slice number. */
 	public static Plot getPlot(ImagePlus imp) {
 		return getPlot(imp, "time");
 	}
 
-	public static Plot getPlot(ImagePlus imp, String options) {
+	/** Returns a Plot of the selection mean versus slice number for the
+		specified hyperstack, where 'option' can be "time" or "z-axis". */
+	public static Plot getPlot(ImagePlus imp, String option) {
 		ZAxisProfiler zap = new ZAxisProfiler();
 		zap.imp = imp;
-		zap.options = options;
+		zap.options = option;
 		zap.isPlotMaker = true;
 		Plot plot = zap.getPlot();
 		return plot;
