@@ -37,6 +37,7 @@ import java.util.Hashtable;
  *  2013-09-24: Added "Exponential Recovery (no offset)" and "Chapman-Richards" (3-parameter) fit types.
  *  2013-10-11: bugfixes, added setStatusAndEsc to show iterations and enable abort by ESC
  *  2015-03-26: bugfix, did not use linear regression for RODBARD
+ *  2016-11-28: added static getNumParams methods
  */
 
 public class CurveFitter implements UserFunction{
@@ -220,15 +221,7 @@ public class CurveFitter implements UserFunction{
 	 */
 	public int doCustomFit(String equation, double[] initialParams, boolean showSettings) {
 		customFormula = null;
-		customParamCount = 0;
-		Program pgm = (new Tokenizer()).tokenize(equation);
-		if (!pgm.hasWord("y") ||  !pgm.hasWord("x"))
-		    return 0;
-		String[] params = {"a","b","c","d","e","f"};
-		for (int i=0; i<params.length; i++) {
-			if (pgm.hasWord(params[i]))
-				customParamCount++;
-		}
+		customParamCount = getNumParams(equation);
 		if (customParamCount==0)
 			return 0;
 		customFormula = equation;
@@ -322,6 +315,15 @@ public class CurveFitter implements UserFunction{
 	/** Get number of parameters for current fit formula
 	 *	Do not use before 'doFit', because the fit function would be undefined.	 */
 	public int getNumParams() {
+		if (fitType == CUSTOM)
+			return customParamCount;
+		else
+			return getNumParams(fitType);
+	}
+
+	/** Returns the number of parameters for a given fit type, except for the 'custom' fit,
+	 *  where the number of parameters is given by the equation: see getNumParams(String) */
+	public static int getNumParams(int fitType) {
 		switch (fitType) {
 			case STRAIGHT_LINE: return 2;
 			case POLY2: return 3;
@@ -343,9 +345,26 @@ public class CurveFitter implements UserFunction{
 			case RODBARD: case RODBARD2: case INV_RODBARD: case RODBARD_INTERNAL: return 4;
 			case GAMMA_VARIATE: return 4;
 			case GAUSSIAN: case GAUSSIAN_INTERNAL: return 4;
-			case CUSTOM: return customParamCount;
 		}
 		return 0;
+	}
+
+	/** Returns the number of parameters for a custom equation given as a macro String,
+	 *  like "y = a + b*x + c*x*x" .  Restricted to 6 parameters "a" ... "f"
+	 *  (fitting more parameters is not likely to yield an accurate result anyhow).
+	 *  Returns 0 if a very basic check does not find a formula of this type. */
+	public static int getNumParams(String customFormula) {
+		Program pgm = (new Tokenizer()).tokenize(customFormula);
+		if (!pgm.hasWord("y") ||  !pgm.hasWord("x"))
+		    return 0;
+		String[] params = {"a","b","c","d","e","f"};
+		int customParamCount = 0;
+		for (int i=0; i<params.length; i++) {
+			if (pgm.hasWord(params[i])) {
+				customParamCount++;
+			}
+		}
+		return customParamCount;
 	}
 
 	/** Returns the formula value for parameters 'p' at 'x'.

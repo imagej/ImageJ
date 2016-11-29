@@ -5,15 +5,22 @@
 </head>
 <body>
 
-<li> <u>1.51h 27 November 2016</u>
+<li> <u>1.51h 28 November 2016</u>
 <ul>
 <li> Thanks to Johan Doornenbal, the <i>Image&gt;Scale</i> command works
 when Width or Height are not given.
 <li> Thanks to Michael Schmid, added static ZAxisProfiler.getPlot(ImagePlus) and
 ZAxisProfiler.getPlot(ImagePlus,String) methods, where the string argument can
 be either "time" or "z-axis".
-<li> Added the ImagePlus.getAllStatistics() and ImageProcessor.getAllStatistics() methods.
+<li> Added the ImagePlus.getAllStatistics() and ImageProcessor.getAllStatistics()
+methods and removed the median calculation in getStatistics() that
+was done in previous versions of ImageJ 1.51.
 <li> Added the FolderOpener.open(path,"virtual") method.
+<li> Thanks to Michael Schmid, added static getNumParams(fitType) and
+getNumParams(customFormula) to the CurveFitter class.
+<li> Thanks to Gabriel Landini, fixed a bug that caused the <i>Image&gt;Duplicate</i>
+command to not be correctly recorded with single images when the recorder
+was not in "Macro" mode.
 <li> Thanks to Norbert Vischer, fixed a v1.50 regression that caused the
 <i>Edit&gt;Selection&gt;Properties</i> command to not work as expected
 with multi-point selections. Use the alt+y shortcut to display
