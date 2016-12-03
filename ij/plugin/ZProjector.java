@@ -195,9 +195,9 @@ public class ZProjector implements PlugIn {
         	ImageProcessor g = green2.getProcessor();
         	ImageProcessor b = blue2.getProcessor();
         	double max = 0;
-        	double rmax = r.getStatistics().max; if (rmax>max) max=rmax;
-        	double gmax = g.getStatistics().max; if (gmax>max) max=gmax;
-        	double bmax = b.getStatistics().max; if (bmax>max) max=bmax;
+        	double rmax = r.getStats().max; if (rmax>max) max=rmax;
+        	double gmax = g.getStats().max; if (gmax>max) max=gmax;
+        	double bmax = b.getStats().max; if (bmax>max) max=bmax;
         	double scale = 255/max;
         	r.multiply(scale); g.multiply(scale); b.multiply(scale);
         	red2.setProcessor(r.convertToByte(false));

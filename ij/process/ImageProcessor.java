@@ -540,7 +540,7 @@ public abstract class ImageProcessor implements Cloneable {
 			ip2.setMask(mask);
 			ip2.setRoi(rect);	
 		}
-		ImageStatistics stats = ip2.getStatistics();
+		ImageStatistics stats = ip2.getStats();
 		AutoThresholder thresholder = new AutoThresholder();
 		int threshold = thresholder.getThreshold(method, stats.histogram);
 		double lower, upper;
@@ -587,7 +587,7 @@ public abstract class ImageProcessor implements Cloneable {
 			ip2.setMask(mask);
 			ip2.setRoi(rect);	
 		}
-		ImageStatistics stats = ip2.getStatistics();
+		ImageStatistics stats = ip2.getStats();
 		int[] histogram = stats.histogram;
 		int originalModeCount = histogram[stats.mode];
 		if (method==ISODATA2) {
@@ -2559,15 +2559,21 @@ public abstract class ImageProcessor implements Cloneable {
 	 * and mode. Use the setRoi(Roi) method to limit statistics to
 	 * a non-rectangular area.
 	 * @see #setRoi	
-	 * @see #getAllStatistics	
+	 * @see #getStatistics	
 	 * @see ImageStatistics	
 	*/
-	public ImageStatistics getStatistics() {
+	public ImageStatistics getStats() {
 		return ImageStatistics.getStatistics(this);
 	}
 		
+	/** Calculates and returns complete uncalibrated statistics for this image or ROI. 
+	 *  This method is up to 70 times slower than getStats().
+	 * @see #setRoi	
+	 * @see #getStats	
+	 * @see ImageStatistics	
+	*/
 	/** Calculates and returns complete uncalibrated statistics for this image or ROI. */
-	public ImageStatistics getAllStatistics() {
+	public ImageStatistics getStatistics() {
 		return ImageStatistics.getStatistics(this, Measurements.ALL_STATS, null);
 	}
 

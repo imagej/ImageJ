@@ -903,7 +903,7 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 
 	ImageStatistics setHistogram(ImagePlus imp, boolean entireStack) {
 		if (IJ.debugMode) IJ.log("ThresholdAdjuster:setHistogram: "+entireStack+" "+entireStack2);
-		double mean = entireStack?imp.getProcessor().getStatistics().mean:0.0;
+		double mean = entireStack?imp.getProcessor().getStats().mean:0.0;
 		if (entireStack && stats!=null && imp.getID()==imageID2 
 		&& entireStack==entireStack2 && mean==mean2)
 			return stats;
@@ -946,7 +946,7 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 		if (roi!=null && !roi.isArea()) roi = null;
 		ip.setRoi(roi);
 		if (stats==null)
-			stats = ip.getStatistics();
+			stats = ip.getStats();
 		if (IJ.debugMode) IJ.log("  stats: "+stats);
 		int maxCount2 = 0;
 		histogram = stats.histogram;
