@@ -112,9 +112,12 @@ public class PointToolOptions implements PlugIn, DialogListener {
 			if (Prefs.pointAutoNextSlice&&!Prefs.pointAddToManager)
 				Prefs.pointAutoMeasure = true;
 		}
+		boolean updateLabels = false;
 		boolean noPointLabels = !gd.getNextBoolean();
-		if (noPointLabels!=Prefs.noPointLabels)
+		if (noPointLabels!=Prefs.noPointLabels) {
 			redraw = true;
+			updateLabels = true;
+		}
 		Prefs.noPointLabels = noPointLabels;
 		if (multipointTool) {
 			boolean showAllPoints = gd.getNextBoolean();
@@ -128,12 +131,31 @@ public class PointToolOptions implements PlugIn, DialogListener {
 			}
 		}
 		if (redraw) {
+			ImagePlus imp = null;
      		PointRoi roi = getPointRoi();
      		if (roi!=null) {
 				roi.setShowLabels(!Prefs.noPointLabels);
-				ImagePlus imp = roi.getImage();
-				if (imp!=null) imp.draw();
+				imp = roi.getImage();
 			}
+			if (updateLabels) {
+				imp = WindowManager.getCurrentImage();
+				Overlay overlay = imp!=null?imp.getOverlay():null;
+				int pointRoiCount = 0;
+				if (overlay!=null) {
+					for (int i=0; i<overlay.size(); i++) {
+						Roi r = overlay.get(i);
+						roi = r!=null && (r instanceof PointRoi)?(PointRoi)r:null;
+						if (roi!=null) {
+							roi.setShowLabels(!Prefs.noPointLabels);
+							pointRoiCount++;
+						}
+					}
+					if (pointRoiCount==0)
+						imp = null;
+				}
+			}
+			if (imp!=null)
+				imp.draw();
 		}
 		return true;
     }

@@ -836,6 +836,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		</pre>
 		@see #getAllStatistics
 		@see #getRawStatistics
+		@see ij.process.ImageProcessor#getStats
 		@see ij.process.ImageStatistics
 		@see ij.process.ImageStatistics#getStatistics
 		*/
@@ -843,7 +844,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return getStatistics(AREA+MEAN+STD_DEV+MODE+MIN_MAX+RECT);
 	}
 	
-	/** Gets the complete calibrated statistics for this image or ROI, with "Limit to threshold" set. */
+	/** This method returns complete calibrated statistics for this image or ROI
+		(with "Limit to threshold"), but it is up to 70 times slower than getStatistics().*/
 	public ImageStatistics getAllStatistics() {
 		return getStatistics(ALL_STATS+LIMIT);
 	}

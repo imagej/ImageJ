@@ -2566,13 +2566,12 @@ public abstract class ImageProcessor implements Cloneable {
 		return ImageStatistics.getStatistics(this);
 	}
 		
-	/** Calculates and returns complete uncalibrated statistics for this image or ROI. 
-	 *  This method is up to 70 times slower than getStats().
+	/** This method calculates and returns complete uncalibrated statistics for
+	 * this image or ROI but it is up to 70 times slower than getStats().
 	 * @see #setRoi	
 	 * @see #getStats	
 	 * @see ImageStatistics	
 	*/
-	/** Calculates and returns complete uncalibrated statistics for this image or ROI. */
 	public ImageStatistics getStatistics() {
 		return ImageStatistics.getStatistics(this, Measurements.ALL_STATS, null);
 	}

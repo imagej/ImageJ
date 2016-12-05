@@ -278,7 +278,11 @@ public class Compiler implements PlugIn, FilenameFilter {
 	}
 	
 	void validateTarget() {
-		if (target<TARGET16 || target>TARGET19)
+		if (target>TARGET19)
+			target = TARGET19;
+		if (target<TARGET15)
+			target = TARGET15;
+		if (target>TARGET15 && !(IJ.isJava16()||IJ.isJava17()||IJ.isJava18()||IJ.isJava19()))
 			target = TARGET16;
 		if (target>TARGET16 && !(IJ.isJava17()||IJ.isJava18()||IJ.isJava19()))
 			target = TARGET16;
