@@ -246,7 +246,8 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 
 	/** Releases the resources used by this PlotWindow */
 	public void dispose() {
-		plot.dispose();
+		if (plot!=null)
+			plot.dispose();
 		removeListeners();
 		plot = null;
 		plotMaker = null;

@@ -132,8 +132,8 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		}
 		if (redraw) {
 			ImagePlus imp = null;
-     		PointRoi roi = getPointRoi();
-     		if (roi!=null) {
+			PointRoi roi = getPointRoi();
+			if (roi!=null) {
 				roi.setShowLabels(!Prefs.noPointLabels);
 				imp = roi.getImage();
 			}

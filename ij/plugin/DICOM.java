@@ -325,12 +325,32 @@ class DicomDecoder {
 		else
 			return ((b0 << 8) + b1);
 	}
+	
+	int getSShort() throws IOException {
+		short b0 = (short)getByte();
+		short b1 = (short)getByte();
+		if (littleEndian)
+			return ((b1 << 8) + b0);
+		else
+			return ((b0 << 8) + b1);
+	}
   
 	final int getInt() throws IOException {
 		int b0 = getByte();
 		int b1 = getByte();
 		int b2 = getByte();
 		int b3 = getByte();
+		if (littleEndian)
+			return ((b3<<24) + (b2<<16) + (b1<<8) + b0);
+		else
+			return ((b0<<24) + (b1<<16) + (b2<<8) + b3);
+	}
+	
+	long getUInt() throws IOException {
+		long b0 = getByte();
+		long b1 = getByte();
+		long b2 = getByte();
+		long b3 = getByte();
 		if (littleEndian)
 			return ((b3<<24) + (b2<<16) + (b1<<8) + b0);
 		else
@@ -788,6 +808,45 @@ class DicomDecoder {
 					StringBuilder sb = new StringBuilder();
 					for (int i=0; i<n; i++) {
 						sb.append(Integer.toString(getShort()));
+						sb.append(" ");
+					}
+					value = sb.toString();
+				}
+				break;
+			case SS:
+				if (elementLength==2)
+					value = Integer.toString(getSShort());
+				else {
+					int n = elementLength/2;
+					StringBuilder sb = new StringBuilder();
+					for (int i=0; i<n; i++) {
+						sb.append(Integer.toString(getSShort()));
+						sb.append(" ");
+					}
+					value = sb.toString();
+				}
+				break;
+			case UL:
+				if (elementLength==4)
+					value = Long.toString(getUInt());
+				else {
+					int n = elementLength/4;
+					StringBuilder sb = new StringBuilder();
+					for (int i=0; i<n; i++) {
+						sb.append(Long.toString(getUInt()));
+						sb.append(" ");
+					}
+					value = sb.toString();
+				}
+				break;
+			case SL:
+				if (elementLength==4)
+					value = Long.toString(getInt());
+				else {
+					int n = elementLength/4;
+					StringBuilder sb = new StringBuilder();
+					for (int i=0; i<n; i++) {
+						sb.append(Long.toString(getInt()));
 						sb.append(" ");
 					}
 					value = sb.toString();
