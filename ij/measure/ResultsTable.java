@@ -1120,5 +1120,5 @@ public class ResultsTable implements Cloneable {
 	public String toString() {
 		return ("ctr="+counter+", hdr="+getColumnHeadings());
 	}
-	
+		
 }

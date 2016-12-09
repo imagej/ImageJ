@@ -21,6 +21,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	private ResultsTable rt;
 	private int measurements;
 	private StringBuffer min,max,mean,sd;
+	private boolean disableReset;
 	
 	// Order must agree with order of checkboxes in Set Measurements dialog box
 	private static final int[] list = {AREA,MEAN,STD_DEV,MODE,MIN_MAX,
@@ -84,7 +85,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		else if (arg.equals("sum"))
 			{summarize(); return DONE;}
 		else if (arg.equals("clear")) {
-			if (IJ.macroRunning()) unsavedMeasurements = false;
+			if (IJ.macroRunning())
+				unsavedMeasurements = false;
 			resetCounter();
 			return DONE;
 		} else
@@ -281,7 +283,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	
 	boolean reset() {
 		boolean ok = true;
-		if (rt.size()>0)
+		if (rt.size()>0 && !disableReset)
 			ok = resetCounter();
 		if (ok && rt.getColumnHeading(ResultsTable.LAST_HEADING)==null)
 			rt.setDefaultHeadings();
@@ -842,7 +844,6 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 		
 	void incrementCounter() {
-		//counter++;
 		if (rt==null) rt = systemRT;
 		rt.incrementCounter();
 		unsavedMeasurements = true;
@@ -1023,5 +1024,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 		drawLabels = b;
 	}
 	
+	public void disableReset(boolean b) {
+		disableReset = b;
+	}
+
 }
 	
