@@ -6,17 +6,30 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>net.imagej</groupId>
-		<artifactId>pom-imagej</artifactId>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
 		<version>RELEASE</version>
 		<relativePath />
 	</parent>
 
+	<groupId>net.imagej</groupId>
 	<artifactId>ij1-tests</artifactId>
 	<version>1.0-SNAPSHOT</version>
 
 	<name>ImageJ1 unit tests</name>
 	<description>Unit tests for ImageJ 1.x.</description>
+	<url>http://imagej.net/ImageJ1_unit_tests</url>
+	<inceptionYear>2009</inceptionYear>
+	<organization>
+		<name>ImageJ</name>
+		<url>http://imagej.net/</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>Simplified BSD License</name>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
 	<developers>
 		<developer>
@@ -53,7 +66,36 @@
 		</contributor>
 	</contributors>
 
+	<mailingLists>
+		<mailingList>
+			<name>ImageJ Forum</name>
+			<archive>http://forum.imagej.net/</archive>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:git://github.com/imagej/ij1-tests</connection>
+		<developerConnection>scm:git:git@github.com:imagej/ij1-tests</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/imagej/ij1-tests</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>https://github.com/imagej/ij1-tests/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>Jenkins</system>
+		<url>http://jenkins.imagej.net/job/ImageJ1-unit-tests/</url>
+	</ciManagement>
+
 	<properties>
+		<main-class>ij.ImageJ</main-class>
+		<package-name>ij</package-name>
+		<license.licenseName>bsd_2</license.licenseName>
+		<license.copyrightOwners>Board of Regents of the University of
+Wisconsin-Madison, Broad Institute of MIT and Harvard, and Max Planck
+Institute of Molecular Cell Biology and Genetics.</license.copyrightOwners>
+		<license.projectName>ImageJ software for multidimensional image processing and analysis.</license.projectName>
 		<imagej1.version>RELEASE</imagej1.version>
 	</properties>
 
@@ -86,20 +128,4 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive>
-						<manifest>
-							<mainClass>ij.ImageJ</mainClass>
-							<packageName>ij</packageName>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>
