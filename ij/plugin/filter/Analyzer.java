@@ -1024,6 +1024,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		drawLabels = b;
 	}
 	
+	/** Used by RoiManager.multiMeasure() to suppress save as dialogs. */
 	public void disableReset(boolean b) {
 		disableReset = b;
 	}

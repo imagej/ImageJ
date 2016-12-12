@@ -377,6 +377,15 @@ public class ResultsTable implements Cloneable {
 		//IJ.log("col: "+col+" "+(col==COLUMN_NOT_FOUND?"not found":""+columns[col]));
 		return getValueAsDouble(col,row);
 	}
+	
+	/** Returns 'true' if the specified column exists and is not emptly. */
+	public boolean columnExists(String column) {
+		int col = getColumnIndex(column);
+		if (col==COLUMN_NOT_FOUND)
+			return false;
+		else
+			return (col<columns.length && columns[col]!=null);
+	}
 
 	/** Returns the string value of the given column and row,
 		where row must be greater than or equal zero
