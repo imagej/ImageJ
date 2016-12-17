@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.51i 12 December 2016</u>
+<li> <u>1.51i 16 December 2016</u>
 <ul>
 <li> Thanks to John Brear, the particle analyzer allows particles to
 be selected on circularity values greater than 1.0.
@@ -36,6 +36,11 @@ using run("ROI Manager…") prier to entering batch mode.
 <li> Thanks to Olivier Burri, fixed a bug the caused the "Append results" option
 of the ROI Manager's "Multi Measure" command to be ignored if the
 "One row per slice" option was not enabled.
+<li> Fixed a bug that sometimes caused the doCommand("Point Tool...") macro 
+function to not display the legacy point tool dialog instead of the non-modal
+multi-point tool dialog.
+<li> Worked around a OS X/Java 8 bug that caused image windows to
+be maximized when moved if a modal GenericDialog was open.
 <li> Thanks to Norbert Vischer, fixed a v1.50 regression that caused the
 <i>Edit&gt;Selection&gt;Properties</i> command to not work as expected
 with multi-point selections. Use the alt+y shortcut to display

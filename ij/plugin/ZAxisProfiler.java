@@ -27,11 +27,11 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 	}
 
 	/** Returns a Plot of the selection mean versus slice number for the
-		specified hyperstack, where 'option' can be "time" or "z-axis". */
-	public static Plot getPlot(ImagePlus imp, String option) {
+		specified hyperstack, where 'options' can be "time" or "z-axis". */
+	public static Plot getPlot(ImagePlus imp, String options) {
 		ZAxisProfiler zap = new ZAxisProfiler();
 		zap.imp = imp;
-		zap.options = option;
+		zap.options = options;
 		zap.isPlotMaker = true;
 		Plot plot = zap.getPlot();
 		return plot;

@@ -80,6 +80,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     private String yesLabel, noLabel;
     private boolean smartRecording;
     private Vector imagePanels;
+    private static GenericDialog instance;
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
     	image window as the parent frame or the ImageJ frame if no image windows
@@ -1168,6 +1169,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			add(buttons);
 			if (IJ.isMacintosh())
 				setResizable(false);
+			if (IJ.isMacOSX()&&IJ.isJava18())
+				instance = this;
 			pack();
 			setup();
 			if (centerDialog) GUI.center(this);
@@ -1486,6 +1489,15 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		return macro;
 	}
     
+	public static GenericDialog getInstance() {
+		return instance;
+	}
+
+	public void dispose() {
+		super.dispose();
+		instance = null;
+	}
+
     public void windowActivated(WindowEvent e) {}
     public void windowOpened(WindowEvent e) {}
     public void windowClosed(WindowEvent e) {}

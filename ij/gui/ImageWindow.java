@@ -532,6 +532,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	}
 	
 	public void maximize() {
+		if (GenericDialog.getInstance()!=null)
+			return; // workaround for OSX/Java 8 maximize bug 
 		Rectangle rect = getMaximumBounds();
 		if (IJ.debugMode) IJ.log("maximize: "+rect);
 		setLocationAndSize(rect.x, rect.y, rect.width, rect.height);

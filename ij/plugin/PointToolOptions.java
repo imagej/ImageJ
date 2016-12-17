@@ -37,12 +37,14 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		
 	void showDialog() {
 		String options = IJ.isMacro()?Macro.getOptions():null;
+		boolean legacyMacro = false;
 		if (options!=null) {
 			options = options.replace("selection=", "color=");
 			options = options.replace("marker=", "size=");
 			Macro.setOptions(options);
+			legacyMacro = options.contains("auto-") || options.contains("add");
 		}
-		multipointTool = IJ.getToolName().equals("multipoint");
+		multipointTool = Toolbar.getMultiPointMode() && !legacyMacro;
 		Color sc =Roi.getColor();
 		String sname = Colors.getColorName(sc, "Yellow");
 		Color cc =PointRoi.getDefaultCrossColor();
