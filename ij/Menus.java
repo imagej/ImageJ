@@ -284,6 +284,7 @@ public class Menus {
 		menu.add(submenu);
 		submenu = new Menu("JavaScript");
 		addExample(submenu, "Sphere", "Sphere.js");
+		addExample(submenu, "Plasma Cloud", "Plasma_Cloud.js");
 		addExample(submenu, "Example Plot", "Example_Plot.js");
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.js");
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.js");
@@ -313,11 +314,12 @@ public class Menus {
 		menu.add(submenu);
 		submenu = new Menu("Java");
 		addExample(submenu, "Sphere", "Sphere_.java");
+		addExample(submenu, "Plasma Cloud", "Plasma_Cloud.java");
+		addExample(submenu, "Gamma Adjuster", "Gamma_Adjuster.java");
 		addExample(submenu, "Plugin", "My_Plugin.java");
 		addExample(submenu, "Plugin Filter", "Filter_Plugin.java");
 		addExample(submenu, "Plugin Frame", "Plugin_Frame.java");
 		addExample(submenu, "Plugin Tool", "Prototype_Tool.java");
-		addExample(submenu, "Gamma Adjuster", "Gamma_Adjuster.java");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		menu.addSeparator();

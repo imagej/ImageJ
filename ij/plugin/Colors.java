@@ -229,5 +229,5 @@ public class Colors implements PlugIn, ItemListener {
 			names.add(arg);
 		return (String[])names.toArray(new String[names.size()]);
 	}
-
+	
 }

@@ -5,46 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.51i 16 December 2016</u>
+<li> <u>1.51j 19 December 2016</u>
 <ul>
-<li> Thanks to John Brear, the particle analyzer allows particles to
-be selected on circularity values greater than 1.0.
-<li> Thanks to Johan Doornenbal, the <i>Image&gt;Scale</i> command works
-when Width or Height are not given.
-<li> Thanks to Mirekslouf, labeling of point selections in overlays now
-reflects the state of the "Label points" checkbox in the "Point Tool" dialog. 
-<li> Thanks to Bastian Schmidt, added code to the DICOM importer to handle tags of
-type SS (signed 16-bit), UL (unsigned 32-bit) and SL (signed 32-bit).
-<li> Thanks to Michael Schmid, added static ZAxisProfiler.getPlot(ImagePlus) and
-ZAxisProfiler.getPlot(ImagePlus,String) methods, where the string argument can
-be either "time" or "z-axis".
-<li> Added the ImagePlus.getAllStatistics() method and removed
-the median calculation done in the ImagePlus.getStatistics() method
-in previous versions of ImageJ 1.51.
-<li> Thanks to Benjamen Gyori, added the ImageProcessor.getStats() method,
-which is up to 70 times faster than ImageProcessor.getStatistics().
-<li> Added the FolderOpener.open(path,"virtual") method.
-<li> Thanks to Michael Schmid, added static getNumParams() methods
-to the CurveFitter class.
-<li> Thanks to Gabriel Landini, fixed a bug that caused the <i>Image&gt;Duplicate</i>
-command to not be correctly recorded with single images when the recorder
-was not in "Macro" mode.
-<li> Thanks to Gunjan Pandey, fixed a bug that caused plugins that used the
-ROI Manager to fail when they were called from batch mode macros. Note
-that the ROI Manager is not displayed in batch mode macros unless it is opened
-using run("ROI Manager…") prier to entering batch mode.
-<li> Thanks to Olivier Burri, fixed a bug the caused the "Append results" option
-of the ROI Manager's "Multi Measure" command to be ignored if the
-"One row per slice" option was not enabled.
-<li> Fixed a bug that sometimes caused the doCommand("Point Tool...") macro 
-function to not display the legacy point tool dialog instead of the non-modal
-multi-point tool dialog.
-<li> Worked around a OS X/Java 8 bug that caused image windows to
-be maximized when moved if a modal GenericDialog was open.
-<li> Thanks to Norbert Vischer, fixed a v1.50 regression that caused the
-<i>Edit&gt;Selection&gt;Properties</i> command to not work as expected
-with multi-point selections. Use the alt+y shortcut to display
-multi-point selection counts.
+<li>Added JavaScript and Java "Plasma Cloud" examples to the
+<i>Help&gt;Examples</i> menu.
+<li> Added the ImageProcessor.fillRect() method.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
