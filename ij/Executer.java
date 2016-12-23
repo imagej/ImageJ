@@ -194,7 +194,7 @@ public class Executer implements Runnable {
 				ed.evaluateScript(".bsh");
 			else if (isPython)
 				ed.evaluateScript(".py");
-			else
+			else if (!name.contains("_Tool"))
 				IJ.runMacro(text);
 		}
 		return true;

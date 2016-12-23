@@ -279,12 +279,15 @@ public class Menus {
 		addExample(submenu, "Array Functions", "Array_Functions.ijm");
 		addExample(submenu, "Dual Progress Bars", "Dual_Progress_Bars.ijm");
 		addExample(submenu, "Grab Viridis Colormap", "Grab_Viridis_Colormap.ijm");
-		addExample(submenu, "Tool", "Circle_Tool.ijm");
+		submenu.addSeparator();
+		addExample(submenu, "Circle Tool", "Circle_Tool.ijm");
+		addExample(submenu, "Star Tool", "Star_Tool.ijm");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("JavaScript");
 		addExample(submenu, "Sphere", "Sphere.js");
 		addExample(submenu, "Plasma Cloud", "Plasma_Cloud.js");
+		addExample(submenu, "Cloud Debugger", "Cloud_Debugger.js");
 		addExample(submenu, "Example Plot", "Example_Plot.js");
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.js");
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.js");
