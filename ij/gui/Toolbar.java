@@ -41,6 +41,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	public static final int DOUBLE_CLICK_THRESHOLD = 650;
 
+	public static final int RECT_ROI=0, ROUNDED_RECT_ROI=1, TILTED_RECT_ROI=2;
 	public static final int OVAL_ROI=0, ELLIPSE_ROI=1, BRUSH_ROI=2;
 	
 	private static final String[] builtInTools = {"Arrow","Brush","Developer Menu","Flood Filler",
@@ -81,7 +82,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private String icon;
 	private int startupTime;
 	private PopupMenu rectPopup, ovalPopup, pointPopup, linePopup, switchPopup;
-	private CheckboxMenuItem rectItem, roundRectItem;
+	private CheckboxMenuItem rectItem, roundRectItem, tiltedRectItem;
 	private CheckboxMenuItem ovalItem, ellipseItem, brushItem;
 	private CheckboxMenuItem pointItem, multiPointItem;
 	private CheckboxMenuItem straightLineItem, polyLineItem, freeLineItem, arrowItem;
@@ -90,8 +91,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static Color foregroundColor = Prefs.getColor(Prefs.FCOLOR,Color.white);
 	private static Color backgroundColor = Prefs.getColor(Prefs.BCOLOR,Color.black);
 	private static int ovalType = OVAL_ROI;
+	private static int rectType = RECT_ROI;
 	private static boolean multiPointMode = Prefs.multiPointMode;
-	private static boolean roundRectMode;
 	private static boolean arrowMode;
 	private static int brushSize = (int)Prefs.get(BRUSH_SIZE, 15);
 	private static int arcSize = (int)Prefs.get(CORNER_DIAMETER, 20);
@@ -128,12 +129,15 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		rectPopup = new PopupMenu();
 		if (Menus.getFontSize()!=0)
 			rectPopup.setFont(Menus.getFont());
-		rectItem = new CheckboxMenuItem("Rectangle Tool", !roundRectMode);
+		rectItem = new CheckboxMenuItem("Rectangle", rectType==RECT_ROI);
 		rectItem.addItemListener(this);
 		rectPopup.add(rectItem);
-		roundRectItem = new CheckboxMenuItem("Rounded Rectangle Tool", roundRectMode);
+		roundRectItem = new CheckboxMenuItem("Rounded Rectangle", rectType==ROUNDED_RECT_ROI);
 		roundRectItem.addItemListener(this);
 		rectPopup.add(roundRectItem);
+		tiltedRectItem = new CheckboxMenuItem("Tilted Rectangle", rectType==TILTED_RECT_ROI);
+		tiltedRectItem.addItemListener(this);
+		rectPopup.add(tiltedRectItem);
 		add(rectPopup);
 
 		ovalPopup = new PopupMenu();
@@ -274,8 +278,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		switch (tool) {
 			case RECTANGLE:
 				xOffset = x; yOffset = y;
-				if (roundRectMode)
+				if (rectType==ROUNDED_RECT_ROI)
 					g.drawRoundRect(x, y+1, 17, 13, 8, 8);
+				else if (rectType==TILTED_RECT_ROI)
+					polyline(0,10,7,0,15,6,8,16,0,10); 
 				else
 					g.drawRect(x, y+1, 17, 13);
 				drawTriangle(16,15);
@@ -511,10 +517,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		String hint2 = " (right click to switch; double click to configure)";
 		switch (tool) {
 			case RECTANGLE:
-				if (roundRectMode)
-					IJ.showStatus("Rectangular or *rounded rectangular* selections"+hint);
+				if (rectType==ROUNDED_RECT_ROI)
+					IJ.showStatus("Rectangle, *rounded rect* or tilted rect"+hint);
+				else if (rectType==TILTED_RECT_ROI)
+					IJ.showStatus("Rectangle, rounded rect or *tilted rect*"+hint);
 				else
-					IJ.showStatus("*Rectangular* or rounded rectangular selections"+hint);
+					IJ.showStatus("*Rectangle*, rounded rect or tilted rect"+hint);
 				return;
 			case OVAL:
 				if (ovalType==BRUSH_ROI)
@@ -621,10 +629,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		name = name.toLowerCase(Locale.US);
 		boolean ok = true;
 		if (name.indexOf("round")!=-1) {
-			roundRectMode = true;
+			rectType = ROUNDED_RECT_ROI;
+			setTool(RECTANGLE);
+		} else if (name.indexOf("tilt")!=-1) {
+			rectType = TILTED_RECT_ROI;
 			setTool(RECTANGLE);
 		} else if (name.indexOf("rect")!=-1) {
-			roundRectMode = false;
+			rectType = RECT_ROI;
 			setTool(RECTANGLE);
 		} else if (name.indexOf("oval")!=-1) {
 			ovalType = OVAL_ROI;
@@ -685,7 +696,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	/** Returns the name of the specified tool. */
 	String getName(int id) {
 		switch (id) {
-			case RECTANGLE: return roundRectMode?"roundrect":"rectangle";
+			case RECTANGLE:
+				switch (rectType) {
+					case RECT_ROI: return "rectangle";
+					case ROUNDED_RECT_ROI: return "roundrect";
+					case TILTED_RECT_ROI: return "tiltrect";
+				}
 			case OVAL:
 				switch (ovalType) {
 					case OVAL_ROI: return "oval";
@@ -842,16 +858,16 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		
 	/** Returns the rounded rectangle arc size, or 0 if the rounded rectangle tool is not enabled. */
 	public static int getRoundRectArcSize() {
-		if (!roundRectMode)
-			return 0;
-		else
+		if (rectType==ROUNDED_RECT_ROI)
 			return arcSize;
+		else
+			return 0;
 	}
 
 	/** Sets the rounded rectangle corner diameter (pixels). */
 	public static void setRoundRectArcSize(int size) {
 		if (size<=0)
-			roundRectMode = false;
+			rectType = RECT_ROI;
 		else {
 			arcSize = size;
 			Prefs.set(CORNER_DIAMETER, arcSize);
@@ -860,12 +876,17 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		ImagePlus imp = WindowManager.getCurrentImage();
 		Roi roi = imp!=null?imp.getRoi():null;
 		if (roi!=null && roi.getType()==Roi.RECTANGLE)
-			roi.setCornerDiameter(roundRectMode?arcSize:0);
+			roi.setCornerDiameter(rectType==ROUNDED_RECT_ROI?arcSize:0);
 	}
 
 	/** Returns 'true' if the multi-point tool is enabled. */
 	public static boolean getMultiPointMode() {
 		return multiPointMode;
+	}
+
+	/** Returns the rectangle tool type (RECT_ROI, ROUNDED_RECT_ROI or TILTED_RECT_ROI). */
+	public static int getRectToolType() {
+		return rectType;
 	}
 
 	/** Returns the oval tool type (OVAL_ROI, ELLIPSE_ROI or BRUSH_ROI). */
@@ -982,8 +1003,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			setTool2(newTool);
 			boolean isRightClick = e.isPopupTrigger()||e.isMetaDown();
 			if (current==RECTANGLE && isRightClick) {
-				rectItem.setState(!roundRectMode);
-				roundRectItem.setState(roundRectMode);
+				rectItem.setState(rectType==RECT_ROI);
+				roundRectItem.setState(rectType==ROUNDED_RECT_ROI);
+				tiltedRectItem.setState(rectType==TILTED_RECT_ROI);
 				if (IJ.isMacOSX()) IJ.wait(10);
 				rectPopup.show(e.getComponent(),x,y);
 				mouseDownTime = 0L;
@@ -1032,7 +1054,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			ImagePlus imp = WindowManager.getCurrentImage();
 			switch (current) {
 				case RECTANGLE:
-					if (roundRectMode)
+					if (rectType==ROUNDED_RECT_ROI)
 						IJ.doCommand("Rounded Rect Tool...");
 					break;
 				case OVAL:
@@ -1210,14 +1232,19 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public void itemStateChanged(ItemEvent e) {
 		CheckboxMenuItem item = (CheckboxMenuItem)e.getSource();
 		String previousName = getToolName();
-		if (item==rectItem || item==roundRectItem) {
-			roundRectMode = item==roundRectItem;
+		if (item==rectItem || item==roundRectItem || item==tiltedRectItem) {
+			if (item==roundRectItem)
+				rectType = ROUNDED_RECT_ROI;
+			else if (item==tiltedRectItem)
+				rectType = TILTED_RECT_ROI;
+			else
+				rectType = RECT_ROI;
 			repaintTool(RECTANGLE);
 			showMessage(RECTANGLE);
 			ImagePlus imp = WindowManager.getCurrentImage();
 			Roi roi = imp!=null?imp.getRoi():null;
 			if (roi!=null && roi.getType()==Roi.RECTANGLE)
-				roi.setCornerDiameter(roundRectMode?arcSize:0);
+				roi.setCornerDiameter(rectType==ROUNDED_RECT_ROI?arcSize:0);
 			if (!previousName.equals(getToolName()))
 				IJ.notifyEventListeners(IJEventListener.TOOL_CHANGED);
 		} else if (item==ovalItem || item==ellipseItem || item==brushItem) {

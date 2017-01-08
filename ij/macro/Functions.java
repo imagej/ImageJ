@@ -1068,18 +1068,22 @@ public class Functions implements MacroConstants, Measurements {
 	Random ran;	
 	double random() {
 		double dseed = Double.NaN;
+		boolean gaussian = false;
 		if (interp.nextToken()=='(') {
 			interp.getLeftParen();
 			if (isStringArg()) {
 				String arg = getString().toLowerCase(Locale.US);
-				if (arg.indexOf("seed")==-1)
-					interp.error("'seed' expected");
-				interp.getComma();
-				dseed = interp.getExpression();
-				long seed = (long)dseed;
-				if (seed!=dseed)
-					interp.error("Seed not integer");
-				ran = new Random(seed);
+				if (arg.equals("seed")) {
+					interp.getComma();
+					dseed = interp.getExpression();
+					long seed = (long)dseed;
+					if (seed!=dseed)
+						interp.error("Seed not integer");
+					ran = new Random(seed);
+				} else if (arg.equals("gaussian"))
+					gaussian = true;
+				else
+					interp.error("'seed' or ''gaussian' expected");
 			}
 			interp.getRightParen();
 			if (!Double.isNaN(dseed)) return Double.NaN;
@@ -1087,7 +1091,10 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getParens();
  		if (ran==null)
 			ran = new Random();
-		return ran.nextDouble();
+		if (gaussian)
+			return ran.nextGaussian();
+		else
+			return ran.nextDouble();
 	}
 	
 	//void setSeed() {
@@ -2292,7 +2299,6 @@ public class Functions implements MacroConstants, Measurements {
 		float size = (float)getFirstArg();
 		int style = -1;
 		if (interp.nextToken()!=')') {
-			interp.getComma();
 			String options = getNextString().toLowerCase();
 			style = 0;
 			if (options.indexOf("bold") >= 0)
@@ -6204,7 +6210,7 @@ public class Functions implements MacroConstants, Measurements {
 			String properties = roi.getProperties();
 			return properties!=null?properties:"";
 		} else if (name.equals("setFillColor")) {
-			roi.setFillColor(Colors.decode(getStringArg(),null));
+			roi.setFillColor(getRoiColor());
 			imp.draw();
 			return null;
 		} else if (name.equals("move")) {
@@ -6214,7 +6220,7 @@ public class Functions implements MacroConstants, Measurements {
 			roi.setName(getStringArg());
 			return null;
 		} else if (name.equals("setStrokeColor")) {
-			roi.setStrokeColor(Colors.decode(getStringArg(),null));
+			roi.setStrokeColor(getRoiColor());
 			imp.draw();
 			return null;
 		} else if (name.equals("setStrokeWidth")) {
@@ -6245,6 +6251,26 @@ public class Functions implements MacroConstants, Measurements {
 		return null;
 	}
 	
+	private Color getRoiColor() {
+		interp.getLeftParen();
+		if (isStringArg()) {
+			Color color = Colors.decode(getString(),null);
+			interp.getRightParen();
+			return color;
+		} else {
+			int r = (int)interp.getExpression();
+			if (interp.nextToken()==')') {
+				interp.getRightParen();
+				return new Color(r);
+			}
+			int g = (int)getNextArg();
+			int b = (int)getLastArg();
+			if (r<0) r=0; if (g<0) g=0; if (b<0) b=0;
+			if (r>255) r=255; if (g>255) g=255; if (b>255) b=255;
+			return new Color(r, g, b);
+		}
+	}
+
 	private void getContainedPoints(Roi roi) {
 		Variable xCoordinates = getFirstArrayVariable();
 		Variable yCoordinates = getLastArrayVariable();

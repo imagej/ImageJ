@@ -344,6 +344,18 @@ public class ImageInfo implements PlugIn {
 			if (cal.calibrated())
 	    		s += " \n";
 	    	s += "No selection\n";
+	    } else if (roi instanceof TiltedRectangleRoi) {
+	    	s += "\nTilted rectangle selection\n";
+	    	double[] p = ((TiltedRectangleRoi)roi).getParams();
+			double dx = p[2] - p[0];
+			double dy = p[3] - p[1];
+			double major = Math.sqrt(dx*dx+dy*dy);
+			s += "  Length: " + IJ.d2s(major,2) + "\n";
+			s += "  Width: " + IJ.d2s(p[4],2) + "\n";
+			s += "  X1: " + IJ.d2s(p[0],2) + "\n";
+			s += "  Y1: " + IJ.d2s(p[1],2) + "\n";
+			s += "  X2: " + IJ.d2s(p[2],2) + "\n";
+			s += "  Y2: " + IJ.d2s(p[3],2) + "\n";
 	    } else if (roi instanceof EllipseRoi) {
 	    	s += "\nElliptical selection\n";
 	    	double[] p = ((EllipseRoi)roi).getParams();

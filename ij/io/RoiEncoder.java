@@ -204,9 +204,15 @@ public class RoiEncoder {
 			putShort(RoiDecoder.STROKE_WIDTH, point.getSize());
 		}
 
-		if (roi instanceof EllipseRoi) {
-			putShort(RoiDecoder.SUBTYPE, RoiDecoder.ELLIPSE);
-			double[] p = ((EllipseRoi)roi).getParams();
+		if (roi instanceof TiltedRectangleRoi || roi instanceof EllipseRoi) {
+			double[] p = null;
+			if (roi instanceof TiltedRectangleRoi) {
+				putShort(RoiDecoder.SUBTYPE, RoiDecoder.TILTED_RECT);
+				p = ((TiltedRectangleRoi)roi).getParams();
+			} else {
+				putShort(RoiDecoder.SUBTYPE, RoiDecoder.ELLIPSE);
+				p = ((EllipseRoi)roi).getParams();
+			}
 			putFloat(RoiDecoder.X1, (float)p[0]);
 			putFloat(RoiDecoder.Y1, (float)p[1]);
 			putFloat(RoiDecoder.X2, (float)p[2]);

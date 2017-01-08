@@ -87,6 +87,7 @@ public class RoiDecoder {
 	public static final int ARROW = 2;
 	public static final int ELLIPSE = 3;
 	public static final int IMAGE = 4;
+	public static final int TILTED_RECT = 5;
 	
 	// options
 	public static final int SPLINE_FIT = 1;
@@ -296,13 +297,16 @@ public class RoiDecoder {
 						roiType = Roi.POLYGON;
 					else if (type==freehand) {
 						roiType = Roi.FREEROI;
-						if (subtype==ELLIPSE) {
+						if (subtype==ELLIPSE || subtype==TILTED_RECT) {
 							double ex1 = getFloat(X1);		
 							double ey1 = getFloat(Y1);		
 							double ex2 = getFloat(X2);		
 							double ey2 = getFloat(Y2);
 							double aspectRatio = getFloat(ELLIPSE_ASPECT_RATIO);
-							roi = new EllipseRoi(ex1,ey1,ex2,ey2,aspectRatio);
+							if (subtype==TILTED_RECT)
+								roi = new TiltedRectangleRoi(ex1,ey1,ex2,ey2,aspectRatio);
+							else
+								roi = new EllipseRoi(ex1,ey1,ex2,ey2,aspectRatio);
 							break;
 						}
 					} else if (type==traced)

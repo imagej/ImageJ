@@ -1657,8 +1657,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		deleteRoi();
 		switch (Toolbar.getToolId()) {
 			case Toolbar.RECTANGLE:
-				int cornerDiameter = Toolbar.getRoundRectArcSize();
-				roi = new Roi(sx, sy, this, cornerDiameter);
+				if (Toolbar.getRectToolType()==Toolbar.TILTED_RECT_ROI)
+					roi = new TiltedRectangleRoi(sx, sy, this);
+				else
+					roi = new Roi(sx, sy, this, Toolbar.getRoundRectArcSize());
 				break;
 			case Toolbar.OVAL:
 				if (Toolbar.getOvalToolType()==Toolbar.ELLIPSE_ROI)
