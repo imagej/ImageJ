@@ -150,8 +150,6 @@ public class PolygonRoi extends Roi {
 					subPixel = true;
 				break;
 		}
-		if (this instanceof EllipseRoi)
-			subPixel = true;
 		x = ic.offScreenX(sx);
 		y = ic.offScreenY(sy);
 		startXD = subPixelResolution()?ic.offScreenXD(sx):x;
@@ -361,7 +359,6 @@ public class PolygonRoi extends Roi {
 					xp2[i] = ic.screenXD(xpf[i]+xbase+offset);
 					yp2[i] = ic.screenYD(ypf[i]+ybase+offset);
 				}
-				//IJ.log(xp2[0]+" "+xpf[0]+" "+xbase+" "+offset+" "+bounds);
 			} else {
 				for (int i=0; i<nPoints; i++) {
 					xp2[i] = ic.screenX(xp[i]+x);
@@ -767,10 +764,10 @@ public class PolygonRoi extends Roi {
 			return;
 		int ox=ic.offScreenX(sx), oy=ic.offScreenY(sy);
 		double oxd=ic.offScreenXD(sx), oyd=ic.offScreenYD(sy);
-		if ((IJ.altKeyDown()||IJ.controlKeyDown()) && !(nPoints<=3 && type!=POINT)) {
+		if ((IJ.altKeyDown()||IJ.controlKeyDown()) && !(nPoints<=3 && type!=POINT) && !(this instanceof RotatedRectRoi)) {
 			deleteHandle(oxd, oyd); 
 			return;
-		} else if (IJ.shiftKeyDown() && type!=POINT) {
+		} else if (IJ.shiftKeyDown() && type!=POINT && !(this instanceof RotatedRectRoi)) {
 			addHandle(oxd, oyd); 
 			return;
 		}

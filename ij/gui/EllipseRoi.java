@@ -6,7 +6,7 @@ import ij.plugin.frame.Recorder;
 import ij.process.FloatPolygon;
 import ij.measure.Calibration;
 
-/** Elliptical region of interest. */
+/** This class implements the ellipse selection tool. */
 public class EllipseRoi extends PolygonRoi {
 	private static final int vertices = 72;
 	private static double defaultRatio = 0.6;
@@ -21,6 +21,7 @@ public class EllipseRoi extends PolygonRoi {
 		this.aspectRatio = aspectRatio;
 		makeEllipse(x1, y1, x2, y2);
 		state = NORMAL;
+		bounds = null;
 	}
 
 	public EllipseRoi(int sx, int sy, ImagePlus imp) {
@@ -28,6 +29,8 @@ public class EllipseRoi extends PolygonRoi {
 		type = FREEROI;
 		xstart = ic.offScreenXD(sx);
 		ystart = ic.offScreenYD(sy);
+		setDrawOffset(false);
+		bounds = null;
 	}
 
 	public void draw(Graphics g) {
@@ -83,19 +86,14 @@ public class EllipseRoi extends PolygonRoi {
 		y = r.y;
 		width = r.width;
 		height = r.height;
-		bounds = poly.getFloatBounds();
-		float xbase = (float)bounds.getX();
-		float ybase = (float)bounds.getY();
 		for (int i=0; i<nPoints; i++) {
-			xpf[i] = xpf[i]-xbase;
-			ypf[i] = ypf[i]-ybase;
+			xpf[i] = xpf[i]-x;
+			ypf[i] = ypf[i]-y;
 		}
 	}
 	
 	protected void handleMouseUp(int screenX, int screenY) {
 		if (state==CONSTRUCTING) {
-            addOffset();
-			finishPolygon();
 			if (Recorder.record) {
 				double x1 = xpf[handle[2]]+x;
 				double y1 = ypf[handle[2]]+y;
@@ -113,23 +111,18 @@ public class EllipseRoi extends PolygonRoi {
 	protected void moveHandle(int sx, int sy) {
 		double ox = ic.offScreenXD(sx); 
 		double oy = ic.offScreenYD(sy);
-		double xbase=x, ybase=y;
-		if (bounds!=null) {
-			xbase = bounds.x;
-			ybase = bounds.y;
-		}
-		double x1 = xpf[handle[2]]+xbase;
-		double y1 = ypf[handle[2]]+ybase;
-		double x2 = xpf[handle[0]]+xbase;
-		double y2 = ypf[handle[0]]+ybase;
+		double x1 = xpf[handle[2]]+x;
+		double y1 = ypf[handle[2]]+y;
+		double x2 = xpf[handle[0]]+x;
+		double y2 = ypf[handle[0]]+y;
 		switch(activeHandle) {
 			case 0: 
 				x2 = ox;
 				y2 = oy;
 				break;
 			case 1: 
-				double dx = (xpf[handle[3]]+xbase) - ox;
-				double dy = (ypf[handle[3]]+ybase) - oy;
+				double dx = (xpf[handle[3]]+x) - ox;
+				double dy = (ypf[handle[3]]+y) - oy;
 				updateRatio(Math.sqrt(dx*dx+dy*dy), x1, y1, x2, y2);
 				break;
 			case 2: 
@@ -137,8 +130,8 @@ public class EllipseRoi extends PolygonRoi {
 				y1 = oy;
 				break;
 			case 3: 
-				dx = (xpf[handle[1]]+xbase) - ox;
-				dy = (ypf[handle[1]]+ybase) - oy;
+				dx = (xpf[handle[1]]+x) - ox;
+				dy = (ypf[handle[1]]+y) - oy;
 				updateRatio(Math.sqrt(dx*dx+dy*dy), x1, y1, x2, y2);
 				break;
 		}
@@ -192,16 +185,11 @@ public class EllipseRoi extends PolygonRoi {
 
 	/** Returns x1, y1, x2, y2 and aspectRatio as a 5 element array. */
 	public double[] getParams() {
-		double xbase=x, ybase=y;
-		if (bounds!=null) {
-			xbase = bounds.x;
-			ybase = bounds.y;
-		}
 		double[] params = new double[5];
-		params[0] = xpf[handle[2]]+xbase;
-		params[1]  = ypf[handle[2]]+ybase;
-		params[2]  = xpf[handle[0]]+xbase;
-		params[3]  = ypf[handle[0]]+ybase;
+		params[0] = xpf[handle[2]]+x;
+		params[1]  = ypf[handle[2]]+y;
+		params[2]  = xpf[handle[0]]+x;
+		params[3]  = ypf[handle[0]]+y;
 		params[4]  = aspectRatio;
 		return params;
 	}

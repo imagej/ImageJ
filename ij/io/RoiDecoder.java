@@ -59,7 +59,7 @@ public class RoiDecoder {
 	public static final int SUBTYPE = 48;
 	public static final int OPTIONS = 50;
 	public static final int ARROW_STYLE = 52;
-	public static final int ELLIPSE_ASPECT_RATIO = 52;
+	public static final int FLOAT_PARAM = 52; //ellipse ratio or rotated rect width
 	public static final int POINT_TYPE= 52;
 	public static final int ARROW_HEAD_SIZE = 53;
 	public static final int ROUNDED_RECT_ARC_SIZE = 54;
@@ -87,7 +87,7 @@ public class RoiDecoder {
 	public static final int ARROW = 2;
 	public static final int ELLIPSE = 3;
 	public static final int IMAGE = 4;
-	public static final int TILTED_RECT = 5;
+	public static final int ROTATED_RECT = 5;
 	
 	// options
 	public static final int SPLINE_FIT = 1;
@@ -297,16 +297,16 @@ public class RoiDecoder {
 						roiType = Roi.POLYGON;
 					else if (type==freehand) {
 						roiType = Roi.FREEROI;
-						if (subtype==ELLIPSE || subtype==TILTED_RECT) {
+						if (subtype==ELLIPSE || subtype==ROTATED_RECT) {
 							double ex1 = getFloat(X1);		
 							double ey1 = getFloat(Y1);		
 							double ex2 = getFloat(X2);		
 							double ey2 = getFloat(Y2);
-							double aspectRatio = getFloat(ELLIPSE_ASPECT_RATIO);
-							if (subtype==TILTED_RECT)
-								roi = new TiltedRectangleRoi(ex1,ey1,ex2,ey2,aspectRatio);
+							double param = getFloat(FLOAT_PARAM);
+							if (subtype==ROTATED_RECT)
+								roi = new RotatedRectRoi(ex1,ey1,ex2,ey2,param);
 							else
-								roi = new EllipseRoi(ex1,ey1,ex2,ey2,aspectRatio);
+								roi = new EllipseRoi(ex1,ey1,ex2,ey2,param);
 							break;
 						}
 					} else if (type==traced)

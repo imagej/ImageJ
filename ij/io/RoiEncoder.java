@@ -204,11 +204,11 @@ public class RoiEncoder {
 			putShort(RoiDecoder.STROKE_WIDTH, point.getSize());
 		}
 
-		if (roi instanceof TiltedRectangleRoi || roi instanceof EllipseRoi) {
+		if (roi instanceof RotatedRectRoi || roi instanceof EllipseRoi) {
 			double[] p = null;
-			if (roi instanceof TiltedRectangleRoi) {
-				putShort(RoiDecoder.SUBTYPE, RoiDecoder.TILTED_RECT);
-				p = ((TiltedRectangleRoi)roi).getParams();
+			if (roi instanceof RotatedRectRoi) {
+				putShort(RoiDecoder.SUBTYPE, RoiDecoder.ROTATED_RECT);
+				p = ((RotatedRectRoi)roi).getParams();
 			} else {
 				putShort(RoiDecoder.SUBTYPE, RoiDecoder.ELLIPSE);
 				p = ((EllipseRoi)roi).getParams();
@@ -217,7 +217,7 @@ public class RoiEncoder {
 			putFloat(RoiDecoder.Y1, (float)p[1]);
 			putFloat(RoiDecoder.X2, (float)p[2]);
 			putFloat(RoiDecoder.Y2, (float)p[3]);
-			putFloat(RoiDecoder.ELLIPSE_ASPECT_RATIO, (float)p[4]);
+			putFloat(RoiDecoder.FLOAT_PARAM, (float)p[4]);
 		}
 				
 		// save stroke width, stroke color and fill color (1.43i or later)

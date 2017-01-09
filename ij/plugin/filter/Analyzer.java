@@ -688,8 +688,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addValue(ResultsTable.MIN_THRESHOLD, stats.lowerThreshold);
 			rt.addValue(ResultsTable.MAX_THRESHOLD, stats.upperThreshold);
 		}
-		if (roi instanceof TiltedRectangleRoi) {
-			double[] p = ((TiltedRectangleRoi)roi).getParams();
+		if (roi instanceof RotatedRectRoi) {
+			double[] p = ((RotatedRectRoi)roi).getParams();
 			double dx = p[2] - p[0];
 			double dy = p[3] - p[1];
 			double length = Math.sqrt(dx*dx+dy*dy);

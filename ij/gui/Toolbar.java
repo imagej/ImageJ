@@ -41,7 +41,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	public static final int DOUBLE_CLICK_THRESHOLD = 650;
 
-	public static final int RECT_ROI=0, ROUNDED_RECT_ROI=1, TILTED_RECT_ROI=2;
+	public static final int RECT_ROI=0, ROUNDED_RECT_ROI=1, ROTATED_RECT_ROI=2;
 	public static final int OVAL_ROI=0, ELLIPSE_ROI=1, BRUSH_ROI=2;
 	
 	private static final String[] builtInTools = {"Arrow","Brush","Developer Menu","Flood Filler",
@@ -82,7 +82,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private String icon;
 	private int startupTime;
 	private PopupMenu rectPopup, ovalPopup, pointPopup, linePopup, switchPopup;
-	private CheckboxMenuItem rectItem, roundRectItem, tiltedRectItem;
+	private CheckboxMenuItem rectItem, roundRectItem, rotatedRectItem;
 	private CheckboxMenuItem ovalItem, ellipseItem, brushItem;
 	private CheckboxMenuItem pointItem, multiPointItem;
 	private CheckboxMenuItem straightLineItem, polyLineItem, freeLineItem, arrowItem;
@@ -135,9 +135,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		roundRectItem = new CheckboxMenuItem("Rounded Rectangle", rectType==ROUNDED_RECT_ROI);
 		roundRectItem.addItemListener(this);
 		rectPopup.add(roundRectItem);
-		tiltedRectItem = new CheckboxMenuItem("Tilted Rectangle", rectType==TILTED_RECT_ROI);
-		tiltedRectItem.addItemListener(this);
-		rectPopup.add(tiltedRectItem);
+		rotatedRectItem = new CheckboxMenuItem("Rotated Rectangle", rectType==ROTATED_RECT_ROI);
+		rotatedRectItem.addItemListener(this);
+		rectPopup.add(rotatedRectItem);
 		add(rectPopup);
 
 		ovalPopup = new PopupMenu();
@@ -280,7 +280,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				xOffset = x; yOffset = y;
 				if (rectType==ROUNDED_RECT_ROI)
 					g.drawRoundRect(x, y+1, 17, 13, 8, 8);
-				else if (rectType==TILTED_RECT_ROI)
+				else if (rectType==ROTATED_RECT_ROI)
 					polyline(0,10,7,0,15,6,8,16,0,10); 
 				else
 					g.drawRect(x, y+1, 17, 13);
@@ -518,11 +518,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		switch (tool) {
 			case RECTANGLE:
 				if (rectType==ROUNDED_RECT_ROI)
-					IJ.showStatus("Rectangle, *rounded rect* or tilted rect"+hint);
-				else if (rectType==TILTED_RECT_ROI)
-					IJ.showStatus("Rectangle, rounded rect or *tilted rect*"+hint);
+					IJ.showStatus("Rectangle, *rounded rect* or rotated rect"+hint);
+				else if (rectType==ROTATED_RECT_ROI)
+					IJ.showStatus("Rectangle, rounded rect or *rotated rect*"+hint);
 				else
-					IJ.showStatus("*Rectangle*, rounded rect or tilted rect"+hint);
+					IJ.showStatus("*Rectangle*, rounded rect or rotated rect"+hint);
 				return;
 			case OVAL:
 				if (ovalType==BRUSH_ROI)
@@ -632,7 +632,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			rectType = ROUNDED_RECT_ROI;
 			setTool(RECTANGLE);
 		} else if (name.indexOf("tilt")!=-1) {
-			rectType = TILTED_RECT_ROI;
+			rectType = ROTATED_RECT_ROI;
 			setTool(RECTANGLE);
 		} else if (name.indexOf("rect")!=-1) {
 			rectType = RECT_ROI;
@@ -700,7 +700,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				switch (rectType) {
 					case RECT_ROI: return "rectangle";
 					case ROUNDED_RECT_ROI: return "roundrect";
-					case TILTED_RECT_ROI: return "tiltrect";
+					case ROTATED_RECT_ROI: return "tiltrect";
 				}
 			case OVAL:
 				switch (ovalType) {
@@ -884,7 +884,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		return multiPointMode;
 	}
 
-	/** Returns the rectangle tool type (RECT_ROI, ROUNDED_RECT_ROI or TILTED_RECT_ROI). */
+	/** Returns the rectangle tool type (RECT_ROI, ROUNDED_RECT_ROI or ROTATED_RECT_ROI). */
 	public static int getRectToolType() {
 		return rectType;
 	}
@@ -1005,7 +1005,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			if (current==RECTANGLE && isRightClick) {
 				rectItem.setState(rectType==RECT_ROI);
 				roundRectItem.setState(rectType==ROUNDED_RECT_ROI);
-				tiltedRectItem.setState(rectType==TILTED_RECT_ROI);
+				rotatedRectItem.setState(rectType==ROTATED_RECT_ROI);
 				if (IJ.isMacOSX()) IJ.wait(10);
 				rectPopup.show(e.getComponent(),x,y);
 				mouseDownTime = 0L;
@@ -1232,11 +1232,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public void itemStateChanged(ItemEvent e) {
 		CheckboxMenuItem item = (CheckboxMenuItem)e.getSource();
 		String previousName = getToolName();
-		if (item==rectItem || item==roundRectItem || item==tiltedRectItem) {
+		if (item==rectItem || item==roundRectItem || item==rotatedRectItem) {
 			if (item==roundRectItem)
 				rectType = ROUNDED_RECT_ROI;
-			else if (item==tiltedRectItem)
-				rectType = TILTED_RECT_ROI;
+			else if (item==rotatedRectItem)
+				rectType = ROTATED_RECT_ROI;
 			else
 				rectType = RECT_ROI;
 			repaintTool(RECTANGLE);

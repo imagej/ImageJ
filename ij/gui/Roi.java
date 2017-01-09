@@ -1875,7 +1875,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			temp = new int[n];
 		for (int i=0; i<size; i++)
 			temp[i] = (int)arr[i];
-			//temp[i] = (int)Math.floor(arr[i]+0.5);
 		return temp;
 	}
 

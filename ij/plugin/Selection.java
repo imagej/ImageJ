@@ -12,7 +12,7 @@ import java.awt.event.KeyEvent;
 import java.util.Vector;
 
 
-/** This plugin implements the commands in the Edit/Section submenu. */
+/** This plugin implements the commands in the Edit/Selection submenu. */
 public class Selection implements PlugIn, Measurements {
 	private ImagePlus imp;
 	private float[] kernel = {1f, 1f, 1f, 1f, 1f};

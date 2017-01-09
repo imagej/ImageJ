@@ -344,9 +344,9 @@ public class ImageInfo implements PlugIn {
 			if (cal.calibrated())
 	    		s += " \n";
 	    	s += "No selection\n";
-	    } else if (roi instanceof TiltedRectangleRoi) {
-	    	s += "\nTilted rectangle selection\n";
-	    	double[] p = ((TiltedRectangleRoi)roi).getParams();
+	    } else if (roi instanceof RotatedRectRoi) {
+	    	s += "\nRotated rectangle selection\n";
+	    	double[] p = ((RotatedRectRoi)roi).getParams();
 			double dx = p[2] - p[0];
 			double dy = p[3] - p[1];
 			double major = Math.sqrt(dx*dx+dy*dy);
