@@ -697,8 +697,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 			double pw = 1.0;
 			if (cal!=null && cal.pixelWidth==cal.pixelHeight)
 				pw = cal.pixelWidth;
-			rt.addValue("TRLength", length*pw);
-			rt.addValue("TRWidth", p[4]*pw);
+			rt.addValue("RRLength", length*pw);
+			rt.addValue("RRWidth", p[4]*pw);
 		}
 	}
 	
