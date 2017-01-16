@@ -1372,7 +1372,7 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Sets the font used by drawString(). */
 	public void setFont(Font font) {
 		this.font = font;
-		fontMetrics	= null;
+		fontMetrics = null;
 		boldFont = font.isBold();
 	}
 	

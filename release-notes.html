@@ -5,11 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.51j 10 January 2017</u>
+<li> <u>1.51j 16 January 2017</u>
 <ul>
 <li> Added the Rotated Rectangle selection tool.
 <li> Thanks to Jerome Mutterer, added the <i>Help&gt;Examples&gt;Macro&gt;Star Tool</i>
 example macro tool, just in time for this holiday season.
+<li> Thanks to Michael Schmid, the <i>File&gt;New&gt;Image</i> command
+displays a progress bar when creating single RGB images filled with noise.
 <li>Added JavaScript and Java "plasma cloud" recursion examples
  to the <i>Help&gt;Examples</i> menu, based on
 <a href="http://introcs.cs.princeton.edu/java/23recursion/PlasmaCloud.java.html">
@@ -21,9 +23,13 @@ by Robert Sedgewick and Kevin Wayne.
 <li> Added the Roi.setStrokeColor(r,g,b), Roi.setStrokeColor(rgb),
 Roi.setFillColor(r,g,b) and Roi.setFillColor(rgb) macro functions.
 <li> Added the ImageProcessor.fillRect() method.
+<li> Thanks to Michael Schmid, the ColorProcessor.filter(type) method supports
+the additional types FIND_EDGES, MEDIAN_FILTER, MIN and MAX.
 <li> Thanks to Norbert Vischer, fixed a bug that caused the particle analyzer
 to be very slow in batch mode macros if the "Add to manager" option was
 enabled.
+<li> Thanks to Michael Schmid, fixed a bug that caused
+<i>Process&gt;Smooth</i> to not process the edges.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

@@ -94,7 +94,7 @@ public class NewImage {
 						break;
 					case RGB: pixels2 = new int[width*height];
 						if (fill==FILL_RANDOM)
-							fillRandomRGB(new ColorProcessor(width,height,(int[])pixels2));
+							fillRandomRGB(new ColorProcessor(width,height,(int[])pixels2), false);
 						break;
 				}
 				if ((fill==FILL_WHITE||fill==FILL_RAMP) || ((type==RGB)&&(fill!=FILL_RANDOM)))
@@ -194,7 +194,7 @@ public class NewImage {
 				}
 				break;
 			case FILL_RANDOM:
-				fillRandomRGB(ip);
+				fillRandomRGB(ip, true);
 				break;
 		}
 		ImagePlus imp = new ImagePlus(title, ip);
@@ -205,12 +205,18 @@ public class NewImage {
 		return imp;
 	}
 	
-	private static void fillRandomRGB(ColorProcessor ip) {
+	private static void fillRandomRGB(ColorProcessor ip, boolean sp) {
 		ByteProcessor rr = new ByteProcessor(width, height);
 		ByteProcessor gg = new ByteProcessor(width, height);
 		ByteProcessor bb = new ByteProcessor(width, height);
-		rr.add(127); gg.add(127); bb.add(127);
-		rr.noise(31); gg.noise(31); bb.noise(31);
+		if (sp) IJ.showProgress(0.0);
+		rr.add(127); if (sp) IJ.showProgress(0.05);
+		gg.add(127); if (sp) IJ.showProgress(0.10);
+		bb.add(127); if (sp) IJ.showProgress(0.15);
+		rr.noise(31); if (sp) IJ.showProgress(0.40);
+		gg.noise(31); if (sp) IJ.showProgress(0.65);
+		bb.noise(31); if (sp) IJ.showProgress(0.90);
+		if (sp) IJ.showProgress(1.0);
 		ip.setChannel(1,rr); ip.setChannel(2,gg); ip.setChannel(3,bb);
 	}
 
