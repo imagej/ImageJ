@@ -16,7 +16,7 @@ import ij.io.SaveDialog;
 
 /** This is a simple TextArea based editor for editing and compiling plugins. */
 public class Editor extends PlugInFrame implements ActionListener, ItemListener,
-	TextListener, ClipboardOwner, MacroConstants, Runnable, Debugger {
+	TextListener, KeyListener, ClipboardOwner, MacroConstants, Runnable, Debugger {
 	
 	/** ImportPackage statements added in front of scripts. Contains no 
 	newlines so that lines numbers in error messages are not changed. */
@@ -85,6 +85,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private ArrayList undoBuffer = new ArrayList();
     private boolean performingUndo;
     private boolean checkForCurlyQuotes;
+	private static int tabInc = 3;
+	private static boolean insertSpaces;
+
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -96,6 +99,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		addMenuBar(options);	
 		ta = new TextArea(rows, columns);
 		ta.addTextListener(this);
+		ta.addKeyListener(this);
 		if (IJ.isLinux()) ta.setBackground(Color.white);
  		addKeyListener(IJ.getInstance());  // ImageJ handles keyboard shortcuts
 		add(ta);
@@ -156,6 +160,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		m.addSeparator();
 		m.add(new MenuItem("Select All", new MenuShortcut(KeyEvent.VK_A)));
 		m.add(new MenuItem("Balance", new MenuShortcut(KeyEvent.VK_B,false)));
+		m.add(new MenuItem("Detab..."));
 		m.add(new MenuItem("Zap Gremlins"));
 		m.add(new MenuItem("Copy to Image Info"));
 		m.addActionListener(this);
@@ -727,6 +732,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			gotoLine();
 		else if ("Balance".equals(what))
 			balance();
+		else if ("Detab...".equals(what))
+			detab();
 		else if ("Zap Gremlins".equals(what))
 			zapGremlins();
 		else if ("Make Text Larger".equals(what))
@@ -888,6 +895,22 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			changes = true;
 		if (IJ.isMacOSX()) // screen update bug work around
 			ta.setCaretPosition(ta.getCaretPosition());
+	}
+	
+	public void keyPressed(KeyEvent e) { 
+	} 
+	
+	public void keyReleased(KeyEvent e) {
+		int pos = ta.getCaretPosition();
+		if (insertSpaces && pos>0 && e.getKeyCode()==KeyEvent.VK_TAB) {
+			String spaces = " ";
+			for (int i=1; i<tabInc; i++)
+				spaces += " ";
+			ta.replaceRange(spaces, pos-1, pos);
+		}
+	}
+	
+	public void keyTyped(KeyEvent e) {
 	}
 
 	public void itemStateChanged(ItemEvent e) {
@@ -1209,6 +1232,46 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			IJ.showMessage("Zap Gremlins", count+" invalid characters converted to spaces");
 		else
 			IJ.showMessage("Zap Gremlins", "No invalid characters found");
+	}
+	
+	
+	private void detab() {
+		GenericDialog gd = new GenericDialog("Detab", this);
+		gd.addNumericField("Spaces per tab: ", tabInc, 0);
+		gd.addCheckbox("Insert spaces for tabs: ", true);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		tabInc = (int)gd.getNextNumber();
+		insertSpaces = gd.getNextBoolean();
+		if (tabInc<1) tabInc=1;
+		if (tabInc>8) tabInc=8;
+		int nb = 0;
+		int pos = 1;
+		String text = ta.getText();
+		if (text.indexOf('\t')<0)
+			return;
+		char[] chars = new char[text.length()];
+		chars = text.toCharArray();
+		StringBuffer sb = new StringBuffer((int)(chars.length*1.25));
+		for (int i=0; i<chars.length; i++) {
+			char c = chars[i];
+			if (c=='\t') {
+				nb = tabInc - ((pos-1)%tabInc);
+				while(nb>0) {
+					sb.append(' ');
+					++pos;
+					--nb;
+				}
+			} else if (c=='\n') {
+				sb.append(c);
+				pos = 1;
+			} else {
+				sb.append(c);
+				++pos;
+			}
+		}
+		ta.setText(sb.toString());
 	}
 
 	void selectAll() {

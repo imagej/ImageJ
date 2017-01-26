@@ -1171,8 +1171,8 @@ public class ColorProcessor extends ImageProcessor {
 		int[] prevRow = new int[width];
 		int[] thisRow = new int[width];
 		int[] nextRow = new int[width];
-		    System.arraycopy(pixels, Math.max(roiY-1,0)*width, thisRow, 0, width);
-		    System.arraycopy(pixels, roiY*width, nextRow, 0, width);
+		System.arraycopy(pixels, Math.max(roiY-1,0)*width, thisRow, 0, width);
+		System.arraycopy(pixels, roiY*width, nextRow, 0, width);
 		for (int y=roiY; y<roiY+roiHeight; y++) {
 			int[] tmp = prevRow;
 			prevRow = thisRow;
