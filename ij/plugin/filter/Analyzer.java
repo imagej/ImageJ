@@ -64,8 +64,13 @@ public class Analyzer implements PlugInFilter, Measurements {
 		this.imp = imp;
 	}
 	
+	/** Construct a new Analyzer using an ImagePlus object and a ResultsTable. */
+	public Analyzer(ImagePlus imp, ResultsTable rt) {
+		this(imp, Analyzer.getMeasurements(), rt);
+	}
+
 	/** Construct a new Analyzer using an ImagePlus object and private
-		measurement options and results table. */
+		measurement options and a ResultsTable. */
 	public Analyzer(ImagePlus imp, int measurements, ResultsTable rt) {
 		this.imp = imp;
 		this.measurements = measurements;
@@ -80,11 +85,13 @@ public class Analyzer implements PlugInFilter, Measurements {
 		this.arg = arg;
 		this.imp = imp;
 		IJ.register(Analyzer.class);
-		if (arg.equals("set"))
-			{doSetDialog(); return DONE;}
-		else if (arg.equals("sum"))
-			{summarize(); return DONE;}
-		else if (arg.equals("clear")) {
+		if (arg.equals("set")) {
+			doSetDialog();
+			return DONE;
+		} else if (arg.equals("sum")) {
+			summarize();
+			return DONE;
+		} else if (arg.equals("clear")) {
 			if (IJ.macroRunning())
 				unsavedMeasurements = false;
 			resetCounter();

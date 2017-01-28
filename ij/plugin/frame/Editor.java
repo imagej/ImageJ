@@ -45,6 +45,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	static final String FONT_MONO= "editor.font.mono";
 	static final String CASE_SENSITIVE= "editor.case-sensitive";
 	static final String DEFAULT_DIR= "editor.dir";
+	static final String INSERT_SPACES= "editor.spaces";
+	static final String TAB_INC= "editor.tab-inc";
 	private TextArea ta;
 	private String path;
 	protected boolean changes;
@@ -85,8 +87,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private ArrayList undoBuffer = new ArrayList();
     private boolean performingUndo;
     private boolean checkForCurlyQuotes;
-	private static int tabInc = 3;
-	private static boolean insertSpaces;
+    private static int tabInc = (int)Prefs.get(TAB_INC, 3);
+    private static boolean insertSpaces = Prefs.get(INSERT_SPACES, false);
+    CheckboxMenuItem insertSpacesItem;
 
 	
 	public Editor() {
@@ -110,6 +113,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			fontSize = sizes.length-1;
         setFont();
 		positionWindow();
+		if (IJ.isJava16() && !IJ.isJava18() && !IJ.isLinux())
+			insertSpaces = false;
 	}
 	
 	void addMenuBar(int options) {
@@ -128,9 +133,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		mb.add(m);
 		
 		m = new Menu("Edit");
-		//String key = IJ.isMacintosh()?"  Cmd ":"  Ctrl+";
-		//MenuItem item = new MenuItem("Undo"+key+"Z");
-		//item.setEnabled(false);
 		MenuItem item = new MenuItem("Undo",new MenuShortcut(KeyEvent.VK_Z));
 		m.add(item);
 		m.addSeparator();
@@ -161,6 +163,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		m.add(new MenuItem("Select All", new MenuShortcut(KeyEvent.VK_A)));
 		m.add(new MenuItem("Balance", new MenuShortcut(KeyEvent.VK_B,false)));
 		m.add(new MenuItem("Detab..."));
+		insertSpacesItem = new CheckboxMenuItem("Tab Key Inserts Spaces");
+		insertSpacesItem.addItemListener(this);
+		insertSpacesItem.setState(insertSpaces);
+		m.add(insertSpacesItem);
 		m.add(new MenuItem("Zap Gremlins"));
 		m.add(new MenuItem("Copy to Image Info"));
 		m.addActionListener(this);
@@ -915,7 +921,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 
 	public void itemStateChanged(ItemEvent e) {
 		CheckboxMenuItem item = (CheckboxMenuItem)e.getSource();
-        setFont();
+		String cmd = e.getItem().toString();
+		if ("Tab Key Inserts Spaces".equals(cmd)) {
+			insertSpaces = e.getStateChange()==1;
+			Prefs.set(INSERT_SPACES, insertSpaces);
+		} else
+        	setFont();
 	}
 
 	/** Override windowActivated in PlugInFrame to
@@ -1238,14 +1249,22 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private void detab() {
 		GenericDialog gd = new GenericDialog("Detab", this);
 		gd.addNumericField("Spaces per tab: ", tabInc, 0);
-		gd.addCheckbox("Insert spaces for tabs: ", true);
+		gd.addCheckbox("Tab key inserts spaces: ", insertSpaces);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
+		int tabInc2 = tabInc;
 		tabInc = (int)gd.getNextNumber();
-		insertSpaces = gd.getNextBoolean();
 		if (tabInc<1) tabInc=1;
 		if (tabInc>8) tabInc=8;
+		if (tabInc!=tabInc2)
+			Prefs.set(TAB_INC, tabInc);
+		boolean insertSpaces2 = insertSpaces;
+		insertSpaces = gd.getNextBoolean();
+		if (insertSpaces!=insertSpaces2) {
+			Prefs.set(INSERT_SPACES, insertSpaces);
+			insertSpacesItem.setState(insertSpaces);
+		}
 		int nb = 0;
 		int pos = 1;
 		String text = ta.getText();
