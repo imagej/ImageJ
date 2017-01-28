@@ -1251,11 +1251,19 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	double getBoolean() {
-		String prompt = getStringArg();
+		interp.getLeftParen();
+		String prompt = getString();
+		String yesButton = "  Yes  ";
+		String noButton = "  No  ";
+		if (interp.nextToken()==',') {
+			yesButton = getNextString();
+			noButton = getNextString();
+		}
+		interp.getRightParen();
 		String title = interp.macroName!=null?interp.macroName:"";
 		if (title.endsWith(" Options"))
 			title = title.substring(0, title.length()-8);
-		YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(), title, prompt);
+		YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(), title, prompt, yesButton, noButton);
 		if (d.cancelPressed()) {
 			interp.done = true;
 			return 0.0;
@@ -5834,6 +5842,9 @@ public class Functions implements MacroConstants, Measurements {
 			roi.setLocation(x, y);
 			imp.draw();
 			return Double.NaN;
+		} else if (name.equals("measure")) {
+			ResultsTable rt = overlay.measure(imp);
+			rt.show("Results");
 		} else
 			interp.error("Unrecognized function name");
 		return Double.NaN;

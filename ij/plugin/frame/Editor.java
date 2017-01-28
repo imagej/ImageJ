@@ -111,7 +111,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			fontSize = 0;
 		if (fontSize>=sizes.length)
 			fontSize = sizes.length-1;
-        setFont();
+		setFont();
 		positionWindow();
 		if (IJ.isJava16() && !IJ.isJava18() && !IJ.isLinux())
 			insertSpaces = false;
@@ -926,7 +926,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			insertSpaces = e.getStateChange()==1;
 			Prefs.set(INSERT_SPACES, insertSpaces);
 		} else
-        	setFont();
+			setFont();
 	}
 
 	/** Override windowActivated in PlugInFrame to
