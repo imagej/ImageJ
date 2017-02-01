@@ -5,12 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.51j 28 January 2017</u>
+<li> <u>1.51j 1 February 2017</u>
 <ul>
 <li> Added the Rotated Rectangle selection tool.
 <li> Added the <i>Edit&gt;Detab</i> command and the
 <i>Edit&gt;Tab Key Inserts Spaces</i> Checkbox menu
 item to the text editor;
+<li> Thanks to Stein Rorvik, added the <i>Macros&gt;Evaluate Macro</i> command
+to the text editor.
 <li> Thanks to Jerome Mutterer, added the <i>Help&gt;Examples&gt;Macro&gt;Star Tool</i>
 example macro tool, just in time for this holiday season.
 <li> Thanks to Michael Schmid, the <i>File&gt;New&gt;Image</i> command
@@ -22,6 +24,10 @@ PlasmaCloud.java</a>, from the book
 <a href="http://introcs.cs.princeton.edu/java/home/">
 Introduction to Programming in Java</a>
 by Robert Sedgewick and Kevin Wayne.
+<li> Thanks to Michael Schmid, added the "Save window locations" option
+to the<i>Edit&gt;Options&gt;Misc</i> dialog (only on Linux). Enable
+this option to workaround a bug with some Linux window
+managers that causes windows to wander down the screen.
 <li> Added the random("gaussian") and Overlay.measure macro functions.
 <li> Added the Roi.setStrokeColor(r,g,b), Roi.setStrokeColor(rgb),
 Roi.setFillColor(r,g,b) and Roi.setFillColor(rgb) macro functions.
@@ -36,6 +42,8 @@ to be very slow in batch mode macros if the "Add to manager" option was
 enabled.
 <li> Thanks to Michael Schmid, fixed a bug that caused
 <i>Process&gt;Smooth</i> to not process the edges.
+<li> Thanks to Salim Kanoun, fixed a bug that caused the getMetadata("info")
+macro function to sometimes not work as expected with stacks.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

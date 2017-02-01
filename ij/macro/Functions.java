@@ -3726,9 +3726,13 @@ public class Functions implements MacroConstants, Measurements {
 					metadata = (String)imp.getProperty("Info");
 			} else 
 				metadata = imp.getStack().getSliceLabel(imp.getCurrentSlice());
-		} else
+		} else {
 			metadata = (String)imp.getProperty("Info");
-		if (metadata==null) metadata = "";
+			if (metadata==null && imp.getStackSize()>1)
+				metadata = imp.getStack().getSliceLabel(imp.getCurrentSlice());
+		}
+		if (metadata==null)
+			metadata = "";
 		return metadata;
 	}
 

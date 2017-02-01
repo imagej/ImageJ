@@ -165,6 +165,7 @@ public class Overlay {
 			Analyzer analyzer = new Analyzer(imp, rt);
 			analyzer.measure();
 		}
+		imp.deleteRoi();
 		return rt;
 	}
 

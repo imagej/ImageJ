@@ -80,7 +80,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.51j";
-	public static final String BUILD = "22";
+	public static final String BUILD = "37";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -268,6 +268,7 @@ public class ImageJ extends Frame implements ActionListener,
 		Rectangle maxBounds = GUI.getMaxWindowBounds();
 		int ijX = Prefs.getInt(IJ_X,-99);
 		int ijY = Prefs.getInt(IJ_Y,-99);
+		//System.out.println("getPreferredLoc1: "+ijX+" "+ijY+" "+maxBounds);
 		if (ijX>=maxBounds.x && ijY>=maxBounds.y && ijX<(maxBounds.x+maxBounds.width-75))
 			return new Point(ijX, ijY);
 		Dimension tbsize = toolbar.getPreferredSize();
@@ -652,10 +653,13 @@ public class ImageJ extends Frame implements ActionListener,
 	/** Called once when ImageJ quits. */
 	public void savePreferences(Properties prefs) {
 		Point loc = getLocation();
+		if (Prefs.doNotSaveWindowLocations) {
+			Rectangle bounds = GUI.getMaxWindowBounds();
+			loc.y = bounds.y;
+		}
+		//System.out.println("savePreferences: "+loc);
 		prefs.put(IJ_X, Integer.toString(loc.x));
 		prefs.put(IJ_Y, Integer.toString(loc.y));
-		//prefs.put(IJ_WIDTH, Integer.toString(size.width));
-		//prefs.put(IJ_HEIGHT, Integer.toString(size.height));
 	}
 
 	public static void main(String args[]) {

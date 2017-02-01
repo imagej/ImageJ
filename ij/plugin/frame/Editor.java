@@ -227,6 +227,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			macrosMenu.add(new MenuItem("Macro Functions...", new MenuShortcut(KeyEvent.VK_M, true)));
 			macrosMenu.add(new MenuItem("Function Finder...", new MenuShortcut(KeyEvent.VK_F, true)));
 			macrosMenu.addSeparator();
+			macrosMenu.add(new MenuItem("Evaluate Macro"));
 			macrosMenu.add(new MenuItem("Evaluate JavaScript", new MenuShortcut(KeyEvent.VK_J, false)));
 			macrosMenu.add(new MenuItem("Evaluate BeanShell", new MenuShortcut(KeyEvent.VK_B, true)));
 			macrosMenu.add(new MenuItem("Evaluate Python", new MenuShortcut(KeyEvent.VK_P, false)));
@@ -420,6 +421,13 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		new MacroRunner(text, debug?this:null);
 	}
 	
+	void evaluateMacro() {
+		String title = getTitle();
+		if (title.endsWith(".js")||title.endsWith("..bsh")||title.endsWith(".py"))
+			setTitle(title.substring(0,title.length()-3)+".ijm");
+		runMacro(false);
+	}
+
 	void evaluateJavaScript() {
 		if (!getTitle().endsWith(".js"))
 			setTitle(SaveDialog.setExtension(getTitle(), ".js"));
@@ -706,6 +714,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			showMacroFunctions();
 		else if ("Function Finder...".equals(what))
 			functionFinder = new FunctionFinder(this);
+		else if ("Evaluate Macro".equals(what))
+			evaluateMacro();
 		else if ("Evaluate JavaScript".equals(what))
 			evaluateJavaScript();
 		else if ("Evaluate BeanShell".equals(what))
