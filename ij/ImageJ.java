@@ -80,7 +80,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.51j";
-	public static final String BUILD = "37";
+	public static final String BUILD = "";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -653,11 +653,10 @@ public class ImageJ extends Frame implements ActionListener,
 	/** Called once when ImageJ quits. */
 	public void savePreferences(Properties prefs) {
 		Point loc = getLocation();
-		if (Prefs.doNotSaveWindowLocations) {
+		if (IJ.isLinux()) {
 			Rectangle bounds = GUI.getMaxWindowBounds();
 			loc.y = bounds.y;
 		}
-		//System.out.println("savePreferences: "+loc);
 		prefs.put(IJ_X, Integer.toString(loc.x));
 		prefs.put(IJ_Y, Integer.toString(loc.y));
 	}
