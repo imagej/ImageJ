@@ -185,7 +185,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		int screenHeight = maxWindow.y+maxWindow.height-sliderHeight;
 		double mag = 1;
 		while (xbase+width*mag>maxWindow.x+maxWindow.width || ybase+height*mag>=screenHeight) {
-			//IJ.log(mag+"  "+xbase+"  "+width*mag+"  "+maxWindow.width);
 			double mag2 = ImageCanvas.getLowerZoomLevel(mag);
 			if (mag2==mag) break;
 			mag = mag2;
@@ -198,14 +197,15 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		ic.setMagnification(mag);
 		if (y+height*mag>screenHeight)
 			y = ybase;
-        if (!updating) setLocation(x, y);
-		if (Prefs.open100Percent && ic.getMagnification()<1.0) {
+        if (Prefs.open100Percent && ic.getMagnification()<1.0) {
 			while(ic.getMagnification()<1.0)
 				ic.zoomIn(0, 0);
 			setSize(Math.min(width, maxWindow.width-x), Math.min(height, screenHeight-y));
 			validate();
 		} else 
 			pack();
+        if (!updating)
+        	setLocation(x, y);
 	}
 					
 	Rectangle getMaxWindow(int xloc, int yloc) {
@@ -380,7 +380,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
     }
 
     public void paint(Graphics g) {
-		//if (IJ.debugMode) IJ.log("wPaint: " + imp.getTitle());
 		drawInfo(g);
 		Rectangle r = ic.getBounds();
 		int extraWidth = MIN_WIDTH - r.width;
@@ -513,7 +512,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		int extraHeight = insets.top+insets.bottom + 10;
 		if (extraHeight==20) extraHeight = 42;
 		int members = getComponentCount();
-		//if (IJ.debugMode) IJ.log("getExtraSize: "+members+" "+insets);
 		for (int i=1; i<members; i++) {
 		    Component m = getComponent(i);
 		    Dimension d = m.getPreferredSize();
@@ -576,14 +574,12 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	}
 	
 	public void windowClosing(WindowEvent e) {
-		//IJ.log("windowClosing: "+imp.getTitle()+" "+closed);
 		if (closed)
 			return;
 		if (ij!=null) {
 			WindowManager.setCurrentWindow(this);
 			IJ.doCommand("Close");
 		} else {
-			//setVisible(false);
 			dispose();
 			WindowManager.removeWindow(this);
 		}

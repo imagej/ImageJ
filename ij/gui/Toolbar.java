@@ -631,7 +631,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (name.indexOf("round")!=-1) {
 			rectType = ROUNDED_RECT_ROI;
 			setTool(RECTANGLE);
-		} else if (name.indexOf("tilt")!=-1) {
+		} else if (name.indexOf("rot")!=-1) {
 			rectType = ROTATED_RECT_ROI;
 			setTool(RECTANGLE);
 		} else if (name.indexOf("rect")!=-1) {
@@ -700,7 +700,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				switch (rectType) {
 					case RECT_ROI: return "rectangle";
 					case ROUNDED_RECT_ROI: return "roundrect";
-					case ROTATED_RECT_ROI: return "tiltrect";
+					case ROTATED_RECT_ROI: return "rotrect";
 				}
 			case OVAL:
 				switch (ovalType) {
@@ -765,7 +765,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		previous = current;
 		if (Recorder.record) {
 			String name = getName(current);
-			if (name!=null) Recorder.record("setTool", name);
+			if (name!=null) {
+				IJ.wait(100); // workaround for OSX/Java 8 bug
+				Recorder.record("setTool", name);
+			}
 		}
 		if (legacyMode)
 			repaint();

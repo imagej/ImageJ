@@ -1176,8 +1176,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			if (centerDialog) GUI.center(this);
 			setVisible(true);
 			recorderOn = Recorder.record;
-			int delay = IJ.isJava18()?100:50;
-			IJ.wait(delay); // workaround for partially drawn dialogs on Java 8
+			IJ.wait(50);
 		}
 		/* For plugins that read their input only via dialogItemChanged, call it at least once */
 		if (!wasCanceled && dialogListeners!=null && dialogListeners.size()>0) {
