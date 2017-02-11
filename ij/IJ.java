@@ -1333,9 +1333,11 @@ public class IJ {
 				WindowManager.setWindow(win);
 			}
 			long start = System.currentTimeMillis();
-			// timeout after 2 seconds unless current thread is event dispatch thread
+			// timeout after 1 second unless current thread is event dispatch thread
 			String thread = Thread.currentThread().getName();
-			int timeout = thread!=null&&thread.indexOf("EventQueue")!=-1?0:2000;
+			int timeout = thread!=null&&thread.indexOf("EventQueue")!=-1?0:1000;
+			if (IJ.isMacOSX() && IJ.isJava18() && timeout>0)
+				timeout = 250;
 			while (true) {
 				wait(10);
 				imp = WindowManager.getCurrentImage();

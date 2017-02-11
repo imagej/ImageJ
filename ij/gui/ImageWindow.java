@@ -204,8 +204,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			validate();
 		} else 
 			pack();
-        if (!updating)
-        	setLocation(x, y);
+		if (!updating)
+			setLocation(x, y);
 	}
 					
 	Rectangle getMaxWindow(int xloc, int yloc) {
