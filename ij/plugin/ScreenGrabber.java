@@ -35,8 +35,7 @@ public class ScreenGrabber implements PlugIn {
 		for (int i=0; i<delay; i++) {
 			IJ.wait(1000);
 			IJ.showStatus("Delayed capture: "+(i+1)+"/"+delay);
-			if (delay>4 && i==delay-2)
-				IJ.beep();
+			if (delay>4 && i==delay-2) IJ.beep();
 		}
 		return captureScreen();
 	}

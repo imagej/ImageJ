@@ -262,7 +262,6 @@ public class ImageReader {
 		int base = 0;
 		float last = 0;
 		for (int k=0; k<fi.stripOffsets.length; k++) {
-			//IJ.log("seek: "+fi.stripOffsets[k]+" "+(in instanceof RandomAccessStream));
 			if (in instanceof RandomAccessStream)
 				((RandomAccessStream)in).seek(fi.stripOffsets[k]);
 			else if (k > 0) {
@@ -877,7 +876,7 @@ public class ImageReader {
 		return readPixels(is);
 	}
 	
-	byte[] uncompress(byte[] input) {
+	private byte[] uncompress(byte[] input) {
 		if (fi.compression==FileInfo.PACK_BITS)
 			return packBitsUncompress(input, fi.rowsPerStrip*fi.width*fi.getBytesPerPixel());
 		else if (fi.compression==FileInfo.LZW || fi.compression==FileInfo.LZW_WITH_DIFFERENCING)

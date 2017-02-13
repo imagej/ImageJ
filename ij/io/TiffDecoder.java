@@ -194,12 +194,13 @@ public class TiffDecoder {
 		decode an IFD for each image. */
 	public void saveImageDescription(byte[] description, FileInfo fi) {
         String id = new String(description);
-        if (!id.startsWith("ImageJ"))
+        boolean createdByImageJ = id.startsWith("ImageJ");
+        if (!createdByImageJ)
 			saveMetadata(getName(IMAGE_DESCRIPTION), id);
 		if (id.length()<7) return;
 		fi.description = id;
         int index1 = id.indexOf("images=");
-        if (index1>0) {
+        if (index1>0 && createdByImageJ) {
             int index2 = id.indexOf("\n", index1);
             if (index2>0) {
                 String images = id.substring(index1+7,index2);
