@@ -1337,7 +1337,7 @@ public class IJ {
 			String thread = Thread.currentThread().getName();
 			int timeout = thread!=null&&thread.indexOf("EventQueue")!=-1?0:1000;
 			if (IJ.isMacOSX() && IJ.isJava18() && timeout>0)
-				timeout = 250;
+				timeout = 250;  //work around OS X/Java 8 window activation bug
 			while (true) {
 				wait(10);
 				imp = WindowManager.getCurrentImage();
