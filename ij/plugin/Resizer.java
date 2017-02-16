@@ -219,11 +219,9 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			imp2 = resizeZ(imp, newDepth, interpolationMethod);
 			if (imp2==null)
 				return null;
-			ImageProcessor ip = imp.getProcessor();
-			double min = ip.getMin();
-			double max = ip.getMax();
-			if (bitDepth==16||bitDepth==32)
-				imp2.getProcessor().setMinAndMax(min, max);
+			double min = imp.getDisplayRangeMin();
+			double max = imp.getDisplayRangeMax();
+			imp2.setDisplayRange(min, max);
 		}
 		if (imp2==null)
 			return null;
