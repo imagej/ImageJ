@@ -125,6 +125,9 @@ public class SubstackMaker implements PlugIn {
 	ImagePlus stackList(ImagePlus imp, int count, int[] numList, String stackTitle) throws Exception {
 		ImageStack stack = imp.getStack();
 		ImageStack stack2 = null;
+		boolean virtualStack = stack.isVirtual();
+		double min = imp.getDisplayRangeMin();
+		double max = imp.getDisplayRangeMax();
 		Roi roi = imp.getRoi();
 		for (int i=0, j=0; i<count; i++) {
 			int currSlice = numList[i]-j;
@@ -149,6 +152,8 @@ public class SubstackMaker implements PlugIn {
 		}
 		ImagePlus impSubstack = imp.createImagePlus();
 		impSubstack.setStack(stackTitle, stack2);
+		if (virtualStack)
+			impSubstack.setDisplayRange(min, max);
 		return impSubstack;
 	}
 	
@@ -156,6 +161,9 @@ public class SubstackMaker implements PlugIn {
 	ImagePlus stackRange(ImagePlus imp, int first, int last, int inc, String title) throws Exception {
 		ImageStack stack = imp.getStack();
 		ImageStack stack2 = null;
+		boolean virtualStack = stack.isVirtual();
+		double min = imp.getDisplayRangeMin();
+		double max = imp.getDisplayRangeMax();
 		Roi roi = imp.getRoi();
 		boolean showProgress = stack.getSize()>400 || stack.isVirtual();
 		for (int i= first, j=0; i<= last; i+=inc) {
@@ -183,6 +191,8 @@ public class SubstackMaker implements PlugIn {
 		ImagePlus substack = imp.createImagePlus();
 		substack.setStack(title, stack2);
 		substack.setCalibration(imp.getCalibration());
+		if (virtualStack)
+			substack.setDisplayRange(min, max);
 		return substack;
 	}
 }

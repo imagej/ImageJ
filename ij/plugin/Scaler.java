@@ -80,6 +80,9 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		boolean crop = r.width!=imp.getWidth() || r.height!=imp.getHeight();
 		ImageStack stack1 = imp.getStack();
 		ImageStack stack2 = new ImageStack(newWidth, newHeight);
+		boolean virtualStack = stack1.isVirtual();
+		double min = imp.getDisplayRangeMin();
+		double max = imp.getDisplayRangeMax();
 		ImageProcessor ip1, ip2;
 		int method = interpolationMethod;
 		if (w==1 || h==1)
@@ -99,6 +102,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			IJ.showProgress(i, nSlices);
 		}
 		imp2.setStack(title, stack2);
+		if (virtualStack)
+			imp2.setDisplayRange(min, max);
 		Calibration cal = imp2.getCalibration();
 		if (cal.scaled()) {
 			cal.pixelWidth *= 1.0/xscale;
