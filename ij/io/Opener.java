@@ -92,7 +92,7 @@ public class Opener {
 				(new PluginInstaller()).install(path);
 				return;
 		}
-		boolean fullPath = path.startsWith("/") || path.startsWith("\\") || path.indexOf(":\\")==1 || isURL;
+		boolean fullPath = path.startsWith("/") || path.startsWith("\\") || path.indexOf(":\\")==1 || path.indexOf(":/")==1 || isURL;
 		if (!fullPath) {
 			String defaultDir = OpenDialog.getDefaultDirectory();
 			if (defaultDir!=null)

@@ -447,7 +447,7 @@ public class FileOpener {
 		else if (fi.url!=null && !fi.url.equals(""))
 			is = new URL(fi.url+fi.fileName).openStream();
 		else {
-			if (fi.directory.length()>0 && !fi.directory.endsWith(Prefs.separator))
+			if (fi.directory.length()>0 && !(fi.directory.endsWith(Prefs.separator)||fi.directory.endsWith("/")))
 				fi.directory += Prefs.separator;
 		    File f = new File(fi.directory + fi.fileName);
 		    if (gzip) fi.compression = FileInfo.COMPRESSION_UNKNOWN;

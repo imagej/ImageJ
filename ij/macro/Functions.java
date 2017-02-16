@@ -6246,6 +6246,8 @@ public class Functions implements MacroConstants, Measurements {
 			String value = "1";
 			interp.getLeftParen();
 			String key = getString();
+			if (key.contains(" "))
+				interp.error("Keys contain a space");
 			if (interp.nextToken()==',') {
 				interp.getComma();
 				value = getString();

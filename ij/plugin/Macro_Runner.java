@@ -48,7 +48,7 @@ public class Macro_Runner implements PlugIn {
 		|| name.endsWith("Menu.ijm") || name.endsWith("Menu.txt"))
 			(new MacroInstaller()).installTool(Menus.getPlugInsPath()+name);
 		else {
-			boolean fullPath = name.startsWith("/") || name.startsWith("\\") || name.indexOf(":\\")==1;
+			boolean fullPath = name.startsWith("/") || name.startsWith("\\") || name.indexOf(":\\")==1 || name.indexOf(":/")==1;
 			if (fullPath)
 				path = name;
 			else
@@ -66,7 +66,7 @@ public class Macro_Runner implements PlugIn {
 		if (arg==null) arg = "";
 		if (name.startsWith("ij.jar:"))
 			return runMacroFromIJJar(name, arg);
-        boolean fullPath = name.startsWith("/") || name.startsWith("\\") || name.indexOf(":\\")==1;
+        boolean fullPath = name.startsWith("/") || name.startsWith("\\") || name.indexOf(":\\")==1 || name.indexOf(":/")==1;
 		String path = name;
 		boolean exists = false;
         if (!fullPath) {
