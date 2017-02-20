@@ -625,5 +625,13 @@ public class Line extends Roi {
 		x1d=xx+x1R; y1d=yy+y1R; x2d=xx+x2R; y2d=yy+y2R;
 		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
 	}
+	
+	public FloatPolygon getRotationCenter() {
+		double xcenter = x1d + (x2d-x1d)/2.0;
+		double ycenter = y1d + (y2d-y1d)/2.0;
+		FloatPolygon p = new FloatPolygon();
+		p.addPoint(xcenter,ycenter);
+		return p;
+	}
 
 }

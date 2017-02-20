@@ -1880,7 +1880,7 @@ public class Plot implements Cloneable {
 				}
 			}
 			boolean haveMinorLogNumbers = i2-i1 < 2;		//nunbers on log minor ticks only if < 2 decades
-			if (minorTicks	&& (!logYAxis || step > 1.1)) { //'standard' log minor ticks only for full decades
+			if (yMin!=yMax && minorTicks	&& (!logYAxis || step > 1.1)) { //'standard' log minor ticks only for full decades
 				step = niceNumber(step*0.19);				//non-log: 4 or 5 minor ticks per major tick
 				if (logYAxis && step < 1) step = 1;
 				i1 = (int)Math.ceil (Math.min(yMin,yMax)/step-1.e-10);

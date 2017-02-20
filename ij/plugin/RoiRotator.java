@@ -45,8 +45,6 @@ public class RoiRotator implements PlugIn {
 		int decimalPlaces = 0;
 		if ((int)angle!=angle)
 			decimalPlaces = 2;
-		if (Macro.getOptions()!=null)
-			rotateAroundImageCenter = false;
 		gd.addNumericField("Angle:", angle, decimalPlaces, 3, "degrees");
 		gd.addCheckbox("Rotate around image center", rotateAroundImageCenter);
 		gd.setInsets(5, 0, 0);
@@ -86,8 +84,6 @@ public class RoiRotator implements PlugIn {
 			poly = new FloatPolygon();
 			poly.addPoint(x1, y1);
 			poly.addPoint(x2, y2);
-			xcenter = x1 + (x2-x1)/2.0;
-			ycenter = y1 + (y2-y1)/2.0;
 		}
 		for (int i=0; i<poly.npoints; i++) {
 			double dx = poly.xpoints[i]-xcenter;

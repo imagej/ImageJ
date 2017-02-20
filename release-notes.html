@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.51k 16 February 2017</u>
+<li> <u>1.51k 20 February 2017</u>
 <ul>
 <li> Added the <i>Plugins&gt;Utilities&gt;Capture Delayed</i> command.
 <li> Added this note to the <i>Help&gt;Examples&gt;Macro&gt;Sphere</i>
@@ -22,8 +22,12 @@ to incorrectly open TIFF stacks created by Bio-Formats.
 starting with "C:/’ to not work in the open() and runMacro() macro functions.
 <li> Thanks to Stein Rorvik, fixed bugs that caused min/max values to be lost when
 resampling virtual stacks.
-<li> Thanks to Stein Rorvik, fixed a bug that caused z-scaling of 8-bit images to not
+<li> Thanks to Stein Rorvik, fixed a bug that caused z-scaling of 8-bit stacks to not
 retain the min,max contrast setting.
+<li> Thanks to Stein Rorvik, fixed a bug that caused <i>Edit&gt;Selection&gt;Rotate</i>
+to not work for straight line selections if "Rotate around image center" was enabled.
+<li> Thanks to Stefan Woerz, fixed a bug that caused profile plots to not be
+displayed if the min and max pixels values were non-zero and equal.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
