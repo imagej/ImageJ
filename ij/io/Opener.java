@@ -1319,5 +1319,5 @@ public class Opener {
 	public static boolean getOpenUsingPlugins() {
 		return openUsingPlugins;
 	}
-	
+		
 }

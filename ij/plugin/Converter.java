@@ -15,8 +15,12 @@ public class Converter implements PlugIn {
 		imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
 			if (imp.isComposite() && arg.equals("RGB Color") && !imp.getStack().isRGB() && !imp.getStack().isHSB() && !imp.getStack().isLab()) {
-				(new RGBStackConverter()).run("");
-				imp.setTitle(imp.getTitle()); // updates size in Window menu
+				if (imp.getWindow()==null && !ij.macro.Interpreter.isBatchMode())
+					RGBStackConverter.convertToRGB(imp);
+				else {
+					(new RGBStackConverter()).run("");
+					imp.setTitle(imp.getTitle()); // updates size in Window menu
+				}
 			} else if (imp.lock()) {
 				convert(arg);
 				imp.unlock();

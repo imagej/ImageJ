@@ -45,6 +45,8 @@ public class RoiRotator implements PlugIn {
 		int decimalPlaces = 0;
 		if ((int)angle!=angle)
 			decimalPlaces = 2;
+		if (Macro.getOptions()!=null)
+			rotateAroundImageCenter = false;
 		gd.addNumericField("Angle:", angle, decimalPlaces, 3, "degrees");
 		gd.addCheckbox("Rotate around image center", rotateAroundImageCenter);
 		gd.setInsets(5, 0, 0);

@@ -3258,8 +3258,11 @@ public class Functions implements MacroConstants, Measurements {
 			TextWindow tw = (TextWindow)frame;
 			if (isCommand)
 				handleTextWindowCommand(tw, s2);
-			else
+			else {
 				tw.append(s2);
+				TextPanel tp = tw.getTextPanel();
+				if (tp!=null) tp.setResultsTable(null);
+			}
 		}
 	}
 	

@@ -399,6 +399,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (isVisible())
 			return;
 		win = null;
+		//if (ip!=null) throw new IllegalArgumentException();
 		if ((IJ.isMacro() && ij==null) || Interpreter.isBatchMode()) {
 			if (isComposite()) ((CompositeImage)this).reset();
 			ImagePlus img = WindowManager.getCurrentImage();

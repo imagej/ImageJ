@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.51k 20 February 2017</u>
+<li> <u>1.51k 24 February 2017</u>
 <ul>
 <li> Added the <i>Plugins&gt;Utilities&gt;Capture Delayed</i> command.
 <li> Added this note to the <i>Help&gt;Examples&gt;Macro&gt;Sphere</i>
@@ -28,6 +28,12 @@ retain the min,max contrast setting.
 to not work for straight line selections if "Rotate around image center" was enabled.
 <li> Thanks to Stefan Woerz, fixed a bug that caused profile plots to not be
 displayed if the min and max pixels values were non-zero and equal.
+<li> Thanks to Volker Baecker, fixed a bug that caused the 
+print("[text-window]", "...") macro function to not work as expected if
+"text-window" had been saved and re-opened.
+<li> Thanks to Puifai Santisakultarm, fixed a bug that caused the
+IJ.run(imp,"RGB Color","") method to not work as expected with
+images that are not displayed.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

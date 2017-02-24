@@ -81,6 +81,8 @@ public class ImageConverter {
 
 	/** Converts this ImagePlus to RGB. */
 	public void convertToRGB() {
+		if (imp.getBitDepth()==24)
+			return;
 		if (imp.getStackSize()>1) {
 			new StackConverter(imp).convertToRGB();
 			return;
