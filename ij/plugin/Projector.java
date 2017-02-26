@@ -201,7 +201,6 @@ public class Projector implements PlugIn {
 					if ((f==0||!allTimePoints)&& c==0)  {
 						buildImp = projImpD;
 						buildImp.setTitle("BuildStack");
-						//buildImp.show();
 					} else {
 						Concatenator concat = new Concatenator();
 						buildImp =  concat.concatenate(buildImp, projImpD, false);
@@ -215,9 +214,7 @@ public class Projector implements PlugIn {
 			finalSlices = 1;
 		}
 		if (imp.getNChannels()>1)
-			IJ.run( buildImp, 
-				"Stack to Hyperstack...", "order=xyztc channels=" + finalChannels + " slices=" + finalSlices + " frames=" + finalFrames + " display=Composite");
-		//buildImp =  WindowManager.getCurrentImage();
+			buildImp = HyperStackConverter.toHyperStack(buildImp, finalChannels, finalSlices, finalFrames, "xyztc", "composite");
 		if (imp.isComposite()) {
 			CompositeImage buildImp2 = new CompositeImage(buildImp, 0);
 			((CompositeImage)buildImp2).copyLuts(imp);
@@ -226,8 +223,6 @@ public class Projector implements PlugIn {
 		}
 		buildImp.setTitle("Projections of "+imp.getShortTitle());
 		buildImp.show();
-		if (WindowManager.getImage("Concatenated Stacks") != null) 
-				WindowManager.getImage("Concatenated Stacks").hide();
 	}
 
     private  void doRGBProjections(ImagePlus imp) {

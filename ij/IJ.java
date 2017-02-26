@@ -562,7 +562,7 @@ public class IJ {
 		Undo.reset();
 		System.gc();
 		lastErrorMessage = "out of memory";
-		String tot = Runtime.getRuntime().totalMemory()/1048576L+"MB";
+		String tot = Runtime.getRuntime().maxMemory()/1048576L+"MB";
 		if (!memMessageDisplayed)
 			log(">>>>>>>>>>>>>>>>>>>>>>>>>>>");
 		log("<Out of memory>");

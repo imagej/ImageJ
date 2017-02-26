@@ -96,8 +96,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {
-    	ID = --currentID;
-		title="null";
+		title = (this instanceof CompositeImage)?"composite":"null";
+		setID();
     }
     
     /** Constructs an ImagePlus from an Image or BufferedImage. The first 
@@ -105,15 +105,15 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		Throws an IllegalStateException if an error occurs while loading the image. */
     public ImagePlus(String title, Image img) {
 		this.title = title;
-    	ID = --currentID;
 		if (img!=null)
 			setImage(img);
+		setID();
     }
     
     /** Constructs an ImagePlus from an ImageProcessor. */
     public ImagePlus(String title, ImageProcessor ip) {
  		setProcessor(title, ip);
-   		ID = --currentID;
+   		setID();
     }
     
 	/** Constructs an ImagePlus from a TIFF, BMP, DICOM, FITS,
@@ -140,16 +140,21 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
      		setRoi(imp.getRoi());
    			if (isURL)
    				this.url = pathOrURL;
-   			ID = --currentID;
+   			setID();
     	}
     }
 
 	/** Constructs an ImagePlus from a stack. */
     public ImagePlus(String title, ImageStack stack) {
     	setStack(title, stack);
-    	ID = --currentID;
+    	setID();
     }
     
+    private void setID() {
+    	ID = --currentID;
+    	//IJ.log("New "+this);
+	}
+	   
 	/** Locks the image so other threads can test to see if it
 		is in use. Returns true if the image was successfully locked.
 		Beeps, displays a message in the status bar, and returns
@@ -2068,6 +2073,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	/** Copies attributes (name, ID, calibration, path) of the specified image to this image. */
 	public void copyAttributes(ImagePlus imp) {
+		if (IJ.debugMode) IJ.log("copyAttributes: "+imp.getID()+"  "+this.getID()+" "+imp+"   "+this);
 		if (imp==null || imp.getWindow()!=null)
 			throw new IllegalArgumentException("Souce image is null or displayed");
 		ID = imp.getID();
@@ -2692,7 +2698,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
     public String toString() {
-    	return "img["+getTitle()+" ("+width+"x"+height+"x"+getNChannels()+"x"+getNSlices()+"x"+getNFrames()+")]";
+    	return "img[\""+getTitle()+"\" ("+getID()+"), "+getBitDepth()+"-bit, "+width+"x"+height+"x"+getNChannels()+"x"+getNSlices()+"x"+getNFrames()+"]";
     }
     
     public void setIJMenuBar(boolean b) {
