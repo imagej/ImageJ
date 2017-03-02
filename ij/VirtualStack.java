@@ -4,7 +4,7 @@ import ij.io.*;
 import ij.gui.ImageCanvas;
 import ij.util.Tools;
 import java.io.*;
-import java.awt.Font;
+import java.awt.*;
 import java.awt.image.ColorModel;
 
 /** This class represents an array of disk-resident images. */
@@ -15,7 +15,6 @@ public class VirtualStack extends ImageStack {
 	private String[] names;
 	private String[] labels;
 	private int bitDepth;
-	private ImageProcessor ip;
 	
 	/** Default constructor. */
 	public VirtualStack() { }
@@ -110,8 +109,8 @@ public class VirtualStack extends ImageStack {
 	public ImageProcessor getProcessor(int n) {
 		//IJ.log("getProcessor: "+n+"  "+names[n-1]+"  "+bitDepth);
 		if (path==null) {
-			if (ip==null)
-				ip = new ByteProcessor(getWidth(), getHeight());
+			ImageProcessor ip = new ByteProcessor(getWidth(), getHeight());
+			label(ip, ""+n, Color.white);
 			return ip;
 		}
 		Opener opener = new Opener();
@@ -137,13 +136,7 @@ public class VirtualStack extends ImageStack {
 			String msg = f.exists()?"Error opening ":"File not found: ";
 			ip = new ByteProcessor(getWidth(), getHeight());
 			ip.invert();
-			int size = getHeight()/20;
-			if (size<9) size=9;
-			Font font = new Font("Helvetica", Font.PLAIN, size);
-			ip.setFont(font);
-			ip.setAntialiasedText(true);
-			ip.setColor(0);
-			ip.drawString(msg+names[n-1], size, size*2);
+			label(ip, msg+names[n-1], Color.black);
 			depthThisImage = 8;
 		}
 		if (depthThisImage!=bitDepth) {
@@ -161,6 +154,16 @@ public class VirtualStack extends ImageStack {
 		}
 		return ip;
 	 }
+	 
+	 private void label(ImageProcessor ip, String msg, Color color) {
+		int size = getHeight()/20;
+		if (size<9) size=9;
+		Font font = new Font("Helvetica", Font.PLAIN, size);
+		ip.setFont(font);
+		ip.setAntialiasedText(true);
+		ip.setColor(color);
+		ip.drawString(msg, size, size*2);
+	}
  
 	/** Currently not implemented */
 	public int saveChanges(int n) {

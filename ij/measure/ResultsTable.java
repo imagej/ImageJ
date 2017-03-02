@@ -437,9 +437,8 @@ public class ResultsTable implements Cloneable {
 		if (column==null)
 			throw new IllegalArgumentException("Column is null");
 		int col = getColumnIndex(column);
-		if (col==COLUMN_NOT_FOUND) {
+		if (col==COLUMN_NOT_FOUND)
 			col = getFreeColumn(column);
-		}
 		setValue(col, row, value);
 	}
 
@@ -1129,5 +1128,7 @@ public class ResultsTable implements Cloneable {
 	public String toString() {
 		return ("ctr="+counter+", hdr="+getColumnHeadings());
 	}
+	
+
 		
 }

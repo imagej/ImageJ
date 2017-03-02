@@ -279,6 +279,7 @@ public class Menus {
 		addExample(submenu, "Array Functions", "Array_Functions.ijm");
 		addExample(submenu, "Dual Progress Bars", "Dual_Progress_Bars.ijm");
 		addExample(submenu, "Grab Viridis Colormap", "Grab_Viridis_Colormap.ijm");
+		addExample(submenu, "Custom Measurement", "Custom_Measurement.ijm");
 		submenu.addSeparator();
 		addExample(submenu, "Circle Tool", "Circle_Tool.ijm");
 		addExample(submenu, "Star Tool", "Star_Tool.ijm");
@@ -298,6 +299,7 @@ public class Menus {
 		addExample(submenu, "Stack Overlay", "Stack_Overlay.js");
 		addExample(submenu, "Dual Progress Bars", "Dual_Progress_Bars.js");
 		addExample(submenu, "Gamma Adjuster", "Gamma_Adjuster.js");
+		addExample(submenu, "Custom Measurement", "Custom_Measurement.js");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("BeanShell");
