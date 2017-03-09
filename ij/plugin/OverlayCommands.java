@@ -210,7 +210,6 @@ public class OverlayCommands implements PlugIn {
 			} else
 				roi.setPosition(imp.getCurrentSlice());
 		}
-		//IJ.log(roi.getCPosition()+" "+roi.getZPosition()+" "+roi.getTPosition());
 	}
 
 	void hide() {

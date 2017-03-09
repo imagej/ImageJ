@@ -5827,16 +5827,14 @@ public class Functions implements MacroConstants, Measurements {
 			if (roi==null)
 				return Double.NaN;;
 			if (imp.getStackSize()>1) {
-				if (imp.isHyperStack()) {
+				if (imp.isHyperStack() && roi.hasHyperStackPosition()) {
 					int c = roi.getCPosition();
 					int z = roi.getZPosition();
 					int t = roi.getTPosition();
-					if (c>0 || z>0 || t>0) {
-						c = c>0?c:imp.getChannel();
-						z = z>0?z:imp.getSlice();
-						t = t>0?t:imp.getFrame();
-						imp.setPosition(c, z, t);
-					}
+					c = c>0?c:imp.getChannel();
+					z = z>0?z:imp.getSlice();
+					t = t>0?t:imp.getFrame();
+					imp.setPosition(c, z, t);
 				} else if (roi.getPosition()>0)
 					imp.setSlice(roi.getPosition());
 			}
@@ -6273,6 +6271,32 @@ public class Functions implements MacroConstants, Measurements {
 		return null;
 	}
 	
+	/*
+	private String getRoiPosition(Roi roi) {
+		Variable channel = getFirstVariable();
+		Variable slice = getNextVariable();
+		Variable frame = getLastVariable();
+		int c = roi.getCPosition();
+		int z = roi.getZPosition();
+		int t = roi.getTPosition();
+		channel.setValue(c);
+		slice.setValue(z);
+		frame.setValue(t);
+		return null;
+	}
+
+	private String setRoiPosition(ImagePlus imp, Roi roi) {
+		int channel = (int)getFirstArg();
+		int slice = (int)getNextArg();
+		int frame = (int)getLastArg();
+		if (channel<=1 && frame<=1 && !imp.isHyperStack())
+			roi.setPosition(slice);
+		else
+			roi.setPosition(channel, slice, frame);
+		return null;
+	}
+	*/
+
 	private Color getRoiColor() {
 		interp.getLeftParen();
 		if (isStringArg()) {

@@ -84,11 +84,8 @@ public class RoiProperties {
 			antialias = troi.getAntialiased();
 		}
 		String position = ""+roi.getPosition();
-		int cpos = roi.getCPosition();
-		int zpos = roi.getZPosition();
-		int tpos = roi.getTPosition();
-		if (cpos>0 || zpos>0 || tpos>0)
-			position = cpos +","+zpos+","+tpos;
+		if (roi.hasHyperStackPosition())
+			position =  roi.getCPosition() +","+roi.getZPosition()+","+ roi.getTPosition();
 		if (position.equals("0"))
 			position = "none";
 		String linec = Colors.colorToString(strokeColor);

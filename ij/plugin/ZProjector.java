@@ -379,7 +379,7 @@ public class ZProjector implements PlugIn {
         int c, z, t;
 		for (Roi r : overlay.toArray()) {
 			c = r.getCPosition();
-			z = r.getZPosition();
+			z = r.hasHyperStackPosition()?r.getZPosition():0;
 			t = r.getTPosition();
 			roi = (Roi)r.clone();
 			if (z>=startSlice && z<=stopSlice || z==0 || c==0 || t==0) {

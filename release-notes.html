@@ -5,43 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.51k 1 March 2017</u>
+<li> <u>1.51m 8 March 2017</u>
 <ul>
-<li> Added the <i>Plugins&gt;Utilities&gt;Capture Delayed</i> command.
-<li> Thanks to Yaman al-Yousof, added Macro and JavaScript
-"Custom Measurement" examples to the <i>Help&gt;Examples</i>
-menu.
-<li> Added this note to the <i>Help&gt;Examples&gt;Macro&gt;Sphere</i>
-example:<br>"JavaScript on Java 8 runs this code 30 times faster than
-the macro language when 'size' is set to 4096."
-<li> Thanks to Norbert Vischer, worked around OSX/Java 8 bugs that caused
-the toolbar to not be updated after clicking on a new tool with the recorder
-running, caused newly opened image windows to obscure the ImageJ
-status and progress bars and caused the selectImage() macro function
-to sometimes be very slow.
-<li> Thanks to Florian Jug and Curtis Rueden, fixed a bug that caused ImageJ
-to incorrectly open TIFF stacks created by Bio-Formats.
-<li> Thanks to Stein Rorvik, fixed bugs that caused Windows file paths
-starting with "C:/’ to not work in the open() and runMacro() macro functions.
-<li> Thanks to Stein Rorvik, fixed bugs that caused min/max values to be lost when
-resampling virtual stacks.
-<li> Thanks to Stein Rorvik, fixed a bug that caused z-scaling of 8-bit stacks to not
-retain the min,max contrast setting.
-<li> Thanks to Stein Rorvik, fixed a bug that caused <i>Edit&gt;Selection&gt;Rotate</i>
-to not work for straight line selections if "Rotate around image center" was enabled.
-<li> Thanks to Stefan Woerz, fixed a bug that caused profile plots to not be
-displayed if the min and max pixels values were non-zero and equal.
-<li> Thanks to Volker Baecker, fixed a bug that caused the 
-print("[text-window]", "...") macro function to not work as expected if
-"text-window" had been saved and re-opened.
-<li> Thanks to Puifai Santisakultarm, fixed a bug that caused the
-IJ.run(imp,"RGB Color","") method to not work as expected with
-non-displayed images.
-<li> Thanks to Michael Cammer, fixed a bug that caused the run("3D Project...",options) 
-macro function to not work reliably with hyperstacks.
-<li> Thanks to Edward Muir and and Curtis Rueden, fixed a bug that caused
-the "Out of memory" error message to incorrectrly report the amount
-of available memory.
+<li> Added the <i>Help&gt;Examples&gt;JavaScript&gt;TeraByte VirtualStack</i>
+example script.
+<li> Thanks to Stefan Helfrich and Mojo Dodo, fixed a bug that caused the
+ <i>Image&gt;Color&gt;Arrange Channels</i> command to not
+ close the source image in batch mode macros.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

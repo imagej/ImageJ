@@ -594,7 +594,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Roi roi = (Roi)rois.get(index);
 		roi.setName(name2);
 		int position = getSliceNumber(name2);
-		if (position>0 && roi.getCPosition()==0 && roi.getZPosition()==0 && roi.getTPosition()==0)
+		if (position>0 && !roi.hasHyperStackPosition())
 			roi.setPosition(position);
 		rois.set(index, roi);
 		listModel.setElementAt(name2, index);
@@ -631,13 +631,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (imp==null || roi==null)
 			return false;
 		if (setSlice) {
-			int c = roi.getCPosition();
-			int z = roi.getZPosition();
-			int t = roi.getTPosition();
 			boolean hyperstack = imp.isHyperStack();
-			//IJ.log("restore: "+hyperstack+" "+c+" "+z+" "+t);
-			if (hyperstack && (c>0||z>0||t>0))
-				imp.setPosition(c, z, t);
+			if (hyperstack && roi.hasHyperStackPosition())
+				imp.setPosition(roi.getCPosition(), roi.getZPosition(), roi.getTPosition());
 			else {
 				String label = (String)listModel.getElementAt(index);
 				int n = getSliceNumber(roi, label);
@@ -1229,8 +1225,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Font font = null;
 		int justification = TextRoi.LEFT;
 		double opacity = -1;
-		int position = -1;
-		int cpos=-1, zpos=-1, tpos=-1;
 		int pointType = -1;
 		int pointSize = -1;
 		if (showDialog) {
@@ -1254,10 +1248,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			color =	 rpRoi.getStrokeColor();
 			fillColor =	 rpRoi.getFillColor();
 			defaultColor = color;
-			position = rpRoi.getPosition();
-			cpos = rpRoi.getCPosition();
-			zpos = rpRoi.getZPosition();
-			tpos = rpRoi.getTPosition();
 			if (rpRoi instanceof TextRoi) {
 				font = ((TextRoi)rpRoi).getCurrentFont();
 				justification = ((TextRoi)rpRoi).getJustification();
@@ -1284,10 +1274,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (color!=null) roi.setStrokeColor(color);
 			if (lineWidth>=0) roi.setStrokeWidth(lineWidth);
 			roi.setFillColor(fillColor);
-			if (cpos>0 || zpos>0 || tpos>0)
-				roi.setPosition(cpos, zpos, tpos);
-			else if (position!=-1)
-				roi.setPosition(position);
+			if (rpRoi!=null) {
+				if (rpRoi.hasHyperStackPosition())
+					roi.setPosition(rpRoi.getCPosition(), rpRoi.getZPosition(), rpRoi.getTPosition());
+				else
+					roi.setPosition(rpRoi.getPosition());
+			}
 			if (roi instanceof TextRoi) {
 				roi.setImage(imp);
 				if (font!=null)

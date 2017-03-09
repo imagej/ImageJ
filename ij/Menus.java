@@ -300,7 +300,8 @@ public class Menus {
 		addExample(submenu, "Dual Progress Bars", "Dual_Progress_Bars.js");
 		addExample(submenu, "Gamma Adjuster", "Gamma_Adjuster.js");
 		addExample(submenu, "Custom Measurement", "Custom_Measurement.js");
-		submenu.addActionListener(listener);
+		addExample(submenu, "Terabyte VirtualStack", "Terabyte_VirtualStack.js");
+			submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("BeanShell");
 		addExample(submenu, "Sphere", "Sphere.bsh");

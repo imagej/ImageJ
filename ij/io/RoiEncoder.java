@@ -370,7 +370,7 @@ public class RoiEncoder {
 		//ij.IJ.log("putHeader2: "+hdr2Offset+" "+roiNameSize+"  "+roiName);
 		putInt(RoiDecoder.HEADER2_OFFSET, hdr2Offset);
 		putInt(hdr2Offset+RoiDecoder.C_POSITION, roi.getCPosition());
-		putInt(hdr2Offset+RoiDecoder.Z_POSITION, roi.getZPosition());
+		putInt(hdr2Offset+RoiDecoder.Z_POSITION, roi.hasHyperStackPosition()?roi.getZPosition():0);
 		putInt(hdr2Offset+RoiDecoder.T_POSITION, roi.getTPosition());
 		Overlay proto = roi.getPrototypeOverlay();
 		Color overlayLabelColor = proto.getLabelColor();
