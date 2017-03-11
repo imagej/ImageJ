@@ -964,7 +964,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			appendResults = cmd.contains("append")?true:false;
 		if (IJ.isMacro()) {
 			if (cmd.startsWith("multi-measure")) {
-				measureAll = cmd.contains(" measure") && nSlices>1;
+				measureAll = cmd.contains(" measure") && nSlices>1; // measure-all
 				onePerSlice = cmd.contains(" one");
 				appendResults = cmd.contains(" append");
 			} else {

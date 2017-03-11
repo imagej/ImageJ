@@ -5267,6 +5267,10 @@ public class Functions implements MacroConstants, Measurements {
 			return showArray();
 		else if (name.equals("fourier"))
 			return fourierArray();
+		else if (name.equals("getVertexAngles"))
+			return getVertexAngles();
+		else if (name.equals("rotate"))
+			return rotateArray();
 		else
 			interp.error("Unrecognized Array function");
 		return null;
@@ -5584,16 +5588,33 @@ public class Functions implements MacroConstants, Measurements {
 		return a;
 	}
 	
+	Variable[] rotateArray() {
+		interp.getLeftParen();
+		Variable[] a = getArray();
+		interp.getComma();
+		int rot = (int) interp.getExpression();
+		interp.getRightParen();
+		int len = a.length;
+		while(rot<0)
+			rot += len;
+		Variable[] b = new Variable[len];
+		for (int i=0; i<len; i++) {
+			int dest = (i + rot)%len;
+			b[dest] = a[i];
+		}
+		for (int i=0; i<len; i++)
+			a[i]= b[i];
+		return a;
+	}
+
 	Variable[] findArrayMaxima(boolean minima) {
-		boolean excludeOnEdges = false;
+		int edgeMode = 0;
 		interp.getLeftParen();
 		Variable[] a = getArray();
 		double tolerance = getNextArg();
 		if (interp.nextToken()==',') {
 			interp.getComma();
-			double arg = interp.getBooleanExpression();
-			interp.checkBoolean(arg);
-			excludeOnEdges = arg==0?false:true;
+			edgeMode = (int)interp.getExpression();
 		}
 		interp.getRightParen();
 		int n = a.length;
@@ -5602,13 +5623,47 @@ public class Functions implements MacroConstants, Measurements {
 			d[i] = a[i].getValue();
 		int[] maxima = null;
 		if (minima)
-			maxima = MaximumFinder.findMinima(d, tolerance, excludeOnEdges);
+			maxima = MaximumFinder.findMinima(d, tolerance, edgeMode);
 		else
-			maxima = MaximumFinder.findMaxima(d, tolerance, excludeOnEdges);
+			maxima = MaximumFinder.findMaxima(d, tolerance, edgeMode);
 		int n2 = maxima.length;
 		Variable[] a2 = new Variable[n2];
 		for (int i=0; i<n2; i++)
 			a2[i] = new Variable(maxima[i]);
+		return a2;
+	}
+	
+	Variable[] getVertexAngles() {
+		interp.getLeftParen();
+		Variable[] xx = getArray();
+		interp.getComma();
+		Variable[] yy = getArray();
+		interp.getComma();
+		int arm = (int) interp.getExpression();
+		int len = xx.length;
+		if (yy.length != len)
+			interp.error("Same size expected");
+		double[] x = new double[len];
+		double[] y = new double[len];
+		double[] vAngles = new double[len];
+		interp.getRightParen();
+		Variable[] a2 = new Variable[len];
+		for (int jj = 0; jj < len; jj++) {
+			x[jj] = xx[jj].getValue();
+			y[jj] = yy[jj].getValue();
+		}
+		for (int mid = 0; mid < len; mid++) {
+			int left = (mid + 10 * len - arm) % len;
+			int right = (mid + arm) % len;
+			double dotprod = (x[right] - x[mid]) * (x[left] - x[mid]) + (y[right] - y[mid]) * (y[left] - y[mid]);
+			double crossprod = (x[right] - x[mid]) * (y[left] - y[mid]) - (y[right] - y[mid]) * (x[left] - x[mid]);
+			double phi = 180.0 - 180.0 / Math.PI * Math.atan2(crossprod, dotprod);
+			while (phi >= 180.0)
+				phi -= 360.0;
+			vAngles[mid] = phi;
+		}
+		for (int i = 0; i < len; i++)
+			a2[i] = new Variable(vAngles[i]);
 		return a2;
 	}
 
