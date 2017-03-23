@@ -42,9 +42,11 @@ public class Zoom implements PlugIn{
 			setZoom(imp, ic);
 		else if (arg.equals("max")) {
 			ImageWindow win = imp.getWindow();
-			win.setBounds(win.getMaximumBounds());
-			win.maximize();
-		} if (arg.equals("scale"))
+			if (win!=null) {
+				win.maximize();
+				IJ.wait(100);
+			}
+		} else if (arg.equals("scale"))
 			scaleToFit(imp);
 	}
 	

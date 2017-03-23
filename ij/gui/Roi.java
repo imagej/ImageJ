@@ -1014,18 +1014,22 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			case KeyEvent.VK_UP:
 				height--;
 				if (height<1) height = 1;
+				notifyListeners(RoiListener.MODIFIED);
 				break;
 			case KeyEvent.VK_DOWN:
 				height++;
 				if ((y+height) > yMax) height = yMax-y;
+				notifyListeners(RoiListener.MODIFIED);
 				break;
 			case KeyEvent.VK_LEFT:
 				width--;
 				if (width<1) width = 1;
+				notifyListeners(RoiListener.MODIFIED);
 				break;
 			case KeyEvent.VK_RIGHT:
 				width++;
 				if ((x+width) > xMax) width = xMax-x;
+				notifyListeners(RoiListener.MODIFIED);
 				break;
 		}
 		updateClipRect();
@@ -2105,7 +2109,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			}
 		}
 	}
-
+	
 	public static void addRoiListener(RoiListener listener) {
 		listeners.addElement(listener);
 	}

@@ -201,7 +201,7 @@ zoom04="View 100%[5]",ij.plugin.Zoom("100%")
 zoom05="To Selection",ij.plugin.Zoom("to")
 zoom06="Scale to Fit",ij.plugin.Zoom("scale")
 zoom07="Set... ",ij.plugin.Zoom("set")
-#zoom07="Maximize",ij.plugin.Zoom("max")
+zoom08="Maximize",ij.plugin.Zoom("max")
 
 # Plugins installed in the Image/Overlay submenu
 overlay01="Add Selection...[b]",ij.plugin.OverlayCommands("add")

@@ -80,7 +80,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.51m";
-	public static final String BUILD = "5";
+	public static final String BUILD = "10";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -497,7 +497,7 @@ public class ImageJ extends Frame implements ActionListener,
 					else if (zoomKey && keyCode==KeyEvent.VK_UP && !ignoreArrowKeys(imp) && Toolbar.getToolId()<Toolbar.SPARE6)
 							cmd="In [+]";
 					else if (roi!=null) {
-						if ((flags & KeyEvent.ALT_MASK) != 0)
+						if ((flags & KeyEvent.ALT_MASK)!=0 || (flags & KeyEvent.CTRL_MASK)!=0)
 							roi.nudgeCorner(keyCode);
 						else
 							roi.nudge(keyCode);

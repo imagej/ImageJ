@@ -207,7 +207,7 @@ public class Menus {
 		getMenu("Analyze>Gels", true);
 		Menu toolsMenu = getMenu("Analyze>Tools", true);
 
-		// the plugins will be added later, with a separator
+		// the plugins will be added later, after a separator
 		addPluginsMenu();
 
 		Menu window = getMenu("Window");
@@ -522,6 +522,7 @@ public class Menus {
 		Plugins not listed in IJ_Prefs are added to the end
 		of the Plugins menu. */
 	void installPlugins() {
+		int nPlugins0 = nPlugins;
 		String value, className;
 		char menuCode;
 		Menu menu;
@@ -573,6 +574,10 @@ public class Menus {
 				if (!skipList.containsKey(pluginList[i]))
 					installUserPlugin(pluginList[i]);
 			}
+		}
+		if ((nPlugins-nPlugins0)<=1 && IJ.getDir("imagej")!=null && IJ.getDir("imagej").startsWith("/private")) {
+			pluginsMenu.addSeparator();
+			addPlugInItem(pluginsMenu, "Why are Plugins Missing?", "ij.plugin.SimpleCommands(\"missing\")", 0, false);
 		}
 		installJarPlugins();
 		installMacros();

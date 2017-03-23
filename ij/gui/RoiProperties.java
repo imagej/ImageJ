@@ -250,6 +250,7 @@ public class RoiProperties {
 				rois[i].setFillColor(fillColor);
 			}
 			imp.draw();
+			imp.getProcessor(); // needed for corect recordering
 		}
 		if (listCoordinates) {
 			if (showPointCounts && (roi instanceof PointRoi))

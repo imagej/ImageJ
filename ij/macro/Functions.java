@@ -1403,9 +1403,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (s1==null)
 			return null;
 		String[] strings = null;
-		if (s1.length()>0 && s2!=null && (s2.equals(",")||s2.equals(";")))
-			strings = s1.split(s2,-1);
-		else if (s1.length()>0 && s2!=null && s2.length()>=3 && s2.startsWith("(")&&s2.endsWith(")")) {
+		if (s1.length()>0 && s2!=null && s2.length()>=3 && s2.startsWith("(")&&s2.endsWith(")")) {
 			s2 = s2.substring(1,s2.length()-1);
 			strings = s1.split(s2,-1);
 		} else 
@@ -4225,6 +4223,8 @@ public class Functions implements MacroConstants, Measurements {
 			Prefs.autoContrast = state;
 		else if (arg1.equals("antialiasedtext"))
 			TextRoi.setAntialiasedText(state);
+		else if (arg1.equals("savebatchoutput"))
+			BatchProcessor.saveOutput(state);
 		else
 			interp.error("Invalid option");
 	}
