@@ -9,11 +9,14 @@ import java.awt.event.*;
 public class Profiler implements PlugIn, PlotMaker {
 	ImagePlus imp;
 	boolean firstTime = true;
+	boolean plotVertically;
 
 	public void run(String arg) {
 		if (arg.equals("set"))
 			{doOptions(); return;}
 		imp = IJ.getImage();
+		if (firstTime)
+			plotVertically = Prefs.verticalProfile || IJ.altKeyDown();
 		Plot plot = getPlot();
 		firstTime = false;
 		if (plot==null)
@@ -29,7 +32,6 @@ public Plot getPlot() {
 				IJ.error("Plot Profile", "Line or rectangular selection required");
 			return null;
 		}
-		boolean plotVertically = Prefs.verticalProfile || IJ.altKeyDown();
 		ProfilePlot pp = new ProfilePlot(imp, plotVertically);
 		return pp.getPlot();
 	}
