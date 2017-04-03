@@ -440,9 +440,18 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			text = ta.getSelectedText();
 		if (text.equals(""))
 			return;
+		boolean strictMode = false;
+		if (IJ.isJava18()) {
+			// text.matches("^( |\t)*(\"use strict\"|'use strict')");
+			String text40 = text.substring(0,Math.min(40,text.length()));
+			strictMode =  text40.contains("'use strict'") || text40.contains("\"use strict\"");
+		}
 		text = getJSPrefix("") + text;
-		if (IJ.isJava18())
+		if (IJ.isJava18()) {
 			text = "load(\"nashorn:mozilla_compat.js\");" + text;
+			if (strictMode)
+				text = "'use strict';" + text;
+		}
 		if ((IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit()))) {
 			// Use JavaScript engine built into Java 6 and later.
 			IJ.runPlugIn("ij.plugin.JavaScriptEvaluator", text);
