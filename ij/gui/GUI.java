@@ -135,9 +135,6 @@ public class GUI {
     
     /** Lightens overly dark scrollbar background on Windows 8. */
     public static void fix(Scrollbar sb) {
-    	if (isWindows8) {
-			sb.setBackground(lightGray);
-		}
     }
     
     public static boolean showCompositeAdvisory(ImagePlus imp, String title) {
