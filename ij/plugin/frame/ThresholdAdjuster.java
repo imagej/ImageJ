@@ -117,7 +117,6 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 
 		// minThreshold slider
 		minSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange/3, 1, 0, sliderRange);
-		GUI.fix(minSlider);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 1;
@@ -142,7 +141,6 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		
 		// maxThreshold slider
 		maxSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange*2/3, 1, 0, sliderRange);
-		GUI.fix(maxSlider);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 1;

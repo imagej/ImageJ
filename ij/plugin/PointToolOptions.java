@@ -13,6 +13,7 @@ import java.util.*;
 public class PointToolOptions implements PlugIn, DialogListener {
 	private static GenericDialog gd = null;
 	private boolean multipointTool;
+	private boolean isMacro;
 	
 	private static final String help = "<html>"
 	+"<h1>Point Tool</h1>"
@@ -28,7 +29,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
 	+"</font>";
  
  	public void run(String arg) {
- 		if (gd!=null && gd.isShowing()) {
+ 		if (gd!=null && gd.isShowing() && !IJ.isMacro()) {
  			gd.toFront();
  			update();
  		} else
@@ -37,14 +38,17 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		
 	void showDialog() {
 		String options = IJ.isMacro()?Macro.getOptions():null;
+		isMacro = options!=null;
 		boolean legacyMacro = false;
-		if (options!=null) {
+		if (isMacro) {
 			options = options.replace("selection=", "color=");
 			options = options.replace("marker=", "size=");
 			Macro.setOptions(options);
 			legacyMacro = options.contains("auto-") || options.contains("add");
 		}
 		multipointTool = Toolbar.getMultiPointMode() && !legacyMacro;
+		if (isMacro && !legacyMacro)
+			multipointTool = true;
 		Color sc =Roi.getColor();
 		String sname = Colors.getColorName(sc, "Yellow");
 		Color cc =PointRoi.getDefaultCrossColor();
@@ -85,9 +89,9 @@ public class PointToolOptions implements PlugIn, DialogListener {
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
 		boolean redraw = false;
 		// type
-		int index = gd.getNextChoiceIndex();
-		if (index!=PointRoi.getDefaultType()) {
-			PointRoi.setDefaultType(index);
+		int typeIndex = gd.getNextChoiceIndex();
+		if (typeIndex!=PointRoi.getDefaultType()) {
+			PointRoi.setDefaultType(typeIndex);
 			redraw = true;
 		}
 		// color
@@ -99,9 +103,9 @@ public class PointToolOptions implements PlugIn, DialogListener {
 			Toolbar.getInstance().repaint();
 		}
 		// size
-		index = gd.getNextChoiceIndex();
-		if (index!=PointRoi.getDefaultSize()) {
-			PointRoi.setDefaultSize(index);
+		int sizeIndex = gd.getNextChoiceIndex();
+		if (sizeIndex!=PointRoi.getDefaultSize()) {
+			PointRoi.setDefaultSize(sizeIndex);
 			redraw = true;
 		}
 		if (!multipointTool) {
@@ -130,6 +134,14 @@ public class PointToolOptions implements PlugIn, DialogListener {
 			if (counter!=getCounter()) {
 				setCounter(counter);
 				redraw = true;
+			}
+		}
+		if (isMacro) {
+			PointRoi roi = getPointRoi();
+			if (roi!=null) {
+				roi.setPointType(typeIndex);
+				roi.setStrokeColor(sc);
+				roi.setSize(sizeIndex);
 			}
 		}
 		if (redraw) {

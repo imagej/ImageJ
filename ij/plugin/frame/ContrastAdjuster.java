@@ -125,7 +125,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		// min slider
 		if (!windowLevel) {
 			minSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
-			GUI.fix(minSlider);
 			c.gridy = y++;
 			c.insets = new Insets(2, 10, 0, 10);
 			gridbag.setConstraints(minSlider, c);
@@ -140,7 +139,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		// max slider
 		if (!windowLevel) {
 			maxSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
-			GUI.fix(maxSlider);
 			c.gridy = y++;
 			c.insets = new Insets(2, 10, 0, 10);
 			gridbag.setConstraints(maxSlider, c);
@@ -154,7 +152,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		
 		// brightness slider
 		brightnessSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
-		GUI.fix(brightnessSlider);
 		c.gridy = y++;
 		c.insets = new Insets(windowLevel?12:2, 10, 0, 10);
 		gridbag.setConstraints(brightnessSlider, c);
@@ -171,7 +168,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		// contrast slider
 		if (!balance) {
 			contrastSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
-			GUI.fix(contrastSlider);
 			c.gridy = y++;
 			c.insets = new Insets(2, 10, 0, 10);
 			gridbag.setConstraints(contrastSlider, c);
