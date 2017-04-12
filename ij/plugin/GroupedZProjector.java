@@ -35,14 +35,26 @@ public class GroupedZProjector implements PlugIn {
 		if (method<0 || method>=ZProjector.METHODS.length)
 			return null;
 		int[] dim = imp.getDimensions();
-		imp.setDimensions(1, groupSize, imp.getStackSize()/groupSize);
+		int projectedStackSize = imp.getStackSize()/groupSize;
+		imp.setDimensions(1, groupSize, projectedStackSize);
 		ZProjector zp = new ZProjector(imp);
 		zp.setMethod(method);
 		zp.setStartSlice(1);
 		zp.setStopSlice(groupSize);
 		zp.doHyperStackProjection(true);
 		imp.setDimensions(dim[2], dim[3], dim[4]);
-		return zp.getProjection();
+
+		ImagePlus zProjectorOutput = zp.getProjection();
+		int[] zProjectDim = zProjectorOutput.getDimensions();
+		for (int i=2; i<dim.length; i++) {
+			if (dim[i] != 1)
+				zProjectDim[i] = projectedStackSize;
+			else
+				zProjectDim[i] = 1;
+		}
+		// Fix dimensions for output ImagePlus
+		zProjectorOutput.setDimensions(zProjectDim[2], zProjectDim[3], zProjectDim[4]);
+		return zProjectorOutput;
 	}
 	
 	boolean showDialog(ImagePlus imp) {
