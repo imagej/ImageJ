@@ -1813,7 +1813,7 @@ public class IJ {
 			path = updateExtension(path, ".txt");
 			format = "Text Image...";
 		} else if (format.indexOf("text")!=-1 || format.indexOf("txt")!=-1) {
-			if (path!=null && !path.endsWith(".xls") && !path.endsWith(".csv"))
+			if (path!=null && !path.endsWith(".xls") && !path.endsWith(".csv") && !path.endsWith(".tsv"))
 				path = updateExtension(path, ".txt");
 			format = "Text...";
 		} else if (format.indexOf("zip")!=-1) {

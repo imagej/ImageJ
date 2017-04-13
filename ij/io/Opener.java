@@ -1239,7 +1239,7 @@ public class Opener {
 			return OJJ;
 
 		// Results table (tab-delimited or comma-separated tabular text)
-		if (name.endsWith(".xls") || name.endsWith(".csv")) 
+		if (name.endsWith(".xls") || name.endsWith(".csv") || name.endsWith(".tsv")) 
 			return TABLE;
 
 		// AVI

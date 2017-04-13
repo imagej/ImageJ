@@ -662,7 +662,7 @@ public class Prefs {
 	}
 	
 	public static String defaultResultsExtension() {
-		return get("options.ext", ".xls");
+		return get("options.ext", ".csv");
 	}
 		
 }

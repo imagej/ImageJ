@@ -555,7 +555,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	}
 	
 	static boolean isTextOrTable(String path) {
-		return path.endsWith(".txt") || path.endsWith(".csv") || path.endsWith(".xls");
+		return path.endsWith(".txt") || path.endsWith(".csv") || path.endsWith(".xls") || path.endsWith(".tsv");
 	}
 	
 	static boolean isSaveAs() {
