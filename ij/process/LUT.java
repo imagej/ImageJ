@@ -37,7 +37,23 @@ import java.awt.Color;
 	static byte[] getBlues(IndexColorModel cm) {
 		byte[] blues=new byte[256]; cm.getBlues(blues); return blues;
 	}
-	
+
+	public IndexColorModel getColorModel() {
+		return new IndexColorModel(8, getMapSize(), getRedBytes(), getGreenBytes(), getBlueBytes());
+	}
+		
+	private byte[] getRedBytes() {
+		byte[] bytes=new byte[256]; getReds(bytes); return bytes;
+	}
+
+	private byte[] getGreenBytes() {
+		byte[] bytes=new byte[256]; getGreens(bytes); return bytes;
+	}
+
+	public byte[] getBlueBytes() {
+		byte[] bytes=new byte[256]; getBlues(bytes); return bytes;
+	}
+
 	public byte[] getBytes() {
 		int size = getMapSize();
 		if (size!=256) return null;

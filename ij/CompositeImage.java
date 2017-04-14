@@ -210,7 +210,7 @@ public class CompositeImage extends ImagePlus {
 				setupLuts(nChannels);
 				LUT cm = lut[currentChannel];
 				if (mode==COLOR)
-					ip.setColorModel(cm);
+					ip.setLut(cm);
 				if (!(cm.min==0.0&&cm.max==0.0))
 					ip.setMinAndMax(cm.min, cm.max);
 				if (!IJ.isMacro()) ContrastAdjuster.update();
