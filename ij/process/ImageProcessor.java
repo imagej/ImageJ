@@ -988,6 +988,7 @@ public abstract class ImageProcessor implements Cloneable {
 		} else {
 			for (int i=0; i<n; i++) {
 				data[i] = getPixelValue((int)(rx+0.5), (int)(ry+0.5));
+				this.putPixel((int)(rx+0.5), (int)(ry+0.5), new int[] {0,255,0});	// wilbur (test)
 				rx += xinc;
 				ry += yinc;
 			}
