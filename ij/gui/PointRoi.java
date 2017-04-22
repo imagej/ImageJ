@@ -691,12 +691,15 @@ public class PointRoi extends PolygonRoi {
 		return handle;
 	}
 	
-	/** Returns the points as an array of Points. */
+	/* Returns the points as an array of Points. 
+	 * Wilhelm Burger: modified to use FloatPolygon for correct point positions.
+	 */
 	public Point[] getContainedPoints() {
-		Polygon p = getPolygon();
+		FloatPolygon p = getFloatPolygon();
 		Point[] points = new Point[p.npoints];
-		for (int i=0; i<p.npoints; i++)
-			points[i] = new Point(p.xpoints[i],p.ypoints[i]);
+		for (int i=0; i<p.npoints; i++) {
+			points[i] = new Point((int) Math.round(p.xpoints[i] - 0.5f), (int) Math.round(p.ypoints[i] - 0.5f));
+		}
 		return points;
 	}
 
