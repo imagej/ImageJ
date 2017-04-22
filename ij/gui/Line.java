@@ -1,6 +1,5 @@
 package ij.gui;
 import ij.*;
-import ij.gui.Line.PointIterator;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.Straightener;
@@ -637,7 +636,7 @@ public class Line extends Roi {
 	}
 	
 	/**
-	 * Special point iterator for thin lines.
+	 * Dedicated point iterator for thin lines.
 	 * The iterator is based on (an improved version of) the algorithm used by
 	 * the original method {@code ImageProcessor.getLine(double, double, double, double)}.
 	 * Improvements are (a) that the endpoint is drawn too and (b) every line
@@ -663,7 +662,7 @@ public class Line extends Roi {
 			this.y1 = y1;
 			double dx = x2 - x1;
 			double dy = y2 - y1;
-			this.n = (int) Math.round(Math.sqrt(dx * dx + dy * dy)); // wilbur: better use ceil?
+			this.n = (int) Math.ceil(Math.sqrt(dx * dx + dy * dy));
 			this.xinc = dx / n;
 			this.yinc = dy / n;
 			x = x1;
@@ -682,7 +681,6 @@ public class Line extends Roi {
 
 		@Override
 		public Point next() {
-			System.out.println("   i = " + i);
 			if (i > n) throw new IllegalStateException();
 			Point p = new Point(u, v);	// the current (next) point
 			moveToNext();
