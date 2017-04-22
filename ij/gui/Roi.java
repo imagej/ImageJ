@@ -545,7 +545,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	
 	/** Returns the coordinates of the pixels inside this ROI as an array of Points.
 	 * @see #getContainedFloatPoints()
-	 * @see #Iterator()
+	 * @see #iterator()
 	 */
 	public Point[] getContainedPoints() {
 		if (isLine()) {

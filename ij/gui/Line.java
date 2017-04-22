@@ -7,6 +7,7 @@ import ij.plugin.frame.Recorder;
 import java.awt.*;
 import java.awt.image.*;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.awt.event.*;
 import java.awt.geom.*;
 
@@ -681,7 +682,7 @@ public class Line extends Roi {
 
 		@Override
 		public Point next() {
-			if (i > n) throw new IllegalStateException();
+			if (i > n) throw new NoSuchElementException();
 			Point p = new Point(u, v);	// the current (next) point
 			moveToNext();
 			return p;
