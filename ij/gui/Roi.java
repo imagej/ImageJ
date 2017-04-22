@@ -2131,9 +2131,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	 * @author Wilhelm Burger
 	 */
 	public Iterator<Point> iterator() {
-		// Returns the default (mask-based) point iterator.
-		// Note that 'Line' overrides the iterator() method and returns 
-		// a specific point iterator.
+		// Returns the default (mask-based) point iterator. Note that 'Line' overrides the 
+		// iterator() method and returns a specific point iterator.
 		return new RoiPointsIteratorMask();
 	}
 	
