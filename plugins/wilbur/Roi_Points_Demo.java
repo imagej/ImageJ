@@ -35,7 +35,8 @@ public class Roi_Points_Demo implements PlugInFilter {
 			IJ.log("No roi selected!");
 			return;	
 		}
-		IJ.log("wilbur: ROI = " + roi.toString());
+		
+		IJ.log("wilbur: ROI = " + roi.getClass().getName());
 		
 		for (Point p : roi) {		
 			ip.putPixel(p.x, p.y, rgb);
