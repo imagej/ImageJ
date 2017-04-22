@@ -1,6 +1,7 @@
 package plugins.wilbur;
 
 import java.awt.Point;
+import java.util.Iterator;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -34,6 +35,8 @@ public class Roi_Points_Demo implements PlugInFilter {
 			IJ.log("No roi selected!");
 			return;	
 		}
+		IJ.log("wilbur: ROI = " + roi.toString());
+		
 		for (Point p : roi) {		
 			ip.putPixel(p.x, p.y, rgb);
 		}
