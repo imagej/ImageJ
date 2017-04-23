@@ -545,7 +545,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	
 	/** Returns the coordinates of the pixels inside this ROI as an array of Points.
 	 * @see #getContainedFloatPoints()
-	 * @see #Iterator()
+	 * @see #iterator()
 	 */
 	public Point[] getContainedPoints() {
 		if (isLine()) {
@@ -2129,53 +2129,18 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	 * @see #getContainedPoints()
 	 * @see #getContainedFloatPoints()
 	 * @author Wilhelm Burger
-	 */
+	*/
 	public Iterator<Point> iterator() {
-		if (isLine() && getStrokeWidth()<=1.0)
-			return new RoiPointsIteratorLine();
-		else
-			return new RoiPointsIteratorMask();
+		// Returns the default (mask-based) point iterator. Note that 'Line' overrides the 
+		// iterator() method and returns a specific point iterator.
+		return new RoiPointsIteratorMask();
 	}
 	
-
-	/**
-	 * Custom iterator over points contained in a straight line-type {@link Roi}.
-	 * @author W. Burger
-	 */
-	private class RoiPointsIteratorLine implements Iterator<Point> {
-		private final FloatPolygon p;
-		private int next = 0;
-
-		RoiPointsIteratorLine() {
-			p = getInterpolatedPolygon();
-		}
-
-		@Override
-		public boolean hasNext() {
-			return next<p.npoints;
-		}
-
-		@Override
-		public Point next() {
-			if (next >= p.npoints)
-				throw new NoSuchElementException();
-			int x = (int)Math.round(p.xpoints[next]);
-			int y = (int)Math.round(p.ypoints[next]);
-			next = next + 1;
-			return new Point(x, y);
-		}
-		
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException();
-		}
-
-	}
 	
 	/**
-	 * Custom iterator over points contained in a mask-backed {@link Roi}.
-	 * @author W. Burger
-	 */
+	 * Default iterator over points contained in a mask-backed {@link Roi}.
+	 * Author: W. Burger
+	*/
 	private class RoiPointsIteratorMask implements Iterator<Point> {
 		private final ImageProcessor mask;
 		private final Rectangle bounds;

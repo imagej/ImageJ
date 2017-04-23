@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.51m 22 April 2017</u>
+<li> <u>1.51m 23 April 2017</u>
 <ul>
 <li> Added the <i>Image&gt;Zoom&gt;Maximize</i> command.
 <li> Increased the tool button size from 28x28 to 30x30, which
@@ -55,6 +55,12 @@ generate a time series regardless of the input stack format.
 composite color images in "Color" mode.
 <li> Thanks to Michael Schmid, fixed a bug in the AVI Reader that caused the file to not be
 closed in case of a cancelled dialog or some IO errors.
+<li> Thanks to Wilhelm Burger, fixed bugs with the PointIterator on line
+and point selections that caused incorrect point coordinates to be returned.
+In particular, terminal points of lines were sometimes not returned, 
+some consecutive line points had identical positions, and
+coordinates of points in point selections were generally off by one pixel.
+Also fixed similar problems with the Line.getPixels() method,
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
