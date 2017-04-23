@@ -5,7 +5,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.util.*;
 import ij.*;
-import ij.plugin.frame.Recorder; 
+import ij.plugin.frame.Recorder;
 import ij.plugin.frame.Editor; 
 import ij.plugin.MacroInstaller;
 import ij.plugin.RectToolOptions;
@@ -52,7 +52,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static final int MAX_EXTRA_TOOLS = 8;
 	private static final int MAX_TOOLS = NUM_TOOLS+MAX_EXTRA_TOOLS;
 	private static final int NUM_BUTTONS = 21;
-	private static final int SIZE = 28;
+	private static final int SIZE = 30;
 	private static final int GAP_SIZE = 9;
 	private static final int OFFSET = 6;
 	private static final String BRUSH_SIZE = "toolbar.brush.size";
@@ -121,7 +121,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addMouseMotionListener(this);
 		instance = this;
 		names[getNumTools()-1] = "\"More Tools\" menu (switch toolsets or add tools)";
-		icons[getNumTools()-1] = "C900T1c13>T7c13>"; // ">>"
+		icons[getNumTools()-1] = "C900T1e15>T7e15>"; // ">>"
 		addPopupMenus();
 	}
 
@@ -265,10 +265,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
         if (tool!=UNUSED)
         	fill3DRect(g, x, 1, SIZE, SIZE-1, !down[tool]);
         g.setColor(toolColor);
-        x = index*SIZE + OFFSET;
+        x = index*SIZE + OFFSET + 1;
         if (tool>=CUSTOM1)
         	x -= SIZE-GAP_SIZE;
-		int y = OFFSET;
+		int y = OFFSET + 1;
 		if (down[tool]) { x++; y++;}
 		this.g = g;
 		if (tool>=CUSTOM1 && tool<=getNumTools() && icons[tool]!=null) {
@@ -284,7 +284,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					polyline(0,10,7,0,15,6,8,16,0,10); 
 				else
 					g.drawRect(x, y+1, 17, 13);
-				drawTriangle(16,15);
+				drawTriangle(17,16);
 				return;
 			case OVAL:
 				xOffset = x; yOffset = y;
@@ -296,14 +296,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					polyline(11,0,13,0,14,1,15,1,16,2,17,3,17,7,12,12,11,12,10,13,8,13,7,14,4,14,3,13,2,13,1,12,1,11,0,10,0,9,1,8,1,7,6,2,7,2,8,1,10,1,11,0);
 				} else
 					g.drawOval(x, y+1, 17, 13);
-				drawTriangle(16,15);
+				drawTriangle(16,16);
 				return;
 			case POLYGON:
 				xOffset = x+1; yOffset = y+2;
-				polyline(4,0,15,0,15,1,11,5,11,6,14,10,14,11,0,11,0,4,4,0);
+				polyline(4,0,15,0,15,1,11,5,11,6,14,11,14,12,0,12,0,4,4,0);
 				return;
 			case FREEROI:
-				xOffset = x; yOffset = y+2;
+				xOffset = x; yOffset = y+3;
 				polyline(2,0,5,0,7,3,10,3,12,0,15,0,17,2,17,5,16,8,13,10,11,11,6,11,4,10,1,8,0,6,0,2,2,0); 
 				return;
 			case LINE:
@@ -314,17 +314,17 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					m(0,12); d(17,3);
 					drawDot(0,11); drawDot(17,2);
 				}
-				drawTriangle(12,14);
+				drawTriangle(14,15);
 				return;
 			case POLYLINE:
 				xOffset = x; yOffset = y;
 				polyline(15,6,11,2,1,2,1,3,7,9,2,14);
-				drawTriangle(12,14);
+				drawTriangle(13,15);
 				return;
 			case FREELINE:
 				xOffset = x; yOffset = y;
 				polyline(16,4,14,6,12,6,9,3,8,3,6,7,2,11,1,11);
-				drawTriangle(12,14);
+				drawTriangle(13,15);
 				return;
 			case POINT:
 				xOffset = x; yOffset = y;
@@ -338,7 +338,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					g.setColor(Roi.getColor());
 					g.fillRect(x+7, y+7, 3, 3);
 				}
-				drawTriangle(14,14);
+				drawTriangle(15,15);
 				return;
 			case WAND:
 				xOffset = x+2; yOffset = y+1;
@@ -376,7 +376,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				polyline(10,7,12,7,12,9);
 				polyline(8,7,2,13,2,15,4,15,11,8);
 				g.setColor(backgroundColor);
-				polyline(-1,-1,18,-1,18,17,-1,17,-1,-1);
+				polyline(-2,-2,19,-2,19,18,-2,18,-2,-2);
 				return;
 			case ANGLE:
 				xOffset = x; yOffset = y+2;
@@ -469,7 +469,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 		if (menus[tool]!=null && menus[tool].getItemCount()>0) { 
 			xOffset = x; yOffset = y;
-			drawTriangle(14, 14);
+			drawTriangle(15, 15);
 		}
 	}
 	

@@ -92,9 +92,13 @@ import javax.imageio.ImageIO;
  *		- can read MJPG files where the frames don't have the same pixel number as the overall video
  *	 2015-09-28
  *		- reads most ImageJ AVI1 files with size>4 GB (incorrectly written by ImageJ versions before 1.50b)
+ *	 2017-04-21
+ *		- bugfix: file was not closed in case of dialog cancelled or some IO errors.
+ *      - Tries to recover data from truncated files.
+ *
  *
  * The AVI format looks like this:
- * RIFF AVI					RIFF HEADER, AVI CHUNK					
+ * RIFF AVI					RIFF HEADER, AVI CHUNK
  *	 | LIST hdrl			MAIN AVI HEADER
  *	 | | avih				AVI HEADER
  *	 | | LIST strl			STREAM LIST(s) (One per stream)
@@ -171,7 +175,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	private final static int   YV12_COMPRESSION	 = 0x32315659; //'YV12' - y plane followed by 2x2 subsampled V and U
 	private final static int   NV12_COMPRESSION	 = 0x3231564E; //'NV12' - y plane followed by 2x2 subsampled interleaved U, V
 	private final static int   NV21_COMPRESSION	 = 0x3132564E; //'NV21' - y plane followed by 2x2 subsampled interleaved V, U
-	
+
 	private final static int   JPEG_COMPRESSION	 = 0x6765706a; //'jpeg' JPEG compression of individual frames
 	private final static int   JPEG_COMPRESSION2 = 0x4745504a; //'JPEG' JPEG compression of individual frames
 	private final static int   JPEG_COMPRESSION3 = 0x04;	   //BI_JPEG: JPEG compression of individual frames
@@ -184,7 +188,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	private final static long  SIZE_MASK = 0xffffffffL;		   //for conversion of sizes from unsigned int to long
 	private final static long  FOUR_GB	 = 0x100000000L;	   //2^32; above this size of data AVI 1 has a problem for sure
 
-	// flags from AVI chunk header 
+	// flags from AVI chunk header
 	private final static int   AVIF_HASINDEX	 = 0x00000010;	// Index at end of file?
 	private final static int   AVIF_MUSTUSEINDEX = 0x00000020;	// ignored by this plugin
 	private final static int   AVIF_ISINTERLEAVED= 0x00000100;	// ignored by this plugin
@@ -230,7 +234,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	private	 ColorModel		   cm;
 	private	 boolean		   variableLength;		//compressed (PNG, JPEG) frames have variable length
 	//for conversion to ImageJ stack
-	private	 Vector<long[]>	   frameInfos;	//for virtual stack: long[] with frame pos&size in file, time(usec)
+	private	 Vector<long[]>	   frameInfos;			//for virtual stack: long[] with frame pos&size in file, time(usec)
 	private	 ImageStack		   stack;
 	private	 ImagePlus		   imp;
 	//for debug messages and error handling
@@ -238,6 +242,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	private	 long			   startTime;
 	private	 boolean		   aborting;
 	private	 boolean		   displayDialog = true;
+    private  String 		   errorText;			//error occurred during makeStack, or null
 
 	//From AVI Header Chunk
 	private	 int			   dwMicroSecPerFrame;
@@ -299,25 +304,28 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 		} catch (Exception e) {
 			error(exceptionMessage(e));
 			return;
+		} finally {
+			closeFile(raFile);
 		}
-		if (displayDialog && !showDialog(fileName))
-			return;	 //ask for parameters
-		try {
-			ImageStack stack = makeStack(path, firstFrame, lastFrame, isVirtual, convertToGray, flipVertical);	//read data
-		} catch (Exception e) {
-			error(exceptionMessage(e));
+		if (displayDialog && !showDialog(fileName))					//ask for parameters
 			return;
-		}
-		if (stack==null || aborting || (stack.isVirtual()&&stack.getProcessor(1)==null))
+		errorText = null;
+		ImageStack stack = makeStack(path, firstFrame, lastFrame, isVirtual, convertToGray, flipVertical);	//read data
+		if (aborting)
+			return;													//error message has been shown already
+		if (stack==null || stack.getSize() == 0 || stack.getProcessor(1)==null) {	//read nothing?
+            if (errorText != null)
+				error(errorText);
+            else {
+				 String rangeText = "";
+				if (firstFrame > 1 || (lastFrame != 0 && lastFrame != dwTotalFrames))
+					rangeText = "\nin Range "+firstFrame+
+                            (lastFrame>0 ? " - "+lastFrame : " - end");
+                error("Error: No Frames Found"+rangeText);
+            }
 			return;
-		if (stack.getSize() == 0) {
-			String rangeText = "";
-			if (firstFrame>1 || lastFrame!=0)
-				rangeText = "\nin Range "+firstFrame+
-					(lastFrame>0 ? " - "+lastFrame : " - end");
-			error("Error: No Frames Found"+rangeText);
-			return;
-		}
+		} else if (errorText != null)
+            IJ.showMessage("AVI Reader", errorText);				//show the error, e.g. we may have an incomplete stack
 		imp = new ImagePlus(WindowManager.makeUniqueName(fileName), stack);
 		if (imp.getBitDepth()==16)
 			imp.getProcessor().resetMinAndMax();
@@ -335,7 +343,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	public ImagePlus getImagePlus() {
 		return imp;
 	}
-	
+
 	/** Opens an AVI file as a virtual stack. The ImagePlus is not displayed. */
 	public static ImagePlus openVirtual(String path) {
 		return open(path, true);
@@ -357,8 +365,10 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	 * @param lastFrame	  Number of last frame to read or 0 for reading all, -1 for all but last...
 	 * @param isVirtual			Whether to return a virtual stack
 	 * @param convertToGray		Whether to convert color images to grayscale
-	 * @return	Returns the stack; null on failure.
-	 *	The stack returned may be non-null, but have a length of zero if no suitable frames were found
+	 * @return	Returns the stack (may be incomplete on error); null on failure.
+	 *	The stack returned may be non-null, but have a length of zero if no suitable frames were found.
+	 *  Use <code>getErrorText</code> to determine whether there has been an error reading the file.
+	 *  For virtual stacks, not that I/O errors may also occur later, when reading the frames.
 	 */
 	public ImageStack makeStack (String path, int firstFrame, int lastFrame,
 			boolean isVirtual, boolean convertToGray, boolean flipVertical) {
@@ -367,37 +377,37 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 		this.isVirtual = isVirtual;
 		this.convertToGray = convertToGray;
 		this.flipVertical = flipVertical;
-		String exceptionMessage = null;
 		IJ.showProgress(.001);
 		try {
 			readAVI(path);
 		} catch (OutOfMemoryError e) {
 			stack.trim();
-			IJ.showMessage("AVI Reader", "Out of memory.  " + stack.getSize() + " of " + dwTotalFrames + " frames will be opened.");
+			errorText = "Out of memory.  " + stack.getSize() + " of " + dwTotalFrames + " frames will be opened.";
 		} catch (Exception e) {
-			exceptionMessage = exceptionMessage(e);
+			errorText = exceptionMessage(e);
+            if (isVirtual || stack==null || stack.getSize()==0)		//return null only if we have really nothing
+				return null;
 		} finally {
-			try {
-				raFile.close();
-				if (verbose)
-					IJ.log("File closed.");
-			} catch (Exception e) {}
+			closeFile(raFile);
+			if (verbose)
+                IJ.log("File closed.");
 			IJ.showProgress(1.0);
-		}
-		if (exceptionMessage != null) {
-		   error(exceptionMessage);
-		   return null;
 		}
 		if (isVirtual && frameInfos != null)
 			stack = this;
 		if (stack!=null && cm!=null)
 			stack.setColorModel(cm);
 		return stack;
-	} 
+	}
+
+    /** Returns a description of the error reading the file with <code>makeStack</code> or null if no error */
+	public String getErrorText() {
+		return errorText;
+	}
 
 	/** Returns an ImageProcessor for the specified slice of this virtual stack (if it is one)
-		where 1<=n<=nslices. Returns null if no virtual stack or no slices.
-	*/
+     *  where 1<=n<=nslices. Returns null if no virtual stack or no slices or error reading the frame.
+	 */
 	public synchronized ImageProcessor getProcessor(int n) {
 		if (frameInfos==null || frameInfos.size()==0 || raFilePath==null)
 			return null;
@@ -405,21 +415,15 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 			throw new IllegalArgumentException("Argument out of range: "+n);
 		Object pixels = null;
 		RandomAccessFile rFile = null;
-		String exceptionMessage = null;
 		try {
 			rFile = new RandomAccessFile(new File(raFilePath), "r");
 			long[] frameInfo = (long[])(frameInfos.get(n-1));
 			pixels = readFrame(rFile, frameInfo[0], (int)frameInfo[1]);
 		} catch (Exception e) {
-			exceptionMessage = exceptionMessage(e);
-		} finally {
-			try {
-				rFile.close();
-			} catch (Exception e) {}
-		}
-		if (exceptionMessage != null) {
-			error(exceptionMessage);
+			error(exceptionMessage(e));
 			return null;
+		} finally {
+			closeFile(rFile);
 		}
 		if (pixels == null) return null; //failed
 		if (pixels instanceof byte[])
@@ -496,9 +500,12 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 
 	/** Read into a (virtual) stack */
 	private void readAVI(String path) throws Exception, IOException {
-
 		if (!headerOK)							// we have not read the header yet?
 			openAndReadHeader(path);
+        else {
+			File file = new File(path);			// open if currently not open
+			raFile = new RandomAccessFile(file, "r");
+        }
 		startTime += System.currentTimeMillis();// taking previously elapsed time into account
 		/** MOVED UP HERE BY JSP*/
 		if (lastFrame > 0)						// last frame number to read: from Dialog
@@ -617,9 +624,13 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 			long size = readInt() & SIZE_MASK;
 			nextPos = raFile.getFilePointer() + size;
 
-			if (nextPos>fileSize || nextPos>endPosition) {
-				IJ.log("AVI File Error: '"+fourccString(type)+"' @ 0x"+Long.toHexString(raFile.getFilePointer()-8)+" has invalid length");
-				return -1;
+			if (nextPos>endPosition || nextPos>fileSize) {
+				errorText = "AVI File Error: '"+fourccString(type)+"' @ 0x"+Long.toHexString(raFile.getFilePointer()-8)+" has invalid length. File damaged/truncated?";
+				IJ.log(errorText);		// this text is also remembered as error message for showing in message box
+				if (fourcc == FOURCC_movi)
+                    nextPos = fileSize;	// if movie data truncated, try reading what we can get
+				else
+                    return -1;			// otherwise, nothing to be done
 			}
 			if (isList && type == FOURCC_LIST)
 				type = readInt();
@@ -1011,7 +1022,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 		if (isPlanarFormat && ((biWidth&1)!=0 || (biHeight&1)!=0))
 			throw new Exception("Odd size ("+biWidth+"x"+biHeight+") unsupported with "+fourccString(biCompression)+" compression");
 		// raw & interleaved YUV: scan line is padded with zeroes to be a multiple of four bytes
-		scanLineSize = isPlanarFormat ? 
+		scanLineSize = isPlanarFormat ?
 				(biWidth * biBitCount) / 8 : ((biWidth * biBitCount + 31) / 32) * 4;
 
 		// a value of biClrUsed=0 means we determine this based on the bits per pixel, if there is a palette
@@ -1397,7 +1408,14 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 		}
 		return s;
 	}
-	
+
+	/** tries to close the given file (if not null) */
+	private void closeFile(RandomAccessFile rFile) {
+		if (rFile != null) try {
+			rFile.close();
+        } catch (Exception e) {}
+	}
+
 	private void error(String msg) {
 		 aborting = true;
 		 IJ.error("AVI Reader", msg);
@@ -1548,9 +1566,9 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 			readableSize += HUFFMAN_LENGTH;
 		}
 	}
-	
+
 	public void displayDialog(boolean displayDialog) {
 		this.displayDialog = displayDialog;
 	}
-	
+
 }

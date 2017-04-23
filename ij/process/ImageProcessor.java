@@ -164,6 +164,8 @@ public abstract class ImageProcessor implements Cloneable {
 	public void setColorModel(ColorModel cm) {
 		if (cm!=null && !(cm instanceof IndexColorModel))
 			throw new IllegalArgumentException("IndexColorModel required");
+		if (cm!=null && cm instanceof LUT)
+			cm = ((LUT)cm).getColorModel();
 		this.cm = cm;
 		baseCM = null;
 		rLUT1 = rLUT2 = null;
@@ -182,9 +184,13 @@ public abstract class ImageProcessor implements Cloneable {
 	}
 	
 	public void setLut(LUT lut) {
-		setColorModel(lut.getColorModel());
-		if (lut!=null && (lut.min!=0.0||lut.max!=0.0))
-			setMinAndMax(lut.min, lut.max);
+		if (lut==null)
+			setColorModel(null);
+		else {
+			setColorModel(lut.getColorModel());
+			if (lut.min!=0.0 || lut.max!=0.0)
+				setMinAndMax(lut.min, lut.max);
+		}
 	}
 
 

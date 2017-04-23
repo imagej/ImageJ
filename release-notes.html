@@ -5,9 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.51m 13 April 2017</u>
+<li> <u>1.51m 22 April 2017</u>
 <ul>
 <li> Added the <i>Image&gt;Zoom&gt;Maximize</i> command.
+<li> Increased the tool button size from 28x28 to 30x30, which
+makes the "ImageJ" window 40 pixels wider and 2 pixes taller.
+<li> Thanks to Agathe Robisson, added a "Center grid on image"
+checkbox to the <i>Analyze&gt;Tools&gt;Grid</i> dialog.
 <li> A <i>Plugins&gt;Why are Plugins Missing?</i> command
 is added to the <i>Plugins</i> menu if plugins were not loaded
 due to macOS 
@@ -24,6 +28,7 @@ use undeclared variables.
 <li> Thanks to Michael Schmid, the <i>Analyze&gt;Plot Profile</i>  command
 remembers whether the alt key was down (used for verticall plotting) when
 initialized so "Live" plots continue to be vertical.
+<li> Thanks to Michael Schmid, the AVI Reader tries to recover data from truncated files.
 <li> Thanks to Jerome Mutterer, added the setOption("SaveBatchOutput",false)
 macro function, which can be used in <i>Process&gt;Batch&gt;Virtual Stack</i>
 macros to prevent slices from being written to the output virtual stack.
@@ -48,6 +53,8 @@ run("Point Tool...", "...") macro function to not work as expected.
 generate a time series regardless of the input stack format.
 <li> Thanks to lcsglvr, fixed a bug that caused slow drawing of 16-bit and 32-bit multi-channel
 composite color images in "Color" mode.
+<li> Thanks to Michael Schmid, fixed a bug in the AVI Reader that caused the file to not be
+closed in case of a cancelled dialog or some IO errors.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
