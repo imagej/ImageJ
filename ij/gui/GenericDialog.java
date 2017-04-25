@@ -40,7 +40,6 @@ import ij.macro.*;
 public class GenericDialog extends Dialog implements ActionListener, TextListener, 
 FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
-	public static final int MAX_SLIDERS = 25;
 	protected Vector numberField, stringField, checkbox, choice, slider, radioButtonGroups;
 	protected TextArea textArea1, textArea2;
 	protected Vector defaultValues,defaultText,defaultStrings,defaultChoiceIndexes;
@@ -64,8 +63,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private String macroOptions;
 	private int topInset, leftInset, bottomInset;
     private boolean customInsets;
-    private int[] sliderIndexes;
-    private double[] sliderScales;
+    private Vector sliderIndexes;
+    private Vector sliderScales;
     private Checkbox previewCheckbox;    // the "Preview" Checkbox, if any
     private Vector dialogListeners;             // the Objects to notify on user input
     private PlugInFilterRunner pfr;      // the PlugInFilterRunner for automatic preview
@@ -621,8 +620,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		
 		if (slider==null) {
 			slider = new Vector(5);
-			sliderIndexes = new int[MAX_SLIDERS];
-			sliderScales = new double[MAX_SLIDERS];
+			sliderIndexes = new Vector(5);
+			sliderScales = new Vector(5);
 		}
 		Scrollbar s = new Scrollbar(Scrollbar.HORIZONTAL, (int)defaultValue, 1, (int)minValue, (int)maxValue+1);
 		slider.addElement(s);
@@ -643,8 +642,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		tf.addFocusListener(this);
 		tf.addKeyListener(this);
 		numberField.addElement(tf);
-		sliderIndexes[slider.size()-1] = numberField.size()-1;
-		sliderScales[slider.size()-1] = scale;
+		sliderIndexes.add(new Integer(numberField.size()-1));
+		sliderScales.add(new Double(scale));
 		defaultValues.addElement(new Double(defaultValue/scale));
 		defaultText.addElement(tf.getText());
 		tf.setEditable(true);
@@ -1318,15 +1317,15 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		if (slider==null) return;
 		Object source = e.getSource();
 		for (int i=0; i<slider.size(); i++) {
-			int index = sliderIndexes[i];
+			int index = ((Integer)sliderIndexes.get(i)).intValue();
 			if (source==numberField.elementAt(index)) {
 				TextField tf = (TextField)numberField.elementAt(index);
 				double value = Tools.parseDouble(tf.getText());
 				if (!Double.isNaN(value)) {
 					Scrollbar sb = (Scrollbar)slider.elementAt(i);
-					sb.setValue((int)(value*sliderScales[i]));
+					double scale = ((Double)sliderScales.get(i)).doubleValue();
+					sb.setValue((int)(value*scale));
 				}	
-				//IJ.log(i+" "+tf.getText());
 			}
 		}
 	}
@@ -1400,9 +1399,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		for (int i=0; i<slider.size(); i++) {
 			if (source==slider.elementAt(i)) {
 				Scrollbar sb = (Scrollbar)source;
-				TextField tf = (TextField)numberField.elementAt(sliderIndexes[i]);
-				int digits = sliderScales[i]==1.0?0:2;
-				tf.setText(""+IJ.d2s(sb.getValue()/sliderScales[i],digits));
+				int index = ((Integer)sliderIndexes.get(i)).intValue();
+				TextField tf = (TextField)numberField.elementAt(index);
+				double scale = ((Double)sliderScales.get(i)).doubleValue();
+				int digits = scale==1.0?0:2;
+				tf.setText(""+IJ.d2s(sb.getValue()/scale,digits));
 			}
 		}
 	}
