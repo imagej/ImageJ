@@ -191,7 +191,7 @@ public class StackConverter {
 		}
 		IJ.showProgress(1.0);
 		imp.setStack(null, stack2);
-		imp.setCalibration(imp.getCalibration()); //update calibration
+		imp.setCalibration(cal); //update calibration
 	}
 
 	/** Converts the stack (which must be RGB) to a 
