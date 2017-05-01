@@ -18,7 +18,7 @@ import ij.io.SaveDialog;
 * @author Michael Schmid
 * @author Wayne Rasband
 */
-public class PlotWindow extends ImageWindow implements ActionListener,	ItemListener,
+public class PlotWindow extends ImageWindow implements ActionListener, ItemListener,
 	ClipboardOwner, ImageListener, RoiListener, Runnable {
 
 	/** Display points using a circle 5 pixels in diameter. */

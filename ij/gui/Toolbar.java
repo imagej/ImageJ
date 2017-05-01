@@ -472,7 +472,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 		if (menus[tool]!=null && menus[tool].getItemCount()>0) { 
 			xOffset = x; yOffset = y;
-			drawTriangle(15, 15);
+			drawTriangle(16, 16);
 		}
 	}
 	

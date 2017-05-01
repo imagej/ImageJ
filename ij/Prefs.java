@@ -437,8 +437,9 @@ public class Prefs {
 	}
 
 	static void loadOptions() {
+		boolean windows10 = IJ.isWindows() && System.getProperty("os.name").contains("Windows 10");
 		int defaultOptions = ANTIALIASING+AVOID_RESLICE_INTERPOLATION+ANTIALIASED_TOOLS+MULTI_POINT_MODE
-			+(!IJ.isMacOSX()?RUN_SOCKET_LISTENER:0);
+			+(!IJ.isMacOSX()?RUN_SOCKET_LISTENER:0)+(windows10?JFILE_CHOOSER:0);
 		int options = getInt(OPTIONS, defaultOptions);
 		usePointerCursor = (options&USE_POINTER)!=0;
 		//antialiasedText = (options&ANTIALIASING)!=0;

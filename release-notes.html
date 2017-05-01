@@ -5,21 +5,22 @@
 </head>
 <body>
 
-<li> <u>1.51m 24 April 2017</u>
+<li> <u>1.51m 30 April 2017</u>
 <ul>
+<li> Images are scaled to fit when windows are resized.
 <li> Added the <i>Image&gt;Zoom&gt;Maximize</i> command.
-<li> Increased the tool button size from 28x28 to 29x30, which
-makes the "ImageJ" window 20 pixels wider and 2 pixes taller.
+<li> Increased the tool button size from 28x28 to 29x30,
+making the "ImageJ" window 20 pixels wider and 2 pixes taller.
 <li> Thanks to Agathe Robisson, added a "Center grid on image"
 checkbox to the <i>Analyze&gt;Tools&gt;Grid</i> dialog.
 <li> A <i>Plugins&gt;Why are Plugins Missing?</i> command
 is added to the <i>Plugins</i> menu if plugins were not loaded
 due to macOS 
-(<a href="docs/install/osx.html#randomization">Path Randomization</a>).
+<a href="docs/install/osx.html#randomization">Path Randomization</a>.
 <li> Added the <i>Help&gt;Examples&gt;JavaScript&gt;TeraByte VirtualStack</i>
 example script.
 <li> Changed the default extension when saving tables from ".xls" to ".csv"
-(coma-delimited values) and added support for opening and saving tables in
+(coma-separated values) and added support for opening and saving tables in
  ".tsv" (tab-delimited values) format.
 <li> The <i>Macros&gt;Evaluate JavaScript</i> command in the text editor
 now respects the "use strict" directive (Java 8 only) to indicate that the code
@@ -58,10 +59,8 @@ composite color images in "Color" mode.
 closed in case of a cancelled dialog or some IO errors.
 <li> Thanks to Wilhelm Burger, fixed bugs with the PointIterator on line
 and point selections that caused incorrect point coordinates to be returned.
-In particular, terminal points of lines were sometimes not returned, 
-some consecutive line points had identical positions, and
-coordinates of points in point selections were generally off by one pixel.
-Also fixed similar problems with the Line.getPixels() method,
+<li> Fixed a bug on Mac OS X that caused the position of the "ImageJ" window
+to not be remembered if it was located partially offscreen to the right.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

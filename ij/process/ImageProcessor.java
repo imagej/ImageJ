@@ -969,51 +969,31 @@ public abstract class ImageProcessor implements Cloneable {
 	 * line starting at (x1,y1) and ending at (x2,y2). For byte
 	 * and short images, returns calibrated values if a calibration
 	 * table has been set using setCalibrationTable().
-	 * Modified to use {@link Line.PointIterator} for consistent results.
-	 * @author Wilhelm Burger (04/2017)
 	 * @see ImageProcessor#setInterpolate
-	 * @param x1 start position x
-	 * @param y1 start position y
-	 * @param x2 end position x
-	 * @param y2 end position y
-	 * @return a one-dimensional array of pixel values on the line
 	*/
 	public double[] getLine(double x1, double y1, double x2, double y2) {
-		if (interpolate)
-			return getLineInterpolated(x1, y1, x2, y2); // use the new method below
-			
-		// collect pixel values into a list
-		ArrayList dataList = new ArrayList();
-		Iterator<Point> iterator = new Line.PointIterator(x1, y1, x2, y2);
-		while(iterator.hasNext()) {
-			Point p = iterator.next();
-			dataList.add(getPixelValue(p.x, p.y));
-		}
-		
-		// convert collected Float values to double[] and return
-		final double[] data = new double[dataList.size()];
-		for (int i=0; i<dataList.size(); i++)
-			data[i] = (Float)dataList.get(i);
-		return data;
-	}
-	
-	// New method (modified from original 'getLine' for interpolation)
-	// by Wilhelm Burger (04/2017)
-	private double[] getLineInterpolated(double x1, double y1, double x2, double y2) {
-		final double dx = x2 - x1;
-		final double dy = y2 - y1;
-		final int n = (int) Math.ceil(Math.sqrt(dx * dx + dy * dy)); // # of segments, n > 0 required!
-		final double xinc = dx / n;
-		final double yinc = dy / n;
-		final double[] data = new double[n + 1]; // we need one more points than segments!
-		
-		double x = x1;
-		double y = y1;
-		
-		for (int i = 0; i < data.length; i++) {
-			x = x1 + i * xinc;
-			y = y1 + i * yinc;
-			data[i] = getInterpolatedValue(x, y); 
+		double dx = x2-x1;
+		double dy = y2-y1;
+		int n = (int)Math.round(Math.sqrt(dx*dx + dy*dy));
+		double xinc = n>0?dx/n:0;
+		double yinc = n>0?dy/n:0;
+		if (!((xinc==0&&n==height) || (yinc==0&&n==width)))
+			n++;
+		double[] data = new double[n];
+		double rx = x1;
+		double ry = y1;
+		if (interpolate) {
+			for (int i=0; i<n; i++) {
+				data[i] = getInterpolatedValue(rx, ry);
+				rx += xinc;
+				ry += yinc;
+			}
+		} else {
+			for (int i=0; i<n; i++) {
+				data[i] = getPixelValue((int)(rx+0.5), (int)(ry+0.5));
+				rx += xinc;
+				ry += yinc;
+			}
 		}
 		return data;
 	}
@@ -2033,7 +2013,7 @@ public abstract class ImageProcessor implements Cloneable {
     	mean 0.0 and the specified standard deviation, to this image or ROI. */
     public abstract void noise(double standardDeviation);
     
-	/** Creates a new processor containing an image
+	/** Returns a new processor containing an image
 		that corresponds to the current ROI. */
 	public abstract ImageProcessor crop();
 	
@@ -2051,18 +2031,18 @@ public abstract class ImageProcessor implements Cloneable {
 	*/
 	public abstract void scale(double xScale, double yScale);
 	
-	/** Creates a new ImageProcessor containing a scaled copy of this image or ROI.
+	/** Returns a new ImageProcessor containing a scaled copy of this image or ROI.
 		@see ij.process.ImageProcessor#setInterpolate
 	*/
 	public abstract ImageProcessor resize(int dstWidth, int dstHeight);
 	
-	/** Creates a new ImageProcessor containing a scaled copy 
+	/** Returns a new ImageProcessor containing a scaled copy 
 		of this image or ROI, with the aspect ratio maintained. */
 	public ImageProcessor resize(int dstWidth) {
 		return resize(dstWidth, (int)(dstWidth*((double)roiHeight/roiWidth)));
 	}
 
-	/** Creates a new ImageProcessor containing a scaled copy of this image or ROI.
+	/** Returns a new ImageProcessor containing a scaled copy of this image or ROI.
 		@param dstWidth   Image width of the resulting ImageProcessor
 		@param dstHeight  Image height of the resulting ImageProcessor
 		@param useAverging  True means that the averaging occurs to avoid
