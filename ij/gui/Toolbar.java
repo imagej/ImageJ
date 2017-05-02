@@ -52,9 +52,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static final int MAX_EXTRA_TOOLS = 8;
 	private static final int MAX_TOOLS = NUM_TOOLS+MAX_EXTRA_TOOLS;
 	private static final int NUM_BUTTONS = 21;
-	private static final int BUTTON_WIDTH = 29;
-	private static final int BUTTON_HEIGHT = 30;
-	private static final int SIZE = 29;  // no longer used
+	private static final int BUTTON_WIDTH = 28;
+	private static final int BUTTON_HEIGHT = 29;
+	private static final int SIZE = 28;  // no longer used
 	private static final int GAP_SIZE = 9;
 	private static final int OFFSET = 6;
 	private static final String BRUSH_SIZE = "toolbar.brush.size";
@@ -100,6 +100,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static int arcSize = (int)Prefs.get(CORNER_DIAMETER, 20);
 	private int lineType = LINE;
 	private static boolean legacyMode;
+	//private static BasicStroke widerLine = new BasicStroke(1.5f);
 	
 	private Color gray = new Color(228,228,228);
 	private Color brighter = gray.brighter();
@@ -227,6 +228,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+			//g2d.setStroke(widerLine);
 		}
 		for (int i=0; i<LINE; i++)
 			drawButton(g, i);
@@ -267,14 +269,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
         if (tool!=UNUSED)
         	fill3DRect(g, x, 1, BUTTON_WIDTH, BUTTON_HEIGHT-1, !down[tool]);
         g.setColor(toolColor);
-        x = index*BUTTON_WIDTH + OFFSET + 1;
+        x = index*BUTTON_WIDTH + OFFSET;
         if (tool>=CUSTOM1)
         	x -= BUTTON_WIDTH-GAP_SIZE;
-		int y = OFFSET + 1;
+		int y = OFFSET;
 		if (down[tool]) { x++; y++;}
 		this.g = g;
 		if (tool>=CUSTOM1 && tool<=getNumTools() && icons[tool]!=null) {
-			drawIcon(g, tool, x, y);
+			drawIcon(g, tool, x+1, y+1);
 			return;
 		}
 		switch (tool) {
@@ -379,7 +381,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				polyline(10,7,12,7,12,9);
 				polyline(8,7,2,13,2,15,4,15,11,8);
 				g.setColor(backgroundColor);
-				polyline(-2,-2,18,-2,18,18,-2,18,-2,-2);
+				polyline(-1,-1,18,-1,18,18,-1,18,-1,-1);
 				return;
 			case ANGLE:
 				xOffset = x; yOffset = y+2;
@@ -472,7 +474,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 		if (menus[tool]!=null && menus[tool].getItemCount()>0) { 
 			xOffset = x; yOffset = y;
-			drawTriangle(16, 16);
+			drawTriangle(15, 15);
 		}
 	}
 	

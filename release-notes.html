@@ -5,62 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.51m 30 April 2017</u>
+<li> <u>1.51n 1 May 2017</u>
 <ul>
-<li> Images are scaled to fit when windows are resized.
-<li> Added the <i>Image&gt;Zoom&gt;Maximize</i> command.
-<li> Increased the tool button size from 28x28 to 29x30,
-making the "ImageJ" window 20 pixels wider and 2 pixes taller.
-<li> Thanks to Agathe Robisson, added a "Center grid on image"
-checkbox to the <i>Analyze&gt;Tools&gt;Grid</i> dialog.
-<li> A <i>Plugins&gt;Why are Plugins Missing?</i> command
-is added to the <i>Plugins</i> menu if plugins were not loaded
-due to macOS 
-<a href="docs/install/osx.html#randomization">Path Randomization</a>.
-<li> Added the <i>Help&gt;Examples&gt;JavaScript&gt;TeraByte VirtualStack</i>
-example script.
-<li> Changed the default extension when saving tables from ".xls" to ".csv"
-(coma-separated values) and added support for opening and saving tables in
- ".tsv" (tab-delimited values) format.
-<li> The <i>Macros&gt;Evaluate JavaScript</i> command in the text editor
-now respects the "use strict" directive (Java 8 only) to indicate that the code
-should be executed in "strict mode". In strict mode, you can not, for example,
-use undeclared variables.
-<li> Thanks to Michael Schmid, the <i>Analyze&gt;Plot Profile</i>  command
-remembers whether the alt key was down (used for verticall plotting) when
-initialized so "Live" plots continue to be vertical.
-<li> Thanks to Michael Schmid, the AVI Reader tries to recover data from truncated files.
-<li> Thanks to Jerome Mutterer, added the setOption("SaveBatchOutput",false)
-macro function, which can be used in <i>Process&gt;Batch&gt;Virtual Stack</i>
-macros to prevent slices from being written to the output virtual stack.
-<li> Thanks to Stephan Preibisch, removed the limit of 25 sliders in GenericDialogs.
-<li> Thanks to Norbert Vischer, added the Array.rotate() and
-Array.getVertexAngles() macro functions and added an optional
-edgeMode argument to the Array.findMaxima() function
-(<a href="macros/examples/RotateArray.txt">example1</a>, 
-<a href="macros/examples/VertexAngles.txt">example2,</a>
-<a href="macros/examples/FindMaxima1D.txt">example1</a>).
-<li> Added the Roi.hasHyperStackPosition() method.
-<li> Thanks to Stefan Helfrich and Mojo Dodo, fixed a bug that caused the
- <i>Image&gt;Color&gt;Arrange Channels</i> command to not
- close the source image in batch mode macros.
- <li> Thanks to Robert Dougherty, fixed a bug that caused the "Overlay"
- checkbox in the <i>Analyze&gt;Tools&gt;Calibration Bar</i> dialog
- box to not be remenbered.
-<li> Thanks to Robert Dougherty, fixed a bug that caused the backgrounds
-of scrollbars to be white when running on Windows 10 and Java 6.
-<li> Thanks to Martin Hohne, fixed a bug that caused the
-run("Point Tool...", "...") macro function to not work as expected.
-<li> Thanks to Stefan Helfrich, fixed a bug that caused the GroupedZProjector to always
-generate a time series regardless of the input stack format.
-<li> Thanks to lcsglvr, fixed a bug that caused slow drawing of 16-bit and 32-bit multi-channel
-composite color images in "Color" mode.
-<li> Thanks to Michael Schmid, fixed a bug in the AVI Reader that caused the file to not be
-closed in case of a cancelled dialog or some IO errors.
-<li> Thanks to Wilhelm Burger, fixed bugs with the PointIterator on line
-and point selections that caused incorrect point coordinates to be returned.
-<li> Fixed a bug on Mac OS X that caused the position of the "ImageJ" window
-to not be remembered if it was located partially offscreen to the right.
+<li> Fixed a 1.51m regression that caused the "+" command
+(<i>Image&gt;Zoom&gt;In</i>) to sometimes not work as expected.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

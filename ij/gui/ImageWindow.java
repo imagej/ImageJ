@@ -135,8 +135,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 				GUI.center(this);
 			nextLocation = null;
 			centerOnScreen = false;
-			//if (ic!=null && ic.getMagnification()<1.0)
-			ic.setScaleToFit(true);
+			//ic.setScaleToFit(true);
 			if (Interpreter.isBatchMode() || (IJ.getInstance()==null&&this instanceof HistogramWindow)) {
 				WindowManager.setTempCurrentImage(imp);
 				Interpreter.addBatchModeImage(imp);

@@ -997,7 +997,7 @@ public abstract class ImageProcessor implements Cloneable {
 		}
 		return data;
 	}
-	
+		
 	/** Returns the pixel values along the horizontal line starting at (x,y). */
 	public void getRow(int x, int y, int[] data, int length) {
 		for (int i=0; i<length; i++)

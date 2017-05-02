@@ -11,7 +11,7 @@ import java.awt.image.*;
  */
 public class ProgressBar extends Canvas {
 
-    public static final int WIDTH = 130;
+    public static final int WIDTH = 120;
     public static final int HEIGHT = 20;
 
     private int canvasWidth, canvasHeight;
