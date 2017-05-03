@@ -1,5 +1,6 @@
 package ij.process;
 import java.util.*;
+import java.util.List;
 import java.awt.*;
 import java.awt.image.*;
 import ij.gui.*;
@@ -969,34 +970,58 @@ public abstract class ImageProcessor implements Cloneable {
 	 * line starting at (x1,y1) and ending at (x2,y2). For byte
 	 * and short images, returns calibrated values if a calibration
 	 * table has been set using setCalibrationTable().
+	 * Modified to use {@link Line.PointIterator} for consistent results.
+	 * @author Wilhelm Burger (05/2017)
 	 * @see ImageProcessor#setInterpolate
-	*/
-	public double[] getLine(double x1, double y1, double x2, double y2) {
-		double dx = x2-x1;
-		double dy = y2-y1;
-		int n = (int)Math.round(Math.sqrt(dx*dx + dy*dy));
-		double xinc = n>0?dx/n:0;
-		double yinc = n>0?dy/n:0;
-		if (!((xinc==0&&n==height) || (yinc==0&&n==width)))
-			n++;
-		double[] data = new double[n];
-		double rx = x1;
-		double ry = y1;
-		if (interpolate) {
-			for (int i=0; i<n; i++) {
-				data[i] = getInterpolatedValue(rx, ry);
-				rx += xinc;
-				ry += yinc;
-			}
-		} else {
-			for (int i=0; i<n; i++) {
-				data[i] = getPixelValue((int)(rx+0.5), (int)(ry+0.5));
-				rx += xinc;
-				ry += yinc;
-			}
-		}
-		return data;
-	}
+	 * @param x1 start position x
+	 * @param y1 start position y
+	 * @param x2 end position x
+	 * @param y2 end position y
+	 * @return a one-dimensional array of pixel values on the line
+	 */
+    public double[] getLine(double x1, double y1, double x2, double y2) {
+        if (interpolate) {
+            return getLineInterpolated(x1, y1, x2, y2); // use the new method below
+        }
+        // collect pixel values into a list
+        List<Float> dataList = new ArrayList<>();
+        Iterator<Point> iterator = new Line.PointIterator(x1, y1, x2, y2);
+        while (iterator.hasNext()) {
+            Point p = iterator.next();
+            dataList.add(getPixelValue(p.x, p.y));
+        }
+
+        // convert collected float values to double[]
+        final double[] data = new double[dataList.size()];
+        int i = 0;
+        for (Float d : dataList) {
+            data[i] = d;
+            i++;
+        }
+
+        return data;
+    }
+	
+    // New method (modified from original 'getLine' for interpolation)
+    // by Wilhelm Burger (05/2017)
+    private double[] getLineInterpolated(double x1, double y1, double x2, double y2) {
+        final double dx = x2 - x1;
+        final double dy = y2 - y1;
+        final int n = Math.max(1, (int) Math.round(Math.sqrt(dx * dx + dy * dy))); // # of segments, n > 0 required!
+        final double xinc = dx / n;
+        final double yinc = dy / n;
+        final double[] data = new double[n + 1]; // we need 1 more points than segments!
+
+        double x = x1;
+        double y = y1;
+
+        for (int i = 0; i < data.length; i++) {
+            x = x1 + i * xinc;
+            y = y1 + i * yinc;
+            data[i] = getInterpolatedValue(x, y);
+        }
+        return data;
+    }
 		
 	/** Returns the pixel values along the horizontal line starting at (x,y). */
 	public void getRow(int x, int y, int[] data, int length) {
