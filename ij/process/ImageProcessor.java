@@ -989,8 +989,9 @@ public abstract class ImageProcessor implements Cloneable {
 				ry += yinc;
 			}
 		} else {
+			rx-=0.5; ry-=0.5; 
 			for (int i=0; i<n; i++) {
-				data[i] = getPixelValue((int)(rx+0.5), (int)(ry+0.5));
+				data[i] = getPixelValue((int)Math.round(rx), (int)Math.round(ry));
 				rx += xinc;
 				ry += yinc;
 			}

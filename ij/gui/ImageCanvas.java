@@ -99,7 +99,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
  		addMouseListener(this);
  		addMouseMotionListener(this);
  		addKeyListener(ij);  // ImageJ handles keyboard shortcuts
-		setFocusTraversalKeysEnabled(false);
+		setScaleToFit(true);
 	}
 		
 	void updateImage(ImagePlus imp) {
@@ -792,6 +792,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		Note that sx and sy are screen coordinates. */
 	public void zoomIn(int sx, int sy) {
 		if (magnification>=32) return;
+		scaleToFit = false;
 	    boolean mouseMoved = sqr(sx-lastZoomSX) + sqr(sy-lastZoomSY) > MAX_MOUSEMOVE_ZOOM*MAX_MOUSEMOVE_ZOOM;
 		lastZoomSX = sx;
 		lastZoomSY = sy;

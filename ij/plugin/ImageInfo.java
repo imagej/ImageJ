@@ -274,6 +274,9 @@ public class ImageInfo implements PlugIn {
     	double mag = ic!=null?ic.getMagnification():1.0;
     	if (mag!=1.0)
 			s += "Magnification: " + IJ.d2s(mag,2) + "\n";
+		if (ic!=null)
+			s += "ScaleToFit: " + ic.getScaleToFit() + "\n";
+
 			
 	    if (cal.calibrated()) {
 	    	s += " \n";
