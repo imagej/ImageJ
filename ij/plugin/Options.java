@@ -130,7 +130,10 @@ public class Options implements PlugIn {
 		if (!extension.startsWith("."))
 			extension = "." + extension;
 		Prefs.set("options.ext", extension);
+		boolean useJFileChooser2 = Prefs.useJFileChooser;
 		Prefs.useJFileChooser = gd.getNextBoolean();
+		if (Prefs.useJFileChooser!=useJFileChooser2)
+			Prefs.jFileChooserSettingChanged = true;
 		if (!IJ.isMacOSX())
 			Prefs.useFileChooser = gd.getNextBoolean();
 		Prefs.intelByteOrder = gd.getNextBoolean();

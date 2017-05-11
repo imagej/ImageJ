@@ -55,7 +55,7 @@ public class Prefs {
 	private static final int USE_SYSTEM_PROXIES=1<<0, USE_FILE_CHOOSER=1<<1,
 		SUBPIXEL_RESOLUTION=1<<2, ENHANCED_LINE_TOOL=1<<3, SKIP_RAW_DIALOG=1<<4,
 		REVERSE_NEXT_PREVIOUS_ORDER=1<<5, AUTO_RUN_EXAMPLES=1<<6, SHOW_ALL_POINTS=1<<7,
-		DO_NOT_SAVE_WINDOW_LOCS=1<<8;
+		DO_NOT_SAVE_WINDOW_LOCS=1<<8, JFILE_CHOOSER_CHANGED=1<<9;
 	public static final String OPTIONS2 = "prefs.options2";
     
 	/** file.separator system property */
@@ -167,6 +167,9 @@ public class Prefs {
 	/** Enable this option to workaround a bug with some Linux window
 		managers that causes windows to wander down the screen. */
 	public static boolean doNotSaveWindowLocations = true;
+	/** Use JFileChooser setting changed/ */
+	public static boolean jFileChooserSettingChanged;
+
 	
 
 	static Properties ijPrefs = new Properties();
@@ -437,9 +440,8 @@ public class Prefs {
 	}
 
 	static void loadOptions() {
-		boolean windows10 = IJ.isWindows() && System.getProperty("os.name").contains("Windows 10");
 		int defaultOptions = ANTIALIASING+AVOID_RESLICE_INTERPOLATION+ANTIALIASED_TOOLS+MULTI_POINT_MODE
-			+(!IJ.isMacOSX()?RUN_SOCKET_LISTENER:0)+(windows10?JFILE_CHOOSER:0);
+			+(!IJ.isMacOSX()?RUN_SOCKET_LISTENER:0);
 		int options = getInt(OPTIONS, defaultOptions);
 		usePointerCursor = (options&USE_POINTER)!=0;
 		//antialiasedText = (options&ANTIALIASING)!=0;
@@ -482,6 +484,7 @@ public class Prefs {
 		autoRunExamples = (options2&AUTO_RUN_EXAMPLES)!=0;
 		showAllPoints = (options2&SHOW_ALL_POINTS)!=0;
 		doNotSaveWindowLocations = (options2&DO_NOT_SAVE_WINDOW_LOCS)!=0;
+		jFileChooserSettingChanged = (options2&JFILE_CHOOSER_CHANGED)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -508,7 +511,8 @@ public class Prefs {
 			+ (enhancedLineTool?ENHANCED_LINE_TOOL:0) + (skipRawDialog?SKIP_RAW_DIALOG:0)
 			+ (reverseNextPreviousOrder?REVERSE_NEXT_PREVIOUS_ORDER:0)
 			+ (autoRunExamples?AUTO_RUN_EXAMPLES:0) + (showAllPoints?SHOW_ALL_POINTS:0)
-			+ (doNotSaveWindowLocations?DO_NOT_SAVE_WINDOW_LOCS:0);
+			+ (doNotSaveWindowLocations?DO_NOT_SAVE_WINDOW_LOCS:0)
+			+ (jFileChooserSettingChanged?JFILE_CHOOSER_CHANGED:0);
 		prefs.put(OPTIONS2, Integer.toString(options2));
 	}
 
