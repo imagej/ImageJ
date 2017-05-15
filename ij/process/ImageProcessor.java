@@ -243,9 +243,16 @@ public abstract class ImageProcessor implements Cloneable {
 		int minDistance = Integer.MAX_VALUE;
 		int distance;
 		int minIndex = 0;
-		int r1=c.getRed();
-		int g1=c.getGreen();
-		int b1=c.getBlue();
+		int r1 = c.getRed();
+		int g1 = c.getGreen();
+		int b1 = c.getBlue();		
+		if (r1!=g1 || g1!=b1 || r1!=b1) {
+			double[] w = ColorProcessor.getWeightingFactors();
+			double oneThird = 1d/3d;
+			r1 = (int)Math.round(r1*(w[0]/oneThird));
+			g1 = (int)Math.round(g1*(w[1]/oneThird));
+			b1 = (int)Math.round(b1*(w[2]/oneThird));
+		}		
 		int r2,b2,g2;
     	for (int i=0; i<mapSize; i++) {
 			r2 = rLUT[i]&0xff; g2 = gLUT[i]&0xff; b2 = bLUT[i]&0xff;

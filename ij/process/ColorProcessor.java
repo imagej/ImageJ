@@ -1315,7 +1315,7 @@ public class ColorProcessor extends ImageProcessor {
 		weights[2] = bWeight;
 		return weights;
 	}
-
+	
 	/** This is a thread-safe (non-static) version of setWeightingFactors(). */
 	public void setRGBWeights(double rweight, double gweight, double bweight) {
 		weights = new double[3];
