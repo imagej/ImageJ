@@ -403,7 +403,8 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			else
 				{minThreshold=0; maxThreshold=threshold;}
 		}
-		if (minThreshold>255) minThreshold = 255;
+		if (minThreshold>255)
+			minThreshold = 255;
 		if (Recorder.record) {
 			boolean stack = stackHistogram!=null && stackHistogram.getState();
 			String options = method+(darkb?" dark":"")+(stack?" stack":"");
@@ -420,7 +421,10 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			double min = ip.getMin();
 			double max = ip.getMax();
 			if (max>min) {
-				minThreshold = min + (minThreshold/255.0)*(max-min);
+				if (ip.getBitDepth()==16 && minThreshold==0.0)
+					minThreshold = 0.0;
+				else
+					minThreshold = min + (minThreshold/255.0)*(max-min);
 				maxThreshold = min + (maxThreshold/255.0)*(max-min);
 			} else
 				minThreshold = maxThreshold = min;

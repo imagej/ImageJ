@@ -245,13 +245,12 @@ public abstract class ImageProcessor implements Cloneable {
 		int minIndex = 0;
 		int r1 = c.getRed();
 		int g1 = c.getGreen();
-		int b1 = c.getBlue();		
-		if (r1!=g1 || g1!=b1 || r1!=b1) {
+		int b1 = c.getBlue();	
+		if (!(r1==g1&&g1==b1&&r1==b1) && icm==defaultColorModel) {
 			double[] w = ColorProcessor.getWeightingFactors();
-			double oneThird = 1d/3d;
-			r1 = (int)Math.round(r1*(w[0]/oneThird));
-			g1 = (int)Math.round(g1*(w[1]/oneThird));
-			b1 = (int)Math.round(b1*(w[2]/oneThird));
+			r1 = (int)Math.round(3*r1*w[0]);
+			g1 = (int)Math.round(3*g1*w[1]);
+			b1 = (int)Math.round(3*b1*w[2]);
 		}		
 		int r2,b2,g2;
     	for (int i=0; i<mapSize; i++) {
@@ -1576,7 +1575,7 @@ public abstract class ImageProcessor implements Cloneable {
 
 	/** Draws the specified ROI on this image using the stroke
 		width, stroke color and fill color defined by roi.setStrokeWidth,
-		roi.setStrokeColor() and roi.setFillColor(). Works best with RGB
+		roi.setStrokeColor() and roi.setFillColor(). Works   with RGB
 		images. Does not work with 16-bit and float images.
 		Requires Java 1.6.
 		@see ImageProcessor#draw
