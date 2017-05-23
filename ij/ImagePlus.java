@@ -1562,6 +1562,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				overlay2 = ip2.getOverlay();
 				if (overlay2!=null)
 					setOverlay(overlay2);
+				Properties props = ((VirtualStack)stack).getProperties();
+				if (props!=null)
+					setProperty("FHT", props.get("FHT"));
 				pixels = ip2.getPixels();
 			} else
 				pixels = stack.getPixels(currentSlice);

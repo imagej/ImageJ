@@ -416,21 +416,8 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 	
 	/** Scales threshold levels in the range 0-255 to the actual levels. */
-	void scaleUpAndSet(ImageProcessor ip, double minThreshold, double maxThreshold) {
-		if (!(ip instanceof ByteProcessor) && minThreshold!=ImageProcessor.NO_THRESHOLD) {
-			double min = ip.getMin();
-			double max = ip.getMax();
-			if (max>min) {
-				if (ip.getBitDepth()==16 && minThreshold==0.0)
-					minThreshold = 0.0;
-				else
-					minThreshold = min + (minThreshold/255.0)*(max-min);
-				maxThreshold = min + (maxThreshold/255.0)*(max-min);
-			} else
-				minThreshold = maxThreshold = min;
-		}
-		ip.setThreshold(minThreshold, maxThreshold, lutColor);
-		//ip.setSnapshotPixels(null); // disable undo removed 20140206 M. Schmid
+	void scaleUpAndSet(ImageProcessor ip, double lower, double upper) {
+		ip.scaleAndSetThreshold(lower, upper, lutColor);
 	}
 
 	/** Scales a threshold level to the range 0-255. */
@@ -527,11 +514,11 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 				max = cal.getCValue((int)max);
 			}
 			if (((int)min==min && (int)max==max) || (ip instanceof ShortProcessor) || max>99999.0) {
-				label1.setText(""+(int)min);
-				label2.setText(""+(int)max);
+				label1.setText(ResultsTable.d2s(min,0));
+				label2.setText(ResultsTable.d2s(max,0));
 			} else {
-				label1.setText(""+IJ.d2s(min,2));
-				label2.setText(""+IJ.d2s(max,2));
+				label1.setText(""+(min<-3.4e38?"-3.4e38":ResultsTable.d2s(min,2)));
+				label2.setText(""+ResultsTable.d2s(max,max==Double.MAX_VALUE?0:2));
 			}
 		}
 	}

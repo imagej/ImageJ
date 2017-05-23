@@ -565,14 +565,7 @@ public abstract class ImageProcessor implements Cloneable {
 				{lower=0.0; upper=threshold;}
 		}
 		if (lower>255) lower = 255;
-		if (notByteData) {
-			if (max>min) {
-				lower = min + (lower/255.0)*(max-min);
-				upper = min + (upper/255.0)*(max-min);
-			} else
-				lower = upper = min;
-		}
-		setThreshold(lower, upper, lutUpdate);
+		scaleAndSetThreshold(lower, upper, lutUpdate);
 	}
 
 	/** Automatically sets the lower and upper threshold levels, where 'method'
@@ -584,14 +577,12 @@ public abstract class ImageProcessor implements Cloneable {
 			throw new IllegalArgumentException("Invalid thresholding method");
 		if (this instanceof ColorProcessor)
 			return;
-		double min=0.0, max=0.0;
 		boolean notByteData = !(this instanceof ByteProcessor);
 		ImageProcessor ip2 = this;
 		if (notByteData) {
 			ImageProcessor mask = ip2.getMask();
 			Rectangle rect = ip2.getRoi();
 			resetMinAndMax();
-			min = getMin(); max = getMax();
 			ip2 = convertToByte(true);
 			ip2.setMask(mask);
 			ip2.setRoi(rect);	
@@ -642,16 +633,33 @@ public abstract class ImageProcessor implements Cloneable {
 			else
 				{lower=0.0; upper=threshold;}
 		}
-		if (notByteData) {
+		scaleAndSetThreshold(lower, upper, lutUpdate);
+
+	}
+	
+	/** Set the threshold using a 0-255 range. */
+	public void scaleAndSetThreshold(double lower, double upper, int lutUpdate) {
+		int bitDepth = getBitDepth();
+		if (bitDepth!=8 && lower!=NO_THRESHOLD) {
+			double min = getMin();
+			double max = getMax();
 			if (max>min) {
-				lower = min + (lower/255.0)*(max-min);
-				upper = min + (upper/255.0)*(max-min);
+				if (bitDepth==16 && lower==0.0)
+					lower = 0.0;
+				else if (bitDepth==32 && lower==0.0)
+					lower = -Float.MAX_VALUE;
+				else
+					lower = min + (lower/255.0)*(max-min);
+				if (bitDepth==16 && upper==255.0)
+					upper = 65535;
+				else if (bitDepth==32 && upper==255.0)
+					upper = Float.MAX_VALUE;
+				else
+					upper = min + (upper/255.0)*(max-min);
 			} else
 				lower = upper = min;
 		}
 		setThreshold(lower, upper, lutUpdate);
-		//if (notByteData && lutUpdate!=NO_LUT_UPDATE)
-		//	setLutAnimation(true);
 	}
 
 	/** Disables thresholding. */

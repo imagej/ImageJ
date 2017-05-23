@@ -234,5 +234,5 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		}
 		info[nImages-1] = fileInfo;
 	}
-	
-	}
+		
+}

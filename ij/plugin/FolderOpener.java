@@ -3,6 +3,7 @@ import java.awt.*;
 import java.io.*;
 import java.awt.event.*;
 import java.awt.image.ColorModel;
+import java.util.Properties;
 import ij.*;
 import ij.io.*;
 import ij.gui.*;
@@ -305,6 +306,11 @@ public class FolderOpener implements PlugIn {
 			fi.directory = directory;
 			imp2.setFileInfo(fi); // saves FileInfo of the first image
 			imp2.setOverlay(overlay);
+			if (stack instanceof VirtualStack) {
+				Properties props = ((VirtualStack)stack).getProperties();
+				if (props!=null)
+					imp2.setProperty("FHT", props.get("FHT"));
+			}
 			if (allSameCalibration) {
 				// use calibration from first image
 				if (scale!=100.0 && cal.scaled()) {
