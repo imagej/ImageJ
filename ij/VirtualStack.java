@@ -7,7 +7,6 @@ import java.io.*;
 import java.awt.*;
 import java.awt.image.ColorModel;
 import java.util.Properties;
-import java.util.Enumeration;
 
 /** This class represents an array of disk-resident images. */
 public class VirtualStack extends ImageStack {
@@ -244,7 +243,7 @@ public class VirtualStack extends ImageStack {
 		return this;
 	}
 	
-		/** Returns the ImagePlus Properties, if any, assoctated with the current slice. */
+	/** Returns the ImagePlus Properties assoctated with the current slice, or null. */
 	public Properties getProperties() {
 		return properties;
 	}
