@@ -2448,6 +2448,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
     	}
 	}
 	
+	public static void resetMultiMeasureResults() {
+		mmResults = mmResults2 = null;
+	}
+	
 	// This class runs the "Multi Measure" command in a separate thread
 	private class MultiMeasureRunner implements Runnable  {
 		private Thread thread;

@@ -9,6 +9,7 @@ import ij.measure.*;
 import ij.text.*;
 import ij.plugin.MeasurementsWriter;
 import ij.plugin.Straightener;
+import ij.plugin.frame.RoiManager;
 import ij.util.Tools;
 import ij.macro.Interpreter;
 
@@ -938,6 +939,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		umeans = null;
 		systemRT.reset();
+		RoiManager.resetMultiMeasureResults();
 		unsavedMeasurements = false;
 		if (tp!=null) tp.clear();
 		summarized = false;
