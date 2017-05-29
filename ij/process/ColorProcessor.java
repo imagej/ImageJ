@@ -1264,6 +1264,14 @@ public class ColorProcessor extends ImageProcessor {
 		return histogram;
 	}
 
+	public synchronized boolean weightedHistogram() {
+		if (weights!=null && (weights[0]!=1d/3d||weights[1]!=1d/3d||weights[2]!=1d/3d))
+			return true;
+		if (rWeight!=1d/3d || gWeight!=1d/3d || bWeight!=1d/3d)
+			return true;
+		return false;
+	}
+
 	/** Performs a convolution operation using the specified kernel. */
 	public void convolve(float[] kernel, int kernelWidth, int kernelHeight) {
 		int size = width*height;
@@ -1324,6 +1332,11 @@ public class ColorProcessor extends ImageProcessor {
 		weights[2] = bweight;
 	}
 
+	/** This is a thread-safe (non-static) version of setWeightingFactors(). */
+	public void setRGBWeights(double[] weights) {
+		this.weights = weights;
+	}
+	
 	/** Returns the values set by setRGBWeights(), or null if setRGBWeights() has not been called. */
 	public double[] getRGBWeights() {
 		return weights;

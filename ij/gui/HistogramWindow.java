@@ -23,7 +23,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	static final int BAR_HEIGHT = 12;
 	static final int XMARGIN = 20;
 	static final int YMARGIN = 10;
-	static final int INTENSITY=0, RED=1, GREEN=2, BLUE=3;
+	static final int INTENSITY1=0, INTENSITY2=1, RED=2, GREEN=3, BLUE=4;
 	
 	protected ImageStatistics stats;
 	protected long[] histogram;
@@ -45,7 +45,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	private ImagePlus srcImp;		// source image for live histograms
 	private Thread bgThread;		// thread background drawing
 	private boolean doUpdate;	// tells background thread to update
-	private int channel;				// RGB channel
+	private int rgbMode;
 	private String blankLabel;
 	private boolean stackHistogram;
 	    
@@ -96,7 +96,8 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		the same as the image range expect for 32 bit images. */
 	public void showHistogram(ImagePlus imp, int bins, double histMin, double histMax) {
 		boolean limitToThreshold = (Analyzer.getMeasurements()&LIMIT)!=0;
-		if (channel!=INTENSITY && imp.getType()==ImagePlus.COLOR_RGB) {
+		if (imp.getType()==ImagePlus.COLOR_RGB && (rgbMode==RED||rgbMode==GREEN||rgbMode==BLUE)) {
+			int channel = rgbMode - 1;
 			ColorProcessor cp = (ColorProcessor)imp.getProcessor();
 			ImageProcessor ip = cp.getChannel(channel, null);
 			ImagePlus imp2 = new ImagePlus("", ip);
@@ -180,6 +181,10 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		}
 		add(buttons);
 		pack();
+		if (IJ.isMacOSX() && IJ.isJava18()) {
+			IJ.wait(50);
+			pack();
+		}
     }
     
 	public void setup() {setup(null);}
@@ -254,11 +259,11 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		ImageProcessor ipRamp = null;
 		if (ipSource instanceof ColorProcessor) {
 			ipRamp = new FloatProcessor(width, height);
-			if (channel==RED)
+			if (rgbMode==RED)
 				ipRamp.setColorModel(LUT.createLutFromColor(Color.red));
-			else if (channel==GREEN)
+			else if (rgbMode==GREEN)
 				ipRamp.setColorModel(LUT.createLutFromColor(Color.green));
-			else if (channel==BLUE)
+			else if (rgbMode==BLUE)
 				ipRamp.setColorModel(LUT.createLutFromColor(Color.blue));
 			pixels = (float[])ipRamp.getPixels();
 		} else
@@ -370,7 +375,20 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			range = 256;
 		ip.drawString(d2s(hmin), x - 4, y);
 		ip.drawString(d2s(hmax), x + HIST_WIDTH - getWidth(hmax, ip) + 10, y);
-        
+		if (ip instanceof ColorProcessor) {
+			x += HIST_WIDTH/2;
+			y += 1;
+			ip.setJustification(ImageProcessor.CENTER_JUSTIFY);
+			boolean weighted = ((ColorProcessor)ip).weightedHistogram();
+			switch (rgbMode) {
+				case INTENSITY1: ip.drawString((weighted?"Weighted Intensity ":"Intensity"), x, y); break;
+				case INTENSITY2: ip.drawString((weighted?"Intensity ":"Weighted Intensity"), x, y); break;
+				case RED: ip.drawString("Red", x, y); break;
+				case GREEN: ip.drawString("Green", x, y); break;
+				case BLUE: ip.drawString("Blue", x, y);  break;
+			}
+			ip.setJustification(ImageProcessor.LEFT_JUSTIFY);
+		}        
 		double binWidth = range/stats.nBins;
 		binWidth = Math.abs(binWidth);
 		boolean showBins = binWidth!=1.0 || !fixedRange;
@@ -396,21 +414,6 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			ip.drawString("Bin Width: " + d2s(binWidth), col2, row4);
 		}
 	}
-
-	/*
-	String d2s(double d) {
-		if (d==Double.MAX_VALUE||d==-Double.MAX_VALUE)
-			return "0";
-		else if (Double.isNaN(d))
-			return("NaN");
-		else if (Double.isInfinite(d))
-			return("Infinity");
-		else if ((int)d==d)
-			return ResultsTable.d2s(d,0);
-		else
-			return ResultsTable.d2s(d,decimalPlaces);
-	}
-	*/
 	
 	private String d2s(double d) {
 		if ((int)d==d)
@@ -543,22 +546,23 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	private void changeChannel() {
 		ImagePlus imp = WindowManager.getImage(srcImageID);
 		if (imp==null || imp.getType()!=ImagePlus.COLOR_RGB) {
-			channel = INTENSITY;
+			rgbMode = INTENSITY1;
 			return;
 		} else {
-			channel++;
-			if (channel>BLUE) channel=INTENSITY;
-			showHistogram(imp, 256);
-			String name = this.imp.getTitle();
-			if (name.startsWith("Red ")) name=name.substring(4);
-			else if (name.startsWith("Green ")) name=name.substring(6);
-			else if (name.startsWith("Blue ")) name=name.substring(5);
-			switch (channel) {
-				case INTENSITY: this.imp.setTitle(name); break;
-				case RED: this.imp.setTitle("Red "+name); break;
-				case GREEN: this.imp.setTitle("Green "+name); break;
-				case BLUE: this.imp.setTitle("Blue "+name); break;
-			}
+			rgbMode++;
+			if (rgbMode>BLUE) rgbMode=INTENSITY1;
+			ColorProcessor cp = (ColorProcessor)imp.getProcessor();
+			boolean weighted = cp.weightedHistogram();
+			if (rgbMode==INTENSITY2) {
+				double[] weights = cp.getRGBWeights();
+				if (weighted)
+					cp.setRGBWeights(1d/3d, 1d/3d, 1d/3d);
+				else
+					cp.setRGBWeights(0.299, 0.587, 0.114);
+				showHistogram(imp, 256);
+				cp.setRGBWeights(weights);
+			} else
+				showHistogram(imp, 256);
 		}
 	}
 

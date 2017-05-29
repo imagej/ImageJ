@@ -2233,7 +2233,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public void close() {
 		super.close();
 		instance = null;
-		mmResults = mmResults2 = null;
+		resetMultiMeasureResults();
 		Prefs.saveLocation(LOC_KEY, getLocation());
 		if (!showAllCheckbox.getState() || IJ.macroRunning())
 			return;
