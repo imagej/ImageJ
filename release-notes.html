@@ -5,15 +5,18 @@
 </head>
 <body>
 
-<li> <u>1.51o 29 May 2017</u>
+<li> <u>1.51o 30 May 2017</u>
 <ul>
 <li> Added a <i>Command Finder</i> tool to the <i>&gt;&gt;</i> toolbar menu.
-<li> Histograms of RGB images display the histogram type ("Intensity" or "Weighted Intensity")
-and the "RGB" button shows both intensity and weighted intensity histograms.
+<li> Thanks to Hermann-Josef Roeser, histograms of RGB images are now 
+labeled with the histogram type ("Intensity (weighted)", "Intensity (unweighted)"
+or "R+G+B") and the "RGB" button cycle includes these three histogram types.
 <li> Updated the VirtualStack class to support frequency domain FFT images
 (<a href="macros/examples/StackFFT.txt">example macros</a>).
 <li> Worked around bugs with Windows 10 Creators Update that caused the
 file open dialog to freeze and the "ImageJ" window to be taller than normal.
+<li> Worked around a bug with Java 8 on Mac OS X that caused the buttons
+in histogram windows to be partially hidden.
 <li> Thanks to Wilhelm Burger and Tiago Ferreira, fixed a bug that caused
 coordinates used by the ImageProcessor.getLine() method to retrieve
 pixel values to be offset by 0.5 pixel when interpolation was not enabled.
@@ -29,6 +32,8 @@ calibation of the source image.
 <li> Thanks to Theresa Swayne, fixed a bug that caused the ROI Manager's
 Multi-Measure command (in "append" mode) to not reset its saved results
 when the Results Table was cleared.
+<li> Thanks to Norbert Vischer, fixed a bug that caused screen updates of
+images with complex overlays to be very slow with Java 8 on Mac OS X.
 <li> Thanks to Rob Beetel, fixed a regression that caused the ROI to be
 deleted after using "Apply" on RGB images in the <i>Brightness/Contrast</i>,
 <i>Window/Level</i> and <i>Color Balance</i> dialogs.
