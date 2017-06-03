@@ -31,34 +31,39 @@ public class PNM_Writer implements PlugIn {
 				ip = ip.duplicate();
 				ip.invert();
 			}
-			ip = ip.convertToByte(true);
+			if (img.getBitDepth()!=16)
+				ip = ip.convertToByte(true);
 			isGray = true;
 			extension = ".pgm";
 		}
 		String title=img.getTitle();
 		int length=title.length();
 		for(int i=2;i<5;i++)
-			if(length>i+1 && title.charAt(length-i)=='.') {
+			if (length>i+1 && title.charAt(length-i)=='.') {
 				title=title.substring(0,length-i);
 				break;
 			}
-
 		if (path==null || path.equals("")) {
 			SaveDialog od = new SaveDialog("PNM Writer", title, extension);
 			String dir=od.getDirectory();
 			String name=od.getFileName();
-			if(name==null)
+			if (name==null)
 				return;
 			path = dir + name;
 		}
-
+		IJ.showStatus("Writing PNM "+path+"...");
+		if (img.getBitDepth()==16) {
+			ip.resetMinAndMax();
+			int max = (int)ip.getMax();
+			if (max>255) {
+				save16Bit(img, path, max);
+				return;
+			} else
+				ip = ip.convertToByte(true);
+		}
 		try {
-			IJ.showStatus("Writing PNM "+path+"...");
-			OutputStream fileOutput =
-				new FileOutputStream(path);
-			DataOutputStream output =
-				new DataOutputStream(fileOutput);
-
+			OutputStream fileOutput = new FileOutputStream(path);
+			DataOutputStream output = new DataOutputStream(fileOutput);
 			int w = img.getWidth(), h = img.getHeight();
 			output.writeBytes((isGray ? "P5" : "P6")
 					+ "\n# Written by ImageJ PNM Writer\n"
@@ -86,6 +91,19 @@ public class PNM_Writer implements PlugIn {
 			IJ.handleException(e);
 		}
 		IJ.showStatus("");
+	}
+	
+	private void save16Bit(ImagePlus img, String path, int max) {
+		try {
+			DataOutputStream output = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
+			ImageProcessor ip = img.getProcessor();
+			output.writeBytes("P5\n# Written by ImageJ PNM Writer\n" + ip.getWidth() + " " + ip.getHeight() + "\n"+max+"\n");
+			for (int i=0; i<ip.getPixelCount(); i++)
+				output.writeShort(ip.get(i));
+			output.close();
+		} catch(IOException e) {
+			IJ.handleException(e);
+		}
 	}
 
 };
