@@ -1719,6 +1719,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		return hyperstackPosition;
 	}
 	
+	/** Sets the position of this ROI based on the stack position of the specified image.  */
+    public void setPosition(ImagePlus imp ) {
+        if (imp==null)
+            return;
+        if (imp.isHyperStack())
+            setPosition(imp.getChannel(), imp.getSlice(), imp.getFrame());
+        else if (imp.getStackSize()>1)
+            this.setPosition(imp.getCurrentSlice());
+    }
+	
 	/** Returns the channel position of this ROI, or zero
 	*  if this ROI is not associated with a particular channel.
 	*/

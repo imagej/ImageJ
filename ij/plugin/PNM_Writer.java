@@ -38,7 +38,7 @@ public class PNM_Writer implements PlugIn {
 		}
 		String title=img.getTitle();
 		int length=title.length();
-		for(int i=2;i<5;i++)
+		for (int i=2;i<5;i++)
 			if (length>i+1 && title.charAt(length-i)=='.') {
 				title=title.substring(0,length-i);
 				break;
@@ -53,13 +53,8 @@ public class PNM_Writer implements PlugIn {
 		}
 		IJ.showStatus("Writing PNM "+path+"...");
 		if (img.getBitDepth()==16) {
-			ip.resetMinAndMax();
-			int max = (int)ip.getMax();
-			if (max>255) {
-				save16Bit(img, path, max);
-				return;
-			} else
-				ip = ip.convertToByte(true);
+			save16Bit(ip, path);
+			return;
 		}
 		try {
 			OutputStream fileOutput = new FileOutputStream(path);
@@ -93,10 +88,12 @@ public class PNM_Writer implements PlugIn {
 		IJ.showStatus("");
 	}
 	
-	private void save16Bit(ImagePlus img, String path, int max) {
+	private void save16Bit(ImageProcessor ip, String path) {
+		ip.resetMinAndMax();
+		int max = (int)ip.getMax();
+		if (max<256) max=256;
 		try {
 			DataOutputStream output = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
-			ImageProcessor ip = img.getProcessor();
 			output.writeBytes("P5\n# Written by ImageJ PNM Writer\n" + ip.getWidth() + " " + ip.getHeight() + "\n"+max+"\n");
 			for (int i=0; i<ip.getPixelCount(); i++)
 				output.writeShort(ip.get(i));
