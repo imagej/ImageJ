@@ -361,7 +361,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 		
 	/** ImageCanvas.paint() calls this method when the
-		ImageProcessor has generated new image. */
+		ImageProcessor has generated a new image. */
 	public void updateImage() {
 		if (ip!=null)
 			img = ip.createImage();
@@ -2493,6 +2493,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Returns a "flattened" version of this image, in RGB format. */
 	public ImagePlus flatten() {
 		if (IJ.debugMode) IJ.log("flatten");
+		IJ.wait(50); // wait for screen to be refreshed
 		ImagePlus imp2 = createImagePlus();
 		imp2.setTitle(flattenTitle);
 		ImageCanvas ic2 = new ImageCanvas(imp2);

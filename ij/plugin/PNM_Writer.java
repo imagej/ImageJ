@@ -53,7 +53,7 @@ public class PNM_Writer implements PlugIn {
 		}
 		IJ.showStatus("Writing PNM "+path+"...");
 		if (img.getBitDepth()==16) {
-			save16Bit(ip, path);
+			save16BitImage(ip, path);
 			return;
 		}
 		try {
@@ -88,7 +88,7 @@ public class PNM_Writer implements PlugIn {
 		IJ.showStatus("");
 	}
 	
-	private void save16Bit(ImageProcessor ip, String path) {
+	private void save16BitImage(ImageProcessor ip, String path) {
 		ip.resetMinAndMax();
 		int max = (int)ip.getMax();
 		if (max<256) max=256;

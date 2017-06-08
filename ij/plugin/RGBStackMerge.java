@@ -212,6 +212,8 @@ public class RGBStackMerge implements PlugIn {
 					images[i].close();
 				}
 			}
+			if (imp2.getWindow()!=null)
+				IJ.selectWindow(imp2.getID());
 		}
 	 }
 	 
