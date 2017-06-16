@@ -169,8 +169,9 @@ public class Prefs {
 	public static boolean doNotSaveWindowLocations = true;
 	/** Use JFileChooser setting changed/ */
 	public static boolean jFileChooserSettingChanged;
+	/** Convert tiff units to microns if pixel width is less than 0.0001 cm. */
+	public static boolean convertToMicrons = true;
 
-	
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);

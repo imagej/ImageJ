@@ -4227,6 +4227,8 @@ public class Functions implements MacroConstants, Measurements {
 			TextRoi.setAntialiasedText(state);
 		else if (arg1.equals("savebatchoutput"))
 			BatchProcessor.saveOutput(state);
+		else if (arg1.startsWith("converttomicrons"))
+			Prefs.convertToMicrons = state;
 		else
 			interp.error("Invalid option");
 	}

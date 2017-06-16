@@ -1447,6 +1447,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 	}
 
+	/*
 	public void paint(Graphics g) {
 		super.paint(g);
 		if (firstPaint) {
@@ -1461,6 +1462,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			firstPaint = false;
 		}
 	}
+	*/
     	
     public void windowClosing(WindowEvent e) {
 		wasCanceled = true; 

@@ -1723,14 +1723,15 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public void setPosition(ImagePlus imp ) {
 		if (imp==null)
 			return;
-		if (imp.isHyperStack())
-			setPosition(imp.getChannel(), imp.getSlice(), imp.getFrame());
-		else if (imp.getStackSize()>1)
+		if (imp.isHyperStack()) {
+			int channel = imp.getDisplayMode()==IJ.COMPOSITE?0:imp.getChannel();
+			setPosition(channel, imp.getSlice(), imp.getFrame());
+		} else if (imp.getStackSize()>1)
 			setPosition(imp.getCurrentSlice());
 		else
 			setPosition(0);
 	}
-	
+		
 	/** Returns the channel position of this ROI, or zero
 	*  if this ROI is not associated with a particular channel.
 	*/
@@ -2047,20 +2048,27 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	}
 	
 	public ImageStatistics getStatistics() {
-		ImageProcessor ip = getMask();
-		Rectangle r = getBounds();
-		if (ip==null)
-			ip = new ByteProcessor(r.width, r.height);
-		Roi roi = (Roi)this.clone();
-		roi.setLocation(0.0, 0.0);
+		Roi roi = this;
+		ImageProcessor ip = null;
+		if (imp!=null)
+			ip = imp.getProcessor();
+		boolean noImage = ip==null;
+		Rectangle bounds = null;
+		if (noImage) {
+			roi = (Roi)this.clone();
+			bounds = roi.getBounds();
+			ip = new ByteProcessor(bounds.width, bounds.height);
+			roi.setLocation(0, 0);
+		}
+		if (roi.isLine())
+			roi = null;
 		ip.setRoi(roi);
-		int params = Measurements.AREA+Measurements.CENTROID+Measurements.ELLIPSE
-			+Measurements.ELLIPSE+Measurements.CIRCULARITY+Measurements.SHAPE_DESCRIPTORS
-			+Measurements.PERIMETER+Measurements.RECT;
-		ImageStatistics stats = ImageStatistics.getStatistics(ip, params, null);
-		stats.mean = stats.min = stats.max = Double.NaN;
-		stats.xCentroid += r.x;
-		stats.yCentroid += r.y;
+		ImageStatistics stats = ip.getStatistics();
+		if (noImage) {
+			stats.mean = stats.min = stats.max = Double.NaN;
+			stats.xCentroid+=bounds.x; stats.yCentroid+=bounds.y; 
+		}
+		ip.resetRoi();
 		return stats;
 	}
 

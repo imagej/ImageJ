@@ -396,7 +396,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		listModel.addElement(label);
 		roi.setName(label);
 		Roi roiCopy = (Roi)roi.clone();
-		setRoiPosition(imp, roiCopy);
+		roiCopy.setPosition(imp);
 		if (lineWidth>1)
 			roiCopy.setStrokeWidth(lineWidth);
 		if (color!=null)
@@ -568,7 +568,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (clone) {
 				String name = (String)listModel.getElementAt(index);
 				Roi roi2 = (Roi)roi.clone();
-				setRoiPosition(imp, roi2);
+				roi2.setPosition(imp);
 				roi.setName(name);
 				roi2.setName(name);
 				rois.set(index, roi2);
@@ -2129,7 +2129,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Adds the current selection to the ROI Manager, using the
 		specified color (a 6 digit hex string) and line width. */
 	public boolean runCommand(String cmd, String hexColor, double lineWidth) {
-		//setRoiPosition();
 		if (hexColor==null && lineWidth==1.0 && (IJ.altKeyDown()&&!Interpreter.isBatchMode()))
 			addRoi(true);
 		else {
@@ -2138,16 +2137,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		return true;	
 	}
-	
-	private void setRoiPosition(ImagePlus imp, Roi roi) {
-		if (imp==null || roi==null)
-			return;
-		if (imp.isHyperStack())
-			roi.setPosition(imp.getChannel(), imp.getSlice(), imp.getFrame());
-		else if (imp.getStackSize()>1)
-			roi.setPosition(imp.getCurrentSlice());
-	}
-	
+		
 	/** Assigns the ROI at the specified index to the current image. */
 	public void select(int index) {
 		select(null, index);
