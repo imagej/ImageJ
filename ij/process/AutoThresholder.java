@@ -581,10 +581,9 @@ public class AutoThresholder {
 			Tprev = threshold;
 			temp = (w1+Math.sqrt(sqterm))/w0;
 
-			if (Double.isNaN(temp)) {
-				IJ.log ("MinError(I): NaN, not converging.");
+			if (Double.isNaN(temp))
 				threshold = Tprev;
-			} else
+			else
 				threshold =(int) Math.floor(temp);
 		}
 		return threshold;

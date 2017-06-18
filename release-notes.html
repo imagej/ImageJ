@@ -5,10 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.51p 15 June 2017</u>
+<li> <u>1.51p 18 June 2017</u>
 <ul>
 <li>  When adding a hyperstack ROI to the ROI Manager, the channel position
  is set to 0 (display in all channels) if the display mode is "Composite".
+ <li> Added the setOption("ConvertToMicrons",boolean) macro function. When this
+ option is set, units in TIFF images are converted to microns if the pixel width
+ is less than 0.0001 cm.
+ <li> Thanks to Norbert vischer, attempted to work around a bug in Java 8 on OS X that
+ sometimes caused painting of GenericDialogs to be incomplete.
 </ul>
  
 <a href="http://imagej.nih.gov/ij">Home</a>

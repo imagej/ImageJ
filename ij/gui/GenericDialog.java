@@ -57,7 +57,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private boolean firstSlider=true;
 	private boolean invalidNumber;
 	private String errorMessage;
-	private boolean firstPaint = true;
 	private Hashtable labels;
 	private boolean macro;
 	private String macroOptions;
@@ -109,8 +108,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			setForeground(SystemColor.controlText);
 			setBackground(SystemColor.control);
 		}
-		//if (IJ.isLinux())
-		//	setBackground(new Color(238, 238, 238));
 		grid = new GridBagLayout();
 		c = new GridBagConstraints();
 		setLayout(grid);
@@ -120,14 +117,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		addWindowListener(this);
     }
     
-	//void showFields(String id) {
-	//	String s = id+": ";
-	//	for (int i=0; i<maxItems; i++)
-	//		if (numberField[i]!=null)
-	//			s += i+"='"+numberField[i].getText()+"' ";
-	//	IJ.write(s);
-	//}
-
 	/** Adds a numeric field. The first word of the label must be
 		unique or command recording will not work.
 	* @param label			the label
@@ -308,7 +297,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		cb.addKeyListener(this);
 		add(cb);
 		checkbox.addElement(cb);
-		//ij.IJ.write("addCheckbox: "+ y+" "+cbIndex);
         if (!isPreview &&(Recorder.record || macro)) //preview checkbox is not recordable
 			saveLabel(cb, label);
         if (isPreview) previewCheckbox = cb;
@@ -351,9 +339,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     public void addPreviewCheckbox(PlugInFilterRunner pfr, String label) {
         if (previewCheckbox!=null)
         	return;
-    	//ImagePlus imp = WindowManager.getCurrentImage();
-		//if (imp!=null && imp.isComposite() && ((CompositeImage)imp).getMode()==IJ.COMPOSITE)
-		//	return;
         previewLabel = label;
         this.pfr = pfr;
         addCheckbox(previewLabel, false, true);
@@ -824,7 +809,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		if (macro) {
 			label = (String)labels.get((Object)tf);
 			theText = Macro.getValue(macroOptions, label, theText);
-			//IJ.write("getNextNumber: "+label+"  "+theText);
 		}	
 		String originalText = (String)defaultText.elementAt(nfIndex);
 		double defaultValue = ((Double)(defaultValues.elementAt(nfIndex))).doubleValue();
@@ -1165,8 +1149,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			c.insets = new Insets(15, 0, 0, 0);
 			grid.setConstraints(buttons, c);
 			add(buttons);
-			if (IJ.isMacintosh())
-				setResizable(false);
 			if (IJ.isMacOSX()&&IJ.isJava18())
 				instance = this;
 			pack();
@@ -1174,8 +1156,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			if (centerDialog) GUI.center(this);
 			setVisible(true);
 			recorderOn = Recorder.record;
-			IJ.wait(50);
+			IJ.wait(25);
 		}
+		
 		/* For plugins that read their input only via dialogItemChanged, call it at least once */
 		if (!wasCanceled && dialogListeners!=null && dialogListeners.size()>0) {
 			resetCounters();
@@ -1336,6 +1319,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	public void focusGained(FocusEvent e) {
 		Component c = e.getComponent();
+		//IJ.log("focusGained: "+c);
 		if (c instanceof TextField)
 			((TextField)c).selectAll();
 	}
@@ -1364,7 +1348,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		} 
 	} 
 		
-
 	void accessTextFields() {
 		if (stringField!=null) {
 			for (int i=0; i<stringField.size(); i++)
@@ -1445,25 +1428,16 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			for (int i=0; i<imagePanels.size(); i++)
 				((ImagePanel)imagePanels.get(i)).repaint();
 		}
+		if (IJ.isMacOSX() && IJ.isJava18())
+			IJ.wait(25);
 	}
-
-	/*
+	
 	public void paint(Graphics g) {
 		super.paint(g);
-		if (firstPaint) {
-			if (numberField!=null && IJ.isMacOSX()) {
-				// work around for bug on Intel Macs that caused 1st field to be un-editable
-				TextField tf = (TextField)(numberField.elementAt(0));
-				tf.setEditable(false);
-				tf.setEditable(true);
-			}
-			if (numberField==null && stringField==null)
-				okay.requestFocus();
-			firstPaint = false;
-		}
+		if (IJ.isMacOSX() && IJ.isJava18())
+			IJ.wait(25);
 	}
-	*/
-    	
+    
     public void windowClosing(WindowEvent e) {
 		wasCanceled = true; 
 		dispose(); 
