@@ -79,6 +79,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     private boolean smartRecording;
     private Vector imagePanels;
     private static GenericDialog instance;
+    private boolean firstPaint = true;
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
     	image window as the parent frame or the ImageJ frame if no image windows
@@ -1428,14 +1429,16 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			for (int i=0; i<imagePanels.size(); i++)
 				((ImagePanel)imagePanels.get(i)).repaint();
 		}
-		if (IJ.isMacOSX() && IJ.isJava18())
-			IJ.wait(25);
 	}
 	
 	public void paint(Graphics g) {
 		super.paint(g);
-		if (IJ.isMacOSX() && IJ.isJava18())
+		if (firstPaint && IJ.isMacOSX() && IJ.isJava18()) {
 			IJ.wait(25);
+			Dimension size = getSize();
+			setSize(size.width+2,size.height+2);
+			firstPaint = false;
+		}
 	}
     
     public void windowClosing(WindowEvent e) {
