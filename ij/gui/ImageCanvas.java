@@ -100,7 +100,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
  		addMouseMotionListener(this);
  		addKeyListener(ij);  // ImageJ handles keyboard shortcuts
  		setFocusTraversalKeysEnabled(false);
-		setScaleToFit(true);
+		//setScaleToFit(true);
 	}
 		
 	void updateImage(ImagePlus imp) {

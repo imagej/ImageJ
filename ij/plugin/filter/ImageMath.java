@@ -31,6 +31,8 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		this.arg = arg;
 		this.imp = imp;
 		IJ.register(ImageMath.class);
+		if (!arg.equals("macro") || Interpreter.getInstance()==null)
+			flags |= PARALLELIZE_STACKS;
 		return flags;
 	}
 

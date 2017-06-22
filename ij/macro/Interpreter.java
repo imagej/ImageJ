@@ -67,6 +67,7 @@ public class Interpreter implements MacroConstants {
 	static TextWindow arrayWindow;
 	int inspectStkIndex = -1;
 	int inspectSymIndex = -1;
+	boolean evaluating;
 
 
 	/** Interprets the specified string. */
@@ -111,10 +112,22 @@ public class Interpreter implements MacroConstants {
 		if (func==null)
 			func = new Functions(this, pgm);
 		func.plot = null;
-		//IJ.showStatus("interpreting");
 		doStatements();
 		finishUp();
 	}
+
+	/** Evaluates macro code. */
+	/*
+	public void eval(String macro) {
+		Tokenizer tok = new Tokenizer();
+		this.pgm = tok.tokenize(macro);
+		evaluating = true;
+		pushGlobals();
+		if (func==null)
+			func = new Functions(this, pgm);
+		run(0);
+	}
+	*/
 
 	/** Runs an existing macro starting at the specified program counter location. */
 	public void run(int location) {
@@ -1178,7 +1191,8 @@ public class Interpreter implements MacroConstants {
 		imageTable = null;
 		WindowManager.setTempCurrentImage(null);
 		wasError = true;
-		instance = null;
+		if (!evaluating)
+			instance = null;
 		if (showMessage && message!=null) {
 			String line = getErrorLine();
 			done = true;

@@ -1436,7 +1436,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		if (firstPaint && IJ.isMacOSX() && IJ.isJava18()) {
 			IJ.wait(25);
 			Dimension size = getSize();
-			setSize(size.width+2,size.height+2);
+			if (size!=null)
+				setSize(size.width+2,size.height+2);
 			firstPaint = false;
 		}
 	}
