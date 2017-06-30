@@ -9,7 +9,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.applet.Applet;
 
 /**
  * This plugin implements the File/Import/URL command and the commands in the Help menu that 
@@ -63,13 +62,6 @@ public class BrowserLauncher implements PlugIn {
 		if (error) return;
 		if (theURL==null || theURL.equals(""))
 			theURL = IJ.URL;
-		Applet applet = IJ.getApplet();
-		if (applet!=null) {
-			try {
-				applet.getAppletContext().showDocument(new URL(theURL), "_blank" );
-			} catch (Exception e) {}
-			return;
-		}
 		try {openURL(theURL);}
 		catch (IOException e) {}
 	}
@@ -83,7 +75,7 @@ public class BrowserLauncher implements PlugIn {
 		String errorMessage = "";
 		if (IJ.isMacOSX()) {
 			if (IJ.isJava16())
-				IJ.runMacro("exec('open', '"+url+"')");
+				IJ.runMacro("exec('open', getArgument())",url);
 			else {
 				try {
 					Method aMethod = mrjFileUtilsClass.getDeclaredMethod("sharedWorkspace", new Class[] {});
@@ -134,7 +126,7 @@ public class BrowserLauncher implements PlugIn {
 	 * required at runtime to locate the user's web browser.
 	 */
 	private static void loadClasses() {
-		if (IJ.isMacOSX() && !IJ.isJava16() && IJ.getApplet()==null) {
+		if (IJ.isMacOSX() && !IJ.isJava16()) {
 			try {
 				if (new File("/System/Library/Java/com/apple/cocoa/application/NSWorkspace.class").exists()) {
 					ClassLoader classLoader = new URLClassLoader(new URL[]{new File("/System/Library/Java").toURL()});

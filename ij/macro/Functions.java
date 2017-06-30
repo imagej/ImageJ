@@ -5033,7 +5033,7 @@ public class Functions implements MacroConstants, Measurements {
 	void makePoint() {
 		double x = getFirstArg();
 		double y = getLastArg();
-		if ((int)x==(int)y)
+		if ((int)x==x && (int)y==y)
 			IJ.makePoint((int)x, (int)y);
 		else
 			IJ.makePoint(x, y);
