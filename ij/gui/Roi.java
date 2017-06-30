@@ -89,6 +89,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	private boolean isCursor;
 	private double xcenter = Double.NaN;
 	private double ycenter;
+	private boolean listenersNotified;
 
 
 	/** Creates a rectangular ROI. */
@@ -2122,6 +2123,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	}
 	
 	public void notifyListeners(int id) {
+		if (id==RoiListener.CREATED) {
+			if (listenersNotified)
+				return;
+			listenersNotified = true;	
+		}
 		synchronized (listeners) {
 			for (int i=0; i<listeners.size(); i++) {
 				RoiListener listener = (RoiListener)listeners.elementAt(i);
@@ -2129,7 +2135,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			}
 		}
 	}
-	
+
 	public static void addRoiListener(RoiListener listener) {
 		listeners.addElement(listener);
 	}

@@ -1649,7 +1649,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		roi.setImage(this);
 		if (updateDisplay)
 			draw();
-		//roi.notifyListeners(RoiListener.CREATED);
+		roi.notifyListeners(RoiListener.CREATED);
 	}
 	
 	/** Creates a rectangular selection. */
@@ -1730,6 +1730,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				}
 				break;
 		}
+		if (roi!=null)
+			roi.notifyListeners(RoiListener.CREATED);
 	}
 
 	/** Deletes the current region of interest. Makes a copy of the ROI
