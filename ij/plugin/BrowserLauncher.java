@@ -83,7 +83,8 @@ public class BrowserLauncher implements PlugIn {
 		String errorMessage = "";
 		if (IJ.isMacOSX()) {
 			if (IJ.isJava16())
-				IJ.runMacro("exec('open', '"+url+"')");
+				//IJ.runMacro("exec('open', '"+url+"')");
+				  IJ.runMacro("exec('open', getArgument())",url);
 			else {
 				try {
 					Method aMethod = mrjFileUtilsClass.getDeclaredMethod("sharedWorkspace", new Class[] {});
