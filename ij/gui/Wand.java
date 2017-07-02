@@ -43,9 +43,9 @@ public class Wand {
     private float[] fpixels;
     private int width, height;
     private float lowerThreshold, upperThreshold;
-    private int xmin;                   //of selection created
-    private boolean exactPixelValue;    //For color, match RGB, not gray value
-    private static boolean allPoints;
+    private int xmin;                   // of selection created
+    private boolean exactPixelValue;    // For color, match RGB, not gray value
+    private static boolean allPoints;  // output contains intermediate points
 
 
     /** Constructs a Wand object from an ImageProcessor. */
@@ -340,11 +340,13 @@ public class Wand {
         return ((double)insideCount)/area<0.25;
     }
 
+    /** Set 'true' and output will contain intermediate points for straight lines longer than one pixel. */
     public static void setAllPoints(boolean b) {
         allPoints = b;
     }
 
-    public static boolean allPoints() {
+    /** Returns 'true' if output contains intermediate points for straight lines longer than one pixel. */
+	public static boolean allPoints() {
         return allPoints;
     }
 

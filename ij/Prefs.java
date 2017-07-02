@@ -171,6 +171,8 @@ public class Prefs {
 	public static boolean jFileChooserSettingChanged;
 	/** Convert tiff units to microns if pixel width is less than 0.0001 cm. */
 	public static boolean convertToMicrons = true;
+	/** Wand tool "Smooth if thresholded" option */
+	public static boolean smoothWand;
 
 
 	static Properties ijPrefs = new Properties();

@@ -1162,6 +1162,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				}
 				setRoiModState(e, roi, -1);
 				String mode = WandToolOptions.getMode();
+				if (Prefs.smoothWand)
+					mode = mode + " smooth";
 				int npoints = IJ.doWand(ox, oy, tolerance, mode);
 				if (Recorder.record && npoints>0) {
 					if (Recorder.scriptMode())

@@ -9,6 +9,7 @@ import ij.util.Tools;
 import ij.plugin.frame.Recorder;
 import ij.plugin.frame.ThresholdAdjuster;
 import ij.macro.Interpreter;
+import ij.macro.MacroRunner;
 import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.measure.Measurements;
@@ -67,6 +68,7 @@ public class IJ {
 	private static DecimalFormat[] sf;
 	private static DecimalFormatSymbols dfs;
 	private static boolean trustManagerCreated;
+	private static String smoothMacro;
 			
 	static {
 		osname = System.getProperty("os.name");
@@ -1451,34 +1453,45 @@ public class IJ {
 	public static int doWand(int x, int y, double tolerance, String mode) {
 		return doWand(getImage(), x, y, tolerance, mode);
 	}
-
-	/** This version of doWand adds an ImagePlus argument. */
+	
 	public static int doWand(ImagePlus img, int x, int y, double tolerance, String mode) {
 		ImageProcessor ip = img.getProcessor();
 		if ((img.getType()==ImagePlus.GRAY32) && Double.isNaN(ip.getPixelValue(x,y)))
 			return 0;
 		int imode = Wand.LEGACY_MODE;
+		boolean smooth = false;
 		if (mode!=null) {
 			if (mode.startsWith("4"))
 				imode = Wand.FOUR_CONNECTED;
 			else if (mode.startsWith("8"))
 				imode = Wand.EIGHT_CONNECTED;
+			smooth = mode.contains("smooth");
+				
 		}
 		Wand w = new Wand(ip);
 		double t1 = ip.getMinThreshold();
-		if (t1==ImageProcessor.NO_THRESHOLD || (ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE&& tolerance>0.0))
+		if (t1==ImageProcessor.NO_THRESHOLD || (ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE&& tolerance>0.0)) {
 			w.autoOutline(x, y, tolerance, imode);
-		else
+			smooth = false;
+		} else
 			w.autoOutline(x, y, t1, ip.getMaxThreshold(), imode);
 		if (w.npoints>0) {
 			Roi previousRoi = img.getRoi();
 			int type = Wand.allPoints()?Roi.FREEROI:Roi.TRACED_ROI;
 			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, type);
 			img.deleteRoi();
-			img.setRoi(roi);
-			// add/subtract this ROI to the previous one if the shift/alt key is down
+			img.setRoi(roi);			
 			if (previousRoi!=null)
-				roi.update(shiftKeyDown(), altKeyDown());
+				roi.update(shiftKeyDown(), altKeyDown());  // add/subtract ROI to previous one if shift/alt key down
+			Roi roi2 = img.getRoi();
+			if (smooth && roi2!=null && roi2.getType()==Roi.TRACED_ROI) {
+				if (smoothMacro==null)
+					smoothMacro = BatchProcessor.openMacroFromJar("SmoothWandTool.txt");
+				if (EventQueue.isDispatchThread())
+					new MacroRunner(smoothMacro); // run on separate thread
+				else
+					IJ.runMacro(smoothMacro);
+			}
 		}
 		return w.npoints;
 	}
