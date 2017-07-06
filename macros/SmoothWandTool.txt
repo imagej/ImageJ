@@ -8,11 +8,10 @@ polyX, polyY, count;
 processSelection();
 exit;
 
-macro "Smooth Wand Tool - Cf00T0d12ST8d12W" {
+macro "Smooth Wand Tool - C026R0055L55ffCf00F1144" {
     run("Select None");
     getCursorLoc(x, y, z, flags);
     getThreshold(lowThr, hiThr);
-    getPixel(x, y);
     if (hiThr==-1)
         exit("This tool only works on thresholded images");
     doWand(x, y);
@@ -31,7 +30,7 @@ function processSelection() {
     polyX = newArray(len);
     polyY = newArray(len);
     count = 0;
-    for(jj = 0; jj < len; jj++){
+    for(jj = 0; jj < len; jj++) {
         x1 = xx[jj];
         y1 = yy[jj];
         x2 = xx[(jj+1)%len];
@@ -55,12 +54,12 @@ function processSelection() {
     makeSelection("polygon", polyX, polyY);
     do{ getCursorLoc(x, y, z, flags); wait(10);}
         while(flags&16!=0);
-    run("Interpolate", "interval=1 adjust");//after button released
+    run("Interpolate", "interval=1 adjust"); //after button released
 }
 
 //processes neighbors of this separator line and adds vertex
-function processPixelPair(x1, y1, x2, y2){
-    if (x1 == x2){
+function processPixelPair(x1, y1, x2, y2) {
+    if (x1 == x2) {
         val1 = getPixel(x1, minOf(y1, y2));
         val2 = getPixel(x1 - 1, minOf(y1, y2));
     }
@@ -81,11 +80,11 @@ function processPixelPair(x1, y1, x2, y2){
         fraction =  (thr - dark)/(bright - dark);
     if (val1 < val2)
         fraction = 1 - fraction;
-    if (y1 == y2){
+    if (y1 == y2) {
         newY = minOf(y1, y2) + fraction - 0.5;
         newX = (x1 + x2)/2;
     }
-    if (x1 == x2){
+    if (x1 == x2) {
         newX = minOf(x1, x2) + fraction - 0.5;
         newY = (y1 + y2)/2;
     }

@@ -45,7 +45,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public static final int OVAL_ROI=0, ELLIPSE_ROI=1, BRUSH_ROI=2;
 	
 	private static final String[] builtInTools = {"Arrow","Brush","Command Finder", "Developer Menu","Flood Filler",
-		"LUT Menu","Overlay Brush","Pencil","Pixel Inspector","Selection Rotator", "Spray Can","Stacks Menu"};
+		"LUT Menu","Overlay Brush","Pencil","Pixel Inspector","Selection Rotator", "Smooth Wand",
+		"Spray Can","Stacks Menu"};
 	private static final String[] builtInTools2 = {"Pixel Inspection Tool","Paintbrush Tool","Flood Fill Tool"};
 
 	private static final int NUM_TOOLS = 23;
@@ -1334,13 +1335,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
                 MacroInstaller mi = new MacroInstaller();
                 label = label.substring(0, label.length()-1) + ".txt";
                 path = "/macros/"+label;
-				if (IJ.shiftKeyDown()) {
-					String macros = mi.openFromIJJar(path);
-                    Editor ed = new Editor();
-                    ed.setSize(350, 300);
-                    ed.create(label, macros);
-                	IJ.setKeyUp(KeyEvent.VK_SHIFT);
-				} else {
+				if (IJ.shiftKeyDown())
+					showCode(label, mi.openFromIJJar(path));
+				 else {
 					resetTools();
 					mi.installFromIJJar(path);
 				}
@@ -1745,36 +1742,65 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (label.startsWith("Arrow")) {
 			tool = new ij.plugin.tool.ArrowTool();
 			if (tool!=null) tool.run("");
+			showSource("Arrow");
 		} else if (label.startsWith("Overlay Brush")) {
 			tool = new ij.plugin.tool.OverlayBrushTool();
 			if (tool!=null) tool.run("");
+			showSource("OverlayBrush");
 		} else if (label.startsWith("Pixel Inspect")) {
 			tool = new ij.plugin.tool.PixelInspectionTool();
 			if (tool!=null) tool.run("");
+			showSource("PixelInspection");
 		} else if (label.startsWith("Brush")||label.startsWith("Paintbrush")) {
 			tool = new ij.plugin.tool.BrushTool();
 			if (tool!=null) tool.run("");
+			showSource("Brush");
 		} else if (label.startsWith("Pencil")) {
 			tool = new ij.plugin.tool.BrushTool();
 			if (tool!=null) tool.run("pencil");
+			showSource("Brush");
 		} else if (label.startsWith("Selection Rotator")) {
 			tool = new ij.plugin.tool.RoiRotationTool();
 			if (tool!=null) tool.run("");
-		} else if (label.startsWith("Flood Fill")) {
-			(new MacroInstaller()).installFromIJJar("/macros/FloodFillTool.txt");
-		} else if (label.startsWith("Spray Can")) {
-			(new MacroInstaller()).installFromIJJar("/macros/SprayCanTool.txt");
-		} else if (label.startsWith("Developer Menu")) {
-			(new MacroInstaller()).installFromIJJar("/macros/DeveloperMenuTool.txt");
-		} else if (label.startsWith("Stacks Menu")) {
-			(new MacroInstaller()).installFromIJJar("/macros/StacksMenuTool.txt");
-		} else if (label.startsWith("LUT Menu")) {
-			(new MacroInstaller()).installFromIJJar("/macros/LUTMenuTool.txt");
-		} else if (label.startsWith("Command Finder")) {
-			(new MacroInstaller()).installFromIJJar("/macros/CommandFinderTool.txt");
-		} else
+			showSource("RoiRotation");
+		} else if (label.startsWith("Flood Fill"))
+			installMacroFromJar("/macros/FloodFillTool.txt");
+		else if (label.startsWith("Spray Can"))
+			installMacroFromJar("/macros/SprayCanTool.txt");
+		else if (label.startsWith("Developer Menu"))
+			installMacroFromJar("/macros/DeveloperMenuTool.txt");
+		else if (label.startsWith("Stacks Menu"))
+			installMacroFromJar("/macros/StacksMenuTool.txt");
+		else if (label.startsWith("LUT Menu"))
+			installMacroFromJar("/macros/LUTMenuTool.txt");
+		else if (label.startsWith("Command Finder"))
+			installMacroFromJar("/macros/CommandFinderTool.txt");
+		else if (label.startsWith("Smooth Wand"))
+			installMacroFromJar("/macros/SmoothWandTool.txt");
+		else
 			ok = false;
 		return ok;
+	}
+	
+	private void showSource(String name) {
+		if (IJ.shiftKeyDown()) {
+			IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+"/source/ij/plugin/tool/"+name+"Tool.java");
+			IJ.setKeyUp(KeyEvent.VK_SHIFT);
+		}
+	}
+	
+	private void installMacroFromJar(String path) {
+		if (IJ.shiftKeyDown())
+			showCode(path, (new MacroInstaller()).openFromIJJar(path));
+		else
+			(new MacroInstaller()).installFromIJJar(path);
+	}
+	
+	private void showCode(String title, String code) {
+		Editor ed = new Editor();
+		ed.setSize(550, 450);
+		ed.create(title, code);
+		IJ.setKeyUp(KeyEvent.VK_SHIFT);
 	}
 	
 	private boolean isMacroSet(int id) {

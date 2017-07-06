@@ -59,7 +59,7 @@ public class WandToolOptions implements PlugIn, DialogListener {
 		}
 		Prefs.smoothWand = gd.getNextBoolean();
 		if (startx>0||starty>0)
-			IJ.doWand(startx, starty, tolerance, mode);
+			IJ.doWand(startx, starty, tolerance, mode+(Prefs.smoothWand?" smooth":""));
 		return true;
 	}
 
