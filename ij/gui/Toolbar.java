@@ -1335,12 +1335,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
                 MacroInstaller mi = new MacroInstaller();
                 label = label.substring(0, label.length()-1) + ".txt";
                 path = "/macros/"+label;
-				if (IJ.shiftKeyDown())
-					showCode(label, mi.openFromIJJar(path));
-				 else {
-					resetTools();
-					mi.installFromIJJar(path);
-				}
+                if (IJ.shiftKeyDown())
+				    showCode(label, mi.openFromIJJar(path));
+				else {
+				    resetTools();
+				    mi.installFromIJJar(path);
+                }
             } else {
                 // load from ImageJ/macros/toolsets
                 if (label.equals("Startup Macros")) {

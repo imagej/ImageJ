@@ -21,7 +21,7 @@ public class WandToolOptions implements PlugIn, DialogListener {
  	public void run(String arg) {
  		imp = WindowManager.getCurrentImage();
  		Roi roi = imp!=null?imp.getRoi():null;
- 		boolean selection = roi!=null && roi.getType()==Roi.TRACED_ROI;
+ 		boolean selection = roi!=null && (roi.getType()==Roi.TRACED_ROI||roi.getType()==Roi.POLYGON);
  		if (imp==null || (ID!=0&&imp.getID()!=ID) || !selection)
  			startx = starty = 0;
  		ID = imp!=null?imp.getID():0;

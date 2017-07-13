@@ -957,7 +957,7 @@ public class ResultsTable implements Cloneable {
 			for (int i=0; i<headings.length; i++)
 				headings[i] = "C"+(i+1);
 		}
-		int firstColumn = headings[0].equals(" ")?1:0;
+		int firstColumn = headings.length>0&&headings[0].equals(" ")?1:0;
 		for (int i=0; i<headings.length; i++) {
 			headings[i] = headings[i].trim();
 			if (commasReplaced) {

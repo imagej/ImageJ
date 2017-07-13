@@ -166,11 +166,11 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		if (imp==null)
 			{checkbox.setState(false); return;};
 		Roi roi = imp.getRoi();
-		if (roi==null || !(roi instanceof PolygonRoi))
-			{checkbox.setState(false); return;};
-		int type = roi.getType();
-		if (type==Roi.FREEROI || type==Roi.FREELINE)
-			{checkbox.setState(false); return;};;
+		int type = roi!=null?roi.getType():null;
+		if (roi==null || !(roi instanceof PolygonRoi) || type==Roi.FREEROI || type==Roi.FREELINE || type==Roi.ANGLE) {
+			checkbox.setState(false);
+			return;
+		};
 		PolygonRoi poly = (PolygonRoi)roi;
 		boolean splineFit = poly.isSplineFit();
 		if (selected && !splineFit) {

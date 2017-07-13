@@ -224,7 +224,7 @@ public class Selection implements PlugIn, Measurements {
 		int type = roi.getType();
 		boolean segmentedSelection = type==Roi.POLYGON||type==Roi.POLYLINE;
 		if (!(segmentedSelection||type==Roi.FREEROI||type==Roi.TRACED_ROI||type==Roi.FREELINE))
-			{IJ.error("Spline", "Polygon or polyline selection required"); return;}
+			{IJ.error("Spline Fit", "Polygon or polyline selection required"); return;}
 		if (roi instanceof EllipseRoi)
 			return;
 		PolygonRoi p = (PolygonRoi)roi;
