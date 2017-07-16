@@ -18,7 +18,7 @@ public class MemoryMonitor extends PlugInFrame {
 	private double[] mem;
 	private int index;
 	private long value;
- 	private double defaultMax = 15*1204*1024; // 15MB
+ 	private double defaultMax = 20*1024*1024; // 20MB
 	private double max = defaultMax;
 	private long maxMemory = IJ.maxMemory();
 	private boolean done;
