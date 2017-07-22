@@ -2669,7 +2669,6 @@ public class Functions implements MacroConstants, Measurements {
 				win.running2 = false;
 			}
 		}
-		//Macro.abort();
 	}
 	
 	void open() {
@@ -5545,8 +5544,8 @@ public class Functions implements MacroConstants, Measurements {
 		Variable[] a1 = getArray();
 		int len1 = a1.length;
 		int len2 = (int)getLastArg();
-		if (len2<=0)
-			interp.error("Length<=0");
+		if (len1 == 0 || len2<=0)
+			interp.error("Cannot resample from or to zero-length");
 		double[] d1 = new double[len1];
 		for (int i=0; i<len1; i++)
 			d1[i] = a1[i].getValue();
@@ -5561,6 +5560,14 @@ public class Functions implements MacroConstants, Measurements {
 		int len1 = y1.length;
 		double factor =  (double)(len2-1)/(len1-1);
 		double[] y2 = new double[len2];
+		if(len1 == 0){ 
+		    return y2;
+		}
+		if(len1 == 1){
+		    for (int jj=0; jj<len2; jj++)
+			    y2[jj] = y1[0];
+		    return(y2);
+		}
 		double[] f1 = new double[len1];//fractional positions
 		double[] f2 = new double[len2];
 		for (int jj=0; jj<len1; jj++)

@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.51q 16 July 2017</u>
+<li> <u>1.51q 22 July 2017</u>
 <ul>
 <li> Thanks to Norbert Vischer, added a "Smooth if thresholded"
 option to the Wand tool dialog
@@ -19,7 +19,15 @@ vulnerability in the  BrowserLauncher.
 <li> Thanks to Alison Walter, fixed a bug that caused the "Spline fit"
 checkbox in the "Line Width" dialog to convert angle selections to polygons.
 <li> Thanks to Chris Lamb, fixed a typo in MemoryMonitor.java where a
-constant that should have been 1024 was 1204 .
+constant that should have been 1024 was 1204.
+<li> Thanks to Norbert Vischer, fixed a bug in the Array.resample() macro
+function that caused it to throw an exception if the langth of the input
+was 0 or 1.
+<li> Thanks to John Loveland and Lukas Kvasnica, fixed a v1.51o
+regression that caused plugins that create virtual stacks without
+implementing the VirtualStack class to throw an exception.
+<li> Thanks to Tim Huang, fixed a bug that caused the <i>Image&gt;Overlay&gt;Flatten</i> 
+command to not work correctly with high-resolution images.
 </ul>
  
 <a href="http://imagej.nih.gov/ij">Home</a>

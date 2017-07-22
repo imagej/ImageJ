@@ -145,7 +145,6 @@ public class Interpreter implements MacroConstants {
 		pc = macroLoc-1;
 		previousInstance = instance;
 		instance = this;
-		//IJ.showStatus("interpreting");
 		pushGlobals();
 		if (func==null)
 			func = new Functions(this, pgm);

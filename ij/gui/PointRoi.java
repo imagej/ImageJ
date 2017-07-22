@@ -11,7 +11,7 @@ import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.KeyEvent;
 import java.util.*;
-import java.awt.geom.Point2D;
+import java.awt.geom.*;
 
 /** This class represents a collection of points. */
 public class PointRoi extends PolygonRoi {
@@ -43,7 +43,6 @@ public class PointRoi extends PolygonRoi {
 	private int[] counts = new int[MAX_COUNTERS];
 	private ResultsTable rt;
 	private long lastPointTime;
-	private double scale;
 	private int[] counterInfo;
 	
 	static {
@@ -147,17 +146,12 @@ public class PointRoi extends PolygonRoi {
 	/** Draws the points on the image. */
 	public void draw(Graphics g) {
 		updatePolygon();
-		//scale = ic!=null?ic.getMagnification():1.0;
-		//if (type!=CIRCLE) scale=1.0;
-		scale = 1.0;
 		if (showLabels && nPoints>1) {
 			fontSize = 8;
 			fontSize += convertSizeToIndex(size);
 			if (fontSize>18)
 				fontSize = 18;
-			double scale2 = 0.7*scale;
-			if (scale2<1.0) scale2=1.0;
-			fontSize = (int)Math.round(fontSize*scale2);
+			fontSize = (int)Math.round(fontSize);
 			font = new Font("SansSerif", Font.PLAIN, fontSize);
 			g.setFont(font);
 			if (fontSize>9)
@@ -175,12 +169,20 @@ public class PointRoi extends PolygonRoi {
 			imp.draw();
 		}
 		PointToolOptions.update();
+		flattenScale = 1.0;
 	}
 
 	void drawPoint(Graphics g, int x, int y, int n) {
 		int size2=size/2;
 		boolean colorSet = false;
 		Graphics2D g2d = (Graphics2D)g;
+		AffineTransform saveXform = null;
+		if (flattenScale>1.0) {
+			saveXform = g2d.getTransform();
+			g2d.translate(x, y);
+			g2d.scale(flattenScale, flattenScale);
+			x = y = 0;
+		}
 		Color color = strokeColor!=null?strokeColor:ROIColor;
 		if (!overlay && isActiveOverlayRoi()) {
 			if (color==Color.cyan)
@@ -221,7 +223,7 @@ public class PointRoi extends PolygonRoi {
 				g.fillRect(x-size2, y-size2, size, size);
 		}
 		if (showLabels && nPoints>1) {
-			int offset = (int)Math.round(0.4*size*scale);
+			int offset = (int)Math.round(0.4);
 			if (offset<1) offset=1;
 			offset++;
 			if (nCounters==1) {
@@ -243,14 +245,14 @@ public class PointRoi extends PolygonRoi {
 				g.drawOval(x-(size2+1), y-(size2+1), size+1, size+1);
 		}
 		if (type==CIRCLE) {
-			int scaledSize = (int)Math.round((size+1)*scale);
+			int scaledSize = (int)Math.round(size+1);
 			g.setColor(color);
-			if (scale!=1.0)
-				g2d.setStroke(new BasicStroke((float)scale*(size>LARGE?2:1)));
-			else if (size>LARGE)
+			if (size>LARGE)
 				g2d.setStroke(twoPixelsWide);
 			g.drawOval(x-scaledSize/2, y-scaledSize/2, scaledSize, scaledSize);
 		}
+		if (saveXform!=null)
+			g2d.setTransform(saveXform);
 	}
 	
 	public void drawPixels(ImageProcessor ip) {

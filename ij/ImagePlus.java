@@ -2515,6 +2515,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		Overlay overlay2 = getOverlay();
 		if (overlay2!=null && imp2.getRoi()!=null)
 			imp2.deleteRoi();
+		setPointScale(imp2.getRoi(), overlay2);
 		ic2.setOverlay(overlay2);
 		ImageCanvas ic = getCanvas();
 		if (ic!=null)
@@ -2620,6 +2621,24 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		imp1.setOverlay(overlay);
 		ImagePlus imp2 = imp1.flatten();
 		stack.setPixels(imp2.getProcessor().getPixels(), slice);
+	}
+	
+	private void setPointScale(Roi roi2, Overlay overlay2) {
+		ImageCanvas ic = getCanvas();
+		if (ic==null)
+			return;
+		double scale = 1.0/ic.getMagnification();
+		if (scale==1.0)
+			return;
+		if (roi2!=null && (roi2 instanceof PointRoi))
+			roi2.setFlattenScale(scale);
+		if (overlay2!=null) {
+			for (int i=0; i<overlay2.size(); i++) {
+				roi2 = overlay2.get(i);
+				if (roi2!=null && (roi2 instanceof PointRoi))
+					roi2.setFlattenScale(scale);
+			}
+		}
 	}
 
 	/** Assigns a LUT (lookup table) to this image.
