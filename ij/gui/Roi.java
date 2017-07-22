@@ -2127,8 +2127,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public void setFlattenScale(double scale) {
 		flattenScale = scale;
 	}
-
-
 	
 	public void notifyListeners(int id) {
 		if (id==RoiListener.CREATED) {

@@ -4958,9 +4958,74 @@ public class Functions implements MacroConstants, Measurements {
 			setMeasurements();
 		else if (name.equals("setCommands"))
 			setCommands();
-		else
+		else if (name.equals("indexOf")) {
+			int index = -1;
+			String key = getStringArg();
+			int size = props.size();
+			String[] keyArr = new String[size];
+			String[] valueArr = new String[size];
+			listToArrays(keyArr, valueArr);
+			for (int i = 0; i < size; i++) {
+				if (keyArr[i].equals(key)) {
+					index = i;
+					break;
+				}
+			}
+			value = "" + index;			
+		} else if (name.equals("fromArrays")) {
+			interp.getLeftParen();
+			String[] keys = getStringArray();
+			interp.getComma();
+			String[] values = getStringArray();
+			if (values.length != keys.length) {
+				interp.error("Arrays must have same length");
+			}
+			props.clear();
+			for (int i = 0; i < keys.length; i++) {
+				if (keys[i].equals("")) {
+					interp.error("Key cannot be an empty string");
+				}
+				props.setProperty(keys[i], values[i]);
+			}
+			interp.getRightParen();
+		} else if (name.equals("toArrays")) {
+			Variable keys = getFirstArrayVariable();
+			Variable values = getLastArrayVariable();
+
+			int size = props.size();
+			String[] keyArr = new String[size];
+			String[] valueArr = new String[size];
+
+			listToArrays(keyArr, valueArr);
+			Variable[] keysVar, valuesVar;
+			keysVar = new Variable[size];
+			valuesVar = new Variable[size];
+			for (int i = 0; i < size; i++) {
+				keysVar[i] = new Variable();
+				keysVar[i].setString(keyArr[i]);
+				valuesVar[i] = new Variable();
+				valuesVar[i].setString(valueArr[i]);
+			}
+			keys.setArray(keysVar);
+			values.setArray(valuesVar);			
+		} else {
 			interp.error("Unrecognized List function");
+		}
 		return value;
+	}
+
+	void listToArrays(String[] keys, String[] values) {
+		Vector v = new Vector();
+		for (Enumeration en = props.keys(); en.hasMoreElements();) {
+			v.addElement(en.nextElement());
+		}
+		for (int i = 0; i < keys.length; i++) {
+			keys[i] = (String) v.elementAt(i);
+		}
+		Arrays.sort(keys);
+		for (int i = 0; i < keys.length; i++) {
+			values[i] = (String) props.get(keys[i]);
+		}
 	}
 	
 	void setCommands() {
