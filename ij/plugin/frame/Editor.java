@@ -1363,9 +1363,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			defaultDir += File.separator;
 	}
 	
-	//public void keyReleased(KeyEvent e) {}
-	//public void keyTyped(KeyEvent e) {}
-	
 	public void lostOwnership (Clipboard clip, Transferable cont) {}
 	
 	public int debug(Interpreter interp, int mode) {

@@ -232,8 +232,10 @@ public class Interpreter implements MacroConstants {
 
 	final void doStatement() {
 		getToken();
-		if (debugMode!=Debugger.NOT_DEBUGGING && debugger!=null && !done && token!=';' && token!=FUNCTION)
+		if (debugMode!=Debugger.NOT_DEBUGGING && debugger!=null && !done && token!=';' && token!=FUNCTION) {
 			debugger.debug(this, debugMode);
+			if (done) return;
+		}
 		switch (token) {
 			case VAR:
 				doVar();

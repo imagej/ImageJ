@@ -38,7 +38,10 @@ public class FFT implements  PlugIn, Measurements {
     public void run(String arg) {
         if (arg.equals("options")) {
             showDialog();
-            if (doFFT) arg="fft"; else return;
+            if (doFFT)
+            	arg="fft";
+            else
+            	return;
         }
         imp = IJ.getImage();
         if (arg.equals("fft") && imp.isComposite()) {
@@ -126,12 +129,13 @@ public class FFT implements  PlugIn, Measurements {
         showStatus("Forward transform");
         fht.transform();
         showStatus("Calculating power spectrum");
+        long t0 = System.currentTimeMillis();
         ImageProcessor ps = fht.getPowerSpectrum();
         if (!(displayFHT||displayComplex||displayRawPS))
         	displayFFT = true;
         if (displayFFT) {
             ImagePlus imp2 = new ImagePlus("FFT of "+imp.getTitle(), ps);
-            imp2.show();
+            imp2.show((System.currentTimeMillis()-t0)+" ms");
             imp2.setProperty("FHT", fht);
             imp2.setCalibration(imp.getCalibration());
             String properties = "Fast Hartley Transform\n";
