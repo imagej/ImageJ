@@ -200,7 +200,7 @@ public class TiffDecoder {
 		if (id.length()<7) return;
 		fi.description = id;
         int index1 = id.indexOf("images=");
-        if (index1>0 && createdByImageJ) {
+        if (index1>0 && createdByImageJ && id.charAt(7)!='\n') {
             int index2 = id.indexOf("\n", index1);
             if (index2>0) {
                 String images = id.substring(index1+7,index2);
@@ -284,7 +284,7 @@ public class TiffDecoder {
 			
 		in.seek(offset+260);
 		int nImages = in.readShort();
-		if(nImages>=2 && (fi.fileType==FileInfo.GRAY8||fi.fileType==FileInfo.COLOR8)) {
+		if (nImages>=2 && (fi.fileType==FileInfo.GRAY8||fi.fileType==FileInfo.COLOR8)) {
 			fi.nImages = nImages;
 			fi.pixelDepth = in.readFloat();	//SliceSpacing
 			int skip = in.readShort();		//CurrentSlice

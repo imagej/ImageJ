@@ -48,8 +48,8 @@ public class PlugInDialog extends Dialog implements PlugIn, WindowListener, Focu
 
 	public void windowActivated(WindowEvent e) {
 		ImageJ ij = IJ.getInstance();
-		if (IJ.isMacOSX() && ij!=null && !ij.isActive() && !(this instanceof ThresholdAdjuster))
-			ij.toFront();
+		//if (IJ.isMacOSX() && ij!=null && !ij.isActive() && !(this instanceof ThresholdAdjuster))
+		//	ij.toFront();
 		WindowManager.setWindow(this);
 	}
 
