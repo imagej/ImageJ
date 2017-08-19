@@ -13,7 +13,7 @@ import java.awt.geom.Rectangle2D;
 	
 	0-3		"Iout"
 	4-5		version (>=217)
-	6-7		roi type
+	6-7		roi type (encoded as one byte)
 	8-9		top
 	10-11	left
 	12-13	bottom

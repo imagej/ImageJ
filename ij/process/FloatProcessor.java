@@ -1026,14 +1026,17 @@ public class FloatProcessor extends ImageProcessor {
 		new ij.plugin.filter.Convolver().convolve(this, kernel, kernelWidth, kernelHeight);
 	}
 
+	/** Returns a 256 bin histogram of the current ROI or of the entire image if there is no ROI. */
+	public int[] getHistogram() {
+		return getStatistics().histogram;
+	}
+
 	/** Not implemented. */
 	public void threshold(int level) {}
 	/** Not implemented. */
 	public void autoThreshold() {}
 	/** Not implemented. */
 	public void medianFilter() {}
-	/** Not implemented. */
-	public int[] getHistogram() {return null;}
 	/** Not implemented. */
 	public void erode() {}
 	/** Not implemented. */

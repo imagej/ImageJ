@@ -101,7 +101,11 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		not open or the command being recorded has called IJ.run(). 
 	*/
 	public static void setCommand(String command) {
-		boolean isMacro = Thread.currentThread().getName().startsWith("Run$_");
+		String threadName = Thread.currentThread().getName();
+		boolean isMacro = threadName.startsWith("Run$_");
+		if (threadName.contains("Popup Menu") || threadName.contains("Developer Menu"))
+			isMacro = false;
+		//IJ.log("setCommand: "+command+"  "+threadName+"  "+isMacro);
 		if (textArea==null || (isMacro&&!recordInMacros))
 			return;
 		commandName = command;

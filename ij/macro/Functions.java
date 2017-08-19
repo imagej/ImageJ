@@ -5048,7 +5048,7 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		props.clear();
 		ImagePlus imp = getImage();
-		int measurements = ALL_STATS;
+		int measurements = ALL_STATS + SLICE;
 		if (arg.contains("limit"))
 			measurements += LIMIT;
 		ImageStatistics stats = imp.getStatistics(measurements);
