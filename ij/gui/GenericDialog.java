@@ -262,7 +262,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		y++;
     }
     
-	/** Sets the echo character for the next string field. */
+    /** Sets the echo character for the next string field. */
     public void setEchoChar(char echoChar) {
     	this.echoChar = echoChar;
     }

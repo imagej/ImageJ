@@ -162,12 +162,13 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			int rotation = e.getWheelRotation();
 			boolean ctrl = (e.getModifiers()&Event.CTRL_MASK)!=0;
 			if ((ctrl||IJ.shiftKeyDown()) && ic!=null) {
-				int ox = ic.offScreenX(e.getX());
-				int oy = ic.offScreenY(e.getX());
+				Point loc = ic.getCursorLoc();
+				int x = ic.screenX(loc.x);
+				int y = ic.screenY(loc.y);
 				if (rotation<0)
-					ic.zoomIn(ox,oy);
+					ic.zoomIn(x,y);
 				else
-					ic.zoomOut(ox,oy);
+					ic.zoomOut(x,y);
 				return;
 			}
 			if (hyperStack) {
