@@ -269,21 +269,31 @@ public class ScaleBar implements PlugIn {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		int fraction = 20;
-		int x = width - width/fraction - barWidthInPixels;
+		int fontType = boldText?Font.BOLD:Font.PLAIN;
+		String font = serifFont?"Serif":"SanSerif";
+		ImageProcessor ip = imp.getProcessor();
+		ip.setFont(new Font(font, fontType, fontSize));
+		ip.setAntialiasedText(true);
+		String label = getLength(barWidth)+" "+getUnits(imp);
+		int swidth = hideText?0:ip.getStringWidth(label);
+		int labelWidth = (swidth < barWidthInPixels)?0:(int) (barWidthInPixels-swidth)/2;
+		int x = 0;
 		int y = 0;
-		if (location.equals(locations[UPPER_RIGHT]))
-			 y = height/fraction;
-		else if (location.equals(locations[LOWER_RIGHT]))
+		if (location.equals(locations[UPPER_RIGHT])) {
+			x = width - width/fraction - barWidthInPixels + labelWidth;
+			y = height/fraction;
+		} else if (location.equals(locations[LOWER_RIGHT])) {
+			x = width - width/fraction - barWidthInPixels + labelWidth;
 			y = height - height/fraction - barHeightInPixels - fontSize;
-		else if (location.equals(locations[UPPER_LEFT])) {
-			x = width/fraction;
+		} else if (location.equals(locations[UPPER_LEFT])) {
+			x = width/fraction - labelWidth;
 			y = height/fraction;
 		} else if (location.equals(locations[LOWER_LEFT])) {
-			x = width/fraction;
+			x = width/fraction - labelWidth;
 			y = height - height/fraction - barHeightInPixels - fontSize;
 		} else {
 			if (roiX==-1)
-				 return false;
+				return false;
 			x = roiX;
 			y = roiY;
 		}
