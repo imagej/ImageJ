@@ -2531,8 +2531,10 @@ public class Plot implements Cloneable {
 	}
 
 	/** Creates a ResultsTable with the data of the plot. Returns an empty table if no data. 
-	 *	Does not write the first x column if writeFirstXColumn is false.
-	 *	x columns equal to the first x column are never written, independent of writeFirstXColumn */
+	 * Does not write the first x column if writeFirstXColumn is false.
+	 * When all columns are the same length, x columns equal to the first x column are
+	 * not written, independent of writeFirstXColumn.
+	*/
 	public ResultsTable getResultsTable(boolean writeFirstXColumn) {
 		ResultsTable rt = new ResultsTable();
 		rt.showRowNumbers(false);
@@ -2544,20 +2546,34 @@ public class Plot implements Cloneable {
 				nDataSets++;
 				tableLength = Math.max(tableLength, plotObject.xValues.length);
 			}
-		if (nDataSets == 0) return null;
+		if (nDataSets == 0)
+			return null;
 		// enter columns one by one to lists of data and headings
 		ArrayList<String> headings = new ArrayList<String>(2*nDataSets);
 		ArrayList<float[]> data = new ArrayList<float[]>(2*nDataSets);
 		int dataSetNumber = 0;
 		int arrowsNumber = 0;
 		PlotObject firstXYobject = null;
+		boolean allSameLength = true;
 		for (PlotObject plotObject : allPlotObjects) {
 			if (plotObject.type==PlotObject.XY_DATA) {
-				boolean sameX =	 firstXYobject != null && Arrays.equals(firstXYobject.xValues, plotObject.xValues);
+				if (firstXYobject != null && firstXYobject.xValues.length!=plotObject.xValues.length) {
+					allSameLength = false;
+					break;
+				}
+				if (firstXYobject==null)
+					firstXYobject = plotObject;
+			}
+		}
+		firstXYobject = null;
+		for (PlotObject plotObject : allPlotObjects) {
+			if (plotObject.type==PlotObject.XY_DATA) {
+				boolean sameX = firstXYobject!=null && Arrays.equals(firstXYobject.xValues, plotObject.xValues) && allSameLength;
 				boolean sameXY = sameX && Arrays.equals(firstXYobject.yValues, plotObject.yValues); //ignore duplicates (e.g. Markers plus Curve)
 				boolean writeX = firstXYobject==null?writeFirstXColumn:!sameX;
 				addToLists(headings, data, plotObject, dataSetNumber, writeX, /*writeY=*/!sameXY, nDataSets>1);
-				if (firstXYobject == null) firstXYobject = plotObject;
+				if (firstXYobject == null)
+					firstXYobject = plotObject;
 				dataSetNumber++;
 			} else if (plotObject.type==PlotObject.ARROWS) {
 				addToLists(headings, data, plotObject, arrowsNumber, /*writeX=*/true, /*writeY=*/true, nDataSets>1);
@@ -2580,7 +2596,6 @@ public class Plot implements Cloneable {
 		nColumns = rt.getLastColumn() + 1;
 		for (int i=0; i<nColumns; i++)
 			rt.setDecimalPlaces(i, getPrecision(rt.getColumn(i)));
-
 		return rt;
 	}
 
