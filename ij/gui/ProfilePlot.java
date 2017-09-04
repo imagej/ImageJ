@@ -15,8 +15,8 @@ public class ProfilePlot {
 	static final double ASPECT_RATIO = 0.5;
 	private double min, max;
 	private boolean minAndMaxCalculated;
-    private static double fixedMin;
-    private static double fixedMax;
+	private static double fixedMin;
+	private static double fixedMax;
     
 	protected ImagePlus imp;
 	protected double[] profile;
