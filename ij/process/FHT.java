@@ -502,7 +502,7 @@ public class FHT extends FloatProcessor {
 
 
 	/** FFT imag value of one row from 2D Hartley Transform.
-	*	@author Joachim Wesner
+	*	Author: Joachim Wesner
 	*/
       void FHTimag(int row, int maxN, float[] fht, float[] imag) {
             int base = row*maxN;

@@ -6,10 +6,7 @@
     <!-- First, ensure the build directory exists. -->
     <mkdir dir="build" />
     <!-- Build everything; add debug="on" to debug -->
-    <javac srcdir="." destdir="build" optimize="on" source="1.5" target="1.5" debug="on" includeantruntime="false">
-      <!-- The plugins directory only needs to be 
-             present at runtime, not at build time. -->
-      <exclude name="plugins/**"/>
+    <javac srcdir="./ij" destdir="build" optimize="on" source="1.5" target="1.5" debug="on" includeantruntime="false" encoding="utf-8">
     </javac>
   </target>
   
@@ -60,6 +57,7 @@
     <mkdir dir="../api" />
     <javadoc 
            sourcepath="."
+           encoding="utf-8"
            packagenames="ij.*"
            destdir="../api"
            author="true"

@@ -572,7 +572,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	
 	/** Returns the coordinates of the pixels inside this ROI as a FloatPolygon.
 	 * @see #getContainedPoints()
-	 * @see #Iterator()
+	 * @see #iterator()
 	 */
 	public FloatPolygon getContainedFloatPoints() {
 		Roi roi2 = this;
@@ -601,7 +601,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	 * ax, ay, bx, by: points A and B of line segment
 	 * cx, cy, rad: Circle center and radius.
 	 * ignoreOutside: if true, ignores intersections outside the line segment A-B
-	 * @Returns an array of 0, 2 or 4 coordinates (for 0, 1, or 2 intersection
+	 * Returns an array of 0, 2 or 4 coordinates (for 0, 1, or 2 intersection
 	 * points). If two intersection points are returned, they are listed in travel
 	 * direction A->B
 	 * </pre>
@@ -2151,16 +2151,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	}
 	
 	/**
-	 * Required by the {@link Interable} interface.
+	 * Required by the {@link Iterable} interface.
 	 * Use to iterate over the contained coordinates. Usage example: 
 	 * <pre>
 	 * for (Point p : roi) {
 	 *   // process p
 	 * }
 	 * </pre>
+	 * Author: Wilhelm Burger
 	 * @see #getContainedPoints()
 	 * @see #getContainedFloatPoints()
-	 * @author Wilhelm Burger
 	*/
 	public Iterator<Point> iterator() {
 		// Returns the default (mask-based) point iterator. Note that 'Line' overrides the 

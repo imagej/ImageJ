@@ -711,7 +711,7 @@ public class PointRoi extends PolygonRoi {
 
 	/**
 	 * Custom iterator for points contained in a {@link PointRoi}.
-	 * @author W. Burger
+	 * Author: W. Burger
 	*/
 	public Iterator<Point> iterator() {	
 		return new Iterator<Point>() {

@@ -363,7 +363,7 @@ public class FFT implements  PlugIn, Measurements {
     }
     
     /** Complex to Complex Inverse Fourier Transform
-    *   @author Joachim Wesner
+    *   Author: Joachim Wesner
     */
     void c2c2DFFT(float[] rein, float[] imin, int maxN, float[] reout, float[] imout) {
             FHT fht = new FHT(new FloatProcessor(maxN,maxN));
@@ -384,7 +384,7 @@ public class FFT implements  PlugIn, Measurements {
       }
 
     /** Build FHT input for equivalent inverse FFT
-    *   @author Joachim Wesner
+    *   Author: Joachim Wesner
     */
     void cplxFHT(int row, int maxN, float[] re, float[] im, boolean reim, float[] fht) {
             int base = row*maxN;

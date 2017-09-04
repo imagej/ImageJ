@@ -93,7 +93,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 
 	
 	public Editor() {
-		this(16, 60, 0, MENU_BAR);
+		this(24, 80, 0, MENU_BAR);
 	}
 
 	public Editor(int rows, int columns, int fontSize, int options) {
@@ -197,7 +197,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if (window.width==0)
 			return;
 		int left = screen.width/2-window.width/2;
-		int top = (screen.height-window.height)/4;
+		int top = screen.height/(IJ.isWindows()?6:5);
+		if (IJ.isMacOSX())
+			top = (screen.height-window.height)/4;
 		if (top<0) top = 0;
 		if (nWindows<=0 || xoffset>8*XINC)
 			{xoffset=0; yoffset=0;}
