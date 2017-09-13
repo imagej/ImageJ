@@ -5,9 +5,26 @@
 </head>
 <body>
 
-<li> <u>1.51q 4 September 2017</u>
+<li> <u>1.51q 13 September 2017</u>
 <ul>
-<li> Thanks to Stein Rørvik, newly opened editor windows are larger and,
+<li> Plot enhancements, thanks to Michael Schmid:
+<ul>
+  <li> Plots saved as tiff or zip include the data, so the plot range can be modified (zooming, etc.)
+  and the data can be listed after loading the plot from a file.
+  <li> Changing the axis or label font size of a plot already shown keeps the image size constant
+  and modifies the plot frame size (previously, the plot frame size was constant).
+  <li> Slightly more space for numbers at the left, enough for scientific notation. Switches
+  to a smaller font if more significant digits are required.
+  <li> Added Plot.getFrameBounds(x, y, width, height) macro function.
+  <li> The default font for plots is now Arial, not Helvetica (Arial is available on more platforms).
+  <li> When opening a plot on a computer where a given font is not available,
+  try to replace fonts by similar ones. This should make the appearance on
+  different platforms more similar.
+  <li> The ImageProcessor class uses GlyphVector, which is more accurate, to calculate text width.
+  <li> Added the ImageProcessor.getStringBounds(String) method, which
+  returns a rectangle enclosing the foreground pixels of a given string.
+</ul>
+<li> Thanks to Stein Rorvik, newly opened editor windows are larger and,
 on Linux and Windows, are less likely cover the main ImageJ window.
 <li> Thanks to Norbert Vischer, added a "Smooth if thresholded"
 option to the Wand tool dialog

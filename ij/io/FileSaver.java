@@ -106,6 +106,10 @@ public class FileSaver {
 			fi.sliceLabels[0] = (String)label;
 		}
 		fi.description = getDescriptionString();
+		if (imp.getProperty(Plot.PROPERTY_KEY) != null) {
+			Plot plot = (Plot)(imp.getProperty(Plot.PROPERTY_KEY));
+			fi.plot = plot.toByteArray();
+		}
 		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
 		fi.overlay = getOverlay(imp);
 		DataOutputStream out = null;
@@ -225,6 +229,10 @@ public class FileSaver {
 		fi.description = getDescriptionString();
 		saveName = false;
 		fi.sliceLabels = imp.getStack().getSliceLabels();
+		if (imp.getProperty(Plot.PROPERTY_KEY) != null) {
+			Plot plot = (Plot)(imp.getProperty(Plot.PROPERTY_KEY));
+			fi.plot = plot.toByteArray();
+		}
 		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
 		fi.overlay = getOverlay(imp);
 		if (imp.isComposite()) saveDisplayRangesAndLuts(imp, fi);
@@ -289,6 +297,10 @@ public class FileSaver {
 			name = name+".tif";
 		fi.description = getDescriptionString();
 		fi.info = imp.getInfoProperty();
+		if (imp.getProperty(Plot.PROPERTY_KEY) != null) {
+			Plot plot = (Plot)(imp.getProperty(Plot.PROPERTY_KEY));
+			fi.plot = plot.toByteArray();
+		}
 		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
 		fi.overlay = getOverlay(imp);
 		fi.sliceLabels = imp.getStack().getSliceLabels();

@@ -57,9 +57,10 @@ public class TiffDecoder {
 	static final int INFO = 0x696e666f;  // "info" (Info image property)
 	static final int LABELS = 0x6c61626c;  // "labl" (slice labels)
 	static final int RANGES = 0x72616e67;  // "rang" (display ranges)
-	static final int LUTS = 0x6c757473;  // "luts" (channel LUTs)
-	static final int ROI = 0x726f6920;  // "roi " (ROI)
-	static final int OVERLAY = 0x6f766572;  // "over" (overlay)
+	static final int LUTS = 0x6c757473;    // "luts" (channel LUTs)
+	static final int PLOT = 0x706c6f74;    // "plot" (serialized plot)
+	static final int ROI = 0x726f6920;     // "roi " (ROI)
+	static final int OVERLAY = 0x6f766572; // "over" (overlay)
 	
 	private String directory;
 	private String name;
@@ -619,6 +620,7 @@ public class TiffDecoder {
 				if (types[i]==LABELS) id = " (slice labels)";
 				if (types[i]==RANGES) id = " (display ranges)";
 				if (types[i]==LUTS) id = " (luts)";
+				if (types[i]==PLOT) id = " (plot)";
 				if (types[i]==ROI) id = " (roi)";
 				if (types[i]==OVERLAY) id = " (overlay)";
 				dInfo += "   "+i+" "+Integer.toHexString(types[i])+" "+counts[i]+id+"\n";
@@ -637,6 +639,8 @@ public class TiffDecoder {
 				getDisplayRanges(start, fi);
 			else if (types[i]==LUTS)
 				getLuts(start, start+counts[i]-1, fi);
+			else if (types[i]==PLOT)
+				getPlot(start, fi);
 			else if (types[i]==ROI)
 				getRoi(start, fi);
 			else if (types[i]==OVERLAY)
@@ -720,6 +724,12 @@ public class TiffDecoder {
 		int len = metaDataCounts[first];
 		fi.roi = new byte[len]; 
 		in.readFully(fi.roi, len); 
+	}
+
+	void getPlot(int first, FileInfo fi) throws IOException {
+		int len = metaDataCounts[first];
+		fi.plot = new byte[len];
+		in.readFully(fi.plot, len);
 	}
 
 	void getOverlay(int first, int last, FileInfo fi) throws IOException {

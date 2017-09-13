@@ -137,8 +137,9 @@ public class FileInfo implements Cloneable {
 	public byte[][] metaData;
 	public double[] displayRanges;
 	public byte[][] channelLuts;
-	public byte[] roi;
-	public byte[][] overlay;
+	public byte[] plot;			// serialized plot
+	public byte[] roi;			// serialized roi
+	public byte[][] overlay;	// serialized overlay objects
 	public int samplesPerPixel;
 	public String openNextDir, openNextName;
     

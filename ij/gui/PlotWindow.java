@@ -58,7 +58,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	 *	only min&max value of the axes are given */
 	public static boolean noTicks;
 
-	
+
 	private static final String PREFS_WIDTH = "pp.width";
 	private static final String PREFS_HEIGHT = "pp.height";
 	private static final String PREFS_FONT_SIZE = "pp.fontsize";
@@ -71,6 +71,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	private static final int NO_TICKS = 32;
 	private static String moreButtonLabel = "More "+'\u00bb';
 
+	boolean wasActivated;			// true after window has been activated once, needed by PlotCanvas
+
 	private Button list, save, more, live;
 	private PopupMenu popupMenu;
 	private MenuItem[] menuItems;
@@ -81,7 +83,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	private int markSize = 5;
 	private static Plot staticPlot;
 	private Plot plot;
-	boolean layoutDone;				// becomes true after the layout has been done, used by PlotCanvas
 	private String blankLabel = "                       ";
 
 	private PlotMaker plotMaker;
@@ -92,7 +93,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	private Roi[] rangeArrowRois;	// these constitute the arrow overlays for changing the range
 	private boolean rangeArrowsVisible;
 	private int activeRangeArrow = -1;
-	
 
 	// static initializer
 	static {
@@ -103,8 +103,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		plotHeight = Prefs.getInt(PREFS_HEIGHT, HEIGHT);
 		fontSize = Prefs.getInt(PREFS_FONT_SIZE, FONT_SIZE);
 		interpolate = (options&INTERPOLATE)==0; // 0=true, 1=false
-		noGridLines = (options&NO_GRID_LINES)!=0; 
-		noTicks = (options&NO_TICKS)!=0; 
+		noGridLines = (options&NO_GRID_LINES)!=0;
+		noTicks = (options&NO_TICKS)!=0;
 	}
 
 	/**
@@ -124,7 +124,16 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	public PlotWindow(String title, String xLabel, String yLabel, double[] xValues, double[] yValues) {
 		this(title, xLabel, yLabel, Tools.toFloat(xValues), Tools.toFloat(yValues));
 	}
-	
+
+	/** Creates a PlotWindow from a given ImagePlus with a Plot object.
+	 *  (called when reading an ImagePlus with an associated plot from a file) */
+	public PlotWindow(ImagePlus imp, Plot plot) {
+		super(imp);
+		((PlotCanvas)getCanvas()).setPlot(plot);
+		this.plot = plot;
+		draw();
+	}
+
 	/** Creates a PlotWindow from a Plot object. */
 	PlotWindow(Plot plot) {
 		super(plot.getImagePlus());
@@ -139,63 +148,67 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		staticPlot = new Plot(title, xLabel, yLabel, xValues, yValues);
 		return new ImagePlus(title, staticPlot.getBlankProcessor());
 	}
-	
+
 	/** Sets the x-axis and y-axis range.
-		Must be called before the plot is displayed. */
+	 *  @deprecated use the corresponding method of the Plot class */
 	public void setLimits(double xMin, double xMax, double yMin, double yMax) {
 		plot.setLimits(xMin, xMax, yMin, yMax);
 	}
 
 	/** Adds a set of points to the plot or adds a curve if shape is set to LINE.
-		Must be called before the plot is displayed.
 	 *	Note that there are more options available by using the methods of the Plot class instead.
-	 * @param x			the x-coodinates
-	 * @param y			the y-coodinates
-	 * @param shape		Plot.CIRCLE, X, BOX, TRIANGLE, CROSS, LINE etc. */
-
+	 *  @param x			the x-coodinates
+	 *  @param y			the y-coodinates
+	 *  @param shape		Plot.CIRCLE, X, BOX, TRIANGLE, CROSS, LINE etc.
+	 *  @deprecated use the corresponding method of the Plot class */
 	public void addPoints(float[] x, float[] y, int shape) {
 		plot.addPoints(x, y, shape);
 	}
 
 	/** Adds a set of points to the plot using double arrays.
-		Must be called before the plot is displayed.
-		Note that there are more options available by using the methods of the Plot class instead. */
+	 *	Must be called before the plot is displayed.
+	 *	Note that there are more options available by using the methods of the Plot class instead.
+	 *  @deprecated use the corresponding method of the Plot class */
 	public void addPoints(double[] x, double[] y, int shape) {
 		addPoints(Tools.toFloat(x), Tools.toFloat(y), shape);
 	}
-	
+
 	/** Adds vertical error bars to the plot.
-		Must be called before the plot is displayed.
-		Note that there are more options available by using the methods of the Plot class instead. */
+	 *	Must be called before the plot is displayed.
+	 *	Note that there are more options available by using the methods of the Plot class instead.
+	 *  @deprecated use the corresponding method of the Plot class */
 	public void addErrorBars(float[] errorBars) {
 		plot.addErrorBars(errorBars);
 	}
 
 	/** Draws a label.
-		Must be called before the plot is displayed.
-		Note that there are more options available by using the methods of the Plot class instead. */
+	 *	Note that there are more options available by using the methods of the Plot class instead.
+	 *  @deprecated use the corresponding method of the Plot class */
 	public void addLabel(double x, double y, String label) {
 		plot.addLabel(x, y, label);
 	}
-	
+
 	/** Changes the drawing color. The frame and labels are
-		always drawn in black.
-		Must be called before the plot is displayed.
-		Note that there are more options available by using the methods of the Plot class instead. */
+	 *	always drawn in black.
+	 *	Must be called before the plot is displayed.
+	 *	Note that there are more options available by using the methods of the Plot class instead.
+	 *  @deprecated use the corresponding method of the Plot class */
 	public void setColor(Color c) {
 		plot.setColor(c);
 	}
 
 	/** Changes the line width.
-		Must be called before the plot is displayed.
-		Note that there are more options available by using the methods of the Plot class instead. */
+	 *	Must be called before the plot is displayed.
+	 *	Note that there are more options available by using the methods of the Plot class instead.
+	 *  @deprecated use the corresponding method of the Plot class */
 	public void setLineWidth(int lineWidth) {
 		plot.setLineWidth(lineWidth);
 	}
 
 	/** Changes the font.
-		Must be called before the plot is displayed.
-		Note that there are more options available by using the methods of the Plot class instead. */
+	 *	Must be called before the plot is displayed.
+	 *	Note that there are more options available by using the methods of the Plot class instead.
+	 *  @deprecated use the corresponding method of the Plot class */
 	public void changeFont(Font font) {
 		plot.changeFont(font);
 	}
@@ -233,26 +246,49 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		pack();
 
 		ImageProcessor ip = plot.getProcessor();
-		if ((ip instanceof ColorProcessor) && (imp.getProcessor() instanceof ByteProcessor))
+		boolean ipIsColor = ip instanceof ColorProcessor;
+		boolean impIsColor = imp.getProcessor() instanceof ColorProcessor;
+		if (ipIsColor != impIsColor)
 			imp.setProcessor(null, ip);
 		else
 			imp.updateAndDraw();
-		layoutDone = true;
 		if (listValues)
 			showList();
 		else
 			ic.requestFocus();	//have focus on the canvas, not the button, so that pressing the space bar allows panning
 	}
 
+	/** Sets the Plot object shown in this PlotWindow. Does not update the window. */
+	public void setPlot(Plot plot) {
+		this.plot = plot;
+		((PlotCanvas)getCanvas()).setPlot(plot);
+	}
+
 	/** Releases the resources used by this PlotWindow */
 	public void dispose() {
 		if (plot!=null)
 			plot.dispose();
-		removeListeners();
+		disableLivePlot();
 		plot = null;
 		plotMaker = null;
 		srcImp = null;
 		super.dispose();
+	}
+
+	/** Called when the window is activated (WindowListener)
+	 *  Window layout is finished at latest a few millisec after windowActivated, then the
+     *  'wasActivated' boolean is set to tell the ImageCanvas that resize events should
+     *  lead to resizing the canvas (before, creating the layout can lead to resize events)*/
+	public void windowActivated(WindowEvent e) {
+		super.windowActivated(e);
+		if (!wasActivated) {
+			new Thread(new Runnable() {
+				public void run() {
+					IJ.wait(50);  //sometimes, window layout is done only a few millisec after windowActivated
+					wasActivated = true;
+				}
+            }).start();
+		}
 	}
 
 	/** Called when the canvas is resized */
@@ -370,14 +406,13 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		}
 	}
 
-//n__ begin mouseMoved
-    /**
-     * Updates the X and Y values when the mouse is moved and, if appropriate,
-     * shows/hides the overlay with the triangular buttons for changing the axis
-     * range limits Overrides mouseMoved() in ImageWindow.
-     *
-     * @see ij.gui.ImageWindow#mouseMoved
-     */
+	/**
+	 * Updates the X and Y values when the mouse is moved and, if appropriate,
+	 * shows/hides the overlay with the triangular buttons for changing the axis
+	 * range limits Overrides mouseMoved() in ImageWindow.
+	 *
+	 * @see ij.gui.ImageWindow#mouseMoved
+	 */
     public void mouseMoved(int x, int y) {
         super.mouseMoved(x, y);
         if (plot == null)
@@ -409,8 +444,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
             }
         } else if (rangeArrowsVisible)
             hideRangeArrows();
-    }    
-    //n__ end mouseMoved
+    }
 
 	/** Called by PlotCanvas */
 	void mouseExited(MouseEvent e) {
@@ -442,7 +476,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 			plot.scroll(0, rotation*amount*Math.max(ic.imageHeight/50, 1));
 	}
 
-    //n__ begin showRangeArrows
     /**
      * Creates an overlay with triangular buttons for changing the axis range
      * limits and shows it
@@ -451,7 +484,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
         if (imp == null)
             return;
         hideRangeArrows(); //in case we have old arrows from a different plot size or so
-        rangeArrowRois = new Roi[4 * 2 + 1]; //4 arrows per axis plus 1 'Reset' icon 
+        rangeArrowRois = new Roi[4 * 2 + 1]; //4 arrows per axis plus 1 'Reset' icon
         int i = 0;
         int height = imp.getHeight();
         int arrowH = plot.topMargin < 14 ? 6 : 8; //height of arrows and distance between them; base is twice that value
@@ -490,8 +523,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
         ic.repaint();
         rangeArrowsVisible = true;
     }
-    //n__ end showRangeArrows
-          
+
 	void hideRangeArrows() {
 		if (imp == null || rangeArrowRois==null) return;
 		Overlay ovly = imp.getOverlay();
@@ -524,7 +556,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 			close();
 		}
 	}
-	
+
 	/** Returns the plot values as a ResultsTable. */
 	public ResultsTable getResultsTable() {
 		return plot.getResultsTable(saveXValues);
@@ -606,7 +638,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		if (autoClose)
 			{imp.changes=false; close();}
 	}
-		
+
 	public void lostOwnership(Clipboard clipboard, Transferable contents) {}
 
 	public float[] getXValues() {
@@ -641,45 +673,58 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		if (autoClose && !listValues) options |= AUTO_CLOSE;
 		if (listValues) options |= LIST_VALUES;
 		if (!interpolate) options |= INTERPOLATE; // true=0, false=1
-		if (noGridLines) options |= NO_GRID_LINES; 
-		if (noTicks) options |= NO_TICKS; 
+		if (noGridLines) options |= NO_GRID_LINES;
+		if (noTicks) options |= NO_TICKS;
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 
 	private void toggleLiveProfiling() {
-		boolean liveMode = live.getForeground()==Color.red;
+		boolean liveMode = bgThread != null;
 		if (liveMode)
-			removeListeners();
+			disableLivePlot();
 		else
-			enableLiveProfiling();
+			enableLivePlot();
 	}
-	
-	/*
-	public static void setLiveMode(Boolean set) {
-		ImagePlus imp = WindowManager.getCurrentImage();
-		ImageWindow win = imp!=null?imp.getWindow():null;
-		PlotWindow pw = win!=null && (win instanceof PlotWindow)?(PlotWindow)win:null;
-		if (pw!=null && pw.live.getForeground()!=Color.red)
-			pw.enableLiveProfiling();
-	}
-	*/
 
-	private void enableLiveProfiling() {
+	/* Enable live plotting.
+	 * This requires that the PlotWindow has been initialized with a Plot having a PlotMaker */
+	private void enableLivePlot() {
 		if (plotMaker==null)
 			plotMaker = plot!=null?plot.getPlotMaker():null;
-		if (plotMaker!=null && bgThread==null) {
-			srcImp = plotMaker.getSourceImage();
-			if (srcImp==null)
-				return;
-			bgThread = new Thread(this, "Live Profiler");
+		if (plotMaker==null) return;
+		srcImp = plotMaker.getSourceImage();
+		if (srcImp==null)
+			return;
+		if (bgThread==null) {
+			bgThread = new Thread(this, "Live Plot");
 			bgThread.setPriority(Math.max(bgThread.getPriority()-3, Thread.MIN_PRIORITY));
+			doUpdate = true;
 			bgThread.start();
-			imageUpdated(srcImp);
 		}
-		createListeners();
-		if (srcImp!=null)
-			imageUpdated(srcImp);
+		if (IJ.debugMode) IJ.log("PlotWindow.createListeners");
+		ImagePlus.addImageListener(this);
+		Roi.addRoiListener(this);
+		Font font = live.getFont();
+		live.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
+		live.setForeground(Color.red);
 	}
+
+	private void disableLivePlot() {
+		if (IJ.debugMode) IJ.log("PlotWindow.disableLivePlot: "+srcImp);
+		if (srcImp==null)
+			return;
+		if (bgThread!=null)
+			bgThread.interrupt();
+		bgThread = null;
+		ImagePlus.removeImageListener(this);
+		Roi.removeRoiListener(this);
+		if (live != null) {
+			Font font = live.getFont();
+			live.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
+			live.setForeground(Color.black);
+		}
+	}
+
 
 	/** For live plots, update the plot if the ROI of the source image changes */
 	public synchronized void roiModified(ImagePlus img, int id) {
@@ -689,31 +734,28 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 			notify();
 		}
 	}
-	
+
 	// Unused
 	public void imageOpened(ImagePlus imp) {
 	}
 
-	/** For live plots, this method is called if the source image content is changed */
+	/** For live plots, this method is called if the source image content is changed. */
 	public synchronized void imageUpdated(ImagePlus imp) {
-		if (imp==srcImp) { 
+		if (imp==srcImp) {
 			doUpdate = true;
 			notify();
 		}
 	}
-	
-	// For live plots, if either the source image or this image are closed, exit
+
+	/** For live plots, if either the source image or this image are closed, exit live mode */
 	public void imageClosed(ImagePlus imp) {
 		if (imp==srcImp || imp==this.imp) {
-			if (bgThread!=null)
-				bgThread.interrupt();
-			bgThread = null;
-			removeListeners();
+			disableLivePlot();
 			srcImp = null;
 			plotMaker = null;
 		}
 	}
-	
+
 	// the background thread for live plotting.
 	public void run() {
 		while (true) {
@@ -742,40 +784,19 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 			}
 		}
 	}
-		
-	private void createListeners() {
-		if (IJ.debugMode) IJ.log("PlotWindow.createListeners");
-		if (srcImp==null)
-			return;
-		ImagePlus.addImageListener(this);
-		Roi.addRoiListener(this);
-		Font font = live.getFont();
-		live.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
-		live.setForeground(Color.red);
-	}
-	
-	private void removeListeners() {
-		if (IJ.debugMode) IJ.log("PlotWindow.removeListeners: "+srcImp);
-		if (srcImp==null)
-			return;
-		ImagePlus.removeImageListener(this);
-		Roi.removeRoiListener(this);
-		Font font = live.getFont();
-		live.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
-		live.setForeground(Color.black);
-	}
-	
+
 	/** Returns the Plot associated with this PlotWindow. */
 	public Plot getPlot() {
 		return plot;
 	}
-	
-	/** Freezes the active plot window. */
+
+	/** Freezes the active plot window, so the image does not get redrawn for zooming,
+	 *  setting the range, etc. */
 	public static void freeze() {
 		Window win = WindowManager.getActiveWindow();
 		if (win!=null && (win instanceof PlotWindow))
 			((PlotWindow)win).getPlot().setFrozen(true);
 	}
-	
+
 }
 

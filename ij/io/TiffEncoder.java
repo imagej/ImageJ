@@ -196,6 +196,12 @@ public class TiffEncoder {
 			nMetaDataEntries += fi.channelLuts.length;
 		}
 
+		if (fi.plot!=null) {
+			nMetaDataEntries++;
+			size += fi.plot.length;
+			nTypes++;
+		}
+
 		if (fi.roi!=null) {
 			nMetaDataEntries++;
 			size += fi.roi.length;
@@ -373,6 +379,8 @@ public class TiffEncoder {
 			for (int i=0; i<fi.channelLuts.length; i++)
 				writeInt(out, fi.channelLuts[i].length);
 		}
+		if (fi.plot!=null)
+			writeInt(out, fi.plot.length);
 		if (fi.roi!=null)
 			writeInt(out, fi.roi.length);
 		if (fi.overlay!=null) {
@@ -399,6 +407,10 @@ public class TiffEncoder {
 		if (fi.channelLuts!=null) {
 			writeInt(out, TiffDecoder.LUTS); // type="luts"
 			writeInt(out, fi.channelLuts.length); // count
+		}
+		if (fi.plot!=null) {
+			writeInt(out, TiffDecoder.PLOT); // type="plot"
+			writeInt(out, 1); // count
 		}
 		if (fi.roi!=null) {
 			writeInt(out, TiffDecoder.ROI); // type="roi "
@@ -428,6 +440,8 @@ public class TiffEncoder {
 			for (int i=0; i<fi.channelLuts.length; i++)
 				out.write(fi.channelLuts[i]);
 		}
+		if (fi.plot!=null)
+			out.write(fi.plot);
 		if (fi.roi!=null)
 			out.write(fi.roi);
 		if (fi.overlay!=null) {

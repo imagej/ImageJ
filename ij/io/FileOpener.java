@@ -156,6 +156,10 @@ public class FileOpener {
 			imp.setProperty("Info", fi.info);
 		if (fi.sliceLabels!=null&&fi.sliceLabels.length==1&&fi.sliceLabels[0]!=null)
 			imp.setProperty("Label", fi.sliceLabels[0]);
+		if (fi.plot!=null) try {
+			Plot plot = new Plot(imp, new ByteArrayInputStream(fi.plot));
+			imp.setProperty(Plot.PROPERTY_KEY, plot);
+		} catch (Exception e) { IJ.handleException(e); }
 		if (fi.roi!=null)
 			imp.setRoi(RoiDecoder.openFromByteArray(fi.roi));
 		if (fi.overlay!=null)

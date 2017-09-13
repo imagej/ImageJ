@@ -425,6 +425,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			//if (compositeImage) stackSize /= nChannels;
 			if (stackSize>1)
 				win = new StackWindow(this);
+			else if (getProperty(Plot.PROPERTY_KEY) != null)
+				win = new PlotWindow(this, (Plot)(getProperty(Plot.PROPERTY_KEY)));
 			else
 				win = new ImageWindow(this);
 			if (roi!=null) roi.setImage(this);
@@ -550,6 +552,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		not work as expected if 'imp' is a CompositeImage
 		and this image is not. */
 	public void setImage(ImagePlus imp) {
+		Properties newProperties = imp.getProperties();
+		if (newProperties!=null)
+			newProperties = (Properties)(newProperties.clone());
 		if (imp.getWindow()!=null)
 			imp = imp.duplicate();
 		ImageStack stack2 = imp.getStack();
@@ -567,7 +572,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			updateAndDraw();
 		}
 		setCalibration(imp.getCalibration());
-		setProperty("Info", imp.getProperty("Info"));
+		properties = newProperties;
+		if (getProperty(Plot.PROPERTY_KEY)!=null && win instanceof PlotWindow) {
+			Plot plot = (Plot)(getProperty(Plot.PROPERTY_KEY));
+			((PlotWindow)win).setPlot(plot);
+			plot.setImagePlus(this);
+		}
 	}
 	
 	/** Replaces the ImageProcessor with the one specified and updates the
@@ -601,9 +611,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (title!=null) setTitle(title);
 		if (ip==null)
 			return;
+		this.ip = ip;
 		if (this.ip!=null && getWindow()!=null)
 			notifyListeners(UPDATED);
-		this.ip = ip;
 		if (ij!=null)
 			ip.setProgressBar(ij.getProgressBar());
         int stackSize = 1;
@@ -2083,11 +2093,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			setCalibration(imp.getCalibration());
 	}
 
-	/** Copies attributes (name, ID, calibration, path) of the specified image to this image. */
+	/** Copies attributes (name, ID, calibration, path, plot) of the specified image to this image. */
 	public void copyAttributes(ImagePlus imp) {
 		if (IJ.debugMode) IJ.log("copyAttributes: "+imp.getID()+"  "+this.getID()+" "+imp+"   "+this);
 		if (imp==null || imp.getWindow()!=null)
-			throw new IllegalArgumentException("Souce image is null or displayed");
+			throw new IllegalArgumentException("Source image is null or displayed");
 		ID = imp.getID();
 		setTitle(imp.getTitle());
 		setCalibration(imp.getCalibration());
@@ -2097,6 +2107,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		Object info = imp.getProperty("Info");
 		if (info!=null)
 			setProperty("Info", imp.getProperty("Info"));
+		Object plot = imp.getProperty(Plot.PROPERTY_KEY);
+		if (plot != null)
+			setProperty(Plot.PROPERTY_KEY, plot);
 	}
 
     /** Calls System.currentTimeMillis() to save the current
