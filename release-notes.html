@@ -20,10 +20,11 @@
   <li> When opening a plot on a computer where a given font is not available,
   try to replace fonts by similar ones. This should make the appearance on
   different platforms more similar.
-  <li> The ImageProcessor class uses GlyphVector, which is more accurate, to calculate text width.
-  <li> Added the ImageProcessor.getStringBounds(String) method, which
-  returns a rectangle enclosing the foreground pixels of a given string.
+  <li> The ImageProcessor getStringWidth() and getStringBounds() methods
+  use the more accurate GlyphVector class.
 </ul>
+<li> Thanks to Jerome Parent, added a "Show unit" checkbox to the
+<i>Analyze&gt;Tools&gt;Calibration Bar</i> dialog box.
 <li> Thanks to Stein Rorvik, newly opened editor windows are larger and,
 on Linux and Windows, are less likely cover the main ImageJ window.
 <li> Thanks to Norbert Vischer, added a "Smooth if thresholded"
