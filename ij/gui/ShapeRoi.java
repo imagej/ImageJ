@@ -7,7 +7,6 @@ import java.util.*;
 import ij.*;
 import ij.process.*;
 import ij.measure.*;
-import ij.plugin.frame.Recorder;
 import ij.plugin.filter.Analyzer;
 import ij.util.Tools;
 

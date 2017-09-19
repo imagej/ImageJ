@@ -227,11 +227,14 @@ public class GelAnalyzer implements PlugIn {
 		if (nLanes<MAX_LANES)
 			nLanes += 1;
 		IJ.showStatus("Lane " + nLanes + " selected");
-
-		if(isVertical)
+		if (isVertical)
 			x[nLanes] = rect.x;
 		else
 			x[nLanes] = rect.y;
+		if(x[nLanes]==x[nLanes-1]){
+			nLanes--; //avoid duplicate
+			return;
+		}
 		if (isVertical && rect.y!=firstRect.y) {
 			rect.y = firstRect.y;
 			gel.setRoi(rect);

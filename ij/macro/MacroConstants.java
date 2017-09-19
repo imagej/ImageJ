@@ -41,7 +41,7 @@ public interface MacroConstants {
 		GET_DATE_AND_TIME=382, SET_METADATA=383, CALCULATOR=384, SET_RGB_WEIGHTS=385, MAKE_POLYGON=386, SET_SELECTION_NAME=387,
 		DRAW_RECT=388, DRAW_OVAL=389, FILL_OVAL=390, SET_OPTION=391, SHOW_TEXT=392, SET_SELECTION_LOC=393, GET_DIMENSIONS=394,
 		WAIT_FOR_USER=395, MAKE_POINT=396, MAKE_TEXT=397, MAKE_ELLIPSE=398, GET_DISPLAYED_AREA=399,
-		TO_SCALED=400, TO_UNSCALED=401, MAKE_ARROW=402;
+		TO_SCALED=400, TO_UNSCALED=401, MAKE_ARROW=402, MAKE_ROTATED_RECT=403;
 	static final String[] functions = {"run","invert","selectWindow","wait", "beep", "resetMinAndMax", "resetThreshold",
 		"print", "write", "doWand", "setMinAndMax", "setThreshold", "setTool",
 		"setForegroundColor", "setBackgroundColor", "makeLine", "makeOval", "makeRectangle",
@@ -58,7 +58,7 @@ public interface MacroConstants {
 		"getDateAndTime", "setMetadata", "imageCalculator", "setRGBWeights", "makePolygon", "setSelectionName",
 		"drawRect", "drawOval", "fillOval", "setOption", "showText", "setSelectionLocation", "getDimensions",
 		"waitForUser", "makePoint", "makeText", "makeEllipse", "getDisplayedArea",
-		"toScaled", "toUnscaled", "makeArrow"};
+		"toScaled", "toUnscaled", "makeArrow", "makeRotatedRectangle"};
 	static final int[] functionIDs = {RUN, INVERT, SELECT, WAIT, BEEP, RESET_MIN_MAX, RESET_THRESHOLD,
 		PRINT, WRITE, DO_WAND, SET_MIN_MAX, SET_THRESHOLD, SET_TOOL,
 		SET_FOREGROUND, SET_BACKGROUND, MAKE_LINE, MAKE_OVAL, MAKE_RECTANGLE,
@@ -75,7 +75,7 @@ public interface MacroConstants {
 		GET_DATE_AND_TIME, SET_METADATA, CALCULATOR, SET_RGB_WEIGHTS, MAKE_POLYGON, SET_SELECTION_NAME,
 		DRAW_RECT, DRAW_OVAL, FILL_OVAL, SET_OPTION, SHOW_TEXT, SET_SELECTION_LOC, GET_DIMENSIONS,
 		WAIT_FOR_USER, MAKE_POINT, MAKE_TEXT, MAKE_ELLIPSE, GET_DISPLAYED_AREA,
-		TO_SCALED, TO_UNSCALED, MAKE_ARROW};
+		TO_SCALED, TO_UNSCALED, MAKE_ARROW, MAKE_ROTATED_RECT};
 
 	// Numeric functions
 	static final int GET_PIXEL=1000, ABS=1001, COS=1002, EXP=1003, FLOOR=1004, LOG=1005, MAX_OF=1006, MIN_OF=1007, POW=1008,

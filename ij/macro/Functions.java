@@ -111,6 +111,7 @@ public class Functions implements MacroConstants, Measurements {
 			case MAKE_ARROW: makeArrow(); break;
 			case MAKE_OVAL: makeOval(); break;
 			case MAKE_RECTANGLE: makeRectangle(); break;
+			case MAKE_ROTATED_RECT: makeRotatedRectangle(); break;
 			case DUMP: interp.dump(); break;
 			case LINE_TO: lineTo(); break;
 			case MOVE_TO: moveTo(); break;
@@ -783,6 +784,11 @@ public class Functions implements MacroConstants, Measurements {
 		resetImage();
 		shiftKeyDown = altKeyDown = false;
 		IJ.setKeyUp(IJ.ALL_KEYS);
+	}
+
+	void makeRotatedRectangle() {
+		getImage().setRoi(new RotatedRectRoi(getFirstArg(), getNextArg(), getNextArg(), getNextArg(), getLastArg()));
+		resetImage();
 	}
 
 	ImagePlus getImage() {

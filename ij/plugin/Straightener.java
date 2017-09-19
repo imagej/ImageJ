@@ -12,8 +12,13 @@ public class Straightener implements PlugIn {
  	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
 		Roi roi = imp.getRoi();
-		if (roi==null || !roi.isLine()) {
-			IJ.error("Straightener", "Line selection required");
+		boolean rotatedRectangle = roi!=null && (roi instanceof RotatedRectRoi);
+		if (roi==null || !(roi.isLine()||rotatedRectangle)) {
+			IJ.error("Straightener", "Line, or rotated rectangle, selection required");
+			return;
+		}
+		if (rotatedRectangle) {
+			new Duplicator().run("");
 			return;
 		}
 		int width = (int)Math.round(roi.getStrokeWidth());
@@ -56,11 +61,6 @@ public class Straightener implements PlugIn {
 		if (cal.pixelWidth==cal.pixelHeight)
 			imp2.setCalibration(cal);
 		imp2.show();
-		//imp.setRoi(roi);
-		//if (type==Roi.POLYLINE&& !((PolygonRoi)roi).isSplineFit()) {
-		//	((PolygonRoi)roi).fitSpline();
-		//	imp.draw();
-		//}
 		if (isMacro) Line.setWidth(originalWidth);
 	}
 	

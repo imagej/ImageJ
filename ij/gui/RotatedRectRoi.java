@@ -33,13 +33,18 @@ public class RotatedRectRoi extends PolygonRoi {
 		bounds = null;
 	}
 
-	public void draw(Graphics g) {
+	public void draw(Graphics g) {	
 		super.draw(g);
 		if (!overlay && ic!=null) {
 			double mag = ic.getMagnification();
 		    int size2 = HANDLE_SIZE/2;
-			for (int i=0; i<4; i++)
-				drawHandle(g, hxs(i)-size2, hys(i)-size2);
+			for (int i=0; i<4; i++){
+			if (i==3)//mark starting point
+				handleColor = strokeColor!=null?strokeColor:ROIColor;
+			else
+				handleColor=Color.white;
+			drawHandle(g, hxs(i)-size2, hys(i)-size2);
+			}
 		}
 	}
 	
@@ -110,6 +115,13 @@ public class RotatedRectRoi extends PolygonRoi {
 	protected void handleMouseUp(int screenX, int screenY) {
 		nPoints = 4;
 		state = NORMAL;
+		if (Recorder.record) {
+			double[] p = getParams();
+			if (Recorder.scriptMode())
+				Recorder.recordCall("imp.setRoi(new RotatedRectRoi("+(int)p[0]+","+(int)p[1]+","+(int)p[2]+","+(int)p[3]+","+(int)p[4]+"));");
+			else
+				Recorder.record("makeRotatedRectangle", (int)p[0], (int)p[1], (int)p[2], (int)p[3], (int)p[4]);
+		}
 	}
 	
 	protected void moveHandle(int sx, int sy) {

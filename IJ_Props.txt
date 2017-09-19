@@ -153,9 +153,10 @@ stacks10="Reslice [/]...",ij.plugin.Slicer
 stacks11="Orthogonal Views[H]",ij.plugin.Orthogonal_Views
 stacks12="Z Project...",ij.plugin.ZProjector
 stacks13="3D Project...",ij.plugin.Projector
-stacks14="Plot Z-axis Profile",ij.plugin.ZAxisProfiler
-stacks15="Label...",ij.plugin.filter.StackLabeler
-stacks16="Statistics",ij.plugin.Stack_Statistics
+stacks14="Plot XY Profile",ij.plugin.StackPlotter
+stacks15="Plot Z-axis Profile",ij.plugin.ZAxisProfiler
+stacks16="Label...",ij.plugin.filter.StackLabeler
+stacks17="Statistics",ij.plugin.Stack_Statistics
 
 # Plugins installed in the Image/Stacks/Animation submenu
 animation_01="Start Animation [\\]",ij.plugin.Animator("start")
