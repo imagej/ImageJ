@@ -314,7 +314,7 @@ public class Menus {
 		submenu = new Menu("Python");
 		addExample(submenu, "Sphere", "Sphere.py");
 		addExample(submenu, "Animated Gaussian Blur", "Animated_Gaussian_Blur.py");
-		addExample(submenu, "Rotational Animation.py", "Rotational_Animation.py");
+		addExample(submenu, "Rotational Animation", "Rotational_Animation.py");
 		addExample(submenu, "Overlay", "Overlay.py");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
