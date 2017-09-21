@@ -18,7 +18,7 @@ public class Straightener implements PlugIn {
 			return;
 		}
 		if (rotatedRectangle) {
-			new Duplicator().run("");
+			IJ.run(imp, "Duplicate...", " ");
 			return;
 		}
 		int width = (int)Math.round(roi.getStrokeWidth());
