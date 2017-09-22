@@ -2184,20 +2184,6 @@ public class ImagePlusTest {
 		assertEquals(6,proc.getPixel(0, 0));
 		assertFalse(ip.changes);
 
-		// test that properties(FHT) deleted
-		ip = new Opener().openTiff(DataConstants.DATA_DIR, "head8bit.tif");
-		ip.setProperty("FHT","Fanny Arbuckle");
-		ip.setTitle("FFT of my toes");
-		proc = ip.getProcessor();
-		assertEquals(6,proc.getPixel(0, 0));
-		proc.set(0,0,99);
-		assertEquals(99,proc.getPixel(0, 0));
-		ip.revert();
-		proc = ip.getProcessor();
-		assertEquals(6,proc.getPixel(0, 0));
-		assertNull(ip.getProperty("FHT"));
-		assertEquals("my toes",ip.getTitle());
-
 		// test that trimProcessor() ran
 		ip = new Opener().openTiff(DataConstants.DATA_DIR, "head8bit.tif");
 		proc = ip.getProcessor();

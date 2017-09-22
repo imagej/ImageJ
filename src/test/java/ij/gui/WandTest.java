@@ -281,7 +281,7 @@ public class WandTest {
 		// test side effects
 		w = newWand(5,5,Pixels5x5);
 		w.autoOutline(2, 2, 1.0, 1.0, 0);
-		outlineTest(w,new int[]{4,3,3,2,2,1,1,2,2,3,3,4,4},new int[]{3,3,4,4,3,3,2,2,1,1,2,2,3});
+		outlineTest(w,new int[]{4,3,3,2,2,1,1,2,2,3,3,4},new int[]{3,3,4,4,3,3,2,2,1,1,2,2});
 
 		Wand.setAllPoints(false);  // make sure we reset
 		assertFalse(Wand.allPoints());

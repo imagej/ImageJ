@@ -79,14 +79,6 @@ public class PlotTest {
 	    assertEquals(0x20,Plot.Y_GRID);
 	    assertEquals(0x40,Plot.X_FORCE2GRID);
 	    assertEquals(0x80,Plot.Y_FORCE2GRID);
-	    //assertEquals(Plot.X_NUMBERS +Plot.Y_NUMBERS+Plot.X_GRID+Plot.Y_GRID, Plot.DEFAULT_FLAGS); 
-	    assertEquals(60,Plot.LEFT_MARGIN);
-	    //assertEquals(18,Plot.RIGHT_MARGIN);
-	    //assertEquals(15,Plot.TOP_MARGIN);
-	    //assertEquals(40,Plot.BOTTOM_MARGIN);
-	    assertEquals(20,Plot.RIGHT_MARGIN);
-	    assertEquals(13,Plot.TOP_MARGIN);
-	    assertEquals(42,Plot.BOTTOM_MARGIN);
 	}
 	
 	@Test

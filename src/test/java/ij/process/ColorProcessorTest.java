@@ -957,7 +957,7 @@ public class ColorProcessorTest {
 		ColorProcessor testColorProcessor = new ColorProcessor( width, height, getRefImageArray() );
 
 		//convolve3x3 int array
-        final int[] ref = {241, 160, 42};
+        final int[] ref = {239, 158, 40};
 		testColorProcessor.filter( 0 );
 		int[] firstResults = testColorProcessor.getPixel(0, 0, null);
 
