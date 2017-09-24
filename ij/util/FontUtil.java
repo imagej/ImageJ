@@ -12,8 +12,8 @@ public class FontUtil {
 	public static Font getFont(String fontFamilyName, int style, float size) {
 		Font font = new Font(fontFamilyName, style, (int)size);
 		if (!font.getFamily().startsWith(fontFamilyName)) {
-			String[] similarFonts = getSimilarFontsList(fontFamilyName);
-			font = getFont(fontFamilyName, style, (int)size);
+			//String[] similarFonts = getSimilarFontsList(fontFamilyName);
+			font = new Font("SansSerif", style, (int)size);
 		}
 		if (size != (int)size)
 			font = font.deriveFont(size);

@@ -5,82 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.51q 18 September 2017</u>
+<li> <u>1.51r 23 September 2017</u>
 <ul>
-<li> Plot enhancements, thanks to Michael Schmid:
-<ul>
-  <li> Plots saved as tiff or zip include the data, so the plot range can be modified (zooming, etc.)
-  and the data can be listed after loading the plot from a file.
-  <li> Changing the axis or label font size of a plot keeps the image size constant
-  and modifies the plot frame size (previously, the plot frame size was constant).
-  <li> Slightly more space for numbers at the left, enough for scientific notation. ImageJ switches
-  to a smaller font if more significant digits are required.
-  <li> Added Plot.getFrameBounds(x, y, width, height) macro function.
-  <li> The default font for plots is now Arial, not Helvetica (Arial is available on more platforms).
-  <li> When opening a plot on a computer where a given font is not available,
-  try to replace fonts by similar ones. This should make the appearance on
-  different platforms more similar.
-  <li> The ImageProcessor getStringWidth() and getStringBounds() methods
-  use the more accurate GlyphVector class.
-</ul>
-<li> Thanks to Norbert Vischer, the <i>Edit&gt;Selection&gt;Straighten</i>
-and <i>Image&gt;Duplicate</i> commands work
-with rotated rectangle selections.
-<li> Thanks to Jerome Parent, added the
-<i>Image&gt;Stacks&gt;Plot XY Profile</i> command.
-<li> Thanks to Jerome Parent, added a "Show unit" checkbox to the
-<i>Analyze&gt;Tools&gt;Calibration Bar</i> dialog box.
-<li> Thanks to Stein Rorvik, newly opened editor windows are larger and,
-on Linux and Windows, are less likely to cover the main ImageJ window.
-<li> Thanks to Norbert Vischer, added a "Smooth if thresholded"
-option to the Wand tool dialog
-(<a href="macros/examples/SmoothLetters.txt">example</a>).
-<li> Thanks to Kenneth Sloan, added a recordable ZProjector.run() method
-(<a href="macros/js/ProjectionDemo.js">examples</a>).
-<li> Thanks to Norbert Vischer, added the makeRotatedRectangle(x1,y1,x2,y2,width)
-macro function.
-<li> Thanks to Norbert Vischer, added the List.toArrays(keys,values),
-List.fromArrays(keys,values) and List.indexOf(key) macro functions.
-<li> Thanks to Max Leiter, fixed a bug that caused RoiListeners to not be
-notified when an ROI was created.
-<li> Thanks to Alvaro Folgado, fixed an OS X command injection 
-vulnerability in the  BrowserLauncher.
-<li> Thanks to Alison Walter, fixed a bug that caused the "Spline fit"
-checkbox in the "Line Width" dialog to convert angle selections to polygons.
-<li> Thanks to Chris Lamb, fixed a typo in MemoryMonitor.java where a
-constant that should have been 1024 was 1204.
-<li> Thanks to Norbert Vischer, fixed a bug in the Array.resample() macro
-function that caused it to throw an exception if the langth of the input
-was 0 or 1.
-<li> Thanks to John Loveland and Lukas Kvasnica, fixed a v1.51o
-regression that caused plugins that create virtual stacks without
-implementing the VirtualStack class to throw an exception.
-<li> Thanks to Tim Huang, fixed a bug that caused the <i>Image&gt;Overlay&gt;Flatten</i> 
-command to not work correctly with high-resolution images.
-<li> Thanks to Norbert Vischer, fixed a bug with the <i>Debug&gt;Abort</i> command in
-the macro editor that caused it to display a bogus error message.
-<li> Thanks to Stefan Helfrich and Azman Rashid, fixed a bug that caused ImageJ
-to not correctly read TIFF files created by the Bfconvert command line tool.
-<li> Thanks to Jan Eglinger, fixed a bug that caused the popup menu
-(e.g. right-click &gt; Rename...) and the "Dev" menu tool to not get recorded.
-<li> Thanks to Sethur, fixed a bug that caused scroll wheel zooming 
-in image stacks (enabled using control or shift key) to not work correctly.
-<li> Thanks to Steffen Schmidt, fixed a bug that caused scale bars
-to not be correctly positioned with large font sizes.
-<li> Thanks to Vanessa King and Jan Eglinger, fixed a bug that caused the
-"List" option in plot windows to sometimes not list all X columns when
-the columns differed in length.
-<li> Thanks to Carne Draug, fixed several problems related to building
-the ImageJ Debian package.
-<li> Thanks to Salim Kanoun, fixed a bug that caused overlay titles 
-to be selectable when a new ROI was being constructed.
-<li> Thanks to Norbert Vischer, fixed a bug than caused the
-<i>Analyze&gt;Gels&gt;Select Next Lane</i> command
-to sometimes create duplicate plots.
-<li> Thanks to Michael Kaul, fixed a v1.51o regression that caused the
- ImagePlus.flatten() method to be much slower.
- <li> Fixed a 1.51e regression  that caused the "Auto" buttion in the 
- <i>Brightness/Contrast</i> dialog to not increase contrast with repeated clicks.
+<li> Fixed a 1.51q reqression that caused the Plot class to
+sometimes throw an exception.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
