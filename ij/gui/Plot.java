@@ -249,7 +249,7 @@ public class Plot implements Cloneable {
 
 	/** Constructs a new plot from an InputStream and closes the stream. If the ImagePlus is
 	 *  non-null, its title and ImageProcessor are used, but the image displayed is not modified.
-	 *	@see toStream() */
+	*/
 	public Plot(ImagePlus imp, InputStream is) throws IOException, ClassNotFoundException {
 		ObjectInputStream in = new ObjectInputStream(is);
 		pp = (PlotProperties)in.readObject();
@@ -667,7 +667,7 @@ public class Plot implements Cloneable {
 
 	public void add(String shape, double[] x, double[] y) {
 		int iShape = toShape(shape);
-		addPoints(Tools.toFloat(x), Tools.toFloat(y), null, iShape, iShape==CUSTOM?shape.substring(6, shape.length()):null);
+		addPoints(Tools.toFloat(x), Tools.toFloat(y), null, iShape, iShape==CUSTOM?shape.substring(5, shape.length()):null);
 	}
 
 	/** Returns the number for a given plot symbol shape, -1 for xError and -2 for yError (all case-insensitive) */
@@ -692,7 +692,7 @@ public class Plot implements Cloneable {
 			shape = -1;
 		else if (str.contains("x"))
 			shape = Plot.X;
-		if (str.startsWith("code: "))
+		if (str.startsWith("code:"))
 			shape = CUSTOM;
 		return shape;
 	}
@@ -2395,8 +2395,14 @@ public class Plot implements Cloneable {
 					break;
 				ImagePlus imp = new ImagePlus("", ip);
 				WindowManager.setTempCurrentImage(imp);
-				String code = "x="+x+";y="+y+";setColor("+plotObject.color.getRGB()+");s="+sc(1)+";"+plotObject.macroCode;
-				String rtn = IJ.runMacro(code);
+				StringBuilder sb = new StringBuilder();
+				sb.append("x="+x);
+				sb.append(";y="+y);
+				sb.append(";setColor("+plotObject.color.getRGB());
+				sb.append(");s="+sc(1));
+				sb.append(";");
+				sb.append(plotObject.macroCode);
+				String rtn = IJ.runMacro(sb.toString());
 				if ("[aborted]".equals(rtn))
 					plotObject.macroCode = null;
 				WindowManager.setTempCurrentImage(null);
@@ -2414,7 +2420,7 @@ public class Plot implements Cloneable {
 				break;
 		}
 	}
-
+	
 	/** Fill the area of the symbols for data points (except for shape=DOT)
 	 *	Note that ip.fill, ip.fillOval etc. can't be used here: they do not care about the clip rectangle */
 	void fillShape(int shape, int x0, int y0, int size) {
