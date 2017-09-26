@@ -75,12 +75,28 @@ public class IJ {
 		isWin = osname.startsWith("Windows");
 		isMac = !isWin && osname.startsWith("Mac");
 		isLinux = osname.startsWith("Linux");
-		String version = System.getProperty("java.version").substring(0,3);
-		if (version.compareTo("2.9")<=0) {  // JVM on Sharp Zaurus PDA claims to be "3.1"!
-			isJava16 = version.compareTo("1.5")>0;
-			isJava17 = version.compareTo("1.6")>0;
-			isJava18 = version.compareTo("1.7")>0;
-			isJava19 = version.compareTo("1.8")>0;
+		String version = System.getProperty("java.version").substring(0,3);		
+		try {
+			Class klass = Class.forName("java.util.zip.CRC32C");
+			isJava16=isJava17=isJava18=isJava19 = true;
+		} catch (ClassNotFoundException e) {}
+		if (!isJava18) {
+			try {
+				Class klass = Class.forName("java.util.stream.IntStream");
+				isJava16=isJava17=isJava18 = true;
+			} catch (ClassNotFoundException e) {}
+		}
+		if (!isJava17) {
+			try {
+				Class klass = Class.forName("java.util.Objects");
+				isJava16=isJava17 = true;
+			} catch (ClassNotFoundException e) {}
+		}
+		if (!isJava16) {
+			try {
+				Class klass = Class.forName("javax.tools.JavaCompiler");
+				isJava16 = true;
+			} catch (ClassNotFoundException e) {}
 		}
 		dfs = new DecimalFormatSymbols(Locale.US);
 		df = new DecimalFormat[10];
