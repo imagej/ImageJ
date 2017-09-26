@@ -53,13 +53,16 @@ public class Plot implements Cloneable {
 	public static final int DOT = 6;
 	/** Draw black lines between the dots and a circle with the given color at each dot */
 	public static final int CONNECTED_CIRCLES = 7;
+	/** Draw shape using macro code */
+	public static final int CUSTOM = 8;
+
 	/** Names for the shapes as an array */
 	final static String[] SHAPE_NAMES = new String[] {
-			"Circle", "X", "Line", "Box", "Triangle", "+", "Dot", "Connected Circles"};
+			"Circle", "X", "Line", "Box", "Triangle", "+", "Dot", "Connected Circles", "Custom"};
 	/** Names in nicely sorting order for menus */
 	final static String[] SORTED_SHAPES = new String[] {
 			SHAPE_NAMES[LINE], SHAPE_NAMES[CONNECTED_CIRCLES], SHAPE_NAMES[CIRCLE], SHAPE_NAMES[BOX], SHAPE_NAMES[TRIANGLE],
-			SHAPE_NAMES[CROSS], SHAPE_NAMES[X], SHAPE_NAMES[DOT] };
+			SHAPE_NAMES[CROSS], SHAPE_NAMES[X], SHAPE_NAMES[DOT]};
 	/** flag for numeric labels of x-axis ticks */
 	public static final int X_NUMBERS = 0x1;
 	/** flag for numeric labels of x-axis ticks */
@@ -663,7 +666,8 @@ public class Plot implements Cloneable {
 	}
 
 	public void add(String shape, double[] x, double[] y) {
-		addPoints(Tools.toFloat(x), Tools.toFloat(y), null, toShape(shape), null);
+		int iShape = toShape(shape);
+		addPoints(Tools.toFloat(x), Tools.toFloat(y), null, iShape, iShape==CUSTOM?shape.substring(6, shape.length()):null);
 	}
 
 	/** Returns the number for a given plot symbol shape, -1 for xError and -2 for yError (all case-insensitive) */
@@ -688,6 +692,8 @@ public class Plot implements Cloneable {
 			shape = -1;
 		else if (str.contains("x"))
 			shape = Plot.X;
+		if (str.startsWith("code: "))
+			shape = CUSTOM;
 		return shape;
 	}
 
@@ -1111,7 +1117,7 @@ public class Plot implements Cloneable {
 		if (items.length >= 3) try {
 			plotObject.lineWidth = Float.parseFloat(items[2].trim());
 		} catch (NumberFormatException e) {};
-		if (items.length >= 4)
+		if (items.length >= 4 && plotObject.shape!=CUSTOM)
 			plotObject.shape = toShape(items[3].trim());
 		updateImage();
 		return;
@@ -2287,7 +2293,7 @@ public class Plot implements Cloneable {
 					ip.setColor(plotObject.color);
 					for (int i=0; i<Math.min(plotObject.xValues.length, plotObject.yValues.length); i++)
 						if ((!logXAxis || plotObject.xValues[i]>0) && (!logYAxis || plotObject.yValues[i]>0))
-							drawShape(plotObject.shape, scaleX(plotObject.xValues[i]), scaleY(plotObject.yValues[i]), markSize);
+							drawShape(plotObject, scaleX(plotObject.xValues[i]), scaleY(plotObject.yValues[i]), markSize);
 				}
 				ip.setClipRect(null);
 				break;
@@ -2354,7 +2360,8 @@ public class Plot implements Cloneable {
 	}
 
 	/** Draw the symbols for data points */
-	void drawShape(int shape, int x, int y, int size) {
+	void drawShape(PlotObject plotObject, int x, int y, int size) {
+		int shape = plotObject.shape;
 		int xbase = x-sc(size/2);
 		int ybase = y-sc(size/2);
 		int xend = x+sc(size/2);
@@ -2381,6 +2388,18 @@ public class Plot implements Cloneable {
 				break;
 			case DOT:
 				ip.drawDot(x, y); //uses current line width
+				break;
+			case CUSTOM:
+				if (plotObject.macroCode==null || frame==null || x<frame.x || y<frame.y
+				|| x>frame.x+frame.width || y>frame.y+frame.height)
+					break;
+				ImagePlus imp = new ImagePlus("", ip);
+				WindowManager.setTempCurrentImage(imp);
+				String code = "x="+x+";y="+y+";setColor("+plotObject.color.getRGB()+");s="+sc(1)+";"+plotObject.macroCode;
+				String rtn = IJ.runMacro(code);
+				if ("[aborted]".equals(rtn))
+					plotObject.macroCode = null;
+				WindowManager.setTempCurrentImage(null);
 				break;
 			default: // CIRCLE, CONNECTED_CIRCLES: 5x5 oval approximated by 5x5 square without corners
 				if (sc(size) < 5.01) {
@@ -2581,7 +2600,7 @@ public class Plot implements Cloneable {
 				ip.setLineWidth(lineWidth);
 				if (plotObject.hasMarker()) {
 					ip.setColor(plotObject.color);
-					drawShape(plotObject.shape, xMarker, y, plotObject.getMarkerSize());
+					drawShape(plotObject, xMarker, y, plotObject.getMarkerSize());
 				}
 				if (plotObject.hasCurve()) {
 					Color c = plotObject.shape == CONNECTED_CIRCLES ?
@@ -2959,12 +2978,15 @@ class PlotObject implements Cloneable, Serializable {
 	public String label;
 	/** Labels only: Justification can be Plot.LEFT, Plot.CENTER or Plot.RIGHT */
 	public int justification;
+	/** Macro code for drawing shape */
+	public String macroCode;
 	/** Text objects (labels, legend, axis labels) only: the font; maybe null for default. This is not serialized (transient) */
 	private transient Font font;
 	/** String for representation of the font family (for Serialization); may be null for default. Font style is in flags, font size in fontSize. */
 	private String fontFamily;
 	/** Font size (for Serialization) */
 	private float fontSize;
+
 
 	/** Generic constructor */
 	PlotObject(int type) {
@@ -2982,6 +3004,8 @@ class PlotObject implements Cloneable, Serializable {
 		this.color = color;
 		this.color2 = color2;
 		this.label = yLabel;
+		if (shape==Plot.CUSTOM)
+			this.macroCode = yLabel;
 	}
 
 	/** Constructor for a set of arrows */
@@ -3058,7 +3082,7 @@ class PlotObject implements Cloneable, Serializable {
 	/** Whether an XY_DATA object has markers to draw */
 	boolean hasMarker() {
 		return type == XY_DATA && (shape == Plot.CIRCLE || shape == Plot.X || shape == Plot.BOX || shape == Plot.TRIANGLE ||
-				shape == Plot.CROSS || shape == Plot.DOT || shape == Plot.CONNECTED_CIRCLES);
+				shape == Plot.CROSS || shape == Plot.DOT || shape == Plot.CONNECTED_CIRCLES || shape == Plot.CUSTOM);
 	}
 
 	/** Whether an XY_DATA object has markers that can be filled */

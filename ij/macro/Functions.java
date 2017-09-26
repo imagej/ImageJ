@@ -2164,7 +2164,7 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("add")) {
 			String arg = getFirstString();
 			int what = Plot.toShape(arg);
-			addToPlot(what);
+			addToPlot(what, arg);
 			return;
 		} else
 			interp.error("Unrecognized plot function");
@@ -2402,7 +2402,7 @@ public class Functions implements MacroConstants, Measurements {
 		plot.makeHighResolution(title, (float)scale, antialiasedText, true);
 	}
 
-	void addToPlot(int what) {
+	void addToPlot(int what, String shape) {
 		boolean errorBars = false;
 		double[] x = getNextArray();
 		double[] y;
@@ -2428,6 +2428,8 @@ public class Functions implements MacroConstants, Measurements {
 			plot.addHorizontalErrorBars(y);
 		else if (errorBars)
 			plot.addPoints(x, y, e, what);
+		else if (what==Plot.CUSTOM)
+			plot.add(shape, x, y);
 		else
 			plot.addPoints(x, y, what);
 	}
