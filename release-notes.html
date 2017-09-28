@@ -5,11 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.51r 26 September 2017</u>
+<li> <u>1.51r 27 September 2017</u>
 <ul>
 <li> Thanks to Norbert Vischer, if the 'type' argument of the Plot.add(type,xpoints,ypoints) macro function
 and plot.add(type,xpoints,ypoints) method starts with "code: " then the macro code contained in the 'type' string
 is executed per point, using variable names 'x' and 'y' for the point location and 's' for high-resolution scale factor. 
+<li> Thanks to Mathieu Prouveur, ImageJ displays an error message when
+a macro function attempts to return a string enclosed in parenthesis.
 <li> Thanks to Roger Leigh, fixed bugs that prevented ImageJ from running on Java 9.
 <li> Thanks to Michael Schmid, fixed a 1.51q reqression 
 that could cause an exception when creating a plot.

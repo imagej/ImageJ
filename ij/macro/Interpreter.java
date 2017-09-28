@@ -444,7 +444,12 @@ public class Interpreter implements MacroConstants {
 		String str = null;
 		Variable[] array = null;
 		int arraySize = 0;
-		getToken();
+		getToken();		
+		if (token=='(') {
+			int next = pgm.code[pc+1];
+			if ((next&TOK_MASK)==STRING_CONSTANT || (next&TOK_MASK)==STRING_FUNCTION || isString(next))
+				error("String enclosed in parens");
+		}		
 		if (token!=';') {
 			boolean isString = token==STRING_CONSTANT || token==STRING_FUNCTION;
 			boolean isArrayFunction = token==ARRAY_FUNCTION;

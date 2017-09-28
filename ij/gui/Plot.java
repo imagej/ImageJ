@@ -2395,11 +2395,11 @@ public class Plot implements Cloneable {
 					break;
 				ImagePlus imp = new ImagePlus("", ip);
 				WindowManager.setTempCurrentImage(imp);
-				StringBuilder sb = new StringBuilder();
-				sb.append("x="+x);
-				sb.append(";y="+y);
-				sb.append(";setColor("+plotObject.color.getRGB());
-				sb.append(");s="+sc(1));
+				StringBuilder sb = new StringBuilder(140+plotObject.macroCode.length());
+				sb.append("x="); sb.append(x);
+				sb.append(";y="); sb.append(y);
+				sb.append(";setColor("); sb.append(plotObject.color.getRGB());
+				sb.append(");s="); sb.append(sc(1));
 				sb.append(";");
 				sb.append(plotObject.macroCode);
 				String rtn = IJ.runMacro(sb.toString());

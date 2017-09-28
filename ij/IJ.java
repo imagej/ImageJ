@@ -75,29 +75,15 @@ public class IJ {
 		isWin = osname.startsWith("Windows");
 		isMac = !isWin && osname.startsWith("Mac");
 		isLinux = osname.startsWith("Linux");
-		String version = System.getProperty("java.version").substring(0,3);		
-		try {
-			Class klass = Class.forName("java.util.zip.CRC32C");
+		String version = System.getProperty("java.version");
+		if (version.startsWith("1.9")||version.startsWith("9"))
 			isJava16=isJava17=isJava18=isJava19 = true;
-		} catch (ClassNotFoundException e) {}
-		if (!isJava18) {
-			try {
-				Class klass = Class.forName("java.util.stream.IntStream");
+		else if (!isJava18&&version.startsWith("1.8"))
 				isJava16=isJava17=isJava18 = true;
-			} catch (ClassNotFoundException e) {}
-		}
-		if (!isJava17) {
-			try {
-				Class klass = Class.forName("java.util.Objects");
+		else if (!isJava17&&version.startsWith("1.7"))
 				isJava16=isJava17 = true;
-			} catch (ClassNotFoundException e) {}
-		}
-		if (!isJava16) {
-			try {
-				Class klass = Class.forName("javax.tools.JavaCompiler");
+		else if (!isJava16&&version.startsWith("1.6"))
 				isJava16 = true;
-			} catch (ClassNotFoundException e) {}
-		}
 		dfs = new DecimalFormatSymbols(Locale.US);
 		df = new DecimalFormat[10];
 		df[0] = new DecimalFormat("0", dfs);
