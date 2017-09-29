@@ -2294,6 +2294,7 @@ public class Plot implements Cloneable {
 					}
 					// draw markers
 					ip.setColor(plotObject.color);
+					plotObject.pointIndex = 0;
 					for (int i=0; i<Math.min(plotObject.xValues.length, plotObject.yValues.length); i++)
 						if ((!logXAxis || plotObject.xValues[i]>0) && (!logYAxis || plotObject.yValues[i]>0))
 							drawShape(plotObject, scaleX(plotObject.xValues[i]), scaleY(plotObject.yValues[i]), markSize);
@@ -2403,6 +2404,7 @@ public class Plot implements Cloneable {
 				sb.append(";y="); sb.append(y);
 				sb.append(";setColor("); sb.append(plotObject.color.getRGB());
 				sb.append(");s="); sb.append(sc(1));
+				sb.append(";i="); sb.append(plotObject.pointIndex++);
 				sb.append(";");
 				sb.append(plotObject.macroCode);
 				String rtn = IJ.runMacro(sb.toString());
@@ -2987,8 +2989,10 @@ class PlotObject implements Cloneable, Serializable {
 	public String label;
 	/** Labels only: Justification can be Plot.LEFT, Plot.CENTER or Plot.RIGHT */
 	public int justification;
-	/** Macro code for drawing shape */
+	/** Macro code for drawing symbols */
 	public String macroCode;
+	/** Index passed to macro code that draws symbols*/
+	public int pointIndex;
 	/** Text objects (labels, legend, axis labels) only: the font; maybe null for default. This is not serialized (transient) */
 	private transient Font font;
 	/** String for representation of the font family (for Serialization); may be null for default. Font style is in flags, font size in fontSize. */
