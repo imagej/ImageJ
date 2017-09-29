@@ -835,8 +835,11 @@ public class Plot implements Cloneable {
 			int iPart = 0;
 			for (PlotObject plotObject : allPlotObjects)
 				if (plotObject.type == PlotObject.XY_DATA && !plotObject.hasFlag(PlotObject.HIDDEN))
-					if (iPart < allLabels.length)
-						plotObject.label = allLabels[iPart++];
+					if (iPart < allLabels.length) {
+						String label = allLabels[iPart++];
+						if (label!=null && label.length()>0)
+							plotObject.label = label;
+					}
 		}
 		pp.legend = new PlotObject(currentLineWidth == 0 ? 1 : currentLineWidth,
 				currentFont, currentColor == null ? Color.black : currentColor, flags);

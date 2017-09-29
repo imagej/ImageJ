@@ -270,6 +270,7 @@ public class Menus {
 		addExample(submenu, "Example Plot", "Example_Plot.ijm");
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.ijm");
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.ijm");
+		addExample(submenu, "Custom Plot Symbols", "Custom_Plot_Symbols.ijm");
 		addExample(submenu, "Process Folder", "Batch_Process_Folder.ijm");
 		addExample(submenu, "OpenDialog Demo", "OpenDialog_Demo.ijm");
 		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.ijm");
