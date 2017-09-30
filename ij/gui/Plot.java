@@ -2295,9 +2295,13 @@ public class Plot implements Cloneable {
 					// draw markers
 					ip.setColor(plotObject.color);
 					plotObject.pointIndex = 0;
-					for (int i=0; i<Math.min(plotObject.xValues.length, plotObject.yValues.length); i++)
+					Font saveFont = ip.getFont();
+					for (int i=0; i<Math.min(plotObject.xValues.length, plotObject.yValues.length); i++) {
 						if ((!logXAxis || plotObject.xValues[i]>0) && (!logYAxis || plotObject.yValues[i]>0))
 							drawShape(plotObject, scaleX(plotObject.xValues[i]), scaleY(plotObject.yValues[i]), markSize);
+					}
+					if (plotObject.shape==CUSTOM)
+						ip.setFont(saveFont);
 				}
 				ip.setClipRect(null);
 				break;
@@ -2610,8 +2614,10 @@ public class Plot implements Cloneable {
 				int lineWidth = sc(plotObject.lineWidth);
 				ip.setLineWidth(lineWidth);
 				if (plotObject.hasMarker()) {
+					Font saveFont = ip.getFont();
 					ip.setColor(plotObject.color);
 					drawShape(plotObject, xMarker, y, plotObject.getMarkerSize());
+					if (plotObject.shape==CUSTOM) ip.setFont(saveFont);
 				}
 				if (plotObject.hasCurve()) {
 					Color c = plotObject.shape == CONNECTED_CIRCLES ?

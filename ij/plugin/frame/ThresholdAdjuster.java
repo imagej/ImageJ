@@ -15,7 +15,7 @@ import ij.plugin.Thresholder;
 /** Adjusts the lower and upper threshold levels of the active image. This
 	class is multi-threaded to provide a more responsive user interface. */
 public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measurements,
-	Runnable, ActionListener, AdjustmentListener, ItemListener, ImageListener {
+	Runnable, ActionListener, AdjustmentListener, ItemListener, ImageListener, MouseWheelListener {
 
 	public static final String LOC_KEY = "threshold.loc";
 	public static final String MODE_KEY = "threshold.mode";
@@ -125,6 +125,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		c.insets = new Insets(1, 10, 0, 0);
 		add(minSlider, c);
 		minSlider.addAdjustmentListener(this);
+		minSlider.addMouseWheelListener(this);
 		minSlider.addKeyListener(ij);
 		minSlider.setUnitIncrement(1);
 		minSlider.setFocusable(false);
@@ -148,6 +149,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		c.insets = new Insets(2, 10, 0, 0);
 		add(maxSlider, c);
 		maxSlider.addAdjustmentListener(this);
+		maxSlider.addMouseWheelListener(this);
 		maxSlider.addKeyListener(ij);
 		maxSlider.setUnitIncrement(1);
 		maxSlider.setFocusable(false);
@@ -254,7 +256,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		notify();
 	}
 
-	public synchronized  void actionPerformed(ActionEvent e) {
+	public synchronized void actionPerformed(ActionEvent e) {
 		Button b = (Button)e.getSource();
 		if (b==null) return;
 		if (b==resetB)
@@ -265,6 +267,20 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			doApplyLut = true;
 		else if (b==setB)
 			doSet = true;
+		notify();
+	}
+
+	public synchronized void mouseWheelMoved(MouseWheelEvent e)	{
+		if(e.getSource()==minSlider)
+		{
+			minSlider.setValue(minSlider.getValue() + e.getWheelRotation());
+			minValue = minSlider.getValue();
+		}
+		else
+		{
+			maxSlider.setValue(maxSlider.getValue() + e.getWheelRotation());
+			maxValue = maxSlider.getValue();
+		}
 		notify();
 	}
 
@@ -856,9 +872,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			ta.notify();
 		}
 	}
-
-
-
+	
 } // ThresholdAdjuster class
 
 
