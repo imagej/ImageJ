@@ -15,7 +15,7 @@ import ij.plugin.Thresholder;
 /** Adjusts the lower and upper threshold levels of the active image. This
 	class is multi-threaded to provide a more responsive user interface. */
 public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measurements,
-	Runnable, ActionListener, AdjustmentListener, ItemListener, ImageListener, MouseWheelListener {
+	Runnable, ActionListener, AdjustmentListener, ItemListener, KeyListener, MouseWheelListener, ImageListener {
 
 	public static final String LOC_KEY = "threshold.loc";
 	public static final String MODE_KEY = "threshold.mode";
@@ -43,7 +43,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	boolean doAutoAdjust,doReset,doApplyLut,doStateChange,doSet;
 	
 	Panel panel;
-	Button autoB, resetB, applyB, setB;
+	Button autoB, resetB, applyB;
 	int previousImageID;
 	int previousImageType;
 	int previousRoiHashCode;
@@ -53,7 +53,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	ImageJ ij;
 	double minThreshold, maxThreshold;  // 0-255
 	Scrollbar minSlider, maxSlider;
-	Label label1, label2;               // for current threshold
+	TextField minLabel, maxLabel;           // for current threshold
 	Label percentiles;
 	boolean done;
 	int lutColor;
@@ -126,7 +126,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		add(minSlider, c);
 		minSlider.addAdjustmentListener(this);
 		minSlider.addMouseWheelListener(this);
-		minSlider.addKeyListener(ij);
+//		minSlider.addKeyListener(ij);
 		minSlider.setUnitIncrement(1);
 		minSlider.setFocusable(false);
 		
@@ -135,10 +135,13 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		c.gridwidth = 1;
 		c.weightx = IJ.isMacintosh()?10:0;
 		c.insets = new Insets(5, 0, 0, 10);
-		String text = IJ.isMacOSX()?"000000":"00000000";
-		label1 = new Label(text, Label.RIGHT);
-    	label1.setFont(font);
-		add(label1, c);
+		String text = "000000";
+		int columns = 4;
+		minLabel = new TextField(text,columns);
+    	minLabel.setFont(font);
+		add(minLabel, c);
+		minLabel.addMouseWheelListener(this);
+		minLabel.addKeyListener(this);
 		
 		// maxThreshold slider
 		maxSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange*2/3, 1, 0, sliderRange);
@@ -150,7 +153,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		add(maxSlider, c);
 		maxSlider.addAdjustmentListener(this);
 		maxSlider.addMouseWheelListener(this);
-		maxSlider.addKeyListener(ij);
+//		maxSlider.addKeyListener(ij);
 		maxSlider.setUnitIncrement(1);
 		maxSlider.setFocusable(false);
 		
@@ -159,9 +162,11 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(2, 0, 0, 10);
-		label2 = new Label(text, Label.RIGHT);
-    	label2.setFont(font);
-		add(label2, c);
+		maxLabel = new TextField(text,columns);
+    	maxLabel.setFont(font);
+		add(maxLabel, c);
+		maxLabel.addMouseWheelListener(this);
+		maxLabel.addKeyListener(this);
 				
 		// choices
 		panel = new Panel();
@@ -219,10 +224,6 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		resetB.addActionListener(this);
 		resetB.addKeyListener(ij);
 		panel.add(resetB);
-		setB = new TrimmedButton("Set",trim);
-		setB.addActionListener(this);
-		setB.addKeyListener(ij);
-		panel.add(setB);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 2;
@@ -265,24 +266,50 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			doAutoAdjust = true;
 		else if (b==applyB)
 			doApplyLut = true;
-		else if (b==setB)
-			doSet = true;
 		notify();
 	}
 
 	public synchronized void mouseWheelMoved(MouseWheelEvent e)	{
-		if(e.getSource()==minSlider)
-		{
+		if(e.getSource()==minSlider || e.getSource()==minLabel) {
 			minSlider.setValue(minSlider.getValue() + e.getWheelRotation());
 			minValue = minSlider.getValue();
 		}
-		else
-		{
+		else {
 			maxSlider.setValue(maxSlider.getValue() + e.getWheelRotation());
 			maxValue = maxSlider.getValue();
 		}
 		notify();
 	}
+	
+	public synchronized void keyPressed(KeyEvent e) {
+		if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+			doSet = true;
+		}
+		else if(e.getKeyCode() == KeyEvent.VK_LEFT) {
+			if(e.getSource()==minLabel) {
+				minSlider.setValue(minSlider.getValue() - 1);
+				minValue = minSlider.getValue();
+			}
+			else {
+				maxSlider.setValue(maxSlider.getValue() - 1);
+				maxValue = maxSlider.getValue();
+			}
+		}
+		else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
+			if(e.getSource()==minLabel) {
+				minSlider.setValue(minSlider.getValue() + 1);
+				minValue = minSlider.getValue();
+			}
+			else {
+				maxSlider.setValue(maxSlider.getValue() + 1);
+				maxValue = maxSlider.getValue();
+			}
+		}
+		notify();
+	}
+	
+	public void keyReleased(KeyEvent e) {}
+	public void keyTyped(KeyEvent e) {}
 
 	public void imageUpdated(ImagePlus imp) {
 		if (imp.getID()==previousImageID && Thread.currentThread()!=thread)
@@ -516,13 +543,13 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	void updateLabels(ImagePlus imp, ImageProcessor ip) {
-		if (label1==null || label2==null)
+		if (minLabel==null || maxLabel==null)
 			return;
 		double min = ip.getMinThreshold();
 		double max = ip.getMaxThreshold();
 		if (min==ImageProcessor.NO_THRESHOLD) {
-			label1.setText("");
-			label2.setText("");
+			minLabel.setText("");
+			maxLabel.setText("");
 		} else {
 			Calibration cal = imp.getCalibration();
 			if (cal.calibrated()) {
@@ -530,11 +557,11 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 				max = cal.getCValue((int)max);
 			}
 			if (((int)min==min && (int)max==max) || (ip instanceof ShortProcessor) || max>99999.0) {
-				label1.setText(ResultsTable.d2s(min,0));
-				label2.setText(ResultsTable.d2s(max,0));
+				minLabel.setText(ResultsTable.d2s(min,0));
+				maxLabel.setText(ResultsTable.d2s(max,0));
 			} else {
-				label1.setText(""+(min<-3.4e38?"-3.4e38":ResultsTable.d2s(min,2)));
-				label2.setText(""+ResultsTable.d2s(max,max==Double.MAX_VALUE?0:2));
+				minLabel.setText(""+(min<-3.4e38?"-3.4e38":ResultsTable.d2s(min,2)));
+				maxLabel.setText(""+ResultsTable.d2s(max,max==Double.MAX_VALUE?0:2));
 			}
 		}
 	}
@@ -608,14 +635,17 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	void doSet(ImagePlus imp, ImageProcessor ip) {
+/*
 		double level1 = ip.getMinThreshold();
 		double level2 = ip.getMaxThreshold();
 		if (level1==ImageProcessor.NO_THRESHOLD) {
 			level1 = scaleUp(ip, defaultMinThreshold);
 			level2 = scaleUp(ip, defaultMaxThreshold);
 		}
+*/
 		Calibration cal = imp.getCalibration();
 		int digits = (ip instanceof FloatProcessor)||cal.calibrated()?2:0;
+/*
 		level1 = cal.getCValue(level1);
 		level2 = cal.getCValue(level2);
 		GenericDialog gd = new GenericDialog("Set Threshold Levels");
@@ -626,6 +656,9 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			return;
 		level1 = gd.getNextNumber();
 		level2 = gd.getNextNumber();
+*/
+		double level1 = Double.parseDouble(minLabel.getText());
+		double level2 = Double.parseDouble(maxLabel.getText());
 		level1 = cal.getRawValue(level1);
 		level2 = cal.getRawValue(level2);
 		if (level2<level1)
