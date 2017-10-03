@@ -498,7 +498,11 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 						values[valuesP] = value;
 					}
 				} else if (filterType == MEDIAN) {
-					median = getMedian(cache, x, cachePointers, medianBuf1, medianBuf2, kNPoints, median);
+					if (isFloat) {
+						median = Float.isNaN(values[valuesP]) ? Float.NaN : values[valuesP];	// a first guess
+						median = getNaNAwareMedian(cache, x, cachePointers, medianBuf1, medianBuf2, kNPoints, median);
+					} else
+						median = getMedian(cache, x, cachePointers, medianBuf1, medianBuf2, kNPoints, median);
 					values[valuesP] = median;
 				} else if (filterType == OUTLIERS) {
 					float v = cache[cacheLineP+x];

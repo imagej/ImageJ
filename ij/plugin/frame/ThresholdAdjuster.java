@@ -138,7 +138,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		String text = "000000";
 		int columns = 4;
 		minLabel = new TextField(text,columns);
-    	minLabel.setFont(font);
+		minLabel.setFont(font);
 		add(minLabel, c);
 		minLabel.addMouseWheelListener(this);
 		minLabel.addKeyListener(this);
@@ -163,7 +163,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		c.weightx = 0;
 		c.insets = new Insets(2, 0, 0, 10);
 		maxLabel = new TextField(text,columns);
-    	maxLabel.setFont(font);
+		maxLabel.setFont(font);
 		add(maxLabel, c);
 		maxLabel.addMouseWheelListener(this);
 		maxLabel.addKeyListener(this);
@@ -270,11 +270,10 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	public synchronized void mouseWheelMoved(MouseWheelEvent e)	{
-		if(e.getSource()==minSlider || e.getSource()==minLabel) {
+		if (e.getSource()==minSlider || e.getSource()==minLabel) {
 			minSlider.setValue(minSlider.getValue() + e.getWheelRotation());
 			minValue = minSlider.getValue();
-		}
-		else {
+		} else {
 			maxSlider.setValue(maxSlider.getValue() + e.getWheelRotation());
 			maxValue = maxSlider.getValue();
 		}
@@ -282,25 +281,21 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 	
 	public synchronized void keyPressed(KeyEvent e) {
-		if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 			doSet = true;
-		}
-		else if(e.getKeyCode() == KeyEvent.VK_LEFT) {
-			if(e.getSource()==minLabel) {
+		} else if(e.getKeyCode() == KeyEvent.VK_LEFT) {
+			if (e.getSource()==minLabel) {
 				minSlider.setValue(minSlider.getValue() - 1);
 				minValue = minSlider.getValue();
-			}
-			else {
+			} else {
 				maxSlider.setValue(maxSlider.getValue() - 1);
 				maxValue = maxSlider.getValue();
 			}
-		}
-		else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
-			if(e.getSource()==minLabel) {
+		} else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
+			if (e.getSource()==minLabel) {
 				minSlider.setValue(minSlider.getValue() + 1);
 				minValue = minSlider.getValue();
-			}
-			else {
+			} else {
 				maxSlider.setValue(maxSlider.getValue() + 1);
 				maxValue = maxSlider.getValue();
 			}
