@@ -250,8 +250,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				debugMenu.addActionListener(this);
 				mb.add(debugMenu);
 			}
-			if (macroExtension && text.indexOf("macro ")!=-1)
-				installMacros(text, false);	
+			//if (macroExtension && text.indexOf("macro \"")!=-1)
+			//	installMacros(text, false);	
 		} else {
 			fileMenu.addSeparator();
 			fileMenu.add(new MenuItem("Compile and Run", new MenuShortcut(KeyEvent.VK_R)));

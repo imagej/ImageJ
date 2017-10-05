@@ -470,8 +470,8 @@ public class Prefs {
 		multiPointMode = (options&MULTI_POINT_MODE)!=0;
 		rotateYZ = (options&ROTATE_YZ)!=0;
 		flipXZ = (options&FLIP_XZ)!=0;
-		dontSaveHeaders = (options&DONT_SAVE_HEADERS)!=0;
-		dontSaveRowNumbers = (options&DONT_SAVE_ROW_NUMBERS)!=0;
+		//dontSaveHeaders = (options&DONT_SAVE_HEADERS)!=0;
+		//dontSaveRowNumbers = (options&DONT_SAVE_ROW_NUMBERS)!=0;
 		noClickToGC = (options&NO_CLICK_TO_GC)!=0;
 		avoidResliceInterpolation = (options&AVOID_RESLICE_INTERPOLATION)!=0;
 		keepUndoBuffers = (options&KEEP_UNDO_BUFFERS)!=0;

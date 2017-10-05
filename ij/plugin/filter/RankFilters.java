@@ -499,7 +499,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 					}
 				} else if (filterType == MEDIAN) {
 					if (isFloat) {
-						median = Float.isNaN(values[valuesP]) ? Float.NaN : values[valuesP];	// a first guess
+						median = Float.isNaN(values[valuesP]) ? Float.NaN : values[valuesP]; // a first guess
 						median = getNaNAwareMedian(cache, x, cachePointers, medianBuf1, medianBuf2, kNPoints, median);
 					} else
 						median = getMedian(cache, x, cachePointers, medianBuf1, medianBuf2, kNPoints, median);
