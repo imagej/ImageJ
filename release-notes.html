@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.51r 5 October 2017</u>
+<li> <u>1.51r 6 October 2017</u>
 <ul>
 <li> Thanks to Norbert Vischer, custom symbols in plots are now supported.
 Refer to the <i>Help&gt;Examples&gt;Macro&gt;Custom Plot Symbols</i>
@@ -14,7 +14,7 @@ command for an example.
 in the "Threshold" dialog by editable text fields and removed the "Set"
 button. New values are validated once the user hits the enter key. Also
 added mouse wheel and arrow key support to the min and max sliders. 
-The left/right keys decrease/increase the threshold values when the cursor
+The up/down keys increase/decrease the threshold values when the cursor
 is within one of the text fields.
 <li> The "Save column headers" and "Save row numbers" options in the
 <i>Edit&gt;Options&gt;Input/Output</i> dialog are always enabled on startup.
@@ -27,6 +27,13 @@ the <i>Orthogonal Views</i> command to throw an exception.
 to not work correctly with 32-bit images containing NaN values.
 <li> Thanks to Ron DeSpain, fixed a bug that could cause startup macro
 shortcuts to be disabled when opening a macro in the macro editor.
+<li> Thanks to Kees Straatman, fixed a bug that caused the
+run("Set Measurements...", options) macro function to not work
+as expected if used after a run("Analyze Particles...", options) call
+that was missing 'display ' in the options string.
+<li> Thanks to Jeremy Adler, fixed a bug that caused the
+run("Stack to Images") macro function to not make the 
+last opened image the active image.
 <li> Thanks to Michael Schmid, fixed a 1.51q reqression 
 that could cause an exception when creating a plot.
 </ul> 

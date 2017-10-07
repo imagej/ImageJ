@@ -283,7 +283,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	public synchronized void keyPressed(KeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 			doSet = true;
-		} else if(e.getKeyCode() == KeyEvent.VK_LEFT) {
+		} else if(e.getKeyCode() == KeyEvent.VK_DOWN) {
 			if (e.getSource()==minLabel) {
 				minSlider.setValue(minSlider.getValue() - 1);
 				minValue = minSlider.getValue();
@@ -291,7 +291,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 				maxSlider.setValue(maxSlider.getValue() - 1);
 				maxValue = maxSlider.getValue();
 			}
-		} else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
+		} else if(e.getKeyCode() == KeyEvent.VK_UP) {
 			if (e.getSource()==minLabel) {
 				minSlider.setValue(minSlider.getValue() + 1);
 				minValue = minSlider.getValue();

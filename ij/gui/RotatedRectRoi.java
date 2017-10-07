@@ -27,6 +27,7 @@ public class RotatedRectRoi extends PolygonRoi {
 		ystart = ic.offScreenYD(sy);
 		ImageWindow win = imp.getWindow();
 		int pixels = win!=null?(int)(win.getSize().height/win.getCanvas().getMagnification()):imp.getHeight();
+		if (IJ.debugMode) IJ.log("RotatedRectRoi: "+(int)rectWidth+" "+pixels);
 		if (rectWidth>pixels)
 			rectWidth = pixels/3;
 		setDrawOffset(false);
@@ -38,8 +39,8 @@ public class RotatedRectRoi extends PolygonRoi {
 		if (!overlay && ic!=null) {
 			double mag = ic.getMagnification();
 		    int size2 = HANDLE_SIZE/2;
-			for (int i=0; i<4; i++){
-			if (i==3)//mark starting point
+			for (int i=0; i<4; i++) {
+			if (i==3) //mark starting point
 				handleColor = strokeColor!=null?strokeColor:ROIColor;
 			else
 				handleColor=Color.white;

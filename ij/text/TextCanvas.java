@@ -31,6 +31,7 @@ class TextCanvas extends Canvas {
 		paint(g);
 	}
   
+static int count;
 	public void paint(Graphics g) {
 		if (tp==null || g==null) return;
 		Dimension d = getSize();

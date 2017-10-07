@@ -262,6 +262,7 @@ public class StackEditor implements PlugIn {
 		CompositeImage cimg = imp.isComposite()?(CompositeImage)imp:null;
 		if (imp.getNChannels()!=imp.getStackSize()) cimg = null;
 		Overlay overlay = imp.getOverlay();
+		int lastImageID = 0;
 		for (int i=1; i<=size; i++) {
 			String label = stack.getShortSliceLabel(i);
 			String title = label!=null&&!label.equals("")?label:getTitle(imp, i);
@@ -291,13 +292,16 @@ public class StackEditor implements PlugIn {
 				if (overlay2.size()>0)
 					imp2.setOverlay(overlay2);
 			}
+			if (i==size)
+				lastImageID = imp2.getID();
 			imp2.show();
 		}
 		imp.changes = false;
 		ImageWindow win = imp.getWindow();
-		if (win!=null)
+		if (win!=null) {
 			win.close();
-		else if (Interpreter.isBatchMode())
+			if (lastImageID<0) IJ.selectWindow(lastImageID);
+		} else if (Interpreter.isBatchMode())
 			Interpreter.removeBatchModeImage(imp);
 		imp.unlock();
 	}
