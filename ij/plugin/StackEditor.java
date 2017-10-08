@@ -298,10 +298,9 @@ public class StackEditor implements PlugIn {
 		}
 		imp.changes = false;
 		ImageWindow win = imp.getWindow();
-		if (win!=null) {
+		if (win!=null)
 			win.close();
-			if (lastImageID<0) IJ.selectWindow(lastImageID);
-		} else if (Interpreter.isBatchMode())
+		else if (Interpreter.isBatchMode())
 			Interpreter.removeBatchModeImage(imp);
 		imp.unlock();
 	}

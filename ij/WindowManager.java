@@ -360,7 +360,6 @@ public class WindowManager {
 			int index = nonImageList.indexOf(win);
 			ImageJ ij = IJ.getInstance();
 			if (index>=0) {
-			 	//if (ij!=null && !ij.quitting())
 				Menus.removeWindowMenuItem(index);
 				nonImageList.removeElement(win);
 			}
@@ -377,14 +376,12 @@ public class WindowManager {
 		int index = imageList.indexOf(win);
 		if (index==-1)
 			return;  // not on the window list
-		if (imageList.size()>1 && IJ.isMacro()) {
-			int newIndex = index-1;
-			if (newIndex<0)
-				newIndex = imageList.size()-1;
+		imageList.removeElementAt(index);
+		if (imageList.size()>1) {
+			int newIndex = imageList.size()-1;
 			setCurrentWindow((ImageWindow)imageList.elementAt(newIndex));
 		} else
 			currentWindow = null;
-		imageList.removeElementAt(index);
 		setTempCurrentImage(null);  //???
 		int nonImageCount = nonImageList.size();
 		if (nonImageCount>0)
@@ -567,15 +564,13 @@ public class WindowManager {
 		}
 	}
     
-	static void showList() {
-		if (IJ.debugMode) {
-			for (int i=0; i<imageList.size(); i++) {
-				ImageWindow win = (ImageWindow)imageList.elementAt(i);
-				ImagePlus imp = win.getImagePlus();
-				IJ.log(i + " " + imp.getTitle() + (win==currentWindow?"*":""));
-			}
-			IJ.log(" ");
+	public static void showList() {
+		for (int i=0; i<imageList.size(); i++) {
+			ImageWindow win = (ImageWindow)imageList.elementAt(i);
+			ImagePlus imp = win.getImagePlus();
+			IJ.log(i + " " + imp.getTitle() + (win==currentWindow?"*":"")+" "+imp.getID());
 		}
+		IJ.log(" ");
     }
     
     public static void toFront(Frame frame) {
