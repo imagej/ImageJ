@@ -117,6 +117,7 @@ public class Commands implements PlugIn {
 				if (gd.wasCanceled())	
 					return false;
 			}
+			Prefs.closingAll = true;
 			for (int i=0; i<list.length; i++) {
 				ImagePlus imp = WindowManager.getImage(list[i]);
 				if (imp!=null) {
@@ -124,6 +125,7 @@ public class Commands implements PlugIn {
 					imp.close();
 				}
 			}
+			Prefs.closingAll = false;
     	}
     	return true;
 	}

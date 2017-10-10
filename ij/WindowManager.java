@@ -15,6 +15,7 @@ public class WindowManager {
 
 	public static boolean checkForDuplicateName;
 	private static Vector imageList = new Vector();		 // list of image windows
+	private static Vector activations = new Vector(); 	// list of image window activations
 	private static Vector nonImageList = new Vector();	// list of non-image windows (Frames and Dialogs)
 	private static ImageWindow currentWindow;			 // active image window
 	private static Window frontWindow;
@@ -44,6 +45,8 @@ public class WindowManager {
 		}
 		Undo.reset();
 		currentWindow = win;
+		activations.remove(win);
+    	activations.add(win);
 		Menus.updateMenus();
 		if (Recorder.record && !IJ.isMacro())
 			Recorder.record("selectWindow", win.getImagePlus().getTitle());
@@ -302,7 +305,7 @@ public class WindowManager {
         Menus.addWindowMenuItem(imp);
         setCurrentWindow(win);
     }
-
+    
 	static void checkForDuplicateName(ImagePlus imp) {
 		if (checkForDuplicateName) {
 			String name = imp.getTitle();
@@ -377,9 +380,12 @@ public class WindowManager {
 		if (index==-1)
 			return;  // not on the window list
 		imageList.removeElementAt(index);
-		if (imageList.size()>1) {
-			int newIndex = imageList.size()-1;
-			setCurrentWindow((ImageWindow)imageList.elementAt(newIndex));
+		activations.remove(win);
+		if (imageList.size()>1 && !Prefs.closingAll && IJ.isMacro()) {
+			win = activations.size()>0?(ImageWindow)activations.elementAt(activations.size()-1):null;
+            if (win==null)
+            	win = (ImageWindow)imageList.elementAt( imageList.size()-1);
+			setCurrentWindow(win);
 		} else
 			currentWindow = null;
 		setTempCurrentImage(null);  //???
@@ -407,12 +413,16 @@ public class WindowManager {
 
 	/** Closes all windows. Stops and returns false if an image or Editor "save changes" dialog is canceled. */
 	public synchronized static boolean closeAllWindows() {
+		Prefs.closingAll = true;
 		while (imageList.size()>0) {
-			if (!((ImageWindow)imageList.elementAt(0)).close())
+			if (!((ImageWindow)imageList.elementAt(0)).close()) {
+				Prefs.closingAll = false;
 				return false;
+			}
 			if (!quittingViaMacro())
 				IJ.wait(100);
 		}
+		Prefs.closingAll = false;
 		Frame[] nonImages = getNonImageWindows();
 		for (int i=0; i<nonImages.length; i++) {
 			Frame frame = nonImages[i];
@@ -570,6 +580,13 @@ public class WindowManager {
 			ImagePlus imp = win.getImagePlus();
 			IJ.log(i + " " + imp.getTitle() + (win==currentWindow?"*":"")+" "+imp.getID());
 		}
+		for (int i=0; i<activations.size(); i++) {
+			ImageWindow win = (ImageWindow)activations.elementAt(i);
+			ImagePlus imp = win.getImagePlus();
+			IJ.log(i + " " + imp.getTitle() + " " + imp.getID());
+		}
+		if (imageList.size()==0) IJ.log("imageList is empty");
+		if (activations.size()==0) IJ.log("activations list is empty");
 		IJ.log(" ");
     }
     

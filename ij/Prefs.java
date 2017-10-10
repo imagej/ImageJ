@@ -173,6 +173,8 @@ public class Prefs {
 	public static boolean convertToMicrons = true;
 	/** Wand tool "Smooth if thresholded" option */
 	public static boolean smoothWand;
+	/** "Close All" command running */
+	public static boolean closingAll;
 
 
 	static Properties ijPrefs = new Properties();
