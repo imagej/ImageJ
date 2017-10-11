@@ -1830,8 +1830,10 @@ public class Interpreter implements MacroConstants {
 	public static void removeBatchModeImage(ImagePlus imp) {
 		if (imageTable!=null && imp!=null) {
 			int index = imageTable.indexOf(imp);
-			if (index!=-1)
+			if (index!=-1) {
 				imageTable.removeElementAt(index);
+				WindowManager.setTempCurrentImage(getLastBatchModeImage());
+			}
 		}
 	}
 	
