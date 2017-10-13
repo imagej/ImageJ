@@ -1329,6 +1329,7 @@ public class IJ {
 			if (impC!=null && impC!=imp && impT!=null)
 				impC.saveRoi();
             WindowManager.setTempCurrentImage(imp);
+            Interpreter.activateImage(imp);
             WindowManager.setWindow(null);
 		} else {
 			ImageWindow win = imp.getWindow();

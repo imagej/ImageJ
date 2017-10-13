@@ -2902,6 +2902,7 @@ public class Functions implements MacroConstants, Measurements {
 							ImagePlus imp2 = WindowManager.getCurrentImage();
 							if (imp2!=null && imp2!=imp) imp2.saveRoi();
 							WindowManager.setTempCurrentImage(imp);
+							Interpreter.activateImage(imp);
 							return;
 						}
 					}
