@@ -15,7 +15,7 @@ public class WindowManager {
 
 	public static boolean checkForDuplicateName;
 	private static Vector imageList = new Vector();		 // list of image windows
-	private static Vector activations = new Vector(); 	// list of image window activations
+	private static Vector activations = new Vector(); 	// list of image, ordered by activation time
 	private static Vector nonImageList = new Vector();	// list of non-image windows (Frames and Dialogs)
 	private static ImageWindow currentWindow;			 // active image window
 	private static Window frontWindow;

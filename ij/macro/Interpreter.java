@@ -39,7 +39,7 @@ public class Interpreter implements MacroConstants {
 	static Interpreter instance, previousInstance;
 	public static boolean batchMode;
 	static Vector imageTable; // images opened in batch mode
-	static Vector imageActivations; // list of image activations
+	static Vector imageActivations; // images ordered by activation time
 	boolean done;
 	Program pgm;
 	Functions func;
