@@ -5,39 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.51r 15 October 2017</u>
+<li> <u>1.51s 20 October 2017</u>
 <ul>
-<li> Thanks to Norbert Vischer, custom symbols in plots are now supported.
-Refer to the <i>Help&gt;Examples&gt;Macro&gt;Custom Plot Symbols</i>
-command for an example.
-<li> Thanks to Philippe Carl, replaced the min/max threshold value labels
-in the "Threshold" dialog by editable text fields and removed the "Set"
-button. New values are validated once the user hits the enter key. Also
-added mouse wheel and arrow key support to the min and max sliders. 
-The up/down keys increase/decrease the threshold values when the cursor
-is within one of the text fields.
-<li> The "Save column headers" and "Save row numbers" options in the
-<i>Edit&gt;Options&gt;Input/Output</i> dialog are always enabled on startup.
-<li> Thanks to Mathieu Prouveur, ImageJ displays an error message when
-a macro function attempts to return a string enclosed in parenthesis.
-<li> Thanks to Roger Leigh, fixed bugs that prevented ImageJ from running on Java 9.
-<li> Thanks to Derek Xu and Michael Schmid, fixed a bug that could cause
-the <i>Orthogonal Views</i> command to throw an exception.
-<li> Thanks to Jerome Parent, fixed a bug that caused the median filter
-to not work correctly with 32-bit images containing NaN values.
-<li> Thanks to Ron DeSpain, fixed a bug that could cause startup macro
-shortcuts to be disabled when opening a macro in the macro editor.
-<li> Thanks to Kees Straatman, fixed a bug that caused the
-run("Set Measurements...", options) macro function to not work
-as expected if used after a run("Analyze Particles...", options) call
-that was missing 'display ' in the options string.
-<li> Thanks to Jeremy Adler, fixed a bug that caused the
-run("Stack to Images") macro function to not make the 
-last opened image active.
-<li> Thanks to Michael Schmid, fixed bugs that sometimes caused the
-the wrong image to be activated after an image is deleted in a macro.
-<li> Thanks to Michael Schmid, fixed a 1.51q regression 
-that could cause an exception when creating a plot.
+<li> Incresed the default plot size from 450x200 to 530x300.
+<li> Thanks to Lorenzo Cangiano, fixed a bug that caused the
+<i>Image&gt;Adjust&gt;Brightness/Contrast</i> tool to sometimes
+throw an exception with 16-bit images.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

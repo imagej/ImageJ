@@ -994,8 +994,12 @@ public class ShortProcessor extends ImageProcessor {
 		int[] histogram = makeHistogramArray();
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int index = y*width + roiX;
-			for (int i=0; i<roiWidth; i++)
-					histogram[pixels[index++]&0xffff]++;
+			for (int i=0; i<roiWidth; i++) {
+				int index2 = pixels[index++]&0xffff;
+				if (index2>=histogram.length)
+					return getHistogram();
+				histogram[index2]++;
+			}
 		}
 		return histogram;
 	}

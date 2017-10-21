@@ -74,6 +74,10 @@ public class Projector implements PlugIn {
 		}
 		if (!showDialog())
 			return;
+		if (sliceInterval>100) {
+			IJ.error("Z spacing ("+(int)sliceInterval+") is too large.");
+			return;
+		}
 		imp.startTiming();
 		isRGB = imp.getType()==ImagePlus.COLOR_RGB;
 		if (imp.isHyperStack()) {
@@ -329,8 +333,7 @@ public class Projector implements PlugIn {
 		}
 		if ((projwidth%2)==1)
 			projwidth++;
-		int projsize = projwidth * projheight;
-		
+		int projsize = projwidth * projheight;		
 		if (projwidth<=0 || projheight<=0) {
 			IJ.error("'projwidth' or 'projheight' <= 0");
 			return null;

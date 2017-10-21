@@ -96,9 +96,13 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		double calx=cal.pixelWidth;
 		double caly=cal.pixelHeight;
 		double calz=cal.pixelDepth;
-		ax=1.0;
-		ay=caly/calx;
-		az=calz/calx;
+		ax = 1.0;
+		ay = caly/calx;
+		az = calz/calx;
+		if (az>100) {
+			IJ.error("Z spacing ("+(int)az+") is too large.");
+			return;
+		}
 		win = imp.getWindow();
 		canvas = win.getCanvas();
 		addListeners(canvas);

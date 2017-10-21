@@ -42,8 +42,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	/** Interpolate line profiles. To set, use Edit/Options/Plots. */
 	public static boolean interpolate;
 	// default values for new installations; values will be then saved in prefs
-	private static final int WIDTH = 450;
-	private static final int HEIGHT = 200;
+	private static final int WIDTH = 530;
+	private static final int HEIGHT = 300;
 	private static final int FONT_SIZE = 12;
 	/** The width of the plot (without frame) in pixels. */
 	public static int plotWidth = WIDTH;
