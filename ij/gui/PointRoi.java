@@ -737,6 +737,24 @@ public class PointRoi extends PolygonRoi {
 			}
 		};
 	}
+	
+	@Override
+	protected int getClosestPoint(double x, double y, FloatPolygon points) {
+		int index = -1;
+		double distance = Double.MAX_VALUE;
+		int slice = imp!=null&&positions!=null&&imp.getStackSize()>1?imp.getCurrentSlice():0;
+		for (int i=0; i<points.npoints; i++) {
+			double dx = points.xpoints[i] - x;
+			double dy = points.ypoints[i] - y;
+			double distance2 = dx*dx+dy*dy;
+			if (distance2<distance && (slice==0||slice==positions[i])) {
+				distance = distance2;
+				index = i;
+			}
+		}
+		return index;
+	}
+
 
 	/** Returns a copy of this PointRoi. */
 	public synchronized Object clone() {

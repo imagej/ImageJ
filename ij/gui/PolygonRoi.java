@@ -789,10 +789,12 @@ public class PolygonRoi extends Roi {
 			removeSplineFit();
 		FloatPolygon points = getFloatPolygon();
 		int pointToDelete = getClosestPoint(ox, oy, points);
-		deletePoint(pointToDelete);
-		if (splineFit) 
-			fitSpline(splinePoints);
-		imp.draw();
+		if (pointToDelete>=0) {
+			deletePoint(pointToDelete);
+			if (splineFit) 
+				fitSpline(splinePoints);
+			imp.draw();
+		}
 	}
 	
 	protected void deletePoint(int index) {
@@ -824,6 +826,8 @@ public class PolygonRoi extends Roi {
 		modState = NO_MODS;
 		if (previousRoi!=null) previousRoi.modState = NO_MODS;
 		int pointToDuplicate = getClosestPoint(ox, oy, points);
+		if (pointToDuplicate<0)
+			return;
 		FloatPolygon points2 = new FloatPolygon();
 		for (int i2=0; i2<n; i2++) {
 			if (i2==pointToDuplicate) {
@@ -854,8 +858,8 @@ public class PolygonRoi extends Roi {
 		}
 	}
 
-	int getClosestPoint(double x, double y, FloatPolygon points) {
-		int index = 0;
+	protected int getClosestPoint(double x, double y, FloatPolygon points) {
+		int index = -1;
 		double distance = Double.MAX_VALUE;
 		for (int i=0; i<points.npoints; i++) {
 			double dx = points.xpoints[i] - x;

@@ -957,7 +957,7 @@ public class ShortProcessor extends ImageProcessor {
 		return 0.0;
 	}
 
-	/** Returns 65536 bin histogram of the current ROI, which
+	/** Returns 65,536 bin histogram of the current ROI, which
 		can be non-rectangular. */
 	public int[] getHistogram() {
 		if (mask!=null)
@@ -986,56 +986,6 @@ public class ShortProcessor extends ImageProcessor {
 			}
 		}
 		return histogram;
-	}
-
-	int[] getHistogram2() {
-		if (mask!=null)
-			return getHistogram2(mask);
-		int[] histogram = makeHistogramArray();
-		for (int y=roiY; y<(roiY+roiHeight); y++) {
-			int index = y*width + roiX;
-			for (int i=0; i<roiWidth; i++) {
-				int index2 = pixels[index++]&0xffff;
-				if (index2>=histogram.length)
-					return getHistogram();
-				histogram[index2]++;
-			}
-		}
-		return histogram;
-	}
-
-	private int[] getHistogram2(ImageProcessor mask) {
-		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
-			throw new IllegalArgumentException(maskSizeError(mask));
-		byte[] mpixels = (byte[])mask.getPixels();
-		int[] histogram = makeHistogramArray();
-		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
-			int index = y * width + roiX;
-			int mi = my * roiWidth;
-			for (int i=0; i<roiWidth; i++) {
-				if (mpixels[mi++]!=0)
-					histogram[pixels[index]&0xffff]++;
-				index++;
-			}
-		}
-		return histogram;
-	}
-
-	private int[] makeHistogramArray() {
-		int max = 0;
-		int value;
-		for (int y=roiY; y<(roiY+roiHeight); y++) {
-			int index = y*width + roiX;
-			for (int i=0; i<roiWidth; i++) {
-				value = pixels[index++]&0xffff;
-				if (value>max)
-					max = value;
-			}
-		}
-		int size = max + 1;
-		if (size<256)
-			size = 256;
-		return new int[size];
 	}
 
 	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {
