@@ -69,8 +69,8 @@ public class Macro {
 	
 	/** Aborts the currently running macro or any plugin using IJ.run(). */
 	public static void abort() {
-		abort = true;
 		//IJ.log("Abort: "+Thread.currentThread().getName());
+		abort = true;
 		if (Thread.currentThread().getName().endsWith("Macro$")) {
 			table.remove(Thread.currentThread());
 			throw new RuntimeException(MACRO_CANCELED);
