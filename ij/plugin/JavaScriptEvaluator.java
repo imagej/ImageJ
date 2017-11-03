@@ -36,6 +36,8 @@ public class JavaScriptEvaluator implements PlugIn, Runnable  {
 	public void run() {
 		result = null;
 		Thread.currentThread().setContextClassLoader(IJ.getClassLoader());
+		if (IJ.isJava19())
+			System.setProperty("nashorn.args", "--language=es6"); // Use ECMAScript 6 on Java 9
 		try {
 			ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
 			ScriptEngine engine = scriptEngineManager.getEngineByName("ECMAScript");
