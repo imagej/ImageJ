@@ -2098,14 +2098,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			roi.setLocation(r.getX()+dx, r.getY()+dy);
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null) {
-			Roi roi = imp.getRoi();
-			if (roi!=null && !(rois.length==1 && rois[0]==roi)) {
-				Rectangle2D r = roi.getFloatBounds();
-				roi.setLocation(r.getX()+dx, r.getY()+dy);
-			}
+		if (imp!=null)
 			imp.draw();
-		}
 	}
 
 	private boolean save(String name, boolean saveSelected) {

@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.51s 3 November 2017</u>
+<li> <u>1.51s 6 November 2017</u>
 <ul>
 <li> Incresed the default plot size from 450x200 to 530x300.
 <li> Thanks to Jean Christophe Taveau, the ECMAScript 6
@@ -24,6 +24,14 @@ when rendering arrows in flattened images.
 <li> Thanks to Jean Christophe Taveau, fixed a bug that caused acripts
 installed in the plugins menu to be aborted if the user clicked
 "Cancel" in a GenericDialog.
+<li> Thanks to Klaus Michel, fixed a bug that caused the ROI Manager's 
+<i>More&gt;Translate</i> command to not work correctly if
+one of the ROIs being translated was active.
+<li> Thanks to Stein Rorvik, fixed a bug that could cause
+interference between command line macros and the
+RunAtStartup.ijm file. The RunAtStartup macro, normally created
+by the <i>Edit&gt;Options&gt;Startup</i> command, now
+runs on the current thread.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
