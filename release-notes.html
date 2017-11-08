@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.51s 7 November 2017</u>
+<li> <u>1.51s 8 November 2017</u>
 <ul>
 <li> Incresed the default plot size from 450x200 to 530x300.
 <li> Thanks to Jean Christophe Taveau, the ECMAScript 6
@@ -32,7 +32,11 @@ interference between command line macros and the
 RunAtStartup and AutoRun macros. The RunAtStartup
 macro, normally created by the <i>Edit&gt;Options&gt;Startup</i>
 command, now runs on the current thread and the AutoRun macro
-does not run when running a command macro.
+is ignored when running a command line macro.
+<li> Thanks to Stein Rorvik, fixed a bug that caused the <i>StartupMacros</i>
+command in the <i>&gt;&gt;</i> toolbar menu to not work as
+expected if the StartupMacros file had an ".ijm" extension.
+
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
