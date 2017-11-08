@@ -175,6 +175,9 @@ public class Prefs {
 	public static boolean smoothWand;
 	/** "Close All" command running */
 	public static boolean closingAll;
+	/** ImageJ was launched from the command line with -macro or -batch option */
+	public static boolean commandLineMacro;
+
 
 
 	static Properties ijPrefs = new Properties();
@@ -184,7 +187,6 @@ public class Prefs {
 	static String homeDir; // ImageJ folder
 	static int threads;
 	static int transparentIndex = -1;
-	static boolean commandLineMacro;
 	private static boolean resetPreferences;
 
 	/** Finds and loads the ImageJ configuration file, "IJ_Props.txt".

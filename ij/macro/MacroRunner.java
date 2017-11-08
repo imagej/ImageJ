@@ -19,7 +19,7 @@ public class MacroRunner implements Runnable {
 	private String argument;
 	private Editor editor;
 
-	/** Create a MacrRunner. */
+	/** Create a MacroRunner. */
 	public MacroRunner() {
 	}
 

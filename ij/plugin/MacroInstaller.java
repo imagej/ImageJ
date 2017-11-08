@@ -112,8 +112,8 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 						tools.add(name);
 						toolCount++;
 					} else if (name.startsWith("AutoRun")) {
-						if (autoRunCount==0 && !openingStartupMacrosInEditor) {
-							new MacroRunner(pgm, macroStarts[count], name, (String)null);
+						if (autoRunCount==0 && !openingStartupMacrosInEditor && !Prefs.commandLineMacro) {
+							new MacroRunner(pgm, macroStarts[count], name, (String)null); // run on separate thread
 							if (name.equals("AutoRunAndHide"))
 								autoRunAndHideCount++;
 						}
@@ -392,10 +392,6 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		  return text;
 	}
 	
-	//void runMacro() {
-	// new MacroRunner(text);
-	//}
-
 	public boolean runMacroTool(String name) {
 		for (int i=0; i<nMacros; i++) {
 			if (macroNames[i].startsWith(name)) {
