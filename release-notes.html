@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.51s 8 November 2017</u>
+<li> <u>1.51s 9 November 2017</u>
 <ul>
 <li> Incresed the default plot size from 450x200 to 530x300.
 <li> Thanks to Jean Christophe Taveau, the ECMAScript 6
@@ -28,11 +28,13 @@ installed in the plugins menu to be aborted if the user clicked
 <i>More&gt;Translate</i> command to not work correctly if
 one of the ROIs being translated was active.
 <li> Thanks to Stein Rorvik, fixed bugs that caused
-the RunAtStartup macro, the AutoRun macro and
-command line macros to interfere with each other. The RunAtStartup
-macro, created by the <i>Edit&gt;Options&gt;Startup</i>
-command and the AutoRun macro, in StartupMacros, and
-command line macros now all run on the same thread.
+the RunAtStartup, AutoRun and
+command line macros to interfere with each other, causing
+&variable expansion in run() calls to not work. To avoid
+this interference, the RunAtStartup macro, created by the
+<i>Edit&gt;Options&gt;Startup</i> command, the AutoRun
+macro, in StartupMacros, and command line macros now
+all run on the same thread.
 <li> Thanks to Stein Rorvik, fixed a bug that caused the <i>StartupMacros</i>
 command in the <i>&gt;&gt;</i> toolbar menu to not work as
 expected if the StartupMacros file had an ".ijm" extension.

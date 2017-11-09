@@ -172,7 +172,9 @@ public class Interpreter implements MacroConstants {
 
 	/** Saves global variables. */
 	public void saveGlobals(Program pgm) {
+		Interpreter saveInstance = instance;
 		saveGlobals2(pgm);
+		instance = saveInstance; 
 	}
 	
 	void saveGlobals2(Program pgm) {

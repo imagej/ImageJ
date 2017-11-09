@@ -46,6 +46,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	private static Program autoRunPgm;
 	private static int autoRunAddress;
 	private static String autoRunName;
+	private boolean autoRunOnCurrentThread;
 	
 	public void run(String path) {
 		if (path==null || path.equals(""))
@@ -117,9 +118,12 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 						toolCount++;
 					} else if (name.startsWith("AutoRun")) {
 						if (autoRunCount==0 && !openingStartupMacrosInEditor) {
-							autoRunPgm = pgm;
-							autoRunAddress = macroStarts[count];
-							autoRunName = name;
+							if (autoRunOnCurrentThread) {
+								autoRunPgm = pgm;
+								autoRunAddress = macroStarts[count];
+								autoRunName = name;
+							} else
+								new MacroRunner(pgm, macroStarts[count], name, (String)null); // run on separate thread
 							if (name.equals("AutoRunAndHide"))
 								autoRunAndHideCount++;
 						}
@@ -510,10 +514,18 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		runMacro(cmd);
 	}
 	
+	/** Installs startup macros and runs AutoRun macro on current thread. */
+	public void installStartupMacros(String path) {
+		autoRunOnCurrentThread = true;
+		installFile(path);
+		autoRunOnCurrentThread = false;
+	}
+	
 	/** Runs the StartupMacros AutoRun macro on the current thread. */
 	public static void autoRun() {
 		if (autoRunPgm!=null)
 			(new MacroRunner()).run(autoRunPgm, autoRunAddress, autoRunName);
+		autoRunPgm = null;
 	}
 
 } 
