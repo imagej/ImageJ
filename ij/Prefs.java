@@ -175,11 +175,8 @@ public class Prefs {
 	public static boolean smoothWand;
 	/** "Close All" command running */
 	public static boolean closingAll;
-	/** ImageJ was launched from the command line with -macro or -batch option */
-	public static boolean commandLineMacro;
-
-
-
+	
+	static boolean commandLineMacro;
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);
 	static String prefsDir;
