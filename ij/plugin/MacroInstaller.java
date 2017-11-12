@@ -117,8 +117,8 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 						tools.add(name);
 						toolCount++;
 					} else if (name.startsWith("AutoRun")) {
-						if (autoRunCount==0 && !openingStartupMacrosInEditor) {
-							if (autoRunOnCurrentThread) {
+						if (autoRunCount==0 && !openingStartupMacrosInEditor && !IJ.isMacro()) {
+							if (autoRunOnCurrentThread) { //autoRun() method will run later
 								autoRunPgm = pgm;
 								autoRunAddress = macroStarts[count];
 								autoRunName = name;

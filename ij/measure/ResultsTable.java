@@ -154,7 +154,7 @@ public class ResultsTable implements Cloneable {
 			if (NaNEmptyCells)
 				Arrays.fill(columns[column], Double.NaN);
 			if (headings[column]==null)
-				headings[column] = "---";
+				headings[column] = "C"+(column+1);
 			if (column>lastColumn) lastColumn = column;
 		}
 		columns[column][counter-1] = value;
@@ -462,6 +462,8 @@ public class ResultsTable implements Cloneable {
 			if (column>lastColumn) lastColumn = column;
 		}
 		columns[column][row] = value;
+		if (headings[column]==null)
+			headings[column] = "C"+(column+1);
 		if (counter<25) {
 			if ((int)value!=value && !Double.isNaN(value))
 				decimalPlaces[column] = (short)precision;
@@ -522,7 +524,7 @@ public class ResultsTable implements Cloneable {
 		for (int i=0; i<=lastColumn; i++) {
 			if (columns[i]!=null) {
 				heading = headings[i];
-				if (heading==null) heading ="---"; 
+				if (heading==null) heading ="C"+(i+1); 
 				sb.append(heading);
 				if (i!=lastColumn) sb.append(delimiter);
 			}
@@ -545,7 +547,7 @@ public class ResultsTable implements Cloneable {
 		for (int i=0; i<=lastColumn; i++) {
 			if (columns[i]!=null) {
 				heading = headings[i];
-				if (heading==null) heading ="---"; 
+				if (heading==null) heading ="C"+(i+1); 
 				temp[index++] = heading;
 			}
 		}
