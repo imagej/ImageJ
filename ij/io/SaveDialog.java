@@ -184,8 +184,16 @@ public class SaveDialog {
 		FileDialog fd = new FileDialog(parent, title, FileDialog.SAVE);
 		if (defaultName!=null)
 			fd.setFile(defaultName);
-		if (defaultDir!=null)
+		if (defaultDir!=null) {
+			if (IJ.isWindows() && defaultDir.endsWith("/")) {
+				File f = new File(defaultDir);
+				if (f.isDirectory())
+					try {
+						defaultDir = f.getCanonicalPath();
+					} catch (IOException e) {}
+			}
 			fd.setDirectory(defaultDir);
+		}
 		fd.show();
 		name = fd.getFile();
 		String origName = name;
