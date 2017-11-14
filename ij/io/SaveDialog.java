@@ -185,7 +185,7 @@ public class SaveDialog {
 		if (defaultName!=null)
 			fd.setFile(defaultName);
 		if (defaultDir!=null) {
-			if (IJ.isWindows() && defaultDir.endsWith("/")) {
+			if (IJ.isWindows() && defaultDir.contains("/")) {
 				File f = new File(defaultDir);
 				if (f.isDirectory())
 					try {

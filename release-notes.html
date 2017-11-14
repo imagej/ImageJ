@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.51s 13 November 2017</u>
+<li> <u>1.51s 14 November 2017</u>
 <ul>
 <li> Incresed the default plot size from 450x200 to 530x300.
 <li> Thanks to Jean Christophe Taveau, the ECMAScript 6
@@ -31,9 +31,9 @@ one of the ROIs being translated was active.
 the RunAtStartup, AutoRun and
 command line macros to interfere with each other, causing
 &variable expansion in run() calls to not work. To avoid
-this interference, the RunAtStartup macro, created by the
-<i>Edit&gt;Options&gt;Startup</i> command, the AutoRun
-macro, in StartupMacros, and command line macros now
+this interference, the RunAtStartup macro (created by
+<i>Edit&gt;Options&gt;Startup</i>), the AutoRun
+macro (in StartupMacros) and command line macros now
 all run on the same thread.
 <li> Thanks to Stein Rorvik, fixed a bug that caused the <i>StartupMacros</i>
 command in the <i>&gt;&gt;</i> toolbar menu to not work as
@@ -43,6 +43,9 @@ caused the getResult() macro function to not work with tables created
 by plugins using the ResultsTable.setValue(column,row,value) method.
 <li> Thanks to Stein Rorvik, fixed a bug that caused forward slash
 separators to not work with default directories on Windows.
+<li> Thanks to Adrian Daerr, fixed a bug that caused raw virtual stacks to
+be opened incorrectly if the number of images specified in the dialog
+was greater than the actual number of images.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
