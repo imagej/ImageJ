@@ -116,8 +116,7 @@ public class ImageReader {
 			while (bufferCount<bufferSize) { // fill the buffer
 				count = in.read(buffer, bufferCount, bufferSize-bufferCount);
 				if (count==-1) {
-					if (bufferCount>0)
-						for (int i=bufferCount; i<bufferSize; i++) buffer[i] = 0;
+					for (int i=bufferCount; i<bufferSize; i++) buffer[i] = 0;
 					totalRead = byteCount;
 					eofError();
 					break;
@@ -216,8 +215,7 @@ public class ImageReader {
 			while (bufferCount<bufferSize) { // fill the buffer
 				count = in.read(buffer, bufferCount, bufferSize-bufferCount);
 				if (count==-1) {
-					if (bufferCount>0)
-						for (int i=bufferCount; i<bufferSize; i++) buffer[i] = 0;
+					for (int i=bufferCount; i<bufferSize; i++) buffer[i] = 0;
 					totalRead = byteCount;
 					eofError();
 					break;
@@ -333,8 +331,7 @@ public class ImageReader {
 			while (bufferCount<bufferSize) { // fill the buffer
 				count = in.read(buffer, bufferCount, bufferSize-bufferCount);
 				if (count==-1) {
-					if (bufferCount>0)
-						for (int i=bufferCount; i<bufferSize; i++) buffer[i] = 0;
+					for (int i=bufferCount; i<bufferSize; i++) buffer[i] = 0;
 					totalRead = byteCount;
 					eofError();
 					break;
@@ -382,8 +379,7 @@ public class ImageReader {
 			while (bufferCount<bufferSize) { // fill the buffer
 				count = in.read(buffer, bufferCount, bufferSize-bufferCount);
 				if (count==-1) {
-					if (bufferCount>0)
-						for (int i=bufferCount; i<bufferSize; i++) buffer[i] = 0;
+					for (int i=bufferCount; i<bufferSize; i++) buffer[i] = 0;
 					totalRead = byteCount;
 					eofError();
 					break;
