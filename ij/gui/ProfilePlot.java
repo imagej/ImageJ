@@ -202,7 +202,7 @@ public class ProfilePlot {
 		return profile;
 	}
 	
-	double[] getColumnAverageProfile(Rectangle rect, ImageProcessor ip) {
+	public static double[] getColumnAverageProfile(Rectangle rect, ImageProcessor ip) {
 		double[] profile = new double[rect.width];
 		int[] counts = new int[rect.width];
 		double[] aLine;
@@ -274,6 +274,8 @@ public class ProfilePlot {
 		ImageProcessor ip2 = (new Straightener()).straightenLine(imp, lineWidth);
 		int width = ip2.getWidth();
 		int height = ip2.getHeight();
+		if (ip2 instanceof FloatProcessor)
+			return getColumnAverageProfile(new Rectangle(0,0,width,height),ip2);
 		profile = new double[width];
 		double[] aLine;
 		ip2.setInterpolate(false);

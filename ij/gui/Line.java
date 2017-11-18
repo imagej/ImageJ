@@ -417,6 +417,8 @@ public class Line extends Roi {
 				if (ip2==null) return new double[0];
 				int width = ip2.getWidth();
 				int height = ip2.getHeight();
+				if (ip2 instanceof FloatProcessor)
+					return ProfilePlot.getColumnAverageProfile(new Rectangle(0,0,width,height),ip2);
 				profile = new double[width];
 				double[] aLine;
 				ip2.setInterpolate(false);
