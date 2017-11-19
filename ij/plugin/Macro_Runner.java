@@ -133,6 +133,8 @@ public class Macro_Runner implements PlugIn {
 			in.read(buffer, 0, size);
 			String macro = new String(buffer, 0, size, "ISO8859_1");
 			in.close();
+			OpenDialog.setLastDirectory(f.getParent()+File.separator);
+			OpenDialog.setLastName(f.getName());
 			if (name.endsWith(".js"))
 				return runJavaScript(macro, arg);
 			else if (name.endsWith(".bsh"))

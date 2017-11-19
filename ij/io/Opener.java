@@ -306,10 +306,11 @@ public class Opener {
 		FileOpener.setSilentMode(silentMode);
 		if (directory.length()>0 && !(directory.endsWith("/")||directory.endsWith("\\")))
 			directory += Prefs.separator;
+		OpenDialog.setLastDirectory(directory);
+		OpenDialog.setLastName(name);
 		String path = directory+name;
 		fileType = getFileType(path);
-		if (IJ.debugMode)
-			IJ.log("openImage: \""+types[fileType]+"\", "+path);
+		if (IJ.debugMode) IJ.log("openImage: \""+types[fileType]+"\", "+path);
 		switch (fileType) {
 			case TIFF:
 				imp = openTiff(directory, name);

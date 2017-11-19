@@ -225,9 +225,8 @@ import javax.swing.filechooser.*;
 			defaultDirectory = defaultDirectory + File.separator;
 	}
 	
-	/** Returns the path to the last directory opened by the user
-		using a file open or file save dialog, or using drag and drop. 
-		Returns null if the users has not opened a file. */
+	/** Returns the path to the directory that contains the last file
+		 opened, or null if a file has not been opened. */
 	public static String getLastDirectory() {
 		return lastDir;
 	}
