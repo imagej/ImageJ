@@ -590,21 +590,21 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Replaces the ImageProcessor with the one specified and updates the display. With
 		stacks, the ImageProcessor must be the same type as other images in the stack and
 		it must be the same width and height.  Set 'title' to null to leave the title unchanged. */
-		public void setProcessor(String title, ImageProcessor ip) {
-			if (ip==null || ip.getPixels()==null)
-				throw new IllegalArgumentException("ip null or ip.getPixels() null");
-			if (getStackSize()>1) {
-				if (ip.getWidth()!=width || ip.getHeight()!=height)
-					throw new IllegalArgumentException("Wrong dimensions for this stack");
-				int stackBitDepth = stack!=null?stack.getBitDepth():0;
-				if (stackBitDepth>0 && getBitDepth()!=stackBitDepth)
-					throw new IllegalArgumentException("Wrong type for this stack");
-			} else {
-				stack = null;
-				setCurrentSlice(1);
-			}
-			setProcessor2(title, ip, null);
+	public void setProcessor(String title, ImageProcessor ip) {
+		if (ip==null || ip.getPixels()==null)
+			throw new IllegalArgumentException("ip null or ip.getPixels() null");
+		if (getStackSize()>1) {
+			if (ip.getWidth()!=width || ip.getHeight()!=height)
+				throw new IllegalArgumentException("Wrong dimensions for this stack");
+			int stackBitDepth = stack!=null?stack.getBitDepth():0;
+			if (stackBitDepth>0 && getBitDepth()!=stackBitDepth)
+				throw new IllegalArgumentException("Wrong type for this stack");
+		} else {
+			stack = null;
+			setCurrentSlice(1);
 		}
+		setProcessor2(title, ip, null);
+	}
 	
 	void setProcessor2(String title, ImageProcessor ip, ImageStack newStack) {
 		//IJ.log("setProcessor2: "+ip+" "+this.ip+" "+newStack);
@@ -617,13 +617,15 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (ij!=null)
 			ip.setProgressBar(ij.getProgressBar());
         int stackSize = 1;
+		boolean dimensionsChanged = width>0 && height>0 && (width!=ip.getWidth() || height!=ip.getHeight());
 		if (stack!=null) {
 			stackSize = stack.getSize();
 			if (currentSlice>stackSize)
 				setCurrentSlice(stackSize);
+			if (currentSlice>=1 && currentSlice<=stackSize && !dimensionsChanged)
+				stack.setPixels(ip.getPixels(),currentSlice);
 		}
 		img = null;
-		boolean dimensionsChanged = width>0 && height>0 && (width!=ip.getWidth() || height!=ip.getHeight());
 		if (dimensionsChanged) roi = null;
 		int type;
 		if (ip instanceof ByteProcessor)
