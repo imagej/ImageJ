@@ -302,6 +302,7 @@ public class Menus {
 		addExample(submenu, "Gamma Adjuster", "Gamma_Adjuster.js");
 		addExample(submenu, "Custom Measurement", "Custom_Measurement.js");
 		addExample(submenu, "Terabyte VirtualStack", "Terabyte_VirtualStack.js");
+		addExample(submenu, "Event Listener", "Event_Listener.js");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("BeanShell");

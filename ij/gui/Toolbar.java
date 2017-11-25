@@ -778,8 +778,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 		if (legacyMode)
 			repaint();
-		if (!previousName.equals(getToolName()))
-			IJ.notifyEventListeners(IJEventListener.TOOL_CHANGED);
+		if (!previousName.equals(getToolName())) {
+			IJ.notifyEventListeners(IJEventListener.TOOL_CHANGED);;
+			repaint();
+		}
 	}
 	
 	boolean isValidTool(int tool) {

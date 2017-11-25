@@ -616,7 +616,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			notifyListeners(UPDATED);
 		if (ij!=null)
 			ip.setProgressBar(ij.getProgressBar());
-        int stackSize = 1;
+		int stackSize = 1;
 		boolean dimensionsChanged = width>0 && height>0 && (width!=ip.getWidth() || height!=ip.getHeight());
 		if (stack!=null) {
 			stackSize = stack.getSize();

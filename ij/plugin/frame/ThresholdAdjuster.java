@@ -14,8 +14,8 @@ import ij.plugin.Thresholder;
 
 /** Adjusts the lower and upper threshold levels of the active image. This
 	class is multi-threaded to provide a more responsive user interface. */
-public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measurements,
-	Runnable, ActionListener, AdjustmentListener, ItemListener, KeyListener, MouseWheelListener, ImageListener {
+public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measurements, Runnable,
+	ActionListener, AdjustmentListener, ItemListener, FocusListener, KeyListener, MouseWheelListener, ImageListener {
 
 	public static final String LOC_KEY = "threshold.loc";
 	public static final String MODE_KEY = "threshold.mode";
@@ -140,6 +140,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		minLabel = new TextField(text,columns);
 		minLabel.setFont(font);
 		add(minLabel, c);
+		minLabel.addFocusListener(this);
 		minLabel.addMouseWheelListener(this);
 		minLabel.addKeyListener(this);
 		
@@ -165,6 +166,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		maxLabel = new TextField(text,columns);
 		maxLabel.setFont(font);
 		add(maxLabel, c);
+		maxLabel.addFocusListener(this);
 		maxLabel.addMouseWheelListener(this);
 		maxLabel.addKeyListener(this);
 				
@@ -268,6 +270,11 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			doApplyLut = true;
 		notify();
 	}
+
+    public synchronized void focusLost(FocusEvent e) {
+        doSet = true;
+		notify();
+    }
 
 	public synchronized void mouseWheelMoved(MouseWheelEvent e)	{
 		if (e.getSource()==minSlider || e.getSource()==minLabel) {
