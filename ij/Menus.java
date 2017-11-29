@@ -1523,17 +1523,6 @@ public class Menus {
 	}
 	
 	void installStartupMacroSet() {
-		if (applet!=null) {
-			String docBase = ""+applet.getDocumentBase();
-			if (!docBase.endsWith("/")) {
-				int index = docBase.lastIndexOf("/");
-				if (index!=-1)
-					docBase = docBase.substring(0, index+1);
-			}
-			IJ.runPlugIn("ij.plugin.URLOpener", docBase+"StartupMacros.txt");
-			return;
-		}
-
 		if (macrosPath==null) {
 			try {
 				(new MacroInstaller()).installFromIJJar("/macros/StartupMacros.txt");
@@ -1549,6 +1538,9 @@ public class Menus {
 				(new MacroInstaller()).installFromIJJar("/macros/StartupMacros.txt");
 				return;
 			}
+		} else {
+			if ("StartupMacros.fiji.ijm".equals(f.getName()))
+				path = f.getPath();
 		}
 		String libraryPath = macrosPath + "Library.txt";
 		f = new File(libraryPath);
