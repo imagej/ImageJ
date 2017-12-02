@@ -5,10 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.51s 29 November 2017</u>
+<li> <u>1.51s 1 December 2017</u>
 <ul>
 <li> Added the <i>Help&gt;Examples&gt;JavaScript&gt;Event Listener</i> example.
 <li> Incresed the default plot size from 450x200 to 530x300.
+<li> Thanks to 'graukatze', line length measurements are now much
+faster when all measurements are disabled in the
+<i>Set Measurents</i> dialog.
 <li> Thanks to Jean Christophe Taveau, ECMAScript 6
 is used when running JavaScript code
 on Java 9
@@ -22,7 +25,7 @@ dialog to throw an exception with 16-bit images.
 <li> Thanks to Rob Lees and Jan Eglinger, fixed a bug that, when 
 deleting a point from a point selection on a stack, could cause
 an overlaping invisible point in another slice to be deleted.
-<li> Thanks to WaDoMa, fixed a bug that caused
+<li> Thanks to 'WaDoMa', fixed a bug that caused
 ImagePlus.setAntialiasRendering() calls to be ignored
 when rendering arrows in flattened images.
 <li> Thanks to Jean Christophe Taveau, fixed a bug that caused acripts
@@ -56,6 +59,8 @@ the specified image size was greater than the file size.
 <li> Thanks to Michael Kaul, fixed a bug that caused the
 ImagePlus.setProcessor() method to sometimes not
 work as expected with stacks.
+<li> Thanks to 'graukatze', fixed a bug that caused <i>Plot Z-axis Profile</i>,
+in "Live" mode, to interfere with the <i>Measure</i> command.
 <li> Thanks to Bjorn Marsen, fixed a v1.51 regression that caused
 run("Set Measurements...","...") to reset the measurement
 counter when used in a macro run from the command line using

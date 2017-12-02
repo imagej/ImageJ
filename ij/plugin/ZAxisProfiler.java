@@ -169,7 +169,8 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 			size = slices;
 		float[] values = new float[size];
 		Calibration cal = imp.getCalibration();
-		Analyzer analyzer = new Analyzer(imp);
+		ResultsTable rt = new ResultsTable();
+		Analyzer analyzer = new Analyzer(imp, rt);
 		int measurements = Analyzer.getMeasurements();
 		boolean showResults = !isPlotMaker && measurements!=0 && measurements!=LIMIT;
 		measurements |= MEAN;
@@ -195,10 +196,8 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 			analyzer.saveResults(stats, roi);
 			values[i-1] = (float)stats.mean;
 		}
-		if (showResults) {
-			ResultsTable rt = Analyzer.getResultsTable();
+		if (showResults)
 			rt.show("Results");
-		}
 		return values;
 	}
 
@@ -213,7 +212,8 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 		boolean showProgress = size>400 || stack.isVirtual();
 		float[] values = new float[size];
 		Calibration cal = imp.getCalibration();
-		Analyzer analyzer = new Analyzer(imp);
+		ResultsTable rt = new ResultsTable();
+		Analyzer analyzer = new Analyzer(imp, rt);
 		int measurements = Analyzer.getMeasurements();
 		boolean showResults = !isPlotMaker && measurements!=0 && measurements!=LIMIT;
 		boolean showingLabels = firstTime && showResults && ((measurements&LABELS)!=0 || (measurements&SLICE)!=0);
@@ -241,10 +241,8 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 			analyzer.saveResults(stats, roi);
 			values[i-1] = (float)stats.mean;
 		}
-		if (showResults) {
-			ResultsTable rt = Analyzer.getResultsTable();
+		if (showResults)
 			rt.show("Results");
-		}
 		if (showingLabels)
 			imp.setSlice(current);
 		return values;
