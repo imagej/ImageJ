@@ -53,16 +53,18 @@ public class Plot implements Cloneable {
 	public static final int DOT = 6;
 	/** Draw black lines between the dots and a circle with the given color at each dot */
 	public static final int CONNECTED_CIRCLES = 7;
+	/** Display points using an diamond-shaped mark. */
+	public static final int DIAMOND = 8;
 	/** Draw shape using macro code */
-	public static final int CUSTOM = 8;
+	public static final int CUSTOM = 9;
 
 	/** Names for the shapes as an array */
 	final static String[] SHAPE_NAMES = new String[] {
-			"Circle", "X", "Line", "Box", "Triangle", "+", "Dot", "Connected Circles", "Custom"};
+			"Circle", "X", "Line", "Box", "Triangle", "+", "Dot", "Connected Circles", "Diamond", "Custom"};
 	/** Names in nicely sorting order for menus */
 	final static String[] SORTED_SHAPES = new String[] {
 			SHAPE_NAMES[LINE], SHAPE_NAMES[CONNECTED_CIRCLES], SHAPE_NAMES[CIRCLE], SHAPE_NAMES[BOX], SHAPE_NAMES[TRIANGLE],
-			SHAPE_NAMES[CROSS], SHAPE_NAMES[X], SHAPE_NAMES[DOT]};
+			SHAPE_NAMES[CROSS], SHAPE_NAMES[DIAMOND], SHAPE_NAMES[X], SHAPE_NAMES[DOT]};
 	/** flag for numeric labels of x-axis ticks */
 	public static final int X_NUMBERS = 0x1;
 	/** flag for numeric labels of x-axis ticks */
@@ -633,7 +635,7 @@ public class Plot implements Cloneable {
 	 * @param xValues	the x coordinates, or null. If null, integers starting at 0 will be used for x.
 	 * @param yValues	the y coordinates (must not be null)
 	 * @param yErrorBars error bars in y, may be null
-	 * @param shape		CIRCLE, X, BOX, TRIANGLE, CROSS, DOT, LINE, CONNECTED_CIRCLES
+	 * @param shape		CIRCLE, X, BOX, TRIANGLE, CROSS, DIAMOND, DOT, LINE, CONNECTED_CIRCLES
 	 * @param label		Label for this curve or set of points, used for a legend and for listing the plots
 	 */
 	public void addPoints(float[] xValues, float[] yValues, float[] yErrorBars, int shape, String label) {
@@ -649,7 +651,7 @@ public class Plot implements Cloneable {
 	/** Adds a set of points to the plot or adds a curve if shape is set to LINE.
 	 * @param x			the x coordinates
 	 * @param y			the y coordinates
-	 * @param shape		CIRCLE, X, BOX, TRIANGLE, CROSS, DOT, LINE, CONNECTED_CIRCLES
+	 * @param shape		CIRCLE, X, BOX, TRIANGLE, CROSS, DIAMOND, DOT, LINE, CONNECTED_CIRCLES
 	 */
 	public void addPoints(float[] x, float[] y, int shape) {
 		addPoints(x, y, null, shape, null);
@@ -684,6 +686,8 @@ public class Plot implements Cloneable {
 			shape = Plot.TRIANGLE;
 		else if (str.contains("cross") || str.contains("+"))
 			shape = Plot.CROSS;
+		else if (str.contains("diamond"))
+			shape = Plot.DIAMOND;
 		else if (str.contains("dot"))
 			shape = Plot.DOT;
 		else if (str.contains("xerror"))
@@ -707,7 +711,7 @@ public class Plot implements Cloneable {
 	 * @param x			the x-coodinates
 	 * @param y			the y-coodinates
 	 * @param errorBars			the vertical error bars, may be null
-	 * @param shape		CIRCLE, X, BOX, TRIANGLE, CROSS, DOT or LINE
+	 * @param shape		CIRCLE, X, BOX, TRIANGLE, CROSS, DIAMOND, DOT or LINE
 	 */
 	public void addPoints(double[] x, double[] y, double[] errorBars, int shape) {
 		addPoints(Tools.toFloat(x), Tools.toFloat(y), Tools.toFloat(errorBars), shape, null);
@@ -2370,6 +2374,7 @@ public class Plot implements Cloneable {
 	/** Draw the symbols for data points */
 	void drawShape(PlotObject plotObject, int x, int y, int size) {
 		int shape = plotObject.shape;
+		if (shape == DIAMOND) size = (int)(size*1.21);
 		int xbase = x-sc(size/2);
 		int ybase = y-sc(size/2);
 		int xend = x+sc(size/2);
@@ -2393,6 +2398,12 @@ public class Plot implements Cloneable {
 			case CROSS:
 				ip.drawLine(xbase,y,xend,y);
 				ip.drawLine(x,ybase,x,yend);
+				break;
+			case DIAMOND:
+				ip.drawLine(xbase,y,x,ybase);
+				ip.drawLine(x,ybase,xend,y);
+				ip.drawLine(xend,y,x,yend);
+				ip.drawLine(x,yend,xbase,y);
 				break;
 			case DOT:
 				ip.drawDot(x, y); //uses current line width
@@ -2433,10 +2444,10 @@ public class Plot implements Cloneable {
 	/** Fill the area of the symbols for data points (except for shape=DOT)
 	 *	Note that ip.fill, ip.fillOval etc. can't be used here: they do not care about the clip rectangle */
 	void fillShape(int shape, int x0, int y0, int size) {
+		if (shape == DIAMOND) size = (int)(size*1.21);
 		int r = sc(size/2)-1;
 		switch(shape) {
 			case BOX:
-				int widthOrHeight = 2*sc(size/2);
 				for (int dy=-r; dy<=r; dy++)
 					for (int dx=-r; dx<=r; dx++)
 						ip.drawDot(x0+dx, y0+dy);
@@ -2448,6 +2459,17 @@ public class Plot implements Cloneable {
 				double hwStep = halfWidth/(yend-ybase+1);
 				for (int y=yend; y>=ybase; y--, halfWidth -= hwStep) {
 					int dx = (int)(Math.round(halfWidth));
+					for (int x=x0-dx; x<=x0+dx; x++)
+						ip.drawDot(x,y);
+				}
+				break;
+			case DIAMOND:
+				ybase = y0 - r - sc(1);
+				yend = y0 + r;
+				halfWidth = sc(size/2)+sc(1)-1;
+				hwStep = halfWidth/(yend-ybase+1);
+				for (int y=yend; y>=ybase; y--) {
+					int dx = (int)(Math.round(halfWidth-(hwStep+1)*Math.abs(y-y0)));
 					for (int x=x0-dx; x<=x0+dx; x++)
 						ip.drawDot(x,y);
 				}
@@ -3101,12 +3123,12 @@ class PlotObject implements Cloneable, Serializable {
 	/** Whether an XY_DATA object has markers to draw */
 	boolean hasMarker() {
 		return type == XY_DATA && (shape == Plot.CIRCLE || shape == Plot.X || shape == Plot.BOX || shape == Plot.TRIANGLE ||
-				shape == Plot.CROSS || shape == Plot.DOT || shape == Plot.CONNECTED_CIRCLES || shape == Plot.CUSTOM);
+				shape == Plot.CROSS || shape == Plot.DIAMOND || shape == Plot.DOT || shape == Plot.CONNECTED_CIRCLES || shape == Plot.CUSTOM);
 	}
 
 	/** Whether an XY_DATA object has markers that can be filled */
 	boolean hasFilledMarker() {
-		return type == XY_DATA && color2 != null && (shape == Plot.CIRCLE || shape == Plot.BOX || shape == Plot.TRIANGLE);
+		return type == XY_DATA && color2 != null && (shape == Plot.CIRCLE || shape == Plot.BOX || shape == Plot.TRIANGLE || shape == Plot.DIAMOND);
 	}
 
 	/** Size of the markers for an XY_DATA object with markers */
