@@ -165,7 +165,7 @@ public class ResultsTableTest {
 		for (int i = 0; i < 1000; i++)
 		{
 			assertEquals(i,r.getValueAsDouble(i,0),Assert.DOUBLE_TOL);
-			assertEquals("---",r.getColumnHeading(i));
+			assertEquals("C"+(i+1),r.getColumnHeading(i));
 		}
 
 	}
@@ -961,7 +961,7 @@ public class ResultsTableTest {
 		r.addValue(2, 3);
 		r.addValue(3, 4);
 		assertNull(r.getRowLabels());
-		assertEquals(" \t---\t---\t---\t---",r.getColumnHeadings());
+		assertEquals(" \tC1\tC2\tC3\tC4",r.getColumnHeadings());
 
 		// null rowLabels, valid headings
 		r = n();
