@@ -982,7 +982,7 @@ public class ResultsTableTest {
 		r.addValue(3, 4);
 		r.setLabel("XXXX", 0);
 		assertNotNull(r.getRowLabels());
-		assertEquals(" \tLabel\t---\t---\t---\t---",r.getColumnHeadings());
+		assertEquals(" \tLabel\tC1\tC2\tC3\tC4",r.getColumnHeadings());
 
 		// valid rowLabels, valid headings
 		r = n();
