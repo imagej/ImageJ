@@ -5,69 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.51s 3 December 2017</u>
+<li> <u>1.51t 7 December 2017</u>
 <ul>
-<li> Thanks to Philippe Carl, added support for diamond symbols
-to the Plot class.
-<li> Added the <i>Help&gt;Examples&gt;JavaScript&gt;Event Listener</i> example.
-<li> Incresed the default plot size from 450x200 to 530x300.
-<li> Thanks to 'graukatze', line length measurements are now much
-faster when all measurements are disabled in the
-<i>Set Measurents</i> dialog.
-<li> Thanks to Jean Christophe Taveau, ECMAScript 6
-is used when running JavaScript code
-on Java 9
-(<a href="https://crazybiocomputing.blogspot.fr">more info</a>).
-<li> Thanks to Ron DeSpain, the File.directory() macro function
-(OpenDialog.getLastDirectory() method) now returns the path to 
-the directory that a macro was loaded from.
-<li> Thanks to Lorenzo Cangiano, fixed a bug that could cause the
-"Apply" button in the <i>Image&gt;Adjust&gt;Brightness/Contrast</i> 
-dialog to throw an exception with 16-bit images.
-<li> Thanks to Rob Lees and Jan Eglinger, fixed a bug that, when 
-deleting a point from a point selection on a stack, could cause
-an overlaping invisible point in another slice to be deleted.
-<li> Thanks to 'WaDoMa', fixed a bug that caused
-ImagePlus.setAntialiasRendering() calls to be ignored
-when rendering arrows in flattened images.
-<li> Thanks to Jean Christophe Taveau, fixed a bug that caused acripts
-installed in the plugins menu to be aborted if the user clicked
-"Cancel" in a GenericDialog.
-<li> Thanks to Klaus Michel, fixed a bug that caused the ROI Manager's 
-<i>More&gt;Translate</i> command to not work correctly if
-one of the ROIs being translated was active.
-<li> Thanks to Stein Rorvik, fixed bugs that caused
-the RunAtStartup, AutoRun and
-command line macros to interfere with each other, causing
-&variable expansion in run() calls to not work. To avoid
-this interference, the RunAtStartup macro (created by
-<i>Edit&gt;Options&gt;Startup</i>), the AutoRun
-macro (in StartupMacros) and command line macros now
-all run on the same thread.
-<li> Thanks to Stein Rorvik, fixed a bug that caused the <i>StartupMacros</i>
-command in the <i>&gt;&gt;</i> toolbar menu to not work as
-expected if the StartupMacros file had an ".ijm" extension.
-<li> Thanks to Alban Favre and Jan Eglinger, fixed a bug that
-caused the getResult() macro function to not work with tables created
-by plugins using the ResultsTable.setValue(column,row,value) method.
-<li> Thanks to Stein Rorvik, fixed a bug that caused forward slash
-separators to not work with default directories on Windows.
-<li> Thanks to Adrian Daerr, fixed a bug that caused raw virtual stacks to
-be opened incorrectly if the number of images specified in the dialog
-was greater than the actual number of images.
-<li> Thanks to 'tigers1964', fixed bugs that sometimes caused
-<i>File&gt;Import&gt;Raw</i> to not correctly zero fill when
-the specified image size was greater than the file size.
-<li> Thanks to Michael Kaul, fixed a bug that caused the
-ImagePlus.setProcessor() method to sometimes not
-work as expected with stacks.
-<li> Thanks to 'graukatze', fixed a bug that caused <i>Plot Z-axis Profile</i>,
-in "Live" mode, to interfere with the <i>Measure</i> command.
-<li> Thanks to Bjorn Marsen, fixed a v1.51 regression that caused
-run("Set Measurements...","...") to reset the measurement
-counter when used in a macro run from the command line using
-the -batch option.
-
+<li> Thanks to Michael Kaul, fixed a v1.51s regression that could cause ImageJ
+to fail to quit properly if there was an Action Bar launched at startup.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
