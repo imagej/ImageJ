@@ -3,10 +3,11 @@ import ij.IJ;
 import ij.plugin.MacroInstaller;
 import ij.plugin.Startup;
 
-/** Runs the RunAtStartup and AutoRun macros, on a separate thread
-	unless ImageJ is running a command line (batch mode) macro.*/
+/** Runs the RunAtStartup (created by Edit/Options/Startup) and AutoRun (in StartupMacros) macros. */
 public class StartupRunner implements Runnable {
 
+	/** Runs the RunAtStartup and AutoRun macros, on the current thread
+		if 'batchMode' true, otherwise on a separate thread. */
 	public void run(boolean batchMode) {
 		if (IJ.debugMode) IJ.log("StartupRunner: "+batchMode);
 		if (batchMode)

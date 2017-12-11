@@ -80,7 +80,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.51t";
-	public static final String BUILD = "5";
+	public static final String BUILD = "8";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -683,29 +683,26 @@ public class ImageJ extends Frame implements ActionListener,
 		for (int i=0; i<nArgs; i++) {
 			String arg = args[i];
 			if (arg==null) continue;
-			if (arg.startsWith("-")) {
-				if (arg.startsWith("-batch")) {
-					noGUI = true;
-					batchMode = true;
-				} else if (arg.startsWith("-macro"))
-					batchMode = true;
-				else if (arg.startsWith("-debug"))
-					IJ.setDebugMode(true);
-				else if (arg.startsWith("-ijpath") && i+1<nArgs) {
-					if (IJ.debugMode) IJ.log("-ijpath: "+args[i+1]);
-					Prefs.setHomeDir(args[i+1]);
-					commandLine = true;
-					args[i+1] = null;
-				} else if (arg.startsWith("-port")) {
-					int delta = (int)Tools.parseDouble(arg.substring(5, arg.length()), 0.0);
-					commandLine = true;
-					if (delta==0)
-						mode = EMBEDDED;
-					else if (delta>0 && DEFAULT_PORT+delta<65536)
-						port = DEFAULT_PORT+delta;
-				} 
-			} else if (arg.endsWith(".ijm") || arg.endsWith(".txt"))
+			if (arg.startsWith("-batch")) {
+				noGUI = true;
 				batchMode = true;
+			} else if (arg.startsWith("-macro") || arg.endsWith(".ijm") || arg.endsWith(".txt"))
+				batchMode = true;
+			else if (arg.startsWith("-debug"))
+				IJ.setDebugMode(true);
+			else if (arg.startsWith("-ijpath") && i+1<nArgs) {
+				if (IJ.debugMode) IJ.log("-ijpath: "+args[i+1]);
+				Prefs.setHomeDir(args[i+1]);
+				commandLine = true;
+				args[i+1] = null;
+			} else if (arg.startsWith("-port")) {
+				int delta = (int)Tools.parseDouble(arg.substring(5, arg.length()), 0.0);
+				commandLine = true;
+				if (delta==0)
+					mode = EMBEDDED;
+				else if (delta>0 && DEFAULT_PORT+delta<65536)
+					port = DEFAULT_PORT+delta;
+			} 
 		}
   		// If existing ImageJ instance, pass arguments to it and quit.
   		boolean passArgs = mode==STANDALONE && !noGUI;

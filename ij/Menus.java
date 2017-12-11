@@ -270,6 +270,7 @@ public class Menus {
 		addExample(submenu, "Example Plot", "Example_Plot.ijm");
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.ijm");
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.ijm");
+		addExample(submenu, "Damped Wave Plot", "Damped_Wave_Plot.ijm");
 		addExample(submenu, "Custom Plot Symbols", "Custom_Plot_Symbols.ijm");
 		addExample(submenu, "Process Folder", "Batch_Process_Folder.ijm");
 		addExample(submenu, "OpenDialog Demo", "OpenDialog_Demo.ijm");
@@ -281,6 +282,8 @@ public class Menus {
 		addExample(submenu, "Dual Progress Bars", "Dual_Progress_Bars.ijm");
 		addExample(submenu, "Grab Viridis Colormap", "Grab_Viridis_Colormap.ijm");
 		addExample(submenu, "Custom Measurement", "Custom_Measurement.ijm");
+		addExample(submenu, "Synthetic Images", "Synthetic_Images.ijm");
+		addExample(submenu, "Spiral Rotation", "Spiral_Rotation.ijm");
 		submenu.addSeparator();
 		addExample(submenu, "Circle Tool", "Circle_Tool.ijm");
 		addExample(submenu, "Star Tool", "Star_Tool.ijm");
@@ -290,6 +293,8 @@ public class Menus {
 		addExample(submenu, "Sphere", "Sphere.js");
 		addExample(submenu, "Plasma Cloud", "Plasma_Cloud.js");
 		addExample(submenu, "Cloud Debugger", "Cloud_Debugger.js");
+		addExample(submenu, "Synthetic Images", "Synthetic_Images.js");
+		addExample(submenu, "Spiral Rotation", "Spiral_Rotation.js");
 		addExample(submenu, "Example Plot", "Example_Plot.js");
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.js");
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.js");
@@ -316,7 +321,7 @@ public class Menus {
 		submenu = new Menu("Python");
 		addExample(submenu, "Sphere", "Sphere.py");
 		addExample(submenu, "Animated Gaussian Blur", "Animated_Gaussian_Blur.py");
-		addExample(submenu, "Rotational Animation", "Rotational_Animation.py");
+		addExample(submenu, "Spiral Rotation", "Spiral_Rotation.py");
 		addExample(submenu, "Overlay", "Overlay.py");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
