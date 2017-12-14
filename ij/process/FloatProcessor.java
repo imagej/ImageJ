@@ -707,7 +707,11 @@ public class FloatProcessor extends ImageProcessor {
 	}
 	
 	public void noise(double standardDeviation) {
-		Random rnd=new Random();
+		if (rnd==null)//n__
+			rnd = new Random();
+		if (!Double.isNaN(seed))
+			rnd.setSeed((int) seed);
+		seed = Double.NaN;
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int i = y * width + roiX;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {

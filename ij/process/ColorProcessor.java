@@ -769,9 +769,9 @@ public class ColorProcessor extends ImageProcessor {
 		return null;
 	}
 
-   public void noise(double range) {
+	public void noise(double range) {
     	filterRGB(RGB_NOISE, range);
-    }
+	}
 
 	public void medianFilter() {
     	filterRGB(RGB_MEDIAN, 0.0);

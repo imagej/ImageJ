@@ -102,6 +102,8 @@ public abstract class ImageProcessor implements Cloneable {
 	protected SampleModel sampleModel;
 	protected static IndexColorModel defaultColorModel;
 	protected boolean minMaxSet;
+	protected static double seed = Double.NaN;
+	protected static Random rnd;
 		
 	protected void showProgress(double percentDone) {
 		if (progressBar!=null)
@@ -2695,6 +2697,10 @@ public abstract class ImageProcessor implements Cloneable {
 			if (inc<1) inc=1;
 		}
 		return inc;
+	}
+	
+	public static void setRandomSeed(double randomSeed) {
+		seed = randomSeed;
 	}
 	
 }

@@ -1086,6 +1086,7 @@ public class Functions implements MacroConstants, Measurements {
 					if (seed!=dseed)
 						interp.error("Seed not integer");
 					ran = new Random(seed);
+					ImageProcessor.setRandomSeed(seed);
 				} else if (arg.equals("gaussian"))
 					gaussian = true;
 				else
@@ -1094,6 +1095,7 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();
 			if (!Double.isNaN(dseed)) return Double.NaN;
 		}
+		ImageProcessor.setRandomSeed(Double.NaN);
 		interp.getParens();
  		if (ran==null)
 			ran = new Random();
@@ -1102,14 +1104,6 @@ public class Functions implements MacroConstants, Measurements {
 		else
 			return ran.nextDouble();
 	}
-
-	//void setSeed() {
-	//	long seed = (long)getArg();
-	//	if (ran==null)
-	//		ran = new Random(seed);
-	//	else
-	//		ran.setSeed(seed);
-	//}
 
 	double getResult() {
 		interp.getLeftParen();
@@ -3031,6 +3025,7 @@ public class Functions implements MacroConstants, Measurements {
 				displayBatchModeImage(imp2);
 				Interpreter.setTempShowMode(false);
 				Interpreter.removeBatchModeImage(imp2);
+				WindowManager.setTempCurrentImage(null);
 			}
 		} else if (sarg.equalsIgnoreCase("hide")) {
 			interp.setBatchMode(true);
@@ -5630,41 +5625,11 @@ public class Functions implements MacroConstants, Measurements {
 		double[] d1 = new double[len1];
 		for (int i=0; i<len1; i++)
 			d1[i] = a1[i].getValue();
-		double[] d2 = resampleArray(d1, len2);
+		double[] d2 = Tools.resampleArray(d1, len2);
 		Variable[] a2 = new Variable[len2];
 		for (int i=0; i<len2; i++)
 			a2[i] = new Variable(d2[i]);
 		return a2;
-	}
-
-	private static double[] resampleArray(double[] y1, int len2) {
-		int len1 = y1.length;
-		double factor =  (double)(len2-1)/(len1-1);
-		double[] y2 = new double[len2];
-		if(len1 == 0){
-		    return y2;
-		}
-		if(len1 == 1){
-		    for (int jj=0; jj<len2; jj++)
-			    y2[jj] = y1[0];
-		    return(y2);
-		}
-		double[] f1 = new double[len1];//fractional positions
-		double[] f2 = new double[len2];
-		for (int jj=0; jj<len1; jj++)
-			f1[jj] = jj*factor;
-		for (int jj=0; jj<len2; jj++)
-			f2[jj] = jj/factor;
-		for (int jj=0; jj<len2-1; jj++) {
-			double pos = f2[jj];
-			int leftPos = (int)Math.floor(pos);
-			int rightPos = (int)Math.floor(pos)+1;
-			double fraction = pos-Math.floor(pos);
-			double value = y1[leftPos] + fraction*(y1[rightPos]-y1[leftPos]);
-			y2[jj] = value;
-		}
-		y2[len2-1] = y1[len1-1];
-		return y2;
 	}
 
 	Variable[] reverseArray() {

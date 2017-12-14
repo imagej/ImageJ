@@ -55,7 +55,7 @@ public class Plot implements Cloneable {
 	public static final int CONNECTED_CIRCLES = 7;
 	/** Display points using an diamond-shaped mark. */
 	public static final int DIAMOND = 8;
-	/** Draw black lines between the dots and a circle with the given color at each dot */
+	/** Fill area between line plot and x-axis at y=0. */
 	public static final int FILLED = 9;
 	/** Draw shape using macro code */
 	public static final int CUSTOM = 10;
@@ -65,7 +65,7 @@ public class Plot implements Cloneable {
 			"Circle", "X", "Line", "Box", "Triangle", "+", "Dot", "Connected Circles", "Diamond", "Filled", "Custom"};
 	/** Names in nicely sorting order for menus */
 	final static String[] SORTED_SHAPES = new String[] {
-			SHAPE_NAMES[LINE], SHAPE_NAMES[CONNECTED_CIRCLES], SHAPE_NAMES[FILLED],SHAPE_NAMES[CIRCLE], SHAPE_NAMES[BOX], SHAPE_NAMES[TRIANGLE],
+			SHAPE_NAMES[LINE], SHAPE_NAMES[CONNECTED_CIRCLES], SHAPE_NAMES[FILLED], SHAPE_NAMES[CIRCLE], SHAPE_NAMES[BOX], SHAPE_NAMES[TRIANGLE],
 			SHAPE_NAMES[CROSS], SHAPE_NAMES[DIAMOND], SHAPE_NAMES[X], SHAPE_NAMES[DOT]};
 	/** flag for numeric labels of x-axis ticks */
 	public static final int X_NUMBERS = 0x1;
@@ -2598,8 +2598,8 @@ public class Plot implements Cloneable {
 		}
 		double dx = maxX - minX;
 		int stretchedLen = (int) (dx * xScale * 10) + 1;
-		double[] stretchedArrX = resampleArray(xD, stretchedLen);
-		double[] stretchedArrY = resampleArray(yD, stretchedLen);
+		double[] stretchedArrX = Tools.resampleArray(xD, stretchedLen);
+		double[] stretchedArrY = Tools.resampleArray(yD, stretchedLen);
 		int yZero = scaleY(0);
 		int prevX = 0;
 		if (logYAxis) {
@@ -2620,39 +2620,6 @@ public class Plot implements Cloneable {
 		ip.setColor(Color.black);
 
 		makeRangeGetSteps();
-	}
-
-	double[] resampleArray(double[] y1, int len2) {
-		int len1 = y1.length;
-		double factor = (double) (len2 - 1) / (len1 - 1);
-		double[] y2 = new double[len2];
-		if (len1 == 0) {
-			return y2;
-		}
-		if (len1 == 1) {
-			for (int jj = 0; jj < len2; jj++) {
-				y2[jj] = y1[0];
-			}
-			return (y2);
-		}
-		double[] f1 = new double[len1];//fractional positions
-		double[] f2 = new double[len2];
-		for (int jj = 0; jj < len1; jj++) {
-			f1[jj] = jj * factor;
-		}
-		for (int jj = 0; jj < len2; jj++) {
-			f2[jj] = jj / factor;
-		}
-		for (int jj = 0; jj < len2 - 1; jj++) {
-			double pos = f2[jj];
-			int leftPos = (int) Math.floor(pos);
-			int rightPos = (int) Math.floor(pos) + 1;
-			double fraction = pos - Math.floor(pos);
-			double value = y1[leftPos] + fraction * (y1[rightPos] - y1[leftPos]);
-			y2[jj] = value;
-		}
-		y2[len2 - 1] = y1[len1 - 1];
-		return y2;
 	}
 
 	/** Vertical text for y axis label */

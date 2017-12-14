@@ -73,12 +73,14 @@ public class WindowManager {
 		//if (img!=null) IJ.log("getCurrentImage: "+img.getTitle()+" "+Thread.currentThread().hashCode()+str);
 		return img;
 	}
+	
+	static int count = 1;
 
 	/** Makes the specified image temporarily the active 
 		image for this thread. Call again with a null
 		argument to revert to the previous active image. */
 	public static void setTempCurrentImage(ImagePlus img) {
-		//IJ.log("setTempImage: "+(img!=null?img.getTitle():"null")+" "+Thread.currentThread().hashCode());
+		//IJ.log("setTempImage: "+(img!=null?""+img:"null")+" "+Thread.currentThread().hashCode());
 		if (img==null)
 			tempImageTable.remove(Thread.currentThread());
 		else

@@ -252,6 +252,37 @@ import java.util.Comparator;
 		return indexes2;
 	}
 	
+	/** Returns an array linearly resampled to a different length. */
+	public static double[] resampleArray(double[] y1, int len2) {
+		int len1 = y1.length;
+		double factor =  (double)(len2-1)/(len1-1);
+		double[] y2 = new double[len2];
+		if(len1 == 0){
+		    return y2;
+		}
+		if(len1 == 1){
+		    for (int jj=0; jj<len2; jj++)
+			    y2[jj] = y1[0];
+		    return(y2);
+		}
+		double[] f1 = new double[len1];//fractional positions
+		double[] f2 = new double[len2];
+		for (int jj=0; jj<len1; jj++)
+			f1[jj] = jj*factor;
+		for (int jj=0; jj<len2; jj++)
+			f2[jj] = jj/factor;
+		for (int jj=0; jj<len2-1; jj++) {
+			double pos = f2[jj];
+			int leftPos = (int)Math.floor(pos);
+			int rightPos = (int)Math.floor(pos)+1;
+			double fraction = pos-Math.floor(pos);
+			double value = y1[leftPos] + fraction*(y1[rightPos]-y1[leftPos]);
+			y2[jj] = value;
+		}
+		y2[len2-1] = y1[len1-1];
+		return y2;
+	}
+
 	/** Opens a text file in ij.jar as a String (example path: "/macros/Circle_Tool.txt"). */
 	public static String openFromIJJarAsString(String path) {
 		return (new ij.plugin.MacroInstaller()).openFromIJJar(path);

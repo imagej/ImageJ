@@ -832,10 +832,15 @@ public class ByteProcessor extends ImageProcessor {
 		filter(MEDIAN_FILTER);
 	}
 
+
     /** Adds pseudorandom, Gaussian ("normally") distributed values, with
     	mean 0.0 and the specified standard deviation, to this image or ROI. */
-    public void noise(double standardDeviation) {
-		Random rnd=new Random();
+	public void noise(double standardDeviation) {
+		if (rnd==null)
+			rnd = new Random();
+		if (!Double.isNaN(seed))
+			rnd.setSeed((int)seed);
+		seed = Double.NaN;
 		int v, ran;
 		boolean inRange;
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
@@ -852,6 +857,7 @@ public class ByteProcessor extends ImageProcessor {
 			}
 		}
     }
+    
 
 	/** Scales the image or selection using the specified scale factors.
 		@see ImageProcessor#setInterpolate
