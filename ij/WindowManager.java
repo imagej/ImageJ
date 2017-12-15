@@ -73,8 +73,6 @@ public class WindowManager {
 		//if (img!=null) IJ.log("getCurrentImage: "+img.getTitle()+" "+Thread.currentThread().hashCode()+str);
 		return img;
 	}
-	
-	static int count = 1;
 
 	/** Makes the specified image temporarily the active 
 		image for this thread. Call again with a null

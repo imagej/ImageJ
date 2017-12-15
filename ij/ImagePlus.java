@@ -422,7 +422,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if ((img!=null) && (width>=0) && (height>=0)) {
 			activated = false;
 			int stackSize = getStackSize();
-			//if (compositeImage) stackSize /= nChannels;
 			if (stackSize>1)
 				win = new StackWindow(this);
 			else if (getProperty(Plot.PROPERTY_KEY) != null)

@@ -3021,11 +3021,10 @@ public class Functions implements MacroConstants, Measurements {
 			displayBatchModeImage(imp2);
 		} else if (sarg.equalsIgnoreCase("show")) {
 			if (imp2!=null) {
+				Interpreter.removeBatchModeImage(imp2);
 				Interpreter.setTempShowMode(true);
 				displayBatchModeImage(imp2);
 				Interpreter.setTempShowMode(false);
-				Interpreter.removeBatchModeImage(imp2);
-				WindowManager.setTempCurrentImage(null);
 			}
 		} else if (sarg.equalsIgnoreCase("hide")) {
 			interp.setBatchMode(true);

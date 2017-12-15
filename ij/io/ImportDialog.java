@@ -292,7 +292,7 @@ public class ImportDialog {
 	public static FileInfo getLastFileInfo() {
 		return lastFileInfo;
 	}
-	
+		
 	private void getDimensionsFromName(String name) {
 		if (name==null) return;
 		int lastUnderscore = name.lastIndexOf("_");
@@ -305,7 +305,7 @@ public class ImportDialog {
 		name2 = new String(chars);
 		String[] numbers = Tools.split(name2);
 		int n = numbers.length;
-		if (n<2 || n>3) return;
+		if (n<2) return;
 		int w = (int)Tools.parseDouble(numbers[0],0);
 		if (w<10) return;
 		int h = (int)Tools.parseDouble(numbers[1],0);
@@ -313,14 +313,14 @@ public class ImportDialog {
 		width = w;
 		height = h;
 		nImages = 1;
-		if (n==3) {
+		if (n>2) {
 			int d = (int)Tools.parseDouble(numbers[2],0);
 			if (d>0)
-				nImages = d;
+			nImages = d;
 		}
 		guessFormat(directory, name);
 	}
-
+    
 	private void guessFormat(String dir, String name) {
 		if (dir==null) return;
 		File file = new File(dir+name);

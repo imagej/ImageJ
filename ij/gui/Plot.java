@@ -1012,7 +1012,7 @@ public class Plot implements Cloneable {
 
 	/** Gets the label String of the xLabel ('x'), yLabel('y') or the legend ('l').
 	 *	Returns null if the given PlotObject does not exist or its label is null */
-	String getLabel(char c) {
+	public String getLabel(char c) {
 		PlotObject plotObject = pp.getPlotObject(c);
 		if (plotObject != null)
 			return plotObject.label;
@@ -1049,7 +1049,7 @@ public class Plot implements Cloneable {
 			if (p >= allPlotObjects.size())                             //the PlotObject passed with Constructor comes last
 				p = 0;
 			PlotObject plotObject = allPlotObjects.get(p);
-			if (plotObject.hasFlag(PlotObject.HIDDEN)) continue;
+			//if (plotObject.hasFlag(PlotObject.HIDDEN)) continue;
 			int type = plotObject.type;
 			String label = plotObject.label;
 			switch (type) {
@@ -2945,13 +2945,23 @@ public class Plot implements Cloneable {
 			int dataSetNumber, boolean writeX, boolean writeY, boolean multipleSets) {
 		if (writeX) {
 			String label = plotObject.type == PlotObject.ARROWS ? "XStart" : "X";
-			if (multipleSets) label += dataSetNumber;
+			if (multipleSets) label += dataSetNumber;			
+			if (dataSetNumber==0 && plotObject.type!=PlotObject.ARROWS) {
+				String plotXLabel = getLabel('x');
+				if (plotXLabel!=null && plotXLabel.startsWith(" ") && plotXLabel.endsWith(" "))
+					label = plotXLabel.substring(1,plotXLabel.length()-1);
+			}
 			headings.add(label);
 			data.add(plotObject.xValues);
 		}
 		if (writeY) {
 			String label = plotObject.type == PlotObject.ARROWS ? "YStart" : "Y";
 			if (multipleSets) label += dataSetNumber;
+			if (dataSetNumber==0 && plotObject.type!=PlotObject.ARROWS) {
+				String plotYLabel = getLabel('y');
+				if (plotYLabel!=null && plotYLabel.startsWith(" ") && plotYLabel.endsWith(" "))
+					label = plotYLabel.substring(1,plotYLabel.length()-1);
+			}
 			headings.add(label);
 			data.add(plotObject.yValues);
 		}
