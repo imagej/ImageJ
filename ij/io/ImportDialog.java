@@ -316,7 +316,7 @@ public class ImportDialog {
 		if (n>2) {
 			int d = (int)Tools.parseDouble(numbers[2],0);
 			if (d>0)
-			nImages = d;
+				nImages = d;
 		}
 		guessFormat(directory, name);
 	}

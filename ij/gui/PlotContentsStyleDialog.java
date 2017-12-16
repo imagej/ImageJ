@@ -30,6 +30,8 @@ public class PlotContentsStyleDialog implements DialogListener {
 		gd.addStringField("Secondary (fill) color:", "#########");
 		gd.addNumericField("Line width: ", 1.0, 1);
 		gd.addChoice("Symbol:", Plot.SORTED_SHAPES, Plot.SORTED_SHAPES[2]);
+		gd.setInsets(10, 60, 0);
+		gd.addCheckbox("Hidden", false);
 		gd.addDialogListener(this);
 		IJ.wait(100);	//needed to avoid hanging
 		updateDialog(gd, 0);	//fill in style for index 0
@@ -49,11 +51,12 @@ public class PlotContentsStyleDialog implements DialogListener {
 		String color2 = gd.getNextString();
 		double width = gd.getNextNumber();
 		String symbol = gd.getNextChoice();
+		Boolean hidden = gd.getNextBoolean();
 		Choice designationsC = (Choice)(gd.getChoices().get(0));
 		if (e.getSource() == designationsC)
 			updateDialog(gd, index);
 		else
-			plot.setPlotObjectStyles(index, color.trim()+","+color2.trim()+","+(float)width+","+symbol);
+			plot.setPlotObjectStyles(index, color.trim()+","+color2.trim()+","+(float)width+","+symbol+(hidden?",hidden":""));
 		return true;
 	}
 
@@ -65,6 +68,7 @@ public class PlotContentsStyleDialog implements DialogListener {
 		TextField color2F = (TextField)(stringFields.get(1));
 		TextField widthF = (TextField)(gd.getNumericFields().get(0));
 		Choice symbolC = (Choice)(choices.get(1));
+		Checkbox hiddenC = (Checkbox)gd.getCheckboxes().get(0);
 		String styleString = plot.getPlotObjectStyles(index);
 		String[] items = styleString.split(",");
 		//IJ.log(items.length+" items from "+allStyles[index]);
@@ -79,6 +83,7 @@ public class PlotContentsStyleDialog implements DialogListener {
 		color2F.setEnabled(isData);	//only (some) data symbols have secondary color
 		widthF.setEnabled(!isText); //all non-Text types have line width
 		symbolC.setEnabled(isData); //only data have a symbol to choose
+		hiddenC.setState(styleString.contains("hidden"));
 	}
 
 	public void setNPasses(int nPasses) {
