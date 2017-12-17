@@ -1034,8 +1034,8 @@ public class Plot implements Cloneable {
 		return p==null ? null : p.yValues;
 	}
 
-	/** Get an array with human-readable designations of the non-hidden PlotObjects (curves, labels, ...)
-	 *	in the sequence they are plotted (i.e., foreground last). **/
+	/** Get an array with human-readable designations of the PlotObjects (curves, labels, ...)
+	 *	in the sequence they are plotted (i.e., foreground last). Hidden PlotObjects are included. **/
 	public String[] getPlotObjectDesignations() {
 		int nObjects = allPlotObjects.size();
 		String[] names = new String[nObjects];
@@ -1049,7 +1049,6 @@ public class Plot implements Cloneable {
 			if (p >= allPlotObjects.size())                             //the PlotObject passed with Constructor comes last
 				p = 0;
 			PlotObject plotObject = allPlotObjects.get(p);
-			//if (plotObject.hasFlag(PlotObject.HIDDEN)) continue;
 			int type = plotObject.type;
 			String label = plotObject.label;
 			switch (type) {
@@ -1712,7 +1711,7 @@ public class Plot implements Cloneable {
 				allMinMax[i] = defaultMinMax[i];
 		enlargeRange = new int[allMinMax.length];
 		for (PlotObject plotObject : allPlotObjects) {
-			if (plotObject.type == PlotObject.XY_DATA || plotObject.type == PlotObject.ARROWS) {
+			if ((plotObject.type == PlotObject.XY_DATA || plotObject.type == PlotObject.ARROWS) && !plotObject.hasFlag(PlotObject.HIDDEN)) {
 				getMinAndMax(allMinMax, enlargeRange, plotObject, axisRangeFlags);
 				if (!allObjects) break;
 			}
@@ -2269,12 +2268,12 @@ public class Plot implements Cloneable {
 
 	private void drawPlotObject(PlotObject plotObject, ImageProcessor ip) {
 		//IJ.log("DRAWING type="+plotObject.type+" lineWidth="+plotObject.lineWidth+" shape="+plotObject.shape);
+		if (plotObject.hasFlag(PlotObject.HIDDEN)) return;
 		ip.setColor(plotObject.color);
 		ip.setLineWidth(sc(plotObject.lineWidth));
 		int type = plotObject.type;
 		switch (type) {
 			case PlotObject.XY_DATA:
-				if (plotObject.hasFlag(PlotObject.HIDDEN)) break;
 				ip.setClipRect(frame);
 				if (plotObject.yEValues != null)
 					drawVerticalErrorBars(plotObject.xValues, plotObject.yValues, plotObject.yEValues);
@@ -2845,8 +2844,8 @@ public class Plot implements Cloneable {
 		return plotMaker;
 	}
 
-	/** Returns the labels of the datasets as linefeed-delimited String.
-	 *	If the label is not set, a blank line is added */
+	/** Returns the labels of the (non-hidden) datasets as linefeed-delimited String.
+	 *	If the label is not set, a blank line is added. */
 	String getDataLabels() {
 		String labels = "";
 		boolean first = true;
