@@ -208,11 +208,6 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 
 	private void applyMacro(ImageProcessor ip) {
 		if (macro2==null) return;
-		if (macro2.indexOf("=")==-1) {
-			IJ.error("The variable 'v' must be assigned a value (e.g., \"v=255-v\")");
-			canceled = true;
-			return;
-		}
 		macro = macro2;
 		ip.setSliceNumber(pfr.getSliceNumber());	
 		boolean showProgress = pfr.getSliceNumber()==1 && !Interpreter.isBatchMode();
@@ -222,6 +217,8 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	public static void applyMacro(ImageProcessor ip, String macro, boolean showProgress) {
+		if (!macro.contains("="))
+			macro = "v="+macro;
 		ImagePlus temp = WindowManager.getTempCurrentImage();
 		WindowManager.setTempCurrentImage(new ImagePlus("",ip));
 		int PCStart = 23;

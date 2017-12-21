@@ -5,14 +5,17 @@
 </head>
 <body>
 
-<li> <u>1.51t 17 December 2017</u>
+<li> <u>1.51t 20 December 2017</u>
 <ul>
 <li> Thanks to Norbert Vischer, the Plot class now supports filled plots.
-Run Help>Examples>Damped Wave Plot to see an example.
+Run <i>Help&gt;Examples&gt;Damped Wave Plot</i> to see an example.
 <li> Added "Synthetic Images" and "Spiral Rotation" examples,
 in Macro and JavaScript versions, to the Help>Examples menu.
 <li> Added a “hidden” checkbox to the plot window
-<i>More&gt;&gt;Contents Style</i> dialog
+<i>More&gt;&gt;Contents Style</i> dialog.
+<i> The <i>Process&gt;Math&gt;Macro</i> command and
+the ImageProcessor.applyMacro() method automatically
+add "v=" if it is missing.
 <li> Thanks to Norbert Vischer, the seed set by the random("seed",n)
 macro function is now used when creating images with random
 content and by Process>Noise commands, allowing reproducible
@@ -21,6 +24,8 @@ test situations to be created
 <li> Thanks to François Gannier, the x and y-axis labels are used
 as the first two column headings in the table created by the plot window
 "List" command when these labels start and end with a space character.
+<li> Thanks to Jan Brocher, fixed a bug that caused the
+ColorThresholder.RGBtoYUV() method to not work as expected.
 <li> Thanks to Michael Kaul, fixed a v1.51s regression that could cause ImageJ
 to fail to quit properly if there was an Action Bar launched at startup.
 <li> Thanks to Norbert Vischer, fixed a v1.51r26 regression that caused
