@@ -80,7 +80,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.51t";
-	public static final String BUILD = "18";
+	public static final String BUILD = "19";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -452,7 +452,10 @@ public class ImageJ extends Frame implements ActionListener,
 			}
 		}
 
-		if ((!Prefs.requireControlKey || control || meta) && keyChar!='+') {
+		boolean functionKey = keyCode>=KeyEvent.VK_F1 && keyCode<=KeyEvent.VK_F12;
+		boolean numPad = keyCode==KeyEvent.VK_DIVIDE || keyCode==KeyEvent.VK_MULTIPLY
+			|| (keyCode>=KeyEvent.VK_NUMPAD0 && keyCode<=KeyEvent.VK_NUMPAD9);
+		if ((!Prefs.requireControlKey||control||meta||functionKey||numPad) && keyChar!='+') {
 			Hashtable shortcuts = Menus.getShortcuts();
 			if (shift)
 				cmd = (String)shortcuts.get(new Integer(keyCode+200));
