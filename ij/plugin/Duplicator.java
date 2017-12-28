@@ -57,8 +57,11 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			} else
 				newTitle = showDialog(imp, "Duplicate...", "Title: ");
 		}
-		if (newTitle==null)
+		if (newTitle==null) {
+			if (isRotatedRect)
+				imp.setRoi(roiA);
 			return;
+		}
 		ImagePlus imp2;
 		Roi roi = imp.getRoi();		
 			if (duplicateStack && (first>1||last<stackSize))
@@ -99,7 +102,9 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 	Author: N. Vischer
 	*/
 	private void straightenRotatedRect(ImagePlus impA, Roi roiA, ImagePlus impB) {
-		impB.deleteRoi();//we have it in roiA
+		impB.deleteRoi(); //we have it in roiA
+		Color colorBack = Toolbar.getBackgroundColor();	
+		IJ.setBackgroundColor(0,0,0);
 		String title = impB.getTitle();
 		if(impB.getOverlay() != null)
 			impB.getOverlay().clear();
@@ -167,7 +172,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		impB.setTitle(title);
 		impB.show();
 		impB.updateAndDraw();
-		impA.setRoi(roiA);//restore rotated rect in source image
+		impA.setRoi(roiA); //restore rotated rect in source image
+		Toolbar.setBackgroundColor(colorBack);
 	}	
 	                
 	/** Returns a copy of the image, stack or hyperstack contained in the specified ImagePlus.

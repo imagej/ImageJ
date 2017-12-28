@@ -11,6 +11,7 @@ import java.awt.*;
 import java.util.*;
 import java.awt.event.KeyEvent;
 import java.io.PrintWriter;
+import java.awt.datatransfer.StringSelection;
 
 /** This is the recursive descent parser/interpreter for the ImageJ macro language. */
 public class Interpreter implements MacroConstants {
@@ -1206,13 +1207,31 @@ public class Interpreter implements MacroConstants {
 			String line = getErrorLine();
 			done = true;
 			if (line.length()>120)
-				line = line.substring(0,119)+"...";
-			showError("Macro Error", message+" in line "+lineNumber+".\n \n"+line, variables);
+				line = line.substring(0,119)+"...";			
+			StringSelection ss = new StringSelection("" + lineNumber);
+			java.awt.datatransfer.Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			clipboard.setContents(ss, null);
+			Frame f = WindowManager.getFrame("Debug");			
+			TextPanel panel = null;
+			if (showVariables && f!=null && (f instanceof TextWindow)){//clear previous content
+				TextWindow debugWindow = (TextWindow) f;
+				if (debugWindow != null) {
+				 panel = debugWindow.getTextPanel();
+				 panel.clear();
+				}	
+			}
+			showError("Macro Error", message+" in line "+lineNumber+" \n \n"+line + "\n \nLine number is on clipboard.", variables);
+			f = WindowManager.getFrame("Debug");
+			if (showVariables && f!=null && (f instanceof TextWindow)) {
+				 TextWindow debugWindow = (TextWindow)f;
+				debugWindow.append("\n---\t\t---\nError:\t\t" + message + " in line "+lineNumber + ":");
+				debugWindow.append("\t\t"+line);
+			}			
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 		}
 		done = true;
 	}
-	
+		
 	void showError(String title, String msg, String[] variables) {
 		GenericDialog gd = new GenericDialog(title);
 		gd.setInsets(6,5,0);
