@@ -1213,17 +1213,17 @@ public class Interpreter implements MacroConstants {
 			clipboard.setContents(ss, null);
 			Frame f = WindowManager.getFrame("Debug");			
 			TextPanel panel = null;
-			if (showVariables && f!=null && (f instanceof TextWindow)){//clear previous content
+			if (showVariables && f!=null && (f instanceof TextWindow)) { //clear previous content
 				TextWindow debugWindow = (TextWindow) f;
 				if (debugWindow != null) {
-				 panel = debugWindow.getTextPanel();
-				 panel.clear();
+					panel = debugWindow.getTextPanel();
+					panel.clear();
 				}	
 			}
 			showError("Macro Error", message+" in line "+lineNumber+" \n \n"+line + "\n \nLine number is on clipboard.", variables);
 			f = WindowManager.getFrame("Debug");
 			if (showVariables && f!=null && (f instanceof TextWindow)) {
-				 TextWindow debugWindow = (TextWindow)f;
+				TextWindow debugWindow = (TextWindow)f;
 				debugWindow.append("\n---\t\t---\nError:\t\t" + message + " in line "+lineNumber + ":");
 				debugWindow.append("\t\t"+line);
 			}			

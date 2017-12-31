@@ -5,10 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.51t 28 December 2017</u>
+<li> <u>1.51t 30 December 2017</u>
 <ul>
 <li> Thanks to Norbert Vischer, the Plot class now supports filled plots.
-Run <i>Help&gt;Examples&gt;Damped Wave Plot</i> to see an example.
+Run <i>Help&gt;Examples&gt;Macro&gt;Damped Wave Plot</i>
+to see an example.
 <li> Thanks to Norbert Vischer, when a macro error occurs, the line
 number is copied to the clipboard and the error message is 
 displayed in the "Debug" window.
@@ -33,6 +34,9 @@ ColorThresholder.RGBtoYUV() method to not work as expected.
 and numeric kaypad macro shortcuts to not work as expected when
 "Require control key for shortcuts" was enabled in
 the <i>Edit&gt;Options&gt;Misc</i> dialog.
+<li> Thanks to Christophe Leterrier, worked around a macOS High Sierra/APFS
+bug that caused LUTs listed in the <i>Image</i> menu and file names
+returned by the getFileList() macro function to not be sorted.
 <li> Thanks to Michael Kaul, fixed a v1.51s regression that could cause ImageJ
 to fail to quit properly if there was an Action Bar launched at startup.
 <li> Thanks to Norbert Vischer, fixed a v1.51r26 regression that caused

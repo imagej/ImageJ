@@ -434,7 +434,8 @@ public class Menus {
 		if (applet==null && f.exists() && f.isDirectory())
 			list = f.list();
 		if (list==null) return;
-		if (IJ.isLinux()) StringSorter.sort(list);
+		if (!IJ.isWindows())
+			Arrays.sort(list);
 		submenu.addSeparator();
  		for (int i=0; i<list.length; i++) {
  			String name = list[i];
