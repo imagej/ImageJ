@@ -17,7 +17,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	private static int newWidth, newHeight;
 	private int newDepth;
 	private boolean doZScaling;
-    private static boolean averageWhenDownsizing = true;
+	private static boolean averageWhenDownsizing = true;
 	private static boolean newWindow = true;
 	private static int interpolationMethod = ImageProcessor.BILINEAR;
 	private String[] methods = ImageProcessor.getInterpolationMethods();
