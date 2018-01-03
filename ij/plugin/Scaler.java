@@ -250,20 +250,22 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			gd.addStringField(label, ""+oldDepth);
 		}
 		fields = gd.getStringFields();
-		for (int i=0; i<fields.size(); i++) {
-			((TextField)fields.elementAt(i)).addTextListener(this);
-			((TextField)fields.elementAt(i)).addFocusListener(this);
-		}
-		xField = (TextField)fields.elementAt(0);
-		yField = (TextField)fields.elementAt(1);
-		if (isStack) {
-			zField = (TextField)fields.elementAt(2);
-			widthField = (TextField)fields.elementAt(3);
-			heightField = (TextField)fields.elementAt(4);
-			depthField = (TextField)fields.elementAt(5);
-		} else {
-			widthField = (TextField)fields.elementAt(2);
-			heightField = (TextField)fields.elementAt(3);
+		if (fields!=null) {
+			for (int i=0; i<fields.size(); i++) {
+				((TextField)fields.elementAt(i)).addTextListener(this);
+				((TextField)fields.elementAt(i)).addFocusListener(this);
+			}
+			xField = (TextField)fields.elementAt(0);
+			yField = (TextField)fields.elementAt(1);
+			if (isStack) {
+				zField = (TextField)fields.elementAt(2);
+				widthField = (TextField)fields.elementAt(3);
+				heightField = (TextField)fields.elementAt(4);
+				depthField = (TextField)fields.elementAt(5);
+			} else {
+				widthField = (TextField)fields.elementAt(2);
+				heightField = (TextField)fields.elementAt(3);
+			}
 		}
 		fieldWithFocus = xField;
 		gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
@@ -338,6 +340,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	}
 
 	public void textValueChanged(TextEvent e) {
+		if (xField==null || yField==null)
+			return;
 		Object source = e.getSource();
 		double newXScale = xscale;
 		double newYScale = yscale;
@@ -349,7 +353,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			if (newXScale!=xscale) {
 				int newWidth = (int)(newXScale*r.width);
 				widthField.setText(""+newWidth);
-				if (constainAspectRatio) {
+				if (constainAspectRatio && yField!=null) {
 					yField.setText(newXText);
 					int newHeight = (int)(newXScale*r.height);
 					heightField.setText(""+newHeight);

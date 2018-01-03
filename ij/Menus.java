@@ -434,7 +434,7 @@ public class Menus {
 		if (applet==null && f.exists() && f.isDirectory())
 			list = f.list();
 		if (list==null) return;
-		if (!IJ.isWindows())
+		if (IJ.isLinux() || IJ.isMacOSX())
 			Arrays.sort(list);
 		submenu.addSeparator();
  		for (int i=0; i<list.length; i++) {
