@@ -269,9 +269,9 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 				//completions.ensureIndexIsVisible(index);
 				table.setRowSelectionInterval(index, index);
 			}
-		} else if (key==KeyEvent.VK_BACK_SPACE) {
-			/* If someone presses backspace they probably want to
-			   remove the last letter from the search string, so
+		} else if (key==KeyEvent.VK_BACK_SPACE || key==KeyEvent.VK_DELETE) {
+			/* If someone presses backspace or delete they probably
+			   want to remove the last letter from the search string, so
 			   switch the focus back to the prompt: */
 			prompt.requestFocus();
 		} else if (source==table) {

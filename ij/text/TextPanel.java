@@ -409,7 +409,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 
 	public void keyPressed(KeyEvent e) {
 		int key = e.getKeyCode();
-		if (key==KeyEvent.VK_BACK_SPACE)
+		if (key==KeyEvent.VK_BACK_SPACE || key==KeyEvent.VK_DELETE)
 			clearSelection();
 		else if (key==KeyEvent.VK_UP)
 			scroll(-1);

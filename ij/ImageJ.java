@@ -80,7 +80,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.51u";
-	public static final String BUILD = "4";
+	public static final String BUILD = "5";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -452,9 +452,12 @@ public class ImageJ extends Frame implements ActionListener,
 			}
 		}
 
+		if (keyCode==KeyEvent.VK_SEPARATOR)
+			keyCode = KeyEvent.VK_DECIMAL;
 		boolean functionKey = keyCode>=KeyEvent.VK_F1 && keyCode<=KeyEvent.VK_F12;
 		boolean numPad = keyCode==KeyEvent.VK_DIVIDE || keyCode==KeyEvent.VK_MULTIPLY
-			|| (keyCode>=KeyEvent.VK_NUMPAD0 && keyCode<=KeyEvent.VK_NUMPAD9);
+			|| keyCode==KeyEvent.VK_DECIMAL
+			|| (keyCode>=KeyEvent.VK_NUMPAD0 && keyCode<=KeyEvent.VK_NUMPAD9);			
 		if ((!Prefs.requireControlKey||control||meta||functionKey||numPad) && keyChar!='+') {
 			Hashtable shortcuts = Menus.getShortcuts();
 			if (shift)
@@ -477,7 +480,7 @@ public class ImageJ extends Frame implements ActionListener,
 		if (cmd==null) {
 			switch (keyCode) {
 				case KeyEvent.VK_TAB: WindowManager.putBehind(); return;
-				case KeyEvent.VK_BACK_SPACE: // delete
+				case KeyEvent.VK_BACK_SPACE: case KeyEvent.VK_DELETE: 
 					if (deleteOverlayRoi(imp))
 						return;
 					if (imp!=null&&imp.getOverlay()!=null&&imp==GelAnalyzer.getGelImage())

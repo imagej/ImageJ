@@ -353,7 +353,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			if (newXScale!=xscale) {
 				int newWidth = (int)(newXScale*r.width);
 				widthField.setText(""+newWidth);
-				if (constainAspectRatio && yField!=null) {
+				if (constainAspectRatio) {
 					yField.setText(newXText);
 					int newHeight = (int)(newXScale*r.height);
 					heightField.setText(""+newHeight);
