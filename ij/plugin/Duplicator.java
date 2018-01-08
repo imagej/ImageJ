@@ -188,6 +188,9 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		if (roi2!=null && roi2.isArea())
 			rect = roi2.getBounds();
 		ImageStack stack = imp.getStack();
+		boolean virtualStack = stack.isVirtual();
+		double min = imp.getDisplayRangeMin();
+		double max = imp.getDisplayRangeMax();
 		ImageStack stack2 = null;
 		int n = stack.getSize();
 		for (int i=1; i<=n; i++) {
@@ -211,6 +214,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			imp2 = new CompositeImage(imp2, 0);
 			((CompositeImage)imp2).copyLuts(imp);
 		}
+		if (virtualStack)
+			imp2.setDisplayRange(min, max);
 		if (imp.isHyperStack())
 			imp2.setOpenAsHyperStack(true);
 		Overlay overlay = imp.getOverlay();
