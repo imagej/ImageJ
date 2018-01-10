@@ -2223,21 +2223,21 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		Calibration cal = getCalibration();
 		if (getProperty("FHT")!=null)
 			return getFFTLocation(x, height-y, cal);
-		if (!(IJ.altKeyDown()||IJ.shiftKeyDown())) {
-			String s = " x="+d2s(cal.getX(x)) + ", y=" + d2s(cal.getY(y,height));
-			if (getStackSize()>1) {
-				int z = isDisplayedHyperStack()?getSlice()-1:getCurrentSlice()-1;
-				s += ", z="+d2s(cal.getZ(z));
-			}
-			return s;
-		} else {
-			String s =  " x="+x+", y=" + y;
-			if (getStackSize()>1) {
-				int z = isDisplayedHyperStack()?getSlice()-1:getCurrentSlice()-1;
-				s += ", z=" + z;
-			}
-			return s;
+		String xx="", yy="";
+		if (cal.scaled()) {
+			xx = " ("+x+")";
+			yy = " ("+y+")";
 		}
+		String s = " x="+d2s(cal.getX(x)) + xx + ", y=" + d2s(cal.getY(y,height)) + yy;
+		if (getStackSize()>1) {
+			Roi roi2 = getRoi();
+			if (roi2==null || roi2.getState()==Roi.NORMAL) {
+				int z = isDisplayedHyperStack()?getSlice()-1:getCurrentSlice()-1;
+				String zz = cal.scaled()&&cal.getZ(z)!=z?" ("+z+")":"";
+				s += ", z="+d2s(cal.getZ(z))+zz;
+			}
+		}
+		return s;
     }
     
     private String d2s(double n) {
