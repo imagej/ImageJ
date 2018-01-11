@@ -123,7 +123,7 @@ import java.util.Vector;
 		gd = new NonBlockingGenericDialog("Batch Process");
 		addPanels(gd);
 		gd.setInsets(15, 0, 5);
-		gd.addChoice("Output format:", formats, format);
+		gd.addChoice("Output_format:", formats, format);
 		gd.setInsets(0, 0, 5);
 		gd.addChoice("Add macro code:", code, code[0]);
 		if (virtualStack==null)

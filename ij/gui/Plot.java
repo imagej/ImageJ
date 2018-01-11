@@ -2786,18 +2786,19 @@ public class Plot implements Cloneable {
 						yBest = p.yValues[i];
 					}
 				}
-				if (xScale != 0 && bestDx*xScale < 50) {	//ignore points more than 50 pixels away in x
+				if (Math.abs(scaleXtoPxl(xBest)-x) < 50) {	//ignore points more than 50 pixels away in x
 					xv = xBest;
 					yv = yBest;
 					yIsValue = true;
-				} else
-					xv = Double.NaN;
+				}
 			}
 		}
 		if (!Double.isNaN(xv)) {
-			text =	"X=" + IJ.d2s(xv, getDigits(xv, 0.001*(xMax-xMin), 6))+", Y";
+			int significantDigits = logXAxis ? -2 : getDigits(xv, 0.001*(xMax-xMin), 6);
+			text =	"X=" + IJ.d2s(xv, significantDigits)+", Y";
 			if (yIsValue) text += "(X)";
-			text +="="+ IJ.d2s(yv, getDigits(yv, 0.001*(yMax-yMin), 6));
+			significantDigits = logYAxis ? -2 : getDigits(yv, 0.001*(yMax-yMin), 6);
+			text +="="+ IJ.d2s(yv, significantDigits);
 		}
 		return text;
 		//}catch(Exception e){IJ.handleException(e);return "ERR";}
