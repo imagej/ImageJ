@@ -1381,8 +1381,8 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getLeftParen();
 		int next = interp.nextToken();
 		int nextNext = interp.nextNextToken();
-		if (next==STRING_CONSTANT || nextNext==','
-		|| nextNext=='[' || next=='-' || next==PI)
+		if (next==STRING_CONSTANT || nextNext==',' || nextNext=='[' || next=='-' || next==PI
+		|| nextNext=='+' || nextNext=='-' || nextNext=='*' || nextNext=='/')
 			return initNewArray();
 		int size = (int)interp.getExpression();
 		if (size<0) interp.error("Negative array size");

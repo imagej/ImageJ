@@ -1409,7 +1409,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			value = "";
 		Calibration cal = imp.getCalibration();
 		String size;
-		if (cal.scaled() && !(IJ.altKeyDown()||(state==NORMAL&&IJ.shiftKeyDown())))
+		if (cal.scaled())
 			size = ", w="+IJ.d2s(width*cal.pixelWidth)+" ("+width+"), h="+IJ.d2s(height*cal.pixelHeight)+" ("+height+")";
 		else
 			size = ", w="+width+", h="+height;
