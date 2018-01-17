@@ -2185,9 +2185,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	Called by ImageCanvas when the mouse moves. Can be overridden by
     	ImagePlus subclasses.
     */
-    public void mouseMoved(int x, int y) {
+	public void mouseMoved(int x, int y) {
 		Roi roi2 = getRoi();
-    	if (ij!=null && (roi2==null || roi2.getState()==Roi.NORMAL))
+		if (ij!=null && (roi2==null || roi2.getState()==Roi.NORMAL))
 			ij.showStatus(getLocationAsString(x,y) + getValueAsString(x,y));
 		savex=x; savey=y;
 	}

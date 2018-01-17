@@ -80,7 +80,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private int previousLine;
     private static Editor instance;
     private int runToLine;
-    private boolean fixedLineEndings;
     private String downloadUrl;
     private boolean downloading;
     private FunctionFinder functionFinder;
@@ -214,7 +213,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 	
 	public void create(String name, String text) {
-		if (text!=null && text.length()>0) fixedLineEndings = true;
 		ta.append(text);
 		if (IJ.isMacOSX()) IJ.wait(25); // needed to get setCaretPosition() on OS X
 		ta.setCaretPosition(0);
@@ -425,7 +423,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	
 	void evaluateMacro() {
 		String title = getTitle();
-		if (title.endsWith(".js")||title.endsWith("..bsh")||title.endsWith(".py"))
+		if (title.endsWith(".js")||title.endsWith(".bsh")||title.endsWith(".py"))
 			setTitle(title.substring(0,title.length()-3)+".ijm");
 		runMacro(false);
 	}
@@ -659,9 +657,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		catch  (Exception e)  {
 			s  = e.toString( );
 		}
-		if (!fixedLineEndings && IJ.isWindows())
-			fixLineEndings();
-		fixedLineEndings = true;
 		int start = ta.getSelectionStart( );
 		int end = ta.getSelectionEnd( );
 		ta.replaceRange(s, start, end);
