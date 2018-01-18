@@ -1373,26 +1373,6 @@ public class Functions implements MacroConstants, Measurements {
 			return new Variable(array).getArray();
 	}
 
-	Variable[] newArray() {
-		if (interp.nextToken()!='(' || interp.nextNextToken()==')') {
-			interp.getParens();
-			return new Variable[0];
-		}
-		interp.getLeftParen();
-		int next = interp.nextToken();
-		int nextNext = interp.nextNextToken();
-		if (next==STRING_CONSTANT || nextNext==',' || nextNext=='[' || next=='-' || next==PI
-		|| nextNext=='+' || nextNext=='-' || nextNext=='*' || nextNext=='/')
-			return initNewArray();
-		int size = (int)interp.getExpression();
-		if (size<0) interp.error("Negative array size");
-		interp.getRightParen();
-    	Variable[] array = new Variable[size];
-    	for (int i=0; i<size; i++)
-    		array[i] = new Variable();
-    	return array;
-	}
-
 	Variable[] split() {
 		String s1 = getFirstString();
 		String s2 = null;
@@ -1456,7 +1436,14 @@ public class Functions implements MacroConstants, Measurements {
     	return array;
 	}
 
-	Variable[] initNewArray() {
+	Variable[] newArray() {
+		if (interp.nextToken()!='(' || interp.nextNextToken()==')') {
+			interp.getParens();
+			return new Variable[0];
+		}
+		interp.getLeftParen();
+		int next = interp.nextToken();
+		int nextNext = interp.nextNextToken();
 		Vector vector = new Vector();
 		int size = 0;
 		do {
