@@ -2147,6 +2147,9 @@ public class Functions implements MacroConstants, Measurements {
 			int what = Plot.toShape(arg);
 			addToPlot(what, arg);
 			return;
+		} else if (name.equals("appendToStack")) {
+			plot.appendToStack();
+			return;
 		} else
 			interp.error("Unrecognized plot function");
 	}

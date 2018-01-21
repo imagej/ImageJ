@@ -154,7 +154,7 @@ public class Plot implements Cloneable {
 
 	PlotProperties pp = new PlotProperties();		//size, range, formatting etc, for easy serialization
 	Vector<PlotObject> allPlotObjects = new Vector<PlotObject>();	//all curves, labels etc., also serialized for saving/reading
-
+	ArrayList<ImageProcessor> plotFamily = new ArrayList<ImageProcessor>();
 	/** For high-resolution plots, everything will be scaled with this number. Otherwise, must be 1.0.
 	 *  (creating margins, saving PlotProperties etc only supports scale=1.0) */
 	float scale = 1.0f;
@@ -869,7 +869,7 @@ public class Plot implements Cloneable {
 	}
 
 	public void setColor(String color) {
-		setColor(Colors.getColor(color, Color.black));
+		setColor(Colors.decode(color, Color.black));
 	}
 
 	/** Changes the drawing color for the next objects that will be added to the plot.
@@ -1227,6 +1227,10 @@ public class Plot implements Cloneable {
 	 *  Note that the PlotWindow might get closed immediately if its 'listValues' and 'autoClose'
 	 *  flags are set */
 	public PlotWindow show() {
+		if (plotFamily.size()>0) {
+			assemblePlotFamily();
+			return null;
+		}
 		if ((IJ.macroRunning() && IJ.getInstance()==null) || Interpreter.isBatchMode()) {
 			imp = getImagePlus();
 			WindowManager.setTempCurrentImage(imp);
@@ -1250,7 +1254,45 @@ public class Plot implements Cloneable {
 			IJ.selectWindow(imp.getID());
 		return pw;
 	}
+	
+	/**
+	 * Appends the plot's ImageProcessor to plotFamily and resets allPlotObjects
+	 * for next slice 
+	 * N. Vischer
+	 */
+	public void appendToStack() {
+		ImagePlus theImp = getImagePlus();
+		ImageProcessor plotIp = theImp.getProcessor();
+		Runtime.getRuntime().gc();
+		long freeMB = Math.round((double) (IJ.maxMemory() - IJ.currentMemory()) / 1e6);
+		IJ.showStatus("#" + plotFamily.size() + ":  Free MBs: " + freeMB);
+		if (freeMB < 100) {//100 M
+			plotFamily.clear();
+			IJ.error("Out of memory");
+			return;
+		}
+		ImageProcessor	clonedIp = (ImageProcessor) plotIp.duplicate();
+		plotFamily.add(clonedIp);
+		if (clonedIp.getWidth() != plotFamily.get(0).getWidth() || clonedIp.getHeight() != plotFamily.get(0).getHeight())
+			IJ.error("Frame size must be constant");
+		plotIp = null;
+		allPlotObjects.clear();
+	}
 
+	void assemblePlotFamily() {
+		int size = plotFamily.size();
+		ImageStack stack = null;
+		for (int jj = 0; jj < size; jj++) {
+			ImageProcessor ip = plotFamily.get(jj);
+			ip = ip.convertToRGB();
+			if (stack==null)
+				stack = new ImageStack(ip.getWidth(), ip.getHeight());
+			stack.addSlice(ip);
+		}
+		ImagePlus familyImp = new ImagePlus(title, stack);
+		familyImp.show();
+	}
+	
 	/** Draws the plot specified for the first time. Does nothing if the plot has been drawn already.
 	 *	Call getProcessor to retrieve the ImageProcessor with it.
 	 *	Does no action with respect to the ImagePlus (if any) */
@@ -2765,7 +2807,7 @@ public class Plot implements Cloneable {
 	}
 
 	/** Returns the x, y coordinates at the cursor position or the nearest point as a String */
-	String getCoordinates(int x, int y) {
+String getCoordinates(int x, int y) {
 		if (frame==null) return "";
 		String text = "";
 		if (!frame.contains(x, y))
@@ -2803,6 +2845,7 @@ public class Plot implements Cloneable {
 		return text;
 		//}catch(Exception e){IJ.handleException(e);return "ERR";}
 	}
+
 
 	/** Returns a reference to the PlotObject having the data passed with the constructor or (if that was null)
 	 *	the first x & y data added later. Otherwise returns null. */
