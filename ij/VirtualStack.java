@@ -21,6 +21,10 @@ public class VirtualStack extends ImageStack {
 	
 	/** Default constructor. */
 	public VirtualStack() { }
+	
+	public VirtualStack(int width, int height) {
+		super(width, height);
+	}
 
 	/** Creates an empty virtual stack. */
 	public VirtualStack(int width, int height, ColorModel cm, String path) {

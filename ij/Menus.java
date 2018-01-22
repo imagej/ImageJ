@@ -271,7 +271,7 @@ public class Menus {
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.ijm");
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.ijm");
 		addExample(submenu, "Damped Wave Plot", "Damped_Wave_Plot.ijm");
-		addExample(submenu, "Plot Family", "Plot_Family.ijm");
+		addExample(submenu, "Dynamic Plot", "Dynamic_Plot.ijm");
 		addExample(submenu, "Custom Plot Symbols", "Custom_Plot_Symbols.ijm");
 		addExample(submenu, "Process Folder", "Batch_Process_Folder.ijm");
 		addExample(submenu, "OpenDialog Demo", "OpenDialog_Demo.ijm");
@@ -299,7 +299,7 @@ public class Menus {
 		addExample(submenu, "Example Plot", "Example_Plot.js");
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.js");
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.js");
-		addExample(submenu, "Plot Family", "Plot_Family.js");
+		addExample(submenu, "Dynamic Plot", "Dynamic_Plot.js");
 		addExample(submenu, "Process Folder", "Batch_Process_Folder.js");
 		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.js");
 		addExample(submenu, "Non-numeric Table", "Non-numeric_Table.js");
