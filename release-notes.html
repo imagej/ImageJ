@@ -5,11 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.51u 20 January 2018</u>l
+<li> <u>1.51u 22 January 2018</u>l
 <ul>
-<li> Thanks to Norbert Vischer, added the Plot.appendToStack() macro
-function and method. The "Dynamic_Plot" macro and JavaScript examples
-in the <i>Help&gt;Examples</i> menu demonstrate how to use appendToStack().
+<li> Thanks to Norbert Vischer, added the Plot.appendToStack() 
+macro function. The Dynamic_Plot.ijm, Dynamic_Plot_2D.ijm and
+Dynamic_Plot.js examples in the
+<i>Help&gt;Examples</i> menu demonstrate how to use appendToStack().
 <li> Thanks to Stein Rorvik, when moving the mouse pointer, or creating
 a selection, on spatially calibrated images, the uncalibrated x and y pixel
 coordinates are shown in parenthesis in the status bar.
@@ -32,6 +33,10 @@ newArray() macro function to fail if there were multiple arguments
 and the first argument was not a number.
 <li> Thanks to Stein Rorvik, fixed a bug on Windows that sometimes caused 
 strings to be pasted in the wrong position in text windows.
+<li> Thanks to Michael Schmid, fixed a bug that caused the
+<i>Process&gt;Filters&gt;Variance</i> command to sometimes
+generate negative values with 32-bit images.
+
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
