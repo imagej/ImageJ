@@ -3265,7 +3265,7 @@ class PlotObject implements Cloneable, Serializable {
 }
 
 
-/** This class represents a collection of plots. */
+/** This is a virtual stack of frozen plots. */
 class PlotVirtualStack extends VirtualStack {
 	Vector plots = new Vector(50);
 	

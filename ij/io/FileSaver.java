@@ -328,6 +328,7 @@ public class FileSaver {
 	}
 
 	public static boolean okForGif(ImagePlus imp) {
+if (imp!=null) return true;
 		int type = imp.getType();
 		if (type==ImagePlus.COLOR_RGB) {
 			String msg = "To save as GIF, the image ";
