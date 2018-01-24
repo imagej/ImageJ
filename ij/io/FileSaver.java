@@ -328,15 +328,9 @@ public class FileSaver {
 	}
 
 	public static boolean okForGif(ImagePlus imp) {
-if (imp!=null) return true;
-		int type = imp.getType();
-		if (type==ImagePlus.COLOR_RGB) {
-			String msg = "To save as GIF, the image ";
-			if (imp.getStackSize()>1)
-				msg = "To save as Animated GIF, the stack ";
-			IJ.error(msg+"must be converted to 8-bit\nindexed color by the Image>Type>8-bit Color command.");
+		if (imp.getType()==ImagePlus.COLOR_RGB)
 			return false;
-		} else
+		else
 			return true;
 	}
 
@@ -344,8 +338,6 @@ if (imp!=null) return true;
 		dialog. Returns false if the user selects cancel
 		or the image is not 8-bits. */
 	public boolean saveAsGif() {
-		if (!okForGif(imp))
-			return false;
 		String path = getPath("GIF", ".gif");
 		if (path==null)
 			return false;
@@ -356,7 +348,6 @@ if (imp!=null) return true;
 	/** Save the image in Gif format using the specified path. Returns
 		false if the image is not 8-bits or there is an I/O error. */
 	public boolean saveAsGif(String path) {
-		if (!okForGif(imp)) return false;
 		IJ.runPlugIn(imp, "ij.plugin.GifWriter", path);
 		updateImp(fi, FileInfo.GIF_OR_JPG);
 		return true;

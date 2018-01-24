@@ -187,37 +187,37 @@ public class GifWriter implements PlugIn {
 
 class AnimatedGifEncoder2 {
 
-   protected int width;					// image size
-   protected int height;
-   protected boolean transparent = false;  // transparent color if given
-   protected int transIndex;			// transparent index in color table
-   protected int repeat = -1;			// no repeat
-   protected int delay = 50;			 // frame delay (hundredths)
-   protected boolean started = false;	// ready to output frames
-   protected OutputStream out;
-   protected ImagePlus image;		// current frame
-   protected byte[] pixels;				// BGR byte array from frame
-   protected byte[] indexedPixels;		// converted frame indexed to palette
-   protected int colorDepth;			// number of bit planes
-   protected byte[] colorTab;			// RGB palette
-   protected int lctSize = 7;			// local color table size (bits-1)
-   protected int dispose = 0;		   // disposal code (-1 = use default)
-   protected boolean closeStream = false;  // close stream when finished
-   protected boolean firstFrame = true;
-   protected boolean sizeSet = false;	// if false, get size from first frame
-   protected int sample = 2;		   // default sample interval for quantizer distance should be small for small icons
-   protected byte[] gct = null;		//Global color table
-   protected boolean gctused = false; // Set to true to use Global color table
-   protected boolean autotransparent = false; // Set True if transparency index coming from image 8 bit only
-   protected boolean GCTextracted = false; // Set if global color table extracted from rgb image 
-   protected boolean GCTloadedExternal = false; // Set if global color table loaded directly from external image 
-  protected int	   GCTred =	 0;	  //Transparent Color
-  protected	  int  GCTgrn = 0;	  // green
-  protected	  int	GCTbl  =  0;   // blue
-  protected	  int	GCTcindex = 0;	//index into color table
-  protected boolean GCTsetTransparent = false; //If true then Color table transparency index is set
-  protected boolean GCToverideIndex = false; //If true Transparent index is set to index with closest colors
-  protected boolean GCToverideColor = false; //if true Color at Transparent index is set to GCTred, GCTgrn GCTbl
+	protected int width;					// image size
+	protected int height;
+	protected boolean transparent = false;  // transparent color if given
+	protected int transIndex;			// transparent index in color table
+	protected int repeat = -1;			// no repeat
+	protected int delay = 50;			 // frame delay (hundredths)
+	protected boolean started = false;	// ready to output frames
+	protected OutputStream out;
+	protected ImagePlus image;		// current frame
+	protected byte[] pixels;				// BGR byte array from frame
+	protected byte[] indexedPixels;		// converted frame indexed to palette
+	protected int colorDepth;			// number of bit planes
+	protected byte[] colorTab;			// RGB palette
+	protected int lctSize = 7;			// local color table size (bits-1)
+	protected int dispose = 0;		   // disposal code (-1 = use default)
+	protected boolean closeStream = false;  // close stream when finished
+	protected boolean firstFrame = true;
+	protected boolean sizeSet = false;	// if false, get size from first frame
+	protected int sample = 2;		   // default sample interval for quantizer distance should be small for small icons
+	protected byte[] gct = null;		//Global color table
+	protected boolean gctused = false; // Set to true to use Global color table
+	protected boolean autotransparent = false; // Set True if transparency index coming from image 8 bit only
+	protected boolean GCTextracted = false; // Set if global color table extracted from rgb image 
+	protected boolean GCTloadedExternal = false; // Set if global color table loaded directly from external image 
+	protected int	   GCTred =	 0;	  //Transparent Color
+	protected	  int  GCTgrn = 0;	  // green
+	protected	  int	GCTbl  =  0;   // blue
+	protected	  int	GCTcindex = 0;	//index into color table
+	protected boolean GCTsetTransparent = false; //If true then Color table transparency index is set
+	protected boolean GCToverideIndex = false; //If true Transparent index is set to index with closest colors
+	protected boolean GCToverideColor = false; //if true Color at Transparent index is set to GCTred, GCTgrn GCTbl
    
    /**
 	* Adds next GIF frame.	The frame is not written immediately, but is
@@ -283,8 +283,8 @@ class AnimatedGifEncoder2 {
 
 	  return ok;
    }
- /*
- 
+   
+ /* 
 	Handles transparency color Index
 	Assumes colors and index are already checked for validity
  */	 
@@ -293,41 +293,21 @@ class AnimatedGifEncoder2 {
 	 if(colorTab==null)throw new IllegalArgumentException("Color Table not loaded."); 
 	 int len = colorTab.length;
 	 setTransparent(true); //Sets color tranparency flag
-	 if(!(GCToverideColor||GCToverideIndex)){
+	 if (!(GCToverideColor||GCToverideIndex)){
 			transIndex = GCTcindex;	 //sets color index
 			return;
 		 }
-		 if(GCToverideIndex)GCTcindex= findClosest(colorTab, GCTred, GCTgrn, GCTbl); 
-									//finds index in color Table
+		 if(GCToverideIndex)
+		 	GCTcindex= findClosest(colorTab, GCTred, GCTgrn, GCTbl); 
+		//finds index in color Table
 		 transIndex = GCTcindex;	
 		 int pindex = 3*GCTcindex;
-		 if(pindex>(len-3))
+		 if (pindex>(len-3))
 			throw new IllegalArgumentException("Index ("+transIndex+") too large for Color Lookup table."); 
 		  colorTab[pindex++]  = (byte)GCTred; //Set Color Table[transparent index] with specified color
 		  colorTab[pindex++]  = (byte)GCTgrn;
 		  colorTab[pindex] = (byte)GCTbl;
    }
- /* 
-*	Get Options because options box has been checked
-	
-	Some of the code being set
-		setTransparent(Color.black);
-		Dispose = 0;   
-			setDelay(500);	 //	 time per frame in milliseconds
-			gctused = false; // Set to true to use Global color table
-		GCTextracted = false; // Set if global color table extracted from rgb image 
-				GCTloadedExternal = false; // Set if global color table loaded directly from external image 
-				GCTextracted = false; // Set if global color table extracted from rgb image 
-		GCTred =  0;   //Transparent Color
-		GCTgrn = 0;	   // green
-		GCTbl  =  0;   // blue
-		GCTcindex = 0;	//index into color table
-		autotransparent = false; // Set True if transparency index coming from image 8 bit only
-		GCTsetTransparent = false; //If true then Color table transparency index is set
-		GCToverideIndex = false; //If true Transparent index is set to index with closest colors
-		GCToverideColor = false; //if true Color at Transparent index is set to GCTred, GCTgrn GCTbl
-   
-*/
 
 String name;
 
@@ -370,49 +350,6 @@ public boolean setoptions(){
 		else
 		titles[i] = "";
 	}
-
-	/*
-	GenericDialog gd = new GenericDialog("Animated Gif Writer");
-	gd.addStringField("Name:", name, 12);
-
-	String defaultItem;
-	if (title1.equals(""))
-		defaultItem = titles[0];
-	else
-		defaultItem = title1;
-	gd.addChoice("Set_Global_Lookup_Table_Options", GCTtype,GCTtype[gctType]);
-	gd.addChoice("Optional Image for Global Color Lookup Table", titles, defaultItem);
-	gd.addChoice("Image Disposal Code", DisposalType,DisposalType[disposalType]);
-	gd.addNumericField("Set delay in milliseconds", (double)setdelay, 0);
-	gd.addNumericField("Number of plays 0 is loop continuously -1 default",(double)repeat,0);
-	gd.addChoice("Transparency setting",TransparencyType,TransparencyType[setTrans]);
-	
-	gd.addNumericField("Red value", (double)red, 0);	
-	gd.addNumericField("Green value",(double)grn,0);
-	gd.addNumericField("Blue value",(double)bl,0);		
-	gd.addNumericField("Index in Color Table",(double)cindex,0);		
-	gd.showDialog();
-	if (gd.wasCanceled())
-		return false;
-	name = gd.getNextString();
-	gctType = gd.getNextChoiceIndex();	  
-	int index1 = gd.getNextChoiceIndex();
-	title1 = titles[index1];
-	disposalType = gd.getNextChoiceIndex();
-	setdelay = (int)gd.getNextNumber();
-	if(setdelay >= 0)setDelay(setdelay);
-	setRepeat( (int)gd.getNextNumber());
-	setTrans = gd.getNextChoiceIndex();
-	red = (int)gd.getNextNumber();
-	grn = (int)gd.getNextNumber();
-	bl = (int)gd.getNextNumber();
-	if((red< 0 )|| (red>255)) red = -1;
-	if((grn< 0 )|| (grn>255)) red = -1;
-	if((bl< 0 )|| (bl>255)) red = -1;
-
-	cindex = (int)gd.getNextNumber();
-	if((cindex< 0 )|| (cindex>255)) cindex = -1;
-	*/
 	
 	setRepeat(0);				
 	autotransparent=false;			//no transparent index
@@ -872,9 +809,6 @@ public void loadGCTrgb(ImagePlus image){
 	  return minpos;
    }
 
-
-  
-
    /**
 	* Writes Graphic Control Extension
 	*/
@@ -927,7 +861,6 @@ public void loadGCTrgb(ImagePlus image){
 		
    }
 
-
    /**
 	* Writes Logical Screen Descriptor with global color table
 	*/
@@ -962,7 +895,6 @@ public void loadGCTrgb(ImagePlus image){
 	  out.write(0);			  // pixel aspect ratio - assume 1:1
    }
 
-
    /**
 	* Writes Netscape application extension to define
 	* repeat count.
@@ -978,7 +910,6 @@ public void loadGCTrgb(ImagePlus image){
 	  out.write(0);			 // block terminator
    }
 
-
    /**
 	* Writes color table
 	*/
@@ -989,7 +920,6 @@ public void loadGCTrgb(ImagePlus image){
 		 out.write(0);
    }
 
-
    /**
 	* Encodes and writes pixel data
 	*/
@@ -999,7 +929,6 @@ public void loadGCTrgb(ImagePlus image){
 	  encoder.encode(out);
    }
 
-
    /**
 	*	 Write 16-bit value to output stream, LSB first
 	*/
@@ -1007,7 +936,6 @@ public void loadGCTrgb(ImagePlus image){
 	  out.write(value & 0xff);
 	  out.write((value >> 8) & 0xff);
    }
-
 
    /**
 	* Writes string to output stream

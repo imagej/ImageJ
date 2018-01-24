@@ -1268,6 +1268,11 @@ public class Plot implements Cloneable {
 		allPlotObjects.clear();
 	}
 	
+	/** Returns the virtual stack created by appendToStack(). */
+	public ImageStack getStack() {
+		return stack;
+	}
+
 	/** Draws the plot specified for the first time. Does nothing if the plot has been drawn already.
 	 *	Call getProcessor to retrieve the ImageProcessor with it.
 	 *	Does no action with respect to the ImagePlus (if any) */
