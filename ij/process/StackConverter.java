@@ -81,6 +81,11 @@ public class StackConverter {
 	/** Converts an RGB or 8-bit color stack to 8-bit grayscale. */
 	void convertRGBToGray8() {
 		ImageStack stack1 = imp.getStack();
+		if (stack1 instanceof PlotVirtualStack) {
+			((PlotVirtualStack)stack1).setBitDepth(8);
+			imp.setStack(stack1);
+			return;
+		}
 		ImageStack stack2 = new ImageStack(width, height);
 		ImageProcessor ip;
 		Image img;

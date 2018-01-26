@@ -155,6 +155,7 @@ public class Plot implements Cloneable {
 	PlotProperties pp = new PlotProperties();		//size, range, formatting etc, for easy serialization
 	Vector<PlotObject> allPlotObjects = new Vector<PlotObject>();	//all curves, labels etc., also serialized for saving/reading
 	private PlotVirtualStack stack;
+	private boolean grayscaleStack;
 	/** For high-resolution plots, everything will be scaled with this number. Otherwise, must be 1.0.
 	 *  (creating margins, saving PlotProperties etc only supports scale=1.0) */
 	float scale = 1.0f;
@@ -1228,6 +1229,7 @@ public class Plot implements Cloneable {
 	 *  flags are set */
 	public PlotWindow show() {
 		if (stack!=null && stack.size()>1) {
+			stack.setBitDepth(grayscaleStack?8:24);
 			new ImagePlus("Plot Stack",stack).show();
 			return null;
 		}
@@ -1260,15 +1262,21 @@ public class Plot implements Cloneable {
 	 * for next slice 
 	 * N. Vischer
 	 */
-	public void appendToStack() {
-		if (stack==null) 
+	public void addToStack() {
+		if (stack==null) {
 			stack = new PlotVirtualStack(getSize().width,getSize().height);
+			grayscaleStack = true;
+		}
 		draw();
 		stack.addPlot(this);
+		if (isColored())
+			grayscaleStack = false;
 		allPlotObjects.clear();
 	}
 	
-	/** Returns the virtual stack created by appendToStack(). */
+	public void appendToStack() { addToStack(); }
+	
+	/** Returns the virtual stack created by addToStack(). */
 	public ImageStack getStack() {
 		return stack;
 	}
@@ -3268,62 +3276,3 @@ class PlotObject implements Cloneable, Serializable {
 		}
 	}
 }
-
-
-/** This is a virtual stack of frozen plots. */
-class PlotVirtualStack extends VirtualStack {
-	Vector plots = new Vector(50);
-	
-	public PlotVirtualStack(int width, int height) {
-		super(width, height);
-	}
-	
-	/** Adds a plot to the end of the stack. */
-	public void addPlot(Plot plot) {
-		plots.add(plot.toByteArray());
-	}
-	   
-   /** Returns the pixel array for the specified slice, were 1<=n<=nslices. */
-	public Object getPixels(int n) {
-		ImageProcessor ip = getProcessor(n);
-		if (ip!=null)
-			return ip.getPixels();
-		else
-			return null;
-	}		
-	
-	/** Returns an ImageProcessor for the specified slice,
-		were 1<=n<=nslices. Returns null if the stack is empty. */
-	public ImageProcessor getProcessor(int n) {
-		byte[] bytes = (byte[])plots.get(n-1);
-		if (bytes!=null) {
-			try {
-				Plot plot = new Plot(null, new ByteArrayInputStream(bytes));
-				ImageProcessor ip = plot.getProcessor();
-				return ip.convertToRGB();
-			} catch (Exception e) {
-				IJ.handleException(e);
-			}
-		}
-		return null;
-	}
-	 
-	 /** Returns the number of slices in this stack. */
-	public int getSize() {
-		return plots.size();
-	}
-		
-	/** Always returns 24 (RGB). */
-	public int getBitDepth() {
-		return 24;
-	}
-		
-	public String getSliceLabel(int n) {
-		return null;
-	}
-
-	public void setPixels(Object pixels, int n) {
-	}
-
-} // PlotVirtualStack
-
