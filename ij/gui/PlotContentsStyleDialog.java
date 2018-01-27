@@ -80,12 +80,13 @@ public class PlotContentsStyleDialog implements DialogListener {
 		String designation = designationsC.getSelectedItem();
 		boolean isData = designation.startsWith("Data");
 		boolean isText = designation.startsWith("Text");
-		color2F.setEnabled(isData);	//only (some) data symbols have secondary color
+		boolean isBox = designation.startsWith("Box");
+		color2F.setEnabled(isData || isBox);	//only (some) data symbols have secondary color
 		widthF.setEnabled(!isText); //all non-Text types have line width
 		symbolC.setEnabled(isData); //only data have a symbol to choose
 		hiddenC.setState(styleString.contains("hidden"));
 	}
-
+	
 	public void setNPasses(int nPasses) {
 	}
 

@@ -2136,6 +2136,12 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("drawVectors")) {
 			drawPlotVectors();
 			return;
+		} else if (name.equals("drawBoxes")) {
+			drawPlotBoxes();
+			return;
+		} else if (name.equals("drawBoxesX")) {
+			drawPlotBoxesX();
+			return;
 		} else if (name.startsWith("setLineWidth")) {
 			plot.setLineWidth((float)getArg());
 			return;
@@ -2275,6 +2281,29 @@ public class Functions implements MacroConstants, Measurements {
 		double[] x2 = getNextArray();
 		double[] y2 = getLastArray();
 		plot.drawVectors(x1, y1, x2, y2);
+	}
+	
+	void drawPlotBoxes() {
+		drawPlotBoxes(false);
+	}
+	void drawPlotBoxesX() {
+		drawPlotBoxes(true);
+	}
+	
+	void drawPlotBoxes(boolean swapXY) {
+		double boxWidth = getFirstArg();
+		double[] x1 = getNextArray();
+		double[] y1 = getNextArray();
+		double[] y2 = getNextArray();
+		double[] y3 = getNextArray();
+		double[] y4 = getNextArray();
+		double[] y5 = getLastArray();
+		int l = x1.length;
+		if (l != y1.length ||l != y2.length ||l != y3.length ||l != y4.length ||l != y5.length || l==0 )
+			interp.error("Arrays must have same length");
+		if (swapXY )
+			boxWidth = - boxWidth;
+		plot.drawBoxes((int) boxWidth, x1, y1, y2, y3, y4, y5);	
 	}
 
 	void setPlotColor(Plot plot) {

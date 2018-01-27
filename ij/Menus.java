@@ -264,9 +264,7 @@ public class Menus {
 	
 	public static Menu getExamplesMenu(ActionListener listener) {
 		Menu menu = new Menu("Examples");
-		Menu submenu = new Menu("Macro");
-		addExample(submenu, "Sphere", "Sphere.ijm");
-		addExample(submenu, "Dialog Box", "Dialog_Box.ijm");
+		Menu submenu = new Menu("Plots");
 		addExample(submenu, "Example Plot", "Example_Plot.ijm");
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.ijm");
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.ijm");
@@ -274,6 +272,13 @@ public class Menus {
 		addExample(submenu, "Dynamic Plot", "Dynamic_Plot.ijm");
 		addExample(submenu, "Dynamic Plot 2D", "Dynamic_Plot_2D.ijm");
 		addExample(submenu, "Custom Plot Symbols", "Custom_Plot_Symbols.ijm");
+		addExample(submenu, "Box Plot", "Box_Plot.ijm");
+		submenu.addActionListener(listener);
+		menu.add(submenu);
+		
+		submenu = new Menu("Macro");
+		addExample(submenu, "Sphere", "Sphere.ijm");
+		addExample(submenu, "Dialog Box", "Dialog_Box.ijm");
 		addExample(submenu, "Process Folder", "Batch_Process_Folder.ijm");
 		addExample(submenu, "OpenDialog Demo", "OpenDialog_Demo.ijm");
 		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.ijm");
@@ -291,6 +296,8 @@ public class Menus {
 		addExample(submenu, "Star Tool", "Star_Tool.ijm");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
+
+
 		submenu = new Menu("JavaScript");
 		addExample(submenu, "Sphere", "Sphere.js");
 		addExample(submenu, "Plasma Cloud", "Plasma_Cloud.js");

@@ -178,6 +178,11 @@ public class StackConverter {
 			return;
 		}
 		ImageStack stack1 = imp.getStack();
+		if (stack1 instanceof PlotVirtualStack) {
+			((PlotVirtualStack)stack1).setBitDepth(24);
+			imp.setStack(stack1);
+			return;
+		}
 		ImageStack stack2 = new ImageStack(width, height);
 		String label;
 	    int inc = nSlices/20;

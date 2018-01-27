@@ -1570,7 +1570,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			Overlay overlay2 = null;
 			if (stack.isVirtual() && !((stack instanceof FileInfoVirtualStack)||(stack instanceof AVI_Reader))) {
 				ImageProcessor ip2 = stack.getProcessor(currentSlice);
-				overlay2 = ip2.getOverlay();
+				overlay2 = ip2!=null?ip2.getOverlay():null;
 				if (overlay2!=null)
 					setOverlay(overlay2);
 				if (stack instanceof VirtualStack) {
@@ -1578,7 +1578,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 					if (props!=null)
 						setProperty("FHT", props.get("FHT"));
 				}
-				pixels = ip2.getPixels();
+				if (ip2!=null) pixels=ip2.getPixels();
 			} else
 				pixels = stack.getPixels(currentSlice);
 			if (ip!=null && pixels!=null) {

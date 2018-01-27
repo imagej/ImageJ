@@ -745,6 +745,11 @@ public class Plot implements Cloneable {
 				Tools.toFloat(x2), Tools.toFloat(y2), currentLineWidth, currentColor));
 	}
 
+	public void drawBoxes(int boxWidth, double[] x1, double[] y1, double[] y2, double[] y3, double[] y4, double[] y5) {
+		allPlotObjects.add(new PlotObject(boxWidth, Tools.toFloat(x1), Tools.toFloat(y1),
+				Tools.toFloat(y2), Tools.toFloat(y3), Tools.toFloat(y4), Tools.toFloat(y5), currentLineWidth, currentColor, currentColor2));
+	}
+	
 	public static double calculateDistance(int x1, int y1, int x2, int y2) {
 		return java.lang.Math.sqrt((x2 - x1)*(double)(x2 - x1) + (y2 - y1)*(double)(y2 - y1));
 	}
@@ -1044,7 +1049,7 @@ public class Plot implements Cloneable {
 		String[] legendLabels = null;
 		if (pp.legend != null && pp.legend.label != null)
 			legendLabels = pp.legend.label.split("[\t\n]");
-		int iData = 1, iArrow = 1, iLine = 1, iText = 1;                //Human readable counters of each object type
+		int iData = 1, iArrow = 1, iLine = 1, iText = 1,  iBox = 1; //Human readable counters of each object type
 		int firstObject = allPlotObjects.get(0).hasFlag(PlotObject.CONSTRUCTOR_DATA) ? 1 : 0; //PlotObject passed with constructor is plotted last
 		for (int i=0, p=firstObject; i<nObjects; i++, p++) {
 			if (p >= allPlotObjects.size())                             //the PlotObject passed with Constructor comes last
@@ -1076,6 +1081,10 @@ public class Plot implements Cloneable {
 					if (text.length()>45) text = text.substring(0, 40)+"...";
 					names[i] = "Text "+iText+": \""+text+'"';
 					iText++;
+					break;
+				case PlotObject.BOXES:
+					names[i] = "Boxes " + iBox;
+					iBox++;
 					break;
 			}
 		}
@@ -1228,6 +1237,7 @@ public class Plot implements Cloneable {
 	 *  Note that the PlotWindow might get closed immediately if its 'listValues' and 'autoClose'
 	 *  flags are set */
 	public PlotWindow show() {
+		PlotVirtualStack stack = getStack();
 		if (stack!=null && stack.size()>1) {
 			stack.setBitDepth(grayscaleStack?8:24);
 			new ImagePlus("Plot Stack",stack).show();
@@ -1271,16 +1281,18 @@ public class Plot implements Cloneable {
 		stack.addPlot(this);
 		if (isColored())
 			grayscaleStack = false;
+		IJ.showStatus("addToStack: "+stack.size());
 		allPlotObjects.clear();
 	}
 	
 	public void appendToStack() { addToStack(); }
 	
 	/** Returns the virtual stack created by addToStack(). */
-	public ImageStack getStack() {
+	public PlotVirtualStack getStack() {
+		IJ.showStatus("");
 		return stack;
 	}
-
+	
 	/** Draws the plot specified for the first time. Does nothing if the plot has been drawn already.
 	 *	Call getProcessor to retrieve the ImageProcessor with it.
 	 *	Does no action with respect to the ImagePlus (if any) */
@@ -2381,6 +2393,62 @@ public class Plot implements Cloneable {
 				}
 				ip.setClipRect(null);
 				break;
+			case PlotObject.BOXES:
+				ip.setClipRect(frame);
+				float boxWidth = plotObject.boxWidth;
+				boolean swapXY = plotObject.boxWidth < 0;
+				if (!swapXY) {
+					for (int i = 0; i < plotObject.xValues.length; i++) {
+						int x = scaleX(plotObject.xValues[i]);
+						int y1 = scaleY(plotObject.boxesQ1[i]);
+						int y2 = scaleY(plotObject.boxesQ2[i]);
+						int y3 = scaleY(plotObject.boxesQ3[i]);
+						int y4 = scaleY(plotObject.boxesQ4[i]);
+						int y5 = scaleY(plotObject.boxesQ5[i]);
+						ip.setLineWidth(sc(plotObject.lineWidth));
+
+						int halfWidth = Math.round(sc(plotObject.boxWidth / 2));
+						Rectangle r1 = new Rectangle(x - halfWidth, y4, halfWidth * 2, y2 - y4);
+						Rectangle cBox = frame.intersection(r1);
+						if(y1 !=y2 || y4 != y5)//otherwise omit whiskers
+							ip.drawLine(x, y1, x, y5);//whiskers
+						if (plotObject.color2 != null) {
+							ip.setColor(plotObject.color2);
+							ip.fillRect(cBox.x, cBox.y, cBox.width, cBox.height);
+						}
+						ip.setColor(plotObject.color);
+						ip.drawRect(cBox.x, cBox.y, cBox.width, cBox.height);
+						ip.setClipRect(frame);
+						ip.drawLine(x - halfWidth, y3, x + halfWidth-1, y3);
+					}
+				}
+				if (swapXY) {
+					boxWidth = -boxWidth;
+					for (int i = 0; i < plotObject.xValues.length; i++) {
+						int y = scaleY(plotObject.xValues[i]);
+						int x1 = scaleX(plotObject.boxesQ1[i]);
+						int x2 = scaleX(plotObject.boxesQ2[i]);
+						int x3 = scaleX(plotObject.boxesQ3[i]);
+						int x4 = scaleX(plotObject.boxesQ4[i]);
+						int x5 = scaleX(plotObject.boxesQ5[i]);
+						ip.setLineWidth(sc(plotObject.lineWidth));
+						int halfWidth = Math.round(sc(boxWidth / 2));
+						if(x1 !=x2 || x4 != x5)//otherwise omit whiskers
+							ip.drawLine(x1, y, x5, y);//whiskers
+						Rectangle r1 = new Rectangle(x2, y - halfWidth, x4 - x2, halfWidth * 2);
+						Rectangle cBox = frame.intersection(r1);
+						if (plotObject.color2 != null) {
+							ip.setColor(plotObject.color2);
+							ip.fillRect(cBox.x, cBox.y, cBox.width, cBox.height);
+						}
+						ip.setColor(plotObject.color);
+						ip.drawRect(cBox.x, cBox.y, cBox.width, cBox.height);
+						ip.setClipRect(frame);
+						ip.drawLine(x3, y - halfWidth, x3, y + halfWidth - 1);
+					}
+				}
+				ip.setClipRect(null);
+				break;
 			case PlotObject.LINE:
 				ip.setClipRect(frame);
 				ip.drawLine(scaleX(plotObject.x), scaleY(plotObject.y), scaleX(plotObject.xEnd), scaleY(plotObject.yEnd));
@@ -3096,7 +3164,7 @@ class PlotObject implements Cloneable, Serializable {
 	static final long serialVersionUID = 1L;
 	/** constants for the type of objects */
 	public final static int XY_DATA = 0, ARROWS = 1, LINE = 2, NORMALIZED_LINE = 3, DOTTED_LINE = 4,
-			LABEL = 5, NORMALIZED_LABEL = 6, LEGEND = 7, AXIS_LABEL = 8, FRAME = 9;
+			LABEL = 5, NORMALIZED_LABEL = 6, LEGEND = 7, AXIS_LABEL = 8, FRAME = 9, BOXES = 10;
 	/** mask for recovering font style from the flags */
 	final static int FONT_STYLE_MASK = 0x0f;
 	/** flag for the data set passed with the constructor. Note that 0 to 0x0f are reserved for fonts modifiers, 0x010-0x800 are reserved for legend modifiers */
@@ -3110,6 +3178,11 @@ class PlotObject implements Cloneable, Serializable {
 	/** The x and y data arrays and the error bars (if non-null). These arrays also serve as x0, y0, x1, y1
 	 *	arrays for plotting arrays of arrows */
 	public float[] xValues, yValues, xEValues, yEValues;
+	/** For Boxes and whiskers. boxesQ1..boxesQ5 hold ascending values
+	 */
+	public float[] boxesQ1, boxesQ2, boxesQ3, boxesQ4, boxesQ5;
+	public float boxWidth;
+	
 	/** Type of the points, such as Plot.LINE, Plot.CROSS etc. (for type = XY_DATA) */
 	public int shape;
 	/** The line width in pixels for 'small' plots */
@@ -3169,6 +3242,21 @@ class PlotObject implements Cloneable, Serializable {
 		this.yEValues = y2;
 		this.lineWidth = lineWidth;
 		this.color = color;
+	}
+
+	/** Constructor for a set of boxes */
+	PlotObject(float boxWidth, float[] x1, float[] y1, float[] y2, float[] y3, float[] y4, float[] y5, float lineWidth,  Color color, Color color2) {
+		this.type = BOXES;
+		this.boxWidth = boxWidth;
+		this.xValues = x1;
+		this.boxesQ1 = y1;
+		this.boxesQ2 = y2;
+		this.boxesQ3 = y3;//median
+		this.boxesQ4 = y4;
+		this.boxesQ5 = y5;
+		this.lineWidth = lineWidth;
+		this.color = color;
+		this.color2 = color2;
 	}
 
 	/** Constructor for a line */
