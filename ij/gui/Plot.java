@@ -57,16 +57,18 @@ public class Plot implements Cloneable {
 	public static final int DIAMOND = 8;
 	/** Fill area between line plot and x-axis at y=0. */
 	public static final int FILLED = 9;
+	/** Draw a bar for each point. */
+	public static final int BAR = 10;
 	/** Draw shape using macro code */
-	public static final int CUSTOM = 10;
+	public static final int CUSTOM = 11;
 	
 	/** Names for the shapes as an array */
 	final static String[] SHAPE_NAMES = new String[] {
-			"Circle", "X", "Line", "Box", "Triangle", "+", "Dot", "Connected Circles", "Diamond", "Filled", "Custom"};
+			"Circle", "X", "Line", "Box", "Triangle", "+", "Dot", "Connected Circles", "Diamond", "Filled", "Bar", "Custom"};
 	/** Names in nicely sorting order for menus */
 	final static String[] SORTED_SHAPES = new String[] {
 			SHAPE_NAMES[LINE], SHAPE_NAMES[CONNECTED_CIRCLES], SHAPE_NAMES[FILLED], SHAPE_NAMES[CIRCLE], SHAPE_NAMES[BOX], SHAPE_NAMES[TRIANGLE],
-			SHAPE_NAMES[CROSS], SHAPE_NAMES[DIAMOND], SHAPE_NAMES[X], SHAPE_NAMES[DOT]};
+			SHAPE_NAMES[CROSS], SHAPE_NAMES[DIAMOND], SHAPE_NAMES[X], SHAPE_NAMES[DOT], SHAPE_NAMES[BAR]};
 	/** flag for numeric labels of x-axis ticks */
 	public static final int X_NUMBERS = 0x1;
 	/** flag for numeric labels of x-axis ticks */
@@ -700,6 +702,8 @@ public class Plot implements Cloneable {
 			shape = -1;
 		else if (str.contains("x"))
 			shape = Plot.X;
+		else if (str.contains("bar"))
+			shape = Plot.BAR;
 		if (str.startsWith("code:"))
 			shape = CUSTOM;
 		return shape;
@@ -2327,25 +2331,22 @@ public class Plot implements Cloneable {
 					ip.setColor(plotObject.color2 == null ? Color.black : plotObject.color2);
 				if (drawLine) {
 					int shortLen = Math.min(plotObject.xValues.length, plotObject.yValues.length);
-					if(plotObject.shape == FILLED){
+					if (plotObject.shape == FILLED) {
 						//ip.setColor(plotObject.color);
 						boolean twoColors = plotObject.color2 != null;
-						if(twoColors){
+						if (twoColors) {
 							ip.setColor(plotObject.color2);
 							ip.setLineWidth(1);
-						}
-						else
+						} else
 							ip.setColor(plotObject.color);
-
 						drawFloatPolyLineFilled(ip, plotObject.xValues, plotObject.yValues, shortLen);
-						if(twoColors){
+						if (twoColors){
 							ip.setColor(plotObject.color);
 							ip.setClipRect(frame);
 							ip.setLineWidth(sc(plotObject.lineWidth));
 							drawFloatPolyline(ip, plotObject.xValues, plotObject.yValues, shortLen);
 						}
-					}
-					else
+					} else
 					    drawFloatPolyline(ip, plotObject.xValues, plotObject.yValues, shortLen);
 				}
 				if (drawMarker) {
@@ -2370,6 +2371,8 @@ public class Plot implements Cloneable {
 					if (plotObject.shape==CUSTOM)
 						ip.setFont(saveFont);
 				}
+				if (plotObject.shape==BAR)
+					drawBarChart(plotObject);
 				ip.setClipRect(null);
 				break;
 			case PlotObject.ARROWS:
@@ -2487,6 +2490,24 @@ public class Plot implements Cloneable {
 			case PlotObject.LEGEND:
 				drawLegend(plotObject, ip);
 				break;
+		}
+	}
+	
+	/** Draw a bar at each point */
+	void drawBarChart(PlotObject plotObject) {
+		ip.setColor(plotObject.color);
+		plotObject.pointIndex = 0;
+		int n = Math.min(plotObject.xValues.length, plotObject.yValues.length);
+		int frameWidth = (int)Math.round(getDrawingFrame().width*xScale);
+		int width = n>1?(int)Math.round((plotObject.xValues[1]-plotObject.xValues[0])*xScale):frameWidth;
+		ip.setLineWidth(1);
+		for (int i=0; i<n; i++) {
+			int x = scaleX(plotObject.xValues[i]);
+			int y = scaleY(plotObject.yValues[i]);
+			int y0 = scaleY(0);
+			//IJ.log(i+" "+scaleX(plotObject.xValues[1])+" "+scaleX(plotObject.xValues[0])+" "+(x-width/2)+" "+y+" "+width+" "+scaleY(0)+" "+y);
+			for (int x2=x; x2<=x+width; x2++)
+				ip.drawLine(x2,y0,x2,y);
 		}
 	}
 
@@ -3178,8 +3199,7 @@ class PlotObject implements Cloneable, Serializable {
 	/** The x and y data arrays and the error bars (if non-null). These arrays also serve as x0, y0, x1, y1
 	 *	arrays for plotting arrays of arrows */
 	public float[] xValues, yValues, xEValues, yEValues;
-	/** For Boxes and whiskers. boxesQ1..boxesQ5 hold ascending values
-	 */
+	/** For Boxes and whiskers. boxesQ1..boxesQ5 hold ascending values */
 	public float[] boxesQ1, boxesQ2, boxesQ3, boxesQ4, boxesQ5;
 	public float boxWidth;
 	
@@ -3321,8 +3341,9 @@ class PlotObject implements Cloneable, Serializable {
 
 	/** Whether an XY_DATA object has markers to draw */
 	boolean hasMarker() {
-		return type == XY_DATA && (shape == Plot.CIRCLE || shape == Plot.X || shape == Plot.BOX || shape == Plot.TRIANGLE ||
-				shape == Plot.CROSS || shape == Plot.DIAMOND || shape == Plot.DOT || shape == Plot.CONNECTED_CIRCLES || shape == Plot.CUSTOM);
+		return type == XY_DATA && (shape == Plot.CIRCLE || shape == Plot.X || shape == Plot.BOX || shape == Plot.TRIANGLE
+				|| shape == Plot.CROSS || shape == Plot.DIAMOND || shape == Plot.DOT || shape == Plot.CONNECTED_CIRCLES
+				|| shape == Plot.CUSTOM);
 	}
 
 	/** Whether an XY_DATA object has markers that can be filled */

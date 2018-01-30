@@ -273,6 +273,7 @@ public class Menus {
 		addExample(submenu, "Dynamic Plot 2D", "Dynamic_Plot_2D.ijm");
 		addExample(submenu, "Custom Plot Symbols", "Custom_Plot_Symbols.ijm");
 		addExample(submenu, "Box Plot", "Box_Plot.ijm");
+		addExample(submenu, "Histograms", "Histograms.ijm");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		
