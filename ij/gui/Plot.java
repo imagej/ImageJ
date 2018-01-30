@@ -55,12 +55,12 @@ public class Plot implements Cloneable {
 	public static final int CONNECTED_CIRCLES = 7;
 	/** Display points using an diamond-shaped mark. */
 	public static final int DIAMOND = 8;
-	/** Fill area between line plot and x-axis at y=0. */
-	public static final int FILLED = 9;
-	/** Draw a bar for each point. */
-	public static final int BAR = 10;
 	/** Draw shape using macro code */
-	public static final int CUSTOM = 11;
+	public static final int CUSTOM = 9;
+	/** Fill area between line plot and x-axis at y=0. */
+	public static final int FILLED = 10;
+	/** Draw a bar for each point. */
+	public static final int BAR = 11;
 	
 	/** Names for the shapes as an array */
 	final static String[] SHAPE_NAMES = new String[] {
