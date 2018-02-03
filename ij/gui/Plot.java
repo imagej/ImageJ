@@ -64,11 +64,12 @@ public class Plot implements Cloneable {
 	
 	/** Names for the shapes as an array */
 	final static String[] SHAPE_NAMES = new String[] {
-			"Circle", "X", "Line", "Box", "Triangle", "+", "Dot", "Connected Circles", "Diamond", "Filled", "Bar", "Custom"};
+			"Circle", "X", "Line", "Box", "Triangle", "+", "Dot", "Connected Circles", "Diamond", "Custom", "Filled", "Bar"};
 	/** Names in nicely sorting order for menus */
 	final static String[] SORTED_SHAPES = new String[] {
-			SHAPE_NAMES[LINE], SHAPE_NAMES[CONNECTED_CIRCLES], SHAPE_NAMES[FILLED], SHAPE_NAMES[CIRCLE], SHAPE_NAMES[BOX], SHAPE_NAMES[TRIANGLE],
-			SHAPE_NAMES[CROSS], SHAPE_NAMES[DIAMOND], SHAPE_NAMES[X], SHAPE_NAMES[DOT], SHAPE_NAMES[BAR]};
+			SHAPE_NAMES[LINE], SHAPE_NAMES[CONNECTED_CIRCLES], SHAPE_NAMES[FILLED], SHAPE_NAMES[BAR],
+			SHAPE_NAMES[CIRCLE], SHAPE_NAMES[BOX], SHAPE_NAMES[TRIANGLE], SHAPE_NAMES[CROSS],
+			SHAPE_NAMES[DIAMOND], SHAPE_NAMES[X], SHAPE_NAMES[DOT]};
 	/** flag for numeric labels of x-axis ticks */
 	public static final int X_NUMBERS = 0x1;
 	/** flag for numeric labels of x-axis ticks */
@@ -164,7 +165,7 @@ public class Plot implements Cloneable {
 	Rectangle frame = null;							//the clip frame, do not use for image scale
 	//The following are the margin sizes actually used. They are modified for font size and also scaled for high-resolution plots
 	int leftMargin = LEFT_MARGIN, rightMargin = RIGHT_MARGIN, topMargin = TOP_MARGIN, bottomMargin = BOTTOM_MARGIN;
-	int frameWidth;									//width corresponding to plot range; frame.width is larger by 1
+	int frameWidth;							    //width corresponding to plot range; frame.width is larger by 1
 	int frameHeight;								//height corresponding to plot range; frame.height is larger by 1
 	int preferredPlotWidth = PlotWindow.plotWidth;  //default size of plot frame (not taking 'High-Resolution' scale factor into account)
 	int preferredPlotHeight = PlotWindow.plotHeight;
@@ -202,6 +203,7 @@ public class Plot implements Cloneable {
 	private int currentJustification = LEFT;
 	private boolean ignoreForce2Grid;				// after explicit setting of range (limits), ignore 'FORCE2GRID' flags
 	//private boolean snapToMinorGrid;				// snap to grid when zooming to selection
+	private double barWidth;
 
 	/** Constructs a new Plot.
 	 *	Note that the data xValues, yValues passed with the constructor are plotted last,
@@ -2320,6 +2322,7 @@ public class Plot implements Cloneable {
 		int type = plotObject.type;
 		switch (type) {
 			case PlotObject.XY_DATA:
+				barWidth = 0.0;
 				ip.setClipRect(frame);
 				if (plotObject.yEValues != null)
 					drawVerticalErrorBars(plotObject.xValues, plotObject.yValues, plotObject.yEValues);
@@ -2499,7 +2502,8 @@ public class Plot implements Cloneable {
 		plotObject.pointIndex = 0;
 		int n = Math.min(plotObject.xValues.length, plotObject.yValues.length);
 		int frameWidth = (int)Math.round(getDrawingFrame().width*xScale);
-		int width = n>1?(int)Math.round((plotObject.xValues[1]-plotObject.xValues[0])*xScale):frameWidth;
+		barWidth = n>1?(plotObject.xValues[1]-plotObject.xValues[0])*xScale:frameWidth;
+		int width = (int)Math.round(barWidth);
 		ip.setLineWidth(1);
 		for (int i=0; i<n; i++) {
 			int x = scaleX(plotObject.xValues[i]);
@@ -2910,6 +2914,13 @@ public class Plot implements Cloneable {
 					yv = yBest;
 					yIsValue = true;
 				}
+			}
+			if (barWidth>0.0) {
+				int index = (int)((x-scaleXtoPxl(p.xValues[0]))/barWidth);
+				if (index<0) index=0;
+				if (index>=p.xValues.length) index=p.xValues.length-1;
+				xv = p.xValues[index];
+				yv = p.yValues[index];
 			}
 		}
 		if (!Double.isNaN(xv)) {
