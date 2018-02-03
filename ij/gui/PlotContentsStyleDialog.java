@@ -77,12 +77,16 @@ public class PlotContentsStyleDialog implements DialogListener {
 		widthF.setText(items[2]);
 		if (items.length >= 4)
 			symbolC.select(items[3]);
-		String designation = designationsC.getSelectedItem();
-		boolean isData = designation.startsWith("Data");
-		boolean isText = designation.startsWith("Text");
-		boolean isBox = designation.startsWith("Box");
+		String designation = designationsC.getSelectedItem().toLowerCase();
+		boolean isData = designation.startsWith("data");
+		boolean isText = designation.startsWith("text");
+		boolean isBox = designation.contains("boxes") || designation.contains("rectangles");
+		boolean isGrid = designation.toLowerCase().contains("redraw_grid");
+		
+		colorF.setEnabled(!isGrid);	//
 		color2F.setEnabled(isData || isBox);	//only (some) data symbols have secondary color
-		widthF.setEnabled(!isText); //all non-Text types have line width
+		widthF.setEnabled(!isText  && !isGrid); //all non-Text types have line width
+		hiddenC.setEnabled(!isGrid);//dont't allow  to hide at several places
 		symbolC.setEnabled(isData); //only data have a symbol to choose
 		hiddenC.setState(styleString.contains("hidden"));
 	}

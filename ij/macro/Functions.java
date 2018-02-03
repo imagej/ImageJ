@@ -2136,11 +2136,11 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("drawVectors")) {
 			drawPlotVectors();
 			return;
-		} else if (name.equals("drawBoxes")) {
-			drawPlotBoxes();
+		} else if (name.equals("drawShapes")) {
+			drawShapes();
 			return;
-		} else if (name.equals("drawBoxesX")) {
-			drawPlotBoxesX();
+		} else if (name.equals("drawGrid")) {
+			plot.drawShapes("redraw_grid", null);	
 			return;
 		} else if (name.startsWith("setLineWidth")) {
 			plot.setLineWidth((float)getArg());
@@ -2282,30 +2282,54 @@ public class Functions implements MacroConstants, Measurements {
 		double[] y2 = getLastArray();
 		plot.drawVectors(x1, y1, x2, y2);
 	}
-	
-	void drawPlotBoxes() {
-		drawPlotBoxes(false);
-	}
-	void drawPlotBoxesX() {
-		drawPlotBoxes(true);
-	}
-	
-	void drawPlotBoxes(boolean swapXY) {
-		double boxWidth = getFirstArg();
-		double[] x1 = getNextArray();
-		double[] y1 = getNextArray();
-		double[] y2 = getNextArray();
-		double[] y3 = getNextArray();
-		double[] y4 = getNextArray();
-		double[] y5 = getLastArray();
-		int l = x1.length;
-		if (l != y1.length ||l != y2.length ||l != y3.length ||l != y4.length ||l != y5.length || l==0 )
-			interp.error("Arrays must have same length");
-		if (swapXY )
-			boxWidth = - boxWidth;
-		plot.drawBoxes((int) boxWidth, x1, y1, y2, y3, y4, y5);	
+
+	//floatCoords eg[6][3] for 3 boxes, each with  with 1 X and 5 ascending Y coordinates
+	void drawShapes() {
+		String type = getFirstString().toLowerCase();
+		double[][] arr2D = null;
+		int nBoxes = 0;
+		int nCoords = 0;
+		if (type.contains("rectangles")) {
+			nCoords = 4;//lefts, tops, rights, bottoms
+		} else if (type.contains("boxes")) {
+			nCoords = 6;//centers, Q1s, Q2s, Q3s, Q4s, Q5s (Q= quartile border)
+		} else {
+			interp.error("Must contain 'rectangles' or 'boxes'");
+			return;
+		}
+		double[] arr = null;
+		for (int jj = 0; jj < nCoords; jj++) {
+			interp.getToken();
+			if (interp.token == ',') {
+				if (!isArrayArg()) {
+					interp.putTokenBack();
+					double singleVal = getNextArg();
+					arr = new double[]{singleVal};//only 1 box
+				} else {
+					arr = getNextArray();//>= 2 boxes
+				}
+				nBoxes = arr.length;
+				if (jj > 0 && arr2D[0].length != nBoxes) {
+					interp.error("Arrays must have same length (" + nBoxes + ")");
+					return;
+				}
+				if (arr2D == null) {
+					arr2D = new double[nCoords][nBoxes];
+				}
+				for (int boxNo = 0; boxNo < nBoxes; boxNo++) {
+					arr2D[jj][boxNo] = arr[boxNo];
+				}
+			}
+		}
+		interp.getRightParen();
+		float[][] floatArr = new float[nCoords][nBoxes];
+		for (int row = 0; row < nCoords; row++) {
+			floatArr[row] = Tools.toFloat(arr2D[row]);
+		}
+		plot.drawShapes(type, floatArr);//example: floatArr[6][3] for 3 'boxes and whiskers'
 	}
 
+	
 	void setPlotColor(Plot plot) {
 		interp.getLeftParen();
 		Color color = getColor();
