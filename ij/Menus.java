@@ -273,6 +273,7 @@ public class Menus {
 		addExample(submenu, "Dynamic Plot 2D", "Dynamic_Plot_2D.ijm");
 		addExample(submenu, "Custom Plot Symbols", "Custom_Plot_Symbols.ijm");
 		addExample(submenu, "Histograms", "Histograms.ijm");
+		addExample(submenu, "Bar Charts", "Bar_Charts.ijm");
 		addExample(submenu, "Shapes", "Plot_Shape_Macros.ijm");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
@@ -347,7 +348,7 @@ public class Menus {
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		menu.addSeparator();
-		CheckboxMenuItem item = new CheckboxMenuItem("Autorun");
+		CheckboxMenuItem item = new CheckboxMenuItem("Autorun Examples");
 		menu.add(item);
 		item.addItemListener(ij);
 		item.setState(Prefs.autoRunExamples);

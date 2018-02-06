@@ -202,8 +202,9 @@ public class Plot implements Cloneable {
 	float currentLineWidth;
 	private int currentJustification = LEFT;
 	private boolean ignoreForce2Grid;				// after explicit setting of range (limits), ignore 'FORCE2GRID' flags
-	//private boolean snapToMinorGrid;				// snap to grid when zooming to selection
-	private double barWidth;
+	//private boolean snapToMinorGrid;			// snap to grid when zooming to selection
+	private double barWidth=0.5;						// 0.1-1.0
+	private double barWidthInPixels;
 
 	/** Constructs a new Plot.
 	 *	Note that the data xValues, yValues passed with the constructor are plotted last,
@@ -2392,7 +2393,7 @@ public class Plot implements Cloneable {
 		int type = plotObject.type;
 		switch (type) {
 			case PlotObject.XY_DATA:
-				barWidth = 0.0;
+				barWidthInPixels = 0.0;
 				ip.setClipRect(frame);
 				if (plotObject.yEValues != null)
 					drawVerticalErrorBars(plotObject.xValues, plotObject.yValues, plotObject.yEValues);
@@ -2620,16 +2621,23 @@ public class Plot implements Cloneable {
 		plotObject.pointIndex = 0;
 		int n = Math.min(plotObject.xValues.length, plotObject.yValues.length);
 		int frameWidth = (int)Math.round(getDrawingFrame().width*xScale);
-		barWidth = n>1?(plotObject.xValues[1]-plotObject.xValues[0])*xScale:frameWidth;
-		int width = (int)Math.round(barWidth);
+		barWidthInPixels = n>1?(plotObject.xValues[1]-plotObject.xValues[0])*xScale:frameWidth;
+		int width = (int)Math.round(barWidthInPixels);
 		ip.setLineWidth(1);
 		for (int i=0; i<n; i++) {
 			int x = scaleX(plotObject.xValues[i]);
 			int y = scaleY(plotObject.yValues[i]);
 			int y0 = scaleY(0);
 			//IJ.log(i+" "+scaleX(plotObject.xValues[1])+" "+scaleX(plotObject.xValues[0])+" "+(x-width/2)+" "+y+" "+width+" "+scaleY(0)+" "+y);
-			for (int x2=x; x2<=x+width; x2++)
-				ip.drawLine(x2,y0,x2,y);
+			if (xCats.length>0) {
+				int width2 = (int)Math.round(width*barWidth);
+				for (int x2=x-width2/2; x2<=x+width2/2; x2++)
+					ip.drawLine(x2,y0,x2,y);
+				barWidthInPixels = 0.0;
+			} else {
+				for (int x2=x; x2<=x+width; x2++)
+					ip.drawLine(x2,y0,x2,y);
+			}
 		}
 	}
 
@@ -3031,8 +3039,8 @@ public class Plot implements Cloneable {
 					yIsValue = true;
 				}
 			}
-			if (barWidth>0.0) {
-				int index = (int)((x-scaleXtoPxl(p.xValues[0]))/barWidth);
+			if (barWidthInPixels>0.0) {
+				int index = (int)((x-scaleXtoPxl(p.xValues[0]))/barWidthInPixels);
 				if (index<0) index=0;
 				if (index>=p.xValues.length) index=p.xValues.length-1;
 				xv = p.xValues[index];
