@@ -253,12 +253,12 @@ public class Plot implements Cloneable {
 		
 		String[] xCats = labelsInBraces(xLabel);
 		String[] yCats = labelsInBraces(yLabel);
-		if(xCats.length > 0){
+		if (xCats.length > 0){
 		    xMin = -0.5;
 		    xMax = xCats.length - 0.5;
 			draw();
 		}
-		if(yCats.length > 0){
+		if (yCats.length > 0){
 		    yMin = -0.5;
 		    yMax = yCats.length - 0.5;
 			draw();
@@ -2047,6 +2047,7 @@ public class Plot implements Cloneable {
 			Font baseFont = scFont;
 			boolean majorTicks = logXAxis ? hasFlag(X_LOG_TICKS) : hasFlag(X_TICKS);
 			boolean minorTicks = hasFlag(X_MINOR_TICKS);
+			minorTicks = minorTicks && (xCats.length == 0);
 			double step = steps[0];
 			int i1 = (int)Math.ceil (Math.min(xMin, xMax)/step-1.e-10);
 			int i2 = (int)Math.floor(Math.max(xMin, xMax)/step+1.e-10);
@@ -2074,7 +2075,7 @@ public class Plot implements Cloneable {
 					double v = (i+i1)*step;
 					int x = (int)Math.round((v - xMin)*xScale) + leftMargin;
 					
-					if(xCats.length > 0){										
+					if (xCats.length > 0) {										
 						int index = (int) v;
 						double remainder =  Math.abs(v - Math.round(v));
 						if(index >= 0 && index < xCats.length  && remainder < 1e-9){
@@ -2145,6 +2146,7 @@ public class Plot implements Cloneable {
 			Font baseFont = scFont;
 			boolean majorTicks = logYAxis ? hasFlag(Y_LOG_TICKS) : hasFlag(Y_TICKS);
 			boolean minorTicks = logYAxis ? hasFlag(Y_LOG_TICKS) : hasFlag(Y_MINOR_TICKS);
+			minorTicks = minorTicks && (yCats.length == 0);
 			double step = steps[1];
 			int i1 = (int)Math.ceil (Math.min(yMin, yMax)/step-1.e-10);
 			int i2 = (int)Math.floor(Math.max(yMin, yMax)/step+1.e-10);
@@ -2629,7 +2631,7 @@ public class Plot implements Cloneable {
 			int y = scaleY(plotObject.yValues[i]);
 			int y0 = scaleY(0);
 			//IJ.log(i+" "+scaleX(plotObject.xValues[1])+" "+scaleX(plotObject.xValues[0])+" "+(x-width/2)+" "+y+" "+width+" "+scaleY(0)+" "+y);
-			if (xCats.length>0) {
+			if (xMin==-0.5) {
 				int width2 = (int)Math.round(width*barWidth);
 				for (int x2=x-width2/2; x2<=x+width2/2; x2++)
 					ip.drawLine(x2,y0,x2,y);
