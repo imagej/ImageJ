@@ -2619,30 +2619,48 @@ public class Plot implements Cloneable {
 	
 	/** Draw a bar at each point */
 	void drawBarChart(PlotObject plotObject) {
-		ip.setColor(plotObject.color);
+		String[] xCats = labelsInBraces(this.getLabel('x'));
 		plotObject.pointIndex = 0;
 		int n = Math.min(plotObject.xValues.length, plotObject.yValues.length);
-		int frameWidth = (int)Math.round(getDrawingFrame().width*xScale);
-		barWidthInPixels = n>1?(plotObject.xValues[1]-plotObject.xValues[0])*xScale:frameWidth;
-		int width = (int)Math.round(barWidthInPixels);
-		ip.setLineWidth(1);
-		for (int i=0; i<n; i++) {
-			int x = scaleX(plotObject.xValues[i]);
-			int y = scaleY(plotObject.yValues[i]);
-			int y0 = scaleY(0);
-			//IJ.log(i+" "+scaleX(plotObject.xValues[1])+" "+scaleX(plotObject.xValues[0])+" "+(x-width/2)+" "+y+" "+width+" "+scaleY(0)+" "+y);
-			if (xMin==-0.5) {
-				int width2 = (int)Math.round(width*barWidth);
-				for (int x2=x-width2/2; x2<=x+width2/2; x2++)
-					ip.drawLine(x2,y0,x2,y);
-				barWidthInPixels = 0.0;
-			} else {
-				for (int x2=x; x2<=x+width; x2++)
-					ip.drawLine(x2,y0,x2,y);
+		int frameWidth = (int) Math.round(getDrawingFrame().width * xScale);
+		barWidthInPixels = n > 1 ? (plotObject.xValues[1] - plotObject.xValues[0]) * xScale : frameWidth;
+		int theWidth = (int) Math.round(barWidthInPixels);
+		int y0 = scaleY(0);
+		int prevY = y0;
+		if (xCats.length > 0) {
+			theWidth = (int) Math.round(theWidth * barWidth);
+		}
+		for (int bar = 0; bar < n; bar++) {
+			int x = scaleX(plotObject.xValues[bar]);
+			int y = scaleY(plotObject.yValues[bar]);
+			int left = x - theWidth / 2;
+			int right = left + theWidth;
+			if (plotObject.color2 != null) {
+				ip.setColor(plotObject.color2);
+				ip.setLineWidth(1);
+				for (int x2 = left; x2 <= right; x2++) {
+					ip.drawLine(x2, y0, x2, y);
+				}
+			}
+			ip.setColor(plotObject.color);
+			ip.setLineWidth(sc(plotObject.lineWidth));
+			if (xCats.length > 0) {
+				ip.drawLine(left, y0, left, y);//up
+				ip.drawLine(left, y, right, y);//right
+				ip.drawLine(right, y, right, y0);//down
+			}
+			if (xCats.length == 0) {
+				ip.drawLine(left, prevY, left, y);//up or down
+				ip.drawLine(left, y, right, y);//right
+				if (bar == n - 1) {
+					ip.drawLine(right, y, right, y0);//last down
+				}
+				prevY = y;
 			}
 		}
-	}
-
+		barWidthInPixels = 0.0;
+	}	
+	
 	/** Draw the symbols for data points */
 	void drawShape(PlotObject plotObject, int x, int y, int size) {
 		int shape = plotObject.shape;
