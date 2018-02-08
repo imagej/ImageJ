@@ -43,6 +43,8 @@ public class SimpleCommands implements PlugIn {
 			showMissingPluginsMessage();
 		else if (arg.equals("fonts"))
 			showFonts();
+		else if (arg.equals("opencp"))
+			openControlPanel();
 	}
 	
 	private synchronized void showFonts() {
@@ -175,6 +177,12 @@ public class SimpleCommands implements PlugIn {
 		new ImagePlus("Results Table", ip).show();
 	}
 	
+	private void openControlPanel() {
+		Prefs.set("Control_Panel.@Main", "51 22 92 426");
+		Prefs.set("Control_Panel.Help.Examples", "144 107 261 373");
+		IJ.run("Control Panel...", "");
+	}
+
 	private void showMissingPluginsMessage() {
 		IJ.showMessage("Path Randomization", 
 			"Plugins were not loaded due to macOS Path Randomization.\n"+

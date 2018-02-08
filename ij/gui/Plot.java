@@ -2505,7 +2505,7 @@ public class Plot implements Cloneable {
 					break;
 				}
 				if (shType.equals("redraw_grid")) {
-					
+				ip.setLineWidth(sc(1));
 					redrawGrid();
 					ip.setClipRect(null);
 					break;
@@ -2865,7 +2865,7 @@ public class Plot implements Cloneable {
 			}
 		}
 		double dx = maxX - minX;
-		int stretchedLen = (int) (dx * xScale * 10) + 1;
+		int stretchedLen = (int) Math.abs((dx * xScale * 10) + 1);
 		double[] stretchedArrX = Tools.resampleArray(xD, stretchedLen);
 		double[] stretchedArrY = Tools.resampleArray(yD, stretchedLen);
 		int yZero = scaleY(0);
