@@ -775,7 +775,7 @@ public class Plot implements Cloneable {
 	 * @param shapeType e.g. "boxes width=20"
 	 * @param floatCoords eg[6][3] holding 1 Xval + 5 Yvals for 3 boxes
 	 */
-	public void drawShapes(String shapeType, float[][] floatCoords) {
+	public void drawShapes(String shapeType, ArrayList floatCoords) {
 			allPlotObjects.add(new PlotObject(shapeType, floatCoords, currentLineWidth, currentColor, currentColor2));
 
 	}
@@ -2478,13 +2478,15 @@ public class Plot implements Cloneable {
 				ip.setClipRect(frame);
 				String shType = plotObject.shapeType.toLowerCase();						
 				if (shType.contains("rectangles")) {
-					int nShapes = plotObject.shapeData[0].length;				
+					int nShapes = plotObject.shapeData.size();
+				
 				
 						for (int i = 0; i < nShapes; i++) {
-							int x1 = scaleX(plotObject.shapeData[0][i]);
-							int y1 = scaleY(plotObject.shapeData[1][i]);
-							int x2 = scaleX(plotObject.shapeData[2][i]);
-							int y2 = scaleY(plotObject.shapeData[3][i]);
+							float[] corners = (float[])(plotObject.shapeData.get(i));							
+							int x1 = scaleX(corners[0]);
+							int y1 = scaleY(corners[1]);
+							int x2 = scaleX(corners[2]);
+							int y2 = scaleY(corners[3]);
 						
 						ip.setLineWidth(sc(plotObject.lineWidth));
 							int left = Math.min(x1, x2);
@@ -2520,18 +2522,21 @@ public class Plot implements Cloneable {
 						}
 					}
 					boolean horizontal = shType.contains("boxesx");
-					int nShapes = plotObject.shapeData[0].length;
+					int nShapes = plotObject.shapeData.size();
 					int halfWidth = Math.round(sc(iBoxWidth / 2));
-
+					for (int i = 0; i < nShapes; i++) {
+						
+						float[] coords = (float[])(plotObject.shapeData.get(i));
+						
+					
 					if (!horizontal) {
-						float[][] data = plotObject.shapeData;
-						for (int i = 0; i < nShapes; i++) {
-							int x = scaleX(data[0][i]);
-							int y1 = scaleY(data[1][i]);
-							int y2 = scaleY(data[2][i]);
-							int y3 = scaleY(data[3][i]);
-							int y4 = scaleY(data[4][i]);
-							int y5 = scaleY(data[5][i]);
+					
+							int x = scaleX(coords[0]);
+							int y1 = scaleY(coords[1]);
+							int y2 = scaleY(coords[2]);
+							int y3 = scaleY(coords[3]);
+							int y4 = scaleY(coords[4]);
+							int y5 = scaleY(coords[5]);
 							ip.setLineWidth(sc(plotObject.lineWidth));
 
 							Rectangle r1 = new Rectangle(x - halfWidth, y4, halfWidth * 2, y2 - y4);
@@ -2549,15 +2554,15 @@ public class Plot implements Cloneable {
 							ip.setClipRect(frame);
 							ip.drawLine(x - halfWidth, y3, x + halfWidth - 1, y3);
 						}
-					}
+					
 					if (horizontal) {
-						for (int i = 0; i < nShapes; i++) {
-							int y = scaleY(plotObject.shapeData[0][i]);
-							int x1 = scaleX(plotObject.shapeData[1][i]);
-							int x2 = scaleX(plotObject.shapeData[2][i]);
-							int x3 = scaleX(plotObject.shapeData[3][i]);
-							int x4 = scaleX(plotObject.shapeData[4][i]);
-							int x5 = scaleX(plotObject.shapeData[5][i]);
+						
+							int y = scaleY(coords[0]);
+							int x1 = scaleX(coords[1]);
+							int x2 = scaleX(coords[2]);
+							int x3 = scaleX(coords[3]);
+							int x4 = scaleX(coords[4]);
+							int x5 = scaleX(coords[5]);
 							ip.setLineWidth(sc(plotObject.lineWidth));
 							if(x1 !=x2 || x4 != x5)//otherwise omit whiskers
 								ip.drawLine(x1, y, x5, y);//whiskers
@@ -3355,7 +3360,7 @@ class PlotObject implements Cloneable, Serializable {
 	 *	arrays for plotting arrays of arrows */
 	public float[] xValues, yValues, xEValues, yEValues;
 	/** For Shapes such as boxplots */
-	public float[][] shapeData;
+	public ArrayList shapeData;
 	public String shapeType;//e.g. "boxes width=20"	
 	/** Type of the points, such as Plot.LINE, Plot.CROSS etc. (for type = XY_DATA) */
 	public int shape;
@@ -3419,7 +3424,7 @@ class PlotObject implements Cloneable, Serializable {
 	}
 
 	/** Constructor for a set of shapes */
-	PlotObject(String shapeType, float[][] shapeData, float lineWidth,  Color color, Color color2) {
+	PlotObject(String shapeType, ArrayList shapeData, float lineWidth,  Color color, Color color2) {
 		this.type = SHAPES;
 		this.shapeData = shapeData;
 		this.shapeType = shapeType;

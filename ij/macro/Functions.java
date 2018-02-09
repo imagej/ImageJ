@@ -2283,7 +2283,8 @@ public class Functions implements MacroConstants, Measurements {
 		plot.drawVectors(x1, y1, x2, y2);
 	}
 
-	//floatCoords eg[6][3] for 3 boxes, each with  with 1 X and 5 ascending Y coordinates
+	//Example 10 boxes: ArrayList has 10 elements, each holding a float[6] for coordinates
+	//Example 10 rectangles: ArrayList has 10 elements, each holding a float[4] for the corners
 	void drawShapes() {
 		String type = getFirstString().toLowerCase();
 		double[][] arr2D = null;
@@ -2326,9 +2327,16 @@ public class Functions implements MacroConstants, Measurements {
 		for (int row = 0; row < nCoords; row++) {
 			floatArr[row] = Tools.toFloat(arr2D[row]);
 		}
-		plot.drawShapes(type, floatArr);//example: floatArr[6][3] for 3 'boxes and whiskers'
+		ArrayList shapeData = new ArrayList();
+		for (int box = 0; box < nBoxes; box++) {
+			float[] coords = new float[nCoords];
+			for (int coord = 0; coord < nCoords; coord++) {
+				coords[coord] = (float) (arr2D[coord][box]);
+			}
+			shapeData.add(coords);
+		}
+		plot.drawShapes(type, shapeData);
 	}
-
 	
 	void setPlotColor(Plot plot) {
 		interp.getLeftParen();

@@ -1332,6 +1332,8 @@ public class IJ {
             Interpreter.activateImage(imp);
             WindowManager.setWindow(null);
 		} else {
+			if (imp==null)
+				return;
 			ImageWindow win = imp.getWindow();
 			if (win!=null) {
 				win.toFront();

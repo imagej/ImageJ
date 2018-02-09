@@ -786,7 +786,8 @@ class TreePanel implements
 		pTree.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				isDragging = false;
-				if(pcp.requiresDoubleClick() && e.getClickCount()!=2) return;
+				if (e.getClickCount()!=2)
+					return;
 				int selRow=pTree.getRowForLocation(e.getX(),e.getY());
 				if (selRow!=-1) toAction();
 			}

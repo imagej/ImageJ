@@ -231,7 +231,7 @@ public class Menus {
 		addPlugInItem(help, "Macros...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/macros/\")", 0, false);
 		addPlugInItem(help, "Macro Functions...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/developer/macro/functions.html\")", 0, false);
 		Menu examplesMenu = getExamplesMenu(ij);
-		addPlugInItem(examplesMenu, "Open Control Panel...", "ij.plugin.SimpleCommands(\"opencp\")", 0, false);
+		addPlugInItem(examplesMenu, "Open as Panel", "ij.plugin.SimpleCommands(\"opencp\")", 0, false);
 		help.add(examplesMenu);
 		help.addSeparator();
 		addPlugInItem(help, "Update ImageJ...", "ij.plugin.ImageJ_Updater", 0, false);
