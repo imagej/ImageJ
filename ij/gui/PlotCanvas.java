@@ -89,7 +89,7 @@ public class PlotCanvas extends ImageCanvas {
 		zoom(sx, sy, Math.sqrt(0.5));
 	}
 
-	void zoom(int sx, int sy, double zoomFactor) {
+	void zoom(int sx, int sy, double zoomFactor) {//n__ 
 		if (plot == null || plot.isFrozen()) {
 			if (zoomFactor > 1)
 				super.zoomIn(sx, sy);
@@ -97,15 +97,8 @@ public class PlotCanvas extends ImageCanvas {
 				super.zoomOut(sx, sy);
 			return;
 		}
-		boolean mouseMoved = sqr(sx-lastZoomSX) + sqr(sy-lastZoomSY) > MAX_MOUSEMOVE_ZOOM*MAX_MOUSEMOVE_ZOOM;
-		if (mouseMoved)
-			plot.zoom(sx, sy, zoomFactor);	  //zoom on cursor coordinates
-		else
-			plot.zoom(Plot.ZOOM_AS_PREVIOUS, -Plot.ZOOM_AS_PREVIOUS, zoomFactor);	 //zoom on center
-		lastZoomSX = sx;
-		lastZoomSY = sy;
+		plot.zoom(sx, sy, zoomFactor);
 	}
-
 
 	/** Implements the Image/Zoom/Original Scale command.
 	 *	Sets the original range of the x, y axes (unless the plot is frozen) */

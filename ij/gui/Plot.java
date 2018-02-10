@@ -1949,55 +1949,57 @@ public class Plot implements Cloneable {
 		updateImage();
 	}
 
-	/** Zooms in or out on a point x, y in screen coordinates. If x>0, default in both directions,
-	 *	if the cursor is below the x axis, only in x direction, if the cursor is left of the y axis, only in y direction.
-	 *	If x < 0, zooms on center; if x == ZOOM_AS_PREVIOUS, zooms on the center of the previous zoom
-	 *	operation */
-	void zoom(int x, int y, double zoomFactor) {
-		boolean zoomIn = zoomFactor > 1.0;
-		boolean zoomAsPrevious = x==ZOOM_AS_PREVIOUS && (!Double.isNaN(previousXZoom) || !Double.isNaN(previousYZoom));
-		if (!zoomAsPrevious) {
-			previousXZoom = Double.NaN;
-			previousYZoom = Double.NaN;
-			saveMinMax();
+	/** 
+	 * Zooms in or out  active plots while keeping focus on cursor position
+	 * Above or below frame: zoom x only
+	 * Left or right of frame: zoom y only
+	 * Corners: focus is in center 
+	 *  N. Vischer
+	*/
+	void zoom(int x, int y, double zoomFactor) {		
+		boolean wasLogX = logXAxis;
+		boolean wasLogY = logYAxis;			
+		double plotX = descaleX(x);
+		double plotY = descaleY(y);
+		IJ.showStatus ("" + plotX);
+		boolean insideX = x > frame.x && x < frame.x + frame.width;
+		boolean insideY = y > frame.y && y < frame.y + frame.height;
+		if (!insideX && !insideY) {
+			insideX = true;
+			insideY = true;
+			x = frame.x + frame.width / 2;
+			y = frame.y + frame.height / 2;
 		}
-		boolean cursorLeft = x >= 0 && x<leftMargin-1;
-		boolean cursorBottom = y>topMargin+frameHeight+1;
-		boolean zoomX = (!cursorLeft && !zoomAsPrevious) || (!Double.isNaN(previousXZoom) && zoomAsPrevious);
-		boolean zoomY = cursorLeft || !cursorBottom || (!Double.isNaN(previousYZoom) && zoomAsPrevious);
-		if (cursorLeft && cursorBottom) // if cursor is in bottom left corner, zoom in y as if cursor was outside
-			x = -1;
-		//IJ.log("x,y="+x+","+y+" zx="+zoomX+" zy="+zoomY+" zPrev="+zoomAsPrevious);
-		for (int axisIndex = 0; axisIndex<currentMinMax.length; axisIndex+=2) {
-			if (axisIndex==0 && !zoomX) continue;
-			if (axisIndex==2 && !zoomY) continue;
-			boolean logAxis = axisIndex==0 ? logXAxis : logYAxis;
-			double min = axisIndex==0 ? xMin : yMin;
-			double max = axisIndex==0 ? xMax : yMax;
-			double mid = 0.5 * (min + max);
-			if (zoomAsPrevious) {
-				mid = axisIndex==0 ? previousXZoom : previousYZoom;
-				if (logAxis) mid = Math.log10(mid);
-			}
-			double span = max - min;
-			if (x >= 0) { //cursor inside? zoom on cursor
-				mid = axisIndex==0 ? descaleX(x) : descaleY(y);
-				if (logAxis) mid = Math.log10(mid);
-			}
-			if (axisIndex==0)
-				previousXZoom = logAxis ? Math.pow(10, mid) : mid;
-			else
-				previousYZoom = logAxis ? Math.pow(10, mid) : mid;
-			//IJ.log("d="+(axisIndex==0 ? "X":"Y")+" x,y="+x+","+y+" mid="+(float)mid);
-			double newHalfSpan = 0.5 * span / zoomFactor;
-			currentMinMax[axisIndex] = mid - newHalfSpan;
-			currentMinMax[axisIndex+1] = mid + newHalfSpan;
-			if (logAxis) {
-				currentMinMax[axisIndex] = Math.pow(10, currentMinMax[axisIndex]);
-				currentMinMax[axisIndex+1] = Math.pow(10, currentMinMax[axisIndex+1]);
-			}
+		int leftPart = x - frame.x;
+		int rightPart = frame.x + frame.width - x;
+		int highPart = y - frame.y;
+		int lowPart = frame.y + frame.height - y;
+
+		if (insideX) {
+			currentMinMax[0] = descaleX((int) (x - leftPart / zoomFactor));
+			currentMinMax[1] = descaleX((int) (x + rightPart / zoomFactor));
+		}
+		if (insideY) {
+			currentMinMax[2] = descaleY((int) (y + lowPart / zoomFactor));
+			currentMinMax[3] = descaleY((int) (y - highPart / zoomFactor));
 		}
 		updateImage();
+		if (wasLogX != logXAxis ){//log-lin was automatically changed
+			int changedX = (int) scaleXtoPxl(plotX);
+			int left = changedX - leftPart;
+			int right = changedX + rightPart;
+			currentMinMax[0] = descaleX(left);
+			currentMinMax[1] = descaleX(right);
+			updateImage();
+		}
+		if (wasLogY != logYAxis){//log-lin was automatically changed
+			int changedY = (int) scaleYtoPxl(plotY);
+			int bottom = changedY + lowPart;
+			int top = changedY + highPart;
+			currentMinMax[2] = descaleY(bottom);
+			currentMinMax[3] = descaleY(top);
+			updateImage();
+		}
 	}
 
 	/** Moves the plot range by a given number of pixels and updates the image */

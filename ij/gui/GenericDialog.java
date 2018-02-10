@@ -713,6 +713,23 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     	customInsets = true;
     }
     
+    /*
+    private void setGridLoc(int gx, int gy) {
+    	if (addToLine) {
+    		if (gx==0)
+    			y--;
+    		else
+    			addToLine = false;    		
+    		c.gridx = c.gridx+1;
+    		c.gridy = y;
+    	} else {
+			c.gridx = gx;
+			c.gridy = gy;
+    	}
+		IJ.log("setGridLoc: "+c.gridx+" "+c.gridy+" "+addToLine);
+    }
+    */
+
     /** Sets a replacement label for the "OK" button. */
     public void setOKLabel(String label) {
     	okLabel = label;
