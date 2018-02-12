@@ -396,6 +396,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	
 	public static void recordOption(String key, String value) {
 		if (key==null) return;
+		key = fixString(key);
 		key = trimKey(key);
 		value = addQuotes(value);
 		checkForDuplicate(key+"=", value);

@@ -47,8 +47,12 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				ShapeRoi shape1 = new ShapeRoi(roi);
 				ShapeRoi shape2 = new ShapeRoi(new Roi(0, 0, w, h));
 				roi = shape2.and(shape1);
-				if (roi.getBounds().width==0 || roi.getBounds().height==0)
-					throw new IllegalArgumentException("Selection is outside the image");
+				if (roi.getBounds().width==0 || roi.getBounds().height==0) {
+					if (IJ.isMacro())
+						IJ.log("Selection is outside image");
+					else
+						throw new IllegalArgumentException("Selection is outside image");
+				}
 				if (restoreRoi) imp.setRoi(roi);
 			}
 		}

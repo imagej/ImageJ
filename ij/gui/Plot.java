@@ -153,8 +153,6 @@ public class Plot implements Cloneable {
 	private static final int MAX_ARROWHEAD_LENGTH = 20;
 	private static Font	 DEFAULT_FONT = FontUtil.getFont("Arial", Font.PLAIN, PlotWindow.fontSize);
 
-	static final int ZOOM_AS_PREVIOUS = -20202020;	//when zooming at this coordinate, it rather uses the previous zoom center
-
 	PlotProperties pp = new PlotProperties();		//size, range, formatting etc, for easy serialization
 	Vector<PlotObject> allPlotObjects = new Vector<PlotObject>();	//all curves, labels etc., also serialized for saving/reading
 	private PlotVirtualStack stack;
@@ -184,8 +182,6 @@ public class Plot implements Cloneable {
 	Font currentFont = defaultFont;					//font as changed by setFont or setFontSize, must never be null
 	private double xScale, yScale;					//pixels per data unit
 	private int xBasePxl, yBasePxl;					//pixel coordinates corresponding to 0
-	private double previousXZoom = Double.NaN;
-	private double previousYZoom = Double.NaN;
 	private int maxIntervals = 12;					//maximum number of intervals between ticks or grid lines
 	private int tickLength = 7;						//length of major ticks
 	private int minorTickLength = 3;				//length of minor ticks
