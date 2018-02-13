@@ -19,14 +19,12 @@ public class Animator implements PlugIn {
 		to stop any animation and display the next or previous frame. 
 	*/
 	public void run(String arg) {
-		imp = WindowManager.getCurrentImage();
-		if (imp==null)
-			{IJ.noImage(); return;}
+		imp = IJ.getImage();
     	nSlices = imp.getStackSize();
 		if (nSlices<2)
 			{IJ.error("Stack required."); return;}
 		ImageWindow win = imp.getWindow();
-		if (win==null || !(win instanceof StackWindow)) {
+		if ((win==null || !(win instanceof StackWindow)) && !arg.equals("options")) {
 			if (arg.equals("next"))
 				imp.setSlice(imp.getCurrentSlice()+1);
 			else if (arg.equals("previous"))
@@ -215,7 +213,7 @@ public class Animator implements PlugIn {
 			else if (slices>1)
 				lastFrame=slices;
 		}
-		boolean start = !swin.getAnimate();
+		boolean start = swin!=null && !swin.getAnimate();
 		Calibration cal = imp.getCalibration();
 		if (cal.fps!=0.0)
 			animationRate = cal.fps;
@@ -251,7 +249,7 @@ public class Animator implements PlugIn {
 		animationRate = speed;
 		if (animationRate!=0.0)
 			cal.fps = animationRate;
-		if (start && !swin.getAnimate())
+		if (start && swin!=null && !swin.getAnimate())
 			startAnimation();
 	}
 	

@@ -927,6 +927,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			String s = theText;
 			if (s!=null&&s.length()>=3&&Character.isLetter(s.charAt(0))&&s.charAt(1)==':'&&s.charAt(2)=='\\')
 				s = s.replaceAll("\\\\", "/");  // replace "\" with "/" in Windows file paths
+			s = Recorder.fixString(s);
 			if (!smartRecording || !s.equals((String)defaultStrings.elementAt(sfIndex)))
 				recordOption(tf, s);
 			else if (Recorder.getCommandOptions()==null)
@@ -1092,6 +1093,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			String cmd = Recorder.getCommand();
 			if (cmd!=null && cmd.equals("Calibrate..."))
 				text2 = text2.replace('\n',' ');
+			text2 = Recorder.fixString(text2);
 			Recorder.recordOption(key, text2);
 		}
 		return text;

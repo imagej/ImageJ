@@ -2078,7 +2078,13 @@ public class Plot implements Cloneable {
 						double remainder =  Math.abs(v - Math.round(v));
 						if(index >= 0 && index < xCats.length  && remainder < 1e-9){
 							String s = xCats[index];
-							ip.drawString(s, x-ip.getStringWidth(s)/2, yOfXAxisNumbers);
+							String[] parts = s.split("\n");//n__
+							int w = 0;
+							for(int jj = 0; jj < parts.length; jj++)
+								w = Math.max(w, ip.getStringWidth(parts[jj]));
+							
+							ip.drawString(s, x-w/2, yOfXAxisNumbers);
+							//ip.drawString(s, x-ip.getStringWidth(s)/2, yOfXAxisNumbers);
 						}		
 						continue;
 					}
@@ -2183,7 +2189,12 @@ public class Plot implements Cloneable {
 						double remainder =  Math.abs(v - Math.round(v));
 						if(index >= 0 && index < yCats.length  && remainder < 1e-9){
 							String s = yCats[index];
-							ip.drawString(s, xNumberRight, y+yNumberOffset);
+							int multiLineOffset = 0;//n__ multi-line cat labels
+							for(int jj = 0; jj < s.length(); jj++)
+								if(s.charAt(jj) == '\n')
+									multiLineOffset -= rect.height/2;
+										
+							ip.drawString(s, xNumberRight, y+yNumberOffset+ multiLineOffset);
 						}		
 						continue;
 					}

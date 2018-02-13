@@ -154,8 +154,15 @@ public class PlotDialog {
                 yLabel = plotYLabel; // suggest last dialog entry if default profile label
 			gd.addNumericField("Number Font Size", numberFont.getSize2D(), 1);
 			gd.addNumericField("Label Font Size", labelFont.getSize2D(), 1);
-			gd.addStringField("X Axis Label", xLabel, 15);
-			gd.addStringField("Y Axis Label", yLabel, 15);
+			String xMultiLineLabel = xLabel.replace("\n", "|");//n__
+			int nChars = 15;
+			if(xLabel.startsWith("{") ||yLabel.startsWith("{" )){
+					nChars = Math.max(nChars, xLabel.length());
+					nChars = Math.max(nChars, yLabel.length());
+			}
+			gd.addStringField("X Axis Label", xMultiLineLabel, nChars);
+			String yMultiLineLabel = yLabel.replace("\n", "|");
+			gd.addStringField("Y Axis Label", yMultiLineLabel, nChars);
 			gd.setInsets(0, 20, 0); // no extra space
 			gd.addCheckbox("Bold Labels", plotFontSize>0 ? axisLabelBold : (labelFont.isBold()));
 			gd.showDialog();
@@ -173,24 +180,30 @@ public class PlotDialog {
 			if (numberFontSize > 24) numberFontSize = 24f;
 			float labelFontSize = (float)gd.getNextNumber();
 			if (gd.invalidNumber()) labelFontSize = labelFont.getSize2D();
-			xLabel = gd.getNextString();
-			yLabel = gd.getNextString();
+			xMultiLineLabel = gd.getNextString();//n__
+			xLabel = xMultiLineLabel.replace("|", "\n");
+			yMultiLineLabel = gd.getNextString();
+			yLabel = yMultiLineLabel.replace("|", "\n");
 			axisLabelBold = gd.getNextBoolean();
 			plot.setFont('f', numberFont.deriveFont(numberFont.getStyle(), numberFontSize));
 			plot.setAxisLabelFont(axisLabelBold ? Font.BOLD : Font.PLAIN, labelFontSize);
 			plot.setXYLabels(xLabel, yLabel);
 			plot.updateImage();
 			if (Recorder.record) {
+				String xLabel2 = xLabel.replace("\n", "\\n");
+				String yLabel2 = yLabel.replace("\n", "\\n");
 				if (Recorder.scriptMode()) {
 					Recorder.recordCall("//plot = IJ.getImage().getProperty(Plot.PROPERTY_KEY)");
 					Recorder.recordCall("plot.setFont(-1,"+IJ.d2s(plotFontSize,1)+");");
 					Recorder.recordCall("plot.setAxisLabelFont(Plot."+(axisLabelBold ? "BOLD" : "PLAIN")+","+IJ.d2s(labelFontSize,1)+");");
-					Recorder.recordCall("plot.setXYLabels(\""+xLabel+"\", \""+yLabel+"\");");
+					//Recorder.recordCall("plot.setXYLabels(\""+xLabel+"\", \""+yLabel+"\");");
+					Recorder.recordCall("plot.setXYLabels(\""+xLabel2+"\", \""+yLabel2+"\");");//n__
 					Recorder.recordCall("plot.setFormatFlags(0x"+Integer.toHexString(flags)+");");
 				} else {
 					Recorder.recordString("Plot.setFontSize("+IJ.d2s(plotFontSize,1)+");\n");
 					Recorder.recordString("Plot.setAxisLabelSize("+IJ.d2s(labelFontSize,1)+", \""+(axisLabelBold ? "bold" : "plain")+"\");\n");
-					Recorder.recordString("Plot.setXYLabels(\""+xLabel+"\", \""+yLabel+"\");\n");
+					//Recorder.recordString("Plot.setXYLabels(\""+xLabel+"\", \""+yLabel+"\");\n");
+					Recorder.recordString("Plot.setXYLabels(\""+xLabel2+"\", \""+yLabel2+"\");\n");//n__
 					Recorder.recordString("Plot.setFormatFlags(\""+Integer.toString(flags,2)+"\");\n");
 				}
 			}
