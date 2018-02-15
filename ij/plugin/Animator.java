@@ -20,7 +20,7 @@ public class Animator implements PlugIn {
 	*/
 	public void run(String arg) {
 		imp = IJ.getImage();
-    	nSlices = imp.getStackSize();
+		nSlices = imp.getStackSize();
 		if (nSlices<2)
 			{IJ.error("Stack required."); return;}
 		ImageWindow win = imp.getWindow();

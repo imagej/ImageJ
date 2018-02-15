@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.51u 13 February 2018</u>l
+<li> <u>1.51u 13 February 2018</u>
 <ul>
 <li> Thanks to Norbert Vischer, added support for plotting
 rectangles, vertical and horizontal bar charts, and vertical
@@ -17,10 +17,12 @@ using the "+" and "-" keys works better.
 <li> Thanks to Norbert Vischer, added the
 <i>Help&gt;Examples&gt;Open as Panel</i> command.
 <li> Thanks to Norbert Vischer, added the Plot.appendToStack() 
-function. The "Dynamic Plot" and "Dynamic Plot 2D" macros in the
-<i>Help&gt;Examples&gt;Plots</i> menu and the "Dynamic Plot"
+function. The <i>Dynamic Plot</i> and <i>Dynamic Plot 2D</i> macros in the
+<i>Help&gt;Examples&gt;Plots</i> menu and the <i>Dynamic Plot</i>
 script in the <i>Help&gt;Examples&gt;JavaScript</i> menu demonstrate
 how to use it.
+<li> Thanks to Norbert Vischer, added support for multi-line labels in plots.
+For an example, see <i>Help&gt;Examples&gt;Plots&gt;BarCharts</i>.
 <li> Added the <i>Help&gt;Examples&gt;Plots&gt;Histograms</i>
 example macro, which demonstrates how to use the new 
 Plot.add("bars",x,y) macro function to draw histograms.
@@ -39,7 +41,7 @@ in the macro functions finder.
 <li> Thanks to Norbert Vischer, the close(pattern) macro function
 closes windows whose title matches 'pattern'. Non-image windows, like "Roi Manager"
 have to be specified without wildcards. For text windows, wildcards are allowed if 'pattern'
-ends with ".txt", ".ijm" etc. Use close(pattern, "unchanged") to
+ends with ".txt", ".ijm" etc. Use close(pattern, "keep") to
 close only unchanged windows.
 <li> Thanks to Michael Schmid, added the Recorder.fixString() method, 
 which is used to escape strings passed to the recorder.
