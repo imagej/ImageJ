@@ -266,6 +266,11 @@ public class MontageMaker implements PlugIn {
 		y += height;
 		montage.drawString(label, x, y);
 	}
+	
+	public void setFontSize(int fontSize) {
+		this.fontSize = fontSize;
+	}
+	
 }
 
 

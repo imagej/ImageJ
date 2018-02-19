@@ -1846,7 +1846,7 @@ public class Interpreter implements MacroConstants {
 		if (imageTable==null)
 			imageTable = new Vector();
 		imageTable.add(imp);
-		//IJ.log("add: "+imp+"  "+imageTable.size());
+		//IJ.log("addBatchModeImage: "+imp+"  "+imageTable.size());
 		activateImage(imp);
 	}
 
@@ -1856,6 +1856,7 @@ public class Interpreter implements MacroConstants {
 			if (index!=-1) {
 				imageTable.remove(index);
 				imageActivations.remove(imp);
+				//IJ.log("removeBatchModeImage: "+imp+"  "+imageTable.size());
 				WindowManager.setTempCurrentImage(getLastBatchModeImage());
 			}
 		}
@@ -1867,7 +1868,7 @@ public class Interpreter implements MacroConstants {
 				imageActivations = new Vector();
 			imageActivations.remove(imp);
 			imageActivations.add(imp);
-			//IJ.log("activateImage: "+imp+"  "+imageActivations.size());
+			//IJ.log("activateImage: "+imp+"  "+imageTable.size());
 		}
 	}
 
@@ -1914,6 +1915,7 @@ public class Interpreter implements MacroConstants {
 			if (imp2==null)
 				imp2 = (ImagePlus)imageTable.get(size-1);
 		} catch(Exception e) { }
+		//IJ.log("getLastBatchModeImage: "+imp2+"  "+imageTable.size());
 		return imp2;
 	} 
  
