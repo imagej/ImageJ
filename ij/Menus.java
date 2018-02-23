@@ -266,16 +266,16 @@ public class Menus {
 	public static Menu getExamplesMenu(ActionListener listener) {
 		Menu menu = new Menu("Examples");
 		Menu submenu = new Menu("Plots");
-		addExample(submenu, "Example Plot", "Example_Plot.ijm");
-		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.ijm");
-		addExample(submenu, "Arrow Plot", "Arrow_Plot.ijm");
-		addExample(submenu, "Damped Wave Plot", "Damped_Wave_Plot.ijm");
-		addExample(submenu, "Dynamic Plot", "Dynamic_Plot.ijm");
-		addExample(submenu, "Dynamic Plot 2D", "Dynamic_Plot_2D.ijm");
-		addExample(submenu, "Custom Plot Symbols", "Custom_Plot_Symbols.ijm");
-		addExample(submenu, "Histograms", "Histograms.ijm");
-		addExample(submenu, "Bar Charts", "Bar_Charts.ijm");
-		addExample(submenu, "Shapes", "Plot_Shape_Macros.ijm");
+		addExample(submenu, "Example Plot", "Example_Plot_.ijm");
+		addExample(submenu, "Semi-log Plot", "Semi-log_Plot_.ijm");
+		addExample(submenu, "Arrow Plot", "Arrow_Plot_.ijm");
+		addExample(submenu, "Damped Wave Plot", "Damped_Wave_Plot_.ijm");
+		addExample(submenu, "Dynamic Plot", "Dynamic_Plot_.ijm");
+		addExample(submenu, "Dynamic Plot 2D", "Dynamic_Plot_2D_.ijm");
+		addExample(submenu, "Custom Plot Symbols", "Custom_Plot_Symbols_.ijm");
+		addExample(submenu, "Histograms", "Histograms_.ijm");
+		addExample(submenu, "Bar Charts", "Bar_Charts_.ijm");
+		addExample(submenu, "Shapes", "Plot_Shapes_.ijm");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		

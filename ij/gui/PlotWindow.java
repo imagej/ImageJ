@@ -550,6 +550,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	/** Shows the data of the backing plot in a Textwindow with columns */
 	void showList(){
 		ResultsTable rt = plot.getResultsTable(saveXValues);
+		if (rt==null) return;
 		rt.show("Plot Values");
 		if (autoClose) {
 			imp.changes=false;

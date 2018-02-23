@@ -2441,7 +2441,8 @@ public class Plot implements Cloneable {
 						ip.setColor(plotObject.color2);
 						ip.setLineWidth(1);
 						for (int i=0; i<Math.min(plotObject.xValues.length, plotObject.yValues.length); i++)
-							if ((!logXAxis || plotObject.xValues[i]>0) && (!logYAxis || plotObject.yValues[i]>0))
+							if ((!logXAxis || plotObject.xValues[i]>0) && (!logYAxis || plotObject.yValues[i]>0)
+							&& !Double.isNaN(plotObject.xValues[i]) && !Double.isNaN(plotObject.yValues[i]))
 								fillShape(plotObject.shape, scaleX(plotObject.xValues[i]), scaleY(plotObject.yValues[i]), markSize);
 						ip.setLineWidth(sc(plotObject.lineWidth));
 					}
@@ -2450,7 +2451,8 @@ public class Plot implements Cloneable {
 					plotObject.pointIndex = 0;
 					Font saveFont = ip.getFont();
 					for (int i=0; i<Math.min(plotObject.xValues.length, plotObject.yValues.length); i++) {
-						if ((!logXAxis || plotObject.xValues[i]>0) && (!logYAxis || plotObject.yValues[i]>0))
+						if ((!logXAxis || plotObject.xValues[i]>0) && (!logYAxis || plotObject.yValues[i]>0)
+						&& !Double.isNaN(plotObject.xValues[i]) && !Double.isNaN(plotObject.yValues[i]))
 							drawShape(plotObject, scaleX(plotObject.xValues[i]), scaleY(plotObject.yValues[i]), markSize);
 					}
 					if (plotObject.shape==CUSTOM)
