@@ -2715,22 +2715,37 @@ public class Plot implements Cloneable {
 				ip.drawDot(x, y); //uses current line width
 				break;
 			case CUSTOM:
-				if (plotObject.macroCode==null || frame==null || x<frame.x || y<frame.y
-				|| x>frame.x+frame.width || y>frame.y+frame.height)
+				if (plotObject.macroCode==null || frame==null)
+				    break;				
+				if (x<frame.x || y<frame.y || x>frame.x+frame.width || y>frame.y+frame.height){
+					plotObject.pointIndex++;
 					break;
+				}
 				ImagePlus imp = new ImagePlus("", ip);
 				WindowManager.setTempCurrentImage(imp);
+				int index = plotObject.pointIndex++;				
 				StringBuilder sb = new StringBuilder(140+plotObject.macroCode.length());
 				sb.append("x="); sb.append(x);
 				sb.append(";y="); sb.append(y);
 				sb.append(";setColor("); sb.append(plotObject.color.getRGB());
 				sb.append(");s="); sb.append(sc(1));
-				sb.append(";i="); sb.append(plotObject.pointIndex++);
-				sb.append(";");
+				sb.append(";i="); sb.append(plotObject.pointIndex);				
+				boolean inRange = index < plotObject.xValues.length && index < plotObject.yValues.length;
+				double xVal =0;//when the symbol is needed for the legend, index is beyond range
+				double yVal =0;
+				if (inRange ){
+				    xVal= plotObject.xValues[index];	
+				    yVal= plotObject.yValues[index];	
+				}
+				sb.append(";xval=" + xVal);
+				sb.append(";yval=" + yVal);
+				sb.append(";");				
 				sb.append(plotObject.macroCode);
-				String rtn = IJ.runMacro(sb.toString());
-				if ("[aborted]".equals(rtn))
+				if (inRange ||!sb.toString().contains("d2s") ){//a graphical symbol won't contain "d2s" ..
+				    String rtn = IJ.runMacro(sb.toString());//.. so it can go to the legend
+				    if ("[aborted]".equals(rtn))
 					plotObject.macroCode = null;
+				}				
 				WindowManager.setTempCurrentImage(null);
 				break;
 			default: // CIRCLE, CONNECTED_CIRCLES: 5x5 oval approximated by 5x5 square without corners
