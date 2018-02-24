@@ -2729,13 +2729,13 @@ public class Plot implements Cloneable {
 				sb.append(";y="); sb.append(y);
 				sb.append(";setColor("); sb.append(plotObject.color.getRGB());
 				sb.append(");s="); sb.append(sc(1));
-				sb.append(";i="); sb.append(plotObject.pointIndex);				
+				sb.append(";i="); sb.append(index);				
 				boolean inRange = index < plotObject.xValues.length && index < plotObject.yValues.length;
 				double xVal =0;//when the symbol is needed for the legend, index is beyond range
 				double yVal =0;
-				if (inRange ){
-				    xVal= plotObject.xValues[index];	
-				    yVal= plotObject.yValues[index];	
+				if (inRange) {
+				    xVal = plotObject.xValues[index];	
+				    yVal = plotObject.yValues[index];	
 				}
 				sb.append(";xval=" + xVal);
 				sb.append(";yval=" + yVal);
