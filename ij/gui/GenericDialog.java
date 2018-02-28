@@ -58,7 +58,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private Hashtable labels;
 	private boolean macro;
 	private String macroOptions;
-	private boolean addNextToSameRow;
+	private boolean addToSameRow;
 	private int topInset, leftInset, bottomInset;
     private boolean customInsets;
     private Vector sliderIndexes;
@@ -140,9 +140,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
    		if (label2.indexOf('_')!=-1)
    			label2 = label2.replace('_', ' ');
 		Label theLabel = makeLabel(label2);
-		if (addNextToSameRow) {
+		if (addToSameRow) {
 			c.gridx = GridBagConstraints.RELATIVE;
-			addNextToSameRow = false;
+			c.insets.left = 10;
 		} else {
 			c.gridx = 0; c.gridy++;
 			if (firstNumericField)
@@ -152,7 +152,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;
+		//IJ.log("x="+c.gridx+", y= "+c.gridy+", width="+c.gridwidth+", ancher= "+c.anchor+" "+c.insets);
 		add(theLabel, c);
+		if (addToSameRow) {
+			c.insets.left = 0;
+			addToSameRow = false;
+		}
 		if (numberField==null) {
 			numberField = new Vector(5);
 			defaultValues = new Vector(5);
@@ -217,7 +222,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	/** Adds a text field.
 	* @param label			the label
 	* @param defaultText		text initially displayed
-	* @param columns			width of the text field. If columns is 30 or more, additional items may be added to this line with addNextToSameRow()
+	* @param columns			width of the text field. If columns is 8 or more, additional items may be added to this line with addToSameRow()
 	*/
 	public void addStringField(String label, String defaultText, int columns) {
    		String label2 = label;
@@ -225,9 +230,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
    			label2 = label2.replace('_', ' ');
 		Label theLabel = makeLabel(label2);
 		boolean custom = customInsets;
-		if (addNextToSameRow) {
+		if (addToSameRow) {
 			c.gridx = GridBagConstraints.RELATIVE;
-			addNextToSameRow = false;
+			addToSameRow = false;
 		} else {
 			c.gridx = 0; c.gridy++;
 			if (stringField==null)
@@ -253,7 +258,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		tf.addKeyListener(this);
 		c.gridx = GridBagConstraints.RELATIVE;
 		c.anchor = GridBagConstraints.WEST;
-        c.gridwidth = columns < 30 ? 1 : GridBagConstraints.REMAINDER;
+        c.gridwidth = columns < 8 ? 1 : GridBagConstraints.REMAINDER;
 		c.insets.left = 0;
 		tf.setEditable(true);
 		add(tf, c);
@@ -284,10 +289,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     	String label2 = label;
    		if (label2.indexOf('_')!=-1)
    			label2 = label2.replace('_', ' ');
-		if (addNextToSameRow) {
+		if (addToSameRow) {
 			c.gridx = GridBagConstraints.RELATIVE;
 			c.insets.left = 10;
-			addNextToSameRow = false;
+			addToSameRow = false;
 		} else {
 			c.gridx = 0; c.gridy++;
 			if (checkbox==null)
@@ -304,7 +309,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		cb.addItemListener(this);
 		cb.addKeyListener(this);
 		add(cb, c);
-        c.insets.left = 0;      // insets will be kept if addNextToSameRow
+		c.insets.left = 0;
 		checkbox.addElement(cb);
         if (!isPreview &&(Recorder.record || macro)) //preview checkbox is not recordable
 			saveLabel(cb, label);
@@ -425,7 +430,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.anchor = GridBagConstraints.WEST;
 		c.insets = getInsets(10, 0, 0, 0);
-		addNextToSameRow = false;
+		addToSameRow = false;
 		add(panel, c);
     }
 
@@ -437,7 +442,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	* @param defaultItem		button initially selected
 	*/
     public void addRadioButtonGroup(String label, String[] items, int rows, int columns, String defaultItem) {
-		addNextToSameRow = false;
+		addToSameRow = false;
     	Panel panel = new Panel();
     	int n = items.length;
      	panel.setLayout(new GridLayout(rows, columns, 0, 0));
@@ -479,9 +484,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
    		if (label2.indexOf('_')!=-1)
    			label2 = label2.replace('_', ' ');
 		Label theLabel = makeLabel(label2);
-		if (addNextToSameRow) {
+		if (addToSameRow) {
 			c.gridx = GridBagConstraints.RELATIVE;
-			addNextToSameRow = false;
+			addToSameRow = false;
 		} else {
 			c.gridx = 0; c.gridy++;
 			if (choice==null)
@@ -534,10 +539,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			theLabel = new MultiLineLabel(text);
 		else
 			theLabel = new Label(text);
-		//theLabel.addKeyListener(this);
-		if (addNextToSameRow) {
+		if (addToSameRow) {
 			c.gridx = GridBagConstraints.RELATIVE;
-			addNextToSameRow = false;
+			addToSameRow = false;
 		} else {
 			c.gridx = 0; c.gridy++;
 			c.insets = getInsets("".equals(text)?0:10, 20, 0, 0); // top, left, bottom, right
@@ -578,7 +582,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.anchor = GridBagConstraints.WEST;
 		c.insets = getInsets(15, 20, 0, 0);
-        addNextToSameRow = false;
+        addToSameRow = false;
 		add(panel, c);
     }
 
@@ -608,10 +612,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
    		if (label2.indexOf('_')!=-1)
    			label2 = label2.replace('_', ' ');
 		Label theLabel = makeLabel(label2);
-		if (addNextToSameRow) {
+		if (addToSameRow) {
 			c.gridx = GridBagConstraints.RELATIVE;
 			c.insets.bottom += 3;
-			addNextToSameRow = false;
+			addToSameRow = false;
 		} else {
 			c.gridx = 0; c.gridy++;
 			c.insets = getInsets(0, 0, 3, 0); // top, left, bottom, right
@@ -679,16 +683,16 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
     /** Adds a Panel to the dialog. */
     public void addPanel(Panel panel) {
-    	addPanel(panel, GridBagConstraints.WEST, addNextToSameRow ? c.insets : getInsets(5,0,0,0));
+    	addPanel(panel, GridBagConstraints.WEST, addToSameRow ? c.insets : getInsets(5,0,0,0));
     }
 
     /** Adds a Panel to the dialog with custom contraint and insets. The
     	defaults are GridBagConstraints.WEST (left justified) and
     	"new Insets(5, 0, 0, 0)" (5 pixels of padding at the top). */
     public void addPanel(Panel panel, int constraints, Insets insets) {
-		if (addNextToSameRow) {
+		if (addToSameRow) {
 			c.gridx = GridBagConstraints.RELATIVE;
-			addNextToSameRow = false;
+			addToSameRow = false;
 		} else {
 			c.gridx = 0; c.gridy++;
 		}
@@ -710,7 +714,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
     /** Set the insets (margins), in pixels, that will be
     	used for the next component added to the dialog
-        (except components added to the same line with addNextToSameRow)
+        (except components added to the same row with addToSameRow)
     <pre>
     Default insets:
         addMessage: 0,20,0 (empty string) or 10,20,0
@@ -734,10 +738,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
      *  addMessage, addPanel, and before the showDialog() method
      *  (in the latter case, the buttons appear to the right of the previous item).
      *  Note that addMessage uses the remaining width, so it must be the last item of a row.
-     *  Must not be used after addStringField with 30 or more columns width.
+     *  Must not be used after addStringField unless its field width is below 8 columns.
      */
-    public void addNextToSameRow() {
-        addNextToSameRow = true;
+    public void addToSameRow() {
+        addToSameRow = true;
     }
 
     /** Sets a replacement label for the "OK" button. */
@@ -1166,15 +1170,16 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				if (!hideCancelButton) buttons.add(cancel);
 				buttons.add(okay);
 			}
-			if (addNextToSameRow) {
+			if (addToSameRow) {
 				c.gridx = GridBagConstraints.RELATIVE;
 			} else {
 				c.gridx = 0; c.gridy++;
 			}
 
 			c.anchor = GridBagConstraints.EAST;
-			c.gridwidth = 2;
+			c.gridwidth = GridBagConstraints.REMAINDER;
 			c.insets = new Insets(15, 0, 0, 0);
+
 			add(buttons, c);
 			if (IJ.isMacOSX()&&IJ.isJava18())
 				instance = this;

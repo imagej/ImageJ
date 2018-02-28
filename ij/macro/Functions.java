@@ -3015,8 +3015,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (pattern != null) {//Norbert
 			WildcardMatch wm = new WildcardMatch();
 			wm.setCaseSensitive(false);
-			//Frame frontWindow = WindowManager.getFrontWindow();
-			String otherStr = "\\\\Others";
+			String otherStr = "\\Others";
 			boolean others = pattern.equals(otherStr);
 			boolean hasWildcard = pattern.contains("*") || pattern.contains("?");
 			if (!others) {
@@ -3752,9 +3751,9 @@ public class Functions implements MacroConstants, Measurements {
 				gd.addChoice(prompt, choices, defaultChoice);
 			} else if (name.equals("setInsets")) {
 				gd.setInsets((int)getFirstArg(), (int)getNextArg(), (int)getLastArg());
-			} else if (name.equals("addNextToSameRow")) {
+			} else if (name.equals("addToSameRow")) {
 				interp.getParens();
-				gd.addNextToSameRow();
+				gd.addToSameRow();
 			} else if (name.equals("setLocation")) {
 				gd.setLocation((int)getFirstArg(), (int)getLastArg());
 			} else if (name.equals("show")) {

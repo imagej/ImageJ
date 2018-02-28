@@ -5,13 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.51v 24 February 2018</u>
+<li> <u>1.51v 27 February 2018</u>
 <ul>
 <li> Thanks to Norbert Vischer, extended the Plot class to make it
 relatively simple to draw the x and y values on plots. For examples, 
 refer to <i>Custom Plot Symbols</i> and <i>Bar Charts</i> in
 the <i>Help&gt;Examples&gt;Plots menu</i>.
-<li> Thanks to Michael Schmid, added the Dialog.addNextToSameRow()
+<li> Thanks to Michael Schmid, added the Dialog.addToSameRow()
 macro function, which makes the next item added to a GenericDialog
 appear on the same row as the previous item
 (<a href="macros/DialogDemo2.txt">example</a>).
@@ -25,6 +25,8 @@ similar to newArray(a.length) to always return 1.
 <li> Thanks to Rob Lees, fixed a 1.51u regression that caused
 the close(pattern) macro function to close the ROI Manager if
 'pattern' did not have a wildcard.
+<li> Thanks to Norbert Vischer, fixed a 1.51u regression that caused
+the close("\\Others") to not work.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

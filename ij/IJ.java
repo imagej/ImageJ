@@ -2015,8 +2015,8 @@ public class IJ {
 			options = NewImage.FILL_BLACK;
 		else if (type.contains("ramp"))
 			options = NewImage.FILL_RAMP;
-		else if (type.contains("random"))
-			options = NewImage.FILL_RANDOM;
+		else if (type.contains("noise") || type.contains("random"))
+			options = NewImage.FILL_NOISE;
 		options += NewImage.CHECK_AVAILABLE_MEMORY;
 		return NewImage.createImage(title, width, height, depth, bitDepth, options);
 	}
