@@ -650,6 +650,27 @@ public class Plot implements Cloneable {
 		return defaultFlags;
 	}
 
+	/** Adds a curve, set of points or error bars to this plot, where 'shape' is
+		"line", "filled", "bars, "circles", "boxes", "triangles", "crosses", "dots",
+		"diamonds", "x" or "connected". */
+	public void add(String shape, double[] xvalues, double[] yvalues) {
+		int iShape = toShape(shape);
+		addPoints(Tools.toFloat(xvalues), Tools.toFloat(yvalues), null, iShape, iShape==CUSTOM?shape.substring(5, shape.length()):null);
+	}
+
+	/** Adds a curve, set of points or error bars to this plot, where 'shape' is
+		"line", "filled", "bars, "circles", "boxes", "triangles", "crosses", "dots",
+		"diamonds", "x", "connected", "error bars" or "xerror bars". */
+	public void add(String shape, double[] yvalues) {
+		int iShape = toShape(shape);
+		if (iShape==-1)
+			addErrorBars(yvalues);
+		else if (iShape==-2)
+			addHorizontalErrorBars(yvalues);
+		else
+			addPoints(null, Tools.toFloat(yvalues), null, iShape, iShape==CUSTOM?shape.substring(5, shape.length()):null);
+	}
+
 	/** Adds a set of points to the plot or adds a curve if shape is set to LINE.
 	 * @param xValues	the x coordinates, or null. If null, integers starting at 0 will be used for x.
 	 * @param yValues	the y coordinates (must not be null)
@@ -684,11 +705,6 @@ public class Plot implements Cloneable {
 	/** This a version of addPoints that works with JavaScript. */
 	public void addPoints(String dummy, float[] x, float[] y, int shape) {
 		addPoints(x, y, shape);
-	}
-
-	public void add(String shape, double[] x, double[] y) {
-		int iShape = toShape(shape);
-		addPoints(Tools.toFloat(x), Tools.toFloat(y), null, iShape, iShape==CUSTOM?shape.substring(5, shape.length()):null);
 	}
 
 	/** Returns the number for a given plot symbol shape, -1 for xError and -2 for yError (all case-insensitive) */

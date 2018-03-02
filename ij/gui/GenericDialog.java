@@ -201,14 +201,27 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		return new Label(label);
     }
 
+	/** Saves the label for given component, for macro recording and for accessing the component in macros. */
     private void saveLabel(Object component, String label) {
     	if (labels==null)
     		labels = new Hashtable();
-    	if (label.length()>0) {
-    		if (label.charAt(0)==' ')
-    			label = label.trim();
-			labels.put(component, label);
-		}
+    	if (label.length()>0)
+    		label = Macro.trimKey(label.trim());
+    	if (hasLabel(label)) {                      // not a unique label?
+    		label += "_0";
+    		for (int n=1; hasLabel(label); n++) {   // while still not a unique label
+    			label = label.substring(0, label.lastIndexOf('_')); //remove counter
+    			label += "_"+n;
+    		}
+    	}
+		labels.put(component, label);
+    }
+
+	/** Returns whether the list of labels for macro recording or macro creation contains a given label. */
+    private boolean hasLabel(String label) {
+    	for (Object o : labels.keySet())
+    		if (labels.get(o).equals(label)) return true;
+    	return false;
     }
 
 	/** Adds an 8 column text field.
