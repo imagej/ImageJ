@@ -623,7 +623,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		Overlay o = showAllOverlay;
 		if (o==null)
 			o = overlay;
-		if (o==null || !o.getDrawLabels() || labelRects==null)
+		if (o==null || !o.isSelectable() || !o.getDrawLabels() || labelRects==null)
 			return false;
 		for (int i=o.size()-1; i>=0; i--) {
 			if (labelRects!=null&&labelRects[i]!=null&&labelRects[i].contains(sx,sy)) {
@@ -1541,7 +1541,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		Overlay o = showAllOverlay;
 		if (o==null)
 			o = overlay;
-		if (o==null)
+		if (o==null || !o.isSelectable())
 			return false;
 		boolean roiManagerShowAllMode = o==showAllOverlay && !Prefs.showAllSliceOnly;
 		boolean labels = o.getDrawLabels();

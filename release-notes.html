@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.51v 1 March 2018</u>
+<li> <u>1.51v 4 March 2018</u>
 <ul>
 <li> Thanks to Norbert Vischer, extended the Plot class to make it
 relatively simple to draw the x and y values on plots. For examples, 
@@ -15,6 +15,9 @@ the <i>Help&gt;Examples&gt;Plots menu</i>.
 macro function, which makes the next item added to a GenericDialog
 appear on the same row as the previous item
 (<a href="http://wsr.imagej.net/macros/DialogDemo2.txt">example</a>).
+<li> Thanks to Salim Kanoun, added the Overlay.selectable(boolean)
+method which can be use to make an overlay non-selectable
+(<a href="http://wsr.imagej.net/macros/NonSelectableOverlay.js">example</a>).
 <li> Thanks to Michael Schmid, the GenericDialog class automatically 
 generates unique labels for macro recording.
 <li> Thanks to Michael Schmid, on Linux, the "OK" button in 
@@ -29,6 +32,8 @@ the close(pattern) macro function to close the ROI Manager if
 'pattern' did not have a wildcard.
 <li> Thanks to Norbert Vischer, fixed a 1.51u regression that caused
 the close("\\Others") to not work.
+<li> Thanks to Rob Lees, fixed a 1.51s regression that caused multi-point
+deletion with “Show all” enabled to not function correctly.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>

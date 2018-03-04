@@ -6034,6 +6034,8 @@ public class Functions implements MacroConstants, Measurements {
 			return showOverlay(imp);
 		else if (name.equals("hide"))
 			return hideOverlay(imp);
+		else if (name.equals("selectable")) 
+			return overlaySelectable(imp);
 		else if (name.equals("remove"))
 			return removeOverlay(imp);
 		else if (name.equals("clear"))
@@ -6308,6 +6310,14 @@ public class Functions implements MacroConstants, Measurements {
 	double hideOverlay(ImagePlus imp) {
 		interp.getParens();
 		imp.setHideOverlay(true);
+		return Double.NaN;
+	}
+
+	double overlaySelectable(ImagePlus imp) {
+		boolean selectable = getBooleanArg();
+		Overlay overlay = imp.getOverlay();
+		if (overlay!=null)
+			overlay.selectable(selectable);
 		return Double.NaN;
 	}
 

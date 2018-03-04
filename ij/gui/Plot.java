@@ -221,7 +221,7 @@ public class Plot implements Cloneable {
 		this(title, xLabel, yLabel, xValues!=null?Tools.toFloat(xValues):null, yValues!=null?Tools.toFloat(yValues):null, getDefaultFlags());
 	}
 
-	/** This is a constructor that works with JavaScript. */
+	/* Obsolete, replaced by new Plot(title,xLabel,yLabel); add(shape,x,y);. */
 	public Plot(String dummy, String title, String xLabel, String yLabel, float[] xValues, float[] yValues) {
 		this(title, xLabel, yLabel, xValues, yValues, getDefaultFlags());
 	}
@@ -650,9 +650,9 @@ public class Plot implements Cloneable {
 		return defaultFlags;
 	}
 
-	/** Adds a curve, set of points or error bars to this plot, where 'shape' is
-		"line", "filled", "bars, "circles", "boxes", "triangles", "crosses", "dots",
-		"diamonds", "x" or "connected". */
+	/** Adds a curve or set of points to this plot, where 'shape' is
+		"line", "filled", "bars, "circles", "boxes", "triangles", "crosses",
+		 "dots", "diamonds", "x" or "connected". */
 	public void add(String shape, double[] xvalues, double[] yvalues) {
 		int iShape = toShape(shape);
 		addPoints(Tools.toFloat(xvalues), Tools.toFloat(yvalues), null, iShape, iShape==CUSTOM?shape.substring(5, shape.length()):null);
@@ -700,11 +700,6 @@ public class Plot implements Cloneable {
 	/** Adds a set of points to the plot using double arrays. */
 	public void addPoints(double[] x, double[] y, int shape) {
 		addPoints(Tools.toFloat(x), Tools.toFloat(y), shape);
-	}
-
-	/** This a version of addPoints that works with JavaScript. */
-	public void addPoints(String dummy, float[] x, float[] y, int shape) {
-		addPoints(x, y, shape);
 	}
 
 	/** Returns the number for a given plot symbol shape, -1 for xError and -2 for yError (all case-insensitive) */
@@ -814,11 +809,6 @@ public class Plot implements Cloneable {
 	/** Adds vertical error bars to the last data passed to the plot (via the constructor or addPoints). */
 	public void addErrorBars(double[] errorBars) {
 		addErrorBars(Tools.toFloat(errorBars));
-	}
-
-	/** This is a version of addErrorBars that works with JavaScript. */
-	public void addErrorBars(String dummy, float[] errorBars) {
-		addErrorBars(errorBars);
 	}
 
 	/** Adds horizontal error bars to the last data passed to the plot (via the constructor or addPoints). */
@@ -1034,11 +1024,6 @@ public class Plot implements Cloneable {
 	/** Determines whether to use antialiased text (default true) */
 	public void setAntialiasedText(boolean antialiasedText) {
 		pp.antialiasedText = antialiasedText;
-	}
-
-	/** Obsolete; replaced by setFont(). */
-	public void changeFont(Font font) {
-		setFont(font);
 	}
 
 	/** Gets the font for xLabel ('x'), yLabel('y'), numbers ('f' for 'frame') or the legend ('l').
@@ -3333,6 +3318,22 @@ public class Plot implements Cloneable {
 	boolean hasFlag(int what) {
 		return (pp.axisFlags&what) != 0;
 	}
+	
+	/* Obsolete, replaced by add(shape,x,y). */
+	public void addPoints(String dummy, float[] x, float[] y, int shape) {
+		addPoints(x, y, shape);
+	}
+	
+	/* Obsolete, replaced by add("error bars",errorBars). */
+	public void addErrorBars(String dummy, float[] errorBars) {
+		addErrorBars(errorBars);
+	}
+	
+	/* Obsolete; replaced by setFont(). */
+	public void changeFont(Font font) {
+		setFont(font);
+	}
+
 }
 
 /** This class contains the properties of the plot, such as size, format, range, etc, except for the data+format (plot contents) */
@@ -3376,7 +3377,7 @@ class PlotProperties implements Cloneable, Serializable {
 		}
 	}
 
-}
+} // class PlotProperties
 
 /** This class contains the data and properties for displaying a curve, a set of arrows, a line or a label in a plot,
  *	as well as the legend, axis labels, and frame (including background and fonts of axis numbering).
@@ -3580,4 +3581,5 @@ class PlotObject implements Cloneable, Serializable {
 			return null;
 		}
 	}
-}
+	
+} // class PlotObject 

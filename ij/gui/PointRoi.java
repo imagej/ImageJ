@@ -743,6 +743,8 @@ public class PointRoi extends PolygonRoi {
 		int index = -1;
 		double distance = Double.MAX_VALUE;
 		int slice = imp!=null&&positions!=null&&imp.getStackSize()>1?imp.getCurrentSlice():0;
+		if (Prefs.showAllPoints)
+			slice = 0;
 		for (int i=0; i<points.npoints; i++) {
 			double dx = points.xpoints[i] - x;
 			double dy = points.ypoints[i] - y;
