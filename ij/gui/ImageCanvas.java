@@ -312,6 +312,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		else
 			labelRects = null;
 		font = overlay.getLabelFont();
+		if (overlay.scalableLabels() && font!=null) {
+			double mag = getMagnification();
+			if (mag!=1.0)
+				font = font.deriveFont((float)(font.getSize()*mag));
+		}
 		Roi activeRoi = imp.getRoi();
 		boolean roiManagerShowAllMode = overlay==showAllOverlay && !Prefs.showAllSliceOnly;
 		for (int i=0; i<n; i++) {

@@ -15,6 +15,7 @@ public class Overlay {
     private boolean drawBackgrounds;
     private Color labelColor;
     private Font labelFont;
+    private boolean scalableLabels;
     private boolean isCalibrationBar;
     private boolean selectable = true;
     
@@ -325,12 +326,15 @@ public class Overlay {
     }
 
     public void setLabelFont(Font font) {
-    	labelFont = font;
+    	setLabelFont(font, false);
     }
     
+    public void setLabelFont(Font font, boolean scalable) {
+    	labelFont = font;
+    	scalableLabels = scalable;
+    }
+
     public Font getLabelFont() {
-    	//if (labelFont==null && labelFontSize!=0)
-    	//	labelFont = new Font("SansSerif", Font.PLAIN, labelFontSize);
     	return labelFont;
     }
 
@@ -356,6 +360,10 @@ public class Overlay {
 		by clicking on their labels or by a long press. */ 
 	public boolean isSelectable() {
 		return selectable;
+	}
+	
+ 	public boolean scalableLabels() {
+		return scalableLabels;
 	}
 
 }
