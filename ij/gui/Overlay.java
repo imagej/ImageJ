@@ -332,6 +332,7 @@ public class Overlay {
     public void setLabelFont(Font font, boolean scalable) {
     	labelFont = font;
     	scalableLabels = scalable;
+    	drawLabels(true);
     }
 
     public Font getLabelFont() {

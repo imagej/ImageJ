@@ -259,7 +259,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 	
 	// run the plugin using a new class loader
 	void runPlugin(String name) {
-		name = name.substring(0,name.length()-5); // remove ".java"
+		name = name.substring(0,name.length()-5); // remove ".java" or ".clas"
 		new PlugInExecuter(name);
 	}
 	
@@ -315,7 +315,7 @@ class PlugInExecuter implements Runnable {
 	}
 	
 	void runCompiledPlugin(String className) {
-		if (IJ.debugMode) IJ.log("Compiler: running "+className);
+		if (IJ.debugMode) IJ.log("Compiler: running \""+className+"\"");
 		IJ.resetClassLoader();
 		ClassLoader loader = IJ.getClassLoader();
 		Object thePlugIn = null;
@@ -332,11 +332,22 @@ class PlugInExecuter implements Runnable {
 		}
 		catch (NoClassDefFoundError e) {
 			String err = e.getMessage();
+			if (IJ.debugMode) IJ.log("NoClassDefFoundError: "+err);
 			int index = err!=null?err.indexOf("wrong name: "):-1;
 			if (index>-1 && !className.contains(".")) {
 				String className2 = err.substring(index+12, err.length()-1);
 				className2 = className2.replace("/", ".");
-				runCompiledPlugin(className2);
+				if (className2.equals(className)) { // Java 9 error format different
+					int spaceIndex = err.indexOf(" ");
+					if (spaceIndex>-1) {
+						className2 = err.substring(0, spaceIndex);
+						className2 = className2.replace("/", ".");
+					}
+				}
+				if (className2.equals(className))
+					IJ.error("Plugin not found: "+className2);
+				else
+					runCompiledPlugin(className2);
 				return;
 			}
 			if (className.indexOf('_')!=-1)
