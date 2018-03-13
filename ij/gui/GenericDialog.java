@@ -1191,10 +1191,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				c.gridx = 0; c.gridy++;
 			}
 			c.anchor = GridBagConstraints.EAST;
-			if (addToSameRowCalled)
-				c.gridwidth = GridBagConstraints.REMAINDER;
-			else
-				c.gridwidth = 2;
+			c.gridwidth = addToSameRowCalled?GridBagConstraints.REMAINDER:2;
 			c.insets = new Insets(15, 0, 0, 0);
 			add(buttons, c);
 			if (IJ.isMacOSX()&&IJ.isJava18())
