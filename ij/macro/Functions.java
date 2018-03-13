@@ -4386,6 +4386,8 @@ public class Functions implements MacroConstants, Measurements {
 			BatchProcessor.saveOutput(state);
 		else if (arg1.startsWith("converttomicrons"))
 			Prefs.convertToMicrons = state;
+		else if (arg1.equals("inverty"))
+			getImage().getCalibration().setInvertY(state);
 		else
 			interp.error("Invalid option");
 	}
@@ -4452,7 +4454,7 @@ public class Functions implements MacroConstants, Measurements {
 		arg = arg.toLowerCase(Locale.US);
 		if (arg.equals("locked"))
 			state = getImage().isLocked();
-		else if (arg.indexOf("invert")!=-1)
+		else if (arg.contains("invert") && arg.contains("lut"))
 			state = getImage().isInvertedLut();
 		else if (arg.indexOf("hyper")!=-1)
 			state = getImage().isHyperStack();
@@ -4477,7 +4479,9 @@ public class Functions implements MacroConstants, Measurements {
 		else if (arg.indexOf("animated")!=-1) {
 			ImageWindow win = getImage().getWindow();
 			state = win!=null && (win instanceof StackWindow) && ((StackWindow)win).getAnimate();
-		} else
+		} else if (arg.equals("inverty"))
+			state = getImage().getCalibration().getInvertY();
+		else
 			interp.error("Invalid argument");
 		return state?1.0:0.0;
 	}

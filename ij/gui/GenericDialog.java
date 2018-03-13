@@ -48,8 +48,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private String okLabel = "  OK  ";
 	private String cancelLabel = "Cancel";
 	private String helpLabel = "Help";
-    private boolean wasCanceled, wasOKed;
-    private int nfIndex, sfIndex, cbIndex, choiceIndex, textAreaIndex, radioButtonIndex;
+	private boolean wasCanceled, wasOKed;
+	private int nfIndex, sfIndex, cbIndex, choiceIndex, textAreaIndex, radioButtonIndex;
 	private GridBagConstraints c;
 	private boolean firstNumericField=true;
 	private boolean firstSlider=true;
@@ -59,26 +59,27 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private boolean macro;
 	private String macroOptions;
 	private boolean addToSameRow;
+	private boolean addToSameRowCalled;
 	private int topInset, leftInset, bottomInset;
-    private boolean customInsets;
-    private Vector sliderIndexes;
-    private Vector sliderScales;
-    private Checkbox previewCheckbox;    // the "Preview" Checkbox, if any
-    private Vector dialogListeners;             // the Objects to notify on user input
-    private PlugInFilterRunner pfr;      // the PlugInFilterRunner for automatic preview
-    private String previewLabel = " Preview";
-    private final static String previewRunning = "wait...";
-    private boolean recorderOn;         // whether recording is allowed
-    private boolean yesNoCancel;
-    private char echoChar;
-    private boolean hideCancelButton;
-    private boolean centerDialog = true;
-    private String helpURL;
-    private String yesLabel, noLabel;
-    private boolean smartRecording;
-    private Vector imagePanels;
-    private static GenericDialog instance;
-    private boolean firstPaint = true;
+	private boolean customInsets;
+	private Vector sliderIndexes;
+	private Vector sliderScales;
+	private Checkbox previewCheckbox;    // the "Preview" Checkbox, if any
+	private Vector dialogListeners;             // the Objects to notify on user input
+	private PlugInFilterRunner pfr;      // the PlugInFilterRunner for automatic preview
+	private String previewLabel = " Preview";
+	private final static String previewRunning = "wait...";
+	private boolean recorderOn;         // whether recording is allowed
+	private boolean yesNoCancel;
+	private char echoChar;
+	private boolean hideCancelButton;
+	private boolean centerDialog = true;
+	private String helpURL;
+	private String yesLabel, noLabel;
+	private boolean smartRecording;
+	private Vector imagePanels;
+	private static GenericDialog instance;
+	private boolean firstPaint = true;
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
     	image window as the parent frame or the ImageJ frame if no image windows
@@ -755,6 +756,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
      */
     public void addToSameRow() {
         addToSameRow = true;
+        addToSameRowCalled = true;
     }
 
     /** Sets a replacement label for the "OK" button. */
@@ -1188,11 +1190,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			} else {
 				c.gridx = 0; c.gridy++;
 			}
-
 			c.anchor = GridBagConstraints.EAST;
-			c.gridwidth = GridBagConstraints.REMAINDER;
+			if (addToSameRowCalled)
+				c.gridwidth = GridBagConstraints.REMAINDER;
+			else
+				c.gridwidth = 2;
 			c.insets = new Insets(15, 0, 0, 0);
-
 			add(buttons, c);
 			if (IJ.isMacOSX()&&IJ.isJava18())
 				instance = this;

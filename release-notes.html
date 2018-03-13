@@ -5,40 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.51v 9 March 2018</u>
+<li> <u>1.52a 12 March 2018</u>
 <ul>
-<li> Thanks to Norbert Vischer, extended the Plot class to make it
-relatively simple to draw the x and y values on plots. For examples, 
-refer to <i>Custom Plot Symbols</i> and <i>Bar Charts</i> in
-the <i>Help&gt;Examples&gt;Plots menu</i>.
-<li> Thanks to Michael Schmid, added the Dialog.addToSameRow()
-macro function, which makes the next item added to a GenericDialog
-appear on the same row as the previous item
-(<a href="http://wsr.imagej.net/macros/DialogDemo2.txt">example</a>).
-<li> Thanks to Salim Kanoun, added the Overlay.selectable(boolean)
-method which can be used to make an overlay non-selectable
-(<a href="http://wsr.imagej.net/macros/NonSelectableOverlay.js">example</a>).
-<li> Thanks to Salim Kanoun, added the Overlay.setLabelFont(font,true)
-method, which causes labels in overlays to scale as the image is zoomed.
-<li> Thanks to Michael Schmid, the GenericDialog class automatically 
-generates unique labels for macro recording.
-<li> Thanks to Michael Schmid, on Linux, the "OK" button in 
-GenericDialogs is now on the right, as it is on Macs.
-<li> Added a setFontSize() method to the MontageMaker class.
-<li> Thanks to Michael Schmid, fixed a bug that caused symbols in plots to be
-drawn at the left or bottom border if there was a NaN value.
-<li> Thanks to Wilhelm Burger, fixed a bug on Java 9 that caused
-<i>Plugins&gt;Compile and Run</i> to not work with .class files
-not in the default package.
-<li> Thanks to Jerome Mutterer, fixed a 1.51u regression that caused macro calls
-similar to newArray(a.length) to always return 1.
-<li> Thanks to Rob Lees, fixed a 1.51u regression that caused
-the close(pattern) macro function to close the ROI Manager if
-'pattern' did not have a wildcard.
-<li> Thanks to Norbert Vischer, fixed a 1.51u regression that caused
-the close("\\Others") to not work.
-<li> Thanks to Rob Lees, fixed a 1.51s regression that caused multi-point
-deletion with “Show all” enabled to not function correctly.
+<li> Thanks to Stein Rorvik, added the setOption("InvertY",boolean) and
+is("InvertY”) macro functions.
 </ul>
 
 <a href="http://imagej.nih.gov/ij">Home</a>
