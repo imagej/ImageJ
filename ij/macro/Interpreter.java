@@ -1966,6 +1966,7 @@ public class Interpreter implements MacroConstants {
         return pgm.lineNumbers[pc];
     }
 
+	/** Returns the names of all variables and functions with human-readable annotations */
 	public String[] getVariables() {
 		int nImages = WindowManager.getImageCount();
 		if (nImages>0) showDebugFunctions = true;
@@ -1993,6 +1994,14 @@ public class Interpreter implements MacroConstants {
 		return variables;
 	}
 	
+	/** Returns the names of all variables, without any annotation */
+	public String[] getVariableNames() {
+		String[] variables = new String[topOfStack+1];
+		for (int i=0; i<=topOfStack; i++)
+			variables[i] = pgm.table[stack[i].symTabIndex].str;
+		return variables;
+	}
+
 	// Returns 'true' if this macro has finished or if it was aborted. */
 	public boolean done() {
 		return done;

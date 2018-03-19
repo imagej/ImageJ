@@ -6,6 +6,7 @@ import ij.process.*;
 import ij.gui.Roi;
 import ij.util.Tools;
 import ij.io.*;
+import ij.macro.*;
 import java.awt.*;
 import java.text.*;
 import java.util.*;
@@ -65,13 +66,24 @@ public class ResultsTable implements Cloneable {
 		and the precision set to 3 or the "Decimal places" value in
 		Analyze/Set Measurements if that value is higher than 3. */
 	public ResultsTable() {
+		init();
+	} 
+	
+	/** Constructs a ResultsTable with 'nRows' rows. */
+	public ResultsTable(Integer nRows) {
+		init();
+		for (int i=0; i<nRows; i++)
+			incrementCounter();
+	} 
+	
+	private void init() {
 		int p = Analyzer.getPrecision();
 		if (p>precision)
 			precision = (short)p;
 		for (int i=0; i<decimalPlaces.length; i++)
 			decimalPlaces[i] = AUTO_FORMAT;
-	} 
-	
+	}
+
 	/** Returns the ResultsTable used by the Measure command. This
 		table must be displayed in the "Results" window. */
 	public static ResultsTable getResultsTable() {
@@ -1131,6 +1143,103 @@ public class ResultsTable implements Cloneable {
 		return ("ctr="+counter+", hdr="+getColumnHeadings());
 	}
 	
+	/** Applies a macro to each row of the table; the columns are assigned variable names
+	 *  as given by getHeadingsAsVaribleNames(). New variables starting with an uppercase letter
+	 *  create a new column with this name.
+	 *  There is also a variable 'rowNumber' available.
+	 *  @return false in case of a macro error */
+	public boolean applyMacro(String macro) {
+	    String[] columnNames = getHeadingsAsVariableNames();
+		Program pgm = (new Tokenizer()).tokenize(macro);
+		StringBuilder sb = new StringBuilder(1000);
+		sb.append("var ");
+		for (int i=0; i<columnNames.length; i++) {
+			sb.append(columnNames[i]);
+			sb.append(',');
+		}
+		sb.append("rowNumber;\n");
+		sb.append("function dummy() {}\n");
+		sb.append(macro);
+		sb.append(";\n");
+		String code = sb.toString();
+		int PCStart = 9+2*columnNames.length;       // 'macro' code starts at this token number
+		Interpreter interp = new Interpreter();
+		interp.run(code, null);                     // first test run
+		if (interp.wasError())
+			return false;
+		boolean[] columnInUse = new boolean[columnNames.length];
+		ArrayList<String> newColumnList = new ArrayList<String>();
+		String[] variables = interp.getVariableNames();
+		for (String variable:variables) {           // check for variables that make a new Column
+			int columnIndex = indexOf(columnNames, variable);
+			if (columnIndex >= 0)
+				columnInUse[columnIndex] = true;    // variable is a know column
+			else if (Character.isUpperCase(variable.charAt(0))) {
+				getFreeColumn(variable);            // create new column
+				newColumnList.add(variable);
+			}
+		}
+		String[] newColumns = newColumnList.toArray(new String[0]);
+		int[] newColumnIndex = new int[newColumns.length];
+		for (int i=0; i<newColumns.length; i++)
+		    newColumnIndex[i] = getColumnIndex(newColumns[i]);
+		for (int row=0; row<counter; row++) {       // apply macro to each row
+			for (int col=0; col<columnNames.length; col++) {
+				if (columnInUse[col]) {
+				    double v = getValueAsDouble(col, row);
+					interp.setVariable(columnNames[col], v);
+				}
+			}
+			interp.setVariable("rowNumber", row);
+			interp.run(PCStart);
+			if (interp.wasError())
+				return false;
+			for (int col=0; col<columnNames.length; col++) {
+				if (columnInUse[col]) {
+					double v = interp.getVariable(columnNames[col]);
+					setValue(col, row, v);
+				}
+			}
+			for (int i=0; i<newColumns.length; i++) {
+				double v = interp.getVariable(newColumns[i]);
+				setValue(newColumnIndex[i], row, v);
+			}
+		}
+		return true;
+	}
 
+	/** Returns the first index of a given non-null String in a String array, or -1 if not found */
+	private int indexOf(String[] sArray, String s) {
+		for (int i=0; i<sArray.length; i++)
+		    if (s.equals(sArray[i])) return i;
+		return -1;
+	}
+	
+
+	/** Returns the column headings; headings not suitable as variable names are converted
+	 *  to valid variable names by replacing non-fitting characters with underscores and
+	 *  adding underscores. To make unique names, underscores+numbers may be added */
+	public String[] getHeadingsAsVariableNames() {
+		String[] names = getHeadings();
+		for (int i=0; i<names.length; i++) {
+			if (names[i].charAt(0)>='0' && names[i].charAt(0)<='9') // variable must not start with digit
+				names[i] = "_"+names[i];
+			names[i] = names[i].replaceAll("[^A-Za-z0-9_]","_");    // replace unsuitable characters with underscores
+			for (int postfix=0; ; postfix++) {
+				boolean isDuplicate = false;
+				for (int j=0; j<i; j++) {
+					if (names[i].equals(names[j])) {                // check for duplicates
+						isDuplicate = true;
+						break;
+					}
+				}
+				if (!isDuplicate) break;
+				if (postfix > 0)                                    // remove trailing underscore+postfix
+					names[i] = names[i].substring(0, names[i].lastIndexOf('_'));
+				names[i] += "_"+postfix;                            // add underscore+postfix number
+			}
+		}
+		return names;
+	}
 		
 }

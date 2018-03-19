@@ -6371,7 +6371,6 @@ public class Functions implements MacroConstants, Measurements {
 		Plot plot = (Plot)(getImage().getProperty(Plot.PROPERTY_KEY)); //null if not a plot window
 		int height = imp.getHeight();
 		Calibration cal = imp.getCalibration();
-
 		interp.getLeftParen();
 		if (isArrayArg()) {
 			Variable[] x = getArray();
@@ -6385,10 +6384,16 @@ public class Functions implements MacroConstants, Measurements {
 		} else {
 			Variable xv = getVariable();
 			Variable yv = null;
+			Variable zv = null;			
 			boolean twoArgs = interp.nextToken()==',';
 			if (twoArgs) {
 				interp.getComma();
 				yv = getVariable();
+			}
+			boolean threeArgs = interp.nextToken()==',';
+			if (threeArgs) {
+				interp.getComma();
+				zv = getVariable();
 			}
 			interp.getRightParen();
 			double x = xv.getValue();
@@ -6396,6 +6401,8 @@ public class Functions implements MacroConstants, Measurements {
 				double y = yv.getValue();
 				xv.setValue(plot == null ? cal.getX(x) : plot.descaleX((int)(x+0.5)));
 				yv.setValue(plot == null ? cal.getY(y,height) : plot.descaleY((int)(y+0.5)));
+				if (threeArgs)
+					zv.setValue(cal.getZ(zv.getValue()));
 			} else {
 				xv.setValue(plot == null ? x*cal.pixelWidth : plot.descaleX((int)(x+0.5)));
 			}
@@ -6420,10 +6427,16 @@ public class Functions implements MacroConstants, Measurements {
 		} else {
 			Variable xv = getVariable();
 			Variable yv = null;
+			Variable zv = null;			
 			boolean twoArgs = interp.nextToken()==',';
 			if (twoArgs) {
 				interp.getComma();
 				yv = getVariable();
+			}
+			boolean threeArgs = interp.nextToken()==',';
+			if (threeArgs) {
+				interp.getComma();
+				zv = getVariable();
 			}
 			interp.getRightParen();
 			double x = xv.getValue();
@@ -6431,6 +6444,8 @@ public class Functions implements MacroConstants, Measurements {
 				double y = yv.getValue();
 				xv.setValue(plot == null ? cal.getRawX(x) : plot.scaleXtoPxl(x));
 				yv.setValue(plot == null ? cal.getRawY(y,height) : plot.scaleYtoPxl(y));
+				if (threeArgs)
+					zv.setValue(cal.getRawZ(zv.getValue()));
 			} else {
 				xv.setValue(plot == null ? x/cal.pixelWidth : plot.scaleXtoPxl(x));
 			}

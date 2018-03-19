@@ -34,6 +34,8 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 		gd.addCheckbox("Use inverting lookup table", Prefs.useInvertingLut);
 		gd.addCheckbox("Auto contrast stacks (or use shift key)", Prefs.autoContrast);
 		gd.addCheckbox("IJ window always on top", Prefs.alwaysOnTop);
+		if (IJ.isLinux())
+			gd.addCheckbox("Cancel button on right", Prefs.dialogCancelButtonOnRight);
 		gd.addChoice("16-bit range:", ranges, ranges[rangeIndex]);
 		gd.addNumericField("Menu font size:", Menus.getFontSize(), 0, 3, "points");
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#appearance");
@@ -90,6 +92,8 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 		boolean alwaysOnTop = Prefs.alwaysOnTop;
 		Prefs.autoContrast = gd.getNextBoolean();
 		Prefs.alwaysOnTop = gd.getNextBoolean();
+		if (IJ.isLinux())
+			Prefs.dialogCancelButtonOnRight = gd.getNextBoolean();
 		setMenuSize = (int)gd.getNextNumber();
 		if (interpolate!=Prefs.interpolateScaledImages) {
 			Prefs.interpolateScaledImages = interpolate;

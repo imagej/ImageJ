@@ -616,7 +616,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		int digits = 0;
 		double scale = 1.0;
 		if ((maxValue-minValue)<=5.0 && (minValue!=(int)minValue||maxValue!=(int)maxValue||defaultValue!=(int)defaultValue)) {
-			scale = 20.0;
+			scale = 50.0;
 			minValue *= scale;
 			maxValue *= scale;
 			defaultValue *= scale;
@@ -1173,7 +1173,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				help.addActionListener(this);
 				help.addKeyListener(this);
 			}
-			if (IJ.isWindows()) {
+			if (IJ.isWindows() || Prefs.dialogCancelButtonOnRight) {
 				buttons.add(okay);
 				if (yesNoCancel) buttons.add(no);;
 				if (!hideCancelButton)
