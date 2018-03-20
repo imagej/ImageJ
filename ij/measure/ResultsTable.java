@@ -1149,6 +1149,7 @@ public class ResultsTable implements Cloneable {
 	 *  There is also a variable 'rowNumber' available.
 	 *  @return false in case of a macro error */
 	public boolean applyMacro(String macro) {
+		String[] headings = getHeadings();
 	    String[] columnNames = getHeadingsAsVariableNames();
 		Program pgm = (new Tokenizer()).tokenize(macro);
 		StringBuilder sb = new StringBuilder(1000);
@@ -1186,7 +1187,7 @@ public class ResultsTable implements Cloneable {
 		for (int row=0; row<counter; row++) {       // apply macro to each row
 			for (int col=0; col<columnNames.length; col++) {
 				if (columnInUse[col]) {
-				    double v = getValueAsDouble(col, row);
+				    double v = getValue(headings[col], row);
 					interp.setVariable(columnNames[col], v);
 				}
 			}

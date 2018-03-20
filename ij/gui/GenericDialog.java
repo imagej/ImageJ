@@ -602,8 +602,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	/**
 	* Adds a slider (scroll bar) to the dialog box.
-	* Floating point values will be used if (maxValue-minValue)<=5.0
-	* and either minValue or maxValue are non-integer.
+	* Floating point values are used if (maxValue-minValue)<=5.0
+	* and either defaultValue or minValue are non-integer.
 	* @param label	 the label
 	* @param minValue  the minimum value of the slider
 	* @param maxValue  the maximum value of the slider
@@ -612,7 +612,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	public void addSlider(String label, double minValue, double maxValue, double defaultValue) {
 		if (defaultValue<minValue) defaultValue=minValue;
 		if (defaultValue>maxValue) defaultValue=maxValue;
-		int columns = 4;
 		int digits = 0;
 		double scale = 1.0;
 		if ((maxValue-minValue)<=5.0 && (minValue!=(int)minValue||maxValue!=(int)maxValue||defaultValue!=(int)defaultValue)) {
@@ -622,6 +621,39 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			defaultValue *= scale;
 			digits = 2;
 		}
+		addSlider( label, minValue, maxValue, defaultValue, scale, digits);
+	}
+	
+	public void addSlider(String label, double minValue, double maxValue, double defaultValue, double stepSize) {
+		if ( stepSize <= 0 ) stepSize  = 1;
+		int digits = digits(stepSize);		
+		double scale = 1.0 / Math.abs( stepSize );
+		if ( scale <= 0 ) scale = 1;
+		if ( defaultValue < minValue ) defaultValue = minValue;
+		if ( defaultValue > maxValue ) defaultValue = maxValue;
+		minValue *= scale;
+		maxValue *= scale;
+		defaultValue *= scale;
+		addSlider(label, minValue, maxValue, defaultValue, scale, digits);
+	}
+	
+	private int digits( double d ) {
+		if ( d == (int) d ) return 0;
+		String s = Double.toString(d);
+		s = s.substring(s.indexOf(".") + 1);
+		return s.length();
+	}
+
+	private int preDigits( double d ) {
+		int value = (int) d;
+		return (int) Math.abs( Math.log10(  value==0 ? 1 : value ) ) + 1;
+	}
+	
+	private void addSlider(String label, double minValue, double maxValue, double defaultValue, double scale, int digits) {
+		int columns = preDigits(maxValue/scale) + digits;
+		//IJ.log("scale " + scale + "   columns " + columns + "  digits " + digits);
+		if ( columns < 4 ) columns = 4;
+		if (minValue<0.0) columns++;
    		String label2 = label;
    		if (label2.indexOf('_')!=-1)
    			label2 = label2.replace('_', ' ');

@@ -3725,8 +3725,17 @@ public class Functions implements MacroConstants, Measurements {
 				String label = getFirstString();
 				double minValue = getNextArg();
 				double maxValue = getNextArg();
-				double defaultValue = getLastArg();
-				gd.addSlider(label, minValue, maxValue, defaultValue);
+				double defaultValue = getNextArg();
+				double stepSize = 0.0;
+				if (interp.nextToken()==',') {
+					interp.getComma();
+					stepSize = interp.getExpression();
+				}
+				interp.getRightParen();
+				if (stepSize==0.0)
+					gd.addSlider(label, minValue, maxValue, defaultValue);
+				else
+					gd.addSlider(label, minValue, maxValue, defaultValue, stepSize);
 			} else if (name.equals("addCheckbox")) {
 				gd.addCheckbox(getFirstString(), getLastArg()==1?true:false);
 			} else if (name.equals("addCheckboxGroup")) {
