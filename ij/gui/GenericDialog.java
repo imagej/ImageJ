@@ -623,9 +623,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		addSlider( label, minValue, maxValue, defaultValue, scale, digits);
 	}
 	
+	/** This vesion of addSlider() adds a 'stepSize' argument.<br>
+	 * Example: http://wsr.imagej.net/macros/SliderDemo.txt
+	*/
 	public void addSlider(String label, double minValue, double maxValue, double defaultValue, double stepSize) {
 		if ( stepSize <= 0 ) stepSize  = 1;
-		if ( stepSize > 1 ) stepSize  = 1;
 		int digits = digits(stepSize);		
 		double scale = 1.0 / Math.abs( stepSize );
 		if ( scale <= 0 ) scale = 1;

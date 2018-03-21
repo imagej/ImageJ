@@ -1147,15 +1147,25 @@ public class ResultsTable implements Cloneable {
 	 *  as given by getHeadingsAsVaribleNames(). New variables starting with an uppercase letter
 	 *  create a new column with this name.
 	 *  There is also a variable 'rowNumber' available.
+	 *  Except for the row label (if existing), currently only supports numeric values, no Strings.
 	 *  @return false in case of a macro error */
 	public boolean applyMacro(String macro) {
-		String[] headings = getHeadings();
-	    String[] columnNames = getHeadingsAsVariableNames();
+		String[] columnHeadings = getHeadingsAsVariableNames();
+		String[] columnNames = getHeadingsAsVariableNames(columnHeadings); // same as variable names
+		int[] columnIndices = new int[columnHeadings.length]; // corresponding column index; <0 for rowLabels
+		for (int i=0; i<columnHeadings.length; i++)
+			columnIndices[i] = getColumnIndex(columnHeadings[i]);
+
 		Program pgm = (new Tokenizer()).tokenize(macro);
 		StringBuilder sb = new StringBuilder(1000);
 		sb.append("var ");
-		for (int i=0; i<columnNames.length; i++) {
+		for (int i=0; i<columnNames.length; i++) {  // create 'var' statement with 'real' data values, so errors are less likely
 			sb.append(columnNames[i]);
+			sb.append('=');
+			if (columnIndices[i] < 0)
+				sb.append(rowLabels[0]==null ? "" : '"'+rowLabels[0]+'"');
+			else
+				sb.append(Math.abs(getValueAsDouble(columnIndices[i], 0))); //avoid negative values since minus would be extra token
 			sb.append(',');
 		}
 		sb.append("rowNumber;\n");
@@ -1163,32 +1173,39 @@ public class ResultsTable implements Cloneable {
 		sb.append(macro);
 		sb.append(";\n");
 		String code = sb.toString();
-		int PCStart = 9+2*columnNames.length;       // 'macro' code starts at this token number
+		int PCStart = 9+4*columnNames.length;       // 'macro' code starts at this token number
 		Interpreter interp = new Interpreter();
 		interp.run(code, null);                     // first test run
 		if (interp.wasError())
 			return false;
+
 		boolean[] columnInUse = new boolean[columnNames.length];
 		ArrayList<String> newColumnList = new ArrayList<String>();
 		String[] variables = interp.getVariableNames();
 		for (String variable:variables) {           // check for variables that make a new Column
-			int columnIndex = indexOf(columnNames, variable);
-			if (columnIndex >= 0)
-				columnInUse[columnIndex] = true;    // variable is a know column
+			int columnNumber = indexOf(columnNames, variable);
+			if (columnNumber >= 0)                  // variable is a know column
+				columnInUse[columnNumber] = macro.indexOf(variable) >=0;
 			else if (Character.isUpperCase(variable.charAt(0))) {
 				getFreeColumn(variable);            // create new column
 				newColumnList.add(variable);
 			}
 		}
 		String[] newColumns = newColumnList.toArray(new String[0]);
-		int[] newColumnIndex = new int[newColumns.length];
+		int[] newColumnIndices = new int[newColumns.length];
 		for (int i=0; i<newColumns.length; i++)
-		    newColumnIndex[i] = getColumnIndex(newColumns[i]);
+		    newColumnIndices[i] = getColumnIndex(newColumns[i]);
+		
 		for (int row=0; row<counter; row++) {       // apply macro to each row
-			for (int col=0; col<columnNames.length; col++) {
-				if (columnInUse[col]) {
-				    double v = getValue(headings[col], row);
-					interp.setVariable(columnNames[col], v);
+			for (int col=0; col<columnHeadings.length; col++) {
+				if (columnInUse[col]) {             // set variable values for used columns
+					if (columnIndices[col] < 0) {
+						String str = rowLabels[row];
+						interp.setVariable(columnNames[col], str);
+					} else {
+						double v = getValueAsDouble(columnIndices[col], row);
+						interp.setVariable(columnNames[col], v);
+					}
 				}
 			}
 			interp.setVariable("rowNumber", row);
@@ -1196,14 +1213,19 @@ public class ResultsTable implements Cloneable {
 			if (interp.wasError())
 				return false;
 			for (int col=0; col<columnNames.length; col++) {
-				if (columnInUse[col]) {
-					double v = interp.getVariable(columnNames[col]);
-					setValue(col, row, v);
+				if (columnInUse[col]) {             // set new values for previous columns
+					if (columnIndices[col] < 0) {
+						String str = interp.getVariableAsString(columnNames[col]);
+						rowLabels[row] = str;
+					} else {
+						double v = interp.getVariable(columnNames[col]);
+						setValue(columnIndices[col], row, v);
+					}
 				}
 			}
-			for (int i=0; i<newColumns.length; i++) {
+			for (int i=0; i<newColumns.length; i++) {   // set new values for newly-created columns
 				double v = interp.getVariable(newColumns[i]);
-				setValue(newColumnIndex[i], row, v);
+				setValue(newColumnIndices[i], row, v);
 			}
 		}
 		return true;
@@ -1215,13 +1237,17 @@ public class ResultsTable implements Cloneable {
 		    if (s.equals(sArray[i])) return i;
 		return -1;
 	}
-	
 
 	/** Returns the column headings; headings not suitable as variable names are converted
 	 *  to valid variable names by replacing non-fitting characters with underscores and
-	 *  adding underscores. To make unique names, underscores+numbers may be added */
+	 *  adding underscores. To make unique names, underscores+numbers are added as required. */
 	public String[] getHeadingsAsVariableNames() {
-		String[] names = getHeadings();
+		return getHeadingsAsVariableNames(getHeadings());
+	}
+
+	/** Converts a list of column headings to a list of corresponding variable names */
+	String[] getHeadingsAsVariableNames(String[] names) {
+		names = (String[])names.clone();
 		for (int i=0; i<names.length; i++) {
 			if (names[i].charAt(0)>='0' && names[i].charAt(0)<='9') // variable must not start with digit
 				names[i] = "_"+names[i];

@@ -2022,6 +2022,17 @@ public class Interpreter implements MacroConstants {
 			}
 		}
 	}
+	
+	public void setVariable(String name, String str) {
+		int index;
+		for (int i=0; i<=topOfStack; i++) {
+			index = stack[i].symTabIndex;
+			if (pgm.table[index].str.equals(name)) {
+				stack[i].setString(str);
+				break;
+			}
+		}
+	}
 
 	public double getVariable(String name) {
 		int index;
