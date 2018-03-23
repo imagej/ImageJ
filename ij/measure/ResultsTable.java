@@ -1150,7 +1150,7 @@ public class ResultsTable implements Cloneable {
 	 *  Except for the row label (if existing), currently only supports numeric values, no Strings.
 	 *  @return false in case of a macro error */
 	public boolean applyMacro(String macro) {
-		String[] columnHeadings = getHeadingsAsVariableNames();
+		String[] columnHeadings = getHeadings();
 		String[] columnNames = getHeadingsAsVariableNames(columnHeadings); // same as variable names
 		int[] columnIndices = new int[columnHeadings.length]; // corresponding column index; <0 for rowLabels
 		for (int i=0; i<columnHeadings.length; i++)
@@ -1163,7 +1163,7 @@ public class ResultsTable implements Cloneable {
 			sb.append(columnNames[i]);
 			sb.append('=');
 			if (columnIndices[i] < 0)
-				sb.append(rowLabels[0]==null ? "" : '"'+rowLabels[0]+'"');
+				sb.append(rowLabels[0]==null ? "\"\"" : '"'+rowLabels[0]+'"');
 			else
 				sb.append(Math.abs(getValueAsDouble(columnIndices[i], 0))); //avoid negative values since minus would be extra token
 			sb.append(',');
@@ -1195,7 +1195,7 @@ public class ResultsTable implements Cloneable {
 		int[] newColumnIndices = new int[newColumns.length];
 		for (int i=0; i<newColumns.length; i++)
 		    newColumnIndices[i] = getColumnIndex(newColumns[i]);
-		
+
 		for (int row=0; row<counter; row++) {       // apply macro to each row
 			for (int col=0; col<columnHeadings.length; col++) {
 				if (columnInUse[col]) {             // set variable values for used columns
@@ -1230,7 +1230,7 @@ public class ResultsTable implements Cloneable {
 		}
 		return true;
 	}
-
+	
 	/** Returns the first index of a given non-null String in a String array, or -1 if not found */
 	private int indexOf(String[] sArray, String s) {
 		for (int i=0; i<sArray.length; i++)
