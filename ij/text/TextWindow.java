@@ -160,6 +160,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		m.add(new MenuItem("Find Next", new MenuShortcut(KeyEvent.VK_G)));
 		m.addActionListener(this);
 		mb.add(m);
+		textPanel.editMenu = m;
 		m = new Menu("Font");
 		m.add(new MenuItem("Make Text Smaller"));
 		m.add(new MenuItem("Make Text Larger"));

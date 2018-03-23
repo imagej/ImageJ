@@ -33,11 +33,12 @@ import java.util.Hashtable;
  *				by the simplex Minimizer and improves convergence.	These parameters can be an offset and
  *				either a linear slope or a factor that the full function is multiplied with.
  *	2012-10-07: added GAUSSIAN_NOOFFSET fit type
- *	2012-11-20: Bugfix: exception on Gaussian&Rodbard with initial params, bad initial params for Gaussian 
+ *	2012-11-20: Bugfix: exception on Gaussian&Rodbard with initial params, bad initial params for Gaussian
  *  2013-09-24: Added "Exponential Recovery (no offset)" and "Chapman-Richards" (3-parameter) fit types.
  *  2013-10-11: bugfixes, added setStatusAndEsc to show iterations and enable abort by ESC
  *  2015-03-26: bugfix, did not use linear regression for RODBARD
  *  2016-11-28: added static getNumParams methods
+ *  2018-03-23: fixes NullPointerException for custom fit without initialParamVariations
  */
 
 public class CurveFitter implements UserFunction{
@@ -72,7 +73,7 @@ public class CurveFitter implements UserFunction{
 	"Chapman-Richards"
 	}; // fList, doFit(), getNumParams() and makeInitialParamsAndVariations() must also be updated
 
-	/** Equations of the built-in fit functions */	
+	/** Equations of the built-in fit functions */
 	public static final String[] fList = {
 	"y = a+bx","y = a+bx+cx^2",									//STRAIGHT_LINE,POLY2
 	"y = a+bx+cx^2+dx^3","y = a+bx+cx^2+dx^3+ex^4",
@@ -134,7 +135,7 @@ public class CurveFitter implements UserFunction{
 		this.yData = yData;
 		numPoints = xData.length;
 	}
-	
+
 	/** Perform curve fitting with one of the built-in functions
 	 *			doFit(fitType) does the fit quietly
 	 *	Use getStatus() and/or getStatusString() to see whether fitting was (probably) successful and
@@ -143,7 +144,7 @@ public class CurveFitter implements UserFunction{
 	public void doFit(int fitType) {
 		doFit(fitType, false);
 	}
-	
+
 	/** Perform curve fitting with one of the built-in functions
 	 *			doFit(fitType, true) pops up a dialog allowing the user to set the initial
 	 *						fit parameters and various numbers controlling the Minimizer
@@ -204,7 +205,7 @@ public class CurveFitter implements UserFunction{
 		    case GAUSSIAN:                      //Gaussians: width (std deviation) should be >0
                 finalParams[3] = Math.abs(finalParams[3]); break;
             case GAUSSIAN_NOOFFSET:
-                finalParams[2] = Math.abs(finalParams[2]); break;                
+                finalParams[2] = Math.abs(finalParams[2]); break;
 		}
 		time = System.currentTimeMillis()-startTime;
 	}
@@ -453,7 +454,7 @@ public class CurveFitter implements UserFunction{
 				if (p[1] <= 0) return Double.NaN;
 				if (p[2] <= 0) return Double.NaN;
 				if (p[3] <= 0) return Double.NaN;
-				
+
 				double pw = Math.pow((x - p[0]), p[2]);
 				double e = Math.exp((-(x - p[0]))/p[3]);
 				return p[1]*pw*e;
@@ -477,7 +478,7 @@ public class CurveFitter implements UserFunction{
 				return 0.0;
 		}
 	}
-	
+
 	/** Get the result of fitting, i.e. the set of parameter values for the best fit.
 	 *	Note that the array returned may have more elements than numParams; ignore the rest.
 	 *	May return an array with only NaN values if the minimizer could not start properly,
@@ -487,7 +488,7 @@ public class CurveFitter implements UserFunction{
 	public double[] getParams() {
 		return finalParams==null ? minimizer.getParams() : finalParams; //if we have no result, take all_NaN result from the Minimizer
 	}
-	
+
 	/** Returns residuals array, i.e., differences between data and curve.
 	 *	The residuals are with respect to the real data, also for fit types where the data are
 	 *	modified before fitting (power&exp fit by linear regression, 'Rodbard NIH Image' ).
@@ -523,11 +524,11 @@ public class CurveFitter implements UserFunction{
 		double stdDev = (sum2-sum*sum/n); //sum of squared residuals
 		return Math.sqrt(stdDev/(n-1.0));
 	}
-	
+
 	/** Returns R^2, where 1.0 is best.
 	<pre>
 	 r^2 = 1 - SSE/SSD
-	 
+
 	 where:	 SSE = sum of the squared errors
 				 SSD = sum of the squared deviations about the mean.
 	</pre>
@@ -570,7 +571,7 @@ public class CurveFitter implements UserFunction{
 	public String getStatusString() {
 		return errorString != null ? errorString : minimizer.STATUS_STRING[getStatus()];
 	}
-	
+
 	/** Get a string with detailed description of the curve fitting results (several lines,
 	 *	including the fit parameters).
 	 */
@@ -622,17 +623,17 @@ public class CurveFitter implements UserFunction{
 	public int getIterations() {
 		return linearRegressionUsed ? 1 : minimizer.getIterations();
 	}
-	
+
 	/** Get maximum number of iterations allowed (sum of iteration count for all restarts) */
 	public int getMaxIterations() {
 		return minimizer.getMaxIterations();
 	}
-	
+
 	/** Set maximum number of iterations allowed (sum of iteration count for all restarts) */
 	public void setMaxIterations(int maxIter) {
 		minimizer.setMaxIterations(maxIter);
 	}
-	
+
 	/** Get maximum number of simplex restarts to do. See Minimizer.setMaxRestarts for details. */
 	public int getRestarts() {
 		return minimizer.getMaxRestarts();
@@ -851,7 +852,7 @@ public class CurveFitter implements UserFunction{
 	 */
 	private void modifyInitialParamsAndVariations() {
 		minimizerInitialParams = initialParams.clone();
-		minimizerInitialParamVariations = initialParamVariations.clone();			 
+		minimizerInitialParamVariations = initialParamVariations.clone();
 		if (numRegressionParams >  0) // convert to shorter arrays with only the parameters used by the minimizer
 			for (int i=0, iNew=0; i<numParams; i++)
 				if (i != factorParam && i != offsetParam) {
@@ -877,10 +878,15 @@ public class CurveFitter implements UserFunction{
             		initialParams[i] = 1.0;
             }
 		}
-		if (fitType==CUSTOM)
-            return true; // no way to guess initial parameters or initialParamVariations
 		if (!hasInitialParamVariations)
 			initialParamVariations = new double[numParams];
+		if (fitType==CUSTOM) {
+			for (int i=0; i<numParams; i++) {
+				initialParamVariations[i] = 0.1 * initialParams[i];
+                if (initialParamVariations[i] == 0) initialParamVariations[i] = 0.01; //should not be zero
+            }
+            return true; // can't guess the initial parameters or initialParamVariations from the data
+        }
 
 		// Calculate some things that might be useful for predicting parameters
 		double firstx = xData[0];
@@ -987,7 +993,7 @@ public class CurveFitter implements UserFunction{
 					initialParams[0] = yMax;	//actually don't care, we will do this via regression
 					initialParams[1] = xOfMax;	  //actually don't care, we will do this via regression
 					initialParams[2] = 0.39894 * (xMax-xMin) * yMean/(yMax+1e-100);
-					break;			  
+					break;
 				case CHAPMAN:                   // a*(1-exp(-b*x))^c
 					initialParams[0] = yMax;
 					initialParams[2] = 1.5; // just assuming any reasonable value
@@ -1106,7 +1112,7 @@ public class CurveFitter implements UserFunction{
 				break;
 			case GAUSSIAN_NOOFFSET:		// a*exp(-(x-b)^2/(2c^2))
 				factorParam = 0;
-				break;			  
+				break;
 		}
 		numRegressionParams = 0;
 		if (offsetParam >= 0) numRegressionParams++;
@@ -1186,7 +1192,7 @@ public class CurveFitter implements UserFunction{
 	/** Get correct params and revert xData, yData if fit has been done via another function */
 	private void postProcessModifiedFitType(int fitType) {
 		if (fitType == POWER_REGRESSION || fitType == EXP_REGRESSION)	// ln y = ln (a*x^b) = ln a + b ln x
-			finalParams[0] = ySign * Math.exp(finalParams[0]);			//or: ln (+,-)y = ln ((+,-)a*exp(bx)) = ln (+,-)a + bx		  
+			finalParams[0] = ySign * Math.exp(finalParams[0]);			//or: ln (+,-)y = ln ((+,-)a*exp(bx)) = ln (+,-)a + bx
 		if (fitType == GAUSSIAN)							// a + b exp(-...) to  a + (b-a)*exp(-...)
 			finalParams[1] += finalParams[0];
 		else if (fitType == RODBARD || fitType == RODBARD2) //d+a/(1+(x/c)^b) to d+(a-d)/(1+(x/c)^b)
@@ -1217,7 +1223,7 @@ public class CurveFitter implements UserFunction{
 		gd.addNumericField("Number of restarts:", minimizer.getMaxRestarts(), 0);
 		gd.addNumericField("Error tolerance [1*10^(-x)]:", -(Math.log(maxRelError)/Math.log(10)), 0);
 		gd.showDialog();
-		if (gd.wasCanceled()) 
+		if (gd.wasCanceled())
 			return;
 		// read initial parameters:
 		for (int i = 0; i < numParams; i++) {
@@ -1236,10 +1242,10 @@ public class CurveFitter implements UserFunction{
 		n = gd.getNextNumber();
 		setMaxError(Math.pow(10.0, -n));
 	}
-	
+
 	 /**
 	 * Gets index of highest value in an array.
-	 * 
+	 *
 	 * @param			   array the array.
 	 * @return			   Index of highest value.
 	 */

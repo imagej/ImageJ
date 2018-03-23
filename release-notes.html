@@ -5,10 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.52a 22 March 2018</u>
+<li> <u>1.52a 23 March 2018</u>
 <ul>
-<li> Thanks to Michael Schmid, added the <i>Analyze&gt;Apply Macro</i>
-command and the ResultsTable.applyMacro() method
+<li> Thanks to Michael Schmid, added <i>Apply Macro</i>
+commands to the <i>Edit</i> and contextual (right click pop-up)
+menus of table windows.
+Also added the ResultsTable.applyMacro() method
 (<a href="http://wsr.imagej.net/macros/ResultsTableMacro.js">JavaScript example</a>).
 <li> Thanks to Michael Kaul, added an optional 5th argument
 ('stepSize') to the Dialog.addSlider() macro function
@@ -19,6 +21,8 @@ dialog box.
 <li> Thanks to Stein Rorvik, added toScaled(x,y,z) and toUnscaled(x,y,z) macro functions.
 <li> Thanks to Fred Damen, fixed a bug that caused the SubHyperstackMaker.makeSubhyperstack()
 method to not work when extract a single frame.
+<li> Thanks to Fred Damen and Michael Schmid, fixed a curve fitter
+bug that could cause a NullPointerException.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

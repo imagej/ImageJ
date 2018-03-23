@@ -8,7 +8,7 @@ import java.awt.datatransfer.*;
 import ij.*;
 import ij.plugin.filter.Analyzer;
 import ij.io.SaveDialog;
-import ij.measure.ResultsTable;
+import ij.measure.*;
 import ij.util.Tools;
 import ij.plugin.frame.Recorder;
 import ij.gui.*;
@@ -56,7 +56,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
     ResultsTable rt;
     boolean unsavedLines;
     String searchString;
-    Menu fileMenu;
+    Menu fileMenu, editMenu;
     boolean menusExtended;
     boolean saveAsCSV;
 
@@ -92,9 +92,6 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			addPopupItem("Summarize");
 			addPopupItem("Distribution...");
 			addPopupItem("Set Measurements...");
-			addPopupItem("Rename...");
-			addPopupItem("Duplicate...");
-			menusExtended = true;
 		}
 	}
 
@@ -463,6 +460,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			IJ.doCommand("Set Measurements...");
  		else if (cmd.equals("Options..."))
 			IJ.doCommand("Input/Output...");
+ 		else if (cmd.equals("Apply Macro..."))
+			new ResultsTableMacros(rt);
 	}
  	
  	public void lostOwnership (Clipboard clip, Transferable cont) {}
@@ -1010,9 +1009,14 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		pm.addSeparator();
 		addPopupItem("Rename...");
 		addPopupItem("Duplicate...");
+		addPopupItem("Apply Macro...");
 		if (fileMenu!=null) {
 			fileMenu.add("Rename...");
 			fileMenu.add("Duplicate...");
+		}
+		if (editMenu!=null) {
+			editMenu.addSeparator();
+			editMenu.add("Apply Macro...");
 		}
 		menusExtended = true;
 	}

@@ -60,6 +60,7 @@ public class ResultsTable implements Cloneable {
 	private Hashtable stringColumns;
 	private boolean NaNEmptyCells;
 	private boolean quoteCommas;
+	private String title;
 
 
 	/** Constructs an empty ResultsTable with the counter=0, no columns
@@ -816,6 +817,7 @@ public class ResultsTable implements Cloneable {
 		The title must be "Results" if this table was obtained using 
 		ResultsTable.getResultsTable() or Analyzer.getResultsTable . */
 	public void show(String windowTitle) {
+		title = windowTitle;
 		if (!windowTitle.equals("Results") && this==Analyzer.getResultsTable())
 			IJ.log("ResultsTable.show(): the system ResultTable should only be displayed in the \"Results\" window.");
 		String tableHeadings = getColumnHeadings();		
@@ -1267,6 +1269,10 @@ public class ResultsTable implements Cloneable {
 			}
 		}
 		return names;
+	}
+	
+	public String getTitle() {
+		return title;
 	}
 		
 }

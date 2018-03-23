@@ -9,25 +9,36 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 
-/** This class implements the Analyze/Apply Macro... command.
+/** This class implements the Apply Macro command in tables.
 * @author Michael Schmid
 */
-public class ResultsTableMacros implements PlugIn, ActionListener {
-	private static String macro = "Sin=sin(rowNumber*0.1);\nCos=cos(rowNumber*0.1);\nSqr=Sin*Sin+Cos*Cos";
+public class ResultsTableMacros implements Runnable, ActionListener {
+	private static String NAME = "TableMacro.ijm";
+	private String defaultMacro = "Sin=sin(rowNumber*0.1);\nCos=cos(rowNumber*0.1);\nSqr=Sin*Sin+Cos*Cos";
 	private GenericDialog gd;
 	private ResultsTable rt, rt2;
 	private Button insertButton, runButton, undoButton;
+	private String title;
 	
-	public void run(String arg) {
-		rt = Analyzer.getResultsTable();
-		ResultsTable rtBackup = (ResultsTable)rt.clone();
-		if (rt == null || rt.size()==0) {
+	public ResultsTableMacros(ResultsTable rt) {
+		this.rt = rt;
+		title = rt!=null?rt.getTitle():null;
+		if (title==null) title = "Results";
+		Thread thread = new Thread(this, "ResultTableMacros");
+		thread.start();
+	}
+	
+	private void showDialog() {
+		if (rt==null)
+			rt = Analyzer.getResultsTable();
+		if (rt==null || rt.size()==0) {
 			IJ.error("Results Table required");
 			return;
 		}
+		ResultsTable rtBackup = (ResultsTable)rt.clone();
 		String[] variableNames = rt.getHeadingsAsVariableNames();
-		gd = new NonBlockingGenericDialog("Apply Macro to Results Table");
-		gd.addTextAreas(macro, null, 10, 45);
+		gd = new NonBlockingGenericDialog("Apply Macro to \""+title+"\"");
+		gd.addTextAreas(getMacro(), null, 12, 45);
 		gd.addChoice("Variables:", variableNames, variableNames[0]);
 		insertButton = new Button("Insert");
 		insertButton.addActionListener(this);
@@ -56,24 +67,28 @@ public class ResultsTableMacros implements PlugIn, ActionListener {
 
 		gd.setOKLabel("Close");
 		gd.showDialog();
-		if (gd.wasCanceled()) {						// dialog cancelled?
-			Analyzer.setResultsTable(rtBackup);		// revert to backup of the ResultsTable
-			rt.show("Results");
+		if (gd.wasCanceled()) {  // dialog cancelled?
+			rt = rtBackup;
+			rt.show(title);
 			return;
 		}
+		IJ.saveString(gd.getTextArea1().getText(), IJ.getDir("macros")+NAME);
 	 }
 
-	private void run() {
-		macro = gd.getTextArea1().getText();
+	private void applyMacro() {
+		TextArea ta = gd.getTextArea1();
+		int start = ta.getSelectionStart();
+		int end = ta.getSelectionEnd();
+		String macro  = start==end?ta.getText():ta.getSelectedText();
 		rt.applyMacro(macro);
-		rt.show("Results");
+		rt.show(title);
 	}
 
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 		if (source==runButton) {
 		  rt2 = (ResultsTable)rt.clone();
-		  run();
+		  applyMacro();
 		} else if (source==insertButton) {
 		  TextArea ta = gd.getTextArea1();
 		  Choice choice = (Choice)(gd.getChoices().get(0));
@@ -84,10 +99,22 @@ public class ResultsTableMacros implements PlugIn, ActionListener {
 	   } else if (source==undoButton) {
 		  if (rt2!=null) {
 			 rt = rt2;
-			 rt.show("Results");
+			 rt.show(title);
 			 rt2 = null;
 		  }
 	   }
 	 }
+	 
+	private String getMacro() {
+		String macro = IJ.openAsString(IJ.getDir("macros")+NAME);
+		if (macro==null || macro.startsWith("Error:"))
+			return defaultMacro;
+		else
+			return macro;
+	}
+	 
+	 public void run() {
+		showDialog();
+ 	}
 	 
 }
