@@ -1177,7 +1177,9 @@ public class ResultsTable implements Cloneable {
 		String code = sb.toString();
 		int PCStart = 9+4*columnNames.length;       // 'macro' code starts at this token number
 		Interpreter interp = new Interpreter();
-		interp.run(code, null);                     // first test run
+		try {
+			interp.run(code, null);  // first test run
+		} catch(Exception e) {}
 		if (interp.wasError())
 			return false;
 

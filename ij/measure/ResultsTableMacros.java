@@ -5,14 +5,13 @@ import ij.*;
 import ij.gui.*;
 import ij.text.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+import java.awt.event.*;
 
 
 /** This class implements the Apply Macro command in tables.
 * @author Michael Schmid
 */
-public class ResultsTableMacros implements Runnable, ActionListener {
+public class ResultsTableMacros implements Runnable, ActionListener, KeyListener {
 	private static String NAME = "TableMacro.ijm";
 	private String defaultMacro = "Sin=sin(rowNumber*0.1);\nCos=cos(rowNumber*0.1);\nSqr=Sin*Sin+Cos*Cos";
 	private GenericDialog gd;
@@ -37,8 +36,9 @@ public class ResultsTableMacros implements Runnable, ActionListener {
 		}
 		ResultsTable rtBackup = (ResultsTable)rt.clone();
 		String[] variableNames = rt.getHeadingsAsVariableNames();
-		gd = new NonBlockingGenericDialog("Apply Macro to \""+title+"\"");
+		gd = new GenericDialog("Apply Macro to \""+title+"\"");
 		gd.addTextAreas(getMacro(), null, 12, 45);
+		gd.getTextArea1().addKeyListener(this);
 		gd.addChoice("Variables:", variableNames, variableNames[0]);
 		insertButton = new Button("Insert");
 		insertButton.addActionListener(this);
@@ -57,12 +57,15 @@ public class ResultsTableMacros implements Runnable, ActionListener {
 		gd.addPanel(panel);
 		gd.addToSameRow();
 
-		gd.addHelp("<html><body><h1>Macro equations for Results Tables</h1><ul>"+
+		gd.addHelp("<html><body><h1>Macro Equations for Results Tables</h1><ul>"+
 				"<li>A new variable starting with an Uppercase character creates a new column.<"+
 				"<li>A new variable starting with a lowercase character is temporary."+
 				"<li>Also <tt>rowNumber</tt> is defined as variable.\n"+
-				"<li>String operations are supported for the 'Label' column only (if enabled<br>with"+
-				"Analyze&gt;Set Measurements&gt;Display Label)."+
+				"<li>String operations are supported for the 'Label' column only (if enabled<br>"+
+				"with Analyze&gt;Set Measurements&gt;Display Label)."+				
+				"<li>Click \"Run\" to apply the macro code to the table."+
+				"<li>Select a line and press "+(IJ.isMacOSX()?"cmd":"ctrl") + "-r to apply a line of macro code."+
+				"<li>Click \"Undo\", or press "+(IJ.isMacOSX()?"cmd":"ctrl")+"-z, to undo the table changes."+
 				"</ul></body></html>");
 
 		gd.setOKLabel("Close");
@@ -104,6 +107,28 @@ public class ResultsTableMacros implements Runnable, ActionListener {
 		  }
 	   }
 	 }
+	 
+	public void keyPressed(KeyEvent e) { 
+		int flags = e.getModifiers();
+		boolean control = (flags & KeyEvent.CTRL_MASK) != 0;
+		boolean meta = (flags & KeyEvent.META_MASK) != 0;
+		int keyCode = e.getKeyCode();
+		if (keyCode==KeyEvent.VK_R && (control||meta)) {
+			rt2 = (ResultsTable)rt.clone();
+			applyMacro();
+		}
+		if (keyCode==KeyEvent.VK_Z && (control||meta) && rt2!=null) {
+			 rt = rt2;
+			 rt.show(title);
+			 rt2 = null;
+		}
+	} 
+	
+	public void keyReleased(KeyEvent e) {
+	}
+	
+	public void keyTyped(KeyEvent e) {
+	}
 	 
 	private String getMacro() {
 		String macro = IJ.openAsString(IJ.getDir("macros")+NAME);
