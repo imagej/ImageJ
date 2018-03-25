@@ -22,7 +22,6 @@ public class ResultsTableMacros implements Runnable, ActionListener, KeyListener
 	public ResultsTableMacros(ResultsTable rt) {
 		this.rt = rt;
 		title = rt!=null?rt.getTitle():null;
-		if (title==null) title = "Results";
 		Thread thread = new Thread(this, "ResultTableMacros");
 		thread.start();
 	}
@@ -63,16 +62,17 @@ public class ResultsTableMacros implements Runnable, ActionListener, KeyListener
 				"<li>Also <tt>rowNumber</tt> is defined as variable.\n"+
 				"<li>String operations are supported for the 'Label' column only (if enabled<br>"+
 				"with Analyze&gt;Set Measurements&gt;Display Label)."+				
-				"<li>Click \"Run\" to apply the macro code to the table."+
+				"<li>Click \"<b>Run</b>\" to apply the macro code to the table."+
 				"<li>Select a line and press "+(IJ.isMacOSX()?"cmd":"ctrl") + "-r to apply a line of macro code."+
-				"<li>Click \"Undo\", or press "+(IJ.isMacOSX()?"cmd":"ctrl")+"-z, to undo the table changes."+
+				"<li>Click \"<b>Undo</b>\", or press "+(IJ.isMacOSX()?"cmd":"ctrl")+"-z, to undo the table changes."+
+				"<li>The code is saved at <b>macros/TableMacro.ijm</b> when you click \"<b>Close</b>\"."+
 				"</ul></body></html>");
 
 		gd.setOKLabel("Close");
 		gd.showDialog();
 		if (gd.wasCanceled()) {  // dialog cancelled?
 			rt = rtBackup;
-			rt.show(title);
+			if (title!=null) rt.show(title);
 			return;
 		}
 		IJ.saveString(gd.getTextArea1().getText(), IJ.getDir("macros")+NAME);
@@ -84,7 +84,7 @@ public class ResultsTableMacros implements Runnable, ActionListener, KeyListener
 		int end = ta.getSelectionEnd();
 		String macro  = start==end?ta.getText():ta.getSelectedText();
 		rt.applyMacro(macro);
-		rt.show(title);
+		if (title!=null) rt.show(title);
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -102,7 +102,7 @@ public class ResultsTableMacros implements Runnable, ActionListener, KeyListener
 	   } else if (source==undoButton) {
 		  if (rt2!=null) {
 			 rt = rt2;
-			 rt.show(title);
+			 if (title!=null) rt.show(title);
 			 rt2 = null;
 		  }
 	   }
@@ -119,7 +119,7 @@ public class ResultsTableMacros implements Runnable, ActionListener, KeyListener
 		}
 		if (keyCode==KeyEvent.VK_Z && (control||meta) && rt2!=null) {
 			 rt = rt2;
-			 rt.show(title);
+			 if (title!=null) rt.show(title);
 			 rt2 = null;
 		}
 	} 

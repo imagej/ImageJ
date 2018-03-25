@@ -3,6 +3,7 @@ import java.awt.Color;
 import java.util.*;
 import java.io.*;
 import java.util.Comparator;
+import java.nio.channels.FileChannel;
 
 /** This class contains static utility methods. */
  public class Tools {
@@ -288,6 +289,34 @@ import java.util.Comparator;
 		return (new ij.plugin.MacroInstaller()).openFromIJJar(path);
 	}
 
-
+	/** Copy the contents of the file at 'path1' to 'path2', returning an error message
+		(as a non-empty string) if there is an error. Based on the method with the
+		same name in Tobias Pietzsch's TifBenchmark class.
+	*/
+	public static String copyFile(String path1, String path2) {
+		File f1 = new File(path1);
+		File f2 = new File(path2);	
+		try {
+			if (!f1.exists() )
+				return "Source file does not exist";
+			if (!f2.exists() )
+				f2.createNewFile();
+			long time = f1.lastModified();	
+			FileInputStream stream1 = new FileInputStream(f1);
+			FileChannel channel1 = stream1.getChannel();
+			FileOutputStream stream2 = new FileOutputStream(f2);
+			final FileChannel channel2 = stream2.getChannel();
+			if (channel2!=null && channel1!=null )
+				channel2.transferFrom(channel1, 0, channel1.size());
+			channel1.close();
+			stream1.close();
+			channel2.close();
+			stream2.close();	
+			f2.setLastModified(time);
+		} catch(Exception e) {
+			return e.getMessage();
+		}
+		return "";
+	}
 
 }

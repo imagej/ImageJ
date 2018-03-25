@@ -18,7 +18,6 @@ import java.lang.reflect.*;
 import java.net.URL;
 import java.awt.datatransfer.*;
 import java.awt.geom.*;
-import java.nio.channels.FileChannel;
 
 
 /** This class implements the built-in macro functions. */
@@ -4017,9 +4016,9 @@ public class Functions implements MacroConstants, Measurements {
 			else
 				return "0";
 		} else if (name.equals("copy")) {
-			File f1 = new File(getFirstString());
-			File f2 = new File(getLastString());
-			String err = copyFile(f1, f2);
+			String f1 = getFirstString();
+			String f2 = getLastString();		
+			String err = Tools.copyFile(f1, f2);
 			if (err.length()>0)
 				interp.error(err);
 			return null;
@@ -4201,28 +4200,9 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		return null;
 	}
-
-	// Based on the method with the same name in Tobias Pietzsch's TifBenchmark class. */
-	public static String copyFile(File source, File destination) {
-		try {
-			if (!source.exists() )
-				return "Source file does not exist";
-			if (!destination.exists() )
-				destination.createNewFile();
-			FileInputStream sourceStream = new FileInputStream(source);
-			FileChannel sourceChannel = sourceStream.getChannel();
-			FileOutputStream destStream = new FileOutputStream(destination);
-			final FileChannel destChannel = destStream.getChannel();
-			if (destChannel!=null && sourceChannel!=null )
-				destChannel.transferFrom(sourceChannel, 0, sourceChannel.size());
-			sourceChannel.close();
-			sourceStream.close();
-			destChannel.close();
-			destStream.close();
-		} catch(Exception e) {
-			return e.getMessage();
-		}
-		return "";
+	
+	public static String copyFile(File f1, File f2) {
+		return Tools.copyFile(f1.getPath(), f2.getPath());
 	}
 
 	// Calls a public static method with an arbitrary number
