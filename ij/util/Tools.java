@@ -289,7 +289,7 @@ import java.nio.channels.FileChannel;
 		return (new ij.plugin.MacroInstaller()).openFromIJJar(path);
 	}
 
-	/** Copy the contents of the file at 'path1' to 'path2', returning an error message
+	/** Copies the contents of the file at 'path1' to 'path2', returning an error message
 		(as a non-empty string) if there is an error. Based on the method with the
 		same name in Tobias Pietzsch's TifBenchmark class.
 	*/

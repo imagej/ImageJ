@@ -1148,7 +1148,7 @@ public class ResultsTable implements Cloneable {
 	/** Applies a macro to each row of the table; the columns are assigned variable names
 	 *  as given by getHeadingsAsVaribleNames(). New variables starting with an uppercase letter
 	 *  create a new column with this name.
-	 *  There is also a variable 'rowNumber' available.
+	 *  The variable 'rowIndex' is pre-defined.
 	 *  Except for the row label (if existing), currently only supports numeric values, no Strings.
 	 *  @return false in case of a macro error */
 	public boolean applyMacro(String macro) {
@@ -1170,7 +1170,7 @@ public class ResultsTable implements Cloneable {
 				sb.append(Math.abs(getValueAsDouble(columnIndices[i], 0))); //avoid negative values since minus would be extra token
 			sb.append(',');
 		}
-		sb.append("rowNumber;\n");
+		sb.append("rowIndex;\n");
 		sb.append("function dummy() {}\n");
 		sb.append(macro);
 		sb.append(";\n");
@@ -1212,7 +1212,7 @@ public class ResultsTable implements Cloneable {
 					}
 				}
 			}
-			interp.setVariable("rowNumber", row);
+			interp.setVariable("rowIndex", row);
 			interp.run(PCStart);
 			if (interp.wasError())
 				return false;
@@ -1274,6 +1274,8 @@ public class ResultsTable implements Cloneable {
 	}
 	
 	public String getTitle() {
+		if (title==null && this==Analyzer.getResultsTable() && IJ.isResultsWindow())
+			title = "Results";
 		return title;
 	}
 		
