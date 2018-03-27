@@ -1142,7 +1142,7 @@ public class ResultsTable implements Cloneable {
 	}
 	
 	public String toString() {
-		return ("ctr="+counter+", hdr="+getColumnHeadings());
+		return ("title="+title+", size="+counter+", hdr="+getColumnHeadings());
 	}
 	
 	/** Applies a macro to each row of the table; the columns are assigned variable names

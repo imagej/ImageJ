@@ -1,5 +1,6 @@
 package ij.measure;
 import ij.plugin.filter.Analyzer;
+import ij.plugin.frame.Recorder;
 import ij.plugin.*;
 import ij.*;
 import ij.gui.*;
@@ -15,8 +16,8 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 	private static String NAME = "TableMacro.ijm";
 	private String defaultMacro = "Sin=sin(rowIndex*0.1);\nCos=cos(rowIndex*0.1);\nSqr=Sin*Sin+Cos*Cos;";
 	private GenericDialog gd;
-	private ResultsTable rt, rt2;
-	private Button runButton, undoButton, openButton, saveButton;
+	private ResultsTable rt, rtBackup;
+	private Button runButton, resetButton, openButton, saveButton;
 	private String title;
 	private int runCount;
 	private TextArea ta;
@@ -35,7 +36,6 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 			IJ.error("Results Table required");
 			return;
 		}
-		ResultsTable rtBackup = (ResultsTable)rt.clone();
 		String[] temp = rt.getHeadingsAsVariableNames();
 		String[] variableNames = new String[temp.length+1];
 		variableNames[0] = "";
@@ -58,9 +58,9 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 		runButton = new Button("Run");
 		runButton.addActionListener(this);
 		panel.add(runButton);
-		undoButton = new Button("Undo");
-		undoButton.addActionListener(this);
-		panel.add(undoButton);		
+		resetButton = new Button("Reset");
+		resetButton.addActionListener(this);
+		panel.add(resetButton);		
 		openButton = new Button("Open");
 		openButton.addActionListener(this);
 		panel.add(openButton);
@@ -79,7 +79,7 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 				"with Analyze&gt;Set Measurements&gt;Display Label)."+				
 				"<li>Click \"<b>Run</b>\" to apply the macro code to the table."+
 				"<li>Select a line and press "+(IJ.isMacOSX()?"cmd":"ctrl") + "-r to apply a line of macro code."+
-				"<li>Click \"<b>Undo</b>\", or press "+(IJ.isMacOSX()?"cmd":"ctrl")+"-z, to undo the table changes."+
+				"<li>Click \"<b>Reset</b>\" to revert to the original version of the table."+
 				"<li>The code is saved at <b>macros/TableMacro.ijm</b> when you click \"<b>OK</b>\"."+
 				"</ul></body></html>");
 
@@ -91,17 +91,33 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 			return;
 		}
 		if (runCount==0)
-			applyMacro();
+			applyMacro();			
+		if (Recorder.record) {
+			String macro = getMacroCode();
+			macro = macro.replaceAll("\n", " ");
+			if (Recorder.scriptMode()) {
+				Recorder.recordCall("title = \""+title+"\";");
+				Recorder.recordCall("frame = WindowManager.getFrame(title);");
+				Recorder.recordCall("rt = frame.getResultsTable();");
+				Recorder.recordCall("rt.applyMacro(\""+macro+"\");");
+				Recorder.recordCall("rt.show(title);");
+			} else {
+			}
+		}
 		IJ.saveString(ta.getText(), IJ.getDir("macros")+NAME);
 	 }
 
 	private void applyMacro() {
-		int start = ta.getSelectionStart();
-		int end = ta.getSelectionEnd();
-		String macro  = start==end?ta.getText():ta.getSelectedText();
-		rt.applyMacro(macro);
+		String code = getMacroCode();
+		rt.applyMacro(code);
 		updateDisplay();
 		runCount++;
+	}
+	
+	private String getMacroCode() {
+		int start = ta.getSelectionStart();
+		int end = ta.getSelectionEnd();
+		return start==end?ta.getText():ta.getSelectedText();
 	}
 	
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
@@ -109,6 +125,7 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 		if (e!=null && (e.getSource() instanceof Choice) && variableName.length()>0) {
 			int pos = ta.getCaretPosition();
 			ta.insert(variableName, pos);
+			 ((Choice)e.getSource()).select(0);
 			//ta.setCaretPosition(pos+variableName.length());
 		}
 		return true;
@@ -117,14 +134,10 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 		if (source==runButton) {
-			rt2 = (ResultsTable)rt.clone();
 			applyMacro();
-		} else if (source==undoButton) {
-			if (rt2!=null) {
-				rt = rt2;
-				updateDisplay();
-				rt2 = null;
-			}
+		} else if (source==resetButton) {
+			rt = (ResultsTable)rtBackup.clone();
+			updateDisplay();
 		} else if (source==openButton) {
 			String macro = IJ.openAsString(null);
 			if (macro==null)
@@ -148,16 +161,18 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 		boolean control = (flags & KeyEvent.CTRL_MASK) != 0;
 		boolean meta = (flags & KeyEvent.META_MASK) != 0;
 		int keyCode = e.getKeyCode();
-		if (keyCode==KeyEvent.VK_R && (control||meta)) {
-			rt2 = (ResultsTable)rt.clone();
+		if (keyCode==KeyEvent.VK_R && (control||meta))
 			applyMacro();
-		}
-		if (keyCode==KeyEvent.VK_Z && (control||meta) && rt2!=null) {
-			 rt = rt2;
-			 updateDisplay();
-			 rt2 = null;
+		if (keyCode==KeyEvent.VK_Z && (control||meta)) {
+			rt = (ResultsTable)rtBackup.clone();
+			updateDisplay();
 		}
 	} 
+	
+	private void updateDisplay() {
+		if (title!=null)
+			rt.show(title);
+	}
 	
 	public void keyReleased(KeyEvent e) {
 	}
@@ -176,11 +191,8 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 	}
 	 
 	public void run() {
+		rtBackup = (ResultsTable)rt.clone();
 		showDialog();
  	}
- 	
- 	private void updateDisplay() {
-		if (title!=null) rt.show(title);
- 	}
-	 
+ 		 
 }
