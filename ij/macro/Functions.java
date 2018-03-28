@@ -237,6 +237,7 @@ public class Functions implements MacroConstants, Measurements {
 			case FIT: value = fit(); break;
 			case OVERLAY: value = overlay(); break;
 			case SELECTION_CONTAINS: value = selectionContains(); break;
+			case TABLE: value = table(); break;
 			default:
 				interp.error("Numeric function expected");
 		}
@@ -6327,6 +6328,36 @@ public class Functions implements MacroConstants, Measurements {
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null)
 			overlay.clear();
+		return Double.NaN;
+	}
+	
+	double table() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (!(interp.token==WORD||interp.token==ARRAY_FUNCTION
+			||interp.token==PREDEFINED_FUNCTION||interp.token==USER_FUNCTION))
+			interp.error("Function name expected: ");
+		String name = interp.tokenString;
+		if (name.equals("applyMacro"))
+			return applyMacroToTable();
+		else
+			interp.error("Unrecognized function name");
+		return Double.NaN;
+	}
+	
+	double applyMacroToTable() {
+		String title = getFirstString();
+		String macro = getLastString();
+		Frame frame = WindowManager.getFrame(title);
+		if (frame==null)
+			interp.error("\""+title+"\" table not found");
+		if (!(frame instanceof TextWindow))
+			interp.error("\""+title+"\" is not a table");
+		ResultsTable rt = ((TextWindow)frame).getResultsTable();
+		rt.applyMacro(macro);
+		rt.show(title);
 		return Double.NaN;
 	}
 
