@@ -105,7 +105,10 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 				Recorder.recordCall("rt.applyMacro(\""+macro+"\");");
 				Recorder.recordCall("rt.show(title);");
 			} else {
-				Recorder.record("Table.applyMacro", title, macro);
+				if (title.equals("Results"))
+					Recorder.record("Table.applyMacro", macro);
+				else
+					Recorder.record("Table.applyMacro", macro, title);
 			}
 		}
 		IJ.saveString(ta.getText(), IJ.getDir("macros")+NAME);

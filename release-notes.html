@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52a 28 March 2018</u>
+<li> <u>1.52a 29 March 2018</u>
 <ul>
 <li> Thanks to Michael Schmid, added <i>Apply Macro</i>
 commands to the <i>Edit</i> and contextual (right click pop-up)
@@ -19,6 +19,15 @@ Also added the ResultsTable.applyMacro() method
 “Cancel button on right” option to the <i>Edit&gt;Options&gt;Appearance</i>
 dialog box. 
 <li> Thanks to Stein Rorvik, added toScaled(x,y,z) and toUnscaled(x,y,z) macro functions.
+<li> Added six macro functions ('title' argument is optional):
+<ul>
+<li>Table.size(title) - returns the table size
+<li>Table.getValue(col, row, title) - returns a numeric value
+<li>Table.setValue(col, row, value, title) - sets numeric or string value
+<li>Table.update(title) - updates table
+<li>Table.applyMacro(macro, title) - applies macro code to table
+<li>Table.rename(title1, title2) - renames a table
+</ul>
 <li> Thanks to Michael Schmid, added the Tools.copyFile(path1,path2) method.
 <li> Thanks to Fred Damen, fixed a bug that caused the SubHyperstackMaker.makeSubhyperstack()
 method to not work when extract a single frame.
