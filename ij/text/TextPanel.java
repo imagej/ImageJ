@@ -544,10 +544,15 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			if (mbSize>0 && tw.mb.getMenu(mbSize-1).getLabel().equals("Results"))
 				tw.mb.remove(mbSize-1);
 			title = title2;
+			rt.show(title);
 		}
 		Menus.updateWindowMenuItem(title1, title2);
-		if (Recorder.record)
-			Recorder.recordString("IJ.renameResults(\""+title2+"\");\n");
+		if (Recorder.record) {
+			if (Recorder.scriptMode())
+				Recorder.recordString("IJ.renameResults(\""+title1+"\", \""+title2+"\");\n");
+			else
+				Recorder.record("Table.rename", title1, title2);
+		}
 	}
 
 	void duplicate() {
@@ -698,8 +703,16 @@ public class TextPanel extends Panel implements AdjustmentListener,
 				IJ.error("Selection required");
 			return;
 		}
-		if (Recorder.record)
-			Recorder.recordString("IJ.deleteRows("+selStart+", "+selEnd+");\n");
+		if (Recorder.record) {
+			if (Recorder.scriptMode())
+				Recorder.recordString("IJ.deleteRows("+selStart+", "+selEnd+");\n");
+			else {
+				if ("Results".equals(title))
+					Recorder.record("Table.deleteRows", selStart, selEnd);
+				else
+					Recorder.record("Table.deleteRows", selStart, selEnd, title);
+			}
+		}
 		int first=selStart, last=selEnd, rows=iRowCount;
 		if (selStart==0 && selEnd==(iRowCount-1)) {
 			vData.removeAllElements();

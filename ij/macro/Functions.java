@@ -6363,6 +6363,8 @@ public class Functions implements MacroConstants, Measurements {
 			return updateTable();
 		else if (name.equals("applyMacro"))
 			return applyMacroToTable();
+		else if (name.equals("deleteRows"))
+			return deleteTableRows();
 		else if (name.equals("rename")) {
 			renameResults();
 			return Double.NaN;
@@ -6402,20 +6404,35 @@ public class Functions implements MacroConstants, Measurements {
 		return Double.NaN;
 	}
 
-
 	double applyMacroToTable() {
 		String macro = getFirstString();
 		String title = "Results";
 		if (interp.nextToken()==',')
 			title = getNextString();
 		interp.getRightParen();
-		if (macro.equals("Results") || macro.equals("Plot Values")) {
-			String temp = macro;
+		if (macro.equals("Results")) {
 			macro = title;
-			title = temp;			
+			title = "Results";			
 		}
 		ResultsTable rt = getResultsTable(title);
 		rt.applyMacro(macro);
+		rt.show(title);
+		return Double.NaN;
+	}
+	
+	double deleteTableRows() {
+		int row1 = (int)getFirstArg();
+		int row2 = (int)getNextArg();	
+		String title = "Results";
+		if (interp.nextToken()==',') {
+			interp.getComma();
+			title = getString();
+		}
+		interp.getRightParen();
+		int n = row2 - row1 + 1;
+		ResultsTable rt = getResultsTable(title);
+		for (int i=row1; i<row1+n; i++)
+			rt.deleteRow(row1);
 		rt.show(title);
 		return Double.NaN;
 	}

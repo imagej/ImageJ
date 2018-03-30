@@ -503,7 +503,7 @@ public class IJ {
 		Frame frame = WindowManager.getFrontWindow();
 		if (frame!=null && (frame instanceof TextWindow)) {
 			TextWindow tw = (TextWindow)frame;
-			if (tw.getTextPanel().getResultsTable()==null) {
+			if (tw.getResultsTable()==null) {
 				IJ.error("Rename", "\""+tw.getTitle()+"\" is not a results table");
 				return;
 			}
@@ -515,7 +515,7 @@ public class IJ {
 		}
 	}
 
-	/** Changes the name of a results window from 'oldTitle' to 'newTitle'. */
+	/** Changes the name of a table window from 'oldTitle' to 'newTitle'. */
 	public static void renameResults(String oldTitle, String newTitle) {
 		Frame frame = WindowManager.getFrame(oldTitle);
 		if (frame==null) {
@@ -523,17 +523,17 @@ public class IJ {
 			return;
 		} else if (frame instanceof TextWindow) {
 			TextWindow tw = (TextWindow)frame;
-			if (tw.getTextPanel().getResultsTable()==null) {
-				error("Rename", "\""+oldTitle+"\" is not a results table");
+			if (tw.getResultsTable()==null) {
+				error("Rename", "\""+oldTitle+"\" is not a table");
 				return;
 			}
 			tw.rename(newTitle);
 		} else
-			error("Rename", "\""+oldTitle+"\" is not a results table");
+			error("Rename", "\""+oldTitle+"\" is not a table");
 	}
 
-	/** Deletes 'row1' through 'row2' of the "Results" window. Arguments
-	     must be in the range 0-Analyzer.getCounter()-1. */
+	/** Deletes 'row1' through 'row2' of the "Results" window, where
+		'row1' and 'row2' must be in the range 0-Analyzer.getCounter()-1. */
 	public static void deleteRows(int row1, int row2) {
 		int n = row2 - row1 + 1;
 		ResultsTable rt = Analyzer.getResultsTable();
