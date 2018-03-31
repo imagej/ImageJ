@@ -6365,6 +6365,8 @@ public class Functions implements MacroConstants, Measurements {
 			return applyMacroToTable();
 		else if (name.equals("deleteRows"))
 			return deleteTableRows();
+		else if (name.equals("deleteColumn"))
+			return deleteTableColumn();
 		else if (name.equals("rename")) {
 			renameResults();
 			return Double.NaN;
@@ -6429,14 +6431,30 @@ public class Functions implements MacroConstants, Measurements {
 			title = getString();
 		}
 		interp.getRightParen();
-		int n = row2 - row1 + 1;
 		ResultsTable rt = getResultsTable(title);
-		for (int i=row1; i<row1+n; i++)
-			rt.deleteRow(row1);
+		rt.deleteRows(row1, row2);
 		rt.show(title);
 		return Double.NaN;
 	}
 	
+	double deleteTableColumn() {
+		String column = getFirstString();
+		String title = "Results";
+		if (interp.nextToken()==',') {
+			interp.getComma();
+			title = getString();
+		}
+		interp.getRightParen();
+		ResultsTable rt = getResultsTable(title);		
+		try {
+			rt.deleteColumn(column);
+			rt.show(title);
+		} catch (Exception e) {
+			interp.error(e.getMessage());
+		}
+		return Double.NaN;
+	}
+
 	ResultsTable getResultsTable(String title) {
 		Frame frame = WindowManager.getFrame(title);
 		if (frame==null)

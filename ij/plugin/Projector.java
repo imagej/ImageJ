@@ -539,7 +539,6 @@ public class Projector implements PlugIn {
 			int lineIndex = j*imageWidth;
 			for (int i=left; i<right; i++) {
 				thispixel = pixels[lineIndex+i]&0xff;
-				//if (stack2.getSize()==32 && j==32 && i==32) IJ.write("thispixel: "+thispixel+ " "+lineIndex);
 				offset++;
 				if ((offset>=projsize) || (offset<0))
 					offset = 0;
@@ -591,7 +590,6 @@ public class Projector implements PlugIn {
 
 	/** Projects each pixel of a volume (stack of slices) onto a plane as the volume rotates about the y-axis. */
 	private void  doOneProjectionY (int nSlices, int xcenter, int zcenter, int projwidth, int projheight, int costheta, int sintheta) {
-		//IJ.write("DoOneProjectionY: "+xcenter+" "+zcenter+" "+(double)costheta/BIGPOWEROF2+ " "+(double)sintheta/BIGPOWEROF2);
 		int thispixel;			//current pixel to be projected
 		int offset, offsetinit;		//precomputed offsets into an image buffer
 		int z;					//z-coordinate of points in current slice before rotation
@@ -637,7 +635,6 @@ public class Projector implements PlugIn {
 					thispixel =pixels[lineOffset+i]&0xff;
 					xcostheta += costheta;  //rotate about x-axis and find new y,z
 					xsintheta += sintheta;  //x-coordinates will not change
-					//if (k==1 && j==top) IJ.write(k+" "thispixel);
 					if ((thispixel <= transparencyUpper) && (thispixel >= transparencyLower)) {
 						xnew = (xcostheta + zsintheta)/BIGPOWEROF2 + xcenter - left;
 						znew = (zcostheta - xsintheta)/BIGPOWEROF2 + zcenter;
@@ -721,14 +718,6 @@ public class Projector implements PlugIn {
 		xsinthetainit = (left - xcenter - 1) * sintheta;
 		ycosthetainit = (top - ycenter - 1) * costheta;
 		ysinthetainit = (top - ycenter - 1) * sintheta;
-		//float[] f = new float[projsize];
-		//IJ.write("");
-		//IJ.write("depthCueSurf: "+depthCueSurf);
-		//IJ.write("zmax: "+zmax);
-		//IJ.write("zmin: "+zmin);
-		//IJ.write("zcenter: "+zcenter);
-		//IJ.write("zmaxminuszmintimes100: "+zmaxminuszmintimes100);
-		//IJ.write("c100minusDepthCueSurf: "+c100minusDepthCueSurf);
 		offsetinit = ((projheight-bottom+top)/2) * projwidth + (projwidth - right + left)/2 - 1;
  		for (int k=1; k<=nSlices; k++) {
 			pixels = (byte[])stack.getPixels(k);

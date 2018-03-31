@@ -535,10 +535,8 @@ public class IJ {
 	/** Deletes 'row1' through 'row2' of the "Results" window, where
 		'row1' and 'row2' must be in the range 0-Analyzer.getCounter()-1. */
 	public static void deleteRows(int row1, int row2) {
-		int n = row2 - row1 + 1;
 		ResultsTable rt = Analyzer.getResultsTable();
-		for (int i=row1; i<row1+n; i++)
-			rt.deleteRow(row1);
+		rt.deleteRows(row1, row2);
 		rt.show("Results");
 	}
 

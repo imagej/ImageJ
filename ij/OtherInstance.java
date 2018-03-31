@@ -217,7 +217,7 @@ public class OtherInstance {
 		if (s!=null) {
 			try {
 				return Integer.decode(s).intValue();
-			} catch (NumberFormatException e) {IJ.write(""+e);}
+			} catch (NumberFormatException e) {IJ.log(""+e);}
 		}
 		return -1;
 	}

@@ -466,7 +466,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
             outIp = typeP;
         }
         byte[] outPixels = (byte[])outIp.getPixels();
-        //IJ.write("roi: "+roi.toString());
         if (roi!=null) {
             for (int y=0, i=0; y<outIp.getHeight(); y++) { //delete everything outside roi
                 for (int x=0; x<outIp.getWidth(); x++, i++) {
@@ -602,7 +601,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                     int offset = pList[listI];
                     int x = offset % width;
                     int y = offset / width;
-                    //if(x==18&&y==20)IJ.write("x0,y0="+x0+","+y0+"@18,20;v0="+v0+" sortingError="+sortingError);
                     boolean isInner = (y!=0 && y!=height-1) && (x!=0 && x!=width-1); //not necessary, but faster than isWithin
                     for (int d=0; d<8; d++) {       //analyze all neighbors (in 8 directions) at the same level
                         int offset2 = offset+dirOffset[d];
@@ -618,7 +616,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                             float v2 = isEDM ? trueEdmHeight(x2, y2, ip) : ip.getPixelValue(x2, y2);
                             if (v2 > v0 + maxSortingError) {
                                 maxPossible = false;    //we have reached a higher point, thus it is no maximum
-                                //if(x0<25&&y0<20)IJ.write("x0,y0="+x0+","+y0+":stop at higher neighbor from x,y="+x+","+y+", dir="+d+",value,value2,v2-v="+v0+","+v2+","+(v2-v0));
                                 break;
                             } else if (v2 >= v0-(float)tolerance) {
                                 if (v2 > v0) {          //maybe this point should have been treated earlier
@@ -768,7 +765,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
             minValue = (threshold == ImageProcessor.NO_THRESHOLD)?globalMin:threshold;
         double offset = minValue - (globalMax-minValue)*(1./253/2-1e-6); //everything above minValue should become >(byte)0
         double factor = 253/(globalMax-minValue);
-        //IJ.write("min,max="+minValue+","+globalMax+"; offset, 1/factor="+offset+", "+(1./factor));
         if (isEDM && factor>1)
             factor = 1;   // with EDM, no better resolution
         ByteProcessor outIp = new ByteProcessor(width, height);
@@ -850,7 +846,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
             int level = pixels[offset0]&255;
             int loLevel = level+1;
             pList[0] = offset0;                     //we start the list at the current maximum
-            //if (xList[0]==122) IJ.write("max#"+iMax+" at x,y="+xList[0]+","+yList[0]+"; level="+level);
             types[offset0] |= LISTED;               //mark first point as listed
             int listLen = 1;                        //number of elements in the list
             int lastLen = 1;
@@ -870,7 +865,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                         if ((isInner || isWithin(x, y, d)) && (types[offset2]&LISTED)==0) {
                             if ((types[offset2]&MAX_AREA)!=0 || (((types[offset2]&ELIMINATED)!=0) && (pixels[offset2]&255)>=loLevel)) {
                                 saddleFound = true; //we have reached a point touching a "true" maximum...
-                                //if (xList[0]==122) IJ.write("saddle found at level="+loLevel+"; x,y="+xList[listI]+","+yList[listI]+", dir="+d);
                                 break;              //...or a level not lower, but touching a "true" maximum
                             } else if ((pixels[offset2]&255)>=loLevel && (types[offset2]&ELIMINATED)==0) {
                                 pList[listLen] = offset2;
@@ -919,7 +913,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     /** delete a line starting at x, y up to the next (4-connected) vertex */
     void removeLineFrom (byte[] pixels, int x, int y) {
         //IJ.log("del line from "+x+","+y);
-        //if(x<50&&y<40)IJ.write("x,y start="+x+","+y);
         pixels[x + width*y] = (byte)255;                        //delete the first point
         boolean continues;
         do {
@@ -940,7 +933,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                     }
                 }
             } // for directions d
-        //if(!continues && x<50&&y<40)IJ.write("x,y end="+x+","+y);
         } while (continues);
         //IJ.log("deleted to "+x+","+y);
     } // void removeLineFrom

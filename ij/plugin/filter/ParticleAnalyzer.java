@@ -47,7 +47,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	/** Display a progress bar. */
 	public static final int SHOW_PROGRESS = 32;
 	
-	/** Clear ImageJ console before starting. */
+	/** Clear "Results" window before starting. */
 	public static final int CLEAR_WORKSHEET = 64;
 	
 	/** Record starting coordinates so outline can be recreated later using doWand(x,y). */

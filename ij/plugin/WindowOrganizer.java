@@ -64,7 +64,6 @@ public class WindowOrganizer implements PlugIn {
 		double averageHeight = totalHeight/nPics;
 		int tileWidth = (int)averageWidth;
 		int tileHeight = (int)averageHeight;
-		//IJ.write("tileWidth, tileHeight: "+tileWidth+" "+tileHeight);
  		int hspace = screen.width - 2 * GAP;
 		if (tileWidth>hspace)
 			tileWidth = hspace;
@@ -108,7 +107,6 @@ public class WindowOrganizer implements PlugIn {
 			ImageWindow win = getWindow(wList[i]);
 			if (win!=null) {
 				win.setLocation(hloc, vloc);
-				//IJ.write(i+" "+w+" "+tileWidth+" "+mag+" "+IJ.d2s(zoomFactor,2)+" "+zoomCount);
 				ImageCanvas canvas = win.getCanvas();
 				while (win.getSize().width*0.85>=tileWidth && canvas.getMagnification()>0.03125)
 					canvas.zoomOut(0, 0);

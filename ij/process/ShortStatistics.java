@@ -128,7 +128,6 @@ public class ShortStatistics extends ImageStatistics {
                 mode = i;
             }
         }
-		//ij.IJ.write("mode2: "+mode+" "+dmode+" "+maxCount);
 	}
 
 

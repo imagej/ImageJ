@@ -804,7 +804,6 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 				IJ.showStatus("RGB images cannot be thresholded");
 			return;
 		}
-		//IJ.write("setup: "+(imp==null?"null":imp.getTitle()));
 		switch (action) {
 			case RESET: reset(imp, ip); break;
 			case AUTO: autoThreshold(imp, ip); break;

@@ -290,7 +290,6 @@ public class TiffDecoder {
 			fi.pixelDepth = in.readFloat();	//SliceSpacing
 			int skip = in.readShort();		//CurrentSlice
 			fi.frameInterval = in.readFloat();
-			//ij.IJ.write("fi.pixelDepth: "+fi.pixelDepth);
 		}
 			
 		in.seek(offset+272);
@@ -374,8 +373,6 @@ public class TiffDecoder {
 			value = getValue(fieldType, count);
 			long lvalue = ((long)value)&0xffffffffL;
 			if (debugMode && ifdCount<10) dumpTag(tag, count, value, fi);
-			//ij.IJ.write(i+"/"+nEntries+" "+tag + ", count=" + count + ", value=" + value);
-			//if (tag==0) return null;
 			switch (tag) {
 				case IMAGE_WIDTH: 
 					fi.width = value;

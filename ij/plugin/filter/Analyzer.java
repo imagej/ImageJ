@@ -410,7 +410,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 				}
 			}
 			saveResults(stats, point);
-			if (i!=p.npoints-1) displayResults();
+			if (i!=p.npoints-1)
+				displayResults();
 		}
 	}
 	
@@ -842,6 +843,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 
 	/** Writes the last row in the system results table to the Results window. */
 	public void displayResults() {
+		if (rt.columnDeleted())
+			return;
 		int counter = rt.getCounter();
 		if (counter==1)
 			IJ.setColumnHeadings(rt.getColumnHeadings());

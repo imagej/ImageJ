@@ -1087,7 +1087,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		ip = imp.getProcessor();
 		if (RGBImage && !imp.lock())
 			{imp=null; return;}
-		//IJ.write("setup: "+(imp==null?"null":imp.getTitle()));
 		switch (action) {
 			case RESET:
 				reset(imp, ip);

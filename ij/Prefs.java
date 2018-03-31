@@ -329,7 +329,7 @@ public class Prefs {
 		if (s!=null) {
 			try {
 				return Integer.decode(s).intValue();
-			} catch (NumberFormatException e) {IJ.write(""+e);}
+			} catch (NumberFormatException e) {IJ.log(""+e);}
 		}
 		return defaultValue;
 	}

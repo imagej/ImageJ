@@ -88,7 +88,6 @@ public class ClassChecker implements PlugIn {
 
 	/** Looks for class and jar files in a subfolders of the plugins folder. */
 	void getSubdirectoryFiles(String path, String dir, Vector v1, Vector v2) {
-		//IJ.write("getSubdirectoryClassFiles: "+path+dir);
 		if (dir.endsWith(".java")) return;
 		File f = new File(path, dir);
 		if (!f.isDirectory()) return;

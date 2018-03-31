@@ -219,7 +219,6 @@ public class LutLoader extends ImagePlus implements PlugIn {
 			i2 = i1+1;
 			if (i2==nColors) i2 = nColors-1;
 			fraction = i*scale - i1;
-			//IJ.write(i+" "+i1+" "+i2+" "+fraction);
 			reds[i] = (byte)((1.0-fraction)*(r[i1]&255) + fraction*(r[i2]&255));
 			greens[i] = (byte)((1.0-fraction)*(g[i1]&255) + fraction*(g[i2]&255));
 			blues[i] = (byte)((1.0-fraction)*(b[i1]&255) + fraction*(b[i2]&255));
@@ -310,7 +309,6 @@ public class LutLoader extends ImagePlus implements PlugIn {
 			long fill2 = f.readLong();
 			int filler = f.readInt();
 		}
-		//IJ.write(id+" "+version+" "+nColors);
 		f.read(fi.reds, 0, nColors);
 		f.read(fi.greens, 0, nColors);
 		f.read(fi.blues, 0, nColors);

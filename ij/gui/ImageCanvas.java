@@ -937,8 +937,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			setMagnification(newMag);
 			imp.getWindow().pack();
 		}
-		//IJ.write(newMag + " " + srcRect.x+" "+srcRect.y+" "+srcRect.width+" "+srcRect.height+" "+dstWidth + " " + dstHeight);
-		//IJ.write(srcRect.x + " " + srcRect.width + " " + dstWidth);
 		setMaxBounds();
 		repaint();
 	}
@@ -1009,7 +1007,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	
 	Color getColor(int index){
 		IndexColorModel cm = (IndexColorModel)imp.getProcessor().getColorModel();
-		//IJ.write(""+index+" "+(new Color(cm.getRGB(index))));
 		return new Color(cm.getRGB(index));
 	}
 	

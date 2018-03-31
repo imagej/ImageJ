@@ -61,6 +61,7 @@ public class ResultsTable implements Cloneable {
 	private boolean NaNEmptyCells;
 	private boolean quoteCommas;
 	private String title;
+	private boolean columnDeleted;
 
 
 	/** Constructs an empty ResultsTable with the counter=0, no columns
@@ -597,7 +598,7 @@ public class ResultsTable implements Cloneable {
 			sb.append(delimiter);
 		}
 		for (int i=0; i<=lastColumn; i++) {
-			if (columns[i]!=null) {
+			if (columns[i]!=null && !"*Deleted*".equals(headings[i])) {
 				String value = getValueAsString(i,row);
 				if (quoteCommas) {
 					if (value.contains(","))
@@ -749,20 +750,21 @@ public class ResultsTable implements Cloneable {
 	}
 
 	/** Deletes the specified row. */
-	public synchronized void deleteRow(int row) {
-		if (counter==0 || row<0 || row>counter-1) return;
+	public synchronized void deleteRow(int rowIndex) {
+		if (counter==0 || rowIndex<0 || rowIndex>counter-1)
+			return;
 		if (rowLabels!=null) {
-			rowLabels[row] = null;
-			for (int i=row; i<counter-1; i++)
+			rowLabels[rowIndex] = null;
+			for (int i=rowIndex; i<counter-1; i++)
 				rowLabels[i] = rowLabels[i+1];
 		}
 		for (int col=0; col<=lastColumn; col++) {
 			if (columns[col]!=null) {
-				for (int i=row; i<counter-1; i++)
+				for (int i=rowIndex; i<counter-1; i++)
 					columns[col][i] = columns[col][i+1];
 				ArrayList stringColumn = stringColumns!=null?(ArrayList)stringColumns.get(new Integer(col)):null;
 				if (stringColumn!=null && stringColumn.size()==counter) {
-					for (int i=row; i<counter-1; i++)
+					for (int i=rowIndex; i<counter-1; i++)
 						stringColumn.set(i,stringColumn.get(i+1));
 					stringColumn.remove(counter-1);
 				}
@@ -771,6 +773,23 @@ public class ResultsTable implements Cloneable {
 		counter--;
 	}
 	
+	/** Deletes the specified rows. */
+	public void deleteRows(int index1, int index2) {
+		if (index1<0) index1=0;
+		int n = index2 - index1 + 1;
+		for (int i=index1; i<index1+n; i++)
+			deleteRow(index1);
+	}
+	
+	/** Deletes the specified column. */
+	public void deleteColumn(String column) {
+		int col = getColumnIndex(column);
+		if (col==COLUMN_NOT_FOUND)
+			throw new IllegalArgumentException("\""+column+"\" column not found");
+		columns[col] = null;
+		columnDeleted = true;
+	}
+
 	public synchronized void reset() {
 		counter = 0;
 		maxRows = 100;
@@ -783,6 +802,7 @@ public class ResultsTable implements Cloneable {
 		lastColumn = -1;
 		rowLabels = null;
 		stringColumns = null;
+		columnDeleted = false;
 	}
 	
 	/** Returns the index of the last used column, or -1 if no columns are used. */
@@ -1277,6 +1297,10 @@ public class ResultsTable implements Cloneable {
 		if (title==null && this==Analyzer.getResultsTable() && IJ.isResultsWindow())
 			title = "Results";
 		return title;
+	}
+	
+	public boolean columnDeleted() {
+		return columnDeleted;
 	}
 		
 }

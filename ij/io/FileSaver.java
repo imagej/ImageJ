@@ -518,7 +518,7 @@ public class FileSaver {
 	/** Save the stack as raw data using the specified path. */
 	public boolean saveAsRawStack(String path) {
 		if (fi.nImages==1)
-			{IJ.write("This is not a stack"); return false;}
+			{IJ.log("This is not a stack"); return false;}
 		fi.intelByteOrder = Prefs.intelByteOrder;
 		boolean signed16Bit = false;
 		Object[] stack = null;

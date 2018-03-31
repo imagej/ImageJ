@@ -247,7 +247,6 @@ public class RoiDecoder {
 					roi = new Line(x1, y1, x2, y2);
 					roi.setDrawOffset(drawOffset);
 				}
-				//IJ.write("line roi: "+x1+" "+y1+" "+x2+" "+y2);
 				break;
 			case polygon: case freehand: case traced: case polyline: case freeline: case angle: case point:
 					//IJ.log("type: "+type);
@@ -268,7 +267,6 @@ public class RoiDecoder {
 						if (ytmp<0) ytmp = 0;
 						x[i] = left+xtmp;
 						y[i] = top+ytmp;
-						//IJ.write(i+" "+getShort(base1+i*2)+" "+getShort(base2+i*2));
 					}
 					if (subPixelResolution) {
 						xf = new float[n];

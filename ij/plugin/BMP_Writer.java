@@ -180,7 +180,6 @@ public class BMP_Writer implements PlugIn {
    bfo.write (0x00);
      counter += pad;
    }
-   // IJ.write("counter of bytes written = " + counter);
  }
 
 
@@ -196,7 +195,6 @@ public class BMP_Writer implements PlugIn {
    fo.write (intToWord (bfReserved1));
    fo.write (intToWord (bfReserved2));
    fo.write (intToDWord (bfOffBits));
-   // IJ.write("biClrUsed = " + biClrUsed + " bfSize = " + bfSize + " bfOffBits=" + bfOffBits);
  }
 
  /*
