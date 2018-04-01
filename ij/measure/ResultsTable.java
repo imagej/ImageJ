@@ -598,7 +598,7 @@ public class ResultsTable implements Cloneable {
 			sb.append(delimiter);
 		}
 		for (int i=0; i<=lastColumn; i++) {
-			if (columns[i]!=null && !"*Deleted*".equals(headings[i])) {
+			if (columns[i]!=null) {
 				String value = getValueAsString(i,row);
 				if (quoteCommas) {
 					if (value.contains(","))
