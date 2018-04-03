@@ -360,7 +360,7 @@ public class OverlayCommands implements PlugIn {
 	}
 	
 	public static void listRois(Roi[] rois) {
-		ArrayList list = new ArrayList();
+		ResultsTable rt = new ResultsTable();
 		for (int i=0; i<rois.length; i++) {
 			if (rois[i]==null)
 				continue;
@@ -374,11 +374,22 @@ public class OverlayCommands implements PlugIn {
 			int c = rois[i].getCPosition();
 			int z = rois[i].getZPosition();
 			int t = rois[i].getTPosition();
-			list.add(i+"\t"+rois[i].getName()+"\t"+rois[i].getTypeAsString()+"\t"+r.x
-			+"\t"+r.y+"\t"+r.width+"\t"+r.height+"\t"+color+"\t"+fill+"\t"+sWidth+"\t"+position+"\t"+c+"\t"+z+"\t"+t);
+			rt.setValue("Index", i, i);
+			rt.setValue("Name", i, rois[i].getName());
+			rt.setValue("Type", i, rois[i].getTypeAsString());
+			rt.setValue("X", i, r.x);
+			rt.setValue("Y", i, r.y);
+			rt.setValue("Width", i, r.width);		
+			rt.setValue("Height", i, r.height);		
+			rt.setValue("Color", i, color);		
+			rt.setValue("Fill", i, fill);		
+			rt.setValue("LWidth", i, sWidth);		
+			rt.setValue("Pos", i, position);	
+			rt.setValue("C", i, c);	
+			rt.setValue("Z", i, z);	
+			rt.setValue("T", i, t);	
 		}
-        String headings = "Index\tName\tType\tX\tY\tWidth\tHeight\tColor\tFill\tLWidth\tPos\tC\tZ\tT";
-		new TextWindow("Overlay Elements", headings, list, 600, 400);
+		rt.show("Overlay Elements");
 	}
 	
 }

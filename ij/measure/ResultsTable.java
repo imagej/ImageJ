@@ -1092,7 +1092,7 @@ public class ResultsTable implements Cloneable {
 	public void saveAs(String path) throws IOException {
 		if (size()==0 && lastColumn<0) return;
 		if (path==null || path.equals("")) {
-			SaveDialog sd = new SaveDialog("Save Results", "Results", Prefs.defaultResultsExtension());
+			SaveDialog sd = new SaveDialog("Save Table", "Table", Prefs.defaultResultsExtension());
 			String file = sd.getFileName();
 			if (file==null) return;
 			path = sd.getDirectory() + file;

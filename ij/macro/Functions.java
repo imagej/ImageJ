@@ -52,7 +52,6 @@ public class Functions implements MacroConstants, Measurements {
     Roi roiClipboard;
     GeneralPath overlayPath;
     boolean overlayDrawLabels;
-    String tableTitle;
 
 	// save/restore settings
 	boolean saveSettingsCalled;
@@ -142,7 +141,7 @@ public class Functions implements MacroConstants, Measurements {
 			case SET_LUT: setLut(); break;
 			case GET_COORDINATES: getCoordinates(); break;
 			case MAKE_SELECTION: makeSelection(); break;
-			case SET_RESULT: setResult(); break;
+			case SET_RESULT: setResult(false); break;
 			case UPDATE_RESULTS: updateResults(); break;
 			case SET_BATCH_MODE: setBatchMode(); break;
 			case PLOT: doPlot(); break;
@@ -1197,12 +1196,15 @@ public class Functions implements MacroConstants, Measurements {
 		return rt;
 	}
 
-	void setResult() {
+	void setResult(boolean add) {
 		ResultsTable rt = null;
 		interp.getLeftParen();
 		String column = getString();
-		interp.getComma();
-		int row = (int)interp.getExpression();
+		int row = Integer.MAX_VALUE;
+		if (!add) {
+			interp.getComma();
+			row = (int)interp.getExpression();
+		}
 		interp.getComma();
 		double value = 0.0;
 		String stringValue = null;
@@ -1219,6 +1221,8 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getRightParen();
 		if (rt==null)
 			rt = Analyzer.getResultsTable();
+		if (row==Integer.MAX_VALUE)
+			row = rt.size()-1;
 		if (row<0 || row>rt.size())
 			interp.error("Row ("+row+") out of range");
 		if (row==rt.size())
@@ -6361,12 +6365,16 @@ public class Functions implements MacroConstants, Measurements {
 		if (!(interp.token==WORD || interp.token==NUMERIC_FUNCTION || interp.token==PREDEFINED_FUNCTION))
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
-		if (name.equals("size"))
-			return getResultsTable().size();
+		if (name.equals("create"))
+			return resetTable();
+		else if (name.equals("size"))
+			return getResultsTable(getTitleArg()).size();
 		else if (name.equals("get"))
 			return getResult();
 		else if (name.equals("set"))
-			return setTableValue();
+			return setTableValue(false);
+		else if (name.equals("add"))
+			return setTableValue(true);
 		else if (name.equals("reset"))
 			return resetTable();
 		else if (name.equals("update"))
@@ -6377,40 +6385,51 @@ public class Functions implements MacroConstants, Measurements {
 			return deleteTableRows();
 		else if (name.equals("deleteColumn"))
 			return deleteTableColumn();
-		else if (name.equals("hideRowNumbers"))
-			return hideRowNumbers();
-		else if (name.equals("rename")) {
+		else if (name.equals("save"))
+			return saveTable();
+		else if (name.equals("hideRowNumbers")) {
+			getResultsTable(getTitleArg()).showRowNumbers(false);
+			return Double.NaN;
+		} else if (name.equals("rename")) {
 			renameResults();
+			return Double.NaN;
+		} else if (name.equals("addRow")) {
+			getResultsTable(getTitleArg()).incrementCounter();
 			return Double.NaN;
 		} else
 			interp.error("Unrecognized function name");
 		return Double.NaN;
 	}
 	
-	double setTableValue() {
-		setResult();
+	double setTableValue(boolean add) {
+		setResult(add);
 		resultsPending = false;
 		return Double.NaN;
 	}
 	
 	double updateTable() {
-		ResultsTable rt = getResultsTable();
-		rt.show(tableTitle);
+		String title = getTitleArg();
+		ResultsTable rt = getResultsTable(title);
+		rt.show(title);
 		return Double.NaN;
 	}
 
 	double resetTable() {
-		ResultsTable rt = getResultsTable();
-		rt.reset();
+		String title = getTitleArg();
+		ResultsTable rt = null;
+		if (getRT(title)==null) {
+			rt = new ResultsTable();
+			rt.show(title);
+		} else {
+			rt = getResultsTable(title);
+			rt.reset();
+		}
 		return Double.NaN;
 	}
 
 	double applyMacroToTable() {
 		String macro = getFirstString();
-		String title = "Results";
-		if (interp.nextToken()==',')
-			title = getNextString();
-		interp.getRightParen();
+		String title = getTitle();
 		if (macro.equals("Results")) {
 			macro = title;
 			title = "Results";			
@@ -6423,13 +6442,8 @@ public class Functions implements MacroConstants, Measurements {
 	
 	double deleteTableRows() {
 		int row1 = (int)getFirstArg();
-		int row2 = (int)getNextArg();	
-		String title = "Results";
-		if (interp.nextToken()==',') {
-			interp.getComma();
-			title = getString();
-		}
-		interp.getRightParen();
+		int row2 = (int)getNextArg();
+		String title = getTitle();
 		ResultsTable rt = getResultsTable(title);
 		rt.deleteRows(row1, row2);
 		rt.show(title);
@@ -6438,12 +6452,7 @@ public class Functions implements MacroConstants, Measurements {
 	
 	double deleteTableColumn() {
 		String column = getFirstString();
-		String title = "Results";
-		if (interp.nextToken()==',') {
-			interp.getComma();
-			title = getString();
-		}
-		interp.getRightParen();
+		String title = getTitle();
 		ResultsTable rt = getResultsTable(title);		
 		try {
 			rt.deleteColumn(column);
@@ -6454,33 +6463,59 @@ public class Functions implements MacroConstants, Measurements {
 		return Double.NaN;
 	}
 
-	double hideRowNumbers() {
-		ResultsTable rt = getResultsTable();			
-		rt.showRowNumbers(false);
+	double saveTable() {
+		String path = getFirstString();
+		ResultsTable rt = getResultsTable(getTitle());		
+		try {
+			rt.saveAs(path);
+		} catch (Exception e) {
+			String msg = e.getMessage();
+			if (!msg.startsWith("Macro canceled"))
+				interp.error(msg);
+		}
 		return Double.NaN;
 	}
 	
-	ResultsTable getResultsTable() {
-		tableTitle = "Results";
+	String getTitle() {
+		String title = "Results";
+		if (interp.nextToken()==',') {
+			interp.getComma();
+			title = getString();
+		}
+		interp.getRightParen();
+		return title;
+	}
+
+	String getTitleArg() {
+		String title = "Results";
 		if (interp.nextToken() == '(') {
 			interp.getLeftParen();
 			if (interp.nextToken()!=')')
-				tableTitle = getString();
+				title = getString();
 			interp.getRightParen();
 		}
-		return getResultsTable(tableTitle);
+		return title;
 	}
 
 	ResultsTable getResultsTable(String title) {
+		ResultsTable rt = getRT(title);
+		if (rt==null && "Results".equals(title))
+			rt = Analyzer.getResultsTable();
+		if (rt==null)
+			interp.error("\""+title+"\" table not found");
+		return rt;
+	}
+
+	ResultsTable getRT(String title) {
 		ResultsTable rt = null;
 		Frame frame = WindowManager.getFrame(title);
 		if (frame==null && "Results".equals(title))
 			rt = Analyzer.getResultsTable();
 		else {
 			if (frame==null)
-				interp.error("\""+title+"\" table not found");
+				return null;
 			if (!(frame instanceof TextWindow))
-				interp.error("\""+title+"\" is not a table");
+				return null;
 			rt = ((TextWindow)frame).getResultsTable();
 		}
 		return rt;

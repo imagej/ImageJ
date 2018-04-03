@@ -5,13 +5,16 @@
 </head>
 <body>
 
-<li> <u>1.52a 1 April 2018</u>
+<li> <u>1.52a 2 April 2018</u>
 <ul>
 <li> Thanks to Michael Schmid, added <i>Apply Macro</i>
 commands to the <i>Edit</i> and contextual (right click pop-up)
 menus of table windows.
 Also added the ResultsTable.applyMacro() method
 (<a href="http://wsr.imagej.net/macros/ResultsTableMacro.js">JavaScript example</a>).
+<li> Thanks to Ron DeSpain, tables created by the <i>Image&gt;Overlay&gt;List Elements</i>
+command can be renamed "Results" and the values accessed using the getResults()
+and getStringResult() macro functions.
 <li> Thanks to Michael Kaul, added an optional 5th argument
 ('stepSize') to the Dialog.addSlider() macro function
 (<a href="http://wsr.imagej.net/macros/SliderDemo.txt">example</a>).
@@ -19,8 +22,12 @@ Also added the ResultsTable.applyMacro() method
 “Cancel button on right” option to the <i>Edit&gt;Options&gt;Appearance</i>
 dialog box. 
 <li> Thanks to Stein Rorvik, added toScaled(x,y,z) and toUnscaled(x,y,z) macro functions.
-<li> Added 10 macro functions that work with tables ('title' argument is optional):
+<li> Added 12 macro functions that work with tables, where the 'title' argument is optional
+(<a href="http://wsr.imagej.net/macros/Sine_Cosine_Table2.txt">example1</a>,
+<a href="http://wsr.imagej.net/macros/Sine_Cosine_Table3.txt">example2</a>,
+<a href="http://wsr.imagej.net/macros/Access_Plot_Data.txt">example3</a>):
   <ul>
+  <li> Table.create(title) - opens a new table
   <li> Table.size(title) - the number of rows in the table
   <li> Table.get(columnName, rowIndex, title) - returns a numeric value
   <li> Table.set(columnName, rowIndex, value, title) - sets numeric or string value
@@ -28,6 +35,7 @@ dialog box.
   <li> Table.reset(title) - resets (clears) the table
   <li> Table.applyMacro(macro, title) - applies macro code to table
   <li> Table.rename(title1, title2) - renames a table
+  <li> Table.save(filePath, title) - saves the table
   <li> Table.deleteRows(index1, index2,  title) - deletes specified rows
   <li> Table.deleteColumn(columnName,  title) - deletes specified column
   <li> Table.hideRowNumbers(title) - disables display of row numbers
