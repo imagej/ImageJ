@@ -15,6 +15,10 @@ class Variable implements MacroConstants, Cloneable {
         this.value = value;
     }
 
+    Variable(String str) {
+        this.str = str;
+    }
+
     Variable(int symTabIndex, double value, String str) {
         this.symTabIndex = symTabIndex;
         this.value = value;

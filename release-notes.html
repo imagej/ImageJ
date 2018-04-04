@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52a 2 April 2018</u>
+<li> <u>1.52a 3 April 2018</u>
 <ul>
 <li> Thanks to Michael Schmid, added <i>Apply Macro</i>
 commands to the <i>Edit</i> and contextual (right click pop-up)
@@ -22,7 +22,7 @@ and getStringResult() macro functions.
 “Cancel button on right” option to the <i>Edit&gt;Options&gt;Appearance</i>
 dialog box. 
 <li> Thanks to Stein Rorvik, added toScaled(x,y,z) and toUnscaled(x,y,z) macro functions.
-<li> Added 12 macro functions that work with tables, where the 'title' argument is optional
+<li> Added 13 macro functions that work with tables, where the 'title' argument is optional
 (<a href="http://wsr.imagej.net/macros/Sine_Cosine_Table2.txt">example1</a>,
 <a href="http://wsr.imagej.net/macros/Sine_Cosine_Table3.txt">example2</a>,
 <a href="http://wsr.imagej.net/macros/Access_Plot_Data.txt">example3</a>):
@@ -30,6 +30,7 @@ dialog box.
   <li> Table.create(title) - opens a new table
   <li> Table.size(title) - the number of rows in the table
   <li> Table.get(columnName, rowIndex, title) - returns a numeric value
+  <li> Table.getString(columnName, rowIndex, title) - returns a string value
   <li> Table.set(columnName, rowIndex, value, title) - sets numeric or string value
   <li> Table.update(title) - updates table window
   <li> Table.reset(title) - resets (clears) the table

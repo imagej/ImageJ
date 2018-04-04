@@ -36,6 +36,7 @@ public class Program implements MacroConstants {
 			addNumericFunctions();
 			addStringFunctions();
 			addArrayFunctions();
+			addVariableFunctions();
 			systemTable = new Symbol[stLoc+1];
 			for (int i=0; i<=stLoc; i++)
 				systemTable[i] = table[i];
@@ -74,6 +75,11 @@ public class Program implements MacroConstants {
 	void addArrayFunctions() {
 		for (int i=0; i<arrayFunctions.length; i++)
 			addSymbol(new Symbol(arrayFunctionIDs[i], arrayFunctions[i]));
+	}
+
+	void addVariableFunctions() {
+		for (int i=0; i<variableFunctions.length; i++)
+			addSymbol(new Symbol(variableFunctionIDs[i], variableFunctions[i]));
 	}
 
 	void addSymbol(Symbol sym) {
@@ -173,6 +179,7 @@ public class Program implements MacroConstants {
 			case NUMERIC_FUNCTION:
 			case STRING_FUNCTION:
 			case ARRAY_FUNCTION:
+			case VARIABLE_FUNCTION:
 			case USER_FUNCTION:
 				str = table[address].str;
 				break;
