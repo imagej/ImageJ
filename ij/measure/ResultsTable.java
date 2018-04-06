@@ -837,6 +837,8 @@ public class ResultsTable implements Cloneable {
 		The title must be "Results" if this table was obtained using 
 		ResultsTable.getResultsTable() or Analyzer.getResultsTable . */
 	public void show(String windowTitle) {
+		if (windowTitle==null)
+			windowTitle = "Results";
 		title = windowTitle;
 		if (!windowTitle.equals("Results") && this==Analyzer.getResultsTable())
 			IJ.log("ResultsTable.show(): the system ResultTable should only be displayed in the \"Results\" window.");
@@ -864,8 +866,10 @@ public class ResultsTable implements Cloneable {
 			TextWindow win;
 			if (frame!=null && frame instanceof TextWindow) {
 				win = (TextWindow)frame;
-				if (!IJ.isMacro() && (windowTitle==null || !windowTitle.startsWith("Counts_")))
+				if (win!=null) {
 					win.toFront();
+					WindowManager.setWindow(frame);
+				}
 			} else {
 				int width = getLastColumn()<=0?250:400;
 				if (showRowNumbers)
@@ -1168,7 +1172,7 @@ public class ResultsTable implements Cloneable {
 	/** Applies a macro to each row of the table; the columns are assigned variable names
 	 *  as given by getHeadingsAsVaribleNames(). New variables starting with an uppercase letter
 	 *  create a new column with this name.
-	 *  The variable 'rowIndex' is pre-defined.
+	 *  The variable 'row' (the row index) is pre-defined.
 	 *  Except for the row label (if existing), currently only supports numeric values, no Strings.
 	 *  @return false in case of a macro error */
 	public boolean applyMacro(String macro) {
@@ -1190,7 +1194,7 @@ public class ResultsTable implements Cloneable {
 				sb.append(Math.abs(getValueAsDouble(columnIndices[i], 0))); //avoid negative values since minus would be extra token
 			sb.append(',');
 		}
-		sb.append("rowIndex;\n");
+		sb.append("row;\n");
 		sb.append("function dummy() {}\n");
 		sb.append(macro);
 		sb.append(";\n");
@@ -1233,7 +1237,7 @@ public class ResultsTable implements Cloneable {
 					}
 				}
 			}
-			interp.setVariable("rowIndex", row);
+			interp.setVariable("row", row);
 			interp.run(PCStart);
 			if (interp.wasError())
 				return false;

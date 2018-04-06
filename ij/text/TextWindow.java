@@ -116,6 +116,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 			if (!IJ.debugMode) GUI.center(this);
 		}
 		show();
+		WindowManager.setWindow(this);
 	}
 
 	/**

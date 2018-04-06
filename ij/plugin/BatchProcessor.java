@@ -43,7 +43,7 @@ import java.util.Vector;
 		+"virtual stack. Make sure the <i>Output</i> folder is empty<br>"
 		+"before clicking on <i>Process</i>.<br>"
 		+"<br>"
-		+"In the macro code, the 'i' (index) and 'n' (stack size) variables<br>"
+		+"In the macro code, the 'i' (slice index) and 'n' (stack size) variables<br>"
 		+"are predefined. Call <i>setOption('SaveBatchOutput',false)</i> to<br>"
 		+"prevent the image currently being processed from being saved,<br>"
 		+"effectively removing it from the output virtual stack.<br> <br>"

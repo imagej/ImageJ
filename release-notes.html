@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52a 3 April 2018</u>
+<li> <u>1.52a 5 April 2018</u>
 <ul>
 <li> Thanks to Michael Schmid, added <i>Apply Macro</i>
 commands to the <i>Edit</i> and contextual (right click pop-up)
@@ -22,24 +22,27 @@ and getStringResult() macro functions.
 “Cancel button on right” option to the <i>Edit&gt;Options&gt;Appearance</i>
 dialog box. 
 <li> Thanks to Stein Rorvik, added toScaled(x,y,z) and toUnscaled(x,y,z) macro functions.
-<li> Added 13 macro functions that work with tables, where the 'title' argument is optional
-(<a href="http://wsr.imagej.net/macros/Sine_Cosine_Table2.txt">example1</a>,
-<a href="http://wsr.imagej.net/macros/Sine_Cosine_Table3.txt">example2</a>,
-<a href="http://wsr.imagej.net/macros/Access_Plot_Data.txt">example3</a>):
+<li> Added 13 macro functions that work with tables. They operate on the
+current (frontmost) table or an optional title argument can be provided (e.g., Table.size("My Table")).
+Examples: <a href="http://wsr.imagej.net/macros/Sine_Cosine_Table2.txt">Sine/Cosine1</a>,
+<a href="http://wsr.imagej.net/macros/Sine_Cosine_Table3.txt">Sine/Cosine2</a>,
+<a href="http://wsr.imagej.net/macros/Access_Plot_Data.txt">Plot Data</a>,
+<a href="http://wsr.imagej.net/macros/Access_Summary_Table.txt">Summary</a>,
+<a href="http://wsr.imagej.net/macros/Access_Overlay_Elements_Table.txt">Overlay Elements</a>.
   <ul>
-  <li> Table.create(title) - opens a new table
-  <li> Table.size(title) - the number of rows in the table
-  <li> Table.get(columnName, rowIndex, title) - returns a numeric value
-  <li> Table.getString(columnName, rowIndex, title) - returns a string value
-  <li> Table.set(columnName, rowIndex, value, title) - sets numeric or string value
-  <li> Table.update(title) - updates table window
-  <li> Table.reset(title) - resets (clears) the table
-  <li> Table.applyMacro(macro, title) - applies macro code to table
+  <li> Table.create() - opens a new table
+  <li> Table.size() - the number of rows in the table
+  <li> Table.get(columnName, rowIndex) - returns a numeric value
+  <li> Table.getString(columnName, rowIndex) - returns a string value
+  <li> Table.set(columnName, rowIndex, value) - sets numeric or string value
+  <li> Table.update() - updates table window
+  <li> Table.reset() - resets (clears) the table
+  <li> Table.applyMacro(macro) - applies macro code to table
   <li> Table.rename(title1, title2) - renames a table
-  <li> Table.save(filePath, title) - saves the table
-  <li> Table.deleteRows(index1, index2,  title) - deletes specified rows
-  <li> Table.deleteColumn(columnName,  title) - deletes specified column
-  <li> Table.hideRowNumbers(title) - disables display of row numbers
+  <li> Table.save(filePath) - saves the table
+  <li> Table.deleteRows(index1, index2) - deletes specified rows
+  <li> Table.deleteColumn(columnName) - deletes specified column
+  <li> Table.hideRowNumbers() - disables display of row numbers
 </ul>
 <li> Thanks to Michael Schmid, added the Tools.copyFile(path1,path2) method.
 <li> Thanks to Fred Damen, fixed a bug that caused the SubHyperstackMaker.makeSubhyperstack()

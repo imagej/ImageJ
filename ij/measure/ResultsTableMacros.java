@@ -14,7 +14,7 @@ import java.awt.event.*;
 */
 public class ResultsTableMacros implements Runnable, DialogListener, ActionListener, KeyListener {
 	private static String NAME = "TableMacro.ijm";
-	private String defaultMacro = "Sin=sin(rowIndex*0.1);\nCos=cos(rowIndex*0.1);\nSqr=Sin*Sin+Cos*Cos;";
+	private String defaultMacro = "Sin=sin(row*0.1);\nCos=cos(row*0.1);\nSqr=Sin*Sin+Cos*Cos;";
 	private GenericDialog gd;
 	private ResultsTable rt, rtBackup;
 	private Button runButton, resetButton, openButton, saveButton;
@@ -39,7 +39,7 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 		String[] temp = rt.getHeadingsAsVariableNames();
 		String[] variableNames = new String[temp.length+2];
 		variableNames[0] = "Insert...";
-		variableNames[1] = "rowIndex";
+		variableNames[1] = "row";
 		for (int i=2; i<variableNames.length; i++)
 			variableNames[i] = temp[i-2];
 		String dialogTitle = "Apply Macro to "+(title!=null?"\""+title+"\"":"Table");
@@ -77,13 +77,14 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 				"<li>The macro, or a selection, is applied to each row of the table."+
 				"<li>A new variable starting with an Uppercase character creates<br>a new column."+
 				"<li>A new variable starting with a lowercase character is temporary."+
-				"<li>The variable <b>rowIndex</b> is pre-defined.\n"+
+				"<li>The variable <b>row</b> (row index) is pre-defined.\n"+
 				"<li>String operations are supported for the 'Label' column only (if<br>enabled"+
 				"with Analyze&gt;Set Measurements&gt;Display Label)."+				
-				"<li>Click \"<b>Run</b>\" to apply the macro code to the table."+
+				"<li>Click \"<b>Run</b>\", or press "+(IJ.isMacOSX()?"cmd":"ctrl") + "-r, to apply the macro code to the table."+
 				"<li>Select a line and press "+(IJ.isMacOSX()?"cmd":"ctrl") + "-r to apply a line of macro code."+
 				"<li>Click \"<b>Reset</b>\" to revert to the original version of the table."+
 				"<li>The code is saved at <b>macros/TableMacro.ijm</b>, and the<br>\"Apply Macro\" command is recorded, when you click \"<b>OK</b>\"."+
+				"<li>All <b>Table.</b> macro functions (such as Table.size) refer to the<br>current (frontmost) table unless the table name is given."+
 				"</ul></body></html>");
 
 		gd.addDialogListener(this);
@@ -198,7 +199,8 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 		if (macro==null || macro.startsWith("Error:"))
 			return defaultMacro;
 		else {
-			macro = macro.replaceAll("rowNumber", "rowIndex");
+			macro = macro.replaceAll("rowNumber", "row");
+			macro = macro.replaceAll("rowIndex", "row");
 			return macro;
 		}
 	}
