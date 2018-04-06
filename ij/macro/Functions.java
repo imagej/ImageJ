@@ -52,7 +52,7 @@ public class Functions implements MacroConstants, Measurements {
     Roi roiClipboard;
     GeneralPath overlayPath;
     boolean overlayDrawLabels;
-	ResultsTable currentTable;
+    ResultsTable currentTable;
 
 	// save/restore settings
 	boolean saveSettingsCalled;

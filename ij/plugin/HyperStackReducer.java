@@ -51,6 +51,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 			imp2.setOpenAsHyperStack(true);
 		} else
 			imp2 = imp.createHyperStack(title2, channels2, slices2, frames2, imp.getBitDepth());
+		imp2.setProperty("Info", (String)imp.getProperty("Info"));
 		reduce(imp2);
 		if (channels2>1 && channels2==imp.getNChannels() && imp.isComposite()) {
 			int mode = ((CompositeImage)imp).getMode();
