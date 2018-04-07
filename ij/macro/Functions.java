@@ -142,7 +142,7 @@ public class Functions implements MacroConstants, Measurements {
 			case SET_LUT: setLut(); break;
 			case GET_COORDINATES: getCoordinates(); break;
 			case MAKE_SELECTION: makeSelection(); break;
-			case SET_RESULT: setResult(); break;
+			case SET_RESULT: setResult(null); break;
 			case UPDATE_RESULTS: updateResults(); break;
 			case SET_BATCH_MODE: setBatchMode(); break;
 			case PLOT: doPlot(); break;
@@ -1212,8 +1212,7 @@ public class Functions implements MacroConstants, Measurements {
 		return rt;
 	}
 
-	void setResult() {
-		ResultsTable rt = null;
+	void setResult(ResultsTable rt) {
 		interp.getLeftParen();
 		String column = getString();
 		interp.getComma();
@@ -6369,7 +6368,7 @@ public class Functions implements MacroConstants, Measurements {
 		return Double.NaN;
 	}
 	
-	Variable doTable() {
+	private Variable doTable() {
 		interp.getToken();
 		if (interp.token!='.')
 			interp.error("'.' expected");
@@ -6399,6 +6398,8 @@ public class Functions implements MacroConstants, Measurements {
 			return deleteTableColumn();
 		else if (name.equals("save"))
 			return saveTable();
+		else if (name.equals("title"))
+			return new Variable(getResultsTable(getTitleArg()).getTitle());
 		else if (name.equals("hideRowNumbers")) {
 			getResultsTable(getTitleArg()).showRowNumbers(false);
 			return new Variable();
@@ -6410,21 +6411,24 @@ public class Functions implements MacroConstants, Measurements {
 		return new Variable();
 	}
 	
-	Variable setTableValue() {
-		setResult();
+	private Variable setTableValue() {
+		ResultsTable rt = getRT(null);
+		//IJ.log("set: "+rt);
+		setResult(rt);
 		return new Variable();
 	}
 	
-	Variable updateTable() {
+	private Variable updateTable() {
 		String title = getTitleArg();
 		ResultsTable rt = getResultsTable(title);
-		rt.show(title);
+		//IJ.log("update: "+rt.hashCode()+"  "+rt.getTitle());
+		rt.show(rt.getTitle());
 		if (rt==Analyzer.getResultsTable())
 			resultsPending = false;
 		return new Variable();
 	}
 
-	Variable resetTable() {
+	private Variable resetTable() {
 		String title = getTitleArg();
 		ResultsTable rt = null;
 		if (getRT(title)==null) {
@@ -6438,8 +6442,8 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		return new Variable();
 	}
-
-	Variable applyMacroToTable() {
+	
+	private Variable applyMacroToTable() {
 		String macro = getFirstString();
 		String title = getTitle();
 		if (macro.equals("Results")) {
@@ -6452,7 +6456,7 @@ public class Functions implements MacroConstants, Measurements {
 		return new Variable();
 	}
 	
-	Variable deleteTableRows() {
+	private Variable deleteTableRows() {
 		int row1 = (int)getFirstArg();
 		int row2 = (int)getNextArg();
 		String title = getTitle();
@@ -6462,7 +6466,7 @@ public class Functions implements MacroConstants, Measurements {
 		return new Variable();
 	}
 	
-	Variable deleteTableColumn() {
+	private Variable deleteTableColumn() {
 		String column = getFirstString();
 		String title = getTitle();
 		ResultsTable rt = getResultsTable(title);		
@@ -6475,7 +6479,7 @@ public class Functions implements MacroConstants, Measurements {
 		return new Variable();
 	}
 
-	Variable saveTable() {
+	private Variable saveTable() {
 		String path = getFirstString();
 		ResultsTable rt = getResultsTable(getTitle());		
 		try {
@@ -6488,7 +6492,7 @@ public class Functions implements MacroConstants, Measurements {
 		return new Variable();
 	}
 	
-	String getTitle() {
+	private String getTitle() {
 		String title = null;
 		if (interp.nextToken()==',') {
 			interp.getComma();
@@ -6498,7 +6502,7 @@ public class Functions implements MacroConstants, Measurements {
 		return title;
 	}
 
-	String getTitleArg() {
+	private String getTitleArg() {
 		String title = null;
 		if (interp.nextToken() == '(') {
 			interp.getLeftParen();
@@ -6509,9 +6513,10 @@ public class Functions implements MacroConstants, Measurements {
 		return title;
 	}
 
-	ResultsTable getResultsTable(String title) {
+	private ResultsTable getResultsTable(String title) {
 		ResultsTable rt = getRT(title);
-		if (title==null) title="Results";
+		if (title==null)
+			title="Results";
 		if (rt==null && "Results".equals(title))
 			rt = Analyzer.getResultsTable();
 		if (rt==null)
@@ -6519,8 +6524,8 @@ public class Functions implements MacroConstants, Measurements {
 		return rt;
 	}
 
-	ResultsTable getRT(String title) {
-		//System.out.println("getRT: "+title);
+	private ResultsTable getRT(String title) {
+		//IJ.log("getRT: "+title+" "+currentTable);
 		if (interp.applyMacroTable!=null && title==null)
 			return interp.applyMacroTable; 
 		ResultsTable rt = null;
@@ -6529,7 +6534,6 @@ public class Functions implements MacroConstants, Measurements {
 			frame = WindowManager.getFrontWindow();
 			if (frame!=null && (frame instanceof TextWindow)) {
 				rt = ((TextWindow)frame).getResultsTable();
-				//System.out.println("getRT2: "+frame+" "+rt);
 				if (rt==null) {
 					if (currentTable!=null)
 						return currentTable;
@@ -6540,18 +6544,20 @@ public class Functions implements MacroConstants, Measurements {
 				}
 			}
 		}
-		if (title==null) title="Results";
+		if (title==null && rt==null && currentTable!=null)
+			return currentTable;
+		if (title==null)
+			title="Results";
+		if (title.equals("Results"))
+			rt = Analyzer.getResultsTable();
 		if (frame==null)
 			frame = WindowManager.getFrame(title);
-		if (frame==null && "Results".equals(title)) {
-			rt = Analyzer.getResultsTable();
-		} else {
-			if (frame==null)
-				return null;
-			if (!(frame instanceof TextWindow))
-				return null;
-			rt = ((TextWindow)frame).getResultsTable();
-		}
+		if (frame==null)
+			return null;
+		if (!(frame instanceof TextWindow))
+			return null;
+		rt = ((TextWindow)frame).getResultsTable();
+		currentTable = rt;
 		return rt;
 	}
 

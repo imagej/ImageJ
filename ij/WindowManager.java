@@ -393,6 +393,7 @@ public class WindowManager {
 
 	/** The specified Window becomes the front window. */
 	public static void setWindow(Window win) {
+		//System.out.println("setWindow: "+win);
 		frontWindow = win;
 		if (win instanceof Frame)
 			frontFrame = (Frame)win;
@@ -402,7 +403,7 @@ public class WindowManager {
 	public static void setWindow(Frame win) {
 		frontWindow = win;
 		frontFrame = win;
-		//IJ.log("Set window: "+(win!=null?win.getTitle():"null"));
+		//System.out.println("Set window: "+(win!=null?win.getTitle():"null"));
     }
 
 	/** Closes all windows. Stops and returns false if an image or Editor "save changes" dialog is canceled. */
