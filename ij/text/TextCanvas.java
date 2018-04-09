@@ -31,7 +31,6 @@ class TextCanvas extends Canvas {
 		paint(g);
 	}
   
-static int count;
 	public void paint(Graphics g) {
 		if (tp==null || g==null) return;
 		Dimension d = getSize();
@@ -42,7 +41,7 @@ static int count;
 		g.setColor(Color.lightGray);
 		if (iImage==null)
 			makeImage(iWidth,iHeight);
-		if (tp.iRowHeight==0 || (tp.iColWidth[0]==0&&tp.iRowCount>0)) {
+		if (tp.iRowHeight==0 || (tp.iColWidth.length>0 && tp.iColWidth[0]==0&&tp.iRowCount>0)) {
 			tp.iRowHeight=fMetrics.getHeight()+2;
 			for(int i=0;i<tp.iColCount;i++)
 				calcAutoWidth(i);

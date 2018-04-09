@@ -795,7 +795,7 @@ public class Interpreter implements MacroConstants {
 			if (type==TABLE) {
 				int token2 = pgm.code[pc+4];
 				String name = pgm.table[token2>>TOK_SHIFT].str;
-				if (name.equals("getString")||name.equals("title"))
+				if (name.equals("getString")||name.equals("title")||name.equals("headings"))
 					return Variable.STRING;
 			}
 		}

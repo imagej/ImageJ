@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52a 7 April 2018</u>
+<li> <u>1.52a 8 April 2018</u>
 <ul>
 <li> Thanks to Michael Schmid, added <i>Apply Macro</i>
 commands to the <i>Edit</i> and contextual (right click pop-up)
@@ -22,17 +22,18 @@ and getStringResult() macro functions.
 “Cancel button on right” option to the <i>Edit&gt;Options&gt;Appearance</i>
 dialog box. 
 <li> Thanks to Stein Rorvik, added toScaled(x,y,z) and toUnscaled(x,y,z) macro functions.
-<li> Added 14 macro functions that work with tables. They operate on the
+<li> Added 15 macro functions that work with tables. They operate on the
 current (frontmost) table or an optional title argument can be provided (e.g., Table.size("My Table")).
-Examples: <a href="http://wsr.imagej.net/macros/Sine_Cosine_Table2.txt">Sine/Cosine1</a>,
-<a href="http://wsr.imagej.net/macros/Sine_Cosine_Table3.txt">Sine/Cosine2</a>,
+Examples: <a href="http://wsr.imagej.net/macros/Sine_Cosine_Table2.txt">Sine/Cosine</a>,
+<a href="http://wsr.imagej.net/macros/Make_Duplicate_Table.txt">Duplicate</a>,
 <a href="http://wsr.imagej.net/macros/Access_Plot_Data.txt">Plot Data</a>,
 <a href="http://wsr.imagej.net/macros/Access_Summary_Table.txt">Summary</a> and
 <a href="http://wsr.imagej.net/macros/Access_Overlay_Elements_Table.txt">Overlay Elements</a>.
   <ul>
   <li> Table.create() - opens a new table
-  <li> Table.size() - the number of rows in the table
-  <li> Table.title() - the title of the current table
+  <li> Table.size() - number of rows in the table
+  <li> Table.title() - title of the current table
+  <li> Table.headings() - column headings as a tab-delimited string
   <li> Table.get(columnName, rowIndex) - returns a numeric value
   <li> Table.getString(columnName, rowIndex) - returns a string value
   <li> Table.set(columnName, rowIndex, value) - sets numeric or string value

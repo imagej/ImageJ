@@ -1299,7 +1299,7 @@ public class ResultsTable implements Cloneable {
 	}
 	
 	public String getTitle() {
-		if (title==null && this==Analyzer.getResultsTable() && IJ.isResultsWindow())
+		if (title==null && this==Analyzer.getResultsTable())
 			title = "Results";
 		return title;
 	}

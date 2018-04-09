@@ -6400,6 +6400,8 @@ public class Functions implements MacroConstants, Measurements {
 			return saveTable();
 		else if (name.equals("title"))
 			return new Variable(getResultsTable(getTitleArg()).getTitle());
+		else if (name.equals("headings"))
+			return new Variable(getResultsTable(getTitleArg()).getColumnHeadings());
 		else if (name.equals("hideRowNumbers")) {
 			getResultsTable(getTitleArg()).showRowNumbers(false);
 			return new Variable();
@@ -6431,6 +6433,17 @@ public class Functions implements MacroConstants, Measurements {
 	private Variable resetTable() {
 		String title = getTitleArg();
 		ResultsTable rt = null;
+		if ("Results".equals(title)) {
+			rt = Analyzer.getResultsTable();
+			rt.reset();
+			rt.show("Results");
+			Frame frame = WindowManager.getFrame("Results");
+			if (frame!=null) {
+				frame.toFront();
+				WindowManager.setWindow(frame);
+			}
+			return new Variable();
+		}
 		if (getRT(title)==null) {
 			rt = new ResultsTable();
 			rt.show(title);
