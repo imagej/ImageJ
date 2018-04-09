@@ -31,7 +31,7 @@ public class ShortStatistics extends ImageStatistics {
 		}
 		if (limitToThreshold)
 			saveThreshold(minThreshold, maxThreshold, cal);
-		int[] hist = ip.getHistogram();
+		int[] hist = (ip instanceof ShortProcessor)?((ShortProcessor)ip).getHistogram2():ip.getHistogram();
 		if (maxThreshold>hist.length-1)
 			maxThreshold = hist.length-1;
 		histogram16 = hist;

@@ -988,6 +988,59 @@ public class ShortProcessor extends ImageProcessor {
 		return histogram;
 	}
 
+	synchronized int[] getHistogram2() {
+		if (mask!=null)
+			return getHistogram2(mask);
+		int max = 0;
+		int value;
+		for (int y=roiY; y<(roiY+roiHeight); y++) {
+			int index = y*width + roiX;
+			for (int i=0; i<roiWidth; i++) {
+				value = pixels[index++]&0xffff;
+				if (value>max)
+					max = value;
+			}
+		}
+		int size = max + 1;
+		if (size<256) size = 256;
+		int[] histogram = new int[size];
+		for (int y=roiY; y<(roiY+roiHeight); y++) {
+			int index = y*width + roiX;
+			for (int i=0; i<roiWidth; i++)
+					histogram[pixels[index++]&0xffff]++;
+		}
+		return histogram;
+	}
+
+	private int[] getHistogram2(ImageProcessor mask) {
+		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
+			throw new IllegalArgumentException(maskSizeError(mask));
+		byte[] mpixels = (byte[])mask.getPixels();		
+		int max = 0;
+		int value;
+		for (int y=roiY; y<(roiY+roiHeight); y++) {
+			int index = y*width + roiX;
+			for (int i=0; i<roiWidth; i++) {
+				value = pixels[index++]&0xffff;
+				if (value>max)
+					max = value;
+			}
+		}
+		int size = max + 1;
+		if (size<256) size = 256;
+		int[] histogram = new int[size];
+		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
+			int index = y * width + roiX;
+			int mi = my * roiWidth;
+			for (int i=0; i<roiWidth; i++) {
+				if (mpixels[mi++]!=0)
+					histogram[pixels[index]&0xffff]++;
+				index++;
+			}
+		}
+		return histogram;
+	}
+	
 	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {
 		if (minThreshold==NO_THRESHOLD)
 			{resetThreshold(); return;}
