@@ -284,7 +284,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	
 	void handleDoubleClick() {
 		boolean overlayList = "Overlay Elements".equals(title);
-		if (selStart<0 || selStart!=selEnd || (iColCount!=1&&!overlayList)) return;
+		if (selStart<0 || selStart!=selEnd || (iColCount!=1&&!overlayList))
+			return;
 		boolean doubleClick = System.currentTimeMillis()-mouseDownTime<=DOUBLE_CLICK_THRESHOLD;
 		mouseDownTime = System.currentTimeMillis();
 		if (doubleClick) {

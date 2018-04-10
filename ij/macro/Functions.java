@@ -6402,6 +6402,8 @@ public class Functions implements MacroConstants, Measurements {
 			return new Variable(getResultsTable(getTitleArg()).getTitle());
 		else if (name.equals("headings"))
 			return new Variable(getResultsTable(getTitleArg()).getColumnHeadings());
+		else if (name.equals("showRowNumbers"))
+			return showRowNumbers();
 		else if (name.equals("hideRowNumbers")) {
 			getResultsTable(getTitleArg()).showRowNumbers(false);
 			return new Variable();
@@ -6435,13 +6437,10 @@ public class Functions implements MacroConstants, Measurements {
 		ResultsTable rt = null;
 		if ("Results".equals(title)) {
 			rt = Analyzer.getResultsTable();
+			rt.showRowNumbers(false);
 			rt.reset();
 			rt.show("Results");
-			Frame frame = WindowManager.getFrame("Results");
-			if (frame!=null) {
-				frame.toFront();
-				WindowManager.setWindow(frame);
-			}
+			toFront("Results");
 			return new Variable();
 		}
 		if (getRT(title)==null) {
@@ -6450,10 +6449,21 @@ public class Functions implements MacroConstants, Measurements {
 		} else {
 			rt = getResultsTable(title);
 			rt.reset();
+			toFront(title);	
 			if (rt==Analyzer.getResultsTable())
 				resultsPending = true;
 		}
 		return new Variable();
+	}
+	
+	private void toFront(String title) {
+		if (title==null)
+			return;
+		Frame frame = WindowManager.getFrame(title);
+		if (frame!=null) {
+			frame.toFront();
+			WindowManager.setWindow(frame);
+		}
 	}
 	
 	private Variable applyMacroToTable() {
@@ -6489,6 +6499,13 @@ public class Functions implements MacroConstants, Measurements {
 		} catch (Exception e) {
 			interp.error(e.getMessage());
 		}
+		return new Variable();
+	}
+
+	private Variable showRowNumbers() {
+		boolean show = (int)getFirstArg()!=0;
+		ResultsTable rt = getResultsTable(getTitle());
+		rt.showRowNumbers(show);
 		return new Variable();
 	}
 

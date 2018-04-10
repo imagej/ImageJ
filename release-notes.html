@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52a 9 April 2018</u>
+<li> <u>1.52a 10 April 2018</u>
 <ul>
 <li> Thanks to Michael Schmid, added <i>Apply Macro</i>
 commands to the <i>Edit</i> and contextual (right click pop-up)
@@ -15,12 +15,15 @@ Also added the ResultsTable.applyMacro() method
 <li> Thanks to Ron DeSpain, tables created by the <i>Image&gt;Overlay&gt;List Elements</i>
 command can be renamed "Results" and the values accessed using the getResults()
 and getStringResult() macro functions.
+<li> Removed the obsolete <i>Plugins&gt;New&gt;Table</i> command. Macros
+that use this command will continue to work.
 <li> Thanks to Michael Kaul, added an optional 5th argument
 ('stepSize') to the Dialog.addSlider() macro function
 (<a href="http://wsr.imagej.net/macros/SliderDemo.txt">example</a>).
 <li> Thanks to Gabriel Landini, on Linux, added the
 “Cancel button on right” option to the <i>Edit&gt;Options&gt;Appearance</i>
 dialog box. 
+<li> The "showRowNumbers" property of the ResultsTable class now defaults to 'false'.
 <li> Thanks to Stein Rorvik, added toScaled(x,y,z) and toUnscaled(x,y,z) macro functions.
 <li> Added 15 macro functions that work with tables. They operate on the
 current (frontmost) table or an optional title argument can be provided (e.g., Table.size("My Table")).
@@ -44,7 +47,7 @@ Examples: <a href="http://wsr.imagej.net/macros/Sine_Cosine_Table2.txt">Sine/Cos
   <li> Table.save(filePath) - saves the table
   <li> Table.deleteRows(index1, index2) - deletes specified rows
   <li> Table.deleteColumn(columnName) - deletes specified column
-  <li> Table.hideRowNumbers() - disables display of row numbers
+  <li> Table.showRowNumbers(boolean) - enable/disable row numbers
 </ul>
 <li> Thanks to Michael Schmid, added the Tools.copyFile(path1,path2) method.
 <li> Thanks to Fred Damen, fixed a bug that caused the SubHyperstackMaker.makeSubhyperstack()
@@ -55,7 +58,8 @@ bug that could cause a NullPointerException.
 function to not preserve the modification date.
 <li> Thanks to Philippe Carl, fixed a bug that caused the <i>Image&gt;Hyperstacks&gt;Reduce Dimensionality</i>
 command to not preserve the "Info" image property.
-<li> Fixed a 1.51s regression that caused statistical calculations on 16-bit images to be much slower.
+<li> Fixed a 1.51s regression that caused statistical calculations on
+small 16-bit images or selections to be much slower.
 
 </ul> 
 

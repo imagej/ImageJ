@@ -152,8 +152,12 @@ public class Executer implements Runnable {
 				runCommand("Auto Threshold...");
 			else if ("Enhance Local Contrast (CLAHE)".equals(cmd)&&(String)table.get("CLAHE ")!=null)
 				runCommand("CLAHE ");
-			else
-				IJ.error("Unrecognized command: \"" + cmd+"\"");
+			else {
+				if ("Table...".equals(cmd))
+					IJ.runPlugIn("ij.plugin.NewPlugin", "table");
+				else
+					IJ.error("Unrecognized command: \"" + cmd+"\"");
+			}
 	 	}
     }   
 

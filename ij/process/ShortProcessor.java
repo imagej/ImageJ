@@ -962,6 +962,8 @@ public class ShortProcessor extends ImageProcessor {
 	public int[] getHistogram() {
 		if (mask!=null)
 			return getHistogram(mask);
+		int roiX=this.roiX, roiY=this.roiY;
+		int roiWidth=this.roiWidth, roiHeight=this.roiHeight;
 		int[] histogram = new int[65536];
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int i = y*width + roiX;
@@ -974,6 +976,8 @@ public class ShortProcessor extends ImageProcessor {
 	int[] getHistogram(ImageProcessor mask) {
 		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
 			throw new IllegalArgumentException(maskSizeError(mask));
+		int roiX=this.roiX, roiY=this.roiY;
+		int roiWidth=this.roiWidth, roiHeight=this.roiHeight;
 		byte[] mpixels = (byte[])mask.getPixels();
 		int[] histogram = new int[65536];
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
@@ -988,9 +992,11 @@ public class ShortProcessor extends ImageProcessor {
 		return histogram;
 	}
 
-	synchronized int[] getHistogram2() {
+	int[] getHistogram2() {
 		if (mask!=null)
 			return getHistogram2(mask);
+		int roiX=this.roiX, roiY=this.roiY;
+		int roiWidth=this.roiWidth, roiHeight=this.roiHeight;
 		int max = 0;
 		int value;
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
@@ -1015,6 +1021,8 @@ public class ShortProcessor extends ImageProcessor {
 	private int[] getHistogram2(ImageProcessor mask) {
 		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
 			throw new IllegalArgumentException(maskSizeError(mask));
+		int roiX=this.roiX, roiY=this.roiY;
+		int roiWidth=this.roiWidth, roiHeight=this.roiHeight;
 		byte[] mpixels = (byte[])mask.getPixels();		
 		int max = 0;
 		int value;

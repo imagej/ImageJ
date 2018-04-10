@@ -1,5 +1,6 @@
 package ij.process;
 import ij.measure.Calibration;
+import java.awt.Rectangle;
 
 /** 16-bit image statistics, including histogram. */
 public class ShortStatistics extends ImageStatistics {
@@ -31,7 +32,9 @@ public class ShortStatistics extends ImageStatistics {
 		}
 		if (limitToThreshold)
 			saveThreshold(minThreshold, maxThreshold, cal);
-		int[] hist = (ip instanceof ShortProcessor)?((ShortProcessor)ip).getHistogram2():ip.getHistogram();
+		Rectangle r = ip.getRoi();
+		boolean smallRoi = r.width*r.height<250000;		
+		int[] hist = smallRoi&&(ip instanceof ShortProcessor)?((ShortProcessor)ip).getHistogram2():ip.getHistogram();
 		if (maxThreshold>hist.length-1)
 			maxThreshold = hist.length-1;
 		histogram16 = hist;

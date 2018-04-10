@@ -414,7 +414,6 @@ new_07="Plugin Frame",ij.plugin.NewPlugin("frame")
 new_08="Plugin Tool",ij.plugin.NewPlugin("plugin-tool")
 new_09=-
 new_10="Text Window...",ij.plugin.NewPlugin("text+dialog")
-new_11="Table...",ij.plugin.NewPlugin("table")
 
 # Plugins installed in the Help/About submenu
 about01="About This Submenu...",ij.plugin.SimpleCommands("about")

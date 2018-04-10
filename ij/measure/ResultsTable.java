@@ -56,7 +56,7 @@ public class ResultsTable implements Cloneable {
 	private String rowLabelHeading = "";
 	private char delimiter = '\t';
 	private boolean headingSet; 
-	private boolean showRowNumbers = true;
+	private boolean showRowNumbers;
 	private Hashtable stringColumns;
 	private boolean NaNEmptyCells;
 	private boolean quoteCommas;
@@ -667,6 +667,7 @@ public class ResultsTable implements Cloneable {
 	public void setDefaultHeadings() {
 		for(int i=0; i<defaultHeadings.length; i++)
 				headings[i] = defaultHeadings[i];
+		showRowNumbers(true);
 	}
 
 	/** Sets the decimal places (digits to the right of decimal point)
