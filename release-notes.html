@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52a 10 April 2018</u>
+<li> <u>1.52a 11 April 2018</u>
 <ul>
 <li> Thanks to Michael Schmid, added <i>Apply Macro</i>
 commands to the <i>Edit</i> and contextual (right click pop-up)
@@ -24,6 +24,12 @@ that use this command will continue to work.
 “Cancel button on right” option to the <i>Edit&gt;Options&gt;Appearance</i>
 dialog box. 
 <li> The "showRowNumbers" property of the ResultsTable class now defaults to 'false'.
+<li> Thanks to Adrian Daerr, when importing ".raw" files with dimensions encoded
+ in the name (e.g. "myfile-640x480.raw"), the byte order is set to
+big-endian if the name ends in "be.raw" and to little-endian if the name
+ends in "le.raw".
+<li> Thanks to Arttu Miettinen, imported".raw" files with dimensions encoded
+ in the name can have a width and/or height less than 9.
 <li> Thanks to Stein Rorvik, added toScaled(x,y,z) and toUnscaled(x,y,z) macro functions.
 <li> Added 15 macro functions that work with tables. They operate on the
 current (frontmost) table or an optional title argument can be provided (e.g., Table.size("My Table")).
@@ -60,6 +66,9 @@ function to not preserve the modification date.
 command to not preserve the "Info" image property.
 <li> Fixed a 1.51s regression that caused statistical calculations on
 small 16-bit images or selections to be much slower.
+<li> Thanks to Michael Schmid, fixed a 1.51o regression that caused the particle
+analyzer to hang when processong 32-bit images..
+
 
 </ul> 
 

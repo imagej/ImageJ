@@ -57,7 +57,7 @@ public class ImportDialog {
 		"24-bit RGB Planar", "24-bit BGR", "24-bit Integer", "32-bit ARGB", "32-bit ABGR", "1-bit Bitmap"};
     	
     static {
-    	options = Prefs.getInt(OPTIONS,0);
+    	options = Prefs.getInt(OPTIONS, 0);
     	sWhiteIsZero = (options&WHITE_IS_ZERO)!=0;
     	sIntelByteOrder = (options&INTEL_BYTE_ORDER)!=0;
     }
@@ -307,9 +307,9 @@ public class ImportDialog {
 		int n = numbers.length;
 		if (n<2) return;
 		int w = (int)Tools.parseDouble(numbers[0],0);
-		if (w<10) return;
+		if (w<1) return;
 		int h = (int)Tools.parseDouble(numbers[1],0);
-		if (h<10) return;
+		if (h<1) return;
 		width = w;
 		height = h;
 		nImages = 1;
@@ -326,18 +326,18 @@ public class ImportDialog {
 		File file = new File(dir+name);
 		long imageSize = (long)width*height*nImages;
 		long fileSize = file.length();
-		if (fileSize==4*imageSize) {
+		if (fileSize==4*imageSize)
 			choiceSelection = 5; // 32-bit real
-			intelByteOrder = true;
-		} else if (fileSize==2*imageSize) {
+		else if (fileSize==2*imageSize)
 			choiceSelection = 2;	// 16-bit unsigned
-			intelByteOrder = true;
-		} else if (fileSize==3*imageSize) {
+		else if (fileSize==3*imageSize)
 			choiceSelection = 7;	// 24-bit RGB
-		} else if (fileSize==imageSize)
+		else if (fileSize==imageSize)
 			choiceSelection = 0;	// 8-bit
-		if (name.endsWith("be.raw"))
+		if (name.endsWith("be.raw"))  // big-endian
 			intelByteOrder = false;
+		else if (name.endsWith("le.raw"))  // little-endian
+			intelByteOrder = true;
 	}
 	
 }
