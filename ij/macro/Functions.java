@@ -6393,9 +6393,11 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("applyMacro"))
 			return applyMacroToTable();
 		else if (name.equals("deleteRows"))
-			return deleteTableRows();
+			return deleteRows();
 		else if (name.equals("deleteColumn"))
-			return deleteTableColumn();
+			return deleteColumn();
+		else if (name.equals("renameColumn"))
+			return renameColumn();
 		else if (name.equals("save"))
 			return saveTable();
 		else if (name.equals("title"))
@@ -6479,7 +6481,7 @@ public class Functions implements MacroConstants, Measurements {
 		return new Variable();
 	}
 	
-	private Variable deleteTableRows() {
+	private Variable deleteRows() {
 		int row1 = (int)getFirstArg();
 		int row2 = (int)getNextArg();
 		String title = getTitle();
@@ -6489,13 +6491,25 @@ public class Functions implements MacroConstants, Measurements {
 		return new Variable();
 	}
 	
-	private Variable deleteTableColumn() {
+	private Variable deleteColumn() {
 		String column = getFirstString();
 		String title = getTitle();
 		ResultsTable rt = getResultsTable(title);		
 		try {
 			rt.deleteColumn(column);
-			rt.show(title);
+		} catch (Exception e) {
+			interp.error(e.getMessage());
+		}
+		return new Variable();
+	}
+
+	private Variable renameColumn() {
+		String oldName = getFirstString();
+		String newName = getNextString();
+		String title = getTitle();
+		ResultsTable rt = getResultsTable(title);		
+		try {
+			rt.renameColumn(oldName, newName);
 		} catch (Exception e) {
 			interp.error(e.getMessage());
 		}

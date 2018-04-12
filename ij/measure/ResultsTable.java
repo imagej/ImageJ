@@ -791,6 +791,17 @@ public class ResultsTable implements Cloneable {
 		columnDeleted = true;
 	}
 
+	/** Changes the name of a column. */
+	public void renameColumn(String oldName, String newName) {
+		int oldCol = getColumnIndex(oldName);
+		if (oldCol==COLUMN_NOT_FOUND)
+			throw new IllegalArgumentException("\""+oldName+"\" column not found");
+		int newCol = getColumnIndex(newName);
+		if (columnExists(newCol))
+			throw new IllegalArgumentException("\""+newName+"\" column exists");
+		headings[oldCol] = newName;
+	}
+
 	public synchronized void reset() {
 		counter = 0;
 		maxRows = 100;
