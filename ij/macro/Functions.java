@@ -5943,8 +5943,8 @@ public class Functions implements MacroConstants, Measurements {
 					rt.setValue("Index", i, ""+i);
 			}
 		}
-		if (!showRowNumbers)
-			rt.showRowNumbers(false);
+		if (showRowNumbers)
+			rt.showRowNumbers(true);
 		for (int arr=0; arr<n; arr++) {
 			Variable[] a = (Variable[])arrays.get(arr);
 			String heading = (String)names.get(arr);
@@ -6411,6 +6411,9 @@ public class Functions implements MacroConstants, Measurements {
 			return new Variable();
 		} else if (name.equals("rename")) {
 			renameResults();
+			return new Variable();
+		} else if (name.startsWith("showArray")) {
+			showArray();
 			return new Variable();
 		} else
 			interp.error("Unrecognized function name");
