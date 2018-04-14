@@ -788,6 +788,7 @@ public class ResultsTable implements Cloneable {
 		if (col==COLUMN_NOT_FOUND)
 			throw new IllegalArgumentException("\""+column+"\" column not found");
 		columns[col] = null;
+		headings[col] = "-";
 		columnDeleted = true;
 	}
 

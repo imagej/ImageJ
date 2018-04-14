@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52a 12 April 2018</u>
+<li> <u>1.52a 13 April 2018</u>
 <ul>
 <li> Thanks to Michael Schmid, added <i>Apply Macro</i>
 commands to the <i>Edit</i> and contextual (right click pop-up)
@@ -65,6 +65,9 @@ bug that could cause a NullPointerException.
 function to not preserve the modification date.
 <li> Thanks to Philippe Carl, fixed a bug that caused the <i>Image&gt;Hyperstacks&gt;Reduce Dimensionality</i>
 command to not preserve the "Info" image property.
+<li> Thanks to Jan Eglinger, fixed bugs that caused the roiManager("open",path)
+macro function to ignore the roi name and roiManager("save",path) not 
+to be recorded when 'path' ended in ".roi".
 <li> Fixed a 1.51s regression that caused statistical calculations on
 small 16-bit images or selections to be much slower.
 <li> Thanks to Michael Schmid, fixed a 1.51o regression that caused the particle

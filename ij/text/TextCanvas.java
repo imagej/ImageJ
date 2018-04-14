@@ -65,7 +65,7 @@ class TextCanvas extends Canvas {
 			for (int i=0;i<tp.iColCount;i++) {
 				int w=tp.iColWidth[i];
 				Color b=Color.white,t=Color.black;
-				if(j>=tp.selStart && j<=tp.selEnd) {
+				if (j>=tp.selStart && j<=tp.selEnd) {
 					int w2 = w;
 					if (tp.iColCount==1)
 						w2 = iWidth;
