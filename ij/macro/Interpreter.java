@@ -797,6 +797,8 @@ public class Interpreter implements MacroConstants {
 				String name = pgm.table[token2>>TOK_SHIFT].str;
 				if (name.equals("getString")||name.equals("title")||name.equals("headings"))
 					return Variable.STRING;
+				else if (name.equals("getColumn"))
+					return Variable.ARRAY;
 			}
 		}
 		if (tok!=WORD)
@@ -992,6 +994,12 @@ public class Interpreter implements MacroConstants {
 			Variable v2 = lookupVariable();
 			v.setArray(v2.getArray());
 			v.setArraySize(v2.getArraySize());
+		} else if (token==VARIABLE_FUNCTION) {
+			Variable v2 = func.getVariableFunction(pgm.table[tokenAddress].type);
+			Variable[] array = v2.getArray();
+			if (array==null)
+				error("Array expected");			
+			v.setArray(array);
 		} else
 			error("Array expected");
 	}

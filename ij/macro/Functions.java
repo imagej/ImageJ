@@ -6382,10 +6382,14 @@ public class Functions implements MacroConstants, Measurements {
 			return new Variable(getResultsTable(getTitleArg()).size());
 		else if (name.equals("get"))
 			return new Variable(getResult(getRT(null)));
+		else if (name.equals("getColumn"))
+			return getColumn();
 		else if (name.equals("getString"))
 			return new Variable(getResultString(getRT(null)));
 		else if (name.equals("set"))
 			return setTableValue();
+		else if (name.equals("setColumn"))
+			return setTableColumn();
 		else if (name.equals("reset"))
 			return resetTable();
 		else if (name.equals("update"))
@@ -6400,6 +6404,8 @@ public class Functions implements MacroConstants, Measurements {
 			return renameColumn();
 		else if (name.equals("save"))
 			return saveTable();
+		else if (name.equals("open"))
+			return openTable();
 		else if (name.equals("title"))
 			return new Variable(getResultsTable(getTitleArg()).getTitle());
 		else if (name.equals("headings"))
@@ -6424,6 +6430,15 @@ public class Functions implements MacroConstants, Measurements {
 		ResultsTable rt = getRT(null);
 		//IJ.log("set: "+rt);
 		setResult(rt);
+		return new Variable();
+	}
+	
+	private Variable setTableColumn() {
+		String column = getFirstString();
+		interp.getComma();
+		Variable[] array = getArray();
+		ResultsTable rt = getResultsTable(getTitle());		
+		rt.setColumn(column, array);
 		return new Variable();
 	}
 	
@@ -6506,6 +6521,12 @@ public class Functions implements MacroConstants, Measurements {
 		return new Variable();
 	}
 
+	private Variable getColumn() {
+		String col = getFirstString();
+		ResultsTable rt = getResultsTable(getTitle());	
+		return new Variable(rt.getColumnAsVariables(col));
+	}
+
 	private Variable renameColumn() {
 		String oldName = getFirstString();
 		String newName = getNextString();
@@ -6539,6 +6560,23 @@ public class Functions implements MacroConstants, Measurements {
 		return new Variable();
 	}
 	
+	private Variable openTable() {
+		String path = getFirstString();
+		String title = getTitle();	
+		if (title==null)
+			title = new File(path).getName();
+		ResultsTable rt = null;
+		try {
+			rt = rt.open(path);
+		} catch (Exception e) {
+			String msg = e.getMessage();
+			if (!msg.startsWith("Macro canceled"))
+				interp.error(msg);
+		}
+		rt.show(title);
+		return new Variable();
+	}
+
 	private String getTitle() {
 		String title = null;
 		if (interp.nextToken()==',') {

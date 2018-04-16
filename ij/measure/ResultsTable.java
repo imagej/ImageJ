@@ -612,6 +612,58 @@ public class ResultsTable implements Cloneable {
 		return new String(sb);
 	}
 	
+	/** Implements the Table.getColumn() macro function. */
+	public Variable[] getColumnAsVariables(String column) {
+		int col = getColumnIndex(column);
+		if (col==COLUMN_NOT_FOUND)
+			throw new IllegalArgumentException("\""+column+"\" column not found");
+		boolean firstValueNumeric = true;
+		int nValues = size();
+		Variable[] values = new Variable[nValues];
+		for (int row=0; row<size(); row++) {
+			double value = columns[col][row];
+			String str = null;
+			if (Double.isNaN(value) && stringColumns!=null) {
+				ArrayList stringColumn = (ArrayList)stringColumns.get(new Integer(col));
+				if (stringColumn!=null && row>=0 && row<stringColumn.size()) {
+						str = (String)stringColumn.get(row);
+						if (firstValueNumeric && "".equals(str)) {
+							nValues = row;
+							break;
+						}
+				}
+			}
+			if (str!=null)
+				values[row] = new Variable(str);
+			else {
+				values[row] = new Variable(value);
+				if (row==0) firstValueNumeric=true;
+			}
+		}
+		if (nValues<values.length) {
+			Variable[] values2 = new Variable[nValues];
+			for (int i=0; i<nValues; i++)
+				values2[i] = values[i];
+			values = values2;
+		}
+		return values;
+	}
+	
+	/** Implements the Table.setColumn() macro function. */
+	public void setColumn(String column, Variable[] array) {
+		if (column==null)
+			return;
+		int col = getColumnIndex(column);
+		if (col==COLUMN_NOT_FOUND)
+			col = getFreeColumn(column);
+		for (int i=0; i<array.length; i++) {
+			if (array[i].getString()!=null)
+				setValue(col, i, array[i].getString());
+			else
+				setValue(col, i, array[i].getValue());
+		}
+	}
+	
 	private String getValueAsString(int column, int row) { 
 		double value = columns[column][row];
 		//IJ.log("getValueAsString1: col="+column+ ", row= "+row+", value= "+value+", size="+stringColumns.size());
