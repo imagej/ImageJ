@@ -424,10 +424,17 @@ public class ShortProcessor extends ImageProcessor {
 	/** Copies the image contained in 'ip' to (xloc, yloc) using one of
 		the transfer modes defined in the Blitter interface. */
 	public void copyBits(ImageProcessor ip, int xloc, int yloc, int mode) {
-		ip = ip.convertToShort(false);
-		new ShortBlitter(this).copyBits(ip, xloc, yloc, mode);
+		boolean temporaryFloat = ip.getBitDepth()==32 && (mode==Blitter.MULTIPLY || mode==Blitter.DIVIDE);
+		if (temporaryFloat) {
+			FloatProcessor ipFloat = this.convertToFloatProcessor();
+			new FloatBlitter(ipFloat).copyBits(ip, xloc, yloc, mode);
+			setPixels(1, ipFloat);
+		} else {
+			ip = ip.convertToShort(false);
+			new ShortBlitter(this).copyBits(ip, xloc, yloc, mode);
+		}
 	}
-
+	
 	/** Transforms the pixel data using a 65536 entry lookup table. */
 	public void applyTable(int[] lut) {
 		if (lut.length!=65536)

@@ -469,8 +469,15 @@ public class ByteProcessor extends ImageProcessor {
 	/** Copies the image contained in 'ip' to (xloc, yloc) using one of
 		the transfer modes defined in the Blitter interface. */
 	public void copyBits(ImageProcessor ip, int xloc, int yloc, int mode) {
-		ip = ip.convertToByte(true);
-		new ByteBlitter(this).copyBits(ip, xloc, yloc, mode);
+		boolean temporaryFloat = ip.getBitDepth()==32 && (mode==Blitter.MULTIPLY || mode==Blitter.DIVIDE);
+		if (temporaryFloat) {
+			FloatProcessor ipFloat = this.convertToFloatProcessor();
+			new FloatBlitter(ipFloat).copyBits(ip, xloc, yloc, mode);
+			setPixels(1, ipFloat);
+		} else {
+			ip = ip.convertToByte(true);
+			new ByteBlitter(this).copyBits(ip, xloc, yloc, mode);
+		}
 	}
 
 	/* Filters start here */

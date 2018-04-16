@@ -72,11 +72,13 @@ command to not preserve the "Info" image property.
 <li> Thanks to Jan Eglinger, fixed bugs that caused the roiManager("open",path)
 macro function to ignore the roi name and roiManager("save",path) not 
 to be recorded when 'path' ended in ".roi".
+<li> Thanks to Norbert Vischer, fixed a bug that caused the Image Calculator to not correctly 
+calculate the result when the operation is MULTIPLY or DIVIDE, the 1st image is  8 or 16 bit, 
+the 2nd image is 32 bit and "32-bit result" is unchecked.
 <li> Fixed a 1.51s regression that caused statistical calculations on
 small 16-bit images or selections to be much slower.
 <li> Thanks to Michael Schmid, fixed a 1.51o regression that caused the particle
 analyzer to hang when processong 32-bit images.
-
 
 </ul> 
 
