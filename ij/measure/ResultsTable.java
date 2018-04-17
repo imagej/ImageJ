@@ -653,6 +653,7 @@ public class ResultsTable implements Cloneable {
 	public void setColumn(String column, Variable[] array) {
 		if (column==null)
 			return;
+		int initialSize = size();
 		int col = getColumnIndex(column);
 		if (col==COLUMN_NOT_FOUND)
 			col = getFreeColumn(column);
@@ -661,6 +662,21 @@ public class ResultsTable implements Cloneable {
 				setValue(col, i, array[i].getString());
 			else
 				setValue(col, i, array[i].getValue());
+		}
+		if (array.length<size()) {
+			for (int i=array.length; i<size(); i++)
+				setValue(col, i, "");
+		}
+		if (initialSize>0 && size()>initialSize) {
+			for (int c=0; c<=lastColumn; c++) {
+				if (c!=col && columns[c]!=null) {
+					String heading = headings[c];
+					if (heading!=null) {
+						for (int i=initialSize; i<size(); i++)
+							setValue(c, i, "");
+					}
+				}
+			}
 		}
 	}
 	

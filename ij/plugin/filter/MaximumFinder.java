@@ -719,7 +719,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                 if (!IJ.isResultsWindow())
                 	rt = new ResultsTable();
                 rt.incrementCounter();
-                rt.setValue("Count", rt.getCounter()-1, npoints);
+                rt.setValue("Count", rt.size()-1, npoints);
                 int measurements = Analyzer.getMeasurements();
                 if ((measurements&Measurements.LABELS)!=0) {
                     String s = imp.getTitle();
@@ -736,7 +736,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                         else
                             s += colon+currentSlice;
                     }
-                    rt.setLabel(s, rt.getCounter()-1);
+                    rt.setLabel(s, rt.size()-1);
                 }
                 rt.show("Results");
             } 

@@ -121,7 +121,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if (roi.getName()==null)
 			roi.setName(""+rt.size());
-		//roi.setName(IJ.getString("Label:", "m"+rt.getCounter()));
+		//roi.setName(IJ.getString("Label:", "m"+rt.size()));
 		roi.setIgnoreClipRect(true);
 		Overlay overlay = imp.getOverlay();
 		if (overlay==null)
@@ -550,7 +550,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			reset();
 		clearSummary();
 		incrementCounter();
-		int counter = rt.getCounter();
+		int counter = rt.size();
 		if (counter<=MAX_STANDARDS && !(stats.umean==0.0&&counter==1&&umeans!=null && umeans[0]!=0f)) {
 			if (umeans==null) umeans = new float[MAX_STANDARDS];
 			umeans[counter-1] = (float)stats.umean;
@@ -845,7 +845,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	public void displayResults() {
 		if (rt.columnDeleted())
 			return;
-		int counter = rt.getCounter();
+		int counter = rt.size();
 		if (counter==1)
 			IJ.setColumnHeadings(rt.getColumnHeadings());
 		TextPanel tp = IJ.isResultsWindow()?IJ.getTextPanel():null;
@@ -855,7 +855,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			int index = lineCount;
 			for (int i=0; i<n; i++)
 				rt.deleteRow(index);
-			counter = rt.getCounter();
+			counter = rt.size();
 		}
 		IJ.write(rt.getRowAsString(counter-1));
 	}
@@ -934,7 +934,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	*/
 	public synchronized static boolean resetCounter() {
 		TextPanel tp = IJ.isResultsWindow()?IJ.getTextPanel():null;
-		int counter = systemRT.getCounter();
+		int counter = systemRT.size();
 		int lineCount = tp!=null?IJ.getTextPanel().getLineCount():0;
 		ImageJ ij = IJ.getInstance();
 		boolean macro = (IJ.macroRunning()&&!switchingModes) || Interpreter.isBatchMode();

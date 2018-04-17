@@ -93,6 +93,7 @@ public class ImageReader {
 			System.arraycopy(byteArray, 0, pixels, current, length);
 			current += length;
 			showProgress(i+1, fi.stripOffsets.length);
+			//IJ.log(i+"  "+ current+"  "+length+"  "+"  "+fi.stripOffsets[i] + "  "+(i>0?(fi.stripOffsets[i]-fi.stripOffsets[i-1]):0));
 		}
 		return pixels;
 	}
@@ -504,8 +505,8 @@ public class ImageReader {
 	}
 
 	int[] readPlanarRGB(InputStream in) throws IOException {
-		if (fi.compression>FileInfo.COMPRESSION_NONE)
-			return readCompressedPlanarRGBImage(in);			
+		if (fi.compression>FileInfo.COMPRESSION_NONE || (fi.stripOffsets!=null&&fi.stripOffsets.length>1))
+			return readCompressedPlanarRGBImage(in);
 		DataInputStream dis = new DataInputStream(in);
 		int planeSize = nPixels; // 1/3 image size
 		byte[] buffer = new byte[planeSize];
@@ -543,6 +544,8 @@ public class ImageReader {
 		int r, g, b;
 		nPixels *= 3; // read all 3 planes
 		byte[] buffer = readCompressed8bitImage(in);
+		//ImageProcessor ip = new ByteProcessor(1024,3*1024, buffer);
+		//new ImagePlus("", ip).show();
 		nPixels /= 3;
 		for (int i=0; i<nPixels; i++) {
 			r = buffer[i]&0xff;

@@ -26,7 +26,7 @@ public class MeasurementsWriter implements PlugIn {
 			}
 		} else {
 			ResultsTable rt = ResultsTable.getResultsTable();
-			if (rt==null || rt.getCounter()==0) {
+			if (rt==null || rt.size()==0) {
 				frame = WindowManager.getFrame("Results");
 				if (frame==null || !(frame instanceof TextWindow))
 					return false;

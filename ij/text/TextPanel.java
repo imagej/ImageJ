@@ -733,7 +733,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 				vData.removeElementAt(selStart);
 				iRowCount--;
 			}
-			if (rt!=null && rowCount==rt.getCounter()) {
+			if (rt!=null && rowCount==rt.size()) {
 				for (int i=0; i<count; i++)
 					rt.deleteRow(selStart);
 				rt.show(title);
@@ -866,7 +866,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			summarized = lastLine!=null && lastLine.startsWith("Max");
 		}
 		String fileName = null;
-		if (rt!=null && rt.getCounter()!=0 && !summarized) {
+		if (rt!=null && rt.size()!=0 && !summarized) {
 			if (path==null || path.equals("")) {
 				IJ.wait(10);
 				String name = isResults?"Results":title;

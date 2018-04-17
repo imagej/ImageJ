@@ -168,7 +168,7 @@ public class SimpleCommands implements PlugIn {
 	
 	private void resultsToImage() {
 		ResultsTable rt = ResultsTable.getResultsTable();
-		if (rt==null || rt.getCounter()==0) {
+		if (rt==null || rt.size()==0) {
 			IJ.error("Results to Image", "The Results table is empty");
 			return;
 		}

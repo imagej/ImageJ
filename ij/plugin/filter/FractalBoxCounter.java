@@ -226,7 +226,7 @@ public class FractalBoxCounter implements PlugInFilter {
 			return;
 		ResultsTable rt=ResultsTable.getResultsTable();
 		rt.incrementCounter();
-		rt.setLabel(imp.getShortTitle(), rt.getCounter()-1);
+		rt.setLabel(imp.getShortTitle(), rt.size()-1);
 		for (int i=0; i<boxSizes.length; i++) {
 			int boxSum = count(boxSizes[i], ip);
 			rt.addValue("C"+boxSizes[i], boxSum);
