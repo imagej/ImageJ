@@ -461,7 +461,7 @@ public class FileOpener {
 				is = new FileInputStream(f);
 		}
 		if (is!=null) {
-		    if (fi.compression>=FileInfo.LZW)
+			if (fi.compression>=FileInfo.LZW || (fi.stripOffsets!=null&&fi.stripOffsets.length>1))
 				is = new RandomAccessStream(is);
 			else if (gzip)
 				is = new GZIPInputStream(is, 50000);

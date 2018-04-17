@@ -89,11 +89,11 @@ public class ImageReader {
 					last = b % fi.width == fi.width - 1 ? 0 : byteArray[b];
 				}
 			}
-			if (current+length>pixels.length) length = pixels.length-current;
+			if (current+length>pixels.length)
+				length = pixels.length-current;
 			System.arraycopy(byteArray, 0, pixels, current, length);
 			current += length;
 			showProgress(i+1, fi.stripOffsets.length);
-			//IJ.log(i+"  "+ current+"  "+length+"  "+"  "+fi.stripOffsets[i] + "  "+(i>0?(fi.stripOffsets[i]-fi.stripOffsets[i-1]):0));
 		}
 		return pixels;
 	}
@@ -544,8 +544,6 @@ public class ImageReader {
 		int r, g, b;
 		nPixels *= 3; // read all 3 planes
 		byte[] buffer = readCompressed8bitImage(in);
-		//ImageProcessor ip = new ByteProcessor(1024,3*1024, buffer);
-		//new ImagePlus("", ip).show();
 		nPixels /= 3;
 		for (int i=0; i<nPixels; i++) {
 			r = buffer[i]&0xff;
@@ -696,7 +694,6 @@ public class ImageReader {
 		int b1, b2, b3;
 		DataInputStream dis = new DataInputStream(in);
 		for (int y=0; y<height; y++) {
-			//IJ.log("read24bitImage: ");
 			dis.readFully(buffer);
 			int b = 0;
 			for (int x=0; x<width; x++) {
@@ -744,7 +741,6 @@ public class ImageReader {
 				skipAttempts++;
 				if (count==-1 || skipAttempts>5) break;
 				bytesRead += count;
-				//IJ.log("skip: "+skipCount+" "+count+" "+bytesRead+" "+skipAttempts);
 			}
 		}
 		byteCount = ((long)width)*height*bytesPerPixel;
@@ -1045,7 +1041,6 @@ class ByteVector {
     }
 
 	void doubleCapacity() {
-		//IJ.log("double: "+data.length*2);
 		byte[] tmp = new byte[data.length*2 + 1];
 		System.arraycopy(data, 0, tmp, 0, data.length);
 		data = tmp;
