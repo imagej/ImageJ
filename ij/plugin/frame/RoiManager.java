@@ -450,6 +450,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			roi.setName(label);
 		rois.add((Roi)roi.clone());
 	}
+	
+	/** Replaces the ROI at specified index. */
+	public void setRoi(Roi roi, int index) {
+    	if (index<0 || index>=rois.size())
+    		throw new IllegalArgumentException("setRoi: Index out of range");
+		rois.set(index, (Roi)roi.clone());
+		updateShowAll();
+	}
 
 	boolean isStandardName(String name) {
 		if (name==null)

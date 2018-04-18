@@ -802,6 +802,8 @@ public class ImageReader {
 					pixels = (Object)readChunkyRGB(in);
 					break;
 				case FileInfo.RGB_PLANAR:
+					if (!(in instanceof RandomAccessStream))
+						in = new RandomAccessStream(in);
 					bytesPerPixel = 3;
 					skip(in);
 					pixels = (Object)readPlanarRGB(in);

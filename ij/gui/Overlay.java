@@ -49,6 +49,14 @@ public class Overlay {
     		list.add(roi);
     }
 
+    /** Replaces the ROI at specified index. */
+    public void set(Roi roi, int index) {
+    	if (index<0 || index>=list.size())
+    		throw new IllegalArgumentException("set: index out of range");
+    	if (roi!=null)
+    		list.set(index, roi);
+    }
+
     /** Removes the ROI with the specified index from this Overlay. */
     public void remove(int index) {
     	list.remove(index);

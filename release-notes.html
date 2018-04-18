@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52a 17 April 2018</u>
+<li> <u>1.52a 18 April 2018</u>
 <ul>
 <li> Thanks to Michael Schmid, added <i>Apply Macro</i>
 commands to the <i>Edit</i> and contextual (right click pop-up)
@@ -61,6 +61,7 @@ Examples: <a href="http://wsr.imagej.net/macros/Sine_Cosine_Table2.txt">Sine/Cos
   <li> Table.showArrays(titleAndOptions, array1, array2, ...) - displays arrays in a table (like Array.show)
 </ul>
 <li> Thanks to Michael Schmid, added the Tools.copyFile(path1,path2) method.
+<li> Thanks to Salim Kanoun, added the RoiManager.set(roi,index) and Overlay.set(roi,index) methods.
 <li> Thanks to Fred Damen, fixed a bug that caused the SubHyperstackMaker.makeSubhyperstack()
 method to not work when extract a single frame.
 <li> Thanks to Fred Damen and Michael Schmid, fixed a curve fitter
@@ -76,7 +77,7 @@ to be recorded when 'path' ended in ".roi".
 calculate the result when the operation is MULTIPLY or DIVIDE, the 1st image is  8 or 16 bit, 
 the 2nd image is 32 bit and "32-bit result" is unchecked.
 <li> Thanks to Mark Rivers, fixed a bug that caused ImageJ to not 
-correctly open some planar RGB TIFF files.
+correctly open some uncompressed planar RGB TIFFs.
 <li> Fixed a 1.51s regression that caused statistical calculations on
 small 16-bit images or selections to be much slower.
 <li> Thanks to Michael Schmid, fixed a 1.51o regression that caused the particle
