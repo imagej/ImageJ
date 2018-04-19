@@ -451,7 +451,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		rois.add((Roi)roi.clone());
 	}
 	
-	/** Replaces the ROI at specified index. */
+	/** Replaces the ROI at the specified index. */
 	public void setRoi(Roi roi, int index) {
     	if (index<0 || index>=rois.size())
     		throw new IllegalArgumentException("setRoi: Index out of range");
@@ -2335,6 +2335,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return indexes;
 		} else
 			return list.getSelectedIndices();
+	}
+	
+	/** This is a macro-callable version of getSelectedIndexes().
+	 * Example: indexes=split(call("ij.plugin.frame.RoiManager.getIndexesAsString"));
+	*/
+	public static String getIndexesAsString() {
+		RoiManager rm = RoiManager.getInstance();
+		if (rm==null) return "";
+		String str = Arrays.toString(rm.getSelectedIndexes());
+		str = str.replaceAll(",","");
+		return str.substring(1,str.length()-1);
 	}
 	
 	/** Returns an array of the selected indexes or all indexes if none are selected. */
