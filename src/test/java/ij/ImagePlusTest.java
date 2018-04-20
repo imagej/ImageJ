@@ -2899,11 +2899,11 @@ public class ImagePlusTest {
 		cal.pixelWidth = 4.0;
 		ip.setCalibration(cal);
 		ip.setCurrentSlice(1);
-		assertEquals(" x=80, y=105, z=0",ip.getLocationAsString(20, 35));
+		assertEquals(" x=80 (20), y=105 (35), z=0",ip.getLocationAsString(20, 35));
 		ip.setCurrentSlice(2);
-		assertEquals(" x=80, y=105, z=2",ip.getLocationAsString(20, 35));
+		assertEquals(" x=80 (20), y=105 (35), z=2 (1)",ip.getLocationAsString(20, 35));
 		ip.setCurrentSlice(3);
-		assertEquals(" x=80, y=105, z=4",ip.getLocationAsString(20, 35));
+		assertEquals(" x=80 (20), y=105 (35), z=4 (2)",ip.getLocationAsString(20, 35));
 
 		//    hyperstack
 		//      note - can't test - only changes hyperstack currently being displayed

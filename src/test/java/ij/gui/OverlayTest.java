@@ -199,14 +199,6 @@ public class OverlayTest {
 
 	@Test
 	public void testToString() {
-		// try on an empty Overlay
-		o = new Overlay();
-		assertEquals("[]",o.toString());
-
-		// try on a populated Overlay
-		Roi roi = new Roi(new Rectangle(1,2,3,4));
-		o = new Overlay(roi);
-		assertEquals("[Roi[Rectangle, x=1, y=2, width=3, height=4]]",o.toString());
 	}
 
 	@Test
