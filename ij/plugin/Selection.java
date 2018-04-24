@@ -629,8 +629,8 @@ public class Selection implements PlugIn, Measurements {
 		} else {
 			roi = (Roi)roi.clone();
 			int lwidth = (int)roi.getStrokeWidth();
-			if (lwidth<5)
-				lwidth = 5;
+			if (lwidth<1)
+				lwidth = 1;
 			Rectangle bounds = roi.getBounds();
 			int width = bounds.width + lwidth*2;
 			int height = bounds.height + lwidth*2;

@@ -29,7 +29,7 @@ public class NewImage {
     private static int type = Prefs.getInt(TYPE, GRAY8);
     private static int fillWith = Prefs.getInt(FILL, FILL_BLACK);
     private static String[] types = {"8-bit", "16-bit", "32-bit", "RGB"};
-    private static String[] fill = {"White", "Black", "Ramp", "Random"}; 
+    private static String[] fill = {"White", "Black", "Ramp", "Noise"}; 
 	
     public NewImage() {
     	openImage();
