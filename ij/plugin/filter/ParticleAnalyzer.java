@@ -633,10 +633,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 					summaryTable = table;
 			}
 		}
-		if (summaryTable==null) {
+		if (summaryTable==null)
 			summaryTable = new ResultsTable();
-			summaryTable.showRowNumbers(false);
-		}
 		float[] areas = rt.getColumn(ResultsTable.AREA);
 		if (areas==null)
 			areas = new float[0];

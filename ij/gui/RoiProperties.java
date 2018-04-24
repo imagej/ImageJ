@@ -341,7 +341,6 @@ public class RoiProperties {
 			rt.addValue("X", fp.xpoints[i]);
 			rt.addValue("Y", fp.ypoints[i]);
 		}
-		rt.showRowNumbers(false);
 		rt.show("XY_"+title);
 	}
 	

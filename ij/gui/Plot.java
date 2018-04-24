@@ -3180,7 +3180,6 @@ public class Plot implements Cloneable {
 	 */
 	public ResultsTable getResultsTable(boolean writeFirstXColumn) {
 		ResultsTable rt = new ResultsTable();
-		rt.showRowNumbers(false);
 		// find the longest x-value data set and count the data sets
 		int nDataSets =	 0;
 		int tableLength = 0;

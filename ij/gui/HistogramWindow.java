@@ -448,7 +448,6 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	/** Returns the histogram values as a ResultsTable. */
 	public ResultsTable getResultsTable() {
 		ResultsTable rt = new ResultsTable();
-		rt.showRowNumbers(false);
 		rt.setPrecision(digits);
 		String vheading = stats.binSize==1.0?"value":"bin start";
 		if (cal.calibrated() && !cal.isSigned16Bit()) {

@@ -271,7 +271,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		tf.addKeyListener(this);
 		c.gridx = GridBagConstraints.RELATIVE;
 		c.anchor = GridBagConstraints.WEST;
-        c.gridwidth = columns < 8 ? 1 : GridBagConstraints.REMAINDER;
+		c.gridwidth = columns <= 8 ? 1 : GridBagConstraints.REMAINDER;
 		c.insets.left = 0;
 		tf.setEditable(true);
 		add(tf, c);
@@ -782,8 +782,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
      *  May be used for addNumericField, addSlider, addChoice, addCheckbox, addStringField,
      *  addMessage, addPanel, and before the showDialog() method
      *  (in the latter case, the buttons appear to the right of the previous item).
-     *  Note that addMessage uses the remaining width, so it must be the last item of a row.
-     *  Must not be used after addStringField unless its field width is below 8 columns.
+     *  Note that addMessage (and addStringField, if its column width is more than 8) use
+     *  the remaining width, so it must be the last item of a row. 
      */
     public void addToSameRow() {
         addToSameRow = true;

@@ -5931,8 +5931,8 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		ResultsTable rt = new ResultsTable();
 		//rt.setPrecision(Analyzer.getPrecision());
-		boolean showRowNumbers = false;
 		int openParenIndex = title.indexOf("(");
+		boolean showRowNumbers = false;
 		if (openParenIndex>=0) {
 			String options = title.substring(openParenIndex, title.length());
 			title = title.substring(0, openParenIndex);

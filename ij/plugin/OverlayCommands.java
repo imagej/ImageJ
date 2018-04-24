@@ -7,7 +7,6 @@ import ij.plugin.frame.Recorder;
 import ij.macro.Interpreter;
 import ij.io.RoiDecoder;
 import ij.plugin.filter.PlugInFilter;
-import ij.text.TextWindow;
 import ij.measure.ResultsTable;
 import java.awt.*;
 import java.util.ArrayList;
@@ -389,7 +388,6 @@ public class OverlayCommands implements PlugIn {
 			rt.setValue("Z", i, z);	
 			rt.setValue("T", i, t);	
 		}
-		rt.showRowNumbers(false);
 		rt.show("Overlay Elements");
 	}
 	

@@ -478,10 +478,8 @@ public class ResultsTable implements Cloneable {
 		columns[column][row] = value;
 		if (headings[column]==null)
 			headings[column] = "C"+(column+1);
-		if (counter<25) {
-			if ((int)value!=value && !Double.isNaN(value))
-				decimalPlaces[column] = (short)precision;
-		}
+		if ((int)value!=value && !Double.isNaN(value))
+			decimalPlaces[column] = (short)precision;
 	}
 
 	/** Sets the string value of the given column and row, where
@@ -952,10 +950,16 @@ public class ResultsTable implements Cloneable {
 					WindowManager.setWindow(frame);
 				}
 			} else {
-				int width = getLastColumn()<=0?250:400;
+				int chars = Math.max(size()>0?getRowAsString(0).length():15, getColumnHeadings().length());
+				int width = 100 + chars*10;
+				if (width<180) width=180;
+				if (width>700) width=700;
 				if (showRowNumbers)
 					width += 50;
-				win = new TextWindow(windowTitle, "", width, 300);
+				int height = 300;
+				if (size()>15) height = 400;
+				if (size()>30 && width>300) height = 500;
+				win = new TextWindow(windowTitle, "", width, height);
 				cloneNeeded = true;
 			}
 			tp = win.getTextPanel();
