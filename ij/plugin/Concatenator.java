@@ -1,7 +1,7 @@
 package ij.plugin;
 import ij.*;
 import ij.macro.Interpreter;
-import ij.process.*;
+import ij.process.*; 
 import ij.gui.*;
 import java.awt.*;
 import ij.measure.*;
@@ -27,7 +27,7 @@ public class Concatenator implements PlugIn, ItemListener{
 	private boolean batch = false;
 	private boolean macro = false;
 	private boolean im4D = true;
-	private static boolean im4D_option = false;
+	private static boolean im4D_option = true;
 	private String[] imageTitles;
 	private ImagePlus[] images;
 	private Vector choices;
@@ -43,13 +43,10 @@ public class Concatenator implements PlugIn, ItemListener{
 	
 	/** Optional string argument sets the name dialog boxes if called from another plugin. */
 	public void run(String arg) {
-		macro = ! arg.equals("");
-		if (!showDialog()) return;
-		ImagePlus imp0 = images!=null&&images.length>0?images[0]:null;
-		if (imp0.isComposite() || imp0.isHyperStack())
-			newImp =concatenateHyperstacks(images, newtitle, keep);
-		else
-			newImp = createHypervol();
+		macro = !arg.equals("");
+		if (!showDialog())
+			return;
+		newImp = concatenate(images, keep);
 		if (newImp!=null)
 			newImp.show();
 	}
@@ -112,7 +109,17 @@ public class Concatenator implements PlugIn, ItemListener{
 		}
 		keep = keepIms;
 		batch = true;
-		newImp = createHypervol();
+		ImagePlus imp0 = images[0];
+		if (imp0.isComposite() || imp0.getNChannels()>1)
+			newImp = concatenateHyperstacks(images, newtitle, keep);
+		else
+			newImp = createHypervol();
+		if (Recorder.scriptMode()) {
+			String args = "imp1";
+			for (int i=1; i<images.length; i++)
+				args += ", imp"+(i+1);
+			Recorder.recordCall("imp"+(images.length+1)+" = Concatenator.run("+args+");");
+		}
 		return newImp;
 	}
 	
@@ -188,12 +195,6 @@ public class Concatenator implements PlugIn, ItemListener{
 		if (im4D) {
 			imp.setDimensions(1, stackSize, imp.getStackSize()/stackSize);
 			imp.setOpenAsHyperStack(true);
-		}
-		if (Recorder.scriptMode()) {
-			String args = "imp1";
-			for (int i=1; i<images.length; i++)
-				args += ", imp"+(i+1);
-			Recorder.recordCall("imp"+(images.length+1)+" = Concatenator.run("+args+");");
 		}
 		return imp;
 	}
@@ -309,7 +310,8 @@ public class Concatenator implements PlugIn, ItemListener{
 		boolean all_windows = false;
 		batch = Interpreter.isBatchMode();
 		macro = macro || (IJ.isMacro()&&Macro.getOptions()!=null);
-		im4D = Menus.commandInUse("Stack to Image5D") && ! batch;
+		if (Menus.commandInUse("Stack to Image5D") && !batch)
+			im4D = true;
 		showingDialog = Macro.getOptions()==null;
 		if (macro) {
 			String options = Macro.getOptions();
