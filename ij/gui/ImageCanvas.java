@@ -206,8 +206,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     public void paint(Graphics g) {
 		if (IJ.debugMode) IJ.log("ImageCanvas.paint: "+imp);
 		painted = true;
-		Roi roi = imp.getRoi();
-		if (roi!=null || overlay!=null || showAllOverlay!=null || Prefs.paintDoubleBuffered) {
+		Roi roi = imp.getRoi();		
+		if (roi!=null || overlay!=null || showAllOverlay!=null || Prefs.paintDoubleBuffered || (IJ.isLinux() && magnification<0.25)) {
+			// Double buffering to avoid flickering of ROIs and to work around a 
+			// Linux problem of large images not showing at low magnification.
 			if (roi!=null)
 				roi.updatePaste();
 			if (imageWidth!=0) {
