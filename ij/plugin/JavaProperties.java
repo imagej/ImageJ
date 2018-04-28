@@ -101,8 +101,7 @@ public class JavaProperties implements PlugIn {
 		list.add("  Prefs.useInvertingLut: "+Prefs.useInvertingLut);		
 		list.add("  Prefs.antialiasedTools: "+Prefs.antialiasedTools);		
 		list.add("  Prefs.useInvertingLut: "+Prefs.useInvertingLut);		
-		list.add("  Prefs.intelByteOrder: "+Prefs.intelByteOrder);		
-		list.add("  Prefs.doubleBuffer: "+Prefs.doubleBuffer);		
+		list.add("  Prefs.intelByteOrder: "+Prefs.intelByteOrder);			
 		list.add("  Prefs.noPointLabels: "+Prefs.noPointLabels);		
 		list.add("  Prefs.disableUndo: "+Prefs.disableUndo);		
 		list.add("  Prefs dir: "+Prefs.getPrefsDir());

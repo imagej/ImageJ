@@ -89,7 +89,7 @@ public class Prefs {
 	public static boolean antialiasedTools = true;
 	/** Export TIFF and Raw using little-endian byte order. */
 	public static boolean intelByteOrder;
-	/** Double buffer display of selections and overlays. */
+	/** No longer used */
 	public static boolean doubleBuffer = true;
 	/** Do not label multiple points created using point tool. */
 	public static boolean noPointLabels;
@@ -149,7 +149,7 @@ public class Prefs {
 	public static boolean enhancedLineTool;
 	/** Keep arrow selection after adding to overlay */
 	public static boolean keepArrowSelections;
-	/** Aways paint using double buffering, except on OS X */
+	/** Aways paint images using double buffering */
 	public static boolean paintDoubleBuffered;
 	/** Do not display dialog when opening .raw files */
 	public static boolean skipRawDialog;

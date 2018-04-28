@@ -208,8 +208,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		painted = true;
 		Roi roi = imp.getRoi();		
 		if (roi!=null || overlay!=null || showAllOverlay!=null || Prefs.paintDoubleBuffered || (IJ.isLinux() && magnification<0.25)) {
-			// Double buffering to avoid flickering of ROIs and to work around a 
-			// Linux problem of large images not showing at low magnification.
+			// Use double buffering to avoid flickering of ROIs and to work around
+			// a Linux problem with large images not showing at low magnification.
 			if (roi!=null)
 				roi.updatePaste();
 			if (imageWidth!=0) {

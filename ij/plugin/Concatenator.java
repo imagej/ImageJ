@@ -14,9 +14,8 @@ import java.awt.image.ColorModel;
 
 /** This plugin, which concatenates two or more images or stacks,
  *	implements the Image/Stacks/Tools/Concatenate command.
- *	Gives the option of viewing the concatenated stack as a 4D image.
+ *	Has the option of viewing the concatenated stack as a 4D image.
  *	@author Jon Jackson j.jackson # ucl.ac.uk
- *	last modified June 29 2006
  */
 public class Concatenator implements PlugIn, ItemListener{
 	public String pluginName =	"Concatenator";
@@ -33,7 +32,7 @@ public class Concatenator implements PlugIn, ItemListener{
 	private Vector choices;
 	private Checkbox allWindows;
 	private final String none = "-- None --";
-	private String newtitle = "Concatenated Stacks";
+	private String newtitle = "Untitled";
 	private ImagePlus newImp;
 	private int stackSize;
 	private double min = 0, max = Float.MAX_VALUE;
@@ -60,32 +59,40 @@ public class Concatenator implements PlugIn, ItemListener{
 		return newImp;
 	}
 	
-	/** Concatenate two images or stacks. */
+	/** Concatenates two images, stacks or hyperstacks. */
 	public static ImagePlus run(ImagePlus img1, ImagePlus img2) {
 		ImagePlus[] images = new ImagePlus[2];
 		images[0]=img1; images[1]=img2;
 		return (new Concatenator()).concatenate(images, false);
 	}
 
-	/** Concatenate three images or stacks. */
+	/** Concatenates three images, stacks or hyperstacks. */
 	public static ImagePlus run(ImagePlus img1, ImagePlus img2, ImagePlus img3) {
 		ImagePlus[] images = new ImagePlus[3];
 		images[0]=img1; images[1]=img2;  images[2]=img3;
 		return (new Concatenator()).concatenate(images, false);
 	}
 
-	/** Concatenate four images or stacks. */
+	/** Concatenates four images, stacks or hyperstacks. */
 	public static ImagePlus run(ImagePlus img1, ImagePlus img2, ImagePlus img3, ImagePlus img4) {
 		ImagePlus[] images = new ImagePlus[4];
 		images[0]=img1; images[1]=img2;  images[2]=img3; images[2]=img4;
 		return (new Concatenator()).concatenate(images, false);
 	}
 
-	/** Concatenate five images or stacks. */
+	/** Concatenates five images, stacks or hyperstacks. */
 	public static ImagePlus run(ImagePlus img1, ImagePlus img2, ImagePlus img3, ImagePlus img4, ImagePlus img5) {
 		ImagePlus[] images = new ImagePlus[5];
 		images[0]=img1; images[1]=img2;  images[2]=img3; images[2]=img4; images[5]=img5;
 		return (new Concatenator()).concatenate(images, false);
+	}
+
+	/** Concatenates two or more images, stacks or hyperstacks.
+	 * @param images Array of source images
+	 * @return Returns the concatenated images as an ImagePlus
+	*/
+	public static ImagePlus run(ImagePlus[] images) {
+		return  (new Concatenator()).concatenate(images, false);
 	}
 
 	/*
@@ -95,7 +102,7 @@ public class Concatenator implements PlugIn, ItemListener{
 	}
 	*/
 
-	/** Concatenate two or more images or stacks. */
+	/** Concatenates two or more images or stacks. */
 	public ImagePlus concatenate(ImagePlus[] ims, boolean keepIms) {
 		images = ims;
 		imageTitles = new String[ims.length];
@@ -131,7 +138,7 @@ public class Concatenator implements PlugIn, ItemListener{
 		return concatenate(images, keep);
 	}
 	
-	ImagePlus createHypervol() {
+	private ImagePlus createHypervol() {
 		boolean firstImage = true;
 		boolean duplicated;
 		Properties[] propertyArr = new Properties[images.length];
@@ -161,12 +168,8 @@ public class Concatenator implements PlugIn, ItemListener{
 				
 				// Safety Checks
 				boolean unequalSizes = currentImp.getNSlices()!=stackSize;
-				if (unequalSizes && !showingDialog)
+				if (unequalSizes)
 					im4D = false;
-				if (unequalSizes && im4D) {
-					IJ.error(pluginName, "Cannot create 4D image because stack sizes are not equal.");
-					return null;
-				}
 				if (currentImp.getType() != dataType) {
 					IJ.log("Omitting " + imageTitles[i] + " - image type not matched");
 					continue;
@@ -200,7 +203,7 @@ public class Concatenator implements PlugIn, ItemListener{
 	}
 	
 	// taken from WSR's Concatenator_.java
-	void concat(ImageStack stack3, ImageStack stack1, boolean dup) {
+	private void concat(ImageStack stack3, ImageStack stack1, boolean dup) {
 		int slice = 1;
 		int size = stack1.getSize();
 		for (int i = 1; i <= size; i++) {
@@ -220,6 +223,7 @@ public class Concatenator implements PlugIn, ItemListener{
 		}
 	} 
 	
+	/** Obsolete, replaced by concatenate(images,keep) and Concatenator.run(images). */
 	public ImagePlus concatenateHyperstacks(ImagePlus[] images, String newTitle, boolean keep) {
 		int n = images.length;
 		int width = images[0].getWidth();
@@ -235,7 +239,8 @@ public class Concatenator implements PlugIn, ItemListener{
 		maxHeight = height;
 		
 		for (int i=1; i<n; i++) {
-			if (images[i].getNFrames()>1) concatSlices = false;
+			if (images[i].getNFrames()>1)
+				concatSlices = false;
 			if (images[i].getBitDepth()!=bitDepth
 			|| images[i].getNChannels()!=channels
 			|| (!concatSlices && images[i].getNSlices()!=slices)) {
@@ -306,7 +311,7 @@ public class Concatenator implements PlugIn, ItemListener{
 		return imp2;
 	}	
 	
-	boolean showDialog() {
+	private boolean showDialog() {
 		boolean all_windows = false;
 		batch = Interpreter.isBatchMode();
 		macro = macro || (IJ.isMacro()&&Macro.getOptions()!=null);
@@ -377,19 +382,22 @@ public class Concatenator implements PlugIn, ItemListener{
 			return false;
 		all_windows = gd.getNextBoolean();
 		all_option = all_windows;
+		gd.setSmartRecording(true);
 		newtitle = gd.getNextString();
+		gd.setSmartRecording(false);
 		keep = gd.getNextBoolean();
 		keep_option = keep;
 		im4D = gd.getNextBoolean();
 		im4D_option = im4D;
 		ImagePlus[] tmpImpArr = new ImagePlus[nImages+1];
 		String[] tmpStrArr = new String[nImages+1];
-		int index, count = 0;
-		for (int i=0; i<(nImages+1); i++) { // compile a list of images to concatenate from user selection
+		int index=0, count = 0;
+		for (int i=0; i<=nImages; i++) { // compile a list of images to concatenate from user selection
 			if (all_windows) { // Useful to not have to specify images in batch mode
 				index = i;
 			} else {
 				if (i == ((nImages+1)<maxEntries?(nImages+1):maxEntries) ) break;
+				gd.setSmartRecording(i==nImages);
 				index = gd.getNextChoiceIndex();
 			}
 			if (index >= nImages) break; // reached the 'none' string or handled all images (in case of all_windows)
