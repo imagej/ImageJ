@@ -3901,17 +3901,8 @@ public class Functions implements MacroConstants, Measurements {
 		if (isInfo) {
 			imp.setProperty("Info", metadata);
 		} else {
-			if (imp.getStackSize()==1) {
-				if (oneArg)
-					imp.setProperty("Info", metadata);
-				else {
-					imp.setProperty("Label", metadata);
-					if (!Interpreter.isBatchMode()) imp.repaintWindow();
-				}
-			} else {
-				imp.getStack().setSliceLabel(metadata, imp.getCurrentSlice());
-				if (!Interpreter.isBatchMode()) imp.repaintWindow();
-			}
+			imp.getStack().setSliceLabel(metadata, imp.getCurrentSlice());
+			if (!Interpreter.isBatchMode()) imp.repaintWindow();
 		}
 	}
 
@@ -3926,12 +3917,7 @@ public class Functions implements MacroConstants, Measurements {
 		ImagePlus imp = getImage();
 		String metadata = null;
 		if (type.indexOf("label")!=-1) {
-			if (imp.getStackSize()==1) {
-				metadata = (String)imp.getProperty("Label");
-				if (metadata==null && noArg)
-					metadata = (String)imp.getProperty("Info");
-			} else
-				metadata = imp.getStack().getSliceLabel(imp.getCurrentSlice());
+			metadata = imp.getStack().getSliceLabel(imp.getCurrentSlice());
 		} else {
 			metadata = (String)imp.getProperty("Info");
 			if (metadata==null && imp.getStackSize()>1)

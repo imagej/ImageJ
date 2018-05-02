@@ -1014,6 +1014,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (!onePerSlice) {
 			int measurements2 = nSlices>1?measurements|Measurements.SLICE:measurements;
 			ResultsTable rt = new ResultsTable();
+			rt.showRowNumbers(true);
 			if (appendResults && mmResults2!=null)
 				rt = mmResults2;
 			Analyzer analyzer = new Analyzer(imp, measurements2, rt);
@@ -1072,6 +1073,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Analyzer aSys = new Analyzer(imp); // System Analyzer
 		ResultsTable rtSys = Analyzer.getResultsTable();
 		ResultsTable rtMulti = new ResultsTable();
+		rtMulti.showRowNumbers(true);
 		if (appendResults && mmResults!=null)
 			rtMulti = mmResults;
 		rtSys.reset();
@@ -1110,6 +1112,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	int getColumnCount(ImagePlus imp, int measurements) {
 		ImageStatistics stats = imp.getStatistics(measurements);
 		ResultsTable rt = new ResultsTable();
+		rt.showRowNumbers(true);
 		Analyzer analyzer = new Analyzer(imp, measurements, rt);
 		analyzer.saveResults(stats, null);
 		int count = 0;

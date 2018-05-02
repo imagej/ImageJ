@@ -1376,10 +1376,14 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			ImageProcessor ip2 = getProcessor();
 			if (ip2==null)
 				return s;
-            String info = (String)getProperty("Info");
-            String label = info!=null?getTitle()+"\n"+info:null;
+			String label = (String)getProperty("Label");
+			if (label==null) {
+            	String info = (String)getProperty("Info");
+            	label = info!=null?getTitle()+"\n"+info:null;
+            }
 			s.addSlice(label, ip2);
 			s.update(ip2);
+			setStack(s);
 		} else {
 			s = stack;
 			if (ip!=null) {

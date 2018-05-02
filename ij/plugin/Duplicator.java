@@ -240,8 +240,12 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		if (imp.getStackSize()>1) {
 			ImageStack stack = imp.getStack();
 			String label = stack.getSliceLabel(imp.getCurrentSlice());
-			if (label!=null && label.indexOf('\n')>0)
-				imp2.setProperty("Info", label);
+			if (label!=null) {
+				if (label.indexOf('\n')>0)
+					imp2.setProperty("Info", label);
+				else
+					imp2.setProperty("Label", label);					
+			}
 			if (imp.isComposite()) {
 				LUT lut = ((CompositeImage)imp).getChannelLut();
 				imp2.getProcessor().setColorModel(lut);
