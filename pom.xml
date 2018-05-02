@@ -84,8 +84,8 @@
 		<url>https://github.com/imagej/ij1-tests/issues</url>
 	</issueManagement>
 	<ciManagement>
-		<system>Jenkins</system>
-		<url>http://jenkins.imagej.net/job/ImageJ1-unit-tests/</url>
+		<system>Travis CI</system>
+		<url>https://travis-ci.com/imagej/ij1-tests</url>
 	</ciManagement>
 
 	<properties>
@@ -97,6 +97,9 @@ Wisconsin-Madison, Broad Institute of MIT and Harvard, and Max Planck
 Institute of Molecular Cell Biology and Genetics.</license.copyrightOwners>
 		<license.projectName>ImageJ software for multidimensional image processing and analysis.</license.projectName>
 		<imagej1.version>RELEASE</imagej1.version>
+
+		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
+		<releaseProfiles>deploy-to-imagej</releaseProfiles>
 	</properties>
 
 	<repositories>
