@@ -610,15 +610,18 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	 *	Returns next position
 	 *	If not found, throws exception or returns -1 */
 	private long findFourccAndRead(int fourcc, boolean isList, long endPosition,
-			boolean throwNotFoundException) throws Exception, IOException {
+	boolean throwNotFoundException) throws Exception, IOException {
 		long nextPos;
 		boolean contentOk = false;
 		do {
 			int type = readType(endPosition);
 			if (type == 0) {			//reached endPosition without finding
-				if (throwNotFoundException)
-					throw new Exception("Required item '"+fourccString(fourcc)+"' not found");
-				else
+				if (throwNotFoundException) {
+					if ("ix00".equals(fourccString(fourcc))) 
+						IJ.log("Required item '"+fourccString(fourcc)+"' not found");
+					else
+						throw new Exception("Required item '"+fourccString(fourcc)+"' not found");
+				} else
 					return -1;
 			}
 			long size = readInt() & SIZE_MASK;

@@ -103,7 +103,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 
 	public void run(ImageProcessor ip) {
 		measure();
-		displayResults();
+		Roi roi = imp.getRoi();
+		if (roi==null && roi.getType()!=Roi.POINT)
+			displayResults();
 		if ((measurements&ADD_TO_OVERLAY)!=0)
 			addToOverlay();
 	}
@@ -410,8 +412,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 				}
 			}
 			saveResults(stats, point);
-			if (i!=p.npoints-1)
-				displayResults();
+			displayResults();
 		}
 	}
 	
@@ -840,7 +841,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		return s;
 	}
-
+	
 	/** Writes the last row in the system results table to the Results window. */
 	public void displayResults() {
 		if (rt.columnDeleted())

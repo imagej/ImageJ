@@ -1105,6 +1105,7 @@ public class ResultsTable implements Cloneable {
 			firstColumn = 1;
 		}
 		ResultsTable rt = new ResultsTable();
+		rt.showRowNumbers(true);
 		for (int i=firstRow; i<lines.length; i++) {
 			rt.incrementCounter();
 			String[] items=lines[i].split(cellSeparator);

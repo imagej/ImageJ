@@ -93,8 +93,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	private static int default16bitDisplayRange;
 	private boolean antialiasRendering = true;
 	private boolean ignoreGlobalCalibration;
+	private boolean oneSliceStack;
 	public boolean setIJMenuBar = Prefs.setIJMenuBar;
 	public boolean typeSet;
+	
 	
 
     /** Constructs an uninitialized ImagePlus. */
@@ -662,6 +664,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		//IJ.log("setStack: "+newStackSize+" "+this);
 		if (newStackSize==0)
 			throw new IllegalArgumentException("Stack is empty");
+		if (newStackSize>1)
+			oneSliceStack = false;
 		if (!newStack.isVirtual()) {
 			Object[] arrays = newStack.getImageArray();
 			if (arrays==null || (arrays.length>0&&arrays[0]==null))
@@ -976,7 +980,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     
 	/** If this is a stack, returns the number of slices, else returns 1. */
 	public int getStackSize() {
-		if (stack==null)
+		if (stack==null || oneSliceStack)
 			return 1;
 		else {
 			int slices = stack.getSize();
@@ -1378,12 +1382,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				return s;
 			String label = (String)getProperty("Label");
 			if (label==null) {
-            	String info = (String)getProperty("Info");
-            	label = info!=null?getTitle()+"\n"+info:null;
-            }
+				String info = (String)getProperty("Info");
+				label = info!=null?getTitle()+"\n"+info:null;
+			}
 			s.addSlice(label, ip2);
 			s.update(ip2);
 			setStack(s);
+			oneSliceStack = true;
 		} else {
 			s = stack;
 			if (ip!=null) {
