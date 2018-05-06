@@ -98,7 +98,7 @@ public class ImageReaderTest {
 	private FormatTester gray24UnsignedTester= new FormatTester(new Gray24UnsignedFormat());
 
 	final FormatTester[] Testers = new FormatTester[] {gray8Tester, color8Tester, gray16SignedTester, gray16UnsignedTester, gray32IntTester,
-			gray32UnsignedTester, gray32FloatTester, gray64FloatTester, rgbTester, bgrTester, argbTester, abgrTester, bargTester, rgbPlanarTester,
+			gray32UnsignedTester, gray32FloatTester, gray64FloatTester, rgbTester, bgrTester, argbTester, abgrTester, bargTester,
 			bitmapTester, rgb48Tester, rgb48PlanarTester, gray12UnsignedTester, gray24UnsignedTester};
 	
 	final ByteOrder.Value[] ByteOrders = new ByteOrder.Value[] {ByteOrder.Value.DEFAULT,ByteOrder.Value.INTEL};
