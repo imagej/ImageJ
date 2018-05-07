@@ -134,7 +134,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	private final static int   FOURCC_RIFF = 0x46464952;   //'RIFF'
 	private final static int   FOURCC_AVI =	 0x20495641;   //'AVI '
 	private final static int   FOURCC_AVIX = 0x58495641;   //'AVIX'	 // extended AVI
-	private final static int   FOURCC_00ix = 0x78693030;   //'ix00'	 // index within
+	private final static int   FOURCC_00ix = 0x78693030;   //'00ix'	 // index within
 	private final static int   FOURCC_indx = 0x78646e69;   //'indx'	 // main index
 	private final static int   FOURCC_idx1 = 0x31786469;   //'idx1'	 // index of single 'movi' block
 	private final static int   FOURCC_LIST = 0x5453494c;   //'LIST'

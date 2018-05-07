@@ -237,12 +237,12 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		String info = (String)imp.getProperty("Info");
 		if (info!=null)
 			imp2.setProperty("Info", info);
-		if (imp.getStackSize()>1) {
+		if (imp.isStack()) {
 			ImageStack stack = imp.getStack();
 			String label = stack.getSliceLabel(imp.getCurrentSlice());
 			if (label!=null) {
-				if (label.indexOf('\n')>0)
-					imp2.setProperty("Info", label);
+				if (label.length()>250 && label.indexOf('\n')>0 && label.contains("0002,"))
+					imp2.setProperty("Info", label); // DICOM metadata
 				else
 					imp2.setProperty("Label", label);					
 			}
@@ -250,6 +250,10 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 				LUT lut = ((CompositeImage)imp).getChannelLut();
 				imp2.getProcessor().setColorModel(lut);
 			}
+		} else {
+			String label = (String)imp.getProperty("Label");
+			if (label!=null)
+				imp2.setProperty("Label", label);
 		}
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && !imp.getHideOverlay()) {

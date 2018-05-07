@@ -151,7 +151,6 @@ public class TiffEncoder {
 	}
 
 	int getMetaDataSize() {
-        //if (stackSize+IMAGE_START>0xffffffffL) return 0;
 		nSliceLabels = 0;
 		nMetaDataEntries = 0;
 		int size = 0;

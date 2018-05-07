@@ -104,7 +104,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	public void run(ImageProcessor ip) {
 		measure();
 		Roi roi = imp.getRoi();
-		if (roi==null && roi.getType()!=Roi.POINT)
+		if (roi==null || roi.getType()!=Roi.POINT)
 			displayResults();
 		if ((measurements&ADD_TO_OVERLAY)!=0)
 			addToOverlay();

@@ -528,7 +528,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		width = newWidth;
 		height = newHeight;
 		ip = null;
-		stack = null;
+		setStackNull();
 		LookUpTable lut = new LookUpTable(img);
 		int type;
 		if (lut.getMapSize() > 0) {
@@ -601,7 +601,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (stackBitDepth>0 && getBitDepth()!=stackBitDepth)
 				throw new IllegalArgumentException("Wrong type for this stack");
 		} else {
-			stack = null;
+			setStackNull();
 			setCurrentSlice(1);
 		}
 		setProcessor2(title, ip, null);
@@ -664,8 +664,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		//IJ.log("setStack: "+newStackSize+" "+this);
 		if (newStackSize==0)
 			throw new IllegalArgumentException("Stack is empty");
-		if (newStackSize>1)
-			oneSliceStack = false;
 		if (!newStack.isVirtual()) {
 			Object[] arrays = newStack.getImageArray();
 			if (arrays==null || (arrays.length>0&&arrays[0]==null))
@@ -687,6 +685,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	if (this.stack==null)
     	    newStack.viewers(+1);
     	this.stack = newStack;
+		oneSliceStack = false;
     	setProcessor2(title, ip, newStack);
 		if (win==null) {
 			if (resetCurrentSlice) setSlice(currentSlice);
@@ -735,6 +734,15 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 		setStack(null, newStack);
 	}
+
+	private synchronized void setStackNull() {
+		if (oneSliceStack && stack!=null && stack.size()>0) {
+			String label = stack.getSliceLabel(1);
+			setProperty("Label", label);	
+		}
+		stack = null;
+		oneSliceStack = false;
+	}	
 
 	/**	Saves this image's FileInfo so it can be later
 		retieved using getOriginalFileInfo(). */
@@ -1164,8 +1172,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (isDicomTag(key))
 			return DicomTools.getTag(this, key);
 		if (getStackSize()>1) {
-			ImageStack stack = getStack();
-			String label = stack.getSliceLabel(getCurrentSlice());
+			ImageStack stack2 = getStack();
+			String label = stack2.getSliceLabel(getCurrentSlice());
 			if (label!=null && label.indexOf('\n')>0) {
 				String value = getStringProperty(key, label);
 				if (value!=null)
@@ -1383,7 +1391,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			String label = (String)getProperty("Label");
 			if (label==null) {
 				String info = (String)getProperty("Info");
-				label = info!=null?getTitle()+"\n"+info:null;
+				label = info!=null?getTitle()+"\n"+info:null; // DICOM metadata
 			}
 			s.addSlice(label, ip2);
 			s.update(ip2);
@@ -1446,7 +1454,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	public void killStack() {
-		stack = null;
+		setStackNull();
 		trimProcessor();
 	}
 	
@@ -2024,7 +2032,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (isComposite())
 				((CompositeImage)this).setChannelsUpdated(); //flush
 		}
-		stack = null;
+		setStackNull();
 		img = null;
 		win = null;
 		if (roi!=null) roi.setImage(null);
@@ -2765,4 +2773,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	return setIJMenuBar && Prefs.setIJMenuBar;
     }
     
+    public boolean isStack() {
+    	return stack!=null;
+    }
+
 }
