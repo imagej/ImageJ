@@ -685,7 +685,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	if (this.stack==null)
     	    newStack.viewers(+1);
     	this.stack = newStack;
-		oneSliceStack = false;
+    	oneSliceStack = false;
     	setProcessor2(title, ip, newStack);
 		if (win==null) {
 			if (resetCurrentSlice) setSlice(currentSlice);
