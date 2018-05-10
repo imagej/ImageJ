@@ -981,6 +981,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				} else
 					roi2.setPosition(slice);
 			}
+			if (showResults)
+				roi2.setName(""+count);
 			overlay.add(roi2);
 		} else {
 			Rectangle r = roi.getBounds();

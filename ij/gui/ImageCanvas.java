@@ -8,10 +8,12 @@ import ij.measure.*;
 import ij.plugin.WandToolOptions;
 import ij.plugin.frame.Recorder;
 import ij.plugin.frame.RoiManager;
+import ij.plugin.filter.Analyzer;
 import ij.plugin.tool.PlugInTool;
 import ij.macro.*;
 import ij.*;
 import ij.util.*;
+import ij.text.*;
 import java.awt.event.*;
 import java.util.*;
 import java.awt.geom.*;
@@ -1575,6 +1577,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				imp.setRoi(roi);
 				roi.handleMouseDown(sx, sy);
 				roiManagerSelect(roi, false);
+				ResultsTable.selectRow(roi);
 				return true;
 			}
 		}

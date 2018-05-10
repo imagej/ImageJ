@@ -1140,10 +1140,8 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	 *	return the pixels array of the resulting image
 	 */
 	private Object readFixedLengthFrame (RandomAccessFile rFile, int size)	throws Exception, IOException {
-		if (size < scanLineSize*biHeight && biBitCount==24  && !isPlanarFormat)
+		if (size < scanLineSize*biHeight)
 			size = scanLineSize*biHeight; // bugfix for RGB odd-width files
-		if (size < scanLineSize*biHeight) //check minimum size (fixed frame length format)
-			throw new Exception("Data chunk size "+size+" too short ("+(scanLineSize*biHeight)+" required)");
 		byte[] rawData = new byte[size];
 		int	 n	= rFile.read(rawData, 0, size);
 		if (n < rawData.length)

@@ -2431,6 +2431,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 						Roi.previousRoi = (Roi)roi.clone();
 				}
 				restore(imp, selected[0], true);
+				ResultsTable.selectRow(imp!=null?imp.getRoi():null);
 				imageID = imp!=null?imp.getID():0;
 			}
 			if (recordInEvent()) {

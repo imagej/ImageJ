@@ -6117,6 +6117,7 @@ public class Functions implements MacroConstants, Measurements {
 					imp.setSlice(roi.getPosition());
 			}
 			imp.setRoi(roi, !Interpreter.isBatchMode());
+			ResultsTable.selectRow(roi);
 			return Double.NaN;
 		} else if (name.equals("moveSelection")) {
 			int index = (int)getFirstArg();
