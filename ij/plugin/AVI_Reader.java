@@ -623,7 +623,6 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 			}
 			long size = readInt() & SIZE_MASK;
 			nextPos = raFile.getFilePointer() + size;
-
 			if (nextPos>endPosition || nextPos>fileSize) {
 				errorText = "AVI File Error: '"+fourccString(type)+"' @ 0x"+Long.toHexString(raFile.getFilePointer()-8)+" has invalid length. File damaged/truncated?";
 				IJ.log(errorText);		// this text is also remembered as error message for showing in message box
@@ -816,8 +815,8 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 				if (verbose)
 					IJ.log("   indx entry: '" +fourccString(dwChunkId)+"' incl header "+posSizeString(qwOffset,dwSize)+timeString());
 				long nextIndxEntryPointer = raFile.getFilePointer();
-				raFile.seek(qwOffset);					//qwOffset & dwSize here include chunk header of ix00
-				findFourccAndRead(FOURCC_ix00, false, qwOffset+dwSize, true);
+				raFile.seek(qwOffset);					//qwOffset & dwSize here include chunk header of ix00	
+				findFourccAndRead(FOURCC_ix00, false, qwOffset+dwSize, false);				
 				raFile.seek(nextIndxEntryPointer);
 				if (frameNumber>lastFrameToRead) break;
 			}
