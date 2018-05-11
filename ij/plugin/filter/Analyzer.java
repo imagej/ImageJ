@@ -107,10 +107,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (roi==null || roi.getType()!=Roi.POINT)
 			displayResults();
 		if ((measurements&ADD_TO_OVERLAY)!=0)
-			addToOverlay();
+			addRoiToOverlay();
 	}
 	
-	void addToOverlay() {
+	private void addRoiToOverlay() {
 		Roi roi = imp.getRoi();
 		if (roi==null)
 			return;
@@ -1037,6 +1037,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 			showMin = b;
 		else if (option.contains("angle"))
 			showAngle = b;
+	}
+	
+	public static boolean addToOverlay() {
+		return ((getMeasurements()&ADD_TO_OVERLAY)!=0);
 	}
 	
 	public static void setResultsTable(ResultsTable rt) {

@@ -134,7 +134,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	private final static int   FOURCC_RIFF = 0x46464952;   //'RIFF'
 	private final static int   FOURCC_AVI =	 0x20495641;   //'AVI '
 	private final static int   FOURCC_AVIX = 0x58495641;   //'AVIX'	 // extended AVI
-	private final static int   FOURCC_00ix = 0x78693030;   //'00ix'	 // index within
+	private final static int   FOURCC_ix00 = 0x30307869;   //'ix00'  // index within
 	private final static int   FOURCC_indx = 0x78646e69;   //'indx'	 // main index
 	private final static int   FOURCC_idx1 = 0x31786469;   //'idx1'	 // index of single 'movi' block
 	private final static int   FOURCC_LIST = 0x5453494c;   //'LIST'
@@ -707,7 +707,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 				readBitMapInfo(endPosition);
 				return true;
 			case FOURCC_indx:
-			case FOURCC_00ix:
+			case FOURCC_ix00:
 				readAvi2Index(endPosition);
 				return true;
 			case FOURCC_idx1:
@@ -817,7 +817,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 					IJ.log("   indx entry: '" +fourccString(dwChunkId)+"' incl header "+posSizeString(qwOffset,dwSize)+timeString());
 				long nextIndxEntryPointer = raFile.getFilePointer();
 				raFile.seek(qwOffset);					//qwOffset & dwSize here include chunk header of ix00
-				findFourccAndRead(FOURCC_00ix, false, qwOffset+dwSize, true);
+				findFourccAndRead(FOURCC_ix00, false, qwOffset+dwSize, true);
 				raFile.seek(nextIndxEntryPointer);
 				if (frameNumber>lastFrameToRead) break;
 			}
