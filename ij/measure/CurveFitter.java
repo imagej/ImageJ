@@ -683,10 +683,10 @@ public class CurveFitter implements UserFunction{
 	/** Returns an array of fit names with nicer sorting */
 	public static String[] getSortedFitList() {
 		if (sortedFitList == null) {
-			String[] l = new String[fitList.length];
+			String[] tmpList = new String[fitList.length];
 			for (int i=0; i<fitList.length; i++)
-				sortedFitList[i] = fitList[sortedTypes[i]];
-			sortedFitList = l;
+				tmpList[i] = fitList[sortedTypes[i]];
+			sortedFitList = tmpList;
 		}
 		return sortedFitList;
 	}
