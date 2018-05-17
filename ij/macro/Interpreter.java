@@ -1509,6 +1509,10 @@ public class Interpreter implements MacroConstants {
 					value = getArrayLength(v);
 					next = nextToken();
 				} else {
+					if (v.getArray()!=null) {
+						getToken();
+						error("'[' expected");
+					}
 					if (prefixValue!=0 && !checkingType) {
 						v.setValue(v.getValue()+prefixValue);
 						prefixValue = 0;
