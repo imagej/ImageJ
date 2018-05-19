@@ -400,7 +400,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			ImageStatistics stats = ImageStatistics.getStatistics(ip, measurements, imp2.getCalibration());
 			PointRoi point = new PointRoi(p.xpoints[i], p.ypoints[i]);
 			point.setPosition(position);
-			if (pointRoi!=null) {
+			if (pointRoi!=null && pointRoi.getNCounters()>1) {
 				int[] counters = pointRoi.getCounters();
 				if (counters!=null && i<counters.length) {
 					int counter = counters[i]&0xff;

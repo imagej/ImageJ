@@ -160,7 +160,7 @@ public class RoiDecoder {
 		int right = getShort(RIGHT);
 		int width = right-left;
 		int height = bottom-top;
-		int n = getShort(N_COORDINATES);
+		int n = getUnsignedShort(N_COORDINATES);
 		int options = getShort(OPTIONS);
 		int position = getInt(POSITION);
 		int hdr2Offset = getInt(HEADER2_OFFSET);
@@ -252,7 +252,7 @@ public class RoiDecoder {
 					//IJ.log("type: "+type);
 					//IJ.log("n: "+n);
 					//IJ.log("rect: "+left+","+top+" "+width+" "+height);
-					if (n==0) break;
+					if (n==0 || n<0) break;
 					int[] x = new int[n];
 					int[] y = new int[n];
 					float[] xf = null;
@@ -326,6 +326,8 @@ public class RoiDecoder {
 			default:
 				throw new IOException("Unrecognized ROI type: "+type);
 		}
+		if (roi==null)
+			return null;
 		roi.setName(getRoiName());
 		
 		// read stroke width, stroke color and fill color (1.43i or later)
@@ -532,6 +534,12 @@ public class RoiDecoder {
 		return n;		
 	}
 	
+	int getUnsignedShort(int base) {
+		int b0 = data[base]&255;
+		int b1 = data[base+1]&255;
+		return (b0<<8) + b1;	
+	}
+
 	int getInt(int base) {
 		int b0 = data[base]&255;
 		int b1 = data[base+1]&255;

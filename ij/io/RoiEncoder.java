@@ -168,6 +168,11 @@ public class RoiEncoder {
 				putShort(RoiDecoder.OPTIONS, options);
 			}
 		}
+		if (n>65535) {
+			ij.IJ.beep();
+			ij.IJ.log("ROIs with more than 65,535 points cannot be saved.");
+			n = 65535;
+		}
 		putShort(RoiDecoder.N_COORDINATES, n);
 		putInt(RoiDecoder.POSITION, roi.getPosition());
 		
