@@ -507,7 +507,6 @@ public class ImageReader {
 	int[] readPlanarRGB(InputStream in) throws IOException {
 		if (fi.compression>FileInfo.COMPRESSION_NONE || (fi.stripOffsets!=null&&fi.stripOffsets.length>1))
 			return readCompressedPlanarRGBImage(in);
-IJ.log("readPlanarRGB2: ");
 		DataInputStream dis = new DataInputStream(in);
 		int planeSize = nPixels; // 1/3 image size
 		byte[] buffer = new byte[planeSize];
@@ -803,7 +802,7 @@ IJ.log("readPlanarRGB2: ");
 					pixels = (Object)readChunkyRGB(in);
 					break;
 				case FileInfo.RGB_PLANAR:
-					if (!(in instanceof RandomAccessStream))
+					if (!(in instanceof RandomAccessStream) && fi.stripOffsets!=null && fi.stripOffsets.length>1)
 						in = new RandomAccessStream(in);
 					bytesPerPixel = 3;
 					skip(in);
