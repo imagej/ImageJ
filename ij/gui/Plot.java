@@ -1263,8 +1263,10 @@ public class Plot implements Cloneable {
 	}
 
 	/** Displays the plot in a PlotWindow and returns a reference to the PlotWindow.
-	 *  Note that the PlotWindow might get closed immediately if its 'listValues' and 'autoClose'
-	 *  flags are set */
+	 *  Plot stacks are shown in a StackWindow, however; in this case the return value is null.
+	 *  Also returns null in BatchMode. Note that the PlotWindow might get closed
+	 *  immediately if its 'listValues' and 'autoClose' flags are set.
+	 */
 	public PlotWindow show() {
 		PlotVirtualStack stack = getStack();
 		if (stack!=null && stack.size()>1) {

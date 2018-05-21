@@ -507,7 +507,7 @@ public class PointRoi extends PolygonRoi {
 	}
 	
 	public boolean counting() {
-		return getNCounters()>1 || counts[0]>0;
+		return getNCounters()>1 || counts[0]>1;
 	}
 
 	public static void setDefaultCounter(int counter) {

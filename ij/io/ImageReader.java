@@ -507,6 +507,7 @@ public class ImageReader {
 	int[] readPlanarRGB(InputStream in) throws IOException {
 		if (fi.compression>FileInfo.COMPRESSION_NONE || (fi.stripOffsets!=null&&fi.stripOffsets.length>1))
 			return readCompressedPlanarRGBImage(in);
+IJ.log("readPlanarRGB2: ");
 		DataInputStream dis = new DataInputStream(in);
 		int planeSize = nPixels; // 1/3 image size
 		byte[] buffer = new byte[planeSize];

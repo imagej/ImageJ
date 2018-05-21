@@ -1311,9 +1311,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (roi!=null && (roi instanceof PointRoi) && ((PointRoi)roi).counting()) {
 			int npoints = ((PolygonRoi)roi).getNCoordinates();
 			int counters = ((PointRoi)roi).getNCounters();
-			String msg = "Delete this selection with "+npoints+" points and "+counters+" counter"+(counters>1?"s":"")+"?";
-			if (!IJ.showMessageWithCancel("Delete?",msg+"\n(Restore using Edit>Selection>Restore Selection.)"))
-				return;
+			if (handle==-1 && !(tool==Toolbar.POINT && !Toolbar.getMultiPointMode()&&IJ.shiftKeyDown())) {
+				String msg = "Delete this point selection ("+npoints+" points, "+counters+" counter"+(counters>1?"s":"")+")?";
+				if (!IJ.showMessageWithCancel("Delete Points?",msg+"\nRestore using Edit>Selection>Restore Selection."))
+					return;
+			}
 		}
 		
 		setRoiModState(e, roi, handle);

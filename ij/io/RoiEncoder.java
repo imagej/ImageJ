@@ -170,7 +170,7 @@ public class RoiEncoder {
 		}
 		if (n>65535) {
 			ij.IJ.beep();
-			ij.IJ.log("ROIs with more than 65,535 points cannot be saved.");
+			ij.IJ.log("ROIs with more than 65k points cannot be saved.");
 			n = 65535;
 		}
 		putShort(RoiDecoder.N_COORDINATES, n);
