@@ -44,6 +44,8 @@ public class PointRoi extends PolygonRoi {
 	private ResultsTable rt;
 	private long lastPointTime;
 	private int[] counterInfo;
+	private boolean promptBeforeDeleting;
+	private boolean promptBeforeDeletingCalled;
 	
 	static {
 		setDefaultType((int)Prefs.get(TYPE_KEY, HYBRID));
@@ -506,8 +508,16 @@ public class PointRoi extends PolygonRoi {
 		return n;
 	}
 	
-	public boolean counting() {
-		return getNCounters()>1 || counts[0]>1;
+	public boolean promptBeforeDeleting() {
+	    if (promptBeforeDeletingCalled)
+	    	return promptBeforeDeleting;
+	    else
+			return getNCounters()>1 || counts[0]>1;
+	}
+
+	public void promptBeforeDeleting(Boolean prompt) {
+		promptBeforeDeleting = prompt;
+		promptBeforeDeletingCalled = true;
 	}
 
 	public static void setDefaultCounter(int counter) {

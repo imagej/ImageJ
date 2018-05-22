@@ -1308,11 +1308,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			return;
 		}
 				
-		if (roi!=null && (roi instanceof PointRoi) && ((PointRoi)roi).counting()) {
+		if (roi!=null && (roi instanceof PointRoi) && ((PointRoi)roi).promptBeforeDeleting()) {
 			int npoints = ((PolygonRoi)roi).getNCoordinates();
 			int counters = ((PointRoi)roi).getNCounters();
 			if (handle==-1 && !(tool==Toolbar.POINT && !Toolbar.getMultiPointMode()&&IJ.shiftKeyDown())) {
-				String msg = "Delete this point selection ("+npoints+" points, "+counters+" counter"+(counters>1?"s":"")+")?";
+				String msg = "Delete this multi-point selection ("+npoints+" points, "+counters+" counter"+(counters>1?"s":"")+")?";
 				if (!IJ.showMessageWithCancel("Delete Points?",msg+"\nRestore using Edit>Selection>Restore Selection."))
 					return;
 			}

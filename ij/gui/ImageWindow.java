@@ -399,7 +399,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (imp==null) return true;
 		boolean changes = imp.changes;
 		Roi roi = imp.getRoi();
-		if (roi!=null && (roi instanceof PointRoi) && ((PointRoi)roi).counting())
+		if (roi!=null && (roi instanceof PointRoi) && ((PointRoi)roi).promptBeforeDeleting())
 			changes = true;
 		if (ij==null || ij.quittingViaMacro() || IJ.getApplet()!=null || Interpreter.isBatchMode() || IJ.macroRunning() || virtual)
 			changes = false;
