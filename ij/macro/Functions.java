@@ -3898,10 +3898,12 @@ public class Functions implements MacroConstants, Measurements {
 		ImagePlus imp = getImage();
 		if (metadata!=null && metadata.length()==0)
 			metadata = null;
-		if (isInfo) {
+		if (isInfo || oneArg) {
 			imp.setProperty("Info", metadata);
 		} else {
 			imp.getStack().setSliceLabel(metadata, imp.getCurrentSlice());
+			if (imp.getStackSize()==1)
+					imp.setProperty("Label", metadata);
 			if (!Interpreter.isBatchMode()) imp.repaintWindow();
 		}
 	}
