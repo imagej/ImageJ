@@ -23,13 +23,14 @@ public class NewImage {
 	static final String SLICES = "new.slices";
 
     private static String name = "Untitled";
-    private static int width = Prefs.getInt(WIDTH, 512);
-    private static int height = Prefs.getInt(HEIGHT, 512);
-    private static int slices = Prefs.getInt(SLICES, 1);
-    private static int type = Prefs.getInt(TYPE, GRAY8);
-    private static int fillWith = Prefs.getInt(FILL, FILL_BLACK);
+    private static int newWidth = Prefs.getInt(WIDTH, 512);
+    private static int newHeight = Prefs.getInt(HEIGHT, 512);
+    private static int newSlices = Prefs.getInt(SLICES, 1);
+    private static int newType = Prefs.getInt(TYPE, GRAY8);
+    private static int newFillWith = Prefs.getInt(FILL, FILL_BLACK);
     private static String[] types = {"8-bit", "16-bit", "32-bit", "RGB"};
     private static String[] fill = {"White", "Black", "Ramp", "Noise"}; 
+    private int gwidth, gheight, gslices, gtype, gfill;
 	
     public NewImage() {
     	openImage();
@@ -206,6 +207,8 @@ public class NewImage {
 	}
 	
 	private static void fillNoiseRGB(ColorProcessor ip, boolean sp) {
+		int width = ip.getWidth();
+		int height = ip.getHeight();
 		ByteProcessor rr = new ByteProcessor(width, height);
 		ByteProcessor gg = new ByteProcessor(width, height);
 		ByteProcessor bb = new ByteProcessor(width, height);
@@ -345,56 +348,67 @@ public class NewImage {
 	}
 	
 	boolean showDialog() {
-		if (type<GRAY8|| type>RGB)
-			type = GRAY8;
-		if (fillWith<OLD_FILL_WHITE||fillWith>FILL_NOISE)
-			fillWith = FILL_WHITE;
+		if (newType<GRAY8|| newType>RGB)
+			newType = GRAY8;
+		if (newFillWith<OLD_FILL_WHITE||newFillWith>FILL_NOISE)
+			newFillWith = FILL_WHITE;
 		GenericDialog gd = new GenericDialog("New Image...");
 		gd.addStringField("Name:", name, 12);
-		gd.addChoice("Type:", types, types[type]);
-		gd.addChoice("Fill with:", fill, fill[fillWith]);
-		gd.addNumericField("Width:", width, 0, 5, "pixels");
-		gd.addNumericField("Height:", height, 0, 5, "pixels");
-		gd.addNumericField("Slices:", slices, 0, 5, "");
+		gd.addChoice("Type:", types, types[newType]);
+		gd.addChoice("Fill with:", fill, fill[newFillWith]);
+		gd.addNumericField("Width:", newWidth, 0, 5, "pixels");
+		gd.addNumericField("Height:", newHeight, 0, 5, "pixels");
+		gd.addNumericField("Slices:", newSlices, 0, 5, "");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
 		name = gd.getNextString();
 		String s = gd.getNextChoice();
 		if (s.startsWith("8"))
-			type = GRAY8;
+			gtype = GRAY8;
 		else if (s.startsWith("16"))
-			type = GRAY16;
+			gtype = GRAY16;
 		else if (s.endsWith("RGB") || s.endsWith("rgb"))
-			type = RGB;
+			gtype = RGB;
 		else
-			type = GRAY32;
-		fillWith = gd.getNextChoiceIndex();
-		width = (int)gd.getNextNumber();
-		height = (int)gd.getNextNumber();
-		slices = (int)gd.getNextNumber();
-		if (slices<1) slices = 1;
-		if (width<1 || height<1) {
+			gtype = GRAY32;
+		gfill = gd.getNextChoiceIndex();
+		gwidth = (int)gd.getNextNumber();
+		gheight = (int)gd.getNextNumber();
+		gslices = (int)gd.getNextNumber();
+		if (gslices<1) gslices = 1;
+		if (gwidth<1 || gheight<1) {
 			IJ.error("New Image", "Width and height must be >0");
 			return false;
-		} else
+		} else {
+			if (!IJ.isMacro()) {
+				newWidth = gwidth;
+				newHeight = gheight;
+				newSlices = gslices;
+				newType = gtype;
+				newFillWith = gfill;
+			}
 			return true;
+		}
 	}
 
 	void openImage() {
 		if (!showDialog())
 			return;
-		try {open(name, width, height, slices, type, fillWith);}
-		catch(OutOfMemoryError e) {IJ.outOfMemory("New Image...");}
+		try {
+			open(name, gwidth, gheight, gslices, gtype, gfill);
+		} catch(OutOfMemoryError e) {
+			IJ.outOfMemory("New Image...");
+		}
 	}
 	
 	/** Called when ImageJ quits. */
 	public static void savePreferences(Properties prefs) {
-		prefs.put(TYPE, Integer.toString(type));
-		prefs.put(FILL, Integer.toString(fillWith));
-		prefs.put(WIDTH, Integer.toString(width));
-		prefs.put(HEIGHT, Integer.toString(height));
-		prefs.put(SLICES, Integer.toString(slices));
+		prefs.put(TYPE, Integer.toString(newType));
+		prefs.put(FILL, Integer.toString(newFillWith));
+		prefs.put(WIDTH, Integer.toString(newWidth));
+		prefs.put(HEIGHT, Integer.toString(newHeight));
+		prefs.put(SLICES, Integer.toString(newSlices));
 	}
 
 }
