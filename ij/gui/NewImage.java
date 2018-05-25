@@ -23,11 +23,11 @@ public class NewImage {
 	static final String SLICES = "new.slices";
 
     private static String name = "Untitled";
-    private static int newWidth = Prefs.getInt(WIDTH, 512);
-    private static int newHeight = Prefs.getInt(HEIGHT, 512);
-    private static int newSlices = Prefs.getInt(SLICES, 1);
-    private static int newType = Prefs.getInt(TYPE, GRAY8);
-    private static int newFillWith = Prefs.getInt(FILL, FILL_BLACK);
+    private static int staticWidth = Prefs.getInt(WIDTH, 512);
+    private static int staticHeight = Prefs.getInt(HEIGHT, 512);
+    private static int staticSlices = Prefs.getInt(SLICES, 1);
+    private static int staticType = Prefs.getInt(TYPE, GRAY8);
+    private static int staticFillWith = Prefs.getInt(FILL, FILL_BLACK);
     private static String[] types = {"8-bit", "16-bit", "32-bit", "RGB"};
     private static String[] fill = {"White", "Black", "Ramp", "Noise"}; 
     private int gwidth, gheight, gslices, gtype, gfill;
@@ -348,17 +348,17 @@ public class NewImage {
 	}
 	
 	boolean showDialog() {
-		if (newType<GRAY8|| newType>RGB)
-			newType = GRAY8;
-		if (newFillWith<OLD_FILL_WHITE||newFillWith>FILL_NOISE)
-			newFillWith = FILL_WHITE;
+		if (staticType<GRAY8|| staticType>RGB)
+			staticType = GRAY8;
+		if (staticFillWith<OLD_FILL_WHITE||staticFillWith>FILL_NOISE)
+			staticFillWith = FILL_WHITE;
 		GenericDialog gd = new GenericDialog("New Image...");
 		gd.addStringField("Name:", name, 12);
-		gd.addChoice("Type:", types, types[newType]);
-		gd.addChoice("Fill with:", fill, fill[newFillWith]);
-		gd.addNumericField("Width:", newWidth, 0, 5, "pixels");
-		gd.addNumericField("Height:", newHeight, 0, 5, "pixels");
-		gd.addNumericField("Slices:", newSlices, 0, 5, "");
+		gd.addChoice("Type:", types, types[staticType]);
+		gd.addChoice("Fill with:", fill, fill[staticFillWith]);
+		gd.addNumericField("Width:", staticWidth, 0, 5, "pixels");
+		gd.addNumericField("Height:", staticHeight, 0, 5, "pixels");
+		gd.addNumericField("Slices:", staticSlices, 0, 5, "");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
@@ -382,11 +382,11 @@ public class NewImage {
 			return false;
 		} else {
 			if (!IJ.isMacro()) {
-				newWidth = gwidth;
-				newHeight = gheight;
-				newSlices = gslices;
-				newType = gtype;
-				newFillWith = gfill;
+				staticWidth = gwidth;
+				staticHeight = gheight;
+				staticSlices = gslices;
+				staticType = gtype;
+				staticFillWith = gfill;
 			}
 			return true;
 		}
@@ -404,11 +404,11 @@ public class NewImage {
 	
 	/** Called when ImageJ quits. */
 	public static void savePreferences(Properties prefs) {
-		prefs.put(TYPE, Integer.toString(newType));
-		prefs.put(FILL, Integer.toString(newFillWith));
-		prefs.put(WIDTH, Integer.toString(newWidth));
-		prefs.put(HEIGHT, Integer.toString(newHeight));
-		prefs.put(SLICES, Integer.toString(newSlices));
+		prefs.put(TYPE, Integer.toString(staticType));
+		prefs.put(FILL, Integer.toString(staticFillWith));
+		prefs.put(WIDTH, Integer.toString(staticWidth));
+		prefs.put(HEIGHT, Integer.toString(staticHeight));
+		prefs.put(SLICES, Integer.toString(staticSlices));
 	}
 
 }

@@ -283,6 +283,8 @@ public class Overlay {
 		overlay2.drawBackgrounds(drawBackgrounds);
 		overlay2.setLabelColor(labelColor);
 		overlay2.setLabelFont(labelFont);
+		overlay2.setIsCalibrationBar(isCalibrationBar);
+		overlay2.selectable(selectable);
 		return overlay2;
 	}
 	
