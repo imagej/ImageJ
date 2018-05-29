@@ -1,4 +1,5 @@
 package ij.util;
+import ij.process.*;
 import java.awt.Color;
 import java.util.*;
 import java.io.*;
@@ -43,6 +44,11 @@ import java.nio.channels.FileChannel;
 			i >>>= 4;
 		}
 		return new String(buf);
+	}
+
+	public static ImageStatistics getStatistics(double[] a) {
+		ImageProcessor ip = new FloatProcessor(a.length, 1, a);
+		return ip.getStats();
 	}
 
 	public static double[] getMinMax(double[] a) {

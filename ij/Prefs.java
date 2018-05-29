@@ -416,6 +416,7 @@ public class Prefs {
 			Analyzer.savePreferences(prefs);
 			ImportDialog.savePreferences(prefs);
 			PlotWindow.savePreferences(prefs);
+			NewImage.savePreferences(prefs);
 			String prefsDir = getPrefsDir();
 			path = prefsDir+separator+PREFS_NAME;
 			if (prefsDir.endsWith(".imagej")) {

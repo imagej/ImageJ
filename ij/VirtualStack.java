@@ -189,10 +189,10 @@ public class VirtualStack extends ImageStack {
 		String label = labels[n-1];
 		if (label==null)
 			return names[n-1];
-		else if (label.length()<=60)
-			return label;
+		else if (label.length()>100 && label.indexOf('\n')>0)
+			return names[n-1]+"\n"+label;  // mult-line metadata
 		else
-			return names[n-1]+"\n"+label;
+			return label;
 	}
 	
 	/** Returns null. */

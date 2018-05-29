@@ -214,7 +214,9 @@ public class ImageInfo implements PlugIn {
     		ImageStack stack = imp.getStack();
     		int slice = imp.getCurrentSlice();
     		String number = slice + "/" + stackSize;
-    		String label = stack.getShortSliceLabel(slice);
+    		String label = stack.getSliceLabel(slice);
+    		if (label!=null && label.contains("\n"))
+    			label = stack.getShortSliceLabel(slice);
     		if (label!=null && label.length()>0)
     			label = " (" + label + ")";
     		else

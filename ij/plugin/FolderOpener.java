@@ -219,8 +219,12 @@ public class FolderOpener implements PlugIn {
 				String label = imp.getTitle();
 				if (stackSize==1) {
 					String info = (String)imp.getProperty("Info");
-					if (info!=null)
-						label += "\n" + info;
+					if (info!=null) {
+						if (info.length()>100 && info.indexOf('\n')>0)
+							label += "\n" + info;   // multi-line metadata
+						else
+							label = info;
+					}
 				}
 				if (Math.abs(imp.getCalibration().pixelWidth-cal.pixelWidth)>0.0000000001)
 					allSameCalibration = false;
