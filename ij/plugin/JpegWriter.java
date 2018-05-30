@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.io.FileSaver;
+import ij.io.SaveDialog;
 import java.awt.image.*;
 import java.awt.*;
 import java.io.*;
@@ -24,9 +25,13 @@ public class JpegWriter implements PlugIn {
 
 	/** Thread-safe method. */
 	public static String save(ImagePlus imp, String path, int quality) {
-		imp.startTiming();
+		if (imp==null)
+			imp = IJ.getImage();
+		if (path==null || path.length()==0)
+			path = SaveDialog.getPath(imp, ".jpg");
+		if (path==null)
+			return null;
 		String error = (new JpegWriter()).saveAsJpeg(imp, path, quality);
-		IJ.showTime(imp, imp.getStartTime(), "JpegWriter: ");
 		return error;
 	}
 

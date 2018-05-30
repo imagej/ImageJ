@@ -248,5 +248,14 @@ public class SaveDialog {
 		}
 		return name;
 	}
-		
+	
+	public static String getPath(ImagePlus imp, String extension) {
+		String title = imp!=null?imp.getTitle():"Untitled";
+		SaveDialog sd = new SaveDialog("Save As", title, extension);
+		if (sd.getFileName()==null)
+			return null;
+		else
+			return sd.getDirectory()+sd.getFileName();
+	}
+			
 }

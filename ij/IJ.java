@@ -147,8 +147,6 @@ public class IJ {
 		Returns any string value returned by the macro, or null. Scripts always return null.
 		The equivalent macro function is runMacro(). */
 	public static String runMacroFile(String name, String arg) {
-		if (ij==null && Menus.getCommands()==null)
-			init();
 		Macro_Runner mr = new Macro_Runner();
 		return mr.runMacroFile(name, arg);
 	}
@@ -1828,12 +1826,14 @@ public class IJ {
 		if (format.indexOf("tif")!=-1) {
 			saveAsTiff(imp, path);
 			return;
-		} else if (format.indexOf("jpeg")!=-1  || format.indexOf("jpg")!=-1) {
+		} else if (format.indexOf("jpeg")!=-1 || format.indexOf("jpg")!=-1) {
 			path = updateExtension(path, ".jpg");
-			format = "Jpeg...";
+			JpegWriter.save(imp, path, FileSaver.getJpegQuality());
+			return;
 		} else if (format.indexOf("gif")!=-1) {
 			path = updateExtension(path, ".gif");
-			format = "Gif...";
+			GifWriter.save(imp, path);
+			return;
 		} else if (format.indexOf("text image")!=-1) {
 			path = updateExtension(path, ".txt");
 			format = "Text Image...";

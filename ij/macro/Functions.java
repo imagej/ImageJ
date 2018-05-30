@@ -4145,7 +4145,7 @@ public class Functions implements MacroConstants, Measurements {
 			String title = defaultName!=null?path:"openFile";
 			defaultName = defaultName!=null?defaultName:"log.txt";
 			SaveDialog sd = new SaveDialog(title, defaultName, ".txt");
-			if(sd.getFileName()==null) return "";
+			if (sd.getFileName()==null) return "";
 			path = sd.getDirectory()+sd.getFileName();
 		} else {
 			File file = new File(path);

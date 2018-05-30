@@ -16,18 +16,37 @@ import javax.imageio.ImageIO;
 /** Saves the active image in GIF format, or as an animated GIF if the image is a stack. */
 public class GifWriter implements PlugIn {
 	static int transparentIndex = Prefs.getTransparentIndex();
-   
+	private boolean showErrors = true;
+	private String error;
+		
 	public void run(String path) {
 		ImagePlus imp = IJ.getImage();
-		if (path.equals("")) {
+		if (path==null || path.equals("")) {
 			SaveDialog sd = new SaveDialog("Save as Gif", imp.getTitle(), ".gif");
 			if (sd.getFileName()==null) return;
 			path = sd.getDirectory()+sd.getFileName();
 		}
+		run(imp, path);
+	}
+	
+	/** Saves the specified image in GIF format or as an animated GIF if the image is a stack. */
+	public static String save(ImagePlus imp, String path) {
+		if (imp==null)
+			imp = IJ.getImage();
+		if (path==null || path.length()==0)
+			path = SaveDialog.getPath(imp, ".gif");
+		if (path==null)
+			return null;
+		GifWriter gf = new GifWriter();
+		gf.showErrors = false;
+		gf.run(imp, path);
+		return gf.error;
+	}
+   
+	private void run(ImagePlus imp, String path) {
 		ImageStack stack = imp.getStack();
 		Overlay overlay = imp.getOverlay();
-		int nSlices = stack.getSize();
-				
+		int nSlices = stack.getSize();				
 		if (nSlices==1) { // save using ImageIO
 			if (overlay!=null)
 				imp = imp.flatten();
@@ -37,7 +56,11 @@ public class GifWriter implements PlugIn {
 				String msg = e.getMessage();
 				if (msg==null || msg.equals(""))
 					msg = ""+e;
-				IJ.error("GifWriter", "An error occured writing the file.\n \n" + msg);
+				error = msg;
+				if (showErrors) {
+					IJ.error("GifWriter", "An error occured writing the file.\n \n" + msg);
+					showErrors = false;
+				}
 			}
 			return;
 		}		
@@ -72,7 +95,11 @@ public class GifWriter implements PlugIn {
 			try {
 				ge.addFrame(tmp);
 			} catch(Exception e)  {
-				IJ.showMessage("Save as Gif: "+e);
+				error = ""+e;
+				if (showErrors) {
+					IJ.error("Save as Gif: "+e);
+					showErrors = false;
+				}
 			}
 		}	
 		ge.finish();
@@ -311,8 +338,7 @@ class AnimatedGifEncoder2 {
 
 String name;
 
-public boolean setoptions(){
-
+public boolean setoptions() {
 	String[] GCTtype = {"Do not use","Load from Current Image", "Load from another Image RGB or 8 Bit",
 	 "Use another RGB to create a new color table " };
 	String[] DisposalType = { "No Disposal","Do not Dispose", "Restore to Background", "Restore to previous" };
@@ -321,36 +347,18 @@ public boolean setoptions(){
 		int setdelay=delay*10;
 	int gctType=0;
 	int setTrans;
-	if(GCTloadedExternal) gctType = 2;
-	if(GCTextracted&&GCTloadedExternal) gctType =3;
-	if(gctused&&!(GCTextracted||GCTloadedExternal))gctType=1;
+	if (GCTloadedExternal) gctType = 2;
+	if (GCTextracted&&GCTloadedExternal) gctType =3;
+	if (gctused&&!(GCTextracted||GCTloadedExternal))gctType=1;
 	setTrans=1;
-	if(!(autotransparent||GCTsetTransparent||GCToverideIndex||GCToverideColor)) setTrans=0;
-	if(GCTsetTransparent&& !(GCToverideIndex||GCToverideColor)) setTrans = 2;
-	if(GCTsetTransparent&& GCToverideIndex && !GCToverideColor) setTrans = 4;
-	if(GCTsetTransparent&& !GCToverideIndex && GCToverideColor) setTrans = 3;
-		
+	if (!(autotransparent||GCTsetTransparent||GCToverideIndex||GCToverideColor)) setTrans=0;
+	if (GCTsetTransparent&& !(GCToverideIndex||GCToverideColor)) setTrans = 2;
+	if (GCTsetTransparent&& GCToverideIndex && !GCToverideColor) setTrans = 4;
+	if (GCTsetTransparent&& !GCToverideIndex && GCToverideColor) setTrans = 3;		
 	int red = GCTred;
 	int grn = GCTgrn;
 	int bl = GCTbl;
 	int cindex =GCTcindex;	
-	int disposalType = dispose;
-		String title1 = "";
-	int[] wList = WindowManager.getIDList();
-	if (wList==null) {
-		IJ.error("No windows are open.");
-		return false;
-	}
-  
-	String[] titles = new String[wList.length];
-	for (int i=0; i<wList.length; i++) {
-		ImagePlus imp = WindowManager.getImage(wList[i]);
-		if (imp!=null && imp.getStackSize()==1)
-		titles[i] = imp.getTitle();
-		else
-		titles[i] = "";
-	}
-	
 	setRepeat(0);				
 	autotransparent=false;			//no transparent index
 	GCTsetTransparent=false;
@@ -361,21 +369,20 @@ public boolean setoptions(){
 				  case 0:	break;
 		  case 1:	autotransparent=true;			 //Set if available from image byte images only
 						break;
-				  case 2:	if(cindex>-1){
+				  case 2:	if(cindex>-1) {
 								GCTsetTransparent=true;	 //set specified  index as transparent color
 								GCTcindex=cindex;	
-							}
-							else	 IJ.error("Incorrect color index must have value between 0 and 255");
+							} else
+								IJ.error("Incorrect color index must have value between 0 and 255");
 						break;
-				   case 3:		if((cindex>-1)&&(red>-1)){	//Set transparent index with specified color
+				   case 3:		if((cindex>-1)&&(red>-1)) {	//Set transparent index with specified color
 								GCTsetTransparent=true;
 									GCToverideColor=true;
 									GCTcindex=cindex;	
 									GCTred=red;
 									GCTgrn=grn;
 									GCTbl=bl;
-									}
-									else	 
+								} else	 
 										IJ.error("Incorrect colors or color index, they must have values between 0 and 255.");
 								break;	
 					case 4:		if(red>-1){
@@ -384,8 +391,8 @@ public boolean setoptions(){
 						GCTred=red;					// and replace the color at the index with
 									GCTgrn=grn;
 									GCTbl=bl;
-								 }
-								 else IJ.error("Incorrect colors, they must have values between 0 and 255.");
+								 } else
+								 	IJ.error("Incorrect colors, they must have values between 0 and 255.");
 								break;		
 					default:	break;			
 	}
