@@ -6134,6 +6134,9 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("measure")) {
 			ResultsTable rt = overlay.measure(imp);
 			rt.show("Results");
+		} else if (name.equals("flatten")) {
+			IJ.runPlugIn("ij.plugin.OverlayCommands", "flatten");
+			return Double.NaN;
 		} else
 			interp.error("Unrecognized function name");
 		return Double.NaN;
@@ -6765,6 +6768,10 @@ public class Functions implements MacroConstants, Measurements {
 			return setSplineAnchors(imp, false);
 		else if (name.equals("setPolylineSplineAnchors"))
 			return setSplineAnchors(imp, true);
+		else if (name.equals("remove")) {
+			getImage().deleteRoi();
+			return null;
+		}
 		Roi roi = imp.getRoi();
 		if (roi==null)
 			interp.error("No selection");

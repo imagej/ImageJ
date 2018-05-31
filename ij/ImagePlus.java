@@ -1773,7 +1773,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (roi!=null) {
 			saveRoi();
 			if (!(IJ.altKeyDown()||IJ.shiftKeyDown())) {
-				RoiManager rm = RoiManager.getInstance();
+				RoiManager rm = RoiManager.getRawInstance();
 				if (rm!=null)
 					rm.deselect(roi);
 			}
@@ -2547,8 +2547,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			}
 		}
 		Overlay overlay2 = getOverlay();
-		if (overlay2!=null && imp2.getRoi()!=null)
+		if (overlay2!=null && imp2.getRoi()!=null) {
 			imp2.deleteRoi();
+			if (getWindow()!=null) IJ.wait(100);
+		}
 		setPointScale(imp2.getRoi(), overlay2);
 		ic2.setOverlay(overlay2);
 		ImageCanvas ic = getCanvas();
