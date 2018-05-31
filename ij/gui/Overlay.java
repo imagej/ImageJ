@@ -170,10 +170,10 @@ public class Overlay {
 	public ResultsTable measure(ImagePlus imp) {
 		ResultsTable rt = new ResultsTable();
 		rt.showRowNumbers(true);
+		Analyzer analyzer = new Analyzer(imp, rt);
 		for (int i=0; i<size(); i++) {
 			Roi roi = get(i);
 			imp.setRoi(roi);
-			Analyzer analyzer = new Analyzer(imp, rt);
 			analyzer.measure();
 		}
 		imp.deleteRoi();

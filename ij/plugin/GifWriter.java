@@ -7,10 +7,6 @@ import ij.plugin.*;
 import java.io.*;
 import java.awt.*;
 import java.awt.image.*;
-import java.awt.Color;
-import java.awt.Point;
-import java.io.OutputStream;
-import java.io.IOException;
 import javax.imageio.ImageIO;
 
 /** Saves the active image in GIF format, or as an animated GIF if the image is a stack. */
@@ -19,16 +15,6 @@ public class GifWriter implements PlugIn {
 	private boolean showErrors = true;
 	private String error;
 		
-	public void run(String path) {
-		ImagePlus imp = IJ.getImage();
-		if (path==null || path.equals("")) {
-			SaveDialog sd = new SaveDialog("Save as Gif", imp.getTitle(), ".gif");
-			if (sd.getFileName()==null) return;
-			path = sd.getDirectory()+sd.getFileName();
-		}
-		run(imp, path);
-	}
-	
 	/** Saves the specified image in GIF format or as an animated GIF if the image is a stack. */
 	public static String save(ImagePlus imp, String path) {
 		if (imp==null)
@@ -42,7 +28,17 @@ public class GifWriter implements PlugIn {
 		gf.run(imp, path);
 		return gf.error;
 	}
-   
+
+	public void run(String path) {
+		ImagePlus imp = IJ.getImage();
+		if (path==null || path.equals("")) {
+			SaveDialog sd = new SaveDialog("Save as Gif", imp.getTitle(), ".gif");
+			if (sd.getFileName()==null) return;
+			path = sd.getDirectory()+sd.getFileName();
+		}
+		run(imp, path);
+	}
+	   
 	private void run(ImagePlus imp, String path) {
 		ImageStack stack = imp.getStack();
 		Overlay overlay = imp.getOverlay();

@@ -6133,7 +6133,10 @@ public class Functions implements MacroConstants, Measurements {
 			return Double.NaN;
 		} else if (name.equals("measure")) {
 			ResultsTable rt = overlay.measure(imp);
-			rt.show("Results");
+			if (IJ.getInstance()==null)
+				Analyzer.setResultsTable(rt);
+			else
+				rt.show("Results");
 		} else if (name.equals("flatten")) {
 			IJ.runPlugIn("ij.plugin.OverlayCommands", "flatten");
 			return Double.NaN;
