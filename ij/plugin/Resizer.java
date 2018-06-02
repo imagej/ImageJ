@@ -26,6 +26,9 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 		ImagePlus imp = IJ.getImage();
 		ImageProcessor ip = imp.getProcessor();
 		Roi roi = imp.getRoi();
+		int bitDepth = imp.getBitDepth();
+		double min = ip.getMin();
+		double max = ip.getMax();	
 		if ((roi==null||!roi.isArea()) && crop) {
 			IJ.error(crop?"Crop":"Resize", "Area selection required");
 			return;
@@ -208,6 +211,9 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			imp.changes = false;
 			imp.close();
 			imp2.show();
+		} else if (crop && (bitDepth==16 || bitDepth==32)) {
+			imp.setDisplayRange(min, max);
+			imp.updateAndDraw();
 		}
 	}
 

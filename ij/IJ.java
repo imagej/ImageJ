@@ -1155,6 +1155,16 @@ public class IJ {
 			img.setRoi(new PointRoi(x, y));
 	}
 
+	/** Creates an Roi. */
+	public static Roi Roi(double x, double y, double width, double height) {
+		return new Roi(x, y, width, height);
+	}
+
+	/** Creates an OvalRoi. */
+	public static OvalRoi OvalRoi(double x, double y, double width, double height) {
+		return new OvalRoi(x, y, width, height);
+	}
+
 	/** Sets the display range (minimum and maximum displayed pixel values) of the current image. */
 	public static void setMinAndMax(double min, double max) {
 		setMinAndMax(getImage(), min, max, 7);

@@ -2223,7 +2223,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Deselect the specified ROI if it is the only one selected. */
 	public void deselect(Roi roi) {
 		int[] indexes = getSelectedIndexes();
-		if (indexes.length==1) {
+		if (indexes.length==1 && listModel.getSize()>0) {
 			String label = (String)listModel.getElementAt(indexes[0]);
 			if (label.equals(roi.getName())) {
 				deselect();
