@@ -32,7 +32,7 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 		gd.addCheckbox("Black canvas", Prefs.blackCanvas);
 		gd.addCheckbox("No image border", Prefs.noBorder);
 		gd.addCheckbox("Use inverting lookup table", Prefs.useInvertingLut);
-		gd.addCheckbox("Auto contrast stacks (or use shift key)", Prefs.autoContrast);
+		gd.addCheckbox("Auto contrast stacks", Prefs.autoContrast);
 		gd.addCheckbox("IJ window always on top", Prefs.alwaysOnTop);
 		if (IJ.isLinux())
 			gd.addCheckbox("Cancel button on right", Prefs.dialogCancelButtonOnRight);

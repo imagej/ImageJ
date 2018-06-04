@@ -1613,7 +1613,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			}
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
-			if ((Prefs.autoContrast||IJ.shiftKeyDown()) && nChannels==1 && imageType!=COLOR_RGB) {
+			if (Prefs.autoContrast && nChannels==1 && imageType!=COLOR_RGB) {
 				(new ContrastEnhancer()).stretchHistogram(ip,0.35,ip.getStats());
 				ContrastAdjuster.update();
 				//IJ.showStatus(n+": min="+ip.getMin()+", max="+ip.getMax());
