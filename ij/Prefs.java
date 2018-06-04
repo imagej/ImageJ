@@ -143,7 +143,7 @@ public class Prefs {
 	public static boolean useFileChooser;
 	/** Use sub-pixel resolution with line selections */
 	public static boolean subPixelResolution;
-	/** Adjust contrast when scrolling stacks (or hold shift key down) */
+	/** Adjust contrast when scrolling stacks */
 	public static boolean autoContrast;
 	/** Allow lines to be created with one click at start and another at the end */
 	public static boolean enhancedLineTool;
