@@ -458,6 +458,8 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			}
 		} else {
 			for (int i=0; i<stats.nBins; i++) {
+				if (stats.binSize!=1.0)
+				rt.setValue("index", i, i);
 				rt.setValue(vheading, i, cal.getCValue(stats.histMin+i*stats.binSize));
 				rt.setValue("count", i, histogram[i]);
 			}

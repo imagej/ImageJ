@@ -1,4 +1,5 @@
 package ij.plugin;
+import ij.plugin.frame.Recorder;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
@@ -120,6 +121,8 @@ public class ImagesToStack implements PlugIn {
 				staticKeep = keep;
 				staticTitlesAsLabels = titlesAsLabels;
 			}
+			if (Recorder.record)
+   				Recorder.recordCall("imp = ImagesToStack.run(arrayOfImages);");
 		} else
 			keep = false;
 		if (method==SCALE_SMALL) {

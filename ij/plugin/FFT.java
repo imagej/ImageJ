@@ -178,6 +178,10 @@ public class FFT implements  PlugIn, Measurements {
         }
         maxN = i;
         showStatus("Padding to "+ maxN + "x" + maxN);
+        if (maxN>=65536) {
+        	IJ.error("FFT", "Padded image is too large ("+maxN+"x"+maxN+")");
+        	return null;
+        }
         ImageStatistics stats = ImageStatistics.getStatistics(ip, MEAN, null);
         ImageProcessor ip2 = ip.createProcessor(maxN, maxN);
         ip2.setValue(stats.mean);

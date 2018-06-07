@@ -7,14 +7,17 @@ public class ImageStatistics implements Measurements {
 
 	/** Use getHIstogram() to get histogram as long array. */
 	public int[] histogram;
+	
 	/** Int pixel count (limited to 2^31-1) */
-	public int pixelCount;
+	public int pixelCount;	
 	/** Long pixel count */
 	public long longPixelCount;
-	/** Int mode (limited to 2^31-1) */
+	
+	/** Mode of 256 bin histogram (counts limited to 2^31-1) */	
 	public int mode;
-	/** Double mode*/
+	/** Mode */
 	public double dmode;
+	
 	public double area;
 	public double min;
 	public double max;

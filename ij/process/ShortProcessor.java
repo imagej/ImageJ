@@ -999,6 +999,9 @@ public class ShortProcessor extends ImageProcessor {
 		return histogram;
 	}
 
+	/** Creates a histogram of length maxof(max+1,256). For small 
+		images or selections, computations using these histograms 
+		are faster compared to 65536 element histograms. */
 	int[] getHistogram2() {
 		if (mask!=null)
 			return getHistogram2(mask);
