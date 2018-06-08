@@ -95,9 +95,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	private boolean ignoreGlobalCalibration;
 	private boolean oneSliceStack;
 	public boolean setIJMenuBar = Prefs.setIJMenuBar;
-	public boolean typeSet;
-	
-	
+		
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {
@@ -108,10 +106,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     /** Constructs an ImagePlus from an Image or BufferedImage. The first 
 		argument will be used as the title of the window that displays the image.
 		Throws an IllegalStateException if an error occurs while loading the image. */
-    public ImagePlus(String title, Image img) {
+    public ImagePlus(String title, Image image) {
 		this.title = title;
-		if (img!=null)
-			setImage(img);
+		if (image!=null)
+			setImage(image);
 		setID();
     }
     
@@ -196,14 +194,14 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (IJ.debugMode) IJ.log(title + ": unlock");
 	}
 		
-	private void waitForImage(Image img) {
+	private void waitForImage(Image image) {
 		if (comp==null) {
 			comp = IJ.getInstance();
 			if (comp==null)
 				comp = new Canvas();
 		}
 		imageLoaded = false;
-		if (!comp.prepareImage(img, this)) {
+		if (!comp.prepareImage(image, this)) {
 			double progress;
 			waitStart = System.currentTimeMillis();
 			while (!imageLoaded && !errorLoadingImage) {
@@ -409,11 +407,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (isVisible())
 			return;
 		win = null;
-		//if (ip!=null) throw new IllegalArgumentException();
 		if ((IJ.isMacro() && ij==null) || Interpreter.isBatchMode()) {
 			if (isComposite()) ((CompositeImage)this).reset();
-			ImagePlus img = WindowManager.getCurrentImage();
-			if (img!=null) img.saveRoi();
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (imp!=null) imp.saveRoi();
 			WindowManager.setTempCurrentImage(this);
 			Interpreter.addBatchModeImage(this);
 			return;
@@ -505,9 +502,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Replaces the image, if any, with the one specified. 
 		Throws an IllegalStateException if an error occurs 
 		while loading the image. */
-	public void setImage(Image img) {
-		if (img instanceof BufferedImage) {
-			BufferedImage bi = (BufferedImage)img;
+	public void setImage(Image image) {
+		if (image instanceof BufferedImage) {
+			BufferedImage bi = (BufferedImage)image;
 			if (bi.getType()==BufferedImage.TYPE_USHORT_GRAY) {
 				setProcessor(null, new ShortProcessor(bi));
 				return;
@@ -518,19 +515,17 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 		roi = null;
 		errorLoadingImage = false;
-		waitForImage(img);
+		waitForImage(image);
 		if (errorLoadingImage)
 			throw new IllegalStateException ("Error loading image");
-		this.img = img;
-		int newWidth = img.getWidth(ij);
-		int newHeight = img.getHeight(ij);
+		int newWidth = image.getWidth(ij);
+		int newHeight = image.getHeight(ij);
 		boolean dimensionsChanged = newWidth!=width || newHeight!=height;
 		width = newWidth;
 		height = newHeight;
-		ip = null;
 		setStackNull();
-		LookUpTable lut = new LookUpTable(img);
-		int type;
+		LookUpTable lut = new LookUpTable(image);
+		int type = GRAY8;
 		if (lut.getMapSize() > 0) {
 			if (lut.isGrayscale())
 				type = GRAY8;
@@ -538,8 +533,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				type = COLOR_256;
 		} else
 			type = COLOR_RGB;
+		if (image!=null && type==COLOR_RGB)
+			ip = new ColorProcessor(image);
+		if (ip==null && image!=null)
+			ip = new ByteProcessor(image);
 		setType(type);
-		setupProcessor();
 		this.img = ip.createImage();
 		if (win!=null) {
 			if (dimensionsChanged)
@@ -784,15 +782,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 	
 	void setupProcessor() {
-		if (imageType==COLOR_RGB) {
-			if (ip==null || ip instanceof ByteProcessor)
-				ip = new ColorProcessor(getImage());
-		} else if (ip==null || (ip instanceof ColorProcessor))
-			ip = new ByteProcessor(getImage());
-		if (roi!=null && roi.isArea())
-			ip.setRoi(roi.getBounds());
-		else
-			ip.resetRoi();
 	}
 	
 	public boolean isProcessor() {
@@ -805,9 +794,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		Sets the line width to the current line width and sets the
 		calibration table if the image is density calibrated. */
 	public ImageProcessor getProcessor() {
-		if (ip==null && img==null)
+		if (ip==null)
 			return null;
-		setupProcessor();
+		if (roi!=null && roi.isArea())
+			ip.setRoi(roi.getBounds());
+		else
+			ip.resetRoi();
 		if (!compositeImage)
 			ip.setLineWidth(Line.getWidth());
 		if (ij!=null)
@@ -885,7 +877,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/* Returns uncalibrated statistics for this image or ROI, including
 		256 bin histogram, pixelCount, mean, mode, min and max. */
 	public ImageStatistics getRawStatistics() {
-		setupProcessor();
 		if (roi!=null && roi.isArea())
 			ip.setRoi(roi);
 		else
@@ -917,7 +908,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		is fixed at 256 and the histogram range is always 0-255.
 	*/
 	public ImageStatistics getStatistics(int mOptions, int nBins, double histMin, double histMax) {
-		setupProcessor();
 		if (roi!=null && roi.isArea())
 			ip.setRoi(roi);
 		else
@@ -1034,7 +1024,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (updateWin) {
 			if (nSlices!=getImageStackSize())
 				setOpenAsHyperStack(true);
-			ip=null; img=null;
+			ip = null;
+			img = null;
 			setPositionWithoutUpdate(getChannel(), getSlice(), getFrame());
 			if (isComposite()) ((CompositeImage)this).reset();
 			new StackWindow(this);
@@ -1126,16 +1117,18 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     /** Returns the bit depth, 8, 16, 24 (RGB) or 32, or 0 if the bit depth 
     	is unknown. RGB images actually use 32 bits per pixel. */
     public int getBitDepth() {
-    	if (imageType==GRAY8 && ip==null && img==null && !typeSet)
+    	ImageProcessor ip2 = ip;
+    	if (ip2==null)
     		return 0;
-    	int bitDepth = 0;
-    	switch (imageType) {
-	    	case GRAY8: case COLOR_256: bitDepth=8; break;
-	    	case GRAY16: bitDepth=16; break;
-	    	case GRAY32: bitDepth=32; break;
-	    	case COLOR_RGB: bitDepth=24; break;
-    	}
-    	return bitDepth;
+    	if (ip2 instanceof ByteProcessor)
+    		return 8;
+    	else if (ip2 instanceof ShortProcessor)
+    		return 16;
+    	else if (ip2 instanceof ColorProcessor)
+    		return 24;
+      	else if (ip2 instanceof FloatProcessor)
+    		return 32;
+    	return 0;
     }
     
     /** Returns the number of bytes per pixel. */
@@ -1152,7 +1145,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return;
 		int previousType = imageType;
 		imageType = type;
-		typeSet = true;
 		if (imageType!=previousType) {
 			if (win!=null)
 				Menus.updateMenus();
@@ -1300,12 +1292,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Returns true is this image uses an inverting LUT that 
 		displays zero as white and 255 as black. */
 	public boolean isInvertedLut() {
-		if (ip==null) {
-			if (img==null)
-				return false;
-			setupProcessor();
-		}
-		return ip.isInvertedLut();
+		return ip!=null && ip.isInvertedLut();
 	}
     
 	private int[] pvalue = new int[4];
@@ -1539,9 +1526,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			ColorModel cm = ip.getColorModel();
 			double min = ip.getMin();
 			double max = ip.getMax();
-			ip = stack.getProcessor(1);
-			ip.setColorModel(cm);
-			ip.setMinAndMax(min, max);
+			ImageProcessor ip2 = stack.getProcessor(1);
+			if (ip2!=null) {
+				ip = ip2;
+				ip.setColorModel(cm);
+				ip.setMinAndMax(min, max);
+			}
 		}
 	}
 	
@@ -1582,7 +1572,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				roi.endPaste();
 			if (isProcessor())
 				stack.setPixels(ip.getPixels(),currentSlice);
-			ip = getProcessor();
 			setCurrentSlice(n);
 			Object pixels = null;
 			Overlay overlay2 = null;
@@ -1604,8 +1593,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 					ip.setPixels(pixels);
 					ip.setSnapshotPixels(null);
 				} catch(Exception e) {}
-			} else
-				ip = stack.getProcessor(n);
+			} else {
+				ImageProcessor ip2 = stack.getProcessor(n);
+				if (ip2!=null) ip = ip2;
+			}
 			if (compositeImage && getCompositeMode()==IJ.COMPOSITE && ip!=null) {
 				int channel = getC();
 				if (channel>0 && channel<=getNChannels())
@@ -1923,7 +1914,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     		fi.nImages = getImageStackSize();
     	fi.whiteIsZero = isInvertedLut();
 		fi.intelByteOrder = false;
-    	setupProcessor();
     	if (fi.nImages==1)
     		fi.pixels = ip.getPixels();
     	else

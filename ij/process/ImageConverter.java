@@ -126,9 +126,7 @@ public class ImageConverter {
 	/** Converts an RGB image to a HSB (hue, saturation and brightness) stack. */
 	public void convertToHSB() {
 		if (type!=ImagePlus.COLOR_RGB)
-			throw new IllegalArgumentException("Image must be RGB");
-		//convert to hue, saturation and brightness
-		//IJ.showProgress(0.1);
+			throw new IllegalArgumentException("Image must be RGB");;
 		ColorProcessor cp;
 		if (imp.getType()==ImagePlus.COLOR_RGB)
 			cp = (ColorProcessor)imp.getProcessor();
@@ -138,7 +136,6 @@ public class ImageConverter {
 		imp.trimProcessor();
 		imp.setStack(null, stack);
 		imp.setDimensions(3, 1, 1);
-		//IJ.showProgress(1.0);
 	}
 	
 	/** Converts an RGB image to a Lab stack. */

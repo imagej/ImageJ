@@ -9,15 +9,15 @@ public class ImageStatistics implements Measurements {
 	public int[] histogram;
 	
 	/** Int pixel count (limited to 2^31-1) */
-	public int pixelCount;	
+	public int pixelCount;
 	/** Long pixel count */
-	public long longPixelCount;
+	public long longPixelCount;	
 	
-	/** Mode of 256 bin histogram (counts limited to 2^31-1) */	
-	public int mode;
 	/** Mode */
 	public double dmode;
-	
+	/** Mode of 256 bin histogram (counts limited to 2^31-1) */	
+	public int mode;
+		
 	public double area;
 	public double min;
 	public double max;

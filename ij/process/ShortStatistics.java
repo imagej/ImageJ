@@ -133,7 +133,6 @@ public class ShortStatistics extends ImageStatistics {
         }
 	}
 
-
 	void getCentroid(ImageProcessor ip, int minThreshold, int maxThreshold) {
 		short[] pixels = (short[])ip.getPixels();
 		byte[] mask = ip.getMaskArray();
