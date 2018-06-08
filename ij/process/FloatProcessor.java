@@ -1079,6 +1079,21 @@ public class FloatProcessor extends ImageProcessor {
 	public int getBitDepth() {
 		return 32;
 	}
+	
+	/** Returns a binary mask, or null if a threshold is not set.*/
+	public ByteProcessor createMask() {
+		if (getMinThreshold()==NO_THRESHOLD)
+			return null;
+		float minThreshold = (float)getMinThreshold();
+		float maxThreshold = (float)getMaxThreshold();
+		ByteProcessor mask = new ByteProcessor(width, height);
+		byte[] mpixels = (byte[])mask.getPixels();
+		for (int i=0; i<pixels.length; i++) {
+			if (pixels[i]>=minThreshold && pixels[i]<=maxThreshold)
+				mpixels[i] = (byte)255;
+		}
+		return mask;
+	}
 
 }
 

@@ -36,7 +36,7 @@ public class ByteProcessor extends ImageProcessor {
 		if (cm instanceof IndexColorModel)
 			pixels = (byte[])(pg.getPixels());
 		if ((cm instanceof IndexColorModel) && ((IndexColorModel)cm).getTransparentPixel()!=-1) {
-    		IndexColorModel icm = (IndexColorModel)cm;
+			IndexColorModel icm = (IndexColorModel)cm;
 			int mapSize = icm.getMapSize();
 			byte[] reds = new byte[mapSize];
 			byte[] greens = new byte[mapSize];
@@ -1251,7 +1251,22 @@ public class ByteProcessor extends ImageProcessor {
 	public int getBitDepth() {
 		return 8;
 	}
-
+	
+	/** Returns a binary mask, or null if a threshold is not set.*/
+	public ByteProcessor createMask() {
+		if (getMinThreshold()==NO_THRESHOLD)
+			return null;
+		int minThreshold = (int)getMinThreshold();
+		int maxThreshold = (int)getMaxThreshold();
+		ByteProcessor mask = new ByteProcessor(width, height);
+		byte[] mpixels = (byte[])mask.getPixels();
+		for (int i=0; i<pixels.length; i++) {
+			int value = pixels[i]&0xff;
+			if (value>=minThreshold && value<=maxThreshold)
+				mpixels[i] = (byte)255;
+		}
+		return mask;
+	}
 	
 	byte[] create8BitImage() {
 		return pixels;

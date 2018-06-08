@@ -1185,6 +1185,22 @@ public class ShortProcessor extends ImageProcessor {
 	public boolean isSigned16Bit() {
 		return cTable!=null && cTable[0]==-32768f && cTable[1]==-32767f;
 	}
+	
+	/** Returns a binary mask, or null if a threshold is not set.*/
+	public ByteProcessor createMask() {
+		if (getMinThreshold()==NO_THRESHOLD)
+			return null;
+		int minThreshold = (int)getMinThreshold();
+		int maxThreshold = (int)getMaxThreshold();
+		ByteProcessor mask = new ByteProcessor(width, height);
+		byte[] mpixels = (byte[])mask.getPixels();
+		for (int i=0; i<pixels.length; i++) {
+			int value = pixels[i]&0xffff;
+			if (value>=minThreshold && value<=maxThreshold)
+				mpixels[i] = (byte)255;
+		}
+		return mask;
+	}
 
 	/** Not implemented. */
 	public void medianFilter() {}
