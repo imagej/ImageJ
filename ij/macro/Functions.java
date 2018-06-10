@@ -1062,7 +1062,10 @@ public class Functions implements MacroConstants, Measurements {
 		for (int y=ymin; y<ymax; y++) {
 			for (int x=xmin; x<xmax; x++) {
 				v = isFloat?ip.getPixelValue(x,y):ip.getPixel(x,y)&0xffffff;
-				if (v>=darg1 && v<=darg2) {
+				boolean replace = v>=darg1 && v<=darg2;
+				if (Double.isNaN(darg1) && Double.isNaN(darg2) && Double.isNaN(v))
+					replace = true;
+				if (replace) {
 					if (isFloat)
 						ip.putPixelValue(x, y, darg3);
 					else

@@ -1080,7 +1080,7 @@ public class FloatProcessor extends ImageProcessor {
 		return 32;
 	}
 	
-	/** Returns a binary mask, or null if a threshold is not set.*/
+	/** Returns a binary mask, or null if a threshold is not set. */
 	public ByteProcessor createMask() {
 		if (getMinThreshold()==NO_THRESHOLD)
 			return null;

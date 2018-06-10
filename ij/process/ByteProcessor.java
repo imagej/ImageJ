@@ -1252,7 +1252,7 @@ public class ByteProcessor extends ImageProcessor {
 		return 8;
 	}
 	
-	/** Returns a binary mask, or null if a threshold is not set.*/
+	/** Returns a binary mask, or null if a threshold is not set. */
 	public ByteProcessor createMask() {
 		if (getMinThreshold()==NO_THRESHOLD)
 			return null;

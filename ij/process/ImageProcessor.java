@@ -513,14 +513,32 @@ public abstract class ImageProcessor implements Cloneable {
 		source = null;
 	}
 	
-	public void setAutoThreshold(String mString) {
-		if (mString==null)
+	/** Automatically sets the lower and upper threshold levels, where 'method'
+	 * must be "Default", "Huang", "Intermodes", "IsoData", "IJ_IsoData", "Li", 
+	 * "MaxEntropy", "Mean", "MinError", "Minimum", "Moments", "Otsu", 
+	 * "Percentile", "RenyiEntropy", "Shanbhag", "Triangle" or "Yen". The
+	 * 'method' string may also include the keywords 'dark' (dark background)
+	 * 'red' (red LUT, the default), 'b&w' (black and white LUT), 'over/under' (over/under LUT) or
+	 * 'no-lut' (no LUT changes), for example "Huang dark b&w".
+	 * @see ImageProcessor#resetThreshold
+	 * @see ImageProcessor#setThreshold
+	 * @see ImageProcessor#createMask
+	*/
+	public void setAutoThreshold(String method) {
+		if (method==null)
 			throw new IllegalArgumentException("Null method");
-		boolean darkBackground = mString.indexOf("dark")!=-1;
-		int index = mString.indexOf(" ");
+		boolean darkBackground = method.contains("dark");
+		int lut = RED_LUT;
+		if (method.contains("b&w"))
+			lut = BLACK_AND_WHITE_LUT;
+		if (method.contains("over"))
+			lut = OVER_UNDER_LUT;
+		if (method.contains("no"))
+			lut = NO_LUT_UPDATE;
+		int index = method.indexOf(" ");
 		if (index!=-1)
-			mString = mString.substring(0, index);
-		setAutoThreshold(mString, darkBackground, RED_LUT);
+			method = method.substring(0, index);
+		setAutoThreshold(method, darkBackground, lut);
 	}
 	
 	public void setAutoThreshold(String mString, boolean darkBackground, int lutUpdate) {
@@ -2699,7 +2717,7 @@ public abstract class ImageProcessor implements Cloneable {
 		seed = randomSeed;
 	}
 	
-	/** Returns a binary mask, or null if a threshold is not set or this is an RGB image.*/
+	/** Returns a binary mask, or null if a threshold is not set or this is an RGB image. */
 	public ByteProcessor createMask() {
 		return null;
 	}
