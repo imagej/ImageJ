@@ -77,13 +77,15 @@ public class IJ {
 		isMac = !isWin && osname.startsWith("Mac");
 		isLinux = osname.startsWith("Linux");
 		String version = System.getProperty("java.version");
-		if (version.startsWith("10"))
+		if (javaVersion<11 && version.startsWith("11"))
+			javaVersion = 11;
+		if (javaVersion<10 && version.startsWith("10"))
 			javaVersion = 10;
-		else if (version.startsWith("1.9")||version.startsWith("9"))
+		 if (javaVersion<9 && (version.startsWith("1.9")||version.startsWith("9")))
 			javaVersion = 9;
-		else if (version.startsWith("1.8"))
+		if (javaVersion<8 && version.startsWith("1.8"))
 			javaVersion = 8;
-		else if (version.startsWith("1.7"))
+		if (javaVersion<7 && version.startsWith("1.7"))
 			javaVersion = 7;
 		dfs = new DecimalFormatSymbols(Locale.US);
 		df = new DecimalFormat[10];
