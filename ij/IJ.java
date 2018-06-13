@@ -50,7 +50,7 @@ public class IJ {
 	private static TextPanel textPanel;
 	private static String osname, osarch;
 	private static boolean isMac, isWin, isLinux, is64Bit;
-	private static int javaVersion = 6;
+	private static int javaVersion;
 	private static boolean controlDown, altDown, spaceDown, shiftDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
@@ -77,16 +77,22 @@ public class IJ {
 		isMac = !isWin && osname.startsWith("Mac");
 		isLinux = osname.startsWith("Linux");
 		String version = System.getProperty("java.version");
-		if (javaVersion<11 && version.startsWith("11"))
-			javaVersion = 11;
-		if (javaVersion<10 && version.startsWith("10"))
-			javaVersion = 10;
-		 if (javaVersion<9 && (version.startsWith("1.9")||version.startsWith("9")))
-			javaVersion = 9;
-		if (javaVersion<8 && version.startsWith("1.8"))
+		if (version.startsWith("1.8"))
 			javaVersion = 8;
-		if (javaVersion<7 && version.startsWith("1.7"))
+		else if (version.startsWith("1.6"))
+			javaVersion = 6;
+		else if (version.startsWith("1.9")||version.startsWith("9"))
+			javaVersion = 9;
+		else if (version.startsWith("10"))
+			javaVersion = 10;
+		else if (version.startsWith("11"))
+			javaVersion = 11;
+		else if (version.startsWith("12"))
+			javaVersion = 12;
+		else if (version.startsWith("1.7"))
 			javaVersion = 7;
+		else
+			javaVersion = 6;
 		dfs = new DecimalFormatSymbols(Locale.US);
 		df = new DecimalFormat[10];
 		df[0] = new DecimalFormat("0", dfs);
