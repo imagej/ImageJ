@@ -5,7 +5,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.51
+# Version 1.52
 
 # Commands installed in the right-click popup menu
 # Overridden in StartupMacros
