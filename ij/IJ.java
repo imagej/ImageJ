@@ -1702,7 +1702,10 @@ public class IJ {
 		Use IJ.open() to display a file open dialog box.
 	*/
 	public static ImagePlus openImage(String path) {
-		return (new Opener()).openImage(path);
+		macroRunning = true;
+		ImagePlus imp = (new Opener()).openImage(path);
+		macroRunning = false;
+		return imp;
 	}
 
 	/** Opens the nth image of the specified tiff stack. */

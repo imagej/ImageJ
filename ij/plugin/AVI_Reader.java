@@ -1570,4 +1570,9 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 		this.displayDialog = displayDialog;
 	}
 
+	/** Open as virtual stack? */
+	public void setVirtual(boolean virtual) {
+		isVirtual = virtual;
+	}
+
 }

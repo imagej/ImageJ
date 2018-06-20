@@ -55,7 +55,7 @@ public class FFT implements	 PlugIn, Measurements {
 	/**
 	 * Multiplies a Fourier domain image by a filter
 	 * @param imp A frequency domain image, which is modified.
-	 * @param filter  The filter
+	 * @param filter  The filter, 32-bits (0-1) or 8-bits (0-255)
 	 * @see #forward
 	 * @see #inverse
 	 * @see #filter
@@ -100,7 +100,7 @@ public class FFT implements	 PlugIn, Measurements {
 	/**
 	 * Does frequency domain fitering of the speciified image
 	 * @param imp The image to be filtered.
-	 * @param filter  The filter
+	 * @param filter  The filter, 32-bits (0-1) or 8-bits (0-255)
 	 * @see #forward
 	 * @see #multiply
 	 * @see #inverse
@@ -115,6 +115,11 @@ public class FFT implements	 PlugIn, Measurements {
 		ImagePlus imp2 = FFT.forward(imp);
 		FFT.multiply(imp2, filter);
 		imp.setProcessor(FFT.inverse(imp2).getProcessor());
+	}
+
+	/** Version of filter() that accepts an ImagePlus for the filter. */
+	public static void filter(ImagePlus imp, ImagePlus filter) {
+		filter(imp, filter.getProcessor());
 	}
 
 	public void run(String arg) {

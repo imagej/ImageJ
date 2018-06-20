@@ -355,6 +355,7 @@ public class Opener {
 				return openZip(path);
 			case AVI:
 				AVI_Reader reader = new AVI_Reader();
+				reader.setVirtual(true);
 				reader.displayDialog(!IJ.macroRunning());
 				reader.run(path);
 				return reader.getImagePlus();

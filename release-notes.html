@@ -5,10 +5,182 @@
 </head>
 <body>
 
-<li> <u>1.52e 17 June 2018</u>
+<li> <u>1.52e 20 June 2018</u>
 <ul>
 <li> Added the FFT.forward(), FFT.multiply(), FFT.inverse() and FFT.filter() methods
 (<a href="http://wsr.imagej.net/macros/FFT_Filter.js">example</a>).
+<li> The open("/path/to/file.avi") macro function and the IJ.openImage("/path/to/file.avi")
+method now open AVI files by default as virtual stacks.
+</ul> 
+
+<li> <u>1.52d 11 June 2018</u>
+<ul>
+<li> The <i>Image&gt;Show Info</i> command no longer truncates 
+one line slice labels to 60 charactera.
+<li> Thanks to Norbert Vischer, the changeValues() macro function
+can now be used to replace NaNs.
+(<a href="http://wsr.imagej.net/macros/ReplaceNaNs.txt">example</a>).
+<li> Thanks to Mark Histed, when the shift key is down, the display
+ range is no longer changed when stepping forward/back in a stack.
+ <li> Thanks to Hugo, the <i>Process&gt;FFT</i> command displays an error 
+ message if the padded image is going to be 65536x65536 or larger.
+ <li> Thanks to Roger Leigh, the IJ.javaVersion() method works with Java 11.
+<li> Added the IJ.Roi(x,y,w,h) and IJ.OvalRoi(x,y,w,h) methods.
+<li> Thanks to Gregor and Michael Schmid, added the ImageProcessor.createMask() method
+(<a href="http://wsr.imagej.net/macros/CreateMaskDemo.js">example</a>).
+<li> Thanks to David Kysela, added the PointRoi.promptBeforeDeleting(boolean) method
+(<a href="http://wsr.imagej.net/macros/PointsWithPrompting.js">example</a>).
+<li> Thanks to Laurent Thomas, added the ImagesToStack.run(images) method
+(<a href="http://wsr.imagej.net/macros/ImagesToStack.js">example</a>).
+<li> Added the Tools.getStatistics(double[]) method.
+<li> Thanks to Ximo Soriano and Michael Schmid, fixed a bug that could cause the
+newImage("Name","RGB noise",width,height,1) macro function to throw an exception.
+<li> Thanks to Ruben Gres, fixed a bug that caused the Overlay.duplicate() method
+to not keep the 'isCalibrationBar' and 'selectable' settings.
+<li> Thanks to David Schreiner, fixed bugs that caused the
+<i>File&gt;Import&gt;Image Sequence</i> command to not correctly
+handle image metadata longer then 60 characters.
+<li> Thanks to 'yahbai', fixed bugs that caused the saveAs("jpg",path),
+saveAs("gif",path) and Overlay.measure macro functions to not work
+in headless mode.
+<li> Thanks to 'yahbai', fixed a bug that caused the ImagePlus.deleteRoi()
+method to throw an exception in headless mode.
+<li> Thanks to Michael Kaul, fixed a 1.52a regression that caused 
+an EOFException when opening Analyze format RGB images.
+<li> Thanks to Bill Christens-Barry, fixed a 1.52b regression that caused the
+label set with the setMetadata("Label", label) macro function to not be displayed
+in the image subtitle of single images.
+<li> Thanks to Michael Cammer, fixed a 1.52c regression that caused
+the <i>Image&gt;Crop</i> command to not work as expected
+with 16-bit images.
+<li> Thanks to Peter Meijer, fixed a 1.52c regression that could cause
+ClassCastExceptions when converting RGB images to stacks.
+</ul> 
+
+<li> <u>1.52c 20 May 2018</u>
+<ul>
+<li> Activating an ROI in an overlay created by <i>Measure</i> (with ‚ÄúAdd to overlay" enabled),
+or by the particle analyzer, selects the corresponding row in the "Results" table.
+<li> ImageJ displays a "Delete Points?" dialog before deleting a multi-point selection
+with counters.
+<li> Thanks to "zzyzyman", fixed a bug that caused ImageJ to fail to open odd-width RGB AVI files.
+<li> Thanks to Merijn van Erp, fixed a bug that caused the CurveFitter.getSortedFitList()
+method to throw an exception.
+<li> Thanks to Kees Straatman and Bill Christens-Barry, fixed a bug in the macro interpreter 
+that caused it to not detect a missing '[' after an array variable.
+<li> Thanks to Mike, fixed a 1.52b regression that caused the AVI Reader to
+fail with a "Required item ‚Äò00ix‚Äô not found" error.
+<li> Thanks to Curtis Rueden, fixed a 1.51t regression that caused errors in
+headless mode macros to throw a HeadlessException.
+<li> Thanks to 'cortig' and Curtis Rueden, fixed a 1.52b regression that caused
+the "Apply" option of the <i>Image&gt;Adjust&gt;Threshold</i> command to not
+behave as expected with 16 and 32 bit images.
+</ul> 
+
+<li> <u>1.52b 6 May 2018</u>
+<ul>
+<li> Changed "Random" to "Noise" in the "Fill with:" choice of
+the <i>File&gt;New&gt;Image</i> dialog box.
+<li> Thanks to Christian Evenhuis, fixed a bug with the
+<i>Edit&gt;Selection&gt;Line to Area</i> command that caused 
+the resulting area selection to translated if the source was a polyline 
+or freeline selection less than 5 pixels wide.
+<li> Added the IJ.javaVersion() method.
+<li> Thanks to Fred Damen, fixed bugs that caused the
+<i>Image&gt;Stacks&gt;Tools&gt;Concatenate</i> command
+to sometimes not work as expected.
+<li> Thanks to Aryeh Weiss and Michael Schmid, worked around a 
+Linux problem with large images not showing at low magnification.
+<li> Thanks to Fred Damen, fixed bugs that sometimes caused
+slices labels of single slice stacks to be lost.
+<li> Thanks to BrainPatcher and Stefan Helfrich, fixed a bug
+that caused the ROI Manager's "Multi Measure" command to
+not work correctly with point selections.
+<li> Thanks to "zzyzyman", fixed a bug that caused ImageJ to
+fail to open AVI files that used the 'indx'/'ix00' indexing schema.
+<li> Thanks to Moses, fixed a 1.52a regression that caused row
+labels to be omitted from tables created by the ROI Manager's
+"Multi Measure" command.
+<li> Thanks to Jerome Mutterer, fixed a 1.52a regression that caused
+imported Results tables to be displayed without row numbers.
+</ul> 
+
+<li> <u>1.52a 23 April 2018</u>
+<ul>
+<li> Thanks to Michael Schmid, added <i>Apply Macro</i>
+commands to the <i>Edit</i> and contextual (right click pop-up)
+menus of table windows.
+Also added the ResultsTable.applyMacro() method
+(<a href="http://wsr.imagej.net/macros/ResultsTableMacro.js">JavaScript example</a>).
+<li> Thanks to Ron DeSpain, tables created by the <i>Image&gt;Overlay&gt;List Elements</i>
+command can be renamed "Results" and the values accessed using the getResults()
+and getStringResult() macro functions.
+<li> Removed the obsolete <i>Plugins&gt;New&gt;Table</i> command. Macros
+that use this command will continue to work.
+<li> Thanks to Michael Kaul, added an optional 5th argument
+('stepSize') to the Dialog.addSlider() macro function
+(<a href="http://wsr.imagej.net/macros/SliderDemo.txt">example</a>).
+<li> Thanks to Gabriel Landini, on Linux, added the
+‚ÄúCancel button on right‚Äù option to the <i>Edit&gt;Options&gt;Appearance</i>
+dialog box. 
+<li> The "showRowNumbers" property of the ResultsTable class now defaults to 'false'.
+<li> Thanks to Adrian Daerr, when importing ".raw" files with dimensions encoded
+ in the name (e.g. "myfile-640x480.raw"), the byte order is set to
+big-endian if the name ends in "be.raw" and to little-endian if the name
+ends in "le.raw".
+<li> Thanks to Arttu Miettinen, imported ".raw" files with dimensions encoded
+ in the name can have a width and/or height less than 10.
+<li> Thanks to Stein Rorvik, added toScaled(x,y,z) and toUnscaled(x,y,z) macro functions.
+<li> Added 20 macro functions that work with tables. They operate on the
+current (frontmost) table or an optional title argument can be provided (e.g., Table.size("My Table")).
+Examples: <a href="http://wsr.imagej.net/macros/Sine_Cosine_Table2.txt">Sine/Cosine Tables</a>,
+<a href="http://wsr.imagej.net/macros/Rearrange_Resuts_Table.txt">Rearrange Table</a> and
+<a href="http://wsr.imagej.net/macros/Access_Tables.txt">Access Tables</a>.
+  <ul>
+  <li> Table.create() - opens a new table
+  <li> Table.reset() - resets (clears) the table
+  <li> Table.size() - number of rows in the table
+  <li> Table.title() - title of the current table
+  <li> Table.headings() - column headings as a tab-delimited string
+  <li> Table.get(columnName, rowIndex) - returns a numeric value
+  <li> Table.getColumn(columnName) - returns a column as an array
+  <li> Table.getString(columnName, rowIndex) - returns a string value
+  <li> Table.set(columnName, rowIndex, value) - sets numeric or string value
+  <li> Table.setColumn(columnName, array) - sets an array as a column
+  <li> Table.update() - updates table window
+  <li> Table.applyMacro(macro) - applies macro code to table
+  <li> Table.rename(title1, title2) - renames a table
+  <li> Table.save(filePath) - saves the table
+  <li> Table.open(filePath) - opens a table
+  <li> Table.deleteRows(index1, index2) - deletes specified rows
+  <li> Table.renameColumn(oldName, newName) - renames a column
+  <li> Table.deleteColumn(columnName) - deletes specified column
+  <li> Table.showRowNumbers(boolean) - enable/disable row numbers
+  <li> Table.showArrays(titleAndOptions, array1, array2, ...) - displays arrays in a table (like Array.show)
+</ul>
+<li> Thanks to Trevor Joyce and A Schain, added the macro-callable RoiManager.getIndexesAsString() method.
+<li> Thanks to Michael Schmid, added the Tools.copyFile(path1,path2) method.
+<li> Thanks to Salim Kanoun, added the RoiManager.setRoi(roi,index) and Overlay.set(roi,index) methods.
+<li> Thanks to Fred Damen, fixed a bug that caused the SubHyperstackMaker.makeSubhyperstack()
+method to not work when extracting a single frame.
+<li> Thanks to Fred Damen and Michael Schmid, fixed a curve fitter
+bug that could cause a NullPointerException.
+<li> Thanks to Norbert Vischer, fixed a bug that caused the File.copy() macro 
+function to not preserve the modification date.
+<li> Thanks to Philippe Carl, fixed a bug that caused the <i>Image&gt;Hyperstacks&gt;Reduce Dimensionality</i>
+command to not preserve the "Info" image property.
+<li> Thanks to Jan Eglinger, fixed bugs that caused the roiManager("open",path)
+macro function to ignore the roi name and roiManager("save",path) not 
+to be recorded when 'path' ended in ".roi".
+<li> Thanks to Norbert Vischer, fixed a bug that caused the Image Calculator to not correctly 
+calculate the result when the operation is MULTIPLY or DIVIDE, the 1st image is  8 or 16 bit, 
+the 2nd image is 32 bit and "32-bit result" is unchecked.
+<li> Thanks to Mark Rivers, fixed a bug that caused ImageJ to not 
+correctly open some uncompressed planar RGB TIFFs.
+<li> Fixed a 1.51s regression that caused statistical calculations on
+small 16-bit images or selections to be much slower.
+<li> Thanks to Michael Schmid, fixed a 1.51o regression that caused the particle
+analyzer to hang when processong 32-bit images.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
