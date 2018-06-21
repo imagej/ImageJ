@@ -280,12 +280,15 @@ public abstract class ImageProcessor implements Cloneable {
 	public boolean isInvertedLut() {
 		if (inversionTested)
 			return invertedLut;
-		if (cm==null || !(cm instanceof IndexColorModel)) {
+		ColorModel cm2 = baseCM;
+		if (cm2==null)
+			cm2 = cm;
+		if (cm2==null || !(cm2 instanceof IndexColorModel)) {
 			invertedLut = false;
 			inversionTested = true;
 			return invertedLut;
 		}
-		IndexColorModel icm = (IndexColorModel)cm;
+		IndexColorModel icm = (IndexColorModel)cm2;
 		boolean hasAscendingStep = false;
 		int v1, v2;
 		for (int i=1; i<255; i++) {

@@ -287,7 +287,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	/** The plugin is invoked by ImageJ using this method.
 	 *	@param arg	 String 'arg' may be used to select the path. If it is an empty string,
 	 *	a file open dialog is shown, and the resulting ImagePlus is displayed thereafter.
-	 *	The ImagePlus is not displayed only if 'arg' is a non-empty String; it can be
+	 *	The ImagePlus is not displayed if 'arg' is a non-empty String; it can be
 	 *	retrieved with getImagePlus().
 	 */
 	public void run (String arg) {
