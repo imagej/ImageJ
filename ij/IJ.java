@@ -2195,7 +2195,7 @@ public class IJ {
 		ArrayList list = new ArrayList();
 		Hashtable commands = Menus.getCommands();
 		Menu lutsMenu = Menus.getImageJMenu("Image>Lookup Tables");
-		if (lutsMenu==null)
+		if (commands==null || lutsMenu==null)
 			return new String[0];
 		for (int i=0; i<lutsMenu.getItemCount(); i++) {
 			MenuItem menuItem = lutsMenu.getItem(i);

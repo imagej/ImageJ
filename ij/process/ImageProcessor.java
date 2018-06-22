@@ -154,6 +154,16 @@ public abstract class ImageProcessor implements Cloneable {
 			return cm;
 	}
 	
+	private IndexColorModel getIndexColorModel() {
+		ColorModel cm2 = baseCM;
+		if (cm2==null)
+			cm2 = cm;
+		if (cm2!=null && (cm2 instanceof IndexColorModel))
+			return (IndexColorModel)cm2;
+		else
+			return null;
+	}
+	
 	/** Returns the current color model, which may have
 		been modified by setMinAndMax() or setThreshold(). */
 	public ColorModel getCurrentColorModel() {
@@ -280,15 +290,9 @@ public abstract class ImageProcessor implements Cloneable {
 	public boolean isInvertedLut() {
 		if (inversionTested)
 			return invertedLut;
-		ColorModel cm2 = baseCM;
-		if (cm2==null)
-			cm2 = cm;
-		if (cm2==null || !(cm2 instanceof IndexColorModel)) {
-			invertedLut = false;
-			inversionTested = true;
-			return invertedLut;
-		}
-		IndexColorModel icm = (IndexColorModel)cm2;
+		IndexColorModel icm = getIndexColorModel();
+		if (icm==null)
+			return false;
 		boolean hasAscendingStep = false;
 		int v1, v2;
 		for (int i=1; i<255; i++) {
@@ -313,9 +317,9 @@ public abstract class ImageProcessor implements Cloneable {
 
 	/** Returns true if this image uses a color LUT. */
 	public boolean isColorLut() {
-		if (cm==null || !(cm instanceof IndexColorModel))
+		IndexColorModel icm = getIndexColorModel();
+		if (icm==null)
 			return false;
-    	IndexColorModel icm = (IndexColorModel)cm;
 		int mapSize = icm.getMapSize();
 		byte[] reds = new byte[mapSize];
 		byte[] greens = new byte[mapSize];
@@ -336,11 +340,11 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Returns true if this image uses a pseudocolor or grayscale LUT, 
 		in other words, is this an image that can be filtered. */
     public boolean isPseudoColorLut() {
-		if (cm==null || !(cm instanceof IndexColorModel))
+		IndexColorModel icm = getIndexColorModel();
+		if (icm==null)
 			return false;
 		if (getMinThreshold()!=NO_THRESHOLD)
 			return true;
-    	IndexColorModel icm = (IndexColorModel)cm;
 		int mapSize = icm.getMapSize();
 		if (mapSize!=256)
 			return false;
@@ -376,9 +380,9 @@ public abstract class ImageProcessor implements Cloneable {
 	public boolean isDefaultLut() {
 		if (cm==null)
 			makeDefaultColorModel();
-		if (!(cm instanceof IndexColorModel))
-			return false;
-    	IndexColorModel icm = (IndexColorModel)cm;
+    	IndexColorModel icm = getIndexColorModel();
+    	if (icm==null)
+    		return false;
 		int mapSize = icm.getMapSize();
 		if (mapSize!=256)
 			return false;

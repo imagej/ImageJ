@@ -783,6 +783,8 @@ public class Menus {
 
 	/** Returns the specified ImageJ menu (e.g., "File>New") or null if it is not found. */
 	public static Menu getImageJMenu(String menuPath) {
+		if (menus==null)
+			return null;
 		if (menus.get(menuPath)!=null)
 			return getMenu(menuPath, false);
 		else
