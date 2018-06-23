@@ -194,7 +194,8 @@ class TextCanvas extends Canvas {
 		char[] chars = tp.iRowCount>0?getChars(column, tp.iRowCount-1):null;
 		if (chars!=null)
 			w = Math.max(w,fMetrics.charsWidth(chars,0,chars.length));
-		tp.iColWidth[column] = w+15;
+		if (column<tp.iColWidth.length)
+			tp.iColWidth[column] = w+15;
 	}
 
 }

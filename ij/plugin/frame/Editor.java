@@ -113,7 +113,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			fontSize = sizes.length-1;
 		setFont();
 		positionWindow();
-		if (IJ.isJava16() && !IJ.isJava18() && !IJ.isLinux())
+		if (!IJ.isJava18() && !IJ.isLinux())
 			insertSpaces = false;
 	}
 	
@@ -453,7 +453,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			if (strictMode)
 				text = "'use strict';" + text;
 		}
-		if ((IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit()))) {
+		if (!(IJ.isMacOSX()&&!IJ.is64Bit())) {
 			// Use JavaScript engine built into Java 6 and later.
 			IJ.runPlugIn("ij.plugin.JavaScriptEvaluator", text);
 		} else {

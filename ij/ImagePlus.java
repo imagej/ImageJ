@@ -2568,8 +2568,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	 */
 	public void flattenStack() {
 		if (IJ.debugMode) IJ.log("flattenStack");
-		if (getStackSize()==1 || !IJ.isJava16())
-			throw new UnsupportedOperationException("Image stack and Java 1.6 required");
+		if (getStackSize()==1)
+			throw new UnsupportedOperationException("Image stack required");
 		boolean composite = isComposite();
 		if (getBitDepth()!=24)
 			new ImageConverter(this).convertToRGB();

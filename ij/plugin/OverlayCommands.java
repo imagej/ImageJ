@@ -256,10 +256,6 @@ public class OverlayCommands implements PlugIn {
 			return;
 		else if (flags==PlugInFilter.DOES_STACKS) {
 			//Added by Marcel Boeglin 2014.01.24
-			if (!IJ.isJava16()) {
-				IJ.error("Flatten Stack", "Java 1.6 required to flatten a stack");
-				return;
-			}
 			if (overlay==null && roiManagerOverlay==null && !imp.isComposite()) {
 				IJ.error("Flatten", "Overlay or multi-channel image required");
 				return;

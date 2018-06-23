@@ -54,7 +54,6 @@ public class BrowserLauncher implements PlugIn {
 	/** The openURL method of com.apple.mrj.MRJFileUtils */
 	private static Method openURL;
 	private static boolean error;
-	static {loadClasses();}
 
 
 	/** Opens the specified URL (default is the ImageJ home page). */
@@ -73,19 +72,9 @@ public class BrowserLauncher implements PlugIn {
 	 */
 	public static void openURL(String url) throws IOException {
 		String errorMessage = "";
-		if (IJ.isMacOSX()) {
-			if (IJ.isJava16())
-				IJ.runMacro("exec('open', getArgument())",url);
-			else {
-				try {
-					Method aMethod = mrjFileUtilsClass.getDeclaredMethod("sharedWorkspace", new Class[] {});
-					Object aTarget = aMethod.invoke( mrjFileUtilsClass, new Object[] {});
-					openURL.invoke(aTarget, new Object[] { new java.net.URL( url )}); 
-				} catch (Exception e) {
-					errorMessage = ""+e;
-				}
-			}
-		} else if (IJ.isWindows()) {
+		if (IJ.isMacOSX())
+			IJ.runMacro("exec('open', getArgument())",url);
+		else if (IJ.isWindows()) {
 			String cmd = "rundll32 url.dll,FileProtocolHandler " + url;
 			if (System.getProperty("os.name").startsWith("Windows 2000"))
 				cmd = "rundll32 shell32.dll,ShellExec_RunDLL " + url;
@@ -121,25 +110,5 @@ public class BrowserLauncher implements PlugIn {
 		}
 	}
 	
-	/**
-	 * Called by a static initializer to load any classes, fields, and methods 
-	 * required at runtime to locate the user's web browser.
-	 */
-	private static void loadClasses() {
-		if (IJ.isMacOSX() && !IJ.isJava16()) {
-			try {
-				if (new File("/System/Library/Java/com/apple/cocoa/application/NSWorkspace.class").exists()) {
-					ClassLoader classLoader = new URLClassLoader(new URL[]{new File("/System/Library/Java").toURL()});
-					mrjFileUtilsClass = Class.forName("com.apple.cocoa.application.NSWorkspace", true, classLoader);
-				} else
-					mrjFileUtilsClass = Class.forName("com.apple.cocoa.application.NSWorkspace");
-				openURL = mrjFileUtilsClass.getDeclaredMethod("openURL", new Class[] { java.net.URL.class });
-			} catch (Exception e) {
-				IJ.log("BrowserLauncher"+e);
-				error = true;
-			}
-		}
-	}
-
 }
 

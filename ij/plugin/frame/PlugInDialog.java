@@ -10,7 +10,7 @@ public class PlugInDialog extends Dialog implements PlugIn, WindowListener, Focu
 	String title;
 	
 	public PlugInDialog(String title) {
-		super(IJ.isMacOSX()?IJ.getInstance():IJ.isJava16()?null:new Frame(),title);
+		super(IJ.isMacOSX()?IJ.getInstance():null,title);
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		this.title = title;
 		ImageJ ij = IJ.getInstance();
@@ -21,7 +21,7 @@ public class PlugInDialog extends Dialog implements PlugIn, WindowListener, Focu
 		addWindowListener(this);
  		addFocusListener(this);
 		if (IJ.isLinux()) setBackground(ImageJ.backgroundColor);
-		if (ij!=null && !IJ.isMacOSX() && IJ.isJava16()) {
+		if (ij!=null && !IJ.isMacOSX()) {
 			Image img = ij.getIconImage();
 			if (img!=null)
 				try {setIconImage(img);} catch (Exception e) {}

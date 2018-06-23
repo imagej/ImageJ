@@ -421,11 +421,9 @@ abstract class CompilerTool {
 	}
 
 	public static CompilerTool getDefault() {
-		if (IJ.isJava16()) {
-			CompilerTool javax = new JavaxCompilerTool();
-			if (javax.isSupported())
-				return javax;
-		}
+		CompilerTool javax = new JavaxCompilerTool();
+		if (javax.isSupported())
+			return javax;
 		CompilerTool legacy = new LegacyCompilerTool();
 		if (legacy.isSupported())
 			return legacy;

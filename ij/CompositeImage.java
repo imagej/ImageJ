@@ -294,10 +294,7 @@ public class CompositeImage extends ImagePlus {
 			for (int i=1; i<nChannels; i++)
 				if (active[i]) cip[i].updateComposite(rgbPixels, 5);
 		}
-		if (IJ.isJava16())
-			createBufferedImage();
-		else
-			createImage();
+		createBufferedImage();
 		if (img==null && awtImage!=null)
 			img = awtImage;
 		singleChannel = false;

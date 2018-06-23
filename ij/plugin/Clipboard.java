@@ -91,12 +91,6 @@ public class Clipboard implements PlugIn, Transferable {
 			Transferable transferable = clipboard.getContents(null);
 			boolean imageSupported = transferable.isDataFlavorSupported(DataFlavor.imageFlavor);
 			boolean textSupported = transferable.isDataFlavorSupported(DataFlavor.stringFlavor);
-			if (!imageSupported && IJ.isMacOSX() && !IJ.isJava16()) {
-				// attempt to open PICT file using QuickTime for Java
-				Object mc = IJ.runPlugIn("MacClipboard", ""); 
-				if (mc!=null && (mc instanceof ImagePlus) && ((ImagePlus)mc).getImage()!=null)
-					return;
-			}
 			if (imageSupported) {
 				Image img = (Image)transferable.getTransferData(DataFlavor.imageFlavor);
 				if (img==null) {

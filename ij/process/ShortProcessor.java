@@ -90,20 +90,7 @@ public class ShortProcessor extends ImageProcessor {
 			create8BitImage();
 		if (cm==null)
 			makeDefaultColorModel();
-		if (ij.IJ.isJava16())
-			return createBufferedImage();
-		if (source==null) {
-			source = new MemoryImageSource(width, height, cm, pixels8, 0, width);
-			source.setAnimated(true);
-			source.setFullBufferUpdates(true);
-			img = Toolkit.getDefaultToolkit().createImage(source);
-		} else if (newPixels) {
-			source.newPixels(pixels8, cm, 0, width);
-			newPixels = false;
-		} else
-			source.newPixels();
-		lutAnimation = false;
-	    return img;
+		return createBufferedImage();
 	}
 	
 	// create 8-bit image by linearly scaling from 16-bits to 8-bits
