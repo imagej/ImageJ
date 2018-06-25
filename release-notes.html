@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52e 22 June 2018</u>
+<li> <u>1.52e 24 June 2018</u>
 <ul>
 <li> Added the FFT.forward(), FFT.multiply(), FFT.inverse() and FFT.filter() methods
 (<a href="http://wsr.imagej.net/macros/FFT_Filter.js">example</a>).
@@ -14,6 +14,9 @@ method now open AVI files by default as virtual stacks.
 <li> Thanks to Volko Straub and Michael Schmid, fixed bugs that caused the
 ImageProcessor.isInvertedLut() and ImageProcessor.isColorLut() methods
 to sometimes incorrectly return 'true' with thresholded images.
+<li> Thanks to Volko Straub, fixed a bug that caused non-thresholded pixels in
+16-bit images to be highlighted in red
+(<a href="http://wsr.imagej.net/macros/ThresholdingIssue.txt">example</a>).
 </ul> 
 
 <li> <u>1.52d 11 June 2018</u>

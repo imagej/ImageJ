@@ -436,8 +436,6 @@ public class ByteProcessor extends ImageProcessor {
 			}
 		}
 		cm = new IndexColorModel(8, 256, rLUT2, gLUT2, bLUT2);
-		newPixels = true;
-		if (min==0.0 && max==255.0) source = null;
 		minThreshold = NO_THRESHOLD;
 	}
 

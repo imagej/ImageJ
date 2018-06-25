@@ -87,9 +87,9 @@ public abstract class ImageProcessor implements Cloneable {
 	protected double histogramMin, histogramMax;
 	protected float[] cTable;
 	protected boolean lutAnimation;
-	protected MemoryImageSource source;
+	protected MemoryImageSource source; //unused
 	protected Image img;
-	protected boolean newPixels;
+	protected boolean newPixels; // unused
 	protected Color drawingColor = Color.black;
 	protected int clipXMin, clipXMax, clipYMin, clipYMax; // clip rect used by drawTo, drawLine, drawDot and drawPixel 
 	protected int justification = LEFT_JUSTIFY;
@@ -181,10 +181,8 @@ public abstract class ImageProcessor implements Cloneable {
 		this.cm = cm;
 		baseCM = null;
 		rLUT1 = rLUT2 = null;
-		newPixels = true;
 		inversionTested = false;
 		minThreshold = NO_THRESHOLD;
-		source = null;
 	}
 
 	public LUT getLut() {
@@ -516,8 +514,6 @@ public abstract class ImageProcessor implements Cloneable {
 			}
 		}
 		cm = new IndexColorModel(8, 256, rLUT2, gLUT2, bLUT2);
-		newPixels = true;
-		source = null;
 	}
 	
 	/** Automatically sets the lower and upper threshold levels, where 'method'
@@ -697,8 +693,6 @@ public abstract class ImageProcessor implements Cloneable {
 		}
 		rLUT1 = rLUT2 = null;
 		inversionTested = false;
-		newPixels = true;
-		source = null;
 	}
 
 	/** Returns the lower threshold level. Returns NO_THRESHOLD
@@ -2273,8 +2267,6 @@ public abstract class ImageProcessor implements Cloneable {
 		of the image. */
 	public void setLutAnimation(boolean lutAnimation) {
 		this.lutAnimation = lutAnimation;
-		newPixels = true;
-		source = null;
 	}
 	
 	void resetPixels(Object pixels) {
@@ -2283,10 +2275,7 @@ public abstract class ImageProcessor implements Cloneable {
 				img.flush();
 				img = null;
 			}
-			source = null;
 		}
-		newPixels = true;
-		source = null;
 	}
 
 	/** Returns an 8-bit version of this image as a ByteProcessor. */

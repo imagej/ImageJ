@@ -86,26 +86,73 @@ public class ShortProcessor extends ImageProcessor {
 	/** Create an 8-bit AWT image by scaling pixels in the range min-max to 0-255. */
 	public Image createImage() {
 		boolean firstTime = pixels8==null;
+		boolean thresholding = minThreshold!=NO_THRESHOLD && lutUpdateMode<NO_LUT_UPDATE;
+		//ij.IJ.log("createImage: "+firstTime+"  "+lutAnimation+"  "+thresholding);
 		if (firstTime || !lutAnimation)
-			create8BitImage();
+			create8BitImage(thresholding&&lutUpdateMode==RED_LUT);
 		if (cm==null)
 			makeDefaultColorModel();
+		if (thresholding) {
+			int t1 = (int)minThreshold;
+			int t2 = (int)maxThreshold;
+			int size = width*height;
+			int value;
+			if (lutUpdateMode==BLACK_AND_WHITE_LUT) {
+				for (int i=0; i<size; i++) {
+					value = (pixels[i]&0xffff);
+					if (value>=t1 && value<=t2)
+						pixels8[i] = (byte)255;
+					else
+						pixels8[i] = (byte)0;
+				}
+			} else { // threshold red
+				for (int i=0; i<size; i++) {
+					value = (pixels[i]&0xffff);
+					if (value>=t1 && value<=t2)
+						pixels8[i] = (byte)255;
+				}
+			}
+			if (ij.IJ.debugMode) {
+				ImageProcessor ip = new ByteProcessor(width, height, pixels8);
+				new ij.ImagePlus("pixels8",ip.duplicate()).show();
+			}
+		}
 		return createBufferedImage();
 	}
 	
+	private IndexColorModel getThresholdColorModel() {
+		byte[] r = new byte[256];
+		byte[] g = new byte[256];
+		byte[] b = new byte[256];
+		for(int i=0; i<255; i++) {
+			r[i]=(byte)i;
+			g[i]=(byte)i;
+			b[i]=(byte)i;
+		}
+		r[255] = (byte)255;
+		g[255] = (byte)0;
+		b[255] = (byte)0;
+		return new IndexColorModel(8, 256, r, g, b);
+	}
+	
 	// create 8-bit image by linearly scaling from 16-bits to 8-bits
-	byte[] create8BitImage() {
+	private byte[] create8BitImage(boolean thresholding) {
 		int size = width*height;
 		if (pixels8==null)
 			pixels8 = new byte[size];
 		int value;
-		int min2=(int)getMin(), max2=(int)getMax(); 
+		int min2=(int)getMin(), max2=(int)getMax();
+		int maxValue = 255;
 		double scale = 256.0/(max2-min2+1);
+		if (thresholding) {
+			maxValue = 254;
+			scale = 255.0/(max2-min2+1);
+		}
 		for (int i=0; i<size; i++) {
 			value = (pixels[i]&0xffff)-min2;
 			if (value<0) value = 0;
 			value = (int)(value*scale+0.5);
-			if (value>255) value = 255;
+			if (value>maxValue) value = maxValue;
 			pixels8[i] = (byte)value;
 		}
 		return pixels8;
@@ -1046,29 +1093,54 @@ public class ShortProcessor extends ImageProcessor {
 		return histogram;
 	}
 	
+	public void setLutAnimation(boolean lutAnimation) {
+		this.lutAnimation = false;
+	}
+
+	
 	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {
-		if (minThreshold==NO_THRESHOLD)
-			{resetThreshold(); return;}
+		if (minThreshold==NO_THRESHOLD) {
+			resetThreshold();
+			return;
+		}
 		if (minThreshold<0.0) minThreshold = 0.0;
 		if (maxThreshold>65535.0) maxThreshold = 65535.0;
 		int min2=(int)getMin(), max2=(int)getMax();
 		if (max2>min2) {
-			// scale to 0-255 using same method as create8BitImage()
-			double scale = 256.0/(max2-min2+1);
-			double minT = minThreshold-min2;
-			if (minT<0) minT = 0;
-			minT = (int)(minT*scale+0.5);
-			if (minT>255) minT = 255;
-			//ij.IJ.log("setThreshold: "+minT+" "+Math.round(((minThreshold-min2)/(max2-min2))*255.0));
-			double maxT = maxThreshold-min2;
-			if (maxT<0) maxT = 0;
-			maxT = (int)(maxT*scale+0.5);
-			if (maxT>255) maxT = 255;
-			super.setThreshold(minT, maxT, lutUpdate); // update LUT
+			if (lutUpdate==OVER_UNDER_LUT) {
+				// scale to 0-255 using same method as create8BitImage()
+				double scale = 256.0/(max2-min2+1);
+				double minT = minThreshold-min2;
+				if (minT<0) minT = 0;
+				minT = (int)(minT*scale+0.5);
+				if (minT>255) minT = 255;
+				//ij.IJ.log("setThreshold: "+minT+" "+Math.round(((minThreshold-min2)/(max2-min2))*255.0));
+				double maxT = maxThreshold-min2;
+				if (maxT<0) maxT = 0;
+				maxT = (int)(maxT*scale+0.5);
+				if (maxT>255) maxT = 255;
+				super.setThreshold(minT, maxT, lutUpdate);
+			} else {
+				lutUpdateMode = lutUpdate;
+				if (rLUT1==null) {
+					if (cm==null)
+						makeDefaultColorModel();
+					baseCM = cm;
+					IndexColorModel m = (IndexColorModel)cm;
+					rLUT1 = new byte[256]; gLUT1 = new byte[256]; bLUT1 = new byte[256];
+					m.getReds(rLUT1); m.getGreens(gLUT1); m.getBlues(bLUT1);
+					rLUT2 = new byte[256]; gLUT2 = new byte[256]; bLUT2 = new byte[256];
+				}
+				if (lutUpdateMode==RED_LUT)
+					cm = getThresholdColorModel();
+				else
+					cm = getDefaultColorModel();
+			}
 		} else
 			super.resetThreshold();
 		this.minThreshold = Math.round(minThreshold);
 		this.maxThreshold = Math.round(maxThreshold);
+		//ij.IJ.log("setThreshold: "+lutUpdateMode+" "+this.minThreshold+" "+this.maxThreshold);
 	}
 	
 	/** Performs a convolution operation using the specified kernel. */

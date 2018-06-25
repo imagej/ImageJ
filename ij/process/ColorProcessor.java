@@ -89,8 +89,6 @@ public class ColorProcessor extends ImageProcessor {
 		if (cm!=null && (cm instanceof IndexColorModel))
 			throw new IllegalArgumentException("DirectColorModel required");
 		this.cm = cm;
-		newPixels = true;
-		source = null;
 		rgbSampleModel = null;
 		rgbRaster = null;
 	}
