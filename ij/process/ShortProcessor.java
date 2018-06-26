@@ -112,10 +112,6 @@ public class ShortProcessor extends ImageProcessor {
 						pixels8[i] = (byte)255;
 				}
 			}
-			if (ij.IJ.debugMode) {
-				ImageProcessor ip = new ByteProcessor(width, height, pixels8);
-				new ij.ImagePlus("pixels8",ip.duplicate()).show();
-			}
 		}
 		return createBufferedImage();
 	}
@@ -156,6 +152,11 @@ public class ShortProcessor extends ImageProcessor {
 			pixels8[i] = (byte)value;
 		}
 		return pixels8;
+	}
+
+	@Override
+	byte[] create8BitImage() {
+		return create8BitImage(false);
 	}
 
 	Image createBufferedImage() {
@@ -1096,7 +1097,6 @@ public class ShortProcessor extends ImageProcessor {
 	public void setLutAnimation(boolean lutAnimation) {
 		this.lutAnimation = false;
 	}
-
 	
 	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {
 		if (minThreshold==NO_THRESHOLD) {

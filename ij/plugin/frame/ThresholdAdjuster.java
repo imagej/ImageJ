@@ -419,6 +419,11 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	 	return ip;
 	}
 	
+	private void resetMinAndMax(ImageProcessor ip) {
+		//if (!(ip.getBitDepth()==16&&mode!=OVER_UNDER))
+		//	ip.resetMinAndMax();		
+	}
+	
     boolean entireStack(ImagePlus imp) {
         return stackHistogram!=null && stackHistogram.getState() && imp.getStackSize()>1;
     }
