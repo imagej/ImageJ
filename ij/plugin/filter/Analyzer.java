@@ -452,7 +452,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 				rt.update(measurements, imp2, roi);
 			}
 		}
-		if ((measurements&(AREA+MEAN+STD_DEV+MODE+MIN_MAX+CENTROID))==0) {
+		if ((measurements&(AREA+MEAN+STD_DEV+MODE+MIN_MAX+CENTROID+MEDIAN))==0) {
 			incrementCounter();
 			rt.addValue("Length", roi.getLength());
 			if (roi.getType()==Roi.LINE && showAngle) {
@@ -515,7 +515,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if (limit!=0 && minThreshold!=ImageProcessor.NO_THRESHOLD)
 			ip2.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
-		ImageStatistics stats = ImageStatistics.getStatistics(ip2, AREA+MEAN+STD_DEV+MODE+MIN_MAX+limit, imp2.getCalibration());
+		ImageStatistics stats = ImageStatistics.getStatistics(ip2, AREA+MEAN+STD_DEV+MODE+MIN_MAX+MEDIAN+limit, imp2.getCalibration());
 		if (saveR!=null) ip2.setRoi(saveR);
 		if ((roi instanceof Line) && (measurements&CENTROID)!=0) {
 			FloatPolygon p = ((Line)roi).getFloatPoints();
