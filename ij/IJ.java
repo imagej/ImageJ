@@ -1899,11 +1899,9 @@ public class IJ {
 		if (path==null)
 			run(format);
 		else {
-			if (path.contains(" ")) {
-				if (path.contains("]"))
-					error("ImageJ cannot save when file path contains both \" \" and \"]\"");
+			if (path.contains(" "))
 				run(imp, format, "save=["+path+"]");
-			} else
+			else
 				run(imp, format, "save="+path);
 		}
 	}
