@@ -20,7 +20,7 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
 		Panel panel = new Panel();
 		panel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 		MultiLineLabel message = new MultiLineLabel(msg);
-		message.setFont(new Font("Dialog", Font.PLAIN, 12));
+		message.setFont(new Font("Dialog", Font.PLAIN, 14));
 		panel.add(message);
 		add("North", panel);
 		

@@ -10,6 +10,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.Calibration;
 import ij.util.*;
+import ij.plugin.frame.Recorder;
 
 /** Implements the File/Import/Image Sequence command, which
 	opens a folder of images as a stack. */
@@ -39,12 +40,15 @@ public class FolderOpener implements PlugIn {
 
 	/** Opens the images in the specified directory as a stack. Opens
 		the images as a virtual stack if the 'options' string contains
-		"virtual". Displays directory chooser and options dialogs if the
+		"virtual" or "use". Displays directory chooser and options dialogs if the
 		the 'path' argument is null. */
 	public static ImagePlus open(String path, String options) {
+		if (options==null)
+			options = "";
 		FolderOpener fo = new FolderOpener();
 		fo.saveImage = true;
-		fo.openAsVirtualStack = options!=null && options.contains("virtual");
+		fo.openAsVirtualStack = options!=null && (options.contains("virtual")||options.contains("use"));
+		fo.filter = Macro.getValue(options, "file", "");
 		fo.run(path);
 		return fo.image;
 	}
@@ -353,6 +357,16 @@ public class FolderOpener implements PlugIn {
 				image = imp2;
 		}
 		IJ.showProgress(1.0);
+		if (Recorder.record) {
+			String options = openAsVirtualStack?"virtual":"";
+			if (filter!=null && filter.length()>0) {
+				if (filter.contains(" "))
+					filter = "["+filter+"]";
+				options = options + " file=" + filter;
+			}
+   			Recorder.recordCall("imp = FolderOpener.open(\""+directory+"\", \""+options+"\");");
+		}
+
 	}
 	
 	private void openAsFileInfoStack(FileInfoVirtualStack stack, String path) {

@@ -657,7 +657,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		if (imp.getStackSize()>1 && !imp.isComposite()) {
 			ImageStack stack = imp.getStack();
 			YesNoCancelDialog d = new YesNoCancelDialog(new Frame(),
-				"Entire Stack?", "Apply LUT to all "+stack.getSize()+" slices in the stack?");
+				"Entire Stack?", "Apply LUT to all "+stack.getSize()+" stack slices?");
 			if (d.cancelPressed())
 				{imp.unlock(); return;}
 			if (d.yesPressed()) {

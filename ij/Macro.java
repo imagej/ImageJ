@@ -114,6 +114,8 @@ public class Macro {
 
 	public static String getValue(String options, String key, String defaultValue) {
 		key = trimKey(key);
+		if (!options.endsWith(" "))
+			options = options + " ";
         key += '=';
 		int index=-1;
 		do { // Require that key not be preceded by a letter
