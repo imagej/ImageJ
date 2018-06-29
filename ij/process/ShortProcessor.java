@@ -116,21 +116,6 @@ public class ShortProcessor extends ImageProcessor {
 		return createBufferedImage();
 	}
 	
-	private IndexColorModel getThresholdColorModel() {
-		byte[] r = new byte[256];
-		byte[] g = new byte[256];
-		byte[] b = new byte[256];
-		for(int i=0; i<255; i++) {
-			r[i]=(byte)i;
-			g[i]=(byte)i;
-			b[i]=(byte)i;
-		}
-		r[255] = (byte)255;
-		g[255] = (byte)0;
-		b[255] = (byte)0;
-		return new IndexColorModel(8, 256, r, g, b);
-	}
-	
 	// create 8-bit image by linearly scaling from 16-bits to 8-bits
 	private byte[] create8BitImage(boolean thresholding) {
 		int size = width*height;
@@ -1108,18 +1093,9 @@ public class ShortProcessor extends ImageProcessor {
 		int min2=(int)getMin(), max2=(int)getMax();
 		if (max2>min2) {
 			if (lutUpdate==OVER_UNDER_LUT) {
-				// scale to 0-255 using same method as create8BitImage()
-				double scale = 256.0/(max2-min2+1);
-				double minT = minThreshold-min2;
-				if (minT<0) minT = 0;
-				minT = (int)(minT*scale+0.5);
-				if (minT>255) minT = 255;
-				//ij.IJ.log("setThreshold: "+minT+" "+Math.round(((minThreshold-min2)/(max2-min2))*255.0));
-				double maxT = maxThreshold-min2;
-				if (maxT<0) maxT = 0;
-				maxT = (int)(maxT*scale+0.5);
-				if (maxT>255) maxT = 255;
-				super.setThreshold(minT, maxT, lutUpdate);
+				double minT = ((minThreshold-getMin())/(getMax()-getMin())*255.0);
+				double maxT = ((maxThreshold-getMin())/(getMax()-getMin())*255.0);
+				super.setThreshold(minT, maxT, lutUpdate); // update LUT
 			} else {
 				lutUpdateMode = lutUpdate;
 				if (rLUT1==null) {

@@ -2718,4 +2718,19 @@ public abstract class ImageProcessor implements Cloneable {
 		return null;
 	}
 	
+	protected IndexColorModel getThresholdColorModel() {
+		byte[] r = new byte[256];
+		byte[] g = new byte[256];
+		byte[] b = new byte[256];
+		for(int i=0; i<255; i++) {
+			r[i]=(byte)i;
+			g[i]=(byte)i;
+			b[i]=(byte)i;
+		}
+		r[255] = (byte)255;
+		g[255] = (byte)0;
+		b[255] = (byte)0;
+		return new IndexColorModel(8, 256, r, g, b);
+	}
+		
 }

@@ -146,30 +146,61 @@ public class FloatProcessor extends ImageProcessor {
 	/** Create an 8-bit AWT image by scaling pixels in the range min-max to 0-255. */
 	public Image createImage() {
 		boolean firstTime = pixels8==null;
+		boolean thresholding = minThreshold!=NO_THRESHOLD && lutUpdateMode<NO_LUT_UPDATE;
+		//ij.IJ.log("createImage: "+firstTime+"  "+lutAnimation+"  "+thresholding);
 		if (firstTime || !lutAnimation)
-			create8BitImage();
+			create8BitImage(thresholding&&lutUpdateMode==RED_LUT);
 		if (cm==null)
 			makeDefaultColorModel();
+		if (thresholding) {
+			int size = width*height;
+			double value;
+			if (lutUpdateMode==BLACK_AND_WHITE_LUT) {
+				for (int i=0; i<size; i++) {
+					value = pixels[i];
+					if (value>=minThreshold && value<=maxThreshold)
+						pixels8[i] = (byte)255;
+					else
+						pixels8[i] = (byte)0;
+				}
+			} else { // threshold red
+				for (int i=0; i<size; i++) {
+					value = pixels[i];
+					if (value>=minThreshold && value<=maxThreshold)
+						pixels8[i] = (byte)255;
+				}
+			}
+		}
 		return createBufferedImage();
 	}
-	
-	// scale from float to 8-bits
-	protected byte[] create8BitImage() {
+		
+	// creates 8-bit image by linearly scaling from float to 8-bits
+	private byte[] create8BitImage(boolean thresholding) {
 		int size = width*height;
 		if (pixels8==null)
 			pixels8 = new byte[size];
-		float value;
+		double value;
 		int ivalue;
-		float min2=(float)getMin(), max2=(float)getMax();
-		float scale = 255f/(max2-min2);
+		double min2 = getMin(), max2=getMax();
+		int maxValue = 255;
+		double scale = 256.0/(max2-min2);
+		if (thresholding) {
+			maxValue = 254;
+			scale = 255.0/(max2-min2);
+		}
 		for (int i=0; i<size; i++) {
 			value = pixels[i]-min2;
-			if (value<0f) value = 0f;
 			ivalue = (int)((value*scale)+0.5f);
-			if (ivalue>255) ivalue = 255;
+			if (ivalue>maxValue) ivalue = maxValue;
 			pixels8[i] = (byte)ivalue;
 		}
+		//new ij.ImagePlus("pixels8",new ByteProcessor(width,height,pixels8).duplicate()).show();
 		return pixels8;
+	}
+
+	@Override
+	byte[] create8BitImage() {
+		return create8BitImage(false);
 	}
 		
 	Image createBufferedImage() {
@@ -998,13 +1029,36 @@ public class FloatProcessor extends ImageProcessor {
 		return 0.0;
 	}
 
+	public void setLutAnimation(boolean lutAnimation) {
+		this.lutAnimation = false;
+	}
+	
 	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {
-		if (minThreshold==NO_THRESHOLD)
-			{resetThreshold(); return;}
+		if (minThreshold==NO_THRESHOLD) {
+			resetThreshold();
+			return;
+		}
 		if (getMax()>getMin()) {
-			double minT = Math.round(((minThreshold-getMin())/(getMax()-getMin()))*255.0);
-			double maxT = Math.round(((maxThreshold-getMin())/(getMax()-getMin()))*255.0);
-			super.setThreshold(minT, maxT, lutUpdate); // update LUT
+			if (lutUpdate==OVER_UNDER_LUT) {
+				double minT = ((minThreshold-getMin())/(getMax()-getMin())*255.0);
+				double maxT = ((maxThreshold-getMin())/(getMax()-getMin())*255.0);
+				super.setThreshold(minT, maxT, lutUpdate); // update LUT
+			} else {
+				lutUpdateMode = lutUpdate;
+				if (rLUT1==null) {
+					if (cm==null)
+						makeDefaultColorModel();
+					baseCM = cm;
+					IndexColorModel m = (IndexColorModel)cm;
+					rLUT1 = new byte[256]; gLUT1 = new byte[256]; bLUT1 = new byte[256];
+					m.getReds(rLUT1); m.getGreens(gLUT1); m.getBlues(bLUT1);
+					rLUT2 = new byte[256]; gLUT2 = new byte[256]; bLUT2 = new byte[256];
+				}
+				if (lutUpdateMode==RED_LUT)
+					cm = getThresholdColorModel();
+				else
+					cm = getDefaultColorModel();
+			}
 		} else
 			super.resetThreshold();
 		this.minThreshold = minThreshold;
