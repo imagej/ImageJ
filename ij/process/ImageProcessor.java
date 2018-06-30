@@ -68,6 +68,7 @@ public abstract class ImageProcessor implements Cloneable {
 	private static boolean useBicubic;
 	private int sliceNumber;
 	private Overlay overlay;
+	private boolean noReset;
 		
     ProgressBar progressBar;
 	protected int width, snapshotWidth;
@@ -522,7 +523,8 @@ public abstract class ImageProcessor implements Cloneable {
 	 * "Percentile", "RenyiEntropy", "Shanbhag", "Triangle" or "Yen". The
 	 * 'method' string may also include the keywords 'dark' (dark background)
 	 * 'red' (red LUT, the default), 'b&w' (black and white LUT), 'over/under' (over/under LUT) or
-	 * 'no-lut' (no LUT changes), for example "Huang dark b&w".
+	 * 'no-lut' (no LUT changes), for example "Huang dark b&w". The display range
+	 * of 16-bit and 32-bit images is not reset if the 'method' string contains 'no-reset'.
 	 * @see ImageProcessor#resetThreshold
 	 * @see ImageProcessor#setThreshold
 	 * @see ImageProcessor#createMask
@@ -531,17 +533,19 @@ public abstract class ImageProcessor implements Cloneable {
 		if (method==null)
 			throw new IllegalArgumentException("Null method");
 		boolean darkBackground = method.contains("dark");
+		noReset = method.contains("no-reset");
 		int lut = RED_LUT;
 		if (method.contains("b&w"))
 			lut = BLACK_AND_WHITE_LUT;
 		if (method.contains("over"))
 			lut = OVER_UNDER_LUT;
-		if (method.contains("no"))
+		if (method.contains("no-lut"))
 			lut = NO_LUT_UPDATE;
 		int index = method.indexOf(" ");
 		if (index!=-1)
 			method = method.substring(0, index);
 		setAutoThreshold(method, darkBackground, lut);
+		noReset = false;
 	}
 	
 	public void setAutoThreshold(String mString, boolean darkBackground, int lutUpdate) {
@@ -569,9 +573,11 @@ public abstract class ImageProcessor implements Cloneable {
 		if (notByteData) {
 			ImageProcessor mask = ip2.getMask();
 			Rectangle rect = ip2.getRoi();
-			resetMinAndMax();
-			min = getMin(); max = getMax();
-			ip2 = convertToByte(true);
+			if (!noReset || lutUpdate==OVER_UNDER_LUT)
+				ip2.resetMinAndMax();
+			noReset = false;
+			min = ip2.getMin(); max = ip2.getMax();
+			ip2 = ip2.convertToByte(true);
 			ip2.setMask(mask);
 			ip2.setRoi(rect);	
 		}

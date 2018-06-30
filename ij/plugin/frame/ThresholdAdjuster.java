@@ -387,7 +387,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 					&& ip.getCurrentColorModel() != ip.getColorModel(); //does not work???
 			if (not8Bits && minMaxChange) {
 				double max1 = ip.getMax();
-				ip.resetMinAndMax();
+				resetMinAndMax(ip);
 				if (maxThreshold==max1)
 					maxThreshold = ip.getMax();
 			}
@@ -417,6 +417,11 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	 	previousSlice = slice;
 	 	firstActivation = false;
 	 	return ip;
+	}
+	
+	private void resetMinAndMax(ImageProcessor ip) {
+		if ((ip instanceof ByteProcessor) || (mode==OVER_UNDER))
+			ip.resetMinAndMax();
 	}
 	
     boolean entireStack(ImagePlus imp) {
@@ -452,7 +457,8 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			minThreshold = 255;
 		if (Recorder.record) {
 			boolean stack = stackHistogram!=null && stackHistogram.getState();
-			String options = method+(darkb?" dark":"")+(stack?" stack":"");
+			boolean noReset = !((ip instanceof ByteProcessor) || (mode==OVER_UNDER));
+			String options = method+(darkb?" dark":"")+(noReset?" no-reset":"")+(stack?" stack":"");
 			if (Recorder.scriptMode())
 				Recorder.recordCall("IJ.setAutoThreshold(imp, \""+options+"\");");
 			else
@@ -625,7 +631,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			if (entireStack(imp))
 				ip.setMinAndMax(stats.min, stats.max);
 			else
-				ip.resetMinAndMax();
+				resetMinAndMax(ip);;
 		}
 		updateScrollBars();
 		if (Recorder.record) {
@@ -667,7 +673,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			level2 = level1;
 		double minDisplay = ip.getMin();
 		double maxDisplay = ip.getMax();
-		ip.resetMinAndMax();
+		resetMinAndMax(ip);;
 		double minValue = ip.getMin();
 		double maxValue = ip.getMax();
 		if (imp.getStackSize()==1) {
@@ -966,7 +972,7 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 			} else {
 				stackMin = stackMax = 0.0;
 				if (entireStack2) {
-					ip.resetMinAndMax();
+					ip.resetMinAndMax();;
 					imp.updateAndDraw();
 				}
 			}

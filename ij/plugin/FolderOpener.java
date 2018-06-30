@@ -41,7 +41,7 @@ public class FolderOpener implements PlugIn {
 	/** Opens the images in the specified directory as a stack. Opens
 		the images as a virtual stack if the 'options' string contains
 		"virtual" or "use". Add " file=abc" to 'options' to only open
-		images with "abc" in their name. Displays directory
+		images with, for example, "abc" in their name. Displays directory
 		chooser and options dialogs if the the 'path' argument is null. */
 	public static ImagePlus open(String path, String options) {
 		if (options==null)
