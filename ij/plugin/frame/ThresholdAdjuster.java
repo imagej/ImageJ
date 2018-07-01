@@ -458,6 +458,11 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		if (Recorder.record) {
 			boolean stack = stackHistogram!=null && stackHistogram.getState();
 			boolean noReset = !((ip instanceof ByteProcessor) || (mode==OVER_UNDER));
+			if (noReset) {
+				ImageStatistics stats2 = ip.getStats();
+				if (ip.getMin()>stats2.min || ip.getMax()<stats2.max)
+					ContrastAdjuster.recordSetMinAndMax(ip.getMin(),ip.getMax());
+			}
 			String options = method+(darkb?" dark":"")+(noReset?" no-reset":"")+(stack?" stack":"");
 			if (Recorder.scriptMode())
 				Recorder.recordCall("IJ.setAutoThreshold(imp, \""+options+"\");");

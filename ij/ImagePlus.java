@@ -693,10 +693,17 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (newStackSize>1 && !(win instanceof StackWindow)) {
 			if (isDisplayedHyperStack())
 				setOpenAsHyperStack(true);
+			activated = false;
 			win = new StackWindow(this, getCanvas());   // replaces this window
+			if (IJ.isMacro()) { // wait for stack window to be activated
+				long start = System.currentTimeMillis();
+				while (!activated) {
+					IJ.wait(5);
+					if ((System.currentTimeMillis()-start)>200)
+						break; // 0.2 second timeout
+				}
+			}
 			setPosition(1, 1, 1);
-			if (Interpreter.getInstance()!=null)
-				IJ.wait(25);
 		} else if (newStackSize>1 && invalidDimensions) {
 			if (isDisplayedHyperStack())
 				setOpenAsHyperStack(true);

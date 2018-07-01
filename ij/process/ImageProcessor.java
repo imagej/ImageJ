@@ -682,6 +682,8 @@ public abstract class ImageProcessor implements Cloneable {
 					lower = min + (lower/255.0)*(max-min);
 				if (bitDepth==16 && upper==255.0)
 					upper = 65535;
+				else if (bitDepth==32 && upper==255.0)
+					upper = getStats().max;
 				else
 					upper = min + (upper/255.0)*(max-min);
 			} else

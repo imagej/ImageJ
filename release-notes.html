@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52e 29 June 2018</u>
+<li> <u>1.52e 30 June 2018</u>
 <ul>
 <li> The "Threshold" tool no longer resets the display range of 16-bit and 32-bit images.
 <li> Thanks to Kai Schleicher, the options string of the FolderOpener.open(dir,options)
@@ -25,6 +25,9 @@ to sometimes incorrectly return 'true' with thresholded images.
 parameters containing a "]" character to not be read correctly.
 <li> Thanks to Michael Nonet, fixed a bug caused the median to always be set to zero 
 when measuring line selections.
+<li> Thanks to Norbert Vischer, fixed a bug that caused errors after running the 
+run("RGB Stack") or run("HSB Stack") macro functions on large images when
+running Java 8 on macOS.
 </ul> 
 
 <li> <u>1.52d 11 June 2018</u>
