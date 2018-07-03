@@ -190,14 +190,15 @@ public class FloatProcessor extends ImageProcessor {
 		}
 		for (int i=0; i<size; i++) {
 			value = pixels[i]-min2;
+			if (value<0.0) value=0.0;
 			ivalue = (int)((value*scale)+0.5f);
 			if (ivalue>maxValue) ivalue = maxValue;
 			pixels8[i] = (byte)ivalue;
 		}
-		//new ij.ImagePlus("pixels8",new ByteProcessor(width,height,pixels8).duplicate()).show();
+		//if (ij.IJ.debugMode) new ij.ImagePlus("pixels8",new ByteProcessor(width,height,pixels8).duplicate()).show();
 		return pixels8;
 	}
-
+	
 	@Override
 	byte[] create8BitImage() {
 		return create8BitImage(false);

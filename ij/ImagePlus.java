@@ -1792,13 +1792,14 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		deleteRoi();
 	}
 
-	public synchronized void saveRoi() {
-		if (roi!=null) {
-			roi.endPaste();
-			Rectangle r = roi.getBounds();
+	public void saveRoi() {
+		Roi roi2 = roi;
+		if (roi2!=null) {
+			roi2.endPaste();
+			Rectangle r = roi2.getBounds();
 			if ((r.width>0 || r.height>0)) {
-				Roi.previousRoi = (Roi)roi.clone();
-				if (IJ.debugMode) IJ.log("saveRoi: "+roi);
+				Roi.previousRoi = (Roi)roi2.clone();
+				if (IJ.debugMode) IJ.log("saveRoi: "+roi2);
 			}
 		}
 	}
