@@ -1303,7 +1303,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 						oxd = points.xpoints[0];
 				}
 			}
-			((PointRoi)roi).addPoint(imp, oxd, oyd);
+			((PointRoi)roi).addUserPoint(imp, oxd, oyd);
 			imp.setRoi(roi);
 			return;
 		}

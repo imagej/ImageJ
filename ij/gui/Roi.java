@@ -2091,6 +2091,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		ycenter = y;
 	}
 	
+	/** Returns the number of points in this selection; equivalent to getPolygon().npoints. */
+	public int size() {
+		return 4;
+	}
+
 	/* 
 	 * Returns the center of the of this selection's countour, or the
 	 * center of the bounding box of composite selections.<br> 

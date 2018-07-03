@@ -1437,6 +1437,11 @@ public class PolygonRoi extends Roi {
 		}
 		return new FloatPolygon(xpoints2, ypoints2, n);
 	}
+	
+	/** Returns the number of points in this selection; equivalent to getPolygon().npoints. */
+	public int size() {
+		return xSpline!=null?splinePoints:nPoints;
+	}
 
 	public boolean subPixelResolution() {
 		return subPixel;

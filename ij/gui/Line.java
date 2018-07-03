@@ -493,6 +493,11 @@ public class Line extends Roi {
 		}
 		return p;
 	}
+	
+	/** Returns the number of points in this selection; equivalent to getPolygon().npoints. */
+	public int size() {
+		return getStrokeWidth()<=1?2:4;
+	}
 
 	public void drawPixels(ImageProcessor ip) {
 		ip.setLineWidth(1);

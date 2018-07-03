@@ -53,6 +53,11 @@ public class PointRoi extends PolygonRoi {
 		setDefaultSize((int)Prefs.get(SIZE_KEY, 1));
 	}
 	
+	public PointRoi() {
+		this(0.0, 0.0);
+		deletePoint(0);
+	}
+	
 	/** Creates a new PointRoi using the specified int arrays of offscreen coordinates. */
 	public PointRoi(int[] ox, int[] oy, int points) {
 		super(itof(ox), itof(oy), points, POINT);
@@ -275,10 +280,14 @@ public class PointRoi extends PolygonRoi {
 		addPoint2(imp, ox, oy);
 		resetBoundingRect();
 		width+=1; height+=1;
-		if (imp!=null && imp.getWindow()!=null)
-			nMarkers++;
 	}
 	
+
+	public void addUserPoint(ImagePlus imp, double ox, double oy) {
+		addPoint(imp, ox, oy);
+		nMarkers++;
+	}
+
 	private void addPoint2(ImagePlus imp, double ox, double oy) {
 		double xbase = getXBase();
 		double ybase = getYBase();
