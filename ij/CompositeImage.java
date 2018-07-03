@@ -336,27 +336,6 @@ public class CompositeImage extends ImagePlus {
 		return sampleModel;
 	}
 
-	/*
-	void createBlitterImage(int n) {
-		ImageProcessor ip = cip[n-1].duplicate();
-		if (ip instanceof FloatProcessor){
-			FloatBlitter fb = new FloatBlitter((FloatProcessor)ip);
-			for (int i=1; i<n; i++)
-				fb.copyBits(cip[i], 0, 0, Blitter.COPY_ZERO_TRANSPARENT);
-		} else if (ip instanceof ByteProcessor){
-			ByteBlitter bb = new ByteBlitter((ByteProcessor)ip);
-			for (int i=1; i<n; i++)
-				bb.copyBits(cip[i], 0, 0, Blitter.OR);
-		} else if (ip instanceof ShortProcessor){
-			ShortBlitter sb = new ShortBlitter((ShortProcessor)ip);
-			for (int i=n-2; i>=0; i--)
-				sb.copyBits(cip[i], 0, 0, Blitter. OR);
-		}
-		img = ip.createImage();
-		singleChannel = false;
-	}
-	*/
-
 	ImageStack getRGBStack(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
 		int w = ip.getWidth();

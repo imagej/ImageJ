@@ -46,6 +46,7 @@ public class PointRoi extends PolygonRoi {
 	private int[] counterInfo;
 	private boolean promptBeforeDeleting;
 	private boolean promptBeforeDeletingCalled;
+	private int nMarkers;
 	
 	static {
 		setDefaultType((int)Prefs.get(TYPE_KEY, HYBRID));
@@ -274,6 +275,8 @@ public class PointRoi extends PolygonRoi {
 		addPoint2(imp, ox, oy);
 		resetBoundingRect();
 		width+=1; height+=1;
+		if (imp!=null && imp.getWindow()!=null)
+			nMarkers++;
 	}
 	
 	private void addPoint2(ImagePlus imp, double ox, double oy) {
@@ -512,8 +515,8 @@ public class PointRoi extends PolygonRoi {
 	    if (promptBeforeDeletingCalled)
 	    	return promptBeforeDeleting;
 	    else
-			return getNCounters()>1 || counts[0]>1;
-	}
+			return nMarkers>10  && imp!=null && imp.getWindow()!=null;
+	} 
 
 	public void promptBeforeDeleting(Boolean prompt) {
 		promptBeforeDeleting = prompt;

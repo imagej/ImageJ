@@ -40,7 +40,8 @@ public class JpegWriter implements PlugIn {
 		int height = imp.getHeight();
 		int biType = BufferedImage.TYPE_INT_RGB;
 		boolean overlay = imp.getOverlay()!=null && !imp.getHideOverlay();
-		if (imp.getProcessor().isDefaultLut() && !imp.isComposite() && !overlay)
+		ImageProcessor ip = imp.getProcessor();
+		if (ip.isDefaultLut() && !imp.isComposite() && !overlay && ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD)
 			biType = BufferedImage.TYPE_BYTE_GRAY;
 		BufferedImage bi = new BufferedImage(width, height, biType);
 		String error = null;
