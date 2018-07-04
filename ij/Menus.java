@@ -305,6 +305,7 @@ public class Menus {
 		addExample(submenu, "Plasma Cloud", "Plasma_Cloud.js");
 		addExample(submenu, "Cloud Debugger", "Cloud_Debugger.js");
 		addExample(submenu, "Synthetic Images", "Synthetic_Images.js");
+		addExample(submenu, "Points", "Points.js");
 		addExample(submenu, "Spiral Rotation", "Spiral_Rotation.js");
 		addExample(submenu, "Example Plot", "Example_Plot.js");
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.js");

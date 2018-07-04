@@ -69,6 +69,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	private	String url;
 	private FileInfo fileInfo;
 	private int imageType = GRAY8;
+	private boolean typeSet;
 	private ImageStack stack;
 	private static int currentID = -1;
 	private int ID;
@@ -1125,8 +1126,18 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	is unknown. RGB images actually use 32 bits per pixel. */
     public int getBitDepth() {
     	ImageProcessor ip2 = ip;
-    	if (ip2==null)
-    		return 0;
+    	if (ip2==null) {
+    		if (imageType==GRAY8 && !typeSet)
+    			return 0;
+    		int bitDepth = 0;
+			switch (imageType) {
+				case GRAY8: case COLOR_256: bitDepth=8; break;
+				case GRAY16: bitDepth=16; break;
+				case GRAY32: bitDepth=32; break;
+				case COLOR_RGB: bitDepth=24; break;
+			}
+    		return bitDepth;
+    	}
     	if (ip2 instanceof ByteProcessor)
     		return 8;
     	else if (ip2 instanceof ShortProcessor)
@@ -1157,6 +1168,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				Menus.updateMenus();
 			getLocalCalibration().setImage(this);
 		}
+		typeSet = true;
 	}
 		
  	/** Returns the string value from the "Info" property string  

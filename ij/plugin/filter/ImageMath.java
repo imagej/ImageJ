@@ -177,6 +177,8 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 				return;
 			}
 		}
+		if (!(ip instanceof FloatProcessor))
+			return;
         float[] pixels = (float[])ip.getPixels();
         int width = ip.getWidth();
         int height = ip.getHeight();
