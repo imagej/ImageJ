@@ -136,24 +136,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		MenuItem item = new MenuItem("Undo",new MenuShortcut(KeyEvent.VK_Z));
 		m.add(item);
 		m.addSeparator();
-		boolean shortcutsBroken = IJ.isWindows()
-			&& (System.getProperty("java.version").indexOf("1.1.8")>=0
-			||System.getProperty("java.version").indexOf("1.5.")>=0);
-		shortcutsBroken = false;
-		if (shortcutsBroken)
-			item = new MenuItem("Cut  Ctrl+X");
-		else
-			item = new MenuItem("Cut",new MenuShortcut(KeyEvent.VK_X));
+		item = new MenuItem("Cut",new MenuShortcut(KeyEvent.VK_X));
 		m.add(item);
-		if (shortcutsBroken)
-			item = new MenuItem("Copy  Ctrl+C");
-		else
-			item = new MenuItem("Copy", new MenuShortcut(KeyEvent.VK_C));
+		item = new MenuItem("Copy", new MenuShortcut(KeyEvent.VK_C));
 		m.add(item);
-		if (shortcutsBroken)
-			item = new MenuItem("Paste  Ctrl+V");
-		else
-			item = new MenuItem("Paste",new MenuShortcut(KeyEvent.VK_V));
+		item = new MenuItem("Paste",new MenuShortcut(KeyEvent.VK_V));
 		m.add(item);
 		m.addSeparator();
 		m.add(new MenuItem("Find...", new MenuShortcut(KeyEvent.VK_F)));
@@ -660,6 +647,19 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		}
 		int start = ta.getSelectionStart( );
 		int end = ta.getSelectionEnd( );
+		if (IJ.isWindows()) { // bug workaround
+			String text = ta.getText();
+			int rcount = 0;
+			for (int i=0; i<=start; i++) {
+				if (text.charAt(i)=='\r')
+					rcount++;
+			}
+			if (IJ.debugMode) IJ.log("paste: "+start+" "+rcount);
+			if (start-rcount>=0) {
+				start -= rcount;
+				end -= rcount;
+			}
+		}
 		ta.replaceRange(s, start, end);
 		if (IJ.isMacOSX())
 			ta.setCaretPosition(start+s.length());

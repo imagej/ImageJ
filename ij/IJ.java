@@ -435,8 +435,10 @@ public class IJ {
 		if (logPanel!=null) {
 			if (s.startsWith("\\"))
 				handleLogCommand(s);
-			else
+			else {
+				if (s.length()==2 && s.equals("\n\n")) s="\n \n";
 				logPanel.append(s);
+			}
 		} else {
 			LogStream.redirectSystem(false);
 			System.out.println(s);

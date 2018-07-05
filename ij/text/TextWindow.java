@@ -187,7 +187,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	}
 
 	/**
-	Adds one or lines of text to the window.
+	Adds one or more lines of text to the window.
 	@param text		The text to be appended. Multiple
 					lines should be separated by \n.
 	*/
