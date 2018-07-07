@@ -436,7 +436,14 @@ public class IJ {
 			if (s.startsWith("\\"))
 				handleLogCommand(s);
 			else {
-				if (s.length()==2 && s.equals("\n\n")) s="\n \n";
+				if (s.endsWith("\n")) {
+					if (s.equals("\n\n"))
+						s= "\n \n ";
+					else if (s.endsWith("\n\n"))
+						s = s.substring(0, s.length()-2)+"\n \n ";
+					else
+						s = s+" ";
+				}
 				logPanel.append(s);
 			}
 		} else {

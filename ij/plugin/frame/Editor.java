@@ -135,12 +135,22 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		m = new Menu("Edit");
 		MenuItem item = new MenuItem("Undo",new MenuShortcut(KeyEvent.VK_Z));
 		m.add(item);
-		m.addSeparator();
-		item = new MenuItem("Cut",new MenuShortcut(KeyEvent.VK_X));
+		m.addSeparator();		
+		boolean shortcutsBroken = IJ.isWindows();
+		if (shortcutsBroken)
+			item = new MenuItem("Cut  Ctrl+X");
+		else
+			item = new MenuItem("Cut",new MenuShortcut(KeyEvent.VK_X));
 		m.add(item);
-		item = new MenuItem("Copy", new MenuShortcut(KeyEvent.VK_C));
+		if (shortcutsBroken)
+			item = new MenuItem("Copy  Ctrl+C");
+		else
+			item = new MenuItem("Copy", new MenuShortcut(KeyEvent.VK_C));
 		m.add(item);
-		item = new MenuItem("Paste",new MenuShortcut(KeyEvent.VK_V));
+		if (shortcutsBroken)
+			item = new MenuItem("Paste  Ctrl+V");
+		else
+			item = new MenuItem("Paste",new MenuShortcut(KeyEvent.VK_V));
 		m.add(item);
 		m.addSeparator();
 		m.add(new MenuItem("Find...", new MenuShortcut(KeyEvent.VK_F)));
@@ -622,13 +632,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		} else
 			return false;
 	}
- 
 	  
 	void cut() {
 		if (copy()) {
 			int start = ta.getSelectionStart();
 			int end = ta.getSelectionEnd();
-			ta.replaceRange("", start, end);
+			ta.replaceRange("", start-offset(start), end-offset(start));
 			if (IJ.isMacOSX())
 				ta.setCaretPosition(start);
 		}	
@@ -641,29 +650,29 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		Transferable clipData = clipboard.getContents(s);
 		try {
 			s = (String)(clipData.getTransferData(DataFlavor.stringFlavor));
-		}
-		catch  (Exception e)  {
+		} catch  (Exception e)  {
 			s  = e.toString( );
 		}
 		int start = ta.getSelectionStart( );
 		int end = ta.getSelectionEnd( );
-		if (IJ.isWindows()) { // bug workaround
-			String text = ta.getText();
-			int rcount = 0;
-			for (int i=0; i<=start; i++) {
-				if (text.charAt(i)=='\r')
-					rcount++;
-			}
-			if (IJ.debugMode) IJ.log("paste: "+start+" "+rcount);
-			if (start-rcount>=0) {
-				start -= rcount;
-				end -= rcount;
-			}
-		}
-		ta.replaceRange(s, start, end);
+		ta.replaceRange(s, start-offset(start), end-offset(start));
 		if (IJ.isMacOSX())
 			ta.setCaretPosition(start+s.length());
 		checkForCurlyQuotes = true;
+	}
+	
+	// workaround for WIndows bug
+	 private int offset(int pos) {
+		if (!IJ.isWindows())
+			return 0;
+		String text = ta.getText();
+		int rcount = 0;
+		for (int i=0; i<=pos; i++) {
+			if (text.charAt(i)=='\r')
+				rcount++;
+		}
+		if (IJ.debugMode) IJ.log("offset: "+pos+" "+rcount);
+		return pos-rcount>=0?rcount:0;
 	}
 
 	void copyToInfo() { 
@@ -681,7 +690,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			text = ta.getSelectedText();
 		imp.setProperty("Info", text);
 	}
-
+	
 	public void actionPerformed(ActionEvent e) {
 		String what = e.getActionCommand();
 		int flags = e.getModifiers();
@@ -737,11 +746,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			print();
 		else if (what.equals("Undo"))
 		   undo();
-		else if (what.equals("Paste"))
+		else if (what.startsWith("Paste"))
 			paste();
-		else if (what.equals("Copy"))
+		else if (what.startsWith("Copy"))
 			copy();
-		else if (what.equals("Cut"))
+		else if (what.startsWith("Cut"))
 		   cut();
 		else if ("Save As...".equals(what))
 			saveAs();
