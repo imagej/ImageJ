@@ -169,8 +169,15 @@ public class RoiEncoder {
 			}
 		}
 		if (n>65535) {
+			if (type==polygon || type==freehand || type==traced) {
+				String name = roi.getName();
+				roi = new ShapeRoi(roi);
+				if (name!=null) roi.setName(name);
+				saveShapeRoi(roi, rect, f, options);
+				return;
+			}
 			ij.IJ.beep();
-			ij.IJ.log("ROIs with more than 65k points cannot be saved.");
+			ij.IJ.log("Non-area selections with more than 65k points cannot be saved.");
 			n = 65535;
 		}
 		putShort(RoiDecoder.N_COORDINATES, n);

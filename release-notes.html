@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52e 6 July 2018</u>
+<li> <u>1.52e 9 July 2018</u>
 <ul>
 <li> The "Threshold" tool no longer resets the display range of 16-bit and 32-bit images.
 <li> Restored the "Set" button (removed in 1.51r) to the "Threshold" dialog,
@@ -41,6 +41,8 @@ command to throw an exception when attempting to process a non-32-bit stack.
 to be pasted into text editor windows at the wrong position.
 <li> Thanks to Stein Rorvik, fixed a bug that caused print("\n\n") to do
 nothing instead of outputting two blank lines as expected.
+<li> Thanks to 'mryellow', fixed a bug that caused polygonal ROIs with
+more than 65,535 points to not be saved correctly.
 <li> Thanks to Lorenzo Cangiano and Jan Eglinger, fixed a 1.52c regression
 that caused a "Save changes?" dialog to be unexpectedly displayed when 
 closing an image with a multi-point selection.
