@@ -668,7 +668,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		checkForCurlyQuotes = true;
 	}
 	
-	// workaround for TextArea.getCaretPosition() bug on WIndows
+	// workaround for TextArea.getCaretPosition() bug on Windows
 	private int offset(int pos) {
 		if (!IJ.isWindows())
 			return 0;

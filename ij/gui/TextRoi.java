@@ -304,8 +304,8 @@ public class TextRoi extends Roi {
 			g2d.rotate(-theta, cx, cy);
 		}
 		int i = 0;
+		updateBounds(g);
 		if (fillColor!=null) {
-			updateBounds(g);
 			Color c = g.getColor();
 			int alpha = fillColor.getAlpha();
  			g.setColor(fillColor);
