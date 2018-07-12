@@ -1171,7 +1171,7 @@ public class ShapeRoi extends Roi {
 			return super.getFloatPolygon();
 	}
 
-	/** Retuns the number of vertices If this ROI consists of a single polygon, otherwise returns 4. */
+	/** If this ROI consists of a single polygon, retuns the number of vertices, otherwise returns 4. */
 	public int size() {
 		return getPolygon().npoints;
 	}
