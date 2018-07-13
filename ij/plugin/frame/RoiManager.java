@@ -433,7 +433,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	 * be used to form the first part of the ROI label if it is zero or greater.
 	 * @param imp	the image associated with the ROI, or null
 	 * @param roi		the Roi to be added
-	 * @param n		if zero or greater, will be used to form irst part of the label
+	 * @param n		if zero or greater, will be used to form the first part of the label
 	*/
 	public void add(ImagePlus imp, Roi roi, int n) {
 		if (IJ.debugMode && n<3 && roi!=null) IJ.log("RoiManager.add: "+n+" "+roi.getName());

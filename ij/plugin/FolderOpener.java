@@ -21,6 +21,7 @@ public class FolderOpener implements PlugIn {
 	private static boolean staticOpenAsVirtualStack;
 	private boolean convertToRGB;
 	private boolean sortFileNames = true;
+	private boolean sortByMetaData = true;
 	private boolean openAsVirtualStack;
 	private double scale = 100.0;
 	private int n, start, increment;
@@ -40,15 +41,21 @@ public class FolderOpener implements PlugIn {
 
 	/** Opens the images in the specified directory as a stack. Opens
 		the images as a virtual stack if the 'options' string contains
-		"virtual" or "use". Add " file=abc" to 'options' to only open
-		images with, for example, "abc" in their name. Displays directory
-		chooser and options dialogs if the the 'path' argument is null. */
+		'virtual' or 'use'. Add ' file=abc' to the options string to only open
+		images with, for example, 'abc' in their name. Add ' noMetaSort' to
+		disable sorting of DICOM stacks by series number (0020,0011).
+		Displays directory chooser and options dialogs if the the 'path'
+		argument is null. */
 	public static ImagePlus open(String path, String options) {
 		if (options==null)
 			options = "";
 		FolderOpener fo = new FolderOpener();
 		fo.saveImage = true;
-		fo.openAsVirtualStack = options!=null && (options.contains("virtual")||options.contains("use"));
+		if (options!=null) {
+			fo.openAsVirtualStack = options.contains("virtual") || options.contains("use");
+			if (options.contains("noMetaSort")) 
+				fo.sortByMetaData = false;
+		}
 		fo.filter = Macro.getValue(options, "file", "");
 		fo.run(path);
 		return fo.image;
@@ -331,7 +338,8 @@ public class FolderOpener implements PlugIn {
 				imp2.setCalibration(cal);
 			}
 			if (info1!=null && info1.lastIndexOf("7FE0,0010")>0) {
-				stack = DicomTools.sort(stack);
+				if (sortByMetaData)
+					stack = DicomTools.sort(stack);
 				imp2.setStack(stack);
 				double voxelDepth = DicomTools.getVoxelDepth(stack);
 				if (voxelDepth>0.0) {
@@ -533,6 +541,10 @@ public class FolderOpener implements PlugIn {
 		sortFileNames = b;
 	}
 	
+	public void sortByMetaData(boolean b) {
+		sortByMetaData = b;
+	}
+
 	/** Sorts file names containing numerical components.
 	* @see ij.util.StringSorter#sortNumerically
 	* Author: Norbert Vischer
