@@ -133,34 +133,33 @@ public class FolderOpener implements PlugIn {
 		n = list.length;
 		start = 1;
 		increment = 1;
+		boolean dicomImages = false;
 		try {
-			if (isMacro) {
-				if (!showDialog(null, list))
-					return;
-			} else {
-				for (int i=0; i<list.length; i++) {
-					Opener opener = new Opener();
-					opener.setSilentMode(true);
-					IJ.redirectErrorMessages(true);
-					ImagePlus imp = opener.openImage(directory, list[i]);
-					IJ.redirectErrorMessages(false);
-					if (imp!=null) {
-						width = imp.getWidth();
-						height = imp.getHeight();
-						bitDepth = imp.getBitDepth();
-						if (arg==null) {
-							if (!showDialog(imp, list))
-								return;
-						}
-						break;
+			for (int i=0; i<list.length; i++) {
+				Opener opener = new Opener();
+				opener.setSilentMode(true);
+				IJ.redirectErrorMessages(true);
+				ImagePlus imp = opener.openImage(directory, list[i]);
+				IJ.redirectErrorMessages(false);
+				if (imp!=null) {
+					width = imp.getWidth();
+					height = imp.getHeight();
+					bitDepth = imp.getBitDepth();
+					String info = (String)imp.getProperty("Info");
+					if (info!=null && info.contains("7FE0,0010"))
+						dicomImages = true;
+					if (arg==null) {
+						if (!showDialog(imp, list))
+							return;
 					}
+					break;
 				}
-				if (width==0) {
-					IJ.error("Sequence Reader", "This folder does not appear to contain\n"
-					+ "any TIFF, JPEG, BMP, DICOM, GIF, FITS or PGM files.\n \n"
-					+ "   \""+directory+"\"");
-					return;
-				}
+			}
+			if (width==0) {
+				IJ.error("Sequence Reader", "This folder does not appear to contain\n"
+				+ "any TIFF, JPEG, BMP, DICOM, GIF, FITS or PGM files.\n \n"
+				+ "   \""+directory+"\"");
+				return;
 			}
 			String pluginName = "Sequence Reader";
 			if (legacyRegex!=null)
@@ -170,7 +169,7 @@ public class FolderOpener implements PlugIn {
 				return;
 			IJ.showStatus("");
 			t0 = System.currentTimeMillis();
-			if (sortFileNames)
+			if (sortFileNames || dicomImages)
 				list = StringSorter.sortNumerically(list);
 
 			if (n<1)
@@ -373,6 +372,8 @@ public class FolderOpener implements PlugIn {
 					filter = "["+filter+"]";
 				options = options + " file=" + filter;
 			}
+			if (!sortByMetaData)
+				options = options + " noMetaSort";
    			Recorder.recordCall("imp = FolderOpener.open(\""+directory+"\", \""+options+"\");");
 		}
 
@@ -427,6 +428,8 @@ public class FolderOpener implements PlugIn {
 			filter = "("+legacyRegex+")";
 		convertToRGB = gd.getNextBoolean();
 		sortFileNames = gd.getNextBoolean();
+		if (!sortFileNames)
+			sortByMetaData = false;
 		openAsVirtualStack = gd.getNextBoolean();
 		if (openAsVirtualStack)
 			scale = 100.0;

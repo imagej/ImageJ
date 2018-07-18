@@ -5,13 +5,18 @@
 </head>
 <body>
 
-<li> <u>1.52f 12 July 2018</u>
+<li> <u>1.52f 18 July 2018</u>
 <ul>
-<li> Thanks to 'Sethur', added a 'noMetaSort' option to the options
-string of the FolderOpener.open(dir,options) method. This option
-disables sorting of DICOM stacks by series number (0020,0011).
+<li> Thanks to 'Sethur', ImageJ no longer sorts imported DICOM
+stacks by series number (tag 0020,0011) if "Sort images numerically" 
+is not checked in the <i>File&gt;Import&gt;ImageSequence</i>
+dialog. Also added a recordable 'noMetaSort' option to the options
+string of the FolderOpener.open(dir,options) method.
 <li> Thanks to Christian Tischer, fixed bugs in the RoiManager.add(ImagePlus,Roi,int)
 method than caused it to not behave as expected if the ROI name was not null.
+<li> Thanks to Norbert Vischer, fixed bugs that caused the
+<i>Edit&gt;Cut</i> and <i>Analyze&gt;Set Scale</i> commands
+to not set the 'changes' flag.
 </ul>
 
 <li> <u>1.52e 11 July 2018</u>

@@ -101,8 +101,10 @@ public class ScaleDialog implements PlugInFilter {
 				cal.pixelHeight = cal.pixelWidth;
 			cal.setUnit(unit);
 		}
-		if (!cal.equals(calOrig))
+		if (!cal.equals(calOrig)) {
 			imp.setCalibration(cal);
+			imp.changes = true;
+		}
 		imp.setGlobalCalibration(global2?cal:null);
 		if (global2 || global2!=global1)
 			WindowManager.repaintImageWindows();
