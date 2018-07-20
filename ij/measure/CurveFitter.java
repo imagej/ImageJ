@@ -3,6 +3,7 @@ import ij.*;
 import ij.gui.*;
 import ij.macro.*;
 import ij.util.Tools;
+import ij.util.IJMath;
 import java.util.Arrays;
 import java.util.Hashtable;
 
@@ -34,11 +35,13 @@ import java.util.Hashtable;
  *				either a linear slope or a factor that the full function is multiplied with.
  *	2012-10-07: added GAUSSIAN_NOOFFSET fit type
  *	2012-11-20: Bugfix: exception on Gaussian&Rodbard with initial params, bad initial params for Gaussian
- *  2013-09-24: Added "Exponential Recovery (no offset)" and "Chapman-Richards" (3-parameter) fit types.
+ *  2013-09-24: Added "Exponential Recovery (no offset)" and "Chapman-Richards" (3-parameter;
+ *              used e.g. to describe forest growth) fit types.
  *  2013-10-11: bugfixes, added setStatusAndEsc to show iterations and enable abort by ESC
  *  2015-03-26: bugfix, did not use linear regression for RODBARD
  *  2016-11-28: added static getNumParams methods
  *  2018-03-23: fixes NullPointerException for custom fit without initialParamVariations
+ *  2018-07-19: added error function erf (=integral over Gaussian)
  */
 
 public class CurveFitter implements UserFunction{
@@ -48,7 +51,7 @@ public class CurveFitter implements UserFunction{
 	RODBARD2=10, EXP_WITH_OFFSET=11, GAUSSIAN=12, EXP_RECOVERY=13,
 	INV_RODBARD=14, EXP_REGRESSION=15, POWER_REGRESSION=16,
 	POLY5=17, POLY6=18, POLY7=19, POLY8=20,
-	GAUSSIAN_NOOFFSET=21, EXP_RECOVERY_NOOFFSET=22, CHAPMAN=23;
+	GAUSSIAN_NOOFFSET=21, EXP_RECOVERY_NOOFFSET=22, CHAPMAN=23, ERF=24;
 
 	/** Nicer sequence of the built-in function types */
 	public static final int[] sortedTypes = { STRAIGHT_LINE, POLY2, POLY3, POLY4,
@@ -57,7 +60,7 @@ public class CurveFitter implements UserFunction{
 			EXPONENTIAL, EXP_REGRESSION, EXP_WITH_OFFSET,
 			EXP_RECOVERY, EXP_RECOVERY_NOOFFSET,
 			LOG, LOG2,
-			GAUSSIAN, GAUSSIAN_NOOFFSET,
+			GAUSSIAN, GAUSSIAN_NOOFFSET, ERF,
 			RODBARD, RODBARD2, INV_RODBARD,
 			GAMMA_VARIATE,CHAPMAN
 	};
@@ -70,7 +73,7 @@ public class CurveFitter implements UserFunction{
 	"Inverse Rodbard", "Exponential (linear regression)", "Power (linear regression)",
 	"5th Degree Polynomial","6th Degree Polynomial","7th Degree Polynomial","8th Degree Polynomial",
 	"Gaussian (no offset)", "Exponential Recovery (no offset)",
-	"Chapman-Richards"
+	"Chapman-Richards", "Error Function"
 	}; // fList, doFit(), getNumParams() and makeInitialParamsAndVariations() must also be updated
 
 	/** Equations of the built-in fit functions */
@@ -87,7 +90,8 @@ public class CurveFitter implements UserFunction{
 	"y = a+bx+cx^2+dx^3+ex^4+fx^5+gx^6+hx^7", "y = a+bx+cx^2+dx^3+ex^4+fx^5+gx^6+hx^7+ix^8",
 	"y = a*exp(-(x-b)*(x-b)/(2*c*c)))",							//GAUSSIAN_NOOFFSET
 	"y = a*(1-exp(-b*x))",                                      //EXP_RECOVERY_NOOFFSET
-	"y = a*(1-exp(-b*x))^c"									    //CHAPMAN
+	"y = a*(1-exp(-b*x))^c",								    //CHAPMAN
+    "y = a+b*erf((x-c)/d)"										//ERF; not that the c parameter is sqrt2 times the Gaussian
 	};
 
 	/** @deprecated now in the Minimizer class (since ImageJ 1.46f).
@@ -200,6 +204,11 @@ public class CurveFitter implements UserFunction{
 		}
 		if (isModifiedFitType(fitType))         //params of actual fit to user params
 			postProcessModifiedFitType(fitType);
+        if (fitType == ERF)                     //make it nicer
+			if (finalParams[3] < 0) {           // y = a+b*erf((x-c)/d) with negative d: invert b instead
+                finalParams[1] = -finalParams[1];
+                finalParams[3] = -finalParams[3];
+			}
 
 		switch (fitType) {		                //postprocessing for nicer output:
 		    case GAUSSIAN:                      //Gaussians: width (std deviation) should be >0
@@ -346,6 +355,7 @@ public class CurveFitter implements UserFunction{
 			case RODBARD: case RODBARD2: case INV_RODBARD: case RODBARD_INTERNAL: return 4;
 			case GAMMA_VARIATE: return 4;
 			case GAUSSIAN: case GAUSSIAN_INTERNAL: return 4;
+			case ERF:   return 4;
 		}
 		return 0;
 	}
@@ -469,11 +479,13 @@ public class CurveFitter implements UserFunction{
 				if (p[3]-x < 2*Double.MIN_VALUE || x<p[0]) // avoid x>=d (singularity) and x<a (negative exponent)
 					y = fitType==INV_RODBARD ? Double.NaN : 0.0;
 				else {
-					y = (x-p[0])/(p[3]-x); //(x-a)/(d-x) = ( (a-d)/(x-d) -1 )
-					y = Math.pow(y,1.0/p[1]);  //y=y**(1/b)
+					y = (x-p[0])/(p[3]-x);		//(x-a)/(d-x) = ( (a-d)/(x-d) -1 )
+					y = Math.pow(y,1.0/p[1]);	//y=y**(1/b)
 					y = y*p[2];
 				}
 				return y;
+            case ERF:
+				return p[0] + p[1]*IJMath.erf((x-p[2])/p[3]);	//y=a+b*erf((x-c)/d)
 			default:
 				return 0.0;
 		}
@@ -937,7 +949,7 @@ public class CurveFitter implements UserFunction{
 				case EXP_WITH_OFFSET:		// a*exp(-bx) + c	assuming b>0, change by factor of e between xMin & xMax
 				case EXP_RECOVERY:			// a*(1-exp(-bx)) + c
 					initialParams[1] = 1./(xMax-xMin+1e-100);
-					initialParams[0] = (yMax-yMin)/Math.exp(initialParams[1]*xMean) * Math.signum(slope) *
+					initialParams[0] = (yMax-yMin+1e-100)/Math.exp(initialParams[1]*xMean) * Math.signum(slope) *
 							fitType==EXP_RECOVERY ? 1 : -1; // don't care, we will do this via regression
 					initialParams[2] = 0.5*yMean;			// don't care, we will do this via regression
 					break;
@@ -955,7 +967,7 @@ public class CurveFitter implements UserFunction{
 					break;
 				case LOG2:					// y = a+b*ln(x-c)
 					initialParams[0] = yMean;				// don't care, we will do this via regression
-					initialParams[1] = (yMax-yMin)/(xMax-xMin+1e-100); // don't care, we will do this via regression
+					initialParams[1] = (yMax-yMin+1e-100)/(xMax-xMin+1e-100); // don't care, we will do this via regression
 					initialParams[2] = Math.min(0., -xMin-0.1*(xMax-xMin)-1e-100);
 					break;
 				case RODBARD:				// d+(a-d)/(1+(x/c)^b)
@@ -1005,6 +1017,12 @@ public class CurveFitter implements UserFunction{
 					if(Double.isNaN(initialParams[1]) || initialParams[1]>1000./xMax) //in case an outlier at the beginning has fooled us
 					    initialParams[1] = 10./xMax;
 					break;
+                case ERF:                       // a+b*erf((x-c)/d)
+					initialParams[0] = 0.5*(yMax+yMin);	//actually don't care, we will do this via regression
+					initialParams[1] = 0.5*(yMax-yMin+1e-100) * (lasty>firsty ? 1 : -1);	//actually don't care, we will do this via regression
+					initialParams[2] = xMin + (xMax-xMin)*(lasty>firsty ? yMax - yMean : yMean - yMin)/(yMax-yMin+1e-100);
+					initialParams[3] = 0.1 * (xMax-xMin+1e-100);
+					break;
 				//no case CUSTOM: here, was done above
 			}
 		}
@@ -1043,7 +1061,7 @@ public class CurveFitter implements UserFunction{
 				//	therefore an estimate for a and B is sqrt(tm-t0)
 				//	K [a] can now be calculated from these estimates
 					initialParamVariations[0] = 0.1*Math.max(yMax-yMin, Math.abs(yMax));
-					double ab = xOfMax - firstx + 0.1*(xMax-xMin);
+					double ab = xOfMax - firstx + 0.1*(xMax-xMin+1e-100);
 					initialParamVariations[2] = 0.1*Math.sqrt(ab);
 					initialParamVariations[3] = 0.1*Math.sqrt(ab);
 					break;
@@ -1052,6 +1070,10 @@ public class CurveFitter implements UserFunction{
 					break;
 				case GAUSSIAN_NOOFFSET:		// a*exp(-(x-b)^2/(2c^2))
 					initialParamVariations[1] = 0.2*initialParams[2]; //(and default for c)
+					break;
+				case ERF:		            // a+b*erf((x-c)/d)
+					initialParamVariations[2] = 0.1 * (xMax-xMin+1e-100);
+					initialParamVariations[3] = 0.5 * initialParams[3];
 					break;
 			}
 		}
@@ -1112,6 +1134,10 @@ public class CurveFitter implements UserFunction{
 				break;
 			case GAUSSIAN_NOOFFSET:		// a*exp(-(x-b)^2/(2c^2))
 				factorParam = 0;
+				break;
+			case ERF:					// a + b*erf((x-c)/d)
+				offsetParam = 0;
+				factorParam = 1;
 				break;
 		}
 		numRegressionParams = 0;
