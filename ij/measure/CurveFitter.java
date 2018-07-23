@@ -88,10 +88,10 @@ public class CurveFitter implements UserFunction{
 	"y = a*exp(bx)", "y = a*x^b",								//EXP_REGRESSION, POWER_REGRESSION
 	"y = a+bx+cx^2+dx^3+ex^4+fx^5", "y = a+bx+cx^2+dx^3+ex^4+fx^5+gx^6",
 	"y = a+bx+cx^2+dx^3+ex^4+fx^5+gx^6+hx^7", "y = a+bx+cx^2+dx^3+ex^4+fx^5+gx^6+hx^7+ix^8",
-	"y = a*exp(-(x-b)*(x-b)/(2*c*c)))",							//GAUSSIAN_NOOFFSET
-	"y = a*(1-exp(-b*x))",                                      //EXP_RECOVERY_NOOFFSET
-	"y = a*(1-exp(-b*x))^c",								    //CHAPMAN
-    "y = a+b*erf((x-c)/d)"										//ERF; not that the c parameter is sqrt2 times the Gaussian
+	"y = a*exp(-(x-b)*(x-b)/(2*c*c)))",						//GAUSSIAN_NOOFFSET
+	"y = a*(1-exp(-b*x))",										//EXP_RECOVERY_NOOFFSET
+	"y = a*(1-exp(-b*x))^c",									//CHAPMAN
+	"y = a+b*erf((x-c)/d)"										//ERF; note that the c parameter is sqrt2 times the Gaussian
 	};
 
 	/** @deprecated now in the Minimizer class (since ImageJ 1.46f).
@@ -204,10 +204,10 @@ public class CurveFitter implements UserFunction{
 		}
 		if (isModifiedFitType(fitType))         //params of actual fit to user params
 			postProcessModifiedFitType(fitType);
-        if (fitType == ERF)                     //make it nicer
+		if (fitType == ERF)                     //make it nicer
 			if (finalParams[3] < 0) {           // y = a+b*erf((x-c)/d) with negative d: invert b instead
-                finalParams[1] = -finalParams[1];
-                finalParams[3] = -finalParams[3];
+				finalParams[1] = -finalParams[1];
+				finalParams[3] = -finalParams[3];
 			}
 
 		switch (fitType) {		                //postprocessing for nicer output:
@@ -1017,7 +1017,7 @@ public class CurveFitter implements UserFunction{
 					if(Double.isNaN(initialParams[1]) || initialParams[1]>1000./xMax) //in case an outlier at the beginning has fooled us
 					    initialParams[1] = 10./xMax;
 					break;
-                case ERF:                       // a+b*erf((x-c)/d)
+				case ERF:	// a+b*erf((x-c)/d)
 					initialParams[0] = 0.5*(yMax+yMin);	//actually don't care, we will do this via regression
 					initialParams[1] = 0.5*(yMax-yMin+1e-100) * (lasty>firsty ? 1 : -1);	//actually don't care, we will do this via regression
 					initialParams[2] = xMin + (xMax-xMin)*(lasty>firsty ? yMax - yMean : yMean - yMin)/(yMax-yMin+1e-100);
