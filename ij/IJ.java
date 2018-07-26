@@ -4,6 +4,7 @@ import ij.process.*;
 import ij.text.*;
 import ij.io.*;
 import ij.plugin.*;
+
 import ij.plugin.filter.*;
 import ij.util.Tools;
 import ij.plugin.frame.Recorder;
@@ -1853,6 +1854,9 @@ public class IJ {
 		if (path!=null && path.length()==0)
 			path = null;
 		format = format.toLowerCase(Locale.US);
+		Roi roi2 = imp!=null?imp.getRoi():null;
+		if (roi2!=null)
+			roi2.endPaste();
 		if (format.indexOf("tif")!=-1) {
 			saveAsTiff(imp, path);
 			return;

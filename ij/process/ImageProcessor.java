@@ -1433,6 +1433,8 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Sets the justification used by drawString(), where <code>justification</code>
 		is CENTER_JUSTIFY, RIGHT_JUSTIFY or LEFT_JUSTIFY. The default is LEFT_JUSTIFY. */
 	public void setJustification(int justification) {
+		if (justification<LEFT_JUSTIFY || justification>RIGHT_JUSTIFY)
+			justification = LEFT_JUSTIFY;
 		this.justification = justification;
 	}
 
@@ -1637,7 +1639,6 @@ public abstract class ImageProcessor implements Cloneable {
 		width, stroke color and fill color defined by roi.setStrokeWidth,
 		roi.setStrokeColor() and roi.setFillColor(). Works   with RGB
 		images. Does not work with 16-bit and float images.
-		Requires Java 1.6.
 		@see ImageProcessor#draw
 		@see ImageProcessor#drawOverlay
 	*/

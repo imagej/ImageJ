@@ -47,7 +47,6 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
-		//IJ.register(Calibrator.class);
 		return DOES_ALL-DOES_RGB+NO_CHANGES;
 	}
 
@@ -154,6 +153,11 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			function = choiceIndex - 1;
 			x = getData(xText);
 			y = getData(yText);
+			if (cal.isSigned16Bit() || imp.getProperty("WasSigned")!=null) {
+				for (int i=0; i<x.length; i++)
+					x[i] += 32768;
+				imp.setProperty("WasSigned", "WasSigned");
+			}
 			if (!validateXValues(imp, x))
 				return;
 			if (!cal.calibrated() || y.length!=0 || function!=oldFunction) {

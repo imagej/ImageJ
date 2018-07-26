@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52f 23 July 2018</u>
+<li> <u>1.52f 26 July 2018</u>
 <ul>
 <li> Thanks to Michael Schmid, added the "Error Function" [y=a+b*erf((x-c)/d)]
 curve fit option and the ij.util.IJ.Math.erf(x) method
@@ -20,6 +20,15 @@ method than caused it to not behave as expected if the ROI name was not null.
 <li> Thanks to Norbert Vischer, fixed bugs that caused the
 <i>Edit&gt;Cut</i> and <i>Analyze&gt;Set Scale</i> commands
 to not set the 'changes' flag.
+<li> Thanks to Stein Rorvik, fixed a bug that caused the Overlay.drawString
+macro function to ignore the justification set by the setJustification() function.
+<li> Thanks to Stein Rorvik, fixed a bug that caused output of the
+Overlay.drawString() function to be lost when text is added using
+Overlay.addSelection().
+<li> Thanks to Lorenzo Cangiono, fixed a bug that caused selections
+pasted into images to not be saved.
+<li> Thanks to Mahmoudi Sidi Ahmed, fixed a bug that caused the
+<i>Analyze&gt;Calibrate</i> command to not work with signed 16-bit images.
 </ul>
 
 <li> <u>1.52e 11 July 2018</u>
