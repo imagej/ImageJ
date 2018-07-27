@@ -4,7 +4,6 @@ import ij.process.*;
 import ij.text.*;
 import ij.io.*;
 import ij.plugin.*;
-
 import ij.plugin.filter.*;
 import ij.util.Tools;
 import ij.plugin.frame.Recorder;

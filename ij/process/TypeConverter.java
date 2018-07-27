@@ -76,7 +76,9 @@ public class TypeConverter {
 	ByteProcessor convertFloatToByte() {
 		if (doScaling) {
 			byte[] pixels8 = ip.create8BitImage();
-			return new ByteProcessor(ip.getWidth(), ip.getHeight(), pixels8);
+			ByteProcessor bp = new ByteProcessor(ip.getWidth(), ip.getHeight(), pixels8);
+			bp.setColorModel(ip.getColorModel());
+			return bp;
 		} else {
 			ByteProcessor bp = new ByteProcessor(width, height);
 			bp.setPixels(0, (FloatProcessor)ip);
