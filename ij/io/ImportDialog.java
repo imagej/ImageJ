@@ -9,8 +9,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.util.*;
 import ij.plugin.frame.Recorder;
-import ij.plugin.FolderOpener;
-import ij.plugin.FileInfoVirtualStack;
+import ij.plugin.*;
 import ij.measure.Calibration;
 
 
@@ -190,8 +189,12 @@ public class ImportDialog {
 		if (fi==null) return;
 		if (openAll) {
 			if (virtual) {
-				virtual = false;
-				IJ.error("Import Raw", "\"Open All\" does not currently support virtual stacks");
+				ImagePlus imp = Raw.openAllVirtual(directory, fi);
+				if (imp!=null) {
+					imp.setSlice(imp.getStackSize()/2);
+					imp.show();
+					imp.setSlice(1);
+				}
 				return;
 			}
 			String[] list = new File(directory).list();
@@ -225,6 +228,8 @@ public class ImportDialog {
 		FileInfo fi = new FileInfo();
 		fi.fileFormat = fi.RAW;
 		fi.fileName = fileName;
+		if (!(directory.endsWith(File.separator)||directory.endsWith("/")))
+			directory += "/";
 		fi.directory = directory;
 		fi.width = width;
 		fi.height = height;

@@ -116,8 +116,8 @@ public class StackWriter implements PlugIn {
 				}
 				if (!f.isDirectory() && (exists||directory.lastIndexOf(".")>directory.length()-5))
 					directory = f.getParent();
-				if (!directory.endsWith(File.separator))
-					directory += File.separator;
+				if (!(directory.endsWith(File.separator)||directory.endsWith("/")))
+					directory += "/";
 			}
 		}
 		if (directory==null) {

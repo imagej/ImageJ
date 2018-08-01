@@ -7,8 +7,8 @@ import java.awt.*;
 import java.io.*;
 import java.util.Properties;
 
-/** This plugin opens a multi-page TIFF file as a virtual stack. It
-	implements the File/Import/TIFF Virtual Stack command. */
+/** This plugin opens a multi-page TIFF file, or a set of raw images, as a 
+	virtual stack. It implements the File/Import/TIFF Virtual Stack command. */
 public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 	private FileInfo[] info;
 	private int nImages;
@@ -33,6 +33,12 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		ImagePlus imp = open();
 		if (imp!=null && show)
 			imp.show();
+	}
+	
+	/* Constructs a FileInfoVirtualStack from an array of FileInfo objects. */
+	public FileInfoVirtualStack(FileInfo[] fi) {
+		info = fi;
+		nImages = info.length;
 	}
 
 	/** Opens the specified tiff file as a virtual stack. */
