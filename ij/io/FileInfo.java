@@ -193,6 +193,31 @@ public class FileInfo implements Cloneable {
 			+ ", samples=" + samplesPerPixel;
     }
     
+    /** Returns JavaScript code that can be used to recreate this FileInfo. */
+    public String getCode() {
+    	String code = "fi = new FileInfo();\n";
+    	String type = null;
+    	if (fileType==GRAY8)
+    		type = "GRAY8";
+    	else if (fileType==GRAY16_UNSIGNED)
+    		type = "GRAY16_UNSIGNED";
+    	else if (fileType==GRAY32_FLOAT)
+    		type = "GRAY32_FLOAT";
+    	else if (fileType==RGB)
+    		type = "RGB";
+    	if (type!=null)
+    		code += "fi.fileType = FileInfo."+type+";\n"; 
+    	code += "fi.width = "+width+";\n";
+    	code += "fi.height = "+height+";\n";
+    	if (nImages>1)
+			code += "fi.nImages = "+nImages+";\n";  	
+    	if (getOffset()>0)
+			code += "fi.longOffset = "+getOffset()+";\n";  	
+    	if (intelByteOrder)
+			code += "fi.intelByteOrder = true;\n";  	
+    	return code;
+    }
+
     private String getType() {
     	switch (fileType) {
 			case GRAY8: return "byte";

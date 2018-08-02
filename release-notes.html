@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52f 1 August 2018</u>
+<li> <u>1.52f 2 August 2018</u>
 <ul>
 <li> Thanks to Michael Schmid, added the "Error Function" [y=a+b*erf((x-c)/d)]
 curve fit option and the ij.util.IJ.Math.erf(x) method
@@ -18,7 +18,8 @@ stacks by series number (tag 0020,0011) if "Sort images numerically"
 is not checked in the <i>File&gt;Import&gt;ImageSequence</i>
 dialog. Also added a recordable 'noMetaSort' option to the options
 string of the FolderOpener.open(dir,options) method.
-<li> Added the Raw.openAllVirtual() method.
+<li> Added the recordable Raw.open(), Raw.openAll() and Raw.openAllVirtual() methods
+(<a href="http://wsr.imagej.net/macros/OpenAllRawVirtual.js">example</a>).
 <li> Thanks to Christian Tischer, fixed bugs in the RoiManager.add(ImagePlus,Roi,int)
 method than caused it to not behave as expected if the ROI name was not null.
 <li> Thanks to Norbert Vischer, fixed bugs that caused the
