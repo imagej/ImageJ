@@ -106,6 +106,7 @@ public class EllipseRoi extends PolygonRoi {
 			}
         }
 		state = NORMAL;
+		modifyRoi();
 	}
 	
 	protected void moveHandle(int sx, int sy) {

@@ -348,17 +348,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		Shape s = at.createTransformedShape(shape);
 		Rectangle2D r = s.getBounds2D();
 		return Math.min(r.getWidth(), r.getHeight());
-		/*
-		ShapeRoi roi2 = new ShapeRoi(s);
-		Roi[] rois = roi2.getRois();
-		if (rois!=null && rois.length>0) {
-			Polygon p = rois[0].getPolygon();
-			ImageProcessor ip = imp.getProcessor();
-			for (int i=0; i<p.npoints-1; i++)
-				ip.drawLine(p.xpoints[i], p.ypoints[i], p.xpoints[i+1], p.ypoints[i+1]);
-			imp.updateAndDraw();
-		}
-		*/
 	}
 
 	/** Return this selection's bounding rectangle. */

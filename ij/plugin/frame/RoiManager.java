@@ -932,7 +932,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		for (int i=0; i<indexes.length; i++) {
 			Roi roi = (Roi)rois.get(indexes[i]);
 			String label = (String) listModel.getElementAt(indexes[i]);
-			if (getSliceNumber(roi,label)>1) allSliceOne=false;
+			if (getSliceNumber(roi,label)>1 || roi.hasHyperStackPosition())
+				allSliceOne=false;
 		}
 		int measurements = Analyzer.getMeasurements();
 		if (imp.getStackSize()>1)
