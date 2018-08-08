@@ -1746,8 +1746,8 @@ public abstract class ImageProcessor implements Cloneable {
 
 	public abstract void set(int index, int value);
 
-	/** Returns the value of the pixel at (x,y) as a float. Faster than
-	    getPixel() because no bounds checking is done. */
+	/** Returns the value of the pixel at (x,y) as a float. Faster 
+	    than getPixelValue() because no bounds checking is done. */
 	public abstract float getf(int x, int y);
 	
 	public abstract float getf(int index);
@@ -1954,7 +1954,7 @@ public abstract class ImageProcessor implements Cloneable {
 	
 	/** Returns the value of the pixel at (x,y). For byte and short
 		images, returns a calibrated value if a calibration table
-		has been  set using setCalibraionTable(). For RGB images,
+		has been set using setCalibraionTable(). For RGB images,
 		returns the luminance value. */
 	public abstract float getPixelValue(int x, int y);
 		

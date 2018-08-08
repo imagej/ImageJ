@@ -303,7 +303,7 @@ public class ShortProcessor extends ImageProcessor {
 		pixels[index] = (short)value;
 	}
 
-	public final float getf(int x, int y) {
+	public final float getf(int x, int y) {		
 		return pixels[y*width+x]&0xffff;
 	}
 

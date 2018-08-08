@@ -370,14 +370,10 @@ import java.util.Vector;
 			String path = IJ.getDirectory("Input Folder");
 			if (path==null) return;
 			inputDir.setText(path);
-			if (IJ.isMacOSX())
-				{gd.setVisible(false); gd.setVisible(true);}
 		} else if (source==output) {
 			String path = IJ.getDirectory("Output Folder");
 			if (path==null) return;
 			outputDir.setText(path);
-			if (IJ.isMacOSX())
-				{gd.setVisible(false); gd.setVisible(true);}
 		} else if (source==test) {
 			thread = new Thread(this, "BatchTest"); 
 			thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));

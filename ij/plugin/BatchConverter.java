@@ -149,8 +149,6 @@ import java.io.*;
 			inputDir.setText(path);
 		else
 			outputDir.setText(path);
-		if (IJ.isMacOSX())
-			{gd.setVisible(false); gd.setVisible(true);}
 	}
 
 }
