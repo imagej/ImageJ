@@ -552,17 +552,35 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 						delete = true;
 				}
 				if (delete) {
-					rois.remove(i);
-					listModel.remove(i);
-				}
+					if (EventQueue.isDispatchThread()) {
+ 						rois.remove(i);
+						listModel.remove(i);
+ 					} else 
+ 						deleteOnEDT(i);
+				} 
 			}
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (count>1 && index.length==1 && imp!=null)
 			imp.deleteRoi();
 		updateShowAll();
-		if (record()) Recorder.record("roiManager", "Delete");
+		if (record())
+			Recorder.record("roiManager", "Delete");
 		return true;
+	}
+	
+	 // Delete ROI on event dispatch thread
+	 private void deleteOnEDT(final int i) {
+		try {
+			EventQueue.invokeAndWait(new Runnable() {
+				public void run() {
+					rois.remove(i);
+					listModel.remove(i);
+				}
+			});
+		} catch (
+			Exception e) {
+		}
 	}
 	
 	boolean update(boolean clone) {
