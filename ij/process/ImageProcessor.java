@@ -2722,7 +2722,9 @@ public abstract class ImageProcessor implements Cloneable {
 		seed = randomSeed;
 	}
 	
-	/** Returns a binary mask, or null if a threshold is not set or this is an RGB image. */
+	/** Returns a binary mask, or null if a threshold is not set or this is an RGB image.
+	 * @see ij.ImagePlus#createMask
+	*/
 	public ByteProcessor createMask() {
 		return null;
 	}

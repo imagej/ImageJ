@@ -853,6 +853,15 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 		return mask;
 	}
+	
+	/** Returns a version of the specified image that has been converted into  
+	 * an 8--bit binary (0 and 255) mask, based on how it is thresholded.
+	 * @see ij.plugin.Thresholder#createMask
+	 * @see ij.process.ImageProcessor#createMask
+	*/
+	public ImagePlus createMask() {
+		return Thresholder.createMask(this);
+	}
 
 	/** Get calibrated statistics for this image or ROI, including 
 		 histogram, area, mean, min and max, standard
