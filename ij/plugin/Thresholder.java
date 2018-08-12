@@ -381,7 +381,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		imp.setCalibration(imp.getCalibration()); //update calibration
 	}
 	
-	/** Returns an 8--bit binary (0 and 255) threshold mask
+	/** Returns an 8-bit binary (0 and 255) threshold mask
 	 * that has the same dimensions as this image.
 	 * @see ij.process.ImageProcessor#createMask
 	 * @see ij.ImagePlus#createThresholdMask
