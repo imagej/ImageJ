@@ -2723,7 +2723,8 @@ public abstract class ImageProcessor implements Cloneable {
 	}
 	
 	/** Returns a binary mask, or null if a threshold is not set or this is an RGB image.
-	 * @see ij.ImagePlus#createMask
+	 * @see ij.ImagePlus#createThresholdMask
+	 * @see ij.ImagePlus#createRoiMask
 	*/
 	public ByteProcessor createMask() {
 		return null;

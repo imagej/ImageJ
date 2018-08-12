@@ -838,7 +838,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 	
 	/** For images with irregular ROIs, returns a byte mask, otherwise, returns
-		null. Mask pixels have a non-zero value. */
+	 *	null. Mask pixels have a non-zero value.and the dimensions of the 
+	 * mask are equal to the width and height of the ROI.
+	 * @see ij.ImagePlus#createRoiMask
+	 * @see ij.ImagePlus#createThresholdMask
+	*/
 	public ImageProcessor getMask() {
 		if (roi==null) {
 			if (ip!=null) ip.resetRoi();
@@ -854,12 +858,26 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return mask;
 	}
 	
-	/** Returns a version of the specified image that has been converted into  
-	 * an 8--bit binary (0 and 255) mask, based on how it is thresholded.
+	/** Returns an 8--bit binary (0 and 255) ROI mask that has
+	 * the same dimensions as this image.
+	 * @see ij.gui.Roi#getMask
+	*/
+	public ByteProcessor createRoiMask() {
+		Roi roi2 = getRoi();
+		if (roi2==null)
+			throw new IllegalArgumentException("ROI required");
+		ByteProcessor mask = new ByteProcessor(getWidth(),getHeight());
+		mask.setColor(255);
+		mask.fill(roi2);
+		return mask;
+	}
+
+	/** Returns an 8--bit binary (0 and 255) threshold mask
+	 * that has the same dimensions as this image.
 	 * @see ij.plugin.Thresholder#createMask
 	 * @see ij.process.ImageProcessor#createMask
 	*/
-	public ImagePlus createMask() {
+	public ByteProcessor createThresholdMask() {
 		return Thresholder.createMask(this);
 	}
 

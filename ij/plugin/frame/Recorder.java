@@ -463,6 +463,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	/** Writes the current command and options to the Recorder window. */
 	public static void saveCommand() {
 		String name = commandName;
+		//IJ.log("saveCommand: "+name+"  "+scriptMode+"  "+commandOptions);
 		if (name!=null) {
 			if (commandOptions==null && (name.equals("Fill")||name.equals("Clear")||name.equals("Draw")))
 				commandOptions = "slice";
@@ -552,6 +553,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 				} else if (name.equals("Add to Manager"))
 					;
 				else if (name.equals("Find Commands..."))
+					;
+				else if (scriptMode && name.equals("Create Mask"))
 					;
 				else if (roi!=null && (roi instanceof TextRoi) && (name.equals("Draw")||name.equals("Add Selection...")))
 					textArea.append(((TextRoi)roi).getMacroCode(name, imp));

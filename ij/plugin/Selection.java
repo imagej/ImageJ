@@ -556,6 +556,7 @@ public class Selection implements PlugIn, Measurements {
 		}
 		maskImp.updateAndRepaintWindow();
 		Prefs.useInvertingLut = useInvertingLut;
+		Recorder.recordCall("mask = imp.getRoiMask();");
 	}
 	
 	void createMaskFromThreshold(ImagePlus imp) {
@@ -569,6 +570,7 @@ public class Selection implements PlugIn, Measurements {
 		ImageProcessor ip2 = imp2.getProcessor();
 		ip2.setThreshold(t1, t2, ip2.getLutUpdateMode());
 		IJ.run("Convert to Mask");
+		Recorder.recordCall("mask = imp.createThresholdMask();");
 	}
 
 	void createSelectionFromMask(ImagePlus imp) {

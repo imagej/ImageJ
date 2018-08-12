@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52f 11 August 2018</u>
+<li> <u>1.52f 12 August 2018</u>
 <ul>
 <li> Thanks to Michael Schmid, added the "Error Function" [y=a+b*erf((x-c)/d)]
 curve fit option and the ij.util.IJ.Math.erf(x) method
@@ -18,7 +18,10 @@ stacks by series number (tag 0020,0011) if "Sort images numerically"
 is not checked in the <i>File&gt;Import&gt;ImageSequence</i>
 dialog. Also added a recordable 'noMetaSort' option to the options
 string of the FolderOpener.open(dir,options) method.
-<li> Thanks to 'Alan', added the ImagePlus.createMask() method
+<li> Thanks to 'Alan', added the createThresholdMask()
+and createRoiMask() methods to the ImagePlus class. These methods
+are recorded when using the <i>Edit&gt;Selection&gt;Create Mask</i>
+command.
 (<a href="http://wsr.imagej.net/macros/CreateMaskDemo2.js">example</a>).
 <li> Added the recordable Raw.open(), Raw.openAll() and Raw.openAllVirtual() methods
 (<a href="http://wsr.imagej.net/macros/OpenAllRawVirtual.js">example</a>).
