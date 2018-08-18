@@ -43,7 +43,7 @@ class TextCanvas extends Canvas {
 			makeImage(iWidth,iHeight);
 		if (tp.iRowHeight==0 || (tp.iColWidth.length>0 && tp.iColWidth[0]==0&&tp.iRowCount>0)) {
 			tp.iRowHeight=fMetrics.getHeight()+2;
-			for(int i=0;i<tp.iColCount;i++)
+			for (int i=0; i<tp.iColCount; i++)
 				calcAutoWidth(i);
 			tp.adjustHScroll();
 			tp.adjustVScroll();
@@ -100,14 +100,14 @@ class TextCanvas extends Canvas {
 		gImage.setColor(Color.darkGray);
 		gImage.drawLine(0,tp.iRowHeight,iWidth,tp.iRowHeight);
 		int x=-tp.iX;
-		for(int i=0;i<tp.iColCount;i++) {
+		for (int i=0; i<tp.iColCount; i++) {
 			int w=tp.iColWidth[i];
 			gImage.setColor(Color.lightGray);
 			gImage.fillRect(x+1,0,w,tp.iRowHeight);
 			gImage.setColor(Color.black);
 			if (tp.sColHead[i]!=null)
 				gImage.drawString(tp.sColHead[i],x+2,tp.iRowHeight-5);
-			if (tp.iColCount>1) {
+			if (tp.iColCount>0) {
 				gImage.setColor(Color.darkGray);
 				gImage.drawLine(x+w-1,0,x+w-1,tp.iRowHeight-1);
 				gImage.setColor(Color.white);
@@ -169,23 +169,18 @@ class TextCanvas extends Canvas {
 	void calcAutoWidth(int column) {
 		if (tp.sColHead==null || column>=tp.iColWidth.length || gImage==null)
 			return;
-		if(fMetrics==null)
+		if (fMetrics==null)
 			fMetrics=gImage.getFontMetrics();
 		int w=15;
-		int maxRows;
-		if (tp.iColCount==1)
-			maxRows = 100;
+		int maxRows = 20;
+		if (column==0 && tp.sColHead[0].equals(" "))
+			w += 5;
 		else {
-			maxRows = 20;
-			if (column==0 && tp.sColHead[0].equals(" "))
-				w += 5;
-			else {
-				char[] chars = tp.sColHead[column].toCharArray();
-				w = Math.max(w,fMetrics.charsWidth(chars,0,chars.length));
-			}
+			char[] chars = tp.sColHead[column].toCharArray();
+			w = Math.max(w,fMetrics.charsWidth(chars,0,chars.length));
 		}
 		int rowCount = Math.min(tp.iRowCount, maxRows);
-		for(int row=0; row<rowCount; row++) {
+		for (int row=0; row<rowCount; row++) {
 			char[] chars = getChars(column,row);
 			if (chars!=null)
 				w = Math.max(w,fMetrics.charsWidth(chars,0,chars.length));

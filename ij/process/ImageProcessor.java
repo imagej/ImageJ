@@ -1602,6 +1602,13 @@ public abstract class ImageProcessor implements Cloneable {
 	*	@see #fill(Roi)
 	*/
 	public void fill(Roi roi) {
+		if (roi!=null && roi.isLine()) {
+			if ((roi instanceof Line) && roi.getStrokeWidth()>1 && !(roi instanceof Arrow))
+				fillPolygon(roi.getPolygon());
+			else
+				roi.drawPixels(this);
+			return;
+		}
 		ImageProcessor m = getMask();
 		Rectangle r = getRoi();
 		setRoi(roi);

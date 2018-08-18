@@ -94,12 +94,6 @@ public class TextRoi extends Roi {
 		init(text, font);
 	}
 
-	/** Creates a TextRoi using the specified location, size and Font.
-	public TextRoi(int x, int y, int width, int height, String text, Font font) {
-		super(x, y, width, height);
-		init(text, font);
-	}
-
 	/** Creates a TextRoi using the specified sub-pixel location, size and Font. */
 	public TextRoi(double x, double y, double width, double height, String text, Font font) {
 		super(x, y, width, height);
@@ -411,6 +405,8 @@ public class TextRoi extends Roi {
 		if (justification<0 || justification>RIGHT)
 			justification = LEFT;
 		this.justification = justification;
+		if (imp!=null)
+			imp.draw();
 	}
 	
 	/** Returns the value of the 'justification' instance variable (LEFT, CENTER or RIGHT). */

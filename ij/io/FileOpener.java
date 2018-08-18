@@ -66,7 +66,7 @@ public class FileOpener {
 		
 		ColorModel cm = createColorModel(fi);
 		if (fi.nImages>1)
-			{return openStack(cm, show);}
+			return openStack(cm, show);
 		switch (fi.fileType) {
 			case FileInfo.GRAY8:
 			case FileInfo.COLOR8:
@@ -196,7 +196,8 @@ public class FileOpener {
 		try {
 			ImageReader reader = new ImageReader(fi);
 			InputStream is = createInputStream(fi);
-			if (is==null) return null;
+			if (is==null)
+				return null;
 			IJ.resetEscape();
 			for (int i=1; i<=fi.nImages; i++) {
 				if (!silentMode)
@@ -208,7 +209,8 @@ public class FileOpener {
 					return null;
 				}
 				pixels = reader.readPixels(is, skip);
-				if (pixels==null) break;
+				if (pixels==null)
+					break;
 				stack.addSlice(null, pixels);
 				skip = fi.gapBetweenImages;
 				if (!silentMode)
@@ -244,7 +246,6 @@ public class FileOpener {
 		if (ip.getMin()==ip.getMax())  // find stack min and max if first slice is blank
 			setStackDisplayRange(imp);
 		if (!silentMode) IJ.showProgress(1.0);
-		//silentMode = false;
 		return imp;
 	}
 

@@ -5,11 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.52f 12 August 2018</u>
+<li> <u>1.52f 18 August 2018</u>
 <ul>
 <li> Thanks to Michael Schmid, added the "Error Function" [y=a+b*erf((x-c)/d)]
 curve fit option and the ij.util.IJ.Math.erf(x) method
 (<a href="http://wsr.imagej.net/macros/ErrorFunctionDemo.txt">example</a>).
+<li> The <i>Edit&gt;Selection&gt;Create Mask</i> command works
+with line selections and overlays.
+<li> "Black background" defaults to 'true'.
 <li> Thanks to Anna Povolná, the "Open all files in folder" and "Use virtual stack"
 options in the <i>File&gt;Import&gt;raw</i> dialog can be used at
 the same time.
@@ -53,6 +56,14 @@ with image titles.
 correctly on Macs.
 <li> Thanks to 'Hamish', fixed a bug that caused the roiManager("delete") macro
 function to throw an exception when used in a loop.
+<li> Thanks to Stein Rorvik, fixed a bug that caused one
+column results tables to not be displayed correctly.
+<li> Thanks to Stein Rorvik, fixed a bug that caused
+<i>File&gt;Import&gt;Raw</i> to silently fail when importing a
+stack and the file size was smaller than the size of a single image.
+<li> Thanks to Stein Rorvik, fixed a bug that caused
+the Overlay.drawString() macro function to not correctly
+display right-justified text.
 <li> Thanks to Manel Bosch, fixed a 1.52e regression that caused 
 image conversions to RGB to not preserve the color coding.
 </ul>

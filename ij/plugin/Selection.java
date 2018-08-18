@@ -528,13 +528,13 @@ public class Selection implements PlugIn, Measurements {
 		boolean selectAll = roi!=null && roi.getType()==Roi.RECTANGLE && roi.getBounds().width==imp.getWidth()
 			&& roi.getBounds().height==imp.getHeight() && imp.isThreshold();
 		boolean overlay = imp.getOverlay()!=null && imp.getProcessor().getMinThreshold()==ImageProcessor.NO_THRESHOLD;
-		if (!overlay && (roi==null || !(roi.isArea()||roi.getType()==Roi.POINT) || selectAll)) {
+		if (!overlay && (roi==null || selectAll)) {
 			createMaskFromThreshold(imp);
 			Prefs.useInvertingLut = useInvertingLut;
 			return;
 		}
 		if (roi==null && imp.getOverlay()==null) {
-			IJ.error("Create Mask", "Area selection or overlay required");
+			IJ.error("Create Mask", "Selection, overlay or threshold required");
 			return;
 		}
 		ByteProcessor mask = imp.createRoiMask();

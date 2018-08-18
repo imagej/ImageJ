@@ -23,6 +23,7 @@ public class ImageReader {
     private long byteCount;
 	private boolean showProgressBar=true;
 	private int eofErrorCount;
+	private int imageCount;
 	private long startTime;
 	public double min, max; // readRGB48() calculates min/max pixel values
 
@@ -836,6 +837,7 @@ public class ImageReader {
 					pixels = null;
 			}
 			showProgress(1, 1);
+			imageCount++;
 			return pixels;
 		}
 		catch (IOException e) {
@@ -853,7 +855,7 @@ public class ImageReader {
 		this.skipCount = skipCount;
 		showProgressBar = false;
 		Object pixels = readPixels(in);
-		if (eofErrorCount>0)
+		if (eofErrorCount>(imageCount==1?1:0))
 			return null;
 		else
 			return pixels;
@@ -1057,6 +1059,6 @@ class ByteVector {
 		System.arraycopy(data, 0, bytes, 0, size);
 		return bytes;
 	}
-	
+		
 }
 

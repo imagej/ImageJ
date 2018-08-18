@@ -352,7 +352,7 @@ public class WindowManager {
     }
 
 	/** Removes the specified window from the Window menu. */
-	public synchronized static void removeWindow(Window win) {
+	public static void removeWindow(Window win) {
 		if (win instanceof ImageWindow)
 			removeImageWindow((ImageWindow)win);
 		else {

@@ -858,8 +858,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return mask;
 	}
 	
-	/** Returns an 8-bit binary (0 and 255) ROI mask that has
-	 * the same dimensions as this image.
+	/** Returns an 8-bit binary (0 and 255) ROI or overlay mask
+	 *  that has the same dimensions as this image.
 	 * @see ij.gui.Roi#getMask
 	*/
 	public ByteProcessor createRoiMask() {
