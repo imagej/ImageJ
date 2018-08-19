@@ -299,6 +299,7 @@ public class TextRoi extends Roi {
 		}
 		int i = 0;
 		updateBounds(g);
+		sx = nonScalable?xi:screenXD(getXBase());
 		if (fillColor!=null) {
 			Color c = g.getColor();
 			int alpha = fillColor.getAlpha();

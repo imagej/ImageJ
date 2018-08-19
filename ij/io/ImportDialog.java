@@ -219,7 +219,8 @@ public class ImportDialog {
 					ip.resetMinAndMax();
 					imp.setDisplayRange(ip.getMin(),ip.getMax());
 				}
-			}
+			} else
+				IJ.error("File>Import>Raw", "File not found: "+filePath);
 		}
 	}
 

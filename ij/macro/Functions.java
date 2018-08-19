@@ -6299,7 +6299,7 @@ public class Functions implements MacroConstants, Measurements {
 			font = imp.getProcessor().getFont();
 		TextRoi roi = null;
 		if (justification==ImageProcessor.RIGHT_JUSTIFY)
-			roi = new TextRoi(x, y- font.getSize(), text, font);
+			roi = new TextRoi(x, y-font.getSize(), text, font);
 		else
 			roi = new TextRoi(text, x, y, font);
 		if (!nullFont && !antialiasedText)
@@ -6342,13 +6342,8 @@ public class Functions implements MacroConstants, Measurements {
 		if (offscreenOverlay!=null) {
 			imp.setOverlay(offscreenOverlay);
 			offscreenOverlay = null;
-		} else {
+		} else
 			imp.setHideOverlay(false);
-			if (justification==ImageProcessor.RIGHT_JUSTIFY) {
-				IJ.wait(250);
-				imp.draw();
-			}
-		}
 		return Double.NaN;
 	}
 
