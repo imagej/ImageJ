@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52f 18 August 2018</u>
+<li> <u>1.52f 20 August 2018</u>
 <ul>
 <li> Thanks to Michael Schmid, added the "Error Function" [y=a+b*erf((x-c)/d)]
 curve fit option and the ij.util.IJ.Math.erf(x) method
@@ -67,6 +67,9 @@ display right-justified text.
 <li> Thanks to Stein Rorvik, fixed bugs that caused the
 run("Raw...",options) and run("Image Sequence...",options)
 macro functions to fail silently if the file or folder did not exist.
+<li> Thanks to Stein Rorvik, fixed a bug that caused
+the stack title to be incorrect after importing an image sequence
+on Windows using a file path using forward slashes.
 <li> Thanks to Manel Bosch, fixed a 1.52e regression that caused 
 image conversions to RGB to not preserve the color coding.
 </ul>

@@ -116,7 +116,13 @@ public class FolderOpener implements PlugIn {
 		if (title.endsWith(File.separator) || title.endsWith("/"))
 			title = title.substring(0, title.length()-1);
 		int index = title.lastIndexOf(File.separatorChar);
-		if (index!=-1) title = title.substring(index + 1);
+		if (index!=-1)
+			title = title.substring(index + 1);
+		else {
+			index = title.lastIndexOf("/");
+			if (index!=-1)
+				title = title.substring(index + 1);
+		}
 		if (title.endsWith(":"))
 			title = title.substring(0, title.length()-1);
 		

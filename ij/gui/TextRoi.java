@@ -276,16 +276,17 @@ public class TextRoi extends Roi {
 		double heightd = bounds!=null?bounds.height:height;
 		int widthi = (int)Math.round(widthd);
 		int heighti = (int)Math.round(heightd);
-		int sx = nonScalable?xi:screenXD(getXBase());
-		int sy = nonScalable?yi:screenYD(getYBase());
-		int sw = nonScalable?widthi:(int)(getMagnification()*widthd);
-		int sh = nonScalable?heighti:(int)(getMagnification()*heightd);
 		Font font = getScaledFont();
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = metrics.getHeight();
 		int descent = metrics.getDescent();
 		g.setFont(font);
 		Graphics2D g2d = (Graphics2D)g;
+		updateBounds(g);
+		int sx = nonScalable?xi:screenXD(getXBase());
+		int sy = nonScalable?yi:screenYD(getYBase());
+		int sw = nonScalable?widthi:(int)(getMagnification()*widthd);
+		int sh = nonScalable?heighti:(int)(getMagnification()*heightd);
 		AffineTransform at = null;
 		if (angle!=0.0) {
 			at = g2d.getTransform();
@@ -298,8 +299,6 @@ public class TextRoi extends Roi {
 			g2d.rotate(-theta, cx, cy);
 		}
 		int i = 0;
-		updateBounds(g);
-		sx = nonScalable?xi:screenXD(getXBase());
 		if (fillColor!=null) {
 			Color c = g.getColor();
 			int alpha = fillColor.getAlpha();

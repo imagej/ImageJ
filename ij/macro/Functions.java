@@ -6298,7 +6298,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (nullFont)
 			font = imp.getProcessor().getFont();
 		TextRoi roi = null;
-		if (justification==ImageProcessor.RIGHT_JUSTIFY)
+		if (justification!=ImageProcessor.LEFT_JUSTIFY)
 			roi = new TextRoi(x, y-font.getSize(), text, font);
 		else
 			roi = new TextRoi(text, x, y, font);
