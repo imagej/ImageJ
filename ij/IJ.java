@@ -1639,14 +1639,22 @@ public class IJ {
 		else if (title2.equals("temp")) {
 			String dir = System.getProperty("java.io.tmpdir");
 			if (isMacintosh()) dir = "/tmp/";
-			if (dir!=null && !dir.endsWith(File.separator)) dir += File.separator;
+			if (dir!=null && !dir.endsWith(File.separator))
+				dir += File.separator;
 			return dir;
 		} else if (title2.equals("image")) {
 			ImagePlus imp = WindowManager.getCurrentImage();
 	    	FileInfo fi = imp!=null?imp.getOriginalFileInfo():null;
-			if (fi!=null && fi.directory!=null)
-				return fi.directory;
-			else
+			if (fi!=null && fi.directory!=null) {
+				String dir = fi.directory;
+				if (dir!=null && !(dir.endsWith(File.separator)||dir.endsWith("/"))) {
+					if (IJ.isWindows()&&dir.contains(File.separator))
+						dir += File.separator;
+					else
+						dir += "/";
+				}
+				return dir;
+			} else
 				return null;
 		} else {
 			DirectoryChooser dc = new DirectoryChooser(title);
@@ -1655,7 +1663,7 @@ public class IJ {
 			return dir;
 		}
 	}
-	
+		
 	/** Alias for getDirectory(). */
 	public static String getDir(String title) {
 		return getDirectory(title);

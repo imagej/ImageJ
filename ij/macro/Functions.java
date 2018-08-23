@@ -2185,7 +2185,26 @@ public class Functions implements MacroConstants, Measurements {
 			String arg = getFirstString();
 			int what = Plot.toShape(arg);
 			addToPlot(what, arg);
-			return;
+			return;			
+		} else if (name.equals("addHistogram")) {
+			interp.getLeftParen();
+			Variable[] arrV = getArray();
+			interp.getComma();
+			double binWidth = interp.getExpression();
+			double binCenter = 0;
+			interp.getToken();
+			if (interp.token == ',') 
+				 binCenter = interp.getExpression();
+			else
+				interp.putTokenBack();
+			interp.getRightParen();
+			
+			int len1 = arrV.length;
+			double[] arrD = new double[len1];
+			for (int i=0; i<len1; i++)
+				arrD[i] = arrV[i].getValue();		
+			plot.addHistogram(arrD, binWidth, binCenter);			
+			return;	
 		} else if (name.equals("appendToStack")) {
 			plot.appendToStack();
 			return;
