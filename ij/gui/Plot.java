@@ -1818,7 +1818,12 @@ public class Plot implements Cloneable {
 				if (plotObject.shape==DOT || plotObject.yEValues != null) //these can't be seen if merging with the frame
 					suggestedEnlarge = ALWAYS_ENLARGE;
 				else if (plotObject.shape != LINE)
-					suggestedEnlarge = USUALLY_ENLARGE;
+					suggestedEnlarge = USUALLY_ENLARGE;				
+				if (plotObject.shape==BAR && plotObject.xValues.length > 1) {
+					int n = plotObject.xValues.length;
+					allMinAndMax[0] -= 0.5 * Math.abs(plotObject.xValues[1] - plotObject.xValues[0]);
+					allMinAndMax[1] += 0.5 * Math.abs(plotObject.xValues[n - 1] - plotObject.xValues[n - 2]);
+				}
 				getMinAndMax(allMinAndMax, enlargeRange, suggestedEnlarge, 0, plotObject.xValues, plotObject.xEValues);
 			}
 			if ((axisRangeFlags & Y_RANGE) != 0) {
@@ -3325,6 +3330,23 @@ public class Plot implements Cloneable {
 		addPoints(x, y, shape);
 	}
 	
+	/** Plots a histogram from an array using auto-binning.
+	 *  @param values	array containing the population
+	 *  N.Vischer
+	 */
+	public void addHistogram(double[] values) {
+		addHistogram(values, 0, 0);
+	}
+
+	/** Plots a histogram from an array using the specified bin width.
+	 *  @param values	array containing the population
+	 *  @param binWidth	set zero for auto-binning
+	 *  N.Vischer
+	 */
+	public void addHistogram(double[] values, double binWidth) {
+		addHistogram(values, binWidth, 0);
+	}
+
 	/** Plots a histogram from an array
 	 *  @param values	array containing the population
 	 *  @param binWidth	set zero for auto-binning
@@ -3344,14 +3366,10 @@ public class Plot implements Cloneable {
 				cleanVals[count++] = val;
 				sum += val;
 				sum2 += val * val;
-
-				if (val < min) {
+				if (val < min)
 					min = val;
-				}
-				if (val > max) {
+				if (val > max)
 					max = val;
-				}
-
 			}
 		}
 		if (binWidth <= 0) {//autobinning
