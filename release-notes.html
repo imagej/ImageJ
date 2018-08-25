@@ -78,11 +78,14 @@ on Windows using a file path using forward slashes.
 image after having opened a composite image.
 <li> Thanks to Ved Sharma, fixed an ROI Manager bug that
 caused a "Rename ROI" dialog do be unexpectadly displayed 
-when running macro using setKeyDown("alt") to create a
-composite selection.
-<li> Thanks to Ved Sharma, fixed an ROI Manager  bug that caused
+when running macro using setKeyDown("alt") and makeOval()
+ to create a composite selection.
+<li> Thanks to Ved Sharma, fixed an ROI Manager bug that caused
  an exception when saving an ROI set containing a point selection
  followed by a composite selection.
+ <li> Thanks to Salim Kanoun, fixed bug that caused
+ RoiManager.addRoi(roi) calls to be ignored if 'roi' was
+ a duplicate.
 <li> Thanks to Manel Bosch, fixed a 1.52e regression that caused 
 image conversions to RGB to not preserve the color coding.
 </ul>

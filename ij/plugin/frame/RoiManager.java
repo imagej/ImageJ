@@ -68,6 +68,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private int imageID;
 	private boolean allowRecording;
 	private boolean recordShowAll = true;
+	private boolean allowDuplicates;
 		
 	/** Opens the "ROI Manager" window, or activates it if it is already open.
 	 * @see #RoiManager(boolean)
@@ -326,6 +327,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	
 	/** Adds the specified ROI. */
 	public void addRoi(Roi roi) {
+		allowDuplicates = true;
 		addRoi(roi, false, null, -1);
 	}
 	
@@ -369,7 +371,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			imp.setSliceWithoutUpdate(position);
 		else
 			position = 0;
-		if (n>0 && !IJ.isMacro() && imp!=null) {
+		if (n>0 && !IJ.isMacro() && imp!=null && !allowDuplicates) {
 			// check for duplicate
 			Roi roi2 = (Roi)rois.get(n-1);
 			if (roi2!=null) {
@@ -382,6 +384,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				}
 			}
 		}
+		allowDuplicates = false;
 		prevID = imp!=null?imp.getID():0;
 		String name = roi.getName();
 		if (isStandardName(name))
