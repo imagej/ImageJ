@@ -1818,13 +1818,13 @@ public class Plot implements Cloneable {
 				if (plotObject.shape==DOT || plotObject.yEValues != null) //these can't be seen if merging with the frame
 					suggestedEnlarge = ALWAYS_ENLARGE;
 				else if (plotObject.shape != LINE)
-					suggestedEnlarge = USUALLY_ENLARGE;				
-				if (plotObject.shape==BAR && plotObject.xValues.length > 1) {
+					suggestedEnlarge = USUALLY_ENLARGE;
+				getMinAndMax(allMinAndMax, enlargeRange, suggestedEnlarge, 0, plotObject.xValues, plotObject.xEValues);
+				if (plotObject.shape == BAR && plotObject.xValues.length > 1) {
 					int n = plotObject.xValues.length;
 					allMinAndMax[0] -= 0.5 * Math.abs(plotObject.xValues[1] - plotObject.xValues[0]);
 					allMinAndMax[1] += 0.5 * Math.abs(plotObject.xValues[n - 1] - plotObject.xValues[n - 2]);
 				}
-				getMinAndMax(allMinAndMax, enlargeRange, suggestedEnlarge, 0, plotObject.xValues, plotObject.xEValues);
 			}
 			if ((axisRangeFlags & Y_RANGE) != 0) {
 				int suggestedEnlarge = 0;
@@ -2086,7 +2086,7 @@ public class Plot implements Cloneable {
 						double remainder =  Math.abs(v - Math.round(v));
 						if(index >= 0 && index < xCats.length  && remainder < 1e-9){
 							String s = xCats[index];
-							String[] parts = s.split("\n");//n__
+							String[] parts = s.split("\n");
 							int w = 0;
 							for(int jj = 0; jj < parts.length; jj++)
 								w = Math.max(w, ip.getStringWidth(parts[jj]));
@@ -2197,7 +2197,7 @@ public class Plot implements Cloneable {
 						double remainder =  Math.abs(v - Math.round(v));
 						if(index >= 0 && index < yCats.length  && remainder < 1e-9){
 							String s = yCats[index];
-							int multiLineOffset = 0;//n__ multi-line cat labels
+							int multiLineOffset = 0; // multi-line cat labels
 							for(int jj = 0; jj < s.length(); jj++)
 								if(s.charAt(jj) == '\n')
 									multiLineOffset -= rect.height/2;

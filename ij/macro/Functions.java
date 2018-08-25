@@ -768,6 +768,7 @@ public class Functions implements MacroConstants, Measurements {
 			updateRoi(roi);
 		resetImage();
 		shiftKeyDown = altKeyDown = false;
+		IJ.setKeyUp(IJ.ALL_KEYS);
 	}
 
 	void makeRectangle() {

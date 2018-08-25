@@ -142,8 +142,8 @@ public class RoiEncoder {
 			}
 		}
 		
+		countersSize = 0;
 		if (roi instanceof PointRoi) {
-			countersSize = 0;
 			counters = ((PointRoi)roi).getCounters();
 			if (counters!=null && counters.length>=n)
 				countersSize = n*4;
@@ -426,6 +426,7 @@ public class RoiEncoder {
 		putInt(hdr2Offset+RoiDecoder.COUNTERS_OFFSET, offset);
 		for (int i=0; i<countersSize/4; i++)
 			putInt(offset+i*4, counters[i]);
+		countersSize = 0;
 	}
 
     void putByte(int base, int v) {

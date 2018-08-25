@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52f 23 August 2018</u>
+<li> <u>1.52f 25 August 2018</u>
 <ul>
 <li> Thanks to Norbret Visher, added the Plot.addHistogram()
 macro function, which plots a histogram from an array
@@ -76,6 +76,13 @@ on Windows using a file path using forward slashes.
 <li> Thanks to Stein Rorvik, fixed a bug that caused
 <i>File&gt;Open Next</i> to not correctly open a non-composite 
 image after having opened a composite image.
+<li> Thanks to Ved Sharma, fixed an ROI Manager bug that
+caused a "Rename ROI" dialog do be unexpectadly displayed 
+when running macro using setKeyDown("alt") to create a
+composite selection.
+<li> Thanks to Ved Sharma, fixed an ROI Manager  bug that caused
+ an exception when saving an ROI set containing a point selection
+ followed by a composite selection.
 <li> Thanks to Manel Bosch, fixed a 1.52e regression that caused 
 image conversions to RGB to not preserve the color coding.
 </ul>
