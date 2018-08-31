@@ -86,6 +86,10 @@ public class RoiInterpolator implements PlugIn {
 			int threshold = 255;
 			bp.setThreshold(threshold, threshold, ImageProcessor.NO_LUT_UPDATE);
 			Roi roi = ts.convert(bp);
+			if (roi==null) {
+				IJ.error("RoiInterpolator", "Unable to interpolate slice "+(s+1)+". More\nintermediate ROIs needed.");
+				return;
+			}
 			roi.setPosition(s+zmin);
 			Rectangle bounds = roi.getBounds();
 			roi.setLocation(bounds.x+xmin, bounds.y+ymin);
