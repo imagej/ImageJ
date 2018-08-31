@@ -1967,10 +1967,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	if (compositeImage)
     		fi.nImages = getImageStackSize();
     	fi.whiteIsZero = isInvertedLut();
-		fi.intelByteOrder = false;		
+		fi.intelByteOrder = false;
 		if (fi.nImages==1 && ip!=null)
-    		fi.pixels = ip.getPixels();
-    	else if (stack!=null)
+			fi.pixels = ip.getPixels();
+		else if (stack!=null)
 			fi.pixels = stack.getImageArray();
 		Calibration cal = getCalibration();
     	if (cal.scaled()) {
