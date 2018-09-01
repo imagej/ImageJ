@@ -102,24 +102,6 @@ public class DicomTools {
 	/** Returns the value (as a string) of the specified DICOM tag id (in the form "0018,0050")
 		of the specified image or stack slice. Returns null if the tag id is not found. */
 	public static String getTag(ImagePlus imp, String id) {
-		return getTag(getMetadata(imp), id);
-	}
-	
-	/** Returns the name of the specified DICOM tag id (in the form "0018,0050")
-		of the specified image or stack slice. Returns null if the tag id is not found. */
-	public static String getTagName(ImagePlus imp, String id) {
-		return getTagName(getMetadata(imp), id);
-	}
-		
-	/** Returns the name of the specified DICOM tag id (in the form "0018,0050")
-		of the current image or stack.. */
-	public static String getTagName(String id) {
-		return getTagName(getMetadata(WindowManager.getCurrentImage()), id);
-	}
-
-	private static String getMetadata(ImagePlus imp) {
-		if (imp==null)
-			return null;
 		String metadata = null;
 		if (imp.getStackSize()>1) {
 			ImageStack stack = imp.getStack();
@@ -128,9 +110,14 @@ public class DicomTools {
 		}
 		if (metadata==null)
 			metadata = (String)imp.getProperty("Info");
-		return metadata;
+		return getTag(metadata, id);
 	}
 	
+	/** Returns the name of the specified DICOM tag. */
+	public static String getTagName(String tag) {
+		return DICOM.getTagName(tag);
+	}
+		
 	private static double getSeriesNumber(String tags) {
 		double series = getNumericTag(tags, "0020,0011");
 		if (Double.isNaN(series)) series = 0;
@@ -161,22 +148,6 @@ public class DicomTools {
 		int index2 = hdr.indexOf("\n", index1);
 		String value = hdr.substring(index1+1, index2);
 		return value;
-	}
-
-	private static String getTagName(String hdr, String tag) {
-		if (hdr==null) return null;
-		int index1 = hdr.indexOf(tag);
-		if (index1==-1) return null;
-		if (hdr.charAt(index1+11)=='>') {
-			// ignore tags in sequences
-			index1 = hdr.indexOf(tag, index1+10);
-			if (index1==-1) return null;
-		}
-		index1 = hdr.indexOf(" ", index1);
-		if (index1==-1) return null;
-		int index2 = hdr.indexOf(":", index1);
-		String name = hdr.substring(index1+2, index2);
-		return name;
 	}
 
 }

@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52f 31 August 2018</u>
+<li> <u>1.52f 1 September 2018</u>
 <ul>
 <li> Thanks to Norbret Visher, added the Plot.addHistogram()
 macro function, which plots a histogram from an array
@@ -31,8 +31,7 @@ command.
 (<a href="http://wsr.imagej.net/macros/CreateMaskDemo2.js">example</a>).
 <li> Added the recordable Raw.open(), Raw.openAll() and Raw.openAllVirtual() methods
 (<a href="http://wsr.imagej.net/macros/OpenAllRawVirtual.js">example</a>).
-<li> Thanks to Stein Rorvik, added the DicomTools.getTagName(imp,id)
-and DicomTools.getTagName(id) methods.
+<li> Thanks to Stein Rorvik, added the DicomTools.getTagName(tag) method.
 <li> Thanks to Christian Tischer, fixed bugs in the RoiManager.add(ImagePlus,Roi,int)
 method than caused it to not behave as expected if the ROI name was not null.
 <li> Thanks to Norbert Vischer, fixed bugs that caused the
@@ -93,6 +92,9 @@ ROI Manager's "Interpolate ROIs" command to
 throw an exception.
 <li> Thanks to 'Agnieszka', fixed a bug that caused the ImagePlus.getFileInfo() 
 method to throw a NullPointerException.
+<li> Thanks to Stein Rorvik, fixed a bug that caused the
+<i>Macros&gt;Evaluate</i> commands in the text editor
+to not update the <i>Window</i> menu.
 <li> Thanks to Manel Bosch, fixed a 1.52e regression that caused 
 image conversions to RGB to not preserve the color coding.
 </ul>

@@ -425,13 +425,13 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	void evaluateMacro() {
 		String title = getTitle();
 		if (title.endsWith(".js")||title.endsWith(".bsh")||title.endsWith(".py"))
-			setTitle(title.substring(0,title.length()-3)+".ijm");
+			setWindowTitle(title.substring(0,title.length()-3)+".ijm");
 		runMacro(false);
 	}
 
 	void evaluateJavaScript() {
 		if (!getTitle().endsWith(".js"))
-			setTitle(SaveDialog.setExtension(getTitle(), ".js"));
+			setWindowTitle(SaveDialog.setExtension(getTitle(), ".js"));
 		int start = ta.getSelectionStart();
 		int end = ta.getSelectionEnd();
 		String text;
@@ -474,7 +474,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			return;
 		}
 		if (!getTitle().endsWith(ext))
-			setTitle(SaveDialog.setExtension(getTitle(), ext));
+			setWindowTitle(SaveDialog.setExtension(getTitle(), ext));
 		int start = ta.getSelectionStart();
 		int end = ta.getSelectionEnd();
 		String text;

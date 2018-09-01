@@ -201,6 +201,17 @@ public class DICOM extends ImagePlus implements PlugIn {
 			fi.fileType = FileInfo.GRAY16_UNSIGNED;
 		}
 	}
+	
+	/** Returns the name of the specified DICOM tag. */
+	public static String getTagName(String tag) {
+		tag = tag.replaceAll(",", "");
+		DicomDictionary d = new DicomDictionary();
+		Properties dictionary = d.getDictionary();
+		String name = (String)dictionary.get(tag);
+		if (name!=null)
+			name = name.substring(2);
+		return name;
+	}
 
 }
 
