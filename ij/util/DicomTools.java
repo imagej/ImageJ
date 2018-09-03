@@ -113,9 +113,9 @@ public class DicomTools {
 		return getTag(metadata, id);
 	}
 	
-	/** Returns the name of the specified DICOM tag. */
-	public static String getTagName(String tag) {
-		return DICOM.getTagName(tag);
+	/** Returns the name of the specified DICOM tag id. */
+	public static String getTagName(String id) {
+		return DICOM.getTagName(id);
 	}
 		
 	private static double getSeriesNumber(String tags) {

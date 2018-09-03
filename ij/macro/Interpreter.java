@@ -64,13 +64,13 @@ public class Interpreter implements MacroConstants {
 	static boolean tempShowMode;
 	boolean waitingForUser;
 	int selectCount;
-
 	
 	static TextWindow arrayWindow;
 	int inspectStkIndex = -1;
 	int inspectSymIndex = -1;
 	boolean evaluating;
 	ResultsTable applyMacroTable;
+	int errorCount;
 
 
 	/** Interprets the specified string. */
@@ -1213,6 +1213,7 @@ public class Interpreter implements MacroConstants {
 	}
 
 	void error (String message) {
+		errorCount++;
 		boolean showMessage = !done;
 		String[] variables = showMessage?getVariables():null;
 		token = EOF;
@@ -1254,6 +1255,8 @@ public class Interpreter implements MacroConstants {
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 		}
 		done = true;
+		if (errorCount>10) 
+			throw new RuntimeException(Macro.MACRO_CANCELED);
 	}
 		
 	void showError(String title, String msg, String[] variables) {

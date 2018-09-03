@@ -202,12 +202,12 @@ public class DICOM extends ImagePlus implements PlugIn {
 		}
 	}
 	
-	/** Returns the name of the specified DICOM tag. */
-	public static String getTagName(String tag) {
-		tag = tag.replaceAll(",", "");
+	/** Returns the name of the specified DICOM tag id. */
+	public static String getTagName(String id) {
+		id = id.replaceAll(",", "");
 		DicomDictionary d = new DicomDictionary();
 		Properties dictionary = d.getDictionary();
-		String name = (String)dictionary.get(tag);
+		String name = (String)dictionary.get(id);
 		if (name!=null)
 			name = name.substring(2);
 		return name;
