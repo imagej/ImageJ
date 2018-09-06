@@ -429,13 +429,11 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 
 	/** Runs a command in the Plugins/Macros submenu on the current thread. */
 	public static boolean runMacroCommand(String name) {
-		//IJ.log("runMacroCommand: "+name+" "+instance.nMacros);
 		if (instance==null)
 			return false;
 		if (name.startsWith(commandPrefixS))
 			name = name.substring(1);
 		for (int i=0; i<instance.nMacros; i++) {
-			//IJ.log("  "+i+" "+instance.macroNames[i]);
 			if (name.equals(instance.macroNames[i])) {
 				MacroRunner mm = new MacroRunner();
 				mm.run(instance.pgm, instance.macroStarts[i], name);
@@ -446,7 +444,6 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	}
 	
 	public static void runMacroShortcut(String name) {
-		//IJ.log("runMacroShortcut: "+name+" "+instance.nMacros);
 		if (instance==null)
 			return;
 		if (name.startsWith(commandPrefixS))
@@ -472,20 +469,12 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		for (int i=0; i<nMacros; i++)
 			if (name.equals(macroNames[i])) {
 				ImageJ.setCommandName(name);
-				if (name!=null && Interpreter.getInstance()!=null) { // abort any currently running macro
-					Interpreter.abort();
-					long t0 = System.currentTimeMillis();
-					while (System.currentTimeMillis()-t0<2000) {
-						IJ.wait(5);
-						if (Interpreter.getInstance()==null)
-							break;
-					}
-				}
+				Interpreter.abort(); // abort any currently running macro
 				new MacroRunner(pgm, macroStarts[i], name, editor);
 				return;
 			}
 	}
-	
+		
 	public int getMacroCount() {
 		return nMacros;
 	}

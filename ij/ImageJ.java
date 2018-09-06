@@ -79,7 +79,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.52f";
-	public static final String BUILD = "46";
+	public static final String BUILD = "48";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -443,7 +443,6 @@ public class ImageJ extends Frame implements ActionListener,
 				else
 					cmd = (String)macroShortcuts.get(new Integer(keyCode));
 				if (cmd!=null) {
-					//MacroInstaller.runMacroCommand(cmd);
 					commandName = cmd;
 					MacroInstaller.runMacroShortcut(cmd);
 					return;

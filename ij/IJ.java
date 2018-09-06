@@ -2255,6 +2255,8 @@ public class IJ {
 		PrintWriter pw = new PrintWriter(caw);
 		e.printStackTrace(pw);
 		String s = caw.toString();
+		if (s!=null && s.contains("ThreadDeath"))
+			return;
 		if (getInstance()!=null) {
 			s = IJ.getInstance().getInfo()+"\n \n"+s;
 			new TextWindow("Exception", s, 500, 340);

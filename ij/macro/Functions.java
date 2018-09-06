@@ -4799,6 +4799,13 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (key.equals("results.count")) {
 			ResultsTable rt = getResultsTable(false);
 			return rt!=null?rt.size():0;
+		} else if (key.equals("hashCode")) {
+			return interp.hashCode();
+		} else if (key.equals("instance")) {
+			Interpreter instance = interp.getInstance();
+			return instance!=null?instance.hashCode():0;
+		} else if (key.equals("done")) {
+			return interp.done?1:0;
 		} else {
 			interp.error("Invalid key");
 			return 0.0;

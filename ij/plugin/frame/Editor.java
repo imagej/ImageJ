@@ -396,13 +396,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			text = ta.getText();
 		else
 			text = ta.getSelectedText();
-		Interpreter instance = Interpreter.getInstance();
-		if (instance!=null) { // abort any currently running macro
-			instance.abortMacro();
-			long t0 = System.currentTimeMillis();
-			while (Interpreter.getInstance()!=null && (System.currentTimeMillis()-t0)<3000L)
-				IJ.wait(10);
-		}
+		Interpreter.abort();  // abort any currently running macro
 		if (checkForCurlyQuotes && text.contains("\u201D")) {
 			// replace curly quotes with standard quotes
  			text = text.replaceAll("\u201C", "\""); 
