@@ -1878,19 +1878,26 @@ public class Interpreter implements MacroConstants {
 		if (func!=null && !(macroName!=null&&macroName.indexOf(" Tool")!=-1))
 			func.abortDialog();
 		IJ.showStatus("Macro aborted");
-		ignoreErrors = true;
-		done = true;
+		shutdown();
 		//IJ.log("abortMacro1: "+done+" "+(instance!=null?""+instance.hashCode():"null"));
 		long t0 = System.currentTimeMillis();
 		while ((System.currentTimeMillis()-t0)<2000 && instance!=null)
 			IJ.wait(5);
 		if (instance!=null) {
-			stopAllMacroThreads();
+			abortAllMacroThreads();
 			setInstance(null);
 		}
 	}
 	
-	private void stopAllMacroThreads() {
+	private synchronized void shutdown() {
+		ignoreErrors = true;
+		for (int i=0; i<10; i++)
+			done = true;
+		//if (done!=true)
+		//	IJ.log("done!=true");
+	}
+		
+	private void abortAllMacroThreads() {
 		ThreadGroup group = Thread.currentThread().getThreadGroup(); 
 		int activeCount = group.activeCount(); 
 		Thread[] threads = new Thread[activeCount]; 
