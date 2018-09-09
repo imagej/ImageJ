@@ -847,14 +847,28 @@ public class PolygonRoi extends Roi {
 		if (type==POINT)
 			imp.setRoi(new PointRoi(points2));
 		else {
-			if (subPixelResolution()) {
-				Roi roi2 = new PolygonRoi(points2, type);
-				roi2.setDrawOffset(getDrawOffset());
-				imp.setRoi(roi2);
-			} else
-				imp.setRoi(new PolygonRoi(toInt(points2.xpoints), toInt(points2.ypoints), points2.npoints, type));
+			setPolygon(points2);
 			if (splineFit) 
-				((PolygonRoi)imp.getRoi()).fitSpline(splinePoints);
+				fitSpline(splinePoints);
+			if (imp!=null) imp.draw();
+		}
+	}
+	
+	private void setPolygon(FloatPolygon p2) {
+		nPoints = p2.npoints;	
+		if (nPoints>=maxPoints)
+			enlargeArrays();
+		float xbase = (float)getXBase();
+		float ybase = (float)getYBase();
+		for (int i=0; i<nPoints; i++) {
+			if (xp!=null) {
+				xp[i] = (int)(p2.xpoints[i]-x);
+				yp[i] = (int)(p2.ypoints[i]-y);
+			}
+			if (xpf!=null) {
+				xpf[i] = p2.xpoints[i] - xbase;
+				ypf[i] = p2.ypoints[i] - ybase;
+			}
 		}
 	}
 
