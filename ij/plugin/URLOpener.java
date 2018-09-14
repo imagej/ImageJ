@@ -85,6 +85,18 @@ public class URLOpener implements PlugIn {
 			FileInfo fi = imp.getOriginalFileInfo();
 			if (fi!=null && fi.fileType==FileInfo.RGB48)
 				imp = new CompositeImage(imp, IJ.COMPOSITE);
+			else if (imp.getNChannels()>1 && fi!=null && fi.description!=null && fi.description.indexOf("mode=")!=-1) {
+				int mode = IJ.COLOR;
+				if (fi.description.indexOf("mode=composite")!=-1)
+					mode = IJ.COMPOSITE;
+				else if (fi.description.indexOf("mode=gray")!=-1)
+					mode = IJ.GRAYSCALE;
+				imp = new CompositeImage(imp, mode);
+			}
+			if (fi!=null && (fi.url==null || fi.url.length()==0)) {
+				fi.url = url;
+				imp.setFileInfo(fi);
+			}
 			imp.show(Opener.getLoadRate(startTime,imp));
 		}
 		IJ.register(URLOpener.class);  // keeps this class from being GC'd

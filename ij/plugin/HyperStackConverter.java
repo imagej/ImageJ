@@ -34,6 +34,13 @@ public class HyperStackConverter implements PlugIn {
 		return toHyperStack(imp, c, z, t, null, null);
 	}
 
+	/** Converts the specified stack into a hyperstack with 'c' channels, 'z' slices and
+		 't' frames using the default ordering ("xyczt") and the specified display
+		 mode ("composite", "color" or "grayscale"). */
+	public static ImagePlus toHyperStack(ImagePlus imp, int c, int z, int t, String mode) {
+		return toHyperStack(imp, c, z, t, null, mode);
+	}
+
 	/** Converts the specified stack into a hyperstack with 'c' channels,
 	 *  'z' slices and 't' frames. The default "xyczt" order is used if
 	 * 'order' is null. The default "composite" display mode is used
@@ -159,10 +166,13 @@ public class HyperStackConverter implements PlugIn {
 		}
 		if (Recorder.record && Recorder.scriptMode()) {
 			String order = orders[ordering];
-			if (order.equals(orders[0]))
-				order = "default";
-			Recorder.recordCall("imp2 = HyperStackConverter.toHyperStack(imp, "+nChannels+", "+
-				nSlices+", "+nFrames+", \""+order+"\", \""+modes[mode]+"\");");
+			if (order.equals(orders[0])) { // default order
+				Recorder.recordCall("imp2 = HyperStackConverter.toHyperStack(imp, "+nChannels+", "+
+					nSlices+", "+nFrames+", \""+modes[mode]+"\");");
+			} else {
+				Recorder.recordCall("imp2 = HyperStackConverter.toHyperStack(imp, "+nChannels+", "+
+					nSlices+", "+nFrames+", \""+order+"\", \""+modes[mode]+"\");");
+			}
 		}
 
 	}

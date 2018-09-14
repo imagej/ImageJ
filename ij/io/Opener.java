@@ -1039,7 +1039,8 @@ public class Opener {
 		}
 		FileOpener fo = new FileOpener(info[0]);
 		imp = fo.openImage();
-		if (imp==null) return null;
+		if (imp==null)
+			return null;
 		int[] offsets = info[0].stripOffsets;
 		if (offsets!=null&&offsets.length>1 && offsets[offsets.length-1]<offsets[0])
 			ij.IJ.run(imp, "Flip Vertically", "stack");
