@@ -155,7 +155,7 @@ public class ResultsTable implements Cloneable {
 		return counter;
 	}
 
-	/** Adds a value to the end of the given column. Counter must be >0.*/
+	/** Adds a value to the end of the given column. */
 	public void addValue(int column, double value) {
 		if (column>=maxColumns)
 			addColumns();
@@ -179,10 +179,10 @@ public class ResultsTable implements Cloneable {
 	}
 	
 	/** Adds a value to the end of the given column. If the column
-		does not exist, it is created.  Counter must be >0.
+		does not exist, it is created.
 		There is an example at:<br>
 		http://imagej.nih.gov/ij/plugins/sine-cosine.html
-		*/
+	*/
 	public void addValue(String column, double value) {
 		if (column==null)
 			throw new IllegalArgumentException("Column is null");
@@ -194,7 +194,7 @@ public class ResultsTable implements Cloneable {
 	}
 	
 	/** Adds a string value to the end of the given column. If the column
-		does not exist, it is created.  Counter must be >0. */
+		does not exist, it is created. */
 	public void addValue(String column, String value) {
 		if (column==null)
 			throw new IllegalArgumentException("Column is null");
@@ -206,7 +206,7 @@ public class ResultsTable implements Cloneable {
 		keep[index] = true;
 	}
 
-	/** Adds a label to the beginning of the current row. Counter must be >0. */
+	/** Adds a label to the beginning of the current row. */
 	public void addLabel(String label) {
 		if (rowLabelHeading.equals(""))
 			rowLabelHeading = "Label";
@@ -228,7 +228,7 @@ public class ResultsTable implements Cloneable {
 	}
 	
 	/** Adds a label to the beginning of the specified row, 
-		or updates an existing lable, where 0<=row<counter.
+		or updates an existing lable, where 0<=row<size().
 		After labels are added or modified, call <code>show()</code>
 		to update the window displaying the table. */
 	public void setLabel(String label, int row) {
@@ -443,7 +443,7 @@ public class ResultsTable implements Cloneable {
 	}
 
 	/** Sets the value of the given column and row, where
-		where 0&lt;=row&lt;counter. If the specified column does 
+		where 0&lt;=row&lt;size(). If the specified column does 
 		not exist, it is created. When adding columns, 
 		<code>show()</code> must be called to update the 
 		window that displays the table.*/
@@ -457,7 +457,7 @@ public class ResultsTable implements Cloneable {
 	}
 
 	/** Sets the value of the given column and row, where
-		where 0&lt;=column&lt;=(lastRow+1 and 0&lt;=row&lt;=counter. */
+		where 0&lt;=column&lt;=(lastRow+1 and 0&lt;=row&lt;=size(). */
 	public void setValue(int column, int row, double value) {
 		if (column>=maxColumns)
 			addColumns();
@@ -483,7 +483,7 @@ public class ResultsTable implements Cloneable {
 	}
 
 	/** Sets the string value of the given column and row, where
-		where 0&lt;=row&lt;counter. If the specified column does 
+		where 0&lt;=row&lt;size(). If the specified column does 
 		not exist, it is created. When adding columns, 
 		<code>show()</code> must be called to update the 
 		window that displays the table.*/
@@ -497,7 +497,7 @@ public class ResultsTable implements Cloneable {
 	}
 
 	/** Sets the string value of the given column and row, where
-		where 0&lt;=column&lt;=(lastRow+1 and 0&lt;=row&lt;=counter. */
+		where 0&lt;=column&lt;=(lastRow+1 and 0&lt;=row&lt;=size(). */
 	public void setValue(int column, int row, String value) {
 		setValue(column, row, Double.NaN);
 		if (stringColumns==null)
@@ -574,7 +574,7 @@ public class ResultsTable implements Cloneable {
 	}
 
 	/** Returns a tab or comma delimited string representing the
-		given row, where 0<=row<=counter-1. */
+		given row, where 0<=row<=size()-1. */
 	public String getRowAsString(int row) {
 		if ((row<0) || (row>=counter))
 			throw new IllegalArgumentException("Row out of range: "+row);

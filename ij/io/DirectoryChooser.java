@@ -52,7 +52,7 @@ import javax.swing.filechooser.*;
 						File file = chooser.getSelectedFile();
 						directory = file.getAbsolutePath();
 						if (!(directory.endsWith(File.separator)||directory.endsWith("/")))
-							directory += "/";
+							directory += File.separator;
 						OpenDialog.setDefaultDirectory(directory);
 					}
 				}
@@ -79,7 +79,7 @@ import javax.swing.filechooser.*;
 				File file = chooser.getSelectedFile();
 				directory = file.getAbsolutePath();
 				if (!(directory.endsWith(File.separator)||directory.endsWith("/")))
-					directory += "/";
+					directory += File.separator;
 				OpenDialog.setDefaultDirectory(directory);
 			}
 		} catch (Exception e) {}
