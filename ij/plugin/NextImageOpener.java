@@ -100,6 +100,10 @@ public class NextImageOpener implements PlugIn {
 			imp2.show();
 			imp0.close();
 			imp0 = imp2;
+		} else if (imp2.getStackSize()>1 && (imp0 instanceof CompositeImage)) {
+			imp2.show();
+			imp0.close();
+			imp0 = imp2;
 		} else {
 			imp0.setStack(newTitle, imp2.getStack());
 			imp0.setCalibration(imp2.getCalibration());
