@@ -874,8 +874,17 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		ByteProcessor mask = new ByteProcessor(getWidth(),getHeight());
 		mask.setColor(255);
 		if (overlay2!=null) {
-			for (int i=0; i<overlay2.size(); i++)
-				mask.fill(overlay2.get(i));			
+			if (overlay2.size()==1 && (overlay2.get(0) instanceof ImageRoi)) {
+				ImageRoi iRoi = (ImageRoi)overlay2.get(0);
+				ImageProcessor ip = iRoi.getProcessor();
+				for (int i=0; i<ip.getPixelCount(); i++) {
+					if (ip.get(i)!=0)
+						mask.set(i, 255);
+				}
+			} else {
+				for (int i=0; i<overlay2.size(); i++)
+					mask.fill(overlay2.get(i));	
+			}		
 		} else if (roi2!=null)
 			mask.fill(roi2);
 		return mask;

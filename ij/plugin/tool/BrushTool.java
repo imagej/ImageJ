@@ -16,7 +16,8 @@ import java.util.Vector;
 	private static String PENCIL_WIDTH_KEY = "pencil.width";
 	private static String CIRCLE_NAME = "brush-tool-overlay";
 	private static final String LOC_KEY = "brush.loc";
-
+	private static final String OVERLAY_KEY = "brush.overlay";
+	
 	private String widthKey;
 	private int width;
 	private ImageProcessor ip;
@@ -36,6 +37,7 @@ import java.util.Vector;
 		isPencil = "pencil".equals(arg);
 		widthKey = isPencil ? PENCIL_WIDTH_KEY : BRUSH_WIDTH_KEY;
 		width = (int)Prefs.get(widthKey, isPencil ? 1 : 5);
+		paintOnOverlay = Prefs.get(OVERLAY_KEY, false);
 		Toolbar.addPlugInTool(this);
 		if (!isPencil)
 			brushInstance = this;
@@ -95,6 +97,7 @@ import java.util.Vector;
   			//imageRoi.setOpacity(1.0-transparency/100.0);
 			imageRoi.setZeroTransparent(true);
 			Overlay overlay = new Overlay(imageRoi);
+			overlay.selectable(false);
 			imp.setOverlay(overlay);
 			overlayImage = imageRoi;
 			return;
@@ -252,19 +255,12 @@ import java.util.Vector;
 			//gd.addSlider("Transparency (%):", 0, 100, transparency);
 			gd.addChoice("Color:", Colors.getColors(colorName), colorName);
 			gd.addCheckbox("Paint on overlay", paintOnOverlay);
-			gd.setInsets(10, 10, 0);
-			String ctrlString = IJ.isMacintosh()? "CMD":"CTRL";
-			gd.addMessage("SHIFT for horizontal or vertical lines\n"+
-					"ALT to draw in background color (or\n"+
-					"to erase if painting on overlay)\n"+
-					ctrlString+"-SHIFT-drag to change "+(isPencil ? "pencil" : "brush")+" width\n"+
-					ctrlString+"-(ALT) click to change foreground\n"+
-					"(background) color, or use Color Picker", null, Color.darkGray);
-			gd.hideCancelButton();
-			gd.addHelp("");
-			gd.setHelpLabel("Undo");
-			gd.setOKLabel("Close");
+			//gd.hideCancelButton();
+			//gd.addHelp("");
+			//gd.setHelpLabel("Undo");
+			//gd.setOKLabel("Close");
 			gd.addDialogListener(this);
+			gd.addHelp(getHelp());
 			Point loc = Prefs.getLocation(LOC_KEY);
 			if (loc!=null) {
 				gd.centerDialog(false);
@@ -292,6 +288,7 @@ import java.util.Vector;
 			Color color = Colors.decode(colorName, null);
 			Toolbar.setForegroundColor(color);
 			Prefs.set(widthKey, width);
+			Prefs.set(OVERLAY_KEY, paintOnOverlay);
 			return true;
 		}
 	}
@@ -303,5 +300,25 @@ import java.util.Vector;
 			Toolbar.setForegroundColor(c);
 		}
 	}
+	
+	private String getHelp() {
+		String ctrlString = IJ.isMacintosh()? "<i>cmd</i>":"<i>ctrl</i>";
+		return	
+			 "<html>"
+			+"<font size=+1>"
+			+"<b>Key modifiers</b>"
+			+"<ul>"
+			+"<li> <i>shift</i> to draw horizontal or vertical lines<br>"
+			+"<li> <i>alt</i> to draw in background color (or<br>to erase if painting on overlay<br>"
+			+"<li>"+ ctrlString+"<i>-shift-drag</i> to change "+(isPencil ? "pencil" : "brush")+" width<br>"
+			+"<li>"+ ctrlString+"<i>-click</i> to change (\"pick up\") the<br>"
+			+"drawing color, or use the Color<br>Picker (<i>shift-k</i>)<br>"
+			+"</ul>"
+			+"Use <i>Edit&gt;Selection&gt;Create Mask</i> to create<br>a mask from the painted overlay. "
+			+"Use<br><i>Image&gt;Overlay&gt;Remove Overlay</i> to remove<br>the painted overlay.<br>"
+			+" <br>"
+			+"</font>";
+	}
+
 
 }
