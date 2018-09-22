@@ -1530,7 +1530,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			boolean channelChanged = channel!=getChannel();
 			setSlice((frame-1)*nChannels*nSlices + (slice-1)*nChannels + channel);
 			updatePosition(channel, slice, frame);
-			if (channelChanged && isComposite())
+			if (channelChanged && isComposite() && !noUpdateMode)
 				updateImage();
 		}
 	}
