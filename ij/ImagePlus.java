@@ -2421,14 +2421,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			cr = cRoi.getBounds();
 		if (cr==null)
 			cr = new Rectangle(0, 0, w, h);
-		if (r==null || (cr.width!=r.width || cr.height!=r.height)) {
-			// create a new roi centered on visible part of image
-			ImageCanvas ic = null;
-			if (win!=null)
-				ic = win.getCanvas();
-			Rectangle srcRect = ic!=null?ic.getSrcRect():new Rectangle(0,0,width, height);
-			int xCenter = srcRect.x + srcRect.width/2;
-			int yCenter = srcRect.y + srcRect.height/2;
+		if (r==null || (cr.width!=r.width || cr.height!=r.height)) {		
+			// Create a new roi centered on visible part of image, or centered on image if clipboard is >= image
+			ImageCanvas ic = win!=null?ic = win.getCanvas():null;
+			Rectangle srcRect = ic!=null?ic.getSrcRect():new Rectangle(0,0,width,height);
+			int xCenter = w>=width ? width/2 : srcRect.x + srcRect.width/2;
+			int yCenter = h>=height ? height/2 : srcRect.y + srcRect.height/2;
 			if (cRoi!=null && cRoi.getType()!=Roi.RECTANGLE) {
 				cRoi.setImage(this);
 				cRoi.setLocation(xCenter-w/2, yCenter-h/2);

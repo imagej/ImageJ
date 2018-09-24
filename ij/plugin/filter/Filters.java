@@ -90,7 +90,8 @@ public class Filters implements PlugInFilter {
 		ImageStatistics stats = new StackStatistics(imp);
 		ImageStack stack = imp.getStack();
 		int nslices = stack.getSize();
-		int min=(int)stats.min, range=(int)(stats.max-stats.min);
+		int min=(int)stats.min;
+		int range=(int)(stats.max-stats.min);
 		int n = imp.getWidth()*imp.getHeight();
 		for (int slice=1; slice<=nslices; slice++) {
 			ImageProcessor ip = stack.getProcessor(slice);
@@ -99,9 +100,13 @@ public class Filters implements PlugInFilter {
 				int before = pixels[i]&0xffff;
 				pixels[i] = (short)(range-((pixels[i]&0xffff)-min));
 			}
+			ip.setMinAndMax(stats.min, stats.max);
 		}
 		imp.setStack(null, stack);
-		imp.setDisplayRange(0, range);
+		for (int slice=1; slice<=nslices; slice++) {
+		    imp.setSlice(slice);
+			imp.setDisplayRange(stats.min, stats.max);
+		}
 		imp.updateAndDraw();
 	}
 	
