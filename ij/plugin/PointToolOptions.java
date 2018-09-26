@@ -72,8 +72,8 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		}
 		gd.setInsets(5, 20, 0);
 		gd.addCheckbox("Label points", !Prefs.noPointLabels);
+		gd.addCheckbox("Show on all slices", Prefs.showAllPoints);
 		if (multipointTool) {
-			gd.addCheckbox("Show all", Prefs.showAllPoints);
 			gd.setInsets(15,0,5);
 			String[] choices =  PointRoi.getCounterChoices();
 			gd.addChoice("Counter:", choices, choices[getCounter()]);
@@ -126,11 +126,11 @@ public class PointToolOptions implements PlugIn, DialogListener {
 			updateLabels = true;
 		}
 		Prefs.noPointLabels = noPointLabels;
+		boolean showAllPoints = gd.getNextBoolean();
+		if (showAllPoints!=Prefs.showAllPoints)
+			redraw = true;
+		Prefs.showAllPoints = showAllPoints;
 		if (multipointTool) {
-			boolean showAllPoints = gd.getNextBoolean();
-			if (showAllPoints!=Prefs.showAllPoints)
-				redraw = true;
-			Prefs.showAllPoints = showAllPoints;
 			int counter = gd.getNextChoiceIndex();
 			if (counter!=getCounter()) {
 				setCounter(counter);
