@@ -724,8 +724,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 		if (resetCurrentSlice)
 			setSlice(currentSlice);
-		if (isComposite() && previousStackSize!=newStackSize)
-			compositeImage = false;
+		//if (isComposite() && previousStackSize!=newStackSize) // fix for File>Open Next bug
+		//	compositeImage = false;
     }
     
 	public void setStack(ImageStack newStack, int channels, int slices, int frames) {
