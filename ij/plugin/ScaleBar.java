@@ -72,6 +72,13 @@ public class ScaleBar implements PlugIn {
 	}
 
 	boolean showDialog(ImagePlus imp) {
+		if (IJ.macroRunning()) {
+			barHeightInPixels = defaultBarHeight;
+			location = locations[LOWER_RIGHT];
+			color = colors[0];
+			bcolor = bcolors[0];
+			fontSize = defaultFontSize;
+		}
 		Roi roi = imp.getRoi();
 		if (roi!=null) {
 			Rectangle r = roi.getBounds();
@@ -172,7 +179,7 @@ public class ScaleBar implements PlugIn {
 			sFontSize = fontSize;
 			sLabelAll = labelAll;
 		}
-		 return true;
+		return true;
 	}
 
 	void drawScaleBar(ImagePlus imp) {

@@ -452,9 +452,12 @@ public class TextRoi extends Roi {
 
 	protected void handleMouseUp(int screenX, int screenY) {
 		super.handleMouseUp(screenX, screenY);
-		//if (width<size || height<size) 
-		//	grow(x+Math.max(size*5,width), y+Math.max((int)(size*1.5),height));
-		if (firstMouseUp) {
+		if (width<5 && height<5 && !IJ.altKeyDown() && imp!=null) {
+			TextRoi roi = new TextRoi(screenX, screenY, line1a);
+			roi.setStrokeColor(Toolbar.getForegroundColor());
+			roi.firstChar = true;
+			imp.setRoi(roi);
+		} else if (firstMouseUp) {
 			updateBounds(null);
 			updateText();
 			firstMouseUp = false;
