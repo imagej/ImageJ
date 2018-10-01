@@ -1754,6 +1754,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		starting screen coordinates. The selection type is determined by which tool in
 		the tool bar is active. The user interactively sets the selection size and shape. */
 	public void createNewRoi(int sx, int sy) {
+		Roi previousRoi = roi;
 		deleteRoi();
 		switch (Toolbar.getToolId()) {
 			case Toolbar.RECTANGLE:
@@ -1785,6 +1786,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				break;
 			case Toolbar.TEXT:
 				roi = new TextRoi(sx, sy, this);
+				((TextRoi)roi).setPreviousRoi(previousRoi);
 				break;
 			case Toolbar.POINT:
 				roi = new PointRoi(sx, sy, this);

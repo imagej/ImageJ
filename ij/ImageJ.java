@@ -79,7 +79,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.52h";
-	public static final String BUILD = "11"; 
+	public static final String BUILD = "17"; 
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -418,7 +418,7 @@ public class ImageJ extends Frame implements ActionListener,
 		ImagePlus imp = WindowManager.getCurrentImage();
 		boolean isStack = (imp!=null) && (imp.getStackSize()>1);
 		
-		if (imp!=null && ((keyChar>=32 && keyChar<=255) || keyChar=='\b' || keyChar=='\n')) {
+		if (imp!=null && !meta && ((keyChar>=32 && keyChar<=255) || keyChar=='\b' || keyChar=='\n')) {
 			Roi roi = imp.getRoi();
 			if (roi!=null && roi instanceof TextRoi) {
 				if (imp.getOverlay()!=null && (control || alt || meta)

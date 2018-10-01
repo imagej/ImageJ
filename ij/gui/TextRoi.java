@@ -38,6 +38,7 @@ public class TextRoi extends Roi {
 	private double angle;  // degrees
 	private static double defaultAngle;
 	private static boolean firstTime = true;
+	private Roi previousRoi;
 
 	/** Creates a TextRoi.*/
 	public TextRoi(int x, int y, String text) {
@@ -452,19 +453,23 @@ public class TextRoi extends Roi {
 
 	protected void handleMouseUp(int screenX, int screenY) {
 		super.handleMouseUp(screenX, screenY);
-		if (width<5 && height<5 && !IJ.altKeyDown() && imp!=null) {
-			TextRoi roi = new TextRoi(screenX, screenY, line1a);
+		//if (previousRoi!=null && (previousRoi instanceof TextRoi) && (previousRoi.getBounds().width<5 || previousRoi.getBounds().height<5))
+		//	previousRoi = null;
+		if (width<5 && height<5 && imp!=null && previousRoi==null) {
+			int ox = ic!=null?ic.offScreenX(screenX):screenX;
+			int oy = ic!=null?ic.offScreenY(screenY):screenY;
+			TextRoi roi = new TextRoi(ox, oy, line1a);
 			roi.setStrokeColor(Toolbar.getForegroundColor());
 			roi.firstChar = true;
 			imp.setRoi(roi);
+			return;
 		} else if (firstMouseUp) {
 			updateBounds(null);
 			updateText();
 			firstMouseUp = false;
-		} else {
-			if (width<5 || height<5)
-			imp.deleteRoi();
 		}
+		if (width<5 || height<5)
+			imp.deleteRoi();
 	}
 	
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
@@ -680,6 +685,10 @@ public class TextRoi extends Roi {
 	
 	public void setDrawStringMode(boolean drawStringMode) {
 		this.drawStringMode = drawStringMode;
+	}
+	
+	public void setPreviousRoi(Roi previousRoi) {
+		this.previousRoi = previousRoi;
 	}
         
 }
