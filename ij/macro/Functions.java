@@ -6324,11 +6324,7 @@ public class Functions implements MacroConstants, Measurements {
 		boolean nullFont = font==null;
 		if (nullFont)
 			font = imp.getProcessor().getFont();
-		TextRoi roi = null;
-		if (justification!=ImageProcessor.LEFT_JUSTIFY)
-			roi = new TextRoi(x, y-font.getSize(), text, font);
-		else
-			roi = new TextRoi(text, x, y, font);
+		TextRoi roi = new TextRoi(text, x, y, font);  // use drawString() compatible constructor
 		if (!nullFont && !antialiasedText)
 			roi.setAntialiased(false);
 		roi.setAngle(angle);
