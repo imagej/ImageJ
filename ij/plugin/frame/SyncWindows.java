@@ -32,7 +32,7 @@ Improved GUI, support of image coordinates and z-slices by Joachim Walter <corre
 */
 public class SyncWindows extends PlugInFrame implements
 	ActionListener, MouseMotionListener, MouseListener, DisplayChangeListener,
-	ItemListener, ImageListener {
+	ItemListener, ImageListener, CommandListener {
 
 	/** Indices of synchronized image windows are maintained in this Vector. */
 	protected Vector vwins = null;
@@ -108,6 +108,7 @@ public class SyncWindows extends PlugInFrame implements
 		updateWindowList();
 		WindowManager.addWindow(this);
 		ImagePlus.addImageListener(this);
+		Executer.addCommandListener(this);
 		show();
 	}
 	
@@ -228,11 +229,9 @@ public class SyncWindows extends PlugInFrame implements
 		ImageCanvas ic;
 		Point p;
 		Point oldp;
-
 		oldX = x; oldY = y;
 		x = e.getX();
 		y = e.getY();
-
 		p = new Point(x, y);
 
 		// get ImageCanvas that received event
@@ -344,7 +343,6 @@ public class SyncWindows extends PlugInFrame implements
 		ImageWindow iw;
 		ImageCanvas ic;
 		Point p;
-
 		p = new Point(x,y);
 
 		// get ImageCanvas that received event
@@ -381,7 +379,6 @@ public class SyncWindows extends PlugInFrame implements
 		ImageWindow iw;
 		ImageCanvas ic;
 		Point p;
-
 		p = new Point(x,y);
 
 		// get ImageCanvas that received event
@@ -420,7 +417,6 @@ public class SyncWindows extends PlugInFrame implements
 		ImageWindow iw;
 		ImageCanvas ic;
 		Point p;
-
 		p = new Point(x,y);
 
 		// get ImageCanvas that received event
@@ -466,7 +462,6 @@ public class SyncWindows extends PlugInFrame implements
 		ImageWindow iw;
 		ImageCanvas ic;
 		Point p;
-
 		p = new Point(x,y);
 
 		// Current window already received mouse event.
@@ -615,6 +610,7 @@ public class SyncWindows extends PlugInFrame implements
 		if(e.getSource() == this) {
 			removeAllWindows();
 			ImagePlus.removeImageListener(this);
+			Executer.removeCommandListener(this);
 			close();	
 		}
 	}
@@ -636,14 +632,12 @@ public class SyncWindows extends PlugInFrame implements
 	/** Build window list display and button controls.
 	 *	Create Hashtable that connects list entries to window IDs.*/
 	protected Panel controlPanel() {
-
 		Panel p = new Panel();
 		BorderLayout layout = new BorderLayout();
 		layout.setVgap(3);
 		p.setLayout(layout);
 		p.add(buildWindowList(), BorderLayout.NORTH,0);
 		p.add(buildControlPanel(), BorderLayout.CENTER,1);
-
 		return p;
 	}
 
@@ -755,7 +749,7 @@ public class SyncWindows extends PlugInFrame implements
 	locations. This is used to determine what part of image to
 	redraw. */
 	protected Rectangle boundingRect(int x, int y,
-				   int oldX, int oldY) {
+		int oldX, int oldY) {
 		int dx = Math.abs(oldX - x)/2;
 		int dy = Math.abs(oldY - y)/2;
 
@@ -951,9 +945,9 @@ public class SyncWindows extends PlugInFrame implements
 		return title;
 	}
 
-/** Get index of "image" in vector of synchronized windows, if image is in vector.
- * Else return -1. 
- */	   
+	/** Get index of "image" in vector of synchronized windows, if image is in vector.
+	 * Else return -1. 
+	*/	   
 	public int getIndexOfImage(ImagePlus image) {
 		int index = -1;
 		ImagePlus imp;
@@ -1021,6 +1015,41 @@ public class SyncWindows extends PlugInFrame implements
 		return instance;
 	}
 
+	public String commandExecuting(String command) {
+		if ("In [+]".equals(command) || "Out [-]".equals(command) ) {
+			if (vwins == null)
+				return command;
+			ImagePlus imp = WindowManager.getCurrentImage();
+			ImageCanvas cic = imp!=null?imp.getCanvas():null;
+			if (cic==null)
+				return command;
+			Point loc = cic.getCursorLoc();
+			if (!cic.cursorOverImage()) {
+				Rectangle srcRect = cic.getSrcRect();
+				loc.x = srcRect.x + srcRect.width/2;
+				loc.y = srcRect.y + srcRect.height/2;
+			}
+			int sx = cic.screenX(loc.x);
+			int sy = cic.screenY(loc.y);
+			for (int i=0; i<vwins.size(); i++) {
+				imp = getImageFromVector(i);
+				if (imp!=null) {
+					ImageCanvas ic = imp.getCanvas();
+					if (ic!=cic) {
+						if ("In [+]".equals(command))
+							ic.zoomIn(sx, sy);
+						else
+							ic.zoomOut(sx, sy);
+						if (ic.getMagnification()<=1.0)
+							imp.repaintWindow();
+					}
+				}
+			}
+
+		}
+		return command;
+	}
+
 }	// SyncWindows_
 
 /** The Listener interface for receiving DisplayChange events.
@@ -1029,7 +1058,6 @@ public class SyncWindows extends PlugInFrame implements
  *	So far only OpenStackWindow used by SyncWindows is such an Object.
  *	*/
 interface DisplayChangeListener extends java.util.EventListener {
-
 	public void displayChanged(DisplayChangeEvent e);
 }
 
@@ -1143,11 +1171,11 @@ class IJEventMulticaster extends AWTEventMulticaster implements DisplayChangeLis
 	 * displayChanged methods on listener-a and listener-b.
 	 * @param e the DisplayChange event
 	 */
-
 	public void displayChanged(DisplayChangeEvent e) {
 		((DisplayChangeListener)a).displayChanged(e);
 		((DisplayChangeListener)b).displayChanged(e);
 	}
+	
 	/**
 	 * Adds DisplayChange-listener-a with DisplayChange-listener-b and
 	 * returns the resulting multicast listener.
@@ -1157,6 +1185,7 @@ class IJEventMulticaster extends AWTEventMulticaster implements DisplayChangeLis
 	public static DisplayChangeListener add(DisplayChangeListener a, DisplayChangeListener b) {
 		return (DisplayChangeListener)addInternal(a, b);
 	}
+	
 	/**
 	 * Removes the old DisplayChange-listener from DisplayChange-listener-l and
 	 * returns the resulting multicast listener.
@@ -1166,4 +1195,5 @@ class IJEventMulticaster extends AWTEventMulticaster implements DisplayChangeLis
 	public static DisplayChangeListener remove(DisplayChangeListener l, DisplayChangeListener oldl) {
 		return (DisplayChangeListener)removeInternal(l, oldl);
 	}
+	
 }
