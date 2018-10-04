@@ -156,7 +156,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     
     private void setID() {
     	ID = --currentID;
-    	//IJ.log("New "+this);
 	}
 	   
 	/** Locks the image so other threads can test to see if it
@@ -561,23 +560,33 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (imp.isHyperStack())
 			setOpenAsHyperStack(true);
 		LUT[] luts = null;
-		if (imp.isComposite() && this.isComposite()) {
+		if (imp.isComposite() && (this instanceof CompositeImage)) {
 			if (((CompositeImage)imp).getMode()!=((CompositeImage)this).getMode())
 				((CompositeImage)this).setMode(((CompositeImage)imp).getMode());
 			luts = ((CompositeImage)imp).getLuts();
 		}
+		LUT lut = !imp.isComposite()?imp.getProcessor().getLut():null;
 		setStack(stack2, imp.getNChannels(), imp.getNSlices(), imp.getNFrames());
+		compositeImage = imp.isComposite();
 		if (luts!=null) {
 			((CompositeImage)this).setLuts(luts);
-			updateAndDraw();
+			((CompositeImage)this).setMode(((CompositeImage)imp).getMode());
+			updateAndRepaintWindow();
+		} else if (lut!=null) {
+			getProcessor().setLut(lut);
+			updateAndRepaintWindow();
 		}
+		setTitle(imp.getTitle());
 		setCalibration(imp.getCalibration());
-		properties = newProperties;
+		setOverlay(imp.getOverlay());
+		properties = newProperties;		
 		if (getProperty(Plot.PROPERTY_KEY)!=null && win instanceof PlotWindow) {
 			Plot plot = (Plot)(getProperty(Plot.PROPERTY_KEY));
 			((PlotWindow)win).setPlot(plot);
 			plot.setImagePlus(this);
 		}
+		setFileInfo(imp.getOriginalFileInfo());
+		setProperty ("Info", imp.getProperty ("Info"));
 	}
 	
 	/** Replaces the ImageProcessor with the one specified and updates the
@@ -661,7 +670,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     public void setStack(String title, ImageStack newStack) {
 		int previousStackSize = getStackSize();
 		int newStackSize = newStack.getSize();
-		//IJ.log("setStack: "+newStackSize+" "+this);
 		if (newStackSize==0)
 			throw new IllegalArgumentException("Stack is empty");
 		if (!newStack.isVirtual()) {
@@ -691,7 +699,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (resetCurrentSlice) setSlice(currentSlice);
 			return;
 		}
-		boolean invalidDimensions = (isDisplayedHyperStack()||isComposite()) && (win instanceof StackWindow) && !((StackWindow)win).validDimensions();
+		boolean invalidDimensions = (isDisplayedHyperStack()||(this instanceof CompositeImage)) && (win instanceof StackWindow) && !((StackWindow)win).validDimensions();
 		if (newStackSize>1 && !(win instanceof StackWindow)) {
 			if (isDisplayedHyperStack())
 				setOpenAsHyperStack(true);
@@ -716,7 +724,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		} else {
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
-			if (isComposite()) {
+			if ((this instanceof CompositeImage)) {
 				((CompositeImage)this).reset();
 				updateAndDraw();
 			}
@@ -724,8 +732,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 		if (resetCurrentSlice)
 			setSlice(currentSlice);
-		//if (isComposite() && previousStackSize!=newStackSize) // fix for File>Open Next bug
-		//	compositeImage = false;
     }
     
 	public void setStack(ImageStack newStack, int channels, int slices, int frames) {
@@ -736,12 +742,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		this.nChannels = channels;
 		this.nSlices = slices;
 		this.nFrames = frames;
-		if (isComposite()) {
-			ImageStack stack2 = this.stack;
-			this.stack = newStack;
-			((CompositeImage)this).reset();
-			this.stack = stack2;
-		}
 		setStack(null, newStack);
 	}
 
@@ -1085,7 +1085,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			new StackWindow(this);
 		}
 		dimensionsSet = true;
-		//IJ.log("setDimensions: "+ nChannels+"  "+nSlices+"  "+nFrames);
 	}
 	
 	/** Returns 'true' if this image is a hyperstack. */
@@ -1116,7 +1115,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	/** Returns the image depth (number of z-slices). */
 	public int getNSlices() {
-		//IJ.log("getNSlices: "+ nChannels+"  "+nSlices+"  "+nFrames);
 		verifyDimensions();
 		return nSlices;
 	}
@@ -1937,7 +1935,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			url2 = fi.url;
 		} else
 			return;
-		//IJ.log("revert: "+path+"  "+fi);
 		IJ.showStatus("Loading: " + path);
 		ImagePlus imp = IJ.openImage(path);
 		if (imp!=null) {
@@ -2394,8 +2391,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			case ImagePlus.GRAY16: bytesPerPixel = 2; break;
 			case ImagePlus.GRAY32: case ImagePlus.COLOR_RGB: bytesPerPixel = 4;
 		}
-		//Roi roi3 = clipboard.getRoi();
-		//IJ.log("copy: "+clipboard +" "+ "roi3="+(roi3!=null?""+roi3:""));
 		if (!batchMode) {
 			msg = (cut)?"Cut":"Copy";
 			IJ.showStatus(msg + ": " + (clipboard.getWidth()*clipboard.getHeight()*bytesPerPixel)/1024 + "k");

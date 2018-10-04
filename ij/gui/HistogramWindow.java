@@ -505,25 +505,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			drawPlot(yMax>0?yMax:newMaxCount, ip);
 		this.imp.updateAndDraw();
 	}
-	
-	/*
-	void rescale() {
-		Graphics g = img.getGraphics();
-		plotScale *= 2;
-		if ((newMaxCount/plotScale)<50) {
-			plotScale = 1;
-			frame = new Rectangle(XMARGIN, YMARGIN, HIST_WIDTH, HIST_HEIGHT);
-			g.setColor(Color.white);
-			g.fillRect(frame.x, frame.y, frame.width, frame.height);
-			g.setColor(Color.black);
-		}
-		drawPlot(newMaxCount/plotScale, g);
-		//ImageProcessor ip = new ColorProcessor(img);
-		//this.imp.setProcessor(null, ip);
-		this.imp.setImage(img);
-	}
-	*/
-	
+		
 	public void actionPerformed(ActionEvent e) {
 		Object b = e.getSource();
 		if (b==live)

@@ -96,26 +96,16 @@ public class NextImageOpener implements PlugIn {
 			}
 			imp0.changes = false;
 		}
-		if (imp2.isComposite() || imp2.isHyperStack()) {
+		if (!(imp0 instanceof CompositeImage) && (imp2.isComposite() || imp2.isHyperStack())) {
+			// imp0.setImage(imp2) does not work if 'imp2' is composite and 'imp0' is not
 			imp2.show();
 			imp0.close();
 			imp0 = imp2;
-		} else if (imp2.getStackSize()>1 && (imp0 instanceof CompositeImage)) {
-			imp2.show();
-			imp0.close();
-			imp0 = imp2;
-		} else {
-			imp0.setStack(newTitle, imp2.getStack());
-			imp0.setCalibration(imp2.getCalibration());
-			imp0.setFileInfo(imp2.getOriginalFileInfo());
-			imp0.setProperty ("Info", imp2.getProperty ("Info"));
-			imp0.setOverlay(imp2.getOverlay());
-			ImageWindow win = imp0.getWindow();
-			if (win!=null) win.repaint();
-		}
+		} else
+			imp0.setImage(imp2);
 		return "ok";
 	}
-
+	
 	/** gets the next image name in a directory list */
 	String getNext(String path, String imageName, boolean forward) {
 		File dir = new File(path);
