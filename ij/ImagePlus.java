@@ -736,7 +736,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		this.nChannels = channels;
 		this.nSlices = slices;
 		this.nFrames = frames;
-		if (channelsBefore!=channels && isComposite()) {
+		if (isComposite()) {
 			ImageStack stack2 = this.stack;
 			this.stack = newStack;
 			((CompositeImage)this).reset();

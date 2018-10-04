@@ -132,7 +132,7 @@ public class SyncWindows extends PlugInFrame implements
 		SyncWindows syncWindows = instance;
 		if (syncWindows==null || !syncWindows.synced(source))
 			return;
-		DisplayChangeEvent event=new DisplayChangeEvent(source, DisplayChangeEvent.T, frame);
+		DisplayChangeEvent event = new DisplayChangeEvent(source, DisplayChangeEvent.T, frame);
 		syncWindows.displayChanged(event);
 	}
 	
@@ -693,7 +693,6 @@ public class SyncWindows extends PlugInFrame implements
 		}
 	}
 
-	// --------------------------------------------------
 	/** Builds panel containing control buttons. */
 	protected Panel buildControlPanel() {
 		GridLayout layout = new GridLayout(4,2);
@@ -702,30 +701,30 @@ public class SyncWindows extends PlugInFrame implements
 		Panel p = new Panel(layout);
 
 		// Checkbox: synchronize cursor
-		cCursor = new Checkbox("Sync Cursor", true);
+		cCursor = new Checkbox("Sync cursor", true);
 		p.add(cCursor);
 
 		// Checkbox: propagate slice
-		cSlice = new Checkbox("Sync z-Slices",true);
+		cSlice = new Checkbox("Sync z-slices",true);
 		p.add(cSlice);
 
 //		TODO: Give functionality to Synchronize Channels and Synchronize t-Frames checkboxes.
 		
 		// Checkbox: synchronize channels (for hyperstacks)
-		cChannel = new Checkbox("Sync Channels", true);
+		cChannel = new Checkbox("Sync channels", true);
 		p.add(cChannel);
 		
 		// Checkbox: synchronize time-frames (for hyperstacks)
-		cFrame = new Checkbox("Sync t-Frames", true);
+		cFrame = new Checkbox("Sync t-frames", true);
 		p.add(cFrame);
 		
 		// Checkbox: image coordinates
-		cCoords = new Checkbox("Image Coordinates", true);
+		cCoords = new Checkbox("Image coordinates", true);
 		cCoords.addItemListener(this);
 		p.add(cCoords);
  
 		// Checkbox: image scaling (take pixel scale and offset into account)
-		cScaling = new Checkbox("Image Scaling", false);
+		cScaling = new Checkbox("Image scaling", false);
 		cScaling.addItemListener(this);
 		p.add(cScaling);
 		
@@ -1016,9 +1015,7 @@ public class SyncWindows extends PlugInFrame implements
 	}
 
 	public String commandExecuting(String command) {
-		if ("In [+]".equals(command) || "Out [-]".equals(command) ) {
-			if (vwins == null)
-				return command;
+		if (vwins!=null && cScaling!=null && cScaling.getState() && ("In [+]".equals(command) || "Out [-]".equals(command))) {
 			ImagePlus imp = WindowManager.getCurrentImage();
 			ImageCanvas cic = imp!=null?imp.getCanvas():null;
 			if (cic==null)

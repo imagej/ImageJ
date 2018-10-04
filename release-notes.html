@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52h 2 October 2018</u>
+<li> <u>1.52h 3 October 2018</u>
 <ul>
 <li> The <i>Edit&gt;Selection&gt;Create Mask</i> command works
 with overlays created by the Brush and Pencil tools.
@@ -16,7 +16,8 @@ on an image and there is no existing selection.
 <li> Thanks to Gabriel Landini, the "Show on all slices" option (was "Show all")
 now appears in both the point and multi-point tool dialogs.
 <li> Thanks to Stein Rorvik, the <i>Analyze&gt;Tools&gt;Synchronize Windows</i>
-tool now supports use of the "+" and "-" keys for synchronized zooming. 
+tool now supports use of the "+" and "-" keys for synchronized zooming
+when the "Image scaling" option is enabled.. 
 <li> Thanks to Bio7, fixed a bug that caused images to turn black when
 assigned an ImageRoi created by the Brush or Pencil tools.
 <li> Thanks to Stein Rorvik, fixed bugs that caused
@@ -39,6 +40,8 @@ out, as well as other shortcuts, to not work when a text selection was active.
 <li> Thanks to Stein Rorvik, fixed a bug that caused right-justified text
  added to an overlay by the Overlay.drawString() macro function to
 not be displayed correctly.
+<li> Thanks to "hwada", fixed a bug that caused the ImagePlus.setImage(ImagePlus)
+method to sometimes fail with hyperstacks.
 <li> Thanks to Norbert Vischer, fixed a 1.52g regression that caused
 multi-channel images to lose color table and display range
 information after being cropped and saved.
