@@ -724,11 +724,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		} else {
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
-			if ((this instanceof CompositeImage)) {
-				((CompositeImage)this).reset();
-				updateAndDraw();
-			}
 			repaintWindow();
+		}
+		if ((this instanceof CompositeImage)) {
+			((CompositeImage)this).reset();
+			updateAndRepaintWindow();
 		}
 		if (resetCurrentSlice)
 			setSlice(currentSlice);

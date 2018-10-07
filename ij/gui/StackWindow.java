@@ -241,7 +241,8 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	
 	public String createSubtitle() {
 		String subtitle = super.createSubtitle();
-		if (!hyperStack) return subtitle;
+		if (!hyperStack || imp.getStackSize()==1)
+			return subtitle;
     	String s="";
     	int[] dim = imp.getDimensions(false);
     	int channels=dim[2], slices=dim[3], frames=dim[4];
