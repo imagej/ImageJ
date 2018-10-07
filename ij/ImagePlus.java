@@ -668,6 +668,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Replaces the image with the specified stack and updates 
 		the display. Set 'title' to null to leave the title unchanged. */
     public void setStack(String title, ImageStack newStack) {
+		//IJ.log("setStack1: "+getNChannels()+" "+getNSlices()+" "+getNFrames());
+    	int bitDepth1 = getBitDepth();
 		int previousStackSize = getStackSize();
 		int newStackSize = newStack.getSize();
 		if (newStackSize==0)
@@ -727,7 +729,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			repaintWindow();
 		}
 		if ((this instanceof CompositeImage)) {
+			compositeImage = getStackSize()!=getNSlices();
 			((CompositeImage)this).reset();
+			if (bitDepth1!=getBitDepth())
+				((CompositeImage)this).resetDisplayRanges();
 			updateAndRepaintWindow();
 		}
 		if (resetCurrentSlice)

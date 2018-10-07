@@ -84,8 +84,8 @@ public class SubHyperstackMaker implements PlugIn {
 
 		// create output image
 		String title = WindowManager.getUniqueName(input.getTitle());
-		ImagePlus output = IJ.createHyperStack(title, input.getWidth(), input.getHeight(), cList.size(), zList.size(), tList.size(), input.getBitDepth());
-		//ImagePlus output = input.createHyperStack(title, cList.size(), zList.size(), tList.size(), input.getBitDepth());	
+		//ImagePlus output = IJ.createHyperStack(title, input.getWidth(), input.getHeight(), cList.size(), zList.size(), tList.size(), input.getBitDepth());
+		ImagePlus output = input.createHyperStack(title, cList.size(), zList.size(), tList.size(), input.getBitDepth());	
 		ImageStack outputStack = output.getImageStack();
 
 		// add specified planes to subhyperstack
