@@ -668,8 +668,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Replaces the image with the specified stack and updates 
 		the display. Set 'title' to null to leave the title unchanged. */
     public void setStack(String title, ImageStack newStack) {
-		//IJ.log("setStack1: "+getNChannels()+" "+getNSlices()+" "+getNFrames());
-    	int bitDepth1 = getBitDepth();
+		//IJ.log("setStack1: "+nChannels+" "+nSlices+" "+nFrames);
+		int bitDepth1 = getBitDepth();
 		int previousStackSize = getStackSize();
 		int newStackSize = newStack.getSize();
 		if (newStackSize==0)
@@ -697,6 +697,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	this.stack = newStack;
     	oneSliceStack = false;
     	setProcessor2(title, ip, newStack);
+    	if ((this instanceof CompositeImage)) {
+			compositeImage = getStackSize()!=getNSlices();
+			((CompositeImage)this).completeReset();
+			if (bitDepth1!=getBitDepth())
+				((CompositeImage)this).resetDisplayRanges();
+			//updateAndRepaintWindow();
+		}
 		if (win==null) {
 			if (resetCurrentSlice) setSlice(currentSlice);
 			return;
@@ -728,13 +735,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				((StackWindow)win).updateSliceSelector();
 			repaintWindow();
 		}
-		if ((this instanceof CompositeImage)) {
-			compositeImage = getStackSize()!=getNSlices();
-			((CompositeImage)this).reset();
-			if (bitDepth1!=getBitDepth())
-				((CompositeImage)this).resetDisplayRanges();
-			updateAndRepaintWindow();
-		}
 		if (resetCurrentSlice)
 			setSlice(currentSlice);
     }
@@ -742,8 +742,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void setStack(ImageStack newStack, int channels, int slices, int frames) {
 		if (newStack==null || channels*slices*frames!=newStack.getSize())
 			throw new IllegalArgumentException("channels*slices*frames!=stackSize");
-		int channelsBefore = this.nChannels;
-		if (IJ.debugMode) IJ.log("setStack: "+newStack.getSize()+" "+channels+" ("+channelsBefore+") "+slices+" "+frames+" "+isComposite());
+		if (IJ.debugMode) IJ.log("setStack: "+newStack.getSize()+" "+channels+" "+slices+" "+frames+" "+isComposite());
 		this.nChannels = channels;
 		this.nSlices = slices;
 		this.nFrames = frames;

@@ -30,7 +30,6 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		addMouseWheelListener(this);
 		if (sliceSelector==null && this.getClass().getName().indexOf("Image5D")!=-1)
 			sliceSelector = new Scrollbar(); // prevents Image5D from crashing
-		//IJ.log(nChannels+" "+nSlices+" "+nFrames);
 		pack();
 		ic = imp.getCanvas();
 		if (ic!=null) ic.setMaxBounds();

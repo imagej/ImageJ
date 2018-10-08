@@ -315,7 +315,6 @@ public class CompositeImage extends ImagePlus {
 			imageSource.newPixels();	
 	}
 
-	/** Uses less memory but only works correctly with Java 1.6 and later. */
 	void createBufferedImage() {
 		if (rgbSampleModel==null)
 			rgbSampleModel = getRGBSampleModel();
@@ -508,6 +507,11 @@ public class CompositeImage extends ImagePlus {
 		if (nChannels>MAX_CHANNELS && getMode()==COMPOSITE)
 			setMode(COLOR);
 		setup(nChannels, getImageStack());
+	}
+	
+	public void completeReset() {
+		cip = null;
+		lut = null;
 	}
 	
 	/* Sets the LUT of the current channel. */
