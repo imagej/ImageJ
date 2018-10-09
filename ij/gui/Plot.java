@@ -60,9 +60,10 @@ public class Plot implements Cloneable {
 	public static final int CUSTOM = 9;
 	/** Fill area between line plot and x-axis at y=0. */
 	public static final int FILLED = 10;
-	/** Draw a histogram bar for each point (bars touch each other unless the x axis has categories set via the label. */
+	/** Draw a histogram bar for each point (bars touch each other unless the x axis has categories set via the label.
+     *  x values should be sorted (ascending or descending) */
 	public static final int BAR = 11;
-	/** Draw afree-standing bar for each point. */
+	/** Draw a free-standing bar for each point. x values should be equidistant and sorted (ascending or descending) */
 	public static final int SEPARATED_BAR = 12;
 
 	/** Names for the shapes as an array */
@@ -205,7 +206,6 @@ public class Plot implements Cloneable {
 	//private boolean snapToMinorGrid;  			// snap to grid when zooming to selection
 	private static double SEPARATED_BAR_WIDTH=0.5;  // for plots with separate bars (e.g. categories), fraction of space, 0.1-1.0
 	double[] steps;                                 //for redrawing the grid
-	private int pointIndex;                         // for symbol macro code (CUSTOM)
 
 	/** Constructs a new Plot with the default options.
 	 * Use add(shape,xvalues,yvalues) to add curves.
@@ -2520,61 +2520,52 @@ public class Plot implements Cloneable {
 		switch (type) {
 			case PlotObject.XY_DATA:
 				ip.setClipRect(frame);
-				if (plotObject.yEValues != null)
+				int nPoints = Math.min(plotObject.xValues.length, plotObject.yValues.length);
+
+				if (plotObject.shape==BAR || plotObject.shape==SEPARATED_BAR)
+					drawBarChart(plotObject);       // (separated) bars
+
+				if (plotObject.shape == FILLED) {   // filling below line
+					ip.setColor(plotObject.color2 != null ? plotObject.color2 : plotObject.color);
+					drawFloatPolyLineFilled(ip, plotObject.xValues, plotObject.yValues, nPoints);
+				}
+				ip.setColor(plotObject.color);
+                ip.setLineWidth(sc(plotObject.lineWidth));
+
+				if (plotObject.yEValues != null)    // error bars in front of bars and fill area below the line, but behind lines and marker symbols
 					drawVerticalErrorBars(plotObject.xValues, plotObject.yValues, plotObject.yEValues);
 				if (plotObject.xEValues != null)
 					drawHorizontalErrorBars(plotObject.xValues, plotObject.yValues, plotObject.xEValues);
-				boolean drawMarker = plotObject.hasMarker();
-				boolean drawLine = plotObject.hasCurve();
-				if (plotObject.shape == CONNECTED_CIRCLES)
-					ip.setColor(plotObject.color2 == null ? Color.black : plotObject.color2);
-				if (drawLine) {
-					int shortLen = Math.min(plotObject.xValues.length, plotObject.yValues.length);
-					if (plotObject.shape == FILLED) {
-						//ip.setColor(plotObject.color);
-						boolean twoColors = plotObject.color2 != null;
-						if (twoColors) {
-							ip.setColor(plotObject.color2);
-							ip.setLineWidth(1);
-						} else
-							ip.setColor(plotObject.color);
-						drawFloatPolyLineFilled(ip, plotObject.xValues, plotObject.yValues, shortLen);
-						if (twoColors){
-							ip.setColor(plotObject.color);
-							ip.setClipRect(frame);
-							ip.setLineWidth(sc(plotObject.lineWidth));
-							drawFloatPolyline(ip, plotObject.xValues, plotObject.yValues, shortLen);
-						}
-					} else
-						drawFloatPolyline(ip, plotObject.xValues, plotObject.yValues, shortLen);
-				}
-				if (drawMarker) {
+
+				if (plotObject.hasFilledMarker()) { // fill markers with secondary color
 					int markSize = plotObject.getMarkerSize();
-					if (plotObject.hasFilledMarker() || (plotObject.shape == CONNECTED_CIRCLES && plotObject.color2 != null)) {
-						//fill markers with secondary color
-						ip.setColor(plotObject.color2);
-						ip.setLineWidth(1);
-						for (int i=0; i<Math.min(plotObject.xValues.length, plotObject.yValues.length); i++)
-							if ((!logXAxis || plotObject.xValues[i]>0) && (!logYAxis || plotObject.yValues[i]>0)
-							&& !Double.isNaN(plotObject.xValues[i]) && !Double.isNaN(plotObject.yValues[i]))
-								fillShape(plotObject.shape, scaleX(plotObject.xValues[i]), scaleY(plotObject.yValues[i]), markSize);
-						ip.setLineWidth(sc(plotObject.lineWidth));
-					}
-					// draw markers
+					ip.setColor(plotObject.color2);
+					ip.setLineWidth(1);
+					for (int i=0; i<nPoints; i++)
+						if ((!logXAxis || plotObject.xValues[i]>0) && (!logYAxis || plotObject.yValues[i]>0)
+								&& !Double.isNaN(plotObject.xValues[i]) && !Double.isNaN(plotObject.yValues[i]))
+							fillShape(plotObject.shape, scaleX(plotObject.xValues[i]), scaleY(plotObject.yValues[i]), markSize);
 					ip.setColor(plotObject.color);
-					pointIndex = -1; //will be pre-incremented
+					ip.setLineWidth(sc(plotObject.lineWidth));
+				}
+				if (plotObject.hasCurve()) {        // draw the lines between the points
+					if (plotObject.shape == CONNECTED_CIRCLES)
+						ip.setColor(plotObject.color2 == null ? Color.black : plotObject.color2);
+					drawFloatPolyline(ip, plotObject.xValues, plotObject.yValues, nPoints);
+					ip.setColor(plotObject.color);
+				}
+				if (plotObject.hasMarker()) {       // draw the marker symbols
+					int markSize = plotObject.getMarkerSize();
+					ip.setColor(plotObject.color);
 					Font saveFont = ip.getFont();
 					for (int i=0; i<Math.min(plotObject.xValues.length, plotObject.yValues.length); i++) {
 						if ((!logXAxis || plotObject.xValues[i]>0) && (!logYAxis || plotObject.yValues[i]>0)
 						&& !Double.isNaN(plotObject.xValues[i]) && !Double.isNaN(plotObject.yValues[i]))
-							drawShape(plotObject, scaleX(plotObject.xValues[i]), scaleY(plotObject.yValues[i]), markSize);
+							drawShape(plotObject, scaleX(plotObject.xValues[i]), scaleY(plotObject.yValues[i]), markSize, i);
 					}
-					pointIndex = 2000000000; //beyond number of data points, tells drawShape it's the legend
 					if (plotObject.shape==CUSTOM)
 						ip.setFont(saveFont);
 				}
-				if (plotObject.shape==BAR || plotObject.shape==SEPARATED_BAR)
-					drawBarChart(plotObject);
 				ip.setClipRect(null);
 				break;
 			case PlotObject.ARROWS:
@@ -2762,14 +2753,14 @@ public class Plot implements Cloneable {
 		int prevY = y0;
 		for (int i = 0; i < n; i++) {
 			int left=0, right=0;
-			if (halfBarWidthInPixels == 0) { //separated bars or n<=1 : fixed bar width
+			if (halfBarWidthInPixels == 0) {         //bar boundaries in the middle between successive x values
 				left = scaleX(i > 0 ? 0.5f*(plotObject.xValues[i-1]+plotObject.xValues[i]) :
 						1.5f*plotObject.xValues[i] - 0.5f*plotObject.xValues[i+1]);
 				right = scaleX(i < n-1 ? 0.5f*(plotObject.xValues[i]+plotObject.xValues[i+1]) :
 						1.5f*plotObject.xValues[i] - 0.5f*plotObject.xValues[i-1]);
 			} else {
 				int x = scaleX(plotObject.xValues[i]);
-				left = x - halfBarWidthInPixels;
+				left = x - halfBarWidthInPixels;     //separated bars or n<=1 : fixed bar width
 				right = x + halfBarWidthInPixels;
 			}
 			if (left < frame.x) left = frame.x;
@@ -2779,8 +2770,8 @@ public class Plot implements Cloneable {
 			int y = scaleYWithOverflow(plotObject.yValues[i]);
 			if (plotObject.color2 != null) {
 				ip.setColor(plotObject.color2);
-				for (int x2 = left; x2 <= right; x2++) //cant use ip.fillRect: ignores the clipRect
-					ip.drawLine(x2, y0, x2, y);
+				for (int x2 = Math.min(left,right); x2 <= Math.max(left,right); x2++)
+					ip.drawLine(x2, y0, x2, y);      //cant use ip.fillRect (ignores the clipRect), so we it fill line by line
 			}
 			ip.setColor(plotObject.color);
 			ip.setLineWidth(sc(plotObject.lineWidth));
@@ -2800,8 +2791,8 @@ public class Plot implements Cloneable {
 		}
 	}
 
-	/** Draw the symbols for data points */
-	void drawShape(PlotObject plotObject, int x, int y, int size) {
+	/** Draw the symbol for the data point number 'pointIndex' (pointIndex < 0 when drawing the legend) */
+	void drawShape(PlotObject plotObject, int x, int y, int size, int pointIndex) {
 		int shape = plotObject.shape;
 		if (shape == DIAMOND) size = (int)(size*1.21);
 		int xbase = x-sc(size/2);
@@ -2840,7 +2831,6 @@ public class Plot implements Cloneable {
 			case CUSTOM:
 				if (plotObject.macroCode==null || frame==null)
 					break;
-				pointIndex++;
 				if (x<frame.x || y<frame.y || x>=frame.x+frame.width || y>=frame.y+frame.height)
 					break;
 				ImagePlus imp = new ImagePlus("", ip);
@@ -2850,19 +2840,19 @@ public class Plot implements Cloneable {
 				sb.append(";y="); sb.append(y);
 				sb.append(";setColor("); sb.append(plotObject.color.getRGB());
 				sb.append(");s="); sb.append(sc(1));
-				boolean inRange = pointIndex < plotObject.xValues.length && pointIndex < plotObject.yValues.length;
-				double xVal = 0; //when the symbol is drawn for the legend, pointIndex is beyond range
+				boolean drawingLegend = pointIndex < 0;
+				double xVal = 0;
 				double yVal = 0;
-				if (inRange) {
+				if (!drawingLegend) {
 					xVal = plotObject.xValues[pointIndex];
 					yVal = plotObject.yValues[pointIndex];
 				}
-				sb.append(";i="); sb.append(inRange ? pointIndex : 0);
+				sb.append(";i="); sb.append(drawingLegend ? 0 : pointIndex);
 				sb.append(";xval=" + xVal);
 				sb.append(";yval=" + yVal);
 				sb.append(";");
 				sb.append(plotObject.macroCode);
-				if (inRange ||!sb.toString().contains("d2s") ) {//a graphical symbol won't contain "d2s" ..
+				if (!drawingLegend ||!sb.toString().contains("d2s") ) {// a graphical symbol won't contain "d2s" ..
 					String rtn = IJ.runMacro(sb.toString());//.. so it can go to the legend
 					if ("[aborted]".equals(rtn))
 					plotObject.macroCode = null;
@@ -3034,8 +3024,6 @@ public class Plot implements Cloneable {
 				ip.drawLine(left, y0, left, y2);
 			}
 		}
-		ip.setLineWidth((int) scale);
-		ip.setColor(Color.black);
 	}
 
 	/** Vertical text for y axis label */
@@ -3124,7 +3112,7 @@ public class Plot implements Cloneable {
 				if (plotObject.hasMarker()) {
 					Font saveFont = ip.getFont();
 					ip.setColor(plotObject.color);
-					drawShape(plotObject, xMarker, y, plotObject.getMarkerSize());
+					drawShape(plotObject, xMarker, y, plotObject.getMarkerSize(), -1);
 					if (plotObject.shape==CUSTOM) ip.setFont(saveFont);
 				}
 				if (plotObject.hasCurve() || plotObject.shape==BAR) {
@@ -3735,7 +3723,8 @@ class PlotObject implements Cloneable, Serializable {
 
 	/** Whether an XY_DATA object has markers that can be filled */
 	boolean hasFilledMarker() {
-		return type == XY_DATA && color2 != null && (shape == Plot.CIRCLE || shape == Plot.BOX || shape == Plot.TRIANGLE || shape == Plot.DIAMOND);
+		return type == XY_DATA && color2 != null && (shape == Plot.CIRCLE || shape == Plot.BOX || shape == Plot.TRIANGLE ||
+				shape == Plot.DIAMOND || shape == Plot.CONNECTED_CIRCLES);
 	}
 
 	/** Size of the markers for an XY_DATA object with markers */
