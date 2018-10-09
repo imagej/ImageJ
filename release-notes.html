@@ -5,8 +5,22 @@
 </head>
 <body>
 
-<li> <u>1.52h 7 October 2018</u>
+<li> <u>1.52h 8 October 2018</u>
 <ul>
+<li> Plot enhancements, thanks to Michael Schmid:
+  <ul>
+  <li> "Save" in plot windows has moved into a new <i>Data&gt;&gt;</i> menu, which includes two additiona items:
+  (1) <i>Add from Plot</i> (takes a PlotObject from a different plot) and
+  (2) <i>Add from Table</i> (adds data from a Results table). Values in tables can be also be plotted
+    directly using the Results table contextual menu.
+  <li> <i>Separated Bar</i> - A bar graph like that we have already for categories (in contrast to the
+  histogram-like bar graph of the 'Bar' type.
+  <li> Histogram-like "Bar" plots that work with non-equidistant points along x.
+  <li> <i>Connected Circles</i> fill the circles with the secondary color = line color,
+  if that color is given and not null.
+  <li> Improved code for filling bars and 'filled' curves.
+  <li> For 'bar' and 'separated bar', y = 0 is included in the plot if the values differ by more than a factor of 2.
+ </ul>
 <li> The <i>Edit&gt;Selection&gt;Create Mask</i> command works
 with overlays created by the Brush and Pencil tools.
 <li> Added a "Help" button to the Brush and Pencil tool dialog boxes.
@@ -17,7 +31,8 @@ on an image and there is no existing selection.
 now appears in both the point and multi-point tool dialogs.
 <li> Thanks to Stein Rorvik, the <i>Analyze&gt;Tools&gt;Synchronize Windows</i>
 tool now supports use of the "+" and "-" keys for synchronized zooming
-when the "Image scaling" option is enabled.. 
+when the "Image scaling" option is enabled.
+<li> Added the IJ.exit() method, which aborts JavaScripts.
 <li> Thanks to Bio7, fixed a bug that caused images to turn black when
 assigned an ImageRoi created by the Brush or Pencil tools.
 <li> Thanks to Stein Rorvik, fixed bugs that caused

@@ -642,8 +642,8 @@ public class IJ {
 	}
 
 	/** Displays a message in a dialog box titled "ImageJ". If a 
-		macro is running, it is aborted. Writes to the Java console
-		if the ImageJ window is not present.*/
+		macro or JavaScript is running, it is aborted. Writes to the
+		Java console if the ImageJ window is not present.*/
 	public static void error(String msg) {
 		error(null, msg);
 		if (Thread.currentThread().getName().endsWith("JavaScript"))
@@ -652,9 +652,9 @@ public class IJ {
 			Macro.abort();
 	}
 	
-	/**Displays a message in a dialog box with the specified title.
-		If a macro is running, it is aborted. Writes to the Java  
-		console if ImageJ is not present. */
+	/** Displays a message in a dialog box with the specified title. If a 
+		macro or JavaScript is running, it is aborted. Writes to the
+		Java console if the ImageJ window is not present. */
 	public static void error(String title, String msg) {
 		if (msg!=null && msg.endsWith(Macro.MACRO_CANCELED))
 			return;
@@ -670,6 +670,13 @@ public class IJ {
 		redirectErrorMessages = false;
 		if (abortMacro)
 			Macro.abort();
+	}
+
+	/** Aborts any currently running JavaScript, or use IJ.error(string)
+		to abort a JavaScript with a message. */
+	public static void exit() {
+		if (Thread.currentThread().getName().endsWith("JavaScript"))
+			throw new RuntimeException(Macro.MACRO_CANCELED);
 	}
 
 	/** 

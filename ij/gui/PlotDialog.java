@@ -13,7 +13,7 @@ public class PlotDialog {
 
 	/** types of dialog */
 	public static final int SET_RANGE = 0, AXIS_OPTIONS = 1, LEGEND = 2, HI_RESOLUTION = 3;
-	/** dialog headings for the dialogType */
+	/** dialog headings for the dialogTypes */
 	private static final String[] HEADINGS = new String[] {"Plot Range...", "Axis Options...", "Add Legend...", "High-Resolution Plot..."};
 	/** potins and numbers for legend position */
 	private static final String[] LEGEND_POSITIONS = new String[] {"Auto",	"Top-Left", "Top-Right", "Bottom-Left", "Bottom-Right", "No Legend"};
@@ -34,8 +34,7 @@ public class PlotDialog {
 	private static float hiResFactor = 4.0f;
 	private static boolean hiResAntiAliased = true;
 
-	/** Construct a new PlotDialog, show it and do the appropriate action on the plot
-	 */
+	/** Construct a new PlotDialog for a given plot and sets the type of dialog */
 	public PlotDialog(Plot plot, int dialogType) {
 		this.plot = plot;
 		this.dialogType = dialogType;
@@ -45,7 +44,7 @@ public class PlotDialog {
 	 *	The 'parent' frame may be null */
 	public void showDialog(Frame parent) {
 		GenericDialog gd = parent == null ? new GenericDialog(HEADINGS[dialogType]) :
-				new GenericDialog(HEADINGS[dialogType]);
+				new GenericDialog(HEADINGS[dialogType], parent);
 		if (dialogType == SET_RANGE) {
 			double[] currentMinMax = plot.currentMinMax;
 			boolean livePlot = plot.plotMaker != null;
@@ -79,21 +78,21 @@ public class PlotDialog {
 				linYMin = Double.NaN;
 			double linYMax = gd.getNextNumber();
 			if (gd.invalidNumber())
-				linYMax = Double.NaN;		
+				linYMax = Double.NaN;
 			if (linXMin == linXMax || linYMin == linYMax)
-				return;		
+				return;
 			currentMinMax[0] = linXMin;
 			currentMinMax[1] = linXMax;
 			currentMinMax[2] = linYMin;
 			currentMinMax[3] = linYMax;
-			
+
 			if (livePlot) plot.templateFlags = setFlag(plot.templateFlags, Plot.X_RANGE, gd.getNextBoolean());
 			boolean xLog = gd.getNextBoolean();
 			if (livePlot) plot.templateFlags = setFlag(plot.templateFlags, Plot.Y_RANGE, gd.getNextBoolean());
 			boolean yLog = gd.getNextBoolean();
 			plot.setAxisXLog(xLog);
 			plot.setAxisYLog(yLog);
-                        plot.setLimits(linXMin, linXMax, linYMin, linYMax);
+			plot.setLimits(linXMin, linXMax, linYMin, linYMax);
 			plot.updateImage();
 			if (Recorder.record) {
 				if (Recorder.scriptMode()) {
@@ -151,7 +150,7 @@ public class PlotDialog {
 			if (xLabel == null || (!(plotXLabel.equals("Distance (pixels)") || plotXLabel.equals("Distance ( )"))))
 				xLabel = plotXLabel;
 			if (yLabel == null || !plotYLabel.equals("Gray Value"))
-                yLabel = plotYLabel; // suggest last dialog entry if default profile label
+			yLabel = plotYLabel; // suggest last dialog entry if default profile label
 			gd.addNumericField("Number Font Size", numberFont.getSize2D(), 1);
 			gd.addNumericField("Label Font Size", labelFont.getSize2D(), 1);
 			String xMultiLineLabel = xLabel.replace("\n", "|");
@@ -284,3 +283,4 @@ public class PlotDialog {
 	}
 
 }
+

@@ -21,17 +21,17 @@ import ij.io.SaveDialog;
 public class PlotWindow extends ImageWindow implements ActionListener, ItemListener,
 	ClipboardOwner, ImageListener, RoiListener, Runnable {
 
-	/** Display points using a circle 5 pixels in diameter. */
+	/** @deprecated */
 	public static final int CIRCLE = Plot.CIRCLE;
-	/** Display points using an X-shaped mark. */
+	/** @deprecated */
 	public static final int X = Plot.X;
-	/** Display points using an box-shaped mark. */
+	/** @deprecated */
 	public static final int BOX = Plot.BOX;
-	/** Display points using an tiangular mark. */
+	/** @deprecated */
 	public static final int TRIANGLE = Plot.TRIANGLE;
-	/** Display points using an cross-shaped mark. */
+	/** @deprecated */
 	public static final int CROSS = Plot.CROSS;
-	/** Connect points with solid lines. */
+	/** @deprecated */
 	public static final int LINE = Plot.LINE;
 	/** Write first X column when listing or saving. */
 	public static boolean saveXValues = true;
@@ -70,12 +70,14 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	private static final int NO_GRID_LINES = 16;
 	private static final int NO_TICKS = 32;
 	private static String moreButtonLabel = "More "+'\u00bb';
+	private static String dataButtonLabel = "Data "+'\u00bb';
 
 	boolean wasActivated;			// true after window has been activated once, needed by PlotCanvas
 
-	private Button list, save, more, live;
-	private PopupMenu popupMenu;
-	private MenuItem[] menuItems;
+	private Button list, data, more, live;
+	private PopupMenu dataPopupMenu, morePopupMenu;
+	private static final int NUM_MENU_ITEMS = 17; //how many menu items we have in total
+	private MenuItem[] menuItems = new MenuItem[NUM_MENU_ITEMS];
 	private Label coordinates;
 	private static String defaultDirectory = null;
 	private static int options;
@@ -222,9 +224,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		list.addActionListener(this);
 		bottomPanel.add(list);
 		bottomPanel.setLayout(new FlowLayout(FlowLayout.RIGHT,hgap,0));
-		save = new Button("Save...");
-		save.addActionListener(this);
-		bottomPanel.add(save);
+		data = new Button(dataButtonLabel);
+		data.addActionListener(this);
+		bottomPanel.add(data);
 		more = new Button(moreButtonLabel);
 		more.addActionListener(this);
 		bottomPanel.add(more);
@@ -238,7 +240,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		coordinates.setBackground(new Color(220, 220, 220));
 		bottomPanel.add(coordinates);
 		add(bottomPanel);
-		more.add(getPopupMenu());
+		data.add(getDataPopupMenu());
+		more.add(getMorePopupMenu());
 		plot.draw();
 		LayoutManager lm = getLayout();
 		if (lm instanceof ImageLayout)
@@ -277,8 +280,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 
 	/** Called when the window is activated (WindowListener)
 	 *  Window layout is finished at latest a few millisec after windowActivated, then the
-     *  'wasActivated' boolean is set to tell the ImageCanvas that resize events should
-     *  lead to resizing the canvas (before, creating the layout can lead to resize events)*/
+	 *  'wasActivated' boolean is set to tell the ImageCanvas that resize events should
+	 *  lead to resizing the canvas (before, creating the layout can lead to resize events)*/
 	public void windowActivated(WindowEvent e) {
 		super.windowActivated(e);
 		if (!wasActivated) {
@@ -287,7 +290,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 					IJ.wait(50);  //sometimes, window layout is done only a few millisec after windowActivated
 					wasActivated = true;
 				}
-            }).start();
+			}).start();
 		}
 	}
 
@@ -299,35 +302,45 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		setMinimumSize(new Dimension(d1.width + d2.width, d1.height + d2.height));
 	}
 
-	//names for popupMenu items
-	private static int COPY=0, COPY_ALL=1, SET_RANGE=2, PREV_RANGE=3, RESET_RANGE=4, FIT_RANGE=5,
-			ZOOM_SELECTION=6, AXIS_OPTIONS=7, LEGEND=8, STYLE=9, RESET_PLOT=10, FREEZE=11, HI_RESOLUTION=12,
-			PROFILE_PLOT_OPTIONS=13;
+	/** Names for popupMenu items. Update NUM_MENU_ITEMS at the top when adding new ones! */
+	private static int SAVE=0, COPY=1, COPY_ALL=2, ADD_FROM_PLOT=3,	ADD_FROM_TABLE=4, //data menu
+			SET_RANGE=5, PREV_RANGE=6, RESET_RANGE=7, FIT_RANGE=8,  //the rest is in the more menu
+			ZOOM_SELECTION=9, AXIS_OPTIONS=10, LEGEND=11, STYLE=12, RESET_PLOT=13,
+			FREEZE=14, HI_RESOLUTION=15, PROFILE_PLOT_OPTIONS=16;
 	//the following commands are disabled when the plot is frozen
-	private static int[] DISABLED_WHEN_FROZEN = new int[]{SET_RANGE, PREV_RANGE, RESET_RANGE,
+	private static int[] DISABLED_WHEN_FROZEN = new int[]{ADD_FROM_PLOT, ADD_FROM_TABLE, SET_RANGE, PREV_RANGE, RESET_RANGE,
 			FIT_RANGE, ZOOM_SELECTION, AXIS_OPTIONS, LEGEND, STYLE, RESET_PLOT};
-	/** Prepares and returns the popupMenu of the More>> button*/
-	PopupMenu getPopupMenu() {
-		popupMenu = new PopupMenu();
-		menuItems = new MenuItem[14];
-		menuItems[COPY] = addPopupItem(popupMenu, "Copy 1st Data Set");
-		menuItems[COPY_ALL] = addPopupItem(popupMenu, "Copy All Data");
-		popupMenu.addSeparator();
-		menuItems[SET_RANGE] = addPopupItem(popupMenu, "Set Range...");
-		menuItems[PREV_RANGE] = addPopupItem(popupMenu, "Previous Range");
-		menuItems[RESET_RANGE] = addPopupItem(popupMenu, "Reset Range");
-		menuItems[FIT_RANGE] = addPopupItem(popupMenu, "Set Range to Fit All");
-		menuItems[ZOOM_SELECTION] = addPopupItem(popupMenu, "Zoom to Selection");
-		popupMenu.addSeparator();
-		menuItems[AXIS_OPTIONS] = addPopupItem(popupMenu, "Axis Options...");
-		menuItems[LEGEND] = addPopupItem(popupMenu, "Legend...");
-		menuItems[STYLE] = addPopupItem(popupMenu, "Contents Style...");
-		menuItems[RESET_PLOT] = addPopupItem(popupMenu, "Reset Format");
-		menuItems[FREEZE] = addPopupItem(popupMenu, "Freeze Plot", true);
-		menuItems[HI_RESOLUTION] = addPopupItem(popupMenu, "High-Resolution Plot...");
-		popupMenu.addSeparator();
-		menuItems[PROFILE_PLOT_OPTIONS] = addPopupItem(popupMenu, "Plot Options...");
-		return popupMenu;
+
+	/** Prepares and returns the popupMenu of the More>> button */
+	PopupMenu getDataPopupMenu() {
+		dataPopupMenu = new PopupMenu();
+		menuItems[SAVE] = addPopupItem(dataPopupMenu, "Save Data...");
+		menuItems[COPY] = addPopupItem(dataPopupMenu, "Copy 1st Data Set");
+		menuItems[COPY_ALL] = addPopupItem(dataPopupMenu, "Copy All Data");
+		dataPopupMenu.addSeparator();
+		menuItems[ADD_FROM_PLOT] = addPopupItem(dataPopupMenu, "Add from Plot...");
+		menuItems[ADD_FROM_TABLE] = addPopupItem(dataPopupMenu, "Add from Table...");
+		return dataPopupMenu;
+	}
+
+	/** Prepares and returns the popupMenu of the More>> button */
+	PopupMenu getMorePopupMenu() {
+		morePopupMenu = new PopupMenu();
+		menuItems[SET_RANGE] = addPopupItem(morePopupMenu, "Set Range...");
+		menuItems[PREV_RANGE] = addPopupItem(morePopupMenu, "Previous Range");
+		menuItems[RESET_RANGE] = addPopupItem(morePopupMenu, "Reset Range");
+		menuItems[FIT_RANGE] = addPopupItem(morePopupMenu, "Set Range to Fit All");
+		menuItems[ZOOM_SELECTION] = addPopupItem(morePopupMenu, "Zoom to Selection");
+		morePopupMenu.addSeparator();
+		menuItems[AXIS_OPTIONS] = addPopupItem(morePopupMenu, "Axis Options...");
+		menuItems[LEGEND] = addPopupItem(morePopupMenu, "Legend...");
+		menuItems[STYLE] = addPopupItem(morePopupMenu, "Contents Style...");
+		menuItems[RESET_PLOT] = addPopupItem(morePopupMenu, "Reset Format");
+		menuItems[FREEZE] = addPopupItem(morePopupMenu, "Freeze Plot", true);
+		menuItems[HI_RESOLUTION] = addPopupItem(morePopupMenu, "High-Resolution Plot...");
+		morePopupMenu.addSeparator();
+		menuItems[PROFILE_PLOT_OPTIONS] = addPopupItem(morePopupMenu, "Plot Options...");
+		return morePopupMenu;
 	}
 
 	MenuItem addPopupItem(PopupMenu popupMenu, String s) {
@@ -355,19 +368,22 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 			toggleLiveProfiling();
 		else if (b==list)
 			showList();
-		else if (b==save)
+		else if (b==data) {
+			enableDisableMenuItems();
+			dataPopupMenu.show((Component)b, 1, 1);
+		} else if (b==more) {
+			enableDisableMenuItems();
+			morePopupMenu.show((Component)b, 1, 1);
+		} else if (b==menuItems[SAVE])
 			saveAsText();
-		else if (b==more) {
-			boolean frozen = plot.isFrozen();	//prepare menu according to 'frozen' state of plot
-			((CheckboxMenuItem)menuItems[FREEZE]).setState(frozen);
-			for (int i : DISABLED_WHEN_FROZEN)
-				menuItems[i].setEnabled(!frozen);
-			popupMenu.show((Component)b, 1, 1);
-		}
 		else if (b==menuItems[COPY])
 			copyToClipboard(false);
 		else if (b==menuItems[COPY_ALL])
 			copyToClipboard(true);
+		else if (b==menuItems[ADD_FROM_PLOT])
+			new PlotContentsDialog(plot, PlotContentsDialog.ADD_FROM_PLOT).showDialog(this);
+		else if (b==menuItems[ADD_FROM_TABLE])
+			new PlotContentsDialog(plot, PlotContentsDialog.ADD_FROM_TABLE).showDialog(this);
 		else if (b==menuItems[ZOOM_SELECTION]) {
 			if (imp!=null && imp.getRoi()!=null && imp.getRoi().isArea())
 				plot.zoomToRect(imp.getRoi().getBounds());
@@ -384,18 +400,27 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		else if (b==menuItems[LEGEND])
 			new PlotDialog(plot, PlotDialog.LEGEND).showDialog(this);
 		else if (b==menuItems[STYLE])
-			new PlotContentsStyleDialog(plot).showDialog(this);
+			new PlotContentsDialog(plot, PlotContentsDialog.STYLE).showDialog(this);
 		else if (b==menuItems[RESET_PLOT]) {
 			plot.setFont(Font.PLAIN, Prefs.getInt(PREFS_FONT_SIZE, FONT_SIZE));
 			plot.setAxisLabelFont(Font.PLAIN, Prefs.getInt(PREFS_FONT_SIZE, FONT_SIZE));
 			plot.setFormatFlags(Plot.getDefaultFlags());
-			plot.setFrameSize(plotWidth, plotHeight); //updates the image
+			plot.setFrameSize(plotWidth, plotHeight); //updates the image only when size changed
+			plot.updateImage();
 		} else if (b==menuItems[HI_RESOLUTION])
 			new PlotDialog(plot, PlotDialog.HI_RESOLUTION).showDialog(this);
 		else if (b==menuItems[PROFILE_PLOT_OPTIONS])
 			IJ.doCommand("Plots...");
 		ic.requestFocus();	//have focus on the canvas, not the button, so that pressing the space bar allows panning
 		} catch (Exception ex) { IJ.handleException(ex); }
+	}
+
+	private void enableDisableMenuItems() {
+		boolean frozen = plot.isFrozen();	//prepare menu according to 'frozen' state of plot
+		((CheckboxMenuItem)menuItems[FREEZE]).setState(frozen);
+		for (int i : DISABLED_WHEN_FROZEN)
+			menuItems[i].setEnabled(!frozen);
+				menuItems[ADD_FROM_TABLE].setEnabled(PlotContentsDialog.tableWindowExists());
 	}
 
 	/** Called if the user activates/deactivates a CheckboxMenuItem */
@@ -800,4 +825,5 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	}
 
 }
+
 

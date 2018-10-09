@@ -697,12 +697,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	this.stack = newStack;
     	oneSliceStack = false;
     	setProcessor2(title, ip, newStack);
-    	if ((this instanceof CompositeImage)) {
+		if ((this instanceof CompositeImage)) {
 			compositeImage = getStackSize()!=getNSlices();
 			((CompositeImage)this).completeReset();
-			if (bitDepth1!=getBitDepth())
+			if (bitDepth1!=0 && bitDepth1!=getBitDepth())
 				((CompositeImage)this).resetDisplayRanges();
-			//updateAndRepaintWindow();
 		}
 		if (win==null) {
 			if (resetCurrentSlice) setSlice(currentSlice);
