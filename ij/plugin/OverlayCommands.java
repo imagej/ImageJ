@@ -376,6 +376,7 @@ public class OverlayCommands implements PlugIn {
 			rt.setValue("Y", i, r.y);
 			rt.setValue("Width", i, r.width);		
 			rt.setValue("Height", i, r.height);		
+			rt.setValue("Points", i, rois[i].size());
 			rt.setValue("Color", i, color);		
 			rt.setValue("Fill", i, fill);		
 			rt.setValue("LWidth", i, sWidth);		
