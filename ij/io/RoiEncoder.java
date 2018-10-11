@@ -214,6 +214,8 @@ public class RoiEncoder {
 			PointRoi point = (PointRoi)roi;
 			putByte(RoiDecoder.POINT_TYPE, point.getPointType());
 			putShort(RoiDecoder.STROKE_WIDTH, point.getSize());
+			if (point.getShowLabels())
+				options |= RoiDecoder.SHOW_LABELS;
 		}
 
 		if (roi instanceof RotatedRectRoi || roi instanceof EllipseRoi) {

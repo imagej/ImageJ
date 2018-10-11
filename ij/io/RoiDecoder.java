@@ -100,6 +100,7 @@ public class RoiDecoder {
 	public static final int SUB_PIXEL_RESOLUTION = 128;
 	public static final int DRAW_OFFSET = 256;
 	public static final int ZERO_TRANSPARENT = 512;
+	public static final int SHOW_LABELS = 1024;
 	
 	// types
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6,
@@ -287,7 +288,8 @@ public class RoiDecoder {
 							((PointRoi)roi).setPointType(getByte(POINT_TYPE));
 							((PointRoi)roi).setSize(getShort(STROKE_WIDTH));
 						}
-						((PointRoi)roi).setShowLabels(!ij.Prefs.noPointLabels);
+						if ((options&SHOW_LABELS)!=0 && !ij.Prefs.noPointLabels)
+							((PointRoi)roi).setShowLabels(true);
 						break;
 					}
 					int roiType;

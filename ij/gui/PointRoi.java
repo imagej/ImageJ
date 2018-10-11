@@ -145,7 +145,6 @@ public class PointRoi extends PolygonRoi {
 	}
 				
 	void handleMouseMove(int ox, int oy) {
-		//IJ.log("handleMouseMove");
 	}
 	
 	protected void handleMouseUp(int sx, int sy) {
@@ -167,11 +166,16 @@ public class PointRoi extends PolygonRoi {
 			if (fontSize>9)
 				Java2.setAntialiasedText(g, true);
 		}
-		int slice = imp!=null&&positions!=null&&imp.getStackSize()>1?imp.getCurrentSlice():0;
+		int slice = imp!=null&&positions!=null&&imp.getStackSize()>1?imp.getCurrentSlice():0;		
+		ImageCanvas ic = imp!=null?imp.getCanvas():null;
+		if (ic!=null && overlay && ic.getShowAllList()!=null && ic.getShowAllList().contains(this) && !Prefs.showAllSliceOnly)
+			slice = 0;  // draw point irrespective of currently selected slice
 		if (Prefs.showAllPoints)
 			slice = 0;
+		//IJ.log("draw: "+positions+" "+imp.getCurrentSlice());
 		for (int i=0; i<nPoints; i++) {
-			if (slice==0 || slice==positions[i])
+			//IJ.log(i+" "+slice+" "+(positions!=null?positions[i]:-1));
+			if (slice==0 || (positions!=null&&(slice==positions[i])||positions[i]==0))
 				drawPoint(g, xp2[i], yp2[i], i+1);
 		}
 		if (updateFullWindow) {
@@ -302,7 +306,7 @@ public class PointRoi extends PolygonRoi {
 	
 	/** Adds a point to this PointRoi. */
 	public PointRoi addPoint(double x, double y) {
-		addPoint(getImage(), x, y);
+		addPoint(null, x, y);
 		return this;
 	}
 
@@ -795,7 +799,6 @@ public class PointRoi extends PolygonRoi {
 		return index;
 	}
 
-
 	/** Returns a copy of this PointRoi. */
 	public synchronized Object clone() {
 		PointRoi r = (PointRoi)super.clone();
@@ -824,7 +827,7 @@ public class PointRoi extends PolygonRoi {
 	public int[] getCounterInfo() {
 		return counterInfo;
 	}
-
+	
 	/** @deprecated */
 	public void setHideLabels(boolean hideLabels) {
 		this.showLabels = !hideLabels;
