@@ -60,8 +60,8 @@ public class Plot implements Cloneable {
 	public static final int CUSTOM = 9;
 	/** Fill area between line plot and x-axis at y=0. */
 	public static final int FILLED = 10;
-	/** Draw a histogram bar for each point (bars touch each other unless the x axis has categories set via the label.
-     *  x values should be sorted (ascending or descending) */
+	/** Draw a histogram bar for each point (bars touch each other unless the x axis has categories set via the axis label.
+	 *  x values should be sorted (ascending or descending) */
 	public static final int BAR = 11;
 	/** Draw a free-standing bar for each point. x values should be equidistant and sorted (ascending or descending) */
 	public static final int SEPARATED_BAR = 12;
@@ -473,7 +473,7 @@ public class Plot implements Cloneable {
 
 	/** Adjusts the format (style) with another plot as a template. Flags determine what to
 	 *	copy from the template; these can be COPY_SIZE, COPY_LABELS, COPY_AXIS_STYLE,
-	 *  COPY_CONTENTS_STYLE, and COPY_LEGEND.
+	 *  COPY_CONTENTS_STYLE (hidden items are ignored), and COPY_LEGEND.
 	 *	<code>plot</code> may be null; then the call has no effect. */
 	public void useTemplate(Plot plot, int templateFlags) {
 		if (plot == null) return;
@@ -512,7 +512,7 @@ public class Plot implements Cloneable {
 					if ((templateFlags & COPY_LEGEND) != 0)
 						plotObject.label = plot.allPlotObjects.get(plotPObjectIndex).label;
 					if ((templateFlags & COPY_CONTENTS_STYLE) != 0)
-						setPlotObjectStyles(plotObject, getPlotObjectStyles(plot.allPlotObjects.get(plotPObjectIndex)));
+						setPlotObjectStyle(plotObject, getPlotObjectStyle(plot.allPlotObjects.get(plotPObjectIndex)));
 				}
 			}
 		}
@@ -904,7 +904,23 @@ public class Plot implements Cloneable {
 				currentFont, currentColor == null ? Color.black : currentColor, flags);
 		if (plotDrawn) updateImage();
 	}
+	
+	public void setLegend(String labels) {
+		setLegend(labels, AUTO_POSITION);
+	}
 
+	public String[] getTypes() {
+		return SORTED_SHAPES;
+	}
+		
+	public void setType(int index, String type) {
+		PlotObject plotObject = allPlotObjects.get(index);
+		if (plotObject!=null && plotObject.shape!=CUSTOM) {
+			plotObject.shape = toShape(type);
+			updateImage();
+		}
+	}
+	
 	/** Sets the justification used by addLabel(), where <code>justification</code>
 	 * is Plot.LEFT, Plot.CENTER or Plot.RIGHT. Default is LEFT. */
 	public void setJustification(int justification) {
@@ -938,7 +954,7 @@ public class Plot implements Cloneable {
 
 	/** Sets the drawing color for the next objects that will be added to the plot. */
 	public void setColor(String c1, String c2) {
-		setColor(Colors.getColor(c1, Color.black), Colors.getColor(c2, null));
+		setColor(Colors.decode(c1, Color.black), Colors.decode(c2, null));
 	}
 
 	/** Set the plot frame background color. */
@@ -948,7 +964,7 @@ public class Plot implements Cloneable {
 
 	/** Set the plot frame background color. */
 	public void setBackgroundColor(String c) {
-		setBackgroundColor(Colors.getColor(c,Color.white));
+		setBackgroundColor(Colors.decode(c,Color.white));
 	}
 
 	/** Changes the line width for the next objects that will be added to the plot. */
@@ -1082,20 +1098,14 @@ public class Plot implements Cloneable {
 	}
 
 	/** Get an array with human-readable designations of the PlotObjects (curves, labels, ...)
-	 *	in the sequence they are plotted (i.e., foreground last). Hidden PlotObjects are included. **/
+	 *	in the sequence they were added (the object passed with the constructur is first,
+	 *	even though it is plotted last). Hidden PlotObjects are included. **/
 	public String[] getPlotObjectDesignations() {
-		int nObjects = allPlotObjects.size();
-		String[] names = new String[nObjects];
+		String[] names = new String[allPlotObjects.size()];
 		if (names.length == 0) return names;
-		String[] legendLabels = null;
-		if (pp.legend != null && pp.legend.label != null)
-			legendLabels = pp.legend.label.split("[\t\n]");
 		int iData = 1, iArrow = 1, iLine = 1, iText = 1,  iBox = 1, iShape = 1; //Human readable counters of each object type
-		int firstObject = allPlotObjects.get(0).hasFlag(PlotObject.CONSTRUCTOR_DATA) ? 1 : 0; //PlotObject passed with constructor is plotted last
-		for (int i=0, p=firstObject; i<nObjects; i++, p++) {
-			if (p >= allPlotObjects.size())            //the PlotObject passed with Constructor comes last
-				p = 0;
-			PlotObject plotObject = allPlotObjects.get(p);
+		for (int i=0; i<allPlotObjects.size(); i++) {
+			PlotObject plotObject = allPlotObjects.get(i);
 			int type = plotObject.type;
 			String label = plotObject.label;
 			switch (type) {
@@ -1134,28 +1144,26 @@ public class Plot implements Cloneable {
 		return names;
 	}
 
-	/** Add the i-th PlotObject from another plot to this one.
-	 *	Index 'i' refers to the sequence how the PlotObjects are plotted (i.e., foreground last).
+	/** Add the i-th PlotObject (in the sequence how they were added, including hidden ones)
+	 *  from another plot to this one.
 	 *  Use 'updateImage' to update the plot thereafter.
-	 *  @return Index of the plotObject added in the sequence they are plotted **/
+	 *  @return Index of the plotObject added in the sequence they were added **/
 	public int addObjectFromPlot(Plot plot, int i) {
-		PlotObject plotObject = plot.getPlotObject(i).deepClone();
+		PlotObject plotObject = plot.getPlotObjectDeepClone(i);
 		plotObject.unsetFlag(PlotObject.CONSTRUCTOR_DATA);
 		allPlotObjects.add(plotObject);
 		int index = allPlotObjects.size() - 1;
-		if (allPlotObjects.get(0).hasFlag(PlotObject.CONSTRUCTOR_DATA)) index --;
 		return index;
 	}
 
 	/** Get the style of the i-th PlotObject (curve, label, ...) in the sequence
-	 *	they are plotted (i.e., foreground last), as String with comma delimiters:
+	 *	they were added (including hidden ones), as String with comma delimiters:
 	 *	Main Color, Secondary Color (or "none"), Line Width [, Symbol shape for XY_DATA] [,hidden] **/
-	public String getPlotObjectStyles(int i) {
-		PlotObject plotObject = getPlotObject(i);
-		return getPlotObjectStyles(plotObject);
+	public String getPlotObjectStyle(int i) {
+		return getPlotObjectStyle(allPlotObjects.get(i));
 	}
 
-	String getPlotObjectStyles(PlotObject plotObject) {
+	String getPlotObjectStyle(PlotObject plotObject) {
 		String styleString = Colors.colorToString(plotObject.color) + "," +
 				Colors.colorToString(plotObject.color2) + "," +
 				plotObject.lineWidth;
@@ -1166,29 +1174,25 @@ public class Plot implements Cloneable {
 		return styleString;
 	}
 
-	/** Get the label the i-th PlotObject in the sequence
-	 *	they are plotted (i.e., foreground last) **/
+	/** Get the label the i-th PlotObject (in the sequence how they were added, including hidden ones).
+	 *  Returns null if no label **/
 	public String getPlotObjectLabel(int i) {
-		PlotObject plotObject = getPlotObject(i);
-		return plotObject.label;
+		return allPlotObjects.get(i).label;
 	}
 
-	/** Set the label the i-th PlotObject in the sequence
-	 *	they are plotted (i.e., foreground last) **/
+	/** Set the label the i-th PlotObject (in the sequence how they were added, including hidden ones) **/
 	public void setPlotObjectLabel(int i, String label) {
-		PlotObject plotObject = getPlotObject(i);
-		plotObject.label = label;
+		allPlotObjects.get(i).label = label;
 	}
 
 	/** Set the style of the i-th PlotObject (curve, label, ...) in the sequence
-	 *	they are plotted (i.e., foreground last), from a String with comma delimiters:
+	 *	they were added (including hidden ones), from a String with comma delimiters:
 	 *	Main Color, Secondary Color (or "none"), Line Width [, Symbol shape for XY_DATA] [,hidden] **/
-	public void setPlotObjectStyles(int i, String styleString) {
-		PlotObject plotObject = getPlotObject(i);
-		setPlotObjectStyles(plotObject, styleString);
+	public void setPlotObjectStyle(int i, String styleString) {
+		setPlotObjectStyle(allPlotObjects.get(i), styleString);
 	}
 
-	void setPlotObjectStyles(PlotObject plotObject, String styleString) {
+	void setPlotObjectStyle(PlotObject plotObject, String styleString) {
 		String[] items = styleString.split(",");
 		int nItems = items.length;
 		if (items[nItems-1].indexOf("hidden") >= 0) {
@@ -1208,30 +1212,10 @@ public class Plot implements Cloneable {
 		return;
 	}
 
-	/** Returns the ith PlotObject of this plot in the sequence they are plotted,
-	 *  (i.e. foreground last). Hidden PlotObjects are counted.
-	 *  Note that internally the plotObject passed with the constructor is first
-	 *  (if there is one); but it is plotted last, so here it is returned for the last index */
-	PlotObject getPlotObject(int i) {
-		if (allPlotObjects.get(0).hasFlag(PlotObject.CONSTRUCTOR_DATA)) i++;
-		if (i == allPlotObjects.size()) i = 0;						//PlotObject passed with Constructor (#0) is last
-		return allPlotObjects.get(i);
-	}
-
 	/** Returns the number of PlotObjects (curves, labels, ...) passed with the constructor or added by 'add' methods */
 	public int getNumPlotObjects() {
 		return allPlotObjects.size();
 	}
-
-	/** Returns the index (in the sequence they are plotted) of the plot object added last.
-	 *  Hidden PlotObjects are counted. Returns -1 if nothing added. */
-	public int getLastAddedIndex() {
-		int index = allPlotObjects.size() - 1;
-		if (index > 0 && allPlotObjects.get(0).hasFlag(PlotObject.CONSTRUCTOR_DATA))
-			index--;
-		return index;
-	}
-
 
 	/** Creates a snapshot of the plot contents (not including axis formats etc),
 	 *  for later undo by restorePlotObjects. See also killPlotObjectsSnapshot */
@@ -1255,9 +1239,14 @@ public class Plot implements Cloneable {
 
 	private void copyPlotObjectsVector(Vector<PlotObject> src, Vector<PlotObject>dest) {
 		if (dest.size() > 0) dest.removeAllElements();
-		for (PlotObject po : src)
-			dest.add(po.deepClone());
+		for (PlotObject plotObject : src)
+			dest.add(plotObject.deepClone());
 	}
+
+	PlotObject getPlotObjectDeepClone(int i) {
+		return allPlotObjects.get(i).deepClone();
+	}
+
 
 	/** Sets the plot range to the initial value determined from minima&maxima or given by setLimits.
 	 *	Updates the image if existing and updateImg is true */
@@ -2530,7 +2519,7 @@ public class Plot implements Cloneable {
 					drawFloatPolyLineFilled(ip, plotObject.xValues, plotObject.yValues, nPoints);
 				}
 				ip.setColor(plotObject.color);
-                ip.setLineWidth(sc(plotObject.lineWidth));
+				ip.setLineWidth(sc(plotObject.lineWidth));
 
 				if (plotObject.yEValues != null)    // error bars in front of bars and fill area below the line, but behind lines and marker symbols
 					drawVerticalErrorBars(plotObject.xValues, plotObject.yValues, plotObject.yEValues);
@@ -2860,7 +2849,7 @@ public class Plot implements Cloneable {
 				WindowManager.setTempCurrentImage(null);
 				break;
 			default: // CIRCLE, CONNECTED_CIRCLES: 5x5 oval approximated by 5x5 square without corners
-				if (sc(size) < 5.01) {
+				if (sc(size) < 5.01 && plotObject.lineWidth < 2) {
 					ip.drawLine(x-1, y-2, x+1, y-2);
 					ip.drawLine(x-1, y+2, x+1, y+2);
 					ip.drawLine(x+2, y+1, x+2, y-1);

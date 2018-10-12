@@ -10,8 +10,8 @@ import java.util.*;
 
 /** This plugin implements most of the Edit/Options/Colors command. */
 public class Colors implements PlugIn, ItemListener {
-	public static final String[] colors = {"red","green","blue","magenta","cyan","yellow","orange","black","white"};
-	private static final String[] colors2 = {"Red","Green","Blue","Magenta","Cyan","Yellow","Orange","Black","White"};
+	public static final String[] colors = {"red","green","blue","magenta","cyan","yellow","orange","black","white","gray"};
+	private static final String[] colors2 = {"Red","Green","Blue","Magenta","Cyan","Yellow","Orange","Black","White","Gray"};
 	private Choice fchoice, bchoice, schoice;
 	private Color fc2, bc2, sc2;
 
@@ -39,7 +39,7 @@ public class Colors implements PlugIn, ItemListener {
 			bchoice.addItemListener(this);
 			schoice.addItemListener(this);
 		}
-		
+
 		gd.showDialog();
 		if (gd.wasCanceled()) {
 			if (fc2!=fc) Toolbar.setForegroundColor(fc);
@@ -66,7 +66,7 @@ public class Colors implements PlugIn, ItemListener {
 			Toolbar.getInstance().repaint();
 		}
 	}
-	
+
 	public static String getColorName(Color c, String defaultName) {
 		if (c==null) return defaultName;
 		String name = defaultName;
@@ -80,6 +80,7 @@ public class Colors implements PlugIn, ItemListener {
 			else if (c.equals(Color.orange)) name = colors2[6];
 			else if (c.equals(Color.black)) name = colors2[7];
 			else if (c.equals(Color.white)) name = colors2[8];
+			else if (c.equals(Color.gray)) name = colors2[9];
 		} else {
 			if (c.equals(Color.red)) name = colors[0];
 			else if (c.equals(Color.green)) name = colors[1];
@@ -90,10 +91,11 @@ public class Colors implements PlugIn, ItemListener {
 			else if (c.equals(Color.orange)) name = colors[6];
 			else if (c.equals(Color.black)) name = colors[7];
 			else if (c.equals(Color.white)) name = colors[8];
+			else if (c.equals(Color.gray)) name = colors[9];
 		}
 		return name;
 	}
-	
+
 	public static Color getColor(String name, Color defaultColor) {
 		if (name==null) return defaultColor;
 		name = name.toLowerCase(Locale.US);
@@ -107,12 +109,13 @@ public class Colors implements PlugIn, ItemListener {
 		else if (name.equals(colors[6])) c = Color.orange;
 		else if (name.equals(colors[7])) c = Color.black;
 		else if (name.equals(colors[8])) c = Color.white;
+		else if (name.equals(colors[9])) c = Color.gray;
 		return c;
 	}
 
 	public static Color decode(String hexColor, Color defaultColor) {
-		Color color = getColor(hexColor, Color.gray);
-		if (color==Color.gray) {
+		Color color = getColor(hexColor, null);
+		if (color==null) {
 			if (hexColor.startsWith("#"))
 				hexColor = hexColor.substring(1);
 			int len = hexColor.length();
@@ -156,9 +159,11 @@ public class Colors implements PlugIn, ItemListener {
 		else if (hex.equals("ffff00")) color = "yellow";
 		else if (hex.equals("00ffff")) color = "cyan";
 		else if (hex.equals("ff00ff")) color = "magenta";
+		else if (hex.equals("ffc800")) color = "orange";
+		else if (hex.equals("808080")) color = "gray";
 		return color;
 	}
-	
+
 	/** Converts a hex color (e.g., "ffff00") into "Red", "Green", "Yellow", etc.
 		Returns null if the color is not one of the eight primary colors. */
 	public static String hexToColor2(String hex) {
@@ -175,6 +180,7 @@ public class Colors implements PlugIn, ItemListener {
 		else if (hex.equals("00ffff")) color = "Cyan";
 		else if (hex.equals("ff00ff")) color = "Magenta";
 		else if (hex.equals("ffc800")) color = "Orange";
+		else if (hex.equals("808080")) color = "Gray";
 		return color;
 	}
 
@@ -218,7 +224,7 @@ public class Colors implements PlugIn, ItemListener {
 			Toolbar.getInstance().repaint();
 		}
 	}
-	
+
 	public static String[] getColors(String... moreColors) {
 		ArrayList names = new ArrayList();
 		for (String arg: moreColors) {
@@ -229,5 +235,4 @@ public class Colors implements PlugIn, ItemListener {
 			names.add(arg);
 		return (String[])names.toArray(new String[names.size()]);
 	}
-	
 }

@@ -311,6 +311,7 @@ public class Menus {
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.js");
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.js");
 		addExample(submenu, "Dynamic Plot", "Dynamic_Plot.js");
+		addExample(submenu, "Plot Types", "Plot_Types.js");
 		addExample(submenu, "Process Folder", "Batch_Process_Folder.js");
 		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.js");
 		addExample(submenu, "Non-numeric Table", "Non-numeric_Table.js");

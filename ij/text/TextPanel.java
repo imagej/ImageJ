@@ -464,7 +464,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
  		else if (cmd.equals("Apply Macro..."))
 			new ResultsTableMacros(rt);
  		else if (cmd.equals("Plot..."))
-			new PlotContentsDialog(rt, title).showDialog(getParent() instanceof Frame ? (Frame)getParent() : null);
+			new PlotContentsDialog(title, rt).showDialog(getParent() instanceof Frame ? (Frame)getParent() : null);
 	}
 
  	public void lostOwnership (Clipboard clip, Transferable cont) {}
@@ -1054,4 +1054,3 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 
 }
-
