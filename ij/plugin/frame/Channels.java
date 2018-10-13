@@ -28,6 +28,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 			instance.toFront();
 			return;
 		}
+		ImageJ ij = IJ.getInstance();
 		WindowManager.addWindow(this);
 		instance = this;
 		GridBagLayout gridbag = new GridBagLayout();
@@ -48,6 +49,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 			choice.addItem(modes[i]);
 		choice.select(0);
 		choice.addItemListener(this);
+		choice.addKeyListener(ij);
 		add(choice, c);
 
 		CompositeImage ci = getImage();
@@ -61,6 +63,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 			c.gridy = y++;
 			add(checkbox[i], c);
 			checkbox[i].addItemListener(this);
+			checkbox[i].addKeyListener(ij);
 		}
 
 		c.insets = new Insets(0, 15, 10, 15);
@@ -68,6 +71,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 		c.gridy = y++;
 		moreButton = new Button(moreLabel);
 		moreButton.addActionListener(this);
+		moreButton.addKeyListener(ij);
 		add(moreButton, c);
 		update();
 
@@ -76,7 +80,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 			addPopupItem(menuItems[i]);
 		add(pm);
 
-		addKeyListener(IJ.getInstance());  // ImageJ handles keyboard shortcuts
+		addKeyListener(ij);  // ImageJ handles keyboard shortcuts
 		setResizable(false);
 		pack();
 		if (location==null) {

@@ -652,31 +652,33 @@ public class Plot implements Cloneable {
 		return defaultFlags;
 	}
 
-	/** Adds a curve or set of points to this plot, where 'shape' is
-	 *  "line", "filled", "bars, "circles", "boxes", "triangles", "crosses",
-	 *  "dots", "diamonds", "x" or "connected".
-	 *  If 'shape' is in the form "code: <macroCode>", the macro given is executed to draw the symbol;
-	 *  macro variables 'x' and 'y' are the pixel coordinates of the point, 'xval' and 'yval' are the plot data
-	 *  and 'i' is the index of the data point (starting with 0 for the first point in the array).
-	 *  The drawing including line thickness, font size, etc. be scaled by scale factor 's' (to make high-resolution plots work).
-	 *  Example: "code: setFont('sanserif',12*s,'bold anti');drawString(d2s(yval,1),x-14*s,y-4*s);"
-	 *  writes the y value for each point above the point */
-	public void add(String shape, double[] xvalues, double[] yvalues) {
-		int iShape = toShape(shape);
-		addPoints(Tools.toFloat(xvalues), Tools.toFloat(yvalues), null, iShape, iShape==CUSTOM?shape.substring(5, shape.length()):null);
+	/** Adds a curve or set of points to this plot, where 'type' is
+	 * "line", "connected circle", "filled", "bar", "separated bar", "circle", "box", "triangle", "diamond", "cross", 
+	 * "x" or "dot". Run <i>Help&gt;Examples&gt;JavaScript&gt;Graph Types</i> to see examples.
+	 * If 'type' is in the form "code: <macroCode>", the macro given is executed to draw the symbol;
+	 * macro variables 'x' and 'y' are the pixel coordinates of the point, 'xval' and 'yval' are the plot data
+	 * and 'i' is the index of the data point (starting with 0 for the first point in the array).
+	 * The drawing including line thickness, font size, etc. be scaled by scale factor 's' (to make high-resolution plots work).
+	 * Example: "code: setFont('sanserif',12*s,'bold anti');drawString(d2s(yval,1),x-14*s,y-4*s);"
+	 * writes the y value for each point above the point.
+	*/
+	public void add(String type, double[] xvalues, double[] yvalues) {
+		int iShape = toShape(type);
+		addPoints(Tools.toFloat(xvalues), Tools.toFloat(yvalues), null, iShape, iShape==CUSTOM?type.substring(5, type.length()):null);
 	}
 
-	/** Adds a curve, set of points or error bars to this plot, where 'shape' is
-		"line", "filled", "bars, "circles", "boxes", "triangles", "crosses", "dots",
-		"diamonds", "x", "connected", "error bars" or "xerror bars". */
-	public void add(String shape, double[] yvalues) {
-		int iShape = toShape(shape);
+	/** Adds a curve, set of points or error bars to this plot, where 'type' is
+	 * "line", "connected circle", "filled", "bar", "separated bar", "circle", "box",
+	 * "triangle", "diamond", "cross", "x", "dot", "error bars" or "xerror bars".
+	*/
+	public void add(String type, double[] yvalues) {
+		int iShape = toShape(type);
 		if (iShape==-1)
 			addErrorBars(yvalues);
 		else if (iShape==-2)
 			addHorizontalErrorBars(yvalues);
 		else
-			addPoints(null, Tools.toFloat(yvalues), null, iShape, iShape==CUSTOM?shape.substring(5, shape.length()):null);
+			addPoints(null, Tools.toFloat(yvalues), null, iShape, iShape==CUSTOM?type.substring(5, type.length()):null);
 	}
 
 	/** Adds a set of points to the plot or adds a curve if shape is set to LINE.
@@ -716,10 +718,12 @@ public class Plot implements Cloneable {
 		int shape = Plot.CIRCLE;
 		if (str.contains("curve") || str.contains("line"))
 			shape = Plot.LINE;
-		if (str.contains("connected"))
+		else if (str.contains("connected"))
 			shape = Plot.CONNECTED_CIRCLES;
 		else if (str.contains("filled"))
 			shape = Plot.FILLED;
+		else if (str.contains("circle"))
+			shape = Plot.CIRCLE;
 		else if (str.contains("box"))
 			shape = Plot.BOX;
 		else if (str.contains("triangle"))
@@ -905,10 +909,6 @@ public class Plot implements Cloneable {
 		if (plotDrawn) updateImage();
 	}
 	
-	public void setLegend(String labels) {
-		setLegend(labels, AUTO_POSITION);
-	}
-
 	public String[] getTypes() {
 		return SORTED_SHAPES;
 	}
