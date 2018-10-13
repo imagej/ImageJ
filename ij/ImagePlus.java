@@ -90,13 +90,14 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	private boolean noUpdateMode;
 	private ImageCanvas flatteningCanvas;
 	private Overlay overlay;
+	private boolean compositeChanges;
 	private boolean hideOverlay;
 	private static int default16bitDisplayRange;
 	private boolean antialiasRendering = true;
 	private boolean ignoreGlobalCalibration;
 	private boolean oneSliceStack;
 	public boolean setIJMenuBar = Prefs.setIJMenuBar;
-		
+			
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {
@@ -697,12 +698,16 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	this.stack = newStack;
     	oneSliceStack = false;
     	setProcessor2(title, ip, newStack);
-		if ((this instanceof CompositeImage)) {
-			compositeImage = getStackSize()!=getNSlices();
+		if (bitDepth1!=0 && bitDepth1!=getBitDepth())
+			compositeChanges = true;
+		if (!(this instanceof CompositeImage))
+			compositeChanges = false;
+		if (compositeChanges) {
 			((CompositeImage)this).completeReset();
 			if (bitDepth1!=0 && bitDepth1!=getBitDepth())
 				((CompositeImage)this).resetDisplayRanges();
 		}
+		compositeChanges = false;
 		if (win==null) {
 			if (resetCurrentSlice) setSlice(currentSlice);
 			return;
@@ -732,6 +737,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		} else {
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
+			if (isComposite()) {
+				((CompositeImage)this).reset();
+				updateAndDraw();
+			}
 			repaintWindow();
 		}
 		if (resetCurrentSlice)
@@ -742,6 +751,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (newStack==null || channels*slices*frames!=newStack.getSize())
 			throw new IllegalArgumentException("channels*slices*frames!=stackSize");
 		if (IJ.debugMode) IJ.log("setStack: "+newStack.getSize()+" "+channels+" "+slices+" "+frames+" "+isComposite());
+		compositeChanges = channels!=this.nChannels;
 		this.nChannels = channels;
 		this.nSlices = slices;
 		this.nFrames = frames;
