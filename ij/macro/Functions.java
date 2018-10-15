@@ -531,11 +531,18 @@ public class Functions implements MacroConstants, Measurements {
 
 	Variable[] getArray() {
 		interp.getToken();
+		if (interp.token==VARIABLE_FUNCTION && pgm.table[interp.tokenAddress].type==TABLE) {
+			Variable v = getVariableFunction(TABLE);
+			if (v!=null) {
+				Variable[] a = v.getArray();
+				if (a!=null) return a;
+			}
+		}
 		boolean newArray = interp.token==ARRAY_FUNCTION && pgm.table[interp.tokenAddress].type==NEW_ARRAY;
 		boolean arrayFunction = interp.token==ARRAY_FUNCTION && pgm.table[interp.tokenAddress].type==ARRAY_FUNC;
 		if (!(interp.token==WORD||newArray||arrayFunction))
 			interp.error("Array expected");
-		Variable[] a;
+		Variable[] a = null;
 		if (newArray)
 			a = getArrayFunction(NEW_ARRAY);
 		else if (arrayFunction)
@@ -2120,6 +2127,9 @@ public class Functions implements MacroConstants, Measurements {
 		}  else if (name.equals("addLegend") || name.equals("setLegend")) {
 			addPlotLegend(currentPlot);
 			return;
+		}  else if (name.equals("setType")) {
+			currentPlot.setType((int)getFirstArg(), getLastString());
+			return;
 		}  else if (name.equals("makeHighResolution")) {
 			makeHighResolution(currentPlot);
 			return;
@@ -2143,7 +2153,10 @@ public class Functions implements MacroConstants, Measurements {
 			setPlotFormatFlags(currentPlot);
 			return;
 		} else if (name.equals("useTemplate")) {
-			usePlotTemplate(currentPlot);
+			fromPlot(currentPlot, 't');
+			return;
+		} else if (name.equals("addFromPlot")) {
+			fromPlot(currentPlot, 'a');
 			return;
 		} else if (name.equals("getFrameBounds")) {
 			getPlotFrameBounds(currentPlot);
@@ -2445,25 +2458,32 @@ public class Functions implements MacroConstants, Measurements {
 		}
 	}
 
-	void usePlotTemplate(Plot plot) {
-	    ImagePlus templateImp = null;
+	/** Plot.useTemplate with 't', Plot.addFromPlot with 'a' */
+	void fromPlot(Plot plot, char type) {
+	    ImagePlus sourceImp = null;
 	    interp.getLeftParen();
 		if (isStringArg()) {
 			String title = getString();
-			templateImp = WindowManager.getImage(title);
-			if (templateImp==null)
+			sourceImp = WindowManager.getImage(title);
+			if (sourceImp==null)
 				interp.error("Image \""+title+"\" not found");
 		} else {
 			int id = (int)interp.getExpression();
-			templateImp = WindowManager.getImage(id);
-			if (templateImp==null)
+			sourceImp = WindowManager.getImage(id);
+			if (sourceImp==null)
 				interp.error("Image ID="+id+" not found");
 		}
+		Plot sourcePlot = (Plot)(sourceImp.getProperty(Plot.PROPERTY_KEY));
+		if (sourcePlot==null)
+			interp.error("No plot: "+sourceImp.getTitle());
+		if (type == 'a') {
+			int objectIndex = (int)getNextArg();
+			if (objectIndex < 0 || objectIndex > plot.getNumPlotObjects())
+				interp.error("Plot "+sourceImp.getTitle()+" has "+plot.getNumPlotObjects()+"items, no number "+objectIndex);
+			plot.addObjectFromPlot(sourcePlot, objectIndex);
+		} else
+			plot.useTemplate(sourcePlot);
 		interp.getRightParen();
-		Plot templatePlot = (Plot)(templateImp.getProperty(Plot.PROPERTY_KEY));
-		if (templatePlot==null)
-			interp.error("No plot: "+templateImp.getTitle());
-		plot.useTemplate(templatePlot);
 	}
 
 	void addPlotLegend(Plot plot) {

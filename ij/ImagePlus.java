@@ -700,9 +700,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	setProcessor2(title, ip, newStack);
 		if (bitDepth1!=0 && bitDepth1!=getBitDepth())
 			compositeChanges = true;
-		if (!(this instanceof CompositeImage))
-			compositeChanges = false;
-		if (compositeChanges) {
+		if (compositeChanges && (this instanceof CompositeImage)) {
+			this.compositeImage = getStackSize()!=getNSlices();
 			((CompositeImage)this).completeReset();
 			if (bitDepth1!=0 && bitDepth1!=getBitDepth())
 				((CompositeImage)this).resetDisplayRanges();

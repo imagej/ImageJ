@@ -179,6 +179,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 			m.add(new MenuItem("Summarize"));
 			m.add(new MenuItem("Distribution..."));
 			m.add(new MenuItem("Set Measurements..."));
+			m.add(new MenuItem("Plot..."));
 			m.add(new MenuItem("Options..."));
 			m.addActionListener(this);
 			mb.add(m);

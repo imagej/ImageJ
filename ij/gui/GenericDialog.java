@@ -1507,13 +1507,17 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 
 	public void paint(Graphics g) {
-		super.paint(g);
-		if (firstPaint && IJ.isMacOSX() && IJ.isJava18()) {
-			IJ.wait(25);
-			Dimension size = getSize();
-			if (size!=null)
-				setSize(size.width+2,size.height+2);
-			firstPaint = false;
+		super.paint(g);		
+		if (firstPaint && IJ.isMacOSX() && IJ.isJava18()) { // fix for incompletely drawn dialogs on Macs
+			EventQueue.invokeLater(new Runnable() {
+				public void run() {
+					IJ.wait(50);
+					Dimension size = getSize();
+					if (size!=null)
+						setSize(size.width+2,size.height+2);
+					firstPaint = false;
+				}
+			});
 		}
 	}
 
