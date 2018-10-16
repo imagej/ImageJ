@@ -875,7 +875,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 	
 	/** Returns an 8-bit binary (0 and 255) ROI or overlay mask
-	 *  that has the same dimensions as this image.
+	 *  that has the same dimensions as this image. Creates an
+	 * ROI mask If the image has both an ROI and an overlay.
+	 * @see #createThresholdMask
 	 * @see ij.gui.Roi#getMask
 	*/
 	public ByteProcessor createRoiMask() {
@@ -885,7 +887,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			throw new IllegalArgumentException("ROI or overlay required");
 		ByteProcessor mask = new ByteProcessor(getWidth(),getHeight());
 		mask.setColor(255);
-		if (overlay2!=null) {
+		if (roi2!=null)
+			mask.fill(roi2);
+		else if (overlay2!=null) {
 			if (overlay2.size()==1 && (overlay2.get(0) instanceof ImageRoi)) {
 				ImageRoi iRoi = (ImageRoi)overlay2.get(0);
 				ImageProcessor ip = iRoi.getProcessor();
@@ -899,8 +903,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				for (int i=0; i<overlay2.size(); i++)
 					mask.fill(overlay2.get(i));	
 			}		
-		} else if (roi2!=null)
-			mask.fill(roi2);
+		} 
 		return mask;
 	}
 

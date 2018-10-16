@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52h 14 October 2018</u>
+<li> <u>1.52h 15 October 2018</u>
 <ul>
 <li> Plot enhancements, thanks to Michael Schmid:
  <ul>
@@ -15,14 +15,14 @@
  <li> Values in tables can be be plotted directly using the contextual menu or the
 <i>Results&gt;Plot</i> command in "Results" tables.
  <li> Added the <i>Separated Bar</i> type, a bar graph with some space between the columns.
- For an example, run <i>Help&gt;Examples&gt;JavaScript&gt;Graph Types</i>.
+ For an example, run <i>Help&gt;Examples&gt;JavaScript&gt;Plot Styles</i>.
  <li> Histogram-like "Bar" plots also work with non-equidistant points along x.
  <li> <i>Connected Circles</i> fill the circles with the secondary color (= line color), if that color is given and not null.
  <li> Improved the code for filling bars and "filled" curves.
  <li> For "Bar" and "Separated Bar", the base line of the plot is y = 0 if the values differ by more than a factor of 2.
 </ul>
-<li> Added the <i>Help&gt;Examples&gt;Plots&gt;Graph Types</i> and
-<i>...JavaScript&gt;Graph Types</i>  examples.
+<li> Added the <i>Help&gt;Examples&gt;Plots&gt;Plot Styles</i> and
+<i>...JavaScript&gt;Plot Styles</i>  examples.
 <li> The <i>Edit&gt;Selection&gt;Create Mask</i> command works
 with overlays created by the Brush and Pencil tools.
 <li> Added a "Help" button to the Brush and Pencil tool dialog boxes.
@@ -75,6 +75,9 @@ to not work as expected with point selections.
  NullPointerException.
  <li> Thanks to Hyung-song Nam and Curtis Rueden, fixed a bug that caused
  keyboard shortcuts to not work with the "Channels" tool.
+ <li> Thanks to Gilles Carpentier, fixed a 1.52f regression that caused
+ <i>Edit&gt;Selection&gt;Create Mask</i> command to not
+ work as exopected if the image had both an roi and an overlay.
 <li> Thanks to Norbert Vischer, fixed a 1.52g regression that caused
 multi-channel images to lose color table and display range
 information after being cropped and saved.

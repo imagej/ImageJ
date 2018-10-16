@@ -2127,8 +2127,8 @@ public class Functions implements MacroConstants, Measurements {
 		}  else if (name.equals("addLegend") || name.equals("setLegend")) {
 			addPlotLegend(currentPlot);
 			return;
-		}  else if (name.equals("setType")) {
-			currentPlot.setType((int)getFirstArg(), getLastString());
+		}  else if (name.equals("setStyle")) {
+			currentPlot.setPlotObjectStyle((int)getFirstArg(), getLastString());
 			return;
 		}  else if (name.equals("makeHighResolution")) {
 			makeHighResolution(currentPlot);

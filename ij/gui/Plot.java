@@ -909,26 +909,11 @@ public class Plot implements Cloneable {
 		if (plotDrawn) updateImage();
 	}
 	
-	/** Returns an array of the available curve types ("Line", "Bar", "Circle", etc).
-	 * See the Help&gt;Examples&gt;JavaScript&gt;Graph Types.
-	 * @see #setType
-	*/
+	/** Returns an array of the available curve types ("Line", "Bar", "Circle", etc). */
 	public String[] getTypes() {
 		return SORTED_SHAPES;
 	}
 		
-	/** Sets the type of the curve with the specified index. Call
-	 * setLegend() or updateImage() to make the change visible.
-	 * @see #getTypes
-	 * @see #setLegend
-	 * @see #updateImage
-	*/
-	public void setType(int index, String type) {
-		PlotObject plotObject = allPlotObjects.get(index);
-		if (plotObject!=null && plotObject.shape!=CUSTOM)
-			plotObject.shape = toShape(type);
-	}
-	
 	/** Sets the justification used by addLabel(), where <code>justification</code>
 	 * is Plot.LEFT, Plot.CENTER or Plot.RIGHT. Default is LEFT. */
 	public void setJustification(int justification) {
@@ -960,7 +945,7 @@ public class Plot implements Cloneable {
 		currentColor2 = c2;
 	}
 
-	/** Sets the drawing color for the next objects that will be added to the plot. */
+	/** Sets the drawing colors for the next objects that will be added to the plot. */
 	public void setColor(String c1, String c2) {
 		setColor(Colors.decode(c1, Color.black), Colors.decode(c2, null));
 	}
