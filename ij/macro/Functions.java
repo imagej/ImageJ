@@ -2481,6 +2481,7 @@ public class Functions implements MacroConstants, Measurements {
 			if (objectIndex < 0 || objectIndex > plot.getNumPlotObjects())
 				interp.error("Plot "+sourceImp.getTitle()+" has "+plot.getNumPlotObjects()+"items, no number "+objectIndex);
 			plot.addObjectFromPlot(sourcePlot, objectIndex);
+			plot.updateImage();
 		} else
 			plot.useTemplate(sourcePlot);
 		interp.getRightParen();

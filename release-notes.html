@@ -5,7 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.52h 15 October 2018</u>
+<h3>Version 1.52h 16 October 2018 (<a href="upgrade/index.html">upgrade</a>)</h3>
+<ul>
+
+<li> <u>1.52h 16 October 2018</u>
 <ul>
 <li> Plot enhancements, thanks to Michael Schmid:
  <ul>
@@ -22,7 +25,7 @@
  <li> For "Bar" and "Separated Bar", the base line of the plot is y = 0 if the values differ by more than a factor of 2.
 </ul>
 <li> Added the <i>Help&gt;Examples&gt;Plots&gt;Plot Styles</i> and
-<i>...JavaScript&gt;Plot Styles</i>  examples.
+<i>...JavaScript&gt;Plot Styles</i> examples.
 <li> The <i>Edit&gt;Selection&gt;Create Mask</i> command works
 with overlays created by the Brush and Pencil tools.
 <li> Added a "Help" button to the Brush and Pencil tool dialog boxes.
@@ -34,8 +37,10 @@ now appears in both the point and multi-point tool dialogs.
 <li> Thanks to Stein Rorvik, the <i>Analyze&gt;Tools&gt;Synchronize Windows</i>
 tool now supports use of the "+" and "-" keys for synchronized zooming
 when the "Image scaling" option is enabled.
-<li> Thanks to Lorenzo Cangiano, add a "Points" column to the
+<li> Thanks to Lorenzo Cangiano, added a "Points" column to the
 <i>Image&gt;Overlay&gt;List Elements</i> table.
+<li> Added the Plot.setStyle() macro function. For an example,
+run <i>Help&gt;Examples&gt;Plots&gt;Plot Styles</i>. 
 <li> Added the IJ.exit() method, which aborts JavaScripts.
 <li> Thanks to Bio7, fixed a bug that caused images to turn black when
 assigned an ImageRoi created by the Brush or Pencil tools.
@@ -66,7 +71,7 @@ the <i>Make Substack</i> command to throw an exception when used
 with hyperstacks opened by the OlympusViewer plugin.
 <li> Fixed bugs in the ImagePlus.setStack() method.
 <li> Thanks to Michael Schmid, fixed a bug that caused the "Show All" button
-to not work as expected with point selections.
+in the ROI Manager to not work as expected with point selections.
 <li> Thanks to Lorenzo Cangiano, fixed a bug that caused programmatically
  generated overlays of PointRois on stacks to be not shown when saved
  and reopened.
@@ -76,8 +81,8 @@ to not work as expected with point selections.
  <li> Thanks to Hyung-song Nam and Curtis Rueden, fixed a bug that caused
  keyboard shortcuts to not work with the "Channels" tool.
  <li> Thanks to Gilles Carpentier, fixed a 1.52f regression that caused
- <i>Edit&gt;Selection&gt;Create Mask</i> command to not
- work as exopected if the image had both an roi and an overlay.
+ the <i>Edit&gt;Selection&gt;Create Mask</i> command to not
+ work as expected if the image had both an roi and an overlay.
 <li> Thanks to Norbert Vischer, fixed a 1.52g regression that caused
 multi-channel images to lose color table and display range
 information after being cropped and saved.
