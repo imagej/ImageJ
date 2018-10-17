@@ -145,7 +145,6 @@ public class Functions implements MacroConstants, Measurements {
 			case SET_RESULT: setResult(null); break;
 			case UPDATE_RESULTS: updateResults(); break;
 			case SET_BATCH_MODE: setBatchMode(); break;
-			case PLOT: doPlot(); break;
 			case SET_JUSTIFICATION: setJustification(); break;
 			case SET_Z_COORDINATE: setZCoordinate(); break;
 			case GET_THRESHOLD: getThreshold(); break;
@@ -238,6 +237,7 @@ public class Functions implements MacroConstants, Measurements {
 			case FIT: value = fit(); break;
 			case OVERLAY: value = overlay(); break;
 			case SELECTION_CONTAINS: value = selectionContains(); break;
+			case PLOT: value = doPlot(); break;
 			default:
 				interp.error("Numeric function expected");
 		}
@@ -2064,7 +2064,7 @@ public class Functions implements MacroConstants, Measurements {
 		shiftKeyDown = altKeyDown = false;
 	}
 
-	void doPlot() {
+	double doPlot() {
 		interp.getToken();
 		if (interp.token!='.')
 			interp.error("'.' expected");
@@ -2073,14 +2073,11 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
 		if (name.equals("create")) {
-			newPlot();
-			return;
+			return newPlot();
 		} else if (name.equals("getValues")) {
-			getPlotValues();
-			return;
+			return getPlotValues();
 		} else if (name.equals("showValues")) {
-			showPlotValues();
-			return;
+			return showPlotValues();
 		}
 		// the following commands work with a plot under construction or an image with a plot created previously
 		Plot currentPlot = plot;
@@ -2090,14 +2087,14 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("No plot window and no plot under construction");
 		if (name.equals("setFrameSize")) {
 			currentPlot.setFrameSize((int)getFirstArg(), (int)getLastArg());
-			return;
+			return Double.NaN;
 		} else if (name.equals("setLimits")) {
 			currentPlot.setLimits(getFirstArg(), getNextArg(), getNextArg(), getLastArg());
-			return;
+			return Double.NaN;
 		} else if (name.equals("setLimitsToFit")) {
 			interp.getParens();
 			currentPlot.setLimitsToFit(true);
-			return;
+			return Double.NaN;
 		} else if (name.equals("setLogScaleX")) {
 			if (interp.nextNextToken()==')') {  //no-argument call setLogScaleX() means true
 				interp.getParens();
@@ -2105,7 +2102,7 @@ public class Functions implements MacroConstants, Measurements {
 			} else
 				currentPlot.setAxisXLog(getBooleanArg());
 			currentPlot.updateImage();
-			return;
+			return Double.NaN;
 		} else if (name.equals("setLogScaleY")) {
 			if (interp.nextNextToken()==')') {
 				interp.getParens();
@@ -2113,93 +2110,78 @@ public class Functions implements MacroConstants, Measurements {
 			} else
 				currentPlot.setAxisYLog(getBooleanArg());
 			currentPlot.updateImage();
-			return;
+			return Double.NaN;
 		} else if (name.equals("getLimits")) {
-			getPlotLimits(currentPlot);
-			return;
+			return getPlotLimits(currentPlot);
 		} else if (name.equals("freeze")) {
 			if (interp.nextNextToken()==')') {
 				interp.getParens();
 				currentPlot.setFrozen(true);
 			} else
 				currentPlot.setFrozen(getBooleanArg());
-			return;
+			return Double.NaN;
 		}  else if (name.equals("addLegend") || name.equals("setLegend")) {
-			addPlotLegend(currentPlot);
-			return;
+			return addPlotLegend(currentPlot);
 		}  else if (name.equals("setStyle")) {
 			currentPlot.setPlotObjectStyle((int)getFirstArg(), getLastString());
-			return;
+			return Double.NaN;
 		}  else if (name.equals("makeHighResolution")) {
-			makeHighResolution(currentPlot);
-			return;
+			return makeHighResolution(currentPlot);
 		} else if (name.equals("setColor")) {
-			setPlotColor(currentPlot);
-			return;
+			return setPlotColor(currentPlot);
 		} else if (name.equals("setBackgroundColor")) {
-			setPlotBackgroundColor(currentPlot);
-			return;
+			return setPlotBackgroundColor(currentPlot);
 		} else if (name.equals("setFontSize")) {
-			setPlotFontSize(currentPlot, false);
-			return;
+			return setPlotFontSize(currentPlot, false);
 		} else if (name.equals("setAxisLabelSize")) {
-			setPlotFontSize(currentPlot, true);
-			return;
+			return setPlotFontSize(currentPlot, true);
 		} else if (name.equals("setXYLabels")) {
 			currentPlot.setXYLabels(getFirstString(), getLastString());
 			currentPlot.updateImage();
-			return;
+			return Double.NaN;
 		} else if (name.equals("setFormatFlags")) {
-			setPlotFormatFlags(currentPlot);
-			return;
+			return setPlotFormatFlags(currentPlot);
 		} else if (name.equals("useTemplate")) {
-			fromPlot(currentPlot, 't');
-			return;
+			return fromPlot(currentPlot, 't');
 		} else if (name.equals("addFromPlot")) {
-			fromPlot(currentPlot, 'a');
-			return;
+			return fromPlot(currentPlot, 'a');
 		} else if (name.equals("getFrameBounds")) {
-			getPlotFrameBounds(currentPlot);
-			return;
-		}
+			return getPlotFrameBounds(currentPlot);
+		} else if (name.equals("getNumObjects")) {
+			return currentPlot.getNumPlotObjects();
+		} else if (name.equals("add")) {
+			String arg = getFirstString();
+			int what = Plot.toShape(arg);
+			addToPlot(currentPlot, what, arg);
+			return Double.NaN;	
+		}		
+		
 		// the following commands need a plot under construction
 		if (plot==null)
 			interp.error("No plot defined");
 		if (name.equals("show")) {
-			showPlot();
-			return;
+			return showPlot();
 		} else if (name.equals("update")) {
-			updatePlot();
-			return;
+			return updatePlot();
 		} else if (name.equals("addText") || name.equals("drawLabel")) {
-			addPlotText();
-			return;
+			return addPlotText();
 		} else if (name.equals("drawLine")) {
-			drawPlotLine(false);
-			return;
+			return drawPlotLine(false);
 		} else if (name.equals("drawNormalizedLine")) {
-			drawPlotLine(true);
-			return;
+			return drawPlotLine(true);
 		} else if (name.equals("drawVectors")) {
-			drawPlotVectors();
-			return;
+			return drawPlotVectors();
 		} else if (name.equals("drawShapes")) {
-			drawShapes();
-			return;
+			return drawShapes();
 		} else if (name.equals("drawGrid")) {
 			plot.drawShapes("redraw_grid", null);	
-			return;
+			return Double.NaN;
 		} else if (name.startsWith("setLineWidth")) {
 			plot.setLineWidth((float)getArg());
-			return;
+			return Double.NaN;
 		} else if (name.startsWith("setJustification")) {
 			setJustification();
-			return;
-		} else if (name.equals("add")) {
-			String arg = getFirstString();
-			int what = Plot.toShape(arg);
-			addToPlot(what, arg);
-			return;			
+			return Double.NaN;
 		} else if (name.equals("addHistogram")) {
 			interp.getLeftParen();
 			Variable[] arrV = getArray();
@@ -2212,21 +2194,21 @@ public class Functions implements MacroConstants, Measurements {
 			else
 				interp.putTokenBack();
 			interp.getRightParen();
-			
 			int len1 = arrV.length;
 			double[] arrD = new double[len1];
 			for (int i=0; i<len1; i++)
 				arrD[i] = arrV[i].getValue();		
 			plot.addHistogram(arrD, binWidth, binCenter);			
-			return;	
+			return Double.NaN;	
 		} else if (name.equals("appendToStack")) {
 			plot.appendToStack();
-			return;
+			return Double.NaN;
 		} else
 			interp.error("Unrecognized plot function");
+		return Double.NaN;
 	}
 
-	void getPlotValues() {
+	double getPlotValues() {
 		Variable xvar = getFirstArrayVariable();
 		Variable yvar = getLastArrayVariable();
 		float[] xvalues = new float[0];
@@ -2260,9 +2242,10 @@ public class Functions implements MacroConstants, Measurements {
 			ya[i] = new Variable(yvalues[i]);
 		xvar.setArray(xa);
 		yvar.setArray(ya);
+		return Double.NaN;
 	}
 
-	void showPlotValues() {
+	double showPlotValues() {
 		String title = "Results";
 		if (interp.nextToken() == '(') {
 			interp.getLeftParen();
@@ -2275,14 +2258,15 @@ public class Functions implements MacroConstants, Measurements {
 		ImageWindow win = imp.getWindow();
 		if (win==null || !(win instanceof PlotWindow)) {
 			interp.error("No plot window");
-			return;
+			return Double.NaN;
 		}
 		PlotWindow pw = (PlotWindow)win;
 		ResultsTable rt = pw.getResultsTable();
 		rt.show(title);
+		return Double.NaN;
 	}
 
-	void newPlot() {
+	double newPlot() {
 		String title = getFirstString();
 		String xLabel = getNextString();
 		String yLabel = getNextString();
@@ -2301,9 +2285,10 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		interp.getRightParen();
 		plot = new Plot(title, xLabel, yLabel, x, y);
+		return Double.NaN;
 	}
 
-	void showPlot() {
+	double showPlot() {
 		if (plot!=null) {
 			PlotWindow plotWindow = plot.show();
 			if (plotWindow!=null)
@@ -2311,9 +2296,10 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		plot = null;
 		interp.getParens();
+		return Double.NaN;
 	}
 
-	void updatePlot() {
+	double updatePlot() {
 		if (plot!=null) {
 			ImagePlus plotImage = WindowManager.getImage(plotID);
 			ImageWindow win = plotImage!=null?plotImage.getWindow():null;
@@ -2327,17 +2313,19 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		plot = null;
 		interp.getParens();
+		return Double.NaN;
 	}
 
-	void addPlotText() {
+	double addPlotText() {
 		String str = getFirstString();
 		double x = getNextArg();
 		double y = getLastArg();
 		plot.setJustification(justification);
 		plot.addLabel(x, y, str);
+		return Double.NaN;
 	}
 
-	void drawPlotLine(boolean normalized) {
+	double drawPlotLine(boolean normalized) {
 		double x1 = getFirstArg();
 		double y1 = getNextArg();
 		double x2 = getNextArg();
@@ -2346,19 +2334,21 @@ public class Functions implements MacroConstants, Measurements {
 			plot.drawNormalizedLine(x1, y1, x2, y2);
 		else
 			plot.drawLine(x1, y1, x2, y2);
+		return Double.NaN;
 	}
 
-	void drawPlotVectors() {
+	double drawPlotVectors() {
 		double[] x1 = getFirstArray();
 		double[] y1 = getNextArray();
 		double[] x2 = getNextArray();
 		double[] y2 = getLastArray();
 		plot.drawVectors(x1, y1, x2, y2);
+		return Double.NaN;
 	}
 
 	//Example 10 boxes: ArrayList has 10 elements, each holding a float[6] for coordinates
 	//Example 10 rectangles: ArrayList has 10 elements, each holding a float[4] for the corners
-	void drawShapes() {
+	double drawShapes() {
 		String type = getFirstString().toLowerCase();
 		double[][] arr2D = null;
 		int nBoxes = 0;
@@ -2369,7 +2359,7 @@ public class Functions implements MacroConstants, Measurements {
 			nCoords = 6;//centers, Q1s, Q2s, Q3s, Q4s, Q5s (Q= quartile border)
 		} else {
 			interp.error("Must contain 'rectangles' or 'boxes'");
-			return;
+			return Double.NaN;
 		}
 		double[] arr = null;
 		for (int jj = 0; jj < nCoords; jj++) {
@@ -2385,7 +2375,7 @@ public class Functions implements MacroConstants, Measurements {
 				nBoxes = arr.length;
 				if (jj > 0 && arr2D[0].length != nBoxes) {
 					interp.error("Arrays must have same length (" + nBoxes + ")");
-					return;
+					return Double.NaN;
 				}
 				if (arr2D == null) {
 					arr2D = new double[nCoords][nBoxes];
@@ -2409,9 +2399,10 @@ public class Functions implements MacroConstants, Measurements {
 			shapeData.add(coords);
 		}
 		plot.drawShapes(type, shapeData);
+		return Double.NaN;
 	}
 	
-	void setPlotColor(Plot plot) {
+	double setPlotColor(Plot plot) {
 		interp.getLeftParen();
 		Color color = getColor();
 		Color color2 = null;
@@ -2421,16 +2412,18 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		plot.setColor(color, color2);
 		interp.getRightParen();
+		return Double.NaN;
 	}
 
-	void setPlotBackgroundColor(Plot plot) {
+	double setPlotBackgroundColor(Plot plot) {
 		interp.getLeftParen();
 		Color color = getColor();
 		interp.getRightParen();
 		plot.setBackgroundColor(color);
+		return Double.NaN;
 	}
 
-	void setPlotFontSize(Plot plot, boolean forAxisLabels) {
+	double setPlotFontSize(Plot plot, boolean forAxisLabels) {
 		float size = (float)getFirstArg();
 		int style = -1;
 		if (interp.nextToken()!=')') {
@@ -2445,9 +2438,10 @@ public class Functions implements MacroConstants, Measurements {
 		if (forAxisLabels) plot.setAxisLabelFont(style, size);
 		else plot.setFont(style, size);
 		plot.updateImage();
+		return Double.NaN;
 	}
 
-	void setPlotFormatFlags(Plot plot) {
+	double setPlotFormatFlags(Plot plot) {
 		String flagString = getStringArg();
 		try {
 			int flags = Integer.parseInt(flagString, 2);
@@ -2456,10 +2450,11 @@ public class Functions implements MacroConstants, Measurements {
 		} catch (NumberFormatException e) {
 			interp.error("Plot format flags not binary");
 		}
+		return Double.NaN;
 	}
 
 	/** Plot.useTemplate with 't', Plot.addFromPlot with 'a' */
-	void fromPlot(Plot plot, char type) {
+	double fromPlot(Plot plot, char type) {
 	    ImagePlus sourceImp = null;
 	    interp.getLeftParen();
 		if (isStringArg()) {
@@ -2485,9 +2480,10 @@ public class Functions implements MacroConstants, Measurements {
 		} else
 			plot.useTemplate(sourcePlot);
 		interp.getRightParen();
+		return Double.NaN;
 	}
 
-	void addPlotLegend(Plot plot) {
+	double addPlotLegend(Plot plot) {
 		String labels = getFirstString();
 		String options = null;
 		if (interp.nextToken()!=')')
@@ -2497,25 +2493,28 @@ public class Functions implements MacroConstants, Measurements {
 		plot.setColor(Color.BLACK);
 		plot.setLineWidth(1);
 		plot.addLegend(labels, options);
+		return Double.NaN;
 	}
 
-	void getPlotLimits(Plot plot) {
+	double getPlotLimits(Plot plot) {
 		double[] limits = plot.getLimits();
 		getFirstVariable().setValue(limits[0]);  //xMin
 		getNextVariable().setValue(limits[1]);   //xMax
 		getNextVariable().setValue(limits[2]);   //yMin
 		getLastVariable().setValue(limits[3]);   //yMax
+		return Double.NaN;
 	}
 
-	void getPlotFrameBounds(Plot plot) {
+	double getPlotFrameBounds(Plot plot) {
 		Rectangle r = plot.getDrawingFrame();
 		getFirstVariable().setValue(r.x);
 		getNextVariable().setValue(r.y);
 		getNextVariable().setValue(r.width);
 		getLastVariable().setValue(r.height);
+		return Double.NaN;
 	}
 
-	void makeHighResolution(Plot plot) {
+	double makeHighResolution(Plot plot) {
 		String title = getFirstString();
 		double scale = getNextArg();
 		boolean antialiasedText = true;
@@ -2526,9 +2525,10 @@ public class Functions implements MacroConstants, Measurements {
 		} else
 			interp.getRightParen();
 		plot.makeHighResolution(title, (float)scale, antialiasedText, true);
+		return Double.NaN;
 	}
 
-	void addToPlot(int what, String shape) {
+	double addToPlot(Plot currentPlot, int what, String shape) {
 		boolean errorBars = false;
 		double[] x = getNextArray();
 		double[] y;
@@ -2549,15 +2549,16 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		interp.getRightParen();
 		if (what==-1)
-			plot.addErrorBars(y);
+			currentPlot.addErrorBars(y);
 		else if (what==-2)
-			plot.addHorizontalErrorBars(y);
+			currentPlot.addHorizontalErrorBars(y);
 		else if (errorBars)
-			plot.addPoints(x, y, e, what);
+			currentPlot.addPoints(x, y, e, what);
 		else if (what==Plot.CUSTOM)
-			plot.add(shape, x, y);
+			currentPlot.add(shape, x, y);
 		else
-			plot.addPoints(x, y, what);
+			currentPlot.addPoints(x, y, what);
+		return Double.NaN;
 	}
 
 	void getBounds() {

@@ -33,7 +33,7 @@ public interface MacroConstants {
 		SNAPSHOT=333, RESET=334, FILL=335, SET_COLOR=336, SET_LINE_WIDTH=337, CHANGE_VALUES=338, SELECT_IMAGE=339, EXIT=340,
 		SET_LOCATION=341, GET_CURSOR_LOC=342, GET_LINE=343, GET_VOXEL_SIZE=344, GET_HISTOGRAM=345, GET_STATISTICS=346,
 		GET_BOUNDING_RECT=347, GET_LUT=348, SET_LUT=349, GET_COORDINATES=350, SHOW_MESSAGE_WITH_CANCEL=351,
-		MAKE_SELECTION=352, SET_RESULT=353, UPDATE_RESULTS=354, SET_BATCH_MODE=355, PLOT=356, SET_JUSTIFICATION=357,
+		MAKE_SELECTION=352, SET_RESULT=353, UPDATE_RESULTS=354, SET_BATCH_MODE=355, SET_JUSTIFICATION=357,
 		SET_Z_COORDINATE=358, GET_THRESHOLD=359, GET_PIXEL_SIZE=360, SETUP_UNDO=361, SAVE_SETTINGS=362, RESTORE_SETTINGS=363,
 		SET_KEY_DOWN=364, OPEN=365, SET_FONT=366, GET_MIN_AND_MAX=367, CLOSE=368, SET_SLICE=369,
 		NEW_IMAGE=370, SAVE_AS=371, SAVE=372, SET_AUTO_THRESHOLD=373, RENAME=374, GET_BOUNDS=375, FILL_RECT=376,
@@ -50,7 +50,7 @@ public interface MacroConstants {
 		"snapshot", "reset", "fill", "setColor", "setLineWidth", "changeValues", "selectImage", "exit",
 		"setLocation", "getCursorLoc", "getLine", "getVoxelSize", "getHistogram", "getStatistics",
 		"getBoundingRect", "getLut", "setLut", "getSelectionCoordinates", "showMessageWithCancel",
-		"makeSelection", "setResult", "updateResults", "setBatchMode", "Plot", "setJustification",
+		"makeSelection", "setResult", "updateResults", "setBatchMode", "setJustification",
 		"setZCoordinate", "getThreshold", "getPixelSize", "setupUndo", "saveSettings", "restoreSettings",
 		"setKeyDown", "open", "setFont", "getMinAndMax", "close", "setSlice",
 		"newImage", "saveAs", "save", "setAutoThreshold", "rename", "getSelectionBounds", "fillRect",
@@ -67,7 +67,7 @@ public interface MacroConstants {
 		SNAPSHOT, RESET, FILL, SET_COLOR, SET_LINE_WIDTH, CHANGE_VALUES, SELECT_IMAGE, EXIT,
 		SET_LOCATION, GET_CURSOR_LOC, GET_LINE, GET_VOXEL_SIZE, GET_HISTOGRAM, GET_STATISTICS,
 		GET_BOUNDING_RECT, GET_LUT, SET_LUT, GET_COORDINATES, SHOW_MESSAGE_WITH_CANCEL,
-		MAKE_SELECTION, SET_RESULT, UPDATE_RESULTS, SET_BATCH_MODE, PLOT, SET_JUSTIFICATION,
+		MAKE_SELECTION, SET_RESULT, UPDATE_RESULTS, SET_BATCH_MODE, SET_JUSTIFICATION,
 		SET_Z_COORDINATE, GET_THRESHOLD, GET_PIXEL_SIZE, SETUP_UNDO, SAVE_SETTINGS, RESTORE_SETTINGS,
 		SET_KEY_DOWN, OPEN, SET_FONT, GET_MIN_AND_MAX, CLOSE, SET_SLICE,
 		NEW_IMAGE, SAVE_AS, SAVE, SET_AUTO_THRESHOLD, RENAME, GET_BOUNDS, FILL_RECT,
@@ -86,7 +86,7 @@ public interface MacroConstants {
 		STARTS_WITH=1034, ENDS_WITH=1035, ATAN2=1036, IS_NAN=1037, GET_ZOOM=1038, PARSE_INT=1039, PARSE_FLOAT=1040,
 		IS_KEY_DOWN=1041, GET_SLICE_NUMBER=1042, SCREEN_WIDTH=1043, SCREEN_HEIGHT=1044, CALIBRATE=1045,
 		ASIN=1046, ACOS=1047, ROI_MANAGER=1048, TOOL_ID=1049, IS=1050, GET_VALUE=1051, STACK=1052, MATCHES=1053,
-		GET_STRING_WIDTH=1054, FIT=1055, OVERLAY=1056, SELECTION_CONTAINS=1057;
+		GET_STRING_WIDTH=1054, FIT=1055, OVERLAY=1056, SELECTION_CONTAINS=1057, PLOT=1058;
 	static final String[] numericFunctions = { "getPixel", "abs", "cos", "exp", "floor", "log", "maxOf", "minOf", "pow",
 		"round", "sin", "sqrt", "tan", "getTime", "getWidth", "getHeight", "random",
 		"getResult", "getResultsCount", "getNumber", "nImages", "nSlices", 
@@ -95,7 +95,7 @@ public interface MacroConstants {
 		"startsWith", "endsWith", "atan2", "isNaN", "getZoom", "parseInt", "parseFloat",
 		"isKeyDown", "getSliceNumber", "screenWidth", "screenHeight", "calibrate",
 		"asin", "acos", "roiManager", "toolID", "is", "getValue", "Stack", "matches",
-		"getStringWidth", "Fit", "Overlay", "selectionContains"};
+		"getStringWidth", "Fit", "Overlay", "selectionContains", "Plot"};
 	static final int[] numericFunctionIDs = {GET_PIXEL, ABS, COS, EXP, FLOOR, LOG, MAX_OF, MIN_OF, POW,
 		ROUND, SIN, SQRT, TAN, GET_TIME, GET_WIDTH, GET_HEIGHT, RANDOM,
 		GET_RESULT, GET_COUNT, GET_NUMBER, NIMAGES, NSLICES,
@@ -104,7 +104,7 @@ public interface MacroConstants {
 		STARTS_WITH, ENDS_WITH, ATAN2, IS_NAN, GET_ZOOM, PARSE_INT, PARSE_FLOAT,
 		IS_KEY_DOWN, GET_SLICE_NUMBER, SCREEN_WIDTH, SCREEN_HEIGHT, CALIBRATE,
 		ASIN, ACOS, ROI_MANAGER, TOOL_ID, IS, GET_VALUE, STACK, MATCHES,
-		GET_STRING_WIDTH, FIT, OVERLAY, SELECTION_CONTAINS};
+		GET_STRING_WIDTH, FIT, OVERLAY, SELECTION_CONTAINS, PLOT};
 		
 	// String functions
 	static final int D2S=2000, TO_HEX=2001, TO_BINARY=2002, GET_TITLE=2003, GET_STRING=2004, SUBSTRING=2005,
