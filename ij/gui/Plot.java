@@ -3,6 +3,7 @@ import java.awt.*;
 import java.util.*;
 import java.io.*;
 import java.lang.reflect.Method;
+import java.awt.geom.Point2D;
 import ij.*;
 import ij.process.*;
 import ij.util.*;
@@ -207,6 +208,8 @@ public class Plot implements Cloneable {
 	private static double SEPARATED_BAR_WIDTH=0.5;  // for plots with separate bars (e.g. categories), fraction of space, 0.1-1.0
 	double[] steps;                                 //for redrawing the grid
 	private int objectToReplace = -1;
+	private Point2D.Double textLoc;
+	private int textIndex;
 
 	/** Constructs a new Plot with the default options.
 	 * Use add(shape,xvalues,yvalues) to add curves.
@@ -851,7 +854,13 @@ public class Plot implements Cloneable {
 	 * is the upper left corner of the the plot frame and (1,1) is
 	 * the lower right corner. Uses the justification specified by setJustification(). */
 	public void addLabel(double x, double y, String label) {
-		allPlotObjects.add(new PlotObject(label, x, y, currentJustification, currentFont, currentColor, PlotObject.NORMALIZED_LABEL));
+		if (textLoc!=null && x==textLoc.getX() && y==textLoc.getY())
+			allPlotObjects.set(textIndex, new PlotObject(label, x, y, currentJustification, currentFont, currentColor, PlotObject.NORMALIZED_LABEL));
+		else {
+			allPlotObjects.add(new PlotObject(label, x, y, currentJustification, currentFont, currentColor, PlotObject.NORMALIZED_LABEL));
+			textLoc = new Point2D.Double(x,y);
+			textIndex = allPlotObjects.size()-1;
+		}
 	}
 
 	/* Draws text at the specified location, using the coordinate system defined

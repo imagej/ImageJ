@@ -2124,6 +2124,8 @@ public class Functions implements MacroConstants, Measurements {
 			return addPlotLegend(currentPlot);
 		}  else if (name.equals("setStyle")) {
 			currentPlot.setPlotObjectStyle((int)getFirstArg(), getLastString());
+			if (plot == null)
+				currentPlot.updateImage();
 			return Double.NaN;
 		}  else if (name.equals("makeHighResolution")) {
 			return makeHighResolution(currentPlot);
@@ -2562,12 +2564,14 @@ public class Functions implements MacroConstants, Measurements {
 		return Double.NaN;
 	}
 	
-	double replacePlot(Plot currentPlot) {
+	double replacePlot(Plot plot) {
 		int index = (int)getFirstArg();
+		if (index<0 || index>=plot.getNumPlotObjects())
+			interp.error("Index out of range");
 		String shape = getNextString();
 		double[] x = getNextArray();
 		double[] y = getLastArray();
-		currentPlot.replace(index, shape, x, y);
+		plot.replace(index, shape, x, y);
 		return Double.NaN;
 	}
 

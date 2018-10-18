@@ -14,49 +14,52 @@ import java.util.ArrayList;
 
 /** This class implements the Plot Window's "Data>Add from Plot" and "More>Contents Style" dialogs */
 public class PlotContentsDialog implements DialogListener {
-	/** types of dialog */
-	public final static int ERROR=-1, STYLE=0, ADD_FROM_PLOT=1, ADD_FROM_TABLE=2;
-	/** dialog headings for the dialogType */
-	private static final String[] HEADINGS = new String[] {"Plot Contents Style", "Add From Plot", "Add From Table"};
+	/** Types of dialog (ERROR suppresses the dialog after an invalid call of a constructor) */
+	public final static int ERROR=-1, STYLE=0, ADD_FROM_PLOT=1, ADD_FROM_TABLE=2, ADD_FROM_ARRAYS=3;
+	/** Dialog headings for each dialogType >= 0 */
+	private static final String[] HEADINGS = new String[] {"Plot Contents Style", "Add From Plot", "Add From Table", "Create Plot"};
 	private Plot plot;
 	private int dialogType;
 	GenericDialog gd;
 	private int currentObjectIndex = -1;
-	private Choice      objectChoice;
-	private Choice      symbolChoice;
-	private TextField   colorField, color2Field, labelField, widthField;
-	private boolean     creatingPlot;                // for creating plots; dialogType determines source
-	private Choice      plotChoice;                  // for "Add from Plot"
-	private Plot[]      allPlots;
-	private String[]    allPlotNames;
-	private static Plot previousPlot;
-	private static int  previousPlotObjectIndex;
-	private int defaultPlotIndex, defaultObjectIndex;
-	private int currentPlotNumObjects;
-	private Choice      tableChoice;                 // for "Add from Table"
-	final static int N_COLUMNS = 4;                  // number of data columns that we can have; x, y, xE, yE
-	private Choice[] columnChoice = new Choice[N_COLUMNS];
+	private Choice        objectChoice;
+	private Choice        symbolChoice;
+	private TextField     colorField, color2Field, labelField, widthField;
+	private Checkbox      visibleCheckbox;
+	private boolean       creatingPlot;              // for creating plots; dialogType determines source
+	private Choice        plotChoice;                // for "Add from Plot"
+	private Plot[]        allPlots;
+	private String[]      allPlotNames;
+	private static Plot   previousPlot;
+	private static int    previousPlotObjectIndex;
+	private int           defaultPlotIndex, defaultObjectIndex;
+	private int           currentPlotNumObjects;
+	private Choice        tableChoice;               // for "Add from Table"
+	final static int      N_COLUMNS = 4;             // number of data columns that we can have; x, y, xE, yE
+	private Choice[]      columnChoice = new Choice[N_COLUMNS];
 	private final static String[] COLUMN_NAMES = new String[] {"X:", "Y:", "X Error:", "Y Error:"};
 	private final static boolean[] COLUMN_ALLOW_NONE = new boolean[] {true, false, true, true}; //y data cannot be null
 	private ResultsTable[] allTables;
-	private String[] allTableNames;
-	private static ResultsTable previousTable;
-	private static int[] previousColumns = new int[]{1, 1, 0, 0}; //must be N_COLUMNS elements
-	private static int defaultTableIndex;
-	private static int[] defaultColumnIndex = new int[N_COLUMNS];
+	private String[]      allTableNames;
+	private static String previousTableName;
+	private static int[]  previousColumns = new int[]{1, 1, 0, 0}; //must be N_COLUMNS elements
+	private static int    defaultTableIndex;
+	private static int[]  defaultColumnIndex = new int[N_COLUMNS];
+	private String[]      arrayHeadings;             // for "Add from Arrays"
+	private ArrayList<float[]> arrayData;
 	private static String previousColor="blue", previousColor2="#a0a0ff", previousSymbol="Circle";
 	private static double previousLineWidth = 1;
 	private static final String[] PLOT_COLORS = new String[] {"blue", "red", "black", "#00c0ff", "#00e000", "gray", "#c08060", "magenta"};
 
 
-	/** Prepare a new PlotContentsDialog for an existing plot. Use showDialog thereafter. */
+	/** Prepares a new PlotContentsDialog for an existing plot. Use showDialog thereafter. */
 	public PlotContentsDialog(Plot plot, int dialogType) {
 		this.plot = plot;
 		this.dialogType = plot == null ? ERROR : dialogType;
 		if (plot != null) currentPlotNumObjects = plot.getNumPlotObjects();
 	}
 
-	/** Prepare a new PlotContentsDialog for plotting data from a ResultsTable */
+	/** Prepares a new PlotContentsDialog for plotting data from a ResultsTable */
 	public PlotContentsDialog(String title, ResultsTable rt) {
 		creatingPlot = true;
 		dialogType = ADD_FROM_TABLE;
@@ -67,6 +70,27 @@ public class PlotContentsDialog implements DialogListener {
 		plot = new Plot("Plot of "+title, "x", "y");
 		allTables = new ResultsTable[] {rt};
 		allTableNames = new String[] {title};
+	}
+
+	/** Prepares a new PlotContentsDialog for plotting data from float[] arrays.
+	 *  Each 'data' array in the ArrayList must have a corresponding element in the 'headings' array.
+	 *  'defaultHeadings' may contain the headings of the items selected initially for x, y, x error and y error, respectively.
+	 *  'defaultHeadings' and each of its entries may be null, and the array may have any length. */
+	public PlotContentsDialog(String title, String[] headings, String[] defaultHeadings, ArrayList<float[]> data) {
+		creatingPlot = true;
+		dialogType = ADD_FROM_ARRAYS;
+		this.arrayHeadings = headings;
+		this.arrayData = data;
+		plot = new Plot(title, "x", "y");
+		if (defaultHeadings != null) {
+			for (int i=0; i<Math.min(defaultHeadings.length, N_COLUMNS); i++) {
+				if (defaultHeadings[i] == null || defaultHeadings[i].length()==0)
+					previousColumns[i] = 0;
+				else
+					previousColumns[i] = Math.max(0,  //default column index; index=0 means 'none' for all except y
+							getIndex(headings, defaultHeadings[i]) + (COLUMN_ALLOW_NONE[i] ? 1 : 0));
+			}
+		}
 	}
 
 	/** Shows the dialog, with a given parent Frame (may be null) */
@@ -105,9 +129,12 @@ public class PlotContentsDialog implements DialogListener {
 			gd.addChoice("Select Table:", allTableNames, allTableNames[defaultTableIndex]);
 			tableChoice = (Choice)(gd.getChoices().get(0));
 			if (creatingPlot) tableChoice.setVisible(false);     // we can't select the table, we have only one
+		}
+		if (dialogType == ADD_FROM_TABLE || dialogType == ADD_FROM_ARRAYS) {
 			for (int i=0; i<N_COLUMNS; i++) {
 				gd.addChoice(COLUMN_NAMES[i], new String[]{""}, "");  // will set up by makeSourceColumns
-				columnChoice[i] = (Choice)(gd.getChoices().get(i+1));
+				Vector choices = gd.getChoices();
+				columnChoice[i] = (Choice)(choices.get(choices.size()-1));
 			}
 			makeSourceColumns();
 		}
@@ -115,23 +142,24 @@ public class PlotContentsDialog implements DialogListener {
 		gd.addStringField("Secondary (fill) color:", previousColor2, 10);
 		gd.addNumericField("Line width: ", previousLineWidth, 1);
 		gd.addChoice("Symbol:", Plot.SORTED_SHAPES, previousSymbol);
+		gd.addStringField("Label:", "", 20);
+		gd.setInsets(10, 60, 0);
+		gd.addCheckbox("Visible", true);
 		Vector choices = gd.getChoices();
 		symbolChoice = (Choice)(choices.get(choices.size()-1));
-		gd.addStringField("Label:", "", 20);
 		Vector stringFields = gd.getStringFields();
 		colorField = (TextField)(stringFields.get(0));
 		color2Field = (TextField)(stringFields.get(1));
-		labelField = (TextField)(stringFields.get(stringFields.size()-1));
+		labelField = (TextField)(stringFields.get(2));
 		widthField = (TextField)(gd.getNumericFields().get(0));
-		gd.setInsets(10, 60, 0);
-		gd.addCheckbox("Visible", true);
+		visibleCheckbox = (Checkbox)(gd.getCheckboxes().get(0));
 		gd.addDialogListener(this);
 		IJ.wait(100);			//sometimes needed to avoid hanging?
 		if (dialogType == STYLE)
 			setDialogStyleFields(objectChoice.getSelectedIndex());
 		else if (dialogType == ADD_FROM_PLOT)
 			addObjectFromPlot();
-		else if (dialogType == ADD_FROM_TABLE)
+		else if (dialogType == ADD_FROM_TABLE || dialogType == ADD_FROM_ARRAYS)
 			addObjectFromTable();
 		plot.updateImage();
 		if (creatingPlot) {
@@ -177,6 +205,7 @@ public class PlotContentsDialog implements DialogListener {
 					Recorder.recordString("Plot.add(\"error\", Table.getColumn(\""+
 							columnChoice[3].getSelectedItem()+"\", \""+tableChoice.getSelectedItem()+"\"));\n");
 			}
+			Recorder.recordString("Plot.setStyle("+currentObjectIndex+", \""+getStyleString()+"\");\n");
 		}
 	}
 
@@ -199,7 +228,7 @@ public class PlotContentsDialog implements DialogListener {
 				addObjectFromPlot();
 			} else
 				setStyle = true;
-		} else if (dialogType == ADD_FROM_TABLE) {
+		} else if (dialogType == ADD_FROM_TABLE || dialogType == ADD_FROM_ARRAYS) {
 			if (e.getSource() == tableChoice) {
 				makeSourceColumns();
 				addObjectFromTable();
@@ -217,17 +246,25 @@ public class PlotContentsDialog implements DialogListener {
 			}
 		}
 		if (setStyle) {
-			String color = gd.getNextString();
-			String color2 = gd.getNextString();
-			double width = gd.getNextNumber();
-			String label = gd.getNextString();
-			Boolean visible = gd.getNextBoolean();
-			String symbol = symbolChoice.getSelectedItem();
-			if (labelField.isEnabled()) plot.setPlotObjectLabel(currentObjectIndex, label.length() > 0 ? label : null);
-			String style = color.trim()+","+color2.trim()+","+(float)width+","+ symbol+(visible?"":"hidden");
+			String style = getStyleString();
 			plot.setPlotObjectStyle(currentObjectIndex, style);
+			if (labelField.isEnabled()) {
+				String label = labelField.getText();
+				plot.setPlotObjectLabel(currentObjectIndex, label.length() > 0 ? label : null);
+			}
 		}
 		return true;
+	}
+
+	/** Returns the style String for Plot.setPlotObjectStyle from the dialog fields */
+	private String getStyleString() {
+		String color = colorField.getText();
+		String color2 = color2Field.getText();
+		double width = Tools.parseDouble(widthField.getText());
+		String symbol = symbolChoice.getSelectedItem();
+		Boolean visible = visibleCheckbox.getState();
+		String style = color.trim()+","+color2.trim()+","+(float)width+","+ symbol+(visible?"":"hidden");
+		return style;
 	}
 
 	/** Sets the style fields of the dialog according to the style of the PlotObject having the
@@ -336,7 +373,7 @@ public class PlotContentsDialog implements DialogListener {
 		for (int i=0; i<allTables.length; i++) {
 			TextWindow tw = tableWindows.get(i);
 			allTables[i] = tw.getResultsTable();
-			if (allTables[i] == previousTable)
+			if (allTableNames[i] == previousTableName)
 				defaultTableIndex = i;
 			allTableNames[i] = tw.getTitle();
 		}
@@ -348,7 +385,7 @@ public class PlotContentsDialog implements DialogListener {
 		for (Frame win : windows) {
 			if (win instanceof TextWindow) {
 				ResultsTable rt = ((TextWindow)win).getResultsTable();
-				if (rt != null && rt.getColumnHeadings().length()>0) return true;
+				if (isValid(rt)) return true;
 			}
 		}
 		return false;
@@ -356,12 +393,18 @@ public class PlotContentsDialog implements DialogListener {
 
 	/** Set up the Choices for the source columns for "Add from Table" */
 	private void makeSourceColumns() {
-		int tableIndex = tableChoice.getSelectedIndex();
-		ResultsTable rt = allTables[tableIndex];
-		String columnHeadingStr = rt.getColumnHeadings();
-		if (!columnHeadingStr.startsWith(" \t"))
-			columnHeadingStr = " \t"+columnHeadingStr;	//add empty field at beginning (if we don't have one)
-		String[] columnHeadings = columnHeadingStr.split("\t");
+		String[] columnHeadings = null;
+		if (dialogType == ADD_FROM_TABLE) {
+			int tableIndex = tableChoice.getSelectedIndex();
+			ResultsTable rt = allTables[tableIndex];
+			String columnHeadingStr = rt.getColumnHeadings();
+			if (!columnHeadingStr.startsWith(" \t"))
+				columnHeadingStr = " \t"+columnHeadingStr;	//add empty field at beginning (if we don't have one)
+			columnHeadings = columnHeadingStr.split("\t");
+		} else {   // if (dialogType == ADD_FROM_ARRAYS)
+			columnHeadings = new String[arrayHeadings.length+1];
+			System.arraycopy(arrayHeadings, 0, columnHeadings, 1, arrayHeadings.length);
+		}
 		columnHeadings[0] = "---";
 		for (int c=0; c<N_COLUMNS; c++) {
 			columnChoice[c].removeAll();
@@ -371,18 +414,27 @@ public class PlotContentsDialog implements DialogListener {
 		}
 	}
 
-	/** For "Add from Table", adds item to the plot according to the current Choice settings
+	/** For "Add from Table" and "Add from Arrays" adds item to the plot according to the current Choice settings
 	 *  and sets the Style fields for it. */
 	private void addObjectFromTable() {
-		int tableIndex = tableChoice.getSelectedIndex();
-		ResultsTable rt = allTables[tableIndex];
 		float data[][] = new float[N_COLUMNS][];
-		for (int c=0; c<N_COLUMNS; c++) {
-			String heading = columnChoice[c].getSelectedItem();
-			int index = rt.getColumnIndex(heading);
-			if (index >= 0)
-				data[c] = rt.getColumn(index);
-			previousColumns[c] = columnChoice[c].getSelectedIndex();
+		if (dialogType == ADD_FROM_TABLE) {
+			ResultsTable rt = allTables[tableChoice.getSelectedIndex()];
+			for (int c=0; c<N_COLUMNS; c++) {
+				String heading = columnChoice[c].getSelectedItem();
+				int index = rt.getColumnIndex(heading);
+				if (index >= 0)
+					data[c] = rt.getColumn(index);
+				previousColumns[c] = columnChoice[c].getSelectedIndex();
+			}
+		} else { //if (dialogType == ADD_FROM_ARRAYS)
+			for (int c=0; c<N_COLUMNS; c++) {
+				String heading = columnChoice[c].getSelectedItem();
+				int index = getIndex(arrayHeadings, heading);
+				if (index >= 0)
+					data[c] = arrayData.get(index);
+				previousColumns[c] = columnChoice[c].getSelectedIndex();
+			}
 		}
 		String label = columnChoice[1].getSelectedItem();	//take label from y
 		int shape = Plot.toShape(symbolChoice.getSelectedItem());
@@ -400,11 +452,12 @@ public class PlotContentsDialog implements DialogListener {
 		}
 		currentObjectIndex = plot.getNumPlotObjects()-1;
 		setDialogStyleFields(currentObjectIndex);
-		previousTable = rt;
+		if (dialogType == ADD_FROM_TABLE)
+			previousTableName = allTableNames[tableChoice.getSelectedIndex()];
 	}
 
 	/** Returns whether the table is non-null and has at least one non-trivial data column */
-	private boolean isValid(ResultsTable rt) {
+	private static boolean isValid(ResultsTable rt) {
 		if (rt == null) return false;
 		String columnHeadingStr = rt.getColumnHeadings();
 		if (columnHeadingStr.startsWith(" \t"))
@@ -412,6 +465,13 @@ public class PlotContentsDialog implements DialogListener {
 		else
 			return columnHeadingStr.length() >= 1;
 
+	}
+
+	/** Finds the index of a searchTerm in the String array; returns -1 if not found */
+	private static int getIndex(String[] strArray, String searchTerm) {
+		for (int i=0; i<strArray.length; i++)
+			if (strArray[i].equals(searchTerm)) return i;
+		return -1;
 	}
 
 	/** Sets the 'previousColor', 'previousColor2' with a suggestion for new colors */
@@ -442,7 +502,7 @@ public class PlotContentsDialog implements DialogListener {
 	}
 
 	/** Creates an 8-bit color value closer to 255 */
-	private int makeBrighter(int v) {
+	private static int makeBrighter(int v) {
 		return v> 190 ? 255 : 255 - (int)(0.4*(255-v));
 	}
 }
