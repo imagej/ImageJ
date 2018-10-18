@@ -277,6 +277,7 @@ public class Menus {
 		addExample(submenu, "Bar Charts", "Bar_Charts_.ijm");
 		addExample(submenu, "Shapes", "Plot_Shapes_.ijm");
 		addExample(submenu, "Plot Styles", "Plot_Styles_.ijm");
+		addExample(submenu, "Random Data", "Random_Data_.ijm");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		

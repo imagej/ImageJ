@@ -2069,7 +2069,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (interp.token!='.')
 			interp.error("'.' expected");
 		interp.getToken();
-		if (!(interp.token==WORD || interp.token==PREDEFINED_FUNCTION))
+		if (!(interp.token==WORD || interp.token==PREDEFINED_FUNCTION || interp.token==STRING_FUNCTION))
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
 		if (name.equals("create")) {
@@ -2147,13 +2147,14 @@ public class Functions implements MacroConstants, Measurements {
 			return fromPlot(currentPlot, 'a');
 		} else if (name.equals("getFrameBounds")) {
 			return getPlotFrameBounds(currentPlot);
-		} else if (name.equals("getNumObjects")) {
+		} else if (name.equals("objectCount")||name.equals("getNumObjects")) {
 			return currentPlot.getNumPlotObjects();
 		} else if (name.equals("add")) {
-			String arg = getFirstString();
-			int what = Plot.toShape(arg);
-			addToPlot(currentPlot, what, arg);
-			return Double.NaN;	
+			return addToPlot(currentPlot);
+		} else if (name.equals("replace")) {
+			return replacePlot(currentPlot);
+		} else if (name.equals("addText") || name.equals("drawLabel")) {
+			return addPlotText(currentPlot);
 		}		
 		
 		// the following commands need a plot under construction
@@ -2163,8 +2164,6 @@ public class Functions implements MacroConstants, Measurements {
 			return showPlot();
 		} else if (name.equals("update")) {
 			return updatePlot();
-		} else if (name.equals("addText") || name.equals("drawLabel")) {
-			return addPlotText();
 		} else if (name.equals("drawLine")) {
 			return drawPlotLine(false);
 		} else if (name.equals("drawNormalizedLine")) {
@@ -2316,7 +2315,7 @@ public class Functions implements MacroConstants, Measurements {
 		return Double.NaN;
 	}
 
-	double addPlotText() {
+	double addPlotText(Plot plot) {
 		String str = getFirstString();
 		double x = getNextArg();
 		double y = getLastArg();
@@ -2528,7 +2527,9 @@ public class Functions implements MacroConstants, Measurements {
 		return Double.NaN;
 	}
 
-	double addToPlot(Plot currentPlot, int what, String shape) {
+	double addToPlot(Plot currentPlot) {
+		String shape = getFirstString();
+		int what = Plot.toShape(shape);
 		boolean errorBars = false;
 		double[] x = getNextArray();
 		double[] y;
@@ -2558,6 +2559,15 @@ public class Functions implements MacroConstants, Measurements {
 			currentPlot.add(shape, x, y);
 		else
 			currentPlot.addPoints(x, y, what);
+		return Double.NaN;
+	}
+	
+	double replacePlot(Plot currentPlot) {
+		int index = (int)getFirstArg();
+		String shape = getNextString();
+		double[] x = getNextArray();
+		double[] y = getLastArray();
+		currentPlot.replace(index, shape, x, y);
 		return Double.NaN;
 	}
 

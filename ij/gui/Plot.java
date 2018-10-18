@@ -206,6 +206,7 @@ public class Plot implements Cloneable {
 	//private boolean snapToMinorGrid;  			// snap to grid when zooming to selection
 	private static double SEPARATED_BAR_WIDTH=0.5;  // for plots with separate bars (e.g. categories), fraction of space, 0.1-1.0
 	double[] steps;                                 //for redrawing the grid
+	private int objectToReplace = -1;
 
 	/** Constructs a new Plot with the default options.
 	 * Use add(shape,xvalues,yvalues) to add curves.
@@ -667,6 +668,11 @@ public class Plot implements Cloneable {
 		addPoints(Tools.toFloat(xvalues), Tools.toFloat(yvalues), null, iShape, iShape==CUSTOM?type.substring(5, type.length()):null);
 	}
 
+	public void replace(int index, String type, double[] xvalues, double[] yvalues) {
+		objectToReplace = index;
+		add(type, xvalues, yvalues);
+	}
+
 	/** Adds a curve, set of points or error bars to this plot, where 'type' is
 	 * "line", "connected circle", "filled", "bar", "separated bar", "circle", "box",
 	 * "triangle", "diamond", "cross", "x", "dot", "error bars" or "xerror bars".
@@ -694,7 +700,11 @@ public class Plot implements Cloneable {
 			for (int i=0; i<yValues.length; i++)
 				xValues[i] = i;
 		}
-		allPlotObjects.add(new PlotObject(xValues, yValues, yErrorBars, shape, currentLineWidth, currentColor, currentColor2, label));
+		if (objectToReplace>=0)
+			allPlotObjects.set(objectToReplace, new PlotObject(xValues, yValues, yErrorBars, shape, currentLineWidth, currentColor, currentColor2, label));
+		else
+			allPlotObjects.add(new PlotObject(xValues, yValues, yErrorBars, shape, currentLineWidth, currentColor, currentColor2, label));
+		objectToReplace = -1;	
 		if (plotDrawn) updateImage();
 	}
 
