@@ -657,7 +657,7 @@ public class Plot implements Cloneable {
 	}
 
 	/** Adds a curve or set of points to this plot, where 'type' is
-	 * "line", "connected circle", "filled", "bar", "separated bar", "circle", "box", "triangle", "diamond", "cross", 
+	 * "line", "connected circle", "filled", "bar", "separated bar", "circle", "box", "triangle", "diamond", "cross",
 	 * "x" or "dot". Run <i>Help&gt;Examples&gt;JavaScript&gt;Graph Types</i> to see examples.
 	 * If 'type' is in the form "code: <macroCode>", the macro given is executed to draw the symbol;
 	 * macro variables 'x' and 'y' are the pixel coordinates of the point, 'xval' and 'yval' are the plot data
@@ -671,9 +671,13 @@ public class Plot implements Cloneable {
 		addPoints(Tools.toFloat(xvalues), Tools.toFloat(yvalues), null, iShape, iShape==CUSTOM?type.substring(5, type.length()):null);
 	}
 
+	/** Replaces the specified plot object (curve or set of points).
+		 Equivalent to add() if there are no plot objects. */
 	public void replace(int index, String type, double[] xvalues, double[] yvalues) {
-		objectToReplace = index;
-		add(type, xvalues, yvalues);
+		if (index>=0 && index<allPlotObjects.size()) {
+			objectToReplace = allPlotObjects.size()>0?index:-1;
+			add(type, xvalues, yvalues);
+		}
 	}
 
 	/** Adds a curve, set of points or error bars to this plot, where 'type' is
@@ -707,7 +711,7 @@ public class Plot implements Cloneable {
 			allPlotObjects.set(objectToReplace, new PlotObject(xValues, yValues, yErrorBars, shape, currentLineWidth, currentColor, currentColor2, label));
 		else
 			allPlotObjects.add(new PlotObject(xValues, yValues, yErrorBars, shape, currentLineWidth, currentColor, currentColor2, label));
-		objectToReplace = -1;	
+		objectToReplace = -1;
 		if (plotDrawn) updateImage();
 	}
 
@@ -927,12 +931,12 @@ public class Plot implements Cloneable {
 				currentFont, currentColor == null ? Color.black : currentColor, flags);
 		if (plotDrawn) updateImage();
 	}
-	
+
 	/** Returns an array of the available curve types ("Line", "Bar", "Circle", etc). */
 	public String[] getTypes() {
 		return SORTED_SHAPES;
 	}
-		
+
 	/** Sets the justification used by addLabel(), where <code>justification</code>
 	 * is Plot.LEFT, Plot.CENTER or Plot.RIGHT. Default is LEFT. */
 	public void setJustification(int justification) {
@@ -1109,16 +1113,51 @@ public class Plot implements Cloneable {
 		return p==null ? null : p.yValues;
 	}
 
+	/** Get the data of the n-th Plot Object containing xy data in the sequence they were added
+	 *  (Other Plot Objects such as labels, arrows, lines, shapes and hidden PlotObjects are not counted).
+	 *	The array returned has elements [0] x data, [1] y data, [2] x error bars, [3] y error bars.
+	 *  If no error bars are given, the corresponding arrays are null.
+	 *  Returns null if there is no Plot Object with xy data with this index.
+	 *  @see #getDataObjectDesignations() **/
+	public float[][] getDataObjectArrays(int index) {
+		int i = 0;
+		for (PlotObject plotObject : allPlotObjects) {
+			if (plotObject.type != PlotObject.XY_DATA || plotObject.hasFlag(PlotObject.HIDDEN)) continue;
+			if (index == i)
+				return new float[][] {plotObject.xValues, plotObject.yValues, plotObject.xEValues, plotObject.yEValues};
+			i++;
+		}
+		return null;
+	}
+
 	/** Get an array with human-readable designations of the PlotObjects (curves, labels, ...)
-	 *	in the sequence they were added (the object passed with the constructur is first,
+	 *	in the sequence they were added (the object passed with the constructor is first,
 	 *	even though it is plotted last). Hidden PlotObjects are included. **/
 	public String[] getPlotObjectDesignations() {
-		String[] names = new String[allPlotObjects.size()];
+		return getPlotObjectDesignations(-1, true);
+	}
+
+	/** Get an array with human-readable designations of the PlotObjects containing xy data
+	 *	in the sequence they were added. Other Plot Objects such as labels, arrows, lines,
+	 *  shapes and hidden PlotObjects are not counted.
+	 *  (the object passed with the constructor is first, even though it is plotted last). */
+	public String[] getDataObjectDesignations() {
+		return getPlotObjectDesignations(PlotObject.XY_DATA, false);
+	}
+
+	/** Get an array with human-readable designations of the PlotObjects with types fitting the mask */
+	String[] getPlotObjectDesignations(int mask, boolean includeHidden) {
+		int nObjects = 0;
+		for (PlotObject plotObject : allPlotObjects)
+			if ((plotObject.type & mask) != 0 && (includeHidden || !plotObject.hasFlag(PlotObject.HIDDEN)))
+				nObjects++;
+		String[] names = new String[nObjects];
 		if (names.length == 0) return names;
 		int iData = 1, iArrow = 1, iLine = 1, iText = 1,  iBox = 1, iShape = 1; //Human readable counters of each object type
-		for (int i=0; i<allPlotObjects.size(); i++) {
-			PlotObject plotObject = allPlotObjects.get(i);
+		int i = 0;
+		for (PlotObject plotObject : allPlotObjects) {
 			int type = plotObject.type;
+			if ((type & mask) == 0 || (!includeHidden && plotObject.hasFlag(PlotObject.HIDDEN))) continue;
 			String label = plotObject.label;
 			switch (type) {
 				case PlotObject.XY_DATA:
@@ -1152,6 +1191,7 @@ public class Plot implements Cloneable {
 					iShape++;
 					break;
 			}
+			i++;
 		}
 		return names;
 	}
@@ -1272,8 +1312,7 @@ public class Plot implements Cloneable {
 	public void setLimitsToFit(boolean updateImg) {
 		saveMinMax();
 		currentMinMax = getMinAndMax(true, ALL_AXES_RANGE);
-		if (Double.isNaN(defaultMinMax[0]))
-			System.arraycopy(currentMinMax, 0, defaultMinMax, 0, currentMinMax.length);
+		System.arraycopy(currentMinMax, 0, defaultMinMax, 0, currentMinMax.length);
 		if (plotDrawn && updateImg) updateImage();
 	}
 
@@ -1403,6 +1442,7 @@ public class Plot implements Cloneable {
 			grayscaleStack = false;
 		IJ.showStatus("addToStack: "+stack.size());
 		allPlotObjects.clear();
+		textLoc = null;
 	}
 
 	public void appendToStack() { addToStack(); }
@@ -2001,7 +2041,8 @@ public class Plot implements Cloneable {
 	}
 
 	void saveMinMax() {
-		System.arraycopy(currentMinMax, 0, savedMinMax, 0, currentMinMax.length);
+		if (!Arrays.equals(currentMinMax, savedMinMax))
+			System.arraycopy(currentMinMax, 0, savedMinMax, 0, currentMinMax.length);
 	}
 
 	/** Returns the first font of the list that is not null, or defaultFont if both are null */
@@ -2861,7 +2902,7 @@ public class Plot implements Cloneable {
 				WindowManager.setTempCurrentImage(null);
 				break;
 			default: // CIRCLE, CONNECTED_CIRCLES: 5x5 oval approximated by 5x5 square without corners
-				if (sc(size) < 5.01 && plotObject.lineWidth < 2) {
+				if (sc(size) < 5.01) {
 					ip.drawLine(x-1, y-2, x+1, y-2);
 					ip.drawLine(x-1, y+2, x+1, y+2);
 					ip.drawLine(x+2, y+1, x+2, y-1);
@@ -3567,9 +3608,9 @@ class PlotProperties implements Cloneable, Serializable {
 class PlotObject implements Cloneable, Serializable {
 	/** The serialVersionUID should not be modified, otherwise saved plots won't be readable any more */
 	static final long serialVersionUID = 1L;
-	/** constants for the type of objects */
-	public final static int XY_DATA = 0, ARROWS = 1, LINE = 2, NORMALIZED_LINE = 3, DOTTED_LINE = 4,
-			LABEL = 5, NORMALIZED_LABEL = 6, LEGEND = 7, AXIS_LABEL = 8, FRAME = 9, SHAPES = 10;
+	/** Constants for the type of objects. These are powers of two so one can use them as masks */
+	public final static int XY_DATA = 1, ARROWS = 2, LINE = 4, NORMALIZED_LINE = 8, DOTTED_LINE = 16,
+			LABEL = 32, NORMALIZED_LABEL = 64, LEGEND = 125, AXIS_LABEL = 256, FRAME = 512, SHAPES = 1024;
 	/** mask for recovering font style from the flags */
 	final static int FONT_STYLE_MASK = 0x0f;
 	/** flag for the data set passed with the constructor. Note that 0 to 0x0f are reserved for fonts modifiers, 0x010-0x800 are reserved for legend modifiers */

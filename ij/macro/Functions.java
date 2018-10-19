@@ -2566,8 +2566,6 @@ public class Functions implements MacroConstants, Measurements {
 	
 	double replacePlot(Plot plot) {
 		int index = (int)getFirstArg();
-		if (index<0 || index>=plot.getNumPlotObjects())
-			interp.error("Index out of range");
 		String shape = getNextString();
 		double[] x = getNextArray();
 		double[] y = getLastArray();

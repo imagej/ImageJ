@@ -1898,15 +1898,18 @@ public class Interpreter implements MacroConstants {
 	}
 		
 	private void abortAllMacroThreads() {
-		ThreadGroup group = Thread.currentThread().getThreadGroup(); 
-		int activeCount = group.activeCount(); 
-		Thread[] threads = new Thread[activeCount]; 
-		group.enumerate(threads); 
-		for (int i = 0; i < activeCount; i++) { 
-			String name = threads[i].getName(); 
-			if (name!=null && name.endsWith("Macro$"))
-				threads[i].stop(); 
-		} 
+		try {
+			ThreadGroup group = Thread.currentThread().getThreadGroup(); 
+			int activeCount = group.activeCount(); 
+			Thread[] threads = new Thread[activeCount]; 
+			group.enumerate(threads); 
+			for (int i = 0; i < activeCount; i++) { 
+				String name = threads[i].getName(); 
+				if (name!=null && name.endsWith("Macro$"))
+					threads[i].stop(); 
+			}
+		} catch (Throwable e) {
+		}
 	} 
 
 	public static Interpreter getInstance() {

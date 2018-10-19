@@ -76,7 +76,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 
 	private Button list, data, more, live;
 	private PopupMenu dataPopupMenu, morePopupMenu;
-	private static final int NUM_MENU_ITEMS = 17; //how many menu items we have in total
+	private static final int NUM_MENU_ITEMS = 18; //how many menu items we have in total
 	private MenuItem[] menuItems = new MenuItem[NUM_MENU_ITEMS];
 	private Label coordinates;
 	private static String defaultDirectory = null;
@@ -303,23 +303,24 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	}
 
 	/** Names for popupMenu items. Update NUM_MENU_ITEMS at the top when adding new ones! */
-	private static int SAVE=0, COPY=1, COPY_ALL=2, ADD_FROM_PLOT=3,	ADD_FROM_TABLE=4, //data menu
-			SET_RANGE=5, PREV_RANGE=6, RESET_RANGE=7, FIT_RANGE=8,  //the rest is in the more menu
-			ZOOM_SELECTION=9, AXIS_OPTIONS=10, LEGEND=11, STYLE=12, RESET_PLOT=13,
-			FREEZE=14, HI_RESOLUTION=15, PROFILE_PLOT_OPTIONS=16;
+	private static int SAVE=0, COPY=1, COPY_ALL=2, ADD_FROM_TABLE=3, ADD_FROM_PLOT=4, ADD_FIT=5, //data menu
+			SET_RANGE=6, PREV_RANGE=7, RESET_RANGE=8, FIT_RANGE=9,  //the rest is in the more menu
+			ZOOM_SELECTION=10, AXIS_OPTIONS=11, LEGEND=12, STYLE=13, RESET_PLOT=14,
+			FREEZE=15, HI_RESOLUTION=16, PROFILE_PLOT_OPTIONS=17;
 	//the following commands are disabled when the plot is frozen
-	private static int[] DISABLED_WHEN_FROZEN = new int[]{ADD_FROM_PLOT, ADD_FROM_TABLE, SET_RANGE, PREV_RANGE, RESET_RANGE,
-			FIT_RANGE, ZOOM_SELECTION, AXIS_OPTIONS, LEGEND, STYLE, RESET_PLOT};
+	private static int[] DISABLED_WHEN_FROZEN = new int[]{ADD_FROM_TABLE, ADD_FROM_PLOT, ADD_FIT,
+			SET_RANGE, PREV_RANGE, RESET_RANGE, FIT_RANGE, ZOOM_SELECTION, AXIS_OPTIONS, LEGEND, STYLE, RESET_PLOT};
 
-	/** Prepares and returns the popupMenu of the More>> button */
+	/** Prepares and returns the popupMenu of the Data>> button */
 	PopupMenu getDataPopupMenu() {
 		dataPopupMenu = new PopupMenu();
 		menuItems[SAVE] = addPopupItem(dataPopupMenu, "Save Data...");
 		menuItems[COPY] = addPopupItem(dataPopupMenu, "Copy 1st Data Set");
 		menuItems[COPY_ALL] = addPopupItem(dataPopupMenu, "Copy All Data");
 		dataPopupMenu.addSeparator();
-		menuItems[ADD_FROM_PLOT] = addPopupItem(dataPopupMenu, "Add from Plot...");
 		menuItems[ADD_FROM_TABLE] = addPopupItem(dataPopupMenu, "Add from Table...");
+		menuItems[ADD_FROM_PLOT] = addPopupItem(dataPopupMenu, "Add from Plot...");
+		menuItems[ADD_FIT] = addPopupItem(dataPopupMenu, "Add Fit...");
 		return dataPopupMenu;
 	}
 
@@ -380,10 +381,12 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 			copyToClipboard(false);
 		else if (b==menuItems[COPY_ALL])
 			copyToClipboard(true);
-		else if (b==menuItems[ADD_FROM_PLOT])
-			new PlotContentsDialog(plot, PlotContentsDialog.ADD_FROM_PLOT).showDialog(this);
 		else if (b==menuItems[ADD_FROM_TABLE])
 			new PlotContentsDialog(plot, PlotContentsDialog.ADD_FROM_TABLE).showDialog(this);
+		else if (b==menuItems[ADD_FROM_PLOT])
+			new PlotContentsDialog(plot, PlotContentsDialog.ADD_FROM_PLOT).showDialog(this);
+		else if (b==menuItems[ADD_FIT])
+			new PlotContentsDialog(plot, PlotContentsDialog.ADD_FIT).showDialog(this);
 		else if (b==menuItems[ZOOM_SELECTION]) {
 			if (imp!=null && imp.getRoi()!=null && imp.getRoi().isArea())
 				plot.zoomToRect(imp.getRoi().getBounds());
@@ -420,7 +423,10 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		((CheckboxMenuItem)menuItems[FREEZE]).setState(frozen);
 		for (int i : DISABLED_WHEN_FROZEN)
 			menuItems[i].setEnabled(!frozen);
-				menuItems[ADD_FROM_TABLE].setEnabled(PlotContentsDialog.tableWindowExists());
+		if (!PlotContentsDialog.tableWindowExists())
+			menuItems[ADD_FROM_TABLE].setEnabled(false);
+		if (plot.getDataObjectDesignations().length == 0)
+			menuItems[ADD_FIT].setEnabled(false);
 	}
 
 	/** Called if the user activates/deactivates a CheckboxMenuItem */
