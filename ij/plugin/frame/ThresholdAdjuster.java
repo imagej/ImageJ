@@ -21,6 +21,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	public static final String LOC_KEY = "threshold.loc";
 	public static final String MODE_KEY = "threshold.mode";
 	public static final String DARK_BACKGROUND = "threshold.dark";
+	public static final String RESET_RANGE = "threshold.reset";
 	static final int RED=0, BLACK_AND_WHITE=1, OVER_UNDER=2;
 	static final String[] modes = {"Red","B&W", "Over/Under"};
 	static final double defaultMinThreshold = 0;//85;
@@ -59,10 +60,11 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	boolean done;
 	int lutColor;
 	Choice methodChoice, modeChoice;
-	Checkbox darkBackground, stackHistogram;
+	Checkbox darkBackground, stackHistogram, resetRangeB;
 	boolean firstActivation = true;
 	boolean setButtonPressed;
-
+	boolean resetRange = true;
+	boolean ignoreEightBitReset;
 
 	public ThresholdAdjuster() {
 		super("Threshold");
@@ -198,6 +200,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 
 		// checkboxes
 		panel = new Panel();
+		panel.setLayout(new GridLayout(2, 2));
 		boolean db = Prefs.get(DARK_BACKGROUND, Prefs.blackBackground?true:false);
         darkBackground = new Checkbox("Dark background");
         darkBackground.setState(db);
@@ -206,11 +209,16 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
         stackHistogram = new Checkbox("Stack histogram");
         stackHistogram.setState(false);
         stackHistogram.addItemListener(this);
-        panel.add(stackHistogram);
+        panel.add(stackHistogram); 
+		resetRange = Prefs.get(RESET_RANGE, true);
+		resetRangeB = new Checkbox("Reset range");
+        resetRangeB.setState(resetRange);
+        resetRangeB.addItemListener(this);
+        panel.add(resetRangeB);
         c.gridx = 0;
         c.gridy = y++;
         c.gridwidth = 2;
-		c.insets = new Insets(5, 5, 0, 5);
+		c.insets = new Insets(5, 5, 0, 0);
         add(panel, c);
 
 		// buttons
@@ -362,6 +370,10 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			}
 		} else if (source==darkBackground) {
 			doBackground = true;
+		} else if (source==resetRangeB) {
+			resetRange = resetRangeB.getState();
+			ignoreEightBitReset = true;
+			doReset = true;
 		} else
 			doAutoAdjust = true;
 		notify();
@@ -401,12 +413,12 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			maxThreshold = ip.getMaxThreshold();
 			boolean isThreshold = minThreshold != ImageProcessor.NO_THRESHOLD
 					&& ip.getCurrentColorModel() != ip.getColorModel(); //does not work???
-			/*if (not8Bits && minMaxChange) {  //if display Range is not the full range, correct threshold at display range limit
+			if (not8Bits && minMaxChange && resetRange) {
 				double max1 = ip.getMax();
 				resetMinAndMax(ip);
 				if (maxThreshold==max1)
 					maxThreshold = ip.getMax();
-			}*/
+			}
 			ImageStatistics stats = plot.setHistogram(imp, entireStack(imp));
 			if (stats == null)
 				return null;
@@ -436,7 +448,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	private void resetMinAndMax(ImageProcessor ip) {
-		if ((ip instanceof ByteProcessor) || (mode==OVER_UNDER))
+		if ((ip instanceof ByteProcessor) || (mode==OVER_UNDER) || resetRange)
 			ip.resetMinAndMax();
 	}
 
@@ -464,7 +476,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			minThreshold = 255;
 		if (Recorder.record) {
 			boolean stack = stackHistogram!=null && stackHistogram.getState();
-			boolean noReset = !((ip instanceof ByteProcessor) || (mode==OVER_UNDER));
+			boolean noReset = !((ip instanceof ByteProcessor) || (mode==OVER_UNDER) || resetRange);
 			if (noReset) {
 				ImageStatistics stats2 = ip.getStats();
 				if (ip.getMin()>stats2.min || ip.getMax()<stats2.max)
@@ -655,6 +667,11 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	void reset(ImagePlus imp, ImageProcessor ip) {
+		if (ignoreEightBitReset) {
+			ignoreEightBitReset = false;
+			if (!resetRange || ip.getBitDepth()==8)
+				return;
+		}
 		ip.resetThreshold();
 		ImageStatistics stats = plot.setHistogram(imp, entireStack(imp));
 		if (!(ip instanceof ByteProcessor)) {
@@ -892,6 +909,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		Prefs.saveLocation(LOC_KEY, getLocation());
 		Prefs.set(MODE_KEY, mode);
 		Prefs.set(DARK_BACKGROUND, darkBackground.getState());
+		Prefs.set(RESET_RANGE, resetRangeB.getState());
 		synchronized(this) {
 			notify();
 		}

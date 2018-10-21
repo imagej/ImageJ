@@ -148,7 +148,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 			decimalPlaces = 0;
 		if (gd.invalidNumber()) return false;
 		if (useTextToolFont)
-			font = new Font(TextRoi.getFont(), TextRoi.getStyle(), fontSize);
+			font = new Font(TextRoi.getDefaultFontName(), TextRoi.getDefaultFontStyle(), fontSize);
 		else
 			font = new Font("SansSerif", Font.PLAIN, fontSize);
 		if (y<fontSize) y = fontSize+5;

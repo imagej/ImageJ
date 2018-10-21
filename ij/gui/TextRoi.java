@@ -329,18 +329,21 @@ public class TextRoi extends Roi {
 			g2d.setTransform(at);
 	}
 
-	/** Returns the name of the global (default) font. */
-	public static String getFont() {
+	/** Returns the name of the default font. Use getCurrentFont().getName()
+		 to get the name of the font that this TextRoi is using. */
+	public static String getDefaultFontName() {
 		return name;
 	}
 
-	/** Returns the global (default) font size. */
-	public static int getSize() {
+	/** Returns the default font size. Use getCurrentFont().getSize()
+		 to get the size of the font that this TextRoi is using. */
+	public static int getDefaultFontSize() {
 		return size;
 	}
 
-	/** Returns the global (default) font style. */
-	public static int getStyle() {
+	/** Returns the default font style. Use getCurrentFont().getStyle()
+		 to get the style of the font that this TextRoi is using. */
+	public static int getDefaultFontStyle() {
 		return style;
 	}
 	
@@ -691,6 +694,21 @@ public class TextRoi extends Roi {
 	
 	public void setPreviousRoi(Roi previousRoi) {
 		this.previousRoi = previousRoi;
+	}
+	
+	/** @deprecated Replaced by getDefaultFontName */
+	public static String getFont() {
+		return name;
+	}
+
+	/** @deprecated Replaced by getDefaultFontSize */
+	public static int getSize() {
+		return size;
+	}
+
+	/** @deprecated Replaced by getDefaultFontStyle */
+	public static int getStyle() {
+		return style;
 	}
         
 }

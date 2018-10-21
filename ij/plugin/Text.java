@@ -11,9 +11,9 @@ public class Text implements PlugIn, DialogListener {
 	private static final String[] styles = {"Plain", "Bold", "Italic", "Bold+Italic"};
 	private static final String[] justifications = {"Left", "Center", "Right"};
 	private static GenericDialog gd;
-	private String font = TextRoi.getFont();
-	private int fontSize = TextRoi.getSize();
-	private int style = TextRoi.getStyle();
+	private String font = TextRoi.getDefaultFontName();
+	private int fontSize = TextRoi.getDefaultFontSize();
+	private int style = TextRoi.getDefaultFontStyle();
 	private int justification = TextRoi.getGlobalJustification();
 	private int angle;
 	private boolean antialiased = TextRoi.isAntialiased();

@@ -2979,9 +2979,9 @@ public class Functions implements MacroConstants, Measurements {
 		int size = 0;
 		int style = 0;
 		if (name.equals("user")) {
-			name = TextRoi.getFont();
-			size = TextRoi.getSize();
-			style = TextRoi.getStyle();
+			name = TextRoi.getDefaultFontName();
+			size = TextRoi.getDefaultFontSize();
+			style = TextRoi.getDefaultFontStyle();
 			antialiasedText = TextRoi.isAntialiased();
 			interp.getRightParen();
 		} else {
