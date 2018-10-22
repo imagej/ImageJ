@@ -1237,11 +1237,16 @@ public class Plot implements Cloneable {
 		allPlotObjects.get(i).label = label;
 	}
 
-	/** Set the style of the i-th PlotObject (curve, label, ...) in the sequence
-	 *	they were added (including hidden ones), from a String with comma delimiters:
-	 *	Main Color, Secondary Color (or "none"), Line Width [, Symbol shape for XY_DATA] [,hidden] **/
+	/** Sets the style of the specified PlotObject (curve, label, etc.) from a
+	 *	comma-delimited string ("color1,color2,lineWidth[,symbol][,hidden]"). */
+	public void setStyle(int index, String style) {
+		if (index<0 || index>=allPlotObjects.size())
+			throw new IllegalArgumentException("Index out of range");
+		setPlotObjectStyle(allPlotObjects.get(index), style);
+	}
+
 	public void setPlotObjectStyle(int i, String styleString) {
-		setPlotObjectStyle(allPlotObjects.get(i), styleString);
+		setStyle(i, styleString);
 	}
 
 	void setPlotObjectStyle(PlotObject plotObject, String styleString) {

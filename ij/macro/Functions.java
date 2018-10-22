@@ -2123,7 +2123,10 @@ public class Functions implements MacroConstants, Measurements {
 		}  else if (name.equals("addLegend") || name.equals("setLegend")) {
 			return addPlotLegend(currentPlot);
 		}  else if (name.equals("setStyle")) {
-			currentPlot.setPlotObjectStyle((int)getFirstArg(), getLastString());
+			int index = (int)getFirstArg();
+			if (index<0 || index>=currentPlot.getNumPlotObjects())
+				interp.error("Index out of bounds");
+			currentPlot.setStyle(index, getLastString());
 			if (plot == null)
 				currentPlot.updateImage();
 			return Double.NaN;

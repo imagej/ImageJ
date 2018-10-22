@@ -672,13 +672,11 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 				return;
 		}
 		ip.resetThreshold();
+		if (!noReset)
+			resetMinAndMax(ip);
 		ImageStatistics stats = plot.setHistogram(imp, entireStack(imp));
-		if (!(ip instanceof ByteProcessor)) {
-			if (entireStack(imp))
-				ip.setMinAndMax(stats.min, stats.max);
-			else
-				resetMinAndMax(ip);;
-		}
+		if (ip.getBitDepth()!=8 && entireStack(imp))
+			ip.setMinAndMax(stats.min, stats.max);
 		updateScrollBars();
 		if (Recorder.record) {
 			if (Recorder.scriptMode())
