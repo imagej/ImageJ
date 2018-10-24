@@ -64,7 +64,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	boolean firstActivation = true;
 	boolean setButtonPressed;
 	boolean noReset;
-	boolean ignoreEightBitReset;
+	boolean noResetChanged;
 
 	public ThresholdAdjuster() {
 		super("Threshold");
@@ -372,7 +372,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			doBackground = true;
 		} else if (source==noResetButton) {
 			noReset = noResetButton.getState();
-			ignoreEightBitReset = true;
+			noResetChanged = true;
 			doReset = true;
 		} else
 			doAutoAdjust = true;
@@ -448,8 +448,14 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	private void resetMinAndMax(ImageProcessor ip) {
-		if (ip.getBitDepth()!=8 && (!noReset || mode==OVER_UNDER))
-			ip.resetMinAndMax();
+		if (ip.getBitDepth()!=8 && (!noReset || mode==OVER_UNDER)) {
+			ImageStatistics stats = ip.getStats();
+			if (ip.getMin()!=stats.min || ip.getMax()!=stats.max) {
+				ip.resetMinAndMax();
+				ContrastAdjuster.update();
+			} else
+				ip.resetMinAndMax();
+		}
 	}
 
 	boolean entireStack(ImagePlus imp) {
@@ -467,7 +473,6 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			stats.histogram[stats.mode] = plot.originalModeCount;
 		int threshold = thresholder.getThreshold(method, stats.histogram);
 		stats.histogram[stats.mode] = modifiedModeCount;
-
 		if (thresholdHigh(ip))  // dark background for non-inverting LUT, or bright background for inverting LUT
 			{minThreshold=threshold+1; maxThreshold=255;}
 		else
@@ -666,10 +671,15 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	void reset(ImagePlus imp, ImageProcessor ip) {
-		if (ignoreEightBitReset) {
-			ignoreEightBitReset = false;
+		if (noResetChanged) {
+			noResetChanged = false;
 			if ((noReset&&mode!=OVER_UNDER) || ip.getBitDepth()==8)
 				return;
+			if (!noReset) {
+				ImageStatistics stats = ip.getStats();
+				if (ip.getMin()==stats.min && ip.getMax()==stats.max)
+					return; // not contrast enhanced; no need to reset
+			}
 		}
 		ip.resetThreshold();
 		if (!noReset)

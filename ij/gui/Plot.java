@@ -1238,7 +1238,9 @@ public class Plot implements Cloneable {
 	}
 
 	/** Sets the style of the specified PlotObject (curve, label, etc.) from a
-	 *	comma-delimited string ("color1,color2,lineWidth[,symbol][,hidden]"). */
+	 *	comma-delimited string ("color1,color2,lineWidth[,symbol][,hidden]"),
+	 * where "color2" can be "none" and "symbol" and "hidden" are optional.
+	*/
 	public void setStyle(int index, String style) {
 		if (index<0 || index>=allPlotObjects.size())
 			throw new IllegalArgumentException("Index out of range");
