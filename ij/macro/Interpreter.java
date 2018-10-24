@@ -526,7 +526,6 @@ public class Interpreter implements MacroConstants {
 			   getAssignmentExpression();
 			getToken();
 		} while (token==',');
-		//IJ.log("token: "+pgm.decodeToken(token,tokenAddress));
 		if (token!=';')
 			error("';' expected");
 		int condPC = pc;
@@ -866,7 +865,6 @@ public class Interpreter implements MacroConstants {
 			if (!func.expandableArrays)
 				error("Index ("+index+") out of range");
 			Variable[] array2 = new Variable[index+array.length/2+1];
-			//IJ.log(array.length+" "+array2.length);
 			boolean strings = array.length>0 && array[0].getString()!=null;
 			for (int i=0; i<array2.length; i++) {
 				if (i<array.length)
@@ -1352,7 +1350,7 @@ public class Interpreter implements MacroConstants {
 				putTokenBack();
 				break;
 			}
-		};
+		}
 		return str;
 	}
 
@@ -1624,7 +1622,7 @@ public class Interpreter implements MacroConstants {
 
 	/** Searches the local and global sections of the stack for.
 		the specified variable. Returns null if it is not found. */
-		final Variable lookupLocalVariable(int symTabAddress) {
+	final Variable lookupLocalVariable(int symTabAddress) {
 		//IJ.log("lookupLocalVariable: "+topOfStack+" "+startOfLocals+" "+topOfGlobals);
 		Variable v = null;
 		for (int i=topOfStack; i>=startOfLocals; i--) {
@@ -1697,7 +1695,6 @@ public class Interpreter implements MacroConstants {
 			stack[i] = null;
 		topOfStack = previousTOS;
 	    startOfLocals = previousStartOfLocals;
-	    //IJ.log("trimStack: "+topOfStack);
 	}
 	
 	/** Searches the entire stack for the variable associated with the 
@@ -1711,7 +1708,6 @@ public class Interpreter implements MacroConstants {
 		boolean found = false;
 		for (int i=topOfStack; i>=0; i--) {
 			v = stack[i];
-			//IJ.log(I+"  "+v+"  "+v.symTabIndex+"  "+tokenAddress);
 			if (v.symTabIndex==tokenAddress) {
 				found = true;
 				break;
@@ -1743,10 +1739,8 @@ public class Interpreter implements MacroConstants {
 					if (index<0 || index>=array.length)
 						error("Index ("+index+") out of 0-"+(array.length-1)+" range");
 					str = array[index].getString();
-					if (str==null) {
-						pc = savePC-1;
-						getToken();
-					}
+					if (str==null)
+						str = toString(array[index].getValue());
 				} else if (next=='.')
 						str = null;
 				else {
@@ -1893,8 +1887,6 @@ public class Interpreter implements MacroConstants {
 		ignoreErrors = true;
 		for (int i=0; i<10; i++)
 			done = true;
-		//if (done!=true)
-		//	IJ.log("done!=true");
 	}
 		
 	private void abortAllMacroThreads() {
@@ -1935,7 +1927,6 @@ public class Interpreter implements MacroConstants {
 		if (imageTable==null)
 			imageTable = new Vector();
 		imageTable.add(imp);
-		//IJ.log("addBatchModeImage: "+imp+"  "+imageTable.size());
 		activateImage(imp);
 	}
 
@@ -1945,7 +1936,6 @@ public class Interpreter implements MacroConstants {
 			if (index!=-1) {
 				imageTable.remove(index);
 				imageActivations.remove(imp);
-				//IJ.log("removeBatchModeImage: "+imp+"  "+imageTable.size());
 				WindowManager.setTempCurrentImage(getLastBatchModeImage());
 			}
 		}
@@ -1957,7 +1947,6 @@ public class Interpreter implements MacroConstants {
 				imageActivations = new Vector();
 			imageActivations.remove(imp);
 			imageActivations.add(imp);
-			//IJ.log("activateImage: "+imp+"  "+imageTable.size());
 		}
 	}
 
@@ -2004,7 +1993,6 @@ public class Interpreter implements MacroConstants {
 			if (imp2==null)
 				imp2 = (ImagePlus)imageTable.get(size-1);
 		} catch(Exception e) { }
-		//IJ.log("getLastBatchModeImage: "+imp2+"  "+imageTable.size());
 		return imp2;
 	} 
  
