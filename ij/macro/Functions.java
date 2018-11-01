@@ -1082,8 +1082,6 @@ public class Functions implements MacroConstants, Measurements {
 			}
 		}
 		if (mask!=null) ip.reset(mask);
-		if (imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32)
-			ip.resetMinAndMax();
 		imp.updateAndDraw();
 		updateNeeded = false;
 	}
@@ -1972,19 +1970,19 @@ public class Functions implements MacroConstants, Measurements {
 		if (isStringArg()) {
 			type = getString().toLowerCase();
 			roiType = Roi.POLYGON;
-			if (type.indexOf("free")!=-1)
+			if (type.contains("free"))
 				roiType = Roi.FREEROI;
-			if (type.indexOf("traced")!=-1)
+			if (type.contains("traced"))
 				roiType = Roi.TRACED_ROI;
-			if (type.indexOf("line")!=-1) {
-				if (type.indexOf("free")!=-1)
+			if (type.contains("line")) {
+				if (type.contains("free"))
 					roiType = Roi.FREELINE;
 				else
 					roiType = Roi.POLYLINE;
 			}
-			if (type.indexOf("angle")!=-1)
+			if (type.contains("angle"))
 				roiType = Roi.ANGLE;
-			if (type.indexOf("point")!=-1)
+			if (type.contains("point")||type.contains("cross")||type.contains("circle")||type.contains("dot"))
 				roiType = Roi.POINT;
 		} else {
 			roiType = (int)interp.getExpression();
@@ -2042,7 +2040,17 @@ public class Functions implements MacroConstants, Measurements {
 			else
 				roi = new Line(xcoord[0], ycoord[0], xcoord[1], ycoord[1]);
 		} else if (roiType==Roi.POINT) {
-			if (floatCoordinates)
+			if (!type.equals("point")) {
+				if (!floatCoordinates) {
+					xfcoord = new float[n];
+					yfcoord = new float[n];
+					for (int i=0; i<n; i++) {
+						xfcoord[i] = (float)xcoord[i];
+						yfcoord[i] = (float)ycoord[i];
+					}
+				}
+				roi = new PointRoi(xfcoord, yfcoord, type);
+			} else if (floatCoordinates)
 				roi = new PointRoi(xfcoord, yfcoord, n);
 			else
 				roi = new PointRoi(xcoord, ycoord, n);
@@ -5340,11 +5348,18 @@ public class Functions implements MacroConstants, Measurements {
 
 	void makePoint() {
 		double x = getFirstArg();
-		double y = getLastArg();
-		if ((int)x==x && (int)y==y)
-			IJ.makePoint((int)x, (int)y);
-		else
-			IJ.makePoint(x, y);
+		double y = getNextArg();
+		String properties = null;
+		if (interp.nextToken()==',')
+			properties = getNextString();
+		interp.getRightParen();
+		if (properties==null) {
+			if ((int)x==x && (int)y==y)
+				IJ.makePoint((int)x, (int)y);
+			else
+				IJ.makePoint(x, y);
+		} else
+			getImage().setRoi(new PointRoi(x, y, properties));
 		resetImage();
 		shiftKeyDown = altKeyDown = false;
 	}

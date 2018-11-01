@@ -224,6 +224,8 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		// buttons
 		int trim = IJ.isMacOSX()?11:0;
 		panel = new Panel();
+		 int hgap = IJ.isMacOSX()?1:5;
+		panel.setLayout(new FlowLayout(FlowLayout.RIGHT,hgap,0));
 		autoB = new TrimmedButton("Auto",trim);
 		autoB.addActionListener(this);
 		autoB.addKeyListener(ij);

@@ -1748,6 +1748,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				ip.resetRoi();
 		}
 		roi.setImage(this);
+		if ((roi instanceof PointRoi) && ((PointRoi)roi).addToOverlay()) {
+			IJ.run(this, "Add Selection...", "");
+			roi = null;
+			return;
+		}
 		if (updateDisplay)
 			draw();
 		roi.notifyListeners(RoiListener.CREATED);

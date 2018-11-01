@@ -47,6 +47,7 @@ public class PointRoi extends PolygonRoi {
 	private boolean promptBeforeDeleting;
 	private boolean promptBeforeDeletingCalled;
 	private int nMarkers;
+	private boolean addToOverlay;
 	
 	static {
 		setDefaultType((int)Prefs.get(TYPE_KEY, HYBRID));
@@ -75,6 +76,12 @@ public class PointRoi extends PolygonRoi {
 		this(ox, oy, ox.length);
 	}
 
+	/** Creates a new PointRoi using the specified coordinates and properties. */
+	public PointRoi(float[] ox, float[] oy, String properties) {
+		this(ox, oy, ox.length);
+		setProps(properties);
+	}
+
 	/** Creates a new PointRoi from a FloatPolygon. */
 	public PointRoi(FloatPolygon poly) {
 		this(poly.xpoints, poly.ypoints, poly.npoints);
@@ -83,6 +90,14 @@ public class PointRoi extends PolygonRoi {
 	/** Creates a new PointRoi from a Polygon. */
 	public PointRoi(Polygon poly) {
 		this(itof(poly.xpoints), itof(poly.ypoints), poly.npoints);
+	}
+
+	/** Creates a new PointRoi using the specified coordinates and properties. */
+	public PointRoi(double ox, double oy, String properties) {
+		super(makeXArray(ox, null), makeYArray(oy, null), 1, POINT);
+		width=1; height=1;
+		incrementCounter(null);
+		setProps(properties);
 	}
 
 	/** Creates a new PointRoi using the specified offscreen int coordinates. */
@@ -118,8 +133,39 @@ public class PointRoi extends PolygonRoi {
 		setCounter(Toolbar.getMultiPointMode()?defaultCounter:0);
 		incrementCounter(imp);
 		enlargeArrays(50);
-		if (Recorder.record && !Recorder.scriptMode()) 
-			Recorder.record("makePoint", x, y);
+		if (Recorder.record) {
+			String add = Prefs.pointAddToOverlay?" add":"";
+			String properties = sizes[convertSizeToIndex(size)]+" "+Colors.colorToString(getColor())+" "+types[type]+add;
+			properties = properties.toLowerCase();		
+			if (Recorder.scriptMode())
+				Recorder.recordCall("imp.setRoi(new PointRoi("+x+","+y+",\""+properties+"\"));");
+			else
+				Recorder.record("makePoint", x, y, properties);
+		}
+	}
+	
+	private void setProps(String p) {
+		if (p==null)
+			return;
+		if (p.contains("tiny")) size=TINY;
+		else if (p.contains("medium")) size=MEDIUM;
+		else if (p.contains("extra")) size=EXTRA_LARGE;
+		else if (p.contains("large")) size=LARGE;
+		if (p.contains("cross")) type=CROSSHAIR;
+		else if (p.contains("dot")) type=DOT;
+		else if (p.contains("circle")) type=CIRCLE;
+		Color c = null;
+		if (p.contains("yellow")) c = Color.yellow;
+		else if (p.contains("red")) c = Color.red;
+		else if (p.contains("black")) c = Color.black;
+		else if (p.contains("white")) c = Color.white;
+		else if (p.contains("geen")) c = Color.green;
+		else if (p.contains("blue")) c = Color.blue;
+		else if (p.contains("magenta")) c = Color.magenta;
+		else if (p.contains("cyan")) c = Color.cyan;
+		if (c!=null)
+			setStrokeColor(c);
+		addToOverlay =  p.contains("add");
 	}
 	
 	static float[] itof(int[] arr) {
@@ -828,6 +874,10 @@ public class PointRoi extends PolygonRoi {
 		return counterInfo;
 	}
 	
+	public boolean addToOverlay() {
+		return addToOverlay;
+	}
+
 	/** @deprecated */
 	public void setHideLabels(boolean hideLabels) {
 		this.showLabels = !hideLabels;
