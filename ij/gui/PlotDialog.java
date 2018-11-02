@@ -46,7 +46,7 @@ public class PlotDialog {
 		GenericDialog gd = parent == null ? new GenericDialog(HEADINGS[dialogType]) :
 				new GenericDialog(HEADINGS[dialogType], parent);
 		if (dialogType == SET_RANGE) {
-			double[] currentMinMax = plot.currentMinMax;
+			double[] currentMinMax = plot.getLimits();
 			boolean livePlot = plot.plotMaker != null;
 			int xDigits = plot.logXAxis ? -2 : Plot.getDigits(currentMinMax[0], currentMinMax[1], 0.005*Math.abs(currentMinMax[1]-currentMinMax[0]), 6);
 			int yDigits = plot.logYAxis ? -2 : Plot.getDigits(currentMinMax[2], currentMinMax[3], 0.005*Math.abs(currentMinMax[3]-currentMinMax[2]), 6);
@@ -81,10 +81,6 @@ public class PlotDialog {
 				linYMax = Double.NaN;
 			if (linXMin == linXMax || linYMin == linYMax)
 				return;
-			currentMinMax[0] = linXMin;
-			currentMinMax[1] = linXMax;
-			currentMinMax[2] = linYMin;
-			currentMinMax[3] = linYMax;
 
 			if (livePlot) plot.templateFlags = setFlag(plot.templateFlags, Plot.X_RANGE, gd.getNextBoolean());
 			boolean xLog = gd.getNextBoolean();

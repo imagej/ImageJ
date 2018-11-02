@@ -14,15 +14,18 @@ import java.util.Arrays;
 import java.util.Vector;
 import java.util.ArrayList;
 
-/** This class implements the Plot Window's "Data>Add from Plot" and "More>Contents Style" dialogs */
+/** This class implements the Plot Window's Data>"Add from Plot", "Add form Table", "Add Fit" and
+ *  "More>Contents Style" dialogs
+ */
 public class PlotContentsDialog implements DialogListener {
 	/** Types of dialog (ERROR suppresses the dialog after an invalid call of a constructor) */
 	public final static int ERROR=-1, STYLE=0, ADD_FROM_PLOT=1, ADD_FROM_TABLE=2, ADD_FROM_ARRAYS=3, ADD_FIT=4;
 	/** Dialog headings for each dialogType >= 0 */
 	private static final String[] HEADINGS = new String[] {"Plot Contents Style", "Add From Plot", "Plot From Table", "Add Plot Data", "Add Fit"};
-	private Plot plot;
-	private int dialogType;
-	GenericDialog gd;
+	private Plot          plot;                     // the plot we work on
+	private int           dialogType;               // determines what to do: ADD_FORM_PLOT, etc.
+	private double[]      savedLimits;              // previous plot range, for undo upon cancel
+	GenericDialog         gd;
 	private int currentObjectIndex = -1;
 	private Choice        objectChoice;
 	private Choice        symbolChoice;
@@ -115,6 +118,7 @@ public class PlotContentsDialog implements DialogListener {
 	/** Shows the dialog, with a given parent Frame (may be null) */
 	public void showDialog(Frame parent) {
 		if (dialogType == ERROR) return;
+		if (!creatingPlot) savedLimits = plot.getLimits();
 		plot.savePlotObjects();
 		String[] designations = plot.getPlotObjectDesignations();
 		if (dialogType == STYLE && designations.length==0) {
@@ -173,6 +177,8 @@ public class PlotContentsDialog implements DialogListener {
 				columnChoice[i] = (Choice)(choices.get(choices.size()-1));
 			}
 			makeSourceColumns();
+			if (!creatingPlot)
+				suggestNewYColumn();
 		}
 		gd.addStringField("Color:", previousColor, 10);
 		gd.addStringField("Secondary (fill) color:", previousColor2, 10);
@@ -208,6 +214,7 @@ public class PlotContentsDialog implements DialogListener {
 		}
 
 		gd.showDialog();
+
 		if (fittingThread != null) {
 			fittingThread.interrupt();
 			try {
@@ -220,6 +227,8 @@ public class PlotContentsDialog implements DialogListener {
 				if (imp != null) imp.close();
 			} else {
 				plot.restorePlotObjects();
+				if (savedLimits != null)
+					plot.setLimits(savedLimits[0], savedLimits[1], savedLimits[2], savedLimits[3]);
 				plot.updateImage();
 				plot.killPlotObjectsSnapshot();
 			}
@@ -406,7 +415,10 @@ public class PlotContentsDialog implements DialogListener {
 		int plotIndex = plotChoice.getSelectedIndex();
 		int objectIndex = objectChoice.getSelectedIndex();
 		plot.restorePlotObjects();
+		if (savedLimits != null)
+			plot.setLimits(savedLimits);
 		currentObjectIndex = plot.addObjectFromPlot(allPlots[plotIndex], objectIndex); //no updateImage; will be done later
+		plot.fitRangeToLastPlotObject();
 		setDialogStyleFields(currentObjectIndex);
 		previousPlot = allPlots[plotIndex];
 		previousPlotObjectIndex = objectIndex;
@@ -473,7 +485,49 @@ public class PlotContentsDialog implements DialogListener {
 	/** For "Add from Table" and "Add from Arrays" adds item to the plot according to the current Choice settings
 	 *  and sets the Style fields for it. */
 	private void addObjectFromTable() {
-		float data[][] = new float[N_COLUMNS][];
+		float[][] data = getDataArrays();
+		String label = columnChoice[1].getSelectedItem();	//take label from y
+		int shape = Plot.toShape(symbolChoice.getSelectedItem());
+		float lineWidth = (float)(Tools.parseDouble(widthField.getText()));
+		if (lineWidth > 0)
+			plot.setLineWidth(lineWidth);
+		plot.restorePlotObjects();
+		if (savedLimits != null)
+			plot.setLimits(savedLimits);
+		plot.setColor(colorField.getText(), color2Field.getText());
+		plot.addPoints(data[0], data[1], data[3], shape, label);
+		if (data[2] != null)
+			plot.addHorizontalErrorBars(data[2]);
+		if (creatingPlot) {
+			plot.setXYLabels(data[0]==null ? "x" : columnChoice[0].getSelectedItem(), columnChoice[1].getSelectedItem());
+			plot.setLimitsToFit(false);
+		} else
+			plot.fitRangeToLastPlotObject();
+		currentObjectIndex = plot.getNumPlotObjects()-1;
+		setDialogStyleFields(currentObjectIndex);
+		if (dialogType == ADD_FROM_TABLE)
+			previousTableName = allTableNames[tableChoice.getSelectedIndex()];
+	}
+
+	/** For "Add from Table" and "Add from Arrays", tries to set a 'y' data column that has not been plotted yet. */
+	private void suggestNewYColumn() {
+		int nYcolumns = columnChoice[1].getItemCount();
+		int currentIndex = columnChoice[1].getSelectedIndex();
+		for (int i=0; i<nYcolumns; i++) {
+			if (columnChoice[0].getSelectedIndex()==0 ||    //if x is a data column, don't suggest it as y
+					!columnChoice[1].getSelectedItem().equals(columnChoice[0].getSelectedItem())) {
+				float[][] data = getDataArrays();
+				data = new float[][] {data[0], data[1]};	//only compare x & y, not the error bars
+				if (plot.getPlotObjectIndex(data) < 0)
+					return; //current data are ok (not duplicate)
+			}
+			columnChoice[1].select((currentIndex+i+1)%nYcolumns); //try the next one
+		}
+	}
+
+	/** For "Add from Table" and "Add from Arrays", retrieves the data arrays according to the columnChoices */
+	private float[][] getDataArrays() {
+		float[][] data = new float[N_COLUMNS][];
 		if (dialogType == ADD_FROM_TABLE) {
 			ResultsTable rt = allTables[tableChoice.getSelectedIndex()];
 			for (int c=0; c<N_COLUMNS; c++) {
@@ -492,29 +546,14 @@ public class PlotContentsDialog implements DialogListener {
 				previousColumns[c] = columnChoice[c].getSelectedIndex();
 			}
 		}
-		String label = columnChoice[1].getSelectedItem();	//take label from y
-		int shape = Plot.toShape(symbolChoice.getSelectedItem());
-		float lineWidth = (float)(Tools.parseDouble(widthField.getText()));
-		if (lineWidth > 0)
-			plot.setLineWidth(lineWidth);
-		plot.restorePlotObjects();
-		plot.setColor(colorField.getText(), color2Field.getText());
-		plot.addPoints(data[0], data[1], data[3], shape, label);
-		if (data[2] != null)
-			plot.addHorizontalErrorBars(data[2]);
-		if (creatingPlot) {
-			plot.setXYLabels(data[0]==null ? "x" : columnChoice[0].getSelectedItem(), columnChoice[1].getSelectedItem());
-			plot.setLimitsToFit(false);
-		}
-		currentObjectIndex = plot.getNumPlotObjects()-1;
-		setDialogStyleFields(currentObjectIndex);
-		if (dialogType == ADD_FROM_TABLE)
-			previousTableName = allTableNames[tableChoice.getSelectedIndex()];
+		return data;
 	}
 
 	/** Does the curve fit and adds the fit curve to the plot */
 	private void addFitCurve() {
 		plot.restorePlotObjects();
+		if (savedLimits != null)
+			plot.setLimits(savedLimits);
 		int dataIndex = fitDataChoice.getSelectedIndex();
 		float[][] data = plot.getDataObjectArrays(dataIndex);
 		String fitName = fitFunctionChoice.getSelectedItem();

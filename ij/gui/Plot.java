@@ -180,7 +180,7 @@ public class Plot implements Cloneable {
 	double[] currentMinMax = new double[]{Double.NaN, 0, Double.NaN, 0}; //current plot range, xMin, xMax, yMin, yMax (values, not logarithm if log axis)
 	double[] defaultMinMax = new double[]{Double.NaN, 0, Double.NaN, 0}; //default plot range
 	double[] savedMinMax = new double[]{Double.NaN, 0, Double.NaN, 0};	//keeps previous range for revert
-	int[] enlargeRange;								//whether to enlarge the range slightly to avoid values at the axes (0=off, USUALLY_ENLARGE, ALWAYS_ENLARGE)
+	int[] enlargeRange;								//whether to enlarge the range slightly to avoid values at the border (0=off, USUALLY_ENLARGE, ALWAYS_ENLARGE)
 	boolean logXAxis, logYAxis;						//whether to really use log axis (never for small relative range)
 
 	int templateFlags = COPY_SIZE | COPY_LABELS | COPY_AXIS_STYLE | COPY_CONTENTS_STYLE | COPY_LEGEND;	//for passing on what should be kept when 'live' plotting (PlotMaker)
@@ -272,6 +272,15 @@ public class Plot implements Cloneable {
 		pp = (PlotProperties)in.readObject();
 		allPlotObjects = (Vector<PlotObject>)in.readObject();
 		in.close();
+		if (pp.xLabel.type==8) {
+			pp.xLabel.updateType();	//convert old (pre-1.52i) type codes for the PlotObjects
+			pp.yLabel.updateType();
+			pp.frame.updateType();
+			if (pp.legend != null) pp.legend.updateType();
+			for (PlotObject plotObject : allPlotObjects)
+				plotObject.updateType();
+		}
+
 		defaultMinMax = pp.rangeMinMax;
 		currentFont = nonNullFont(pp.frame.getFont(), currentFont); // best guess in case we want to add a legend
 		getProcessor();     //prepares scale, calibration etc, but does not plot it yet
@@ -351,74 +360,50 @@ public class Plot implements Cloneable {
 	public void setLimits(double xMin, double xMax, double yMin, double yMax) {
 
 		boolean containsNaN = (Double.isNaN(xMin + xMax + yMin + yMax));
-		if (containsNaN && allPlotObjects.isEmpty())//can't apply auto-range without data
+		if (containsNaN && getNumPlotObjects(PlotObject.XY_DATA|PlotObject.ARROWS, false)==0)//can't apply auto-range without data
 			return;
-		boolean[] auto = new boolean[4];
 		double[] range = {xMin, xMax, yMin, yMax};
-		if (containsNaN) {
+		if (containsNaN) {                          //auto range for at least one limit
 			double[] extrema = getMinAndMax(true, ALL_AXES_RANGE);
-
-			for (int jj = 0; jj < 4; jj++)
-				if (Double.isNaN(range[jj])) {
-					range[jj] = extrema[jj];
-					auto[jj] = true;
+			boolean[] auto = new boolean[range.length];
+			for (int i = 0; i < range.length; i++)
+				if (Double.isNaN(range[i])) {
+					auto[i] = true;
+					range[i] = extrema[i];
 				}
-			double left = range[0];
-			double right = range[1];
-			double bottom = range[2];
-			double top = range[3];
-
-			//set semi-auto to full-auto if it would result in reverse axis direction
-			if ((auto[0] || auto[1]) && (left >= right)) {
-				left = extrema[0];
-				right = extrema[1];
-				auto[0] = true;
-				auto[1] = true;
+			for (int a = 0; a<range.length; a+=2) { //for all axes (0 for x, 2 for y): would semi-auto reverse the axis?
+				if (auto[a] == auto[a+1]) continue; //ignore if not semi-auto
+				boolean currentAxisReverse = defaultMinMax[a+1] < defaultMinMax[a];
+				if ((!currentAxisReverse && range[a+1] <= range[a]) || (currentAxisReverse && range[a] <= range[a+1])) {
+					auto[a] = true;					//semi-auto to full-auto
+					auto[a+1] = true;
+					range[a] = extrema[a];
+					range[a+1] = extrema[a+1];
+				}
 			}
-			if ((auto[2] || auto[3]) && (bottom >= top)) {
-				bottom = extrema[2];
-				top = extrema[3];
-				auto[2] = true;
-				auto[3] = true;
-			}
-			//Add 3% extra space to automatic borders
-			double extraXLin = (right - left) * 0.03;
-			double extraYLin = (top - bottom) * 0.03;
-			double extraXLog = (Math.log(right) - Math.log(left)) * 0.03;
-			double extraYLog = (Math.log(top) - Math.log(bottom)) * 0.03;
-
-			boolean isLogX = hasFlag(X_LOG_NUMBERS);
-			boolean isLogY = hasFlag(Y_LOG_NUMBERS);
-
-			if (auto[0] && !isLogX)
-				range[0] = left - extraXLin;//extra space (linear)
-			if (auto[1] && !isLogX)
-				range[1] = right + extraXLin;
-			if (auto[2] && !isLogY)
-				range[2] = bottom - extraYLin;
-			if (auto[3] && !isLogY)
-				range[3] = top + extraYLin;
-
-			if (auto[0] && isLogX)
-				range[0] = Math.exp(Math.log(left) - extraXLog);//extra space (log)
-			if (auto[1] && isLogX)
-				range[1] = Math.exp(Math.log(right) + extraXLog);
-			if (auto[2] && isLogY)
-				range[2] = Math.exp(Math.log(bottom) - extraYLog);
-			if (auto[3] && isLogY)
-				range[3] = Math.exp(Math.log(top) + extraYLog);
+			for (int i = 0; i < range.length; i++)
+				if (!auto[i])       // don't modify for limits that were set manually
+					enlargeRange[i] = 0;
+			enlargeRange(range);    // for automatic limits, avoid points exactly at the border
 		}
-		defaultMinMax = range;//change pointer of defaultMinMax
-		enlargeRange = null;
+		defaultMinMax = range;      // take the new values as default: change pointer of defaultMinMax
 		ignoreForce2Grid = true;
 		if (plotDrawn)
 			setLimitsToDefaults(true);
 	}
 
 	/** Returns the current limits as an array xMin, xMax, yMin, yMax.
+	 *  (note that ImageJ versions before to 1.52i have returned incorrect values in case of log axes)
 	 *	Note that future versions might return a longer array (e.g. for y2 axis limits) */
 	public double[] getLimits() {
-		return new double[] {xMin, xMax, yMin, yMax};
+		return currentMinMax.clone();//new double[] {xMin, xMax, yMin, yMax};
+	}
+
+	/** Sets the current limits from an array xMin, xMax, yMin, yMax
+	 *  The array may be also longer or shorter, but should not contain NaN values.
+	 *  Does not update the plot, does not save the old limits. */
+	public void setLimits(double[] limits) {
+		System.arraycopy(limits, 0, currentMinMax, 0, Math.min(limits.length, defaultMinMax.length));
 	}
 
 	/** Sets the canvas size in (unscaled) pixels and sets the scale to 1.0.
@@ -1130,14 +1115,14 @@ public class Plot implements Cloneable {
 		return null;
 	}
 
-	/** Get an array with human-readable designations of the PlotObjects (curves, labels, ...)
+	/** Gets an array with human-readable designations of the PlotObjects (curves, labels, ...)
 	 *	in the sequence they were added (the object passed with the constructor is first,
 	 *	even though it is plotted last). Hidden PlotObjects are included. **/
 	public String[] getPlotObjectDesignations() {
 		return getPlotObjectDesignations(-1, true);
 	}
 
-	/** Get an array with human-readable designations of the PlotObjects containing xy data
+	/** Gets an array with human-readable designations of the PlotObjects containing xy data
 	 *	in the sequence they were added. Other Plot Objects such as labels, arrows, lines,
 	 *  shapes and hidden PlotObjects are not counted.
 	 *  (the object passed with the constructor is first, even though it is plotted last). */
@@ -1145,12 +1130,25 @@ public class Plot implements Cloneable {
 		return getPlotObjectDesignations(PlotObject.XY_DATA, false);
 	}
 
-	/** Get an array with human-readable designations of the PlotObjects with types fitting the mask */
-	String[] getPlotObjectDesignations(int mask, boolean includeHidden) {
+	/** Returns the number of PlotObjects (curves, labels, ...) passed with the constructor or added by 'add' or 'draw' methods.
+	 *  Legend, frame and axes (though internally PlotObjects) are not included */
+	public int getNumPlotObjects() {
+		return allPlotObjects.size();
+	}
+
+	/** Returns the number of PlotObjects fitting the mask.
+	 *  Legend, frame and axes (though internally PlotObjects) are not included */
+	int getNumPlotObjects(int mask, boolean includeHidden) {
 		int nObjects = 0;
 		for (PlotObject plotObject : allPlotObjects)
 			if ((plotObject.type & mask) != 0 && (includeHidden || !plotObject.hasFlag(PlotObject.HIDDEN)))
 				nObjects++;
+		return nObjects;
+	}
+
+	/** Gets an array with human-readable designations of the PlotObjects with types fitting the mask */
+	String[] getPlotObjectDesignations(int mask, boolean includeHidden) {
+		int nObjects = getNumPlotObjects(mask, includeHidden);
 		String[] names = new String[nObjects];
 		if (names.length == 0) return names;
 		int iData = 1, iArrow = 1, iLine = 1, iText = 1,  iBox = 1, iShape = 1; //Human readable counters of each object type
@@ -1271,9 +1269,35 @@ public class Plot implements Cloneable {
 		return;
 	}
 
-	/** Returns the number of PlotObjects (curves, labels, ...) passed with the constructor or added by 'add' methods */
-	public int getNumPlotObjects() {
-		return allPlotObjects.size();
+	/** Returns the index of the first plot object with x,y data (points, line) or arrows
+	 *  with all data equal to those given.  Returns or -1 is no such plot object exists.
+	 *  The array 'values' should contain the x, y, x error bar, yerror bar data. The 'values' array may have any size;
+	 *  only the data given are compared (e.g. for an array with length 2, there is no check for erro bars).
+	 *  Used when adding data from a table not to suggest the same data twice. */
+	public int getPlotObjectIndex(float[][] values) {
+		return getPlotObjectIndex(PlotObject.XY_DATA|PlotObject.ARROWS, values);
+	}
+
+	/** Returns the index of the first plot object fitting the type mask and with all data equal to those given.
+	 *  Returns or -1 is no such plot object exists.
+	 *  The array 'values' should contain the x, y, x error bar, yerror bar data. The 'values' array may have any size;
+	 *  only the data given are compared (e.g. for an array with length 2, there is no check for erro bars).
+	 *  Used when adding data from a table not to suggest the same data twice. */
+	int getPlotObjectIndex(int typeMask, float[][] values) {
+		for (int i=0; i<allPlotObjects.size(); i++) {
+			PlotObject plotObject = allPlotObjects.get(i);
+			if ((plotObject.type & typeMask) == 0) continue;
+			float[][] plotObjectArrays = plotObject.getAllDataValues();
+			boolean equal = true;
+			for (int j=0; j<Math.min(plotObjectArrays.length, values.length); j++) {
+				if (!Arrays.equals(plotObjectArrays[j], values[j])) {
+					equal = false;
+					break;
+				}
+			}
+			if (equal) return i;
+		}
+		return -1;
 	}
 
 	/** Creates a snapshot of the plot contents (not including axis formats etc),
@@ -1306,7 +1330,6 @@ public class Plot implements Cloneable {
 		return allPlotObjects.get(i).deepClone();
 	}
 
-
 	/** Sets the plot range to the initial value determined from minima&maxima or given by setLimits.
 	 *	Updates the image if existing and updateImg is true */
 	public void setLimitsToDefaults(boolean updateImg) {
@@ -1315,11 +1338,12 @@ public class Plot implements Cloneable {
 		if (plotDrawn && updateImg) updateImage();
 	}
 
-	/** Sets the plot range to encompass all data. Updates the image if existing. */
+	/** Sets the plot range to encompass all data. Updates the image if existing and updateImg is true. */
 	public void setLimitsToFit(boolean updateImg) {
 		saveMinMax();
 		currentMinMax = getMinAndMax(true, ALL_AXES_RANGE);
-		System.arraycopy(currentMinMax, 0, defaultMinMax, 0, currentMinMax.length);
+		enlargeRange(currentMinMax);              //avoid points exactly at the border
+		//System.arraycopy(currentMinMax, 0, defaultMinMax, 0, currentMinMax.length);
 		if (plotDrawn && updateImg) updateImage();
 	}
 
@@ -1851,19 +1875,6 @@ public class Plot implements Cloneable {
 				//		currentMinMax[i] = stepForSnap * Math.round(currentMinMax[i]/stepForSnap);
 				//		currentMinMax[i+1] = stepForSnap * Math.round(currentMinMax[i+1]/stepForSnap);
 				//	}
-				} else if (enlargeRange != null) {
-					// Enlarge range slightly (only in y direction) so that markers at min, max are not hidden by the frame
-					range = currentMinMax[i+1]-currentMinMax[i];
-					double tmpMin = currentMinMax[i] - 0.015*range;
-					if (enlargeRange[i] == USUALLY_ENLARGE)		  // 'weak' enlarging: dont traverse zero
-						currentMinMax[i] = (tmpMin*currentMinMax[i] <= 0) ? 0 : tmpMin;
-					else if (enlargeRange[i] == ALWAYS_ENLARGE)	  // always enlarge
-						currentMinMax[i] = tmpMin;
-					double tmpMax = currentMinMax[i+1] + 0.015*range;
-					if (enlargeRange[i+1] == USUALLY_ENLARGE)
-						currentMinMax[i+1] = (tmpMax*currentMinMax[i+1] <= 0) ? 0 : tmpMax;
-					else if (enlargeRange[i+1] == ALWAYS_ENLARGE)
-						currentMinMax[i+1] = tmpMax;
 				}
 			}
 			if (i==0) {
@@ -1881,7 +1892,6 @@ public class Plot implements Cloneable {
 			}
 		}
 		//snapToMinorGrid = false;
-		enlargeRange = null;
 		ignoreForce2Grid = false;
 
 		// calculate what we need to convert the data to screen pixels
@@ -1899,19 +1909,23 @@ public class Plot implements Cloneable {
 		return steps;
 	}
 
-
 	public void redrawGrid(){
 		if(ip != null){
 			drawAxesTicksGridNumbers(steps);
 			ip.setColor(Color.black);
 		}
 	}
+
+	/** Gets the initial plot limits (i.e., x&y ranges). For compatibility with previous versions of ImageJ,
+	 *  only the first PlotObject (with numeric data) is used to determine the limits. */
 	void getInitialMinAndMax() {
 		int axisRangeFlags = 0;
 		if (Double.isNaN(defaultMinMax[0])) axisRangeFlags |= X_RANGE;
 		if (Double.isNaN(defaultMinMax[2])) axisRangeFlags |= Y_RANGE;
-		if (axisRangeFlags != 0)
+		if (axisRangeFlags != 0) {
 			defaultMinMax = getMinAndMax(false, axisRangeFlags);
+			enlargeRange(defaultMinMax);
+		}
 		setLimitsToDefaults(false);			//use the range values to start with, but don't draw yet
 	}
 
@@ -1921,7 +1935,11 @@ public class Plot implements Cloneable {
 	 *	Array elements returned are xMin, xMax, yMin, yMax. Also sets enlargeRange to tell which limits should be enlarged
 	 *	beyond the minimum or maximum of the data */
 	double[] getMinAndMax(boolean allObjects, int axisRangeFlags) {
-		double[] allMinMax = new double[]{Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE};
+		boolean invertedXAxis = currentMinMax[1] < currentMinMax[0];
+		boolean invertedYAxis = currentMinMax[3] < currentMinMax[2];
+		double xSign = invertedXAxis ? -1 : 1;
+		double ySign = invertedYAxis ? -1 : 1;
+		double[] allMinMax = new double[]{xSign*Double.MAX_VALUE, -xSign*Double.MAX_VALUE, ySign*Double.MAX_VALUE, -ySign*Double.MAX_VALUE};
 		for (int i=0; i<allMinMax.length; i++)
 			if (((axisRangeFlags>>i/2) & 1)==0)	  //keep default min & max for this axis
 				allMinMax[i] = defaultMinMax[i];
@@ -1957,19 +1975,34 @@ public class Plot implements Cloneable {
 		return allMinMax;
 	}
 
+	/** Enlarges the current minimum and maximum ranges to include the data range of the last plotObject added,
+	 *  if it is an XY_DATA or ARROWS plotObject.
+	 *  Does not set the new limits as default, does not redraw the plot. */
+	void fitRangeToLastPlotObject() {
+		if (allPlotObjects.size() < 1) return;
+		PlotObject plotObject = allPlotObjects.lastElement();
+		if (Double.isNaN(currentMinMax[0]) || Double.isNaN(currentMinMax[2])) {   // no range determined yet?
+			setLimitsToFit(false);
+		} else {   //we have min&max already, just extend the range if necessary
+			enlargeRange = new int[currentMinMax.length];
+			getMinAndMax(currentMinMax, enlargeRange, plotObject, ALL_AXES_RANGE);
+			enlargeRange(currentMinMax);
+		}
+	}
+
 	/** Gets the minimum and maximum values from an XY_DATA or ARROWS plotObject;
 	 *	axisRangeFlags determine for which axis (X_RANGE for x axis, Y_RANGE for y axis)
 	 *	The minimum modifies allMinAndMax[0] (x), allMinAndMax[2] (y); the maximum modifies [1], [3].
-	 *	Sets the enlargeRange variables */
+	 *	If allMinAndMax values are modified, the corresponding enlargeRange array elements are also set */
 	void getMinAndMax(double[] allMinAndMax, int[] enlargeRange, PlotObject plotObject, int axisRangeFlags) {
+		boolean invertedXAxis = currentMinMax[1] < currentMinMax[0];
+		boolean invertedYAxis = currentMinMax[3] < currentMinMax[2];
 		if (plotObject.type == PlotObject.XY_DATA) {
 			if ((axisRangeFlags & X_RANGE) != 0) {
 				int suggestedEnlarge = 0;
-				if (plotObject.shape==DOT || plotObject.yEValues != null) //these can't be seen if merging with the frame
-					suggestedEnlarge = ALWAYS_ENLARGE;
-				else if (plotObject.shape != LINE)
-					suggestedEnlarge = USUALLY_ENLARGE;
-				getMinAndMax(allMinAndMax, enlargeRange, suggestedEnlarge, 0, plotObject.xValues, plotObject.xEValues);
+				if (!(plotObject.shape == LINE || plotObject.shape == FILLED) || plotObject.yEValues != null)
+					suggestedEnlarge = ALWAYS_ENLARGE;	//enlarge to make space at the obrders (we don't try to keep x=0 at the frame border)
+				getMinAndMax(allMinAndMax, enlargeRange, suggestedEnlarge, 0, plotObject.xValues, plotObject.xEValues, invertedXAxis);
 				if ((plotObject.shape == BAR || plotObject.shape == SEPARATED_BAR)&& plotObject.xValues.length > 1) {
 					int n = plotObject.xValues.length;
 					allMinAndMax[0] -= 0.5 * Math.abs(plotObject.xValues[1] - plotObject.xValues[0]);
@@ -1980,32 +2013,36 @@ public class Plot implements Cloneable {
 				int suggestedEnlarge = 0;
 				if (plotObject.shape==DOT || plotObject.xEValues != null) //these can't be seen if merging with the frame
 					suggestedEnlarge = ALWAYS_ENLARGE;
-				else if (plotObject.shape != LINE)
+				else if (!(plotObject.shape == LINE || plotObject.shape == FILLED))
 					suggestedEnlarge = USUALLY_ENLARGE;
-				getMinAndMax(allMinAndMax, enlargeRange,  suggestedEnlarge, 2, plotObject.yValues, plotObject.yEValues);
+				getMinAndMax(allMinAndMax, enlargeRange,  suggestedEnlarge, 2, plotObject.yValues, plotObject.yEValues, invertedYAxis);
 				if ((plotObject.shape == BAR || plotObject.shape == SEPARATED_BAR) &&
-						(allMinAndMax[2] > 0 && allMinAndMax[3]/allMinAndMax[2] >= 2))
+						(allMinAndMax[2] > 0 && allMinAndMax[3]/allMinAndMax[2] >= 2) && !logYAxis)
 					allMinAndMax[2] = 0;           // for bar plots, y min = 0 unless values differ less than a factor of 2
 			}
 		} else if (plotObject.type == PlotObject.ARROWS) {
 			if ((axisRangeFlags & X_RANGE) != 0) {
-				getMinAndMax(allMinAndMax, enlargeRange, ALWAYS_ENLARGE, 0, plotObject.xValues, null);
-				getMinAndMax(allMinAndMax, enlargeRange, ALWAYS_ENLARGE, 0, plotObject.xEValues, null);
+				getMinAndMax(allMinAndMax, enlargeRange, ALWAYS_ENLARGE, 0, plotObject.xValues, null, invertedXAxis);
+				getMinAndMax(allMinAndMax, enlargeRange, ALWAYS_ENLARGE, 0, plotObject.xEValues, null, invertedXAxis);
 			}
 			if ((axisRangeFlags & Y_RANGE) != 0) {
-				getMinAndMax(allMinAndMax, enlargeRange, ALWAYS_ENLARGE, 2, plotObject.yValues, null);
-				getMinAndMax(allMinAndMax, enlargeRange, ALWAYS_ENLARGE, 2, plotObject.yEValues, null);
+				getMinAndMax(allMinAndMax, enlargeRange, ALWAYS_ENLARGE, 2, plotObject.yValues, null, invertedYAxis);
+				getMinAndMax(allMinAndMax, enlargeRange, ALWAYS_ENLARGE, 2, plotObject.yEValues, null, invertedYAxis);
 			}
 		}
 	}
 
-	/** Gets the minimum and maximum values for a dataset, taking error bars (if not null) into account.
-	 *	The minimum modifies allMinAndMax[axisIndex] the maximum modifies allMinAndMax[axisIndex+1]
-	 *	If minAndMax is not null, it is extended to include the new min&max.
-	 *	Also cares about whether the range should be enlarged to avoid hiding markers at the edges */
+	/** Gets the minimum and maximum values for a dataset (one direction, x or y),
+	 *  taking error bars (if not null) into account.
+	 *	The minimum modifies allMinAndMax[axisIndex] the maximum modifies allMinAndMax[axisIndex+1].
+	 *	Also cares about whether the range should be enlarged to avoid hiding markers at the borders:
+	 *  suggestedEnlarge is 0 for lines or a suggestion for the data type; if the allMinAndMax is
+	 *  range is extended, the corresponding enlargeRange item is set accordingly */
 	void getMinAndMax(double[] allMinAndMax, int[] enlargeRange, int suggestedEnlarge,
-			int axisIndex, float[] data, float[] errorBars) {
+			int axisIndex, float[] data, float[] errorBars, boolean invertedAxis) {
 		int nMinEqual = 0, nMaxEqual = 0;
+		int minIndex = invertedAxis ? axisIndex+1 : axisIndex;   // index of 'min' value in allMinAndMax, enlargeRange
+		int maxIndex = invertedAxis ? axisIndex : axisIndex+1;
 		for (int i=0; i<data.length; i++) {
 			double v1 = data[i];
 			double v2 = data[i];
@@ -2013,43 +2050,72 @@ public class Plot implements Cloneable {
 				v1 -= errorBars[i];
 				v2 += errorBars[i];
 			}
-			if (v1 < allMinAndMax[axisIndex]) {
-				allMinAndMax[axisIndex] = v1;
+			if (v1 < allMinAndMax[minIndex]) {
+				allMinAndMax[minIndex] = v1;
 				nMinEqual = 1;
-				enlargeRange[axisIndex] = suggestedEnlarge;
-				if (suggestedEnlarge == 0 && i>0 && i<data.length-1) //for lines except at the end: also enlarge
-					enlargeRange[axisIndex] = USUALLY_ENLARGE;
-			} else if (v1 == allMinAndMax[axisIndex])
+				enlargeRange[minIndex] = suggestedEnlarge;
+				if (suggestedEnlarge == 0 && ((i>0 && i<data.length-1) || v2 != v1)) //for lines except at the end: also enlarge
+					enlargeRange[minIndex] = USUALLY_ENLARGE;
+			} else if (v1 == allMinAndMax[minIndex])
 				nMinEqual++;
-			if (v2 > allMinAndMax[axisIndex+1]) {
-				allMinAndMax[axisIndex+1] = v2;
+			if (v2 > allMinAndMax[maxIndex]) {
+				allMinAndMax[maxIndex] = v2;
 				nMaxEqual = 1;
-				enlargeRange[axisIndex+1] = suggestedEnlarge;
-				if (suggestedEnlarge == 0 && i>0 && i<data.length-1) //for lines except at the end: also enlarge
-					enlargeRange[axisIndex+1] = USUALLY_ENLARGE;
-			} else if (v2 == allMinAndMax[axisIndex+1])
+				enlargeRange[maxIndex] = suggestedEnlarge;
+				if (suggestedEnlarge == 0 && ((i>0 && i<data.length-1) || v2 != v1)) //for lines except at the end: also enlarge
+					enlargeRange[maxIndex] = USUALLY_ENLARGE;
+			} else if (v2 == allMinAndMax[maxIndex])
 				nMaxEqual++;
 		}
-		//lines with many points (>10%) at min or max?
-		if (enlargeRange[axisIndex] == 0 && nMinEqual > 2 && nMinEqual*10 > data.length)
-			enlargeRange[axisIndex] = USUALLY_ENLARGE;
-		if (enlargeRange[axisIndex+1] == 0 && nMaxEqual > 2 && nMaxEqual*10 > data.length)
-			enlargeRange[axisIndex+1] = USUALLY_ENLARGE;
-		//all data at min or max?
+		//lines with many points (>10%) at min or max? Add extra space at borders ('usually', i.e. unless limit is zero)
+		if (enlargeRange[minIndex] == 0 && nMinEqual > 2 && nMinEqual*10 > data.length)
+			enlargeRange[minIndex] = USUALLY_ENLARGE;
+		if (enlargeRange[maxIndex] == 0 && nMaxEqual > 2 && nMaxEqual*10 > data.length)
+			enlargeRange[maxIndex] = USUALLY_ENLARGE;
+		//all data at min or max? Always add space to avoid hiding the line behind the frame
 		if (nMinEqual == data.length)
-			enlargeRange[axisIndex] = ALWAYS_ENLARGE;
+			enlargeRange[minIndex] = ALWAYS_ENLARGE;
 		if (nMaxEqual == data.length)
-			enlargeRange[axisIndex+1] = ALWAYS_ENLARGE;
-		//min or max set previously, but not with proper enlarge range?
-		if (nMinEqual>0 && enlargeRange[axisIndex]<suggestedEnlarge)
-			enlargeRange[axisIndex] = suggestedEnlarge;
-		if (nMaxEqual>0 && enlargeRange[axisIndex+1]<suggestedEnlarge)
-			enlargeRange[axisIndex+1] = suggestedEnlarge;
+			enlargeRange[maxIndex] = ALWAYS_ENLARGE;
+		//same min or max as for current data set found already previously, but not asking yet for added space at borders?
+		if (nMinEqual>0 && enlargeRange[minIndex]<suggestedEnlarge)
+			enlargeRange[minIndex] = suggestedEnlarge;
+		if (nMaxEqual>0 && enlargeRange[maxIndex]<suggestedEnlarge)
+			enlargeRange[maxIndex] = suggestedEnlarge;
 	}
 
 	void saveMinMax() {
 		if (!Arrays.equals(currentMinMax, savedMinMax))
 			System.arraycopy(currentMinMax, 0, savedMinMax, 0, currentMinMax.length);
+	}
+
+	/** Modifies automatic limits to avoid points exactly at the borders.
+	 *  This only happens for limits where the corresponding value of the class array 'enlargeRange' is set:
+	 *  ALWAYS_ENLARGE: always enlarges the range; USUALLY_ENLARGE means that the limits should not be shifted across zero */
+	void enlargeRange(double[] minMax) {
+		if (enlargeRange == null) return;
+		for (int a=0; a<Math.min(minMax.length, enlargeRange.length); a+=2) { //for all axes (0 for x, 2 for y)
+			boolean logAxis = a==0 ? logXAxis : logYAxis;
+			if (logAxis) {
+				minMax[a] = Math.log10(minMax[a]);
+				minMax[a+1] = Math.log10(minMax[a+1]);
+			}
+			double range = minMax[a+1] - minMax[a];
+			double tmpMin = minMax[a] - 0.015*range;
+			if (enlargeRange[a] == USUALLY_ENLARGE && !logAxis)  // 'weak' enlarging: dont traverse zero
+				minMax[a] = (tmpMin*minMax[a] <= 0) ? 0 : tmpMin;
+			else if (enlargeRange[a] == ALWAYS_ENLARGE)
+				minMax[a] = tmpMin;
+			double tmpMax = minMax[a+1] + 0.015*range;
+			if (enlargeRange[a+1] == USUALLY_ENLARGE && !logAxis)
+				minMax[a+1] = (tmpMax*minMax[a+1] <= 0) ? 0 : tmpMax;
+			else if (enlargeRange[a+1] == ALWAYS_ENLARGE)
+				minMax[a+1] = tmpMax;
+			if (logAxis) {
+				minMax[a] = Math.pow(10, minMax[a]);
+				minMax[a+1] = Math.pow(10, minMax[a+1]);
+			}
+		}
 	}
 
 	/** Returns the first font of the list that is not null, or defaultFont if both are null */
@@ -2079,7 +2145,7 @@ public class Plot implements Cloneable {
 	 * the x axis and end with the up arrow at the upper side of the y axis.
 	 */
 	void zoomOnRangeArrow(int arrowIndex) {
-		if (arrowIndex < 8) {//0..7 = arrows, 8 = Reset Range
+		if (arrowIndex < 8) {//0..7 = arrows, 8 = Reset Range, 9 = Fit All
 			int axisIndex = (arrowIndex / 4) * 2;  //0 for x, 2 for y
 			double min = axisIndex == 0 ? xMin : yMin;
 			double max = axisIndex == 0 ? xMax : yMax;
@@ -2100,10 +2166,10 @@ public class Plot implements Cloneable {
 			}
 			currentMinMax[axisIndex] = min;
 			currentMinMax[axisIndex + 1] = max;
-		}
-
-		if (arrowIndex == 8)
+		} else if (arrowIndex == 8)
 			setLimitsToDefaults(false);
+		else if (arrowIndex == 9)
+			setLimitsToFit(false);
 		updateImage();
 	}
 
@@ -3617,7 +3683,7 @@ class PlotObject implements Cloneable, Serializable {
 	static final long serialVersionUID = 1L;
 	/** Constants for the type of objects. These are powers of two so one can use them as masks */
 	public final static int XY_DATA = 1, ARROWS = 2, LINE = 4, NORMALIZED_LINE = 8, DOTTED_LINE = 16,
-			LABEL = 32, NORMALIZED_LABEL = 64, LEGEND = 125, AXIS_LABEL = 256, FRAME = 512, SHAPES = 1024;
+			LABEL = 32, NORMALIZED_LABEL = 64, LEGEND = 128, AXIS_LABEL = 256, FRAME = 512, SHAPES = 1024;
 	/** mask for recovering font style from the flags */
 	final static int FONT_STYLE_MASK = 0x0f;
 	/** flag for the data set passed with the constructor. Note that 0 to 0x0f are reserved for fonts modifiers, 0x010-0x800 are reserved for legend modifiers */
@@ -3801,6 +3867,11 @@ class PlotObject implements Cloneable, Serializable {
 		return font;
 	}
 
+	/** Returns all data xValues, yValues, xEValues, yEValues as a float[][] array. Note that future versions may have more data. */
+	float[][] getAllDataValues() {
+		return new float[][] {xValues, yValues, xEValues, yEValues};
+	}
+
 	/** A shallow clone that does not duplicate arrays or objects */
 	public PlotObject clone() {
 		try {
@@ -3838,4 +3909,13 @@ class PlotObject implements Cloneable, Serializable {
 		return dest;
 	}
 
+	/** Converts old (pre-1.52i) type codes for the PlotObjects to the new ones, which can be used as masks */
+	void updateType() {
+		type = 1<<type;
+	}
+
+	/*public String toString() {  //for debug messages
+		String s = "PlotObject type="+type+" flags="+flags+" xV:"+(xValues==null ? "-":yValues.length)+" yV:"+(yValues==null ? "-":yValues.length+" col="+color);
+		return s;
+	}*/
 } // class PlotObject

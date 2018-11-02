@@ -457,8 +457,10 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
         if (x < plot.leftMargin || y > plot.topMargin + plot.frameHeight) {
             if (!rangeArrowsVisible && !plot.isFrozen())
                 showRangeArrows();
-            if (activeRangeArrow == 8)//it's the 'R' icon
+            if (activeRangeArrow == 8)      //it's the 'R' icon
                 coordinates.setText("Reset Range");
+            else if (activeRangeArrow == 9) //it's the 'F' icon
+                coordinates.setText("Full Range (Fit All)");
             if (activeRangeArrow >= 0 && !rangeArrowRois[activeRangeArrow].contains(x, y)) {
                 rangeArrowRois[activeRangeArrow].setFillColor(Color.GRAY);
                 ic.repaint();			//de-highlight arrow where cursor has moved out
@@ -515,7 +517,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
         if (imp == null)
             return;
         hideRangeArrows(); //in case we have old arrows from a different plot size or so
-        rangeArrowRois = new Roi[4 * 2 + 1]; //4 arrows per axis plus 1 'Reset' icon
+        rangeArrowRois = new Roi[4 * 2 + 2]; //4 arrows per axis plus 'Reset' and 'Fit All' icons
         int i = 0;
         int height = imp.getHeight();
         int arrowH = plot.topMargin < 14 ? 6 : 8; //height of arrows and distance between them; base is twice that value
@@ -536,16 +538,18 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
         }
         Font theFont = new Font("SansSerif", Font.BOLD, 13);
 
-        TextRoi txtRoi = new TextRoi(2, height - 20, 20, 18, " R ", theFont);
+        TextRoi txtRoi = new TextRoi(1, height - 19, "\u2009R\u2009", theFont);  //thin spaces to make roi slightly wider
         rangeArrowRois[8] = txtRoi;
+        TextRoi txtRoi2 = new TextRoi(20, height - 19, "\u2009F\u2009", theFont);
+        rangeArrowRois[9] = txtRoi2;
 
         Overlay ovly = imp.getOverlay();
         if (ovly == null)
             ovly = new Overlay();
         for (Roi roi : rangeArrowRois) {
             if (roi instanceof TextRoi) {
-                txtRoi.setStrokeColor(Color.WHITE);
-                txtRoi.setFillColor(Color.GRAY);
+                roi.setStrokeColor(Color.WHITE);
+                roi.setFillColor(Color.GRAY);
             } else
                 roi.setFillColor(Color.GRAY);
             ovly.add(roi);
@@ -793,7 +797,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		while (true) {
 			IJ.wait(50);	//delay to make sure the roi has been updated
 			Plot plot = plotMaker!=null?plotMaker.getPlot():null;
-			if (doUpdate && plot!=null) {
+			if (doUpdate && plot!=null && plot.getNumPlotObjects()>0) {
 				plot.useTemplate(this.plot, this.plot.templateFlags);
 				plot.setPlotMaker(plotMaker);
 				this.plot = plot;

@@ -75,6 +75,7 @@ public class Functions implements MacroConstants, Measurements {
 	static WaitForUserDialog waitForUserDialog;
 	int pasteMode;
 	int lineWidth = 1;
+	boolean lineWidthSet;
 	boolean expandableArrays;
 	int plotWidth;
 	int plotHeight;
@@ -287,8 +288,11 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	private void setLineWidth(int width) {
+		if (overlayPath!=null && width!=lineWidth)
+			addDrawingToOverlay(getImage());
 		lineWidth = width;
 		getProcessor().setLineWidth(width);
+		lineWidthSet = true;
 	}
 
 	Variable[] getArrayFunction(int type) {
@@ -829,7 +833,7 @@ public class Functions implements MacroConstants, Measurements {
 	ImageProcessor getProcessor() {
 		if (defaultIP==null) {
 			defaultIP = getImage().getProcessor();
-			if (lineWidth!=1)
+			if (lineWidthSet)
 				defaultIP.setLineWidth(lineWidth);
 		}
 		return defaultIP;
@@ -5349,17 +5353,17 @@ public class Functions implements MacroConstants, Measurements {
 	void makePoint() {
 		double x = getFirstArg();
 		double y = getNextArg();
-		String properties = null;
+		String options = null;
 		if (interp.nextToken()==',')
-			properties = getNextString();
+			options = getNextString();
 		interp.getRightParen();
-		if (properties==null) {
+		if (options==null) {
 			if ((int)x==x && (int)y==y)
 				IJ.makePoint((int)x, (int)y);
 			else
 				IJ.makePoint(x, y);
 		} else
-			getImage().setRoi(new PointRoi(x, y, properties));
+			getImage().setRoi(new PointRoi(x, y, options));
 		resetImage();
 		shiftKeyDown = altKeyDown = false;
 	}
@@ -6406,8 +6410,8 @@ public class Functions implements MacroConstants, Measurements {
 			overlay = offscreenOverlay;
 		}
 		if (defaultColor!=null)
-			roi.setStrokeColor(defaultColor);
-		roi.setLineWidth(getProcessor().getLineWidth());
+			roi.setStrokeColor(defaultColor);		
+		roi.setStrokeWidth(getProcessor().getLineWidth());
 		overlay.add(roi);
 	}
 
