@@ -3990,7 +3990,7 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getParens();
 		ImagePlus imp = getImage();
 		String metadata = null;
-		if (type.indexOf("label")!=-1) {
+		if (type.contains("label") && (imp.isStack()||!noArg)) {
 			metadata = imp.getStack().getSliceLabel(imp.getCurrentSlice());
 		} else {
 			metadata = (String)imp.getProperty("Info");
@@ -6516,7 +6516,6 @@ public class Functions implements MacroConstants, Measurements {
 	
 	private Variable setTableValue() {
 		ResultsTable rt = getRT(null);
-		//IJ.log("set: "+rt);
 		setResult(rt);
 		return new Variable();
 	}
@@ -6533,7 +6532,6 @@ public class Functions implements MacroConstants, Measurements {
 	private Variable updateTable() {
 		String title = getTitleArg();
 		ResultsTable rt = getResultsTable(title);
-		//IJ.log("update: "+rt.hashCode()+"  "+rt.getTitle());
 		rt.show(rt.getTitle());
 		if (rt==Analyzer.getResultsTable())
 			resultsPending = false;
@@ -6698,7 +6696,6 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	private ResultsTable getRT(String title) {
-		//IJ.log("getRT: "+title+" "+currentTable);
 		if (interp.applyMacroTable!=null && title==null)
 			return interp.applyMacroTable; 
 		ResultsTable rt = null;

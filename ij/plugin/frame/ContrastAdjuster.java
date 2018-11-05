@@ -352,7 +352,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		}
 		plot.defaultMin = defaultMin;
 		plot.defaultMax = defaultMax;
-		//plot.histogram = null;
 		int valueRange = (int)(defaultMax-defaultMin);
 		int newSliderRange = valueRange;
 		if (newSliderRange>640 && newSliderRange<1280)
@@ -364,7 +363,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		double displayRange = max-min;
 		if (valueRange>=1280 && valueRange!=0 && displayRange/valueRange<0.25)
 			newSliderRange *= 1.6666;
-		//IJ.log(valueRange+" "+displayRange+" "+newSliderRange);
 		if (newSliderRange!=sliderRange) {
 			sliderRange = newSliderRange;
 			updateScrollBars(null, true);
@@ -718,7 +716,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		previousImageID = 0;
 	 	((ColorProcessor)ip).caSnapshot(false);
 		setup();
-		//imp.deleteRoi();
 		if (Recorder.record) {
 			if (Recorder.scriptMode())
 				Recorder.recordCall("IJ.run(imp, \"Apply LUT\", \"\");");
@@ -903,12 +900,18 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 					else
 						Recorder.recordString("call(\"ij.ImagePlus.setDefault16bitRange\", "+range2+");\n");
 				}
-
 			}
 		}
 	}
 	
 	private void propagate(ImagePlus img) {
+		if (img.getBitDepth()==24) {
+			GenericDialog gd = new GenericDialog("Contrast Adjuster");
+			gd.addMessage( "Propagation of RGB images not supported. As a work-around,\nconvert images to multi-channel composite color.");
+			gd.hideCancelButton();
+			gd.showDialog();
+			return;
+		}
 		int[] list = WindowManager.getIDList();
 		if (list==null) return;
 		int nImages = list.length;
