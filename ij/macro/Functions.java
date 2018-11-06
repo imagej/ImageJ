@@ -3952,27 +3952,27 @@ public class Functions implements MacroConstants, Measurements {
 	void setMetadata() {
 		String metadata = null;
 		String arg1 = getFirstString();
-		boolean oneArg = false;
 		if (interp.nextToken()==',')
 			metadata = getLastString();
 		else
 			interp.getRightParen();
+		ImagePlus imp = getImage();
 		boolean isInfo = false;
-		if (metadata==null) {
+		if (metadata==null) { // one argument
 			metadata = arg1;
-			oneArg = true;
+			if (imp.getStackSize()==1)
+				isInfo = true;
 			if (metadata.startsWith("Info:")) {
 				metadata = metadata.substring(5);
 				isInfo = true;
 			}
 		} else
 			isInfo = arg1.startsWith("info") || arg1.startsWith("Info");
-		ImagePlus imp = getImage();
 		if (metadata!=null && metadata.length()==0)
 			metadata = null;
-		if (isInfo || oneArg) {
+		if (isInfo)
 			imp.setProperty("Info", metadata);
-		} else {
+		else {
 			imp.getStack().setSliceLabel(metadata, imp.getCurrentSlice());
 			if (imp.getStackSize()==1)
 					imp.setProperty("Label", metadata);
@@ -3981,22 +3981,21 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	String getMetadata() {
-		String type = "label";
-		boolean noArg = true;
-		if (interp.nextToken()=='(' && interp.nextNextToken()!=')') {
-			type = getStringArg().toLowerCase(Locale.US);
-			noArg = false;
-		} else
-			interp.getParens();
+		String type = "info";
 		ImagePlus imp = getImage();
+		if (interp.nextToken()=='(' && interp.nextNextToken()!=')')
+			type = getStringArg().toLowerCase(Locale.US);
+		else {  // no arg
+			interp.getParens();
+			type = imp.getStackSize()>1?"label":"info";
+		}
 		String metadata = null;
-		if (type.contains("label") && (imp.isStack()||!noArg)) {
-			metadata = imp.getStack().getSliceLabel(imp.getCurrentSlice());
-		} else {
+		if (type.contains("info")) {
 			metadata = (String)imp.getProperty("Info");
 			if (metadata==null && imp.getStackSize()>1)
 				metadata = imp.getStack().getSliceLabel(imp.getCurrentSlice());
-		}
+		} else
+			metadata = imp.getStack().getSliceLabel(imp.getCurrentSlice());
 		if (metadata==null)
 			metadata = "";
 		return metadata;
