@@ -396,6 +396,43 @@ public class PointRoi extends PolygonRoi {
 			displayCounts();
 	}
 	
+	/** Returns the index of the current counter. */
+	public int getCounter() {
+		return counter;
+	}
+
+	/** Returns the count associated with the specified counter index.
+	 * @see #getLastCounter
+	*/
+	public int getCount(int counter) {
+		if (counter==0 && counters==null)
+			return nPoints;
+		else
+			return counts[counter];
+	}
+	
+	/** Returns the index of the last counter. */
+	public int getLastCounter() {
+		return nCounters - 1;
+	}
+
+	/** Returns the number of counters. */
+	public int getNCounters() {
+		int n = 0;
+		for (int counter=0; counter<nCounters; counter++) {
+			if (getCount(counter)>0) n++;
+		}
+		return n;
+	}
+	
+	/** Returns the counter assocated with the specified point. */
+	public int getCounter(int index) {
+		if (counters==null || index>=counters.length)
+			return 0;
+		else
+			return counters[index];
+	}
+
 	public void resetCounters() {
 		for (int i=0; i<counts.length; i++)
 			counts[i] = 0;
@@ -519,15 +556,6 @@ public class PointRoi extends PolygonRoi {
 		return SMALL;
 	}
 
-	/** Deprecated */
-	public static void setDefaultCrossColor(Color color) {
-	}
-	
-	/** Deprecated */
-	public static Color getDefaultCrossColor() {
-		return null;
-	}
-
 	/** Always returns true. */
 	public boolean subPixelResolution() {
 		return true;
@@ -545,31 +573,12 @@ public class PointRoi extends PolygonRoi {
 		return null;
 	}
 
-	public String toString() {
-		if (nPoints>1)
-			return ("Roi[Points, count="+nPoints+"]");
-		else
-			return ("Roi[Point, x="+x+", y="+y+"]");
-	}
-	
 	public void setCounter(int counter) {
 		this.counter = counter;
 		if (counter>nCounters-1 && nCounters<MAX_COUNTERS)
 			nCounters = counter + 1;
 	}
 
-	public int getCounter() {
-		return counter;
-	}
-
-	public int getNCounters() {
-		int n = 0;
-		for (int counter=0; counter<nCounters; counter++) {
-			if (getCount(counter)>0) n++;
-		}
-		return n;
-	}
-	
 	public boolean promptBeforeDeleting() {
 	    if (promptBeforeDeletingCalled)
 	    	return promptBeforeDeleting;
@@ -584,21 +593,6 @@ public class PointRoi extends PolygonRoi {
 
 	public static void setDefaultCounter(int counter) {
 		defaultCounter = counter;
-	}
-
-	public int getCount(int counter) {
-		if (counter==0 && counters==null)
-			return nPoints;
-		else
-			return counts[counter];
-	}
-	
-	/** Returns the counter assocated with the specified point. */
-	public int getCounter(int index) {
-		if (counters==null || index>=counters.length)
-			return 0;
-		else
-			return counters[index];
 	}
 
 	public int[] getCounters() {
@@ -878,6 +872,13 @@ public class PointRoi extends PolygonRoi {
 		return addToOverlay;
 	}
 
+	public String toString() {
+		if (nPoints>1)
+			return ("Roi[Points, count="+nPoints+"]");
+		else
+			return ("Roi[Point, x="+x+", y="+y+"]");
+	}
+	
 	/** @deprecated */
 	public void setHideLabels(boolean hideLabels) {
 		this.showLabels = !hideLabels;
@@ -890,6 +891,15 @@ public class PointRoi extends PolygonRoi {
 	/** @deprecated */
 	public static String getDefaultMarkerSize() {
 		return sizes[defaultSize];
+	}
+	
+	/** Deprecated */
+	public static void setDefaultCrossColor(Color color) {
+	}
+	
+	/** Deprecated */
+	public static Color getDefaultCrossColor() {
+		return null;
 	}
 
 }
