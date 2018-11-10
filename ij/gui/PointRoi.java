@@ -13,7 +13,9 @@ import java.awt.event.KeyEvent;
 import java.util.*;
 import java.awt.geom.*;
 
-/** This class represents a collection of points. */
+/** This class represents a collection of points that can be associated with counters.
+ * @see <a href="http://wsr.imagej.net/macros/js/PointProperties.js">PointProperties.js</a>
+*/
 public class PointRoi extends PolygonRoi {
 	public static final String[] sizes = {"Tiny", "Small", "Medium", "Large", "Extra Large"};
 	public static final String[] types = {"Hybrid", "Cross", "Dot", "Circle"};
@@ -403,7 +405,8 @@ public class PointRoi extends PolygonRoi {
 
 	/** Returns the count associated with the specified counter index.
 	 * @see #getLastCounter
-	*/
+	 * @see <a href="http://wsr.imagej.net/macros/js/PointProperties.js">PointProperties.js</a>
+	 */
 	public int getCount(int counter) {
 		if (counter==0 && counters==null)
 			return nPoints;

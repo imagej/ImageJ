@@ -45,6 +45,8 @@ public class SimpleCommands implements PlugIn {
 			showFonts();
 		else if (arg.equals("opencp"))
 			openControlPanel();
+		else if (arg.equals("magic"))
+			installMagicMontageTools();
 	}
 	
 	private synchronized void showFonts() {
@@ -189,6 +191,11 @@ public class SimpleCommands implements PlugIn {
 			"ImageJ folder and then copy it back. More information is at\n \n"+
 			IJ.URL+"/docs/install/osx.html#randomization");
 	}
-
+	
+	private void installMagicMontageTools() {
+		try {
+			(new MacroInstaller()).installFromIJJar("/macros/MagicMontageTools.txt");
+		} catch (Exception e) {}
+	}
 		
 }

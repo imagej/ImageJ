@@ -10,8 +10,8 @@ import java.util.Vector;
 // Versions
 // 2012-07-22 shift to confine horizontally or vertically, ctrl-shift to resize, ctrl to pick
 
-/** This class implements the Paintbrush Tool, which allows the user to draw directly on
-	 an image or on an ImageRoi in an Overlay if "Paint on overlay" is enabled. */	
+/** This class implements the Paintbrush Tool, which allows the user to draw on
+	 an image, or on an Overlay if "Paint on overlay" is enabled. */	
 public class BrushTool extends PlugInTool implements Runnable {
 	
 	private final static int UNCONSTRAINED=0, HORIZONTAL=1, VERTICAL=2, RESIZING=3, RESIZED=4, IDLE=5; //mode flags
