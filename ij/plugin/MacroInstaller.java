@@ -268,7 +268,9 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			Toolbar tb = Toolbar.getInstance();
 			if (tb!=null)
 				tb.installStartupTools();
-		} else
+		} else if (path.contains("Tools"))
+			install(text);
+		else
 			installSingleTool(text);
 	}
 

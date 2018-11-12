@@ -1292,6 +1292,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		index1 = findKey(info, key+": "); // standard 'key: value' pair?
 		if (index1<0) // Bio-Formats metadata?
 			index1 = findKey(info, key+" = ");
+		if (index1<0) // '=' with no spaces
+			index1 = findKey(info, key+"=");
 		if (index1<0) // otherwise not found
 			return null;
 		if (index1==info.length())

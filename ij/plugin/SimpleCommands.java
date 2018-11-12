@@ -193,9 +193,15 @@ public class SimpleCommands implements PlugIn {
 	}
 	
 	private void installMagicMontageTools() {
-		try {
-			(new MacroInstaller()).installFromIJJar("/macros/MagicMontageTools.txt");
-		} catch (Exception e) {}
+		String name = "MagicMontageTools.txt";
+		String path = "/macros/"+name;
+		MacroInstaller mi = new MacroInstaller();
+		if (IJ.shiftKeyDown())
+			 Toolbar.showCode(name, mi.openFromIJJar(path));
+		else
+			try {
+				mi.installFromIJJar(path);
+			} catch (Exception e) {}
 	}
 		
 }
