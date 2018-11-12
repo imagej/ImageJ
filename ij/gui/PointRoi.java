@@ -156,17 +156,7 @@ public class PointRoi extends PolygonRoi {
 		if (options.contains("cross")) type=CROSS;
 		else if (options.contains("dot")) type=DOT;
 		else if (options.contains("circle")) type=CIRCLE;
-		Color c = null;
-		if (options.contains("yellow")) c = Color.yellow;
-		else if (options.contains("red")) c = Color.red;
-		else if (options.contains("black")) c = Color.black;
-		else if (options.contains("white")) c = Color.white;
-		else if (options.contains("geen")) c = Color.green;
-		else if (options.contains("blue")) c = Color.blue;
-		else if (options.contains("magenta")) c = Color.magenta;
-		else if (options.contains("cyan")) c = Color.cyan;
-		if (c!=null)
-			setStrokeColor(c);
+		setStrokeColor(Colors.getColor(options,Roi.getColor()));
 		addToOverlay =  options.contains("add");
 	}
 	

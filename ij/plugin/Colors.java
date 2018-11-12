@@ -100,16 +100,16 @@ public class Colors implements PlugIn, ItemListener {
 		if (name==null) return defaultColor;
 		name = name.toLowerCase(Locale.US);
 		Color c = defaultColor;
-		if (name.equals(colors[0])) c = Color.red;
-		else if (name.equals(colors[1])) c = Color.green;
-		else if (name.equals(colors[2])) c = Color.blue;
-		else if (name.equals(colors[3])) c = Color.magenta;
-		else if (name.equals(colors[4])) c = Color.cyan;
-		else if (name.equals(colors[5])) c = Color.yellow;
-		else if (name.equals(colors[6])) c = Color.orange;
-		else if (name.equals(colors[7])) c = Color.black;
-		else if (name.equals(colors[8])) c = Color.white;
-		else if (name.equals(colors[9])) c = Color.gray;
+		if (name.contains(colors[7])) c = Color.black;
+		else if (name.contains(colors[8])) c = Color.white;
+		else if (name.contains(colors[0])) c = Color.red;
+		else if (name.contains(colors[2])) c = Color.blue;
+		else if (name.contains(colors[5])) c = Color.yellow;
+		else if (name.contains(colors[1])) c = Color.green;
+		else if (name.contains(colors[3])) c = Color.magenta;
+		else if (name.contains(colors[4])) c = Color.cyan;
+		else if (name.contains(colors[6])) c = Color.orange;
+		else if (name.contains(colors[9])) c = Color.gray;
 		return c;
 	}
 

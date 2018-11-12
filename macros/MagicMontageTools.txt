@@ -5,14 +5,30 @@
 // Montage tools for easy montage manipulation
 // jerome.mutterer at ibmp.fr
 
-var v=versionCheck();
-function versionCheck() {
-    requires("1.41f");
-    return 1;
+var str="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+var lcas=false;
+var antialiasedLabels = true;
+var n=0;
+var xoffset=0.05;
+var yoffset=0.05;
+var pos="Clicked quadrant";
+
+var commands = newArray("Copy", "Paste","-", "Scale Bar...", 
+    "Brightness/Contrast...", "-", "Extract Selected Panels","Crop Montage [F3]","-",
+    "Add Panel to Manager [F1]","Selected panels to stack [F2]", "Montage to Stack", "-",
+    "Fit Clipboard content into panel [F4]","Fill Panel with Clipboard content [F5]","-",
+    "Set Montage Layout","Change Montage Layout","-",
+    "Hide Overlay","Show Overlay", "Remove Overlay", "Flatten", "-",
+    "Copy to System"));
+
+var toolCmds = newMenu("Magic Montage Menu Tool",commands);
+var pmCmds = newMenu("Popup Menu",commands);
+ 
+macro "Popup Menu" {
+   runCommand();
 }
 
-macro "Auto Montage Action Tool - C00fF0077C0f0F9977Cf00F9077C888F0977" {
-
+macro "Auto Montage Action Tool - C66fF0077C6f6F9977Cf66F9077C888F0977" {
     setBatchMode(true);
     b=bitDepth;
     if ((b!=24)&&(nSlices==1)) 	{ exit("Stack, Composite, or RGB image required.");}
@@ -45,7 +61,7 @@ macro "Auto Montage Action Tool - C00fF0077C0f0F9977Cf00F9077C888F0977" {
     setBatchMode(false);
 }
 
-macro "Select Panels Tool - Cf00R0077R9077C888R9977R0977"{
+macro "Select Panels Tool - Cf44R0077R9077C888R9977R0977"{
     run("Select None");
     setPasteMode("copy");
     w = getWidth;
@@ -56,7 +72,8 @@ macro "Select Panels Tool - Cf00R0077R9077C888R9977R0977"{
     selectImage(id);
     xn = info("xMontage");
     yn = info("yMontage");
-    if ((xn==0)||(yn==0)) {exit;}
+    if ((xn==0)||(yn==0))
+       exit;
     xc = floor(x/(w/xn));
     yc = floor(y/(h/yn));
     makeRectangle(xc*(w/xn),yc*(h/yn),(w/xn),(h/yn));
@@ -86,8 +103,7 @@ macro "Extract Selected Panels"{
     setMetadata("Info","xMontage="+getWidth/pw+"\nyMontage="+getHeight/ph+"\n");
 }
 
-
-macro "Montage Shuffler Tool - C888R0077R9977C03fR0977R9077"{
+macro "Montage Shuffler Tool - C888R0077R9977C44fR0977R9077"{
     id=getImageID;
     run("Select None");
     setPasteMode("copy");
@@ -96,7 +112,8 @@ macro "Montage Shuffler Tool - C888R0077R9977C03fR0977R9077"{
     getCursorLoc(x, y, z, flags);
     xn = info("xMontage");
     yn = info("yMontage");
-    if ((xn==0)||(yn==0)) exit;
+    if ((xn==0)||(yn==0))
+       exit;
     xstart = x; ystart = y;
     x2=x; y2=y;
     while (flags&16 !=0) {
@@ -124,16 +141,7 @@ macro "Montage Shuffler Tool - C888R0077R9977C03fR0977R9077"{
     }
 }
 
-
-var str="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-var lcas=false;
-var antialiasedLabels = true;
-var n=0;
-var xoffset=0.05;
-var yoffset=0.05;
-var pos="Clicked quadrant";
-
-macro "Annot Tool - C000 T2709A T8709B T1f09C T8f09D" {
+macro "Annotation Tool - C700 T2709A T8709B T1f09C T8f09D" {
     xn = info("xMontage");
     yn = info("yMontage");
     
@@ -166,7 +174,7 @@ macro "Annot Tool - C000 T2709A T8709B T1f09C T8f09D" {
     n++; if (n>lengthOf(str)) n=0;
 }
 
-macro "Annot Tool Options" {
+macro "Annotation Tool Options" {
     if (nImages>0) setupUndo;
     Dialog.create("Annotation - Options");
     Dialog.addString("Labels",str);
@@ -188,16 +196,16 @@ macro "Annot Tool Options" {
 
 }
 
-
-
-
-macro "Montage Sync Tool - C000L48d8L838d" {
+macro "Montage Sync Tool - C800L07f7L707fG" {
     w=getWidth;
     h= getHeight;
     getCursorLoc(x,y,z,flags);
     xn = info("xMontage");
     yn = info("yMontage");
-    if ((xn==0)||(yn==0)) {run("Set Montage Layout"); exit;}
+    if ((xn==0)||(yn==0)) {
+       run("Set Montage Layout");
+       exit;
+    }
     xc = floor(x/(w/xn));
     yc = floor(y/(h/yn));
     x0 = x-xc*w/xn;
@@ -211,18 +219,34 @@ macro "Montage Sync Tool - C000L48d8L838d" {
             yp[j*xn+i] = y0+j*(h/yn);
         }
     }
-    makeSelection("point",xp,yp);
+    makeSelection("point yellow large hybred",xp,yp);
 }
 
+macro "Magic Montage Menu Tool - C800G027ff200" {
+   runCommand();
+}
 
+function runCommand() {
+   cmd = getArgument();
+    if (cmd=="Scale Bar...")
+       doCommand(cmd);
+    else
+       run(getArgument());
+}
+
+macro "Magic Montage Help Action Tool - C911T4e18?"{
+     run("URL...", "url=http://wsr.imagej.net/macros/toolsets/MagicMontage.pdf");
+      //run("URL...", "url=http://imagejdocu.tudor.lu/doku.php?id=howto:working:work_with_magic_montage");     
+}
+
+// Returns numeric value associated with 'key' or 0 if not found. 
 function info(key) {
-	i = getMetadata("info");
-	List.setList(i);
-	return List.getValue(key);
+   value = getInfo(key);
+   if (value=="")
+      return 0;
+   else
+      return parseInt(value);
 }
-
-
-
 
 function swap(a,b,c,d) {
     setupUndo;
@@ -255,7 +279,7 @@ function spring(x0,y0,x1,y1) {
         xa[i]=x0+j*(x1-x0)/d+sin(j/7)*r;
         ya[i]=y0+j*(y1-y0)/d+cos(j/7)*r;
     }
-    if (xa.length>1){
+    if (xa.length>1) {
         xa[0]=x0;
         ya[0]=y0;
         xa[xa.length-1]=x1;
@@ -264,18 +288,20 @@ function spring(x0,y0,x1,y1) {
     makeSelection("freeline",xa,ya);
 }
 
-macro "bar Action Tool - C000L060bLe6ebL09e9L08e8"{
-    doCommand("Scale Bar...");
-}
-
-macro "Magic Montage Help Action Tool - C000T3f15?"{
-     run("URL...", "url=http://imagejdocu.tudor.lu/doku.php?id=howto:working:work_with_magic_montage");
-}
-
-
 macro "Add Panel to Manager [F1]" {
     roiManager("Add");
     setOption("Show All",true);
+}
+
+macro "Montage to Stack" {
+   columns = info("xMontage");
+   rows = info("yMontage");
+   if (rows==0 || columns==0) {
+       run("Set Montage Layout");
+       columns = info("xMontage");
+       rows = info("yMontage");
+    }
+   run("Montage to Stack...", "columns=&columns rows=&rows");
 }
 
 macro "Selected panels to stack [F2]" {
@@ -329,6 +355,8 @@ macro "Crop Montage [F3]" {
     }
     setVoxelSize(xp,yp,zp,unit);
     setBatchMode(false);
+    setSlice(nSlices);
+    setSlice(1);
 }
 
 macro "Fit Clipboard content into panel [F4]" {
@@ -355,7 +383,6 @@ macro "Fit Clipboard content into panel [F4]" {
 }
 
 macro "Fill Panel with Clipboard content [F5]" {
-
     getSelectionBounds(x,y,sw,sh);
     id=getImageID;
     setBatchMode(true);
@@ -379,7 +406,11 @@ macro "Fill Panel with Clipboard content [F5]" {
     
 }
 
-macro "Set Montage Layout [F12]" {
+macro "Set Montage Layout" {
+    columns = info("xMontage");
+    rows = info("yMontage");
+    if (columns>0 && rows>0)
+       exit("Layout ("+columns+"x"+rows+") is already set");
     Dialog.create("Set Montage Layout");
     Dialog.addNumber("Width:", 2);
     Dialog.addNumber("Height:", 2);
@@ -389,17 +420,29 @@ macro "Set Montage Layout [F12]" {
     setMetadata("Info","xMontage="+mw+"\nyMontage="+mh+"\n");
 }
 
-var pmCmds = newMenu("Popup Menu",
-        newArray("Copy", "Paste","-",
-        "Brightness/Contrast...", "-",
-        "Extract Selected Panels","-",
-        "Add Panel to Manager [F1]", "Selected panels to stack [F2]","-","Crop Montage [F3]","-",
-        "Fit Clipboard content into panel [F4]","Fill Panel with Clipboard content [F5]","-",
-        "Set Montage Layout [F12]","-",
-        "Hide Overlay","Show Overlay", "Remove Overlay","-",
-        "Copy to System"));
-
-macro "Popup Menu" {
-    cmd = getArgument;
-    run(cmd);
+macro "Change Montage Layout" {
+   columns = info("xMontage");
+   rows = info("yMontage");
+   if (rows==0 || columns==0) {
+       run("Set Montage Layout");
+       columns = info("xMontage");
+       rows = info("yMontage");
+    }
+    id1 = getImageID;
+    title = getTitle;
+    getVoxelSize(xp,yp,zp,unit);
+    Dialog.create("Change Montage Layout");
+    Dialog.addNumber("Columns:", columns);
+    Dialog.addNumber("Rows:", rows);
+    Dialog.show;
+    columns2 = Dialog.getNumber;
+    rows2 = Dialog.getNumber;
+    run("Montage to Stack...", "columns=&columns rows=&rows");
+    id2 = getImageID;
+    run("Make Montage...", "columns=&columns2 rows=&rows2 scale=1.0");
+    rename(title);
+    setVoxelSize(xp,yp,zp,unit);
+    selectImage(id1); close;
+    selectImage(id2); close;
 }
+
