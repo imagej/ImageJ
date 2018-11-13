@@ -15,7 +15,7 @@ public class ShortProcessor extends ImageProcessor {
 	private short[] snapshotPixels;
 	private byte[] LUT;
 	private boolean fixedScale;
-	private int bgColor;
+	private int bgValue;
 
 
 	/** Creates a new ShortProcessor using the specified pixel array and ColorModel.
@@ -728,7 +728,7 @@ public class ShortProcessor extends ImageProcessor {
 		double xlimit = width-1.0, xlimit2 = width-1.001;
 		double ylimit = height-1.0, ylimit2 = height-1.001;
 		// zero is 32768 for signed images
-		int background = isSigned16Bit()?bgColor+32768:bgColor; 
+		int background = isSigned16Bit()?bgValue+32768:bgValue; 
 		
 		if (interpolationMethod==BICUBIC) {
 			for (int y=roiY; y<(roiY + roiHeight); y++) {
@@ -977,13 +977,13 @@ public class ShortProcessor extends ImageProcessor {
 	}
 
 	public void setBackgroundValue(double value) {
-		bgColor = (int)value;
-		if (bgColor<0) bgColor = 0;
-		if (bgColor>65535) bgColor = 65535;
+		bgValue = (int)value;
+		if (bgValue<0) bgValue = 0;
+		if (bgValue>65535) bgValue = 65535;
 	}
 
 	public double getBackgroundValue() {
-		return bgColor;
+		return bgValue;
 	}
 
 	/** Returns 65,536 bin histogram of the current ROI, which

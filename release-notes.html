@@ -6,7 +6,7 @@
 <body>
 
 
-<li> <u>1.52i 12 November 2018</u>
+<li> <u>1.52i 13 November 2018</u>
 <ul>
 <li> Thanks to Jerome Mutterer, added the
 <i>Image&gt;Stacks&gt;Tools&gt;Magic Montage Tools</i> command.
@@ -17,6 +17,8 @@ a "Don't reset range" checkbox to the "Threshold" dialog
 (<a href="http://wsr.imagej.net/macros/ThresholdNoResetDemo.txt">example</a>).
 <li> Added an error bars example to the
 <i>Help&gt;Examples&gt;Plots&gt;Plot Styles</i> macro.
+<li> Thanks to Barbara and Michael Schmid, the Translate command in
+the ROI Manager remembers the delta x and delta y values.
 <li> Thanks to Alex Mironov, added an optional properties string
 argument to the makePoint() macro function
 (<a href="http://wsr.imagej.net/macros/PointsToOverlayDemo.txt">macro example</a>,
@@ -29,8 +31,8 @@ run <i>Help&gt;Examples&gt;Plots&gt;Random Data</i>
 or <i>Help&gt;Examples&gt;JavaScript&gt;Plot Random Data</i>.
 <li> Thanks to Michael Schmid, added an "Add Fit" commamnd to
 the Data&gt;&gt;menu of Plot windows.
-<li> Thanks to Laurent Thomas, the ShortProcessor and FloatProcessor
- rotate() method now uses the value set by setBackgroundValue() to fill.
+<li> Thanks to Laurent Thomas, ShortProcessor.rotate() and FloatProcessor.rotate() 
+now fill useing the value set by setBackgroundValue().
 <li> Thanks to Kai Barthel, the <i>Analyze&gt;Calibrate</i> command
 resets the display range of contrast-reduced images.
 <li> Thanks to Michael Schmid, added the Plot.objectCount macro function.
@@ -47,6 +49,8 @@ funtion to reset the display range of 16-bit and 32-bit images.
 <li> Thanks to Alex Mironov, fixed a bug that caused setLineWidth(1)
 in a macro to incorrectly set the line with to the width set in the
 <i>Edit&gt;Options&gt;Line Width</i> dialog.
+<li> Thanks to Michael Schmid, fixed a bug that caused the Undo command to
+not work after rotating an image with "Enlarge image" enabled.
 <li> Thanks to Nicolas Stifani, fixed a 1.52h regression on Windows that caused
  canceled dialog boxes in macros started using the
 <i>Plugins&gt;Macros&gt;Run</i> command to throw an exception.

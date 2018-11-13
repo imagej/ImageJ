@@ -34,7 +34,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	public void run(ImageProcessor ip) {
-		if(enlarge && gd.wasOKed()) synchronized(this) {
+		if (enlarge && gd.wasOKed()) synchronized(this) {
 			if (!isEnlarged) {
 				enlargeCanvas();
 				isEnlarged=true;
@@ -68,8 +68,6 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 
 	void enlargeCanvas() {
 		imp.unlock();
-		if (imp.getStackSize()==1)
-			Undo.setup(Undo.COMPOUND_FILTER, imp);
 		IJ.run("Select All");
 		IJ.run("Rotate...", "angle="+angle);
 		Roi roi = imp.getRoi();
@@ -77,6 +75,8 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 		if (r.width<imp.getWidth()) r.width = imp.getWidth();
 		if (r.height<imp.getHeight()) r.height = imp.getHeight();
 		IJ.showStatus("Rotate: Enlarging...");
+		if (imp.getStackSize()==1)
+			Undo.setup(Undo.COMPOUND_FILTER, imp);
 		IJ.run("Canvas Size...", "width="+r.width+" height="+r.height+" position=Center "+(fillWithBackground?"":"zero"));
 		IJ.showStatus("Rotating...");
 	}
@@ -100,7 +100,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 		}
 		ic.setDisplayList(path, null, null);
 	}
-	
+
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
 		this.pfr = pfr;
 		String macroOptions = Macro.getOptions();
@@ -113,12 +113,12 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 		}
 		gd = new GenericDialog("Rotate");
 		gd.addNumericField("Angle (degrees):", angle, (int)angle==angle?1:2);
-		gd.addNumericField("Grid Lines:", gridLines, 0);
+		gd.addNumericField("Grid lines:", gridLines, 0);
 		gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
 		if (bitDepth==8 || bitDepth==24)
-			gd.addCheckbox("Fill with Background Color", fillWithBackground);
+			gd.addCheckbox("Fill with background color", fillWithBackground);
 		if (canEnlarge)
-			gd.addCheckbox("Enlarge Image to Fit Result", enlarge);
+			gd.addCheckbox("Enlarge image", enlarge);
 		else
 			enlarge = false;
 		gd.addPreviewCheckbox(pfr);
@@ -133,7 +133,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 			flags |= NO_CHANGES;			// undoable as a "compound filter"
 		return IJ.setupDialog(imp, flags);
 	}
-	
+
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
 		angle = gd.getNextNumber();
 		//only check for invalid input to "angle", don't care about gridLines

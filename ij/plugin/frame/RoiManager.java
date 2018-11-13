@@ -69,6 +69,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private boolean allowRecording;
 	private boolean recordShowAll = true;
 	private boolean allowDuplicates;
+	private double translateX = 10.0;
+	private double translateY = 10.0;
+
 		
 	/** Opens the "ROI Manager" window, or activates it if it is already open.
 	 * @see #RoiManager(boolean)
@@ -2122,22 +2125,20 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	private void translate() {
-		double dx = 10.0;
-		double dy = 10.0;
 		GenericDialog gd = new GenericDialog("Translate");
-		gd.addNumericField("X offset (pixels): ", dx, 0);
-		gd.addNumericField("Y offset (pixels): ", dy, 0);
+		gd.addNumericField("X offset (pixels): ", translateX, 0);
+		gd.addNumericField("Y offset (pixels): ", translateY, 0);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
-		dx = gd.getNextNumber();
-		dy = gd.getNextNumber();
-		translate(dx, dy);
+		translateX = gd.getNextNumber();
+		translateY = gd.getNextNumber();
+		translate(translateX, translateY);
 		if (record()) {
 			if (Recorder.scriptMode())
-				Recorder.recordCall("rm.translate("+dx+", "+dy+");");
+				Recorder.recordCall("rm.translate("+translateX+", "+translateY+");");
 			else
-				Recorder.record("roiManager", "translate", (int)dx, (int)dy);
+				Recorder.record("roiManager", "translate", (int)translateX, (int)translateY);
 		}
 	}
 
