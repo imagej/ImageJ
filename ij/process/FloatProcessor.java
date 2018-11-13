@@ -14,6 +14,7 @@ public class FloatProcessor extends ImageProcessor {
 	private float[] snapshotPixels = null;
 	private float fillColor =  Float.MAX_VALUE;
 	private boolean fixedScale = false;
+	private float bgValue;
 
 	/** Creates a new FloatProcessor using the specified pixel array. */
 	public FloatProcessor(int width, int height, float[] pixels) {
@@ -705,7 +706,7 @@ public class FloatProcessor extends ImageProcessor {
 							pixels[index++] = pixels2[width*iys+ixs];
 						}
 					} else
-						pixels[index++] = 0;
+						pixels[index++] = bgValue;
 				}
 			}
 		}
@@ -1021,13 +1022,12 @@ public class FloatProcessor extends ImageProcessor {
 		fillColor = (float)value;
 	}
 
-	/** Does nothing. The rotate() and scale() methods always zero fill. */
 	public void setBackgroundValue(double value) {
+		bgValue = (float)value;
 	}
 
-	/** Always returns 0. */
 	public double getBackgroundValue() {
-		return 0.0;
+		return bgValue;
 	}
 
 	public void setLutAnimation(boolean lutAnimation) {
