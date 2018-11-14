@@ -29,6 +29,10 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 			Roi roi = imp.getRoi();
 			Rectangle r = roi!=null?roi.getBounds():null;
 			canEnlarge = r==null || (r.x==0&&r.y==0&&r.width==imp.getWidth()&&r.height==imp.getHeight());
+			if (imp.isComposite() && ((CompositeImage)imp).getMode()==IJ.COMPOSITE) {
+				Undo.setup(Undo.TRANSFORM, imp);
+				flags = flags | NO_UNDO_RESET;
+			}
 		}
 		return flags;
 	}
@@ -112,7 +116,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 			Macro.setOptions(macroOptions);
 		}
 		gd = new GenericDialog("Rotate");
-		gd.addNumericField("Angle (degrees):", angle, (int)angle==angle?1:2);
+		gd.addSlider("Angle:", -90, 90, angle);
 		gd.addNumericField("Grid lines:", gridLines, 0);
 		gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
 		if (bitDepth==8 || bitDepth==24)

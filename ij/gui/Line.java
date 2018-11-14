@@ -612,6 +612,7 @@ public class Line extends Roi {
 			case KeyEvent.VK_RIGHT: x2R+=inc; break;
 		}
 		grow(ic.screenXD(x+x2R), ic.screenYD(y+y2R));
+		notifyListeners(RoiListener.MOVED);
 	}
 	
 	public boolean getDrawOffset() {

@@ -86,6 +86,8 @@ public interface PlugInFilter {
 		ImageProcessor set according to the area that should be processed. Use the
 		Edit/Options/Memory & Threads command to view or set the thread count. */
     public final int PARALLELIZE_IMAGES = 262144;
+    /** Set this flag to prevent Undo from being reset when processing a stack. */
+    public final int NO_UNDO_RESET = 524288;
 
     // flags 0x01000000 and above are reserved for ExtendedPlugInFilter
 }

@@ -1029,6 +1029,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		oldX = x; oldY = y;
 		cachedMask = null;
 		showStatus();
+		notifyListeners(RoiListener.MOVED);
 	}
 	
 	// Finds the union of current and previous roi

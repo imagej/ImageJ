@@ -132,14 +132,34 @@ public class CurveFitter implements UserFunction{
 	private String errorString;		// in case of error before invoking the minimizer
 	private static String[] sortedFitList; // names like fitList, but in more logical sequence
 	private static Hashtable<String, Integer> namesTable; // converts fitList String into number
-
+	
 	/** Construct a new CurveFitter. */
 	public CurveFitter (double[] xData, double[] yData) {
-		this.xData = xData;
-		this.yData = yData;
-		numPoints = xData.length;
+		int cleanPoints = 0;
+		for (int jj=0; jj<xData.length; jj++) {
+			if (!Double.isNaN(xData[jj] + yData[jj]))
+				cleanPoints++;
+		}
+		if (cleanPoints==xData.length) {
+			this.xData = xData;
+			this.yData = yData;
+		} else { //remove pairs containing a NaN
+			double[] cleanX = new double[cleanPoints];
+			double[] cleanY = new double[cleanPoints];
+			int ptr = 0;
+			for (int jj=0; jj<xData.length; jj++) {
+				if (!Double.isNaN(xData[jj] + yData[jj])) {
+					cleanX[ptr] = xData[jj];
+					cleanY[ptr] = yData[jj];
+					ptr++;
+				}
+			}
+			this.xData = cleanX;
+			this.yData = cleanY;
+		}
+		numPoints = this.xData.length;
 	}
-
+	
 	/** Perform curve fitting with one of the built-in functions
 	 *			doFit(fitType) does the fit quietly
 	 *	Use getStatus() and/or getStatusString() to see whether fitting was (probably) successful and

@@ -52,7 +52,7 @@ public class Undo {
 			calCopy = (Calibration)imp.getCalibration().clone();
 		} else if (what==TRANSFORM) {	
 			if (!IJ.macroRunning())
-				impCopy = new ImagePlus(imp.getTitle(), imp.getProcessor().duplicate());
+				impCopy = imp.duplicate();
 		} else if (what==MACRO) {	
 			impCopy = new ImagePlus(imp.getTitle(), imp.getProcessor().duplicate());
 			whatToUndo = TRANSFORM;
@@ -82,6 +82,7 @@ public class Undo {
 	}
 		
 	public static void reset() {
+		if (IJ.debugMode) IJ.log("Undo.reset: "+ whatToUndo+" "+impCopy);
 		if (whatToUndo==COMPOUND_FILTER || whatToUndo==OVERLAY_ADDITION)
 			return;
 		whatToUndo = NOTHING;
@@ -91,13 +92,12 @@ public class Undo {
 		calCopy = null;
 		roiCopy = null;
 		lutCopy = null;
-		//if (IJ.debugMode) IJ.log("Undo.reset");
 	}
 	
 
 	public static void undo() {
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (IJ.debugMode) IJ.log("Undo.undo: "+ whatToUndo+" "+imp+" "+imageID);
+		if (IJ.debugMode) IJ.log("Undo.undo: "+ whatToUndo+" "+imp+"  "+impCopy);
 		if (imp==null || imageID!=imp.getID()) {
 			if (imp!=null && !IJ.macroRunning()) { // does image still have an undo buffer?
 				ImageProcessor ip2 = imp.getProcessor();
@@ -138,7 +138,7 @@ public class Undo {
 				break;
 			case TRANSFORM:
 				if (impCopy!=null)
-					imp.setProcessor(impCopy.getTitle(), impCopy.getProcessor());
+					imp.setStack(impCopy.getStack());
 				break;
 			case PASTE:
 				Roi roi = imp.getRoi();
