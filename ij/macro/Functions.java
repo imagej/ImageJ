@@ -4472,6 +4472,8 @@ public class Functions implements MacroConstants, Measurements {
 			BatchProcessor.saveOutput(state);
 		else if (arg1.startsWith("converttomicrons"))
 			Prefs.convertToMicrons = state;
+		else if (arg1.startsWith("supportmacroundo"))
+			Prefs.supportMacroUndo = state;
 		else if (arg1.equals("inverty"))
 			getImage().getCalibration().setInvertY(state);
 		else

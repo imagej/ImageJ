@@ -29,7 +29,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 			Roi roi = imp.getRoi();
 			Rectangle r = roi!=null?roi.getBounds():null;
 			canEnlarge = r==null || (r.x==0&&r.y==0&&r.width==imp.getWidth()&&r.height==imp.getHeight());
-			if (imp.isComposite() && ((CompositeImage)imp).getMode()==IJ.COMPOSITE) {
+			if (imp.getDisplayMode()==IJ.COMPOSITE) { // setup Undo for composite color stacks
 				Undo.setup(Undo.TRANSFORM, imp);
 				flags = flags | NO_UNDO_RESET;
 			}

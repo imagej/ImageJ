@@ -131,10 +131,7 @@ public class DICOM extends ImagePlus implements PlugIn {
 			if (dd.windowWidth>0.0) {
 				double min = dd.windowCenter-dd.windowWidth/2;
 				double max = dd.windowCenter+dd.windowWidth/2;
-				if (Prefs.openDicomsAsFloat) {
-					min -= dd.rescaleIntercept;
-					max -= dd.rescaleIntercept;
-				} else {
+				if (!Prefs.openDicomsAsFloat) {
 					Calibration cal = imp.getCalibration();
 					min = cal.getRawValue(min);
 					max = cal.getRawValue(max);

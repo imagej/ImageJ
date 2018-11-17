@@ -353,13 +353,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
     public static String getImageSize(ImagePlus imp) {
     	if (imp==null)
     		return null;
-		double size = ((double)imp.getWidth()*imp.getHeight()*imp.getStackSize())/1024.0;
-		int type = imp.getType();
-    	switch (type) {
-	    	case ImagePlus.GRAY16: size *= 2.0; break;
-	    	case ImagePlus.GRAY32: size *= 4.0; break;
-	    	case ImagePlus.COLOR_RGB: size *= 4.0; break;
-    	}
+    	double size = imp.getSizeInBytes()/1024.0;
    		String s2=null, s3=null;
     	if (size<1024.0)
     		{s2=IJ.d2s(size,0); s3="K";}

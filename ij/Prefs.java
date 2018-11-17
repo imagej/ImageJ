@@ -178,6 +178,8 @@ public class Prefs {
 	public static boolean closingAll;
 	/** Dialog "Cancel" button is on right on Linux */
 	public static boolean dialogCancelButtonOnRight;
+	/** Support TRANSFORM Undo in macros */
+	public static boolean supportMacroUndo;
 
 	static boolean commandLineMacro;
 	static Properties ijPrefs = new Properties();
