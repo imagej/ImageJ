@@ -90,6 +90,15 @@ public class Overlay {
     	}
     }
     
+    /** Returns the ROI with the specified name or null if not found. */
+    public Roi get(String name) {
+    	int index = getIndex(name);
+    	if (index==-1)
+    		return null;
+    	else
+    		return get(index);   		
+    }
+
     /** Returns the index of the ROI with the specified name, or -1 if not found. */
     public int getIndex(String name) {
     	if (name==null) return -1;
