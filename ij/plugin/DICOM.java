@@ -112,7 +112,7 @@ public class DICOM extends ImagePlus implements PlugIn {
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.openImage();
 			ImageProcessor ip = imp.getProcessor();
-			if (Prefs.openDicomsAsFloat) {
+			if (dd.rescaleSlope!=1.0 || Prefs.openDicomsAsFloat) {
 				ip = ip.convertToFloat();
 				if (dd.rescaleSlope!=1.0)
 					ip.multiply(dd.rescaleSlope);

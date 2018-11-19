@@ -6,7 +6,7 @@
 <body>
 
 
-<li> <u>1.52i 17 November 2018</u>
+<li> <u>1.52i 18 November 2018</u>
 <ul>
 <li> Thanks to Jerome Mutterer, added the
 <i>Image&gt;Stacks&gt;Tools&gt;Magic Montage Tools</i> command.
@@ -47,7 +47,7 @@ from arrays to the PlotContentsDialog class
 (<a href="http://wsr.imagej.net/plugins/Test_ContentsDialog.java">example</a>).
 <li> Added the PointRoi.getLastCounter() method.
 <li> Added the DuplicateAll() (the Duplicate method crops if there is an ROI)
- and getSizeInBytes()  methods to the ImagePlus class.
+ and getSizeInBytes() methods to the ImagePlus class.
 (<a href="http://wsr.imagej.net/macros/js/PointProperties.js">example</a>).
 <li> Thanks to Philippe Carl and Michael Schmid, fixed a bug that caused
 the macro interpreter to incorrectly evaluate string expressions containing
@@ -69,6 +69,9 @@ wider than 1 to differ from profile plots of rectangles of the same size.
 was enabled in <i>Edit&gt;Options&gt;DICOM</i>.
 <li> Thanks to Kenneth Sloan, fixed a bug that caused the Paintbrush Tool
 (in "Paint on overlay" mode) to delete pre-existing overlays.
+<li> Thanks to 'mountain_man', fixed a bug that caused the Rescale Slope
+tag (0028,1053) to be ignored when opening DICOM images and
+"Open as 32-bit float" was not enabled in <i>Edit&gt;Options&gt;DICOM</i>.
 <li> Thanks to Nicolas Stifani, fixed a 1.52h regression on Windows that caused
  canceled dialog boxes in macros started using the
 <i>Plugins&gt;Macros&gt;Run</i> command to throw an exception.
