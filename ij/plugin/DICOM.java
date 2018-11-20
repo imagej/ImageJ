@@ -84,7 +84,6 @@ public class DICOM extends ImagePlus implements PlugIn {
 		String fileName = od.getFileName();
 		if (fileName==null)
 			return;
-		//IJ.showStatus("Opening: " + directory + fileName);
 		DicomDecoder dd = new DicomDecoder(directory, fileName);
 		dd.inputStream = inputStream;
 		FileInfo fi = null;
@@ -112,7 +111,8 @@ public class DICOM extends ImagePlus implements PlugIn {
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.openImage();
 			ImageProcessor ip = imp.getProcessor();
-			if (dd.rescaleSlope!=1.0 || Prefs.openDicomsAsFloat) {
+			boolean openAsFloat = dd.rescaleSlope!=1.0 || Prefs.openDicomsAsFloat;
+			if (openAsFloat) {
 				ip = ip.convertToFloat();
 				if (dd.rescaleSlope!=1.0)
 					ip.multiply(dd.rescaleSlope);
@@ -131,7 +131,7 @@ public class DICOM extends ImagePlus implements PlugIn {
 			if (dd.windowWidth>0.0) {
 				double min = dd.windowCenter-dd.windowWidth/2;
 				double max = dd.windowCenter+dd.windowWidth/2;
-				if (!Prefs.openDicomsAsFloat) {
+				if (!openAsFloat) {
 					Calibration cal = imp.getCalibration();
 					min = cal.getRawValue(min);
 					max = cal.getRawValue(max);

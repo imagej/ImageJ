@@ -107,15 +107,16 @@ public class FloatProcessor extends ImageProcessor {
 		minMaxSet = true;
 	}
 
-	/**
-	Sets the min and max variables that control how real
-	pixel values are mapped to 0-255 screen values. Use
-	resetMinAndMax() to enable auto-scaling;
-	@see ij.plugin.frame.ContrastAdjuster 
+	/** Sets the min and max variables that control how real
+	 * pixel values are mapped to 0-255 screen values. Use
+	 * resetMinAndMax() to enable auto-scaling;
+	 * @see ij.plugin.frame.ContrastAdjuster 
 	*/
 	public void setMinAndMax(double minimum, double maximum) {
-		if (minimum==0.0 && maximum==0.0)
-			{resetMinAndMax(); return;}
+		if (minimum==0.0 && maximum==0.0) {
+			resetMinAndMax();
+			return;
+		}
 		min = (float)minimum;
 		max = (float)maximum;
 		fixedScale = true;
