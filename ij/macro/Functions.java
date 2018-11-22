@@ -3148,6 +3148,11 @@ public class Functions implements MacroConstants, Measurements {
 							if (pattern.equalsIgnoreCase("cp")) {
 								((ColorPicker) thisWin).close();
 							}
+						}						
+						if (thisWin instanceof ThresholdAdjuster) {//Threshold
+							if (pattern.equalsIgnoreCase("Threshold")) {
+								((ThresholdAdjuster) thisWin).close();
+							}
 						}
 						if (thisWin instanceof Editor) {//macros editor, loaded text files
 							Editor ed = (Editor) thisWin;
