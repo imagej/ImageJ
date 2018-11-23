@@ -1430,7 +1430,9 @@ public class Plot implements Cloneable {
 		PlotVirtualStack stack = getStack();
 		if (stack!=null && stack.size()>1) {
 			stack.setBitDepth(grayscaleStack?8:24);
-			new ImagePlus("Plot Stack",stack).show();
+			ImagePlus stackImp = new ImagePlus("Plot Stack",stack);
+			stackImp.show();
+			adjustCalibration(stackImp.getCalibration());
 			return null;
 		}
 		if ((IJ.macroRunning() && IJ.getInstance()==null) || Interpreter.isBatchMode()) {

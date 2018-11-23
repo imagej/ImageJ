@@ -6,7 +6,7 @@
 <body>
 
 
-<li> <u>1.52i 21 November 2018</u>
+<li> <u>1.52i 22 November 2018</u>
 <ul>
 <li> Thanks to Jerome Mutterer, added the
 <i>Image&gt;Stacks&gt;Tools&gt;Magic Montage Tools</i> command.
@@ -76,8 +76,9 @@ tag (0028,1053) to be ignored when opening DICOM images and
 caused a NullPointerException.
 <li> Thanks to Michael Schmid, fixed a bug that caused buttons in
 some dialogs (e.g., "B&C" and "Threshold") to not be displayed correctly
-on macOS when using the "Metal" look and feel. Switch to "Metal" by opening
-an Action Bar or by using <i>Edit&gt;Options&gt;Look and Feel</i> on Fiji.
+on macOS when using the Metal look and feel. Opening an Action Bar switches
+to Metal or use <i>Edit&gt;Options&gt;Look and Feel</i> in Fiji.
+<li> Thanks to Michael Schmid, fixed a bug that caused plot stacks to not be spatially calibrated.
 <li> Thanks to Nicolas Stifani, fixed a 1.52h regression on Windows that caused
  canceled dialog boxes in macros started using the
 <i>Plugins&gt;Macros&gt;Run</i> command to throw an exception.

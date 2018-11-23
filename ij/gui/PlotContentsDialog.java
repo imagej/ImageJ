@@ -313,6 +313,7 @@ public class PlotContentsDialog implements DialogListener {
 	}
 
 	private void setPlotObjectStyle() {
+		if (currentObjectIndex < 0) return;
 		String style = getStyleString();
 		plot.setPlotObjectStyle(currentObjectIndex, style);
 		if (labelField.isEnabled()) {
@@ -469,6 +470,22 @@ public class PlotContentsDialog implements DialogListener {
 			if (!columnHeadingStr.startsWith(" \t"))
 				columnHeadingStr = " \t"+columnHeadingStr;	//add empty field at beginning (if we don't have one)
 			columnHeadings = columnHeadingStr.split("\t");
+			int nBadColumns = 0;
+			for (int i=1; i<columnHeadings.length; i++) {	//check for columns with no data
+				int index = rt.getColumnIndex(columnHeadings[i]);
+				if (!rt.columnExists(index)) {
+					columnHeadings[i] = null;
+					nBadColumns++;
+				}
+			}
+			if (nBadColumns > 0) {
+				String[] newHeadings = new String[columnHeadings.length - nBadColumns];
+				int i=0;
+				for (String heading : columnHeadings)		//copy 'good' headings
+					if (heading != null)
+						newHeadings[i++] = heading;
+				columnHeadings = newHeadings;
+			}
 		} else {   // if (dialogType == ADD_FROM_ARRAYS)
 			columnHeadings = new String[arrayHeadings.length+1];
 			System.arraycopy(arrayHeadings, 0, columnHeadings, 1, arrayHeadings.length);
@@ -477,8 +494,9 @@ public class PlotContentsDialog implements DialogListener {
 		for (int c=0; c<nColumnsToUse; c++) {
 			columnChoice[c].removeAll();
 			for (int i=COLUMN_ALLOW_NONE[c] ? 0 : 1; i<columnHeadings.length; i++)
-				columnChoice[c].addItem(columnHeadings[i]);
-			columnChoice[c].select(Math.min(columnChoice[c].getItemCount()-1, previousColumns[c]));
+					columnChoice[c].addItem(columnHeadings[i]);
+			if (columnChoice[c].getItemCount() > 0 && previousColumns[c] >= 0)
+				columnChoice[c].select(Math.min(columnChoice[c].getItemCount()-1, previousColumns[c]));
 		}
 	}
 
@@ -486,6 +504,7 @@ public class PlotContentsDialog implements DialogListener {
 	 *  and sets the Style fields for it. */
 	private void addObjectFromTable() {
 		float[][] data = getDataArrays();
+		if (data[1] == null) return;  //no y data? then can't plot
 		String label = columnChoice[1].getSelectedItem();	//take label from y
 		int shape = Plot.toShape(symbolChoice.getSelectedItem());
 		float lineWidth = (float)(Tools.parseDouble(widthField.getText()));

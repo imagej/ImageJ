@@ -20,6 +20,10 @@ public class HTMLDialog extends JDialog implements ActionListener, KeyListener, 
 
 	public HTMLDialog(String title, String message) {
 		super(ij.IJ.getInstance(), title, true);
+		if (title!=null && title.equals("NonBlocking")) {
+			setTitle("");
+			setModal(false);
+		}
 		init(message);
 	}
 
