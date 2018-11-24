@@ -1536,9 +1536,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     }
 
 	void showHelp() {
-		if (helpURL.startsWith("<html>"))
-			new HTMLDialog("NonBlocking", helpURL);
-		else {
+		if (helpURL.startsWith("<html>")) {	
+			if (this instanceof NonBlockingGenericDialog)
+				new HTMLDialog("", helpURL, false); // non blocking
+			else
+				new HTMLDialog(this, "", helpURL); //modal
+		} else {
 			String macro = "run('URL...', 'url="+helpURL+"');";
 			new MacroRunner(macro);
 		}

@@ -153,8 +153,8 @@ stacks10="Reslice [/]...",ij.plugin.Slicer
 stacks11="Orthogonal Views[H]",ij.plugin.Orthogonal_Views
 stacks12="Z Project...",ij.plugin.ZProjector
 stacks13="3D Project...",ij.plugin.Projector
-stacks14="Plot XY Profile",ij.plugin.StackPlotter
-stacks15="Plot Z-axis Profile",ij.plugin.ZAxisProfiler
+stacks14="Plot Z-axis Profile",ij.plugin.ZAxisProfiler
+stacks15="Measure Stack...",ij.plugin.SimpleCommands("measure")
 stacks16="Label...",ij.plugin.filter.StackLabeler
 stacks17="Statistics",ij.plugin.Stack_Statistics
 
@@ -166,15 +166,16 @@ animation_03="Animation Options...",ij.plugin.Animator("options")
 # Plugins installed in the Image/Stacks/Tools submenu
 tools_01="Combine...",ij.plugin.StackCombiner
 tools_02="Concatenate...",ij.plugin.Concatenator
-tools_03="Reduce...",ij.plugin.StackReducer
-tools_04="Reverse",ij.plugin.StackReverser
-tools_05="Insert...",ij.plugin.StackInserter
-tools_06="Montage to Stack...",ij.plugin.StackMaker
-tools_07="Make Substack...",ij.plugin.SubstackMaker
-tools_08="Grouped Z Project...",ij.plugin.GroupedZProjector
-tools_09="Set Label...",ij.plugin.SimpleCommands("set")
+tools_03="Grouped Z Project...",ij.plugin.GroupedZProjector
+tools_04="Insert...",ij.plugin.StackInserter
+tools_05="Magic Montage Tools",ij.plugin.SimpleCommands("magic")
+tools_06="Make Substack...",ij.plugin.SubstackMaker
+tools_07="Montage to Stack...",ij.plugin.StackMaker
+tools_08="Plot XY Profile",ij.plugin.StackPlotter
+tools_09="Reduce...",ij.plugin.StackReducer
 tools_10="Remove Slice Labels",ij.plugin.SimpleCommands("remove")
-tools_11="Magic Montage Tools",ij.plugin.SimpleCommands("magic")
+tools_11="Reverse",ij.plugin.StackReverser
+tools_12="Set Label...",ij.plugin.SimpleCommands("set")
 
 # Plugins installed in the Image/Hyperstacks submenu
 hyperstacks01="New Hyperstack...",ij.plugin.HyperStackMaker

@@ -47,6 +47,8 @@ public class SimpleCommands implements PlugIn {
 			openControlPanel();
 		else if (arg.equals("magic"))
 			installMagicMontageTools();
+		else if (arg.equals("measure"))
+			IJ.runMacroFile("ij.jar:MeasureStack", null);
 	}
 	
 	private synchronized void showFonts() {
