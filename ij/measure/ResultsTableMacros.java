@@ -127,7 +127,7 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 		int end = ta.getSelectionEnd();
 		return start==end?ta.getText():ta.getSelectedText();
 	}
-
+	
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
 		final String variableName = gd.getNextChoice();
 		if (e!=null && (e.getSource() instanceof Choice) && !variableName.equals("Insert...")) {

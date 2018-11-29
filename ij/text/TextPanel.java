@@ -463,6 +463,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			IJ.doCommand("Input/Output...");
  		else if (cmd.equals("Apply Macro..."))
 			new ResultsTableMacros(rt);
+ 		else if (cmd.equals("Sort..."))
+			sort();
  		else if (cmd.equals("Plot..."))
 			new PlotContentsDialog(title, rt).showDialog(getParent() instanceof Frame ? (Frame)getParent() : null);
 	}
@@ -1026,6 +1028,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		addPopupItem("Rename...");
 		addPopupItem("Duplicate...");
 		addPopupItem("Apply Macro...");
+		addPopupItem("Sort...");
 		addPopupItem("Plot...");
 		if (fileMenu!=null) {
 			fileMenu.add("Rename...");
@@ -1051,6 +1054,29 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if (vData!=null)
 			vData.removeAllElements();
 		vData = null;
+	}
+	
+	private void sort() {
+		if (rt==null)
+			return;
+		String[] headers = rt.getHeadings();
+		String[] headers2 = headers;
+		if (headers[0].equals("Label")) {
+			headers = new String[headers.length-1];
+			for (int i=0; i<headers.length; i++)
+				headers[i] = headers2[i+1];
+		}
+		GenericDialog gd = new GenericDialog("Sort Table");
+		gd.addChoice ("Column: ", headers, headers[0]);
+		gd.showDialog();
+		if (gd.wasCanceled()) 
+			return;
+		String column = gd.getNextChoice();
+		rt.sort(column);
+		rt.show(title);
+		scrollToTop();
+		if (Recorder.record)
+			Recorder.record("Table.sort", column);
 	}
 
 }

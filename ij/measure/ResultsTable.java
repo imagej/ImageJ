@@ -1420,5 +1420,28 @@ public class ResultsTable implements Cloneable {
 		((TextWindow)frame).getTextPanel().setSelection(index, index);
     	return true;	
     }
+    
+    /** Sorts this table on the specified column. TO DO: add string support.*/
+	public void sort(String column) {
+		int col = getColumnIndex(column);
+		if (col==COLUMN_NOT_FOUND)
+			throw new IllegalArgumentException("Column not found");
+		double[] values = new double[size()];
+		for (int i=0; i<size(); i++)
+			values[i] = getValueAsDouble(col,i);
+		int[] indexes = Tools.rank(values);
+		ResultsTable rt2 = (ResultsTable)clone();
+		String[] headers = getHeadings();
+		for (int i=0; i<headers.length; i++) {
+			if ("Label".equals(headers[i])) {
+				for (int row = 0; row<size(); row++)
+					setLabel(rt2.getLabel(indexes[row]), row);
+			} else {
+				col = getColumnIndex(headers[i]);
+				for (int row = 0; row<size(); row++)
+					setValue(col, row, rt2.getValueAsDouble(col,indexes[row]));
+			}
+		}
+	}
 		
 }

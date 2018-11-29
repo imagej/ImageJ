@@ -5,15 +5,19 @@
 </head>
 <body>
 
-
-<li> <u>1.52i 24 November 2018</u>
+<li> <u>1.52i 26 November 2018</u>
 <ul>
 <li> Thanks to Ved Sharma and Michael Kaul, added the
 <i>Image&gt;Stacks&gt;Measure Stack</i> command
-(<a href="http://wsr.imagej.net/macros/MeasureStack.txt">macro source</a>).
+(<a href="http://wsr.imagej.net/macros/MeasureStack.txt">macro source</a>),
+useful for plotting stacks using the contextual (right-click) <i>Plot</i> command
+in Results tables.
 <li> Thanks to Jerome Mutterer, added the
 <i>Image&gt;Stacks&gt;Tools&gt;Magic Montage Tools</i> command
 (<a href="http://wsr.imagej.net/macros/toolsets/Magic%20Montage.txt">macro source</a>).
+ <li> Tables can be sorted using the Sort command in the contextual (right-click)
+menu or in the <i>Results</i> menu
+(<a href="http://wsr.imagej.net/macros/LabelParticlesBySize.txt">example</a>).
 <li> Thanks to Matias Andina, the <i>Image&gt;Transform&gt;Rotate</i> command
 can now be used interactiely.
 <li> Thanks to Michael Schmid, added an  "F" (Fit All) icon next to the "R" (Reset Range)
@@ -26,8 +30,8 @@ a "Don't reset range" checkbox to the "Threshold" dialog
 <li> Alphabetized the <i>Image&gt;Stacks&gt;Tools</i> menu.
 <li> Moved the <i>Image&gt;Stacks&gt;Plot XY Profile</i> command
 to <i>Image&gt;Stacks&gt;Tools&gt;Plot XY Profile</i>.
-<li> Thanks to Barbara and Michael Schmid, the Translate command in
-the ROI Manager remembers the x offset and y offset values.
+<li> Thanks to 'Barbara' and Michael Schmid, the <i>Translate</i> command in
+the ROI Manager remembers the x and y offset values.
 <li> Thanks to Alex Mironov, added an optional properties string
 argument to the makePoint() macro function
 (<a href="http://wsr.imagej.net/macros/PointsToOverlayDemo.txt">macro example</a>,
@@ -39,7 +43,7 @@ automatically calls Overlay.add() when the line width changes
 run <i>Help&gt;Examples&gt;Plots&gt;Random Data</i>
 or <i>Help&gt;Examples&gt;JavaScript&gt;Plot Random Data</i>.
 <li> Thanks to Michael Schmid, added an "Add Fit" commamnd to
-the Data&gt;&gt;menu of Plot windows.
+the <i>Data&gt;&gt;</i> menu of Plot windows.
 <li> Thanks to Laurent Thomas, ShortProcessor.rotate() and FloatProcessor.rotate() 
 now fill using the value set by setBackgroundValue().
 <li> Thanks to Kai Barthel, the <i>Analyze&gt;Calibrate</i> command
@@ -55,18 +59,17 @@ from arrays to the PlotContentsDialog class
 <li> Added the PointRoi.getLastCounter() method.
 <li> Added the DuplicateAll() (the Duplicate method crops if there is an ROI)
  and getSizeInBytes() methods to the ImagePlus class.
-(<a href="http://wsr.imagej.net/macros/js/PointProperties.js">example</a>).
 <li> Thanks to Philippe Carl and Michael Schmid, fixed a bug that caused
 the macro interpreter to incorrectly evaluate string expressions containing
 numeric arrays indexed using the ++ operator.
 <li> Thanks to Stein Rorvik, fixed a bug that caused the changeValues() macro
 funtion to reset the display range of 16-bit and 32-bit images.
 <li> Thanks to Alex Mironov, fixed a bug that caused setLineWidth(1)
-in a macro to incorrectly set the line with to the width set in the
+in a macro to incorrectly set the line width to the width set in the
 <i>Edit&gt;Options&gt;Line Width</i> dialog.
-<li> Thanks to Michael Schmid, fixed a bug that caused the Undo command to
+<li> Thanks to Michael Schmid, fixed a bug that caused the <i>Undo</i> command to
 not work after rotating an image with "Enlarge image" enabled.
-<li> Thanks to Matias Andina, fixed a bug that caused the Undo command to
+<li> Thanks to Matias Andina, fixed a bug that caused the <i>Undo</i> command to
 not work after cropping or rotating a composite color image.
 <li> Thanks to Michael Schmid, fixed a bug that caused nudging the end of a line
 selection with alt-arrow keys to not update a live profile plot.
