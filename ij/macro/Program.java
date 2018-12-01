@@ -22,15 +22,13 @@ public class Program implements MacroConstants {
     // run keyboard shortcut macros on event dispatch thread?
 	boolean queueCommands; 
 	Hashtable extensionRegistry;
-	
-	
+			
 	public Program() {
 		if (systemTable!=null) {
 			stLoc = systemTable.length - 1;
 			for (int i=0; i<=stLoc; i++)
-			table[i] = systemTable[i];
+				table[i] = systemTable[i];
 		} else {
-			//IJ.log("make table");
 			addKeywords();
 			addFunctions();
 			addNumericFunctions();
@@ -99,11 +97,9 @@ public class Program implements MacroConstants {
 			int[] tmp = new int[maxProgramSize*2];
 			System.arraycopy(code, 0, tmp, 0, maxProgramSize);
 			code = tmp;
-
             tmp = new int[maxProgramSize*2];  //n__
 			System.arraycopy(lineNumbers, 0, tmp, 0, maxProgramSize);
 			lineNumbers = tmp;
-
 			maxProgramSize *= 2;
         }
 		code[pc] = tok;
@@ -112,7 +108,6 @@ public class Program implements MacroConstants {
 
 	/** Looks up a word in the symbol table. Returns null if the word is not found. */
 	Symbol lookupWord(String str) {
-        //IJ.log("lookupWord: "+str);
 		Symbol symbol;
 		String symStr;
 		for (int i=0; i<=stLoc; i++) {
@@ -126,7 +121,6 @@ public class Program implements MacroConstants {
 	}
 
 	void saveGlobals(Interpreter interp) {
-		//IJ.log("saveGlobals: "+interp.topOfStack);
 		if (interp.topOfStack==-1)
 			return;
 		int n = interp.topOfStack+1;
@@ -274,9 +268,13 @@ public class Program implements MacroConstants {
 		}
 		return false;
 	}
-	
+		
 	public int getSize() {
 		return pc;
+	}
+	
+	public String toString() {
+		return "pgm[code="+(code!=null?""+code.length:"null") + " tab="+(table!=null?""+table.length:"null")+"]";
 	}
 	
 } // Program

@@ -70,6 +70,7 @@ public class IJ {
 	private static DecimalFormatSymbols dfs;
 	private static boolean trustManagerCreated;
 	private static String smoothMacro;
+	private static Interpreter macroInterpreter;
 			
 	static {
 		osname = System.getProperty("os.name");
@@ -312,6 +313,13 @@ public class IJ {
 		//IJ.log("run2: "+command+" "+Thread.currentThread().hashCode());
 	}
 	
+	/** Used by the macro interpretor to run commands. */
+	public static void runFromMacro(Interpreter interpreter, String command, String options) {
+		macroInterpreter = interpreter;
+		run(command, options);
+		macroInterpreter = null;
+	}
+
 	/** Converts commands that have been renamed so 
 		macros using the old names continue to work. */
 	private static String convert(String command) {
@@ -645,6 +653,11 @@ public class IJ {
 		macro or JavaScript is running, it is aborted. Writes to the
 		Java console if the ImageJ window is not present.*/
 	public static void error(String msg) {
+		if (	macroInterpreter!=null) {
+			macroInterpreter.abort(msg);
+			macroInterpreter = null;
+			return;
+		}
 		error(null, msg);
 		if (Thread.currentThread().getName().endsWith("JavaScript"))
 			throw new RuntimeException(Macro.MACRO_CANCELED);
