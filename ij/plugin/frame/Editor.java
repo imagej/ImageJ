@@ -89,8 +89,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private boolean checkForCurlyQuotes;
     private static int tabInc = (int)Prefs.get(TAB_INC, 3);
     private static boolean insertSpaces = Prefs.get(INSERT_SPACES, false);
-    CheckboxMenuItem insertSpacesItem;
-
+    private CheckboxMenuItem insertSpacesItem;
+	private CheckboxMenuItem interactiveItem;
+	private Interpreter interpreter;
 	
 	public Editor() {
 		this(24, 80, 0, MENU_BAR);
@@ -227,6 +228,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			macrosMenu.add(new MenuItem("Install Macros", new MenuShortcut(KeyEvent.VK_I)));
 			macrosMenu.add(new MenuItem("Macro Functions...", new MenuShortcut(KeyEvent.VK_M, true)));
 			macrosMenu.add(new MenuItem("Function Finder...", new MenuShortcut(KeyEvent.VK_F, true)));
+			interactiveItem = new CheckboxMenuItem("InteractiveMode");
+			macrosMenu.add(interactiveItem);
 			macrosMenu.addSeparator();
 			macrosMenu.add(new MenuItem("Evaluate Macro"));
 			macrosMenu.add(new MenuItem("Evaluate JavaScript", new MenuShortcut(KeyEvent.VK_J, false)));
@@ -929,6 +932,36 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			for (int i=1; i<tabInc; i++)
 				spaces += " ";
 			ta.replaceRange(spaces, pos-1, pos);
+		}
+		if (interactiveItem!=null && interactiveItem.getState() && e.getKeyChar()=='\n')
+			runMacro(e);
+	}
+	
+	private void runMacro(KeyEvent e) {
+		String text = ta.getText();
+		int pos2 = ta.getCaretPosition()-2;
+		if (pos2<0) pos2=0;
+		int pos1 = 0;
+		for (int i=pos2; i>=0; i--) {
+			if (i==0 || text.charAt(i)=='\n') {
+				pos1 = i;
+				break;
+			}
+		}
+		if (interpreter==null) {
+			interpreter = new Interpreter();
+			interpreter.setIgnoreErrors(true);
+			interpreter.setEditor(this);
+		}
+		String code = text.substring(pos1,pos2+1);
+		if (code.length()<=6 && code.contains("help")) {
+			ta.appendText("  Enter an expression (e.g., \"2+2\" or \"log(2)\") and press return to evaluate it.\n");			
+			ta.appendText("  Press "+(IJ.isMacOSX()?"cmd":"ctrl")+"+shift+H to open the Function Finder.\n");			
+		} else {
+			interpreter.run(code);
+			String error = interpreter.getErrorMessage();
+			if (error!=null)
+				ta.appendText("  "+error+"\n");
 		}
 	}
 	

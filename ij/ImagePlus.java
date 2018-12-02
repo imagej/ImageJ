@@ -172,7 +172,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return false;
         } else {
         	locked = true;
-			if (IJ.debugMode) IJ.log(title + ": lock");
 			return true;
         }
 	}
@@ -192,7 +191,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Unlocks the image. */
 	public synchronized void unlock() {
 		locked = false;
-		if (IJ.debugMode) IJ.log(title + ": unlock");
 	}
 		
 	private void waitForImage(Image image) {

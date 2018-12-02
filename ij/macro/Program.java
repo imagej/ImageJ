@@ -38,8 +38,8 @@ public class Program implements MacroConstants {
 			systemTable = new Symbol[stLoc+1];
 			for (int i=0; i<=stLoc; i++)
 				systemTable[i] = table[i];
-			IJ.register(Program.class);
 		}
+		if (IJ.debugMode) IJ.log("Pgm: "+(stLoc+1));
 	}
 	
 	public int[] getCode() {

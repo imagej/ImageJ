@@ -370,8 +370,6 @@ public abstract class ImageProcessor implements Cloneable {
 			stdDev = 0.0;
 		boolean isPseudoColor = stdDev<20.0;
 		if ((int)stdDev==67) isPseudoColor = true; // "3-3-2 RGB" LUT
-		if (ij.IJ.debugMode)
-			ij.IJ.log("isPseudoColorLut: "+(isPseudoColor) + " " + stdDev);
 		return isPseudoColor;
 	}
 

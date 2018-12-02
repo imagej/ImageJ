@@ -73,7 +73,7 @@ public class Interpreter implements MacroConstants {
 	int errorCount;
 	volatile boolean ignoreErrors;
 	String errorMessage;
-
+	Editor editor;
 
 	/** Interprets the specified string. */
 	public void run(String macro) {
@@ -319,7 +319,7 @@ public class Interpreter implements MacroConstants {
 				String s = getString();
 				inPrint = false;
 				if (s!=null && s.length()>0 && !s.equals("NaN") && !s.equals("[aborted]"))
-					IJ.log(s);
+					log(s);
 				return;
 			case ARRAY_FUNCTION: func.getArrayFunction(pgm.table[tokenAddress].type); break;
 			case EOF: break;
@@ -331,6 +331,13 @@ public class Interpreter implements MacroConstants {
 			if (token!=';' && !done)
 				error("';' expected");
 		}
+	}
+	
+	void log(String s) {
+		if (editor!=null)
+			editor.getTextArea().appendText("  "+s+"\n");
+		else
+			IJ.log(s);
 	}
 
 	Variable runUserFunction() {
@@ -2301,6 +2308,10 @@ public class Interpreter implements MacroConstants {
 	
 	public String getErrorMessage() {
 		return errorMessage;
+	}
+	
+	public void setEditor(Editor editor) {
+		this.editor = editor;
 	}
 	
 } // class Interpreter

@@ -314,7 +314,7 @@ public class IJ {
 	}
 	
 	/** Used by the macro interpretor to run commands. */
-	public static void runFromMacro(Interpreter interpreter, String command, String options) {
+	public static void run(Interpreter interpreter, String command, String options) {
 		macroInterpreter = interpreter;
 		run(command, options);
 		macroInterpreter = null;
@@ -653,7 +653,7 @@ public class IJ {
 		macro or JavaScript is running, it is aborted. Writes to the
 		Java console if the ImageJ window is not present.*/
 	public static void error(String msg) {
-		if (	macroInterpreter!=null) {
+		if (macroInterpreter!=null) {
 			macroInterpreter.abort(msg);
 			macroInterpreter = null;
 			return;
@@ -944,7 +944,7 @@ public class IJ {
 	}
 
 	public static void setKeyUp(int key) {
-		if (debugMode) IJ.log("setKeyUp: "+key);
+		//if (debugMode) IJ.log("setKeyUp: "+key);
 		switch (key) {
 			case KeyEvent.VK_CONTROL: controlDown=false; break;
 			case KeyEvent.VK_META: if (isMacintosh()) controlDown=false; break;
