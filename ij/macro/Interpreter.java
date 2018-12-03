@@ -335,7 +335,7 @@ public class Interpreter implements MacroConstants {
 	
 	void log(String s) {
 		if (editor!=null)
-			editor.getTextArea().appendText("  "+s+"\n");
+			editor.insertText(s);
 		else
 			IJ.log(s);
 	}

@@ -5,6 +5,7 @@ import ij.gui.*;
 import ij.io.Opener;
 import ij.text.TextWindow;
 import ij.measure.ResultsTable;
+import ij.plugin.frame.Editor;
 import java.awt.Frame;
 
 /** This plugin implements the Plugins/Utilities/Unlock, Image/Rename
@@ -49,6 +50,8 @@ public class SimpleCommands implements PlugIn {
 			installMagicMontageTools();
 		else if (arg.equals("measure"))
 			IJ.runMacroFile("ij.jar:MeasureStack", null);
+		else if (arg.equals("interactive"))
+			openInteractiveModeEditor();
 	}
 	
 	private synchronized void showFonts() {
@@ -204,6 +207,12 @@ public class SimpleCommands implements PlugIn {
 			try {
 				mi.installFromIJJar(path);
 			} catch (Exception e) {}
+	}
+	
+	private void openInteractiveModeEditor() {
+		Editor ed = new Editor();
+		ed.setSize(600, 500);
+		ed.create(Editor.INTERACTIVE_NAME, "");
 	}
 		
 }

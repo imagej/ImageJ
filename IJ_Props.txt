@@ -378,8 +378,9 @@ macros01="Install...",ij.plugin.MacroInstaller
 macros02="Run...",ij.plugin.Macro_Runner
 macros03="Edit...",ij.plugin.Compiler("edit")
 macros04="Startup Macros...",ij.plugin.Commands("startup")
-macros05="Record...",ij.plugin.frame.Recorder
-macros06=-
+macros05="Interactive Interpreter...",ij.plugin.SimpleCommands("interactive")
+macros06="Record...",ij.plugin.frame.Recorder
+macros07=-
 
 # Plugins installed in the Plugins/Shortcuts submenu
 shortcuts01="Add Shortcut... ",ij.plugin.Hotkeys("install")

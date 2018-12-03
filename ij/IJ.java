@@ -310,6 +310,7 @@ public class IJ {
 		macroRunning = false;
 		Macro.setOptions(null);
 		testAbort();
+		macroInterpreter = null;
 		//IJ.log("run2: "+command+" "+Thread.currentThread().hashCode());
 	}
 	
@@ -2255,7 +2256,7 @@ public class IJ {
 	}
 	
 	static void abort() {
-		if ((ij!=null || Interpreter.isBatchMode()) &&macroInterpreter==null)
+		if ((ij!=null || Interpreter.isBatchMode()) && macroInterpreter==null)
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 	}
 	

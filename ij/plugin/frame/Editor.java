@@ -41,6 +41,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
 	public static final int MONOSPACED=1, MENU_BAR=2;
 	public static final int MACROS_MENU_ITEMS = 14;
+	public static final String INTERACTIVE_NAME = "Interactive Macro Interpreter";
 	static final String FONT_SIZE = "editor.font.size";
 	static final String FONT_MONO= "editor.font.mono";
 	static final String CASE_SENSITIVE= "editor.case-sensitive";
@@ -70,29 +71,28 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private MacroInstaller installer;
 	private static String defaultDir = Prefs.get(DEFAULT_DIR, null);;
 	private boolean dontShowWindow;
-    private int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
-    private int fontSize = (int)Prefs.get(FONT_SIZE, 6); // defaults to 16-point
-    private CheckboxMenuItem monospaced;
-    private static boolean wholeWords;
-    private boolean isMacroWindow;
-    private int debugStart, debugEnd;
-    private static TextWindow debugWindow;
-    private boolean step;
-    private int previousLine;
-    private static Editor instance;
-    private int runToLine;
-    private String downloadUrl;
-    private boolean downloading;
-    private FunctionFinder functionFinder;
-    private ArrayList undoBuffer = new ArrayList();
-    private boolean performingUndo;
-    private boolean checkForCurlyQuotes;
-    private static int tabInc = (int)Prefs.get(TAB_INC, 3);
-    private static boolean insertSpaces = Prefs.get(INSERT_SPACES, false);
+	private int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
+	private int fontSize = (int)Prefs.get(FONT_SIZE, 6); // defaults to 16-point
+	private CheckboxMenuItem monospaced;
+	private static boolean wholeWords;
+	private boolean isMacroWindow;
+	private int debugStart, debugEnd;
+	private static TextWindow debugWindow;
+	private boolean step;
+	private int previousLine;
+	private static Editor instance;
+	private int runToLine;
+	private String downloadUrl;
+	private boolean downloading;
+	private FunctionFinder functionFinder;
+	private ArrayList undoBuffer = new ArrayList();
+	private boolean performingUndo;
+	private boolean checkForCurlyQuotes;
+	private static int tabInc = (int)Prefs.get(TAB_INC, 3);
+	private static boolean insertSpaces = Prefs.get(INSERT_SPACES, false);
 	private CheckboxMenuItem insertSpacesItem;
 	private boolean interactiveMode;
 	private Interpreter interpreter;
-	private char previousChar;
 	
 	public Editor() {
 		this(24, 80, 0, MENU_BAR);
@@ -261,6 +261,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if (dontShowWindow) {
 			dispose();
 			dontShowWindow = false;
+		}
+		if (name.equals(INTERACTIVE_NAME)) {
+			enterInteractiveMode();
+			String txt = ta.getText();
+			ta.setCaretPosition(txt.length());
 		}
 		WindowManager.setWindow(this);
 		checkForCurlyQuotes = true;
@@ -934,10 +939,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				spaces += " ";
 			ta.replaceRange(spaces, pos-1, pos);
 		}
-		char ch = e.getKeyChar();
-		if (interactiveMode && ch=='\n')
+		if (interactiveMode && e.getKeyChar()=='\n')
 			runMacro(e);
-		previousChar = ch;
 	}
 	
 	private void runMacro(KeyEvent e) {
@@ -971,16 +974,17 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			interpreter.run(code);
 			String error = interpreter.getErrorMessage();
 			if (error!=null)
-				ta.appendText("  "+error+"\n");
+				insertText(error);
 		}
 	}
 	
 	private void enterInteractiveMode() {
 		if (interactiveMode)
 			return;
-		if (ta!=null && ta.getText().length()>400 && !getTitle().equals("Untitled.txt")) {
+		String title = getTitle();
+		if (ta!=null && ta.getText().length()>400 && !(title.equals("Untitled.txt")||!title.contains("."))) {
 			GenericDialog gd = new GenericDialog("Enter Interactive Mode");
-			gd.addMessage("Enter a mode for that supports interactive\nediting and running of macros?");
+			gd.addMessage("Enter mode that supports interactive\nediting and running of macros?");
 			gd.setOKLabel("Enter");
 			gd.showDialog();
 			if (gd.wasCanceled())
@@ -990,6 +994,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		interactiveMode = true;
 	}
 	
+	public void insertText(String text) {
+		if (ta==null) return;			
+		int start = ta.getSelectionStart( );
+		ta.replaceRange("  "+text+"\n", start, start);
+	}
+		
 	public void keyTyped(KeyEvent e) {
 	}
 
