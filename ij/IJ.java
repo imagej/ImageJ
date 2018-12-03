@@ -313,7 +313,7 @@ public class IJ {
 		//IJ.log("run2: "+command+" "+Thread.currentThread().hashCode());
 	}
 	
-	/** Used by the macro interpretor to run commands. */
+	/** The macro interpreter uses this method to run commands. */
 	public static void run(Interpreter interpreter, String command, String options) {
 		macroInterpreter = interpreter;
 		run(command, options);
@@ -580,7 +580,12 @@ public class IJ {
     
     /**Displays a "no images are open" dialog box.*/
 	public static void noImage() {
-		error("No Image", "There are no images open.");
+		String msg = "There are no images open.";
+		if (macroInterpreter!=null) {
+			macroInterpreter.abort(msg);
+			macroInterpreter = null;
+		} else
+			error("No Image", msg);
 	}
 
 	/** Displays an "out of memory" message to the "Log" window. */
@@ -2250,7 +2255,7 @@ public class IJ {
 	}
 	
 	static void abort() {
-		if (ij!=null || Interpreter.isBatchMode())
+		if ((ij!=null || Interpreter.isBatchMode()) &&macroInterpreter==null)
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 	}
 	
