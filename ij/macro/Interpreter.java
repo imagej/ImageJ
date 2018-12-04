@@ -128,6 +128,8 @@ public class Interpreter implements MacroConstants {
 		pushGlobals();
 		if (func==null)
 			func = new Functions(this, pgm);
+		else
+			func.pgm = pgm;
 		func.plot = null;
 		done = false;
 		errorMessage = null;

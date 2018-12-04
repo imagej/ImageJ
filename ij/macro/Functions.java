@@ -5665,7 +5665,7 @@ public class Functions implements MacroConstants, Measurements {
 			if (i!=len-1)
 				sb.append(", ");
 		}
-		IJ.log(sb.toString());
+		interp.log(sb.toString());
 		return null;
 	}
 

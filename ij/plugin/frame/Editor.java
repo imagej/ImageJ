@@ -12,6 +12,7 @@ import ij.macro.*;
 import ij.plugin.MacroInstaller;
 import ij.plugin.Commands;
 import ij.plugin.Macro_Runner;
+import ij.plugin.JavaScriptEvaluator;
 import ij.io.SaveDialog;
 
 /** This is a simple TextArea based editor for editing and compiling plugins. */
@@ -93,6 +94,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private CheckboxMenuItem insertSpacesItem;
 	private boolean interactiveMode;
 	private Interpreter interpreter;
+	private JavaScriptEvaluator evaluator;
 	
 	public Editor() {
 		this(24, 80, 0, MENU_BAR);
@@ -944,6 +946,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 	
 	private void runMacro(KeyEvent e) {
+		boolean isScript = getTitle().endsWith(".js");
 		String text = ta.getText();
 		int pos2 = ta.getCaretPosition()-2;
 		if (pos2<0) pos2=0;
@@ -954,22 +957,44 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				break;
 			}
 		}
-		if (interpreter==null) {
-			interpreter = new Interpreter();
-			interpreter.setIgnoreErrors(true);
-			interpreter.setEditor(this);
+		if (isScript) {
+			if (evaluator==null) {
+				interpreter = null;
+				evaluator = new JavaScriptEvaluator();
+			}
+		} else {
+			if (interpreter==null) {
+				evaluator = null;
+				interpreter = new Interpreter();
+				interpreter.setIgnoreErrors(true);
+				interpreter.setEditor(this);
+			}
 		}
 		String code = text.substring(pos1,pos2+1);
-		if (code.length()<=6 && code.contains("help")) {
-			ta.appendText("  Type a macro function (e.g., \"run('Invert')\") to run it.\n");			
+		if (code.length()==0 || code.equals("\n"))
+			return;		
+		else if (code.length()<=6 && code.contains("help")) {
+			ta.appendText("  Type a function (e.g., \"run('Invert')\") to run it.\n");			
 			ta.appendText("  Enter an expression (e.g., \"2+2\" or \"log(2)\") to evaluate it.\n");			
 			ta.appendText("  Move cursor to end of line and press return to repeat.\n");			
 			ta.appendText("  Type \"quit\" to exit interactive mode.\n");			
-			ta.appendText("  Press "+(IJ.isMacOSX()?"cmd":"ctrl")+"+M to enter interactive mode.\n");			
-			ta.appendText("  Press "+(IJ.isMacOSX()?"cmd":"ctrl")+"+shift+F to open the Function Finder.\n");			
+			ta.appendText("  Press "+(IJ.isMacOSX()?"cmd":"ctrl")+"+M to enter interactive mode.\n");
+			if (!isScript)		
+				ta.appendText("  Press "+(IJ.isMacOSX()?"cmd":"ctrl")+"+shift+F to open the Function Finder.\n");	
 		} else if (code.length()<=6 && code.contains("quit")) {
 			interactiveMode = false;
-			ta.appendText("[Exiting interactive mode.]\n");						
+			interpreter = null;
+			evaluator = null;
+			ta.appendText("[Exiting interactive mode.]\n");
+		} else if (isScript) {
+			code = "load(\"nashorn:mozilla_compat.js\");"+JavaScriptIncludes+code;
+			String rtn = evaluator.eval(code);
+			if (rtn!=null) {
+				int index = rtn.indexOf("at line number ");
+				if (index>-1)
+					rtn = rtn.substring(0,index);
+				insertText(rtn);	
+			}	
 		} else {
 			interpreter.run(code);
 			String error = interpreter.getErrorMessage();
@@ -984,7 +1009,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		String title = getTitle();
 		if (ta!=null && ta.getText().length()>400 && !(title.equals("Untitled.txt")||!title.contains("."))) {
 			GenericDialog gd = new GenericDialog("Enter Interactive Mode");
-			gd.addMessage("Enter mode that supports interactive\nediting and running of macros?");
+			gd.addMessage("Enter mode that supports interactive\nediting and running of macros and scripts?");
 			gd.setOKLabel("Enter");
 			gd.showDialog();
 			if (gd.wasCanceled())

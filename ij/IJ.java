@@ -152,7 +152,7 @@ public class IJ {
 		The file is assumed to be in the macros folder
  		unless <code>name</code> is a full path.
 		The optional string argument (<code>arg</code>) can be retrieved in the called 
-		macro or script (v1.42k or later) using the getArgument() function. 
+		macro or script using the getArgument() function. 
 		Returns any string value returned by the macro, or null. Scripts always return null.
 		The equivalent macro function is runMacro(). */
 	public static String runMacroFile(String name, String arg) {
