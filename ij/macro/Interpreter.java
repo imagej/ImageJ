@@ -73,7 +73,7 @@ public class Interpreter implements MacroConstants {
 	int errorCount;
 	volatile boolean ignoreErrors;
 	String errorMessage;
-	Editor editor;
+	String evalOutput;
 
 	/** Interprets the specified string. */
 	public void run(String macro) {
@@ -84,8 +84,6 @@ public class Interpreter implements MacroConstants {
 				macro = macro + additionalFunctions;
 		}
 		IJ.resetEscape();
-		if (pgm!=null)
-			reuseSymbolTable();
 		Tokenizer tok = new Tokenizer();
 		Program pgm = tok.tokenize(macro);
 		if (pgm.hasVars && pgm.hasFunctions)
@@ -116,6 +114,24 @@ public class Interpreter implements MacroConstants {
 		return returnValue;
 	}
 	
+	/** Evaluates 'code' and returns the output, or any error, as a String. */
+	public String eval(String code) {
+		if (pgm!=null)
+			reuseSymbolTable();
+		Tokenizer tok = new Tokenizer();
+		Program pgm = tok.tokenize(code);
+		if (pgm.hasVars && pgm.hasFunctions)
+			saveGlobals2(pgm);
+		evaluating = true;
+		evalOutput = null;
+		ignoreErrors = true;
+		run(pgm);
+		if (errorMessage!=null)
+			return errorMessage;
+		else
+			return evalOutput;
+	}
+
 	/** Interprets the specified tokenized macro file starting at location 0. */
 	public void run(Program pgm) {
 		this.pgm = pgm;
@@ -136,19 +152,6 @@ public class Interpreter implements MacroConstants {
 		doStatements();
 		finishUp();
 	}
-
-	/** Evaluates macro code. */
-	/*
-	public void eval(String macro) {
-		Tokenizer tok = new Tokenizer();
-		this.pgm = tok.tokenize(macro);
-		evaluating = true;
-		pushGlobals();
-		if (func==null)
-			func = new Functions(this, pgm);
-		run(0);
-	}
-	*/
 
 	/** Runs an existing macro starting at the specified program counter location. */
 	public void run(int location) {
@@ -336,8 +339,8 @@ public class Interpreter implements MacroConstants {
 	}
 	
 	void log(String s) {
-		if (editor!=null)
-			editor.insertText(s);
+		if (evaluating)
+			evalOutput = s;
 		else
 			IJ.log(s);
 	}
@@ -2311,11 +2314,7 @@ public class Interpreter implements MacroConstants {
 	public String getErrorMessage() {
 		return errorMessage;
 	}
-	
-	public void setEditor(Editor editor) {
-		this.editor = editor;
-	}
-	
+		
 } // class Interpreter
 
 

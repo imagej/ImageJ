@@ -378,7 +378,7 @@ macros01="Install...",ij.plugin.MacroInstaller
 macros02="Run...",ij.plugin.Macro_Runner
 macros03="Edit...",ij.plugin.Compiler("edit")
 macros04="Startup Macros...",ij.plugin.Commands("startup")
-macros05="Interactive Interpreter...",ij.plugin.SimpleCommands("interactive")
+macros05="Interactive Interpreter...[j]",ij.plugin.SimpleCommands("interactive")
 macros06="Record...",ij.plugin.frame.Recorder
 macros07=-
 

@@ -4,7 +4,7 @@ import ij.plugin.frame.Editor;
 import javax.script.*;
 
 /** Implements the text editor's Macros/Run command, and the
-    IJ.runMacroFile() method, when the file name ends in ".js". */
+    IJ.runMacroFile() method, when the file name ends with ".js". */
 public class JavaScriptEvaluator implements PlugIn, Runnable  {
 	private Thread thread;
 	private String script;
@@ -30,7 +30,7 @@ public class JavaScriptEvaluator implements PlugIn, Runnable  {
 		return null;
 	}
 
-	// Evaluate script in current thread 
+	// Evaluates 'script' and returns any error messages as a String. 
 	public String eval(String script) {
 		this.script = script;
 		evaluating = true;
@@ -73,16 +73,13 @@ public class JavaScriptEvaluator implements PlugIn, Runnable  {
 				msg = msg.substring(47, msg.length());
 			if (msg.startsWith("sun.org.mozilla.javascript.internal.EvaluatorException"))
 				msg = "Error"+msg.substring(54, msg.length());
-			if (msg.length()>0 && !msg.contains("Macro canceled"))
-				log(msg);
+			if (msg.length()>0 && !msg.contains("Macro canceled")) {
+				if (evaluating)
+					error = msg;
+				else
+					IJ.log(msg);
+			}
 		}
-	}
-	
-	private void log(String msg) {
-		if (evaluating)
-			error = msg;
-		else
-			IJ.log(msg);
 	}
 	
 	public String toString() {

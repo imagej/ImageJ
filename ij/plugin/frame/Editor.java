@@ -42,7 +42,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
 	public static final int MONOSPACED=1, MENU_BAR=2;
 	public static final int MACROS_MENU_ITEMS = 14;
-	public static final String INTERACTIVE_NAME = "Interactive Macro Interpreter";
+	public static final String INTERACTIVE_NAME = "Interactive Interpreter";
 	static final String FONT_SIZE = "editor.font.size";
 	static final String FONT_MONO= "editor.font.mono";
 	static final String CASE_SENSITIVE= "editor.case-sensitive";
@@ -966,8 +966,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			if (interpreter==null) {
 				evaluator = null;
 				interpreter = new Interpreter();
-				interpreter.setIgnoreErrors(true);
-				interpreter.setEditor(this);
 			}
 		}
 		String code = text.substring(pos1,pos2+1);
@@ -979,8 +977,23 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			ta.appendText("  Move cursor to end of line and press return to repeat.\n");			
 			ta.appendText("  Type \"quit\" to exit interactive mode.\n");			
 			ta.appendText("  Press "+(IJ.isMacOSX()?"cmd":"ctrl")+"+M to enter interactive mode.\n");
-			if (!isScript)		
+			if (!isScript) {	
 				ta.appendText("  Press "+(IJ.isMacOSX()?"cmd":"ctrl")+"+shift+F to open the Function Finder.\n");	
+				ta.appendText("  Type \"js\" to switch language to JavaScript.\n");	
+			} else
+				ta.appendText("  Type \"macro\" to switch language to macro.\n");				
+		} else if (code.length()<=3 && code.contains("js")) {
+			interactiveMode = false;
+			interpreter = null;
+			evaluator = null;
+			changeExtension(".js");
+			enterInteractiveMode();
+		} else if (code.length()<=6 && code.contains("macro")) {
+			interactiveMode = false;
+			interpreter = null;
+			evaluator = null;
+			changeExtension(".txt");
+			enterInteractiveMode();
 		} else if (code.length()<=6 && code.contains("quit")) {
 			interactiveMode = false;
 			interpreter = null;
@@ -996,18 +1009,25 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				insertText(rtn);	
 			}	
 		} else {
-			interpreter.run(code);
-			String error = interpreter.getErrorMessage();
-			if (error!=null)
-				insertText(error);
+			String rtn = interpreter.eval(code);
+			if (rtn!=null)
+				insertText(rtn);
 		}
+	}
+	
+	private void changeExtension(String ext) {
+		String title = getTitle();
+		int index = title.indexOf(".");
+		if (index>-1)
+			title = title.substring(0,index);
+		setTitle(title+ext);
 	}
 	
 	private void enterInteractiveMode() {
 		if (interactiveMode)
 			return;
 		String title = getTitle();
-		if (ta!=null && ta.getText().length()>400 && !(title.equals("Untitled.txt")||!title.contains("."))) {
+		if (ta!=null && ta.getText().length()>400 && !(title.equals("Untitled.txt")||title.equals("Untitled.js")||title.startsWith(INTERACTIVE_NAME))) {
 			GenericDialog gd = new GenericDialog("Enter Interactive Mode");
 			gd.addMessage("Enter mode that supports interactive\nediting and running of macros and scripts?");
 			gd.setOKLabel("Enter");
@@ -1015,7 +1035,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			if (gd.wasCanceled())
 				return;
 		}
-		ta.appendText("[Entering interactive mode. Type \"help\" for info, \"quit\" to exit.]\n");
+		String language = title.endsWith(".js")?" JavaScript ":" macro ";
+		ta.appendText("[Entering"+language+"interactive mode. Type \"help\" for info, \"quit\" to exit.]\n");
 		interactiveMode = true;
 	}
 	
