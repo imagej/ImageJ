@@ -95,6 +95,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private boolean interactiveMode;
 	private Interpreter interpreter;
 	private JavaScriptEvaluator evaluator;
+	private int messageCount;
 	
 	public Editor() {
 		this(24, 80, 0, MENU_BAR);
@@ -1027,7 +1028,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if (interactiveMode)
 			return;
 		String title = getTitle();
-		if (ta!=null && ta.getText().length()>400 && !(title.equals("Untitled.txt")||title.equals("Untitled.js")||title.startsWith(INTERACTIVE_NAME))) {
+		if (ta!=null && ta.getText().length()>400 && !(title.startsWith("Untitled")||title.startsWith(INTERACTIVE_NAME))) {
 			GenericDialog gd = new GenericDialog("Enter Interactive Mode");
 			gd.addMessage("Enter mode that supports interactive\nediting and running of macros and scripts?");
 			gd.setOKLabel("Enter");
@@ -1036,7 +1037,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				return;
 		}
 		String language = title.endsWith(".js")?" JavaScript ":" macro ";
-		ta.appendText("[Entering"+language+"interactive mode. Type \"help\" for info, \"quit\" to exit.]\n");
+		messageCount++;
+		String help = messageCount<=2?" Type \"help\" for info, \"quit\" to exit.":"";
+		ta.appendText("[Entering"+language+"interactive mode."+help+"]\n");
 		interactiveMode = true;
 	}
 	
