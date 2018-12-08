@@ -38,6 +38,17 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"importPackage(java.util);"+
 		"importPackage(java.io);"+
 		"function print(s) {IJ.log(s);};";
+		
+	private static String JS_EXAMPLES =
+		"  img = IJ.openImage(\"http://wsr.imagej.net/images/blobs.gif\")\n" +
+ 		"  img = IJ.createImage(\"Untitled\", \"16-bit ramp\", 500, 500, 1)\n" + 		
+ 		"  img.show()\n" +
+ 		"  ip = img.getProcessor()\n" +
+ 		"  ip.getStats()\n" +
+ 		"  ip.blurGaussian(10)\n" +
+ 		"  ip.get(10,10)\n" +
+ 		"  ip.set(10,10,222)\n" +
+ 		"  To run, move cursor to end of line and press 'enter'\n";
 
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
 	public static final int MONOSPACED=1, MENU_BAR=2;
@@ -975,14 +986,18 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else if (code.length()<=6 && code.contains("help")) {
 			ta.appendText("  Type a function (e.g., \"run('Invert')\") to run it.\n");			
 			ta.appendText("  Enter an expression (e.g., \"2+2\" or \"log(2)\") to evaluate it.\n");			
-			ta.appendText("  Move cursor to end of line and press return to repeat.\n");			
-			ta.appendText("  Type \"quit\" to exit interactive mode.\n");			
-			ta.appendText("  Press "+(IJ.isMacOSX()?"cmd":"ctrl")+"+M to enter interactive mode.\n");
-			if (!isScript) {	
-				ta.appendText("  Press "+(IJ.isMacOSX()?"cmd":"ctrl")+"+shift+F to open the Function Finder.\n");	
-				ta.appendText("  Type \"js\" to switch language to JavaScript.\n");	
-			} else
-				ta.appendText("  Type \"macro\" to switch language to macro.\n");				
+			ta.appendText("  Move cursor to end of line and press 'enter' to repeat.\n");			
+			ta.appendText("  \"quit\" - exit interactive mode\n");			
+			ta.appendText("  "+(IJ.isMacOSX()?"cmd":"ctrl")+"+M - enter interactive mode\n");
+			if (isScript) {	
+				ta.appendText("  \"macro\" - switch language to macro\n");
+				ta.appendText("  \"examples\" - see examples\n");	
+			} else {
+				ta.appendText("  "+(IJ.isMacOSX()?"cmd":"ctrl")+"+shift+F - open Function Finder\n");	
+				ta.appendText("  \"js\" - switch language to JavaScript\n");	
+			}
+		} else if (isScript && code.length()==9 && code.contains("examples")) {
+			ta.appendText(JS_EXAMPLES);					
 		} else if (code.length()<=3 && code.contains("js")) {
 			interactiveMode = false;
 			interpreter = null;

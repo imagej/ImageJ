@@ -1349,7 +1349,7 @@ public class Interpreter implements MacroConstants {
 		return hilitedVars;
 	}
 
-	String getErrorLine() {//n__
+	String getErrorLine() {
 		int savePC = pc;
 		lineNumber = pgm.lineNumbers[pc];
 		while (pc>=0 && lineNumber==pgm.lineNumbers[pc])
