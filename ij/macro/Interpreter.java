@@ -91,16 +91,6 @@ public class Interpreter implements MacroConstants {
 		run(pgm);
 	}
 	
-	private void reuseSymbolTable() {
-		if (pgm==null || pgm.stLoc>799)
-			return;
-		Symbol[] table1 = pgm.getSymbolTable();
-		Symbol[] table2 = new Symbol[pgm.stLoc+1];
-		for (int i=0; i<=pgm.stLoc; i++)
-			table2[i] = table1[i];
-		Program.systemTable = table2;
-	}
-
 	/** Runs the specified macro, passing it a string 
 		argument and returning a string value. */
 	public String run(String macro, String arg) {
@@ -131,7 +121,17 @@ public class Interpreter implements MacroConstants {
 		else
 			return evalOutput;
 	}
-
+	
+	private void reuseSymbolTable() {
+		if (pgm==null)
+			return;
+		Symbol[] table1 = pgm.getSymbolTable();
+		Symbol[] table2 = new Symbol[pgm.stLoc+1];
+		for (int i=0; i<=pgm.stLoc; i++)
+			table2[i] = table1[i];
+		Program.systemTable = table2;
+	}
+	
 	/** Interprets the specified tokenized macro file starting at location 0. */
 	public void run(Program pgm) {
 		this.pgm = pgm;
@@ -329,7 +329,11 @@ public class Interpreter implements MacroConstants {
 			case ARRAY_FUNCTION: func.getArrayFunction(pgm.table[tokenAddress].type); break;
 			case EOF: break;
 			default:
-				error("Statement cannot begin with '"+pgm.decodeToken(token, tokenAddress)+"'");
+				if (evaluating && token==PI) {
+					putTokenBack();
+					log(""+getExpression());
+				} else
+					error("Statement cannot begin with '"+pgm.decodeToken(token, tokenAddress)+"'");
 		}
 		if (!looseSyntax) {
 			getToken();
@@ -784,7 +788,8 @@ public class Interpreter implements MacroConstants {
 			case STRING_FUNCTION: doNumericStringAssignment(); break;
 			default:
 				putTokenBack();
-				getAssignmentExpression();
+				double value = getAssignmentExpression();
+				if (evaluating) log(""+value);
 		}
 	}
 
@@ -1433,6 +1438,8 @@ public class Interpreter implements MacroConstants {
 		if ((int)x==x)
 			return IJ.d2s(x,0);
 		else {
+			if (evaluating)
+				return ""+x;
 			String str = IJ.d2s(x, 4, 9);
 			while(str.endsWith("0") && str.contains(".") && !str.contains("E"))
 				str = str.substring(0, str.length()-1);

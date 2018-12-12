@@ -5,8 +5,8 @@ import java.util.Hashtable;
 /** An object of this type is a tokenized macro file and the associated symbol table. */
 public class Program implements MacroConstants {
 
-	private int maxSymbols = 800; // will be increased as needed
-	private int maxProgramSize = 2000;  // well be increased as needed
+	private int maxSymbols = 500;  // will be increased as needed
+	private int maxProgramSize = 650;  // well be increased as needed
 	private int pc = -1;
 	
 	int stLoc = -1;
@@ -25,6 +25,8 @@ public class Program implements MacroConstants {
 			
 	public Program() {
 		if (systemTable!=null) {
+			if (systemTable.length>table.length)
+				enlargeSymbolTable();
 			stLoc = systemTable.length - 1;
 			for (int i=0; i<=stLoc; i++)
 				table[i] = systemTable[i];
@@ -39,7 +41,7 @@ public class Program implements MacroConstants {
 			for (int i=0; i<=stLoc; i++)
 				systemTable[i] = table[i];
 		}
-		if (IJ.debugMode) IJ.log("Pgm: "+(stLoc+1));
+		if (IJ.debugMode) IJ.log("Symbol table: "+(stLoc+1)+"  "+table.length+"  "+systemTable.length);
 	}
 	
 	public int[] getCode() {
@@ -82,13 +84,17 @@ public class Program implements MacroConstants {
 
 	void addSymbol(Symbol sym) {
 		stLoc++;
-		if (stLoc==table.length) {
-			Symbol[] tmp = new Symbol[maxSymbols*2];
-			System.arraycopy(table, 0, tmp, 0, maxSymbols);
-			table = tmp;
-			maxSymbols *= 2;
-		}
+		if (stLoc==table.length)
+			enlargeSymbolTable();
 		table[stLoc] = sym;
+	}
+	
+	void enlargeSymbolTable() {
+		Symbol[] tmp = new Symbol[maxSymbols*2];
+		System.arraycopy(table, 0, tmp, 0, maxSymbols);
+		table = tmp;
+		maxSymbols *= 2;
+		if (IJ.debugMode) IJ.log("enlargeSymbolTable: "+table.length);
 	}
 	
 	void addToken(int tok, int lineNumber) {//n__

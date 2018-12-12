@@ -40,15 +40,19 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"function print(s) {IJ.log(s);};";
 		
 	private static String JS_EXAMPLES =
-		"  img = IJ.openImage(\"http://wsr.imagej.net/images/blobs.gif\")\n" +
- 		"  img = IJ.createImage(\"Untitled\", \"16-bit ramp\", 500, 500, 1)\n" + 		
- 		"  img.show()\n" +
- 		"  ip = img.getProcessor()\n" +
- 		"  ip.getStats()\n" +
- 		"  ip.blurGaussian(10)\n" +
- 		"  ip.get(10,10)\n" +
- 		"  ip.set(10,10,222)\n" +
- 		"  To run, move cursor to end of line and press 'enter'\n";
+		"img = IJ.openImage(\"http://wsr.imagej.net/images/blobs.gif\")\n"
+ 		+"img = IJ.createImage(\"Untitled\", \"16-bit ramp\", 500, 500, 1)\n" 		
+ 		+"img.show()\n"
+ 		+"ip = img.getProcessor()\n"
+ 		+"ip.getStats()\n"
+ 		+"IJ.setAutoThreshold(img, \"IsoData\")\n"
+ 		+"IJ.run(img, \"Analyze Particles...\", \"show=Overlay display clear\")\n"
+		+"ip.invert()\n"
+ 		+"ip.blurGaussian(5)\n"	 
+ 		+"ip.get(10,10)\n"
+ 		+"ip.set(10,10,222)\n"
+ 		+"(To run, move cursor to end of a line and press 'enter'.\n"
+ 		+"Visible images are automatically updated.)\n";
 
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
 	public static final int MONOSPACED=1, MENU_BAR=2;
@@ -985,13 +989,13 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			return;		
 		else if (code.length()<=6 && code.contains("help")) {
 			ta.appendText("  Type a function (e.g., \"run('Invert')\") to run it.\n");			
-			ta.appendText("  Enter an expression (e.g., \"2+2\" or \"log(2)\") to evaluate it.\n");			
+			ta.appendText("  Enter an expression (e.g., \"x/2\" or \"log(2)\") to evaluate it.\n");			
 			ta.appendText("  Move cursor to end of line and press 'enter' to repeat.\n");			
 			ta.appendText("  \"quit\" - exit interactive mode\n");			
 			ta.appendText("  "+(IJ.isMacOSX()?"cmd":"ctrl")+"+M - enter interactive mode\n");
 			if (isScript) {	
 				ta.appendText("  \"macro\" - switch language to macro\n");
-				ta.appendText("  \"examples\" - see examples\n");	
+				ta.appendText("  \"examples\" - show JavaScript examples\n");	
 			} else {
 				ta.appendText("  "+(IJ.isMacOSX()?"cmd":"ctrl")+"+shift+F - open Function Finder\n");	
 				ta.appendText("  \"js\" - switch language to JavaScript\n");	
@@ -1016,14 +1020,20 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			evaluator = null;
 			ta.appendText("[Exiting interactive mode.]\n");
 		} else if (isScript) {
+			boolean updateImage = code.contains("ip.");
 			code = "load(\"nashorn:mozilla_compat.js\");"+JavaScriptIncludes+code;
 			String rtn = evaluator.eval(code);
-			if (rtn!=null) {
+			if (rtn!=null && rtn.length()>0) {
 				int index = rtn.indexOf("at line number ");
 				if (index>-1)
 					rtn = rtn.substring(0,index);
 				insertText(rtn);	
-			}	
+			}
+			if (updateImage && (rtn==null||rtn.length()==0)) {
+				ImagePlus imp = WindowManager.getCurrentImage();
+				if (imp!=null)
+					imp.updateAndDraw();
+			}
 		} else {
 			String rtn = interpreter.eval(code);
 			if (rtn!=null)
@@ -1051,10 +1061,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			if (gd.wasCanceled())
 				return;
 		}
-		String language = title.endsWith(".js")?" JavaScript ":" macro ";
+		String language = title.endsWith(".js")?"JavaScript ":"Macro ";
 		messageCount++;
-		String help = messageCount<=2?" Type \"help\" for info, \"quit\" to exit.":"";
-		ta.appendText("[Entering"+language+"interactive mode."+help+"]\n");
+		String help = messageCount<=2?" Type \"help\" for info.":"";
+		ta.appendText("["+language+"interactive mode."+help+"]\n");
 		interactiveMode = true;
 	}
 	

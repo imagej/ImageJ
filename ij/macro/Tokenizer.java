@@ -31,6 +31,7 @@ public class Tokenizer implements MacroConstants {
         } while (token!=EOF);
         if (pgm.hasFunctions)
         	addUserFunctions();
+		//IJ.log(program.length()+" "+pgm.getSize()+" "+IJ.d2s((double)program.length()/pgm.getSize(),1)+" "+program.length()/10);
         return pgm;
     }
 
