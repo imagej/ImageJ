@@ -988,7 +988,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if (code.length()==0 || code.equals("\n"))
 			return;		
 		else if (code.length()<=6 && code.contains("help")) {
-			ta.appendText("  Type a function (e.g., \"run('Invert')\") to run it.\n");			
+			ta.appendText("  Type a statement (e.g., \"run('Invert')\") to run it.\n");			
 			ta.appendText("  Enter an expression (e.g., \"x/2\" or \"log(2)\") to evaluate it.\n");			
 			ta.appendText("  Move cursor to end of line and press 'enter' to repeat.\n");			
 			ta.appendText("  \"quit\" - exit interactive mode\n");			

@@ -55,7 +55,7 @@ public class Undo {
 			calCopy = (Calibration)imp.getCalibration().clone();
 		} else if (what==TRANSFORM) {	
 			if ((!IJ.macroRunning()||Prefs.supportMacroUndo) && (imp.getStackSize()==1||imp.getDisplayMode()==IJ.COMPOSITE) && imp.getSizeInBytes()<209715200)
-				impCopy = imp.duplicateAll();
+				impCopy = imp.duplicate();
 			else
 				reset();
 		} else if (what==MACRO) {	

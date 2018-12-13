@@ -554,7 +554,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (newProperties!=null)
 			newProperties = (Properties)(newProperties.clone());
 		if (imp.getWindow()!=null)
-			imp = imp.duplicateAll();
+			imp = imp.duplicate();
 		ImageStack stack2 = imp.getStack();
 		if (imp.isHyperStack())
 			setOpenAsHyperStack(true);
@@ -2140,20 +2140,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 	
 
-	/** Returns a copy of this image or stack, cropped if there is an ROI.
-	* @see #duplicateAll
+	/** Returns a copy of this image or stack.
 	* @see #crop
 	* @see ij.plugin.Duplicator#run
 	*/
 	public ImagePlus duplicate() {
-		return (new Duplicator()).run(this);
-	}
-
-	/** Returns a copy of this image or stack.
-	 * @see #duplicate
-	 * @see #crop
-	*/
-	public ImagePlus duplicateAll() {
 		Roi roi = getRoi();
 		deleteRoi();
 		ImagePlus imp2 =(new Duplicator()).run(this);
@@ -2163,7 +2154,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	/** Returns a copy this image or stack slice, cropped if there is an ROI.
 	 * @see #duplicate
-	 * @see #duplicateAll
 	 * @see ij.plugin.Duplicator#crop
 	*/
 	public ImagePlus crop() {

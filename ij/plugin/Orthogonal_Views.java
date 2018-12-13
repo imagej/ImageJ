@@ -40,7 +40,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private boolean flipXZ = Prefs.flipXZ;
 	
 	private int xyX, xyY;
-	private Calibration cal=null, cal_xz=new Calibration(), cal_yz=new Calibration();
+	private Calibration cal, cal_xz, cal_yz;
 	private double magnification=1.0;
 	private Color color = Roi.getColor();
 	private double min, max;
@@ -83,16 +83,18 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		rgb = imp.getBitDepth()==24 || hyperstack;
 		int yzBitDepth = hyperstack?24:imp.getBitDepth();
 		if (yz_image==null || yz_image.getHeight()!=imp.getHeight() || yz_image.getBitDepth()!=yzBitDepth)
-			yz_image = new ImagePlus();
+			yz_image = imp.createImagePlus();
 		xz_image = WindowManager.getImage(xzID);
 		if (xz_image==null || xz_image.getWidth()!=imp.getWidth() || xz_image.getBitDepth()!=yzBitDepth)
-			xz_image = new ImagePlus();
+			xz_image = imp.createImagePlus();
 		instance = this;
 		int mode = imp.getCompositeMode();
 		ImageProcessor ip = mode==IJ.COMPOSITE?new ColorProcessor(imp.getImage()):imp.getProcessor();
 		min = ip.getMin();
 		max = ip.getMax();
 		cal=this.imp.getCalibration();
+		cal_xz = cal.copy();
+		cal_yz = cal.copy();
 		double calx=cal.pixelWidth;
 		double caly=cal.pixelHeight;
 		double calz=cal.pixelDepth;

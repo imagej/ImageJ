@@ -6229,6 +6229,10 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("flatten")) {
 			IJ.runPlugIn("ij.plugin.OverlayCommands", "flatten");
 			return Double.NaN;
+		} else if (name.equals("setFontSize")) {
+			overlay.setLabelFont(new Font("SansSerif", Font.PLAIN, (int)getArg()));
+			overlay.drawLabels(true);
+			return Double.NaN;
 		} else
 			interp.error("Unrecognized function name");
 		return Double.NaN;
