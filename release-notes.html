@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52j 12 December 2018</u>
+<li> <u>1.52j 13 December 2018</u>
 <ul>
 <li> Added the <i>Macros&gt;Enter Interactive Mode</i> command
 to the text editor, which enables interactive editing and running
@@ -20,7 +20,9 @@ can now convert a single image to a stack.
 <li> Thanks to Jerome Mutterer, errors in macro run() statements
  are now reported using a "Macro Error" dialog that displays
  the line number.
- <li> Added the Overlay.setFontSize() macro function.
+ <li> Added the Overlay.setFontSize(size,options) and
+ Overlay.setFontColor(foreground,background) macro functions
+and corresponding Overlay class methods.
 <li> Thanks to Jerome Mutterer, added the setIgnoreErrors() and
 getErrorMessage() methods to the Interpreter class
 (<a href="http://wsr.imagej.net/plugins/Test_IgnoreErrors.java">example</a>).
@@ -31,6 +33,8 @@ freezing, nonworking XZ and YZ dragging and lack of density calibration, and inc
 "Rotate YZ" and "Flip XZ" where enabled in <i>Edit&gt;Options&gt;DICOM</i>.
 <li> Thanks to Stein Rorvik, fixed a bug that caused particle analyzer overlays to
 not be specific to the current slice when processing one slice.
+<li> Fixed a bug that caused the color of overlay labels to be set to black after 
+the image is saved and reopened..
 </ul>
 
 <li> <u>1.52i 26 November 2018</u>

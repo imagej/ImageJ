@@ -15,7 +15,7 @@ import java.awt.geom.*;
 public class RoiEncoder {
 	static final int HEADER_SIZE = 64;
 	static final int HEADER2_SIZE = 64;
-	static final int VERSION = 227; // v1.50d (point counters)
+	static final int VERSION = 228; // v1.52i (overlay labels background color)
 	private String path;
 	private OutputStream f;
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, 
@@ -328,6 +328,8 @@ public class RoiEncoder {
 		Font font = proto.getLabelFont();
 		if (font!=null && font.getStyle()==Font.BOLD)
 			options |= RoiDecoder.OVERLAY_BOLD;
+		if (proto.scalableLabels())
+			options |= RoiDecoder.SCALE_LABELS;
 		putShort(RoiDecoder.OPTIONS, options);
 	}
 	
@@ -388,8 +390,11 @@ public class RoiEncoder {
 		putInt(hdr2Offset+RoiDecoder.T_POSITION, roi.getTPosition());
 		Overlay proto = roi.getPrototypeOverlay();
 		Color overlayLabelColor = proto.getLabelColor();
+		Color overlayLabelColor2 = proto.getLabelColor2();
 		if (overlayLabelColor!=null)
 			putInt(hdr2Offset+RoiDecoder.OVERLAY_LABEL_COLOR, overlayLabelColor.getRGB());
+		if (overlayLabelColor2!=null)
+			putInt(hdr2Offset+RoiDecoder.OVERLAY_LABEL_COLOR2, overlayLabelColor2.getRGB());
 		Font font = proto.getLabelFont();
 		if (font!=null)
 			putShort(hdr2Offset+RoiDecoder.OVERLAY_FONT_SIZE, font.getSize());

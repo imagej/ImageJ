@@ -154,7 +154,8 @@ public class FileSaver {
 			if (overlay==null) return null;
 		}
 		int n = overlay.size();
-		if (n==0) return null;
+		if (n==0)
+			return null;
 		if (Orthogonal_Views.isOrthoViewsImage(imp))
 			return null;
 		byte[][] array = new byte[n][];

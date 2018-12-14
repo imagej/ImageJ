@@ -6230,7 +6230,24 @@ public class Functions implements MacroConstants, Measurements {
 			IJ.runPlugIn("ij.plugin.OverlayCommands", "flatten");
 			return Double.NaN;
 		} else if (name.equals("setFontSize")) {
-			overlay.setLabelFont(new Font("SansSerif", Font.PLAIN, (int)getArg()));
+			int fontSize = (int)getFirstArg();
+			String options = null;
+			if (interp.nextToken()!=')')
+				options = getLastString();
+			else
+				interp.getRightParen();
+			overlay.setFontSize(fontSize, options);
+			return Double.NaN;
+		} else if (name.equals("setFontColor")) {
+			interp.getLeftParen();
+			Color color = getColor();
+			Color color2 = null;
+			if (interp.nextToken()==',') {
+				interp.getComma();
+				color2 = getColor();
+			}
+			interp.getRightParen();
+			overlay.setLabelColor(color, color2);
 			overlay.drawLabels(true);
 			return Double.NaN;
 		} else

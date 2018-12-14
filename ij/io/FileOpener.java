@@ -180,8 +180,8 @@ public class FileOpener {
 				overlay.drawLabels(proto.getDrawLabels());
 				overlay.drawNames(proto.getDrawNames());
 				overlay.drawBackgrounds(proto.getDrawBackgrounds());
-				overlay.setLabelColor(proto.getLabelColor());
-				overlay.setLabelFont(proto.getLabelFont());
+				overlay.setLabelColor(proto.getLabelColor(), proto.getLabelColor2());
+				overlay.setLabelFont(proto.getLabelFont(), proto.scalableLabels());
 			}
 			overlay.add(roi);
 		}

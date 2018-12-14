@@ -81,6 +81,7 @@ public class RoiDecoder {
 	public static final int ROI_PROPS_OFFSET = 40;
 	public static final int ROI_PROPS_LENGTH = 44;
 	public static final int COUNTERS_OFFSET = 48;
+	public static final int OVERLAY_LABEL_COLOR2 = 52;
 
 	// subtypes
 	public static final int TEXT = 1;
@@ -101,6 +102,7 @@ public class RoiDecoder {
 	public static final int DRAW_OFFSET = 256;
 	public static final int ZERO_TRANSPARENT = 512;
 	public static final int SHOW_LABELS = 1024;
+	public static final int SCALE_LABELS = 2048;
 	
 	// types
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6,
@@ -167,6 +169,7 @@ public class RoiDecoder {
 		int hdr2Offset = getInt(HEADER2_OFFSET);
 		int channel=0, slice=0, frame=0;
 		int overlayLabelColor=0;
+		int overlayLabelColor2=0;
 		int overlayFontSize=0;
 		int imageOpacity=0;
 		int imageSize=0;
@@ -187,6 +190,8 @@ public class RoiDecoder {
 			slice = getInt(hdr2Offset+Z_POSITION);
 			frame = getInt(hdr2Offset+T_POSITION);
 			overlayLabelColor = getInt(hdr2Offset+OVERLAY_LABEL_COLOR);
+			if (version>=228)
+				overlayLabelColor2 = getInt(hdr2Offset+OVERLAY_LABEL_COLOR2);
 			overlayFontSize = getShort(hdr2Offset+OVERLAY_FONT_SIZE);
 			imageOpacity = getByte(hdr2Offset+IMAGE_OPACITY);
 			imageSize = getInt(hdr2Offset+IMAGE_SIZE);
@@ -204,7 +209,7 @@ public class RoiDecoder {
 			roi.setPosition(position);
 			if (channel>0 || slice>0 || frame>0)
 				roi.setPosition(channel, slice, frame);
-			decodeOverlayOptions(roi, version, options, overlayLabelColor, overlayFontSize);
+			decodeOverlayOptions(roi, version, options, overlayLabelColor, overlayLabelColor2, overlayFontSize);
 			if (version>=224) {
 				String props = getRoiProps();
 				if (props!=null)
@@ -363,20 +368,21 @@ public class RoiDecoder {
 		roi.setPosition(position);
 		if (channel>0 || slice>0 || frame>0)
 			roi.setPosition(channel, slice, frame);
-		decodeOverlayOptions(roi, version, options, overlayLabelColor, overlayFontSize);
+		decodeOverlayOptions(roi, version, options, overlayLabelColor, overlayLabelColor2, overlayFontSize);
 		return roi;
 	}
 	
-	void decodeOverlayOptions(Roi roi, int version, int options, int color, int fontSize) {
+	void decodeOverlayOptions(Roi roi, int version, int options, int color, int color2, int fontSize) {
 		Overlay proto = new Overlay();
 		proto.drawLabels((options&OVERLAY_LABELS)!=0);
 		proto.drawNames((options&OVERLAY_NAMES)!=0);
 		proto.drawBackgrounds((options&OVERLAY_BACKGROUNDS)!=0);
-		if (version>=220)
-			proto.setLabelColor(new Color(color));
+		if (version>=220 && color!=0)
+			proto.setLabelColor(new Color(color), color2!=0?new Color(color2):null);
 		boolean bold = (options&OVERLAY_BOLD)!=0;
-		if (fontSize>0 || bold) {
-			proto.setLabelFont(new Font("SansSerif", bold?Font.BOLD:Font.PLAIN, fontSize));
+		boolean scalable = (options&SCALE_LABELS)!=0;
+		if (fontSize>0 || bold || scalable) {
+			proto.setLabelFont(new Font("SansSerif", bold?Font.BOLD:Font.PLAIN, fontSize), scalable);
 		}
 		roi.setPrototypeOverlay(proto);
 	}
