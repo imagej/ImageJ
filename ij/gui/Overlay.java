@@ -14,7 +14,7 @@ public class Overlay {
     private boolean label;
     private boolean drawNames;
     private boolean drawBackgrounds;
-    private Color labelColor, labelColor2;
+    private Color labelColor;
     private Font labelFont;
     private boolean scalableLabels;
     private boolean isCalibrationBar;
@@ -132,6 +132,13 @@ public class Overlay {
 		Roi[] rois = toArray();
 		for (int i=0; i<rois.length; i++)
 			rois[i].setStrokeColor(color);
+	}
+
+    /** Sets the stroke width of all the ROIs in this overlay. */
+    public void setStrokeWidth(Double width) {
+		Roi[] rois = toArray();
+		for (int i=0; i<rois.length; i++)
+			rois[i].setStrokeWidth(width);
 	}
 
     /** Sets the fill color of all the ROIs in this overlay. */
@@ -291,7 +298,7 @@ public class Overlay {
 		overlay2.drawLabels(label);
 		overlay2.drawNames(drawNames);
 		overlay2.drawBackgrounds(drawBackgrounds);
-		overlay2.setLabelColor(labelColor, labelColor2);
+		overlay2.setLabelColor(labelColor);
 		overlay2.setLabelFont(labelFont, scalableLabels);
 		overlay2.setIsCalibrationBar(isCalibrationBar);
 		overlay2.selectable(selectable);
@@ -335,21 +342,11 @@ public class Overlay {
     }
 
     public void setLabelColor(Color c) {
-    	setLabelColor(c, null);
+    	labelColor = c;
     }
     
-    /** Set tha label color and label background color. */
-    public void setLabelColor(Color c1, Color c2) {
-    	labelColor = c1;
-    	labelColor2 = c2;
-    }
-
     public Color getLabelColor() {
     	return labelColor;
-    }
-
-    public Color getLabelColor2() {
-    	return labelColor2;
     }
 
     public void setLabelFont(Font font) {
@@ -361,16 +358,18 @@ public class Overlay {
     	scalableLabels = scalable;
     }
 
-    /** Set the font size with options. The options string can contain
-     * 'scale' (enlarge labels when image zoomed) and/or 'bold'
-     * (display bold labels).
+    /** Set the label font size with options. The options string can contain
+     * 'scale' (enlarge labels when image zoomed), 'bold'
+     * (display bold labels) or 'background' (display labels
+     * with contrasting background.
     */
-    public void setFontSize(int size, String options) {
+    public void setLabelFontSize(int size, String options) {
     	int style = Font.PLAIN;
     	if (options!=null) {
     		scalableLabels = options.contains("scale");
     		if (options.contains("bold"))
     			style = Font.BOLD;
+    		drawBackgrounds = options.contains("back");
     	}
     	labelFont = new Font("SansSerif", style, size);
     	drawLabels(true);
@@ -409,7 +408,7 @@ public class Overlay {
 	}
 	
 	public String toString() {
-    	return "Overlay[size="+size()+" "+(scalableLabels?"scale":"")+" "+Colors.colorToString(getLabelColor())+"/"+Colors.colorToString(getLabelColor2())+"]";
+    	return "Overlay[size="+size()+" "+(scalableLabels?"scale":"")+" "+Colors.colorToString(getLabelColor())+"]";
     }
     
 }

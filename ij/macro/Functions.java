@@ -6229,26 +6229,35 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("flatten")) {
 			IJ.runPlugIn("ij.plugin.OverlayCommands", "flatten");
 			return Double.NaN;
-		} else if (name.equals("setFontSize")) {
+		} else if (name.equals("setLabelFontSize")) {
 			int fontSize = (int)getFirstArg();
 			String options = null;
 			if (interp.nextToken()!=')')
 				options = getLastString();
 			else
 				interp.getRightParen();
-			overlay.setFontSize(fontSize, options);
+			overlay.setLabelFontSize(fontSize, options);
 			return Double.NaN;
-		} else if (name.equals("setFontColor")) {
+		} else if (name.equals("setLabelColor")) {
 			interp.getLeftParen();
 			Color color = getColor();
-			Color color2 = null;
 			if (interp.nextToken()==',') {
 				interp.getComma();
-				color2 = getColor();
+				Color ignore = getColor();
+				overlay.drawBackgrounds(true);
 			}
 			interp.getRightParen();
-			overlay.setLabelColor(color, color2);
+			overlay.setLabelColor(color);
 			overlay.drawLabels(true);
+			return Double.NaN;
+		} else if (name.equals("setStrokeColor")) {
+			interp.getLeftParen();
+			Color color = getColor();
+			interp.getRightParen();
+			overlay.setStrokeColor(color);
+			return Double.NaN;
+		} else if (name.equals("setStrokeWidth")) {
+			overlay.setStrokeWidth(getArg());
 			return Double.NaN;
 		} else
 			interp.error("Unrecognized function name");

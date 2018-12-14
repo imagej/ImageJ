@@ -368,13 +368,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		if (textColor!=null) {
 			labelColor = textColor;
-			Color bgLabelColor = overlay!=null?overlay.getLabelColor2():null;
-			if (overlay!=null && (overlay.getDrawBackgrounds()||bgLabelColor!=null)) {
-				if (bgLabelColor!=null)
-					bgColor = bgLabelColor;
-				else
-					bgColor = new Color(255-labelColor.getRed(), 255-labelColor.getGreen(), 255-labelColor.getBlue());
-			} else
+			if (overlay!=null && overlay.getDrawBackgrounds())
+				bgColor = (labelColor.getRGB()&0xffffff)<20000?Color.white:Color.black;
+			else
 				bgColor = null;
 		} else {
 			int red = defaultColor.getRed();

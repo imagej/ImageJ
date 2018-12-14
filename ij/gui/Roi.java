@@ -1753,7 +1753,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		prototypeOverlay.drawLabels(overlay.getDrawLabels());
 		prototypeOverlay.drawNames(overlay.getDrawNames());
 		prototypeOverlay.drawBackgrounds(overlay.getDrawBackgrounds());
-		prototypeOverlay.setLabelColor(overlay.getLabelColor(), overlay.getLabelColor2());
+		prototypeOverlay.setLabelColor(overlay.getLabelColor());
 		prototypeOverlay.setLabelFont(overlay.getLabelFont(), overlay.scalableLabels());
 	} 
 
