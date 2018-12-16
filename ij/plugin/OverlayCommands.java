@@ -306,12 +306,7 @@ public class OverlayCommands implements PlugIn {
 			rm = new RoiManager();
 		if (overlay.size()>=4 && overlay.get(3).getPosition()!=0)
 			Prefs.showAllSliceOnly = true;
-		rm.runCommand("reset");
-		rm.setEditMode(imp, false);
-		for (int i=0; i<overlay.size(); i++)
-			rm.add(imp, overlay.get(i), i+1);
-		rm.setEditMode(imp, true);
-		rm.runCommand("show all");
+		rm.setOverlay(overlay);
 		imp.setOverlay(null);
 	}
 	

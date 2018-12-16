@@ -53,6 +53,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private Button moreButton, colorButton;
 	private Checkbox showAllCheckbox = new Checkbox("Show All", false);
 	private Checkbox labelsCheckbox = new Checkbox("Labels", false);
+	private Overlay prototypeOverlay;
 
 	private static boolean measureAll = true;
 	private static boolean onePerSlice = true;
@@ -435,6 +436,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return hex;
 	}
 	
+	/** Adds the specified ROI to the list. The second argument ('n') will 
+	 * be used to form the first part of the ROI label if it is zero or greater.
+	 * @param roi		the Roi to be added
+	 * @param n		if zero or greater, will be used to form the first part of the label
+	*/
+	public void add(Roi roi, int n) {
+		add((ImagePlus)null, roi, n);
+	}
+
 	/** Adds the specified ROI to the list. The third argument ('n') will 
 	 * be used to form the first part of the ROI label if it is zero or greater.
 	 * @param imp	the image associated with the ROI, or null
@@ -2120,6 +2130,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (IJ.isMacOSX() && IJ.isMacro())
 			ignoreInterrupts = true;
 		listModel.removeAllElements();
+		prototypeOverlay = null;
 		rois.clear();
 		updateShowAll();
 	}
@@ -2306,8 +2317,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Roi roi = (Roi)rois[i].clone();
 			if (!Prefs.showAllSliceOnly && !IJ.isMacro())
 				roi.setPosition(0);
-			if (roi.getStrokeWidth()==1)
-				roi.setStrokeWidth(0);
+			//if (roi.getStrokeWidth()==1)
+			//	roi.setStrokeWidth(0);
 			overlay.add(roi);
 		}
 		imp.setOverlay(overlay);
@@ -2401,6 +2412,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			overlay.drawBackgrounds(true);
 		}
 		overlay.drawNames(Prefs.useNamesAsLabels);
+		if (prototypeOverlay!=null) {
+			overlay.drawNames(prototypeOverlay.getDrawNames());
+			overlay.drawBackgrounds(prototypeOverlay.getDrawBackgrounds());
+			overlay.setLabelColor(prototypeOverlay.getLabelColor());
+			overlay.setLabelFont(prototypeOverlay.getLabelFont(), prototypeOverlay.scalableLabels());
+		}
 		return overlay;
 	}
 
@@ -2500,6 +2517,20 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	
 	public static void resetMultiMeasureResults() {
 		mmResults = mmResults2 = null;
+	}
+	
+	public void setOverlay(Overlay overlay) {
+		if (overlay==null) {
+			prototypeOverlay = null;
+			return;
+		}
+		reset();
+		prototypeOverlay = overlay.create();
+		setEditMode(null, false);
+		for (int i=0; i<overlay.size(); i++)
+			add(overlay.get(i), i+1);
+		setEditMode(null, true);
+		runCommand("show all");
 	}
 	
 	// This class runs the "Multi Measure" command in a separate thread
