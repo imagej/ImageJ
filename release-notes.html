@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52j 15 December 2018</u>
+<li> <u>1.52j 19 December 2018</u>
 <ul>
 <li> Added the <i>Macros&gt;Enter Interactive Mode</i> command
 to the text editor, which enables interactive editing and running
@@ -15,8 +15,14 @@ Type "js" in interactive mode to switch the language to JavaScript.
 Also added the associated
 <i>Plugins&gt;Macros&gt;Interactive Interpreter</i> command 
 (shortcut: "j").
+<li> Thanks to Ilan Tal, added the "Ignore Rescale Slope and open as 16-bit"
+checkbox to the <i>Edit&gt;Optios&gt;DICOM</i> dialog.
 <li> Thanks to Michael Schmid, <i>Image&gt;Edit&gt;Resize</i>
 can now convert a single image to a stack.
+<li> Thanks to MichaelSchmid, improved the calculation of Feret
+parameters for composite selections. FeretAngle is now reported
+(within 0.5 deg), works with pixel aspect ratios different from one and is
+more accuate due to use of 0.5 deg increments.
 <li> Thanks to Jerome Mutterer, errors in macro run() statements
  are now reported using a "Macro Error" dialog that displays
  the line number.
@@ -38,7 +44,7 @@ not be specific to the current slice when processing one slice.
 <li> Fixed a bug that caused the color of overlay labels to be set to black after 
 the image was saved and reopened.
 <li> Fixed a bug that caused the <i>Image&gt;Overlay&gt;To ROI Manager</i>
-command to not preserve properties such a label color and scalability.
+command to not preserve overlay properties such a label color and scalability.
 </ul>
 
 <li> <u>1.52i 26 November 2018</u>

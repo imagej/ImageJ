@@ -133,6 +133,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private ImageProcessor redirectIP;
 	private PolygonFiller pf;
 	private Roi saveRoi;
+	private int saveSlice;
 	private int beginningCount;
 	private Rectangle r;
 	private ImageProcessor mask;
@@ -234,6 +235,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		processStack = (flags&DOES_STACKS)!=0;
 		slice = 0;
 		saveRoi = imp.getRoi();
+		saveSlice = imp.getCurrentSlice();
 		if (saveRoi!=null && saveRoi.getType()!=Roi.RECTANGLE && saveRoi.isArea())
 			polygon = saveRoi.getPolygon();
 		imp.startTiming();
@@ -259,6 +261,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (slice==imp.getStackSize()) {
 			imp.updateAndDraw();
 			if (saveRoi!=null) imp.setRoi(saveRoi);
+			if (processStack) imp.setSlice(saveSlice);
 		}
 	}
 	

@@ -1327,14 +1327,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (gd.wasCanceled()) return;
 		}
 		for (int i=0; i<n; i++) {
-			//String label = (String) listModel.getElementAt(indexes[i]);
 			Roi roi = (Roi)rois.get(indexes[i]);
 			if (roi==null) continue;
-			//IJ.log("set "+color+"	 "+lineWidth+"	"+fillColor);
 			if (color!=null) roi.setStrokeColor(color);
 			if (lineWidth>=0) roi.setStrokeWidth(lineWidth);
 			roi.setFillColor(fillColor);
-			if (rpRoi!=null) {
+			if (rpRoi!=null && n==1) {
 				if (rpRoi.hasHyperStackPosition())
 					roi.setPosition(rpRoi.getCPosition(), rpRoi.getZPosition(), rpRoi.getTPosition());
 				else
@@ -2321,6 +2319,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			//	roi.setStrokeWidth(0);
 			overlay.add(roi);
 		}
+		overlay.drawLabels(prototypeOverlay.getDrawLabels());
 		imp.setOverlay(overlay);
 		if (imp.getCanvas()!=null)
 			setOverlay(imp, null);

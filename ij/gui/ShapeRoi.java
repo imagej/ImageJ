@@ -592,7 +592,7 @@ public class ShapeRoi extends Roi {
 		return shape.contains(x-this.x, y-this.y);
 	}
 
-	/** Caculates "Feret" (maximum caliper width) and "MinFeret" (minimum caliper width). */	
+	/** Caculates "Feret" (maximum caliper width) and "MinFeret" (minimum caliper width). */
 	public double[] getFeretValues() {
 		Roi[] rois = getRois();
 		if (rois!=null && rois.length==1) {
@@ -613,29 +613,30 @@ public class ShapeRoi extends Roi {
 		double cx = r.getX() + r.getWidth()/2;
 		double cy = r.getY() + r.getHeight()/2;
 		AffineTransform at = new AffineTransform();
-		at.translate(cx, cy);
-		for (int i=0; i<181; i++) {
-			at.rotate(Math.PI/180.0);
+		if (pw != ph)
+			at.scale(1.0, ph/pw);  //correct for pixel aspect ratio
+		at.translate(-cx, -cy);    //shift to origin for better accuracy
+		double angleInc = 0.5;
+		AffineTransform rotator = AffineTransform.getRotateInstance(angleInc*Math.PI/180.0);
+		for (double rotAngle=0; rotAngle<90; rotAngle+=angleInc) {  //rotate in 0.5 deg increments
+			if (rotAngle > 0)
+				at.preConcatenate(rotator);  //'pre-'applying the rotation matrix means rotating as the last step
 			s = at.createTransformedShape(shape);
 			r = s.getBounds2D();
-			double max2 = Math.max(r.getWidth(), r.getHeight());
-			if (max2>diameter) {
-				diameter = max2*pw;
-				//angle = i;
+			if (r.getWidth() > diameter) {
+				diameter = r.getWidth();
+				angle = rotAngle;
+			}
+			if (r.getHeight() > diameter) {
+				diameter = r.getHeight();
+				angle = rotAngle + 90;
 			}
 			double min2 = Math.min(r.getWidth(), r.getHeight());
 			min = Math.min(min, min2);
 		}
-		if (pw!=ph) {
-			diameter = 0.0;
-			angle = 0.0;
-		}
-		if (pw==ph)
-			min *= pw;
-		else {
-			min = 0.0;
-			angle = 0.0;
-		}
+		min *= pw;
+		diameter *= pw;
+
 		double[] a = new double[5];
 		a[0] = diameter;
 		a[1] = angle;

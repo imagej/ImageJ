@@ -52,7 +52,8 @@ public class URLOpener implements PlugIn {
 					imp.setFileInfo(fi);
 				}
 				imp.show(Opener.getLoadRate(startTime,imp));
-				if ("flybrain.tif".equals(imp.getTitle()) || "t1-head.tif".equals(imp.getTitle()) )
+				String title = imp.getTitle();
+				if (title!=null && (title.startsWith("flybrain") || title.startsWith("t1-head")))
 					imp.setSlice(imp.getStackSize()/2);
 			}
 			return;
