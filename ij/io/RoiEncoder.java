@@ -168,7 +168,7 @@ public class RoiEncoder {
 				putShort(RoiDecoder.OPTIONS, options);
 			}
 		}
-		if (n>65535) {
+		if (n>65535 && type!=point) {
 			if (type==polygon || type==freehand || type==traced) {
 				String name = roi.getName();
 				roi = new ShapeRoi(roi);
@@ -180,7 +180,10 @@ public class RoiEncoder {
 			ij.IJ.log("Non-polygonal selections with more than 65k points cannot be saved.");
 			n = 65535;
 		}
-		putShort(RoiDecoder.N_COORDINATES, n);
+		if (type==point && n>65535) {
+			putInt(RoiDecoder.SIZE, n);
+		} else 
+			putShort(RoiDecoder.N_COORDINATES, n);
 		putInt(RoiDecoder.POSITION, roi.getPosition());
 		
 		if (type==rect) {

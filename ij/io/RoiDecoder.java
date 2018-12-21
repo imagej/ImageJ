@@ -19,7 +19,7 @@ import java.awt.geom.Rectangle2D;
 	12-13	bottom
 	14-15	right
 	16-17	NCoordinates
-	18-33	x1,y1,x2,y2 (straight line)
+	18-33	x1,y1,x2,y2 (straight line) or x,y,width,hight (double rect) or size (npoints)
 	34-35	stroke width (v1.43i or later)
 	36-39   ShapeRoi size (type must be 1 if this value>0)
 	40-43   stroke color (v1.43i or later)
@@ -52,6 +52,7 @@ public class RoiDecoder {
 	public static final int YD = 22;
 	public static final int WIDTHD = 26;
 	public static final int HEIGHTD = 30;
+	public static final int SIZE = 18;
 	public static final int STROKE_WIDTH = 34;
 	public static final int SHAPE_ROI_SIZE = 36;
 	public static final int STROKE_COLOR = 40;
@@ -163,6 +164,8 @@ public class RoiDecoder {
 		int width = right-left;
 		int height = bottom-top;
 		int n = getUnsignedShort(N_COORDINATES);
+		if (n==0)
+			n = getInt(SIZE);
 		int options = getShort(OPTIONS);
 		int position = getInt(POSITION);
 		int hdr2Offset = getInt(HEADER2_OFFSET);

@@ -53,7 +53,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private Button moreButton, colorButton;
 	private Checkbox showAllCheckbox = new Checkbox("Show All", false);
 	private Checkbox labelsCheckbox = new Checkbox("Labels", false);
-	private Overlay prototypeOverlay;
+	private Overlay overlayTemplate;
 
 	private static boolean measureAll = true;
 	private static boolean onePerSlice = true;
@@ -2128,7 +2128,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (IJ.isMacOSX() && IJ.isMacro())
 			ignoreInterrupts = true;
 		listModel.removeAllElements();
-		prototypeOverlay = null;
+		overlayTemplate = null;
 		rois.clear();
 		updateShowAll();
 	}
@@ -2319,7 +2319,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			//	roi.setStrokeWidth(0);
 			overlay.add(roi);
 		}
-		overlay.drawLabels(prototypeOverlay.getDrawLabels());
+		overlay.drawLabels(overlayTemplate.getDrawLabels());
 		imp.setOverlay(overlay);
 		if (imp.getCanvas()!=null)
 			setOverlay(imp, null);
@@ -2411,11 +2411,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			overlay.drawBackgrounds(true);
 		}
 		overlay.drawNames(Prefs.useNamesAsLabels);
-		if (prototypeOverlay!=null) {
-			overlay.drawNames(prototypeOverlay.getDrawNames());
-			overlay.drawBackgrounds(prototypeOverlay.getDrawBackgrounds());
-			overlay.setLabelColor(prototypeOverlay.getLabelColor());
-			overlay.setLabelFont(prototypeOverlay.getLabelFont(), prototypeOverlay.scalableLabels());
+		if (overlayTemplate!=null) {
+			overlay.drawNames(overlayTemplate.getDrawNames());
+			overlay.drawBackgrounds(overlayTemplate.getDrawBackgrounds());
+			overlay.setLabelColor(overlayTemplate.getLabelColor());
+			overlay.setLabelFont(overlayTemplate.getLabelFont(), overlayTemplate.scalableLabels());
 		}
 		return overlay;
 	}
@@ -2520,11 +2520,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	
 	public void setOverlay(Overlay overlay) {
 		if (overlay==null) {
-			prototypeOverlay = null;
+			overlayTemplate = null;
 			return;
 		}
 		reset();
-		prototypeOverlay = overlay.create();
+		overlayTemplate = overlay.create();
 		setEditMode(null, false);
 		for (int i=0; i<overlay.size(); i++)
 			add(overlay.get(i), i+1);
