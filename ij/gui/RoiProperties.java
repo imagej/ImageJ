@@ -151,11 +151,10 @@ public class RoiProperties {
 		if (showListCoordinates) {
 			if ((roi instanceof PointRoi) && Toolbar.getMultiPointMode())
 				showPointCounts = true;
-			int n = roi.getFloatPolygon().npoints;
 			if (showPointCounts)
 				gd.addCheckbox("Show point counts (shortcut: alt+y)", listCoordinates);
 			else
-				gd.addCheckbox("List coordinates ("+n+")", listCoordinates);
+				gd.addCheckbox("List coordinates ("+roi.size()+")", listCoordinates);
 			if (nProperties>0)
 				gd.addCheckbox("List properties ("+nProperties+")", listProperties);
 			else {

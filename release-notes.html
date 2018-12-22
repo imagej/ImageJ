@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52j 20 December 2018</u>
+<li> <u>1.52j 22 December 2018</u>
 <ul>
 <li> Added the <i>Macros&gt;Enter Interactive Mode</i> command
 to the text editor, which enables interactive editing and running
@@ -15,8 +15,9 @@ Type "js" in interactive mode to switch the language to JavaScript.
 Also added the associated
 <i>Plugins&gt;Macros&gt;Interactive Interpreter</i> command 
 (shortcut: "j").
-<li> Thanks to Ved Sharma, point selections with more than 65535 points
-can now be saved and reopened.
+<li> Thanks to Ved Sharma, point selections with more than 65,535 points
+can now be saved and reopened
+(<a href="http://wsr.imagej.net/macros/js/ManyPoints.js">example</a>).
 <li> Thanks to Ilan Tal, added the "Ignore Rescale Slope and open as 16-bit"
 checkbox to the <i>Edit&gt;Optios&gt;DICOM</i> dialog.
 <li> Thanks to Michael Schmid, <i>Image&gt;Edit&gt;Resize</i>
@@ -28,6 +29,8 @@ more accuate due to use of 0.5 deg increments.
 <li> Thanks to Jerome Mutterer, errors in macro run() statements
  are now reported using a "Macro Error" dialog that displays
  the line number.
+ <li> Added the JavaScript-friendly ImageStatistics.histogram() method
+(<a href="http://wsr.imagej.net/macros/js/PlotHistogram.js">example</a>).
  <li> Added the Overlay.setLabelFontSize(size,options),
  Overlay.setLabelColor(), Overlay.setStrokeColor()
  and Overlay.setStrokeWidth() macro functions,

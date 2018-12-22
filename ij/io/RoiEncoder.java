@@ -180,9 +180,9 @@ public class RoiEncoder {
 			ij.IJ.log("Non-polygonal selections with more than 65k points cannot be saved.");
 			n = 65535;
 		}
-		if (type==point && n>65535) {
+		if (type==point && n>65535)
 			putInt(RoiDecoder.SIZE, n);
-		} else 
+		else 
 			putShort(RoiDecoder.N_COORDINATES, n);
 		putInt(RoiDecoder.POSITION, roi.getPosition());
 		

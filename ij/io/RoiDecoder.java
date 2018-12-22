@@ -19,7 +19,7 @@ import java.awt.geom.Rectangle2D;
 	12-13	bottom
 	14-15	right
 	16-17	NCoordinates
-	18-33	x1,y1,x2,y2 (straight line) or x,y,width,hight (double rect) or size (npoints)
+	18-33	x1,y1,x2,y2 (straight line) | x,y,width,height (double rect) | size (npoints)
 	34-35	stroke width (v1.43i or later)
 	36-39   ShapeRoi size (type must be 1 if this value>0)
 	40-43   stroke color (v1.43i or later)
