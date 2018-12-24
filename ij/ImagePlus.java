@@ -962,32 +962,33 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 	
 	/** Returns an ImageStatistics object generated using the
-		specified measurement options and histogram bin count. 
-		Note: except for float images, the number of bins
-		is currently fixed at 256.
-	*/
+		specified measurement options and histogram bin count.  */
 	public ImageStatistics getStatistics(int mOptions, int nBins) {
 		return getStatistics(mOptions, nBins, 0.0, 0.0);
 	}
 
 	/** Returns an ImageStatistics object generated using the
-		specified measurement options, histogram bin count and histogram range. 
-		Note: for 8-bit and RGB images, the number of bins
-		is fixed at 256 and the histogram range is always 0-255.
-	*/
+		specified measurement options, histogram bin count
+		and histogram range. */
 	public ImageStatistics getStatistics(int mOptions, int nBins, double histMin, double histMax) {
+		ImageProcessor ip2 = ip;
+		int bitDepth = getBitDepth();
+		if (nBins!=256 && (bitDepth==8||bitDepth==24))
+			ip2 =ip.convertToShort(false);
 		if (roi!=null && roi.isArea())
-			ip.setRoi(roi);
+			ip2.setRoi(roi);
 		else
-			ip.resetRoi();
-		ip.setHistogramSize(nBins);
+			ip2.resetRoi();
+		ip2.setHistogramSize(nBins);
 		Calibration cal = getCalibration();
-		if (getType()==GRAY16&& !(histMin==0.0&&histMax==0.0))
-			{histMin=cal.getRawValue(histMin); histMax=cal.getRawValue(histMax);}
-		ip.setHistogramRange(histMin, histMax);
-		ImageStatistics stats = ImageStatistics.getStatistics(ip, mOptions, cal);
-		ip.setHistogramSize(256);
-		ip.setHistogramRange(0.0, 0.0);
+		if (getType()==GRAY16&& !(histMin==0.0&&histMax==0.0)) {
+			histMin = cal.getRawValue(histMin);
+			histMax=cal.getRawValue(histMax);
+		}
+		ip2.setHistogramRange(histMin, histMax);
+		ImageStatistics stats = ImageStatistics.getStatistics(ip2, mOptions, cal);
+		ip2.setHistogramSize(256);
+		ip2.setHistogramRange(0.0, 0.0);
 		return stats;
 	}
 	
@@ -2852,6 +2853,31 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		} catch (CloneNotSupportedException e) {
 			return null;
 		}
+	}
+	
+	/** Plots a 256 bin histogram of this image and returns the PlotWindow. */
+	public PlotWindow plotHistogram() {
+		return plotHistogram(256);
+	}
+
+	/** Plots a histogram of this image using the specified
+		number of bins and returns the PlotWindow. */
+	public PlotWindow plotHistogram(int bins) {
+		ImageStatistics stats = getStatistics(AREA+MEAN+MODE+MIN_MAX, bins);
+		Plot plot = new Plot("Hist_"+getTitle(), "Value", "Frequency");
+		plot.setColor("black", "#999999");
+		plot.setFont(new Font("SansSerif",Font.PLAIN,14));
+		double[] y = stats.histogram();
+		int n = y.length;
+		double[] x = new double[n];
+		int bits = getBitDepth();
+		double min = bits==16||bits==32?stats.min:0;
+		for (int i=0; i<n; i++)
+			x[i] = min+i*stats.binSize;
+		plot.add("bar", x, y);
+		if (bins!=256)
+			plot.addLegend(bins+" bins", "auto");
+		return plot.show();
 	}
 
     public String toString() {

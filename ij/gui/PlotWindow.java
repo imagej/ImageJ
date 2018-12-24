@@ -454,6 +454,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
         }
 
         //arrows for modifying the plot range
+        if (plot==null) return;
         if (x < plot.leftMargin || y > plot.topMargin + plot.frameHeight) {
             if (!rangeArrowsVisible && !plot.isFrozen())
                 showRangeArrows();
