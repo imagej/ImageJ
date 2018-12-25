@@ -2871,12 +2871,15 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		int n = y.length;
 		double[] x = new double[n];
 		int bits = getBitDepth();
-		double min = bits==16||bits==32?stats.min:0;
+		boolean eightBit = bits==8 || bits==24;
+		double min = !eightBit?stats.min:0;
 		for (int i=0; i<n; i++)
 			x[i] = min+i*stats.binSize;
 		plot.add("bar", x, y);
 		if (bins!=256)
 			plot.addLegend(bins+" bins", "auto");
+		if (eightBit)
+			plot.setLimits(0,256,0,Double.NaN);
 		return plot.show();
 	}
 

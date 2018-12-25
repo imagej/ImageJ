@@ -1022,7 +1022,7 @@ public class ShapeRoi extends Roi {
 			basex=r.x; basey=r.y;
 		}
 		aTx.setTransform(mag, 0.0, 0.0, mag, -basex*mag, -basey*mag);
-		aTx.translate(x, y);
+		aTx.translate(getXBase(), getYBase());
 		if (fillColor!=null) {
 			if (isActiveOverlayRoi) {
 				g2d.setColor(Color.cyan);
