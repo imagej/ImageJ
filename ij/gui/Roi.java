@@ -1386,7 +1386,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			previousRoi.modState = NO_MODS;
 	 }
 
-	protected void showStatus() {
+	public void showStatus() {
 		if (imp==null)
 			return;
 		String value;

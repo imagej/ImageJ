@@ -933,7 +933,6 @@ public class IJ {
 				break;
 			case KeyEvent.VK_SHIFT:
 				shiftDown=true;
-				updateStatus();
 				if (debugMode) beep();
 				break;
 			case KeyEvent.VK_SPACE: {
@@ -950,12 +949,12 @@ public class IJ {
 	}
 
 	public static void setKeyUp(int key) {
-		//if (debugMode) IJ.log("setKeyUp: "+key);
+		if (debugMode) IJ.log("setKeyUp: "+key);
 		switch (key) {
 			case KeyEvent.VK_CONTROL: controlDown=false; break;
 			case KeyEvent.VK_META: if (isMacintosh()) controlDown=false; break;
 			case KeyEvent.VK_ALT: altDown=false; updateStatus(); break;
-			case KeyEvent.VK_SHIFT: shiftDown=false; updateStatus();  if (debugMode) beep(); break;
+			case KeyEvent.VK_SHIFT: shiftDown=false; if (debugMode) beep(); break;
 			case KeyEvent.VK_SPACE:
 				spaceDown=false;
 				ImageWindow win = WindowManager.getCurrentWindow();
@@ -970,14 +969,13 @@ public class IJ {
 	private static void updateStatus() {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
-			ImageCanvas ic = imp.getCanvas();
-			if (ic!=null && imp.getCalibration().scaled()) {
-				Point p = ic.getCursorLoc();
-				imp.mouseMoved(p.x, p.y);
+			Roi roi = imp.getRoi();
+			if (roi!=null && imp.getCalibration().scaled()) {
+				roi.showStatus();
 			}
 		}
 	}
-	
+
 	public static void setInputEvent(InputEvent e) {
 		altDown = e.isAltDown();
 		shiftDown = e.isShiftDown();

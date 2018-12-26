@@ -1,6 +1,7 @@
 package ij.gui;
 import java.awt.*;
 import java.awt.image.*;
+import java.awt.event.*;
 import ij.*;
 import ij.plugin.frame.Recorder;
 import ij.process.FloatPolygon;
@@ -77,6 +78,45 @@ public class EllipseRoi extends PolygonRoi {
 		}
 		makePolygonRelative();
 		cachedMask = null;
+		showStatus();
+	}
+	
+	public void showStatus() {
+		double[] p = getParams();
+		double dx = p[2] - p[0];
+		double dy = p[3] - p[1];
+		double major = Math.sqrt(dx*dx+dy*dy);
+		double minor = major*p[4];
+		double angle = getFloatAngle(p[0], p[1], p[2], p[3]);
+		if (imp!=null && !IJ.altKeyDown()) {
+			Calibration cal = imp.getCalibration();
+			if (cal.scaled()) {
+				dx *= cal.pixelWidth;
+				dy *= cal.pixelHeight;
+				major = Math.sqrt(dx*dx+dy*dy);
+				minor = major*p[4];
+			}
+		}
+		IJ.showStatus("major=" + IJ.d2s(major)+", minor=" + IJ.d2s(minor)+", angle=" + IJ.d2s(angle));
+	}
+
+	public void nudgeCorner(int key) {
+		if (ic==null) return;
+		double x1 = xpf[handle[2]]+x;
+		double y1 = ypf[handle[2]]+y;
+		double x2 = xpf[handle[0]]+x;
+		double y2 = ypf[handle[0]]+y;
+		double inc = 1.0/ic.getMagnification();
+		switch(key) {
+			case KeyEvent.VK_UP: y2-=inc; break;
+			case KeyEvent.VK_DOWN: y2+=inc; break;
+			case KeyEvent.VK_LEFT: x2-=inc; break;
+			case KeyEvent.VK_RIGHT: x2+=inc; break;
+		}
+		makeEllipse(x1, y1, x2, y2);
+		imp.draw();
+		notifyListeners(RoiListener.MOVED);
+		showStatus();
 	}
 
 	void makePolygonRelative() {

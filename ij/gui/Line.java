@@ -11,7 +11,6 @@ import java.util.NoSuchElementException;
 import java.awt.event.*;
 import java.awt.geom.*;
 
-
 /** This class represents a straight line selection. */
 public class Line extends Roi {
 
@@ -246,7 +245,7 @@ public class Line extends Roi {
 						else x1d=x2d+length;
 					}
 					y1d = y2d;
-					if(center){
+					if(center) {
 						y1d=y2d=ycd;
 						if(aspect){
 							if(xcd>x1d) {
@@ -381,9 +380,13 @@ public class Line extends Roi {
 			drawHandle(g, sx3-size2, sy3-size2);
 		}
 		if (state!=NORMAL)
-			IJ.showStatus(imp.getLocationAsString(x2,y2)+", angle=" + IJ.d2s(getAngle()) + ", length=" + IJ.d2s(getLength()));
+			showStatus();
 		if (updateFullWindow)
 			{updateFullWindow = false; imp.draw();}
+	}
+	
+	public void showStatus() {
+		IJ.showStatus(imp.getLocationAsString(x2,y2)+", angle=" + IJ.d2s(getAngle()) + ", length=" + IJ.d2s(getLength()));
 	}
 	
 	public double getAngle() {
@@ -613,6 +616,7 @@ public class Line extends Roi {
 		}
 		grow(ic.screenXD(x+x2R), ic.screenYD(y+y2R));
 		notifyListeners(RoiListener.MOVED);
+		showStatus();
 	}
 	
 	public boolean getDrawOffset() {

@@ -1,6 +1,7 @@
 package ij.gui;
 import java.awt.*;
 import java.awt.image.*;
+import java.awt.event.*;
 import ij.*;
 import ij.plugin.frame.Recorder;
 import ij.process.FloatPolygon;
@@ -97,6 +98,46 @@ public class RotatedRectRoi extends PolygonRoi {
 		makePolygonRelative();
 		cachedMask = null;
 		DefaultRectWidth = rectWidth;
+		showStatus();
+	}
+	
+	public void showStatus() {
+		double[] p = getParams();
+		double dx = p[2] - p[0];
+		double dy = p[3] - p[1];
+		double length = Math.sqrt(dx*dx+dy*dy);
+		double width = p[4];
+		if (imp!=null && !IJ.altKeyDown()) {
+			Calibration cal = imp.getCalibration();
+			if (cal.scaled() && cal.pixelWidth==cal.pixelHeight) {
+				dx *= cal.pixelWidth;
+				dy *= cal.pixelHeight;
+				length = Math.sqrt(dx*dx+dy*dy);
+				width = p[4]*cal.pixelWidth;
+			}
+		}
+		double angle = getFloatAngle(p[0], p[1], p[2], p[3]);
+		IJ.showStatus("length=" + IJ.d2s(length)+", width=" + IJ.d2s(width)+", angle=" + IJ.d2s(angle));
+	}
+
+	public void nudgeCorner(int key) {
+		if (ic==null) return;
+		double[] p = getParams();
+		double x1 = p[0];
+		double y1 = p[1];
+		double x2 = p[2];
+		double y2 = p[3];
+		double inc = 1.0/ic.getMagnification();
+		switch(key) {
+			case KeyEvent.VK_UP: y2-=inc; break;
+			case KeyEvent.VK_DOWN: y2+=inc; break;
+			case KeyEvent.VK_LEFT: x2-=inc; break;
+			case KeyEvent.VK_RIGHT: x2+=inc; break;
+		}
+		makeRectangle(x1, y1, x2, y2);
+		imp.draw();
+		notifyListeners(RoiListener.MOVED);
+		showStatus();
 	}
 
 	void makePolygonRelative() {
