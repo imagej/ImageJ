@@ -5,29 +5,36 @@
 </head>
 <body>
 
-<li> <u>1.52j 25 December 2018</u>
+<li> <u>1.52k 2 January 2019</u>
 <ul>
-<li> Added the <i>Macros&gt;Enter Interactive Mode</i> command
-to the text editor, which enables interactive editing and running
-of macro and JavaScript code
+<li> Thanks to Albert Cardona, added the "Text scale (0.5-2.0)" option to the
+<i>Edit&gt;Options&gt;Appearance</i> dialog, which enables
+scaling of text in GenericDialogs and in the Command Finder.
+</ul>
+
+<li> <u>1.52j 29 December 2018</u>
+<ul>
+<li> Added the <i>Plugins&gt;Macros&gt;Interactive Interpreter</i> command 
+(shortcut: "j"), which enables interactive editing and running
+of macro and JavaScript code in an editor window
 (<a href="http://wsr.imagej.net/docs/InteractiveDemo.txt">example</a>).
-Type "js" in interactive mode to switch the language to JavaScript.
-Also added the associated
-<i>Plugins&gt;Macros&gt;Interactive Interpreter</i> command 
-(shortcut: "j").
+Type "js" in to switch the language to JavaScript.
 <li> Thanks to Ved Sharma, point selections with more than 65,535 points
 can now be saved and reopened
 (<a href="http://wsr.imagej.net/macros/js/ManyPoints.js">example</a>).
 <li> Thanks to Philippe Carl, the status bar is updated when adjusting
 elliptical and rotated rectangle selections.
 <li> Thanks to Ilan Tal, added the "Ignore Rescale Slope and open as 16-bit"
-checkbox to the <i>Edit&gt;Optios&gt;DICOM</i> dialog.
+checkbox to the <i>Edit&gt;Options&gt;DICOM</i> dialog box.
 <li> Thanks to Michael Schmid, <i>Image&gt;Edit&gt;Resize</i>
 can now convert a single image to a stack.
 <li> Thanks to MichaelSchmid, improved the calculation of Feret
 parameters for composite selections. FeretAngle is now reported
 (within 0.5 deg), works with pixel aspect ratios different from one and is
 more accuate due to use of 0.5 deg increments.
+<li> Thanks to MichaelSchmid, the output of ROI Manager 'AND', 'OR'
+and 'XOR' operations are, if possible, converted from composite ROIs
+into simpler polygon ROIs.
 <li> Thanks to Jerome Mutterer, errors in macro run() statements
  are now reported using a "Macro Error" dialog that displays
  the line number.
@@ -46,8 +53,9 @@ getErrorMessage() methods to the Interpreter class
 <li> Thanks to Michael Schmid, fixed a bug that caused 
 <i>Image&gt;Edit&gt;Resize</i> to not preserve stack lookup tables.
 <li> Thanks to Stein Rorvik, fixed <i>Orthogonal Views</i> bugs that caused
-freezing, nonworking XZ and YZ dragging and lack of density calibration, and incorrect behavior when
-"Rotate YZ" and "Flip XZ" where enabled in <i>Edit&gt;Options&gt;DICOM</i>.
+freezing, dragging in XZ and YZ views to not work, missing density calibration
+and incorrect behavior when "Rotate YZ" and "Flip XZ" where enabled in 
+<i>Edit&gt;Options&gt;DICOM</i>.
 <li> Thanks to Stein Rorvik, fixed a bug that caused particle analyzer overlays to
 not be specific to the current slice when processing one slice.
 <li> Fixed a bug that caused the color of overlay labels to be set to black after 
@@ -57,8 +65,8 @@ command to not preserve overlay properties such a label color and scalability.
 <li> Thanks to Wilhelm Burger, fixed a bug that caused the Roi.setLocation(x,y)
 method to not work correctly with ShapeRois if x or y were not integers.
 <li> Thanks to Philippe Carl, fixed a bug that caused the status bar to not be
-updated or to not be updated correctly when moving or changing the length
-of straight line selections and arrows using the arrow keys. 
+updated, or to not be updated correctly, when moving or changing the length
+of straight line and arrow selections using the arrow keys. 
 </ul>
 
 <li> <u>1.52i 26 November 2018</u>

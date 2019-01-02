@@ -1453,9 +1453,19 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			}
 		}
 		if (s1!=null)
-			imp.setRoi(s1);
+			imp.setRoi(simplifyShapeRoi(s1));
 	}
-	
+
+	private Roi simplifyShapeRoi(ShapeRoi sRoi) { //convert composite roi to simple roi if possible
+		Roi[] rois = sRoi.getRois();
+		if (rois.length != 1) return sRoi;
+		int type = rois[0].getType();
+		if (type==Roi.POLYGON || type==Roi.FREEROI)
+			return rois[0];
+		else
+			return sRoi;
+	}
+
 	Roi convertLineToPolygon(Roi roi, ImageProcessor ip) {
 		if (roi==null) return null;
 		ip.resetRoi();
@@ -1525,7 +1535,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				s1.and(s2);
 			}
 		}
-		if (s1!=null) imp.setRoi(s1);
+		if (s1!=null) imp.setRoi(simplifyShapeRoi(s1));
 		if (record()) Recorder.record("roiManager", "AND");
 	}
 
@@ -1558,7 +1568,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				s1.xor(s2);
 			}
 		}
-		if (s1!=null) imp.setRoi(s1);
+		if (s1!=null) imp.setRoi(simplifyShapeRoi(s1));
 		if (record()) Recorder.record("roiManager", "XOR");
 	}
 
@@ -2561,4 +2571,3 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 
 }
-

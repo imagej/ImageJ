@@ -38,6 +38,8 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 			gd.addCheckbox("Cancel button on right", Prefs.dialogCancelButtonOnRight);
 		gd.addChoice("16-bit range:", ranges, ranges[rangeIndex]);
 		gd.addNumericField("Menu font size:", Menus.getFontSize(), 0, 3, "points");
+		gd.addNumericField("Text scale (0.5-2.0):", Prefs.getTextScale(), 2, 5, "");
+		//gd.addSlider("Text scale:", 0.75, 2.0, GenericDialog.textScale);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#appearance");
 		gd.addDialogListener(this);
 		gd.showDialog();
@@ -95,6 +97,7 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 		if (IJ.isLinux())
 			Prefs.dialogCancelButtonOnRight = gd.getNextBoolean();
 		setMenuSize = (int)gd.getNextNumber();
+		Prefs.setTextScale(gd.getNextNumber());
 		if (interpolate!=Prefs.interpolateScaledImages) {
 			Prefs.interpolateScaledImages = interpolate;
 			draw();
