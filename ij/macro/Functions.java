@@ -6544,9 +6544,63 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.startsWith("showArray")) {
 			showArray();
 			return new Variable();
-		} else
+		} else if (name.equals("getSelectionStart"))	
+			return getSelectionStart();
+		else if (name.equals("getSelectionEnd"))
+			return getSelectionEnd();
+		else if (name.equals("setSelection"))
+			return setSelection();
+		else
 			interp.error("Unrecognized function name");
 		return new Variable();
+	}
+	
+	private Variable setSelection() {
+		interp.getLeftParen();
+		double from = interp.getExpression();
+		interp.getComma();
+		double to = interp.getExpression();
+		String title = getTitle();
+		if (title != null){
+			Frame f = WindowManager.getFrame(title);
+			if (f!=null && (f instanceof TextWindow)){
+				TextWindow tWin = (TextWindow)f;
+				tWin.getTextPanel().setSelection((int)from, (int)to);
+				return new Variable();
+			}
+		}
+		interp.error("Title of table missing or not found");
+		return new Variable();
+	}
+	
+	private Variable getSelectionStart() {
+		int selStart = -1;
+		String title = getTitleArg();
+		if (title != null){
+			Frame f = WindowManager.getFrame(title);
+			if (f!=null && (f instanceof TextWindow)){
+				TextWindow tWin = (TextWindow)f;	
+				selStart = tWin.getTextPanel().getSelectionStart();
+				return new Variable(selStart);
+			}
+		}
+		interp.error("Title of table missing or not found");
+		return new Variable(selStart);
+	}
+	
+	private Variable getSelectionEnd() {
+		int selEnd = -1;
+		String title = getTitleArg();
+		if (title != null){
+			Frame f = WindowManager.getFrame(title);
+			if (f!=null && (f instanceof TextWindow)){
+				TextWindow tWin = (TextWindow)f;	
+				selEnd = tWin.getTextPanel().getSelectionEnd();
+				return new Variable(selEnd);
+			}
+		}
+		interp.error("Title of table missing or not found");
+		return new Variable(selEnd);
 	}
 	
 	private Variable setTableValue() {

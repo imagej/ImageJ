@@ -89,7 +89,7 @@ public class ThresholdToSelection implements PlugInFilter {
 		}
 
 		/** Adds point x, y at the end of the list */
-		public void push(int x, int y) {
+		public void append(int x, int y) {
 			if (last-first>=2 && collinear(this.x[last-2], this.y[last-2], this.x[last-1], this.y[last-1], x , y)) {
 				this.x[last-1] = x; //replace previous point
 				this.y[last-1] = y;
@@ -102,7 +102,7 @@ public class ThresholdToSelection implements PlugInFilter {
 		}
 
 		/** Adds point x, y at the beginning of the list */
-		public void shift(int x, int y) {
+		public void prepend(int x, int y) {
 			if (last-first>=2 && collinear(this.x[first+1], this.y[first+1], this.x[first], this.y[first], x , y)) {
 				this.x[first] = x; //replace previous point
 				this.y[first] = y;
@@ -115,7 +115,7 @@ public class ThresholdToSelection implements PlugInFilter {
 		}
 
 		/** Merge with another Outline by adding it at the end. Thereafter, the other outline must not be used any more. */
-		public void push(Outline o) {
+		public void append(Outline o) {
 			int size = last - first;
 			int oSize = o.last - o.first;
 			if (size <= o.first && oSize > reserved - last) { // we don't have enough space in our own array but in that of 'o'
@@ -135,7 +135,7 @@ public class ThresholdToSelection implements PlugInFilter {
 		}
 
 		/** Merge with another Outline by adding it at the beginning. Thereafter, the other outline must not be used any more. */
-		public void shift(Outline o) {
+		public void prepend(Outline o) {
 			int size = last - first;
 			int oSize = o.last - o.first;
 			if (size <= o.reserved - o.last && oSize > first) { // we don't have enough space in our own array but in that of 'o'
@@ -257,37 +257,37 @@ public class ThresholdToSelection implements PlugInFilter {
 					if (!prevRow[x + 1]) {
 						// Upper edge of selected area:
 						// - left and right outlines are null: new outline
-						// - left null: push (line to left)
-						// - right null: shift (line to right), or shift&push (after lower right corner, two borders from one corner)
+						// - left null: append (line to left)
+						// - right null: prepend (line to right), or prepend&append (after lower right corner, two borders from one corner)
 						// - left == right: close (end of hole above) unless we can continue at the right
-						// - left != right: merge (shift) unless we can continue at the right
+						// - left != right: merge (prepend) unless we can continue at the right
 						if (outline[x] == null) {
 							if (outline[x + 1] == null) {
 								outline[x + 1] = outline[x] = new Outline();
-								outline[x].push(x + 1, y);
-								outline[x].push(x, y);
+								outline[x].append(x + 1, y);
+								outline[x].append(x, y);
 							} else {
 								outline[x] = outline[x + 1];  // line from top-right to top-left
 								outline[x + 1] = null;
-								outline[x].push(x, y);
+								outline[x].append(x, y);
 							}
 						} else if (outline[x + 1] == null) {
 							if (x == xAfterLowerRightCorner) {
 								outline[x + 1] = outline[x];
 								outline[x] = oAfterLowerRightCorner;
-								outline[x].push(x, y);
-								outline[x + 1].shift(x + 1, y);
+								outline[x].append(x, y);
+								outline[x + 1].prepend(x + 1, y);
 							} else {
 								outline[x + 1] = outline[x];
 								outline[x] = null;
-								outline[x + 1].shift(x + 1, y);
+								outline[x + 1].prepend(x + 1, y);
 							}
 						} else if (outline[x + 1] == outline[x]) {
 							if (x < w - 1 && y < h && x != xAfterLowerRightCorner
 									&& !thisRow[x + 2] && prevRow[x + 2]) { //at lower right corner & next pxl deselected
 								outline[x] = null;
 								//outline[x+1] unchanged
-								outline[x + 1].shift(x + 1,y);
+								outline[x + 1].prepend(x + 1,y);
 								xAfterLowerRightCorner = x + 1;
 								oAfterLowerRightCorner = outline[x + 1];
 							} else {
@@ -297,7 +297,7 @@ public class ThresholdToSelection implements PlugInFilter {
 								outline[x] = (x == xAfterLowerRightCorner) ? oAfterLowerRightCorner : null;
 							}
 						} else {
-							outline[x].shift(outline[x + 1]);		// merge
+							outline[x].prepend(outline[x + 1]);		// merge
 							for (int x1 = 0; x1 <= w; x1++)
 								if (x1 != x + 1 && outline[x1] == outline[x + 1]) {
 									outline[x1] = outline[x];        // after merging, replace old with merged
@@ -313,36 +313,36 @@ public class ThresholdToSelection implements PlugInFilter {
 						// left edge
 						if (outline[x] == null)
 							throw new RuntimeException("assertion failed");
-						outline[x].push(x, y + 1);
+						outline[x].append(x, y + 1);
 					}
 				} else {  // !thisRow[x + 1], i.e., pixel (x,y) is deselected
 					if (prevRow[x + 1]) {
 						// Lower edge of selected area:
 						// - left and right outlines are null: new outline
-						// - left == null: shift
-						// - right == null: push, or push&shift (after lower right corner, two borders from one corner)
+						// - left == null: prepend
+						// - right == null: append, or append&prepend (after lower right corner, two borders from one corner)
 						// - right == left: close unless we can continue at the right
-						// - right != left: merge (push) unless we can continue at the right
+						// - right != left: merge (append) unless we can continue at the right
 						if (outline[x] == null) {
 							if (outline[x + 1] == null) {
 								outline[x] = outline[x + 1] = new Outline();
-								outline[x].push(x, y);
-								outline[x].push(x + 1, y);
+								outline[x].append(x, y);
+								outline[x].append(x + 1, y);
 							} else {
 									outline[x] = outline[x + 1];
 									outline[x + 1] = null;
-									outline[x].shift(x, y);
+									outline[x].prepend(x, y);
 							}
 						} else if (outline[x + 1] == null) {
 							if (x == xAfterLowerRightCorner) {
 								outline[x + 1] = outline[x];
 								outline[x] = oAfterLowerRightCorner;
-								outline[x].shift(x, y);
-								outline[x + 1].push(x + 1, y);
+								outline[x].prepend(x, y);
+								outline[x + 1].append(x + 1, y);
 							} else {
 								outline[x + 1] = outline[x];
 								outline[x] = null;
-								outline[x + 1].push(x + 1, y);
+								outline[x + 1].append(x + 1, y);
 							}
 						} else if (outline[x + 1] == outline[x]) {
 							//System.err.println("add " + outline[x]);
@@ -350,7 +350,7 @@ public class ThresholdToSelection implements PlugInFilter {
 									&& thisRow[x + 2] && !prevRow[x + 2]) { //at lower right corner & next pxl selected
 								outline[x] = null;
 								//outline[x+1] unchanged
-								outline[x + 1].push(x + 1,y);
+								outline[x + 1].append(x + 1,y);
 								xAfterLowerRightCorner = x + 1;
 								oAfterLowerRightCorner = outline[x + 1];
 							} else {
@@ -361,14 +361,14 @@ public class ThresholdToSelection implements PlugInFilter {
 						} else {
 							if (x < w - 1 && y < h && x != xAfterLowerRightCorner
 									&& thisRow[x + 2] && !prevRow[x + 2]) { //at lower right corner && next pxl selected
-								outline[x].push(x + 1, y);
-								outline[x + 1].shift(x + 1,y);
+								outline[x].append(x + 1, y);
+								outline[x + 1].prepend(x + 1,y);
 								xAfterLowerRightCorner = x + 1;
 								oAfterLowerRightCorner = outline[x];
 								// outline[x + 1] unchanged (the one at the right-hand side of (x, y-1) to the top)
 								outline[x] = null;
 							} else {
-								outline[x].push(outline[x + 1]);         // merge
+								outline[x].append(outline[x + 1]);         // merge
 								for (int x1 = 0; x1 <= w; x1++)
 									if (x1 != x + 1 && outline[x1] == outline[x + 1]) {
 										outline[x1] = outline[x];        // after merging, replace old with merged
@@ -385,7 +385,7 @@ public class ThresholdToSelection implements PlugInFilter {
 						// right edge
 						if (outline[x] == null)
 							throw new RuntimeException("assertion failed");
-						outline[x].shift(x, y + 1);
+						outline[x].prepend(x, y + 1);
 					}
 				}
 			}
