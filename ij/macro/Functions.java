@@ -6565,7 +6565,10 @@ public class Functions implements MacroConstants, Measurements {
 			Frame f = WindowManager.getFrame(title);
 			if (f!=null && (f instanceof TextWindow)){
 				TextWindow tWin = (TextWindow)f;
-				tWin.getTextPanel().setSelection((int)from, (int)to);
+				if (from == -1 && to == -1)
+					tWin.getTextPanel().resetSelection();
+				else
+					tWin.getTextPanel().setSelection((int)from, (int)to);
 				return new Variable();
 			}
 		}
