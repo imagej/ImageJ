@@ -2329,7 +2329,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			//	roi.setStrokeWidth(0);
 			overlay.add(roi);
 		}
-		overlay.drawLabels(overlayTemplate.getDrawLabels());
+		if (overlayTemplate!=null)
+			overlay.drawLabels(overlayTemplate.getDrawLabels());
 		imp.setOverlay(overlay);
 		if (imp.getCanvas()!=null)
 			setOverlay(imp, null);

@@ -878,7 +878,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			stats.xstart=x; stats.ystart=y;
 			saveResults(stats, roi);
 			if (addToManager)
-				addToRoiManager(roi, mask);				
+				addToRoiManager(roi, mask, particleCount);				
 			if (showChoice!=NOTHING)
 				drawParticle(drawIP, roi, stats, mask);
 		}
@@ -920,7 +920,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	}
 	
 	/** Adds the ROI to the ROI Manager. */
-	private void addToRoiManager(Roi roi, ImageProcessor mask) {
+	private void addToRoiManager(Roi roi, ImageProcessor mask, int particleNumber) {
 		if (roiManager==null) {
 			if (Macro.getOptions()!=null && Interpreter.isBatchMode())
 				roiManager = Interpreter.getBatchModeRoiManager();
@@ -939,8 +939,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (floodFill && mask!=null) {
 			mask.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
 			double xbase=roi.getXBase(), ybase=roi.getYBase();
-			roi = new ThresholdToSelection().convert(mask);
-			roi.setLocation(xbase, ybase);
+			Roi roi2 = new ThresholdToSelection().convert(mask);
+			if (roi2!=null) {
+				roi = roi2;
+				roi.setLocation(xbase, ybase);
+			} else
+				IJ.log("ToSelection error: "+particleNumber+" "+mask);
 		}
 		if (imp.getStackSize()>1) {
 			int n = imp.getCurrentSlice();
@@ -952,7 +956,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		}
 		if (lineWidth!=1)
 			roi.setStrokeWidth(lineWidth);
-		roiManager.add(imp, roi, rt.size());
+		roiManager.add(imp, roi, particleNumber);
 	}
 	
 	/** Draws a selected particle in a separate image.	This is
@@ -984,7 +988,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			if (floodFill && mask!=null) {
 				mask.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
 				roi2 = new ThresholdToSelection().convert(mask);
-				roi2.setLocation(roi.getXBase(), roi.getYBase());
+				if (roi2!=null)
+					roi2.setLocation(roi.getXBase(), roi.getYBase());
+				else {
+					IJ.log("ThresholdToSelection error: "+count+" "+mask);
+					roi2 = (Roi)roi.clone();
+				}
 			} else
 				roi2 = (Roi)roi.clone();
 			roi2.setStrokeColor(Color.cyan);

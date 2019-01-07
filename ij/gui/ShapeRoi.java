@@ -1007,8 +1007,12 @@ public class ShapeRoi extends Roi {
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		boolean isActiveOverlayRoi = !overlay && isActiveOverlayRoi();
 		//IJ.log("draw: "+overlay+"  "+isActiveOverlayRoi);
-		if (isActiveOverlayRoi)
-			color = Color.cyan;
+		if (isActiveOverlayRoi) {
+			if (color==Color.cyan)
+				color = Color.magenta;
+			else
+				color = Color.cyan;
+		}
 		if (fillColor!=null) color = fillColor;
 		g.setColor(color);
 		AffineTransform aTx = (((Graphics2D)g).getDeviceConfiguration()).getDefaultTransform();

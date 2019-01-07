@@ -3216,12 +3216,13 @@ public class Functions implements MacroConstants, Measurements {
 				boolean F = flags.contains("F");//front
 				boolean C = flags.contains("C");//changed
 				boolean kill = M && !(C && keep);
-				if (others) {
+				if (others)
 					kill = !F && !(C && keep);
-				}
 
 				if (kill) {
 					ImagePlus imp = WindowManager.getImage(ids[jj]);
+					if (imp==null)
+						continue;
 					ImageWindow win = imp.getWindow();
 					if (win != null) {
 						imp.changes = false;
