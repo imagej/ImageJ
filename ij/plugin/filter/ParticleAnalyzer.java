@@ -943,8 +943,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			if (roi2!=null) {
 				roi = roi2;
 				roi.setLocation(xbase, ybase);
-			} else
-				IJ.log("ToSelection error: "+particleNumber+" "+mask);
+			}
 		}
 		if (imp.getStackSize()>1) {
 			int n = imp.getCurrentSlice();
@@ -990,10 +989,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				roi2 = new ThresholdToSelection().convert(mask);
 				if (roi2!=null)
 					roi2.setLocation(roi.getXBase(), roi.getYBase());
-				else {
-					IJ.log("ThresholdToSelection error: "+count+" "+mask);
+				else
 					roi2 = (Roi)roi.clone();
-				}
 			} else
 				roi2 = (Roi)roi.clone();
 			roi2.setStrokeColor(Color.cyan);
