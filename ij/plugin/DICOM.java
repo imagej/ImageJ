@@ -240,6 +240,7 @@ class DicomDecoder {
 	private static final int ITEM = 0xFFFEE000;
 	private static final int ITEM_DELIMINATION = 0xFFFEE00D;
 	private static final int SEQUENCE_DELIMINATION = 0xFFFEE0DD;
+	private static final int FLOAT_PIXEL_DATA = 0x7FE00008;
 	private static final int PIXEL_DATA = 0x7FE00010;
 
 	private static final int AE=0x4145, AS=0x4153, AT=0x4154, CS=0x4353, DA=0x4441, DS=0x4453, DT=0x4454,
@@ -670,8 +671,11 @@ class DicomDecoder {
 					addInfo(tag, elementLength/2);
 					break;
 				case PIXEL_DATA:
+				case FLOAT_PIXEL_DATA:
 					// Start of image data...
 					if (elementLength!=0) {
+						if (tag==FLOAT_PIXEL_DATA)
+							fi.fileType = FileInfo.GRAY32_FLOAT;
 						fi.offset = location;
 						addInfo(tag, location);
 						decodingTags = false;
@@ -1687,6 +1691,7 @@ class DicomDictionary {
 		"300C0008=DSStart Cumulative Meterset Weight",
 		"300C0022=ISReferenced Fraction Group Number",
 
+		"7FE00008=OXFloat Pixel Data",
 		"7FE00010=OXPixel Data",
 		
 		"FFFEE000=DLItem",

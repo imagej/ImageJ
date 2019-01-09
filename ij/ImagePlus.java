@@ -2035,14 +2035,14 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			fi.valueUnit = cal.getValueUnit();
 
     	switch (imageType) {
-	    	case GRAY8: case COLOR_256:
-    			LookUpTable lut = createLut();
+			case GRAY8: case COLOR_256:
+				LookUpTable lut = createLut();
 				boolean customLut = !lut.isGrayscale() || (ip!=null&&!ip.isDefaultLut());
-    			if (imageType==COLOR_256 || customLut) {
-    				fi.fileType = FileInfo.COLOR8;
-    				addLut(lut, fi);
-    			} else
-    				fi.fileType = FileInfo.GRAY8;
+				if (imageType==COLOR_256 || customLut)
+					fi.fileType = FileInfo.COLOR8;
+				else
+					fi.fileType = FileInfo.GRAY8;
+				addLut(lut, fi);
 				break;
 	    	case GRAY16:
 	    		if (compositeImage && fi.nImages==3) {
