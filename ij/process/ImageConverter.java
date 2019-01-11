@@ -68,15 +68,23 @@ public class ImageConverter {
 			return;
 		if (!(type==ImagePlus.GRAY8||type==ImagePlus.GRAY16||type==ImagePlus.COLOR_RGB))
 			throw new IllegalArgumentException("Unsupported conversion");
+		double min = imp.getDisplayRangeMin();
+		double max = imp.getDisplayRangeMax();
+		Calibration cal = imp.getCalibration();
+		if (cal.isSigned16Bit()) {
+			min -= 32768;
+			max -= 32768;
+		}
 		if (imp.getStackSize()>1) {
 			new StackConverter(imp).convertToGray32();
+			imp.setDisplayRange(min, max);
 			return;
 		}
 		ImageProcessor ip = imp.getProcessor();
 		imp.trimProcessor();
-		Calibration cal = imp.getCalibration();
 		imp.setProcessor(null, ip.convertToFloat());
 		imp.setCalibration(cal); //update calibration
+		imp.setDisplayRange(min, max);
 	}
 
 	/** Converts this ImagePlus to RGB. */

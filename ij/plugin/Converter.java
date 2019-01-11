@@ -67,7 +67,7 @@ public class Converter implements PlugIn {
 				else if (item.equals("16-bit"))
 					new StackConverter(imp).convertToGray16();
 				else if (item.equals("32-bit"))
-					new StackConverter(imp).convertToGray32();
+					new ImageConverter(imp).convertToGray32();
 				else if (item.equals("RGB Color"))
 					new StackConverter(imp).convertToRGB();
 				else if (item.equals("RGB Stack"))
