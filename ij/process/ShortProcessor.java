@@ -254,9 +254,11 @@ public class ShortProcessor extends ImageProcessor {
 
 	/**
 	Sets the min and max variables that control how real
-	pixel values are mapped to 0-255 screen values.
+	pixel values are mapped to 0-255 screen values. With
+	signed 16-bit images, use IJ.setMinAndMax(imp,min,max).
 	@see #resetMinAndMax
 	@see ij.plugin.frame.ContrastAdjuster 
+	@see ij.IJ#setMinAndMax(ij.ImagePlus,double,double)
 	*/
 	public void setMinAndMax(double minimum, double maximum) {
 		if (minimum==0.0 && maximum==0.0)

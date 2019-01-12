@@ -612,6 +612,17 @@ public class ResultsTable implements Cloneable {
 	
 	/** Implements the Table.getColumn() macro function. */
 	public Variable[] getColumnAsVariables(String column) {
+		if ("Label".equals(column)) {
+			if (rowLabels==null)
+				throw new IllegalArgumentException("Column not found");
+			int n = size();
+			Variable[] labels = new Variable[n];
+			for (int i=0; i<n; i++) {
+				String label = getLabel(i);
+				labels[i] = new Variable(label!=null?label:"");
+			}
+			return labels;
+		}
 		int col = getColumnIndex(column);
 		if (col==COLUMN_NOT_FOUND)
 			throw new IllegalArgumentException("\""+column+"\" column not found");

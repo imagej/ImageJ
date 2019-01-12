@@ -462,8 +462,13 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
                 coordinates.setText("Reset Range");
             else if (activeRangeArrow == 9) //it's the 'F' icon
                 coordinates.setText("Full Range (Fit All)");
+            else if (activeRangeArrow >= 10) //space between arrow-pairs
+                coordinates.setText("Set limit...");
             if (activeRangeArrow >= 0 && !rangeArrowRois[activeRangeArrow].contains(x, y)) {
-                rangeArrowRois[activeRangeArrow].setFillColor(Color.GRAY);
+				if(activeRangeArrow>=10) //numerical box
+					rangeArrowRois[activeRangeArrow].setFillColor(new Color(235, 235, 235));
+				else //arrow
+					rangeArrowRois[activeRangeArrow].setFillColor(Color.GRAY);
                 ic.repaint();			//de-highlight arrow where cursor has moved out
                 activeRangeArrow = -1;
             }
@@ -494,6 +499,10 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		}
 		int rotation = e.getWheelRotation();
 		int amount = e.getScrollAmount();
+		if (e.getX() < plot.leftMargin || e.getX() > plot.leftMargin + plot.frameWidth)//n__
+			return;
+		if (e.getY() < plot.topMargin || e.getY() > plot.topMargin + plot.frameHeight) 
+			return;
 		boolean ctrl = (e.getModifiers()&Event.CTRL_MASK)!=0;
 		if (amount<1) amount=1;
 		if (rotation==0)
@@ -518,7 +527,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
         if (imp == null)
             return;
         hideRangeArrows(); //in case we have old arrows from a different plot size or so
-        rangeArrowRois = new Roi[4 * 2 + 2]; //4 arrows per axis plus 'Reset' and 'Fit All' icons
+        rangeArrowRois = new Roi[4 * 2 + 2 + 4]; //4 arrows per axis, plus 'Reset' and 'Fit All' icons, plus 4 numerical input boxes
         int i = 0;
         int height = imp.getHeight();
         int arrowH = plot.topMargin < 14 ? 6 : 8; //height of arrows and distance between them; base is twice that value
@@ -534,7 +543,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
         for (float y : new float[]{plot.topMargin + plot.frameHeight, plot.topMargin}) { //create arrows for y axis
             float[] y0 = new float[]{y + arrowH / 2, y + 3 * arrowH / 2 + 0.1f, y + arrowH / 2};
             rangeArrowRois[i++] = new PolygonRoi(xP, y0, 3, Roi.POLYGON);
-            float[] y1 = new float[]{y - arrowH / 2, y - 3 * arrowH / 2 - 0.1f, y - arrowH / 2};
+          float[] y1 = new float[]{y - arrowH / 2, y - 3 * arrowH / 2 - 0.1f, y - arrowH / 2};
             rangeArrowRois[i++] = new PolygonRoi(xP, y1, 3, Roi.POLYGON);
         }
         Font theFont = new Font("SansSerif", Font.BOLD, 13);
@@ -544,15 +553,22 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
         TextRoi txtRoi2 = new TextRoi(20, height - 19, "\u2009F\u2009", theFont);
         rangeArrowRois[9] = txtRoi2;
 
+		rangeArrowRois[10] = new Roi(plot.leftMargin - arrowH/2 + 1, height - 5 * arrowH / 2, arrowH - 2, arrowH * 2);//numerical box left
+		rangeArrowRois[11] = new Roi(plot.leftMargin + plot.frameWidth - arrowH/2 + 1, height - 5 * arrowH / 2, arrowH - 2, arrowH * 2);//numerical box right
+        rangeArrowRois[12] = new Roi(arrowH / 2, plot.topMargin + plot.frameHeight - arrowH/2 + 1, arrowH * 2, arrowH -2);//numerical box bottom
+        rangeArrowRois[13] = new Roi(arrowH / 2, plot.topMargin - arrowH/2 + 1,  arrowH * 2, arrowH - 2   );//numerical box top
+ 
         Overlay ovly = imp.getOverlay();
         if (ovly == null)
             ovly = new Overlay();
         for (Roi roi : rangeArrowRois) {
-            if (roi instanceof TextRoi) {
+            if (roi instanceof PolygonRoi) 
+                   roi.setFillColor(Color.GRAY);
+			else if (roi instanceof TextRoi) {
                 roi.setStrokeColor(Color.WHITE);
                 roi.setFillColor(Color.GRAY);
             } else
-                roi.setFillColor(Color.GRAY);
+                roi.setFillColor(new Color(235, 235, 235));
             ovly.add(roi);
         }
         imp.setOverlay(ovly);

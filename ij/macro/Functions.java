@@ -6703,7 +6703,13 @@ public class Functions implements MacroConstants, Measurements {
 	private Variable getColumn() {
 		String col = getFirstString();
 		ResultsTable rt = getResultsTable(getTitle());	
-		return new Variable(rt.getColumnAsVariables(col));
+		Variable column = null;
+		try {
+			column =  new Variable(rt.getColumnAsVariables(col));
+		} catch (Exception e) {
+			interp.error(e.getMessage());
+		}
+		return column;
 	}
 
 	private Variable renameColumn() {

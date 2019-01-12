@@ -429,10 +429,13 @@ public abstract class ImageProcessor implements Cloneable {
 	public abstract double getMax();
 
 	/** This image will be displayed by mapping pixel values in the
-		range min-max to screen values in the range 0-255. For
-		byte images, this mapping is done by updating the LUT. For
-		short and float images, it's done by generating 8-bit AWT
-		images. For RGB images, it's done by changing the pixel values. */
+	 * range min-max to screen values in the range 0-255. For
+	 * byte images, this mapping is done by updating the LUT. For
+	 * short and float images, it's done by generating 8-bit AWT
+	 * images. For RGB images, it's done by changing the pixel values.
+	 * With signed 16-bit images, use IJ.setMinAndMax(imp,min,max).
+	 * @see ij.IJ#setMinAndMax(ij.ImagePlus,double,double)
+	*/
 	public abstract void setMinAndMax(double min, double max);
 
 	/** For short and float images, recalculates the min and max

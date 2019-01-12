@@ -2147,7 +2147,7 @@ public class Plot implements Cloneable {
 	 * the x axis and end with the up arrow at the upper side of the y axis.
 	 */
 	void zoomOnRangeArrow(int arrowIndex) {
-		if (arrowIndex < 8) {//0..7 = arrows, 8 = Reset Range, 9 = Fit All
+		if (arrowIndex < 8) {//0..7 = arrows, 8 = Reset Range, 9 = Fit All, 10..13 = set single limit
 			int axisIndex = (arrowIndex / 4) * 2;  //0 for x, 2 for y
 			double min = axisIndex == 0 ? xMin : yMin;
 			double max = axisIndex == 0 ? xMax : yMax;
@@ -2172,6 +2172,22 @@ public class Plot implements Cloneable {
 			setLimitsToDefaults(false);
 		else if (arrowIndex == 9)
 			setLimitsToFit(false);
+		else if (arrowIndex <= 13) {
+			int arrPair = arrowIndex - 10;
+			GenericDialog gd = new GenericDialog("Set Limit");
+			String[] prompts = "X-Left,X-Right,Y-Bottom,Y-Top".split(",");
+
+			gd.addNumericField(prompts[arrPair], currentMinMax[arrPair], 2);
+			gd.setCancelLabel("Set All Limits");
+			gd.showDialog();
+		
+			double val = gd.getNextNumber();
+			currentMinMax[arrPair] = val;
+			defaultMinMax[arrPair] = val;
+			if (gd.wasCanceled()){
+				new PlotDialog(this, PlotDialog.SET_RANGE).showDialog(getImagePlus().getWindow());
+			}
+		}
 		updateImage();
 	}
 
@@ -2260,6 +2276,8 @@ public class Plot implements Cloneable {
 	 *	The grid or major tick spacing in each direction is given by steps */
 	void drawAxesTicksGridNumbers(double[] steps) {
 
+		if (ip==null)
+			return;
 		String[] xCats = labelsInBraces('x');   // create categories for the axes (if any)
 		String[] yCats = labelsInBraces('y');
 		Font scFont = scFont(pp.frame.getFont());
@@ -3145,7 +3163,7 @@ public class Plot implements Cloneable {
 
 	/** Vertical text for y axis label */
 	void drawYLabel(String yLabel, int xRight, int yFrameTop, int frameHeight, Font scaledFont) {
-		if (yLabel.equals(""))
+		if (ip==null || yLabel.equals(""))
 			return;
 		ip.setFont(scaledFont);
 		FontMetrics fm = ip.getFontMetrics();

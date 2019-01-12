@@ -652,7 +652,7 @@ public class ShapeRoi extends Roi {
 	public double getLength() {
 		if (width==0 && height==0)
 			return 0.0;
-		if (paPerim>0.)
+		if (paPerim>0.0)
 			return paPerim;
 		double length = 0.0;
 		Roi[] rois = getRois();

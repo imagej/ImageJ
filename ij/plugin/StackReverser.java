@@ -1,6 +1,7 @@
 package ij.plugin;
 import ij.*;
 import ij.process.*;
+import ij.measure.Calibration;
 
 /** This plugin implements the Image/Transform/Flip Z and
 	Image/Stacks/Tools/Reverse commands. */
@@ -24,6 +25,9 @@ public class StackReverser implements PlugIn {
 		int n = stack.getSize();
 		if (n==1)
 			return;
+		Calibration cal = imp.getCalibration();
+		double min = cal.getCValue(imp.getDisplayRangeMin());
+		double max = cal.getCValue(imp.getDisplayRangeMax());
  		ImageStack stack2 = new ImageStack(imp.getWidth(), imp.getHeight(), n);
  		for (int i=1; i<=n; i++) {
  			stack2.setPixels(stack.getPixels(i), n-i+1);
@@ -35,6 +39,7 @@ public class StackReverser implements PlugIn {
 			((CompositeImage)imp).reset();
 			imp.updateAndDraw();
 		}
+		IJ.setMinAndMax(imp, min, max);
 	}
 
 }
