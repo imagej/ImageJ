@@ -148,8 +148,8 @@ public class Opener {
 				case OJJ:  // ObjectJ project
 					IJ.runPlugIn("ObjectJ_", path);
 					break;
-				case TABLE:  // ImageJ Results table
-					openResultsTable(path);
+				case TABLE: 
+					openTable(path);
 					break;
 				case RAW:
 					IJ.runPlugIn("ij.plugin.Raw", path);
@@ -1115,7 +1115,9 @@ public class Opener {
 	public static void openResultsTable(String path) {
 		try {
 			ResultsTable rt = ResultsTable.open(path);
-			if (rt!=null) rt.show("Results");
+			rt.showRowNumbers(true);
+			if (rt!=null)
+				rt.show("Results");
 		} catch(IOException e) {
 			IJ.error("Open Results", e.getMessage());
 		}
@@ -1132,13 +1134,15 @@ public class Opener {
 				return;
 			else
 				path = dir+name;
+		} else {
+			name = (new Opener()).getName(path);
+			if (name.startsWith("Results."))
+				name = "Results";
 		}
 		try {
 			ResultsTable rt = ResultsTable.open(path);
-			if (rt!=null) {
-				rt.showRowNumbers(false);
+			if (rt!=null)
 				rt.show(name);
-			}
 		} catch(IOException e) {
 			IJ.error("Open Table", e.getMessage());
 		}
