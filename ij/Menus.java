@@ -78,6 +78,7 @@ public class Menus {
 	private static int userPluginsIndex; // First user plugin or submenu in Plugins menu
 	private static boolean addSorted;
 	private static int defaultFontSize = IJ.isWindows()?15:0;
+	private static int scale = (int)Math.round(Prefs.getGuiScale());
 	private static int fontSize = Prefs.getInt(Prefs.MENU_SIZE, defaultFontSize);
 	private static Font menuFont;
 
@@ -249,7 +250,8 @@ public class Menus {
 		file.addSeparator();
 		addPlugInItem(file, "Quit", "ij.plugin.Commands(\"quit\")", 0, false);
 
-		if (fontSize!=0)
+		//System.out.println("MenuBar.setFont: "+fontSize+" "+scale+"  "+getFont());
+		if (fontSize!=0 || scale>1)
 			mbar.setFont(getFont());
 		if (ij!=null) {
 			ij.setMenuBar(mbar);
@@ -1148,7 +1150,7 @@ public class Menus {
 		int count = 0;
 		MenuItem mi;
 		popup = new PopupMenu("");
-		if (fontSize!=0)
+		if (fontSize!=0 || scale>1)
 			popup.setFont(getFont());
 
 		while (true) {
@@ -1609,12 +1611,16 @@ public class Menus {
 	/** Returns the size (in points) used for the fonts in ImageJ menus. Returns
 		0 if the default font size is being used or if this is a Macintosh. */
 	public static int getFontSize() {
-		return IJ.isMacintosh()?0:fontSize;
+		return fontSize;
+		//return IJ.isMacintosh()?0:fontSize;
 	}
 	
 	public static Font getFont() {
-		if (menuFont==null)
-			menuFont =  new Font("SanSerif", Font.PLAIN, fontSize==0?12:fontSize);
+		if (menuFont==null) {
+			int size = fontSize==0?12:fontSize;
+			size *= scale;
+			menuFont =  new Font("SanSerif", Font.PLAIN, size);
+		}
 		return menuFont;
 	}
 

@@ -79,7 +79,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.52k";
-	public static final String BUILD = "24";
+	public static final String BUILD = "31";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -165,11 +165,12 @@ public class ImageJ extends Frame implements ActionListener,
 		statusBar.setForeground(Color.black);
 		statusBar.setBackground(backgroundColor);
 		statusLine = new JLabel();
-		statusLine.setFont(new Font("SansSerif", Font.PLAIN, 13));
+		int scale = (int)Math.round(Prefs.getGuiScale());
+		statusLine.setFont(new Font("SansSerif", Font.PLAIN, 13*scale));
 		statusLine.addKeyListener(this);
 		statusLine.addMouseListener(this);
 		statusBar.add("Center", statusLine);
-		progressBar = new ProgressBar(ProgressBar.WIDTH, ProgressBar.HEIGHT);
+		progressBar = new ProgressBar(ProgressBar.WIDTH*scale, ProgressBar.HEIGHT*scale);
 		progressBar.addKeyListener(this);
 		progressBar.addMouseListener(this);
 		statusBar.add("East", progressBar);

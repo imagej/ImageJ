@@ -1,5 +1,5 @@
 package ij.gui;
-import ij.IJ;
+import ij.*;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -29,6 +29,9 @@ public class MessageDialog extends Dialog implements ActionListener, KeyListener
 		add("South", panel);
 		if (ij.IJ.isMacintosh())
 			setResizable(false);
+		//Font font = getFont();
+		//if (font!=null && Prefs.getGuiScale()!=1.0)
+		//	setFont(font.deriveFont((float)(font.getSize()*Prefs.getGuiScale())));
 		pack();
 		GUI.center(this);
 		addWindowListener(this);

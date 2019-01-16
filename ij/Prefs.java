@@ -36,7 +36,7 @@ public class Prefs {
     public static final String DIV_BY_ZERO_VALUE = "div-by-zero";
     public static final String NOISE_SD = "noise.sd";
     public static final String MENU_SIZE = "menu.size";
-    public static final String TEXT_SCALE = "text.scale";
+    public static final String GUI_SCALE = "gui.scale";
     public static final String THREADS = "threads";
 	public static final String KEY_PREFIX = ".";
  
@@ -193,7 +193,7 @@ public class Prefs {
 	static int threads;
 	static int transparentIndex = -1;
 	private static boolean resetPreferences;
-	private static double textScale = 1.0;
+	private static double guiScale = 1.0;
 
 	/** Finds and loads the ImageJ configuration file, "IJ_Props.txt".
 		@return	an error message if "IJ_Props.txt" not found.
@@ -216,7 +216,7 @@ public class Prefs {
 		imagesURL = props.getProperty("images.location");
 		loadPreferences();
 		loadOptions();
-		textScale = get(TEXT_SCALE, 1.0);
+		guiScale = get(GUI_SCALE, 1.0);
 		return null;
 	}
 
@@ -687,16 +687,16 @@ public class Prefs {
 	}
 		
 	/** Sets the GenericDialog and Command Finder text scale (0.5 to 2.0). */
-	public static void setTextScale(double scale) {
-		if (scale>=0.5 && scale<=2.0) {
-			textScale = scale;
-			set(TEXT_SCALE, textScale);
+	public static void setGuiScale(double scale) {
+		if (scale>=0.5 && scale<=2.5) {
+			guiScale = scale;
+			set(GUI_SCALE, guiScale);
 		}
 	}
 
 	/** Returns the GenericDialog and Command Finder text scale. */
-	public static double getTextScale() {
-		return textScale;
+	public static double getGuiScale() {
+		return guiScale;
 	}
 
 }
