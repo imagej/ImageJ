@@ -442,9 +442,12 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		table.setPreferredScrollableViewportSize(dim);
 		table.addKeyListener(this);
 		table.addMouseListener(this);
+		double guiScale = Prefs.getGuiScale();
+		if (guiScale>1.0)
+			table.setRowHeight((int)(table.getRowHeight()*guiScale*0.9));
 		Font font = table.getFont();
-		if (font!=null && Prefs.getGuiScale()!=1.0)
-			table.setFont(font.deriveFont((float)(font.getSize()*Prefs.getGuiScale())));
+		if (font!=null && guiScale>1.0)
+			table.setFont(font.deriveFont((float)(font.getSize()*guiScale)));
 		// Auto-scroll table using keystrokes
 		table.addKeyListener(new KeyAdapter() {
 			public void keyTyped(final KeyEvent evt) {

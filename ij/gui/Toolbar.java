@@ -101,7 +101,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static int arcSize = (int)Prefs.get(CORNER_DIAMETER, 20);
 	private int lineType = LINE;
 	private static boolean legacyMode;
-	private static int scale;
+	private static int scale = 1;
 	private static int buttonWidth;
 	private static int buttonHeight;
 	private static int gapSize;
@@ -426,6 +426,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (null==g) return;
 		icon = icons[tool];
 		if (icon==null) return;
+		if (scale>1)
+			((Graphics2D)g).setStroke(new BasicStroke(scale));
 		this.icon = icon;
 		int x1, y1, x2, y2;
 		pc = 0;
@@ -439,14 +441,17 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				case 'O': g.drawOval(x+v(), y+v(), v(), v()); break;  // oval
 				case 'V': case 'o': g.fillOval(x+v(), y+v(), v(), v()); break;  // filled oval
 				case 'C': // set color
+					int saveScale = scale;
+					scale = 1;
 					int v1=v(), v2=v(), v3=v();
 					int red=v1*16, green=v2*16, blue=v3*16;
 					if (red>255) red=255; if (green>255) green=255; if (blue>255) blue=255;
 					Color color = v1==1&&v2==2&&v3==3?foregroundColor:new Color(red,green,blue);
 					g.setColor(color);
+					scale = saveScale;
 					break; 
 				case 'L': g.drawLine(x+v(), y+v(), x+v(), y+v()); break; // line
-				case 'D': g.fillRect(x+v(), y+v(), 1, 1); break; // dot
+				case 'D':  g.fillRect(x+v(), y+v(), scale, scale); break; // dot
 				case 'P': // polyline
 					Polygon p = new Polygon();
 					p.addPoint(x+v(), y+v());
@@ -1495,7 +1500,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			icons[getNumTools()-1] = icons[getNumTools()-2];
 			names[getNumTools()-2] = null;
 			icons[getNumTools()-2] = null;
-			ps = new Dimension(buttonWidth*NUM_BUTTONS-(BUTTON_WIDTH-gapSize)+nExtraTools*BUTTON_WIDTH, buttonHeight);
+			ps = new Dimension(buttonWidth*NUM_BUTTONS-(buttonWidth-gapSize)+nExtraTools*buttonWidth, buttonHeight);
 			IJ.getInstance().pack();
 			tool = getNumTools()-2;
 		}
