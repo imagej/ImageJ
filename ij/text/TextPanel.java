@@ -440,7 +440,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		else if (cmd.equals("Copy"))
 			copySelection();
 		else if (cmd.equals("Clear"))
-			clearSelection();
+			doClear();
 		else if (cmd.equals("Select All"))
 			selectAll();
 		else if (cmd.equals("Find..."))
@@ -701,11 +701,23 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		clearSelection();
 	}
 
+	/** Implements the Clear command. */
+	public void doClear() {
+		if (getLineCount()>0 && selStart!=-1 && selEnd!=-1)
+			clearSelection();
+		else if ("Results".equals(title))
+			IJ.doCommand("Clear Results");
+		else {
+			selectAll();
+			clearSelection();
+		}
+	}
+
 	/** Deletes the selected lines. */
 	public void clearSelection() {
 		if (selStart==-1 || selEnd==-1) {
 			if (getLineCount()>0)
-				IJ.error("Selection required");
+				IJ.error("Text selection required");
 			return;
 		}
 		if (Recorder.record) {

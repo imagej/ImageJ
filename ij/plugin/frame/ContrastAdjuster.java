@@ -204,7 +204,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			add(choice);
 		}
 	
-		// buttons'
+		// buttons
 		int trim = IJ.isMacOSX()?20:0;
 		panel = new Panel();
 		panel.setLayout(new GridLayout(0,2, 0, 0));

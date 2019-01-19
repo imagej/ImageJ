@@ -18,7 +18,6 @@ import java.awt.image.*;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
-
 /**
 This frame is the main ImageJ class.
 <p>
@@ -79,7 +78,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.52k";
-	public static final String BUILD = "41";
+	public static final String BUILD = "51";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -165,12 +164,12 @@ public class ImageJ extends Frame implements ActionListener,
 		statusBar.setForeground(Color.black);
 		statusBar.setBackground(backgroundColor);
 		statusLine = new JLabel();
-		int scale = (int)Math.round(Prefs.getGuiScale());
-		statusLine.setFont(new Font("SansSerif", Font.PLAIN, 13*scale));
+		double scale = Prefs.getGuiScale();
+		statusLine.setFont(new Font("SansSerif", Font.PLAIN, (int)(13*scale)));
 		statusLine.addKeyListener(this);
 		statusLine.addMouseListener(this);
 		statusBar.add("Center", statusLine);
-		progressBar = new ProgressBar(ProgressBar.WIDTH*scale, ProgressBar.HEIGHT*scale);
+		progressBar = new ProgressBar((int)(ProgressBar.WIDTH*scale), (int)(ProgressBar.HEIGHT*scale));
 		progressBar.addKeyListener(this);
 		progressBar.addMouseListener(this);
 		statusBar.add("East", progressBar);
@@ -864,6 +863,14 @@ public class ImageJ extends Frame implements ActionListener,
 	
 	public static void setCommandName(String name) {
 		commandName = name;
+	}
+	
+	public void resize() {
+		double scale = Prefs.getGuiScale();
+		toolbar.init();
+		statusLine.setFont(new Font("SansSerif", Font.PLAIN, (int)(13*scale)));
+		progressBar.init((int)(ProgressBar.WIDTH*scale), (int)(ProgressBar.HEIGHT*scale));
+		pack();
 	}
 
 }

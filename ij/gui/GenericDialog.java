@@ -563,8 +563,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.HORIZONTAL;
-		if (font!=null)
+		if (font!=null) {
+			if (Prefs.getGuiScale()>1.0)
+				font = font.deriveFont((float)(font.getSize()*Prefs.getGuiScale()));
 			theLabel.setFont(font);
+		}
 		if (color!=null)
 			theLabel.setForeground(color);
 		add(theLabel, c);

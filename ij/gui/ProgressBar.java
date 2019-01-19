@@ -33,6 +33,10 @@ public class ProgressBar extends Canvas {
      * This constructor is called once by ImageJ at startup.
      */
     public ProgressBar(int canvasWidth, int canvasHeight) {
+    	init(canvasWidth, canvasHeight);
+	}
+    
+    public void init(int canvasWidth, int canvasHeight) {
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
         x = 3;

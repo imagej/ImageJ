@@ -101,6 +101,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static int arcSize = (int)Prefs.get(CORNER_DIAMETER, 20);
 	private int lineType = LINE;
 	private static boolean legacyMode;
+	private static double dscale = 1.0;
 	private static int scale = 1;
 	private static int buttonWidth;
 	private static int buttonHeight;
@@ -120,12 +121,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 
 	public Toolbar() {
-		scale = (int)Math.round(Prefs.getGuiScale());
-		buttonWidth = BUTTON_WIDTH*scale;
-		buttonHeight = BUTTON_HEIGHT*scale;
-		gapSize = GAP_SIZE*scale;
-		offset = OFFSET*scale;
-		ps = new Dimension(buttonWidth*NUM_BUTTONS-(buttonWidth-gapSize), buttonHeight);
+		init();
 		down = new boolean[MAX_TOOLS];
 		resetButtons();
 		down[0] = true;
@@ -137,6 +133,25 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		names[getNumTools()-1] = "\"More Tools\" menu (switch toolsets or add tools)";
 		icons[getNumTools()-1] = "C900T1e15>T7e15>"; // ">>"
 		addPopupMenus();
+	}
+	
+	public void init() {
+		dscale = Prefs.getGuiScale();
+		scale = (int)Math.round(dscale);
+		if ((dscale>=1.5&&dscale<2.0) || (dscale>=2.5&&dscale<3.0))
+			dscale = scale;
+		if (dscale>1.0) {
+			buttonWidth = (int)((BUTTON_WIDTH-2)*dscale);
+			buttonHeight = (int)((BUTTON_HEIGHT-2)*dscale);
+			offset = (int)((OFFSET-1)*dscale);
+			//IJ.log(dscale+" "+BUTTON_WIDTH+" "+buttonWidth+" "+offset);
+		} else {
+			buttonWidth = BUTTON_WIDTH;
+			buttonHeight = BUTTON_HEIGHT;
+			offset = OFFSET;
+		}
+		gapSize = GAP_SIZE;
+		ps = new Dimension(buttonWidth*NUM_BUTTONS-(buttonWidth-gapSize), buttonHeight);
 	}
 
 	void addPopupMenus() {

@@ -689,9 +689,9 @@ public class Prefs {
 		return get("options.ext", ".csv");
 	}
 		
-	/** Sets the GenericDialog and Command Finder text scale (0.5 to 2.0). */
+	/** Sets the GenericDialog and Command Finder text scale (0.5 to 3.0). */
 	public static void setGuiScale(double scale) {
-		if (scale>=0.5 && scale<=2.5) {
+		if (scale>=0.5 && scale<=3.0) {
 			guiScale = scale;
 			set(GUI_SCALE, guiScale);
 		}
