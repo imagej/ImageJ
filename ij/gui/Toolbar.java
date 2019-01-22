@@ -1044,7 +1044,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				}
 			}
 			setTool2(newTool);
-			boolean isRightClick = e.isPopupTrigger()||e.isMetaDown();
+			//boolean isRightClick = e.isPopupTrigger()||e.isMetaDown();
+			int flags = e.getModifiers();
+			boolean isRightClick = e.isPopupTrigger()||(!IJ.isMacintosh()&&(flags&Event.META_MASK)!=0);
 			if (current==RECTANGLE && isRightClick) {
 				rectItem.setState(rectType==RECT_ROI);
 				roundRectItem.setState(rectType==ROUNDED_RECT_ROI);

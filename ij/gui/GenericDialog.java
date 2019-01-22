@@ -80,6 +80,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private static GenericDialog instance;
 	private boolean firstPaint = true;
 	private boolean fontSizeSet;
+	private boolean escapePressed;
+
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
     	image window as the parent frame or the ImageJ frame if no image windows
@@ -113,7 +115,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c = new GridBagConstraints();
 		setLayout(grid);
 		macroOptions = Macro.getOptions();
-		macro = macroOptions!=null;
+		macro = macroOptions!=null && !Interpreter.showingError();
 		addKeyListener(this);
 		addWindowListener(this);
     }
@@ -1425,6 +1427,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	public void keyPressed(KeyEvent e) {
 		int keyCode = e.getKeyCode();
 		IJ.setKeyDown(keyCode);
+		escapePressed = keyCode==KeyEvent.VK_ESCAPE;
 		if (keyCode==KeyEvent.VK_ENTER && textArea1==null && okay!=null && okay.isEnabled()) {
 			wasOKed = true;
 			if (IJ.isMacOSX())
@@ -1582,5 +1585,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     public void windowIconified(WindowEvent e) {}
     public void windowDeiconified(WindowEvent e) {}
     public void windowDeactivated(WindowEvent e) {}
+    
+    public boolean escapePressed() {
+		return escapePressed;
+	}
 
 }

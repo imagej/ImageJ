@@ -24,7 +24,7 @@ public class GifWriter implements PlugIn {
 		if (path==null)
 			return null;
 		GifWriter gf = new GifWriter();
-		gf.showErrors = false;
+		//gf.showErrors = false;
 		gf.run(imp, path);
 		return gf.error;
 	}

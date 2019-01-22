@@ -24,5 +24,5 @@ public class TrimmedButton extends Button {
     public Dimension getPreferredSize() {
         return getMinimumSize();
     }
-
+    
 }

@@ -64,6 +64,7 @@ public class Interpreter implements MacroConstants {
 	static boolean tempShowMode;
 	boolean waitingForUser;
 	int selectCount;
+	static boolean showingError;
 	
 	static TextWindow arrayWindow;
 	int inspectStkIndex = -1;
@@ -1296,6 +1297,7 @@ public class Interpreter implements MacroConstants {
 	}
 		
 	void showError(String title, String msg, String[] variables) {
+		showingError = true;
 		GenericDialog gd = new GenericDialog(title);
 		gd.setInsets(6,5,0);
 		gd.addMessage(msg);
@@ -1303,6 +1305,7 @@ public class Interpreter implements MacroConstants {
 		gd.addCheckbox("Show \"Debug\" Window", showVariables);
 		gd.hideCancelButton();
 		gd.showDialog();
+		showingError = false;
 		showVariables = gd.getNextBoolean();
 		if (!gd.wasCanceled() && showVariables)
 			updateDebugWindow(variables, null);
@@ -2320,6 +2323,10 @@ public class Interpreter implements MacroConstants {
 	
 	public String getErrorMessage() {
 		return errorMessage;
+	}
+	
+	public static boolean showingError() {
+		return showingError;
 	}
 		
 } // class Interpreter

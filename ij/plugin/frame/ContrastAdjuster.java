@@ -91,11 +91,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		gridbag = new GridBagLayout();
 		c = new GridBagConstraints();
 		setLayout(gridbag);
-		Font font = getFont();
-		if (font!=null && scale>1.0) {
-			font = font.deriveFont((float)(font.getSize()*scale));
-			setFont(font);
-		}
 		if (scale>1.0) {
 			sanFont = sanFont.deriveFont((float)(sanFont.getSize()*scale));
 			monoFont = monoFont.deriveFont((float)(monoFont.getSize()*scale));
@@ -200,33 +195,36 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			addBalanceChoices();
 			gridbag.setConstraints(choice, c);
 			choice.addItemListener(this);
-			//choice.addKeyListener(ij);		
 			add(choice);
 		}
 	
 		// buttons
+ 		if (scale>1.0) {
+			Font font = getFont();
+			if (font!=null) 
+				font = font.deriveFont((float)(font.getSize()*scale));
+			else
+				font = new Font("SansSerif", Font.PLAIN, (int)(12*scale));
+			setFont(font);
+		}
 		int trim = IJ.isMacOSX()?20:0;
 		panel = new Panel();
 		panel.setLayout(new GridLayout(0,2, 0, 0));
 		autoB = new TrimmedButton("Auto",trim);
 		autoB.addActionListener(this);
 		autoB.addKeyListener(ij);
-		if (font!=null) autoB.setFont(font);
 		panel.add(autoB);
 		resetB = new TrimmedButton("Reset",trim);
 		resetB.addActionListener(this);
 		resetB.addKeyListener(ij);
-		if (font!=null) resetB.setFont(font);
 		panel.add(resetB);
 		setB = new TrimmedButton("Set",trim);
 		setB.addActionListener(this);
 		setB.addKeyListener(ij);
-		if (font!=null) setB.setFont(font);
 		panel.add(setB);
 		applyB = new TrimmedButton("Apply",trim);
 		applyB.addActionListener(this);
 		applyB.addKeyListener(ij);
-		if (font!=null) applyB.setFont(font);
 		panel.add(applyB);
 		c.gridy = y++;
 		c.insets = new Insets(8, 5, 10, 5);

@@ -254,7 +254,7 @@ public class Menus {
 		addPlugInItem(file, "Quit", "ij.plugin.Commands(\"quit\")", 0, false);
 
 		//System.out.println("MenuBar.setFont: "+fontSize+" "+scale+"  "+getFont());
-		if (scale>1.0)
+		if (fontSize!=0 || scale>1.0)
 			mbar.setFont(getFont());
 		if (ij!=null) {
 			ij.setMenuBar(mbar);
@@ -1153,7 +1153,7 @@ public class Menus {
 		int count = 0;
 		MenuItem mi;
 		popup = new PopupMenu("");
-		if (scale>1.0)
+		if (fontSize!=0 || scale>1.0)
 			popup.setFont(getFont());
 		while (true) {
 			count++;
