@@ -647,11 +647,8 @@ public class IJ {
 				if (isMacro() && hd.escapePressed())
 					throw new RuntimeException(Macro.MACRO_CANCELED);
 			} else {
-				GenericDialog gd = new GenericDialog(title);
-				gd.addMessage(msg);
-				gd.hideCancelButton();
-				gd.showDialog();
-				if (isMacro() && gd.escapePressed())
+				MessageDialog md = new MessageDialog(ij, title, msg); 
+				if (isMacro() && md.escapePressed())
 					throw new RuntimeException(Macro.MACRO_CANCELED);
 			}
 		} else
@@ -1606,6 +1603,14 @@ public class IJ {
 				abort();
 		}
 		return img;
+	}
+	
+	/**The macro interpreter uses this method to call getImage().*/
+	public static ImagePlus getImage(Interpreter interpreter) {
+		macroInterpreter = interpreter;
+		ImagePlus imp =  getImage();
+		macroInterpreter = null;
+		return imp;
 	}
 	
 	/** Returns the active image or stack slice as an ImageProcessor, or displays

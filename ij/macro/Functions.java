@@ -812,7 +812,7 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	ImagePlus getImage() {
-		ImagePlus imp = IJ.getImage();
+		ImagePlus imp = IJ.getImage(interp);
 		if (imp.getWindow()==null && IJ.getInstance()!=null && !interp.isBatchMode() && WindowManager.getTempCurrentImage()==null)
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 		defaultIP = null;

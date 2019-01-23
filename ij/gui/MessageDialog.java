@@ -14,8 +14,21 @@ public class MessageDialog extends Dialog implements ActionListener, KeyListener
 		super(parent, title, true);
 		setLayout(new BorderLayout());
 		if (message==null) message = "";
+		Font font = null;
+		double scale = Prefs.getGuiScale();
+		if (scale>1.0) {
+			font = getFont();
+			if (font!=null)
+				font = font.deriveFont((float)(font.getSize()*scale));
+			else
+				font = new Font("SansSerif", Font.PLAIN, (int)(12*scale));
+			setFont(font);
+		}
 		label = new MultiLineLabel(message);
-		if (!IJ.isLinux()) label.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		if (font!=null)
+			label.setFont(font);
+		else if (!IJ.isLinux())
+			label.setFont(new Font("SansSerif", Font.PLAIN, 14));
 		Panel panel = new Panel();
 		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 15));
 		panel.add(label);
@@ -29,9 +42,6 @@ public class MessageDialog extends Dialog implements ActionListener, KeyListener
 		add("South", panel);
 		if (ij.IJ.isMacintosh())
 			setResizable(false);
-		//Font font = getFont();
-		//if (font!=null && Prefs.getGuiScale()!=1.0)
-		//	setFont(font.deriveFont((float)(font.getSize()*Prefs.getGuiScale())));
 		pack();
 		GUI.center(this);
 		addWindowListener(this);

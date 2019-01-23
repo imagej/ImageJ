@@ -18,7 +18,6 @@ public class MultiLineLabel extends Canvas {
     public MultiLineLabel(String label) {
         init(label);
     }
-    
 
     public MultiLineLabel(String label, int minimumWidth) {
         init(label);
