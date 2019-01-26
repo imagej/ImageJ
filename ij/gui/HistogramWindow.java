@@ -96,12 +96,16 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		the same as the image range expect for 32 bit images. */
 	public void showHistogram(ImagePlus imp, int bins, double histMin, double histMax) {
 		boolean limitToThreshold = (Analyzer.getMeasurements()&LIMIT)!=0;
+		ImageProcessor ip = imp.getProcessor();
+		if (ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD
+		&& ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE)
+			limitToThreshold = false;  // ignore invisible thresholds
 		if (imp.getBitDepth()==24 && rgbMode<INTENSITY1)
 			rgbMode=INTENSITY1;
 		if (rgbMode==RED||rgbMode==GREEN||rgbMode==BLUE) {
 			int channel = rgbMode - 2;
 			ColorProcessor cp = (ColorProcessor)imp.getProcessor();
-			ImageProcessor ip = cp.getChannel(channel, null);
+			ip = cp.getChannel(channel, null);
 			ImagePlus imp2 = new ImagePlus("", ip);
 			imp2.setRoi(imp.getRoi());
 			stats = imp2.getStatistics(AREA+MEAN+MODE+MIN_MAX, bins, histMin, histMax);

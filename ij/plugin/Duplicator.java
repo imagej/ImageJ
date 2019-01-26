@@ -193,7 +193,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		double max = imp.getDisplayRangeMax();
 		ImageStack stack2 = null;
 		int n = stack.getSize();
-		boolean showProgress = virtualStack || (n*stack.getWidth()*stack.getHeight()>=209715200);
+		boolean showProgress = virtualStack || ((double)n*stack.getWidth()*stack.getHeight()>=209715200.0);
 		for (int i=1; i<=n; i++) {
 			if (showProgress) {
 				IJ.showStatus("Duplicating: "+i+"/"+n);
@@ -287,7 +287,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		double max = imp.getDisplayRangeMax();
 		ImageStack stack2 = null;	
 		int n = lastSlice-firstSlice+1;
-		boolean showProgress = virtualStack || (n*stack.getWidth()*stack.getHeight()>=209715200);
+		boolean showProgress = virtualStack || ((double)n*stack.getWidth()*stack.getHeight()>=209715200.0);
 		for (int i=firstSlice; i<=lastSlice; i++) {
 			if (showProgress) {
 				IJ.showStatus("Duplicating: "+i+"/"+lastSlice);
@@ -300,6 +300,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 				stack2 = new ImageStack(ip2.getWidth(), ip2.getHeight(), imp.getProcessor().getColorModel());
 			stack2.addSlice(stack.getSliceLabel(i), ip2);
 		}
+		IJ.showProgress(1.0);
 		ImagePlus imp2 = imp.createImagePlus();
 		imp2.setStack("DUP_"+imp.getTitle(), stack2);
 		String info = (String)imp.getProperty("Info");

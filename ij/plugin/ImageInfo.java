@@ -271,7 +271,14 @@ public class ImageInfo implements PlugIn {
 				lower = cal.getCValue((int)lower);
 				upper = cal.getCValue((int)upper);
 			}
-			s += "Threshold: "+d2s(lower)+"-"+d2s(upper)+uncalibrated+"\n";
+			int lutMode = ip.getLutUpdateMode();
+			String mode = "red";
+			switch (lutMode) {
+				case ImageProcessor.BLACK_AND_WHITE_LUT: mode="B&W"; break;
+				case ImageProcessor.NO_LUT_UPDATE: mode="invisible"; break;
+				case ImageProcessor.OVER_UNDER_LUT: mode="over/under"; break;
+			}
+			s += "Threshold: "+d2s(lower)+"-"+d2s(upper)+uncalibrated+" ("+mode+")\n";
 		}
 		ImageCanvas ic = imp.getCanvas();
     	double mag = ic!=null?ic.getMagnification():1.0;
