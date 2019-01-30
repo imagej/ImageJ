@@ -5,6 +5,7 @@ import java.awt.image.*;
 import ij.*;
 import ij.gui.*;
 import ij.measure.*;
+import ij.plugin.frame.Recorder;
 
 /** This class converts an ImagePlus object to a different type. */
 public class ImageConverter {
@@ -29,6 +30,7 @@ public class ImageConverter {
 		if (type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32) {
 			imp.setProcessor(null, ip.convertToByte(doScaling));
 			imp.setCalibration(imp.getCalibration()); //update calibration
+			record();
 		} else if (type==ImagePlus.COLOR_RGB)
 	    	imp.setProcessor(null, ip.convertToByte(doScaling));
 		else if (ip.isPseudoColorLut()) {
@@ -57,9 +59,21 @@ public class ImageConverter {
 			return;
 		}
 		ImageProcessor ip = imp.getProcessor();
+		if (type==ImagePlus.GRAY32)
+			record();
 		imp.trimProcessor();
 		imp.setProcessor(null, ip.convertToShort(doScaling));
 		imp.setCalibration(imp.getCalibration()); //update calibration
+	}
+	
+	private void record() {
+		if (Recorder.record) {
+			Boolean state = ImageConverter.getDoScaling();
+			if (Recorder.scriptMode())
+				Recorder.recordCall("ImageConverter.setDoScaling("+state+");", true);
+			else
+				Recorder.	recordString("setOption(\"ScaleConversions\", "+state+");\n");
+		}
 	}
 
 	/** Converts this ImagePlus to 32-bit grayscale. */

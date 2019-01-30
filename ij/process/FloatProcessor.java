@@ -178,23 +178,23 @@ public class FloatProcessor extends ImageProcessor {
 		
 	// creates 8-bit image by linearly scaling from float to 8-bits
 	private byte[] create8BitImage(boolean thresholding) {
-		//ij.IJ.log("create8BitImage: "+thresholding);
 		int size = width*height;
 		if (pixels8==null)
 			pixels8 = new byte[size];
 		double value;
 		int ivalue;
-		double min2 = getMin(), max2=getMax();
+		double min2 = getMin();
+		double max2=getMax();
 		double scale = 255.0/(max2-min2);
 		int maxValue = thresholding?254:255;
+		if (ij.IJ.debugMode) ij.IJ.log("create8BitImage: "+min2+"  "+max2+"  "+scale);
 		for (int i=0; i<size; i++) {
 			value = pixels[i]-min2;
 			if (value<0.0) value=0.0;
-			ivalue = (int)(value*scale);
+			ivalue = (int)(value*scale+0.5);
 			if (ivalue>maxValue) ivalue = maxValue;
 			pixels8[i] = (byte)ivalue;
 		}
-		//if (ij.IJ.debugMode) new ij.ImagePlus("pixels8",new ByteProcessor(width,height,pixels8).duplicate()).show();
 		return pixels8;
 	}
 	

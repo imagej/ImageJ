@@ -4479,6 +4479,8 @@ public class Functions implements MacroConstants, Measurements {
 			Prefs.supportMacroUndo = state;
 		else if (arg1.equals("inverty"))
 			getImage().getCalibration().setInvertY(state);
+		else if (arg1.equals("scaleconversions"))
+			ImageConverter.setDoScaling(state);
 		else
 			interp.error("Invalid option");
 	}
@@ -5580,7 +5582,7 @@ public class Functions implements MacroConstants, Measurements {
 			return getRankPositions();
 		else if (name.equals("getStatistics"))
 			return getArrayStatistics();
-		else if (name.equals("getSequence"))
+		else if (name.equals("sequence") || name.equals("getSequence"))
 			return getSequence();
 		else if (name.equals("fill"))
 			return fillArray();
@@ -6867,7 +6869,7 @@ public class Functions implements MacroConstants, Measurements {
 		h.setValue(r.height);
 	}
 
-	void toScaled() {       //pixel coordinates to calibrated coordinates
+	void toScaled() {   //pixel coordinates to calibrated coordinates
 		ImagePlus imp = getImage();
 		Plot plot = (Plot)(getImage().getProperty(Plot.PROPERTY_KEY)); //null if not a plot window
 		int height = imp.getHeight();
@@ -6904,13 +6906,12 @@ public class Functions implements MacroConstants, Measurements {
 				yv.setValue(plot == null ? cal.getY(y,height) : plot.descaleY((int)(y+0.5)));
 				if (threeArgs)
 					zv.setValue(cal.getZ(zv.getValue()));
-			} else {
-				xv.setValue(plot == null ? x*cal.pixelWidth : plot.descaleX((int)(x+0.5)));
-			}
+			} else //oneArg; convert horizontal length (not the x coordinate, no offset)
+				xv.setValue(x * cal.pixelWidth) ;							
 		}
 	}
 
-	void toUnscaled() {     //calibrated coordinates to pixel coordinates
+	void toUnscaled() {   //calibrated coordinates to pixel coordinates
 		ImagePlus imp = getImage();
 		Plot plot = (Plot)(getImage().getProperty(Plot.PROPERTY_KEY)); //null if not a plot window
 		int height = imp.getHeight();
@@ -6947,9 +6948,8 @@ public class Functions implements MacroConstants, Measurements {
 				yv.setValue(plot == null ? cal.getRawY(y,height) : plot.scaleYtoPxl(y));
 				if (threeArgs)
 					zv.setValue(cal.getRawZ(zv.getValue()));
-			} else {
-				xv.setValue(plot == null ? x/cal.pixelWidth : plot.scaleXtoPxl(x));
-			}
+			} else  //oneArg; convert horizontal length (not the x coordinate, no offset)
+				xv.setValue(x/cal.pixelWidth);				
 		}
 	}
 

@@ -297,8 +297,12 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (textArea!=null)
 			textArea.append(str);
 	}
-
+	
 	public static void recordCall(String call) {
+		recordCall(call, false);
+	}
+
+	public static void recordCall(String call, boolean recordCommand) {
 		if (IJ.debugMode) IJ.log("recordCall: "+call+"  "+commandName);
 		boolean isMacro = Thread.currentThread().getName().endsWith("Macro$") && !recordInMacros;
 		if (textArea!=null && scriptMode && !IJ.macroRunning() && !isMacro) {
@@ -309,7 +313,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			if (javaMode() && call.startsWith("rt = "))
 				call = "ResultTable " + call;
 			textArea.append(call+"\n");
-			commandName = null;
+			if (!recordCommand)
+				commandName = null;
  		}
 	}
 	
