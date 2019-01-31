@@ -184,10 +184,9 @@ public class FloatProcessor extends ImageProcessor {
 		double value;
 		int ivalue;
 		double min2 = getMin();
-		double max2=getMax();
+		double max2 = getMax();
 		double scale = 255.0/(max2-min2);
 		int maxValue = thresholding?254:255;
-		if (ij.IJ.debugMode) ij.IJ.log("create8BitImage: "+min2+"  "+max2+"  "+scale);
 		for (int i=0; i<size; i++) {
 			value = pixels[i]-min2;
 			if (value<0.0) value=0.0;

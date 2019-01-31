@@ -459,6 +459,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 				Line line = (Line)roi;
 				rt.addValue("Angle", line.getAngle(line.x1,line.y1,line.x2,line.y2));
 			}
+			if ((measurements&LABELS)!=0)
+				rt.addLabel("Label", getFileName());
 			return;
 		}
 		boolean straightLine = roi.getType()==Roi.LINE;
