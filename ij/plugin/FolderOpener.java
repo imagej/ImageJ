@@ -177,7 +177,7 @@ public class FolderOpener implements PlugIn {
 				return;
 			IJ.showStatus("");
 			t0 = System.currentTimeMillis();
-			if (sortFileNames || dicomImages)
+			if (sortFileNames || dicomImages || IJ.isMacOSX())
 				list = StringSorter.sortNumerically(list);
 
 			if (n<1)
