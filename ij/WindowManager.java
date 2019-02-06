@@ -375,20 +375,22 @@ public class WindowManager {
 		int index = imageList.indexOf(win);
 		if (index==-1)
 			return;  // not on the window list
-		imageList.removeElementAt(index);
-		activations.remove(win);
-		if (imageList.size()>1 && !Prefs.closingAll) {
-			ImageWindow win2 = activations.size()>0?(ImageWindow)activations.get(activations.size()-1):null;
-			setCurrentWindow(win2);
-		} else
-			currentWindow = null;
-		setTempCurrentImage(null);  //???
-		int nonImageCount = nonImageList.size();
-		if (nonImageCount>0)
-			nonImageCount++;
-		Menus.removeWindowMenuItem(nonImageCount+index);
-		Menus.updateMenus();
-		Undo.reset();
+		try {
+			imageList.remove(win);
+			activations.remove(win);
+			if (imageList.size()>1 && !Prefs.closingAll) {
+				ImageWindow win2 = activations.size()>0?(ImageWindow)activations.get(activations.size()-1):null;
+				setCurrentWindow(win2);
+			} else
+				currentWindow = null;
+			setTempCurrentImage(null);  //???
+			int nonImageCount = nonImageList.size();
+			if (nonImageCount>0)
+				nonImageCount++;
+			Menus.removeWindowMenuItem(nonImageCount+index);
+			Menus.updateMenus();
+			Undo.reset();
+		}  catch (Exception e) { }
 	}
 
 	/** The specified Window becomes the front window. */

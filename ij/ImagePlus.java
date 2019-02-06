@@ -1924,8 +1924,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	
 	/** Implements the File/Revert command. */
 	public void revert() {
-		if (getStackSize()>1 && getStack().isVirtual())
+		if (getStackSize()>1 && getStack().isVirtual()) {
+			int thisSlice = currentSlice;
+			currentSlice = 0;
+			setSlice(thisSlice);
 			return;
+		}
 		FileInfo fi = getOriginalFileInfo();
 		boolean isFileInfo = fi!=null && fi.fileFormat!=FileInfo.UNKNOWN;
 		if (!isFileInfo && url==null)
