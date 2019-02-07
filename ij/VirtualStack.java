@@ -3,6 +3,7 @@ import ij.process.*;
 import ij.io.*;
 import ij.gui.ImageCanvas;
 import ij.util.Tools;
+import ij.plugin.FolderOpener;
 import java.io.*;
 import java.awt.*;
 import java.awt.image.ColorModel;
@@ -132,8 +133,14 @@ public class VirtualStack extends ImageStack {
 			int type = imp.getType();
 			ColorModel cm = imp.getProcessor().getColorModel();
 			String info = (String)imp.getProperty("Info");
-			if (info!=null && !(info.startsWith("Software")||info.startsWith("ImageDescription")))
-				labels[n-1] = info;
+			if (info!=null) {
+				if (FolderOpener.useInfo(info))
+					labels[n-1] = info;
+			} else {
+				String sliceLabel = imp.getStack().getSliceLabel(1);
+				if (FolderOpener.useInfo(sliceLabel))
+					labels[n-1] = "Label: "+sliceLabel;
+			}
 			depthThisImage = imp.getBitDepth();
 			ip = imp.getProcessor();
 			ip.setOverlay(imp.getOverlay());
@@ -161,7 +168,7 @@ public class VirtualStack extends ImageStack {
 		}
 		return ip;
 	 }
-	 
+	 	 
 	 private void label(ImageProcessor ip, String msg, Color color) {
 		int size = getHeight()/20;
 		if (size<9) size=9;
@@ -189,10 +196,12 @@ public class VirtualStack extends ImageStack {
 		String label = labels[n-1];
 		if (label==null)
 			return names[n-1];
-		else if (label.length()>100 && label.indexOf('\n')>0)
-			return names[n-1]+"\n"+label;
-		else
-			return label;
+		else {
+			if (label.startsWith("Label: "))  // slice label
+				return label.substring(7,label.length());
+			else
+				return names[n-1]+"\n"+label;
+		}
 	}
 	
 	/** Returns null. */

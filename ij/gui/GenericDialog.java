@@ -114,6 +114,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c = new GridBagConstraints();
 		setLayout(grid);
 		macroOptions = Macro.getOptions();
+		//IJ.log("macroOptions: "+macroOptions+"  "+title);
 		macro = macroOptions!=null;
 		addKeyListener(this);
 		addWindowListener(this);

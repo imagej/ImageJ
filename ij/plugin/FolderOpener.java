@@ -191,6 +191,8 @@ public class FolderOpener implements PlugIn {
 			ImagePlus imp = null;
 			boolean firstMessage = true;
 			boolean fileInfoStack = false;
+			
+			// open images as stack
 			for (int i=start-1; i<list.length; i++) {
 				if ((counter++%increment)!=0)
 					continue;
@@ -238,8 +240,14 @@ public class FolderOpener implements PlugIn {
 				String label = imp.getTitle();
 				if (stackSize==1) {
 					String info = (String)imp.getProperty("Info");
-					if (info!=null && info.length()>100 && info.indexOf('\n')>0)
-							label += "\n" + info; 
+					if (info!=null) {
+						if (useInfo(info))
+							label += "\n" + info;
+					} else {
+						String sliceLabel = imp.getStack().getSliceLabel(1);
+						if (useInfo(sliceLabel))
+							label =  sliceLabel;
+					}
 				}
 				if (Math.abs(imp.getCalibration().pixelWidth-cal.pixelWidth)>0.0000000001)
 					allSameCalibration = false;
@@ -255,8 +263,7 @@ public class FolderOpener implements PlugIn {
 							roi.setPosition(count+1);
 						overlay.add(roi);
 					}
-				}
-				
+				}				
 				if (openAsVirtualStack) { 
 					if (fileInfoStack)
 						openAsFileInfoStack((FileInfoVirtualStack)stack, directory+list[i]);
@@ -309,7 +316,8 @@ public class FolderOpener implements PlugIn {
 					break;
 				if (IJ.escapePressed())
 					{IJ.beep(); break;}
-			}
+			}  // open images as stack
+			
 		} catch(OutOfMemoryError e) {
 			IJ.outOfMemory("FolderOpener");
 			if (stack!=null) stack.trim();
@@ -385,6 +393,10 @@ public class FolderOpener implements PlugIn {
    			Recorder.recordCall("imp = FolderOpener.open(\""+directory+"\", \""+options+"\");");
 		}
 	}
+	
+	public static boolean useInfo(String info) {
+		return info!=null && !(info.startsWith("Software")||info.startsWith("ImageDescription"));
+	 }
 	
 	private void openAsFileInfoStack(FileInfoVirtualStack stack, String path) {
 		FileInfo[] info = Opener.getTiffFileInfo(path);

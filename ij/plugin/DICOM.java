@@ -111,6 +111,7 @@ public class DICOM extends ImagePlus implements PlugIn {
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.openImage();
 			boolean openAsFloat = (dd.rescaleSlope!=1.0&&!Prefs.ignoreRescaleSlope) || Prefs.openDicomsAsFloat;
+			String options = Macro.getOptions();
 			if (openAsFloat) {
 				IJ.run(imp, "32-bit", "");
 				if (dd.rescaleSlope!=1.0)
@@ -131,6 +132,7 @@ public class DICOM extends ImagePlus implements PlugIn {
 				coeff[1] = dd.rescaleSlope;
 				imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "Gray Value");
 			}
+			Macro.setOptions(options);
 			if (dd.windowWidth>0.0) {
 				double min = dd.windowCenter-dd.windowWidth/2;
 				double max = dd.windowCenter+dd.windowWidth/2;
