@@ -6,7 +6,9 @@ import ij.io.Opener;
 import ij.text.TextWindow;
 import ij.measure.ResultsTable;
 import ij.plugin.frame.Editor;
+import java.awt.Desktop;
 import java.awt.Frame;
+import java.io.File;
 
 /** This plugin implements the Plugins/Utilities/Unlock, Image/Rename
 	and Plugins/Utilities/Search commands. */
@@ -23,7 +25,7 @@ public class SimpleCommands implements PlugIn {
 		else if (arg.equals("table")) 
 			Opener.openTable("");
 		else if (arg.equals("rename"))
-			rename();
+			rename();	
 		else if (arg.equals("reset"))
 			reset();
 		else if (arg.equals("about"))
@@ -52,6 +54,8 @@ public class SimpleCommands implements PlugIn {
 			IJ.runMacroFile("ij.jar:MeasureStack", null);
 		else if (arg.equals("interactive"))
 			openInteractiveModeEditor();
+		else if (arg.startsWith("showdir"))
+			showDirectory(arg.replace("showdir", ""));
 	}
 	
 	private synchronized void showFonts() {
@@ -214,5 +218,39 @@ public class SimpleCommands implements PlugIn {
 		ed.setSize(600, 500);
 		ed.create(Editor.INTERACTIVE_NAME, "");
 	}
-		
+	
+	private void showDirectory(String arg) {
+		arg = arg.toLowerCase();
+		String path = IJ.getDir(arg);
+		if (path == null) {
+			if (arg.equals("image")) {
+				if (WindowManager.getCurrentImage()==null)
+					IJ.noImage();
+				else
+					IJ.error("No file is associated with front image");
+			} else
+				IJ.error("Folder not found: " + arg);
+			return;
+		}		
+		File dir = new File(path);
+		if (!dir.exists()) {
+			IJ.error("Folder not found: " + arg);
+			return;
+		}
+		if (arg.equals("image")&& IJ.getImage() != null) {
+			File imgPath = new File(dir + File.separator + IJ.getImage().getTitle());
+			if (!imgPath.exists()) {
+				IJ.error("Image not found");
+				return;
+			}
+		}
+		Desktop desktop = Desktop.getDesktop();
+		try {
+			desktop.open(dir);
+		} catch (Exception e) {
+			IJ.error("Failed to Show Folder: " + e.toString());
+			return;
+		}
+	}
+	
 }
