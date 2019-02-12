@@ -104,7 +104,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 			for (int i=0; i<n; i++) {
 				info[i] = (FileInfo)fi.clone();
 				info[i].nImages = 1;
-				info[i].longOffset = fi.getOffset() + i*(size + fi.gapBetweenImages);
+				info[i].longOffset = fi.getOffset() + i*(size + fi.getGap());
 			}
 		}
 		nImages = info.length;
@@ -148,7 +148,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		long fileLength = f.length();
 		long bytesPerImage = fi.width*fi.height*fi.getBytesPerPixel();
 		for (int i=fi.nImages-1; i>=0; i--) {
-			long offset =  fi.getOffset() + i*(bytesPerImage+fi.gapBetweenImages);
+			long offset =  fi.getOffset() + i*(bytesPerImage+fi.getGap());
 			if (offset+bytesPerImage<=fileLength)
 				return i+1;
 		}

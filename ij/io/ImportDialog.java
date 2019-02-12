@@ -34,7 +34,7 @@ public class ImportDialog {
     private static int sHeight = Prefs.getInt(HEIGHT,512);
     private static long sOffset = Prefs.getInt(OFFSET,0);
     private static int sNImages = Prefs.getInt(N,1);
-    private static int sGapBetweenImages = Prefs.getInt(GAP,0);
+    private static long sGapBetweenImages = Prefs.getInt(GAP,0);
     private static boolean sWhiteIsZero;
     private static boolean sIntelByteOrder;
     private static boolean sVirtual;
@@ -43,7 +43,7 @@ public class ImportDialog {
     private int height = sHeight;
     private long offset = sOffset;
     private int nImages = sNImages;
-    private int gapBetweenImages = sGapBetweenImages;
+    private long gapBetweenImages = sGapBetweenImages;
     private boolean whiteIsZero = sWhiteIsZero;
     private boolean intelByteOrder = sIntelByteOrder;
     private boolean virtual = sVirtual;
@@ -83,11 +83,11 @@ public class ImportDialog {
 		getDimensionsFromName(fileName);
 		GenericDialog gd = new GenericDialog("Import>Raw...");
 		gd.addChoice("Image type:", types, types[choiceSelection]);
-		gd.addNumericField("Width:", width, 0, 6, "pixels");
-		gd.addNumericField("Height:", height, 0, 6, "pixels");
-		gd.addNumericField("Offset to first image:", offset, 0, 6, "bytes");
-		gd.addNumericField("Number of images:", nImages, 0, 6, null);
-		gd.addNumericField("Gap between images:", gapBetweenImages, 0, 6, "bytes");
+		gd.addNumericField("Width:", width, 0, 8, "pixels");
+		gd.addNumericField("Height:", height, 0, 8, "pixels");
+		gd.addNumericField("Offset to first image:", offset, 0, 8, "bytes");
+		gd.addNumericField("Number of images:", nImages, 0, 8, null);
+		gd.addNumericField("Gap between images:", gapBetweenImages, 0, 8, "bytes");
 		gd.addCheckbox("White is zero", whiteIsZero);
 		gd.addCheckbox("Little-endian byte order", intelByteOrder);
 		gd.addCheckbox("Open all files in folder", openAll);
@@ -104,7 +104,7 @@ public class ImportDialog {
 		gd.setSmartRecording(nImages==1);
 		nImages = (int)gd.getNextNumber();
 		gd.setSmartRecording(gapBetweenImages==0);
-		gapBetweenImages = (int)gd.getNextNumber();
+		gapBetweenImages = (long)gd.getNextNumber();
 		gd.setSmartRecording(false);
 		whiteIsZero = gd.getNextBoolean();
 		intelByteOrder = gd.getNextBoolean();
@@ -244,7 +244,8 @@ public class ImportDialog {
 		else
 			fi.offset = (int)offset;
 		fi.nImages = nImages;
-		fi.gapBetweenImages = gapBetweenImages;
+		fi.gapBetweenImages = (int)gapBetweenImages;
+		fi.longGap = gapBetweenImages;
 		fi.intelByteOrder = intelByteOrder;
 		fi.whiteIsZero = whiteIsZero;
 		if (imageType.equals("8-bit"))
@@ -289,7 +290,7 @@ public class ImportDialog {
 		prefs.put(HEIGHT, Integer.toString(sHeight));
 		prefs.put(OFFSET, Integer.toString(sOffset>2147483647?0:(int)sOffset));
 		prefs.put(N, Integer.toString(sNImages));
-		prefs.put(GAP, Integer.toString(sGapBetweenImages));
+		prefs.put(GAP, Integer.toString(sGapBetweenImages>2147483647?0:(int)sGapBetweenImages));
 		int options = 0;
 		if (sWhiteIsZero)
 			options |= WHITE_IS_ZERO;

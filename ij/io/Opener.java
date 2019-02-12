@@ -865,7 +865,7 @@ public class Opener {
 			if (n<1 || n>fi.nImages)
 				throw new IllegalArgumentException("N out of 1-"+fi.nImages+" range");
 			long size = fi.width*fi.height*fi.getBytesPerPixel();
-			fi.longOffset = fi.getOffset() + (n-1)*(size+fi.gapBetweenImages);
+			fi.longOffset = fi.getOffset() + (n-1)*(size+fi.getGap());
 			fi.offset = 0;
 			fi.nImages = 1;
 		} else {

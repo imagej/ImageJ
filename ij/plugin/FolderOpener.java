@@ -408,7 +408,7 @@ public class FolderOpener implements PlugIn {
 			for (int i=0; i<n; i++) {
 				FileInfo fi = (FileInfo)info[0].clone();
 				fi.nImages = 1;
-				fi.longOffset = fi.getOffset() + i*(size + fi.gapBetweenImages);
+				fi.longOffset = fi.getOffset() + i*(size + fi.getGap());
 				stack.addImage(fi);
 			}
 		} else

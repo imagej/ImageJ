@@ -244,6 +244,7 @@ public class SimpleCommands implements PlugIn {
 				return;
 			}
 		}
+		if (IJ.debugMode) IJ.log("showDirectory: "+arg+", "+dir);
 		Desktop desktop = Desktop.getDesktop();
 		try {
 			desktop.open(dir);

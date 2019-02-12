@@ -212,7 +212,7 @@ public class FileOpener {
 				if (pixels==null)
 					break;
 				stack.addSlice(null, pixels);
-				skip = fi.gapBetweenImages;
+				skip = fi.getGap();
 				if (!silentMode)
 					IJ.showProgress(i, fi.nImages);
 			}

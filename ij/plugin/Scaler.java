@@ -215,13 +215,13 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		r = ip.getRoi();
 		int width = newWidth;
 		if (width==0) width = r.width;
-		int height = (int)((double)width*r.height/r.width);
+		int height = (int)Math.round(((double)width*r.height/r.width));
 		xscale = Tools.parseDouble(xstr, 0.0);
 		yscale = Tools.parseDouble(ystr, 0.0);
 		zscale = 1.0;
 		if (xscale!=0.0 && yscale!=0.0) {
-			width = (int)(r.width*xscale);
-			height = (int)(r.height*yscale);
+			width = (int)Math.round(r.width*xscale);
+			height = (int)Math.round(r.height*yscale);
 		} else {
 			xstr = "-";
 			ystr = "-";
@@ -291,26 +291,26 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			zscale = Tools.parseDouble(zstr, 0.0);
 		}
 		String wstr = gd.getNextString();
-		newWidth = (int)Tools.parseDouble(wstr, 0);
-		newHeight = (int)Tools.parseDouble(gd.getNextString(), 0);
+		newWidth = (int)Math.round(Tools.parseDouble(wstr, 0));
+		newHeight = (int)Math.round(Tools.parseDouble(gd.getNextString(), 0));
 		if (newHeight!=0 && (wstr.equals("-") || wstr.equals("0")))
-			newWidth = (int)(newHeight * (double)r.width/r.height);
+			newWidth = (int)Math.round(newHeight * (double)r.width/r.height);
 		else if (newWidth!=0 && newHeight==0)
-			newHeight= (int)(newWidth * (double)r.height/r.width);
+			newHeight= (int)Math.round(newWidth * (double)r.height/r.width);
 		else if (newHeight!=0 && newWidth==0)
-			newWidth = (int)(newHeight * (double)r.width/r.height);
+			newWidth = (int)Math.round(newHeight * (double)r.width/r.height);
 		if (newWidth==0 || newHeight==0) {
 			IJ.error("Scaler", "Width or height is 0");
 			return false;
 		}
 		if (xscale>0.0 && yscale>0.0) {
-			newWidth = (int)(r.width*xscale);
-			newHeight = (int)(r.height*yscale);
+			newWidth = (int)Math.round(r.width*xscale);
+			newHeight = (int)Math.round(r.height*yscale);
 		}
 		if (isStack) {
-			newDepth = (int)Tools.parseDouble(gd.getNextString(), 0);
+			newDepth = (int)Math.round(Tools.parseDouble(gd.getNextString(), 0));
 			if (newDepth==stackSize && zscale!=1.0 && zscale>0.0)
-				newDepth = (int)(stackSize*zscale);
+				newDepth = (int)Math.round(stackSize*zscale);
 		}
 		interpolationMethod = gd.getNextChoiceIndex();
 		if (bitDepth==8 || bitDepth==24)
@@ -351,11 +351,11 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			newXScale = Tools.parseDouble(newXText,0);
 			if (newXScale==0) return;
 			if (newXScale!=xscale) {
-				int newWidth = (int)(newXScale*r.width);
+				int newWidth = (int)Math.round(newXScale*r.width);
 				widthField.setText(""+newWidth);
 				if (constainAspectRatio) {
 					yField.setText(newXText);
-					int newHeight = (int)(newXScale*r.height);
+					int newHeight = (int)Math.round(newXScale*r.height);
 					heightField.setText(""+newHeight);
 				}
 			}
@@ -364,7 +364,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			newYScale = Tools.parseDouble(newYText,0);
 			if (newYScale==0) return;
 			if (newYScale!=yscale) {
-				int newHeight = (int)(newYScale*r.height);
+				int newHeight = (int)Math.round(newYScale*r.height);
 				heightField.setText(""+newHeight);
 			}
 		} else if (source==zField && fieldWithFocus==zField) {
@@ -381,13 +381,13 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 					else
 						nSlices = slices;
 				}
-				int newDepth= (int)(newZScale*nSlices);
+				int newDepth= (int)Math.round(newZScale*nSlices);
 				depthField.setText(""+newDepth);
 			}
 		} else if (source==widthField && fieldWithFocus==widthField) {
-			int newWidth = (int)Tools.parseDouble(widthField.getText(), 0.0);
+			int newWidth = (int)Math.round(Tools.parseDouble(widthField.getText(), 0.0));
 			if (newWidth!=0) {
-				int newHeight = (int)(newWidth*(double)r.height/r.width);
+				int newHeight = (int)Math.round(newWidth*(double)r.height/r.width);
 				heightField.setText(""+newHeight);
 				xField.setText("-");
 				yField.setText("-");
@@ -395,7 +395,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 				newYScale = 0.0;
 			}
        } else if (source==depthField && fieldWithFocus==depthField) {
-            int newDepth = (int)Tools.parseDouble(depthField.getText(), 0.0);
+            int newDepth = (int)Math.round(Tools.parseDouble(depthField.getText(), 0.0));
             if (newDepth!=0) {
                 zField.setText("-");
                 newZScale = 0.0;
