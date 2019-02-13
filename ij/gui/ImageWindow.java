@@ -300,7 +300,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
     		s += "; ";
 		} else {
 			String label = (String)imp.getProperty("Label");
-			if (label!=null) {
+			if (label!=null && label.length()>0) {
 				int newline = label.indexOf('\n');
 				if (newline>0)
 					label = label.substring(0, newline);
@@ -309,7 +309,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 					label = label.substring(0,len-4);
 				if (label.length()>60)
 					label = label.substring(0, 60);
-				s = label + "; ";
+				s = "\""+label + "\"; ";
 			}
 		}
     	int type = imp.getType();

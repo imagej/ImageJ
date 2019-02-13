@@ -133,11 +133,6 @@ public class SimpleCommands implements PlugIn {
 	
 	private void setSliceLabel() {
 		ImagePlus imp = IJ.getImage();
-		int size = imp.getStackSize();
-		if (size==1) {
-			IJ.error("Stack required");
-			return;
-		}
 		ImageStack stack = imp.getStack();
 		int n = imp.getCurrentSlice();
 		String label = stack.getSliceLabel(n);
@@ -147,26 +142,27 @@ public class SimpleCommands implements PlugIn {
 		GenericDialog gd = new GenericDialog("Set Slice Label ("+n+")");
 		gd.addStringField("Label:", label2, 30);
 		gd.showDialog();
-		if (gd.wasCanceled())
-			return;
-		label2 = gd.getNextString();
-		if (label2!=label) {
-			stack.setSliceLabel(label2, n);
-			imp.repaintWindow();
+		if (!gd.wasCanceled()) {
+			label2 = gd.getNextString();
+			if (label2!=label) {
+				if (label2.length()==0)
+					label2 = null;
+				stack.setSliceLabel(label2, n);
+				imp.setProperty("Label", label2);	
+				imp.repaintWindow();
+			}
 		}
 	}
 
 	private void removeStackLabels() {
 		ImagePlus imp = IJ.getImage();
+		ImageStack stack = imp.getStack();
 		int size = imp.getStackSize();
+		for (int i=1; i<=size; i++)
+			stack.setSliceLabel(null, i);
 		if (size==1)
-			IJ.error("Stack required");
-		else {
-			ImageStack stack = imp.getStack();
-			for (int i=1; i<=size; i++)
-				stack.setSliceLabel(null, i);
-			imp.repaintWindow();
-		}
+			imp.setProperty("Label", null);				
+		imp.repaintWindow();
 	}
 	
 	private void imageToResults() {

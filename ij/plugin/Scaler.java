@@ -195,19 +195,28 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	}
 	
 	boolean showDialog(ImageProcessor ip) {
-		String macroOptions = Macro.getOptions();
-		if (macroOptions!=null) {
-			if (macroOptions.indexOf(" interpolate")!=-1)
-				macroOptions.replaceAll(" interpolate", " interpolation=Bilinear");
-			else if (macroOptions.indexOf(" interpolation=")==-1)
-				macroOptions = macroOptions+" interpolation=None";
-			Macro.setOptions(macroOptions);
+		String options = Macro.getOptions();
+		boolean isMacro = options!=null;
+		if (isMacro) {
+			if (options.indexOf(" interpolate")!=-1)
+				options.replaceAll(" interpolate", " interpolation=Bilinear");
+			else if (options.indexOf(" interpolation=")==-1)
+				options = options+" interpolation=None";
+			if (options.contains("width=")&&options.contains(" height=")) {
+				xstr = "-";
+				ystr = "-";
+				if (options.contains(" depth="))
+					zstr = "-";
+				else
+					zstr = "1.0";
+			}
+			Macro.setOptions(options);
 		}
 		int bitDepth = imp.getBitDepth();
 		int stackSize = imp.getStackSize();
 		boolean isStack = stackSize>1;
 		oldDepth = stackSize;
-		if (isStack) {
+		if (isStack && !isMacro) {
 			xstr = "1.0";
 			ystr = "1.0";
 			zstr = "1.0";
