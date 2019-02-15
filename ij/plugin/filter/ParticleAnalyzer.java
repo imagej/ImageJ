@@ -936,18 +936,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			if (resetCounter)
 				roiManager.runCommand("reset");
 		}
-		
-		if (floodFill && mask!=null) {
-			mask.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
-			double xbase=roi.getXBase(), ybase=roi.getYBase();
-			Roi roi2 = new ThresholdToSelection().convert(mask);
-			if (roi2!=null && (roi2 instanceof ShapeRoi)) {
-				double perim = roi.getLength();
-				roi = roi2;
-				roi.setLocation(xbase, ybase);
-				((ShapeRoi)roi).setPaPerim(perim);
-			}
-		}
 		if (imp.getStackSize()>1) {
 			int n = imp.getCurrentSlice();
 			if (hyperstack) {
@@ -986,17 +974,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				overlay.drawLabels(true);
 				overlay.setLabelFont(new Font("SansSerif", Font.PLAIN, fontSize));
 			}
-			Roi roi2 = null;
-			if (floodFill && mask!=null) {
-				mask.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
-				roi2 = new ThresholdToSelection().convert(mask);
-				if (roi2!=null && (roi2 instanceof ShapeRoi)) {
-					roi2.setLocation(roi.getXBase(), roi.getYBase());
-					((ShapeRoi)roi2).setPaPerim(roi.getLength());
-				} else
-					roi2 = (Roi)roi.clone();
-			} else
-				roi2 = (Roi)roi.clone();
+			Roi roi2 = (Roi)roi.clone();
 			roi2.setStrokeColor(Color.cyan);
 			if (lineWidth!=1)
 				roi2.setStrokeWidth(lineWidth);

@@ -4558,9 +4558,15 @@ public class Functions implements MacroConstants, Measurements {
 		else if (arg.indexOf("animated")!=-1) {
 			ImageWindow win = getImage().getWindow();
 			state = win!=null && (win instanceof StackWindow) && ((StackWindow)win).getAnimate();
-		} else if (arg.equals("inverty"))
+		} else if (arg.equals("inverty")) {
 			state = getImage().getCalibration().getInvertY();
-		else
+		} else if (arg.startsWith("area")) {
+			Roi roi = getImage().getRoi();
+			state = roi!=null?roi.isArea():false;
+		} else if (arg.startsWith("line")) {
+			Roi roi = getImage().getRoi();
+			state = roi!=null?roi.isLine():false;
+		} else
 			interp.error("Invalid argument");
 		return state?1.0:0.0;
 	}

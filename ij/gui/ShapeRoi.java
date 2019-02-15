@@ -75,7 +75,6 @@ public class ShapeRoi extends Roi {
 	
 	private Vector savedRois;
 	private static Stroke defaultStroke = new BasicStroke();
-	private double paPerim;
 
 
 	/** Constructs a ShapeRoi from an Roi. */
@@ -652,8 +651,6 @@ public class ShapeRoi extends Roi {
 	public double getLength() {
 		if (width==0 && height==0)
 			return 0.0;
-		if (paPerim>0.0)
-			return paPerim;
 		double length = 0.0;
 		Roi[] rois = getRois();
 		ImagePlus imp2 = getImage();
@@ -1179,10 +1176,6 @@ public class ShapeRoi extends Roi {
 			return super.getFloatPolygon();
 	}
 	
-	public void setPaPerim(double perim) {
-		paPerim = perim;
-	}
-
 	/** If this ROI consists of a single polygon, retuns the number of vertices, otherwise returns 4. */
 	public int size() {
 		return getPolygon().npoints;
