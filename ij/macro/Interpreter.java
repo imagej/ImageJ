@@ -1774,9 +1774,16 @@ public class Interpreter implements MacroConstants {
 						error("Array expected");
 					if (index<0 || index>=array.length)
 						error("Index ("+index+") out of 0-"+(array.length-1)+" range");
-					str = array[index].getString();
-					if (str==null)
-						str = toString(array[index].getValue());
+					str = array[index].getString();					
+					if (str==null) {
+						int next2 = nextToken();
+						if (next2==')' || next2==';')
+							str = toString(array[index].getValue());
+						else {
+							pc = savePC-1;
+							getToken();
+						}
+					}
 				} else if (next=='.')
 						str = null;
 				else {
