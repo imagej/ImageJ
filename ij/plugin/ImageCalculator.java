@@ -43,7 +43,7 @@ public class ImageCalculator implements PlugIn {
 			else
 				titles[i] = "";
 		}
-		GenericDialog gd = new GenericDialog("Image Calculator", IJ.getInstance());
+		GenericDialog gd = new GenericDialog("Image Calculator");
 		String defaultItem;
 		if (title1.equals(""))
 			defaultItem = titles[0];

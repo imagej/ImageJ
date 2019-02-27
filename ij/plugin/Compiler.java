@@ -15,8 +15,8 @@ import javax.tools.*;
 /** Compiles and runs plugins using the javac compiler. */
 public class Compiler implements PlugIn, FilenameFilter {
 
-	private static final int TARGET14=0, TARGET15=1, TARGET16=2,  TARGET17=3,  TARGET18=4;
-	private static final String[] targets = {"1.4", "1.5", "1.6", "1.7", "1.8"};
+	private static final int TARGET14=0, TARGET15=1, TARGET16=2,  TARGET17=3,  TARGET18=4, TARGET19=5;
+	private static final String[] targets = {"1.4", "1.5", "1.6", "1.7", "1.8", "1.9"};
 	private static final String TARGET_KEY = "javac.target";
 	private static CompilerTool compilerTool;
 	private static String dir, name;
@@ -125,7 +125,6 @@ public class Compiler implements PlugIn, FilenameFilter {
 		Vector sources = new Vector();
 		sources.add(path);
 		
-		/*
 		if (IJ.debugMode) {
 			StringBuilder builder = new StringBuilder();
 			builder.append("javac");
@@ -139,7 +138,6 @@ public class Compiler implements PlugIn, FilenameFilter {
 			}
 			IJ.log(builder.toString());
 		}
-		*/
 		
 		boolean errors = true;
 		String s = "not compiled";
@@ -180,16 +178,18 @@ public class Compiler implements PlugIn, FilenameFilter {
 		File f = new File(path);
 		if (f.exists() && f.isDirectory())
 			list = f.list();
-		if (list==null) return;
+		if (list==null)
+			return;
+		boolean isJarsFolder = path.endsWith("jars");
 		if (!path.endsWith(File.separator))
 			path += File.separator;
 		for (int i=0; i<list.length; i++) {
 			File f2 = new File(path+list[i]);
 			if (f2.isDirectory())
 				addJars(path+list[i], sb);
-			else if (list[i].endsWith(".jar")&&(list[i].indexOf("_")==-1||list[i].equals("loci_tools.jar")||list[i].contains("3D_Viewer"))) {
+			else if (list[i].endsWith(".jar")&&(!list[i].contains("_")||isJarsFolder||list[i].equals("loci_tools.jar"))) {
 				sb.append(File.pathSeparator+path+list[i]);
-				//if (IJ.debugMode) IJ.log("javac classpath: "+path+list[i]);
+				//IJ.log("javac classpath: "+path+list[i]);
 			}
 		}
 	}
@@ -199,8 +199,12 @@ public class Compiler implements PlugIn, FilenameFilter {
 			errors = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
 			errors.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		}
-		if (errors!=null)
+		if (errors!=null) {
+			ImageJ ij = IJ.getInstance();
+			if (ij!=null)
+				s = ij.getInfo()+"\n \n"+s;
 			errors.display("Errors", s);
+		}
 		IJ.showStatus("done (errors)");
 	}
 
@@ -255,7 +259,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 	
 	// run the plugin using a new class loader
 	void runPlugin(String name) {
-		name = name.substring(0,name.length()-5); // remove ".java"
+		name = name.substring(0,name.length()-5); // remove ".java" or ".clas"
 		new PlugInExecuter(name);
 	}
 	
@@ -274,19 +278,20 @@ public class Compiler implements PlugIn, FilenameFilter {
 	}
 	
 	void validateTarget() {
-		if (target<0 || target>TARGET18)
+		if (target>TARGET19)
+			target = TARGET19;
+		if (target<TARGET16)
 			target = TARGET16;
-		if (target>TARGET15 && !(IJ.isJava16()||IJ.isJava17()||IJ.isJava18()))
-			target = TARGET15;
-		if (target>TARGET16 && !(IJ.isJava17()||IJ.isJava18()))
+		if (target>TARGET16 && IJ.javaVersion()<7)
 			target = TARGET16;
-		if (target>TARGET17 && !IJ.isJava18())
+		if (target>TARGET17 && IJ.javaVersion()<8)
 			target = TARGET17;
+		if (target>TARGET18 && IJ.javaVersion()<9)
+			target = TARGET18;
 		Prefs.set(TARGET_KEY, target);
 	}
 	
 }
-
 
 class PlugInExecuter implements Runnable {
 	private String plugin;
@@ -308,7 +313,7 @@ class PlugInExecuter implements Runnable {
 	}
 	
 	void runCompiledPlugin(String className) {
-		if (IJ.debugMode) IJ.log("Compiler: running "+className);
+		if (IJ.debugMode) IJ.log("Compiler: running \""+className+"\"");
 		IJ.resetClassLoader();
 		ClassLoader loader = IJ.getClassLoader();
 		Object thePlugIn = null;
@@ -325,11 +330,22 @@ class PlugInExecuter implements Runnable {
 		}
 		catch (NoClassDefFoundError e) {
 			String err = e.getMessage();
+			if (IJ.debugMode) IJ.log("NoClassDefFoundError: "+err);
 			int index = err!=null?err.indexOf("wrong name: "):-1;
 			if (index>-1 && !className.contains(".")) {
 				String className2 = err.substring(index+12, err.length()-1);
 				className2 = className2.replace("/", ".");
-				runCompiledPlugin(className2);
+				if (className2.equals(className)) { // Java 9 error format different
+					int spaceIndex = err.indexOf(" ");
+					if (spaceIndex>-1) {
+						className2 = err.substring(0, spaceIndex);
+						className2 = className2.replace("/", ".");
+					}
+				}
+				if (className2.equals(className))
+					IJ.error("Plugin not found: "+className2);
+				else
+					runCompiledPlugin(className2);
 				return;
 			}
 			if (className.indexOf('_')!=-1)
@@ -405,11 +421,9 @@ abstract class CompilerTool {
 	}
 
 	public static CompilerTool getDefault() {
-		if (IJ.isJava16()) {
-			CompilerTool javax = new JavaxCompilerTool();
-			if (javax.isSupported())
-				return javax;
-		}
+		CompilerTool javax = new JavaxCompilerTool();
+		if (javax.isSupported())
+			return javax;
 		CompilerTool legacy = new LegacyCompilerTool();
 		if (legacy.isSupported())
 			return legacy;

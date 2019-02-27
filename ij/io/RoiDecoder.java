@@ -13,13 +13,13 @@ import java.awt.geom.Rectangle2D;
 	
 	0-3		"Iout"
 	4-5		version (>=217)
-	6-7		roi type
+	6-7		roi type (encoded as one byte)
 	8-9		top
 	10-11	left
 	12-13	bottom
 	14-15	right
 	16-17	NCoordinates
-	18-33	x1,y1,x2,y2 (straight line)
+	18-33	x1,y1,x2,y2 (straight line) | x,y,width,height (double rect) | size (npoints)
 	34-35	stroke width (v1.43i or later)
 	36-39   ShapeRoi size (type must be 1 if this value>0)
 	40-43   stroke color (v1.43i or later)
@@ -52,6 +52,7 @@ public class RoiDecoder {
 	public static final int YD = 22;
 	public static final int WIDTHD = 26;
 	public static final int HEIGHTD = 30;
+	public static final int SIZE = 18;
 	public static final int STROKE_WIDTH = 34;
 	public static final int SHAPE_ROI_SIZE = 36;
 	public static final int STROKE_COLOR = 40;
@@ -59,7 +60,7 @@ public class RoiDecoder {
 	public static final int SUBTYPE = 48;
 	public static final int OPTIONS = 50;
 	public static final int ARROW_STYLE = 52;
-	public static final int ELLIPSE_ASPECT_RATIO = 52;
+	public static final int FLOAT_PARAM = 52; //ellipse ratio or rotated rect width
 	public static final int POINT_TYPE= 52;
 	public static final int ARROW_HEAD_SIZE = 53;
 	public static final int ROUNDED_RECT_ARC_SIZE = 54;
@@ -87,6 +88,7 @@ public class RoiDecoder {
 	public static final int ARROW = 2;
 	public static final int ELLIPSE = 3;
 	public static final int IMAGE = 4;
+	public static final int ROTATED_RECT = 5;
 	
 	// options
 	public static final int SPLINE_FIT = 1;
@@ -99,6 +101,8 @@ public class RoiDecoder {
 	public static final int SUB_PIXEL_RESOLUTION = 128;
 	public static final int DRAW_OFFSET = 256;
 	public static final int ZERO_TRANSPARENT = 512;
+	public static final int SHOW_LABELS = 1024;
+	public static final int SCALE_LABELS = 2048;
 	
 	// types
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6,
@@ -159,7 +163,9 @@ public class RoiDecoder {
 		int right = getShort(RIGHT);
 		int width = right-left;
 		int height = bottom-top;
-		int n = getShort(N_COORDINATES);
+		int n = getUnsignedShort(N_COORDINATES);
+		if (n==0)
+			n = getInt(SIZE);
 		int options = getShort(OPTIONS);
 		int position = getInt(POSITION);
 		int hdr2Offset = getInt(HEADER2_OFFSET);
@@ -246,13 +252,12 @@ public class RoiDecoder {
 					roi = new Line(x1, y1, x2, y2);
 					roi.setDrawOffset(drawOffset);
 				}
-				//IJ.write("line roi: "+x1+" "+y1+" "+x2+" "+y2);
 				break;
 			case polygon: case freehand: case traced: case polyline: case freeline: case angle: case point:
 					//IJ.log("type: "+type);
 					//IJ.log("n: "+n);
 					//IJ.log("rect: "+left+","+top+" "+width+" "+height);
-					if (n==0) break;
+					if (n==0 || n<0) break;
 					int[] x = new int[n];
 					int[] y = new int[n];
 					float[] xf = null;
@@ -267,7 +272,6 @@ public class RoiDecoder {
 						if (ytmp<0) ytmp = 0;
 						x[i] = left+xtmp;
 						y[i] = top+ytmp;
-						//IJ.write(i+" "+getShort(base1+i*2)+" "+getShort(base2+i*2));
 					}
 					if (subPixelResolution) {
 						xf = new float[n];
@@ -288,7 +292,8 @@ public class RoiDecoder {
 							((PointRoi)roi).setPointType(getByte(POINT_TYPE));
 							((PointRoi)roi).setSize(getShort(STROKE_WIDTH));
 						}
-						((PointRoi)roi).setShowLabels(!ij.Prefs.noPointLabels);
+						if ((options&SHOW_LABELS)!=0 && !ij.Prefs.noPointLabels)
+							((PointRoi)roi).setShowLabels(true);
 						break;
 					}
 					int roiType;
@@ -296,13 +301,16 @@ public class RoiDecoder {
 						roiType = Roi.POLYGON;
 					else if (type==freehand) {
 						roiType = Roi.FREEROI;
-						if (subtype==ELLIPSE) {
+						if (subtype==ELLIPSE || subtype==ROTATED_RECT) {
 							double ex1 = getFloat(X1);		
 							double ey1 = getFloat(Y1);		
 							double ex2 = getFloat(X2);		
 							double ey2 = getFloat(Y2);
-							double aspectRatio = getFloat(ELLIPSE_ASPECT_RATIO);
-							roi = new EllipseRoi(ex1,ey1,ex2,ey2,aspectRatio);
+							double param = getFloat(FLOAT_PARAM);
+							if (subtype==ROTATED_RECT)
+								roi = new RotatedRectRoi(ex1,ey1,ex2,ey2,param);
+							else
+								roi = new EllipseRoi(ex1,ey1,ex2,ey2,param);
 							break;
 						}
 					} else if (type==traced)
@@ -324,11 +332,15 @@ public class RoiDecoder {
 			default:
 				throw new IOException("Unrecognized ROI type: "+type);
 		}
+		if (roi==null)
+			return null;
 		roi.setName(getRoiName());
 		
 		// read stroke width, stroke color and fill color (1.43i or later)
 		if (version>=218) {
 			getStrokeWidthAndColor(roi, hdr2Offset);
+			if (type==point)
+				roi.setStrokeWidth(0);
 			boolean splineFit = (options&SPLINE_FIT)!=0;
 			if (splineFit && roi instanceof PolygonRoi)
 				((PolygonRoi)roi).fitSpline();
@@ -364,11 +376,12 @@ public class RoiDecoder {
 		proto.drawLabels((options&OVERLAY_LABELS)!=0);
 		proto.drawNames((options&OVERLAY_NAMES)!=0);
 		proto.drawBackgrounds((options&OVERLAY_BACKGROUNDS)!=0);
-		if (version>=220)
+		if (version>=220 && color!=0)
 			proto.setLabelColor(new Color(color));
 		boolean bold = (options&OVERLAY_BOLD)!=0;
-		if (fontSize>0 || bold) {
-			proto.setLabelFont(new Font("SansSerif", bold?Font.BOLD:Font.PLAIN, fontSize));
+		boolean scalable = (options&SCALE_LABELS)!=0;
+		if (fontSize>0 || bold || scalable) {
+			proto.setLabelFont(new Font("SansSerif", bold?Font.BOLD:Font.PLAIN, fontSize), scalable);
 		}
 		roi.setPrototypeOverlay(proto);
 	}
@@ -528,6 +541,12 @@ public class RoiDecoder {
 		return n;		
 	}
 	
+	int getUnsignedShort(int base) {
+		int b0 = data[base]&255;
+		int b1 = data[base+1]&255;
+		return (b0<<8) + b1;	
+	}
+
 	int getInt(int base) {
 		int b0 = data[base]&255;
 		int b1 = data[base+1]&255;
@@ -543,6 +562,8 @@ public class RoiDecoder {
 	/** Opens an ROI from a byte array. */
 	public static Roi openFromByteArray(byte[] bytes) {
 		Roi roi = null;
+		if (bytes==null || bytes.length==0)
+			return roi;
 		try {
 			RoiDecoder decoder = new RoiDecoder(bytes, null);
 			roi = decoder.getRoi();

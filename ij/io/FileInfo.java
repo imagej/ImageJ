@@ -103,7 +103,7 @@ public class FileInfo implements Cloneable {
     public int height;
     public int offset=0;  // Use getOffset() to read
     public int nImages;
-    public int gapBetweenImages;
+    public int gapBetweenImages;   // Use getGap() to read
     public boolean whiteIsZero;
     public boolean intelByteOrder;
 	public int compression;
@@ -132,13 +132,16 @@ public class FileInfo implements Cloneable {
 	public String description;
 	// Use <i>longOffset</i> instead of <i>offset</i> when offset>2147483647.
 	public long longOffset;  // Use getOffset() to read
+	// Use <i>longGap</i> instead of <i>gapBetweenImages</i> when gap>2147483647.
+	public long longGap;  // Use getGap() to read
 	// Extra metadata to be stored in the TIFF header
 	public int[] metaDataTypes; // must be < 0xffffff
 	public byte[][] metaData;
 	public double[] displayRanges;
 	public byte[][] channelLuts;
-	public byte[] roi;
-	public byte[][] overlay;
+	public byte[] plot;			// serialized plot
+	public byte[] roi;			// serialized roi
+	public byte[][] overlay;	// serialized overlay objects
 	public int samplesPerPixel;
 	public String openNextDir, openNextName;
     
@@ -160,6 +163,11 @@ public class FileInfo implements Cloneable {
     	return longOffset>0L?longOffset:((long)offset)&0xffffffffL;
     }
     
+    /** Returns the gap between images as a long. */
+    public final long getGap() {
+    	return longGap>0L?longGap:((long)gapBetweenImages)&0xffffffffL;
+    }
+
 	/** Returns the number of bytes used per pixel. */
 	public int getBytesPerPixel() {
 		switch (fileType) {
@@ -181,6 +189,7 @@ public class FileInfo implements Cloneable {
 			+ ", height=" + height
 			+ ", nImages=" + nImages
 			+ ", offset=" + getOffset()
+			+ ", gap=" + getGap()
 			+ ", type=" + getType()
 			+ ", byteOrder=" + (intelByteOrder?"little":"big")
 			+ ", format=" + fileFormat
@@ -192,6 +201,31 @@ public class FileInfo implements Cloneable {
 			+ ", samples=" + samplesPerPixel;
     }
     
+    /** Returns JavaScript code that can be used to recreate this FileInfo. */
+    public String getCode() {
+    	String code = "fi = new FileInfo();\n";
+    	String type = null;
+    	if (fileType==GRAY8)
+    		type = "GRAY8";
+    	else if (fileType==GRAY16_UNSIGNED)
+    		type = "GRAY16_UNSIGNED";
+    	else if (fileType==GRAY32_FLOAT)
+    		type = "GRAY32_FLOAT";
+    	else if (fileType==RGB)
+    		type = "RGB";
+    	if (type!=null)
+    		code += "fi.fileType = FileInfo."+type+";\n"; 
+    	code += "fi.width = "+width+";\n";
+    	code += "fi.height = "+height+";\n";
+    	if (nImages>1)
+			code += "fi.nImages = "+nImages+";\n";  	
+    	if (getOffset()>0)
+			code += "fi.longOffset = "+getOffset()+";\n";  	
+    	if (intelByteOrder)
+			code += "fi.intelByteOrder = true;\n";  	
+    	return code;
+    }
+
     private String getType() {
     	switch (fileType) {
 			case GRAY8: return "byte";

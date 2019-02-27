@@ -32,13 +32,24 @@ public class CalibrationBar implements PlugIn {
 	static final String[] locations = {"Upper Right","Lower Right","Lower Left", "Upper Left", "At Selection"};
 	static final int UPPER_RIGHT=0, LOWER_RIGHT=1, LOWER_LEFT=2, UPPER_LEFT=3, AT_SELECTION=4;
 
-	static String fillColor = colors[0];
-	static String textColor = colors[3];
-	static String location = locations[UPPER_RIGHT];
-	static double zoom = 1;
-	static int numLabels = 5;
-	static int fontSize = 12;
-	static int decimalPlaces = 0;
+	private static String sFillColor = colors[0];
+	private static String sTextColor = colors[3];
+	private static String sLocation = locations[UPPER_RIGHT];
+	private static double sZoom = 1;
+	private static int sNumLabels = 5;
+	private static int sFontSize = 12;
+	private static int sDecimalPlaces = 0;
+	private static boolean sFlatten;
+	
+	private String fillColor = sFillColor;
+	private String textColor = sTextColor;
+	private String location = sLocation;
+	private double zoom = sZoom;
+	private int numLabels = sNumLabels;
+	private int fontSize = sFontSize;
+	private int decimalPlaces = sDecimalPlaces;
+	private boolean flatten = sFlatten;
+
 	ImagePlus imp;
 	LiveDialog gd;
 
@@ -56,7 +67,7 @@ public class CalibrationBar implements PlugIn {
 	int userPadding = 0;
 	int fontHeight = 0;
 	boolean boldText;
-	boolean flatten;
+	boolean showUnit;
 	Object backupPixels;
 	byte[] byteStorage;
 	int[] intStorage;
@@ -84,7 +95,7 @@ public class CalibrationBar implements PlugIn {
 		double mag = (ic!=null)?ic.getMagnification():1.0;
 		if (zoom<=1 && mag<1)
 			zoom = (double) 1.0/mag;
-		insetPad = imp.getWidth()/50;
+		insetPad = (imp.getWidth()+imp.getHeight())/100;
 		if (insetPad<4)
 			insetPad = 4;
 		updateColorBar();
@@ -150,10 +161,10 @@ public class CalibrationBar implements PlugIn {
 		gd.addNumericField("Decimal places:", decimalPlaces, 0);
 		gd.addNumericField("Font size:", fontSize, 0);
 		gd.addNumericField("Zoom factor:", zoom, 1);
-		String[] labels = {"Bold text", "Overlay"};
-		boolean[] states = {boldText, !flatten};
+		String[] labels = {"Bold text", "Overlay", "Show unit"};
+		boolean[] states = {boldText, !flatten, showUnit};
 		gd.setInsets(10, 30, 0);
-		gd.addCheckboxGroup(1, 2, labels, states);
+		gd.addCheckboxGroup(2, 2, labels, states);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
@@ -166,6 +177,17 @@ public class CalibrationBar implements PlugIn {
 		zoom = (double)gd.getNextNumber();
 		boldText = gd.getNextBoolean();
 		flatten = !gd.getNextBoolean();
+		showUnit = gd.getNextBoolean();
+		if (!IJ.isMacro()) {
+			sFlatten = flatten;
+			sFillColor = fillColor;
+			sTextColor = textColor;
+			sLocation = location;
+			sZoom = zoom;
+			sNumLabels = numLabels;
+			sFontSize = fontSize;
+			sDecimalPlaces = decimalPlaces;
+		}
 		return true;
 	}
 
@@ -187,7 +209,6 @@ public class CalibrationBar implements PlugIn {
 		win_width = (int)(XMARGIN*zoom) + 5 + (int)(BAR_THICKNESS*zoom) + maxTextWidth + (int)((XMARGIN/2)*zoom);
 		if (x==-1 && y==-1)
 			return;	 // return if calculating width
-
 		Color c = getColor(fillColor);
 		if (c!=null) {
 			Roi r = new Roi(x, y, win_width, (int)(WIN_HEIGHT*zoom + 2*(int)(YMARGIN*zoom)));
@@ -297,7 +318,9 @@ public class CalibrationBar implements PlugIn {
 			double yLabelD = (int)(YMARGIN*zoom + BAR_LENGTH*zoom - i*barStep - 1);
 			int yLabel = (int)(Math.round( y + BAR_LENGTH*zoom - i*barStep - 1));
 			Calibration cal = imp.getCalibration();
-			//s = cal.getValueUnit();
+			String s = "";
+			if (showUnit)
+				s = cal.getValueUnit();
 			ImageProcessor ipOrig = imp.getProcessor();
 			double min = ipOrig.getMin();
 			double max = ipOrig.getMax();
@@ -313,18 +336,19 @@ public class CalibrationBar implements PlugIn {
 				if (!decimalPlacesChanged && decimalPlaces==0 && ((int)cmax!=cmax||(int)cmin!=cmin))
 					decimalPlaces = 2;
 			}
+			String todisplay = d2s(grayLabel)+" "+s;
 			if (overlay!=null) {
-				TextRoi label = new TextRoi(d2s(grayLabel), x + 5, yLabel + fontHeight/2, font);
+				TextRoi label = new TextRoi(todisplay, x + 5, yLabel + fontHeight/2, font);				
 				label.setStrokeColor(c);
 				overlay.add(label, CALIBRATION_BAR);
 			}
-			int iLength = metrics.stringWidth(d2s(grayLabel));
+			int iLength = metrics.stringWidth(todisplay);
 			if (iLength > maxLength)
-				maxLength = iLength;
+				maxLength = iLength+5;
 		}
 		return maxLength;
 	}
-	
+		
 	String d2s(double d) {
 			return IJ.d2s(d,decimalPlaces);
 	}
@@ -438,6 +462,7 @@ public class CalibrationBar implements PlugIn {
 			textColor = ( (Choice)(choice.elementAt(2)) ).getSelectedItem();
 			boldText = ( (Checkbox)(checkbox.elementAt(0)) ).getState();
 			flatten = !( (Checkbox)(checkbox.elementAt(1)) ).getState();
+			showUnit = ( (Checkbox)(checkbox.elementAt(2)) ).getState();
 			updateColorBar();
 		}
 

@@ -32,18 +32,18 @@ class TextCanvas extends Canvas {
 	}
   
 	public void paint(Graphics g) {
-		if(tp==null || g==null) return;
+		if (tp==null || g==null) return;
 		Dimension d = getSize();
 		int iWidth = d.width;
 		int iHeight = d.height;
 		
-		if(iWidth<=0 || iHeight<=0) return;
+		if (iWidth<=0 || iHeight<=0) return;
 		g.setColor(Color.lightGray);
-		if(iImage==null)
+		if (iImage==null)
 			makeImage(iWidth,iHeight);
-		if(tp.iRowHeight==0 || (tp.iColWidth[0]==0&&tp.iRowCount>0)) {
+		if (tp.iRowHeight==0 || (tp.iColWidth.length>0 && tp.iColWidth[0]==0&&tp.iRowCount>0)) {
 			tp.iRowHeight=fMetrics.getHeight()+2;
-			for(int i=0;i<tp.iColCount;i++)
+			for (int i=0; i<tp.iColCount; i++)
 				calcAutoWidth(i);
 			tp.adjustHScroll();
 			tp.adjustVScroll();
@@ -54,18 +54,18 @@ class TextCanvas extends Canvas {
 			drawColumnLabels(iWidth);
 		int y=tp.iRowHeight+1-tp.iY;
 		int j=0;
-		while(y<tp.iRowHeight+1) {
+		while (y<tp.iRowHeight+1) {
 			j++;
 			y+=tp.iRowHeight;
 		}
 		tp.iFirstRow=j;
 		y=tp.iRowHeight+1;
-		for(;y<iHeight && j<tp.iRowCount;j++,y+=tp.iRowHeight) {
+		for (;y<iHeight && j<tp.iRowCount; j++,y+=tp.iRowHeight) {
 			int x=-tp.iX;
-			for(int i=0;i<tp.iColCount;i++) {
+			for (int i=0;i<tp.iColCount;i++) {
 				int w=tp.iColWidth[i];
 				Color b=Color.white,t=Color.black;
-				if(j>=tp.selStart && j<=tp.selEnd) {
+				if (j>=tp.selStart && j<=tp.selEnd) {
 					int w2 = w;
 					if (tp.iColCount==1)
 						w2 = iWidth;
@@ -100,14 +100,14 @@ class TextCanvas extends Canvas {
 		gImage.setColor(Color.darkGray);
 		gImage.drawLine(0,tp.iRowHeight,iWidth,tp.iRowHeight);
 		int x=-tp.iX;
-		for(int i=0;i<tp.iColCount;i++) {
+		for (int i=0; i<tp.iColCount; i++) {
 			int w=tp.iColWidth[i];
 			gImage.setColor(Color.lightGray);
 			gImage.fillRect(x+1,0,w,tp.iRowHeight);
 			gImage.setColor(Color.black);
 			if (tp.sColHead[i]!=null)
 				gImage.drawString(tp.sColHead[i],x+2,tp.iRowHeight-5);
-			if (tp.iColCount>1) {
+			if (tp.iColCount>0) {
 				gImage.setColor(Color.darkGray);
 				gImage.drawLine(x+w-1,0,x+w-1,tp.iRowHeight-1);
 				gImage.setColor(Color.white);
@@ -123,22 +123,17 @@ class TextCanvas extends Canvas {
 		gImage.drawLine(0,0,iWidth,0);
 	}
 	
-	char[] getChars(int column, int row) {
+	synchronized char[] getChars(int column, int row) {
 		if (tp==null || tp.vData==null)
 			return null;
 		if (row>=tp.vData.size())
 			return null;
-		char[] chars = (char[])(tp.vData.elementAt(row));
-		if (chars.length==0)
+		char[] chars = row<tp.vData.size()?(char[])(tp.vData.elementAt(row)):null;
+		if (chars==null || chars.length==0)
 			return null;
 		
-		if (tp.iColCount==1) {
-	    	//for (int i=0; i<chars.length; i++) {
-	    	//	if (chars[i]<' ')
-	    	//		chars[i] = ' ';
-	    	//}
-	    	return chars;
-	    }
+		if (tp.iColCount==1)
+			return chars;
 	    
 	    int start = 0;
 	    int tabs = 0;
@@ -174,23 +169,18 @@ class TextCanvas extends Canvas {
 	void calcAutoWidth(int column) {
 		if (tp.sColHead==null || column>=tp.iColWidth.length || gImage==null)
 			return;
-		if(fMetrics==null)
+		if (fMetrics==null)
 			fMetrics=gImage.getFontMetrics();
 		int w=15;
-		int maxRows;
-		if (tp.iColCount==1)
-			maxRows = 100;
+		int maxRows = 20;
+		if (column==0 && tp.sColHead[0].equals(" "))
+			w += 5;
 		else {
-			maxRows = 20;
-			if (column==0 && tp.sColHead[0].equals(" "))
-				w += 5;
-			else {
-				char[] chars = tp.sColHead[column].toCharArray();
-				w = Math.max(w,fMetrics.charsWidth(chars,0,chars.length));
-			}
+			char[] chars = tp.sColHead[column].toCharArray();
+			w = Math.max(w,fMetrics.charsWidth(chars,0,chars.length));
 		}
 		int rowCount = Math.min(tp.iRowCount, maxRows);
-		for(int row=0; row<rowCount; row++) {
+		for (int row=0; row<rowCount; row++) {
 			char[] chars = getChars(column,row);
 			if (chars!=null)
 				w = Math.max(w,fMetrics.charsWidth(chars,0,chars.length));
@@ -199,7 +189,8 @@ class TextCanvas extends Canvas {
 		char[] chars = tp.iRowCount>0?getChars(column, tp.iRowCount-1):null;
 		if (chars!=null)
 			w = Math.max(w,fMetrics.charsWidth(chars,0,chars.length));
-		tp.iColWidth[column] = w+15;
+		if (column<tp.iColWidth.length)
+			tp.iColWidth[column] = w+15;
 	}
 
 }

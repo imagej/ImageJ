@@ -150,6 +150,13 @@ import javax.swing.filechooser.*;
 			if (sharedFrame==null) sharedFrame = new Frame();
 			parent = sharedFrame;
 		}
+		if (IJ.isMacOSX() && IJ.isJava18()) {
+			ImageJ ij = IJ.getInstance();
+			if (ij!=null && ij.isActive())
+				parent = ij;
+			else
+				parent = null;
+		}
 		FileDialog fd = new FileDialog(parent, title);
 		if (path!=null)
 			fd.setDirectory(path);
@@ -214,13 +221,12 @@ import javax.swing.filechooser.*;
 	/** Sets the current working directory. */
 	public static void setDefaultDirectory(String defaultDir) {
 		defaultDirectory = defaultDir;
-		if (!defaultDirectory.endsWith(File.separator) && !defaultDirectory.endsWith("/"))
+		if (defaultDirectory!=null && !defaultDirectory.endsWith(File.separator) && !defaultDirectory.endsWith("/"))
 			defaultDirectory = defaultDirectory + File.separator;
 	}
 	
-	/** Returns the path to the last directory opened by the user
-		using a file open or file save dialog, or using drag and drop. 
-		Returns null if the users has not opened a file. */
+	/** Returns the path to the directory that contains the last file
+		 opened, or null if a file has not been opened. */
 	public static String getLastDirectory() {
 		return lastDir;
 	}

@@ -117,6 +117,7 @@ public class Commands implements PlugIn {
 				if (gd.wasCanceled())	
 					return false;
 			}
+			Prefs.closingAll = true;
 			for (int i=0; i<list.length; i++) {
 				ImagePlus imp = WindowManager.getImage(list[i]);
 				if (imp!=null) {
@@ -124,6 +125,7 @@ public class Commands implements PlugIn {
 					imp.close();
 				}
 			}
+			Prefs.closingAll = false;
     	}
     	return true;
 	}
@@ -146,13 +148,17 @@ public class Commands implements PlugIn {
 	// Plugins>Macros>Open Startup Macros command
 	void openStartupMacros() {
 		Applet applet = IJ.getApplet();
-		if (applet!=null) {
+		if (applet!=null)
 			IJ.run("URL...", "url="+IJ.URL+"/applet/StartupMacros.txt");
-		} else {
+		else {
 			String path = IJ.getDirectory("macros")+"StartupMacros.txt";
 			File f = new File(path);
 			if (!f.exists()) {
 				path = IJ.getDirectory("macros")+"StartupMacros.ijm";
+				f = new File(path);
+			}
+			if (!f.exists()) {
+				path = IJ.getDirectory("macros")+"StartupMacros.fiji.ijm";
 				f = new File(path);
 			}
 			if (!f.exists())

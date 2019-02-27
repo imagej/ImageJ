@@ -9,8 +9,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.util.*;
 import ij.plugin.frame.Recorder;
-import ij.plugin.FolderOpener;
-import ij.plugin.FileInfoVirtualStack;
+import ij.plugin.*;
 import ij.measure.Calibration;
 
 
@@ -35,7 +34,7 @@ public class ImportDialog {
     private static int sHeight = Prefs.getInt(HEIGHT,512);
     private static long sOffset = Prefs.getInt(OFFSET,0);
     private static int sNImages = Prefs.getInt(N,1);
-    private static int sGapBetweenImages = Prefs.getInt(GAP,0);
+    private static long sGapBetweenImages = Prefs.getInt(GAP,0);
     private static boolean sWhiteIsZero;
     private static boolean sIntelByteOrder;
     private static boolean sVirtual;
@@ -44,7 +43,7 @@ public class ImportDialog {
     private int height = sHeight;
     private long offset = sOffset;
     private int nImages = sNImages;
-    private int gapBetweenImages = sGapBetweenImages;
+    private long gapBetweenImages = sGapBetweenImages;
     private boolean whiteIsZero = sWhiteIsZero;
     private boolean intelByteOrder = sIntelByteOrder;
     private boolean virtual = sVirtual;
@@ -57,7 +56,7 @@ public class ImportDialog {
 		"24-bit RGB Planar", "24-bit BGR", "24-bit Integer", "32-bit ARGB", "32-bit ABGR", "1-bit Bitmap"};
     	
     static {
-    	options = Prefs.getInt(OPTIONS,0);
+    	options = Prefs.getInt(OPTIONS, 0);
     	sWhiteIsZero = (options&WHITE_IS_ZERO)!=0;
     	sIntelByteOrder = (options&INTEL_BYTE_ORDER)!=0;
     }
@@ -82,13 +81,13 @@ public class ImportDialog {
 		if (choiceSelection>=types.length)
 			choiceSelection = 0;
 		getDimensionsFromName(fileName);
-		GenericDialog gd = new GenericDialog("Import>Raw...", IJ.getInstance());
+		GenericDialog gd = new GenericDialog("Import>Raw...");
 		gd.addChoice("Image type:", types, types[choiceSelection]);
-		gd.addNumericField("Width:", width, 0, 6, "pixels");
-		gd.addNumericField("Height:", height, 0, 6, "pixels");
-		gd.addNumericField("Offset to first image:", offset, 0, 6, "bytes");
-		gd.addNumericField("Number of images:", nImages, 0, 6, null);
-		gd.addNumericField("Gap between images:", gapBetweenImages, 0, 6, "bytes");
+		gd.addNumericField("Width:", width, 0, 8, "pixels");
+		gd.addNumericField("Height:", height, 0, 8, "pixels");
+		gd.addNumericField("Offset to first image:", offset, 0, 8, "bytes");
+		gd.addNumericField("Number of images:", nImages, 0, 8, null);
+		gd.addNumericField("Gap between images:", gapBetweenImages, 0, 8, "bytes");
 		gd.addCheckbox("White is zero", whiteIsZero);
 		gd.addCheckbox("Little-endian byte order", intelByteOrder);
 		gd.addCheckbox("Open all files in folder", openAll);
@@ -97,15 +96,16 @@ public class ImportDialog {
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
-		gd.setSmartRecording(true);
 		choiceSelection = gd.getNextChoiceIndex();
-		gd.setSmartRecording(false);
 		width = (int)gd.getNextNumber();
 		height = (int)gd.getNextNumber();
-		gd.setSmartRecording(true);
+		gd.setSmartRecording(offset==0);
 		offset = (long)gd.getNextNumber();
+		gd.setSmartRecording(nImages==1);
 		nImages = (int)gd.getNextNumber();
-		gapBetweenImages = (int)gd.getNextNumber();
+		gd.setSmartRecording(gapBetweenImages==0);
+		gapBetweenImages = (long)gd.getNextNumber();
+		gd.setSmartRecording(false);
 		whiteIsZero = gd.getNextBoolean();
 		intelByteOrder = gd.getNextBoolean();
 		openAll = gd.getNextBoolean();
@@ -140,7 +140,7 @@ public class ImportDialog {
 			if (list[i].startsWith("."))
 				continue;
 			fi.fileName = list[i];
-			imp = new FileOpener(fi).open(false);
+			imp = new FileOpener(fi).openImage();
 			if (imp==null)
 				IJ.log(list[i] + ": unable to open");
 			else {
@@ -171,6 +171,7 @@ public class ImportDialog {
 				IJ.showStatus((stack.getSize()+1) + ": " + list[i]);
 			}
 		}
+		Recorder.recordCall(fi.getCode()+"imp = Raw.openAll(\""+ fi.directory+"\", fi);");
 		if (stack!=null) {
 			imp = new ImagePlus("Imported Stack", stack);
 			if (imp.getBitDepth()==16 || imp.getBitDepth()==32)
@@ -186,11 +187,17 @@ public class ImportDialog {
 		Does nothing if the dialog is canceled. */
 	public void openImage() {
 		FileInfo fi = getFileInfo();
-		if (fi==null) return;
+		if (fi==null)
+			return;
 		if (openAll) {
 			if (virtual) {
-				virtual = false;
-				IJ.error("Import Raw", "\"Open All\" does not currently support virtual stacks");
+				ImagePlus imp = Raw.openAllVirtual(directory, fi);
+				Recorder.recordCall(fi.getCode()+"imp = Raw.openAllVirtual(\""+directory+"\", fi);");
+				if (imp!=null) {
+					imp.setSlice(imp.getStackSize()/2);
+					imp.show();
+					imp.setSlice(1);
+				}
 				return;
 			}
 			String[] list = new File(directory).list();
@@ -200,7 +207,9 @@ public class ImportDialog {
 			new FileInfoVirtualStack(fi);
 		else {
 			FileOpener fo = new FileOpener(fi);
-			ImagePlus imp = fo.open(false);
+			ImagePlus imp = fo.openImage();
+			String filePath = fi.directory+fi.fileName;
+			Recorder.recordCall(fi.getCode()+"imp = Raw.open(\""+filePath+"\", fi);");
 			if (imp!=null) {
 				imp.show();
 				int n = imp.getStackSize();
@@ -210,7 +219,8 @@ public class ImportDialog {
 					ip.resetMinAndMax();
 					imp.setDisplayRange(ip.getMin(),ip.getMax());
 				}
-			}
+			} else
+				IJ.error("File>Import>Raw", "File not found: "+filePath);
 		}
 	}
 
@@ -224,6 +234,8 @@ public class ImportDialog {
 		FileInfo fi = new FileInfo();
 		fi.fileFormat = fi.RAW;
 		fi.fileName = fileName;
+		if (!(directory.endsWith(File.separator)||directory.endsWith("/")))
+			directory += "/";
 		fi.directory = directory;
 		fi.width = width;
 		fi.height = height;
@@ -232,7 +244,8 @@ public class ImportDialog {
 		else
 			fi.offset = (int)offset;
 		fi.nImages = nImages;
-		fi.gapBetweenImages = gapBetweenImages;
+		fi.gapBetweenImages = (int)gapBetweenImages;
+		fi.longGap = gapBetweenImages;
 		fi.intelByteOrder = intelByteOrder;
 		fi.whiteIsZero = whiteIsZero;
 		if (imageType.equals("8-bit"))
@@ -277,7 +290,7 @@ public class ImportDialog {
 		prefs.put(HEIGHT, Integer.toString(sHeight));
 		prefs.put(OFFSET, Integer.toString(sOffset>2147483647?0:(int)sOffset));
 		prefs.put(N, Integer.toString(sNImages));
-		prefs.put(GAP, Integer.toString(sGapBetweenImages));
+		prefs.put(GAP, Integer.toString(sGapBetweenImages>2147483647?0:(int)sGapBetweenImages));
 		int options = 0;
 		if (sWhiteIsZero)
 			options |= WHITE_IS_ZERO;
@@ -291,7 +304,7 @@ public class ImportDialog {
 	public static FileInfo getLastFileInfo() {
 		return lastFileInfo;
 	}
-	
+		
 	private void getDimensionsFromName(String name) {
 		if (name==null) return;
 		int lastUnderscore = name.lastIndexOf("_");
@@ -304,39 +317,39 @@ public class ImportDialog {
 		name2 = new String(chars);
 		String[] numbers = Tools.split(name2);
 		int n = numbers.length;
-		if (n<2 || n>3) return;
+		if (n<2) return;
 		int w = (int)Tools.parseDouble(numbers[0],0);
-		if (w<10) return;
+		if (w<1) return;
 		int h = (int)Tools.parseDouble(numbers[1],0);
-		if (h<10) return;
+		if (h<1) return;
 		width = w;
 		height = h;
 		nImages = 1;
-		if (n==3) {
+		if (n>2) {
 			int d = (int)Tools.parseDouble(numbers[2],0);
 			if (d>0)
 				nImages = d;
 		}
 		guessFormat(directory, name);
 	}
-
+    
 	private void guessFormat(String dir, String name) {
 		if (dir==null) return;
 		File file = new File(dir+name);
 		long imageSize = (long)width*height*nImages;
 		long fileSize = file.length();
-		if (fileSize==4*imageSize) {
+		if (fileSize==4*imageSize)
 			choiceSelection = 5; // 32-bit real
-			intelByteOrder = true;
-		} else if (fileSize==2*imageSize) {
+		else if (fileSize==2*imageSize)
 			choiceSelection = 2;	// 16-bit unsigned
-			intelByteOrder = true;
-		} else if (fileSize==3*imageSize) {
+		else if (fileSize==3*imageSize)
 			choiceSelection = 7;	// 24-bit RGB
-		} else if (fileSize==imageSize)
+		else if (fileSize==imageSize)
 			choiceSelection = 0;	// 8-bit
-		if (name.endsWith("be.raw"))
+		if (name.endsWith("be.raw"))  // big-endian
 			intelByteOrder = false;
+		else if (name.endsWith("le.raw"))  // little-endian
+			intelByteOrder = true;
 	}
 	
 }

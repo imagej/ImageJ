@@ -5,6 +5,7 @@ import java.awt.image.*;
 import ij.*;
 import ij.gui.*;
 import ij.measure.*;
+import ij.plugin.frame.Recorder;
 
 /** This class converts an ImagePlus object to a different type. */
 public class ImageConverter {
@@ -29,6 +30,7 @@ public class ImageConverter {
 		if (type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32) {
 			imp.setProcessor(null, ip.convertToByte(doScaling));
 			imp.setCalibration(imp.getCalibration()); //update calibration
+			record();
 		} else if (type==ImagePlus.COLOR_RGB)
 	    	imp.setProcessor(null, ip.convertToByte(doScaling));
 		else if (ip.isPseudoColorLut()) {
@@ -57,9 +59,21 @@ public class ImageConverter {
 			return;
 		}
 		ImageProcessor ip = imp.getProcessor();
+		if (type==ImagePlus.GRAY32)
+			record();
 		imp.trimProcessor();
 		imp.setProcessor(null, ip.convertToShort(doScaling));
 		imp.setCalibration(imp.getCalibration()); //update calibration
+	}
+	
+	private void record() {
+		if (Recorder.record) {
+			Boolean state = ImageConverter.getDoScaling();
+			if (Recorder.scriptMode())
+				Recorder.recordCall("ImageConverter.setDoScaling("+state+");", true);
+			else
+				Recorder.	recordString("setOption(\"ScaleConversions\", "+state+");\n");
+		}
 	}
 
 	/** Converts this ImagePlus to 32-bit grayscale. */
@@ -68,19 +82,25 @@ public class ImageConverter {
 			return;
 		if (!(type==ImagePlus.GRAY8||type==ImagePlus.GRAY16||type==ImagePlus.COLOR_RGB))
 			throw new IllegalArgumentException("Unsupported conversion");
+		Calibration cal = imp.getCalibration();
+		double min = cal.getCValue(imp.getDisplayRangeMin());
+		double max = cal.getCValue(imp.getDisplayRangeMax());
 		if (imp.getStackSize()>1) {
 			new StackConverter(imp).convertToGray32();
+			IJ.setMinAndMax(imp, min, max);
 			return;
 		}
 		ImageProcessor ip = imp.getProcessor();
 		imp.trimProcessor();
-		Calibration cal = imp.getCalibration();
 		imp.setProcessor(null, ip.convertToFloat());
 		imp.setCalibration(cal); //update calibration
+		IJ.setMinAndMax(imp, min, max);
 	}
 
 	/** Converts this ImagePlus to RGB. */
 	public void convertToRGB() {
+		if (imp.getBitDepth()==24)
+			return;
 		if (imp.getStackSize()>1) {
 			new StackConverter(imp).convertToRGB();
 			return;
@@ -124,9 +144,7 @@ public class ImageConverter {
 	/** Converts an RGB image to a HSB (hue, saturation and brightness) stack. */
 	public void convertToHSB() {
 		if (type!=ImagePlus.COLOR_RGB)
-			throw new IllegalArgumentException("Image must be RGB");
-		//convert to hue, saturation and brightness
-		//IJ.showProgress(0.1);
+			throw new IllegalArgumentException("Image must be RGB");;
 		ColorProcessor cp;
 		if (imp.getType()==ImagePlus.COLOR_RGB)
 			cp = (ColorProcessor)imp.getProcessor();
@@ -136,7 +154,6 @@ public class ImageConverter {
 		imp.trimProcessor();
 		imp.setStack(null, stack);
 		imp.setDimensions(3, 1, 1);
-		//IJ.showProgress(1.0);
 	}
 	
 	/** Converts an RGB image to a Lab stack. */

@@ -11,12 +11,16 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
 	private boolean firstPaint = true;
 
 	public YesNoCancelDialog(Frame parent, String title, String msg) {
+		this(parent, title, msg, "  Yes  ", "  No  ");
+	}
+
+	public YesNoCancelDialog(Frame parent, String title, String msg, String yesLabel, String noLabel) {
 		super(parent, title, true);
 		setLayout(new BorderLayout());
 		Panel panel = new Panel();
 		panel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 		MultiLineLabel message = new MultiLineLabel(msg);
-		message.setFont(new Font("Dialog", Font.PLAIN, 12));
+		message.setFont(new Font("Dialog", Font.PLAIN, 14));
 		panel.add(message);
 		add("North", panel);
 		
@@ -27,8 +31,8 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
 			noB = new Button("Don't Save");
 			cancelB = new Button("  Cancel  ");
 		} else {
-			yesB = new Button("  Yes  ");
-			noB = new Button("  No  ");
+			yesB = new Button(yesLabel);
+			noB = new Button(noLabel);
 			cancelB = new Button(" Cancel ");
 		}
 		yesB.addActionListener(this);

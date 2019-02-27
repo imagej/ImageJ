@@ -10,7 +10,7 @@ import java.awt.event.*;
 /** This subclass of ImageCanvas has special provisions for plots:
  * - Zooming: sets the plot range
  * - Scrolling: moves data area
- *  This behavior can be suppressed if 
+ *  This behavior is suppressed if the plot is frozen
  * */
 public class PlotCanvas extends ImageCanvas {
 	/** The plot displayed */
@@ -89,7 +89,7 @@ public class PlotCanvas extends ImageCanvas {
 		zoom(sx, sy, Math.sqrt(0.5));
 	}
 
-	void zoom(int sx, int sy, double zoomFactor) {
+	void zoom(int sx, int sy, double zoomFactor) {//n__ 
 		if (plot == null || plot.isFrozen()) {
 			if (zoomFactor > 1)
 				super.zoomIn(sx, sy);
@@ -97,15 +97,8 @@ public class PlotCanvas extends ImageCanvas {
 				super.zoomOut(sx, sy);
 			return;
 		}
-		boolean mouseMoved = sqr(sx-lastZoomSX) + sqr(sy-lastZoomSY) > MAX_MOUSEMOVE_ZOOM*MAX_MOUSEMOVE_ZOOM;
-		if (mouseMoved)
-			plot.zoom(sx, sy, zoomFactor);	  //zoom on cursor coordinates
-		else
-			plot.zoom(Plot.ZOOM_AS_PREVIOUS, -Plot.ZOOM_AS_PREVIOUS, zoomFactor);	 //zoom on center
-		lastZoomSX = sx;
-		lastZoomSY = sy;
+		plot.zoom(sx, sy, zoomFactor);
 	}
-
 
 	/** Implements the Image/Zoom/Original Scale command.
 	 *	Sets the original range of the x, y axes (unless the plot is frozen) */
@@ -147,20 +140,20 @@ public class PlotCanvas extends ImageCanvas {
 	}
 
 	/** Resizes the canvas when the user resizes the window. To avoid a race condition while creating
-	 *	a new window, this is ignored if no window exists or the window layout is not finished */
+	 *	a new window, this is ignored if no window exists or the window has not been activated yet.
+     */
 	void resizeCanvas(int width, int height) {
 		if (plot == null || plot.isFrozen()) {
 			super.resizeCanvas(width, height);
 			return;
 		}
 		resetMagnification();
-		//IJ.log("resizeCanvas "+width+"x"+height);
 		if (width == oldWidth && height == oldHeight) return;
 		if (plot == null) return;
 		ImageWindow win = imp.getWindow();
 		if (win==null || !(win instanceof PlotWindow)) return;
-		if (!((PlotWindow)win).layoutDone) return;				// window layout not finished yet?
-		((PlotWindow)win).updateMinimumSize();
+		if (!win.isVisible()) return;
+		if (!((PlotWindow)win).wasActivated) return;				// window layout not finished yet?
 		Dimension minSize = plot.getMinimumSize();
 		int plotWidth  =  width < minSize.width	 ? minSize.width  : width;
 		int plotHeight = height < minSize.height ? minSize.height : height;

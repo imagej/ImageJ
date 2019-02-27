@@ -11,6 +11,9 @@ import java.awt.image.*;
  */
 public class ProgressBar extends Canvas {
 
+    public static final int WIDTH = 120;
+    public static final int HEIGHT = 20;
+
     private int canvasWidth, canvasHeight;
     private int x, y, width, height;
     private long lastTime = 0;
@@ -30,6 +33,10 @@ public class ProgressBar extends Canvas {
      * This constructor is called once by ImageJ at startup.
      */
     public ProgressBar(int canvasWidth, int canvasHeight) {
+    	init(canvasWidth, canvasHeight);
+	}
+    
+    public void init(int canvasWidth, int canvasHeight) {
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
         x = 3;

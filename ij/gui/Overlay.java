@@ -4,6 +4,9 @@ import java.util.Vector;
 import java.awt.geom.Rectangle2D;
 import ij.*;
 import ij.process.ImageProcessor;
+import ij.plugin.filter.Analyzer;
+import ij.plugin.Colors;
+import ij.measure.ResultsTable;
 
 /** An Overlay is a list of ROIs that can be drawn non-destructively on an Image. */
 public class Overlay {
@@ -13,7 +16,9 @@ public class Overlay {
     private boolean drawBackgrounds;
     private Color labelColor;
     private Font labelFont;
+    private boolean scalableLabels;
     private boolean isCalibrationBar;
+    private boolean selectable = true;
     
     /** Constructs an empty Overlay. */
     public Overlay() {
@@ -23,12 +28,14 @@ public class Overlay {
     /** Constructs an Overlay and adds the specified ROI. */
     public Overlay(Roi roi) {
     	list = new Vector();
-    	list.add(roi);
+    	if (roi!=null)
+    		list.add(roi);
     }
 
     /** Adds an ROI to this Overlay. */
     public void add(Roi roi) {
-    	list.add(roi);
+    	if (roi!=null)
+    		list.add(roi);
     }
         
     /** Adds an ROI to this Overlay using the specified name. */
@@ -39,7 +46,16 @@ public class Overlay {
 
     /** Adds an ROI to this Overlay. */
     public void addElement(Roi roi) {
-    	list.add(roi);
+    	if (roi!=null)
+    		list.add(roi);
+    }
+
+    /** Replaces the ROI at the specified index. */
+    public void set(Roi roi, int index) {
+    	if (index<0 || index>=list.size())
+    		throw new IllegalArgumentException("set: index out of range");
+    	if (roi!=null)
+    		list.set(index, roi);
     }
 
     /** Removes the ROI with the specified index from this Overlay. */
@@ -75,6 +91,15 @@ public class Overlay {
     	}
     }
     
+    /** Returns the ROI with the specified name or null if not found. */
+    public Roi get(String name) {
+    	int index = getIndex(name);
+    	if (index==-1)
+    		return null;
+    	else
+    		return get(index);   		
+    }
+
     /** Returns the index of the ROI with the specified name, or -1 if not found. */
     public int getIndex(String name) {
     	if (name==null) return -1;
@@ -107,6 +132,13 @@ public class Overlay {
 		Roi[] rois = toArray();
 		for (int i=0; i<rois.length; i++)
 			rois[i].setStrokeColor(color);
+	}
+
+    /** Sets the stroke width of all the ROIs in this overlay. */
+    public void setStrokeWidth(Double width) {
+		Roi[] rois = toArray();
+		for (int i=0; i<rois.length; i++)
+			rois[i].setStrokeWidth(width);
 	}
 
     /** Sets the fill color of all the ROIs in this overlay. */
@@ -147,6 +179,22 @@ public class Overlay {
 				roi.setLocation(r.x+(int)dx, r.y+(int)dy);
 			}
 		}
+	}
+	
+	/** Measures the ROIs in this overlay on the specified image
+	* and returns the results as a ResultsTable.
+	*/
+	public ResultsTable measure(ImagePlus imp) {
+		ResultsTable rt = new ResultsTable();
+		rt.showRowNumbers(true);
+		Analyzer analyzer = new Analyzer(imp, rt);
+		for (int i=0; i<size(); i++) {
+			Roi roi = get(i);
+			imp.setRoi(roi);
+			analyzer.measure();
+		}
+		imp.deleteRoi();
+		return rt;
 	}
 
 	/*
@@ -251,7 +299,9 @@ public class Overlay {
 		overlay2.drawNames(drawNames);
 		overlay2.drawBackgrounds(drawBackgrounds);
 		overlay2.setLabelColor(labelColor);
-		overlay2.setLabelFont(labelFont);
+		overlay2.setLabelFont(labelFont, scalableLabels);
+		overlay2.setIsCalibrationBar(isCalibrationBar);
+		overlay2.selectable(selectable);
 		return overlay2;
 	}
 	
@@ -264,10 +314,6 @@ public class Overlay {
 		return overlay2;
 	}
 	
-	public String toString() {
-    	return list.toString();
-    }
-    
     public void drawLabels(boolean b) {
     	label = b;
     }
@@ -304,12 +350,32 @@ public class Overlay {
     }
 
     public void setLabelFont(Font font) {
-    	labelFont = font;
+    	setLabelFont(font, false);
     }
     
+    public void setLabelFont(Font font, boolean scalable) {
+    	labelFont = font;
+    	scalableLabels = scalable;
+    }
+
+    /** Set the label font size with options. The options string can contain
+     * 'scale' (enlarge labels when image zoomed), 'bold'
+     * (display bold labels) or 'background' (display labels
+     * with contrasting background.
+    */
+    public void setLabelFontSize(int size, String options) {
+    	int style = Font.PLAIN;
+    	if (options!=null) {
+    		scalableLabels = options.contains("scale");
+    		if (options.contains("bold"))
+    			style = Font.BOLD;
+    		drawBackgrounds = options.contains("back");
+    	}
+    	labelFont = new Font("SansSerif", style, size);
+    	drawLabels(true);
+    }
+
     public Font getLabelFont() {
-    	//if (labelFont==null && labelFontSize!=0)
-    	//	labelFont = new Font("SansSerif", Font.PLAIN, labelFontSize);
     	return labelFont;
     }
 
@@ -324,5 +390,25 @@ public class Overlay {
     void setVector(Vector v) {list = v;}
         
     Vector getVector() {return list;}
+    
+    /** Set 'false' to prevent ROIs in this overlay from being activated 
+		by clicking on their labels or by a long clicking. */ 
+    public void selectable(boolean selectable) {
+    	this.selectable = selectable;
+    }
+    
+    /** Returns 'true' if ROIs in this overlay can be activated
+		by clicking on their labels or by a long press. */ 
+	public boolean isSelectable() {
+		return selectable;
+	}
+	
+ 	public boolean scalableLabels() {
+		return scalableLabels;
+	}
+	
+	public String toString() {
+    	return "Overlay[size="+size()+" "+(scalableLabels?"scale":"")+" "+Colors.colorToString(getLabelColor())+"]";
+    }
     
 }

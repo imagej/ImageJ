@@ -5,14 +5,15 @@ import ij.plugin.frame.Recorder;
 import java.awt.*;
 
 /*
- * This class contains dialog for formatting of plots
+ * This class contains dialogs for formatting of plots (range, axes, labels, legend, creating a high-resolution plot)
+ * Formatting of contents (curves, symbols, ...) is in PlotContentsStyleDialog
  */
 
 public class PlotDialog {
 
 	/** types of dialog */
 	public static final int SET_RANGE = 0, AXIS_OPTIONS = 1, LEGEND = 2, HI_RESOLUTION = 3;
-	/** dialog headings for the dialogType */
+	/** dialog headings for the dialogTypes */
 	private static final String[] HEADINGS = new String[] {"Plot Range...", "Axis Options...", "Add Legend...", "High-Resolution Plot..."};
 	/** potins and numbers for legend position */
 	private static final String[] LEGEND_POSITIONS = new String[] {"Auto",	"Top-Left", "Top-Right", "Bottom-Left", "Bottom-Right", "No Legend"};
@@ -32,9 +33,8 @@ public class PlotDialog {
 	//saved dialog options: High-resolution plot
 	private static float hiResFactor = 4.0f;
 	private static boolean hiResAntiAliased = true;
-	
-	/** Construct a new PlotDialog, show it and do the appropriate action on the plot
-	 */
+
+	/** Construct a new PlotDialog for a given plot and sets the type of dialog */
 	public PlotDialog(Plot plot, int dialogType) {
 		this.plot = plot;
 		this.dialogType = dialogType;
@@ -44,9 +44,9 @@ public class PlotDialog {
 	 *	The 'parent' frame may be null */
 	public void showDialog(Frame parent) {
 		GenericDialog gd = parent == null ? new GenericDialog(HEADINGS[dialogType]) :
-				new GenericDialog(HEADINGS[dialogType]);
+				new GenericDialog(HEADINGS[dialogType], parent);
 		if (dialogType == SET_RANGE) {
-			double[] currentMinMax = plot.currentMinMax;
+			double[] currentMinMax = plot.getLimits();
 			boolean livePlot = plot.plotMaker != null;
 			int xDigits = plot.logXAxis ? -2 : Plot.getDigits(currentMinMax[0], currentMinMax[1], 0.005*Math.abs(currentMinMax[1]-currentMinMax[0]), 6);
 			int yDigits = plot.logYAxis ? -2 : Plot.getDigits(currentMinMax[2], currentMinMax[3], 0.005*Math.abs(currentMinMax[3]-currentMinMax[2]), 6);
@@ -79,19 +79,16 @@ public class PlotDialog {
 			double linYMax = gd.getNextNumber();
 			if (gd.invalidNumber())
 				linYMax = Double.NaN;
+			if (linXMin == linXMax || linYMin == linYMax)
+				return;
 
-			currentMinMax[0] = linXMin;
-			currentMinMax[1] = linXMax;
-			currentMinMax[2] = linYMin;
-			currentMinMax[3] = linYMax;
-			
 			if (livePlot) plot.templateFlags = setFlag(plot.templateFlags, Plot.X_RANGE, gd.getNextBoolean());
 			boolean xLog = gd.getNextBoolean();
 			if (livePlot) plot.templateFlags = setFlag(plot.templateFlags, Plot.Y_RANGE, gd.getNextBoolean());
 			boolean yLog = gd.getNextBoolean();
 			plot.setAxisXLog(xLog);
 			plot.setAxisYLog(yLog);
-                        plot.setLimits(linXMin, linXMax, linYMin, linYMax);
+			plot.setLimits(linXMin, linXMax, linYMin, linYMax);
 			plot.updateImage();
 			if (Recorder.record) {
 				if (Recorder.scriptMode()) {
@@ -107,7 +104,6 @@ public class PlotDialog {
 					Recorder.recordString("Plot.setLimits("+IJ.d2s(linXMin,xDigits)+","+IJ.d2s(linXMax,xDigits)+","+IJ.d2s(linYMin,yDigits)+","+IJ.d2s(linYMax,yDigits)+");\n");
 				}
 			}
-		//n__ end PlotDialog
 		} else if (dialogType == AXIS_OPTIONS) {
 			int flags = plot.getFlags();
 			int columns = 2;
@@ -122,7 +118,7 @@ public class PlotDialog {
 			panel.add(new Label("X Axis"), c);
 			c.gridx = 2;
 			panel.add(new Label("Y Axis"), c);
-			
+
 			Checkbox[] checkboxes = new Checkbox[labels.length*columns];
 			for (int l=0; l<labels.length; l++) {
 				c.gridy++;
@@ -139,13 +135,31 @@ public class PlotDialog {
 			gd.addPanel(panel);
 			gd.setInsets(15, 0, 3); // top, left, bottom -- extra space
 			Font plotFont = (plot.currentFont != null) ? plot.currentFont : plot.defaultFont;
-			Font labelFont = (plot.xLabelFont != null) ? plot.xLabelFont : plotFont;
-			gd.addNumericField("Number Font Size", plotFont.getSize2D(), 1);
+			Font labelFont = plot.getFont('x');
+			if (labelFont == null) labelFont = plotFont;
+			Font numberFont = plot.getFont('f');
+			if (numberFont == null) numberFont = plotFont;
+			String plotXLabel = plot.getLabel('x');
+			String plotYLabel = plot.getLabel('y');
+			if (plotXLabel == null) plotXLabel = "";
+			if (plotYLabel == null) plotYLabel = "";
+			if (xLabel == null || (!(plotXLabel.equals("Distance (pixels)") || plotXLabel.equals("Distance ( )"))))
+				xLabel = plotXLabel;
+			if (yLabel == null || !plotYLabel.equals("Gray Value"))
+			yLabel = plotYLabel; // suggest last dialog entry if default profile label
+			gd.addNumericField("Number Font Size", numberFont.getSize2D(), 1);
 			gd.addNumericField("Label Font Size", labelFont.getSize2D(), 1);
-			gd.addStringField("X Axis Label", xLabel != null ? xLabel : plot.xLabel, 15);
-			gd.addStringField("Y Axis Label", yLabel != null ? yLabel : plot.yLabel, 15);
+			String xMultiLineLabel = xLabel.replace("\n", "|");
+			int nChars = 15;
+			if(xLabel.startsWith("{") ||yLabel.startsWith("{" )){
+					nChars = Math.max(nChars, xLabel.length());
+					nChars = Math.max(nChars, yLabel.length());
+			}
+			gd.addStringField("X Axis Label", xMultiLineLabel, nChars);
+			String yMultiLineLabel = yLabel.replace("\n", "|");
+			gd.addStringField("Y Axis Label", yMultiLineLabel, nChars);
 			gd.setInsets(0, 20, 0); // no extra space
-			gd.addCheckbox("Bold Labels", plotFontSize>0 ? axisLabelBold : (plotFont.isBold()));
+			gd.addCheckbox("Bold Labels", plotFontSize>0 ? axisLabelBold : (labelFont.isBold()));
 			gd.showDialog();
 			if (gd.wasCanceled()) return;
 
@@ -155,28 +169,36 @@ public class PlotDialog {
 				flags = setFlag(flags, xFlags[l]<<1, checkboxes[l*columns+1].getState());
 			}
 			plot.setFormatFlags(flags);
-			float plotFontSize = (float)gd.getNextNumber();
-			if (gd.invalidNumber()) plotFontSize = plotFont.getSize2D();
+			float numberFontSize = (float)gd.getNextNumber();
+			if (gd.invalidNumber()) numberFontSize = numberFont.getSize2D();
+			if (numberFontSize < 9)  numberFontSize = 9f;
+			if (numberFontSize > 24) numberFontSize = 24f;
 			float labelFontSize = (float)gd.getNextNumber();
 			if (gd.invalidNumber()) labelFontSize = labelFont.getSize2D();
-			xLabel = gd.getNextString();
-			yLabel = gd.getNextString();
+			xMultiLineLabel = gd.getNextString();
+			xLabel = xMultiLineLabel.replace("|", "\n");
+			yMultiLineLabel = gd.getNextString();
+			yLabel = yMultiLineLabel.replace("|", "\n");
 			axisLabelBold = gd.getNextBoolean();
-			plot.setFont(-1, plotFontSize);
+			plot.setFont('f', numberFont.deriveFont(numberFont.getStyle(), numberFontSize));
 			plot.setAxisLabelFont(axisLabelBold ? Font.BOLD : Font.PLAIN, labelFontSize);
 			plot.setXYLabels(xLabel, yLabel);
 			plot.updateImage();
 			if (Recorder.record) {
+				String xLabel2 = xLabel.replace("\n", "\\n");
+				String yLabel2 = yLabel.replace("\n", "\\n");
 				if (Recorder.scriptMode()) {
 					Recorder.recordCall("//plot = IJ.getImage().getProperty(Plot.PROPERTY_KEY)");
 					Recorder.recordCall("plot.setFont(-1,"+IJ.d2s(plotFontSize,1)+");");
 					Recorder.recordCall("plot.setAxisLabelFont(Plot."+(axisLabelBold ? "BOLD" : "PLAIN")+","+IJ.d2s(labelFontSize,1)+");");
-					Recorder.recordCall("plot.setXYLabels(\""+xLabel+"\", \""+yLabel+"\");");
+					//Recorder.recordCall("plot.setXYLabels(\""+xLabel+"\", \""+yLabel+"\");");
+					Recorder.recordCall("plot.setXYLabels(\""+xLabel2+"\", \""+yLabel2+"\");");
 					Recorder.recordCall("plot.setFormatFlags(0x"+Integer.toHexString(flags)+");");
 				} else {
 					Recorder.recordString("Plot.setFontSize("+IJ.d2s(plotFontSize,1)+");\n");
 					Recorder.recordString("Plot.setAxisLabelSize("+IJ.d2s(labelFontSize,1)+", \""+(axisLabelBold ? "bold" : "plain")+"\");\n");
-					Recorder.recordString("Plot.setXYLabels(\""+xLabel+"\", \""+yLabel+"\");\n");
+					//Recorder.recordString("Plot.setXYLabels(\""+xLabel+"\", \""+yLabel+"\");\n");
+					Recorder.recordString("Plot.setXYLabels(\""+xLabel2+"\", \""+yLabel2+"\");\n");
 					Recorder.recordString("Plot.setFormatFlags(\""+Integer.toString(flags,2)+"\");\n");
 				}
 			}
@@ -257,3 +279,4 @@ public class PlotDialog {
 	}
 
 }
+

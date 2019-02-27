@@ -2,7 +2,7 @@ package ij.gui;
 import ij.*;
 import ij.plugin.Colors;
 import ij.io.RoiDecoder;
-import ij.process.FloatPolygon;
+import ij.process.*;
 import ij.measure.*;
 import ij.util.Tools;
 import ij.plugin.filter.Analyzer;
@@ -24,6 +24,7 @@ public class RoiProperties {
 	private boolean setPositions;
 	private boolean listCoordinates;
 	private boolean listProperties;
+	private boolean showPointCounts;
 	private static final String[] justNames = {"Left", "Center", "Right"};
 	private int nProperties;
 
@@ -83,11 +84,8 @@ public class RoiProperties {
 			antialias = troi.getAntialiased();
 		}
 		String position = ""+roi.getPosition();
-		int cpos = roi.getCPosition();
-		int zpos = roi.getZPosition();
-		int tpos = roi.getTPosition();
-		if (cpos>0 || zpos>0 || tpos>0)
-			position = cpos +","+zpos+","+tpos;
+		if (roi.hasHyperStackPosition())
+			position =  roi.getCPosition() +","+roi.getZPosition()+","+ roi.getTPosition();
 		if (position.equals("0"))
 			position = "none";
 		String linec = Colors.colorToString(strokeColor);
@@ -151,8 +149,12 @@ public class RoiProperties {
 		if (isText)
 			gd.addCheckbox("Antialiased text", antialias);
 		if (showListCoordinates) {
-			int n = roi.getFloatPolygon().npoints;
-			gd.addCheckbox("List coordinates ("+n+")", listCoordinates);
+			if ((roi instanceof PointRoi) && Toolbar.getMultiPointMode())
+				showPointCounts = true;
+			if (showPointCounts)
+				gd.addCheckbox("Show point counts (shortcut: alt+y)", listCoordinates);
+			else
+				gd.addCheckbox("List coordinates ("+roi.size()+")", listCoordinates);
 			if (nProperties>0)
 				gd.addCheckbox("List properties ("+nProperties+")", listProperties);
 			else {
@@ -200,6 +202,7 @@ public class RoiProperties {
 						imp.setHideOverlay(true);
 				} else {
 					overlay.drawLabels(labels);
+					Analyzer.drawLabels(labels);
 					overlay.drawBackgrounds(true);
 					if (imp.getHideOverlay())
 						imp.setHideOverlay(false);
@@ -246,9 +249,14 @@ public class RoiProperties {
 				rois[i].setFillColor(fillColor);
 			}
 			imp.draw();
+			imp.getProcessor(); // needed for corect recordering
 		}
-		if (listCoordinates)
-			listCoordinates(roi);
+		if (listCoordinates) {
+			if (showPointCounts && (roi instanceof PointRoi))
+				((PointRoi)roi).displayCounts();
+			else
+				listCoordinates(roi);
+		}
 		if (listProperties && nProperties>0)
 			listProperties(roi);
 		return true;
@@ -283,17 +291,24 @@ public class RoiProperties {
 	}
 		
 	public boolean showImageDialog(String name) {
-		GenericDialog gd = new GenericDialog(title);
+		ImageRoi iRoi = (ImageRoi)roi;
+		boolean zeroTransparent =  iRoi.getZeroTransparent();
+		GenericDialog gd = new GenericDialog("Image ROI Properties");
 		gd.addStringField("Name:", name, 15);
-		gd.addNumericField("Opacity (0-100%):", ((ImageRoi)roi).getOpacity()*100.0, 0);
+		gd.addNumericField("Opacity (0-100%):", iRoi.getOpacity()*100.0, 0);
+		gd.addCheckbox("Transparent background", zeroTransparent);
 		if (addToOverlay)
 			gd.addCheckbox("New Overlay", false);
 		gd.showDialog();
-		if (gd.wasCanceled()) return false;
+		if (gd.wasCanceled())
+			return false;
 		name = gd.getNextString();
 		roi.setName(name.length()>0?name:null);
 		double opacity = gd.getNextNumber()/100.0;
-		((ImageRoi)roi).setOpacity(opacity);
+		iRoi.setOpacity(opacity);
+		boolean zeroTransparent2 = gd.getNextBoolean();
+		if (zeroTransparent!=zeroTransparent2)
+			iRoi.setZeroTransparent(zeroTransparent2);
 		boolean newOverlay = addToOverlay?gd.getNextBoolean():false;
 		if (newOverlay) roi.setName("new-overlay");
 		return true;
@@ -332,7 +347,6 @@ public class RoiProperties {
 			rt.addValue("X", fp.xpoints[i]);
 			rt.addValue("Y", fp.ypoints[i]);
 		}
-		rt.showRowNumbers(false);
 		rt.show("XY_"+title);
 	}
 	

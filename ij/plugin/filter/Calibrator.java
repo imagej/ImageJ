@@ -47,7 +47,6 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
-		//IJ.register(Calibrator.class);
 		return DOES_ALL-DOES_RGB+NO_CHANGES;
 	}
 
@@ -154,6 +153,11 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			function = choiceIndex - 1;
 			x = getData(xText);
 			y = getData(yText);
+			if (cal.isSigned16Bit() || imp.getProperty("WasSigned")!=null) {
+				for (int i=0; i<x.length; i++)
+					x[i] += 32768;
+				imp.setProperty("WasSigned", "WasSigned");
+			}
 			if (!validateXValues(imp, x))
 				return;
 			if (!cal.calibrated() || y.length!=0 || function!=oldFunction) {
@@ -189,7 +193,15 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		cal.setFunction(function, parameters, unit, zeroClip);
 		if (!cal.equals(calOrig))
 			imp.setCalibration(cal);
+		int bitDepth = imp.getBitDepth();
 		imp.setGlobalCalibration(global2?cal:null);
+		if (function!=Calibration.NONE && bitDepth!=8 && imp.getNChannels()==1 && !(bitDepth==16&&imp.getDefault16bitRange()>0)) {
+			ImageStatistics stats = imp.getProcessor().getStats();
+			if (imp.getDisplayRangeMin()<stats.min || imp.getDisplayRangeMax()>stats.max) {
+				imp.resetDisplayRange();
+				imp.updateAndDraw();
+			}
+		}
 		if (global2 || global2!=global1)
 			WindowManager.repaintImageWindows();
 		else
@@ -198,7 +210,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			FileOpener.setShowConflictMessage(true);
 		if (function!=Calibration.NONE && showPlotFlag) {
 			if (curveFitter!=null)
-				Fitter.plot(curveFitter, imp.getBitDepth()==8);
+				Fitter.plot(curveFitter, bitDepth==8);
 			else
 				showPlot(x, y, cal, fitGoodness);
 		}

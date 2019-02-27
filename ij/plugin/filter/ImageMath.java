@@ -9,7 +9,7 @@ import java.awt.*;
 public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	
 	public static final String MACRO_KEY = "math.macro";
-	private int flags = DOES_ALL|SUPPORTS_MASKING|KEEP_PREVIEW|PARALLELIZE_STACKS;
+	private int flags = DOES_ALL|SUPPORTS_MASKING|KEEP_PREVIEW;
 	private String arg;
 	private ImagePlus imp;
 	private boolean canceled;	
@@ -31,6 +31,8 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		this.arg = arg;
 		this.imp = imp;
 		IJ.register(ImageMath.class);
+		if (!arg.equals("macro") || Interpreter.getInstance()==null)
+			flags |= PARALLELIZE_STACKS;
 		return flags;
 	}
 
@@ -157,7 +159,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 
 	void getGammaValue (double defaultValue) {
 		gd = new GenericDialog("Gamma");
-		gd.addSlider("Value:", 0.05, 5.0, defaultValue);
+		gd.addSlider("Value:", 0.0, 5.0, defaultValue, 0.02);
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
 		gd.showDialog();
@@ -175,6 +177,8 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 				return;
 			}
 		}
+		if (!(ip instanceof FloatProcessor))
+			return;
         float[] pixels = (float[])ip.getPixels();
         int width = ip.getWidth();
         int height = ip.getHeight();
@@ -206,11 +210,6 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 
 	private void applyMacro(ImageProcessor ip) {
 		if (macro2==null) return;
-		if (macro2.indexOf("=")==-1) {
-			IJ.error("The variable 'v' must be assigned a value (e.g., \"v=255-v\")");
-			canceled = true;
-			return;
-		}
 		macro = macro2;
 		ip.setSliceNumber(pfr.getSliceNumber());	
 		boolean showProgress = pfr.getSliceNumber()==1 && !Interpreter.isBatchMode();
@@ -220,6 +219,8 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	public static void applyMacro(ImageProcessor ip, String macro, boolean showProgress) {
+		if (!macro.contains("="))
+			macro = "v="+macro;
 		ImagePlus temp = WindowManager.getTempCurrentImage();
 		WindowManager.setTempCurrentImage(new ImagePlus("",ip));
 		int PCStart = 23;
@@ -318,6 +319,21 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 				}
 			}
 			if (hasGetPixel) System.arraycopy(pixels2, 0, pixels1, 0, w*h);
+		} else if (ip.isSigned16Bit()) {
+			for (int y=r.y; y<(r.y+r.height); y++) {
+				if (showProgress && y%inc==0)
+					IJ.showProgress(y-r.y, r.height);
+				interp.setVariable("y", y);
+				for (int x=r.x; x<(r.x+r.width); x++) {
+					v = ip.getPixelValue(x, y);
+					interp.setVariable("v", v);
+					if (hasX) interp.setVariable("x", x);
+					if (hasA) interp.setVariable("a", getA((h-y-1)-h2, x-w2));
+					if (hasD) interp.setVariable("d", getD(x-w2,y-h2));
+					interp.run(PCStart);
+					ip.putPixelValue(x, y, interp.getVariable("v"));
+				}
+			}
 		} else if (bitDepth==16) {
 			short[] pixels1 = (short[])ip.getPixels();
 			short[] pixels2 = pixels1;

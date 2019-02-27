@@ -245,8 +245,15 @@ public class StackEditor implements PlugIn {
 	}
 
 	public void convertStackToImages(ImagePlus imp) {
-		if (nSlices<2)
-			{IJ.error("\"Convert Stack to Images\" requires a stack"); return;}
+		if (nSlices<2) {
+			IJ.wait(500);
+			imp = IJ.getImage();
+			nSlices = imp.getStackSize();
+		}
+		if (nSlices<2) {
+			IJ.error("\"Convert Stack to Images\" requires a stack\n"+imp);
+			return;
+		}
 		if (!imp.lock())
 			return;
 		ImageStack stack = imp.getStack();
@@ -262,6 +269,7 @@ public class StackEditor implements PlugIn {
 		CompositeImage cimg = imp.isComposite()?(CompositeImage)imp:null;
 		if (imp.getNChannels()!=imp.getStackSize()) cimg = null;
 		Overlay overlay = imp.getOverlay();
+		int lastImageID = 0;
 		for (int i=1; i<=size; i++) {
 			String label = stack.getShortSliceLabel(i);
 			String title = label!=null&&!label.equals("")?label:getTitle(imp, i);
@@ -291,6 +299,8 @@ public class StackEditor implements PlugIn {
 				if (overlay2.size()>0)
 					imp2.setOverlay(overlay2);
 			}
+			if (i==size)
+				lastImageID = imp2.getID();
 			imp2.show();
 		}
 		imp.changes = false;

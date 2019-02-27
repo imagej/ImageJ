@@ -69,8 +69,8 @@ public class Macro {
 	
 	/** Aborts the currently running macro or any plugin using IJ.run(). */
 	public static void abort() {
-		abort = true;
 		//IJ.log("Abort: "+Thread.currentThread().getName());
+		abort = true;
 		if (Thread.currentThread().getName().endsWith("Macro$")) {
 			table.remove(Thread.currentThread());
 			throw new RuntimeException(MACRO_CANCELED);
@@ -114,6 +114,8 @@ public class Macro {
 
 	public static String getValue(String options, String key, String defaultValue) {
 		key = trimKey(key);
+		if (!options.endsWith(" "))
+			options = options + " ";
         key += '=';
 		int index=-1;
 		do { // Require that key not be preceded by a letter
@@ -128,20 +130,24 @@ public class Macro {
 			else
 				return options.substring(1, index);
 		} else if (options.charAt(0)=='[') {
-			index = options.indexOf("]",1);
-			if (index<=1)
+			int count = 1;
+			index = -1;
+			for (int i=1; i<options.length(); i++) {
+				char ch = options.charAt(i);
+				if (ch=='[')
+					count++;
+				else if (ch==']')
+					count--;
+				if (count==0) {
+					index = i;
+					break;
+				}
+			}
+			if (index<0)
 				return defaultValue;
 			else
 				return options.substring(1, index);
 		} else {
-			//if (options.indexOf('=')==-1) {
-			//	options = options.trim();
-			//	IJ.log("getValue: "+key+"  |"+options+"|");
-			//	if (options.length()>0)
-			//		return options;
-			//	else
-			//		return defaultValue;
-			//}
 			index = options.indexOf(" ");
 			if (index<0)
 				return defaultValue;

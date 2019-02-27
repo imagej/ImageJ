@@ -26,6 +26,9 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 		ImagePlus imp = IJ.getImage();
 		ImageProcessor ip = imp.getProcessor();
 		Roi roi = imp.getRoi();
+		int bitDepth = imp.getBitDepth();
+		double min = ip.getMin();
+		double max = ip.getMax();	
 		if ((roi==null||!roi.isArea()) && crop) {
 			IJ.error(crop?"Crop":"Resize", "Area selection required");
 			return;
@@ -47,8 +50,12 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				ShapeRoi shape1 = new ShapeRoi(roi);
 				ShapeRoi shape2 = new ShapeRoi(new Roi(0, 0, w, h));
 				roi = shape2.and(shape1);
-				if (roi.getBounds().width==0 || roi.getBounds().height==0)
-					throw new IllegalArgumentException("Selection is outside the image");
+				if (roi.getBounds().width==0 || roi.getBounds().height==0) {
+					if (IJ.isMacro())
+						IJ.log("Selection is outside image");
+					else
+						throw new IllegalArgumentException("Selection is outside image");
+				}
 				if (restoreRoi) imp.setRoi(roi);
 			}
 		}
@@ -72,14 +79,14 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				newWidth = (int)origWidth;
 				newHeight = (int)origHeight;
 			}
-			GenericDialog gd = new GenericDialog("Resize", IJ.getInstance());
+			GenericDialog gd = new GenericDialog("Resize");
 			gd.addNumericField("Width (pixels):", newWidth, 0);
 			gd.addNumericField("Height (pixels):", newHeight, 0);
 			if (imp.isHyperStack()) {
 				z1 = imp.getNSlices();
 				t1 = imp.getNFrames();
 			}
-			if (z1>1 && z1==stackSize)
+			if (z1==stackSize)
 				gd.addNumericField("Depth (images):", z1, 0);
 			else if (z1>1 && z1<stackSize)
 				gd.addNumericField("Depth (slices):", z1, 0);
@@ -103,8 +110,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			}
 			newWidth = (int)gd.getNextNumber();
 			newHeight = (int)gd.getNextNumber();
-			if (z1>1)
-				z2 = (int)gd.getNextNumber();
+			z2 = (int)gd.getNextNumber();
 			if (t1>1)
 				t2 = (int)gd.getNextNumber();
 			if (gd.invalidNumber()) {
@@ -128,8 +134,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				newHeight = (int)Math.round(newWidth*(origHeight/origWidth));
 		}
 		ip.setInterpolationMethod(interpolationMethod);
-		if (stackSize==1)
-			Undo.setup(crop?Undo.TRANSFORM:Undo.TYPE_CONVERSION, imp);
+		Undo.setup(crop?Undo.TRANSFORM:Undo.TYPE_CONVERSION, imp);
 			    	
 		if (roi!=null || newWidth!=origWidth || newHeight!=origHeight) {
 			try {
@@ -204,6 +209,9 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			imp.changes = false;
 			imp.close();
 			imp2.show();
+		} else if (crop && (bitDepth==16 || bitDepth==32)) {
+			imp.setDisplayRange(min, max);
+			imp.updateAndDraw();
 		}
 	}
 
@@ -216,23 +224,21 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			interpolationMethod = interpolationMethod&15;
 			int stackSize = imp.getStackSize();
 			int bitDepth = imp.getBitDepth();
-			if (newDepth<=stackSize/2 && interpolationMethod==ImageProcessor.NONE)
-				imp2 = shrinkZ(imp, newDepth, inPlace);
-			else
-				imp2 = resizeZ(imp, newDepth, interpolationMethod);
+			imp2 = resizeZ(imp, newDepth, interpolationMethod);
 			if (imp2==null)
 				return null;
-			ImageProcessor ip = imp.getProcessor();
-			double min = ip.getMin();
-			double max = ip.getMax();
-			if (bitDepth==16||bitDepth==32)
-				imp2.getProcessor().setMinAndMax(min, max);
+			double min = imp.getDisplayRangeMin();
+			double max = imp.getDisplayRangeMax();
+			imp2.setDisplayRange(min, max);
 		}
 		if (imp2==null)
 			return null;
-		if (imp2!=imp && imp.isComposite()) {
-			imp2 = new CompositeImage(imp2, ((CompositeImage)imp).getMode());
-			((CompositeImage)imp2).copyLuts(imp);
+		if (imp2!=imp) {
+			if (imp.isComposite()) {
+				imp2 = new CompositeImage(imp2, ((CompositeImage)imp).getMode());
+				((CompositeImage)imp2).copyLuts(imp);
+			} else
+				imp2.setLut(imp.getProcessor().getLut());
 		}
 		imp2.setCalibration(imp.getCalibration());
 		Calibration cal = imp2.getCalibration();
@@ -262,8 +268,6 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			slices2 = depth2;
 		double scale = (double)(depth2-1)/slices;
 		if (scaleT) scale = (double)(depth2-1)/frames;
-		if (scale<=0.5 && interpolationMethod==ImageProcessor.NONE)
-			return shrinkHyperstack(imp, depth2, inPlace, scaleT);
 		ImageStack stack1 = imp.getStack();
 		int width = stack1.getWidth();
 		int height = stack1.getHeight();
@@ -330,54 +334,6 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 		}
 		imp2.setDimensions(channels, slices2, frames2);
 		return imp2;
-	}
-
-	private ImagePlus shrinkHyperstack(ImagePlus imp, int newDepth, boolean inPlace, boolean scaleT) {
-		int channels = imp.getNChannels();
-		int slices = imp.getNSlices();
-		int frames = imp.getNFrames();
-		int factor = (int)Math.round((double)slices/newDepth);
-		if (scaleT) factor = frames/newDepth;
-		int zfactor = scaleT?1:factor;
-		int tfactor = scaleT?factor:1;
-		ImageStack stack = imp.getStack();
-		ImageStack stack2 = new ImageStack(imp.getWidth(), imp.getHeight());
-		boolean virtual = stack.isVirtual();
-		int slices2 = slices/zfactor + ((slices%zfactor)!=0?1:0);
-		int frames2 = frames/tfactor + ((frames%tfactor)!=0?1:0);
-		int n = channels*slices2*frames2;
-		int count = 1;
-		for (int t=1; t<=frames; t+=tfactor) {
-			for (int z=1; z<=slices; z+=zfactor) {
-				for (int c=1; c<=channels; c++) {
-					int i = imp.getStackIndex(c, z, t);
-					IJ.showProgress(i, n);
-					ImageProcessor ip = stack.getProcessor(imp.getStackIndex(c, z, t));
-					if (!inPlace) ip=ip.duplicate();
-					//IJ.log(count++ +"  "+i+" "+c+" "+z+" "+t);
-					stack2.addSlice(stack.getSliceLabel(i), ip);
-				}
-			}
-		}
-		ImagePlus imp2 = new ImagePlus(imp.getTitle(), stack2);
-		imp2.setDimensions(channels, slices2, frames2);
-		IJ.showProgress(1.0);
-		return imp2;
-	}
-
-	private ImagePlus shrinkZ(ImagePlus imp, int newDepth, boolean inPlace) {
-		ImageStack stack = imp.getStack();
-		int factor = imp.getStackSize()/newDepth;
-		boolean virtual = stack.isVirtual();
-		int n = stack.getSize();
-		ImageStack stack2 = new ImageStack(stack.getWidth(), stack.getHeight());
-		for (int i=1; i<=n; i+=factor) {
-			if (virtual) IJ.showProgress(i, n);
-			ImageProcessor ip2 = stack.getProcessor(i);
-			if (!inPlace) ip2 = ip2.duplicate();
-			stack2.addSlice(stack.getSliceLabel(i), ip2);
-		}
-		return new ImagePlus(imp.getTitle(), stack2);
 	}
 
 	private ImagePlus resizeZ(ImagePlus imp, int newDepth, int interpolationMethod) {

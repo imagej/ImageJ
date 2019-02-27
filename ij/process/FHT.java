@@ -227,7 +227,6 @@ public class FHT extends FloatProcessor {
 
 	/** Performs a 2D FHT (Fast Hartley Transform). */
 	public void rc2DFHT(float[] x, boolean inverse, int maxN) {
-		//IJ.write("FFT: rc2DFHT (row-column Fast Hartley Transform)");
 		if (S==null) initializeTables(maxN);
 		for (int row=0; row<maxN; row++)
 			dfht3(x, row*maxN, inverse, maxN);		
@@ -304,7 +303,6 @@ public class FHT extends FloatProcessor {
 			gpSize = 4;
 			numBfs = 2;
 			numGps = numGps / 2;
-			//IJ.write("FFT: dfht3 "+Nlog2+" "+numGps+" "+numBfs);
 			for (stage=2; stage<Nlog2; stage++) {
 				for (gpNum=0; gpNum<numGps; gpNum++) {
 					Ad0 = gpNum * gpSize * 2;
@@ -502,7 +500,7 @@ public class FHT extends FloatProcessor {
 
 
 	/** FFT imag value of one row from 2D Hartley Transform.
-	*	@author Joachim Wesner
+	*	Author: Joachim Wesner
 	*/
       void FHTimag(int row, int maxN, float[] fht, float[] imag) {
             int base = row*maxN;

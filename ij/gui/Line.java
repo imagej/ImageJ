@@ -6,9 +6,10 @@ import ij.plugin.Straightener;
 import ij.plugin.frame.Recorder;
 import java.awt.*;
 import java.awt.image.*;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.awt.event.*;
 import java.awt.geom.*;
-
 
 /** This class represents a straight line selection. */
 public class Line extends Roi {
@@ -244,7 +245,7 @@ public class Line extends Roi {
 						else x1d=x2d+length;
 					}
 					y1d = y2d;
-					if(center){
+					if(center) {
 						y1d=y2d=ycd;
 						if(aspect){
 							if(xcd>x1d) {
@@ -379,9 +380,13 @@ public class Line extends Roi {
 			drawHandle(g, sx3-size2, sy3-size2);
 		}
 		if (state!=NORMAL)
-			IJ.showStatus(imp.getLocationAsString(x2,y2)+", angle=" + IJ.d2s(getAngle()) + ", length=" + IJ.d2s(getLength()));
+			showStatus();
 		if (updateFullWindow)
 			{updateFullWindow = false; imp.draw();}
+	}
+	
+	public void showStatus() {
+		IJ.showStatus(imp.getLocationAsString(x2,y2)+", angle=" + IJ.d2s(getAngle()) + ", length=" + IJ.d2s(getLength()));
 	}
 	
 	public double getAngle() {
@@ -415,6 +420,8 @@ public class Line extends Roi {
 				if (ip2==null) return new double[0];
 				int width = ip2.getWidth();
 				int height = ip2.getHeight();
+				if (ip2 instanceof FloatProcessor)
+					return ProfilePlot.getColumnAverageProfile(new Rectangle(0,0,width,height),ip2);
 				profile = new double[width];
 				double[] aLine;
 				ip2.setInterpolate(false);
@@ -488,6 +495,11 @@ public class Line extends Roi {
 			p.addPoint((float)p4x, (float)p4y);
 		}
 		return p;
+	}
+	
+	/** Returns the number of points in this selection; equivalent to getPolygon().npoints. */
+	public int size() {
+		return getStrokeWidth()<=1?2:4;
 	}
 
 	public void drawPixels(ImageProcessor ip) {
@@ -603,6 +615,8 @@ public class Line extends Roi {
 			case KeyEvent.VK_RIGHT: x2R+=inc; break;
 		}
 		grow(ic.screenXD(x+x2R), ic.screenYD(y+y2R));
+		notifyListeners(RoiListener.MOVED);
+		showStatus();
 	}
 	
 	public boolean getDrawOffset() {
@@ -624,6 +638,93 @@ public class Line extends Roi {
 		double yy = getYBase();
 		x1d=xx+x1R; y1d=yy+y1R; x2d=xx+x2R; y2d=yy+y2R;
 		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
+	}
+	
+	public FloatPolygon getRotationCenter() {
+		double xcenter = x1d + (x2d-x1d)/2.0;
+		double ycenter = y1d + (y2d-y1d)/2.0;
+		FloatPolygon p = new FloatPolygon();
+		p.addPoint(xcenter,ycenter);
+		return p;
+	}
+	
+	/**
+	 * Dedicated point iterator for thin lines.
+	 * The iterator is based on (an improved version of) the algorithm used by
+	 * the original method {@code ImageProcessor.getLine(double, double, double, double)}.
+	 * Improvements are (a) that the endpoint is drawn too and (b) every line
+	 * point is visited only once, duplicates are skipped.
+	 * 
+	 * Author: Wilhelm Burger (04/2017)
+	*/
+	public static class PointIterator implements Iterator<Point> {
+		private double x1, y1;
+		private final int n;
+		private final double xinc, yinc;
+		private double x, y;
+		private int u, v;
+		private int u_prev, v_prev;
+		private int i;
+
+		public PointIterator(Line line) {
+			this(line.x1d, line.y1d, line.x2d, line.y2d);
+		}
+		
+		public PointIterator(double x1, double y1, double x2, double y2) {
+			this.x1 = x1;
+			this.y1 = y1;
+			double dx = x2 - x1;
+			double dy = y2 - y1;
+			this.n = (int) Math.ceil(Math.sqrt(dx * dx + dy * dy));
+			this.xinc = dx / n;
+			this.yinc = dy / n;
+			x = x1;
+			y = y1;
+			u = (int) Math.round(x - 0.5);	
+			v = (int) Math.round(y - 0.5);
+			u_prev = Integer.MIN_VALUE;
+			v_prev = Integer.MIN_VALUE;
+			i = 0;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return i <= n;	// needs to be '<=' to include last segment (point)!
+		}
+
+		@Override
+		public Point next() {
+			if (i > n) throw new NoSuchElementException();
+			Point p = new Point(u, v);	// the current (next) point
+			moveToNext();
+			return p;
+		}
+		
+		// move to next point by skipping duplicate points
+		private void moveToNext() {
+			do {
+				i = i + 1;
+				x = x1 + i * xinc;
+				y = y1 + i * yinc; 
+				u_prev = u;
+				v_prev = v;
+				u = (int) Math.round(x - 0.5);	
+				v = (int) Math.round(y - 0.5);
+			} while (i <= n && u == u_prev && v == v_prev);
+		}
+		
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+	}
+	
+	@Override
+	public Iterator<Point> iterator() {
+		if (getStrokeWidth() <= 1.0)
+			return new PointIterator(this);	// use the specific thin-line iterator
+		else
+			return super.iterator();	// fall back on Roi's iterator
 	}
 
 }

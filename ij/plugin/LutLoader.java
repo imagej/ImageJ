@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.io.*;
 import ij.process.*;
+import ij.gui.ImageWindow;
 import java.awt.*;
 import java.io.*;
 import java.awt.image.*;
@@ -96,6 +97,8 @@ public class LutLoader extends ImagePlus implements PlugIn {
 				if (imp.getStackSize()>1)
 					imp.getStack().setColorModel(cm);
 				imp.updateAndRepaintWindow();
+				if (IJ.isMacro() && imp.getWindow()!=null)
+					IJ.wait(25);
 			}
 		} else
 			createImage(fi, showImage);
@@ -216,7 +219,6 @@ public class LutLoader extends ImagePlus implements PlugIn {
 			i2 = i1+1;
 			if (i2==nColors) i2 = nColors-1;
 			fraction = i*scale - i1;
-			//IJ.write(i+" "+i1+" "+i2+" "+fraction);
 			reds[i] = (byte)((1.0-fraction)*(r[i1]&255) + fraction*(r[i2]&255));
 			greens[i] = (byte)((1.0-fraction)*(g[i1]&255) + fraction*(g[i2]&255));
 			blues[i] = (byte)((1.0-fraction)*(b[i1]&255) + fraction*(b[i2]&255));
@@ -251,7 +253,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 	
 	/** Opens an NIH Image LUT, 768 byte binary LUT or text LUT from a file or URL. */
 	boolean openLut(FileInfo fi) {
-		//IJ.showStatus("Opening: " + fi.directory + fi.fileName);
+		//IJ.log("openLut: " + fi.directory + fi.fileName);
 		boolean isURL = fi.url!=null && !fi.url.equals("");
 		int length = 0;
 		String path = isURL?fi.url:fi.directory+fi.fileName;
@@ -307,7 +309,6 @@ public class LutLoader extends ImagePlus implements PlugIn {
 			long fill2 = f.readLong();
 			int filler = f.readInt();
 		}
-		//IJ.write(id+" "+version+" "+nColors);
 		f.read(fi.reds, 0, nColors);
 		f.read(fi.greens, 0, nColors);
 		f.read(fi.blues, 0, nColors);

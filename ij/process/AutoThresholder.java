@@ -40,6 +40,8 @@ public class AutoThresholder {
 	/** Calculates and returns a threshold using the specified
 		method and 256 bin histogram. */
 	public int getThreshold(Method method, int[] histogram) {
+		if (histogram==null)
+			throw new IllegalArgumentException("Histogram is null");
 		if (histogram.length!=256)
 			throw new IllegalArgumentException("Histogram length not 256");
 		int threshold = 0;
@@ -579,10 +581,9 @@ public class AutoThresholder {
 			Tprev = threshold;
 			temp = (w1+Math.sqrt(sqterm))/w0;
 
-			if (Double.isNaN(temp)) {
-				IJ.log ("MinError(I): NaN, not converging.");
+			if (Double.isNaN(temp))
 				threshold = Tprev;
-			} else
+			else
 				threshold =(int) Math.floor(temp);
 		}
 		return threshold;
@@ -628,11 +629,9 @@ public class AutoThresholder {
 		int iter =0;
 		int threshold = -1;
 		double [] iHisto = new double [256];
-
 		for (int i=0; i<256; i++)
 			iHisto[i]=(double) data[i];
-
-		double [] tHisto = iHisto;
+		double [] tHisto = new double[iHisto.length] ;
 
 		while (!bimodalTest(iHisto) ) {
 			 //smooth with a 3 point running mean filter
@@ -640,7 +639,7 @@ public class AutoThresholder {
 				tHisto[i]= (iHisto[i-1] + iHisto[i] +iHisto[i+1])/3;
 			tHisto[0] = (iHisto[0]+iHisto[1])/3; //0 outside
 			tHisto[255] = (iHisto[254]+iHisto[255])/3; //0 outside
-			iHisto = tHisto;
+			System.arraycopy(tHisto, 0, iHisto, 0, iHisto.length) ;
 			iter++;
 			if (iter>10000) {
 				threshold = -1;
@@ -650,7 +649,6 @@ public class AutoThresholder {
 		}
 		// The threshold is the minimum between the two peaks.
 		for (int i=1; i<255; i++) {
-			//IJ.log(" "+i+"  "+iHisto[i]);
 			if (iHisto[i-1] > iHisto[i] && iHisto[i+1] >= iHisto[i]) {
 				threshold = i;
 				break;

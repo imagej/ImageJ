@@ -4,6 +4,7 @@ import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
 import ij.plugin.ContrastEnhancer;
+import ij.plugin.frame.Recorder;
 import java.awt.*;
 import java.util.*;
 
@@ -58,6 +59,8 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
 			imp.updateAndDraw();
 		}
 		IJ.showProgress(1.0);
+		if (Recorder.record && slice==1)
+			Recorder.recordCall("FFT.filter(imp,filter); //see Help/Examples/JavaScript/FFT Filter");
 	}
 	
 	void doInverseTransform(FHT fht, ImageProcessor ip) {
@@ -121,9 +124,13 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
 		showStatus("Filtering");
 		fht.swapQuadrants(filter);
 		float[] fhtPixels = (float[])fht.getPixels();
-		byte[] filterPixels = (byte[])filter.getPixels();
-		for (int i=0; i<fhtPixels.length; i++)
-			fhtPixels[i] = (float)(fhtPixels[i]*(filterPixels[i]&255)/255.0);
+		boolean isFloat = filter.getBitDepth()==32;
+		for (int i=0; i<fhtPixels.length; i++) {
+			if (isFloat)
+				fhtPixels[i] = fhtPixels[i]*filter.getf(i);
+			else
+				fhtPixels[i] = (float)(fhtPixels[i]*(filter.get(i)/255.0));
+		}
 		fht.swapQuadrants(filter);
 	}
 	
@@ -160,10 +167,10 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
 			IJ.error("FFT", "The filter cannot be a stack.");
 			return null;
 		}		
-		ImageProcessor filter = filterImp.getProcessor();		
-		filter =  filter.convertToByte(true);		
+		ImageProcessor filter = filterImp.getProcessor();
+		if (filter!=null && filter.getBitDepth()!=32)		
+			filter =  filter.convertToByte(true);		
 		filter = resizeFilter(filter, size);
-		//new ImagePlus("Resized Filter", filter.duplicate()).show();
 		return filter;
 	}
 	

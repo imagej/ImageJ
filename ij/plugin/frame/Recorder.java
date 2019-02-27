@@ -101,7 +101,11 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		not open or the command being recorded has called IJ.run(). 
 	*/
 	public static void setCommand(String command) {
-		boolean isMacro = Thread.currentThread().getName().startsWith("Run$_");
+		String threadName = Thread.currentThread().getName();
+		boolean isMacro = threadName.startsWith("Run$_");
+		if (threadName.contains("Popup Menu") || threadName.contains("Developer Menu"))
+			isMacro = false;
+		//IJ.log("setCommand: "+command+"  "+threadName+"  "+isMacro);
 		if (textArea==null || (isMacro&&!recordInMacros))
 			return;
 		commandName = command;
@@ -123,13 +127,41 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		return commandName;
 	}
 
+	/** Replaces '\' characters with '/'. */
 	static String fixPath (String path) {
-		StringBuffer sb = new StringBuffer();
-		char c;
+		if (path==null)
+			path = "";
+		if (!IJ.isWindows())
+			return path;
+		StringBuilder sb = new StringBuilder();
 		for (int i=0; i<path.length(); i++) {
-			sb.append(c=path.charAt(i));
+			char c=path.charAt(i);
 			if (c=='\\')
-				sb.append("\\");
+				sb.append("/");
+			else
+				sb.append(c);
+		}
+		return new String(sb);
+	}
+	
+	/** Replaces special characters in a String for creation of a quoted macro String. Does not add quotes. */
+	public static String fixString (String str) {
+		StringBuilder sb = new StringBuilder();
+		char c;
+		for (int i=0; i<str.length(); i++) {
+			c = str.charAt(i);
+			if (c =='\\' || c=='"')
+				sb.append("\\"+c);
+			else if (c == '\n')
+				sb.append("\\n");
+			else if (c < ' ' || c > '~' && c < 0xa0) {
+				sb.append('\\');
+				String octal = Integer.toString(c,8);
+				while (octal.length()<3)
+					octal = '0' + octal;
+				sb.append(octal);
+			} else
+				sb.append(c);
 		}
 		return new String(sb);
 	}
@@ -254,7 +286,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	}
 
 	public static void record(String method, String path, String args, int a1, int a2, int a3, int a4, int a5) {
-		if (textArea==null) return;
+		if (textArea==null)
+			return;
 		path = fixPath(path);
 		method = "//"+method;
 		textArea.append(method+"(\""+path+"\", "+"\""+args+"\", "+a1+", "+a2+", "+a3+", "+a4+", "+a5+");\n");
@@ -264,8 +297,12 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (textArea!=null)
 			textArea.append(str);
 	}
-
+	
 	public static void recordCall(String call) {
+		recordCall(call, false);
+	}
+
+	public static void recordCall(String call, boolean recordCommand) {
 		if (IJ.debugMode) IJ.log("recordCall: "+call+"  "+commandName);
 		boolean isMacro = Thread.currentThread().getName().endsWith("Macro$") && !recordInMacros;
 		if (textArea!=null && scriptMode && !IJ.macroRunning() && !isMacro) {
@@ -276,7 +313,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			if (javaMode() && call.startsWith("rt = "))
 				call = "ResultTable " + call;
 			textArea.append(call+"\n");
-			commandName = null;
+			if (!recordCommand)
+				commandName = null;
  		}
 	}
 	
@@ -366,6 +404,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	
 	public static void recordOption(String key, String value) {
 		if (key==null) return;
+		key = fixString(key);
 		key = trimKey(key);
 		value = addQuotes(value);
 		checkForDuplicate(key+"=", value);
@@ -432,6 +471,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	/** Writes the current command and options to the Recorder window. */
 	public static void saveCommand() {
 		String name = commandName;
+		//IJ.log("saveCommand: "+name+"  "+scriptMode+"  "+commandOptions);
 		if (name!=null) {
 			if (commandOptions==null && (name.equals("Fill")||name.equals("Clear")||name.equals("Draw")))
 				commandOptions = "slice";
@@ -442,6 +482,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			if (!bbSet && (name.equals("Make Binary")||name.equals("Convert to Mask")||name.equals("Erode")
 			||name.equals("Dilate")||name.equals("Skeletonize")))
 				setBlackBackground();
+			if (name.equals("Add Shortcut by Name... "))
+				name = "Add Shortcut... ";
 			if (commandOptions!=null) {
 				if (name.equals("Open...") || name.equals("URL...")) {
 					String s = scriptMode?"imp = IJ.openImage":"open";
@@ -520,6 +562,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					;
 				else if (name.equals("Find Commands..."))
 					;
+				else if (scriptMode && name.equals("Create Mask"))
+					;
 				else if (roi!=null && (roi instanceof TextRoi) && (name.equals("Draw")||name.equals("Add Selection...")))
 					textArea.append(((TextRoi)roi).getMacroCode(name, imp));
 				else {
@@ -553,7 +597,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	}
 	
 	static boolean isTextOrTable(String path) {
-		return path.endsWith(".txt") || path.endsWith(".csv") || path.endsWith(".xls");
+		return path.endsWith(".txt") || path.endsWith(".csv") || path.endsWith(".xls") || path.endsWith(".tsv");
 	}
 	
 	static boolean isSaveAs() {
@@ -619,6 +663,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	}
 
 	static String addQuotes(String value) {
+		if (value==null)
+			value = "";
 		int index = value.indexOf(' ');
 		if (index>-1)
 			value = "["+value+"]";

@@ -1363,7 +1363,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	public static void RGBtoYUV() {
 		ImagePlus imp = IJ.getImage();
 		if (imp.getBitDepth()==24) {
-			RGBtoLab(imp.getProcessor());
+			RGBtoYUV(imp.getProcessor());
 			imp.updateAndDraw();
 		}
 	}

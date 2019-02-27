@@ -25,7 +25,7 @@ public class GelAnalyzer implements PlugIn {
 	static int[] x = new int[MAX_LANES+1];
 	static PlotsCanvas plotsCanvas;
 	static ImageProcessor ipLanes;
-	static ImagePlus  gel;
+	static ImagePlus gel;
 	static int plotHeight;
 	static int options = (int)Prefs.get(OPTIONS, PERCENT+INVERT);
 	static boolean uncalibratedOD = (options&OD)!=0;
@@ -227,11 +227,14 @@ public class GelAnalyzer implements PlugIn {
 		if (nLanes<MAX_LANES)
 			nLanes += 1;
 		IJ.showStatus("Lane " + nLanes + " selected");
-
-		if(isVertical)
+		if (isVertical)
 			x[nLanes] = rect.x;
 		else
 			x[nLanes] = rect.y;
+		if(x[nLanes]==x[nLanes-1]){
+			nLanes--; //avoid duplicate
+			return;
+		}
 		if (isVertical && rect.y!=firstRect.y) {
 			rect.y = firstRect.y;
 			gel.setRoi(rect);
@@ -243,7 +246,8 @@ public class GelAnalyzer implements PlugIn {
 	}
 	
 	void updateRoiList(Rectangle rect) {
-			if (gel==null) return;
+			if (gel==null)
+				return;
 			if (overlay==null) {
 				overlay = new Overlay();
 				overlay.drawLabels(true);
@@ -465,6 +469,10 @@ public class GelAnalyzer implements PlugIn {
 		IJ.showMessage("Gel Analyzer", msg);
 	}
 
+	public static ImagePlus getGelImage() {
+		return gel;
+	}
+
 }
 
 
@@ -528,7 +536,7 @@ class PlotsCanvas extends ImageCanvas {
 			counter = 0;
 			return;
 		}
-		ImageStatistics s = imp.getStatistics();
+		ImageStatistics stats = imp.getStatistics();
 		if (counter==0) {
 			rt = ResultsTable.getResultsTable();
 			rt.reset();
@@ -536,10 +544,10 @@ class PlotsCanvas extends ImageCanvas {
 		//IJ.setColumnHeadings(" \tArea");
 		double perimeter = roi.getLength();
 		String error = "";
-		double circularity = 4.0*Math.PI*(s.pixelCount/(perimeter*perimeter));
+		double circularity = 4.0*Math.PI*(stats.pixelCount/(perimeter*perimeter));
 		if (circularity<0.025)
 			error = " (error?)";
-		double area = s.pixelCount+perimeter/2.0; // add perimeter/2 to account area under border
+		double area = stats.pixelCount+perimeter/2.0; // add perimeter/2 to account area under border
 		Calibration cal = imp.getCalibration();
 		area = area*cal.pixelWidth*cal.pixelHeight;
 		rect[counter] = roi.getBounds();
@@ -551,7 +559,6 @@ class PlotsCanvas extends ImageCanvas {
 		rt.incrementCounter();
 		rt.addValue("Area", area);
 		rt.show("Results");
-		// IJ.write((counter+1)+"\t"+IJ.d2s(area, places)+error);
 		measured[counter] = area;
 		if (counter<MAX_PEAKS)
 			counter++;
@@ -604,7 +611,6 @@ class PlotsCanvas extends ImageCanvas {
 			if (!fits)
 				y = r.y - 2;
 			ip.drawString(s, x, y);
-			//IJ.write(i+": "+x+" "+y+" "+s+" "+ip.StringWidth(s)/2);
 		}
 		imp.updateAndDraw();
 		displayPercentages();
@@ -628,7 +634,6 @@ class PlotsCanvas extends ImageCanvas {
 			rt.incrementCounter();
 			rt.addValue("Area", measured[i]);
 			rt.addValue("Percent", percent);
-			//IJ.write((i+1)+"\t"+IJ.d2s(measured[i],3)+"\t"+IJ.d2s(percent,3));
 		}
 		rt.show("Results");
 	}
@@ -637,11 +642,8 @@ class PlotsCanvas extends ImageCanvas {
 		for (int i=0; i<counter; i++) {
 			double a = (actual[i]/actual[0])*100;
 			double m = (measured[i]/measured[0])*100;
-			IJ.write(IJ.d2s(a, 4)+" "
-					 +IJ.d2s(m, 4)+" "
-					 +IJ.d2s(((m-a)/m)*100, 4));
 		}
 	}
-
+	
 }
 

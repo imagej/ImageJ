@@ -29,7 +29,7 @@ public class Options implements PlugIn {
 	// Miscellaneous Options
 	void miscOptions() {
 		String key = IJ.isMacintosh()?"command":"control";
-		GenericDialog gd = new GenericDialog("Miscellaneous Options", IJ.getInstance());
+		GenericDialog gd = new GenericDialog("Miscellaneous Options");
 		gd.addStringField("Divide by zero value:", ""+FloatBlitter.divideByZeroValue, 10);
 		gd.addCheckbox("Use pointer cursor", Prefs.usePointerCursor);
 		gd.addCheckbox("Hide \"Process Stack?\" dialog", IJ.hideProcessStackDialog);
@@ -39,6 +39,10 @@ public class Options implements PlugIn {
 			gd.addCheckbox("Run single instance listener", Prefs.runSocketListener);
 		gd.addCheckbox("Enhanced line tool", Prefs.enhancedLineTool);
 		gd.addCheckbox("Reverse CZT order of \">\" and \"<\"", Prefs.reverseNextPreviousOrder);
+		if (IJ.isMacOSX())
+			gd.addCheckbox("Don't set Mac menu bar", !Prefs.setIJMenuBar);
+		if (IJ.isLinux())
+			gd.addCheckbox("Save window locations", !Prefs.doNotSaveWindowLocations);
 		gd.addCheckbox("Debug mode", IJ.debugMode);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#misc");
 		gd.showDialog();
@@ -69,6 +73,10 @@ public class Options implements PlugIn {
 			Prefs.runSocketListener = gd.getNextBoolean();
 		Prefs.enhancedLineTool = gd.getNextBoolean();
 		Prefs.reverseNextPreviousOrder = gd.getNextBoolean();
+		if (IJ.isMacOSX())
+			Prefs.setIJMenuBar = !gd.getNextBoolean();
+		if (IJ.isLinux())
+			Prefs.doNotSaveWindowLocations = !gd.getNextBoolean();
 		IJ.setDebugMode(gd.getNextBoolean());
 	}
 
@@ -91,7 +99,7 @@ public class Options implements PlugIn {
 		GenericDialog gd = new GenericDialog("I/O Options");
 		gd.addNumericField("JPEG quality (0-100):", FileSaver.getJpegQuality(), 0, 3, "");
 		gd.addNumericField("GIF and PNG transparent index:", Prefs.getTransparentIndex(), 0, 3, "");
-		gd.addStringField("File extension for tables (.txt, .xls or .csv):", Prefs.defaultResultsExtension(), 4);
+		gd.addStringField("File extension for tables (.csv, .tsv or .txt):", Prefs.defaultResultsExtension(), 4);
 		gd.addCheckbox("Use JFileChooser to open/save", Prefs.useJFileChooser);
 		if (!IJ.isMacOSX())
 			gd.addCheckbox("Use_file chooser to import sequences", Prefs.useFileChooser);
@@ -122,7 +130,10 @@ public class Options implements PlugIn {
 		if (!extension.startsWith("."))
 			extension = "." + extension;
 		Prefs.set("options.ext", extension);
+		boolean useJFileChooser2 = Prefs.useJFileChooser;
 		Prefs.useJFileChooser = gd.getNextBoolean();
+		if (Prefs.useJFileChooser!=useJFileChooser2)
+			Prefs.jFileChooserSettingChanged = true;
 		if (!IJ.isMacOSX())
 			Prefs.useFileChooser = gd.getNextBoolean();
 		Prefs.intelByteOrder = gd.getNextBoolean();
@@ -165,7 +176,7 @@ public class Options implements PlugIn {
 	void dicom() {
 		GenericDialog gd = new GenericDialog("DICOM Options");
 		gd.addCheckbox("Open as 32-bit float", Prefs.openDicomsAsFloat);
-		//gd.addCheckbox("Calculate voxel depth", Prefs.calculateDicomVoxelDepth);
+		gd.addCheckbox("Ignore Rescale Slope", Prefs.ignoreRescaleSlope);
 		gd.addMessage("Orthogonal Views");
 		gd.setInsets(5, 40, 0);
 		gd.addCheckbox("Rotate YZ", Prefs.rotateYZ);
@@ -175,7 +186,7 @@ public class Options implements PlugIn {
 		if (gd.wasCanceled())
 			return;
 		Prefs.openDicomsAsFloat = gd.getNextBoolean();
-		//Prefs.calculateDicomVoxelDepth = gd.getNextBoolean();
+		Prefs.ignoreRescaleSlope = gd.getNextBoolean();
 		Prefs.rotateYZ = gd.getNextBoolean();
 		Prefs.flipXZ = gd.getNextBoolean();
 	}

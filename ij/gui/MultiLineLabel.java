@@ -18,7 +18,6 @@ public class MultiLineLabel extends Canvas {
     public MultiLineLabel(String label) {
         init(label);
     }
-    
 
     public MultiLineLabel(String label, int minimumWidth) {
         init(label);
@@ -37,7 +36,8 @@ public class MultiLineLabel extends Canvas {
     // Figures out how wide each line of the label
     // is, and how wide the widest line is.
     protected void measure() {
-        FontMetrics fm = this.getFontMetrics(this.getFont());
+        Font font = getFont();
+        FontMetrics fm = font!=null?getFontMetrics(font):null;
         // If we don't have font metrics yet, just return.
         if (fm == null) return;
         line_height = fm.getHeight();

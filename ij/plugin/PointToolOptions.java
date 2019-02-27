@@ -13,22 +13,24 @@ import java.util.*;
 public class PointToolOptions implements PlugIn, DialogListener {
 	private static GenericDialog gd = null;
 	private boolean multipointTool;
+	private boolean isMacro;
 	
 	private static final String help = "<html>"
 	+"<h1>Point Tool</h1>"
 	+"<font size=+1>"
 	+"<ul>"
 	+"<li> Alt-click, or control-click, on a point to delete it.<br>"
-	+"<li> Press 'y' (<i>Edit&gt;Selection&gt;Properties</i>) to display<br>the counts in a results table.<br>"
-	+"<li> Press 'm' (<i>Analyze&gt;Measure</i>) to display the<br>point stack positions in the results table.<br>"
+	+"<li> Press 'alt+y' (<i>Edit&gt;Selection&gt;Properties</i> plus<br>alt key) to display the counts in a results table.<br>"
+	+"<li> Press 'm' (<i>Analyze&gt;Measure</i>) to list the counter<br>and stack position associated with each point.<br>"
 	+"<li> Use <i>File&gt;Save As&gt;Tiff</i> or <i>File&gt;Save As&gt;Selection</i><br>to save the points and counts.<br>"
+	+"<li> Press 'F' (<i>Image&gt;Overlay</i>&gt;Flatten</i>) to create an<br>RGB image with embedded markers for export.<br>"
 	+"<li> Hold the shift key down and points will be<br>constrained to a horizontal or vertical line.<br>"
 	+"</ul>"
 	+" <br>"
 	+"</font>";
  
  	public void run(String arg) {
- 		if (gd!=null && gd.isShowing()) {
+ 		if (gd!=null && gd.isShowing() && !IJ.isMacro()) {
  			gd.toFront();
  			update();
  		} else
@@ -37,12 +39,18 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		
 	void showDialog() {
 		String options = IJ.isMacro()?Macro.getOptions():null;
-		if (options!=null) {
+		isMacro = options!=null;
+		boolean legacyMacro = false;
+		if (isMacro) {
 			options = options.replace("selection=", "color=");
 			options = options.replace("marker=", "size=");
+			options = options.replace("type=Crosshair", "type=Cross");
 			Macro.setOptions(options);
+			legacyMacro = options.contains("auto-") || options.contains("add");
 		}
-		multipointTool = IJ.getToolName().equals("multipoint");
+		multipointTool = Toolbar.getMultiPointMode() && !legacyMacro;
+		if (isMacro && !legacyMacro)
+			multipointTool = true;
 		Color sc =Roi.getColor();
 		String sname = Colors.getColorName(sc, "Yellow");
 		Color cc =PointRoi.getDefaultCrossColor();
@@ -65,8 +73,8 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		}
 		gd.setInsets(5, 20, 0);
 		gd.addCheckbox("Label points", !Prefs.noPointLabels);
+		gd.addCheckbox("Show on all slices", Prefs.showAllPoints);
 		if (multipointTool) {
-			gd.addCheckbox("Show all", Prefs.showAllPoints);
 			gd.setInsets(15,0,5);
 			String[] choices =  PointRoi.getCounterChoices();
 			gd.addChoice("Counter:", choices, choices[getCounter()]);
@@ -83,9 +91,9 @@ public class PointToolOptions implements PlugIn, DialogListener {
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
 		boolean redraw = false;
 		// type
-		int index = gd.getNextChoiceIndex();
-		if (index!=PointRoi.getDefaultType()) {
-			PointRoi.setDefaultType(index);
+		int typeIndex = gd.getNextChoiceIndex();
+		if (typeIndex!=PointRoi.getDefaultType()) {
+			PointRoi.setDefaultType(typeIndex);
 			redraw = true;
 		}
 		// color
@@ -97,9 +105,9 @@ public class PointToolOptions implements PlugIn, DialogListener {
 			Toolbar.getInstance().repaint();
 		}
 		// size
-		index = gd.getNextChoiceIndex();
-		if (index!=PointRoi.getDefaultSize()) {
-			PointRoi.setDefaultSize(index);
+		int sizeIndex = gd.getNextChoiceIndex();
+		if (sizeIndex!=PointRoi.getDefaultSize()) {
+			PointRoi.setDefaultSize(sizeIndex);
 			redraw = true;
 		}
 		if (!multipointTool) {
@@ -112,28 +120,58 @@ public class PointToolOptions implements PlugIn, DialogListener {
 			if (Prefs.pointAutoNextSlice&&!Prefs.pointAddToManager)
 				Prefs.pointAutoMeasure = true;
 		}
+		boolean updateLabels = false;
 		boolean noPointLabels = !gd.getNextBoolean();
-		if (noPointLabels!=Prefs.noPointLabels)
+		if (noPointLabels!=Prefs.noPointLabels) {
 			redraw = true;
+			updateLabels = true;
+		}
 		Prefs.noPointLabels = noPointLabels;
+		boolean showAllPoints = gd.getNextBoolean();
+		if (showAllPoints!=Prefs.showAllPoints)
+			redraw = true;
+		Prefs.showAllPoints = showAllPoints;
 		if (multipointTool) {
-			boolean showAllPoints = gd.getNextBoolean();
-			if (showAllPoints!=Prefs.showAllPoints)
-				redraw = true;
-			Prefs.showAllPoints = showAllPoints;
 			int counter = gd.getNextChoiceIndex();
 			if (counter!=getCounter()) {
 				setCounter(counter);
 				redraw = true;
 			}
 		}
-		if (redraw) {
-     		PointRoi roi = getPointRoi();
-     		if (roi!=null) {
-				roi.setShowLabels(!Prefs.noPointLabels);
-				ImagePlus imp = roi.getImage();
-				if (imp!=null) imp.draw();
+		if (isMacro) {
+			PointRoi roi = getPointRoi();
+			if (roi!=null) {
+				roi.setPointType(typeIndex);
+				roi.setStrokeColor(sc);
+				roi.setSize(sizeIndex);
 			}
+		}
+		if (redraw) {
+			ImagePlus imp = null;
+			PointRoi roi = getPointRoi();
+			if (roi!=null) {
+				roi.setShowLabels(!Prefs.noPointLabels);
+				imp = roi.getImage();
+			}
+			if (updateLabels) {
+				imp = WindowManager.getCurrentImage();
+				Overlay overlay = imp!=null?imp.getOverlay():null;
+				int pointRoiCount = 0;
+				if (overlay!=null) {
+					for (int i=0; i<overlay.size(); i++) {
+						Roi r = overlay.get(i);
+						roi = r!=null && (r instanceof PointRoi)?(PointRoi)r:null;
+						if (roi!=null) {
+							roi.setShowLabels(!Prefs.noPointLabels);
+							pointRoiCount++;
+						}
+					}
+					if (pointRoiCount==0)
+						imp = null;
+				}
+			}
+			if (imp!=null)
+				imp.draw();
 		}
 		return true;
     }

@@ -5,8 +5,8 @@ import java.util.Hashtable;
 /** An object of this type is a tokenized macro file and the associated symbol table. */
 public class Program implements MacroConstants {
 
-	private int maxSymbols = 800; // will be increased as needed
-	private int maxProgramSize = 2000;  // well be increased as needed
+	private int maxSymbols = 500;  // will be increased as needed
+	private int maxProgramSize = 650;  // well be increased as needed
 	private int pc = -1;
 	
 	int stLoc = -1;
@@ -22,25 +22,26 @@ public class Program implements MacroConstants {
     // run keyboard shortcut macros on event dispatch thread?
 	boolean queueCommands; 
 	Hashtable extensionRegistry;
-	
-	
+			
 	public Program() {
 		if (systemTable!=null) {
+			if (systemTable.length>table.length)
+				enlargeSymbolTable();
 			stLoc = systemTable.length - 1;
 			for (int i=0; i<=stLoc; i++)
-			table[i] = systemTable[i];
+				table[i] = systemTable[i];
 		} else {
-			//IJ.log("make table");
 			addKeywords();
 			addFunctions();
 			addNumericFunctions();
 			addStringFunctions();
 			addArrayFunctions();
+			addVariableFunctions();
 			systemTable = new Symbol[stLoc+1];
 			for (int i=0; i<=stLoc; i++)
 				systemTable[i] = table[i];
-			IJ.register(Program.class);
 		}
+		if (IJ.debugMode) IJ.log("Symbol table: "+(stLoc+1)+"  "+table.length+"  "+systemTable.length);
 	}
 	
 	public int[] getCode() {
@@ -76,15 +77,24 @@ public class Program implements MacroConstants {
 			addSymbol(new Symbol(arrayFunctionIDs[i], arrayFunctions[i]));
 	}
 
+	void addVariableFunctions() {
+		for (int i=0; i<variableFunctions.length; i++)
+			addSymbol(new Symbol(variableFunctionIDs[i], variableFunctions[i]));
+	}
+
 	void addSymbol(Symbol sym) {
 		stLoc++;
-		if (stLoc==table.length) {
-			Symbol[] tmp = new Symbol[maxSymbols*2];
-			System.arraycopy(table, 0, tmp, 0, maxSymbols);
-			table = tmp;
-			maxSymbols *= 2;
-		}
+		if (stLoc==table.length)
+			enlargeSymbolTable();
 		table[stLoc] = sym;
+	}
+	
+	void enlargeSymbolTable() {
+		Symbol[] tmp = new Symbol[maxSymbols*2];
+		System.arraycopy(table, 0, tmp, 0, maxSymbols);
+		table = tmp;
+		maxSymbols *= 2;
+		if (IJ.debugMode) IJ.log("enlargeSymbolTable: "+table.length);
 	}
 	
 	void addToken(int tok, int lineNumber) {//n__
@@ -93,11 +103,9 @@ public class Program implements MacroConstants {
 			int[] tmp = new int[maxProgramSize*2];
 			System.arraycopy(code, 0, tmp, 0, maxProgramSize);
 			code = tmp;
-
             tmp = new int[maxProgramSize*2];  //n__
 			System.arraycopy(lineNumbers, 0, tmp, 0, maxProgramSize);
 			lineNumbers = tmp;
-
 			maxProgramSize *= 2;
         }
 		code[pc] = tok;
@@ -106,7 +114,6 @@ public class Program implements MacroConstants {
 
 	/** Looks up a word in the symbol table. Returns null if the word is not found. */
 	Symbol lookupWord(String str) {
-        //IJ.log("lookupWord: "+str);
 		Symbol symbol;
 		String symStr;
 		for (int i=0; i<=stLoc; i++) {
@@ -120,7 +127,6 @@ public class Program implements MacroConstants {
 	}
 
 	void saveGlobals(Interpreter interp) {
-		//IJ.log("saveGlobals: "+interp.topOfStack);
 		if (interp.topOfStack==-1)
 			return;
 		int n = interp.topOfStack+1;
@@ -173,6 +179,7 @@ public class Program implements MacroConstants {
 			case NUMERIC_FUNCTION:
 			case STRING_FUNCTION:
 			case ARRAY_FUNCTION:
+			case VARIABLE_FUNCTION:
 			case USER_FUNCTION:
 				str = table[address].str;
 				break;
@@ -267,9 +274,13 @@ public class Program implements MacroConstants {
 		}
 		return false;
 	}
-	
+		
 	public int getSize() {
 		return pc;
+	}
+	
+	public String toString() {
+		return "pgm[code="+(code!=null?""+code.length:"null") + " tab="+(table!=null?""+table.length:"null")+"]";
 	}
 	
 } // Program

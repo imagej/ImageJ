@@ -35,10 +35,8 @@ public class ByteProcessor extends ImageProcessor {
    		cm = pg.getColorModel();
 		if (cm instanceof IndexColorModel)
 			pixels = (byte[])(pg.getPixels());
-		else
-			System.err.println("ByteProcessor: not 8-bit image");
-		if (((IndexColorModel)cm).getTransparentPixel()!=-1) {
-    		IndexColorModel icm = (IndexColorModel)cm;
+		if ((cm instanceof IndexColorModel) && ((IndexColorModel)cm).getTransparentPixel()!=-1) {
+			IndexColorModel icm = (IndexColorModel)cm;
 			int mapSize = icm.getMapSize();
 			byte[] reds = new byte[mapSize];
 			byte[] greens = new byte[mapSize];
@@ -80,6 +78,7 @@ public class ByteProcessor extends ImageProcessor {
 		pixels = ((DataBufferByte) buffer).getData();
 		width = raster.getWidth();
 		height = raster.getHeight();
+		resetRoi();
 	}
 
 	/** Creates a ByteProcessor from an ImageProcessor. 16-bit and 32-bit
@@ -103,19 +102,9 @@ public class ByteProcessor extends ImageProcessor {
 	}
 
 	public Image createImage() {
-		if (cm==null) cm = getDefaultColorModel();
-		if (ij.IJ.isJava16()) return createBufferedImage();
-		if (source==null) {
-			source = new MemoryImageSource(width, height, cm, pixels, 0, width);
-			source.setAnimated(true);
-			source.setFullBufferUpdates(true);
-			img = Toolkit.getDefaultToolkit().createImage(source);
-		} else if (newPixels) {
-			source.newPixels(pixels, cm, 0, width);
-			newPixels = false;
-		} else
-			source.newPixels();
-		return img;
+		if (cm==null)
+			cm = getDefaultColorModel();
+		return createBufferedImage();
 	}
 
 	Image createBufferedImage() {
@@ -258,14 +247,37 @@ public class ByteProcessor extends ImageProcessor {
 			return 0;
 	}
 	
-	public final int get(int x, int y) {return pixels[y*width+x]&0xff;}
-	public final void set(int x, int y, int value) {pixels[y*width+x] = (byte)value;}
-	public final int get(int index) {return pixels[index]&0xff;}
-	public final void set(int index, int value) {pixels[index] = (byte)value;}
-	public final float getf(int x, int y) {return pixels[y*width+x]&0xff;}
-	public final void setf(int x, int y, float value) {pixels[y*width+x] = (byte)(value+0.5f);}
-	public final float getf(int index) {return pixels[index]&0xff;}
-	public final void setf(int index, float value) {pixels[index] = (byte)value;}
+	public final int get(int x, int y) {
+		return pixels[y*width+x]&0xff;
+	}
+	
+	public final void set(int x, int y, int value) {
+		pixels[y*width+x] = (byte)value;
+	}
+	
+	public final int get(int index) {
+		return pixels[index]&0xff;
+	}
+	
+	public final void set(int index, int value) {
+		pixels[index] = (byte)value;
+	}
+	
+	public final float getf(int x, int y) {
+		return pixels[y*width+x]&0xff;
+	}
+	
+	public final void setf(int x, int y, float value) {
+		pixels[y*width+x] = (byte)(value+0.5f);
+	}
+	
+	public final float getf(int index) {
+		return pixels[index]&0xff;
+	}
+	
+	public final void setf(int index, float value) {
+		pixels[index] = (byte)value;
+	}
 
 	static double oldx, oldy;
 
@@ -310,7 +322,6 @@ public class ByteProcessor extends ImageProcessor {
 
 	/** Sets the foreground drawing color. */
 	public void setColor(Color color) {
-		//if (ij.IJ.altKeyDown()) throw new IllegalArgumentException("setColor: "+color);
 		drawingColor = color;
 		fgColor = getBestIndex(color);
 	}
@@ -448,8 +459,6 @@ public class ByteProcessor extends ImageProcessor {
 			}
 		}
 		cm = new IndexColorModel(8, 256, rLUT2, gLUT2, bLUT2);
-		newPixels = true;
-		if (min==0.0 && max==255.0) source = null;
 		minThreshold = NO_THRESHOLD;
 	}
 
@@ -469,8 +478,15 @@ public class ByteProcessor extends ImageProcessor {
 	/** Copies the image contained in 'ip' to (xloc, yloc) using one of
 		the transfer modes defined in the Blitter interface. */
 	public void copyBits(ImageProcessor ip, int xloc, int yloc, int mode) {
-		ip = ip.convertToByte(true);
-		new ByteBlitter(this).copyBits(ip, xloc, yloc, mode);
+		boolean temporaryFloat = ip.getBitDepth()==32 && (mode==Blitter.MULTIPLY || mode==Blitter.DIVIDE);
+		if (temporaryFloat) {
+			FloatProcessor ipFloat = this.convertToFloatProcessor();
+			new FloatBlitter(ipFloat).copyBits(ip, xloc, yloc, mode);
+			setPixels(1, ipFloat);
+		} else {
+			ip = ip.convertToByte(true);
+			new ByteBlitter(this).copyBits(ip, xloc, yloc, mode);
+		}
 	}
 
 	/* Filters start here */
@@ -832,10 +848,15 @@ public class ByteProcessor extends ImageProcessor {
 		filter(MEDIAN_FILTER);
 	}
 
+
     /** Adds pseudorandom, Gaussian ("normally") distributed values, with
     	mean 0.0 and the specified standard deviation, to this image or ROI. */
-    public void noise(double standardDeviation) {
-		Random rnd=new Random();
+	public void noise(double standardDeviation) {
+		if (rnd==null)
+			rnd = new Random();
+		if (!Double.isNaN(seed))
+			rnd.setSeed((int)seed);
+		seed = Double.NaN;
 		int v, ran;
 		boolean inRange;
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
@@ -852,6 +873,7 @@ public class ByteProcessor extends ImageProcessor {
 			}
 		}
     }
+    
 
 	/** Scales the image or selection using the specified scale factors.
 		@see ImageProcessor#setInterpolate
@@ -1240,7 +1262,22 @@ public class ByteProcessor extends ImageProcessor {
 	public int getBitDepth() {
 		return 8;
 	}
-
+	
+	/** Returns a binary mask, or null if a threshold is not set. */
+	public ByteProcessor createMask() {
+		if (getMinThreshold()==NO_THRESHOLD)
+			return null;
+		int minThreshold = (int)getMinThreshold();
+		int maxThreshold = (int)getMaxThreshold();
+		ByteProcessor mask = new ByteProcessor(width, height);
+		byte[] mpixels = (byte[])mask.getPixels();
+		for (int i=0; i<pixels.length; i++) {
+			int value = pixels[i]&0xff;
+			if (value>=minThreshold && value<=maxThreshold)
+				mpixels[i] = (byte)255;
+		}
+		return mask;
+	}
 	
 	byte[] create8BitImage() {
 		return pixels;

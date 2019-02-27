@@ -7,8 +7,8 @@ import java.awt.*;
 import java.io.*;
 import java.util.Properties;
 
-/** This plugin opens a multi-page TIFF file as a virtual stack. It
-	implements the File/Import/TIFF Virtual Stack command. */
+/** This plugin opens a multi-page TIFF file, or a set of raw images, as a 
+	virtual stack. It implements the File/Import/TIFF Virtual Stack command. */
 public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 	private FileInfo[] info;
 	private int nImages;
@@ -33,6 +33,12 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		ImagePlus imp = open();
 		if (imp!=null && show)
 			imp.show();
+	}
+	
+	/* Constructs a FileInfoVirtualStack from an array of FileInfo objects. */
+	public FileInfoVirtualStack(FileInfo[] fi) {
+		info = fi;
+		nImages = info.length;
 	}
 
 	/** Opens the specified tiff file as a virtual stack. */
@@ -92,17 +98,18 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		FileInfo fi = info[0];
 		int n = fi.nImages;
 		if (info.length==1 && n>1) {
+			n = validateNImages(fi);
 			info = new FileInfo[n];
 			long size = fi.width*fi.height*fi.getBytesPerPixel();
 			for (int i=0; i<n; i++) {
 				info[i] = (FileInfo)fi.clone();
 				info[i].nImages = 1;
-				info[i].longOffset = fi.getOffset() + i*(size + fi.gapBetweenImages);
+				info[i].longOffset = fi.getOffset() + i*(size + fi.getGap());
 			}
 		}
 		nImages = info.length;
 		FileOpener fo = new FileOpener(info[0] );
-		ImagePlus imp = fo.open(false);
+		ImagePlus imp = fo.openImage();
 		if (nImages==1 && fi.fileType==FileInfo.RGB48)
 			return imp;
 		Properties props = fo.decodeDescriptionString(fi);
@@ -132,6 +139,20 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 			}
 		}
 		return imp2;
+	}
+	
+	private int validateNImages(FileInfo fi) {
+		File f = new File(fi.directory + fi.fileName);
+		if (!f.exists())
+			return fi.nImages;
+		long fileLength = f.length();
+		long bytesPerImage = fi.width*fi.height*fi.getBytesPerPixel();
+		for (int i=fi.nImages-1; i>=0; i--) {
+			long offset =  fi.getOffset() + i*(bytesPerImage+fi.getGap());
+			if (offset+bytesPerImage<=fileLength)
+				return i+1;
+		}
+		return fi.nImages;
 	}
 
 	int getInt(Properties props, String key) {
@@ -177,11 +198,11 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		if (IJ.debugMode) {
 			long t0 = System.currentTimeMillis();
 			FileOpener fo = new FileOpener(info[n-1]);
-			imp = fo.open(false);
+			imp = fo.openImage();
 			IJ.log("FileInfoVirtualStack: "+n+", offset="+info[n-1].getOffset()+", "+(System.currentTimeMillis()-t0)+"ms");
 		} else {
 			FileOpener fo = new FileOpener(info[n-1]);
-			imp = fo.open(false);
+			imp = fo.openImage();
 		}
 		if (imp!=null)
 			return imp.getProcessor();
@@ -234,5 +255,5 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		}
 		info[nImages-1] = fileInfo;
 	}
-	
-	}
+		
+}

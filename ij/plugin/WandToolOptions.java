@@ -21,7 +21,7 @@ public class WandToolOptions implements PlugIn, DialogListener {
  	public void run(String arg) {
  		imp = WindowManager.getCurrentImage();
  		Roi roi = imp!=null?imp.getRoi():null;
- 		boolean selection = roi!=null && roi.getType()==Roi.TRACED_ROI;
+ 		boolean selection = roi!=null && (roi.getType()==Roi.TRACED_ROI||roi.getType()==Roi.POLYGON);
  		if (imp==null || (ID!=0&&imp.getID()!=ID) || !selection)
  			startx = starty = 0;
  		ID = imp!=null?imp.getID():0;
@@ -31,13 +31,14 @@ public class WandToolOptions implements PlugIn, DialogListener {
  			sliderMax = imp.getProcessor().getMax();
  			if (depth==32) sliderMax+=0.0000000001;
  		}
- 		showCheckbox = imp!=null && depth!=24 && WindowManager.getFrame("Threshold")==null
- 			&& !imp.isThreshold();
+ 		showCheckbox = imp!=null && depth!=24 && WindowManager.getFrame("Threshold")==null && !imp.isThreshold();
 		GenericDialog gd = new GenericDialog("Wand Tool");
 		gd.addSlider("Tolerance: ", 0, sliderMax, tolerance);
 		gd.addChoice("Mode:", modes, mode);
-		if (showCheckbox) {
+		if (showCheckbox)
 			gd.addCheckbox("Enable Thresholding", false);
+		gd.addCheckbox("Smooth if thresholded", Prefs.smoothWand);
+		if (showCheckbox) {
 			gd.setInsets(2,0,0);
 			gd.addMessage("Thresholded objects are traced and \"Tolerance\"\nis ignored when thresholding is enabled.");
 		}
@@ -56,8 +57,9 @@ public class WandToolOptions implements PlugIn, DialogListener {
 				IJ.run("Threshold...");
 			}
 		}
+		Prefs.smoothWand = gd.getNextBoolean();
 		if (startx>0||starty>0)
-			IJ.doWand(startx, starty, tolerance, mode);
+			IJ.doWand(startx, starty, tolerance, mode+(Prefs.smoothWand?" smooth":""));
 		return true;
 	}
 

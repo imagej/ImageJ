@@ -65,7 +65,7 @@ public class Binner implements PlugIn {
 		}
 		if (zshrink>1 && !imp.isHyperStack())
 			stack2 = shrinkZ(stack2, zshrink);
-		ImagePlus imp2 = (ImagePlus)imp.clone();
+		ImagePlus imp2 = imp.createImagePlus();
 		imp2.setStack("Reduced "+imp.getShortTitle(), stack2);
 		Calibration cal2 = imp2.getCalibration();
 		if (cal2.scaled()) {

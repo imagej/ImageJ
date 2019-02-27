@@ -56,7 +56,7 @@ public class Ellipse_Fitter implements PlugInFilter {
 	public void run(ImageProcessor ip) {
 		EllipseFitter ef = new EllipseFitter();
 		ef.fit(ip);
-		IJ.write(IJ.d2s(ef.major)+" "+IJ.d2s(ef.minor)+" "+IJ.d2s(ef.angle)+" "+IJ.d2s(ef.xCenter)+" "+IJ.d2s(ef.yCenter));
+		IJ.log(IJ.d2s(ef.major)+" "+IJ.d2s(ef.minor)+" "+IJ.d2s(ef.angle)+" "+IJ.d2s(ef.xCenter)+" "+IJ.d2s(ef.yCenter));
 		ef.drawEllipse(ip);
 	}
 }

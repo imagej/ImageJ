@@ -291,6 +291,12 @@ public class OvalRoi extends Roi {
 		Polygon p = getPolygon();
 		return new FloatPolygon(toFloat(p.xpoints), toFloat(p.ypoints), p.npoints);
 	}
+	
+	/** Returns the number of points in this selection; equivalent to getPolygon().npoints. */
+	public int size() {
+		return getPolygon().npoints;
+	}
+
 
 	/** Tests if the specified point is inside the boundary of this OvalRoi.
 	* Authors: Barry DeZonia and Michael Schmid

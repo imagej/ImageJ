@@ -25,7 +25,7 @@ public class FITS_Reader extends ImagePlus implements PlugIn {
 		catch (IOException e) {}
 		if (fi!=null && fi.width>0 && fi.height>0 && fi.offset>0) {
 			FileOpener fo = new FileOpener(fi);
-			ImagePlus imp = fo.open(false);
+			ImagePlus imp = fo.openImage();
 			if(fi.nImages==1) {
 			  ImageProcessor ip = imp.getProcessor();			   
 			  ip.flipVertical(); // origin is at bottom left corner

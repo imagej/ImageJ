@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.io.FileSaver;
+import ij.io.SaveDialog;
 import java.awt.image.*;
 import java.awt.*;
 import java.io.*;
@@ -24,9 +25,13 @@ public class JpegWriter implements PlugIn {
 
 	/** Thread-safe method. */
 	public static String save(ImagePlus imp, String path, int quality) {
-		imp.startTiming();
+		if (imp==null)
+			imp = IJ.getImage();
+		if (path==null || path.length()==0)
+			path = SaveDialog.getPath(imp, ".jpg");
+		if (path==null)
+			return null;
 		String error = (new JpegWriter()).saveAsJpeg(imp, path, quality);
-		IJ.showTime(imp, imp.getStartTime(), "JpegWriter: ");
 		return error;
 	}
 
@@ -35,7 +40,8 @@ public class JpegWriter implements PlugIn {
 		int height = imp.getHeight();
 		int biType = BufferedImage.TYPE_INT_RGB;
 		boolean overlay = imp.getOverlay()!=null && !imp.getHideOverlay();
-		if (imp.getProcessor().isDefaultLut() && !imp.isComposite() && !overlay)
+		ImageProcessor ip = imp.getProcessor();
+		if (ip.isDefaultLut() && !imp.isComposite() && !overlay && ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD)
 			biType = BufferedImage.TYPE_BYTE_GRAY;
 		BufferedImage bi = new BufferedImage(width, height, biType);
 		String error = null;

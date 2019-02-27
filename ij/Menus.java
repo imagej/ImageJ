@@ -80,6 +80,7 @@ public class Menus {
 	private static int defaultFontSize = IJ.isWindows()?15:0;
 	private static int fontSize = Prefs.getInt(Prefs.MENU_SIZE, defaultFontSize);
 	private static Font menuFont;
+	private static double scale = 1.0;
 
 	static boolean jnlp; // true when using Java WebStart
 	public static int setMenuBarCount;
@@ -92,6 +93,9 @@ public class Menus {
 	}
 
 	String addMenuBar() {
+		scale = Prefs.getGuiScale();
+		if ((scale>=1.5&&scale<2.0) || (scale>=2.5&&scale<3.0))
+			scale = (int)Math.round(scale);
 		nPlugins = nMacros = userPluginsIndex = 0;
 		addSorted = installingJars = duplicateCommand = false;
 		error = null;
@@ -110,7 +114,16 @@ public class Menus {
 		openSamples.addSeparator();
 		addPlugInItem(openSamples, "Cache Sample Images ", "ij.plugin.URLOpener(\"cache\")", 0, false);
 		addOpenRecentSubMenu(file);
-		Menu importMenu = getMenu("File>Import", true);
+		Menu importMenu = getMenu("File>Import", true);		
+		Menu showFolderMenu = new Menu("Show Folder");
+		file.add(showFolderMenu);
+		addPlugInItem(showFolderMenu, "Image", "ij.plugin.SimpleCommands(\"showdirImage\")", 0, false);
+		addPlugInItem(showFolderMenu, "Plugins", "ij.plugin.SimpleCommands(\"showdirPlugins\")", 0, false);
+		addPlugInItem(showFolderMenu, "Macros", "ij.plugin.SimpleCommands(\"showdirMacros\")", 0, false);
+		addPlugInItem(showFolderMenu, "LUTs", "ij.plugin.SimpleCommands(\"showdirLuts\")", 0, false);
+		addPlugInItem(showFolderMenu, "ImageJ", "ij.plugin.SimpleCommands(\"showdirImageJ\")", 0, false);
+		addPlugInItem(showFolderMenu, "temp", "ij.plugin.SimpleCommands(\"showdirTemp\")", 0, false);
+		addPlugInItem(showFolderMenu, "Home", "ij.plugin.SimpleCommands(\"showdirHome\")", 0, false);
 		file.addSeparator();
 		addPlugInItem(file, "Close", "ij.plugin.Commands(\"close\")", KeyEvent.VK_W, false);
 		addPlugInItem(file, "Close All", "ij.plugin.Commands(\"close-all\")", KeyEvent.VK_W, true);
@@ -207,7 +220,7 @@ public class Menus {
 		getMenu("Analyze>Gels", true);
 		Menu toolsMenu = getMenu("Analyze>Tools", true);
 
-		// the plugins will be added later, with a separator
+		// the plugins will be added later, after a separator
 		addPluginsMenu();
 
 		Menu window = getMenu("Window");
@@ -231,6 +244,7 @@ public class Menus {
 		addPlugInItem(help, "Macros...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/macros/\")", 0, false);
 		addPlugInItem(help, "Macro Functions...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/developer/macro/functions.html\")", 0, false);
 		Menu examplesMenu = getExamplesMenu(ij);
+		addPlugInItem(examplesMenu, "Open as Panel", "ij.plugin.SimpleCommands(\"opencp\")", 0, false);
 		help.add(examplesMenu);
 		help.addSeparator();
 		addPlugInItem(help, "Update ImageJ...", "ij.plugin.ImageJ_Updater", 0, false);
@@ -248,7 +262,8 @@ public class Menus {
 		file.addSeparator();
 		addPlugInItem(file, "Quit", "ij.plugin.Commands(\"quit\")", 0, false);
 
-		if (fontSize!=0)
+		//System.out.println("MenuBar.setFont: "+fontSize+" "+scale+"  "+getFont());
+		if (fontSize!=0 || scale>1.0)
 			mbar.setFont(getFont());
 		if (ij!=null) {
 			ij.setMenuBar(mbar);
@@ -264,12 +279,25 @@ public class Menus {
 	
 	public static Menu getExamplesMenu(ActionListener listener) {
 		Menu menu = new Menu("Examples");
-		Menu submenu = new Menu("Macro");
+		Menu submenu = new Menu("Plots");
+		addExample(submenu, "Example Plot", "Example_Plot_.ijm");
+		addExample(submenu, "Semi-log Plot", "Semi-log_Plot_.ijm");
+		addExample(submenu, "Arrow Plot", "Arrow_Plot_.ijm");
+		addExample(submenu, "Damped Wave Plot", "Damped_Wave_Plot_.ijm");
+		addExample(submenu, "Dynamic Plot", "Dynamic_Plot_.ijm");
+		addExample(submenu, "Dynamic Plot 2D", "Dynamic_Plot_2D_.ijm");
+		addExample(submenu, "Custom Plot Symbols", "Custom_Plot_Symbols_.ijm");
+		addExample(submenu, "Histograms", "Histograms_.ijm");
+		addExample(submenu, "Bar Charts", "Bar_Charts_.ijm");
+		addExample(submenu, "Shapes", "Plot_Shapes_.ijm");
+		addExample(submenu, "Plot Styles", "Plot_Styles_.ijm");
+		addExample(submenu, "Random Data", "Random_Data_.ijm");
+		submenu.addActionListener(listener);
+		menu.add(submenu);
+		
+		submenu = new Menu("Macro");
 		addExample(submenu, "Sphere", "Sphere.ijm");
 		addExample(submenu, "Dialog Box", "Dialog_Box.ijm");
-		addExample(submenu, "Example Plot", "Example_Plot.ijm");
-		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.ijm");
-		addExample(submenu, "Arrow Plot", "Arrow_Plot.ijm");
 		addExample(submenu, "Process Folder", "Batch_Process_Folder.ijm");
 		addExample(submenu, "OpenDialog Demo", "OpenDialog_Demo.ijm");
 		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.ijm");
@@ -279,20 +307,40 @@ public class Menus {
 		addExample(submenu, "Array Functions", "Array_Functions.ijm");
 		addExample(submenu, "Dual Progress Bars", "Dual_Progress_Bars.ijm");
 		addExample(submenu, "Grab Viridis Colormap", "Grab_Viridis_Colormap.ijm");
-		addExample(submenu, "Tool", "Circle_Tool.ijm");
+		addExample(submenu, "Custom Measurement", "Custom_Measurement.ijm");
+		addExample(submenu, "Synthetic Images", "Synthetic_Images.ijm");
+		addExample(submenu, "Spiral Rotation", "Spiral_Rotation.ijm");
+		submenu.addSeparator();
+		addExample(submenu, "Circle Tool", "Circle_Tool.ijm");
+		addExample(submenu, "Star Tool", "Star_Tool.ijm");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
+
 		submenu = new Menu("JavaScript");
 		addExample(submenu, "Sphere", "Sphere.js");
+		addExample(submenu, "Plasma Cloud", "Plasma_Cloud.js");
+		addExample(submenu, "Cloud Debugger", "Cloud_Debugger.js");
+		addExample(submenu, "Synthetic Images", "Synthetic_Images.js");
+		addExample(submenu, "Points", "Points.js");
+		addExample(submenu, "Spiral Rotation", "Spiral_Rotation.js");
 		addExample(submenu, "Example Plot", "Example_Plot.js");
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.js");
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.js");
+		addExample(submenu, "Dynamic Plot", "Dynamic_Plot.js");
+		addExample(submenu, "Plot Styles", "Plot_Styles.js");
+		addExample(submenu, "Plot Random Data", "Plot_Random_Data.js");
+		addExample(submenu, "Histogram Plots", "Histogram_Plots.js");
 		addExample(submenu, "Process Folder", "Batch_Process_Folder.js");
 		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.js");
 		addExample(submenu, "Non-numeric Table", "Non-numeric_Table.js");
 		addExample(submenu, "Overlay", "Overlay.js");
 		addExample(submenu, "Stack Overlay", "Stack_Overlay.js");
 		addExample(submenu, "Dual Progress Bars", "Dual_Progress_Bars.js");
+		addExample(submenu, "Gamma Adjuster", "Gamma_Adjuster.js");
+		addExample(submenu, "Custom Measurement", "Custom_Measurement.js");
+		addExample(submenu, "Terabyte VirtualStack", "Terabyte_VirtualStack.js");
+		addExample(submenu, "Event Listener", "Event_Listener.js");
+		addExample(submenu, "FFT Filter", "FFT_Filter.js");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("BeanShell");
@@ -306,12 +354,14 @@ public class Menus {
 		submenu = new Menu("Python");
 		addExample(submenu, "Sphere", "Sphere.py");
 		addExample(submenu, "Animated Gaussian Blur", "Animated_Gaussian_Blur.py");
-		addExample(submenu, "Rotational Animation.py", "Rotational_Animation.py");
+		addExample(submenu, "Spiral Rotation", "Spiral_Rotation.py");
 		addExample(submenu, "Overlay", "Overlay.py");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("Java");
 		addExample(submenu, "Sphere", "Sphere_.java");
+		addExample(submenu, "Plasma Cloud", "Plasma_Cloud.java");
+		addExample(submenu, "Gamma Adjuster", "Gamma_Adjuster.java");
 		addExample(submenu, "Plugin", "My_Plugin.java");
 		addExample(submenu, "Plugin Filter", "Filter_Plugin.java");
 		addExample(submenu, "Plugin Frame", "Plugin_Frame.java");
@@ -319,7 +369,7 @@ public class Menus {
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		menu.addSeparator();
-		CheckboxMenuItem item = new CheckboxMenuItem("Autorun");
+		CheckboxMenuItem item = new CheckboxMenuItem("Autorun Examples");
 		menu.add(item);
 		item.addItemListener(ij);
 		item.setState(Prefs.autoRunExamples);
@@ -417,7 +467,8 @@ public class Menus {
 		if (applet==null && f.exists() && f.isDirectory())
 			list = f.list();
 		if (list==null) return;
-		if (IJ.isLinux()) StringSorter.sort(list);
+		if (IJ.isLinux() || IJ.isMacOSX())
+			Arrays.sort(list);
 		submenu.addSeparator();
  		for (int i=0; i<list.length; i++) {
  			String name = list[i];
@@ -453,7 +504,6 @@ public class Menus {
 				boolean functionKey = keyCode>=KeyEvent.VK_F1 && keyCode<=KeyEvent.VK_F12;
 				if (keyCode>0 && !functionKey)
 					command = command.substring(0,openBracket);
-				//IJ.write(command+": "+shortcut);
 			}
 		}
 		if (keyCode>=KeyEvent.VK_F1 && keyCode<=KeyEvent.VK_F12) {
@@ -512,6 +562,7 @@ public class Menus {
 		Plugins not listed in IJ_Prefs are added to the end
 		of the Plugins menu. */
 	void installPlugins() {
+		int nPlugins0 = nPlugins;
 		String value, className;
 		char menuCode;
 		Menu menu;
@@ -563,6 +614,10 @@ public class Menus {
 				if (!skipList.containsKey(pluginList[i]))
 					installUserPlugin(pluginList[i]);
 			}
+		}
+		if ((nPlugins-nPlugins0)<=1 && IJ.getDir("imagej")!=null && IJ.getDir("imagej").startsWith("/private")) {
+			pluginsMenu.addSeparator();
+			addPlugInItem(pluginsMenu, "Why are Plugins Missing?", "ij.plugin.SimpleCommands(\"missing\")", 0, false);
 		}
 		installJarPlugins();
 		installMacros();
@@ -748,6 +803,8 @@ public class Menus {
 
 	/** Returns the specified ImageJ menu (e.g., "File>New") or null if it is not found. */
 	public static Menu getImageJMenu(String menuPath) {
+		if (menus==null)
+			return null;
 		if (menus.get(menuPath)!=null)
 			return getMenu(menuPath, false);
 		else
@@ -1029,7 +1086,6 @@ public class Menus {
 				v.addElement(dir+name);
 				classCount++;
 				className = name;
-				//IJ.write("File: "+f+"/"+name);
 			} else if (hasUnderscore && (name.endsWith(".jar") || name.endsWith(".zip"))) {
 				if (jarFiles==null) jarFiles = new Vector();
 				jarFiles.addElement(f.getPath() + File.separator + name);
@@ -1106,9 +1162,8 @@ public class Menus {
 		int count = 0;
 		MenuItem mi;
 		popup = new PopupMenu("");
-		if (fontSize!=0)
+		if (fontSize!=0 || scale>1.0)
 			popup.setFont(getFont());
-
 		while (true) {
 			count++;
 			s = Prefs.getString("popup" + (count/10)%10 + count%10);
@@ -1290,25 +1345,14 @@ public class Menus {
 			window.insertSeparator(WINDOW_MENU_ITEMS+windowMenuItems2);
 			windowMenuItems2++;
 		}
-		//IJ.write("insertWindowMenuItem: "+windowMenuItems2);
 	}
 
 	/** Adds one image to the end of the Window menu. */
 	static synchronized void addWindowMenuItem(ImagePlus imp) {
 		if (ij==null) return;
 		String name = imp.getTitle();
-		int size = (imp.getWidth()*imp.getHeight()*imp.getStackSize())/1024;
-		switch (imp.getType()) {
-			case ImagePlus.GRAY32: case ImagePlus.COLOR_RGB: // 32-bit
-				size *=4;
-				break;
-			case ImagePlus.GRAY16:  // 16-bit
-				size *= 2;
-				break;
-			default: // 8-bit
-				;
-		}
-		CheckboxMenuItem item = new CheckboxMenuItem(name + " " + size + "K");
+		String size = ImageWindow.getImageSize(imp);
+		CheckboxMenuItem item = new CheckboxMenuItem(name+" "+size);
 		item.setActionCommand("" + imp.getID());
 		window.add(item);
 		item.addItemListener(ij);
@@ -1317,7 +1361,8 @@ public class Menus {
 	/** Removes the specified item from the Window menu. */
 	static synchronized void removeWindowMenuItem(int index) {
 		//IJ.log("removeWindowMenuItem: "+index+" "+windowMenuItems2+" "+window.getItemCount());
-		if (ij==null) return;
+		if (ij==null)
+			return;
 		try {
 			if (index>=0 && index<window.getItemCount()) {
 				window.remove(WINDOW_MENU_ITEMS+index);
@@ -1334,27 +1379,33 @@ public class Menus {
 
 	/** Changes the name of an item in the Window menu. */
 	public static synchronized void updateWindowMenuItem(String oldLabel, String newLabel) {
-		if (oldLabel==null || oldLabel.equals(newLabel))
+		updateWindowMenuItem(null, oldLabel, newLabel);
+	}
+
+	/** Changes the name of an item in the Window menu. */
+	public static synchronized void updateWindowMenuItem(ImagePlus imp, String oldLabel, String newLabel) {
+		if (oldLabel==null || newLabel==null)
 			return;
 		int first = WINDOW_MENU_ITEMS;
-		int last = window.getItemCount()-1;
-		//IJ.write("updateWindowMenuItem: "+" "+first+" "+last+" "+oldLabel+" "+newLabel);
+		int count = window.getItemCount();
 		try {  // workaround for Linux/Java 5.0/bug
-			for (int i=first; i<=last; i++) {
+			for (int i=first; i<count; i++) {
 				MenuItem item = window.getItem(i);
-				//IJ.write(i+" "+item.getLabel()+" "+newLabel);
 				String label = item.getLabel();
-				if (item!=null && label.startsWith(oldLabel)) {
-					if (label.endsWith("K")) {
-						int index = label.lastIndexOf(' ');
-						if (index>-1)
-							newLabel += label.substring(index, label.length());
-					}
-					item.setLabel(newLabel);
+				if (imp!=null) {  //remove size (e.g. " 24MB")
+					int index = label.lastIndexOf(" ");
+					if (index>-1)
+						label = label.substring(0, index);
+				}
+				if (item!=null && label.equals(oldLabel)) {
+					String size = "";
+					if (imp!=null)
+						size =  " " + ImageWindow.getImageSize(imp);
+					item.setLabel(newLabel+size);
 					return;
 				}
 			}
-		} catch (NullPointerException e) {}
+		} catch (Exception e) {}
 	}
 	
 	/** Adds a file path to the beginning of the File/Open Recent submenu. */
@@ -1509,17 +1560,6 @@ public class Menus {
 	}
 	
 	void installStartupMacroSet() {
-		if (applet!=null) {
-			String docBase = ""+applet.getDocumentBase();
-			if (!docBase.endsWith("/")) {
-				int index = docBase.lastIndexOf("/");
-				if (index!=-1)
-					docBase = docBase.substring(0, index+1);
-			}
-			IJ.runPlugIn("ij.plugin.URLOpener", docBase+"StartupMacros.txt");
-			return;
-		}
-
 		if (macrosPath==null) {
 			try {
 				(new MacroInstaller()).installFromIJJar("/macros/StartupMacros.txt");
@@ -1535,6 +1575,9 @@ public class Menus {
 				(new MacroInstaller()).installFromIJJar("/macros/StartupMacros.txt");
 				return;
 			}
+		} else {
+			if ("StartupMacros.fiji.ijm".equals(f.getName()))
+				path = f.getPath();
 		}
 		String libraryPath = macrosPath + "Library.txt";
 		f = new File(libraryPath);
@@ -1542,7 +1585,7 @@ public class Menus {
 		try {
 			MacroInstaller mi = new MacroInstaller();
 			if (isLibrary) mi.installLibrary(libraryPath);
-			mi.installFile(path);
+			mi.installStartupMacros(path);
 			nMacros += mi.getMacroCount();
 		} catch (Exception e) {}
 	}
@@ -1579,12 +1622,17 @@ public class Menus {
 	/** Returns the size (in points) used for the fonts in ImageJ menus. Returns
 		0 if the default font size is being used or if this is a Macintosh. */
 	public static int getFontSize() {
-		return IJ.isMacintosh()?0:fontSize;
+		return fontSize;
+		//return IJ.isMacintosh()?0:fontSize;
 	}
 	
 	public static Font getFont() {
-		if (menuFont==null)
-			menuFont =  new Font("SanSerif", Font.PLAIN, fontSize==0?12:fontSize);
+		if (menuFont==null) {
+			int size = fontSize==0?12:fontSize;
+			size = (int)Math.round(size*scale);
+			menuFont =  new Font("SanSerif", Font.PLAIN, size);
+		}
+		//System.out.println("Menus.getFont: "+scale+" "+fontSize+" "+menuFont);
 		return menuFont;
 	}
 
@@ -1616,6 +1664,15 @@ public class Menus {
 		IJ.resetClassLoader();
 		IJ.runPlugIn("ij.plugin.ClassChecker", "");
 		IJ.showStatus("Menus updated: "+m.nPlugins + " commands, " + m.nMacros + " macros");
+	}
+	
+	public static void updateFont() {
+		scale = (int)Math.round(Prefs.getGuiScale());
+		Font font = getFont();
+		mbar.setFont(font);
+		if (ij!=null)
+			ij.setMenuBar(mbar);
+		popup.setFont(font);
 	}
 	
 }

@@ -4,6 +4,7 @@ import ij.io.*;
 import ij.gui.*;
 import ij.plugin.filter.Analyzer;
 import ij.macro.Interpreter;
+import ij.measure.ResultsTable;
 import java.awt.*;
 import java.io.*;
 import java.awt.event.*;
@@ -115,6 +116,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 			if (!IJ.debugMode) GUI.center(this);
 		}
 		show();
+		WindowManager.setWindow(this);
 	}
 
 	/**
@@ -160,6 +162,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		m.add(new MenuItem("Find Next", new MenuShortcut(KeyEvent.VK_G)));
 		m.addActionListener(this);
 		mb.add(m);
+		textPanel.editMenu = m;
 		m = new Menu("Font");
 		m.add(new MenuItem("Make Text Smaller"));
 		m.add(new MenuItem("Make Text Larger"));
@@ -176,6 +179,8 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 			m.add(new MenuItem("Summarize"));
 			m.add(new MenuItem("Distribution..."));
 			m.add(new MenuItem("Set Measurements..."));
+			m.add(new MenuItem("Sort..."));
+			m.add(new MenuItem("Plot..."));
 			m.add(new MenuItem("Options..."));
 			m.addActionListener(this);
 			mb.add(m);
@@ -184,7 +189,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	}
 
 	/**
-	Adds one or lines of text to the window.
+	Adds one or more lines of text to the window.
 	@param text		The text to be appended. Multiple
 					lines should be separated by \n.
 	*/
@@ -224,6 +229,12 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	public TextPanel getTextPanel() {
 		return textPanel;
 	}
+	
+	/** Returns the ResultsTable associated with this TextWindow, or null. */
+	public ResultsTable getResultsTable() {
+		return textPanel!=null?textPanel.getResultsTable():null;
+	}
+
 
 	/** Appends the text in the specified file to the end of this TextWindow. */
 	public void load(BufferedReader in) throws IOException {
@@ -252,8 +263,6 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		int id = e.getID();
 		if (id==WindowEvent.WINDOW_CLOSING)
 			close();	
-		else if (id==WindowEvent.WINDOW_ACTIVATED)
-			WindowManager.setWindow(this);
 	}
 
 	public void itemStateChanged(ItemEvent e) {
@@ -339,7 +348,6 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	}
 	
 	public void focusGained(FocusEvent e) {
-		WindowManager.setWindow(this);
 	}
 
 	public void focusLost(FocusEvent e) {}

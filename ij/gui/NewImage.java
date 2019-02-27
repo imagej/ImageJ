@@ -12,7 +12,8 @@ import ij.process.*;
 public class NewImage {
 
 	public static final int GRAY8=0, GRAY16=1, GRAY32=2, RGB=3;
-	public static final int FILL_BLACK=1, FILL_RAMP=2, FILL_RANDOM=3, FILL_WHITE=4, CHECK_AVAILABLE_MEMORY=8;
+	public static final int FILL_BLACK=1, FILL_RAMP=2, FILL_NOISE=3, FILL_RANDOM=3,
+		FILL_WHITE=4, CHECK_AVAILABLE_MEMORY=8;
 	private static final int OLD_FILL_WHITE=0;
 	
     static final String TYPE = "new.type";
@@ -22,14 +23,14 @@ public class NewImage {
 	static final String SLICES = "new.slices";
 
     private static String name = "Untitled";
-    private static int width = Prefs.getInt(WIDTH, 400);
-    private static int height = Prefs.getInt(HEIGHT, 400);
-    private static int slices = Prefs.getInt(SLICES, 1);
-    private static int type = Prefs.getInt(TYPE, GRAY8);
-    private static int fillWith = Prefs.getInt(FILL, FILL_BLACK);
+    private static int staticWidth = Prefs.getInt(WIDTH, 512);
+    private static int staticHeight = Prefs.getInt(HEIGHT, 512);
+    private static int staticSlices = Prefs.getInt(SLICES, 1);
+    private static int staticType = Prefs.getInt(TYPE, GRAY8);
+    private static int staticFillWith = Prefs.getInt(FILL, FILL_BLACK);
     private static String[] types = {"8-bit", "16-bit", "32-bit", "RGB"};
-    private static String[] fill = {"White", "Black", "Ramp", "Random"};
-    
+    private static String[] fill = {"White", "Black", "Ramp", "Noise"}; 
+    private int gwidth, gheight, gslices, gtype, gfill;
 	
     public NewImage() {
     	openImage();
@@ -43,7 +44,8 @@ public class NewImage {
 		if (type==GRAY16) bytesPerPixel = 2;
 		else if (type==GRAY32||type==RGB) bytesPerPixel = 4;
 		long size = (long)width*height*nSlices*bytesPerPixel;
-		boolean bigStack = size/(1024*1024)>=50;
+		int sizeThreshold = fill==FILL_NOISE?10:250;
+		boolean bigStack = size/(1024*1024)>=sizeThreshold;
 		String size2 = size/(1024*1024)+"MB ("+width+"x"+height+"x"+nSlices+")";
 		if ((options&CHECK_AVAILABLE_MEMORY)!=0) {
 			long max = IJ.maxMemory(); // - 100*1024*1024;
@@ -69,7 +71,8 @@ public class NewImage {
 		ImageStack stack = imp.createEmptyStack();
 		int inc = nSlices/40;
 		if (inc<1) inc = 1;
-		IJ.showStatus("Allocating "+size2+". Press 'Esc' to abort.");
+		if (bigStack)
+			IJ.showStatus("Allocating "+size2+". Press 'Esc' to abort.");
 		IJ.resetEscape();
 		try {
 			stack.addSlice(null, ip);
@@ -78,12 +81,24 @@ public class NewImage {
 					IJ.showProgress(i, nSlices);
 				Object pixels2 = null;
 				switch (type) {
-					case GRAY8: pixels2 = new byte[width*height]; break;
-					case GRAY16: pixels2 = new short[width*height]; break;
-					case GRAY32: pixels2 = new float[width*height]; break;
-					case RGB: pixels2 = new int[width*height]; break;
+					case GRAY8: pixels2 = new byte[width*height];
+						if (fill==FILL_NOISE)
+							fillNoiseByte(new ByteProcessor(width,height,(byte[])pixels2));
+						break;
+					case GRAY16: pixels2 = new short[width*height];
+						if (fill==FILL_NOISE)
+							fillNoiseShort(new ShortProcessor(width,height,(short[])pixels2,null));
+						break;
+					case GRAY32: pixels2 = new float[width*height];
+						if (fill==FILL_NOISE)
+							fillNoiseFloat(new FloatProcessor(width,height,(float[])pixels2,null));
+						break;
+					case RGB: pixels2 = new int[width*height];
+						if (fill==FILL_NOISE)
+							fillNoiseRGB(new ColorProcessor(width,height,(int[])pixels2), false);
+						break;
 				}
-				if (fill!=FILL_BLACK || type==RGB)
+				if ((fill==FILL_WHITE||fill==FILL_RAMP) || ((type==RGB)&&(fill!=FILL_NOISE)))
 					System.arraycopy(ip.getPixels(), 0, pixels2, 0, width*height);
 				stack.addSlice(null, pixels2);
 				if (IJ.escapePressed()) {IJ.beep(); break;};
@@ -134,9 +149,8 @@ public class NewImage {
 						pixels[offset++] = ramp[x];
 				}
 				break;
-			case FILL_RANDOM:
-				ip.add(127);
-				ip.noise(31);
+			case FILL_NOISE:
+				fillNoiseByte(ip);
 				break;
 		}
 		ImagePlus imp = new ImagePlus(title, ip);
@@ -145,6 +159,11 @@ public class NewImage {
 			if (!ok) imp = null;
 		}
 		return imp;
+	}
+	
+	private static void fillNoiseByte(ImageProcessor ip) {
+		ip.add(127);
+		ip.noise(31);
 	}
 
 	public static ImagePlus createRGBImage(String title, int width, int height, int slices, int options) {
@@ -175,13 +194,8 @@ public class NewImage {
 						pixels[offset++] = ramp[x];
 				}
 				break;
-			case FILL_RANDOM:
-				ByteProcessor rr = new ByteProcessor(width, height);
-				ByteProcessor gg = new ByteProcessor(width, height);
-				ByteProcessor bb = new ByteProcessor(width, height);
-				rr.add(127); gg.add(127); bb.add(127);
-				rr.noise(31); gg.noise(31); bb.noise(31);
-				ip.setChannel(1,rr); ip.setChannel(2,gg); ip.setChannel(3,bb);
+			case FILL_NOISE:
+				fillNoiseRGB(ip, true);
 				break;
 		}
 		ImagePlus imp = new ImagePlus(title, ip);
@@ -192,6 +206,23 @@ public class NewImage {
 		return imp;
 	}
 	
+	private static void fillNoiseRGB(ColorProcessor ip, boolean sp) {
+		int width = ip.getWidth();
+		int height = ip.getHeight();
+		ByteProcessor rr = new ByteProcessor(width, height);
+		ByteProcessor gg = new ByteProcessor(width, height);
+		ByteProcessor bb = new ByteProcessor(width, height);
+		if (sp) IJ.showProgress(0.0);
+		rr.add(127); if (sp) IJ.showProgress(0.05);
+		gg.add(127); if (sp) IJ.showProgress(0.10);
+		bb.add(127); if (sp) IJ.showProgress(0.15);
+		rr.noise(31); if (sp) IJ.showProgress(0.40);
+		gg.noise(31); if (sp) IJ.showProgress(0.65);
+		bb.noise(31); if (sp) IJ.showProgress(0.90);
+		if (sp) IJ.showProgress(1.0);
+		ip.setChannel(1,rr); ip.setChannel(2,gg); ip.setChannel(3,bb);
+	}
+
 	/** Creates an unsigned short image. */
 	public static ImagePlus createShortImage(String title, int width, int height, int slices, int options) {
 		int fill = getFill(options);
@@ -213,9 +244,8 @@ public class NewImage {
 						pixels[offset++] = ramp[x];
 				}
 				break;
-			case FILL_RANDOM:
-				ip.add(32767);
-				ip.noise(7940);
+			case FILL_NOISE:
+				fillNoiseShort(ip);
 				break;
 		}
 	    if (fill==FILL_WHITE)
@@ -227,6 +257,11 @@ public class NewImage {
 		}
 		imp.getProcessor().setMinAndMax(0, 65535); // default display range
 		return imp;
+	}
+
+	private static void fillNoiseShort(ImageProcessor ip) {
+		ip.add(32767);
+		ip.noise(7940);
 	}
 
 	/**
@@ -257,8 +292,8 @@ public class NewImage {
 						pixels[offset++] = ramp[x];
 				}
 				break;
-			case FILL_RANDOM:
-				ip.noise(1);
+			case FILL_NOISE:
+				fillNoiseFloat(ip);
 				break;
 		}
 	    if (fill==FILL_WHITE)
@@ -268,9 +303,13 @@ public class NewImage {
 			boolean ok = createStack(imp, ip, slices, GRAY32, options);
 			if (!ok) imp = null;
 		}
-		if (fill!=FILL_RANDOM)
+		if (fill!=FILL_NOISE)
 			imp.getProcessor().setMinAndMax(0.0, 1.0); // default display range
 		return imp;
+	}
+
+	private static void fillNoiseFloat(ImageProcessor ip) {
+		ip.noise(1);
 	}
 
 	private static int getSize(int width, int height) {
@@ -309,56 +348,67 @@ public class NewImage {
 	}
 	
 	boolean showDialog() {
-		if (type<GRAY8|| type>RGB)
-			type = GRAY8;
-		if (fillWith<OLD_FILL_WHITE||fillWith>FILL_RANDOM)
-			fillWith = FILL_WHITE;
-		GenericDialog gd = new GenericDialog("New Image...", IJ.getInstance());
+		if (staticType<GRAY8|| staticType>RGB)
+			staticType = GRAY8;
+		if (staticFillWith<OLD_FILL_WHITE||staticFillWith>FILL_NOISE)
+			staticFillWith = FILL_WHITE;
+		GenericDialog gd = new GenericDialog("New Image...");
 		gd.addStringField("Name:", name, 12);
-		gd.addChoice("Type:", types, types[type]);
-		gd.addChoice("Fill with:", fill, fill[fillWith]);
-		gd.addNumericField("Width:", width, 0, 5, "pixels");
-		gd.addNumericField("Height:", height, 0, 5, "pixels");
-		gd.addNumericField("Slices:", slices, 0, 5, "");
+		gd.addChoice("Type:", types, types[staticType]);
+		gd.addChoice("Fill with:", fill, fill[staticFillWith]);
+		gd.addNumericField("Width:", staticWidth, 0, 5, "pixels");
+		gd.addNumericField("Height:", staticHeight, 0, 5, "pixels");
+		gd.addNumericField("Slices:", staticSlices, 0, 5, "");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
 		name = gd.getNextString();
 		String s = gd.getNextChoice();
 		if (s.startsWith("8"))
-			type = GRAY8;
+			gtype = GRAY8;
 		else if (s.startsWith("16"))
-			type = GRAY16;
+			gtype = GRAY16;
 		else if (s.endsWith("RGB") || s.endsWith("rgb"))
-			type = RGB;
+			gtype = RGB;
 		else
-			type = GRAY32;
-		fillWith = gd.getNextChoiceIndex();
-		width = (int)gd.getNextNumber();
-		height = (int)gd.getNextNumber();
-		slices = (int)gd.getNextNumber();
-		if (slices<1) slices = 1;
-		if (width<1 || height<1) {
+			gtype = GRAY32;
+		gfill = gd.getNextChoiceIndex();
+		gwidth = (int)gd.getNextNumber();
+		gheight = (int)gd.getNextNumber();
+		gslices = (int)gd.getNextNumber();
+		if (gslices<1) gslices = 1;
+		if (gwidth<1 || gheight<1) {
 			IJ.error("New Image", "Width and height must be >0");
 			return false;
-		} else
+		} else {
+			if (!IJ.isMacro()) {
+				staticWidth = gwidth;
+				staticHeight = gheight;
+				staticSlices = gslices;
+				staticType = gtype;
+				staticFillWith = gfill;
+			}
 			return true;
+		}
 	}
 
 	void openImage() {
 		if (!showDialog())
 			return;
-		try {open(name, width, height, slices, type, fillWith);}
-		catch(OutOfMemoryError e) {IJ.outOfMemory("New Image...");}
+		try {
+			open(name, gwidth, gheight, gslices, gtype, gfill);
+		} catch(OutOfMemoryError e) {
+			IJ.outOfMemory("New Image...");
+		}
 	}
 	
 	/** Called when ImageJ quits. */
 	public static void savePreferences(Properties prefs) {
-		prefs.put(TYPE, Integer.toString(type));
-		prefs.put(FILL, Integer.toString(fillWith));
-		prefs.put(WIDTH, Integer.toString(width));
-		prefs.put(HEIGHT, Integer.toString(height));
-		prefs.put(SLICES, Integer.toString(slices));
+		prefs.put(TYPE, Integer.toString(staticType));
+		prefs.put(FILL, Integer.toString(staticFillWith));
+		prefs.put(WIDTH, Integer.toString(staticWidth));
+		prefs.put(HEIGHT, Integer.toString(staticHeight));
+		prefs.put(SLICES, Integer.toString(staticSlices));
 	}
 
 }

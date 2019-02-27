@@ -12,8 +12,8 @@ public class NewPlugin implements PlugIn {
 
 	public static final int MACRO=0, JAVASCRIPT=1, PLUGIN=2, PLUGIN_FILTER=3, PLUGIN_FRAME=4,
 		TEXT_FILE=5, TABLE=6, MACRO_TOOL=7, PLUGIN_TOOL=8, TEMPLATE=9;
-    private static int rows = 16;
-    private static int columns = 60;
+    private static int rows = 24;
+    private static int columns = 80;
     private static int tableWidth = 350;
     private static int tableHeight = 250;
     private int type = MACRO;

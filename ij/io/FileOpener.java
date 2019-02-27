@@ -46,13 +46,17 @@ public class FileOpener {
 		if (IJ.debugMode) IJ.log("FileInfo: "+fi);
 	}
 	
+	/** Opens the image and returns it has an ImagePlus object. */
+	public ImagePlus openImage() {
+		return open(false);
+	}
+
 	/** Opens the image and displays it. */
 	public void open() {
 		open(true);
 	}
 	
-	/** Opens the image. Displays it if 'show' is
-	true. Returns an ImagePlus object if successful. */
+	/** Obsolete, replaced by openImage() and open(). */
 	public ImagePlus open(boolean show) {
 
 		ImagePlus imp=null;
@@ -62,7 +66,7 @@ public class FileOpener {
 		
 		ColorModel cm = createColorModel(fi);
 		if (fi.nImages>1)
-			{return openStack(cm, show);}
+			return openStack(cm, show);
 		switch (fi.fileType) {
 			case FileInfo.GRAY8:
 			case FileInfo.COLOR8:
@@ -152,6 +156,10 @@ public class FileOpener {
 			imp.setProperty("Info", fi.info);
 		if (fi.sliceLabels!=null&&fi.sliceLabels.length==1&&fi.sliceLabels[0]!=null)
 			imp.setProperty("Label", fi.sliceLabels[0]);
+		if (fi.plot!=null) try {
+			Plot plot = new Plot(imp, new ByteArrayInputStream(fi.plot));
+			imp.setProperty(Plot.PROPERTY_KEY, plot);
+		} catch (Exception e) { IJ.handleException(e); }
 		if (fi.roi!=null)
 			imp.setRoi(RoiDecoder.openFromByteArray(fi.roi));
 		if (fi.overlay!=null)
@@ -162,15 +170,18 @@ public class FileOpener {
 	
 	void setOverlay(ImagePlus imp, byte[][] rois) {
 		Overlay overlay = new Overlay();
+		Overlay proto = null;
 		for (int i=0; i<rois.length; i++) {
 			Roi roi = RoiDecoder.openFromByteArray(rois[i]);
-			if (i==0) {
-				Overlay proto = roi.getPrototypeOverlay();
+			if (roi==null)
+				continue;
+			if (proto==null) {
+				proto = roi.getPrototypeOverlay();
 				overlay.drawLabels(proto.getDrawLabels());
 				overlay.drawNames(proto.getDrawNames());
 				overlay.drawBackgrounds(proto.getDrawBackgrounds());
 				overlay.setLabelColor(proto.getLabelColor());
-				overlay.setLabelFont(proto.getLabelFont());
+				overlay.setLabelFont(proto.getLabelFont(), proto.scalableLabels());
 			}
 			overlay.add(roi);
 		}
@@ -185,7 +196,8 @@ public class FileOpener {
 		try {
 			ImageReader reader = new ImageReader(fi);
 			InputStream is = createInputStream(fi);
-			if (is==null) return null;
+			if (is==null)
+				return null;
 			IJ.resetEscape();
 			for (int i=1; i<=fi.nImages; i++) {
 				if (!silentMode)
@@ -197,9 +209,10 @@ public class FileOpener {
 					return null;
 				}
 				pixels = reader.readPixels(is, skip);
-				if (pixels==null) break;
+				if (pixels==null)
+					break;
 				stack.addSlice(null, pixels);
-				skip = fi.gapBetweenImages;
+				skip = fi.getGap();
 				if (!silentMode)
 					IJ.showProgress(i, fi.nImages);
 			}
@@ -233,7 +246,6 @@ public class FileOpener {
 		if (ip.getMin()==ip.getMax())  // find stack min and max if first slice is blank
 			setStackDisplayRange(imp);
 		if (!silentMode) IJ.showProgress(1.0);
-		//silentMode = false;
 		return imp;
 	}
 
@@ -320,6 +332,13 @@ public class FileOpener {
 		Calibration cal = imp.getCalibration();
 		boolean calibrated = false;
 		if (fi.pixelWidth>0.0 && fi.unit!=null) {
+			if (Prefs.convertToMicrons && fi.pixelWidth<=0.0001 && fi.unit.equals("cm")) {
+				fi.pixelWidth *= 10000.0;
+				fi.pixelHeight *= 10000.0;
+				if (fi.pixelDepth!=1.0)
+					fi.pixelDepth *= 10000.0;
+				fi.unit = "um";
+			}
 			cal.pixelWidth = fi.pixelWidth;
 			cal.pixelHeight = fi.pixelHeight;
 			cal.pixelDepth = fi.pixelDepth;
@@ -433,7 +452,7 @@ public class FileOpener {
 		else if (fi.url!=null && !fi.url.equals(""))
 			is = new URL(fi.url+fi.fileName).openStream();
 		else {
-			if (fi.directory.length()>0 && !fi.directory.endsWith(Prefs.separator))
+			if (fi.directory.length()>0 && !(fi.directory.endsWith(Prefs.separator)||fi.directory.endsWith("/")))
 				fi.directory += Prefs.separator;
 		    File f = new File(fi.directory + fi.fileName);
 		    if (gzip) fi.compression = FileInfo.COMPRESSION_UNKNOWN;
@@ -443,7 +462,7 @@ public class FileOpener {
 				is = new FileInputStream(f);
 		}
 		if (is!=null) {
-		    if (fi.compression>=FileInfo.LZW)
+			if (fi.compression>=FileInfo.LZW)
 				is = new RandomAccessStream(is);
 			else if (gzip)
 				is = new GZIPInputStream(is, 50000);

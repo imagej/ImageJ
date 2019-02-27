@@ -238,8 +238,13 @@ public class FloatStatistics extends ImageStatistics {
 			for (int x=rx; x<(rx+rw); x++) {
 				if (mask==null||mask[mi++]!=0) {
 					v = pixels[i];
-					if (v>=minThreshold && v<=maxThreshold)
+					if (v>=minThreshold && v<=maxThreshold) {
+						if (count==pixels2.length) {
+							median = Double.NaN;
+							return;
+						}
 						pixels2[count++] = v;
+					}
 				}
 				i++;
 			}

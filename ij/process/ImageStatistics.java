@@ -5,16 +5,19 @@ import java.awt.*;
 /** Statistics, including the histogram, of an image or selection. */
 public class ImageStatistics implements Measurements {
 
-	/** Use getHIstogram() to get histogram as long array. */
+	/** Use the hIstogram() method to get the histogram as a double  array. */
 	public int[] histogram;
+	
 	/** Int pixel count (limited to 2^31-1) */
 	public int pixelCount;
 	/** Long pixel count */
-	public long longPixelCount;
-	/** Int mode (limited to 2^31-1) */
-	public int mode;
-	/** Double mode*/
+	public long longPixelCount;	
+	
+	/** Mode */
 	public double dmode;
+	/** Mode of 256 bin histogram (counts limited to 2^31-1) */	
+	public int mode;
+		
 	public double area;
 	public double min;
 	public double max;
@@ -64,6 +67,12 @@ public class ImageStatistics implements Measurements {
 	EllipseFitter ef;
 
 	
+	/* Get uncalibrated statistics, including histogram, area, mean, 
+		min and max, standard deviation and mode. */
+	public static ImageStatistics getStatistics(ImageProcessor ip) {
+		return getStatistics(ip, AREA+MEAN+STD_DEV+MODE+MIN_MAX+RECT, null);
+	}
+
 	public static ImageStatistics getStatistics(ImageProcessor ip, int mOptions, Calibration cal) {
 		Object pixels = ip.getPixels();
 		if (pixels instanceof byte[])
@@ -267,9 +276,9 @@ public class ImageStatistics implements Measurements {
 		areaFraction = sum*100.0/total;
 	}
 	
-	/** Returns the histogram as an array of longs. */
-	public long[] getHistogram() {
-		long[] hist = new long[histogram.length];
+	/** Returns the histogram as an array of doubles. */
+	public double[] histogram() {
+		double[] hist = new double[histogram.length];
 		for (int i=0; i<hist.length; i++) {
 			if (longHistogram!=null)
 				hist[i] = longHistogram[i];
@@ -277,6 +286,15 @@ public class ImageStatistics implements Measurements {
 				hist[i] = histogram[i];
 		}
 		return hist;
+	}
+
+	/** Returns the histogram as an array of longs. */
+	public long[] getHistogram() {
+		double[] hist = histogram();
+		long[] hist2 = new long[hist.length];
+		for (int i=0; i<hist.length; i++)
+			hist2[i] = (long)hist[i];
+		return hist2;
 	}
 	
 	public String toString() {

@@ -108,6 +108,8 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 			imp.changes = false;
 			imp.close();
 		}
+		if (imp2.getWindow()!=null)
+			IJ.selectWindow(imp2.getID());
 	}
 
 	public void convertHyperstack(ImagePlus imp, ImagePlus imp2) {

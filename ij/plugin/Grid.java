@@ -32,6 +32,8 @@ public class Grid implements PlugIn, DialogListener {
 	private String color = "Cyan";
 	private boolean bold;
 	private boolean randomOffset;
+	private boolean centered;
+	private Checkbox centerCheckbox, randomCheckbox;
 
 	public void run(String arg) {
 		imp = IJ.getImage();
@@ -169,8 +171,14 @@ public class Grid implements PlugIn, DialogListener {
 		gd.addNumericField("Area per point:", areaPerPoint, places, 6, units+"^2");
 		gd.addChoice("Color:", colors, color);
 		gd.addCheckbox("Bold", bold);
+		gd.addCheckbox("Center grid on image", centered);
 		gd.addCheckbox("Random offset", randomOffset);
 		gd.addDialogListener(this);
+		if (!isMacro) {
+			Vector v = gd.getCheckboxes();
+			centerCheckbox = (Checkbox)v.elementAt(1);
+			randomCheckbox = (Checkbox)v.elementAt(2);
+		}
 		dialogItemChanged(gd, null);
 		gd.showDialog();
 		if (gd.wasCanceled()) {
@@ -193,7 +201,13 @@ public class Grid implements PlugIn, DialogListener {
 		areaPerPoint = gd.getNextNumber();
 		color = gd.getNextChoice();
 		bold = gd.getNextBoolean();
+		centered = gd.getNextBoolean();
 		randomOffset = gd.getNextBoolean();
+		if (randomOffset) {
+			centered = false;
+			if (centerCheckbox!=null)
+				centerCheckbox.setState(false);
+		}
 		double minArea= (width*height)/50000.0;
 		if (type.equals(types[CROSSES])&&minArea<50.0)
 			minArea = 50.0;
@@ -210,7 +224,10 @@ public class Grid implements PlugIn, DialogListener {
 		double tileSize = Math.sqrt(areaPerPoint);
 		tileWidth = tileSize/pixelWidth;
 		tileHeight = tileSize/pixelHeight;
-		if (randomOffset) {
+		if (centered) {
+			xstart = (int)Math.round((width%tileWidth)/2.0);
+			ystart = (int)Math.round((height%tileHeight)/2.0);
+		} else if (randomOffset) {
 			xstart = (int)(random.nextDouble()*tileWidth);
 			ystart = (int)(random.nextDouble()*tileHeight);
 		} else {
@@ -222,10 +239,11 @@ public class Grid implements PlugIn, DialogListener {
 		if (gd.invalidNumber())
 			return true;
 		drawGrid();
-        	return true;
+        return true;
 	}
 
 	private void drawGrid() {
+		//IJ.log(centered+" "+xstart+" "+ystart);
 		if (type.equals(types[LINES]))
 			drawLines();
 		else if (type.equals(types[HLINES]))
@@ -242,6 +260,7 @@ public class Grid implements PlugIn, DialogListener {
 	
 	private void getSettings() {
 		String prefs = Prefs.get(OPTIONS, "Lines,Cyan,-");
+		//IJ.log("options: "+prefs);
 		String[] options = Tools.split(prefs, ",");
 		if (options.length>=3) {
 			type = options[0];
@@ -250,13 +269,19 @@ public class Grid implements PlugIn, DialogListener {
 			areaPerPoint = saveAreaPerPoint;
 			color = options[1];
 			bold = options[2].contains("bold");
+			centered = options[2].contains("centered");
 			randomOffset = options[2].contains("random");
+			if (centered)
+				randomOffset = false;
 		}
 	}
 	
 	private void saveSettings() {
-		String options = type+","+color+","+(bold?"bold":"")+" "+(randomOffset?"random":"");
-		Prefs.set(OPTIONS, options);
+		String options = type+","+color+",";
+		String options2 = (bold?"bold ":"")+(centered?"centered ":"")+(randomOffset?"random ":"");
+		if (options2.length()==0)
+			options2 = "-";
+		Prefs.set(OPTIONS, options+options2);
 		saveAreaPerPoint = areaPerPoint;
 	}
 

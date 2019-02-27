@@ -59,8 +59,14 @@ public class Hotkeys implements PlugIn {
 					}
 				}
 			}
-		} else
+		} else {
 			command = gd.getNextChoice();
+			Hashtable cmds = Menus.getCommands();
+			if (command.contains("[") && cmds!=null && cmds.get(command)==null) {
+				if (cmds.get(command+"]")!=null)
+					command += "]";
+			}
+		}
 		String plugin = "ij.plugin.Hotkeys("+"\""+command+"\")";
 		int err = Menus.installPlugin(plugin,Menus.SHORTCUTS_MENU,"*"+command,shortcut,IJ.getInstance());
 		switch (err) {

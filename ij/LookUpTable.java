@@ -101,8 +101,7 @@ public class LookUpTable extends Object {
 				bar.setColor(new Color(i, i, i));
 				bar.moveTo(i, 0); bar.lineTo(i, height);
 			}
-		}
-		else {
+		} else {
 			for (int i = 0; i<mapSize; i++) {
 				bar.setColor(new Color(rLUT[i]&0xff, gLUT[i]&0xff, bLUT[i]&0xff));
 				bar.moveTo(i, 0); bar.lineTo(i, height);

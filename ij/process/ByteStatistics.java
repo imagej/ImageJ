@@ -35,7 +35,9 @@ public class ByteStatistics extends ImageStatistics {
 		else
 			getRawStatistics(minThreshold,maxThreshold);
 		if ((mOptions&MIN_MAX)!=0) {
-			if (cTable!=null)
+			if (pixelCount==0)
+				min = max = Double.NaN;
+			else if (cTable!=null)
 				getCalibratedMinAndMax(minThreshold, maxThreshold, cTable);
 			else
 				getRawMinAndMax(minThreshold, maxThreshold);

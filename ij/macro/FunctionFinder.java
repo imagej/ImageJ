@@ -19,11 +19,11 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 	private Button insertButton, infoButton, closeButton;
 	private String [] commands;
 	private Editor editor;
-	
+
 	public FunctionFinder(Editor editor) {
-		
+
 		this.editor = editor;
-		
+
 		String exists = IJ.runMacro("return File.exists(getDirectory('macros')+'functions.html');");
 		if (exists=="0")	{
 			String installLocalMacroFunctionsFile = "functions = File.openUrlAsString('"+IJ.URL+"/developer/macro/functions.html');\n"+
@@ -48,7 +48,7 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 			IJ.error("ImageJ/macros/functions.html is corrupted");
 			return;
 		}
-		
+
 		ImageJ imageJ = IJ.getInstance();
 		if (dialog==null) {
 			dialog = new Dialog(imageJ, "Built-in Functions");
@@ -76,8 +76,8 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 			buttonPanel.add(closeButton);
 			dialog.add(buttonPanel, BorderLayout.SOUTH);
 			dialog.pack();
-		}	
-		
+		}
+
 		Frame frame = WindowManager.getFrontWindow();
 		if (frame==null) return;
 		java.awt.Point posi=frame.getLocationOnScreen();
@@ -87,11 +87,11 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 		dialog.setVisible(true);
 		dialog.toFront();
 	}
-	
+
 	public FunctionFinder() {
 		this(null);
 	}
-	
+
 	public void populateList(String matchingSubstring) {
 		String substring = matchingSubstring.toLowerCase();
 		functions.removeAll();
@@ -107,12 +107,12 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 			}
 		} catch (Exception e){}
 	}
-	
+
 	public void edPaste(String arg) {
 		Frame frame = WindowManager.getFrontWindow();
 		if (!(frame instanceof Editor))
 			return;
-		
+
 		try {
 			TextArea ta = ((Editor)frame).getTextArea();
 			editor = (Editor)frame;
@@ -125,27 +125,27 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 				ta.setCaretPosition(start+arg.length());
 		} catch (Exception e) { }
 	}
-	
+
 	public void itemStateChanged(ItemEvent ie) {
 		populateList(prompt.getText());
 	}
-	
+
 	protected void runFromLabel(String listLabel) {
 		edPaste(listLabel);
 		closeAndRefocus();
 	}
-	
+
 	public void close() {
 		closeAndRefocus();
 	}
-	
+
 	public void closeAndRefocus() {
 		if (dialog!=null)
 			dialog.dispose();
 		if (editor!=null)
 			editor.toFront();
 	}
-	
+
 	public void keyPressed(KeyEvent ke) {
 		int key = ke.getKeyCode();
 		int items = functions.getItemCount();
@@ -176,17 +176,23 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 			else if (key==KeyEvent.VK_ESCAPE) {
 				closeAndRefocus();
 			}
+			else if (key==KeyEvent.VK_BACK_SPACE || key==KeyEvent.VK_DELETE) {
+			/* If someone presses backspace or delete they probably
+			   want to remove the last letter from the search string, so
+			   switch the focus back to the prompt: */
+			prompt.requestFocus();
+		}
 		}
 	}
-	
+
 	public void keyReleased(KeyEvent ke) { }
-	
+
 	public void keyTyped(KeyEvent ke) { }
-	
+
 	public void textValueChanged(TextEvent te) {
 		populateList(prompt.getText());
 	}
-	
+
 	public void actionPerformed(ActionEvent e) {
 		Object b = e.getSource();
 		if (b==insertButton) {
@@ -209,11 +215,11 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 		} else if (b==closeButton)
 		closeAndRefocus();
 	}
-	
+
 	public void windowClosing(WindowEvent e) {
 		closeAndRefocus();
 	}
-	
+
 	public void windowActivated(WindowEvent e) { }
 	public void windowDeactivated(WindowEvent e) { }
 	public void windowClosed(WindowEvent e) { }

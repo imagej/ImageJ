@@ -40,10 +40,22 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			showLegacyDialog = false;
 		ImagePlus imp = IJ.getImage();
 		if (imp.getStackSize()==1) {
+			if (!convertToMask && imp.getProcessor().isBinary()) {
+				setThreshold(imp);
+				return;
+			}
 			Undo.setup(Undo.TRANSFORM, imp);
 			applyThreshold(imp, false);
 		} else
 			convertStack(imp);
+	}
+	
+	private void setThreshold(ImagePlus imp) {
+		ImageProcessor ip = imp.getProcessor();
+		int threshold = ip.isInvertedLut()?255:0;
+		if (Prefs.blackBackground)
+			threshold = ip.isInvertedLut()?0:255;		
+		ip.setThreshold(threshold, threshold, ImageProcessor.NO_LUT_UPDATE);
 	}
 	
 	void convertStack(ImagePlus imp) {
@@ -379,6 +391,21 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		imp.setStack(null, stack2);
 		imp.setSlice(currentSlice);
 		imp.setCalibration(imp.getCalibration()); //update calibration
+	}
+	
+	/** Returns an 8-bit binary (0 and 255) threshold mask
+	 * that has the same dimensions as this image.
+	 * @see ij.process.ImageProcessor#createMask
+	 * @see ij.ImagePlus#createThresholdMask
+	 * @see ij.ImagePlus#createRoiMask
+	*/
+	public static ByteProcessor createMask(ImagePlus imp) {
+		ImageProcessor ip = imp.getProcessor();
+		if (ip instanceof ColorProcessor)
+			throw new IllegalArgumentException("Non-RGB image requires");
+		if (ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD)
+			throw new IllegalArgumentException("Image must be thresholded");
+		return ip.createMask();
 	}
 	
 	void autoThreshold(ImageProcessor ip) {

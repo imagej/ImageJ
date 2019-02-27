@@ -17,7 +17,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	private static int newWidth, newHeight;
 	private int newDepth;
 	private boolean doZScaling;
-    private static boolean averageWhenDownsizing = true;
+	private static boolean averageWhenDownsizing = true;
 	private static boolean newWindow = true;
 	private static int interpolationMethod = ImageProcessor.BILINEAR;
 	private String[] methods = ImageProcessor.getInterpolationMethods();
@@ -80,16 +80,13 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		boolean crop = r.width!=imp.getWidth() || r.height!=imp.getHeight();
 		ImageStack stack1 = imp.getStack();
 		ImageStack stack2 = new ImageStack(newWidth, newHeight);
+		boolean virtualStack = stack1.isVirtual();
+		double min = imp.getDisplayRangeMin();
+		double max = imp.getDisplayRangeMax();
 		ImageProcessor ip1, ip2;
 		int method = interpolationMethod;
 		if (w==1 || h==1)
 			method = ImageProcessor.NONE;
-		Overlay overlay = imp.getOverlay();
-		if (imp.getHideOverlay())
-			overlay = null;
-		if (overlay!=null)
-			overlay = overlay.duplicate();
-		Overlay overlay2 = new Overlay();
 		for (int i=1; i<=nSlices; i++) {
 			IJ.showStatus("Scale: " + i + "/" + nSlices);
 			ip1 = stack1.getProcessor(i);
@@ -102,28 +99,37 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			ip2 = ip1.resize(newWidth, newHeight, averageWhenDownsizing);
 			if (ip2!=null)
 				stack2.addSlice(label, ip2);
-			if (overlay!=null) {
-				Roi roi = overlay.get(i-1);
-				Rectangle bounds = roi.getBounds();
-				if (roi instanceof ImageRoi && bounds.x==0 && bounds.y==0) {
-					ImageRoi iroi = (ImageRoi)roi;
-					ImageProcessor processor = iroi.getProcessor();
-					processor.setInterpolationMethod(method);
-					processor =processor.resize(newWidth, newHeight, averageWhenDownsizing);
-					iroi.setProcessor(processor);
-					overlay2.add(iroi);
-				}
-			}
 			IJ.showProgress(i, nSlices);
 		}
 		imp2.setStack(title, stack2);
+		if (virtualStack)
+			imp2.setDisplayRange(min, max);
 		Calibration cal = imp2.getCalibration();
 		if (cal.scaled()) {
 			cal.pixelWidth *= 1.0/xscale;
 			cal.pixelHeight *= 1.0/yscale;
 		}
-		if (overlay2.size()>0)
-			imp2.setOverlay(overlay2);
+		Overlay overlay = imp.getOverlay();
+		if (imp.getHideOverlay())
+			overlay = null;
+		if (overlay!=null) {
+			overlay = overlay.duplicate();
+			Overlay overlay2 = new Overlay();
+			for (int i=0; i<overlay.size(); i++) {
+				Roi roi = overlay.get(i);
+				Rectangle bounds = roi.getBounds();
+				if (roi instanceof ImageRoi && bounds.x==0 && bounds.y==0) {
+					ImageRoi iroi = (ImageRoi)roi;
+					ImageProcessor processor = iroi.getProcessor();
+					processor.setInterpolationMethod(method);
+					processor = processor.resize(newWidth, newHeight, averageWhenDownsizing);
+					iroi.setProcessor(processor);
+					overlay2.add(iroi);
+				}
+			}
+			if (overlay2.size()>0)
+				imp2.setOverlay(overlay2);
+		}
 		IJ.showProgress(1.0);
 		int[] dim = imp.getDimensions();
 		imp2.setDimensions(dim[2], dim[3], dim[4]);
@@ -189,19 +195,28 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	}
 	
 	boolean showDialog(ImageProcessor ip) {
-		String macroOptions = Macro.getOptions();
-		if (macroOptions!=null) {
-			if (macroOptions.indexOf(" interpolate")!=-1)
-				macroOptions.replaceAll(" interpolate", " interpolation=Bilinear");
-			else if (macroOptions.indexOf(" interpolation=")==-1)
-				macroOptions = macroOptions+" interpolation=None";
-			Macro.setOptions(macroOptions);
+		String options = Macro.getOptions();
+		boolean isMacro = options!=null;
+		if (isMacro) {
+			if (options.indexOf(" interpolate")!=-1)
+				options.replaceAll(" interpolate", " interpolation=Bilinear");
+			else if (options.indexOf(" interpolation=")==-1)
+				options = options+" interpolation=None";
+			if (options.contains("width=")&&options.contains(" height=")) {
+				xstr = "-";
+				ystr = "-";
+				if (options.contains(" depth="))
+					zstr = "-";
+				else
+					zstr = "1.0";
+			}
+			Macro.setOptions(options);
 		}
 		int bitDepth = imp.getBitDepth();
 		int stackSize = imp.getStackSize();
 		boolean isStack = stackSize>1;
 		oldDepth = stackSize;
-		if (isStack) {
+		if (isStack && !isMacro) {
 			xstr = "1.0";
 			ystr = "1.0";
 			zstr = "1.0";
@@ -209,13 +224,13 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		r = ip.getRoi();
 		int width = newWidth;
 		if (width==0) width = r.width;
-		int height = (int)((double)width*r.height/r.width);
+		int height = (int)Math.round(((double)width*r.height/r.width));
 		xscale = Tools.parseDouble(xstr, 0.0);
 		yscale = Tools.parseDouble(ystr, 0.0);
 		zscale = 1.0;
 		if (xscale!=0.0 && yscale!=0.0) {
-			width = (int)(r.width*xscale);
-			height = (int)(r.height*yscale);
+			width = (int)Math.round(r.width*xscale);
+			height = (int)Math.round(r.height*yscale);
 		} else {
 			xstr = "-";
 			ystr = "-";
@@ -244,20 +259,22 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			gd.addStringField(label, ""+oldDepth);
 		}
 		fields = gd.getStringFields();
-		for (int i=0; i<fields.size(); i++) {
-			((TextField)fields.elementAt(i)).addTextListener(this);
-			((TextField)fields.elementAt(i)).addFocusListener(this);
-		}
-		xField = (TextField)fields.elementAt(0);
-		yField = (TextField)fields.elementAt(1);
-		if (isStack) {
-			zField = (TextField)fields.elementAt(2);
-			widthField = (TextField)fields.elementAt(3);
-			heightField = (TextField)fields.elementAt(4);
-			depthField = (TextField)fields.elementAt(5);
-		} else {
-			widthField = (TextField)fields.elementAt(2);
-			heightField = (TextField)fields.elementAt(3);
+		if (fields!=null) {
+			for (int i=0; i<fields.size(); i++) {
+				((TextField)fields.elementAt(i)).addTextListener(this);
+				((TextField)fields.elementAt(i)).addFocusListener(this);
+			}
+			xField = (TextField)fields.elementAt(0);
+			yField = (TextField)fields.elementAt(1);
+			if (isStack) {
+				zField = (TextField)fields.elementAt(2);
+				widthField = (TextField)fields.elementAt(3);
+				heightField = (TextField)fields.elementAt(4);
+				depthField = (TextField)fields.elementAt(5);
+			} else {
+				widthField = (TextField)fields.elementAt(2);
+				heightField = (TextField)fields.elementAt(3);
+			}
 		}
 		fieldWithFocus = xField;
 		gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
@@ -283,22 +300,26 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			zscale = Tools.parseDouble(zstr, 0.0);
 		}
 		String wstr = gd.getNextString();
-		newWidth = (int)Tools.parseDouble(wstr, 0);
-		newHeight = (int)Tools.parseDouble(gd.getNextString(), 0);
+		newWidth = (int)Math.round(Tools.parseDouble(wstr, 0));
+		newHeight = (int)Math.round(Tools.parseDouble(gd.getNextString(), 0));
 		if (newHeight!=0 && (wstr.equals("-") || wstr.equals("0")))
-				newWidth= (int)(newHeight*(double)r.width/r.height);
+			newWidth = (int)Math.round(newHeight * (double)r.width/r.height);
+		else if (newWidth!=0 && newHeight==0)
+			newHeight= (int)Math.round(newWidth * (double)r.height/r.width);
+		else if (newHeight!=0 && newWidth==0)
+			newWidth = (int)Math.round(newHeight * (double)r.width/r.height);
 		if (newWidth==0 || newHeight==0) {
 			IJ.error("Scaler", "Width or height is 0");
 			return false;
 		}
 		if (xscale>0.0 && yscale>0.0) {
-			newWidth = (int)(r.width*xscale);
-			newHeight = (int)(r.height*yscale);
+			newWidth = (int)Math.round(r.width*xscale);
+			newHeight = (int)Math.round(r.height*yscale);
 		}
 		if (isStack) {
-			newDepth = (int)Tools.parseDouble(gd.getNextString(), 0);
+			newDepth = (int)Math.round(Tools.parseDouble(gd.getNextString(), 0));
 			if (newDepth==stackSize && zscale!=1.0 && zscale>0.0)
-				newDepth = (int)(stackSize*zscale);
+				newDepth = (int)Math.round(stackSize*zscale);
 		}
 		interpolationMethod = gd.getNextChoiceIndex();
 		if (bitDepth==8 || bitDepth==24)
@@ -328,6 +349,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	}
 
 	public void textValueChanged(TextEvent e) {
+		if (xField==null || yField==null)
+			return;
 		Object source = e.getSource();
 		double newXScale = xscale;
 		double newYScale = yscale;
@@ -337,11 +360,11 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			newXScale = Tools.parseDouble(newXText,0);
 			if (newXScale==0) return;
 			if (newXScale!=xscale) {
-				int newWidth = (int)(newXScale*r.width);
+				int newWidth = (int)Math.round(newXScale*r.width);
 				widthField.setText(""+newWidth);
 				if (constainAspectRatio) {
 					yField.setText(newXText);
-					int newHeight = (int)(newXScale*r.height);
+					int newHeight = (int)Math.round(newXScale*r.height);
 					heightField.setText(""+newHeight);
 				}
 			}
@@ -350,7 +373,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			newYScale = Tools.parseDouble(newYText,0);
 			if (newYScale==0) return;
 			if (newYScale!=yscale) {
-				int newHeight = (int)(newYScale*r.height);
+				int newHeight = (int)Math.round(newYScale*r.height);
 				heightField.setText(""+newHeight);
 			}
 		} else if (source==zField && fieldWithFocus==zField) {
@@ -367,13 +390,13 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 					else
 						nSlices = slices;
 				}
-				int newDepth= (int)(newZScale*nSlices);
+				int newDepth= (int)Math.round(newZScale*nSlices);
 				depthField.setText(""+newDepth);
 			}
 		} else if (source==widthField && fieldWithFocus==widthField) {
-			int newWidth = (int)Tools.parseDouble(widthField.getText(), 0.0);
+			int newWidth = (int)Math.round(Tools.parseDouble(widthField.getText(), 0.0));
 			if (newWidth!=0) {
-				int newHeight = (int)(newWidth*(double)r.height/r.width);
+				int newHeight = (int)Math.round(newWidth*(double)r.height/r.width);
 				heightField.setText(""+newHeight);
 				xField.setText("-");
 				yField.setText("-");
@@ -381,7 +404,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 				newYScale = 0.0;
 			}
        } else if (source==depthField && fieldWithFocus==depthField) {
-            int newDepth = (int)Tools.parseDouble(depthField.getText(), 0.0);
+            int newDepth = (int)Math.round(Tools.parseDouble(depthField.getText(), 0.0));
             if (newDepth!=0) {
                 zField.setText("-");
                 newZScale = 0.0;

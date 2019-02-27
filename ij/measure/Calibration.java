@@ -217,6 +217,11 @@ public class Calibration implements Cloneable {
   		return y/pixelHeight + yOrigin;
 	}
  	
+   	/** Converts a z-coodinate in physical units to pixels. */
+ 	public double getRawZ(double z) {
+  		return z/pixelDepth + zOrigin;
+	}
+
  	/** Converts a y-coodinate in physical units to pixels,
  		taking into account the 'invertY' flag. */
  	public double getRawY(double y, int imageHeight) {

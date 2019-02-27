@@ -3,6 +3,7 @@ import ij.*;
 import ij.gui.*; 
 import ij.process.*;
 import ij.plugin.filter.*; 
+import ij.plugin.frame.Recorder;
 import ij.measure.Measurements;
 import java.lang.*; 
 import java.awt.*; 
@@ -49,6 +50,7 @@ public class ZProjector implements PlugIn {
     
     private String color = "";
     private boolean isHyperstack;
+    private boolean simpleComposite;
     private int increment = 1;
     private int sliceCount;
 
@@ -58,6 +60,42 @@ public class ZProjector implements PlugIn {
     /** Construction of ZProjector with image to be projected. */
     public ZProjector(ImagePlus imp) {
 		setImage(imp); 
+    }
+    
+    /** Performs projection on the entire stack using the specified method and returns
+    	 the result, where 'method' is "avg", "min", "max", "sum", "sd" or "median".
+    	 Add " all" to 'method' to project all hyperstack time points. */
+    public static ImagePlus run(ImagePlus imp, String method) {
+    	return run(imp, method, 1, imp.getStackSize());
+    }
+
+	/** Performs projection using the specified method and stack range, and returns
+		 the result, where 'method' is "avg", "min", "max", "sum", "sd" or "median".
+		Add " all" to 'method' to project all hyperstack time points. <br>
+		Example: http://imagej.nih.gov/ij/macros/js/ProjectionDemo.js
+	*/
+	 public static ImagePlus run(ImagePlus imp, String method, int startSlice, int stopSlice) {
+    	ZProjector zp = new ZProjector(imp);
+    	zp.setStartSlice(startSlice);
+    	zp.setStopSlice(stopSlice);
+    	zp.isHyperstack = imp.isHyperStack();
+    	if (zp.isHyperstack && startSlice==1 && stopSlice==imp.getStackSize())
+    		zp.setDefaultBounds();
+    	if (method==null) return null;
+    	method = method.toLowerCase();
+    	int m = -1;
+    	if (method.startsWith("av")) m = AVG_METHOD;
+    	else if (method.startsWith("max")) m = MAX_METHOD;
+    	else if (method.startsWith("min")) m = MIN_METHOD;
+    	else if (method.startsWith("sum")) m = SUM_METHOD;
+    	else if (method.startsWith("sd")) m = SD_METHOD;
+    	else if (method.startsWith("median")) m = MEDIAN_METHOD;
+    	if (m<0)
+    		throw new IllegalArgumentException("Invalid projection method: "+method);
+    	zp.allTimeFrames = method.contains("all");
+    	zp.setMethod(m);
+    	zp.doProjection(true);
+    	return zp.getProjection();
     }
 
     /** Explicitly set image to be projected. This is useful if
@@ -92,14 +130,13 @@ public class ZProjector implements PlugIn {
 
     public void run(String arg) {
 		imp = IJ.getImage();
-		int stackSize = imp.getStackSize();
 		if (imp==null) {
 	    	IJ.noImage(); 
 	    	return; 
 		}
 
 		//  Make sure input image is a stack.
-		if(stackSize==1) {
+		if(imp.getStackSize()==1) {
 	    	IJ.error("Z Project", "Stack required"); 
 	    	return; 
 		}
@@ -110,12 +147,69 @@ public class ZProjector implements PlugIn {
 	    		return; 
 		}
 
-		// Set default bounds.
-		int channels = imp.getNChannels();
+		setDefaultBounds();
+			
+		// Build control dialog
+		GenericDialog gd = buildControlDialog(startSlice,stopSlice);
+		gd.showDialog(); 
+		if (gd.wasCanceled()) return; 
+
+		if (!imp.lock()) return;   // exit if in use
+		long tstart = System.currentTimeMillis();
+		gd.setSmartRecording(true);
+		int startSlice2 = startSlice;
+		int stopSlice2 = stopSlice;
+		setStartSlice((int)gd.getNextNumber());
+		setStopSlice((int)gd.getNextNumber()); 
+		boolean rangeChanged = startSlice!=startSlice2 || stopSlice!=stopSlice2;
+		startSlice2 = startSlice;
+		stopSlice2 = stopSlice;
+		gd.setSmartRecording(false);
+		method = gd.getNextChoiceIndex();
+		Prefs.set(METHOD_KEY, method);
+		if (isHyperstack)
+			allTimeFrames = imp.getNFrames()>1&&imp.getNSlices()>1?gd.getNextBoolean():false;
+		doProjection(true); 
+
+		if (arg.equals("") && projImage!=null) {
+			long tstop = System.currentTimeMillis();
+			if (simpleComposite) IJ.run(projImage, "Grays", "");
+			projImage.show("ZProjector: " +IJ.d2s((tstop-tstart)/1000.0,2)+" seconds");
+		}
+
+		imp.unlock();
+		IJ.register(ZProjector.class);
+		if (Recorder.scriptMode()) {
+			String m = getMethodAsString();
+			if (isHyperstack && allTimeFrames)
+				m = m + " all";
+			String range = "";
+			if (rangeChanged)
+				range = ","+startSlice2+","+stopSlice2;
+			Recorder.recordCall("imp = ZProjector.run(imp,\""+m+"\""+range+");");
+		}
+		
+    }
+    
+    private String getMethodAsString() {
+    	switch (method) {
+     		case AVG_METHOD: return "avg";
+    		case MAX_METHOD: return "max";
+    		case MIN_METHOD: return "min";
+    		case SUM_METHOD: return "sum";
+    		case SD_METHOD: return "sd";
+    		case MEDIAN_METHOD: return "median";
+    		default: return "avg";
+    	}
+    }
+    
+    private void setDefaultBounds() {
+		int stackSize = imp.getStackSize();
+    	int channels = imp.getNChannels();
 		int frames = imp.getNFrames();
 		int slices = imp.getNSlices();
 		isHyperstack = imp.isHyperStack()||( ij.macro.Interpreter.isBatchMode()&&((frames>1&&frames<stackSize)||(slices>1&&slices<stackSize)));
-		boolean simpleComposite = channels==stackSize;
+		simpleComposite = channels==stackSize;
 		if (simpleComposite)
 			isHyperstack = false;
 		startSlice = 1; 
@@ -127,38 +221,6 @@ public class ZProjector implements PlugIn {
 				stopSlice = imp.getNFrames();
 		} else
 			stopSlice  = stackSize;
-			
-		// Build control dialog
-		GenericDialog gd = buildControlDialog(startSlice,stopSlice);
-		gd.showDialog(); 
-		if (gd.wasCanceled()) return; 
-
-		if (!imp.lock()) return;   // exit if in use
-		long tstart = System.currentTimeMillis();
-		gd.setSmartRecording(true);
-		setStartSlice((int)gd.getNextNumber());
-		setStopSlice((int)gd.getNextNumber()); 
-		gd.setSmartRecording(false);
-		method = gd.getNextChoiceIndex();
-		Prefs.set(METHOD_KEY, method);
-		if (isHyperstack) {
-			allTimeFrames = imp.getNFrames()>1&&imp.getNSlices()>1?gd.getNextBoolean():false;
-			doHyperStackProjection(allTimeFrames);
-		} else if (imp.getType()==ImagePlus.COLOR_RGB)
-			doRGBProjection(true);
-		else 
-			doProjection(true); 
-
-		if (arg.equals("") && projImage!=null) {
-			long tstop = System.currentTimeMillis();
-			projImage.setCalibration(imp.getCalibration());
-			if (simpleComposite) IJ.run(projImage, "Grays", "");
-			projImage.show("ZProjector: " +IJ.d2s((tstop-tstart)/1000.0,2)+" seconds");
-		}
-
-		imp.unlock();
-		IJ.register(ZProjector.class);
-		return; 
     }
     
     public void doRGBProjection() {
@@ -195,9 +257,9 @@ public class ZProjector implements PlugIn {
         	ImageProcessor g = green2.getProcessor();
         	ImageProcessor b = blue2.getProcessor();
         	double max = 0;
-        	double rmax = r.getStatistics().max; if (rmax>max) max=rmax;
-        	double gmax = g.getStatistics().max; if (gmax>max) max=gmax;
-        	double bmax = b.getStatistics().max; if (bmax>max) max=bmax;
+        	double rmax = r.getStats().max; if (rmax>max) max=rmax;
+        	double gmax = g.getStats().max; if (gmax>max) max=gmax;
+        	double bmax = b.getStats().max; if (bmax>max) max=bmax;
         	double scale = 255/max;
         	r.multiply(scale); g.multiply(scale); b.multiply(scale);
         	red2.setProcessor(r.convertToByte(false));
@@ -214,7 +276,7 @@ public class ZProjector implements PlugIn {
 	@param start starting slice to display
 	@param stop last slice */
     protected GenericDialog buildControlDialog(int start, int stop) {
-		GenericDialog gd = new GenericDialog("ZProjection",IJ.getInstance()); 
+		GenericDialog gd = new GenericDialog("ZProjection"); 
 		gd.addNumericField("Start slice:",startSlice,0/*digits*/); 
 		gd.addNumericField("Stop slice:",stopSlice,0/*digits*/);
 		gd.addChoice("Projection type", METHODS, METHODS[method]); 
@@ -227,6 +289,10 @@ public class ZProjector implements PlugIn {
     public void doProjection() {
 		if (imp==null)
 			return;
+		if (imp.getBitDepth()==24) {
+			doRGBProjection();
+			return;
+		}
 		sliceCount = 0;
 		if (method<AVG_METHOD || method>MEDIAN_METHOD)
 			method = AVG_METHOD;
@@ -291,13 +357,22 @@ public class ZProjector implements PlugIn {
     }
 
 	//Added by Marcel Boeglin 2013.09.23
-	/** Performs actual projection using specified method. If handleOverlay,
-	adds stack overlay elements from startSlice to stopSlice to projection*/
+	/** Performs actual projection using specified method.
+		If handleOverlay, adds stack overlay 
+		elements from startSlice to stopSlice to projection. */
 	public void doProjection(boolean handleOverlay) {
-		doProjection();
-		Overlay overlay = imp.getOverlay();
-		if (handleOverlay && overlay!=null)
-			projImage.setOverlay(projectStackRois(overlay));
+		if (isHyperstack)
+			doHyperStackProjection(allTimeFrames);
+		else if (imp.getType()==ImagePlus.COLOR_RGB)
+			doRGBProjection(handleOverlay);
+		else {
+			doProjection();
+			Overlay overlay = imp.getOverlay();
+			if (handleOverlay && overlay!=null)
+				projImage.setOverlay(projectStackRois(overlay));
+		}
+		if (projImage!=null)
+			projImage.setCalibration(imp.getCalibration());
 	}
 	
 	//Added by Marcel Boeglin 2013.09.23
@@ -379,7 +454,7 @@ public class ZProjector implements PlugIn {
         int c, z, t;
 		for (Roi r : overlay.toArray()) {
 			c = r.getCPosition();
-			z = r.getZPosition();
+			z = r.hasHyperStackPosition()?r.getZPosition():0;
 			t = r.getTPosition();
 			roi = (Roi)r.clone();
 			if (z>=startSlice && z<=stopSlice || z==0 || c==0 || t==0) {

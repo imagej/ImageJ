@@ -142,8 +142,8 @@ public class RoiEncoder {
 			}
 		}
 		
+		countersSize = 0;
 		if (roi instanceof PointRoi) {
-			countersSize = 0;
 			counters = ((PointRoi)roi).getCounters();
 			if (counters!=null && counters.length>=n)
 				countersSize = n*4;
@@ -168,7 +168,22 @@ public class RoiEncoder {
 				putShort(RoiDecoder.OPTIONS, options);
 			}
 		}
-		putShort(RoiDecoder.N_COORDINATES, n);
+		if (n>65535 && type!=point) {
+			if (type==polygon || type==freehand || type==traced) {
+				String name = roi.getName();
+				roi = new ShapeRoi(roi);
+				if (name!=null) roi.setName(name);
+				saveShapeRoi(roi, rect, f, options);
+				return;
+			}
+			ij.IJ.beep();
+			ij.IJ.log("Non-polygonal selections with more than 65k points cannot be saved.");
+			n = 65535;
+		}
+		if (type==point && n>65535)
+			putInt(RoiDecoder.SIZE, n);
+		else 
+			putShort(RoiDecoder.N_COORDINATES, n);
 		putInt(RoiDecoder.POSITION, roi.getPosition());
 		
 		if (type==rect) {
@@ -202,16 +217,24 @@ public class RoiEncoder {
 			PointRoi point = (PointRoi)roi;
 			putByte(RoiDecoder.POINT_TYPE, point.getPointType());
 			putShort(RoiDecoder.STROKE_WIDTH, point.getSize());
+			if (point.getShowLabels())
+				options |= RoiDecoder.SHOW_LABELS;
 		}
 
-		if (roi instanceof EllipseRoi) {
-			putShort(RoiDecoder.SUBTYPE, RoiDecoder.ELLIPSE);
-			double[] p = ((EllipseRoi)roi).getParams();
+		if (roi instanceof RotatedRectRoi || roi instanceof EllipseRoi) {
+			double[] p = null;
+			if (roi instanceof RotatedRectRoi) {
+				putShort(RoiDecoder.SUBTYPE, RoiDecoder.ROTATED_RECT);
+				p = ((RotatedRectRoi)roi).getParams();
+			} else {
+				putShort(RoiDecoder.SUBTYPE, RoiDecoder.ELLIPSE);
+				p = ((EllipseRoi)roi).getParams();
+			}
 			putFloat(RoiDecoder.X1, (float)p[0]);
 			putFloat(RoiDecoder.Y1, (float)p[1]);
 			putFloat(RoiDecoder.X2, (float)p[2]);
 			putFloat(RoiDecoder.Y2, (float)p[3]);
-			putFloat(RoiDecoder.ELLIPSE_ASPECT_RATIO, (float)p[4]);
+			putFloat(RoiDecoder.FLOAT_PARAM, (float)p[4]);
 		}
 				
 		// save stroke width, stroke color and fill color (1.43i or later)
@@ -308,6 +331,8 @@ public class RoiEncoder {
 		Font font = proto.getLabelFont();
 		if (font!=null && font.getStyle()==Font.BOLD)
 			options |= RoiDecoder.OVERLAY_BOLD;
+		if (proto.scalableLabels())
+			options |= RoiDecoder.SCALE_LABELS;
 		putShort(RoiDecoder.OPTIONS, options);
 	}
 	
@@ -364,7 +389,7 @@ public class RoiEncoder {
 		//ij.IJ.log("putHeader2: "+hdr2Offset+" "+roiNameSize+"  "+roiName);
 		putInt(RoiDecoder.HEADER2_OFFSET, hdr2Offset);
 		putInt(hdr2Offset+RoiDecoder.C_POSITION, roi.getCPosition());
-		putInt(hdr2Offset+RoiDecoder.Z_POSITION, roi.getZPosition());
+		putInt(hdr2Offset+RoiDecoder.Z_POSITION, roi.hasHyperStackPosition()?roi.getZPosition():0);
 		putInt(hdr2Offset+RoiDecoder.T_POSITION, roi.getTPosition());
 		Overlay proto = roi.getPrototypeOverlay();
 		Color overlayLabelColor = proto.getLabelColor();
@@ -408,6 +433,7 @@ public class RoiEncoder {
 		putInt(hdr2Offset+RoiDecoder.COUNTERS_OFFSET, offset);
 		for (int i=0; i<countersSize/4; i++)
 			putInt(offset+i*4, counters[i]);
+		countersSize = 0;
 	}
 
     void putByte(int base, int v) {

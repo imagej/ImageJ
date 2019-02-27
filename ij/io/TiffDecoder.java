@@ -57,9 +57,10 @@ public class TiffDecoder {
 	static final int INFO = 0x696e666f;  // "info" (Info image property)
 	static final int LABELS = 0x6c61626c;  // "labl" (slice labels)
 	static final int RANGES = 0x72616e67;  // "rang" (display ranges)
-	static final int LUTS = 0x6c757473;  // "luts" (channel LUTs)
-	static final int ROI = 0x726f6920;  // "roi " (ROI)
-	static final int OVERLAY = 0x6f766572;  // "over" (overlay)
+	static final int LUTS = 0x6c757473;    // "luts" (channel LUTs)
+	static final int PLOT = 0x706c6f74;    // "plot" (serialized plot)
+	static final int ROI = 0x726f6920;     // "roi " (ROI)
+	static final int OVERLAY = 0x6f766572; // "over" (overlay)
 	
 	private String directory;
 	private String name;
@@ -194,12 +195,13 @@ public class TiffDecoder {
 		decode an IFD for each image. */
 	public void saveImageDescription(byte[] description, FileInfo fi) {
         String id = new String(description);
-        if (!id.startsWith("ImageJ"))
+        boolean createdByImageJ = id.startsWith("ImageJ");
+        if (!createdByImageJ)
 			saveMetadata(getName(IMAGE_DESCRIPTION), id);
 		if (id.length()<7) return;
 		fi.description = id;
         int index1 = id.indexOf("images=");
-        if (index1>0) {
+        if (index1>0 && createdByImageJ && id.charAt(7)!='\n') {
             int index2 = id.indexOf("\n", index1);
             if (index2>0) {
                 String images = id.substring(index1+7,index2);
@@ -283,12 +285,11 @@ public class TiffDecoder {
 			
 		in.seek(offset+260);
 		int nImages = in.readShort();
-		if(nImages>=2 && (fi.fileType==FileInfo.GRAY8||fi.fileType==FileInfo.COLOR8)) {
+		if (nImages>=2 && (fi.fileType==FileInfo.GRAY8||fi.fileType==FileInfo.COLOR8)) {
 			fi.nImages = nImages;
 			fi.pixelDepth = in.readFloat();	//SliceSpacing
 			int skip = in.readShort();		//CurrentSlice
 			fi.frameInterval = in.readFloat();
-			//ij.IJ.write("fi.pixelDepth: "+fi.pixelDepth);
 		}
 			
 		in.seek(offset+272);
@@ -372,8 +373,6 @@ public class TiffDecoder {
 			value = getValue(fieldType, count);
 			long lvalue = ((long)value)&0xffffffffL;
 			if (debugMode && ifdCount<10) dumpTag(tag, count, value, fi);
-			//ij.IJ.write(i+"/"+nEntries+" "+tag + ", count=" + count + ", value=" + value);
-			//if (tag==0) return null;
 			switch (tag) {
 				case IMAGE_WIDTH: 
 					fi.width = value;
@@ -618,6 +617,7 @@ public class TiffDecoder {
 				if (types[i]==LABELS) id = " (slice labels)";
 				if (types[i]==RANGES) id = " (display ranges)";
 				if (types[i]==LUTS) id = " (luts)";
+				if (types[i]==PLOT) id = " (plot)";
 				if (types[i]==ROI) id = " (roi)";
 				if (types[i]==OVERLAY) id = " (overlay)";
 				dInfo += "   "+i+" "+Integer.toHexString(types[i])+" "+counts[i]+id+"\n";
@@ -636,6 +636,8 @@ public class TiffDecoder {
 				getDisplayRanges(start, fi);
 			else if (types[i]==LUTS)
 				getLuts(start, start+counts[i]-1, fi);
+			else if (types[i]==PLOT)
+				getPlot(start, fi);
 			else if (types[i]==ROI)
 				getRoi(start, fi);
 			else if (types[i]==OVERLAY)
@@ -719,6 +721,12 @@ public class TiffDecoder {
 		int len = metaDataCounts[first];
 		fi.roi = new byte[len]; 
 		in.readFully(fi.roi, len); 
+	}
+
+	void getPlot(int first, FileInfo fi) throws IOException {
+		int len = metaDataCounts[first];
+		fi.plot = new byte[len];
+		in.readFully(fi.plot, len);
 	}
 
 	void getOverlay(int first, int last, FileInfo fi) throws IOException {

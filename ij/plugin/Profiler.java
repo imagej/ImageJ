@@ -9,11 +9,14 @@ import java.awt.event.*;
 public class Profiler implements PlugIn, PlotMaker {
 	ImagePlus imp;
 	boolean firstTime = true;
+	boolean plotVertically;
 
 	public void run(String arg) {
 		if (arg.equals("set"))
 			{doOptions(); return;}
 		imp = IJ.getImage();
+		if (firstTime)
+			plotVertically = Prefs.verticalProfile || IJ.altKeyDown();
 		Plot plot = getPlot();
 		firstTime = false;
 		if (plot==null)
@@ -24,15 +27,12 @@ public class Profiler implements PlugIn, PlotMaker {
 	
 public Plot getPlot() {
 		Roi roi = imp.getRoi();
-		//if (roi==null && !firstTime)
-		//	IJ.run(imp, "Restore Selection", "");
 		if (roi==null || !(roi.isLine()||roi.getType()==Roi.RECTANGLE)) {
 			if (firstTime)
 				IJ.error("Plot Profile", "Line or rectangular selection required");
 			return null;
 		}
-		boolean averageHorizontally = Prefs.verticalProfile || IJ.altKeyDown();
-		ProfilePlot pp = new ProfilePlot(imp, averageHorizontally);
+		ProfilePlot pp = new ProfilePlot(imp, plotVertically);
 		return pp.getPlot();
 	}
 	
@@ -46,7 +46,7 @@ public Plot getPlot() {
 		boolean fixedScale = ymin!=0.0 || ymax!=0.0;
 		boolean wasFixedScale = fixedScale;
 		
-		GenericDialog gd = new GenericDialog("Plot Options", IJ.getInstance());
+		GenericDialog gd = new GenericDialog("Plot Options");
 		gd.addNumericField("Width:", PlotWindow.plotWidth, 0);
 		gd.addNumericField("Height:", PlotWindow.plotHeight, 0);
 		gd.addNumericField("Font Size:", PlotWindow.fontSize, 0);

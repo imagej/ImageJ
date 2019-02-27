@@ -467,11 +467,7 @@ public class ControlPanel implements PlugIn {
 
 	void unsetPanelShowingProperty(String item) {
 		String s = pStr2Key(item);
-		if (visiblePanels.remove(s))
-		{
-			//IJ.write("removed from showing "+item);
-		}
-		//propertiesChanged=true;
+		visiblePanels.remove(s);
 	}
 
 	boolean hasPanelShowingProperty(String item) {
@@ -786,7 +782,8 @@ class TreePanel implements
 		pTree.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				isDragging = false;
-				if(pcp.requiresDoubleClick() && e.getClickCount()!=2) return;
+				if (e.getClickCount()!=2)
+					return;
 				int selRow=pTree.getRowForLocation(e.getX(),e.getY());
 				if (selRow!=-1) toAction();
 			}
@@ -868,10 +865,6 @@ class TreePanel implements
 				TreeNode[] nodePath = node.getPath();
 				TreePath nTreePath = new TreePath(nodePath);
 				String npS = nTreePath.toString();
-/*				if(pcp.hasPanelShowingProperty(npS))
-				{
-					IJ.write("has panel showing: "+npS);
-				}*/
 				DefaultMutableTreeNode[] localPath = new DefaultMutableTreeNode[nodePath.length-rootPath.length+1];
 				for(int i=0; i<localPath.length; i++)
 				{
@@ -916,7 +909,6 @@ class TreePanel implements
 
 	public void actionPerformed(ActionEvent e) {
 			String cmd=e.getActionCommand();
-			//IJ.write(cmd);
 			if(cmd==null) return;
 			if (cmd.equals("Help")) {
 				showHelp();
@@ -924,8 +916,7 @@ class TreePanel implements
 			}
 			if(cmd.equals("Show Parent")) {
 				DefaultMutableTreeNode parent = (DefaultMutableTreeNode)root.getParent();
-				if(parent!=null) {
-					//IJ.write("show parent");
+				if (parent!=null) {
 					TreePanel panel = pcp.getPanelForNode(parent);
 					if(panel==null) panel = pcp.newPanel(parent);
 					if(panel!=null) panel.setVisible();
@@ -976,7 +967,6 @@ class TreePanel implements
 		String rootPath = getRootPath().toString();
 		rootPath = rootPath.substring(rootPath.indexOf("[")+1,rootPath.lastIndexOf("]"));
 		String path = "["+rootPath +", "+evPathString+"]";
-		//IJ.write("collapse");
 		pcp.unsetExpandedStateProperty(path);
 	}
 
@@ -995,7 +985,6 @@ class TreePanel implements
 			TreePanel p = (TreePanel)panels.get(path);
 			if(p!=null) p.close();
 		}
-		//IJ.write("expansion");
 		pcp.setExpandedStateProperty(path);
 	}
 
@@ -1036,7 +1025,6 @@ class TreePanel implements
 		TreePath path = new TreePath(nPath);
 		TreePath localPath = new TreePath(tPath);
 		String pathString = localPath.toString();
-		//IJ.write("to be collapsed "+pathString);
 		TreePanel p = pcp.getPanelForNode(node);
 		if (p==null) {
 			if(pnt!=null)
@@ -1065,7 +1053,6 @@ class TreePanel implements
 	}
 
 	void setVisible() {
-		//IJ.write("setVisible at "+defaultLocation.getX()+" "+defaultLocation.getY());
 		if (pFrame!=null && !pFrame.isVisible()) {
 			restoreExpandedNodes();
 			if (defaultLocation!=null) pFrame.setLocation(defaultLocation);
@@ -1082,8 +1069,6 @@ class TreePanel implements
 						tPath[i] = (DefaultMutableTreeNode)rPath[i+pPath.length-1];
 					//TreePath path = new TreePath(rPath);
 					TreePath localPath = new TreePath(tPath);
-					//IJ.write("root path="+new TreePath(rPath).toString()+"; parent path="+new TreePath(pPath).toString()+"; local="+localPath.toString());
-					//IJ.write("to be collapsed "+localPath.toString());
 					pnl.getTree().collapsePath(localPath);
 				}
 			}

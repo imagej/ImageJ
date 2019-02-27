@@ -88,9 +88,7 @@ public class StackWriter implements PlugIn {
 			return;			
 		}
 		String format = fileType.toLowerCase(Locale.US);
-		if (format.equals("gif") && !FileSaver.okForGif(imp))
-			return;
-		else if (format.equals("fits") && !FileSaver.okForFits(imp))
+		if (format.equals("fits") && !FileSaver.okForFits(imp))
 			return;
 			
 		if (format.equals("text"))
@@ -118,8 +116,8 @@ public class StackWriter implements PlugIn {
 				}
 				if (!f.isDirectory() && (exists||directory.lastIndexOf(".")>directory.length()-5))
 					directory = f.getParent();
-				if (!directory.endsWith(File.separator))
-					directory += File.separator;
+				if (!(directory.endsWith(File.separator)||directory.endsWith("/")))
+					directory += "/";
 			}
 		}
 		if (directory==null) {
@@ -159,9 +157,13 @@ public class StackWriter implements PlugIn {
 			}
 			imp2.setProcessor(null, ip);
 			String label2 = stack.getSliceLabel(i);
-			if (label2!=null && label2.indexOf("\n")!=-1)
-				imp2.setProperty("Info", label2);
-			else {
+			imp2.setProperty("Label", null);
+			if (label2!=null) {
+				if (label2.contains("\n"))
+					imp2.setProperty("Info", label2);
+				else
+					imp2.setProperty("Label", label2);;
+			} else {
 				Properties props = imp2.getProperties();
 				if (props!=null) props.remove("Info");
 			}

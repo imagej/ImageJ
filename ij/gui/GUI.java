@@ -54,7 +54,7 @@ public class GUI {
 	public static Rectangle getZeroBasedMaxBounds() {
 		if (maxBounds==null)
 			getMaxWindowBounds();
-		if (IJ.debugMode) IJ.log("GUI.getZeroBasedMaxBounds: "+zeroBasedMaxBounds);
+		//if (IJ.debugMode) IJ.log("GUI.getZeroBasedMaxBounds: "+zeroBasedMaxBounds);
 		return zeroBasedMaxBounds;
 	}
 	
@@ -110,7 +110,7 @@ public class GUI {
 					break;
 			}
 		}
-		if (IJ.debugMode) IJ.log("GUI.getZeroBasedMonitor: "+bounds2);
+		//if (IJ.debugMode) IJ.log("GUI.getZeroBasedMonitor: "+bounds2);
 		if (bounds2!=null) {
 			bounds = bounds2;
 			zeroBasedMaxBounds = bounds2;
@@ -135,9 +135,6 @@ public class GUI {
     
     /** Lightens overly dark scrollbar background on Windows 8. */
     public static void fix(Scrollbar sb) {
-    	if (isWindows8) {
-			sb.setBackground(lightGray);
-		}
     }
     
     public static boolean showCompositeAdvisory(ImagePlus imp, String title) {

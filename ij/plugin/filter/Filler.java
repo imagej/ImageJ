@@ -146,7 +146,7 @@ public class Filler implements PlugInFilter, Measurements {
 
 	void drawParticleLabels(ImageProcessor ip) {
 		ResultsTable rt = ResultsTable.getResultsTable();
-		int count = rt.getCounter();
+		int count = rt.size();
 		int first = Analyzer.firstParticle;
 		int last = Analyzer.lastParticle;
 		if (count==0 || first>=count || last>=count)

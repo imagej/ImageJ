@@ -1,8 +1,10 @@
 package ij.util;
+import ij.process.*;
 import java.awt.Color;
 import java.util.*;
 import java.io.*;
 import java.util.Comparator;
+import java.nio.channels.FileChannel;
 
 /** This class contains static utility methods. */
  public class Tools {
@@ -42,6 +44,11 @@ import java.util.Comparator;
 			i >>>= 4;
 		}
 		return new String(buf);
+	}
+
+	public static ImageStatistics getStatistics(double[] a) {
+		ImageProcessor ip = new FloatProcessor(a.length, 1, a);
+		return ip.getStats();
 	}
 
 	public static double[] getMinMax(double[] a) {
@@ -252,11 +259,70 @@ import java.util.Comparator;
 		return indexes2;
 	}
 	
+	/** Returns an array linearly resampled to a different length. */
+	public static double[] resampleArray(double[] y1, int len2) {
+		int len1 = y1.length;
+		double factor =  (double)(len2-1)/(len1-1);
+		double[] y2 = new double[len2];
+		if(len1 == 0){
+		    return y2;
+		}
+		if(len1 == 1){
+		    for (int jj=0; jj<len2; jj++)
+			    y2[jj] = y1[0];
+		    return(y2);
+		}
+		double[] f1 = new double[len1];//fractional positions
+		double[] f2 = new double[len2];
+		for (int jj=0; jj<len1; jj++)
+			f1[jj] = jj*factor;
+		for (int jj=0; jj<len2; jj++)
+			f2[jj] = jj/factor;
+		for (int jj=0; jj<len2-1; jj++) {
+			double pos = f2[jj];
+			int leftPos = (int)Math.floor(pos);
+			int rightPos = (int)Math.floor(pos)+1;
+			double fraction = pos-Math.floor(pos);
+			double value = y1[leftPos] + fraction*(y1[rightPos]-y1[leftPos]);
+			y2[jj] = value;
+		}
+		y2[len2-1] = y1[len1-1];
+		return y2;
+	}
+
 	/** Opens a text file in ij.jar as a String (example path: "/macros/Circle_Tool.txt"). */
 	public static String openFromIJJarAsString(String path) {
 		return (new ij.plugin.MacroInstaller()).openFromIJJar(path);
 	}
 
-
+	/** Copies the contents of the file at 'path1' to 'path2', returning an error message
+		(as a non-empty string) if there is an error. Based on the method with the
+		same name in Tobias Pietzsch's TifBenchmark class.
+	*/
+	public static String copyFile(String path1, String path2) {
+		File f1 = new File(path1);
+		File f2 = new File(path2);	
+		try {
+			if (!f1.exists() )
+				return "Source file does not exist";
+			if (!f2.exists() )
+				f2.createNewFile();
+			long time = f1.lastModified();	
+			FileInputStream stream1 = new FileInputStream(f1);
+			FileChannel channel1 = stream1.getChannel();
+			FileOutputStream stream2 = new FileOutputStream(f2);
+			final FileChannel channel2 = stream2.getChannel();
+			if (channel2!=null && channel1!=null )
+				channel2.transferFrom(channel1, 0, channel1.size());
+			channel1.close();
+			stream1.close();
+			channel2.close();
+			stream2.close();	
+			f2.setLastModified(time);
+		} catch(Exception e) {
+			return e.getMessage();
+		}
+		return "";
+	}
 
 }

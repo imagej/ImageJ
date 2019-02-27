@@ -66,8 +66,7 @@ public class JavaProperties implements PlugIn {
 		String osName = System.getProperty("os.name");
 		list.add("  IJ.getVersion: "+IJ.getVersion());
 		list.add("  IJ.getFullVersion: "+IJ.getFullVersion());
-		list.add("  IJ.isJava17: "+IJ.isJava17());
-		list.add("  IJ.isJava18: "+IJ.isJava18());
+		list.add("  IJ.javaVersion: "+IJ.javaVersion());
 		list.add("  IJ.isLinux: "+IJ.isLinux());
 		list.add("  IJ.isMacintosh: "+IJ.isMacintosh());
 		list.add("  IJ.isMacOSX: "+IJ.isMacOSX());
@@ -99,8 +98,7 @@ public class JavaProperties implements PlugIn {
 		list.add("  Prefs.useInvertingLut: "+Prefs.useInvertingLut);		
 		list.add("  Prefs.antialiasedTools: "+Prefs.antialiasedTools);		
 		list.add("  Prefs.useInvertingLut: "+Prefs.useInvertingLut);		
-		list.add("  Prefs.intelByteOrder: "+Prefs.intelByteOrder);		
-		list.add("  Prefs.doubleBuffer: "+Prefs.doubleBuffer);		
+		list.add("  Prefs.intelByteOrder: "+Prefs.intelByteOrder);			
 		list.add("  Prefs.noPointLabels: "+Prefs.noPointLabels);		
 		list.add("  Prefs.disableUndo: "+Prefs.disableUndo);		
 		list.add("  Prefs dir: "+Prefs.getPrefsDir());

@@ -18,44 +18,63 @@ import ij.measure.Calibration;
    img2.show();
 </pre>
 */
-public class Duplicator implements PlugIn, TextListener {
-	private static boolean duplicateStack;
-	private boolean duplicateSubstack;
+public class Duplicator implements PlugIn, TextListener, ItemListener {
+	private static boolean staticDuplicateStack;
+	private boolean duplicateStack;
 	private int first, last;
 	private Checkbox checkbox;
-	private TextField rangeField;
+	private TextField titleField, rangeField;
 	private TextField[] rangeFields;
 	private int firstC, lastC, firstZ, lastZ, firstT, lastT;
-	private boolean isCommand;
+	private String defaultTitle;
+	private String sliceLabel;
+	private ImagePlus imp;
+	private boolean legacyMacro;
+	private boolean titleChanged;
+	private GenericDialog gd;
 
 	public void run(String arg) {
-		isCommand = true;
-		ImagePlus imp = IJ.getImage();
+		imp = IJ.getImage();
+		Roi roiA = imp.getRoi();
+		ImagePlus impA = imp;
+		boolean isRotatedRect = (roiA!=null &&  roiA instanceof RotatedRectRoi);
+		if (isRotatedRect) {
+			Rectangle bounds = imp.getRoi().getBounds();
+			imp.setRoi(bounds);
+		}
 		int stackSize = imp.getStackSize();
 		String title = imp.getTitle();
 		String newTitle = WindowManager.getUniqueName(title);
+		defaultTitle = newTitle;
+		duplicateStack = staticDuplicateStack && !IJ.isMacro();
 		if (!IJ.altKeyDown()||stackSize>1) {
 			if (imp.isHyperStack() || imp.isComposite()) {
-				duplicateHyperstack(imp, newTitle);
+				duplicateHyperstack(imp, newTitle);			
+				if (isRotatedRect) {
+					straightenRotatedRect(impA, roiA, IJ.getImage());	
+				}								
 				return;
 			} else
-				newTitle = showDialog(imp, "Duplicate...", "Title: ", newTitle);
+				newTitle = showDialog(imp, "Duplicate...", "Title: ");
 		}
-		if (newTitle==null)
+		if (newTitle==null) {
+			if (isRotatedRect)
+				imp.setRoi(roiA);
 			return;
-		ImagePlus imp2;
-		Roi roi = imp.getRoi();
-		if (duplicateSubstack && (first>1||last<stackSize))
-			imp2 = run(imp, first, last);
-		else if (duplicateStack || imp.getStackSize()==1)
-			imp2 = run(imp);
-		else
-			imp2 = duplicateImage(imp);
-		Calibration cal = imp2.getCalibration();
-		if (roi!=null && (cal.xOrigin!=0.0||cal.yOrigin!=0.0)) {
-			cal.xOrigin -= roi.getBounds().x;
-			cal.yOrigin -= roi.getBounds().y;
 		}
+		ImagePlus imp2;
+		Roi roi = imp.getRoi();		
+			if (duplicateStack && (first>1||last<stackSize))
+				imp2 = run(imp, first, last);
+			else if (duplicateStack || imp.getStackSize()==1)
+				imp2 = run(imp);
+			else
+				imp2 = crop(imp);
+			Calibration cal = imp2.getCalibration();
+			if (roi!=null && (cal.xOrigin!=0.0||cal.yOrigin!=0.0)) {
+				cal.xOrigin -= roi.getBounds().x;
+				cal.yOrigin -= roi.getBounds().y;
+			}	
 		imp2.setTitle(newTitle);
 		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE) {
 			Roi roi2 = (Roi)cropRoi(imp, roi).clone();
@@ -65,26 +84,121 @@ public class Duplicator implements PlugIn, TextListener {
 		imp2.show();
 		if (stackSize>1 && imp2.getStackSize()==stackSize)
 			imp2.setSlice(imp.getCurrentSlice());
-
+		if (isRotatedRect)
+			straightenRotatedRect(impA, roiA, imp2);		
 	}
-                
-	/** Returns a copy of the image, stack or hyperstack contained in the specified ImagePlus. */
+	
+ /** Rotates duplicated part of image
+	- impA is original image,
+	- roiA is orig rotatedRect
+	- impB contains duplicated overlapping bounding rectangle	
+	processing steps:
+	- increase canvas of impB before rotation
+	- rotate impB
+	- calculate excentricity
+	- translate to compensate excentricity 
+	- create orthogonal rectangle in center
+	- crop to impC	
+	Author: N. Vischer
+	*/
+	private void straightenRotatedRect(ImagePlus impA, Roi roiA, ImagePlus impB) {
+		impB.deleteRoi(); //we have it in roiA
+		Color colorBack = Toolbar.getBackgroundColor();	
+		IJ.setBackgroundColor(0,0,0);
+		String title = impB.getTitle();
+		if(impB.getOverlay() != null)
+			impB.getOverlay().clear();
+		int boundLeft = roiA.getBounds().x;
+		int boundTop = roiA.getBounds().y;
+		int boundWidth = roiA.getBounds().width;
+		int boundHeight = roiA.getBounds().height;
+
+		float[] xx = roiA.getFloatPolygon().xpoints;
+		float[] yy = roiA.getFloatPolygon().ypoints;
+
+		double dx1 = xx[1] - xx[0];//calc sides and angle
+		double dy1 = yy[1] - yy[0];
+		double dx2 = xx[2] - xx[1];
+		double dy2 = yy[2] - yy[1];
+
+		double rrWidth = Math.sqrt(dx1 * dx1 + dy1 * dy1);//width of rot rect
+		double rrHeight = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+		double rrDia = Math.sqrt(rrWidth * rrWidth + rrHeight * rrHeight);
+
+		double phi1 = -Math.atan2(dy1, dx1);
+		double phi0 = phi1 * 180 / Math.PI;
+
+		double usedL = Math.max(boundLeft, 0); //usedrect is orthogonal rect to be rotated
+		double usedR = Math.min(boundLeft + boundWidth, impA.getWidth());
+		double usedT = Math.max(boundTop, 0);
+		double usedB = Math.min(boundTop + boundHeight, impA.getHeight());
+		double usedCX = (usedL + usedR) / 2;
+		double usedCY = (usedT + usedB) / 2; //Center of UsedRect
+
+		double boundsCX = boundLeft + boundWidth / 2;//Center of Bound = center of RotRect
+		double boundsCY = boundTop + boundHeight / 2;
+
+		double dx3 = boundsCX - usedCX;//calculate excentricity
+		double dy3 = boundsCY - usedCY;
+		double rad3 = Math.sqrt(dx3 * dx3 + dy3 * dy3);
+		double phi3 = Math.atan2(dy3, dx3);
+		double phi4 = phi3 + phi1;
+		double dx4 = -rad3 * Math.cos(phi4);
+		double dy4 = -rad3 * Math.sin(phi4);
+
+		//Increase canvas to a square large enough for rotation
+		ImageStack stackOld = impB.getStack();
+		int currentSlice = impB.getCurrentSlice();
+		double xOff = (rrDia - (usedR - usedL)) / 2;//put img in center
+		double yOff = (rrDia - (usedB - usedT)) / 2;
+
+		ImageStack stackNew = (new CanvasResizer()).expandStack(stackOld, (int) rrDia, (int) rrDia, (int) xOff, (int) yOff);
+		impB.setStack(stackNew);
+		ImageProcessor ip = impB.getProcessor();
+		ip.setInterpolationMethod(ImageProcessor.BILINEAR);
+		ip.setBackgroundValue(0);
+
+		for (int slc = 0; slc < stackNew.size(); slc++) {
+			impB.setSlice(slc+1);
+			ip.rotate(phi0); //Rotate
+			ip.translate(dx4, dy4); //Translate
+		}
+
+		int x = (impB.getWidth() - (int) rrWidth) / 2;
+		int y = (impB.getHeight() - (int) rrHeight) / 2;
+
+		impB.setStack(impB.getStack().crop(x, y, 0, (int) rrWidth, (int) rrHeight, impB.getStack().getSize()));//Crop
+		impB.setSlice(currentSlice);
+		impB.setTitle(title);
+		impB.show();
+		impB.updateAndDraw();
+		impA.setRoi(roiA); //restore rotated rect in source image
+		Toolbar.setBackgroundColor(colorBack);
+	}	
+	                
+	/** Returns a copy of the image, stack or hyperstack contained in the specified ImagePlus.
+	* @see ij.ImagePlus#duplicate
+	*/
 	public ImagePlus run(ImagePlus imp) {
-   		if (Recorder.record&&isCommand)
-   			Recorder.recordCall("imp = new Duplicator().run(imp);");
 		if (imp.getStackSize()==1)
-			return duplicateImage(imp);
+			return crop(imp);
 		Rectangle rect = null;
 		Roi roi = imp.getRoi();
 		Roi roi2 = cropRoi(imp, roi);
 		if (roi2!=null && roi2.isArea())
 			rect = roi2.getBounds();
 		ImageStack stack = imp.getStack();
+		boolean virtualStack = stack.isVirtual();
+		double min = imp.getDisplayRangeMin();
+		double max = imp.getDisplayRangeMax();
 		ImageStack stack2 = null;
 		int n = stack.getSize();
+		boolean showProgress = virtualStack || ((double)n*stack.getWidth()*stack.getHeight()>=209715200.0);
 		for (int i=1; i<=n; i++) {
-			if (stack.isVirtual())
+			if (showProgress) {
 				IJ.showStatus("Duplicating: "+i+"/"+n);
+				IJ.showProgress(i,n);
+			}
 			ImageProcessor ip2 = stack.getProcessor(i);
 			ip2.setRoi(rect);
 			ip2 = ip2.crop();
@@ -92,6 +206,7 @@ public class Duplicator implements PlugIn, TextListener {
 				stack2 = new ImageStack(ip2.getWidth(), ip2.getHeight(), imp.getProcessor().getColorModel());
 			stack2.addSlice(stack.getSliceLabel(i), ip2);
 		}
+		IJ.showProgress(1.0);
 		ImagePlus imp2 = imp.createImagePlus();
 		imp2.setStack("DUP_"+imp.getTitle(), stack2);
 		String info = (String)imp.getProperty("Info");
@@ -103,15 +218,22 @@ public class Duplicator implements PlugIn, TextListener {
 			imp2 = new CompositeImage(imp2, 0);
 			((CompositeImage)imp2).copyLuts(imp);
 		}
+		if (virtualStack)
+			imp2.setDisplayRange(min, max);
 		if (imp.isHyperStack())
 			imp2.setOpenAsHyperStack(true);
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && !imp.getHideOverlay())
 			imp2.setOverlay(overlay.crop(rect));
+   		if (Recorder.record)
+   			Recorder.recordCall("imp2 = imp.duplicate();");
 		return imp2;
 	}
 	
-	ImagePlus duplicateImage(ImagePlus imp) {
+	/** Returns a copy the current stack image, cropped if there is a selection.
+	* @see ij.ImagePlus#crop
+	*/
+	public ImagePlus crop(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
 		ImageProcessor ip2 = ip.crop();
 		ImagePlus imp2 = imp.createImagePlus();
@@ -119,15 +241,23 @@ public class Duplicator implements PlugIn, TextListener {
 		String info = (String)imp.getProperty("Info");
 		if (info!=null)
 			imp2.setProperty("Info", info);
-		if (imp.getStackSize()>1) {
+		if (imp.isStack()) {
 			ImageStack stack = imp.getStack();
 			String label = stack.getSliceLabel(imp.getCurrentSlice());
-			if (label!=null && label.indexOf('\n')>0)
-				imp2.setProperty("Info", label);
+			if (label!=null) {
+				if (label.length()>250 && label.indexOf('\n')>0 && label.contains("0002,"))
+					imp2.setProperty("Info", label); // DICOM metadata
+				else
+					imp2.setProperty("Label", label);					
+			}
 			if (imp.isComposite()) {
 				LUT lut = ((CompositeImage)imp).getChannelLut();
 				imp2.getProcessor().setColorModel(lut);
 			}
+		} else {
+			String label = (String)imp.getProperty("Label");
+			if (label!=null)
+				imp2.setProperty("Label", label);
 		}
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && !imp.getHideOverlay()) {
@@ -136,6 +266,12 @@ public class Duplicator implements PlugIn, TextListener {
  				overlay2.crop(imp.getCurrentSlice(), imp.getCurrentSlice());
  			imp2.setOverlay(overlay2);
  		}
+   		if (Recorder.record) {
+   			if (imp.getStackSize()==1)
+   				Recorder.recordCall("imp2 = imp.duplicate();");
+   			else
+   				Recorder.recordCall("imp2 = imp.crop();");
+   		}
 		return imp2;
 	}
 	
@@ -146,10 +282,17 @@ public class Duplicator implements PlugIn, TextListener {
 		if (roi!=null && roi.isArea())
 			rect = roi.getBounds();
 		ImageStack stack = imp.getStack();
-		ImageStack stack2 = null;
+		boolean virtualStack = stack.isVirtual();
+		double min = imp.getDisplayRangeMin();
+		double max = imp.getDisplayRangeMax();
+		ImageStack stack2 = null;	
+		int n = lastSlice-firstSlice+1;
+		boolean showProgress = virtualStack || ((double)n*stack.getWidth()*stack.getHeight()>=209715200.0);
 		for (int i=firstSlice; i<=lastSlice; i++) {
-			if (stack.isVirtual())
+			if (showProgress) {
 				IJ.showStatus("Duplicating: "+i+"/"+lastSlice);
+				IJ.showProgress(i-firstSlice,n);
+			}
 			ImageProcessor ip2 = stack.getProcessor(i);
 			ip2.setRoi(rect);
 			ip2 = ip2.crop();
@@ -157,6 +300,7 @@ public class Duplicator implements PlugIn, TextListener {
 				stack2 = new ImageStack(ip2.getWidth(), ip2.getHeight(), imp.getProcessor().getColorModel());
 			stack2.addSlice(stack.getSliceLabel(i), ip2);
 		}
+		IJ.showProgress(1.0);
 		ImagePlus imp2 = imp.createImagePlus();
 		imp2.setStack("DUP_"+imp.getTitle(), stack2);
 		String info = (String)imp.getProperty("Info");
@@ -168,14 +312,16 @@ public class Duplicator implements PlugIn, TextListener {
 			imp2.setDimensions(1, 1, size);
 		else
 			imp2.setDimensions(1, size, 1);
+		if (virtualStack)
+			imp2.setDisplayRange(min, max);
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && !imp.getHideOverlay()) {
 			Overlay overlay2 = overlay.crop(rect);
 			overlay2.crop(firstSlice, lastSlice);
 			imp2.setOverlay(overlay2);
 		}
-   		if (Recorder.record&&isCommand)
-   			Recorder.recordCall("imp = new Duplicator().run(imp, "+firstSlice+", "+lastSlice+");");
+   		if (Recorder.record)
+   			Recorder.recordCall("imp2 = new Duplicator().run(imp, "+firstSlice+", "+lastSlice+");");
 		return imp2;
 	}
 
@@ -232,30 +378,36 @@ public class Duplicator implements PlugIn, TextListener {
 			overlay2.crop(firstC, lastC, firstZ, lastZ, firstT, lastT);
 			imp2.setOverlay(overlay2);
 		}
-   		if (Recorder.record&&isCommand)
-   			Recorder.recordCall("imp = new Duplicator().run(imp, "+firstC+", "+lastC+", "+firstZ+", "+lastZ+", "+firstT+", "+lastT+");");
+   		if (Recorder.record)
+   			Recorder.recordCall("imp2 = new Duplicator().run(imp, "+firstC+", "+lastC+", "+firstZ+", "+lastZ+", "+firstT+", "+lastT+");");
 		return imp2;
 	}
 
-	String showDialog(ImagePlus imp, String title, String prompt, String defaultString) {
+	String showDialog(ImagePlus imp, String dialogTitle, String prompt) {
 		int stackSize = imp.getStackSize();
-		duplicateSubstack = stackSize>1 && (stackSize==imp.getNSlices()||stackSize==imp.getNFrames());
-		GenericDialog gd = new GenericDialog(title);
-		gd.addStringField(prompt, defaultString, duplicateSubstack?15:20);
+		String options = Macro.getOptions();
+		boolean isMacro = options!=null;
+		duplicateStack = stackSize>1 && duplicateStack && !isMacro;
+		legacyMacro = options!=null && (options.contains("duplicate")||!options.contains("use"));
+		String title = getNewTitle();
+		if (title==null) title=defaultTitle;
+		GenericDialog gd = new GenericDialog(dialogTitle);
+		this.gd = gd;
+		gd.addStringField(prompt, title, 15);
 		if (stackSize>1) {
-			boolean duplicate = duplicateStack && !IJ.isMacro();
-			String msg = duplicateSubstack?"Duplicate stack":"Duplicate entire stack";
-			gd.addCheckbox(msg, duplicate||imp.isComposite());
-			if (duplicateSubstack) {
-				gd.setInsets(2, 30, 3);
-				gd.addStringField("Range:", "1-"+stackSize);
-				Vector v = gd.getStringFields();
-				rangeField = (TextField)v.elementAt(1);
-				rangeField.addTextListener(this);
+			gd.addCheckbox("Duplicate stack", duplicateStack);
+			gd.setInsets(2, 30, 3);
+			gd.addStringField("Range:", "1-"+stackSize);
+			if (!isMacro) {
 				checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
+				checkbox.addItemListener(this);
+				Vector v = gd.getStringFields();
+				titleField = (TextField)v.elementAt(0);
+				rangeField = (TextField)v.elementAt(1);
+				titleField.addTextListener(this);
+				rangeField.addTextListener(this);
 			}
-		} else
-			duplicateStack = false;
+		}
 		gd.setSmartRecording(true);
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -263,7 +415,7 @@ public class Duplicator implements PlugIn, TextListener {
 		title = gd.getNextString();
 		if (stackSize>1) {
 			duplicateStack = gd.getNextBoolean();
-			if (duplicateStack && duplicateSubstack) {
+			if (duplicateStack) {
 				String[] range = Tools.split(gd.getNextString(), " -");
 				double d1 = gd.parseDouble(range[0]);
 				double d2 = range.length==2?gd.parseDouble(range[1]):Double.NaN;
@@ -275,6 +427,27 @@ public class Duplicator implements PlugIn, TextListener {
 			} else {
 				first = 1;
 				last = stackSize;
+			}
+		}
+		if (!isMacro)
+			staticDuplicateStack = duplicateStack;
+		if (Recorder.record && titleField!=null && titleField.getText().equals(sliceLabel))
+			Recorder.recordOption("use");
+		return title;
+	}
+	
+	private String getNewTitle() {
+		if (titleChanged)
+			return null;
+		String title = defaultTitle;
+		if (imp.getStackSize()>1 && !duplicateStack && !legacyMacro && (checkbox==null||!checkbox.getState())) {
+			ImageStack stack = imp.getStack();
+			String label = stack.getShortSliceLabel(imp.getCurrentSlice());
+			if (label!=null && label.length()==0)
+				label = null;
+			if (label!=null) {
+				title = label;
+				sliceLabel = label;
 			}
 		}
 		return title;
@@ -320,10 +493,12 @@ public class Duplicator implements PlugIn, TextListener {
 		int nSlices = imp.getNSlices();
 		int nFrames = imp.getNFrames();
 		boolean composite = imp.isComposite() && nChannels==imp.getStackSize();
+		String options = Macro.getOptions();
+		boolean isMacro = options!=null;
 		GenericDialog gd = new GenericDialog("Duplicate");
 		gd.addStringField("Title:", newTitle, 15);
 		gd.setInsets(12, 20, 8);
-		gd.addCheckbox("Duplicate hyperstack", (duplicateStack&&!IJ.isMacro())||composite);
+		gd.addCheckbox("Duplicate hyperstack", (duplicateStack&&!isMacro)||composite);
 		int nRangeFields = 0;
 		if (nChannels>1) {
 			gd.setInsets(2, 30, 3);
@@ -340,13 +515,16 @@ public class Duplicator implements PlugIn, TextListener {
 			gd.addStringField("Frames (t):", "1-"+nFrames);
 			nRangeFields++;
 		}
-		Vector v = gd.getStringFields();
-		rangeFields = new TextField[3];
-		for (int i=0; i<nRangeFields; i++) {
-			rangeFields[i] = (TextField)v.elementAt(i+1);
-			rangeFields[i].addTextListener(this);
+		if (!isMacro) {
+			checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
+			checkbox.addItemListener(this);
+			Vector v = gd.getStringFields();
+			rangeFields = new TextField[3];
+			for (int i=0; i<nRangeFields; i++) {
+				rangeFields[i] = (TextField)v.elementAt(i+1);
+				rangeFields[i].addTextListener(this);
+			}
 		}
-		checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
 		gd.setSmartRecording(true);
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -386,6 +564,8 @@ public class Duplicator implements PlugIn, TextListener {
 			if (firstT>lastT) {firstT=1; lastT=nFrames;}
 		} else
 			firstT = lastT = 1;
+		if (!isMacro)
+			staticDuplicateStack = duplicateStack;
 		return newTitle;
 	}
 	
@@ -416,7 +596,24 @@ public class Duplicator implements PlugIn, TextListener {
 	}
 
 	public void textValueChanged(TextEvent e) {
-		checkbox.setState(true);
+		if (IJ.debugMode) IJ.log("Duplicator.textValueChanged: "+e);
+		if (e.getSource()==titleField) {
+			if (!titleField.getText().equals(getNewTitle()))
+				titleChanged = true;
+		} else
+			checkbox.setState(true);
 	}
+	
+	public void itemStateChanged(ItemEvent e) {
+		duplicateStack = checkbox.getState();
+		if (titleField!=null) {
+			String title = getNewTitle();
+			if (title!=null && !title.equals(titleField.getText())) {
+				titleField.setText(title);
+				if (gd!=null) gd.setDefaultString(0, title);
+			}
+		}
+	}
+
 	
 }

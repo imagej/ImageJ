@@ -52,7 +52,8 @@ public class URLOpener implements PlugIn {
 					imp.setFileInfo(fi);
 				}
 				imp.show(Opener.getLoadRate(startTime,imp));
-				if ("flybrain.tif".equals(imp.getTitle()) || "t1-head.tif".equals(imp.getTitle()) )
+				String title = imp.getTitle();
+				if (title!=null && (title.startsWith("flybrain") || title.startsWith("t1-head")))
 					imp.setSlice(imp.getStackSize()/2);
 			}
 			return;
@@ -71,7 +72,7 @@ public class URLOpener implements PlugIn {
 			url = "http://" + url;
 		if (url.endsWith("/"))
 			IJ.runPlugIn("ij.plugin.BrowserLauncher", url.substring(0, url.length()-1));
-		else if (url.endsWith(".html") || url.endsWith(".htm") ||  url.indexOf(".html#")>0 || noExtension(url))
+		else if (url.endsWith(".html") || url.endsWith(".htm") || url.endsWith(".pdf") ||  url.indexOf(".html#")>0 || noExtension(url))
 			IJ.runPlugIn("ij.plugin.BrowserLauncher", url);
 		else if (url.endsWith(".txt")||url.endsWith(".ijm")||url.endsWith(".js")||url.endsWith(".java"))
 			openTextFile(url, false);
@@ -85,6 +86,18 @@ public class URLOpener implements PlugIn {
 			FileInfo fi = imp.getOriginalFileInfo();
 			if (fi!=null && fi.fileType==FileInfo.RGB48)
 				imp = new CompositeImage(imp, IJ.COMPOSITE);
+			else if (imp.getNChannels()>1 && fi!=null && fi.description!=null && fi.description.indexOf("mode=")!=-1) {
+				int mode = IJ.COLOR;
+				if (fi.description.indexOf("mode=composite")!=-1)
+					mode = IJ.COMPOSITE;
+				else if (fi.description.indexOf("mode=gray")!=-1)
+					mode = IJ.GRAYSCALE;
+				imp = new CompositeImage(imp, mode);
+			}
+			if (fi!=null && (fi.url==null || fi.url.length()==0)) {
+				fi.url = url;
+				imp.setFileInfo(fi);
+			}
 			imp.show(Opener.getLoadRate(startTime,imp));
 		}
 		IJ.register(URLOpener.class);  // keeps this class from being GC'd

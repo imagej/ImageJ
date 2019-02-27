@@ -5,7 +5,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.50
+# Version 1.52
 
 # Commands installed in the right-click popup menu
 # Overridden in StartupMacros
@@ -123,6 +123,8 @@ adjust05="Color Threshold...",ij.plugin.frame.ColorThresholder
 adjust06="Size...",ij.plugin.Resizer
 adjust07="Canvas Size...",ij.plugin.CanvasResizer
 adjust08="Line Width... ",ij.plugin.frame.LineWidthAdjuster
+adjust09="Coordinates...",ij.plugin.Coordinates
+
 
 # Plugins installed in the Image/Color submenu
 color01="Split Channels",ij.plugin.ChannelSplitter
@@ -152,8 +154,9 @@ stacks11="Orthogonal Views[H]",ij.plugin.Orthogonal_Views
 stacks12="Z Project...",ij.plugin.ZProjector
 stacks13="3D Project...",ij.plugin.Projector
 stacks14="Plot Z-axis Profile",ij.plugin.ZAxisProfiler
-stacks15="Label...",ij.plugin.filter.StackLabeler
-stacks16="Statistics",ij.plugin.Stack_Statistics
+stacks15="Measure Stack...",ij.plugin.SimpleCommands("measure")
+stacks16="Label...",ij.plugin.filter.StackLabeler
+stacks17="Statistics",ij.plugin.Stack_Statistics
 
 # Plugins installed in the Image/Stacks/Animation submenu
 animation_01="Start Animation [\\]",ij.plugin.Animator("start")
@@ -163,14 +166,16 @@ animation_03="Animation Options...",ij.plugin.Animator("options")
 # Plugins installed in the Image/Stacks/Tools submenu
 tools_01="Combine...",ij.plugin.StackCombiner
 tools_02="Concatenate...",ij.plugin.Concatenator
-tools_03="Reduce...",ij.plugin.StackReducer
-tools_04="Reverse",ij.plugin.StackReverser
-tools_05="Insert...",ij.plugin.StackInserter
-tools_06="Montage to Stack...",ij.plugin.StackMaker
-tools_07="Make Substack...",ij.plugin.SubstackMaker
-tools_08="Grouped Z Project...",ij.plugin.GroupedZProjector
-tools_09="Set Label...",ij.plugin.SimpleCommands("set")
+tools_03="Grouped Z Project...",ij.plugin.GroupedZProjector
+tools_04="Insert...",ij.plugin.StackInserter
+tools_05="Magic Montage Tools",ij.plugin.SimpleCommands("magic")
+tools_06="Make Substack...",ij.plugin.SubstackMaker
+tools_07="Montage to Stack...",ij.plugin.StackMaker
+tools_08="Plot XY Profile",ij.plugin.StackPlotter
+tools_09="Reduce...",ij.plugin.StackReducer
 tools_10="Remove Slice Labels",ij.plugin.SimpleCommands("remove")
+tools_11="Reverse",ij.plugin.StackReverser
+tools_12="Set Label...",ij.plugin.SimpleCommands("set")
 
 # Plugins installed in the Image/Hyperstacks submenu
 hyperstacks01="New Hyperstack...",ij.plugin.HyperStackMaker
@@ -199,7 +204,7 @@ zoom04="View 100%[5]",ij.plugin.Zoom("100%")
 zoom05="To Selection",ij.plugin.Zoom("to")
 zoom06="Scale to Fit",ij.plugin.Zoom("scale")
 zoom07="Set... ",ij.plugin.Zoom("set")
-#zoom07="Maximize",ij.plugin.Zoom("max")
+zoom08="Maximize",ij.plugin.Zoom("max")
 
 # Plugins installed in the Image/Overlay submenu
 overlay01="Add Selection...[b]",ij.plugin.OverlayCommands("add")
@@ -373,8 +378,9 @@ macros01="Install...",ij.plugin.MacroInstaller
 macros02="Run...",ij.plugin.Macro_Runner
 macros03="Edit...",ij.plugin.Compiler("edit")
 macros04="Startup Macros...",ij.plugin.Commands("startup")
-macros05="Record...",ij.plugin.frame.Recorder
-macros06=-
+macros05="Interactive Interpreter...[j]",ij.plugin.SimpleCommands("interactive")
+macros06="Record...",ij.plugin.frame.Recorder
+macros07=-
 
 # Plugins installed in the Plugins/Shortcuts submenu
 shortcuts01="Add Shortcut... ",ij.plugin.Hotkeys("install")
@@ -392,12 +398,13 @@ utilities04="Monitor Events...",ij.plugin.EventListener
 utilities05="Monitor Memory...",ij.plugin.frame.MemoryMonitor
 utilities06=-
 utilities07="Capture Screen[G]",ij.plugin.ScreenGrabber
-utilities08="Capture Image",ij.plugin.ScreenGrabber("image")
-utilities09=-
-utilities10="ImageJ Properties",ij.plugin.JavaProperties
-utilities11="Threads",ij.plugin.ThreadLister
-utilities12="Benchmark",ij.plugin.filter.Benchmark
-utilities13="Reset...",ij.plugin.SimpleCommands("reset")
+utilities08="Capture Delayed...",ij.plugin.ScreenGrabber("delay")
+utilities09="Capture Image",ij.plugin.ScreenGrabber("image")
+utilities10=-
+utilities11="ImageJ Properties",ij.plugin.JavaProperties
+utilities12="Threads",ij.plugin.ThreadLister
+utilities13="Benchmark",ij.plugin.filter.Benchmark
+utilities14="Reset...",ij.plugin.SimpleCommands("reset")
 
 # Plugins installed in the Plugins/New submenu
 new_01="Macro",ij.plugin.NewPlugin("macro")
@@ -410,7 +417,6 @@ new_07="Plugin Frame",ij.plugin.NewPlugin("frame")
 new_08="Plugin Tool",ij.plugin.NewPlugin("plugin-tool")
 new_09=-
 new_10="Text Window...",ij.plugin.NewPlugin("text+dialog")
-new_11="Table...",ij.plugin.NewPlugin("table")
 
 # Plugins installed in the Help/About submenu
 about01="About This Submenu...",ij.plugin.SimpleCommands("about")
@@ -419,7 +425,8 @@ about02=-
 # URL of directory containing the sample images
 # Used when ImageJ is running as an application,
 # otherwise applet.getDocumentBase()+"/images" is used.
-images.location=http://imagej.nih.gov/ij/images/
+#images.location=http://imagej.nih.gov/ij/images/
+images.location=http://wsr.imagej.net/images/
 
 # Images installed in the Open Samples submenu
 # RawReader expects a string with "name width height nImages bitsPerPixel offset [white]"

@@ -7,7 +7,6 @@ import java.util.*;
 import ij.*;
 import ij.process.*;
 import ij.measure.*;
-import ij.plugin.frame.Recorder;
 import ij.plugin.filter.Analyzer;
 import ij.util.Tools;
 
@@ -223,6 +222,7 @@ public class ShapeRoi extends Roi {
 		setShape(new GeneralPath(at.createTransformedShape(a1)));
 		x = r.x;
 		y = r.y;
+		cachedMask = null;
 		return this;
 	}
 
@@ -592,7 +592,7 @@ public class ShapeRoi extends Roi {
 		return shape.contains(x-this.x, y-this.y);
 	}
 
-	/** Caculates "Feret" (maximum caliper width) and "MinFeret" (minimum caliper width). */	
+	/** Caculates "Feret" (maximum caliper width) and "MinFeret" (minimum caliper width). */
 	public double[] getFeretValues() {
 		Roi[] rois = getRois();
 		if (rois!=null && rois.length==1) {
@@ -613,29 +613,30 @@ public class ShapeRoi extends Roi {
 		double cx = r.getX() + r.getWidth()/2;
 		double cy = r.getY() + r.getHeight()/2;
 		AffineTransform at = new AffineTransform();
-		at.translate(cx, cy);
-		for (int i=0; i<181; i++) {
-			at.rotate(Math.PI/180.0);
+		if (pw != ph)
+			at.scale(1.0, ph/pw);  //correct for pixel aspect ratio
+		at.translate(-cx, -cy);    //shift to origin for better accuracy
+		double angleInc = 0.5;
+		AffineTransform rotator = AffineTransform.getRotateInstance(angleInc*Math.PI/180.0);
+		for (double rotAngle=0; rotAngle<90; rotAngle+=angleInc) {  //rotate in 0.5 deg increments
+			if (rotAngle > 0)
+				at.preConcatenate(rotator);  //'pre-'applying the rotation matrix means rotating as the last step
 			s = at.createTransformedShape(shape);
 			r = s.getBounds2D();
-			double max2 = Math.max(r.getWidth(), r.getHeight());
-			if (max2>diameter) {
-				diameter = max2*pw;
-				//angle = i;
+			if (r.getWidth() > diameter) {
+				diameter = r.getWidth();
+				angle = rotAngle;
+			}
+			if (r.getHeight() > diameter) {
+				diameter = r.getHeight();
+				angle = rotAngle + 90;
 			}
 			double min2 = Math.min(r.getWidth(), r.getHeight());
 			min = Math.min(min, min2);
 		}
-		if (pw!=ph) {
-			diameter = 0.0;
-			angle = 0.0;
-		}
-		if (pw==ph)
-			min *= pw;
-		else {
-			min = 0.0;
-			angle = 0.0;
-		}
+		min *= pw;
+		diameter *= pw;
+
 		double[] a = new double[5];
 		a[0] = diameter;
 		a[1] = angle;
@@ -648,6 +649,8 @@ public class ShapeRoi extends Roi {
 	/**Returns the perimeter if this ShapeRoi can be decomposed 
 		into simple ROIs, otherwise returns zero. */
 	public double getLength() {
+		if (width==0 && height==0)
+			return 0.0;
 		double length = 0.0;
 		Roi[] rois = getRois();
 		ImagePlus imp2 = getImage();
@@ -852,8 +855,9 @@ public class ShapeRoi extends Roi {
 	 * control points of the curves segments in the iteration order;
 	 * @return <strong><code>true</code></strong> if successful.*/
 	boolean parsePath(PathIterator pIter, double[] params, Vector segments, Vector rois, Vector handles) {
+		if (pIter==null || pIter.isDone())
+			return false;
 		boolean result = true;
-		if (pIter==null) return false;
 		double pw = 1.0, ph = 1.0;
 		if (imp!=null) {
 			Calibration cal = imp.getCalibration();
@@ -1003,8 +1007,12 @@ public class ShapeRoi extends Roi {
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		boolean isActiveOverlayRoi = !overlay && isActiveOverlayRoi();
 		//IJ.log("draw: "+overlay+"  "+isActiveOverlayRoi);
-		if (isActiveOverlayRoi)
-			color = Color.cyan;
+		if (isActiveOverlayRoi) {
+			if (color==Color.cyan)
+				color = Color.magenta;
+			else
+				color = Color.cyan;
+		}
 		if (fillColor!=null) color = fillColor;
 		g.setColor(color);
 		AffineTransform aTx = (((Graphics2D)g).getDeviceConfiguration()).getDefaultTransform();
@@ -1018,7 +1026,7 @@ public class ShapeRoi extends Roi {
 			basex=r.x; basey=r.y;
 		}
 		aTx.setTransform(mag, 0.0, 0.0, mag, -basex*mag, -basey*mag);
-		aTx.translate(x, y);
+		aTx.translate(getXBase(), getYBase());
 		if (fillColor!=null) {
 			if (isActiveOverlayRoi) {
 				g2d.setColor(Color.cyan);
@@ -1166,6 +1174,11 @@ public class ShapeRoi extends Roi {
 			return rois[0].getFloatPolygon();
 		else
 			return super.getFloatPolygon();
+	}
+	
+	/** If this ROI consists of a single polygon, retuns the number of vertices, otherwise returns 4. */
+	public int size() {
+		return getPolygon().npoints;
 	}
 
 }

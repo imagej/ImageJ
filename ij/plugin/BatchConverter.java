@@ -102,7 +102,7 @@ import java.io.*;
 		gd = new GenericDialog("Batch Convert");
 		addPanels(gd);
 		gd.setInsets(15, 0, 5);
-		gd.addChoice("Output format:", formats, format);
+		gd.addChoice("Output_format:", formats, format);
 		gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
 		//gd.addStringField("Height (pixels): ", height==0?"\u2014":""+height, 6);
 		gd.addNumericField("Scale factor:", scale, 2);
@@ -149,8 +149,6 @@ import java.io.*;
 			inputDir.setText(path);
 		else
 			outputDir.setText(path);
-		if (IJ.isMacOSX())
-			{gd.setVisible(false); gd.setVisible(true);}
 	}
 
 }

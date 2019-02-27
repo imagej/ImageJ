@@ -40,8 +40,11 @@ public class ImageInfo implements PlugIn {
 		s += "ImageJ home: "+IJ.getDir("imagej")+"\n";
 		s += "Java home: "+System.getProperty("java.home")+"\n";
 		s += "Screen size: "+screen.width+"x"+screen.height+"\n";
-		if (IJ.isMacOSX())
-			s += "SetMenuBarCount: "+Menus.setMenuBarCount+"\n";
+		s += "GUI scale: "+IJ.d2s(Prefs.getGuiScale(),2)+"\n";
+		if (IJ.isMacOSX()) {
+			String time = " ("+ImageWindow.setMenuBarTime+"ms)";
+			s += "SetMenuBarCount: "+Menus.setMenuBarCount+time+"\n";
+		}
 		new TextWindow("Info", s, 600, 300);
 	}
 
@@ -212,7 +215,9 @@ public class ImageInfo implements PlugIn {
     		ImageStack stack = imp.getStack();
     		int slice = imp.getCurrentSlice();
     		String number = slice + "/" + stackSize;
-    		String label = stack.getShortSliceLabel(slice);
+    		String label = stack.getSliceLabel(slice);
+    		if (label!=null && label.contains("\n"))
+    			label = stack.getShortSliceLabel(slice);
     		if (label!=null && label.length()>0)
     			label = " (" + label + ")";
     		else
@@ -241,6 +246,16 @@ public class ImageInfo implements PlugIn {
 				String mode = ((CompositeImage)imp).getModeAsString();
 				s += "  Composite mode: \"" + mode + "\"\n";
 			}
+			if (stack.isVirtual()) {
+				String stackType = "virtual";
+				if (stack instanceof AVI_Reader)
+					stackType += " (AVI Reader)";
+				if (stack instanceof FileInfoVirtualStack)
+					stackType += " (FileInfoVirtualStack)";
+				if (stack instanceof ListVirtualStack)
+					stackType += " (ListVirtualStack)";
+				s += "Stack type: " + stackType+ "\n";
+			}
 		}
 		
 		if (imp.isLocked())
@@ -256,12 +271,22 @@ public class ImageInfo implements PlugIn {
 				lower = cal.getCValue((int)lower);
 				upper = cal.getCValue((int)upper);
 			}
-			s += "Threshold: "+d2s(lower)+"-"+d2s(upper)+uncalibrated+"\n";
+			int lutMode = ip.getLutUpdateMode();
+			String mode = "red";
+			switch (lutMode) {
+				case ImageProcessor.BLACK_AND_WHITE_LUT: mode="B&W"; break;
+				case ImageProcessor.NO_LUT_UPDATE: mode="invisible"; break;
+				case ImageProcessor.OVER_UNDER_LUT: mode="over/under"; break;
+			}
+			s += "Threshold: "+d2s(lower)+"-"+d2s(upper)+uncalibrated+" ("+mode+")\n";
 		}
 		ImageCanvas ic = imp.getCanvas();
     	double mag = ic!=null?ic.getMagnification():1.0;
     	if (mag!=1.0)
 			s += "Magnification: " + IJ.d2s(mag,2) + "\n";
+		if (ic!=null)
+			s += "ScaleToFit: " + ic.getScaleToFit() + "\n";
+
 			
 	    if (cal.calibrated()) {
 	    	s += " \n";
@@ -302,8 +327,10 @@ public class ImageInfo implements PlugIn {
 			Dimension screen = IJ.getScreenSize();
 			s += "Screen location: "+loc.x+","+loc.y+" ("+screen.width+"x"+screen.height+")\n";
 		}
-		if (IJ.isMacOSX())
-			s += "SetMenuBarCount: "+Menus.setMenuBarCount+"\n";
+		if (IJ.isMacOSX()) {
+			String time = " ("+ImageWindow.setMenuBarTime+"ms)";
+			s += "SetMenuBarCount: "+Menus.setMenuBarCount+time+"\n";
+		}
 		
 		String zOrigin = stackSize>1||cal.zOrigin!=0.0?","+d2s(cal.zOrigin):"";
 		String origin = d2s(cal.xOrigin)+","+d2s(cal.yOrigin)+zOrigin;
@@ -314,10 +341,11 @@ public class ImageInfo implements PlugIn {
 
 	    Overlay overlay = imp.getOverlay();
 		if (overlay!=null) {
-			String hidden = imp.getHideOverlay()?" (hidden)":" ";
 			int n = overlay.size();
 			String elements = n==1?" element":" elements";
-			s += "Overlay: " + n + elements + (imp.getHideOverlay()?" (hidden)":"") + "\n";
+			String selectable = overlay.isSelectable()?" selectable ":" non-selectable ";
+			String hidden = imp.getHideOverlay()?" (hidden)":"";
+			s += "Overlay: " + n + selectable + elements + hidden + "\n";
 		} else
 	    	s += "No overlay\n";
 
@@ -330,6 +358,18 @@ public class ImageInfo implements PlugIn {
 			if (cal.calibrated())
 	    		s += " \n";
 	    	s += "No selection\n";
+	    } else if (roi instanceof RotatedRectRoi) {
+	    	s += "\nRotated rectangle selection\n";
+	    	double[] p = ((RotatedRectRoi)roi).getParams();
+			double dx = p[2] - p[0];
+			double dy = p[3] - p[1];
+			double major = Math.sqrt(dx*dx+dy*dy);
+			s += "  Length: " + IJ.d2s(major,2) + "\n";
+			s += "  Width: " + IJ.d2s(p[4],2) + "\n";
+			s += "  X1: " + IJ.d2s(p[0],2) + "\n";
+			s += "  Y1: " + IJ.d2s(p[1],2) + "\n";
+			s += "  X2: " + IJ.d2s(p[2],2) + "\n";
+			s += "  Y2: " + IJ.d2s(p[3],2) + "\n";
 	    } else if (roi instanceof EllipseRoi) {
 	    	s += "\nElliptical selection\n";
 	    	double[] p = ((EllipseRoi)roi).getParams();

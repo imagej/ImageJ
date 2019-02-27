@@ -134,12 +134,6 @@ public class Filters3D implements PlugIn {
 		}
 		ImagePlus imp2 = RGBStackMerge.mergeChannels(channels, false);
 		imp.setImage(imp2);
-		//if (imp.isComposite()) {
-		//	CompositeImage ci = (CompositeImage)imp;
-		//	ci.reset();
-		//	ci.resetDisplayRanges();
-		//	ci.updateAllChannelsAndDraw();
-		//}
 		imp.setC(1);
 	}
 

@@ -184,8 +184,16 @@ public class SaveDialog {
 		FileDialog fd = new FileDialog(parent, title, FileDialog.SAVE);
 		if (defaultName!=null)
 			fd.setFile(defaultName);
-		if (defaultDir!=null)
+		if (defaultDir!=null) {
+			if (IJ.isWindows() && defaultDir.contains("/")) {
+				File f = new File(defaultDir);
+				if (f.isDirectory())
+					try {
+						defaultDir = f.getCanonicalPath();
+					} catch (IOException e) {}
+			}
 			fd.setDirectory(defaultDir);
+		}
 		fd.show();
 		name = fd.getFile();
 		String origName = name;
@@ -240,5 +248,14 @@ public class SaveDialog {
 		}
 		return name;
 	}
-		
+	
+	public static String getPath(ImagePlus imp, String extension) {
+		String title = imp!=null?imp.getTitle():"Untitled";
+		SaveDialog sd = new SaveDialog("Save As", title, extension);
+		if (sd.getFileName()==null)
+			return null;
+		else
+			return sd.getDirectory()+sd.getFileName();
+	}
+			
 }

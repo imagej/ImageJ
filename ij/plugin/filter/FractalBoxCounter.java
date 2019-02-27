@@ -47,7 +47,7 @@ public class FractalBoxCounter implements PlugInFilter {
 
 	public void run(ImageProcessor ip) {
 
-		GenericDialog gd = new GenericDialog("Fractal Box Counter", IJ.getInstance());
+		GenericDialog gd = new GenericDialog("Fractal Box Counter");
 		gd.addStringField("Box Sizes:", sizes, 20);
 		gd.addCheckbox("Black Background", blackBackground);
 
@@ -226,7 +226,7 @@ public class FractalBoxCounter implements PlugInFilter {
 			return;
 		ResultsTable rt=ResultsTable.getResultsTable();
 		rt.incrementCounter();
-		rt.setLabel(imp.getShortTitle(), rt.getCounter()-1);
+		rt.setLabel(imp.getShortTitle(), rt.size()-1);
 		for (int i=0; i<boxSizes.length; i++) {
 			int boxSum = count(boxSizes[i], ip);
 			rt.addValue("C"+boxSizes[i], boxSum);

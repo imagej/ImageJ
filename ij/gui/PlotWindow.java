@@ -10,6 +10,7 @@ import ij.process.*;
 import ij.util.*;
 import ij.text.TextWindow;
 import ij.plugin.filter.Analyzer;
+import ij.plugin.filter.PlugInFilterRunner;
 import ij.measure.*;
 import ij.io.SaveDialog;
 
@@ -17,20 +18,20 @@ import ij.io.SaveDialog;
 * @author Michael Schmid
 * @author Wayne Rasband
 */
-public class PlotWindow extends ImageWindow implements ActionListener,	ItemListener,
+public class PlotWindow extends ImageWindow implements ActionListener, ItemListener,
 	ClipboardOwner, ImageListener, RoiListener, Runnable {
 
-	/** Display points using a circle 5 pixels in diameter. */
+	/** @deprecated */
 	public static final int CIRCLE = Plot.CIRCLE;
-	/** Display points using an X-shaped mark. */
+	/** @deprecated */
 	public static final int X = Plot.X;
-	/** Display points using an box-shaped mark. */
+	/** @deprecated */
 	public static final int BOX = Plot.BOX;
-	/** Display points using an tiangular mark. */
+	/** @deprecated */
 	public static final int TRIANGLE = Plot.TRIANGLE;
-	/** Display points using an cross-shaped mark. */
+	/** @deprecated */
 	public static final int CROSS = Plot.CROSS;
-	/** Connect points with solid lines. */
+	/** @deprecated */
 	public static final int LINE = Plot.LINE;
 	/** Write first X column when listing or saving. */
 	public static boolean saveXValues = true;
@@ -41,8 +42,8 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 	/** Interpolate line profiles. To set, use Edit/Options/Plots. */
 	public static boolean interpolate;
 	// default values for new installations; values will be then saved in prefs
-	private static final int WIDTH = 450;
-	private static final int HEIGHT = 200;
+	private static final int WIDTH = 530;
+	private static final int HEIGHT = 300;
 	private static final int FONT_SIZE = 12;
 	/** The width of the plot (without frame) in pixels. */
 	public static int plotWidth = WIDTH;
@@ -57,7 +58,7 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 	 *	only min&max value of the axes are given */
 	public static boolean noTicks;
 
-	
+
 	private static final String PREFS_WIDTH = "pp.width";
 	private static final String PREFS_HEIGHT = "pp.height";
 	private static final String PREFS_FONT_SIZE = "pp.fontsize";
@@ -69,10 +70,14 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 	private static final int NO_GRID_LINES = 16;
 	private static final int NO_TICKS = 32;
 	private static String moreButtonLabel = "More "+'\u00bb';
+	private static String dataButtonLabel = "Data "+'\u00bb';
 
-	private Button list, save, more, live;
-	private PopupMenu popupMenu;
-	private MenuItem[] menuItems;
+	boolean wasActivated;			// true after window has been activated once, needed by PlotCanvas
+
+	private Button list, data, more, live;
+	private PopupMenu dataPopupMenu, morePopupMenu;
+	private static final int NUM_MENU_ITEMS = 18; //how many menu items we have in total
+	private MenuItem[] menuItems = new MenuItem[NUM_MENU_ITEMS];
 	private Label coordinates;
 	private static String defaultDirectory = null;
 	private static int options;
@@ -80,7 +85,6 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 	private int markSize = 5;
 	private static Plot staticPlot;
 	private Plot plot;
-	boolean layoutDone;				// becomes true after the layout has been done, used by PlotCanvas
 	private String blankLabel = "                       ";
 
 	private PlotMaker plotMaker;
@@ -91,7 +95,6 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 	private Roi[] rangeArrowRois;	// these constitute the arrow overlays for changing the range
 	private boolean rangeArrowsVisible;
 	private int activeRangeArrow = -1;
-	
 
 	// static initializer
 	static {
@@ -102,8 +105,8 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 		plotHeight = Prefs.getInt(PREFS_HEIGHT, HEIGHT);
 		fontSize = Prefs.getInt(PREFS_FONT_SIZE, FONT_SIZE);
 		interpolate = (options&INTERPOLATE)==0; // 0=true, 1=false
-		noGridLines = (options&NO_GRID_LINES)!=0; 
-		noTicks = (options&NO_TICKS)!=0; 
+		noGridLines = (options&NO_GRID_LINES)!=0;
+		noTicks = (options&NO_TICKS)!=0;
 	}
 
 	/**
@@ -123,7 +126,16 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 	public PlotWindow(String title, String xLabel, String yLabel, double[] xValues, double[] yValues) {
 		this(title, xLabel, yLabel, Tools.toFloat(xValues), Tools.toFloat(yValues));
 	}
-	
+
+	/** Creates a PlotWindow from a given ImagePlus with a Plot object.
+	 *  (called when reading an ImagePlus with an associated plot from a file) */
+	public PlotWindow(ImagePlus imp, Plot plot) {
+		super(imp);
+		((PlotCanvas)getCanvas()).setPlot(plot);
+		this.plot = plot;
+		draw();
+	}
+
 	/** Creates a PlotWindow from a Plot object. */
 	PlotWindow(Plot plot) {
 		super(plot.getImagePlus());
@@ -138,63 +150,67 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 		staticPlot = new Plot(title, xLabel, yLabel, xValues, yValues);
 		return new ImagePlus(title, staticPlot.getBlankProcessor());
 	}
-	
+
 	/** Sets the x-axis and y-axis range.
-		Must be called before the plot is displayed. */
+	 *  @deprecated use the corresponding method of the Plot class */
 	public void setLimits(double xMin, double xMax, double yMin, double yMax) {
 		plot.setLimits(xMin, xMax, yMin, yMax);
 	}
 
 	/** Adds a set of points to the plot or adds a curve if shape is set to LINE.
-		Must be called before the plot is displayed.
 	 *	Note that there are more options available by using the methods of the Plot class instead.
-	 * @param x			the x-coodinates
-	 * @param y			the y-coodinates
-	 * @param shape		Plot.CIRCLE, X, BOX, TRIANGLE, CROSS, LINE etc. */
-
+	 *  @param x			the x-coodinates
+	 *  @param y			the y-coodinates
+	 *  @param shape		Plot.CIRCLE, X, BOX, TRIANGLE, CROSS, LINE etc.
+	 *  @deprecated use the corresponding method of the Plot class */
 	public void addPoints(float[] x, float[] y, int shape) {
 		plot.addPoints(x, y, shape);
 	}
 
 	/** Adds a set of points to the plot using double arrays.
-		Must be called before the plot is displayed.
-		Note that there are more options available by using the methods of the Plot class instead. */
+	 *	Must be called before the plot is displayed.
+	 *	Note that there are more options available by using the methods of the Plot class instead.
+	 *  @deprecated use the corresponding method of the Plot class */
 	public void addPoints(double[] x, double[] y, int shape) {
 		addPoints(Tools.toFloat(x), Tools.toFloat(y), shape);
 	}
-	
+
 	/** Adds vertical error bars to the plot.
-		Must be called before the plot is displayed.
-		Note that there are more options available by using the methods of the Plot class instead. */
+	 *	Must be called before the plot is displayed.
+	 *	Note that there are more options available by using the methods of the Plot class instead.
+	 *  @deprecated use the corresponding method of the Plot class */
 	public void addErrorBars(float[] errorBars) {
 		plot.addErrorBars(errorBars);
 	}
 
 	/** Draws a label.
-		Must be called before the plot is displayed.
-		Note that there are more options available by using the methods of the Plot class instead. */
+	 *	Note that there are more options available by using the methods of the Plot class instead.
+	 *  @deprecated use the corresponding method of the Plot class */
 	public void addLabel(double x, double y, String label) {
 		plot.addLabel(x, y, label);
 	}
-	
+
 	/** Changes the drawing color. The frame and labels are
-		always drawn in black.
-		Must be called before the plot is displayed.
-		Note that there are more options available by using the methods of the Plot class instead. */
+	 *	always drawn in black.
+	 *	Must be called before the plot is displayed.
+	 *	Note that there are more options available by using the methods of the Plot class instead.
+	 *  @deprecated use the corresponding method of the Plot class */
 	public void setColor(Color c) {
 		plot.setColor(c);
 	}
 
 	/** Changes the line width.
-		Must be called before the plot is displayed.
-		Note that there are more options available by using the methods of the Plot class instead. */
+	 *	Must be called before the plot is displayed.
+	 *	Note that there are more options available by using the methods of the Plot class instead.
+	 *  @deprecated use the corresponding method of the Plot class */
 	public void setLineWidth(int lineWidth) {
 		plot.setLineWidth(lineWidth);
 	}
 
 	/** Changes the font.
-		Must be called before the plot is displayed.
-		Note that there are more options available by using the methods of the Plot class instead. */
+	 *	Must be called before the plot is displayed.
+	 *	Note that there are more options available by using the methods of the Plot class instead.
+	 *  @deprecated use the corresponding method of the Plot class */
 	public void changeFont(Font font) {
 		plot.changeFont(font);
 	}
@@ -208,9 +224,9 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 		list.addActionListener(this);
 		bottomPanel.add(list);
 		bottomPanel.setLayout(new FlowLayout(FlowLayout.RIGHT,hgap,0));
-		save = new Button("Save...");
-		save.addActionListener(this);
-		bottomPanel.add(save);
+		data = new Button(dataButtonLabel);
+		data.addActionListener(this);
+		bottomPanel.add(data);
 		more = new Button(moreButtonLabel);
 		more.addActionListener(this);
 		bottomPanel.add(more);
@@ -224,7 +240,8 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 		coordinates.setBackground(new Color(220, 220, 220));
 		bottomPanel.add(coordinates);
 		add(bottomPanel);
-		more.add(getPopupMenu());
+		data.add(getDataPopupMenu());
+		more.add(getMorePopupMenu());
 		plot.draw();
 		LayoutManager lm = getLayout();
 		if (lm instanceof ImageLayout)
@@ -232,24 +249,49 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 		pack();
 
 		ImageProcessor ip = plot.getProcessor();
-		if ((ip instanceof ColorProcessor) && (imp.getProcessor() instanceof ByteProcessor))
+		boolean ipIsColor = ip instanceof ColorProcessor;
+		boolean impIsColor = imp.getProcessor() instanceof ColorProcessor;
+		if (ipIsColor != impIsColor)
 			imp.setProcessor(null, ip);
 		else
 			imp.updateAndDraw();
-		layoutDone = true;
 		if (listValues)
 			showList();
 		else
 			ic.requestFocus();	//have focus on the canvas, not the button, so that pressing the space bar allows panning
 	}
 
+	/** Sets the Plot object shown in this PlotWindow. Does not update the window. */
+	public void setPlot(Plot plot) {
+		this.plot = plot;
+		((PlotCanvas)getCanvas()).setPlot(plot);
+	}
+
 	/** Releases the resources used by this PlotWindow */
 	public void dispose() {
-		plot.dispose();
+		if (plot!=null)
+			plot.dispose();
+		disableLivePlot();
 		plot = null;
 		plotMaker = null;
 		srcImp = null;
 		super.dispose();
+	}
+
+	/** Called when the window is activated (WindowListener)
+	 *  Window layout is finished at latest a few millisec after windowActivated, then the
+	 *  'wasActivated' boolean is set to tell the ImageCanvas that resize events should
+	 *  lead to resizing the canvas (before, creating the layout can lead to resize events)*/
+	public void windowActivated(WindowEvent e) {
+		super.windowActivated(e);
+		if (!wasActivated) {
+			new Thread(new Runnable() {
+				public void run() {
+					IJ.wait(50);  //sometimes, window layout is done only a few millisec after windowActivated
+					wasActivated = true;
+				}
+			}).start();
+		}
 	}
 
 	/** Called when the canvas is resized */
@@ -260,34 +302,46 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 		setMinimumSize(new Dimension(d1.width + d2.width, d1.height + d2.height));
 	}
 
-	//names for popupMenu items
-	private static int COPY=0, COPY_ALL=1, SET_RANGE=2, PREV_RANGE=3, RESET_RANGE=4, FIT_RANGE=5,
-			ZOOM_SELECTION=6, AXIS_OPTIONS=7, LEGEND=8, RESET_PLOT=9, FREEZE=10, HI_RESOLUTION=11,
-			PROFILE_PLOT_OPTIONS=12;
+	/** Names for popupMenu items. Update NUM_MENU_ITEMS at the top when adding new ones! */
+	private static int SAVE=0, COPY=1, COPY_ALL=2, ADD_FROM_TABLE=3, ADD_FROM_PLOT=4, ADD_FIT=5, //data menu
+			SET_RANGE=6, PREV_RANGE=7, RESET_RANGE=8, FIT_RANGE=9,  //the rest is in the more menu
+			ZOOM_SELECTION=10, AXIS_OPTIONS=11, LEGEND=12, STYLE=13, RESET_PLOT=14,
+			FREEZE=15, HI_RESOLUTION=16, PROFILE_PLOT_OPTIONS=17;
 	//the following commands are disabled when the plot is frozen
-	private static int[] DISABLED_WHEN_FROZEN = new int[]{SET_RANGE, PREV_RANGE, RESET_RANGE,
-			FIT_RANGE, ZOOM_SELECTION, AXIS_OPTIONS, LEGEND, RESET_PLOT};
-	/** Prepares and returns the popupMenu of the More>> button*/
-	PopupMenu getPopupMenu() {
-		popupMenu = new PopupMenu();
-		menuItems = new MenuItem[13];
-		menuItems[COPY] = addPopupItem(popupMenu, "Copy 1st Data Set");
-		menuItems[COPY_ALL] = addPopupItem(popupMenu, "Copy All Data");
-		popupMenu.addSeparator();
-		menuItems[SET_RANGE] = addPopupItem(popupMenu, "Set Range...");
-		menuItems[PREV_RANGE] = addPopupItem(popupMenu, "Previous Range");
-		menuItems[RESET_RANGE] = addPopupItem(popupMenu, "Reset Range");
-		menuItems[FIT_RANGE] = addPopupItem(popupMenu, "Set Range to Fit All");
-		menuItems[ZOOM_SELECTION] = addPopupItem(popupMenu, "Zoom to Selection");
-		popupMenu.addSeparator();
-		menuItems[AXIS_OPTIONS] = addPopupItem(popupMenu, "Axis Options...");
-		menuItems[LEGEND] = addPopupItem(popupMenu, "Legend...");
-		menuItems[RESET_PLOT] = addPopupItem(popupMenu, "Reset Format");
-		menuItems[FREEZE] = addPopupItem(popupMenu, "Freeze Plot", true);
-		menuItems[HI_RESOLUTION] = addPopupItem(popupMenu, "High-Resolution Plot...");
-		popupMenu.addSeparator();
-		menuItems[PROFILE_PLOT_OPTIONS] = addPopupItem(popupMenu, "Plot Options...");
-		return popupMenu;
+	private static int[] DISABLED_WHEN_FROZEN = new int[]{ADD_FROM_TABLE, ADD_FROM_PLOT, ADD_FIT,
+			SET_RANGE, PREV_RANGE, RESET_RANGE, FIT_RANGE, ZOOM_SELECTION, AXIS_OPTIONS, LEGEND, STYLE, RESET_PLOT};
+
+	/** Prepares and returns the popupMenu of the Data>> button */
+	PopupMenu getDataPopupMenu() {
+		dataPopupMenu = new PopupMenu();
+		menuItems[SAVE] = addPopupItem(dataPopupMenu, "Save Data...");
+		menuItems[COPY] = addPopupItem(dataPopupMenu, "Copy 1st Data Set");
+		menuItems[COPY_ALL] = addPopupItem(dataPopupMenu, "Copy All Data");
+		dataPopupMenu.addSeparator();
+		menuItems[ADD_FROM_TABLE] = addPopupItem(dataPopupMenu, "Add from Table...");
+		menuItems[ADD_FROM_PLOT] = addPopupItem(dataPopupMenu, "Add from Plot...");
+		menuItems[ADD_FIT] = addPopupItem(dataPopupMenu, "Add Fit...");
+		return dataPopupMenu;
+	}
+
+	/** Prepares and returns the popupMenu of the More>> button */
+	PopupMenu getMorePopupMenu() {
+		morePopupMenu = new PopupMenu();
+		menuItems[SET_RANGE] = addPopupItem(morePopupMenu, "Set Range...");
+		menuItems[PREV_RANGE] = addPopupItem(morePopupMenu, "Previous Range");
+		menuItems[RESET_RANGE] = addPopupItem(morePopupMenu, "Reset Range");
+		menuItems[FIT_RANGE] = addPopupItem(morePopupMenu, "Set Range to Fit All");
+		menuItems[ZOOM_SELECTION] = addPopupItem(morePopupMenu, "Zoom to Selection");
+		morePopupMenu.addSeparator();
+		menuItems[AXIS_OPTIONS] = addPopupItem(morePopupMenu, "Axis Options...");
+		menuItems[LEGEND] = addPopupItem(morePopupMenu, "Legend...");
+		menuItems[STYLE] = addPopupItem(morePopupMenu, "Contents Style...");
+		menuItems[RESET_PLOT] = addPopupItem(morePopupMenu, "Reset Format");
+		menuItems[FREEZE] = addPopupItem(morePopupMenu, "Freeze Plot", true);
+		menuItems[HI_RESOLUTION] = addPopupItem(morePopupMenu, "High-Resolution Plot...");
+		morePopupMenu.addSeparator();
+		menuItems[PROFILE_PLOT_OPTIONS] = addPopupItem(morePopupMenu, "Plot Options...");
+		return morePopupMenu;
 	}
 
 	MenuItem addPopupItem(PopupMenu popupMenu, String s) {
@@ -309,24 +363,30 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 
 	/** Called if user has activated a button or popup menu item */
 	public void actionPerformed(ActionEvent e) {
+		try {
 		Object b = e.getSource();
 		if (b==live)
 			toggleLiveProfiling();
 		else if (b==list)
 			showList();
-		else if (b==save)
+		else if (b==data) {
+			enableDisableMenuItems();
+			dataPopupMenu.show((Component)b, 1, 1);
+		} else if (b==more) {
+			enableDisableMenuItems();
+			morePopupMenu.show((Component)b, 1, 1);
+		} else if (b==menuItems[SAVE])
 			saveAsText();
-		else if (b==more) {
-			boolean frozen = plot.isFrozen();	//prepare menu according to 'frozen' state of plot
-			((CheckboxMenuItem)menuItems[FREEZE]).setState(frozen);
-			for (int i : DISABLED_WHEN_FROZEN)
-				menuItems[i].setEnabled(!frozen);
-			popupMenu.show((Component)b, 1, 1);
-		}
 		else if (b==menuItems[COPY])
 			copyToClipboard(false);
 		else if (b==menuItems[COPY_ALL])
 			copyToClipboard(true);
+		else if (b==menuItems[ADD_FROM_TABLE])
+			new PlotContentsDialog(plot, PlotContentsDialog.ADD_FROM_TABLE).showDialog(this);
+		else if (b==menuItems[ADD_FROM_PLOT])
+			new PlotContentsDialog(plot, PlotContentsDialog.ADD_FROM_PLOT).showDialog(this);
+		else if (b==menuItems[ADD_FIT])
+			new PlotContentsDialog(plot, PlotContentsDialog.ADD_FIT).showDialog(this);
 		else if (b==menuItems[ZOOM_SELECTION]) {
 			if (imp!=null && imp.getRoi()!=null && imp.getRoi().isArea())
 				plot.zoomToRect(imp.getRoi().getBounds());
@@ -342,16 +402,31 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 			new PlotDialog(plot, PlotDialog.AXIS_OPTIONS).showDialog(this);
 		else if (b==menuItems[LEGEND])
 			new PlotDialog(plot, PlotDialog.LEGEND).showDialog(this);
+		else if (b==menuItems[STYLE])
+			new PlotContentsDialog(plot, PlotContentsDialog.STYLE).showDialog(this);
 		else if (b==menuItems[RESET_PLOT]) {
 			plot.setFont(Font.PLAIN, Prefs.getInt(PREFS_FONT_SIZE, FONT_SIZE));
 			plot.setAxisLabelFont(Font.PLAIN, Prefs.getInt(PREFS_FONT_SIZE, FONT_SIZE));
 			plot.setFormatFlags(Plot.getDefaultFlags());
-			plot.setFrameSize(plotWidth, plotHeight); //updates the image
+			plot.setFrameSize(plotWidth, plotHeight); //updates the image only when size changed
+			plot.updateImage();
 		} else if (b==menuItems[HI_RESOLUTION])
 			new PlotDialog(plot, PlotDialog.HI_RESOLUTION).showDialog(this);
 		else if (b==menuItems[PROFILE_PLOT_OPTIONS])
 			IJ.doCommand("Plots...");
 		ic.requestFocus();	//have focus on the canvas, not the button, so that pressing the space bar allows panning
+		} catch (Exception ex) { IJ.handleException(ex); }
+	}
+
+	private void enableDisableMenuItems() {
+		boolean frozen = plot.isFrozen();	//prepare menu according to 'frozen' state of plot
+		((CheckboxMenuItem)menuItems[FREEZE]).setState(frozen);
+		for (int i : DISABLED_WHEN_FROZEN)
+			menuItems[i].setEnabled(!frozen);
+		if (!PlotContentsDialog.tableWindowExists())
+			menuItems[ADD_FROM_TABLE].setEnabled(false);
+		if (plot.getDataObjectDesignations().length == 0)
+			menuItems[ADD_FIT].setEnabled(false);
 	}
 
 	/** Called if the user activates/deactivates a CheckboxMenuItem */
@@ -362,14 +437,13 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 		}
 	}
 
-//n__ begin mouseMoved
-    /**
-     * Updates the X and Y values when the mouse is moved and, if appropriate,
-     * shows/hides the overlay with the triangular buttons for changing the axis
-     * range limits Overrides mouseMoved() in ImageWindow.
-     *
-     * @see ij.gui.ImageWindow#mouseMoved
-     */
+	/**
+	 * Updates the X and Y values when the mouse is moved and, if appropriate,
+	 * shows/hides the overlay with the triangular buttons for changing the axis
+	 * range limits Overrides mouseMoved() in ImageWindow.
+	 *
+	 * @see ij.gui.ImageWindow#mouseMoved
+	 */
     public void mouseMoved(int x, int y) {
         super.mouseMoved(x, y);
         if (plot == null)
@@ -380,13 +454,21 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
         }
 
         //arrows for modifying the plot range
+        if (plot==null) return;
         if (x < plot.leftMargin || y > plot.topMargin + plot.frameHeight) {
             if (!rangeArrowsVisible && !plot.isFrozen())
                 showRangeArrows();
-            if (activeRangeArrow == 8)//it's the 'R' icon
+            if (activeRangeArrow == 8)      //it's the 'R' icon
                 coordinates.setText("Reset Range");
+            else if (activeRangeArrow == 9) //it's the 'F' icon
+                coordinates.setText("Full Range (Fit All)");
+            else if (activeRangeArrow >= 10) //space between arrow-pairs
+                coordinates.setText("Set limit...");
             if (activeRangeArrow >= 0 && !rangeArrowRois[activeRangeArrow].contains(x, y)) {
-                rangeArrowRois[activeRangeArrow].setFillColor(Color.GRAY);
+				if(activeRangeArrow>=10) //numerical box
+					rangeArrowRois[activeRangeArrow].setFillColor(new Color(235, 235, 235));
+				else //arrow
+					rangeArrowRois[activeRangeArrow].setFillColor(Color.GRAY);
                 ic.repaint();			//de-highlight arrow where cursor has moved out
                 activeRangeArrow = -1;
             }
@@ -401,8 +483,7 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
             }
         } else if (rangeArrowsVisible)
             hideRangeArrows();
-    }    
-    //n__ end mouseMoved
+    }
 
 	/** Called by PlotCanvas */
 	void mouseExited(MouseEvent e) {
@@ -418,6 +499,10 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 		}
 		int rotation = e.getWheelRotation();
 		int amount = e.getScrollAmount();
+		if (e.getX() < plot.leftMargin || e.getX() > plot.leftMargin + plot.frameWidth)//n__
+			return;
+		if (e.getY() < plot.topMargin || e.getY() > plot.topMargin + plot.frameHeight) 
+			return;
 		boolean ctrl = (e.getModifiers()&Event.CTRL_MASK)!=0;
 		if (amount<1) amount=1;
 		if (rotation==0)
@@ -434,7 +519,6 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 			plot.scroll(0, rotation*amount*Math.max(ic.imageHeight/50, 1));
 	}
 
-    //n__ begin showRangeArrows
     /**
      * Creates an overlay with triangular buttons for changing the axis range
      * limits and shows it
@@ -443,7 +527,7 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
         if (imp == null)
             return;
         hideRangeArrows(); //in case we have old arrows from a different plot size or so
-        rangeArrowRois = new Roi[4 * 2 + 1]; //4 arrows per axis plus 1 'Reset' icon 
+        rangeArrowRois = new Roi[4 * 2 + 2 + 4]; //4 arrows per axis, plus 'Reset' and 'Fit All' icons, plus 4 numerical input boxes
         int i = 0;
         int height = imp.getHeight();
         int arrowH = plot.topMargin < 14 ? 6 : 8; //height of arrows and distance between them; base is twice that value
@@ -459,31 +543,39 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
         for (float y : new float[]{plot.topMargin + plot.frameHeight, plot.topMargin}) { //create arrows for y axis
             float[] y0 = new float[]{y + arrowH / 2, y + 3 * arrowH / 2 + 0.1f, y + arrowH / 2};
             rangeArrowRois[i++] = new PolygonRoi(xP, y0, 3, Roi.POLYGON);
-            float[] y1 = new float[]{y - arrowH / 2, y - 3 * arrowH / 2 - 0.1f, y - arrowH / 2};
+          float[] y1 = new float[]{y - arrowH / 2, y - 3 * arrowH / 2 - 0.1f, y - arrowH / 2};
             rangeArrowRois[i++] = new PolygonRoi(xP, y1, 3, Roi.POLYGON);
         }
         Font theFont = new Font("SansSerif", Font.BOLD, 13);
 
-        TextRoi txtRoi = new TextRoi(2, height - 20, 20, 18, " R ", theFont);
+        TextRoi txtRoi = new TextRoi(1, height - 19, "\u2009R\u2009", theFont);  //thin spaces to make roi slightly wider
         rangeArrowRois[8] = txtRoi;
+        TextRoi txtRoi2 = new TextRoi(20, height - 19, "\u2009F\u2009", theFont);
+        rangeArrowRois[9] = txtRoi2;
 
+		rangeArrowRois[10] = new Roi(plot.leftMargin - arrowH/2 + 1, height - 5 * arrowH / 2, arrowH - 2, arrowH * 2);//numerical box left
+		rangeArrowRois[11] = new Roi(plot.leftMargin + plot.frameWidth - arrowH/2 + 1, height - 5 * arrowH / 2, arrowH - 2, arrowH * 2);//numerical box right
+        rangeArrowRois[12] = new Roi(arrowH / 2, plot.topMargin + plot.frameHeight - arrowH/2 + 1, arrowH * 2, arrowH -2);//numerical box bottom
+        rangeArrowRois[13] = new Roi(arrowH / 2, plot.topMargin - arrowH/2 + 1,  arrowH * 2, arrowH - 2   );//numerical box top
+ 
         Overlay ovly = imp.getOverlay();
         if (ovly == null)
             ovly = new Overlay();
         for (Roi roi : rangeArrowRois) {
-            if (roi instanceof TextRoi) {
-                txtRoi.setStrokeColor(Color.WHITE);
-                txtRoi.setFillColor(Color.GRAY);
-            } else
+            if (roi instanceof PolygonRoi) 
+                   roi.setFillColor(Color.GRAY);
+			else if (roi instanceof TextRoi) {
+                roi.setStrokeColor(Color.WHITE);
                 roi.setFillColor(Color.GRAY);
+            } else
+                roi.setFillColor(new Color(235, 235, 235));
             ovly.add(roi);
         }
         imp.setOverlay(ovly);
         ic.repaint();
         rangeArrowsVisible = true;
     }
-    //n__ end showRangeArrows
-          
+
 	void hideRangeArrows() {
 		if (imp == null || rangeArrowRois==null) return;
 		Overlay ovly = imp.getOverlay();
@@ -510,13 +602,14 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 	/** Shows the data of the backing plot in a Textwindow with columns */
 	void showList(){
 		ResultsTable rt = plot.getResultsTable(saveXValues);
+		if (rt==null) return;
 		rt.show("Plot Values");
 		if (autoClose) {
 			imp.changes=false;
 			close();
 		}
 	}
-	
+
 	/** Returns the plot values as a ResultsTable. */
 	public ResultsTable getResultsTable() {
 		return plot.getResultsTable(saveXValues);
@@ -598,7 +691,7 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 		if (autoClose)
 			{imp.changes=false; close();}
 	}
-		
+
 	public void lostOwnership(Clipboard clipboard, Transferable contents) {}
 
 	public float[] getXValues() {
@@ -633,35 +726,58 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 		if (autoClose && !listValues) options |= AUTO_CLOSE;
 		if (listValues) options |= LIST_VALUES;
 		if (!interpolate) options |= INTERPOLATE; // true=0, false=1
-		if (noGridLines) options |= NO_GRID_LINES; 
-		if (noTicks) options |= NO_TICKS; 
+		if (noGridLines) options |= NO_GRID_LINES;
+		if (noTicks) options |= NO_TICKS;
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 
 	private void toggleLiveProfiling() {
-		boolean liveMode = live.getForeground()==Color.red;
+		boolean liveMode = bgThread != null;
 		if (liveMode)
-			removeListeners();
+			disableLivePlot();
 		else
-			enableLiveProfiling();
+			enableLivePlot();
 	}
 
-	private void enableLiveProfiling() {
+	/* Enable live plotting.
+	 * This requires that the PlotWindow has been initialized with a Plot having a PlotMaker */
+	private void enableLivePlot() {
 		if (plotMaker==null)
 			plotMaker = plot!=null?plot.getPlotMaker():null;
-		if (plotMaker!=null && bgThread==null) {
-			srcImp = plotMaker.getSourceImage();
-			if (srcImp==null)
-				return;
-			bgThread = new Thread(this, "Live Profiler");
+		if (plotMaker==null) return;
+		srcImp = plotMaker.getSourceImage();
+		if (srcImp==null)
+			return;
+		if (bgThread==null) {
+			bgThread = new Thread(this, "Live Plot");
 			bgThread.setPriority(Math.max(bgThread.getPriority()-3, Thread.MIN_PRIORITY));
+			doUpdate = true;
 			bgThread.start();
-			imageUpdated(srcImp);
 		}
-		createListeners();
-		if (srcImp!=null)
-			imageUpdated(srcImp);
+		if (IJ.debugMode) IJ.log("PlotWindow.createListeners");
+		ImagePlus.addImageListener(this);
+		Roi.addRoiListener(this);
+		Font font = live.getFont();
+		live.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
+		live.setForeground(Color.red);
 	}
+
+	private void disableLivePlot() {
+		if (IJ.debugMode) IJ.log("PlotWindow.disableLivePlot: "+srcImp);
+		if (srcImp==null)
+			return;
+		if (bgThread!=null)
+			bgThread.interrupt();
+		bgThread = null;
+		ImagePlus.removeImageListener(this);
+		Roi.removeRoiListener(this);
+		if (live != null) {
+			Font font = live.getFont();
+			live.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
+			live.setForeground(Color.black);
+		}
+	}
+
 
 	/** For live plots, update the plot if the ROI of the source image changes */
 	public synchronized void roiModified(ImagePlus img, int id) {
@@ -671,37 +787,34 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 			notify();
 		}
 	}
-	
+
 	// Unused
 	public void imageOpened(ImagePlus imp) {
 	}
 
-	/** For live plots, this method is called if the source image content is changed */
+	/** For live plots, this method is called if the source image content is changed. */
 	public synchronized void imageUpdated(ImagePlus imp) {
-		if (imp==srcImp) { 
+		if (imp==srcImp) {
 			doUpdate = true;
 			notify();
 		}
 	}
-	
-	// For live plots, if either the source image or this image are closed, exit
+
+	/** For live plots, if either the source image or this image are closed, exit live mode */
 	public void imageClosed(ImagePlus imp) {
 		if (imp==srcImp || imp==this.imp) {
-			if (bgThread!=null)
-				bgThread.interrupt();
-			bgThread = null;
-			removeListeners();
+			disableLivePlot();
 			srcImp = null;
 			plotMaker = null;
 		}
 	}
-	
+
 	// the background thread for live plotting.
 	public void run() {
 		while (true) {
 			IJ.wait(50);	//delay to make sure the roi has been updated
-			Plot plot = plotMaker.getPlot();
-			if (doUpdate && plot!=null) {
+			Plot plot = plotMaker!=null?plotMaker.getPlot():null;
+			if (doUpdate && plot!=null && plot.getNumPlotObjects()>0) {
 				plot.useTemplate(this.plot, this.plot.templateFlags);
 				plot.setPlotMaker(plotMaker);
 				this.plot = plot;
@@ -724,41 +837,20 @@ public class PlotWindow extends ImageWindow implements ActionListener,	ItemListe
 			}
 		}
 	}
-		
-	private void createListeners() {
-		if (IJ.debugMode) IJ.log("PlotWindow.createListeners");
-		if (srcImp==null)
-			return;
-		ImagePlus.addImageListener(this);
-		Roi.addRoiListener(this);
-		Font font = live.getFont();
-		live.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
-		live.setForeground(Color.red);
-	}
-	
-	private void removeListeners() {
-		if (IJ.debugMode) IJ.log("PlotWindow.removeListeners");
-		if (srcImp==null)
-			return;
-		ImagePlus.removeImageListener(this);
-		Roi.removeRoiListener(this);
-		Font font = live.getFont();
-		live.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
-		live.setForeground(Color.black);
-	}
-	
+
 	/** Returns the Plot associated with this PlotWindow. */
 	public Plot getPlot() {
 		return plot;
 	}
-	
-	/** Freezes the active plot window. */
+
+	/** Freezes the active plot window, so the image does not get redrawn for zooming,
+	 *  setting the range, etc. */
 	public static void freeze() {
 		Window win = WindowManager.getActiveWindow();
 		if (win!=null && (win instanceof PlotWindow))
 			((PlotWindow)win).getPlot().setFrozen(true);
 	}
-	
+
 }
 
 

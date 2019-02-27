@@ -146,4 +146,8 @@ public class FloatPolygon {
 		return length;
 	}
 	
+	public String toString() {
+		return "Polygon[npoints="+npoints+"]";
+	}
+	
 }

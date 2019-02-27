@@ -8,6 +8,7 @@ import java.awt.Color;
 		lower and upper bound to be specified. */
     public class LUT extends IndexColorModel implements Cloneable {
         public double min, max;
+        private IndexColorModel cm;
 	
     /** Constructs a LUT from red, green and blue byte arrays, which must have a length of 256. */
     public LUT(byte r[], byte g[], byte b[]) {
@@ -37,7 +38,17 @@ import java.awt.Color;
 	static byte[] getBlues(IndexColorModel cm) {
 		byte[] blues=new byte[256]; cm.getBlues(blues); return blues;
 	}
-	
+
+	public IndexColorModel getColorModel() {
+		if (cm==null) {
+			byte[] reds=new byte[256]; getReds(reds);
+			byte[] greens=new byte[256]; getGreens(greens);
+			byte[] blues=new byte[256]; getBlues(blues);
+			cm = new IndexColorModel(8, getMapSize(), reds, greens, blues);
+		}
+		return cm;
+	}
+		
 	public byte[] getBytes() {
 		int size = getMapSize();
 		if (size!=256) return null;

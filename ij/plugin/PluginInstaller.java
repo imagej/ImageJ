@@ -30,6 +30,8 @@ public class PluginInstaller implements PlugIn {
 	public boolean install(String path) {
 		boolean isURL = path.contains("://");
 		String lcPath = path.toLowerCase();
+		if (isURL)
+			path = Opener.updateUrl(path);
 		boolean isTool = lcPath.endsWith("tool.ijm") || lcPath.endsWith("tool.txt")
 			|| lcPath.endsWith("tool.class") || lcPath.endsWith("tool.jar");
 		boolean isMacro = lcPath.endsWith(".txt") || lcPath.endsWith(".ijm");
@@ -155,7 +157,7 @@ public class PluginInstaller implements PlugIn {
 		int n = 0;
 		try {
 			url = new URL(urlString);
-			if (IJ.debugMode) IJ.log("Downloading: "+urlString+"  " +url);
+			if (IJ.debugMode) IJ.log("PluginInstaller: "+urlString+"  " +url);
 			if (url==null)
 				return null;
 			URLConnection uc = url.openConnection();

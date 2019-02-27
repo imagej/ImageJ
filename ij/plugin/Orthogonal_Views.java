@@ -40,7 +40,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private boolean flipXZ = Prefs.flipXZ;
 	
 	private int xyX, xyY;
-	private Calibration cal=null, cal_xz=new Calibration(), cal_yz=new Calibration();
+	private Calibration cal, cal_xz, cal_yz;
 	private double magnification=1.0;
 	private Color color = Roi.getColor();
 	private double min, max;
@@ -83,22 +83,28 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		rgb = imp.getBitDepth()==24 || hyperstack;
 		int yzBitDepth = hyperstack?24:imp.getBitDepth();
 		if (yz_image==null || yz_image.getHeight()!=imp.getHeight() || yz_image.getBitDepth()!=yzBitDepth)
-			yz_image = new ImagePlus();
+			yz_image = imp.createImagePlus();
 		xz_image = WindowManager.getImage(xzID);
 		if (xz_image==null || xz_image.getWidth()!=imp.getWidth() || xz_image.getBitDepth()!=yzBitDepth)
-			xz_image = new ImagePlus();
+			xz_image = imp.createImagePlus();
 		instance = this;
 		int mode = imp.getCompositeMode();
 		ImageProcessor ip = mode==IJ.COMPOSITE?new ColorProcessor(imp.getImage()):imp.getProcessor();
 		min = ip.getMin();
 		max = ip.getMax();
 		cal=this.imp.getCalibration();
+		cal_xz = cal.copy();
+		cal_yz = cal.copy();
 		double calx=cal.pixelWidth;
 		double caly=cal.pixelHeight;
 		double calz=cal.pixelDepth;
-		ax=1.0;
-		ay=caly/calx;
-		az=calz/calx;
+		ax = 1.0;
+		ay = caly/calx;
+		az = calz/calx;
+		if (az>100) {
+			IJ.error("Z spacing ("+(int)az+") is too large.");
+			return;
+		}
 		win = imp.getWindow();
 		canvas = win.getCanvas();
 		addListeners(canvas);
@@ -134,7 +140,6 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			int mode = imp.getCompositeMode();
 			rgb = mode==IJ.COMPOSITE;
 			ColorModel cm = rgb?null:imp.getProcessor().getColorModel();
-			//IJ.log("getStack; "+c+" "+currentChannel+" "+fp1);
 			if (cm!=null && fp1!=null && fp1.getBitDepth()!=24) {
 				fp1.setColorModel(cm);
 				fp2.setColorModel(cm);
@@ -184,11 +189,15 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			cal_yz.pixelWidth=o_depth/az;
 			cal_yz.pixelHeight=o_height;
 		}
+		if (flipXZ)
+			cal_yz.setInvertY(true);
 		yz_image.setCalibration(cal_yz);
 		yz_image.setIJMenuBar(false);
 		cal_xz.setUnit(unit);
 		cal_xz.pixelWidth=o_width;
 		cal_xz.pixelHeight=o_depth/az;
+		if (flipXZ)
+			cal_xz.setInvertY(true);
 		xz_image.setCalibration(cal_xz);
 		xz_image.setIJMenuBar(false);
 	}
@@ -233,6 +242,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		double arat=az/ax;
 		int width2 = fp1.getWidth();
 		int height2 = (int)Math.round(fp1.getHeight()*az);
+		if (height2<1) height2=1;
 		if (width2!=fp1.getWidth()||height2!=fp1.getHeight()) {
 			fp1.setInterpolate(true);
 			ImageProcessor sfp1=fp1.resize(width2, height2);
@@ -249,11 +259,13 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			updateZYView(p, is);
 				
 		width2 = (int)Math.round(fp2.getWidth()*az);
+		if (width2<1) width2=1;
 		height2 = fp2.getHeight();
 		String title = "YZ ";
 		if (rotateYZ) {
 			width2 = fp2.getWidth();
 			height2 = (int)Math.round(fp2.getHeight()*az);
+			if (height2<1) height2=1;
 			title = "ZY ";
 		}
 		if (width2!=fp2.getWidth()||height2!=fp2.getHeight()) {
@@ -272,14 +284,11 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			ImageCanvas ic = yz_image.getCanvas();
 			ic.addKeyListener(this);
 			ic.addMouseListener(this);
-			//ic.addMouseMotionListener(this);
+			ic.addMouseMotionListener(this);
 			ic.setCustomRoi(true);
-			//yz_image.getWindow().addMouseWheelListener(this);
 			yzID = yz_image.getID();
 		} else {
 			ImageCanvas ic = yz_image.getWindow().getCanvas();
-			ic.addMouseListener(this);
-			//ic.addMouseMotionListener(this);
 			ic.setCustomRoi(true);
 		}
 		if (xz_image.getWindow()==null) {
@@ -287,14 +296,11 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			ImageCanvas ic = xz_image.getCanvas();
 			ic.addKeyListener(this);
 			ic.addMouseListener(this);
-			//ic.addMouseMotionListener(this);
+			ic.addMouseMotionListener(this);
 			ic.setCustomRoi(true);
-			//xz_image.getWindow().addMouseWheelListener(this);
 			xzID = xz_image.getID();
 		} else {
 			ImageCanvas ic = xz_image.getWindow().getCanvas();
-			ic.addMouseListener(this);
-			//ic.addMouseMotionListener(this);
 			ic.setCustomRoi(true);
 		}
 		 
@@ -325,7 +331,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
  				xzWin.setLocation(xyX,xyY+xyWin.getHeight());
  			if (firstTime) {
  				imp.getWindow().toFront();
- 				if (!sliceSet) {
+ 				if (!sliceSet && imp.getSlice()==1) {
 					if (hyperstack)
 						imp.setPosition(imp.getChannel(), imp.getNSlices()/2, imp.getFrame());
 					else
@@ -496,7 +502,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			}
 			fp2.setPixels(newpix);
 		}
-		if (!flipXZ) fp2.flipVertical();
+		if (!flipXZ)
+			fp2.flipVertical();
 		
 	}
 	
@@ -651,10 +658,11 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 				pos = yz_image.getCanvas().getCursorLoc().x;
 			}
 			int z = (int)Math.round(pos/az);
+			int slice = flipXZ?imp.getNSlices()-z:z+1;
 			if (hyperstack)
-				imp.setPosition(imp.getChannel(), z+1, imp.getFrame());
+				imp.setPosition(imp.getChannel(), slice, imp.getFrame());
 			else
-				imp.setSlice(z+1);
+				imp.setSlice(slice);
 		}
 		update();
 	}
@@ -744,8 +752,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		int z=imp.getNSlices();
 		int zlice=imp.getSlice()-1;
 		int zcoord=(int)Math.round(arat*zlice);
-		if (flipXZ) zcoord = (int)Math.round(arat*(z-zlice));
-		
+		if (flipXZ)
+			zcoord = (int)Math.round(arat*(z-zlice));		
 		ImageCanvas xzCanvas = xz_image.getCanvas();
 		p=new Point (x, zcoord);
 		GeneralPath path = new GeneralPath();
@@ -756,7 +764,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			if (flipXZ)
 				zcoord=(int)Math.round(brat*(z-zlice));
 			else
-				zcoord=(int)Math.round(brat*(zlice));
+				zcoord=(int)Math.round(brat*(zlice));			
 			p=new Point (y, zcoord);
 		} else {
 			zcoord=(int)Math.round(arat*zlice);

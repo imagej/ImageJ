@@ -150,8 +150,6 @@ public class PolygonRoi extends Roi {
 					subPixel = true;
 				break;
 		}
-		if (this instanceof EllipseRoi)
-			subPixel = true;
 		x = ic.offScreenX(sx);
 		y = ic.offScreenY(sy);
 		startXD = subPixelResolution()?ic.offScreenXD(sx):x;
@@ -361,7 +359,6 @@ public class PolygonRoi extends Roi {
 					xp2[i] = ic.screenXD(xpf[i]+xbase+offset);
 					yp2[i] = ic.screenYD(ypf[i]+ybase+offset);
 				}
-				//IJ.log(xp2[0]+" "+xpf[0]+" "+xbase+" "+offset+" "+bounds);
 			} else {
 				for (int i=0; i<nPoints; i++) {
 					xp2[i] = ic.screenX(xp[i]+x);
@@ -429,6 +426,8 @@ public class PolygonRoi extends Roi {
 	//Within correction circle, all vertices with sharp angles are removed.
 	//Norbert Vischer
 	protected void wipeBack() {
+		if (previousRoi!=null && previousRoi.modState==SUBTRACT_FROM_ROI)
+			return;
 		double correctionRadius = 20;
 		if (ic!=null)
 			correctionRadius /= ic.getMagnification();
@@ -514,7 +513,7 @@ public class PolygonRoi extends Roi {
 			xp[nPoints-1] = ox-x;
 			yp[nPoints-1] = oy-y;
 		}
-		if (type==POLYLINE && subPixelResolution()) {
+		if (type==POLYLINE && Prefs.splineFitLines) {
 			fitSpline();
 			imp.draw();
 		} else
@@ -654,7 +653,7 @@ public class PolygonRoi extends Roi {
 		imp.draw(xmin2-m, ymin2-m, xmax2-xmin2+m*2, ymax2-ymin2+m*2);
 	}
 
-	private void resetBoundingRect() {
+	protected void resetBoundingRect() {
 		//IJ.log("resetBoundingRect");
 		if (xpf!=null) {
 			resetSubPixelBoundingRect();
@@ -765,10 +764,10 @@ public class PolygonRoi extends Roi {
 			return;
 		int ox=ic.offScreenX(sx), oy=ic.offScreenY(sy);
 		double oxd=ic.offScreenXD(sx), oyd=ic.offScreenYD(sy);
-		if ((IJ.altKeyDown()||IJ.controlKeyDown()) && !(nPoints<=3 && type!=POINT)) {
+		if ((IJ.altKeyDown()||IJ.controlKeyDown()) && !(nPoints<=3 && type!=POINT) && !(this instanceof RotatedRectRoi)) {
 			deleteHandle(oxd, oyd); 
 			return;
-		} else if (IJ.shiftKeyDown() && type!=POINT) {
+		} else if (IJ.shiftKeyDown() && type!=POINT && !(this instanceof RotatedRectRoi)) {
 			addHandle(oxd, oyd); 
 			return;
 		}
@@ -790,10 +789,12 @@ public class PolygonRoi extends Roi {
 			removeSplineFit();
 		FloatPolygon points = getFloatPolygon();
 		int pointToDelete = getClosestPoint(ox, oy, points);
-		deletePoint(pointToDelete);
-		if (splineFit) 
-			fitSpline(splinePoints);
-		imp.draw();
+		if (pointToDelete>=0) {
+			deletePoint(pointToDelete);
+			if (splineFit) 
+				fitSpline(splinePoints);
+			imp.draw();
+		}
 	}
 	
 	protected void deletePoint(int index) {
@@ -825,6 +826,8 @@ public class PolygonRoi extends Roi {
 		modState = NO_MODS;
 		if (previousRoi!=null) previousRoi.modState = NO_MODS;
 		int pointToDuplicate = getClosestPoint(ox, oy, points);
+		if (pointToDuplicate<0)
+			return;
 		FloatPolygon points2 = new FloatPolygon();
 		for (int i2=0; i2<n; i2++) {
 			if (i2==pointToDuplicate) {
@@ -844,19 +847,35 @@ public class PolygonRoi extends Roi {
 		if (type==POINT)
 			imp.setRoi(new PointRoi(points2));
 		else {
-			if (subPixelResolution()) {
-				Roi roi2 = new PolygonRoi(points2, type);
-				roi2.setDrawOffset(getDrawOffset());
-				imp.setRoi(roi2);
-			} else
-				imp.setRoi(new PolygonRoi(toInt(points2.xpoints), toInt(points2.ypoints), points2.npoints, type));
+			setPolygon(points2);
 			if (splineFit) 
-				((PolygonRoi)imp.getRoi()).fitSpline(splinePoints);
+				fitSpline(splinePoints);
+			if (imp!=null) imp.draw();
+		}
+	}
+	
+	private void setPolygon(FloatPolygon p2) {
+		nPoints = p2.npoints;	
+		if (nPoints>=maxPoints)
+			enlargeArrays();
+		float xbase = (float)getXBase();
+		float ybase = (float)getYBase();
+		if (xp==null) {
+			xp = new int[maxPoints];
+			yp = new int[maxPoints];
+		}
+		for (int i=0; i<nPoints; i++) {
+			xp[i] = (int)(p2.xpoints[i]-x);
+			yp[i] = (int)(p2.ypoints[i]-y);
+			if (xpf!=null) {
+				xpf[i] = p2.xpoints[i] - xbase;
+				ypf[i] = p2.ypoints[i] - ybase;
+			}
 		}
 	}
 
-	int getClosestPoint(double x, double y, FloatPolygon points) {
-		int index = 0;
+	protected int getClosestPoint(double x, double y, FloatPolygon points) {
+		int index = -1;
 		double distance = Double.MAX_VALUE;
 		for (int i=0; i<points.npoints; i++) {
 			double dx = points.xpoints[i] - x;
@@ -954,51 +973,38 @@ public class PolygonRoi extends Roi {
 		return xSpline!=null;
 	}
 
-	/* Creates a spline fitted polygon with one pixel segment lengths 
+	/* Creates a spline fitted polygon with one pixel segment lengths
 		that can be retrieved using the getFloatPolygon() method. */
 	public void fitSplineForStraightening() {
-		fitSpline((int)getUncalibratedLength()*2);
+		fitSpline((int)(getUncalibratedLength()*2)+1); //preliminary finer splines with half-pixel steps (plus end point)
 		if (xSpline==null || splinePoints==0) return;
 		float[] xpoints = new float[splinePoints*2];
 		float[] ypoints = new float[splinePoints*2];
 		xpoints[0] = xSpline[0];
 		ypoints[0] = ySpline[0];
-		int n=1, n2;
-		double inc = 0.01;
-		double distance=0.0, distance2=0.0, dx=0.0, dy=0.0, xinc, yinc;
-		double x, y, lastx, lasty, x1, y1, x2=xSpline[0], y2=ySpline[0];
+		double lengthRead = 0;   //total arc length read from the preliminary spline
+		int pointsWritten = 1;
+		double x1, y1;
+		double x2 = xSpline[0], y2 = ySpline[0];
 		for (int i=1; i<splinePoints; i++) {
 			x1=x2; y1=y2;
-			x=x1; y=y1;
 			x2=xSpline[i]; y2=ySpline[i];
-			dx = x2-x1;
-			dy = y2-y1;
-			distance = Math.sqrt(dx*dx+dy*dy);
-			xinc = dx*inc/distance;
-			yinc = dy*inc/distance;
-			lastx=xpoints[n-1]; lasty=ypoints[n-1];
-			//n2 = (int)(dx/xinc);
-			n2 = (int)(distance/inc);
-			if (splinePoints==2) n2++;
-			do {
-				dx = x-lastx;
-				dy = y-lasty;
-				distance2 = Math.sqrt(dx*dx+dy*dy);
-				//IJ.log(i+"   "+IJ.d2s(xinc,5)+"	"+IJ.d2s(yinc,5)+"	 "+IJ.d2s(distance,2)+"	  "+IJ.d2s(distance2,2)+"	"+IJ.d2s(x,2)+"	  "+IJ.d2s(y,2)+"	"+IJ.d2s(lastx,2)+"	  "+IJ.d2s(lasty,2)+"	"+n+"	"+n2);
-				if (distance2>=1.0-inc/2.0 && n<xpoints.length-1) {
-					xpoints[n] = (float)x;
-					ypoints[n] = (float)y;
-					//IJ.log("--- "+IJ.d2s(x,2)+"	"+IJ.d2s(y,2)+"	 "+n);
-					n++;
-					lastx=x; lasty=y;
-				}
-				x += xinc;
-				y += yinc;
-			} while (--n2>0);
+			double dx = x2-x1;
+			double dy = y2-y1;
+			double distance = Math.sqrt(dx*dx+dy*dy);
+			lengthRead += distance;
+			double distanceOverNextWrite = lengthRead - pointsWritten;
+			if (distanceOverNextWrite >= 0.0) {  // we have to write a new point
+				double fractionOverNextWrite = distanceOverNextWrite/distance;
+				xpoints[pointsWritten] = (float)(x2 - fractionOverNextWrite*dx);
+				ypoints[pointsWritten] = (float)(y2 - fractionOverNextWrite*dy);
+				//IJ.log("n="+pointsWritten+" x,y="+xpoints[pointsWritten]+","+ypoints[pointsWritten]);
+				pointsWritten++;
+			}
 		}
 		xSpline = xpoints;
 		ySpline = ypoints;
-		splinePoints = n;
+		splinePoints = pointsWritten;
 		//IJ.log("xSpline="+xSpline+" splinePoints="+splinePoints);
 	}
 
@@ -1229,6 +1235,8 @@ public class PolygonRoi extends Roi {
 		of 8 and 4 non-adjacent edges so the perimeter is 8-4*(2-sqrt(2)).
 	*/
 	double getTracedPerimeter() {
+		if (xp==null)
+			return Double.NaN;
 		int sumdx = 0;
 		int sumdy = 0;
 		int nCorners = 0;
@@ -1434,6 +1442,11 @@ public class PolygonRoi extends Roi {
 		}
 		return new FloatPolygon(xpoints2, ypoints2, n);
 	}
+	
+	/** Returns the number of points in this selection; equivalent to getPolygon().npoints. */
+	public int size() {
+		return xSpline!=null?splinePoints:nPoints;
+	}
 
 	public boolean subPixelResolution() {
 		return subPixel;
@@ -1614,6 +1627,7 @@ public class PolygonRoi extends Roi {
 			xpf = toFloat(xp);
 			ypf = toFloat(yp);
 		}
+		subPixel = true;
 	}
 
 	public String getDebugInfo() {

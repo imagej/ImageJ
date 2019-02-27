@@ -36,6 +36,7 @@ public class Prefs {
     public static final String DIV_BY_ZERO_VALUE = "div-by-zero";
     public static final String NOISE_SD = "noise.sd";
     public static final String MENU_SIZE = "menu.size";
+    public static final String GUI_SCALE = "gui.scale";
     public static final String THREADS = "threads";
 	public static final String KEY_PREFIX = ".";
  
@@ -54,7 +55,9 @@ public class Prefs {
 
 	private static final int USE_SYSTEM_PROXIES=1<<0, USE_FILE_CHOOSER=1<<1,
 		SUBPIXEL_RESOLUTION=1<<2, ENHANCED_LINE_TOOL=1<<3, SKIP_RAW_DIALOG=1<<4,
-		REVERSE_NEXT_PREVIOUS_ORDER=1<<5, AUTO_RUN_EXAMPLES=1<<6, SHOW_ALL_POINTS=1<<7;
+		REVERSE_NEXT_PREVIOUS_ORDER=1<<5, AUTO_RUN_EXAMPLES=1<<6, SHOW_ALL_POINTS=1<<7,
+		DO_NOT_SAVE_WINDOW_LOCS=1<<8, JFILE_CHOOSER_CHANGED=1<<9,
+		CANCEL_BUTTON_ON_RIGHT=1<<10, IGNORE_RESCALE_SLOPE=1<<11;
 	public static final String OPTIONS2 = "prefs.options2";
     
 	/** file.separator system property */
@@ -83,11 +86,11 @@ public class Prefs {
 	public static boolean requireControlKey;
 	/** Open 8-bit images with inverting LUT so 0 is white and 255 is black. */
 	public static boolean useInvertingLut;
-	/** Draw tool icons using antialiasing. */
+	/** Draw tool icons using antialiasing (always true). */
 	public static boolean antialiasedTools = true;
 	/** Export TIFF and Raw using little-endian byte order. */
 	public static boolean intelByteOrder;
-	/** Double buffer display of selections and overlays. */
+	/** No longer used */
 	public static boolean doubleBuffer = true;
 	/** Do not label multiple points created using point tool. */
 	public static boolean noPointLabels;
@@ -115,6 +118,8 @@ public class Prefs {
 	public static boolean multiPointMode;
 	/** Open DICOMs as 32-bit float images */
 	public static boolean openDicomsAsFloat;
+	/** Ignore Rescale Slope when opening DICOMs */
+	public static boolean ignoreRescaleSlope;
 	/** Plot rectangular selectons vertically */
 	public static boolean verticalProfile;
 	/** Rotate YZ orthogonal views 90 degrees */
@@ -141,13 +146,13 @@ public class Prefs {
 	public static boolean useFileChooser;
 	/** Use sub-pixel resolution with line selections */
 	public static boolean subPixelResolution;
-	/** Adjust contrast when scrolling stacks (or hold shift key down) */
+	/** Adjust contrast when scrolling stacks */
 	public static boolean autoContrast;
 	/** Allow lines to be created with one click at start and another at the end */
 	public static boolean enhancedLineTool;
 	/** Keep arrow selection after adding to overlay */
 	public static boolean keepArrowSelections;
-	/** Aways paint using double buffering, except on OS X */
+	/** Aways paint images using double buffering */
 	public static boolean paintDoubleBuffered;
 	/** Do not display dialog when opening .raw files */
 	public static boolean skipRawDialog;
@@ -157,8 +162,29 @@ public class Prefs {
 	public static boolean autoRunExamples = true;
 	/** Ignore stack positions when displaying points. */
 	public static boolean showAllPoints;
-	
+	/** Set MenuBar on Macs running Java 8. */
+	public static boolean setIJMenuBar = IJ.isMacOSX();
+	/** "ImageJ" window is always on top. */
+	public static boolean alwaysOnTop;
+	/** Automatically spline fit line selections */
+	public static boolean splineFitLines;
+	/** Enable this option to workaround a bug with some Linux window
+		managers that causes windows to wander down the screen. */
+	public static boolean doNotSaveWindowLocations = true;
+	/** Use JFileChooser setting changed/ */
+	public static boolean jFileChooserSettingChanged;
+	/** Convert tiff units to microns if pixel width is less than 0.0001 cm. */
+	public static boolean convertToMicrons = true;
+	/** Wand tool "Smooth if thresholded" option */
+	public static boolean smoothWand;
+	/** "Close All" command running */
+	public static boolean closingAll;
+	/** Dialog "Cancel" button is on right on Linux */
+	public static boolean dialogCancelButtonOnRight;
+	/** Support TRANSFORM Undo in macros */
+	public static boolean supportMacroUndo;
 
+	static boolean commandLineMacro;
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);
 	static String prefsDir;
@@ -166,8 +192,8 @@ public class Prefs {
 	static String homeDir; // ImageJ folder
 	static int threads;
 	static int transparentIndex = -1;
-	static boolean commandLineMacro;
 	private static boolean resetPreferences;
+	private static double guiScale = 1.0;
 
 	/** Finds and loads the ImageJ configuration file, "IJ_Props.txt".
 		@return	an error message if "IJ_Props.txt" not found.
@@ -178,12 +204,6 @@ public class Prefs {
 			return loadAppletProps(f, applet);
 		if (homeDir==null)
 			homeDir = System.getProperty("user.dir");
-		String userHome = System.getProperty("user.home");
-		prefsDir = userHome; // User's home directory
-		if (IJ.isMacOSX())
-			prefsDir += "/Library/Preferences";
-		else
-			prefsDir += File.separator+".imagej";
 		if (f==null) {
 			try {f = new FileInputStream(homeDir+"/"+PROPS_NAME);}
 			catch (FileNotFoundException e) {f=null;}
@@ -196,17 +216,17 @@ public class Prefs {
 		imagesURL = props.getProperty("images.location");
 		loadPreferences();
 		loadOptions();
+		guiScale = get(GUI_SCALE, 1.0);
 		return null;
 	}
 
 	/*
-	static void dumpPrefs(String title) {
-		IJ.log("");
-		IJ.log(title);
+	static void dumpPrefs() {
+		System.out.println("");
 		Enumeration e = ijPrefs.keys();
 		while (e.hasMoreElements()) {
 			String key = (String) e.nextElement();
-			IJ.log(key+": "+ijPrefs.getProperty(key));
+			System.out.println(key+": "+ijPrefs.getProperty(key));
 		}
 	}
 	*/
@@ -252,9 +272,17 @@ public class Prefs {
 			return path;
 	}
 
-	/** Gets the path to the directory where the 
+	/** Returns the path to the directory where the 
 		preferences file (IJPrefs.txt) is saved. */
 	public static String getPrefsDir() {
+		if (prefsDir==null) {
+			String dir = System.getProperty("user.home");
+			if (IJ.isMacOSX())
+				dir += "/Library/Preferences";
+			else
+				dir += File.separator+".imagej";
+			prefsDir = dir;
+		}
 		return prefsDir;
 	}
 
@@ -307,7 +335,7 @@ public class Prefs {
 		if (s!=null) {
 			try {
 				return Integer.decode(s).intValue();
-			} catch (NumberFormatException e) {IJ.write(""+e);}
+			} catch (NumberFormatException e) {IJ.log(""+e);}
 		}
 		return defaultValue;
 	}
@@ -342,7 +370,7 @@ public class Prefs {
 
 	/** Opens the IJ_Prefs.txt file. */
 	static void loadPreferences() {
-		String path = prefsDir+separator+PREFS_NAME;
+		String path = getPrefsDir()+separator+PREFS_NAME;
 		boolean ok =  loadPrefs(path);
 		if (!ok) { // not found
 			if (IJ.isWindows())
@@ -385,6 +413,7 @@ public class Prefs {
 			prefs.put(NOISE_SD, Double.toString(Filters.getSD()));
 			if (threads>1) prefs.put(THREADS, Integer.toString(threads));
 			if (IJ.isMacOSX()) useJFileChooser = false;
+			if (!IJ.isLinux()) dialogCancelButtonOnRight = false;
 			saveOptions(prefs);
 			savePluginPrefs(prefs);
 			IJ.getInstance().savePreferences(prefs);
@@ -394,6 +423,7 @@ public class Prefs {
 			ImportDialog.savePreferences(prefs);
 			PlotWindow.savePreferences(prefs);
 			NewImage.savePreferences(prefs);
+			String prefsDir = getPrefsDir();
 			path = prefsDir+separator+PREFS_NAME;
 			if (prefsDir.endsWith(".imagej")) {
 				File f = new File(prefsDir);
@@ -425,7 +455,7 @@ public class Prefs {
 
 	static void loadOptions() {
 		int defaultOptions = ANTIALIASING+AVOID_RESLICE_INTERPOLATION+ANTIALIASED_TOOLS+MULTI_POINT_MODE
-			+(!IJ.isMacOSX()?RUN_SOCKET_LISTENER:0);
+			+(!IJ.isMacOSX()?RUN_SOCKET_LISTENER:0)+BLACK_BACKGROUND;
 		int options = getInt(OPTIONS, defaultOptions);
 		usePointerCursor = (options&USE_POINTER)!=0;
 		//antialiasedText = (options&ANTIALIASING)!=0;
@@ -451,8 +481,8 @@ public class Prefs {
 		multiPointMode = (options&MULTI_POINT_MODE)!=0;
 		rotateYZ = (options&ROTATE_YZ)!=0;
 		flipXZ = (options&FLIP_XZ)!=0;
-		dontSaveHeaders = (options&DONT_SAVE_HEADERS)!=0;
-		dontSaveRowNumbers = (options&DONT_SAVE_ROW_NUMBERS)!=0;
+		//dontSaveHeaders = (options&DONT_SAVE_HEADERS)!=0;
+		//dontSaveRowNumbers = (options&DONT_SAVE_ROW_NUMBERS)!=0;
 		noClickToGC = (options&NO_CLICK_TO_GC)!=0;
 		avoidResliceInterpolation = (options&AVOID_RESLICE_INTERPOLATION)!=0;
 		keepUndoBuffers = (options&KEEP_UNDO_BUFFERS)!=0;
@@ -467,6 +497,11 @@ public class Prefs {
 		reverseNextPreviousOrder = (options2&REVERSE_NEXT_PREVIOUS_ORDER)!=0;
 		autoRunExamples = (options2&AUTO_RUN_EXAMPLES)!=0;
 		showAllPoints = (options2&SHOW_ALL_POINTS)!=0;
+		doNotSaveWindowLocations = (options2&DO_NOT_SAVE_WINDOW_LOCS)!=0;
+		jFileChooserSettingChanged = (options2&JFILE_CHOOSER_CHANGED)!=0;
+		dialogCancelButtonOnRight = (options2&CANCEL_BUTTON_ON_RIGHT)!=0;
+		ignoreRescaleSlope = (options2&IGNORE_RESCALE_SLOPE)!=0;
+		;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -492,7 +527,11 @@ public class Prefs {
 			+ (useFileChooser?USE_FILE_CHOOSER:0) + (subPixelResolution?SUBPIXEL_RESOLUTION:0)
 			+ (enhancedLineTool?ENHANCED_LINE_TOOL:0) + (skipRawDialog?SKIP_RAW_DIALOG:0)
 			+ (reverseNextPreviousOrder?REVERSE_NEXT_PREVIOUS_ORDER:0)
-			+ (autoRunExamples?AUTO_RUN_EXAMPLES:0) + (showAllPoints?SHOW_ALL_POINTS:0);
+			+ (autoRunExamples?AUTO_RUN_EXAMPLES:0) + (showAllPoints?SHOW_ALL_POINTS:0)
+			+ (doNotSaveWindowLocations?DO_NOT_SAVE_WINDOW_LOCS:0)
+			+ (jFileChooserSettingChanged?JFILE_CHOOSER_CHANGED:0)
+			+ (dialogCancelButtonOnRight?CANCEL_BUTTON_ON_RIGHT:0)
+			+ (ignoreRescaleSlope?IGNORE_RESCALE_SLOPE:0);
 		prefs.put(OPTIONS2, Integer.toString(options2));
 	}
 
@@ -569,7 +608,8 @@ public class Prefs {
 	/** Saves the Point <code>loc</code> in the preferences
 		 file as a string using the keyword <code>key</code>. */
 	public static void saveLocation(String key, Point loc) {
-		set(key, loc.x+","+loc.y);
+		if (!doNotSaveWindowLocations)
+			set(key, loc.x+","+loc.y);
 	}
 
 	/** Uses the keyword <code>key</code> to retrieve a location
@@ -646,8 +686,21 @@ public class Prefs {
 	}
 	
 	public static String defaultResultsExtension() {
-		return get("options.ext", ".xls");
+		return get("options.ext", ".csv");
 	}
 		
+	/** Sets the GenericDialog and Command Finder text scale (0.5 to 3.0). */
+	public static void setGuiScale(double scale) {
+		if (scale>=0.5 && scale<=3.0) {
+			guiScale = scale;
+			set(GUI_SCALE, guiScale);
+		}
+	}
+
+	/** Returns the GenericDialog and Command Finder text scale. */
+	public static double getGuiScale() {
+		return guiScale;
+	}
+
 }
 

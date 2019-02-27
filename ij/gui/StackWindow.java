@@ -30,7 +30,6 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		addMouseWheelListener(this);
 		if (sliceSelector==null && this.getClass().getName().indexOf("Image5D")!=-1)
 			sliceSelector = new Scrollbar(); // prevents Image5D from crashing
-		//IJ.log(nChannels+" "+nSlices+" "+nFrames);
 		pack();
 		ic = imp.getCanvas();
 		if (ic!=null) ic.setMaxBounds();
@@ -162,12 +161,13 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			int rotation = e.getWheelRotation();
 			boolean ctrl = (e.getModifiers()&Event.CTRL_MASK)!=0;
 			if ((ctrl||IJ.shiftKeyDown()) && ic!=null) {
-				int ox = ic.offScreenX(e.getX());
-				int oy = ic.offScreenY(e.getX());
+				Point loc = ic.getCursorLoc();
+				int x = ic.screenX(loc.x);
+				int y = ic.screenY(loc.y);
 				if (rotation<0)
-					ic.zoomIn(ox,oy);
+					ic.zoomIn(x,y);
 				else
-					ic.zoomOut(ox,oy);
+					ic.zoomOut(x,y);
 				return;
 			}
 			if (hyperStack) {
@@ -216,7 +216,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			zSelector.setMaximum(stackSize+1);
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				if (imp!=null)
+				if (imp!=null && zSelector!=null)
 					zSelector.setValue(imp.getCurrentSlice());
 			}
 		});
@@ -240,7 +240,8 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	
 	public String createSubtitle() {
 		String subtitle = super.createSubtitle();
-		if (!hyperStack) return subtitle;
+		if (!hyperStack || imp.getStackSize()==1)
+			return subtitle;
     	String s="";
     	int[] dim = imp.getDimensions(false);
     	int channels=dim[2], slices=dim[3], frames=dim[4];
@@ -269,7 +270,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
     }
     
     public boolean isHyperStack() {
-    	return hyperStack;
+    	return hyperStack && getNScrollbars()>0;
     }
     
     public void setPosition(int channel, int slice, int frame) {

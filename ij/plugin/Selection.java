@@ -12,7 +12,7 @@ import java.awt.event.KeyEvent;
 import java.util.Vector;
 
 
-/** This plugin implements the commands in the Edit/Section submenu. */
+/** This plugin implements the commands in the Edit/Selection submenu. */
 public class Selection implements PlugIn, Measurements {
 	private ImagePlus imp;
 	private float[] kernel = {1f, 1f, 1f, 1f, 1f};
@@ -224,7 +224,7 @@ public class Selection implements PlugIn, Measurements {
 		int type = roi.getType();
 		boolean segmentedSelection = type==Roi.POLYGON||type==Roi.POLYLINE;
 		if (!(segmentedSelection||type==Roi.FREEROI||type==Roi.TRACED_ROI||type==Roi.FREELINE))
-			{IJ.error("Spline", "Polygon or polyline selection required"); return;}
+			{IJ.error("Spline Fit", "Polygon or polyline selection required"); return;}
 		if (roi instanceof EllipseRoi)
 			return;
 		PolygonRoi p = (PolygonRoi)roi;
@@ -289,7 +289,7 @@ public class Selection implements PlugIn, Measurements {
 		imp.setRoi(p);
 	}
 	
-	private void transferProperties(Roi roi1, Roi roi2) {
+	private static void transferProperties(Roi roi1, Roi roi2) {
 		if (roi1==null || roi2==null)
 			return;
 		roi2.setStrokeColor(roi1.getStrokeColor());
@@ -527,26 +527,31 @@ public class Selection implements PlugIn, Measurements {
 		Prefs.useInvertingLut = false;
 		boolean selectAll = roi!=null && roi.getType()==Roi.RECTANGLE && roi.getBounds().width==imp.getWidth()
 			&& roi.getBounds().height==imp.getHeight() && imp.isThreshold();
-		if (roi==null || !(roi.isArea()||roi.getType()==Roi.POINT) || selectAll) {
+		boolean overlay = imp.getOverlay()!=null && imp.getProcessor().getMinThreshold()==ImageProcessor.NO_THRESHOLD;
+		if (!overlay && (roi==null || selectAll)) {
 			createMaskFromThreshold(imp);
 			Prefs.useInvertingLut = useInvertingLut;
 			return;
 		}
+		if (roi==null && imp.getOverlay()==null) {
+			IJ.error("Create Mask", "Selection, overlay or threshold required");
+			return;
+		}
+		ByteProcessor mask = imp.createRoiMask();
+		if (!Prefs.blackBackground)
+			mask.invertLut();
 		ImagePlus maskImp = null;
 		Frame frame = WindowManager.getFrame("Mask");
 		if (frame!=null && (frame instanceof ImageWindow))
 			maskImp = ((ImageWindow)frame).getImagePlus();
-		if (maskImp==null) {
-			ImageProcessor ip = new ByteProcessor(imp.getWidth(), imp.getHeight());
-			if (!Prefs.blackBackground)
-				ip.invertLut();
-			maskImp = new ImagePlus("Mask", ip);
+		if (maskImp!=null && maskImp.getBitDepth()==8) {
+			ImageProcessor ip = maskImp.getProcessor();
+			ip.copyBits(mask, 0, 0, Blitter.OR);
+			maskImp.setProcessor(ip);
+		} else {
+			maskImp = new ImagePlus("Mask", mask);
 			maskImp.show();
 		}
-		ImageProcessor ip = maskImp.getProcessor();
-		ip.setRoi(roi);
-		ip.setValue(255);
-		ip.fill(ip.getMask());
 		Calibration cal = imp.getCalibration();
 		if (cal.scaled()) {
 			Calibration cal2 = maskImp.getCalibration();
@@ -556,19 +561,20 @@ public class Selection implements PlugIn, Measurements {
 		}
 		maskImp.updateAndRepaintWindow();
 		Prefs.useInvertingLut = useInvertingLut;
+		Recorder.recordCall("mask = imp.createRoiMask();");
 	}
 	
 	void createMaskFromThreshold(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
-		if (ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD)
-			{IJ.error("Create Mask", "Area selection or thresholded image required"); return;}
-		double t1 = ip.getMinThreshold();
-		double t2 = ip.getMaxThreshold();
-		IJ.run("Duplicate...", "title=mask");
-		ImagePlus imp2 = WindowManager.getCurrentImage();
-		ImageProcessor ip2 = imp2.getProcessor();
-		ip2.setThreshold(t1, t2, ip2.getLutUpdateMode());
-		IJ.run("Convert to Mask");
+		if (ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD) {
+			IJ.error("Create Mask", "Area selection, overlay or thresholded image required");
+			return;
+		}
+		ByteProcessor mask = imp.createThresholdMask();
+		if (!Prefs.blackBackground)
+			mask.invertLut();
+		new ImagePlus("mask",mask).show();
+		Recorder.recordCall("mask = imp.createThresholdMask();");
 	}
 
 	void createSelectionFromMask(ImagePlus imp) {
@@ -587,6 +593,8 @@ public class Selection implements PlugIn, Measurements {
 			return;
 		}
 		int threshold = ip.isInvertedLut()?255:0;
+		if (Prefs.blackBackground)
+			threshold = ip.isInvertedLut()?0:255;		
 		ip.setThreshold(threshold, threshold, ImageProcessor.NO_LUT_UPDATE);
 		IJ.runPlugIn("ij.plugin.filter.ThresholdToSelection", "");
 	}
@@ -605,11 +613,18 @@ public class Selection implements PlugIn, Measurements {
 		imp.setRoi(s1.xor(s2));
 	}
 	
-	void lineToArea(ImagePlus imp) {
+	private void lineToArea(ImagePlus imp) {
 		Roi roi = imp.getRoi();
 		if (roi==null || !roi.isLine())
 			{IJ.error("Line to Area", "Line selection required"); return;}
 		Undo.setup(Undo.ROI, imp);
+		Roi roi2 = lineToArea(roi);
+		imp.setRoi(roi2);
+		Roi.previousRoi = (Roi)roi.clone();
+	}
+	
+	/** Converts a line selection into an area selection. */
+	public static Roi lineToArea(Roi roi) {
 		Roi roi2 = null;
 		if (roi.getType()==Roi.LINE) {
 			double width = roi.getStrokeWidth();
@@ -620,21 +635,33 @@ public class Selection implements PlugIn, Measurements {
 			roi2 = new PolygonRoi(p, Roi.POLYGON);
 			roi2.setDrawOffset(roi.getDrawOffset());
 		} else {
-			ImageProcessor ip2 = new ByteProcessor(imp.getWidth(), imp.getHeight());
+			roi = (Roi)roi.clone();
+			int lwidth = (int)roi.getStrokeWidth();
+			if (lwidth<1)
+				lwidth = 1;
+			Rectangle bounds = roi.getBounds();
+			int width = bounds.width + lwidth*2;
+			int height = bounds.height + lwidth*2;
+			ImageProcessor ip2 = new ByteProcessor(width, height);
+			roi.setLocation(lwidth, lwidth);
 			ip2.setColor(255);
 			roi.drawPixels(ip2);
-			//new ImagePlus("ip2", ip2.duplicate()).show();
 			ip2.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
 			ThresholdToSelection tts = new ThresholdToSelection();
 			roi2 = tts.convert(ip2);
+			if (roi2==null)
+				return roi;
+			if (bounds.x==0&&bounds.y==0)
+				roi2.setLocation(0, 0);
+			else
+				roi2.setLocation(bounds.x-lwidth/2, bounds.y-lwidth/2);
 		}
 		transferProperties(roi, roi2);
 		roi2.setStrokeWidth(0);
 		Color c = roi2.getStrokeColor();
 		if (c!=null)  // remove any transparency
 			roi2.setStrokeColor(new Color(c.getRed(),c.getGreen(),c.getBlue()));
-		imp.setRoi(roi2);
-		Roi.previousRoi = (Roi)roi.clone();
+		return roi2;
 	}
 	
 	void areaToLine(ImagePlus imp) {
@@ -711,7 +738,7 @@ public class Selection implements PlugIn, Measurements {
 	}
 	
 	boolean setProperties(String title, Roi roi) {
-		if ((roi instanceof PointRoi) && Toolbar.getMultiPointMode()) {
+		if ((roi instanceof PointRoi) && Toolbar.getMultiPointMode() && IJ.altKeyDown()) {
 			((PointRoi)roi).displayCounts();
 			return true;
 		}

@@ -18,21 +18,34 @@ public class ScaleBar implements PlugIn {
 	static final String[] bcolors = {"None","Black","White","Dark Gray","Gray","Light Gray","Yellow","Blue","Green","Red"};
 	static final String[] checkboxLabels = {"Bold Text", "Hide Text", "Serif Font", "Overlay"};
 	final static String SCALE_BAR = "|SB|";
-	static double barWidth;
-	static int defaultBarHeight = 4;
-	static int barHeightInPixels = defaultBarHeight;
-	static String location = locations[LOWER_RIGHT];
-	static String color = colors[0];
-	static String bcolor = bcolors[0];
-	static boolean boldText = true;
-	static boolean hideText;
-	static boolean createOverlay;
-	static int defaultFontSize = 14;
-	static int fontSize;
-	static boolean labelAll;
+	
+	private static int defaultFontSize = 14;
+	private static int defaultBarHeight = 4;
+	private static double sBarWidth;
+	private static int sBarHeightInPixels = defaultBarHeight;
+	private static String sLocation = locations[LOWER_RIGHT];
+	private static String sColor = colors[0];
+	private static String sBcolor = bcolors[0];
+	private static boolean sBoldText = true;
+	private static boolean sHideText;
+	private static boolean sCreateOverlay = true;
+	private static int sFontSize = defaultFontSize;
+	private static boolean sLabelAll;
+	
+	private double barWidth = sBarWidth;
+	private int barHeightInPixels = sBarHeightInPixels;
+	private String location = sLocation;
+	private String color = sColor;
+	private String bcolor = sBcolor;
+	private boolean boldText = sBoldText;
+	private boolean hideText = sHideText;
+	private boolean createOverlay = sCreateOverlay;
+	private int fontSize = sFontSize;
+	private boolean labelAll = sLabelAll;
+
 	ImagePlus imp;
 	double imageWidth;
-	double mag;
+	double mag = 1.0;
 	int xloc, yloc;
 	int barWidthInPixels;
 	int roiX=-1, roiY, roiWidth, roiHeight;
@@ -59,6 +72,13 @@ public class ScaleBar implements PlugIn {
 	}
 
 	boolean showDialog(ImagePlus imp) {
+		if (IJ.macroRunning()) {
+			barHeightInPixels = defaultBarHeight;
+			location = locations[LOWER_RIGHT];
+			color = colors[0];
+			bcolor = bcolors[0];
+			fontSize = defaultFontSize;
+		}
 		Roi roi = imp.getRoi();
 		if (roi!=null) {
 			Rectangle r = roi.getBounds();
@@ -145,8 +165,21 @@ public class ScaleBar implements PlugIn {
 		createOverlay = gd.getNextBoolean();
 		if (stackSize>1)
 			labelAll = gd.getNextBoolean();
-		if (IJ.macroRunning()) updateScalebar();
-		 return true;
+		if (IJ.macroRunning())
+			updateScalebar();
+		else {
+			sBarWidth = barWidth;
+			sBarHeightInPixels = barHeightInPixels;
+			sLocation = location;
+			sColor = color;
+			sBcolor = bcolor;
+			sBoldText = boldText;
+			sHideText = hideText;
+			sCreateOverlay = createOverlay;
+			sFontSize = fontSize;
+			sLabelAll = labelAll;
+		}
+		return true;
 	}
 
 	void drawScaleBar(ImagePlus imp) {
@@ -268,22 +301,34 @@ public class ScaleBar implements PlugIn {
 		barWidthInPixels = (int)(barWidth/cal.pixelWidth);
 		int width = imp.getWidth();
 		int height = imp.getHeight();
-		int fraction = 20;
-		int x = width - width/fraction - barWidthInPixels;
+		int margin = (width+height)/100;
+		if (mag==1.0)
+			margin = (int)(margin*1.5);
+		int fontType = boldText?Font.BOLD:Font.PLAIN;
+		String font = serifFont?"Serif":"SanSerif";
+		ImageProcessor ip = imp.getProcessor();
+		ip.setFont(new Font(font, fontType, fontSize));
+		ip.setAntialiasedText(true);
+		String label = getLength(barWidth)+" "+getUnits(imp);
+		int swidth = hideText?0:ip.getStringWidth(label);
+		int labelWidth = (swidth < barWidthInPixels)?0:(int) (barWidthInPixels-swidth)/2;
+		int x = 0;
 		int y = 0;
-		if (location.equals(locations[UPPER_RIGHT]))
-			 y = height/fraction;
-		else if (location.equals(locations[LOWER_RIGHT]))
-			y = height - height/fraction - barHeightInPixels - fontSize;
-		else if (location.equals(locations[UPPER_LEFT])) {
-			x = width/fraction;
-			y = height/fraction;
+		if (location.equals(locations[UPPER_RIGHT])) {
+			x = width - margin - barWidthInPixels + labelWidth;
+			y = margin;
+		} else if (location.equals(locations[LOWER_RIGHT])) {
+			x = width - margin - barWidthInPixels + labelWidth;
+			y = height - margin - barHeightInPixels - fontSize;
+		} else if (location.equals(locations[UPPER_LEFT])) {
+			x = margin - labelWidth;
+			y = margin;
 		} else if (location.equals(locations[LOWER_LEFT])) {
-			x = width/fraction;
-			y = height - height/fraction - barHeightInPixels - fontSize;
+			x = margin - labelWidth;
+			y = height - margin - barHeightInPixels - fontSize;
 		} else {
 			if (roiX==-1)
-				 return false;
+				return false;
 			x = roiX;
 			y = roiY;
 		}

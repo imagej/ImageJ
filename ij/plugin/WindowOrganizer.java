@@ -8,7 +8,7 @@ import java.awt.*;
 /** This class implements the Window menu's "Show All", "Main Window", "Cascade" and "Tile" commands. */
 public class WindowOrganizer implements PlugIn {
 
-	private static final int XSTART=4, YSTART=80, XOFFSET=8, YOFFSET=24,MAXSTEP=200,GAP=2;
+	private static final int XSTART=4, YSTART=94, XOFFSET=8, YOFFSET=24,MAXSTEP=200,GAP=2;
 	private int titlebarHeight = IJ.isMacintosh()?40:20;
 
 	public void run(String arg) {
@@ -64,7 +64,6 @@ public class WindowOrganizer implements PlugIn {
 		double averageHeight = totalHeight/nPics;
 		int tileWidth = (int)averageWidth;
 		int tileHeight = (int)averageHeight;
-		//IJ.write("tileWidth, tileHeight: "+tileWidth+" "+tileHeight);
  		int hspace = screen.width - 2 * GAP;
 		if (tileWidth>hspace)
 			tileWidth = hspace;
@@ -108,7 +107,6 @@ public class WindowOrganizer implements PlugIn {
 			ImageWindow win = getWindow(wList[i]);
 			if (win!=null) {
 				win.setLocation(hloc, vloc);
-				//IJ.write(i+" "+w+" "+tileWidth+" "+mag+" "+IJ.d2s(zoomFactor,2)+" "+zoomCount);
 				ImageCanvas canvas = win.getCanvas();
 				while (win.getSize().width*0.85>=tileWidth && canvas.getMagnification()>0.03125)
 					canvas.zoomOut(0, 0);

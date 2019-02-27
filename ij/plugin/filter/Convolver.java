@@ -64,7 +64,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	}
 	
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
-		gd = new GenericDialog("Convolver...", IJ.getInstance());
+		gd = new GenericDialog("Convolver...");
 		gd.addTextAreas(kernelText, null, 10, 30);
 		gd.addPanel(makeButtonPanel(gd));
 		gd.addCheckbox("Normalize Kernel", normalizeFlag);

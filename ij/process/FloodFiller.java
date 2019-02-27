@@ -134,7 +134,6 @@ public class FloodFiller {
 	
 	/** This method is used by the particle analyzer to remove interior holes from particle masks. */
 	public void particleAnalyzerFill(int x, int y, double level1, double level2, ImageProcessor mask, Rectangle bounds) {
-		//if (count>100) return;
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		//IJ.log("ff: "+x+" "+y+" "+level1+" "+level2+" "+ip+" "+mask+" "+bounds);
@@ -174,7 +173,7 @@ public class FloodFiller {
 				else if (inScanLine && y<height-1 && !inParticle(i,y+1,level1,level2))
 					inScanLine = false;
 			}
-		}        
+		} 
 	}
 	
 	final boolean inParticle(int x, int y, double level1, double level2) {
