@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52m20 15 February 2019</u>
+<li> <u>1.52m24 27 February 2019</u>
 <ul>
 <li> Thanks to Norbert Vischer, added the <i>File&gt;Show Folder</i>
 submenu.
@@ -33,15 +33,21 @@ Results table labels to not be displayed for line measurements if no
 measurement options were enabled in Analyze>Set Measurements.
 <li> Thanks to Stein Rorvik, fixed rounding errors in the
 <i>Image&gt;Scale</i> command.
+<li> Thanks to Norbert Vischer, fixed a bug that caused 
+the toolbar to be corrupted when opening an overlay
+containing multi-point selections.
+<li> Thanks to Norbert Vischer, fixed bugs that caused 
+numerous "//setTool()" statements to be recorded when opening
+ROI sets or overlays that contain multi-point selections.
+<li> Fixed a bug that caused multi-point selections to lose
+their 'pointBeforeDeleting' property when saved and re-opened.
 <li> Thanks to Stein Rorvik, fixed a 1.52d regression that caused
 <i>File&gt;Import&gt;Image Sequence</i> to use the image label
 (if present) as the slice label instead of the filename.
 <li> Thanks to Gilles Carpentier, fixed a 1.52k regression that
 caused the particle analyzer to unexpectedly create composite ROIs.
-<li> Thanks to Gilles Carpentier, fixed a 1.52k regression that
-caused the particle analyzer to unexpectedly create composite ROIs.
 <li> Thanks to Jan Eglinger, fixed a 1.52i regression that caused 
-macro string expressions like "s"+a[i]*n to generate an error.
+macro string expressions like <i>"s"+a[i]*n</i> to generate an error.
 </ul>
 
 <li> <u>1.52k 29 January 2019</u>

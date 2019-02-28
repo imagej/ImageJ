@@ -615,7 +615,7 @@ public class PointRoi extends PolygonRoi {
 						nCounters = counter + 1;
 				}
 			}
-			IJ.setTool("multi-point");
+			//IJ.setTool("multi-point");
 		}
 	}
 	

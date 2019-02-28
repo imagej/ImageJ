@@ -103,6 +103,7 @@ public class RoiDecoder {
 	public static final int ZERO_TRANSPARENT = 512;
 	public static final int SHOW_LABELS = 1024;
 	public static final int SCALE_LABELS = 2048;
+	public static final int PROMPT_BEFORE_DELETING = 4096; //points
 	
 	// types
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6,
@@ -294,6 +295,8 @@ public class RoiDecoder {
 						}
 						if ((options&SHOW_LABELS)!=0 && !ij.Prefs.noPointLabels)
 							((PointRoi)roi).setShowLabels(true);
+						if ((options&PROMPT_BEFORE_DELETING)!=0)
+							((PointRoi)roi).promptBeforeDeleting(true);
 						break;
 					}
 					int roiType;

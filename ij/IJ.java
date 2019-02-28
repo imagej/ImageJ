@@ -581,7 +581,7 @@ public class IJ {
     
     /**Displays a "no images are open" dialog box.*/
 	public static void noImage() {
-		String msg = "There are no images open.";
+		String msg = "There are no images open";
 		if (macroInterpreter!=null) {
 			macroInterpreter.abort(msg);
 			macroInterpreter = null;

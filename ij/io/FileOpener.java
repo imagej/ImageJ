@@ -9,7 +9,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.*;
-import ij.plugin.frame.ThresholdAdjuster;
+import ij.plugin.frame.*;
 
 /**
  * Opens or reverts an image specified by a FileInfo object. Images can
@@ -48,7 +48,11 @@ public class FileOpener {
 	
 	/** Opens the image and returns it has an ImagePlus object. */
 	public ImagePlus openImage() {
-		return open(false);
+		boolean wasRecording = Recorder.record;
+		Recorder.record = false;
+		ImagePlus imp = open(false);
+		Recorder.record = wasRecording;
+		return imp;
 	}
 
 	/** Opens the image and displays it. */
@@ -161,7 +165,7 @@ public class FileOpener {
 			imp.setProperty(Plot.PROPERTY_KEY, plot);
 		} catch (Exception e) { IJ.handleException(e); }
 		if (fi.roi!=null)
-			imp.setRoi(RoiDecoder.openFromByteArray(fi.roi));
+			decodeAndSetRoi(imp, fi);
 		if (fi.overlay!=null)
 			setOverlay(imp, fi.overlay);
 		if (show) imp.show();
@@ -236,7 +240,7 @@ public class FileOpener {
 		if (fi.info!=null)
 			imp.setProperty("Info", fi.info);
 		if (fi.roi!=null)
-			imp.setRoi(RoiDecoder.openFromByteArray(fi.roi));
+			decodeAndSetRoi(imp, fi);
 		if (fi.overlay!=null)
 			setOverlay(imp, fi.overlay);
 		if (show) imp.show();
@@ -247,6 +251,13 @@ public class FileOpener {
 			setStackDisplayRange(imp);
 		if (!silentMode) IJ.showProgress(1.0);
 		return imp;
+	}
+	
+	private void decodeAndSetRoi(ImagePlus imp, FileInfo fi) {
+		Roi roi = RoiDecoder.openFromByteArray(fi.roi);
+		imp.setRoi(roi);
+		if ((roi instanceof PointRoi) && ((PointRoi)roi).getNCounters()>1) 
+			IJ.setTool("multi-point");
 	}
 
 	void setStackDisplayRange(ImagePlus imp) {

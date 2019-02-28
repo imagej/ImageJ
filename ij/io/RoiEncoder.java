@@ -219,6 +219,8 @@ public class RoiEncoder {
 			putShort(RoiDecoder.STROKE_WIDTH, point.getSize());
 			if (point.getShowLabels())
 				options |= RoiDecoder.SHOW_LABELS;
+			if (point.promptBeforeDeleting())
+				options |= RoiDecoder.PROMPT_BEFORE_DELETING;
 		}
 
 		if (roi instanceof RotatedRectRoi || roi instanceof EllipseRoi) {

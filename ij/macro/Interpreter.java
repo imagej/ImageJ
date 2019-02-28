@@ -1296,15 +1296,22 @@ public class Interpreter implements MacroConstants {
 	}
 		
 	void showError(String title, String msg, String[] variables) {
+		boolean noImages = msg.startsWith("There are no images open");
+		if (noImages)
+			title = "No Images";
 		Macro.setOptions(null);
 		GenericDialog gd = new GenericDialog(title);
 		gd.setInsets(6,5,0);
 		gd.addMessage(msg);
 		gd.setInsets(15,30,5);
-		gd.addCheckbox("Show \"Debug\" Window", showVariables);
+		if (!noImages)
+			gd.addCheckbox("Show \"Debug\" Window", showVariables);
 		gd.hideCancelButton();
 		gd.showDialog();
-		showVariables = gd.getNextBoolean();
+		if (!noImages)
+			showVariables = gd.getNextBoolean();
+		else
+			showVariables = false;
 		if (!gd.wasCanceled() && showVariables)
 			updateDebugWindow(variables, null);
 	}
