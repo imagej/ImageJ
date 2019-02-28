@@ -113,7 +113,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		setLayout(new BorderLayout());
 		listModel = new DefaultListModel();
 		list.setModel(listModel);
-		list.setPrototypeCellValue("0000-0000-0000 ");		
+		GUI.scale(list);
+		list.setPrototypeCellValue("0000-0000-0000 ");
 		list.addListSelectionListener(this);
 		list.addKeyListener(ij);
 		list.addMouseListener(this);

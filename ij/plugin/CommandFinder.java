@@ -26,6 +26,7 @@ package ij.plugin;
 import ij.*;
 import ij.text.*;
 import ij.plugin.frame.Editor;
+import ij.gui.GUI;
 import ij.gui.HTMLDialog;
 import java.awt.*;
 import java.awt.event.*;
@@ -421,11 +422,16 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 
 		closeCheckBox = new JCheckBox("Close window after running command", closeWhenRunning);
+		GUI.scale(closeCheckBox);
 		closeCheckBox.addItemListener(this);
 
 		JPanel northPanel = new JPanel(new BorderLayout());
-		northPanel.add(new JLabel(" Search:"), BorderLayout.WEST);
+		JLabel searchLabel = new JLabel(" Search:");
+		GUI.scale(searchLabel);
+		northPanel.add(searchLabel, BorderLayout.WEST);
 		prompt = new JTextField("", 20);
+		GUI.scale(prompt);
+
 		prompt.getDocument().addDocumentListener(new PromptDocumentListener());
 		prompt.addKeyListener(this);
 		northPanel.add(prompt);
@@ -438,16 +444,13 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		table.setColumnSelectionAllowed(false);
 		//table.setAutoCreateRowSorter(true);
 		tableModel.setColumnWidths(table.getColumnModel());
+		GUI.scale(table);
+
 		Dimension dim = new Dimension(TABLE_WIDTH, table.getRowHeight()*TABLE_ROWS);
 		table.setPreferredScrollableViewportSize(dim);
 		table.addKeyListener(this);
 		table.addMouseListener(this);
-		double guiScale = Prefs.getGuiScale();
-		if (guiScale>1.0)
-			table.setRowHeight((int)(table.getRowHeight()*guiScale*0.9));
-		Font font = table.getFont();
-		if (font!=null && guiScale>1.0)
-			table.setFont(font.deriveFont((float)(font.getSize()*guiScale)));
+
 		// Auto-scroll table using keystrokes
 		table.addKeyListener(new KeyAdapter() {
 			public void keyTyped(final KeyEvent evt) {
@@ -479,9 +482,13 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		contentPane.add(scrollPane, BorderLayout.CENTER);
 
 		runButton = new JButton("Run");
+		GUI.scale(runButton);
 		sourceButton = new JButton("Source");
+		GUI.scale(sourceButton);
 		closeButton = new JButton("Close");
+		GUI.scale(closeButton);
 		helpButton = new JButton("Help");
+		GUI.scale(helpButton);
 		runButton.addActionListener(this);
 		sourceButton.addActionListener(this);
 		closeButton.addActionListener(this);
