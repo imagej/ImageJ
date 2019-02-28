@@ -246,6 +246,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		LayoutManager lm = getLayout();
 		if (lm instanceof ImageLayout)
 			((ImageLayout)lm).ignoreNonImageWidths(true);  //don't expand size to make the panel fit
+		GUI.scale(bottomPanel);
 		pack();
 
 		ImageProcessor ip = plot.getProcessor();
@@ -314,6 +315,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	/** Prepares and returns the popupMenu of the Data>> button */
 	PopupMenu getDataPopupMenu() {
 		dataPopupMenu = new PopupMenu();
+		GUI.scalePopupMenu(dataPopupMenu);
 		menuItems[SAVE] = addPopupItem(dataPopupMenu, "Save Data...");
 		menuItems[COPY] = addPopupItem(dataPopupMenu, "Copy 1st Data Set");
 		menuItems[COPY_ALL] = addPopupItem(dataPopupMenu, "Copy All Data");
@@ -327,6 +329,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	/** Prepares and returns the popupMenu of the More>> button */
 	PopupMenu getMorePopupMenu() {
 		morePopupMenu = new PopupMenu();
+		GUI.scalePopupMenu(morePopupMenu);
 		menuItems[SET_RANGE] = addPopupItem(morePopupMenu, "Set Range...");
 		menuItems[PREV_RANGE] = addPopupItem(morePopupMenu, "Previous Range");
 		menuItems[RESET_RANGE] = addPopupItem(morePopupMenu, "Reset Range");
