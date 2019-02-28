@@ -4,6 +4,7 @@ import ij.*;
 
 /** This class consists of static GUI utility methods. */
 public class GUI {
+	private static final Font DEF_GUI_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
 	private static Color lightGray = new Color(240,240,240);
 	private static boolean isWindows8;
 	private static Rectangle maxBounds;
@@ -31,7 +32,47 @@ public class GUI {
 		if (top<bounds.y) top=bounds.y;
 		win.setLocation(left, top);
 	}
-	
+
+	/**
+	 * Scales an AWT component according to {@link Prefs#getGuiScale()}.
+	 *
+	 * @param component the AWT component to be scaled. If a container, scaling is
+	 *                  applied to all its child components
+	 */
+	public static void scale(final Component component) {
+		final float scale = (float) Prefs.getGuiScale();
+		if (component instanceof Container)
+			scaleComponents((Container)component, scale);
+		else
+			scaleComponent(component, scale);
+	}
+
+	private static void scaleComponents(final Container container, final float scale) {
+		for (final Component child : container.getComponents()) {
+			if (child instanceof Container) {
+				scaleComponents((Container) child, scale);
+			}
+			else {
+				scaleComponent(child, scale);
+			}
+		}
+	}
+
+	private static void scaleComponent(final Component component, final float scale) {
+		Font font = component.getFont();
+		if (font == null) font = DEF_GUI_FONT;
+		font = font.deriveFont(scale * font.getSize());
+		component.setFont(font);
+	}
+
+	public static void scalePopupMenu(final PopupMenu popup) {
+		final float scale = (float) Prefs.getGuiScale();
+		Font font = popup.getFont();
+		if (font == null) font = DEF_GUI_FONT;
+		font = font.deriveFont(scale * font.getSize());
+		popup.setFont(font);
+	}
+
 	public static Rectangle getMaxWindowBounds() {
 		if (GraphicsEnvironment.isHeadless())
 			return new Rectangle(0,0,0,0);
