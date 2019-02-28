@@ -139,6 +139,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		panel.add(labelsCheckbox);
 		add("East", panel);		
 		addPopupMenu();
+		GUI.scale(this);
 		pack();
 		Dimension size = getSize();
 		if (size.width>270)
@@ -163,6 +164,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 	void addPopupMenu() {
 		pm=new PopupMenu();
+		GUI.scalePopupMenu(pm);
 		//addPopupItem("Select All");
 		addPopupItem("Open...");
 		addPopupItem("Save...");

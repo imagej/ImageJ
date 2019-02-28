@@ -98,6 +98,8 @@ public class SyncWindows extends PlugInFrame implements
 		instance = this;
 		panel = controlPanel();
 		add(panel);
+		GUI.scale(this);
+
 		pack();
 		setResizable(false);
 		IJ.register(this.getClass());
@@ -773,6 +775,7 @@ public class SyncWindows extends PlugInFrame implements
 		// When an StackWindow is replaced by an OpenStackWindow, updateWindowList
 		// is called again and the other components in the panel are removed, also.
 		Component newWindowList = buildWindowList();
+		GUI.scale(newWindowList);
 		panel.remove(0);
 		panel.add(newWindowList,BorderLayout.NORTH,0);
 		pack();

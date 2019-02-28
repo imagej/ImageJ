@@ -48,7 +48,7 @@ public class MemoryMonitor extends PlugInFrame {
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		g.setColor(Color.white);
 		g.fillRect(0, 0, WIDTH, HEIGHT);
-		g.setFont(new Font("SansSerif",Font.PLAIN,12));
+		g.setFont(new Font("SansSerif",Font.PLAIN,(int)(12*Prefs.getGuiScale())));
 		show();
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null) {

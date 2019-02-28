@@ -71,6 +71,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		if (IJ.isLinux()) textArea.setBackground(Color.white);
 		textArea.append(text);
 		add("Center", textArea);
+		GUI.scale(this);
 		pack();
 		GUI.center(this);
 		show();

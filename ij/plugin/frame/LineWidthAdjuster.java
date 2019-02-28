@@ -65,7 +65,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		add(panel, BorderLayout.CENTER);
 		slider.addAdjustmentListener(this);
 		slider.setUnitIncrement(1);
-		
+		GUI.scale(this);
 		pack();
 		Point loc = Prefs.getLocation(LOC_KEY);
 		if (loc!=null)
