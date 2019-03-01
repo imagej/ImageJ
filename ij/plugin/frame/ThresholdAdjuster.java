@@ -249,6 +249,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		add(panel, c);
 
  		addKeyListener(ij);  // ImageJ handles keyboard shortcuts
+		GUI.scale(this);
 		pack();
 		Point loc = Prefs.getLocation(LOC_KEY);
 		if (loc!=null)
@@ -1003,7 +1004,8 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 
 
 class ThresholdPlot extends Canvas implements Measurements, MouseListener {
-	static final int WIDTH = 256, HEIGHT=48;
+	static final int SCALE = (int) Math.round(Prefs.getGuiScale()); // either 1, 2 or 3
+	static final int WIDTH = 256 * SCALE, HEIGHT= 48 * SCALE;
 	int lowerThreshold = -1;
 	int upperThreshold = 170;
 	ImageStatistics stats;
@@ -1131,10 +1133,12 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 				osg.setColor(Color.white);
 				osg.fillRect(0, 0, WIDTH, HEIGHT);
 				osg.setColor(Color.gray);
-				for (int i = 0; i < WIDTH; i++) {
+				int xpos = 0;
+				for (int i = 0; i < 256; i++) {
 					if (hColors!=null) osg.setColor(hColors[i]);
-					int histValue = histogram[i]<hmax ? histogram[i] : hmax;
-					osg.drawLine(i, HEIGHT, i, HEIGHT - (HEIGHT*histogram[i]+hmax-1)/hmax);
+					//int histValue = histogram[i]<hmax ? histogram[i] : hmax;
+					for (int j = 0; j < SCALE; j++)
+						osg.drawLine(xpos, HEIGHT, xpos++, HEIGHT - (HEIGHT*histogram[i]+hmax-1)/hmax);
 				}
 				osg.dispose();
 			}
@@ -1148,6 +1152,8 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
  		g.drawRect(0, 0, WIDTH+1, HEIGHT+1);
  		if (lowerThreshold==-1)
  			return;
+ 		lowerThreshold *= SCALE;
+ 		upperThreshold *= SCALE;
 		if (mode==ThresholdAdjuster.OVER_UNDER) {
 			g.setColor(Color.blue);
 			g.drawRect(0, 0, lowerThreshold, HEIGHT+1);
