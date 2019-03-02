@@ -249,6 +249,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		add(panel, c);
 
  		addKeyListener(ij);  // ImageJ handles keyboard shortcuts
+		GUI.scale(this);
 		pack();
 		Point loc = Prefs.getLocation(LOC_KEY);
 		if (loc!=null)
@@ -546,8 +547,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
  		int max = (int)Math.round(maxThreshold);
  		if (max<0) max=0;
  		if (max>255) max=255;
-		plot.lowerThreshold = min;
-		plot.upperThreshold = max;
+ 		plot.setThreshold(min,max);
 		plot.mode = mode;
 		plot.repaint();
 	}
@@ -808,7 +808,6 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		}
 		minSlider.setValue((int)minThreshold);
 		maxSlider.setValue((int)maxThreshold);
-
 		scaleUpAndSet(ip, minThreshold, maxThreshold);
 	}
 
@@ -1003,9 +1002,12 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 
 
 class ThresholdPlot extends Canvas implements Measurements, MouseListener {
-	static final int WIDTH = 256, HEIGHT=48;
+	double scale = Prefs.getGuiScale();
+	int width = (int)Math.round(256*scale);
+	int height= (int)Math.round(48*scale);
 	int lowerThreshold = -1;
-	int upperThreshold = 170;
+ 	int upperThreshold = (int)Math.round(170*scale);
+
 	ImageStatistics stats;
 	int[] histogram;
 	Color[] hColors;
@@ -1021,13 +1023,13 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 
 	public ThresholdPlot() {
 		addMouseListener(this);
-		setSize(WIDTH+2, HEIGHT+2);
+		setSize(width+2, height+2);
 	}
 
     /** Overrides Component getPreferredSize(). Added to work
     	around a bug in Java 1.4.1 on Mac OS X.*/
     public Dimension getPreferredSize() {
-        return new Dimension(WIDTH+2, HEIGHT+2);
+        return new Dimension(width+2, height+2);
     }
 
 	ImageStatistics setHistogram(ImagePlus imp, boolean entireStack) {
@@ -1126,15 +1128,22 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 		if (g==null) return;
 		if (histogram!=null) {
 			if (os==null && hmax>0) {
-				os = createImage(WIDTH,HEIGHT);
+				os = createImage(width,height);
 				osg = os.getGraphics();
+				if (scale>1)
+					((Graphics2D)osg).setStroke(new BasicStroke((float)scale));
 				osg.setColor(Color.white);
-				osg.fillRect(0, 0, WIDTH, HEIGHT);
+				osg.fillRect(0, 0, width, height);
 				osg.setColor(Color.gray);
-				for (int i = 0; i < WIDTH; i++) {
+				double scale2 = width/256.0;
+				int barWidth = 1;
+				if (scale>1) barWidth=2;
+				if (scale>2) barWidth=3;
+				for (int i = 0; i < 256; i++) {
 					if (hColors!=null) osg.setColor(hColors[i]);
-					int histValue = histogram[i]<hmax ? histogram[i] : hmax;
-					osg.drawLine(i, HEIGHT, i, HEIGHT - (HEIGHT*histogram[i]+hmax-1)/hmax);
+					int x =(int)(i*scale2);
+					for (int j = 0; j<barWidth; j++)
+						osg.drawLine(x+j, height, x+j, height - ((int)(height*histogram[i]+hmax-1)/hmax));
 				}
 				osg.dispose();
 			}
@@ -1142,25 +1151,30 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 			g.drawImage(os, 1, 1, this);
 		} else {
 			g.setColor(Color.white);
-			g.fillRect(1, 1, WIDTH, HEIGHT);
+			g.fillRect(1, 1, width, height);
 		}
 		g.setColor(Color.black);
- 		g.drawRect(0, 0, WIDTH+1, HEIGHT+1);
+ 		g.drawRect(0, 0, width+1, height+1);
  		if (lowerThreshold==-1)
  			return;
 		if (mode==ThresholdAdjuster.OVER_UNDER) {
 			g.setColor(Color.blue);
-			g.drawRect(0, 0, lowerThreshold, HEIGHT+1);
+			g.drawRect(0, 0, lowerThreshold, height+1);
 			g.drawRect(0, 1, lowerThreshold, 1);
 			g.setColor(Color.green);
-			g.drawRect(upperThreshold+2, 0, WIDTH-upperThreshold-1, HEIGHT+1);
-			g.drawLine(upperThreshold+2, 1, WIDTH+1,1);
+			g.drawRect(upperThreshold+2, 0, width-upperThreshold-1, height+1);
+			g.drawLine(upperThreshold+2, 1, width+1,1);
 			return;
 		}
 		if (mode==ThresholdAdjuster.RED)
 			g.setColor(Color.red);
-		g.drawRect(lowerThreshold+1, 0, upperThreshold-lowerThreshold, HEIGHT+1);
+		g.drawRect(lowerThreshold+1, 0, upperThreshold-lowerThreshold, height+1);
 		g.drawLine(lowerThreshold+1, 1, upperThreshold+1, 1);
+	}
+	
+	void setThreshold(int min, int max) {
+ 		lowerThreshold = (int)Math.round(min*scale);
+ 		upperThreshold = (int)Math.round(max*scale);
 	}
 
 	public void mousePressed(MouseEvent e) {}

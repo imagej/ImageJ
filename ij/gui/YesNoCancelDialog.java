@@ -53,6 +53,7 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
 		}
 		add("South", panel);
 		addWindowListener(this);
+		GUI.scale(this);
 		pack();
 		GUI.center(this);
 		show();

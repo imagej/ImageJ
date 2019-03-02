@@ -1,9 +1,14 @@
 package ij.gui;
-import java.awt.*;
 import ij.*;
+import java.awt.*;
+import javax.swing.JComponent;
+import javax.swing.JList;
+import javax.swing.JTable;
+import javax.swing.UIManager;
 
 /** This class consists of static GUI utility methods. */
 public class GUI {
+	private static final Font DEFAULT_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
 	private static Color lightGray = new Color(240,240,240);
 	private static boolean isWindows8;
 	private static Rectangle maxBounds;
@@ -145,6 +150,88 @@ public class GUI {
 		gd.addMessage(msg);
 		gd.showDialog();
 		return !gd.wasCanceled();
+	}
+	
+	/**
+	 * Scales an AWT component according to {@link Prefs#getGuiScale()}.
+	 * @param component the AWT component to be scaled. If a container, scaling is applied to all its child components
+	 */
+	public static void scale(final Component component) {
+		final float scale = (float)Prefs.getGuiScale();
+		if (scale==1f)
+			return;
+		if (component instanceof Container)
+			scaleComponents((Container)component, scale);
+		else
+			scaleComponent(component, scale);
+	}
+
+	private static void scaleComponents(final Container container, final float scale) {
+		for (final Component child : container.getComponents()) {
+			if (child instanceof Container)
+				scaleComponents((Container) child, scale);
+			else
+				scaleComponent(child, scale);
+		}
+	}
+
+	private static void scaleComponent(final Component component, final float scale) {
+		Font font = component.getFont();
+		if (font == null)
+			font = DEFAULT_FONT;
+		font = font.deriveFont(scale*font.getSize());
+		component.setFont(font);
+	}
+
+	public static void scalePopupMenu(final PopupMenu popup) {
+		final float scale = (float) Prefs.getGuiScale();
+		if (scale==1f)
+			return;
+		Font font = popup.getFont();
+		if (font == null)
+			font = DEFAULT_FONT;
+		font = font.deriveFont(scale*font.getSize());
+		popup.setFont(font);
+	}
+	
+	/**
+	 * Tries to detect if a Swing component is unscaled and scales it it according
+	 * to {@link #getGuiScale()}.
+	 * <p>
+	 * This is mainly relevant to linux: Swing components scale automatically on
+	 * most platforms, specially since Java 8. However there are still exceptions to
+	 * this on linux: e.g., In Ubuntu, Swing components do scale, but only under the
+	 * GTK L&F. (On the other hand AWT components do not scale <i>at all</i> on
+	 * hiDPI screens on linux).
+	 * </p>
+	 * <p>
+	 * This method tries to avoid exaggerated font sizes by detecting if a component
+	 * has been already scaled by the UIManager, applying only
+	 * {@link #getGuiScale()} to the component's font if not.
+	 * </p>
+	 *
+	 * @param component the component to be scaled
+	 * @return true, if component's font was resized
+	 */
+	public static boolean scale(final JComponent component) {
+		final double guiScale = Prefs.getGuiScale();
+		if (guiScale == 1d)
+			return false;
+		Font font = component.getFont();
+		if (font == null && component instanceof JList)
+			font = UIManager.getFont("List.font");
+		else if (font == null && component instanceof JTable)
+			font = UIManager.getFont("Table.font");
+		else if (font == null)
+			font = UIManager.getFont("Label.font");
+		if (font.getSize() > DEFAULT_FONT.getSize())
+			return false;
+		if (component instanceof JTable)
+			((JTable) component).setRowHeight((int) (((JTable) component).getRowHeight() * guiScale * 0.9));
+		else if (component instanceof JList)
+			((JList<?>) component).setFixedCellHeight((int) (((JList<?>) component).getFixedCellHeight() * guiScale * 0.9));
+		component.setFont(font.deriveFont((float) guiScale * font.getSize()));
+		return true;
 	}
 
 }

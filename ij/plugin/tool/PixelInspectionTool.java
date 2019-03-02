@@ -205,6 +205,7 @@ class PixelInspector extends PlugInFrame
 					add(labels[p]);
 			}
 		}
+		GUI.scale(this);
 		pack();
 	}
 

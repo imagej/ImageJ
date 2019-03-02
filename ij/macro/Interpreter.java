@@ -1298,7 +1298,7 @@ public class Interpreter implements MacroConstants {
 	void showError(String title, String msg, String[] variables) {
 		boolean noImages = msg.startsWith("There are no images open");
 		if (noImages)
-			title = "No Images";
+			title = "No Image";
 		Macro.setOptions(null);
 		GenericDialog gd = new GenericDialog(title);
 		gd.setInsets(6,5,0);

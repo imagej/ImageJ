@@ -9,7 +9,9 @@ import java.awt.event.*;
 /** This plugin continuously plots ImageJ's memory utilization. 
 	Click on the plot to force the JVM to do garbage collection. */
 public class MemoryMonitor extends PlugInFrame {
- 	private static final int WIDTH=250, HEIGHT=90;
+	private static final double scale = Prefs.getGuiScale();
+ 	private static final int width = (int)(250*scale);
+ 	private static final int height = (int)(90*scale);
 	private static final String LOC_KEY = "memory.loc";
 	private static MemoryMonitor instance;
 	private Image image;
@@ -34,7 +36,7 @@ public class MemoryMonitor extends PlugInFrame {
 		
 		setLayout(new BorderLayout());
 		Canvas ic = new PlotCanvas();
-		ic.setSize(WIDTH, HEIGHT);
+		ic.setSize(width, height);
 		add(ic);
 		setResizable(false);
 		pack();
@@ -43,12 +45,12 @@ public class MemoryMonitor extends PlugInFrame {
 			setLocation(loc);
 		else
 			GUI.center(this);
-		image = createImage(WIDTH,HEIGHT);
+		image = createImage(width,height);
 		g = (Graphics2D)image.getGraphics();
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		g.setColor(Color.white);
-		g.fillRect(0, 0, WIDTH, HEIGHT);
-		g.setFont(new Font("SansSerif",Font.PLAIN,12));
+		g.fillRect(0, 0, width, height);
+		g.setFont(new Font("SansSerif",Font.PLAIN,(int)(12*Prefs.getGuiScale())));
 		show();
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null) {
@@ -56,7 +58,7 @@ public class MemoryMonitor extends PlugInFrame {
 			ic.addKeyListener(ij);
 			ic.addMouseListener(ij);
 		}
-		mem = new double[WIDTH+1];
+		mem = new double[width+1];
 		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
        	while (!done) {
 			updatePlot();
@@ -76,7 +78,7 @@ public class MemoryMonitor extends PlugInFrame {
 		}
 		g.drawString(s, 2, 15);
 		String images = ""+WindowManager.getImageCount();
-		g.drawString(images, WIDTH-(5+images.length()*8), 15);
+		g.drawString(images, width-(5+images.length()*8), 15);
 	}
 
 	void updatePlot() {
@@ -94,15 +96,15 @@ public class MemoryMonitor extends PlugInFrame {
 		int index2 = index+1;
 		if (index2==mem.length) index2 = 0;
 		g.setColor(Color.white);
-		g.fillRect(0, 0, WIDTH, HEIGHT);
+		g.fillRect(0, 0, width, height);
 	 	g.setColor(Color.black);	
-		double scale = HEIGHT/max;
+		double scale = height/max;
 		int x1 = 0;
-		int y1 = HEIGHT-(int)(mem[index2]*scale);
-		for (int x2=1; x2<WIDTH; x2++) {
+		int y1 = height-(int)(mem[index2]*scale);
+		for (int x2=1; x2<width; x2++) {
 			index2++;
 			if (index2==mem.length) index2 = 0;
-			int y2 = HEIGHT-(int)(mem[index2]*scale);
+			int y2 = height-(int)(mem[index2]*scale);
 			g.drawLine(x1, y1, x2, y2);
 			x1=x2; y1=y2;
 		}

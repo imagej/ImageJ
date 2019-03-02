@@ -15,14 +15,15 @@ import ij.text.TextWindow;
 /** This class is an extended ImageWindow that displays histograms. */
 public class HistogramWindow extends ImageWindow implements Measurements, ActionListener, 
 	ClipboardOwner, ImageListener, RoiListener, Runnable {
-	
-	static final int WIN_WIDTH = 300;
-	static final int WIN_HEIGHT = 240;
-	static final int HIST_WIDTH = 256;
-	static final int HIST_HEIGHT = 128;
-	static final int BAR_HEIGHT = 12;
-	static final int XMARGIN = 20;
-	static final int YMARGIN = 10;
+	private static final double SCALE = Prefs.getGuiScale();
+	static final int HIST_WIDTH = (int)(SCALE*256);
+	static final int HIST_HEIGHT = (int)(SCALE*128);
+	static final int XMARGIN = (int)(20*SCALE);
+	static final int YMARGIN = (int)(10*SCALE);
+	static final int WIN_WIDTH = HIST_WIDTH + (int)(44*SCALE);
+	static final int WIN_HEIGHT = HIST_HEIGHT + (int)(112*SCALE);
+	static final int BAR_HEIGHT = (int)(SCALE*12);
+
 	static final int INTENSITY1=0, INTENSITY2=1, RGB=2, RED=3, GREEN=4, BLUE=5;
 	
 	protected ImageStatistics stats;
@@ -205,6 +206,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			buttons.add(valueAndCount);
 		}
 		add(buttons);
+		GUI.scale(buttons);
 		pack();
 		if (IJ.isMacOSX() && IJ.isJava18()) {
 			IJ.wait(50);
@@ -218,9 +220,9 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		if (value==null || count==null)
 			return;
 		if ((frame!=null)  && x>=frame.x && x<=(frame.x+frame.width)) {
-			x = x - frame.x;
-			if (x>255) x = 255;
-			int index = (int)(x*((double)histogram.length)/HIST_WIDTH);
+			x = (x - frame.x);
+			int index = (int)(x*(SCALE*histogram.length)/HIST_WIDTH/SCALE);
+			if (index>255) index = 255;
 			String vlabel=null, clabel=null;
 			if (blankLabel.length()==11) // OS X
 				{vlabel=" "; clabel=" ";}
@@ -267,10 +269,10 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
  		x = XMARGIN + 1;
 		y = YMARGIN + HIST_HEIGHT + 2;
 		if (imp==null)
-			lut.drawUnscaledColorBar(ip, x-1, y, 256, BAR_HEIGHT);
+			lut.drawUnscaledColorBar(ip, x-1, y, HIST_WIDTH, BAR_HEIGHT);
 		else
-			drawAlignedColorBar(imp, xMin, xMax, ip, x-1, y, 256, BAR_HEIGHT);
-		y += BAR_HEIGHT+15;
+			drawAlignedColorBar(imp, xMin, xMax, ip, x-1, y, HIST_WIDTH, BAR_HEIGHT);
+		y += BAR_HEIGHT+(int)(15*SCALE);
   		drawText(ip, x, y, fixedRange);
   		srcImageID = imp.getID();
 	}
@@ -388,7 +390,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 		
 	void drawText(ImageProcessor ip, int x, int y, boolean fixedRange) {
-		ip.setFont(new Font("SansSerif",Font.PLAIN,12));
+		ip.setFont(new Font("SansSerif",Font.PLAIN,(int)(12*SCALE)));
 		ip.setAntialiasedText(true);
 		double hmin = cal.getCValue(stats.histMin);
 		double hmax = cal.getCValue(stats.histMax);
@@ -417,14 +419,15 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		boolean showBins = binWidth!=1.0 || !fixedRange;
 		int col1 = XMARGIN + 5;
 		int col2 = XMARGIN + HIST_WIDTH/2;
-		int row1 = y+25;
-		if (showBins) row1 -= 8;
-		int row2 = row1 + 15;
-		int row3 = row2 + 15;
-		int row4 = row3 + 15;
+		int row1 = y+(int)(25*SCALE);
+		if (showBins) row1 -= (int)(8*SCALE);
+		int row2 = row1 + (int)(15*SCALE);
+		int row3 = row2 + (int)(15*SCALE);
+		int row4 = row3 + (int)(15*SCALE);
 		long count = stats.longPixelCount>0?stats.longPixelCount:stats.pixelCount;
 		String modeCount = " (" + stats.maxCount + ")";
 		if (modeCount.length()>12) modeCount = "";
+		
 		ip.drawString("Count: " + count, col1, row1);
 		ip.drawString("Mean: " + d2s(stats.mean), col1, row2);
 		ip.drawString("StdDev: " + d2s(stats.stdDev), col1, row3);
@@ -670,4 +673,3 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 
 }
-
