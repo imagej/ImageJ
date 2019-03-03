@@ -243,13 +243,22 @@ public class EllipseRoi extends PolygonRoi {
 			pw = cal.pixelWidth;
 			ph = cal.pixelHeight;
 		}
+		if (pw != ph)    //the following calculation holds only for pixel aspect ratio == 1 (otherwise different axes in distorted ellipse)
+			return a;
 		double[] p = getParams();
-		double dx = (p[2] - p[0])*pw;
-		double dy = (p[3] - p[1])*ph;
-		double major = Math.sqrt(dx*dx+dy*dy);
+		double dx = p[2] - p[0];  //this is always major axis; aspect ratio p[4] is limited to <= 1
+		double dy = p[3] - p[1];
+		double major = Math.sqrt(dx*dx + dy*dy);
 		double minor = major*p[4];
-		a[0] = major;
-		a[2] = (pw==ph)?minor:a[2];
+		a[0] = major*pw; //Feret from convex hull should be accurate anyhow
+		a[2] = minor*pw; //here our own calculation is better
+		System.arraycopy(p, 0, a, 8, 4);  //MaxFeret endpoints
+		double xCenter = 0.5*(p[2] + p[0]);
+		double yCenter = 0.5*(p[3] + p[1]);
+		double semiMinorX = dy * 0.5 * p[4];
+		double semiMinorY = dx * (-0.5) * p[4];
+		a[12] = xCenter + semiMinorX; a[14] = xCenter - semiMinorX;
+		a[13] = yCenter + semiMinorY; a[15] = yCenter - semiMinorY;
 		return a;
 	}
 	

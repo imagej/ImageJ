@@ -12,9 +12,9 @@ import java.awt.event.*;
 public class PolygonRoi extends Roi {
 
 	protected int maxPoints = 1000; // will be increased if necessary
-	protected int[] xp, yp;		// image coordinates relative to origin of roi bounding box
+	protected int[] xp, yp;		    // image coordinates relative to origin of roi bounding box
 	protected float[] xpf, ypf;		// or alternative sub-pixel coordinates
-	protected int[] xp2, yp2;	// absolute screen coordinates
+	protected int[] xp2, yp2;	    // absolute screen coordinates
 	protected int nPoints;
 	protected float[] xSpline,ySpline; // relative image coordinates
 	protected int splinePoints = 200;
@@ -150,6 +150,8 @@ public class PolygonRoi extends Roi {
 					subPixel = true;
 				break;
 		}
+		previousSX = sx;
+		previousSY = sy;
 		x = ic.offScreenX(sx);
 		y = ic.offScreenY(sy);
 		startXD = subPixelResolution()?ic.offScreenXD(sx):x;
@@ -371,6 +373,19 @@ public class PolygonRoi extends Roi {
 	public void mouseMoved(MouseEvent e) {
 		int sx = e.getX();
 		int sy = e.getY();
+		int flags = e.getModifiers();
+		constrain = (flags&Event.SHIFT_MASK)!=0;
+		if (constrain) {  // constrain in 90deg steps
+			int dx = sx - previousSX;
+			int dy = sy - previousSY;
+			if (Math.abs(dx) > Math.abs(dy))
+				dy = 0;
+			else
+				dx = 0;
+			sx = previousSX + dx;
+			sy = previousSY + dy;
+		}
+
 		// Do rubber banding
 		int tool = Toolbar.getToolId();
 		if (!(tool==Toolbar.POLYGON || tool==Toolbar.POLYLINE || tool==Toolbar.ANGLE)) {
@@ -380,6 +395,8 @@ public class PolygonRoi extends Roi {
 		}
 		if (IJ.altKeyDown())
 			wipeBack();
+
+		
 		drawRubberBand(sx, sy);
 		degrees = Double.NaN;
 		double len = -1;
@@ -580,6 +597,17 @@ public class PolygonRoi extends Roi {
 	}
 	
 	protected void moveHandle(int sx, int sy) {
+		if (constrain) {  // constrain in 90deg steps
+			int dx = sx - previousSX;
+			int dy = sy - previousSY;
+			if (Math.abs(dx) > Math.abs(dy))
+				dy = 0;
+			else
+				dx = 0;
+			sx = previousSX + dx;
+			sy = previousSY + dy;
+		}
+
 		if (clipboard!=null) return;
 		int ox = ic.offScreenX(sx);
 		int oy = ic.offScreenY(sy);
@@ -699,7 +727,7 @@ public class PolygonRoi extends Roi {
 		}
 		FloatPolygon poly = new FloatPolygon(xpf, ypf, nPoints);
 		Rectangle r = poly.getBounds();
-		x = r.x;;
+		x = r.x;
 		y = r.y;
 		width = r.width;
 		height = r.height;
@@ -768,11 +796,10 @@ public class PolygonRoi extends Roi {
 			deleteHandle(oxd, oyd); 
 			return;
 		} else if (IJ.shiftKeyDown() && type!=POINT && !(this instanceof RotatedRectRoi)) {
-			addHandle(oxd, oyd); 
+			addHandle(oxd, oyd);
 			return;
 		}
-		state = MOVING_HANDLE;
-		activeHandle = handle;
+		super.mouseDownInHandle(handle, sx, sy); //sets state, activeHandle, previousSX&Y
 		int m = (int)(10.0/ic.getMagnification());
 		xClipMin=ox-m; yClipMin=oy-m; xClipMax=ox+m; yClipMax=oy+m;
 	}
@@ -853,7 +880,7 @@ public class PolygonRoi extends Roi {
 			if (imp!=null) imp.draw();
 		}
 	}
-	
+
 	private void setPolygon(FloatPolygon p2) {
 		nPoints = p2.npoints;	
 		if (nPoints>=maxPoints)
@@ -1071,6 +1098,18 @@ public class PolygonRoi extends Roi {
 				if (nPoints==xp.length)
 					enlargeArrays();
 			}
+			if (constrain) {  // this point was constrained in 90deg steps; correct coordinates
+				int dx = sx - previousSX;
+				int dy = sy - previousSY;
+				if (Math.abs(dx) > Math.abs(dy))
+					dy = 0;
+				else
+					dx = 0;
+				sx = previousSX + dx;
+				sy = previousSY + dy;
+			}
+			previousSX = sx;  //save for constraining next line if desired
+			previousSY = sy;
 			//if (lineWidth>1) fitSpline();
 			notifyListeners(RoiListener.EXTENDED);
 		}
@@ -1091,21 +1130,49 @@ public class PolygonRoi extends Roi {
 			}
 		}
 	}
-	
+	/** Returns whether the center of pixel (x,y) is contained in the Roi.
+	 *  The position of a pixel center determines whether a pixel is selected.
+	 *  Note the ImageJ convention of 0.5 pixel shift between outline and pixel centers,
+	 *  i.e., pixel (0,0) is enclosed by the rectangle spanned between (0,0) and (1,1).
+	 *  Points exactly at the left (right) border are considered outside (inside);
+	 *  points exactly on horizontal borders, are considered outside (inside) at the border
+	 *  with the lower (higher) y.
+	 *  This convention is opposite to that of the java.awt.Shape class.
+	 *  In x, the offset is chosen slightly below 0.5 to reduce the impact of numerical
+	 *  errors. */
 	public boolean contains(int x, int y) {
 		if (!super.contains(x, y))
 			return false;
 		if (xSpline!=null) {
 			FloatPolygon poly = new FloatPolygon(xSpline, ySpline, splinePoints);
-			return poly.contains(x-this.x, y-this.y);
+			return poly.contains(x - getXBase() + 0.4999, y - getYBase() + 0.5);
 		} else if (xpf!=null) {
 			FloatPolygon poly = new FloatPolygon(xpf, ypf, nPoints);
-			return poly.contains(x-this.x, y-this.y);
+			return poly.contains(x - getXBase() + 0.4999, y - getYBase() + 0.5);
 		} else {
 			Polygon poly = new Polygon(xp, yp, nPoints);
-			return poly.contains(x-this.x, y-this.y);
+			return poly.contains(x - this.x + 0.4999, y - this.y + 0.5);
 		}
 	}
+
+	/** Returns whether coordinate (x,y) is contained in the Roi.
+	 *  Note that the coordinate (0,0) is the top-left corner of pixel (0,0).
+	 *  Use contains(int, int) to determine whether a given pixel is contained in the Roi. */
+	public boolean containsPoint(double x, double y) {
+		if (!super.containsPoint(x, y))
+			return false;
+		if (xSpline!=null) {
+			FloatPolygon poly = new FloatPolygon(xSpline, ySpline, splinePoints);
+			return poly.contains(x - getXBase() +1e-7, y - getYBase() + 1e-10);
+		} else if (xpf!=null) {
+			FloatPolygon poly = new FloatPolygon(xpf, ypf, nPoints);
+			return poly.contains(x - getXBase() + 1e-7, y - getYBase() + 1e-10);
+		} else {
+			Polygon poly = new Polygon(xp, yp, nPoints);
+			return poly.contains(x - this.x + 1e-7, y - this.y + 1e-10);
+		}
+	}
+
 	
 	/** Returns a handle number if the specified screen coordinates are	 
 		inside or near a handle, otherwise returns -1. */
@@ -1127,18 +1194,20 @@ public class PolygonRoi extends Roi {
 	}
 
 	public ImageProcessor getMask() {
-		if (cachedMask!=null && cachedMask.getPixels()!=null
-		&& cachedMask.getWidth()==width && cachedMask.getHeight()==height)
-			return cachedMask;
+		ImageProcessor mask = cachedMask;
+		if (mask!=null && mask.getPixels()!=null
+		&& mask.getWidth()==width && mask.getHeight()==height)
+			return mask;
 		PolygonFiller pf = new PolygonFiller();
 		if (xSpline!=null)
-			pf.setPolygon(toIntR(xSpline), toIntR(ySpline), splinePoints);
+			pf.setPolygon(xSpline, ySpline, splinePoints, (float)(getXBase()-x), (float)(getYBase()-y));
 		else if (xpf!=null)
-			pf.setPolygon(toIntR(xpf), toIntR(ypf), nPoints);
+			pf.setPolygon(xpf, ypf, nPoints, (float)(getXBase()-x), (float)(getYBase()-y));
 		else
 			pf.setPolygon(xp, yp, nPoints);
-		cachedMask = pf.getMask(width, height);
-		return cachedMask;
+		mask = pf.getMask(width, height);
+		cachedMask = mask;
+		return mask;
 	}
 
 	/** Returns the length of this line selection after
@@ -1225,18 +1294,21 @@ public class PolygonRoi extends Roi {
 		return length;
 	}
 
-	/** Returns the perimeter length of ROIs created using the
-		wand tool and the particle analyzer. The algorithm counts
-		edge pixels as 1 and corner pixels as sqrt(2). It does this by
-		calculating the total length of the ROI boundary and subtracting
-		2-sqrt(2) for each non-adjacent corner. For example, a 1x1 pixel
-		ROI has a boundary length of 4 and 2 non-adjacent edges so the
-		perimeter is 4-2*(2-sqrt(2)). A 2x2 pixel ROI has a boundary length
-		of 8 and 4 non-adjacent edges so the perimeter is 8-4*(2-sqrt(2)).
-	*/
+	/** Returns the perimeter length of ROIs created using the wand tool
+	 *  and the particle analyzer. The algorithm counts pixels in straight edges
+	 *  as 1 and pixels in corners as sqrt(2).
+	 *  It does this by calculating the total length of the ROI boundary and subtracting
+	 *  2-sqrt(2) for each non-adjacent corner. For example, a 1x1 pixel
+	 *  ROI has a boundary length of 4 and 2 non-adjacent edges so the
+	 *  perimeter is 4-2*(2-sqrt(2)). A 2x2 pixel ROI has a boundary length
+	 *  of 8 and 4 non-adjacent edges so the perimeter is 8-4*(2-sqrt(2)).
+	 *  Note that this code can currently create inconsistent legths depending on
+	 *  the starting position.
+	 */
 	double getTracedPerimeter() {
 		if (xp==null)
 			return Double.NaN;
+		if (nPoints < 4) return 0;
 		int sumdx = 0;
 		int sumdy = 0;
 		int nCorners = 0;
@@ -1270,6 +1342,37 @@ public class PolygonRoi extends Roi {
 			h = cal.pixelHeight;
 		}
 		return sumdx*w+sumdy*h-(nCorners*((w+h)-Math.sqrt(w*w+h*h)));
+		/* Alternative code leading to slightly different results:
+		 *  It does this by calculating the total length of the ROI boundary
+		 *  and subtracting 1-sqrt(2)/2 for each corner.
+		 *  For example, a 1x1 pixel ROI has a boundary length of 4 and
+		 *  and 4 corners so the perimeter is 4-4*(1-sqrt(2)/2) = 2*sqrt(2).
+		 *  A 2x2 pixel ROI has a boundary length of 8 and 4 corners so the
+		 *  perimeter is 8-4*(1-sqrt(2)/2) = 4 + 2*sqrt(2).		/*	int x0 = xp[nPoints-2];
+		int y0 = yp[nPoints-2];
+		int x1 = xp[nPoints-1];
+		int y1 = yp[nPoints-1];
+		int sumdx = 0;
+		int sumdy = 0;
+		int nCorners = 0;
+		for (int i=0; i<nPoints; i++) {
+			int x2 = xp[i];
+			int y2 = yp[i];  //The following is the cross product r01 x r12 = (x1-x0)*(y2-y1) - (y1-y0)*(x2-x1)
+			int crossProduct = x0*(y1-y2) - y0*(x1-x2) + (y2*x1-y1*x2);
+			if (crossProduct != 0) nCorners++;
+			sumdx += Math.abs(x2-x1);
+			sumdy += Math.abs(y2-y1);
+			x0 = x1; y0 = y1;
+			x1 = x2; y1 = y2;
+		}
+		double pw=1.0, ph=1.0;  //pixel width & height (in scaled units)
+		if (imp!=null) {
+			Calibration cal = imp.getCalibration();
+			pw = cal.pixelWidth;
+			ph = cal.pixelHeight;
+		}
+		return sumdx*pw + sumdy*ph - 0.5*nCorners*((pw+ph) - Math.sqrt(pw*pw+ph*ph));
+		*/
 	}
 
 	/** Returns the perimeter (for ROIs) or length (for lines).*/
@@ -1417,7 +1520,7 @@ public class PolygonRoi extends Roi {
 		return new Polygon(xpoints2, ypoints2, n);
 	}
 	
-	/** Returns this polygon or polyline as float arrays. */
+	/** Returns this polygon or polyline as float arrays in image pixel coordinates. */
 	public FloatPolygon getFloatPolygon() {
 		int n = xSpline!=null?splinePoints:nPoints;
 		float[] xpoints2 = new float[n];
@@ -1450,68 +1553,6 @@ public class PolygonRoi extends Roi {
 
 	public boolean subPixelResolution() {
 		return subPixel;
-	}
-
-	/** Uses the gift wrap algorithm to find the 
-		convex hull and returns it as a Polygon. */
-	public Polygon getConvexHull() {
-		int n = getNCoordinates();
-		int[] xCoordinates = getXCoordinates();
-		int[] yCoordinates = getYCoordinates();
-		Rectangle r = getBounds();
-		int xbase = r.x;
-		int ybase = r.y;
-		int[] xx = new int[n];
-		int[] yy = new int[n];
-		int n2 = 0;
-		int smallestY = Integer.MAX_VALUE;
-		int x, y;
-		for (int i=0; i<n; i++) {
-			y = yCoordinates[i];
-			if (y<smallestY)
-			smallestY = y;
-		}
-		int smallestX = Integer.MAX_VALUE;
-		int p1 = 0;
-		for (int i=0; i<n; i++) {
-			x = xCoordinates[i];
-			y = yCoordinates[i];
-			if (y==smallestY && x<smallestX) {
-				smallestX = x;
-				p1 = i;
-			}
-		}
-		int pstart = p1;
-		int x1, y1, x2, y2, x3, y3, p2, p3;
-		int determinate;
-		int count = 0;
-		do {
-			x1 = xCoordinates[p1];
-			y1 = yCoordinates[p1];
-			p2 = p1+1; if (p2==n) p2=0;
-			x2 = xCoordinates[p2];
-			y2 = yCoordinates[p2];
-			p3 = p2+1; if (p3==n) p3=0;
-			do {
-				x3 = xCoordinates[p3];
-				y3 = yCoordinates[p3];
-				determinate = x1*(y2-y3)-y1*(x2-x3)+(y3*x2-y2*x3);
-				if (determinate>0)
-					{x2=x3; y2=y3; p2=p3;}
-				p3 += 1;
-				if (p3==n) p3 = 0;
-			} while (p3!=p1);
-			if (n2<n) { 
-				xx[n2] = xbase + x1;
-				yy[n2] = ybase + y1;
-				n2++;
-			} else {
-				count++;
-				if (count>10) return null;
-			}
-			p1 = p2;
-		} while (p1!=pstart);
-		return new Polygon(xx, yy, n2);
 	}
 		
 	public FloatPolygon getInterpolatedPolygon(double interval, boolean smooth) {

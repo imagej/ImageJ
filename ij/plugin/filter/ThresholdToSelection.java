@@ -409,13 +409,10 @@ public class ThresholdToSelection implements PlugInFilter {
 		}
 
 		ShapeRoi shape = new ShapeRoi(path);
-		Roi roi = shape!=null?shape.shapeToRoi():null; // try to convert to non-composite ROI
+		Roi roi = shape!=null ? shape.trySimplify():null; // try to convert to non-composite ROI
 		if (showStatus)
 			IJ.showProgress(1.0);
-		if (roi!=null)
-			return roi;
-		else
-			return shape;
+		return roi;
 	}
 
 	public int setup(String arg, ImagePlus imp) {

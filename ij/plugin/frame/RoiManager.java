@@ -114,7 +114,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		listModel = new DefaultListModel();
 		list.setModel(listModel);
 		GUI.scale(list);
-		list.setPrototypeCellValue("0000-0000-0000 ");			
+		list.setPrototypeCellValue("0000-0000-0000 ");		
 		list.addListSelectionListener(this);
 		list.addKeyListener(ij);
 		list.addMouseListener(this);
@@ -164,7 +164,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	void addPopupMenu() {
-		pm=new PopupMenu();
+		pm = new PopupMenu();
 		GUI.scalePopupMenu(pm);
 		addPopupItem("Open...");
 		addPopupItem("Save...");
@@ -1412,19 +1412,20 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			error("More than one item must be selected, or none");
 			return;
 		}
-		int nPointRois = 0;
-		for (int i=0; i<rois.length; i++) {
-			if (rois[i].getType()==Roi.POINT)
-				nPointRois++;
-			else
-				break;
-		}
-		if (nPointRois==rois.length)
+		if (countPointRois(rois)==rois.length)
 			combinePoints(imp, rois);
 		else
 			combineRois(imp, rois);
 	}
-	
+
+	private int countPointRois(Roi[] rois) {
+		int nPointRois = 0;
+		for (Roi roi : rois)
+			if (roi.getType()==Roi.POINT)
+				nPointRois++;
+		return nPointRois;
+	}
+
 	private void combineRois(ImagePlus imp, Roi[] rois) {
 		IJ.resetEscape();
 		ShapeRoi s1=null, s2=null;
@@ -1436,7 +1437,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				return;
 			}
 			Roi roi = rois[i];
-			if (!roi.isArea()) {
+			if (!roi.isArea() && roi.getType() != Roi.POINT) {
 				if (ip==null)
 					ip = new ByteProcessor(imp.getWidth(), imp.getHeight());
 				roi = convertLineToPolygon(roi, ip);
@@ -1458,17 +1459,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			}
 		}
 		if (s1!=null)
-			imp.setRoi(simplifyShapeRoi(s1));
-	}
-
-	private Roi simplifyShapeRoi(ShapeRoi sRoi) { //convert composite roi to simple roi if possible
-		Roi[] rois = sRoi.getRois();
-		if (rois.length != 1) return sRoi;
-		int type = rois[0].getType();
-		if (type==Roi.POLYGON || type==Roi.FREEROI)
-			return rois[0];
-		else
-			return sRoi;
+			imp.setRoi(s1.trySimplify());
 	}
 
 	Roi convertLineToPolygon(Roi roi, ImageProcessor ip) {
@@ -1489,49 +1480,49 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 	void combinePoints(ImagePlus imp, Roi[] rois) {
 		int n = rois.length;
-		Polygon[] p = new Polygon[n];
-		int points = 0;
-		for (int i=0; i<n; i++) {
-			p[i] = rois[i].getPolygon();
-			points += p[i].npoints;
+		FloatPolygon fp = new FloatPolygon();
+		for (int r=0; r<n; r++) {
+			FloatPolygon fpi = rois[r].getFloatPolygon();
+			for (int i=0; i<fpi.npoints; i++)
+				fp.addPoint(fpi.xpoints[i], fpi.ypoints[i]);
 		}
-		if (points==0)
-			return;
-		int[] xpoints = new int[points];
-		int[] ypoints = new int[points];
-		int index = 0;
-		for (int i=0; i<p.length; i++) {
-			for (int j=0; j<p[i].npoints; j++) {
-				xpoints[index] = p[i].xpoints[j];
-				ypoints[index] = p[i].ypoints[j];
-				index++;
-			}	
-		}
-		imp.setRoi(new PointRoi(xpoints, ypoints, xpoints.length));
+		imp.setRoi(new PointRoi(fp));
 	}
 
+	/** Intersection of area rois or PointRois.
+	 *  If there is one PointRoi in the list of selected Rois, the points inside all selected area rois are kept.
+	 *  If more than one PointRoi is selected, the PointRois get converted to area rois with each pixel containing
+	 *  at least one point selected. */
 	void and() {
 		ImagePlus imp = getImage();
 		if (imp==null) return;
-		int[] indexes = getSelectedIndexes();
-		if (indexes.length==1) {
+		Roi[] rois = getSelectedRoisAsArray();
+		if (rois.length==1) {
 			error("More than one item must be selected, or none");
 			return;
 		}
-		if (indexes.length==0)
-			indexes = getAllIndexes();
-		ShapeRoi s1=null, s2=null;
-		for (int i=0; i<indexes.length; i++) {
-			Roi roi = (Roi)rois.get(indexes[i]);
-			if (roi==null || !roi.isArea())
+		int nPointRois = countPointRois(rois);
+		ShapeRoi s1=null;
+		PointRoi pointRoi = null;
+		for (Roi roi : rois) {
+			if (roi==null || !(roi.isArea() || roi.getType() == Roi.POINT))
 				continue;
 			if (s1==null) {
+				if (nPointRois == 1 && roi.getType() == Roi.POINT) {
+					pointRoi = (PointRoi)roi;
+					continue;  //PointRoi will be handled at the end
+				}
 				if (roi instanceof ShapeRoi)
 					s1 = (ShapeRoi)roi.clone();
 				else
 					s1 = new ShapeRoi(roi);
-				if (s1==null) return;
+				if (s1==null) continue;
 			} else {
+				if (nPointRois == 1 && roi.getType() == Roi.POINT) {
+					pointRoi = (PointRoi)roi;
+					continue;  //PointRoi will be handled at the end
+				}
+				ShapeRoi s2 = null;
 				if (roi instanceof ShapeRoi)
 					s2 = (ShapeRoi)roi.clone();
 				else
@@ -1540,7 +1531,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				s1.and(s2);
 			}
 		}
-		if (s1!=null) imp.setRoi(simplifyShapeRoi(s1));
+		if (s1==null) return;
+		if (pointRoi != null) imp.setRoi(pointRoi.containedPoints(s1));
+		else imp.setRoi(s1.trySimplify());
 		if (record()) Recorder.record("roiManager", "AND");
 	}
 
@@ -1557,7 +1550,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ShapeRoi s1=null, s2=null;
 		for (int i=0; i<indexes.length; i++) {
 			Roi roi = (Roi)rois.get(indexes[i]);
-			if (!roi.isArea()) continue;
+			if (roi==null || !(roi.isArea() || roi.getType() == Roi.POINT))
+				continue;
 			if (s1==null) {
 				if (roi instanceof ShapeRoi)
 					s1 = (ShapeRoi)roi.clone();
@@ -1573,7 +1567,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				s1.xor(s2);
 			}
 		}
-		if (s1!=null) imp.setRoi(simplifyShapeRoi(s1));
+		if (s1!=null) imp.setRoi(s1.trySimplify());
 		if (record()) Recorder.record("roiManager", "XOR");
 	}
 

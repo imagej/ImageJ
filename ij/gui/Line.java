@@ -163,6 +163,16 @@ public class Line extends Roi {
 	}
 
 	protected void moveHandle(int sx, int sy) {
+		if (constrain && activeHandle == 2) {  // constrain translation in 90deg steps
+			int dx = sx - previousSX;
+			int dy = sy - previousSY;
+			if (Math.abs(dx) > Math.abs(dy))
+				dy = 0;
+			else
+				dx = 0;
+			sx = previousSX + dx;
+			sy = previousSY + dy;
+		}
 		double offset = getOffset(-0.5);
 		double ox = ic.offScreenXD(sx)+offset;
 		double oy = ic.offScreenYD(sy)+offset;
@@ -333,8 +343,7 @@ public class Line extends Roi {
 	}
 
 	protected void mouseDownInHandle(int handle, int sx, int sy) {
-		state = MOVING_HANDLE;
-		activeHandle = handle;
+		super.mouseDownInHandle(handle, sx, sy); //sets state, activeHandle, previousSX&Y
 		if (getStrokeWidth()<=3)
 			ic.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 	}

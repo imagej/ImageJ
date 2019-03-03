@@ -40,8 +40,8 @@ public class PointRoi extends PolygonRoi {
 	private static int defaultCounter;
 	private int counter;
 	private int nCounters = 1;
-	private short[] counters;
-	private short[] positions;
+	private short[] counters;   //for each point, 0-100 for counter (=category that can be defined by the user)
+	private int[] positions;    //for each point, the stack slice, or 0 for 'show on all'
 	private int[] counts = new int[MAX_COUNTERS];
 	private ResultsTable rt;
 	private long lastPointTime;
@@ -65,12 +65,14 @@ public class PointRoi extends PolygonRoi {
 	public PointRoi(int[] ox, int[] oy, int points) {
 		super(itof(ox), itof(oy), points, POINT);
 		width+=1; height+=1;
+		updateCounts();
 	}
 
 	/** Creates a new PointRoi using the specified float arrays of offscreen coordinates. */
 	public PointRoi(float[] ox, float[] oy, int points) {
 		super(ox, oy, points, POINT);
 		width+=1; height+=1;
+		updateCounts();
 	}
 
 	/** Creates a new PointRoi using the specified float arrays of offscreen coordinates. */
@@ -213,7 +215,7 @@ public class PointRoi extends PolygonRoi {
 		//IJ.log("draw: "+positions+" "+imp.getCurrentSlice());
 		for (int i=0; i<nPoints; i++) {
 			//IJ.log(i+" "+slice+" "+(positions!=null?positions[i]:-1));
-			if (slice==0 || (positions!=null&&(slice==positions[i])||positions[i]==0))
+			if (slice==0 || (positions!=null&&(slice==positions[i]||positions[i]==0)))
 				drawPoint(g, xp2[i], yp2[i], i+1);
 		}
 		if (updateFullWindow) {
@@ -368,20 +370,20 @@ public class PointRoi extends PolygonRoi {
 		if (counter!=0 || isStack || counters!=null) {
 			if (counters==null) {
 				counters = new short[nPoints*2];
-				positions = new short[nPoints*2];
+				positions = new int[nPoints*2];
 			}
 			counters[nPoints-1] = (short)counter;
 			if (imp!=null)
-					positions[nPoints-1] = imp.getStackSize()>1?(short)imp.getCurrentSlice():0;
+					positions[nPoints-1] = imp.getStackSize()>1 ? imp.getCurrentSlice() : 0;
 			//if (positions[nPoints-1]==0 || positions[nPoints-1]==1 || counters[nPoints-1]==0)
 			//	IJ.log("incrementCounter: "+nPoints+" "+" "+positions[nPoints-1]+" "+counters[nPoints-1]+" "+imp);
 			if (nPoints+1==counters.length) {
 				short[] temp = new short[counters.length*2];
 				System.arraycopy(counters, 0, temp, 0, counters.length);
 				counters = temp;
-				temp = new short[counters.length*2];
-				System.arraycopy(positions, 0, temp, 0, positions.length);
-				positions = temp;
+				int[] temp1 = new int[counters.length*2];
+				System.arraycopy(positions, 0, temp1, 0, positions.length);
+				positions = temp1;
 			}
 		}
 		if (rt!=null && WindowManager.getFrame(getCountsTitle())!=null)
@@ -434,14 +436,25 @@ public class PointRoi extends PolygonRoi {
 		PointToolOptions.update();
 	}
 	
-	/** Subtract the points that intersect the specified ROI and return 
-		the result. Returns null if there are no resulting points. */
+	/** Returns the points of this Roi that are not contained in the specified area ROI.
+	 *  Returns null if there are no resulting points or Roi is not an area roi. */
 	public PointRoi subtractPoints(Roi roi) {
-		Polygon points = getPolygon();
-		Polygon poly = roi.getPolygon();
-		Polygon points2 = new Polygon();
+		return checkContained(roi, false);
+	}
+
+	/** Returns the points of this Roi that are contained in the specified area ROI.
+	 *  Returns null if there are no resulting points or Roi is not an area roi. */
+	public PointRoi containedPoints(Roi roi) {
+		return checkContained(roi, true);
+	}
+
+	/** Returns the points contained (not contained) in <code>roi</code> if <code>keepContained</code> is true (false). */
+	PointRoi checkContained(Roi roi, boolean keepContained) {
+		if (!roi.isArea()) return null;
+		FloatPolygon points = getFloatPolygon();
+		FloatPolygon points2 = new FloatPolygon();
 		for (int i=0; i<points.npoints; i++) {
-			if (!poly.contains(points.xpoints[i], points.ypoints[i]))
+			if (keepContained == roi.containsPoint(points.xpoints[i], points.ypoints[i]))
 				points2.addPoint(points.xpoints[i], points.ypoints[i]);
 		}
 		if (points2.npoints==0)
@@ -451,11 +464,14 @@ public class PointRoi extends PolygonRoi {
 	}
 
 	public ImageProcessor getMask() {
-		if (cachedMask!=null && cachedMask.getPixels()!=null)
-			return cachedMask;
-		ImageProcessor mask = new ByteProcessor(width, height);
+		ImageProcessor mask = cachedMask;
+		if (mask!=null && mask.getPixels()!=null)
+			return mask;
+		mask = new ByteProcessor(width, height);
+		double deltaX = getXBase() - x;
+		double deltaY = getYBase() - y;
 		for (int i=0; i<nPoints; i++)
-			mask.putPixel((int)Math.round(xpf[i]), (int)Math.round(ypf[i]), 255);
+			mask.putPixel((int)(xpf[i] + deltaX), (int)(ypf[i] + deltaY), 255);
 		cachedMask = mask;
 		return mask;
 	}
@@ -588,37 +604,51 @@ public class PointRoi extends PolygonRoi {
 		defaultCounter = counter;
 	}
 
+	/** Returns an array containing for each point:
+	 *  The counter number (0-100) in the lower 8 bits, and the slice number
+	 *  (or 0, if the point appears on all slices) in the higher 24 bits.
+	 *  Used when writing a Roi to file (RoiEncoder) */
 	public int[] getCounters() {
 		if (nPoints>65535)
 			return null;
 		int[] temp = new int[nPoints];
 		if (counters!=null) {
 			for (int i=0; i<nPoints; i++)
-				temp[i] = (counters[i]&0xff) + ((positions[i]&0xffff)<<8);
+				temp[i] = (counters[i]&0xff) + (positions[i]<<8);
 		}
 		return temp;
 	}
 
+	/** Sets the counter number and slice number for each point from an
+	 *  array, where the lower 8 bits are the counter number and the
+	 *  higher 24 bits contain the slice position of each point.
+	 *  Used when reading a roi fromfile (RoiDecoder).  */
 	public void setCounters(int[] counters) {
 		if (counters!=null) {
 			int n = counters.length;
 			this.counters = new short[n*2];
-			this.positions = new short[n*2];
+			this.positions = new int[n*2];
 			for (int i=0; i<n; i++) {
 				int counter = counters[i]&0xff;
-				int position = (counters[i]>>8)&0xffff;
+				int position = counters[i]>>8;
+				//IJ.log(i+" cnt="+counter+" slice="+position);
 				this.counters[i] = (short)counter;
-				this.positions[i] = (short)position;
-				if (counter<counts.length) {
-					counts[counter]++;
-					if (counter>nCounters-1)
-						nCounters = counter + 1;
-				}
+				this.positions[i] = position;
+				if (counter<counts.length && counter>nCounters-1)
+					nCounters = counter + 1;
 			}
-			//IJ.setTool("multi-point");
+			updateCounts();
 		}
 	}
-	
+
+	/** Updates the counts for each category in 'counters' */
+	public void updateCounts() {
+		Arrays.fill(counts, 0);
+		for (int i=0; i<nPoints; i++)
+			counts[(counters==null || counters[i]>=counts.length) ? 0 : counters[i]] ++;
+	}
+
+	/** Returns the stack slice of the point with the given index, or 0 if no slice defined for this point */
 	public int getPointPosition(int index) {
 		if (positions!=null && index<nPoints)
 			return positions[index];
@@ -635,9 +665,9 @@ public class PointRoi extends PolygonRoi {
 			int nChannels = 1;
 			int nSlices = 1;
 			int nFrames = 1;
-			boolean isHyperstack = false;
+			boolean isHyperstack = false;				isHyperstack = true;
+
 			if (imp.isComposite() || imp.isHyperStack()) {
-				isHyperstack = true;
 				nChannels = imp.getNChannels();
 				nSlices = imp.getNSlices();
 				nFrames = imp.getNFrames();
@@ -841,7 +871,7 @@ public class PointRoi extends PolygonRoi {
 				r.counters[i] = counters[i];
 		}
 		if (positions!=null) {
-			r.positions = new short[positions.length];
+			r.positions = new int[positions.length];
 			for (int i=0; i<positions.length; i++)
 				r.positions[i] = positions[i];
 		}

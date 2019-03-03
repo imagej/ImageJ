@@ -31,9 +31,10 @@ public class Selection implements PlugIn, Measurements {
 			{addToRoiManager(imp); return;}
 		if (imp==null)
 			{IJ.noImage(); return;}
-		if (arg.equals("all"))
+		if (arg.equals("all")) {
+			imp.saveRoi();
 			imp.setRoi(0,0,imp.getWidth(),imp.getHeight());
-		else if (arg.equals("none"))
+		} else if (arg.equals("none"))
 			imp.deleteRoi();
 		else if (arg.equals("restore"))
 			imp.restoreRoi();
@@ -479,28 +480,22 @@ public class Selection implements PlugIn, Measurements {
 	}
 
 	void convexHull(ImagePlus imp) {
+		long startTime = System.currentTimeMillis();
 		Roi roi = imp.getRoi();
-		int type = roi!=null?roi.getType():-1;
-		if (!(type==Roi.FREEROI||type==Roi.TRACED_ROI||type==Roi.POLYGON||type==Roi.POINT))
-			{IJ.error("Convex Hull", "Polygonal or point selection required"); return;}
-		if (roi instanceof EllipseRoi)
-			return;
-		//if (roi.subPixelResolution() && roi instanceof PolygonRoi) {
-		//	FloatPolygon p = ((PolygonRoi)roi).getFloatConvexHull();
-		//	if (p!=null)
-		//		imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON));
-		//} else {
-		Polygon p = roi.getConvexHull();
+		if (roi == null) { IJ.error("Convex Hull", "Selection required"); return; }
+		if (roi instanceof Line) { IJ.error("Convex Hull", "Area selection, point selection, or segmented or free line required"); return; }
+		FloatPolygon p = roi.getFloatConvexHull();
 		if (p!=null) {
 			Undo.setup(Undo.ROI, imp);
-			Roi roi2 = new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON);
+			Roi roi2 = new PolygonRoi(p, roi.POLYGON);
 			transferProperties(roi, roi2);
 			imp.setRoi(roi2);
+			IJ.showTime(imp, startTime, "Convex Hull ", 1);
 		}
 	}
 	
 	// Finds the index of the upper right point that is guaranteed to be on convex hull
-	int findFirstPoint(int[] xCoordinates, int[] yCoordinates, int n, ImagePlus imp) {
+	/*int findFirstPoint(int[] xCoordinates, int[] yCoordinates, int n, ImagePlus imp) {
 		int smallestY = imp.getHeight();
 		int x, y;
 		for (int i=0; i<n; i++) {
@@ -519,7 +514,7 @@ public class Selection implements PlugIn, Measurements {
 			}
 		}
 		return p1;
-	}
+	}*/
 	
 	void createMask(ImagePlus imp) {
 		Roi roi = imp.getRoi();
@@ -593,24 +588,19 @@ public class Selection implements PlugIn, Measurements {
 			return;
 		}
 		int threshold = ip.isInvertedLut()?255:0;
-		if (Prefs.blackBackground)
-			threshold = ip.isInvertedLut()?0:255;		
 		ip.setThreshold(threshold, threshold, ImageProcessor.NO_LUT_UPDATE);
 		IJ.runPlugIn("ij.plugin.filter.ThresholdToSelection", "");
 	}
 
 	void invert(ImagePlus imp) {
 		Roi roi = imp.getRoi();
-		if (roi==null || !roi.isArea())
+		if (roi == null)
+			{run("all"); return;}
+		if (!roi.isArea())
 			{IJ.error("Inverse", "Area selection required"); return;}
-		ShapeRoi s1, s2;
-		if (roi instanceof ShapeRoi)
-			s1 = (ShapeRoi)roi;
-		else
-			s1 = new ShapeRoi(roi);
-		s2 = new ShapeRoi(new Roi(0,0, imp.getWidth(), imp.getHeight()));
+		Roi inverse = roi.getInverse(imp);
 		Undo.setup(Undo.ROI, imp);
-		imp.setRoi(s1.xor(s2));
+		imp.setRoi(inverse);
 	}
 	
 	private void lineToArea(ImagePlus imp) {

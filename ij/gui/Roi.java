@@ -34,7 +34,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public static final int RECTANGLE=0, OVAL=1, POLYGON=2, FREEROI=3, TRACED_ROI=4, LINE=5, 
 		POLYLINE=6, FREELINE=7, ANGLE=8, COMPOSITE=9, POINT=10; // Types
 	public static final int HANDLE_SIZE = 5; 
-	public static final int NOT_PASTING = -1; 
+	public static final int NOT_PASTING = -1;
+	public static final int FERET_ARRAYSIZE = 16; // Size of array with Feret values
+	public static final int FERET_ARRAY_POINTOFFSET = 8; // Where point coordinates start in Feret array
 	
 	static final int NO_MODS=0, ADD_TO_ROI=1, SUBTRACT_FROM_ROI=2; // modification states
 		
@@ -44,9 +46,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	int activeHandle;
 	int state;
 	int modState = NO_MODS;
-	int cornerDiameter;
+	int cornerDiameter;             //for rounded rectangle
+	int previousSX, previousSY;     //remember for aborting moving with esc and constrain
 	
-	public static Roi previousRoi;
+	public static Roi previousRoi;  //for Edit>Selection>Restore Selection
 	public static final BasicStroke onePixelWide = new BasicStroke(1);
 	protected static Color ROIColor = Prefs.getColor(Prefs.ROICOLOR,Color.yellow);
 	protected static int pasteMode = Blitter.COPY;
@@ -62,16 +65,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	protected int oldX, oldY, oldWidth, oldHeight;
 	protected int clipX, clipY, clipWidth, clipHeight;
 	protected ImagePlus clipboard;
-	protected boolean constrain; // to be square
+	protected boolean constrain;    // to be square or limit to horizontal/vertical motion
 	protected boolean center;
 	protected boolean aspect;
 	protected boolean updateFullWindow;
 	protected double mag = 1.0;
-	protected double asp_bk; //saves aspect ratio if resizing takes roi very small
+	protected double asp_bk;        //saves aspect ratio if resizing takes roi very small
 	protected ImageProcessor cachedMask;
 	protected Color handleColor = Color.white;
 	protected Color	 strokeColor;
-	protected Color instanceColor; //obsolete; replaced by	strokeColor
+	protected Color instanceColor;  //obsolete; replaced by strokeColor
 	protected Color fillColor;
 	protected BasicStroke stroke;
 	protected boolean nonScalable;
@@ -158,8 +161,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		setImage(imp);
 		int ox=sx, oy=sy;
 		if (ic!=null) {
-			ox = ic.offScreenX(sx);
-			oy = ic.offScreenY(sy);
+			ox = ic.offScreenX2(sx);
+			oy = ic.offScreenY2(sy);
 		}
 		setLocation(ox, oy);
 		this.cornerDiameter = cornerDiameter;
@@ -191,6 +194,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		startX = x; startY = y;
 		oldX = x; oldY = y; oldWidth=0; oldHeight=0;
 		if (bounds!=null) {
+			if (!isInteger(bounds.x) || !isInteger(bounds.y))
+				cachedMask = null;
 			bounds.x = x;
 			bounds.y = y;
 		}
@@ -199,13 +204,17 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	/** Set the location of the ROI in image coordinates. */
 	public void setLocation(double x, double y) {
 		setLocation((int)x, (int)y);
-		if ((int)x==x && (int)y==y)
+		if (isInteger(x) && isInteger(y))
 			return;
 		if (bounds!=null) {
+			if (!isInteger(x-bounds.x) || !isInteger(y-bounds.y))
+				cachedMask = null;
 			bounds.x = x;
 			bounds.y = y;
-		} else
+		} else {
+			cachedMask = null;
 			bounds = new Rectangle2D.Double(x, y, width, height);
+		}
 		subPixel = true;
 	}
 	
@@ -249,7 +258,13 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			pw = cal.pixelWidth;
 			ph = cal.pixelHeight;
 		}
-		return 2.0*width*pw+2.0*height*ph;
+		double perimeter = 2.0*width*pw + 2.0*height*ph;
+		if (cornerDiameter > 0) {      //using Ramanujan's approximation for the circumference of an ellipse
+			double a = 0.5*Math.min(cornerDiameter, width)*pw;
+			double b = 0.5*Math.min(cornerDiameter, height)*ph;
+			 perimeter += Math.PI*(3*(a + b) - Math.sqrt((3*a + b)*(a + 3*b))) -4*(a+b);
+		}
+		return perimeter;
 	}
 	
 	/** Returns Feret's diameter, the greatest distance between 
@@ -259,85 +274,124 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		return a!=null?a[0]:0.0;
 	}
 
-	/** Caculates "Feret" (maximum caliper width), "FeretAngle"
-		and "MinFeret" (minimum caliper width), "FeretX" and "FeretY". */	
+	/** Returns an array with the following values:
+	 *  <br>[0] "Feret" (maximum caliper width)
+	 *  <br>[1] "FeretAngle" (angle of diameter with maximum caliper width, between 0 and 180 deg)
+	 *  <br>[2] "MinFeret" (minimum caliper width)
+	 *  <br>[3][4] , "FeretX" and "FeretY", the X and Y coordinates of the starting point
+	 *  (leftmost point) of the maximum-caliper-width diameter.
+	 *  <br>[5-7] reserved
+	 *  <br>All these values and point coordinates are in calibrated image coordinates.
+	 *  <p>
+	 *  The following array elements are end points of the maximum and minimum caliper diameter,
+	 *  in unscaled image pixel coordinates:
+	 *  <br>[8][9]   "FeretX1", "FeretY1"; unscaled versions of "FeretX" and "FeretY"
+	 *  (subclasses may use any end of the diameter, not necessarily the left one)
+	 *  <br>[10][11] "FeretX2", "FeretY2", end point of the maxium-caliper-width diameter.
+	 *  Both of these points are vertices of the convex hull.
+	 *  <br> The final four array elements are the starting and end points of the minimum caliper width,
+	 *  <br>[12],[13] "MinFeretX", "MinFeretY", and
+	 *  <br>[14],[15] "MinFeretX2", "MinFeretY2". These two pooints are not sorted by x,
+	 *  but the first point point (MinFeretX, MinFeretY) is guaranteed to be a vertex of the convex hull,
+	 *  while second point (MinFeretX2, MinFeretY2) usually is not a vertex point but at a
+	 *  boundary line of the convex hull. */	
 	public double[] getFeretValues() {
-		double min=Double.MAX_VALUE, diameter=0.0, angle=0.0, feretX=0.0, feretY=0.0;
-		int p1=0, p2=0;
 		double pw=1.0, ph=1.0;
 		if (imp!=null) {
 			Calibration cal = imp.getCalibration();
 			pw = cal.pixelWidth;
 			ph = cal.pixelHeight;
 		}
-		Polygon poly = getConvexHull();
-		if (poly==null) {
-			poly = getPolygon();
-			if (poly==null) return null;
-		}
-		double w2=pw*pw, h2=ph*ph;
-		double dx, dy, d;
+
+		FloatPolygon poly = getFloatConvexHull();
+		if (poly==null || poly.npoints==0) return null;
+
+		double[] a = new double[FERET_ARRAYSIZE];
+		// calculate maximum Feret diameter: largest distance between any two points
+		int p1=0, p2=0;
+		double diameterSqr = 0.0;  //square of maximum Feret diameter
 		for (int i=0; i<poly.npoints; i++) {
-			for (int j=i; j<poly.npoints; j++) {
-				dx = poly.xpoints[i] - poly.xpoints[j];
-				dy = poly.ypoints[i] - poly.ypoints[j];
-				d = Math.sqrt(dx*dx*w2 + dy*dy*h2);
-				if (d>diameter) {diameter=d; p1=i; p2=j;}
+			for (int j=i+1; j<poly.npoints; j++) {
+				double dx = (poly.xpoints[i] - poly.xpoints[j])*pw;
+				double dy = (poly.ypoints[i] - poly.ypoints[j])*ph;
+				double dsqr = dx*dx + dy*dy;
+				if (dsqr>diameterSqr) {diameterSqr=dsqr; p1=i; p2=j;}
 			}
 		}
-		Rectangle r = getBounds();
-		double cx = r.x + r.width/2.0;
-		double cy = r.y + r.height/2.0;
-		int n = poly.npoints;
-		double[] x = new double[n];
-		double[] y = new double[n];
-		for (int i=0; i<n; i++) {
-			x[i] = (poly.xpoints[i]-cx)*pw;
-			y[i] = (poly.ypoints[i]-cy)*ph;
-		}
-		double xr, yr;
-		for (double a=0; a<=90; a+=0.5) { // rotate calipers in 0.5 degree increments
-			double cos = Math.cos(a*Math.PI/180.0);
-			double sin = Math.sin(a*Math.PI/180.0);
-			double xmin=Double.MAX_VALUE, ymin=Double.MAX_VALUE;
-			double xmax=-Double.MAX_VALUE, ymax=-Double.MAX_VALUE;
-			for (int i=0; i<n; i++) {
-				xr = cos*x[i] - sin*y[i];
-				yr = sin*x[i] + cos*y[i];
-				if (xr<xmin) xmin = xr;
-				if (xr>xmax) xmax = xr;
-				if (yr<ymin) ymin = yr;
-				if (yr>ymax) ymax = yr;
-			}
-			double width = xmax - xmin;
-			double height = ymax - ymin;
-			double min2 = Math.min(width, height);
-			min = Math.min(min, min2);
-		}
-		double x1=poly.xpoints[p1], y1=poly.ypoints[p1];
-		double x2=poly.xpoints[p2], y2=poly.ypoints[p2];
-		if (x1>x2) {
-			double tx1=x1, ty1=y1;
-			x1=x2; y1=y2; x2=tx1; y2=ty1;
-		}
-		feretX = x1*pw;
-		feretY = y1*ph;
-		dx=x2-x1; dy=y1-y2;
-		angle = (180.0/Math.PI)*Math.atan2(dy*ph, dx*pw);
-		if (angle<0.0)
+        if (poly.xpoints[p1] > poly.xpoints[p2]) {
+            int p2swap = p1; p1 = p2; p2 = p2swap;
+        }
+		double xf1=poly.xpoints[p1], yf1=poly.ypoints[p1];
+		double xf2=poly.xpoints[p2], yf2=poly.ypoints[p2];
+		double angle = (180.0/Math.PI)*Math.atan2((yf1-yf2)*ph, (xf2-xf1)*pw);
+		if (angle < 0.0)
 			angle += 180.0;
-		//breadth = getFeretBreadth(poly, angle, x1, y1, x2, y2);
-		double[] a = new double[5];
-		a[0] = diameter;
+		a[0] = Math.sqrt(diameterSqr);
 		a[1] = angle;
-		a[2] = min;
-		a[3] = feretX;
-		a[4] = feretY;
+		a[3] = xf1; a[4] = yf1;
+		{ int i = FERET_ARRAY_POINTOFFSET;     //array elements 8-11 are start and end points of max Feret diameter
+			a[i++] = poly.xpoints[p1]; a[i++] = poly.ypoints[p1];
+			a[i++] = poly.xpoints[p2]; a[i++] = poly.ypoints[p2];
+		}
+		
+		// Calculate minimum Feret diameter:
+		// For all pairs of points on the convex hull:
+		//   Get the point with the largest distance from the line between these two points
+		//   Of all these pairs, take the one where the distance is the lowest
+		// The following code requires a counterclockwise convex hull with no duplicate points
+		double x0 = poly.xpoints[poly.npoints-1];
+		double y0 = poly.ypoints[poly.npoints-1];
+		double minFeret = Double.MAX_VALUE;
+		double[] xyEnd = new double[4];        //start and end points of the minFeret diameter, uncalibrated
+		double[] xyEi  = new double[4];        //intermediate values of xyEnd
+		for (int i=0; i<poly.npoints; i++) {   //find caliper width for one side of calipers touching points i-1, i
+			double xprev = x0;
+			double yprev = y0;
+			x0 = poly.xpoints[i];
+			y0 = poly.ypoints[i];
+			double xnorm = (y0 - yprev) * ph;
+			double ynorm = (xprev - x0) * pw;
+			double normalizationFactor = 1/Math.sqrt(xnorm*xnorm + ynorm*ynorm);
+			xnorm *= normalizationFactor * pw; //normalized vector perpendicular to line between i-1, i; * scale factor for product below
+			ynorm *= normalizationFactor * ph;
+			double maxDist = 0;
+			for (int j=0; j<poly.npoints; j++) {
+				double x1 = poly.xpoints[j];
+				double y1 = poly.ypoints[j];
+				double dx = x1 - x0;
+				double dy = y1 - y0;
+				double dist = dx*xnorm + dy*ynorm;
+				if (dist > maxDist) {
+					maxDist = dist;
+					xyEi[0] = x1;
+					xyEi[1] = y1;
+					xyEi[2] = xyEi[0] - (xnorm/pw * dist)/pw;
+					xyEi[3] = xyEi[1] - (ynorm/ph * dist)/ph;
+				}
+			}
+			if (maxDist < minFeret) {
+				minFeret = maxDist;
+				System.arraycopy(xyEi, 0, xyEnd, 0, 4);
+			}
+		}
+		a[2] = minFeret;
+		System.arraycopy(xyEnd, 0, a, FERET_ARRAY_POINTOFFSET+4, 4);    //a[12]-a[15] are minFeretX, Y, X2, Y2
 		return a;
 	}
-	
+
+	/** Returns the convex hull of this Roi as a Polygon with integer coordinates
+	 *  by rounding the floating-point values.
+	 *  Coordinates of the convex hull are image pixel coordinates. */
 	public Polygon getConvexHull() {
-		return getPolygon();
+		FloatPolygon fp = getFloatConvexHull();
+		return new Polygon(toIntR(fp.xpoints), toIntR(fp.ypoints), fp.npoints);
+	}
+
+	/** Returns the convex hull of this Roi as a FloatPolygon.
+	 *  Coordinates of the convex hull are image pixel coordinates. */
+	public FloatPolygon getFloatConvexHull() {
+		FloatPolygon fp = getFloatPolygon("");   //no duplicate closing points, no path-separating NaNs needed
+		return fp == null ? null : fp.getConvexHull();
 	}
 	
 	double getFeretBreadth(Shape shape, double angle, double x1, double y1, double x2, double y2) {
@@ -391,16 +445,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		return new Polygon(xpoints, ypoints, 4);
 	}
 
+	/** Returns the outline (in image pixel coordinates) as a FloatPolygon */
 	public FloatPolygon getFloatPolygon() {
-		if (cornerDiameter>0) {
-			ImageProcessor ip = getMask();
-			Roi roi2 = (new ThresholdToSelection()).convert(ip);
-			if (roi2!=null) {
-				roi2.setLocation(x, y);
-				return roi2.getFloatPolygon();
-			}
-		}
-		if (subPixelResolution() && bounds!=null) {
+		if (cornerDiameter>0) {  // Rounded Rectangle
+			ShapeRoi s = new ShapeRoi(this);
+			return s.getFloatPolygon();
+		} else if (subPixelResolution() && bounds!=null) {
 			float[] xpoints = new float[4];
 			float[] ypoints = new float[4];
 			xpoints[0] = (float)bounds.x;
@@ -417,7 +467,26 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			return new FloatPolygon(toFloat(p.xpoints), toFloat(p.ypoints), p.npoints);
 		}
 	}
-	
+
+	/** Returns the outline in image pixel coordinates,
+	 *  where options may include "close" to add a point to close the outline
+	 *  if this is an area roi and the outline is not closed yet.
+	 *  (For ShapeRois, "separate" inserts NaN values between subpaths). */
+	public FloatPolygon getFloatPolygon(String options) {
+		options = options.toLowerCase();
+		boolean addPointForClose = options.indexOf("close") >= 0;
+		FloatPolygon fp = getFloatPolygon();
+		int n = fp.npoints;
+		if (isArea() && n > 1) {
+			boolean isClosed = fp.xpoints[0] == fp.xpoints[n-1] && fp.ypoints[0] == fp.ypoints[n-1];
+			if (addPointForClose && !isClosed)
+				fp.addPoint(fp.xpoints[0], fp.ypoints[0]);
+			else if (!addPointForClose && isClosed)
+				fp.npoints--;
+		}
+		return fp;
+	}
+
 	/** Returns, as a FloatPolygon, an interpolated version 
 	 * of this selection that has points spaced 1.0 pixel apart.
 	 */
@@ -654,11 +723,25 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		}
 		catch (CloneNotSupportedException e) {return null;}
 	}
-	
+
+	/** Aborts constructing or modifying the roi (called by the ImageJ class on escape) */
+	public void abortModification(ImagePlus imp) {
+		if (state == CONSTRUCTING) {
+			setImage(null);
+			Roi savedPreviousRoi = previousRoi;
+			imp.setRoi(previousRoi!=null && previousRoi.getImage() == imp ? previousRoi : null);
+			previousRoi = savedPreviousRoi;     //(overrule saving this aborted roi as previousRoi)
+		} else if (state == MOVING)
+			move(previousSX, previousSY);       //move back to starting point
+		else if (state == MOVING_HANDLE)
+			moveHandle(previousSX, previousSY); //move handle back to starting point
+		state = NORMAL;
+	}
+
 	protected void grow(int sx, int sy) {
 		if (clipboard!=null) return;
-		int xNew = ic.offScreenX(sx);
-		int yNew = ic.offScreenY(sy);
+		int xNew = ic.offScreenX2(sx);
+		int yNew = ic.offScreenY2(sy);
 		if (type==RECTANGLE) {
 			if (xNew < 0) xNew = 0;
 			if (yNew < 0) yNew = 0;
@@ -727,8 +810,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	protected void moveHandle(int sx, int sy) {
 		double asp;
 		if (clipboard!=null) return;
-		int ox = ic.offScreenX(sx);
-		int oy = ic.offScreenY(sy);
+		int ox = ic.offScreenX2(sx);
+		int oy = ic.offScreenY2(sy);
 		if (ox<0) ox=0; if (oy<0) oy=0;
 		if (ox>xMax) ox=xMax; if (oy>yMax) oy=yMax;
 		int x1=x, y1=y, x2=x1+width, y2=y+height, xc=x+width/2, yc=y+height/2;
@@ -922,6 +1005,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	}
 
 	void move(int sx, int sy) {
+		if (constrain) {  // constrain translation in 90deg steps
+			int dx = sx - previousSX;
+			int dy = sy - previousSY;
+			if (Math.abs(dx) > Math.abs(dy))
+				dy = 0;
+			else
+				dx = 0;
+			sx = previousSX + dx;
+			sy = previousSY + dy;
+		}
 		int xNew = ic.offScreenX(sx);
 		int yNew = ic.offScreenY(sy);
 		int dx = xNew - startX;
@@ -964,6 +1057,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public void nudge(int key) {
 		if (WindowManager.getActiveWindow() instanceof ij.plugin.frame.RoiManager)
 			return;
+		if (bounds != null && (!isInteger(bounds.x) || !isInteger(bounds.y)))
+			cachedMask = null;
 		switch(key) {
 			case KeyEvent.VK_UP:
 				y--;
@@ -1225,16 +1320,45 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		ip.setRoi(x-margin, y-margin, width+margin*2+1, height+margin*2+1);
 		ip.fill(mask);
 	}
-	
+
+	/** Returns whether the center of pixel (x,y) is contained in the Roi.
+	 *  The position of a pixel center determines whether a pixel is selected.
+	 *  Points exactly at the left (right) border are considered outside (inside);
+	 *  points exactly on horizontal borders are considered outside (inside) at the border
+	 *  with the lower (higher) y. This convention is opposite to that of the java.awt.Shape class. */
 	public boolean contains(int x, int y) {
 		Rectangle r = new Rectangle(this.x, this.y, width, height);
 		boolean contains = r.contains(x, y);
 		if (cornerDiameter==0 || contains==false)
 			return contains;
-		RoundRectangle2D rr = new RoundRectangle2D.Float(this.x, this.y, width, height, cornerDiameter, cornerDiameter);
+		RoundRectangle2D rr = new RoundRectangle2D.Double(this.x, this.y, width, height, cornerDiameter, cornerDiameter);
+		return rr.contains(x+0.4999, y+0.4999);
+	}
+
+	/** Returns whether coordinate (x,y) is contained in the Roi.
+	 *  Note that the coordinate (0,0) is the top-left corner of pixel (0,0).
+	 *  Use contains(int, int) to determine whether a given pixel is contained in the Roi. */
+	public boolean containsPoint(double x, double y) {
+		boolean contains = false;
+		if (bounds == null)
+			contains = x>=this.x && y>=this.y && x<this.x+width && y<this.y+height;
+		if (cornerDiameter==0 || contains==false)
+			return contains;
+		RoundRectangle2D rr = new RoundRectangle2D.Double(this.x, this.y, width, height, cornerDiameter, cornerDiameter);
 		return rr.contains(x, y);
 	}
-		
+
+	/** Returns the inverted roi, or null if this is not an area roi or cannot be converted to a ShapeRoi.
+	 *  If imp is not given, assumes a rectangle of size 2e9*2e9 for the boundary. */
+	public Roi getInverse(ImagePlus imp) {
+		if (!isArea()) return null;
+		Roi fullImage = (imp == null) ? new Roi(0,0, 2000000000, 2000000000) : new Roi(0,0, imp.getWidth(), imp.getHeight());
+		ShapeRoi s = (this instanceof ShapeRoi) ? (ShapeRoi)(this.clone()) : new ShapeRoi(this);
+		if (s == null) return null;
+		ShapeRoi inverse = s.xor(new ShapeRoi(fullImage));
+		return inverse.trySimplify();
+	}
+	
 	/** Returns a handle number if the specified screen coordinates are	 
 		inside or near a handle, otherwise returns -1. */
 	public int isHandle(int sx, int sy) {
@@ -1266,12 +1390,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	
 	protected void mouseDownInHandle(int handle, int sx, int sy) {
 		state = MOVING_HANDLE;
+		previousSX = sx;
+		previousSY = sy;
 		activeHandle = handle;
 	}
 
 	protected void handleMouseDown(int sx, int sy) {
 		if (state==NORMAL && ic!=null) {
 			state = MOVING;
+			previousSX = sx;
+			previousSY = sy;
 			startX = ic.offScreenX(sx);
 			startY = ic.offScreenY(sy);
 			startXD = ic.offScreenXD(sx);
@@ -1334,14 +1462,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		else
 			s1.not(s2);
 		previousRoi.modState = NO_MODS;
-		Roi[] rois = s1.getRois();
-		if (rois.length==0) return;
-		int type2 = rois[0].getType();
-		Roi roi2 = null;
-		if (rois.length==1 && (type2==POLYGON||type2==FREEROI))
-			roi2 = rois[0];
-		else
-			roi2 = s1;
+		Roi roi2 = s1.trySimplify();
+		if (roi2 == null) return;
 		if (roi2!=null)
 			roi2.copyAttributes(previousRoi);
 		imp.setRoi(roi2);
@@ -1413,7 +1535,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		else
 			return null;
 	}
-	
+
 	public void startPaste(ImagePlus clipboard) {
 		IJ.showStatus("Pasting...");
 		IJ.wait(10);
@@ -1915,6 +2037,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		return temp;
 	}
 
+	/** Returns whether a number is an integer */
+	public static boolean isInteger(double x) {
+		return x == (int)x;
+	}
+
 	public void setProperty(String key, String value) {
 		if (key==null) return;
 		if (props==null)
@@ -2082,9 +2209,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		ycenter = y;
 	}
 	
-	/** Returns the number of points in this selection; equivalent to getPolygon().npoints. */
+	/** Returns the number of points in this selection; equivalent to getFloatPolygon().npoints. */
 	public int size() {
-		return 4;
+		return getFloatPolygon().npoints;
 	}
 
 	/* 
@@ -2097,7 +2224,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		FloatPolygon poly = getFloatPolygon();
 		int nPoints = poly.npoints;
 		int n2 = nPoints-1;
-		for (int n1=0; n1<nPoints; n1++){
+		for (int n1=0; n1<nPoints; n1++) {
 			dx = poly.xpoints[n1] - poly.xpoints[n2];
 			dy = poly.ypoints[n1] - poly.ypoints[n2];
 			x = poly.xpoints[n2] + dx/2.0;
@@ -2180,15 +2307,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			if (isLine()) {
 				Roi roi2 = Selection.lineToArea(Roi.this);
 				mask = roi2.getMask();
-				bounds = roi2.getBounds();
 				xbase = roi2.x;
 				ybase = roi2.y;
 			} else {
 				mask = getMask();
-				bounds = getBounds();
 				xbase = Roi.this.x;
 				ybase = Roi.this.y;
 			}
+			bounds = new Rectangle(mask.getWidth(), mask.getHeight());
 			n = bounds.width * bounds.height;
 			findNext(0);	// sets next
 		}

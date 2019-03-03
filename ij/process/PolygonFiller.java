@@ -5,16 +5,31 @@ import java.awt.Rectangle;
 
 
 /** This class fills polygons using the scan-line filling algorithm 
-	described at "http://www.cs.rit.edu/~icss571/filling/". */
+	described at "http://www.cs.rit.edu/~icss571/filling/".
+
+	Note that by ImageJ convention, outline and pixel coordinates are shifted by 0.5:
+	Pixel (0,0) is enclosed by the rectangle between (0,0) and (1,1); thus all 0.5
+	is added to all polygon coordinates when comparing to pixel coordinates.
+
+	After applying this offset, rounding is done such that points
+	exactly on the left boundary are considered outside, points
+	exactly on the right boundary inside.
+	Points exactly on a horizontal boundary are considered ouside for
+	the boundary with lower y and inside for the boundary with the higher y.
+	(actually, the boundary is slightly shifted to the left (in x) to ensure
+	correct rounding in spite of the final numeric accuracy)
+*/
 public class PolygonFiller {
 	int BLACK=0xff000000, WHITE=0xffffffff;
 	int edges; // number of edges
 	int activeEdges; // number of  active edges
 
 	// the polygon
-	int[] x; // x coordinates
-	int[] y; // y coordinates
-	int n;  // number of coordinates
+	int[] x;                // x coordinates of polygon vertices (null when using float values)
+	int[] y;                // y coordinates
+	float[] xf, yf;         // floating-point coordinates, may be given instead of integer 'x'
+	float xOffset, yOffset; // offset that has to be added to xf, yf
+	int n;                  // number of coordinates (polygon vertices)
 
 	// edge table
 	double[] ex;	// x coordinates
@@ -30,18 +45,35 @@ public class PolygonFiller {
 
 	/** Constructs a PolygonFiller. */
 	public PolygonFiller() {
-	 }
+	}
 
-	/** Constructs a PolygonFiller using the specified polygon. */
+	/** Constructs a PolygonFiller using the specified polygon with integer coordinates. */
 	public PolygonFiller(int[] x, int[] y, int n) {
 		setPolygon(x, y, n);
-	 }
+	}
+
+	/** Constructs a PolygonFiller using the specified polygon with floating-point coordinates. */
+	public PolygonFiller(float[] xf, float[] yf, int n, float xOffset, float yOffset) {
+		setPolygon(xf, yf, n, xOffset, yOffset);
+	}
 
 	/** Specifies the polygon to be filled. */
 	public void setPolygon(int[] x, int[] y, int n) {
 		this.x = x;
 		this.y = y;
 		this.n = n;
+	}
+
+	/** Specifies the polygon to be filled in case of float coordinates.
+	 *  In this case, multiple polygons separated by one set of NaN coordinates each.
+	 */
+	public void setPolygon(float[] xf, float[] yf, int n, float xOffset, float yOffset) {
+		x = y = null;
+		this.xf = xf;
+		this.yf = yf;
+		this.n = n;
+		this.xOffset = xOffset;
+		this.yOffset = yOffset;
 	}
 
 	 void allocateArrays(int n) {
@@ -55,28 +87,60 @@ public class PolygonFiller {
 		}
 	}
 
-	/** Generates the edge table. */
-	void buildEdgeTable(int[] x, int[] y, int n) {
-		int length, iplus1, x1, x2, y1, y2;
+	/** Generates the edge table for all non-horizontal lines:
+	 *  ey1, ey2: min & max y value
+	 *  eslope: inverse slope dx/dy
+	 *  ex: x value at ey1, corrected for half-pixel shift between outline&pixel coordinates
+	 *  sedge: list of sorted edges is prepared (not sorted yet) */
+	void buildEdgeTable() {
 		edges = 0;
+		int polyStart = 0;	  //index where the polygon has started (i.e., 0 unless we have multiple ploygons separated by NaN)
 		for (int i=0; i<n; i++) {
-			iplus1 = i==n-1?0:i+1;
-			y1 = y[i];	y2 = y[iplus1];
-			x1 = x[i];	x2 = x[iplus1];
-			if (y1==y2)
-				continue; //ignore horizontal lines
-			if (y1>y2) { // swap ends
-				int tmp = y1;
-				y1=y2; y2=tmp;
-				tmp=x1;
-				x1=x2; x2=tmp;
+			int iplus1 = i==n-1 ? polyStart : i+1;
+			if (x != null) {  //using int arrays
+				int y1 = y[i];  int y2 = y[iplus1];
+				int x1 = x[i];  int x2 = x[iplus1];
+				if (y1==y2)
+					continue; //ignore horizontal lines
+				if (y1>y2) {  //swap ends to ensure y1<y2
+					int tmp = y1;
+					y1 = y2;  y2 = tmp;
+					tmp = x1;
+					x1 = x2;  x2 = tmp;
+				}
+				double slope = (double)(x2 - x1)/(y2 - y1);
+				ex[edges] = x1 + 0.5*slope + 1e-8;  // x at the y1 pixel coordinate
+				ey1[edges] = y1;
+				ey2[edges] = y2;
+				eslope[edges] = slope;
+			} else {          //using float arrays
+				if (Float.isNaN(xf[iplus1])) //after the last point, close the polygon
+					iplus1 = polyStart;
+				if (Float.isNaN(xf[i])) {    //when a new polygon follows, remember the start point for closing it
+					polyStart = i + 1;
+					continue;
+				}
+				double y1f = yf[i] + yOffset;  double y2f = yf[iplus1] + yOffset;
+				double x1f = xf[i] + xOffset;  double x2f = xf[iplus1] + xOffset;
+				int y1 = (int)Math.ceil(y1f - 0.5f);
+				int y2 = (int)Math.ceil(y2f - 0.5f);
+				if (y1==y2 || (y1<=0 && y2<=0))
+					continue; //ignore horizontal lines or lines that don't reach the first row of pixels
+				if (y1>y2) {  //swap ends to ensure y1<y2
+					int tmp = y1;
+					y1 = y2;  y2 = tmp;
+					double ftmp = y1f;
+					y1f = y2f;  y2f = ftmp;
+					ftmp = x1f;
+					x1f = x2f;  x2f = ftmp;
+				}
+				double slope = (x2f - x1f)/(y2f - y1f);
+				ex[edges] = x1f + (y1 - y1f + 0.5)*slope + 1e-8; // x at the y1 pixel coordinate
+				ey1[edges] = y1;
+				ey2[edges] = y2;
+				eslope[edges] = slope;
 			}
-			double slope = (double)(x2-x1)/(y2-y1);
-			ex[edges] = x1 + slope/2.0; 
-			ey1[edges] = y1;
-			ey2[edges] = y2;
-			eslope[edges] = slope;
-			edges++;   
+			edges++;
 		}
 		for (int i=0; i<edges; i++)
 			sedge[i] = i;
@@ -91,7 +155,7 @@ public class PolygonFiller {
 	/** Returns a byte mask containing a filled version of the polygon. */
 	public ImageProcessor getMask(int width, int height) {
 		allocateArrays(n);
-		buildEdgeTable(x, y, n);
+		buildEdgeTable();
 		//printEdges();
 		int x1, x2, offset, index;
 		ImageProcessor mask = new ByteProcessor(width, height);
@@ -107,7 +171,7 @@ public class PolygonFiller {
 				x2 = (int)(ex[aedge[i+1]]+0.5); 
 				if (x2<0) x2=0; 
 				if (x2>width) x2 = width;
-				//IJ.log(y+" "+x1+"  "+x2);
+				//IJ.log(y+" "+x1+"-"+x2+" x1edge="+(ex[aedge[i]]+0.5)+" x2edge="+(ex[aedge[i+1]]+0.5)+" slope1="+eslope[aedge[i]]+" slope1="+eslope[aedge[i+1]]+" offs="+xOffset+","+yOffset);
 				for (int x=x1; x<x2; x++)
 					pixels[offset+x] = -1; // 255 (white)
 			}			

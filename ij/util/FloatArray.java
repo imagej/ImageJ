@@ -26,23 +26,34 @@ package ij.util;
 		return size;
 	}
 
-	/** Returns a float array containing all elements of this expandable array. */
+	/** Removes all elements form this FloatArray. */
+	public void clear() {
+		size = 0;
+	}
+
+	/** Returns a float array containing all elements of this FloatArray. */
 	public float[] toArray() {
 		float[] out = new float[size];
 		System.arraycopy(data, 0, out, 0, size);
 		return out;
 	}
 
-	/** Returns the element at the specified position in this expandable array.
+	/** Returns the element at the specified position in this FloatArray.
 	 *  @throws IndexOutOfBoundsException - if index is out of range (<code>index < 0 || index >= size()</code>). */
 	public float get(int index) {
 		if (index<0 || index>= size) throw new IndexOutOfBoundsException("FloatArray Index out of Bounds: "+index);
 		return data[index];
 	}
 
-	/** Replaces the element at the specified position with the value. 
+	/** Returns the last element of this FloatArray.
+	 *  @throws IndexOutOfBoundsException - if this FloatArray is empty */
+	public float getLast() {
+		return get(size-1);
+	}
+
+	/** Replaces the element at the specified position with the value given. 
 	 *  @return the value previously at the specified position.
-	 *  @throws  - if index is out of range (<code>index < 0 || index >= size()</code>). */
+	 *  @throws IndexOutOfBoundsException - if index is out of range (<code>index < 0 || index >= size()</code>). */
 	public float set(int index, float value) {
 		if (index<0 || index>= size) throw new IndexOutOfBoundsException("FloatArray Index out of Bounds: "+index);
 		float previousValue = data[index];
@@ -50,15 +61,33 @@ package ij.util;
 		return previousValue;
 	}
 
-	/** Appends the specified value to the end of this expandable array. Returns the number of elements after adding. */
+	/** Appends the specified value to the end of this FloatArray. Returns the number of elements after adding. */
 	public int add(float value) {
 		if (size >= data.length) {
-			float[] newData = new float[size*2+50];
+			float[] newData = new float[size*2 + 50];
 			System.arraycopy(data, 0, newData, 0, size);
 			data = newData;
 		}
 		data[size++] = value;
 		return size;
+	}
+
+	/** Appends the first n values from the specified array to this FloatArray. Returns the number of elements after adding. */
+	public int add(float[] a, int n) {
+		if (size + n > data.length) {
+			float[] newData = new float[size*2 + n + 50];
+			System.arraycopy(data, 0, newData, 0, size);
+			data = newData;
+		}
+		System.arraycopy(a, 0, data, size, n);
+		size += n;
+		return size;
+	}
+
+	/** Deletes the last <code>n</code> element from this FloatArray. <code>n</code> may be larger than the number of elements; in that
+	 *  case, all elements are removed. */
+	public void removeLast(int n) {
+		size -= Math.min(n, size);
 	}
 
 	/** Trims the capacity of this FloatArray instance to be its current size,

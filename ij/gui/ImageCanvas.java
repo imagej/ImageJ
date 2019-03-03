@@ -654,14 +654,24 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return false;
 	}
 
-	/**Converts a screen x-coordinate to an offscreen x-coordinate.*/
+	/**Converts a screen x-coordinate to an offscreen x-coordinate (nearest pixel center).*/
 	public int offScreenX(int sx) {
 		return srcRect.x + (int)(sx/magnification);
 	}
 		
-	/**Converts a screen y-coordinate to an offscreen y-coordinate.*/
+	/**Converts a screen y-coordinate to an offscreen y-coordinate (nearest pixel center).*/
 	public int offScreenY(int sy) {
 		return srcRect.y + (int)(sy/magnification);
+	}
+	
+	/**Converts a screen x-coordinate to an offscreen x-coordinate (Roi coordinate of nearest pixel border).*/
+	public int offScreenX2(int sx) {
+		return srcRect.x + (int)Math.round(sx/magnification);
+	}
+		
+	/**Converts a screen y-coordinate to an offscreen y-coordinate (Roi coordinate of nearest pixel border).*/
+	public int offScreenY2(int sy) {
+		return srcRect.y + (int)Math.round(sy/magnification);
 	}
 	
 	/**Converts a screen x-coordinate to a floating-point offscreen x-coordinate.*/

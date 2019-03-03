@@ -337,8 +337,19 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	void drawPlot(long maxCount, ImageProcessor ip) {
 		if (maxCount==0) maxCount = 1;
 		frame = new Rectangle(XMARGIN, YMARGIN, HIST_WIDTH, HIST_HEIGHT);
-		ip.drawRect(frame.x-1, frame.y, frame.width+2, frame.height+1);
-		if (histogram.length<=HIST_WIDTH) {
+		ip.drawRect(frame.x-1, frame.y, frame.width+2, frame.height+1);		
+		if (histogram.length==256) {
+			double scale2 = HIST_WIDTH/256.0;
+			int barWidth = 1;
+			if (SCALE>1) barWidth=2;
+			if (SCALE>2) barWidth=3;
+			for (int i = 0; i < 256; i++) {
+				int x =(int)(i*scale2);
+				int y = (int)(((double)HIST_HEIGHT*(double)histogram[i])/maxCount);
+				for (int j = 0; j<barWidth; j++)
+					ip.drawLine(x+j+XMARGIN, YMARGIN+HIST_HEIGHT, x+j+XMARGIN, YMARGIN+HIST_HEIGHT-y);
+			}
+		} else if (histogram.length<=HIST_WIDTH) {
 			int index, y;
 			for (int i=0; i<HIST_WIDTH; i++) {
 				index = (int)(i*(double)histogram.length/HIST_WIDTH); 
@@ -365,13 +376,24 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		ip.drawRect(frame.x-1, frame.y, frame.width+2, frame.height+1);
 		double max = Math.log(maxCount);
 		ip.setColor(Color.gray);
-		if (histogram.length<=HIST_WIDTH) {
+		if (histogram.length==256) {
+			double scale2 = HIST_WIDTH/256.0;
+			int barWidth = 1;
+			if (SCALE>1) barWidth=2;
+			if (SCALE>2) barWidth=3;
+			for (int i=0; i < 256; i++) {
+				int x =(int)(i*scale2);
+				int y = histogram[i]==0?0:(int)(HIST_HEIGHT*Math.log(histogram[i])/max);
+				if (y>HIST_HEIGHT) y = HIST_HEIGHT;
+				for (int j = 0; j<barWidth; j++)
+					ip.drawLine(x+j+XMARGIN, YMARGIN+HIST_HEIGHT, x+j+XMARGIN, YMARGIN+HIST_HEIGHT-y);
+			}
+		} else if (histogram.length<=HIST_WIDTH) {
 			int index, y;
 			for (int i = 0; i<HIST_WIDTH; i++) {
 				index = (int)(i*(double)histogram.length/HIST_WIDTH); 
 				y = histogram[index]==0?0:(int)(HIST_HEIGHT*Math.log(histogram[index])/max);
-				if (y>HIST_HEIGHT)
-					y = HIST_HEIGHT;
+				if (y>HIST_HEIGHT) y = HIST_HEIGHT;
 				ip.drawLine(i+XMARGIN, YMARGIN+HIST_HEIGHT, i+XMARGIN, YMARGIN+HIST_HEIGHT-y);
 			}
 		} else {

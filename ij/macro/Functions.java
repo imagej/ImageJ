@@ -7051,8 +7051,25 @@ public class Functions implements MacroConstants, Measurements {
 			return type.toLowerCase(Locale.US);
 		} else if (name.equals("getSplineAnchors"))
 			return getSplineAnchors(roi);
+		else if (name.equals("getFeretPoints"))
+			return getFeretPoints(roi);
 		else
 			interp.error("Unrecognized Roi function");
+		return null;
+	}
+
+	private String getFeretPoints(Roi roi) {
+		Variable xCoordinates = getFirstArrayVariable();
+		Variable yCoordinates = getLastArrayVariable();
+		double[] feretValues = roi.getFeretValues();
+		Variable[] xa = new Variable[4];
+		Variable[] ya = new Variable[4];
+		for (int i=0; i<4; i++) {
+			xa[i] = new Variable(feretValues[Roi.FERET_ARRAY_POINTOFFSET + 2*i]);
+			ya[i] = new Variable(feretValues[Roi.FERET_ARRAY_POINTOFFSET + 2*i+1]);
+		}
+		xCoordinates.setArray(xa);
+		yCoordinates.setArray(ya);
 		return null;
 	}
 
