@@ -269,6 +269,17 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		draw();
 	}
 	
+	/** Use to update the image when the underlying virtual stack changes. */
+	public void updateVirtualSlice() {
+		ImageStack vstack = getStack();
+		if (vstack.isVirtual()) {
+			double min=getDisplayRangeMin(), max=getDisplayRangeMax();
+			setProcessor(vstack.getProcessor(getCurrentSlice()));
+			setDisplayRange(min,max);
+		} else
+			throw new IllegalArgumentException("Virtual stack required");
+	}
+	
 	/** Sets the display mode of composite color images, where 'mode' 
 		 should be IJ.COMPOSITE, IJ.COLOR or IJ.GRAYSCALE. */
 	public void setDisplayMode(int mode) {
@@ -1912,7 +1923,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				else if (r.width==width && r.height==height) // is it the same size as the image
 					roi.setLocation(0, 0);
 				draw();
-				roi.notifyListeners(RoiListener.CREATED);
+				roi.notifyListeners(RoiListener.MODIFIED);
 			}
 		}
 	}

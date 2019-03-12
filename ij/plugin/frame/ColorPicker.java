@@ -31,6 +31,7 @@ public class ColorPicker extends PlugInDialog {
         ColorGenerator cg = new ColorGenerator(width, height, new int[width*height]);
         cg.drawColors(colorWidth, colorHeight, columns, rows);
         Canvas colorCanvas = new ColorCanvas(width, height, null, cg);
+		//new ImagePlus("cp",cg.duplicate()).show();
         Panel panel = new Panel();
         panel.add(colorCanvas);
         add(panel);

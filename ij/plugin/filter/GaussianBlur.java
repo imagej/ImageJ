@@ -33,10 +33,13 @@ import java.awt.Rectangle;
 
 public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
 
+    /** for remembering till the next invocation */
+    private static double sigmaS = 2.0;
+    private static boolean sigmaScaledS = false;
     /** the standard deviation of the Gaussian*/
-    private static double sigma = 2.0;
+    private double sigma = sigmaS;
     /** whether sigma is given in units corresponding to the pixel scale (not pixels)*/
-    private static boolean sigmaScaled = false;
+    private boolean sigmaScaled = sigmaScaledS;
     /** The flags specifying the capabilities and needs */
     private int flags = DOES_ALL|SUPPORTS_MASKING|KEEP_PREVIEW;
     private ImagePlus imp;              // The ImagePlus of the setup call, needed to get the spatial calibration
@@ -88,6 +91,10 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
         gd.addDialogListener(this);
         gd.showDialog();                    // input by the user (or macro) happens here
         if (gd.wasCanceled()) return DONE;
+        if (options==null) {                // interactive use: remember values as default for the next invocation
+            sigmaS = sigma;
+            sigmaScaledS = sigmaScaled;
+        }
         if (oldMacro) sigma /= 2.5;         // for old macros, "radius" was 2.5 sigma
         IJ.register(this.getClass());       // protect static class variables (parameters) from garbage collection
         return IJ.setupDialog(imp, flags);  // ask whether to process all slices of stack (if a stack)
