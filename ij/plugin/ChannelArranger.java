@@ -182,9 +182,8 @@ class ThumbnailsCanvas extends Canvas implements MouseListener, MouseMotionListe
 	int currentChannel, currentSlice, currentFrame;
 
 	public ThumbnailsCanvas(ImagePlus imp) {
-		if (!imp.isComposite()) {
+		if (!imp.isComposite())
 			return;
-		}
 		cImp = (CompositeImage) imp;
 		addMouseListener(this);
 		addMouseMotionListener(this);
@@ -220,15 +219,13 @@ class ThumbnailsCanvas extends Canvas implements MouseListener, MouseMotionListe
 	}
 
 	public void paint(Graphics g) {
-		if (g == null) {
+		if (g == null)
 			return;
-		}
 		int savedMode = cImp.getMode();
 		if (savedMode==IJ.COMPOSITE)
 			cImp.setMode(IJ.COLOR);
 		BufferedImage bImg;
 		ImageProcessor ipSmall;
-
 		os = createImage((nChannels + 1) * iconSize, 2 * iconSize + 30);
 		osg = os.getGraphics();
 		osg.setFont(ImageJ.SansSerif12);
@@ -263,9 +260,8 @@ class ThumbnailsCanvas extends Canvas implements MouseListener, MouseMotionListe
 		y1 += (iconSize + separatorY);
 		osg.drawString("New:", 6, y1);
 		osg.dispose();
-		if (os == null) {
+		if (os == null)
 			return;
-		}
 		g.drawImage(os, 0, 0, this);
 		if (savedMode==IJ.COMPOSITE)
 			cImp.setMode(savedMode);
@@ -279,18 +275,17 @@ class ThumbnailsCanvas extends Canvas implements MouseListener, MouseMotionListe
 		PopupMenu popup = new PopupMenu();
 		String[] colors = "Grays,-,Red,Green,Blue,Yellow,Magenta,Cyan,-,Fire,Ice,Spectrum,3-3-2 RGB,Red/Green".split(",");
 		for (int jj = 0; jj < colors.length; jj++) {
-			if (colors[jj].equals("-")) {
+			if (colors[jj].equals("-"))
 				popup.addSeparator();
-			} else {
+			else {
 				MenuItem mi = new MenuItem(colors[jj]);
 				popup.add(mi);
 				mi.addActionListener(this);
 			}
 		}
 		add(popup);
-		if (IJ.isMacOSX()) {
+		if (IJ.isMacOSX())
 			IJ.wait(10);
-		}
 		popup.show(this, x, y);
 		setCursor(defaultCursor);
 	}
@@ -299,9 +294,7 @@ class ThumbnailsCanvas extends Canvas implements MouseListener, MouseMotionListe
 		String cmd = e.getActionCommand();
 		cImp.setPosition(currentChannel, currentSlice, currentFrame);
 		CompositeImage cImp = (CompositeImage) this.cImp;
-
 		IJ.run(cmd);
-
 		repaint();
 		setCursor(defaultCursor);
 	}
@@ -327,13 +320,10 @@ class ThumbnailsCanvas extends Canvas implements MouseListener, MouseMotionListe
 			}
 			channelUnderCursor = chn;
 		}
-
-		if (channelUnderCursor > 0) {
+		if (channelUnderCursor > 0)
 			setCursor(handCursor);
-		} else {
+		else
 			setCursor(defaultCursor);
-		}
-
 	}
 
 	public void mouseEntered(MouseEvent e) {

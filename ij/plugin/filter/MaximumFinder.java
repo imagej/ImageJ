@@ -18,9 +18,9 @@ import java.util.*;
  * When finding maxima (not minima), pixels with a level below the lower threshold
  * can be left unprocessed.
  *
- * Except for segmentation, this plugin works with ROIs, including non-rectangular ROIs.
- * Since this plug-in creates a separate output image it processes
- *    only single images or slices, no stacks.
+ * Except for segmentation, this plugin works with area ROIs, including non-rectangular ROIs,
+ * which define the area where maxima are reported.
+ * Since this plug-in creates a separate output image it processes only single images or slices, no stacks.
  *
  * Notes:
  * - When using one instance of MaximumFinder for more than one image in parallel threads,
@@ -38,12 +38,15 @@ import java.util.*;
  * version 22-May-2011 Bugfix: Maximum search in EDM and float images with large dynamic range could omit maxima
  * version 13-Sep-2013 added the findMaxima() and findMinima() functions for arrays (Norbert Vischer)
  * version 20-Mar-2014 Watershed segmentation of EDM with tolerance>=1.0 does not kill fine particles
+ * version 11-Mar-2019 adds "strict" option, "noise tolerance" renamed to "prominence"
  */
 
 public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     //filter params
-    /** maximum height difference between points that are not counted as separate maxima */
+    /** prominence: maximum height difference between points that are not counted as separate maxima */
     private static double tolerance = 10;
+    /** strict=off allows one maximum even if it is not higher than the prominence above all other pixels */
+    private static boolean strict = false;
     /** Output type single points */
     public final static int SINGLE_POINTS=0;
     /** Output type all points around the maximum within the tolerance */
@@ -69,6 +72,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     private static boolean useMinThreshold;
     /** whether to find darkest points on light background */
     private static boolean lightBackground;
+    private boolean   oldMacro = false;             // till 1.52m, "strict" was the same as "excludeOnEdges" and "prominence" was called "noise tolerance"
     private ImagePlus imp;                          // the ImagePlus of the setup call
     private int flags = DOES_ALL|NO_CHANGES|NO_UNDO;// the flags (see interfaces PlugInFilter & ExtendedPlugInFilter)
     private boolean   thresholded;                  // whether the input image has a threshold
@@ -86,7 +90,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     private int       intEncodeShift;               // needed for encoding x & y in a single int (watershed): shift of y
     /** directions to 8 neighboring pixels, clockwise: 0=North (-y), 1=NE, 2=East (+x), ... 7=NW */
     private int[]     dirOffset;                    // pixel offsets of neighbor pixels for direct addressing
-    private Polygon points;                    // maxima found by findMaxima() when outputType is POINT_SELECTION
+    private Polygon   xyCoordinates;                // maxima found by findMaxima() POINT_SELECTION, LIST, COUNT
     final static int[] DIR_X_OFFSET = new int[] {  0,  1,  1,  1,  0, -1, -1, -1 };
     final static int[] DIR_Y_OFFSET = new int[] { -1, -1,  0,  1,  1,  1,  0, -1 };
     /** the following constants are used to set bits corresponding to pixel types */
@@ -117,16 +121,22 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         ImageProcessor ip = imp.getProcessor();
         ip.resetBinaryThreshold(); // remove any invisible threshold set by Make Binary or Convert to Mask
         thresholded = ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD;
+        String options = Macro.getOptions();
+        if  (options!=null && options.indexOf("noise=") >= 0) { // ensure compatibility with old macros
+            oldMacro = true;                                    // specifying "noise=", not "prominence="
+            Macro.setOptions(options.replaceAll("noise=", "prominence="));
+        }
         GenericDialog gd = new GenericDialog(command);
-        int digits = (ip instanceof FloatProcessor)?2:0;
         String unit = (imp.getCalibration()!=null)?imp.getCalibration().getValueUnit():null;
-        unit = (unit==null||unit.equals("Gray Value"))?":":" ("+unit+"):";
-        gd.addNumericField("Noise tolerance"+unit,tolerance, digits);
-        gd.addChoice("Output type:", outputTypeNames, outputTypeNames[dialogOutputType]);
+        int digits = (ip instanceof FloatProcessor || unit != null) ? 2 : 0;
+        if (unit.equals("Gray Value")) unit = null;
+        gd.addNumericField("Prominence >",tolerance, digits, 6, unit);
         gd.addCheckbox("Exclude edge maxima", excludeOnEdges);
         if (thresholded)
             gd.addCheckbox("Above lower threshold", useMinThreshold);
         gd.addCheckbox("Light background", lightBackground);
+        gd.addCheckbox("Strict", strict);
+        gd.addChoice("Output type:", outputTypeNames, outputTypeNames[dialogOutputType]);
         gd.addPreviewCheckbox(pfr, "Preview point selection");
         gd.addMessage("    "); //space for number of maxima
         messageArea = (Label)gd.getMessage();
@@ -148,7 +158,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
         tolerance = gd.getNextNumber();
         if (tolerance<0) tolerance = 0;
-        dialogOutputType = gd.getNextChoiceIndex();
         outputType = previewing ? POINT_SELECTION : dialogOutputType;
         excludeOnEdges = gd.getNextBoolean();
         if (thresholded)
@@ -156,6 +165,8 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         else
             useMinThreshold = false;
         lightBackground = gd.getNextBoolean();
+        strict = gd.getNextBoolean();
+        dialogOutputType = gd.getNextChoiceIndex();
         boolean invertedLut = imp.isInvertedLut();
         if (useMinThreshold && ((invertedLut&&!lightBackground) || (!invertedLut&&lightBackground))) {
             if (!thresholdWarningShown)
@@ -211,7 +222,8 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
             ip.setRoi(roi);
         }
         ByteProcessor outIp = null;
-        outIp = findMaxima(ip, tolerance, threshold, outputType, excludeOnEdges, false); //process the image
+        boolean strictMode = oldMacro ? excludeOnEdges : strict;
+        outIp = findMaxima(ip, tolerance, strictMode, threshold, outputType, excludeOnEdges, false); //process the image
         if (outIp == null) return;              //cancelled by user or previewing or no output image
         if (!Prefs.blackBackground)             //normally, output has an inverted LUT, "active" pixels black (255) - like a mask
             outIp.invertLut();
@@ -239,16 +251,35 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
      * @param ip             The input image
      * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value
      *                       from the ridge to a higher maximum
-     * @param excludeOnEdges Whether to exclude edge maxima
+     * @param excludeOnEdges Whether to exclude edge maxima. Also determines whether strict mode is on, i.e.,
+     *                       whether the global maximum is accepted even if all other pixel are less than 'tolerance'
+     *                       below this level (In 1.52m and before, 'strict' and 'excludeOnEdges' were the same).
      * @return               A Polygon containing the coordinates of the maxima
      */
     public Polygon getMaxima(ImageProcessor ip, double tolerance, boolean excludeOnEdges) {
-		findMaxima(ip, tolerance, ImageProcessor.NO_THRESHOLD,
+		return getMaxima(ip, tolerance, excludeOnEdges, excludeOnEdges);
+    }
+
+    /** Finds the image maxima and returns them as a Polygon.
+     * @param ip             The input image
+     * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value
+     *                       from the ridge to a higher maximum
+     * @param strict         When off, the global maximum is accepted even if all other pixel are less than
+     *                       'tolerance' below this level. With <code>excludeOnEdges=true</code>, 'strict' also
+     *                       means that the surounding of a maximum within 'tolerance' must not include an edge pixel
+     *                       (otherwise, it is enough that there is no edge pixel with the maximum value).
+     * @param excludeOnEdges Whether to exclude edge maxima. Also determines whether strict mode is on, i.e.,
+     *                       whether the global maximum is accepted even if all other pixel are less than 'tolerance'
+     *                       below this level (In 1.52m and before, 'strict' and 'excludeOnEdges' were the same).
+     * @return               A Polygon containing the coordinates of the maxima
+     */
+    public Polygon getMaxima(ImageProcessor ip, double tolerance, boolean strict, boolean excludeOnEdges) {
+		findMaxima(ip, tolerance, strict, ImageProcessor.NO_THRESHOLD,
 			MaximumFinder.POINT_SELECTION, excludeOnEdges, false);
-		if (points==null)
+		if (xyCoordinates==null)
 			return new Polygon();
 		else
-			return points;
+			return xyCoordinates;
     }
 
 	/**
@@ -381,7 +412,9 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
      *                       from the ridge to a higher maximum
      * @param outputType     What to mark in output image: SINGLE_POINTS, IN_TOLERANCE or SEGMENTED.
      *                       No output image is created for output types POINT_SELECTION, LIST and COUNT.
-     * @param excludeOnEdges Whether to exclude edge maxima
+     * @param excludeOnEdges Whether to exclude edge maxima. Also determines whether strict mode is on, i.e.,
+     *                       whether the global maximum is accepted even if all other pixel are less than 'tolerance'
+     *                       below this level (In 1.52m and before, 'strict' and 'excludeOnEdges' were the same).
      * @return               A new byteProcessor with a normal (uninverted) LUT where the marked points
      *                       are set to 255 (Background 0). Pixels outside of the roi of the input ip are not set.
      *                       Returns null if outputType does not require an output or if cancelled by escape
@@ -390,7 +423,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     	return findMaxima(ip, tolerance, ImageProcessor.NO_THRESHOLD, outputType, excludeOnEdges, false);
     }
 
-   /** Here the processing is done: Find the maxima of an image (does not find minima).
+   /** Finds the maxima of an image (does not find minima).
      *
      * LIMITATIONS:          With outputType=SEGMENTED (watershed segmentation), some segmentation lines
      *                       may be improperly placed if local maxima are suppressed by the tolerance.
@@ -402,13 +435,42 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
      *                       ImageProcessor.NO_THRESHOLD
      * @param outputType     What to mark in output image: SINGLE_POINTS, IN_TOLERANCE or SEGMENTED.
      *                       No output image is created for output types POINT_SELECTION, LIST and COUNT.
-     * @param excludeOnEdges Whether to exclude edge maxima
+     * @param excludeOnEdges Whether to exclude edge maxima. Also determines whether strict mode is on, i.e.,
+     *                       whether the global maximum is accepted even if all other pixel are less than 'tolerance'
+     *                       below this level (In 1.52m and before, 'strict' and 'excludeOnEdges' were the same).
      * @param isEDM          Whether the image is a float Euclidian Distance Map.
      * @return               A new byteProcessor with a normal (uninverted) LUT where the marked points
      *                       are set to 255 (Background 0). Pixels outside of the roi of the input ip are not set.
      *                       Returns null if outputType does not require an output or if cancelled by escape
      */
     public ByteProcessor findMaxima(ImageProcessor ip, double tolerance, double threshold,
+            int outputType, boolean excludeOnEdges, boolean isEDM) {
+        return findMaxima(ip, tolerance, excludeOnEdges, threshold, outputType, excludeOnEdges, isEDM);
+    }
+
+   /** Here the processing is done: Find the maxima of an image (does not find minima).
+     *
+     * LIMITATIONS:          With outputType=SEGMENTED (watershed segmentation), some segmentation lines
+     *                       may be improperly placed if local maxima are suppressed by the tolerance.
+     *
+     * @param ip             The input image
+     * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value
+     *                       from the ridge to a higher maximum
+     * @param strict         When off, the global maximum is accepted even if all other pixel are less than
+     *                       'tolerance' below this level. With <code>excludeOnEdges=true</code>, 'strict' also
+     *                       means that the surounding of a maximum within 'tolerance' must not include an edge pixel
+     *                       (otherwise, it is enough that there is no edge pixel with the maximum value).
+     * @param threshold      Minimum height of a maximum (uncalibrated); for no minimum height set it to
+     *                       ImageProcessor.NO_THRESHOLD
+     * @param outputType     What to mark in output image: SINGLE_POINTS, IN_TOLERANCE or SEGMENTED.
+     *                       No output image is created for output types POINT_SELECTION, LIST and COUNT.
+     * @param excludeOnEdges Whether to exclude edge maxima
+     * @param isEDM          Whether the image is a float Euclidian Distance Map.
+     * @return               A new byteProcessor with a normal (uninverted) LUT where the marked points
+     *                       are set to 255 (Background 0). Pixels outside of the roi of the input ip are not set.
+     *                       Returns null if outputType does not require an output or if cancelled by escape
+     */
+    public ByteProcessor findMaxima(ImageProcessor ip, double tolerance, boolean strict, double threshold,
             int outputType, boolean excludeOnEdges, boolean isEDM) {
         if (dirOffset == null) makeDirectionOffsets(ip);
         Rectangle roi = ip.getRoi();
@@ -427,6 +489,10 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                 if (globalMax<v) globalMax = v;
             }
         }
+        boolean maximumPossible = globalMax>globalMin;
+        if (strict && globalMax - globalMin <= tolerance)
+            maximumPossible = false;
+
         if (threshold !=ImageProcessor.NO_THRESHOLD)
             threshold -= (globalMax-globalMin)*1e-6;//avoid rounding errors
         //for segmentation, exclusion of edge maxima cannot be done now but has to be done after segmentation:
@@ -434,17 +500,18 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 
         if (Thread.currentThread().isInterrupted()) return null;
         IJ.showStatus("Getting sorted maxima...");
-        long[] maxPoints = getSortedMaxPoints(ip, typeP, excludeEdgesNow, isEDM, globalMin, globalMax, threshold); 
+        long[] maxPoints = maximumPossible ?
+                getSortedMaxPoints(ip, typeP, excludeEdgesNow, isEDM, globalMin, globalMax, threshold) : new long[0];
         if (Thread.currentThread().isInterrupted()) return null;
         IJ.showStatus("Analyzing  maxima...");
         float maxSortingError = 0;
         if (ip instanceof FloatProcessor)   //sorted sequence may be inaccurate by this value
             maxSortingError = 1.1f * (isEDM ? SQRT2/2f : (globalMax-globalMin)/2e9f);
-        analyzeAndMarkMaxima(ip, typeP, maxPoints, excludeEdgesNow, isEDM, globalMin, tolerance, outputType, maxSortingError);
+        analyzeAndMarkMaxima(ip, typeP, maxPoints, excludeEdgesNow, isEDM, globalMin, tolerance, strict, outputType, maxSortingError);
         //new ImagePlus("Pixel types",typeP.duplicate()).show();
         if (outputType==POINT_SELECTION || outputType==LIST || outputType==COUNT)
             return null;
-        
+
         ByteProcessor outIp;
         byte[] pixels;
         if (outputType == SEGMENTED) {
@@ -562,16 +629,16 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     * @param outputType 
     */   
    void analyzeAndMarkMaxima(ImageProcessor ip, ByteProcessor typeP, long[] maxPoints, boolean excludeEdgesNow,
-        boolean isEDM, float globalMin, double tolerance, int outputType, float maxSortingError) {
+        boolean isEDM, float globalMin, double tolerance, boolean strict, int outputType, float maxSortingError) {
         byte[] types =  (byte[])typeP.getPixels();
         float[] edmPixels = isEDM ? (float[])ip.getPixels() : null;
         int nMax = maxPoints.length;
         int [] pList = new int[width*height];       //here we enter points starting from a maximum
-        Vector xyVector = null;
+        Polygon xyCoordinates = null;
         Roi roi = null;
         boolean displayOrCount = outputType==POINT_SELECTION||outputType==LIST||outputType==COUNT;
         if (displayOrCount) 
-            xyVector=new Vector();
+            xyCoordinates = new Polygon();
         if (imp!=null)
             roi = imp.getRoi();	    
       
@@ -629,11 +696,11 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                                 pList[listLen] = offset2;
                                 listLen++;              //we have found a new point within the tolerance
                                 types[offset2] |= LISTED;
-                                if (x2==0 || x2==width-1 || y2==0 || y2==height-1) {
+                                if ((x2==0 || x2==width-1 || y2==0 || y2==height-1) && (strict || v2 >= v0)) {
                                     isEdgeMaximum = true;
                                     if (excludeEdgesNow) {
                                         maxPossible = false;
-                                        break;          //we have an edge maximum;
+                                        break;          //we have an edge maximum
                                     }
                                 }
                                 if (v2==v0) {           //prepare finding center of equal points (in case single point needed)
@@ -681,41 +748,35 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 							int x = offset % width;
 							int y = offset / width;
 							if (roi==null || roi.contains(x, y))
-								xyVector.addElement(new int[] {x, y});
+								xyCoordinates.addPoint(x, y);
 						}
 					}
 				} //if !sortingError
-			} while (sortingError);				//redo if we have encountered a higher maximum: handle it now.
+			} while (sortingError);				        //redo if we have encountered a higher maximum: handle it now.
         } // for all maxima iMax
+        if (nMax == 0)                                  //no initial maxima at all? then consider all as 'within tolerance'
+            Arrays.fill(types, (byte)(PROCESSED|MAX_AREA));
 
         if (Thread.currentThread().isInterrupted()) return;
-        if (displayOrCount && xyVector!=null) {
-            int npoints = xyVector.size();
-            if (outputType == POINT_SELECTION && npoints>0) {
-                int[] xpoints = new int[npoints];
-                int[] ypoints = new int[npoints];
-                for (int i=0; i<npoints; i++) {
-                    int[] xy = (int[])xyVector.elementAt(i);
-                    xpoints[i] = xy[0];
-                    ypoints[i] = xy[1];
-                }
-                if (imp!=null) {
-                	PointRoi points = new PointRoi(xpoints, ypoints, npoints);
+        if (displayOrCount) {
+            if (xyCoordinates == null) xyCoordinates = new Polygon();
+            int npoints = xyCoordinates.npoints;
+            if (outputType == POINT_SELECTION) {
+                if (imp!=null && npoints>0) {
+                	PointRoi points = new PointRoi(xyCoordinates);
                 	if (npoints<15 && points.getSize()<3)
                 		points.setSize(3);
                 	if (npoints==1)
                  		points.setSize(4);               		
                 	imp.setRoi(points);
                 }
-                points = new Polygon(xpoints, ypoints, npoints);
             } else if (outputType==LIST) {
                 Analyzer.resetCounter();
                 ResultsTable rt = ResultsTable.getResultsTable();
                 for (int i=0; i<npoints; i++) {
-                    int[] xy = (int[])xyVector.elementAt(i);
                     rt.incrementCounter();
-                    rt.addValue("X", xy[0]);
-                    rt.addValue("Y", xy[1]);
+                    rt.addValue("X", xyCoordinates.xpoints[i]);
+                    rt.addValue("Y", xyCoordinates.ypoints[i]);
                 }
                 rt.show("Results");
             } else if (outputType==COUNT) {
@@ -746,7 +807,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
             } 
         }
         if (previewing)
-            messageArea.setText((xyVector==null ? 0 : xyVector.size())+" Maxima");
+            messageArea.setText((xyCoordinates==null ? 0 : xyCoordinates.npoints)+" Maxima");
     } //void analyzeAndMarkMaxima
 
    /** Create an 8-bit image by scaling the pixel values of ip to 1-254 (<lower threshold 0) and mark maximum areas as 255.
@@ -1319,5 +1380,3 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     }
 
 }
-
-

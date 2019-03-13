@@ -17,6 +17,7 @@ public class ColorChooser implements TextListener, AdjustmentListener {
 	boolean useHSB;
 	String title;
 	Frame frame;
+	double scale = Prefs.getGuiScale();
 
 	/** Constructs a ColorChooser using the specified title and initial color. */
 	public ColorChooser(String title, Color initialColor, boolean useHSB) {
@@ -40,7 +41,7 @@ public class ColorChooser implements TextListener, AdjustmentListener {
 		gd.addSlider("Red:", 0, 255, red);
 		gd.addSlider("Green:", 0, 255, green);
 		gd.addSlider("Blue:", 0, 255, blue);
-		panel = new ColorPanel(initialColor);
+		panel = new ColorPanel(initialColor, scale);
 		gd.addPanel(panel, GridBagConstraints.CENTER, new Insets(10, 0, 0, 0));
 		colors = gd.getNumericFields();
 		for (int i=0; i<colors.size(); i++)
@@ -80,16 +81,19 @@ public class ColorChooser implements TextListener, AdjustmentListener {
 }
 
 class ColorPanel extends Panel {
-	static final int WIDTH=150, HEIGHT=50;
-	static Font font = new Font("Monospaced", Font.PLAIN, 18);
-	Color c;
+	private int width=150, height=50;
+	private Font font;
+	private Color c;
 	 
-	ColorPanel(Color c) {
+	ColorPanel(Color c, double scale) {
 		this.c = c;
+		width = (int)(width*scale);
+		height = (int)(height*scale);
+		font = new Font("Monospaced", Font.PLAIN, (int)(18*scale));
 	}
 
 	public Dimension getPreferredSize() {
-		return new Dimension(WIDTH, HEIGHT);
+		return new Dimension(width, height);
 	}
 
 	void setColor(Color c) {
@@ -97,21 +101,21 @@ class ColorPanel extends Panel {
 	}
 
 	public Dimension getMinimumSize() {
-		return new Dimension(WIDTH, HEIGHT);
+		return new Dimension(width, height);
 	}
 
 	public void paint(Graphics g) {
 		g.setColor(c);
-		g.fillRect(0, 0, WIDTH, HEIGHT);
+		g.fillRect(0, 0, width, height);
 		int intensity = (c.getRed()+c.getGreen()+c.getBlue())/3;
 		Color c2 = intensity<128?Color.white:Color.black;
 		g.setColor(c2);
 		g.setFont(font);
 		Java2.setAntialiasedText(g, true);
 		String s = Colors.colorToString(c);
-		g.drawString(s, 5, HEIGHT-5);
+		g.drawString(s, 5, height-5);
 		g.setColor(Color.black);
-		g.drawRect(0, 0, WIDTH-1, HEIGHT-1);
+		g.drawRect(0, 0, width-1, height-1);
 	}
 
 }

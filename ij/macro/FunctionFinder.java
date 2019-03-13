@@ -2,6 +2,7 @@ package ij.macro;
 import ij.*;
 import ij.plugin.*;
 import ij.plugin.frame.*;
+import ij.gui.GUI;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Hashtable;
@@ -75,6 +76,7 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 			closeButton.addActionListener(this);
 			buttonPanel.add(closeButton);
 			dialog.add(buttonPanel, BorderLayout.SOUTH);
+			GUI.scale(dialog);
 			dialog.pack();
 		}
 

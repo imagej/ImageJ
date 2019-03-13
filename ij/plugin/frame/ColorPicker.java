@@ -18,19 +18,20 @@ public class ColorPicker extends PlugInDialog {
 			instance.toFront();
 			return;
 		}
+		double scale = Prefs.getGuiScale();
 		instance = this;
 		WindowManager.addWindow(this);
         int colorWidth = 22;
         int colorHeight = 16;
         int columns = 5;
         int rows = 20;
-        int width = columns*colorWidth;
-        int height = rows*colorHeight;
+        int width = (int)(columns*colorWidth*scale);
+        int height = (int)(rows*colorHeight*scale);
         addKeyListener(IJ.getInstance());
 		setLayout(new BorderLayout());
         ColorGenerator cg = new ColorGenerator(width, height, new int[width*height]);
         cg.drawColors(colorWidth, colorHeight, columns, rows);
-        Canvas colorCanvas = new ColorCanvas(width, height, null, cg);
+        Canvas colorCanvas = new ColorCanvas(width, height, null, cg, scale);
 		//new ImagePlus("cp",cg.duplicate()).show();
         Panel panel = new Panel();
         panel.add(colorCanvas);
@@ -211,21 +212,23 @@ class ColorGenerator extends ColorProcessor {
     
 } 
 
-class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener{
+class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener {
 	int width, height;
 	Vector colors;
 	boolean background;
 	long mouseDownTime;
 	ColorGenerator ip;
 	Frame frame;
+	double scale;
 			
-	public ColorCanvas(int width, int height, Frame frame, ColorGenerator ip) {
+	public ColorCanvas(int width, int height, Frame frame, ColorGenerator ip, double scale) {
 		this.width=width; this.height=height;
 		this.ip = ip;
 		addMouseListener(this);
  		addMouseMotionListener(this);
         addKeyListener(IJ.getInstance());
 		setSize(width, height);
+		this.scale = scale;
 	}
 	
 	public Dimension getPreferredSize() {
@@ -237,7 +240,7 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener{
 	}
 	
 	public void paint(Graphics g) {
-		g.drawImage(ip.createImage(), 0, 0, null);
+		g.drawImage(ip.createImage(), 0, 0, (int)(ip.getWidth()*scale), (int)(ip.getHeight()*scale), null);
 	}
 
 	public void mousePressed(MouseEvent e) {
@@ -251,8 +254,8 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener{
 		Rectangle foreground2Rect = new Rectangle(9, 276, 23, 25);
 		Rectangle background1Rect = new Rectangle(33, 302, 45, 10);
 		Rectangle background2Rect = new Rectangle(56, 277, 23, 25);
-		int x = e.getX();
-		int y = e.getY();
+		int x = (int)(e.getX()/scale);
+		int y = (int)(e.getY()/scale);
 		long difference = System.currentTimeMillis()-mouseDownTime;
 		boolean doubleClick = (difference<=250);
 		mouseDownTime = System.currentTimeMillis();
