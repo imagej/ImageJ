@@ -1763,8 +1763,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (newRoi==null)
 				{deleteRoi(); return;}
 		}
-		if (bounds.width==0 && bounds.height==0 && !(newRoi.getType()==Roi.POINT||newRoi.getType()==Roi.LINE))
-			{deleteRoi(); return;}
+		if (bounds.width==0 && bounds.height==0 && !(newRoi.getType()==Roi.POINT||newRoi.getType()==Roi.LINE)) {
+			deleteRoi();
+			return;
+		}
 		roi = newRoi;
 		if (ip!=null) {
 			ip.setMask(null);
@@ -1781,8 +1783,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 		if (updateDisplay)
 			draw();
-		if (roi!=null)
-			roi.notifyListeners(RoiListener.CREATED);
+		if (roi!=null) {
+			if (roi.listenersNotified())
+				roi.notifyListeners(RoiListener.MODIFIED);
+			else
+				roi.notifyListeners(RoiListener.CREATED);
+		}
 	}
 	
 	/** Creates a rectangular selection. */

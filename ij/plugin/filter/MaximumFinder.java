@@ -131,11 +131,11 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         int digits = (ip instanceof FloatProcessor || unit != null) ? 2 : 0;
         if (unit.equals("Gray Value")) unit = null;
         gd.addNumericField("Prominence >",tolerance, digits, 6, unit);
+        gd.addCheckbox("Strict", strict);
         gd.addCheckbox("Exclude edge maxima", excludeOnEdges);
         if (thresholded)
             gd.addCheckbox("Above lower threshold", useMinThreshold);
         gd.addCheckbox("Light background", lightBackground);
-        gd.addCheckbox("Strict", strict);
         gd.addChoice("Output type:", outputTypeNames, outputTypeNames[dialogOutputType]);
         gd.addPreviewCheckbox(pfr, "Preview point selection");
         gd.addMessage("    "); //space for number of maxima
@@ -159,13 +159,13 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         tolerance = gd.getNextNumber();
         if (tolerance<0) tolerance = 0;
         outputType = previewing ? POINT_SELECTION : dialogOutputType;
+        strict = gd.getNextBoolean();
         excludeOnEdges = gd.getNextBoolean();
         if (thresholded)
             useMinThreshold = gd.getNextBoolean();
         else
             useMinThreshold = false;
         lightBackground = gd.getNextBoolean();
-        strict = gd.getNextBoolean();
         dialogOutputType = gd.getNextChoiceIndex();
         boolean invertedLut = imp.isInvertedLut();
         if (useMinThreshold && ((invertedLut&&!lightBackground) || (!invertedLut&&lightBackground))) {

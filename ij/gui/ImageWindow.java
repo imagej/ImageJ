@@ -282,7 +282,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			if (SCALE>1.0) {
 				Font font = new Font("SansSerif", Font.PLAIN, (int)(12*SCALE));
 				g.setFont(font);
-				GUI.scale(this);
 			}
 			g.drawString(createSubtitle(), insets.left+5, insets.top+TEXT_GAP);
 		}

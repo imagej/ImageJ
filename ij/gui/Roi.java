@@ -2354,5 +2354,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			}
 		}
 	}
+	
+	public boolean listenersNotified() {
+		return listenersNotified;
+	}
 
 }

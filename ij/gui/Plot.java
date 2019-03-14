@@ -528,20 +528,20 @@ public class Plot implements Cloneable {
 	 *  If a label has the form {txt1,txt2,txt3}, the corresponding axis will be labeled
 	 *  not by numbers but rather with the texts "txt1", "txt2" ... instead of 0, 1, ...
 	 *  In this special case, there will be no label for the axis on the plot.
-	 *	Call updateImage() thereafter to make the change visible (if it is shown already). */
+	 *	Call update() thereafter to make the change visible (if it is shown already). */
 	public void setXYLabels(String xLabel, String yLabel) {
 		pp.xLabel.label = xLabel!=null ? xLabel : "";
 		pp.yLabel.label = yLabel!=null ? yLabel : "";
 	}
 
 	/** Sets the maximum number of intervals in a plot.
-	 *	Call updateImage() thereafter to make the change visible (if the image is shown already). */
+	 *	Call update() thereafter to make the change visible (if the image is shown already). */
 	public void setMaxIntervals(int intervals) {
 			maxIntervals = intervals;
 	}
 
 	/** Sets the length of the major tick in pixels.
-	 *	Call updateImage() thereafter to make the change visible (if the image is shown already). */
+	 *	Call update() thereafter to make the change visible (if the image is shown already). */
 	public void setTickLength(int tickLength) {
 			tickLength = tickLength;
 	}
@@ -553,7 +553,7 @@ public class Plot implements Cloneable {
 
 	/** Sets the flags that control the axes format.
 	 *	Does not modify the flags for logarithmic axes on/off and the FORCE2GRID flags.
-	 *	Call updateImage() thereafter to make the change visible (if it is shown already). */
+	 *	Call update() thereafter to make the change visible (if it is shown already). */
 	public void setFormatFlags(int flags) {
 		int unchangedFlags = X_LOG_NUMBERS | Y_LOG_NUMBERS | X_FORCE2GRID | Y_FORCE2GRID;
 		flags = flags & (~unchangedFlags);	  //remove flags that should not be affected
@@ -566,32 +566,32 @@ public class Plot implements Cloneable {
 	}
 
 	/** Sets the X Axis format to Log or Linear.
-	 *	Call updateImage() thereafter to make the change visible (if it is shown already). */
+	 *	Call update() thereafter to make the change visible (if it is shown already). */
 	public void setAxisXLog(boolean axisXLog) {
 		pp.axisFlags = axisXLog ? pp.axisFlags | X_LOG_NUMBERS : pp.axisFlags & (~X_LOG_NUMBERS);
 	}
 
 	/** Sets the Y Axis format to Log or Linear.
-	 *	Call updateImage() thereafter to make the change visible (if it is shown already). */
+	 *	Call update() thereafter to make the change visible (if it is shown already). */
 	public void setAxisYLog(boolean axisYLog) {
 		pp.axisFlags = axisYLog ? pp.axisFlags | Y_LOG_NUMBERS : pp.axisFlags & (~Y_LOG_NUMBERS);
 	}
 
 	/** Sets whether to show major ticks at the x axis.
-	 *	Call updateImage() thereafter to make the change visible (if the image is shown already). */
+	 *	Call update() thereafter to make the change visible (if the image is shown already). */
 
 	public void setXTicks(boolean xTicks) {
 		pp.axisFlags = xTicks ? pp.axisFlags | X_TICKS : pp.axisFlags & (~X_TICKS);
 	}
 
 	/** Sets whether to show major ticks at the y axis.
-	 *	Call updateImage() thereafter to make the change visible (if the image is shown already). */
+	 *	Call update() thereafter to make the change visible (if the image is shown already). */
 	public void setYTicks(boolean yTicks) {
 		pp.axisFlags = yTicks ? pp.axisFlags | Y_TICKS : pp.axisFlags & (~Y_TICKS);
 	}
 
 	/** Sets whether to show minor ticks on the x axis (if linear). Also sets major ticks if true and no grid is set.
-	 *	Call updateImage() thereafter to make the change visible (if the image is shown already). */
+	 *	Call update() thereafter to make the change visible (if the image is shown already). */
 	public void setXMinorTicks(boolean xMinorTicks) {
 		pp.axisFlags = xMinorTicks ? pp.axisFlags | X_MINOR_TICKS : pp.axisFlags & (~X_MINOR_TICKS);
 		if (xMinorTicks && !hasFlag(X_GRID))
@@ -599,14 +599,14 @@ public class Plot implements Cloneable {
 	}
 
 	/** Sets whether to show minor ticks on the y axis (if linear). Also sets major ticks if true and no grid is set.
-	 *	Call updateImage() thereafter to make the change visible (if the image is shown already). */
+	 *	Call update() thereafter to make the change visible (if the image is shown already). */
 	public void setYMinorTicks(boolean yMinorTicks) {
 		pp.axisFlags = yMinorTicks ? pp.axisFlags | Y_MINOR_TICKS : pp.axisFlags & (~Y_MINOR_TICKS);
 		if (yMinorTicks && !hasFlag(Y_GRID))
 			pp.axisFlags |= Y_TICKS;
 	}
 
-	/** Sets the properties of the axes. Call updateImage() thereafter to make the change visible
+	/** Sets the properties of the axes. Call update() thereafter to make the change visible
 	 *	(if the image is shown already). */
 	public void setAxes(boolean xLog, boolean yLog, boolean xTicks, boolean yTicks, boolean xMinorTicks, boolean yMinorTicks,
 			int tickLenght, int minorTickLenght) {
@@ -620,7 +620,7 @@ public class Plot implements Cloneable {
 		setMinorTickLength(minorTickLenght);
 	}
 
-	/** Sets log scale in x. Call updateImage() thereafter to make the change visible
+	/** Sets log scale in x. Call update() thereafter to make the change visible
 	 *	(if the image is shown already). */
 
 	public void setLogScaleX() {
@@ -999,7 +999,7 @@ public class Plot implements Cloneable {
 	/** Sets the font for all following drawLabel etc. operations. The currently set font when
 	 *	displaying the plot determines the font of all labels & numbers.
 	 *  After the plot has been shown, sets the font for the numbers and the legend (if present).
-	 *	Call updateImage() thereafter to make the change visible (if the image is shown already). */
+	 *	Call update() thereafter to make the change visible (if the image is shown already). */
 	public void setFont(Font font) {
 		if (font == null) font = defaultFont;
 		currentFont = font;
@@ -1018,7 +1018,7 @@ public class Plot implements Cloneable {
 	 *  After the plot has been shown, sets the font for the numbers and the legend (if present).
 	 *	Styles are defined in the Font class, e.g. Font.PLAIN, Font.BOLD.
 	 *	Set <code>style</code> to -1 to leave the style unchanged.
-	 *	Call updateImage() thereafter to make the change visible (if the image is shown already). */
+	 *	Call update() thereafter to make the change visible (if the image is shown already). */
 	public void setFont(int style, float size) {
 		if (size < 9) size = 9f;
 		if (size > 24) size = 24f;
@@ -1030,7 +1030,7 @@ public class Plot implements Cloneable {
 	/** Sets the size of the x and y label font size and style. Styles are defined
 	 *	in the Font class, e.g. Font.PLAIN, Font.BOLD.
 	 *	Set <code>style</code> to -1 to leave the style unchanged.
-	 *	Call updateImage() thereafter to make the change visible (if the image is shown already). */
+	 *	Call update() thereafter to make the change visible (if the image is shown already). */
 	public void setAxisLabelFont(int style, float size) {
 		if (size < 9) size = 9f;
 		if (size > 33) size = 33f;
@@ -1196,7 +1196,7 @@ public class Plot implements Cloneable {
 
 	/** Add the i-th PlotObject (in the sequence how they were added, including hidden ones)
 	 *  from another plot to this one.
-	 *  Use 'updateImage' to update the plot thereafter.
+	 *  Use 'update' to update the plot thereafter.
 	 *  @return Index of the plotObject added in the sequence they were added **/
 	public int addObjectFromPlot(Plot plot, int i) {
 		PlotObject plotObject = plot.getPlotObjectDeepClone(i);
@@ -1309,7 +1309,7 @@ public class Plot implements Cloneable {
 
 	/** Restores the plot contents (not including axis formats etc) from the snapshot
 	 *  previously created by savePlotObjects(). See also killPlotObjectsSnapshot
-	 *  Use 'updateImage' to update the plot thereafter. */
+	 *  Use 'update' to update the plot thereafter. */
 	public void restorePlotObjects() {
 		if (allPlotObjectsSnapshot != null)
 			copyPlotObjectsVector(allPlotObjectsSnapshot, allPlotObjects);
@@ -1522,7 +1522,12 @@ public class Plot implements Cloneable {
 		return pp.isFrozen;
 	}
 
-	/** Draws the plot again, ignored if the plot has not been drawn before or the plot is frozen
+	/** Draws the plot again, ignored if the plot has not been drawn before or the plot is frozen. */
+	public void update() {
+		updateImage();
+	}
+
+	/** Draws the plot again, ignored if the plot has not been drawn before or the plot is frozen.
 	 *	If the ImagePlus exist, updates it and its calibration. */
 	public void updateImage() {
 		if (!plotDrawn || pp.isFrozen) return;
