@@ -1103,7 +1103,8 @@ public class Plot implements Cloneable {
 	 *	The array returned has elements [0] x data, [1] y data, [2] x error bars, [3] y error bars.
 	 *  If no error bars are given, the corresponding arrays are null.
 	 *  Returns null if there is no Plot Object with xy data with this index.
-	 *  @see #getDataObjectDesignations() **/
+	 *  @see #getDataObjectDesignations()
+	**/
 	public float[][] getDataObjectArrays(int index) {
 		int i = 0;
 		for (PlotObject plotObject : allPlotObjects) {
@@ -1421,10 +1422,11 @@ public class Plot implements Cloneable {
 			yScale = Double.POSITIVE_INFINITY;
 	}
 
-	/** Displays the plot in a PlotWindow and returns a reference to the PlotWindow.
+	/** Displays the plot in a PlotWindow.
 	 *  Plot stacks are shown in a StackWindow, however; in this case the return value is null.
 	 *  Also returns null in BatchMode. Note that the PlotWindow might get closed
 	 *  immediately if its 'listValues' and 'autoClose' flags are set.
+	 *  @see #update()
 	 */
 	public PlotWindow show() {
 		PlotVirtualStack stack = getStack();

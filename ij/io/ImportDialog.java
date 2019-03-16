@@ -306,7 +306,10 @@ public class ImportDialog {
 	}
 		
 	private void getDimensionsFromName(String name) {
-		if (name==null) return;
+		if (name==null)
+			return;
+		if (!name.matches(".*[0-9]+x[0-9]+.*"))
+			return; // must have 'x' seperator
 		int lastUnderscore = name.lastIndexOf("_");
 		String name2 = name;
 		if (lastUnderscore>=0)

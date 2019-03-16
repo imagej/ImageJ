@@ -1635,7 +1635,7 @@ public abstract class ImageProcessor implements Cloneable {
 		else
 			s1 = new ShapeRoi(roi);
 		s2 = new ShapeRoi(new Roi(0,0, width, height));
-		setRoi(s1.xor(s2));
+		setRoi(s2.xor(s1));
 		fill(getMask());
 		setMask(m);
 		setRoi(r);
