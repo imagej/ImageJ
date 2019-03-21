@@ -624,6 +624,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 		setProcessor2(title, ip, null);
 	}
+	static int counter = 1;
 	
 	void setProcessor2(String title, ImageProcessor ip, ImageStack newStack) {
 		//IJ.log("setProcessor2: "+ip+" "+this.ip+" "+newStack);
@@ -1485,7 +1486,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			}
 			s.addSlice(label, ip2);
 			s.update(ip2);
-			setStack(s);
+			this.stack = s;
 			ip = ip2;
 			oneSliceStack = true;
 		} else {
