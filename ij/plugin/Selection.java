@@ -568,7 +568,15 @@ public class Selection implements PlugIn, Measurements {
 		ByteProcessor mask = imp.createThresholdMask();
 		if (!Prefs.blackBackground)
 			mask.invertLut();
-		new ImagePlus("mask",mask).show();
+		ImagePlus maskImp = new ImagePlus("mask",mask);
+		Calibration cal = imp.getCalibration();
+		if (cal.scaled()) {
+			Calibration cal2 = maskImp.getCalibration();
+			cal2.pixelWidth = cal.pixelWidth;
+			cal2.pixelHeight = cal.pixelHeight;
+			cal2.setUnit(cal.getUnit());
+		}
+		maskImp.show();
 		Recorder.recordCall("mask = imp.createThresholdMask();");
 	}
 
