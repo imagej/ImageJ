@@ -32,6 +32,7 @@ public class FolderOpener implements PlugIn {
 	private ImagePlus image;
 	private boolean saveImage;
 	private long t0;
+	private int wrongBitDepthCount;
 	
 	/** Opens the images in the specified directory as a stack. Displays
 		directory chooser and options dialogs if the argument is null. */
@@ -300,6 +301,8 @@ public class FolderOpener implements PlugIn {
 						}
 						if (bitDepth2!=bitDepth) {
 							IJ.log(list[i] + ": wrong bit depth; "+bitDepth+" expected, "+bitDepth2+" found");
+							if (bitDepth==16 && bitDepth2==32)
+								wrongBitDepthCount++;
 							break;
 						}
 						if (scale<100.0)
@@ -348,7 +351,7 @@ public class FolderOpener implements PlugIn {
 					cal.pixelDepth = cal.pixelWidth;
 				imp2.setCalibration(cal);
 			}
-			if (info1!=null && info1.lastIndexOf("7FE0,0010")>0) {
+			if (info1!=null && info1.lastIndexOf("7FE0,0010")>0) { //DICOM
 				if (sortByMetaData)
 					stack = DicomTools.sort(stack);
 				imp2.setStack(stack);
@@ -362,6 +365,10 @@ public class FolderOpener implements PlugIn {
 					imp2.getProcessor().setMinAndMax(min, max);
 					imp2.updateAndDraw();
 				}
+				if (wrongBitDepthCount>0)
+					IJ.error("DICOM Reader", 
+					""+wrongBitDepthCount+" slices skipped. To avoid this problem, enable \"Open as 32-bit float\"\n"
+					+ "or \"Ignore Rescale Slope\" in the Edit>Options>DICOM dialog.");
 			}
 			if (imp2.getStackSize()==1) {
 				imp2.setProperty("Label", list[0]);

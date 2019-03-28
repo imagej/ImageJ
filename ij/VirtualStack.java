@@ -224,7 +224,10 @@ public class VirtualStack extends ImageStack {
 	
 	/** Returns the path to the directory containing the images. */
 	public String getDirectory() {
-		return path;
+		String path2 = path;
+		if (!(path2.endsWith("/") || path2.endsWith(File.separator)))
+			path2 = path2 + "/";
+		return path2;
 	}
 		
 	/** Returns the file name of the specified slice, were 1<=n<=nslices. */

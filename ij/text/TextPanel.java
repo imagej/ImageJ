@@ -418,7 +418,9 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			keyListener.keyPressed(e);
 	}
 
-	public void keyReleased (KeyEvent e) {}
+	public void keyReleased (KeyEvent e) {
+		IJ.setKeyUp(e.getKeyCode());
+	}
 
 	public void keyTyped (KeyEvent e) {
 		if (keyListener!=null)

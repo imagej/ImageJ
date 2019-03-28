@@ -224,7 +224,7 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_ZOOM: value = getZoom(); break;
 			case PARSE_FLOAT: value = parseDouble(getStringArg()); break;
 			case PARSE_INT: value = parseInt(); break;
-			case IS_KEY_DOWN: value=isKeyDown(); break;
+			case IS_KEY_DOWN: value = isKeyDown(); break;
 			case GET_SLICE_NUMBER: interp.getParens(); value=getImage().getCurrentSlice(); break;
 			case SCREEN_WIDTH: case SCREEN_HEIGHT: value = getScreenDimension(type); break;
 			case CALIBRATE: value = getImage().getCalibration().getCValue(getArg()); break;
@@ -2161,8 +2161,7 @@ public class Functions implements MacroConstants, Measurements {
 			return replacePlot(currentPlot);
 		} else if (name.equals("addText") || name.equals("drawLabel")) {
 			return addPlotText(currentPlot);
-		}		
-		
+		}
 		// the following commands need a plot under construction
 		if (plot==null)
 			interp.error("No plot defined");
@@ -2806,6 +2805,11 @@ public class Functions implements MacroConstants, Measurements {
 			IJ.setKeyDown(KeyEvent.VK_SHIFT);
 		else
 			IJ.setKeyUp(KeyEvent.VK_SHIFT);
+		boolean controlKeyDown = keys.indexOf("control")!=-1;
+		if (controlKeyDown)
+			IJ.setKeyDown(KeyEvent.VK_CONTROL);
+		else
+			IJ.setKeyUp(KeyEvent.VK_CONTROL);
 		if (keys.equals("space"))
 			IJ.setKeyDown(KeyEvent.VK_SPACE);
 		else
@@ -3575,6 +3579,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (key.indexOf("alt")!=-1) value = IJ.altKeyDown()==true?1.0:0.0;
 		else if (key.indexOf("shift")!=-1) value = IJ.shiftKeyDown()==true?1.0:0.0;
 		else if (key.indexOf("space")!=-1) value = IJ.spaceBarDown()==true?1.0:0.0;
+		else if (key.indexOf("control")!=-1) value = IJ.controlKeyDown()==true?1.0:0.0;
 		else interp.error("Invalid key");
 		return value;
 	}

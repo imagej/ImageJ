@@ -38,6 +38,10 @@ public class DicomTools {
 	private static String[] getSortStrings(ImageStack stack, String tag) {
 		double series = getSeriesNumber(getSliceLabel(stack,1));
 		int n = stack.getSize();
+		boolean checkRescaleSlope = (stack instanceof VirtualStack)?((VirtualStack)stack).getBitDepth()==16:false;
+		if (Prefs.ignoreRescaleSlope)
+			checkRescaleSlope = false;
+		boolean showError = false;
 		String[] values = new String[n];
 		sliceLabels = new String[n];
 		for (int i=1; i<=n; i++) {
@@ -47,15 +51,30 @@ public class DicomTools {
 			double value = getNumericTag(tags, tag);
 			if (Double.isNaN(value)) {
 				if (IJ.debugMode) IJ.log("  "+tag+"  tag missing in slice "+i);
+				if (showError) rescaleSlopeError();
 				return null;
 			}
 			if (getSeriesNumber(tags)!=series) {
 				if (IJ.debugMode) IJ.log("  all slices must be part of the same series");
+				if (showError) rescaleSlopeError();
 				return null;
 			}
 			values[i-1] = toString(value, MAX_DIGITS) + toString(i, MAX_DIGITS);
+			if (checkRescaleSlope) {
+				double rescaleSlope = getNumericTag(tags, "0028,1053");
+				if (rescaleSlope!=1.0)
+					showError = true;
+			}
 		}
+		if (showError) rescaleSlopeError();
 		return values;
+	}
+	
+	private static void rescaleSlopeError() {
+		IJ.error("DICOM Reader", 
+			"Slices with RescaleSlope!=1.0 will not open correctly.\n"
+			+"To avoid this problem, enable \"Open as 32-bit float\"\n"
+			+ "or \"Ignore Rescale Slope\" in the Edit>Options>DICOM dialog.");
 	}
 
 	private static String toString(double value, int width) {
