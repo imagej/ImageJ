@@ -5605,9 +5605,47 @@ public class Functions implements MacroConstants, Measurements {
 			return getVertexAngles();
 		else if (name.equals("rotate"))
 			return rotateArray();
+		else if (name.equals("delete"))
+			return deleteArray();
 		else
 			interp.error("Unrecognized Array function");
 		return null;
+	}
+
+	Variable[] deleteArray() {
+		interp.getLeftParen();
+		Variable[] arr1 = getArray();
+		double value = Double.MAX_VALUE;
+		String stringValue = null;
+		interp.getComma();
+		if (isStringArg())
+			stringValue = getString();
+		else
+			value = interp.getExpression();
+		interp.getRightParen();			
+		int len1 = arr1.length;
+		Variable[] cleanArr = new Variable[len1];
+		int len2 = 0;
+		for (int jj = 0; jj < len1; jj++) {
+			int type = arr1[jj].getType();
+			boolean remove = false;
+			if (stringValue!=null) {
+				if (type==Variable.STRING) {
+					String str = arr1[jj].getString();
+					remove =  stringValue.equals(str);
+				}
+			} else if (type==Variable.VALUE) {
+				double val = arr1[jj].getValue();
+				remove =  (val==value);
+				remove = remove || (Double.isNaN(val) && Double.isNaN(value));
+			}
+			if (!remove)
+				cleanArr[len2++] = (Variable)arr1[jj].clone();
+		}		
+		Variable[] shortenedArr = new Variable[len2];
+		for (int jj=0; jj<len2; jj++)
+			shortenedArr[jj] = cleanArr[jj];
+		return shortenedArr;
 	}
 
 	Variable[] fourierArray() {

@@ -11,7 +11,7 @@ import java.awt.*;
 import java.util.*;
 import java.awt.event.KeyEvent;
 import java.io.PrintWriter;
-import java.awt.datatransfer.StringSelection;
+
 
 /** This is the recursive descent parser/interpreter for the ImageJ macro language. */
 public class Interpreter implements MacroConstants {
@@ -1267,11 +1267,6 @@ public class Interpreter implements MacroConstants {
 			done = true;
 			if (line.length()>120)
 				line = line.substring(0,119)+"...";			
-			StringSelection ss = new StringSelection("" + lineNumber);
-			try {
-				java.awt.datatransfer.Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-				clipboard.setContents(ss, null);
-			} catch(Exception e) {}
 			Frame f = WindowManager.getFrame("Debug");			
 			TextPanel panel = null;
 			if (showVariables && f!=null && (f instanceof TextWindow)) { //clear previous content
