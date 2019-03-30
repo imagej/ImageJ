@@ -5605,14 +5605,31 @@ public class Functions implements MacroConstants, Measurements {
 			return getVertexAngles();
 		else if (name.equals("rotate"))
 			return rotateArray();
-		else if (name.equals("delete"))
-			return deleteArray();
+		else if (name.equals("deleteValue") || name.equals("delete"))
+			return deleteArrayValue();
+		else if (name.equals("deleteIndex"))
+			return deleteArrayIndex();
 		else
 			interp.error("Unrecognized Array function");
 		return null;
 	}
+	
+	Variable[] deleteArrayIndex() {
+		interp.getLeftParen();
+		Variable[] arr1 = getArray();
+		int index = (int)getLastArg();
+		checkIndex(index, 0, arr1.length-1);
+		int len1 = arr1.length;
+		Variable[] arr2 = new Variable[len1-1];
+		int index2 = 0;
+		for (int i=0; i<len1; i++) {
+			if (i!=index)
+				arr2[index2++] = (Variable)arr1[i].clone();
+		}		
+		return arr2;
+	}
 
-	Variable[] deleteArray() {
+	Variable[] deleteArrayValue() {
 		interp.getLeftParen();
 		Variable[] arr1 = getArray();
 		double value = Double.MAX_VALUE;
