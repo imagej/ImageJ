@@ -634,7 +634,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         float[] edmPixels = isEDM ? (float[])ip.getPixels() : null;
         int nMax = maxPoints.length;
         int [] pList = new int[width*height];       //here we enter points starting from a maximum
-        Polygon xyCoordinates = null;
+        xyCoordinates = null;
         Roi roi = null;
         boolean displayOrCount = outputType==POINT_SELECTION||outputType==LIST||outputType==COUNT;
         if (displayOrCount) 
