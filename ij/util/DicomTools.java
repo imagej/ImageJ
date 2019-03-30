@@ -51,12 +51,12 @@ public class DicomTools {
 			double value = getNumericTag(tags, tag);
 			if (Double.isNaN(value)) {
 				if (IJ.debugMode) IJ.log("  "+tag+"  tag missing in slice "+i);
-				if (showError) rescaleSlopeError();
+				if (showError) rescaleSlopeError(stack);
 				return null;
 			}
 			if (getSeriesNumber(tags)!=series) {
 				if (IJ.debugMode) IJ.log("  all slices must be part of the same series");
-				if (showError) rescaleSlopeError();
+				if (showError) rescaleSlopeError(stack);
 				return null;
 			}
 			values[i-1] = toString(value, MAX_DIGITS) + toString(i, MAX_DIGITS);
@@ -66,15 +66,12 @@ public class DicomTools {
 					showError = true;
 			}
 		}
-		if (showError) rescaleSlopeError();
+		if (showError) rescaleSlopeError(stack);
 		return values;
 	}
 	
-	private static void rescaleSlopeError() {
-		IJ.error("DICOM Reader", 
-			"Slices with RescaleSlope!=1.0 will not open correctly.\n"
-			+"To avoid this problem, enable \"Open as 32-bit float\"\n"
-			+ "or \"Ignore Rescale Slope\" in the Edit>Options>DICOM dialog.");
+	private static void rescaleSlopeError(ImageStack stack) {
+		((VirtualStack)stack).setBitDepth(32);
 	}
 
 	private static String toString(double value, int width) {
@@ -170,4 +167,3 @@ public class DicomTools {
 	}
 
 }
-
