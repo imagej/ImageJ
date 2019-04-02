@@ -29,9 +29,10 @@ public class Functions implements MacroConstants, Measurements {
     ImageProcessor defaultIP;
     ImagePlus defaultImp;
     int imageType;
-    boolean colorSet, fontSet;
-    Color defaultColor;
-    double defaultValue = Double.NaN;
+    boolean fontSet;
+    Color globalColor;
+	double globalValue = Double.NaN;
+	int globalLineWidth;
     Plot plot;
     static int plotID;
     int justification = ImageProcessor.LEFT_JUSTIFY;
@@ -74,8 +75,6 @@ public class Functions implements MacroConstants, Measurements {
 	boolean autoContrast;
 	static WaitForUserDialog waitForUserDialog;
 	int pasteMode;
-	int lineWidth = 1;
-	boolean lineWidthSet;
 	boolean expandableArrays;
 	int plotWidth;
 	int plotHeight;
@@ -288,11 +287,12 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	private void setLineWidth(int width) {
-		if (overlayPath!=null && width!=lineWidth)
-			addDrawingToOverlay(getImage());
-		lineWidth = width;
-		getProcessor().setLineWidth(width);
-		lineWidthSet = true;
+		if (WindowManager.getCurrentImage()!=null) {
+			if (overlayPath!=null && width!=globalLineWidth)
+				addDrawingToOverlay(getImage());
+			getProcessor().setLineWidth(width);
+		}
+		globalLineWidth = width;
 	}
 
 	Variable[] getArrayFunction(int type) {
@@ -628,9 +628,9 @@ public class Functions implements MacroConstants, Measurements {
 
 	void setForegroundColor() {
 		boolean isImage = WindowManager.getCurrentImage()!=null;
-		int lineWidth = 0;
+		int lnWidth = 0;
 		if (isImage)
-			lineWidth = getProcessor().getLineWidth();
+			lnWidth = getProcessor().getLineWidth();
 		int red=0, green=0, blue=0;
 		int arg1 = (int)getFirstArg();
 		if (interp.nextToken()==')') {
@@ -646,9 +646,9 @@ public class Functions implements MacroConstants, Measurements {
 		IJ.setForegroundColor(red, green, blue);
 		resetImage();
 		if (isImage)
-			setLineWidth(lineWidth);
-		defaultColor = null;
-		defaultValue = Double.NaN;
+			setLineWidth(lnWidth);
+		globalColor = null;
+		globalValue = Double.NaN;
 	}
 
 	void setBackgroundColor() {
@@ -669,24 +669,24 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void setColor() {
-		colorSet = true;
 		interp.getLeftParen();
 		if (isStringArg()) {
-			defaultColor = getColor();
-			getProcessor().setColor(defaultColor);
-			defaultValue = Double.NaN;
+			globalColor = getColor();
+			globalValue = Double.NaN;
 			interp.getRightParen();
 			return;
 		}
 		double arg1 = interp.getExpression();
-		if (interp.nextToken()==')')
-			{interp.getRightParen(); setColor(arg1); return;}
+		if (interp.nextToken()==')') {
+			interp.getRightParen();
+			setColor(arg1);
+			return;
+		}
 		int red=(int)arg1, green=(int)getNextArg(), blue=(int)getLastArg();
 		if (red<0) red=0; if (green<0) green=0; if (blue<0) blue=0;
 		if (red>255) red=255; if (green>255) green=255; if (blue>255) blue=255;
-		defaultColor = new Color(red, green, blue);
-		getProcessor().setColor(defaultColor);
-		defaultValue = Double.NaN;
+		globalColor = new Color(red, green, blue);
+		globalValue = Double.NaN;
 	}
 
 	void setColor(double value) {
@@ -709,8 +709,8 @@ public class Functions implements MacroConstants, Measurements {
 				ip.setValue(value);
 				break;
 		}
-		defaultValue = value;
-		defaultColor = null;
+		globalValue = value;
+		globalColor = null;
 	}
 
 	void makeLine() {
@@ -815,15 +815,20 @@ public class Functions implements MacroConstants, Measurements {
 	void resetImage() {
 		defaultImp = null;
 		defaultIP = null;
-		colorSet = fontSet = false;
-		lineWidth = 1;
+		fontSet = false;
 	}
 
 	ImageProcessor getProcessor() {
 		if (defaultIP==null) {
 			defaultIP = getImage().getProcessor();
-			if (lineWidthSet)
-				defaultIP.setLineWidth(lineWidth);
+			if (globalLineWidth>0)
+				defaultIP.setLineWidth(globalLineWidth);
+			if (globalColor!=null)
+				defaultIP.setColor(globalColor);
+			else if (!Double.isNaN(globalValue))
+				defaultIP.setValue(globalValue);
+			else
+				defaultIP.setColor(Toolbar.getForegroundColor());
 		}
 		return defaultIP;
 	}
@@ -916,7 +921,6 @@ public class Functions implements MacroConstants, Measurements {
 		int a2 = (int)Math.round(interp.getExpression());
 		interp.getRightParen();
 		ImageProcessor ip = getProcessor();
-		if (!colorSet) setForegroundColor(ip);
 		ip.lineTo(a1, a2);
 		updateAndDraw();
 	}
@@ -932,19 +936,8 @@ public class Functions implements MacroConstants, Measurements {
 		int y2 = (int)Math.round(interp.getExpression());
 		interp.getRightParen();
 		ImageProcessor ip = getProcessor();
-		if (!colorSet) setForegroundColor(ip);
 		ip.drawLine(x1, y1, x2, y2);
 		updateAndDraw();
-	}
-
-	void setForegroundColor(ImageProcessor ip) {
-		if (defaultColor!=null)
-			ip.setColor(defaultColor);
-		else if (!Double.isNaN(defaultValue))
-			ip.setValue(defaultValue);
-		else
-			ip.setColor(Toolbar.getForegroundColor());
-		colorSet = true;
 	}
 
 	void doIPMethod(int type) {
@@ -959,7 +952,6 @@ public class Functions implements MacroConstants, Measurements {
 			case FILL:
 				ImagePlus imp = getImage();
 				Roi roi = imp.getRoi();
-				if (!colorSet) setForegroundColor(ip);
 				if (roi==null) {
 					ip.resetRoi();
 					ip.fill();
@@ -1005,8 +997,6 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		interp.getRightParen();
 		ImageProcessor ip = getProcessor();
-		if (!colorSet)
-			setForegroundColor(ip);
 		setFont(ip);
 		ip.setJustification(justification);
 		ip.setAntialiasedText(antialiasedText);
@@ -2439,8 +2429,10 @@ public class Functions implements MacroConstants, Measurements {
 				style |= Font.ITALIC;
 		}
 		interp.getRightParen();
-		if (forAxisLabels) plot.setAxisLabelFont(style, size);
-		else plot.setFont(style, size);
+		if (forAxisLabels)
+			plot.setAxisLabelFont(style, size);
+		else
+			plot.setFont(style, size);
 		plot.updateImage();
 		return Double.NaN;
 	}
@@ -3625,7 +3617,6 @@ public class Functions implements MacroConstants, Measurements {
 		int width = (int)getNextArg();
 		int height = (int)getLastArg();
 		ImageProcessor ip = getProcessor();
-		if (!colorSet) setForegroundColor(ip);
 		switch (type) {
 			case DRAW_RECT: ip.drawRect(x, y, width, height); break;
 			case FILL_RECT: ip.setRoi(x, y, width, height); ip.fill(); break;
@@ -3742,7 +3733,6 @@ public class Functions implements MacroConstants, Measurements {
 		} else
 			interp.getRightParen();
 		ImageProcessor ip = getProcessor();
-		if (!colorSet) setForegroundColor(ip);
 		FloodFiller ff = new FloodFiller(ip);
 		if (fourConnected)
 			ff.fill(x, y);
@@ -6497,8 +6487,8 @@ public class Functions implements MacroConstants, Measurements {
 				offscreenOverlay = new Overlay();
 			overlay = offscreenOverlay;
 		}
-		if (defaultColor!=null)
-			roi.setStrokeColor(defaultColor);		
+		if (globalColor!=null)
+			roi.setStrokeColor(globalColor);		
 		roi.setStrokeWidth(getProcessor().getLineWidth());
 		overlay.add(roi);
 	}

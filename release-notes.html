@@ -5,11 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.52o10 30 March 2019</u>
+<li> <u>1.52o13 1 April 2019</u>
 <ul>
 <li> Thanks to Philippe Carl, the isKeyDown() and setKeyDown() macro
 functions now support the control key
 (<a href="http://wsr.imagej.net/macros/KeysDownDemo.txt">example</a>).
+<li> Thanks to Stein Rorvik, the setColor() and setLineWidth() macro functions
+no longer abort the macro if no image is open.
 <li> Thanks to NorbertVischer, Philippe Carl and Stein Rorvik, added the
 Array.deleteValue() and Array.deleteIndex() macro functions
 (<a href="http://wsr.imagej.net/macros/ArrayDeleteDemo.txt">example</a>).
@@ -17,6 +19,8 @@ Array.deleteValue() and Array.deleteIndex() macro functions
 function key shortcut to not work if the shift key was down.
 <li> Thanks to Salim Kanoun, fixed a bug in the DICOM reader that caused
 it to sometimes not correctly open PT DICOM stacks.
+<li> Thanks to Stein Rorvik, fixed a rounding error with setMinAndMax()
+on some density calibrated 8-bit images.
 <li> Thanks to Ellen Arena, fixed 1.52m regression that caused
 the <i>Edit&gt;Selection&gt;Create Selection</i> command
 to not work as expected with non-thresholded images.

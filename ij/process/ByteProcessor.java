@@ -423,8 +423,8 @@ public class ByteProcessor extends ImageProcessor {
 	public void setMinAndMax(double min, double max) {
 		if (max<min)
 			return;
-		this.min = (int)min;
-		this.max = (int)max;
+		this.min = (int)Math.round(min);
+		this.max = (int)Math.round(max);
 		if (rLUT1==null) {
 			if (cm==null)
 				makeDefaultColorModel();
