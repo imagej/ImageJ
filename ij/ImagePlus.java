@@ -2188,6 +2188,31 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return (new Duplicator()).crop(this);
 	}
 
+	/** Returns a cropped copy this image or stack, where 'options'
+	 * can be "stack", "slice" or a range (e.g., "20-30").
+	 * @see #duplicate
+	 * @see #crop
+	 * @see ij.plugin.Duplicator#crop
+	*/
+	public ImagePlus crop(String options) {
+		int stackSize = getStackSize();
+		if (options==null || options.equals("stack"))
+			return (new Duplicator()).run(this);
+		else if (options.equals("slice") || stackSize==1)
+			return crop();
+		else {
+			String[] range = Tools.split(options, " -");
+			double d1 = Tools.parseDouble(range[0]);
+			double d2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
+			int s1 = Double.isNaN(d1)?1:(int)d1;
+			int s2 = Double.isNaN(d2)?stackSize:(int)d2;
+			if (s1<1) s1 = 1;
+			if (s2>stackSize) s2 = stackSize;
+			if (s1>s2) {s1=1; s2=stackSize;}
+			return new Duplicator().run(this, s1, s2);
+		}
+	}
+
 	/** Returns a new ImagePlus with this image's attributes
 		(e.g. spatial scale), but no image. */
 	public ImagePlus createImagePlus() {

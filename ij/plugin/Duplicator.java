@@ -225,8 +225,12 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && !imp.getHideOverlay())
 			imp2.setOverlay(overlay.crop(rect));
-   		if (Recorder.record)
-   			Recorder.recordCall("imp2 = imp.duplicate();");
+   		if (Recorder.record) {
+   			if (imp.getRoi()==null)
+   				Recorder.recordCall("imp2 = imp.duplicate();");
+   			else
+   				Recorder.recordCall("imp2 = imp.crop(\"stack\");");
+   		}
 		return imp2;
 	}
 	
@@ -267,9 +271,12 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
  			imp2.setOverlay(overlay2);
  		}
    		if (Recorder.record) {
-   			if (imp.getStackSize()==1)
-   				Recorder.recordCall("imp2 = imp.duplicate();");
-   			else
+   			if (imp.getStackSize()==1) {
+   				if (imp.getRoi()==null)
+   					Recorder.recordCall("imp2 = imp.duplicate();");
+   				else
+   					Recorder.recordCall("imp2 = imp.crop();");
+   			} else
    				Recorder.recordCall("imp2 = imp.crop();");
    		}
 		return imp2;
@@ -321,7 +328,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			imp2.setOverlay(overlay2);
 		}
    		if (Recorder.record)
-   			Recorder.recordCall("imp2 = new Duplicator().run(imp, "+firstSlice+", "+lastSlice+");");
+   			Recorder.recordCall("imp2 = imp.crop(\""+firstSlice+"-"+lastSlice+"\");");
 		return imp2;
 	}
 
