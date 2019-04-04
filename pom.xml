@@ -18,11 +18,11 @@
 
 	<name>ImageJ1 unit tests</name>
 	<description>Unit tests for ImageJ 1.x.</description>
-	<url>http://imagej.net/ImageJ1_unit_tests</url>
+	<url>https://imagej.net/ImageJ1_unit_tests</url>
 	<inceptionYear>2009</inceptionYear>
 	<organization>
 		<name>ImageJ</name>
-		<url>http://imagej.net/</url>
+		<url>https://imagej.net/</url>
 	</organization>
 	<licenses>
 		<license>
@@ -35,7 +35,7 @@
 		<developer>
 			<id>ctrueden</id>
 			<name>Curtis Rueden</name>
-			<url>http://imagej.net/User:Rueden</url>
+			<url>https://imagej.net/User:Rueden</url>
 			<roles>
 				<role>founder</role>
 				<role>lead</role>
@@ -50,18 +50,18 @@
 	<contributors>
 		<contributor>
 			<name>Barry DeZonia</name>
-			<url>http://imagej.net/User:Bdezonia</url>
+			<url>https://imagej.net/User:Bdezonia</url>
 			<roles><role>founder</role></roles>
 			<properties><id>bdezonia</id></properties>
 		</contributor>
 		<contributor>
 			<name>Wayne Rasband</name>
-			<url>http://imagej.net/Wayne_Rasband</url>
+			<url>https://imagej.net/Wayne_Rasband</url>
 			<properties><id>rasband</id></properties>
 		</contributor>
 		<contributor>
 			<name>Mark Hiner</name>
-			<url>http://imagej.net/User:Hinerm</url>
+			<url>https://imagej.net/User:Hinerm</url>
 			<properties><id>hinerm</id></properties>
 		</contributor>
 	</contributors>
@@ -69,7 +69,7 @@
 	<mailingLists>
 		<mailingList>
 			<name>Image.sc Forum</name>
-			<archive>https://forum.image.sc/</archive>
+			<archive>https://forum.image.sc/tags/imagej</archive>
 		</mailingList>
 	</mailingLists>
 
@@ -105,7 +105,7 @@ Institute of Molecular Cell Biology and Genetics.</license.copyrightOwners>
 	<repositories>
 		<repository>
 			<id>imagej.public</id>
-			<url>http://maven.imagej.net/content/groups/public</url>
+			<url>https://maven.imagej.net/content/groups/public</url>
 		</repository>
 	</repositories>
 
