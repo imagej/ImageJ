@@ -3794,6 +3794,9 @@ public class Functions implements MacroConstants, Measurements {
 			if (name.equals("create")) {
 				gd = new GenericDialog(getStringArg());
 				return null;
+			} else if (name.equals("createNonBlocking")) {
+				gd = new NonBlockingGenericDialog(getStringArg());
+				return null;
 			}
 			if (gd==null) {
 				interp.error("No dialog created with Dialog.create()");

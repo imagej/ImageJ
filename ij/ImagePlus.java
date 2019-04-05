@@ -2195,6 +2195,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	 * @see ij.plugin.Duplicator#crop
 	*/
 	public ImagePlus crop(String options) {
+		String msg = "crop: \"stack\", \"slice\" or a range (e.g., \"20-30\") expected";
 		int stackSize = getStackSize();
 		if (options==null || options.equals("stack"))
 			return (new Duplicator()).run(this);
@@ -2202,14 +2203,16 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return crop();
 		else {
 			String[] range = Tools.split(options, " -");
-			double d1 = Tools.parseDouble(range[0]);
-			double d2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
-			int s1 = Double.isNaN(d1)?1:(int)d1;
-			int s2 = Double.isNaN(d2)?stackSize:(int)d2;
+			if (range.length!=2)
+				throw new IllegalArgumentException(msg);
+			double s1 = Tools.parseDouble(range[0]);
+			double s2 = Tools.parseDouble(range[1]);
+			if (Double.isNaN(s1) || Double.isNaN(s2))
+				throw new IllegalArgumentException(msg);
 			if (s1<1) s1 = 1;
 			if (s2>stackSize) s2 = stackSize;
 			if (s1>s2) {s1=1; s2=stackSize;}
-			return new Duplicator().run(this, s1, s2);
+			return new Duplicator().run(this, (int)s1, (int)s2);
 		}
 	}
 

@@ -270,6 +270,10 @@ public class Menus {
 			Menus.setMenuBarCount++;
 		}
 		
+		// Add deleted sample images to commands table
+		pluginsTable.put("Lena (68K)", "ij.plugin.URLOpener(\"lena-std.tif\")");
+		pluginsTable.put("Bridge (174K)", "ij.plugin.URLOpener(\"bridge.gif\")");
+		
 		if (pluginError!=null)
 			error = error!=null?error+="\n"+pluginError:pluginError;
 		if (jarError!=null)
