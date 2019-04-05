@@ -205,7 +205,7 @@ public class PointRoiTest {
 		ImagePlus ip;
 		
 		// try with null imageplus
-		p = new PointRoi(2,2,null);
+		p = new PointRoi(2,2,(ImagePlus) null);
 		validateConstruction(p,1,1);
 		
 		// TODO - with null ip test effects on Recorder
