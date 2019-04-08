@@ -2,60 +2,42 @@
 //N.Vischer
 //01.07.17 20:20
 
-var         
-polyX, polyY, count;
+var count, polyX, polyY
 
-processSelection();
-exit;
-
-macro "Smooth Wand Tool - C026R0055L55ffCf00F1144" {
-    run("Select None");
-    getCursorLoc(x, y, z, flags);
-    getThreshold(lowThr, hiThr);
-    if (hiThr==-1)
-        exit("This tool only works on thresholded images");
-    doWand(x, y);
-    processSelection();
-}
-
-function processSelection() {
-   getSelectionBounds(x, y, w, h);
-    if (w<2 || h<2)
-        exit("Width and height must be > 1 px");
-    if (selectionType != 4) 
-        exit("No traced selection found");
-    getThreshold(lowThr, hiThr);
-    getSelectionCoordinates(xx, yy);
-    len = xx.length;
-    polyX = newArray(len);
-    polyY = newArray(len);
-    count = 0;
-    for(jj = 0; jj < len; jj++) {
-        x1 = xx[jj];
-        y1 = yy[jj];
-        x2 = xx[(jj+1)%len];
-        y2 = yy[(jj+1)%len];
-        dd = 1;
-        if (y1 == y2) {//horizontal separator
-            if (x1 > x2) dd = -1;
-            for(x = x1; x != x2; x+= dd){
-                processPixelPair(x, y1, x+dd, y1);
-            }
-        }
-        else {//vertical separator
-            if (y1 > y2) dd = -1;
-            for(y = y1; y != y2; y+= dd){
-                processPixelPair(x1, y, x1, y+dd);
-            }
+getSelectionBounds(x, y, w, h);
+if (w<2 || h<2)
+    exit("Width and height must be > 1 px");
+if (selectionType != 4) 
+    exit("No traced selection found");
+getThreshold(lowThr, hiThr);
+getSelectionCoordinates(xx, yy);
+len = xx.length;
+polyX = newArray(len);
+polyY = newArray(len);
+count = 0;
+for(jj = 0; jj < len; jj++) {
+    x1 = xx[jj];
+    y1 = yy[jj];
+    x2 = xx[(jj+1)%len];
+    y2 = yy[(jj+1)%len];
+    dd = 1;
+    if (y1 == y2) {//horizontal separator
+        if (x1 > x2) dd = -1;
+        for(x = x1; x != x2; x+= dd){
+            processPixelPair(x, y1, x+dd, y1);
         }
     }
-    polyX = Array.trim(polyX, count);
-    polyY = Array.trim(polyY, count);
-    makeSelection("polygon", polyX, polyY);
-    do{ getCursorLoc(x, y, z, flags); wait(10);}
-        while(flags&16!=0);
-    run("Interpolate", "interval=1 adjust"); //after button released
+    else {//vertical separator
+        if (y1 > y2) dd = -1;
+        for(y = y1; y != y2; y+= dd){
+            processPixelPair(x1, y, x1, y+dd);
+        }
+    }
 }
+polyX = Array.trim(polyX, count);
+polyY = Array.trim(polyY, count);
+makeSelection("polygon", polyX, polyY);
+run("Interpolate", "interval=1 adjust"); //after button released
 
 //processes neighbors of this separator line and adds vertex
 function processPixelPair(x1, y1, x2, y2) {
@@ -96,9 +78,3 @@ function processPixelPair(x1, y1, x2, y2) {
         polyY = Array.concat(polyY, polyY);
     }       
 }
-
-
-
-
-
-

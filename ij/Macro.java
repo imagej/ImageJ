@@ -166,6 +166,11 @@ public class Macro {
 		key = key.toLowerCase(Locale.US);
 		return key;
 	}
+	
+	/** Evaluates 'code' and returns the output, or any error, as a String. */
+	public static String eval(String code) {
+		return new Interpreter().eval(code);
+	}
 
 }
 
