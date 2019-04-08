@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52o19 4 April 2019</u>
+<li> <u>1.52o25 7 April 2019</u>
 <ul>
 <li> Thanks to Stein Rorvik, copies of IJ_Props.txt and/or IJ_Prefs.txt
 in the ImageJ folder override the corresponding files in the default locations.
@@ -17,6 +17,8 @@ no longer abort the macro if no image is open.
 <li> Thanks to Sian Culley, removed "Bridge" and "Lena" from the
 <i>File&gt;Open Samples</i> menu. Macros and scripts that use
 these images will continue to work.
+<li> Thanks to Stein Rorvik, the run("Apply LUT") macro function no longer
+shows an error message with images that have a display range of 0-255.
 <li> Thanks to NorbertVischer, Philippe Carl and Stein Rorvik, added the
 Array.deleteValue() and Array.deleteIndex() macro functions
 (<a href="http://wsr.imagej.net/macros/ArrayDeleteDemo.txt">example</a>).
@@ -29,6 +31,9 @@ it to sometimes not correctly open PT DICOM stacks.
 <li> Thanks to Stein Rorvik, fixed a rounding error with setMinAndMax()
 on some density calibrated 8-bit images.
 <li> Fixed non-macro recording of the <i>Image&gt;Duplicate</i> command.
+<li> Thanks to Norbert Vischer, fixed a bug that caused the
+doWand(x,y,tolerance,"Smooth") macro function to cause
+the macro language's &var variable passing method to fail.
 <li> Thanks to Ellen Arena, fixed 1.52m regression that caused
 the <i>Edit&gt;Selection&gt;Create Selection</i> command
 to not work as expected with non-thresholded images.

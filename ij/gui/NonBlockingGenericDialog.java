@@ -3,7 +3,7 @@ import ij.*;
 import java.awt.event.*;
 import java.awt.EventQueue;
 
-/** This is an extension of GenericDialog that is non-model.
+/** This is an extension of GenericDialog that is non-modal.
  *	@author Johannes Schindelin
  */
 public class NonBlockingGenericDialog extends GenericDialog {

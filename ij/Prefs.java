@@ -196,8 +196,7 @@ public class Prefs {
 	private static double guiScale = 1.0;
 
 	/** Finds and loads the configuration file ("IJ_Props.txt")
-	 * and the preferences file ("IJ_Prefs.txt"), looking first 
-	 * in the ImageJ folder, and, if not found, in ij.jar.
+	 * and the preferences file ("IJ_Prefs.txt").
 	 * @return	an error message if "IJ_Props.txt" not found.
 	*/
 	public static String load(Object ij, Applet applet) {
@@ -287,9 +286,12 @@ public class Prefs {
 		preferences file (IJPrefs.txt) is saved. */
 	public static String getPrefsDir() {
 		if (prefsDir==null) {
+			if (ImageJDir==null)
+				ImageJDir = System.getProperty("user.dir");
 			File f = new File(ImageJDir+File.separator+PREFS_NAME);
 			if (f.exists())
 				prefsDir = ImageJDir;
+			//System.out.println("getPrefsDir: "+f+"  "+prefsDir);
 			if (prefsDir==null) {
 				String dir = System.getProperty("user.home");
 				if (IJ.isMacOSX())

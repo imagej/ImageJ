@@ -1550,7 +1550,7 @@ public class IJ {
 					if (EventQueue.isDispatchThread())
 						new MacroRunner(smoothMacro); // run on separate thread
 					else
-						IJ.runMacro(smoothMacro);
+						new Interpreter().eval(smoothMacro);
 				}
 			}
 		}

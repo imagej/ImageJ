@@ -106,6 +106,7 @@ public class Interpreter implements MacroConstants {
 	
 	/** Evaluates 'code' and returns the output, or any error, as a String. */
 	public String eval(String code) {
+		Interpreter saveInstance = instance;
 		if (pgm!=null)
 			reuseSymbolTable();
 		Tokenizer tok = new Tokenizer();
@@ -116,6 +117,7 @@ public class Interpreter implements MacroConstants {
 		evalOutput = null;
 		ignoreErrors = true;
 		run(pgm);
+		instance = saveInstance;
 		if (errorMessage!=null)
 			return errorMessage;
 		else

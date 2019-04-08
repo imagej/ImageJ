@@ -33,7 +33,7 @@ public class LutApplier implements PlugInFilter {
 		min = (int)imp.getDisplayRangeMin();
 		max = (int)imp.getDisplayRangeMax();
 		int depth = imp.getBitDepth();
-		if ((depth==8||depth==24) && min==0 && max==255) {
+		if (!IJ.isMacro() && (depth==8||depth==24) && min==0 && max==255) {
 				IJ.error("Apply LUT", "The display range must first be updated\n"
                 +"using Image>Adjust>Brightness/Contrast\n"
                 +"or threshold levels defined using\n"

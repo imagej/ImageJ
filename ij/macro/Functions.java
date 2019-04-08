@@ -673,6 +673,8 @@ public class Functions implements MacroConstants, Measurements {
 		if (isStringArg()) {
 			globalColor = getColor();
 			globalValue = Double.NaN;
+			if (WindowManager.getCurrentImage()!=null)
+				getProcessor().setColor(globalColor);
 			interp.getRightParen();
 			return;
 		}
@@ -687,6 +689,8 @@ public class Functions implements MacroConstants, Measurements {
 		if (red>255) red=255; if (green>255) green=255; if (blue>255) blue=255;
 		globalColor = new Color(red, green, blue);
 		globalValue = Double.NaN;
+		if (WindowManager.getCurrentImage()!=null)
+			getProcessor().setColor(globalColor);
 	}
 
 	void setColor(double value) {
