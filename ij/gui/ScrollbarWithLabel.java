@@ -1,5 +1,6 @@
 package ij.gui;
 import ij.IJ;
+import ij.Prefs;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
@@ -28,7 +29,7 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 		bar.addAdjustmentListener(this);
 		addKeyListener(IJ.getInstance()); 
 	}
-	
+		
 	/* (non-Javadoc)
 	 * @see java.awt.Component#getPreferredSize()
 	 */
@@ -38,7 +39,10 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 		Dimension minSize = getMinimumSize();
 		if (width<minSize.width) width = minSize.width;		
 		int height = bar.getPreferredSize().height;
-		dim = new Dimension(width, height);
+		int iconHeight = icon.getPreferredSize().height;
+		if (iconHeight>height)
+			height = iconHeight;
+		dim = new Dimension(width, (int)(height));
 		return dim;
 	}
 	
@@ -140,11 +144,13 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 	
 	
 	class Icon extends Canvas implements MouseListener {
-		private static final int WIDTH = 12, HEIGHT=14;
-		private BasicStroke stroke = new BasicStroke(2f);
+		private final double SCALE = Prefs.getGuiScale();
+		private final int WIDTH = (int)(12*SCALE);
+		private final int HEIGHT= (int)(14*SCALE);
+		private BasicStroke stroke = new BasicStroke((float)(2*SCALE));
 		private char type;
 		private Image image;
-
+		
 		public Icon(char type) {
 			addMouseListener(this);
 			addKeyListener(IJ.getInstance()); 
@@ -173,17 +179,23 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 		}
 		
 		private void drawLetter(Graphics g) {
-			g.setFont(new Font("SansSerif", Font.PLAIN, 14));
+			Font font = new Font("SansSerif", Font.PLAIN, 14);
+			if (SCALE>1.0)
+				font = font.deriveFont((float)(font.getSize()*SCALE));
+			g.setFont(font);
 			g.setColor(Color.black);
-			g.drawString(String.valueOf(type), 2, 12);
+			g.drawString(String.valueOf(type), (int)(2*SCALE), (int)(12*SCALE));
 		}
 
 		private void drawPlayPauseButton(Graphics2D g) {
 			if (stackWindow.getAnimate()) {
 				g.setColor(Color.black);
 				g.setStroke(stroke);
-				g.drawLine(3, 3, 3, 11);
-				g.drawLine(8, 3, 8, 11);
+				int s3 = (int)(3*SCALE);
+				int s8 = (int)(8*SCALE);
+				int s11 = (int)(11*SCALE);
+				g.drawLine(s3, s3, s3, s11);
+				g.drawLine(s8, s3, s8, s11);
 			} else {
 				g.setColor(Color.darkGray);
 				GeneralPath path = new GeneralPath();
@@ -191,6 +203,11 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 				path.lineTo(10f, 7f);
 				path.lineTo(3f, 12f);
 				path.lineTo(3f, 2f);
+				if (SCALE>1.0) {
+					AffineTransform at = new AffineTransform();
+					at.scale(SCALE, SCALE);
+					path = new GeneralPath(at.createTransformedShape(path));
+				}
 				g.fill(path);
 			}
 		}
@@ -209,7 +226,6 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 		public void mouseClicked(MouseEvent e) {}
 		public void mouseEntered(MouseEvent e) {}
 	
-	} // StartStopIcon class
-
+	} // Icon class
 	
 }
