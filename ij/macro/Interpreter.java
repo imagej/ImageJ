@@ -104,7 +104,9 @@ public class Interpreter implements MacroConstants {
 		return returnValue;
 	}
 	
-	/** Evaluates 'code' and returns the output, or any error, as a String. */
+	/** Evaluates 'code' and returns the output, or any error, as a String.
+	 * @see ij.Macro#eval
+	*/
 	public String eval(String code) {
 		Interpreter saveInstance = instance;
 		if (pgm!=null)
@@ -116,6 +118,7 @@ public class Interpreter implements MacroConstants {
 		evaluating = true;
 		evalOutput = null;
 		ignoreErrors = true;
+		calledMacro = true;
 		run(pgm);
 		instance = saveInstance;
 		if (errorMessage!=null)

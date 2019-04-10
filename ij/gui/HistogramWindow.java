@@ -527,6 +527,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		ip.fill();
 		ip.resetRoi();
 		ip.setColor(Color.black);
+		ip.setLineWidth(1);
 		if (logScale) {
 			drawLogPlot(yMax>0?yMax:newMaxCount, ip);
 			drawPlot(yMax>0?yMax:newMaxCount, ip);

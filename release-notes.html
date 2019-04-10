@@ -5,10 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.52o27 9 April 2019</u>
+<li> <u>1.52o30 10 April 2019</u>
 <ul>
 <li> Thanks to Tiago Ferreira, stack and hyperstack scrollbars 
-now apply  the <i>Edit&gt;Options&gt;Appearance</i> "GUI scale".
+now apply the <i>Edit&gt;Options&gt;Appearance</i> "GUI scale".
 <li> Thanks to 'mountain_man', tables can be sorted alphabetically.
 <li> Thanks to Stein Rorvik, copies of IJ_Props.txt and/or IJ_Prefs.txt
 in the ImageJ folder override the corresponding files in the default locations.
@@ -37,6 +37,11 @@ on some density calibrated 8-bit images.
 <li> Thanks to Norbert Vischer, fixed a bug that caused the
 doWand(x,y,tolerance,"Smooth") macro function to cause
 the macro language's &var variable passing method to fail.
+<li> Thanks to Jan Eglinger, fixed a bug that caused log histogram plots
+to be malformed if the line width was set to greater than 1.
+<li> Thanks to Stein Rorvik, fixed a bug that caused the Table.title
+and getInfo("window.title") macro functions to sometimes
+not work with custom tables.
 <li> Thanks to Ellen Arena, fixed 1.52m regression that caused
 the <i>Edit&gt;Selection&gt;Create Selection</i> command
 to not work as expected with non-thresholded images.

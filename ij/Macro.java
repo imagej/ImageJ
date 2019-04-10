@@ -167,7 +167,9 @@ public class Macro {
 		return key;
 	}
 	
-	/** Evaluates 'code' and returns the output, or any error, as a String. */
+	/** Evaluates 'code' and returns the output, or any error, 
+	 * as a String (e.g., Macro.eval("2+2") returns "4").	
+	*/
 	public static String eval(String code) {
 		return new Interpreter().eval(code);
 	}
