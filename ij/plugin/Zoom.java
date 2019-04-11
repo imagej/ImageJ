@@ -113,7 +113,7 @@ public class Zoom implements PlugIn{
 		if (y<0) y=0;
 		String options = IJ.macroRunning()?Macro.getOptions():null;
 		boolean legacyMacro = areaSelection && options!=null && options.contains("x=") && !options.contains("width=");
-		Rectangle bounds = GUI.getMaxWindowBounds();
+		Rectangle bounds = GUI.getMaxWindowBounds(win);
 		boolean smallImage = mag>1.0 && width*mag<bounds.width && height*mag<bounds.height;
 		if ((areaSelection||smallImage||srcWidth!=srcRect.width||srcHeight!=srcRect.height) && !legacyMacro) {
 			if (areaSelection && roi.getType()==Roi.RECTANGLE)

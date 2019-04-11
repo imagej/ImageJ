@@ -152,7 +152,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			return;
 		int width = imp.getWidth();
 		int height = imp.getHeight();
-		Rectangle maxWindow = getMaxWindow(0, 0);
+		Rectangle maxWindow = getMaxWindow(this);
 		if (WindowManager.getWindowCount()<=1)
 			xbase = -1;
 		if (width>maxWindow.width/2 && xbase>maxWindow.x+5+XINC*6)
@@ -212,12 +212,9 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			setLocation(x, y);
 	}
 					
-	Rectangle getMaxWindow(int xloc, int yloc) {
-		Rectangle bounds = GUI.getMaxWindowBounds();
-		if (xloc>bounds.x+bounds.width || yloc>bounds.y+bounds.height) {
-			Rectangle bounds2 = getSecondaryMonitorBounds(xloc, yloc);
-			if (bounds2!=null) return bounds2;
-		}
+	Rectangle getMaxWindow(Component component) {
+		Rectangle bounds = GUI.getMaxWindowBounds(component);
+		// code below was previously only run when component was on default/first screen (does it matter?)
 		Dimension ijSize = ij!=null?ij.getSize():new Dimension(0,0);
 		if (bounds.height>600) {
 			bounds.y += ijSize.height;
@@ -225,25 +222,39 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		}
 		return bounds;
 	}
-	
-	private Rectangle getSecondaryMonitorBounds(int xloc, int yloc) {
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice[] gs = ge.getScreenDevices();
-		Rectangle bounds = null;
-		for (int j=0; j<gs.length; j++) {
-			GraphicsDevice gd = gs[j];
-			GraphicsConfiguration[] gc = gd.getConfigurations();
-			for (int i=0; i<gc.length; i++) {
-				Rectangle bounds2 = gc[i].getBounds();
-				if (bounds2!=null && bounds2.contains(xloc, yloc)) {
-					bounds = bounds2;
-					break;
-				}
-			}
-		}		
-		if (IJ.debugMode) IJ.log("getSecondaryMonitorBounds: "+bounds);
-		return bounds;
-	}
+
+//	Rectangle getMaxWindow(int xloc, int yloc) {
+//		Rectangle bounds = GUI.getMaxWindowBounds();
+//		if (xloc>bounds.x+bounds.width || yloc>bounds.y+bounds.height) {
+//			Rectangle bounds2 = getSecondaryMonitorBounds(xloc, yloc);
+//			if (bounds2!=null) return bounds2;
+//		}
+//		Dimension ijSize = ij!=null?ij.getSize():new Dimension(0,0);
+//		if (bounds.height>600) {
+//			bounds.y += ijSize.height;
+//			bounds.height -= ijSize.height;
+//		}
+//		return bounds;
+//	}
+//	
+//	private Rectangle getSecondaryMonitorBounds(int xloc, int yloc) {
+//		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+//		GraphicsDevice[] gs = ge.getScreenDevices();
+//		Rectangle bounds = null;
+//		for (int j=0; j<gs.length; j++) {
+//			GraphicsDevice gd = gs[j];
+//			GraphicsConfiguration[] gc = gd.getConfigurations();
+//			for (int i=0; i<gc.length; i++) {
+//				Rectangle bounds2 = gc[i].getBounds();
+//				if (bounds2!=null && bounds2.contains(xloc, yloc)) {
+//					bounds = bounds2;
+//					break;
+//				}
+//			}
+//		}		
+//		if (IJ.debugMode) IJ.log("getSecondaryMonitorBounds: "+bounds);
+//		return bounds;
+//	}
 	
 	public double getInitialMagnification() {
 		return initialMagnification;
@@ -483,7 +494,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	}
 	
 	public Rectangle getMaximumBounds() {
-		Rectangle maxWindow = GUI.getMaxWindowBounds();
+		Rectangle maxWindow = GUI.getMaxWindowBounds(this);
 		if (imp==null)
 			return maxWindow;
 		double width = imp.getWidth();

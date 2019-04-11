@@ -202,7 +202,7 @@ public class ImageJ extends Frame implements ActionListener,
 					if (!Prefs.jFileChooserSettingChanged)
 						Prefs.useJFileChooser = true;
 				} else if (IJ.isMacOSX()) {
-					Rectangle maxBounds = GUI.getMaxWindowBounds();
+					Rectangle maxBounds = GUI.getMaxWindowBounds(this);
 					if (loc.x+size.width>maxBounds.x+maxBounds.width)
 						setLocation(loc.x, loc.y);
 				}
@@ -277,7 +277,7 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 	
 	public Point getPreferredLocation() {
-		Rectangle maxBounds = GUI.getMaxWindowBounds();
+		Rectangle maxBounds = GUI.getMaxWindowBounds(this);
 		int ijX = Prefs.getInt(IJ_X,-99);
 		int ijY = Prefs.getInt(IJ_Y,-99);
 		//System.out.println("getPreferredLoc1: "+ijX+" "+ijY+" "+maxBounds);
@@ -687,7 +687,7 @@ public class ImageJ extends Frame implements ActionListener,
 	public void savePreferences(Properties prefs) {
 		Point loc = getLocation();
 		if (IJ.isLinux()) {
-			Rectangle bounds = GUI.getMaxWindowBounds();
+			Rectangle bounds = GUI.getMaxWindowBounds(this);
 			loc.y = bounds.y;
 		}
 		prefs.put(IJ_X, Integer.toString(loc.x));

@@ -26,7 +26,7 @@ public class GUI {
 	public static void center(Window win) {
 		if (win==null)
 			return;
-		Rectangle bounds = getMaxWindowBounds();
+		Rectangle bounds = getMaxWindowBounds(win);
 		Dimension window= win.getSize();
 		if (window.width==0)
 			return;
@@ -36,21 +36,59 @@ public class GUI {
 		if (top<bounds.y) top=bounds.y;
 		win.setLocation(left, top);
 	}
-	
+
 	public static Rectangle getMaxWindowBounds() {
+		return getMaxWindowBounds(null, true);
+	}
+
+	public static Rectangle getMaxWindowBounds(Component component) {
+		return getMaxWindowBounds(component, true);
+	}
+
+	/**
+	 * Get maximum window bounds for the screen that contains a given component.
+	 * @param component An AWT component located on the desired screen.
+	 * If <code>null</code> is provided, the default screen is used.
+	 * @param accountForInsets Deduct the space taken up by menu and status bars, etc.
+	 */	
+	public static Rectangle getMaxWindowBounds(Component component, boolean accountForInsets) {
 		if (GraphicsEnvironment.isHeadless())
 			return new Rectangle(0,0,0,0);
+
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		Rectangle bounds = ge.getMaximumWindowBounds();
+		GraphicsConfiguration gc;
+		if (component == null)
+			gc = ge.getDefaultScreenDevice().getDefaultConfiguration();
+		else
+			gc = component.getGraphicsConfiguration();
+		Insets insets = accountForInsets ? Toolkit.getDefaultToolkit().getScreenInsets(gc) : new Insets(0,0,0,0);
+		Rectangle maxBoundsComponent = new Rectangle(gc.getBounds());
+
+		// cf. https://stackoverflow.com/q/22467544
+		DisplayMode mode = gc.getDevice().getDisplayMode();
+		maxBoundsComponent.width = mode.getWidth();
+		maxBoundsComponent.height = mode.getHeight();
+		
+		Rectangle bounds = new Rectangle(maxBoundsComponent);
+		bounds.x += insets.left;
+		bounds.y += insets.top;
+		bounds.width -= insets.left + insets.right;
+		bounds.height -= insets.top + insets.bottom;
+		
+		// do not understand
 		if (IJ.isLinux() && unionOfBounds==null)
 			unionOfBounds = getUnionOfBounds(ge);
 		zeroBasedMaxBounds = null;
+		
+		// do not understand
 		if (bounds.x>300 || bounds.equals(unionOfBounds))
 			bounds = getZeroBasedMonitor(ge, bounds);
-		if (bounds.x<0 || bounds.x>300 || bounds.width<300) {
-			Dimension screen = getScreenSize();
-			bounds = new Rectangle(0, 0, screen.width, screen.height);
-		}
+		
+//		// do not understand; not compatible with multi-screen setup (e.g., bounds.x < 0 possible)
+//		if (bounds.x<0 || bounds.x>300 || bounds.width<300) {
+//			Dimension screen = getScreenSize(); // size of default screen
+//			bounds = new Rectangle(0, 0, screen.width, screen.height);
+//		}
 		if (IJ.debugMode) IJ.log("GUI.getMaxWindowBounds: "+bounds);
 		maxBounds = bounds;
 		return bounds;
