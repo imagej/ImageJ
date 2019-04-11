@@ -833,15 +833,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int newWidth = (int)(imageWidth*newMag);
 		int newHeight = (int)(imageHeight*newMag);
 		Dimension newSize = canEnlarge(newWidth, newHeight);
-		if (newSize!=null) {
-			setSize(newSize.width, newSize.height);
-			if (newSize.width!=newWidth || newSize.height!=newHeight)
-				adjustSourceRect(newMag, zoomTargetOX, zoomTargetOY);
-			else
-				setMagnification(newMag);
-			imp.getWindow().pack();
-		} else // can't enlarge window
+		setSize(newSize.width, newSize.height);
+		if (newSize.width!=newWidth || newSize.height!=newHeight)
 			adjustSourceRect(newMag, zoomTargetOX, zoomTargetOY);
+		else
+			setMagnification(newMag);
+		imp.getWindow().pack();
 		repaint();
 		if (srcRect.width<imageWidth || srcRect.height<imageHeight)
 			resetMaxBounds();
@@ -864,7 +861,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		//IJ.log("adjustSourceRect2: "+srcRect+" "+dstWidth+"  "+dstHeight);
 	}
 
-    /** Returns the size to which the window can be enlarged, or null if it can't be enlarged.
+    /** Returns the size to which the window can be enlarged.
      *  <code>newWidth, newHeight</code> is the size needed for showing the full image
      *  at the magnification needed */
 	protected Dimension canEnlarge(int newWidth, int newHeight) {
@@ -885,14 +882,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		Rectangle max = win.getMaxWindow(r1.x, r1.y);
 		boolean fitsHorizontally = r1.x+r1.width<max.x+max.width;
 		boolean fitsVertically = r1.y+r1.height<max.y+max.height;
-		if (fitsHorizontally && fitsVertically)
-			return new Dimension(newWidth, newHeight);
-		else if (fitsVertically && newHeight<dstWidth)
-			return new Dimension(dstWidth, newHeight);
-		else if (fitsHorizontally && newWidth<dstHeight)
-			return new Dimension(newWidth, dstHeight);
-		else
-			return null;
+		if (!fitsHorizontally)
+			newWidth = (max.x + max.width) - (r1.x + 1) - (win.getBounds().width - dstWidth);
+		if (!fitsVertically)
+			newHeight = (max.y + max.height) - (r1.y + 1) - (win.getBounds().height - dstHeight);
+		return new Dimension(newWidth, newHeight);
 	}
 
 	/**Zooms out by making the source rectangle (srcRect)  
