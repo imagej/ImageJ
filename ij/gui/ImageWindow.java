@@ -152,7 +152,14 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			return;
 		int width = imp.getWidth();
 		int height = imp.getHeight();
-		Rectangle maxWindow = getMaxWindow(this);
+		// load location and find associated screen bounds
+		Point loc = Prefs.getLocation(LOC_KEY);
+		Rectangle bounds = null;
+		if (loc != null)
+			bounds = GUI.getScreenBounds(loc, true);		
+		// if loc not valid, use screen bounds of visible window (this) or of main window (ij) if not visible yet (updating == false)
+		Rectangle maxWindow = bounds != null ? bounds : getMaxWindow(updating ? this : ij);  
+		
 		if (WindowManager.getWindowCount()<=1)
 			xbase = -1;
 		if (width>maxWindow.width/2 && xbase>maxWindow.x+5+XINC*6)
@@ -161,8 +168,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			count = 0;
 			xbase = maxWindow.x + (maxWindow.width>1800?24:12);
 			if (width*2<=maxWindow.width) {
-				Point loc = Prefs.getLocation(LOC_KEY);
-				if (loc!=null && loc.x<maxWindow.width*2/3 && loc.y<maxWindow.height/3) {
+				if (loc!=null && loc.x<maxWindow.x+maxWindow.width*2/3 && loc.y<maxWindow.y+maxWindow.height/3) {
 					xbase = loc.x;
 					ybase = loc.y;
 				} else {

@@ -36,45 +36,70 @@ public class GUI {
 		if (top<bounds.y) top=bounds.y;
 		win.setLocation(left, top);
 	}
-
-	public static Rectangle getMaxWindowBounds() {
-		return getMaxWindowBounds(null, true);
-	}
-
-	public static Rectangle getMaxWindowBounds(Component component) {
-		return getMaxWindowBounds(component, true);
-	}
-
+	
+	// ----------------------------------------------
+	
 	/**
-	 * Get maximum window bounds for the screen that contains a given component.
+	 * Get maximum bounds for the screen that contains a given point.
+	 * @param point Coordinates of point.
+	 * @param accountForInsets Deduct the space taken up by menu and status bars, etc. (after point is found to be inside bonds)
+	 * @return Rectangle of bounds or <code>null</code> if point not inside of any screen.
+	 */
+	public static Rectangle getScreenBounds(Point point, boolean accountForInsets) {
+		if (GraphicsEnvironment.isHeadless())
+			return new Rectangle(0,0,0,0);		
+		GraphicsDevice[] devices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+		for (GraphicsDevice device : devices) {
+			DisplayMode mode = device.getDisplayMode();
+			for (GraphicsConfiguration config : device.getConfigurations()) {
+				Rectangle bounds = config.getBounds();
+				if (bounds == null) continue;
+				// cf. https://stackoverflow.com/q/22467544
+				bounds.width = mode.getWidth();
+				bounds.height= mode.getHeight();
+				if (bounds.contains(point)) {
+					Insets insets = accountForInsets ? Toolkit.getDefaultToolkit().getScreenInsets(config) : null;
+					return shrinkByInsets(bounds, insets);
+				}
+			}
+		}
+		return null;		
+	}
+	
+	/**
+	 * Get maximum bounds for the screen that contains a given component.
 	 * @param component An AWT component located on the desired screen.
 	 * If <code>null</code> is provided, the default screen is used.
 	 * @param accountForInsets Deduct the space taken up by menu and status bars, etc.
+	 * @return Rectangle of bounds.
 	 */	
-	public static Rectangle getMaxWindowBounds(Component component, boolean accountForInsets) {
+	public static Rectangle getScreenBounds(Component component, boolean accountForInsets) {
 		if (GraphicsEnvironment.isHeadless())
 			return new Rectangle(0,0,0,0);
-
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsConfiguration gc;
-		if (component == null)
-			gc = ge.getDefaultScreenDevice().getDefaultConfiguration();
-		else
-			gc = component.getGraphicsConfiguration();
-		Insets insets = accountForInsets ? Toolkit.getDefaultToolkit().getScreenInsets(gc) : new Insets(0,0,0,0);
-		Rectangle maxBoundsComponent = new Rectangle(gc.getBounds());
-
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();		
+		GraphicsConfiguration gc = component == null ? ge.getDefaultScreenDevice().getDefaultConfiguration() :
+													   component.getGraphicsConfiguration();   
+		Insets insets = accountForInsets ? Toolkit.getDefaultToolkit().getScreenInsets(gc) : null;
+		Rectangle bounds = new Rectangle(gc.getBounds());
 		// cf. https://stackoverflow.com/q/22467544
 		DisplayMode mode = gc.getDevice().getDisplayMode();
-		maxBoundsComponent.width = mode.getWidth();
-		maxBoundsComponent.height = mode.getHeight();
-		
-		Rectangle bounds = new Rectangle(maxBoundsComponent);
-		bounds.x += insets.left;
-		bounds.y += insets.top;
-		bounds.width -= insets.left + insets.right;
-		bounds.height -= insets.top + insets.bottom;
-		
+		bounds.width = mode.getWidth();
+		bounds.height = mode.getHeight();		
+		return shrinkByInsets(bounds, insets);
+	}
+
+	public static Rectangle getScreenBounds(Point point) {
+		return getScreenBounds(point, false);
+	}		
+
+	public static Rectangle getScreenBounds(Component component) {
+		return getScreenBounds(component, false);
+	}			
+	
+	public static Rectangle getMaxWindowBounds(Component component) {
+		Rectangle bounds = getScreenBounds(component, true);
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+
 		// do not understand
 		if (IJ.isLinux() && unionOfBounds==null)
 			unionOfBounds = getUnionOfBounds(ge);
@@ -91,8 +116,24 @@ public class GUI {
 //		}
 		if (IJ.debugMode) IJ.log("GUI.getMaxWindowBounds: "+bounds);
 		maxBounds = bounds;
-		return bounds;
+		return bounds;		
 	}
+	
+	public static Rectangle getMaxWindowBounds() {
+		return getMaxWindowBounds(null);
+	}
+	
+	private static Rectangle shrinkByInsets(Rectangle bounds, Insets insets) {
+		Rectangle shrunk = new Rectangle(bounds);
+		if (insets == null) return shrunk; 
+		shrunk.x += insets.left;
+		shrunk.y += insets.top;
+		shrunk.width -= insets.left + insets.right;
+		shrunk.height -= insets.top + insets.bottom;
+		return shrunk;
+	}
+	
+	// ----------------------------------------------
 
 	public static Rectangle getZeroBasedMaxBounds() {
 		if (maxBounds==null)
