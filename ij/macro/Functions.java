@@ -1636,7 +1636,7 @@ public class Functions implements MacroConstants, Measurements {
 		String type = win.getClass().getName();
 		if (win instanceof TextWindow) {
 			TextPanel tp = ((TextWindow)win).getTextPanel();
-			if (tp.getColumnHeadings().isEmpty())
+			if (tp.getColumnHeadings().isEmpty()  && tp.getResultsTable()==null)
 				type = "Text";
 			else {
 				if (tp.getResultsTable()!=null)
@@ -3389,8 +3389,8 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();
 			oneArg = true;
 		}
-		if (oneArg && format.contains(File.separator))
-			IJ.save(format); // argument is a path
+		if (oneArg && (format.contains(File.separator)||format.contains("/")))
+			IJ.save(format); // assume argument is a path
 		else
 			IJ.saveAs(format, path);
 	}
@@ -6661,14 +6661,17 @@ public class Functions implements MacroConstants, Measurements {
 		setResult(rt);
 		return new Variable();
 	}
-	
+		
 	private Variable setTableColumn() {
 		String column = getFirstString();
-		interp.getComma();
-		Variable[] array = getArray();
+		Variable[] array = new Variable[0];
+		if (interp.nextToken()!=')') {
+			interp.getComma();
+			array = getArray();
+		}
 		ResultsTable rt = getResultsTable(getTitle());		
 		rt.setColumn(column, array);
-		unUpdatedTable = rt;
+		rt.show(rt.getTitle());
 		return new Variable();
 	}
 	

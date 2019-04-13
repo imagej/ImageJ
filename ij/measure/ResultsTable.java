@@ -686,7 +686,7 @@ public class ResultsTable implements Cloneable {
 			}
 		}
 	}
-	
+		
 	private String getValueAsString(int column, int row) { 
 		double value = columns[column][row];
 		//IJ.log("getValueAsString1: col="+column+ ", row= "+row+", value= "+value+", size="+stringColumns.size());
@@ -1114,6 +1114,16 @@ public class ResultsTable implements Cloneable {
 			firstColumn = 1;
 		}
 		ResultsTable rt = new ResultsTable();
+		//IJ.log("open: "+firstRow+" "+lines.length+" "+headings.length);
+		if (firstRow>=lines.length) { //empty table?
+			for (int i=0; i<headings.length; i++) {
+				if (headings[i]==null) continue;
+				int col = rt.getColumnIndex(headings[i]);
+				if (col==COLUMN_NOT_FOUND)
+					col = rt.getFreeColumn(headings[i]);
+			}
+			return rt;
+		}
 		rt.showRowNumbers(path.contains("Results"));
 		for (int i=firstRow; i<lines.length; i++) {
 			rt.incrementCounter();
@@ -1189,11 +1199,12 @@ public class ResultsTable implements Cloneable {
 	}
 
 	public void saveAs(String path) throws IOException {
-		if (size()==0 && lastColumn<0) return;
+		boolean emptyTable = size()==0 && lastColumn<0;
 		if (path==null || path.equals("")) {
 			SaveDialog sd = new SaveDialog("Save Table", "Table", Prefs.defaultResultsExtension());
 			String file = sd.getFileName();
-			if (file==null) return;
+			if (file==null)
+				return;
 			path = sd.getDirectory() + file;
 		}
 		boolean csv = path.endsWith(".csv") || path.endsWith(".CSV");
@@ -1205,7 +1216,7 @@ public class ResultsTable implements Cloneable {
 		boolean saveShowRowNumbers = showRowNumbers;
 		if (Prefs.dontSaveRowNumbers)	
 			showRowNumbers = false;
-		if (!Prefs.dontSaveHeaders) {
+		if (!Prefs.dontSaveHeaders && !emptyTable) {
 			String headings = getColumnHeadings();
 			pw.println(headings);
 		}

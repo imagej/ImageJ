@@ -6,7 +6,7 @@ import ij.io.*;
 import java.io.*;
 import java.awt.Frame;
 
-/** Writes measurements to a csv or tab-delimited text file. */
+/** Saves a tables as a csv or tab-delimited text file. */
 public class MeasurementsWriter implements PlugIn {
 
 	public void run(String path) {
