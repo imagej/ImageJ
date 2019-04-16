@@ -105,11 +105,11 @@ public class JavaProperties implements PlugIn {
 		list.add("  Current dir: "+OpenDialog.getDefaultDirectory());
 		list.add("  Sample images dir: "+Prefs.getImagesURL());
 		list.add("  Memory in use: "+IJ.freeMemory());	
-		Dimension d = IJ.getScreenSize();
+		Rectangle d = GUI.getScreenBounds(IJ.getInstance());
 		list.add("  Screen size: " + d.width + "x" + d.height);
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		String b1 = toString(GUI.getMaxWindowBounds());
-		String b2 = toString(ge.getMaximumWindowBounds());
+		String b1 = toString(GUI.getMaxWindowBounds(IJ.getInstance()));
+		String b2 = toString(GUI.getScreenBounds(IJ.getInstance(), true));
 		if (!b2.equals(b1))
 			b1 += " (" + b2 + ")";
 		list.add("  Max window bounds: " + b1);

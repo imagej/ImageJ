@@ -515,14 +515,14 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 		contentPane.add(southPanel, BorderLayout.SOUTH);
 
-		Dimension screenSize = IJ.getScreenSize();
+		Rectangle screen = GUI.getScreenBounds(IJ.getInstance(), true);
 
 		frame.pack();
 
 		int dialogWidth = frame.getWidth();
 		int dialogHeight = frame.getHeight();
-		int screenWidth = (int)screenSize.getWidth();
-		int screenHeight = (int)screenSize.getHeight();
+		int screenWidth = screen.width;
+		int screenHeight = screen.height;
 
 		Point pos = imageJ.getLocationOnScreen();
 		Dimension size = imageJ.getSize();
@@ -537,12 +537,12 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 		if (initialX+dialogWidth>screenWidth)
 			initialX = screenWidth-dialogWidth;
-		if (initialX<0)
-			initialX = 0;
+		if (initialX<screen.x)
+			initialX = screen.x;
 		if (initialY+dialogHeight>screenHeight)
 			initialY = screenHeight-dialogHeight;
-		if (initialY<0)
-			initialY = 0;
+		if (initialY<screen.y)
+			initialY = screen.y;
 
 		frame.setLocation(initialX,initialY);
 		frame.setVisible(true);

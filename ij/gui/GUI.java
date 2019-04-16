@@ -22,22 +22,24 @@ public class GUI {
 		}
 	}
 
-	/** Positions the specified window in the center of the screen. */
-	public static void center(Window win) {
-		if (win==null)
+	// ----------------------------------------------
+
+	/** Positions the specified window in the center of the screen that contains target. */
+	public static void center(Window win, Component target) {
+		if (win == null)
 			return;
-		Rectangle bounds = getMaxWindowBounds(win);
-		Dimension window= win.getSize();
-		if (window.width==0)
+		Rectangle bounds = getScreenBounds(target, true);
+		Dimension window = win.getSize();
+		if (window.width == 0)
 			return;
-		int left = bounds.x + (bounds.width-window.width)/2;
-		if (left<bounds.x) left=bounds.x;
-		int top = bounds.y + (bounds.height-window.height)/4;
-		if (top<bounds.y) top=bounds.y;
+		int left = bounds.x + Math.max(0, (bounds.width - window.width) / 2);
+		int top = bounds.y + Math.max(0, (bounds.height - window.height) / 4);
 		win.setLocation(left, top);
 	}
-	
-	// ----------------------------------------------
+
+	public static void center(Window win) {
+		center(win, win);
+	}
 	
 	/**
 	 * Get maximum bounds for the screen that contains a given point.

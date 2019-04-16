@@ -64,7 +64,7 @@ public class HTMLDialog extends JDialog implements ActionListener, KeyListener, 
 		container.add(panel, "South");
 		setForeground(Color.black);
 		pack();
-		Dimension screenD = IJ.getScreenSize();
+		Rectangle screenD = GUI.getScreenBounds(IJ.getInstance());
 		Dimension dialogD = getSize();
 		int maxWidth = (int)(Math.min(0.70*screenD.width, 800)); //max 70% of screen width, but not more than 800 pxl
 		if (maxWidth>400 && dialogD.width>maxWidth)

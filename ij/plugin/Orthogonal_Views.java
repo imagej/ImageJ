@@ -44,7 +44,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private double magnification=1.0;
 	private Color color = Roi.getColor();
 	private double min, max;
-	private Dimension screen = IJ.getScreenSize();
+	private Rectangle screen;
 	private boolean syncZoom = true;
 	private Point crossLoc;
 	private boolean firstTime = true;
@@ -106,6 +106,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			return;
 		}
 		win = imp.getWindow();
+		screen = GUI.getScreenBounds(win, true);
 		canvas = win.getCanvas();
 		addListeners(canvas);
 		magnification= canvas.getMagnification();

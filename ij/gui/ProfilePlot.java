@@ -81,7 +81,7 @@ public class ProfilePlot {
 			width = MIN_WIDTH;
 			height = (int)(width*ASPECT_RATIO);
 		}
-		Dimension screen = IJ.getScreenSize();
+		Rectangle screen = GUI.getScreenBounds(this.imp != null ? this.imp.getWindow() : IJ.getInstance(), true);
 		int maxWidth = Math.min(screen.width-200, 1000);
 		if (width>maxWidth) {
 			width = maxWidth;

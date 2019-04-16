@@ -1365,7 +1365,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public int isHandle(int sx, int sy) {
 		if (clipboard!=null || ic==null) return -1;
 		double mag = ic.getMagnification();
-		int margin = IJ.getScreenSize().width>1280?5:3;
+		int margin = GUI.getScreenBounds(new Point(sx, sy)).width>1280?5:3;
 		int size = HANDLE_SIZE+margin;
 		int halfSize = size/2;
 		double x = getXBase();

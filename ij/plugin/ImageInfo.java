@@ -36,7 +36,7 @@ public class ImageInfo implements PlugIn {
 		if (IJ.getInstance()!=null)
 			s += IJ.getInstance().getInfo()+"\n \n";
 		s += "No images are open\n";
-		Dimension screen = IJ.getScreenSize();
+		Rectangle screen = GUI.getScreenBounds(IJ.getInstance());
 		s += "ImageJ home: "+IJ.getDir("imagej")+"\n";
 		s += "Java home: "+System.getProperty("java.home")+"\n";
 		s += "Screen size: "+screen.width+"x"+screen.height+"\n";
@@ -324,8 +324,8 @@ public class ImageInfo implements PlugIn {
 		ImageWindow win = imp.getWindow();
 		if (win!=null) {
 			Point loc = win.getLocation();
-			Dimension screen = IJ.getScreenSize();
-			s += "Screen location: "+loc.x+","+loc.y+" ("+screen.width+"x"+screen.height+")\n";
+			Rectangle bounds = GUI.getScreenBounds(win);
+			s += "Screen location: "+(loc.x-bounds.x)+","+(loc.y-bounds.y)+" ("+bounds.width+"x"+bounds.height+")\n";
 		}
 		if (IJ.isMacOSX()) {
 			String time = " ("+ImageWindow.setMenuBarTime+"ms)";

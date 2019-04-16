@@ -158,7 +158,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (loc != null)
 			bounds = GUI.getScreenBounds(loc, true);		
 		// if loc not valid, use screen bounds of visible window (this) or of main window (ij) if not visible yet (updating == false)
-		Rectangle maxWindow = bounds != null ? bounds : getMaxWindow(updating ? this : ij);  
+		Rectangle maxWindow = bounds != null ? bounds : GUI.getMaxWindowBounds(updating ? this : ij);  
 		
 		if (WindowManager.getWindowCount()<=1)
 			xbase = -1;
@@ -217,51 +217,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (!updating)
 			setLocation(x, y);
 	}
-					
-	Rectangle getMaxWindow(Component component) {
-		Rectangle bounds = GUI.getMaxWindowBounds(component);
-		// code below was previously only run when component was on default/first screen (does it matter?)
-		Dimension ijSize = ij!=null?ij.getSize():new Dimension(0,0);
-		if (bounds.height>600) {
-			bounds.y += ijSize.height;
-			bounds.height -= ijSize.height;
-		}
-		return bounds;
-	}
 
-//	Rectangle getMaxWindow(int xloc, int yloc) {
-//		Rectangle bounds = GUI.getMaxWindowBounds();
-//		if (xloc>bounds.x+bounds.width || yloc>bounds.y+bounds.height) {
-//			Rectangle bounds2 = getSecondaryMonitorBounds(xloc, yloc);
-//			if (bounds2!=null) return bounds2;
-//		}
-//		Dimension ijSize = ij!=null?ij.getSize():new Dimension(0,0);
-//		if (bounds.height>600) {
-//			bounds.y += ijSize.height;
-//			bounds.height -= ijSize.height;
-//		}
-//		return bounds;
-//	}
-//	
-//	private Rectangle getSecondaryMonitorBounds(int xloc, int yloc) {
-//		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-//		GraphicsDevice[] gs = ge.getScreenDevices();
-//		Rectangle bounds = null;
-//		for (int j=0; j<gs.length; j++) {
-//			GraphicsDevice gd = gs[j];
-//			GraphicsConfiguration[] gc = gd.getConfigurations();
-//			for (int i=0; i<gc.length; i++) {
-//				Rectangle bounds2 = gc[i].getBounds();
-//				if (bounds2!=null && bounds2.contains(xloc, yloc)) {
-//					bounds = bounds2;
-//					break;
-//				}
-//			}
-//		}		
-//		if (IJ.debugMode) IJ.log("getSecondaryMonitorBounds: "+bounds);
-//		return bounds;
-//	}
-	
 	public double getInitialMagnification() {
 		return initialMagnification;
 	}

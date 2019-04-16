@@ -318,7 +318,7 @@ public class GelAnalyzer implements PlugIn {
 
 		if (verticalScaleFactor==0.0) verticalScaleFactor=1.0;
 		if (horizontalScaleFactor==0.0) horizontalScaleFactor=1.0;
-		Dimension screen = IJ.getScreenSize();
+		Rectangle screen = GUI.getScreenBounds(imp.getWindow(), true);
 		if (plotWidth>screen.width-screen.width/6)
 			plotWidth = screen.width - screen.width/6;
 		plotWidth = (int)(plotWidth*horizontalScaleFactor);
@@ -491,7 +491,7 @@ class Plots extends ImagePlus {
 		Point loc = win.getLocation();
 		int w = getWidth()+20;
 		int h = getHeight()+30;
-		Dimension screen = IJ.getScreenSize();
+		Rectangle screen = GUI.getScreenBounds(win, true);
 		if (loc.x+w>screen.width)
 			w = screen.width-loc.x-20;
 		if (loc.y+h>screen.height)

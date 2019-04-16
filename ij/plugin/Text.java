@@ -57,7 +57,7 @@ public class Text implements PlugIn, DialogListener {
 		gd.addCheckbox("Antialiased text", antialiased);
 		Point loc = Prefs.getLocation(LOC_KEY);
 		if (IJ.debugMode) {
-			Dimension screen = IJ.getScreenSize();
+			Rectangle screen = GUI.getScreenBounds(loc);
 			IJ.log("Fonts: "+loc+" "+screen);
 		}
 		if (loc!=null) {

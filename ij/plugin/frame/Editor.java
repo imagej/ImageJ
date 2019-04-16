@@ -212,7 +212,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}			
 			
 	public void positionWindow() {
-		Dimension screen = IJ.getScreenSize();
+		Rectangle screen = GUI.getScreenBounds(IJ.getInstance(), true);
 		Dimension window = getSize();
 		if (window.width==0)
 			return;
@@ -223,7 +223,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if (top<0) top = 0;
 		if (nWindows<=0 || xoffset>8*XINC)
 			{xoffset=0; yoffset=0;}
-		setLocation(left+xoffset, top+yoffset);
+		setLocation(screen.x+left+xoffset, screen.y+top+yoffset);
 		xoffset+=XINC; yoffset+=YINC;
 		nWindows++;
 	}

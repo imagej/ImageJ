@@ -3632,7 +3632,7 @@ public class Functions implements MacroConstants, Measurements {
 
 	double getScreenDimension(int type) {
 		interp.getParens();
-		Dimension screen = IJ.getScreenSize();
+		Rectangle screen = GUI.getScreenBounds(IJ.getInstance());
 		if (type==SCREEN_WIDTH)
 			return screen.width;
 		else
