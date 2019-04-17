@@ -166,19 +166,17 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			xbase = -1;
 		if (xbase==-1) {
 			count = 0;
-			xbase = maxWindow.x + (maxWindow.width>1800?24:12);
-			if (width*2<=maxWindow.width) {
-				if (loc!=null && loc.x<maxWindow.x+maxWindow.width*2/3 && loc.y<maxWindow.y+maxWindow.height/3) {
-					xbase = loc.x;
-					ybase = loc.y;
-				} else {
-					xbase = maxWindow.x+maxWindow.width/2-width/2;
-					ybase = maxWindow.y;
-				}
-				firstSmallWindow = true;
-				if (IJ.debugMode) IJ.log("ImageWindow.xbase: "+xbase+" "+loc);
-			} else
-				ybase = maxWindow.y;
+			if (loc != null) {
+				xbase = loc.x;
+				ybase = loc.y;
+			} else {
+				xbase = maxWindow.x + (maxWindow.width - width) / 2;
+				ybase = maxWindow.y + (maxWindow.height - height) / 4;
+			}
+			xbase = Math.max(xbase, maxWindow.x);
+			ybase = Math.max(ybase, maxWindow.y);
+			firstSmallWindow = true;
+			if (IJ.debugMode) IJ.log("ImageWindow.xbase: "+xbase+" "+loc);
 			xloc = xbase;
 			yloc = ybase;
 		}
