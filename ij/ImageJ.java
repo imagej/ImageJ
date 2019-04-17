@@ -279,9 +279,9 @@ public class ImageJ extends Frame implements ActionListener,
 	public Point getPreferredLocation() {
 		int ijX = Prefs.getInt(IJ_X,-99);
 		int ijY = Prefs.getInt(IJ_Y,-99);
-		Rectangle maxBounds = GUI.getScreenBounds(new Point(ijX, ijY), true);
+		Rectangle maxBounds = GUI.getMaxWindowBounds(new Point(ijX, ijY));
 		if (maxBounds == null)
-			maxBounds = GUI.getScreenBounds((Component)null, true);
+			maxBounds = GUI.getMaxWindowBounds();
 		//System.out.println("getPreferredLoc1: "+ijX+" "+ijY+" "+maxBounds);
 		if (ijX>=maxBounds.x && ijY>=maxBounds.y && ijX<(maxBounds.x+maxBounds.width-75))
 			return new Point(ijX, ijY);
@@ -688,10 +688,6 @@ public class ImageJ extends Frame implements ActionListener,
 	/** Called once when ImageJ quits. */
 	public void savePreferences(Properties prefs) {
 		Point loc = getLocation();
-		if (IJ.isLinux()) {
-			Rectangle bounds = GUI.getMaxWindowBounds(this);
-			loc.y = bounds.y; // why?
-		}
 		prefs.put(IJ_X, Integer.toString(loc.x));
 		prefs.put(IJ_Y, Integer.toString(loc.y));
 	}

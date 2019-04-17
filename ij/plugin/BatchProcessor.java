@@ -129,7 +129,7 @@ import java.util.Vector;
 		if (virtualStack==null)
 			gd.addStringField("File name contains:", "", 10);
 		gd.setInsets(15, 10, 0);
-		Rectangle screen = GUI.getScreenBounds(IJ.getInstance(), true);
+		Rectangle screen = GUI.getMaxWindowBounds(IJ.getInstance());
 		gd.addTextAreas(macro, null, screen.width<=600?10:15, 60);
 		addButtons(gd);
 		gd.setOKLabel("Process");

@@ -212,7 +212,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}			
 			
 	public void positionWindow() {
-		Rectangle screen = GUI.getScreenBounds(IJ.getInstance(), true);
+		Rectangle screen = GUI.getMaxWindowBounds(IJ.getInstance());
 		Dimension window = getSize();
 		if (window.width==0)
 			return;

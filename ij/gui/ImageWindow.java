@@ -156,7 +156,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		Point loc = Prefs.getLocation(LOC_KEY);
 		Rectangle bounds = null;
 		if (loc != null)
-			bounds = GUI.getScreenBounds(loc, true);		
+			bounds = GUI.getMaxWindowBounds(loc);		
 		// if loc not valid, use screen bounds of visible window (this) or of main window (ij) if not visible yet (updating == false)
 		Rectangle maxWindow = bounds != null ? bounds : GUI.getMaxWindowBounds(updating ? this : ij);  
 		
@@ -193,8 +193,9 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		}
 
 		int screenHeight = maxWindow.y+maxWindow.height-sliderHeight;
+		int screenWidth = maxWindow.x+maxWindow.width;
 		double mag = 1;
-		while (xbase+width*mag>maxWindow.x+maxWindow.width || ybase+height*mag>=screenHeight) {
+		while (xbase+width*mag>screenWidth || ybase+height*mag>=screenHeight) {
 			double mag2 = ImageCanvas.getLowerZoomLevel(mag);
 			if (mag2==mag) break;
 			mag = mag2;
@@ -210,7 +211,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
         if (Prefs.open100Percent && ic.getMagnification()<1.0) {
 			while(ic.getMagnification()<1.0)
 				ic.zoomIn(0, 0);
-			setSize(Math.min(width, maxWindow.width-x), Math.min(height, screenHeight-y));
+			setSize(Math.min(width, screenWidth-x), Math.min(height, screenHeight-y));
 			validate();
 		} else 
 			pack();

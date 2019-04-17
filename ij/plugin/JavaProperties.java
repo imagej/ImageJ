@@ -108,11 +108,7 @@ public class JavaProperties implements PlugIn {
 		Rectangle d = GUI.getScreenBounds(IJ.getInstance());
 		list.add("  Screen size: " + d.width + "x" + d.height);
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		String b1 = toString(GUI.getMaxWindowBounds(IJ.getInstance()));
-		String b2 = toString(GUI.getScreenBounds(IJ.getInstance(), true));
-		if (!b2.equals(b1))
-			b1 += " (" + b2 + ")";
-		list.add("  Max window bounds: " + b1);
+		list.add("  Max window bounds: " + toString(GUI.getMaxWindowBounds(IJ.getInstance())));
 		listMonitors(ge, list);
 		System.gc();
 		doFullDump();
@@ -141,9 +137,6 @@ public class JavaProperties implements PlugIn {
 			}
 		}
 		if (n>1) {
-			Rectangle ub = GUI.getUnionOfBounds();
-			if (ub!=null)
-				list.add("  Union of bounds: " + toString(ub));
 			for (int i=0; i<n; i++)
 				list.add("  Monitor"+(i+1)+": " + str[i]);
 		}

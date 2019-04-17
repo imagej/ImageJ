@@ -28,7 +28,7 @@ public class WindowOrganizer implements PlugIn {
 	}
 	
 	void tileWindows(int[] wList) {
-		Rectangle screen = GUI.getScreenBounds(IJ.getInstance(), true);
+		Rectangle screen = GUI.getMaxWindowBounds(IJ.getInstance());
 		int minWidth = Integer.MAX_VALUE;
 		int minHeight = Integer.MAX_VALUE;
 		boolean allSameSize = true;
@@ -127,7 +127,7 @@ public class WindowOrganizer implements PlugIn {
 	}		
 			
 	void cascadeWindows(int[] wList) {
-		Rectangle screen = GUI.getScreenBounds(IJ.getInstance(), true);
+		Rectangle screen = GUI.getMaxWindowBounds(IJ.getInstance());
 		int x = XSTART;
 		int y = YSTART;
 		int xstep = 0;

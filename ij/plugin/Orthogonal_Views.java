@@ -106,7 +106,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			return;
 		}
 		win = imp.getWindow();
-		screen = GUI.getScreenBounds(win, true);
+		screen = GUI.getMaxWindowBounds(win);
 		canvas = win.getCanvas();
 		addListeners(canvas);
 		magnification= canvas.getMagnification();
