@@ -186,10 +186,10 @@ public class ImageJ extends Frame implements ActionListener,
 		setCursor(Cursor.getDefaultCursor()); // work-around for JDK 1.1.8 bug
 		if (mode!=NO_SHOW) {
 			if (IJ.isWindows()) try {setIcon();} catch(Exception e) {}
-			setLocation(loc.x, loc.y);
 			setResizable(false);
 			setAlwaysOnTop(Prefs.alwaysOnTop);
 			pack();
+			setLocation(loc.x, loc.y); // call after pack()
 			setVisible(true);
 			Dimension size = getSize();
 			if (size!=null) {
