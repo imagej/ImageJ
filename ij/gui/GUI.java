@@ -20,7 +20,7 @@ public class GUI {
 			isWindows8 = osname.contains("unknown") || osname.contains("8");
 		}
 		unionOfBounds = new Rectangle();
-		screenConfigs = new java.util.ArrayList<>();
+		screenConfigs = new java.util.ArrayList<GraphicsConfiguration>();
 		for (GraphicsDevice device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
 			GraphicsConfiguration config = device.getDefaultConfiguration();
 			unionOfBounds = unionOfBounds.union(config.getBounds());
