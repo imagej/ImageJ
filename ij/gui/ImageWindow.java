@@ -217,6 +217,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			setLocation(x, y);
 	}
 
+	Rectangle getMaxWindow(int xloc, int yloc) {
+		return GUI.getMaxWindowBounds(new Point(xloc, yloc));
+	}
+
 	public double getInitialMagnification() {
 		return initialMagnification;
 	}

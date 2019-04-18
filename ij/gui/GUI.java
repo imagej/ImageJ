@@ -121,7 +121,7 @@ public class GUI {
 			if (bounds != null && bounds.x == 0 && bounds.y == 0)
 				return bounds;
 		}
-		return null;		
+		return null;
 	}
 	
 	public static Rectangle getUnionOfBounds() {
