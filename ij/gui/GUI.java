@@ -11,15 +11,22 @@ public class GUI {
 	private static final Font DEFAULT_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
 	private static Color lightGray = new Color(240,240,240);
 	private static boolean isWindows8;
+	private static Rectangle unionOfBounds;
+	private static java.util.List<GraphicsConfiguration> screenConfigs;
 
 	static {
 		if (IJ.isWindows()) {
 			String osname = System.getProperty("os.name");
 			isWindows8 = osname.contains("unknown") || osname.contains("8");
 		}
+		unionOfBounds = new Rectangle();
+		screenConfigs = new java.util.ArrayList<>();
+		for (GraphicsDevice device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
+			GraphicsConfiguration config = device.getDefaultConfiguration();
+			unionOfBounds = unionOfBounds.union(config.getBounds());
+			screenConfigs.add(config);
+		}
 	}
-
-	// ----------------------------------------------
 
 	/** Positions the specified window in the center of the screen that contains target. */
 	public static void center(Window win, Component target) {
@@ -46,16 +53,12 @@ public class GUI {
 	 */
 	public static Rectangle getScreenBounds(Point point, boolean accountForInsets) {
 		if (GraphicsEnvironment.isHeadless())
-			return new Rectangle(0,0,0,0);		
-		GraphicsDevice[] devices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
-		for (GraphicsDevice device : devices) {
-			for (GraphicsConfiguration config : device.getConfigurations()) {
-				Rectangle bounds = config.getBounds();
-				if (bounds == null) continue;
-				if (bounds.contains(point)) {
-					Insets insets = accountForInsets ? Toolkit.getDefaultToolkit().getScreenInsets(config) : null;
-					return shrinkByInsets(bounds, insets);
-				}
+			return new Rectangle(0,0,0,0);
+		for (GraphicsConfiguration config : screenConfigs) {
+			Rectangle bounds = config.getBounds();
+			if (bounds != null && bounds.contains(point)) {
+				Insets insets = accountForInsets ? Toolkit.getDefaultToolkit().getScreenInsets(config) : null;
+				return shrinkByInsets(bounds, insets);
 			}
 		}
 		return null;		
@@ -75,8 +78,7 @@ public class GUI {
 		GraphicsConfiguration gc = component == null ? ge.getDefaultScreenDevice().getDefaultConfiguration() :
 													   component.getGraphicsConfiguration();   
 		Insets insets = accountForInsets ? Toolkit.getDefaultToolkit().getScreenInsets(gc) : null;
-		Rectangle bounds = new Rectangle(gc.getBounds());
-		return shrinkByInsets(bounds, insets);
+		return shrinkByInsets(gc.getBounds(), insets);
 	}
 
 	public static Rectangle getScreenBounds(Point point) {
@@ -113,8 +115,19 @@ public class GUI {
 		return shrunk;
 	}
 	
-	// ----------------------------------------------
-
+	public static Rectangle getZeroBasedMaxBounds() {
+		for (GraphicsConfiguration config : screenConfigs) {
+			Rectangle bounds = config.getBounds();
+			if (bounds != null && bounds.x == 0 && bounds.y == 0)
+				return bounds;
+		}
+		return null;		
+	}
+	
+	public static Rectangle getUnionOfBounds() {
+		return unionOfBounds;
+	}
+	
     static private Frame frame;
     
     /** Creates a white AWT Image image of the specified size. */
