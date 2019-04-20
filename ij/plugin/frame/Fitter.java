@@ -138,64 +138,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 	}
 	
 	public static void plot(CurveFitter cf, boolean eightBitCalibrationPlot) {
-		double[] x = cf.getXPoints();
-		double[] y = cf.getYPoints();
-		if (cf.getParams().length<cf.getNumParams()) {
-			Plot plot = new Plot(cf.getFormula(),"X","Y",x,y);
-			plot.setColor(Color.BLUE);
-			plot.addLabel(0.02, 0.1, cf.getName());
-			plot.addLabel(0.02, 0.2, cf.getStatusString());
-			plot.show();
-			return;
-		}
-		int npoints = 100;
-		if (npoints<x.length)
-			npoints = x.length; //or 2*x.length-1; for 2 values per data point
-		if (npoints>1000)
-			npoints = 1000;
-		double[] a = Tools.getMinMax(x);
-		double xmin=a[0], xmax=a[1];
-		if (eightBitCalibrationPlot) {
-			npoints = 256;
-			xmin = 0;
-			xmax = 255;
-		}
-		a = Tools.getMinMax(y);
-		double ymin=a[0], ymax=a[1]; //y range of data points
-		float[] px = new float[npoints];
-		float[] py = new float[npoints];
-		double inc = (xmax-xmin)/(npoints-1);
-		double tmp = xmin;
-		for (int i=0; i<npoints; i++) {
-			px[i]=(float)tmp;
-			tmp += inc;
-		}
-		double[] params = cf.getParams();
-		for (int i=0; i<npoints; i++)
-			py[i] = (float)cf.f(params, px[i]);
-		a = Tools.getMinMax(py);
-		double dataRange = ymax - ymin;
-		ymin = Math.max(ymin - dataRange, Math.min(ymin, a[0])); //expand y range for curve, but not too much
-		ymax = Math.min(ymax + dataRange, Math.max(ymax, a[1]));
-		Plot plot = new Plot(cf.getFormula(),"X","Y",px,py);
-		plot.setLimits(xmin, xmax, ymin, ymax);
-		plot.setColor(Color.RED);
-		plot.addPoints(x, y, PlotWindow.CIRCLE);
-		plot.setColor(Color.BLUE);
-
-		StringBuffer legend = new StringBuffer(100);
-		legend.append(cf.getName()); legend.append('\n');
-		legend.append(cf.getFormula()); legend.append('\n');
-        double[] p = cf.getParams();
-        int n = cf.getNumParams();
-        char pChar = 'a';
-        for (int i = 0; i < n; i++) {
-			legend.append(pChar+" = "+IJ.d2s(p[i],5,9)+'\n');
-			pChar++;
-        }
-		legend.append("R^2 = "+IJ.d2s(cf.getRSquared(),4)); legend.append('\n');
-		plot.addLabel(0.02, 0.1, legend.toString());
-		plot.setColor(Color.BLUE);
+		Plot plot = cf.getPlot(eightBitCalibrationPlot?256:100);
 		plot.show();									
 	}
 	

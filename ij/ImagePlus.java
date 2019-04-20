@@ -1494,6 +1494,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			this.stack = s;
 			ip = ip2;
 			oneSliceStack = true;
+			setCurrentSlice(1);
 		} else {
 			s = stack;
 			if (ip!=null) {
@@ -1679,8 +1680,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			Roi roi = getRoi();
 			if (roi!=null)
 				roi.endPaste();
-			if (isProcessor())
+			if (isProcessor()) {
+				if (currentSlice==0) currentSlice=1;
 				stack.setPixels(ip.getPixels(),currentSlice);
+			}
 			setCurrentSlice(n);
 			Object pixels = null;
 			Overlay overlay2 = null;

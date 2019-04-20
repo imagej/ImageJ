@@ -57,6 +57,7 @@ public class ResultsTable implements Cloneable {
 	private char delimiter = '\t';
 	private boolean headingSet; 
 	private boolean showRowNumbers;
+	private int baseRowNumber = 1;
 	private Hashtable stringColumns;
 	private boolean NaNEmptyCells;
 	private boolean quoteCommas;
@@ -583,7 +584,7 @@ public class ResultsTable implements Cloneable {
 		else
 			sb.setLength(0);
 		if (showRowNumbers) {
-			sb.append(Integer.toString(row+1));
+			sb.append(Integer.toString(row+baseRowNumber));
 			sb.append(delimiter);
 		}
 		if (rowLabels!=null) {
@@ -769,6 +770,12 @@ public class ResultsTable implements Cloneable {
 
 	public void showRowNumbers(boolean showNumbers) {
 		showRowNumbers = showNumbers;
+		baseRowNumber = 1;
+	}
+
+	public void showRowIndexes(boolean showIndexes) {
+		showRowNumbers = showIndexes;
+		baseRowNumber = showIndexes?0:1;
 	}
 
 	private static DecimalFormat[] df;
@@ -1114,7 +1121,6 @@ public class ResultsTable implements Cloneable {
 			firstColumn = 1;
 		}
 		ResultsTable rt = new ResultsTable();
-		//IJ.log("open: "+firstRow+" "+lines.length+" "+headings.length);
 		if (firstRow>=lines.length) { //empty table?
 			for (int i=0; i<headings.length; i++) {
 				if (headings[i]==null) continue;

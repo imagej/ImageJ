@@ -102,8 +102,15 @@ public class ImageStack {
 	/** Adds the image in 'ip' to the end of the stack, setting
 		the string 'sliceLabel' as the slice metadata. */
 	public void addSlice(String sliceLabel, ImageProcessor ip) {
-		if (ip.getWidth()!=width || ip.getHeight()!=height)
-			throw new IllegalArgumentException("ImageStack.addSlice(): dimensions do not match");
+		if (ip.getWidth()!=width || ip.getHeight()!=height) {
+			if (width==0 && height==0) {
+				width = ip.getWidth();
+				height = ip.getHeight();
+				stack = new Object[INITIAL_SIZE];
+				label = new String[INITIAL_SIZE];
+			} else
+				throw new IllegalArgumentException("ImageStack.addSlice(): dimensions do not match");
+		}
 		if (nSlices==0) {
 			cm = ip.getColorModel();
 			min = ip.getMin();

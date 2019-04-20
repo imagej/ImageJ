@@ -5,8 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.52o33 13 April 2019</u>
+<li> <u>1.52o40 19 April 2019</u>
 <ul>
+<li> Added the <i>Help&gt;Examples&gt;Macro&gt;Curve Fitting</i>
+and <i>Help&gt;Examples&gt;JavaScript&gt;Curve Fitting</i> examples.
 <li> Thanks to Tiago Ferreira, stack and hyperstack scrollbars 
 now apply the <i>Edit&gt;Options&gt;Appearance</i> "GUI scale".
 <li> Thanks to 'mountain_man', tables can be sorted alphabetically.
@@ -48,11 +50,22 @@ and getInfo("window.title") macro functions to sometimes
 not work with custom tables.
 <li> Thanks to Stein Rorvik, fixed bugs related to saving and
 opening empty tables.
+<li> Thanks to Norbert Vischer, fixed a bug that caused the 
+Mac menu bar to disappear when activating the Channels, 
+ColorPicker, ContrastAdjuster and ThresholdAdjuster dialogs.
+<li> Thanks to Norbert Vischer, fixed a bug that caused the
+"Save changes?" dialog to not be the front-most window 
+when quitting ImageJ.
+<li> Thanks to Tihamer, fixed a bug that caused the
+CurveFitter.getResultString() method to fail if
+there was a fitting error. 
 <li> Thanks to Ellen Arena, fixed 1.52m regression that caused
 the <i>Edit&gt;Selection&gt;Create Selection</i> command
 to not work as expected with non-thresholded images.
 <li>Thanks to Laurent Thomas, fixed a 1.52n regression that caused the
 MaximumFinder.getMaxima() method to always return 0 points.
+<li> Thanks to Gabriel Landini, fixed a regression that could cause
+the ImagePlus.setSlice() method to throw an exception.
 </ul>
 
 <li> <u>1.52n 22 March 2019</u>

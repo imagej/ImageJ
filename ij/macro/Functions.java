@@ -4445,6 +4445,8 @@ public class Functions implements MacroConstants, Measurements {
 			Analyzer.setMeasurement(STD_DEV, state);
 		else if (arg1.equals("showrownumbers"))
 			ResultsTable.getResultsTable().showRowNumbers(state);
+		else if (arg1.equals("showrowindexes"))
+			ResultsTable.getResultsTable().showRowIndexes(state);
 		else if (arg1.startsWith("show"))
 			Analyzer.setOption(arg1, state);
 		else if (arg1.startsWith("bicubic"))
@@ -6092,6 +6094,7 @@ public class Functions implements MacroConstants, Measurements {
 			}
 		}
      	rt.show(title);
+		waitUntilActivated(title);
 		return null;
 	}
 
@@ -6586,7 +6589,9 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("headings"))
 			return new Variable(getResultsTable(getTitleArg()).getColumnHeadings());
 		else if (name.equals("showRowNumbers"))
-			return showRowNumbers();
+			return showRowNumbers(true);
+		else if (name.equals("showRowIndexes"))
+			return showRowNumbers(false);
 		else if (name.equals("sort"))
 			return sortTable();
 		else if (name.equals("hideRowNumbers")) {
@@ -6699,6 +6704,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (getRT(title)==null) {
 			rt = new ResultsTable();
 			rt.show(title);
+			waitUntilActivated(title);
 		} else {
 			rt = getResultsTable(title);
 			rt.reset();
@@ -6708,6 +6714,20 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		return new Variable();
 	}
+	
+	private void waitUntilActivated(String title) {
+		long start = System.currentTimeMillis();
+		while (true) {
+			IJ.wait(5);
+			Frame frame = WindowManager.getFrontWindow();
+			String title2 = frame!=null?frame.getTitle():null;
+			if (title.equals(title2))
+				return;
+			if ((System.currentTimeMillis()-start)>200)
+				break;
+		}
+	}
+
 	
 	private void toFront(String title) {
 		if (title==null)
@@ -6781,10 +6801,13 @@ public class Functions implements MacroConstants, Measurements {
 		return new Variable();
 	}
 
-	private Variable showRowNumbers() {
+	private Variable showRowNumbers(boolean numbers) {
 		boolean show = (int)getFirstArg()!=0;
 		ResultsTable rt = getResultsTable(getTitle());
-		rt.showRowNumbers(show);
+		if (numbers)
+			rt.showRowNumbers(show);
+		else
+			rt.showRowIndexes(show);
 		unUpdatedTable = rt;
 		return new Variable();
 	}
