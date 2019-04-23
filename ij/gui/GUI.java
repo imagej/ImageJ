@@ -11,20 +11,11 @@ public class GUI {
 	private static final Font DEFAULT_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
 	private static Color lightGray = new Color(240,240,240);
 	private static boolean isWindows8;
-	private static Rectangle unionOfBounds;
-	private static java.util.List<GraphicsConfiguration> screenConfigs;
 
 	static {
 		if (IJ.isWindows()) {
 			String osname = System.getProperty("os.name");
 			isWindows8 = osname.contains("unknown") || osname.contains("8");
-		}
-		unionOfBounds = new Rectangle();
-		screenConfigs = new java.util.ArrayList<GraphicsConfiguration>();
-		for (GraphicsDevice device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
-			GraphicsConfiguration config = device.getDefaultConfiguration();
-			unionOfBounds = unionOfBounds.union(config.getBounds());
-			screenConfigs.add(config);
 		}
 	}
 
@@ -45,6 +36,16 @@ public class GUI {
 		center(win, win);
 	}
 	
+	private static java.util.List<GraphicsConfiguration> getScreenConfigs() {
+		java.util.ArrayList<GraphicsConfiguration> configs = new java.util.ArrayList<GraphicsConfiguration>();
+		for (GraphicsDevice device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
+			configs.add(device.getDefaultConfiguration());
+			System.out.printf("Screen: %s\n", device.getDefaultConfiguration().getBounds());
+		}
+		System.out.println();
+		return configs;
+	}
+	
 	/**
 	 * Get maximum bounds for the screen that contains a given point.
 	 * @param point Coordinates of point.
@@ -54,7 +55,7 @@ public class GUI {
 	public static Rectangle getScreenBounds(Point point, boolean accountForInsets) {
 		if (GraphicsEnvironment.isHeadless())
 			return new Rectangle(0,0,0,0);
-		for (GraphicsConfiguration config : screenConfigs) {
+		for (GraphicsConfiguration config : getScreenConfigs()) {
 			Rectangle bounds = config.getBounds();
 			if (bounds != null && bounds.contains(point)) {
 				Insets insets = accountForInsets ? Toolkit.getDefaultToolkit().getScreenInsets(config) : null;
@@ -116,7 +117,7 @@ public class GUI {
 	}
 	
 	public static Rectangle getZeroBasedMaxBounds() {
-		for (GraphicsConfiguration config : screenConfigs) {
+		for (GraphicsConfiguration config : getScreenConfigs()) {
 			Rectangle bounds = config.getBounds();
 			if (bounds != null && bounds.x == 0 && bounds.y == 0)
 				return bounds;
@@ -125,6 +126,10 @@ public class GUI {
 	}
 	
 	public static Rectangle getUnionOfBounds() {
+		Rectangle unionOfBounds = new Rectangle();
+		for (GraphicsConfiguration config : getScreenConfigs()) {
+			unionOfBounds = unionOfBounds.union(config.getBounds());
+		}
 		return unionOfBounds;
 	}
 	
