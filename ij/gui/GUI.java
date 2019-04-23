@@ -40,9 +40,7 @@ public class GUI {
 		java.util.ArrayList<GraphicsConfiguration> configs = new java.util.ArrayList<GraphicsConfiguration>();
 		for (GraphicsDevice device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
 			configs.add(device.getDefaultConfiguration());
-			System.out.printf("Screen: %s\n", device.getDefaultConfiguration().getBounds());
 		}
-		System.out.println();
 		return configs;
 	}
 	
