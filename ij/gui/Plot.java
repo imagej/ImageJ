@@ -185,7 +185,7 @@ public class Plot implements Cloneable {
 
 	int templateFlags = COPY_SIZE | COPY_LABELS | COPY_AXIS_STYLE | COPY_CONTENTS_STYLE | COPY_LEGEND;	//for passing on what should be kept when 'live' plotting (PlotMaker)
 
-	Font defaultFont = DEFAULT_FONT;				//default font for labels, axis, etc.
+	Font defaultFont = DEFAULT_FONT;			//default font for labels, axis, etc.
 	Font currentFont = defaultFont;					//font as changed by setFont or setFontSize, must never be null
 	private double xScale, yScale;					//pixels per data unit
 	private int xBasePxl, yBasePxl;					//pixel coordinates corresponding to 0
@@ -996,7 +996,7 @@ public class Plot implements Cloneable {
 		allPlotObjects.add(new PlotObject(x1, y1, x2, y2, currentLineWidth, step, currentColor, PlotObject.DOTTED_LINE));
 	}
 
-	/** Sets the font for all following drawLabel etc. operations. The currently set font when
+	/** Sets the font for all following addLabel() etc. operations. The currently set font when
 	 *	displaying the plot determines the font of all labels & numbers.
 	 *  After the plot has been shown, sets the font for the numbers and the legend (if present).
 	 *	Call update() thereafter to make the change visible (if the image is shown already). */
@@ -1010,7 +1010,7 @@ public class Plot implements Cloneable {
 		}
 	}
 
-	/** Sets the font size and style for all following drawLabel etc. operations. This leaves
+	/** Sets the font size and style for all following addLabel() etc. operations. This leaves
 	 *	the font name and style of the previously used fonts unchanged. The currently set font
 	 *	when displaying the plot determines the font of the numbers at the axes.
 	 *	That font also sets the default label font size, which may be overridden by

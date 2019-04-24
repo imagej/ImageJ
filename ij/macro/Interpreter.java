@@ -1888,6 +1888,8 @@ public class Interpreter implements MacroConstants {
 			if (rt!=null && rt.size()>0)
 				rt.show("Results");
 		}
+		if (func.unUpdatedTable!=null)
+			func.unUpdatedTable.show(func.unUpdatedTable.getTitle());
 		if (IJ.isMacOSX() && selectCount>0 && debugger==null) {
 			Frame frame = WindowManager.getFrontWindow();
 			if (frame!=null && (frame instanceof ImageWindow))

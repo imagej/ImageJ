@@ -873,9 +873,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		unsavedLines = false;
 	}
 
-	/** Saves all the text in this TextPanel to a file. Set
-		'path' to "" to display a save as dialog. Returns
-		'false' if the user cancels the save as dialog.*/
+	/** Saves the text in this TextPanel to a file. Set 'path' to "" to
+	 * display a "save as" dialog. Returns 'false' if the user cancels
+	 * the dialog.
+	*/
 	public boolean saveAs(String path) {
 		boolean isResults = IJ.isResultsWindow() && IJ.getTextPanel()==this;
 		boolean summarized = false;
@@ -884,13 +885,14 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			summarized = lastLine!=null && lastLine.startsWith("Max");
 		}
 		String fileName = null;
-		if (rt!=null && rt.size()!=0 && !summarized) {
+		if (rt!=null && !summarized) {
 			if (path==null || path.equals("")) {
 				IJ.wait(10);
 				String name = isResults?"Results":title;
-				SaveDialog sd = new SaveDialog("Save Results", name, Prefs.defaultResultsExtension());
+				SaveDialog sd = new SaveDialog("Save Table", name, Prefs.defaultResultsExtension());
 				fileName = sd.getFileName();
-				if (fileName==null) return false;
+				if (fileName==null)
+					return false;
 				path = sd.getDirectory() + fileName;
 			}
 			rt.save(path);

@@ -54,6 +54,7 @@ public class Functions implements MacroConstants, Measurements {
 	GeneralPath overlayPath;
 	boolean overlayDrawLabels;
 	ResultsTable currentTable;
+	ResultsTable unUpdatedTable;
 
 	// save/restore settings
 	boolean saveSettingsCalled;
@@ -1230,7 +1231,8 @@ public class Functions implements MacroConstants, Measurements {
 		if (rt==null) {
 			rt = Analyzer.getResultsTable();
 			resultsPending = true;
-		}
+		} else
+			unUpdatedTable = rt;
 		if (row<0 || row>rt.size())
 			interp.error("Row ("+row+") out of range");
 		if (row==rt.size())
@@ -1634,7 +1636,7 @@ public class Functions implements MacroConstants, Measurements {
 		String type = win.getClass().getName();
 		if (win instanceof TextWindow) {
 			TextPanel tp = ((TextWindow)win).getTextPanel();
-			if (tp.getColumnHeadings().isEmpty())
+			if (tp.getColumnHeadings().isEmpty()  && tp.getResultsTable()==null)
 				type = "Text";
 			else {
 				if (tp.getResultsTable()!=null)
@@ -3387,8 +3389,8 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();
 			oneArg = true;
 		}
-		if (oneArg && format.contains(File.separator))
-			IJ.save(format); // argument is a path
+		if (oneArg && (format.contains(File.separator)||format.contains("/")))
+			IJ.save(format); // assume argument is a path
 		else
 			IJ.saveAs(format, path);
 	}
@@ -4443,6 +4445,8 @@ public class Functions implements MacroConstants, Measurements {
 			Analyzer.setMeasurement(STD_DEV, state);
 		else if (arg1.equals("showrownumbers"))
 			ResultsTable.getResultsTable().showRowNumbers(state);
+		else if (arg1.equals("showrowindexes"))
+			ResultsTable.getResultsTable().showRowIndexes(state);
 		else if (arg1.startsWith("show"))
 			Analyzer.setOption(arg1, state);
 		else if (arg1.startsWith("bicubic"))
@@ -6090,6 +6094,7 @@ public class Functions implements MacroConstants, Measurements {
 			}
 		}
      	rt.show(title);
+		waitUntilActivated(title);
 		return null;
 	}
 
@@ -6584,7 +6589,9 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("headings"))
 			return new Variable(getResultsTable(getTitleArg()).getColumnHeadings());
 		else if (name.equals("showRowNumbers"))
-			return showRowNumbers();
+			return showRowNumbers(true);
+		else if (name.equals("showRowIndexes"))
+			return showRowNumbers(false);
 		else if (name.equals("sort"))
 			return sortTable();
 		else if (name.equals("hideRowNumbers")) {
@@ -6611,65 +6618,65 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getLeftParen();
 		double from = interp.getExpression();
 		interp.getComma();
-		double to = interp.getExpression();
-		String title = getTitle();
-		if (title != null){
-			Frame f = WindowManager.getFrame(title);
-			if (f!=null && (f instanceof TextWindow)){
-				TextWindow tWin = (TextWindow)f;
-				if (from == -1 && to == -1)
-					tWin.getTextPanel().resetSelection();
-				else
-					tWin.getTextPanel().setSelection((int)from, (int)to);
-				return new Variable();
-			}
+		double to = interp.getExpression();		
+		ResultsTable rt = getResultsTable(getTitle());
+		String title = rt.getTitle();
+		Frame f = WindowManager.getFrame(title);
+		if (f!=null && (f instanceof TextWindow)){
+			TextWindow tWin = (TextWindow)f;
+			if (from == -1 && to == -1)
+				tWin.getTextPanel().resetSelection();
+			else
+				tWin.getTextPanel().setSelection((int)from, (int)to);
+			return new Variable();
 		}
-		interp.error("Title of table missing or not found");
+		interp.error("\""+title+"\" table not found");
 		return new Variable();
 	}
 	
 	private Variable getSelectionStart() {
-		int selStart = -1;
-		String title = getTitleArg();
-		if (title != null){
-			Frame f = WindowManager.getFrame(title);
-			if (f!=null && (f instanceof TextWindow)){
-				TextWindow tWin = (TextWindow)f;	
-				selStart = tWin.getTextPanel().getSelectionStart();
-				return new Variable(selStart);
-			}
+		int selStart = -1;		
+		ResultsTable rt = getResultsTable(getTitleArg());
+		String title = rt.getTitle();
+		Frame f = WindowManager.getFrame(title);
+		if (f!=null && (f instanceof TextWindow)){
+			TextWindow tWin = (TextWindow)f;	
+			selStart = tWin.getTextPanel().getSelectionStart();
+			return new Variable(selStart);
 		}
-		interp.error("Title of table missing or not found");
 		return new Variable(selStart);
 	}
 	
 	private Variable getSelectionEnd() {
 		int selEnd = -1;
-		String title = getTitleArg();
-		if (title != null){
-			Frame f = WindowManager.getFrame(title);
-			if (f!=null && (f instanceof TextWindow)){
-				TextWindow tWin = (TextWindow)f;	
-				selEnd = tWin.getTextPanel().getSelectionEnd();
-				return new Variable(selEnd);
-			}
+		ResultsTable rt = getResultsTable(getTitleArg());
+		String title = rt.getTitle();
+		Frame f = WindowManager.getFrame(title);
+		if (f!=null && (f instanceof TextWindow)){
+			TextWindow tWin = (TextWindow)f;	
+			selEnd = tWin.getTextPanel().getSelectionEnd();
+			return new Variable(selEnd);
 		}
-		interp.error("Title of table missing or not found");
+		interp.error("\""+title+"\" table not found");
 		return new Variable(selEnd);
 	}
-	
+		
 	private Variable setTableValue() {
 		ResultsTable rt = getRT(null);
 		setResult(rt);
 		return new Variable();
 	}
-	
+		
 	private Variable setTableColumn() {
 		String column = getFirstString();
-		interp.getComma();
-		Variable[] array = getArray();
+		Variable[] array = new Variable[0];
+		if (interp.nextToken()!=')') {
+			interp.getComma();
+			array = getArray();
+		}
 		ResultsTable rt = getResultsTable(getTitle());		
 		rt.setColumn(column, array);
+		rt.show(rt.getTitle());
 		return new Variable();
 	}
 	
@@ -6677,6 +6684,7 @@ public class Functions implements MacroConstants, Measurements {
 		String title = getTitleArg();
 		ResultsTable rt = getResultsTable(title);
 		rt.show(rt.getTitle());
+		unUpdatedTable = null;
 		if (rt==Analyzer.getResultsTable())
 			resultsPending = false;
 		return new Variable();
@@ -6696,6 +6704,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (getRT(title)==null) {
 			rt = new ResultsTable();
 			rt.show(title);
+			waitUntilActivated(title);
 		} else {
 			rt = getResultsTable(title);
 			rt.reset();
@@ -6705,6 +6714,20 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		return new Variable();
 	}
+	
+	private void waitUntilActivated(String title) {
+		long start = System.currentTimeMillis();
+		while (true) {
+			IJ.wait(5);
+			Frame frame = WindowManager.getFrontWindow();
+			String title2 = frame!=null?frame.getTitle():null;
+			if (title.equals(title2))
+				return;
+			if ((System.currentTimeMillis()-start)>200)
+				break;
+		}
+	}
+
 	
 	private void toFront(String title) {
 		if (title==null)
@@ -6745,6 +6768,7 @@ public class Functions implements MacroConstants, Measurements {
 		ResultsTable rt = getResultsTable(title);		
 		try {
 			rt.deleteColumn(column);
+			unUpdatedTable = rt;
 		} catch (Exception e) {
 			interp.error(e.getMessage());
 		}
@@ -6770,16 +6794,21 @@ public class Functions implements MacroConstants, Measurements {
 		ResultsTable rt = getResultsTable(title);		
 		try {
 			rt.renameColumn(oldName, newName);
+			unUpdatedTable = rt;
 		} catch (Exception e) {
 			interp.error(e.getMessage());
 		}
 		return new Variable();
 	}
 
-	private Variable showRowNumbers() {
+	private Variable showRowNumbers(boolean numbers) {
 		boolean show = (int)getFirstArg()!=0;
 		ResultsTable rt = getResultsTable(getTitle());
-		rt.showRowNumbers(show);
+		if (numbers)
+			rt.showRowNumbers(show);
+		else
+			rt.showRowIndexes(show);
+		unUpdatedTable = rt;
 		return new Variable();
 	}
 

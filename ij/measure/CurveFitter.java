@@ -6,6 +6,7 @@ import ij.util.Tools;
 import ij.util.IJMath;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.awt.Color;
 
 /** Curve fitting class based on the Simplex method in the Minimizer class
  *
@@ -610,6 +611,8 @@ public class CurveFitter implements UserFunction{
 	public String getResultString() {
 		String resultS =  "\nFormula: " + getFormula() +
 				"\nStatus: "+getStatusString();
+		if (getStatus()==Minimizer.INITIALIZATION_FAILURE)
+			return resultS;
 		if (!linearRegressionUsed) resultS += "\nNumber of completed minimizations: " + minimizer.getCompletedMinimizations();
 		resultS += "\nNumber of iterations: " + getIterations();
 		if (!linearRegressionUsed) resultS += " (max: " + minimizer.getMaxIterations() + ")";
@@ -1305,6 +1308,75 @@ public class CurveFitter implements UserFunction{
 			}
 		}
 		return index;
+	}
+	
+	public Plot getPlot() {
+		return getPlot(100);
+	}
+
+	public Plot getPlot(int points) {
+		int PLOT_WIDTH=600, PLOT_HEIGHT=350;
+		double[] x = getXPoints();
+		double[] y = getYPoints();
+		if (getStatus()==Minimizer.INITIALIZATION_FAILURE) {
+			Plot plot = new Plot(getFormula(),"X","Y");
+			plot.setColor(Color.RED, Color.RED);
+			plot.addPoints(x, y, PlotWindow.CIRCLE);
+			plot.setColor(Color.BLUE);
+			plot.setFrameSize(PLOT_WIDTH, PLOT_HEIGHT);
+			plot.addLabel(0.02, 0.1, getName());
+			plot.addLabel(0.02, 0.2, getStatusString());
+			return plot;
+		}
+		int npoints = points;
+		if (npoints<x.length)
+			npoints = x.length; //or 2*x.length-1; for 2 values per data point
+		if (npoints>1000)
+			npoints = 1000;
+		double[] a = Tools.getMinMax(x);
+		double xmin=a[0], xmax=a[1];
+		if (points==256) {
+			npoints = points;
+			xmin = 0;
+			xmax = 255;
+		}
+		a = Tools.getMinMax(y);
+		double ymin=a[0], ymax=a[1]; //y range of data points
+		float[] px = new float[npoints];
+		float[] py = new float[npoints];
+		double inc = (xmax-xmin)/(npoints-1);
+		double tmp = xmin;
+		for (int i=0; i<npoints; i++) {
+			px[i]=(float)tmp;
+			tmp += inc;
+		}
+		double[] params = getParams();
+		for (int i=0; i<npoints; i++)
+			py[i] = (float)f(params, px[i]);
+		a = Tools.getMinMax(py);
+		double dataRange = ymax - ymin;
+		ymin = Math.max(ymin - dataRange, Math.min(ymin, a[0])); //expand y range for curve, but not too much
+		ymax = Math.min(ymax + dataRange, Math.max(ymax, a[1]));
+		Plot plot = new Plot(getFormula(), "X", "Y", px, py);
+		plot.setLimits(xmin, xmax, ymin, ymax);
+		plot.setFrameSize(PLOT_WIDTH, PLOT_HEIGHT);
+		plot.setColor(Color.RED, Color.RED);
+		plot.addPoints(x, y, PlotWindow.CIRCLE);
+		plot.setColor(Color.BLUE);
+		StringBuffer legend = new StringBuffer(100);
+		legend.append(getName()); legend.append('\n');
+		legend.append(getFormula()); legend.append('\n');
+        double[] p = getParams();
+        int n = getNumParams();
+        char pChar = 'a';
+        for (int i = 0; i < n; i++) {
+			legend.append(pChar+" = "+IJ.d2s(p[i],5,9)+'\n');
+			pChar++;
+        }
+		legend.append("R^2 = "+IJ.d2s(getRSquared(),4)); legend.append('\n');
+		plot.addLabel(0.02, 0.1, legend.toString());
+		plot.setColor(Color.BLUE);
+		return plot;
 	}
 
 }

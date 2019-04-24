@@ -1,6 +1,7 @@
 package ij.plugin.frame;
 import java.awt.*;
 import java.awt.event.*;
+import ij.gui.ImageWindow;
 import ij.*;
 import ij.plugin.*;
 
@@ -48,8 +49,8 @@ public class PlugInDialog extends Dialog implements PlugIn, WindowListener, Focu
 
 	public void windowActivated(WindowEvent e) {
 		ImageJ ij = IJ.getInstance();
-		//if (IJ.isMacOSX() && ij!=null && !ij.isActive() && !(this instanceof ThresholdAdjuster))
-		//	ij.toFront();
+		if (IJ.isMacOSX() && ij!=null)
+			ij.toFront();
 		WindowManager.setWindow(this);
 	}
 

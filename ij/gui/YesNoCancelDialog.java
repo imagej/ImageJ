@@ -57,6 +57,7 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
 		pack();
 		GUI.center(this);
 		show();
+		IJ.wait(500);
 	}
     
 	public void actionPerformed(ActionEvent e) {
