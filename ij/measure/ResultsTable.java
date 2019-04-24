@@ -57,6 +57,7 @@ public class ResultsTable implements Cloneable {
 	private char delimiter = '\t';
 	private boolean headingSet; 
 	private boolean showRowNumbers;
+	private int baseRowNumber = 1;
 	private Hashtable stringColumns;
 	private boolean NaNEmptyCells;
 	private boolean quoteCommas;
@@ -583,7 +584,7 @@ public class ResultsTable implements Cloneable {
 		else
 			sb.setLength(0);
 		if (showRowNumbers) {
-			sb.append(Integer.toString(row+1));
+			sb.append(Integer.toString(row+baseRowNumber));
 			sb.append(delimiter);
 		}
 		if (rowLabels!=null) {
@@ -686,7 +687,7 @@ public class ResultsTable implements Cloneable {
 			}
 		}
 	}
-	
+		
 	private String getValueAsString(int column, int row) { 
 		double value = columns[column][row];
 		//IJ.log("getValueAsString1: col="+column+ ", row= "+row+", value= "+value+", size="+stringColumns.size());
@@ -769,6 +770,12 @@ public class ResultsTable implements Cloneable {
 
 	public void showRowNumbers(boolean showNumbers) {
 		showRowNumbers = showNumbers;
+		baseRowNumber = 1;
+	}
+
+	public void showRowIndexes(boolean showIndexes) {
+		showRowNumbers = showIndexes;
+		baseRowNumber = showIndexes?0:1;
 	}
 
 	private static DecimalFormat[] df;
@@ -1114,6 +1121,15 @@ public class ResultsTable implements Cloneable {
 			firstColumn = 1;
 		}
 		ResultsTable rt = new ResultsTable();
+		if (firstRow>=lines.length) { //empty table?
+			for (int i=0; i<headings.length; i++) {
+				if (headings[i]==null) continue;
+				int col = rt.getColumnIndex(headings[i]);
+				if (col==COLUMN_NOT_FOUND)
+					col = rt.getFreeColumn(headings[i]);
+			}
+			return rt;
+		}
 		rt.showRowNumbers(path.contains("Results"));
 		for (int i=firstRow; i<lines.length; i++) {
 			rt.incrementCounter();
@@ -1189,11 +1205,12 @@ public class ResultsTable implements Cloneable {
 	}
 
 	public void saveAs(String path) throws IOException {
-		if (size()==0 && lastColumn<0) return;
+		boolean emptyTable = size()==0 && lastColumn<0;
 		if (path==null || path.equals("")) {
 			SaveDialog sd = new SaveDialog("Save Table", "Table", Prefs.defaultResultsExtension());
 			String file = sd.getFileName();
-			if (file==null) return;
+			if (file==null)
+				return;
 			path = sd.getDirectory() + file;
 		}
 		boolean csv = path.endsWith(".csv") || path.endsWith(".CSV");
@@ -1205,7 +1222,7 @@ public class ResultsTable implements Cloneable {
 		boolean saveShowRowNumbers = showRowNumbers;
 		if (Prefs.dontSaveRowNumbers)	
 			showRowNumbers = false;
-		if (!Prefs.dontSaveHeaders) {
+		if (!Prefs.dontSaveHeaders && !emptyTable) {
 			String headings = getColumnHeadings();
 			pw.println(headings);
 		}

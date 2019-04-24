@@ -1938,9 +1938,9 @@ public class IJ {
 		} else if (format.indexOf("lut")!=-1) {
 			path = updateExtension(path, ".lut");
 			format = "LUT...";
-		} else if (format.indexOf("results")!=-1 || format.indexOf("measurements")!=-1) {
+		} else if (format.contains("results") || format.contains("measurements") || format.contains("table")) {
 			format = "Results...";
-		} else if (format.indexOf("selection")!=-1 || format.indexOf("roi")!=-1) {
+		} else if (format.contains("selection") || format.contains("roi")) {
 			path = updateExtension(path, ".roi");
 			format = "Selection...";
 		} else if (format.indexOf("xy")!=-1 || format.indexOf("coordinates")!=-1) {

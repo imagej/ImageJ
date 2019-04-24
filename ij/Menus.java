@@ -314,6 +314,7 @@ public class Menus {
 		addExample(submenu, "Custom Measurement", "Custom_Measurement.ijm");
 		addExample(submenu, "Synthetic Images", "Synthetic_Images.ijm");
 		addExample(submenu, "Spiral Rotation", "Spiral_Rotation.ijm");
+		addExample(submenu, "Curve Fitting", "Curve_Fitting.ijm");
 		submenu.addSeparator();
 		addExample(submenu, "Circle Tool", "Circle_Tool.ijm");
 		addExample(submenu, "Star Tool", "Star_Tool.ijm");
@@ -345,6 +346,7 @@ public class Menus {
 		addExample(submenu, "Terabyte VirtualStack", "Terabyte_VirtualStack.js");
 		addExample(submenu, "Event Listener", "Event_Listener.js");
 		addExample(submenu, "FFT Filter", "FFT_Filter.js");
+		addExample(submenu, "Curve Fitting", "Curve_Fitting.js");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("BeanShell");
