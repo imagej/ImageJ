@@ -515,14 +515,12 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 		contentPane.add(southPanel, BorderLayout.SOUTH);
 
-		Dimension screenSize = IJ.getScreenSize();
+		Rectangle screen = GUI.getMaxWindowBounds(IJ.getInstance());
 
 		frame.pack();
 
 		int dialogWidth = frame.getWidth();
 		int dialogHeight = frame.getHeight();
-		int screenWidth = (int)screenSize.getWidth();
-		int screenHeight = (int)screenSize.getHeight();
 
 		Point pos = imageJ.getLocationOnScreen();
 		Dimension size = imageJ.getSize();
@@ -532,18 +530,12 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		   would push the dialog off to the screen to any
 		   side, adjust it so that it's on the screen.
 		*/
-		int initialX = (int)pos.getX() + 10;
-		int initialY = (int)pos.getY() + size.height+10;
-
-		if (initialX+dialogWidth>screenWidth)
-			initialX = screenWidth-dialogWidth;
-		if (initialX<0)
-			initialX = 0;
-		if (initialY+dialogHeight>screenHeight)
-			initialY = screenHeight-dialogHeight;
-		if (initialY<0)
-			initialY = 0;
-
+		int initialX = pos.x + 10;
+		int initialY = pos.y + 10 + size.height;
+		
+		initialX = Math.max(screen.x, Math.min(initialX, screen.x+screen.width-dialogWidth));
+		initialY = Math.max(screen.y, Math.min(initialY, screen.y+screen.height-dialogHeight));
+		
 		frame.setLocation(initialX,initialY);
 		frame.setVisible(true);
 		frame.toFront();

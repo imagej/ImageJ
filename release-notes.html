@@ -5,6 +5,21 @@
 </head>
 <body>
 
+<li> <u>1.52p2 27 April 2019</u>
+<ul>
+<li> Thanks to Uwe Schmidt, improved the support for multiple screen setups:
+  <ul>
+  <li> Placement of first image window is more predictable.
+  <li> Reliably determine the correct screen for a given location or window,
+  for example to determine if a window can be enlarged.
+  <li> If there is ambiguity about which screen to use, the one that contains
+  the main ImageJ window will be chosen. For example
+  <i>Plugins&gt;Utilities&gt;Capture Screen</i> and <i>Windows&gt;Tile</i>
+  use the screen with the main ImageJ window.
+  <li> Code simplification, especially by removing special cases for Linux.
+  </ul>
+</ul>
+
 <li> <u>1.52o 23 April 2019</u>
 <ul>
 <li> Added the <i>Help&gt;Examples&gt;Macro&gt;Curve Fitting</i>

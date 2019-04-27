@@ -105,14 +105,16 @@ public class JavaProperties implements PlugIn {
 		list.add("  Current dir: "+OpenDialog.getDefaultDirectory());
 		list.add("  Sample images dir: "+Prefs.getImagesURL());
 		list.add("  Memory in use: "+IJ.freeMemory());	
-		Dimension d = IJ.getScreenSize();
-		list.add("  Screen size: " + d.width + "x" + d.height);
+		Rectangle s1 = GUI.getScreenBounds(); // primary screen
+		Rectangle s2 = GUI.getScreenBounds(IJ.getInstance()); // screen with "ImageJ" window
+		if (s1.equals(s2))
+			list.add("  Screen size: " + s1.width + "x" + s1.height);
+		else {
+			list.add("  Size of primary screen: " + s1.width + "x" + s1.height);
+			list.add("  Size of \"ImageJ\" screen: " + s2.width + "x" + s2.height);
+		}
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		String b1 = toString(GUI.getMaxWindowBounds());
-		String b2 = toString(ge.getMaximumWindowBounds());
-		if (!b2.equals(b1))
-			b1 += " (" + b2 + ")";
-		list.add("  Max window bounds: " + b1);
+		list.add("  Max window bounds: " + toString(GUI.getMaxWindowBounds(IJ.getInstance())));
 		listMonitors(ge, list);
 		System.gc();
 		doFullDump();
@@ -141,9 +143,6 @@ public class JavaProperties implements PlugIn {
 			}
 		}
 		if (n>1) {
-			Rectangle ub = GUI.getUnionOfBounds();
-			if (ub!=null)
-				list.add("  Union of bounds: " + toString(ub));
 			for (int i=0; i<n; i++)
 				list.add("  Monitor"+(i+1)+": " + str[i]);
 		}
