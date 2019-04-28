@@ -33,6 +33,8 @@ public class FHT extends FloatProcessor {
 	public int originalBitDepth;
 	/** Used by the FFT class. */
 	public ColorModel originalColorModel;
+	/** Used by the FFT class. */
+	public double powerSpectrumMean;
 
 	/** Constructs a FHT object from an ImageProcessor. Byte, short and RGB images 
 		are converted to float. Float images are duplicated. */
@@ -660,6 +662,7 @@ public class FHT extends FloatProcessor {
 		fht.originalHeight = originalHeight;
 		fht.originalBitDepth = originalBitDepth;		
 		fht.originalColorModel = originalColorModel;		
+		fht.powerSpectrumMean = powerSpectrumMean;		
 		return fht;
 	}
 		

@@ -245,6 +245,7 @@ public class FFT implements	 PlugIn, Measurements {
 			ImagePlus imp2 = new ImagePlus("FFT of "+imp.getTitle(), ps);
 			if (showOutput)
 				imp2.show((System.currentTimeMillis()-t0)+" ms");
+			fht.powerSpectrumMean = ps.getStats().mean;
 			imp2.setProperty("FHT", fht);
 			imp2.setCalibration(imp.getCalibration());
 			String properties = "Fast Hartley Transform\n";
@@ -317,12 +318,17 @@ public class FFT implements	 PlugIn, Measurements {
 			return;
 		float[] fht = (float[])ip.getPixels();
 		ImageProcessor mask = imp.getProcessor();
+		int bitDepth = mask.getBitDepth();
 		mask = mask.convertToByte(false);
 		if (mask.getWidth()!=ip.getWidth() || mask.getHeight()!=ip.getHeight())
 			return;
-		ImageStatistics stats = ImageStatistics.getStatistics(mask, MIN_MAX, null);
-		if (stats.histogram[0]==0 && stats.histogram[255]==0)
+		mask.resetRoi();
+		ImageStatistics stats = mask.getStats();
+		if (stats.histogram[0]==0 && stats.histogram[255]==0) {
+			if (bitDepth==8 && ip.powerSpectrumMean!=stats.mean)
+				IJ.showMessage("Inverse FFT", "No pixels have been set to 0 (black) or\n255 (white) so filtering will not be done.");
 			return;
+		}
 		boolean passMode = stats.histogram[255]!=0;
 		IJ.showStatus("Masking: "+(passMode?"pass":"filter"));
 		mask = mask.duplicate();

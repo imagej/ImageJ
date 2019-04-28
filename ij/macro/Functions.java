@@ -3325,7 +3325,7 @@ public class Functions implements MacroConstants, Measurements {
 			height = (int)getNextArg();
 		}
 		interp.getRightParen();
-		if (width==0&&height==0) {
+		if (width==0 && height==0) {
 			Window win = WindowManager.getActiveWindow();
 			if (win!=null)
 				win.setLocation(x, y);
@@ -6609,11 +6609,33 @@ public class Functions implements MacroConstants, Measurements {
 			return getSelectionEnd();
 		else if (name.equals("setSelection"))
 			return setSelection();
+		else if (name.equals("setLocAndSize") || name.equals("setLocationAndSize"))
+			return setTableLocAndSize();
 		else
 			interp.error("Unrecognized function name");
 		return new Variable();
 	}
 	
+	private Variable setTableLocAndSize() {
+		double x = getFirstArg();
+		double y = getNextArg();
+		double width = getNextArg();
+		double height = getNextArg();
+		String title = getTitle();
+		if (title==null) {
+			ResultsTable rt = getResultsTable(title);
+			title = rt.getTitle();
+		}
+		Frame frame = WindowManager.getFrame(title);
+		if (frame!=null) {
+			Point loc = frame.getLocation();
+			Dimension size = frame.getSize();
+			frame.setLocation(Double.isNaN(x)?loc.x:(int)x, Double.isNaN(y)?loc.y:(int)y);
+			frame.setSize(Double.isNaN(width)?size.width:(int)width, Double.isNaN(height)?size.height:(int)height);
+		}
+		return new Variable();
+	}
+
 	private Variable setSelection() {
 		interp.getLeftParen();
 		double from = interp.getExpression();
