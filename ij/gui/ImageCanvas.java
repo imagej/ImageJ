@@ -861,7 +861,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		//IJ.log("adjustSourceRect2: "+srcRect+" "+dstWidth+"  "+dstHeight);
 	}
 
-    /** Returns the size to which the window can be enlarged.
+    /** Returns the size to which the window can be enlarged, or null if it can't be enlarged.
      *  <code>newWidth, newHeight</code> is the size needed for showing the full image
      *  at the magnification needed */
 	protected Dimension canEnlarge(int newWidth, int newHeight) {
@@ -869,24 +869,20 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			return null;
 		ImageWindow win = imp.getWindow();
 		if (win==null) return null;
-		Rectangle r1 = win.getBounds();
-		Insets insets = win.getInsets();
-		Point loc = getLocation();
-		if (loc.x>insets.left+5 || loc.y>insets.top+5) {
-			r1.width = newWidth+insets.left+insets.right+ImageWindow.HGAP*2;
-			r1.height = newHeight+insets.top+insets.bottom+ImageWindow.VGAP*2+win.getSliderHeight();
-		} else {
-			r1.width = r1.width - dstWidth + newWidth;
-			r1.height = r1.height - dstHeight + newHeight;
-		}
+		Rectangle r = win.getBounds();
 		Rectangle max = GUI.getMaxWindowBounds(win);
-		boolean fitsHorizontally = r1.x+r1.width<max.x+max.width;
-		boolean fitsVertically = r1.y+r1.height<max.y+max.height;
-		if (!fitsHorizontally)
-			newWidth = (max.x + max.width) - (r1.x + 1) - (win.getBounds().width - dstWidth);
-		if (!fitsVertically)
-			newHeight = (max.y + max.height) - (r1.y + 1) - (win.getBounds().height - dstHeight);
-		return new Dimension(newWidth, newHeight);
+		double aspectRatio = (double)newHeight/newWidth;
+		int maxWidth = (max.x + max.width) - r.x - (r.width - dstWidth);
+		int maxHeight = (max.y + max.height) - r.y - (r.height - dstHeight);
+		if (newWidth > maxWidth) {
+			newWidth = maxWidth;
+			newHeight = (int) Math.round(aspectRatio * newWidth); 
+		}
+		if (newHeight > maxHeight) {
+			newHeight = maxHeight;
+			newWidth = (int) Math.round(newHeight / aspectRatio);
+		}
+		return new Dimension(Math.min(newWidth,maxWidth), Math.min(newHeight,maxHeight));
 	}
 
 	/**Zooms out by making the source rectangle (srcRect)  
