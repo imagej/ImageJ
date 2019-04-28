@@ -606,7 +606,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		imp.deleteRoi();
 		ip.resetRoi();
 		ip.reset();
-		if (displaySummary && IJ.getInstance()!=null)
+		if (displaySummary)
 			updateSliceSummary();
 		if (addToManager && roiManager!=null)
 			roiManager.setEditMode(imp, true);
