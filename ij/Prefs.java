@@ -643,15 +643,12 @@ public class Prefs {
 		double yloc = Tools.parseDouble(value.substring(index+1));
 		if (Double.isNaN(yloc)) return null;
 		Point p = new Point((int)xloc, (int)yloc);
-		Dimension screen = null;
-		if (IJ.debugMode)
-			screen = Toolkit.getDefaultToolkit().getScreenSize();
-		else
-			screen = IJ.getScreenSize();
-		if (p.x>screen.width-100 || p.y>screen.height-40)
-			return null;
-		else
+		// get bounds of screen that contains p (null if contained nowhere)
+		Rectangle bounds = GUI.getScreenBounds(p);
+		if (bounds!=null && p.x+100<=bounds.x+bounds.width && p.y+ 40<=bounds.y+bounds.height)
 			return p;
+		else
+			return null;
 	}
 
 	/** Save plugin preferences. */

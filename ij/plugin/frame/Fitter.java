@@ -66,7 +66,6 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		for (int i=0; i<dx.length; i++)
 			text += IJ.d2s(dx[i],2)+"  "+IJ.d2s(dy[i],2)+"\n";
 		textArea = new TextArea("",15,30,TextArea.SCROLLBARS_VERTICAL_ONLY);
-		//textArea.setBackground(Color.white);
 		textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		if (IJ.isLinux()) textArea.setBackground(Color.white);
 		textArea.append(text);

@@ -46,8 +46,7 @@ public class ScreenGrabber implements PlugIn {
 		ImagePlus imp = null;
 		try {
 			Robot robot = new Robot();
-			Dimension dimension = IJ.getScreenSize();
-			Rectangle r = new Rectangle(dimension);
+			Rectangle r = GUI.getScreenBounds(IJ.getInstance()); // screen showing "ImageJ" window
 			Image img = robot.createScreenCapture(r);
 			if (img!=null) imp = new ImagePlus("Screenshot", img);
 		} catch(Exception e) {}

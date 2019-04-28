@@ -11,9 +11,6 @@ public class GUI {
 	private static final Font DEFAULT_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
 	private static Color lightGray = new Color(240,240,240);
 	private static boolean isWindows8;
-	private static Rectangle maxBounds;
-	private static Rectangle zeroBasedMaxBounds;
-	private static Rectangle unionOfBounds;
 
 	static {
 		if (IJ.isWindows()) {
@@ -22,107 +19,118 @@ public class GUI {
 		}
 	}
 
-	/** Positions the specified window in the center of the screen. */
-	public static void center(Window win) {
-		if (win==null)
+	/** Positions the specified window in the center of the screen that contains target. */
+	public static void center(Window win, Component target) {
+		if (win == null)
 			return;
-		Rectangle bounds = getMaxWindowBounds();
-		Dimension window= win.getSize();
-		if (window.width==0)
+		Rectangle bounds = getMaxWindowBounds(target);
+		Dimension window = win.getSize();
+		if (window.width == 0)
 			return;
-		int left = bounds.x + (bounds.width-window.width)/2;
-		if (left<bounds.x) left=bounds.x;
-		int top = bounds.y + (bounds.height-window.height)/4;
-		if (top<bounds.y) top=bounds.y;
+		int left = bounds.x + Math.max(0, (bounds.width - window.width) / 2);
+		int top = bounds.y + Math.max(0, (bounds.height - window.height) / 4);
 		win.setLocation(left, top);
+	}
+
+	public static void center(Window win) {
+		center(win, win);
+	}
+	
+	private static java.util.List<GraphicsConfiguration> getScreenConfigs() {
+		java.util.ArrayList<GraphicsConfiguration> configs = new java.util.ArrayList<GraphicsConfiguration>();
+		for (GraphicsDevice device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
+			configs.add(device.getDefaultConfiguration());
+		}
+		return configs;
+	}
+	
+	/**
+	 * Get maximum bounds for the screen that contains a given point.
+	 * @param point Coordinates of point.
+	 * @param accountForInsets Deduct the space taken up by menu and status bars, etc. (after point is found to be inside bonds)
+	 * @return Rectangle of bounds or <code>null</code> if point not inside of any screen.
+	 */
+	public static Rectangle getScreenBounds(Point point, boolean accountForInsets) {
+		if (GraphicsEnvironment.isHeadless())
+			return new Rectangle(0,0,0,0);
+		for (GraphicsConfiguration config : getScreenConfigs()) {
+			Rectangle bounds = config.getBounds();
+			if (bounds != null && bounds.contains(point)) {
+				Insets insets = accountForInsets ? Toolkit.getDefaultToolkit().getScreenInsets(config) : null;
+				return shrinkByInsets(bounds, insets);
+			}
+		}
+		return null;		
+	}
+	
+	/**
+	 * Get maximum bounds for the screen that contains a given component.
+	 * @param component An AWT component located on the desired screen.
+	 * If <code>null</code> is provided, the default screen is used.
+	 * @param accountForInsets Deduct the space taken up by menu and status bars, etc.
+	 * @return Rectangle of bounds.
+	 */	
+	public static Rectangle getScreenBounds(Component component, boolean accountForInsets) {
+		if (GraphicsEnvironment.isHeadless())
+			return new Rectangle(0,0,0,0);
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();		
+		GraphicsConfiguration gc = component == null ? ge.getDefaultScreenDevice().getDefaultConfiguration() :
+													   component.getGraphicsConfiguration();   
+		Insets insets = accountForInsets ? Toolkit.getDefaultToolkit().getScreenInsets(gc) : null;
+		return shrinkByInsets(gc.getBounds(), insets);
+	}
+
+	public static Rectangle getScreenBounds(Point point) {
+		return getScreenBounds(point, false);
+	}		
+
+	public static Rectangle getScreenBounds(Component component) {
+		return getScreenBounds(component, false);
+	}			
+
+	public static Rectangle getScreenBounds() {
+		return getScreenBounds((Component)null);
+	}			
+
+	public static Rectangle getMaxWindowBounds(Point point) {
+		return getScreenBounds(point, true);
+	}
+
+	public static Rectangle getMaxWindowBounds(Component component) {
+		return getScreenBounds(component, true);
 	}
 	
 	public static Rectangle getMaxWindowBounds() {
-		if (GraphicsEnvironment.isHeadless())
-			return new Rectangle(0,0,0,0);
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		Rectangle bounds = ge.getMaximumWindowBounds();
-		if (IJ.isLinux() && unionOfBounds==null)
-			unionOfBounds = getUnionOfBounds(ge);
-		zeroBasedMaxBounds = null;
-		if (bounds.x>300 || bounds.equals(unionOfBounds))
-			bounds = getZeroBasedMonitor(ge, bounds);
-		if (bounds.x<0 || bounds.x>300 || bounds.width<300) {
-			Dimension screen = getScreenSize();
-			bounds = new Rectangle(0, 0, screen.width, screen.height);
-		}
-		if (IJ.debugMode) IJ.log("GUI.getMaxWindowBounds: "+bounds);
-		maxBounds = bounds;
-		return bounds;
-	}
-
-	public static Rectangle getZeroBasedMaxBounds() {
-		if (maxBounds==null)
-			getMaxWindowBounds();
-		//if (IJ.debugMode) IJ.log("GUI.getZeroBasedMaxBounds: "+zeroBasedMaxBounds);
-		return zeroBasedMaxBounds;
+		return getMaxWindowBounds((Component)null);
 	}
 	
-	private static Dimension getScreenSize() {
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice[] gd = ge.getScreenDevices();
-		GraphicsConfiguration[] gc = gd[0].getConfigurations();
-		Rectangle bounds = gc[0].getBounds();
-		if ((bounds.x==0&&bounds.y==0) || (IJ.isLinux()&&gc.length>1))
-			return new Dimension(bounds.width, bounds.height);
-		else
-			return Toolkit.getDefaultToolkit().getScreenSize();
+	private static Rectangle shrinkByInsets(Rectangle bounds, Insets insets) {
+		Rectangle shrunk = new Rectangle(bounds);
+		if (insets == null) return shrunk; 
+		shrunk.x += insets.left;
+		shrunk.y += insets.top;
+		shrunk.width -= insets.left + insets.right;
+		shrunk.height -= insets.top + insets.bottom;
+		return shrunk;
+	}
+	
+	public static Rectangle getZeroBasedMaxBounds() {
+		for (GraphicsConfiguration config : getScreenConfigs()) {
+			Rectangle bounds = config.getBounds();
+			if (bounds != null && bounds.x == 0 && bounds.y == 0)
+				return bounds;
+		}
+		return null;
 	}
 	
 	public static Rectangle getUnionOfBounds() {
-		if (unionOfBounds==null)
-			getMaxWindowBounds();
+		Rectangle unionOfBounds = new Rectangle();
+		for (GraphicsConfiguration config : getScreenConfigs()) {
+			unionOfBounds = unionOfBounds.union(config.getBounds());
+		}
 		return unionOfBounds;
 	}
-
-	private static Rectangle getUnionOfBounds(GraphicsEnvironment ge) {
-		Rectangle virtualBounds = new Rectangle();
-		GraphicsDevice[] gs = ge.getScreenDevices();
-		Rectangle bounds2 = null;
-		int nMonitors = 0;
-		for (int j = 0; j < gs.length; j++) {
-			GraphicsDevice gd = gs[j];
-			GraphicsConfiguration[] gc = gd.getConfigurations();
-			for (int i=0; i < gc.length; i++) {
-				Rectangle bounds = gc[i].getBounds();
-				if (bounds!=null && !bounds.equals(bounds2)) {
-					virtualBounds = virtualBounds.union(bounds);
-					nMonitors++;
-				}
-				bounds2 = bounds;
-			}
-		}
-		if (nMonitors<2)
-			virtualBounds = new Rectangle(0,0,1,1);
-		if (IJ.debugMode) IJ.log("GUI.getUnionOfBounds: "+nMonitors+" "+virtualBounds);
-		return virtualBounds;
-	} 
-
-	private static Rectangle getZeroBasedMonitor(GraphicsEnvironment ge, Rectangle bounds) {
-		GraphicsDevice[] gs = ge.getScreenDevices();
-		Rectangle bounds2 = null;
-		for (int j=0; j<gs.length; j++) {
-			GraphicsDevice gd = gs[j];
-			GraphicsConfiguration[] gc = gd.getConfigurations();
-			for (int i=0; i<gc.length; i++) {
-				bounds2 = gc[i].getBounds();
-				if (bounds2!=null && bounds.x==0)
-					break;
-			}
-		}
-		//if (IJ.debugMode) IJ.log("GUI.getZeroBasedMonitor: "+bounds2);
-		if (bounds2!=null) {
-			bounds = bounds2;
-			zeroBasedMaxBounds = bounds2;
-		}
-		return bounds;
-	}
-
+	
     static private Frame frame;
     
     /** Creates a white AWT Image image of the specified size. */
