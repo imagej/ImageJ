@@ -170,7 +170,7 @@ public class Prefs {
 	public static boolean splineFitLines;
 	/** Enable this option to workaround a bug with some Linux window
 		managers that causes windows to wander down the screen. */
-	public static boolean doNotSaveWindowLocations = true;
+	public static boolean doNotSaveWindowLocations;
 	/** Use JFileChooser setting changed/ */
 	public static boolean jFileChooserSettingChanged;
 	/** Convert tiff units to microns if pixel width is less than 0.0001 cm. */
@@ -643,8 +643,7 @@ public class Prefs {
 		double yloc = Tools.parseDouble(value.substring(index+1));
 		if (Double.isNaN(yloc)) return null;
 		Point p = new Point((int)xloc, (int)yloc);
-		// get bounds of screen that contains p (null if contained nowhere)
-		Rectangle bounds = GUI.getScreenBounds(p);
+		Rectangle bounds = GUI.getScreenBounds(p); // get bounds of screen that contains p
 		if (bounds!=null && p.x+100<=bounds.x+bounds.width && p.y+ 40<=bounds.y+bounds.height)
 			return p;
 		else

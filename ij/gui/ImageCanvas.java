@@ -868,12 +868,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (IJ.altKeyDown())
 			return null;
 		ImageWindow win = imp.getWindow();
-		if (win==null) return null;
+		if (win==null)
+			return null;
 		Rectangle r = win.getBounds();
 		Rectangle max = GUI.getMaxWindowBounds(win);
 		double aspectRatio = (double)newHeight/newWidth;
-		int maxWidth = (max.x + max.width) - r.x - (r.width - dstWidth);
-		int maxHeight = (max.y + max.height) - r.y - (r.height - dstHeight);
+		int maxWidth = (max.x + max.width) - r.x - (r.width - dstWidth) - max.width/60;
+		int maxHeight = (max.y + max.height) - r.y - (r.height - dstHeight) - max.height/60;
 		if (newWidth > maxWidth) {
 			newWidth = maxWidth;
 			newHeight = (int) Math.round(aspectRatio * newWidth); 

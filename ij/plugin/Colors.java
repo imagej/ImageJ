@@ -10,8 +10,8 @@ import java.util.*;
 
 /** This plugin implements most of the Edit/Options/Colors command. */
 public class Colors implements PlugIn, ItemListener {
-	public static final String[] colors = {"red","green","blue","magenta","cyan","yellow","orange","black","white","gray"};
-	private static final String[] colors2 = {"Red","Green","Blue","Magenta","Cyan","Yellow","Orange","Black","White","Gray"};
+	public static final String[] colors = {"red","green","blue","magenta","cyan","yellow","orange","black","white","gray","lightgray","darkgray","pink"};
+	private static final String[] colors2 = {"Red","Green","Blue","Magenta","Cyan","Yellow","Orange","Black","White","Gray","lightGray","darkGray","Pink"};
 	private Choice fchoice, bchoice, schoice;
 	private Color fc2, bc2, sc2;
 
@@ -81,6 +81,9 @@ public class Colors implements PlugIn, ItemListener {
 			else if (c.equals(Color.black)) name = colors2[7];
 			else if (c.equals(Color.white)) name = colors2[8];
 			else if (c.equals(Color.gray)) name = colors2[9];
+			else if (c.equals(Color.lightGray)) name = colors2[10];
+			else if (c.equals(Color.darkGray)) name = colors2[11];
+			else if (c.equals(Color.pink)) name = colors2[12];
 		} else {
 			if (c.equals(Color.red)) name = colors[0];
 			else if (c.equals(Color.green)) name = colors[1];
@@ -92,6 +95,9 @@ public class Colors implements PlugIn, ItemListener {
 			else if (c.equals(Color.black)) name = colors[7];
 			else if (c.equals(Color.white)) name = colors[8];
 			else if (c.equals(Color.gray)) name = colors[9];
+			else if (c.equals(Color.lightGray)) name = colors[10];
+			else if (c.equals(Color.darkGray)) name = colors[11];
+			else if (c.equals(Color.pink)) name = colors[12];
 		}
 		return name;
 	}
@@ -110,6 +116,9 @@ public class Colors implements PlugIn, ItemListener {
 		else if (name.contains(colors[4])) c = Color.cyan;
 		else if (name.contains(colors[6])) c = Color.orange;
 		else if (name.contains(colors[9])) c = Color.gray;
+		else if (name.contains(colors[10])) c = Color.lightGray;
+		else if (name.contains(colors[11])) c = Color.darkGray;
+		else if (name.contains(colors[12])) c = Color.pink;
 		return c;
 	}
 

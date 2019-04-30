@@ -155,10 +155,16 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		// load location and find associated screen bounds
 		Point loc = Prefs.getLocation(LOC_KEY);
 		Rectangle bounds = null;
-		if (loc != null)
-			bounds = GUI.getMaxWindowBounds(loc);		
+		if (loc!=null) {
+			bounds = GUI.getMaxWindowBounds(loc);
+			if (bounds!=null && (loc.x>bounds.x+bounds.width/3||loc.y>bounds.y+bounds.height/3)
+			&& (loc.x+width>bounds.x+bounds.width||loc.y+height>bounds.y+bounds.height)) {
+				loc = null;
+				bounds = null;
+			}
+		}		
 		// if loc not valid, use screen bounds of visible window (this) or of main window (ij) if not visible yet (updating == false)
-		Rectangle maxWindow = bounds != null ? bounds : GUI.getMaxWindowBounds(updating ? this : ij);  
+		Rectangle maxWindow = bounds!=null?bounds:GUI.getMaxWindowBounds(updating?this: ij);  
 		
 		if (WindowManager.getWindowCount()<=1)
 			xbase = -1;
@@ -400,7 +406,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		closed = true;
 		if (WindowManager.getWindowCount()==0)
 			{xloc = 0; yloc = 0;}
-		if (firstSmallWindow)
+		if (IJ.debugMode) IJ.log("close: "+firstSmallWindow);
 			Prefs.saveLocation(LOC_KEY, getLocation());
 		WindowManager.removeWindow(this);
 		if (ij!=null && ij.quitting())  // this may help avoid thread deadlocks
