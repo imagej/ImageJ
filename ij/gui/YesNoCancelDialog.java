@@ -55,7 +55,7 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
 		addWindowListener(this);
 		GUI.scale(this);
 		pack();
-		GUI.center(this);
+		GUI.centerOnImageJScreen(this);
 		show();
 	}
     

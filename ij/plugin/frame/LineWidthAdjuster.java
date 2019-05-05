@@ -72,7 +72,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		if (loc!=null)
 			setLocation(loc);
 		else
-			GUI.center(this);
+			GUI.centerOnImageJScreen(this);
 		setResizable(false);
 		show();
 		thread = new Thread(this, "LineWidthAdjuster");

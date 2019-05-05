@@ -84,7 +84,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		add("Center", textArea);
 		GUI.scale(this);
 		pack();
-		GUI.center(this);
+		GUI.centerOnImageJScreen(this);
 		if (showFrame)
 			show();
 		IJ.register(Recorder.class);

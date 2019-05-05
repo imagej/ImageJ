@@ -177,7 +177,7 @@ class PixelInspector extends PlugInFrame
 		if (loc!=null)
 			setLocation(loc);
 		else
-			GUI.center(this);
+			GUI.centerOnImageJScreen(this);
 		setResizable(false);
 		show();
 		toFront();

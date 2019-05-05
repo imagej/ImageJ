@@ -44,7 +44,7 @@ public class MemoryMonitor extends PlugInFrame {
 		if (loc!=null)
 			setLocation(loc);
 		else
-			GUI.center(this);
+			GUI.centerOnImageJScreen(this);
 		image = createImage(width,height);
 		g = (Graphics2D)image.getGraphics();
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);

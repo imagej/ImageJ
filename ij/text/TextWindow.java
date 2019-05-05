@@ -113,7 +113,8 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 			setLocation(loc);
 		} else {
 			setSize(width, height);
-			if (!IJ.debugMode) GUI.center(this);
+			if (!IJ.debugMode)
+				GUI.centerOnImageJScreen(this);
 		}
 		show();
 		WindowManager.setWindow(this);

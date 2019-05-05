@@ -1241,7 +1241,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			}
 			pack();
 			setup();
-			if (centerDialog) GUI.center(this);
+			if (centerDialog)
+				GUI.centerOnImageJScreen(this); 
 			setVisible(true);
 			recorderOn = Recorder.record;
 			IJ.wait(25);

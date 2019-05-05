@@ -78,7 +78,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.52p";
-	public static final String BUILD = "10"; 
+	public static final String BUILD = "18"; 
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -279,9 +279,7 @@ public class ImageJ extends Frame implements ActionListener,
 	public Point getPreferredLocation() {
 		int ijX = Prefs.getInt(IJ_X,-99);
 		int ijY = Prefs.getInt(IJ_Y,-99);
-		Rectangle maxBounds = GUI.getMaxWindowBounds(new Point(ijX, ijY));
-		if (maxBounds == null)
-			maxBounds = GUI.getMaxWindowBounds();
+		Rectangle maxBounds = GUI.getMaxWindowBounds();
 		//System.out.println("getPreferredLoc1: "+ijX+" "+ijY+" "+maxBounds);
 		if (ijX>=maxBounds.x && ijY>=maxBounds.y && ijX<(maxBounds.x+maxBounds.width-75))
 			return new Point(ijX, ijY);

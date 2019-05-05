@@ -86,7 +86,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 		GUI.scale(this);
 		pack();
 		if (location==null) {
-			GUI.center(this);
+			GUI.centerOnImageJScreen(this);
 			location = getLocation();
 		} else
 			setLocation(location);

@@ -72,7 +72,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		add("Center", textArea);
 		GUI.scale(this);
 		pack();
-		GUI.center(this);
+		GUI.centerOnImageJScreen(this);
 		show();
 		IJ.register(Fitter.class);
 	}

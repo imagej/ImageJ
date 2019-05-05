@@ -150,7 +150,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (loc!=null)
 			setLocation(loc);
 		else
-			GUI.center(this);
+			GUI.centerOnImageJScreen(this);
 		show();
 	}
 

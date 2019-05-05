@@ -47,7 +47,7 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 
 		GUI.scale(this);
 		pack();
-		GUI.center(this);
+		GUI.centerOnImageJScreen(this);
 		setResizable(false);
 		show();
 	}

@@ -194,6 +194,7 @@ public class Prefs {
 	static int transparentIndex = -1;
 	private static boolean resetPreferences;
 	private static double guiScale = 1.0;
+	private static Properties locKeys = new Properties();
 
 	/** Finds and loads the configuration file ("IJ_Props.txt")
 	 * and the preferences file ("IJ_Prefs.txt").
@@ -644,9 +645,15 @@ public class Prefs {
 		if (Double.isNaN(yloc)) return null;
 		Point p = new Point((int)xloc, (int)yloc);
 		Rectangle bounds = GUI.getScreenBounds(p); // get bounds of screen that contains p
-		if (bounds!=null && p.x+100<=bounds.x+bounds.width && p.y+ 40<=bounds.y+bounds.height)
+		if (bounds!=null && p.x+100<=bounds.x+bounds.width && p.y+ 40<=bounds.y+bounds.height) {
+			if (locKeys.get(key)==null) { // first time for this key? 
+				locKeys.setProperty(key, "");
+				Rectangle primaryScreen = GUI.getMaxWindowBounds();
+				if (!(primaryScreen.contains(p))) // verify location is on primary screen
+					return null;
+			}
 			return p;
-		else
+		} else
 			return null;
 	}
 

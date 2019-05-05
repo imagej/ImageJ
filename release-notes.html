@@ -4,7 +4,7 @@
 <title>Release Notes</title>
 </head>
 <body>
-
+Maximized image windows no longer revert to the main screen.
 <li> <u>1.52p2 30 April 2019</u>
 <ul>
 <li> Thanks to Uwe Schmidt, improved the support for multiple screen setups:
@@ -16,6 +16,8 @@
   the main ImageJ window will be chosen. For example
   <i>Plugins&gt;Utilities&gt;Capture Screen</i> and <i>Windows&gt;Tile</i>
   use the screen with the main ImageJ window.
+  <li> Dialogs are shown on the screen containing the main ImageJ window.
+  <li> Maximized image windows no longer revert to the main screen.
   <li> Improved behavior of "+" (<i>Image&gt;Zoom&gt;In</i>) command.
   <li> Code simplification, especially by removing special cases for Linux.
   </ul>
@@ -24,6 +26,12 @@
 <li> Thanks to Mikael Eriksson, fixed a bug that caused the
 particle analyzer's "Summary" table to not be accessible in macros
 run from the command line using the -batch option.
+<li> Thanks to Andrew Clark, fixed a bug that caused
+<i>Edit&gt;Undo</i> to delete all stack slices except the
+current one after using the flood fill tool.
+<li> Thanks to 'Nhthayer', fixed a bug that caused imageJ to
+incorrectly read TIFF stacks created by the Python
+tifffile package when the "imagej=True" option was used.
 </ul>
 
 <li> <u>1.52o 23 April 2019</u>

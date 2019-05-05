@@ -59,8 +59,9 @@ public class Undo {
 			else
 				reset();
 		} else if (what==MACRO) {	
-			impCopy = new ImagePlus(imp.getTitle(), imp.getProcessor().duplicate());
-			whatToUndo = TRANSFORM;
+			ipCopy = imp.getProcessor().duplicate();
+			calCopy = (Calibration)imp.getCalibration().clone();
+			impCopy = null;
 		} else if (what==COMPOUND_FILTER) {
 			ImageProcessor ip = imp.getProcessor();
 			if (ip!=null)
@@ -97,8 +98,7 @@ public class Undo {
 		calCopy = null;
 		roiCopy = null;
 		lutCopy = null;
-	}
-	
+	}	
 
 	public static void undo() {
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -153,6 +153,12 @@ public class Undo {
 				setup(ROI, imp); // setup redo
 				imp.setRoi(roiCopy2);
 				return; //don't reset
+			case MACRO:
+				if (ipCopy!=null) {
+					imp.setProcessor(ipCopy);
+					if (calCopy!=null) imp.setCalibration(calCopy);
+				}
+				break;
 			case OVERLAY_ADDITION:
 				Overlay overlay = imp.getOverlay();
 				if (overlay==null) 

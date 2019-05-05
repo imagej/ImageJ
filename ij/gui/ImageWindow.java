@@ -406,7 +406,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		closed = true;
 		if (WindowManager.getWindowCount()==0)
 			{xloc = 0; yloc = 0;}
-		if (IJ.debugMode) IJ.log("close: "+firstSmallWindow);
+		if (firstSmallWindow)
 			Prefs.saveLocation(LOC_KEY, getLocation());
 		WindowManager.removeWindow(this);
 		if (ij!=null && ij.quitting())  // this may help avoid thread deadlocks

@@ -2178,7 +2178,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public ImagePlus duplicate() {
 		Roi roi = getRoi();
 		deleteRoi();
-		ImagePlus imp2 =(new Duplicator()).run(this);
+		ImagePlus imp2 = (new Duplicator()).run(this);
 		setRoi(roi);
 		return imp2;
 	}

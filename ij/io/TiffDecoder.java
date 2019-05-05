@@ -206,7 +206,8 @@ public class TiffDecoder {
             if (index2>0) {
                 String images = id.substring(index1+7,index2);
                 int n = (int)Tools.parseDouble(images, 0.0);
-                if (n>1) fi.nImages = n;
+                if (n>1 && fi.compression==FileInfo.COMPRESSION_NONE)
+                	fi.nImages = n;
             }
         }
 	}

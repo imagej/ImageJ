@@ -43,7 +43,7 @@ public class MessageDialog extends Dialog implements ActionListener, KeyListener
 		if (ij.IJ.isMacintosh())
 			setResizable(false);
 		pack();
-		GUI.center(this);
+		GUI.centerOnImageJScreen(this);
 		addWindowListener(this);
 		show();
 	}

@@ -55,8 +55,10 @@ public class HyperStackConverter implements PlugIn {
 	*/
 	public static ImagePlus toHyperStack(ImagePlus imp, int c, int z, int t, String order, String mode) {
 		int n = imp.getStackSize();
-		if (n==1 || imp.getBitDepth()==24)
-			throw new IllegalArgumentException("Non-RGB stack required");
+		if (n==1)
+			throw new IllegalArgumentException("Stack required");
+		if (imp.getBitDepth()==24 && mode.equalsIgnoreCase("composite"))
+			mode = "color";
 		if (c*z*t!=n)
 			throw new IllegalArgumentException("C*Z*T not equal stack size");
 		imp.setDimensions(c, z, t);

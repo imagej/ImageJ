@@ -72,7 +72,7 @@ public class HTMLDialog extends JDialog implements ActionListener, KeyListener, 
 		if (dialogD.height > 0.80*screenD.height && screenD.height>400)  //max 80% of screen height
 			dialogD.height = (int)(0.80*screenD.height);
 		setSize(dialogD);
-		GUI.center(this);
+		GUI.centerOnImageJScreen(this);
 		if (!modal) WindowManager.addWindow(this);
 		show();
 	}

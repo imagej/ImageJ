@@ -43,7 +43,7 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 		addKeyListener(this);
 		pack();
 		if (xloc==-1)
-			GUI.center(this);
+			GUI.centerOnImageJScreen(this);
 		else
 			setLocation(xloc, yloc);
 		setAlwaysOnTop(true);

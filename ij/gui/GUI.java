@@ -31,6 +31,12 @@ public class GUI {
 		int top = bounds.y + Math.max(0, (bounds.height - window.height) / 4);
 		win.setLocation(left, top);
 	}
+	
+	/** Positions the specified window in the center of the
+		 screen containing the "ImageJ" window. */
+	public static void centerOnImageJScreen(Window win) {
+		center(win, IJ.getInstance());
+	}
 
 	public static void center(Window win) {
 		center(win, win);
