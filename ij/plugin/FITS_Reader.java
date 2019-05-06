@@ -21,21 +21,14 @@ public class FITS_Reader extends ImagePlus implements PlugIn {
 		IJ.showStatus("Opening: " + directory + fileName);
 		FitsDecoder fd = new FitsDecoder(directory, fileName);
 		FileInfo fi = null;
-		try {fi = fd.getInfo();}
-		catch (IOException e) {}
+		try {
+			fi = fd.getInfo();
+		} catch (IOException e) {}
 		if (fi!=null && fi.width>0 && fi.height>0 && fi.offset>0) {
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.openImage();
-			if(fi.nImages==1) {
-			  ImageProcessor ip = imp.getProcessor();			   
-			  ip.flipVertical(); // origin is at bottom left corner
-			  setProcessor(fileName, ip);
-			} else {
-			  ImageStack stack = imp.getStack(); // origin is at bottom left corner				 
-			  for(int i=1; i<=stack.getSize(); i++)
-				  stack.getProcessor(i).flipVertical();
-			  setStack(fileName, stack);
-			}
+			ImageStack stack = imp.getStack(); // origin is at bottom left corner				 
+			setStack(fileName, stack);
 			Calibration cal = imp.getCalibration();
 			if (fi.fileType==FileInfo.GRAY16_SIGNED && fd.bscale==1.0 && fd.bzero==32768.0)
 				cal.setFunction(Calibration.NONE, null, "Gray Value");
@@ -145,6 +138,8 @@ class FitsDecoder {
 			if (count>360 && fi.width==0)
 				{f.close(); return null;}
 		}
+		if (fi.pixelWidth==1.0 && fi.pixelDepth==1)
+			fi.unit = "pixel";
 
 		f.close();
 		fi.offset = 2880+2880*(((count*80)-1)/2880);

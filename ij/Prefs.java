@@ -649,8 +649,11 @@ public class Prefs {
 			if (locKeys.get(key)==null) { // first time for this key? 
 				locKeys.setProperty(key, "");
 				Rectangle primaryScreen = GUI.getMaxWindowBounds();
-				if (!(primaryScreen.contains(p))) // verify location is on primary screen
-					return null;
+				ImageJ ij = IJ.getInstance();
+				Point ijLoc = ij!=null?ij.getLocation():null;
+				//System.out.println("getLoc: "+key+" "+(ijLoc!=null&&primaryScreen.contains(ijLoc)) + "  "+!primaryScreen.contains(p));
+				if ((ijLoc!=null&&primaryScreen.contains(ijLoc)) && !primaryScreen.contains(p))
+					return null; // return null if "ImageJ" window on primary screen and this location is not
 			}
 			return p;
 		} else
