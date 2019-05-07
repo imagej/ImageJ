@@ -195,6 +195,7 @@ public class Functions implements MacroConstants, Measurements {
 		double value = 0.0;
 		switch (type) {
 			case GET_PIXEL: value = getPixel(); break;
+			case GETV: value = getPixelValue(); break;
 			case ABS: case COS: case EXP: case FLOOR: case LOG: case ROUND:
 			case SIN: case SQRT: case TAN: case ATAN: case ASIN: case ACOS:
 				value = math(type);
@@ -897,6 +898,12 @@ public class Functions implements MacroConstants, Measurements {
 				value = ip.getf((int)a1);
 		}
 		return value;
+	}
+	
+	double getPixelValue() {
+		int x = (int)getFirstArg();
+		int y = (int)getLastArg();
+		return getProcessor().getPixelValue(x,y);
 	}
 
 	void setZCoordinate() {

@@ -27,8 +27,7 @@ public class FITS_Reader extends ImagePlus implements PlugIn {
 		if (fi!=null && fi.width>0 && fi.height>0 && fi.offset>0) {
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.openImage();
-			ImageStack stack = imp.getStack(); // origin is at bottom left corner				 
-			setStack(fileName, stack);
+			setStack(fileName, imp.getStack());
 			Calibration cal = imp.getCalibration();
 			if (fi.fileType==FileInfo.GRAY16_SIGNED && fd.bscale==1.0 && fd.bzero==32768.0)
 				cal.setFunction(Calibration.NONE, null, "Gray Value");

@@ -1740,13 +1740,23 @@ public abstract class ImageProcessor implements Cloneable {
 	public abstract Object getPixelsCopy();
 
 	/** Returns the value of the pixel at (x,y). For RGB images, the
-		argb values are packed in an int. For float images, the
-		the value must be converted using Float.intBitsToFloat().
-		Returns zero if either the x or y coodinate is out of range. */
+	 * argb values are packed in an int. For float images, the
+	 * the value must be converted using Float.intBitsToFloat().
+	 * Returns zero if either the x or y coodinate is out of range.
+	 * Use <i>getv(x,y)</i> to get calibrated values from
+	 * 8-bit and 16-bit images, to get intensity values from RGB
+	 * images and to get float values from 32-bit images.
+	 * @see ImageProcessor#getPixelValue
+	*/
 	public abstract int getPixel(int x, int y);
 
-	public int getPixelCount() {
-		return width*height;
+	/** Returns the value of the pixel at <i>(x,y)</i>, a calibrated
+	 *  value from 8-bit and 16-bit images, an intensity value
+	 *  from RGB images and a double value from 32-bit images.
+	 * @see ImageProcessor#getPixel
+	*/
+	public double getv(int x, int y) {
+		return getPixelValue(x,y);
 	}
 
 	/** This is a faster version of getPixel() that does not do bounds checking. */
@@ -1775,6 +1785,10 @@ public abstract class ImageProcessor implements Cloneable {
 	public abstract void setf(int x, int y, float value);
 
 	public abstract void setf(int index, float value);
+
+	public int getPixelCount() {
+		return width*height;
+	}
 
 	/** Returns a copy of the pixel data as a 2D int array with
 		dimensions [x=0..width-1][y=0..height-1]. With RGB
@@ -1839,9 +1853,10 @@ public abstract class ImageProcessor implements Cloneable {
 	}
 
     /** Returns the samples for the pixel at (x,y) in an int array.
-    	RGB pixels have three samples, all others have one.
-		Returns zeros if the the coordinates are not in bounds.
-		iArray is an optional preallocated array. */
+	 * RGB pixels have three samples, all others have one.
+	 * Returns zeros if the the coordinates are not in bounds.
+	 * iArray is an optional preallocated array.
+	*/
 	public int[] getPixel(int x, int y, int[] iArray) {
 		if (iArray==null) iArray = new int[1];
 		iArray[0] = getPixel(x, y);
@@ -1966,10 +1981,12 @@ public abstract class ImageProcessor implements Cloneable {
 		using Float.floatToIntBits(). */
 	public abstract void putPixel(int x, int y, int value);
 
+
 	/** Returns the value of the pixel at (x,y). For byte and short
-		images, returns a calibrated value if a calibration table
-		has been set using setCalibraionTable(). For RGB images,
-		returns the luminance value. */
+	 * images, returns a calibrated value if a calibration table
+	 * has been set using setCalibraionTable(). For RGB images,
+	 * returns the luminance value.
+	*/
 	public abstract float getPixelValue(int x, int y);
 
 	/** Stores the specified value at (x,y). */

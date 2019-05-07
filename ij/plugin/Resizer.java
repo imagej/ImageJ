@@ -110,7 +110,8 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			}
 			newWidth = (int)gd.getNextNumber();
 			newHeight = (int)gd.getNextNumber();
-			z2 = (int)gd.getNextNumber();
+			if (z1==stackSize || (z1>1 && z1<stackSize))
+				z2 = (int)gd.getNextNumber();
 			if (t1>1)
 				t2 = (int)gd.getNextNumber();
 			if (gd.invalidNumber()) {

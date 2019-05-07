@@ -5,7 +5,7 @@
 </head>
 <body>
 Maximized image windows no longer revert to the main screen.
-<li> <u>1.52p21 06 May 2019</u>
+<li> <u>1.52p22 07 May 2019</u>
 <ul>
 <li> Thanks to Uwe Schmidt, improved the support for multiple screen setups:
   <ul>
@@ -21,8 +21,10 @@ Maximized image windows no longer revert to the main screen.
   <li> Improved behavior of "+" (<i>Image&gt;Zoom&gt;In</i>) command.
   <li> Code simplification, especially by removing special cases for Linux.
   </ul>
-<li> Thanks to 'alex', the FITS Reader does not flip images vertically
-so inspection of pixel values produces the correct values.
+<li> Thanks to 'alex', the FITS Reader no longer flips images vertically
+so inspection of pixels will produce the expected values.
+<li> Added the getv(x,y) macro function and the ImageProcessor.getv(x,y)
+method.
 <li> Thanks to "Herbie", restored macro support for the
 "lightGray", "darkGray" and "pink" named colors.
 <li> Thanks to Mikael Eriksson, fixed a bug that caused the
@@ -34,6 +36,9 @@ current one after using the flood fill tool.
 <li> Thanks to 'Nhthayer', fixed a bug that caused imageJ to
 incorrectly read TIFF stacks created by the Python
 tifffile package when the "imagej=True" option was used.
+<li> Thanks to Marcel Boeglin, fixed a bug that caused
+the <i>Image&gt;Adjust&gt;Size</i> command to throw
+on exception with XYCT hyperstacks.
 </ul>
 
 <li> <u>1.52o 23 April 2019</u>
