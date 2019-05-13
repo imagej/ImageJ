@@ -1235,6 +1235,14 @@ public class ResultsTable implements Cloneable {
 		delimiter = '\t';
 	}
 	
+	/** Returns the default headings ("Area","Mean","StdDev", etc.). */
+	public static String[] getDefaultHeadings() {
+		String[] headings = new String[defaultHeadings.length];
+		for (int i=0; i<defaultHeadings.length; i++)
+			headings[i] = defaultHeadings[i];
+		return headings;
+	}
+
 	public static String getDefaultHeading(int index) {
 		if (index>=0 && index<defaultHeadings.length)
 			return defaultHeadings[index];

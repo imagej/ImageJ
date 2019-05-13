@@ -440,7 +440,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (roi!=null) roi.setImage(this);
 			if (overlay!=null && getCanvas()!=null)
 				getCanvas().setOverlay(overlay);
-			draw();
 			IJ.showStatus(statusMessage);
 			if (IJ.isMacro()) { // wait for window to be activated
 				long start = System.currentTimeMillis();

@@ -5,7 +5,7 @@
 </head>
 <body>
 Maximized image windows no longer revert to the main screen.
-<li> <u>1.52p22 07 May 2019</u>
+<li> <u>1.52p25 13 May 2019</u>
 <ul>
 <li> Thanks to Uwe Schmidt, improved the support for multiple screen setups:
   <ul>
@@ -23,6 +23,8 @@ Maximized image windows no longer revert to the main screen.
   </ul>
 <li> Thanks to 'alex', the FITS Reader no longer flips images vertically
 so inspection of pixels will produce the expected values.
+<li> Thanks to Jerome Mutterer, added the getValue(measurement) macro function,
+where ’measurement’ is “Area”, “Mean”, “Skew”, etc.
 <li> Added the getv(x,y) macro function and the ImageProcessor.getv(x,y)
 method.
 <li> Thanks to "Herbie", restored macro support for the
@@ -39,6 +41,9 @@ tifffile package when the "imagej=True" option was used.
 <li> Thanks to Marcel Boeglin, fixed a bug that caused
 the <i>Image&gt;Adjust&gt;Size</i> command to throw
 on exception with XYCT hyperstacks.
+<li> Thanks to Francisco Romanos, fixed a bug that caused
+the run("Scale...",options) macro function to ignore the
+'interpolate' options keyword.
 </ul>
 
 <li> <u>1.52o 23 April 2019</u>

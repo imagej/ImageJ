@@ -75,6 +75,7 @@ public class ColorProcessor extends ImageProcessor {
 		if (image==null) {
 			image = new BufferedImage(cm, rgbRaster, false, null);
 		}
+		//ij.IJ.log("image: "+image);
 		return image;
 	}
 
@@ -396,7 +397,7 @@ public class ColorProcessor extends ImageProcessor {
 				return (float)(r*rWeight + g*gWeight + b*bWeight);
 		}
 		else 
-			return 0;
+			return Float.NaN;
 	}
 
 

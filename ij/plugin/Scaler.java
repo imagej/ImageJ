@@ -198,9 +198,9 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		String options = Macro.getOptions();
 		boolean isMacro = options!=null;
 		if (isMacro) {
-			if (options.indexOf(" interpolate")!=-1)
-				options.replaceAll(" interpolate", " interpolation=Bilinear");
-			else if (options.indexOf(" interpolation=")==-1)
+			if (options.contains(" interpolate"))
+				options = options.replaceAll(" interpolate", " interpolation=Bilinear");
+			else if (!options.contains(" interpolation="))
 				options = options+" interpolation=None";
 			if (options.contains("width=")&&options.contains(" height=")) {
 				xstr = "-";

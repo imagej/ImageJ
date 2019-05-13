@@ -4867,9 +4867,28 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (key.equals("done")) {
 			return interp.done?1:0;
 		} else {
+			String[] headings = ResultsTable.getDefaultHeadings();
+			for (int i=0; i<headings.length; i++) {
+				if (key.equals(headings[i]))
+					return getMeasurementValue(headings[i]);
+			}
 			interp.error("Invalid key");
 			return 0.0;
 		}
+	}
+	
+	double getMeasurementValue(String heading) {
+		ImagePlus imp = getImage();
+		int measurements = ALL_STATS + SLICE;
+		ImageStatistics stats = imp.getStatistics(measurements);
+		ResultsTable rt = new ResultsTable();
+		Analyzer analyzer = new Analyzer(imp, measurements, rt);
+		analyzer.saveResults(stats, imp.getRoi());
+		double value = Double.NaN;
+		try {
+			value = rt.getValue(heading, 0);
+		} catch (Exception e) {};
+		return value;
 	}
 
 	double getColorValue(Color color) {

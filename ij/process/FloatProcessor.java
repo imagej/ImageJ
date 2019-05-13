@@ -387,7 +387,7 @@ public class FloatProcessor extends ImageProcessor {
 		if (x>=0 && x<width && y>=0 && y<height)
 			return pixels[y*width + x];
 		else
-			return 0f;
+			return Float.NaN;
 	}
 
 	/** Draws a pixel in the current foreground color. */

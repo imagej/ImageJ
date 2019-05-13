@@ -398,7 +398,7 @@ public class ShortProcessor extends ImageProcessor {
 			else
 				return cTable[pixels[y*width + x]&0xffff];
 		} else
-			return 0f;
+			return Float.NaN;
 	}
 
 	/**	Returns a reference to the short array containing this image's

@@ -317,7 +317,7 @@ public class ByteProcessor extends ImageProcessor {
 			else
 				return cTable[pixels[y*width + x]&0xff];
 		} else
-			return 0f;
+			return Float.NaN;
 	}
 
 	/** Sets the foreground drawing color. */
