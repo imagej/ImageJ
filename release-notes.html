@@ -5,7 +5,7 @@
 </head>
 <body>
 Maximized image windows no longer revert to the main screen.
-<li> <u>1.52p25 13 May 2019</u>
+<li> <u>1.52p26 14 May 2019</u>
 <ul>
 <li> Thanks to Uwe Schmidt, improved the support for multiple screen setups:
   <ul>
@@ -23,10 +23,11 @@ Maximized image windows no longer revert to the main screen.
   </ul>
 <li> Thanks to 'alex', the FITS Reader no longer flips images vertically
 so inspection of pixels will produce the expected values.
-<li> Thanks to Jerome Mutterer, added the getValue(measurement) macro function,
-where ’measurement’ is “Area”, “Mean”, “Skew”, etc.
-<li> Added the getv(x,y) macro function and the ImageProcessor.getv(x,y)
-method.
+<li> Thanks to Jerome Mutterer, added the getValue(measurement)
+macro function, where 'measurement' is "Mean", "Median", "Feret", etc.
+(<a href="http://wsr.imagej.net/macros/Colorize_ROIs_by_Measurement.txt">example</a>).
+<li> Added the getValue(x,y) macro function and
+the ImageProcessor.getValue(x,y) method.
 <li> Thanks to "Herbie", restored macro support for the
 "lightGray", "darkGray" and "pink" named colors.
 <li> Thanks to Mikael Eriksson, fixed a bug that caused the
@@ -44,6 +45,9 @@ on exception with XYCT hyperstacks.
 <li> Thanks to Francisco Romanos, fixed a bug that caused
 the run("Scale...",options) macro function to ignore the
 'interpolate' options keyword.
+<li> Thanks to Glen MacDonald and Curtis Rueden, fixed a 
+bug that sometimes caused macros in the "More Tools" (>>)
+menu to be sorted randomly.
 </ul>
 
 <li> <u>1.52o 23 April 2019</u>

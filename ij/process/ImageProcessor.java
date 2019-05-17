@@ -1743,21 +1743,12 @@ public abstract class ImageProcessor implements Cloneable {
 	 * argb values are packed in an int. For float images, the
 	 * the value must be converted using Float.intBitsToFloat().
 	 * Returns zero if either the x or y coodinate is out of range.
-	 * Use <i>getv(x,y)</i> to get calibrated values from
+	 * Use <i>getValue(x,y)</i> to get calibrated values from
 	 * 8-bit and 16-bit images, to get intensity values from RGB
 	 * images and to get float values from 32-bit images.
-	 * @see ImageProcessor#getPixelValue
+	 * @see ImageProcessor#getValue
 	*/
 	public abstract int getPixel(int x, int y);
-
-	/** Returns the value of the pixel at <i>(x,y)</i>, a calibrated
-	 *  value from 8-bit and 16-bit images, an intensity value
-	 *  from RGB images and a double value from 32-bit images.
-	 * @see ImageProcessor#getPixel
-	*/
-	public double getv(int x, int y) {
-		return getPixelValue(x,y);
-	}
 
 	/** This is a faster version of getPixel() that does not do bounds checking. */
 	public abstract int get(int x, int y);
@@ -1981,6 +1972,17 @@ public abstract class ImageProcessor implements Cloneable {
 		using Float.floatToIntBits(). */
 	public abstract void putPixel(int x, int y, int value);
 
+
+	/** Returns the value of the pixel at <i>(x,y)</i>, a calibrated
+	 *  value from 8-bit and 16-bit images, an intensity value
+	 *  from RGB images and a double value from 32-bit images.
+	 * This is an alias for getPixelValue(x,y).
+	 * @see ImageProcessor#getPixel
+	 * @see ImageProcessor#getPixelValue
+	*/
+	public double getValue(int x, int y) {
+		return getPixelValue(x,y);
+	}
 
 	/** Returns the value of the pixel at (x,y). For byte and short
 	 * images, returns a calibrated value if a calibration table

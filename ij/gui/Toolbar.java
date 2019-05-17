@@ -1148,6 +1148,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (!applet && f.exists() && f.isDirectory()) {
 			list = f.list();
 			if (list==null) return;
+			Arrays.sort(list);
 		} else
 			list = new String[0];
 		switchPopup.removeAll();

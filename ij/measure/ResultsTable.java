@@ -623,7 +623,7 @@ public class ResultsTable implements Cloneable {
 			return labels;
 		}
 		int col = getColumnIndex(column);
-		if (col==COLUMN_NOT_FOUND)
+		if (col==COLUMN_NOT_FOUND || columns[col]==null)
 			throw new IllegalArgumentException("\""+column+"\" column not found");
 		boolean firstValueNumeric = true;
 		int nValues = size();
@@ -1237,10 +1237,7 @@ public class ResultsTable implements Cloneable {
 	
 	/** Returns the default headings ("Area","Mean","StdDev", etc.). */
 	public static String[] getDefaultHeadings() {
-		String[] headings = new String[defaultHeadings.length];
-		for (int i=0; i<defaultHeadings.length; i++)
-			headings[i] = defaultHeadings[i];
-		return headings;
+		return defaultHeadings;
 	}
 
 	public static String getDefaultHeading(int index) {
