@@ -816,7 +816,7 @@ public abstract class ImageProcessor implements Cloneable {
 		if (roi==null)
 			resetRoi();
 		else {
-			if (roi instanceof PointRoi && ((PointRoi)roi).getNCoordinates()==1) {
+			if ((roi instanceof PointRoi) && roi.size()==1) {
 				setMask(null);
 				FloatPolygon p = roi.getFloatPolygon();
 				setRoi((int)p.xpoints[0], (int)p.ypoints[0], 1, 1);
@@ -1974,8 +1974,8 @@ public abstract class ImageProcessor implements Cloneable {
 
 
 	/** Returns the value of the pixel at <i>(x,y)</i>, a calibrated
-	 *  value from 8-bit and 16-bit images, an intensity value
-	 *  from RGB images and a double value from 32-bit images.
+	 * value from 8-bit and 16-bit images, an intensity value
+	 * from RGB images and a double value from 32-bit images.
 	 * This is an alias for getPixelValue(x,y).
 	 * @see ImageProcessor#getPixel
 	 * @see ImageProcessor#getPixelValue
@@ -2670,19 +2670,23 @@ public abstract class ImageProcessor implements Cloneable {
 	 * including histogram, area, mean, min and max, standard deviation,
 	 * and mode. Use the setRoi(Roi) method to limit statistics to
 	 * a non-rectangular area.
-	 * @see #setRoi
+	 * @return an {@link ij.process.ImageStatistics} object
+	 * @see #setRoi(Roi)
 	 * @see #getStatistics
-	 * @see ImageStatistics
+	 * @see ij.ImagePlus#getStatistics
 	*/
 	public ImageStatistics getStats() {
 		return ImageStatistics.getStatistics(this);
 	}
 
-	/** This method calculates and returns complete uncalibrated statistics for
-	 * this image or ROI but it is up to 70 times slower than getStats().
-	 * @see #setRoi
+	/** Calculates and returns complete uncalibrated (raw)
+	 * statistics for this image or ROI but it is up to 70 times
+	 * slower than getStats(). Use the setRoi(Roi) method to
+	 * limit statistics to a non-rectangular area.
+	 * @return an {@link ij.process.ImageStatistics} object
+	 * @see #setRoi(Roi)
 	 * @see #getStats
-	 * @see ImageStatistics
+	 * @see ij.ImagePlus#getAllStatistics
 	*/
 	public ImageStatistics getStatistics() {
 		return ImageStatistics.getStatistics(this, Measurements.ALL_STATS, null);

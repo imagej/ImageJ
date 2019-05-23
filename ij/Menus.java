@@ -1681,4 +1681,17 @@ public class Menus {
 		popup.setFont(font);
 	}
 	
+	/** Adds a command to the ImageJ menu bar. */
+	public static void add(String menuPath, String plugin) {
+		if (pluginsTable==null)
+			return;
+		int index = menuPath.lastIndexOf(">");
+		if (index==-1 || index==menuPath.length()-1)
+			return;
+		String label = menuPath.substring(index+1, menuPath.length());
+		menuPath = menuPath.substring(0, index);
+		pluginsTable.put(label, plugin);
+		addItem(getMenu(menuPath), label, 0, false);
+	}
+	
 }

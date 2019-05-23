@@ -5,7 +5,7 @@
 </head>
 <body>
 Maximized image windows no longer revert to the main screen.
-<li> <u>1.52p26 14 May 2019</u>
+<li> <u>1.52p36 23 May 2019</u>
 <ul>
 <li> Thanks to Uwe Schmidt, improved the support for multiple screen setups:
   <ul>
@@ -30,6 +30,10 @@ macro function, where 'measurement' is "Mean", "Median", "Feret", etc.
 the ImageProcessor.getValue(x,y) method.
 <li> Thanks to "Herbie", restored macro support for the
 "lightGray", "darkGray" and "pink" named colors.
+<li> Thanks to Somsubhro Chaudhuri, added the getValue() macro
+function and the Rotator.getAngle() method.
+<li> Thanks to Wilhelm Burger, added the Menus.add(menuPath,class)
+method.
 <li> Thanks to Mikael Eriksson, fixed a bug that caused the
 particle analyzer's "Summary" table to not be accessible in macros
 run from the command line using the -batch option.
@@ -48,6 +52,9 @@ the run("Scale...",options) macro function to ignore the
 <li> Thanks to Glen MacDonald and Curtis Rueden, fixed a 
 bug that sometimes caused macros in the "More Tools" (>>)
 menu to be sorted randomly.
+<li> Thanks to Philippe Carl, fixed a bug that caused
+ImagePlus.getStatistic() and ImageProcessor.getStatistic() to
+not treat one point selections the same way.
 </ul>
 
 <li> <u>1.52o 23 April 2019</u>

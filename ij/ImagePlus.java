@@ -942,18 +942,22 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
          IJ.log("Mean: "+stats.mean);
          IJ.log("Max: "+stats.max);
 		</pre>
+		@return an {@link ij.process.ImageStatistics} object
 		@see #getAllStatistics
 		@see #getRawStatistics
 		@see ij.process.ImageProcessor#getStats
-		@see ij.process.ImageStatistics
-		@see ij.process.ImageStatistics#getStatistics
 		*/
 	public ImageStatistics getStatistics() {
 		return getStatistics(AREA+MEAN+STD_DEV+MODE+MIN_MAX+RECT);
 	}
 	
-	/** This method returns complete calibrated statistics for this image or ROI
-		(with "Limit to threshold"), but it is up to 70 times slower than getStatistics().*/
+	/** This method returns complete calibrated statistics for this
+	 * image or ROI (with "Limit to threshold"), but it is up to 70 times
+	 * slower than getStatistics().
+	 * @return an {@link ij.process.ImageStatistics} object
+	 * @see #getStatistics
+	 * @see ij.process.ImageProcessor#getStatistics
+	*/
 	public ImageStatistics getAllStatistics() {
 		return getStatistics(ALL_STATS+LIMIT);
 	}
@@ -970,7 +974,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	/** Returns an ImageStatistics object generated using the
 		specified measurement options.
-		@see ij.process.ImageStatistics
 		@see ij.measure.Measurements
 	*/
 	public ImageStatistics getStatistics(int mOptions) {
@@ -991,10 +994,16 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		int bitDepth = getBitDepth();
 		if (nBins!=256 && (bitDepth==8||bitDepth==24))
 			ip2 =ip.convertToShort(false);
-		if (roi!=null && roi.isArea())
-			ip2.setRoi(roi);
-		else
+		Roi roi2 = roi;
+		if (roi2==null)
 			ip2.resetRoi();
+		else if (roi2.isArea())
+			ip2.setRoi(roi2);			
+		else if ((roi2 instanceof PointRoi) && roi2.size()==1) {
+				// needed to be consistent with ImageProcessor.getStatistics()
+				FloatPolygon p = roi2.getFloatPolygon();
+				ip2.setRoi((int)p.xpoints[0], (int)p.ypoints[0], 1, 1);
+		}
 		ip2.setHistogramSize(nBins);
 		Calibration cal = getCalibration();
 		if (getType()==GRAY16&& !(histMin==0.0&&histMax==0.0)) {

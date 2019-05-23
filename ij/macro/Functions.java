@@ -4850,6 +4850,13 @@ public class Functions implements MacroConstants, Measurements {
 			ImageProcessor ip = getProcessor();
 			setFont(ip);
 			return ip.getFontMetrics().getHeight();
+		} else if (key.equals("selection.size")) {
+			ImagePlus imp = getImage();
+			Roi roi = imp.getRoi();
+			if (roi==null)
+				return 0.0;
+			else
+				return roi.size();
 		} else if (key.equals("selection.width")) {
 			ImagePlus imp = getImage();
 			Roi roi = imp.getRoi();
@@ -4859,6 +4866,8 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (key.equals("results.count")) {
 			ResultsTable rt = getResultsTable(false);
 			return rt!=null?rt.size():0;
+		} else if (key.equals("rotation.angle")) {
+			return Rotator.getAngle();
 		} else if (key.equals("hashCode")) {
 			return interp.hashCode();
 		} else if (key.equals("instance")) {

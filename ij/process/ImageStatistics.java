@@ -67,12 +67,28 @@ public class ImageStatistics implements Measurements {
 	EllipseFitter ef;
 
 	
-	/* Get uncalibrated statistics, including histogram, area, mean, 
-		min and max, standard deviation and mode. */
+	/** Calculates and returns uncalibrated (raw) statistics for the
+	 * specified image, including histogram, area, mean, min and
+	 * max, standard deviation and mode.  Use ImageProcessor.setRoi(x,y,width,height)
+	 * to limit statistics to a rectangular area and ImageProcessor.setRoi(Roi)
+	 * to limit to a non-rectangular area.
+	 * @see ij.process.ImageProcessor#setRoi(int,int,int,int)
+	 * @see ij.process.ImageProcessor#setRoi(Roi)
+	 * @see ij.process.ImageProcessor#getStats
+	*/
 	public static ImageStatistics getStatistics(ImageProcessor ip) {
 		return getStatistics(ip, AREA+MEAN+STD_DEV+MODE+MIN_MAX+RECT, null);
 	}
 
+	/** Calculates and returns statistics for the specified
+	 * image using the specified measurent options
+	 * and calibration. Use ImageProcessor.setRoi(x,y,width,height)
+	 * to limit statistics to a rectangular area and ImageProcessor.setRoi(Roi)
+	 * to limit to a non-rectangular area.
+	 * @see ij.process.ImageProcessor#setRoi(int,int,int,int)
+	 * @see ij.process.ImageProcessor#setRoi(Roi)
+	 * @see ij.measure.Measurements
+	*/
 	public static ImageStatistics getStatistics(ImageProcessor ip, int mOptions, Calibration cal) {
 		Object pixels = ip.getPixels();
 		if (pixels instanceof byte[])

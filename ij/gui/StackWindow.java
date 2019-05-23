@@ -14,7 +14,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	protected Thread thread;
 	protected volatile boolean done;
 	protected volatile int slice;
-	private ScrollbarWithLabel animationSelector;
+	protected ScrollbarWithLabel animationSelector;
 	boolean hyperStack;
 	int nChannels=1, nSlices=1, nFrames=1;
 	int c=1, z=1, t=1;

@@ -154,6 +154,11 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 		return true;
 	}
 
+	/** Returns the current angle. */
+	public static double getAngle() {
+		return angle;
+	}
+
 	public void setNPasses(int nPasses) {
 	}
 
