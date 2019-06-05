@@ -46,7 +46,7 @@ The following command line options are recognized by ImageJ:
 
   -batch path [arg]
     Runs a macro or script (JavaScript, BeanShell or Python) in
-    batch (no GUI) mode, passing it an optional argument.
+    batch (no GUI) mode, passing an optional argument.
     ImageJ exits when the macro finishes.
 
   -eval "macro code"
@@ -78,7 +78,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.52p";
-	public static final String BUILD = "36"; 
+	public static final String BUILD = "43"; 
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);

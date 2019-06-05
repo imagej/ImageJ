@@ -102,7 +102,8 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		if (sc!=Roi.getColor()) {
 			Roi.setColor(sc);
 			redraw = true;
-			Toolbar.getInstance().repaint();
+			Toolbar tb = Toolbar.getInstance();
+			if (tb!=null) tb.repaint();
 		}
 		// size
 		int sizeIndex = gd.getNextChoiceIndex();

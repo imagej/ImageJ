@@ -8,8 +8,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.text.*;
 import ij.plugin.filter.Analyzer;
-import ij.plugin.frame.Recorder;
-import ij.plugin.frame.RoiManager;
+import ij.plugin.frame.*;
 import ij.plugin.Colors;
 import ij.macro.Interpreter;
 import ij.util.Tools;
@@ -1057,7 +1056,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			outputImage = new ImagePlus(prefix+title, outlines);
 			outputImage.setCalibration(imp.getCalibration());
 			if (inSituShow) {
-				if (imp.getStackSize()==1)
+				if (imp.getStackSize()==1 && !Recorder.record)
 					Undo.setup(Undo.TRANSFORM, imp);
 				ImageStack outputStack = outputImage.getStack();
 				if (imp.getStackSize()>1 && outputStack.getSize()==1 && imp.getBitDepth()==8)

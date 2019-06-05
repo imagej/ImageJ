@@ -72,6 +72,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private boolean allowDuplicates;
 	private double translateX = 10.0;
 	private double translateY = 10.0;
+	private static String errorMessage;
 
 		
 	/** Opens the "ROI Manager" window, or activates it if it is already open.
@@ -92,6 +93,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		instance = this;
 		list = new JList();
+		errorMessage = null;
 		showWindow();
 	}
 	
@@ -101,6 +103,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		list = new JList();
 		listModel = new DefaultListModel();
 		list.setModel(listModel);
+		errorMessage = null;
 	}
 
 	void showWindow() {
@@ -790,7 +793,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				name = name.substring(0, name.length()-4);
 			listModel.addElement(name);
 			rois.add(roi);
-		}		
+			errorMessage = null;
+		} else
+			errorMessage = "Unable to 	open ROI at "+path;
 		updateShowAll();
 	}
 	
@@ -799,6 +804,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ZipInputStream in = null; 
 		ByteArrayOutputStream out = null; 
 		int nRois = 0; 
+		errorMessage = null;
 		try { 
 			in = new ZipInputStream(new FileInputStream(path)); 
 			byte[] buf = new byte[1024]; 
@@ -825,15 +831,18 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			} 
 			in.close(); 
 		} catch (IOException e) {
-			error(e.toString());
+			errorMessage = e.toString();
+			error(errorMessage);
 		} finally {
 			if (in!=null)
 				try {in.close();} catch (IOException e) {}
 			if (out!=null)
 				try {out.close();} catch (IOException e) {}
 		}
-		if(nRois==0)
-				error("This ZIP archive does not appear to contain \".roi\" files");
+		if (nRois==0 && errorMessage==null) {
+			errorMessage = "This ZIP archive does not contain \".roi\" files: " + path;
+			error(errorMessage);
+		}
 		updateShowAll();
 	} 
 
@@ -867,10 +876,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			path = dir+name2;
 		}
 		RoiEncoder re = new RoiEncoder(path);
+		errorMessage = null;
 		try {
 			re.write(roi);
 		} catch (IOException e) {
-			IJ.error("ROI Manager", e.getMessage());
+			errorMessage = e.getMessage();
+			IJ.error("ROI Manager", errorMessage);
 		}
 		if (Recorder.record && !IJ.isMacro())
 			Recorder.record("roiManager", "Save", path);
@@ -895,6 +906,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		String[] names = new String[listModel.size()];
 		for (int i=0; i<listModel.size(); i++)
 			names[i] = (String)listModel.getElementAt(i);
+		errorMessage = null;
 		try {
 			ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
 			out = new DataOutputStream(new BufferedOutputStream(zos));
@@ -912,7 +924,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			}
 			out.close();
 		} catch (IOException e) {
-			error(""+e);
+			errorMessage = ""+e;
+			error(errorMessage);
 			return false;
 		} finally {
 			if (out!=null)
@@ -2174,8 +2187,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	private boolean save(String name, boolean saveSelected) {
-		if (!name.endsWith(".zip") && !name.equals(""))
-			return error("Name must end with '.zip'");
+		errorMessage = null;
+		if (!name.endsWith(".zip") && !name.equals("")) {
+			errorMessage = "Name must end with '.zip'";
+			return error(errorMessage);
+		}
 		if (getCount()==0)
 			return error("The list is empty");
 		int[] indexes = null;
@@ -2540,6 +2556,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			add(overlay.get(i), i+1);
 		setEditMode(null, true);
 		runCommand("show all");
+	}
+	
+	/** Returns the most recent I/O error message, or null if there was no error. */
+	public static String getErrorMessage() {
+		return errorMessage;
 	}
 	
 	// This class runs the "Multi Measure" command in a separate thread

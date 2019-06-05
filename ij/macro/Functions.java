@@ -674,8 +674,12 @@ public class Functions implements MacroConstants, Measurements {
 		if (isStringArg()) {
 			globalColor = getColor();
 			globalValue = Double.NaN;
-			if (WindowManager.getCurrentImage()!=null)
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (imp!=null) {
+				if (overlayPath!=null)
+					addDrawingToOverlay(imp);
 				getProcessor().setColor(globalColor);
+			}
 			interp.getRightParen();
 			return;
 		}
@@ -4473,6 +4477,8 @@ public class Functions implements MacroConstants, Measurements {
 			getImage().getCalibration().setInvertY(state);
 		else if (arg1.equals("scaleconversions"))
 			ImageConverter.setDoScaling(state);
+		else if (arg1.startsWith("copyhead"))
+			Prefs.copyColumnHeaders = state;
 		else
 			interp.error("Invalid option");
 	}
@@ -6278,9 +6284,10 @@ public class Functions implements MacroConstants, Measurements {
 			return overlay!=null && imp.getHideOverlay()?1.0:0.0;
 		else if (name.equals("addSelection"))
 			return overlayAddSelection(imp, overlay);
-		else if (name.equals("setPosition"))
+		else if (name.equals("setPosition")) {
+			addDrawingToOverlay(imp);
 			return overlaySetPosition(overlay);
-		else if (name.equals("setFillColor"))
+		} else if (name.equals("setFillColor"))
 			return overlaySetFillColor(overlay);
 		if (overlay==null)
 			interp.error("No overlay");
@@ -6454,7 +6461,8 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	double overlayMoveTo() {
-		if (overlayPath==null) overlayPath = new GeneralPath();
+		if (overlayPath==null)
+			overlayPath = new GeneralPath();
 		interp.getLeftParen();
 		float x = (float)interp.getExpression();
 		interp.getComma();
@@ -6465,7 +6473,10 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	double overlayLineTo() {
-		if (overlayPath==null) overlayPath = new GeneralPath();
+		if (overlayPath==null) {
+			overlayPath = new GeneralPath();
+			overlayPath.moveTo(0, 0);
+		}
 		interp.getLeftParen();
 		float x = (float)interp.getExpression();
 		interp.getComma();
@@ -6537,7 +6548,8 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void addDrawingToOverlay(ImagePlus imp) {
-		if (overlayPath==null) return;
+		if (overlayPath==null)
+			return;
 		Roi roi = new ShapeRoi(overlayPath);
 		overlayPath = null;
 		addRoi(imp, roi);
@@ -6932,11 +6944,11 @@ public class Functions implements MacroConstants, Measurements {
 	private Variable getAllHeadings() {
 		interp.getParens();
 		String[] headings = ResultsTable.getDefaultHeadings();
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(250);
 		for (int i=0; i<headings.length; i++) {
 			sb.append(headings[i]);
 			if (i<headings.length-1)
-				sb.append(" ");
+				sb.append("\t");
 		}
 		return new Variable(sb.toString());
 	}

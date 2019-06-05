@@ -63,7 +63,8 @@ public class Colors implements PlugIn, ItemListener {
 			Roi.setColor(sc2);
 			ImagePlus imp = WindowManager.getCurrentImage();
 			if (imp!=null) imp.draw();
-			Toolbar.getInstance().repaint();
+			Toolbar tb = Toolbar.getInstance();
+			if (tb!=null) tb.repaint();
 		}
 	}
 

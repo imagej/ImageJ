@@ -199,8 +199,7 @@ public class IJ {
 				((PlugIn)thePlugIn).run(arg);
  			else
 				new PlugInFilterRunner(thePlugIn, commandName, arg);
-		}
-		catch (ClassNotFoundException e) {
+		} catch (ClassNotFoundException e) {
 			if (IJ.getApplet()==null)
 				log("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 		}
@@ -231,7 +230,9 @@ public class IJ {
 				new PlugInFilterRunner(thePlugIn, commandName, arg);
 		}
 		catch (ClassNotFoundException e) {
-			if (className.contains("_")  && !suppressPluginNotFoundError)
+			if (className.startsWith("macro:"))
+				runMacro(className.substring(6));
+			else if (className.contains("_")  && !suppressPluginNotFoundError)
 				error("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 		}
 		catch (NoClassDefFoundError e) {

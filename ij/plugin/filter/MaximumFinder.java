@@ -246,21 +246,25 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
      } //public void run
      
 
-    /** Finds the image maxima and returns them as a Polygon. There
-     * is an example at http://imagej.nih.gov/ij/macros/js/FindMaxima.js.
+    /** Finds the image maxima and returns them as a Polygon, where
+     * poly.npoints is the number of maxima. There is an example at<br>
+     * http://imagej.nih.gov/ij/macros/js/FindMaxima.js.
      * @param ip             The input image
      * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value
      *                       from the ridge to a higher maximum
      * @param excludeOnEdges Whether to exclude edge maxima. Also determines whether strict mode is on, i.e.,
      *                       whether the global maximum is accepted even if all other pixel are less than 'tolerance'
      *                       below this level (In 1.52m and before, 'strict' and 'excludeOnEdges' were the same).
-     * @return               A Polygon containing the coordinates of the maxima
+     * @return         A Polygon containing the coordinates of the maxima, where poly.npoints 
+     *                       is the number of maxima. Note that poly.xpoints.length may be greater
+     *                       than the number of maxima.
      */
     public Polygon getMaxima(ImageProcessor ip, double tolerance, boolean excludeOnEdges) {
 		return getMaxima(ip, tolerance, excludeOnEdges, excludeOnEdges);
     }
 
-    /** Finds the image maxima and returns them as a Polygon.
+    /** Finds the image maxima and returns them as a Polygon, where poly.npoints is
+     * the number of maxima.
      * @param ip             The input image
      * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value
      *                       from the ridge to a higher maximum
@@ -271,7 +275,9 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
      * @param excludeOnEdges Whether to exclude edge maxima. Also determines whether strict mode is on, i.e.,
      *                       whether the global maximum is accepted even if all other pixel are less than 'tolerance'
      *                       below this level (In 1.52m and before, 'strict' and 'excludeOnEdges' were the same).
-     * @return               A Polygon containing the coordinates of the maxima
+     * @return         A Polygon containing the coordinates of the maxima, where poly.npoints 
+     *                       is the number of maxima. Note that poly.xpoints.length may be greater
+     *                       than the number of maxima.
      */
     public Polygon getMaxima(ImageProcessor ip, double tolerance, boolean strict, boolean excludeOnEdges) {
 		findMaxima(ip, tolerance, strict, ImageProcessor.NO_THRESHOLD,
