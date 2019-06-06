@@ -159,7 +159,10 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 
 	void getGammaValue (double defaultValue) {
 		gd = new GenericDialog("Gamma");
-		gd.addSlider("Value:", 0.0, 5.0, defaultValue, 0.02);
+		if (GraphicsEnvironment.isHeadless())
+			gd.addNumericField("Value:", defaultValue, 2);
+		else
+			gd.addSlider("Value:", 0.0, 5.0, defaultValue, 0.02);
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
 		gd.showDialog();

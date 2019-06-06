@@ -5,7 +5,7 @@
 </head>
 <body>
 Maximized image windows no longer revert to the main screen.
-<li> <u>1.52p43 5 June 2019</u>
+<li> <u>1.52p44 6 June 2019</u>
 <ul>
 <li> Thanks to Uwe Schmidt, improved the support for multiple screen setups:
   <ul>
@@ -33,12 +33,13 @@ the ImageProcessor.getValue(x,y) method.
 <li> Thanks to Somsubhro Chaudhuri, added the getValue("selection.angle")
 macro function and the Rotator.getAngle() method.
 <li> Added the getValue("selection.size") macro function.
+<li> Added the setOption("CopyHeadings",boolean) macro function.
 <li> Thanks to Wilhelm Burger, added the Menus.add(menuPath,class)
 method.
 <li> Thanks to Philippe Carl, added the RoiManager.getErrorMessage() method.
 <li> Thanks to Laurent Thomas, updated the Javadoc of the MaximumFinder.getMaxima()
-methods to make it clearer that the npoints field of the returned Polygon is the
-number of maxima found, not the length of the xpoints field.
+methods to make it clearer that the npoints variable of the returned Polygon is the
+number of maxima found, not the length of the xpoints variable.
 <li> Thanks to Mikael Eriksson, fixed a bug that caused the
 particle analyzer's "Summary" table to not be accessible in macros
 run from the command line using the -batch option.
@@ -69,6 +70,8 @@ exception when called from a -batch command line macro.
 the Overlay.drawLine() macro function to not work
 correctly when used in conjuction with Overlay.setColor()
 and/or Overlay.setPosition().
+<li> Thanks to 'Niederle', worked around a bug that caused the
+run("Gamma...", "value=...") macro function to fail in Fiji headless mode.
 </ul>
 
 <li> <u>1.52o 23 April 2019</u>
