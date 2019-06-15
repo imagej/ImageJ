@@ -5,7 +5,7 @@
 </head>
 <body>
 Maximized image windows no longer revert to the main screen.
-<li> <u>1.52p44 6 June 2019</u>
+<li> <u>1.52p52 14 June 2019</u>
 <ul>
 <li> Thanks to Uwe Schmidt, improved the support for multiple screen setups:
   <ul>
@@ -21,6 +21,7 @@ Maximized image windows no longer revert to the main screen.
   <li> Improved behavior of "+" (<i>Image&gt;Zoom&gt;In</i>) command.
   <li> Code simplification, especially by removing special cases for Linux.
   </ul>
+<li> ImageJ displays a warning dialog before deleting a multi-point selection.
 <li> Thanks to 'alex', the FITS Reader no longer flips images vertically
 so inspection of pixels will produce the expected values.
 <li> Thanks to Jerome Mutterer, added the getValue(measurement)
@@ -70,8 +71,11 @@ exception when called from a -batch command line macro.
 the Overlay.drawLine() macro function to not work
 correctly when used in conjuction with Overlay.setColor()
 and/or Overlay.setPosition().
-<li> Thanks to 'Niederle', worked around a bug that caused the
-run("Gamma...", "value=...") macro function to fail in Fiji headless mode.
+<li> Thanks to 'Niederle', worked around a bug that caused
+the run("Gamma...", "value=x.xx") macro function to fail in
+Fiji headless mode.
+<li> Thanks to 'fieryice12', fixed a bug that caused the
+Plot.showValues macro function to fail in batch mode.
 </ul>
 
 <li> <u>1.52o 23 April 2019</u>

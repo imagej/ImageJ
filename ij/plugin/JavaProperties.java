@@ -64,6 +64,12 @@ public class JavaProperties implements PlugIn {
 		String userDir = System.getProperty("user.dir");
 		String userHome = System.getProperty("user.home");
 		String osName = System.getProperty("os.name");
+		String path = Prefs.getCustomPropsPath();
+		if (path!=null)
+			list.add("  *Custom properties*: "+path);
+		path = Prefs.getCustomPrefsPath();
+		if (path!=null)
+			list.add("  *Custom preferences*: "+path);
 		list.add("  IJ.getVersion: "+IJ.getVersion());
 		list.add("  IJ.getFullVersion: "+IJ.getFullVersion());
 		list.add("  IJ.javaVersion: "+IJ.javaVersion());
@@ -83,6 +89,7 @@ public class JavaProperties implements PlugIn {
 		list.add("  IJ.getDir(\"default\"): "+ IJ.getDir("default"));
 		list.add("  IJ.getDir(\"image\"): "+ IJ.getDir("image"));
 		list.add("");
+		
 		list.add("  Menus.getPlugInsPath: "+Menus.getPlugInsPath());
 		list.add("  Menus.getMacrosPath: "+Menus.getMacrosPath());
 		list.add("  Prefs.getImageJDir: "+Prefs.getImageJDir());		

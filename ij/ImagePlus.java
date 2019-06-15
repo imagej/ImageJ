@@ -97,6 +97,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	private boolean ignoreGlobalCalibration;
 	private boolean oneSliceStack;
 	public boolean setIJMenuBar = Prefs.setIJMenuBar;
+	private Plot plot;
 			
 
     /** Constructs an uninitialized ImagePlus. */
@@ -1777,8 +1778,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				return;
 			}
 			newRoi = (Roi)newRoi.clone();
-			if (newRoi==null)
-				{deleteRoi(); return;}
+			if (newRoi==null) {
+				deleteRoi();
+				return;
+			}
 		}
 		if (bounds.width==0 && bounds.height==0 && !(newRoi.getType()==Roi.POINT||newRoi.getType()==Roi.LINE)) {
 			deleteRoi();
@@ -1895,7 +1898,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		so it can be recovered by Edit/Selection/Restore Selection. */
 	public void deleteRoi() {
 		if (roi!=null) {
-			saveRoi();
+			saveRoi();			
 			if (!(IJ.altKeyDown()||IJ.shiftKeyDown())) {
 				RoiManager rm = RoiManager.getRawInstance();
 				if (rm!=null)
@@ -1911,6 +1914,23 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				ip.resetRoi();
 			draw();
 		}
+	}
+	
+	public boolean okToDeleteRoi() {
+		if (roi!=null && (roi instanceof PointRoi) && getWindow()!=null && ((PointRoi)roi).promptBeforeDeleting()) {
+			int npoints = ((PolygonRoi)roi).getNCoordinates();
+			int counters = ((PointRoi)roi).getNCounters();
+			String msg = "Delete this multi-point selection ("+npoints+" points, "+counters+" counter"+(counters>1?"s":"")+")?";
+			GenericDialog gd=new GenericDialog("Delete Points?");
+			gd.addMessage(msg+"\nRestore using Edit>Selection>Restore Selection.");
+			gd.addHelp(PointToolOptions.help);
+			gd.setOKLabel("Delete");
+			gd.setCancelLabel("Keep");
+			gd.showDialog();
+			if (gd.wasCanceled())
+				return false;
+		}
+		return true;
 	}
 	
 	/** Deletes the current region of interest. */
@@ -2963,6 +2983,14 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     
     public boolean isStack() {
     	return stack!=null;
+    }
+    
+    public void setPlot(Plot plot) {
+    	this.plot = plot;
+    }
+    
+    public Plot getPlot() {
+    	return plot;
     }
 
 }

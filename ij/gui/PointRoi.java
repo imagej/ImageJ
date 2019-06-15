@@ -592,7 +592,7 @@ public class PointRoi extends PolygonRoi {
 	    if (promptBeforeDeletingCalled)
 	    	return promptBeforeDeleting;
 	    else
-			return nMarkers>10  && imp!=null && imp.getWindow()!=null;
+			return (nMarkers>8||getNCounters()>1) && imp!=null && imp.getWindow()!=null;
 	} 
 
 	public void promptBeforeDeleting(Boolean prompt) {

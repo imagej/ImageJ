@@ -2261,6 +2261,12 @@ public class Functions implements MacroConstants, Measurements {
 		ImagePlus imp = getImage();
 		ImageWindow win = imp.getWindow();
 		if (win==null || !(win instanceof PlotWindow)) {
+			Plot plot = imp.getPlot();
+			if (plot!=null) {
+				ResultsTable rt = plot.getResultsTable(true);
+				rt.show(title);
+				return Double.NaN;
+			}
 			interp.error("No plot window");
 			return Double.NaN;
 		}

@@ -41,6 +41,12 @@ public class ImageInfo implements PlugIn {
 		s += "Java home: "+System.getProperty("java.home")+"\n";
 		s += "Screen size: "+screen.width+"x"+screen.height+"\n";
 		s += "GUI scale: "+IJ.d2s(Prefs.getGuiScale(),2)+"\n";
+		String path = Prefs.getCustomPropsPath();
+		if (path!=null)
+			s += "*Custom properties*: "+ path +"\n";
+		path = Prefs.getCustomPrefsPath();
+		if (path!=null)
+			s += "*Custom preferences*: "+ path +"\n";
 		if (IJ.isMacOSX()) {
 			String time = " ("+ImageWindow.setMenuBarTime+"ms)";
 			s += "SetMenuBarCount: "+Menus.setMenuBarCount+time+"\n";

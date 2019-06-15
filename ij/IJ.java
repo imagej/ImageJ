@@ -200,8 +200,10 @@ public class IJ {
  			else
 				new PlugInFilterRunner(thePlugIn, commandName, arg);
 		} catch (ClassNotFoundException e) {
-			if (IJ.getApplet()==null)
-				log("Plugin or class not found: \"" + className + "\"\n(" + e+")");
+			log("Plugin or class not found: \"" + className + "\"\n(" + e+")");
+			String path = Prefs.getCustomPropsPath();
+			if (path!=null);
+				log("Error may be due to custom properties at " + path);
 		}
 		catch (InstantiationException e) {log("Unable to load plugin (ins)");}
 		catch (IllegalAccessException e) {log("Unable to load plugin, possibly \nbecause it is not public.");}

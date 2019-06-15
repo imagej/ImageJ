@@ -36,9 +36,9 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	public void run(String arg) {
 		imp = IJ.getImage();
 		Roi roi = imp.getRoi();
-		if (roi!=null && !roi.isArea())
-			imp.deleteRoi(); // ignore any line selection
 		ImageProcessor ip = imp.getProcessor();
+		if (roi!=null && !roi.isArea())
+			ip.resetRoi();
 		if (!showDialog(ip))
 			return;
 		doZScaling = newDepth>0 && newDepth!=oldDepth;

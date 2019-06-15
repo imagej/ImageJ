@@ -195,6 +195,8 @@ public class Prefs {
 	private static boolean resetPreferences;
 	private static double guiScale = 1.0;
 	private static Properties locKeys = new Properties();
+	private static String propertiesPath; // location of custom IJ_Props.txt
+	private static String preferencesPath; // location of custom IJ_Prefs.txt
 
 	/** Finds and loads the configuration file ("IJ_Props.txt")
 	 * and the preferences file ("IJ_Prefs.txt").
@@ -205,7 +207,8 @@ public class Prefs {
 			ImageJDir = System.getProperty("user.dir");
 		InputStream f = null;
 		try { // Look for IJ_Props.txt in ImageJ folder
-			f = new FileInputStream(ImageJDir+"/"+PROPS_NAME); 
+			f = new FileInputStream(ImageJDir+"/"+PROPS_NAME);
+			propertiesPath = ImageJDir+"/"+PROPS_NAME;
 		} catch (FileNotFoundException e) {
 			f = null;
 		}
@@ -290,8 +293,10 @@ public class Prefs {
 			if (ImageJDir==null)
 				ImageJDir = System.getProperty("user.dir");
 			File f = new File(ImageJDir+File.separator+PREFS_NAME);
-			if (f.exists())
+			if (f.exists()) {
 				prefsDir = ImageJDir;
+				preferencesPath = ImageJDir+"/"+PREFS_NAME;
+			}
 			//System.out.println("getPrefsDir: "+f+"  "+prefsDir);
 			if (prefsDir==null) {
 				String dir = System.getProperty("user.home");
@@ -320,7 +325,7 @@ public class Prefs {
 			return getString(DIR_IMAGE);
 	}
 
-	/** Finds an string in IJ_Props or IJ_Prefs.txt. */
+	/** Finds a string in IJ_Props or IJ_Prefs.txt. */
 	public static String getString(String key) {
 		return props.getProperty(key);
 	}
@@ -724,6 +729,16 @@ public class Prefs {
 	/** Returns the GenericDialog and Command Finder text scale. */
 	public static double getGuiScale() {
 		return guiScale;
+	}
+
+	/** Returns the custom properties (IJ_Props.txt) file path. */
+	public static String getCustomPropsPath() {
+		return propertiesPath;
+	}
+
+	/** Returns the custom preferences (IJ_Prefs.txt) file path. */
+	public static String getCustomPrefsPath() {
+		return preferencesPath;
 	}
 
 }

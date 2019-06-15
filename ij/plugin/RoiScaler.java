@@ -20,6 +20,8 @@ public class RoiScaler implements PlugIn {
 			IJ.error("Scale", "This command requires a selection");
 			return;
 		}
+		if (!imp.okToDeleteRoi())
+			return;
 		if (!showDialog())
 			return;
 		if (!IJ.macroRunning()) {

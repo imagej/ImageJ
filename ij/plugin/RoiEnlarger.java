@@ -18,6 +18,8 @@ public class RoiEnlarger implements PlugIn {
 			IJ.error("Enlarge", "This command requires an area selection");
 			return;
 		}
+		if (!imp.okToDeleteRoi())
+			return;
 		double n = showDialog(imp, defaultDistance);
 		if (n==Double.NaN)
 			return;
