@@ -29,6 +29,8 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 		int bitDepth = imp.getBitDepth();
 		double min = ip.getMin();
 		double max = ip.getMax();	
+		if (!imp.okToDeleteRoi())
+			return;
 		if ((roi==null||!roi.isArea()) && crop) {
 			IJ.error(crop?"Crop":"Resize", "Area selection required");
 			return;

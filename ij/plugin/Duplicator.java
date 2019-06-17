@@ -42,6 +42,13 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			Rectangle bounds = imp.getRoi().getBounds();
 			imp.setRoi(bounds);
 		}
+		if (roiA!=null) {
+			Rectangle r = roiA.getBounds();
+			if (r.x>=imp.getWidth() || r.y>=imp.getHeight() || r.x+r.width<=0 || r.y+r.height<=0) {
+				IJ.error("Roi is outside image");
+				return;
+			}
+		}
 		int stackSize = imp.getStackSize();
 		String title = imp.getTitle();
 		String newTitle = WindowManager.getUniqueName(title);

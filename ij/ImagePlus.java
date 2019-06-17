@@ -1924,10 +1924,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			GenericDialog gd=new GenericDialog("Delete Points?");
 			gd.addMessage(msg+"\nRestore using Edit>Selection>Restore Selection.");
 			gd.addHelp(PointToolOptions.help);
-			gd.setOKLabel("Delete");
-			gd.setCancelLabel("Keep");
+			gd.setOKLabel("Keep");
+			gd.setCancelLabel("Delete");
 			gd.showDialog();
-			if (gd.wasCanceled())
+			if (gd.wasOKed())
 				return false;
 		}
 		return true;

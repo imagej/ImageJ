@@ -20,6 +20,7 @@ public class CanvasResizer implements PlugIn {
 		ImagePlus imp = IJ.getImage();
 		wOld = imp.getWidth();
 		hOld = imp.getHeight();
+		if (!imp.okToDeleteRoi()) return;
 
 		ImageStack stackOld = imp.getStack();
 		if ((stackOld != null) && (stackOld.getSize() > 1))

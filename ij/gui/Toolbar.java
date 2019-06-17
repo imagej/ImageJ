@@ -44,7 +44,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public static final int RECT_ROI=0, ROUNDED_RECT_ROI=1, ROTATED_RECT_ROI=2;
 	public static final int OVAL_ROI=0, ELLIPSE_ROI=1, BRUSH_ROI=2;
 	
-	private static final String[] builtInTools = {"Arrow","Brush","Command Finder", "Developer Menu","Flood Filler",
+	public static final String[] builtInTools = {"Arrow","Brush","Command Finder", "Developer Menu","Flood Filler",
 		"LUT Menu","Overlay Brush","Pencil","Pixel Inspector","Selection Rotator",
 		"Spray Can","Stacks Menu"};
 	private static final String[] builtInTools2 = {"Pixel Inspection Tool","Paintbrush Tool","Flood Fill Tool"};

@@ -104,7 +104,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		resetCounter,showProgress, recordStarts, displaySummary, floodFill,
 		addToManager, inSituShow;
 		
-	private boolean showResultsWindow = true;
+	private boolean showResultsTable = true;
+	private boolean showSummaryTable = true;
 	private double level1, level2;
 	private double minSize, maxSize;
 	private double minCircularity, maxCircularity;
@@ -141,7 +142,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private Polygon polygon;
 	private RoiManager roiManager;
 	private static RoiManager staticRoiManager;
-	private static ResultsTable staticResultsTable;
+	private static ResultsTable staticResultsTable, staticSummaryTable;
 	private ImagePlus outputImage;
 	private boolean hideOutputImage;
 	private int roiType;
@@ -451,7 +452,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (staticResultsTable!=null) {
 			rt = staticResultsTable;
 			staticResultsTable = null;
-			showResultsWindow = false;
+			showResultsTable = false;
+		}
+		if (staticSummaryTable!=null) {
+			summaryTable = staticSummaryTable;
+			staticSummaryTable = null;
+			showSummaryTable = false;
 		}
 		displaySummary = (options&DISPLAY_SUMMARY)!=0 ||  (options&SHOW_SUMMARY)!=0;
 		inSituShow = (options&IN_SITU_SHOW)!=0;
@@ -600,7 +606,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		}
 		if (showProgress)
 			IJ.showProgress(1.0);
-		if (showResults && showResultsWindow && rt.size()>0)
+		if (showResults && showResultsTable && rt.size()>0)
 			rt.updateResults();
 		imp.deleteRoi();
 		ip.resetRoi();
@@ -665,7 +671,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		summaryTable.addValue("%Area", sum*100.0/totalArea);
 		addMeans(areas.length>0?start:-1);
 		String title = slices==1?"Summary":"Summary of "+imp.getTitle();
-		summaryTable.show(title);
+		if (showSummaryTable)
+			summaryTable.show(title);
 	}
 
  	void addMeans(int start) {
@@ -914,7 +921,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			rt.addValue("XStart", stats.xstart);
 			rt.addValue("YStart", stats.ystart);
 		}
-		if (showResultsWindow && showResults)
+		if (showResultsTable && showResults)
 			rt.addResults();
 	}
 	
@@ -1067,7 +1074,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				outputImage.show();
 		}
 		if (showResults && !processStack) {
-			if (showResultsWindow && rt.size()>0) {
+			if (showResultsTable && rt.size()>0) {
 				TextPanel tp = IJ.getTextPanel();
 				if (beginningCount>0 && tp!=null && tp.getLineCount()!=count)
 					rt.show("Results");
@@ -1122,6 +1129,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		ParticleAnalyzer instance.	*/
 	public static void setResultsTable(ResultsTable rt) {
 		staticResultsTable = rt;
+	}
+
+	/** Sets the ResultsTable to be used by the next  
+		ParticleAnalyzer instance for the summary.	*/
+	public static void setSummaryTable(ResultsTable rt) {
+		staticSummaryTable = rt;
 	}
 
 	int getColumnID(String name) {
