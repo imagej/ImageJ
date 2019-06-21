@@ -27,6 +27,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
 	+"<li> Press 'F' (<i>Image&gt;Overlay</i>&gt;Flatten</i>) to create an<br>RGB image with embedded markers for export.<br>"
 	+"<li> Hold the shift key down and points will be<br>constrained to a horizontal or vertical line.<br>"
 	+"<li> Use <i>Edit&gt;Selection&gt;Select None</i> to delete a<br>multi-point selection.<br>"
+	+"<li> Switch to the multi-point tool and use<br><i>Edit&gt;Selection&gt;Restore Selection</i> to restore<br>a deleted multi-point selection.<br>"
 	+"</ul>"
 	+" <br>"
 	+"</font>";

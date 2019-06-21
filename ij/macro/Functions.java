@@ -5446,7 +5446,7 @@ public class Functions implements MacroConstants, Measurements {
 			font = imp.getProcessor().getFont();
 		TextRoi roi = new TextRoi(x, y, text, font);
 		if (!nullFont)
-			roi.setAntialiased(antialiasedText);
+			roi.setAntiAlias(antialiasedText);
 		imp.setRoi(roi);
 	}
 
@@ -6540,7 +6540,7 @@ public class Functions implements MacroConstants, Measurements {
 			font = imp.getProcessor().getFont();
 		TextRoi roi = new TextRoi(text, x, y, font);  // use drawString() compatible constructor
 		if (!nullFont && !antialiasedText)
-			roi.setAntialiased(false);
+			roi.setAntiAlias(false);
 		roi.setAngle(angle);
 		roi.setJustification(justification);
 		addRoi(imp, roi);
@@ -7205,6 +7205,10 @@ public class Functions implements MacroConstants, Measurements {
 			return properties!=null?properties:"";
 		} else if (name.equals("setFillColor")) {
 			roi.setFillColor(getRoiColor());
+			imp.draw();
+			return null;
+		} else if (name.equals("setAntiAlias")) {
+			roi.setAntiAlias(getBooleanArg());
 			imp.draw();
 			return null;
 		} else if (name.equals("move")) {

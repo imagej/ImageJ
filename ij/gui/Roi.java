@@ -95,6 +95,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	private double xcenter = Double.NaN;
 	private double ycenter;
 	private boolean listenersNotified;
+	private boolean antiAlias = true;
 
 
 	/** Creates a rectangular ROI. */
@@ -1201,9 +1202,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		Graphics2D g2d = (Graphics2D)g;
 		if (stroke!=null)
 			g2d.setStroke(getScaledStroke());
+		setRenderingHint(g2d);
 		if (cornerDiameter>0) {
 			int sArcSize = (int)Math.round(cornerDiameter*mag);
-			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			if (fillColor!=null)
 				g.fillRoundRect(sx1, sy1, sw, sh, sArcSize, sArcSize);
 			else
@@ -1655,6 +1656,19 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		return defaultFillColor;
 	}
 	
+	public void setAntiAlias(boolean antiAlias) {
+		this.antiAlias = antiAlias;
+	}
+	
+	public boolean getAntiAlias() {
+		return antiAlias;
+	}
+	
+	protected void setRenderingHint(Graphics2D g2d) {
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+			antiAlias?RenderingHints.VALUE_ANTIALIAS_ON:RenderingHints.VALUE_ANTIALIAS_OFF);
+	}
+		
 	/** Copy the attributes (outline color, fill color, outline width) 
 		of	'roi2' to the this selection. */
 	public void copyAttributes(Roi roi2) {

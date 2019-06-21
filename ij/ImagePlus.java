@@ -1778,10 +1778,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				return;
 			}
 			newRoi = (Roi)newRoi.clone();
-			if (newRoi==null) {
-				deleteRoi();
-				return;
-			}
+			if (newRoi==null)
+				{deleteRoi(); return;}
 		}
 		if (bounds.width==0 && bounds.height==0 && !(newRoi.getType()==Roi.POINT||newRoi.getType()==Roi.LINE)) {
 			deleteRoi();
@@ -1947,10 +1945,20 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				Roi.previousRoi = (Roi)roi2.clone();
 				if (IJ.debugMode) IJ.log("saveRoi: "+roi2);
 			}
+			if ((roi2 instanceof PointRoi) && ((PointRoi)roi2).promptBeforeDeleting()) {
+				PointRoi.savedPoints = (PointRoi)roi2.clone();
+				if (IJ.debugMode) IJ.log("saveRoi: saving multi-point selection");
+			}
 		}
 	}
     
 	public void restoreRoi() {
+		if (Toolbar.getToolId()==Toolbar.POINT && PointRoi.savedPoints!=null) {
+			roi = (Roi)PointRoi.savedPoints.clone();
+			draw();
+			roi.notifyListeners(RoiListener.MODIFIED);
+			return;
+		}
 		if (Roi.previousRoi!=null) {
 			Roi pRoi = Roi.previousRoi;
 			Rectangle r = pRoi.getBounds();

@@ -43,7 +43,7 @@ public class Text implements PlugIn, DialogListener {
 			Color c = textRoi.getStrokeColor();
 			if (c!=null) color=c;
 			fillc = Colors.colorToString2(textRoi.getFillColor());
-			antialiased = textRoi.getAntialiased();
+			antialiased = textRoi.getAntiAlias();
 		}
 		colorName = Colors.colorToString2(color);
 		gd = new NonBlockingGenericDialog("Fonts");
@@ -112,7 +112,7 @@ public class Text implements PlugIn, DialogListener {
 			textRoi.setAngle(angle);
 			textRoi.setJustification(justification);
 			textRoi.setFillColor(fillColor);
-			textRoi.setAntialiased(antialiased);
+			textRoi.setAntiAlias(antialiased);
 		}
 		return true;
 	}

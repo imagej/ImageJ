@@ -27,13 +27,19 @@ public class Selection implements PlugIn, Measurements {
 
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
-		if (arg.equals("add"))
-			{addToRoiManager(imp); return;}
-		if (imp==null)
-			{IJ.noImage(); return;}
+		if (arg.equals("add")) {
+			addToRoiManager(imp);
+			return;
+		}
+		if (imp==null) {
+			IJ.noImage();
+			return;
+		}
 		if (arg.equals("all")) {
-			if (imp.okToDeleteRoi())
+			if (imp.okToDeleteRoi()) {
+				imp.saveRoi();
 				imp.setRoi(0,0,imp.getWidth(),imp.getHeight());
+			}
 		} else if (arg.equals("none")) {
 			if (imp.okToDeleteRoi())
 				imp.deleteRoi();

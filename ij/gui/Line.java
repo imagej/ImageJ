@@ -108,13 +108,13 @@ public class Line extends Roi {
 	        double dx = Math.abs(xend-xstart);
 	        double comp = dy / dx;
 	        
-	        for(;i<PI_SEARCH.length; i++) {
+	        for (;i<PI_SEARCH.length; i++) {
 	            if(comp < PI_SEARCH[i]) {
 	                break;
 	            }
 	        }
 	        
-	        if(i < PI_SEARCH.length) {
+	        if (i < PI_SEARCH.length) {
 	            if(yend > ystart) {
 	                yend = ystart + dx*PI_MULT[i];
 	            } else {
@@ -371,6 +371,7 @@ public class Line extends Roi {
 		int sx3 = sx1 + (sx2-sx1)/2;
 		int sy3 = sy1 + (sy2-sy1)/2;
 		Graphics2D g2d = (Graphics2D)g;
+		setRenderingHint(g2d);
 		if (stroke!=null && !isActiveOverlayRoi) 
 			g2d.setStroke(getScaledStroke());
 		g.drawLine(sx1, sy1, sx2, sy2);

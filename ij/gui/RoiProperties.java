@@ -81,7 +81,7 @@ public class RoiProperties {
 			strokeWidth = font.getSize();
 			angle = troi.getAngle();
 			justification = troi.getJustification();
-			antialias = troi.getAntialiased();
+			antialias = troi.getAntiAlias();
 		}
 		String position = ""+roi.getPosition();
 		if (roi.hasHyperStackPosition())
@@ -231,7 +231,7 @@ public class RoiProperties {
 			troi.setAngle(angle);
 			if (justification!=troi.getJustification())
 				troi.setJustification(justification);
-			troi.setAntialiased(antialias);
+			troi.setAntiAlias(antialias);
 		} else
 			roi.setStrokeWidth((float)strokeWidth);
 		if (showName)

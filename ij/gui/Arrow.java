@@ -61,8 +61,7 @@ public class Arrow extends Line {
 		if (fillColor!=null) color = fillColor;
 		g.setColor(color);
 		Graphics2D g2 = (Graphics2D)g;
-		if (!overlay)
-			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		setRenderingHint(g2);
 		AffineTransform at = g2.getDeviceConfiguration().getDefaultTransform();
 		double mag = getMagnification();
 		int xbase=0, ybase=0;

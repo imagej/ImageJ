@@ -1,5 +1,4 @@
 package ij.gui;
-
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.geom.*;
@@ -63,7 +62,6 @@ public class OvalRoi extends Roi {
 		return a;
 	}
 
-
 	protected void moveHandle(int sx, int sy) {
 		double asp;
 		if (clipboard!=null) return;
@@ -97,7 +95,7 @@ public class OvalRoi extends Roi {
 		   height = y2-y;
 		else
 		   {height=1; y=y2;}
-		if(center) {
+		if (center) {
 			switch(activeHandle){
 				case 0:
 					width=(xc-x)*2;
@@ -134,11 +132,11 @@ public class OvalRoi extends Roi {
 					width=(xc-x)*2;
 					break;
 			}
-			if(x>=x2) {
+			if (x>=x2) {
 				width=1;
 				x=x2=xc;
 			}
-			if(y>=y2) {
+			if (y>=y2) {
 				height=1;
 				y=y2=yc;
 			}
@@ -146,10 +144,10 @@ public class OvalRoi extends Roi {
 		}
 
 		if (constrain) {
-			if(activeHandle==1 || activeHandle==5) width=height;
+			if (activeHandle==1 || activeHandle==5) width=height;
 			else height=width;
 			
-			if(x>=x2) {
+			if (x>=x2) {
 				width=1;
 				x=x2=xc;
 			}
@@ -190,10 +188,10 @@ public class OvalRoi extends Roi {
 		}
 
 		if (aspect && !constrain) {
-			if(activeHandle==1 || activeHandle==5) width=(int)Math.rint((double)height*asp);
+			if (activeHandle==1 || activeHandle==5) width=(int)Math.rint((double)height*asp);
 			else height=(int)Math.rint((double)width/asp);
 
-			switch (activeHandle){
+			switch (activeHandle) {
 				case 0:
 					x=x2-width;
 					y=y2-height;
@@ -219,17 +217,17 @@ public class OvalRoi extends Roi {
 					x=x2-width;
 					break;
 			}
-			if (center){
+			if (center) {
 				x=xc-width/2;
 				y=yc-height/2;
 			}
 			// Attempt to preserve aspect ratio when roi very small:
 			if (width<8) {
-				if(width<1) width = 1;
+				if (width<1) width = 1;
 				height=(int)Math.rint((double)width/asp_bk);
 			}
 			if (height<8) {
-				if(height<1) height =1;
+				if (height<1) height =1;
 				width=(int)Math.rint((double)height*asp_bk);
 			}
 		}
@@ -266,6 +264,7 @@ public class OvalRoi extends Roi {
 		Graphics2D g2d = (Graphics2D)g;
 		if (stroke!=null) 
 			g2d.setStroke(getScaledStroke());
+		setRenderingHint(g2d);
 		if (fillColor!=null) {
 			if (!overlay && isActiveOverlayRoi()) {
 				g.setColor(Color.cyan);

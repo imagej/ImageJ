@@ -29,7 +29,6 @@ public class TextRoi extends Roi {
 	private static int globalJustification;
 	private static Color defaultFillColor;
 	private int justification;
-	private boolean antialiased = antialiasedText;
 	private double previousMag;
 	private boolean firstChar = true;
 	private boolean firstMouseUp = true;
@@ -70,7 +69,7 @@ public class TextRoi extends Roi {
 		height = (int)(metrics.getHeight());
 		this.x = (int)x;
 		this.y = (int)(y - height);
-		setAntialiased(true);
+		setAntiAlias(true);
 		justification = LEFT;
 	}
 
@@ -109,6 +108,7 @@ public class TextRoi extends Roi {
 			theText[i] = lines[i];
 		if (font==null) font = new Font(name, style, size);
 		instanceFont = font;
+		setAntiAlias(antialiasedText);
 		firstChar = false;
 		if (width==1 && height==1) {
 			ImageJ ij = IJ.getInstance();
@@ -148,6 +148,7 @@ public class TextRoi extends Roi {
 		instanceFont = new Font(name, style, size);
 		justification = globalJustification;
 		setStrokeColor(Toolbar.getForegroundColor());
+		setAntiAlias(antialiasedText);
 		if (WindowManager.getWindow("Fonts")!=null) {
 			setFillColor(defaultFillColor);
 			setAngle(defaultAngle);
@@ -209,7 +210,7 @@ public class TextRoi extends Roi {
 	/** Renders the text on the image. */
 	public void drawPixels(ImageProcessor ip) {
 		ip.setFont(instanceFont);
-		ip.setAntialiasedText(antialiased);
+		ip.setAntialiasedText(getAntiAlias());
 		FontMetrics metrics = ip.getFontMetrics();
 		int fontHeight = metrics.getHeight();
 		int descent = metrics.getDescent();
@@ -268,7 +269,7 @@ public class TextRoi extends Roi {
 
 	void drawText(Graphics g) {
 		g.setColor( strokeColor!=null? strokeColor:ROIColor);
-		Java2.setAntialiasedText(g, antialiased);
+		Java2.setAntialiasedText(g, getAntiAlias());
 		if (newFont || width==1)
 			updateBounds(g);
 		double mag = getMagnification();
@@ -368,18 +369,18 @@ public class TextRoi extends Roi {
 		antialiasedText = antialiased;
 	}
 	
-	/** Sets the 'antialiased' instance variable. */
-	public void setAntialiased(boolean antialiased) {
-		this.antialiased = antialiased;
+	/** Sets the 'antiAlias' instance variable. */
+	public void setAntialiased(boolean antiAlias) {
+		setAntiAlias(antiAlias);
 		if (angle>0.0)
-			this.antialiased = true;
+			setAntiAlias(true);
 	}
 	
-	/** Returns the state of the 'antialiased' instance variable. */
+	/** Returns the state of the 'antiAlias' instance variable. */
 	public boolean getAntialiased() {
-		return antialiased;
+		return getAntiAlias();
 	}
-
+		
 	/** Sets the 'justification' instance variable (must be LEFT, CENTER or RIGHT) */
 	public static void setGlobalJustification(int justification) {
 		if (justification<0 || justification>RIGHT)
@@ -441,7 +442,7 @@ public class TextRoi extends Roi {
 		if (imp!=null) {
 			Roi roi = imp.getRoi();
 			if (roi instanceof TextRoi) {
-				((TextRoi)roi).setAntialiased(antialiased);
+				roi.setAntiAlias(antialiased);
 				((TextRoi)roi).setCurrentFont(new Font(name, style, size));
 				imp.draw();
 			}
@@ -492,7 +493,7 @@ public class TextRoi extends Roi {
 			else
 				return;
 		}
-		Java2.setAntialiasedText(g, antialiased);
+		Java2.setAntialiasedText(g, getAntiAlias());
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = (int)(metrics.getHeight()/mag);
 		int descent = metrics.getDescent();
@@ -681,7 +682,7 @@ public class TextRoi extends Roi {
 	public void setAngle(double angle) {
 		this.angle = angle;
 		if (angle!=0.0)
-			setAntialiased(true);
+			setAntiAlias(true);
 	}
 
 	public boolean getDrawStringMode() {

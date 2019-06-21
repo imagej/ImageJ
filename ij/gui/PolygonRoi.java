@@ -212,6 +212,7 @@ public class PolygonRoi extends Roi {
 		}
 		g.setColor(color);
 		Graphics2D g2d = (Graphics2D)g;
+		setRenderingHint(g2d);
 		if (stroke!=null && !isActiveOverlayRoi)
 			g2d.setStroke(getScaledStroke());
 		if (xSpline!=null) {
