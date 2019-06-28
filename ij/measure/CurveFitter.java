@@ -133,7 +133,7 @@ public class CurveFitter implements UserFunction{
 	private String errorString;		// in case of error before invoking the minimizer
 	private static String[] sortedFitList; // names like fitList, but in more logical sequence
 	private static Hashtable<String, Integer> namesTable; // converts fitList String into number
-	
+
 	/** Construct a new CurveFitter. */
 	public CurveFitter (double[] xData, double[] yData) {
 		int cleanPoints = 0;
@@ -160,7 +160,7 @@ public class CurveFitter implements UserFunction{
 		}
 		numPoints = this.xData.length;
 	}
-	
+
 	/** Perform curve fitting with one of the built-in functions
 	 *			doFit(fitType) does the fit quietly
 	 *	Use getStatus() and/or getStatusString() to see whether fitting was (probably) successful and
@@ -1309,7 +1309,7 @@ public class CurveFitter implements UserFunction{
 		}
 		return index;
 	}
-	
+
 	public Plot getPlot() {
 		return getPlot(100);
 	}
@@ -1358,12 +1358,14 @@ public class CurveFitter implements UserFunction{
 		ymin = Math.max(ymin - dataRange, Math.min(ymin, a[0])); //expand y range for curve, but not too much
 		ymax = Math.min(ymax + dataRange, Math.max(ymax, a[1]));
 		Plot plot = new Plot(getFormula(), "X", "Y", px, py);
+		plot.setLabel(0, "fit");
 		plot.setLimits(xmin, xmax, ymin, ymax);
 		plot.setFrameSize(PLOT_WIDTH, PLOT_HEIGHT);
 		plot.setColor(Color.RED, Color.RED);
 		plot.addPoints(x, y, PlotWindow.CIRCLE);
-		plot.setColor(Color.BLUE);
-		StringBuffer legend = new StringBuffer(100);
+		plot.setLabel(1, "data");
+		plot.setColor(Color.BLUE); //will be used for the data in the constructor
+		StringBuilder legend = new StringBuilder(100);
 		legend.append(getName()); legend.append('\n');
 		legend.append(getFormula()); legend.append('\n');
         double[] p = getParams();

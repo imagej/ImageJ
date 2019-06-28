@@ -27,9 +27,18 @@ public class VirtualStack extends ImageStack {
 		super(width, height);
 	}
 
-	/** Creates an empty virtual stack. */
+	/** Creates an empty virtual stack.
+	 * @param width		image width
+	 * @param height	image height
+	 * @param cm	ColorModel or null
+	 * @param path	file path of directory containing the images
+	 * @see #addSlice(String)
+	 * @see <a href="http://wsr.imagej.net/macros/js/OpenAsVirtualStack.js">OpenAsVirtualStack.js</a>
+	*/
 	public VirtualStack(int width, int height, ColorModel cm, String path) {
 		super(width, height, cm);
+		if (path.length()>0 && !(path.endsWith(File.separator)||path.endsWith("/")))
+			path = path + "/";
 		this.path = path;
 		names = new String[INITIAL_SIZE];
 		labels = new String[INITIAL_SIZE];
@@ -50,12 +59,18 @@ public class VirtualStack extends ImageStack {
 		bitDepth = 8;
 	}
 
-	 /** Adds an image to the end of the stack. */
-	public void addSlice(String name) {
-		if (name==null) 
-			throw new IllegalArgumentException("'name' is null!");
+	/** Adds an image to the end of the stack. The argument 
+	 * can be a full file path (e.g., "C:/Users/wayne/dir1/image.tif")
+	 * if the 'path' argument in the constructor is "". File names
+	 * that start with '.' are ignored.
+	*/
+	public void addSlice(String fileName) {
+		if (fileName==null) 
+			throw new IllegalArgumentException("'fileName' is null!");
+		if (fileName.startsWith("."))
+			return;
 		nSlices++;
-	   //IJ.log("addSlice: "+nSlices+"	"+name);
+	   //IJ.log("addSlice: "+nSlices+"	"+fileName);
 	   if (nSlices==names.length) {
 			String[] tmp = new String[nSlices*2];
 			System.arraycopy(names, 0, tmp, 0, nSlices);
@@ -64,7 +79,7 @@ public class VirtualStack extends ImageStack {
 			System.arraycopy(labels, 0, tmp, 0, nSlices);
 			labels = tmp;
 		}
-		names[nSlices-1] = name;
+		names[nSlices-1] = fileName;
 	}
 
    /** Does nothing. */
@@ -123,7 +138,7 @@ public class VirtualStack extends ImageStack {
 		Opener opener = new Opener();
 		opener.setSilentMode(true);
 		IJ.redirectErrorMessages(true);
-		ImagePlus imp = opener.openImage(path, names[n-1]);
+		ImagePlus imp = opener.openImage(path+names[n-1]);
 		IJ.redirectErrorMessages(false);
 		ImageProcessor ip = null;
 		int depthThisImage = 0;

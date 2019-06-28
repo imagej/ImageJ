@@ -917,6 +917,15 @@ public class Plot implements Cloneable {
 		if (plotDrawn) updateImage();
 	}
 
+	/** Sets the label for the plot object nuber 'index' in the sequence they were added.
+	 *  With index=-1, sets the label for the last object added.
+	 *  For x/y data, the label is used for the legend and as header in getResultsTableWithLabels.
+	 *  For Text/Label objects, it affects the label shown (but the plot is not redisplayed). */
+	public void setLabel(int index, String label) {
+		if (index < 0) index = allPlotObjects.size() + index;
+		allPlotObjects.get(index).label = label;
+	}
+
 	/** Returns an array of the available curve types ("Line", "Bar", "Circle", etc). */
 	public String[] getTypes() {
 		return SORTED_SHAPES;
@@ -2188,7 +2197,7 @@ public class Plot implements Cloneable {
 			gd.addNumericField(prompts[arrPair], currentMinMax[arrPair], 2);
 			gd.setCancelLabel("Set All Limits");
 			gd.showDialog();
-		
+
 			double val = gd.getNextNumber();
 			currentMinMax[arrPair] = val;
 			defaultMinMax[arrPair] = val;
@@ -3415,12 +3424,32 @@ public class Plot implements Cloneable {
 		return getResultsTable(true);
 	}
 
-	/** Creates a ResultsTable with the data of the plot. Returns an empty table if no data.
+	/** Creates a ResultsTable with the data of the plot. Returns null if no data.
 	 * Does not write the first x column if writeFirstXColumn is false.
 	 * When all columns are the same length, x columns equal to the first x column are
 	 * not written, independent of writeFirstXColumn.
+	 * Column headings are "X", "Y", "X1", "Y1", etc, irrespective of any labels of the data sets
 	 */
 	public ResultsTable getResultsTable(boolean writeFirstXColumn) {
+		return getResultsTable(writeFirstXColumn, false);
+	}
+
+	/** Creates a ResultsTable with the data of the plot. Returns null if no data.
+	 * When all columns are the same length, x columns equal to the first x column are
+	 * not written, independent of writeFirstXColumn.
+	 * When the data sets have labels, they are used for column headings
+	 */
+	public ResultsTable getResultsTableWithLabels() {
+		return getResultsTable(true, true);
+	}
+
+	/** Creates a ResultsTable with the data of the plot. Returns null if no data.
+	 * Does not write the first x column if writeFirstXColumn is false.
+	 * When all columns are the same length, x columns equal to the first x column are
+	 * not written, independent of writeFirstXColumn.
+	 * When the data sets have labels and useLabels is true, they are used for column headings,
+	 * otherwise columns are named X, Y, X1, Y1, ... */
+	ResultsTable getResultsTable(boolean writeFirstXColumn, boolean useLabels) {
 		ResultsTable rt = new ResultsTable();
 		// find the longest x-value data set and count the data sets
 		int nDataSets =	 0;
@@ -3454,13 +3483,13 @@ public class Plot implements Cloneable {
 			if (plotObject.type==PlotObject.XY_DATA) {
 				boolean sameX = firstXYobject!=null && Arrays.equals(firstXYobject.xValues, plotObject.xValues) && allSameLength;
 				boolean sameXY = sameX && Arrays.equals(firstXYobject.yValues, plotObject.yValues); //ignore duplicates (e.g. Markers plus Curve)
-				boolean writeX = firstXYobject==null?writeFirstXColumn:!sameX;
-				addToLists(headings, data, plotObject, dataSetNumber, writeX, /*writeY=*/!sameXY, nDataSets>1);
+				boolean writeX = firstXYobject==null ? writeFirstXColumn : !sameX;
+				addToLists(headings, data, plotObject, dataSetNumber, writeX, /*writeY=*/!sameXY, /*multipleSets=*/nDataSets>1, useLabels);
 				if (firstXYobject == null)
 					firstXYobject = plotObject;
 				dataSetNumber++;
 			} else if (plotObject.type==PlotObject.ARROWS) {
-				addToLists(headings, data, plotObject, arrowsNumber, /*writeX=*/true, /*writeY=*/true, nDataSets>1);
+				addToLists(headings, data, plotObject, arrowsNumber, /*writeX=*/true, /*writeY=*/true, /*multipleSets=*/nDataSets>1, /*useLabels=*/false);
 				arrowsNumber++;
 			}
 		}
@@ -3488,27 +3517,48 @@ public class Plot implements Cloneable {
 	// when writing float data, precision should be at least 1e-5*data range
 	static final double MIN_FLOAT_PRECISION = 1e-5;
 
-
 	void addToLists(ArrayList<String> headings, ArrayList<float[]>data, PlotObject plotObject,
-			int dataSetNumber, boolean writeX, boolean writeY, boolean multipleSets) {
+			int dataSetNumber, boolean writeX, boolean writeY, boolean multipleSets, boolean useLabels) {
+		String plotObjectLabel = useLabels ? replaceSpacesEtc(plotObject.label) : null;
 		if (writeX) {
-			String label = plotObject.type == PlotObject.ARROWS ? "XStart" : "X";
-			if (multipleSets) label += dataSetNumber;
-			if (dataSetNumber==0 && plotObject.type!=PlotObject.ARROWS) {
+			String label = null;                                                     // column header for x column
+			if (plotObject.type!=PlotObject.ARROWS) {
 				String plotXLabel = getLabel('x');
-				if (plotXLabel!=null && plotXLabel.startsWith(" ") && plotXLabel.endsWith(" "))
-					label = plotXLabel.substring(1,plotXLabel.length()-1);
+				if (dataSetNumber==0 && plotXLabel!=null) {                          // use x axis label for 1st dataset if permitted
+					if (useLabels)
+						label = replaceSpacesEtc(plotXLabel);
+					else if (plotXLabel.startsWith(" ") && plotXLabel.endsWith(" ")) // legacy: always use axis label for 1st data if spaces at start&end
+						label = plotXLabel.substring(1,plotXLabel.length()-1);
+				} else if (plotObjectLabel != null && dataSetNumber>0)
+					label = "X_"+plotObjectLabel;                                    // use "X_" + dataset label
+				if (label != null && headings.contains(label))
+					label = null; // avoid duplicate labels (not possible in ResultsTable)
+			}
+			if (label == null) {                                                     // create default label if no specific label yet
+				label = plotObject.type == PlotObject.ARROWS ? "XStart" : "X";
+				if (multipleSets) label += dataSetNumber;
 			}
 			headings.add(label);
 			data.add(plotObject.xValues);
 		}
 		if (writeY) {
-			String label = plotObject.type == PlotObject.ARROWS ? "YStart" : "Y";
-			if (multipleSets) label += dataSetNumber;
-			if (dataSetNumber==0 && plotObject.type!=PlotObject.ARROWS) {
+			String label = null;;                                                     // column header for y column
+			if (plotObject.type!=PlotObject.ARROWS) {
 				String plotYLabel = getLabel('y');
-				if (plotYLabel!=null && plotYLabel.startsWith(" ") && plotYLabel.endsWith(" "))
-					label = plotYLabel.substring(1,plotYLabel.length()-1);
+				if (dataSetNumber==0 && plotYLabel!=null) {
+					if (useLabels && plotObjectLabel == null)                         // use y axis label for 1st dataset if no data set label
+						label = replaceSpacesEtc(plotYLabel);
+					else if (plotYLabel.startsWith(" ") && plotYLabel.endsWith(" "))  // legacy: always use axis label for 1st data if spaces at start&end
+						label = plotYLabel.substring(1,plotYLabel.length()-1);
+				}
+				if (plotObjectLabel != null)
+					label = plotObjectLabel;
+				if (label != null && headings.contains(label))
+					label = null; // avoid duplicate labels (not possible in ResultsTable)
+			}
+			if (label == null) {                                                     // create default label if no specific label yet
+				label = plotObject.type == PlotObject.ARROWS ? "YStart" : "Y";
+				if (multipleSets) label += dataSetNumber;
 			}
 			headings.add(label);
 			data.add(plotObject.yValues);
@@ -3525,6 +3575,15 @@ public class Plot implements Cloneable {
 			headings.add(label);
 			data.add(plotObject.yEValues);
 		}
+	}
+
+	/** Convert a string to a label suitable for a ResultsTable without whitespace, quotes or commas,
+	 *  to avoid problems when saving and reading the table. Returns null if an empty string or null. */
+	static String replaceSpacesEtc(String s) {
+		if (s == null) return null;
+		s = s.trim().replaceAll("[\\s,]", "_").replace("\"","''");
+		if (s.length() == 0) return null;
+		return s;
 	}
 
 	/** get the number of digits for writing a column to the results table or the clipboard */
