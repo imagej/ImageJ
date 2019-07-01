@@ -4887,6 +4887,8 @@ public class Functions implements MacroConstants, Measurements {
 			return instance!=null?instance.hashCode():0;
 		} else if (key.equals("done")) {
 			return interp.done?1:0;
+		} else if (key.startsWith("Length")) {
+				return getMeasurementValue(key);
 		} else {
 			String[] headings = ResultsTable.getDefaultHeadings();
 			for (int i=0; i<headings.length; i++) {

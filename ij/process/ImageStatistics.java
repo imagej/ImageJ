@@ -260,7 +260,7 @@ public class ImageStatistics implements Measurements {
 	
 	void calculateMedian(int[] hist, int first, int last, Calibration cal) {
 		//ij.IJ.log("calculateMedian: "+first+"  "+last+"  "+hist.length+"  "+pixelCount);
-		if (pixelCount==0) {
+		if (pixelCount==0 || first<0 || last>hist.length) {
 			median = Double.NaN;
 			return;
 		}

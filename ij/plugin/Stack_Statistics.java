@@ -48,6 +48,7 @@ public class Stack_Statistics implements PlugIn {
 		rt.addValue("Min", stats.min);
 		rt.addValue("Max", stats.max);
 		rt.addValue("Mode", stats.dmode);
+		rt.addValue("Median", stats.median);
 		rt.show("Results");
 	}
 	

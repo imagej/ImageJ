@@ -11,7 +11,7 @@ public class StackStatistics extends ImageStatistics {
 	/** Creates a StackStatistics object from a stack, using 256 
 		histogram bins and the entire stack pixel value range. */
 	public StackStatistics(ImagePlus imp) {
-		this(imp, 256, 0.0, 0.0);
+		this(imp, 256, 0.0, imp.getBitDepth()==8||imp.getBitDepth()==24?256.0:0.0);
 	}
 
 	/** Creates a StackStatistics object from a stack, using the specified 
@@ -28,7 +28,7 @@ public class StackStatistics extends ImageStatistics {
 	}
 
     void doCalculations(ImagePlus imp,  int bins, double histogramMin, double histogramMax) {
-        ImageProcessor ip = imp.getProcessor();
+       ImageProcessor ip = imp.getProcessor();
 		boolean limitToThreshold = (Analyzer.getMeasurements()&LIMIT)!=0;
 		double minThreshold = -Float.MAX_VALUE;
 		double maxThreshold = Float.MAX_VALUE;
@@ -150,6 +150,7 @@ public class StackStatistics extends ImageStatistics {
         	histMax = 255.0;
         dmode = getMode(cal);
 		copyHistogram(nBins);
+		median = getMedian(longHistogram, (int)minThreshold, (int)maxThreshold, cal);
         IJ.showStatus("");
         IJ.showProgress(1.0);
     }
@@ -180,6 +181,7 @@ public class StackStatistics extends ImageStatistics {
 		getRawStatistics(longHistogram, minThreshold, maxThreshold);
 		getRawMinAndMax(longHistogram, minThreshold, maxThreshold);
 		copyHistogram(256);
+		median = getMedian(longHistogram, minThreshold, maxThreshold, cal);
 		IJ.showStatus("");
 		IJ.showProgress(1.0);
 	}
@@ -261,6 +263,7 @@ public class StackStatistics extends ImageStatistics {
 		pw=1.0; ph=1.0;
 		getRaw16BitMinAndMax(hist16, minThreshold, maxThreshold);
 		get16BitStatistics(hist16, (int)min, (int)max);
+		median = getMedian(hist16, minThreshold, maxThreshold, cal);
 		histogram16 = new int[65536];
 		for (int i=0; i<65536; i++) {
 			long count = hist16[i];
@@ -337,4 +340,18 @@ public class StackStatistics extends ImageStatistics {
         return tmode;
     }
     
+    double getMedian(long[] hist, int first, int last, Calibration cal) {
+		//ij.IJ.log("getMedian: "+first+"  "+last+"  "+hist.length+"  "+pixelCount);
+		if (pixelCount==0 || first<0 || last>hist.length)
+			return Double.NaN;
+		double sum = 0;
+		int i = first-1;
+		double halfCount = pixelCount/2.0;
+		do {
+			sum += hist[++i];
+		} while (sum<=halfCount && i<last);
+		return cal!=null?cal.getCValue(i):i;
+	}
+
+   
 }
