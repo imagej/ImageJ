@@ -61,7 +61,7 @@ public class SyncWindows extends PlugInFrame implements
 
 	/** Hashtable to map list ids to image window ids. */
 	protected Vector vListMap;
-	
+
 	/** reference to current instance of ImageJ (to avoid repeated IJ.getInstance() s) */
 	protected final ImageJ ijInstance;
 
@@ -71,16 +71,16 @@ public class SyncWindows extends PlugInFrame implements
 	 */
 	private double currentMag = 1;
 	private Rectangle currentSrcRect = new Rectangle(0,0,400,400);
-	
+
 	// Control size of cursor box and clipping region. These could be
 	// changed to tune performance.
 	static final int RSZ = 16;
 	static final int SZ = RSZ/2;
 	static final int SCALE = 3;
-	
+
 	private static SyncWindows instance;
 	private static Point location;
-	
+
 	//--------------------------------------------------
 	/** Create window sync frame. Frame is shown via call to show() or
 		by invoking run method.	 */
@@ -112,7 +112,7 @@ public class SyncWindows extends PlugInFrame implements
 		Executer.addCommandListener(this);
 		show();
 	}
-	
+
 	public static void setC(ImageWindow source, int channel) {
 		SyncWindows syncWindows = instance;
 		if (syncWindows==null || !syncWindows.synced(source))
@@ -136,7 +136,7 @@ public class SyncWindows extends PlugInFrame implements
 		DisplayChangeEvent event = new DisplayChangeEvent(source, DisplayChangeEvent.T, frame);
 		syncWindows.displayChanged(event);
 	}
-	
+
 	private boolean synced(ImageWindow source) {
 		if (source==null || vwins==null)
 			return false;
@@ -177,9 +177,9 @@ public class SyncWindows extends PlugInFrame implements
 					if (!iw.equals(source))
 						imp.setC(value);
 				}
-			}	
-		}		 
-		
+			}
+		}
+
 		// Change slice in other synchronized windows.
 		if (cSlice.getState() && type==DisplayChangeEvent.Z) {
 			for (int n=0; n<vwins.size();++n) {
@@ -205,7 +205,7 @@ public class SyncWindows extends PlugInFrame implements
 					if (!iw.equals(source))
 						imp.setT(value);
 				}
-			}   
+			}
 		}
 
 		// Store srcRect, Magnification and others of current ImageCanvas
@@ -246,10 +246,10 @@ public class SyncWindows extends PlugInFrame implements
 			if (ijInstance.quitting()) {
 				return;
 			}
-			imp = getImageFromVector(n);	   
-			if (imp != null) {				
+			imp = getImageFromVector(n);
+			if (imp != null) {
 				iw = imp.getWindow();
-				ic = iw.getCanvas();			  
+				ic = iw.getCanvas();
 				if (cCoords.getState() && iw != iwc) {
 					p = getMatchingCoords(ic, icc, x, y);
 					oldp = getMatchingCoords(ic, icc, oldX, oldY);
@@ -263,8 +263,8 @@ public class SyncWindows extends PlugInFrame implements
 				if (! (roi != null && roi instanceof PolygonRoi && roi.getState() == Roi.CONSTRUCTING) )
 					drawSyncCursor(imp, p.x, p.y);
 				if (iw != iwc)
-					ic.mouseMoved(adaptEvent(e, ic, p));	   
-			}		   
+					ic.mouseMoved(adaptEvent(e, ic, p));
+			}
 		}
 		// Display correct values in ImageJ statusbar
 		iwc.getImagePlus().mouseMoved(icc.offScreenX(x), icc.offScreenY(y));
@@ -338,7 +338,7 @@ public class SyncWindows extends PlugInFrame implements
 		if (!cCursor.getState()) return;
 		if (vwins == null) return;
 		// prevent popups popping up in all windows on right mouseclick
-		if (Toolbar.getToolId()!= Toolbar.MAGNIFIER && 
+		if (Toolbar.getToolId()!= Toolbar.MAGNIFIER &&
 			(e.isPopupTrigger() || (e.getModifiers() & MouseEvent.META_MASK)!=0)) return;
 		ImagePlus imp;
 		ImageWindow iw;
@@ -373,7 +373,7 @@ public class SyncWindows extends PlugInFrame implements
 
 	// --------------------------------------------------
 	/** Propagate mouse entered events to all synchronized windows. */
-	public void mouseEntered(MouseEvent e) {	
+	public void mouseEntered(MouseEvent e) {
 		if (!cCursor.getState()) return;
 		if (vwins == null) return;
 		ImagePlus imp;
@@ -392,7 +392,7 @@ public class SyncWindows extends PlugInFrame implements
 				return;
 			}
 			imp = getImageFromVector(n);
-			if (imp != null) {		
+			if (imp != null) {
 				iw = imp.getWindow();
 				if(iw != iwc) {
 					ic = iw.getCanvas();
@@ -401,7 +401,7 @@ public class SyncWindows extends PlugInFrame implements
 						p = getMatchingCoords(ic, icc, x, y);
 					}
 					ic.mouseEntered(adaptEvent(e, ic, p));
-				}				
+				}
 			}
 		}
 		// Store srcRect, Magnification and others of current ImageCanvas
@@ -430,10 +430,10 @@ public class SyncWindows extends PlugInFrame implements
 				return;
 			}
 			imp = getImageFromVector(n);
-			if (imp != null) {				
+			if (imp != null) {
 				iw = imp.getWindow();
 				ic = iw.getCanvas();
-				
+
 				if (cCoords.getState() && iw != iwc)
 					p = getMatchingCoords(ic, icc, x, y);
 				else {
@@ -443,7 +443,7 @@ public class SyncWindows extends PlugInFrame implements
 
 				setCursor(imp, null);
 				if (iw != iwc)
-					ic.mouseExited(adaptEvent(e, ic, p));					 
+					ic.mouseExited(adaptEvent(e, ic, p));
 			}
 		}
 		// Store srcRect, Magnification and others of current ImageCanvas
@@ -457,7 +457,7 @@ public class SyncWindows extends PlugInFrame implements
 		if (!cCursor.getState()) return;
 		if (vwins == null) return;
 		// prevent popups popping up in all windows on right mouseclick
-		if (Toolbar.getToolId()!= Toolbar.MAGNIFIER && 
+		if (Toolbar.getToolId()!= Toolbar.MAGNIFIER &&
 			(e.isPopupTrigger() || (e.getModifiers() & MouseEvent.META_MASK)!=0)) return;
 		ImagePlus imp;
 		ImageWindow iw;
@@ -501,7 +501,7 @@ public class SyncWindows extends PlugInFrame implements
 		if (!cCursor.getState()) return;
 		if (vwins == null) return;
 		// prevent popups popping up in all windows on right mouseclick
-		if (Toolbar.getToolId()!= Toolbar.MAGNIFIER && 
+		if (Toolbar.getToolId()!= Toolbar.MAGNIFIER &&
 			(e.isPopupTrigger() || (e.getModifiers() & MouseEvent.META_MASK)!=0)) return;
 		ImagePlus imp;
 		ImageWindow iw;
@@ -591,14 +591,14 @@ public class SyncWindows extends PlugInFrame implements
 			}
 			addSelections();
 		}
-		
+
 		if (cCoords != null && e.getSource() == cCoords) {
-			if (cScaling != null && e.getStateChange() == ItemEvent.DESELECTED) 
+			if (cScaling != null && e.getStateChange() == ItemEvent.DESELECTED)
 					cScaling.setState(false);
-		}	
-		
+		}
+
 		if (cScaling != null && e.getSource() == cScaling) {
-			if (cCoords != null && e.getStateChange() == ItemEvent.SELECTED) 
+			if (cCoords != null && e.getStateChange() == ItemEvent.SELECTED)
 					cCoords.setState(true);
 		}
 	}
@@ -612,10 +612,10 @@ public class SyncWindows extends PlugInFrame implements
 			removeAllWindows();
 			ImagePlus.removeImageListener(this);
 			Executer.removeCommandListener(this);
-			close();	
+			close();
 		}
 	}
-	
+
 	/** Implementation of ImageListener interface: update window list, if image is opened or closed */
 	public void imageOpened(ImagePlus imp) {
 		updateWindowList();
@@ -649,16 +649,16 @@ public class SyncWindows extends PlugInFrame implements
 		ImageWindow iw;
 
 		// get IDList from WindowManager
-		int[] imageIDs = WindowManager.getIDList();		  
-		
+		int[] imageIDs = WindowManager.getIDList();
+
 		if(imageIDs != null) {
 			int size;
 			if (imageIDs.length < 10) {
 				size = imageIDs.length;
 			} else {
 				size = 10;
-			} 
-			
+			}
+
 			// Initialize window list and vector that maps list entries to window IDs.
 			wList = new java.awt.List(size, true);
 			vListMap = new Vector();
@@ -710,26 +710,26 @@ public class SyncWindows extends PlugInFrame implements
 		p.add(cSlice);
 
 //		TODO: Give functionality to Synchronize Channels and Synchronize t-Frames checkboxes.
-		
+
 		// Checkbox: synchronize channels (for hyperstacks)
 		cChannel = new Checkbox("Sync channels", true);
 		p.add(cChannel);
-		
+
 		// Checkbox: synchronize time-frames (for hyperstacks)
 		cFrame = new Checkbox("Sync t-frames", true);
 		p.add(cFrame);
-		
+
 		// Checkbox: image coordinates
 		cCoords = new Checkbox("Image coordinates", true);
 		cCoords.addItemListener(this);
 		p.add(cCoords);
- 
+
 		// Checkbox: image scaling (take pixel scale and offset into account)
 		cScaling = new Checkbox("Image scaling", false);
 		cScaling.addItemListener(this);
 		p.add(cScaling);
-		
-		
+
+
 
 		// Synchronize all windows.
 		bSyncAll = new Button("Synchronize All");
@@ -769,7 +769,7 @@ public class SyncWindows extends PlugInFrame implements
 	}
 
 	/* Update the List of Windows in the GUI. Used by the "Update" button. */
-	protected void updateWindowList() {	  
+	protected void updateWindowList() {
 		// Don't build a new window list, while the old one is removed.
 		// When an StackWindow is replaced by an OpenStackWindow, updateWindowList
 		// is called again and the other components in the panel are removed, also.
@@ -779,7 +779,7 @@ public class SyncWindows extends PlugInFrame implements
 		panel.add(newWindowList,BorderLayout.NORTH,0);
 		pack();
 	}
-	
+
 	// --------------------------------------------------
 	private void addSelections() {
 		if(wList == null) return; // nothing to select
@@ -857,14 +857,14 @@ public class SyncWindows extends PlugInFrame implements
 		imp = WindowManager.getImage(I.intValue());
 		if (imp != null) {
 			iw = imp.getWindow();
-			if (iw != null) {	
+			if (iw != null) {
 				ic = iw.getCanvas();
 				if (ic != null) {
 						ic.removeMouseListener(this);
 						ic.removeMouseMotionListener(this);
 						// Repaint to get rid of sync indicator.
-						ic.paint(ic.getGraphics()); 
-				}		
+						ic.paint(ic.getGraphics());
+				}
 			}
 		}
 	}
@@ -894,7 +894,7 @@ public class SyncWindows extends PlugInFrame implements
 		if (overlay2!=null) {
 			for (int i = overlay2.size()-1; i>=0; i--) {
 				Roi roi2 = overlay2.get(i);
-				if (roi2.isCursor()) 
+				if (roi2.isCursor())
 					overlay2.remove(i);
 			}
 			if (cursor==null) {
@@ -918,7 +918,7 @@ public class SyncWindows extends PlugInFrame implements
 		currentMag = ic.getMagnification();
 		currentSrcRect = new Rectangle(ic.getSrcRect());
 	}
-	
+
 	// --------------------------------------------------
 	/** Get ImagePlus from Windows-Vector vwins. */
 	public ImagePlus getImageFromVector(int n) {
@@ -926,9 +926,10 @@ public class SyncWindows extends PlugInFrame implements
 
 		ImagePlus imp;
 		imp = WindowManager.getImage(((Integer)vwins.elementAt(n)).intValue());
+		if (imp.isLocked()) return null;	//must not touch locked windows
 		return imp;
-	}	 
-	
+	}
+
 	/** Get the title of image n from Windows-Vector vwins. If the image ends with
 	 *	.tif, the extension is removed. */
 	public String getImageTitleFromVector(int n) {
@@ -941,19 +942,19 @@ public class SyncWindows extends PlugInFrame implements
 			title = title.substring(0, title.length()-4);
 		} else if (title.length()>=5 && (title.substring(title.length()-5)).equalsIgnoreCase(".tiff")) {
 			title = title.substring(0, title.length()-5);
-		}		 
+		}
 		return title;
 	}
 
 	/** Get index of "image" in vector of synchronized windows, if image is in vector.
-	 * Else return -1. 
-	*/	   
+	 * Else return -1.
+	*/
 	public int getIndexOfImage(ImagePlus image) {
 		int index = -1;
 		ImagePlus imp;
-		if (vwins == null || vwins.size() == 0) 
+		if (vwins == null || vwins.size() == 0)
 			return index;
-			
+
 		for (int n=0; n<vwins.size(); n++){
 			imp = WindowManager.getImage(((Integer)vwins.elementAt(n)).intValue());
 			if (imp == image) {
@@ -968,9 +969,9 @@ public class SyncWindows extends PlugInFrame implements
 	/** Get Screen Coordinates for ImageCanvas ic matching
 	 *	the OffScreen Coordinates of the current ImageCanvas.
 	 *	(srcRect and magnification stored after each received event.)
-	 *	Input: The target ImageCanvas, the current ImageCanvas, 
+	 *	Input: The target ImageCanvas, the current ImageCanvas,
 	 *	x-ScreenCoordinate for current Canvas, y-ScreenCoordinate for current Canvas
-	 *	If the "ImageScaling" checkbox is selected, Scaling and Offset 
+	 *	If the "ImageScaling" checkbox is selected, Scaling and Offset
 	 *	of the images are taken into account. */
 	protected Point getMatchingCoords(ImageCanvas ic, ImageCanvas icc, int x, int y) {
 
@@ -983,7 +984,7 @@ public class SyncWindows extends PlugInFrame implements
 
 			xOffScreen = ((xOffScreen-curCal.xOrigin)*curCal.pixelWidth)/cal.pixelWidth+cal.xOrigin;
 			yOffScreen = ((yOffScreen-curCal.yOrigin)*curCal.pixelHeight)/cal.pixelHeight+cal.yOrigin;
-		}			 
+		}
 
 		int xnew = ic.screenXD(xOffScreen);
 		int ynew = ic.screenYD(yOffScreen);
@@ -999,7 +1000,7 @@ public class SyncWindows extends PlugInFrame implements
 		   p.x, p.y, e.getClickCount(), e.isPopupTrigger());
 
 	}
-	    
+
 	public Insets getInsets() {
 		Insets i = super.getInsets();
 		return new Insets(i.top+10, i.left+10, i.bottom+10, i.right+10);
@@ -1010,7 +1011,7 @@ public class SyncWindows extends PlugInFrame implements
 		instance = null;
 		location = getLocation();
 	}
-	
+
 	public static SyncWindows getInstance() {
 		return instance;
 	}
@@ -1173,7 +1174,7 @@ class IJEventMulticaster extends AWTEventMulticaster implements DisplayChangeLis
 		((DisplayChangeListener)a).displayChanged(e);
 		((DisplayChangeListener)b).displayChanged(e);
 	}
-	
+
 	/**
 	 * Adds DisplayChange-listener-a with DisplayChange-listener-b and
 	 * returns the resulting multicast listener.
@@ -1183,7 +1184,7 @@ class IJEventMulticaster extends AWTEventMulticaster implements DisplayChangeLis
 	public static DisplayChangeListener add(DisplayChangeListener a, DisplayChangeListener b) {
 		return (DisplayChangeListener)addInternal(a, b);
 	}
-	
+
 	/**
 	 * Removes the old DisplayChange-listener from DisplayChange-listener-l and
 	 * returns the resulting multicast listener.
@@ -1193,5 +1194,5 @@ class IJEventMulticaster extends AWTEventMulticaster implements DisplayChangeLis
 	public static DisplayChangeListener remove(DisplayChangeListener l, DisplayChangeListener oldl) {
 		return (DisplayChangeListener)removeInternal(l, oldl);
 	}
-	
+
 }

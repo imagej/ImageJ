@@ -18,12 +18,12 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	boolean hyperStack;
 	int nChannels=1, nSlices=1, nFrames=1;
 	int c=1, z=1, t=1;
-	
+
 
 	public StackWindow(ImagePlus imp) {
 		this(imp, null);
 	}
-	
+
     public StackWindow(ImagePlus imp, ImageCanvas ic) {
 		super(imp, ic);
 		addScrollbars(imp);
@@ -42,7 +42,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		thread = new Thread(this, "zSelector");
 		thread.start();
 	}
-	
+
 	void addScrollbars(ImagePlus imp) {
 		ImageStack s = imp.getStack();
 		int stackSize = s.getSize();
@@ -108,6 +108,15 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			win.setSliderHeight(sliderHeight);
 	}
 
+	/** Enables or disables the sliders. Used when locking/unlocking an image. */
+	public synchronized void setSlidersEnabled(boolean b) {
+		if (sliceSelector != null)     sliceSelector.setEnabled(b);
+		if (cSelector != null)         cSelector.setEnabled(b);
+		if (zSelector != null)         zSelector.setEnabled(b);
+		if (tSelector != null)         tSelector.setEnabled(b);
+		if (animationSelector != null) animationSelector.setEnabled(b);
+	}
+
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
 		if (!running2 || imp.isHyperStack()) {
 			if (e.getSource()==cSelector) {
@@ -127,7 +136,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		if (!running)
 			syncWindows(e.getSource());
 	}
-	
+
 	private void syncWindows(Object source) {
 		if (SyncWindows.getInstance()==null)
 			return;
@@ -147,7 +156,6 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			throw new RuntimeException("Unknownsource:"+source);
 	}
 
-	
 	void updatePosition() {
 		slice = (t-1)*nChannels*nSlices + (z-1)*nChannels + c;
 		imp.updatePosition(c, z, t);
@@ -205,7 +213,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			SyncWindows.setZ(this, index);
 		}
 	}
-	
+
 	/** Updates the stack scrollbar. */
 	public void updateSliceSelector() {
 		if (hyperStack || zSelector==null || imp==null)
@@ -221,7 +229,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			}
 		});
 	}
-	
+
 	public void run() {
 		while (!done) {
 			synchronized(this) {
@@ -237,7 +245,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			}
 		}
 	}
-	
+
 	public String createSubtitle() {
 		String subtitle = super.createSubtitle();
 		if (!hyperStack || imp.getStackSize()==1)
@@ -268,11 +276,11 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			subtitle = "";
     	return s + subtitle;
     }
-    
+
     public boolean isHyperStack() {
     	return hyperStack && getNScrollbars()>0;
     }
-    
+
     public void setPosition(int channel, int slice, int frame) {
     	if (cSelector!=null && channel!=c) {
     		c = channel;
@@ -297,7 +305,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 				imp.setSlice(s);
 		}
     }
-    
+
     private void setSlice(ImagePlus imp, int n) {
 		if (imp.isLocked()) {
 			IJ.beep();
@@ -305,7 +313,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		} else
 			imp.setSlice(n);
     }
-    
+
 	public boolean validDimensions() {
 		int c = imp.getNChannels();
 		int z = imp.getNSlices();
@@ -319,17 +327,17 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		else
 			return true;
 	}
-    
+
     public void setAnimate(boolean b) {
     	if (running2!=b && animationSelector!=null)
     		animationSelector.updatePlayPauseIcon();
 		running2 = b;
     }
-    
+
     public boolean getAnimate() {
     	return running2;
     }
-    
+
     public int getNScrollbars() {
     	int n = 0;
     	if (cSelector!=null) n++;
@@ -337,7 +345,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
     	if (tSelector!=null) n++;
     	return n;
     }
-    
+
     void removeScrollbars() {
     	if (cSelector!=null) {
     		remove(cSelector);

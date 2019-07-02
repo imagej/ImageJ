@@ -17,23 +17,23 @@ public class Executer implements Runnable {
 	private static String previousCommand;
 	private static CommandListener listener;
 	private static Vector listeners = new Vector();
-	
+
 	private String command;
 	private Thread thread;
-	
+
 	/** Create an Executer to run the specified menu command
 		in this thread using the active image. */
 	public Executer(String cmd) {
 		command = cmd;
 	}
 
-	/** Create an Executer that runs the specified menu 
+	/** Create an Executer that runs the specified menu
 		command in a separate thread using the specified image,
 		or using the active image if 'imp' is null. */
 	public Executer(String cmd, ImagePlus imp) {
 		if (cmd.startsWith("Repeat")) {
 			command = previousCommand;
-			IJ.setKeyUp(KeyEvent.VK_SHIFT);		
+			IJ.setKeyUp(KeyEvent.VK_SHIFT);
 		} else {
 			command = cmd;
 			if (!(cmd.equals("Undo")||cmd.equals("Close")))
@@ -117,7 +117,7 @@ public class Executer implements Runnable {
 				WindowManager.setTempCurrentImage(null);
 		}
 	}
-	    
+
 	void runCommand(String cmd) {
 		Hashtable table = Menus.getCommands();
 		String className = (String)table.get(cmd);
@@ -131,6 +131,15 @@ public class Executer implements Runnable {
 					className = className.substring(0, argStart);
 				}
 			}
+			// we have the plugin class name, let us see whether it is allowed to run it
+			ImagePlus imp = WindowManager.getCurrentImage();
+			boolean imageLocked = imp != null && imp.isLocked();
+			if (imageLocked && !allowedWithLockedImage(className)) {
+				IJ.beep();
+				IJ.showStatus(cmd + " blocked: Locked image \"" + imp.getTitle() + "\"");
+				return;
+			}
+			// run the plugin
 			if (IJ.shiftKeyDown() && className.startsWith("ij.plugin.Macro_Runner") && !Menus.getShortcuts().contains("*"+cmd))
     			IJ.open(IJ.getDirectory("plugins")+arg);
     		else
@@ -159,7 +168,16 @@ public class Executer implements Runnable {
 					IJ.error("Unrecognized command: \"" + cmd+"\"");
 			}
 	 	}
-    }   
+    }
+
+	/** If the foreground image is locked during a filter operation with NonBlockingGenericDialog,
+	 *  the following plugins are allowed */
+	boolean allowedWithLockedImage(String className) {
+		return className.equals("ij.plugin.Zoom") ||
+				className.equals("ij.plugin.frame.ContrastAdjuster") ||
+				className.equals("ij.plugin.SimpleCommands") ||  //includes Plugins>Utiltites>Reset (needed to reset a locked image)
+				className.equals("ij.plugin.WindowOrganizer");
+	}
 
     /** Opens a .lut file from the ImageJ/luts directory and returns 'true' if successful. */
     public static boolean loadLut(String name) {
@@ -182,7 +200,7 @@ public class Executer implements Runnable {
 		return false;
     }
 
-    /** Opens a file from the File/Open Recent menu 
+    /** Opens a file from the File/Open Recent menu
  	      and returns 'true' if successful. */
     boolean openRecent(String cmd) {
 		Menu menu = Menus.getOpenRecentMenu();
@@ -201,17 +219,17 @@ public class Executer implements Runnable {
 	public static String getCommand() {
 		return previousCommand;
 	}
-	
+
 	/** Adds the specified command listener. */
 	public static void addCommandListener(CommandListener listener) {
 		listeners.addElement(listener);
 	}
-	
+
 	/** Removes the specified command listener. */
 	public static void removeCommandListener(CommandListener listener) {
 		listeners.removeElement(listener);
 	}
-	
+
 	public static int getListenerCount() {
 		return listeners.size();
 	}

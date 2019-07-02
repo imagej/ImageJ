@@ -1,5 +1,5 @@
 package ij.gui;
-import ij.IJ;
+import ij.*;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -26,7 +26,7 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
 		
 		panel = new Panel();
 		panel.setLayout(new FlowLayout(FlowLayout.RIGHT, 15, 8));
-		if (IJ.isMacintosh() && msg.startsWith("Save")) {
+		if (msg.startsWith("Save")) {
 			yesB = new Button("  Save  ");
 			noB = new Button("Don't Save");
 			cancelB = new Button("  Cancel  ");
@@ -41,16 +41,17 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
 		yesB.addKeyListener(this);
 		noB.addKeyListener(this);
 		cancelB.addKeyListener(this);
-		if (IJ.isMacintosh()) {
+		if (IJ.isWindows() || Prefs.dialogCancelButtonOnRight) {
+			panel.add(yesB);
 			panel.add(noB);
 			panel.add(cancelB);
-			panel.add(yesB);
-			setResizable(false);
 		} else {
-			panel.add(yesB);
 			panel.add(noB);
 			panel.add(cancelB);
+			panel.add(yesB);
 		}
+		if (IJ.isMacintosh())
+			setResizable(false);
 		add("South", panel);
 		addWindowListener(this);
 		GUI.scale(this);

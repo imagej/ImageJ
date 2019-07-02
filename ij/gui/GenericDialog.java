@@ -628,13 +628,13 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 		addSlider( label, minValue, maxValue, defaultValue, scale, digits);
 	}
-	
+
 	/** This vesion of addSlider() adds a 'stepSize' argument.<br>
 	 * Example: http://wsr.imagej.net/macros/SliderDemo.txt
 	*/
 	public void addSlider(String label, double minValue, double maxValue, double defaultValue, double stepSize) {
 		if ( stepSize <= 0 ) stepSize  = 1;
-		int digits = digits(stepSize);		
+		int digits = digits(stepSize);
 		double scale = 1.0 / Math.abs( stepSize );
 		if ( scale <= 0 ) scale = 1;
 		if ( defaultValue < minValue ) defaultValue = minValue;
@@ -644,7 +644,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		defaultValue *= scale;
 		addSlider(label, minValue, maxValue, defaultValue, scale, digits);
 	}
-	
+
 	private int digits( double d ) {
 		if ( d == (int) d ) return 0;
 		String s = Double.toString(d);
@@ -676,7 +676,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			slider = new Vector(5);
 			sliderIndexes = new Vector(5);
 			sliderScales = new Vector(5);
-			sliderDigits = new Vector(5);	
+			sliderDigits = new Vector(5);
 		}
 		Scrollbar s = new Scrollbar(Scrollbar.HORIZONTAL, (int)defaultValue, 1, (int)minValue, (int)maxValue+1);
 		slider.addElement(s);
@@ -789,7 +789,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
      *  addMessage, addPanel, and before the showDialog() method
      *  (in the latter case, the buttons appear to the right of the previous item).
      *  Note that addMessage (and addStringField, if its column width is more than 8) use
-     *  the remaining width, so it must be the last item of a row. 
+     *  the remaining width, so it must be the last item of a row.
      */
     public void addToSameRow() {
         addToSameRow = true;
@@ -884,12 +884,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	/** Returns the contents of the next numeric field,
 		or NaN if the field does not contain a number. */
-   public double getNextNumber() {
+    public double getNextNumber() {
 		if (numberField==null)
 			return -1.0;
 		TextField tf = (TextField)numberField.elementAt(nfIndex);
 		String theText = tf.getText();
-        String label=null;
+		String label=null;
 		if (macro) {
 			label = (String)labels.get((Object)tf);
 			theText = Macro.getValue(macroOptions, label, theText);
@@ -920,7 +920,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 							+"   Key: \""+label.toLowerCase(Locale.US)+"\"\n"
 							+"   Value or variable name: \""+theText+"\"");
 					}
-                }
+				}
 			}
 		}
 		if (recorderOn && !skipRecording) {
@@ -1232,7 +1232,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			c.insets = new Insets(15, 0, 0, 0);
 			add(buttons, c);
 			if (IJ.isMacOSX()&&IJ.isJava18())
-				instance = this;				
+				instance = this;
 			Font font = getFont();
 			if (IJ.debugMode) IJ.log("GenericDialog font: "+fontSizeSet+" "+font);
 			if (!fontSizeSet && font!=null && Prefs.getGuiScale()!=1.0) {
@@ -1242,13 +1242,18 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			pack();
 			setup();
 			if (centerDialog)
-				GUI.centerOnImageJScreen(this); 
+				GUI.centerOnImageJScreen(this);
 			setVisible(true);
 			recorderOn = Recorder.record;
 			IJ.wait(25);
 		}
+		if (!(this instanceof NonBlockingGenericDialog))
+		    finalizeRecording();
+		resetCounters();
+	}
 
-		/* For plugins that read their input only via dialogItemChanged, call it at least once */
+	/** For plugins that read their input only via dialogItemChanged, call it at least once, then stop recording */
+	void finalizeRecording() {
 		if (!wasCanceled && dialogListeners!=null && dialogListeners.size()>0) {
 			resetCounters();
 			((DialogListener)dialogListeners.elementAt(0)).dialogItemChanged(this,null);
@@ -1256,7 +1261,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 		resetCounters();
 	}
-	
+
 	@Override
 	public void setFont(Font font) {
 		super.setFont(!fontSizeSet&&Prefs.getGuiScale()!=1.0?font.deriveFont((float)(font.getSize()*Prefs.getGuiScale())):font);
@@ -1526,7 +1531,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 
 	public void paint(Graphics g) {
-		super.paint(g);		
+		super.paint(g);
 		if (firstPaint && IJ.isMacOSX() && IJ.isJava18()) { // fix for incompletely drawn dialogs on Macs
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {
@@ -1555,7 +1560,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     }
 
 	void showHelp() {
-		if (helpURL.startsWith("<html>")) {	
+		if (helpURL.startsWith("<html>")) {
 			if (this instanceof NonBlockingGenericDialog)
 				new HTMLDialog("", helpURL, false); // non blocking
 			else
@@ -1585,5 +1590,5 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     public void windowIconified(WindowEvent e) {}
     public void windowDeiconified(WindowEvent e) {}
     public void windowDeactivated(WindowEvent e) {}
-    
+
 }
