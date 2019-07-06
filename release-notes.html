@@ -5,13 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.52q7 1 July 2019</u>
+<li> <u>1.52q11 3 July 2019</u>
 <ul>
 <li> "Save changes?" dialogs on Windows and Linux now
 use "Don't Save", "Cancel" and "Save" buttons.
 <li> Thanks to Noreen Walker, the <i>Image&gt;Stacks&gt;Statistics</i>
 command and the StackStatistics class now calculate the median
 of non-float images.
+<li> Drag and drop opening of images, tables and LUTs is recorded.
 <li> Thanks to Michael Schmid, added the Plot.showValuesWithLabels()
 macro function and the Plot.getResultsTableWithLabels() method.
 Both create tables that use legend labels and/or axis labels as 
@@ -19,6 +20,10 @@ column headings. The List, Save Data and Copy All Data
 plot window commands also now use labels.
 <li> Thanks to Jerome Mutterer, added the getValue("Length")
 macro function.
+<li> Thanks to Stein Rorvik, fixed a bug that caused
+<i>File&gt;Import&gt;Image Sequence</i> to not
+correctly handle RGB48 images when "Use virtual stack"
+was enabled.
 </ul>
 
 <li> <u>1.52p 22 June 2019</u>

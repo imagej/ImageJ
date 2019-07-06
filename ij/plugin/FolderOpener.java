@@ -107,6 +107,8 @@ public class FolderOpener implements PlugIn {
 		}
 		if (directory==null)
 			return;
+		if (!(directory.endsWith("/")||directory.endsWith(File.separator)))
+			directory = directory + "/";
 		String[] list = (new File(directory)).list();
 		if (list==null) {
 			IJ.error("File>Import>Image Sequence", "Directory not found: "+directory);
@@ -425,8 +427,17 @@ public class FolderOpener implements PlugIn {
 				fi.longOffset = fi.getOffset() + i*(size + fi.getGap());
 				stack.addImage(fi);
 			}
-		} else
-			stack.addImage(info[0]);
+		} else {
+			FileInfo fi = info[0];
+			if (fi.fileType==FileInfo.RGB48) {
+				for (int slice=1; slice<=3; slice++) {
+					FileInfo fi2 = (FileInfo)fi.clone();
+					fi2.sliceNumber = slice;
+					stack.addImage(fi2);
+				}
+			} else
+				stack.addImage(fi);
+		}
 	}
 	
 	boolean showDialog(ImagePlus imp, String[] list) {

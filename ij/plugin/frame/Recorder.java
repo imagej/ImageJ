@@ -414,6 +414,26 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			commandOptions += " "+key+"="+value;
 	}
 
+	public static void recordOpen(String path) {
+		if (!record || path==null)
+			return;
+		path = fixPath(path);
+		String s = scriptMode?"imp = IJ.openImage":"open";
+		boolean openingLut = false;
+		if (scriptMode) {
+			if (isTextOrTable(path))
+				s = "IJ.open";
+			else if (path!=null && path.endsWith(".lut")) {
+				s = "lut = Opener.openLut";
+				openingLut = true;
+			}
+		}
+		textArea.append(s+"(\""+path+"\");\n");
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (openingLut && imp!=null && !imp.getTitle().endsWith(".lut"))
+			textArea.append("imp.setLut(lut);\n");
+	}
+	
 	public static void recordPath(String key, String path) {
 		if (key==null || !recordPath) {
 			recordPath = true;
@@ -485,23 +505,9 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			if (name.equals("Add Shortcut by Name... "))
 				name = "Add Shortcut... ";
 			if (commandOptions!=null) {
-				if (name.equals("Open...") || name.equals("URL...")) {
-					String s = scriptMode?"imp = IJ.openImage":"open";
-					String path = strip(commandOptions);
-					boolean openingLut = false;
-					if (scriptMode) {
-						if (isTextOrTable(commandOptions))
-							s = "IJ.open";
-						else if (path!=null && path.endsWith(".lut")) {
-							s = "lut = Opener.openLut";
-							openingLut = true;
-						}
-					}
-					textArea.append(s+"(\""+path+"\");\n");
-					ImagePlus imp = WindowManager.getCurrentImage();
-					if (openingLut && imp!=null && !imp.getTitle().endsWith(".lut"))
-						textArea.append("imp.setLut(lut);\n");
-				} else if (name.equals("TIFF Virtual Stack...") && scriptMode) {
+				if (name.equals("Open...") || name.equals("URL..."))
+					recordOpen(strip(commandOptions));
+				else if (name.equals("TIFF Virtual Stack...") && scriptMode) {
 					String s = "imp = IJ.openVirtual";
 					String path = strip(commandOptions);
 					textArea.append(s+"(\""+path+"\");\n");

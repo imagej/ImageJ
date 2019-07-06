@@ -94,8 +94,7 @@ public class FileInfo implements Cloneable {
 	public int fileFormat;
 	
 	/* File type (GRAY8, GRAY_16_UNSIGNED, RGB, etc.) */
-	public int fileType;
-	
+	public int fileType;	
 	public String fileName;
 	public String directory;
 	public String url;
@@ -120,6 +119,7 @@ public class FileInfo implements Cloneable {
 	public String info;
 	public InputStream inputStream;
 	public VirtualStack virtualStack;
+	public int sliceNumber; // used by FileInfoVirtualStack
 	
 	public double pixelWidth=1.0;
 	public double pixelHeight=1.0;

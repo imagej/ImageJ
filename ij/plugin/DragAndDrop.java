@@ -3,6 +3,7 @@ import ij.*;
 import ij.gui.*;
 import ij.io.*;
 import ij.process.ImageProcessor;
+import ij.plugin.frame.Recorder;
 import java.io.*;
 import java.awt.Point;
 import java.awt.datatransfer.*;
@@ -188,8 +189,10 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 							ImageProcessor ip = (new TextReader()).open(path);
 							if (ip!=null)
 								new ImagePlus(f.getName(),ip).show();
-						} else
+						} else {
+							Recorder.recordOpen(path);
 							(new Opener()).openAndAddToRecent(path);
+						}
 						OpenDialog.setLastDirectory(f.getParent()+File.separator);
 						OpenDialog.setLastName(f.getName());
 					}

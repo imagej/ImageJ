@@ -203,6 +203,8 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		} else {
 			FileOpener fo = new FileOpener(info[n-1]);
 			imp = fo.openImage();
+			if (info[n-1].fileType==FileInfo.RGB48 && info[n-1].sliceNumber>0)
+				imp.setSlice(info[n-1].sliceNumber);
 		}
 		if (imp!=null)
 			return imp.getProcessor();
