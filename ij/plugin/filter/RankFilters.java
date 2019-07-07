@@ -106,7 +106,8 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 			filterType = MEDIAN;
 			radius = 1.0;
 		} else {
-GenericDialog gd = new GenericDialog(command+"...");
+			GenericDialog gd = NonBlockingGenericDialog.newDialog(imp,command+"...");
+			//GenericDialog gd = new GenericDialog(command+"...");
 			radius = lastRadius[filterType]<=0 ? 2 :  lastRadius[filterType];
 			gd.addNumericField("Radius", radius, 1, 6, "pixels");
 			int digits = imp.getType() == ImagePlus.GRAY32 ? 2 : 0;

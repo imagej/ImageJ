@@ -43,6 +43,7 @@ public class Options implements PlugIn {
 			gd.addCheckbox("Don't set Mac menu bar", !Prefs.setIJMenuBar);
 		if (IJ.isLinux())
 			gd.addCheckbox("Save window locations", !Prefs.doNotSaveWindowLocations);
+		gd.addCheckbox("Non-blocking filter dialogs", Prefs.nonBlockingFilterDialogs);
 		gd.addCheckbox("Debug mode", IJ.debugMode);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#misc");
 		gd.showDialog();
@@ -77,6 +78,7 @@ public class Options implements PlugIn {
 			Prefs.setIJMenuBar = !gd.getNextBoolean();
 		if (IJ.isLinux())
 			Prefs.doNotSaveWindowLocations = !gd.getNextBoolean();
+		Prefs.nonBlockingFilterDialogs = gd.getNextBoolean();
 		IJ.setDebugMode(gd.getNextBoolean());
 	}
 

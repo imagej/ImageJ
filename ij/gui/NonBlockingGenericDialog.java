@@ -52,5 +52,16 @@ public class NonBlockingGenericDialog extends GenericDialog {
 		super.dispose();
 		WindowManager.removeWindow(this);
 	}
+	
+	public static GenericDialog newDialog(ImagePlus imp, String title) {
+		if (Prefs.nonBlockingFilterDialogs && imp!=null && imp.getWindow()!=null) {
+			imp.filterLock();
+			GenericDialog gd = new NonBlockingGenericDialog(title);
+			//gd.setImageID(imp.getID());
+			return gd;
+		} else
+			return new GenericDialog(title);
+	}
+  
 
 }

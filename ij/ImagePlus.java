@@ -58,7 +58,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	protected boolean compositeImage;
 	protected int width;
 	protected int height;
-	protected boolean locked = false;
+	protected boolean locked;
+	protected boolean filterLocked;
 	protected int nChannels = 1;
 	protected int nSlices = 1;
 	protected int nFrames = 1;
@@ -190,11 +191,26 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return true;
         }
 	}
-
+	
 	/** Unlocks the image. */
 	public synchronized void unlock() {
 		locked = false;
+		filterUnlock();
 		if (win instanceof StackWindow) ((StackWindow)win).setSlidersEnabled(true);
+	}
+
+	public void filterLock() {
+		//IJ.log("filterLock");
+		filterLocked = true;
+	}
+	
+	public void filterUnlock() {
+		//IJ.log("filterUnlock");
+		filterLocked = false;
+	}
+
+	public boolean lockedByFilter() {
+		return filterLocked;
 	}
 
 	private void waitForImage(Image image) {
