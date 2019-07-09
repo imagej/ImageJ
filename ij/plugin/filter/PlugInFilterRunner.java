@@ -265,6 +265,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 			((PlugInFilter)theFilter).run(ip);
 			pass++;
 		}
+
 		if (thread.isInterrupted()) return;
 		if (doMasking) {
 			if (snapshotPixels != null)
@@ -517,7 +518,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 				if (thread.isInterrupted())
 					break interruptable;
 				//IJ.log("process preview start now");
-				processOneImage(ip, fp, true);		// P R O C E S S   (sets ipChanged)
+				processOneImage(ip, fp, snapshotPixels); // P R O C E S S   (sets ipChanged)
 				IJ.showProgress(1.0);
 				if (thread.isInterrupted())
 					break interruptable;

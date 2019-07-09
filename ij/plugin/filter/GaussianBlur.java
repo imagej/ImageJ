@@ -1,7 +1,6 @@
 package ij.plugin.filter;
 import ij.*;
-import ij.gui.DialogListener;
-import ij.gui.GenericDialog;
+import ij.gui.*;
 import ij.process.*;
 
 import java.awt.AWTEvent;
@@ -79,7 +78,7 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
                 Macro.setOptions(options.replaceAll("radius=", "sigma="));
             }
         }
-        GenericDialog gd = new GenericDialog(command);
+		GenericDialog gd = NonBlockingGenericDialog.newDialog(command, imp);
         sigma = Math.abs(sigma);
         gd.addNumericField("Sigma (Radius):", sigma, 2);
         if (imp.getCalibration()!=null && !imp.getCalibration().getUnits().equals("pixels")) {

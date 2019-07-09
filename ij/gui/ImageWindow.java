@@ -394,6 +394,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 				msg = "Save changes to\n" + "\"" + name + "\"?";
 			else
 				msg = "Save changes to \"" + name + "\"?";
+			if (imp.isLocked())
+				msg += "\nWARNING: This image is locked.\nProbably, processing is unfinished (slow or still previewing).";
 			toFront();
 			YesNoCancelDialog d = new YesNoCancelDialog(this, "ImageJ", msg);
 			if (d.cancelPressed())

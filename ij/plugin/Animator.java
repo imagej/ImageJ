@@ -23,6 +23,8 @@ public class Animator implements PlugIn {
 		nSlices = imp.getStackSize();
 		if (nSlices<2)
 			{IJ.error("Stack required."); return;}
+		if (imp.isLocked())
+			{IJ.beep(); IJ.showStatus("Image is locked: \""+imp.getTitle()+"\""); return;}
 		ImageWindow win = imp.getWindow();
 		if ((win==null || !(win instanceof StackWindow)) && !arg.equals("options")) {
 			if (arg.equals("next"))
@@ -83,9 +85,6 @@ public class Animator implements PlugIn {
 	}
 
 	void startAnimation() {
-		if (imp.isLocked()) {
-			return;
-		}
 		int first=firstFrame, last=lastFrame;
 		if (first<1 || first>nSlices || last<1 || last>nSlices)
 			{first=1; last=nSlices;}
@@ -130,6 +129,7 @@ public class Animator implements PlugIn {
 						sliceIncrement = 1;
 					}
 				}
+				if (imp.isLocked()) return;
 				imp.setPosition(imp.getChannel(), imp.getSlice(), frame);
 			}
 			return;
@@ -160,6 +160,7 @@ public class Animator implements PlugIn {
 						sliceIncrement = 1;
 					}
 				}
+				if (imp.isLocked()) return;
 				imp.setPosition(imp.getChannel(), slice, imp.getFrame());
 			}
 			return;
@@ -196,9 +197,9 @@ public class Animator implements PlugIn {
 					sliceIncrement = 1;
 				}
 			}
+			if (imp.isLocked()) return;
 			swin.showSlice(slice);
 		}
-		
 	}
 
 	void doOptions() {
@@ -367,4 +368,3 @@ public class Animator implements PlugIn {
 	}
 
 }
-

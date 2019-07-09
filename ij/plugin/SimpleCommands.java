@@ -50,12 +50,12 @@ public class SimpleCommands implements PlugIn {
 			openControlPanel();
 		else if (arg.equals("magic"))
 			installMagicMontageTools();
-		else if (arg.equals("measure"))
-			IJ.runMacroFile("ij.jar:MeasureStack", null);
 		else if (arg.equals("interactive"))
 			openInteractiveModeEditor();
 		else if (arg.startsWith("showdir"))
 			showDirectory(arg.replace("showdir", ""));
+		else if (arg.equals("measure"))
+			measureStack();
 	}
 	
 	private synchronized void showFonts() {
@@ -249,5 +249,15 @@ public class SimpleCommands implements PlugIn {
 			return;
 		}
 	}
-	
+
+	private void measureStack() {
+		ImagePlus imp = IJ.getImage();
+		if (imp.isLocked()) {
+			IJ.showStatus("Image is locked: \""+imp.getTitle()+"\"");
+			IJ.beep();
+		} else
+			IJ.runMacroFile("ij.jar:MeasureStack", null);
+		return;
+	}
+
 }

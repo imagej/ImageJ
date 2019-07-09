@@ -59,7 +59,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	protected int width;
 	protected int height;
 	protected boolean locked;
-	protected boolean filterLocked;
+	private Thread lockingThread;
 	protected int nChannels = 1;
 	protected int nSlices = 1;
 	protected int nFrames = 1;
@@ -174,6 +174,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				return false;
 			} else {
 				locked = true;
+				lockingThread = Thread.currentThread();
 				if (win instanceof StackWindow) ((StackWindow)win).setSlidersEnabled(false);
 				return true;
 			}
@@ -186,6 +187,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return false;
         else {
         	locked = true;
+        	lockingThread = Thread.currentThread();
 			if (win instanceof StackWindow) ((StackWindow)win).setSlidersEnabled(false);
 			if (IJ.debugMode) IJ.log(title + ": lock silently");
 			return true;
@@ -195,22 +197,18 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Unlocks the image. */
 	public synchronized void unlock() {
 		locked = false;
-		filterUnlock();
+		lockingThread = null;
 		if (win instanceof StackWindow) ((StackWindow)win).setSlidersEnabled(true);
 	}
-
-	public void filterLock() {
-		//IJ.log("filterLock");
-		filterLocked = true;
-	}
 	
-	public void filterUnlock() {
-		//IJ.log("filterUnlock");
-		filterLocked = false;
+	/** Returns 'true' if the image is locked. */
+	public boolean isLocked() {
+		return locked;
 	}
 
-	public boolean lockedByFilter() {
-		return filterLocked;
+	/** Returns 'true' if the image was locked on another thread. */
+	public boolean isLockedByAnotherThread() {
+		return locked && Thread.currentThread()!=lockingThread;
 	}
 
 	private void waitForImage(Image image) {
@@ -2644,11 +2642,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	public static void removeImageListener(ImageListener listener) {
 		listeners.removeElement(listener);
-	}
-
-	/** Returns 'true' if the image is locked. */
-	public boolean isLocked() {
-		return locked;
 	}
 
 	public void setOpenAsHyperStack(boolean openAsHyperStack) {

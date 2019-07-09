@@ -21,6 +21,7 @@ public class Straightener implements PlugIn {
 			IJ.run(imp, "Duplicate...", " ");
 			return;
 		}
+		if (!imp.lock()) return;
 		int width = (int)Math.round(roi.getStrokeWidth());
 		int originalWidth = width;
 		boolean isMacro = IJ.macroRunning() && Macro.getOptions()!=null;
@@ -35,7 +36,7 @@ public class Straightener implements PlugIn {
 			if (stackSize>1)
 				gd.addCheckbox("Process Entire Stack", processStack);
 			gd.showDialog();
-			if (gd.wasCanceled()) return;
+			if (gd.wasCanceled()) {imp.unlock(); return;}
 			newTitle = gd.getNextString();
 			width = (int)gd.getNextNumber();
 			Line.setWidth(width);
@@ -55,6 +56,7 @@ public class Straightener implements PlugIn {
 			ip2 = straighten(imp, roi, width);
 			imp2 = new ImagePlus(newTitle, ip2);
 		}
+		imp.unlock();
 		if (imp2==null)
 			return;
 		Calibration cal = imp.getCalibration();

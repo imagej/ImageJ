@@ -133,10 +133,10 @@ public class Executer implements Runnable {
 			}
 			// we have the plugin class name, let us see whether it is allowed to run it
 			ImagePlus imp = WindowManager.getCurrentImage();
-			boolean imageLocked = imp != null && imp.isLocked();
-			if (imageLocked && imp.lockedByFilter() && !allowedWithLockedImage(className)) {
+			boolean imageLocked = imp!=null && imp.isLockedByAnotherThread();
+			if (imageLocked && !allowedWithLockedImage(className)) {
 				IJ.beep();
-				IJ.showStatus("\""+cmd + "\" command blocked; \"" + imp.getTitle() + "\" is locked");
+				IJ.showStatus("\""+cmd + "\" blocked because \"" + imp.getTitle() + "\" is locked");
 				return;
 			}
 			// run the plugin
