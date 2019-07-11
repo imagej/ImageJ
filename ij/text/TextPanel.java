@@ -761,36 +761,12 @@ public class TextPanel extends Panel implements AdjustmentListener,
 				}
 			}
 		}
-		clearOverlay(first, last, rows);
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null)
+			Overlay.updateTableOverlay(imp, first, last, rows);
 		selStart=-1; selEnd=-1; selOrigin=-1; selLine=-1;
 		adjustVScroll();
 		tc.repaint();
-	}
-
-	private void clearOverlay(int first, int last, int rows) {
-		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp==null)
-			return;
-		Overlay overlay = imp.getOverlay();
-		if (overlay==null)
-			return;
-		if (overlay.size()!=rows)
-			return;
-		String name1 = overlay.get(0).getName();
-		String name2 = overlay.get(overlay.size()-1).getName();
-		if (!"1".equals(name1) || !(""+rows).equals(name2))
-			return;
-		int count = last-first+1;
-		if (overlay.size()==count) {
-			if (count==1 || IJ.showMessageWithCancel("ImageJ", "Delete the "+overlay.size()+" element overlay?  "))
-				imp.setOverlay(null);
-			return;
-		}
-		for (int i=0; i<count; i++)
-			overlay.remove(first);
-		for (int i=first; i<overlay.size(); i++)
-			overlay.get(i).setName(""+(i+1));
-		imp.draw();
 	}
 
 	/** Deletes all the lines. */

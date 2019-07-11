@@ -294,6 +294,7 @@ public class ImageInfo implements PlugIn {
 			s += "ScaleToFit: " + ic.getScaleToFit() + "\n";
 
 			
+	    String valueUnit = cal.getValueUnit();
 	    if (cal.calibrated()) {
 	    	s += " \n";
 	    	int curveFit = cal.getFunction();
@@ -315,7 +316,10 @@ public class ImageInfo implements PlugIn {
 				if (c.length>=5)
 					s += "  c: "+IJ.d2s(c[4],6)+"\n";
 			}
-			s += "  Unit: \""+cal.getValueUnit()+"\"\n";	    	
+			s += "  Unit: \""+valueUnit+"\"\n";	    	
+	    } else if (valueUnit!=null && !valueUnit.equals("Gray Value")) {
+			s += "Calibration function: None\n";
+			s += "  Unit: \""+valueUnit+"\"\n";	    	
 	    } else
 	    	s += "Uncalibrated\n";
 

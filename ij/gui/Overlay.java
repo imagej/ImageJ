@@ -411,4 +411,37 @@ public class Overlay {
     	return "Overlay[size="+size()+" "+(scalableLabels?"scale":"")+" "+Colors.colorToString(getLabelColor())+"]";
     }
     
+    /** Updates overlays created by the particle analyzer
+    	when rows are deleted from the results table. */
+    public static void updateTableOverlay(ImagePlus imp, int first, int last, int tableSize) {
+		if (imp==null)
+			return;
+		Overlay overlay = imp.getOverlay();
+		if (overlay==null)
+			return;
+		if (overlay.size()!=tableSize)
+			return;
+		if (first<0)
+			first = 0;
+		if (last>tableSize-1)
+			last = tableSize-1;
+		if (first>last)
+			return;
+		String name1 = overlay.get(0).getName();
+		String name2 = overlay.get(overlay.size()-1).getName();
+		if (!"1".equals(name1) || !(""+tableSize).equals(name2))
+			return;
+		int count = last-first+1;
+		if (overlay.size()==count && !IJ.isMacro()) {
+			if (count==1 || IJ.showMessageWithCancel("ImageJ", "Delete "+overlay.size()+" element overlay?  "))
+				imp.setOverlay(null);
+			return;
+		}
+		for (int i=0; i<count; i++)
+			overlay.remove(first);
+		for (int i=first; i<overlay.size(); i++)
+			overlay.get(i).setName(""+(i+1));
+		imp.draw();
+	}
+    
 }

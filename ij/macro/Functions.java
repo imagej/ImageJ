@@ -6852,7 +6852,11 @@ public class Functions implements MacroConstants, Measurements {
 		int row2 = (int)getNextArg();
 		String title = getTitle();
 		ResultsTable rt = getResultsTable(title);
+		int tableSize = rt.size();
 		rt.deleteRows(row1, row2);
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null)
+			Overlay.updateTableOverlay(imp, row1, row2, tableSize);
 		rt.show(title);
 		return new Variable();
 	}

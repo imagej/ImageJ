@@ -131,13 +131,15 @@ public class Executer implements Runnable {
 					className = className.substring(0, argStart);
 				}
 			}
-			// we have the plugin class name, let us see whether it is allowed to run it
-			ImagePlus imp = WindowManager.getCurrentImage();
-			boolean imageLocked = imp!=null && imp.isLockedByAnotherThread();
-			if (imageLocked && !allowedWithLockedImage(className)) {
-				IJ.beep();
-				IJ.showStatus("\""+cmd + "\" blocked because \"" + imp.getTitle() + "\" is locked");
-				return;
+			if (Prefs.nonBlockingFilterDialogs) {
+				// we have the plugin class name, let us see whether it is allowed to run it
+				ImagePlus imp = WindowManager.getCurrentImage();
+				boolean imageLocked = imp!=null && imp.isLockedByAnotherThread();
+				if (imageLocked && !allowedWithLockedImage(className)) {
+					IJ.beep();
+					IJ.showStatus("\""+cmd + "\" blocked because \"" + imp.getTitle() + "\" is locked");
+					return;
+				}
 			}
 			// run the plugin
 			if (IJ.shiftKeyDown() && className.startsWith("ij.plugin.Macro_Runner") && !Menus.getShortcuts().contains("*"+cmd))

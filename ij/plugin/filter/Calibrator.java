@@ -191,6 +191,8 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			unit = "Uncalibrated OD";
 		}
 		cal.setFunction(function, parameters, unit, zeroClip);
+		if (function==Calibration.NONE)
+			cal.setValueUnit(unit);
 		if (!cal.equals(calOrig))
 			imp.setCalibration(cal);
 		int bitDepth = imp.getBitDepth();

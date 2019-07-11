@@ -538,8 +538,15 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 				else if (scriptMode && name.equals("Text Image... ")) // File>Import>Text Image
 					;
 				else {
-					if (name.equals("Calibrate...")&&commandOptions.startsWith("function=None"))
-						commandOptions = commandOptions.substring(0,13);
+					if (name.equals("Calibrate...")) {
+						if (commandOptions.startsWith("function=None unit=[Gray Value]"))
+							commandOptions = commandOptions.substring(0,13);
+						else if (commandOptions.startsWith("function=None")) {
+							int index = commandOptions.indexOf(" text1=");
+							if (index>0)
+								commandOptions = commandOptions.substring(0,index);
+						}
+					}
 					String prefix = "run(";
 					if (scriptMode) {
 						boolean addImp = imageUpdated || (WindowManager.getCurrentImage()!=null
