@@ -711,8 +711,11 @@ public class CurveFitter implements UserFunction{
 	public String getFormula() {
 		if (fitType==CUSTOM)
 			return customFormula;
-		else
-			return fList[fitType];
+		if (fitType==GAUSSIAN_INTERNAL)
+			fitType = GAUSSIAN;
+		else if (fitType==RODBARD_INTERNAL)
+			fitType = RODBARD;
+		return fList[fitType];
 	}
 
 	/** Returns an array of fit names with nicer sorting */
@@ -904,6 +907,10 @@ public class CurveFitter implements UserFunction{
 	 *	and returns false if the data cannot be fitted because of negative x.
 	 *	In such a case, 'errorString' contains a message about the problem. */
 	private boolean makeInitialParamsAndVariations(int fitType) {
+		if (numPoints == 0) {
+			errorString = "No data to fit";
+			return false;
+		}
 		boolean hasInitialParams = initialParams != null;
 		boolean hasInitialParamVariations = initialParamVariations != null;
 		if (!hasInitialParams) {

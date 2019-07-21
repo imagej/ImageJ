@@ -127,7 +127,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		} else {
 			if (labels.endsWith("\t"))
 				this.labels = labels.substring(0, labels.length()-1);
-			sColHead = Tools.split(this.labels, "\t");
+			sColHead = this.labels.split("\t");
         	iColCount = sColHead.length;
 		}
 		flush();
@@ -156,7 +156,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		} else {
 			if (labels.endsWith("\t"))
 				this.labels = labels.substring(0, labels.length()-1);
-			sColHead = Tools.split(this.labels, "\t");
+			sColHead = this.labels.split("\t");
         	iColCount = sColHead.length;
 			iColWidth=new int[iColCount];
 			columnsManuallyAdjusted = false;

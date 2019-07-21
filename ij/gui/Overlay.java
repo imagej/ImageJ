@@ -412,7 +412,7 @@ public class Overlay {
     }
     
     /** Updates overlays created by the particle analyzer
-    	when rows are deleted from the results table. */
+    	after rows are deleted from the Results table. */
     public static void updateTableOverlay(ImagePlus imp, int first, int last, int tableSize) {
 		if (imp==null)
 			return;

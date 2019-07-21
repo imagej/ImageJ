@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52q22 11 July 2019</u>
+<li> <u>1.52q27 20 July 2019</u>
 <ul>
 <li> Thanks to Michael Schmid, added the "Non-blocking filter dialogs"
 option to <i>Edit&gt;Options&gt;Misc</i>. The Convolve,
@@ -13,6 +13,10 @@ Mean, Median, Minimum, Maximum and Variance commands
 use NonBlockingGenericDialogs when this option is enabled.
 <li> "Save changes?" dialogs on Windows and Linux now
 use "Don't Save", "Cancel" and "Save" buttons.
+<li> Thanks to Norbret Vischer, added the
+<i>Dialog.addMessage(string,fontSize,fontColor)</i> 
+macro function
+(<a href="http://wsr.imagej.net/macros/examples/DialogMessageDemo.txt">example</a>).
 <li> Thanks to Noreen Walker, the <i>Image&gt;Stacks&gt;Statistics</i>
 command and the StackStatistics class now calculate the median
 of non-float images.
@@ -29,11 +33,19 @@ macro function.
 correctly handle RGB48 images when "Use virtual stack"
 was enabled.
 <li> Thanks to François Gannier, fixed a bug that caused the
-unit to not be set when the Function was set to None in the
+unit to not be set when "Function:" was set to "None" in the
 <i>Analyze&gt;Calibrate</i> dialog.
 <li> Thanks to 'Matthew', fixed bugs that cause the Table.deleteRows() 
 macro function and IJ.deleteRows() method to not update particle
 analyzer overlays.
+<li> Thanks to Norbert Vischer, fixed bugs that caused tables with
+missing columns or rows to not be opened correctly.
+<li> Thanks to Sara Vecchio and Michael Schmid, fixed a bug that
+caussed the curve fitter to throw an exception if all data points
+contained NaNs.
+<li> Thanks to Jeremy Adler, fixed a regression that caused the
+the makeSelection(10, xpoints, ypoints) macro function to
+throw an exception.
 </ul>
 
 <li> <u>1.52p 22 June 2019</u>

@@ -2033,7 +2033,7 @@ public class Functions implements MacroConstants, Measurements {
 			else
 				roi = new Line(xcoord[0], ycoord[0], xcoord[1], ycoord[1]);
 		} else if (roiType==Roi.POINT) {
-			if (!type.equals("point")) {
+			if (type!=null && !type.equals("point")) {
 				if (!floatCoordinates) {
 					xfcoord = new float[n];
 					yfcoord = new float[n];
@@ -3861,7 +3861,21 @@ public class Functions implements MacroConstants, Measurements {
 			} else if (name.equals("addRadioButtonGroup")) {
 				addRadioButtonGroup(gd);
 			} else if (name.equals("addMessage")) {
-				gd.addMessage(getStringArg());
+				String msg = getFirstString();
+				Font font = null;
+				Color color = null;
+				if (interp.nextToken()==',') {
+					interp.getComma();
+					double fontSize = interp.getExpression();
+					if (interp.nextToken()==',') {
+						interp.getComma();
+						String colorName = interp.getString();
+						color = Colors.decode(colorName, Color.BLACK);
+					}
+					font = new Font("SansSerif", Font.PLAIN, (int)(fontSize*Prefs.getGuiScale()));	
+				}
+				interp.getRightParen();
+				gd.addMessage(msg, font, color);				
 			} else if (name.equals("addHelp")) {
 				gd.addHelp(getStringArg());
 			} else if (name.equals("addChoice")) {

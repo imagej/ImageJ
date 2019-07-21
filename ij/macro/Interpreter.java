@@ -1125,7 +1125,7 @@ public class Interpreter implements MacroConstants {
 					break;
 			}
 		} else if (s1!=null)
-			v1 = Tools.parseDouble(s1, 0.0);
+			v1 = Tools.parseDouble(s1, Double.NaN);
 		return v1;
 	}
 
