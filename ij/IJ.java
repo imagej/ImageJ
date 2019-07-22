@@ -571,6 +571,45 @@ public class IJ {
 			Overlay.updateTableOverlay(imp, row1, row2, tableSize);
 		rt.show("Results");
 	}
+	
+	/** Returns a measurement result, where 'measurement' is "Area", 
+	 * "Mean", "StdDev", "Mode", "Min", "Max", "X", "Y", "XM", "YM",
+	 * "Perim.", "BX", "BY", "Width", "Height", "Major", "Minor", "Angle",
+	 * "Circ.", "Feret", "IntDen", "Median", "Skew", "Kurt", "%Area",
+	 * "RawIntDen", "Ch", "Slice", "Frame", "FeretX", "FeretY",
+	 * "FeretAngle", "MinFeret", "AR", "Round", "Solidity", "MinThr"
+	 * or "MaxThr". Add " raw" to the argument to disable calibration,
+	 * for example IJ.getValue("Mean raw"). Add " limit" to enable
+	 * the "limit to threshold" option.
+	*/
+	public static double getValue(ImagePlus imp, String measurement) {
+		String options = "";
+		int index = measurement.indexOf(" ");
+		if (index>0) {
+			if (index<measurement.length()-1)
+				options = measurement.substring(index+1, measurement.length());
+			measurement = measurement.substring(0, index);
+		}
+		int measurements = Measurements.ALL_STATS + Measurements.SLICE;
+		if (options.contains("limit"))
+			measurements += Measurements.LIMIT;
+		Calibration cal = null;
+		if (options.contains("raw")) {
+			cal = imp.getCalibration();
+			imp.setCalibration(null);
+		}
+		ImageStatistics stats = imp.getStatistics(measurements);
+		ResultsTable rt = new ResultsTable();
+		Analyzer analyzer = new Analyzer(imp, measurements, rt);
+		analyzer.saveResults(stats, imp.getRoi());
+		double value = Double.NaN;
+		try {
+			value = rt.getValue(measurement, 0);
+		} catch (Exception e) {};
+		if (cal!=null)
+			imp.setCalibration(cal);
+		return value;
+	}
 
 	/** Returns a reference to the "Results" window TextPanel.
 		Opens the "Results" window if it is currently not open.

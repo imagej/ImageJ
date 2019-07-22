@@ -1131,17 +1131,14 @@ public class ResultsTable implements Cloneable {
 			return rt;
 		}
 		rt.showRowNumbers(path.contains("Results"));
-		//System.out.println("lines.length: "+lines.length);
 		for (int i=firstRow; i<lines.length; i++) {
 			rt.incrementCounter();
 			String[] items = lines[i].split(cellSeparator);
-			//System.out.println("items.length: "+items.length+" |"+lines[i]+"| "+lines[i].length());
 			for (int j=firstColumn; j<headings.length; j++) {
 				if (j==labelsIndex&&labels)
 					rt.addLabel(headings[labelsIndex], items[labelsIndex]);
 				else {
 					double value = j<items.length?Tools.parseDouble(items[j]):Double.NaN;
-					//System.out.println(i+"  "+j+"  "+value+"  "+(items[j]!=null?items[j]+" "+items[j].length():"null"));
 					if (Double.isNaN(value)) {
 						String item = j<items.length?items[j]:"";
 						if (commasReplaced) {
