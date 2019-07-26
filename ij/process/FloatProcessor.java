@@ -1017,6 +1017,7 @@ public class FloatProcessor extends ImageProcessor {
 	/** Sets the default fill/draw value. */
 	public void setValue(double value) {
 		fillColor = (float)value;
+		fillValueSet = true;
 	}
 
 	public void setBackgroundValue(double value) {

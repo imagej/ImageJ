@@ -976,6 +976,7 @@ public class ShortProcessor extends ImageProcessor {
 			fgColor = (int)value;
 			if (fgColor<0) fgColor = 0;
 			if (fgColor>65535) fgColor = 65535;
+			fillValueSet = true;
 	}
 
 	public void setBackgroundValue(double value) {

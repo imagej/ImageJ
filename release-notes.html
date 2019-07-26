@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52q30 22 July 2019</u>
+<li> <u>1.52q33 25 July 2019</u>
 <ul>
 <li> Thanks to Michael Schmid, added the "Non-blocking filter dialogs"
 option to <i>Edit&gt;Options&gt;Misc</i>. The Convolve,
@@ -45,6 +45,11 @@ missing columns or rows to not be opened correctly.
 <li> Thanks to Sara Vecchio and Michael Schmid, fixed a bug that
 caussed the curve fitter to throw an exception if all data points
 contained NaNs.
+<li> Thanks to Robert Haase, fixed a bug that caused the
+<i>Process&gt;Find Maxima</i> to throw an exception in
+Fiji headless mode.
+<li> Thanks to Stephen Royle, fixed a bug that caused the
+run("Fill") macro function to ignore setColor(pixelValue) calls.
 <li> Thanks to Jeremy Adler, fixed a regression that caused the
 the makeSelection(10, xpoints, ypoints) macro function to
 throw an exception.

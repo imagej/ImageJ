@@ -331,6 +331,7 @@ public class ByteProcessor extends ImageProcessor {
 		fgColor = (int)value;
 		if (fgColor<0) fgColor = 0;
 		if (fgColor>255) fgColor = 255;
+		fillValueSet = true;
 	}
 
 	/** Sets the background fill value, where 0<=value<=255. */

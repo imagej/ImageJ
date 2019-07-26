@@ -125,6 +125,7 @@ public class ColorProcessor extends ImageProcessor {
 	/** Sets the default fill/draw value, where <code>value</code> is interpreted as an RGB int. */
 	public void setValue(double value) {
 		fgColor = (int)value;
+		fillValueSet = true;
 	}
 
 	/** Sets the background fill value, where <code>value</code> is interpreted as an RGB int. */
