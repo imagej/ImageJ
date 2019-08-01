@@ -109,12 +109,16 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	}
 
 	/** Enables or disables the sliders. Used when locking/unlocking an image. */
-	public synchronized void setSlidersEnabled(boolean b) {
-		if (sliceSelector != null)     sliceSelector.setEnabled(b);
-		if (cSelector != null)         cSelector.setEnabled(b);
-		if (zSelector != null)         zSelector.setEnabled(b);
-		if (tSelector != null)         tSelector.setEnabled(b);
-		if (animationSelector != null) animationSelector.setEnabled(b);
+	public synchronized void setSlidersEnabled(final boolean b) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				if (sliceSelector != null)     sliceSelector.setEnabled(b);
+				if (cSelector != null)         cSelector.setEnabled(b);
+				if (zSelector != null)         zSelector.setEnabled(b);
+				if (tSelector != null)         tSelector.setEnabled(b);
+				if (animationSelector != null) animationSelector.setEnabled(b);
+			}
+		});
 	}
 
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
