@@ -14,19 +14,34 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	private ImagePlus imp;
 	private boolean canceled;	
 	private double lower=-1.0, upper=-1.0;
-	private static double addValue = 25;
-	private static double mulValue = 1.25;
-	private static double minValue = 0;
-	private static double maxValue = 255;
-	private static final String defaultAndValue = "11110000";
-	private static String andValue = defaultAndValue;
-	private static final double defaultGammaValue = 0.5;
-	private static double gammaValue = defaultGammaValue;
-	private static String macro = Prefs.get(MACRO_KEY, "v=v+50*sin(d/10)");
 	private String macro2;
 	private PlugInFilterRunner pfr;
 	private GenericDialog gd;
+	
+	private static double defaultAddValue = 25;
+	private static double defaultMulValue = 1.25;
+	private static double defaultMinValue = 0;
+	private static double defaultMaxValue = 255;
+	private static String defaultAndValue = "11110000";
+	private static double defaultGammaValue = 0.5;
+	private static String defaultMacro = Prefs.get(MACRO_KEY, "v=v+50*sin(d/10)");
+	
+	private static double lastAddValue = defaultAddValue;
+	private static double lastMulValue = defaultMulValue;
+	private static double lastMinValue = defaultMinValue;
+	private static double lastMaxValue = defaultMaxValue;
+	private static String lastAndValue = defaultAndValue;
+	private static double lastGammaValue = defaultGammaValue;
+	private static String lastMacro = defaultMacro;
 
+	private double addValue = defaultAddValue;
+	private double mulValue = defaultMulValue;
+	private double minValue = defaultMinValue;
+	private double maxValue = defaultMaxValue;
+	private String andValue = defaultAndValue;
+	private double gammaValue = defaultGammaValue;
+	private String macro = defaultMacro;
+	
 	public int setup(String arg, ImagePlus imp) {
 		this.arg = arg;
 		this.imp = imp;
@@ -142,7 +157,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		int places = Analyzer.getPrecision();
 		if (digits>0 || (int)defaultValue!=defaultValue)
 			digits = Math.max(places, 1);
-		gd = new GenericDialog(title);
+		gd = NonBlockingGenericDialog.newDialog(title, imp);
 		gd.addNumericField(prompt, defaultValue, digits, 8, null);
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
@@ -150,7 +165,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	void getBinaryValue (String title, String prompt, String defaultValue) {
-		gd = new GenericDialog(title);
+		gd = NonBlockingGenericDialog.newDialog(title, imp);
 		gd.addStringField(prompt, defaultValue);
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
@@ -158,7 +173,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	void getGammaValue (double defaultValue) {
-		gd = new GenericDialog("Gamma");
+		gd = NonBlockingGenericDialog.newDialog("Gamma", imp);
 		if (GraphicsEnvironment.isHeadless())
 			gd.addNumericField("Value:", defaultValue, 2);
 		else
@@ -402,7 +417,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		String options = Macro.getOptions();
 		if (options!=null && options.startsWith("v="))
 			Macro.setOptions("code="+options);
-		gd = new GenericDialog("Expression Evaluator");
+		gd = NonBlockingGenericDialog.newDialog("Expression Evaluator", imp);
 		gd.addStringField("Code:", macro, 42);
 		gd.setInsets(0,40,0);
 		gd.addMessage("v=pixel value, x,y&z=pixel coordinates, w=image width,\nh=image height, a=angle, d=distance from center\n");
@@ -415,6 +430,16 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 
     public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
 		this.pfr = pfr;
+		boolean interactive = Macro.getOptions()==null;
+		if (interactive) {
+			addValue = lastAddValue;
+			mulValue = lastMulValue;
+			minValue = lastMinValue;
+			maxValue = lastMaxValue;
+			andValue = lastAndValue;
+			gammaValue = lastGammaValue;
+			macro = lastMacro;
+		}
 	 	if (arg.equals("macro"))
 			getMacro(macro);
     	else if (arg.equals("add"))
@@ -444,8 +469,18 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		}
 		if (gd!=null && gd.wasCanceled())
 			return DONE;
-		else
+		else {
+			if (interactive) {
+				lastAddValue = addValue;
+				lastMulValue = mulValue;
+				lastMinValue = minValue;
+				lastMaxValue = maxValue;
+				lastAndValue = andValue;
+				lastGammaValue = gammaValue;
+				lastMacro = macro;
+			}
 			return IJ.setupDialog(imp, flags);
+		}
    }
 
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {

@@ -178,7 +178,8 @@ public class Executer implements Runnable {
 		return className.equals("ij.plugin.Zoom") ||
 				className.equals("ij.plugin.frame.ContrastAdjuster") ||
 				className.equals("ij.plugin.SimpleCommands") ||  //includes Plugins>Utiltites>Reset (needed to reset a locked image)
-				className.equals("ij.plugin.WindowOrganizer");
+				className.equals("ij.plugin.WindowOrganizer") ||
+				className.equals("ij.plugin.URLOpener");
 	}
 
     /** Opens a .lut file from the ImageJ/luts directory and returns 'true' if successful. */

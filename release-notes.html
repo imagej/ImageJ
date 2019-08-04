@@ -5,12 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.52q35 31 July 2019</u>
+<li> <u>1.52q36 3 August 2019</u>
 <ul>
 <li> Thanks to Michael Schmid, added the "Non-blocking filter dialogs"
 option to <i>Edit&gt;Options&gt;Misc</i>. The Convolve,
-Mean, Median, Minimum, Maximum and Variance commands
-use NonBlockingGenericDialogs when this option is enabled.
+Mean, Median, Minimum, Maximum, Variance and Image&gt;Math
+commands use NonBlockingGenericDialogs when
+this option is enabled.
 <li> "Save changes?" dialogs on Windows and Linux now
 use "Don't Save", "Cancel" and "Save" buttons.
 <li> Thanks to Norbret Vischer, added the
@@ -28,6 +29,9 @@ column headings. The List, Save Data and Copy All Data
 plot window commands also now use labels.
 <li> Thanks to Jerome Mutterer, added the getValue("Length")
 macro function.
+<li> Thanks to Michael Schmid, the ImagePlus lock() and unlock()
+methods now support multiple lock/unlock operations by the
+same thread.
 <li> Added the IJ.getValue(imp,measurement) method, where
 'measurement' is "Area", "Mean", "StdDev", etc.
 <li> Thanks to Stein Rorvik, fixed a bug that caused

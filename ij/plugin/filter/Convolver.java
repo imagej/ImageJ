@@ -29,10 +29,12 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	private PlugInFilterRunner pfr;
 	private Thread mainThread;
 	private int pass;
-
-	
-	static String kernelText = "-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 24 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n";
-	static boolean normalizeFlag = true;
+	private static String defaultKernelText = "-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 24 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n";
+	private static boolean defaultNormalizeFlag = true;
+	private static String lastKernelText = defaultKernelText;
+	private static boolean lastNormalizeFlag = defaultNormalizeFlag;
+	private String kernelText = defaultKernelText;
+	private boolean normalizeFlag = defaultNormalizeFlag;
 
 	public int setup(String arg, ImagePlus imp) {
  		this.imp = imp;
@@ -64,15 +66,25 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	}
 	
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
-		gd = new GenericDialog("Convolver...");
+		boolean interactive = Macro.getOptions()==null;
+		if (interactive) {
+			kernelText = lastKernelText;
+			normalizeFlag = lastNormalizeFlag;
+		}
+		gd = NonBlockingGenericDialog.newDialog("Convolver...", imp);
 		gd.addTextAreas(kernelText, null, 10, 30);
 		gd.addPanel(makeButtonPanel(gd));
 		gd.addCheckbox("Normalize Kernel", normalizeFlag);
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
 		gd.showDialog();
-		if (gd.wasCanceled()) return DONE;
+		if (gd.wasCanceled())
+			return DONE;
 		this.pfr = pfr;
+		if (interactive) {
+			lastKernelText = kernelText;
+			lastNormalizeFlag = normalizeFlag;
+		}
 		return IJ.setupDialog(imp, flags);
 	}
 
