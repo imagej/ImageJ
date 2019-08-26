@@ -440,7 +440,7 @@ public class TiffDecoder {
 							else if (bitDepth==16)
 								fi.fileType = FileInfo.GRAY16_UNSIGNED;
 							else
-								error("ImageJ can only open 8 and 16 bit/channel images ("+bitDepth+")");
+								error("ImageJ cannot open interleaved "+bitDepth+"-bit images.");
 							in.seek(saveLoc);
 						}
 						break;

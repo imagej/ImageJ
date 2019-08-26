@@ -998,9 +998,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 	/** Returns the default results table. This table should only
 		be displayed in a the "Results" window. */
 	public static ResultsTable getResultsTable() {
+		systemRT.showRowNumbers(true);
 		return systemRT;
 	}
-
+	
 	/** Returns the number of digits displayed to the right of decimal point. */
 	public static int getPrecision() {
 		return precision;

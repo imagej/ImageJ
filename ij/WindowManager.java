@@ -21,6 +21,7 @@ public class WindowManager {
 	private static Window frontWindow;
 	private static Frame frontFrame;
 	private static Hashtable tempImageTable = new Hashtable();
+	private static boolean IJWindowInFront;
 	
 	private WindowManager() {
 	}
@@ -399,12 +400,14 @@ public class WindowManager {
 		frontWindow = win;
 		if (win instanceof Frame)
 			frontFrame = (Frame)win;
+		IJWindowInFront(false);
     }
 
 	/** The specified frame becomes the front window, the one returnd by getFrontWindow(). */
 	public static void setWindow(Frame win) {
 		frontWindow = win;
 		frontFrame = win;
+		IJWindowInFront(false);
 		//System.out.println("Set window(F): "+(win!=null?win.getTitle():"null"));
     }
 
@@ -594,4 +597,12 @@ public class WindowManager {
 		frame.toFront();
 	}
 	    
+    public static void IJWindowInFront(boolean inFront) {
+    	IJWindowInFront = inFront;
+	}
+
+    public static boolean IJWindowInFront() {
+    	return IJWindowInFront;
+	}
+
 }

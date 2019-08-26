@@ -278,8 +278,8 @@ public class FolderOpener implements PlugIn {
 						ImageProcessor ip = null;
 						if (stackSize>1) {
 							String sliceLabel = inputStack.getSliceLabel(slice);
-							if (sliceLabel!=null)
-								label2 = sliceLabel;
+							if (sliceLabel!=null && sliceLabel.length()<=15)
+								label2 += ":"+sliceLabel;
 							else if (label2!=null && !label2.equals(""))
 								label2 += ":"+slice;
 						}

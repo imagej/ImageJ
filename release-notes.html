@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52q36 3 August 2019</u>
+<li> <u>1.52q43 26 August 2019</u>
 <ul>
 <li> Thanks to Michael Schmid, added the "Non-blocking filter dialogs"
 option to <i>Edit&gt;Options&gt;Misc</i>. The Convolve,
@@ -59,9 +59,24 @@ enlarged ROIs to be shifted if the polygon defining the
 original ROI had points outside the filled polygon.
 <li> Thanks to Michael Schmid, fixed a bug that could cause
 ImageJ to freezes when running macros that manipulate stacks.
+<li> Thanks to Norbert Vischer, fixed a bug that caused
+the numeric field in GenericDialog sliders to be too
+narrow when the maximum value was greater than 9999.
+<li> Thanks to Norbert Vischer, fixed a bug that caused
+the getValue(x,y) macro function to not interpolate when
+x or y were real numbers.
+<li> Thanks to Norbert Vischer, fixed a bug that caused
+the getPixel(x,y) macro function to not return raw pixel values
+when x or y were real numbers.
+<li> Thanks to Hyung-song Nam and Curtis Rueden, fixed a bug
+that caused the Channels tool to become unresponsive.
 <li> Thanks to Jeremy Adler, fixed a regression that caused the
 the makeSelection(10, xpoints, ypoints) macro function to
 throw an exception.
+<li> Thanks to Dan McDonald, fixed a regression that caused the
+Raw File Opener to throw an exception.
+<li> Fixed a 1.52a regression that caused tables created by
+the gel analyzer to not have row numbers.
 </ul>
 
 <li> <u>1.52p 22 June 2019</u>

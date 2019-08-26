@@ -890,8 +890,14 @@ public class Functions implements MacroConstants, Measurements {
 			} else {
 				if (ip instanceof ColorProcessor)
 					value = ip.getPixelInterpolated(a1, a2);
-				else
+				else {
+					ImagePlus imp = getImage();
+					Calibration cal = imp.getCalibration();
+					imp.setCalibration(null);
+					ip = imp.getProcessor();
 					value = ip.getInterpolatedValue(a1, a2);
+					imp.setCalibration(cal);
+				}
 			}
 		} else {
 			if (interp.token!=')') interp.error("')' expected");
@@ -4853,9 +4859,14 @@ public class Functions implements MacroConstants, Measurements {
 	double getValue() {
 		interp.getLeftParen();
 		if (!isStringArg()) {  // getValue(x,y)
-			int x = (int)interp.getExpression();
-			int y = (int)getLastArg();
-			return getProcessor().getPixelValue(x,y);
+			double x = interp.getExpression();
+			double y = getLastArg();
+			int ix = (int)x;
+			int iy = (int)y;
+			if (x==ix && y==iy)
+				return getProcessor().getPixelValue(ix,iy);
+			else
+				return getProcessor().getInterpolatedValue(x,y);
 		}
 		String key = getString();
 		interp.getRightParen();
