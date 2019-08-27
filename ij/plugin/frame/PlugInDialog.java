@@ -8,8 +8,6 @@ import ij.plugin.*;
 /**  This is a non-modal dialog that plugins can extend. */
 public class PlugInDialog extends Dialog implements PlugIn, WindowListener, FocusListener {
 
-	private long previousActivationTime;
-	
 	public PlugInDialog(String title) {
 		super(IJ.isMacOSX()?IJ.getInstance():null,title);
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
@@ -47,15 +45,6 @@ public class PlugInDialog extends Dialog implements PlugIn, WindowListener, Focu
     }
 
 	public void windowActivated(WindowEvent e) {
-		long time = System.currentTimeMillis();
-		long interval = time-previousActivationTime;
-		ImageJ ij = IJ.getInstance();
-		//System.out.println("windowActivated: "+WindowManager.IJWindowInFront()+" "+interval);
-		if (IJ.isMacOSX() && ij!=null) { // restores Mac menu bar
-			ij.requestFocus();
-			this.requestFocus();
-		}
-		previousActivationTime = time;
 		WindowManager.setWindow(this);
 	}
 

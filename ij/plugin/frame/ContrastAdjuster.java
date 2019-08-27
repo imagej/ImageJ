@@ -1156,7 +1156,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		setup();
 		WindowManager.setWindow(this);
 	}
-
+	
 	public synchronized  void itemStateChanged(ItemEvent e) {
 		int index = choice.getSelectedIndex();
 		channels = channelConstants[index];
