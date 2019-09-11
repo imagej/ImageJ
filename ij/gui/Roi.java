@@ -6,7 +6,6 @@ import ij.plugin.frame.Recorder;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.filter.ThresholdToSelection;
 import ij.plugin.RectToolOptions;
-import ij.plugin.Selection;
 import ij.macro.Interpreter;
 import ij.io.RoiDecoder;
 import java.awt.*;
@@ -610,15 +609,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	 * @see #iterator()
 	 */
 	public Point[] getContainedPoints() {
-		if (isLine()) {
-			FloatPolygon p = getInterpolatedPolygon();
-			Point[] points = new Point[p.npoints];
-			for (int i=0; i<p.npoints; i++)
-				points[i] = new Point((int)Math.round(p.xpoints[i]),(int)Math.round(p.ypoints[i]));
-			return points;
-		}
-		ImageProcessor mask = getMask();
-		Rectangle bounds = getBounds();
+		Roi roi = this;
+		if (isLine())
+			roi = toArea();
+		ImageProcessor mask = roi.getMask();
+		Rectangle bounds = roi.getBounds();
 		ArrayList points = new ArrayList();
 		for (int y=0; y<bounds.height; y++) {
 			for (int x=0; x<bounds.width; x++) {
@@ -639,7 +634,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			if (getStrokeWidth()<=1)
 				return roi2.getInterpolatedPolygon();
 			else
-				roi2 = Selection.lineToArea(this);
+				roi2 = toArea();
 		}
 		ImageProcessor mask = roi2.getMask();
 		Rectangle bounds = roi2.getBounds();
@@ -2254,7 +2249,59 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		yC /= lSum;
 		return new double[]{xC, yC};
 	}
-
+	
+	/** Converts this selection into an area selection. */
+	public Roi toArea() {
+		if (!isLine())
+			return this;
+		Roi roi = (Roi)this.clone();
+		Roi roi2 = null;
+		if (roi.getType()==Roi.LINE) {
+			double width = roi.getStrokeWidth();
+			if (width<=1.0)
+				roi.setStrokeWidth(1.0000001);
+			FloatPolygon p = roi.getFloatPolygon();
+			roi.setStrokeWidth(width);
+			roi2 = new PolygonRoi(p, Roi.POLYGON);
+			roi2.setDrawOffset(roi.getDrawOffset());
+		} else {
+			int lwidth = (int)roi.getStrokeWidth();
+			if (lwidth<1)
+				lwidth = 1;
+			Rectangle bounds = roi.getBounds();
+			int width = bounds.width + lwidth*2;
+			int height = bounds.height + lwidth*2;
+			ImageProcessor ip2 = new ByteProcessor(width, height);
+			roi.setLocation(lwidth, lwidth);
+			ip2.setColor(255);
+			roi.drawPixels(ip2);
+			ip2.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
+			ThresholdToSelection tts = new ThresholdToSelection();
+			roi2 = tts.convert(ip2);
+			if (roi2==null)
+				return roi;
+			if (bounds.x==0&&bounds.y==0)
+				roi2.setLocation(0, 0);
+			else
+				roi2.setLocation(bounds.x-lwidth/2, bounds.y-lwidth/2);
+		}
+		transferProperties(roi, roi2);
+		roi2.setStrokeWidth(0);
+		Color c = roi2.getStrokeColor();
+		if (c!=null)  // remove any transparency
+			roi2.setStrokeColor(new Color(c.getRed(),c.getGreen(),c.getBlue()));
+		return roi2;
+	}
+	
+	private static void transferProperties(Roi roi1, Roi roi2) {
+		if (roi1==null || roi2==null)
+			return;
+		roi2.setStrokeColor(roi1.getStrokeColor());
+		if (roi1.getStroke()!=null)
+			roi2.setStroke(roi1.getStroke());
+		roi2.setDrawOffset(roi1.getDrawOffset());
+	}
+	
 	/** Returns a hashcode for this Roi that typically changes 
 		if it is moved, even though it is still the same object. */
 	public int getHashCode() {
@@ -2320,7 +2367,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		
 		RoiPointsIteratorMask() {
 			if (isLine()) {
-				Roi roi2 = Selection.lineToArea(Roi.this);
+				Roi roi2 = Roi.this.toArea();
 				mask = roi2.getMask();
 				xbase = roi2.x;
 				ybase = roi2.y;

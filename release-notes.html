@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52q44 26 August 2019</u>
+<li> <u>1.52q47 10 September 2019</u>
 <ul>
 <li> Thanks to Michael Schmid, added the "Non-blocking filter dialogs"
 option to <i>Edit&gt;Options&gt;Misc</i>. The Convolve,
@@ -29,6 +29,8 @@ column headings. The List, Save Data and Copy All Data
 plot window commands also now use labels.
 <li> Thanks to Jerome Mutterer, added the getValue("Length")
 macro function.
+<li> Thanks to Jerome Mutterer, added the IJ.pad(string,digits)
+macro function and method.
 <li> Thanks to Michael Schmid, the ImagePlus lock() and unlock()
 methods now support multiple lock/unlock operations by the
 same thread.
@@ -68,10 +70,8 @@ x or y were real numbers.
 <li> Thanks to Norbert Vischer, fixed a bug that caused
 the getPixel(x,y) macro function to not return raw pixel values
 when x or y were real numbers.
-<li> Thanks to Hyung-song Nam and Curtis Rueden, fixed a bug
-that caused the Channels tool on macOS to become unresponsive.
-<li> Thanks to Florian Jug, fixed a bug that caused the "Auto"
-button in the "B&C" tool to not have focus on macOS.
+<li> Thanks to 'mountain_man', fixed a bug that caused
+line selections to not be correctly converted to ShapeRois.
 <li> Thanks to Jeremy Adler, fixed a regression that caused the
 the makeSelection(10, xpoints, ypoints) macro function to
 throw an exception.
@@ -79,6 +79,12 @@ throw an exception.
 Raw File Opener to throw an exception.
 <li> Fixed a 1.52a regression that caused tables created by
 the gel analyzer to not have row numbers.
+<li> Thanks to Hyung-song Nam and Curtis Rueden, fixed a
+1.52o regression that caused the Channels tool on macOS
+to become unresponsive.
+<li> Thanks to Florian Jug, fixed a 1.52o regression that
+caused the "Auto" button in the "B&C" tool to not have
+focus on macOS.
 </ul>
 
 <li> <u>1.52p 22 June 2019</u>

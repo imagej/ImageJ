@@ -561,8 +561,7 @@ public class SyncWindows extends PlugInFrame implements
 					v.addElement(I);
 				}
 				addWindows(v);
-			}
-			else if(bpressed==bUnsyncAll) {
+			} else if(bpressed==bUnsyncAll) {
 				removeAllWindows();
 			}
 		} else if (wList != null && source == wList) {

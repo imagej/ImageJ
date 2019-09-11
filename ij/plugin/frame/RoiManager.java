@@ -1473,7 +1473,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private void combineRois(ImagePlus imp, Roi[] rois) {
 		IJ.resetEscape();
 		ShapeRoi s1=null, s2=null;
-		ImageProcessor ip = null;
 		for (int i=0; i<rois.length; i++) {
 			IJ.showProgress(i, rois.length-1);
 			if (IJ.escapePressed()) {
@@ -1481,12 +1480,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				return;
 			}
 			Roi roi = rois[i];
-			if (!roi.isArea() && roi.getType() != Roi.POINT) {
-				if (ip==null)
-					ip = new ByteProcessor(imp.getWidth(), imp.getHeight());
-				roi = convertLineToPolygon(roi, ip);
-				if (roi==null) continue;
-			}
+			if (!roi.isArea() && roi.getType() != Roi.POINT) 
+			 roi = roi.toArea();
 			if (s1==null) {
 				if (roi instanceof ShapeRoi)
 					s1 = (ShapeRoi)roi;
@@ -1506,22 +1501,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			imp.setRoi(s1.trySimplify());
 	}
 
-	Roi convertLineToPolygon(Roi roi, ImageProcessor ip) {
-		if (roi==null) return null;
-		ip.resetRoi();
-		ip.setColor(0);
-		ip.fill();
-		ip.setColor(255);
-		if (roi.getType()==Roi.LINE && roi.getStrokeWidth()>1)
-			ip.fillPolygon(roi.getPolygon());
-		else
-			roi.drawPixels(ip);
-		//new ImagePlus("ip", ip.duplicate()).show();
-		ip.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
-		ThresholdToSelection tts = new ThresholdToSelection();
-		return tts.convert(ip);
-	}
-
 	void combinePoints(ImagePlus imp, Roi[] rois) {
 		int n = rois.length;
 		FloatPolygon fp = new FloatPolygon();
@@ -1533,7 +1512,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		imp.setRoi(new PointRoi(fp));
 	}
 
-	/** Intersection of area rois or PointRois.
+	/** calculates the intersection of area, line and point selections.
 	 *  If there is one PointRoi in the list of selected Rois, the points inside all selected area rois are kept.
 	 *  If more than one PointRoi is selected, the PointRois get converted to area rois with each pixel containing
 	 *  at least one point selected. */
@@ -1549,10 +1528,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ShapeRoi s1=null;
 		PointRoi pointRoi = null;
 		for (Roi roi : rois) {
-			if (roi==null || !(roi.isArea() || roi.getType() == Roi.POINT))
+			if (roi==null)
 				continue;
 			if (s1==null) {
-				if (nPointRois == 1 && roi.getType() == Roi.POINT) {
+				if (nPointRois==1 && roi.getType() == Roi.POINT) {
 					pointRoi = (PointRoi)roi;
 					continue;  //PointRoi will be handled at the end
 				}
@@ -1562,7 +1541,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 					s1 = new ShapeRoi(roi);
 				if (s1==null) continue;
 			} else {
-				if (nPointRois == 1 && roi.getType() == Roi.POINT) {
+				if (nPointRois==1 && roi.getType()==Roi.POINT) {
 					pointRoi = (PointRoi)roi;
 					continue;  //PointRoi will be handled at the end
 				}
@@ -1576,9 +1555,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			}
 		}
 		if (s1==null) return;
-		if (pointRoi != null) imp.setRoi(pointRoi.containedPoints(s1));
-		else imp.setRoi(s1.trySimplify());
-		if (record()) Recorder.record("roiManager", "AND");
+		if (pointRoi!=null)
+			imp.setRoi(pointRoi.containedPoints(s1));
+		else
+			imp.setRoi(s1.trySimplify());
+		if (record())
+			Recorder.record("roiManager", "AND");
 	}
 
 	void xor() {
@@ -1594,7 +1576,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ShapeRoi s1=null, s2=null;
 		for (int i=0; i<indexes.length; i++) {
 			Roi roi = (Roi)rois.get(indexes[i]);
-			if (roi==null || !(roi.isArea() || roi.getType() == Roi.POINT))
+			if (roi==null)
 				continue;
 			if (s1==null) {
 				if (roi instanceof ShapeRoi)

@@ -139,11 +139,9 @@ public class ShapeRoi extends Roi {
 		x = r.x;
 		y = r.y;
 		width = r.width;
-		height = r.height;
-		
+		height = r.height;		
 		state = NORMAL;
-		oldX=x; oldY=y; oldWidth=width; oldHeight=height;
-				
+		oldX=x; oldY=y; oldWidth=width; oldHeight=height;				
 		AffineTransform at = new AffineTransform();
 		at.translate(-x, -y);
 		shape = new GeneralPath(at.createTransformedShape(shape));
@@ -267,6 +265,8 @@ public class ShapeRoi extends Roi {
 	 *
 	 */
 	private Shape roiToShape(Roi roi) {
+		if (roi.isLine())
+			roi = roi.toArea();
 		Shape shape = null;
 		Rectangle r = roi.getBounds();
 		boolean closeShape = true;

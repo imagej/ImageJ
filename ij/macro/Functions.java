@@ -6189,7 +6189,7 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
 		if (name.equals("pad"))
-			return IJ.pad((int)getFirstArg(), (int)getLastArg());
+			return pad();
 		else if (name.equals("deleteRows"))
 			IJ.deleteRows((int)getFirstArg(), (int)getLastArg());
 		else if (name.equals("log"))
@@ -6211,6 +6211,21 @@ public class Functions implements MacroConstants, Measurements {
 		else
 			interp.error("Unrecognized IJ function name");
 		return null;
+	}
+	
+	private String pad() {
+		int intArg = 0;
+		String stringArg = null;
+		interp.getLeftParen();
+		if (isStringArg())
+			stringArg = getString();
+		else
+			intArg = (int)interp.getExpression();
+		int digits = (int)getLastArg();
+		if (stringArg!=null)
+			return IJ.pad(stringArg, digits);
+		else
+			return IJ.pad(intArg, digits);
 	}
 
 	private void renameResults() {
