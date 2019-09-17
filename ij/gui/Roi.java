@@ -611,14 +611,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public Point[] getContainedPoints() {
 		Roi roi = this;
 		if (isLine())
-			roi = toArea();
+			roi = convertToPolygon();
 		ImageProcessor mask = roi.getMask();
 		Rectangle bounds = roi.getBounds();
 		ArrayList points = new ArrayList();
 		for (int y=0; y<bounds.height; y++) {
 			for (int x=0; x<bounds.width; x++) {
 				if (mask==null || mask.getPixel(x,y)!=0)
-					points.add(new Point(this.x+x,this.y+y));
+					points.add(new Point(roi.x+x,roi.y+y));
 			}
 		}
 		return (Point[])points.toArray(new Point[points.size()]);
@@ -634,7 +634,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			if (getStrokeWidth()<=1)
 				return roi2.getInterpolatedPolygon();
 			else
-				roi2 = toArea();
+				roi2 = convertToPolygon();
 		}
 		ImageProcessor mask = roi2.getMask();
 		Rectangle bounds = roi2.getBounds();
@@ -2250,11 +2250,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		return new double[]{xC, yC};
 	}
 	
-	/** Converts this selection into an area selection. */
-	public Roi toArea() {
-		if (!isLine())
-			return this;
+	/** Converts this line selection into an area selection. */
+	public Roi convertToPolygon() {
 		Roi roi = (Roi)this.clone();
+		if (!roi.isLine())
+			return roi;
 		Roi roi2 = null;
 		if (roi.getType()==Roi.LINE) {
 			double width = roi.getStrokeWidth();
@@ -2263,7 +2263,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			FloatPolygon p = roi.getFloatPolygon();
 			roi.setStrokeWidth(width);
 			roi2 = new PolygonRoi(p, Roi.POLYGON);
-			roi2.setDrawOffset(roi.getDrawOffset());
+			//roi2.setDrawOffset(roi.getDrawOffset());
 		} else {
 			int lwidth = (int)roi.getStrokeWidth();
 			if (lwidth<1)
@@ -2367,7 +2367,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		
 		RoiPointsIteratorMask() {
 			if (isLine()) {
-				Roi roi2 = Roi.this.toArea();
+				Roi roi2 = Roi.this.convertToPolygon();
 				mask = roi2.getMask();
 				xbase = roi2.x;
 				ybase = roi2.y;

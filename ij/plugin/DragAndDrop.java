@@ -42,35 +42,35 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 			flavors = t.getTransferDataFlavors();
 			if (IJ.debugMode) IJ.log("DragAndDrop.drop: "+flavors.length+" flavors");
 			for (int i=0; i<flavors.length; i++) {
-			if (IJ.debugMode) IJ.log("  flavor["+i+"]: "+flavors[i].getMimeType());
-			if (flavors[i].isFlavorJavaFileListType()) {
-				Object data = t.getTransferData(DataFlavor.javaFileListFlavor);
-				iterator = ((List)data).iterator();
-				break;
-			} else if (flavors[i].isFlavorTextType()) {
-				Object ob = t.getTransferData(flavors[i]);
-				if (!(ob instanceof String)) continue;
-				String s = ob.toString().trim();
-				if (IJ.isLinux() && s.length()>1 && (int)s.charAt(1)==0)
-				s = fixLinuxString(s);
-				ArrayList list = new ArrayList();
-				if (s.indexOf("href=\"")!=-1 || s.indexOf("src=\"")!=-1) {
-					s = parseHTML(s);
-					if (IJ.debugMode) IJ.log("  url: "+s);
-					list.add(s);
-					this.iterator = list.iterator();
+				if (IJ.debugMode) IJ.log("  flavor["+i+"]: "+flavors[i].getMimeType());
+				if (flavors[i].isFlavorJavaFileListType()) {
+					Object data = t.getTransferData(DataFlavor.javaFileListFlavor);
+					iterator = ((List)data).iterator();
 					break;
-				}
-				BufferedReader br = new BufferedReader(new StringReader(s));
-				String tmp;
-				while (null != (tmp = br.readLine())) {
-					tmp = java.net.URLDecoder.decode(tmp.replaceAll("\\+","%2b"), "UTF-8");
-					if (tmp.startsWith("file://")) tmp = tmp.substring(7);
-					if (IJ.debugMode) IJ.log("  content: "+tmp);
-					if (tmp.startsWith("http://"))
+				} else if (flavors[i].isFlavorTextType()) {
+					Object ob = t.getTransferData(flavors[i]);
+					if (!(ob instanceof String)) continue;
+					String s = ob.toString().trim();
+					if (IJ.isLinux() && s.length()>1 && (int)s.charAt(1)==0)
+						s = fixLinuxString(s);
+					ArrayList list = new ArrayList();
+					if (s.indexOf("href=\"")!=-1 || s.indexOf("src=\"")!=-1) {
+						s = parseHTML(s);
+						if (IJ.debugMode) IJ.log("  url: "+s);
 						list.add(s);
-					else
-						list.add(new File(tmp));
+						this.iterator = list.iterator();
+						break;
+					}
+					BufferedReader br = new BufferedReader(new StringReader(s));
+					String tmp;
+					while (null != (tmp = br.readLine())) {
+						tmp = java.net.URLDecoder.decode(tmp.replaceAll("\\+","%2b"), "UTF-8");
+						if (tmp.startsWith("file://")) tmp = tmp.substring(7);
+						if (IJ.debugMode) IJ.log("  content: "+tmp);
+						if (tmp.startsWith("http://"))
+							list.add(s);
+						else
+							list.add(new File(tmp));
 					}
 					this.iterator = list.iterator();
 					break;
@@ -81,8 +81,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 				thread.setPriority(Math.max(thread.getPriority()-1, Thread.MIN_PRIORITY));
 				thread.start();
 			}
-		}
-		catch(Exception e)  {
+		} catch(Exception e)  {
 			dtde.dropComplete(false);
 			return;
 		}
@@ -96,157 +95,158 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 		}
 	}
 	    
-	    private String fixLinuxString(String s) {
-	    	StringBuffer sb = new StringBuffer(200);
-	    	for (int i=0; i<s.length(); i+=2)
-	    		sb.append(s.charAt(i));
-	    	return new String(sb);
-	    }
-	    
-	    private String parseHTML(String s) {
-	    	if (IJ.debugMode) IJ.log("parseHTML:\n"+s);
-	    	int index1 = s.indexOf("src=\"");
-	    	if (index1>=0) {
-	    		int index2 = s.indexOf("\"", index1+5);
-	    		if (index2>0)
-	    			return s.substring(index1+5, index2);
-	    	}
-	    	index1 = s.indexOf("href=\"");
-	    	if (index1>=0) {
-	    		int index2 = s.indexOf("\"", index1+6);
-	    		if (index2>0)
-	    			return s.substring(index1+6, index2);
-	    	}
-	    	return s;
-	    }
+	private String fixLinuxString(String s) {
+		StringBuffer sb = new StringBuffer(200);
+		for (int i=0; i<s.length(); i+=2)
+			sb.append(s.charAt(i));
+		return new String(sb);
+	}
+	
+	private String parseHTML(String s) {
+		if (IJ.debugMode) IJ.log("parseHTML:\n"+s);
+		int index1 = s.indexOf("src=\"");
+		if (index1>=0) {
+			int index2 = s.indexOf("\"", index1+5);
+			if (index2>0)
+				return s.substring(index1+5, index2);
+		}
+		index1 = s.indexOf("href=\"");
+		if (index1>=0) {
+			int index2 = s.indexOf("\"", index1+6);
+			if (index2>0)
+				return s.substring(index1+6, index2);
+		}
+		return s;
+	}
 
-	    public void dragEnter(DropTargetDragEvent e)  {
-	    	IJ.showStatus("<<Drag and Drop>>");
-			if (IJ.debugMode) IJ.log("DragEnter: "+e.getLocation());
-			e.acceptDrag(DnDConstants.ACTION_COPY);
-			openAsVirtualStack = false;
-	    }
+	public void dragEnter(DropTargetDragEvent e)  {
+		IJ.showStatus("<<Drag and Drop>>");
+		if (IJ.debugMode) IJ.log("DragEnter: "+e.getLocation());
+		e.acceptDrag(DnDConstants.ACTION_COPY);
+		openAsVirtualStack = false;
+	}
 
-	    public void dragOver(DropTargetDragEvent e) {
-			if (IJ.debugMode) IJ.log("DragOver: "+e.getLocation());
-			Point loc = e.getLocation();
-			int buttonSize = Toolbar.getButtonSize();
-			int width = IJ.getInstance().getSize().width;
-			openAsVirtualStack = width-loc.x<=buttonSize;
-			if (openAsVirtualStack)
-	    		IJ.showStatus("<<Open as Virtual Stack>>");
-	    	else
-	    		IJ.showStatus("<<Drag and Drop>>");
-	    }
-	    
-	    public void dragExit(DropTargetEvent e) {
-	    	IJ.showStatus("");
-	    }
-	    public void dropActionChanged(DropTargetDragEvent e) {}
-	    
-		public void run() {
-			Iterator iterator = this.iterator;
-			while(iterator.hasNext()) {
-				Object obj = iterator.next();
-				String str = ""+obj;
-				if (str!=null && str.startsWith("https:/")) {
-					if (!str.startsWith("https://"))
-						str = str.replace("https:/", "http://");
-					obj = str;
-				}
-				if (obj!=null && (obj instanceof String))
-					openURL((String)obj);
-				else
-					openFile((File)obj);
+	public void dragOver(DropTargetDragEvent e) {
+		if (IJ.debugMode) IJ.log("DragOver: "+e.getLocation());
+		Point loc = e.getLocation();
+		int buttonSize = Toolbar.getButtonSize();
+		int width = IJ.getInstance().getSize().width;
+		openAsVirtualStack = width-loc.x<=buttonSize;
+		if (openAsVirtualStack)
+			IJ.showStatus("<<Open as Virtual Stack>>");
+		else
+			IJ.showStatus("<<Drag and Drop>>");
+	}
+	
+	public void dragExit(DropTargetEvent e) {
+		IJ.showStatus("");
+	}
+	
+	public void dropActionChanged(DropTargetDragEvent e) {}
+	
+	public void run() {
+		Iterator iterator = this.iterator;
+		while(iterator.hasNext()) {
+			Object obj = iterator.next();
+			String str = ""+obj;
+			if (str!=null && str.startsWith("https:/")) {
+				if (!str.startsWith("https://"))
+					str = str.replace("https:/", "http://");
+				obj = str;
 			}
+			if (obj!=null && (obj instanceof String))
+				openURL((String)obj);
+			else
+				openFile((File)obj);
 		}
-		
-		/** Open a URL. */
-		private void openURL(String url) {
-			if (IJ.debugMode) IJ.log("DragAndDrop.openURL: "+url);
-			if (url!=null)
-				IJ.open(url);
-		}
+	}
+	
+	/** Open a URL. */
+	private void openURL(String url) {
+		if (IJ.debugMode) IJ.log("DragAndDrop.openURL: "+url);
+		if (url!=null)
+			IJ.open(url);
+	}
 
-		/** Open a file. If it's a directory, ask to open all images as a sequence in a stack or individually. */
-		public void openFile(File f) {
-			if (IJ.debugMode) IJ.log("DragAndDrop.openFile: "+f);
-			try {
-				if (null == f) return;
-				String path = f.getCanonicalPath();
-				if (f.exists()) {
-					if (f.isDirectory()) {
-						if (openAsVirtualStack)
-							IJ.run("Image Sequence...", "open=[" + path + "] sort use");
-						else
-							openDirectory(f, path);
-					} else {
-						if (openAsVirtualStack && (path.endsWith(".tif")||path.endsWith(".TIF")))
-							(new FileInfoVirtualStack()).run(path);
-						else if (openAsVirtualStack && (path.endsWith(".avi")||path.endsWith(".AVI")))
-							IJ.run("AVI...", "open=["+path+"] use");
-						else if (openAsVirtualStack && (path.endsWith(".txt"))) {
-							ImageProcessor ip = (new TextReader()).open(path);
-							if (ip!=null)
-								new ImagePlus(f.getName(),ip).show();
-						} else {
-							Recorder.recordOpen(path);
-							(new Opener()).openAndAddToRecent(path);
-						}
-						OpenDialog.setLastDirectory(f.getParent()+File.separator);
-						OpenDialog.setLastName(f.getName());
-					}
+	/** Open a file. If it's a directory, ask to open all images as a sequence in a stack or individually. */
+	public void openFile(File f) {
+		if (IJ.debugMode) IJ.log("DragAndDrop.openFile: "+f);
+		try {
+			if (null == f) return;
+			String path = f.getCanonicalPath();
+			if (f.exists()) {
+				if (f.isDirectory()) {
+					if (openAsVirtualStack)
+						IJ.run("Image Sequence...", "open=[" + path + "] sort use");
+					else
+						openDirectory(f, path);
 				} else {
-					IJ.log("File not found: " + path);
-				}
-			} catch (Throwable e) {
-				if (!Macro.MACRO_CANCELED.equals(e.getMessage()))
-					IJ.handleException(e);
-			}
-		}
-		
-		private void openDirectory(File f, String path) {
-			if (path==null) return;
-			if (!(path.endsWith(File.separator)||path.endsWith("/")))
-				path += File.separator;
-			String[] names = f.list();
-			names = (new FolderOpener()).trimFileList(names);
-			if (names==null)
-				return;
-			String msg = "Open all "+names.length+" images in \"" + f.getName() + "\" as a stack?";
-			GenericDialog gd = new GenericDialog("Open Folder");
-			gd.setInsets(10,5,0);
-			gd.addMessage(msg);
-			gd.setInsets(15,35,0);
-			gd.addCheckbox("Convert to RGB", convertToRGB);
-			gd.setInsets(0,35,0);
-			gd.addCheckbox("Use Virtual Stack", virtualStack);
-			gd.enableYesNoCancel();
-			gd.showDialog();
-			if (gd.wasCanceled())
-				return;
-			if (gd.wasOKed()) {
-				convertToRGB = gd.getNextBoolean();
-				virtualStack = gd.getNextBoolean();
-				String options  = " sort";
-				if (convertToRGB) options += " convert_to_rgb";
-				if (virtualStack) options += " use";
-				IJ.run("Image Sequence...", "open=[" + path + "]"+options);
-				DirectoryChooser.setDefaultDirectory(path);
-			} else {
-				for (int k=0; k<names.length; k++) {
-					if (!names[k].startsWith(".")) {
-						IJ.redirectErrorMessages(true);
-						ImagePlus imp = IJ.openImage(path+names[k]);
-						if (imp!=null) {
-							imp.setIJMenuBar(k==names.length-1);
-							imp.show();
-						}
-						IJ.redirectErrorMessages(false);
+					if (openAsVirtualStack && (path.endsWith(".tif")||path.endsWith(".TIF")))
+						(new FileInfoVirtualStack()).run(path);
+					else if (openAsVirtualStack && (path.endsWith(".avi")||path.endsWith(".AVI")))
+						IJ.run("AVI...", "open=["+path+"] use");
+					else if (openAsVirtualStack && (path.endsWith(".txt"))) {
+						ImageProcessor ip = (new TextReader()).open(path);
+						if (ip!=null)
+							new ImagePlus(f.getName(),ip).show();
+					} else {
+						Recorder.recordOpen(path);
+						(new Opener()).openAndAddToRecent(path);
 					}
+					OpenDialog.setLastDirectory(f.getParent()+File.separator);
+					OpenDialog.setLastName(f.getName());
+				}
+			} else {
+				IJ.log("File not found: " + path);
+			}
+		} catch (Throwable e) {
+			if (!Macro.MACRO_CANCELED.equals(e.getMessage()))
+				IJ.handleException(e);
+		}
+	}
+	
+	private void openDirectory(File f, String path) {
+		if (path==null) return;
+		if (!(path.endsWith(File.separator)||path.endsWith("/")))
+			path += File.separator;
+		String[] names = f.list();
+		names = (new FolderOpener()).trimFileList(names);
+		if (names==null)
+			return;
+		String msg = "Open all "+names.length+" images in \"" + f.getName() + "\" as a stack?";
+		GenericDialog gd = new GenericDialog("Open Folder");
+		gd.setInsets(10,5,0);
+		gd.addMessage(msg);
+		gd.setInsets(15,35,0);
+		gd.addCheckbox("Convert to RGB", convertToRGB);
+		gd.setInsets(0,35,0);
+		gd.addCheckbox("Use Virtual Stack", virtualStack);
+		gd.enableYesNoCancel();
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		if (gd.wasOKed()) {
+			convertToRGB = gd.getNextBoolean();
+			virtualStack = gd.getNextBoolean();
+			String options  = " sort";
+			if (convertToRGB) options += " convert_to_rgb";
+			if (virtualStack) options += " use";
+			IJ.run("Image Sequence...", "open=[" + path + "]"+options);
+			DirectoryChooser.setDefaultDirectory(path);
+		} else {
+			for (int k=0; k<names.length; k++) {
+				if (!names[k].startsWith(".")) {
+					IJ.redirectErrorMessages(true);
+					ImagePlus imp = IJ.openImage(path+names[k]);
+					if (imp!=null) {
+						imp.setIJMenuBar(k==names.length-1);
+						imp.show();
+					}
+					IJ.redirectErrorMessages(false);
 				}
 			}
-			IJ.register(DragAndDrop.class);
 		}
+		IJ.register(DragAndDrop.class);
+	}
 		
 }

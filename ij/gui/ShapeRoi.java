@@ -266,7 +266,7 @@ public class ShapeRoi extends Roi {
 	 */
 	private Shape roiToShape(Roi roi) {
 		if (roi.isLine())
-			roi = roi.toArea();
+			roi = roi.convertToPolygon();
 		Shape shape = null;
 		Rectangle r = roi.getBounds();
 		boolean closeShape = true;

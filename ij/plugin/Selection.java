@@ -637,7 +637,7 @@ public class Selection implements PlugIn, Measurements {
 	
 	/** Converts a line selection into an area selection. */
 	public static Roi lineToArea(Roi roi) {
-		return roi.toArea();
+		return roi.convertToPolygon();
 	}
 	
 	void areaToLine(ImagePlus imp) {

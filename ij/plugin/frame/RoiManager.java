@@ -1480,8 +1480,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				return;
 			}
 			Roi roi = rois[i];
-			if (!roi.isArea() && roi.getType() != Roi.POINT) 
-			 roi = roi.toArea();
+			if (!roi.isArea() && roi.getType()!=Roi.POINT) 
+			 roi = roi.convertToPolygon();
 			if (s1==null) {
 				if (roi instanceof ShapeRoi)
 					s1 = (ShapeRoi)roi;

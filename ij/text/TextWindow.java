@@ -265,7 +265,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		if (id==WindowEvent.WINDOW_CLOSING)
 			close();	
 		else if (id==WindowEvent.WINDOW_ACTIVATED)
-			WindowManager.setWindow(this);		
+			WindowManager.setWindow(this);	
 	}
 
 	public void itemStateChanged(ItemEvent e) {
