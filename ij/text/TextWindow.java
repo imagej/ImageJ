@@ -136,6 +136,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 			WindowManager.addWindow(this);
 			setSize(width, height);
 			show();
+			WindowManager.setWindow(this);
 		} else
 			dispose();
 	}
@@ -264,8 +265,8 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		int id = e.getID();
 		if (id==WindowEvent.WINDOW_CLOSING)
 			close();	
-		else if (id==WindowEvent.WINDOW_ACTIVATED)
-			WindowManager.setWindow(this);	
+		else if (id==WindowEvent.WINDOW_ACTIVATED && !"Log".equals(getTitle()))
+			WindowManager.setWindow(this);
 	}
 
 	public void itemStateChanged(ItemEvent e) {
