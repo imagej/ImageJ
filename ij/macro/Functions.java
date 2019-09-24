@@ -7261,13 +7261,35 @@ public class Functions implements MacroConstants, Measurements {
 			if (type.equals("Straight Line"))
 				type = "Line";
 			return type.toLowerCase(Locale.US);
-		} else if (name.equals("getSplineAnchors"))
+		} else if (name.equals("getSplineAnchors")) {
 			return getSplineAnchors(roi);
-		else if (name.equals("getFeretPoints"))
+		} else if (name.equals("getFeretPoints")) {
 			return getFeretPoints(roi);
-		else
+		} else if (name.equals("setPosition")) {
+			setRoiPosition(roi);
+			return null;
+		} else if (name.equals("getPosition")) {
+			getRoiPosition(roi);
+			return null;
+		} else
 			interp.error("Unrecognized Roi function");
 		return null;
+	}
+	
+	void setRoiPosition(Roi roi) {
+		int channel = (int)getFirstArg();
+		int slice = (int)getNextArg();
+		int frame = (int)getLastArg();
+		roi.setPosition(channel, slice, frame);
+	}
+
+	void getRoiPosition(Roi roi) {
+		Variable channel = getFirstVariable();
+		Variable slice = getNextVariable();
+		Variable frame = getLastVariable();
+		channel.setValue(roi.getCPosition());
+		slice.setValue(roi.getZPosition());
+		frame.setValue(roi.getTPosition());
 	}
 
 	private String getFeretPoints(Roi roi) {

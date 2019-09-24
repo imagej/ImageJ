@@ -24,6 +24,7 @@ import java.net.*;
 import javax.net.ssl.*;
 import java.security.cert.*;
 import java.security.KeyStore;
+import java.nio.ByteBuffer;
 
 
 /** This class consists of static utility methods. */
@@ -2112,6 +2113,34 @@ public class IJ {
 			str = "Error: "+e.getMessage();
 		}
 		return str;
+	}
+	
+	public static ByteBuffer openAsByteBuffer(String path) {
+		if (path==null || path.equals("")) {
+			OpenDialog od = new OpenDialog("Open as ByteBuffer", "");
+			String directory = od.getDirectory();
+			String name = od.getFileName();
+			if (name==null) return null;
+			path = directory + name;
+		}
+		File file = new File(path);
+		if (!file.exists()) {
+			error("OpenAsByteBuffer", "File not found");
+			return null;
+		}
+		int len = (int)file.length();
+		byte[] buffer = new byte[len];
+		try {
+			InputStream in = new BufferedInputStream(new FileInputStream(path));
+			DataInputStream dis = new DataInputStream(in);
+			dis.readFully(buffer);
+			dis.close();
+		}
+		catch (Exception e) {
+			error("OpenAsByteBuffer", e.getMessage());
+			return null;
+		}
+		return ByteBuffer.wrap(buffer);
 	}
 
 	/** Creates a new image.

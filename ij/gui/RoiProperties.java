@@ -98,7 +98,11 @@ public class RoiProperties {
 		GenericDialog gd = new GenericDialog(title);
 		if (showName) {
 			gd.addStringField(nameLabel, name, 15);
-			gd.addStringField("Position:", position);
+			String label = "Position:";
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (position.contains(",") || (imp!=null&&imp.isHyperStack()))
+				label = "Position (c,s,f):";
+			gd.addStringField(label, position);
 		}
 		if (isText) {
 			gd.addStringField("Stroke color:", linec);

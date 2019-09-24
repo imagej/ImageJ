@@ -116,7 +116,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 			Macro.setOptions(macroOptions);
 		}
 		gd = new GenericDialog("Rotate");
-		gd.addSlider("Angle:", -90, 90, angle);
+		gd.addSlider("Angle:", -90, 90, angle, 0.1);
 		gd.addNumericField("Grid lines:", gridLines, 0);
 		gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
 		if (bitDepth==8 || bitDepth==24)

@@ -8,9 +8,15 @@ import java.net.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
-/*	ImageJ/NIH Image 64 byte ROI outline header
-	2 byte numbers are big-endian signed shorts
-	
+/** This class decodes an ImageJ .roi file. 
+	<p>
+	This is the format of the original 64 byte ImageJ/NIH Image
+	.roi file header. Two byte numbers are big-endian
+	signed shorts. The JavaScript example at
+	http://wsr.imagej.net/macros/js/DecodeRoiFile.js
+	demonstrates how to use this information to 
+	decode a .roi file.
+	<pre>
 	0-3		"Iout"
 	4-5		version (>=217)
 	6-7		roi type (encoded as one byte)
@@ -32,9 +38,10 @@ import java.awt.geom.Rectangle2D;
 	56-59   position
 	60-63   header2 offset
 	64-       x-coordinates (short), followed by y-coordinates
+	<pre>
+	@see <a href="http://wsr.imagej.net/macros/js/DecodeRoiFile.js">DecodeRoiFile.js</a>
 */
 
-/** Decodes an ImageJ, NIH Image or Scion Image ROI file. */
 public class RoiDecoder {
 	// offsets
 	public static final int VERSION_OFFSET = 4;

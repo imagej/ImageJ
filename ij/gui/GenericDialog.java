@@ -635,6 +635,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	public void addSlider(String label, double minValue, double maxValue, double defaultValue, double stepSize) {
 		if ( stepSize <= 0 ) stepSize  = 1;
 		int digits = digits(stepSize);
+		if (digits==1 && "Angle:".equals(label))
+			digits = 2;
 		double scale = 1.0 / Math.abs( stepSize );
 		if ( scale <= 0 ) scale = 1;
 		if ( defaultValue < minValue ) defaultValue = minValue;
@@ -685,6 +687,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		slider.addElement(s);
 		s.addAdjustmentListener(this);
 		s.setUnitIncrement(1);
+		if (IJ.isMacOSX())
+			s.addKeyListener(this);
 
 		if (numberField==null) {
 			numberField = new Vector(5);

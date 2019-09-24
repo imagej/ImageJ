@@ -78,7 +78,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.52r";
-	public static final String BUILD = "2";
+	public static final String BUILD = "12";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -265,6 +265,8 @@ public class ImageJ extends Frame implements ActionListener,
 			props.put("proxySet", "true");
 			props.put("http.proxyHost", server);
 			props.put("http.proxyPort", ""+port);
+			props.put("https.proxyHost", server);
+			props.put("https.proxyPort", ""+port);
 		}
 		//new ProxySettings().logProperties();
 	}
@@ -281,7 +283,8 @@ public class ImageJ extends Frame implements ActionListener,
 		int ijY = Prefs.getInt(IJ_Y,-99);
 		Rectangle maxBounds = GUI.getMaxWindowBounds();
 		//System.out.println("getPreferredLoc1: "+ijX+" "+ijY+" "+maxBounds);
-		if (ijX>=maxBounds.x && ijY>=maxBounds.y && ijX<(maxBounds.x+maxBounds.width-75))
+		if (ijX>=maxBounds.x && ijY>=maxBounds.y && ijX<(maxBounds.x+maxBounds.width-75)
+		&& ijY<(maxBounds.y+maxBounds.height-75))
 			return new Point(ijX, ijY);
 		Dimension tbsize = toolbar.getPreferredSize();
 		int ijWidth = tbsize.width+10;

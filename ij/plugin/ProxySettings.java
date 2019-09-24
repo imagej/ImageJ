@@ -34,6 +34,19 @@ public class ProxySettings implements PlugIn {
 		props.put("http.proxyPort", ""+proxyport);
 		Prefs.set("proxy.server", proxyhost);
 		Prefs.set("proxy.port", proxyport);
+		String httpsHost = System.getProperty("https.proxyHost");
+		if (httpsHost == null) {
+			httpsHost = proxyhost;
+		}
+		int httpsPort = proxyport;
+		String httpsSystemPort = System.getProperty("https.proxyPort");
+		if (httpsSystemPort != null) {
+			double portNumber = Tools.parseDouble(httpsSystemPort);
+			if (!Double.isNaN(portNumber))
+				httpsPort = (int)portNumber;
+		}
+		props.put("https.proxyHost", httpsHost);
+		props.put("https.proxyPort", ""+httpsPort);
 		try {
 			System.setProperty("java.net.useSystemProxies", Prefs.useSystemProxies?"true":"false");
 		} catch(Exception e) {}
@@ -43,8 +56,10 @@ public class ProxySettings implements PlugIn {
 	
 	public void logProperties() {
 		IJ.log("proxy set: "+ System.getProperty("proxySet"));
-		IJ.log("proxy host: "+ System.getProperty("http.proxyHost"));
-		IJ.log("proxy port: "+System.getProperty("http.proxyPort"));
+		IJ.log("http proxy host: "+ System.getProperty("http.proxyHost"));
+		IJ.log("http proxy port: "+System.getProperty("http.proxyPort"));
+		IJ.log("https proxy host: "+ System.getProperty("https.proxyHost"));
+		IJ.log("https proxy port: "+System.getProperty("https.proxyPort"));
 		IJ.log("java.net.useSystemProxies: "+System.getProperty("java.net.useSystemProxies"));
 	}
 

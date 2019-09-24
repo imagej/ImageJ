@@ -430,8 +430,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		if (cal.calibrated()) {
 			min = cal.getCValue((int)min);
 			max = cal.getCValue((int)max);
-			if (type!=ImagePlus.GRAY16)
-				realValue = true;
+			realValue = true;
 		}
 		if (windowLevel) {
 			int digits = realValue?2:0;
