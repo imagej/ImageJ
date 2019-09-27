@@ -672,7 +672,7 @@ public class PolygonRoi extends Roi {
 		if (yClipMax>ymax2) ymax2 = yClipMax;
 		xClipMin=xmin; yClipMin=ymin; xClipMax=xmax; yClipMax=ymax;
 		double mag = ic.getMagnification();
-		int handleSize = type==POINT?HANDLE_SIZE+12:HANDLE_SIZE;
+		int handleSize = type==POINT?HANDLE_SIZE+25:HANDLE_SIZE;
 		double strokeWidth = getStrokeWidth();
 		if (strokeWidth<1.0) strokeWidth=1.0;
 		if (handleSize<strokeWidth && isLine())

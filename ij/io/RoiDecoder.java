@@ -10,7 +10,7 @@ import java.awt.geom.Rectangle2D;
 
 /** This class decodes an ImageJ .roi file. 
 	<p>
-	This is the format of the original 64 byte ImageJ/NIH Image
+	Format of the original 64 byte ImageJ/NIH Image
 	.roi file header. Two byte numbers are big-endian
 	signed shorts. The JavaScript example at
 	http://wsr.imagej.net/macros/js/DecodeRoiFile.js

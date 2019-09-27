@@ -17,15 +17,16 @@ import java.awt.geom.*;
  * @see <a href="http://wsr.imagej.net/macros/js/PointProperties.js">PointProperties.js</a>
 */
 public class PointRoi extends PolygonRoi {
-	public static final String[] sizes = {"Tiny", "Small", "Medium", "Large", "Extra Large"};
+	public static final String[] sizes = {"Tiny", "Small", "Medium", "Large", "Extra Large", "XXL", "XXXL"};
 	public static final String[] types = {"Hybrid", "Cross", "Dot", "Circle"};
 	private static final String TYPE_KEY = "point.type";
 	private static final String SIZE_KEY = "point.size";
 	private static final String CROSS_COLOR_KEY = "point.cross.color";
-	private static final int TINY=1, SMALL=3, MEDIUM=5, LARGE=7, EXTRA_LARGE=11;
+	private static final int TINY=1, SMALL=3, MEDIUM=5, LARGE=7, EXTRA_LARGE=11, XXL=17, XXXL=25;
 	private static final int HYBRID=0, CROSS=1, CROSSHAIR=1, DOT=2, CIRCLE=3;
 	private static final BasicStroke twoPixelsWide = new BasicStroke(2);
 	private static final BasicStroke threePixelsWide = new BasicStroke(3);
+	private static final BasicStroke fivePixelsWide = new BasicStroke(5);
 	private static int defaultType = HYBRID;
 	private static int defaultSize = SMALL;
 	private static Font font;
@@ -129,7 +130,7 @@ public class PointRoi extends PolygonRoi {
 		size = defaultSize;
 		showLabels = !Prefs.noPointLabels;
 		if (imp!=null) {
-			int r = 10;
+			int r = 10 + size;
 			double mag = ic!=null?ic.getMagnification():1;
 			if (mag<1)
 				r = (int)(r/mag);
@@ -156,6 +157,8 @@ public class PointRoi extends PolygonRoi {
 		else if (options.contains("medium")) size=MEDIUM;
 		else if (options.contains("extra")) size=EXTRA_LARGE;
 		else if (options.contains("large")) size=LARGE;
+		else if (options.contains("xxxl")) size=XXXL;
+		else if (options.contains("xxl")) size=XXL;
 		if (options.contains("cross")) type=CROSS;
 		else if (options.contains("dot")) type=DOT;
 		else if (options.contains("circle")) type=CIRCLE;
@@ -198,10 +201,10 @@ public class PointRoi extends PolygonRoi {
 		updatePolygon();
 		if (showLabels && nPoints>1) {
 			fontSize = 8;
-			fontSize += convertSizeToIndex(size);
-			if (fontSize>18)
-				fontSize = 18;
+			double scale = size>=XXL?2:1.5;
+			fontSize += scale*convertSizeToIndex(size);
 			fontSize = (int)Math.round(fontSize);
+			//IJ.log("fontSize: "+fontSize+" "+scale);
 			font = new Font("SansSerif", Font.PLAIN, fontSize);
 			g.setFont(font);
 			if (fontSize>9)
@@ -219,6 +222,8 @@ public class PointRoi extends PolygonRoi {
 			if (slice==0 || (positions!=null&&(slice==positions[i]||positions[i]==0)))
 				drawPoint(g, xp2[i], yp2[i], i+1);
 		}
+		//if (size>=EXTRA_LARGE)
+		//	updateFullWindow = true;
 		if (updateFullWindow) {
 			updateFullWindow = false;
 			imp.draw();
@@ -254,7 +259,9 @@ public class PointRoi extends PolygonRoi {
 				g.setColor(color);
 				colorSet = true;
 			}
-			if (size>LARGE)
+			if (size>XXL)
+				g2d.setStroke(fivePixelsWide);
+			else if (size>LARGE)
 				g2d.setStroke(threePixelsWide);
 			g.drawLine(x-(size+2), y, x+size+2, y);
 			g.drawLine(x, y-(size+2), x, y+size+2);
@@ -278,16 +285,20 @@ public class PointRoi extends PolygonRoi {
 				g.fillRect(x-size2, y-size2, size, size);
 		}
 		if (showLabels && nPoints>1) {
-			int offset = (int)Math.round(0.4);
-			if (offset<1) offset=1;
-			offset++;
+			int xoffset = 2;
+			if (size==LARGE) xoffset=3;
+			if (size==EXTRA_LARGE) xoffset=4;
+			if (size==XXL) xoffset=5;
+			if (size==XXXL) xoffset=7;
+			int yoffset = xoffset;
+			if (size>=LARGE) yoffset=yoffset-1;
 			if (nCounters==1) {
 				if (!colorSet)
 					g.setColor(color);
-				g.drawString(""+n, x+offset, y+offset+fontSize);
+				g.drawString(""+n, x+xoffset, y+yoffset+fontSize);
 			} else if (counters!=null) {
 				g.setColor(getColor(counters[n-1]));
-				g.drawString(""+counters[n-1], x+offset, y+offset+fontSize);
+				g.drawString(""+counters[n-1], x+xoffset, y+yoffset+fontSize);
 			}
 		}
 		if ((size>TINY||type==DOT) && (type==HYBRID||type==DOT)) {
@@ -551,6 +562,8 @@ public class PointRoi extends PolygonRoi {
 			case MEDIUM: return 2;
 			case LARGE: return 3;
 			case EXTRA_LARGE: return 4;
+			case XXL: return 5;
+			case XXXL: return 6;
 		}
 		return 1;
 	}
@@ -562,6 +575,8 @@ public class PointRoi extends PolygonRoi {
 			case 2: return MEDIUM;
 			case 3: return LARGE;
 			case 4: return EXTRA_LARGE;
+			case 5: return XXL;
+			case 6: return XXXL;
 		}
 		return SMALL;
 	}

@@ -4958,8 +4958,12 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("getOrthoViewsID")) {
 			interp.getParens();
 			return Orthogonal_Views.getImageID();
+		} else if (name.equals("getOrthoViewsIDs")) {
+			return getOrthoViewsIDs();
 		} else if (name.equals("setOrthoViews"))
 			return setOrthoViews();
+		else if (name.equals("getOrthoViews"))
+			return getOrthoViews();
 		ImagePlus imp = getImage();
 		if (name.equals("setPosition"))
 			{setPosition(imp); return Double.NaN;}
@@ -4980,6 +4984,8 @@ public class Functions implements MacroConstants, Measurements {
 			{cal.setZUnit(getStringArg()); return Double.NaN;}
 		if (name.equals("getUnits"))
 			{getStackUnits(cal); return Double.NaN;}
+		if (name.equals("setUnits"))
+			{setStackUnits(cal); return Double.NaN;}
 		if (imp.getStackSize()==1)
 			interp.error("Stack required");
 		if (name.equals("setDimensions"))
@@ -5019,6 +5025,31 @@ public class Functions implements MacroConstants, Measurements {
 		return Double.NaN;
 	}
 
+	private double getOrthoViewsIDs() {
+		Variable xy = getFirstVariable();
+		Variable xz = getNextVariable();
+		Variable yz = getLastVariable();
+		int[] ids = Orthogonal_Views.getImageIDs();
+		xy.setValue(ids[0]);
+		xz.setValue(ids[1]);
+		yz.setValue(ids[2]);
+		return Double.NaN;
+	}
+
+	private double getOrthoViews() {
+		Variable x = getFirstVariable();
+		Variable y = getNextVariable();
+		Variable z = getLastVariable();
+		Orthogonal_Views orthoViews = Orthogonal_Views.getInstance();
+		int[] loc = new int[3];
+		if (orthoViews!=null)
+			loc = orthoViews.getCrossLoc();
+		x.setValue(loc[0]);
+		y.setValue(loc[1]);
+		z.setValue(loc[2]);
+		return Double.NaN;
+	}
+
 	void getStackUnits(Calibration cal) {
 		Variable x = getFirstVariable();
 		Variable y = getNextVariable();
@@ -5030,6 +5061,14 @@ public class Functions implements MacroConstants, Measurements {
 		z.setString(cal.getZUnit());
 		t.setString(cal.getTimeUnit());
 		v.setString(cal.getValueUnit());
+	}
+	
+	void setStackUnits(Calibration cal) {
+		cal.setXUnit(getFirstString());
+		cal.setYUnit(getNextString());
+		cal.setZUnit(getNextString());
+		cal.setTimeUnit(getNextString());
+		cal.setValueUnit(getLastString());
 	}
 
 	void getStackStatistics(ImagePlus imp, boolean calibrated) {

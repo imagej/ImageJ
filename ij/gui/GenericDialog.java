@@ -1438,8 +1438,28 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 
 	public void keyPressed(KeyEvent e) {
+		Component component = e.getComponent();
 		int keyCode = e.getKeyCode();
 		IJ.setKeyDown(keyCode);
+		if ((component instanceof Scrollbar) && (keyCode==KeyEvent.VK_LEFT||keyCode==KeyEvent.VK_RIGHT)) {
+			Scrollbar sb = (Scrollbar)component;
+			int value = sb.getValue();
+			if (keyCode==KeyEvent.VK_RIGHT)
+				sb.setValue(value+1);
+			else
+				sb.setValue(value-1);				
+			for (int i=0; i<slider.size(); i++) {
+				if (sb==slider.elementAt(i)) {
+					int index = ((Integer)sliderIndexes.get(i)).intValue();
+					TextField tf = (TextField)numberField.elementAt(index);
+					double scale = ((Double)sliderScales.get(i)).doubleValue();
+					int digits = ((Integer)sliderDigits.get(i)).intValue();
+					tf.setText(""+IJ.d2s(sb.getValue()/scale,digits));
+				}
+			}
+			notifyListeners(e);
+			return;
+		}
 		if (keyCode==KeyEvent.VK_ENTER && textArea1==null && okay!=null && okay.isEnabled()) {
 			wasOKed = true;
 			if (IJ.isMacOSX())

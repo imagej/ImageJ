@@ -918,6 +918,17 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		return img!=null?img.getID():0;
 	}
 
+	public static int[] getImageIDs() {
+		int[] ids = new int[3];
+		Orthogonal_Views instance2 = getInstance();
+		if (instance2==null)
+			return ids;
+		ids[0] = instance2.imp.getID();
+		ids[1] = instance2.xz_image.getID();
+		ids[2] = instance2.yz_image.getID();
+		return ids;
+	}
+
  	public static void stop() {
 		if (instance!=null)
 			instance.dispose();
