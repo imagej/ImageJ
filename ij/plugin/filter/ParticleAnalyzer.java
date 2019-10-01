@@ -1036,7 +1036,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		int count = rt.size();
 		// if (count==0) return;
 		boolean lastSlice = !processStack||slice==imp.getStackSize();
-		if ((showChoice==OVERLAY_OUTLINES||showChoice==OVERLAY_MASKS) && count>0 && (!processStack||slice==imp.getStackSize())) {
+		if ((showChoice==OVERLAY_OUTLINES||showChoice==OVERLAY_MASKS) && overlay!=null && count>0 && (!processStack||slice==imp.getStackSize())) {
 			if (processStack)
 				imp.setOverlay(overlay);
 			else {
@@ -1049,8 +1049,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 					imp.setOverlay(overlay0);
 				}
 			}
-		}
-		else if (outlines!=null && lastSlice) {
+		} else if (outlines!=null && lastSlice) {
 			String title = imp!=null?imp.getTitle():"Outlines";
 			String prefix;
 			if (showChoice == MASKS)

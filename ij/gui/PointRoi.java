@@ -222,8 +222,6 @@ public class PointRoi extends PolygonRoi {
 			if (slice==0 || (positions!=null&&(slice==positions[i]||positions[i]==0)))
 				drawPoint(g, xp2[i], yp2[i], i+1);
 		}
-		//if (size>=EXTRA_LARGE)
-		//	updateFullWindow = true;
 		if (updateFullWindow) {
 			updateFullWindow = false;
 			imp.draw();

@@ -176,14 +176,20 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	}
 	 
 	private void calibrate() {
-		String unit=cal.getUnit();
+		String xunit = cal.getXUnit();
+		String yunit = cal.getYUnit();
+		String zunit = cal.getZUnit();
 		double o_depth=cal.pixelDepth;
 		double o_height=cal.pixelHeight;
 		double o_width=cal.pixelWidth;
-		cal_yz.setUnit(unit);
+		cal_yz.setXUnit(zunit);
+		cal_yz.setYUnit(yunit);
+		cal_yz.setZUnit(xunit);
 		if (rotateYZ) {
 			cal_yz.pixelHeight=o_depth/az;
 			cal_yz.pixelWidth=o_height;
+			cal_yz.setXUnit(yunit);
+			cal_yz.setYUnit(zunit);
 		} else {
 			cal_yz.pixelWidth=o_depth/az;
 			cal_yz.pixelHeight=o_height;
@@ -192,7 +198,9 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			cal_yz.setInvertY(true);
 		yz_image.setCalibration(cal_yz);
 		yz_image.setIJMenuBar(false);
-		cal_xz.setUnit(unit);
+		cal_xz.setXUnit(xunit);
+		cal_xz.setYUnit(zunit);
+		cal_xz.setZUnit(yunit);
 		cal_xz.pixelWidth=o_width;
 		cal_xz.pixelHeight=o_depth/az;
 		if (flipXZ)
@@ -918,14 +926,15 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		return img!=null?img.getID():0;
 	}
 
+	/** Returns the IDs of the XY, YZ and XZ images as an int array.*/
 	public static int[] getImageIDs() {
 		int[] ids = new int[3];
 		Orthogonal_Views instance2 = getInstance();
 		if (instance2==null)
 			return ids;
 		ids[0] = instance2.imp.getID();
-		ids[1] = instance2.xz_image.getID();
-		ids[2] = instance2.yz_image.getID();
+		ids[1] = instance2.yz_image.getID();
+		ids[2] = instance2.xz_image.getID();
 		return ids;
 	}
 

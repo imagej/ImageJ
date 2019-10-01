@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52r17 26 September 2019</u>
+<li> <u>1.52r22 30 September 2019</u>
 <ul>
 <li> Thanks to Stein Rorvik, the slider in the <i>Image&gt;Transform&gt;Rotate</i>
 dialog now shows the angle using two decimal places and the slider arrows
@@ -14,10 +14,12 @@ as a shortcut to finely adjust the angle.
 <li>  Thanks to 'felix.b', labels of multi-point tool markers get
 larger as the markers get larger and there are two new marker
 sizes ("XXL" and "XXXL").
+<li> Thanks to Stein Rorvik, the <i>Image&gt;Adjust&gt;Coordinates</i>
+command can now be used to set the Z unit.
 <li> Thanks to Stein Rorvik, added the Roi.getPosition(channel,slice,frame),
 Roi.setPosition(channel,slice,frame),
 Stack.setUnits(x,y,z,time,value), Stack.getOrthoViews(x,y,z)
-and Stack.getOrthoViewsIDs(xy,xz,yz) macro functions.
+and Stack.getOrthoViewsIDs(xy,yz,xz) macro functions.
 <li> Added the IJ.openAsByteBuffer() method
 (<a href="http://wsr.imagej.net/macros/js/DecodeRoiFile.js">example</a>).
 <li> Thanks to Michael Schmid, fixed a bug that caused the
@@ -31,6 +33,9 @@ be able to update via HTTPS through a proxy.
 <li> Worked around a macOS bug that caused the keyboard 
 arrow keys to not function as shortcuts for the
 increment/decrement arrows in GenericDialog sliders.
+<li> Thanks to Marcel Boeglin, fixed a bug that could cause the
+particle analyzer to throw an exception when creating an 
+overlay and no particles were detected.
 <li> Thanks to Francois Gannier and Michael Schmid, fixed a
 1.52o regression that caused the Log window to unexpectedly
 become the active window.

@@ -67,7 +67,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		String xo = cal.xOrigin==(int)cal.xOrigin?IJ.d2s(cal.xOrigin,0):IJ.d2s(cal.xOrigin,2);
 		String yo = cal.yOrigin==(int)cal.yOrigin?IJ.d2s(cal.yOrigin,0):IJ.d2s(cal.yOrigin,2);
 		String zo = "";
-		if (cal.zOrigin!=0.0) {
+		if (imp.getNSlices()>1) {
 			zo = cal.zOrigin==(int)cal.zOrigin?IJ.d2s(cal.zOrigin,0):IJ.d2s(cal.zOrigin,2);
 			zo = "," + zo;
 		}

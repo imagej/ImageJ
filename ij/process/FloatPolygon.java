@@ -41,18 +41,6 @@ public class FloatPolygon {
 		this.ypoints = ypoints;
 	}
 		
-	/* Constructs a FloatPolygon from a Polygon. 
-	public FloatPolygon(Polygon polygon) {
-		npoints = polygon.npoints;
-		xpoints = new float[npoints];
-		ypoints = new float[npoints];
-		for (int i=0; i<npoints; i++) {
-			xpoints[i] = polygon.xpoints[i];
-			ypoints[i] = polygon.ypoints[i];
-		}
-	}
-	*/
-
 	/** Returns 'true' if the point (x,y) is inside this polygon. This is a Java
 	 *  version of the remarkably small C program by W. Randolph Franklin at
 	 *  http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html#The%20C%20Code
@@ -73,6 +61,11 @@ public class FloatPolygon {
 				inside = !inside;
 		}
 		return inside;
+	}
+
+	/** A version of contains() that accepts float arguments. */
+	public boolean contains(float x, float y) {
+		return contains((double)x, (double)y);
 	}
 
 	public Rectangle getBounds() {

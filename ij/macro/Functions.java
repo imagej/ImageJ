@@ -4985,7 +4985,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (name.equals("getUnits"))
 			{getStackUnits(cal); return Double.NaN;}
 		if (name.equals("setUnits"))
-			{setStackUnits(cal); return Double.NaN;}
+			{setStackUnits(imp); return Double.NaN;}
 		if (imp.getStackSize()==1)
 			interp.error("Stack required");
 		if (name.equals("setDimensions"))
@@ -5063,12 +5063,14 @@ public class Functions implements MacroConstants, Measurements {
 		v.setString(cal.getValueUnit());
 	}
 	
-	void setStackUnits(Calibration cal) {
+	void setStackUnits(ImagePlus imp) {
+		Calibration cal = imp.getCalibration();
 		cal.setXUnit(getFirstString());
 		cal.setYUnit(getNextString());
 		cal.setZUnit(getNextString());
 		cal.setTimeUnit(getNextString());
 		cal.setValueUnit(getLastString());
+		imp.repaintWindow();
 	}
 
 	void getStackStatistics(ImagePlus imp, boolean calibrated) {
