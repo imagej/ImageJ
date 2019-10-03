@@ -8,8 +8,10 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import ij.measure.Calibration;
+import ij.plugin.frame.Recorder;
 
 public class ImageProperties implements PlugInFilter, TextListener {
+	private final String SAME = "-";
 	ImagePlus imp;
 	static final int NANOMETER=0, MICROMETER=1, MILLIMETER=2, CENTIMETER=3,
 		 METER=4, KILOMETER=5, INCH=6, FOOT=7, MILE=8, PIXEL=9, OTHER_UNIT=10;
@@ -33,10 +35,13 @@ public class ImageProperties implements PlugInFilter, TextListener {
 	
 	void showDialog(ImagePlus imp) {
 		String options = Macro.getOptions();
+		boolean legacyMacro = false;
 		if (options!=null ) {
 			String options2 = options.replaceAll(" depth=", " slices=");
 			options2 = options2.replaceAll(" interval=", " frame=");
 			Macro.setOptions(options2);
+			if (options.contains("unit="))
+				legacyMacro = true;
 		}
 		Calibration cal = imp.getCalibration();
 		Calibration calOrig = cal.copy();
@@ -49,6 +54,9 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		boolean global1 = imp.getGlobalCalibration()!=null;
 		boolean global2;
 		int digits = cal.pixelWidth<1.0||cal.pixelHeight<1.0||cal.pixelDepth<1.0?7:4;
+		String xunit = cal.getXUnit();
+		String yunit = cal.getYUnit();
+		String zunit = cal.getZUnit();
 		GenericDialog gd = new GenericDialog(imp.getTitle());
 		gd.addNumericField("Channels (c):", channels, 0);
 		gd.addNumericField("Slices (z):", slices, 0);
@@ -56,10 +64,18 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		gd.setInsets(0, 5, 0);
 		gd.addMessage("Note: c*z*t must equal "+stackSize, null, Color.darkGray);
 		gd.setInsets(15, 0, 0);
-		gd.addStringField("Unit of length:", cal.getUnit());
-		gd.addNumericField("Pixel_width:", cal.pixelWidth, digits, 8, null);
-		gd.addNumericField("Pixel_height:", cal.pixelHeight, digits, 8, null);
-		gd.addNumericField("Voxel_depth:", cal.pixelDepth, digits, 8, null);
+		if (legacyMacro)
+			gd.addStringField("Unit of length:", cal.getUnit());
+		int fieldWidth = 9;
+		gd.addNumericField("Pixel_width:", cal.pixelWidth, digits, fieldWidth, null);		
+		gd.addToSameRow();
+		gd.addStringField("_", xunit, 5);				
+		gd.addNumericField("Pixel_height:", cal.pixelHeight, digits, fieldWidth, null);	
+		gd.addToSameRow();
+		gd.addStringField("_", yunit.equals(xunit)?SAME:yunit, 5);			
+		gd.addNumericField("Voxel_depth:", cal.pixelDepth, digits, fieldWidth, null);
+		gd.addToSameRow();
+		gd.addStringField("_", zunit.equals(xunit)?SAME:zunit, 5);			
 		gd.setInsets(10, 0, 5);
 		double interval = cal.frameInterval;
 		String intervalStr = IJ.d2s(interval, (int)interval==interval?0:2) + " " + cal.getTimeUnit();
@@ -105,31 +121,47 @@ public class ImageProperties implements PlugInFilter, TextListener {
  		else
  			IJ.error("Properties", "The product of channels ("+channels+"), slices ("+slices
  				+")\n and frames ("+frames+") must equal the stack size ("+stackSize+").");
-
-		String unit = gd.getNextString();
-        if (unit.equals("u"))
-            unit = "" + IJ.micronSymbol;
-        else if (unit.equals("A"))
-        	unit = ""+IJ.angstromSymbol;
+		String unit = "";
+		if (legacyMacro)
+			unit = gd.getNextString();   
  		double pixelWidth = gd.getNextNumber();
+ 		String xunit2 = gd.getNextString();
  		double pixelHeight = gd.getNextNumber();
+ 		String yunit2 = gd.getNextString();
  		double pixelDepth = gd.getNextNumber();
-		if (!unit.equals(cal.getUnit())) {
-			cal.setYUnit(null);
-			cal.setZUnit(null);
+ 		String zunit2 = gd.getNextString();
+ 		boolean reset = false;
+ 		boolean xUnitChanged=false,yUnitChanged=false,zUnitChanged=false;
+ 		if (legacyMacro) {
+			if (!unit.equals(cal.getUnit())) {
+				cal.setYUnit(null);
+				cal.setZUnit(null);
+			}
+			cal.setUnit(unit);
+		} else {
+			xUnitChanged = !xunit2.equals(xunit);
+			if (xUnitChanged)
+				cal.setXUnit(xunit2);
+			yUnitChanged = !yunit2.equals(yunit) && !yunit2.equals(SAME);
+			if (yUnitChanged)
+				cal.setYUnit(yunit2);
+			zUnitChanged = !zunit2.equals(zunit) && !zunit2.equals(SAME);
+			if (zUnitChanged)
+				cal.setZUnit(zunit2);
+			unit = xunit2;			
 		}
 		if (unit.equals("") || unit.equalsIgnoreCase("none") || pixelWidth==0.0) {
+			// reset
 			cal.setUnit(null);
 			cal.pixelWidth = 1.0;
 			cal.pixelHeight = 1.0;
 			cal.pixelDepth = 1.0;
 		} else {
-			cal.setUnit(unit);
 			cal.pixelWidth = pixelWidth;
 			cal.pixelHeight = pixelHeight;
 			cal.pixelDepth = pixelDepth;
 		}
-
+		
 		gd.setSmartRecording(interval==0);
 		String frameInterval = validateInterval(gd.getNextString());
 		String[] intAndUnit = Tools.split(frameInterval, " -");
@@ -161,6 +193,25 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			imp.repaintWindow();
 		if (global2 && global2!=global1)
 			FileOpener.setShowConflictMessage(true);
+			
+		if (Recorder.record) {
+			if (Recorder.scriptMode()) {
+				if (xUnitChanged)
+					Recorder.recordCall("imp.getCalibration().setXUnit(\""+xunit2+"\");", true);
+				if (yUnitChanged)
+					Recorder.recordCall("imp.getCalibration().setYUnit(\""+yunit2+"\");", true);
+				if (zUnitChanged)
+					Recorder.recordCall("imp.getCalibration().setZUnit(\""+zunit2+"\");", true);
+			} else {
+				if (xUnitChanged)
+					Recorder.record("Stack.setXUnit", xunit2);
+				if (yUnitChanged)
+					Recorder.record("Stack.setYUnit", yunit2);
+				if (zUnitChanged)
+					Recorder.record("Stack.setZUnit", zunit2);
+			}
+		}
+
 	}
 	
 	String validateInterval(String interval) {

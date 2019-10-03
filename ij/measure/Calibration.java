@@ -129,7 +129,9 @@ public class Calibration implements Cloneable {
 			return "pixel";
 		else if (unit.equals("um"))
 			unit = "\u00B5m";
-		return unit;
+        else if (unit.equals("A"))
+            unit = ""+IJ.angstromSymbol;
+        return unit;
 	}
 
  	/** Returns the default length unit (e.g. "micron", "inch"). */

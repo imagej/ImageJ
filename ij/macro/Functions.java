@@ -4980,6 +4980,10 @@ public class Functions implements MacroConstants, Measurements {
 			{cal.frameInterval=getArg(); return Double.NaN;}
 		if (name.equals("setTUnit"))
 			{cal.setTimeUnit(getStringArg()); return Double.NaN;}
+		if (name.equals("setXUnit"))
+			{cal.setXUnit(getStringArg()); return Double.NaN;}
+		if (name.equals("setYUnit"))
+			{cal.setYUnit(getStringArg()); return Double.NaN;}
 		if (name.equals("setZUnit"))
 			{cal.setZUnit(getStringArg()); return Double.NaN;}
 		if (name.equals("getUnits"))

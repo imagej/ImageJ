@@ -210,7 +210,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     		labels = new Hashtable();
     	if (label.length()>0)
     		label = Macro.trimKey(label.trim());
-    	if (hasLabel(label)) {                      // not a unique label?
+    	if (label.length()>0 && hasLabel(label)) {                      // not a unique label?
     		label += "_0";
     		for (int n=1; hasLabel(label); n++) {   // while still not a unique label
     			label = label.substring(0, label.lastIndexOf('_')); //remove counter
@@ -241,6 +241,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	* @param columns			width of the text field. If columns is 8 or more, additional items may be added to this line with addToSameRow()
 	*/
 	public void addStringField(String label, String defaultText, int columns) {
+		if (addToSameRow && label.equals("_"))
+			label = "";
    		String label2 = label;
    		if (label2.indexOf('_')!=-1)
    			label2 = label2.replace('_', ' ');
@@ -1002,8 +1004,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			return "";
 		TextField tf = (TextField)(stringField.elementAt(sfIndex));
 		theText = tf.getText();
+		String label = labels!=null?(String)labels.get((Object)tf):"";
 		if (macro) {
-			String label = (String)labels.get((Object)tf);
 			theText = Macro.getValue(macroOptions, label, theText);
 			if (theText!=null && (theText.startsWith("&")||label.toLowerCase(Locale.US).startsWith(theText))) {
 				// Is the value a macro variable?
@@ -1013,7 +1015,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				if (s!=null) theText = s;
 			}
 		}
-		if (recorderOn) {
+		if (recorderOn && !label.equals("")) {
 			String s = theText;
 			if (s!=null&&s.length()>=3&&Character.isLetter(s.charAt(0))&&s.charAt(1)==':'&&s.charAt(2)=='\\')
 				s = s.replaceAll("\\\\", "/");  // replace "\" with "/" in Windows file paths

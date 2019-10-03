@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.measure.Calibration;
+import ij.plugin.frame.Recorder;
 import java.awt.AWTEvent;
 import java.awt.geom.Rectangle2D;
 
@@ -71,6 +72,7 @@ public class Coordinates implements PlugIn, DialogListener {
 		String xUnit = cal.getUnit();
 		String yUnit = cal.getYUnit();
 		String zUnit = cal.getZUnit();
+		boolean xUnitChanged=false,yUnitChanged=false,zUnitChanged=false;
 		gd.addStringField("X_unit:", xUnit, 18);
 		gd.addStringField("Y_unit:", yUnit.equals(xUnit) ? SAME_AS_X : yUnit, 18);
 		if (isStack)
@@ -120,40 +122,57 @@ public class Coordinates implements PlugIn, DialogListener {
 			if (cal.pixelHeight < 0)
 				cal.pixelHeight = -cal.pixelHeight;
 		}
-		cal.setXUnit(gd.getNextString());
-		yUnit = gd.getNextString();
-		cal.setYUnit((yUnit.equals("") || yUnit.equals(SAME_AS_X)) ? null : yUnit);
+		String xUnit2 = gd.getNextString();
+		xUnitChanged = !xUnit2.equals(xUnit);
+		if (xUnitChanged)
+			cal.setXUnit(xUnit2);
+		String yUnit2 = gd.getNextString();
+		yUnitChanged = !yUnit2.equals(yUnit) && !yUnit2.equals(SAME_AS_X);
+		if (yUnitChanged)
+			cal.setYUnit(yUnit2);
+		String zUnit2 = null;
 		if (isStack) {
-			zUnit = gd.getNextString();
-			cal.setZUnit((zUnit.equals("") || zUnit.equals(SAME_AS_X)) ? null : zUnit);
+			zUnit2 = gd.getNextString();
+			zUnitChanged = !zUnit2.equals(zUnit) && !zUnit2.equals(SAME_AS_X);
+			if (zUnitChanged)
+				cal.setZUnit(zUnit2);
 		}
 		ImageWindow win = imp.getWindow();
 		imp.repaintWindow();
+		if (Recorder.record) {
+			if (Recorder.scriptMode()) {
+				if (xUnitChanged)
+					Recorder.recordCall("imp.getCalibration().setXUnit(\""+xUnit2+"\");", true);
+				if (yUnitChanged)
+					Recorder.recordCall("imp.getCalibration().setYUnit(\""+yUnit2+"\");", true);
+				if (zUnitChanged)
+					Recorder.recordCall("imp.getCalibration().setZUnit(\""+zUnit2+"\");", true);
+			} else {
+				if (xUnitChanged)
+					Recorder.record("Stack.setXUnit", xUnit2);
+				if (yUnitChanged)
+					Recorder.record("Stack.setYUnit", yUnit2);
+				if (zUnitChanged)
+					Recorder.record("Stack.setZUnit", zUnit2);
+			}
+		}
 	}
 
-	// In interactive mode, disable 'ok' in case of input errors (bad numbers, zero range or inverted x)
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
 		if (mode == POINT) {
 			gd.getNextNumber();
 			gd.getNextNumber();
-			gd.getNextString();
-			gd.getNextString();
-			if (isStack) {
+			if (isStack)
 				gd.getNextNumber();
-				gd.getNextString();
-			}
 			return (!gd.invalidNumber());
 		} else {
 			double xl = gd.getNextNumber();
 			double xr = gd.getNextNumber();
 			double yt = gd.getNextNumber();
 			double yb = gd.getNextNumber();
-			gd.getNextString();
-			gd.getNextString();
 			if (isStack) {
 				double zf = gd.getNextNumber();
 				double zl = gd.getNextNumber();
-				gd.getNextString();
 				return (!gd.invalidNumber() && (xr>xl) && (yt!=yb) && (zl>zf));
 			} else
 				return (!gd.invalidNumber() && xr>xl && yt!=yb);
