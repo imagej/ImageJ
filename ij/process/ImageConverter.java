@@ -252,6 +252,7 @@ public class ImageConverter {
 		MedianCut mc = new MedianCut(pixels, width, height);
 		ImageProcessor ip2 = mc.convertToByte(nColors);
 	    imp.setProcessor(null, ip2);
+	    imp.setTypeToColor256();
 	}
 	
 	/** Set true to scale to 0-255 when converting short to byte or float

@@ -693,6 +693,7 @@ public class FileSaver {
 			msg = msg.substring(0, 100);
 		msg = "File saving error (IOException):\n   \"" + msg + "\"";
 		IJ.error("FileSaver."+title, msg+" \n   "+path);
+		IJ.showProgress(1.0);
 	}
 	
 	private void error(String msg) {

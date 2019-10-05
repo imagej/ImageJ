@@ -1308,6 +1308,17 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 		typeSet = true;
 	}
+	
+	public void setTypeToColor256() {
+		if (imageType==ImagePlus.GRAY8) {
+			ImageProcessor ip2 = getProcessor();
+			if (ip2!=null && ip2.getMinThreshold()==ImageProcessor.NO_THRESHOLD && ip2.isColorLut() && !ip2.isPseudoColorLut()) {
+				imageType = COLOR_256;
+				typeSet = true;
+			}
+		}
+	}
+	
 
  	/** Returns the string value from the "Info" property string
 	 * associated with 'key', or null if the key is not found.

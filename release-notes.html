@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52r24 3 October 2019</u>
+<li> <u>1.52r24 5 October 2019</u>
 <ul>
 <li> Thanks to Stein Rorvik, you can now view and set
 the X, Y and Z dimension units in the 
@@ -21,6 +21,7 @@ sizes ("XXL" and "XXXL").
 command can now be used to set the Z unit.
 <li> Thanks to Stein Rorvik, added the Roi.getPosition(channel,slice,frame),
 Roi.setPosition(channel,slice,frame),
+Stack.setXUnit(), Stack.setYUnit(),
 Stack.setUnits(x,y,z,time,value), Stack.getOrthoViews(x,y,z)
 and Stack.getOrthoViewsIDs(xy,yz,xz) macro functions.
 <li> Added the IJ.openAsByteBuffer() method
@@ -39,6 +40,9 @@ increment/decrement arrows in GenericDialog sliders.
 <li> Thanks to Marcel Boeglin, fixed a bug that could cause the
 particle analyzer to throw an exception when creating an 
 overlay and no particles were detected.
+<li> Thanks to Noreen Walker, fixed a bug that caused the
+image type to unexpectadly to change to COLOR_256 when
+using the "glasbey" LUT.
 <li> Thanks to Francois Gannier and Michael Schmid, fixed a
 1.52o regression that caused the Log window to unexpectedly
 become the active window.

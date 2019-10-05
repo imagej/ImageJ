@@ -271,6 +271,7 @@ public class StackConverter {
             stack2.addSlice(null, montage.crop());
         }
 		imp.setStack(null, stack2);
+		imp.setTypeToColor256();
 	}
 
 }

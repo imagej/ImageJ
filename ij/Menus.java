@@ -1231,13 +1231,6 @@ public class Menus {
     		else if (stack.isLab())
     			type = LAB_STACK;
     	}
-		if (type==ImagePlus.GRAY8) {
-			ImageProcessor ip = imp.getProcessor();
-			if (ip!=null && ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD && ip.isColorLut() && !ip.isPseudoColorLut()) {
-				type = ImagePlus.COLOR_256;
-				imp.setType(ImagePlus.COLOR_256);
-			}
-		}
     	switch (type) {
     		case ImagePlus.GRAY8:
 				gray8Item.setState(true);
