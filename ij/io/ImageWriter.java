@@ -7,6 +7,7 @@ import ij.process.ImageProcessor;
 public class ImageWriter {
 	private FileInfo fi;
 	private boolean showProgressBar=true;
+	private boolean savingStack;
 	
 	public ImageWriter (FileInfo fi) {
 		this.fi = fi;
@@ -33,6 +34,7 @@ public class ImageWriter {
 	
 	void write8BitStack(OutputStream out, Object[] stack)  throws IOException {
 		showProgressBar = false;
+		savingStack = true;
 		for (int i=0; i<fi.nImages; i++) {
 			IJ.showStatus("Writing: " + (i+1) + "/" + fi.nImages);
 			write8BitImage(out, (byte[])stack[i]);
@@ -184,13 +186,15 @@ public class ImageWriter {
 	}
 	
 	private int getCount(long imageSize) {
+		if (savingStack)
+			return (int)imageSize;
 		int count = (int)(imageSize/50L);
 		if (count<65536)
 			count = 65536;
 		if (count>imageSize)
 			count = (int)imageSize;
 		count = (count/4)*4;
-		if (IJ.debugMode) IJ.write("ImageWriter: "+imageSize+" "+count+" "+imageSize/50);	
+		if (IJ.debugMode) IJ.log("ImageWriter: "+imageSize+" "+count+" "+imageSize/50);	
 		return count;	
 	}
 	
@@ -312,6 +316,7 @@ public class ImageWriter {
 				break;
 			default:
 		}
+		savingStack = false;
 	}
 	
 }

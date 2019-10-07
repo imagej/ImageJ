@@ -5,11 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.52r24 5 October 2019</u>
+<li> <u>1.52r32 6 October 2019</u>
 <ul>
 <li> Thanks to Stein Rorvik, you can now view and set
 the X, Y and Z dimension units in the 
 <i>Image&gt;Properties</i> dialog box.
+<li> Thanks to Ryan Siu, the double click interval used to
+complete a polygon selection is reduced from 500ms to 300ms and
+a confirmation dialog is displayed if there are more than 25 points.
 <li> Thanks to Stein Rorvik, the slider in the <i>Image&gt;Transform&gt;Rotate</i>
 dialog now shows the angle using two decimal places and the slider arrows
 increment/decrement by 0.1 degrees. Use the keyboard arrow keys
@@ -43,6 +46,9 @@ overlay and no particles were detected.
 <li> Thanks to Noreen Walker, fixed a bug that caused the
 image type to unexpectadly to change to COLOR_256 when
 using the "glasbey" LUT.
+<li> Thanks to 'mountain_man', fixed a bug
+that caused an image to not be displayed correctly
+if a LUT was applied before the image was shown.
 <li> Thanks to Francois Gannier and Michael Schmid, fixed a
 1.52o regression that caused the Log window to unexpectedly
 become the active window.

@@ -1070,14 +1070,21 @@ public class PolygonRoi extends Roi {
 			samePoint = (xpf[nPoints-2]==xpf[nPoints-1] && ypf[nPoints-2]==ypf[nPoints-1]);
 		else
 			samePoint = (xp[nPoints-2]==xp[nPoints-1] && yp[nPoints-2]==yp[nPoints-1]);
+		boolean doubleClick = (System.currentTimeMillis()-mouseUpTime)<=300;
 		Rectangle biggerStartBox = new Rectangle(ic.screenXD(startXD)-5, ic.screenYD(startYD)-5, 10, 10);
 		if (nPoints>2 && (biggerStartBox.contains(sx, sy)
 		|| (ic.offScreenXD(sx)==startXD && ic.offScreenYD(sy)==startYD)
-		|| (samePoint && (System.currentTimeMillis()-mouseUpTime)<=500))) {
-			nPoints--;
-			addOffset();
-			finishPolygon();
-			return;
+		|| (samePoint && doubleClick))) {
+			boolean okayToFinish = true;
+			if (type==POLYGON && samePoint && doubleClick && nPoints>25) {
+				okayToFinish = IJ.showMessageWithCancel("Polygon Tool", "Complete the selection?");
+			}
+			if (okayToFinish) {
+				nPoints--;
+				addOffset();
+				finishPolygon();
+				return;
+			}
 		} else if (!samePoint) {
 			mouseUpTime = System.currentTimeMillis();
 			if (type==ANGLE && nPoints==3) {

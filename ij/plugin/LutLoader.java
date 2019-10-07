@@ -92,8 +92,10 @@ public class LutLoader extends ImagePlus implements PlugIn {
 				IndexColorModel cm = new IndexColorModel(8, 256, fi.reds, fi.greens, fi.blues);
 				if (imp.isComposite())
 					((CompositeImage)imp).setChannelColorModel(cm);
-				else
+				else {
 					ip.setColorModel(cm);
+					if (imp.getWindow()==null) imp.setProcessor(ip);
+				}
 				if (imp.getStackSize()>1)
 					imp.getStack().setColorModel(cm);
 				imp.updateAndRepaintWindow();
@@ -253,7 +255,6 @@ public class LutLoader extends ImagePlus implements PlugIn {
 	
 	/** Opens an NIH Image LUT, 768 byte binary LUT or text LUT from a file or URL. */
 	boolean openLut(FileInfo fi) {
-		//IJ.log("openLut: " + fi.directory + fi.fileName);
 		boolean isURL = fi.url!=null && !fi.url.equals("");
 		int length = 0;
 		String path = isURL?fi.url:fi.directory+fi.fileName;

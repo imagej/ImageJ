@@ -1553,9 +1553,11 @@ public class Functions implements MacroConstants, Measurements {
 				ImagePlus imp = getImage();
 				String value = imp.getStringProperty(key);
 				if (value!=null) return value;
-			} else if (lowercaseKey.equals("micrometer.abbreviation"))
+			} else if (lowercaseKey.equals("micrometer.abbreviation")) {
 				return "\u00B5m";
-			else if (lowercaseKey.equals("image.subtitle")) {
+			} else if (lowercaseKey.equals("image.title")) {
+				return getImage().getTitle();
+			} else if (lowercaseKey.equals("image.subtitle")) {
 				ImagePlus imp = getImage();
 				ImageWindow win = imp.getWindow();
 				return win!=null?win.createSubtitle():"";
