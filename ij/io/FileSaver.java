@@ -788,6 +788,10 @@ public class FileSaver {
 
 		if (saveName)
 			appendEscapedLine(sb, "name="+imp.getTitle());
+			
+		if (imp.getType()==ImagePlus.COLOR_256)
+			sb.append("8bitcolor=true\n");
+
 		sb.append((char)0);
 		return new String(sb);
 	}

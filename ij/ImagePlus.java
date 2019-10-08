@@ -576,14 +576,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		height = newHeight;
 		setStackNull();
 		LookUpTable lut = new LookUpTable(image);
-		int type = GRAY8;
-		if (lut.getMapSize() > 0) {
-			if (lut.isGrayscale())
-				type = GRAY8;
-			else
-				type = COLOR_256;
-		} else
-			type = COLOR_RGB;
+		int type = lut.getMapSize()>0?GRAY8:COLOR_RGB;
 		if (image!=null && type==COLOR_RGB)
 			ip = new ColorProcessor(image);
 		if (ip==null && image!=null)

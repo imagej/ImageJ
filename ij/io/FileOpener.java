@@ -406,6 +406,9 @@ public class FileOpener {
 			}
 		}
 		
+		if (getBoolean(props, "8bitcolor"))
+			imp.setTypeToColor256(); // set type to COLOR_256
+		
 		int stackSize = imp.getStackSize();
 		if (stackSize>1) {
 			int channels = (int)getDouble(props,"channels");

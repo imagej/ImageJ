@@ -41,6 +41,10 @@ public class PNG_Writer implements PlugIn {
     }
 
 	public void writeImage(ImagePlus imp, String path, int transparentIndex) throws Exception {
+		if (imp.getType()==ImagePlus.COLOR_256) {
+			imp = imp.duplicate();
+			new ImageConverter(imp).convertToRGB();
+		}
 		if (imp.getStackSize()==4 && imp.getBitDepth()==8 && "alpha".equalsIgnoreCase(imp.getStack().getSliceLabel(4)))
 			writeFourChannelsWithAlpha(imp, path);
 		else if (transparentIndex>=0 && transparentIndex<=255 && imp.getBitDepth()==8)
