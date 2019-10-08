@@ -610,6 +610,8 @@ public class Selection implements PlugIn, Measurements {
 			return;
 		}
 		int threshold = ip.isInvertedLut()?255:0;
+		if (Prefs.blackBackground)
+			threshold = (threshold==255)?0:255;
 		ip.setThreshold(threshold, threshold, ImageProcessor.NO_LUT_UPDATE);
 		IJ.runPlugIn("ij.plugin.filter.ThresholdToSelection", "");
 	}

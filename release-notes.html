@@ -5,8 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.52r36 7 October 2019</u>
+<li> <u>1.52r37 8 October 2019</u>
 <ul>
+<li> Thanks to Michael Schmid, <i>Gaussian Blur</i> now uses a Thread Pool,
+reducing overhead and making it faster for small images.
 <li> Thanks to Stein Rorvik, you can now view and set
 the X, Y and Z dimension units in the 
 <i>Image&gt;Properties</i> dialog box.
@@ -52,6 +54,10 @@ if a LUT was applied before the image was shown.
 <li> Thanks to 'mountain_man', fixed a bug
 that caused 8-bit PNG images with LUTs to
 open as type COLOR_256.
+<li> Thanks to Jan Brocher, fixed a bug that caused the
+<i>Edit&gt;Selection&gt;Create Selection</i> command
+to ignore the “Black background” setting with
+non-thresholded binary images.
 <li> Thanks to Francois Gannier and Michael Schmid, fixed a
 1.52o regression that caused the Log window to unexpectedly
 become the active window.
