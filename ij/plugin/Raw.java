@@ -23,7 +23,9 @@ public class Raw implements PlugIn {
 	/** Opens the image at 'filePath' using the format specified by 'fi'. */
 	public static ImagePlus open(String filePath, FileInfo fi) {
 		File f = new File(filePath);
-		fi.directory = f.getParent()+ "/";
+		String parent = f.getParent();
+		if (parent!=null)
+			fi.directory = parent+ "/";
 		fi.fileName = f.getName();
 		return (new FileOpener(fi)).open(false);
 	}	
@@ -50,7 +52,7 @@ public class Raw implements PlugIn {
 		list = fo.sortFileList(list);
 		if (list==null)
 			return null;
-		if (!(directory.endsWith(File.separator)||directory.endsWith("/")))
+		if (directory!=null && !(directory.endsWith(File.separator)||directory.endsWith("/")))
 			directory += "/";
 		FileInfo[] info = new FileInfo[list.length];
 		for (int i=0; i<list.length; i++) {

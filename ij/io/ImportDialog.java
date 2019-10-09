@@ -208,7 +208,7 @@ public class ImportDialog {
 		else {
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.openImage();
-			String filePath = fi.directory+fi.fileName;
+			String filePath = fi.getFilePath();
 			Recorder.recordCall(fi.getCode()+"imp = Raw.open(\""+filePath+"\", fi);");
 			if (imp!=null) {
 				imp.show();

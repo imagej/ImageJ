@@ -75,6 +75,10 @@ public class TiffDecoder {
 	private int photoInterp;
 		
 	public TiffDecoder(String directory, String name) {
+		if (directory==null)
+			directory = "";
+		if (directory.length()>0 && !(directory.endsWith(File.separator)||directory.endsWith("/")))
+			directory += "/";
 		this.directory = directory;
 		this.name = name;
 	}
@@ -764,7 +768,7 @@ public class TiffDecoder {
 		long ifdOffset;
 		ArrayList list = new ArrayList();
 		if (in==null)
-			in = new RandomAccessStream(new RandomAccessFile(new File(directory, name), "r"));
+			in = new RandomAccessStream(new RandomAccessFile(new File(directory+name), "r"));
 		ifdOffset = OpenImageFileHeader();
 		if (ifdOffset<0L) {
 			in.close();

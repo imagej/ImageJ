@@ -327,8 +327,14 @@ public class ImageInfo implements PlugIn {
 		if (fi!=null) {
 			if (fi.url!=null && !fi.url.equals(""))
 				s += "URL: " + fi.url + "\n";
-			else if (fi.directory!=null && fi.fileName!=null)
-				s += "Path: " + fi.directory + fi.fileName + "\n";
+			else {
+				String defaultDir = (fi.directory==null || fi.directory.length()==0)?System.getProperty("user.dir"):"";
+				if (defaultDir.length()>0) {
+					defaultDir = defaultDir.replaceAll("\\\\", "/");
+					defaultDir += "/";
+				}
+				s += "Path: " + defaultDir + fi.getFilePath() + "\n";
+			}
 		}
 		
 		ImageWindow win = imp.getWindow();

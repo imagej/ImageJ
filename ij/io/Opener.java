@@ -678,7 +678,9 @@ public class Opener {
 		FileInfo fi = new FileInfo();
 		fi.fileFormat = fi.IMAGEIO;
 		fi.fileName = f.getName();
-		fi.directory = f.getParent()+File.separator;
+		String parent = f.getParent();
+		if (parent!=null)
+			fi.directory = parent + File.separator;
 		imp.setFileInfo(fi);
 		return imp;
 	}
@@ -963,7 +965,9 @@ public class Opener {
 		if (fi!=null) {
 			fi.fileFormat = FileInfo.ZIP_ARCHIVE;
 			fi.fileName = f.getName();
-			fi.directory = f.getParent()+File.separator;
+			String parent = f.getParent();
+			if (parent!=null)
+				fi.directory = parent+File.separator;
 		}
 		return imp;
 	}
@@ -1290,7 +1294,7 @@ public class Opener {
 		else if (fi.url!=null && !fi.url.equals(""))
 			return new URL(fi.url+fi.fileName).openStream();
 		else {
-			File f = new File(fi.directory + fi.fileName);
+			File f = new File(fi.getFilePath());
 			if (f==null || f.isDirectory())
 				return null;
 			else {

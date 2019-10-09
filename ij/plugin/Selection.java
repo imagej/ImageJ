@@ -603,10 +603,10 @@ public class Selection implements PlugIn, Measurements {
 		if (!ip.isBinary()) {
 			IJ.error("Create Selection",
 				"This command creates a composite selection from\n"+
-				"a mask (8-bit binary image with white background)\n"+
-				"or from an image that has been thresholded using\n"+
-				"the Image>Adjust>Threshold tool. The current\n"+
-				"image is not a mask and has not been thresholded.");
+				"a mask (8-bit binary image) or from an image\n"+
+				"thresholded using Image>Adjust>Threshold\n"+
+				"The current image is not a mask and has not\n"+
+				"been thresholded.");
 			return;
 		}
 		int threshold = ip.isInvertedLut()?255:0;

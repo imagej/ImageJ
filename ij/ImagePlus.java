@@ -2075,7 +2075,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			path = url;
 			url2 = url;
 		} else if (fi!=null && !((fi.directory==null||fi.directory.equals("")))) {
-			path = fi.directory+fi.fileName;
+			path = fi.getFilePath();
 		} else if (fi!=null && fi.url!=null && !fi.url.equals("")) {
 			path = fi.url;
 			url2 = fi.url;

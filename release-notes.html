@@ -5,10 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.52r37 8 October 2019</u>
+<li> <u>1.52r39 9 October 2019</u>
 <ul>
-<li> Thanks to Michael Schmid, <i>Gaussian Blur</i> now uses a Thread Pool,
-reducing overhead and making it faster for small images.
+<li> Thanks to Michael Schmid, <i>Process&gt;Filters&gt;Gaussian Blur</i>
+now uses a Thread Pool, reducing overhead and making it
+faster for small images.
 <li> Thanks to Stein Rorvik, you can now view and set
 the X, Y and Z dimension units in the 
 <i>Image&gt;Properties</i> dialog box.
@@ -58,6 +59,9 @@ open as type COLOR_256.
 <i>Edit&gt;Selection&gt;Create Selection</i> command
 to ignore the “Black background” setting with
 non-thresholded binary images.
+<li> Thanks to 'mountain_man', fixed a bug that caused
+ImageJ to not be be able to open TIFF files saved
+without a file path.
 <li> Thanks to Francois Gannier and Michael Schmid, fixed a
 1.52o regression that caused the Log window to unexpectedly
 become the active window.

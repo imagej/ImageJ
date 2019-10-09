@@ -257,7 +257,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 	boolean openLut(FileInfo fi) {
 		boolean isURL = fi.url!=null && !fi.url.equals("");
 		int length = 0;
-		String path = isURL?fi.url:fi.directory+fi.fileName;
+		String path = isURL?fi.url:fi.getFilePath();
 		if (!isURL) {
 			File f = new File(path);
 			length = (int)f.length();
@@ -292,7 +292,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 		if (isURL)
 			is = new URL(fi.url+fi.fileName).openStream();
 		else
-			is = new FileInputStream(fi.directory + fi.fileName);
+			is = new FileInputStream(fi.getFilePath());
 		DataInputStream f = new DataInputStream(is);
 		int nColors = 256;
 		if (!raw) {
@@ -322,7 +322,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 	int openTextLut(FileInfo fi) throws IOException {
 		TextReader tr = new TextReader();
 		tr.hideErrorMessages();
-		ImageProcessor ip = tr.open(fi.directory+fi.fileName);
+		ImageProcessor ip = tr.open(fi.getFilePath());
 		if (ip==null)
 			return 0;
 		int width = ip.getWidth();

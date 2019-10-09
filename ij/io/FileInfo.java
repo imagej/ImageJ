@@ -158,7 +158,17 @@ public class FileInfo implements Cloneable {
 		samplesPerPixel = 1;
     }
     
-    /** Returns the offset as a long. */
+     /** Returns the file path. */
+    public String getFilePath() {
+    	String dir = directory;
+		if (dir==null)
+			dir = "";
+		if (dir.length()>0 && !(dir.endsWith(File.separator)||dir.endsWith("/")))
+			dir += "/";
+    	return dir + fileName;
+    }
+
+   /** Returns the offset as a long. */
     public final long getOffset() {
     	return longOffset>0L?longOffset:((long)offset)&0xffffffffL;
     }

@@ -283,7 +283,7 @@ public class FileOpener {
 	public void revertToSaved(ImagePlus imp) {
 		if (fi==null)
 			return;
-		String path = fi.directory + fi.fileName;
+		String path = fi.getFilePath();
 		if (fi.url!=null && !fi.url.equals("") && (fi.directory==null||fi.directory.equals("")))
 			path = fi.url;
 		IJ.showStatus("Loading: " + path);
@@ -468,7 +468,7 @@ public class FileOpener {
 		else {
 			if (fi.directory.length()>0 && !(fi.directory.endsWith(Prefs.separator)||fi.directory.endsWith("/")))
 				fi.directory += Prefs.separator;
-		    File f = new File(fi.directory + fi.fileName);
+		    File f = new File(fi.getFilePath());
 		    if (gzip) fi.compression = FileInfo.COMPRESSION_UNKNOWN;
 		    if (f==null || !f.exists() || f.isDirectory() || !validateFileInfo(f, fi))
 		    	is = null;
@@ -519,7 +519,7 @@ public class FileOpener {
 			+"  Bytes/pixel: " + fi.getBytesPerPixel() + "\n"
 			+(length>0?"  File length: " + length + "\n":"");
 		if (silentMode) {
-			IJ.log("Error opening "+fi.directory+fi.fileName);
+			IJ.log("Error opening "+fi.getFilePath());
 			IJ.log(msg2);
 		} else
 			IJ.error("FileOpener", msg2);

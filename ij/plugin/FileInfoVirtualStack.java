@@ -142,7 +142,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 	}
 	
 	private int validateNImages(FileInfo fi) {
-		File f = new File(fi.directory + fi.fileName);
+		File f = new File(fi.getFilePath());
 		if (!f.exists())
 			return fi.nImages;
 		long fileLength = f.length();
