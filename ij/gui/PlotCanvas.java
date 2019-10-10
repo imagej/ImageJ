@@ -237,21 +237,6 @@ public class PlotCanvas extends ImageCanvas {
 			super.mouseReleased(e);
 	}
 
-	/** Overrides ImageCanvas.mouseClicked, handles double-clicking of axes to set axis options and range */
-	public void mouseClicked(MouseEvent e) {
-		Rectangle frame = plot.getDrawingFrame();
-		int x = e.getX(), y = e.getY();
-		boolean isXaxis = y >= frame.y+frame.height && x >= frame.x && x < frame.x+frame.width;
-		boolean isYaxis = x <= frame.x && y >= frame.y && y < frame.y+frame.height;
-		if (e.getClickCount() == 2 && (isXaxis || isYaxis)) {
-			Roi roi = imp.getRoi();
-			if (roi != null && roi.getState() == Roi.CONSTRUCTING)
-				imp.deleteRoi();		//double-click should not create a roi
-			new PlotDialog(plot, isXaxis ? PlotDialog.X_AXIS : PlotDialog.Y_AXIS).showDialog(imp.getWindow());
-		} else 
-			super.mouseClicked(e);
-	}
-
     /** Returns the index of the arrow for modifying the range when the mouse click was
      *  at such an arrow, otherwise -1 */
     int getRangeArrowIndex(MouseEvent e) {
