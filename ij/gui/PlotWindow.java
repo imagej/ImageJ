@@ -76,7 +76,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 
 	private Button list, data, more, live;
 	private PopupMenu dataPopupMenu, morePopupMenu;
-	private static final int NUM_MENU_ITEMS = 19; //how many menu items we have in total
+	private static final int NUM_MENU_ITEMS = 20; //how many menu items we have in total
 	private MenuItem[] menuItems = new MenuItem[NUM_MENU_ITEMS];
 	private Label coordinates;
 	private static String defaultDirectory = null;
@@ -306,8 +306,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	/** Names for popupMenu items. Update NUM_MENU_ITEMS at the top when adding new ones! */
 	private static int SAVE=0, COPY=1, COPY_ALL=2, LIST_SIMPLE=3, ADD_FROM_TABLE=4, ADD_FROM_PLOT=5, ADD_FIT=6, //data menu
 			SET_RANGE=7, PREV_RANGE=8, RESET_RANGE=9, FIT_RANGE=10,  //the rest is in the more menu
-			ZOOM_SELECTION=11, AXIS_OPTIONS=12, LEGEND=13, STYLE=14, RESET_PLOT=15,
-			FREEZE=16, HI_RESOLUTION=17, PROFILE_PLOT_OPTIONS=18;
+			ZOOM_SELECTION=11, AXIS_OPTIONS=12, LEGEND=13, STYLE=14, TEMPLATE=15, RESET_PLOT=16,
+			FREEZE=17, HI_RESOLUTION=18, PROFILE_PLOT_OPTIONS=19;
 	//the following commands are disabled when the plot is frozen
 	private static int[] DISABLED_WHEN_FROZEN = new int[]{ADD_FROM_TABLE, ADD_FROM_PLOT, ADD_FIT,
 			SET_RANGE, PREV_RANGE, RESET_RANGE, FIT_RANGE, ZOOM_SELECTION, AXIS_OPTIONS, LEGEND, STYLE, RESET_PLOT};
@@ -340,6 +340,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		menuItems[AXIS_OPTIONS] = addPopupItem(morePopupMenu, "Axis Options...");
 		menuItems[LEGEND] = addPopupItem(morePopupMenu, "Legend...");
 		menuItems[STYLE] = addPopupItem(morePopupMenu, "Contents Style...");
+		menuItems[TEMPLATE] = addPopupItem(morePopupMenu, "Use Template...");
 		menuItems[RESET_PLOT] = addPopupItem(morePopupMenu, "Reset Format");
 		menuItems[FREEZE] = addPopupItem(morePopupMenu, "Freeze Plot", true);
 		menuItems[HI_RESOLUTION] = addPopupItem(morePopupMenu, "High-Resolution Plot...");
@@ -410,6 +411,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 			new PlotDialog(plot, PlotDialog.LEGEND).showDialog(this);
 		else if (b==menuItems[STYLE])
 			new PlotContentsDialog(plot, PlotContentsDialog.STYLE).showDialog(this);
+		else if (b==menuItems[TEMPLATE])
+			new PlotDialog(plot, PlotDialog.TEMPLATE).showDialog(this);
 		else if (b==menuItems[RESET_PLOT]) {
 			plot.setFont(Font.PLAIN, Prefs.getInt(PREFS_FONT_SIZE, FONT_SIZE));
 			plot.setAxisLabelFont(Font.PLAIN, Prefs.getInt(PREFS_FONT_SIZE, FONT_SIZE));
@@ -446,7 +449,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	/**
 	 * Updates the X and Y values when the mouse is moved and, if appropriate,
 	 * shows/hides the overlay with the triangular buttons for changing the axis
-	 * range limits Overrides mouseMoved() in ImageWindow.
+	 * range limits.
+	 * Overrides mouseMoved() in ImageWindow.
 	 *
 	 * @see ij.gui.ImageWindow#mouseMoved
 	 */
@@ -593,9 +597,13 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		activeRangeArrow = -1;
 	}
 
-	/** Returns the index of the range arrow at cursor position x,y, or -1 of none.
-	 *	Index numbers start with 0 at the 'down' arrow of the lower side of the x axis
-	 *	and end with the up arrow at the upper side of the y axis. */
+	/** Returns the index of the range-modifying symbol or axis at the
+	 *  cursor position x,y, or -1 of none.
+	 *  Index numbers for arrows start with 0 at the 'down' arrow of the
+	 *  lower side of the x axis and end with 7 the up arrow at the upper
+	 *  side of the y axis. Numbers 8 & 9 are for "Reset Range" and "Fit All";
+	 *  numbers 10-13 for a dialog to set a single limit. */
+	 
 	int getRangeArrowIndex(int x, int y) {
 		if (!rangeArrowsVisible) return -1;
 		for (int i=0; i<rangeArrowRois.length; i++)
@@ -822,7 +830,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 			IJ.wait(50);	//delay to make sure the roi has been updated
 			Plot plot = plotMaker!=null?plotMaker.getPlot():null;
 			if (doUpdate && plot!=null && plot.getNumPlotObjects()>0) {
-				plot.useTemplate(this.plot, this.plot.templateFlags);
+				plot.useTemplate(this.plot, this.plot.templateFlags | Plot.COPY_SIZE | Plot.COPY_LABELS | Plot.COPY_AXIS_STYLE |
+						Plot.COPY_CONTENTS_STYLE | Plot.COPY_LEGEND | Plot.COPY_EXTRA_OBJECTS);
 				plot.setPlotMaker(plotMaker);
 				this.plot = plot;
 				((PlotCanvas)ic).setPlot(plot);

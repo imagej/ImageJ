@@ -34,7 +34,7 @@ public class Plot implements Cloneable {
 	//These are saved in the flags of the PlotObject class; thus bits up to 0x0f are reserved
 	public static final int TOP_LEFT=0x90, TOP_RIGHT=0xA0, BOTTOM_LEFT=0xB0, BOTTOM_RIGHT=0xC0, AUTO_POSITION=0x80;
 	/** Masks out bits for legend positions; if all these bits are off, the legend is turned off */
-	private static final int LEGEND_POSITION_MASK = 0xf0;
+	static final int LEGEND_POSITION_MASK = 0xf0;
 	/** Legend has its curves in bottom-to-top sequence (otherwise top to bottom) */
 	public static final int LEGEND_BOTTOM_UP = 0x100;
 	/** Legend erases background (otherwise transparent) */
@@ -127,6 +127,8 @@ public class Plot implements Cloneable {
 	public static final int COPY_AXIS_STYLE = 0x80;
 	/** Flag for copying from a template: copy contents style */
 	public static final int COPY_CONTENTS_STYLE = 0x100;
+	/** Flag for copying PlotObjects (curves...) from a template if the template has more PlotObjects than the Plot to copy to. */
+	public static final int COPY_EXTRA_OBJECTS = 0x200;
 
 	/** The default margin width left of the plot frame (enough for 5-digit numbers such as unscaled 16-bit
 	 *	@deprecated Not a fixed value any more, use getDrawingFrame() to get the drawing area */
@@ -160,6 +162,7 @@ public class Plot implements Cloneable {
 	private static Font	 DEFAULT_FONT = FontUtil.getFont("Arial", Font.PLAIN, PlotWindow.fontSize);
 
 	PlotProperties pp = new PlotProperties();		//size, range, formatting etc, for easy serialization
+	PlotProperties ppSnapshot;						//copy for reverting
 	Vector<PlotObject> allPlotObjects = new Vector<PlotObject>();	//all curves, labels etc., also serialized for saving/reading
 	Vector<PlotObject> allPlotObjectsSnapshot;      //copy for reverting
 	private PlotVirtualStack stack;
@@ -182,10 +185,10 @@ public class Plot implements Cloneable {
 	double[] savedMinMax = new double[]{Double.NaN, 0, Double.NaN, 0};	//keeps previous range for revert
 	int[] enlargeRange;								//whether to enlarge the range slightly to avoid values at the border (0=off, USUALLY_ENLARGE, ALWAYS_ENLARGE)
 	boolean logXAxis, logYAxis;						//whether to really use log axis (never for small relative range)
+	//for passing on what should be kept when 'live' plotting (PlotMaker), but note that 'COPY_EXTRA_OBJECTS' is also on for live plotting:
+	int templateFlags = COPY_SIZE | COPY_LABELS | COPY_AXIS_STYLE | COPY_CONTENTS_STYLE | COPY_LEGEND;	
 
-	int templateFlags = COPY_SIZE | COPY_LABELS | COPY_AXIS_STYLE | COPY_CONTENTS_STYLE | COPY_LEGEND;	//for passing on what should be kept when 'live' plotting (PlotMaker)
-
-	Font defaultFont = DEFAULT_FONT;			//default font for labels, axis, etc.
+	Font defaultFont = DEFAULT_FONT;				//default font for labels, axis, etc.
 	Font currentFont = defaultFont;					//font as changed by setFont or setFontSize, must never be null
 	private double xScale, yScale;					//pixels per data unit
 	private int xBasePxl, yBasePxl;					//pixel coordinates corresponding to 0
@@ -354,11 +357,20 @@ public class Plot implements Cloneable {
 		return imp == null ? title : imp.getTitle();
 	}
 
-	/** Sets the x-axis and y-axis range. Updates the image if existing.
-	 *  Accepts NaN values to indicate auto-range.
-	 */
+	/** Sets the x-axis and y-axis range. Saves the new limits as default (so the 'R' field sets the limits to these).
+	 *  Updates the image if existing.
+	 *  Accepts NaN values to indicate auto-range. */
 	public void setLimits(double xMin, double xMax, double yMin, double yMax) {
+		setLimitsNoUpdate(xMin, xMax, yMin, yMax);
+		makeLimitsDefault();
+		ignoreForce2Grid = true;
+		if (plotDrawn)
+			setLimitsToDefaults(true);
+	}
 
+	/** Sets the x-axis and y-axis range. Accepts NaN values to indicate auto range.
+	 *  Does not update the image and leaves the default limits (for reset via the 'R' field) untouched. */
+	void setLimitsNoUpdate(double xMin, double xMax, double yMin, double yMax) {
 		boolean containsNaN = (Double.isNaN(xMin + xMax + yMin + yMax));
 		if (containsNaN && getNumPlotObjects(PlotObject.XY_DATA|PlotObject.ARROWS, false)==0)//can't apply auto-range without data
 			return;
@@ -386,10 +398,13 @@ public class Plot implements Cloneable {
 					enlargeRange[i] = 0;
 			enlargeRange(range);    // for automatic limits, avoid points exactly at the border
 		}
-		defaultMinMax = range;      // take the new values as default: change pointer of defaultMinMax
+		System.arraycopy(range, 0, currentMinMax, 0, Math.min(range.length, currentMinMax.length));
 		ignoreForce2Grid = true;
-		if (plotDrawn)
-			setLimitsToDefaults(true);
+	}
+
+	/** Takes over the current limits as the default ones (i.e., the limits set by clicking at the 'R' field in the bottom-left corner) */
+	void makeLimitsDefault() {
+		System.arraycopy(currentMinMax, 0, defaultMinMax, 0, Math.min(currentMinMax.length, defaultMinMax.length));
 	}
 
 	/** Returns the current limits as an array xMin, xMax, yMin, yMax.
@@ -453,15 +468,14 @@ public class Plot implements Cloneable {
 	}
 
 	/** Adjusts the format with another plot as a template, using the current
-	 *  (usually default) flags of this plot. Used for keeping the style during
-	 *  'Live' plotting (PlotMaker).
+	 *  (usually default) templateFlags of this plot.
 	 *  <code>plot</code> may be null; then the call has no effect. */
 	public void useTemplate(Plot plot) {
 		useTemplate(plot, templateFlags);
 	}
 
 	/** Adjusts the format (style) with another plot as a template. Flags determine what to
-	 *	copy from the template; these can be COPY_SIZE, COPY_LABELS, COPY_AXIS_STYLE,
+	 *	copy from the template; these can be X_RANGE, Y_RANGE, COPY_SIZE, COPY_LABELS, COPY_AXIS_STYLE,
 	 *  COPY_CONTENTS_STYLE (hidden items are ignored), and COPY_LEGEND.
 	 *	<code>plot</code> may be null; then the call has no effect. */
 	public void useTemplate(Plot plot, int templateFlags) {
@@ -469,11 +483,10 @@ public class Plot implements Cloneable {
 		this.defaultFont = plot.defaultFont;
 		this.currentFont = plot.currentFont;
 		this.currentLineWidth = plot.currentLineWidth;
-		this.pp.frame = plot.pp.frame.clone();
 		this.currentColor = plot.currentColor;
 		if ((templateFlags & COPY_AXIS_STYLE) != 0) {
 			this.pp.axisFlags = plot.pp.axisFlags;
-			this.pp.frame = plot.pp.frame.clone();
+			this.pp.frame = plot.pp.frame.deepClone();
 		}
 		if ((templateFlags & COPY_LABELS) != 0) {
 			this.pp.xLabel.label = plot.pp.xLabel.label;
@@ -487,9 +500,9 @@ public class Plot implements Cloneable {
 				if (!plotDrawn) defaultMinMax[i] = plot.currentMinMax[i];
 			}
 		if ((templateFlags & COPY_LEGEND) != 0 && plot.pp.legend != null)
-			this.pp.legend = plot.pp.legend.clone();
+			this.pp.legend = plot.pp.legend.deepClone();
 		if ((templateFlags & (COPY_LEGEND | COPY_CONTENTS_STYLE)) != 0) {
-			int plotPObjectIndex = 0;
+			int plotPObjectIndex = 0;  //points to PlotObjects of the templatePlot
 			int plotPObjectsSize = plot.allPlotObjects.size();
 			for (PlotObject plotObject : allPlotObjects) {
 				if (plotObject.type == PlotObject.XY_DATA && !plotObject.hasFlag(PlotObject.HIDDEN)) {
@@ -502,11 +515,16 @@ public class Plot implements Cloneable {
 						plotObject.label = plot.allPlotObjects.get(plotPObjectIndex).label;
 					if ((templateFlags & COPY_CONTENTS_STYLE) != 0)
 						setPlotObjectStyle(plotObject, getPlotObjectStyle(plot.allPlotObjects.get(plotPObjectIndex)));
+					plotPObjectIndex++;
 				}
 			}
 		}
 		if ((templateFlags & COPY_SIZE) != 0)
 			setSize(plot.pp.width, plot.pp.height);
+
+		if ((templateFlags & COPY_EXTRA_OBJECTS) != 0)
+			for (int p = allPlotObjects.size(); p < plot.allPlotObjects.size(); p++)
+				allPlotObjects.add(plot.allPlotObjects.get(p));
 		this.templateFlags = templateFlags;
 	}
 
@@ -1049,7 +1067,7 @@ public class Plot implements Cloneable {
 		setYLabelFont(pp.xLabel.getFont().deriveFont(style < 0 ? pp.yLabel.getFont().getStyle() : style, size));
 	}
 
-	/** Sets the xLabelFont; must not be mull. If this method is not used, the last setFont
+	/** Sets the xLabelFont; must not be null. If this method is not used, the last setFont
 	 *	of setFontSize call before displaying the plot determines the font, or if neither
 	 *	was called, the font size of the Plot Options is used. */
 	public void setXLabelFont(Font font) {
@@ -1091,6 +1109,16 @@ public class Plot implements Cloneable {
 			return plotObject.label;
 		else
 			return null;
+	}
+
+	/** Gets the flags of the xLabel ('x'), yLabel('y') or the legend ('l').
+	 *	Returns -1 if the given PlotObject does not exist */
+	public int getObjectFlags(char c) {
+		PlotObject plotObject = pp.getPlotObject(c);
+		if (plotObject != null)
+			return plotObject.flags;
+		else
+			return -1;
 	}
 
 	/** Get the x coordinates of the data set passed with the constructor (if not null)
@@ -1330,6 +1358,26 @@ public class Plot implements Cloneable {
 		allPlotObjectsSnapshot = null;
 	}
 
+	/** Creates a snapshot of the plot properties (formatting, range etc., not PlotObjects such as data and corresponding curves etc.),
+	 *  for later undo by restorePlotProperties. See also killPlotPropertiesSnapshot */
+	public void savePlotPlotProperties() {
+		pp.rangeMinMax = currentMinMax;
+		ppSnapshot = pp.deepClone();
+	}
+
+	/** Restores the plot properties (formatting, range etc., not PlotObjects such as data and corresponding curves etc.)
+	 *  from a snapshot previously created by savePlotPlotProperties. See also killPlotPropertiesSnapshot.
+ 	 *  Use 'update' to update the plot thereafter. */
+	public void restorePlotProperties() {
+		pp = ppSnapshot.deepClone();
+		System.arraycopy(pp.rangeMinMax, 0, currentMinMax, 0, Math.min(pp.rangeMinMax.length, currentMinMax.length));
+	}
+
+	/** Deletes the snapshot of the plot properties to make space */
+	public void killPlotPropertiesSnapshot() {
+		ppSnapshot = null;
+	}
+
 	private void copyPlotObjectsVector(Vector<PlotObject> src, Vector<PlotObject>dest) {
 		if (dest.size() > 0) dest.removeAllElements();
 		for (PlotObject plotObject : src)
@@ -1567,7 +1615,7 @@ public class Plot implements Cloneable {
 	public ImagePlus makeHighResolution(String title, float scale, boolean antialiasedText, boolean showIt) {
 		Plot hiresPlot = null;
 		try {
-			hiresPlot = (Plot)clone();	//shallow clone, thus arrays&objects are not cloned
+			hiresPlot = (Plot)clone();	//shallow clone, thus arrays&objects are not cloned, but they will be used only now
 		} catch (Exception e) {return null;}
 		hiresPlot.ip = null;
 		hiresPlot.imp = null;
@@ -2103,6 +2151,7 @@ public class Plot implements Cloneable {
 			enlargeRange[maxIndex] = suggestedEnlarge;
 	}
 
+	/** Saves the plot range for later restoring by 'setPreviousMinMax' */
 	void saveMinMax() {
 		if (!Arrays.equals(currentMinMax, savedMinMax))
 			System.arraycopy(currentMinMax, 0, savedMinMax, 0, currentMinMax.length);
@@ -2159,9 +2208,11 @@ public class Plot implements Cloneable {
 	}
 
 	/**
-	 * Zooms in or out when the user clicks one of the overlay arrows at the
-	 * axes. Index numbers start with 0 at the 'down' arrow of the lower side of
-	 * the x axis and end with the up arrow at the upper side of the y axis.
+	 * Adjusts the plot range when the user clicks one of the overlay symbols at the
+	 * axes. Index numbers for arrows start with 0 at the 'down' arrow of the
+	 * lower side of the x axis and end with 7 the up arrow at the upper
+	 * side of the y axis. Numbers 8 & 9 are for "Reset Range" and "Fit All";
+	 * numbers 10-13 for a dialog to set a single limit.
 	 */
 	void zoomOnRangeArrow(int arrowIndex) {
 		if (arrowIndex < 8) {//0..7 = arrows, 8 = Reset Range, 9 = Fit All, 10..13 = set single limit
@@ -3759,6 +3810,17 @@ class PlotProperties implements Cloneable, Serializable {
 		}
 	}
 
+	/** A deep clone; it also duplicates arrays and pPlotObjects */
+	public PlotProperties deepClone() {
+		PlotProperties pp2 = clone(); //shallow clone
+		if (frame != null)  pp2.frame  = frame.deepClone();
+		if (xLabel != null) pp2.xLabel = xLabel.deepClone();
+		if (yLabel != null) pp2.yLabel = yLabel.deepClone();
+		if (legend != null) pp2.legend = legend.deepClone();
+		if (rangeMinMax != null) pp2.rangeMinMax = rangeMinMax.clone();
+		return pp2;
+	}
+
 } // class PlotProperties
 
 /** This class contains the data and properties for displaying a curve, a set of arrows, a line or a label in a plot,
@@ -3968,8 +4030,9 @@ class PlotObject implements Cloneable, Serializable {
 		}
 	}
 
-	/** A deep clone, which duplicates arrays etc. Note that the colors and the font are not cloned;
-	 *  it is assumed these are never modified but only replaced by other objects. */
+	/** A deep clone, which duplicates arrays etc. 
+	 *  Note that colors & font are not cloned; it is assumed that these wil not be modified but replaced,
+	 *  so the clone remains unaffected */
 	public PlotObject deepClone() {
 		PlotObject po2 = clone();
 		if (xValues != null) po2.xValues = xValues.clone();
@@ -4001,8 +4064,8 @@ class PlotObject implements Cloneable, Serializable {
 		type = 1<<type;
 	}
 
-	/*public String toString() {  //for debug messages
-		String s = "PlotObject type="+type+" flags="+flags+" xV:"+(xValues==null ? "-":yValues.length)+" yV:"+(yValues==null ? "-":yValues.length+" col="+color);
+	public String toString() {  //for debug messages
+		String s = "PlotObject type="+type+" flags="+flags+" xV:"+(xValues==null ? "-":yValues.length)+" yV:"+(yValues==null ? "-":yValues.length)+" label="+label+" col="+color+" fSize="+fontSize+" ff="+fontFamily;
 		return s;
-	}*/
+	}
 } // class PlotObject

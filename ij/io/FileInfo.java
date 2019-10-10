@@ -159,14 +159,14 @@ public class FileInfo implements Cloneable {
     }
     
      /** Returns the file path. */
-    public String getFilePath() {
-    	String dir = directory;
+	public String getFilePath() {
+		String dir = directory;
 		if (dir==null)
 			dir = "";
 		if (dir.length()>0 && !(dir.endsWith(File.separator)||dir.endsWith("/")))
 			dir += "/";
-    	return dir + fileName;
-    }
+		return dir + fileName;
+	}
 
    /** Returns the offset as a long. */
     public final long getOffset() {
