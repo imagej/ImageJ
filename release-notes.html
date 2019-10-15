@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52r41 10 October 2019</u>
+<li> <u>1.52r43 14 October 2019</u>
 <ul>
 <li> Plot enhancements, thanks to Michael Schmid: 
 <ul>
@@ -17,6 +17,11 @@ them into a multi-panel figure.
 updated (e.g. a fit, duplicate of a profile, or other profile, to 
 compare the live profiles etc. with it). 
 </ul>
+<li> Thanks to Marcel Boeglin, the title of the ROI list created by
+<i>Image&gt;Overlay&gt;List Elements</i> includes the image
+name, the image associated with the list is activated when you 
+double click on a line, the corresponding ROI is activated, and
+stacks are set to the ROI position, if any.
 <li> Thanks to Michael Schmid, <i>Process&gt;Filters&gt;Gaussian Blur</i>
 now uses a Thread Pool, reducing overhead and making it
 faster for small images.
@@ -24,8 +29,9 @@ faster for small images.
 the X, Y and Z dimension units in the 
 <i>Image&gt;Properties</i> dialog box.
 <li> Thanks to Ryan Siu, the double click interval used to
-complete a polygon selection is reduced from 500ms to 300ms and
-a confirmation dialog is displayed if there are more than 25 points.
+complete a polygon selection is reduced from 500ms to 250ms and
+a confirmation dialog is displayed when completing the selection
+if there are more than 25 points.
 <li> Thanks to Stein Rorvik, the slider in the <i>Image&gt;Transform&gt;Rotate</i>
 dialog now shows the angle using two decimal places and the slider arrows
 increment/decrement by 0.1 degrees. Use the keyboard arrow keys
@@ -35,6 +41,8 @@ larger as the markers get larger and there are two new marker
 sizes ("XXL" and "XXXL").
 <li> Thanks to Stein Rorvik, the <i>Image&gt;Adjust&gt;Coordinates</i>
 command can now be used to set the Z unit.
+<li> GenericDialogs display an error message if show() is called
+instead of showDialog().
 <li> Thanks to Stein Rorvik, added the Roi.getPosition(channel,slice,frame),
 Roi.setPosition(channel,slice,frame),
 Stack.setXUnit(), Stack.setYUnit(),

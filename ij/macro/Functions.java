@@ -7225,7 +7225,9 @@ public class Functions implements MacroConstants, Measurements {
 		Roi roi = imp.getRoi();
 		if (roi==null)
 			interp.error("No selection");
-		if (name.equals("contains")) {
+		if (name.equals("size")) {			
+				return ""+roi.size();
+		} else if (name.equals("contains")) {
 			int x = (int)Math.round(getFirstArg());
 			int y = (int)Math.round(getLastArg());
 			return roi.contains(x,y)?"1":"0";

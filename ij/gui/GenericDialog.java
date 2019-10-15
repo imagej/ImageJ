@@ -80,6 +80,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private static GenericDialog instance;
 	private boolean firstPaint = true;
 	private boolean fontSizeSet;
+	private boolean showDialogCalled;
 
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
@@ -119,6 +120,17 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		addKeyListener(this);
 		addWindowListener(this);
     }
+
+	/** Adds a numeric field. The first word of the label must be
+		unique or command recording will not work.
+	* @param label			the label
+	* @param defaultValue	value to be initially displayed
+	*/
+	public void addNumericField(String label, double defaultValue) {
+		int decimalPlaces = (int)defaultValue==defaultValue?0:3;
+		int columnWidth = decimalPlaces==3?8:6;
+		addNumericField(label, defaultValue, decimalPlaces, columnWidth, null);
+	}
 
 	/** Adds a numeric field. The first word of the label must be
 		unique or command recording will not work.
@@ -1193,6 +1205,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	/** Displays this dialog box. */
 	public void showDialog() {
+		showDialogCalled = true;
 		if (macro) {
 			dispose();
 			recorderOn = Recorder.record && Recorder.recordInMacros;
@@ -1260,7 +1273,13 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		    finalizeRecording();
 		resetCounters();
 	}
-
+	
+	public void show() {
+		super.show();
+		if (!showDialogCalled)
+			IJ.error("GenericDialog Error", "show() called instead of showDialog()");
+	}
+		
 	/** For plugins that read their input only via dialogItemChanged, call it at least once, then stop recording */
 	void finalizeRecording() {
 		if (!wasCanceled && dialogListeners!=null && dialogListeners.size()>0) {

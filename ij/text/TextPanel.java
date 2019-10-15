@@ -282,8 +282,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
  		}
 	}
 
-	void handleDoubleClick() {
-		boolean overlayList = "Overlay Elements".equals(title);
+	void handleDoubleClick() {//Marcel Boeglin 2019.10.07
+		boolean overlayList = title.startsWith("Overlay Elements of ");
 		if (selStart<0 || selStart!=selEnd || (iColCount!=1&&!overlayList))
 			return;
 		boolean doubleClick = System.currentTimeMillis()-mouseDownTime<=DOUBLE_CLICK_THRESHOLD;
@@ -292,7 +292,21 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			char[] chars = (char[])(vData.elementAt(selStart));
 			String s = new String(chars);
 			if (overlayList) {
-				handleDoubleClickInOverlayList(s);
+				String owner = title.substring(20, title.length());
+				String[] titles = WindowManager.getImageTitles();
+				for (int i=0; i<titles.length; i++) {
+					String t = titles[i];
+					if (titles[i].equals(owner)) {
+						ImagePlus imp = WindowManager.getImage(owner);
+						WindowManager.setTempCurrentImage(imp);//?
+						Frame frame = imp.getWindow();
+						frame.toFront();
+						if (frame.getState()==Frame.ICONIFIED)
+							frame.setState(Frame.NORMAL);
+						handleDoubleClickInOverlayList(s);
+						break;
+					}
+				}
 				return;
 			}
 			int index = s.indexOf(": ");
@@ -307,7 +321,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		}
 	}
 
-	private void handleDoubleClickInOverlayList(String s) {
+	private void handleDoubleClickInOverlayList(String s) {//Marcel Boeglin 2019.10.09
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
 			return;
@@ -317,9 +331,22 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		String[] columns = s.split("\t");
 		int index = (int)Tools.parseDouble(columns[0]);
 		Roi roi = overlay.get(index);
+		if (imp.isHyperStack()) {
+			int c = roi.getCPosition();
+			int z = roi.getZPosition();
+			int t = roi.getTPosition();
+			c = c==0?imp.getChannel():c;
+			z = z==0?imp.getSlice():z;
+			t = t==0?imp.getFrame():t;
+			imp.setPosition(c, z, t);
+		} else {
+			int p = roi.getPosition();
+			if (p>=1 && p<=imp.getStackSize())
+				imp.setPosition(p);
+		}
 		imp.setRoi(roi);
 	}
-
+	
     /** For better performance, open double-clicked files on
     	separate thread instead of on event dispatch thread. */
     public void run() {

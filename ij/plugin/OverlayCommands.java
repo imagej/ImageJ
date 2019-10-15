@@ -380,7 +380,9 @@ public class OverlayCommands implements PlugIn {
 			rt.setValue("Z", i, z);	
 			rt.setValue("T", i, t);	
 		}
-		rt.show("Overlay Elements");
+		ImagePlus imp = WindowManager.getCurrentImage();
+		String title = imp!=null?" of "+imp.getTitle():"";
+		rt.show("Overlay Elements"+title);//Marcel Boeglin 2019.10.07
 	}
 	
 }
