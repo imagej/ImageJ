@@ -1490,13 +1490,17 @@ public class ResultsTable implements Cloneable {
 				columns[i][j] = rt2.columns[i][ces[j].index];
 		    ArrayList sc = null;
 		    Map scs =  stringColumns;
-		    if (scs != null)
+		    	if (scs != null)
 			sc = (ArrayList) scs.get (new Integer (i));
 		    if (sc != null) {
-			ArrayList sc2 = (ArrayList) rt2.stringColumns.get (new Integer (i));
-			for (int j = 0; j < size(); j++)
-			    sc.set (j, sc2.get (ces[j].index));
+				ArrayList sc2 = (ArrayList) rt2.stringColumns.get (new Integer (i));
+				for (int j = 0; j < size(); j++)
+			    	sc.set (j, sc2.get (ces[j].index));
 		    }
+		}
+		if (rowLabels != null) {
+			for (int i = 0; i < size(); i++)
+				rowLabels[i] =  rt2.rowLabels[ces[i].index];
 		}
 	}
 	

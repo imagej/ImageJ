@@ -1274,6 +1274,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		resetCounters();
 	}
 	
+	@Override
 	public void show() {
 		super.show();
 		if (!showDialogCalled)

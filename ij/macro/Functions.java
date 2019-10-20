@@ -4157,9 +4157,18 @@ public class Functions implements MacroConstants, Measurements {
 		File f = new File(getStringArg());
 		if (name.equals("getLength")||name.equals("length"))
 			return ""+f.length();
-		else if (name.equals("getName"))
+		else if (name.equals("getNameWithoutExtension")) {
+			String name2 =  f.getName();
+			int dotIndex = name2.lastIndexOf(".");
+			if (dotIndex>=0)
+				name2 = name2.substring(0, dotIndex);
+			return name2;
+		} else if (name.equals("getName")) {
 			return f.getName();
-		else if (name.equals("getAbsolutePath"))
+		} else if (name.equals("getDirectory")) {
+			String parent = f.getParent();
+			return parent!=null?parent.replaceAll("\\\\", "/")+"/":"";
+		} else if (name.equals("getAbsolutePath"))
 			return f.getAbsolutePath();
 		else if (name.equals("getParent"))
 			return f.getParent();
@@ -4966,6 +4975,8 @@ public class Functions implements MacroConstants, Measurements {
 			return setOrthoViews();
 		else if (name.equals("getOrthoViews"))
 			return getOrthoViews();
+		else if (name.equals("getPointPosition"))
+			return getPointPosition();
 		ImagePlus imp = getImage();
 		if (name.equals("setPosition"))
 			{setPosition(imp); return Double.NaN;}
@@ -5019,6 +5030,13 @@ public class Functions implements MacroConstants, Measurements {
 		else
 			interp.error("Unrecognized Stack function");
 		return Double.NaN;
+	}
+	
+	private double getPointPosition() {
+		Roi roi = getImage().getRoi();
+		if (!(roi instanceof PointRoi))
+			interp.error("Point selection required");
+		return ((PointRoi)roi).getPointPosition((int)getArg());
 	}
 
 	private double setOrthoViews() {

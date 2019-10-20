@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52r43 14 October 2019</u>
+<li> <u>1.52r49 20 October 2019</u>
 <ul>
 <li> Plot enhancements, thanks to Michael Schmid: 
 <ul>
@@ -17,11 +17,11 @@ them into a multi-panel figure.
 updated (e.g. a fit, duplicate of a profile, or other profile, to 
 compare the live profiles etc. with it). 
 </ul>
-<li> Thanks to Marcel Boeglin, the title of the ROI list created by
+<li> Thanks to Marcel Boeglin, the title of the selection list created by
 <i>Image&gt;Overlay&gt;List Elements</i> includes the image
-name, the image associated with the list is activated when you 
-double click on a line, the corresponding ROI is activated, and
-stacks are set to the ROI position, if any.
+name, the image associated with the list is activated, and when you 
+double click on a line, the corresponding selection is activated and
+stacks are set to the selection position, if any.
 <li> Thanks to Michael Schmid, <i>Process&gt;Filters&gt;Gaussian Blur</i>
 now uses a Thread Pool, reducing overhead and making it
 faster for small images.
@@ -46,8 +46,11 @@ instead of showDialog().
 <li> Thanks to Stein Rorvik, added the Roi.getPosition(channel,slice,frame),
 Roi.setPosition(channel,slice,frame),
 Stack.setXUnit(), Stack.setYUnit(),
-Stack.setUnits(x,y,z,time,value), Stack.getOrthoViews(x,y,z)
-and Stack.getOrthoViewsIDs(xy,yz,xz) macro functions.
+Stack.setUnits(x,y,z,time,value), Stack.getOrthoViews(x,y,z),
+Stack.getOrthoViewsIDs(xy,yz,xz), File.getDirectory(path)
+and File.getNameWithoutExtension(path) macro functions.
+<li> Thanks to Leroy Olivier, added the Stack.getPointPosition(index)
+macro function.
 <li> Added the IJ.openAsByteBuffer() method
 (<a href="http://wsr.imagej.net/macros/js/DecodeRoiFile.js">example</a>).
 <li> Thanks to Michael Schmid, fixed a bug that caused the
@@ -80,6 +83,9 @@ non-thresholded binary images.
 <li> Thanks to 'mountain_man', fixed a bug that caused
 ImageJ to not be be able to open TIFF files saved
 without a file path.
+<li> Thanks to Birgit Moeller, fixed a bug that caused the
+"Label" column to not be sorted when using the Sort
+command in Results tables.
 <li> Thanks to Francois Gannier and Michael Schmid, fixed a
 1.52o regression that caused the Log window to unexpectedly
 become the active window.
