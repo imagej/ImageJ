@@ -1717,6 +1717,8 @@ public class IJ {
 				return null;
 		} else if (title2.equals("home"))
 			return System.getProperty("user.home") + File.separator;
+		else if (title2.equals("downloads"))
+			return System.getProperty("user.home")+File.separator+"Downloads"+File.separator;
 		else if (title2.equals("startup"))
 			return Prefs.getImageJDir();
 		else if (title2.equals("imagej"))

@@ -387,9 +387,10 @@ public class OvalRoi extends Roi {
 	}
 
 	public ImageProcessor getMask() {
-		if (cachedMask!=null && cachedMask.getPixels()!=null)
-			return cachedMask;
-		ImageProcessor mask = new ByteProcessor(width, height);
+		ImageProcessor mask = cachedMask;
+		if (mask!=null && mask.getPixels()!=null && mask.getWidth()==width && mask.getHeight()==height)
+			return mask;
+		mask = new ByteProcessor(width, height);
 		double a=width/2.0, b=height/2.0;
 		double a2=a*a, b2=b*b;
         a -= 0.5; b -= 0.5;

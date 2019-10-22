@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52r51 21 October 2019</u>
+<li> <u>1.52r54 22 October 2019</u>
 <ul>
 <li> Plot enhancements, thanks to Michael Schmid: 
 <ul>
@@ -43,6 +43,8 @@ sizes ("XXL" and "XXXL").
 command can now be used to set the Z unit.
 <li> GenericDialogs display an error message if show() is called
 instead of showDialog().
+<li> Added the getDir("downloads") macro function and
+the IJ.getDir("downloads") method.
 <li> Thanks to Stein Rorvik, added the Roi.getPosition(channel,slice,frame),
 Roi.setPosition(channel,slice,frame),
 Stack.setXUnit(), Stack.setYUnit(),
@@ -250,6 +252,9 @@ the run("Gamma...", "value=x.xx") macro function to fail in
 Fiji headless mode.
 <li> Thanks to 'fieryice12', fixed a bug that caused the
 Plot.showValues macro function to fail in batch mode.
+<li> Thanks to Philippe Carl and Michael Schmid, fixed a bug
+that caused OvalRoi.getMask() to sometimes 
+return a zero-width mask.
 <li> Thanks to NorbertVischer, fixed a bug that caused
 the <i>Image&gt;Duplicate</i> command to throw
 on exception if the ROI was outside the image.

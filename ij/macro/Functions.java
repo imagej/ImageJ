@@ -257,7 +257,7 @@ public class Functions implements MacroConstants, Measurements {
 			case FROM_CHAR_CODE: str = fromCharCode(); break;
 			case GET_INFO: str = getInfo(); break;
 			case GET_IMAGE_INFO: interp.getParens(); str = getImageInfo(); break;
-			case GET_DIRECTORY: str = getDirectory(); break;
+			case GET_DIRECTORY: case GET_DIR: str = getDirectory(); break;
 			case GET_ARGUMENT: interp.getParens(); str=interp.argument!=null?interp.argument:""; break;
 			case TO_LOWER_CASE: str = getStringArg().toLowerCase(Locale.US); break;
 			case TO_UPPER_CASE: str = getStringArg().toUpperCase(Locale.US); break;
