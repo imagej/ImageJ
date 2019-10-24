@@ -186,7 +186,7 @@ public class Plot implements Cloneable {
 	int[] enlargeRange;								//whether to enlarge the range slightly to avoid values at the border (0=off, USUALLY_ENLARGE, ALWAYS_ENLARGE)
 	boolean logXAxis, logYAxis;						//whether to really use log axis (never for small relative range)
 	//for passing on what should be kept when 'live' plotting (PlotMaker), but note that 'COPY_EXTRA_OBJECTS' is also on for live plotting:
-	int templateFlags = COPY_SIZE | COPY_LABELS | COPY_AXIS_STYLE | COPY_CONTENTS_STYLE | COPY_LEGEND;	
+	int templateFlags = COPY_SIZE | COPY_LABELS | COPY_AXIS_STYLE | COPY_CONTENTS_STYLE | COPY_LEGEND;
 
 	Font defaultFont = DEFAULT_FONT;				//default font for labels, axis, etc.
 	Font currentFont = defaultFont;					//font as changed by setFont or setFontSize, must never be null
@@ -2212,9 +2212,11 @@ public class Plot implements Cloneable {
 	 * axes. Index numbers for arrows start with 0 at the 'down' arrow of the
 	 * lower side of the x axis and end with 7 the up arrow at the upper
 	 * side of the y axis. Numbers 8 & 9 are for "Reset Range" and "Fit All";
-	 * numbers 10-13 for a dialog to set a single limit.
+	 * numbers 10-13 for a dialog to set a single limit, and 14-15 for an axis options dialog.
+	 * Numbers 10-15 must correspond to the dialogTypes as defined in PlotDialog.
 	 */
 	void zoomOnRangeArrow(int arrowIndex) {
+		if (arrowIndex < 0) return;
 		if (arrowIndex < 8) {//0..7 = arrows, 8 = Reset Range, 9 = Fit All, 10..13 = set single limit
 			int axisIndex = (arrowIndex / 4) * 2;  //0 for x, 2 for y
 			double min = axisIndex == 0 ? xMin : yMin;
@@ -2236,27 +2238,16 @@ public class Plot implements Cloneable {
 			}
 			currentMinMax[axisIndex] = min;
 			currentMinMax[axisIndex + 1] = max;
-		} else if (arrowIndex == 8)
+		} else if (arrowIndex == 8) {
 			setLimitsToDefaults(false);
-		else if (arrowIndex == 9)
+		} else if (arrowIndex == 9) {
 			setLimitsToFit(false);
-		else if (arrowIndex <= 13) {
-			int arrPair = arrowIndex - 10;
-			GenericDialog gd = new GenericDialog("Set Limit");
-			String[] prompts = "X-Left,X-Right,Y-Bottom,Y-Top".split(",");
-
-			gd.addNumericField(prompts[arrPair], currentMinMax[arrPair], 2);
-			gd.setCancelLabel("Set All Limits");
-			gd.showDialog();
-
-			double val = gd.getNextNumber();
-			currentMinMax[arrPair] = val;
-			defaultMinMax[arrPair] = val;
-			if (gd.wasCanceled()){
-				new PlotDialog(this, PlotDialog.SET_RANGE).showDialog(getImagePlus().getWindow());
-			}
+		} else if (arrowIndex <= 15) {
+			int dialogType = arrowIndex;
+			new PlotDialog(this, dialogType).showDialog(imp.getWindow());
 		}
-		updateImage();
+		if (arrowIndex <= 9) // the PlotDialog cares about updating the plot
+			updateImage();
 	}
 
 	/**
@@ -4030,7 +4021,7 @@ class PlotObject implements Cloneable, Serializable {
 		}
 	}
 
-	/** A deep clone, which duplicates arrays etc. 
+	/** A deep clone, which duplicates arrays etc.
 	 *  Note that colors & font are not cloned; it is assumed that these wil not be modified but replaced,
 	 *  so the clone remains unaffected */
 	public PlotObject deepClone() {

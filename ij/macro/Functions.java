@@ -286,15 +286,6 @@ public class Functions implements MacroConstants, Measurements {
 		return str;
 	}
 
-	private void setLineWidth(int width) {
-		if (WindowManager.getCurrentImage()!=null) {
-			if (overlayPath!=null && width!=globalLineWidth)
-				addDrawingToOverlay(getImage());
-			getProcessor().setLineWidth(width);
-		}
-		globalLineWidth = width;
-	}
-
 	Variable[] getArrayFunction(int type) {
 		Variable[] array;
 		switch (type) {
@@ -322,8 +313,17 @@ public class Functions implements MacroConstants, Measurements {
 				interp.error("Variable function expected");
 		}
 		if (var==null)
-			var = new Variable();
+			var = new Variable(Double.NaN);
 		return var;
+	}
+
+	private void setLineWidth(int width) {
+		if (WindowManager.getCurrentImage()!=null) {
+			if (overlayPath!=null && width!=globalLineWidth)
+				addDrawingToOverlay(getImage());
+			getProcessor().setLineWidth(width);
+		}
+		globalLineWidth = width;
 	}
 
 	final double math(int type) {

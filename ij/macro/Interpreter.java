@@ -274,9 +274,6 @@ public class Interpreter implements MacroConstants {
 			case PREDEFINED_FUNCTION:
 				func.doFunction(pgm.table[tokenAddress].type);
 				break;
-			case VARIABLE_FUNCTION:
-				func.getVariableFunction(pgm.table[tokenAddress].type);
-				break;
 			case USER_FUNCTION:
 				runUserFunction();
 				break;
@@ -323,6 +320,7 @@ public class Interpreter implements MacroConstants {
 			case NUMERIC_FUNCTION:
 			case STRING_FUNCTION:
 			case STRING_CONSTANT:
+			case VARIABLE_FUNCTION:
 			case '(': 
 				putTokenBack();
 				inPrint = true;
@@ -1129,8 +1127,8 @@ public class Interpreter implements MacroConstants {
 		return v1;
 	}
 
-	// returns true if the specified token is a string variable
-	boolean isString(int pcLoc) {
+	// Returns true if the token at the specified location is a string
+	private boolean isString(int pcLoc) {
 		int tok = pgm.code[pcLoc];
 		if ((tok&0xff)==VARIABLE_FUNCTION) {
 			int address = tok>>TOK_SHIFT;
@@ -1422,7 +1420,12 @@ public class Interpreter implements MacroConstants {
 		case STRING_FUNCTION:
 			str = func.getStringFunction(pgm.table[tokenAddress].type);
 			break;
-		case VARIABLE_FUNCTION:
+		case VARIABLE_FUNCTION:		
+			if (!isString(pc)) {
+				putTokenBack();
+				str = toString(getStringExpression());
+				break;
+			}
 			v = func.getVariableFunction(pgm.table[tokenAddress].type);
 			str = v.getString();
 			if (str==null) {

@@ -1696,8 +1696,8 @@ public class IJ {
 		return ImageJ.VERSION+build;
 	}
 
-	/** Returns the path to the home ("user.home"), startup, ImageJ, plugins, macros, 
-		luts, temp, current or image directory if <code>title</code> is "home", "startup", 
+	/** Returns the path to the home ("user.home"), downloads, startup, ImageJ, plugins, macros, 
+		luts, temp, current or image directory if <code>title</code> is "home", "downloads", "startup", 
 		"imagej", "plugins", "macros", "luts", "temp", "current", "default", "image", otherwise, 
 		displays a dialog and returns the path to the directory selected by the user. 
 		Returns null if the specified directory is not found or the user

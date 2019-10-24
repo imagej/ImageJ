@@ -3,6 +3,7 @@ import ij.*;
 import ij.process.*;
 import ij.plugin.frame.Recorder;
 import java.awt.*;
+import java.util.Vector;
 
 /*
  * This class contains dialogs for formatting of plots (range, axes, labels, legend, creating a high-resolution plot)
@@ -11,16 +12,17 @@ import java.awt.*;
 
 public class PlotDialog implements DialogListener {
 
-	/** types of dialog */
-	public static final int SET_RANGE = 0, AXIS_OPTIONS = 1, LEGEND = 2, HI_RESOLUTION = 3, TEMPLATE = 4,
-			X_AXIS = 5, Y_AXIS = 6;
-	/** dialog headings for the dialogTypes */
-	private static final String[] HEADINGS = new String[] {"Plot Range...", "Axis Options...", "Add Legend...", "High-Resolution Plot...", "Use Template...",
-			"X Axis...", "Y Axis..."};
-	/** positions and corresponding codes for legend position */
+	/** Types of dialog. Note that 10-14 must be the same as the corresponding PlotWindow.rangeArrow numbers */
+	public static final int SET_RANGE = 0, AXIS_OPTIONS = 1, LEGEND = 2, HI_RESOLUTION = 3, TEMPLATE = 4, //5-9 spare
+			X_LEFT = 10, X_RIGHT = 11, Y_BOTTOM = 12, Y_TOP = 13, X_AXIS = 14, Y_AXIS = 15;
+	/** Dialog headings for the dialogTypes */
+	private static final String[] HEADINGS = new String[] {"Plot Range", "Axis Options", "Add Legend", "High-Resolution Plot", "Use Template",
+			null, null, null, null, null,  // 5-9 spare
+			"X Left", "X Right", "Y Bottom","Y Top", "X Axis", "Y Axis"};
+	/** Positions and corresponding codes for legend position */
 	private static final String[] LEGEND_POSITIONS = new String[] {"Auto",	"Top-Left", "Top-Right", "Bottom-Left", "Bottom-Right", "No Legend"};
 	private static final int[] LEGEND_POSITION_N = new int[] {Plot.AUTO_POSITION, Plot.TOP_LEFT, Plot.TOP_RIGHT, Plot.BOTTOM_LEFT, Plot.BOTTOM_RIGHT, 0};
-	/** template "copy what" flag: dialog texts and corresponding bit masks, in the sequence they appear in the dialog*/
+	/** Template "copy what" flag: dialog texts and corresponding bit masks, in the sequence as they appear in the dialog*/
 	private static final String[] TEMPLATE_FLAG_NAMES = new String[] {"X Range", "Y Range", "Axis Style", "Labels",
 			"Legend", "Contents Style", "Extra Objects (Curves...)",  "Window Size"};
 	private static final int[] TEMPLATE_FLAGS = new int[] {Plot.X_RANGE, Plot.Y_RANGE, Plot.COPY_AXIS_STYLE, Plot.COPY_LABELS,
@@ -31,6 +33,8 @@ public class PlotDialog implements DialogListener {
 	private boolean minMaxSaved;			//whether plot min&max has been saved for "previous range"
 	private boolean dialogShowing;			//when the dialog is showing, ignore the last call with event null
 	private Plot[]  templatePlots;
+
+	private Checkbox xLogCheckbox, yLogCheckbox;
 
 	//saved dialog options: legend
 	private static int legendPosNumber = 0;
@@ -63,8 +67,10 @@ public class PlotDialog implements DialogListener {
 		if (dialogType == TEMPLATE)
 			plot.savePlotObjects();
 
-		GenericDialog gd = parent == null ? new GenericDialog(HEADINGS[dialogType]) :
-				new GenericDialog(HEADINGS[dialogType], parent);
+		String dialogTitle = dialogType >= X_LEFT && dialogType <= Y_TOP ?
+			"Set Axis Limit..." : (HEADINGS[dialogType] + "...");
+		GenericDialog gd = parent == null ? new GenericDialog(dialogTitle) :
+				new GenericDialog(dialogTitle, parent);
 		if (!setupDialog(gd)) return;
 		gd.addDialogListener(this);
 		dialogItemChanged(gd, null);		//preview immediately
@@ -93,7 +99,16 @@ public class PlotDialog implements DialogListener {
 		plot.killPlotPropertiesSnapshot();
 		if (dialogType == TEMPLATE)
 			plot.killPlotObjectsSnapshot();
-		return;
+
+		ImagePlus imp = plot.getImagePlus();
+		ImageWindow win = imp == null ? null : imp.getWindow();
+		if (win instanceof PlotWindow)
+			((PlotWindow)win).hideRangeArrows(); // arrows etc might be still visible, but the mouse maybe elsewhere
+
+		if (!gd.wasCanceled() && !gd.wasOKed()) { // user has pressed "Set all limits" or "Set Axis Options" button
+			int newDialogType = (dialogType == SET_RANGE) ? AXIS_OPTIONS : SET_RANGE;
+			new PlotDialog(plot, newDialogType).showDialog(parent);
+		}
 	}
 
 	/** Setting up the dialog fields and initial parameters. The input is read in the dialogItemChanged method, which must
@@ -103,25 +118,33 @@ public class PlotDialog implements DialogListener {
 		double[] currentMinMax = plot.getLimits();
 		boolean livePlot = plot.plotMaker != null;
 
+		int xDigits = plot.logXAxis ? -2 : Plot.getDigits(currentMinMax[0], currentMinMax[1], 0.005*Math.abs(currentMinMax[1]-currentMinMax[0]), 6);
 		if (dialogType == SET_RANGE || dialogType == X_AXIS) {
-			int xDigits = plot.logXAxis ? -2 : Plot.getDigits(currentMinMax[0], currentMinMax[1], 0.005*Math.abs(currentMinMax[1]-currentMinMax[0]), 6);
 			gd.addNumericField("X_From", currentMinMax[0], xDigits, 6, "*");
 			gd.addToSameRow();
 			gd.addNumericField("To", currentMinMax[1], xDigits, 6, "*");
 			gd.setInsets(0, 20, 0); //top, left, bottom
 			if (livePlot)
 				gd.addCheckbox("Fix_X Range While Live", (plot.templateFlags & Plot.X_RANGE) != 0);
-			gd.addCheckbox("Log_X Axis", (plot.hasFlag(Plot.X_LOG_NUMBERS)));
+			gd.addCheckbox("Log_X Axis  **", (plot.hasFlag(Plot.X_LOG_NUMBERS)));
+			xLogCheckbox = lastCheckboxAdded(gd);
+			enableDisableLogCheckbox(xLogCheckbox, currentMinMax[0], currentMinMax[1]);
 		}
+		int yDigits = plot.logYAxis ? -2 : Plot.getDigits(currentMinMax[2], currentMinMax[3], 0.005*Math.abs(currentMinMax[3]-currentMinMax[2]), 6);
 		if (dialogType == SET_RANGE || dialogType == Y_AXIS) {
-			int yDigits = plot.logYAxis ? -2 : Plot.getDigits(currentMinMax[2], currentMinMax[3], 0.005*Math.abs(currentMinMax[3]-currentMinMax[2]), 6);
 			gd.setInsets(20, 0, 3); //top, left, bottom
 			gd.addNumericField("Y_From", currentMinMax[2], yDigits, 6, "*");
 			gd.addToSameRow();
 			gd.addNumericField("To", currentMinMax[3], yDigits, 6, "*");
 			if (livePlot)
 				gd.addCheckbox("Fix_Y Range While Live", (plot.templateFlags & Plot.Y_RANGE) != 0);
-			gd.addCheckbox("Log_Y Axis", (plot.hasFlag(Plot.Y_LOG_NUMBERS)));
+			gd.addCheckbox("Log_Y Axis  **", (plot.hasFlag(Plot.Y_LOG_NUMBERS)));
+			yLogCheckbox = lastCheckboxAdded(gd);
+			enableDisableLogCheckbox(yLogCheckbox, currentMinMax[2], currentMinMax[3]);
+		}
+		if (dialogType >= X_LEFT && dialogType <= Y_TOP) {
+			int digits = dialogType < Y_BOTTOM ? xDigits : yDigits;
+			gd.addNumericField(HEADINGS[dialogType], currentMinMax[dialogType - X_LEFT], digits, 6, "*");
 		}
 
 		if (dialogType == AXIS_OPTIONS || dialogType == X_AXIS || dialogType == Y_AXIS) {
@@ -175,6 +198,10 @@ public class PlotDialog implements DialogListener {
 		if (dialogType == SET_RANGE || dialogType == X_AXIS || dialogType == Y_AXIS) {
 			gd.setInsets(10, 0, 0);			//top, left, bottom
 			gd.addMessage("* Leave empty for automatic range");//, new Font("SansSerif", Font.PLAIN, 11));
+		}
+		if (dialogType == SET_RANGE || dialogType == X_AXIS || dialogType == Y_AXIS) {
+			gd.setInsets(2, 0, 0);			//top, left, bottom
+			gd.addMessage("** Requires limits > 0 and max/min > 3");//, new Font("SansSerif", Font.PLAIN, 11));
 		}
 
 		if (dialogType == AXIS_OPTIONS) {
@@ -247,6 +274,13 @@ public class PlotDialog implements DialogListener {
 				gd.addCheckbox(TEMPLATE_FLAG_NAMES[i], flag);
 			}
 		}
+		// Add a button to access another dialog that might be also desired
+		if (dialogType >= X_LEFT && dialogType <= Y_TOP)
+			gd.enableYesNoCancel("OK", "Set All Limits...");
+		else if (dialogType == AXIS_OPTIONS)
+			gd.enableYesNoCancel("OK", "Set Range...");
+		else if (dialogType == SET_RANGE)
+			gd.enableYesNoCancel("OK", "Set Axis Options...");
 		return true;
 	} //setupDialog
 
@@ -260,11 +294,11 @@ public class PlotDialog implements DialogListener {
 		if (dialogType == SET_RANGE || dialogType == X_AXIS) {
 			double[] currentMinMax = plot.getLimits();
 			double linXMin = gd.getNextNumber();
-			if (gd.invalidNumber())
-				linXMin = Double.NaN;
+			//if (gd.invalidNumber())
+				//linXMin = Double.NaN;
 			double linXMax = gd.getNextNumber();
-			if (gd.invalidNumber())
-				linXMax = Double.NaN;
+			//if (gd.invalidNumber())
+				//linXMax = Double.NaN;
 			if (linXMin == linXMax) return false;
 			if (!minMaxSaved) {
 				plot.saveMinMax();		//save for 'Previous Range' in plot menu
@@ -275,15 +309,17 @@ public class PlotDialog implements DialogListener {
 			boolean xLog = gd.getNextBoolean();
 			plot.setAxisXLog(xLog);
 			plot.setLimitsNoUpdate(linXMin, linXMax, currentMinMax[2], currentMinMax[3]);
+			currentMinMax = plot.getLimits();
+			enableDisableLogCheckbox(xLogCheckbox, currentMinMax[0], currentMinMax[1]);
 		}
 		if (dialogType == SET_RANGE || dialogType == Y_AXIS) {
 			double[] currentMinMax = plot.getLimits();
 			double linYMin = gd.getNextNumber();
-			if (gd.invalidNumber())
-				linYMin = Double.NaN;
+			//if (gd.invalidNumber())
+				//linYMin = Double.NaN;
 			double linYMax = gd.getNextNumber();
-			if (gd.invalidNumber())
-				linYMax = Double.NaN;
+			//if (gd.invalidNumber())
+				//linYMax = Double.NaN;
 			if (linYMin == linYMax) return false;
 			if (!minMaxSaved) {
 				plot.saveMinMax();		//save for 'Previous Range' in plot menu
@@ -295,6 +331,14 @@ public class PlotDialog implements DialogListener {
 			boolean yLog = gd.getNextBoolean();
 			plot.setAxisYLog(yLog);
 			plot.setLimitsNoUpdate(currentMinMax[0], currentMinMax[1], linYMin, linYMax);
+			currentMinMax = plot.getLimits();
+			enableDisableLogCheckbox(yLogCheckbox, currentMinMax[2], currentMinMax[3]);
+		}
+		if (dialogType >= X_LEFT && dialogType <= Y_TOP) {
+			double newLimit = gd.getNextNumber();
+			double[] minMaxCopy = (double[])(plot.getLimits().clone());
+			minMaxCopy[dialogType - X_LEFT] = newLimit;
+			plot.setLimitsNoUpdate(minMaxCopy[0], minMaxCopy[1], minMaxCopy[2], minMaxCopy[3]);
 		}
 
 		if (dialogType == AXIS_OPTIONS || dialogType == X_AXIS || dialogType == Y_AXIS) {
@@ -462,6 +506,13 @@ public class PlotDialog implements DialogListener {
 		}
 	}
 
+	/** Disables switching on a checkbox for log range if the axis limits do not allow it.
+	 *  The checkbox can be always switched off. */
+	void enableDisableLogCheckbox(Checkbox checkbox, double limit1, double limit2) {
+		boolean logPossible = limit1 > 0 && limit2 > 0 && (limit1 > 3*limit2 || limit2 > 3*limit1);
+		checkbox.setEnabled(logPossible);
+	}
+
 
 	boolean getFlag(int flags, int bitMask) {
 		return (flags&bitMask) != 0;
@@ -471,6 +522,11 @@ public class PlotDialog implements DialogListener {
 		flags &= ~bitMask;
 		if (state) flags |= bitMask;
 		return flags;
+	}
+
+	Checkbox lastCheckboxAdded(GenericDialog gd) {
+		Vector checkboxes = gd.getCheckboxes();
+		return (Checkbox)(checkboxes.get(checkboxes.size() - 1));
 	}
 
 }

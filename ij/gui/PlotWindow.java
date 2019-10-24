@@ -92,9 +92,13 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	private Thread bgThread;		// thread for plotting (in the background)
 	private boolean doUpdate;		// tells the background thread to update
 
-	private Roi[] rangeArrowRois;	// these constitute the arrow overlays for changing the range
+	private Roi[] rangeArrowRois;	// the overlays (arrows etc) for changing the range. Note: #10-15 must correspond to PlotDialog.dialogType!
 	private boolean rangeArrowsVisible;
 	private int activeRangeArrow = -1;
+	private static Color inactiveRangeArrowColor = Color.GRAY;
+	private static Color inactiveRangeRectColor = new Color(0x20404040, true); //transparent gray
+	private static Color activeRangeArrowColor = Color.RED;
+	private static Color activeRangeRectColor = new Color(0x18ff0000, true); //transparent red
 
 	// static initializer
 	static {
@@ -454,46 +458,52 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	 *
 	 * @see ij.gui.ImageWindow#mouseMoved
 	 */
-    public void mouseMoved(int x, int y) {
-        super.mouseMoved(x, y);
-        if (plot == null)
-            return;
-        if (coordinates != null) {	//coordinate readout
-            String coords = plot.getCoordinates(x, y) + blankLabel;
-            coordinates.setText(coords.substring(0, blankLabel.length()));
-        }
+	public void mouseMoved(int x, int y) {
+		super.mouseMoved(x, y);
+		if (plot == null)
+			return;
+		if (coordinates != null) {	//coordinate readout
+			String coords = plot.getCoordinates(x, y) + blankLabel;
+			coordinates.setText(coords.substring(0, blankLabel.length()));
+		}
 
-        //arrows for modifying the plot range
-        if (plot==null) return;
-        if (x < plot.leftMargin || y > plot.topMargin + plot.frameHeight) {
-            if (!rangeArrowsVisible && !plot.isFrozen())
-                showRangeArrows();
-            if (activeRangeArrow == 8)      //it's the 'R' icon
-                coordinates.setText("Reset Range");
-            else if (activeRangeArrow == 9) //it's the 'F' icon
-                coordinates.setText("Full Range (Fit All)");
-            else if (activeRangeArrow >= 10) //space between arrow-pairs
-                coordinates.setText("Set limit...");
-            if (activeRangeArrow >= 0 && !rangeArrowRois[activeRangeArrow].contains(x, y)) {
-				if(activeRangeArrow>=10) //numerical box
-					rangeArrowRois[activeRangeArrow].setFillColor(new Color(235, 235, 235));
-				else //arrow
-					rangeArrowRois[activeRangeArrow].setFillColor(Color.GRAY);
-                ic.repaint();			//de-highlight arrow where cursor has moved out
-                activeRangeArrow = -1;
-            }
-            if (activeRangeArrow < 0) { //highlight arrow below cursor (if any)
-                int i = getRangeArrowIndex(x, y);
-                if (i >= 0) {			//we have an arrow at cursor position
-
-                    rangeArrowRois[i].setFillColor(Color.RED);
-                    activeRangeArrow = i;
-                    ic.repaint();
-                }
-            }
-        } else if (rangeArrowsVisible)
-            hideRangeArrows();
-    }
+		//arrows and other symbols for modifying the plot range
+		if (x < plot.leftMargin || y > plot.topMargin + plot.frameHeight) {
+			if (!rangeArrowsVisible && !plot.isFrozen())
+				showRangeArrows();
+			if (activeRangeArrow < 0)       //mouse is not on one of the symbols, ignore (nothing to display)
+				{}
+			else if (activeRangeArrow < 8)  //mouse over an arrow: 0,3,4,7 for increase, 1,2,5,6 for decrease
+				coordinates.setText(((activeRangeArrow+1)&0x02) != 0 ? "Decrease Range" : "Increase Range");
+			else if (activeRangeArrow == 8) //it's the 'R' icon
+				coordinates.setText("Reset Range");
+			else if (activeRangeArrow == 9) //it's the 'F' icon
+				coordinates.setText("Full Range (Fit All)");
+			else if (activeRangeArrow >= 10 &&
+					activeRangeArrow < 14)  //space between arrow-pairs for single number
+				coordinates.setText("Set limit...");
+			else if (activeRangeArrow >= 14)
+				coordinates.setText("Axis Range & Options...");
+			boolean repaint = false;
+			if (activeRangeArrow >= 0 && !rangeArrowRois[activeRangeArrow].contains(x, y)) {
+				rangeArrowRois[activeRangeArrow].setFillColor(
+						activeRangeArrow < 10 ? inactiveRangeArrowColor : inactiveRangeRectColor);
+				repaint = true;             //de-highlight arrow where cursor has moved out
+				activeRangeArrow = -1;
+			}
+			if (activeRangeArrow < 0) {     //no currently highlighted arrow, do we have a new one?
+				int i = getRangeArrowIndex(x, y);
+				if (i >= 0) {               //we have an arrow or symbol at cursor position
+					rangeArrowRois[i].setFillColor(
+							i < 14 ? activeRangeArrowColor : activeRangeRectColor);
+					activeRangeArrow = i;
+					repaint = true;
+				}
+			}
+			if (repaint) ic.repaint();
+		} else if (rangeArrowsVisible)
+			hideRangeArrows();
+	}
 
 	/** Called by PlotCanvas */
 	void mouseExited(MouseEvent e) {
@@ -530,14 +540,14 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	}
 
     /**
-     * Creates an overlay with triangular buttons for changing the axis range
+     * Creates an overlay with triangular buttons and othr symbols for changing the axis range
      * limits and shows it
      */
     void showRangeArrows() {
         if (imp == null)
             return;
         hideRangeArrows(); //in case we have old arrows from a different plot size or so
-        rangeArrowRois = new Roi[4 * 2 + 2 + 4]; //4 arrows per axis, plus 'Reset' and 'Fit All' icons, plus 4 numerical input boxes
+        rangeArrowRois = new Roi[4 * 2 + 2 + 4 + 2]; //4 arrows per axis, + 'Reset' and 'Fit All' icons, + 4 numerical input boxes + 2 axes
         int i = 0;
         int height = imp.getHeight();
         int arrowH = plot.topMargin < 14 ? 6 : 8; //height of arrows and distance between them; base is twice that value
@@ -568,17 +578,26 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
         rangeArrowRois[12] = new Roi(arrowH / 2, plot.topMargin + plot.frameHeight - arrowH/2 + 1, arrowH * 2, arrowH -2);//numerical box bottom
         rangeArrowRois[13] = new Roi(arrowH / 2, plot.topMargin - arrowH/2 + 1,  arrowH * 2, arrowH - 2   );//numerical box top
 
+        int topMargin = plot.topMargin;
+        int bottomMargin = topMargin + plot.frameHeight;
+        int leftMargin = plot.leftMargin;
+        int rightMargin = plot.leftMargin + plot.frameWidth;
+        rangeArrowRois[14] = new Roi(leftMargin, bottomMargin+2,        // area to click for x axis options
+				rightMargin - leftMargin + 1, 2*arrowH);
+        rangeArrowRois[15] = new Roi(leftMargin-2*arrowH-2, topMargin,  // area to click for y axis options
+				2*arrowH, bottomMargin - topMargin + 1);
+
         Overlay ovly = imp.getOverlay();
         if (ovly == null)
             ovly = new Overlay();
         for (Roi roi : rangeArrowRois) {
             if (roi instanceof PolygonRoi)
-                   roi.setFillColor(Color.GRAY);
+                   roi.setFillColor(inactiveRangeArrowColor);
 			else if (roi instanceof TextRoi) {
                 roi.setStrokeColor(Color.WHITE);
-                roi.setFillColor(Color.GRAY);
+                roi.setFillColor(inactiveRangeArrowColor);
             } else
-                roi.setFillColor(new Color(235, 235, 235));
+                roi.setFillColor(inactiveRangeRectColor); //transparent gray for single number boxes and axis range
             ovly.add(roi);
         }
         imp.setOverlay(ovly);
@@ -602,8 +621,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	 *  Index numbers for arrows start with 0 at the 'down' arrow of the
 	 *  lower side of the x axis and end with 7 the up arrow at the upper
 	 *  side of the y axis. Numbers 8 & 9 are for "Reset Range" and "Fit All";
-	 *  numbers 10-13 for a dialog to set a single limit. */
-	 
+	 *  numbers 10-13 for a dialog to set a single limit, and 14-15 for the axis options. */
+
 	int getRangeArrowIndex(int x, int y) {
 		if (!rangeArrowsVisible) return -1;
 		for (int i=0; i<rangeArrowRois.length; i++)
