@@ -2993,6 +2993,8 @@ public class Plot implements Cloneable {
 		int ybase = y-sc(size/2);
 		int xend = x+sc(size/2);
 		int yend = y+sc(size/2);
+		if (ip==null)
+			return;
 		switch(shape) {
 			case X:
 				ip.drawLine(xbase,ybase,xend,yend);
