@@ -272,6 +272,8 @@ public class StackEditor implements PlugIn {
 		int lastImageID = 0;
 		for (int i=1; i<=size; i++) {
 			String label = stack.getShortSliceLabel(i);
+			if (label!=null && (label.contains("/") || label.contains("\\") || label.contains(":")))
+				label = null;
 			String title = label!=null&&!label.equals("")?label:getTitle(imp, i);
 			ImageProcessor ip = stack.getProcessor(i);
 			if (cimg!=null) {

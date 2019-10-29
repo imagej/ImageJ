@@ -9,6 +9,12 @@ import java.io.*;
 import java.util.Iterator;
 import javax.imageio.*;
 import javax.imageio.stream.*;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import javax.imageio.metadata.IIOMetadata;
+
+
 
 /** The File/Save As/Jpeg command (FileSaver.saveAsJpeg() method) 
       uses this plugin to save images in JPEG format. */
@@ -68,8 +74,49 @@ public class JpegWriter implements PlugIn {
 			param.setCompressionMode(param.MODE_EXPLICIT);
 			param.setCompressionQuality(quality/100f);
 			if (quality == 100)
-				param.setSourceSubsampling(1, 1, 0, 0);
-			IIOImage iioImage = new IIOImage(bi, null, null);
+				param.setSourceSubsampling(1, 1, 0, 0);						
+			IIOImage iioImage = null;
+			if (quality<90)  // Use chroma subsampling YUV420
+				iioImage = new IIOImage(bi, null, null);
+			else {
+				// Disable JPEG chroma subsampling
+				// http://svn.apache.org/repos/asf/shindig/trunk/java/gadgets/src/main/java/org/apache/shindig/gadgets/rewrite/image/BaseOptimizer.java
+				// http://svn.apache.org/repos/asf/shindig/trunk/java/gadgets/src/main/java/org/apache/shindig/gadgets/rewrite/image/JpegImageUtils.java
+				// Peter Haub, Okt. 2019
+				IIOMetadata metadata = writer.getDefaultImageMetadata(new ImageTypeSpecifier(bi.getColorModel(), bi.getSampleModel()), param);			
+				Node rootNode = metadata.getAsTree("javax_imageio_jpeg_image_1.0");				
+				boolean metadataUpdated = false;
+				// The top level root node has two children, out of which the second one will
+				// contain all the information related to image markers.
+				if (rootNode.getLastChild() != null) {
+					Node markerNode = rootNode.getLastChild();
+					NodeList markers = markerNode.getChildNodes();
+					// Search for 'SOF' marker where subsampling information is stored.
+					for (int i = 0; i < markers.getLength(); i++) {
+						Node node = markers.item(i);
+						// 'SOF' marker can have
+						//   1 child node if the color representation is greyscale,
+						//   3 child nodes if the color representation is YCbCr, and
+						//   4 child nodes if the color representation is YCMK.
+						// This subsampling applies only to YCbCr.
+						if (node.getNodeName().equalsIgnoreCase("sof") && node.hasChildNodes() && node.getChildNodes().getLength() == 3) {
+							// In 'SOF' marker, first child corresponds to the luminance channel, and setting
+							// the HsamplingFactor and VsamplingFactor to 1, will imply 4:4:4 chroma subsampling.
+							NamedNodeMap attrMap = node.getFirstChild().getAttributes();
+							// SamplingModes: UNKNOWN(-2), DEFAULT(-1), YUV444(17), YUV422(33), YUV420(34), YUV411(65)					
+							int samplingmode = 17;   // YUV444
+							attrMap.getNamedItem("HsamplingFactor").setNodeValue((samplingmode & 0xf) + "");
+							attrMap.getNamedItem("VsamplingFactor").setNodeValue(((samplingmode >> 4) & 0xf) + "");
+							metadataUpdated = true;
+							break;
+						}
+					}
+				}
+				// Read the updated metadata from the metadata node tree.
+				if (metadataUpdated)
+					metadata.setFromTree("javax_imageio_jpeg_image_1.0", rootNode);					
+				iioImage = new IIOImage(bi, null, metadata);				
+			} // end of code adaption (Disable JPEG chroma subsampling)			
 			writer.write(null, iioImage, param);
 			ios.close();
 			writer.dispose();
