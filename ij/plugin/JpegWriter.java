@@ -15,11 +15,12 @@ import org.w3c.dom.NodeList;
 import javax.imageio.metadata.IIOMetadata;
 
 
-
 /** The File/Save As/Jpeg command (FileSaver.saveAsJpeg() method) 
       uses this plugin to save images in JPEG format. */
 public class JpegWriter implements PlugIn {
 	public static final int DEFAULT_QUALITY = 75;
+	private static boolean disableChromaSubsampling;
+	private static boolean chromaSubsamplingSet;
 
 	public void run(String arg) {
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -76,7 +77,10 @@ public class JpegWriter implements PlugIn {
 			if (quality == 100)
 				param.setSourceSubsampling(1, 1, 0, 0);						
 			IIOImage iioImage = null;
-			if (quality<90)  // Use chroma subsampling YUV420
+			boolean disableSubsampling = quality>=90;
+			if (chromaSubsamplingSet)
+				disableSubsampling = disableChromaSubsampling;
+			if (!disableSubsampling)  // Use chroma subsampling YUV420
 				iioImage = new IIOImage(bi, null, null);
 			else {
 				// Disable JPEG chroma subsampling
@@ -132,18 +136,19 @@ public class JpegWriter implements PlugIn {
 		return error;
 	}
 
-	/**
-	* @deprecated
-	* replaced by FileSaver.setJpegQuality()
-	*/
+	/** Disable chroma subsampling so higher quality JPEG files 
+		are created. By default, chroma subsampling is disabled 
+		when Quality is equal to or greater than 90.
+	*/		
+	public static void disableChromaSubsampling(boolean disable) {
+		disableChromaSubsampling = disable;
+		chromaSubsamplingSet = true;
+	}
+	
 	public static void setQuality(int jpegQuality) {
 		FileSaver.setJpegQuality(jpegQuality);
 	}
 
-	/**
-	* @deprecated
-	* replaced by FileSaver.getJpegQuality()
-	*/
 	public static int getQuality() {
 		return FileSaver.getJpegQuality();
 	}

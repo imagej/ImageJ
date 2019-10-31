@@ -2359,7 +2359,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	 * Author: W. Burger
 	*/
 	private class RoiPointsIteratorMask implements Iterator<Point> {
-		private final ImageProcessor mask;
+		private ImageProcessor mask;
 		private final Rectangle bounds;
 		private final int xbase, ybase;
 		private final int n;
@@ -2373,6 +2373,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 				ybase = roi2.y;
 			} else {
 				mask = getMask();
+				if (mask==null) {
+					mask = new ByteProcessor(width, height);
+					mask.invert();
+				}
 				xbase = Roi.this.x;
 				ybase = Roi.this.y;
 			}
