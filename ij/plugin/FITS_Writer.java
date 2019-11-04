@@ -4,6 +4,7 @@ import java.util.Properties;
 import ij.*;
 import ij.io.*;
 import ij.process.*;
+import ij.measure.*;
 
 /**
  * This plugin saves a 16 or 32 bit image in FITS format. It is a stripped-down version of the SaveAs_FITS 
@@ -13,9 +14,16 @@ import ij.process.*;
  * <br>Version 2010-11-23 : corrects 16-bit writing, adds BZERO & BSCALE updates (K.A. Collins, Univ. Louisville).
  * <br>Version 2008-09-07 : preserves non-minimal FITS header if already present (F.V. Hessman, Univ. Goettingen).
  * <br>Version 2008-12-15 : fixed END card recognition bug (F.V. Hessman, Univ. Goettingen).
+ * <br>Version 2019-11-03 : various updates  (K.A. Collins, CfA-Harvard and Smithsonian).
  */
 public class FITS_Writer implements PlugIn {
 
+    private int numCards = 0;
+    private Calibration cal;
+    private boolean unsigned16 = false;
+    private double bZero = 0.0;
+    private double bScale = 1.0;
+            
 	public void run(String path) {
 		ImagePlus imp = IJ.getImage();
 		ImageProcessor ip = imp.getProcessor();
@@ -39,60 +47,76 @@ public class FITS_Writer implements PlugIn {
 		String name = f.getName();
 		if (f.exists()) f.delete();
 		int numBytes = 0;
+        
+        cal = imp.getCalibration();
+        unsigned16 = (bitDepth==16 && cal.getFunction()==Calibration.NONE && cal.getCoefficients()==null);
 
 		// GET IMAGE
-		if (bitDepth==8)
-			ip = ip.convertToShort(false);
-		else if (imp.getCalibration().isSigned16Bit())
-			ip = ip.convertToFloat();
-		if (ip instanceof ShortProcessor)
+		if (bitDepth==8) {
+            numBytes = 1;
+            if (cal.getFunction()!=Calibration.NONE && cal.getCoefficients()!=null) {
+                bZero = cal.getCoefficients()[0];
+                if (cal.getCoefficients()[1] != 0) bScale = cal.getCoefficients()[1];
+            }
+        } else if (ip instanceof ShortProcessor) {
 			numBytes = 2;
-		else if (ip instanceof FloatProcessor)
-			numBytes = 4;
+            if (unsigned16) {
+                bZero = 32768.0;
+                bScale = 1.0;
+            } else {
+                if (cal.getCoefficients()[1] != 0) bScale = cal.getCoefficients()[1];
+                bZero = cal.getCoefficients()[0] + (32768.0*bScale);
+            }
+        } else if (ip instanceof FloatProcessor) {
+			numBytes = 4;  //float processor does not support calibration - data values are shifted and scaled in FITS_Reader
+            bZero = 0.0;   //float values are written back out without shifting
+            bScale = 1.0;  //and without scaling
+        }
+
 		int fillerLength = 2880 - ( (numBytes * imp.getWidth() * imp.getHeight()) % 2880 );
 
 		// WRITE FITS HEADER
 		String[] hdr = getHeader(imp);
-		if (hdr == null)
-			createHeader(path, ip, numBytes);
-		else
-			copyHeader(hdr, path, ip, numBytes);
+//		if (hdr == null)
+//			createHeader(path, ip, numBytes);
+//		else
+        createHeader(hdr, path, ip, numBytes);
 
 		// WRITE DATA
 		writeData(path, ip);
 		char[] endFiller = new char[fillerLength];
 		appendFile(endFiller, path);
-	}
+    }
 
-	/**
-	 * Creates a FITS header for an image which doesn't have one already.
-	 */	
-	void createHeader(String path, ImageProcessor ip, int numBytes) {
-		int numCards = 7;
-		String bitperpix = "";
-		if      (numBytes==2) {bitperpix = "                  16";}
-		else if (numBytes==4) {bitperpix = "                 -32";}
-		else if (numBytes==1) {bitperpix = "                   8";}
- 		appendFile(writeCard("SIMPLE", "                   T", "Created by ImageJ FITS_Writer"), path);
- 		appendFile(writeCard("BITPIX", bitperpix, "number of bits per data pixel"), path);
- 		appendFile(writeCard("NAXIS", "                   2", "number of data axes"), path);
- 		appendFile(writeCard("NAXIS1", "                "+ip.getWidth(), "length of data axis 1"), path);
- 		appendFile(writeCard("NAXIS2", "                "+ip.getHeight(), "length of data axis 2"), path);
-        if (numBytes==2)
-            appendFile(writeCard("BZERO", "               32768", "data range offset"), path);
-        else
-            appendFile(writeCard("BZERO", "                   0", "data range offset"), path);
-        appendFile(writeCard("BSCALE", "                   1", "default scaling factor"), path);
-
- 		int fillerSize = 2880 - ((numCards*80+3) % 2880);
-		char[] end = new char[3];
-		end[0] = 'E'; end[1] = 'N'; end[2] = 'D';
-		char[] filler = new char[fillerSize];
-		for (int i = 0; i < fillerSize; i++)
-			filler[i] = ' ';
- 		appendFile(end, path);
- 		appendFile(filler, path);
-	}
+//	/**
+//	 * Creates a FITS header for an image which doesn't have one already.
+//	 */	
+//	void createHeader(String path, ImageProcessor ip, int numBytes) {
+//
+//		String bitperpix = "";
+//		if      (numBytes==2) {bitperpix = "                  16";}
+//		else if (numBytes==4) {bitperpix = "                 -32";}
+//		else if (numBytes==1) {bitperpix = "                   8";}
+// 		appendFile(writeCard("SIMPLE", "                   T", "Created by ImageJ FITS_Writer"), path);
+// 		appendFile(writeCard("BITPIX", bitperpix, "number of bits per data pixel"), path);
+// 		appendFile(writeCard("NAXIS", "                   2", "number of data axes"), path);
+// 		appendFile(writeCard("NAXIS1", "                "+ip.getWidth(), "length of data axis 1"), path);
+// 		appendFile(writeCard("NAXIS2", "                "+ip.getHeight(), "length of data axis 2"), path);
+//        if (bZero != 0 || bScale != 1.0)
+//            {
+//            appendFile(writeCard("BZERO", ""+bZero, "data range offset"), path);
+//            appendFile(writeCard("BSCALE", ""+bScale, "scaling factor"), path);
+//            }
+//
+//        int fillerSize = 2880 - ((numCards*80+3) % 2880);
+//		char[] end = new char[3];
+//		end[0] = 'E'; end[1] = 'N'; end[2] = 'D';
+//		char[] filler = new char[fillerSize];
+//		for (int i = 0; i < fillerSize; i++)
+//			filler[i] = ' ';
+// 		appendFile(end, path);
+// 		appendFile(filler, path);
+//	}
 
 	/**
 	 * Writes one line of a FITS header
@@ -107,9 +131,15 @@ public class FITS_Writer implements PlugIn {
 		card[31] = '/';
 		card[32] = ' ';
 		s2ch(comment, card, 33);
+        numCards++;
 		return card;
 	}
-			
+    
+	void writeCard(char[] line, String path) {    
+        appendFile(line, path);
+        numCards++;
+    }
+    
 	/**
 	 * Converts a String to a char[]
 	 */
@@ -118,7 +148,8 @@ public class FITS_Writer implements PlugIn {
 		for (int i = offset; i < 80 && i < str.length()+offset; i++)
 			ch[i] = str.charAt(j++);
 	}
-	
+    
+
 	/**
 	 * Appends 'line' to the end of the file specified by 'path'.
 	 */
@@ -127,8 +158,7 @@ public class FITS_Writer implements PlugIn {
 			FileWriter output = new FileWriter(path, true);
 			output.write(line);
 			output.close();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			IJ.showStatus("Error writing file!");
 			return;
 		}
@@ -140,19 +170,30 @@ public class FITS_Writer implements PlugIn {
 	void writeData(String path, ImageProcessor ip) {
 		int w = ip.getWidth();
 		int h = ip.getHeight();
-		if (ip instanceof ShortProcessor) {
-			short[] pixels = (short[])ip.getPixels();
+		if (ip instanceof ByteProcessor) {
+			byte[] pixels = (byte[])ip.getPixels();
 			try {   
 				DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path,true)));
 				for (int i = h - 1; i >= 0; i-- )
                     for (int j = i*w; j < w*(i+1); j++)
-                        dos.writeShort(pixels[j]^0x8000);
+                        dos.writeByte(pixels[j]);
 				dos.close();
-			}
-			catch (IOException e) {
+            } catch (IOException e) {
 				IJ.showStatus("Error writing file!");
 				return;
-			}
+            }    
+        } else if (ip instanceof ShortProcessor) {
+			short[] pixels = (short[])ip.getPixels();
+			try {   
+				DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path,true)));
+                for (int i = h - 1; i >= 0; i-- )
+                    for (int j = i*w; j < w*(i+1); j++)
+                        dos.writeShort(pixels[j]^0x8000);
+				dos.close();
+            } catch (IOException e) {
+				IJ.showStatus("Error writing file!");
+				return;
+            }
 		} else if (ip instanceof FloatProcessor) {
 			float[] pixels = (float[])ip.getPixels();
 			try {   
@@ -161,13 +202,12 @@ public class FITS_Writer implements PlugIn {
                     for (int j = i*w; j < w*(i+1); j++)
 					dos.writeFloat(pixels[j]);
 				dos.close();
-			}
-			catch (IOException e) {
+            } catch (IOException e) {
 				IJ.showStatus("Error writing file!");
 				return;
-			}					   
-		}
-	}
+                }					   
+            }
+        }
 
 	/**
 	 * Extracts the original FITS header from the Properties object of the
@@ -192,7 +232,13 @@ public class FITS_Writer implements PlugIn {
 			int slice = img.getCurrentSlice();
 			ImageStack stack = img.getStack();
 			content = stack.getSliceLabel(slice);
-		}
+            if (content == null) {
+                Properties props = img.getProperties();
+                if (props == null)
+                    return null;
+                content = (String)props.getProperty ("Info");  
+            }
+        }
 		if (content == null)
 			return null;
 
@@ -239,53 +285,69 @@ public class FITS_Writer implements PlugIn {
 	/**
 	 * Copies the image header contained in the image's Info property.
 	 */
-	void copyHeader(String[] hdr, String path, ImageProcessor ip, int numBytes) {
-		int numCards = 7;
+	void createHeader(String[] hdr, String path, ImageProcessor ip, int numBytes) {
 		String bitperpix = "";
-
-		// THIS STUFF NEEDS TO BE MADE CONFORMAL WITH THE PRESENT IMAGE
+        int imw=ip.getWidth();
+        int imh=ip.getHeight();
+        String wbuf = "               ";
+        String hbuf = "               ";
+        if (imw < 10000)
+            wbuf = wbuf + " ";
+        if (imw < 1000)
+            wbuf = wbuf + " ";
+        if (imw < 100)
+            wbuf = wbuf + " ";
+        if (imw < 10)
+            wbuf = wbuf + " ";
+        if (imh < 10000)
+            hbuf = hbuf + " ";
+        if (imh < 1000)
+            hbuf = hbuf + " ";
+        if (imh < 100)
+            hbuf = hbuf + " ";
+        if (imh < 10)
+            hbuf = hbuf + " ";        
+		// THESE KEYWORDS NEED TO BE MADE CONFORMAL WITH THE PRESENT IMAGE
 		if      (numBytes==2) {bitperpix = "                  16";}
 		else if (numBytes==4) {bitperpix = "                 -32";}
 		else if (numBytes==1) {bitperpix = "                   8";}
  		appendFile(writeCard("SIMPLE", "                   T", "Created by ImageJ FITS_Writer"), path);
  		appendFile(writeCard("BITPIX", bitperpix, "number of bits per data pixel"), path);
  		appendFile(writeCard("NAXIS", "                   2", "number of data axes"), path);
-		appendFile(writeCard("NAXIS1", "                "+ip.getWidth(), "length of data axis 1"), path);
- 		appendFile(writeCard("NAXIS2", "                "+ip.getHeight(), "length of data axis 2"), path);
-        if (numBytes==2)
-            appendFile(writeCard("BZERO", "               32768", "data range offset"), path);
-        else
-            appendFile(writeCard("BZERO", "                   0", "data range offset"), path);
-        appendFile(writeCard("BSCALE", "                   1", "default scaling factor"), path);
+		appendFile(writeCard("NAXIS1", wbuf + imw, "length of data axis 1"), path);
+ 		appendFile(writeCard("NAXIS2", hbuf + imh, "length of data axis 2"), path);
+        if (bZero != 0 || bScale != 1.0) {
+            appendFile(writeCard("BZERO", ""+bZero, "data range offset"), path);
+            appendFile(writeCard("BSCALE", ""+bScale, "scaling factor"), path);
+        }
 
+        if (hdr != null) {
+            // APPEND THE REST OF THE HEADER IF ONE EXISTS
+            char[] card;
+            for (int i=0; i < hdr.length; i++) {
+                String s = hdr[i];
+                card = eighty(s);
+                if (!s.startsWith("SIMPLE") &&
+                    !s.startsWith("BITPIX") &&
+                    !s.startsWith("NAXIS")  &&
+                    !s.startsWith("BZERO") &&
+                    !s.startsWith("BSCALE") &&
+                    !s.startsWith("END")   &&
+                    s.trim().length() > 1) {
+                        writeCard(card, path);
+                    }
+                }
+            }
 
-		// APPEND THE REST OF THE HEADER
-		char[] card;
-		for (int i=0; i < hdr.length; i++) {
-			String s = hdr[i];
-			card = eighty(s);
-			if (!s.startsWith("SIMPLE") &&
-			    !s.startsWith("BITPIX") &&
-			    !s.startsWith("NAXIS")  &&
-                !s.startsWith("BZERO") &&
-                !s.startsWith("BSCALE") &&
-			    !s.startsWith("END")   &&
-			     s.trim().length() > 1) {
-				appendFile(card, path);
-				numCards++;
-			}
-		}
- 
-		// FINISH OFF THE HEADER
-		int fillerSize = 2880 - ((numCards*80+3) % 2880);
-		char[] end = new char[3];
-		end[0] = 'E'; end[1] = 'N'; end[2] = 'D';
-		char[] filler = new char[fillerSize];
-		for (int i = 0; i < fillerSize; i++)
-			filler[i] = ' ';
-		appendFile(end, path);
-		appendFile(filler, path);
-	}
+        // FINISH OFF THE HEADER
+        int fillerSize = 2880 - ((numCards*80+3) % 2880);
+        char[] end = new char[3];
+        end[0] = 'E'; end[1] = 'N'; end[2] = 'D';
+        char[] filler = new char[fillerSize];
+        for (int i = 0; i < fillerSize; i++)
+            filler[i] = ' ';
+        appendFile(end, path);
+        appendFile(filler, path);
+        }
 
-}
-
+    }

@@ -2373,7 +2373,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 				ybase = roi2.y;
 			} else {
 				mask = getMask();
-				if (mask==null) {
+				if (mask==null && type==RECTANGLE) {
 					mask = new ByteProcessor(width, height);
 					mask.invert();
 				}

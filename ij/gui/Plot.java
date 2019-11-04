@@ -158,8 +158,7 @@ public class Plot implements Cloneable {
 	private static final int USUALLY_ENLARGE = 1, ALWAYS_ENLARGE = 2; //enlargeRange settings
 	private static final double RELATIVE_ARROWHEAD_SIZE = 0.2; //arrow heads have 1/5 of vector length
 	private static final int MIN_ARROWHEAD_LENGTH = 3;
-	private static final int MAX_ARROWHEAD_LENGTH = 20;
-	private static Font	 DEFAULT_FONT = FontUtil.getFont("Arial", Font.PLAIN, PlotWindow.fontSize);
+	private static final int MAX_ARROWHEAD_LENGTH = 20;	
 
 	PlotProperties pp = new PlotProperties();		//size, range, formatting etc, for easy serialization
 	PlotProperties ppSnapshot;						//copy for reverting
@@ -188,7 +187,7 @@ public class Plot implements Cloneable {
 	//for passing on what should be kept when 'live' plotting (PlotMaker), but note that 'COPY_EXTRA_OBJECTS' is also on for live plotting:
 	int templateFlags = COPY_SIZE | COPY_LABELS | COPY_AXIS_STYLE | COPY_CONTENTS_STYLE | COPY_LEGEND;
 
-	Font defaultFont = DEFAULT_FONT;				//default font for labels, axis, etc.
+	Font defaultFont = FontUtil.getFont("Arial", Font.PLAIN, PlotWindow.getDefaultFontSize()); //default font for labels, axis, etc.
 	Font currentFont = defaultFont;					//font as changed by setFont or setFontSize, must never be null
 	private double xScale, yScale;					//pixels per data unit
 	private int xBasePxl, yBasePxl;					//pixel coordinates corresponding to 0
@@ -1023,6 +1022,11 @@ public class Plot implements Cloneable {
 		allPlotObjects.add(new PlotObject(x1, y1, x2, y2, currentLineWidth, step, currentColor, PlotObject.DOTTED_LINE));
 	}
 
+	/** Sets the font size for all following addLabel() etc. operations. */
+	public void setFontSize(int size) {
+		setFont(-1, (float)size);
+	}
+	
 	/** Sets the font for all following addLabel() etc. operations. The currently set font when
 	 *	displaying the plot determines the font of all labels & numbers.
 	 *  After the plot has been shown, sets the font for the numbers and the legend (if present).
@@ -1048,13 +1052,13 @@ public class Plot implements Cloneable {
 	 *	Call update() thereafter to make the change visible (if the image is shown already). */
 	public void setFont(int style, float size) {
 		if (size < 9) size = 9f;
-		if (size > 24) size = 24f;
+		if (size > 36) size = 36f;
 		Font previousFont = nonNullFont(pp.frame.getFont(), currentFont);
 		if (style < 0) style = previousFont.getStyle();
 		setFont(previousFont.deriveFont(style, size));
 	}
 
-	/** Sets the size of the x and y label font size and style. Styles are defined
+	/** Sets the x and y label font size and style. Styles are defined
 	 *	in the Font class, e.g. Font.PLAIN, Font.BOLD.
 	 *	Set <code>style</code> to -1 to leave the style unchanged.
 	 *	Call update() thereafter to make the change visible (if the image is shown already). */

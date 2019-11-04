@@ -688,8 +688,13 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	}
 	
 	/** Used by GenericDialog to determine if any options have been recorded. */
-	static public String getCommandOptions() {
+	public static String getCommandOptions() {
 		return commandOptions;
+	}
+
+	/** Used by GenericDialog.notifyListeners() to clear the command options. */
+	public static void resetCommandOptions() {
+		commandOptions = null;
 	}
 
 	void createMacro() {

@@ -790,7 +790,8 @@ public abstract class ImageProcessor implements Cloneable {
 				if (x<0) r3.x = -x;
 				if (y<0) r3.y = -y;
 				mask.setRoi(r3);
-				mask = mask.crop();
+				if (mask!=null)
+					mask = mask.crop();
 			}
 			roiX=r2.x; roiY=r2.y; roiWidth=r2.width; roiHeight=r2.height;
 		} else {

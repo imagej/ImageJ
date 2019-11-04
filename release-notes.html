@@ -5,16 +5,33 @@
 </head>
 <body>
 
-<li> <u>1.52s5 31 October 2019</u>
+<li> <u>1.52s12 4 November 2019</u>
 <ul>
 <li> Thanks to Peter Haub, chroma subsampling is disabled when saving in
 JPEG format if the Quality setting (<i>Edit&gt;Options&gt;Input/Output</i>)
 is 90 or higher, resulting in higher quality images but larger file sizes.
+<li> Thanks to Karen Collins, improved the FITS Writer.
+<li> Added the <i>Help&gt;Examples&gt;JavaScript&gt;JPEG Quality Plot</i>
+example.
+<li> Removed the obsolete “Draw grid lines” option from the
+<i>Edit&gt;Options&gt;Plot</i> dialog.
+<li> Thanks to Peter Haub, added the JpegWriter.disableChromaSubsampling()
+method
+(<a href="http://wsr.imagej.net/macros/js/JpegQualityTests.js">example</a>).
+<li> Added the Plot.setFontSize() method.
 <li> Thanks to 'kefe' and Herbie, fixed a bug that caused the <i>Stack to Images</i>
 command to use slice labels as image titles even when
 they contained "/", "\" or ":" characters.
 <li> Thanks to 'sudgy' and Jan Eglinger, fixed a bug the caused iteration
 over the points contained in an ROI to throw an exception for rectangular ROIs.
+<li> Thanks to Norbert Vischer, fixed a bug that caused the options dialogs
+for the Rounded Rectangle, Multi-point and Arrow tools to generate
+"Duplicate keyword" errors when the Recorder was running.
+<li> Thanks to Peter Haub, fixed a bug that caused the Image Calculator
+to not work as expected with RGB images when using the
+"Difference" operator and "32-bit (float) result" option.
+<li> Fixed a bug that caused the "Font size" (aka "Default font size")
+setting in the <i>Edit&gt;Options&gt;Plot</i> dialog to be ignored.
 </ul>
 
 <li> <u>1.52r 26 October 2019</u>
@@ -29,6 +46,8 @@ corresponding axis dialog.
 <li>When adding a curve to a "Live" plot, it remains when the plot is 
 updated. 
 </ul>
+<li> Thanks to Jan Eglinger, saving TIFF images and stacks to
+network drives is up to 10 times faster.
 <li> Thanks to Marcel Boeglin, the title of the selection list created by
 <i>Image&gt;Overlay&gt;List Elements</i> includes the image
 name. And, when you double click on a line, the image associated

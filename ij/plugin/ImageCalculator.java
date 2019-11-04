@@ -239,14 +239,18 @@ public class ImageCalculator implements PlugIn {
 			ip1.snapshot();
 			Undo.setup(Undo.FILTER, img1);
 		}
-		if (floatResult) ip2 = ip2.convertToFloat();
+		boolean rgb = ip2 instanceof ColorProcessor;
+		if (floatResult && !rgb)
+			ip2 = ip2.convertToFloat();
 		try {
-			ip1.copyBits(ip2, 0, 0, mode);
+  			ip1.copyBits(ip2, 0, 0, mode);
 		}
 		catch (IllegalArgumentException e) {
 			IJ.error("\""+img1.getTitle()+"\": "+e.getMessage());
 			return null;
 		}
+		if (floatResult && rgb)
+			ip1 = ip1.convertToFloat();
 		if (!(ip1 instanceof ByteProcessor))
 			ip1.resetMinAndMax();
 		if (createWindow) {
@@ -261,7 +265,7 @@ public class ImageCalculator implements PlugIn {
 		int width = Math.min(ip1.getWidth(), ip2.getWidth());
 		int height = Math.min(ip1.getHeight(), ip2.getHeight());
 		ImageProcessor ip3 = ip1.createProcessor(width, height);
-		if (floatResult) {
+		if (floatResult && !(ip1 instanceof ColorProcessor)) {
 			ip1 = ip1.convertToFloat();
 			ip3 = ip3.convertToFloat();
 		}

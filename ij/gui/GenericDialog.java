@@ -1555,6 +1555,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
         for (int i=0; everythingOk && i<dialogListeners.size(); i++)
             try {
                 resetCounters();
+                if (this instanceof NonBlockingGenericDialog)
+                	Recorder.resetCommandOptions();
                 if (!((DialogListener)dialogListeners.elementAt(i)).dialogItemChanged(this, e))
                     everythingOk = false; }         // disable further listeners if false (invalid parameters) returned
             catch (Exception err) {                 // for exceptions, don't cover the input by a window but

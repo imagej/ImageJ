@@ -335,6 +335,7 @@ public class Menus {
 		addExample(submenu, "Plot Styles", "Plot_Styles.js");
 		addExample(submenu, "Plot Random Data", "Plot_Random_Data.js");
 		addExample(submenu, "Histogram Plots", "Histogram_Plots.js");
+		addExample(submenu, "JPEG Quality Plot", "JPEG_Quality_Plot.js");
 		addExample(submenu, "Process Folder", "Batch_Process_Folder.js");
 		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.js");
 		addExample(submenu, "Non-numeric Table", "Non-numeric_Table.js");

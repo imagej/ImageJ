@@ -135,15 +135,6 @@ public class JpegWriter implements PlugIn {
 		}
 		return error;
 	}
-
-	/** Disable chroma subsampling so higher quality JPEG files 
-		are created. By default, chroma subsampling is disabled 
-		when Quality is equal to or greater than 90.
-	*/		
-	public static void disableChromaSubsampling(boolean disable) {
-		disableChromaSubsampling = disable;
-		chromaSubsamplingSet = true;
-	}
 	
 	public static void setQuality(int jpegQuality) {
 		FileSaver.setJpegQuality(jpegQuality);
@@ -152,5 +143,18 @@ public class JpegWriter implements PlugIn {
 	public static int getQuality() {
 		return FileSaver.getJpegQuality();
 	}
+	
+	/** Enhance quality of JPEGs by disabing chroma subsampling. 
+		By default, enhanced quality is automatically used
+		when the Quality setting is 90 or greater. */		
+	public static void setEnhanceQuality(boolean enhanceQuality) {
+		disableChromaSubsampling = enhanceQuality;
+		chromaSubsamplingSet = true;
+	}
+
+	public static void disableChromaSubsampling(boolean disable) {
+		setEnhanceQuality(disable);
+	}
+
 
 }
