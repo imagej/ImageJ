@@ -186,8 +186,8 @@ public class Plot implements Cloneable {
 	boolean logXAxis, logYAxis;						//whether to really use log axis (never for small relative range)
 	//for passing on what should be kept when 'live' plotting (PlotMaker), but note that 'COPY_EXTRA_OBJECTS' is also on for live plotting:
 	int templateFlags = COPY_SIZE | COPY_LABELS | COPY_AXIS_STYLE | COPY_CONTENTS_STYLE | COPY_LEGEND;
-
-	Font defaultFont = FontUtil.getFont("Arial", Font.PLAIN, PlotWindow.getDefaultFontSize()); //default font for labels, axis, etc.
+	private int dsize = PlotWindow.getDefaultFontSize();
+	Font defaultFont = FontUtil.getFont("Arial",Font.PLAIN,dsize); //default font for labels, axis, etc.
 	Font currentFont = defaultFont;					//font as changed by setFont or setFontSize, must never be null
 	private double xScale, yScale;					//pixels per data unit
 	private int xBasePxl, yBasePxl;					//pixel coordinates corresponding to 0

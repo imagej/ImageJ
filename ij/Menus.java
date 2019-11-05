@@ -129,7 +129,7 @@ public class Menus {
 		addPlugInItem(file, "Close All", "ij.plugin.Commands(\"close-all\")", KeyEvent.VK_W, true);
 		addPlugInItem(file, "Save", "ij.plugin.Commands(\"save\")", KeyEvent.VK_S, false);
 		saveAsMenu = getMenu("File>Save As", true);
-		addPlugInItem(file, "Revert", "ij.plugin.Commands(\"revert\")", KeyEvent.VK_R,  false);
+		addPlugInItem(file, "Revert", "ij.plugin.Commands(\"revert\")", KeyEvent.VK_R,  true);
 		file.addSeparator();
 		addPlugInItem(file, "Page Setup...", "ij.plugin.filter.Printer(\"setup\")", 0, false);
 		addPlugInItem(file, "Print...", "ij.plugin.filter.Printer(\"print\")", KeyEvent.VK_P, false);
@@ -201,7 +201,7 @@ public class Menus {
 		getMenu("Process>Batch", true);
 		addPlugInItem(process, "Image Calculator...", "ij.plugin.ImageCalculator", 0, false);
 		addPlugInItem(process, "Subtract Background...", "ij.plugin.filter.BackgroundSubtracter", 0, false);
-		addItem(process, "Repeat Command", KeyEvent.VK_R, true);
+		addItem(process, "Repeat Command", KeyEvent.VK_R, false);
 		
 		Menu analyzeMenu = getMenu("Analyze");
 		addPlugInItem(analyzeMenu, "Measure", "ij.plugin.filter.Analyzer", KeyEvent.VK_M, false);

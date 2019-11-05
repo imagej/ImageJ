@@ -147,13 +147,13 @@ public class JpegWriter implements PlugIn {
 	/** Enhance quality of JPEGs by disabing chroma subsampling. 
 		By default, enhanced quality is automatically used
 		when the Quality setting is 90 or greater. */		
-	public static void setEnhanceQuality(boolean enhanceQuality) {
-		disableChromaSubsampling = enhanceQuality;
+	public static void enhanceQuality(boolean enhance) {
+		disableChromaSubsampling = enhance;
 		chromaSubsamplingSet = true;
 	}
 
 	public static void disableChromaSubsampling(boolean disable) {
-		setEnhanceQuality(disable);
+		enhanceQuality(disable);
 	}
 
 

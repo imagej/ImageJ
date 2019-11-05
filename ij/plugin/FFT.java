@@ -27,6 +27,7 @@ public class FFT implements	 PlugIn, Measurements {
 	public static boolean displayFHT;
 	public static boolean displayComplex;
 	public static String fileName;
+	private static boolean reuseWindow;
 	
 	private ImagePlus imp, imp2;
 	private boolean padded;
@@ -242,9 +243,15 @@ public class FFT implements	 PlugIn, Measurements {
 		if (!(displayFHT||displayComplex||displayRawPS))
 			displayFFT = true;
 		if (displayFFT) {
-			ImagePlus imp2 = new ImagePlus("FFT of "+imp.getTitle(), ps);
-			if (showOutput)
-				imp2.show((System.currentTimeMillis()-t0)+" ms");
+			String title = "FFT of "+imp.getTitle();
+			ImagePlus imp2 = new ImagePlus(title, ps);
+			if (showOutput) {
+				ImagePlus fftImage = reuseWindow?WindowManager.getImage(title):null;
+				if (fftImage!=null)
+					fftImage.setImage(imp2);
+				else
+					imp2.show((System.currentTimeMillis()-t0)+" ms");
+			}
 			fht.powerSpectrumMean = ps.getStats().mean;
 			imp2.setProperty("FHT", fht);
 			imp2.setCalibration(imp.getCalibration());
@@ -430,6 +437,7 @@ public class FFT implements	 PlugIn, Measurements {
 		gd.addCheckbox("Complex Fourier Transform", displayComplex);
 		gd.setInsets(8, 20, 0);
 		gd.addCheckbox("Do forward transform", false);
+		gd.addCheckbox("Reuse \"FFT of...\" window", reuseWindow);
 		gd.addHelp(IJ.URL+"/docs/menus/process.html#fft-options");
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -439,6 +447,7 @@ public class FFT implements	 PlugIn, Measurements {
 		displayFHT = gd.getNextBoolean();
 		displayComplex = gd.getNextBoolean();
 		doFFT = gd.getNextBoolean();
+		reuseWindow = gd.getNextBoolean();
 	}
 	
 	void doFHTInverseTransform() {

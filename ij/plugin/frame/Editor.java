@@ -56,7 +56,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
 	public static final int MONOSPACED=1, MENU_BAR=2;
-	public static final int MACROS_MENU_ITEMS = 14;
+	public static final int MACROS_MENU_ITEMS = 15;
 	public static final String INTERACTIVE_NAME = "Interactive Interpreter";
 	static final String FONT_SIZE = "editor.font.size";
 	static final String FONT_MONO= "editor.font.mono";
@@ -248,6 +248,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			macrosMenu.add(new MenuItem("Macro Functions...", new MenuShortcut(KeyEvent.VK_M, true)));
 			macrosMenu.add(new MenuItem("Function Finder...", new MenuShortcut(KeyEvent.VK_F, true)));
 			macrosMenu.add(new MenuItem("Enter Interactive Mode"));
+			macrosMenu.add(new MenuItem("Set as Repeat Command"));
 			macrosMenu.addSeparator();
 			macrosMenu.add(new MenuItem("Evaluate Macro"));
 			macrosMenu.add(new MenuItem("Evaluate JavaScript", new MenuShortcut(KeyEvent.VK_J, false)));
@@ -669,6 +670,22 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				ta.setCaretPosition(start);
 		}	
 	}
+	
+	private void setAsRepeatCommand() {
+		String title = getTitle();
+		if (!(title.endsWith(".ijm")||title.endsWith(".txt")||!title.contains("."))) {
+			IJ.error("Set as Repeat Command", "Macro code required");
+			return;
+		}
+		int start = ta.getSelectionStart();
+		int end = ta.getSelectionEnd();
+		String text;
+		if (start==end)
+			text = ta.getText();
+		else
+			text = ta.getSelectedText();
+		Executer.setAsRepeatCommand(text);
+	}
 
 	void paste() {
 		String s;
@@ -808,6 +825,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			copyToInfo();
 		else if (what.equals("Enter Interactive Mode"))
 			enterInteractiveMode();
+		else if (what.equals("Set as Repeat Command"))
+			setAsRepeatCommand();
 		else if (what.endsWith(".ijm") || what.endsWith(".java") || what.endsWith(".js") || what.endsWith(".bsh") || what.endsWith(".py"))
 			openExample(what);
 		else {

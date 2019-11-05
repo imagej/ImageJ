@@ -20,6 +20,7 @@ public class Executer implements Runnable {
 
 	private String command;
 	private Thread thread;
+	private boolean repeatingCommand;
 
 	/** Create an Executer to run the specified menu command
 		in this thread using the active image. */
@@ -34,6 +35,7 @@ public class Executer implements Runnable {
 		if (cmd.startsWith("Repeat")) {
 			command = previousCommand;
 			IJ.setKeyUp(KeyEvent.VK_SHIFT);
+			repeatingCommand = true;
 		} else {
 			command = cmd;
 			if (!(cmd.equals("Undo")||cmd.equals("Close")))
@@ -166,8 +168,12 @@ public class Executer implements Runnable {
 			else {
 				if ("Table...".equals(cmd))
 					IJ.runPlugIn("ij.plugin.NewPlugin", "table");
-				else
-					IJ.error("Unrecognized command: \"" + cmd+"\"");
+				else {
+					if (repeatingCommand)
+						IJ.runMacro(previousCommand);
+					else
+						IJ.error("Unrecognized command: \"" + cmd+"\"");
+				}
 			}
 	 	}
     }
@@ -221,6 +227,10 @@ public class Executer implements Runnable {
 		if no command has been executed. */
 	public static String getCommand() {
 		return previousCommand;
+	}
+
+	public static String setAsRepeatCommand(String cmd) {
+		return previousCommand = cmd;
 	}
 
 	/** Adds the specified command listener. */
