@@ -46,13 +46,12 @@ public class Profiler implements PlugIn, PlotMaker {
 		boolean fixedScale = ymin!=0.0 || ymax!=0.0;
 		boolean wasFixedScale = fixedScale;
 		
-		String options = IJ.isMacro()?Macro.getOptions():null;
-		if (options!=null && options.contains("font="))
-			Macro.setOptions(options.replaceAll("font=", "default="));
-		GenericDialog gd = new GenericDialog("Plot Options");
+		GenericDialog gd = new GenericDialog("Plot Defaults");
+		gd.setInsets(4,0,0);
+		gd.addMessage("---------- Plot Defaults ---------");
 		gd.addNumericField("Width:", PlotWindow.plotWidth, 0);
 		gd.addNumericField("Height:", PlotWindow.plotHeight, 0);
-		gd.addNumericField("Default font size:", PlotWindow.getDefaultFontSize(), 0);
+		gd.addNumericField("Font size:", PlotWindow.getDefaultFontSize(), 0);
 		gd.setInsets(5,20,0); //distance to previous
 		//gd.addCheckbox("Draw grid lines", !PlotWindow.noGridLines);
 		gd.addCheckbox("Draw_ticks", !PlotWindow.noTicks);
@@ -60,7 +59,7 @@ public class Profiler implements PlugIn, PlotMaker {
 		gd.addCheckbox("List values", PlotWindow.listValues);
 		
 		gd.setInsets(15,0,0);
-		gd.addMessage("--------Profile Plot Options--------");
+		gd.addMessage("------- Profile Plot Options -------");
 		gd.setInsets(5,20,0);
 		gd.addCheckbox("Fixed y-axis scale", fixedScale);
 		gd.addNumericField("Minimum Y:", ymin, 2);

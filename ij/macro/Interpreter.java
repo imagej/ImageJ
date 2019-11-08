@@ -679,7 +679,7 @@ public class Interpreter implements MacroConstants {
 		switch (token) {
 			case PREDEFINED_FUNCTION: case USER_FUNCTION: case VAR:
 			case WORD: case '(': case PLUS_PLUS: case RETURN: case ARRAY_FUNCTION:
-			case NUMERIC_FUNCTION: case STRING_FUNCTION:
+			case NUMERIC_FUNCTION: case STRING_FUNCTION: case VARIABLE_FUNCTION:
 				skipSimpleStatement();
 				break;
 			case IF:

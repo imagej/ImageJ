@@ -69,7 +69,7 @@ public class TextRoi extends Roi {
 		height = (int)(metrics.getHeight());
 		this.x = (int)x;
 		this.y = (int)(y - height);
-		setAntiAlias(true);
+		setAntiAlias(antialiasedText);
 		justification = LEFT;
 	}
 

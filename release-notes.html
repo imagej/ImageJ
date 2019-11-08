@@ -5,12 +5,16 @@
 </head>
 <body>
 
-<li> <u>1.52s14 5 November 2019</u>
+<li> <u>1.52s19 8 November 2019</u>
 <ul>
 <li> Added the <i>Macros&gt;Set as Repeat Command</i>
 command to the macro editor. After running this command,
 the selected macro code will run each time you press 'r', the
-shortcut for the <i>Process&gt;Repeat Command</i> command. 
+shortcut for the <i>Process&gt;Repeat Command</i> command.
+<li> Changed the shortcut for <i>Process&gt;Repeat Command</i>
+to 'r' and the shortcut for <i>File&gt;Revert</i> to shift-r.
+<li> Added a "Reuse 'FFT of...' window" option to the
+<i>Process&gt;FFT&gt;FFT Options</i> dialog.
 <li> Thanks to Peter Haub, chroma subsampling is disabled when saving in
 JPEG format if the Quality setting (<i>Edit&gt;Options&gt;Input/Output</i>)
 is 90 or higher, resulting in higher quality images but larger file sizes.
@@ -36,6 +40,12 @@ to not work as expected with RGB images when using the
 "Difference" operator and "32-bit (float) result" option.
 <li> Fixed a bug that caused the "Font size" (aka "Default font size")
 setting in the <i>Edit&gt;Options&gt;Plot</i> dialog to be ignored.
+<li> Thanks to Stein Rorvik, fixed a bug that caused the
+run("Calibration Bar...",optons) macro function to ignore calls to
+setOption("AntialiasedText",boolean).
+<li> Thanks go Sethur, worked around a Windows 10 bug that caused
+the click-and-drag-handle on scrollbars to be very hard to see.
+
 </ul>
 
 <li> <u>1.52r 26 October 2019</u>

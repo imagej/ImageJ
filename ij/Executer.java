@@ -229,8 +229,8 @@ public class Executer implements Runnable {
 		return previousCommand;
 	}
 
-	public static String setAsRepeatCommand(String cmd) {
-		return previousCommand = cmd;
+	public static void setAsRepeatCommand(String cmd) {
+		previousCommand = cmd;
 	}
 
 	/** Adds the specified command listener. */
