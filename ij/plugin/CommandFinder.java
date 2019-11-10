@@ -47,7 +47,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	private static JFrame frame;
 	private JTextField prompt;
 	private JScrollPane scrollPane;
-	private JButton runButton, sourceButton, closeButton, helpButton;
+	private JButton runButton, sourceButton, closeButton, commandsButton, helpButton;
 	private JCheckBox closeCheckBox;
 	private Hashtable commandsHash;
 	private String [] commands;
@@ -133,6 +133,8 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 			showSource(tableModel.getCommand(row));
 		} else if (source == closeButton) {
 			closeWindow();
+		} else if (source == commandsButton) {
+			IJ.doCommand("Commands...");
 		} else if (source == helpButton) {
 			String text = "<html>Shortcuts:<br>"
 				+ "&emsp;&uarr; &darr;&ensp; Select items<br>"
@@ -487,15 +489,19 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		GUI.scale(sourceButton);
 		closeButton = new JButton("Close");
 		GUI.scale(closeButton);
+		commandsButton = new JButton("Commands");
+		GUI.scale(commandsButton);
 		helpButton = new JButton("Help");
 		GUI.scale(helpButton);
 		runButton.addActionListener(this);
 		sourceButton.addActionListener(this);
 		closeButton.addActionListener(this);
+		commandsButton.addActionListener(this);
 		helpButton.addActionListener(this);
 		runButton.addKeyListener(this);
 		sourceButton.addKeyListener(this);
 		closeButton.addKeyListener(this);
+		commandsButton.addKeyListener(this);
 		helpButton.addKeyListener(this);
 
 		JPanel southPanel = new JPanel();
@@ -508,6 +514,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		buttonsPanel.add(runButton);
 		buttonsPanel.add(sourceButton);
 		buttonsPanel.add(closeButton);
+		buttonsPanel.add(commandsButton);
 		buttonsPanel.add(helpButton);
 
 		southPanel.add(optionsPanel, BorderLayout.CENTER);

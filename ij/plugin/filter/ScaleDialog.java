@@ -33,7 +33,6 @@ public class ScaleDialog implements PlugInFilter {
 		
 		String scale = "<no scale>";
 		int digits = 2;
-		//IJ.log("ScaleDialog: "+isCalibrated);
 		Roi roi = imp.getRoi();
 		if (roi!=null && (roi instanceof Line)) {
 			measured = ((Line)roi).getRawLength();
@@ -66,22 +65,19 @@ public class ScaleDialog implements PlugInFilter {
 		gd.setInsets(10, 0, 0);
 		gd.addMessage("Scale: "+"12345.789 pixels per centimeter");
 		gd.addHelp(IJ.URL+"/docs/menus/analyze.html#scale");
-		if (aspectRatio==1.0 && "pixel".equals(unit))
-			gd.setSmartRecording(true);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		measured = gd.getNextNumber();
 		known = gd.getNextNumber();
+		if (aspectRatio==1.0)
+			gd.setSmartRecording(true);
 		aspectRatio = gd.getNextNumber();
+		gd.setSmartRecording(false);
 		unit = gd.getNextString();
         if (unit.equals("A"))
         	unit = ""+IJ.angstromSymbol;
  		global2 = gd.getNextBoolean();
-		//if (measured!=0.0 && known==0.0) {
-		//	imp.setGlobalCalibration(global2?cal:null);
-		//	return;
-		//}
 		if (measured==known && unit.equals("unit"))
 			unit = "pixel";
 		if (measured<=0.0 || known<=0.0 || unit.startsWith("pixel") || unit.startsWith("Pixel") || unit.equals("")) {

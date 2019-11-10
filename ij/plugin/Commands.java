@@ -81,7 +81,7 @@ public class Commands implements PlugIn {
 		Window win = WindowManager.getActiveWindow();
 		if (win==null || (Interpreter.isBatchMode() && win instanceof ImageWindow))
 			closeImage(imp);
-		else if (win instanceof PlugInFrame)
+		else if (win instanceof PlugInFrame && !"Commands".equals(((PlugInFrame)win).getTitle()))
 			((PlugInFrame)win).close();
 		else if (win instanceof PlugInDialog)
 			((PlugInDialog)win).close();

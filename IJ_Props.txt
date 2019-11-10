@@ -393,18 +393,19 @@ shortcuts06=-
 # Plugins installed in the Plugins/Utilities submenu
 utilities01="Control Panel...[U]",ij.plugin.ControlPanel
 utilities02="Find Commands...[l]",ij.plugin.CommandFinder
-utilities03="Search...",ij.plugin.SimpleCommands("search")
-utilities04="Monitor Events...",ij.plugin.EventListener
-utilities05="Monitor Memory...",ij.plugin.frame.MemoryMonitor
-utilities06=-
-utilities07="Capture Screen[G]",ij.plugin.ScreenGrabber
-utilities08="Capture Delayed...",ij.plugin.ScreenGrabber("delay")
-utilities09="Capture Image",ij.plugin.ScreenGrabber("image")
-utilities10=-
-utilities11="ImageJ Properties",ij.plugin.JavaProperties
-utilities12="Threads",ij.plugin.ThreadLister
-utilities13="Benchmark",ij.plugin.filter.Benchmark
-utilities14="Reset...",ij.plugin.SimpleCommands("reset")
+utilities03="Commands...[L]",ij.plugin.frame.Commands
+utilities04="Search...",ij.plugin.SimpleCommands("search")
+utilities05="Monitor Events...",ij.plugin.EventListener
+utilities06="Monitor Memory...",ij.plugin.frame.MemoryMonitor
+utilities07=-
+utilities08="Capture Screen[G]",ij.plugin.ScreenGrabber
+utilities09="Capture Delayed...",ij.plugin.ScreenGrabber("delay")
+utilities10="Capture Image",ij.plugin.ScreenGrabber("image")
+utilities11=-
+utilities12="ImageJ Properties",ij.plugin.JavaProperties
+utilities13="Threads",ij.plugin.ThreadLister
+utilities14="Benchmark",ij.plugin.filter.Benchmark
+utilities15="Reset...",ij.plugin.SimpleCommands("reset")
 
 # Plugins installed in the Plugins/New submenu
 new_01="Macro",ij.plugin.NewPlugin("macro")

@@ -836,18 +836,19 @@ public class ResultsTable implements Cloneable {
 	public synchronized void deleteRow(int rowIndex) {
 		if (counter==0 || rowIndex<0 || rowIndex>counter-1)
 			return;
+		int counter2 = Math.min(counter,maxRows-1);
 		if (rowLabels!=null) {
 			rowLabels[rowIndex] = null;
-			for (int i=rowIndex; i<counter-1; i++)
+			for (int i=rowIndex; i<counter2; i++)
 				rowLabels[i] = rowLabels[i+1];
 		}
 		for (int col=0; col<=lastColumn; col++) {
 			if (columns[col]!=null) {
-				for (int i=rowIndex; i<counter-1; i++)
+				for (int i=rowIndex; i<counter2; i++)
 					columns[col][i] = columns[col][i+1];
 				ArrayList stringColumn = stringColumns!=null?(ArrayList)stringColumns.get(new Integer(col)):null;
 				if (stringColumn!=null && stringColumn.size()==counter) {
-					for (int i=rowIndex; i<counter-1; i++)
+					for (int i=rowIndex; i<counter2; i++)
 						stringColumn.set(i,stringColumn.get(i+1));
 					stringColumn.remove(counter-1);
 				}
