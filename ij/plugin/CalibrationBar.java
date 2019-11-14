@@ -40,6 +40,7 @@ public class CalibrationBar implements PlugIn {
 	private static int sFontSize = 12;
 	private static int sDecimalPlaces = 0;
 	private static boolean sFlatten;
+	private static boolean boldText;
 	
 	private String fillColor = sFillColor;
 	private String textColor = sTextColor;
@@ -66,7 +67,6 @@ public class CalibrationBar implements PlugIn {
 	int win_width;
 	int userPadding = 0;
 	int fontHeight = 0;
-	boolean boldText;
 	boolean showUnit;
 	Object backupPixels;
 	byte[] byteStorage;
