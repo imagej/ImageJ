@@ -140,6 +140,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 
 		// minHue slider
 		minSlider = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
+		GUI.fixScrollbar(minSlider);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 1;
@@ -162,6 +163,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 
 		// maxHue sliderHue
 		maxSlider = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
+		GUI.fixScrollbar(maxSlider);
 		c.gridx = 0;
 		c.gridy = y;
 		c.gridwidth = 1;
@@ -211,6 +213,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 
 		// minSat slider
 		minSlider2 = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
+		GUI.fixScrollbar(minSlider2);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 1;
@@ -232,6 +235,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 
 		// maxSat slider
 		maxSlider2 = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
+		GUI.fixScrollbar(maxSlider2);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 1;
@@ -279,6 +283,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 
 		// minBri slider
 		minSlider3 = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
+		GUI.fixScrollbar(minSlider3);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 1;
@@ -300,6 +305,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 
 		// maxBri slider
 		maxSlider3 = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
+		GUI.fixScrollbar(maxSlider3);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 1;

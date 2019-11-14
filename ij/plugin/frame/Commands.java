@@ -8,10 +8,26 @@ import java.awt.event.*;
 /** This plugin implements the Plugins>Utiltiees>Recent Commands command. */
 public class Commands extends PlugInFrame implements ActionListener, ItemListener, CommandListener {
 	public static final String LOC_KEY = "commands.loc";
-	public static final int MAX_COMMANDS = 20;
+	public static final String CMDS_KEY = "commands.cmds";
+		public static final int MAX_COMMANDS = 20;
 	private static Frame instance;
+	private static final String divider = "---------------";
+	private static final String[] commands = {
+		"Blobs (25K)",
+		"Open...",
+		"Show Info...",
+		"Close",
+		"Close All",
+		"Histogram",
+		"Find Maxima...",
+		"Gaussian Blur...",		
+		"Record...",
+		"Capture Screen",
+		"Find Commands..."
+	};
 	private List list;
 	private String command;
+	private Button button;
 
 	public Commands() {
 		super("Commands");
@@ -20,28 +36,49 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
 			return;
 		}
 		instance = this;
+		WindowManager.addWindow(this);
 		list = new List(MAX_COMMANDS);
 		list.addItemListener(this);
-		list.add("Blobs (25K)");
-		list.add("Image...");
-		list.add("Open...");
-		list.add("Show Info...");
-		list.add("Close");
-		list.add("Close All");
-		list.add("Invert");
-		list.add("Gaussian Blur...");		
-		list.add("Record...");
-		list.add("Capture Screen");
-		list.add("Monitor Memory...");
-		list.add("Find Commands...");
+		String cmds = Prefs.get(CMDS_KEY, null);
+		if (cmds!=null) {
+			String[] cmd = cmds.split(",");
+			int len = cmd.length<=MAX_COMMANDS?cmd.length:MAX_COMMANDS;
+			boolean isDivider = false;
+			for (int i=0; i<len; i++) {
+				if (divider.equals(cmd[i])) {
+					isDivider = true;
+					break;
+				}
+			}
+			if (isDivider) {
+				for (int i=0; i<len; i++)
+					list.add(cmd[i]);
+			} else
+				cmds = null;				
+		}
+		if (cmds==null) {
+			list.add(divider);
+			int len = commands.length<MAX_COMMANDS?commands.length:MAX_COMMANDS-1;
+			for (int i=0; i<len; i++)
+				list.add(commands[i]);		
+		}
 		ImageJ ij = IJ.getInstance();
 		addKeyListener(ij);
-IJ.log("addCommandListener");
 		Executer.addCommandListener(this);
-		//WindowManager.addWindow(this);
 		GUI.scale(list);
 		list.addKeyListener(ij);
-		add(list);
+		GridBagLayout gridbag = new GridBagLayout();
+        GridBagConstraints c = new GridBagConstraints();
+        setLayout(gridbag);
+        c.insets = new Insets(0, 0, 0, 0); 
+        c.gridx = 0; c.gridy = 0; c.anchor = GridBagConstraints.WEST;
+        add(list,c); 
+		button = new Button("Edit");
+		button.addActionListener(this);
+		button.addKeyListener(ij);
+        //c.insets = new Insets(2, 6, 6, 6); 
+        c.gridx = 0; c.gridy = 2; c.anchor = GridBagConstraints.CENTER;
+        add(button, c);
 		pack();
 		Dimension size = getSize();
 		Point loc = Prefs.getLocation(LOC_KEY);
@@ -51,7 +88,29 @@ IJ.log("addCommandListener");
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		IJ.log("actionPerformed: "+e);
+		GenericDialog gd = new GenericDialog("Commands");
+		int dividerIndex = getDividerIndex();
+		StringBuilder sb = new StringBuilder(200);
+		for (int i=0; i<dividerIndex; i++) {
+			String cmd = list.getItem(i);
+			sb.append(cmd);
+			sb.append(" ");
+		}
+		sb.append("Debug Mode ");
+		String recentCommands = sb.toString();
+		gd.setInsets(5, 0, 0);
+		gd.addTextAreas(recentCommands, null, 4, 28);
+		int index = dividerIndex + 1;
+		int n = 1;
+		for (int i=index; i<list.getItemCount(); i++) {
+			gd.setInsets(2, 8, 0);
+			gd.addStringField("Cmd"+IJ.pad(n++,2)+":", list.getItem(i), 20);
+		}
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		for (int i=index; i<list.getItemCount(); i++)
+			list.replaceItem(gd.getNextString(),i);
 	}
 
 	public void itemStateChanged(ItemEvent e) {
@@ -59,34 +118,60 @@ IJ.log("addCommandListener");
 		if (e.getStateChange()==ItemEvent.SELECTED) {
 			int index = list.getSelectedIndex();
 			command = list.getItem(index);
-			IJ.doCommand(command);
+			if (!command.equals(divider)) {
+				if (command.equals("Debug Mode"))
+					IJ.runMacro("setOption('DebugMode')");
+				else
+					IJ.doCommand(command);
+			}
 			list.deselect(index);
 		}
 	}
 	
 	public String commandExecuting(String cmd2) {
-		IJ.log("commandExecuting: "+cmd2);
+		if ("Quit".equals(cmd2))
+			return cmd2;
 		String cmd1 = command;
 		if (cmd1==null || !cmd1.equals(cmd2)) {
 			try {
 				list.remove(cmd2);
 			} catch(Exception e) {}
+			if (list.getItemCount()>=MAX_COMMANDS)
+				list.remove(getDividerIndex()-1);
 			list.add(cmd2, 0);
-			if (list.getItemCount()>MAX_COMMANDS)
-				list.remove(list.getItemCount()-1);
 		}
 		command = null;
 		return cmd2;
+	}
+	
+	private int getDividerIndex() {
+		int index = 0;
+		for (int i=0; i<MAX_COMMANDS; i++) {
+			String cmd = list.getItem(i);
+			if (divider.equals(cmd)) {
+				index = i;
+				break;
+			}
+		}
+		return index;
 	}
 	
 	/** Overrides PlugInFrame.close(). */
 	public void close() {
 		super.close();
 		instance = null;
-IJ.log("close");
 		Executer.removeCommandListener(this);
 		Prefs.saveLocation(LOC_KEY, getLocation());
+		StringBuilder sb = new StringBuilder(200);
+		for (int i=0; i<list.getItemCount(); i++) {
+			String cmd = list.getItem(i);
+			sb.append(cmd);
+			sb.append(",");
+		}
+		String cmds = sb.toString();
+		cmds = cmds.substring(0, cmds.length()-1);
+		//IJ.log("close: "+cmds); IJ.wait(5000);
+		Prefs.set(CMDS_KEY, cmds);
 	}
-
 
 }

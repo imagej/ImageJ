@@ -4,6 +4,7 @@ import ij.plugin.frame.Recorder;
 import ij.plugin.frame.Editor; 
 import ij.text.TextWindow;
 import ij.plugin.frame.PlugInFrame;
+import ij.plugin.frame.Commands;
 import ij.util.Tools;
 import ij.macro.Interpreter;
 import java.awt.*;
@@ -423,7 +424,9 @@ public class WindowManager {
 		Frame[] nonImages = getNonImageWindows();
 		for (int i=0; i<nonImages.length; i++) {
 			Frame frame = nonImages[i];
-			if (frame!=null && (frame instanceof Editor)) {
+			if (frame!=null && frame instanceof Commands)
+				((Commands)frame).close();
+			else if (frame!=null && (frame instanceof Editor)) {
 				((Editor)frame).close();
 				if (((Editor)frame).fileChanged())
 					return false;

@@ -1,4 +1,5 @@
 package ij.gui;
+import ij.ImageJ;
 import ij.IJ;
 import ij.Prefs;
 import java.awt.*;
@@ -23,8 +24,7 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 		super(new BorderLayout(2, 0));
 		this.stackWindow = stackWindow;
 		bar = new Scrollbar(Scrollbar.HORIZONTAL, value, visible, minimum, maximum);
-		if (IJ.isWindows())
-			bar.setBackground(Color.white);
+		GUI.fixScrollbar(bar);
 		icon = new Icon(label);
 		add(icon, BorderLayout.WEST);
 		add(bar, BorderLayout.CENTER);
@@ -144,7 +144,7 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 		icon.repaint();
 	}
 	
-	
+		
 	class Icon extends Canvas implements MouseListener {
 		private final double SCALE = Prefs.getGuiScale();
 		private final int WIDTH = (int)(12*SCALE);

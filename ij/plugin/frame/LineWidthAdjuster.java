@@ -34,6 +34,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		WindowManager.addWindow(this);
 		instance = this;
 		slider = new Scrollbar(Scrollbar.HORIZONTAL, Line.getWidth(), 1, 1, sliderRange+1);
+		GUI.fixScrollbar(slider);
 		slider.setFocusable(false); // prevents blinking on Windows
 				
 		Panel panel = new Panel();

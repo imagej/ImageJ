@@ -67,10 +67,12 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		setLayout(new BorderLayout());
 		add("Center",tc);
 		sbHoriz=new Scrollbar(Scrollbar.HORIZONTAL);
+		//GUI.fixScrollbar(sbHoriz);
 		sbHoriz.addAdjustmentListener(this);
 		sbHoriz.setFocusable(false); // prevents scroll bar from blinking on Windows
 		add("South", sbHoriz);
 		sbVert=new Scrollbar(Scrollbar.VERTICAL);
+		//GUI.fixScrollbar(sbVert);
 		sbVert.addAdjustmentListener(this);
 		sbVert.setFocusable(false);
 		ImageJ ij = IJ.getInstance();

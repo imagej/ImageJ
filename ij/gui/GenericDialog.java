@@ -698,6 +698,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			sliderDigits = new Vector(5);
 		}
 		Scrollbar s = new Scrollbar(Scrollbar.HORIZONTAL, (int)defaultValue, 1, (int)minValue, (int)maxValue+1);
+		GUI.fixScrollbar(s);
 		slider.addElement(s);
 		s.addAdjustmentListener(this);
 		s.setUnitIncrement(1);
