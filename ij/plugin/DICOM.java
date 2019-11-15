@@ -110,28 +110,78 @@ public class DICOM extends ImagePlus implements PlugIn {
 		if (fi!=null && fi.width>0 && fi.height>0 && fi.offset>0) {
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.openImage();
-			boolean openAsFloat = (dd.rescaleSlope!=1.0&&!Prefs.ignoreRescaleSlope) || Prefs.openDicomsAsFloat;
+			boolean openAsFloat = Prefs.openDicomsAsFloat;
+			// Define local variables for slope and intercept so that we can
+			// follow the ignoreRescaleSlope setting
+			double dicomRescaleIntercept = dd.rescaleIntercept;
+			double dicomRescaleSlope = Prefs.ignoreRescaleSlope ? 1.0 : dd.rescaleSlope;
+
 			String options = Macro.getOptions();
+			// Set the targetDataType to the filetype as first guess
+			int targetDataType = fi.fileType;
+
+			// Convert to 32-bit float if requested
 			if (openAsFloat) {
-				IJ.run(imp, "32-bit", "");
-				if (dd.rescaleSlope!=1.0)
-					IJ.run(imp, "Multiply...", "value="+dd.rescaleSlope+" stack");
-				if (dd.rescaleIntercept!=0.0)
-					IJ.run(imp, "Add...", "value="+dd.rescaleIntercept+" stack");
-				if (imp.getStackSize()>1) {
-				    imp.setSlice(imp.getStackSize()/2);
-					ImageStatistics stats = imp.getRawStatistics();
-					imp.setDisplayRange(stats.min,stats.max);
-				}
-			} else if (fi.fileType==FileInfo.GRAY16_SIGNED) {
-				if (dd.rescaleIntercept!=0.0 && dd.rescaleSlope==1.0)
-					IJ.run(imp, "Add...", "value="+dd.rescaleIntercept+" stack");
-			} else if (dd.rescaleIntercept!=0.0 && (dd.rescaleSlope==1.0||fi.fileType==FileInfo.GRAY8)) {
-				double[] coeff = new double[2];
-				coeff[0] = dd.rescaleIntercept;
-				coeff[1] = dd.rescaleSlope;
-				imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "Gray Value");
+				ImageConverter converter = new ImageConverter(imp);
+				converter.convertToGray32();
+				// Remember target data type
+				targetDataType = FileInfo.GRAY32_UNSIGNED;
 			}
+
+			// For 8bit, 12bit, 16bit signed and unsigned target data type
+			// use the in-build linear calibration (transparent to the user)
+			// and take care not to overwrite an existing GRAY16_SIGNED calibration.
+			// In all other cases (also for the convert-to-float case) apply
+			// the DICOM intercept and slope directly to the data.
+			if (dicomRescaleIntercept!=0.0 || dicomRescaleSlope!=1.0) {					  
+				switch (targetDataType) {
+					case FileInfo.GRAY8:
+					case FileInfo.GRAY12_UNSIGNED:
+					case FileInfo.GRAY16_UNSIGNED:
+					case FileInfo.GRAY16_SIGNED:
+							Calibration calib = imp.getCalibration();
+							double[] coeffOld = calib.getCoefficients();
+
+							// In case of existing linear calibration (should only happen with GRAY16_SINGED), 
+							// combine existing y = mx + t linear calibration with new calibration =>
+							// m_new = m_old * m_DICOM
+							// t_new = m_DICOM * t_old + t_new
+							double t_old = 0;
+							double m_old = 1;
+							if (coeffOld != null) {
+								if (coeffOld.length == 2) {
+									t_old = coeffOld[0];
+									m_old = coeffOld[1];
+								} else {
+									// This should never happen! The only preexisting calibration at this point
+									// should be the one applied for GRAY16_SIGNED images, which is linear.
+									String msg = "Unexpected existing calibration when opening DICOM file!";
+									IJ.error(msg);
+									return;
+								}
+							}							
+
+							double[] coeff = new double[2];
+							coeff[0] = dicomRescaleSlope * t_old + dicomRescaleIntercept;
+							coeff[1] = dicomRescaleSlope * m_old;
+
+							calib.setFunction(Calibration.STRAIGHT_LINE, coeff, "Gray Value");
+						break;					
+					default:
+						// For target data types not supporting soft-calibration
+						// we have to directly apply the calibration to the data
+						// In case of multi-frame DICOMs, apply this for every slice
+						for (int z=1; z<imp.getStackSize(); z++) {
+							ImageProcessor ip = imp.getStack().getProcessor(z);
+							if (dicomRescaleSlope!=1.0)
+								ip.multiply(dicomRescaleSlope);
+							if (dicomRescaleIntercept!=0.0)
+								ip.add(dicomRescaleIntercept);							
+						}
+						break;
+				}
+			}
+
 			Macro.setOptions(options);
 			if (dd.windowWidth>0.0) {
 				double min = dd.windowCenter-dd.windowWidth/2;
@@ -565,10 +615,14 @@ class DicomDecoder {
 			int tag = getNextTag();
 			if ((location&1)!=0) // DICOM tags must be at even locations
 				oddLocations = true;
-			if (inSequence) {
-				addInfo(tag, null);
-				continue;
-			}
+			
+			// We cannot skip the sequences since multi-frame DICOMs have the
+			// RescaleSlope and RescaleIntercept tags inside a sequence.
+			// if (inSequence) {
+			// 	addInfo(tag, null);
+			// 	continue;
+			// }
+
 			String s;
 			switch (tag) {
 				case TRANSFER_SYNTAX_UID:
@@ -752,7 +806,8 @@ class DicomDecoder {
 
 	void addInfo(int tag, String value) throws IOException {
 		String info = getHeaderInfo(tag, value);
-		if (inSequence && info!=null && vr!=SQ) info = ">" + info;
+		if (inSequence && info!=null && vr!=SQ) 
+			info = ">" + info;
 		if (info!=null &&  tag!=ITEM) {
 			int group = tag>>>16;
 			//if (group!=previousGroup && (previousInfo!=null&&previousInfo.indexOf("Sequence:")==-1))
