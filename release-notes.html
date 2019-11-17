@@ -5,11 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.52s46 14 November 2019</u>
+<li> <u>1.52s49 16 November 2019</u>
 <ul>
 <li> Thanks to 'LPUoO', added the <i>Plugins&gt;Utilities&gt;Commands</i> 
 command, which opens a list of commonly and recently used 
-commands. 
+commands.
+<li> Thanks to Norbert Vischer, adding an exclamation mark to
+showStatus() messages avoids status bar flicker when
+processing multiple images
+(<a href="http://wsr.imagej.net/macros/examples/NonVolatileShowStatus.txt">example</a>).
 <li> Added the <i>Macros&gt;Set as Repeat Command</i>
 command to the macro editor. After running this command,
 the selected macro code will run each time you press 'r', the
@@ -46,8 +50,8 @@ setting in the <i>Edit&gt;Options&gt;Plot</i> dialog to be ignored.
 <li> Thanks to Stein Rorvik, fixed a bug that caused the
 run("Calibration Bar...",optons) macro function to ignore calls to
 setOption("AntialiasedText",boolean).
-<li> Thanks go Sethur, worked around a Windows OpenJDK bug that
-caused the "thumb" on scrollbars to be hard to see.
+<li> Thanks go Sethur, worked around a Windows 10 and OpenJDK
+bug that caused the "thumb" on scrollbars to be hard to see.
 <li> Thanks to Stein Rorvik, fixed a bug that caused the
 <i>Analyze&gt;Set Scale</i> command to not be correctly
 recoded.

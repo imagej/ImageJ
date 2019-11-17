@@ -91,15 +91,16 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
 		GenericDialog gd = new GenericDialog("Commands");
 		int dividerIndex = getDividerIndex();
 		StringBuilder sb = new StringBuilder(200);
+		sb.append("| ");	
 		for (int i=0; i<dividerIndex; i++) {
 			String cmd = list.getItem(i);
 			sb.append(cmd);
-			sb.append(" ");
+			sb.append(" | ");
 		}
-		sb.append("Debug Mode ");
+		sb.append("Debug Mode | Hyperstack |");
 		String recentCommands = sb.toString();
 		gd.setInsets(5, 0, 0);
-		gd.addTextAreas(recentCommands, null, 4, 28);
+		gd.addTextAreas(recentCommands, null, 5, 28);
 		int index = dividerIndex + 1;
 		int n = 1;
 		for (int i=index; i<list.getItemCount(); i++) {
@@ -121,6 +122,8 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
 			if (!command.equals(divider)) {
 				if (command.equals("Debug Mode"))
 					IJ.runMacro("setOption('DebugMode')");
+				else if (command.equals("Hyperstack"))
+					IJ.runMacro("newImage('HyperStack', '8-bit color label', 400, 300, 3, 4, 25)");
 				else
 					IJ.doCommand(command);
 			}
