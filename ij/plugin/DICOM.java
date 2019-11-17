@@ -145,7 +145,7 @@ public class DICOM extends ImagePlus implements PlugIn {
 							// In case of existing linear calibration (should only happen with GRAY16_SINGED), 
 							// combine existing y = mx + t linear calibration with new calibration =>
 							// m_new = m_old * m_DICOM
-							// t_new = m_DICOM * t_old + t_new
+							// t_new = m_DICOM * t_old + t_DICOM
 							double t_old = 0;
 							double m_old = 1;
 							if (coeffOld != null) {
