@@ -73,6 +73,7 @@ public class IJ {
 	private static String smoothMacro;
 	private static Interpreter macroInterpreter;
 	private static boolean protectStatusBar;
+	private static Thread statusBarThread;
 			
 	static {
 		osname = System.getProperty("os.name");
@@ -408,22 +409,30 @@ public class IJ {
 		return applet;
 	}
 	
-	/**Displays a message in the ImageJ status bar. */
-	public static void showStatus(String s) {
-		if (!macroRunning())
-			protectStatusBar = false;
+	/**Displays a message in the ImageJ status bar.*/
+	public static void showStatus(String s) {	//x
+		if ((statusBarThread==null && Interpreter.getInstance()==null)
+		|| (statusBarThread!=null && Thread.currentThread()!=statusBarThread)) {
+			statusBarThread = null;
+			protectStatusBar = false;			
+		}
 		boolean doProtect = s.startsWith("!"); //suppress subsequent process status
 		if (doProtect) {
 			protectStatusBar = true;
+			statusBarThread = Thread.currentThread();
 			s = s.substring(1);
 		}
-		if (doProtect || !protectStatusBar){
+		if (doProtect || !protectStatusBar) {
 			if (ij!=null)
 				ij.showStatus(s);
 			ImagePlus imp = WindowManager.getCurrentImage();
 			ImageCanvas ic = imp!=null?imp.getCanvas():null;
-			if (ic!=null)
-				ic.setShowCursorStatus(s.length()==0?true:false);
+			if (ic!=null) {
+				if (protectStatusBar)
+					ic.setShowCursorStatus(false);
+				else
+					ic.setShowCursorStatus(s.length()==0?true:false);
+			}
 		}
 	}
 	
@@ -855,7 +864,8 @@ public class IJ {
 	}
 	
 	public static void showTime(ImagePlus imp, long start, String str, int nslices) {
-		if (Interpreter.isBatchMode()) return;
+		if (Interpreter.isBatchMode())
+			return;
 	    double seconds = (System.currentTimeMillis()-start)/1000.0;
 		double pixels = (double)imp.getWidth() * imp.getHeight();
 		double rate = pixels*nslices/seconds;
@@ -2427,4 +2437,14 @@ public class IJ {
 			return properties.get(key);
 	}
 	
+	public static boolean statusBarProtected() {
+		return protectStatusBar;
+	}
+	
+	public static void protectStatusBar(boolean protect) {
+		protectStatusBar = protect;
+		if (!protectStatusBar)
+			statusBarThread = null;
+	}
+
 }
