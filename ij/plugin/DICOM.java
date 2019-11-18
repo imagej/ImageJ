@@ -550,6 +550,13 @@ class DicomDecoder {
 			elementLength = 0;
 			inSequence = true;
 		}
+		// We can also be inside sequence if the elementLength is explicitly
+		// given. In this case, hopefully the VR was explicit as well, otherwise
+		// it is impossible to determine without dictionary.
+		if (vr == SQ) {
+			inSequence = true;
+		}
+
  		//IJ.log("getNextTag: "+tag+" "+elementLength);
 		return tag;
 	}
@@ -806,8 +813,7 @@ class DicomDecoder {
 
 	void addInfo(int tag, String value) throws IOException {
 		String info = getHeaderInfo(tag, value);
-		if (inSequence && info!=null && vr!=SQ) 
-			info = ">" + info;
+		if (inSequence && info!=null && vr!=SQ) info = ">" + info;
 		if (info!=null &&  tag!=ITEM) {
 			int group = tag>>>16;
 			//if (group!=previousGroup && (previousInfo!=null&&previousInfo.indexOf("Sequence:")==-1))
