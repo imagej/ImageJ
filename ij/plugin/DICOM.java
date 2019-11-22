@@ -110,11 +110,11 @@ public class DICOM extends ImagePlus implements PlugIn {
 		if (fi!=null && fi.width>0 && fi.height>0 && fi.offset>0) {
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.openImage();
-			boolean openAsFloat = Prefs.openDicomsAsFloat;
 			// Define local variables for slope and intercept so that we can
 			// follow the ignoreRescaleSlope setting
 			double dicomRescaleIntercept = dd.rescaleIntercept;
 			double dicomRescaleSlope = Prefs.ignoreRescaleSlope ? 1.0 : dd.rescaleSlope;
+			boolean openAsFloat = Prefs.openDicomsAsFloat || dicomRescaleSlope!=1.0;
 
 			String options = Macro.getOptions();
 			// Set the targetDataType to the filetype as first guess
