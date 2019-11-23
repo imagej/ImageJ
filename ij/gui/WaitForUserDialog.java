@@ -19,6 +19,7 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 	
 	public WaitForUserDialog(String title, String text) {
 		super(IJ.getInstance(), title, false);
+		IJ.protectStatusBar(false);
 		if (text!=null && text.startsWith("IJ: "))
 			text = text.substring(4);
 		label = new MultiLineLabel(text, 175);

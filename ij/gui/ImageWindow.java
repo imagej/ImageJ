@@ -199,10 +199,12 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		int screenHeight = maxWindow.y+maxWindow.height-sliderHeight;
 		int screenWidth = maxWindow.x+maxWindow.width;
 		double mag = 1;
-		while (xbase+width*mag>screenWidth || ybase+height*mag>=screenHeight) {
-			double mag2 = ImageCanvas.getLowerZoomLevel(mag);
-			if (mag2==mag) break;
-			mag = mag2;
+		if (!(this instanceof PlotWindow)) { // unless a plot (always at 100%), zoom out to show all of image
+			while (xbase+width*mag>screenWidth || ybase+height*mag>=screenHeight) {
+				double mag2 = ImageCanvas.getLowerZoomLevel(mag);
+				if (mag2==mag) break;
+				mag = mag2;
+			}
 		}
 		
 		if (mag<1.0) {

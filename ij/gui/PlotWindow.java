@@ -104,13 +104,15 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	static {
 		options = Prefs.getInt(OPTIONS, SAVE_X_VALUES);
 		autoClose = (options&AUTO_CLOSE)!=0;
-		listValues = (options&LIST_VALUES)!=0;
 		plotWidth = Prefs.getInt(PREFS_WIDTH, WIDTH);
 		plotHeight = Prefs.getInt(PREFS_HEIGHT, HEIGHT);
 		defaultFontSize = fontSize = Prefs.getInt(PREFS_FONT_SIZE, defaultFontSize);
 		interpolate = (options&INTERPOLATE)==0; // 0=true, 1=false
-		noGridLines = (options&NO_GRID_LINES)!=0;
-		noTicks = (options&NO_TICKS)!=0;
+		Dimension screen = IJ.getScreenSize();
+		if (plotWidth>screen.width && plotHeight>screen.height) {
+			plotWidth = WIDTH;
+			plotHeight = HEIGHT;
+		}
 	}
 
 	/**
@@ -755,11 +757,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		prefs.put(PREFS_HEIGHT, Integer.toString(plotHeight));
 		prefs.put(PREFS_FONT_SIZE, Integer.toString(defaultFontSize));
 		int options = 0;
-		if (autoClose && !listValues) options |= AUTO_CLOSE;
-		if (listValues) options |= LIST_VALUES;
 		if (!interpolate) options |= INTERPOLATE; // true=0, false=1
-		if (noGridLines) options |= NO_GRID_LINES;
-		if (noTicks) options |= NO_TICKS;
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 

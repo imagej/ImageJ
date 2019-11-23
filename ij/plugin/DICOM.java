@@ -242,6 +242,8 @@ class DicomDecoder {
 	private static final int RED_PALETTE = 0x00281201;
 	private static final int GREEN_PALETTE = 0x00281202;
 	private static final int BLUE_PALETTE = 0x00281203;
+	private static final int ACQUISITION_CONTEXT_SEQUENCE = 0x00400555;
+	private static final int VIEW_CODE_SEQUENCE = 0x00540220;
 	private static final int ICON_IMAGE_SEQUENCE = 0x00880200;
 	private static final int ITEM = 0xFFFEE000;
 	private static final int ITEM_DELIMINATION = 0xFFFEE00D;
@@ -279,6 +281,7 @@ class DicomDecoder {
 	boolean inSequence;
  	BufferedInputStream inputStream;
  	String modality;
+ 	private boolean acquisitionSequence;
 
 	public DicomDecoder(String directory, String fileName) {
 		this.directory = directory;
@@ -565,7 +568,7 @@ class DicomDecoder {
 			int tag = getNextTag();
 			if ((location&1)!=0) // DICOM tags must be at even locations
 				oddLocations = true;
-			if (inSequence) {
+			if (inSequence && !acquisitionSequence) {
 				addInfo(tag, null);
 				continue;
 			}
@@ -876,6 +879,10 @@ class DicomDecoder {
 				break;
 			case SQ:
 				value = "";
+				if (tag==ACQUISITION_CONTEXT_SEQUENCE)
+					acquisitionSequence = true;
+				if (tag==VIEW_CODE_SEQUENCE)
+					acquisitionSequence = false;
 				boolean privateTag = ((tag>>16)&1)!=0;
 				if (tag!=ICON_IMAGE_SEQUENCE && !privateTag)
 					break;

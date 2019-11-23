@@ -409,16 +409,16 @@ public class IJ {
 		return applet;
 	}
 	
-	/**Displays a message in the ImageJ status bar.*/
-	public static void showStatus(String s) {	//x
-		if ((statusBarThread==null && Interpreter.getInstance()==null)
-		|| (statusBarThread!=null && Thread.currentThread()!=statusBarThread)) {
-			statusBarThread = null;
-			protectStatusBar = false;			
-		}
-		boolean doProtect = s.startsWith("!"); //suppress subsequent process status
+	/**Displays a message in the ImageJ status bar. If 's' starts 
+		with '!', subsequent showStatus() calls in the current
+		thread (without "!" in the message) are suppressed. */
+	public static void showStatus(String s) {
+		if ((Interpreter.getInstance()==null&&statusBarThread==null)
+		|| (statusBarThread!=null&&Thread.currentThread()!=statusBarThread))
+			protectStatusBar(false);
+		boolean doProtect = s.startsWith("!"); // suppress subsequent showStatus() calls
 		if (doProtect) {
-			protectStatusBar = true;
+			protectStatusBar(true);
 			statusBarThread = Thread.currentThread();
 			s = s.substring(1);
 		}
@@ -427,12 +427,8 @@ public class IJ {
 				ij.showStatus(s);
 			ImagePlus imp = WindowManager.getCurrentImage();
 			ImageCanvas ic = imp!=null?imp.getCanvas():null;
-			if (ic!=null) {
-				if (protectStatusBar)
-					ic.setShowCursorStatus(false);
-				else
-					ic.setShowCursorStatus(s.length()==0?true:false);
-			}
+			if (ic!=null)
+				ic.setShowCursorStatus(s.length()==0?true:false);
 		}
 	}
 	

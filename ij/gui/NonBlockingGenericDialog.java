@@ -13,6 +13,7 @@ public class NonBlockingGenericDialog extends GenericDialog implements ImageList
 	public NonBlockingGenericDialog(String title) {
 		super(title, null);
 		setModal(false);
+		IJ.protectStatusBar(false);
 	}
 
 	public synchronized void showDialog() {

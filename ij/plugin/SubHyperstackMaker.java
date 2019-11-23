@@ -128,6 +128,7 @@ public class SubHyperstackMaker implements PlugIn {
 			}
 			output = compositeOutput;
 		}
+		output.setCalibration(input.getCalibration());
 		return output;
 	}
 

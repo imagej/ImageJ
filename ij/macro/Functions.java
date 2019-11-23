@@ -5657,6 +5657,7 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	String debug() {
+		IJ.protectStatusBar(false);
 		String arg = "break";
 		if (interp.nextToken()=='(')
 			arg = getStringArg().toLowerCase(Locale.US);

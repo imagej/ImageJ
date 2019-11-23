@@ -2441,7 +2441,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void mouseMoved(int x, int y) {
 		Roi roi2 = getRoi();
 		if (ij!=null && (roi2==null || roi2.getState()==Roi.NORMAL))
-			ij.showStatus(getLocationAsString(x,y) + getValueAsString(x,y));
+			IJ.showStatus(getLocationAsString(x,y) + getValueAsString(x,y));
 		savex=x; savey=y;
 	}
 

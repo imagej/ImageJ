@@ -79,15 +79,14 @@ public class SubstackMaker implements PlugIn {
 					if (ch==',') {count += 1;}
 				}
 				int[] numList = new int[count];
-				for(int i=0; i<count; i++) {
+				for (int i=0; i<count; i++) {
 					int idx2 = userInput.indexOf(",");
-					if(idx2>0) {
+					if (idx2>0) {
 						String num = userInput.substring(0,idx2);
 						Integer obj = new Integer(num);
 						numList[i] = obj.intValue();
 						userInput = userInput.substring(idx2+1);
-					}
-					else{
+					} else {
 						String num = userInput;
 						Integer obj = new Integer(num);
 						numList[i] = obj.intValue();
@@ -103,7 +102,7 @@ public class SubstackMaker implements PlugIn {
 	
 	String showDialog() {
 		String options = Macro.getOptions();
-		if  (options!=null && !options.contains("slices=")) {
+		if (options!=null && !options.contains("slices=")) {
 			Macro.setOptions(options.replace("channels=", "slices="));
 			Macro.setOptions(options.replace("frames=", "slices="));
 		}

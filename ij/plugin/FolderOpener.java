@@ -326,7 +326,7 @@ public class FolderOpener implements PlugIn {
 					}
 				}
 				count++;
-				IJ.showStatus(count+"/"+n);
+				IJ.showStatus("!"+count+"/"+n);
 				IJ.showProgress(count, n);
 				if (count>=n) 
 					break;

@@ -1096,8 +1096,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	public void mousePressed(MouseEvent e) {
-		if (!IJ.statusBarProtected())
-			showCursorStatus = true;
+		showCursorStatus = true;
 		int toolID = Toolbar.getToolId();
 		ImageWindow win = imp.getWindow();
 		if (win!=null && win.running2 && toolID!=Toolbar.MAGNIFIER) {
@@ -1664,10 +1663,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				ImageWindow win = imp.getWindow();
 				// Cursor must move at least 12 pixels before text
 				// displayed using IJ.showStatus() is overwritten.
-				if ((sx-sx2)*(sx-sx2)+(sy-sy2)*(sy-sy2)>144) {
-					if (!IJ.statusBarProtected())
-						showCursorStatus =  true;
-				}
+				if ((sx-sx2)*(sx-sx2)+(sy-sy2)*(sy-sy2)>144)
+					showCursorStatus =  true;
 				if (win!=null&&showCursorStatus) win.mouseMoved(ox, oy);
 			} else
 				IJ.showStatus("");
