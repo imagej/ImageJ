@@ -110,7 +110,7 @@ public class DICOM extends ImagePlus implements PlugIn {
 		if (fi!=null && fi.width>0 && fi.height>0 && fi.offset>0) {
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.openImage();
-			boolean openAsFloat = (dd.rescaleSlope!=1.0&&!Prefs.ignoreRescaleSlope) || Prefs.openDicomsAsFloat;
+			boolean openAsFloat = (dd.rescaleSlope!=1.0&&!Prefs.ignoreRescaleSlope) || Prefs.openDicomsAsFloat;		
 			String options = Macro.getOptions();
 			if (openAsFloat) {
 				IJ.run(imp, "32-bit", "");
@@ -124,8 +124,12 @@ public class DICOM extends ImagePlus implements PlugIn {
 					imp.setDisplayRange(stats.min,stats.max);
 				}
 			} else if (fi.fileType==FileInfo.GRAY16_SIGNED) {
-				if (dd.rescaleIntercept!=0.0 && dd.rescaleSlope==1.0)
-					IJ.run(imp, "Add...", "value="+dd.rescaleIntercept+" stack");
+				if (dd.rescaleIntercept!=0.0 && dd.rescaleSlope==1.0) {
+					double[] coeff = new double[2];
+					coeff[0] = -32768 + dd.rescaleIntercept;
+					coeff[1] = 1.0;
+					imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "Gray Value");
+				}
 			} else if (dd.rescaleIntercept!=0.0 && (dd.rescaleSlope==1.0||fi.fileType==FileInfo.GRAY8)) {
 				double[] coeff = new double[2];
 				coeff[0] = dd.rescaleIntercept;
