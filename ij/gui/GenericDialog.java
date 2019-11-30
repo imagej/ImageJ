@@ -44,9 +44,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	protected TextArea textArea1, textArea2;
 	protected Vector defaultValues,defaultText,defaultStrings,defaultChoiceIndexes;
 	protected Component theLabel;
-	private Button cancel, okay, no, help;
-	private String okLabel = "  OK  ";
-	private String cancelLabel = "Cancel";
+	private Button okay = new Button("  OK  ");
+	private Button cancel = new Button("Cancel");
+	private Button no, help;
 	private String helpLabel = "Help";
 	private boolean wasCanceled, wasOKed;
 	private int nfIndex, sfIndex, cbIndex, choiceIndex, textAreaIndex, radioButtonIndex;
@@ -69,12 +69,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private String previewLabel = " Preview";
 	private final static String previewRunning = "wait...";
 	private boolean recorderOn;         // whether recording is allowed
-	private boolean yesNoCancel;
 	private char echoChar;
 	private boolean hideCancelButton;
 	private boolean centerDialog = true;
 	private String helpURL;
-	private String yesLabel, noLabel;
 	private boolean smartRecording;
 	private Vector imagePanels;
 	private static GenericDialog instance;
@@ -615,7 +613,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.anchor = GridBagConstraints.WEST;
 		c.insets = getInsets(15, 20, 0, 0);
-        addToSameRow = false;
+		addToSameRow = false;
 		add(panel, c);
     }
 
@@ -820,12 +818,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
     /** Sets a replacement label for the "OK" button. */
     public void setOKLabel(String label) {
-    	okLabel = label;
+		okay.setLabel(label);
     }
 
     /** Sets a replacement label for the "Cancel" button. */
     public void setCancelLabel(String label) {
-    	cancelLabel = label;
+    	cancel.setLabel(label);
     }
 
     /** Sets a replacement label for the "Help" button. */
@@ -857,13 +855,15 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
             IJ. log("User clicked 'No'");
     	</pre>
 	*/
-    public void enableYesNoCancel(String yesLabel, String noLabel) {
-    	this.yesLabel = yesLabel;
-    	this.noLabel = noLabel;
-    	yesNoCancel = true;
-    }
+	public void enableYesNoCancel(String yesLabel, String noLabel) {
+		okay.setLabel(yesLabel);
+		if (no != null)
+			no.setLabel(noLabel);
+		else
+			no = new Button(noLabel);
+	}
 
-    /** No not display "Cancel" button. */
+    /** Do not display "Cancel" button. */
     public void hideCancelButton() {
     	hideCancelButton = true;
     }
@@ -998,7 +998,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	/** Returns true if one or more of the numeric fields contained an
 		invalid number. Must be called after one or more calls to getNextNumber(). */
-   public boolean invalidNumber() {
+    public boolean invalidNumber() {
     	boolean wasInvalid = invalidNumber;
     	invalidNumber = false;
     	return wasInvalid;
@@ -1215,18 +1215,16 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			pfr.setDialog(this);
 			Panel buttons = new Panel();
 			buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-			cancel = new Button(cancelLabel);
-			cancel.addActionListener(this);
-			cancel.addKeyListener(this);
-			if (yesNoCancel) {
-				okLabel = yesLabel;
-				no = new Button(noLabel);
+			okay.addActionListener(this);
+			okay.addKeyListener(this);
+			if (!hideCancelButton) {
+				cancel.addActionListener(this);
+				cancel.addKeyListener(this);
+			}
+			if (no != null) {
 				no.addActionListener(this);
 				no.addKeyListener(this);
 			}
-			okay = new Button(okLabel);
-			okay.addActionListener(this);
-			okay.addKeyListener(this);
 			boolean addHelp = helpURL!=null;
 			if (addHelp) {
 				help = new Button(helpLabel);
@@ -1235,13 +1233,13 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			}
 			if (IJ.isWindows() || Prefs.dialogCancelButtonOnRight) {
 				buttons.add(okay);
-				if (yesNoCancel) buttons.add(no);;
+				if (no != null) buttons.add(no);;
 				if (!hideCancelButton)
 					buttons.add(cancel);
 				if (addHelp) buttons.add(help);
 			} else {
 				if (addHelp) buttons.add(help);
-				if (yesNoCancel) buttons.add(no);
+				if (no != null) buttons.add(no);
 				if (!hideCancelButton) buttons.add(cancel);
 				buttons.add(okay);
 			}
@@ -1271,17 +1269,17 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			IJ.wait(25);
 		}
 		if (!(this instanceof NonBlockingGenericDialog))
-		    finalizeRecording();
+			finalizeRecording();
 		resetCounters();
 	}
-	
+
 	@Override
 	public void show() {
 		super.show();
 		if (!showDialogCalled)
 			IJ.error("GenericDialog Error", "show() called instead of showDialog()");
 	}
-		
+
 	/** For plugins that read their input only via dialogItemChanged, call it at least once, then stop recording */
 	void finalizeRecording() {
 		if (!wasCanceled && dialogListeners!=null && dialogListeners.size()>0) {
@@ -1350,7 +1348,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
   	}
 
   	/** Returns a reference to the Label or MultiLineLabel created by the
-  		last addMessage() call, or null if addMessage() was not called. */
+  	 *	last addMessage() call, or the Label of the last addNumericField, addSlider,
+  	 *	addStringField or addCoice. Otherwise returns null. */
   	public Component getMessage() {
   		return theLabel;
   	}
@@ -1470,7 +1469,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			if (keyCode==KeyEvent.VK_RIGHT)
 				sb.setValue(value+1);
 			else
-				sb.setValue(value-1);				
+				sb.setValue(value-1);
 			for (int i=0; i<slider.size(); i++) {
 				if (sb==slider.elementAt(i)) {
 					int index = ((Integer)sliderIndexes.get(i)).intValue();

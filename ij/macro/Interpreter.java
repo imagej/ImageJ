@@ -444,6 +444,10 @@ public class Interpreter implements MacroConstants {
 						args[count] = new Variable(0, 0.0, getString());
 					else
 						args[count] = new Variable(0, getExpression(), null);
+				} else if (next==ARRAY_FUNCTION) {
+					getToken();
+					Variable[] array = func.getArrayFunction(pgm.table[tokenAddress].type);
+					args[count] = new Variable(0, 0, null, array);
 				} else
 					args[count] = new Variable(0, getExpression(), null);
 				count++;

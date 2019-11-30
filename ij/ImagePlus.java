@@ -2775,7 +2775,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (getWindow()!=null) IJ.wait(100);
 		}
 		setPointScale(imp2.getRoi(), overlay2);
-		ic2.setOverlay(overlay2);
+		imp2.setOverlay(overlay2);
 		ImageCanvas ic = getCanvas();
 		if (ic!=null)
 			ic2.setShowAllList(ic.getShowAllList());
@@ -2919,13 +2919,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	 * @see ij.gui.Roi#setNonScalable
 	 */
 	public void setOverlay(Overlay overlay) {
-		ImageCanvas ic = getCanvas();
-		if (ic!=null) {
-			ic.setOverlay(overlay);
-			overlay = null;
-		} else
-			this.overlay = overlay;
+		this.overlay = overlay;
 		setHideOverlay(false);
+		ImageCanvas ic = getCanvas();
+		if (ic!=null)
+			ic.repaintOverlay();
 	}
 
 	/** Creates an Overlay from the specified Shape, Color
@@ -2955,11 +2953,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	/** Returns the current overly, or null if this image does not have an overlay. */
 	public Overlay getOverlay() {
-		ImageCanvas ic = getCanvas();
-		if (ic!=null)
-			return ic.getOverlay();
-		else
-			return overlay;
+		return overlay;
 	}
 
 	public void setHideOverlay(boolean hide) {

@@ -21,6 +21,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	private boolean isLineRoi;
 	private Button open, save;
 	private GenericDialog gd;
+	private MultiLineLabel messageLabel;
 	private boolean normalize = true;
 	private int nSlices;
 	private int flags = DOES_ALL|CONVERT_TO_FLOAT|SUPPORTS_MASKING|KEEP_PREVIEW|FINAL_PROCESSING|SNAPSHOT;
@@ -64,7 +65,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		if (!kernelError)
 			convolve(ip, kernel, kw, kh);
 	}
-	
+
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
 		boolean interactive = Macro.getOptions()==null;
 		if (interactive) {
@@ -72,6 +73,10 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 			normalizeFlag = lastNormalizeFlag;
 		}
 		gd = NonBlockingGenericDialog.newDialog("Convolver...", imp);
+		gd.setInsets(5,20,0);
+		gd.addMessage(" \nKernel:"); //reserve two lines
+		messageLabel = (MultiLineLabel)gd.getMessage();
+		gd.setInsets(5,20,0);
 		gd.addTextAreas(kernelText, null, 10, 30);
 		gd.addPanel(makeButtonPanel(gd));
 		gd.addCheckbox("Normalize Kernel", normalizeFlag);
@@ -99,42 +104,41 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		} else
 			return !gd.isPreviewActive();
     }
-    
+
     boolean decodeKernel(String text) {
     	if (Macro.getOptions()!=null && !hasNewLine(text))
     		return decodeSquareKernel(text);
-		String[] rows = Tools.split(text, "\n");
+		String[] rows = Tools.split(text.trim(), "\n");
 		kh = rows.length;
 		if (kh==0) return false;
-		String[] values = Tools.split(rows[0]);
+		String[] values = Tools.split(rows[0].trim());
 		kw = values.length;
 		kernel = new float[kw*kh];
 		boolean done = gd.wasOKed();
 		int i = 0;
+		String err = null;
 		for (int y=0; y<kh; y++) {
-			values = Tools.split(rows[y]);	
-			if (values.length!=kw) {
-				String err = "Row "+(y+1)+" is not the same length as the first row";
-				if (done)
-					IJ.error("Convolver", err);
-				else
-					IJ.showStatus(err);
-				return false;
-			}
-			for (int x=0; x<kw; x++)
-				kernel[i++] = (float)Tools.parseDouble(values[x], 0.0);
+			values = Tools.split(rows[y]);
+			if (values.length!=kw)
+				err = "Row "+(y+1)+" is not the same length\nas the first row";
+			else
+				for (int x=0; x<kw; x++)
+					kernel[i++] = (float)Tools.parseDouble(values[x], 0.0);
 		}
-		if ((kw&1)!=1 || (kh&1)!=1) {
-			String err = "Kernel must have odd width and height. This one is "+kw+"x"+kh+".";
+		if ((kw&1)!=1 || (kh&1)!=1)
+			err = "Kernel must have odd width and height.\nThis one is "+kw+"x"+kh+".";
+		if (err == null) {
+			messageLabel.setText(kw+"x"+kh+" kernel");
+		} else {
 			if (done)
 				IJ.error("Convolver", err);
 			else
-				IJ.showStatus(err);
+				messageLabel.setText(err);
 			return false;
 		}
 		return true;
     }
-    
+
 	boolean hasNewLine(String text) {
 		for (int i=0; i<text.length(); i++) {
 			if (text.charAt(i)=='\n') return true;
@@ -169,7 +173,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 			return false;
 		}
 	}
-	
+
 	/** Creates a panel containing "Save...", "Save..." and "Preview" buttons. */
 	Panel makeButtonPanel(GenericDialog gd) {
 		Panel buttons = new Panel();
@@ -192,7 +196,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		boolean notFloat = !(ip instanceof FloatProcessor);
 		ImageProcessor ip2 = ip;
 		if (notFloat) {
-			if (ip2 instanceof ColorProcessor) 
+			if (ip2 instanceof ColorProcessor)
 				throw new IllegalArgumentException("RGB images not supported");
 			ip2 = ip2.convertToFloat();
 		}
@@ -209,16 +213,16 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		}
 		return !canceled;
 	}
-	
+
 	/** If 'normalize' is true (the default), the convolve(), convolveFloat() and
 		convolveFloat1D() (4 argument version) methods divide each kernel
 		coefficient by the sum of the coefficients, preserving image brightness. */
 	public void setNormalize(boolean normalizeKernel) {
 		normalize = normalizeKernel;
 	}
-	
-	/** Convolves the float image <code>ip</code> with a kernel of width 
-		<code>kw</code> and height <code>kh</code>. Returns false if 
+
+	/** Convolves the float image <code>ip</code> with a kernel of width
+		<code>kw</code> and height <code>kh</code>. Returns false if
 		the user cancels the operation by pressing 'Esc'. */
 	public boolean convolveFloat(ImageProcessor ip, float[] kernel, int kw, int kh) {
 		if (!(ip instanceof FloatProcessor))
@@ -231,7 +235,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		int y1 = r.y;
 		int x2 = x1 + r.width;
 		int y2 = y1 + r.height;
-		int uc = kw/2;    
+		int uc = kw/2;
 		int vc = kh/2;
 		float[] pixels = (float[])ip.getPixels();
 		float[] pixels2 = (float[])ip.getSnapshotPixels();
@@ -292,7 +296,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		convolveFloat1D(ip, kernel, kw, kh, normalize?getScale(kernel):1.0);
 	}
 
-	/** Convolves the image <code>ip</code> with a kernel of width 
+	/** Convolves the image <code>ip</code> with a kernel of width
 		<code>kw</code> and height <code>kh</code>. */
 	public void convolveFloat1D(FloatProcessor ip, float[] kernel, int kw, int kh, double scale) {
 		int width = ip.getWidth();
@@ -302,7 +306,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		int y1 = r.y;
 		int x2 = x1 + r.width;
 		int y2 = y1 + r.height;
-		int uc = kw/2;    
+		int uc = kw/2;
 		int vc = kh/2;
 		float[] pixels = (float[])ip.getPixels();
 		float[] pixels2 = (float[])ip.getSnapshotPixels();
@@ -343,7 +347,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 			}
     	}
     }
-   	 
+
 	public static double getScale(float[] kernel) {
 		double scale = 1.0;
 		double sum = 0.0;
@@ -361,7 +365,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		if (y>=height) y = height-1;
 		return pixels[x+y*width];
 	}
-	
+
 	void save() {
 		TextArea ta1 = gd.getTextArea1();
 		ta1.selectAll();
@@ -389,7 +393,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		pw.print(text);
 		pw.close();
 	}
-	
+
 	void open() {
 		OpenDialog od = new OpenDialog("Open Kernel...", "");
 		String directory = od.getDirectory();
@@ -430,7 +434,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		}
 		gd.getTextArea1().setText(new String(sb));
 	}
-	
+
 	public void setNPasses(int nPasses) {
 		this.nPasses = nPasses;
 		pass = 0;
@@ -451,5 +455,3 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	}
 
 }
-
-

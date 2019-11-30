@@ -198,6 +198,7 @@ public class Opener {
 						dir = new File(sdir);
 					if (dir!=null)
 						fc.setCurrentDirectory(dir);
+					if (IJ.debugMode) IJ.log("Opener.openMultiple: "+sdir+" "+dir);
 					int returnVal = fc.showOpenDialog(IJ.getInstance());
 					if (returnVal!=JFileChooser.APPROVE_OPTION)
 						return;

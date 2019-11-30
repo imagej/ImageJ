@@ -46,7 +46,8 @@ import javax.swing.filechooser.*;
 				jOpen(title, getDefaultDirectory(), null);
 			else
 				open(title, getDefaultDirectory(), null);
-			if (name!=null) defaultDirectory = dir;
+			if (name!=null)
+				setDefaultDirectory(dir);
 			this.title = title;
 			recordPath = true;
 		} else {
@@ -209,8 +210,9 @@ import javax.swing.filechooser.*;
 			getDirectory() + getFileName();
 	}
 
-	/** Returns the current working directory, which may be null. The
-		returned string always ends with the separator character ("/" or "\").*/
+	/** Returns the current working directory as a string
+		ending in the separator character ("/" or "\"), or
+		an empty or null string. */
 	public static String getDefaultDirectory() {
 		if (defaultDirectory==null)
 			defaultDirectory = Prefs.getDefaultDirectory();
@@ -218,10 +220,12 @@ import javax.swing.filechooser.*;
 	}
 
 	/** Sets the current working directory. */
-	public static void setDefaultDirectory(String defaultDir) {
-		defaultDirectory = defaultDir;
-		if (defaultDirectory!=null && !defaultDirectory.endsWith(File.separator) && !defaultDirectory.endsWith("/"))
-			defaultDirectory = defaultDirectory + File.separator;
+	public static void setDefaultDirectory(String dir) {
+		if (dir!=null && dir.length()>0 && !(dir.endsWith(File.separator)||dir.endsWith("/"))) {
+			String separator = dir.contains("/")?"/":File.separator;
+			dir = dir + separator;
+		}
+		defaultDirectory = dir;
 	}
 	
 	/** Returns the path to the directory that contains the last file

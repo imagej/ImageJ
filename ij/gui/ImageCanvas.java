@@ -45,7 +45,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private Font font;
 	private Rectangle[] labelRects;
     private boolean maxBoundsReset;
-    private Overlay overlay, showAllOverlay;
+    private Overlay showAllOverlay;
     private static final int LIST_OFFSET = 100000;
     private static Color showAllColor = Prefs.getColor(Prefs.SHOW_ALL_COLOR, new Color(0, 255, 255));
     private Color defaultColor = showAllColor;
@@ -213,7 +213,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     public void paint(Graphics g) {
 		// if (IJ.debugMode) IJ.log("paint: "+imp);
 		painted = true;
-		Roi roi = imp.getRoi();	
+		Roi roi = imp.getRoi();
+		Overlay overlay = imp.getOverlay();
 		if (roi!=null || overlay!=null || showAllOverlay!=null || Prefs.paintDoubleBuffered || (IJ.isLinux() && magnification<0.25)) {
 			// Use double buffering to avoid flickering of ROIs and to work around
 			// a Linux problem with large images not showing at low magnification.
@@ -363,7 +364,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
     	
 	void drawOverlay(Graphics g) {
-		drawOverlay(overlay, g);
+		drawOverlay(imp.getOverlay(), g);
 	}
 
     private void initGraphics(Overlay overlay, Graphics g, Color textColor, Color defaultColor) {
@@ -541,6 +542,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (img!=null)
 				offScreenGraphics.drawImage(img, 0, 0, srcRectWidthMag, srcRectHeightMag,
 					srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
+			Overlay overlay = imp.getOverlay();
 			if (overlay!=null)
 				drawOverlay(overlay, offScreenGraphics);
 			if (showAllOverlay!=null)
@@ -631,7 +633,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 						setCursor(crosshairCursor);
 				} else if (roi!=null && roi.getState()!=roi.CONSTRUCTING && roi.isHandle(sx, sy)>=0) {
 					setCursor(handCursor);
-				} else if ((overlay!=null||showAllOverlay!=null) && overOverlayLabel(sx,sy,ox,oy) && (roi==null||roi.getState()!=roi.CONSTRUCTING)) {
+				} else if ((imp.getOverlay()!=null||showAllOverlay!=null) && overOverlayLabel(sx,sy,ox,oy) && (roi==null||roi.getState()!=roi.CONSTRUCTING)) {
 					overOverlayLabel = true;
 					setCursor(handCursor);
 				} else if (Prefs.usePointerCursor || (roi!=null && roi.getState()!=roi.CONSTRUCTING && roi.contains(ox, oy)))
@@ -644,7 +646,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private boolean overOverlayLabel(int sx, int sy, int ox, int oy) {
 		Overlay o = showAllOverlay;
 		if (o==null)
-			o = overlay;
+			o = imp.getOverlay();
 		if (o==null || !o.isSelectable() || !o.getDrawLabels() || labelRects==null)
 			return false;
 		for (int i=o.size()-1; i>=0; i--) {
@@ -1124,7 +1126,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			return;
 		}
 		
-		if (overOverlayLabel && (overlay!=null||showAllOverlay!=null)) {
+		if (overOverlayLabel && (imp.getOverlay()!=null||showAllOverlay!=null)) {
 			if (activateOverlayRoi(ox, oy))
 				return;
 		}
@@ -1138,7 +1140,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			tool.mousePressed(imp, e);
 			if (e.isConsumed()) return;
 		}
-		if (customRoi && overlay!=null)
+		if (customRoi && imp.getOverlay()!=null)
 			return;
 
 		if (toolID>=Toolbar.CUSTOM1) {
@@ -1443,14 +1445,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	/** Use ImagePlus.setOverlay(ij.gui.Overlay). */
 	public void setOverlay(Overlay overlay) {
-		this.overlay = overlay;
-		labelRects = null;
-		repaint();
+		imp.setOverlay(overlay);
 	}
 	
 	/** Use ImagePlus.getOverlay(). */
 	public Overlay getOverlay() {
-		return overlay;
+		return imp.getOverlay();
 	}
 
 	/**
@@ -1461,9 +1461,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (list!=null) {
 			Overlay list2 = new Overlay();
 			list2.setVector(list);
-			setOverlay(list2);
+			imp.setOverlay(list2);
 		} else
-			setOverlay(null);
+			imp.setOverlay(null);
+		Overlay overlay = imp.getOverlay();
 		if (overlay!=null)
 			overlay.drawLabels(overlay.size()>0&&overlay.get(0).getStrokeColor()==null);
 		else
@@ -1476,14 +1477,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	* replaced by ImagePlus.setOverlay(Shape, Color, BasicStroke)
 	*/
 	public void setDisplayList(Shape shape, Color color, BasicStroke stroke) {
-		if (shape==null)
-			{setOverlay(null); return;}
-		Roi roi = new ShapeRoi(shape);
-		roi.setStrokeColor(color);
-		roi.setStroke(stroke);
-		Overlay list = new Overlay();
-		list.add(roi);
-		setOverlay(list);
+		imp.setOverlay(shape, color, stroke);
 	}
 	
 	/**
@@ -1494,7 +1488,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		roi.setStrokeColor(color);
 		Overlay list = new Overlay();
 		list.add(roi);
-		setOverlay(list);
+		imp.setOverlay(list);
 	}
 	
 	/**
@@ -1502,7 +1496,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	* replaced by ImagePlus.getOverlay()
 	*/
 	public Vector getDisplayList() {
-		if (overlay==null) return null;
+		Overlay overlay = imp.getOverlay();
+		if (overlay==null)
+			return null;
 		Vector displayList = new Vector();
 		for (int i=0; i<overlay.size(); i++)
 			displayList.add(overlay.get(i));
@@ -1533,6 +1529,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public void mouseReleased(MouseEvent e) {
 		int ox = offScreenX(e.getX());
 		int oy = offScreenY(e.getY());
+		Overlay overlay = imp.getOverlay();
 		if ((overlay!=null||showAllOverlay!=null) && ox==mousePressedX && oy==mousePressedY) {
 			boolean cmdDown = IJ.isMacOSX() && e.isMetaDown();
 			Roi roi = imp.getRoi();
@@ -1585,7 +1582,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		Overlay o = showAllOverlay;
 		if (o==null)
-			o = overlay;
+			o = imp.getOverlay();
 		if (o==null || !o.isSelectable())
 			return false;
 		boolean roiManagerShowAllMode = o==showAllOverlay && !Prefs.showAllSliceOnly;
@@ -1702,6 +1699,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		while(getPaintPending() && (System.currentTimeMillis()-t0)<500L)
 			IJ.wait(10);
 		return hidden;
+	}
+	
+	public void repaintOverlay() {
+		labelRects = null;
+		repaint();
 	}
 
 }

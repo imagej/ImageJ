@@ -4165,7 +4165,14 @@ public class Functions implements MacroConstants, Measurements {
 			String err = IJ.saveString(getFirstString(), getLastString());
 			if (err!=null) interp.error(err);
 			return null;
+		} else if (name.startsWith("setDefaultDir")) {
+			OpenDialog.setDefaultDirectory(getStringArg());
+			return null;
+		} else if (name.startsWith("getDefaultDir")) {
+			String dir = OpenDialog.getDefaultDirectory();
+			return dir!=null?dir:"";
 		}
+
 		File f = new File(getStringArg());
 		if (name.equals("getLength")||name.equals("length"))
 			return ""+f.length();
@@ -4706,9 +4713,42 @@ public class Functions implements MacroConstants, Measurements {
 			return getBuffer();
 		else if (name.equals("show"))
 			return showString();
+		else if (name.equals("join"))
+			return join();
+		else if (name.equals("trim"))
+			return getStringArg().trim();
 		else
 			interp.error("Unrecognized String function");
 		return null;
+	}
+
+	private String join() {
+		interp.getLeftParen();
+		String delimiter = ", ";
+		Variable[] arr = getArray();
+		if (interp.nextToken()==',')
+			delimiter = getNextString();
+		interp.getRightParen();
+		return joinArray(arr, delimiter).toString();
+	}
+	
+	private StringBuilder joinArray(Variable[] a, String delimiter) {
+		int len = a.length;
+		StringBuilder sb = new StringBuilder(len*6);
+		for (int i=0; i<len; i++) {
+			String s = a[i].getString();
+			if (s==null) {
+				double v = a[i].getValue();
+				if ((int)v==v)
+					s = IJ.d2s(v,0);
+				else
+					s = ResultsTable.d2s(v,4);
+			}
+			sb.append(s);
+			if (i!=len-1)
+				sb.append(delimiter);
+		}
+		return sb;
 	}
 
 	private String showString() {
@@ -5836,23 +5876,9 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		Variable[] a = getArray();
 		interp.getRightParen();
-		int len = a.length;
-		StringBuffer sb = new StringBuffer(len);
+		StringBuilder sb = joinArray(a, ", ");
 		if (prefix!=null)
 			sb.append(prefix+" ");
-		for (int i=0; i<len; i++) {
-			String s = a[i].getString();
-			if (s==null) {
-				double v = a[i].getValue();
-				if ((int)v==v)
-					s = IJ.d2s(v,0);
-				else
-					s = ResultsTable.d2s(v,4);
-			}
-			sb.append(s);
-			if (i!=len-1)
-				sb.append(", ");
-		}
 		interp.log(sb.toString());
 		return null;
 	}
