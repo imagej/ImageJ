@@ -141,7 +141,7 @@ public class StackWriter implements PlugIn {
 		ImagePlus imp2 = new ImagePlus();
 		imp2.setTitle(imp.getTitle());
 		Calibration cal = imp.getCalibration();
-		int nSlices = stack.getSize();
+		int nSlices = stack.size();
 		String path,label=null;
 		imp.lock();
 		for (int i=1; i<=nSlices; i++) {

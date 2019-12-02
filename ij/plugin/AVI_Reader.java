@@ -313,7 +313,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 		ImageStack stack = makeStack(path, firstFrame, lastFrame, isVirtual, convertToGray, flipVertical);	//read data
 		if (aborting)
 			return;													//error message has been shown already
-		if (stack==null || stack.getSize() == 0 || stack.getProcessor(1)==null) {	//read nothing?
+		if (stack==null || stack.size() == 0 || stack.getProcessor(1)==null) {	//read nothing?
             if (errorText != null)
 				error(errorText);
             else {
@@ -336,7 +336,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 		imp.setFileInfo(fi);
 		if (arg.equals(""))
 			imp.show();
-		IJ.showTime(imp, startTime, "Read AVI in ", stack.getSize());
+		IJ.showTime(imp, startTime, "Read AVI in ", stack.size());
 	}
 
 	/** Returns the ImagePlus opened by run(). */
@@ -382,10 +382,10 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 			readAVI(path);
 		} catch (OutOfMemoryError e) {
 			stack.trim();
-			errorText = "Out of memory.  " + stack.getSize() + " of " + dwTotalFrames + " frames will be opened.";
+			errorText = "Out of memory.  " + stack.size() + " of " + dwTotalFrames + " frames will be opened.";
 		} catch (Exception e) {
 			errorText = exceptionMessage(e);
-            if (isVirtual || stack==null || stack.getSize()==0)		//return null only if we have really nothing
+            if (isVirtual || stack==null || stack.size()==0)		//return null only if we have really nothing
 				return null;
 		} finally {
 			closeFile(raFile);

@@ -168,7 +168,7 @@ public class ImportDialog {
 					stack.trim();
 					break;
 				}
-				IJ.showStatus((stack.getSize()+1) + ": " + list[i]);
+				IJ.showStatus((stack.size()+1) + ": " + list[i]);
 			}
 		}
 		Recorder.recordCall(fi.getCode()+"imp = Raw.openAll(\""+ fi.directory+"\", fi);");

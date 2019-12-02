@@ -915,7 +915,7 @@ public class Functions implements MacroConstants, Measurements {
 		int n = z + 1;
 		ImagePlus imp = getImage();
 		ImageStack stack = imp.getStack();
-		int size = stack.getSize();
+		int size = stack.size();
 		if (z<0 || z>=size)
 			interp.error("Z coordinate ("+z+") is out of 0-"+(size-1)+ " range");
 		this.defaultIP = stack.getProcessor(n);
@@ -5229,7 +5229,7 @@ public class Functions implements MacroConstants, Measurements {
 		int n1 = (int)getFirstArg();
 		int n2 = (int)getLastArg();
 		ImageStack stack = imp.getStack();
-		int size = stack.getSize();
+		int size = stack.size();
 		if (n1<1||n1>size||n2<1||n2>size)
 			interp.error("Argument out of range");
 		Object pixels = stack.getPixels(n1);

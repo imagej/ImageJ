@@ -11,7 +11,7 @@ public class DicomTools {
 	/** Sorts a DICOM stack by image number. */
 	public static ImageStack sort(ImageStack stack) {
 		if (IJ.debugMode) IJ.log("Sorting by DICOM image number");
-		if (stack.getSize()==1) return stack;
+		if (stack.size()==1) return stack;
 		String[] strings = getSortStrings(stack, "0020,0013");
 		if (strings==null) return stack;
 		StringSorter.sort(strings);
@@ -26,7 +26,7 @@ public class DicomTools {
 	private static ImageStack sortStack(ImageStack stack, String[] strings) {
 		ImageProcessor ip = stack.getProcessor(1);
 		ImageStack stack2 = new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
-		for (int i=0; i<stack.getSize(); i++) {
+		for (int i=0; i<stack.size(); i++) {
 			int slice = (int)Tools.parseDouble(strings[i].substring(strings[i].length()-MAX_DIGITS), 0.0);
 			if (slice==0) return null;
 			stack2.addSlice(sliceLabels[slice-1], stack.getPixels(slice));
@@ -37,7 +37,7 @@ public class DicomTools {
 
 	private static String[] getSortStrings(ImageStack stack, String tag) {
 		double series = getSeriesNumber(getSliceLabel(stack,1));
-		int n = stack.getSize();
+		int n = stack.size();
 		boolean checkRescaleSlope = (stack instanceof VirtualStack)?((VirtualStack)stack).getBitDepth()==16:false;
 		if (Prefs.ignoreRescaleSlope)
 			checkRescaleSlope = false;
@@ -103,13 +103,13 @@ public class DicomTools {
 			String[] xyz = pos0.split("\\\\");
 			if (xyz.length!=3) return voxelDepth;
 			double z0 = Double.parseDouble(xyz[2]);
-			if (stack.isVirtual()) stack.getProcessor(stack.getSize());
-			posn = getTag(stack.getSliceLabel(stack.getSize()), "0020,0032");
+			if (stack.isVirtual()) stack.getProcessor(stack.size());
+			posn = getTag(stack.getSliceLabel(stack.size()), "0020,0032");
 			if (posn==null) return voxelDepth;
 			xyz = posn.split("\\\\");
 			if (xyz.length!=3) return voxelDepth;
 			double zn = Double.parseDouble(xyz[2]);
-			voxelDepth = Math.abs((zn - z0) / (stack.getSize() - 1));
+			voxelDepth = Math.abs((zn - z0) / (stack.size() - 1));
 		}
 		if (IJ.debugMode) IJ.log("DicomTools.getVoxelDepth: "+voxelDepth+"  "+pos0+"  "+posn);
 		return voxelDepth;

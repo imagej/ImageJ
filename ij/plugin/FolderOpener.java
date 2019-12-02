@@ -305,7 +305,7 @@ public class FolderOpener implements PlugIn {
 								ip = ip.convertToFloat();
 								bitDepth = 32;
 								ImageStack stack2 = new ImageStack(width, height, stack.getColorModel());
-								for (int n=1; n<=stack.getSize(); n++) {
+								for (int n=1; n<=stack.size(); n++) {
 									ImageProcessor ip2 = stack.getProcessor(n);
 									ip2 = ip2.convertToFloat();
 									ip2.subtract(32768);
@@ -338,7 +338,7 @@ public class FolderOpener implements PlugIn {
 			IJ.outOfMemory("FolderOpener");
 			if (stack!=null) stack.trim();
 		}
-		if (stack!=null && stack.getSize()>0) {
+		if (stack!=null && stack.size()>0) {
 			ImagePlus imp2 = new ImagePlus(title, stack);
 			if (imp2.getType()==ImagePlus.GRAY16 || imp2.getType()==ImagePlus.GRAY32)
 				imp2.getProcessor().setMinAndMax(min, max);

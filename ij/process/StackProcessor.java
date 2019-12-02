@@ -32,7 +32,7 @@ public class StackProcessor {
     public StackProcessor(ImageStack stack, ImageProcessor ip) {
     	this.stack = stack;
     	this.ip = ip;
-    	nSlices = stack.getSize();
+    	nSlices = stack.size();
  	    if (nSlices>1 && ip!=null)
  	    	ip.setProgressBar(null);
    }
@@ -126,7 +126,7 @@ public class StackProcessor {
 	    	}
 			IJ.showProgress(1.0);
 		} catch(OutOfMemoryError o) {
-			while(stack.getSize()>1)
+			while(stack.size()>1)
 				stack.deleteLastSlice();
 			IJ.outOfMemory("StackProcessor.resize");
 			IJ.showProgress(1.0);
@@ -280,8 +280,8 @@ public class StackProcessor {
             nb += ker[i];
         if (zmin<0)
             zmin = 0;
-        if (zmax>stack.getSize())
-            zmax = stack.getSize();
+        if (zmax>stack.size())
+            zmax = stack.size();
         int sizex = stack.getWidth();
         int sizey = stack.getHeight();
         double value;
@@ -321,7 +321,7 @@ public class StackProcessor {
         int vz = (int)Math.ceil(radz);
         int x0=x-vx, y0=y-vy, z0=z-vz;
         int w=vx*2, h=vy*2, d=vz*2;
-		if (x0<0 || x0+w>stack.getWidth() || y0<0 || y0+h>stack.getHeight() || z0<0 || z0+d>stack.getSize())
+		if (x0<0 || x0+w>stack.getWidth() || y0<0 || y0+h>stack.getHeight() || z0<0 || z0+d>stack.size())
 			return getEdgeNeighborhood(ker, nbval, x, y, z, radx, rady, radz);
         voxels = stack.getVoxels(x0, y0, z0, w, h, d, voxels);
 		return new ArrayUtil(voxels);
@@ -350,7 +350,7 @@ public class StackProcessor {
         int c = 0;
         int sizex = stack.getWidth();
         int sizey = stack.getHeight();
-        int sizez = stack.getSize();
+        int sizez = stack.size();
         for (int k = z - vz; k <= z + vz; k++) {
             for (int j = y - vy; j <= y + vy; j++) {
                 for (int i = x - vx; i <= x + vx; i++) {

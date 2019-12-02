@@ -276,7 +276,7 @@ public class Projector implements PlugIn {
 		stack = imp.getStack();
 		if (imp.getBitDepth()==16 || imp.getBitDepth()==32) {
 			ImageStack stack2 = new ImageStack(imp.getWidth(),imp.getHeight());
-			for (int i=1; i<=stack.getSize(); i++)
+			for (int i=1; i<=stack.size(); i++)
 				stack2.addSlice(stack.getProcessor(i).convertToByte(true));
 			stack = stack2;
 		}

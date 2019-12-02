@@ -84,7 +84,7 @@ public class Filters3D implements PlugIn {
 		final float voisz = vz;
 		final int width= stack.getWidth();
 		final int height= stack.getHeight();
-		final int depth= stack.getSize();
+		final int depth= stack.size();
 		ImageStack res = null;
 		
 		if ((filter==MEAN) || (filter==MEDIAN) || (filter==MIN) || (filter==MAX) || (filter==VAR)) {
@@ -99,7 +99,7 @@ public class Filters3D implements PlugIn {
 			final int n_cpus = Prefs.getThreads();
 
 			final int f = filter;
-			final int dec = (int) Math.ceil((double) stack.getSize() / (double) n_cpus);
+			final int dec = (int) Math.ceil((double) stack.size() / (double) n_cpus);
 			Thread[] threads = ThreadUtil.createThreadArray(n_cpus);
 			for (int ithread = 0; ithread < threads.length; ithread++) {
 				threads[ithread] = new Thread() {

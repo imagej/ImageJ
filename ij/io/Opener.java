@@ -791,7 +791,7 @@ public class Opener {
 				stack.deleteLastSlice();
 			}
 			IJ.showProgress(1.0);
-			if (stack.getSize()==0)
+			if (stack.size()==0)
 				return null;
 			if (fi.fileType==FileInfo.GRAY16_UNSIGNED||fi.fileType==FileInfo.GRAY12_UNSIGNED
 			||fi.fileType==FileInfo.GRAY32_FLOAT||fi.fileType==FileInfo.RGB48) {
@@ -808,7 +808,7 @@ public class Opener {
 				imp.setProperty("Info", fi.info);
 			if (fi.description!=null && fi.description.contains("order=zct"))
 				new HyperStackConverter().shuffle(imp, HyperStackConverter.ZCT);
-			int stackSize = stack.getSize();
+			int stackSize = stack.size();
 			if (nChannels>1 && (stackSize%nChannels)==0) {
 				imp.setDimensions(nChannels, stackSize/nChannels, 1);
 				imp = new CompositeImage(imp, IJ.COMPOSITE);

@@ -42,7 +42,7 @@ public class GifWriter implements PlugIn {
 	private void run(ImagePlus imp, String path) {
 		ImageStack stack = imp.getStack();
 		Overlay overlay = imp.getOverlay();
-		int nSlices = stack.getSize();				
+		int nSlices = stack.size();				
 		if (nSlices==1) { // save using ImageIO
 			if (overlay!=null)
 				imp = imp.flatten();

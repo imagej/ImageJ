@@ -95,7 +95,7 @@ public class HyperStackMaker implements PlugIn {
 		int t = imp.getNFrames();
 		ImageStack stack = imp.getStack();
 		Overlay overlay = new Overlay();
-		int n = stack.getSize();
+		int n = stack.size();
 		int channel=1, slice=1, frame=1;
 		boolean hyperstack = imp.isHyperStack();
 		for (int i=1; i<=n; i++) {

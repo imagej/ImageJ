@@ -214,7 +214,7 @@ public class ImagesToStack implements PlugIn {
 				images[i].close();
 			}
 		}
-		if (stack.getSize()==0)
+		if (stack.size()==0)
 			return null;
 		ImagePlus imp = new ImagePlus(name, stack);
 		if (stackType==16 || stackType==32)

@@ -93,7 +93,7 @@ public class Filters implements PlugInFilter {
 		imp.getCalibration().disableDensityCalibration();
 		ImageStatistics stats = new StackStatistics(imp);
 		ImageStack stack = imp.getStack();
-		int nslices = stack.getSize();
+		int nslices = stack.size();
 		int min=(int)stats.min, range=(int)(stats.max-stats.min);
 		int n = imp.getWidth()*imp.getHeight();
 		for (int slice=1; slice<=nslices; slice++) {

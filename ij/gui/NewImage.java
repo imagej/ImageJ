@@ -111,7 +111,7 @@ public class NewImage {
 		IJ.showStatus("");
 		if (bigStack)
 			IJ.showProgress(nSlices, nSlices);
-		if (stack.getSize()>1)
+		if (stack.size()>1)
 			imp.setStack(null, stack);
 		return true;
 	}

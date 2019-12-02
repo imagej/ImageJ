@@ -466,7 +466,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 Roi roi = imp.getRoi();
 		 int roiType = roi!=null?roi.getType():0;
 		 ImageStack stack = imp.getStack();
-		 int stackSize = stack.getSize();
+		 int stackSize = stack.size();
 		 ImageProcessor ip,ip2=null;
 		 float[] line = null;
 		 boolean ortho = (int)x1==x1&&(int)y1==y1&&x1==x2||y1==y2;

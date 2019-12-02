@@ -208,7 +208,7 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 			int frames = imp.getNFrames();
 			timeProfile = slices==1 && frames>1;
 		}
-		int size = stack.getSize();
+		int size = stack.size();
 		boolean showProgress = size>400 || stack.isVirtual();
 		float[] values = new float[size];
 		Calibration cal = imp.getCalibration();

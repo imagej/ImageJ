@@ -66,7 +66,7 @@ public class ScaleBar implements PlugIn {
 		if (createOverlay) return;
 		ImageStack stack = imp.getStack();
 		String units = getUnits(imp);
-		for (int i=1; i<=stack.getSize(); i++)
+		for (int i=1; i<=stack.size(); i++)
 			drawScaleBar(stack.getProcessor(i), units);
 		imp.setStack(stack);
 	}

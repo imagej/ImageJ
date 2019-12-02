@@ -16,7 +16,7 @@ public class StackReducer implements PlugIn {
 		if (imp==null)
 			{IJ.noImage(); return;}
 		ImageStack stack = imp.getStack();
-		int size = stack.getSize();
+		int size = stack.size();
 		if (size==1 || (imp.getNChannels()==size&&imp.isComposite()))
 			{IJ.error("Stack or hyperstack required"); return;}
 		if (!showDialog(stack))
@@ -34,7 +34,7 @@ public class StackReducer implements PlugIn {
 			showCheckbox = true;
 		else if (hyperstack && imp.getNSlices()>1)
 			reduceSlices = true;
-		int n = stack.getSize();
+		int n = stack.size();
 		GenericDialog gd = new GenericDialog("Reduce Size");
 		gd.addNumericField("Reduction Factor:", factor, 0);
 		if (showCheckbox)
@@ -50,7 +50,7 @@ public class StackReducer implements PlugIn {
 	public void reduceStack(ImagePlus imp, int factor) {
 		ImageStack stack = imp.getStack();
 		boolean virtual = stack.isVirtual();
-		int n = stack.getSize();
+		int n = stack.size();
 		ImageStack stack2 = new ImageStack(stack.getWidth(), stack.getHeight());
 		for (int i=1; i<=n; i+=factor) {
 			if (virtual) IJ.showProgress(i, n);

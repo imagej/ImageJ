@@ -44,7 +44,7 @@ public class Binner implements PlugIn {
 		ColorModel cm=imp.createLut().getColorModel();
 		ImageStack stack=imp.getStack();
 		ImageStack stack2 = new ImageStack (w, h, cm);
-		int d = stack.getSize();
+		int d = stack.size();
 		if (method==SUM) {
 			int bitDepth = imp.getBitDepth();
 			if (bitDepth==8)
@@ -86,7 +86,7 @@ public class Binner implements PlugIn {
 	private ImageStack shrinkZ(ImageStack stack, int zshrink) {
 		int w = stack.getWidth();
 		int h = stack.getHeight();
-		int d = stack.getSize();
+		int d = stack.size();
 		int d2 = d/zshrink;
 		ImageStack stack2 = new ImageStack (w, h, stack.getColorModel());
 		for (int z=1; z<=d2; z++)
@@ -129,9 +129,9 @@ public class Binner implements PlugIn {
 					ImageProcessor ip = stack.getProcessor(imp.getStackIndex(c, z, t));
 						tstack.addSlice(stack.getSliceLabel(i), ip);
 				}
-				//IJ.log("1: "+c+"  "+t+" "+tstack.getSize()+"  "+slices);
+				//IJ.log("1: "+c+"  "+t+" "+tstack.size()+"  "+slices);
 				tstack = shrinkZ(tstack, zshrink);
-				for (int i=1; i<=tstack.getSize(); i++)
+				for (int i=1; i<=tstack.size(); i++)
 					stack2.addSlice(tstack.getSliceLabel(i), tstack.getProcessor(i));
 			}
 		}

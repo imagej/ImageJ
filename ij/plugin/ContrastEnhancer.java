@@ -290,7 +290,7 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		}
 		if (imp.getBitDepth()==16 && processStack && imp.getStackSize()>1) {
 			ImageStack stack = imp.getStack();
-			ImageProcessor ip = stack.getProcessor(stack.getSize()/2);
+			ImageProcessor ip = stack.getProcessor(stack.size()/2);
 			ImageStatistics stats = ip.getStats();
 			imp.getProcessor().setMinAndMax(stats.min, stats.max);
 		} else

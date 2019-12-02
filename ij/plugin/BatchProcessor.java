@@ -148,16 +148,16 @@ import java.util.Vector;
 	
 	void processVirtualStack(String outputPath) {
 		ImageStack stack = virtualStack.getStack();
-		int n = stack.getSize();
+		int n = stack.size();
 		int index = 0;
 		for (int i=1; i<=n; i++) {
 			if (IJ.escapePressed()) break;
 			IJ.showProgress(i, n);
 			ImageProcessor ip = stack.getProcessor(i);
 			if (ip==null) return;
-			ImagePlus imp = new ImagePlus(i+"/"+stack.getSize(), ip);
+			ImagePlus imp = new ImagePlus(i+"/"+stack.size(), ip);
 			if (!macro.equals("")) {
-				if (!runMacro("i="+(index++)+";"+"n="+stack.getSize()+";"+macro, imp))
+				if (!runMacro("i="+(index++)+";"+"n="+stack.size()+";"+macro, imp))
 					break;
 			}
 			if (saveOutput && !outputPath.equals("")) {

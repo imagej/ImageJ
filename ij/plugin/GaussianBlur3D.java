@@ -60,7 +60,7 @@ public class GaussianBlur3D implements PlugIn {
 	private static void blurZ(ImageStack stack, double sigmaZ) {
 		GaussianBlur gb = new GaussianBlur();
 		double accuracy = (stack.getBitDepth()==8||stack.getBitDepth()==24)?0.002:0.0002;
-		int w=stack.getWidth(), h=stack.getHeight(), d=stack.getSize();
+		int w=stack.getWidth(), h=stack.getHeight(), d=stack.size();
 		float[] zpixels = null;
 		FloatProcessor fp =null;
 		IJ.showStatus("Z blurring");

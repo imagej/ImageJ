@@ -22,7 +22,7 @@ public class StackReverser implements PlugIn {
 	
 	public void flipStack(ImagePlus imp) {
 		ImageStack stack = imp.getStack();
-		int n = stack.getSize();
+		int n = stack.size();
 		if (n==1)
 			return;
 		Calibration cal = imp.getCalibration();

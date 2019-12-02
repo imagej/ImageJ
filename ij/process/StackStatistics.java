@@ -41,7 +41,7 @@ public class StackStatistics extends ImageStatistics {
     	histMin = histogramMin;
     	histMax = histogramMax;
         ImageStack stack = imp.getStack();
-        int size = stack.getSize();
+        int size = stack.size();
         ip.setRoi(imp.getRoi());
         byte[] mask = ip.getMaskArray();
         float[] cTable = imp.getCalibration().getCTable();
@@ -168,7 +168,7 @@ public class StackStatistics extends ImageStatistics {
 		ImageStack stack = imp.getStack();
 		Roi roi = imp.getRoi();
 		longHistogram = new long[256];
-		int n = stack.getSize();
+		int n = stack.size();
 		for (int slice=1; slice<=n; slice++) {
 			IJ.showProgress(slice, n);
 			ip = stack.getProcessor(slice);
@@ -250,7 +250,7 @@ public class StackStatistics extends ImageStatistics {
 		ImageStack stack = imp.getStack();
 		Roi roi = imp.getRoi();
 		long[] hist16 = new long[65536];
-		int n = stack.getSize();
+		int n = stack.size();
 		for (int slice=1; slice<=n; slice++) {
 			IJ.showProgress(slice, n);
 			IJ.showStatus(slice+"/"+n);

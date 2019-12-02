@@ -199,7 +199,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		double min = imp.getDisplayRangeMin();
 		double max = imp.getDisplayRangeMax();
 		ImageStack stack2 = null;
-		int n = stack.getSize();
+		int n = stack.size();
 		boolean showProgress = virtualStack || ((double)n*stack.getWidth()*stack.getHeight()>=209715200.0);
 		for (int i=1; i<=n; i++) {
 			if (showProgress) {

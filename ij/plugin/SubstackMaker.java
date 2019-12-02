@@ -164,7 +164,7 @@ public class SubstackMaker implements PlugIn {
 		double min = imp.getDisplayRangeMin();
 		double max = imp.getDisplayRangeMax();
 		Roi roi = imp.getRoi();
-		boolean showProgress = stack.getSize()>400 || stack.isVirtual();
+		boolean showProgress = stack.size()>400 || stack.isVirtual();
 		for (int i= first, j=0; i<= last; i+=inc) {
 			if (showProgress) IJ.showProgress(i,last);
 			int currSlice = i-j;

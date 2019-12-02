@@ -61,7 +61,7 @@ public class BinaryInterpolator {
 	}
 
 	public void run(ImageStack stack) {	
-		int sliceCount = stack.getSize();
+		int sliceCount = stack.size();
 		if (sliceCount < 3) {
 			IJ.error("Too few slices to interpolate!");
 			return;

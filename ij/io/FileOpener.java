@@ -230,9 +230,9 @@ public class FileOpener {
 			stack.trim();
 		}
 		if (!silentMode) IJ.showProgress(1.0);
-		if (stack.getSize()==0)
+		if (stack.size()==0)
 			return null;
-		if (fi.sliceLabels!=null && fi.sliceLabels.length<=stack.getSize()) {
+		if (fi.sliceLabels!=null && fi.sliceLabels.length<=stack.size()) {
 			for (int i=0; i<fi.sliceLabels.length; i++)
 				stack.setSliceLabel(fi.sliceLabels[i], i+1);
 		}
@@ -264,7 +264,7 @@ public class FileOpener {
 		ImageStack stack = imp.getStack();
 		double min = Double.MAX_VALUE;
 		double max = -Double.MAX_VALUE;
-		int n = stack.getSize();
+		int n = stack.size();
 		for (int i=1; i<=n; i++) {
 			if (!silentMode)
 				IJ.showStatus("Calculating stack min and max: "+i+"/"+n);

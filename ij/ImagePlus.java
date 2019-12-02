@@ -295,7 +295,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		nothing if there is no window associated with
 		this image (i.e. show() has not been called).*/
 	public synchronized void updateAndDraw() {
-		if (stack!=null && !stack.isVirtual() && currentSlice>=1 && currentSlice<=stack.getSize()) {		
+		if (stack!=null && !stack.isVirtual() && currentSlice>=1 && currentSlice<=stack.size()) {		
 			if (stack.size()>1 && win!=null && !(win instanceof StackWindow)) {
 				setStack(stack);	//adds scroll bar if stack size has changed to >1
 				return;
@@ -676,7 +676,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		int stackSize = 1;
 		boolean dimensionsChanged = width>0 && height>0 && (width!=ip.getWidth() || height!=ip.getHeight());
 		if (stack!=null) {
-			stackSize = stack.getSize();
+			stackSize = stack.size();
 			if (currentSlice>stackSize)
 				setCurrentSlice(stackSize);
 			if (currentSlice>=1 && currentSlice<=stackSize && !dimensionsChanged)
@@ -1128,7 +1128,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (stack==null || oneSliceStack)
 			return 1;
 		else {
-			int slices = stack.getSize();
+			int slices = stack.size();
 			if (slices<=0) slices = 1;
 			return slices;
 		}
@@ -1139,7 +1139,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (stack==null)
 			return 1;
 		else {
-			int slices = stack.getSize();
+			int slices = stack.size();
 			if (slices==0) slices = 1;
 			return slices;
 		}
@@ -1690,7 +1690,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	/* Hack needed to make the HyperStackReducer work. */
 	public void resetStack() {
-		if (currentSlice==1 && stack!=null && stack.getSize()>0) {
+		if (currentSlice==1 && stack!=null && stack.size()>0) {
 			ColorModel cm = ip.getColorModel();
 			double min = ip.getMin();
 			double max = ip.getMax();
@@ -1734,7 +1734,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				updateAndRepaintWindow();
 			return;
 		}
-		if (n>=1 && n<=stack.getSize()) {
+		if (n>=1 && n<=stack.size()) {
 			Roi roi = getRoi();
 			if (roi!=null)
 				roi.endPaste();

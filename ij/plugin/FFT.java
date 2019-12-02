@@ -419,7 +419,7 @@ public class FFT implements	 PlugIn, Measurements {
 	
 	void swapQuadrants(ImageStack stack) {
 		FHT fht = new FHT(new FloatProcessor(1, 1));
-		for (int i=1; i<=stack.getSize(); i++)
+		for (int i=1; i<=stack.size(); i++)
 			fht.swapQuadrants(stack.getProcessor(i));
 	}
 

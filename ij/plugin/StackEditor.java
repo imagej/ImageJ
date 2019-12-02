@@ -35,7 +35,7 @@ public class StackEditor implements PlugIn {
  		if (!imp.lock()) return;
 		int id = 0;
 		ImageStack stack = imp.getStack();
-		if (stack.getSize()==1) {
+		if (stack.size()==1) {
 			String label = stack.getSliceLabel(1);
 			if (label!=null && label.indexOf("\n")!=-1)
 				stack.setSliceLabel(null, 1);
@@ -66,7 +66,7 @@ public class StackEditor implements PlugIn {
 		ImageStack stack = imp.getStack();
 		int n = imp.getCurrentSlice();
  		stack.deleteSlice(n);
- 		if (stack.getSize()==1) {
+ 		if (stack.size()==1) {
 			String label = stack.getSliceLabel(1);
  			if (label!=null) imp.setProperty("Label", label);
  		}
@@ -257,7 +257,7 @@ public class StackEditor implements PlugIn {
 		if (!imp.lock())
 			return;
 		ImageStack stack = imp.getStack();
-		int size = stack.getSize();
+		int size = stack.size();
 		if (size>30 && !IJ.isMacro()) {
 			boolean ok = IJ.showMessageWithCancel("Convert to Images?",
 			"Are you sure you want to convert this\nstack to "
