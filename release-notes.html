@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52s70 29 November 2019</u>
+<li> <u>1.52s72 1 December 2019</u>
 <ul>
 <li> Thanks to 'LPUoO', added the <i>Plugins&gt;Utilities&gt;Commands</i> 
 command, which opens a list of commonly and recently used 
@@ -15,7 +15,6 @@ showStatus() messages avoids status bar flicker
 (<a href="http://wsr.imagej.net/macros/examples/NonVolatileShowStatus.txt">example</a>). 
 <li> Thanks to Michael Schmid, the <i>Process&gt;Filters&gt;Convolve</i>
 dialog displays feedback on the kernel as it is modified.
-I also add a Convolver with feedback on the kernel in a Message field of the dialog
 <li> Added the <i>Macros&gt;Set as Repeat Command</i>
 command to the macro editor. After running this command,
 the selected macro code will run each time you press 'r', the
@@ -32,6 +31,9 @@ is 90 or higher, resulting in higher quality images but larger file sizes.
 example.
 <li> Removed the obsolete “Draw grid lines” option from the
 <i>Edit&gt;Options&gt;Plot</i> dialog.
+<li> Thanks to Michael Schmid, the ImagePlus.updateAndDraw()
+method adds a scroll bar to the window if the stack size
+changed to greater than one.
 <li> Thanks to Stein Rorvik, added the File.getDefaultDir,
 File.setDefaultDir(path), String.trim(string) and String.join(array)
 macro functions.

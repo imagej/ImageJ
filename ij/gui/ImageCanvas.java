@@ -1662,7 +1662,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				// displayed using IJ.showStatus() is overwritten.
 				if ((sx-sx2)*(sx-sx2)+(sy-sy2)*(sy-sy2)>144)
 					showCursorStatus =  true;
-				if (win!=null&&showCursorStatus) win.mouseMoved(ox, oy);
+				if (win!=null&&showCursorStatus)
+					win.mouseMoved(ox, oy);
 			} else
 				IJ.showStatus("");
 		}

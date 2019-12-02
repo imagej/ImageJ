@@ -295,7 +295,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		nothing if there is no window associated with
 		this image (i.e. show() has not been called).*/
 	public synchronized void updateAndDraw() {
-		if (stack!=null && !stack.isVirtual() && currentSlice>=1 && currentSlice<=stack.getSize()) {
+		if (stack!=null && !stack.isVirtual() && currentSlice>=1 && currentSlice<=stack.getSize()) {		
+			if (stack.size()>1 && win!=null && !(win instanceof StackWindow)) {
+				setStack(stack);	//adds scroll bar if stack size has changed to >1
+				return;
+			}
 			Object pixels = stack.getPixels(currentSlice);
 			if (ip!=null && pixels!=null && pixels!=ip.getPixels()) { // was stack updated?
 				try {
@@ -2440,8 +2444,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     */
 	public void mouseMoved(int x, int y) {
 		Roi roi2 = getRoi();
-		if (ij!=null && (roi2==null || roi2.getState()==Roi.NORMAL))
-			IJ.showStatus(getLocationAsString(x,y) + getValueAsString(x,y));
+		if (ij!=null && !IJ.statusBarProtected() && (roi2==null || roi2.getState()==Roi.NORMAL))
+			ij.showStatus(getLocationAsString(x,y) + getValueAsString(x,y));
 		savex=x; savey=y;
 	}
 
