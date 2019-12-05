@@ -525,7 +525,7 @@ public class TextRoi extends Roi {
 				b.x = oldX+oldWidth/2.0 - newWidth/2.0;
 				break;
 			case RIGHT:
-				b.x = oldX+oldWidth - newWidth;
+				b.x = oldX+oldWidth-newWidth;
 				break;
 		}
 		b.height = nLines*fontHeight+2;
@@ -665,7 +665,14 @@ public class TextRoi extends Roi {
 			ip.fill();
 		}
 	}
-
+	
+	@Override
+	public void setLocation(int x, int y) {
+		super.setLocation(x, y);
+		oldX = x;
+		oldWidth = width;
+	}
+	
 	/** Returns a copy of this TextRoi. */
 	public synchronized Object clone() {
 		TextRoi tr = (TextRoi)super.clone();

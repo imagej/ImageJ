@@ -19,6 +19,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	public static final int MIN_HEIGHT = 32;
 	public static final int HGAP = 5;
 	public static final int VGAP = 5;
+	private static final String LOC_KEY = "image.loc";
 	
 	protected ImagePlus imp;
 	protected ImageJ ij;
@@ -46,6 +47,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	private static Point nextLocation;
 	public static long setMenuBarTime;	
     private int textGap = centerOnScreen?0:TEXT_GAP;
+    private Point initialLoc;
 	
 	/** This variable is set false if the user presses the escape key or closes the window. */
 	public boolean running;
@@ -151,14 +153,31 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			return;
 		int width = imp.getWidth();
 		int height = imp.getHeight();
-		Rectangle maxWindow = GUI.getMaxWindowBounds(updating?this: ij);  		
+		
+		// load prefernces file location
+		Point loc = Prefs.getLocation(LOC_KEY);
+		Rectangle bounds = null;
+		if (loc!=null) {
+			bounds = GUI.getMaxWindowBounds(loc);
+			if (bounds!=null && (loc.x>bounds.x+bounds.width/3||loc.y>bounds.y+bounds.height/3)
+			&& (loc.x+width>bounds.x+bounds.width||loc.y+height>bounds.y+bounds.height)) {
+				loc = null;
+				bounds = null;
+			}
+		}		
+		// if loc not valid, use screen bounds of visible window (this) or of main window (ij) if not visible yet (updating == false)
+		Rectangle maxWindow = bounds!=null?bounds:GUI.getMaxWindowBounds(updating?this: ij);  
+
 		if (WindowManager.getWindowCount()<=1)
 			xbase = -1;
 		if (width>maxWindow.width/2 && xbase>maxWindow.x+5+XINC*6)
 			xbase = -1;
 		if (xbase==-1) {
-			count = xloc = yloc = 0;
-			if (ij!=null) {
+			count = 0;
+			if (loc!=null) {
+				xbase = loc.x;
+				ybase = loc.y;
+			} else if (ij!=null) {
 				Rectangle ijBounds = ij.getBounds();
 				if (ijBounds.y-maxWindow.x<maxWindow.height/8) {
 					xbase = ijBounds.x;
@@ -217,8 +236,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			validate();
 		} else 
 			pack();
-		if (!updating)
+		if (!updating) {
 			setLocation(x, y);
+			initialLoc = new Point(x,y);
+		}
 	}
 
 	Rectangle getMaxWindow(int xloc, int yloc) {
@@ -407,6 +428,11 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (WindowManager.getWindowCount()==0) {
 			xloc = 0;
 			yloc = 0;
+		}
+		Point currentLoc = getLocation();
+		if (initialLoc!=null && !currentLoc.equals(initialLoc) && !IJ.isMacro()) {
+			Prefs.saveLocation(LOC_KEY, currentLoc);
+			xbase = -1;
 		}
 		WindowManager.removeWindow(this);
 		if (ij!=null && ij.quitting())  // this may help avoid thread deadlocks
@@ -677,9 +703,16 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
     public void setLocationAndSize(int x, int y, int width, int height) {
 		setBounds(x, y, width, height);
 		getCanvas().fitToWindow();
+		initialLoc = null;
 		pack();
 	}
 	
+    @Override
+    public void setLocation(int x, int y) {
+    	super.setLocation(x, y);
+		initialLoc = null;
+	}
+
 	public void setSliderHeight(int height) {
 		sliderHeight = height;
 	}
