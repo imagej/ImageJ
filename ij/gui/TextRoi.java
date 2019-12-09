@@ -65,10 +65,10 @@ public class TextRoi extends Roi {
 		FontMetrics metrics = g.getFontMetrics(instanceFont);
 		g.dispose();
 		bounds = null;
-		width = (int)stringWidth(theText[0],metrics,g);
-		height = (int)(metrics.getHeight());
+		this.width = (int)stringWidth(theText[0],metrics,g);
+		this.height = (int)(metrics.getHeight());
 		this.x = (int)x;
-		this.y = (int)(y - height);
+		this.y = (int)(y - this.height);
 		setAntiAlias(antialiasedText);
 		justification = LEFT;
 	}
@@ -110,12 +110,6 @@ public class TextRoi extends Roi {
 		instanceFont = font;
 		setAntiAlias(antialiasedText);
 		firstChar = false;
-		if (width==1 && height==1) {
-			ImageJ ij = IJ.getInstance();
-			Graphics g = ij!=null?ij.getGraphics():null;
-			if (g!=null)
-				updateBounds(g);
-		}
 	}
 
 	/** @deprecated */
@@ -189,7 +183,6 @@ public class TextRoi extends Roi {
 		} else {
 			char[] chr = {c};
 			theText[cline] += new String(chr);
-			updateBounds(null);
 			updateText();
 			firstChar = false;
 			return;
@@ -225,11 +218,11 @@ public class TextRoi extends Roi {
 					break;
 				case CENTER:
 					int tw = metrics.stringWidth(theText[i]);
-					ip.drawString(theText[i], xi+(width-tw)/2, yi+yy+fontHeight);
+					ip.drawString(theText[i], xi+(this.width-tw)/2, yi+yy+fontHeight);
 					break;
 				case RIGHT:
 					tw = metrics.stringWidth(theText[i]);
-					ip.drawString(theText[i], xi+width-tw, yi+yy+fontHeight);
+					ip.drawString(theText[i], xi+this.width-tw, yi+yy+fontHeight);
 					break;
 			}
 			i++;
@@ -239,9 +232,9 @@ public class TextRoi extends Roi {
 
 	/** Draws the text on the screen, clipped to the ROI. */
 	public void draw(Graphics g) {
-		if (IJ.debugMode) IJ.log("draw: "+theText[0]+"  "+width+","+height);
+		if (IJ.debugMode) IJ.log("draw: "+theText[0]+"  "+this.width+","+this.height);
 		if (Interpreter.isBatchMode() && ic!=null && ic.getDisplayList()!=null) return;
-		if (newFont || width==1)
+		if (newFont || this.width==1)
 			updateBounds(g);
 		Color c = getStrokeColor();
 		setStrokeColor(getColor());
@@ -250,8 +243,8 @@ public class TextRoi extends Roi {
 		double mag = getMagnification();
 		int sx = screenXD(getXBase());
 		int sy = screenYD(getYBase());
-		int swidth = (int)((bounds!=null?bounds.width:width)*mag);
-		int sheight = (int)((bounds!=null?bounds.height:height)*mag);
+		int swidth = (int)((bounds!=null?bounds.width:this.width)*mag);
+		int sheight = (int)((bounds!=null?bounds.height:this.height)*mag);
 		Rectangle r = null;
 		if (angle!=0.0)
 			drawText(g);
@@ -259,7 +252,8 @@ public class TextRoi extends Roi {
 			r = g.getClipBounds();
 			g.setClip(sx, sy, swidth, sheight);
 			drawText(g);
-			if (r!=null) g.setClip(r.x, r.y, r.width, r.height);
+			if (r!=null)
+				g.setClip(r.x, r.y, r.width, r.height);
 		}
 	}
 	
@@ -270,13 +264,11 @@ public class TextRoi extends Roi {
 	void drawText(Graphics g) {
 		g.setColor( strokeColor!=null? strokeColor:ROIColor);
 		Java2.setAntialiasedText(g, getAntiAlias());
-		if (newFont || width==1)
-			updateBounds(g);
 		double mag = getMagnification();
 		int xi = (int)Math.round(getXBase());
 		int yi = (int)Math.round(getYBase());
-		double widthd = bounds!=null?bounds.width:width;
-		double heightd = bounds!=null?bounds.height:height;
+		double widthd = bounds!=null?bounds.width:this.width;
+		double heightd = bounds!=null?bounds.height:this.height;
 		int widthi = (int)Math.round(widthd);
 		int heighti = (int)Math.round(heightd);
 		Font font = getScaledFont();
@@ -296,8 +288,8 @@ public class TextRoi extends Roi {
 			double cx=sx, cy=sy;
 			double theta = Math.toRadians(angle);
 			if (drawStringMode) {
-				cx = screenX(x);
-				cy = screenY(y+height-descent);
+				cx = screenX(this.x);
+				cy = screenY(this.y+this.height-descent);
 			}
 			g2d.rotate(-theta, cx, cy);
 		}
@@ -407,11 +399,11 @@ public class TextRoi extends Roi {
 			justification = LEFT;
 		if (drawStringMode && justification==RIGHT && this.justification==LEFT) {
 			bounds = null;
-			x = x - width;
+			this.x = this.x - this.width;
 		}
 		if (drawStringMode && justification==CENTER && this.justification==LEFT) {
 			bounds = null;
-			x = x - width/2;
+			this.x = this.x - this.width/2;
 		}
 		this.justification = justification;
 		if (imp!=null)
@@ -461,7 +453,7 @@ public class TextRoi extends Roi {
 
 	protected void handleMouseUp(int screenX, int screenY) {
 		super.handleMouseUp(screenX, screenY);
-		if (width<5 && height<5 && imp!=null && previousRoi==null) {
+		if (this.width<5 && this.height<5 && imp!=null && previousRoi==null) {
 			int ox = ic!=null?ic.offScreenX(screenX):screenX;
 			int oy = ic!=null?ic.offScreenY(screenY):screenY;
 			TextRoi roi = new TextRoi(ox, oy, line1a);
@@ -474,7 +466,7 @@ public class TextRoi extends Roi {
 			updateText();
 			firstMouseUp = false;
 		}
-		if (width<5 || height<5)
+		if (this.width<5 || this.height<5)
 			imp.deleteRoi();
 	}
 	
@@ -500,7 +492,7 @@ public class TextRoi extends Roi {
 		int i=0, nLines=0;
 		Rectangle2D.Double b = bounds;
 		if (b==null)
-			b = new Rectangle2D.Double(x, y, width, height);
+			b = new Rectangle2D.Double(this.x, this.y, this.width, this.height);
 		double oldXD = b.x;
 		double oldYD = b.y;
 		double oldWidthD = b.width;
@@ -518,8 +510,6 @@ public class TextRoi extends Roi {
 		b.width = newWidth;
 		switch (justification) {
 			case LEFT:
-				if (xMax!=0 && x+newWidth>xMax && width!=1)
-					b.x = xMax-width;
 				break;
 			case CENTER:
 				b.x = oldX+oldWidth/2.0 - newWidth/2.0;
@@ -529,16 +519,10 @@ public class TextRoi extends Roi {
 				break;
 		}
 		b.height = nLines*fontHeight+2;
-		if (yMax!=0) {
-			if (b.height>yMax)
-				b.height = yMax;
-			if (b.y+b.height>yMax)
-				b.y = yMax-height;
-		}
-		x=(int)b.x; y=(int)b.y;
-		width=(int)Math.ceil(b.width);
-		height=(int)Math.ceil(b.height);
-		//IJ.log("adjustSize2: "+theText[0]+"  "+width+","+height);
+		this.x = (int)b.x;
+		this.y = (int)b.y;
+		this.width=(int)Math.ceil(b.width);
+		this.height=(int)Math.ceil(b.height);
 	}
 	
 	void updateText() {
@@ -594,14 +578,14 @@ public class TextRoi extends Roi {
 		else
 			code += "setColor(\""+Colors.colorToString(getStrokeColor())+"\");\n";
 		if (addSelection) {
-			code += "Overlay.drawString(\""+text()+"\", "+x+", "+(y+fontHeight)+", "+getAngle()+");\n";
+			code += "Overlay.drawString(\""+text()+"\", "+this.x+", "+(this.y+fontHeight)+", "+getAngle()+");\n";
 			code += "Overlay.show();\n";
 		} else {
-			code += (script?"ip.":"")+"drawString(\""+text()+"\", "+x+", "+(y+fontHeight)+");\n";
+			code += (script?"ip.":"")+"drawString(\""+text()+"\", "+this.x+", "+(this.y+fontHeight)+");\n";
 			if (script)
 				code += "imp.updateAndDraw();\n";
 			else
-				code += "//makeText(\""+text()+"\", "+x+", "+(y+fontHeight)+");\n";
+				code += "//makeText(\""+text()+"\", "+this.x+", "+(this.y+fontHeight)+");\n";
 		}
 		return (code);
 	}
@@ -617,7 +601,7 @@ public class TextRoi extends Roi {
 	}
 	
 	private String getAddSelectionScript(String code) {
-		code += "roi = new TextRoi("+x+", "+y+", \""+text()+"\", font);\n";
+		code += "roi = new TextRoi("+this.x+", "+this.y+", \""+text()+"\", font);\n";
 		code += "roi.setStrokeColor(new Color("+getColorArgs(getStrokeColor())+"));\n";
 		if (getFillColor()!=null)
 			code += "roi.setFillColor(new Color("+getColorArgs(getFillColor())+"));\n";
@@ -650,16 +634,16 @@ public class TextRoi extends Roi {
 		else {
 			ip.setFont(instanceFont);
 			ip.setAntialiasedText(antialiasedText);
-			int i=0, width=0;
+			int i=0, w=0;
 			while (i<MAX_LINES && theText[i]!=null) {
-				int w = ip.getStringWidth(theText[i]);
-				if (w>width)
-					width = w;
+				int w2 = ip.getStringWidth(theText[i]);
+				if (w2>w)
+					w = w2;
 				i++;
 			}
 			Rectangle r = ip.getRoi();
-			if (width>r.width) {
-				r.width = width;
+			if (w>r.width) {
+				r.width = w;
 				ip.setRoi(r);
 			}
 			ip.fill();
@@ -669,8 +653,7 @@ public class TextRoi extends Roi {
 	@Override
 	public void setLocation(int x, int y) {
 		super.setLocation(x, y);
-		oldX = x;
-		oldWidth = width;
+		oldWidth = this.width;
 	}
 	
 	/** Returns a copy of this TextRoi. */

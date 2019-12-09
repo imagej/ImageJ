@@ -16,39 +16,36 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
 	private static int filterIndex = 1;
 	private int slice;
 	private int stackSize;	
-	private boolean done;
 	private ImageProcessor filter;
 	private static boolean processStack;
 	private boolean padded;
 	private	int originalWidth;
 	private int originalHeight;
 	private Rectangle rect = new Rectangle();
+	private 	FHT fht1;
 
 	public int setup(String arg, ImagePlus imp) {
  		this.imp = imp;
- 		if (imp==null)
- 			{IJ.noImage(); return DONE;}
- 		stackSize = imp.getStackSize();
+		this.stackSize = imp.getStackSize();
+ 		if (imp==null) {
+ 			IJ.noImage();
+ 			return DONE;
+ 		}
+		fht1 = newFHT(imp.getProcessor());
+		filter = getFilter(fht1.getWidth());
+		if (filter==null)
+			return DONE;
 		if (imp.getProperty("FHT")!=null) {
 			IJ.error("FFT Custom Filter", "Spatial domain (non-FFT) image required");
 			return DONE;
-		}
-		else
+		} else
 			return processStack?DOES_ALL+DOES_STACKS:DOES_ALL;
 	}
 
 	public void run(ImageProcessor ip) {
 		slice++;
-		if (done)
-			return;
-		FHT fht = newFHT(ip);
-		if (slice==1) {
-			filter = getFilter(fht.getWidth());
-			if (filter==null) {
-				done = true;
-				return;
-			}
-		}
+		FHT fht = fht1!=null?fht1:newFHT(ip);
+		fht1 = null;
 		((FHT)fht).transform();
 		customFilter(fht);		
 		doInverseTransform(fht, ip);

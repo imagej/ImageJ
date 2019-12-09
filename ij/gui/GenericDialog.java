@@ -659,11 +659,25 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		addSlider(label, minValue, maxValue, defaultValue, scale, digits);
 	}
 
-	private int digits( double d ) {
-		if ( d == (int) d ) return 0;
-		String s = Double.toString(d);
-		s = s.substring(s.indexOf(".") + 1);
-		return s.length();
+	/** Author: Michael Kaul */
+	private static int digits(double d) {
+		if (d == (int)d)
+			return 0;
+		String s  = Double.toString(d);
+		int ePos  = s.indexOf("E");
+		if (ePos==-1)
+			ePos   = s.indexOf("e");
+		int dotPos = s.indexOf( "." );
+		int digits = 0;
+		if (ePos==-1 )
+			digits = s.substring(dotPos+1).length();
+		else {
+			String number = s.substring( dotPos + 1, ePos );
+			if (!number.equals( "0" ))
+				digits += number.length( );
+			digits = digits - Integer.valueOf(s.substring(ePos+1));
+		}
+		return digits;
 	}
 
 	private void addSlider(String label, double minValue, double maxValue, double defaultValue, double scale, int digits) {

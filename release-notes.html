@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52s76 4 December 2019</u>
+<li> <u>1.52s82 9 December 2019</u>
 <ul>
 <li> Thanks to 'LPUoO', added the <i>Plugins&gt;Utilities&gt;Commands</i> 
 command, which opens a list of commonly and recently used 
@@ -81,7 +81,19 @@ WIndow menu to not be updated when saving a table.
 <i>Image&gt;Transform&gt;Translate</i> command
 to ignore overlays.
 <li> Thanks to Stein Rorvik, fixed a bug that caused right
-justified text on overlays to not be translated correctly.
+justified text in overlays to not be translated correctly.
+<li> Thanks to Stein Rorvik, worked around a Java bug 
+that caused OpenDialog.setDefaultDirectory(path) to
+sometimes not work as expected on Windows with paths
+containing "/" separators.
+<li> Thanks to Stein Rorvik, fixed a bug that caused macros
+calling open("") to not be aborted when the user clicked
+"Cancel" in the file open dialog and "Use JFileChooser to open/save"
+was enabled in the <i>Edit&gt;Options&gt;Input/Output</i> dialog box.
+<li> Thanks to Nicolás De Francesco, fixed a bug that caused
+<i>Process&gt;FFT&gt;Custom Filter</i> to only process 
+the current stack slice even though "Process entire stack" 
+was checked in the dialog box.
 </ul>
 
 <li> <u>1.52r 26 October 2019</u>

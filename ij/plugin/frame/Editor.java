@@ -1515,10 +1515,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		isMacroWindow = mw;
 	}
 
-	public static void setDefaultDirectory(String defaultDirectory) {
-		defaultDir = defaultDirectory;
-		if (defaultDir!=null && !(defaultDir.endsWith(File.separator)||defaultDir.endsWith("/")))
-			defaultDir += File.separator;
+	public static void setDefaultDirectory(String dir) {
+		if (dir!=null && dir.length()>0 && !(dir.endsWith(File.separator)||dir.endsWith("/"))) {
+			String separator = dir.contains("/")?"/":File.separator;
+			dir = dir + separator;
+		}
+		defaultDir = dir;
 	}
 	
 	public void lostOwnership (Clipboard clip, Transferable cont) {}
