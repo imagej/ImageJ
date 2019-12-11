@@ -19,20 +19,18 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
 	private ImageProcessor filter;
 	private static boolean processStack;
 	private boolean padded;
-	private	int originalWidth;
+	private int originalWidth;
 	private int originalHeight;
 	private Rectangle rect = new Rectangle();
-	private 	FHT fht1;
 
 	public int setup(String arg, ImagePlus imp) {
  		this.imp = imp;
-		this.stackSize = imp.getStackSize();
  		if (imp==null) {
  			IJ.noImage();
  			return DONE;
  		}
-		fht1 = newFHT(imp.getProcessor());
-		filter = getFilter(fht1.getWidth());
+ 		this.stackSize = imp.getStackSize();
+		filter = getFilter();
 		if (filter==null)
 			return DONE;
 		if (imp.getProperty("FHT")!=null) {
@@ -44,8 +42,9 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
 
 	public void run(ImageProcessor ip) {
 		slice++;
-		FHT fht = fht1!=null?fht1:newFHT(ip);
-		fht1 = null;
+		FHT fht = newFHT(ip);
+		if (slice==1)
+			filter = resizeFilter(filter, fht.getWidth());
 		((FHT)fht).transform();
 		customFilter(fht);		
 		doInverseTransform(fht, ip);
@@ -131,7 +130,7 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
 		fht.swapQuadrants(filter);
 	}
 	
-	ImageProcessor getFilter(int size) {
+	ImageProcessor getFilter() {
 		int[] wList = WindowManager.getIDList();
 		if (wList==null || wList.length<2) {
 			IJ.error("FFT", "A filter (as an open image) is required.");
@@ -167,7 +166,6 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
 		ImageProcessor filter = filterImp.getProcessor();
 		if (filter!=null && filter.getBitDepth()!=32)		
 			filter =  filter.convertToByte(true);		
-		filter = resizeFilter(filter, size);
 		return filter;
 	}
 	

@@ -32,11 +32,6 @@ import javax.swing.filechooser.*;
 		used and the dialog is not displayed. Uses
 		and updates the ImageJ default directory. */
 	public OpenDialog(String title, String path) {
-		//if (IJ.debugMode) {
-		//	String dir = getDefaultDirectory();
-		//	String str = dir!=null?new File(dir).isDirectory()+" "+Prefs.useJFileChooser+" \""+dir+"\"":"null";			
-		//	IJ.log("OpenDialog: "+str);
-		//}
 		String macroOptions = Macro.getOptions();
 		if (macroOptions!=null && (path==null||path.equals(""))) {
 			path = Macro.getValue(macroOptions, title, path);
