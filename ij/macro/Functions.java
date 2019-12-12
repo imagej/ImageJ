@@ -215,7 +215,7 @@ public class Functions implements MacroConstants, Measurements {
 			case SELECTION_TYPE: value=getSelectionType(); break;
 			case IS_OPEN: value=isOpen(); break;
 			case IS_ACTIVE: value=isActive(); break;
-			case INDEX_OF: value=indexOf(); break;
+			case INDEX_OF: value=indexOf(null); break;
 			case LAST_INDEX_OF: value=getFirstString().lastIndexOf(getLastString()); break;
 			case CHAR_CODE_AT: value=charCodeAt(); break;
 			case GET_BOOLEAN: value=getBoolean(); break;
@@ -253,7 +253,7 @@ public class Functions implements MacroConstants, Measurements {
 			case TO_BINARY: str = toString(2); break;
 			case GET_TITLE: interp.getParens(); str=getImage().getTitle(); break;
 			case GET_STRING: str = getStringDialog(); break;
-			case SUBSTRING: str = substring(); break;
+			case SUBSTRING: str=substring(null); break;
 			case FROM_CHAR_CODE: str = fromCharCode(); break;
 			case GET_INFO: str = getInfo(); break;
 			case GET_IMAGE_INFO: interp.getParens(); str = getImageInfo(); break;
@@ -264,7 +264,7 @@ public class Functions implements MacroConstants, Measurements {
 			case RUN_MACRO: str = runMacro(false); break;
 			case EVAL: str = runMacro(true); break;
 			case TO_STRING: str = doToString(); break;
-			case REPLACE: str = replace(); break;
+			case REPLACE: str = replace(null); break;
 			case DIALOG: str = doDialog(); break;
 			case GET_METADATA: str = getMetadata(); break;
 			case FILE: str = doFile(); break;
@@ -2615,10 +2615,10 @@ public class Functions implements MacroConstants, Measurements {
 		}
 	}
 
-	String substring() {
-		String s = getFirstString();
-		int index1 = (int)getNextArg();
-		int index2 = s.length();
+	String substring(String s) {
+		s = getStringFunctionArg(s);
+		int index1 = (int)interp.getExpression();
+		int index2 = s.length();	
 		if (interp.nextToken()==',')
 			index2 = (int)getLastArg();
 		else
@@ -2629,10 +2629,19 @@ public class Functions implements MacroConstants, Measurements {
 		checkIndex(index2, 0, s.length());
 		return s.substring(index1, index2);
 	}
+	
+	private String getStringFunctionArg(String s) {
+		if (s==null) {
+			s=getFirstString();
+			interp.getComma();
+		} else
+			interp.getLeftParen();
+		return s;
+	}
 
-	int indexOf() {
-		String s1 = getFirstString();
-		String s2 = getNextString();
+	int indexOf(String s1) {
+		s1 = getStringFunctionArg(s1);
+		String s2 = getString();
 		int fromIndex = 0;
 		if (interp.nextToken()==',') {
 			fromIndex = (int)getLastArg();
@@ -3743,9 +3752,9 @@ public class Functions implements MacroConstants, Measurements {
 		}
 	}
 
-	String replace() {
-		String s1 = getFirstString();
-		String s2 = getNextString();
+	String replace(String s1) {
+		s1 = getStringFunctionArg(s1);
+		String s2 = getString();
 		String s3 = getLastString();
 		if (s2.length()==1 && s3.length()==1)
 			return s1.replace(s2.charAt(0), s3.charAt(0));

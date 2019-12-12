@@ -19,11 +19,11 @@ import java.awt.geom.*;
 public class PointRoi extends PolygonRoi {
 	public static final String[] sizes = {"Tiny", "Small", "Medium", "Large", "Extra Large", "XXL", "XXXL"};
 	public static final String[] types = {"Hybrid", "Cross", "Dot", "Circle"};
+	public static final int HYBRID=0, CROSS=1, CROSSHAIR=1, DOT=2, CIRCLE=3;
 	private static final String TYPE_KEY = "point.type";
 	private static final String SIZE_KEY = "point.size";
 	private static final String CROSS_COLOR_KEY = "point.cross.color";
 	private static final int TINY=1, SMALL=3, MEDIUM=5, LARGE=7, EXTRA_LARGE=11, XXL=17, XXXL=25;
-	private static final int HYBRID=0, CROSS=1, CROSSHAIR=1, DOT=2, CIRCLE=3;
 	private static final BasicStroke twoPixelsWide = new BasicStroke(2);
 	private static final BasicStroke threePixelsWide = new BasicStroke(3);
 	private static final BasicStroke fivePixelsWide = new BasicStroke(5);
@@ -528,7 +528,9 @@ public class PointRoi extends PolygonRoi {
 	}
 
 
-	public static void setDefaultSize(int index) {
+	/** Sets the default point size, where 'size' is 0-6 (Tiny-XXXL). */
+	public static void setDefaultSize(int size) {
+		int index = size;
 		if (index>=0 && index<sizes.length) {
 			defaultSize = convertIndexToSize(index);
 			PointRoi instance = getPointRoiInstance();
@@ -538,17 +540,18 @@ public class PointRoi extends PolygonRoi {
 		}
 	}
 	
+	/** Returns the default point size 0-6 (Tiny-XXXL). */
 	public static int getDefaultSize() {
 		return convertSizeToIndex(defaultSize);
 	}
 
-	/** Sets the point size, where 'size' is 0-4. */
+	/** Sets the point size, where 'size' is 0-6 (Tiny-XXXL). */
 	public void setSize(int size) {
 		if (size>=0 && size<sizes.length)
 			this.size = convertIndexToSize(size);
 	}
 
-	/** Returns the point size (0-4). */
+	/** Returns the current point size 0-6 (Tiny-XXXL). */
 	public int getSize() {
 		return convertSizeToIndex(size);
 	}

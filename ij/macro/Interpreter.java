@@ -1126,8 +1126,14 @@ public class Interpreter implements MacroConstants {
 					v1 = v1<=v2?1.0:0.0;
 					break;
 			}
-		} else if (s1!=null)
-			v1 = Tools.parseDouble(s1, Double.NaN);
+		} else if (s1!=null) {
+			if (s1.equals("true"))
+				v1 = 1.0;
+			else if (s1.equals("false"))
+				v1 = 0.0;
+			else
+				v1 = Tools.parseDouble(s1, Double.NaN);
+		}
 		return v1;
 	}
 
@@ -1216,7 +1222,7 @@ public class Interpreter implements MacroConstants {
 
 	final void checkBoolean(double value) {
 		if (!(value==0.0 || value==1.0))
-			error("Boolean expression expected");
+			error("Boolean expression expected: "+value);
 	}
 
 	void doVar() {
@@ -1531,6 +1537,9 @@ public class Interpreter implements MacroConstants {
 			case NUMBER:
 				value = tokenValue;
 				break;
+			case STRING_CONSTANT:
+				value = Tools.parseDouble(tokenString,Double.NaN);
+				break;
 			case NUMERIC_FUNCTION:
 				value = func.getFunctionValue(pgm.table[tokenAddress].type);
 				break;
@@ -1577,8 +1586,12 @@ public class Interpreter implements MacroConstants {
 					v = getArrayElement(v);
 					value = v.getValue();
 					next = nextToken();
+					if (next=='.') {
+						value = evaluateDotFunction(v);
+						next = nextToken();
+					}
 				} else if (next=='.') {
-					value = getArrayLength(v);
+					value = evaluateDotFunction(v);
 					next = nextToken();
 				} else {
 					if (v.getArray()!=null) {
@@ -1645,14 +1658,25 @@ public class Interpreter implements MacroConstants {
 		return array[index];
 	}
 	
-	final double getArrayLength(Variable v) {
+	final double evaluateDotFunction(Variable v) {
 		getToken(); // '.'
 		getToken();
-		if (!(token==WORD && tokenString.equals("length")))
-			error("'length' expected");
-		if (v.getArray()==null)
-			error("Array expected");
-		return v.getArraySize();
+		if (token!=WORD)
+			error("Function expected ("+token+")");
+		if (v.getArray()!=null && tokenString.equals("length"))
+			return v.getArraySize();
+		String str = v.getString();
+		if (str!=null) {
+			if (tokenString.equals("length")) {
+				getParens();
+				return str.length();
+			} else if (tokenString.equals("contains")) {
+				return str.contains(func.getStringArg())?1.0:0.0;
+			} else
+				error("Expecting string function");			
+		}
+		error("Array or string expected");
+		return NaN;
 	}
 	
 	final double getStringExpression() {
@@ -1804,9 +1828,12 @@ public class Interpreter implements MacroConstants {
 						error("Array expected");
 					if (index<0 || index>=array.length)
 						error("Index ("+index+") out of 0-"+(array.length-1)+" range");
-					str = array[index].getString();					
-					if (str==null) {
-						int next2 = nextToken();
+					str = array[index].getString();
+					int next2 = nextToken();			
+					if (str!=null) {
+						if (next2=='.')
+							str = runStringFunction(str);
+					} else {
 						if (next2==')' || next2==';')
 							str = toString(array[index].getValue());
 						else {
@@ -1815,7 +1842,7 @@ public class Interpreter implements MacroConstants {
 						}
 					}
 				} else if (next=='.')
-						str = null;
+					str = runStringFunction(v.getString());
 				else {
 					if (v.getArray()!=null)
 						{getToken(); error("'[' or '.' expected");}
@@ -1826,6 +1853,52 @@ public class Interpreter implements MacroConstants {
 		}
 		if (!found)
 			undefined();
+		return str;
+	}
+	
+	private String runStringFunction(String str) {
+		getToken(); // '.'
+		getToken();
+		if (token==WORD) {
+			if (tokenString.equals("length")) {
+				getParens();
+				str = ""+str.length();
+			} else if (tokenString.equals("contains")) {
+				str = ""+str.contains(func.getStringArg());
+			} else if (tokenString.equals("trim")) {
+				getParens();
+				str = str.trim();
+			} else if (tokenString.equals("charAt")) {
+				str = ""+str.charAt((int)func.getArg());
+			} else if (tokenString.equals("replaceAll")) {
+				str = func.replace(str);
+			} else
+				str = null;
+		} else if (token==NUMERIC_FUNCTION) {
+			int type = pgm.table[tokenAddress].type;
+			switch (type) {
+				case INDEX_OF: str = ""+func.indexOf(str); break;
+				case LAST_INDEX_OF: str = ""+str.lastIndexOf(func.getStringArg()); break;
+				case STARTS_WITH: str = ""+str.startsWith(func.getStringArg()); break;
+				case ENDS_WITH: str = ""+str.endsWith(func.getStringArg()); break;
+				default:
+					str = null;
+			}
+		} else if (token==STRING_FUNCTION) {
+			int type = pgm.table[tokenAddress].type;
+			switch (type) {
+				case SUBSTRING: str = func.substring(str); break;
+				case INDEX_OF: str = ""+func.indexOf(str); break;
+				case TO_LOWER_CASE: getParens(); str = str.toLowerCase(Locale.US); break;
+				case TO_UPPER_CASE: getParens(); str = str.toUpperCase(Locale.US); break;
+				case REPLACE: str = func.replace(str); break;
+				default:
+					str = null;
+			}
+		} else
+			str = null;
+		if (str==null)
+			error("String function expected");
 		return str;
 	}
 
