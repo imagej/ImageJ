@@ -110,6 +110,12 @@ public class TextRoi extends Roi {
 		instanceFont = font;
 		setAntiAlias(antialiasedText);
 		firstChar = false;
+		if (this.width==1 && this.height==1) {
+			ImageJ ij = IJ.getInstance();
+			Graphics g = ij!=null?ij.getGraphics():null;
+			if (g!=null)
+				updateBounds(g);
+		}
 	}
 
 	/** @deprecated */
@@ -183,6 +189,7 @@ public class TextRoi extends Roi {
 		} else {
 			char[] chr = {c};
 			theText[cline] += new String(chr);
+			updateBounds(null);
 			updateText();
 			firstChar = false;
 			return;
@@ -252,8 +259,7 @@ public class TextRoi extends Roi {
 			r = g.getClipBounds();
 			g.setClip(sx, sy, swidth, sheight);
 			drawText(g);
-			if (r!=null)
-				g.setClip(r.x, r.y, r.width, r.height);
+			if (r!=null) g.setClip(r.x, r.y, r.width, r.height);
 		}
 	}
 	
@@ -264,11 +270,13 @@ public class TextRoi extends Roi {
 	void drawText(Graphics g) {
 		g.setColor( strokeColor!=null? strokeColor:ROIColor);
 		Java2.setAntialiasedText(g, getAntiAlias());
+		if (newFont || this.width==1)
+			updateBounds(g);
 		double mag = getMagnification();
 		int xi = (int)Math.round(getXBase());
 		int yi = (int)Math.round(getYBase());
 		double widthd = bounds!=null?bounds.width:this.width;
-		double heightd = bounds!=null?bounds.height:this.height;
+		double heightd = bounds!=null?bounds.height:height;
 		int widthi = (int)Math.round(widthd);
 		int heighti = (int)Math.round(heightd);
 		Font font = getScaledFont();
@@ -289,7 +297,7 @@ public class TextRoi extends Roi {
 			double theta = Math.toRadians(angle);
 			if (drawStringMode) {
 				cx = screenX(this.x);
-				cy = screenY(this.y+this.height-descent);
+				cy = screenY(this.y+height-descent);
 			}
 			g2d.rotate(-theta, cx, cy);
 		}
@@ -515,14 +523,15 @@ public class TextRoi extends Roi {
 				b.x = oldX+oldWidth/2.0 - newWidth/2.0;
 				break;
 			case RIGHT:
-				b.x = oldX+oldWidth-newWidth;
+				b.x = oldX+oldWidth - newWidth;
 				break;
 		}
 		b.height = nLines*fontHeight+2;
-		this.x = (int)b.x;
-		this.y = (int)b.y;
+		this.x=(int)b.x;
+		this.y=(int)b.y;
 		this.width=(int)Math.ceil(b.width);
 		this.height=(int)Math.ceil(b.height);
+		//IJ.log("adjustSize2: "+theText[0]+"  "+this.width+","+this.height);
 	}
 	
 	void updateText() {
@@ -649,13 +658,13 @@ public class TextRoi extends Roi {
 			ip.fill();
 		}
 	}
-	
+
 	@Override
 	public void setLocation(int x, int y) {
 		super.setLocation(x, y);
 		oldWidth = this.width;
 	}
-	
+
 	/** Returns a copy of this TextRoi. */
 	public synchronized Object clone() {
 		TextRoi tr = (TextRoi)super.clone();
