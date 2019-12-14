@@ -259,7 +259,8 @@ public class TextRoi extends Roi {
 			r = g.getClipBounds();
 			g.setClip(sx, sy, swidth, sheight);
 			drawText(g);
-			if (r!=null) g.setClip(r.x, r.y, r.width, r.height);
+			if (r!=null)
+				g.setClip(r.x, r.y, r.width, r.height);
 		}
 	}
 	
@@ -276,7 +277,7 @@ public class TextRoi extends Roi {
 		int xi = (int)Math.round(getXBase());
 		int yi = (int)Math.round(getYBase());
 		double widthd = bounds!=null?bounds.width:this.width;
-		double heightd = bounds!=null?bounds.height:height;
+		double heightd = bounds!=null?bounds.height:this.height;
 		int widthi = (int)Math.round(widthd);
 		int heighti = (int)Math.round(heightd);
 		Font font = getScaledFont();
@@ -297,7 +298,7 @@ public class TextRoi extends Roi {
 			double theta = Math.toRadians(angle);
 			if (drawStringMode) {
 				cx = screenX(this.x);
-				cy = screenY(this.y+height-descent);
+				cy = screenY(this.y+this.height-descent);
 			}
 			g2d.rotate(-theta, cx, cy);
 		}
@@ -527,10 +528,10 @@ public class TextRoi extends Roi {
 				break;
 		}
 		b.height = nLines*fontHeight+2;
-		this.x=(int)b.x;
-		this.y=(int)b.y;
-		this.width=(int)Math.ceil(b.width);
-		this.height=(int)Math.ceil(b.height);
+		this.x = (int)b.x;
+		this.y = (int)b.y;
+		this.width = (int)Math.ceil(b.width);
+		this.height = (int)Math.ceil(b.height);
 		//IJ.log("adjustSize2: "+theText[0]+"  "+this.width+","+this.height);
 	}
 	

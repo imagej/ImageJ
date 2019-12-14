@@ -5,12 +5,16 @@
 </head>
 <body>
 
-<li> <u>1.52t4 12 December 2019</u>
+<li> <u>1.52t6 14 December 2019</u>
 <ul>
-<li> Added the following string functions, where 's' is a string variable:<br>
+<li> Thanks to Norbert Vischer, added support for superscripts and
+subscripts in plot axis labels
+(<a href="http://wsr.imagej.net/macros/examples/PlotWithSubscriptsAndSuperscrips.txt">example</a>). 
+<li> Added the following string functions to the macro language, where
+'s' is a string variable:<br>
 s.length, s.contains(s2), s.trim, s.charAt(i), s.replace(s1,s2), 
 s.replaceAll(s1,s2), s.indexOf(s2), s.lastIndexOf(s2), s.startsWith(s2), 
-s.endsWith(s2), s.substring(i1,i2), s.substring(i), s.indexOf(s2),
+s.endsWith(s2), s.matches(s2), s.substring(i1,i2), s.substring(i), s.indexOf(s2),
 s.toLowerCase, s.toUpperCase.
 <li> Thanks to Dorai Iyer, fixed a 1.52s regression that caused characters
 entered using the text tool to sometimes be repeated.

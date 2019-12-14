@@ -182,7 +182,7 @@ public class PlotDialog implements DialogListener {
 				plotXLabel = lastXLabel;	// suggest last dialog entry if default profile label
 			if ((plotYLabel == null  || plotYLabel.equals("Gray Value")) && lastYLabel != null)
 				plotYLabel = lastYLabel;
-			int nChars = 15;
+			int nChars = 20;
 			if ((plotXLabel != null && plotXLabel.startsWith("{")) || (plotYLabel != null && plotYLabel.startsWith("{" ))) {
 					nChars = Math.max(nChars, plotXLabel.length());
 					nChars = Math.max(nChars, plotYLabel.length());
@@ -196,12 +196,15 @@ public class PlotDialog implements DialogListener {
 				gd.addStringField("Y Axis Label", plotYLabel, nChars);
 		}
 		if (dialogType == SET_RANGE || dialogType == X_AXIS || dialogType == Y_AXIS) {
+			Font smallFont = new Font("SansSerif", Font.PLAIN, (int)(10*Prefs.getGuiScale()));//n__
 			gd.setInsets(10, 0, 0);			//top, left, bottom
-			gd.addMessage("* Leave empty for automatic range");//, new Font("SansSerif", Font.PLAIN, 11));
-		}
-		if (dialogType == SET_RANGE || dialogType == X_AXIS || dialogType == Y_AXIS) {
-			gd.setInsets(2, 0, 0);			//top, left, bottom
-			gd.addMessage("** Requires limits > 0 and max/min > 3");//, new Font("SansSerif", Font.PLAIN, 11));
+			gd.addMessage("*   Leave empty for automatic range", smallFont, Color.gray);
+			gd.setInsets(0, 0, 0);
+			gd.addMessage("** Requires limits > 0 and max/min > 3", smallFont, Color.gray);
+			if (dialogType == X_AXIS || dialogType == Y_AXIS) {
+				gd.setInsets(0, 0, 0);
+				gd.addMessage("    Label supports !!sub-!! and ^^superscript^^", smallFont, Color.gray);
+			}
 		}
 
 		if (dialogType == AXIS_OPTIONS) {
@@ -386,7 +389,9 @@ public class PlotDialog implements DialogListener {
 			boolean axisLabelBold = gd.getNextBoolean();
 			plot.setFont('f', numberFont.deriveFont(numberFont.getStyle(), numberFontSize));
 			plot.setAxisLabelFont(axisLabelBold ? Font.BOLD : Font.PLAIN, labelFontSize);
-		}
+			Font smallFont = new Font("SansSerif", Font.PLAIN, (int)(10*Prefs.getGuiScale()));
+			gd.addMessage("Labels support !!sub-!! and ^^superscript^^", smallFont, Color.gray);//n__
+		}	
 		if (dialogType == LEGEND) {
 			Font legendFont = plot.getFont('l');
 			if (legendFont == null) legendFont = (plot.currentFont != null) ? plot.currentFont : plot.defaultFont;

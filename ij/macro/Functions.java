@@ -233,7 +233,7 @@ public class Functions implements MacroConstants, Measurements {
 			case IS: value = is(); break;
 			case GET_VALUE: value = getValue(); break;
 			case STACK: value = doStack(); break;
-			case MATCHES: value = matches(); break;
+			case MATCHES: value = matches(null); break;
 			case GET_STRING_WIDTH: value = getStringWidth(); break;
 			case FIT: value = fit(); break;
 			case OVERLAY: value = overlay(); break;
@@ -5320,13 +5320,18 @@ public class Functions implements MacroConstants, Measurements {
 		return s;
 	}
 
-	double matches() {
-		String str = getFirstString();
-		String regex = getLastString();
-		boolean matches = str.matches(regex);
-		return matches?1.0:0.0;
+	double matches(String str) {
+		str = getStringFunctionArg(str);
+		String regex = getString();
+		interp.getRightParen();
+		try {
+			return str.matches(regex)?1.0:0.0;
+		} catch (Exception e) {
+			interp.error(""+e);
+			return 0.0;
+		}
 	}
-
+	
 	void waitForUser() {
 		IJ.wait(50);
 		if (waitForUserDialog!=null && waitForUserDialog.isShowing())
