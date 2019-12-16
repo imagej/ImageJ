@@ -1884,7 +1884,7 @@ public class Plot implements Cloneable {
 		leftMargin	 = sc(LEFT_MARGIN*marginScale);
 		rightMargin	 = sc(RIGHT_MARGIN*marginScale);
 		topMargin	 = sc(TOP_MARGIN*marginScale);
-		bottomMargin = sc(BOTTOM_MARGIN*marginScale + 2);//n__
+		bottomMargin = sc(BOTTOM_MARGIN*marginScale + 2);
 		if(pp != null && pp.xLabel != null && pp.xLabel.getFont() != null){
 			float numberSize = font.getSize2D();
 			float labelSize = pp.xLabel.getFont().getSize2D();
@@ -2606,7 +2606,7 @@ public class Plot implements Cloneable {
 		} else
 			y += sc(1);
 		// --- Write x and y axis text labels
-		if (xCats == null){//n__
+		if (xCats == null) {
 			ip.setFont(pp.xLabel.getFont() == null ? scFont : scFont(pp.xLabel.getFont()));
 			ImageProcessor xLabel = stringToPixels(xLabelToDraw);
 			if(xLabel != null){
@@ -2615,7 +2615,7 @@ public class Plot implements Cloneable {
 				ip.insert(xLabel, xpos, ypos);
 			}
 		}
-		if (yCats == null) {//n__
+		if (yCats == null) {
 			ip.setFont(pp.yLabel.getFont() == null ? scFont : scFont(pp.yLabel.getFont()));
 			ImageProcessor yLabel = stringToPixels(yLabelToDraw);
 			if(yLabel != null){

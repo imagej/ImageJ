@@ -196,7 +196,7 @@ public class PlotDialog implements DialogListener {
 				gd.addStringField("Y Axis Label", plotYLabel, nChars);
 		}
 		if (dialogType == SET_RANGE || dialogType == X_AXIS || dialogType == Y_AXIS) {
-			Font smallFont = new Font("SansSerif", Font.PLAIN, (int)(10*Prefs.getGuiScale()));//n__
+			Font smallFont = new Font("SansSerif", Font.PLAIN, (int)(10*Prefs.getGuiScale()));
 			gd.setInsets(10, 0, 0);			//top, left, bottom
 			gd.addMessage("*   Leave empty for automatic range", smallFont, Color.gray);
 			gd.setInsets(0, 0, 0);
@@ -390,7 +390,7 @@ public class PlotDialog implements DialogListener {
 			plot.setFont('f', numberFont.deriveFont(numberFont.getStyle(), numberFontSize));
 			plot.setAxisLabelFont(axisLabelBold ? Font.BOLD : Font.PLAIN, labelFontSize);
 			Font smallFont = new Font("SansSerif", Font.PLAIN, (int)(10*Prefs.getGuiScale()));
-			gd.addMessage("Labels support !!sub-!! and ^^superscript^^", smallFont, Color.gray);//n__
+			gd.addMessage("Labels support !!sub-!! and ^^superscript^^", smallFont, Color.gray);
 		}	
 		if (dialogType == LEGEND) {
 			Font legendFont = plot.getFont('l');

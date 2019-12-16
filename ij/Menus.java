@@ -214,7 +214,11 @@ public class Menus {
 		analyzeMenu.addSeparator();
 		addPlugInItem(analyzeMenu, "Set Scale...", "ij.plugin.filter.ScaleDialog", 0, false);
 		addPlugInItem(analyzeMenu, "Calibrate...", "ij.plugin.filter.Calibrator", 0, false);
-		addPlugInItem(analyzeMenu, "Histogram", "ij.plugin.Histogram", KeyEvent.VK_H, false);
+		if (IJ.isMacOSX()) {
+			addPlugInItem(analyzeMenu, "Histogram", "ij.plugin.Histogram", 0, false);
+			shortcuts.put(new Integer(KeyEvent.VK_H),"Histogram");
+		} else
+			addPlugInItem(analyzeMenu, "Histogram", "ij.plugin.Histogram", KeyEvent.VK_H, false);
 		addPlugInItem(analyzeMenu, "Plot Profile", "ij.plugin.Profiler(\"plot\")", KeyEvent.VK_K, false);
 		addPlugInItem(analyzeMenu, "Surface Plot...", "ij.plugin.SurfacePlotter", 0, false);
 		getMenu("Analyze>Gels", true);
