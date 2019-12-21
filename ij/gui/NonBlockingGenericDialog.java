@@ -83,10 +83,12 @@ public class NonBlockingGenericDialog extends GenericDialog implements ImageList
 	public void imageUpdated(ImagePlus imp) {}
 
 	/** Put the dialog into the foreground when the image we work on gets into the foreground */
+	@Override
     public void windowActivated(WindowEvent e) {
 		if ((e.getWindow() instanceof ImageWindow) && e.getOppositeWindow()!=this)
 			toFront();
+		WindowManager.setWindow(this);
 	}
-
+	
 }
 

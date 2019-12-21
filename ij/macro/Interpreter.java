@@ -287,7 +287,10 @@ public class Interpreter implements MacroConstants {
 				if (inLoop) throw new MacroException(CONTINUE);
 				break;
 			case WORD:
-				doAssignment();
+				if (pgm.code[pc+1]=='.')
+					doStringFunction();
+				else
+					doAssignment();
 				break;
 			case IF:
 				doIf();
@@ -343,6 +346,15 @@ public class Interpreter implements MacroConstants {
 			if (token!=';' && !done)
 				error("';' expected");
 		}
+	}
+	
+	private void doStringFunction() {
+		boolean stringFunction = (pgm.code[pc+2]&0xff)==136;
+		putTokenBack();
+		String s = stringFunction?getString():""+getExpression();
+		if (s.endsWith(".0"))
+			s = s.substring(0,s.length()-2);
+		IJ.log(s);
 	}
 	
 	void log(String s) {
@@ -404,7 +416,7 @@ public class Interpreter implements MacroConstants {
 						args[count] = v2;
 					} else
 						args[count] = new Variable(0, getExpression(), null);	
-				} else if (next==WORD && (nextPlus==',' || nextPlus==')')) {
+				} else if (next==WORD && (nextPlus==','||nextPlus==')')) {
 					value = 0.0;
 					Variable[] array = null;
 					int arraySize = 0;
@@ -434,6 +446,12 @@ public class Interpreter implements MacroConstants {
 						pc = savePC;
 						args[count] = new Variable(0, getExpression(), null);
 					}
+				} else if (next==WORD && nextPlus=='.' ) { // s.length, s.substring(), etc.
+					boolean stringFunction = (pgm.code[pc+3]&0xff)==136;
+					if (stringFunction)
+						args[count] = new Variable(0, 0.0, func.getString(), null);
+					else
+						args[count] = new Variable(0, getExpression(), null);
 				} else if (nextPlus=='+' && next==WORD) {
 					int savePC = pc;
 					getToken();

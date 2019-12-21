@@ -596,5 +596,12 @@ public class WindowManager {
 			frame.setState(Frame.NORMAL);
 		frame.toFront();
 	}
+	
+	public static void toFront(Window window) {
+		if (window==null) return;
+		if (window instanceof Frame && ((Frame)window).getState()==Frame.ICONIFIED)
+			((Frame)window).setState(Frame.NORMAL);
+		window.toFront();
+	}
 	    
 }

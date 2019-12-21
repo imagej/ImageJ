@@ -3,6 +3,7 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.Calibration;
+import java.awt.Point;
 
 /** This plugin animates stacks. */
 public class Animator implements PlugIn {
@@ -177,7 +178,10 @@ public class Animator implements PlugIn {
 				fps=count;
 				count=0;
 			}
-			IJ.showStatus((int)(fps+0.5) + " fps");
+			ImageCanvas ic = imp.getCanvas();
+			boolean showFrameRate = !(ic!=null?ic.cursorOverImage():false);
+			if (showFrameRate)
+				IJ.showStatus((int)(fps+0.5) + " fps");
 			if (time<nextTime)
 				IJ.wait((int)(nextTime-time));
 			else
@@ -199,6 +203,11 @@ public class Animator implements PlugIn {
 			}
 			if (imp.isLocked()) return;
 			swin.showSlice(slice);
+			if (!showFrameRate) {
+				Point loc = ic!=null?ic.getCursorLoc():null;
+				if (loc!=null)
+					imp.mouseMoved(loc.x,loc.y);
+			}
 		}
 	}
 

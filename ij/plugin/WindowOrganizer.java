@@ -173,10 +173,10 @@ public class WindowOrganizer implements PlugIn {
 				
 			}
 		}
-		Frame[] frames = WindowManager.getNonImageWindows();
-		if (frames!=null) {
-			for (int i=0; i<frames.length; i++)
-					WindowManager.toFront(frames[i]);
+		Window[] windows = WindowManager.getAllNonImageWindows();
+		if (windows!=null) {
+			for (int i=0; i<windows.length; i++)
+					WindowManager.toFront(windows[i]);
 		}
 		IJ.getInstance().toFront();
 	}

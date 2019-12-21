@@ -5,19 +5,25 @@
 </head>
 <body>
 
-<li> <u>1.52t7 15 December 2019</u>
+<li> <u>1.52t13 20 December 2019</u>
 <ul>
 <li> Thanks to Norbert Vischer, added support for superscripts and
 subscripts in plot axis labels
 (<a href="http://wsr.imagej.net/macros/examples/PlotWithSubscriptsAndSuperscrips.txt">example</a>). 
-<li> Added the following string functions to the macro language, where
+<li> Thanks to Mark Rivers, the i>Help&gt;Examples&gt;JavaScript&gt;TeraByte VirtualStack</i>
+example now generates test patterns and supports multiple image types.
+<li> Added the following macro language string functions, where
 's' is a string variable:<br>
-s.length, s.contains(s2), s.trim, s.charAt(i), s.replace(s1,s2), 
-s.replaceAll(s1,s2), s.indexOf(s2), s.lastIndexOf(s2), s.startsWith(s2), 
-s.endsWith(s2), s.matches(s2), s.substring(i1,i2), s.substring(i), s.indexOf(s2),
-s.toLowerCase, s.toUpperCase.
+s.charAt(i), s.contains(s2), s.endsWith(s2), s.indexOf(s2), s.lastIndexOf(s2),
+s.length, s.matches(s2), s.replace(s1,s2), s.startsWith(s2),
+s.substring(i1,i2), s.substring(i), s.toLowerCase,
+s.toUpperCase, s.trim.
 <li> Thanks to Stephen Royle, fixed a bug on macOS that caused
-the  <i>ImageJ&gt;Hide ImageJ</i> command to not work.
+the  command-h keyboard shortcut (<i>ImageJ&gt;Hide ImageJ</i>)
+to not work.
+<li> Thanks to Mark Rivers, fixed a bug that caused the cursor
+location and pixel value to not be displayed in the status bar
+for animated stacks.
 <li> Thanks to Dorai Iyer, fixed a 1.52s regression that caused characters
 entered using the text tool to sometimes be repeated.
 </ul>

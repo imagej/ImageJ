@@ -54,9 +54,13 @@ public class VirtualStack extends ImageStack {
 	</pre>
 	*/
 	public VirtualStack(int width, int height, int slices) {
+		this(width, height, slices, 8);
+	}
+
+	public VirtualStack(int width, int height, int slices, int bitDepth) {
 		super(width, height, null);
 		nSlices = slices;
-		bitDepth = 8;
+		this.bitDepth = bitDepth;
 	}
 
 	/** Adds an image to the end of the stack. The argument 
@@ -130,8 +134,25 @@ public class VirtualStack extends ImageStack {
 		were 1<=n<=nslices. Returns null if the stack is empty.
 	*/
 	public ImageProcessor getProcessor(int n) {
-		if (path==null) {
-			ImageProcessor ip = new ByteProcessor(getWidth(), getHeight());
+		if (path==null) {  //Help>Examples?JavaScript>Terabyte VirtualStack
+			ImageProcessor ip = null;
+			int w=getWidth(), h=getHeight();
+			switch (bitDepth) {
+				case 8: ip = new ByteProcessor(w,h); break;
+				case 16: ip = new ShortProcessor(w,h); break;
+				case 24: ip = new ColorProcessor(w,h); break;
+				case 32: ip = new FloatProcessor(w,h); break;
+			}
+			int value = 0;
+			ImagePlus img = WindowManager.getCurrentImage();
+			if (img!=null && img.getStackSize()==nSlices)
+				value = img.getCurrentSlice()-1;
+			if (bitDepth==16)
+				value *= 256;
+			if (bitDepth!=32) {
+				for (int i=0; i<ip.getPixelCount(); i++)
+					ip.set(i,value++);
+			}
 			label(ip, ""+n, Color.white);
 			return ip;
 		}

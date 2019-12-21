@@ -123,6 +123,10 @@ public class Colors implements PlugIn, ItemListener {
 		return c;
 	}
 
+	public static Color decode(String hexColor) {
+		return decode(hexColor, Color.gray);
+	}
+
 	public static Color decode(String hexColor, Color defaultColor) {
 		Color color = getColor(hexColor, null);
 		if (color==null) {
