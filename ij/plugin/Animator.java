@@ -132,6 +132,7 @@ public class Animator implements PlugIn {
 				}
 				if (imp.isLocked()) return;
 				imp.setPosition(imp.getChannel(), imp.getSlice(), frame);
+				imp.updateStatusbarValue();
 			}
 			return;
 		}
@@ -163,6 +164,7 @@ public class Animator implements PlugIn {
 				}
 				if (imp.isLocked()) return;
 				imp.setPosition(imp.getChannel(), slice, imp.getFrame());
+				imp.updateStatusbarValue();
 			}
 			return;
 		}
@@ -186,7 +188,7 @@ public class Animator implements PlugIn {
 				IJ.wait((int)(nextTime-time));
 			else
 				Thread.yield();
-			nextTime += (long)(1000.0/animationRate);
+			nextTime += (long)Math.round(1000.0/animationRate);
 			slice += sliceIncrement;
 			if (slice<first) {
 				slice = first+1;
@@ -203,11 +205,8 @@ public class Animator implements PlugIn {
 			}
 			if (imp.isLocked()) return;
 			swin.showSlice(slice);
-			if (!showFrameRate) {
-				Point loc = ic!=null?ic.getCursorLoc():null;
-				if (loc!=null)
-					imp.mouseMoved(loc.x,loc.y);
-			}
+			if (!showFrameRate)
+				imp.updateStatusbarValue();
 		}
 	}
 

@@ -89,7 +89,7 @@ public class PolygonRoi extends Roi {
 		else if (type==POINT)
 			this.type = POINT;
 		else
-			throw new IllegalArgumentException("Invalid type");
+			throw new IllegalArgumentException("PolygonRoi: Invalid type");
 	}
 
 	private void init2(int type) {
@@ -263,6 +263,35 @@ public class PolygonRoi extends Roi {
 			{updateFullWindow = false; imp.draw();}
 	}
 	
+	private void outlineLine() {
+		int n = 2*(nPoints-1);
+		float[] x = new float[n];
+		float[] y = new float[n];
+		int j = 0;
+		double width = getStrokeWidth();
+		if (width<=1.0)
+			setStrokeWidth(1.0000001);
+		FloatPolygon p = getFloatPolygon();
+		setStrokeWidth(width);
+		int index = 0;
+		for (int i=1; i<nPoints; i++) {
+			Line segment = new Line(p.xpoints[i-1],p.ypoints[i-1],p.xpoints[i],p.ypoints[i]);
+			FloatPolygon rect = segment.getFloatPolygon();
+			x[index] = rect.xpoints[0];
+			y[index] = rect.ypoints[0];
+			x[n-index-1] = rect.xpoints[1];
+			y[n-index-1] = rect.ypoints[1];
+			index++;
+			x[index] = rect.xpoints[3];
+			y[index] = rect.ypoints[3];
+			x[n-index-1] = rect.xpoints[2];
+			y[n-index-1] = rect.ypoints[2];
+			index++;
+		}
+		Roi outline = new PolygonRoi(x, y, Roi.POLYGON);
+		imp.setOverlay(new Overlay(outline));
+	}
+
 	private void drawSpline(Graphics g, float[] xpoints, float[] ypoints, int npoints, boolean closed, boolean fill, boolean isActiveOverlayRoi) {
 		if (xpoints==null || xpoints.length==0)
 			return;
@@ -297,7 +326,7 @@ public class PolygonRoi extends Roi {
 		} else
 			g2d.draw(path);
 	}
-
+	
 	public void drawPixels(ImageProcessor ip) {
 		int saveWidth = ip.getLineWidth();
 		if (getStrokeWidth()>1f)

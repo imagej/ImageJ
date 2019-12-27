@@ -214,15 +214,24 @@ public class FloatPolygon {
 		} while (p1!=pstart);
 		return new FloatPolygon(xx, yy, n2);
 	}
-
-	double sqr(double x) {return x*x;}
 	
-    double crossProduct(double x1, double y1, double x2, double y2) {
+	public synchronized void translate(double x, double y) {
+		float fx = (float)x;
+		float fy = (float)y;
+		for (int i=0; i<npoints; i++) {
+			xpoints[i] += fx;
+			ypoints[i] += fy;
+		}
+	}
+
+	private double sqr(double x) {return x*x;}
+	
+    private double crossProduct(double x1, double y1, double x2, double y2) {
         return (double)x1*y2 - (double)x2*y1;
     }
 
 	public String toString() {
-		return "Polygon[npoints="+npoints+"]";
+		return "FloatPolygon[npoints="+npoints+"]";
 	}
 	
 }

@@ -2263,34 +2263,111 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			FloatPolygon p = roi.getFloatPolygon();
 			roi.setStrokeWidth(width);
 			roi2 = new PolygonRoi(p, Roi.POLYGON);
-			//roi2.setDrawOffset(roi.getDrawOffset());
+			transferProperties(roi, roi2);
+			roi2.setStrokeWidth(0);
+			Color c = roi2.getStrokeColor();
+			if (c!=null)  // remove any transparency
+				roi2.setStrokeColor(new Color(c.getRed(),c.getGreen(),c.getBlue()));
 		} else {
-			int lwidth = (int)roi.getStrokeWidth();
-			if (lwidth<1)
-				lwidth = 1;
-			Rectangle bounds = roi.getBounds();
-			int width = bounds.width + lwidth*2;
-			int height = bounds.height + lwidth*2;
-			ImageProcessor ip2 = new ByteProcessor(width, height);
-			roi.setLocation(lwidth, lwidth);
-			ip2.setColor(255);
-			roi.drawPixels(ip2);
-			ip2.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
-			ThresholdToSelection tts = new ThresholdToSelection();
-			roi2 = tts.convert(ip2);
+			roi2 = convertLineToArea(this);
 			if (roi2==null)
 				return roi;
-			if (bounds.x==0&&bounds.y==0)
-				roi2.setLocation(0, 0);
-			else
-				roi2.setLocation(bounds.x-lwidth/2, bounds.y-lwidth/2);
 		}
-		transferProperties(roi, roi2);
+		return roi2;
+	}
+	
+	/** Converts a line selection into an area (polygon or composite) selection.<br>
+	 * Author: Michael Schmid
+	*/
+	public static Roi convertLineToArea(Roi line) {
+		if (line==null || !line.isLine())
+			throw new IllegalArgumentException("Line selection required"); 
+		double lineWidth = line.getStrokeWidth();
+		if (lineWidth<1)
+			lineWidth = 1;
+		Rectangle bounds = line.getBounds();
+		double width = bounds.x+bounds.width + lineWidth;
+		double height = bounds.y+bounds.height + lineWidth;
+		ImageProcessor ip = new ByteProcessor((int)Math.round(width), (int)Math.round(height));
+		ip.setColor(255);
+		double radius = lineWidth/2.0;
+		FloatPolygon p = line.getFloatPolygon();
+		int n = p.npoints;
+		float[] xv = new float[4]; //vertex points of rectangle will be filled for each line segment
+  		float[] yv = new float[4];
+  		float[] xt = new float[3]; //vertex points of triangle will be filled for each line segment
+  		float[] yt = new float[3];
+		double dx1 = p.xpoints[1]-p.xpoints[0];
+		double dy1 = p.ypoints[1]-p.ypoints[0];
+		double l = len(dx1, dy1);
+		dx1 = dx1/l;
+		dy1 = dy1/l;
+		double dx0 = dx1;
+		double dy0 = dy1;
+		double xfrom = p.xpoints[0];
+		double yfrom = p.ypoints[0];
+		for (int i=1; i<n; i++) { //line segment from point i-1 ("from") to point i ("to")
+			double xto = p.xpoints[i];
+			double yto = p.ypoints[i];
+			double dx2, dy2;
+			if (i<n-1) {
+				dx2 = p.xpoints[i+1]-p.xpoints[i];
+				dy2 = p.ypoints[i+1]-p.ypoints[i];
+				l = len(dx2, dy2);
+				dx2 = dx2/l;
+				dy2 = dy2/l;
+			} else {
+				dx2 = dx1;
+				dy2 = dy1;
+			}
+			xv[0] = (float)(xfrom+radius*dy1);
+			yv[0] = (float)(yfrom-radius*dx1);
+			xv[1] = (float)(xfrom-radius*dy1);
+			yv[1] = (float)(yfrom+radius*dx1);
+			xv[2] = (float)(xto-radius*dy1);
+			yv[2] = (float)(yto+radius*dx1);
+			xv[3] = (float)(xto+radius*dy1);
+			yv[3] = (float)(yto-radius*dx1);
+			Roi rect = new PolygonRoi(xv, yv, Roi.POLYGON);
+			ip.fill(rect);
+			if (i>0) {  //fill triangle to previous line segment
+				boolean rightTurn=(dx1*dy0>dx0*dy1);
+				xt[0] = (float)xfrom;
+				yt[0] = (float)yfrom;
+				if (rightTurn) {
+					xt[1] = (float)(xfrom-radius*dy0);
+					yt[1] = (float)(yfrom+radius*dx0);
+					xt[2] = (float)(xfrom-radius*dy1);
+					yt[2] = (float)(yfrom+radius*dx1);
+				} else {  
+					xt[1] = (float)(xfrom+radius*dy0);
+					yt[1] = (float)(yfrom-radius*dx0);
+					xt[2] = (float)(xfrom+radius*dy1);
+					yt[2] = (float)(yfrom-radius*dx1);
+				}
+				Roi tiangle = new PolygonRoi(xt, yt, Roi.POLYGON);
+				ip.fill(tiangle);
+			}
+			dx0 = dx1;
+			dy0 = dy1;
+			dx1 = dx2;
+			dy1 = dy2;
+			xfrom = xto;
+			yfrom = yto;
+		}
+		ip.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
+		ThresholdToSelection tts = new ThresholdToSelection();
+		Roi roi2 = tts.convert(ip);
+		transferProperties(line, roi2);
 		roi2.setStrokeWidth(0);
 		Color c = roi2.getStrokeColor();
 		if (c!=null)  // remove any transparency
 			roi2.setStrokeColor(new Color(c.getRed(),c.getGreen(),c.getBlue()));
 		return roi2;
+	}
+	
+	private static double len(double dx, double dy) {
+		return Math.sqrt(dx*dx+dy*dy);
 	}
 	
 	private static void transferProperties(Roi roi1, Roi roi2) {

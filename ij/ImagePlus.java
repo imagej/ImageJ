@@ -2439,24 +2439,23 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
     /** Displays the cursor coordinates and pixel value in the status bar.
-    	Called by ImageCanvas when the mouse moves. Can be overridden by
-    	ImagePlus subclasses.
+	 * Called by ImageCanvas when the mouse moves.
     */
 	public void mouseMoved(int x, int y) {
 		Roi roi2 = getRoi();
 		if (ij!=null && !IJ.statusBarProtected() && (roi2==null || roi2.getState()==Roi.NORMAL))
 			ij.showStatus(getLocationAsString(x,y) + getValueAsString(x,y));
-		savex=x; savey=y;
 	}
 
-    private int savex, savey;
-
     /** Redisplays the (x,y) coordinates and pixel value (which may
-		have changed) in the status bar. Called by the Next Slice and
-		Previous Slice commands to update the z-coordinate and pixel value.
+	 * have changed) in the status bar. Called by the Next Slice and
+	 * Previous Slice commands to update the z-coordinate and pixel value.
     */
 	public void updateStatusbarValue() {
-		IJ.showStatus(getLocationAsString(savex,savey) + getValueAsString(savex,savey));
+		ImageCanvas ic = getCanvas();
+		Point loc = ic!=null?ic.getCursorLoc():null;
+		if (loc!=null)
+			mouseMoved(loc.x,loc.y);
 	}
 
 	String getFFTLocation(int x, int y, Calibration cal) {

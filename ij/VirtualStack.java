@@ -18,6 +18,7 @@ public class VirtualStack extends ImageStack {
 	private String[] labels;
 	private int bitDepth;
 	private Properties  properties;
+	private boolean generateData;
 
 	
 	/** Default constructor. */
@@ -54,13 +55,18 @@ public class VirtualStack extends ImageStack {
 	</pre>
 	*/
 	public VirtualStack(int width, int height, int slices) {
-		this(width, height, slices, 8);
+		this(width, height, slices, "8-bit");
 	}
 
-	public VirtualStack(int width, int height, int slices, int bitDepth) {
+	public VirtualStack(int width, int height, int slices, String options) {
 		super(width, height, null);
 		nSlices = slices;
-		this.bitDepth = bitDepth;
+		int depth = 8;
+  		if (options.contains("16-bit")) depth=16;
+ 	    if (options.contains("RGB")) depth=24;
+        if (options.contains("32-bit")) depth=32;
+        this.generateData = options.contains("fill");
+		this.bitDepth = depth;
 	}
 
 	/** Adds an image to the end of the stack. The argument 
@@ -143,15 +149,17 @@ public class VirtualStack extends ImageStack {
 				case 24: ip = new ColorProcessor(w,h); break;
 				case 32: ip = new FloatProcessor(w,h); break;
 			}
-			int value = 0;
-			ImagePlus img = WindowManager.getCurrentImage();
-			if (img!=null && img.getStackSize()==nSlices)
-				value = img.getCurrentSlice()-1;
-			if (bitDepth==16)
-				value *= 256;
-			if (bitDepth!=32) {
-				for (int i=0; i<ip.getPixelCount(); i++)
-					ip.set(i,value++);
+			if (generateData) {
+				int value = 0;
+				ImagePlus img = WindowManager.getCurrentImage();
+				if (img!=null && img.getStackSize()==nSlices)
+					value = img.getCurrentSlice()-1;
+				if (bitDepth==16)
+					value *= 256;
+				if (bitDepth!=32) {
+					for (int i=0; i<ip.getPixelCount(); i++)
+						ip.set(i,value++);
+				}
 			}
 			label(ip, ""+n, Color.white);
 			return ip;
