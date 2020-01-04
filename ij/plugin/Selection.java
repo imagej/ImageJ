@@ -639,7 +639,7 @@ public class Selection implements PlugIn, Measurements {
 	
 	/** Converts a line selection into an area selection. */
 	public static Roi lineToArea(Roi roi) {
-		return roi.convertToPolygon();
+		return Roi.convertLineToArea(roi);
 	}
 	
 	void areaToLine(ImagePlus imp) {

@@ -186,6 +186,8 @@ public class Prefs {
 	public static boolean supportMacroUndo;
 	/** Use NonBlockingGenericDialogs in filters */	
 	public static boolean nonBlockingFilterDialogs;
+	//Save location of moved image windows */	
+	//public static boolean saveImageLocation = true;
 
 	static boolean commandLineMacro;
 	static Properties ijPrefs = new Properties();
@@ -637,7 +639,7 @@ public class Prefs {
 		 file as a string using the keyword <code>key</code>. */
 	public static void saveLocation(String key, Point loc) {
 		if (!doNotSaveWindowLocations)
-			set(key, loc.x+","+loc.y);
+			set(key, loc!=null?loc.x+","+loc.y:null);
 	}
 
 	/** Uses the keyword <code>key</code> to retrieve a location

@@ -17,7 +17,7 @@ public class ProfilePlot {
 	private boolean minAndMaxCalculated;
 	private static double fixedMin;
 	private static double fixedMax;
-    
+
 	protected ImagePlus imp;
 	protected double[] profile;
 	protected double magnification;
@@ -26,7 +26,7 @@ public class ProfilePlot {
 	protected String yLabel;
 	protected float[] xValues;
 
-	
+
 	public ProfilePlot() {
 	}
 
@@ -71,7 +71,7 @@ public class ProfilePlot {
 		else
 			magnification = 1.0;
 	}
-	
+
 	/** Returns the size of the plot that createWindow() creates. */
 	public Dimension getPlotSize() {
 		if (profile==null) return null;
@@ -89,14 +89,14 @@ public class ProfilePlot {
 		}
 		return new Dimension(width, height);
 	}
-	
+
 	/** Displays this profile plot in a window. */
 	public void createWindow() {
 		Plot plot = getPlot();
 		if (plot!=null)
 			plot.show();
 	}
-	
+
 	public Plot getPlot() {
 		if (profile==null)
 			return null;
@@ -118,7 +118,7 @@ public class ProfilePlot {
 		}
 		return plot;
 	}
-	
+
 	String getShortTitle(ImagePlus imp) {
 		String title = imp.getTitle();
 		int index = title.lastIndexOf('.');
@@ -131,38 +131,38 @@ public class ProfilePlot {
 	public double[] getProfile() {
 		return profile;
 	}
-	
+
 	/** Returns the calculated minimum value. */
 	public double getMin() {
 		if (!minAndMaxCalculated)
 			findMinAndMax();
 		return min;
 	}
-	
+
 	/** Returns the calculated maximum value. */
 	public double getMax() {
 		if (!minAndMaxCalculated)
 			findMinAndMax();
 		return max;
 	}
-	
+
 	/** Sets the y-axis min and max. Specify (0,0) to autoscale. */
 	public static void setMinAndMax(double min, double max) {
 		fixedMin = min;
 		fixedMax = max;
 		IJ.register(ProfilePlot.class);
 	}
-	
+
 	/** Returns the profile plot y-axis min. Auto-scaling is used if min=max=0. */
 	public static double getFixedMin() {
 		return fixedMin;
 	}
-	
+
 	/** Returns the profile plot y-axis max. Auto-scaling is used if min=max=0. */
 	public static double getFixedMax() {
 		return fixedMax;
 	}
-	
+
 	double[] getStraightLineProfile(Roi roi, Calibration cal, ImageProcessor ip) {
 			ip.setInterpolate(PlotWindow.interpolate);
 			Line line = (Line)roi;
@@ -201,7 +201,7 @@ public class ProfilePlot {
 			xInc = cal.pixelHeight;
 		return profile;
 	}
-	
+
 	public static double[] getColumnAverageProfile(Rectangle rect, ImageProcessor ip) {
 		double[] profile = new double[rect.width];
 		int[] counts = new int[rect.width];
@@ -219,8 +219,9 @@ public class ProfilePlot {
 		for (int i=0; i<rect.width; i++)
 			profile[i] /= counts[i];
 		return profile;
-	}	
+	}
 
+	/** Returns the profile for a polyline with single-pixel width */
 	double[] getIrregularProfile(Roi roi, ImageProcessor ip, Calibration cal) {
 		boolean interpolate = PlotWindow.interpolate;
 		boolean calcXValues = cal!=null && cal.pixelWidth!=cal.pixelHeight;
@@ -270,8 +271,13 @@ public class ProfilePlot {
 	}
 
 	double[] getWideLineProfile(ImagePlus imp, int lineWidth) {
-		Roi roi = (Roi)imp.getRoi().clone();
+		Roi roi = imp.getRoi();
+		if (roi == null) return null;	//roi may have changed asynchronously
+		if ((roi instanceof PolygonRoi) && roi.getState()==Roi.CONSTRUCTING)
+			return null;				//don't disturb roi under construction by spline fit
+		roi = (Roi)roi.clone();
 		ImageProcessor ip2 = (new Straightener()).straightenLine(imp, lineWidth);
+		if (ip2 == null) return null;
 		int width = ip2.getWidth();
 		int height = ip2.getHeight();
 		if (ip2 instanceof FloatProcessor)
@@ -293,7 +299,7 @@ public class ProfilePlot {
 		}
 		return profile;
 	}
-	
+
 	void findMinAndMax() {
 		if (profile==null) return;
 		double min = Double.MAX_VALUE;
@@ -307,6 +313,6 @@ public class ProfilePlot {
 		this.min = min;
 		this.max = max;
 	}
-	
+
 
 }

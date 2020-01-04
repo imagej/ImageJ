@@ -19,7 +19,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	public static final int MIN_HEIGHT = 32;
 	public static final int HGAP = 5;
 	public static final int VGAP = 5;
-	private static final String LOC_KEY = "image.loc";
+	public static final String LOC_KEY = "image.loc";
 	
 	protected ImagePlus imp;
 	protected ImageJ ij;
@@ -48,6 +48,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	public static long setMenuBarTime;	
     private int textGap = centerOnScreen?0:TEXT_GAP;
     private Point initialLoc;
+	private int screenHeight, screenWidth;
+
 	
 	/** This variable is set false if the user presses the escape key or closes the window. */
 	public boolean running;
@@ -211,8 +213,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			yloc = ybase;
 		}
 
-		int screenHeight = maxWindow.y+maxWindow.height-sliderHeight;
-		int screenWidth = maxWindow.x+maxWindow.width;
+		screenHeight = maxWindow.y+maxWindow.height-sliderHeight;
+		screenWidth = maxWindow.x+maxWindow.width;
 		double mag = 1;
 		if (!(this instanceof PlotWindow)) { // unless a plot (always at 100%), zoom out to show all of image
 			while (xbase+width*mag>screenWidth || ybase+height*mag>=screenHeight) {
@@ -429,14 +431,16 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			xloc = 0;
 			yloc = 0;
 		}
-		Point currentLoc = getLocation();
-		if (initialLoc!=null && !currentLoc.equals(initialLoc) && !IJ.isMacro()) {
-			Prefs.saveLocation(LOC_KEY, currentLoc);
-			xbase = -1;
-		}
 		WindowManager.removeWindow(this);
 		if (ij!=null && ij.quitting())  // this may help avoid thread deadlocks
 			return true;
+		Rectangle bounds = getBounds();
+		if (initialLoc!=null && !bounds.equals(initialLoc) && !IJ.isMacro()
+		&& bounds.y<screenHeight/3 && (bounds.y+bounds.height)<=screenHeight
+		&& (bounds.x+bounds.width)<=screenWidth) {
+			Prefs.saveLocation(LOC_KEY, new Point(bounds.x,bounds.y));
+			xbase = -1;
+		}
 		dispose();
 		if (imp!=null)
 			imp.flush();

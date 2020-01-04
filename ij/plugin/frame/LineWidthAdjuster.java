@@ -19,7 +19,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 	Scrollbar slider;
 	int value;
 	boolean setText;
-	static LineWidthAdjuster instance; 
+	static LineWidthAdjuster instance;
 	Thread thread;
 	boolean done;
 	TextField tf;
@@ -30,13 +30,13 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		if (instance!=null) {
 			WindowManager.toFront(instance);
 			return;
-		}		
+		}
 		WindowManager.addWindow(this);
 		instance = this;
 		slider = new Scrollbar(Scrollbar.HORIZONTAL, Line.getWidth(), 1, 1, sliderRange+1);
 		GUI.fixScrollbar(slider);
 		slider.setFocusable(false); // prevents blinking on Windows
-				
+
 		Panel panel = new Panel();
 		int margin = IJ.isMacOSX()?5:0;
 		GridBagLayout grid = new GridBagLayout();
@@ -55,18 +55,18 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		tf = new TextField(""+Line.getWidth(), 4);
 		tf.addTextListener(this);
 		grid.setConstraints(tf, c);
-    	panel.add(tf);
-		
+		panel.add(tf);
+
 		c.gridx = 2;
 		c.insets = new Insets(margin, 25, margin, 5);
 		checkbox = new Checkbox("Spline fit", isSplineFit());
 		checkbox.addItemListener(this);
 		panel.add(checkbox);
-		
+
 		add(panel, BorderLayout.CENTER);
 		slider.addAdjustmentListener(this);
 		slider.setUnitIncrement(1);
-		
+
 		GUI.scale(this);
 		pack();
 		Point loc = Prefs.getLocation(LOC_KEY);
@@ -81,7 +81,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		setup();
 		addKeyListener(IJ.getInstance());
 	}
-	
+
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
 		value = slider.getValue();
 		setText = true;
@@ -101,22 +101,22 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
     }
 	void setup() {
 	}
-	
-	// Separate thread that does the potentially time-consuming processing 
+
+	// Separate thread that does the potentially time-consuming processing
 	public void run() {
 		while (!done) {
 			synchronized(this) {
 				try {wait();}
 				catch(InterruptedException e) {}
 				if (done) return;
-				Line.setWidth(value);
-				if (setText) tf.setText(""+value);
-				setText = false;
-				updateRoi();
 			}
+			if (setText) tf.setText(""+value);
+			setText = false;
+			Line.setWidth(value);
+			updateRoi();
 		}
 	}
-	
+
 	private static void updateRoi() {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
@@ -138,7 +138,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 			imp.draw();
 		}
 	}
-	
+
 	boolean isSplineFit() {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null) return false;
@@ -168,7 +168,8 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		if (imp==null)
 			{checkbox.setState(false); return;};
 		Roi roi = imp.getRoi();
-		int type = roi!=null?roi.getType():null;
+		int type = roi!=null ? roi.getType() : -1;
+
 		if (roi==null || !(roi instanceof PolygonRoi) || type==Roi.FREEROI || type==Roi.FREELINE || type==Roi.ANGLE) {
 			checkbox.setState(false);
 			return;
@@ -176,16 +177,18 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		PolygonRoi poly = (PolygonRoi)roi;
 		boolean splineFit = poly.isSplineFit();
 		if (selected && !splineFit) {
-			poly.fitSpline();
+			poly.fitSpline(); //this must not call roi.notifyListeners (live plot would trigger it continuously)
 			Prefs.splineFitLines = true;
 			imp.draw();
+			roi.notifyListeners(RoiListener.MODIFIED);
 		} else if (!selected && splineFit) {
 			poly.removeSplineFit();
 			Prefs.splineFitLines = false;
 			imp.draw();
+			roi.notifyListeners(RoiListener.MODIFIED);
 		}
 	}
-	
+
 	public static void update() {
 		if (instance==null) return;
 		instance.checkbox.setState(instance.isSplineFit());
@@ -196,6 +199,5 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 			instance.tf.setText(""+lineWidth);
 		}
 	}
-	
-} 
 
+}

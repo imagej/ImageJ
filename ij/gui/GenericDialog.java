@@ -1311,7 +1311,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 
     /** Reset the counters before reading the dialog parameters */
-	private void resetCounters() {
+	void resetCounters() {
 		nfIndex = 0;        // prepare for readout
 		sfIndex = 0;
 		cbIndex = 0;

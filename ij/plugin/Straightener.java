@@ -65,7 +65,7 @@ public class Straightener implements PlugIn {
 		imp2.show();
 		if (isMacro) Line.setWidth(originalWidth);
 	}
-	
+
 	public ImageProcessor straighten(ImagePlus imp, Roi roi, int width) {
 		ImageProcessor ip2;
 		if (imp.getBitDepth()==24 && roi.getType()!=Roi.LINE)
@@ -81,7 +81,7 @@ public class Straightener implements PlugIn {
 			ip2 = straightenLine(imp, width);
 		return ip2;
 	}
-		
+
 	public ImageStack straightenStack(ImagePlus imp, Roi roi, int width) {
 		int current = imp.getCurrentSlice();
 		int n = imp.getStackSize();
@@ -100,7 +100,11 @@ public class Straightener implements PlugIn {
 
 	public ImageProcessor straightenLine(ImagePlus imp, int width) {
 		Roi tempRoi = imp.getRoi();
-		if (!(tempRoi instanceof PolygonRoi))
+		if (tempRoi == null) return null;	//roi may have changed asynchronously
+		if (tempRoi instanceof Line) {
+			FloatPolygon fp = ((Line)tempRoi).getFloatPoints();
+			tempRoi = new PolygonRoi(fp.xpoints, fp.ypoints, 2, Roi.POLYLINE);
+		} else if (!(tempRoi instanceof PolygonRoi))
 			return null;
 		PolygonRoi roi = (PolygonRoi)tempRoi;
 		if (roi==null)
@@ -164,18 +168,15 @@ public class Straightener implements PlugIn {
 		}
 		return ip2;
 	}
-	
+
 	public ImageProcessor rotateLine(ImagePlus imp, int width) {
 		Roi roi = imp.getRoi();
 		if (roi==null || roi.getType()!=Roi.LINE)
 			throw new IllegalArgumentException("Straight line selection expected");
-		Polygon p = ((Line)roi).getPoints();
-		imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, 2, Roi.POLYLINE));
 		ImageProcessor ip2 = imp.getBitDepth()==24?straightenRGB(imp, width):straightenLine(imp, width);
-		imp.setRoi(roi);
 		return ip2;
 	}
-	
+
 	ImageProcessor straightenRGB(ImagePlus imp, int width) {
 		int w=imp.getWidth(), h=imp.getHeight();
 		int size = w*h;
@@ -184,16 +185,18 @@ public class Straightener implements PlugIn {
         byte[] b = new byte[size];
 		ColorProcessor cp = (ColorProcessor)imp.getProcessor();
 		cp.getRGB(r, g, b);
+		Roi roi = imp.getRoi();
+		if (roi == null) return null;
         ImagePlus imp2 = new ImagePlus("red", new ByteProcessor(w, h, r, null));
-        imp2.setRoi((Roi)imp.getRoi().clone());
+        imp2.setRoi((Roi)roi.clone());
         ImageProcessor red = straightenLine(imp2, width);
         if (red==null) return null;
         imp2 = new ImagePlus("green", new ByteProcessor(w, h, g, null));
-        imp2.setRoi((Roi)imp.getRoi().clone());
+        imp2.setRoi((Roi)roi.clone());
         ImageProcessor green = straightenLine(imp2, width);
         if (green==null) return null;
         imp2 = new ImagePlus("blue", new ByteProcessor(w, h, b, null));
-        imp2.setRoi((Roi)imp.getRoi().clone());
+        imp2.setRoi((Roi)roi.clone());
         ImageProcessor blue = straightenLine(imp2, width);
         if (blue==null) return null;
         ColorProcessor cp2 = new ColorProcessor(red.getWidth(), red.getHeight());
@@ -204,7 +207,7 @@ public class Straightener implements PlugIn {
         imp.setRoi(imp2.getRoi());
         return cp2;
  	}
- 	
+
 	ImageProcessor straightenComposite(ImagePlus imp, int width) {
 		Image img = imp.getImage();
 		ImagePlus imp2 = new ImagePlus("temp", new ColorProcessor(img));
@@ -213,7 +216,7 @@ public class Straightener implements PlugIn {
         imp.setRoi(imp2.getRoi());
         return ip2;
 	}
-	
+
 	ImageProcessor rotateCompositeLine(ImagePlus imp, int width) {
 		Image img = imp.getImage();
 		ImagePlus imp2 = new ImagePlus("temp", new ColorProcessor(img));

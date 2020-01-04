@@ -31,6 +31,8 @@ public class NonBlockingGenericDialog extends GenericDialog implements ImageList
 		try {
 			wait();
 		} catch (InterruptedException e) { }
+		finalizeRecording();
+		resetCounters();
 	}
 
 	public synchronized void actionPerformed(ActionEvent e) {

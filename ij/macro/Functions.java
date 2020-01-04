@@ -4545,6 +4545,9 @@ public class Functions implements MacroConstants, Measurements {
 			ImageConverter.setDoScaling(state);
 		else if (arg1.startsWith("copyhead"))
 			Prefs.copyColumnHeaders = state;
+		//else if (arg1.startsWith("saveimageloc")) {
+		//	Prefs.saveImageLocation = state;
+		//	if (!state) Prefs.set(ImageWindow.LOC_KEY,null);
 		else
 			interp.error("Invalid option");
 	}
