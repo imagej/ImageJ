@@ -56,7 +56,7 @@ public class GifWriter implements PlugIn {
 				if (showErrors) {
 					msg = "An error occured writing the file.\n \n" + msg;
 					if (msg.contains("NullPointerException"))
-            			msg = "Incorrect file path: \""+path+"\"";
+						msg = "Incorrect file path: \""+path+"\"";
 					IJ.error("GIF Writer", msg);
 					showErrors = false;
 				}

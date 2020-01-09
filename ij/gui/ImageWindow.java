@@ -46,8 +46,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	private static boolean centerOnScreen;
 	private static Point nextLocation;
 	public static long setMenuBarTime;	
-    private int textGap = centerOnScreen?0:TEXT_GAP;
-    private Point initialLoc;
+	private int textGap = centerOnScreen?0:TEXT_GAP;
+	private Point initialLoc;
 	private int screenHeight, screenWidth;
 
 	
