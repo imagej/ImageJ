@@ -118,6 +118,8 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
 		//IJ.log("itemStateChanged: "+e);
 		if (e.getStateChange()==ItemEvent.SELECTED) {
 			int index = list.getSelectedIndex();
+			if (index<0)
+				return;
 			command = list.getItem(index);
 			if (!command.equals(divider)) {
 				if (command.equals("Debug Mode"))

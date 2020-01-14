@@ -820,4 +820,3 @@ public class Selection implements PlugIn, Measurements {
 	}
 
 }
-
