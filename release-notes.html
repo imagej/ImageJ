@@ -5,13 +5,19 @@
 </head>
 <body>
 
-<li> <u>1.52t24 14 January 2020</u>
+<li> <u>1.52t26 15 January 2020</u>
 <ul>
+<li> Thanks to Laurent Thomas, added a "Group" field to the
+<i>Edit&gt;Selection&gt;Properties</i> dialog and an
+"ROI Menu" tool to the toolbar's <i>&gt;&gt;</i> menu.
 <li> Thanks to Norbert Vischer, added support for superscripts and
 subscripts in plot axis labels
 (<a href="http://wsr.imagej.net/macros/examples/PlotWithSubscriptsAndSuperscrips.txt">example</a>). 
 <li> Thanks to Mark Rivers, the i>Help&gt;Examples&gt;JavaScript&gt;TeraByte VirtualStack</i>
 example now generates test patterns and supports multiple image types.
+<li> Thanks to Laurent Thomas, added the Roi.getDefaultGroup,
+Roi.setDefaultGroup(group), Roi.getGroup and Roi.setGroup(group)
+macro functions, and the corresponding Roi class methods.
 <li> Added the following macro language string functions, where
 's' is a string variable:<br>
 s.charAt(i), s.contains(s2), s.endsWith(s2), s.indexOf(s2), s.lastIndexOf(s2),
@@ -42,7 +48,7 @@ of the 'stepSize' argument was very small.
 plot and LineWidthAdjuster bugs.
 <li> Thanks to Norbert Vischer, fixed a bug that caused the
 <i>Image&gt;Overay&gt;Flatten</i> command to throw
-an exception.
+an exception when flattening hyperstacks.
 <li> Thanks to Dorai Iyer, fixed a 1.52s regression that caused characters
 entered using the text tool to sometimes be repeated.
 <li> Thanks to Rodrigo Goncalves and Curtis Rueden, fixed a

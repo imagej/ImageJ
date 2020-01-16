@@ -88,6 +88,9 @@ public class RoiProperties {
 			position =  roi.getCPosition() +","+roi.getZPosition()+","+ roi.getTPosition();
 		if (position.equals("0"))
 			position = "none";
+		String group = ""+roi.getGroup();
+		if (group.equals("0"))
+			group = "none";
 		String linec = Colors.colorToString(strokeColor);
 		String fillc = Colors.colorToString(fillColor);
 		if (IJ.isMacro()) {
@@ -103,6 +106,7 @@ public class RoiProperties {
 			if (position.contains(",") || (imp!=null&&imp.isHyperStack()))
 				label = "Position (c,s,f):";
 			gd.addStringField(label, position);
+			gd.addStringField("Group:", group);
 		}
 		if (isText) {
 			gd.addStringField("Stroke color:", linec);
@@ -119,6 +123,7 @@ public class RoiProperties {
 				gd.addNumericField("Width:", strokeWidth, digits);
 			}
 		}
+
 		if (!isLine) {
 			if (isPoint) {
 				int index = ((PointRoi)roi).getPointType();
@@ -166,16 +171,18 @@ public class RoiProperties {
 				gd.addMessage("No properties");
 			}
 		}
-		if (showName && "".equals(name) && "none".equals(position) && "none".equals(fillc))
+		if (showName && "".equals(name) && "none".equals(position) && "none".equals(group) && "none".equals(fillc))
 			gd.setSmartRecording(true);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
 		String position2 = "";
+		String group2 = "";
 		if (showName) {
 			name = gd.getNextString();
 			if (!isRange) roi.setName(name.length()>0?name:null);
 			position2 = gd.getNextString();
+			group2 = gd.getNextString();
 		}
 		linec = gd.getNextString();
 		if (!isPoint)
@@ -238,8 +245,12 @@ public class RoiProperties {
 			troi.setAntiAlias(antialias);
 		} else
 			roi.setStrokeWidth((float)strokeWidth);
-		if (showName)
+		if (showName) {
 			setPosition(roi, position, position2);
+			Color color = setGroup(roi, group, group2);
+			if (color!=null)
+				strokeColor = color;
+		}
 		roi.setStrokeColor(strokeColor);
 		roi.setFillColor(fillColor);
 		if (newOverlay) roi.setName("new-overlay");
@@ -253,7 +264,7 @@ public class RoiProperties {
 				rois[i].setFillColor(fillColor);
 			}
 			imp.draw();
-			imp.getProcessor(); // needed for corect recordering
+			imp.getProcessor(); // needed for correct recordering
 		}
 		if (listCoordinates) {
 			if (showPointCounts && (roi instanceof PointRoi))
@@ -292,6 +303,21 @@ public class RoiProperties {
 			roi.setPosition(pos[0], pos[1], pos[2]);
 			return;
 		}
+	}
+	
+	private Color setGroup(Roi roi, String group1, String group2) {
+		if (group1.equals(group2))
+			return null;
+		if (group2.equals("none") || group2.equals("0")) {
+			roi.setGroup(0);
+			return Roi.getColor();
+		}
+		double group = Tools.parseDouble(group2);
+		if (!Double.isNaN(group)) {
+			roi.setGroup((int)group);
+			return roi.getStrokeColor();
+		}
+		return null;
 	}
 		
 	public boolean showImageDialog(String name) {

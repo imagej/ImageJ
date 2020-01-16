@@ -2,10 +2,10 @@ package ij.gui;
 import ij.*;
 import ij.process.*;
 import ij.measure.*;
+import ij.plugin.*;
 import ij.plugin.frame.Recorder;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.filter.ThresholdToSelection;
-import ij.plugin.RectToolOptions;
 import ij.macro.Interpreter;
 import ij.io.RoiDecoder;
 import java.awt.*;
@@ -54,7 +54,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	protected static int pasteMode = Blitter.COPY;
 	protected static int lineWidth = 1;
 	protected static Color defaultFillColor;
+	protected static int defaultGroup; // zero is no specific group
+	protected static Color groupColor;
 	private static Vector listeners = new Vector();
+	private static LUT glasbeyLut;
 	
 	protected int type;
 	protected int xMax, yMax;
@@ -72,7 +75,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	protected double asp_bk;        //saves aspect ratio if resizing takes roi very small
 	protected ImageProcessor cachedMask;
 	protected Color handleColor = Color.white;
-	protected Color	 strokeColor;
+	protected Color strokeColor;
 	protected Color instanceColor;  //obsolete; replaced by strokeColor
 	protected Color fillColor;
 	protected BasicStroke stroke;
@@ -95,6 +98,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	private double ycenter;
 	private boolean listenersNotified;
 	private boolean antiAlias = true;
+	private int group;
 
 
 	/** Creates a rectangular ROI. */
@@ -135,6 +139,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			g.dispose();
 		}
 		fillColor = defaultFillColor;
+		this.group = defaultGroup; //initialize with current group and associated color
+		if (defaultGroup>0)
+			this.strokeColor = groupColor;
 	}
 	
 	/** Creates a rounded rectangular ROI using double arguments. */
@@ -179,6 +186,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 				setStrokeColor(scolor);
 		}
 		fillColor = defaultFillColor;
+		this.group = defaultGroup;
+		if (defaultGroup>0)
+			this.strokeColor = groupColor;
 	}
 
 	/** @deprecated */
@@ -1575,6 +1585,50 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		clipboard = null;
 		imp.getProcessor().reset();
 		imp.updateAndDraw();
+	}	
+
+	/** Returns the group value assigned to newly created ROIs. */
+	public static int getDefaultGroup() {
+		return defaultGroup;
+	}
+
+	/** Sets the group value assigned to newly created ROIs, and updates default group color. */
+	public static void setDefaultGroup(int group) {
+		if (group<0 || group>255)
+			throw new IllegalArgumentException("Invalid group: "+group);
+		defaultGroup = group;
+		groupColor = getGroupColor(group);
+	}
+	
+	/** Returns the group attribute of this ROI. */
+	public int getGroup() {
+		return this.group;
+	}
+
+	/** Sets the group of this Roi, and updates stroke color accordingly. */
+	public void setGroup(int group) {
+		if (group<0 || group>255)
+			throw new IllegalArgumentException("Invalid group: "+group);
+		this.group = group;
+		this.strokeColor = group>0?getGroupColor(group):null;
+		if (imp!=null) // Update Roi Color in the GUI
+			imp.draw();
+	}
+
+	/** Retrieves color associated to a given roi group. */
+	private static Color getGroupColor(int group) {
+		Color color = ROIColor; // default ROI color
+		if (group>0) { // read Glasbey Lut
+			if (glasbeyLut==null) {
+				String path = IJ.getDir("luts")+"Glasbey.lut";
+				glasbeyLut = LutLoader.openLut("noerror:"+path);
+				if (glasbeyLut==null)
+					IJ.log("LUT not found: "+path);
+			}
+			if (glasbeyLut!=null)
+				color = new Color(glasbeyLut.getRGB(group));
+		}
+		return color;
 	}
 
 	/** Returns the angle in degrees between the specified line and a horizontal line. */

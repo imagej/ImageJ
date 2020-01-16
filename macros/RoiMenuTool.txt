@@ -1,0 +1,39 @@
+   var rCmds = newMenu("ROI Menu Tool", 
+                        newArray("Set Default Roi Group", "Set Group of Selected ROIs", "Select Group") );
+
+   macro "ROI Menu Tool - C037T1d16R" {
+       cmd = getArgument();
+       if (cmd=="Set Default ROI Group")
+          setDefaultRoiGroup();
+       else if (cmd=="Set Group of Selected ROIs")
+          setGroup();       
+       else if (cmd=="Select Group")
+          selectGroup();
+      else
+         return;
+   }
+
+  function setDefaultRoiGroup() {
+     group = parseInt(call("ij.gui.Roi.getDefaultGroup"));
+     Dialog.create("Set Default Group");
+     Dialog.addNumber("Default group", group);
+     Dialog.show;
+     group = Dialog.getNumber();
+     Roi.setDefaultGroup(group);
+  }
+
+  function setGroup() {
+     Dialog.create("Set Group");
+     Dialog.addString("Group", "1");
+     Dialog.show;
+     group = Dialog.getString();
+     call("ij.plugin.frame.RoiManager.setGroup", group);
+  }
+
+  function selectGroup(){
+     Dialog.create("Select group");
+     Dialog.addString("Group", "0");
+     Dialog.show;
+     group = Dialog.getString();
+     call("ij.plugin.frame.RoiManager.selectGroup", group);
+  }

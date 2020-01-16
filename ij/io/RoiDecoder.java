@@ -82,7 +82,7 @@ public class RoiDecoder {
 	public static final int NAME_LENGTH = 20;
 	public static final int OVERLAY_LABEL_COLOR = 24;
 	public static final int OVERLAY_FONT_SIZE = 28; //short
-	public static final int AVAILABLE_BYTE1 = 30;  //byte
+	public static final int GROUP = 30;  //byte
 	public static final int IMAGE_OPACITY = 31;  //byte
 	public static final int IMAGE_SIZE = 32;  //int
 	public static final int FLOAT_STROKE_WIDTH = 36;  //float
@@ -180,6 +180,7 @@ public class RoiDecoder {
 		int channel=0, slice=0, frame=0;
 		int overlayLabelColor=0;
 		int overlayFontSize=0;
+		int group=0;
 		int imageOpacity=0;
 		int imageSize=0;
 		boolean subPixelResolution = (options&SUB_PIXEL_RESOLUTION)!=0 &&  version>=222;
@@ -202,6 +203,7 @@ public class RoiDecoder {
 			overlayFontSize = getShort(hdr2Offset+OVERLAY_FONT_SIZE);
 			imageOpacity = getByte(hdr2Offset+IMAGE_OPACITY);
 			imageSize = getInt(hdr2Offset+IMAGE_SIZE);
+			group = getByte(hdr2Offset+GROUP);
 		}
 		
 		if (name!=null && name.endsWith(".roi"))
@@ -373,6 +375,10 @@ public class RoiDecoder {
 			if (counters!=null && (roi instanceof PointRoi))
 				((PointRoi)roi).setCounters(counters);
 		}
+		
+		// set group (1.52t or later)
+		if (version>=228 && group>0)
+			roi.setGroup(group);
 
 		roi.setPosition(position);
 		if (channel>0 || slice>0 || frame>0)

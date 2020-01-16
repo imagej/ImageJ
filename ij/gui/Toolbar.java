@@ -46,7 +46,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	public static final String[] builtInTools = {"Arrow","Brush","Command Finder", "Developer Menu","Flood Filler",
 		"LUT Menu","Overlay Brush","Pencil","Pixel Inspector","Selection Rotator",
-		"Spray Can","Stacks Menu"};
+		"Spray Can","Stacks Menu","ROI Menu"};
 	private static final String[] builtInTools2 = {"Pixel Inspection Tool","Paintbrush Tool","Flood Fill Tool"};
 
 	private static final int NUM_TOOLS = 23;
@@ -1822,6 +1822,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			installMacroFromJar("/macros/LUTMenuTool.txt");
 		else if (label.startsWith("Command Finder"))
 			installMacroFromJar("/macros/CommandFinderTool.txt");
+		else if (label.startsWith("ROI"))
+			installMacroFromJar("/macros/RoiMenuTool.txt");
 		else
 			ok = false;
 		return ok;

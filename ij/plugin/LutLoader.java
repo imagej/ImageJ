@@ -15,6 +15,7 @@ import java.net.*;
 public class LutLoader extends ImagePlus implements PlugIn {
 
 	private static String defaultDirectory = null;
+	private boolean suppressErrors;
 
 	/** If 'arg'="", displays a file open dialog and opens the specified
 		LUT. If 'arg' is a path, opens the LUT specified by the path. If
@@ -229,6 +230,9 @@ public class LutLoader extends ImagePlus implements PlugIn {
 	
 	/** Opens a LUT and returns it as a LUT object. */
 	public static LUT openLut(String pathOrURL) {
+		boolean noError = pathOrURL.startsWith("noerror:");
+		if (noError)
+			pathOrURL = pathOrURL.substring(8);
 		FileInfo fi = new FileInfo();
 		fi.reds = new byte[256]; 
 		fi.greens = new byte[256]; 
@@ -246,6 +250,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 				return null;
 		}
 		LutLoader loader = new LutLoader();
+		loader.suppressErrors = noError;
 		boolean ok = loader.openLut(fi);
 		if (ok)
 			return new LUT(fi.reds, fi.greens, fi.blues);
@@ -277,7 +282,8 @@ public class LutLoader extends ImagePlus implements PlugIn {
 			if (size==0)
 				error(path);
 		} catch (IOException e) {
-			IJ.error("LUT Loader", ""+e);
+			if (!suppressErrors)
+				IJ.error("LUT Loader", ""+e);
 		}
 		return size==256;
 	}

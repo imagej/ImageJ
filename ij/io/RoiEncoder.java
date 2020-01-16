@@ -15,7 +15,7 @@ import java.awt.geom.*;
 public class RoiEncoder {
 	static final int HEADER_SIZE = 64;
 	static final int HEADER2_SIZE = 64;
-	static final int VERSION = 227; // v1.50d (point counters)
+	static final int VERSION = 228; // v1.52t (group)
 	private String path;
 	private OutputStream f;
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, 
@@ -410,6 +410,7 @@ public class RoiEncoder {
 			putProps(roi, hdr2Offset);
 		if (countersSize>0)
 			putPointCounters(roi, hdr2Offset);
+		putByte(hdr2Offset+RoiDecoder.GROUP, roi.getGroup());
 	}
 
 	void putName(Roi roi, int hdr2Offset) {

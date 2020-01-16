@@ -1282,6 +1282,24 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (record()) Recorder.record("roiManager", "Multi Plot");
 		imp.unlock();
 	}
+		
+	/** Sets the group for the selected ROIs. */ 
+	public void setGroup(int group) {
+		int[] indexes = getSelectedIndexes();
+		for (int i: indexes) {
+			Roi roi = getRoi(i);
+			roi.setGroup(group);
+		}
+	}
+
+	/** Macro-callable version of setGroup(). */
+	public static void setGroup(String group) {
+		RoiManager rm = getInstance();
+		if (rm==null) return;
+		int groupInt = (int)Tools.parseDouble(group,0);
+		if (groupInt>0)
+			rm.setGroup(groupInt);
+	}
 
 	boolean drawOrFill(int mode) {
 		int[] indexes = getIndexes();
@@ -1339,6 +1357,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		double opacity = -1;
 		int pointType = -1;
 		int pointSize = -1;
+		int group = -1;
 		if (showDialog) {
 			//String label = (String) listModel.getElementAt(indexes[0]);
 			rpRoi = (Roi)rois.get(indexes[0]);
@@ -1355,10 +1374,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			RoiProperties rp = new RoiProperties("Properties", rpRoi);
 			if (!rp.showDialog())
 				return;
+			// Recover parameters of the Property window that were stored in the "transient" roi
 			lineWidth = (int)rpRoi.getStrokeWidth();
 			defaultLineWidth = lineWidth;
 			color =	 rpRoi.getStrokeColor();
 			fillColor =	 rpRoi.getFillColor();
+			group = rpRoi.getGroup();
 			defaultColor = color;
 			if (rpRoi instanceof TextRoi) {
 				font = ((TextRoi)rpRoi).getCurrentFont();
@@ -1384,6 +1405,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (color!=null) roi.setStrokeColor(color);
 			if (lineWidth>=0) roi.setStrokeWidth(lineWidth);
 			roi.setFillColor(fillColor);
+			if (group>0) roi.setGroup(group); // overwrite strokeColor for group>0
 			if (rpRoi!=null && n==1) {
 				if (rpRoi.hasHyperStackPosition())
 					roi.setPosition(rpRoi.getCPosition(), rpRoi.getZPosition(), rpRoi.getTPosition());
@@ -1412,6 +1434,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (roi!=null && (n==1||!showingAll)) {
 			if (lineWidth>=0) roi.setStrokeWidth(lineWidth);
 			if (color!=null) roi.setStrokeColor(color);
+			if (group>0) roi.setGroup(group); // overwrite strokeColor for group>0
 			if (fillColor!=null) roi.setFillColor(fillColor);
 			if (roi!=null && (roi instanceof TextRoi)) {
 				((TextRoi)roi).setCurrentFont(font);
@@ -2289,6 +2312,28 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			roi.setImage(imp);
 			roi.update(shiftKeyDown, altKeyDown);
 		}
+	}
+
+	/** Selects all ROIs of a given group. */
+	public void selectGroup(int group) {
+		ArrayList<Integer>listSelected = new ArrayList<Integer>();
+		for (int i=0; i<getCount(); i++) {
+			Roi roi = getRoi(i);
+			if (roi.getGroup()==group)
+				listSelected.add(i);
+		}
+		int[] selected = new int[listSelected.size()];
+		for (int j=0; j<listSelected.size(); j++)
+			selected[j] = listSelected.get(j);
+		setSelectedIndexes(selected);
+	}
+
+	/** Macro-callable version of selectGroup, */
+	public static void selectGroup(String group) {
+		RoiManager rm = getInstance();
+		if (rm==null) return;
+		int groupInt = (int)Tools.parseDouble(group,0);
+		if (groupInt>0) rm.selectGroup(groupInt);
 	}
 
 	public void deselect() {
