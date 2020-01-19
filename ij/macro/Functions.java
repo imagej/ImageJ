@@ -1698,6 +1698,8 @@ public class Functions implements MacroConstants, Measurements {
 	double getSelectionType() {
 		interp.getParens();
 		double type = -1;
+		if (WindowManager.getImageCount()==0)
+			return type;
 		ImagePlus imp = getImage();
 		Roi roi = imp.getRoi();
 		if (roi!=null)
@@ -7275,7 +7277,13 @@ public class Functions implements MacroConstants, Measurements {
 		if (interp.token!=WORD)
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
-		if (name.equals("getDefaultGroup")) {
+		if (name.equals("getDefaultStrokeWidth")) {
+			interp.getParens();
+			return new Variable(Roi.getDefaultStrokeWidth());
+		} else if (name.equals("setDefaultStrokeWidth")) {
+			Roi.setDefaultStrokeWidth(getArg());
+			return null;
+		} else if (name.equals("getDefaultGroup")) {
 			interp.getParens();
 			return new Variable(Roi.getDefaultGroup());
 		} else if (name.equals("setDefaultGroup")) {

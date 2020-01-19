@@ -15,7 +15,7 @@ import java.awt.geom.*;
 public class RoiEncoder {
 	static final int HEADER_SIZE = 64;
 	static final int HEADER2_SIZE = 64;
-	static final int VERSION = 228; // v1.52t (group)
+	static final int VERSION = 228; // v1.52t (roi groups, scale lines)
 	private String path;
 	private OutputStream f;
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, 
@@ -84,6 +84,8 @@ public class RoiEncoder {
 		int roiType = roi.getType();
 		int type = rect;
 		int options = 0;
+		if (roi.getScaleLines())
+			options |= RoiDecoder.SCALE_LINES;
 		roiName = roi.getName();
 		if (roiName!=null)
 			roiNameSize = roiName.length()*2;

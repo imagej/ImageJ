@@ -54,10 +54,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	protected static int pasteMode = Blitter.COPY;
 	protected static int lineWidth = 1;
 	protected static Color defaultFillColor;
-	protected static int defaultGroup; // zero is no specific group
-	protected static Color groupColor;
 	private static Vector listeners = new Vector();
 	private static LUT glasbeyLut;
+	private static int defaultGroup; // zero is no specific group
+	private static Color groupColor;
+	private static double defaultStrokeWidth;
 	
 	protected int type;
 	protected int xMax, yMax;
@@ -99,6 +100,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	private boolean listenersNotified;
 	private boolean antiAlias = true;
 	private int group;
+	private boolean scaleLines; // Scale stroke width on zoomed images?
 
 
 	/** Creates a rectangular ROI. */
@@ -137,6 +139,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			Graphics g = ic.getGraphics();
 			draw(g);
 			g.dispose();
+		}
+		if (defaultStrokeWidth>0.0) {
+			setStrokeWidth(defaultStrokeWidth);
+			scaleLines = false;
 		}
 		fillColor = defaultFillColor;
 		this.group = defaultGroup; //initialize with current group and associated color
@@ -184,6 +190,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			Color scolor = RectToolOptions.getDefaultStrokeColor();
 			if (scolor!=null)
 				setStrokeColor(scolor);
+		}
+		if (defaultStrokeWidth>0.0) {
+			setStrokeWidth(defaultStrokeWidth);
+			scaleLines = false;
 		}
 		fillColor = defaultFillColor;
 		this.group = defaultGroup;
@@ -1587,6 +1597,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		imp.updateAndDraw();
 	}	
 
+	/** Returns the default stroke width. */
+	public static double getDefaultStrokeWidth() {
+		return defaultStrokeWidth;
+	}
+
+	/** Sets the default stroke width. */
+	public static void setDefaultStrokeWidth(double width) {
+		defaultStrokeWidth = width<0.0?0.0:width;
+	}
+
 	/** Returns the group value assigned to newly created ROIs. */
 	public static int getDefaultGroup() {
 		return defaultGroup;
@@ -1763,6 +1783,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	/** Sets the width of the line used to draw this ROI. Set
 	 * the width to 0.0 and the ROI will be drawn using a
 	 * a 1 pixel stroke width regardless of the magnification.
+	 * @see #setDefaultStrokeWidth(double)
 	 * @see #setStrokeColor(Color)
 	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
@@ -1778,6 +1799,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			this.stroke = new BasicStroke(width);
 		if (width>1f)
 			fillColor = null;
+		if (width>0)
+			scaleLines = true;
 		if (notify)
 			notifyListeners(RoiListener.MODIFIED);
 	}
@@ -1803,7 +1826,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	}
 	
 	protected BasicStroke getScaledStroke() {
-		if (ic==null)
+		if (ic==null || !scaleLines)
 			return stroke;
 		double mag = ic.getMagnification();
 		if (mag!=1.0) {
@@ -2434,6 +2457,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		flattenScale = scale;
 	}
 	
+	/** Returns 'true' if lines widths are scaled as images are zoomed. */
+	public boolean getScaleLines() {
+		return scaleLines;
+	}
+
+	/** Scale width of lines on zoomed images? */
+	public void setScaleLines(boolean scaleLines) {
+		this.scaleLines = scaleLines;
+	}
+
 	public void notifyListeners(int id) {
 		if (id==RoiListener.CREATED) {
 			if (listenersNotified)
@@ -2473,8 +2506,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		// iterator() method and returns a specific point iterator.
 		return new RoiPointsIteratorMask();
 	}
-	
-	
+		
+		
 	/**
 	 * Default iterator over points contained in a mask-backed {@link Roi}.
 	 * Author: W. Burger

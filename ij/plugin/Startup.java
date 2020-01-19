@@ -18,7 +18,8 @@ import java.util.Vector;
 			"Debug mode",
 			"10-bit (0-1023) range",
 			"12-bit (0-4095) range",
-			"Splash Screen"
+			"Splash Screen",
+			"Bolder selections"
 		};
 	private String macro = "";
 	private int originalLength;
@@ -90,7 +91,9 @@ import java.util.Vector;
 		else if (item.equals(code[5]))
 			statement = "call(\"ij.ImagePlus.setDefault16bitRange\", 12);\n";
 		else if (item.equals(code[6]))			
-			statement =  "run(\"About ImageJ...\");\nwait(3000);\nclose(\"About ImageJ\");\n";
+			statement = "run(\"About ImageJ...\");\nwait(3000);\nclose(\"About ImageJ\");\n";
+		else if (item.equals(code[7]))			
+			statement = "Roi.setDefaultStrokeWidth(2);\n";
 		if (statement!=null) {
 			TextArea ta = gd.getTextArea1();
 			ta.insert(statement, ta.getCaretPosition());

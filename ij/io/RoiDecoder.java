@@ -111,6 +111,7 @@ public class RoiDecoder {
 	public static final int SHOW_LABELS = 1024;
 	public static final int SCALE_LABELS = 2048;
 	public static final int PROMPT_BEFORE_DELETING = 4096; //points
+	public static final int SCALE_LINES = 8192;
 	
 	// types
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6,
@@ -185,6 +186,9 @@ public class RoiDecoder {
 		int imageSize=0;
 		boolean subPixelResolution = (options&SUB_PIXEL_RESOLUTION)!=0 &&  version>=222;
 		boolean drawOffset = subPixelResolution && (options&DRAW_OFFSET)!=0;
+		boolean scaleLines = true;
+		if (version>=228)
+			scaleLines = (options&SCALE_LINES)!=0;
 		
 		boolean subPixelRect = version>=223 && subPixelResolution && (type==rect||type==oval);
 		double xd=0.0, yd=0.0, widthd=0.0, heightd=0.0;
@@ -214,7 +218,7 @@ public class RoiDecoder {
 		if (isComposite) {
 			roi = getShapeRoi();
 			if (version>=218)
-				getStrokeWidthAndColor(roi, hdr2Offset);
+				getStrokeWidthAndColor(roi, hdr2Offset, scaleLines);
 			roi.setPosition(position);
 			if (channel>0 || slice>0 || frame>0)
 				roi.setPosition(channel, slice, frame);
@@ -350,7 +354,7 @@ public class RoiDecoder {
 		
 		// read stroke width, stroke color and fill color (1.43i or later)
 		if (version>=218) {
-			getStrokeWidthAndColor(roi, hdr2Offset);
+			getStrokeWidthAndColor(roi, hdr2Offset, scaleLines);
 			if (type==point)
 				roi.setStrokeWidth(0);
 			boolean splineFit = (options&SPLINE_FIT)!=0;
@@ -402,15 +406,17 @@ public class RoiDecoder {
 		roi.setPrototypeOverlay(proto);
 	}
 
-	void getStrokeWidthAndColor(Roi roi, int hdr2Offset) {
+	void getStrokeWidthAndColor(Roi roi, int hdr2Offset, boolean scaleLines) {
 		double strokeWidth = getShort(STROKE_WIDTH);
 		if (hdr2Offset>0) {
 			double strokeWidthD = getFloat(hdr2Offset+FLOAT_STROKE_WIDTH);
 			if (strokeWidthD>0.0)
 				strokeWidth = strokeWidthD;
 		}
-		if (strokeWidth>0.0)
+		if (strokeWidth>0.0) {
 			roi.setStrokeWidth(strokeWidth);
+			roi.setScaleLines(scaleLines);
+		}
 		int strokeColor = getInt(STROKE_COLOR);
 		if (strokeColor!=0) {
 			int alpha = (strokeColor>>24)&0xff;

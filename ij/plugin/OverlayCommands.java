@@ -360,6 +360,11 @@ public class OverlayCommands implements PlugIn {
 			double strokeWidth = rois[i].getStrokeWidth();
 			int digits = strokeWidth==(int)strokeWidth?0:1;
 			String sWidth = IJ.d2s(strokeWidth,digits);
+			if (rois[i].getScaleLines())
+				sWidth += "s";
+			String group = ""+rois[i].getGroup();
+			if (group.equals("0"))
+				group = "none";
 			int position = rois[i].getPosition();
 			int c = rois[i].getCPosition();
 			int z = rois[i].getZPosition();
@@ -367,6 +372,7 @@ public class OverlayCommands implements PlugIn {
 			rt.setValue("Index", i, i);
 			rt.setValue("Name", i, rois[i].getName());
 			rt.setValue("Type", i, rois[i].getTypeAsString());
+			rt.setValue("Group", i, group);
 			rt.setValue("X", i, r.x);
 			rt.setValue("Y", i, r.y);
 			rt.setValue("Width", i, r.width);		
