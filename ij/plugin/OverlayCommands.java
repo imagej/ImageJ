@@ -360,8 +360,6 @@ public class OverlayCommands implements PlugIn {
 			double strokeWidth = rois[i].getStrokeWidth();
 			int digits = strokeWidth==(int)strokeWidth?0:1;
 			String sWidth = IJ.d2s(strokeWidth,digits);
-			if (rois[i].getScaleLines())
-				sWidth += "s";
 			String group = ""+rois[i].getGroup();
 			if (group.equals("0"))
 				group = "none";

@@ -873,7 +873,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		okay.setLabel(yesLabel);
 		if (no != null)
 			no.setLabel(noLabel);
-		else
+		else if (noLabel!=null)
 			no = new Button(noLabel);
 	}
 

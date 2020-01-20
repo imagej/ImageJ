@@ -7,7 +7,7 @@ import java.io.*;
 /** This is a virtual stack of frozen plots. */
 public class PlotVirtualStack extends VirtualStack {
 	private Vector plots = new Vector(50);
-	private int bitDepth = 24;
+	private int bitDepth = 8;
 	
 	public PlotVirtualStack(int width, int height) {
 		super(width, height);
@@ -17,6 +17,8 @@ public class PlotVirtualStack extends VirtualStack {
 	/** Adds a plot to the end of the stack. */
 	public void addPlot(Plot plot) {
 		plots.add(plot.toByteArray());
+		if (plot.isColored())
+			bitDepth = 24;
 	}
 	   
    /** Returns the pixel array for the specified slice, were 1<=n<=nslices. */

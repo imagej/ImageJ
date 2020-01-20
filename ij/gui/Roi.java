@@ -100,7 +100,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	private boolean listenersNotified;
 	private boolean antiAlias = true;
 	private int group;
-	private boolean scaleLines; // Scale stroke width on zoomed images?
+	private boolean usingDefaultStroke;
+
 
 
 	/** Creates a rectangular ROI. */
@@ -140,9 +141,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			draw(g);
 			g.dispose();
 		}
-		if (defaultStrokeWidth>0.0) {
-			setStrokeWidth(defaultStrokeWidth);
-			scaleLines = false;
+		if (defaultStrokeWidth>0) {
+			stroke = new BasicStroke((float)defaultStrokeWidth);
+			usingDefaultStroke = true;
 		}
 		fillColor = defaultFillColor;
 		this.group = defaultGroup; //initialize with current group and associated color
@@ -191,9 +192,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			if (scolor!=null)
 				setStrokeColor(scolor);
 		}
-		if (defaultStrokeWidth>0.0) {
-			setStrokeWidth(defaultStrokeWidth);
-			scaleLines = false;
+		if (defaultStrokeWidth>0) {
+			stroke = new BasicStroke((float)defaultStrokeWidth);
+			usingDefaultStroke = true;
 		}
 		fillColor = defaultFillColor;
 		this.group = defaultGroup;
@@ -729,7 +730,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public synchronized Object clone() {
 		try { 
 			Roi r = (Roi)super.clone();
-			r.setImage(null);
+			if (!usingDefaultStroke)
 			r.setStroke(getStroke());
 			r.setFillColor(getFillColor());
 			r.imageID = getImageID();
@@ -1799,8 +1800,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			this.stroke = new BasicStroke(width);
 		if (width>1f)
 			fillColor = null;
-		if (width>0)
-			scaleLines = true;
+		usingDefaultStroke = false;
 		if (notify)
 			notifyListeners(RoiListener.MODIFIED);
 	}
@@ -1812,21 +1812,26 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 
 	/** Returns the lineWidth. */
 	public float getStrokeWidth() {
-		return stroke!=null?stroke.getLineWidth():0f;
+		return (stroke!=null&&!usingDefaultStroke)?stroke.getLineWidth():0f;
 	}
 
 	/** Sets the Stroke used to draw this ROI. */
 	public void setStroke(BasicStroke stroke) {
 		this.stroke = stroke;
+		if (stroke!=null)
+			usingDefaultStroke = false;
 	}
 	
 	/** Returns the Stroke used to draw this ROI, or null if no Stroke is used. */
 	public BasicStroke getStroke() {
-		return stroke;
+		if (usingDefaultStroke)
+			return null;
+		else
+			return stroke;
 	}
 	
 	protected BasicStroke getScaledStroke() {
-		if (ic==null || !scaleLines)
+		if (ic==null || usingDefaultStroke)
 			return stroke;
 		double mag = ic.getMagnification();
 		if (mag!=1.0) {
@@ -2457,16 +2462,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		flattenScale = scale;
 	}
 	
-	/** Returns 'true' if lines widths are scaled as images are zoomed. */
-	public boolean getScaleLines() {
-		return scaleLines;
-	}
-
-	/** Scale width of lines on zoomed images? */
-	public void setScaleLines(boolean scaleLines) {
-		this.scaleLines = scaleLines;
-	}
-
 	public void notifyListeners(int id) {
 		if (id==RoiListener.CREATED) {
 			if (listenersNotified)

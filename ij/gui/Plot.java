@@ -165,7 +165,6 @@ public class Plot implements Cloneable {
 	Vector<PlotObject> allPlotObjects = new Vector<PlotObject>();	//all curves, labels etc., also serialized for saving/reading
 	Vector<PlotObject> allPlotObjectsSnapshot;      //copy for reverting
 	private PlotVirtualStack stack;
-	private boolean grayscaleStack;
 	/** For high-resolution plots, everything will be scaled with this number. Otherwise, must be 1.0.
 	 *  (creating margins, saving PlotProperties etc only supports scale=1.0) */
 	float scale = 1.0f;
@@ -1428,12 +1427,22 @@ public class Plot implements Cloneable {
 	/** Returns the plot as an ImagePlus.
 	 *	If an ImagePlus for this plot already exists, displays the plot in that ImagePlus and returns it. */
 	public ImagePlus getImagePlus() {
+		if (stack != null) {
+			if (imp != null)
+				return imp;
+			else {
+				imp = new ImagePlus("Plot Stack",stack);
+				adjustCalibration(imp.getCalibration());
+				return imp;
+			}
+		}
 		if (plotDrawn)
 			updateImage();
 		else
 			draw();
 		if (imp != null) {
-			if (imp.getProcessor() != ip) imp.setProcessor(ip);
+			if (imp.getProcessor() != ip)
+				imp.setProcessor(ip);
 			return imp;
 		} else {
 			ImagePlus imp = new ImagePlus(title, ip);
@@ -1448,9 +1457,12 @@ public class Plot implements Cloneable {
 	 *	The ImagePlus is not displayed or updated unless its ImageProcessor is
 	 *  no that of the current Plot (then it gets this ImageProcessor).
 	 *  Does nothing if imp is unchanged and has the ImageProcessor of this plot.
-	 *	'imp' may be null to disconnect the plot from its ImagePlus */
+	 *  'imp' may be null to disconnect the plot from its ImagePlus.
+	 *	Does nothing for Plot Stacks. */
 	public void setImagePlus(ImagePlus imp) {
 		if (imp != null && imp == this.imp && imp.getProcessor() == ip)
+			return;
+		if (stack != null)
 			return;
 		if (this.imp != null)
 			this.imp.setProperty(PROPERTY_KEY, null);
@@ -1484,18 +1496,16 @@ public class Plot implements Cloneable {
 	}
 
 	/** Displays the plot in a PlotWindow.
-	 *  Plot stacks are shown in a StackWindow, however; in this case the return value is null.
+	 *  Plot stacks are shown in a StackWindow, not in a PlotWindow;
+	 *  in this case the return value is null (use getImagePlus().getWindow() instead).
 	 *  Also returns null in BatchMode. Note that the PlotWindow might get closed
 	 *  immediately if its 'listValues' and 'autoClose' flags are set.
 	 *  @see #update()
 	 */
 	public PlotWindow show() {
 		PlotVirtualStack stack = getStack();
-		if (stack!=null && stack.size()>1) {
-			stack.setBitDepth(grayscaleStack?8:24);
-			ImagePlus stackImp = new ImagePlus("Plot Stack",stack);
-			stackImp.show();
-			adjustCalibration(stackImp.getCalibration());
+		if (stack!=null) {
+			getImagePlus().show();
 			return null;
 		}
 		if ((IJ.macroRunning() && IJ.getInstance()==null) || Interpreter.isBatchMode()) {
@@ -1529,15 +1539,11 @@ public class Plot implements Cloneable {
 	 * N. Vischer
 	 */
 	public void addToStack() {
-		if (stack==null) {
+		if (stack==null)
 			stack = new PlotVirtualStack(getSize().width,getSize().height);
-			grayscaleStack = true;
-		}
 		draw();
 		stack.addPlot(this);
-		if (isColored())
-			grayscaleStack = false;
-		IJ.showStatus("addToStack: "+stack.size());
+		IJ.showStatus("addToPlotStack: "+stack.size());
 		allPlotObjects.clear();
 		textLoc = null;
 	}
@@ -1597,7 +1603,7 @@ public class Plot implements Cloneable {
 		if (!plotDrawn || pp.isFrozen) return;
 		getBlankProcessor();
 		drawContents(ip);
-		if (imp == null) return;
+		if (imp == null || stack != null) return;
 		adjustCalibration(imp.getCalibration());
 		imp.updateAndDraw();
 		if (ip != imp.getProcessor())
@@ -1854,7 +1860,8 @@ public class Plot implements Cloneable {
 				invertedLut = Prefs.useInvertingLut && !Interpreter.isBatchMode() && IJ.getInstance()!=null;
 				if (invertedLut) ip.invertLut();
 			}
-			if (imp != null) imp.setProcessor(ip);
+			if (imp != null && stack == null)
+				imp.setProcessor(ip);
 		}
 		if (ip instanceof ColorProcessor)
 			Arrays.fill((int[])(ip.getPixels()), 0xffffff);
