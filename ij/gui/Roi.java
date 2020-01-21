@@ -141,8 +141,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			draw(g);
 			g.dispose();
 		}
-		if (defaultStrokeWidth>0) {
-			stroke = new BasicStroke((float)defaultStrokeWidth);
+		double defaultWidth = defaultStrokeWidth();
+		if (defaultWidth>0) {
+			stroke = new BasicStroke((float)defaultWidth);
 			usingDefaultStroke = true;
 		}
 		fillColor = defaultFillColor;
@@ -192,8 +193,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			if (scolor!=null)
 				setStrokeColor(scolor);
 		}
-		if (defaultStrokeWidth>0) {
-			stroke = new BasicStroke((float)defaultStrokeWidth);
+		double defaultWidth = defaultStrokeWidth();
+		if (defaultWidth>0) {
+			stroke = new BasicStroke((float)defaultWidth);
 			usingDefaultStroke = true;
 		}
 		fillColor = defaultFillColor;
@@ -730,8 +732,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public synchronized Object clone() {
 		try { 
 			Roi r = (Roi)super.clone();
+			r.setImage(null);
 			if (!usingDefaultStroke)
-			r.setStroke(getStroke());
+				r.setStroke(getStroke());
 			r.setFillColor(getFillColor());
 			r.imageID = getImageID();
 			r.listenersNotified = false;
@@ -1151,7 +1154,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		clipY = (y<=oldY)?y:oldY;
 		clipWidth = ((x+width>=oldX+oldWidth)?x+width:oldX+oldWidth) - clipX + 1;
 		clipHeight = ((y+height>=oldY+oldHeight)?y+height:oldY+oldHeight) - clipY + 1;
-		int m = 3;
+		int m = 7;
 		if (ic!=null) {
 			double mag = ic.getMagnification();
 			if (mag<1.0)
@@ -1272,27 +1275,59 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		}		
 	}
 	
+	private static double defaultStrokeWidth() {
+		double defaultWidth = defaultStrokeWidth;
+		double guiScale = Prefs.getGuiScale();
+		if (defaultWidth<=1 && guiScale>1.0) {
+			defaultWidth = guiScale;
+			if (defaultWidth<2) defaultWidth = 2;
+		}
+		return defaultWidth;
+	}
+
 	void drawHandle(Graphics g, int x, int y) {
+		int scale = defaultStrokeWidth()>=1?2:1;
 		double size = (width*height)*mag*mag;
 		if (type==LINE) {
 			size = Math.sqrt(width*width+height*height);
 			size *= size*mag*mag;
 		}
-		if (size>4000.0) {
-			g.setColor(Color.black);
-			g.fillRect(x,y,5,5);
-			g.setColor(handleColor);
-			g.fillRect(x+1,y+1,3,3);
-		} else if (size>1000.0) {
-			g.setColor(Color.black);
-			g.fillRect(x+1,y+1,4,4);
-			g.setColor(handleColor);
-			g.fillRect(x+2,y+2,2,2);
-		} else {			
-			g.setColor(Color.black);
-			g.fillRect(x+1,y+1,3,3);
-			g.setColor(handleColor);
-			g.fillRect(x+2,y+2,1,1);
+		if (state==CONSTRUCTING)
+			size = 5001;			
+		if (scale==2) {
+			if (size>5000.0) {
+				g.setColor(Color.black);
+				g.fillRect(x-2,y-2,9,9);
+				g.setColor(handleColor);
+				g.fillRect(x-1,y-1,7,7);
+			} else if (size>1500.0) {
+				g.setColor(Color.black);
+				g.fillRect(x-1,y-1,7,7);
+				g.setColor(handleColor);
+				g.fillRect(x,y,5,5);
+			} else {
+				g.setColor(Color.black);
+				g.fillRect(x,y,5,5);
+				g.setColor(handleColor);
+				g.fillRect(x+1,y+1,3,3);
+			}
+		} else {
+			if (size>5000.0) {
+				g.setColor(Color.black);
+				g.fillRect(x-1,y-1,7,7);
+				g.setColor(handleColor);
+				g.fillRect(x,y,5,5);
+			} else if (size>1500.0) {
+				g.setColor(Color.black);
+				g.fillRect(x,y,5,5);
+				g.setColor(handleColor);
+				g.fillRect(x+1,y+1,3,3);
+			} else {
+				g.setColor(Color.black);
+				g.fillRect(x+1,y+1,3,3);
+				g.setColor(handleColor);
+				g.fillRect(x+2,y+2,1,1);
+			}
 		}
 	}
 
@@ -1602,7 +1637,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public static double getDefaultStrokeWidth() {
 		return defaultStrokeWidth;
 	}
-
+	
 	/** Sets the default stroke width. */
 	public static void setDefaultStrokeWidth(double width) {
 		defaultStrokeWidth = width<0.0?0.0:width;
