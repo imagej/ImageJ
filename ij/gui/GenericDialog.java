@@ -1275,6 +1275,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				setFont(font.deriveFont((float)(font.getSize()*Prefs.getGuiScale())));
 			}
 			pack();
+			
+			if (okay!=null && numberField==null && stringField==null && checkbox==null
+			&& choice==null && slider==null && radioButtonGroups==null && textArea1==null)
+				okay.requestFocusInWindow();
 			setup();
 			if (centerDialog)
 				GUI.centerOnImageJScreen(this);

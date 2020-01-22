@@ -381,13 +381,12 @@ public class Line extends Roi {
 			g.drawLine(sx1, sy1, sx2, sy2);
 		}
 		if (!overlay) {
-			int size2 = HANDLE_SIZE/2;
 			mag = getMagnification();
 			handleColor = strokeColor!=null?strokeColor:ROIColor;
-			drawHandle(g, sx1-size2, sy1-size2);
+			drawHandle(g, sx1, sy1);
 			handleColor=Color.white;
-			drawHandle(g, sx2-size2, sy2-size2);
-			drawHandle(g, sx3-size2, sy3-size2);
+			drawHandle(g, sx2, sy2);
+			drawHandle(g, sx3, sy3);
 		}
 		if (state!=NORMAL)
 			showStatus();
@@ -556,7 +555,7 @@ public class Line extends Roi {
 	/** Returns a handle number if the specified screen coordinates are  
 		inside or near a handle, otherwise returns -1. */
 	public int isHandle(int sx, int sy) {
-		int size = HANDLE_SIZE+5;
+		int size = getHandleSize()+5;
 		if (getStrokeWidth()>1) size += (int)Math.log(getStrokeWidth());
 		int halfSize = size/2;
 		double offset = getOffset(0.5);

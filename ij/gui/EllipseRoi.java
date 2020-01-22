@@ -36,10 +36,9 @@ public class EllipseRoi extends PolygonRoi {
 
 	public void draw(Graphics g) {
 		super.draw(g);
-		int size2 = HANDLE_SIZE/2;
 		if (!overlay) {
 			for (int i=0; i<handle.length; i++)
-				drawHandle(g, xp2[handle[i]]-size2, yp2[handle[i]]-size2);
+				drawHandle(g, xp2[handle[i]], yp2[handle[i]]);
 		}
 	}
 
@@ -190,7 +189,7 @@ public class EllipseRoi extends PolygonRoi {
 	}
 	
 	public int isHandle(int sx, int sy) {
-		int size = HANDLE_SIZE+5;
+		int size = getHandleSize()+5;
 		int halfSize = size/2;
 		int index = -1;
 		for (int i=0; i<handle.length; i++) {

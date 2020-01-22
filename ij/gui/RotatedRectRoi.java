@@ -39,13 +39,12 @@ public class RotatedRectRoi extends PolygonRoi {
 		super.draw(g);
 		if (!overlay && ic!=null) {
 			double mag = ic.getMagnification();
-		    int size2 = HANDLE_SIZE/2;
 			for (int i=0; i<4; i++) {
 			if (i==3) //mark starting point
 				handleColor = strokeColor!=null?strokeColor:ROIColor;
 			else
 				handleColor=Color.white;
-			drawHandle(g, hxs(i)-size2, hys(i)-size2);
+			drawHandle(g, hxs(i), hys(i));
 			}
 		}
 	}
@@ -198,7 +197,7 @@ public class RotatedRectRoi extends PolygonRoi {
 	}
 	
 	public int isHandle(int sx, int sy) {
-		int size = HANDLE_SIZE+5;
+		int size = getHandleSize()+5;
 		int halfSize = size/2;
 		int index = -1;
 		for (int i=0; i<4; i++) {

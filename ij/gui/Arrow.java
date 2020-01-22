@@ -81,11 +81,10 @@ public class Arrow extends Line {
 			if (doubleHeaded) g2.fill(at.createTransformedShape(shape2));
 		}
 		if (state!=CONSTRUCTING && !overlay) {
-			int size2 = HANDLE_SIZE/2;
 			handleColor=Color.white;
-			drawHandle(g, screenXD(x1d)-size2, screenYD(y1d)-size2);
-			drawHandle(g, screenXD(x2d)-size2, screenYD(y2d)-size2);
-			drawHandle(g, screenXD(x1d+(x2d-x1d)/2.0)-size2, screenYD(y1d+(y2d-y1d)/2.0)-size2);
+			drawHandle(g, screenXD(x1d), screenYD(y1d));
+			drawHandle(g, screenXD(x2d), screenYD(y2d));
+			drawHandle(g, screenXD(x1d+(x2d-x1d)/2.0), screenYD(y1d+(y2d-y1d)/2.0));
 		}
 		if (state!=NORMAL && imp!=null && imp.getRoi()!=null)
 			showStatus();

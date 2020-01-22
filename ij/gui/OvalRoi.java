@@ -274,15 +274,14 @@ public class OvalRoi extends Roi {
 		} else
 			g.drawOval(sx1, sy1, sw, sh);
 		if (state!=CONSTRUCTING && clipboard==null && !overlay) {
-			int size2 = HANDLE_SIZE/2;
-			drawHandle(g, sx1+sw2-size2, sy1+sh2-size2);
-			drawHandle(g, sx3-sw2-size2, sy1+sh2-size2);
-			drawHandle(g, sx3-sw2-size2, sy3-sh2-size2);
-			drawHandle(g, sx1+sw2-size2, sy3-sh2-size2);
-			drawHandle(g, sx2-size2, sy1-size2);
-			drawHandle(g, sx3-size2, sy2-size2);
-			drawHandle(g, sx2-size2, sy3-size2);
-			drawHandle(g, sx1-size2, sy2-size2);
+			drawHandle(g, sx1+sw2, sy1+sh2);
+			drawHandle(g, sx3-sw2, sy1+sh2);
+			drawHandle(g, sx3-sw2, sy3-sh2);
+			drawHandle(g, sx1+sw2, sy3-sh2);
+			drawHandle(g, sx2, sy1);
+			drawHandle(g, sx3, sy2);
+			drawHandle(g, sx2, sy3);
+			drawHandle(g, sx1, sy2);
 		}
 		drawPreviousRoi(g);
 		if (updateFullWindow)
@@ -363,7 +362,7 @@ public class OvalRoi extends Roi {
 	public int isHandle(int sx, int sy) {
 		if (clipboard!=null || ic==null) return -1;
 		double mag = ic.getMagnification();
-		int size = HANDLE_SIZE+3;
+		int size = getHandleSize()+3;
 		int halfSize = size/2;
 		int sx1 = ic.screenX(x) - halfSize;
 		int sy1 = ic.screenY(y) - halfSize;

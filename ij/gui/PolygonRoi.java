@@ -247,14 +247,13 @@ public class PolygonRoi extends Roi {
 				drawStartBox(g);
 		}
 		if (hasHandles	&& clipboard==null && !overlay) {
-			int size2 = HANDLE_SIZE/2;
 			if (activeHandle>0)
-				drawHandle(g, xp2[activeHandle-1]-size2, yp2[activeHandle-1]-size2);
+				drawHandle(g, xp2[activeHandle-1], yp2[activeHandle-1]);
 			if (activeHandle<nPoints-1)
-				drawHandle(g, xp2[activeHandle+1]-size2, yp2[activeHandle+1]-size2);
-			handleColor= strokeColor!=null? strokeColor:ROIColor; drawHandle(g, xp2[0]-size2, yp2[0]-size2); handleColor=Color.white;
+				drawHandle(g, xp2[activeHandle+1], yp2[activeHandle+1]);
+			handleColor= strokeColor!=null? strokeColor:ROIColor; drawHandle(g, xp2[0], yp2[0]); handleColor=Color.white;
 			for (int i=1; i<nPoints; i++)
-				drawHandle(g, xp2[i]-size2, yp2[i]-size2);
+				drawHandle(g, xp2[i], yp2[i]);
 		}
 		drawPreviousRoi(g);
 		if (!(state==MOVING_HANDLE||state==CONSTRUCTING||state==NORMAL))
@@ -672,7 +671,7 @@ public class PolygonRoi extends Roi {
 		if (yClipMax>ymax2) ymax2 = yClipMax;
 		xClipMin=xmin; yClipMin=ymin; xClipMax=xmax; yClipMax=ymax;
 		double mag = ic.getMagnification();
-		int handleSize = type==POINT?HANDLE_SIZE+25:HANDLE_SIZE;
+		int handleSize = type==POINT?getHandleSize()+25:getHandleSize();
 		double strokeWidth = getStrokeWidth();
 		if (strokeWidth<1.0) strokeWidth=1.0;
 		if (handleSize<strokeWidth && isLine())
@@ -1187,7 +1186,7 @@ public class PolygonRoi extends Roi {
 	public int isHandle(int sx, int sy) {
 		if (!(xSpline!=null||type==POLYGON||type==POLYLINE||type==ANGLE||type==POINT)||clipboard!=null)
 		   return -1;
-		int size = HANDLE_SIZE+5;
+		int size = getHandleSize()+5;
 		int halfSize = size/2;
 		int handle = -1;
 		int sx2, sy2;

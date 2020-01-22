@@ -729,6 +729,7 @@ public class Prefs {
 		if (scale>=0.5 && scale<=3.0) {
 			guiScale = scale;
 			set(GUI_SCALE, guiScale);
+			Roi.resetHandleSize();
 		}
 	}
 
