@@ -2,3 +2,6 @@
 *.class
 *.jar
 *~
+/bin/
+.project
+.classpath
