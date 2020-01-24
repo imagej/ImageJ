@@ -27,7 +27,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	// Order must agree with order of checkboxes in Set Measurements dialog box
 	private static final int[] list = {AREA,MEAN,STD_DEV,MODE,MIN_MAX,
 		CENTROID,CENTER_OF_MASS,PERIMETER,RECT,ELLIPSE,SHAPE_DESCRIPTORS, FERET,
-		INTEGRATED_DENSITY,MEDIAN,SKEWNESS,KURTOSIS,AREA_FRACTION,STACK_POSITION,
+		INTEGRATED_DENSITY,MEDIAN,SKEWNESS,KURTOSIS,AREA_FRACTION,STACK_POSITION,ROI_GROUP, // TO DO
 		LIMIT,LABELS,INVERT_Y,SCIENTIFIC_NOTATION,ADD_TO_OVERLAY,NaN_EMPTY_CELLS};
 
 	private static final String MEASUREMENTS = "measurements";
@@ -164,8 +164,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 			Macro.setOptions(macroOptions.replaceAll("slice ", "stack "));
 
  		GenericDialog gd = new GenericDialog("Set Measurements");
-		String[] labels = new String[18];
-		boolean[] states = new boolean[18];
+		String[] labels = new String[19];
+		boolean[] states = new boolean[19];
 		labels[0]="Area"; states[0]=(systemMeasurements&AREA)!=0;
 		labels[1]="Mean gray value"; states[1]=(systemMeasurements&MEAN)!=0;
 		labels[2]="Standard deviation"; states[2]=(systemMeasurements&STD_DEV)!=0;
@@ -184,6 +184,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels[15]="Kurtosis"; states[15]=(systemMeasurements&KURTOSIS)!=0;
 		labels[16]="Area_fraction"; states[16]=(systemMeasurements&AREA_FRACTION)!=0;
 		labels[17]="Stack position"; states[17]=(systemMeasurements&STACK_POSITION)!=0;
+		labels[18]="Roi group"; states[18]=(systemMeasurements&ROI_GROUP)!=0;
 		gd.setInsets(0, 0, 0);
 		gd.addCheckboxGroup(10, 2, labels, states);
 		labels = new String[6];
@@ -704,6 +705,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 				rt.addValue("Angle", angle);
 			} else if (roi instanceof PointRoi)
 				savePoints((PointRoi)roi);
+		}
+		if ((measurements&ROI_GROUP)!=0 && roi!=null) {
+			rt.addValue("Group", roi.getGroup());
 		}
 		if ((measurements&LIMIT)!=0 && imp!=null && imp.getBitDepth()!=24) {
 			rt.addValue(ResultsTable.MIN_THRESHOLD, stats.lowerThreshold);
