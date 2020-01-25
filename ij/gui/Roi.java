@@ -101,8 +101,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	private boolean antiAlias = true;
 	private int group;
 	private boolean usingDefaultStroke;
-	private static int handleSize;
-	
+	private static int defaultHandleSize;
+	private int handleSize = -1;	
+	private boolean scaleStrokeWidth; // Scale stroke width when zooming images?
 
 	/** Creates a rectangular ROI. */
 	public Roi(int x, int y, int width, int height) {
@@ -1154,12 +1155,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		clipY = (y<=oldY)?y:oldY;
 		clipWidth = ((x+width>=oldX+oldWidth)?x+width:oldX+oldWidth) - clipX + 1;
 		clipHeight = ((y+height>=oldY+oldHeight)?y+height:oldY+oldHeight) - clipY + 1;
-		int m = 7;
-		if (ic!=null) {
-			double mag = ic.getMagnification();
-			if (mag<1.0)
-				m = (int)(8/mag);
-		}
+		int handleSize = getHandleSize();
+		double mag = ic!=null?ic.getMagnification():1;
+		int m = mag<1.0?(int)(handleSize/mag):handleSize;
 		m += clipRectMargin();
 		double strokeWidth = getStrokeWidth();
 		if (strokeWidth==0.0)
@@ -1282,35 +1280,57 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	}
 	
 	/** Returns the current handle size. */
-	public static int getHandleSize() {
-		if (handleSize>0)
+	public int getHandleSize() {
+		if (handleSize>=0)
 			return handleSize;
+		else
+			return getDefaultHandleSize();
+	}
+
+	/** Sets the current handle size. */
+	public void setHandleSize(int size) {
+		if (size>=0 && ((size&1)==0))
+			size++; // add 1 if odd
+		handleSize = size;
+		if (imp!=null)
+			imp.draw();
+	}
+
+	/** Returns the default handle size. */
+	public static int getDefaultHandleSize() {
+		if (defaultHandleSize>0)
+			return defaultHandleSize;
 		int defaultWidth = (int)defaultStrokeWidth();
 		int size = 7;
 		if (defaultWidth>=1) size=9;
 		if (defaultWidth>=3) size=11;
 		if (defaultWidth>=5) size=13;
-		handleSize = size;
-		return handleSize;
+		defaultHandleSize = size;
+		return defaultHandleSize;
 	}
 	
-	public static void resetHandleSize() {
-		handleSize = 0;
+	public static void resetDefaultHandleSize() {
+		defaultHandleSize = 0;
 	}
 
 	void drawHandle(Graphics g, int x, int y) {
-		double size = (width*height)*mag*mag;
-		if (type==LINE) {
-			size = Math.sqrt(width*width+height*height);
-			size *= size*mag*mag;
+		int threshold1 = 7500;
+		int threshold2 = 1500;
+		double size = (this.width*this.height)*this.mag*this.mag;
+		if (this instanceof Line) {
+			size = ((Line)this).getLength()*this.mag;
+			threshold1 = 150;
+			threshold2 = 50;
+		} else {
+			if (state==CONSTRUCTING)
+				size = threshold1 + 1;	
 		}
-		if (state==CONSTRUCTING)
-			size = 5001;	
 		int width = 7;
-		if (size>5000) {
+		int x0=x, y0=y;
+		if (size>threshold1) {
 			x -= 3;
 			y -= 3;
-		} else if (size>1500) {
+		} else if (size>threshold2) {
 			x -= 2;
 			y -= 2;
 			width = 5;
@@ -1323,6 +1343,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		x -= inc/2;
 		y -= inc/2;
 		g.setColor(Color.black);
+		if (width<3) {
+			g.fillRect(x0,y0,1,1);
+			return;
+		}
 		g.fillRect(x++,y++,width,width);
 		g.setColor(handleColor);
 		width -= 2;
@@ -1639,7 +1663,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	/** Sets the default stroke width. */
 	public static void setDefaultStrokeWidth(double width) {
 		defaultStrokeWidth = width<0.0?0.0:width;
-		handleSize = 0;
+		resetDefaultHandleSize();
 	}
 
 	/** Returns the group value assigned to newly created ROIs. */
@@ -1834,6 +1858,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			this.stroke = new BasicStroke(width);
 		if (width>1f)
 			fillColor = null;
+		if (width>0)
+			scaleStrokeWidth = true;
 		usingDefaultStroke = false;
 		if (notify)
 			notifyListeners(RoiListener.MODIFIED);
@@ -1842,6 +1868,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	/** This is a version of setStrokeWidth() that accepts a double argument. */
 	public void setStrokeWidth(double width) {
 		setStrokeWidth((float)width);
+	}
+	
+	public void setUnscalableStrokeWidth(double width) {
+		setStrokeWidth((float)width);
+		scaleStrokeWidth = false;
+
 	}
 
 	/** Returns the lineWidth. */
@@ -1864,8 +1896,13 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			return stroke;
 	}
 	
+	/** Returns 'true' if the stroke width is scaled as images are zoomed. */
+	public boolean getScaleStrokeWidth() {
+		return scaleStrokeWidth;
+	}
+
 	protected BasicStroke getScaledStroke() {
-		if (ic==null || usingDefaultStroke)
+		if (ic==null || usingDefaultStroke || !scaleStrokeWidth)
 			return stroke;
 		double mag = ic.getMagnification();
 		if (mag!=1.0) {

@@ -87,8 +87,6 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		gd.addHelp(help);
 		gd.addDialogListener(this);
 		gd.showDialog();
-		if (gd.wasCanceled()) {
-		}
 	}
 	
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
@@ -148,6 +146,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
 				roi.setPointType(typeIndex);
 				roi.setStrokeColor(sc);
 				roi.setSize(sizeIndex);
+				redraw = true;
 			}
 		}
 		if (redraw) {

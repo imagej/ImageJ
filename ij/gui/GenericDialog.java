@@ -89,7 +89,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		this(title, getParentFrame());
 	}
 
-	private static Frame getParentFrame() {
+	static Frame getParentFrame() {
 		Frame parent = WindowManager.getCurrentImage()!=null?
 			(Frame)WindowManager.getCurrentImage().getWindow():IJ.getInstance()!=null?IJ.getInstance():new Frame();
 		if (IJ.isMacOSX() && IJ.isJava18()) {
@@ -1286,7 +1286,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			recorderOn = Recorder.record;
 			IJ.wait(25);
 		}
-		if (!(this instanceof NonBlockingGenericDialog))
+		if (macro || !(this instanceof NonBlockingGenericDialog))
 			finalizeRecording();
 		resetCounters();
 	}
@@ -1576,8 +1576,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
                 if (this instanceof NonBlockingGenericDialog)
                 	Recorder.resetCommandOptions();
                 if (!((DialogListener)dialogListeners.elementAt(i)).dialogItemChanged(this, e))
-                    everythingOk = false; }         // disable further listeners if false (invalid parameters) returned
-            catch (Exception err) {                 // for exceptions, don't cover the input by a window but
+                    everythingOk = false;         // disable further listeners if false (invalid parameters) returned
+            } catch (Exception err) {                 // for exceptions, don't cover the input by a window but
                 IJ.beep();                          // show them at in the "Log"
                 IJ.log("ERROR: "+err+"\nin DialogListener of "+dialogListeners.elementAt(i)+
                 "\nat "+(err.getStackTrace()[0])+"\nfrom "+(err.getStackTrace()[1]));  //requires Java 1.4

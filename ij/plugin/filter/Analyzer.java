@@ -457,7 +457,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addValue("Length", roi.getLength());
 			if (roi.getType()==Roi.LINE && showAngle) {
 				Line line = (Line)roi;
-				rt.addValue("Angle", line.getAngle(line.x1,line.y1,line.x2,line.y2));
+				rt.addValue("Angle", line.getFloatAngle(line.x1d,line.y1d,line.x2d,line.y2d));
 			}
 			if ((measurements&LABELS)!=0)
 				rt.addLabel("Label", getFileName());
@@ -696,7 +696,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 				rt.addValue("Length", roi.getLength());
 				if (roi.getType()==Roi.LINE && showAngle) {
 					Line line = (Line)roi;
-					rt.addValue("Angle", line.getAngle(line.x1,line.y1,line.x2,line.y2));
+					rt.addValue("Angle", line.getFloatAngle(line.x1d,line.y1d,line.x2d,line.y2d));
 				}
 			} else if (roi.getType()==Roi.ANGLE) {
 				double angle = ((PolygonRoi)roi).getAngle();

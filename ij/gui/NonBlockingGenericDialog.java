@@ -11,7 +11,7 @@ public class NonBlockingGenericDialog extends GenericDialog implements ImageList
 	ImagePlus imp;	//when non-null, this dialog gets closed when the image is closed
 
 	public NonBlockingGenericDialog(String title) {
-		super(title, null);
+		super(title, getParentFrame());
 		setModal(false);
 		IJ.protectStatusBar(false);
 	}
