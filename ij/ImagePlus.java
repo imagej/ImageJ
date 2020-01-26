@@ -1064,16 +1064,22 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     		return title;
     }
 
-	/** Returns a shortened version of image name that does not
-		include spaces or a file name extension. */
+	/** If the image title is a file name, returns the name
+		without the extension and with spaces removed,
+		otherwise returns the title shortened to the first space.
+	*/	
 	public String getShortTitle() {
-		String title = getTitle();
-		int index = title.indexOf(' ');
-		if (index>-1)
+		String title = getTitle().trim();
+		int index = title.lastIndexOf('.');
+		boolean fileName = index>0;
+		if (fileName) {
 			title = title.substring(0, index);
-		index = title.lastIndexOf('.');
-		if (index>0)
-			title = title.substring(0, index);
+			title = title.replaceAll(" ","");
+		} else {
+			index = title.indexOf(' ');
+			if (index>-1 && !fileName)
+				title = title.substring(0, index);
+		}
 		return title;
     }
 
@@ -2674,6 +2680,20 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public static void removeImageListener(ImageListener listener) {
 		listeners.removeElement(listener);
 	}
+	
+	/** For debug purposes, writes all registered (and possibly,
+		forgotten) ImageListeners to the log window */
+	public static void logImageListeners() {
+		if (listeners.size() == 0)
+			IJ.log("No ImageListeners");
+		else {
+			for (Object li : listeners) {
+				IJ.log("imageListener: "+li);
+				if (li instanceof Window)
+					IJ.log("   ("+(((Window)li).isShowing() ? "showing" : "invisible")+")");
+			}
+		}
+	}
 
 	public void setOpenAsHyperStack(boolean openAsHyperStack) {
 		this.openAsHyperStack = openAsHyperStack;
@@ -3037,5 +3057,5 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     public Plot getPlot() {
     	return plot;
     }
-
+    
 }

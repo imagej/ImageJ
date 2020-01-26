@@ -79,6 +79,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private boolean firstPaint = true;
 	private boolean fontSizeSet;
 	private boolean showDialogCalled;
+	private boolean recordingDone;
 
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
@@ -1300,7 +1301,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	/** For plugins that read their input only via dialogItemChanged, call it at least once, then stop recording */
 	void finalizeRecording() {
-		if (!wasCanceled && dialogListeners!=null && dialogListeners.size()>0) {
+		if (!wasCanceled && dialogListeners!=null && dialogListeners.size()>0 && !recordingDone) {
 			resetCounters();
 			((DialogListener)dialogListeners.elementAt(0)).dialogItemChanged(this,null);
 			recorderOn = false;
@@ -1366,8 +1367,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
   	}
 
   	/** Returns a reference to the Label or MultiLineLabel created by the
-  	 *	last addMessage() call, or the Label of the last addNumericField, addSlider,
-  	 *	addStringField or addCoice. Otherwise returns null. */
+  	 *	last addMessage() call. Otherwise returns null. */
   	public Component getMessage() {
   		return theLabel;
   	}
@@ -1583,6 +1583,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
                 "\nat "+(err.getStackTrace()[0])+"\nfrom "+(err.getStackTrace()[1]));  //requires Java 1.4
             }
         boolean workaroundOSXbug = IJ.isMacOSX() && okay!=null && !okay.isEnabled() && everythingOk;
+	if (recorderOn && everythingOk)
+	    recordingDone = true;
         if (previewCheckbox!=null)
             previewCheckbox.setEnabled(everythingOk);
         if (okay!=null)

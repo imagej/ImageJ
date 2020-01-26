@@ -6,9 +6,10 @@ import java.awt.EventQueue;
 /** This is an extension of GenericDialog that is non-modal.
  *	@author Johannes Schindelin
  */
-public class NonBlockingGenericDialog extends GenericDialog implements ImageListener {
+public class NonBlockingGenericDialog extends GenericDialog {
 
-	ImagePlus imp;	//when non-null, this dialog gets closed when the image is closed
+	ImagePlus imp;                  //when non-null, this dialog gets closed when the image is closed
+	WindowListener windowListener;  //checking for whether the associated window gets closed
 
 	public NonBlockingGenericDialog(String title) {
 		super(title, getParentFrame());
@@ -20,7 +21,7 @@ public class NonBlockingGenericDialog extends GenericDialog implements ImageList
 		super.showDialog();
 		if (isMacro())
 			return;
-		if (!IJ.macroRunning()) { // add to Window menu on event dispatch thread
+		if (!IJ.macroRunning()) {   // add to Window menu on event dispatch thread
 			final NonBlockingGenericDialog thisDialog = this;
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {
@@ -28,11 +29,28 @@ public class NonBlockingGenericDialog extends GenericDialog implements ImageList
 				}
 			});
 		}
+		if (imp != null) {
+			ImageWindow win = imp.getWindow();
+			if (win != null) {      //when the associated image closes, also close the dialog
+				final NonBlockingGenericDialog gd = this;
+				windowListener = new WindowAdapter() {
+					public void windowClosed(WindowEvent e) {
+						cancelDialogAndClose();	
+					}
+				};
+				win.addWindowListener(windowListener);
+			}
+		}
 		try {
 			wait();
 		} catch (InterruptedException e) { }
 		finalizeRecording();
 		resetCounters();
+	}
+
+	/** Gets called if the associated image window is closed */
+	private void cancelDialogAndClose() {
+		super.windowClosing(null);	// sets wasCanceled=true and does dispose()
 	}
 
 	public synchronized void actionPerformed(ActionEvent e) {
@@ -56,6 +74,11 @@ public class NonBlockingGenericDialog extends GenericDialog implements ImageList
 	public void dispose() {
 		super.dispose();
 		WindowManager.removeWindow(this);
+		if (imp != null) {
+			ImageWindow win = imp.getWindow();
+			if (win != null && windowListener != null)
+				win.removeWindowListener(windowListener);
+		}			
 	}
 	
 	/** Returns a new NonBlockingGenericDialog with given title, unless
@@ -68,21 +91,10 @@ public class NonBlockingGenericDialog extends GenericDialog implements ImageList
 		if (Prefs.nonBlockingFilterDialogs && imp!=null && imp.getWindow()!=null) {
 			NonBlockingGenericDialog gd = new NonBlockingGenericDialog(title);
 			gd.imp = imp;
-			imp.addImageListener(gd);
-			ImageWindow win = imp.getWindow();
-			//if (win!=null) win.addWindowListener(gd);
 			return gd;
 		} else
 			return new GenericDialog(title);
 	}
-		
-	public void imageClosed(ImagePlus imp) {
-		if (imp == this.imp)
-			super.windowClosing(null);	// sets wasCanceled=true and does dispose()
-	}
-
-	public void imageOpened(ImagePlus imp) {}
-	public void imageUpdated(ImagePlus imp) {}
 
 	/** Put the dialog into the foreground when the image we work on gets into the foreground */
 	@Override
@@ -93,4 +105,3 @@ public class NonBlockingGenericDialog extends GenericDialog implements ImageList
 	}
 	
 }
-

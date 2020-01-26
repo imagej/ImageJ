@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52t44 24 January 2020</u>
+<li> <u>1.52t45 26 January 2020</u>
 <ul>
 <li> Thanks to Laurent Thomas, added a "Group" field to the
 <i>Edit&gt;Selection&gt;Properties</i> dialog and an
@@ -13,6 +13,8 @@
 <li> Thanks to Norbert Vischer, added support for superscripts and
 subscripts in plot axis labels
 (<a href="http://wsr.imagej.net/macros/examples/PlotWithSubscriptsAndSuperscrips.txt">example</a>). 
+<li> Thanks to Norbert Vischer, added a "Separate Image" option to the
+"Location:" menu of the <i>Analyze&gt;Tools&gt;Calibration Bar</i> dialog.
 <li> Selection handles are larger. 
 <li> Added a "Bolder selections" ("Roi.setDefaultStrokeWidth(2);") code
 choice to the <i>Edit&gt;Options&gt;Startup</i> dialog.
@@ -59,9 +61,18 @@ with only buttons to put the focus on the first button, which is not the
 <li> Thanks to John Fozard and 'mountain_man', fixed a bug
 that caused angle measurements of lines a few pixels
 in length to be incorrect.
+<li> Thanks to 'SarenT', fixed a bug that caused the
+ImagePlus.getShortTitle() method to truncate file names
+containing spaces.
+<li> Thanks to Norbert Vischer, fixed a bug that caused
+a "Has Calibration Bar" error when attempting to adjust
+brightness and contrast after clicking on "Cancel" in
+the <i>Analyze&gt;Tools&gt;Calibration Bar</i> dialog.
 <li> Thanks to Fernando Garcia-Polite, fixed a 1.52q regression
 that caused the run("Point Tool...",options) macro function 
 to no longer work.
+<li> Thanks to Michael Schmid, fixed a 1.52q regression
+that caused duplicate recordinging of non-blocking dialogs.
 <li> Thanks to Dorai Iyer, fixed a 1.52s regression that caused characters
 entered using the text tool to sometimes be repeated.
 <li> Thanks to Rodrigo Goncalves and Curtis Rueden, fixed a
