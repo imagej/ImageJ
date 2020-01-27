@@ -69,6 +69,7 @@ public class RoiProperties {
 		Color strokeColor = roi.getStrokeColor();
 		Color fillColor = roi.getFillColor();
 		double strokeWidth = roi.getStrokeWidth();
+		double strokeWidth2 = strokeWidth;
 		boolean isText = roi instanceof TextRoi;
 		boolean isLine = roi.isLine();
 		boolean isPoint = roi instanceof PointRoi;
@@ -186,7 +187,7 @@ public class RoiProperties {
 		}
 		linec = gd.getNextString();
 		if (!isPoint)
-			strokeWidth = gd.getNextNumber();
+			strokeWidth2 = gd.getNextNumber();
 		if (isText) {
 			angle = gd.getNextNumber();
 			justification = gd.getNextChoiceIndex();
@@ -235,21 +236,19 @@ public class RoiProperties {
 		if (isText) {
 			TextRoi troi = (TextRoi)roi;
 			Font font = troi.getCurrentFont();
-			if ((int)strokeWidth!=font.getSize()) {
-				font = new Font(font.getName(), font.getStyle(), (int)strokeWidth);
+			if (strokeWidth2!=strokeWidth) {
+				font = new Font(font.getName(), font.getStyle(), (int)strokeWidth2);
 				troi.setCurrentFont(font);
 			}
 			troi.setAngle(angle);
 			if (justification!=troi.getJustification())
 				troi.setJustification(justification);
 			troi.setAntiAlias(antialias);
-		} else
-			roi.setStrokeWidth((float)strokeWidth);
+		} else if (strokeWidth2!=strokeWidth)
+			roi.setStrokeWidth((float)strokeWidth2);
 		if (showName) {
 			setPosition(roi, position, position2);
-			Color color = setGroup(roi, group, group2);
-			if (color!=null)
-				strokeColor = color;
+			setGroup(roi, group, group2);
 		}
 		roi.setStrokeColor(strokeColor);
 		roi.setFillColor(fillColor);
@@ -260,7 +259,7 @@ public class RoiProperties {
 			Roi[] rois = overlay.toArray();
 			for (int i=0; i<rois.length; i++) {
 				rois[i].setStrokeColor(strokeColor);
-				rois[i].setStrokeWidth((float)strokeWidth);
+				rois[i].setStrokeWidth((float)strokeWidth2);
 				rois[i].setFillColor(fillColor);
 			}
 			imp.draw();
@@ -305,19 +304,16 @@ public class RoiProperties {
 		}
 	}
 	
-	private Color setGroup(Roi roi, String group1, String group2) {
+	private void setGroup(Roi roi, String group1, String group2) {
 		if (group1.equals(group2))
-			return null;
+			return;
 		if (group2.equals("none") || group2.equals("0")) {
 			roi.setGroup(0);
-			return Roi.getColor();
+			return;
 		}
 		double group = Tools.parseDouble(group2);
-		if (!Double.isNaN(group)) {
+		if (!Double.isNaN(group))
 			roi.setGroup((int)group);
-			return roi.getStrokeColor();
-		}
-		return null;
 	}
 		
 	public boolean showImageDialog(String name) {
