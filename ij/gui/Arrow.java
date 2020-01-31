@@ -80,7 +80,7 @@ public class Arrow extends Line {
 			g2.fill(at.createTransformedShape(shape));
 			if (doubleHeaded) g2.fill(at.createTransformedShape(shape2));
 		}
-		if (state!=CONSTRUCTING && !overlay) {
+		if (!overlay) {
 			handleColor=Color.white;
 			drawHandle(g, screenXD(x1d), screenYD(y1d));
 			drawHandle(g, screenXD(x2d), screenYD(y2d));

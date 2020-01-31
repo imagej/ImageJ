@@ -64,11 +64,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private boolean customInsets;
 	private Vector sliderIndexes, sliderScales, sliderDigits;
 	private Checkbox previewCheckbox;    // the "Preview" Checkbox, if any
-	private Vector dialogListeners;             // the Objects to notify on user input
+	private Vector dialogListeners;      // the Objects to notify on user input
 	private PlugInFilterRunner pfr;      // the PlugInFilterRunner for automatic preview
 	private String previewLabel = " Preview";
 	private final static String previewRunning = "wait...";
-	private boolean recorderOn;         // whether recording is allowed
+	private boolean recorderOn;          // whether recording is allowed (after the dialog is closed)
 	private char echoChar;
 	private boolean hideCancelButton;
 	private boolean centerDialog = true;
@@ -79,7 +79,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private boolean firstPaint = true;
 	private boolean fontSizeSet;
 	private boolean showDialogCalled;
-	private boolean recordingDone;
 
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
@@ -1276,20 +1275,16 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				setFont(font.deriveFont((float)(font.getSize()*Prefs.getGuiScale())));
 			}
 			pack();
-			
+
 			if (okay!=null && numberField==null && stringField==null && checkbox==null
 			&& choice==null && slider==null && radioButtonGroups==null && textArea1==null)
 				okay.requestFocusInWindow();
 			setup();
 			if (centerDialog)
 				GUI.centerOnImageJScreen(this);
-			setVisible(true);
-			recorderOn = Recorder.record;
-			IJ.wait(25);
+			setVisible(true);					//except for NonBlockingGenericDialog, returns after 'dispose' by OK or Cancel
+
 		}
-		if (macro || !(this instanceof NonBlockingGenericDialog))
-			finalizeRecording();
-		resetCounters();
 	}
 
 	@Override
@@ -1301,7 +1296,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	/** For plugins that read their input only via dialogItemChanged, call it at least once, then stop recording */
 	void finalizeRecording() {
-		if (!wasCanceled && dialogListeners!=null && dialogListeners.size()>0 && !recordingDone) {
+		if (!wasCanceled && dialogListeners!=null && dialogListeners.size()>0) {
 			resetCounters();
 			((DialogListener)dialogListeners.elementAt(0)).dialogItemChanged(this,null);
 			recorderOn = false;
@@ -1584,7 +1579,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
             }
         boolean workaroundOSXbug = IJ.isMacOSX() && okay!=null && !okay.isEnabled() && everythingOk;
 	if (recorderOn && everythingOk)
-	    recordingDone = true;
         if (previewCheckbox!=null)
             previewCheckbox.setEnabled(everythingOk);
         if (okay!=null)
@@ -1650,9 +1644,18 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		return instance;
 	}
 
+	/** Closes the dialog; records the options */
 	public void dispose() {
 		super.dispose();
 		instance = null;
+
+		if (!macro) {
+			recorderOn = Recorder.record;
+			IJ.wait(25);
+		}
+		resetCounters();
+		finalizeRecording();
+		resetCounters();
 	}
 
     public void windowActivated(WindowEvent e) {}

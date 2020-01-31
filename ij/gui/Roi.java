@@ -1237,7 +1237,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			} else
 				g.drawRect(sx1, sy1, sw, sh);
 		}
-		if (state!=CONSTRUCTING && clipboard==null && !overlay) {
+		if (clipboard==null && !overlay) {
 			drawHandle(g, sx1, sy1);
 			drawHandle(g, sx2, sy1);
 			drawHandle(g, sx3, sy1);
@@ -1274,7 +1274,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		double guiScale = Prefs.getGuiScale();
 		if (defaultWidth<=1 && guiScale>1.0) {
 			defaultWidth = guiScale;
-			if (defaultWidth<2) defaultWidth = 2;
+			if (defaultWidth<1.5) defaultWidth = 1.5;
 		}
 		return defaultWidth;
 	}
@@ -1300,11 +1300,13 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public static int getDefaultHandleSize() {
 		if (defaultHandleSize>0)
 			return defaultHandleSize;
-		int defaultWidth = (int)defaultStrokeWidth();
+		double defaultWidth = defaultStrokeWidth();
 		int size = 7;
-		if (defaultWidth>=1) size=9;
+		if (defaultWidth>1.5) size=9;
 		if (defaultWidth>=3) size=11;
-		if (defaultWidth>=5) size=13;
+		if (defaultWidth>=4) size=13;
+		if (defaultWidth>=5) size=15;
+		if (defaultWidth>=11) size=(int)defaultWidth;
 		defaultHandleSize = size;
 		return defaultHandleSize;
 	}
@@ -1322,7 +1324,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			threshold1 = 150;
 			threshold2 = 50;
 		} else {
-			if (state==CONSTRUCTING)
+			if (state==CONSTRUCTING && !(type==RECTANGLE||type==OVAL))
 				size = threshold1 + 1;	
 		}
 		int width = 7;
@@ -1846,32 +1848,35 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	 * @see #setStrokeColor(Color)
 	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
-	public void setStrokeWidth(float width) {
-		if (width<0f)
-			width = 0f;
-		boolean notify = listeners.size()>0 && isLine() && getStrokeWidth()!=width;
-		if (width==0)
-			stroke = null;
-		else if (wideLine)
-			this.stroke = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
-		else
-			this.stroke = new BasicStroke(width);
-		if (width>1f)
-			fillColor = null;
-		if (width>0)
+	public void setStrokeWidth(float strokeWidth) {
+		if (strokeWidth<0f)
+			strokeWidth = 0f;
+		if (strokeWidth==0f && usingDefaultStroke)
+			return;
+		if (strokeWidth>0f) {
 			scaleStrokeWidth = true;
-		usingDefaultStroke = false;
+			usingDefaultStroke = false;
+		}
+		boolean notify = listeners.size()>0 && isLine() && getStrokeWidth()!=strokeWidth;
+		if (strokeWidth==0f)
+			this.stroke = null;
+		else if (wideLine)
+			this.stroke = new BasicStroke(strokeWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
+		else
+			this.stroke = new BasicStroke(strokeWidth);
+		if (strokeWidth>1f)
+			fillColor = null;
 		if (notify)
 			notifyListeners(RoiListener.MODIFIED);
 	}
 
 	/** This is a version of setStrokeWidth() that accepts a double argument. */
-	public void setStrokeWidth(double width) {
-		setStrokeWidth((float)width);
+	public void setStrokeWidth(double strokeWidth) {
+		setStrokeWidth((float)strokeWidth);
 	}
 	
-	public void setUnscalableStrokeWidth(double width) {
-		setStrokeWidth((float)width);
+	public void setUnscalableStrokeWidth(double strokeWidth) {
+		setStrokeWidth((float)strokeWidth);
 		scaleStrokeWidth = false;
 
 	}

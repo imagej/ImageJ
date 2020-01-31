@@ -25,6 +25,7 @@ public class PolygonRoi extends Roi {
 	private boolean userCreated;
 	private boolean subPixel;
 	private boolean drawOffset;
+	private int boxSize = 8;
 
 	long mouseUpTime = 0;
 
@@ -184,12 +185,13 @@ public class PolygonRoi extends Roi {
 		if (lineWidth>1 && isLine())
 			updateWideLine(lineWidth);
 		drawOffset = subPixelResolution();
+		boxSize = (int)(boxSize*Prefs.getGuiScale());
 	}
 
 	private void drawStartBox(Graphics g) {
 		if (type!=ANGLE) {
 			double offset = getOffset(0.5);
-			g.drawRect(ic.screenXD(startXD+offset)-4, ic.screenYD(startYD+offset)-4, 8, 8);
+			g.drawRect(ic.screenXD(startXD+offset)-boxSize/2, ic.screenYD(startYD+offset)-boxSize/2, boxSize, boxSize);
 		}
 	}
 	
@@ -258,8 +260,10 @@ public class PolygonRoi extends Roi {
 		drawPreviousRoi(g);
 		if (!(state==MOVING_HANDLE||state==CONSTRUCTING||state==NORMAL))
 			showStatus();
-		if (updateFullWindow)
-			{updateFullWindow = false; imp.draw();}
+		if (updateFullWindow) {
+			updateFullWindow = false;
+			imp.draw();
+		}
 	}
 
 	private void drawSpline(Graphics g, float[] xpoints, float[] ypoints, int npoints, boolean closed, boolean fill, boolean isActiveOverlayRoi) {
@@ -515,7 +519,7 @@ public class PolygonRoi extends Roi {
 		if (y2>ymax) ymax=y2;
 		if (oy>ymax) ymax=oy;
 		//clip = new Rectangle(xmin, ymin, xmax-xmin, ymax-ymin);
-		int margin = 4;
+		int margin = boxSize;
 		if (ic!=null) {
 			double mag = ic.getMagnification();
 			if (mag<1.0) margin = (int)(margin/mag);
@@ -587,6 +591,7 @@ public class PolygonRoi extends Roi {
 		if (type!=POINT) modifyRoi();
 		LineWidthAdjuster.update();
 		notifyListeners(RoiListener.COMPLETED);
+		updateFullWindow = true;
 	}
 	
 	public void exitConstructingMode() {
@@ -1070,7 +1075,9 @@ public class PolygonRoi extends Roi {
 		else
 			samePoint = (xp[nPoints-2]==xp[nPoints-1] && yp[nPoints-2]==yp[nPoints-1]);
 		boolean doubleClick = (System.currentTimeMillis()-mouseUpTime)<=300;
-		Rectangle biggerStartBox = new Rectangle(ic.screenXD(startXD)-5, ic.screenYD(startYD)-5, 10, 10);
+		int size = boxSize+2;
+		int size2 = boxSize/2 +1;
+		Rectangle biggerStartBox = new Rectangle(ic.screenXD(startXD)-size2, ic.screenYD(startYD)-size2, size, size);
 		if (nPoints>2 && (biggerStartBox.contains(sx, sy)
 		|| (ic.offScreenXD(sx)==startXD && ic.offScreenYD(sy)==startYD)
 		|| (samePoint && doubleClick))) {

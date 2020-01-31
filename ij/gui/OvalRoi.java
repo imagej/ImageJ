@@ -273,7 +273,7 @@ public class OvalRoi extends Roi {
 				g.fillOval(sx1, sy1, sw, sh);
 		} else
 			g.drawOval(sx1, sy1, sw, sh);
-		if (state!=CONSTRUCTING && clipboard==null && !overlay) {
+		if (clipboard==null && !overlay) {
 			drawHandle(g, sx1+sw2, sy1+sh2);
 			drawHandle(g, sx3-sw2, sy1+sh2);
 			drawHandle(g, sx3-sw2, sy3-sh2);

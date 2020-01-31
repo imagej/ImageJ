@@ -35,7 +35,7 @@ public class NonBlockingGenericDialog extends GenericDialog {
 				final NonBlockingGenericDialog gd = this;
 				windowListener = new WindowAdapter() {
 					public void windowClosed(WindowEvent e) {
-						cancelDialogAndClose();	
+						cancelDialogAndClose();
 					}
 				};
 				win.addWindowListener(windowListener);
@@ -44,8 +44,6 @@ public class NonBlockingGenericDialog extends GenericDialog {
 		try {
 			wait();
 		} catch (InterruptedException e) { }
-		finalizeRecording();
-		resetCounters();
 	}
 
 	/** Gets called if the associated image window is closed */
@@ -58,7 +56,7 @@ public class NonBlockingGenericDialog extends GenericDialog {
 		if (!isVisible())
 			notify();
 	}
-	
+
 	public synchronized void keyPressed(KeyEvent e) {
 		super.keyPressed(e);
 		if (wasOKed() || wasCanceled())
@@ -70,7 +68,7 @@ public class NonBlockingGenericDialog extends GenericDialog {
 		if (wasOKed() || wasCanceled())
 			notify();
     }
-    
+
 	public void dispose() {
 		super.dispose();
 		WindowManager.removeWindow(this);
@@ -78,9 +76,9 @@ public class NonBlockingGenericDialog extends GenericDialog {
 			ImageWindow win = imp.getWindow();
 			if (win != null && windowListener != null)
 				win.removeWindowListener(windowListener);
-		}			
+		}
 	}
-	
+
 	/** Returns a new NonBlockingGenericDialog with given title, unless
 	 *  java is running in headless mode; then a GenericDialog will be
 	 *  returned (headless mode does not support the NonBlockingGenericDialog).
@@ -103,5 +101,5 @@ public class NonBlockingGenericDialog extends GenericDialog {
 			toFront();
 		WindowManager.setWindow(this);
 	}
-	
+
 }

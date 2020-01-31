@@ -259,7 +259,8 @@ public class RoiProperties {
 			Roi[] rois = overlay.toArray();
 			for (int i=0; i<rois.length; i++) {
 				rois[i].setStrokeColor(strokeColor);
-				rois[i].setStrokeWidth((float)strokeWidth2);
+				if (strokeWidth2!=strokeWidth)
+					rois[i].setStrokeWidth((float)strokeWidth2);
 				rois[i].setFillColor(fillColor);
 			}
 			imp.draw();

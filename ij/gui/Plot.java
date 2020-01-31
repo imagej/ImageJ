@@ -158,7 +158,7 @@ public class Plot implements Cloneable {
 	private static final int USUALLY_ENLARGE = 1, ALWAYS_ENLARGE = 2; //enlargeRange settings
 	private static final double RELATIVE_ARROWHEAD_SIZE = 0.2; //arrow heads have 1/5 of vector length
 	private static final int MIN_ARROWHEAD_LENGTH = 3;
-	private static final int MAX_ARROWHEAD_LENGTH = 20;	
+	private static final int MAX_ARROWHEAD_LENGTH = 20;
 
 	PlotProperties pp = new PlotProperties();		//size, range, formatting etc, for easy serialization
 	PlotProperties ppSnapshot;						//copy for reverting
@@ -1025,7 +1025,7 @@ public class Plot implements Cloneable {
 	public void setFontSize(int size) {
 		setFont(-1, (float)size);
 	}
-	
+
 	/** Sets the font for all following addLabel() etc. operations. The currently set font when
 	 *	displaying the plot determines the font of all labels & numbers.
 	 *  After the plot has been shown, sets the font for the numbers and the legend (if present).
@@ -1431,7 +1431,7 @@ public class Plot implements Cloneable {
 			if (imp != null)
 				return imp;
 			else {
-				imp = new ImagePlus("Plot Stack",stack);
+				imp = new ImagePlus(title, stack);
 				adjustCalibration(imp.getCalibration());
 				return imp;
 			}
@@ -1881,7 +1881,7 @@ public class Plot implements Cloneable {
 		ip.setColor(Color.black);
 		return ip;
 	}
-	
+
 	/** Calculates the margin sizes and sets the class variables accordingly */
 	void makeMarginValues() {
 		Font font = nonNullFont(pp.frame.getFont(), currentFont);
@@ -2626,7 +2626,7 @@ public class Plot implements Cloneable {
 			ip.setFont(pp.yLabel.getFont() == null ? scFont : scFont(pp.yLabel.getFont()));
 			ImageProcessor yLabel = stringToPixels(yLabelToDraw);
 			if(yLabel != null){
-				yLabel = yLabel.rotateLeft();	
+				yLabel = yLabel.rotateLeft();
 				int xRightOfYLabel = xNumberRight - maxNumWidth - sc(2);
 				int xpos = xRightOfYLabel - yLabel.getWidth() - sc(2);
 				int ypos = topMargin + (frame.height -yLabel.getHeight())/2;
@@ -2659,7 +2659,7 @@ public class Plot implements Cloneable {
 	/** draw something like 1.2 10^-9; returns the width of the string drawn.
 	 *	'Digits' should be >=0 for drawing the mantissa (=1.38 in this example), negative to draw only 10^exponent
 	 *	Currently only supports center justification and right justification (y of center line)
-	 *	Fonts baseFont, smallFont should be scaled already*/	
+	 *	Fonts baseFont, smallFont should be scaled already*/
 	int drawExpString(double value, int digits, int x, int y, int justification, int fontAscent, Font baseFont, Font smallFont) {
 		String base = "10";
 		String exponent = null;
@@ -2692,7 +2692,7 @@ public class Plot implements Cloneable {
 		ip.drawString(base, x, y+fontAscent*7/10);
 		return width;
 	}
-	
+
 	//Returns a pixelMap containting labelStr.
 	//Uses font of current ImageProcessor.
 	//Returns null for empty or blank-only strings
