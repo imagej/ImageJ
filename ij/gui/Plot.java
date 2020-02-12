@@ -888,26 +888,28 @@ public class Plot implements Cloneable {
 		Hidden data sets are ignored.
 		If 'labels' is null or empty, the labels of the data set previously (if any) are used.
 		To modify the legend's style, call 'setFont' and 'setLineWidth' before 'addLegend'. */
-	public void addLegend(String labels, String options) {
-		int flags = Plot.AUTO_POSITION;
-		if (options!=null) {
-			options = options.toLowerCase();
-			if (options.contains("top-left"))
-				flags |= Plot.TOP_LEFT;
-			else if (options.contains("top-right"))
-				flags |= Plot.TOP_RIGHT;
-			else if (options.contains("bottom-left"))
-				flags |= Plot.BOTTOM_LEFT;
-			else if (options.contains("bottom-right"))
-				flags |= Plot.BOTTOM_RIGHT;
-			if (options.contains("bottom-to-top"))
-				flags |= Plot.LEGEND_BOTTOM_UP;
-			if (options.contains("transparent"))
-				flags |= Plot.LEGEND_TRANSPARENT;
+		public void addLegend(String labels, String options) {
+			int flags = 0;
+			if (options!=null) {
+				options = options.toLowerCase();
+				if (options.contains("top-left"))
+					flags |= Plot.TOP_LEFT;
+				else if (options.contains("top-right"))
+					flags |= Plot.TOP_RIGHT;
+				else if (options.contains("bottom-left"))
+					flags |= Plot.BOTTOM_LEFT;
+				else if (options.contains("bottom-right"))
+					flags |= Plot.BOTTOM_RIGHT;
+				else if (!options.contains("off") && !options.contains("no"))
+					flags |= Plot.AUTO_POSITION;
+				if (options.contains("bottom-to-top"))
+					flags |= Plot.LEGEND_BOTTOM_UP;
+				if (options.contains("transparent"))
+					flags |= Plot.LEGEND_TRANSPARENT;
+			}
+			setLegend(labels, flags);
 		}
-		setLegend(labels, flags);
-	}
-
+	
 	/** Adds a legend. The legend will be always drawn last (on top of everything).
 	 *	To modify the legend's style, call 'setFont' and 'setLineWidth' before 'addLegend'
 	 *	@param labels labels of the points or curves in the sequence of the data were added, tab-delimited or linefeed-delimited.

@@ -397,7 +397,7 @@ public class PlotDialog implements DialogListener {
 			if (legendFont == null) legendFont = (plot.currentFont != null) ? plot.currentFont : plot.defaultFont;
 
 			String labels = gd.getNextText();
-			int legendPosNumber = gd.getNextChoiceIndex();
+			legendPosNumber = gd.getNextChoiceIndex();
 			int lFlags = LEGEND_POSITION_N[legendPosNumber];
 			float legendFontSize = (float)gd.getNextNumber();
 			transparentBackground = gd.getNextBoolean();

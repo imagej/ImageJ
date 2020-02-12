@@ -111,7 +111,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private Interpreter interpreter;
 	private JavaScriptEvaluator evaluator;
 	private int messageCount;
-	private boolean acceptMacros = true;
+	private String rejectMacrosMsg;
 	
 	public Editor() {
 		this(24, 80, 0, MENU_BAR);
@@ -295,16 +295,19 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	public void createMacro(String name, String text) {
 		create(name, text);
 	}
-	public void setAcceptMacros(boolean b) {
-		acceptMacros = b;
+	public void setRejectMacrosMsg(String msg ) {
+		rejectMacrosMsg = msg;
 	}
-	public boolean getAcceptMacros() {
-		return acceptMacros;
+	public String getRejectMacrosMsg() {
+		return rejectMacrosMsg;
 	}
 	
 	void installMacros(String text, boolean installInPluginsMenu) {
-		if(!acceptMacros)
+		if(rejectMacrosMsg != null){
+			if(rejectMacrosMsg.length()> 0)
+					IJ.showMessage("", rejectMacrosMsg);
 			return;
+		}
 		String functions = Interpreter.getAdditionalFunctions();
 		if (functions!=null && text!=null) {
 			if (!(text.endsWith("\n") || functions.startsWith("\n")))

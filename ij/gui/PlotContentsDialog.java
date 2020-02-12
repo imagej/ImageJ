@@ -48,7 +48,7 @@ public class PlotContentsDialog implements DialogListener {
 	private ResultsTable[] allTables;
 	private String[]      allTableNames;
 	private static String previousTableName;
-	private static int[]  previousColumns = new int[]{0, 1, 0, 0}; //must be N_COLUMNS elements
+	private static int[]  previousColumns = new int[]{1, 1, 0, 0}; //must be N_COLUMNS elements
 	private static int    defaultTableIndex;
 	private static int[]  defaultColumnIndex = new int[N_COLUMNS];
 	private String[]      arrayHeadings;             // for "Add from Arrays"

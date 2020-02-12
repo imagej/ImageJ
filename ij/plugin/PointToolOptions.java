@@ -61,7 +61,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		String type = PointRoi.types[PointRoi.getDefaultType()];
 		String size = PointRoi.sizes[PointRoi.getDefaultSize()];
 		if (multipointTool)
-			gd = new NonBlockingGenericDialog("Point Tool");
+			gd = NonBlockingGenericDialog.newDialog("Point Tool");
 		else
 			gd = new GenericDialog("Point Tool");
 		gd.setInsets(5,0,2);

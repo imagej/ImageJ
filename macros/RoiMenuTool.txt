@@ -1,39 +1,69 @@
-   var rCmds = newMenu("ROI Menu Tool", 
-                        newArray("Set Default Roi Group", "Set Group of Selected ROIs", "Select Group") );
+  var rCmds = newMenu("ROI Menu Tool", 
+      newArray("Set Default Group...", "Set Default Stroke Width...", "-", 
+      "Set Group of Selected ROIs", "Select Group", "-", "Properties...") );
 
-   macro "ROI Menu Tool - C037T1d16R" {
-       cmd = getArgument();
-       if (cmd=="Set Default ROI Group")
+  macro "ROI Menu Tool - C037T0d15RT8c12oTfc12i" {
+      cmd = getArgument();
+      if (cmd=="Set Default Group...")
           setDefaultRoiGroup();
-       else if (cmd=="Set Group of Selected ROIs")
-          setGroup();       
+      else if (cmd=="Set Default Stroke Width...")
+          setDefaultRoiStrokeWidth();
+      else if (cmd=="Set Group of Selected ROIs")
+          setRoiGroup();       
        else if (cmd=="Select Group")
-          selectGroup();
-      else
-         return;
+          selectRoiGroup();
+      else if (cmd=="Properties...")
+          properties();
    }
 
+  function properties() {
+     if (selectionType==-1) {
+        showMessage("Selection required");
+        exit;
+     }
+     run("Properties... ");
+  }
+
   function setDefaultRoiGroup() {
-     group = parseInt(call("ij.gui.Roi.getDefaultGroup"));
+     group = Roi.getDefaultGroup;
      Dialog.create("Set Default Group");
      Dialog.addNumber("Default group", group);
      Dialog.show;
      group = Dialog.getNumber();
      Roi.setDefaultGroup(group);
+     call("ij.plugin.frame.Recorder.recordString", "Roi.setDefaultGroup("+group+");\n");
   }
 
-  function setGroup() {
+  function setDefaultRoiStrokeWidth() {
+     width = Roi.getDefaultStrokeWidth;
+     Dialog.create("Set Default Stroke Width");
+     Dialog.addNumber("Default stroke width", width);
+     Dialog.show;
+     width = Dialog.getNumber();
+     Roi.setDefaultStrokeWidth(width);
+     call("ij.plugin.frame.Recorder.recordString", "Roi.setDefaultStrokeWidth("+width+");\n");
+  }
+
+  function setRoiGroup() {
      Dialog.create("Set Group");
      Dialog.addString("Group", "1");
      Dialog.show;
      group = Dialog.getString();
-     call("ij.plugin.frame.RoiManager.setGroup", group);
-  }
+     RoiManager.setGroup(group);
+     if (call("ij.plugin.frame.Recorder.scriptMode")=="true")
+        call("ij.plugin.frame.Recorder.recordString", "rm.setGroup("+group+");\n");
+     else
+        call("ij.plugin.frame.Recorder.recordString", "RoiManager.setGroup("+group+");\n");
+ }
 
-  function selectGroup(){
+  function selectRoiGroup() {
      Dialog.create("Select group");
      Dialog.addString("Group", "0");
      Dialog.show;
      group = Dialog.getString();
-     call("ij.plugin.frame.RoiManager.selectGroup", group);
+     RoiManager.selectGroup(group);
+     if (call("ij.plugin.frame.Recorder.scriptMode")=="true")
+        call("ij.plugin.frame.Recorder.recordString", "rm.selectGroup("+group+");\n");
+     else
+        call("ij.plugin.frame.Recorder.recordString", "RoiManager.selectGroup("+group+");\n");
   }

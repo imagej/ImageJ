@@ -23,6 +23,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	private int measurements;
 	private StringBuffer min,max,mean,sd;
 	private boolean disableReset;
+	private boolean resultsUpdated;
 	
 	// Order must agree with order of checkboxes in Set Measurements dialog box
 	private static final int[] list = {AREA,MEAN,STD_DEV,MODE,MIN_MAX,
@@ -863,7 +864,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 				rt.deleteRow(index);
 			counter = rt.size();
 		}
-		IJ.write(rt.getRowAsString(counter-1));
+		if (!resultsUpdated && counter>1 && rt.getColumnIndex("Group")>=0 && rt.getValue("Group",counter-1)>0) {
+			rt.show("Results");
+			resultsUpdated = true;
+		} else
+			IJ.write(rt.getRowAsString(counter-1));
 	}
 
 	/** Redisplays the results table. */

@@ -193,6 +193,9 @@ public class CalibrationBar implements PlugIn {
 		boolean[] states = {boldText, !flatten, showUnit};
 		gd.setInsets(10, 30, 0);
 		gd.addCheckboxGroup(2, 2, labels, states);
+		Checkbox overlayBox = (Checkbox)(gd.getCheckboxes().elementAt(1));
+		if (location.equals(locations[SEPARATE_IMAGE]))
+			overlayBox.setEnabled(false);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
@@ -492,6 +495,11 @@ public class CalibrationBar implements PlugIn {
 			boldText = ( (Checkbox)(checkbox.elementAt(0)) ).getState();
 			flatten = !( (Checkbox)(checkbox.elementAt(1)) ).getState();
 			showUnit = ( (Checkbox)(checkbox.elementAt(2)) ).getState();
+			Checkbox overlayBox = (Checkbox)(checkbox.elementAt(1) );
+			if (location.equals(locations[SEPARATE_IMAGE]))
+					overlayBox.setEnabled(false);
+			else
+					overlayBox.setEnabled(true);
 			updateColorBar();
 		}
 

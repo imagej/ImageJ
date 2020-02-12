@@ -629,8 +629,8 @@ public class Opener {
 		if (img!=null) {
 			try {
 				imp = new ImagePlus(name, img);
-			} catch (IllegalStateException e) {
-				IJ.error("Opener", e.getMessage()+"\n(Note: IJ cannot open CMYK JPEGs)\n \n"+dir+name);
+			} catch (Exception e) {
+				IJ.error("Opener", e.getMessage()+"\n(Note: ImageJ cannot open CMYK JPEGs)\n \n"+dir+name);
 				return null; // error loading image
 			}				
 			if (imp.getType()==ImagePlus.COLOR_RGB)

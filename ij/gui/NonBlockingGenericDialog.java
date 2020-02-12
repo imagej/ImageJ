@@ -2,6 +2,7 @@ package ij.gui;
 import ij.*;
 import java.awt.event.*;
 import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 
 /** This is an extension of GenericDialog that is non-modal.
  *	@author Johannes Schindelin
@@ -79,8 +80,8 @@ public class NonBlockingGenericDialog extends GenericDialog {
 		}
 	}
 
-	/** Returns a new NonBlockingGenericDialog with given title, unless
-	 *  java is running in headless mode; then a GenericDialog will be
+	/** Returns a new NonBlockingGenericDialog with the given title, unless
+	 *  Java is running in headless mode; then a GenericDialog will be
 	 *  returned (headless mode does not support the NonBlockingGenericDialog).
 	 *  @param title Dialog title
 	 *  @param imp   The image associated with this dialog
@@ -92,6 +93,18 @@ public class NonBlockingGenericDialog extends GenericDialog {
 			return gd;
 		} else
 			return new GenericDialog(title);
+	}
+
+	/** Returns a new NonBlockingGenericDialog with the given title, 
+	 *  unless Java is running in headless mode; then a GenericDialog
+	 *  will be returned.
+	 *  @param title Dialog title
+	*/
+	public static GenericDialog newDialog(String title) {
+		if (GraphicsEnvironment.isHeadless())
+			return new GenericDialog(title);
+		else
+			return new NonBlockingGenericDialog(title);
 	}
 
 	/** Put the dialog into the foreground when the image we work on gets into the foreground */

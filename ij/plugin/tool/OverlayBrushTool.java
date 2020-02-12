@@ -195,7 +195,7 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 		public void showDialog() {
 			Color color = Toolbar.getForegroundColor();
 			String colorName = Colors.colorToString2(color);
-			gd = new NonBlockingGenericDialog("Overlay Brush Options");
+			gd = NonBlockingGenericDialog.newDialog("Overlay Brush Options");
 			gd.addSlider("Brush width (pixels):", 0, 50, width);
 			gd.addSlider("Transparency (%):", 0, 100, transparency);
 			gd.addChoice("Color:", Colors.getColors(colorName), colorName);

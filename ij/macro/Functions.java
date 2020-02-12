@@ -309,6 +309,7 @@ public class Functions implements MacroConstants, Measurements {
 		switch (type) {
 			case TABLE: var = doTable(); break;
 			case ROI: var = doRoi(); break;
+			case ROI_MANAGER2: var = doRoiManager(); break;
 			default:
 				interp.error("Variable function expected");
 		}
@@ -7556,5 +7557,27 @@ public class Functions implements MacroConstants, Measurements {
 		return null;
 	}
 
-} // class Functions
+	private Variable doRoiManager() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (interp.token!=WORD)
+			interp.error("Function name expected: ");
+		String name = interp.tokenString;
+		RoiManager rm = RoiManager.getInstance2();
+		if (rm==null)
+			interp.error("No ROI Manager");
+		else if (name.equals("setGroup")) {
+			rm.setGroup((int)getArg());
+			return null;
+		} else if (name.equals("selectGroup")) {
+			rm.selectGroup((int)getArg());
+			return null;
+		} else
+			interp.error("Unrecognized RoiManager function");
+		return null;
+	}
+	
+	} // class Functions
 
