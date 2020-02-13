@@ -1449,6 +1449,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		if (imp!=null) imp.draw();
 		if (record()) {
+			if (group>0) Recorder.record("Roi.setGroup", group); // OK for IJmacro but not for the scripting languages ?
 			if (fillColor!=null)
 				Recorder.record("roiManager", "Set Fill Color", Colors.colorToString(fillColor));
 			else {
