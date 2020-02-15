@@ -7568,8 +7568,14 @@ public class Functions implements MacroConstants, Measurements {
 		RoiManager rm = RoiManager.getInstance2();
 		if (rm==null)
 			interp.error("No ROI Manager");
-		else if (name.equals("setGroup")) {
-			rm.setGroup((int)getArg());
+		if (name.equals("select")) {
+			rm.select((int)getArg());
+			return null;
+		} else if (name.equals("setGroup")) {
+			int group = (int)getArg();
+			if (group<0 || group>255)
+				interp.error("Group out of range");
+			rm.setGroup(group);
 			return null;
 		} else if (name.equals("selectGroup")) {
 			rm.selectGroup((int)getArg());

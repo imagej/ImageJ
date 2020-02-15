@@ -44,7 +44,7 @@ public class GifWriter implements PlugIn {
 		Overlay overlay = imp.getOverlay();
 		int nSlices = stack.size();				
 		if (nSlices==1) { // save using ImageIO
-			if (overlay!=null)
+			if (overlay!=null && !imp.tempOverlay())
 				imp = imp.flatten();
 			try {
 				writeImage(imp, path, transparentIndex);

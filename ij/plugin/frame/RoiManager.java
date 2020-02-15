@@ -1290,9 +1290,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Roi roi = getRoi(i);
 			roi.setGroup(group);
 		}
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) imp.draw();
 	}
 
-	/** Macro-callable version of setGroup(). */
+	/** Obsolete; replaced by RoiManager.setGroup() macro function. */
 	public static void setGroup(String group) {
 		RoiManager rm = getInstance();
 		if (rm==null) return;
@@ -1449,10 +1451,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		if (imp!=null) imp.draw();
 		if (record()) {
+			if (group>0) {
+				if (Recorder.scriptMode())
+					Recorder.recordCall("rm.setGroup("+group+");");
+				else
+					Recorder.record("RoiManager.setGroup", group);
+			}
 			if (fillColor!=null)
 				Recorder.record("roiManager", "Set Fill Color", Colors.colorToString(fillColor));
 			else {
-				Recorder.record("roiManager", "Set Color", Colors.colorToString(color!=null?color:Color.red));
+				if (group==0)
+					Recorder.record("roiManager", "Set Color", Colors.colorToString(color!=null?color:Color.red));
 				Recorder.record("roiManager", "Set Line Width", lineWidth);
 			}
 		}
@@ -1923,7 +1932,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 	/** Obsolete
 	 * @deprecated
-	 * @see #getCount
+	 * @see #size
 	 * @see #getRoisAsArray
 	*/
 	public Hashtable getROIs() {
@@ -1936,7 +1945,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 	/** Obsolete
 	 * @deprecated
-	 * @see #getCount
+	 * @see #size
 	 * @see #getRoisAsArray
 	 * @see #getSelectedIndex
 	*/
@@ -2328,7 +2337,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		setSelectedIndexes(selected);
 	}
 
-	/** Macro-callable version of selectGroup, */
+	/** Obsolete; replaced by RoiManager.selectGroup() macro function. */
 	public static void selectGroup(String group) {
 		RoiManager rm = getInstance();
 		if (rm==null) return;
@@ -2443,7 +2452,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	* greater than or equal to 0 and less than the value returned by getCount().
 	* @see #getSelectedIndexes
 	* @see #getSelectedRoisAsArray
-	* @see #getCount
+	* @see #size
 	*/
 	public void setSelectedIndexes(int[] indexes) {
 		int count = getCount();

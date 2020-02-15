@@ -2904,6 +2904,16 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		ImagePlus imp2 = imp1.flatten();
 		stack.setPixels(imp2.getProcessor().getPixels(), slice);
 	}
+	
+	public boolean tempOverlay() {
+		Overlay o = getOverlay();
+		if (o==null || o.size()!=1)
+			return false;
+		if ("Pixel Inspector".equals(o.get(0).getName()))
+			return true;
+		else
+			return false;
+	}
 
 	private void setPointScale(Roi roi2, Overlay overlay2) {
 		ImageCanvas ic = getCanvas();

@@ -421,10 +421,14 @@ public class Plot implements Cloneable {
 
 	/** Sets the canvas size in (unscaled) pixels and sets the scale to 1.0.
 	 * If the scale remains 1.0, this will be the size of the resulting ImageProcessor.
-	 * When not called, the canvas size is adjusted for the plot frame size specified
-	 * by setFrameSize or otherwise in Edit>Options>Plots. */
+	 * When not called, the canvas size is adjusted for the plot size specified
+	 * by setFrameSize() or setWindowSize(), or otherwise in Edit>Options>Plots.
+	 * @see #setFrameSize(int,int)
+	 * @see #setWindowSize(int,int)
+	*/
 	public void setSize(int width, int height) {
-		if (ip != null && width == ip.getWidth() && height == ip.getHeight()) return;
+		if (ip != null && width == ip.getWidth() && height == ip.getHeight())
+			return;
 		Dimension minSize = getMinimumSize();
 		pp.width = Math.max(width, minSize.width);
 		pp.height = Math.max(height, minSize.height);
@@ -445,7 +449,9 @@ public class Plot implements Cloneable {
 	 *	This frame size in pixels divided by the data range defines the image scale.
 	 *	This method does not check for the minimum size MIN_FRAMEWIDTH, MIN_FRAMEHEIGHT.
 	 *	Note that the black frame will have an outer size that is one pixel larger
-	 *	(when plotted with a linewidth of one pixel). */
+	 *	(when plotted with a linewidth of one pixel).
+	 * @see #setWindowSize(int,int)
+	*/
 	public void setFrameSize(int width, int height) {
 		if (pp.width <= 0) {                //plot not drawn yet? Just remember as preferred size
 			preferredPlotWidth = width;
@@ -457,6 +463,31 @@ public class Plot implements Cloneable {
 			height += topMargin+bottomMargin;
 			setSize(width, height);
 		}
+	}
+
+	/** Sets the plot window size in (unscaled) pixels. This size includes
+	 *	the borders with the axis labels. Also sets the scale to 1.0.
+	 * @see #setFrameSize(int,int)
+	*/
+	public void setWindowSize(int width, int height) {
+		scale = 1.0f;
+		if (pp.width <= 0) {                //plot not drawn yet? Just remember as preferred size
+			makeMarginValues();
+			int infoHeight = 11;
+			double scale = Prefs.getGuiScale();
+			if (scale>1.0)
+				infoHeight = (int)(infoHeight*scale);
+			int buttonPanelHeight = 45;
+			int extraWidth = leftMargin + rightMargin + ImageWindow.HGAP*2;
+			int extraHeight = topMargin + bottomMargin + infoHeight + buttonPanelHeight;
+			if (extraWidth<width)
+				width -= extraWidth;
+			if (extraHeight<height)	
+				height -= extraHeight;
+			preferredPlotWidth = width;
+			preferredPlotHeight = height;
+		} else
+			setSize(width, height);
 	}
 
 	/** The minimum plot size including borders, in pixels (at scale=1) */
