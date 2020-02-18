@@ -135,27 +135,29 @@ public class Clipboard implements PlugIn, Transferable {
 		if (!isDataFlavorSupported(flavor))
 			throw new UnsupportedFlavorException(flavor);
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null) {
-			imp = flatten(imp);
-			ImageProcessor ip;
-			if (imp.isComposite()) {
-				ip = new ColorProcessor(imp.getImage());
-				ip.setRoi(imp.getRoi());
-			} else	
-				ip = imp.getProcessor();
-			ip = ip.crop();
-			int w = ip.getWidth();
-			int h = ip.getHeight();
-			IJ.showStatus(w+"x"+h+ " image copied to system clipboard");
-			Image img = IJ.getInstance().createImage(w, h);
-			Graphics g = img.getGraphics();
-			g.drawImage(ip.createImage(), 0, 0, null);
-			g.dispose();
-			return img;
-		} else {
-			//IJ.noImage();
+		if (imp==null)
 			return null;
+		Roi roi = imp.getRoi();
+		boolean overlay = imp.getOverlay()!=null && !imp.getHideOverlay();
+		if (overlay && !imp.tempOverlay())
+			imp = imp.flatten();
+		int x = 0;
+		int y = 0;
+		int width = imp.getWidth();
+		int height = imp.getHeight();
+		if (roi!=null && !roi.isLine()) {
+			Rectangle bounds = roi.getBounds();
+			x = bounds.x;
+			y = bounds.y;
+			width = bounds.width;
+			height = bounds.height;
 		}
+		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		Graphics g = bi.createGraphics();
+		Image img = imp.getImage();	
+		g.drawImage(img,0,0,width,height,x,y,x+width,y+height,null);
+		g.dispose();
+		return bi;
 	}
 	
 	void showInternalClipboard() {

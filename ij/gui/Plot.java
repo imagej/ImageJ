@@ -465,29 +465,36 @@ public class Plot implements Cloneable {
 		}
 	}
 
-	/** Sets the plot window size in (unscaled) pixels. This size includes
-	 *	the borders with the axis labels. Also sets the scale to 1.0.
+	/** Sets the plot window size in pixels.
 	 * @see #setFrameSize(int,int)
 	*/
 	public void setWindowSize(int width, int height) {
 		scale = 1.0f;
-		if (pp.width <= 0) {                //plot not drawn yet? Just remember as preferred size
-			makeMarginValues();
-			int infoHeight = 11;
-			double scale = Prefs.getGuiScale();
-			if (scale>1.0)
-				infoHeight = (int)(infoHeight*scale);
-			int buttonPanelHeight = 45;
-			int extraWidth = leftMargin + rightMargin + ImageWindow.HGAP*2;
-			int extraHeight = topMargin + bottomMargin + infoHeight + buttonPanelHeight;
+		makeMarginValues();
+		int titleBarHeight = 22;
+		int infoHeight = 11;
+		double scale = Prefs.getGuiScale();
+		if (scale>1.0)
+			infoHeight = (int)(infoHeight*scale);
+		int buttonPanelHeight = 45;
+		if (pp.width <= 0) {     //plot not drawn yet? 
+			int extraWidth = leftMargin+rightMargin+ImageWindow.HGAP*2;
+			int extraHeight = topMargin+bottomMargin+titleBarHeight+infoHeight+buttonPanelHeight;
 			if (extraWidth<width)
 				width -= extraWidth;
 			if (extraHeight<height)	
 				height -= extraHeight;
 			preferredPlotWidth = width;
 			preferredPlotHeight = height;
-		} else
+		} else {
+			int extraWidth = ImageWindow.HGAP*2;
+			int extraHeight = titleBarHeight+infoHeight+buttonPanelHeight;
+			if (extraWidth<width)
+				width -= extraWidth;
+			if (extraHeight<height)	
+				height -= extraHeight;
 			setSize(width, height);
+		}
 	}
 
 	/** The minimum plot size including borders, in pixels (at scale=1) */

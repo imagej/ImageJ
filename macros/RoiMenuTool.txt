@@ -16,6 +16,23 @@
           properties();
    }
 
+  // Numeric keypad shortcuts used to set the default ROI group
+ macro "Keypad shortcuts for setting default group" { }
+  macro "Group 0 (none) [n0]" { npad(0); }
+  macro "Group 1 [n1]" { npad(1); }
+  macro "Group 2 [n2]" { npad(2); }
+  macro "Group 3 [n3]" { npad(3); }
+  macro "Group 4 [n4]" { npad(4); }
+  macro "Group 5 [n5]" { npad(5); }
+  macro "Group 6 [n6]" { npad(6); }
+  macro "Group 7 [n7]" { npad(7); }
+  macro "Group 8 [n8]" { npad(8); }
+  macro "Group 9 [n9]" { npad(9); }
+
+  function npad(digit) {
+      Roi.setDefaultGroup(digit);
+  }
+
   function properties() {
      if (selectionType==-1) {
         showMessage("Selection required");

@@ -1932,7 +1932,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 	/** Obsolete
 	 * @deprecated
-	 * @see #size
+	 * @see #getCount
 	 * @see #getRoisAsArray
 	*/
 	public Hashtable getROIs() {
@@ -1945,7 +1945,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 	/** Obsolete
 	 * @deprecated
-	 * @see #size
+	 * @see #getCount
 	 * @see #getRoisAsArray
 	 * @see #getSelectedIndex
 	*/
@@ -2452,7 +2452,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	* greater than or equal to 0 and less than the value returned by getCount().
 	* @see #getSelectedIndexes
 	* @see #getSelectedRoisAsArray
-	* @see #size
+	* @see #getCount
 	*/
 	public void setSelectedIndexes(int[] indexes) {
 		int count = getCount();
