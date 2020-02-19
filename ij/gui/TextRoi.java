@@ -25,6 +25,7 @@ public class TextRoi extends Roi {
 	private static int size = 18;
 	private Font instanceFont;
 	private static boolean newFont = true;
+	private boolean newJustification;
 	private static boolean antialiasedText = true; // global flag used by text tool
 	private static int globalJustification;
 	private static Color defaultFillColor;
@@ -209,6 +210,14 @@ public class TextRoi extends Roi {
 	
 	/** Renders the text on the image. */
 	public void drawPixels(ImageProcessor ip) {
+		if (newFont || this.width==1 || newJustification) {
+			ImageJ ij = IJ.getInstance();
+			Graphics g = ij!=null?ij.getGraphics():null;
+			if (g!=null)
+				updateBounds(g);
+		}
+		if (!ip.fillValueSet())
+			ip.setColor(Toolbar.getForegroundColor());
 		ip.setFont(instanceFont);
 		ip.setAntialiasedText(getAntiAlias());
 		FontMetrics metrics = ip.getFontMetrics();
@@ -240,8 +249,9 @@ public class TextRoi extends Roi {
 	/** Draws the text on the screen, clipped to the ROI. */
 	public void draw(Graphics g) {
 		if (IJ.debugMode) IJ.log("draw: "+theText[0]+"  "+this.width+","+this.height);
-		if (Interpreter.isBatchMode() && ic!=null && ic.getDisplayList()!=null) return;
-		if (newFont || this.width==1)
+		if (Interpreter.isBatchMode() && ic!=null && ic.getDisplayList()!=null)
+			return;
+		if (newFont || this.width==1 || newJustification)
 			updateBounds(g);
 		Color c = getStrokeColor();
 		setStrokeColor(getColor());
@@ -382,7 +392,7 @@ public class TextRoi extends Roi {
 		return getAntiAlias();
 	}
 		
-	/** Sets the 'justification' instance variable (must be LEFT, CENTER or RIGHT) */
+	/** Sets the default text tool justification (LEFT, CENTER or RIGHT). */
 	public static void setGlobalJustification(int justification) {
 		if (justification<0 || justification>RIGHT)
 			justification = LEFT;
@@ -397,12 +407,12 @@ public class TextRoi extends Roi {
 		}
 	}
 	
-	/** Returns the global (default) justification (LEFT, CENTER or RIGHT). */
+	/** Returns the default text tool justification (LEFT, CENTER or RIGHT). */
 	public static int getGlobalJustification() {
 		return globalJustification;
 	}
 
-	/** Sets the 'justification' instance variable (must be LEFT, CENTER or RIGHT) */
+	/** Sets the 'justification' instance variable (LEFT, CENTER or RIGHT) */
 	public void setJustification(int justification) {
 		if (justification<0 || justification>RIGHT)
 			justification = LEFT;
@@ -415,6 +425,7 @@ public class TextRoi extends Roi {
 			this.x = this.x - this.width/2;
 		}
 		this.justification = justification;
+		newJustification = true;
 		if (imp!=null)
 			imp.draw();
 	}
@@ -487,6 +498,7 @@ public class TextRoi extends Roi {
 		if (nonScalable) mag = 1.0;
 		Font font = getScaledFont();
 		newFont = false;
+		newJustification = false;
 		boolean nullg = g==null;
 		if (nullg) {
 			if (ic!=null)

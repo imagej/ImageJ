@@ -499,6 +499,7 @@ public class Selection implements PlugIn, Measurements {
 		FloatPolygon p = roi.getFloatConvexHull();
 		if (p!=null) {
 			Undo.setup(Undo.ROI, imp);
+			imp.deleteRoi();
 			Roi roi2 = new PolygonRoi(p, roi.POLYGON);
 			transferProperties(roi, roi2);
 			imp.setRoi(roi2);

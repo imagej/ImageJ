@@ -245,6 +245,11 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 	* @see ij.ImagePlus#crop
 	*/
 	public ImagePlus crop(ImagePlus imp) {
+		if (imp.getNChannels()>1 && imp.getCompositeMode()==IJ.COMPOSITE) {
+			int z = imp.getSlice();
+			int t = imp.getFrame();
+			return run(imp, 1, imp.getNChannels(), z, z, t, t);
+		}
 		ImageProcessor ip = imp.getProcessor();
 		ImageProcessor ip2 = ip.crop();
 		ImagePlus imp2 = imp.createImagePlus();
@@ -373,6 +378,14 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 				for (int i=firstC; i<=lastC; i++) {
 					LUT lut = ((CompositeImage)imp).getChannelLut(i);
 					((CompositeImage)imp2).setChannelLut(lut, i2++);
+				}
+				if (imp.getNChannels()==imp2.getNChannels()) {	
+					boolean[] active = ((CompositeImage)imp).getActiveChannels();
+					boolean[] active2 = ((CompositeImage)imp2).getActiveChannels();
+					if (active!=null && active2!=null && active.length==active2.length) {
+						for (int i=0; i<active.length; i++)
+							active2[i] = active[i];
+					}
 				}
 			} else if (firstC==lastC) {
 				LUT lut = ((CompositeImage)imp).getChannelLut(firstC);

@@ -324,6 +324,7 @@ public class ByteProcessor extends ImageProcessor {
 	public void setColor(Color color) {
 		drawingColor = color;
 		fgColor = getBestIndex(color);
+		fillValueSet = true;
 	}
 
 	/** Sets the default fill/draw value, where 0<=value<=255. */

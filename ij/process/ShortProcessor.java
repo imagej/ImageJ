@@ -969,6 +969,7 @@ public class ShortProcessor extends ImageProcessor {
 				setValue(0.0);
 		} else
 			fgColor = (int)(getMin() + (getMax()-getMin())*(bestIndex/255.0));
+		fillValueSet = true;
 	}
 	
 	/** Sets the default fill/draw value, where 0<=value<=65535). */

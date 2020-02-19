@@ -114,12 +114,14 @@ public class ColorProcessor extends ImageProcessor {
 	public void setColor(Color color) {
 		fgColor = color.getRGB();
 		drawingColor = color;
+		fillValueSet = true;
 	}
 
 
 	/** Sets the fill/draw color, where <code>color</code> is an RGB int. */
 	public void setColor(int color) {
 		fgColor = color;
+		fillValueSet = true;
 	}
 
 	/** Sets the default fill/draw value, where <code>value</code> is interpreted as an RGB int. */

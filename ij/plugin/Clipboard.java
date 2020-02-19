@@ -138,26 +138,12 @@ public class Clipboard implements PlugIn, Transferable {
 		if (imp==null)
 			return null;
 		Roi roi = imp.getRoi();
+		if (roi!=null && !roi.isLine())
+			imp = imp.crop();
 		boolean overlay = imp.getOverlay()!=null && !imp.getHideOverlay();
 		if (overlay && !imp.tempOverlay())
-			imp = imp.flatten();
-		int x = 0;
-		int y = 0;
-		int width = imp.getWidth();
-		int height = imp.getHeight();
-		if (roi!=null && !roi.isLine()) {
-			Rectangle bounds = roi.getBounds();
-			x = bounds.x;
-			y = bounds.y;
-			width = bounds.width;
-			height = bounds.height;
-		}
-		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-		Graphics g = bi.createGraphics();
-		Image img = imp.getImage();	
-		g.drawImage(img,0,0,width,height,x,y,x+width,y+height,null);
-		g.dispose();
-		return bi;
+			imp = imp.flatten(); 
+		return imp.getImage();
 	}
 	
 	void showInternalClipboard() {

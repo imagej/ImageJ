@@ -94,6 +94,7 @@ public class CompositeImage extends ImagePlus {
 			setOpenAsHyperStack(true);
 	}
 
+	@Override
 	public Image getImage() {
 		if (img==null)
 			updateImage();
