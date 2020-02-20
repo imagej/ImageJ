@@ -1565,9 +1565,7 @@ public class Menus {
 	
 	void installStartupMacroSet() {
 		if (macrosPath==null) {
-			try {
-				(new MacroInstaller()).installFromIJJar("/macros/StartupMacros.txt");
-			} catch (Exception e) {}
+			MacroInstaller.installFromJar("/macros/StartupMacros.txt");
 			return;
 		}
 		String path = macrosPath + "StartupMacros.txt";

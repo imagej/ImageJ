@@ -257,9 +257,21 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			if (text!=null)
 				Interpreter.setAdditionalFunctions(text);
 	}
-
+	
+	 /** Installs a macro set contained in ij.jar. */
+	public static void installFromJar(String path) {
+		try {
+			(new MacroInstaller()).installFromIJJar(path);
+		} catch (Exception e) {}
+	}
+	
 	 /** Installs a macro set contained in ij.jar. */
 	public void installFromIJJar(String path) {
+		boolean installMacros = false;
+		if (path.endsWith("MenuTool.txt+")) {
+			path = path.substring(0,path.length()-1);
+			installMacros = true;
+		}
 		String text = openFromIJJar(path);
 		if (text==null) return;
 		if (path.endsWith("StartupMacros.txt")) {
@@ -268,9 +280,9 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			Toolbar tb = Toolbar.getInstance();
 			if (tb!=null)
 				tb.installStartupTools();
-		} else if (path.contains("Tools"))
+		} else if (path.contains("Tools") || installMacros) {
 			install(text);
-		else
+		} else
 			installSingleTool(text);
 	}
 

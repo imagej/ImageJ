@@ -1,6 +1,6 @@
   var rCmds = newMenu("ROI Menu Tool", 
       newArray("Set Default Group...", "Set Default Stroke Width...", "-", 
-      "Set Group of Selected ROIs", "Select Group", "-", "Properties...") );
+      "Set Group of Selected ROIs", "Select Group", "-", "Properties..." , "Install Keypad Shortcuts") );
 
   macro "ROI Menu Tool - C037T0d15RT8c12oTfc12i" {
       cmd = getArgument();
@@ -14,7 +14,9 @@
           selectRoiGroup();
       else if (cmd=="Properties...")
           properties();
-   }
+      else if (cmd=="Install Keypad Shortcuts")
+          call("ij.plugin.MacroInstaller.installFromJar", "/macros/RoiMenuTool.txt+");
+  }
 
   // Numeric keypad shortcuts used to set the default ROI group
  macro "Keypad shortcuts for setting default group" { }

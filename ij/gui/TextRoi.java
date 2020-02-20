@@ -208,7 +208,13 @@ public class TextRoi extends Roi {
 		}
 	}
 	
-	/** Renders the text on the image. */
+	/** Renders the text on the image. Draws the text in
+	 * the foreground color if ip.setColor(Color) has
+	 * not been called.
+	 *	@see ij.process.ImageProcessor#setFont(Font)
+	 *	@see ij.process.ImageProcessor#setAntialiasedText(boolean)
+	 *	@see ij.process.ImageProcessor#setColor(Color)
+	*/
 	public void drawPixels(ImageProcessor ip) {
 		if (newFont || this.width==1 || newJustification) {
 			ImageJ ij = IJ.getInstance();
