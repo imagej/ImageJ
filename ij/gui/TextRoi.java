@@ -7,6 +7,7 @@ import ij.plugin.frame.Recorder;
 import ij.plugin.Colors;
 import java.awt.geom.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 
 /** This class is a rectangular ROI containing text. */
@@ -39,6 +40,7 @@ public class TextRoi extends Roi {
 	private static double defaultAngle;
 	private static boolean firstTime = true;
 	private Roi previousRoi;
+	private Graphics fontGraphics;
 
 	/** Creates a TextRoi.*/
 	public TextRoi(int x, int y, String text) {
@@ -111,12 +113,8 @@ public class TextRoi extends Roi {
 		instanceFont = font;
 		setAntiAlias(antialiasedText);
 		firstChar = false;
-		if (this.width==1 && this.height==1) {
-			ImageJ ij = IJ.getInstance();
-			Graphics g = ij!=null?ij.getGraphics():null;
-			if (g!=null)
-				updateBounds(g);
-		}
+		if (this.width==1 && this.height==1)
+			updateBounds(null);
 	}
 
 	/** @deprecated */
@@ -216,12 +214,8 @@ public class TextRoi extends Roi {
 	 *	@see ij.process.ImageProcessor#setColor(Color)
 	*/
 	public void drawPixels(ImageProcessor ip) {
-		if (newFont || this.width==1 || newJustification) {
-			ImageJ ij = IJ.getInstance();
-			Graphics g = ij!=null?ij.getGraphics():null;
-			if (g!=null)
-				updateBounds(g);
-		}
+		if (newFont || this.width==1 || newJustification)
+			updateBounds(null);
 		if (!ip.fillValueSet())
 			ip.setColor(Toolbar.getForegroundColor());
 		ip.setFont(instanceFont);
@@ -497,21 +491,16 @@ public class TextRoi extends Roi {
 	}
 	
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
-	void updateBounds(Graphics g) {
+	private void updateBounds(Graphics g) {
 		if (firstChar || drawStringMode)
 			return;
 		double mag = ic!=null?ic.getMagnification():1.0;
 		if (nonScalable) mag = 1.0;
 		Font font = getScaledFont();
+		if (g==null)
+			g = getFontGraphics(font);
 		newFont = false;
 		newJustification = false;
-		boolean nullg = g==null;
-		if (nullg) {
-			if (ic!=null)
-				g = ic.getGraphics();
-			else
-				return;
-		}
 		Java2.setAntialiasedText(g, getAntiAlias());
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = (int)(metrics.getHeight()/mag);
@@ -532,7 +521,6 @@ public class TextRoi extends Roi {
 				newWidth = w;
 			i++;
 		}
-		if (nullg) g.dispose();
 		newWidth += 2.0;
 		b.width = newWidth;
 		switch (justification) {
@@ -551,6 +539,17 @@ public class TextRoi extends Roi {
 		this.width = (int)Math.ceil(b.width);
 		this.height = (int)Math.ceil(b.height);
 		//IJ.log("adjustSize2: "+theText[0]+"  "+this.width+","+this.height);
+	}
+	
+	private Graphics getFontGraphics(Font font) {
+		if (fontGraphics==null) {
+			BufferedImage bi =new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+			fontGraphics = (Graphics2D)bi.getGraphics();
+			fontGraphics.setFont(font);
+		}
+		if (this.newFont)
+			fontGraphics.setFont(font);
+		return  fontGraphics;
 	}
 	
 	void updateText() {

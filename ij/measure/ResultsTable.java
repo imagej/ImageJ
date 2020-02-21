@@ -934,6 +934,8 @@ public class ResultsTable implements Cloneable {
 		The title must be "Results" if this table was obtained using 
 		ResultsTable.getResultsTable() or Analyzer.getResultsTable . */
 	public void show(String windowTitle) {
+		if  (GraphicsEnvironment.isHeadless())
+			return; // Tables can't be displayed in headless mode
 		if (windowTitle==null)
 			windowTitle = "Results";
 		title = windowTitle;
