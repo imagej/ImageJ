@@ -493,8 +493,12 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		String name = commandName;
 		//IJ.log("saveCommand: "+name+"  "+isSaveAs()+" "+scriptMode+"  "+commandOptions);
 		if (name!=null) {
-			if (commandOptions==null && (name.equals("Fill")||name.equals("Clear")||name.equals("Draw")))
-				commandOptions = "slice";
+			if (commandOptions==null && (name.equals("Fill")||name.equals("Clear")||name.equals("Draw"))) {
+				ImagePlus imp = WindowManager.getCurrentImage();
+				Roi roi = imp!=null?imp.getRoi():null;
+				if (!(roi!=null && (roi instanceof TextRoi) && (name.equals("Draw"))))
+					commandOptions = "slice";
+			}
 			if (!fgColorSet && (name.equals("Fill")||name.equals("Draw")))
 				setForegroundColor(Toolbar.getForegroundColor());
 			else if (!bgColorSet && (name.equals("Clear")||name.equals("Clear Outside")))

@@ -25,7 +25,6 @@ public class TextRoi extends Roi {
 	private static int style = Font.PLAIN;
 	private static int size = 18;
 	private Font instanceFont;
-	private static boolean newFont = true;
 	private boolean newJustification;
 	private static boolean antialiasedText = true; // global flag used by text tool
 	private static int globalJustification;
@@ -41,11 +40,11 @@ public class TextRoi extends Roi {
 	private static boolean firstTime = true;
 	private Roi previousRoi;
 	private Graphics fontGraphics;
+	private static Font defaultFont = ImageJ.SansSerif12;
 
-	/** Creates a TextRoi.*/
+	/** Creates a TextRoi using the defaultFont.*/
 	public TextRoi(int x, int y, String text) {
-		super(x, y, 1, 1);
-		init(text, null);
+		this(x, y, text, defaultFont);
 	}
 	
 	/** Use this constructor as a drop-in replacement for ImageProcessor.drawString(). */
@@ -74,6 +73,8 @@ public class TextRoi extends Roi {
 		this.y = (int)(y - this.height);
 		setAntiAlias(antialiasedText);
 		justification = LEFT;
+		if (defaultColor!=null)
+			setStrokeColor(defaultColor);
 	}
 
 	/** Creates a TextRoi using sub-pixel coordinates.*/
@@ -104,6 +105,11 @@ public class TextRoi extends Roi {
 		init(text, font);
 	}
 	
+	/** Creates a TextRoi using the specified location and Font. */
+	public static TextRoi create(double x, double y, String text, Font font) {
+		return new TextRoi(x, y, text, font);
+	}
+
 	private void init(String text, Font font) {
 		String[] lines = Tools.split(text, "\n");
 		int count = Math.min(lines.length, MAX_LINES);
@@ -113,8 +119,10 @@ public class TextRoi extends Roi {
 		instanceFont = font;
 		setAntiAlias(antialiasedText);
 		firstChar = false;
+		if (defaultColor!=null)
+			setStrokeColor(defaultColor);
 		if (this.width==1 && this.height==1)
-			updateBounds(null);
+			updateBounds();
 	}
 
 	/** @deprecated */
@@ -183,12 +191,12 @@ public class TextRoi extends Roi {
 			// newline
 			if (cline<(MAX_LINES-1)) cline++;
 			theText[cline] = "";
-			updateBounds(null);
+			updateBounds();
 			updateText();
 		} else {
 			char[] chr = {c};
 			theText[cline] += new String(chr);
-			updateBounds(null);
+			updateBounds();
 			updateText();
 			firstChar = false;
 			return;
@@ -214,8 +222,6 @@ public class TextRoi extends Roi {
 	 *	@see ij.process.ImageProcessor#setColor(Color)
 	*/
 	public void drawPixels(ImageProcessor ip) {
-		if (newFont || this.width==1 || newJustification)
-			updateBounds(null);
 		if (!ip.fillValueSet())
 			ip.setColor(Toolbar.getForegroundColor());
 		ip.setFont(instanceFont);
@@ -251,8 +257,6 @@ public class TextRoi extends Roi {
 		if (IJ.debugMode) IJ.log("draw: "+theText[0]+"  "+this.width+","+this.height);
 		if (Interpreter.isBatchMode() && ic!=null && ic.getDisplayList()!=null)
 			return;
-		if (newFont || this.width==1 || newJustification)
-			updateBounds(g);
 		Color c = getStrokeColor();
 		setStrokeColor(getColor());
 		super.draw(g); // draw the rectangle
@@ -281,8 +285,6 @@ public class TextRoi extends Roi {
 	void drawText(Graphics g) {
 		g.setColor( strokeColor!=null? strokeColor:ROIColor);
 		Java2.setAntialiasedText(g, getAntiAlias());
-		if (newFont || this.width==1)
-			updateBounds(g);
 		double mag = getMagnification();
 		int xi = (int)Math.round(getXBase());
 		int yi = (int)Math.round(getYBase());
@@ -296,7 +298,6 @@ public class TextRoi extends Roi {
 		int descent = metrics.getDescent();
 		g.setFont(font);
 		Graphics2D g2d = (Graphics2D)g;
-		updateBounds(g);
 		int sx = nonScalable?xi:screenXD(getXBase());
 		int sy = nonScalable?yi:screenYD(getYBase());
 		int sw = nonScalable?widthi:(int)(getMagnification()*widthd);
@@ -362,7 +363,7 @@ public class TextRoi extends Roi {
 	/** Set the current (instance) font. */
 	public void setCurrentFont(Font font) {
 		instanceFont = font;
-		updateBounds(null);
+		updateBounds();
 	}
 	
 	/** Returns the current (instance) font. */
@@ -425,7 +426,7 @@ public class TextRoi extends Roi {
 			this.x = this.x - this.width/2;
 		}
 		this.justification = justification;
-		newJustification = true;
+		updateBounds();
 		if (imp!=null)
 			imp.draw();
 	}
@@ -449,7 +450,6 @@ public class TextRoi extends Roi {
 		style = fontStyle;
 		globalJustification = LEFT;
 		antialiasedText = antialiased;
-		newFont = true;
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
 			Roi roi = imp.getRoi();
@@ -459,6 +459,12 @@ public class TextRoi extends Roi {
 				imp.draw();
 			}
 		}
+			
+	}
+
+	/** Sets the default font. */
+	public static void setDefaultFont(Font font) {
+		defaultFont = font;
 	}
 
 	/** Sets the default fill (background) color. */
@@ -482,7 +488,7 @@ public class TextRoi extends Roi {
 			imp.setRoi(roi);
 			return;
 		} else if (firstMouseUp) {
-			updateBounds(null);
+			updateBounds();
 			updateText();
 			firstMouseUp = false;
 		}
@@ -491,16 +497,13 @@ public class TextRoi extends Roi {
 	}
 	
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
-	private void updateBounds(Graphics g) {
+	private void updateBounds() {
 		if (firstChar || drawStringMode)
 			return;
 		double mag = ic!=null?ic.getMagnification():1.0;
 		if (nonScalable) mag = 1.0;
 		Font font = getScaledFont();
-		if (g==null)
-			g = getFontGraphics(font);
-		newFont = false;
-		newJustification = false;
+		Graphics g = getFontGraphics(font);
 		Java2.setAntialiasedText(g, getAntiAlias());
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = (int)(metrics.getHeight()/mag);
@@ -545,10 +548,8 @@ public class TextRoi extends Roi {
 		if (fontGraphics==null) {
 			BufferedImage bi =new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
 			fontGraphics = (Graphics2D)bi.getGraphics();
-			fontGraphics.setFont(font);
 		}
-		if (this.newFont)
-			fontGraphics.setFont(font);
+		fontGraphics.setFont(font);
 		return  fontGraphics;
 	}
 	
@@ -632,6 +633,13 @@ public class TextRoi extends Roi {
 		code += "roi.setStrokeColor(new Color("+getColorArgs(getStrokeColor())+"));\n";
 		if (getFillColor()!=null)
 			code += "roi.setFillColor(new Color("+getColorArgs(getFillColor())+"));\n";
+		int just = getJustification();
+		if (just>LEFT) {
+			if (just==CENTER)
+				code += "roi.setJustification(TextRoi.CENTER);\n";
+			else if (just==RIGHT)
+				code += "roi.setJustification(TextRoi.RIGHT);\n";
+		}
 		if (getAngle()!=0.0)
 			code += "roi.setAngle("+getAngle()+");\n";
 		code += "overlay.add(roi);\n";

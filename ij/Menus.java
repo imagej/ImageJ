@@ -352,6 +352,7 @@ public class Menus {
 		addExample(submenu, "Event Listener", "Event_Listener.js");
 		addExample(submenu, "FFT Filter", "FFT_Filter.js");
 		addExample(submenu, "Curve Fitting", "Curve_Fitting.js");
+		addExample(submenu, "Overlay Text", "Overlay_Text.js");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("BeanShell");
