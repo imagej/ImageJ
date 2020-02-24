@@ -75,6 +75,8 @@ public class Selection implements PlugIn, Measurements {
 			rotate(imp); 
 		else if (arg.equals("enlarge"))
 			enlarge(imp); 
+		else if (arg.equals("rect"))
+			fitRectangle(imp); 
 	}
 	
 	private void rotate(ImagePlus imp) {
@@ -814,6 +816,103 @@ public class Selection implements PlugIn, Measurements {
 		transferProperties(roiOrig, roi2);
 		imp.setRoi(roi2);
 		bandSize = n;
+	}
+	
+	/*  Fits a minimum area rectangle into a ROI, by searching for the minimum area bounding rectangles
+	 *  among the ones having a side that is colinear with an edge of the convex hull.
+	 *	
+	 * 	Loosely based on:
+	 * 	H. Freeman and R. Shapira. 1975. Determining the minimum-area encasing rectangle for an arbitrary 
+	 * 	closed curve. Commun. ACM 18, 7 (July 1975), 409–413. DOI:https://doi.org/10.1145/360881.360919	
+	*/
+	private void fitRectangle(ImagePlus imp) {
+		if (!imp.okToDeleteRoi()) return;
+		long startTime = System.currentTimeMillis();
+		Roi roi = imp.getRoi();
+		if (roi == null)
+			{noRoi("Fit Rectangle"); return;}
+		if (roi instanceof Line || roi.isDrawingTool()) 
+			{IJ.error("Fit Rectangle", "Area selection, point selection, or segmented or free line required"); return;}
+		if (!roi.isArea()) {
+			// check number of points and colinearity before proceeding
+			FloatPolygon poly = roi.getFloatPolygon();
+			int n = poly.npoints;
+			if (n < 3)
+				{IJ.error("Fit Rectangle", "At least three points are required"); return;}
+			float[] x = poly.xpoints;
+			float[] y = poly.ypoints;
+			boolean colinear = true;
+			for(int i=2; i<n; i++) {
+				float prod = (x[i] - x[0]) * (y[i] - y[0]) - (x[i] - x[1]) * (y[i] - y[1]);
+				if (prod != 0)	colinear = false;	
+			}
+			if (colinear)
+				{IJ.error("Fit Rectangle", "Points are colinear"); return;}
+		}
+		FloatPolygon p = roi.getFloatConvexHull();
+		if (p!=null) {		
+			int np = p.npoints;
+			float[] xp = p.xpoints;
+			float[] yp = p.ypoints;
+			Rectangle r = roi.getBounds();
+			double minArea = 2 * r.width * r.height; // generous overestimation
+			double minFD = 0;
+			int imin = -1;
+			int i2min = -1;
+			int jmin = -1;
+			double min_hmin = 0;
+			double min_hmax = 0;
+			for (int i = 0; i < np; i++) {
+				double maxLD = 0;
+				int imax = -1;
+				int i2max = -1;
+				int jmax = -1;
+				int i2 = i + 1;
+				if(i == np-1) i2 = 0;
+				for (int j = 0; j < np; j++) {
+					// distance based on vector cross product
+					double d = Math.abs( ((xp[i2] - xp[i]) * (yp[j] - yp[i]) - (xp[j] - xp[i]) * (yp[i2] - yp[i])) / Math.sqrt(Math.pow(xp[i2] - xp[i], 2) + Math.pow(yp[i2] - yp [i], 2)) );
+					if (maxLD < d) {
+						maxLD = d;
+						imax = i;
+						jmax = j;
+						i2max = i2;
+					}
+				}
+				double hmin = 0;
+				double hmax = 0;
+				for (int k = 0; k < np; k++) { // rotating calipers
+					// projected distance based on vector dot product, includes sign
+					double hd = ((xp[i2max] - xp[imax]) * (xp[k] -  xp[imax]) + (yp[k] - yp[imax]) * (yp[i2max] - yp[imax])) / Math.sqrt(Math.pow(xp[i2max] - xp[imax], 2) + Math.pow(yp[i2max] - yp [imax], 2));
+					hmin = Math.min(hmin, hd);
+					hmax = Math.max(hmax, hd);
+				}
+				double area = maxLD * (hmax - hmin);
+				if (minArea > area) {
+					minArea = area;
+					minFD = maxLD;
+					min_hmin = hmin;
+					min_hmax = hmax;
+
+					imin = imax;
+					i2min = i2max;
+					jmin = jmax;
+				}
+			}
+			double pd = ((xp[i2min] - xp[imin]) * (yp[jmin] - yp[imin]) - (xp[jmin] - xp[imin]) * (yp[i2min] - yp[imin])) / Math.sqrt(Math.pow(xp[i2min] - xp[imin], 2) + Math.pow(yp[i2min] - yp [imin], 2)); // signed feret diameter
+			double pairAngle = Math.atan2( yp[i2min]- yp[imin], xp[i2min]- xp[imin]);
+			double minAngle = pairAngle + Math.PI/2;
+			double x1 = xp[imin] + Math.cos(pairAngle) * min_hmax + Math.cos(minAngle) * pd/2;
+			double y1 = yp[imin] + Math.sin(pairAngle) * min_hmax + Math.sin(minAngle) * pd/2;
+			double x2 = xp[imin] + Math.cos(pairAngle) * min_hmin + Math.cos(minAngle) * pd/2;
+			double y2 = yp[imin] + Math.sin(pairAngle) * min_hmin + Math.sin(minAngle) * pd/2;
+			Undo.setup(Undo.ROI, imp);
+			imp.deleteRoi();
+			Roi roi2 = new RotatedRectRoi(x1,  y1,  x2,  y2,  minFD);
+			transferProperties(roi, roi2);
+			imp.setRoi(roi2);
+			IJ.showTime(imp, startTime, "Fit Rectangle ", 1);
+		}
 	}
 	
 	void noRoi(String command) {
