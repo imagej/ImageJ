@@ -4948,7 +4948,9 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		String key = getString();
 		interp.getRightParen();
-		if (key.equals("rgb.foreground"))
+		if (key.equals("image.size"))
+			return getImage().getSizeInBytes();
+		else if (key.equals("rgb.foreground"))
 			return Toolbar.getForegroundColor().getRGB()&0xffffff;
 		else if (key.equals("rgb.background"))
 			return Toolbar.getBackgroundColor().getRGB()&0xffffff;

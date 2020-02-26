@@ -34,13 +34,13 @@ public class TextRoi extends Roi {
 	private boolean firstChar = true;
 	private boolean firstMouseUp = true;
 	private int cline = 0;
-	private boolean drawStringMode;
 	private double angle;  // degrees
 	private static double defaultAngle;
 	private static boolean firstTime = true;
 	private Roi previousRoi;
 	private Graphics fontGraphics;
 	private static Font defaultFont = ImageJ.SansSerif12;
+	private double originalX;
 
 	/** Creates a TextRoi using the defaultFont.*/
 	public TextRoi(int x, int y, String text) {
@@ -50,31 +50,14 @@ public class TextRoi extends Roi {
 	/** Use this constructor as a drop-in replacement for ImageProcessor.drawString(). */
 	public TextRoi(String text, double x, double y, Font font) {
 		super(x, y, 1, 1);
-		drawStringMode = true;
-		if (text!=null && text.contains("\n")) {
-			String[] lines = Tools.split(text, "\n");
-			int count = Math.min(lines.length, MAX_LINES);
-			for (int i=0; i<count; i++)
-				theText[i] = lines[i];
-		} else
-			theText[0] = text;
-		instanceFont = font;
-		if (instanceFont==null)
-			instanceFont = new Font(name, style, size);
-		ImageJ ij = IJ.getInstance();
-		Graphics g = ij!=null?ij.getGraphics():null;
-		if (g==null) return;
-		FontMetrics metrics = g.getFontMetrics(instanceFont);
-		g.dispose();
-		bounds = null;
-		this.width = (int)stringWidth(theText[0],metrics,g);
-		this.height = (int)(metrics.getHeight());
-		this.x = (int)x;
-		this.y = (int)(y - this.height);
-		setAntiAlias(antialiasedText);
-		justification = LEFT;
-		if (defaultColor!=null)
-			setStrokeColor(defaultColor);
+		init(text,font);
+		if (font!=null) {
+			Graphics g = getFontGraphics(font);
+			FontMetrics metrics = g.getFontMetrics(font);
+			Rectangle2D.Double fbounds = getFloatBounds();
+			this.bounds = null;
+			setLocation(fbounds.x, fbounds.y-metrics.getAscent());
+		}
 	}
 
 	/** Creates a TextRoi using sub-pixel coordinates.*/
@@ -105,7 +88,12 @@ public class TextRoi extends Roi {
 		init(text, font);
 	}
 	
-	/** Creates a TextRoi using the specified location and Font. */
+	/** Creates a TextRoi using the specified text and location. */
+	public static TextRoi create(String text, double x, double y, Font font) {
+		return new TextRoi(text, x, y, font);
+	}
+
+	/** Obsolete. */
 	public static TextRoi create(double x, double y, String text, Font font) {
 		return new TextRoi(x, y, text, font);
 	}
@@ -115,14 +103,17 @@ public class TextRoi extends Roi {
 		int count = Math.min(lines.length, MAX_LINES);
 		for (int i=0; i<count; i++)
 			theText[i] = lines[i];
-		if (font==null) font = new Font(name, style, size);
+		if (font==null)
+			font = defaultFont;
+		if (font==null)
+			font = new Font("SansSerif", Font.PLAIN, 14);
 		instanceFont = font;
 		setAntiAlias(antialiasedText);
 		firstChar = false;
 		if (defaultColor!=null)
 			setStrokeColor(defaultColor);
-		if (this.width==1 && this.height==1)
-			updateBounds();
+		originalX = getFloatBounds().x;
+		updateBounds();
 	}
 
 	/** @deprecated */
@@ -204,14 +195,13 @@ public class TextRoi extends Roi {
 	}
 
 	Font getScaledFont() {
-		if (nonScalable)
+		if (instanceFont==null)
+			instanceFont = new Font("SansSerif", Font.PLAIN, 14);
+		double mag = getMagnification();
+		if (nonScalable || imp==null || mag==1.0)
 			return instanceFont;
-		else {
-			if (instanceFont==null)
-				instanceFont = new Font(name, style, size);
-			double mag = getMagnification();
+		else
 			return instanceFont.deriveFont((float)(instanceFont.getSize()*mag));
-		}
 	}
 	
 	/** Renders the text on the image. Draws the text in
@@ -307,10 +297,6 @@ public class TextRoi extends Roi {
 			at = g2d.getTransform();
 			double cx=sx, cy=sy;
 			double theta = Math.toRadians(angle);
-			if (drawStringMode) {
-				cx = screenX(this.x);
-				cy = screenY(this.y+this.height-descent);
-			}
 			g2d.rotate(-theta, cx, cy);
 		}
 		int i = 0;
@@ -360,13 +346,13 @@ public class TextRoi extends Roi {
 		return style;
 	}
 	
-	/** Set the current (instance) font. */
-	public void setCurrentFont(Font font) {
+	/** Sets the current font. */
+	public void setFont(Font font) {
 		instanceFont = font;
 		updateBounds();
 	}
-	
-	/** Returns the current (instance) font. */
+		
+	/** Returns the current font. */
 	public Font getCurrentFont() {
 		return instanceFont;
 	}
@@ -417,14 +403,6 @@ public class TextRoi extends Roi {
 	public void setJustification(int justification) {
 		if (justification<0 || justification>RIGHT)
 			justification = LEFT;
-		if (drawStringMode && justification==RIGHT && this.justification==LEFT) {
-			bounds = null;
-			this.x = this.x - this.width;
-		}
-		if (drawStringMode && justification==CENTER && this.justification==LEFT) {
-			bounds = null;
-			this.x = this.x - this.width/2;
-		}
 		this.justification = justification;
 		updateBounds();
 		if (imp!=null)
@@ -498,24 +476,17 @@ public class TextRoi extends Roi {
 	
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
 	private void updateBounds() {
-		if (firstChar || drawStringMode)
+		if (firstChar )
 			return;
-		double mag = ic!=null?ic.getMagnification():1.0;
-		if (nonScalable) mag = 1.0;
+		double lineHeight = 0;
+		double mag = getMagnification();
 		Font font = getScaledFont();
 		Graphics g = getFontGraphics(font);
 		Java2.setAntialiasedText(g, getAntiAlias());
 		FontMetrics metrics = g.getFontMetrics(font);
-		int fontHeight = (int)(metrics.getHeight()/mag);
-		int descent = metrics.getDescent();
+		double fontHeight = metrics.getHeight()/mag;
 		int i=0, nLines=0;
-		Rectangle2D.Double b = bounds;
-		if (b==null)
-			b = new Rectangle2D.Double(this.x, this.y, this.width, this.height);
-		double oldXD = b.x;
-		double oldYD = b.y;
-		double oldWidthD = b.width;
-		double oldHeightD = b.height;
+		Rectangle2D.Double b = getFloatBounds();
 		double newWidth = 10;
 		while (i<MAX_LINES && theText[i]!=null) {
 			nLines++;
@@ -530,10 +501,10 @@ public class TextRoi extends Roi {
 			case LEFT:
 				break;
 			case CENTER:
-				b.x = oldX+oldWidth/2.0 - newWidth/2.0;
+				b.x = originalX - newWidth/2.0;
 				break;
 			case RIGHT:
-				b.x = oldX+oldWidth - newWidth;
+				b.x = originalX - newWidth;
 				break;
 		}
 		b.height = nLines*fontHeight+2;
@@ -711,11 +682,10 @@ public class TextRoi extends Roi {
 	}
 
 	public boolean getDrawStringMode() {
-		return drawStringMode;
+		return false;
 	}
 	
 	public void setDrawStringMode(boolean drawStringMode) {
-		this.drawStringMode = drawStringMode;
 	}
 	
 	public void setPreviousRoi(Roi previousRoi) {
@@ -736,5 +706,12 @@ public class TextRoi extends Roi {
 	public static int getStyle() {
 		return style;
 	}
+	
+	/** @deprecated Replaced by setFont(font) */
+	public void setCurrentFont(Font font) {
+		instanceFont = font;
+		updateBounds();
+	}
+
         
 }

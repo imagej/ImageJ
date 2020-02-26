@@ -87,7 +87,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	protected double flattenScale = 1.0;
 	protected static Color defaultColor;
 
-
 	private String name;
 	private int position;
 	private int channel, slice, frame;

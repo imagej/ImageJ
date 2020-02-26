@@ -46,6 +46,12 @@ public class Line extends Roi {
 		oldX=x; oldY=y; oldWidth=width; oldHeight=height;
 		state = NORMAL;
 	}
+	
+	/** Creates a new straight line selection using the specified
+		starting and ending offscreen coordinates. */
+	public static Line create(double x1, double y1, double x2, double y2) {
+		return new Line(x1, y1, x2, y2);
+	}
 
 	/** Starts the process of creating a new user-generated straight line
 		selection. 'sx' and 'sy' are screen coordinates that specify
