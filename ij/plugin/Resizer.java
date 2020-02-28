@@ -4,6 +4,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.util.Tools;
+import ij.plugin.frame.Recorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -215,6 +216,20 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 		} else if (crop && (bitDepth==16 || bitDepth==32)) {
 			imp.setDisplayRange(min, max);
 			imp.updateAndDraw();
+		}
+		if (Recorder.scriptMode()) {
+			String options = "";
+			if (interpolationMethod==ImageProcessor.NONE)
+				options = "none";
+			else if (interpolationMethod==ImageProcessor.BICUBIC)
+				options = "bicubic";
+			else
+				options = "bilinear";
+			if (averageWhenDownsizing)
+				options = options + " average";
+			if (constrain)
+				options = options + " constrain";
+			Recorder.recordCall("imp2 = imp.resize("+newWidth+", "+newHeight+", \""+options+"\");");
 		}
 	}
 

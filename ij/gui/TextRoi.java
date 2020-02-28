@@ -25,11 +25,10 @@ public class TextRoi extends Roi {
 	private static int style = Font.PLAIN;
 	private static int size = 18;
 	private Font instanceFont;
-	private boolean newJustification;
 	private static boolean antialiasedText = true; // global flag used by text tool
-	private static int globalJustification;
+	private static int globalJustification = LEFT;
 	private static Color defaultFillColor;
-	private int justification;
+	private int justification = LEFT;
 	private double previousMag;
 	private boolean firstChar = true;
 	private boolean firstMouseUp = true;
@@ -40,7 +39,6 @@ public class TextRoi extends Roi {
 	private Roi previousRoi;
 	private Graphics fontGraphics;
 	private static Font defaultFont = ImageJ.SansSerif12;
-	private double originalX;
 
 	/** Creates a TextRoi using the defaultFont.*/
 	public TextRoi(int x, int y, String text) {
@@ -55,8 +53,8 @@ public class TextRoi extends Roi {
 			Graphics g = getFontGraphics(font);
 			FontMetrics metrics = g.getFontMetrics(font);
 			Rectangle2D.Double fbounds = getFloatBounds();
-			this.bounds = null;
-			setLocation(fbounds.x, fbounds.y-metrics.getAscent());
+			fbounds.y = fbounds.y-metrics.getAscent();
+			setBounds(fbounds);
 		}
 	}
 
@@ -112,7 +110,6 @@ public class TextRoi extends Roi {
 		firstChar = false;
 		if (defaultColor!=null)
 			setStrokeColor(defaultColor);
-		originalX = getFloatBounds().x;
 		updateBounds();
 	}
 
@@ -404,7 +401,8 @@ public class TextRoi extends Roi {
 		if (justification<0 || justification>RIGHT)
 			justification = LEFT;
 		this.justification = justification;
-		updateBounds();
+		if (ic==null)
+			updateBounds();
 		if (imp!=null)
 			imp.draw();
 	}
@@ -501,18 +499,14 @@ public class TextRoi extends Roi {
 			case LEFT:
 				break;
 			case CENTER:
-				b.x = originalX - newWidth/2.0;
+				b.x = this.oldX+this.oldWidth - newWidth/2.0;
 				break;
 			case RIGHT:
-				b.x = originalX - newWidth;
+				b.x = this.oldX+this.oldWidth - newWidth;
 				break;
 		}
 		b.height = nLines*fontHeight+2;
-		this.x = (int)b.x;
-		this.y = (int)b.y;
-		this.width = (int)Math.ceil(b.width);
-		this.height = (int)Math.ceil(b.height);
-		//IJ.log("adjustSize2: "+theText[0]+"  "+this.width+","+this.height);
+		setBounds(b);
 	}
 	
 	private Graphics getFontGraphics(Font font) {

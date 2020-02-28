@@ -4,6 +4,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.util.Tools;
+import ij.plugin.frame.Recorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -167,7 +168,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 					ImageRoi iroi = (ImageRoi)roi;
 					ImageProcessor processor = iroi.getProcessor();
 					processor.setInterpolationMethod(interpolationMethod);
-					processor =processor.resize(newWidth, newHeight, averageWhenDownsizing);
+					processor = processor.resize(newWidth, newHeight, averageWhenDownsizing);
 					iroi.setProcessor(processor);
 					imp2.setOverlay(new Overlay(iroi));
 				}
@@ -191,6 +192,18 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			imp.deleteRoi();
 			imp.updateAndDraw();
 			imp.changes = true;
+		}				
+		if (Recorder.scriptMode()) {
+			String options = "";
+			if (interpolationMethod==ImageProcessor.NONE)
+				options = "none";
+			else if (interpolationMethod==ImageProcessor.BICUBIC)
+				options = "bicubic";
+			else
+				options = "bilinear";
+			if (averageWhenDownsizing)
+				options = options + " average";
+			Recorder.recordCall("imp2 = imp.resize("+newWidth+", "+newHeight+", \""+options+"\");");
 		}
 	}
 	

@@ -2273,6 +2273,26 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		setRoi(roi);
 		return imp2;
 	}
+	
+	/** Returns a scaled copy of this image or ROI, where the
+		 'options'  string can contain 'none', 'bilinear'. 'bicubic',
+		'average' and 'constrain'.
+	*/
+	public ImagePlus resize(int dstWidth, int dstHeight, String options) {
+		ImageProcessor ip = getProcessor();
+		if (options==null)
+			options = "";
+		if (options.contains("constrain"))
+			return new ImagePlus("Untitled", ip.resize(dstWidth));
+		int interpolation = ImageProcessor.BILINEAR;
+		if (options.contains("none"))
+			interpolation = ImageProcessor.NONE;
+		if (options.contains("bicubic"))
+			interpolation = ImageProcessor.BICUBIC;
+		ip.setInterpolationMethod(interpolation);		
+		boolean useAveraging = options.contains("average");
+		return new ImagePlus("Untitled", ip.resize(dstWidth, dstHeight, useAveraging));
+	}
 
 	/** Returns a copy this image or stack slice, cropped if there is an ROI.
 	 * @see #duplicate

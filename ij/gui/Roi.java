@@ -452,6 +452,18 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			return new Rectangle2D.Double(x, y, width, height);
 	}
 
+	/** Sets the bounds of rectangular, oval or text selections. */
+	public void setBounds(Rectangle2D.Double b) {
+		if (!(type==RECTANGLE||type==OVAL||(this instanceof TextRoi)))
+			return;
+		this.x = (int)b.x;
+		this.y = (int)b.y;
+		this.width = (int)Math.ceil(b.width);
+		this.height = (int)Math.ceil(b.height);
+		bounds = new Rectangle2D.Double(b.x, b.y, b.width, b.height);
+		cachedMask = null;
+	}
+
 	/**
 	* @deprecated
 	* replaced by getBounds()
