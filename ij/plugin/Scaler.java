@@ -73,6 +73,27 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		IJ.showProgress(1.0);
 	}
 	
+	/** Returns a scaled copy of this image or ROI, where the
+		 'options'  string can contain 'none', 'bilinear'. 'bicubic',
+		'average' and 'constrain'.
+	*/
+	public static ImagePlus resize(ImagePlus imp, int dstWidth, int dstHeight, int dstDepth, String options) {
+		ImageProcessor ip = imp.getProcessor();
+		if (options==null)
+			options = "";
+		if (options.contains("constrain"))
+			return new ImagePlus("Untitled", ip.resize(dstWidth));
+		int interpolation = ImageProcessor.BILINEAR;
+		if (options.contains("none"))
+			interpolation = ImageProcessor.NONE;
+		if (options.contains("bicubic"))
+			interpolation = ImageProcessor.BICUBIC;
+		ip.setInterpolationMethod(interpolation);		
+		boolean useAveraging = options.contains("average");
+		return new ImagePlus("Untitled", ip.resize(dstWidth, dstHeight, useAveraging));
+	}
+
+	
 	void createNewStack(ImagePlus imp, ImageProcessor ip) {
 		int nSlices = imp.getStackSize();
 		int w=imp.getWidth(), h=imp.getHeight();

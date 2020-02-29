@@ -1076,6 +1076,8 @@ public class ResultsTable implements Cloneable {
 		String text = IJ.openAsString(path);
 		if (text==null)
 			return null;
+		if (text.length()==0)
+			return new ResultsTable();
 		if (text.startsWith("Error:"))
 			throw new IOException("Error opening "+path);
 		boolean csv = path.endsWith(".csv") || path.endsWith(".CSV");
@@ -1087,7 +1089,7 @@ public class ResultsTable implements Cloneable {
 		}
 		String commaSubstitute2 = ""+commaSubstitute;
 		String[] lines = text.split(lineSeparator);
-		if (lines.length==0)
+		if (lines.length==0 || (lines.length==1 && lines[0].length()==0))
 			throw new IOException("Table is empty or invalid");
 		String[] headings = lines[0].split(cellSeparator);
 		if (headings.length<1)
