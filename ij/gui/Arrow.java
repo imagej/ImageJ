@@ -69,7 +69,7 @@ public class Arrow extends Line {
 			Rectangle r = ic.getSrcRect();
 			xbase = r.x; ybase = r.y;
 		}
-		at.setTransform(mag, 0.0, 0.0, mag, -xbase*mag, -ybase*mag);
+		at.setTransform(mag, 0.0, 0.0, mag, (-xbase+0.5)*mag, (-ybase+0.5)*mag); //0.5: int coordinate at pixel center
 		if (outline) {
 			float lineWidth = (float)(getOutlineWidth()*mag);
 			g2.setStroke(new BasicStroke(lineWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));

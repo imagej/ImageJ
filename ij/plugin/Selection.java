@@ -10,6 +10,7 @@ import ij.util.Tools;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.Vector;
+import java.awt.geom.*;
 
 
 /** This plugin implements the commands in the Edit/Selection submenu. */
@@ -653,7 +654,8 @@ public class Selection implements PlugIn, Measurements {
 		}
 		Undo.setup(Undo.ROI, imp);
 		Polygon p = roi.getPolygon();
-		if (p==null) return;
+		FloatPolygon fp = (roi.subPixelResolution()) ? roi.getFloatPolygon() : null;
+		if (p==null && fp==null) return;
 		int type1 = roi.getType();
 		if (type1==Roi.COMPOSITE) {
 			IJ.error("Area to Line", "Composite selections cannot be converted to lines.");
@@ -663,8 +665,10 @@ public class Selection implements PlugIn, Measurements {
 		if (type1==Roi.OVAL||type1==Roi.FREEROI||type1==Roi.TRACED_ROI
 		||((roi instanceof PolygonRoi)&&((PolygonRoi)roi).isSplineFit()))
 			type2 = Roi.FREELINE;
-		Roi roi2 = new PolygonRoi(p.xpoints, p.ypoints, p.npoints, type2);
+		Roi roi2 = fp==null ? new PolygonRoi(p, type2) : new PolygonRoi(fp, type2);
 		transferProperties(roi, roi2);
+		Rectangle2D.Double bounds = roi.getFloatBounds();
+		roi2.setLocation(bounds.x - 0.5, bounds.y -0.5);	//area and line roi coordinates are 0.5 pxl different
 		imp.setRoi(roi2);
 	}
 

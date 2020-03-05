@@ -1198,7 +1198,4 @@ public class ShapeRoi extends Roi {
 			if (a[i] != (int)a[i]) return false;
 		return true;
 	}
-
-	double sqr(double x) {return x*x;}
-
 }

@@ -20,6 +20,11 @@ public class OvalRoi extends Roi {
 		super(x, y, width, height);
 		type = OVAL;
 	}
+	
+	/** Creates an OvalRoi. */
+	public static OvalRoi create(double x, double y, double width, double height) {
+		return new OvalRoi(x, y, width, height);
+	}
 
 	/** Starts the process of creating a user-defined OvalRoi. */
 	public OvalRoi(int x, int y, ImagePlus imp) {
@@ -65,8 +70,8 @@ public class OvalRoi extends Roi {
 	protected void moveHandle(int sx, int sy) {
 		double asp;
 		if (clipboard!=null) return;
-		int ox = ic.offScreenX2(sx);
-		int oy = ic.offScreenY2(sy);
+		int ox = offScreenX(sx);
+		int oy = offScreenY(sy);
 		//IJ.log("moveHandle: "+activeHandle+" "+ox+" "+oy);
 		int x1=x, y1=y, x2=x+width, y2=y+height, xc=x+width/2, yc=y+height/2;
 		int w2 = (int)(0.14645*width);
@@ -364,10 +369,10 @@ public class OvalRoi extends Roi {
 		double mag = ic.getMagnification();
 		int size = getHandleSize()+3;
 		int halfSize = size/2;
-		int sx1 = ic.screenX(x) - halfSize;
-		int sy1 = ic.screenY(y) - halfSize;
-		int sx3 = ic.screenX(x+width) - halfSize;
-		int sy3 = ic.screenY(y+height) - halfSize;
+		int sx1 = screenX(x) - halfSize;
+		int sy1 = screenY(y) - halfSize;
+		int sx3 = screenX(x+width) - halfSize;
+		int sy3 = screenY(y+height) - halfSize;
 		int sx2 = sx1 + (sx3 - sx1)/2;
 		int sy2 = sy1 + (sy3 - sy1)/2;
 		

@@ -78,14 +78,14 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	private PopupMenu dataPopupMenu, morePopupMenu;
 	private static final int NUM_MENU_ITEMS = 20; //how many menu items we have in total
 	private MenuItem[] menuItems = new MenuItem[NUM_MENU_ITEMS];
-	private Label coordinates;
+	private Label statusLabel;
+	private String userStatusText;
 	private static String defaultDirectory = null;
 	private static int options;
 	private int defaultDigits = -1;
 	private int markSize = 5;
 	private static Plot staticPlot;
 	private Plot plot;
-	private String blankLabel = "                       ";
 
 	private PlotMaker plotMaker;
 	private ImagePlus srcImp;		// the source image for live plotting
@@ -241,10 +241,10 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 			live.addActionListener(this);
 			bottomPanel.add(live);
 		}
-		coordinates = new Label(blankLabel);
-		coordinates.setFont(new Font("Monospaced", Font.PLAIN, 12));
-		coordinates.setBackground(new Color(220, 220, 220));
-		bottomPanel.add(coordinates);
+		statusLabel = new Label();
+		statusLabel.setFont(new Font("Monospaced", Font.PLAIN, 12));
+		statusLabel.setBackground(new Color(220, 220, 220));
+		bottomPanel.add(statusLabel);
 		add(bottomPanel);
 		data.add(getDataPopupMenu());
 		more.add(getMorePopupMenu());
@@ -253,6 +253,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		if (lm instanceof ImageLayout)
 			((ImageLayout)lm).ignoreNonImageWidths(true);  //don't expand size to make the panel fit
 		GUI.scale(bottomPanel);
+		maximizeCoordinatesLabelWidth();
 		pack();
 
 		ImageProcessor ip = plot.getProcessor();
@@ -302,11 +303,32 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	}
 
 	/** Called when the canvas is resized */
-	void updateMinimumSize() {
+	void canvasResized() {
 		if (plot == null) return;
-		Dimension d1 = getExtraSize();
+		/*Dimension d1 = getExtraSize();
 		Dimension d2 = plot.getMinimumSize();
-		setMinimumSize(new Dimension(d1.width + d2.width, d1.height + d2.height));
+		setMinimumSize(new Dimension(d1.width + d2.width, d1.height + d2.height));*/
+		maximizeCoordinatesLabelWidth();
+	}
+
+	/** Maximizes the width for the coordinate&status readout field and its parent bottomPanel */
+	void maximizeCoordinatesLabelWidth() {
+		Insets insets = getInsets();                    //by default, left & right insets are 0 anyhow
+		Component parent = statusLabel.getParent();     //the bottomPanel, has insets of 0
+		if (!parent.isValid()) parent.validate();
+		int cWidth = getWidth() - 2*HGAP - statusLabel.getX() - insets.left - insets.right;
+		int cHeight = statusLabel.getPreferredSize().height;
+		statusLabel.setPreferredSize(new Dimension(cWidth, cHeight));
+		parent.setSize(getWidth() - 2*HGAP, parent.getHeight());
+	}
+
+	/** Shows the text in the coordinate&status readout field at the bottom.
+	 *  This text may get temporarily replaced for 'tooltips' (mouse over range arrows etc.).
+	 *  Call with a null argument to enable coordinate readout again. */
+	public void showStatus(String text) {
+		userStatusText = text;
+		if (statusLabel != null)
+			statusLabel.setText(text == null ? "" : text);
 	}
 
 	/** Names for popupMenu items. Update NUM_MENU_ITEMS at the top when adding new ones! */
@@ -464,10 +486,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		super.mouseMoved(x, y);
 		if (plot == null)
 			return;
-		if (coordinates != null) {	//coordinate readout
-			String coords = plot.getCoordinates(x, y) + blankLabel;
-			coordinates.setText(coords.substring(0, blankLabel.length()));
-		}
+		String statusText = null; //coordinate readout, status or tooltip, will be shown in coordinate&status line
 
 		//arrows and other symbols for modifying the plot range
 		if (x < plot.leftMargin || y > plot.topMargin + plot.frameHeight) {
@@ -476,16 +495,16 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 			if (activeRangeArrow < 0)       //mouse is not on one of the symbols, ignore (nothing to display)
 				{}
 			else if (activeRangeArrow < 8)  //mouse over an arrow: 0,3,4,7 for increase, 1,2,5,6 for decrease
-				coordinates.setText(((activeRangeArrow+1)&0x02) != 0 ? "Decrease Range" : "Increase Range");
+				statusText = ((activeRangeArrow+1)&0x02) != 0 ? "Decrease Range" : "Increase Range";
 			else if (activeRangeArrow == 8) //it's the 'R' icon
-				coordinates.setText("Reset Range");
+				statusText = "Reset Range";
 			else if (activeRangeArrow == 9) //it's the 'F' icon
-				coordinates.setText("Full Range (Fit All)");
+				statusText = "Full Range (Fit All)";
 			else if (activeRangeArrow >= 10 &&
 					activeRangeArrow < 14)  //space between arrow-pairs for single number
-				coordinates.setText("Set limit...");
+				statusText = "Set limit...";
 			else if (activeRangeArrow >= 14)
-				coordinates.setText("Axis Range & Options...");
+				statusText = "Axis Range & Options...";
 			boolean repaint = false;
 			if (activeRangeArrow >= 0 && !rangeArrowRois[activeRangeArrow].contains(x, y)) {
 				rangeArrowRois[activeRangeArrow].setFillColor(
@@ -505,6 +524,11 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 			if (repaint) ic.repaint();
 		} else if (rangeArrowsVisible)
 			hideRangeArrows();
+
+		if (statusText == null)
+			statusText = userStatusText != null ? userStatusText : plot.getCoordinates(x, y);
+		if (statusLabel != null)
+			statusLabel.setText(statusText);
 	}
 
 	/** Called by PlotCanvas */

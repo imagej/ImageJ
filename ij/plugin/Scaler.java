@@ -54,9 +54,13 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		ip.setBackgroundValue(bgValue);
 		imp.startTiming();
 		try {
-			if (newWindow && imp.getStackSize()>1 && processStack)
-				createNewStack(imp, ip);
-			else {
+			if (newWindow && imp.getStackSize()>1 && processStack) {
+				ImagePlus imp2 = createNewStack(imp, ip, newWidth, newHeight, newDepth);
+				if (imp2!=null) {
+					imp2.show();
+					imp2.changes = true;
+				}
+			} else {
 				Overlay overlay = imp.getOverlay();
 				if (imp.getHideOverlay())
 					overlay = null;
@@ -71,30 +75,34 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			IJ.outOfMemory("Scale");
 		}
 		IJ.showProgress(1.0);
+		record(imp, newWidth, newHeight, newDepth, interpolationMethod);			
 	}
 	
 	/** Returns a scaled copy of this image or ROI, where the
 		 'options'  string can contain 'none', 'bilinear'. 'bicubic',
-		'average' and 'constrain'.
+		'slice' and 'constrain'.
 	*/
 	public static ImagePlus resize(ImagePlus imp, int dstWidth, int dstHeight, int dstDepth, String options) {
-		ImageProcessor ip = imp.getProcessor();
 		if (options==null)
 			options = "";
-		if (options.contains("constrain"))
-			return new ImagePlus("Untitled", ip.resize(dstWidth));
-		int interpolation = ImageProcessor.BILINEAR;
+		Scaler scaler = new Scaler();
 		if (options.contains("none"))
-			interpolation = ImageProcessor.NONE;
+			scaler.interpolationMethod = ImageProcessor.NONE;
 		if (options.contains("bicubic"))
-			interpolation = ImageProcessor.BICUBIC;
-		ip.setInterpolationMethod(interpolation);		
-		boolean useAveraging = options.contains("average");
-		return new ImagePlus("Untitled", ip.resize(dstWidth, dstHeight, useAveraging));
+			scaler.interpolationMethod = ImageProcessor.BICUBIC;
+		boolean processStack = imp.getStackSize()>1 && !options.contains("slice");
+		//return new ImagePlus("Untitled", ip.resize(dstWidth, dstHeight, useAveraging));
+		Roi roi = imp.getRoi();
+		ImageProcessor ip = imp.getProcessor();
+		if (roi!=null && !roi.isArea())
+			ip.resetRoi();
+		scaler.doZScaling = dstDepth!=1;
+		if (scaler.doZScaling)
+			scaler.processStack = true;
+		return scaler.createNewStack(imp, ip, dstWidth, dstHeight, dstDepth);
 	}
-
 	
-	void createNewStack(ImagePlus imp, ImageProcessor ip) {
+	private ImagePlus createNewStack(ImagePlus imp, ImageProcessor ip, int newWidth, int newHeight, int newDepth) {
 		int nSlices = imp.getStackSize();
 		int w=imp.getWidth(), h=imp.getHeight();
 		ImagePlus imp2 = imp.createImagePlus();
@@ -166,10 +174,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			resizer.setAverageWhenDownsizing(averageWhenDownsizing);
 			imp2 = resizer.zScale(imp2, newDepth, interpolationMethod);
 		}
-		if (imp2!=null) {
-			imp2.show();
-			imp2.changes = true;
-		}
+		return imp2;
 	}
 
 	private void scale(ImageProcessor ip, Overlay overlay) {
@@ -213,19 +218,20 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			imp.deleteRoi();
 			imp.updateAndDraw();
 			imp.changes = true;
-		}				
-		if (Recorder.scriptMode()) {
-			String options = "";
-			if (interpolationMethod==ImageProcessor.NONE)
-				options = "none";
-			else if (interpolationMethod==ImageProcessor.BICUBIC)
-				options = "bicubic";
-			else
-				options = "bilinear";
-			if (averageWhenDownsizing)
-				options = options + " average";
-			Recorder.recordCall("imp2 = imp.resize("+newWidth+", "+newHeight+", \""+options+"\");");
 		}
+	}
+	
+	public static void record(ImagePlus imp, int w2, int h2, int d2, int method) {
+		if (!Recorder.scriptMode())
+			return;
+		String options = "";
+		if (method==ImageProcessor.NONE)
+			options = "none";
+		else if (method==ImageProcessor.BICUBIC)
+			options = "bicubic";
+		else
+			options = "bilinear";
+		Recorder.recordCall("imp2 = imp.resize("+w2+", "+h2+(d2>0&&d2!=imp.getStackSize()?", "+d2:"")+", \""+options+"\");");
 	}
 	
 	boolean showDialog(ImageProcessor ip) {
@@ -370,7 +376,6 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		}
 		gd.setSmartRecording(true);
 		title = gd.getNextString();
-
 		if (fillWithBackground) {
 			Color bgc = Toolbar.getBackgroundColor();
 			if (bitDepth==8)

@@ -6,7 +6,7 @@ import ij.plugin.Colors;
 import ij.plugin.PointToolOptions;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
-import ij.util.Java2; 
+import ij.util.Java2;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.KeyEvent;
@@ -100,7 +100,7 @@ public class PointRoi extends PolygonRoi {
 
 	/** Creates a new PointRoi using the specified coordinates and options. */
 	public PointRoi(double ox, double oy, String options) {
-		super(makeXArray(ox, null), makeYArray(oy, null), 1, POINT);
+		super(makeXorYArray(ox, null, false), makeXorYArray(oy, null, true), 1, POINT);
 		width=1; height=1;
 		incrementCounter(null);
 		setOptions(options);
@@ -108,21 +108,21 @@ public class PointRoi extends PolygonRoi {
 
 	/** Creates a new PointRoi using the specified offscreen int coordinates. */
 	public PointRoi(int ox, int oy) {
-		super(makeXArray(ox, null), makeYArray(oy, null), 1, POINT);
+		super(makeXorYArray(ox, null, false), makeXorYArray(oy, null, true), 1, POINT);
 		width=1; height=1;
 		incrementCounter(null);
 	}
 
 	/** Creates a new PointRoi using the specified offscreen double coordinates. */
 	public PointRoi(double ox, double oy) {
-		super(makeXArray(ox, null), makeYArray(oy, null), 1, POINT);
+		super(makeXorYArray(ox, null, false), makeXorYArray(oy, null, true), 1, POINT);
 		width=1; height=1;
 		incrementCounter(null);
 	}
 
 	/** Creates a new PointRoi using the specified screen coordinates. */
 	public PointRoi(int sx, int sy, ImagePlus imp) {
-		super(makeXArray(sx, imp), makeYArray(sy, imp), 1, POINT);
+		super(makeXorYArray(sx, imp, false), makeXorYArray(sy, imp, true), 1, POINT);
 		defaultCounter = 0;
 		setImage(imp);
 		width=1; height=1;
@@ -176,16 +176,19 @@ public class PointRoi extends PolygonRoi {
 		return temp;
 	}
 
-	static float[] makeXArray(double value, ImagePlus imp) {
-		float[] array = new float[1];
-		array[0] = (float)(imp!=null?imp.getCanvas().offScreenXD((int)value):value);
-		return array;
-	}
-				
-	static float[] makeYArray(double value, ImagePlus imp) {
-		float[] array = new float[1];
-		array[0] = (float)(imp!=null?imp.getCanvas().offScreenYD((int)value):value);
-		return array;
+	/** Creates a one-element array with a coordinate; if 'imp' is non-null
+	 *  converts from a screen coordinate to an image (offscreen) coordinate.
+	 *  The array can be used for adding to an existing point selection */
+	static float[] makeXorYArray(double value, ImagePlus imp, boolean isY) {
+		if (imp != null) {
+			ImageCanvas canvas = imp.getCanvas();
+			if (canvas != null) {			//offset 0.5 converts from area to pixel center coordinates
+				value = (isY ? canvas.offScreenYD((int)value) :canvas.offScreenXD((int)value)) - 0.5;
+				if (!magnificationForSubPixel(canvas.getMagnification()))
+					value = Math.round(value);
+			}
+		}
+		return new float[] {(float)value};
 	}
 				
 	void handleMouseMove(int ox, int oy) {
@@ -321,9 +324,11 @@ public class PointRoi extends PolygonRoi {
 	
 	public void drawPixels(ImageProcessor ip) {
 		ip.setLineWidth(Analyzer.markWidth);
+		double x0 = bounds == null ? x : bounds.x;
+		double y0 = bounds == null ? y : bounds.y;
 		for (int i=0; i<nPoints; i++) {
-			ip.moveTo(x+(int)xpf[i], y+(int)ypf[i]);
-			ip.lineTo(x+(int)xpf[i], y+(int)ypf[i]);
+			ip.moveTo((int)Math.round(x0+xpf[i]), (int)Math.round(y0+ypf[i]));
+			ip.lineTo((int)Math.round(x0+xpf[i]), (int)Math.round(y0+ypf[i]));
 		}
 	}
 	

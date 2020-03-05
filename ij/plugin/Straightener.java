@@ -127,14 +127,16 @@ public class Straightener implements PlugIn {
 		//if (IJ.debugMode)  distances = new FloatProcessor(n, 1);
 		float[] pixels = (float[])ip2.getPixels();
 		double x1, y1;
-		double x2=p.xpoints[0]-(p.xpoints[1]-p.xpoints[0]);
-		double y2=p.ypoints[0]-(p.ypoints[1]-p.ypoints[0]);
-		if (width==1)
+		// the following will be taken as the previous point; extrapolate back one pixel
+		double x2 = p.xpoints[0]-(p.xpoints[1]-p.xpoints[0]);
+		double y2 = p.ypoints[0]-(p.ypoints[1]-p.ypoints[0]);
+		if (width<=1)
 			ip2.putPixelValue(0, 0, ip.getInterpolatedValue(x2, y2));
 		for (int i=0; i<n; i++) {
 			if (!processStack&&(i%10)==0) IJ.showProgress(i, n);
 			x1=x2; y1=y2;
-			x2=p.xpoints[i]; y2=p.ypoints[i];
+			x2 = p.xpoints[i];
+			y2 = p.ypoints[i];
 			//if (distances!=null) distances.putPixelValue(i, 0, (float)Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)));
 			if (width==1) {
 				ip2.putPixelValue(i, 0, ip.getInterpolatedValue(x2, y2));
@@ -146,8 +148,8 @@ public class Straightener implements PlugIn {
             dx /= length;
             dy /= length;
 			//IJ.log(i+"  "+x2+"  "+dy+"  "+(dy*width/2f)+"   "+y2+"  "+dx+"   "+(dx*width/2f));
-			double x = x2-dy*width/2.0;
-			double y = y2-dx*width/2.0;
+			double x = x2-dy*(width-1)/2.0;
+			double y = y2-dx*(width-1)/2.0;
 			int j = 0;
 			int n2 = width;
 			do {

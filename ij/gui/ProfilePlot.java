@@ -221,7 +221,13 @@ public class ProfilePlot {
 		return profile;
 	}
 
-	/** Returns the profile for a polyline with single-pixel width */
+	/** Returns the profile for a polyline with single-pixel width.
+	 *  If subpixel resolution is enabled (Plot options>subpixel resolution),
+	 *  the line coordinates are interpreted as the roi line shown at high zoom level,
+	 *  i.e., integer (x,y) is at the top left corner of pixel (x,y).
+	 *  Thus, the coordinates of the pixel center are taken as (x+0.5, y+0.5).
+	 *  If subpixel resolution if off, the coordinates of the pixel centers are taken
+	 *  as integer (x,y). */
 	double[] getIrregularProfile(Roi roi, ImageProcessor ip, Calibration cal) {
 		boolean interpolate = PlotWindow.interpolate;
 		boolean calcXValues = cal!=null && cal.pixelWidth!=cal.pixelHeight;
@@ -233,7 +239,8 @@ public class ProfilePlot {
 		int n2;
 		double inc = 0.01;
 		double distance=0.0, distance2=0.0, dx=0.0, dy=0.0, xinc, yinc;
-		double x, y, lastx=0.0, lasty=0.0, x1, y1, x2=xpoints[0], y2=ypoints[0];
+		double x, y, lastx=0.0, lasty=0.0, x1, y1;
+		double x2=xpoints[0], y2=ypoints[0];
 		double value;
 		for (int i=1; i<n; i++) {
 			x1=x2; y1=y2;

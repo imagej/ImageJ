@@ -1316,8 +1316,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		boolean multiPointMode = roi!=null && (roi instanceof PointRoi) && handle==-1
 			&& tool==Toolbar.POINT && Toolbar.getMultiPointMode();
 		if (multiPointMode) {
-			double oxd = offScreenXD(sx);
-			double oyd = offScreenYD(sy);
+			double oxd = roi.offScreenXD(sx);
+			double oyd = roi.offScreenYD(sy);
 			if (e.isShiftDown() && !IJ.isMacro()) {
 				FloatPolygon points = roi.getFloatPolygon();
 				if (points.npoints>0) {
@@ -1592,7 +1592,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		for (int i=o.size()-1; i>=0; i--) {
 			Roi roi = o.get(i);
 			//IJ.log(".isAltDown: "+roi.contains(ox, oy));
-			if (roi.contains(ox, oy) || (labels&&labelRects!=null&&labelRects[i]!=null&&labelRects[i].contains(sx,sy))) {
+			boolean containsMousePoint = false;
+			if (roi instanceof Line) {	//grab line roi near its center
+				double grabLineWidth = 1.1 + 5./magnification;
+				containsMousePoint = (((Line)roi).getFloatPolygon(grabLineWidth)).contains(ox, oy);
+			} else
+				containsMousePoint = roi.contains(ox, oy);
+			if (containsMousePoint || (labels&&labelRects!=null&&labelRects[i]!=null&&labelRects[i].contains(sx,sy))) {
 				if (hyperstack && roi.getPosition()==0) {
 					int c = roi.getCPosition();
 					int z = roi.getZPosition();

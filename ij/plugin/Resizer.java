@@ -217,20 +217,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			imp.setDisplayRange(min, max);
 			imp.updateAndDraw();
 		}
-		if (Recorder.scriptMode()) {
-			String options = "";
-			if (interpolationMethod==ImageProcessor.NONE)
-				options = "none";
-			else if (interpolationMethod==ImageProcessor.BICUBIC)
-				options = "bicubic";
-			else
-				options = "bilinear";
-			if (averageWhenDownsizing)
-				options = options + " average";
-			if (constrain)
-				options = options + " constrain";
-			Recorder.recordCall("imp2 = imp.resize("+newWidth+", "+newHeight+", \""+options+"\");");
-		}
+		Scaler.record(imp, newWidth, newHeight, 1, interpolationMethod);	
 	}
 
 	public ImagePlus zScale(ImagePlus imp, int newDepth, int interpolationMethod) {

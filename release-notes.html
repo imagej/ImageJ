@@ -5,8 +5,29 @@
 </head>
 <body>
 
-<li> <u>1.52u29 28 February 2020</u>
+<li> <u>1.52u33 5 March 2020</u>
 <ul>
+
+<li> ROI enhancements, thanks to Michael Schmid: 
+<ul>
+<li> Line and point selections have integer coordinates at
+pixel centers when displayed at high magnification. Area selections
+have integer coordinates at the top-left corner of pixels.
+<li>All  interactively created ROIs except rectangles and ovals are created
+with subpixel resolution if the magnification is above 150%.
+<li> The <i>Line to Area</i> command is faster and more accurate
+<li> The <i>Straighten</i> command is more accurate.
+<li> The <i>Image&gt;Info</i> command displays more
+information about ROIs.
+<li> Long-click to select ROIs from overlays now also works
+with lines.
+<li> Fixed a bug that could (rarely) cause an exception during
+"wipe back" when drawing a polygon or polyline. In "wipe back"
+mode, the mouse behaves like an eraser when
+moved backwards with alt key down.
+
+</ul>
+
 <li> Thanks to Nicolas De Francesco, added the
 <i>Edit&gt;Selection&gt;Fit Rectangle</i> command.
 <li> Added the <i>Help&gt;Examples&gt;JavaScript&gt;Overlay Text</i> example.

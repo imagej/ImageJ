@@ -4,7 +4,7 @@ import ij.gui.*;
 import java.awt.Rectangle;
 
 
-/** This class fills polygons using the scan-line filling algorithm 
+/** This class fills polygons using the scan-line filling algorithm
 	described at "http://www.cs.rit.edu/~icss571/filling/".
 
 	Note that by ImageJ convention, outline and pixel coordinates are shifted by 0.5:
@@ -25,23 +25,24 @@ public class PolygonFiller {
 	int activeEdges; // number of  active edges
 
 	// the polygon
-	int[] x;                // x coordinates of polygon vertices (null when using float values)
-	int[] y;                // y coordinates
-	float[] xf, yf;         // floating-point coordinates, may be given instead of integer 'x'
-	float xOffset, yOffset; // offset that has to be added to xf, yf
-	int n;                  // number of coordinates (polygon vertices)
+	int[] x;                 // x coordinates of polygon vertices (null when using float values)
+	int[] y;                 // y coordinates
+	float[] xf, yf;          // floating-point coordinates, may be given instead of integer 'x'
+	double xOffset, yOffset; // offset that has to be added to xf, yf
+	int n;                   // number of coordinates (polygon vertices)
 
 	// edge table
-	double[] ex;	// x coordinates
-	int[] ey1;	// upper y coordinates
-	int[] ey2;	// lower y coordinates
+	double[] ex;       // x coordinates
+	int[] ey1;         // upper y coordinates
+	int[] ey2;         // lower y coordinates
 	double[] eslope;   // inverse slopes (1/m)
+	int yMin, yMax;    // lowest and highest of all ey1, ey2;
 
 	// sorted edge table (indexes into edge table) (currently not used)
 	int[] sedge;
 
 	// active edge table (indexes into edge table)
-	int[] aedge; 
+	int[] aedge;
 
 	/** Constructs a PolygonFiller. */
 	public PolygonFiller() {
@@ -53,7 +54,7 @@ public class PolygonFiller {
 	}
 
 	/** Constructs a PolygonFiller using the specified polygon with floating-point coordinates. */
-	public PolygonFiller(float[] xf, float[] yf, int n, float xOffset, float yOffset) {
+	public PolygonFiller(float[] xf, float[] yf, int n, double xOffset, double yOffset) {
 		setPolygon(xf, yf, n, xOffset, yOffset);
 	}
 
@@ -67,7 +68,7 @@ public class PolygonFiller {
 	/** Specifies the polygon to be filled in case of float coordinates.
 	 *  In this case, multiple polygons separated by one set of NaN coordinates each.
 	 */
-	public void setPolygon(float[] xf, float[] yf, int n, float xOffset, float yOffset) {
+	public void setPolygon(float[] xf, float[] yf, int n, double xOffset, double yOffset) {
 		x = y = null;
 		this.xf = xf;
 		this.yf = yf;
@@ -93,6 +94,8 @@ public class PolygonFiller {
 	 *  ex: x value at ey1, corrected for half-pixel shift between outline&pixel coordinates
 	 *  sedge: list of sorted edges is prepared (not sorted yet) */
 	void buildEdgeTable() {
+		yMin = Integer.MAX_VALUE;
+		yMax = Integer.MIN_VALUE;
 		edges = 0;
 		int polyStart = 0;	  //index where the polygon has started (i.e., 0 unless we have multiple ploygons separated by NaN)
 		for (int i=0; i<n; i++) {
@@ -113,6 +116,8 @@ public class PolygonFiller {
 				ey1[edges] = y1;
 				ey2[edges] = y2;
 				eslope[edges] = slope;
+				if (y1 < yMin) yMin = y1;
+				if (y2 > yMax) yMax = y2;
 			} else {          //using float arrays
 				if (Float.isNaN(xf[iplus1])) //after the last point, close the polygon
 					iplus1 = polyStart;
@@ -122,8 +127,9 @@ public class PolygonFiller {
 				}
 				double y1f = yf[i] + yOffset;  double y2f = yf[iplus1] + yOffset;
 				double x1f = xf[i] + xOffset;  double x2f = xf[iplus1] + xOffset;
-				int y1 = (int)Math.ceil(y1f - 0.5f);
-				int y2 = (int)Math.ceil(y2f - 0.5f);
+				int y1 = (int)Math.round(y1f);
+				int y2 = (int)Math.round(y2f);
+				//IJ.log("x, y="+xf[i]+","+yf[i]+"+ offs="+xOffset+","+yOffset+"->"+x1f+","+y1f+" int="+y1);
 				if (y1==y2 || (y1<=0 && y2<=0))
 					continue; //ignore horizontal lines or lines that don't reach the first row of pixels
 				if (y1>y2) {  //swap ends to ensure y1<y2
@@ -139,6 +145,8 @@ public class PolygonFiller {
 				ey1[edges] = y1;
 				ey2[edges] = y2;
 				eslope[edges] = slope;
+				if (y1 < yMin) yMin = y1;
+				if (y2 > yMax) yMax = y2;
 			}
 			edges++;
 		}
@@ -154,13 +162,25 @@ public class PolygonFiller {
 
 	/** Returns a byte mask containing a filled version of the polygon. */
 	public ImageProcessor getMask(int width, int height) {
+		ByteProcessor mask = new ByteProcessor(width, height);
+		fillByteProcessorMask(mask);
+		return mask;
+	}
+
+	/** Fills the ByteProcessor with 255 inside the polygon */
+	public void fillByteProcessorMask(ByteProcessor mask) {
+		int width = mask.getWidth();
+		int height = mask.getHeight();
+		byte[] pixels = (byte[])mask.getPixels();
 		allocateArrays(n);
 		buildEdgeTable();
 		//printEdges();
 		int x1, x2, offset, index;
-		ImageProcessor mask = new ByteProcessor(width, height);
-		byte[] pixels = (byte[])mask.getPixels();
-		for (int y=0; y<height; y++) {
+		int yStart = yMin>0 ? yMin : 0;
+		if (yMin != 0)
+			shiftXValuesAndActivate(yStart);
+		//IJ.log("yMin="+yMin+" yStart="+yStart+" nActive="+activeEdges);
+		for (int y=yStart; y<Math.min(height, yMax+1); y++) {
 			removeInactiveEdges(y);
 			activateEdges(y);
 			offset = y*width;
@@ -168,17 +188,30 @@ public class PolygonFiller {
 				x1 = (int)(ex[aedge[i]]+0.5);
 				if (x1<0) x1=0;
 				if (x1>width) x1 = width;
-				x2 = (int)(ex[aedge[i+1]]+0.5); 
-				if (x2<0) x2=0; 
+				x2 = (int)(ex[aedge[i+1]]+0.5);
+				if (x2<0) x2=0;
 				if (x2>width) x2 = width;
-				//IJ.log(y+" "+x1+"-"+x2+" x1edge="+(ex[aedge[i]]+0.5)+" x2edge="+(ex[aedge[i+1]]+0.5)+" slope1="+eslope[aedge[i]]+" slope1="+eslope[aedge[i+1]]+" offs="+xOffset+","+yOffset);
 				for (int x=x1; x<x2; x++)
 					pixels[offset+x] = -1; // 255 (white)
-			}			
+			}
 			updateXCoordinates();
 		}
-		return mask;
-	}	
+	}
+
+	/** Shifts the x coordinates of all edges according to their slopes
+	 *  as required for starting at the given y value and prepares the
+	 *  list of active edges as it would have resulted from procesing
+	 *  the previous lines */
+	void shiftXValuesAndActivate(int yStart) {
+		for (int i=0; i<edges; i++) {
+			int index = sedge[i];
+			if (ey1[index] < yStart && ey2[index] >= yStart) {
+				ex[index] += eslope[index] * (yStart - ey1[index]);
+				aedge[activeEdges++] = index;
+			}
+		}
+		sortActiveEdges();
+	}
 
 	/** Updates the x coordinates in the active edges list and sorts the list if necessary. */
 	void updateXCoordinates() {
@@ -192,7 +225,7 @@ public class PolygonFiller {
 			if (x2<x1) sorted = false;
 			x1 = x2;
 		}
-		if (!sorted) 
+		if (!sorted)
 			sortActiveEdges();
 	}
 
@@ -204,7 +237,7 @@ public class PolygonFiller {
 			for (int j=i; j<activeEdges; j++)
 				if (ex[aedge[j]] <ex[aedge[min]]) min = j;
 			tmp=aedge[min];
-			aedge[min] = aedge[i]; 
+			aedge[min] = aedge[i];
 			aedge[i]=tmp;
 		}
 	}
@@ -217,9 +250,9 @@ public class PolygonFiller {
 			if (y<ey1[index] || y>=ey2[index]) {
 				for (int j=i; j<activeEdges-1; j++)
 					aedge[j] = aedge[j+1];
-				activeEdges--; 
+				activeEdges--;
 			} else
-				i++;		 
+				i++;
 		}
 	}
 
@@ -231,7 +264,7 @@ public class PolygonFiller {
 				int index = 0;
 				while (index<activeEdges && ex[edge]>ex[aedge[index]])
 					index++;
-				for (int j=activeEdges-1; j>=index; j--) 
+				for (int j=activeEdges-1; j>=index; j--)
 					aedge[j+1] = aedge[j];
 				aedge[index] = edge;
 				activeEdges++;
@@ -242,8 +275,8 @@ public class PolygonFiller {
 	/** Display the contents of the edge table*/
 	void printEdges() {
 		for (int i=0; i<edges; i++) {
-			int index = sedge[i];
-			IJ.log(i+"	"+ex[index]+"  "+ey1[index]+"  "+ey2[index] + "  " + IJ.d2s(eslope[index],2) );
+			int index = i;
+			IJ.log(i+": x="+IJ.d2s(ex[index])+" y="+ey1[index]+" to "+ey2[index] + " sl=" + IJ.d2s(eslope[index],2) );
 		}
 	}
 
@@ -251,7 +284,7 @@ public class PolygonFiller {
 	void printActiveEdges() {
 		for (int i=0; i<activeEdges; i++) {
 			int index =aedge[i];
-			IJ.log(i+"	"+ex[index]+"  "+ey1[index]+"  "+ey2[index] );
+			IJ.log(i+": x="+IJ.d2s(ex[index])+" y="+ey1[index]+" to "+ey2[index] + " sl=" + IJ.d2s(eslope[index],2) );
 		}
 	}
 

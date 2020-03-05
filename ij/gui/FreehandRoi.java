@@ -21,8 +21,8 @@ public class FreehandRoi extends PolygonRoi {
 			growFloat(sx, sy);
 			return;
 		}
-		int ox = ic.offScreenX(sx);
-		int oy = ic.offScreenY(sy);
+		int ox = offScreenX(sx);
+		int oy = offScreenY(sy);
 		if (ox<0) ox = 0;
 		if (oy<0) oy = 0;
 		if (ox>xMax) ox = xMax;
@@ -40,8 +40,8 @@ public class FreehandRoi extends PolygonRoi {
 	}
               
 	private void growFloat(int sx, int sy) {
-		double ox = ic.offScreenXD(sx);
-		double oy = ic.offScreenYD(sy);
+		double ox = offScreenXD(sx);
+		double oy = offScreenYD(sy);
 		if (ox<0.0) ox = 0.0;
 		if (oy<0.0) oy = 0.0;
 		if (ox>xMax) ox = xMax;
@@ -61,10 +61,10 @@ public class FreehandRoi extends PolygonRoi {
 	void drawLine() {
 		int x1, y1, x2, y2;
 		if (xpf!=null) {
-			x1 = (int)xpf[nPoints-2]+x;
-			y1 = (int)ypf[nPoints-2]+y;
-			x2 = (int)xpf[nPoints-1]+x;
-			y2 = (int)ypf[nPoints-1]+y;
+			x1 = (int)Math.round(xpf[nPoints-2]+x);
+			y1 = (int)Math.round(ypf[nPoints-2]+y);
+			x2 = (int)Math.round(xpf[nPoints-1]+x);
+			y2 = (int)Math.round(ypf[nPoints-1]+y);
 		} else {
 			x1 = xp[nPoints-2]+x;
 			y1 = yp[nPoints-2]+y;

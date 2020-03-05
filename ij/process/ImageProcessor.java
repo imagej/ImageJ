@@ -1024,7 +1024,7 @@ public abstract class ImageProcessor implements Cloneable {
 	 * Returns an array containing the pixel values along the
 	 * line starting at (x1,y1) and ending at (x2,y2). Pixel
 	 * values are sampled using getInterpolatedValue(double,double)
-	 * if interpolatiion is enabled or getPixelValue(int,int) if it is not.
+	 * if interpolation is enabled or getPixelValue(int,int) if it is not.
 	 * For byte and short images, returns calibrated values if a
 	 * calibration table has been set using setCalibrationTable().
 	 * The length of the returned array, minus one, is approximately
@@ -1051,7 +1051,6 @@ public abstract class ImageProcessor implements Cloneable {
 				ry += yinc;
 			}
 		} else {
-			rx-=0.5; ry-=0.5;
 			for (int i=0; i<n; i++) {
 				data[i] = getPixelValue((int)Math.round(rx), (int)Math.round(ry));
 				rx += xinc;

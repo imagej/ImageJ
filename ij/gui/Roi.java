@@ -26,7 +26,24 @@ import java.awt.geom.*;
  *   // process p
  * }
  * </pre>
- */
+ * <b>
+ * Convention for subpixel resolution and zooming in:
+ * </b><ul>
+ * <li> Area ROIs: Integer coordinates refer to the top-left corner of the pixel with these coordinates.
+ *      Thus, pixel (0,0) is enclosed by the rectangle spanned between points (0,0) and (1,1),
+ *      i.e., a rectangle at (0,0) with width = height = 1 pixel.
+ * <li> Line and Point Rois: Integer coordinates refer to the center of a pixel.
+ *      Thus, a line from (0,0) to (1,0) has its start and end points in the center of
+ *      pixels (0,0) and (1,0), respectively, and drawing the line should affect both
+ *      pixels. For images dispplayed at high zoom loevels, this means that (open) lines
+ *      and single points are displayed 0.5 pixels further to the right and bottom than
+ *      the outlines of area ROIs (closed lines) with the same coordinates.
+ * </ul>
+ * Note that rectangular and (nonrotated) oval ROIs do not support subpixel resolution.
+ * Since ImageJ 1.52t, this convention does not depend on the Prefs.subpixelResolution
+ * previously accessible via Edit>Options>Plot) and this flag has no effect any more.
+ *
+  */
 public class Roi extends Object implements Cloneable, java.io.Serializable, Iterable<Point> {
 
 	public static final int CONSTRUCTING=0, MOVING=1, RESIZING=2, NORMAL=3, MOVING_HANDLE=4; // States
@@ -173,7 +190,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	}
 	
 	/** Starts the process of creating a user-defined rectangular Roi,
-		where sx and sy are the starting screen coordinates. */
+		where sx and sy are the starting screen coordinates.
+		For rectangular rois, also a corner diameter may be specified to
+		make it a rounded rectangle */
 	public Roi(int sx, int sy, ImagePlus imp, int cornerDiameter) {
 		setImage(imp);
 		int ox=sx, oy=sy;
@@ -229,8 +248,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		startX = x; startY = y;
 		oldX = x; oldY = y; oldWidth=0; oldHeight=0;
 		if (bounds!=null) {
-			if (!isInteger(bounds.x) || !isInteger(bounds.y))
+			if (!isInteger(bounds.x) || !isInteger(bounds.y)) {
 				cachedMask = null;
+				width  = (int)Math.ceil(bounds.width);
+				height = (int)Math.ceil(bounds.height);
+			}
 			bounds.x = x;
 			bounds.y = y;
 		}
@@ -242,8 +264,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		if (isInteger(x) && isInteger(y))
 			return;
 		if (bounds!=null) {
-			if (!isInteger(x-bounds.x) || !isInteger(y-bounds.y))
+			if (!isInteger(x-bounds.x) || !isInteger(y-bounds.y)) {
 				cachedMask = null;
+				width  = (int)Math.ceil(bounds.x + bounds.width) - this.x;	//ensure that all pixels are inside
+				height = (int)Math.ceil(bounds.y + bounds.height) - this.y;
+			}
 			bounds.x = x;
 			bounds.y = y;
 		} else {
@@ -1068,10 +1093,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			return;
 		x += dx;
 		y += dy;
-		if (bounds!=null) {
-			bounds.x += dx;
-			bounds.y += dy;
-		}
+		if (bounds!=null)
+			setLocation(bounds.x + dx, bounds.y + dy);
 		boolean isImageRoi = this instanceof ImageRoi;
 		if (clipboard==null && type==RECTANGLE && !isImageRoi) {
 			if (x<0) x=0; if (y<0) y=0;
@@ -1092,10 +1115,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		oldWidth = width;
 		oldHeight=height;
 		if (isImageRoi) showStatus();
-		if (bounds!=null) {
-			bounds.x = x;
-			bounds.y = y;
-		}
 	}
 
 	/** Nudge ROI one pixel on arrow key press. */
@@ -1471,10 +1490,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		double y = getYBase();
 		double width = getFloatWidth();
 		double height = getFloatHeight();
-		int sx1 = ic.screenXD(x) - halfSize;
-		int sy1 = ic.screenYD(y) - halfSize;
-		int sx3 = ic.screenXD(x+width) - halfSize;
-		int sy3 = ic.screenYD(y+height) - halfSize;
+		int sx1 = screenXD(x) - halfSize;
+		int sy1 = screenYD(y) - halfSize;
+		int sx3 = screenXD(x+width) - halfSize;
+		int sy3 = screenYD(y+height) - halfSize;
 		int sx2 = sx1 + (sx3 - sx1)/2;
 		int sy2 = sy1 + (sy3 - sy1)/2;
 		if (sx>=sx1&&sx<=sx1+size&&sy>=sy1&&sy<=sy1+size) return 0;
@@ -1500,10 +1519,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			state = MOVING;
 			previousSX = sx;
 			previousSY = sy;
-			startX = ic.offScreenX(sx);
-			startY = ic.offScreenY(sy);
-			startXD = ic.offScreenXD(sx);
-			startYD = ic.offScreenYD(sy);
+			startX = offScreenX(sx);
+			startY = offScreenY(sy);
+			startXD = offScreenXD(sx);
+			startYD = offScreenYD(sy);
 			//showStatus();
 		}
 	}
@@ -2108,7 +2127,13 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public boolean isLine() {
 		return type>=LINE && type<=FREELINE;
 	}
-	
+
+
+	/** Return 'true' if this is a line or point selection. */
+	protected boolean isLineOrPoint() {
+		return isLine() || type==POINT;
+	}
+
 	/** Returns 'true' if this is an ROI primarily used from drawing
 		(e.g., TextRoi or Arrow). */
 	public boolean isDrawingTool() {
@@ -2124,13 +2149,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public String getTypeAsString() {
 		String s="";
 		switch(type) {
-			case POLYGON: s="Polygon"; break;
+			case POLYGON: s="Polygon";
+				if (this instanceof EllipseRoi) s="Ellipse";
+				if (this instanceof RotatedRectRoi) s="Rotated Rectangle";
+				break;
 			case FREEROI: s="Freehand"; break;
 			case TRACED_ROI: s="Traced"; break;
 			case POLYLINE: s="Polyline"; break;
 			case FREELINE: s="Freeline"; break;
 			case ANGLE: s="Angle"; break;
-			case LINE: s="Straight Line"; break;
+			case LINE: s=this instanceof Arrow ? "Arrow" : "Straight Line"; break;
 			case OVAL: s="Oval"; break;
 			case COMPOSITE: s = "Composite"; break;
 			case POINT: s="Point"; break;
@@ -2156,13 +2184,18 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		return subPixel;
 	}
 
-	/** Returns true if this is a PolygonRoi that supports sub-pixel 
-		resolution and polygons are drawn on zoomed images offset
-		down and to the right by 0.5 pixels.. */
+	/** @deprecated Drawoffset is not used any more. */
+	@Deprecated
 	public boolean getDrawOffset() {
 		return false;
 	}
-	
+
+	/** @deprecated This method was previously used to draw lines and polylines shifted
+	 *  by 0.5 pixels top the bottom and right, for better agreement with the
+	 *  position used by ProfilePlot, with the default taken from
+	 *  Prefs.subPixelResolution. Now the shift is independent of this
+	 *  setting and only depends on the ROI type (area or line/point ROI). */
+	@Deprecated	
 	public void setDrawOffset(boolean drawOffset) {
 	}
 	
@@ -2194,10 +2227,81 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			return false;
 	}
 
-	protected int screenX(int ox) {return ic!=null?ic.screenX(ox):ox;}
-	protected int screenY(int oy) {return ic!=null?ic.screenY(oy):oy;}
-	protected int screenXD(double ox) {return ic!=null?ic.screenXD(ox):(int)ox;}
-	protected int screenYD(double oy) {return ic!=null?ic.screenYD(oy):(int)oy;}
+	/** Converts image canvas screen x coordinates to integer offscreen image pixel
+	 *  coordinates, depending on whether this roi uses the line or area convention
+	 *  for coordinates. */
+	protected int offScreenX(int sx) {
+		if (ic == null) return sx;
+		return useLineSubpixelConvention() ? ic.offScreenX(sx) : ic.offScreenX2(sx);
+	}
+
+	/** Converts image canvas screen y coordinates to integer offscreen image pixel
+	 *  coordinates, depending on whether this roi uses the line or area convention
+	 *  for coordinates. */
+	protected int offScreenY(int sy) {
+		if (ic == null) return sy;
+		return useLineSubpixelConvention() ? ic.offScreenY(sy) : ic.offScreenY2(sy);
+	}
+
+	/** Converts image canvas screen x coordinates to floating-point offscreen image pixel
+	 *  coordinates, depending on whether this roi uses the line or area convention
+	 *  for coordinates. */
+	protected double offScreenXD(int sx) {
+		if (ic == null) return sx;
+		double offScreenValue = ic.offScreenXD(sx);
+		if (useLineSubpixelConvention())
+			offScreenValue -= 0.5;
+		return offScreenValue;
+	}
+
+	/** Converts image canvas screen y coordinates to floating-point offscreen image pixel
+	 *  coordinates, depending on whether this roi uses the line or area convention
+	 *  for coordinates. */
+	protected double offScreenYD(int sy) {
+		if (ic == null) return sy;
+		double offScreenValue = ic.offScreenYD(sy);
+		if (useLineSubpixelConvention())
+			offScreenValue -= 0.5;
+		return offScreenValue;
+	}
+
+	/** Returns 'true' if this ROI uses for drawing the convention for
+	 *  line and point ROIs, where the coordinates are with respect
+	 *  to the pixel center.
+	 *  Returns false for area rois, which have coordinates with respect to
+	 *  the upper left corners of the pixels */
+	protected boolean useLineSubpixelConvention() {
+		return isLineOrPoint();
+	}
+
+	/** Returns whether a roi created interactively should have subpixel resolution,
+	 *  (if the roi type supports it), i.e., whether the magnification is high enough */
+	protected boolean magnificationForSubPixel() {
+		return magnificationForSubPixel(getMagnification());
+	}
+
+	protected static boolean magnificationForSubPixel(double magnification) {
+		return magnification > 1.5;
+	}
+
+	/**Converts an image pixel x (offscreen)coordinate to a screen x coordinate,
+	 * taking the the line or area convention for coordinates into account */
+	protected int screenXD(double ox) {
+		if (ic == null) return (int)ox;
+		if (useLineSubpixelConvention()) ox += 0.5;
+		return ic.screenXD(ox);
+	}
+
+	/**Converts an image pixel y (offscreen)coordinate to a screen y coordinate,
+	 * taking the the line or area convention for coordinates into account */
+	protected int screenYD(double oy) {
+		if (ic == null) return (int)oy;
+		if (useLineSubpixelConvention()) oy += 0.5;
+		return ic.screenYD(oy);
+	}
+
+	protected int screenX(int ox) {return screenXD(ox);}
+	protected int screenY(int oy) {return screenYD(oy);}
 
 	/** Converts a float array to an int array using truncation. */
 	public static int[] toInt(float[] arr) {
@@ -2453,8 +2557,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		Roi roi2 = null;
 		if (line.getType()==Roi.LINE) {
 			if (lineWidth<=1.0)
-				line.setStrokeWidth(1.0000001);
-			FloatPolygon p = line.getFloatPolygon();
+				lineWidth = 1.0000001;
+			FloatPolygon p = ((Line)line).getFloatPolygon(lineWidth);
 			roi2 = new PolygonRoi(p, Roi.POLYGON);
 			line.setStrokeWidth(lineWidth);
 		} else {
@@ -2463,49 +2567,45 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			Rectangle bounds = line.getBounds();
 			double width = bounds.x+bounds.width + lineWidth;
 			double height = bounds.y+bounds.height + lineWidth;
-			ImageProcessor ip = new ByteProcessor((int)Math.round(width), (int)Math.round(height));
-			ip.setColor(255);
+			ByteProcessor ip = new ByteProcessor((int)Math.round(width), (int)Math.round(height));
+			PolygonFiller polygonFiller = new PolygonFiller();
+			//ip.setColor(255);
 			double radius = lineWidth/2.0;
 			FloatPolygon p = line.getFloatPolygon();
 			int n = p.npoints;
 			float[] xv = new float[4]; //vertex points of rectangle will be filled for each line segment
 			float[] yv = new float[4];
-			float[] xt = new float[3]; //vertex points of triangle will be filled for each line segment
+			float[] xt = new float[3]; //vertex points of triangle will be filled between line segments
 			float[] yt = new float[3];
 			double dx1 = p.xpoints[1]-p.xpoints[0];
 			double dy1 = p.ypoints[1]-p.ypoints[0];
-			double l = len(dx1, dy1);
-			dx1 = dx1/l;
+			double l = length(dx1, dy1);
+			dx1 = dx1/l;			   //unit vector along current line segment
 			dy1 = dy1/l;
 			double dx0 = dx1;
 			double dy0 = dy1;
-			double xfrom = p.xpoints[0];
-			double yfrom = p.ypoints[0];
+			double xfrom = p.xpoints[0] - 0.5*dx1;
+			double yfrom = p.ypoints[0] - 0.5*dy1;
+			//Overlay ovly = new Overlay();
 			for (int i=1; i<n; i++) { //line segment from point i-1 ("from") to point i ("to")
 				double xto = p.xpoints[i];
 				double yto = p.ypoints[i];
-				double dx2, dy2;
-				if (i<n-1) {
-					dx2 = p.xpoints[i+1]-p.xpoints[i];
-					dy2 = p.ypoints[i+1]-p.ypoints[i];
-					l = len(dx2, dy2);
-					dx2 = dx2/l;
-					dy2 = dy2/l;
-				} else {
-					dx2 = dx1;
-					dy2 = dy1;
+				if (i==n-1) {
+					xto += 0.5*dx1;
+					yto += 0.5*dy1;
 				}
-				xv[0] = (float)(xfrom+radius*dy1);
-				yv[0] = (float)(yfrom-radius*dx1);
-				xv[1] = (float)(xfrom-radius*dy1);
-				yv[1] = (float)(yfrom+radius*dx1);
-				xv[2] = (float)(xto-radius*dy1);
-				yv[2] = (float)(yto+radius*dx1);
-				xv[3] = (float)(xto+radius*dy1);
-				yv[3] = (float)(yto-radius*dx1);
-				Roi rect = new PolygonRoi(xv, yv, Roi.POLYGON);
-				ip.fill(rect);
-				if (i>0) {  //fill triangle to previous line segment
+				xv[0] = (float)(xfrom + radius*dy1);
+				yv[0] = (float)(yfrom - radius*dx1);
+				xv[1] = (float)(xfrom - radius*dy1);
+				yv[1] = (float)(yfrom + radius*dx1);
+				xv[2] = (float)(xto - radius*dy1);
+				yv[2] = (float)(yto + radius*dx1);
+				xv[3] = (float)(xto + radius*dy1);
+				yv[3] = (float)(yto - radius*dx1);
+				polygonFiller.setPolygon(xv, yv, 4, 0.5f, 0.5f); //offset 0.5 pxl: line vs area coordinate convention
+				polygonFiller.fillByteProcessorMask(ip);
+				//ovly.add(new PolygonRoi(xv,yv,Roi.POLYGON));
+				if (i>1) {  //fill triangle to previous line segment
 					boolean rightTurn=(dx1*dy0>dx0*dy1);
 					xt[0] = (float)xfrom;
 					yt[0] = (float)yfrom;
@@ -2514,25 +2614,37 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 						yt[1] = (float)(yfrom+radius*dx0);
 						xt[2] = (float)(xfrom-radius*dy1);
 						yt[2] = (float)(yfrom+radius*dx1);
-					} else {  
+						xt[0] += (float)(0.5*(radius*dy0+radius*dy1));  //extend triangle to avoid missing pixels (due to rounding errors)
+						yt[0] -= (float)(0.5*(radius*dx0+radius*dx1));  //where it touches a rectangle
+					} else {
 						xt[1] = (float)(xfrom+radius*dy0);
 						yt[1] = (float)(yfrom-radius*dx0);
 						xt[2] = (float)(xfrom+radius*dy1);
 						yt[2] = (float)(yfrom-radius*dx1);
+						xt[0] -= (float)(0.5*(radius*dy0+radius*dy1));
+						yt[0] += (float)(0.5*(radius*dx0+radius*dx1));
 					}
-					Roi tiangle = new PolygonRoi(xt, yt, Roi.POLYGON);
-					ip.fill(tiangle);
+					polygonFiller.setPolygon(xt, yt, 3, 0.5f, 0.5f);
+					polygonFiller.fillByteProcessorMask(ip);
+					//ovly.add(new PolygonRoi(xt,yt,Roi.POLYGON));
 				}
 				dx0 = dx1;
 				dy0 = dy1;
-				dx1 = dx2;
-				dy1 = dy2;
 				xfrom = xto;
 				yfrom = yto;
+				if (i<n-1) {
+					dx1 = p.xpoints[i+1]-p.xpoints[i];
+					dy1 = p.ypoints[i+1]-p.ypoints[i];
+					l = length(dx1, dy1);
+					dx1 = dx1/l;	   //unit vector along next line segment
+					dy1 = dy1/l;
+				}
 			}
+			//IJ.getImage().setOverlay(ovly);
 			ip.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
 			ThresholdToSelection tts = new ThresholdToSelection();
 			roi2 = tts.convert(ip);
+			if (roi2 == null) return null; //empty roi if the line was outside the image
 		}
 		transferProperties(line, roi2);
 		roi2.setStrokeWidth(0);
@@ -2541,11 +2653,15 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			roi2.setStrokeColor(new Color(c.getRed(),c.getGreen(),c.getBlue()));
 		return roi2;
 	}
-	
-	private static double len(double dx, double dy) {
+
+	/** Returns the length of a vector with components dx, dy */
+	static double length(double dx, double dy) {
 		return Math.sqrt(dx*dx+dy*dy);
 	}
-	
+
+	/** Used by PolygonRoi, Line, ShapeRoi etc. */
+	static double sqr(double x) {return x*x; }
+
 	private static void transferProperties(Roi roi1, Roi roi2) {
 		if (roi1==null || roi2==null)
 			return;
@@ -2565,7 +2681,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public void setFlattenScale(double scale) {
 		flattenScale = scale;
 	}
-	
+
 	public void notifyListeners(int id) {
 		if (id==RoiListener.CREATED) {
 			if (listenersNotified)
