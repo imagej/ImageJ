@@ -294,8 +294,8 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener {
 	}
 
 	public void mouseMoved(MouseEvent e) {
-		int x = e.getX();
-		int y = e.getY();
+		int x = (int)(e.getX()/scale);
+		int y = (int)(e.getY()/scale);
 		int p = ip.getPixel(x, y);
 		int r = (p&0xff0000)>>16;
 		int g = (p&0xff00)>>8;

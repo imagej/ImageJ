@@ -356,18 +356,22 @@ public class Opener {
 				else
 					return null;
 			case UNKNOWN: case TEXT:
-				// Call HandleExtraFileTypes plugin to see if it can handle unknown format
-				int[] wrap = new int[] {fileType};
-				imp = openWithHandleExtraFileTypes(path, wrap);
-				if (imp!=null && imp.getNChannels()>1)
-					imp = new CompositeImage(imp, IJ.COLOR);
-				fileType = wrap[0];
-				if (imp==null && fileType==UNKNOWN && IJ.getInstance()==null)
-					IJ.error("Opener", "Unsupported format or not found");
-				return imp;
+				return openUsingHandleExtraFileTypes(fileType, path);
 			default:
 				return null;
 		}
+	}
+	
+	// Call HandleExtraFileTypes plugin to see if it can handle unknown format
+	private ImagePlus openUsingHandleExtraFileTypes(int fileType, String path) {
+		int[] wrap = new int[] {fileType};
+		ImagePlus imp = openWithHandleExtraFileTypes(path, wrap);
+		if (imp!=null && imp.getNChannels()>1)
+			imp = new CompositeImage(imp, IJ.COLOR);
+		fileType = wrap[0];
+		if (imp==null && (fileType==UNKNOWN||fileType==TIFF))
+			IJ.error("Opener", "Unsupported format or file not found:\n"+path);
+		return imp;
 	}
 	
 	String getPath() {
@@ -829,10 +833,7 @@ public class Opener {
 		try {
 			info = td.getTiffInfo();
 		} catch (IOException e) {
-			String msg = e.getMessage();
-			if (msg==null||msg.equals("")) msg = ""+e;
-			IJ.error("Open TIFF", msg);
-			return null;
+			return openUsingHandleExtraFileTypes(TIFF, directory+name);
 		}
 		if (info==null)
 			return null;

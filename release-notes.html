@@ -5,31 +5,36 @@
 </head>
 <body>
 
-<li> <u>1.52u33 5 March 2020</u>
+<li> <u>1.52u36 10 March 2020</u>
 <ul>
-
 <li> ROI enhancements, thanks to Michael Schmid: 
 <ul>
 <li> Line and point selections have integer coordinates at
 pixel centers when displayed at high magnification. Area selections
 have integer coordinates at the top-left corner of pixels.
-<li>All  interactively created ROIs except rectangles and ovals are created
-with subpixel resolution if the magnification is above 150%.
+<li> All  interactively created ROIs except rectangles and ovals are created
+with subpixel resolution when the magnification is above 150%.
+<li> Removed the "Sub-pixel resolution" option from
+<i>Edit</i>Options<i>Plots</i>.
 <li> The <i>Line to Area</i> command is faster and more accurate
 <li> The <i>Straighten</i> command is more accurate.
 <li> The <i>Image&gt;Info</i> command displays more
 information about ROIs.
 <li> Long-click to select ROIs from overlays now also works
 with lines.
+<li> The <i>Measure</i> command uses <i>Line to Area</i> instead of
+<i>Straighten</i> to get statistics from segmented and freehand line
+selections that have a width geater than one.
 <li> Fixed a bug that could (rarely) cause an exception during
 "wipe back" when drawing a polygon or polyline. In "wipe back"
 mode, the mouse behaves like an eraser when
 moved backwards with alt key down.
-
 </ul>
-
 <li> Thanks to Nicolas De Francesco, added the
 <i>Edit&gt;Selection&gt;Fit Rectangle</i> command.
+<li> Thanks to Peter Bankhead, the default TIFF reader uses the HandleExtraFileTypes
+ plugin when it is unable to open a file. As an example, .svs files dragged and dropped
+ on the "ImageJ" window are now opened by the Bio-Formats plugin.
 <li> Added the <i>Help&gt;Examples&gt;JavaScript&gt;Overlay Text</i> example.
 <li> Thanks to Laurent Thomas, added  a 
 "Install Keypad Shortcuts" command to the
@@ -58,6 +63,8 @@ TextRoi.setJustification() and TextRoi.drawPixels() methods
 to not work as expected.
 <li> Thanks to Nicolas De Francesco, fixed a bug that caused
 empty tables to not be opened correctly.
+<li> Fixed a bug that caused the Color Picker to not work
+correctly if the GUI scale was greater than one.
 <li> Thanks to 'sebi06', fixed a 1.52p regression that caused the
 particle analyzer to thow an exception in headless mode.
 </ul>
