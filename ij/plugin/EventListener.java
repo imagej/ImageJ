@@ -1,6 +1,7 @@
 package ij.plugin;
 import ij.*;
 import ij.gui.*;
+import java.awt.EventQueue;
 
 /** This plugin implements the Plugins/Utilities/Monitor Events command.
 	By implementing the IJEventListener, CommandListener, ImageListener
@@ -49,17 +50,21 @@ public class EventListener implements PlugIn, IJEventListener, ImageListener, Ro
 
 	// called when an image is opened
 	public void imageOpened(ImagePlus imp) {
-		IJ.log("Opened \""+imp.getTitle()+"\"");
+		IJ.log("Opened \""+imp.getTitle()+"\""+edt());
 	}
 
 	// Called when an image is closed
 	public void imageClosed(ImagePlus imp) {
-		IJ.log("Closed \""+imp.getTitle()+"\"");
+		IJ.log("Closed \""+imp.getTitle()+"\""+edt());
 	}
 
 	// Called when an image's pixel data is updated
 	public void imageUpdated(ImagePlus imp) {
-		IJ.log("Updated \""+imp.getTitle()+"\"");
+		IJ.log("Updated \""+imp.getTitle()+"\""+edt());
+	}
+	
+	private String edt() {
+		return EventQueue.isDispatchThread()?" (EDT)":" (not EDT)";
 	}
 	
 	public String commandExecuting(String command) {

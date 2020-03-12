@@ -2669,24 +2669,27 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public static void resetClipboard() {
 		clipboard = null;
 	}
-
-	protected void notifyListeners(int id) {
-		synchronized (listeners) {
-			for (int i=0; i<listeners.size(); i++) {
-				ImageListener listener = (ImageListener)listeners.elementAt(i);
-				switch (id) {
-					case OPENED:
-						listener.imageOpened(this);
-						break;
-					case CLOSED:
-						listener.imageClosed(this);
-						break;
-					case UPDATED:
-						listener.imageUpdated(this);
-						break;
+	
+	protected void notifyListeners(final int id) {
+	    final ImagePlus imp = this;
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				for (int i=0; i<listeners.size(); i++) {
+					ImageListener listener = (ImageListener)listeners.elementAt(i);
+					switch (id) {
+						case OPENED:
+							listener.imageOpened(imp);
+							break;
+						case CLOSED:
+							listener.imageClosed(imp);
+							break;
+						case UPDATED:
+							listener.imageUpdated(imp);
+							break;
+					}
 				}
 			}
-		}
+		});
 	}
 
 	public static void addImageListener(ImageListener listener) {

@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52u36 10 March 2020</u>
+<li> <u>1.52u38 12 March 2020</u>
 <ul>
 <li> ROI enhancements, thanks to Michael Schmid: 
 <ul>
@@ -48,7 +48,10 @@ Properties dialog are recordable.
 <li> Added the RoiManager.setGroup(group) and
 RoiManager.selectGroup(group) macro functions.
 <li> Thanks to Ken Gilbert, added the getValue("image.size")
-macro function. (DOCUMENT)
+macro function. (DOCUMENT)    
+<li> Thanks to Laurent Thomas, added the setOption("WaitForCompletion",false)
+macro function, which causes the next exec() call to return an empty string and
+not wait for the command to finish. (DOCUMENT)    
 <li> Thanks to Volker Backer, added the ImagePlus.resize()
 method, recorded by the <i>Image&gt;Scale</i>
 and <i>Image&gt;Adjust&gt;Size</i> commands.
@@ -65,6 +68,8 @@ to not work as expected.
 empty tables to not be opened correctly.
 <li> Fixed a bug that caused the Color Picker to not work
 correctly if the GUI scale was greater than one.
+<li> Thanks to Michael Schmid, fixed a bug that could cause
+a thread deadlock in plugins using the ImageListener interface.
 <li> Thanks to 'sebi06', fixed a 1.52p regression that caused the
 particle analyzer to thow an exception in headless mode.
 </ul>

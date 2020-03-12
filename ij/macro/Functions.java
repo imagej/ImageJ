@@ -85,6 +85,7 @@ public class Functions implements MacroConstants, Measurements {
 	boolean plotNoTicks;
 	boolean profileVerticalProfile;
 	boolean profileSubPixelResolution;
+	boolean waitForCompletion = true;
 
 
 	Functions(Interpreter interp, Program pgm) {
@@ -4548,6 +4549,8 @@ public class Functions implements MacroConstants, Measurements {
 			ImageConverter.setDoScaling(state);
 		else if (arg1.startsWith("copyhead"))
 			Prefs.copyColumnHeaders = state;
+		else if (arg1.equals("waitforcompletion"))
+			waitForCompletion = state;
 		//else if (arg1.startsWith("saveimageloc")) {
 		//	Prefs.saveImageLocation = state;
 		//	if (!state) Prefs.set(ImageWindow.LOC_KEY,null);
@@ -4918,7 +4921,10 @@ public class Functions implements MacroConstants, Measurements {
 		BufferedReader reader = null;
 		try {
 			Process p = Runtime.getRuntime().exec(cmd);
-			if (openingDoc) return null;
+			boolean returnImmediately = openingDoc || !waitForCompletion;
+			waitForCompletion = true;
+			if (returnImmediately)
+				return null;
 			reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			String line; int count=1;
 			while ((line=reader.readLine())!=null)  {

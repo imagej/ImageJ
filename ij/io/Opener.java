@@ -362,7 +362,8 @@ public class Opener {
 		}
 	}
 	
-	// Call HandleExtraFileTypes plugin to see if it can handle unknown format
+	// Call HandleExtraFileTypes plugin to see if it can handle unknown formats
+	// or files in TIFF format that the built in reader is unable to open.
 	private ImagePlus openUsingHandleExtraFileTypes(int fileType, String path) {
 		int[] wrap = new int[] {fileType};
 		ImagePlus imp = openWithHandleExtraFileTypes(path, wrap);
