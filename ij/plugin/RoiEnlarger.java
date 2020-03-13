@@ -23,10 +23,6 @@ public class RoiEnlarger implements PlugIn {
 		double n = showDialog(imp, defaultDistance);
 		if (n==Double.NaN)
 			return;
-		if (n>255) {
-			IJ.error("Enlarge", "Cannot enlarge by more than 255 pixels"); 
-			return;
-		}
 		Roi roi2 = enlarge(roi, n);
 		if (roi2!=null) {
 			imp.setRoi(roi2);
@@ -68,8 +64,6 @@ public class RoiEnlarger implements PlugIn {
 		int n = (int)Math.round(pixels);
 		if (type==Roi.RECTANGLE || type==Roi.OVAL)
 			return enlargeRectOrOval(roi, n);
-		if (n>255)
-			n = 255;
 		if (n<0)
 			return shrink(roi, -n);
 		Rectangle bounds = roi.getBounds();
@@ -88,13 +82,9 @@ public class RoiEnlarger implements PlugIn {
 		int xoffset = bounds2.x - (n+1);
 		int yoffset = bounds2.y - (n+1);
 		roi.setLocation(bounds.x, bounds.y);
-		boolean bb = Prefs.blackBackground;
-		Prefs.blackBackground = true;
-		new EDM().toEDM(ip);
-		Prefs.blackBackground = bb;
-		ip.setThreshold(0, n, ImageProcessor.NO_LUT_UPDATE);
-		//new ImagePlus("ip", ip).show();
-		roi2 = (new ThresholdToSelection()).convert(ip);
+		FloatProcessor edm = new EDM().makeFloatEDM (ip, 0, false);
+		edm.setThreshold(0, n, ImageProcessor.NO_LUT_UPDATE);
+		roi2 = (new ThresholdToSelection()).convert(edm);
 		if (roi2==null)
 			return roi;	
 		roi2.setLocation(bounds.x-n+xoffset, bounds.y-n+yoffset);
@@ -127,12 +117,9 @@ public class RoiEnlarger implements PlugIn {
 		ip.setColor(255);
 		ip.fill(roi);
 		roi.setLocation(bounds.x, bounds.y);
-		boolean bb = Prefs.blackBackground;
-		Prefs.blackBackground = true;
-		new EDM().toEDM(ip);
-		Prefs.blackBackground = bb;
-		ip.setThreshold(n+1, 255, ImageProcessor.NO_LUT_UPDATE);
-		Roi roi2 = (new ThresholdToSelection()).convert(ip);
+		FloatProcessor edm = new EDM().makeFloatEDM (ip, 0, false);		
+		edm.setThreshold(n+1, Float.MAX_VALUE, ImageProcessor.NO_LUT_UPDATE);
+		Roi roi2 = (new ThresholdToSelection()).convert(edm);
 		if (roi2==null)
 			return roi;
 		Rectangle bounds2 = roi2.getBounds();

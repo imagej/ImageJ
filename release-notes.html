@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52u38 12 March 2020</u>
+<li> <u>1.52u40 13 March 2020</u>
 <ul>
 <li> ROI enhancements, thanks to Michael Schmid: 
 <ul>
@@ -32,6 +32,9 @@ moved backwards with alt key down.
 </ul>
 <li> Thanks to Nicolas De Francesco, added the
 <i>Edit&gt;Selection&gt;Fit Rectangle</i> command.
+<li> Thanks to 'Dcolam' and Jan Eglinger, the
+<i>Edit&gt;Selection&gt;Enlarge</i> command no
+longer has a 255 pixel limit. 
 <li> Thanks to Peter Bankhead, the default TIFF reader uses the HandleExtraFileTypes
  plugin when it is unable to open a file. As an example, .svs files dragged and dropped
  on the "ImageJ" window are now opened by the Bio-Formats plugin.
@@ -70,6 +73,10 @@ empty tables to not be opened correctly.
 correctly if the GUI scale was greater than one.
 <li> Thanks to Michael Schmid, fixed a bug that could cause
 a thread deadlock in plugins using the ImageListener interface.
+<li> Thanks to Michael Schmid, fixed a bug that caused the
+"List coordinates" option in the <i>Edit&gt;Selection&gt;Properties</i>
+dialog to ignore the "Origin" setting in the
+<i>Image&gt;Properties</i> dialog.
 <li> Thanks to 'sebi06', fixed a 1.52p regression that caused the
 particle analyzer to thow an exception in headless mode.
 </ul>

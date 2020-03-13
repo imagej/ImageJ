@@ -345,18 +345,17 @@ public class RoiProperties {
 		if (roi==null) return;
 		boolean allIntegers = true;
 		FloatPolygon fp = roi.getFloatPolygon();
-		//FloatPolygon fp  = ((PolygonRoi)roi).getNonSplineFloatCoordinates();
 		ImagePlus imp = roi.getImage();
 		String title = "Coordinates";
 		if (imp!=null) {
 			Calibration cal = imp.getCalibration();
-			if (cal.pixelWidth!=1.0 || cal.pixelHeight!=1.0) {
-				for (int i=0; i<fp.npoints; i++) {
-					fp.xpoints[i] *= cal.pixelWidth;
-					fp.ypoints[i] *= cal.pixelHeight;
-				}
-				allIntegers = false;
+			int height = imp.getHeight();
+			for (int i=0; i<fp.npoints; i++) {
+				fp.xpoints[i] = (float)cal.getX(fp.xpoints[i]);
+				fp.ypoints[i] = (float)cal.getY(fp.ypoints[i], height);
 			}
+			if (cal.pixelWidth!=1.0 || cal.pixelHeight!=1.0)
+				allIntegers = false;
 			title = imp.getTitle();
 		}
 		if (allIntegers) {
