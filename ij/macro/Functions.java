@@ -200,6 +200,7 @@ public class Functions implements MacroConstants, Measurements {
 			case SIN: case SQRT: case TAN: case ATAN: case ASIN: case ACOS:
 				value = math(type);
 				break;
+			case MATH: value = doMath(); break;
 			case MAX_OF: case MIN_OF: case POW: case ATAN2: value=math2(type); break;
 			case GET_TIME: interp.getParens(); value=System.currentTimeMillis(); break;
 			case GET_WIDTH: interp.getParens(); value=getImage().getWidth(); break;
@@ -326,6 +327,58 @@ public class Functions implements MacroConstants, Measurements {
 			getProcessor().setLineWidth(width);
 		}
 		globalLineWidth = width;
+	}
+	
+	private double doMath() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (!(interp.token==WORD||interp.token==NUMERIC_FUNCTION))
+			interp.error("Function name expected: ");
+		String name = interp.tokenString;		
+		if (name.equals("min"))
+			return Math.min(getFirstArg(), getLastArg());
+		else if (name.equals("max"))
+			return Math.max(getFirstArg(), getLastArg());
+		else if (name.equals("pow"))
+			return Math.pow(getFirstArg(), getLastArg());
+		else if (name.equals("atan2"))
+			return Math.atan2(getFirstArg(), getLastArg());
+		double arg = getArg();
+		if (name.equals("ceil"))
+			return Math.ceil(arg);
+		else if (name.equals("abs"))
+			return Math.abs(arg);
+		else if (name.equals("cos"))
+			return Math.cos(arg);			
+		else if (name.equals("exp"))
+			return Math.exp(arg);
+		else if (name.equals("floor"))
+			return Math.floor(arg);			
+		else if (name.equals("log"))
+			return Math.log(arg);
+		else if (name.equals("log10"))
+			return Math.log10(arg);
+		else if (name.equals("round"))
+			return Math.round(arg);			
+		else if (name.equals("sin"))
+			return Math.sin(arg);
+		else if (name.equals("sqr"))
+			return arg*arg;			
+		else if (name.equals("sqrt"))
+			return Math.sqrt(arg);			
+		else if (name.equals("tan"))
+			return Math.tan(arg);
+		else if (name.equals("atan"))
+			return Math.atan(arg);			
+		else if (name.equals("asin"))
+			return Math.asin(arg);
+		else if (name.equals("acos"))
+			return Math.acos(arg);
+		else
+			interp.error("Unrecognized function name");
+		return Double.NaN;
 	}
 
 	final double math(int type) {
