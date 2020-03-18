@@ -5,17 +5,17 @@
 </head>
 <body>
 
-<li> <u>1.52u41 15 March 2020</u>
+<li> <u>1.52u 17 March 2020</u>
 <ul>
 <li> ROI enhancements, thanks to Michael Schmid: 
 <ul>
 <li> Line and point selections have integer coordinates at
 pixel centers when displayed at high magnification. Area selections
 have integer coordinates at the top-left corner of pixels.
-<li> All  interactively created ROIs except rectangles and ovals are created
+<li> All  interactively created ROIs, except rectangles and ovals, are created
 with subpixel resolution when the magnification is above 150%.
-<li> Removed the "Sub-pixel resolution" option from
-<i>Edit</i>Options<i>Plots</i>.
+<li> Removed the "Sub-pixel resolution" option from the
+<i>Edit&gt;Options&gt;Plots</i> dialog.
 <li> The <i>Line to Area</i> command is faster and more accurate
 <li> The <i>Straighten</i> command is more accurate.
 <li> The <i>Image&gt;Info</i> command displays more
@@ -23,8 +23,8 @@ information about ROIs.
 <li> Long-click to select ROIs from overlays now also works
 with lines.
 <li> The <i>Measure</i> command uses <i>Line to Area</i> instead of
-<i>Straighten</i> to get statistics from segmented and freehand line
-selections that have a width geater than one.
+<i>Straighten</i> to get statistics from segmented and freehand lines
+with a width geater than one.
 <li> Fixed a bug that could (rarely) cause an exception during
 "wipe back" when drawing a polygon or polyline. In "wipe back"
 mode, the mouse behaves like an eraser when
@@ -46,26 +46,30 @@ ROI Menu tool. Add<br>
 to the <i>Edit&gt;Options&gt;Startup</i> dialog
 to have the shortcuts automatically installed on startup.
 <li> Thanks to Laurent Thomas, the commands in the
-ROI Menu tool and the group setting in the ROI Manager's
+ROI Menu tool and the "Group" setting in the ROI Manager's
 Properties dialog are recordable.
 <li> Added the
-Math.absl(n), Math.acos(n), Math.asin(n), Math.atan(n), Math.atan2(n1,n2), Math.ceil(n),
+Math.abs(n), Math.acos(n), Math.asin(n), Math.atan(n), Math.atan2(n1,n2), Math.ceil(n),
 Math.cos(n), Math.exp(n), Math.floor(n), Math.log(n), Math.log10(n), Math.min(n1,n2),
 Math.max(n1,n2), Math.pow(n1,n2), Math.round(n), Math.sin(n), Math.sqr(n),
-Math.sqrt(n) and Math.tan(n) macro functions. (DOCUMENT)
+Math.sqrt(n) and Math.tan(n) macro functions.
 <li> Added the RoiManager.setGroup(group) and
 RoiManager.selectGroup(group) macro functions.
 <li> Thanks to Ken Gilbert, added the getValue("image.size")
-macro function. (DOCUMENT)    
+macro function.  
 <li> Thanks to Laurent Thomas, added the setOption("WaitForCompletion",false)
 macro function, which causes the next exec() call to return an empty string and
-not wait for the command to finish. (DOCUMENT)    
+not wait for the command being executed to finish.
+<li> Thanks to Nortbert Vischer, added the Array.sort(array1,array2,array3...)
+macro function
+(<a href="../../macros/examples/ArraySortDemo.txt">example</a>).   
 <li> Thanks to Volker Backer, added the ImagePlus.resize()
-method, recorded by the <i>Image&gt;Scale</i>
+method, which is recorded by the <i>Image&gt;Scale</i>
 and <i>Image&gt;Adjust&gt;Size</i> commands.
 <li> Thanks to Fred Damen, added the Plot.setWindowSize() method.
 <li> Thanks to Lewis Muir, fixed a bug the caused the Pixel Inspection Tool's
-red box to be included with the image when saving in GIF, JPEG or PNG format.
+red selection box to be included with the image when saving in
+GIF, JPEG or PNG format.
 <li> Thanks to 'cooketho', fixed a bug that caused the 
 <i>Edit&gt;Copy to System</i> command to sometimes not work
 as expected with composite images.

@@ -6050,7 +6050,8 @@ public class Functions implements MacroConstants, Measurements {
 	Variable[] sortArray() {
 		interp.getLeftParen();
 		Variable[] a = getArray();
-		interp.getRightParen();
+		boolean multipleArrays= interp.nextToken()==',';
+		int[] indexes = null;
 		int len = a.length;
 		int nNumbers = 0;
 		for (int i=0; i<len; i++) {
@@ -6060,6 +6061,8 @@ public class Functions implements MacroConstants, Measurements {
 			double[] d = new double[len];
 			for (int i=0; i<len; i++)
 				d[i] = a[i].getValue();
+			if(multipleArrays)
+				indexes = Tools.rank(d);
 			Arrays.sort(d);
 			for (int i=0; i<len; i++)
 				a[i].setValue(d[i]);
@@ -6067,12 +6070,31 @@ public class Functions implements MacroConstants, Measurements {
 			String[] s = new String[len];
 			for (int i=0; i<len; i++)
 				s[i] = a[i].getString();
-			//StringSorter.sort(s);
+			if(multipleArrays)
+				indexes = Tools.rank(s);
 			Arrays.sort(s, String.CASE_INSENSITIVE_ORDER);
 			for (int i=0; i<len; i++)
 				a[i].setString(s[i]);
-		} else
+		} else{
 			interp.error("Mixed strings and numbers");
+			return a;
+		}
+		while (interp.nextToken()==',') {
+			interp.getComma();
+			Variable[] b = getArray();
+			if(b.length != len){
+				interp.error("Arrays must have same length");
+				return a;
+			}
+			Variable[] c = new Variable[len];
+			for (int jj = 0; jj < len; jj++){
+				c[jj] = b[indexes[jj]];
+			}	
+			for (int jj = 0; jj < len; jj++){
+				b[jj] = c[jj];
+			}	
+		}
+		interp.getRightParen();
 		return a;
 	}
 
