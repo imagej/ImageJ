@@ -422,7 +422,7 @@ public class Line extends Roi {
 			return getRawLength();
 		else {
 			Calibration cal = imp.getCalibration();
-			return Math.sqrt(sqr((x2d-x1d)*cal.pixelWidth) + sqr(y2d-y1d)*cal.pixelHeight);
+			return Math.sqrt(sqr((x2d-x1d)*cal.pixelWidth) + sqr((y2d-y1d)*cal.pixelHeight));
 		}
 	}
 
