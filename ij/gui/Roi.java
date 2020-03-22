@@ -1853,6 +1853,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		this.fillColor = roi2.fillColor;
 		this.setStrokeWidth(roi2.getStrokeWidth());
 		this.setName(roi2.getName());
+		this.group = roi2.group;
 	}
 
 	/**

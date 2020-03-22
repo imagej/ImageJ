@@ -20,7 +20,7 @@ public class RoiScaler implements PlugIn {
 			IJ.error("Scale", "This command requires a selection");
 			return;
 		}
-		if (!imp.okToDeleteRoi())
+		if (!IJ.isMacro() && !imp.okToDeleteRoi())
 			return;
 		if (!showDialog())
 			return;
@@ -28,11 +28,6 @@ public class RoiScaler implements PlugIn {
 			defaultXScale = xscale;
 			defaultYScale = yscale;
 		}
-		//if (roi instanceof ImageRoi) {
-		//	((ImageRoi)roi).rotate(angle);
-		//	imp.draw();
-		//	return;
-		//}
 		Roi roi2 = scale(roi, xscale, yscale, centered);
 		if (roi2==null)
 			return;
@@ -44,8 +39,8 @@ public class RoiScaler implements PlugIn {
 	
 	public boolean showDialog() {
 		GenericDialog gd = new GenericDialog("Scale Selection");
-		gd.addNumericField("X scale factor:", defaultXScale, 2, 3, "");
-		gd.addNumericField("Y scale factor:", defaultYScale, 2, 3, "");
+		gd.addNumericField("X scale factor:", defaultXScale, 2, 4, "");
+		gd.addNumericField("Y scale factor:", defaultYScale, 2, 4, "");
 		gd.addCheckbox("Centered", false);
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -97,9 +92,7 @@ public class RoiScaler implements PlugIn {
 				type = Roi.FREEROI;
 			roi2 = new PolygonRoi(poly.xpoints, poly.ypoints,poly.npoints, type);
 		}
-		roi2.setStrokeColor(roi.getStrokeColor());
-		if (roi.getStroke()!=null)
-			roi2.setStroke(roi.getStroke());
+		roi2.copyAttributes(roi);
 		return roi2;
 	}
 	

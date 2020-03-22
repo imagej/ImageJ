@@ -33,7 +33,7 @@ public class Opener {
 	public static final String[] types = {"unknown","tif","dcm","fits","pgm",
 		"jpg","gif","lut","bmp","zip","java/txt","roi","txt","png","t&d","custom","ojj","table","raw"};
 	private static String defaultDirectory = null;
-	private static int fileType;
+	private int fileType;
 	private boolean error;
 	private boolean isRGB48;
 	private boolean silentMode;
@@ -104,7 +104,7 @@ public class Opener {
 		long start = System.currentTimeMillis();
 		ImagePlus imp = null;
 		if (path.endsWith(".txt"))
-			fileType = JAVA_OR_TEXT;
+			this.fileType = JAVA_OR_TEXT;
 		else
 			imp = openImage(path);
 		if (imp==null && isURL)
@@ -116,7 +116,7 @@ public class Opener {
 			else
 				imp.show(getLoadRate(start,imp));
 		} else {
-			switch (fileType) {
+			switch (this.fileType) {
 				case LUT:
 					imp = (ImagePlus)IJ.runPlugIn("ij.plugin.LutLoader", path);
 					if (imp.getWidth()!=0)
@@ -310,9 +310,9 @@ public class Opener {
 		OpenDialog.setLastDirectory(directory);
 		OpenDialog.setLastName(name);
 		String path = directory+name;
-		fileType = getFileType(path);
-		if (IJ.debugMode) IJ.log("openImage: \""+types[fileType]+"\", "+path);
-		switch (fileType) {
+		this.fileType = getFileType(path);
+		if (IJ.debugMode) IJ.log("openImage: \""+types[this.fileType]+"\", "+path);
+		switch (this.fileType) {
 			case TIFF:
 				imp = openTiff(directory, name);
 				return imp;
@@ -356,7 +356,7 @@ public class Opener {
 				else
 					return null;
 			case UNKNOWN: case TEXT:
-				return openUsingHandleExtraFileTypes(fileType, path);
+				return openUsingHandleExtraFileTypes(path);
 			default:
 				return null;
 		}
@@ -364,13 +364,13 @@ public class Opener {
 	
 	// Call HandleExtraFileTypes plugin to see if it can handle unknown formats
 	// or files in TIFF format that the built in reader is unable to open.
-	private ImagePlus openUsingHandleExtraFileTypes(int fileType, String path) {
-		int[] wrap = new int[] {fileType};
+	private ImagePlus openUsingHandleExtraFileTypes(String path) {
+		int[] wrap = new int[] {this.fileType};
 		ImagePlus imp = openWithHandleExtraFileTypes(path, wrap);
 		if (imp!=null && imp.getNChannels()>1)
 			imp = new CompositeImage(imp, IJ.COLOR);
-		fileType = wrap[0];
-		if (imp==null && (fileType==UNKNOWN||fileType==TIFF))
+		this.fileType = wrap[0];
+		if (imp==null && (this.fileType==UNKNOWN||this.fileType==TIFF))
 			IJ.error("Opener", "Unsupported format or file not found:\n"+path);
 		return imp;
 	}
@@ -502,11 +502,11 @@ public class Opener {
 	}
 
 	
-	public ImagePlus openWithHandleExtraFileTypes(String path, int[] fileType) {
+	public ImagePlus openWithHandleExtraFileTypes(String path, int[] fileTypes) {
 		ImagePlus imp = null;
 		if (path.endsWith(".db")) {
 			// skip hidden Thumbs.db files on Windows
-			fileType[0] = CUSTOM;
+			fileTypes[0] = CUSTOM;
 			return null;
 		}
 		imp = (ImagePlus)IJ.runPlugIn("HandleExtraFileTypes", path);
@@ -521,11 +521,11 @@ public class Opener {
 			imp.setFileInfo(fi);
 		}
 		if (imp.getWidth()>0 && imp.getHeight()>0) {
-			fileType[0] = CUSTOM;
+			fileTypes[0] = CUSTOM;
 			return imp;
 		} else {
 			if (imp.getWidth()==-1)
-				fileType[0] = CUSTOM; // plugin opened image so don't display error
+				fileTypes[0] = CUSTOM; // plugin opened image so don't display error
 			return null;
 		}
 	}
@@ -834,7 +834,8 @@ public class Opener {
 		try {
 			info = td.getTiffInfo();
 		} catch (IOException e) {
-			return openUsingHandleExtraFileTypes(TIFF, directory+name);
+			this.fileType = TIFF;
+			return openUsingHandleExtraFileTypes(directory+name);
 		}
 		if (info==null)
 			return null;

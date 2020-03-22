@@ -905,6 +905,18 @@ public class PointRoi extends PolygonRoi {
 		return r;
 	}
 	
+	@Override
+	public void copyAttributes(Roi roi2) {
+		super.copyAttributes(roi2);
+		if (roi2 instanceof PointRoi) {
+			PointRoi p2 = (PointRoi)roi2;
+			this.type = p2.type;
+			this.size = p2.size;
+			this.showLabels = p2.showLabels;
+			this.fontSize = p2.fontSize;
+		}
+	}
+	
 	public void setCounterInfo(int[] info) {
 		counterInfo = info;
 	}
