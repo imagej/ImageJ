@@ -5,11 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.52v4 22 March 2020</u>
+<li> <u>1.52v5 24 March 2020</u>
 <ul>
 <li> Thanks to 'Max1', fixed a bug that caused the
 <i>Edit&gt;Selection&gt;Scale</i> command to not maintain
-the selection name, fill color, point type and point size.
+the selection name, group, fill color, point type and point size.
+<li> Thanks to 'Odinsbane', added the ByteProcessor.skeletonize(foreground)
+method, where 'foreground' is either 0 or 255.
+<li> Thanks to 'Odinsbane', fixed a bug that caused the ByteProcessor.skeletonize()
+method to not work correctly with objects touching the image edge.
 <li> Thanks to Nicolas De Francesco, fixed a 1.52u regression that caused
 incorrect straight line length measurements with spatially calibrated images.
 </ul>

@@ -117,7 +117,8 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
         else if (arg.startsWith("fill"))
             fill(ip, foreground, background);
         else if (arg.startsWith("skel")) {
-            ip.resetRoi(); skeletonize(ip);
+            ip.resetRoi();
+            skeletonize(ip);
         } else if (arg.equals("erode") || arg.equals("dilate"))
             doIterations((ByteProcessor)ip, arg);
         else if (arg.equals("open")) {
@@ -156,60 +157,10 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
     }
 
     void skeletonize(ImageProcessor ip) {
-        if (Prefs.blackBackground) ip.invert();
-        boolean edgePixels = hasEdgePixels(ip);
-        ImageProcessor ip2 = expand(ip, edgePixels);
-        ((ByteProcessor)ip2).skeletonize();
-        ip = shrink(ip, ip2, edgePixels);
-        if (Prefs.blackBackground) ip.invert();
-    }
-
-    boolean hasEdgePixels(ImageProcessor ip) {
-        int width = ip.getWidth();
-        int height = ip.getHeight();
-        boolean edgePixels = false;
-        for (int x=0; x<width; x++) { // top edge
-            if (ip.getPixel(x, 0)==foreground)
-                edgePixels = true;
-        }
-        for (int x=0; x<width; x++) { // bottom edge
-            if (ip.getPixel(x, height-1)==foreground)
-                edgePixels = true;
-        }
-        for (int y=0; y<height; y++) { // left edge
-            if (ip.getPixel(0, y)==foreground)
-                edgePixels = true;
-        }
-        for (int y=0; y<height; y++) { // right edge
-            if (ip.getPixel(width-1, y)==foreground)
-                edgePixels = true;
-        }
-        return edgePixels;
-    }
-    
-    ImageProcessor expand(ImageProcessor ip, boolean hasEdgePixels) {
-        if (hasEdgePixels) {
-            ImageProcessor ip2 = ip.createProcessor(ip.getWidth()+2, ip.getHeight()+2);
-            if (foreground==0) {
-                ip2.setColor(255);
-                ip2.fill();
-            }
-            ip2.insert(ip, 1, 1);
-            //new ImagePlus("ip2", ip2).show();
-            return ip2;
-        } else
-            return ip;
-    }
-
-    ImageProcessor shrink(ImageProcessor ip, ImageProcessor ip2, boolean hasEdgePixels) {
-        if (hasEdgePixels) {
-            int width = ip.getWidth();
-            int height = ip.getHeight();
-            for (int y=0; y<height; y++)
-                for (int x=0; x<width; x++)
-                    ip.putPixel(x, y, ip2.getPixel(x+1, y+1));
-        }
-        return ip;
+    	int fg = Prefs.blackBackground?255:0;
+		if (ip.isInvertedLut())
+			fg = 255-fg;
+        ((ByteProcessor)ip).skeletonize(fg);
     }
 
     // Binary fill by Gabriel Landini, G.Landini at bham.ac.uk

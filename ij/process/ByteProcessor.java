@@ -823,10 +823,18 @@ public class ByteProcessor extends ImageProcessor {
 		new BinaryProcessor(this).outline();
 	}
 	
+	/** Converts black objects in a binary image to single pixel skeletons. */
 	public void skeletonize() {
 		new BinaryProcessor(this).skeletonize();
 	}
 	
+	/** Converts objects with pixel values of 'forground' (255 or 0) 
+		in a binary imager to single pixel skeletons.
+	*/
+	public void skeletonize(int foreground) {
+		new BinaryProcessor(this).skeletonize(foreground);
+	}
+
 	private final int findMedian (int[] values) {
 	//Finds the 5th largest of 9 values
 		for (int i = 1; i <= 4; i++) {
