@@ -156,12 +156,12 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
         if (Prefs.blackBackground) ip.invert();
     }
 
-    void skeletonize(ImageProcessor ip) {
-    	int fg = Prefs.blackBackground?255:0;
+	void skeletonize(ImageProcessor ip) {
+		int fg = Prefs.blackBackground?255:0;
 		if (ip.isInvertedLut())
 			fg = 255-fg;
-        ((ByteProcessor)ip).skeletonize(fg);
-    }
+		((ByteProcessor)ip).skeletonize(fg);
+	}
 
     // Binary fill by Gabriel Landini, G.Landini at bham.ac.uk
     // 21/May/2008

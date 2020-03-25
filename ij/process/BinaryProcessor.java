@@ -101,15 +101,15 @@ public class BinaryProcessor extends ByteProcessor {
 		the table is available at
 		"http://imagej.nih.gov/ij/images/skeletonize-table.gif".
 	*/
-	 public void skeletonize(int foreground) {
-	 	if (!(foreground==255||foreground==0))
-	 		throw new IllegalArgumentException("Foreground must be 255 or 0");
-	 	this.foreground = foreground;
-        boolean edgePixels = hasEdgePixels();
-        BinaryProcessor ip2 = expand(edgePixels);
-        ip2.skeletonize2(foreground);
+	public void skeletonize(int foreground) {
+		if (!(foreground==255||foreground==0))
+			throw new IllegalArgumentException("Skeletonize: foreground must be 255 or 0");
+		this.foreground = foreground;
+		boolean edgePixels = hasEdgePixels();
+		BinaryProcessor ip2 = expand(edgePixels);
+		ip2.skeletonize2(foreground);
 		shrink(ip2, edgePixels);
-    }
+	}
 
 	/** Converts black objects in a binary image to single pixel skeletons. */
 	 public void skeletonize() {

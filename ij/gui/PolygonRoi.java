@@ -491,7 +491,7 @@ public class PolygonRoi extends Roi {
 		double oxd = offScreenXD(sx);
 		double oyd = offScreenYD(sy);
 		int ox = offScreenX(sx);
-		int oy = offScreenX(sy);
+		int oy = offScreenY(sy);
 		int x1, y1, x2, y2;
 		if (xpf!=null) {
 			x1 = (int)xpf[nPoints-2]+x;
