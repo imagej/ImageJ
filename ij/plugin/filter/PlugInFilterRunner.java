@@ -95,7 +95,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 		doStack = slices>1 && (flags&PlugInFilter.DOES_STACKS)!=0;
 		imp.startTiming();
 		if (doStack || processedAsPreview==0) {				// if processing during preview was not enough
-			IJ.showStatus(command + (doStack ? " (Stack)..." : "..."));
+			//IJ.showStatus(command + (doStack ? " (Stack)..." : "..."));
 			ImageProcessor ip = imp.getProcessor();
 			pass = 0;
 			if (!doStack) {	   // single image

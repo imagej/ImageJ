@@ -74,7 +74,9 @@ public class Interpreter implements MacroConstants {
 	volatile boolean ignoreErrors;
 	String errorMessage;
 	String evalOutput;
-
+	int[] callStack;
+	int callDepth = 0;
+	
 	/** Interprets the specified string. */
 	public void run(String macro) {
 		if (additionalFunctions!=null) {
@@ -141,6 +143,7 @@ public class Interpreter implements MacroConstants {
 	public void run(Program pgm) {
 		this.pgm = pgm;
 		pc = -1;
+		callDepth = 0;
 		instance = this;
 		if (!calledMacro) {
 			batchMode = false;
@@ -363,8 +366,25 @@ public class Interpreter implements MacroConstants {
 		else
 			IJ.log(s);
 	}
-
+	
+	//For showing call stack in macro errors
+	private void growCallStack(int grow) {
+		if(callStack == null){
+			callStack = new int[10];
+			callDepth = 0;
+		}
+		if (callDepth <0 ||  callDepth > 8)
+			return;
+		if (grow == 1){
+			int line = pgm.lineNumbers[pc];
+			callStack[callDepth++] = line;
+		}
+		if (grow == -1 && callDepth > 0)
+			callDepth--;
+	}
+	
 	Variable runUserFunction() {
+		growCallStack(1);
 		int newPC = (int)tokenValue;
 		int saveStartOfLocals = startOfLocals;
 		startOfLocals = topOfStack+1;
@@ -386,6 +406,7 @@ public class Interpreter implements MacroConstants {
 		inFunction = saveInFunction;
 		pc = savePC;
 		trimStack(saveTOS, saveStartOfLocals);
+		growCallStack(-1);
 		return value;
 	}
 
@@ -1323,11 +1344,19 @@ public class Interpreter implements MacroConstants {
 					panel.clear();
 				}	
 			}
-			showError("Macro Error", message+" in line "+lineNumber+" \n \n"+line, variables);
+			String calledFrom = "";
+			if (callDepth > 0 && callStack != null) {
+				for (int jj = callDepth - 1; jj >= 0; jj--) {
+					int theline = callStack[jj];
+					calledFrom += "\t\t(called from line " + theline +")\n";
+				}
+			}
+			showError("Macro Error", message+" in line "+lineNumber +"\n" + calledFrom +" \n"+line, variables);
 			f = WindowManager.getFrame("Debug");
 			if (showVariables && f!=null && (f instanceof TextWindow)) {
 				TextWindow debugWindow = (TextWindow)f;
 				debugWindow.append("\n---\t\t---\nError:\t\t" + message + " in line "+lineNumber + ":");
+				debugWindow.append(calledFrom + "\t\t");	
 				debugWindow.append("\t\t"+line);
 			}			
 			throw new RuntimeException(Macro.MACRO_CANCELED);
@@ -2230,7 +2259,7 @@ public class Interpreter implements MacroConstants {
 		debugMode = mode;
 	}
 	
-	public int getLineNumber() {//n__
+	public int getLineNumber() {
         return pgm.lineNumbers[pc];
     }
 
@@ -2369,7 +2398,7 @@ public class Interpreter implements MacroConstants {
 				inspectStkIndex = stkPos;
 				inspectSymIndex = symIndex;
 				TextPanel txtPanel = arrayWindow.getTextPanel();
-				String oldText = txtPanel.getText();//n__ possible NullPointer at ij.text.TextPanel.getText(TextPanel.java:875) vData == null
+				String oldText = txtPanel.getText();// possible NullPointer at ij.text.TextPanel.getText(TextPanel.java:875) vData == null
 				String[] oldLines = oldText.split("\n");
 				txtPanel.clear();
 				txtPanel.setColumnHeadings(headings);
@@ -2406,7 +2435,7 @@ public class Interpreter implements MacroConstants {
 				txtPanel.scrollToTop();
 				if (debugger!=null && (debugger instanceof Window))
 					((Window)debugger).toFront();
-				//n__  scroll position should not change during single-stepping
+				// scroll position should not change during single-stepping
 			}
 		}
 	}

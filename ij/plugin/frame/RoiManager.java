@@ -34,7 +34,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private static final int DRAW=0, FILL=1, LABEL=2;
 	private static final int SHOW_ALL=0, SHOW_NONE=1, LABELS=2, NO_LABELS=3;
 	private static final int MENU=0, COMMAND=1;
-	private static final int IGNORE_POSITION=-999;
+	private static final int IGNORE_POSITION=-999;  // ignore the ROI's built in position
 	private static final int CHANNEL=0, SLICE=1, FRAME=2, SHOW_DIALOG=3;
 	private static int rows = 15;
 	private static int lastNonShiftClick = -1;
@@ -416,7 +416,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		listModel.addElement(label);
 		roi.setName(label);
 		Roi roiCopy = (Roi)roi.clone();
-		if (imp!=null && imp.getStackSize()>1 && imp.getWindow()!=null && isVisible()) {
+		if (ignorePosition && imp!=null && imp.getStackSize()>1 && imp.getWindow()!=null && isVisible()) {
 			// set ROI position to current stack position if image and RoiManager are visible
 			roiCopy.setPosition(imp);
 		}
