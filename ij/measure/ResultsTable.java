@@ -94,7 +94,16 @@ public class ResultsTable implements Cloneable {
 		return Analyzer.getResultsTable();
 	}
 		
-	/** Returns the "Results" TextWindow. */
+	/** Returns the ResultsTable with the specified title, or null if it does not exist, */
+	public static ResultsTable getResultsTable(String title) {
+		Frame f = WindowManager.getFrame(title);
+		if (f!=null && (f instanceof TextWindow))
+			return ((TextWindow)f).getResultsTable();
+		else
+			return null;
+	}
+		
+	/** Obsolete. */
 	public static TextWindow getResultsWindow() {
 		Frame f = WindowManager.getFrame("Results");
 		if (f==null || !(f instanceof TextWindow))

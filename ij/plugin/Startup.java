@@ -14,12 +14,13 @@ import java.util.Vector;
 		private static final String[] code = {
 			"[Select from list]",
 			"Black background",
-			"Add to overlay",
+			"Set default directory",
 			"Debug mode",
 			"10-bit (0-1023) range",
 			"12-bit (0-4095) range",
 			"Splash Screen",
-			"Bolder selections"
+			"Bolder selections",
+			"Add to overlay"
 		};
 	private String macro = "";
 	private int originalLength;
@@ -82,8 +83,8 @@ import java.util.Vector;
 		String statement = null;
 		if (item.equals(code[1]))
 			statement = "setOption(\"BlackBackground\", true);\n";
-		else if (item.equals(code[2]))
-			statement = "setOption(\"Add to overlay\", true);\n";
+		else if (item.equals(code[2]))			
+			statement = "File.setDefaultDir(getDir(\"downloads\"));\n";
 		else if (item.equals(code[3]))
 			statement = "setOption(\"DebugMode\", true);\n";
 		else if (item.equals(code[4]))
@@ -94,6 +95,8 @@ import java.util.Vector;
 			statement = "run(\"About ImageJ...\");\nwait(3000);\nclose(\"About ImageJ\");\n";
 		else if (item.equals(code[7]))			
 			statement = "Roi.setDefaultStrokeWidth(2);\n";
+		else if (item.equals(code[8]))
+			statement = "setOption(\"Add to overlay\", true);\n";
 		if (statement!=null) {
 			TextArea ta = gd.getTextArea1();
 			ta.insert(statement, ta.getCaretPosition());

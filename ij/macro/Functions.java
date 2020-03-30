@@ -6495,6 +6495,14 @@ public class Functions implements MacroConstants, Measurements {
 				imp.draw();
 			}
 			return Double.NaN;
+		} else if (name.equals("useNamesAsLabels")) {
+			boolean useNames = getBooleanArg();
+			Overlay overlay = imp.getOverlay();
+			if (overlay!=null) {
+				overlay.drawNames(useNames);
+				imp.draw();
+			}
+			return Double.NaN;
 		}
 		Overlay overlay = imp.getOverlay();
 		if (overlay==null && name.equals("size"))

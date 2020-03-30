@@ -862,9 +862,9 @@ public class IJ {
 	public static void showTime(ImagePlus imp, long start, String str, int nslices) {
 		if (Interpreter.isBatchMode())
 			return;
-	    double seconds = (System.currentTimeMillis()-start)/1000.0;
-	    if (seconds<=0.5 && macroRunning())
-	    	return;
+		double seconds = (System.currentTimeMillis()-start)/1000.0;
+		if (seconds<=0.5 && macroRunning())
+			return;
 		double pixels = (double)imp.getWidth() * imp.getHeight();
 		double rate = pixels*nslices/seconds;
 		String str2;

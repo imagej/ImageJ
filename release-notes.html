@@ -5,16 +5,21 @@
 </head>
 <body>
 
-<li> <u>1.52v8 27 March 2020</u>
+<li> <u>1.52v10 30 March 2020</u>
 <ul>
 <li> Thanks to Norbert Vischer, macro error messages include the call stack.
 (<a href="http://wsr.imagej.net/macros/TestCallStack.txt">example</a>). 
-<li> TestCallStack.txt
+<li> Added a "Set default directory" code choice to the
+ <i>Edit&gt;Options&gt;Startup</i> dialog.
+<li> The  run("Viridis") macro function now works on Fiji.
+<li> Added the Overlay.useNamesAsLabels(boolean) macro function
+(<a href="http://wsr.imagej.net/macros/examples/ShowResultsInOverlay.txt">example</a>).  (DOCUMENT)
+<li> Thanks to 'Odinsbane', added the ByteProcessor.skeletonize(foreground)
+method, where 'foreground' is either 0 or 255.
+<li> Thanks to Laurent Thomas, added the ResultsTable.getResultsTable(title) method.
 <li> Thanks to 'Max1', fixed a bug that caused the
 <i>Edit&gt;Selection&gt;Scale</i> command to not maintain
 the selection name, group, fill color, point type and point size.
-<li> Thanks to 'Odinsbane', added the ByteProcessor.skeletonize(foreground)
-method, where 'foreground' is either 0 or 255.
 <li> Thanks to 'Odinsbane', fixed a bug that caused the ByteProcessor.skeletonize()
 method to not work correctly with objects touching the image edge.
 <li> Thanks to Stefan Helfrich and Olivier Burri, fixed a bug caused the
