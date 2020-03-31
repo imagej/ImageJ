@@ -28,7 +28,7 @@ import ij.measure.*;
 import ij.plugin.OverlayCommands;
 
 /** This plugin implements the Analyze/Tools/ROI Manager command. */
-public class RoiManager extends PlugInFrame implements ActionListener, ItemListener, MouseListener, MouseWheelListener, ListSelectionListener {
+public class RoiManager extends PlugInFrame implements ActionListener, ItemListener, MouseListener, MouseWheelListener, ListSelectionListener, Iterable {
 	public static final String LOC_KEY = "manager.loc";
 	private static final int BUTTONS = 11;
 	private static final int DRAW=0, FILL=1, LABEL=2;
@@ -2631,6 +2631,39 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Returns the most recent I/O error message, or null if there was no error. */
 	public static String getErrorMessage() {
 		return errorMessage;
+	}
+	
+	@Override
+	public Iterator<Roi> iterator() {
+
+		Iterator<Roi> it = new Iterator<Roi>() {
+			private int index = -1;
+			RoiManager rm = RoiManager.getInstance();
+
+			/** Returns 'true' if next element exists. */ 
+			@Override
+			public boolean hasNext() {
+				if (index+1<rm.getCount()) 
+					return true;
+				else 
+					return false;
+			}
+
+			/** Returns current ROI and updates pointer. */
+			@Override
+			public Roi next() {
+				if (index+1<rm.getCount())
+					return rm.getRoi(++index);
+				else
+					return null;
+			} 
+
+			@Override
+			public void remove() { 
+				throw new UnsupportedOperationException(); 
+			}
+		};
+		return it;
 	}
 
 	// This class runs the "Multi Measure" command in a separate thread
