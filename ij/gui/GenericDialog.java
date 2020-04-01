@@ -79,6 +79,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private boolean firstPaint = true;
 	private boolean fontSizeSet;
 	private boolean showDialogCalled;
+	private boolean listenersCalled;     // have dialogListeners been called (needed to record options)
 
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
@@ -1296,6 +1297,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	/** For plugins that read their input only via dialogItemChanged, call it at least once, then stop recording */
 	void finalizeRecording() {
+		if (listenersCalled)
+			return;
+		listenersCalled = true;
 		if (!wasCanceled && dialogListeners!=null && dialogListeners.size()>0) {
 			resetCounters();
 			((DialogListener)dialogListeners.elementAt(0)).dialogItemChanged(this,null);
@@ -1565,20 +1569,22 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
         if (dialogListeners==null)
         	return;
         boolean everythingOk = true;
-        for (int i=0; everythingOk && i<dialogListeners.size(); i++)
+        for (int i=0; everythingOk && i<dialogListeners.size(); i++) {
             try {
                 resetCounters();
                 if (this instanceof NonBlockingGenericDialog)
                 	Recorder.resetCommandOptions();
                 if (!((DialogListener)dialogListeners.elementAt(i)).dialogItemChanged(this, e))
                     everythingOk = false;         // disable further listeners if false (invalid parameters) returned
-            } catch (Exception err) {                 // for exceptions, don't cover the input by a window but
+            } catch (Exception err) {             // for exceptions, don't cover the input by a window but
                 IJ.beep();                          // show them at in the "Log"
                 IJ.log("ERROR: "+err+"\nin DialogListener of "+dialogListeners.elementAt(i)+
                 "\nat "+(err.getStackTrace()[0])+"\nfrom "+(err.getStackTrace()[1]));  //requires Java 1.4
             }
+        }
         boolean workaroundOSXbug = IJ.isMacOSX() && okay!=null && !okay.isEnabled() && everythingOk;
-	if (recorderOn && everythingOk)
+        if (everythingOk)
+			listenersCalled = true;
         if (previewCheckbox!=null)
             previewCheckbox.setEnabled(everythingOk);
         if (okay!=null)
