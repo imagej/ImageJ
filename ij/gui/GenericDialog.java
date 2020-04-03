@@ -79,7 +79,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private boolean firstPaint = true;
 	private boolean fontSizeSet;
 	private boolean showDialogCalled;
-	private boolean listenersCalled;     // have dialogListeners been called (needed to record options)
+	private boolean listenersCalled;     // have dialogListeners been called (needed to record options)?
 
 
     /** Creates a new GenericDialog with the specified title. Uses the current image

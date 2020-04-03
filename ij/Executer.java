@@ -200,6 +200,11 @@ public class Executer implements Runnable {
 			path = IJ.getDirectory("luts")+name.toLowerCase().replace(" ","_")+".lut";
 			f = new File(path);
 		}
+		if (!f.exists() && Character.isLowerCase(name.charAt(0))) {
+			String name2 = name.substring(0,1).toUpperCase()+name.substring(1);
+			path = IJ.getDirectory("luts")+name2+".lut";
+			f = new File(path);
+		}
 		if (!f.exists() && name.toLowerCase().equals("viridis")) {
 			path = IJ.getDirectory("luts")+"mpl-viridis.lut";  //Fiji version
 			f = new File(path);
