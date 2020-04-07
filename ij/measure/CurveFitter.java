@@ -94,6 +94,24 @@ public class CurveFitter implements UserFunction{
 	"y = a*(1-exp(-b*x))^c",									//CHAPMAN
 	"y = a+b*erf((x-c)/d)"										//ERF; note that the c parameter is sqrt2 times the Gaussian
 	};
+	
+	/** ImageJ Macro language code for the built-in functions */
+	public static final String[] fMacro = {
+	"y = a+x*b","y = a+x*(b+x*c)",								//STRAIGHT_LINE,POLY2
+	"y = a+x*(b+x*(c+x*d))","y = a+x*(b+x*(c+x*(d+x*e)))",
+	"y = a*Math.exp(b*x)","y = a*Math.pow(x,b)", "y = a*Math.log(b*x)", //EXPONENTIAL,POWER,LOG
+	"y = d+(a-d)/(1+Math.pow(x/c,b))", "y = b*Math.pow(x-a,c)*Math.exp(-(x-a)/d)",	//RODBARD,GAMMA_VARIATE
+	"y = a+b*Math.log(x-c)", "y = c*Math.pow((x-a)/(d-x),1/b)",  	 //LOG2,RODBARD2
+	"y = a*Math.exp(-b*x)+c", "y = a+(b-a)*Math.exp(-(x-c)*(x-c)/(2*d*d))", //EXP_WITH_OFFSET,GAUSSIAN
+	"y = a*(1-Math.exp(-b*x))+c", "y = c*Math.pow((x-a)/(d-x),1/b)", //EXP_RECOVERY, INV_RODBARD
+	"y = a*Math.exp(b*x)", "y = a*Math.pow(x,b)",						//EXP_REGRESSION, POWER_REGRESSION
+	"y = a+x*(b+x*(c+x*(d+x*(e+x*f))))", "y = a+x*(b+x*(c+x*(d+x*(e+x*(f+x*g)))))",
+	"y = a+x*(b+x*(c+x*(d+x*(e+x*(f+x*(g+x*h))))))", "y = a+x*(b+x*(c+x*(d+x*(e+x*(f+x*(g+x*(h+x*i)))))))",
+	"y = a*Math.exp(-(x-b)*(x-b)/(2*c*c))",						//GAUSSIAN_NOOFFSET
+	"y = a*(1-Math.exp(-b*x))",									//EXP_RECOVERY_NOOFFSET
+	"y = a*Math.pow(1-Math.exp(-b*x),c)",						//CHAPMAN
+	"y = a+b*Math.erf((x-c)/d)"									//ERF; note that the c parameter is sqrt2 times the Gaussian sigma
+	};
 
 	/** @deprecated now in the Minimizer class (since ImageJ 1.46f).
 	 *	(probably of not much value for anyone anyhow?) */
@@ -335,10 +353,14 @@ public class CurveFitter implements UserFunction{
 	 *					   should be set to -1)
 	 */
 	public void setOffsetMultiplySlopeParams(int offsetParam, int multiplyParam, int slopeParam) {
+		if (multiplyParam >= 0 && slopeParam>=0)
+			throw new IllegalArgumentException("CurveFitter: only one of multiplyParam and slopeParam may be given (i.e., >=0)");
 		this.offsetParam = offsetParam;
 		hasSlopeParam = slopeParam >= 0;
 		factorParam = hasSlopeParam ? slopeParam : multiplyParam;
 		numRegressionParams = 0;
+		if (factorParam >= 0 && factorParam==offsetParam)
+			throw new IllegalArgumentException("CurveFitter: offsetParam and slopeParam/factorParam must be different");
 		if (offsetParam >=0) numRegressionParams++;
 		if (factorParam >=0) numRegressionParams++;
 	}
@@ -609,8 +631,9 @@ public class CurveFitter implements UserFunction{
 	 *	including the fit parameters).
 	 */
 	public String getResultString() {
-		String resultS =  "\nFormula: " + getFormula() +
-				"\nStatus: "+getStatusString();
+		String resultS =  "\nFormula: " + getFormula()
+				+ "\nMacro code: "+getMacroCode()
+				+ "\nStatus: "+getStatusString();
 		if (getStatus()==Minimizer.INITIALIZATION_FAILURE)
 			return resultS;
 		if (!linearRegressionUsed) resultS += "\nNumber of completed minimizations: " + minimizer.getCompletedMinimizations();
@@ -717,6 +740,21 @@ public class CurveFitter implements UserFunction{
 			fitType = RODBARD;
 		return fList[fitType];
 	}
+	
+	/** Returns macro code of the form "y = ...x" for the fit function used.
+	 *  Note that this is not neccessarily the equation acutally used for the fit
+	 *  (for the various "linear regression" types and RODBARD2, the fit is done
+	 *  differently). Note that no macro code may be avialable for custom fits
+	 *  using the UserFunction interface. */
+	public String getMacroCode() {
+		if (fitType==CUSTOM)
+			return customFormula;
+		if (fitType==GAUSSIAN_INTERNAL)
+			fitType = GAUSSIAN;
+		else if (fitType==RODBARD_INTERNAL)
+			fitType = RODBARD;
+		return fMacro[fitType];
+	}
 
 	/** Returns an array of fit names with nicer sorting */
 	public static String[] getSortedFitList() {
@@ -793,8 +831,10 @@ public class CurveFitter implements UserFunction{
 				params[i] = offset;
 			else if (i == factorParam)
 				params[i] = factor;
-			else
+			else if (iM>=0)
 				params[i] = params[iM--];
+			else
+				params[i] = Double.NaN;
 		}
 		params[numParams] = sumResidualsSqr;
 	}

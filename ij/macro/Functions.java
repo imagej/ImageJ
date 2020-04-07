@@ -376,6 +376,8 @@ public class Functions implements MacroConstants, Measurements {
 			return Math.asin(arg);
 		else if (name.equals("acos"))
 			return Math.acos(arg);
+		else if (name.equals("erf"))
+			return IJMath.erf(arg);
 		else
 			interp.error("Unrecognized function name");
 		return Double.NaN;
@@ -5756,10 +5758,20 @@ public class Functions implements MacroConstants, Measurements {
 	double getEquation() {
 		int index = (int)getFirstArg();
 		Variable name = getNextVariable();
-		Variable formula = getLastVariable();
+		Variable formula = getNextVariable();
+		Variable macroCode=null;
+		interp.getToken();
+		if (interp.token==',') {
+			macroCode = getVariable();
+			interp.getToken();
+		}
+		if (interp.token!=')')
+			interp.error("')' expected");
 		checkIndex(index, 0, CurveFitter.fitList.length-1);
 		name.setString(CurveFitter.fitList[index]);
 		formula.setString(CurveFitter.fList[index]);
+		if (macroCode != null)
+			macroCode.setString(CurveFitter.fMacro[index]);
 		return Double.NaN;
 	}
 

@@ -88,7 +88,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private static String defaultDir = Prefs.get(DEFAULT_DIR, null);;
 	private boolean dontShowWindow;
 	private int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
-	private int fontSize = (int)Prefs.get(FONT_SIZE, 6); // defaults to 16-point
+	private int fontSizeIndex = (int)Prefs.get(FONT_SIZE, 6); // defaults to 16-point
 	private CheckboxMenuItem monospaced;
 	private static boolean wholeWords;
 	private boolean isMacroWindow;
@@ -1487,28 +1487,28 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
     
     void changeFontSize(boolean larger) {
-        int in = fontSize;
+        int in = fontSizeIndex;
         if (larger) {
-            fontSize++;
-            if (fontSize==sizes.length)
-                fontSize = sizes.length-1;
+            fontSizeIndex++;
+            if (fontSizeIndex==sizes.length)
+                fontSizeIndex = sizes.length-1;
         } else {
-            fontSize--;
-            if (fontSize<0)
-                fontSize = 0;
+            fontSizeIndex--;
+            if (fontSizeIndex<0)
+                fontSizeIndex = 0;
         }
-        IJ.showStatus(sizes[fontSize]+" point");
+        IJ.showStatus(sizes[fontSizeIndex]+" point");
         setFont();
     }
     
     void saveSettings() {
-		Prefs.set(FONT_SIZE, fontSize);
+		Prefs.set(FONT_SIZE, fontSizeIndex);
 		Prefs.set(FONT_MONO, monospaced.getState());
-		IJ.showStatus("Font settings saved (size="+sizes[fontSize]+", monospaced="+monospaced.getState()+")");
+		IJ.showStatus("Font settings saved (size="+sizes[fontSizeIndex]+", monospaced="+monospaced.getState()+")");
     }
     
     void setFont() {
-        ta.setFont(new Font(getFontName(), Font.PLAIN, sizes[fontSize]));
+        ta.setFont(new Font(getFontName(), Font.PLAIN, sizes[fontSizeIndex]));
     }
     
     String getFontName() {
@@ -1517,6 +1517,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	
 	public void setFont(Font font) {
 		ta.setFont(font);
+	}
+	
+	public int getFontSize() {
+		return sizes[fontSizeIndex];
 	}
 
 	public void append(String s) {

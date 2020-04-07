@@ -1052,10 +1052,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	boolean multiMeasure(String cmd) {
 		ImagePlus imp = getImage();
 		if (imp==null) return false;
-		if (!imp.lock())
-			return false;
 		int[] indexes = getIndexes();
-		if (indexes.length==0)
+		if (indexes.length==0) {
+			error("Multi-measure: no selection");
+			return false;
+		}
+		if (!imp.lock())
 			return false;
 		int measurements = Analyzer.getMeasurements();
 
