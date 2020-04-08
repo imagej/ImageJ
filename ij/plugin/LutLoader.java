@@ -95,7 +95,9 @@ public class LutLoader extends ImagePlus implements PlugIn {
 					((CompositeImage)imp).setChannelColorModel(cm);
 				else {
 					ip.setColorModel(cm);
-					if (imp.getWindow()==null) imp.setProcessor(ip);
+					ip.setMinAndMax(ip.getMin(), ip.getMax());
+					if (imp.getWindow()==null)
+						imp.setProcessor(ip);
 				}
 				if (imp.getStackSize()>1)
 					imp.getStack().setColorModel(cm);
