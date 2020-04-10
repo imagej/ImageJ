@@ -340,10 +340,7 @@ public class CalibrationBar implements PlugIn {
 			font = new Font("SansSerif", fontType, (int)( fontSize*zoom));
 		int maxLength = 0;
 
-		//Blank offscreen image for font metrics
-		Image img = GUI.createBlankImage(128, 64);
-		Graphics g = img.getGraphics();
-		FontMetrics metrics = g.getFontMetrics(font);
+		FontMetrics metrics = getFontMetrics(font);
 		fontHeight = metrics.getHeight();
 
 		for (int i = 0; i < numLabels; i++) {
@@ -386,12 +383,10 @@ public class CalibrationBar implements PlugIn {
 	}
 
 	int getFontHeight() {
-		Image img = GUI.createBlankImage(64, 64); //dummy version to get fontHeight
-		Graphics g = img.getGraphics();
 		int fontType = boldText?Font.BOLD:Font.PLAIN;
 		Font font = new Font("SansSerif", fontType, (int) (fontSize*zoom) );
-		FontMetrics metrics = g.getFontMetrics(font);
-		return	metrics.getHeight();
+		FontMetrics metrics = getFontMetrics(font);
+		return metrics.getHeight();
 	}
 
 	Color getColor(String color) {
@@ -417,6 +412,13 @@ public class CalibrationBar implements PlugIn {
 
 	void calculateWidth() {
 		drawBarAsOverlay(imp, -1, -1);
+	}
+	
+	private FontMetrics getFontMetrics(Font font) {
+		BufferedImage bi =new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+		Graphics g = (Graphics2D)bi.getGraphics();
+		g.setFont(font);
+		return g.getFontMetrics(font);
 	}
 		
 	class LiveDialog extends GenericDialog {

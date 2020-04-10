@@ -3193,7 +3193,6 @@ public class Functions implements MacroConstants, Measurements {
 				interp.getComma();
 				keep = getString().equalsIgnoreCase("keep");
 			}
-
 			interp.getRightParen();
 		}
 		if (pattern == null) {//Wayne close front image
@@ -3212,6 +3211,8 @@ public class Functions implements MacroConstants, Measurements {
 		}
 
 		if (pattern != null) {//Norbert
+			if (pattern.equals("Results"))
+				resultsPending = false;
 			WildcardMatch wm = new WildcardMatch();
 			wm.setCaseSensitive(false);
 			String otherStr = "\\Others";
@@ -3262,7 +3263,7 @@ public class Functions implements MacroConstants, Measurements {
 							TextWindow txtWin = (TextWindow) thisWin;
 							String title = txtWin.getTitle();
 							if (wm.match(title, pattern)) {
-								if(title.equals("Results"))
+								if (title.equals("Results"))
 									IJ.run("Clear Results");
 								txtWin.close();
 							}

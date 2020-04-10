@@ -31,9 +31,10 @@ public class Selection implements PlugIn, Measurements {
 		if (arg.equals("add")) {
 			addToRoiManager(imp);
 			return;
-		}
+		}		
 		if (imp==null) {
-			IJ.noImage();
+			if (!(IJ.isMacro()&&arg.equals("none")))
+				IJ.noImage();
 			return;
 		}
 		if (arg.equals("all")) {

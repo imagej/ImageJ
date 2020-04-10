@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52v19  8 April 2020</u>
+<li> <u>1.52v23  10 April 2020</u>
 <ul>
 <li> Thanks to Norbert Vischer, macro error messages include the call stack.
 (<a href="http://wsr.imagej.net/macros/TestCallStack.txt">example</a>). 
@@ -36,6 +36,11 @@ to sometimes change.
 GenericDialogs to throw an exception.
 <li> Thanks to Jeremy Adler, fixed a bug where changing the LUT
 resets the display range.
+<li> Thanks to 'Sh_Ty', fixed a bug the caused the 
+<i>Analyze&gt;Tools&gt;Calibration Bar</i> command to throw
+an exception in headless mode.
+<li> Thanks to Michael Schmid, fixed a bug that could cause
+macros creating plots with custom symbols to fail.
 <li> Thanks to Nicolas De Francesco, fixed a 1.52u regression that caused
 incorrect straight line length measurements with spatially calibrated images.
 <li> Thanks to Peter Haub, fixed a 1.52u regression that caused the cursor

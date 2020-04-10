@@ -1803,7 +1803,7 @@ public class Plot implements Cloneable {
 	/** Returns whether the plot requires color (not grayscale) */
 	boolean isColored() {
 		for (PlotObject plotObject : allPlotObjects)
-			if (isColored(plotObject.color) || isColored(plotObject.color2))
+			if (isColored(plotObject.color) || isColored(plotObject.color2) || plotObject.shape==CUSTOM)
 				return true;
 		for (PlotObject plotObject : pp.getAllPlotObjects())
 			if (plotObject != null && (isColored(plotObject.color) || isColored(plotObject.color2)))
@@ -3212,7 +3212,7 @@ public class Plot implements Cloneable {
 				StringBuilder sb = new StringBuilder(140+plotObject.macroCode.length());
 				sb.append("x="); sb.append(x);
 				sb.append(";y="); sb.append(y);
-				sb.append(";setColor("); sb.append(plotObject.color.getRGB());
+				sb.append(";setColor("); sb.append(plotObject.color.getRGB()&0xffffff);
 				sb.append(");s="); sb.append(sc(1));
 				boolean drawingLegend = pointIndex < 0;
 				double xVal = 0;
