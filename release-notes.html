@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.52v23  10 April 2020</u>
+<li> <u>1.52v  11 April 2020</u>
 <ul>
 <li> Thanks to Norbert Vischer, macro error messages include the call stack.
 (<a href="http://wsr.imagej.net/macros/TestCallStack.txt">example</a>). 
@@ -17,7 +17,7 @@
 <li> Thanks to Fred Damen, Java compiler error messages use the default editor font.
 <li> Thanks to Fred Damen and Michael Schmid, added the Math.erf(x) macro function.
 <li> Added the Overlay.useNamesAsLabels(boolean) macro function
-(<a href="http://wsr.imagej.net/macros/examples/ShowResultsInOverlay.txt">example</a>).  (DOCUMENT)
+(<a href="http://wsr.imagej.net/macros/examples/ShowResultsInOverlay.txt">example</a>).
 <li> Thanks to Michael Schmid, added the Fit.getEquation(index,name,formula,macroCode)
 macro function
 (<a href="http://wsr.imagej.net/macros/TestCurveFitMacroCode.txt">example</a>).
@@ -29,7 +29,7 @@ method, where 'foreground' is either 0 or 255.
 the selection name, group, fill color, point type and point size.
 <li> Thanks to 'Odinsbane', fixed a bug that caused the ByteProcessor.skeletonize()
 method to not work correctly with objects touching the image edge.
-<li> Thanks to Stefan Helfrich and Olivier Burri, fixed a bug caused the
+<li> Thanks to Stefan Helfrich and Olivier Burri, fixed a bug that caused the
 position of ROIs added to the ROI Manager using RoiManager.setRoi()
 to sometimes change. 
 <li> Thanks to Michael Schmid, fixed a bug that sometimes caused
@@ -39,8 +39,9 @@ resets the display range.
 <li> Thanks to 'Sh_Ty', fixed a bug the caused the 
 <i>Analyze&gt;Tools&gt;Calibration Bar</i> command to throw
 an exception in headless mode.
-<li> Thanks to Michael Schmid, fixed a bug that could cause
-macros creating plots with custom symbols to fail.
+<li> Thanks to Michael Schmid, fixed a bug that caused
+plots with custom symbols to use the wrong color
+or generate an error.
 <li> Thanks to Nicolas De Francesco, fixed a 1.52u regression that caused
 incorrect straight line length measurements with spatially calibrated images.
 <li> Thanks to Peter Haub, fixed a 1.52u regression that caused the cursor
