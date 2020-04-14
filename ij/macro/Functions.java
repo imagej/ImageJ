@@ -2218,7 +2218,9 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("setFormatFlags")) {
 			return setPlotFormatFlags(currentPlot);
 		} else if (name.equals("useTemplate")) {
-			return fromPlot(currentPlot, 't');
+			return fromPlot(currentPlot, 't');			
+		} else if (name.equals("setIntervals")) {
+			return setPlotIntervals(currentPlot);
 		} else if (name.equals("addFromPlot")) {
 			return fromPlot(currentPlot, 'a');
 		} else if (name.equals("getFrameBounds")) {
@@ -2279,6 +2281,16 @@ public class Functions implements MacroConstants, Measurements {
 			return Double.NaN;
 		} else
 			interp.error("Unrecognized plot function");
+		return Double.NaN;
+	}
+
+	double setPlotIntervals(Plot plot) {
+		double xinterval = getFirstArg();
+		double yinterval = getLastArg();
+		if (xinterval <= 0) xinterval = Double.NaN;
+		if (yinterval <= 0) yinterval = Double.NaN;
+		plot.setIntervals(xinterval, yinterval);
+		plot.updateImage();
 		return Double.NaN;
 	}
 

@@ -330,5 +330,23 @@ import java.nio.channels.FileChannel;
 		}
 		return "";
 	}
+	
+	/** Retrieves a number form a list of key-number pairs like "value1=1234.5 area=1.2e6".
+	 *  The "=" (if present) must be part of the 'key' string. Delimiters may be commas, semicolons or whitespace.
+	 *  There must be no whitespace between key and number.
+	 *  Returns Double.NaN if 'list' is null, if the key is not found, if the number is 'NaN' or invalid. */
+	public static double getNumberFromList(String list, String key) {
+		if (list == null) return Double.NaN;
+		int i = list.indexOf(key);
+		if (i < 0) return Double.NaN;
+		int start = i + key.length();
+		int n = start;
+		while (n < list.length() && !isDelimiter(list.charAt(n))) n++;
+		return parseDouble(list.substring(start, n));
+	}
+
+	private static boolean isDelimiter(char c) {
+		return Character.isWhitespace(c) || c==',' || c==';';
+	}
 
 }

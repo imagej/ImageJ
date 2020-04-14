@@ -419,6 +419,17 @@ public class Plot implements Cloneable {
 		System.arraycopy(limits, 0, currentMinMax, 0, Math.min(limits.length, defaultMinMax.length));
 	}
 
+	/** Sets the intervals between the numbers/grid lines/major ticks. NaN sets auto intervals.
+	 *  Intervals < 1 should have one significant digit (0.07 is fine, 0.15 isn't).
+	 *  Automatic intervals are also used if the numbers would be too dense or too sparse with the
+	 *  intervals supplied. Does not update the plot. */
+	public void setIntervals(double xInterval, double yInterval) {
+		String options=null;
+		if (!Double.isNaN(xInterval) || !Double.isNaN(yInterval))
+			options = "xinterval="+xInterval + ",yinterval="+yInterval;
+		pp.frame.options = options;
+	}
+
 	/** Sets the canvas size in (unscaled) pixels and sets the scale to 1.0.
 	 * If the scale remains 1.0, this will be the size of the resulting ImageProcessor.
 	 * When not called, the canvas size is adjusted for the plot size specified
@@ -1038,12 +1049,14 @@ public class Plot implements Cloneable {
 		currentLineWidth = lineWidth > 0 ? lineWidth : 0.01f;
 	}
 
-	/** Changes the line width for the next objects that will be added to the plot. */
+	/** Changes the line width for the next objects that will be added to the plot.
+	 *  After all objects have been added, set the line width to the width desired
+	 *  for the frame around the plot (max. 3) */
 	public void setLineWidth(float lineWidth) {
 		currentLineWidth = lineWidth > 0.01 ? lineWidth : 0.01f;
 	}
 
-	/* Draws a line using the coordinate system defined by setLimits(). */
+	/** Draws a line using the coordinate system defined by setLimits(). */
 	public void drawLine(double x1, double y1, double x2, double y2) {
 		allPlotObjects.add(new PlotObject(x1, y1, x2, y2, currentLineWidth, 0, currentColor, PlotObject.LINE));
 	}
@@ -1056,7 +1069,7 @@ public class Plot implements Cloneable {
 		allPlotObjects.add(new PlotObject(x1, y1, x2, y2, currentLineWidth, 0, currentColor, PlotObject.NORMALIZED_LINE));
 	}
 
-	/* Draws a line using the coordinate system defined by setLimits(). */
+	/** Draws a line using the coordinate system defined by setLimits(). */
 	public void drawDottedLine(double x1, double y1, double x2, double y2, int step) {
 		allPlotObjects.add(new PlotObject(x1, y1, x2, y2, currentLineWidth, step, currentColor, PlotObject.DOTTED_LINE));
 	}
@@ -1125,6 +1138,16 @@ public class Plot implements Cloneable {
 	/** Determines whether to use antialiased text (default true) */
 	public void setAntialiasedText(boolean antialiasedText) {
 		pp.antialiasedText = antialiasedText;
+	}
+
+	/** Returns the font currently used (e.g. for the next 'addLabel') */
+	public Font getCurrentFont() {
+		return currentFont != null ? currentFont : defaultFont;
+	}
+
+	/** Returns the default font for the plot */
+	public Font getDefaultFont() {
+		return defaultFont;
 	}
 
 	/** Gets the font for xLabel ('x'), yLabel('y'), numbers ('f' for 'frame') or the legend ('l').
@@ -1977,9 +2000,18 @@ public class Plot implements Cloneable {
 			if ((i==0 && !simpleXAxis()) || (i==2 && !simpleYAxis())) {
 				int minGridspacing = i==0 ? MIN_X_GRIDSPACING : MIN_Y_GRIDSPACING;
 				int frameSize = i==0 ? frameWidth : frameHeight;
-				double step = Math.abs((currentMinMax[i+1] - currentMinMax[i]) *
-						Math.max(1.0/maxIntervals, (float)sc(minGridspacing)/frameSize+0.06)); //the smallest allowable step
-				step = niceNumber(step);
+				double step = Tools.getNumberFromList(pp.frame.options, i==0 ? "xinterval=" : "yinterval="); //user-defined interval
+				if (!Double.isNaN(step)) {
+					int nSteps = (int)(Math.floor(currentMinMax[i+1]/step+1e-10) - Math.ceil(currentMinMax[i]/step-1e-10));
+					if (nSteps < 1) step = Double.NaN;  //user-suppied interval too large, less than two numbers would be shown
+					if ((i==0 && nSteps*sc(minGridspacing)*0.5 > frameSize) || i!=0 && nSteps*sc(pp.frame.getFont().getSize()) > frameSize)
+						step = Double.NaN;              //user-suppied interval too small, too many numbers would be shown
+				}
+				if (Double.isNaN(step)) {               //automatic interval
+					step = Math.abs((currentMinMax[i+1] - currentMinMax[i]) *
+						Math.max(1.0/maxIntervals, (float)sc(minGridspacing)/frameSize+(maxIntervals>12 ? 0.02 : 0.06))); //the smallest allowable step
+					step = niceNumber(step);
+				}
 				if (logAxis && step < 1)
 					step = 1;
 				steps[i/2] = step;
@@ -2476,12 +2508,15 @@ public class Plot implements Cloneable {
 				}
 				boolean haveMinorLogNumbers = i2-i1 < 2;		//nunbers on log minor ticks only if < 2 decades
 				if (minorTicks && (!logXAxis || step > 1.1)) {  //'standard' log minor ticks only for full decades
-					step = niceNumber(step*0.19);				//non-log: 4 or 5 minor ticks per major tick
-					if (logXAxis && step < 1) step = 1;
-					i1 = (int)Math.ceil (Math.min(xMin,xMax)/step-1.e-10);
-					i2 = (int)Math.floor(Math.max(xMin,xMax)/step+1.e-10);
+					double mstep = niceNumber(step*0.19);       //non-log: 4 or 5 minor ticks per major tick
+					double minorPerMajor = step/mstep;
+					if (Math.abs(minorPerMajor-Math.round(minorPerMajor)) > 1e-10) //major steps are not an integer multiple of minor steps? (e.g. user step 90 deg)
+						mstep = step/4;
+					if (logXAxis && mstep < 1) mstep = 1;
+					i1 = (int)Math.ceil (Math.min(xMin,xMax)/mstep-1.e-10);
+					i2 = (int)Math.floor(Math.max(xMin,xMax)/mstep+1.e-10);
 					for (int i=i1; i<=i2; i++) {
-						double v = i*step;
+						double v = i*mstep;
 						int x = (int)Math.round((v - xMin)*xScale) + leftMargin;
 						ip.drawLine(x, y1, x, y1+sc(minorTickLength));
 						ip.drawLine(x, y2, x, y2-sc(minorTickLength));
@@ -2589,12 +2624,15 @@ public class Plot implements Cloneable {
 				}
 				boolean haveMinorLogNumbers = i2-i1 < 2;        //numbers on log minor ticks only if < 2 decades
 				if (minorTicks && (!logYAxis || step > 1.1)) {  //'standard' log minor ticks only for full decades
-					step = niceNumber(step*0.19);               //non-log: 4 or 5 minor ticks per major tick
-					if (logYAxis && step < 1) step = 1;
-					i1 = (int)Math.ceil (Math.min(yMin,yMax)/step-1.e-10);
-					i2 = (int)Math.floor(Math.max(yMin,yMax)/step+1.e-10);
+					double mstep = niceNumber(step*0.19);       //non-log: 4 or 5 minor ticks per major tick
+					double minorPerMajor = step/mstep;
+					if (Math.abs(minorPerMajor-Math.round(minorPerMajor)) > 1e-10) //major steps are not an integer multiple of minor steps? (e.g. user step 90 deg)
+						mstep = step/4;
+					if (logYAxis && step < 1) mstep = 1;
+					i1 = (int)Math.ceil (Math.min(yMin,yMax)/mstep-1.e-10);
+					i2 = (int)Math.floor(Math.max(yMin,yMax)/mstep+1.e-10);
 					for (int i=i1; i<=i2; i++) {
-						double v = i*step;
+						double v = i*mstep;
 						int y = topMargin + frameHeight - (int)Math.round((v - yMin)*yScale);
 						ip.drawLine(x1, y, x1+sc(minorTickLength), y);
 						ip.drawLine(x2, y, x2-sc(minorTickLength), y);
@@ -2969,29 +3007,28 @@ public class Plot implements Cloneable {
 				if (shType.contains("rectangles")) {
 					int nShapes = plotObject.shapeData.size();
 
+					for (int i = 0; i < nShapes; i++) {
+						float[] corners = (float[])(plotObject.shapeData.get(i));
+						int x1 = scaleX(corners[0]);
+						int y1 = scaleY(corners[1]);
+						int x2 = scaleX(corners[2]);
+						int y2 = scaleY(corners[3]);
 
-						for (int i = 0; i < nShapes; i++) {
-							float[] corners = (float[])(plotObject.shapeData.get(i));
-							int x1 = scaleX(corners[0]);
-							int y1 = scaleY(corners[1]);
-							int x2 = scaleX(corners[2]);
-							int y2 = scaleY(corners[3]);
+					ip.setLineWidth(sc(plotObject.lineWidth));
+						int left = Math.min(x1, x2);
+						int right = Math.max(x1, x2);
+						int top = Math.min(y1, y2);
+						int bottom = Math.max(y1, y2);
 
-						ip.setLineWidth(sc(plotObject.lineWidth));
-							int left = Math.min(x1, x2);
-							int right = Math.max(x1, x2);
-							int top = Math.min(y1, y2);
-							int bottom = Math.max(y1, y2);
-
-							Rectangle r1 = new Rectangle(left, top, right-left, bottom - top);
-							Rectangle cBox = frame.intersection(r1);
-							if (plotObject.color2 != null) {
-								ip.setColor(plotObject.color2);
-								ip.fillRect(cBox.x, cBox.y, cBox.width, cBox.height);
-							}
-							ip.setColor(plotObject.color);
-							ip.drawRect(cBox.x, cBox.y, cBox.width, cBox.height);
+						Rectangle r1 = new Rectangle(left, top, right-left, bottom - top);
+						Rectangle cBox = frame.intersection(r1);
+						if (plotObject.color2 != null) {
+							ip.setColor(plotObject.color2);
+							ip.fillRect(cBox.x, cBox.y, cBox.width, cBox.height);
 						}
+						ip.setColor(plotObject.color);
+						ip.drawRect(cBox.x, cBox.y, cBox.width, cBox.height);
+					}
 					ip.setClipRect(null);
 					break;
 				}
@@ -3017,8 +3054,7 @@ public class Plot implements Cloneable {
 
 						float[] coords = (float[])(plotObject.shapeData.get(i));
 
-
-					if (!horizontal) {
+						if (!horizontal) {
 
 							int x = scaleX(coords[0]);
 							int y1 = scaleY(coords[1]);
@@ -3212,7 +3248,8 @@ public class Plot implements Cloneable {
 				StringBuilder sb = new StringBuilder(140+plotObject.macroCode.length());
 				sb.append("x="); sb.append(x);
 				sb.append(";y="); sb.append(y);
-				sb.append(";setColor('"); sb.append(Tools.c2hex(plotObject.color));
+				sb.append(";setColor('");
+				sb.append(Tools.c2hex(plotObject.color));
 				sb.append("');s="); sb.append(sc(1));
 				boolean drawingLegend = pointIndex < 0;
 				double xVal = 0;
@@ -3915,7 +3952,10 @@ public class Plot implements Cloneable {
 
 }
 
-/** This class contains the properties of the plot, such as size, format, range, etc, except for the data+format (plot contents) */
+/** This class contains the properties of the plot, such as size, format, range, etc, except for the data+format (plot contents).
+ *  To enable reading serialized PlotObjects of plots created with previous versions of ImageJ, 
+ *  the variable names MUST NEVER be changed! Also any additions should be made after careful thought,
+ *  since they have to be kept for all future versions. */
 class PlotProperties implements Cloneable, Serializable {
 	/** The serialVersionUID should not be modified, otherwise saved plots won't be readable any more */
 	static final long serialVersionUID = 1L;
@@ -3972,7 +4012,10 @@ class PlotProperties implements Cloneable, Serializable {
 /** This class contains the data and properties for displaying a curve, a set of arrows, a line or a label in a plot,
  *	as well as the legend, axis labels, and frame (including background and fonts of axis numbering).
  *	Note that all properties such as lineWidths and Fonts have to be scaled up for high-resolution plots.
- *	This class allows serialization for writing into tiff files */
+ *	This class allows serialization for writing into tiff files.
+ *  To enable reading serialized PlotObjects of plots created with previous versions of ImageJ, 
+ *  the variable names MUST NEVER be changed! Also any additions should be made after careful thought,
+ *  since they have to be kept for all future versions. */
 class PlotObject implements Cloneable, Serializable {
 	/** The serialVersionUID should not be modified, otherwise saved plots won't be readable any more */
 	static final long serialVersionUID = 1L;
@@ -3989,25 +4032,29 @@ class PlotObject implements Cloneable, Serializable {
 	public int type = XY_DATA;
 	/** bitwise combination of flags, or the position of a legend */
 	public int flags;
+	/**  Options, currently implemented for FRAME: 'xinterval=<number> yinterval=<number>' supported (intervals of major ticks/grid) */
+	public String options;
 	/** The x and y data arrays and the error bars (if non-null). These arrays also serve as x0, y0, x1, y1
 	 *	arrays for plotting arrays of arrows */
 	public float[] xValues, yValues, xEValues, yEValues;
-	/** For Shapes such as boxplots */
+	/** For SHAPES: For boxplots with whiskers ('boxes'), elements of the ArrayList are float[6] with x and all 5 y values
+	 *  (for 'boxesx', y and all 5 x values), for 'rectangles', float[4] with x1, y1, x2, y2. */
 	public ArrayList shapeData;
-	public String shapeType;//e.g. "boxes width=20"
+	/** For SHAPES only, shape type & options. Currently implemented: 'boxes', 'boxesx' (box plots with whiskers), 'rectangles', 'redraw_grid' */
+	public String shapeType; //e.g. "boxes width=20"
 	/** Type of the points, such as Plot.LINE, Plot.CROSS etc. (for type = XY_DATA) */
 	public int shape;
-	/** The line width in pixels for 'small' plots */
+	/** The line width in pixels for 'normal' plots (for high-resolution plots, to be multiplied by a scale factor) */
 	public float lineWidth;
 	/** The color of the object, must not be null */
 	public Color color;
 	/** The secondary color (for filling closed symbols and for the line of CIRCLES_AND_LINE, may be null for unfilled/default */
 	public Color color2;
-	/* Labels and lines only: Position (NORMALIZED objects: relative units 0...1) */
+	/** Labels and lines: Position (NORMALIZED objects: relative units 0...1). */
 	public double x, y;
-	/* Lines only: End position */
+	/** Lines only: End position */
 	public double xEnd, yEnd;
-	/* Dotted lines only: step */
+	/** Dotted lines only: step */
 	public int step;
 	/** A label for the y data of the curve, a text to draw, or the text of a legend (tab-delimited lines) */
 	public String label;
@@ -4019,7 +4066,7 @@ class PlotObject implements Cloneable, Serializable {
 	private transient Font font;
 	/** String for representation of the font family (for Serialization); may be null for default. Font style is in flags, font size in fontSize. */
 	private String fontFamily;
-	/** Font size (for Serialization) */
+	/** Font size (for Serialization), for 'normal' plots (for high-resolution plots, to be multiplied by a scale factor) */
 	private float fontSize;
 
 

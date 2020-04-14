@@ -3,7 +3,7 @@ import java.awt.*;
 import java.io.*;
 import java.awt.event.*;
 import java.awt.image.ColorModel;
-import java.util.Properties;
+import java.util.*;
 import ij.*;
 import ij.io.*;
 import ij.gui.*;
@@ -114,6 +114,17 @@ public class FolderOpener implements PlugIn {
 			IJ.error("File>Import>Image Sequence", "Directory not found: "+directory);
 			return;
 		}
+		
+		//remove subdirectories from list
+		ArrayList fileList = new ArrayList();
+		for (int i=0; i<list.length; i++) {
+			File f = (new File(directory+list[i]));
+			if (!f.isDirectory())
+				fileList.add(list[i]);
+		}
+		if (fileList.size()<list.length)
+			list = (String[])fileList.toArray(new String[fileList.size()]);
+
 		String title = directory;
 		if (title.endsWith(File.separator) || title.endsWith("/"))
 			title = title.substring(0, title.length()-1);
