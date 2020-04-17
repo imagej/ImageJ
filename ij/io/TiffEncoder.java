@@ -216,6 +216,13 @@ public class TiffEncoder {
 			nMetaDataEntries += fi.overlay.length;
 		}
 
+		if (fi.imageProperties!=null) {
+			for (int i=0; i<fi.imageProperties.length; i++)
+				size += fi.imageProperties[i].length()*2;
+			nTypes++;
+			nMetaDataEntries += fi.imageProperties.length;
+		}
+
 		if (fi.metaDataTypes!=null && fi.metaData!=null && fi.metaData[0]!=null
 		&& fi.metaDataTypes.length==fi.metaData.length) {
 			extraMetaDataEntries = fi.metaData.length;
@@ -357,9 +364,9 @@ public class TiffEncoder {
 		out.write(colorTable16);
 	}
 	
-	/** Writes image metadata ("info" image propery, 
+	/** Writes image metadata ("info" property, 
 		stack slice labels, channel display ranges, luts, ROIs,
-		overlays and extra metadata). */
+		overlays, properties and extra metadata). */
 	void writeMetaData(OutputStream out) throws IOException {
 	
 		// write byte counts (META_DATA_BYTE_COUNTS tag)
@@ -385,6 +392,10 @@ public class TiffEncoder {
 		if (fi.overlay!=null) {
 			for (int i=0; i<fi.overlay.length; i++)
 				writeInt(out, fi.overlay[i].length);
+		}
+		if (fi.imageProperties!=null) {
+			for (int i=0; i<fi.imageProperties.length; i++)
+				writeInt(out, fi.imageProperties[i].length()*2);
 		}
 		for (int i=0; i<extraMetaDataEntries; i++)
 			writeInt(out, fi.metaData[i].length);	
@@ -419,6 +430,10 @@ public class TiffEncoder {
 			writeInt(out, TiffDecoder.OVERLAY); // type="over"
 			writeInt(out, fi.overlay.length); // count
 		}
+		if (fi.imageProperties!=null) {
+			writeInt(out, TiffDecoder.PROPERTIES); // type="prop"
+			writeInt(out, fi.imageProperties.length); // count
+		}
 		for (int i=0; i<extraMetaDataEntries; i++) {
 			writeInt(out, fi.metaDataTypes[i]);
 			writeInt(out, 1); // count
@@ -447,9 +462,12 @@ public class TiffEncoder {
 			for (int i=0; i<fi.overlay.length; i++)
 				out.write(fi.overlay[i]);
 		}
+		if (fi.imageProperties!=null) {
+			for (int i=0; i<fi.imageProperties.length; i++)
+				writeChars(out, fi.imageProperties[i]);
+		}
 		for (int i=0; i<extraMetaDataEntries; i++)
-			out.write(fi.metaData[i]); 
-					
+			out.write(fi.metaData[i]); 					
 	}
 
 	/** Creates an optional image description string for saving calibration data.

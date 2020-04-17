@@ -10,7 +10,7 @@ This class represents an expandable array of images.
 public class ImageStack {
 	private static final int BYTE=0, SHORT=1, FLOAT=2, RGB=3, UNKNOWN=-1;
 	static final int INITIAL_SIZE = 25;
-	static final String outOfRange = "Argument out of range: ";
+	static final String outOfRange = "Stack argument out of range: ";
 	private int type = UNKNOWN;
 	private int nSlices = 0;
 	private Object[] stack;

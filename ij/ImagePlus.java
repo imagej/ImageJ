@@ -100,6 +100,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	private boolean oneSliceStack;
 	public boolean setIJMenuBar = Prefs.setIJMenuBar;
 	private Plot plot;
+	private Properties imageProperties;
 
 
     /** Constructs an uninitialized ImagePlus. */
@@ -1373,14 +1374,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return Tools.parseDouble(getStringProperty(key));
 	}
 
-	/**
-	 * @deprecated
-	 * @see #getStringProperty
-	*/
-	public String getProp(String key) {
-		return getStringProperty(key);
-	}
-
 	private String getStringProperty(String key, String info) {
 		int index1 = -1;
 		index1 = findKey(info, key+": "); // standard 'key: value' pair?
@@ -1412,6 +1405,46 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return i + key.length();
 		else
 			return -1;
+	}
+
+	public void setProp(String key, String value) {
+		if (key==null)
+			return;
+		if (imageProperties==null)
+			imageProperties = new Properties();
+		if (value==null || value.length()==0)
+			imageProperties.remove(key);
+		else
+			imageProperties.setProperty(key, value);
+	}
+	
+	public String getProp(String key) {
+		if (imageProperties==null)
+			return null;
+		else
+			return imageProperties.getProperty(key);
+	}
+
+	public String[] getImagePropertiesAsArray() {
+		if (imageProperties==null || imageProperties.size()==0)
+			return null;
+		String props[] = new String[imageProperties.size()];
+		int index = 0;
+		for (Enumeration en=imageProperties.keys(); en.hasMoreElements();) {
+			String key = (String)en.nextElement();
+			props[index++] = key+"="+imageProperties.getProperty(key);
+		}
+		return props;
+	}
+	
+	public void setImageProperties(String[] props) {
+		for (int i=0; i<props.length; i++) {
+			int index = props[i].indexOf("=");
+			if (index==-1) continue;
+			String key = props[i].substring(0,index);
+			String value = props[i].substring(index+1);
+			setProp(key,value);
+		}
 	}
 
 	/** Returns the "Info" property string, or null if it is not found. */

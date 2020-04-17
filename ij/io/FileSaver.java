@@ -112,6 +112,7 @@ public class FileSaver {
 		}
 		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
 		fi.overlay = getOverlay(imp);
+		fi.imageProperties = imp.getImagePropertiesAsArray();
 		DataOutputStream out = null;
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
@@ -202,6 +203,7 @@ public class FileSaver {
 			fi.sliceLabels = imp.getStack().getSliceLabels();
 		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
 		fi.overlay = getOverlay(imp);
+		fi.imageProperties = imp.getImagePropertiesAsArray();
 		if (imp.isComposite()) saveDisplayRangesAndLuts(imp, fi);
 		DataOutputStream out = null;
 		try {

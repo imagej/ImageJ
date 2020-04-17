@@ -61,6 +61,7 @@ public class TiffDecoder {
 	static final int PLOT = 0x706c6f74;    // "plot" (serialized plot)
 	static final int ROI = 0x726f6920;     // "roi " (ROI)
 	static final int OVERLAY = 0x6f766572; // "over" (overlay)
+	static final int PROPERTIES = 0x70726f70; // "prop" (properties)
 	
 	private String directory;
 	private String name;
@@ -600,17 +601,25 @@ public class TiffDecoder {
 		in.seek(loc);
 		int n = metaDataCounts.length;
 		int hdrSize = metaDataCounts[0];
-		if (hdrSize<12 || hdrSize>804)
-			{in.seek(saveLoc); return;}
+		if (hdrSize<12 || hdrSize>804) {
+			in.seek(saveLoc);
+			return;
+		}
 		int magicNumber = getInt();
-		if (magicNumber!=MAGIC_NUMBER)  // "IJIJ"
-			{in.seek(saveLoc); return;}
+		if (magicNumber!=MAGIC_NUMBER)  { // "IJIJ"
+			in.seek(saveLoc);
+			return;
+		}
 		int nTypes = (hdrSize-4)/8;
 		int[] types = new int[nTypes];
-		int[] counts = new int[nTypes];
-		
-		if (debugMode) dInfo += "Metadata:\n";
+		int[] counts = new int[nTypes];		
+		if (debugMode) {
+			dInfo += "Metadata:\n";
+			dInfo += "   Header size: "+hdrSize+"\n";
+			dInfo += "   Types: "+nTypes+"\n";
+		}
 		int extraMetaDataEntries = 0;
+		int index = 1;
 		for (int i=0; i<nTypes; i++) {
 			types[i] = getInt();
 			counts[i] = getInt();
@@ -618,14 +627,20 @@ public class TiffDecoder {
 				extraMetaDataEntries += counts[i];
 			if (debugMode) {
 				String id = "";
-				if (types[i]==INFO) id = " (Info property)";
-				if (types[i]==LABELS) id = " (slice labels)";
-				if (types[i]==RANGES) id = " (display ranges)";
-				if (types[i]==LUTS) id = " (luts)";
-				if (types[i]==PLOT) id = " (plot)";
-				if (types[i]==ROI) id = " (roi)";
-				if (types[i]==OVERLAY) id = " (overlay)";
-				dInfo += "   "+i+" "+Integer.toHexString(types[i])+" "+counts[i]+id+"\n";
+				if (types[i]==INFO) id = "Info property";
+				if (types[i]==LABELS) id = "slice labels";
+				if (types[i]==RANGES) id = "display ranges";
+				if (types[i]==LUTS) id = "luts";
+				if (types[i]==PLOT) id = "plot";
+				if (types[i]==ROI) id = "roi";
+				if (types[i]==OVERLAY) id = "overlay";
+				if (types[i]==PROPERTIES) id = "properties";
+				int len = metaDataCounts[index];
+				int count = counts[i];
+				index += count;
+				if (index>=metaDataCounts.length) index=1;
+				String lenstr = count==1?", length=":", length[0]=";
+				dInfo += "   "+i+", "+id+", count="+count+lenstr+len+"\n";
 			}
 		}
 		fi.metaDataTypes = new int[extraMetaDataEntries];
@@ -647,6 +662,8 @@ public class TiffDecoder {
 				getRoi(start, fi);
 			else if (types[i]==OVERLAY)
 				getOverlay(start, start+counts[i]-1, fi);
+			else if (types[i]==PROPERTIES)
+				getImageProperties(start, start+counts[i]-1, fi);
 			else if (types[i]<0xffffff) {
 				for (int j=start; j<start+counts[i]; j++) { 
 					int len = metaDataCounts[j]; 
@@ -745,6 +762,29 @@ public class TiffDecoder {
 		}
 	}
 
+	void getImageProperties(int first, int last, FileInfo fi) throws IOException {
+		fi.imageProperties = new String[last-first+1];
+	    int index = 0;
+	    byte[] buffer = new byte[metaDataCounts[first]];
+		for (int i=first; i<=last; i++) {
+			int len = metaDataCounts[i];
+			if (len>buffer.length)
+				buffer = new byte[len];
+			in.readFully(buffer, len);
+			len /= 2;
+			char[] chars = new char[len];
+			if (littleEndian) {
+				for (int j=0, k=0; j<len; j++)
+					chars[j] = (char)(buffer[k++]&255 + ((buffer[k++]&255)<<8));
+			} else {
+				for (int j=0, k=0; j<len; j++)
+					chars[j] = (char)(((buffer[k++]&255)<<8) + buffer[k++]&255);
+			}
+			fi.imageProperties[index++] = new String(chars);
+			//ij.IJ.log(i+"  "+fi.imageProperties[i-1]+"  "+len);
+		}
+	}
+
 	void error(String message) throws IOException {
 		if (in!=null) in.close();
 		throw new IOException(message);
@@ -783,7 +823,7 @@ public class TiffDecoder {
 				ifdOffset = ((long)getInt())&0xffffffffL;
 			} else
 				ifdOffset = 0L;
-			if (debugMode && ifdCount<10) dInfo += "  nextIFD=" + ifdOffset + "\n";
+			if (debugMode && ifdCount<10) dInfo += "nextIFD=" + ifdOffset + "\n";
 			if (fi!=null && fi.nImages>1)
 				ifdOffset = 0L;   // ignore extra IFDs in ImageJ and NIH Image stacks
 		}
