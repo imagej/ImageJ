@@ -20,24 +20,98 @@ in the public domain by Stanford University in 1995 and is now freely available.
 
 Version 2008-08-25 inverse transform: mask is always symmetrized
 */
-public class FFT implements	 PlugIn, Measurements {
+public class FFT implements PlugIn, Measurements {
 
-	static boolean displayFFT = true;
 	public static boolean displayRawPS;
 	public static boolean displayFHT;
 	public static boolean displayComplex;
-	public static String fileName;
+	private static boolean displayFFT = true;
+	private static boolean doFFT;
 	private static boolean reuseWindow;
+	public static String fileName;
 	
+	private boolean iDisplayRawPS;
+	private boolean iDisplayFHT;
+	private boolean iDisplayComplex;
+	private boolean iDisplayFFT;
+	private boolean iDoFFT;
+	private boolean iReuseWindow;
+
 	private ImagePlus imp, imp2;
 	private boolean padded;
 	private int originalWidth;
 	private int originalHeight;
 	private int stackSize = 1;
 	private int slice = 1;
-	private boolean doFFT;
 	private boolean showOutput = true;
 	
+		
+	public void run(String arg) {
+		if (arg.equals("options")) {
+			showDialog();
+			if (iDoFFT)
+				arg="fft";
+			else
+				return;
+		}
+		if (imp==null)
+			imp = IJ.getImage();
+		if (arg.equals("fft") && imp.isComposite()) {
+			if (!GUI.showCompositeAdvisory(imp,"FFT"))
+				return;
+		}
+		if (arg.equals("redisplay")) {
+			redisplayPowerSpectrum();
+			return;
+		}
+		if (arg.equals("swap"))	 {
+			swapQuadrants(imp.getStack());
+			imp.updateAndDraw();
+			return;
+		}
+	   if (arg.equals("inverse")) {
+			if (imp.getTitle().startsWith("FHT of")) {
+				doFHTInverseTransform();
+				return;
+			}
+			if (imp.getStackSize()==2) {
+				doComplexInverseTransform();
+				return;
+			}
+		}
+		ImageProcessor ip = imp.getProcessor();
+		Object obj = imp.getProperty("FHT");
+		FHT fht = (obj instanceof FHT)?(FHT)obj:null;
+		stackSize = imp.getStackSize();
+		boolean inverse;
+		if (fht==null && arg.equals("inverse")) {
+			IJ.error("FFT", "Frequency domain image required");
+			return;
+		}
+		if (fht!=null) {
+			inverse = true;
+			imp.deleteRoi();
+		} else {
+			if (imp.getRoi()!=null)
+				ip = ip.crop();
+			fht = newFHT(ip);
+			inverse = false;
+		}
+		if (inverse)
+			doInverseTransform(fht);
+		else {
+			fileName = imp.getTitle();
+			doForwardTransform(fht);   
+		}	 
+		IJ.showProgress(1.0);
+		if (Recorder.record) {
+			if (inverse)
+   				Recorder.recordCall("imp = FFT.inverse(imp);");
+   			else
+   				Recorder.recordCall("imp = FFT.forward(imp); //see Help/Examples/JavaScript/FFT Filter");
+   		}
+	}
+
 	/**
 	 * Performs a forward FHT transform.
 	 * @param imp  A spatial  domain image, which is not modified
@@ -122,72 +196,6 @@ public class FFT implements	 PlugIn, Measurements {
 	public static void filter(ImagePlus imp, ImagePlus filter) {
 		filter(imp, filter.getProcessor());
 	}
-
-	public void run(String arg) {
-		if (arg.equals("options")) {
-			showDialog();
-			if (doFFT)
-				arg="fft";
-			else
-				return;
-		}
-		if (imp==null)
-			imp = IJ.getImage();
-		if (arg.equals("fft") && imp.isComposite()) {
-			if (!GUI.showCompositeAdvisory(imp,"FFT"))
-				return;
-		}
-		if (arg.equals("redisplay")) {
-			redisplayPowerSpectrum();
-			return;
-		}
-		if (arg.equals("swap"))	 {
-			swapQuadrants(imp.getStack());
-			imp.updateAndDraw();
-			return;
-		}
-	   if (arg.equals("inverse")) {
-			if (imp.getTitle().startsWith("FHT of")) {
-				doFHTInverseTransform();
-				return;
-			}
-			if (imp.getStackSize()==2) {
-				doComplexInverseTransform();
-				return;
-			}
-		}
-		ImageProcessor ip = imp.getProcessor();
-		Object obj = imp.getProperty("FHT");
-		FHT fht = (obj instanceof FHT)?(FHT)obj:null;
-		stackSize = imp.getStackSize();
-		boolean inverse;
-		if (fht==null && arg.equals("inverse")) {
-			IJ.error("FFT", "Frequency domain image required");
-			return;
-		}
-		if (fht!=null) {
-			inverse = true;
-			imp.deleteRoi();
-		} else {
-			if (imp.getRoi()!=null)
-				ip = ip.crop();
-			fht = newFHT(ip);
-			inverse = false;
-		}
-		if (inverse)
-			doInverseTransform(fht);
-		else {
-			fileName = imp.getTitle();
-			doForwardTransform(fht);   
-		}	 
-		IJ.showProgress(1.0);
-		if (Recorder.record) {
-			if (inverse)
-   				Recorder.recordCall("imp = FFT.inverse(imp);");
-   			else
-   				Recorder.recordCall("imp = FFT.forward(imp); //see Help/Examples/JavaScript/FFT Filter");
-   		}
-	}
 	
 	void doInverseTransform(FHT fht) {
 		fht = fht.getCopy();
@@ -236,17 +244,39 @@ public class FFT implements	 PlugIn, Measurements {
 
 	void doForwardTransform(FHT fht) {
 		showStatus("Forward transform");
+		long t0 = System.currentTimeMillis();
 		fht.transform();
 		showStatus("Calculating power spectrum");
-		long t0 = System.currentTimeMillis();
 		ImageProcessor ps = fht.getPowerSpectrum();
-		if (!(displayFHT||displayComplex||displayRawPS))
-			displayFFT = true;
-		if (displayFFT) {
+		if (iDisplayRawPS || (displayRawPS&&!IJ.isMacro())) {
+			ImageProcessor rawps = fht.getRawPowerSpectrum();
+			if (rawps!=null) {
+				fht.swapQuadrants(rawps);
+				new ImagePlus("PS of "+fileName, rawps).show();
+			}
+		}
+		if (iDisplayFHT || (displayFHT&&!IJ.isMacro())) {
+			ImagePlus imp2 = new ImagePlus("FHT of "+FFT.fileName, fht.duplicate());
+			(new ContrastEnhancer()).stretchHistogram(imp2, 0.1);
+			imp2.setProp("FFT width", ""+originalWidth);
+			imp2.setProp("FFT height", ""+originalHeight);
+			imp2.show();
+		}
+		if (iDisplayComplex || (displayComplex&&!IJ.isMacro())) {
+			ImageStack ct = fht.getComplexTransform();
+			ImagePlus imp2 = new ImagePlus("Complex of "+FFT.fileName, ct);
+			(new ContrastEnhancer()).stretchHistogram(imp2, 0.1);
+			imp2.setProp("FFT width", ""+originalWidth);
+			imp2.setProp("FFT height", ""+originalHeight);
+			imp2.show();
+		}
+		if (!(iDisplayFHT || iDisplayComplex || iDisplayRawPS))
+			iDisplayFFT = true;
+		if (iDisplayFFT) {
 			String title = "FFT of "+imp.getTitle();
 			ImagePlus imp2 = new ImagePlus(title, ps);
 			if (showOutput) {
-				ImagePlus fftImage = reuseWindow?WindowManager.getImage(title):null;
+				ImagePlus fftImage = iReuseWindow?WindowManager.getImage(title):null;
 				if (fftImage!=null)
 					fftImage.setImage(imp2);
 				else
@@ -343,10 +373,8 @@ public class FFT implements	 PlugIn, Measurements {
 			changeValuesAndSymmetrize(mask, (byte)255, (byte)0); //0-254 become 0
 		else
 			changeValuesAndSymmetrize(mask, (byte)0, (byte)255); //1-255 become 255
-		//long t0=System.currentTimeMillis();
 		for (int i=0; i<3; i++)
 			smooth(mask);
-		//IJ.log("smoothing time:"+(System.currentTimeMillis()-t0));
 		if (IJ.debugMode || IJ.altKeyDown())
 			new ImagePlus("mask", mask.duplicate()).show();
 		ip.swapQuadrants(mask);
@@ -354,8 +382,6 @@ public class FFT implements	 PlugIn, Measurements {
 		for (int i=0; i<fht.length; i++) {
 			fht[i] = (float)(fht[i]*(maskPixels[i]&255)/255.0);
 		}
-		//FloatProcessor fht2 = new FloatProcessor(mask.getWidth(),mask.getHeight(),fht,null);
-		//new ImagePlus("fht", fht2.duplicate()).show();
 	}
 
 	// Change pixels not equal to v1 to the new value v2.
@@ -424,30 +450,46 @@ public class FFT implements	 PlugIn, Measurements {
 	}
 
 	void showDialog() {
+		if (!IJ.isMacro()) {
+			iDisplayRawPS = displayRawPS;
+			iDisplayFHT = displayFHT;
+			iDisplayComplex = displayComplex;
+			iDisplayFFT = displayFFT;
+			iDoFFT = doFFT;
+			iReuseWindow = reuseWindow;
+		}
 		GenericDialog gd = new GenericDialog("FFT Options");
 		gd.setInsets(0, 20, 0);
 		gd.addMessage("Display:");
 		gd.setInsets(5, 35, 0);
-		gd.addCheckbox("FFT window", displayFFT);
+		gd.addCheckbox("FFT (\"FFT of...\") window", iDisplayFFT);
 		gd.setInsets(0, 35, 0);
-		gd.addCheckbox("Raw power spectrum", displayRawPS);
+		gd.addCheckbox("Raw power spectrum", iDisplayRawPS);
 		gd.setInsets(0, 35, 0);
-		gd.addCheckbox("Fast Hartley Transform", displayFHT);
+		gd.addCheckbox("Fast Hartley Transform", iDisplayFHT);
 		gd.setInsets(0, 35, 0);
-		gd.addCheckbox("Complex Fourier Transform", displayComplex);
+		gd.addCheckbox("Complex Fourier Transform", iDisplayComplex);
 		gd.setInsets(8, 20, 0);
-		gd.addCheckbox("Do forward transform", false);
-		gd.addCheckbox("Reuse \"FFT of...\" window", reuseWindow);
+		gd.addCheckbox("Reuse \"FFT of...\" window", iReuseWindow);
+		gd.addCheckbox("Do forward transform", iDoFFT);
 		gd.addHelp(IJ.URL+"/docs/menus/process.html#fft-options");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
-		displayFFT = gd.getNextBoolean();
-		displayRawPS = gd.getNextBoolean();
-		displayFHT = gd.getNextBoolean();
-		displayComplex = gd.getNextBoolean();
-		doFFT = gd.getNextBoolean();
-		reuseWindow = gd.getNextBoolean();
+		iDisplayFFT = gd.getNextBoolean();
+		iDisplayRawPS = gd.getNextBoolean();
+		iDisplayFHT = gd.getNextBoolean();
+		iDisplayComplex = gd.getNextBoolean();
+		iReuseWindow = gd.getNextBoolean();
+		iDoFFT = gd.getNextBoolean();
+		if (!IJ.isMacro()) {
+			displayRawPS = iDisplayRawPS;
+			displayFHT = iDisplayFHT;
+			displayComplex = iDisplayComplex;
+			displayFFT = iDisplayFFT;
+			doFFT = iDoFFT;
+			reuseWindow = iReuseWindow;
+		}
 	}
 	
 	void doFHTInverseTransform() {
@@ -455,7 +497,10 @@ public class FFT implements	 PlugIn, Measurements {
 		fht.inverseTransform();
 		fht.resetMinAndMax();
 		String name = WindowManager.getUniqueName(imp.getTitle().substring(7));
-		new ImagePlus(name, fht).show();
+		IJ.showProgress(1.0);
+		ImagePlus img = new ImagePlus(name, fht);
+		img = unpad(img);
+		img.show();
 	}
 
 	void doComplexInverseTransform() {
@@ -473,24 +518,24 @@ public class FFT implements	 PlugIn, Measurements {
 		swapQuadrants(stack);
 		stack2.addSlice("Real", reout);
 		stack2.addSlice("Imaginary", imout);
-		stack2 = unpad(stack2);
 		String name = WindowManager.getUniqueName(imp.getTitle().substring(10));
 		ImagePlus imp2 = new ImagePlus(name, stack2);
+		imp2 = unpad(imp2);
 		imp2.getProcessor().resetMinAndMax();
 		imp2.show();
 	}
 	
-	ImageStack unpad(ImageStack stack) {
-		Object w = imp.getProperty("FFT width");
-		Object h = imp.getProperty("FFT height");
-		if (w==null || h==null) return stack;
-		int width = (int)Tools.parseDouble((String)w, 0.0);
-		int height = (int)Tools.parseDouble((String)h, 0.0);
-		if (width==0 || height==0 || (width==stack.getWidth()&&height==stack.getHeight()))
-			return stack;
-		StackProcessor sp = new StackProcessor(stack, null);
-		ImageStack stack2 = sp.crop(0, 0, width, height);
-		return stack2;
+	private ImagePlus unpad(ImagePlus img) {
+		String w = imp.getProp("FFT width");
+		String h = imp.getProp("FFT height");
+		if (w==null || h==null)
+			return img;
+		int width = (int)Tools.parseDouble(w, 0.0);
+		int height = (int)Tools.parseDouble(h, 0.0);
+		if (width==0 || height==0 || (width==img.getWidth()&&height==img.getHeight()))
+			return img;
+		img.setRoi(0, 0, width, height);
+		return img.crop("stack");
 	}
 	
 	/** Complex to Complex Inverse Fourier Transform

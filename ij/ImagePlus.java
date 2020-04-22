@@ -1329,6 +1329,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	 * Works with DICOM tags and Bio-Formats metadata.
 	 * @see #getNumericProperty
 	 * @see #getInfoProperty
+	 * @see #getProp
+	 * @see #setProp
 	*/
 	public String getStringProperty(String key) {
 		if (key==null)
@@ -1407,6 +1409,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return -1;
 	}
 
+	/** Adds a key-value pair to this image's string properties.
+	 * The key-value pair is removed if 'value' is null. The 
+	 * properties persist if the image is saved in TIFF format.
+	*/
 	public void setProp(String key, String value) {
 		if (key==null)
 			return;
@@ -1418,6 +1424,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			imageProperties.setProperty(key, value);
 	}
 	
+	/** Returns the string property associated with the specified key. */
 	public String getProp(String key) {
 		if (imageProperties==null)
 			return null;
@@ -1425,29 +1432,46 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return imageProperties.getProperty(key);
 	}
 
-	public String[] getImagePropertiesAsArray() {
+	/** Used for saving string properties in TIFF header. */
+	public String[] getPropertiesAsArray() {
 		if (imageProperties==null || imageProperties.size()==0)
 			return null;
-		String props[] = new String[imageProperties.size()];
+		String props[] = new String[imageProperties.size()*2];
 		int index = 0;
 		for (Enumeration en=imageProperties.keys(); en.hasMoreElements();) {
 			String key = (String)en.nextElement();
-			props[index++] = key+"="+imageProperties.getProperty(key);
+			String value = imageProperties.getProperty(key);
+			props[index++] = key;
+			props[index++] = value;
 		}
 		return props;
 	}
 	
-	public void setImageProperties(String[] props) {
-		for (int i=0; i<props.length; i++) {
-			int index = props[i].indexOf("=");
-			if (index==-1) continue;
-			String key = props[i].substring(0,index);
-			String value = props[i].substring(index+1);
-			setProp(key,value);
+	/** Used for restoring string properties from TIFF header. */
+	public void setProperties(String[] props) {
+		this.imageProperties = null;
+		int equalsIndex = props[0].indexOf("=");
+		if (equalsIndex>0 && equalsIndex<50) { // v1.53a3 format
+			for (int i=0; i<props.length; i++) {
+				int index = props[i].indexOf("=");
+				if (index==-1) continue;
+				String key = props[i].substring(0,index);
+				String value = props[i].substring(index+1);
+				setProp(key,value);
+			}
+		} else {
+			for (int i=0; i<props.length; i+=2) {
+				String key = props[i];
+				String value = props[i+1];
+				setProp(key,value);
+			}
 		}
 	}
 
-	/** Returns the "Info" property string, or null if it is not found. */
+	/** Returns the "Info" property string, or null if it is not found.
+	 * @see #getProp
+	 * @see #setProp
+	*/
 	public String getInfoProperty() {
 		String info = null;
 		Object obj = getProperty("Info");
@@ -1460,6 +1484,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	/** Returns the property associated with 'key', or null if it is not found.
+	 * @see #getProp
+	 * @see #setProp
 	 * @see #getStringProperty
 	 * @see #getNumericProperty
 	 * @see #getInfoProperty
@@ -1472,7 +1498,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	/** Adds a key-value pair to this image's properties. The key
-		is removed from the properties table if value is null. */
+	 * is removed from the properties table if value is null.
+	 * @see #getProp
+	 * @see #setProp
+	*/
 	public void setProperty(String key, Object value) {
 		if (properties==null)
 			properties = new Properties();

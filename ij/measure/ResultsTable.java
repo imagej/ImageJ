@@ -11,6 +11,7 @@ import java.awt.*;
 import java.text.*;
 import java.util.*;
 import java.io.*;
+import java.math.RoundingMode;
 
 
 /** This is a table for storing measurement results and strings as columns of values. 
@@ -838,6 +839,7 @@ public class ResultsTable implements Cloneable {
 			df[7] = new DecimalFormat("0.0000000", dfs);
 			df[8] = new DecimalFormat("0.00000000", dfs);
 			df[9] = new DecimalFormat("0.000000000", dfs);
+			df[0].setRoundingMode(RoundingMode.HALF_UP);
 		}
 		return df[decimalPlaces].format(n);
 	}

@@ -79,7 +79,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private boolean firstPaint = true;
 	private boolean fontSizeSet;
 	private boolean showDialogCalled;
-	private boolean listenersCalled;     // have dialogListeners been called (needed to record options)?
+	private boolean optionsRecorded;     // have dialogListeners been called to record options?
 	private Label lastLabelAdded;
 
 
@@ -1302,9 +1302,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	/** For plugins that read their input only via dialogItemChanged, call it at least once, then stop recording */
 	void finalizeRecording() {
-		if (listenersCalled)
+		if (optionsRecorded)
 			return;
-		listenersCalled = true;
+		optionsRecorded = true;
 		if (!wasCanceled && dialogListeners!=null && dialogListeners.size()>0) {
 			resetCounters();
 			((DialogListener)dialogListeners.elementAt(0)).dialogItemChanged(this,null);
@@ -1588,8 +1588,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
             }
         }
         boolean workaroundOSXbug = IJ.isMacOSX() && okay!=null && !okay.isEnabled() && everythingOk;
-        if (everythingOk)
-			listenersCalled = true;
+        if (everythingOk && recorderOn)
+			optionsRecorded = true;
         if (previewCheckbox!=null)
             previewCheckbox.setEnabled(everythingOk);
         if (okay!=null)
@@ -1668,7 +1668,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		finalizeRecording();
 		resetCounters();
 	}
-	
+
 	 /** Returns a reference to the label of the most recently
     	added numeric field, string field, choice or slider. */
     public Label getLabel() {
@@ -1681,5 +1681,5 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     public void windowIconified(WindowEvent e) {}
     public void windowDeiconified(WindowEvent e) {}
     public void windowDeactivated(WindowEvent e) {}
-    
+
 }

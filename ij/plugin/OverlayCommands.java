@@ -10,6 +10,7 @@ import ij.plugin.filter.PlugInFilter;
 import ij.measure.ResultsTable;
 import java.awt.*;
 import java.util.ArrayList;
+import java.awt.geom.Rectangle2D;
 
 /** This plugin implements the commands in the Image/Overlay menu. */
 public class OverlayCommands implements PlugIn {
@@ -371,8 +372,14 @@ public class OverlayCommands implements PlugIn {
 			rt.setValue("Name", i, rois[i].getName());
 			rt.setValue("Type", i, rois[i].getTypeAsString());
 			rt.setValue("Group", i, group);
-			rt.setValue("X", i, r.x);
-			rt.setValue("Y", i, r.y);
+			if (rois[i] instanceof PointRoi) {
+				Rectangle2D.Double bounds = rois[i].getFloatBounds();
+				rt.setValue("X", i, (int)Math.round(bounds.x));
+				rt.setValue("Y", i, (int)Math.round(bounds.y));
+			} else {
+				rt.setValue("X", i, r.x);
+				rt.setValue("Y", i, r.y);
+			}
 			rt.setValue("Width", i, r.width);		
 			rt.setValue("Height", i, r.height);		
 			rt.setValue("Points", i, rois[i].size());

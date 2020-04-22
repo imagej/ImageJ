@@ -25,6 +25,7 @@ import javax.net.ssl.*;
 import java.security.cert.*;
 import java.security.KeyStore;
 import java.nio.ByteBuffer;
+import java.math.RoundingMode;
 
 
 /** This class consists of static utility methods. */
@@ -109,6 +110,7 @@ public class IJ {
 		df[7] = new DecimalFormat("0.0000000", dfs);
 		df[8] = new DecimalFormat("0.00000000", dfs);
 		df[9] = new DecimalFormat("0.000000000", dfs);
+		df[0].setRoundingMode(RoundingMode.HALF_UP);
 	}
 			
 	static void init(ImageJ imagej, Applet theApplet) {

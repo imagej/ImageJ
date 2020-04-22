@@ -300,6 +300,7 @@ public class Menus {
 		addExample(submenu, "Shapes", "Plot_Shapes_.ijm");
 		addExample(submenu, "Plot Styles", "Plot_Styles_.ijm");
 		addExample(submenu, "Random Data", "Random_Data_.ijm");
+		addExample(submenu, "Plot Results", "Plot_Results_.ijm");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		

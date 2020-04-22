@@ -1,7 +1,7 @@
 package ij.io;
 import java.io.*;
 
-/**Saves an image described by a FileInfo object as an uncompressed, big-endian TIFF file.*/
+/**Saves an image described by a FileInfo object as an uncompressed TIFF file.*/
 public class TiffEncoder {
 	static final int HDR_SIZE = 8;
 	static final int MAP_SIZE = 768; // in 16-bit words
@@ -216,11 +216,11 @@ public class TiffEncoder {
 			nMetaDataEntries += fi.overlay.length;
 		}
 
-		if (fi.imageProperties!=null) {
-			for (int i=0; i<fi.imageProperties.length; i++)
-				size += fi.imageProperties[i].length()*2;
+		if (fi.properties!=null) {
+			for (int i=0; i<fi.properties.length; i++)
+				size += fi.properties[i].length()*2;
 			nTypes++;
-			nMetaDataEntries += fi.imageProperties.length;
+			nMetaDataEntries += fi.properties.length;
 		}
 
 		if (fi.metaDataTypes!=null && fi.metaData!=null && fi.metaData[0]!=null
@@ -393,9 +393,9 @@ public class TiffEncoder {
 			for (int i=0; i<fi.overlay.length; i++)
 				writeInt(out, fi.overlay[i].length);
 		}
-		if (fi.imageProperties!=null) {
-			for (int i=0; i<fi.imageProperties.length; i++)
-				writeInt(out, fi.imageProperties[i].length()*2);
+		if (fi.properties!=null) {
+			for (int i=0; i<fi.properties.length; i++)
+				writeInt(out, fi.properties[i].length()*2);
 		}
 		for (int i=0; i<extraMetaDataEntries; i++)
 			writeInt(out, fi.metaData[i].length);	
@@ -430,9 +430,9 @@ public class TiffEncoder {
 			writeInt(out, TiffDecoder.OVERLAY); // type="over"
 			writeInt(out, fi.overlay.length); // count
 		}
-		if (fi.imageProperties!=null) {
+		if (fi.properties!=null) {
 			writeInt(out, TiffDecoder.PROPERTIES); // type="prop"
-			writeInt(out, fi.imageProperties.length); // count
+			writeInt(out, fi.properties.length); // count
 		}
 		for (int i=0; i<extraMetaDataEntries; i++) {
 			writeInt(out, fi.metaDataTypes[i]);
@@ -462,9 +462,9 @@ public class TiffEncoder {
 			for (int i=0; i<fi.overlay.length; i++)
 				out.write(fi.overlay[i]);
 		}
-		if (fi.imageProperties!=null) {
-			for (int i=0; i<fi.imageProperties.length; i++)
-				writeChars(out, fi.imageProperties[i]);
+		if (fi.properties!=null) {
+			for (int i=0; i<fi.properties.length; i++)
+				writeChars(out, fi.properties[i]);
 		}
 		for (int i=0; i<extraMetaDataEntries; i++)
 			out.write(fi.metaData[i]); 					

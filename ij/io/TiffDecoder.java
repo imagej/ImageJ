@@ -615,7 +615,7 @@ public class TiffDecoder {
 		int[] counts = new int[nTypes];		
 		if (debugMode) {
 			dInfo += "Metadata:\n";
-			dInfo += "   Header size: "+hdrSize+"\n";
+			dInfo += "   Entries: "+(metaDataCounts.length-1)+"\n";
 			dInfo += "   Types: "+nTypes+"\n";
 		}
 		int extraMetaDataEntries = 0;
@@ -626,7 +626,7 @@ public class TiffDecoder {
 			if (types[i]<0xffffff)
 				extraMetaDataEntries += counts[i];
 			if (debugMode) {
-				String id = "";
+				String id = "unknown";
 				if (types[i]==INFO) id = "Info property";
 				if (types[i]==LABELS) id = "slice labels";
 				if (types[i]==RANGES) id = "display ranges";
@@ -640,7 +640,7 @@ public class TiffDecoder {
 				index += count;
 				if (index>=metaDataCounts.length) index=1;
 				String lenstr = count==1?", length=":", length[0]=";
-				dInfo += "   "+i+", "+id+", count="+count+lenstr+len+"\n";
+				dInfo += "   "+i+", type="+id+", count="+count+lenstr+len+"\n";
 			}
 		}
 		fi.metaDataTypes = new int[extraMetaDataEntries];
@@ -663,7 +663,7 @@ public class TiffDecoder {
 			else if (types[i]==OVERLAY)
 				getOverlay(start, start+counts[i]-1, fi);
 			else if (types[i]==PROPERTIES)
-				getImageProperties(start, start+counts[i]-1, fi);
+				getProperties(start, start+counts[i]-1, fi);
 			else if (types[i]<0xffffff) {
 				for (int j=start; j<start+counts[i]; j++) { 
 					int len = metaDataCounts[j]; 
@@ -762,8 +762,8 @@ public class TiffDecoder {
 		}
 	}
 
-	void getImageProperties(int first, int last, FileInfo fi) throws IOException {
-		fi.imageProperties = new String[last-first+1];
+	void getProperties(int first, int last, FileInfo fi) throws IOException {
+		fi.properties = new String[last-first+1];
 	    int index = 0;
 	    byte[] buffer = new byte[metaDataCounts[first]];
 		for (int i=first; i<=last; i++) {
@@ -780,8 +780,7 @@ public class TiffDecoder {
 				for (int j=0, k=0; j<len; j++)
 					chars[j] = (char)(((buffer[k++]&255)<<8) + buffer[k++]&255);
 			}
-			fi.imageProperties[index++] = new String(chars);
-			//ij.IJ.log(i+"  "+fi.imageProperties[i-1]+"  "+len);
+			fi.properties[index++] = new String(chars);
 		}
 	}
 

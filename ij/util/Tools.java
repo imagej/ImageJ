@@ -10,7 +10,7 @@ import java.nio.channels.FileChannel;
  public class Tools {
 	/** This array contains the 16 hex digits '0'-'F'. */
 	public static final char[] hexDigits = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-	
+
 	/** Converts a Color to an 7 byte hex string starting with '#'. */
 	public static String c2hex(Color c) {
 		int i = c.getRGB();
@@ -22,7 +22,7 @@ import java.nio.channels.FileChannel;
 		}
 		return new String(buf7);
 	}
-		
+
 	/** Converts a float to an 9 byte hex string starting with '#'. */
 	public static String f2hex(float f) {
 		int i = Float.floatToIntBits(f);
@@ -34,8 +34,8 @@ import java.nio.channels.FileChannel;
 		}
 		return new String(buf9);
 	}
-		
-	/** Converts an int to a zero-padded hex string of fixed length 'digits'. 
+
+	/** Converts an int to a zero-padded hex string of fixed length 'digits'.
 	 *  If the number is too high, it gets truncated, keeping only the lowest 'digits' characters. */
 	public static String int2hex(int i, int digits) {
 		char[] buf = new char[digits];
@@ -84,7 +84,7 @@ import java.nio.channels.FileChannel;
 		minAndMax[1] = max;
 		return minAndMax;
 	}
-	
+
 	/** Converts the float array 'a' to a double array. */
 	public static double[] toDouble(float[] a) {
 		int len = a.length;
@@ -93,7 +93,7 @@ import java.nio.channels.FileChannel;
 			d[i] = a[i];
 		return d;
 	}
-	
+
 	/** Converts the double array 'a' to a float array. */
 	public static float[] toFloat(double[] a) {
 		if (a==null)
@@ -122,7 +122,7 @@ import java.nio.channels.FileChannel;
 	}
 
 	/**
-	* Returns a double containg the value represented by the 
+	* Returns a double containg the value represented by the
 	* specified <code>String</code>.
 	*
 	* @param      s   the string to be parsed.
@@ -136,11 +136,11 @@ import java.nio.channels.FileChannel;
 		try {
 			defaultValue = Double.parseDouble(s);
 		} catch (NumberFormatException e) {}
-		return defaultValue;			
+		return defaultValue;
 	}
 
 	/**
-	* Returns a double containg the value represented by the 
+	* Returns a double containg the value represented by the
 	* specified <code>String</code>.
 	*
 	* @param      s   the string to be parsed.
@@ -150,8 +150,8 @@ import java.nio.channels.FileChannel;
 	public static double parseDouble(String s) {
 		return parseDouble(s, Double.NaN);
 	}
-	
-	/** Returns the number of decimal places needed to display a 
+
+	/** Returns the number of decimal places needed to display a
 		number, or -2 if exponential notation should be used. */
 	public static int getDecimalPlaces(double n) {
 		if ((int)n==n || Double.isNaN(n))
@@ -167,7 +167,7 @@ import java.nio.channels.FileChannel;
 		if (digits>4) digits=4;
 		return digits;
 	}
-	
+
 	/** Returns the number of decimal places needed to display two numbers,
 		or -2 if exponential notation should be used. */
 	public static int getDecimalPlaces(double n1, double n2) {
@@ -185,8 +185,8 @@ import java.nio.channels.FileChannel;
 			digits = digits2;
 		return digits;
 	}
-	
-	/** Splits a string into substrings using the default delimiter set, 
+
+	/** Splits a string into substrings using the default delimiter set,
 	which is " \t\n\r" (space, tab, newline and carriage-return). */
 	public static String[] split(String str) {
 		return split(str, " \t\n\r");
@@ -202,13 +202,13 @@ import java.nio.channels.FileChannel;
 		String[] strings;
 		if (tokens>0) {
 			strings = new String[tokens];
-			for(int i=0; i<tokens; i++) 
+			for(int i=0; i<tokens; i++)
 				strings[i] = t.nextToken();
 		} else
 			strings = new String[0];
 		return strings;
 	}
-	
+
 	static String[] splitLines(String str) {
 		Vector v = new Vector();
 		try {
@@ -225,7 +225,7 @@ import java.nio.channels.FileChannel;
 		v.copyInto((String[])lines);
 		return lines;
 	}
-	
+
 	/** Returns a sorted list of indices of the specified double array.
 		Modified from: http://stackoverflow.com/questions/951848 by N.Vischer.
 	*/
@@ -264,7 +264,7 @@ import java.nio.channels.FileChannel;
 			indexes2[i] = indexes[i].intValue();
 		return indexes2;
 	}
-	
+
 	/** Returns an array linearly resampled to a different length. */
 	public static double[] resampleArray(double[] y1, int len2) {
 		int len1 = y1.length;
@@ -307,13 +307,13 @@ import java.nio.channels.FileChannel;
 	*/
 	public static String copyFile(String path1, String path2) {
 		File f1 = new File(path1);
-		File f2 = new File(path2);	
+		File f2 = new File(path2);
 		try {
 			if (!f1.exists() )
 				return "Source file does not exist";
 			if (!f2.exists() )
 				f2.createNewFile();
-			long time = f1.lastModified();	
+			long time = f1.lastModified();
 			FileInputStream stream1 = new FileInputStream(f1);
 			FileChannel channel1 = stream1.getChannel();
 			FileOutputStream stream2 = new FileOutputStream(f2);
@@ -323,14 +323,14 @@ import java.nio.channels.FileChannel;
 			channel1.close();
 			stream1.close();
 			channel2.close();
-			stream2.close();	
+			stream2.close();
 			f2.setLastModified(time);
 		} catch(Exception e) {
 			return e.getMessage();
 		}
 		return "";
 	}
-	
+
 	/** Retrieves a number form a list of key-number pairs like "value1=1234.5 area=1.2e6".
 	 *  The "=" (if present) must be part of the 'key' string. Delimiters may be commas, semicolons or whitespace.
 	 *  There must be no whitespace between key and number.
@@ -345,8 +345,66 @@ import java.nio.channels.FileChannel;
 		return parseDouble(list.substring(start, n));
 	}
 
+	/** Retrieves a String form a list of key-number pairs like "value1="abc" str='the Text'".
+	 *  The "=" (if present) must be part of the 'key' string.
+	 *  Strings containing commas, semicolons or whitespace must be enclosed in single or double quotes.
+	 *  There must be no whitespace between key and quotes or key and unquoted String.
+	 *  Strings must not contain a key. In case of doubt, e.g., replace the '=' with '\='
+	 *  Escape sequences with backslashes are recognized, also backslash-u???? for unicode.
+	 *  Returns null if 'list' is null or if the key is not found */
+	public static String getStringFromList(String list, String key) {
+		if (list == null) return null;
+		int i = list.indexOf(key);
+		if (i < 0) return null;
+		int start = i + key.length();
+		if (list.length() == start) return "";
+		char quote = list.charAt(start);
+		boolean hasQuotes = quote == '\'' || quote == '\"';
+		if (hasQuotes) start++;
+		String str = decodeEscaped(list.substring(start), hasQuotes ? quote : (char)-2);
+		return str;
+	}
+
+	/** Decodes backslash-escaped characters from the String until the character 'delim' is found.
+	 *  With 'delim'=-1, does not search for a delimiter, with 'delim'=(char)-2, (unescaped)
+	 *  whitespace, commas and semicolons are interpreted as delimiters.
+	 *  Also decodes unicode backslash-u???? characters */
+	public static String decodeEscaped(String str, char delim) {
+		StringBuilder sb = new StringBuilder();
+		for (int i=0; i<str.length(); i++) {
+			char c = str.charAt(i);
+			if ((delim == (char)-2 && isDelimiter(c)) || c == delim) break;
+			if (c == '\\' && i+1 < str.length()) {    //escaped by backslash
+				i++;
+				c = str.charAt(i);
+				if (c == 'u' && i+4 < str.length())
+					try {
+						c = (char)Integer.parseInt(str.substring(i+1, i+5), 16);
+						i += 4;
+					} catch (NumberFormatException e) {}
+				else
+					c = withBackslash(c);           // decodes backslash-t for tab etc.
+			}
+			sb.append(c);
+		}
+		return sb.toString();
+	}
+
 	private static boolean isDelimiter(char c) {
 		return Character.isWhitespace(c) || c==',' || c==';';
+	}
+
+	/** Returns the escaped character if there was a preceding backslash.
+	 *  Returns 'c' if there is no known escape sequence backslash-c */
+	private static char withBackslash(char c) {
+		switch (c) {
+			case 'b': return '\b';
+			case 't': return '\t';
+			case 'f': return '\f';
+			case 'r': return '\r';
+			case 'n': return '\n';
+			default: return c;
+		}
 	}
 
 }

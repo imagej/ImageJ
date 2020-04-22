@@ -118,7 +118,7 @@ public class PlotDialog implements DialogListener {
 		double[] currentMinMax = plot.getLimits();
 		boolean livePlot = plot.plotMaker != null;
 
-		int xDigits = plot.logXAxis ? -2 : Plot.getDigits(currentMinMax[0], currentMinMax[1], 0.005*Math.abs(currentMinMax[1]-currentMinMax[0]), 6);
+		int xDigits = plot.logXAxis ? -2 : Plot.getDigits(currentMinMax[0], currentMinMax[1], 0.005*Math.abs(currentMinMax[1]-currentMinMax[0]), 6, 0);
 		if (dialogType == SET_RANGE || dialogType == X_AXIS) {
 			gd.addNumericField("X_From", currentMinMax[0], xDigits, 6, "*");
 			gd.addToSameRow();
@@ -130,7 +130,7 @@ public class PlotDialog implements DialogListener {
 			xLogCheckbox = lastCheckboxAdded(gd);
 			enableDisableLogCheckbox(xLogCheckbox, currentMinMax[0], currentMinMax[1]);
 		}
-		int yDigits = plot.logYAxis ? -2 : Plot.getDigits(currentMinMax[2], currentMinMax[3], 0.005*Math.abs(currentMinMax[3]-currentMinMax[2]), 6);
+		int yDigits = plot.logYAxis ? -2 : Plot.getDigits(currentMinMax[2], currentMinMax[3], 0.005*Math.abs(currentMinMax[3]-currentMinMax[2]), 6, 0);
 		if (dialogType == SET_RANGE || dialogType == Y_AXIS) {
 			gd.setInsets(20, 0, 3); //top, left, bottom
 			gd.addNumericField("Y_From", currentMinMax[2], yDigits, 6, "*");
@@ -391,7 +391,7 @@ public class PlotDialog implements DialogListener {
 			plot.setAxisLabelFont(axisLabelBold ? Font.BOLD : Font.PLAIN, labelFontSize);
 			Font smallFont = new Font("SansSerif", Font.PLAIN, (int)(10*Prefs.getGuiScale()));
 			gd.addMessage("Labels support !!sub-!! and ^^superscript^^", smallFont, Color.gray);
-		}	
+		}
 		if (dialogType == LEGEND) {
 			Font legendFont = plot.getFont('l');
 			if (legendFont == null) legendFont = (plot.currentFont != null) ? plot.currentFont : plot.defaultFont;
@@ -440,8 +440,8 @@ public class PlotDialog implements DialogListener {
 			Recorder.recordString(plotDot+(Recorder.scriptMode() ? "setAxisYLog(" : "setLogScaleY(")+plot.hasFlag(Plot.Y_LOG_NUMBERS)+");\n");
 		if (dialogType == SET_RANGE || dialogType == X_AXIS || dialogType == Y_AXIS) {
 			double[] currentMinMax = plot.getLimits();
-			int xDigits = plot.logXAxis ? -2 : Plot.getDigits(currentMinMax[0], currentMinMax[1], 0.005*Math.abs(currentMinMax[1]-currentMinMax[0]), 6);
-			int yDigits = plot.logYAxis ? -2 : Plot.getDigits(currentMinMax[2], currentMinMax[3], 0.005*Math.abs(currentMinMax[3]-currentMinMax[2]), 6);
+			int xDigits = plot.logXAxis ? -2 : Plot.getDigits(currentMinMax[0], currentMinMax[1], 0.005*Math.abs(currentMinMax[1]-currentMinMax[0]), 6, 0);
+			int yDigits = plot.logYAxis ? -2 : Plot.getDigits(currentMinMax[2], currentMinMax[3], 0.005*Math.abs(currentMinMax[3]-currentMinMax[2]), 6, 0);
 			Recorder.recordString(plotDot+"setLimits("+IJ.d2s(currentMinMax[0],xDigits)+","+IJ.d2s(currentMinMax[1],xDigits)+
 						","+IJ.d2s(currentMinMax[2],yDigits)+","+IJ.d2s(currentMinMax[3],yDigits)+");\n");
 		}
@@ -468,7 +468,7 @@ public class PlotDialog implements DialogListener {
 			if (Recorder.scriptMode()) {
 				Recorder.recordCall("plot.setColor(Color.black);");
 				Recorder.recordCall("plot.setLineWidth(1);");
-				Recorder.recordCall("plot.addLegend(\""+labels+"\", 0x"+Integer.toHexString(lFlags)+"\");");
+				Recorder.recordCall("plot.addLegend(\""+labels+"\", 0x"+Integer.toHexString(lFlags)+");");
 			} else {
 				String options = LEGEND_POSITIONS[legendPosNumber];
 				if (getFlag(lFlags, Plot.LEGEND_BOTTOM_UP))   options+=" Bottom-To-Top";
@@ -535,4 +535,3 @@ public class PlotDialog implements DialogListener {
 	}
 
 }
-
