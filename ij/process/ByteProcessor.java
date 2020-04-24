@@ -335,6 +335,11 @@ public class ByteProcessor extends ImageProcessor {
 		fillValueSet = true;
 	}
 
+	/** Returns the foreground fill/draw value. */
+	public double getForegroundValue() {
+		return fgColor;
+	}
+
 	/** Sets the background fill value, where 0<=value<=255. */
 	public void setBackgroundValue(double value) {
 		bgColor = (int)value;

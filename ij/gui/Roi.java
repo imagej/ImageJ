@@ -677,8 +677,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	}
 	
 	/** Returns the coordinates of the pixels inside this ROI as an array of Points.
-	 * @see #getContainedFloatPoints()
-	 * @see #iterator()
+	 * @see #getContainedFloatPoints
+	 * @see #iterator
 	 */
 	public Point[] getContainedPoints() {
 		Roi roi = this;
@@ -697,8 +697,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	}
 	
 	/** Returns the coordinates of the pixels inside this ROI as a FloatPolygon.
-	 * @see #getContainedPoints()
-	 * @see #iterator()
+	 * @see #getContainedPoints
+	 * @see #iterator
 	 */
 	public FloatPolygon getContainedFloatPoints() {
 		Roi roi2 = this;
@@ -1715,7 +1715,13 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		return defaultGroup;
 	}
 
-	/** Sets the group value assigned to newly created ROIs, and updates default group color. */
+	/** Sets the group value assigned to newly created ROIs, and also
+	 * sets the default ROI color to the group color. Set to zero to not
+	 * have a default group and to use the default ROI color.
+	 * @see #setGroup
+	 * @see #getGroup
+	 * @see #getGroupColor
+	*/
 	public static void setDefaultGroup(int group) {
 		if (group<0 || group>255)
 			throw new IllegalArgumentException("Invalid group: "+group);

@@ -130,6 +130,11 @@ public class ColorProcessor extends ImageProcessor {
 		fillValueSet = true;
 	}
 
+	/** Returns the foreground fill/draw value. */
+	public double getForegroundValue() {
+		return fgColor;
+	}
+
 	/** Sets the background fill value, where <code>value</code> is interpreted as an RGB int. */
 	public void setBackgroundValue(double value) {
 		bgColor = (int)value;

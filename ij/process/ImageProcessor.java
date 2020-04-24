@@ -417,6 +417,9 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Sets the default fill/draw value. */
 	public abstract void setValue(double value);
 	
+	/** Returns the default fill/draw value. */
+	public abstract double getForegroundValue();
+
 	/** Returns 'true' if the fill/draw value has been set. */
 	public boolean fillValueSet() {
 		return fillValueSet;

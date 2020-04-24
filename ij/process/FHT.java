@@ -19,7 +19,7 @@ public class FHT extends FloatProcessor {
 	private float[] S;
 	private int[] bitrev;
 	private float[] tempArr;
-	private boolean showProgress = true;
+	private boolean showProgress;
 
 	
 	/** Used by the FFT class. */
@@ -191,6 +191,7 @@ public class FHT extends FloatProcessor {
 	void transform(boolean inverse) {
 		if (!powerOf2Size())
 			throw new  IllegalArgumentException("Image not power of 2 size or not square: "+width+"x"+height);
+		setShowProgress(true);
 		maxN = width;
 		if (S==null)
 			initializeTables(maxN);
@@ -442,6 +443,7 @@ public class FHT extends FloatProcessor {
 		return ip;
 	}
 	
+	/** Returns the unscaled 32-bit power spectrum. */
 	public FloatProcessor getRawPowerSpectrum() {
 		if (!isFrequencyDomain)
 			throw new  IllegalArgumentException("Frequency domain image required");
@@ -475,8 +477,8 @@ public class FHT extends FloatProcessor {
 			FHTreal(i, maxN, fht, re);
 			FHTimag(i, maxN, fht, im);
 		}
-		swapQuadrants(new FloatProcessor(maxN, maxN, re, null));
-		swapQuadrants(new FloatProcessor(maxN, maxN, im, null));
+		swapQuadrants(new FloatProcessor(maxN, maxN, re));
+		swapQuadrants(new FloatProcessor(maxN, maxN, im));
 		ImageStack stack = new ImageStack(maxN, maxN);
 		stack.addSlice("Real", re);
 		stack.addSlice("Imaginary", im);
@@ -538,21 +540,7 @@ public class FHT extends FloatProcessor {
 		</pre>
 	*/
  	public void swapQuadrants(ImageProcessor ip) {
- 		ImageProcessor t1, t2;
-		int size = ip.getWidth()/2;
-		ip.setRoi(size,0,size,size);
-		t1 = ip.crop();
-  		ip.setRoi(0,size,size,size);
-		t2 = ip.crop();
-		ip.insert(t1,0,size);
-		ip.insert(t2,size,0);
-		ip.setRoi(0,0,size,size);
-		t1 = ip.crop();
-  		ip.setRoi(size,size,size,size);
-		t2 = ip.crop();
-		ip.insert(t1,size,size);
-		ip.insert(t2,0,0);
-		ip.resetRoi();
+ 		FFT.swapQuadrants(ip);
 	}
 
 	/**	Swap quadrants 1 and 3 and 2 and 4 of the image

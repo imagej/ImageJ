@@ -1020,6 +1020,11 @@ public class FloatProcessor extends ImageProcessor {
 		fillColor = (float)value;
 		fillValueSet = true;
 	}
+	
+	/** Returns the foreground fill/draw value. */
+	public double getForegroundValue() {
+		return fillColor;
+	}
 
 	public void setBackgroundValue(double value) {
 		bgValue = (float)value;

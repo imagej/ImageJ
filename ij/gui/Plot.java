@@ -159,7 +159,7 @@ public class Plot implements Cloneable {
 	private static final double RELATIVE_ARROWHEAD_SIZE = 0.2; //arrow heads have 1/5 of vector length
 	private static final int MIN_ARROWHEAD_LENGTH = 3;
 	private static final int MAX_ARROWHEAD_LENGTH = 20;
-	private static final String MULTIPLY_SYMBOL = "\u00B7"; //middot, default multiplication symbol for scientific notation. use setOptions("msymbol=\\u00d7") for '×'
+	private static final String MULTIPLY_SYMBOL = "\u00B7"; //middot, default multiplication symbol for scientific notation. Use setOptions("msymbol=\\u00d7") for '×'
 
 	PlotProperties pp = new PlotProperties();		//size, range, formatting etc, for easy serialization
 	PlotProperties ppSnapshot;						//copy for reverting
@@ -423,10 +423,11 @@ public class Plot implements Cloneable {
 	/** Sets options for the plot. Multiple options may be separated by whitespace or commas.
 	 *  Note that whitespace surrounding the '=' characters is not allowed.
 	 *  Currently recognized options are:
+	 *  "addhspace=10 addvspace=5" Increases the left&right or top&bottom margins by the given number of pixels.
 	 *  "xinterval=30 yinterval=90" Sets interval between numbers, major ticks & grid lines
 	 *    (default intervals are used if the custom intervals would be too dense or too sparse)
 	 *  "xdecimals=2 ydecimals=-1" Sets the minimum number of decimals; use negative numbers for scientific notation.
-	 *  "msymbol=' \\u00d7 '" Sets multiplication symbol for scientific notation, here a cross with spaces
+	 *  "msymbol=' \\u00d7 '" Sets multiplication symbol for scientific notation, here a cross with spaces.
 	 *  */
 	public void setOptions(String options) {
 		pp.frame.options = options.toLowerCase();
@@ -1954,10 +1955,12 @@ public class Plot implements Cloneable {
 		float marginScale = 0.1f + 0.9f*font.getSize2D()/12f;
 		if (marginScale < 0.7f) marginScale = 0.7f;
 		if (marginScale > 2f) marginScale = 2f;
-		leftMargin	 = sc(LEFT_MARGIN*marginScale);
-		rightMargin	 = sc(RIGHT_MARGIN*marginScale);
-		topMargin	 = sc(TOP_MARGIN*marginScale);
-		bottomMargin = sc(BOTTOM_MARGIN*marginScale + 2);
+		int addHspace = (int)Tools.getNumberFromList(pp.frame.options, "addhspace="); //user-defined extra space
+		int addVspace = (int)Tools.getNumberFromList(pp.frame.options, "addvspace=");
+		leftMargin	 = sc(LEFT_MARGIN*marginScale + addHspace);
+		rightMargin	 = sc(RIGHT_MARGIN*marginScale + addHspace);
+		topMargin	 = sc(TOP_MARGIN*marginScale + addVspace);
+		bottomMargin = sc(BOTTOM_MARGIN*marginScale + 2 + addVspace);
 		if(pp != null && pp.xLabel != null && pp.xLabel.getFont() != null){
 			float numberSize = font.getSize2D();
 			float labelSize = pp.xLabel.getFont().getSize2D();
@@ -2576,11 +2579,17 @@ public class Plot implements Cloneable {
 			} else {
 				int digitsForWidth = logYAxis ? -1 : digits;
 				if (digitsForWidth < 0) {
-					digitsForWidth--; //"1.0*10^5" etc. needs more space than 1.0E5
+					digitsForWidth--; //"1.0*10^5" etc. needs more space than 1.0*5, simulate by adding one decimal
 					xNumberRight += sc(1)+ip.getStringWidth("0")/4;
 				}
-				int w1 = ip.getStringWidth(IJ.d2s(currentMinMax[2], digitsForWidth));
-				int w2 = ip.getStringWidth(IJ.d2s(currentMinMax[3], digitsForWidth));
+				String str1 = IJ.d2s(currentMinMax[2], digitsForWidth);
+				String str2 = IJ.d2s(currentMinMax[3], digitsForWidth);
+				if (digitsForWidth < 0) {
+					str1 = str1.replaceFirst("E",multiplySymbol);
+					str2 = str2.replaceFirst("E",multiplySymbol);
+				}
+				int w1 = ip.getStringWidth(str1);
+				int w2 = ip.getStringWidth(str2);
 				int wMax = Math.max(w1,w2);
 				if (hasFlag(Y_NUMBERS)) {
 					if (wMax > xNumberRight - sc(4) - (pp.yLabel.label.length()>0 ? fm.getHeight() : 0)) {

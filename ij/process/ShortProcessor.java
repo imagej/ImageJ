@@ -980,6 +980,11 @@ public class ShortProcessor extends ImageProcessor {
 			fillValueSet = true;
 	}
 
+	/** Returns the foreground fill/draw value. */
+	public double getForegroundValue() {
+		return fgColor;
+	}
+
 	public void setBackgroundValue(double value) {
 		bgValue = (int)value;
 		if (bgValue<0) bgValue = 0;
