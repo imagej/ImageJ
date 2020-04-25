@@ -82,6 +82,7 @@ public class CompositeImage extends ImagePlus {
 		Object info = imp.getProperty("Info");
 		if (info!=null)
 			setProperty("Info", imp.getProperty("Info"));
+		setProperties(imp.getPropertiesAsArray());		
 		if (mode==COMPOSITE) {
 			for (int i=0; i<MAX_CHANNELS; i++)
 				active[i] = true;

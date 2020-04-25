@@ -333,8 +333,13 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		int len = shortcut.length();
 		if (len>1)
 			shortcut = shortcut.toUpperCase(Locale.US);;
-		if (len>3 || (len>1&&shortcut.charAt(0)!='F'&&shortcut.charAt(0)!='N'))
+		if (len>3 || (len>1 && shortcut.charAt(0)!='F' && shortcut.charAt(0)!='N' && shortcut.charAt(0)!='&'))
 			return;
+		boolean bothNumKeys = shortcut.startsWith("&");
+		if (bothNumKeys){ //first handle num key of keyboard
+			shortcut = shortcut.replace("&", "");
+			len = shortcut.length();
+		}			
 		int code = Menus.convertShortcutToCode(shortcut);
 		if (code==0)
 			return;
@@ -346,7 +351,12 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			Hashtable macroShortcuts = Menus.getMacroShortcuts();
 			macroShortcuts.put(new Integer(code), commandPrefix+name);
 			nShortcuts++;
-			return;
+			if(!bothNumKeys)
+				return;
+		}
+		if(bothNumKeys){//now handle numerical keypad
+			shortcut = "N" + shortcut;
+			code = Menus.convertShortcutToCode(shortcut);
 		}
 		Hashtable shortcuts = Menus.getShortcuts();
 		if (shortcuts.get(new Integer(code))!=null) {

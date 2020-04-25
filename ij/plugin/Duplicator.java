@@ -219,6 +219,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		String info = (String)imp.getProperty("Info");
 		if (info!=null)
 			imp2.setProperty("Info", info);
+		imp2.setProperties(imp.getPropertiesAsArray());
+		imp2.setCalibration(imp.getCalibration());
 		int[] dim = imp.getDimensions();
 		imp2.setDimensions(dim[2], dim[3], dim[4]);
 		if (imp.isComposite()) {
@@ -257,6 +259,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		String info = (String)imp.getProperty("Info");
 		if (info!=null)
 			imp2.setProperty("Info", info);
+		imp2.setProperties(imp.getPropertiesAsArray());
 		if (imp.isStack()) {
 			ImageStack stack = imp.getStack();
 			String label = stack.getSliceLabel(imp.getCurrentSlice());
@@ -325,6 +328,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		String info = (String)imp.getProperty("Info");
 		if (info!=null)
 			imp2.setProperty("Info", info);
+		imp2.setProperties(imp.getPropertiesAsArray());
 		int size = stack2.getSize();
 		boolean tseries = imp.getNFrames()==imp.getStackSize();
 		if (tseries)

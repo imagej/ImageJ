@@ -139,6 +139,7 @@ public class FileSaver {
 			fht.setColorModel(fht.originalColorModel);
 		ImagePlus imp2 = new ImagePlus(imp.getTitle(), fht);
 		imp2.setProperty("Info", imp.getProperty("Info"));
+		imp2.setProperties(imp.getPropertiesAsArray());
 		imp2.setCalibration(imp.getCalibration());
 		imp = imp2;
 		fi = imp.getFileInfo();

@@ -14,7 +14,7 @@ public class NonBlockingGenericDialog extends GenericDialog {
 	WindowListener windowListener;  //checking for whether the associated window gets closed
 
 	public NonBlockingGenericDialog(String title) {
-		super(title, getParentFrame());
+		super(title, GUI.getParentFrame());
 		setModal(false);
 		IJ.protectStatusBar(false);
 	}
@@ -114,19 +114,6 @@ public class NonBlockingGenericDialog extends GenericDialog {
 		if ((e.getWindow() instanceof ImageWindow) && e.getOppositeWindow()!=this)
 			toFront();
 		WindowManager.setWindow(this);
-	}
-
-	static Frame getParentFrame() {
-		Frame parent = WindowManager.getCurrentImage()!=null?
-			(Frame)WindowManager.getCurrentImage().getWindow():IJ.getInstance()!=null?IJ.getInstance():new Frame();
-		if (IJ.isMacOSX() && IJ.isJava18()) {
-			ImageJ ij = IJ.getInstance();
-			if (ij!=null && ij.isActive())
-				parent = ij;
-			else
-				parent = null;
-		}
-		return parent;
 	}
 
 }

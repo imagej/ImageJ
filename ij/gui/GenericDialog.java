@@ -92,7 +92,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 
 	private static Frame getParentFrame() {
-		return NonBlockingGenericDialog.getParentFrame();
+		return GUI.getParentFrame();
 	}
 
     /** Creates a new GenericDialog using the specified title and parent frame. */

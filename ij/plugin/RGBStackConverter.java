@@ -192,7 +192,8 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 		ImagePlus imp2 = imp.createImagePlus();
 		imp2.setStack(title, stack);
 		Object info = imp.getProperty("Info");
-		if (info!=null) imp2.setProperty("Info", info);
+		if (info!=null) imp2.setProperty("Info", info);		
+		imp2.setProperties(imp.getPropertiesAsArray());
 		Overlay overlay = imp.getOverlay();
 		Overlay overlay2 = null;
 		if (overlay!=null) {

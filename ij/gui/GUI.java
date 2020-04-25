@@ -249,13 +249,29 @@ public class GUI {
 		return true;
 	}
 	
-		/** Works around an OpenJDK bug on Windows that
-		 * causes the scrollbar thumb color and background
-		 * color to be almost identical.
-		*/
-		public static final void fixScrollbar(Scrollbar sb) {
+	/** Works around an OpenJDK bug on Windows that
+	 * causes the scrollbar thumb color and background
+	 * color to be almost identical.
+	*/
+	public static final void fixScrollbar(Scrollbar sb) {
 		if (IJ.isWindows())
 			sb.setBackground(scrollbarBackground);
-	}	
+	}
+	
+	/** Returns a reference to the current image window,
+	 * or to the "ImageJ" window if no images are open.
+	*/
+	public static Frame getParentFrame() {
+		Frame parent = WindowManager.getCurrentImage()!=null?
+			(Frame)WindowManager.getCurrentImage().getWindow():IJ.getInstance()!=null?IJ.getInstance():new Frame();
+		if (IJ.isMacOSX() && IJ.isJava18()) {
+			ImageJ ij = IJ.getInstance();
+			if (ij!=null && ij.isActive())
+				parent = ij;
+			else
+				parent = null;
+		}
+		return parent;
+	}
 
 }

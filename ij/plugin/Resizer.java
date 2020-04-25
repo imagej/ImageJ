@@ -250,6 +250,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 		if (cal.scaled()) cal.pixelDepth *= (double)imp.getNSlices()/imp2.getNSlices();
 		Object info = imp.getProperty("Info");
 		if (info!=null) imp2.setProperty("Info", info);
+		imp2.setProperties(imp.getPropertiesAsArray());
 		if (imp.isHyperStack())
 			imp2.setOpenAsHyperStack(imp.isHyperStack());
 		return imp2;

@@ -1449,6 +1449,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	
 	/** Used for restoring string properties from TIFF header. */
 	public void setProperties(String[] props) {
+		if (props==null)
+			return;
 		this.imageProperties = null;
 		int equalsIndex = props[0].indexOf("=");
 		if (equalsIndex>0 && equalsIndex<50) { // v1.53a3 format
@@ -2397,6 +2399,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		String info = (String)getProperty("Info");
 		if (info!=null)
 			imp2.setProperty("Info", info);
+		String[] props =getPropertiesAsArray();
+		if (props!=null)
+			imp2.setProperties(props);
+		imp2.setProperties(getPropertiesAsArray());
 		FileInfo fi = getOriginalFileInfo();
 		if (fi!=null) {
 			fi = (FileInfo)fi.clone();
@@ -2449,6 +2455,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		Object info = imp.getProperty("Info");
 		if (info!=null)
 			setProperty("Info", imp.getProperty("Info"));
+		setProperties(imp.getPropertiesAsArray());
 		Object plot = imp.getProperty(Plot.PROPERTY_KEY);
 		if (plot != null)
 			setProperty(Plot.PROPERTY_KEY, plot);
@@ -2893,6 +2900,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		ImagePlus imp3 = new ImagePlus("Flat_"+getTitle(), new ColorProcessor(bi));
 		imp3.copyScale(this);
 		imp3.setProperty("Info", getProperty("Info"));
+		String[] props = getPropertiesAsArray();
+		if (props!=null)
+			imp3.setProperties(props);
 		return imp3;
 	}
 
