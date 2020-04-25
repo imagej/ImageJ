@@ -3,6 +3,7 @@ import ij.*;
 import java.awt.event.*;
 import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
+import java.awt.Frame;
 
 /** This is an extension of GenericDialog that is non-modal.
  *	@author Johannes Schindelin
@@ -113,6 +114,19 @@ public class NonBlockingGenericDialog extends GenericDialog {
 		if ((e.getWindow() instanceof ImageWindow) && e.getOppositeWindow()!=this)
 			toFront();
 		WindowManager.setWindow(this);
+	}
+
+	static Frame getParentFrame() {
+		Frame parent = WindowManager.getCurrentImage()!=null?
+			(Frame)WindowManager.getCurrentImage().getWindow():IJ.getInstance()!=null?IJ.getInstance():new Frame();
+		if (IJ.isMacOSX() && IJ.isJava18()) {
+			ImageJ ij = IJ.getInstance();
+			if (ij!=null && ij.isActive())
+				parent = ij;
+			else
+				parent = null;
+		}
+		return parent;
 	}
 
 }

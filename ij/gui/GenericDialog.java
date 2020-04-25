@@ -91,17 +91,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		this(title, getParentFrame());
 	}
 
-	static Frame getParentFrame() {
-		Frame parent = WindowManager.getCurrentImage()!=null?
-			(Frame)WindowManager.getCurrentImage().getWindow():IJ.getInstance()!=null?IJ.getInstance():new Frame();
-		if (IJ.isMacOSX() && IJ.isJava18()) {
-			ImageJ ij = IJ.getInstance();
-			if (ij!=null && ij.isActive())
-				parent = ij;
-			else
-				parent = null;
-		}
-		return parent;
+	private static Frame getParentFrame() {
+		return NonBlockingGenericDialog.getParentFrame();
 	}
 
     /** Creates a new GenericDialog using the specified title and parent frame. */
