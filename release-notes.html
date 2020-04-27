@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53a18  27 April 2020</u>
+<li> <u>1.53a19  27 April 2020</u>
 <ul>
 <li> Thanks to Michael Ellis, added support for saving and restoring
 persistent image properties via the Property.set(key,value) and
@@ -16,6 +16,9 @@ getProp(key), setProp(key,double) and getNumericProp(key) methods
 that allows shortcuts to be used on both numerical
 keypads and normal keyboards.
 (<a href="http://wsr.imagej.net/macros/examples/NumpadMacroShortcuts.txt">example</a>).  DOCUMENT
+<li> Thanks to Richard Boardman, increased the BufferedOutputStream
+buffer size in the FileSaver class to 32K and added the static
+FileSaver.setBufferSize(int) method.
 <li> Thanks to Michael Schmid, added the Plot.setOptions() macro function.
 See <i>Help&gt;Examples&gt;>Plots&gt;Plot Results</i> for an example. DOCUMENT
 <li> Thanks to Michael Schmid, added the Plot.getCurrentFont(),

@@ -272,8 +272,8 @@ public class FFT implements PlugIn, Measurements {
 			ImageStack ct = fht.getComplexTransform();
 			ImagePlus imp2 = new ImagePlus("Complex of "+FFT.fileName, ct);
 			enhanceContrast(imp2);
-			imp2.setProp("FFT_width", ""+originalWidth);
-			imp2.setProp("FFT_height", ""+originalHeight);
+			imp2.setProp("FFT_width", originalWidth);
+			imp2.setProp("FFT_height", originalHeight);
 			imp2.show();
 		}
 		if (!(iDisplayFHT || iDisplayComplex || iDisplayRawPS))

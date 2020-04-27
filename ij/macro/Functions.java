@@ -7710,7 +7710,10 @@ public class Functions implements MacroConstants, Measurements {
 		String name = interp.tokenString;
 		ImagePlus imp = getImage();
 		if (name.equals("set")) {
-			imp.setProp(getFirstString(), getLastString());
+			String key = getFirstString();
+			String value = getLastString();
+			if (value.length()==0) value = null;
+			imp.setProp(key, value);
 			return null;
 		} else if (name.equals("get")) {  // "get" added to Interpreter.isString(int)
 			String value = imp.getProp(getStringArg());

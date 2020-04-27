@@ -17,9 +17,9 @@ import javax.imageio.*;
 /** Saves images in tiff, gif, jpeg, raw, zip and text format. */
 public class FileSaver {
 
-	private static final int BSIZE = 65536; // 64K
 	public static final int DEFAULT_JPEG_QUALITY = 85;
 	private static int jpegQuality;
+	private static int bsize = 32768; // 32K
 	
     static {setJpegQuality(ij.Prefs.getInt(ij.Prefs.JPEG, DEFAULT_JPEG_QUALITY));}
 
@@ -117,7 +117,7 @@ public class FileSaver {
 		DataOutputStream out = null;
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
-			out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path),BSIZE));
+			out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path),bsize));
 			file.write(out);
 			out.close();
 		} catch (IOException e) {
@@ -210,7 +210,7 @@ public class FileSaver {
 		DataOutputStream out = null;
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
-			out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path),BSIZE));
+			out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path),bsize));
 			file.write(out);
 			out.close();
 		} catch (IOException e) {
@@ -315,7 +315,7 @@ public class FileSaver {
 		DataOutputStream out = null;
 		try {
 			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path));
-			out = new DataOutputStream(new BufferedOutputStream(zos));
+			out = new DataOutputStream(new BufferedOutputStream(zos,bsize));
         	zos.putNextEntry(new ZipEntry(name));
 			TiffEncoder te = new TiffEncoder(fi);
 			te.write(out);
@@ -501,7 +501,7 @@ public class FileSaver {
 					pixels[i] = (short)(pixels[i]-32768);
 			}
 			ImageWriter file = new ImageWriter(fi);
-			out = new BufferedOutputStream(new FileOutputStream(path));
+			out = new BufferedOutputStream(new FileOutputStream(path),bsize);
 			file.write(out);
 			out.close();
 		}
@@ -546,7 +546,7 @@ public class FileSaver {
 				}
 			}
 			ImageWriter file = new ImageWriter(fi);
-			out = new BufferedOutputStream(new FileOutputStream(path));
+			out = new BufferedOutputStream(new FileOutputStream(path),bsize);
 			file.write(out);
 			out.close();
 		} catch (IOException e) {
@@ -827,6 +827,11 @@ public class FileSaver {
     public static int getJpegQuality() {
         return jpegQuality;
     }
-
+    
+    /** Sets the BufferedOutputStream buffer size in bytes (default is 32K). */
+    public static void setBufferSize(int bufferSize) {
+        bsize = bufferSize;
+        if (bsize<2048) bsize = 2048;
+    }
 
 }
