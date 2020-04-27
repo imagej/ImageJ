@@ -1182,14 +1182,15 @@ public class Interpreter implements MacroConstants {
 		if ((tok&0xff)==VARIABLE_FUNCTION) {
 			int address = tok>>TOK_SHIFT;
 			int type = pgm.table[address].type;
-			if (type==TABLE || type==ROI) {
+			if (type==TABLE || type==ROI || type==PROPERTY) {
 				int token2 = pgm.code[pcLoc+2];
 				String name = pgm.table[token2>>TOK_SHIFT].str;
 				if (name.equals("getStrokeColor") || name.equals("getDefaultColor")
 				|| name.equals("getFillColor") || name.equals("getName")
 				|| name.equals("getProperty") || name.equals("getProperties")
 				|| name.equals("getType") || name.equals("getString") || name.equals("title")
-				|| name.equals("headings") || name.equals("allHeadings"))
+				|| name.equals("headings") || name.equals("allHeadings")
+				|| name.equals("get"))
 					return true;
 			}
 		}

@@ -1424,12 +1424,36 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			imageProperties.setProperty(key, value);
 	}
 	
-	/** Returns the string property associated with the specified key. */
+	/** Saves a persistent numeric propery. The property is
+	 *  removed if 'value' is NaN.
+	 * @see #getNumericProp
+	*/
+	public void setProp(String key, double value) {
+		setProp(key, Double.isNaN(value)?null:""+value);
+	}
+
+	/** Returns the string property associated with the specified key
+	 * or null if the property is not found.
+	 * @see #setProp
+	 * @see #getNumericProp
+	*/
 	public String getProp(String key) {
 		if (imageProperties==null)
 			return null;
 		else
 			return imageProperties.getProperty(key);
+	}
+	
+	/** Returns the numeric property associated with the specified key
+	 * or NaN if the property is not found.
+	 * @see #setProp(String,double)
+	 * @see #getProp
+	*/
+	public double getNumericProp(String key) {
+		if (imageProperties==null)
+			return Double.NaN;
+		else
+			return Tools.parseDouble(getProp(key), Double.NaN);
 	}
 
 	/** Used for saving string properties in TIFF header. */
@@ -1447,10 +1471,29 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return props;
 	}
 	
+	/** Returns information displayed by Image/Show Info command. */
+	public String getPropsInfo() {
+		if (imageProperties==null || imageProperties.size()==0)
+			return "0";
+		String info2 = "";
+		for (Enumeration en=imageProperties.keys(); en.hasMoreElements();) {
+			String key = (String)en.nextElement();
+			if (info2.length()>50) {
+				info2 += "...";
+				break;
+			} else
+				info2 += " " + key;
+		}
+		if (info2.length()>1)
+			info2 = " (" + info2.substring(1) + ")";
+		return imageProperties.size() + info2;			
+	}
+	
 	/** Used for restoring string properties from TIFF header. */
 	public void setProperties(String[] props) {
 		if (props==null)
 			return;
+		//IJ.log("setProperties: "+props.length+" "+getTitle());
 		this.imageProperties = null;
 		int equalsIndex = props[0].indexOf("=");
 		if (equalsIndex>0 && equalsIndex<50) { // v1.53a3 format
@@ -1465,6 +1508,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			for (int i=0; i<props.length; i+=2) {
 				String key = props[i];
 				String value = props[i+1];
+				//IJ.log("   "+key+" "+value.length());
 				setProp(key,value);
 			}
 		}
@@ -2399,9 +2443,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		String info = (String)getProperty("Info");
 		if (info!=null)
 			imp2.setProperty("Info", info);
-		String[] props =getPropertiesAsArray();
-		if (props!=null)
-			imp2.setProperties(props);
 		imp2.setProperties(getPropertiesAsArray());
 		FileInfo fi = getOriginalFileInfo();
 		if (fi!=null) {
@@ -2900,9 +2941,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		ImagePlus imp3 = new ImagePlus("Flat_"+getTitle(), new ColorProcessor(bi));
 		imp3.copyScale(this);
 		imp3.setProperty("Info", getProperty("Info"));
-		String[] props = getPropertiesAsArray();
-		if (props!=null)
-			imp3.setProperties(props);
+		imp3.setProperties(getPropertiesAsArray());
 		return imp3;
 	}
 

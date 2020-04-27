@@ -132,7 +132,8 @@ import java.nio.channels.FileChannel;
 	*	<code>defaultValue</code> if the string does not contain a parsable double
 	*/
 	public static double parseDouble(String s, double defaultValue) {
-		if (s==null) return defaultValue;
+		if (s==null)
+			return defaultValue;
 		try {
 			defaultValue = Double.parseDouble(s);
 		} catch (NumberFormatException e) {}

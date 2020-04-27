@@ -357,6 +357,12 @@ public class ImageInfo implements PlugIn {
 	    if (cal.getInvertY())
 	    	s += "Inverted y coordinates\n";
 
+	    String pinfo = imp.getPropsInfo();
+	    if (!pinfo.equals("0"))
+	   		s += "Properties: " + pinfo + "\n";
+	   	else
+	   		s += "No properties\n";
+	   	
 	    Overlay overlay = imp.getOverlay();
 		if (overlay!=null) {
 			int n = overlay.size();

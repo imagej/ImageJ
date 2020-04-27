@@ -306,12 +306,14 @@ public class Functions implements MacroConstants, Measurements {
 		return array;
 	}
 
+	// functions returning a string must be added to Interpreter.isString(int)
 	Variable getVariableFunction(int type) {
 		Variable var = null;
 		switch (type) {
 			case TABLE: var = doTable(); break;
 			case ROI: var = doRoi(); break;
 			case ROI_MANAGER2: var = doRoiManager(); break;
+			case PROPERTY: var = doProperty(); break;
 			default:
 				interp.error("Variable function expected");
 		}
@@ -7695,6 +7697,26 @@ public class Functions implements MacroConstants, Measurements {
 			return null;
 		} else
 			interp.error("Unrecognized RoiManager function");
+		return null;
+	}
+	
+	private Variable doProperty() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (interp.token!=WORD)
+			interp.error("Function name expected: ");
+		String name = interp.tokenString;
+		ImagePlus imp = getImage();
+		if (name.equals("set")) {
+			imp.setProp(getFirstString(), getLastString());
+			return null;
+		} else if (name.equals("get")) {  // "get" added to Interpreter.isString(int)
+			String value = imp.getProp(getStringArg());
+			return new Variable(value!=null?value:"");
+		} else
+			interp.error("Unrecognized Property function");
 		return null;
 	}
 

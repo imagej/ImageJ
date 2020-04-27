@@ -66,8 +66,11 @@ public class FFT implements PlugIn, Measurements {
 			return;
 		}
 		if (arg.equals("swap"))	 {
-			swapQuadrants(imp.getStack());
-			imp.updateAndDraw();
+			if (imp.getWidth()==imp.getHeight()) {
+				swapQuadrants(imp.getStack());
+				imp.updateAndDraw();
+			} else
+				IJ.error("Swap Quadrants","Image must be square");
 			return;
 		}
 	   if (arg.equals("inverse")) {
@@ -261,16 +264,16 @@ public class FFT implements PlugIn, Measurements {
 			swapQuadrants(ip2);
 			ImagePlus imp2 = new ImagePlus("FHT of "+FFT.fileName, ip2);
 			enhanceContrast(imp2);
-			imp2.setProp("FFT width", ""+originalWidth);
-			imp2.setProp("FFT height", ""+originalHeight);
+			imp2.setProp("FFT_width", originalWidth);
+			imp2.setProp("FFT_height", originalHeight);
 			imp2.show();
 		}
 		if (iDisplayComplex || (displayComplex&&!IJ.isMacro())) {
 			ImageStack ct = fht.getComplexTransform();
 			ImagePlus imp2 = new ImagePlus("Complex of "+FFT.fileName, ct);
 			enhanceContrast(imp2);
-			imp2.setProp("FFT width", ""+originalWidth);
-			imp2.setProp("FFT height", ""+originalHeight);
+			imp2.setProp("FFT_width", ""+originalWidth);
+			imp2.setProp("FFT_height", ""+originalHeight);
 			imp2.show();
 		}
 		if (!(iDisplayFHT || iDisplayComplex || iDisplayRawPS))
@@ -474,7 +477,7 @@ public class FFT implements PlugIn, Measurements {
 		for (int i=1; i<=stack.size(); i++)
 			swapQuadrants(stack.getProcessor(i));
 	}
-
+	
 	void showDialog() {
 		if (!IJ.isMacro()) {
 			iDisplayRawPS = displayRawPS;
@@ -551,12 +554,8 @@ public class FFT implements PlugIn, Measurements {
 	}
 	
 	private ImagePlus unpad(ImagePlus img) {
-		String w = imp.getProp("FFT width");
-		String h = imp.getProp("FFT height");
-		if (w==null || h==null)
-			return img;
-		int width = (int)Tools.parseDouble(w, 0.0);
-		int height = (int)Tools.parseDouble(h, 0.0);
+		int width = (int)imp.getNumericProp("FFT_width");
+		int height = (int)imp.getNumericProp("FFT_height");
 		if (width==0 || height==0 || (width==img.getWidth()&&height==img.getHeight()))
 			return img;
 		int i=2;

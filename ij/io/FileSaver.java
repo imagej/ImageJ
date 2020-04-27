@@ -17,6 +17,7 @@ import javax.imageio.*;
 /** Saves images in tiff, gif, jpeg, raw, zip and text format. */
 public class FileSaver {
 
+	private static final int BSIZE = 65536; // 64K
 	public static final int DEFAULT_JPEG_QUALITY = 85;
 	private static int jpegQuality;
 	
@@ -116,7 +117,7 @@ public class FileSaver {
 		DataOutputStream out = null;
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
-			out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
+			out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path),BSIZE));
 			file.write(out);
 			out.close();
 		} catch (IOException e) {
@@ -209,7 +210,7 @@ public class FileSaver {
 		DataOutputStream out = null;
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
-			out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
+			out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path),BSIZE));
 			file.write(out);
 			out.close();
 		} catch (IOException e) {
