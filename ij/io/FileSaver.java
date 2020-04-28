@@ -19,7 +19,7 @@ public class FileSaver {
 
 	public static final int DEFAULT_JPEG_QUALITY = 85;
 	private static int jpegQuality;
-	private static int bsize = 32768; // 32K
+	private static int bsize = 32768; // 32K default buffer size
 	
     static {setJpegQuality(ij.Prefs.getInt(ij.Prefs.JPEG, DEFAULT_JPEG_QUALITY));}
 
@@ -289,7 +289,6 @@ public class FileSaver {
 	
 	/** Save the image or stack in TIFF/ZIP format using the specified path. */
 	public boolean saveAsZip(String path) {
-		//fi.nImages = 1;
 		if (imp.getProperty("FHT")!=null && path.contains("FFT of "))
 			setupFFTSave();
 		if (!path.endsWith(".zip"))
@@ -302,6 +301,7 @@ public class FileSaver {
 			name = name+".tif";
 		fi.description = getDescriptionString();
 		fi.info = imp.getInfoProperty();
+		fi.properties = imp.getPropertiesAsArray();
 		if (imp.getProperty(Plot.PROPERTY_KEY) != null) {
 			Plot plot = (Plot)(imp.getProperty(Plot.PROPERTY_KEY));
 			fi.plot = plot.toByteArray();
