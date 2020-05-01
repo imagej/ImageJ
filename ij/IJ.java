@@ -342,9 +342,6 @@ public class IJ {
 			commandTable.put("Convert Stack to Images", "Stack to Images");
 			commandTable.put("Convert Stack to RGB", "Stack to RGB");
 			commandTable.put("Convert to Composite", "Make Composite");
-			commandTable.put("New HyperStack...", "New Hyperstack...");
-			commandTable.put("Stack to HyperStack...", "Stack to Hyperstack...");
-			commandTable.put("HyperStack to Stack", "Hyperstack to Stack");
 			commandTable.put("RGB Split", "Split Channels");
 			commandTable.put("RGB Merge...", "Merge Channels...");
 			commandTable.put("Channels...", "Channels Tool...");
@@ -361,6 +358,35 @@ public class IJ {
 			commandTable.put("Statistics...", "Statistics");
 			commandTable.put("Channels Tool... ", "Channels Tool...");
 			commandTable.put("Profile Plot Options...", "Plots...");
+			commandTable.put("AuPbSn 40 (56K)", "AuPbSn 40");
+			commandTable.put("Bat Cochlea Volume (19K)", "Bat Cochlea Volume");
+			commandTable.put("Bat Cochlea Renderings (449K)", "Bat Cochlea Renderings");
+			commandTable.put("Blobs (25K)", "Blobs");
+			commandTable.put("Boats (356K)", "Boats");			
+			commandTable.put("Cardio (768K, RGB DICOM)", "Cardio (RGB DICOM)");
+			commandTable.put("Cell Colony (31K)", "Cell Colony");
+			commandTable.put("Clown (14K)", "Clown");
+			commandTable.put("Confocal Series (2.2MB)", "Confocal Series");
+			commandTable.put("CT (420K, 16-bit DICOM)", "CT (16-bit DICOM)");			
+			commandTable.put("Dot Blot (7K)", "Dot Blot");
+			commandTable.put("Embryos (42K)", "Embryos");
+			commandTable.put("Fluorescent Cells (400K)", "Fluorescent Cells");
+			commandTable.put("Fly Brain (1MB)", "Fly Brain");			
+			commandTable.put("Gel (105K)", "Gel");
+			commandTable.put("HeLa Cells (1.3M, 48-bit RGB)", "HeLa Cells (48-bit RGB)");
+			commandTable.put("Leaf (36K)", "Leaf");
+			commandTable.put("Line Graph (21K)", "Line Graph");			
+			commandTable.put("Mitosis (26MB, 5D stack)", "Mitosis (5D stack)");
+			commandTable.put("MRI Stack (528K)", "MRI Stack");
+			commandTable.put("M51 Galaxy (177K, 16-bits)", "M51 Galaxy (16-bits))");
+			commandTable.put("Neuron (1.6M, 5 channels", "Neuron (5 channels");
+			commandTable.put("Nile Bend (1.9M)", "Nile Bend");			
+			commandTable.put("Organ of Corti (2.8M, 4D stack)", "Organ of Corti (4D stack)");
+			commandTable.put("Particles (75K)", "Particles");
+			commandTable.put("T1 Head (2.4M, 16-bits)", "T1 Head (16-bits)");
+			commandTable.put("T1 Head Renderings (736K)", "T1 Head Renderings");
+			commandTable.put("TEM Filter (112K)", "TEM Filter");
+			commandTable.put("Tree Rings (48K)", "Tree Rings");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)

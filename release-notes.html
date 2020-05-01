@@ -5,13 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.53a21  28 April 2020</u>
+<li> <u>1.53a22  1 May 2020</u>
 <ul>
 <li> Thanks to Michael Ellis, added support for saving and restoring
 persistent image properties via the Property.set(key,value) and
 Property.get(key) macro functions and the setProp(key,string),
 getProp(key), setProp(key,double) and getNumericProp(key) methods
 (<a href="http://wsr.imagej.net/macros/js/ImageProperties.js">JavaScript example</a>).  DOCUMENT
+<li> Removed file sizes from entries in the <i>File&gt;Open Samples&gt;</i> submenu.
+Macros that use the old entries (e.g. "Blobs (25K)") continue to work.
 <li> Thanks to Norbert Vischer, added the [&n] macro shortcut notation 
 that allows shortcuts to be used on both numerical
 keypads and normal keyboards.
@@ -21,6 +23,8 @@ buffer size in the FileSaver class to 32K and added the static
 FileSaver.setBufferSize(int) method.
 <li> Thanks to Michael Schmid, added the Plot.setOptions() macro function.
 See <i>Help&gt;Examples&gt;>Plots&gt;Plot Results</i> for an example. DOCUMENT
+<li> Added the Property.getInfo(), Property.setInfo(), Property.getSliceLabel(),
+Property.setSliceLabel() and Property.getDicomTag() macro functions. (DOCUMENT)
 <li> Thanks to Michael Schmid, added the Plot.getCurrentFont(),
 Plot.getDefaultFont() and Tools.getNumberFromList() methods.
 <li> Thanks to Herbie Gluender, added the GenericDialog.getLabel()

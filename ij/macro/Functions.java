@@ -7705,7 +7705,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (interp.token!='.')
 			interp.error("'.' expected");
 		interp.getToken();
-		if (interp.token!=WORD)
+		if (!(interp.token==WORD || interp.token==STRING_FUNCTION))
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
 		ImagePlus imp = getImage();
@@ -7718,10 +7718,28 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("get")) {  // "get" added to Interpreter.isString(int)
 			String value = imp.getProp(getStringArg());
 			return new Variable(value!=null?value:"");
+		} else if (name.equals("getInfo")) {
+			interp.getParens();
+			String value = (String)imp.getProperty("Info");
+			return new Variable(value!=null?value:"");
+		} else if (name.equals("setInfo")) {
+			imp.setProperty("Info", getStringArg());
+			return null;
+		} else if (name.equals("getSliceLabel")) {
+			interp.getParens();
+			String value = imp.getStack().getSliceLabel(imp.getCurrentSlice());
+			return new Variable(value!=null?value:"");
+		} else if (name.equals("setSliceLabel")) {
+			imp.getStack().setSliceLabel(getStringArg(), imp.getCurrentSlice());
+			if (!Interpreter.isBatchMode()) imp.repaintWindow();
+			return null;
+		} else if (name.equals("getDicomTag")) {
+			String value = imp.getStringProperty(getStringArg());
+			return new Variable(value!=null?value:"");
 		} else
 			interp.error("Unrecognized Property function");
 		return null;
 	}
 
-	} // class Functions
+} // class Functions
 

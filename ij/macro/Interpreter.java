@@ -1190,7 +1190,8 @@ public class Interpreter implements MacroConstants {
 				|| name.equals("getProperty") || name.equals("getProperties")
 				|| name.equals("getType") || name.equals("getString") || name.equals("title")
 				|| name.equals("headings") || name.equals("allHeadings")
-				|| name.equals("get"))
+				|| name.equals("get") || name.equals("getInfo") || name.equals("getSliceLabel")
+				|| name.equals("getDicomTag"))
 					return true;
 			}
 		}
