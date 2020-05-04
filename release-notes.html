@@ -5,30 +5,31 @@
 </head>
 <body>
 
-<li> <u>1.53a25  4 May 2020</u>
+<li> <u>1.53a  4 May 2020</u>
 <ul>
 <li> Thanks to Michael Ellis, added support for saving and restoring
 persistent image properties via the Property.set(key,value) and
 Property.get(key) macro functions and the setProp(key,string),
 getProp(key), setProp(key,double) and getNumericProp(key) methods
-(<a href="http://wsr.imagej.net/macros/js/ImageProperties.js">JavaScript example</a>).  DOCUMENT
+(<a href="http://wsr.imagej.net/macros/js/ImageProperties.js">JavaScript example</a>).
 <li> Removed file sizes from entries in the <i>File&gt;Open Samples&gt;</i> submenu.
 Macros that use the old entries (e.g. "Blobs (25K)") continue to work.
 <li> Thanks to Laurent Thomas, the Overlay and RoiManager classes are now iterable.
-Plugins can use "for (Roi roi : rm) {...}" instead of "for (int i = 0; i != rm.getCount(); i++) {...}".
-In JavaScript, use "for each (roi in rm) {}"
-(<a href="http://wsr.imagej.net/macros/js/ListOverlayRois.js">JavaScript example</a>).
+Plugins can use "for (Roi roi : rm)" instead of "for (int i = 0; i != rm.getCount(); i++)".
+In JavaScript, use "for each (roi in rm)"
+(<a href="http://wsr.imagej.net/macros/js/ListOverlayRois.js">example</a>).
 <li> Thanks to Norbert Vischer, added the [&n] macro shortcut notation 
 that allows shortcuts to be used on both numerical
-keypads and normal keyboards.
-(<a href="http://wsr.imagej.net/macros/examples/NumpadMacroShortcuts.txt">example</a>).  DOCUMENT
+keypads and normal (laptop) keyboards.
+(<a href="http://wsr.imagej.net/macros/examples/NumpadMacroShortcuts.txt">example</a>).
 <li> Thanks to Richard Boardman, increased the BufferedOutputStream
 buffer size in the FileSaver class to 32K and added the static
 FileSaver.setBufferSize(int) method.
 <li> Thanks to Michael Schmid, added the Plot.setOptions() macro function.
-See <i>Help&gt;Examples&gt;>Plots&gt;Plot Results</i> for an example. DOCUMENT
-<li> Added the Property.getInfo(), Property.setInfo(), Property.getSliceLabel(),
-Property.setSliceLabel() and Property.getDicomTag() macro functions. (DOCUMENT)
+See <i>Help&gt;Examples&gt;Plots&gt;Plot Results</i> for an example.
+<li> Added the Property.get(key), Property.set(key,value), Property.getInfo,
+Property.getSliceLabel, Property.setSliceLabel(string) and
+Property.getDicomTag(string) macro functions.
 <li> Thanks to Michael Schmid, added the Plot.getCurrentFont(),
 Plot.getDefaultFont() and Tools.getNumberFromList() methods.
 <li> Thanks to Herbie Gluender, added the GenericDialog.getLabel()
@@ -45,13 +46,11 @@ the <i>File&gt;Import&gt;Image Sequence</i> command
 to not ignore subdirectories.
 <li> Thanks to Michael Cammer, fixed a 1.52v regression that caused
 recording to not work correctly when Preview was checked in a filter dialog.
-<li> Thanks to 'Eljonco', fixed a bug the caused the Threshold tool to 
-sometimes freeze ImageJ.
 <li> Fixed a 1.52o regression that caused the 
 <i>Help&gt;Examples&gt;JavaScript&gt;FFT Filter</i>
 script to display an error message.
-<li> Thanks to 'Eljonco', fixed a 1.52v regression where the Threshold tool
-could cause ImageJ to freeze.
+<li> Thanks to 'Eljonco', fixed a 1.52v regression that caused the Threshold tool to 
+sometimes freeze ImageJ.
 </ul>
 
 <li> <u>1.52v  11 April 2020</u>
