@@ -84,6 +84,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			instance.firstActivation = true;
 			instance.toFront();
 			instance.setup(cimp, true);
+			instance.updateScrollBars();
 			return;
 		}
 
@@ -266,8 +267,10 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		thread.start();
 		ImagePlus imp = WindowManager.getCurrentImage();
 		ImagePlus.addImageListener(this);
-		if (imp!=null)
+		if (imp!=null) {
 			setup(imp, true);
+			updateScrollBars();
+		}
 	}
 
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
@@ -440,7 +443,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			updateLabels(imp, ip);
 			updatePercentiles(imp, ip);
 			updatePlot(ip);
-			updateScrollBars();
+			//updateScrollBars();
 			imp.updateAndDraw();
 			imageWasUpdated = false;
 		}
@@ -746,6 +749,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		ip.setSnapshotPixels(null); // disable undo
 		previousImageID = 0;
 		setup(imp, false);
+		updateScrollBars();
 		if (Recorder.record) {
 			if (imp.getBitDepth()==32) {
 				if (Recorder.scriptMode())
@@ -784,6 +788,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		ip.resetThreshold();
 		previousImageID = 0;
 		setup(imp, true);
+		updateScrollBars();
  	}
 
 	/** User has clicked 'Dark background'.
@@ -929,8 +934,10 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
     	super.windowActivated(e);
     	plot.requestFocus();
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (!firstActivation && imp!=null)
+		if (!firstActivation && imp!=null) {
 			setup(imp, false);
+			updateScrollBars();
+		}
 	}
 
 	// Returns a hashcode for the specified ROI that typically changes
@@ -951,6 +958,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 					return;
 				ta.previousImageID = 0;
 				ta.setup(imp, false);
+				ta.updateScrollBars();
 			}
 		}
 	}

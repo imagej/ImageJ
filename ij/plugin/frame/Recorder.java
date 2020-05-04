@@ -717,8 +717,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (scriptMode) { // JavaScript, BeanShell or Java
 			if (dotIndex>=0) name = name.substring(0, dotIndex);
 			if (text.indexOf("rm.")!=-1) {
-				text = (java?"RoiManager ":"")+ "rm = RoiManager.getInstance();\n"
-				+ "if (rm==null) rm = new RoiManager();\n"
+				text = (java?"RoiManager ":"")+ "rm = RoiManager.getRoiManager();\n"
 				+ text;
 			}
 			if (text.contains("overlay.add"))

@@ -28,7 +28,7 @@ import ij.measure.*;
 import ij.plugin.OverlayCommands;
 
 /** This plugin implements the Analyze/Tools/ROI Manager command. */
-public class RoiManager extends PlugInFrame implements ActionListener, ItemListener, MouseListener, MouseWheelListener, ListSelectionListener, Iterable {
+public class RoiManager extends PlugInFrame implements ActionListener, ItemListener, MouseListener, MouseWheelListener, ListSelectionListener, Iterable<Roi> {
 	public static final String LOC_KEY = "manager.loc";
 	private static final int BUTTONS = 11;
 	private static final int DRAW=0, FILL=1, LABEL=2;

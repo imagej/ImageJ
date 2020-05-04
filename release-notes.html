@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53a22  1 May 2020</u>
+<li> <u>1.53a25  4 May 2020</u>
 <ul>
 <li> Thanks to Michael Ellis, added support for saving and restoring
 persistent image properties via the Property.set(key,value) and
@@ -14,6 +14,10 @@ getProp(key), setProp(key,double) and getNumericProp(key) methods
 (<a href="http://wsr.imagej.net/macros/js/ImageProperties.js">JavaScript example</a>).  DOCUMENT
 <li> Removed file sizes from entries in the <i>File&gt;Open Samples&gt;</i> submenu.
 Macros that use the old entries (e.g. "Blobs (25K)") continue to work.
+<li> Thanks to Laurent Thomas, the Overlay and RoiManager classes are now iterable.
+Plugins can use "for (Roi roi : rm) {...}" instead of "for (int i = 0; i != rm.getCount(); i++) {...}".
+In JavaScript, use "for each (roi in rm) {}"
+(<a href="http://wsr.imagej.net/macros/js/ListOverlayRois.js">JavaScript example</a>).
 <li> Thanks to Norbert Vischer, added the [&n] macro shortcut notation 
 that allows shortcuts to be used on both numerical
 keypads and normal keyboards.
@@ -41,9 +45,13 @@ the <i>File&gt;Import&gt;Image Sequence</i> command
 to not ignore subdirectories.
 <li> Thanks to Michael Cammer, fixed a 1.52v regression that caused
 recording to not work correctly when Preview was checked in a filter dialog.
+<li> Thanks to 'Eljonco', fixed a bug the caused the Threshold tool to 
+sometimes freeze ImageJ.
 <li> Fixed a 1.52o regression that caused the 
 <i>Help&gt;Examples&gt;JavaScript&gt;FFT Filter</i>
 script to display an error message.
+<li> Thanks to 'Eljonco', fixed a 1.52v regression where the Threshold tool
+could cause ImageJ to freeze.
 </ul>
 
 <li> <u>1.52v  11 April 2020</u>

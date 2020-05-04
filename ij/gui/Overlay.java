@@ -2,6 +2,7 @@ package ij.gui;
 import java.awt.*;
 import java.util.Vector;
 import java.awt.geom.Rectangle2D;
+import java.util.Iterator;
 import ij.*;
 import ij.process.ImageProcessor;
 import ij.plugin.filter.Analyzer;
@@ -9,7 +10,7 @@ import ij.plugin.Colors;
 import ij.measure.ResultsTable;
 
 /** An Overlay is a list of ROIs that can be drawn non-destructively on an Image. */
-public class Overlay {
+public class Overlay implements Iterable<Roi> {
 	private Vector list;
     private boolean label;
     private boolean drawNames;
@@ -442,6 +443,39 @@ public class Overlay {
 		for (int i=first; i<overlay.size(); i++)
 			overlay.get(i).setName(""+(i+1));
 		imp.draw();
+	}
+	
+	@Override
+	public Iterator<Roi> iterator() {
+		final Overlay overlay = this;
+
+		Iterator<Roi> it = new Iterator<Roi>() {
+			private int index = -1;
+
+			/** Returns 'true' if next element exists. */ 
+			@Override
+			public boolean hasNext() {
+				if (index+1<overlay.size()) 
+					return true;
+				else 
+					return false;
+			}
+
+			/** Returns current ROI and updates pointer. */
+			@Override
+			public Roi next() {
+				if (index+1<overlay.size())
+					return overlay.get(++index);
+				else
+					return null;
+			} 
+
+			@Override
+			public void remove() { 
+				throw new UnsupportedOperationException(); 
+			}
+		};
+		return it;
 	}
     
 }

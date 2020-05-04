@@ -248,8 +248,6 @@ public class FFT implements PlugIn, Measurements {
 		showStatus("Forward transform");
 		long t0 = System.currentTimeMillis();
 		fht.transform();
-		showStatus("Calculating power spectrum");
-		ImageProcessor ps = fht.getPowerSpectrum();
 		if (iDisplayRawPS || (displayRawPS&&!IJ.isMacro())) {
 			ImageProcessor rawps = fht.getRawPowerSpectrum();
 			if (rawps!=null) {
@@ -279,6 +277,8 @@ public class FFT implements PlugIn, Measurements {
 		if (!(iDisplayFHT || iDisplayComplex || iDisplayRawPS))
 			iDisplayFFT = true;
 		if (iDisplayFFT) {
+			showStatus("Calculating power spectrum");
+			ImageProcessor ps = fht.getPowerSpectrum();
 			String title = "FFT of "+imp.getTitle();
 			ImagePlus imp2 = new ImagePlus(title, ps);
 			if (showOutput) {

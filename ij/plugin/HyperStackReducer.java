@@ -26,7 +26,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 	public void run(String arg) {
 		//IJ.log("HyperStackReducer-1");
 		imp = IJ.getImage();
-		if (!imp.isHyperStack()) {
+		if (!imp.isHyperStack() && imp.getNChannels()==1) {
 			IJ.error("Reducer", "HyperStack required");
 			return;
 		}
