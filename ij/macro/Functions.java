@@ -7705,7 +7705,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (interp.token!='.')
 			interp.error("'.' expected");
 		interp.getToken();
-		if (!(interp.token==WORD || interp.token==STRING_FUNCTION))
+		if (!(interp.token==WORD||interp.token==STRING_FUNCTION||interp.token==NUMERIC_FUNCTION))
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
 		ImagePlus imp = getImage();
@@ -7718,6 +7718,10 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("get")) {  // "get" added to Interpreter.isString(int)
 			String value = imp.getProp(getStringArg());
 			return new Variable(value!=null?value:"");
+		} else if (name.equals("getNumber")) {
+			String svalue = imp.getProp(getStringArg());
+			double nvalue = svalue!=null?Tools.parseDouble(svalue):Double.NaN;
+			return new Variable(nvalue);
 		} else if (name.equals("getInfo")) {
 			interp.getParens();
 			String value = (String)imp.getProperty("Info");

@@ -262,16 +262,14 @@ public class FFT implements PlugIn, Measurements {
 			swapQuadrants(ip2);
 			ImagePlus imp2 = new ImagePlus("FHT of "+FFT.fileName, ip2);
 			enhanceContrast(imp2);
-			imp2.setProp("FFT_width", originalWidth);
-			imp2.setProp("FFT_height", originalHeight);
+			setImageProperties(imp2, "Fast Hartley Transform");
 			imp2.show();
 		}
 		if (iDisplayComplex || (displayComplex&&!IJ.isMacro())) {
 			ImageStack ct = fht.getComplexTransform();
 			ImagePlus imp2 = new ImagePlus("Complex of "+FFT.fileName, ct);
 			enhanceContrast(imp2);
-			imp2.setProp("FFT_width", originalWidth);
-			imp2.setProp("FFT_height", originalHeight);
+			setImageProperties(imp2, "Complex Fourier Transform");
 			imp2.show();
 		}
 		if (!(iDisplayFHT || iDisplayComplex || iDisplayRawPS))
@@ -299,6 +297,13 @@ public class FFT implements PlugIn, Measurements {
 			if (!showOutput)
 				this.imp2 = imp2;
 		}
+	}
+	
+	private void setImageProperties(ImagePlus imp, String type) {
+		imp.setProp("ShowInfo", "true"); // Image>Show Info will display these properties
+		imp.setProp(" ", type);
+		imp.setProp("Original width", originalWidth);
+		imp.setProp("Original height", originalHeight);
 	}
 	
 	private void enhanceContrast(ImagePlus imp) {
@@ -554,8 +559,8 @@ public class FFT implements PlugIn, Measurements {
 	}
 	
 	private ImagePlus unpad(ImagePlus img) {
-		int width = (int)imp.getNumericProp("FFT_width");
-		int height = (int)imp.getNumericProp("FFT_height");
+		int width = (int)imp.getNumericProp("Original width");
+		int height = (int)imp.getNumericProp("Original height");
 		if (width==0 || height==0 || (width==img.getWidth()&&height==img.getHeight()))
 			return img;
 		int i=2;
