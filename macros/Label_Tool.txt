@@ -1,0 +1,57 @@
+// An ImageJ tool that makes nice and easy labels 
+// as seen https://twitter.com/Astbury_BSL/status/1258677104696311809
+// Author: Jerome Mutterer
+
+   var label = 'label';
+
+   macro "Label Tool (alt to remove) - C037o0c66L4c74L74d4T9208a" {  
+      linewidth = parseInt(call('ij.gui.Line.getWidth'));
+      radius = maxOf(4,linewidth*2);
+      getCursorLoc(x, y, z, flags);
+      if (flags&8>0) {
+         removeLabel(x,y);
+         exit();
+      } 
+      getDateAndTime(yr, mo, dw, d, h, m, s, ms);
+      uid = "labeltool_"+yr+""+mo+""+d+""+h+""+m+""+s+""+ms;
+      nbefore = Overlay.size;
+      getCursorLoc(x1, y1, z, flags);
+      while (flags&16>0) {
+         getCursorLoc(x1, y1, z, flags);
+         drawItem();
+         wait(30);
+         while (Overlay.size>nbefore) Overlay.removeSelection(Overlay.size-1);
+      }
+      drawItem();
+      label =getString("Enter label", label);
+      while (Overlay.size>nbefore) Overlay.removeSelection(Overlay.size-1);
+      drawItem();
+   }
+
+   function drawItem() {
+      makeOval(x-radius, y-radius, radius*2, radius*2);
+      Roi.setName(uid);
+      Overlay.addSelection("",0,""+hexCol());
+      makeLine(x, y,x1,y1,x1+(((x1<x)*-1)+((x1>=x)*1))*getStringWidth(label),y1);
+      Roi.setName(uid);
+      Overlay.addSelection(""+hexCol(), linewidth);
+      setFont("user");
+      makeText(label, x1 - (x1<x)*getStringWidth(label), y1-getValue("font.height")-linewidth);
+      Roi.setName(uid);
+      Overlay.addSelection(""+hexCol(), linewidth);
+      run("Select None");
+   }
+
+   function hexCol() {
+      return IJ.pad(toHex(getValue("rgb.foreground")),6);
+   }
+
+   function removeLabel(x,y) {
+      index = Overlay.indexAt(x,y);
+      if (index>=0) {
+         Overlay.activateSelection(index);
+         name = Roi.getName();
+         Overlay.removeRois(name);
+         Roi.remove;
+      }
+   }

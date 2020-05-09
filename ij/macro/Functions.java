@@ -306,6 +306,7 @@ public class Functions implements MacroConstants, Measurements {
 		return array;
 	}
 
+	// type must be added to Interpreter.getExpressionType and
 	// functions returning a string must be added to Interpreter.isString(int)
 	Variable getVariableFunction(int type) {
 		Variable var = null;
@@ -6477,8 +6478,8 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("'.' expected");
 		interp.getToken();
 		if (!(interp.token==WORD||interp.token==ARRAY_FUNCTION
-			||interp.token==PREDEFINED_FUNCTION||interp.token==USER_FUNCTION))
-			interp.error("Function name expected: ");
+		|| interp.token==PREDEFINED_FUNCTION||interp.token==USER_FUNCTION))
+			interp.error("Function name expected");
 		String name = interp.tokenString;
 		ImagePlus imp = getImage();
 		if (name.equals("lineTo"))
@@ -6533,7 +6534,7 @@ public class Functions implements MacroConstants, Measurements {
 			return 0.0;
 		else if (name.equals("hidden"))
 			return overlay!=null && imp.getHideOverlay()?1.0:0.0;
-		else if (name.equals("addSelection"))
+		else if (name.equals("addSelection") || name.equals("addRoi"))
 			return overlayAddSelection(imp, overlay);
 		else if (name.equals("setPosition")) {
 			addDrawingToOverlay(imp);
@@ -6555,7 +6556,7 @@ public class Functions implements MacroConstants, Measurements {
 			overlay.remove(index);
 			imp.draw();
 			return Double.NaN;
-		} else if (name.equals("activateSelection")) {
+		} else if (name.equals("activateSelection")||name.equals("activateRoi")) {
 			int index = (int)getArg();
 			checkIndex(index, 0, size-1);
 			Roi roi = overlay.get(index);
@@ -6625,7 +6626,12 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("setStrokeWidth")) {
 			overlay.setStrokeWidth(getArg());
 			return Double.NaN;
-		} else
+		} else if (name.equals("indexAt")) {
+			return overlay.indexAt((int)getFirstArg(),(int)getLastArg());
+		} else if (name.equals("removeRois")) {
+			overlay.remove(getStringArg());
+			return Double.NaN;
+ 		} else
 			interp.error("Unrecognized function name");
 		return Double.NaN;
 	}
@@ -7539,6 +7545,11 @@ public class Functions implements MacroConstants, Measurements {
 
 	void setRoiPosition(Roi roi) {
 		int channel = (int)getFirstArg();
+		if (interp.nextToken()==')') {
+			interp.getRightParen();
+			roi.setPosition(channel);
+			return;
+		}
 		int slice = (int)getNextArg();
 		int frame = (int)getLastArg();
 		roi.setPosition(channel, slice, frame);
@@ -7730,11 +7741,15 @@ public class Functions implements MacroConstants, Measurements {
 			imp.setProperty("Info", getStringArg());
 			return null;
 		} else if (name.equals("getSliceLabel")) {
-			interp.getParens();
-			String value = imp.getStack().getSliceLabel(imp.getCurrentSlice());
-			return new Variable(value!=null?value:"");
+			String value = imp.getStack().getSliceLabel((int)getArg());
+			Variable v = new Variable(value!=null?value:"");
+			return v;
 		} else if (name.equals("setSliceLabel")) {
-			imp.getStack().setSliceLabel(getStringArg(), imp.getCurrentSlice());
+			String label = getFirstString();
+			int slice = (int)getLastArg();
+			if (slice<1 || slice>imp.getStackSize())
+				interp.error("Argument must be >=1 and <="+imp.getStackSize());
+			imp.getStack().setSliceLabel(label, slice);
 			if (!Interpreter.isBatchMode()) imp.repaintWindow();
 			return null;
 		} else if (name.equals("getDicomTag")) {

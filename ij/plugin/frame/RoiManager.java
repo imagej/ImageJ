@@ -714,7 +714,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 								imp.setPosition(n);
 						} else
 							imp.setSlice(n);
-					}
+					} else if (roi.getZPosition()>0 && imp.getNSlices()==imp.getStackSize())
+						imp.setSlice(roi.getZPosition());
 				}
 				imp.unlock();
 			} else

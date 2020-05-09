@@ -45,7 +45,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public static final int OVAL_ROI=0, ELLIPSE_ROI=1, BRUSH_ROI=2;
 	
 	public static final String[] builtInTools = {"Arrow","Brush","Command Finder", "Developer Menu","Flood Filler",
-		"LUT Menu","Overlay Brush","Pencil","Pixel Inspector","Selection Rotator",
+		"Label Maker","LUT Menu","Overlay Brush","Pencil","Pixel Inspector","Selection Rotator",
 		"Spray Can","Stacks Menu","ROI Menu"};
 	private static final String[] builtInTools2 = {"Pixel Inspection Tool","Paintbrush Tool","Flood Fill Tool"};
 
@@ -1824,6 +1824,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			installMacroFromJar("/macros/CommandFinderTool.txt");
 		else if (label.startsWith("ROI"))
 			installMacroFromJar("/macros/RoiMenuTool.txt");
+		else if (label.startsWith("Label"))
+			installMacroFromJar("/macros/Label_Tool.txt");
 		else
 			ok = false;
 		return ok;

@@ -61,7 +61,8 @@ public class Overlay implements Iterable<Roi> {
 
     /** Removes the ROI with the specified index from this Overlay. */
     public void remove(int index) {
-    	list.remove(index);
+    	if (index>=0)
+    		list.remove(index);
     }
     
     /** Removes the specified ROI from this Overlay. */
@@ -112,6 +113,16 @@ public class Overlay implements Iterable<Roi> {
 		return -1;
     }
     
+    /** Returns the index of the last ROI that contains the point (x,y). */
+    public int indexAt(int x, int y) {
+     	Roi[] rois = toArray();
+		for (int i=rois.length-1; i>=0; i--) {
+			if (rois[i]!=null && rois[i].contains(x,y))
+				return i;
+		}
+		return -1;
+    }
+
     /** Returns 'true' if this Overlay contains the specified ROI. */
     public boolean contains(Roi roi) {
     	return list.contains(roi);
