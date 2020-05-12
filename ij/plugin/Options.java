@@ -198,7 +198,7 @@ public class Options implements PlugIn {
 	private void roiDefaults() {
 		Color color = Roi.getColor();
 		String cname = Colors.getColorName(color, "yellow");
-		GenericDialog gd = new GenericDialog("Roi Defaults");
+		GenericDialog gd = new GenericDialog("ROI Defaults");
 		gd.addChoice("Color:", Colors.colors, cname);
 		gd.addNumericField("Stroke width:", Roi.getDefaultStrokeWidth(), 0);
 		gd.addNumericField("Group:", Roi.getDefaultGroup(), 0);

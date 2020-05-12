@@ -44,8 +44,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	protected TextArea textArea1, textArea2;
 	protected Vector defaultValues,defaultText,defaultStrings,defaultChoiceIndexes;
 	protected Component theLabel;
-	private Button okay = new Button("  OK  ");
-	private Button cancel = new Button("Cancel");
+	private Button okay;
+	private Button cancel;
 	private Button no, help;
 	private String helpLabel = "Help";
 	private boolean wasCanceled, wasOKed;
@@ -98,6 +98,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     /** Creates a new GenericDialog using the specified title and parent frame. */
     public GenericDialog(String title, Frame parent) {
 		super(parent==null?new Frame():parent, title, true);
+		okay = new Button("  OK  ");
+		cancel = new Button("Cancel");
 		if (Prefs.blackCanvas) {
 			setForeground(SystemColor.controlText);
 			setBackground(SystemColor.control);
