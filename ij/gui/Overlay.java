@@ -113,7 +113,8 @@ public class Overlay implements Iterable<Roi> {
 		return -1;
     }
     
-    /** Returns the index of the last ROI that contains the point (x,y). */
+    /** Returns the index of the last ROI that contains the point (x,y)
+    	or null if no ROI contains the point. */
     public int indexAt(int x, int y) {
      	Roi[] rois = toArray();
 		for (int i=rois.length-1; i>=0; i--) {

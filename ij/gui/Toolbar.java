@@ -1103,6 +1103,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				case RECTANGLE:
 					if (rectType==ROUNDED_RECT_ROI)
 						IJ.doCommand("Rounded Rect Tool...");
+					else
+						IJ.doCommand("Roi Defaults...");
 					break;
 				case OVAL:
 					showBrushDialog();

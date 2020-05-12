@@ -22,6 +22,8 @@ public class Options implements PlugIn {
 			{conversions(); return;}
 		else if (arg.equals("dicom"))
 			{dicom(); return;}
+		else if (arg.equals("roi"))
+			{roiDefaults(); return;}
 		else if (arg.equals("reset"))
 			{reset(); return;}
 	}
@@ -191,6 +193,24 @@ public class Options implements PlugIn {
 		Prefs.ignoreRescaleSlope = gd.getNextBoolean();
 		Prefs.rotateYZ = gd.getNextBoolean();
 		Prefs.flipXZ = gd.getNextBoolean();
+	}
+	
+	private void roiDefaults() {
+		Color color = Roi.getColor();
+		String cname = Colors.getColorName(color, "yellow");
+		GenericDialog gd = new GenericDialog("Roi Defaults");
+		gd.addChoice("Color:", Colors.colors, cname);
+		gd.addNumericField("Stroke width:", Roi.getDefaultStrokeWidth(), 0);
+		gd.addNumericField("Group:", Roi.getDefaultGroup(), 0);
+		gd.addMessage("Color changes if group>0");		
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		cname = gd.getNextChoice();
+		color = Colors.getColor(cname, Color.yellow);
+		Roi.setColor(color);
+		Roi.setDefaultStrokeWidth( gd.getNextNumber() );
+		Roi.setDefaultGroup( (int)gd.getNextNumber() );
 	}
 	
 	// Delete preferences file when ImageJ quits

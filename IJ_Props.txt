@@ -95,25 +95,26 @@ selection24="Image to Selection...",ij.plugin.OverlayCommands("image-roi")
 selection25="Add to Manager[t]",ij.plugin.Selection("add")
 
 # Plugins installed in the Edit/Options submenu
-options01="Line Width...",ij.plugin.Options("line")
-options02="Input/Output...",ij.plugin.Options("io")
-options03="Fonts...",ij.plugin.SimpleCommands("fonts")
-options04="Plots...",ij.plugin.Profiler("set")
-options05="Rounded Rect Tool...",ij.plugin.RectToolOptions
-options06="Arrow Tool...",ij.plugin.ArrowToolOptions
-options07="Point Tool...",ij.plugin.PointToolOptions
-options08="Wand Tool...",ij.plugin.WandToolOptions
-options09="Colors...",ij.plugin.Colors
-options10="Appearance...",ij.plugin.AppearanceOptions
-options11="Conversions...",ij.plugin.Options("conv")
-options12="Memory & Threads...",ij.plugin.Memory
-options13="Proxy Settings...",ij.plugin.ProxySettings
-options14="Compiler...",ij.plugin.Compiler("options")
-options15="DICOM...",ij.plugin.Options("dicom")
-options16="Startup...",ij.plugin.Startup
-options17="Misc...",ij.plugin.Options("misc")
-options18=-
-options19="Reset... ",ij.plugin.Options("reset")
+options01="Appearance...",ij.plugin.AppearanceOptions
+options02="Arrow Tool...",ij.plugin.ArrowToolOptions
+options03="Colors...",ij.plugin.Colors
+options04="Compiler...",ij.plugin.Compiler("options")
+options05="Conversions...",ij.plugin.Options("conv")
+options06="DICOM...",ij.plugin.Options("dicom")
+options07="Fonts...",ij.plugin.SimpleCommands("fonts")
+options08="Input/Output...",ij.plugin.Options("io")
+options09="Line Width...",ij.plugin.Options("line")
+options10="Memory & Threads...",ij.plugin.Memory
+options11="Misc...",ij.plugin.Options("misc")
+options12="Plots...",ij.plugin.Profiler("set")
+options13="Point Tool...",ij.plugin.PointToolOptions
+options14="Proxy Settings...",ij.plugin.ProxySettings
+options15="Roi Defaults...",ij.plugin.Options("roi")
+options16="Rounded Rect Tool...",ij.plugin.RectToolOptions
+options17="Startup...",ij.plugin.Startup
+options18="Wand Tool...",ij.plugin.WandToolOptions
+options19=-
+options20="Reset... ",ij.plugin.Options("reset")
 
 # Plugins installed in the Image/Adjust submenu
 adjust01="Brightness/Contrast...[C]",ij.plugin.frame.ContrastAdjuster
