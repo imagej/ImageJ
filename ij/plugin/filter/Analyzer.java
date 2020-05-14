@@ -711,6 +711,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		int group = roi!=null?roi.getGroup():0;
 		if (group>0)
 			rt.addValue("Group", group);
+			rt.addValue("Group name", Roi.getNameOfGroup(group));
 	}
 	
 	private void clearSummary() {
