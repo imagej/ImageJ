@@ -6,6 +6,7 @@ import ij.io.*;
 import ij.plugin.filter.*;
 import ij.plugin.frame.LineWidthAdjuster;
 import java.awt.*;
+import java.awt.event.*;
 
 /** This plugin implements most of the commands
 	in the Edit/Options sub-menu. */
@@ -195,6 +196,27 @@ public class Options implements PlugIn {
 		Prefs.flipXZ = gd.getNextBoolean();
 	}
 	
+	class ButtonPanel extends Panel implements ActionListener{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		public ButtonPanel() {
+			super();
+			Button button = new Button("Set group names");
+			button.addActionListener(this);
+			this.add(button);			
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			RoiGroupTable table = new RoiGroupTable();
+			table.showTable();
+		}
+		
+		
+	}
 	private void roiDefaults() {
 		Color color = Roi.getColor();
 		String cname = Colors.getColorName(color, "yellow");
@@ -202,7 +224,8 @@ public class Options implements PlugIn {
 		gd.addChoice("Color:", Colors.colors, cname);
 		gd.addNumericField("Stroke width:", Roi.getDefaultStrokeWidth(), 0);
 		gd.addNumericField("Group:", Roi.getDefaultGroup(), 0);
-		gd.addMessage("Color changes if group>0");		
+		gd.addMessage("Color changes if group>0");	
+		gd.addPanel(new ButtonPanel());
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
