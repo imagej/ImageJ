@@ -75,6 +75,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	private static LUT glasbeyLut;
 	private static int defaultGroup; // zero is no specific group
 	private static Color groupColor;
+	static Map<Integer, String> groupNames = Prefs.getGroupNameMap();
 	private static double defaultStrokeWidth;
 	
 	protected int type;
@@ -1733,8 +1734,41 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public int getGroup() {
 		return this.group;
 	}
-
-	/** Sets the group of this Roi, and updates stroke color accordingly. */
+	
+	/** Return the group name of this ROI, in the current state of the group:name mapping */
+	public String getGroupName() {
+		return getNameOfGroup( this.getGroup() );
+		}
+	
+	/** Return the name associated to a given group **/
+	public static String getNameOfGroup(int group) {
+		if ( groupNames.containsKey(group) ) 
+			return groupNames.get(group);
+		else
+			return new String("group") + String.valueOf(group); // or should it return None ?
+	}
+	
+	/** Add or update a group name **/
+	public static void setNameOfGroup(int group, String name) {
+		groupNames.put(group, name);
+	}
+	
+	/** Return the mapping group:name **/
+	public static Map<Integer, String> getGroupNameMap(){
+		return new TreeMap<Integer, String>(Roi.groupNames); // return a copy (safer)
+	}
+	
+	/** Replace existing group name mapping, the mapping is automatically sorted by keys **/
+	public static void setGroupNameMap(Map<Integer, String> groupNames) {
+		Roi.groupNames = new TreeMap<Integer, String>(groupNames);
+	}
+	
+	/** Replace existing group name mapping, with a already sorted Map (TreeMap) **/
+	public static void setGroupNameMap(TreeMap<Integer, String> groupNames) {
+		Roi.groupNames = groupNames;
+	}
+	
+	/** Sets the group of this Roi, and updates stroke color and name accordingly. */
 	public void setGroup(int group) {
 		if (group<0 || group>255)
 			throw new IllegalArgumentException("Invalid group: "+group);
