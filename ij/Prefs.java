@@ -60,6 +60,8 @@ public class Prefs {
 		CANCEL_BUTTON_ON_RIGHT=1<<10, IGNORE_RESCALE_SLOPE=1<<11,
 		NON_BLOCKING_DIALOGS=1<<12;
 	public static final String OPTIONS2 = "prefs.options2";
+	
+	private static Map<Integer, String> roiGroupNames = new TreeMap<Integer, String>();
     
 	/** file.separator system property */
 	public static String separator = System.getProperty("file.separator");
@@ -395,6 +397,21 @@ public class Prefs {
 	/** Returns the file.separator system property. */
 	public static String getFileSeparator() {
 		return separator;
+	}
+	
+	/** Returns the saved group names mapping */
+	public static Map<Integer, String> getGroupNameMap(){
+		return new TreeMap<Integer, String>(roiGroupNames);
+	}
+	
+	/** Set the groupName mapping */
+	public static void setGroupNameMap(Map<Integer, String> groupNames) {
+		roiGroupNames = new TreeMap<Integer, String>(groupNames);
+	}
+	
+	/** Set the groupName mapping from a already ordered Map */
+	public static void setGroupNameMap(TreeMap<Integer, String> groupNames) {
+		roiGroupNames = groupNames;
 	}
 
 	/** Opens the ImageJ preferences file ("IJ_Prefs.txt") file. */
