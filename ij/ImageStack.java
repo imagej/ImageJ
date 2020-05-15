@@ -349,7 +349,7 @@ public class ImageStack {
 
 	public String toString() {
 		String v = isVirtual()?"(V)":"";
-		return ("stack["+getWidth()+"x"+getHeight()+"x"+getSize()+v+"]");
+		return ("stack["+getWidth()+"x"+getHeight()+"x"+size()+v+"]");
 	}
 	
 	/** Returns, as a double, the value of the specified voxel.
@@ -628,12 +628,12 @@ public class ImageStack {
 	 
 	/** Duplicates this stack. */
 	 public ImageStack duplicate() {
-	 	return crop(0, 0, 0, width, height, getSize());
+	 	return crop(0, 0, 0, width, height, size());
 	 }
 	 
 	/** Creates a new stack by cropping this one. */
 	 public ImageStack crop(int x, int y, int z, int width, int height, int depth) {
-	 	if (x<0||y<0||z<0||x+width>this.width||y+height>this.height||z+depth>getSize())
+	 	if (x<0||y<0||z<0||x+width>this.width||y+height>this.height||z+depth>size())
 	 		throw new IllegalArgumentException("Argument out of range");
 		ImageStack stack2 = new ImageStack(width, height, getColorModel());
 		for (int i=z; i<z+depth; i++) {
@@ -648,7 +648,7 @@ public class ImageStack {
 	/** Creates a float version of this stack. */
 	 public ImageStack convertToFloat() {
 		ImageStack stack2 = new ImageStack(width, height, getColorModel());
-		for (int i=1; i<=getSize(); i++) {
+		for (int i=1; i<=size(); i++) {
 			ImageProcessor ip2 = this.getProcessor(i);
 			ip2 = ip2.convertToFloat();
 			stack2.addSlice(this.getSliceLabel(i), ip2);

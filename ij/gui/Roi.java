@@ -1125,24 +1125,24 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			cachedMask = null;
 		switch(key) {
 			case KeyEvent.VK_UP:
-				y--;
-				if (y<0 && (type!=RECTANGLE||clipboard==null))
-					y = 0;
+				this.y--;
+				if (this.y<0 && (type!=RECTANGLE||clipboard==null))
+					this.y = 0;
 				break;
 			case KeyEvent.VK_DOWN:
-				y++;
-				if ((y+height)>=yMax && (type!=RECTANGLE||clipboard==null))
-					y = yMax-height;
+				this.y++;
+				if ((this.y+height)>=yMax && (type!=RECTANGLE||clipboard==null))
+					this.y = yMax-height;
 				break;
 			case KeyEvent.VK_LEFT:
-				x--;
-				if (x<0 && (type!=RECTANGLE||clipboard==null))
-					x = 0;
+				this.x--;
+				if (this.x<0 && (type!=RECTANGLE||clipboard==null))
+					this.x = 0;
 				break;
 			case KeyEvent.VK_RIGHT:
-				x++;
-				if ((x+width)>=xMax && (type!=RECTANGLE||clipboard==null))
-					x = xMax-width;
+				this.x++;
+				if ((this.x+width)>=xMax && (type!=RECTANGLE||clipboard==null))
+					this.x = xMax-width;
 				break;
 		}
 		updateClipRect();
@@ -1150,8 +1150,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			imp.draw();
 		else
 			imp.draw(clipX, clipY, clipWidth, clipHeight);
-		oldX = x; oldY = y;
+		oldX = this.x; oldY = this.y;
 		bounds = null;
+		setLocation(this.x, this.y);
 		showStatus();
 		notifyListeners(RoiListener.MOVED);
 	}
@@ -1633,7 +1634,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		String value;
 		if (state!=CONSTRUCTING && (type==RECTANGLE||type==POINT) && width<=25 && height<=25) {
 			ImageProcessor ip = imp.getProcessor();
-			double v = ip.getPixelValue(x,y);
+			double v = ip.getPixelValue(this.x,this.y);
 			int digits = (imp.getType()==ImagePlus.GRAY8||imp.getType()==ImagePlus.GRAY16)?0:2;
 			value = ", value="+IJ.d2s(v,digits);
 		} else
@@ -1644,7 +1645,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			size = ", w="+IJ.d2s(width*cal.pixelWidth)+" ("+width+"), h="+IJ.d2s(height*cal.pixelHeight)+" ("+height+")";
 		else
 			size = ", w="+width+", h="+height;
-		IJ.showStatus(imp.getLocationAsString(x,y)+size+value);
+		IJ.showStatus(imp.getLocationAsString(this.x,this.y)+size+value);
 	}
 		
 	/** Always returns null for rectangular Roi's */

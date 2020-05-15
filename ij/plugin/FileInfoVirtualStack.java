@@ -221,7 +221,11 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		}
 	 }
  
-	 /** Returns the number of images in this stack. */
+	/** Returns the number of slices in this stack. */
+	public int size() {
+		return getSize();
+	}
+
 	public int getSize() {
 		return nImages;
 	}

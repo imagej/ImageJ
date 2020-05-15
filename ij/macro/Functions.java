@@ -6631,8 +6631,27 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("removeRois")) {
 			overlay.remove(getStringArg());
 			return Double.NaN;
+		} else if (name.equals("getBounds")) {
+			return getOverlayElementBounds(overlay);
  		} else
 			interp.error("Unrecognized function name");
+		return Double.NaN;
+	}
+	
+	private double getOverlayElementBounds(Overlay overlay) {
+		int index = (int)getFirstArg();
+		Variable x = getNextVariable();
+		Variable y = getNextVariable();
+		Variable width = getNextVariable();
+		Variable height = getLastVariable();
+		Roi roi = overlay.get(index);
+		if (roi==null)
+			return Double.NaN;
+		Rectangle2D.Double r = roi.getFloatBounds();
+		x.setValue(r.x);
+		y.setValue(r.y);
+		width.setValue(r.width);
+		height.setValue(r.height);
 		return Double.NaN;
 	}
 

@@ -117,8 +117,9 @@ public class VirtualStack extends ImageStack {
 	
 	/** Deletes the last slice in the stack. */
 	public void deleteLastSlice() {
-		if (nSlices>0)
-			deleteSlice(nSlices);
+		int n = size();
+		if (n>0)
+			deleteSlice(n);
 	}
 	   
    /** Returns the pixel array for the specified slice, were 1<=n<=nslices. */
@@ -226,8 +227,12 @@ public class VirtualStack extends ImageStack {
 	public int saveChanges(int n) {
 		return -1;
 	}
+	
+	/** Returns the number of slices in this stack. */
+	public int size() {
+		return getSize();
+	}
 
-	 /** Returns the number of slices in this stack. */
 	public int getSize() {
 		return nSlices;
 	}
@@ -289,7 +294,7 @@ public class VirtualStack extends ImageStack {
 	}
 	
 	public ImageStack sortDicom(String[] strings, String[] info, int maxDigits) {
-		int n = getSize();
+		int n = size();
 		String[] names2 = new String[n];
 		for (int i=0; i<n; i++)
 			names2[i] = names[i];
