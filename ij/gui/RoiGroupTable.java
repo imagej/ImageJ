@@ -180,5 +180,7 @@ public class RoiGroupTable extends Panel {
 	    	}
     	}
     }
+    
+    public RoiGroupTableModel getTableModel(){ return this.tableModel; }
 
 }
