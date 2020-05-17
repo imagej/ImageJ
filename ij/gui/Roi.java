@@ -44,6 +44,7 @@ import java.awt.geom.*;
  * previously accessible via Edit>Options>Plot) and this flag has no effect any more.
  *
   */
+@SuppressWarnings("serial")
 public class Roi extends Object implements Cloneable, java.io.Serializable, Iterable<Point> {
 
 	public static final int CONSTRUCTING=0, MOVING=1, RESIZING=2, NORMAL=3, MOVING_HANDLE=4; // States
@@ -71,7 +72,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	protected static int pasteMode = Blitter.COPY;
 	protected static int lineWidth = 1;
 	protected static Color defaultFillColor;
-	private static Vector listeners = new Vector();
+	private static Vector<RoiListener> listeners = new Vector<RoiListener>();
 	private static LUT glasbeyLut;
 	private static int defaultGroup; // zero is no specific group
 	private static Color groupColor;
