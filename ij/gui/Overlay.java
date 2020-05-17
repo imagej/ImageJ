@@ -11,7 +11,7 @@ import ij.measure.ResultsTable;
 
 /** An Overlay is a list of ROIs that can be drawn non-destructively on an Image. */
 public class Overlay implements Iterable<Roi> {
-	private Vector list;
+	private Vector<Roi> list;
     private boolean label;
     private boolean drawNames;
     private boolean drawBackgrounds;
@@ -23,12 +23,12 @@ public class Overlay implements Iterable<Roi> {
     
     /** Constructs an empty Overlay. */
     public Overlay() {
-    	list = new Vector();
+    	list = new Vector<Roi>();
     }
     
     /** Constructs an Overlay and adds the specified ROI. */
     public Overlay(Roi roi) {
-    	list = new Vector();
+    	list = new Vector<Roi>();
     	if (roi!=null)
     		list.add(roi);
     }
@@ -400,9 +400,9 @@ public class Overlay implements Iterable<Roi> {
     	return isCalibrationBar;
     }
 
-    void setVector(Vector v) {list = v;}
+    void setVector(Vector<Roi> v) {list = v;}
         
-    Vector getVector() {return list;}
+    Vector<Roi> getVector() {return list;}
     
     /** Set 'false' to prevent ROIs in this overlay from being activated 
 		by clicking on their labels or by a long clicking. */ 
