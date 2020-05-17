@@ -4,7 +4,7 @@ import java.util.Vector;
 import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
 import ij.*;
-import ij.process.ImageProcessor;
+//import ij.process.ImageProcessor;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.Colors;
 import ij.measure.ResultsTable;
@@ -400,9 +400,9 @@ public class Overlay implements Iterable<Roi> {
     	return isCalibrationBar;
     }
 
-    void setVector(Vector v) {list = v;}
+    void setVector(Vector<Roi> v) {list = v;}
         
-    Vector getVector() {return list;}
+    Vector<Roi> getVector() {return list;}
     
     /** Set 'false' to prevent ROIs in this overlay from being activated 
 		by clicking on their labels or by a long clicking. */ 
