@@ -687,7 +687,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			roi = convertLineToArea(this);
 		ImageProcessor mask = roi.getMask();
 		Rectangle bounds = roi.getBounds();
-		ArrayList points = new ArrayList();
+		ArrayList<Point> points = new ArrayList<Point>();
 		for (int y=0; y<bounds.height; y++) {
 			for (int x=0; x<bounds.width; x++) {
 				if (mask==null || mask.getPixel(x,y)!=0)
@@ -1534,7 +1534,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		if (imp==null) return;
 		imp.draw(clipX-5, clipY-5, clipWidth+10, clipHeight+10);
 		if (Recorder.record) {
-			String method;
+			//String method;
 			if (type==OVAL)
 				Recorder.record("makeOval", x, y, width, height);
 			else if (!(this instanceof TextRoi)) {
