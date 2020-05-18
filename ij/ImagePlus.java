@@ -3192,4 +3192,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	return plot;
     }
     
+    public Properties getImageProperties() {
+    	if (imageProperties==null)
+    		imageProperties = new Properties();
+    	return imageProperties;
+    }
+    
 }

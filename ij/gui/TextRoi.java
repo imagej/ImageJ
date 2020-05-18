@@ -24,7 +24,7 @@ public class TextRoi extends Roi {
 	private static String name = "SansSerif";
 	private static int style = Font.PLAIN;
 	private static int size = 18;
-	private Font instanceFont;
+	private Font font;
 	private static boolean antialiasedText = true; // global flag used by text tool
 	private static int globalJustification = LEFT;
 	private static Color defaultFillColor;
@@ -105,7 +105,7 @@ public class TextRoi extends Roi {
 			font = defaultFont;
 		if (font==null)
 			font = new Font("SansSerif", Font.PLAIN, 14);
-		instanceFont = font;
+		this.font = font;
 		setAntiAlias(antialiasedText);
 		firstChar = false;
 		if (defaultColor!=null)
@@ -117,7 +117,7 @@ public class TextRoi extends Roi {
 	public TextRoi(int x, int y, String text, Font font, Color color) {
 		super(x, y, 1, 1);
 		if (font==null) font = new Font(name, style, size);
-		instanceFont = font;
+		this.font = font;
 		IJ.error("TextRoi", "API has changed. See updated example at\nhttp://imagej.nih.gov/ij/macros/js/TextOverlay.js");
 	}
 
@@ -140,7 +140,7 @@ public class TextRoi extends Roi {
 			firstMouseUp = false;
 			previousRoi = null;
 		}
-		instanceFont = new Font(name, style, size);
+		font = new Font(name, style, size);
 		justification = globalJustification;
 		setStrokeColor(Toolbar.getForegroundColor());
 		setAntiAlias(antialiasedText);
@@ -192,13 +192,13 @@ public class TextRoi extends Roi {
 	}
 
 	Font getScaledFont() {
-		if (instanceFont==null)
-			instanceFont = new Font("SansSerif", Font.PLAIN, 14);
+		if (font==null)
+			font = new Font("SansSerif", Font.PLAIN, 14);
 		double mag = getMagnification();
 		if (nonScalable || imp==null || mag==1.0)
-			return instanceFont;
+			return font;
 		else
-			return instanceFont.deriveFont((float)(instanceFont.getSize()*mag));
+			return font.deriveFont((float)(font.getSize()*mag));
 	}
 	
 	/** Renders the text on the image. Draws the text in
@@ -211,7 +211,7 @@ public class TextRoi extends Roi {
 	public void drawPixels(ImageProcessor ip) {
 		if (!ip.fillValueSet())
 			ip.setColor(Toolbar.getForegroundColor());
-		ip.setFont(instanceFont);
+		ip.setFont(font);
 		ip.setAntialiasedText(getAntiAlias());
 		FontMetrics metrics = ip.getFontMetrics();
 		int fontHeight = metrics.getHeight();
@@ -345,13 +345,20 @@ public class TextRoi extends Roi {
 	
 	/** Sets the current font. */
 	public void setFont(Font font) {
-		instanceFont = font;
+		this.font = font;
 		updateBounds();
+	}
+	
+	/** Sets the size of the current font. */
+	public void setFontSize(int size) {
+		if (font==null)
+			font = defaultFont;
+		font = font.deriveFont((float)size);
 	}
 		
 	/** Returns the current font. */
 	public Font getCurrentFont() {
-		return instanceFont;
+		return font;
 	}
 	
 	/** Returns the state of the global 'antialiasedText' variable, which is used by the "Fonts" widget. */
@@ -401,8 +408,7 @@ public class TextRoi extends Roi {
 		if (justification<0 || justification>RIGHT)
 			justification = LEFT;
 		this.justification = justification;
-		if (ic==null)
-			updateBounds();
+        updateBounds();
 		if (imp!=null)
 			imp.draw();
 	}
@@ -441,6 +447,11 @@ public class TextRoi extends Roi {
 	/** Sets the default font. */
 	public static void setDefaultFont(Font font) {
 		defaultFont = font;
+	}
+	
+	/** Sets the default font size. */
+	public static void setDefaultFontSize(int size) {
+		defaultFont = defaultFont.deriveFont((float)size);
 	}
 
 	/** Sets the default fill (background) color. */
@@ -629,10 +640,10 @@ public class TextRoi extends Roi {
 	}
 	
 	public void clear(ImageProcessor ip) {
-		if (instanceFont==null)
+		if (font==null)
 			ip.fill();
 		else {
-			ip.setFont(instanceFont);
+			ip.setFont(font);
 			ip.setAntialiasedText(antialiasedText);
 			int i=0, w=0;
 			while (i<MAX_LINES && theText[i]!=null) {
@@ -703,7 +714,7 @@ public class TextRoi extends Roi {
 	
 	/** @deprecated Replaced by setFont(font) */
 	public void setCurrentFont(Font font) {
-		instanceFont = font;
+		this.font = font;
 		updateBounds();
 	}
 

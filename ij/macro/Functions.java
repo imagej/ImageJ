@@ -5475,9 +5475,9 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getParens();
 			props.clear();
 		} else if (name.equals("setList"))
-			setProperties();
+			setPropertiesFromString(props);
 		else if (name.equals("getList"))
-			value = getProperties();
+			value = getPropertiesAsString(props);
 		else if (name.equals("size")||name.equals("getSize")) {
 			interp.getParens();
 			value = ""+props.size();
@@ -5589,36 +5589,6 @@ public class Functions implements MacroConstants, Measurements {
 				props.setProperty(name, value);
 			}
 		}
-	}
-
-	void setProperties() {
-		String list = getStringArg();
-		props.clear();
-		try {
-			InputStream is = new ByteArrayInputStream(list.getBytes("utf-8"));
-			props.load(is);
-		} catch(Exception e) {
-			interp.error(""+e);
-		}
-	}
-
-	String getProperties() {
-		interp.getParens();
-		Vector v = new Vector();
-		for (Enumeration en=props.keys(); en.hasMoreElements();)
-			v.addElement(en.nextElement());
-		String[] keys = new String[v.size()];
-		for (int i=0; i<keys.length; i++)
-			keys[i] = (String)v.elementAt(i);
-		Arrays.sort(keys);
-		StringBuffer sb = new StringBuffer();
-		for (int i=0; i<keys.length; i++) {
-			sb.append(keys[i]);
-			sb.append("=");
-			sb.append(props.get(keys[i]));
-			sb.append("\n");
-		}
-		return sb.toString();
 	}
 
 	void makePoint() {
@@ -7415,7 +7385,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (interp.token!='.')
 			interp.error("'.' expected");
 		interp.getToken();
-		if (interp.token!=WORD)
+		if (!(interp.token==WORD||interp.token==PREDEFINED_FUNCTION))
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
 		if (name.equals("getDefaultStrokeWidth")) {
@@ -7557,6 +7527,21 @@ public class Functions implements MacroConstants, Measurements {
 			if (!(roi instanceof PointRoi))
 				interp.error("Point selection required");
 			return new Variable(((PointRoi)roi).getPointPosition((int)getArg()));
+		} else if (name.equals("setFontSize")) {
+			if (roi instanceof TextRoi)
+				((TextRoi)roi).setFontSize((int)getArg());
+			return null;
+		} else if (name.equals("setJustification")) {
+			if (!(roi instanceof TextRoi))
+				return null;
+			String str = getStringArg().toLowerCase(Locale.US);
+			int just = TextRoi.LEFT;
+			if (str.equals("center"))
+				just = TextRoi.CENTER;
+			else if (str.equals("right"))
+				just = TextRoi.RIGHT;
+			((TextRoi)roi).setJustification(just);
+			return null;
 		} else
 			interp.error("Unrecognized Roi function");
 		return null;
@@ -7735,7 +7720,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (interp.token!='.')
 			interp.error("'.' expected");
 		interp.getToken();
-		if (!(interp.token==WORD||interp.token==STRING_FUNCTION||interp.token==NUMERIC_FUNCTION))
+		if (!(interp.token==WORD||interp.token==STRING_FUNCTION||interp.token==NUMERIC_FUNCTION||interp.token==ARRAY_FUNCTION))
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
 		ImagePlus imp = getImage();
@@ -7774,9 +7759,44 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("getDicomTag")) {
 			String value = imp.getStringProperty(getStringArg());
 			return new Variable(value!=null?value:"");
+		} else if (name.equals("setList")) {
+			setPropertiesFromString(imp.getImageProperties());
+			return null;
+		} else if (name.equals("getList")) {
+			return new Variable(getPropertiesAsString(imp.getImageProperties()));
 		} else
 			interp.error("Unrecognized Property function");
 		return null;
+	}
+	
+	private void setPropertiesFromString(Properties props) {
+		String list = getStringArg();
+		props.clear();
+		try {
+			InputStream is = new ByteArrayInputStream(list.getBytes("utf-8"));
+			props.load(is);
+		} catch(Exception e) {
+			interp.error(""+e);
+		}
+	}
+
+	private String getPropertiesAsString(Properties props) {
+		interp.getParens();
+		Vector v = new Vector();
+		for (Enumeration en=props.keys(); en.hasMoreElements();)
+			v.addElement(en.nextElement());
+		String[] keys = new String[v.size()];
+		for (int i=0; i<keys.length; i++)
+			keys[i] = (String)v.elementAt(i);
+		Arrays.sort(keys);
+		StringBuffer sb = new StringBuffer();
+		for (int i=0; i<keys.length; i++) {
+			sb.append(keys[i]);
+			sb.append("=");
+			sb.append(props.get(keys[i]));
+			sb.append("\n");
+		}
+		return sb.toString();
 	}
 
 } // class Functions
