@@ -709,8 +709,12 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addValue("RRWidth", p[4]*pw);
 		}
 		int group = roi!=null?roi.getGroup():0;
-		if (group>0)
+		if (group>0) {
 			rt.addValue("Group", group);
+			String name = Roi.getGroupName(group);
+			if (name!=null)
+				rt.addValue("GroupName", name);				
+		}
 	}
 	
 	private void clearSummary() {

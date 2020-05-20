@@ -53,6 +53,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public static final int NOT_PASTING = -1;
 	public static final int FERET_ARRAYSIZE = 16; // Size of array with Feret values
 	public static final int FERET_ARRAY_POINTOFFSET = 8; // Where point coordinates start in Feret array
+	private static final String NAMES_KEY = "group.names";
 	
 	static final int NO_MODS=0, ADD_TO_ROI=1, SUBTRACT_FROM_ROI=2; // modification states
 		
@@ -76,7 +77,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	private static int defaultGroup; // zero is no specific group
 	private static Color groupColor;
 	private static double defaultStrokeWidth;
-	
+	private static String groupNamesString = Prefs.get(NAMES_KEY, null);
+	private static String[] groupNames;
+	private static boolean groupNamesChanged;
+
 	protected int type;
 	protected int xMax, yMax;
 	protected ImagePlus imp;
@@ -1733,6 +1737,71 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	/** Returns the group attribute of this ROI. */
 	public int getGroup() {
 		return this.group;
+	}
+
+	/** Returns the group name associtated with the specified group. */
+	public static String getGroupName(int groupNumber) {
+		if (groupNumber<1 || groupNumber>255)
+			return null;
+		if (groupNames==null && groupNamesString==null)
+			return null;
+		if (groupNames==null)
+			groupNames = groupNamesString.split(",");
+		if (groupNumber>groupNames.length)
+			return null;
+		String name = groupNames[groupNumber-1];
+		if (name==null)
+			return null;
+		return name.length()>0?name:null;
+	}
+	
+	public static synchronized void setGroupName(int groupNumber, String name) {
+		if (groupNumber<1 || groupNumber>255)
+			return;
+		if (groupNamesString==null && groupNames==null)
+			groupNames = new String[groupNumber];
+		if (groupNames==null)
+			groupNames = groupNamesString.split(",");
+		if (groupNumber>groupNames.length) {
+			String[] temp = new String[groupNumber];
+			for (int i=0; i<groupNames.length; i++)
+				temp[i] = groupNames[i];
+			groupNames = temp;
+		}
+		//IJ.log("setGroupName: "+groupNumber+"  "+name+"  "+groupNames.length);
+		groupNames[groupNumber-1] = name;
+		groupNamesChanged = true;
+	}
+	
+	public static synchronized void saveGroupNames() {
+		if (groupNames==null)
+			return;
+		StringBuilder sb = new StringBuilder(groupNames.length*12);
+		for (int i=0; i<groupNames.length; i++) {
+			String name = groupNames[i];
+			if (name==null)
+				name = "";
+			sb.append(name);
+			if (i<groupNames.length-1)
+				sb.append(",");			
+		}
+		groupNamesString = sb.toString();
+		groupNames = null;
+		Prefs.set(NAMES_KEY, groupNamesString);
+	}
+	
+	/** Returns the group names as a comma-delimeted string. */
+	public static String getGroupNames() {
+		if (groupNamesChanged && groupNames!=null)
+			saveGroupNames();
+		groupNamesChanged = false;
+		return groupNamesString;
+	}
+
+	/** Sets the group names from a comma-delimeted string. */
+	public static void setGroupNames(String names) {
+		groupNamesString = names;
+		groupNames = null;
 	}
 
 	/** Sets the group of this Roi, and updates stroke color accordingly. */

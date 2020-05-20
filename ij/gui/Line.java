@@ -497,7 +497,7 @@ public class Line extends Roi {
 		return getFloatPolygon(getStrokeWidth());
 	}
 
-	FloatPolygon getFloatPolygon(double strokeWidth) {
+	public FloatPolygon getFloatPolygon(double strokeWidth) {
 		FloatPolygon p = new FloatPolygon();
 		if (strokeWidth <= 1) {
 			p.addPoint((float)x1d, (float)y1d);

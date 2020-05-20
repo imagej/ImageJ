@@ -11,7 +11,7 @@ import ij.measure.ResultsTable;
 
 /** An Overlay is a list of ROIs that can be drawn non-destructively on an Image. */
 public class Overlay implements Iterable<Roi> {
-	private Vector list;
+	private Vector<Roi> list;
     private boolean label;
     private boolean drawNames;
     private boolean drawBackgrounds;
@@ -23,12 +23,12 @@ public class Overlay implements Iterable<Roi> {
     
     /** Constructs an empty Overlay. */
     public Overlay() {
-    	list = new Vector();
+    	list = new Vector<Roi>();
     }
     
     /** Constructs an Overlay and adds the specified ROI. */
     public Overlay(Roi roi) {
-    	list = new Vector();
+    	list = new Vector<Roi>();
     	if (roi!=null)
     		list.add(roi);
     }
@@ -118,12 +118,20 @@ public class Overlay implements Iterable<Roi> {
     public int indexAt(int x, int y) {
      	Roi[] rois = toArray();
 		for (int i=rois.length-1; i>=0; i--) {
-			if (rois[i]!=null && rois[i].contains(x,y))
+			if (contains(rois[i],x,y))
 				return i;
 		}
 		return -1;
     }
-
+    
+	private boolean contains(Roi roi, int x, int y) {
+		if (roi==null) return false;
+		if (roi instanceof Line)
+			return  (((Line)roi).getFloatPolygon(10)).contains(x,y);
+		else
+			return roi.contains(x,y);
+	}
+	
     /** Returns 'true' if this Overlay contains the specified ROI. */
     public boolean contains(Roi roi) {
     	return list.contains(roi);
@@ -400,9 +408,9 @@ public class Overlay implements Iterable<Roi> {
     	return isCalibrationBar;
     }
 
-    void setVector(Vector v) {list = v;}
+    void setVector(Vector<Roi> v) {list = v;}
         
-    Vector getVector() {return list;}
+    Vector<Roi> getVector() {return list;}
     
     /** Set 'false' to prevent ROIs in this overlay from being activated 
 		by clicking on their labels or by a long clicking. */ 

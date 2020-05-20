@@ -408,7 +408,7 @@ public class TextRoi extends Roi {
 		if (justification<0 || justification>RIGHT)
 			justification = LEFT;
 		this.justification = justification;
-        updateBounds();
+		updateBounds();
 		if (imp!=null)
 			imp.draw();
 	}
