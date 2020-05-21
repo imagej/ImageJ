@@ -300,7 +300,6 @@ public class FFT implements PlugIn, Measurements {
 	}
 	
 	private void setImageProperties(ImagePlus imp, String type) {
-		imp.setProp("ShowInfo", "true"); // Image>Show Info will display these properties
 		imp.setProp(" ", type);
 		imp.setProp("Original width", originalWidth);
 		imp.setProp("Original height", originalHeight);

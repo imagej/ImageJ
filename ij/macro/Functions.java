@@ -7400,6 +7400,12 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("setDefaultGroup")) {
 			Roi.setDefaultGroup((int)getArg());
 			return null;
+		} else if (name.equals("getGroupNames")) {
+			String names = Roi.getGroupNames();
+			return new Variable(names!=null?names:"");
+		} else if (name.equals("setGroupNames")) {
+			Roi.setGroupNames(getStringArg());
+			return null;
 		}
 		ImagePlus imp = getImage();
 		if (name.equals("paste")) {

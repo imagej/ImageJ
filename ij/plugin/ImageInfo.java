@@ -70,7 +70,7 @@ public class ImageInfo implements PlugIn {
 			if (infoProperty==null)
 				infoProperty = getExifData(imp);
 		}
-		if (imp.getProp("ShowInfo")!=null) {
+		if (imp.getProp("HideInfo")==null) {
 			String properties = getImageProperties(imp);
 			if (properties!=null) {
 				if (infoProperty!=null)
@@ -504,7 +504,7 @@ public class ImageInfo implements PlugIn {
 			String key = props[i];
 			String value = props[i+1];
 			if (key!=null && value!=null && !key.equals("ShowInfo")) {
-				if (value.length()<60)
+				if (value.length()<80)
 					s += key + ": " + value + "\n";
 				else
 					s += key + ": <" + value.length() + " characters>\n";

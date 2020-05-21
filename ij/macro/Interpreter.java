@@ -1191,7 +1191,8 @@ public class Interpreter implements MacroConstants {
 				|| name.equals("getType") || name.equals("getString") || name.equals("title")
 				|| name.equals("headings") || name.equals("allHeadings")
 				|| name.equals("get") || name.equals("getInfo") || name.equals("getSliceLabel")
-				|| name.equals("getDicomTag") || name.equals("getList"))
+				|| name.equals("getDicomTag") || name.equals("getList")
+				|| name.equals("getGroupNames"))
 					return true;
 			}
 		}

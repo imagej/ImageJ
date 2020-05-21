@@ -2,6 +2,8 @@ package ij.gui;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
 import java.io.File;
 import java.util.*;
 import ij.*;
@@ -446,63 +448,73 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		this.icon = icon;
 		int x1, y1, x2, y2;
 		pc = 0;
-		while (true) {
-			char command = icon.charAt(pc++);
-			if (pc>=icon.length()) break;
-			switch (command) {
-				case 'B': x+=v(); y+=v(); break;  // reset base
-				case 'R': g.drawRect(x+v(), y+v(), v(), v()); break;  // rectangle
-				case 'F': g.fillRect(x+v(), y+v(), v(), v()); break;  // filled rectangle
-				case 'O': g.drawOval(x+v(), y+v(), v(), v()); break;  // oval
-				case 'V': case 'o': g.fillOval(x+v(), y+v(), v(), v()); break;  // filled oval
-				case 'C': // set color
-					int saveScale = scale;
-					scale = 1;
-					int v1=v(), v2=v(), v3=v();
-					int red=v1*16, green=v2*16, blue=v3*16;
-					if (red>255) red=255; if (green>255) green=255; if (blue>255) blue=255;
-					Color color = v1==1&&v2==2&&v3==3?foregroundColor:new Color(red,green,blue);
-					g.setColor(color);
-					scale = saveScale;
-					break; 
-				case 'L': g.drawLine(x+v(), y+v(), x+v(), y+v()); break; // line
-				case 'D':  g.fillRect(x+v(), y+v(), scale, scale); break; // dot
-				case 'P': // polyline
-					Polygon p = new Polygon();
-					p.addPoint(x+v(), y+v());
-					while (true) {
-						x2=v(); if (x2==0) break;
-						y2=v(); if (y2==0) break;
-						p.addPoint(x+x2, y+y2);
-					}
-					g.drawPolyline(p.xpoints, p.ypoints, p.npoints);
-					break;
-				case 'G': case 'H':// polygon or filled polygon
-					p = new Polygon();
-					p.addPoint(x+v(), y+v());
-					while (true) {
-						x2=v(); y2=v();
-						if (x2==0 && y2==0 && p.npoints>2)
-							break;
-						p.addPoint(x+x2, y+y2);
-					}
-					if (command=='G')
-						g.drawPolygon(p.xpoints, p.ypoints, p.npoints);
-					else
-						g.fillPolygon(p.xpoints, p.ypoints, p.npoints);
-					break;
-				case 'T': // text (one character)
-					x2 = x+v()-1;
-					y2 = y+v();
-					int size = v()*10+v()+1;
-					char[] c = new char[1];
-					c[0] = pc<icon.length()?icon.charAt(pc++):'e';
-					g.setFont(new Font("SansSerif", Font.PLAIN, size));
-					g.drawString(new String(c), x2, y2);
-					break;
-				default: break;
+		if (icon.trim().startsWith("icon:")) {
+			String path = IJ.getDir("macros")+"toolsets/icons/"+icon.substring(icon.indexOf(":")+1);
+			try {
+				BufferedImage bi = ImageIO.read(new File(path));
+				((Graphics2D)g).drawImage(bi,null, x-5,y-5);
+			} catch (Exception e) {
+				IJ.error("Toolbar", "Error reading tool icon:\n"+path);
 			}
-			if (pc>=icon.length()) break;
+		} else {
+			while (true) {
+				char command = icon.charAt(pc++);
+				if (pc>=icon.length()) break;
+				switch (command) {
+					case 'B': x+=v(); y+=v(); break;  // reset base
+					case 'R': g.drawRect(x+v(), y+v(), v(), v()); break;  // rectangle
+					case 'F': g.fillRect(x+v(), y+v(), v(), v()); break;  // filled rectangle
+					case 'O': g.drawOval(x+v(), y+v(), v(), v()); break;  // oval
+					case 'V': case 'o': g.fillOval(x+v(), y+v(), v(), v()); break;  // filled oval
+					case 'C': // set color
+						int saveScale = scale;
+						scale = 1;
+						int v1=v(), v2=v(), v3=v();
+						int red=v1*16, green=v2*16, blue=v3*16;
+						if (red>255) red=255; if (green>255) green=255; if (blue>255) blue=255;
+						Color color = v1==1&&v2==2&&v3==3?foregroundColor:new Color(red,green,blue);
+						g.setColor(color);
+						scale = saveScale;
+						break; 
+					case 'L': g.drawLine(x+v(), y+v(), x+v(), y+v()); break; // line
+					case 'D':  g.fillRect(x+v(), y+v(), scale, scale); break; // dot
+					case 'P': // polyline
+						Polygon p = new Polygon();
+						p.addPoint(x+v(), y+v());
+						while (true) {
+							x2=v(); if (x2==0) break;
+							y2=v(); if (y2==0) break;
+							p.addPoint(x+x2, y+y2);
+						}
+						g.drawPolyline(p.xpoints, p.ypoints, p.npoints);
+						break;
+					case 'G': case 'H':// polygon or filled polygon
+						p = new Polygon();
+						p.addPoint(x+v(), y+v());
+						while (true) {
+							x2=v(); y2=v();
+							if (x2==0 && y2==0 && p.npoints>2)
+								break;
+							p.addPoint(x+x2, y+y2);
+						}
+						if (command=='G')
+							g.drawPolygon(p.xpoints, p.ypoints, p.npoints);
+						else
+							g.fillPolygon(p.xpoints, p.ypoints, p.npoints);
+						break;
+					case 'T': // text (one character)
+						x2 = x+v()-1;
+						y2 = y+v();
+						int size = v()*10+v()+1;
+						char[] c = new char[1];
+						c[0] = pc<icon.length()?icon.charAt(pc++):'e';
+						g.setFont(new Font("SansSerif", Font.PLAIN, size));
+						g.drawString(new String(c), x2, y2);
+						break;
+					default: break;
+				}
+				if (pc>=icon.length()) break;
+			}
 		}
 		if (menus[tool]!=null && menus[tool].getItemCount()>0) { 
 			xOffset = x; yOffset = y;

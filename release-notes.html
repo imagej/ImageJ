@@ -5,15 +5,19 @@
 </head>
 <body>
 
-<li> <u>1.53b21  19 May 2020</u>
+<li> <u>1.53b26  20 May 2020</u>
 <ul>
 <li> Thanks to Jerome Mutterer, added the "Label Maker" tool to
 the toolbar's "&gt;&gt;" menu. Shift click on "Label Maker" in 
 the menu to view the macro source code.
 <li> Thanks to Laurent Thomas, added the 
 <i>Edit&gt;Options&gt;Roi Defaults</i> command, which
-provides support for group names. Double
+adds support for ROI group names. Double
 click on the rectangle tool to run this command.
+<li> Thanks to Jerome Mutterer, added support for
+tool icons read from image files located in the
+IJ.getDir("macros")+"toolsets/icons/" folder. Example:
+<i>macro "Test Tool - icon:833.png" {...)</i>.
 <li> Thanks to Erod Baybay, added the Roi.setPosition(slice) macro function.
 <li> Thanks to Jerome Mutterer, added the Overlay.indexAt(x,y),
 Overlay.removeRois(name) and Overlay.getBounds(index,x,y,width,height)
@@ -21,12 +25,17 @@ macro functions. DOCUMENT
 <li> Thanks to Stein Rorvik, added the Roi.setJustification(str),
 Roi.setFontSize(size), Property.setList(str) and Property.getList
 macro functions. DOCUMENT
+<li> Thanks to Laurent Thomas, added the Roi.getGroupNames
+and Roi.setGroupNames() and macro functions. DOCUMENT
 <li> Thanks to Jan Eglinger, moved initialization of the okay and cancel
 buttons in GenericDialog into the constructors.
 <li> Thanks to Hidenao Yamada, fixed a bug that caused the
 FileInfoVirtualStack.deleteLastSlice() method to not work.
 <li> Thanks to Tom Kazimiers, fixed spelling of the ARTIST tag
 in the TiffDecoder.
+<li> Thanks to Jerome Mutterer and Michael Schmid, fixed a rounding
+error that caused the <i>Measure</i> command to not correctly
+measure point selectons with non-integer corrdinates.
 <li> Thanks to Madison Williams, fixed a 1.52o regression that caused tables
 created by the Cell Counter plugin to be empty.
 <li> Thanks to Ron DeSpain, fixed a 1.52u regression that caused

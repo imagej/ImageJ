@@ -397,7 +397,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 				ip = stack.getProcessor(position);
 			else
 				ip = imp2.getProcessor();
-			ip.setRoi((int)p.xpoints[i], (int)p.ypoints[i], 1, 1);
+			ip.setRoi((int)Math.round(p.xpoints[i]), (int)Math.round(p.ypoints[i]), 1, 1);
 			ImageStatistics stats = ImageStatistics.getStatistics(ip, measurements, imp2.getCalibration());
 			stats.xCenterOfMass = p.xpoints[i];
 			stats.yCenterOfMass = p.ypoints[i];

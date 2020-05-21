@@ -1412,9 +1412,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Adds a key-value pair to this image's string properties.
 	 * The key-value pair is removed if 'value' is null. The 
 	 * properties persist if the image is saved in TIFF format.
-	 * Add a "ShowInfo" property (e.g. set("ShowInfo","true")) and
-	 * the property list will be displayed by the Image/Show Info
-	 * command.
+	 * Add a "HideInfo" property (e.g. set("HideInfo","true")) to
+	 * prevent the properties from being displayed by the
+	 * Image/Show Info command.
 	*/
 	public void setProp(String key, String value) {
 		if (key==null)

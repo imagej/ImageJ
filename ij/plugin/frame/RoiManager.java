@@ -1376,7 +1376,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (n>1)
 				rpRoi.setName("range: "+(indexes[0]+1)+"-"+(indexes[n-1]+1));
 			rpRoi.setFillColor(fillColor);
-			RoiProperties rp = new RoiProperties("Properties", rpRoi);
+			RoiProperties rp = new RoiProperties("Properties ", rpRoi); // " "=show "List coordinates"
 			if (!rp.showDialog())
 				return;
 			// Recover parameters of the Property window that were stored in the "transient" roi
