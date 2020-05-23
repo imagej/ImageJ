@@ -1190,6 +1190,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
                 addItem(name);
 			}
 		}
+		addItem("Overlay Editing Tools*");
 		addPluginTools();
 		addItem("Restore Startup Tools");
 		addItem("Remove Custom Tools");
@@ -1883,9 +1884,5 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public int getNumTools() {
 		return NUM_TOOLS + nExtraTools;
 	}
-
-	//public void repaint() {
-	//	super.repaint();
-	//}
 
 }

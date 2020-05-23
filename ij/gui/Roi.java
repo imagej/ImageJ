@@ -1809,7 +1809,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		if (group<0 || group>255)
 			throw new IllegalArgumentException("Invalid group: "+group);
 		this.group = group;
-		this.strokeColor = group>0?getGroupColor(group):null;
+		setStrokeColor(group>0?getGroupColor(group):null);
 		if (imp!=null) // Update Roi Color in the GUI
 			imp.draw();
 	}

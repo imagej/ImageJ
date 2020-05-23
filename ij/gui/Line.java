@@ -508,14 +508,14 @@ public class Line extends Roi {
 			double len = length(dx, dy);
 			dx *= 0.5/len;		// half unit vector in the direction of the line
 			dy *= 0.5/len;		// when rotated 90 deg cw, this yields the vector (-dx, dy)
-			double p1x = x1d + 0.5 - dx - dy*strokeWidth;	//0.5 pxl shift: area vs. line coordinate convention
-			double p1y = y1d + 0.5 - dy + dx*strokeWidth;
-			double p2x = x2d + 0.5 + dx - dy*strokeWidth;
-			double p2y = y2d + 0.5 + dy + dx*strokeWidth;
-			double p3x = x2d + 0.5 + dx + dy*strokeWidth;
-			double p3y = y2d + 0.5 + dy - dx*strokeWidth;
-			double p4x = x1d + 0.5 - dx + dy*strokeWidth;
-			double p4y = y1d + 0.5 - dy - dx*strokeWidth;
+			double p1x = x1d + 0.5 - dx + dy*strokeWidth;  //0.5 pxl shift: area vs. line coordinate convention
+			double p1y = y1d + 0.5 - dy - dx*strokeWidth;
+			double p2x = x1d + 0.5 - dx - dy*strokeWidth;
+			double p2y = y1d + 0.5 - dy + dx*strokeWidth;
+			double p3x = x2d + 0.5 + dx - dy*strokeWidth;
+			double p3y = y2d + 0.5 + dy + dx*strokeWidth;
+			double p4x = x2d + 0.5 + dx + dy*strokeWidth;
+			double p4y = y2d + 0.5 + dy - dx*strokeWidth;
 			p.addPoint((float)p1x, (float)p1y);
 			p.addPoint((float)p2x, (float)p2y);
 			p.addPoint((float)p3x, (float)p3y);

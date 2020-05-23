@@ -497,7 +497,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
  		else if (cmd.equals("Sort..."))
 			sort();
  		else if (cmd.equals("Plot..."))
-			new PlotContentsDialog(title, rt).showDialog(getParent() instanceof Frame ? (Frame)getParent() : null);
+			new PlotContentsDialog(title, getOrCreateResultsTable()).showDialog(getParent() instanceof Frame ? (Frame)getParent() : null);
 	}
 
  	public void lostOwnership (Clipboard clip, Transferable cont) {}
@@ -547,7 +547,9 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 
 	void rename(String title2) {
-		if (rt==null) return;
+		ResultsTable rt2 = getOrCreateResultsTable();
+		if (rt2==null)
+			return;
 		if (title2!=null && title2.equals(""))
 			title2 = null;
 		TextWindow tw = getTextWindow();
@@ -573,14 +575,14 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			tw.dispose();
 			WindowManager.removeWindow(tw);
 			flush();
-			rt.show("Results");
+			rt2.show("Results");
 		} else {
 			tw.setTitle(title2);
 			int mbSize = tw.mb!=null?tw.mb.getMenuCount():0;
 			if (mbSize>0 && tw.mb.getMenu(mbSize-1).getLabel().equals("Results"))
 				tw.mb.remove(mbSize-1);
 			title = title2;
-			rt.show(title);
+			rt2.show(title);
 		}
 		Menus.updateWindowMenuItem(title1, title2);
 		if (Recorder.record) {
@@ -592,8 +594,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 
 	void duplicate() {
-		if (rt==null) return;
-		ResultsTable rt2 = (ResultsTable)rt.clone();
+		ResultsTable rt2 = getOrCreateResultsTable();
+		if (rt2==null)
+			return;
+		rt2 = (ResultsTable)rt.clone();
 		String title2 = IJ.getString("Title:", getNewTitle(title));
 		if (!title2.equals("")) {
 			if (title2.equals("Results")) title2 = "Results2";
@@ -1080,9 +1084,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 	
 	private void sort() {
-		if (rt==null)
+		ResultsTable rt2 = getOrCreateResultsTable();
+		if (rt2==null)
 			return;
-		String[] headers = rt.getHeadings();
+		String[] headers = rt2.getHeadings();
 		String[] headers2 = headers;
 		if (headers[0].equals("Label")) {
 			headers = new String[headers.length-1];
@@ -1095,8 +1100,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if (gd.wasCanceled()) 
 			return;
 		String column = gd.getNextChoice();
-		rt.sort(column);
-		rt.show(title);
+		rt2.sort(column);
+		rt2.show(title);
 		scrollToTop();
 		if (Recorder.record)
 			Recorder.record("Table.sort", column);

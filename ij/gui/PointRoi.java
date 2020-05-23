@@ -150,7 +150,7 @@ public class PointRoi extends PolygonRoi {
 		}
 	}
 	
-	private void setOptions(String options) {
+	public void setOptions(String options) {
 		if (options==null)
 			return;
 		if (options.contains("tiny")) size=TINY;
@@ -162,6 +162,8 @@ public class PointRoi extends PolygonRoi {
 		if (options.contains("cross")) type=CROSS;
 		else if (options.contains("dot")) type=DOT;
 		else if (options.contains("circle")) type=CIRCLE;
+		if (options.contains("nolabel")) setShowLabels(false);
+		else if (options.contains("label")) setShowLabels(true);
 		setStrokeColor(Colors.getColor(options,Roi.getColor()));
 		addToOverlay =  options.contains("add");
 	}

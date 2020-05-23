@@ -9,10 +9,11 @@ import ij.plugin.filter.Analyzer;
 import ij.text.TextWindow;
 import java.awt.*;
 import java.util.*;
+import java.awt.event.*;
 
 
  /** Displays a dialog that allows the user to specify ROI properties such as color and line width. */
-public class RoiProperties {
+public class RoiProperties implements TextListener, WindowListener {
 	private ImagePlus imp;
 	private Roi roi;
 	private Overlay overlay;
@@ -27,6 +28,8 @@ public class RoiProperties {
 	private boolean showPointCounts;
 	private static final String[] justNames = {"Left", "Center", "Right"};
 	private int nProperties;
+	private TextField groupField, colorField;
+	private Label groupName;
 
 	/** Constructs a ColorChooser using the specified title and initial color. */
 	public RoiProperties(String title, Roi roi) {
@@ -101,13 +104,14 @@ public class RoiProperties {
 		int digits = (int)strokeWidth==strokeWidth?0:1;
 		GenericDialog gd = new GenericDialog(title);
 		if (showName) {
-			gd.addStringField(nameLabel, name, 15);
+			gd.addStringField(nameLabel, name, 20);
 			String label = "Position:";
 			ImagePlus imp = WindowManager.getCurrentImage();
 			if (position.contains(",") || (imp!=null&&imp.isHyperStack()))
 				label = "Position (c,s,f):";
 			gd.addStringField(label, position);
 			gd.addStringField("Group:", group);
+			gd.addToSameRow(); gd.addMessage("wwwwwwwwwwww");
 		}
 		if (isText) {
 			gd.addStringField("Stroke color:", linec);
@@ -122,6 +126,13 @@ public class RoiProperties {
 			else {
 				gd.addStringField("Stroke color:", linec);
 				gd.addNumericField("Width:", strokeWidth, digits);
+			}
+			if (showName && !IJ.isMacro()) {
+				Vector v = gd.getStringFields();
+				groupField = (TextField)v.elementAt(v.size()-2);
+				groupField.addTextListener(this);
+				colorField = (TextField)v.elementAt(v.size()-1);
+				groupName = (Label)gd.getMessage();
 			}
 		}
 
@@ -174,6 +185,7 @@ public class RoiProperties {
 		}
 		if (showName && "".equals(name) && "none".equals(position) && "none".equals(group) && "none".equals(fillc))
 			gd.setSmartRecording(true);
+		gd.addWindowListener(this);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
@@ -246,12 +258,12 @@ public class RoiProperties {
 			troi.setAntiAlias(antialias);
 		} else if (strokeWidth2!=strokeWidth)
 			roi.setStrokeWidth((float)strokeWidth2);
+		roi.setStrokeColor(strokeColor);
+		roi.setFillColor(fillColor);
 		if (showName) {
 			setPosition(roi, position, position2);
 			setGroup(roi, group, group2);
 		}
-		roi.setStrokeColor(strokeColor);
-		roi.setFillColor(fillColor);
 		if (newOverlay) roi.setName("new-overlay");
 		if (applyToOverlay) {
 			if (imp==null || overlay==null)
@@ -382,5 +394,37 @@ public class RoiProperties {
 		props = props.replaceAll(": ", "\t");
 		new TextWindow("Properties", "Key\tValue", props, 300, 300);
 	}
-
+	
+	public void textValueChanged(TextEvent e) {
+		if (groupName==null)
+			return;
+		TextField tf = (TextField) e.getSource();
+		String str = tf.getText();
+		double group = Tools.parseDouble(str, Double.NaN);
+		if (!Double.isNaN(group) && group>=0 && group<=255) {
+			roi.setGroup((int)group);
+			String name = Roi.getGroupName((int)group);
+			if (name==null)
+				name="unnamed";
+			if (group==0)
+				name = "";
+			groupName.setText(" "+name);
+			Color strokeColor = roi.getStrokeColor();
+			colorField.setText(Colors.colorToString(strokeColor));
+		} else
+			groupName.setText("");
+	}
+	
+	public void windowActivated(WindowEvent e) {
+		String gname = Roi.getGroupName(roi.getGroup());
+		groupName.setText(gname!=null?" "+gname:"");
+	}
+	
+	public void windowClosing(WindowEvent e) {}
+    public void windowOpened(WindowEvent e) {}
+    public void windowClosed(WindowEvent e) {}
+    public void windowIconified(WindowEvent e) {}
+    public void windowDeiconified(WindowEvent e) {}
+    public void windowDeactivated(WindowEvent e) {}
+    
 }

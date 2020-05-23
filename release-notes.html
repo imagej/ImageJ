@@ -5,19 +5,23 @@
 </head>
 <body>
 
-<li> <u>1.53b26  20 May 2020</u>
+<li> <u>1.53b33  23 May 2020</u>
 <ul>
-<li> Thanks to Jerome Mutterer, added the "Label Maker" tool to
-the toolbar's "&gt;&gt;" menu. Shift click on "Label Maker" in 
-the menu to view the macro source code.
+<li> Thanks to Jerome Mutterer, added the "Overlay Editing Tools"
+toolset and the  "Label Maker" tool to the toolbar's  "&gt;&gt;"
+menu. Shift click on a toolset or tool in the "&gt;&gt;" menu to
+view the macro source code.
 <li> Thanks to Laurent Thomas, added the 
 <i>Edit&gt;Options&gt;Roi Defaults</i> command, which
 adds support for ROI group names. Double
 click on the rectangle tool to run this command.
+<li> The group name, "Stroke Color:" field and the selection color
+are dynamically updated as the group number is changed in the
+<i>Edit&gt;Selection&gt;Properties</i> dialog.
 <li> Thanks to Jerome Mutterer, added support for
 tool icons read from image files located in the
 IJ.getDir("macros")+"toolsets/icons/" folder. Example:
-<i>macro "Test Tool - icon:833.png" {...)</i>.
+<i>macro "Test Tool - icon:833.png" { }</i>. DOCUMENT
 <li> Thanks to Erod Baybay, added the Roi.setPosition(slice) macro function.
 <li> Thanks to Jerome Mutterer, added the Overlay.indexAt(x,y),
 Overlay.removeRois(name) and Overlay.getBounds(index,x,y,width,height)
@@ -26,7 +30,7 @@ macro functions. DOCUMENT
 Roi.setFontSize(size), Property.setList(str) and Property.getList
 macro functions. DOCUMENT
 <li> Thanks to Laurent Thomas, added the Roi.getGroupNames
-and Roi.setGroupNames() and macro functions. DOCUMENT
+and Roi.setGroupNames() macro functions. DOCUMENT
 <li> Thanks to Jan Eglinger, moved initialization of the okay and cancel
 buttons in GenericDialog into the constructors.
 <li> Thanks to Hidenao Yamada, fixed a bug that caused the
@@ -35,7 +39,10 @@ FileInfoVirtualStack.deleteLastSlice() method to not work.
 in the TiffDecoder.
 <li> Thanks to Jerome Mutterer and Michael Schmid, fixed a rounding
 error that caused the <i>Measure</i> command to not correctly
-measure point selectons with non-integer corrdinates.
+measure point selectons with non-integer coordinates.
+<li> Thanks to Herbie Gluender, fixed bugs that caused the
+Rename, Duplicate, Sort and Plot Results table commands
+to not work if the table did not contain a ResultsTable object.
 <li> Thanks to Madison Williams, fixed a 1.52o regression that caused tables
 created by the Cell Counter plugin to be empty.
 <li> Thanks to Ron DeSpain, fixed a 1.52u regression that caused
@@ -44,6 +51,8 @@ arrow keys to move line selections.
 <li> Thanks to Stein Rorvik, fixed a 1.52t regression that caused
 the TextRoi.setJustification() method to sometimes not work
 as expected
+<li> Thanks to 'hwada', fixed a 1.52t regression that changed the order
+of the points returned by Line.getFloatPolygon().
 </ul>
 
 <li> <u>1.53a  4 May 2020</u>
