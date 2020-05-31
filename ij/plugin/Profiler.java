@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import ij.plugin.frame.Recorder;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -105,7 +106,8 @@ public class Profiler implements PlugIn, PlotMaker {
 			ymax = tmp;
 		}
 		ProfilePlot.setMinAndMax(ymin, ymax);
-		IJ.register(Profiler.class);
+		if (!Recorder.scriptMode())
+			Recorder.	recordString("setOption(\"InterpolateLines\", "+PlotWindow.interpolate+");\n");
 	}
 		
 }

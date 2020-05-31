@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53b33  23 May 2020</u>
+<li> <u>1.53b42  30 May 2020</u>
 <ul>
 <li> Thanks to Jerome Mutterer, added the "Overlay Editing Tools"
 toolset and the  "Label Maker" tool to the toolbar's  "&gt;&gt;"
@@ -29,6 +29,9 @@ macro functions. DOCUMENT
 <li> Thanks to Stein Rorvik, added the Roi.setJustification(str),
 Roi.setFontSize(size), Property.setList(str) and Property.getList
 macro functions. DOCUMENT
+<li> Added the setOption("InterpolateLines",boolean) macro function. DOCUMENT
+<li> Thanks to Adrian Martin, added the setOption("FlipFitsImages",true)
+macro function. DOCUMENT
 <li> Thanks to Laurent Thomas, added the Roi.getGroupNames
 and Roi.setGroupNames() macro functions. DOCUMENT
 <li> Thanks to Jan Eglinger, moved initialization of the okay and cancel
@@ -43,6 +46,14 @@ measure point selectons with non-integer coordinates.
 <li> Thanks to Herbie Gluender, fixed bugs that caused the
 Rename, Duplicate, Sort and Plot Results table commands
 to not work if the table did not contain a ResultsTable object.
+<li> Thanks to Norbert Vischer, fixed a bug that caused the
+<i>Stack to Hyperstack</i> command to throw an exception.
+<li> Thanks to 'Hayato', fixed a bug that caused the
+roiManager("measure") macro function to be slow on
+Windows when measuring thousands of ROIs.
+<li> Thanks to Gilles Carpentier, fixed a bug that caused the
+<i>Stack to Hyperstack</i> command to unexpectedly display
+the output image in batch mode.
 <li> Thanks to Madison Williams, fixed a 1.52o regression that caused tables
 created by the Cell Counter plugin to be empty.
 <li> Thanks to Ron DeSpain, fixed a 1.52u regression that caused

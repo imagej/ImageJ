@@ -597,7 +597,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		ResultsTable rt2 = getOrCreateResultsTable();
 		if (rt2==null)
 			return;
-		rt2 = (ResultsTable)rt.clone();
+		rt2 = (ResultsTable)rt2.clone();
 		String title2 = IJ.getString("Title:", getNewTitle(title));
 		if (!title2.equals("")) {
 			if (title2.equals("Results")) title2 = "Results2";

@@ -51,7 +51,6 @@ public class ProfilePlot {
 		units = cal.getUnits();
 		yLabel = cal.getValueUnit();
 		ImageProcessor ip = imp.getProcessor();
-		//ip.setCalibrationTable(cal.getCTable());
 		if (roiType==Roi.LINE)
 			profile = getStraightLineProfile(roi, cal, ip);
 		else if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE) {
@@ -230,51 +229,16 @@ public class ProfilePlot {
 	 *  as integer (x,y). */
 	double[] getIrregularProfile(Roi roi, ImageProcessor ip, Calibration cal) {
 		boolean interpolate = PlotWindow.interpolate;
-		boolean calcXValues = cal!=null && cal.pixelWidth!=cal.pixelHeight;
 		FloatPolygon p = roi.getFloatPolygon();
-		int n = p.npoints;
-		float[] xpoints = p.xpoints;
-		float[] ypoints = p.ypoints;
-		ArrayList values = new ArrayList();
-		int n2;
-		double inc = 0.01;
-		double distance=0.0, distance2=0.0, dx=0.0, dy=0.0, xinc, yinc;
-		double x, y, lastx=0.0, lasty=0.0, x1, y1;
-		double x2=xpoints[0], y2=ypoints[0];
-		double value;
-		for (int i=1; i<n; i++) {
-			x1=x2; y1=y2;
-			x=x1; y=y1;
-			x2=xpoints[i]; y2=ypoints[i];
-			dx = x2-x1;
-			dy = y2-y1;
-			distance = Math.sqrt(dx*dx+dy*dy);
-			xinc = dx*inc/distance;
-			yinc = dy*inc/distance;
-			//n2 = (int)(dx/xinc);
-			n2 = (int)(distance/inc);
-			if (n==2) n2++;
-			do {
-				dx = x-lastx;
-				dy = y-lasty;
-				distance2 = Math.sqrt(dx*dx+dy*dy);
-				//IJ.log(i+"   "+IJ.d2s(xinc,5)+"   "+IJ.d2s(yinc,5)+"   "+IJ.d2s(distance,2)+"   "+IJ.d2s(distance2,2)+"   "+IJ.d2s(x,2)+"   "+IJ.d2s(y,2)+"   "+IJ.d2s(lastx,2)+"   "+IJ.d2s(lasty,2)+"   "+n+"   "+n2);
-				if (distance2>=1.0-inc/2.0) {
-					if (interpolate)
-						value = ip.getInterpolatedValue(x, y);
-					else
-						value = ip.getPixelValue((int)Math.round(x), (int)Math.round(y));
-					values.add(new Double(value));
-					lastx=x; lasty=y;
-				}
-				x += xinc;
-				y += yinc;
-			} while (--n2>0);
-		}
-		double[] values2 = new double[values.size()];
-		for (int i=0; i<values.size(); i++)
-			values2[i] = ((Double)values.get(i)).doubleValue();
-		return values2;
+		float[][] xyPoints = ((PolygonRoi)roi).getEquidistantPoints(p.xpoints, p.ypoints, p.npoints, /*segmentLength=*/1.0, imp);
+		float[] xPoints = xyPoints[0];
+		float[] yPoints = xyPoints[1];
+		double[] values = new double[xPoints.length];
+		for (int i=0; i<xPoints.length; i++)
+			values[i] = interpolate ?
+				ip.getInterpolatedValue(xPoints[i], yPoints[i]) :
+				ip.getPixelValue((int)Math.round(xPoints[i]), (int)Math.round(yPoints[i]));
+		return values;
 	}
 
 	double[] getWideLineProfile(ImagePlus imp, int lineWidth) {

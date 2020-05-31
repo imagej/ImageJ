@@ -1438,10 +1438,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		setProp(key, Double.isNaN(value)?null:svalue);
 	}
 
-	/** Returns the string property associated with the specified key
-	 * or null if the property is not found.
+	/** Returns as a string the image property associated with the
+	 *  specified key or null if the property is not found.
 	 * @see #setProp
 	 * @see #getNumericProp
+	 * @see #getStringProperty
 	*/
 	public String getProp(String key) {
 		if (imageProperties==null)

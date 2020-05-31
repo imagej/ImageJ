@@ -491,10 +491,14 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	/** Writes the current command and options to the Recorder window. */
 	public static void saveCommand() {
 		String name = commandName;
+		ImagePlus imp = WindowManager.getCurrentImage();
 		//IJ.log("saveCommand: "+name+"  "+isSaveAs()+" "+scriptMode+"  "+commandOptions);
 		if (name!=null) {
+			if (name.equals("Make Binary") && imp!=null && imp.getStackSize()==1) {
+				name = "Convert to Mask";
+				commandOptions = null;
+			}
 			if (commandOptions==null && (name.equals("Fill")||name.equals("Clear")||name.equals("Draw"))) {
-				ImagePlus imp = WindowManager.getCurrentImage();
 				Roi roi = imp!=null?imp.getRoi():null;
 				if (!(roi!=null && (roi instanceof TextRoi) && (name.equals("Draw"))))
 					commandOptions = "slice";
@@ -503,7 +507,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 				setForegroundColor(Toolbar.getForegroundColor());
 			else if (!bgColorSet && (name.equals("Clear")||name.equals("Clear Outside")))
 				setBackgroundColor(Toolbar.getBackgroundColor());
-			if (!bbSet && (name.equals("Make Binary")||name.equals("Convert to Mask")||name.equals("Erode")
+			if (!bbSet && (name.equals("Convert to Mask")||name.equals("Erode")
 			||name.equals("Dilate")||name.equals("Skeletonize")))
 				setBlackBackground();
 			if (name.equals("Add Shortcut by Name... "))
@@ -566,12 +570,13 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					}
 				}
 			} else {
-				ImagePlus imp = WindowManager.getCurrentImage();
 				Roi roi = imp!=null?imp.getRoi():null;
 				if (name.equals("Threshold...") || name.equals("Fonts...") || name.equals("Brightness/Contrast...") || name.equals("Channels Tool..."))
 					textArea.append((scriptMode?"//IJ.":"//")+"run(\""+name+"\");\n");
 				else if (name.equals("Start Animation [\\]"))
 					textArea.append("doCommand(\"Start Animation [\\\\]\");\n");
+				else if (name.equals("Blobs"))
+					textArea.append("run(\"Blobs (25K)\");\n");
 				else if (name.equals("Split Channels") && scriptMode) {
 					String text = "channels = ChannelSplitter.split(imp);\n";
 					if (javaMode())

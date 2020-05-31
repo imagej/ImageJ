@@ -1269,6 +1269,8 @@ public class Functions implements MacroConstants, Measurements {
 		int size = rt.size();
 		if (size==0) {
 			Frame frame = WindowManager.getFrontWindow();
+			if (frame==null || (frame instanceof Editor))
+				frame = WindowManager.getFrame("Results");
 			if (frame!=null && (frame instanceof TextWindow)) {
 				TextPanel tp = ((TextWindow)frame).getTextPanel();
 				rt = tp.getOrCreateResultsTable();
@@ -1466,9 +1468,10 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Selection required");
 		ProfilePlot pp = new ProfilePlot(imp, IJ.altKeyDown());
 		double[] array = pp.getProfile();
-		if (array==null)
-			{interp.done=true; return null;}
-		else
+		if (array==null) {
+			interp.done=true;
+			return null;
+		} else
 			return new Variable(array).getArray();
 	}
 
@@ -4356,7 +4359,8 @@ public class Functions implements MacroConstants, Measurements {
 		} else {
 			File file = new File(path);
 			if (file.exists() && !(path.endsWith(".txt")||path.endsWith(".java")||path.endsWith(".xls")
-			||path.endsWith(".ijm")||path.endsWith(".html")||path.endsWith(".htm")))
+			||path.endsWith(".csv")||path.endsWith(".tsv")||path.endsWith(".ijm")
+			||path.endsWith(".html")||path.endsWith(".htm")))
 				interp.error("File exists and suffix is not '.txt', '.java', etc.");
 		}
 		try {
@@ -4619,6 +4623,10 @@ public class Functions implements MacroConstants, Measurements {
 			Prefs.copyColumnHeaders = state;
 		else if (arg1.equals("waitforcompletion"))
 			waitForCompletion = state;
+		else if (arg1.equals("interpolatelines"))
+			PlotWindow.interpolate = state;
+		else if (arg1.equals("flipfitsimages"))
+			FITS_Reader.flipImages(state);
 		//else if (arg1.startsWith("saveimageloc")) {
 		//	Prefs.saveImageLocation = state;
 		//	if (!state) Prefs.set(ImageWindow.LOC_KEY,null);

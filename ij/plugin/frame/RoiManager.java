@@ -217,7 +217,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (command.equals("Flatten [F]"))
 			flatten();
 		else if (command.equals("Measure"))
-			measure(MENU);
+			measure(getImage());
 		else if (command.equals("Open..."))
 			open(null);
 		else if (command.equals("Save...")) {
@@ -991,8 +991,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Recorder.record("roiManager", "List");
 	}
 
-	boolean measure(int mode) {
-		ImagePlus imp = getImage();
+	boolean measure(ImagePlus imp) {
 		if (imp==null)
 			return false;
 		int[] indexes = getIndexes();
@@ -1015,15 +1014,16 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int currentSlice = imp.getCurrentSlice();
 		Analyzer.setMeasurements(measurements&(~Measurements.ADD_TO_OVERLAY));
 		for (int i=0; i<indexes.length; i++) {
-			if (restore(getImage(), indexes[i], !allSliceOne))
-				IJ.run("Measure");
+			noUpdateMode = true;
+			if (restore(imp, indexes[i], !allSliceOne))
+				IJ.run(imp, "Measure", "");
 			else
 				break;
 		}
 		Analyzer.setMeasurements(measurements);
 		imp.setSlice(currentSlice);
 		if (indexes.length>1)
-			IJ.run("Select None");
+			imp.deleteRoi();
 		if (record()) Recorder.record("roiManager", "Measure");
 		if (!allSliceOne)
 			imp.unlock();
@@ -2057,9 +2057,19 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			update(false);
 		else if (cmd.equals("delete"))
 			delete(false);
-		else if (cmd.equals("measure"))
-			measure(COMMAND);
-		else if (cmd.equals("draw"))
+		else if (cmd.equals("measure")) {
+			if (EventQueue.isDispatchThread())
+				measure(getImage());
+			else try {
+				// run on event dispatching thread for greater speed on Windows
+				final ImagePlus imp = getImage();
+				EventQueue.invokeAndWait(new Runnable() {
+					public void run() {
+						measure(imp);
+					}
+				});
+			} catch (Exception e) {}
+		} else if (cmd.equals("draw"))
 			drawOrFill(DRAW);
 		else if (cmd.equals("fill"))
 			drawOrFill(FILL);

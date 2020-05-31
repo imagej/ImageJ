@@ -39,8 +39,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	public static boolean autoClose;
 	/** Display the XY coordinates in a separate window. To set, use Edit/Options/Plots. */
 	public static boolean listValues;
-	/** Interpolate line profiles. To set, use Edit/Options/Plots. */
-	public static boolean interpolate;
+	/** Interpolate line profiles. To set, use Edit/Options/Plots or setOption("InterpolateLines",boolean). */
+	public static boolean interpolate = true;
 	// default values for new installations; values will be then saved in prefs
 	private static final int WIDTH = 600;
 	private static final int HEIGHT = 340;
@@ -107,7 +107,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		plotWidth = Prefs.getInt(PREFS_WIDTH, WIDTH);
 		plotHeight = Prefs.getInt(PREFS_HEIGHT, HEIGHT);
 		defaultFontSize = fontSize = Prefs.getInt(PREFS_FONT_SIZE, defaultFontSize);
-		interpolate = (options&INTERPOLATE)==0; // 0=true, 1=false
 		Dimension screen = IJ.getScreenSize();
 		if (plotWidth>screen.width && plotHeight>screen.height) {
 			plotWidth = WIDTH;

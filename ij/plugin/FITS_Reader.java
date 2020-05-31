@@ -9,8 +9,11 @@ import ij.measure.*;
 
 /** Opens and displays FITS images. The FITS format is 
 	described at "http://fits.gsfc.nasa.gov/fits_standard.html".
+	Add setOption("FlipFitsImages",true) to the
+	Edit/Options/Startup dialog to have images flipped vertically.
 */
 public class FITS_Reader extends ImagePlus implements PlugIn {
+	private static boolean flipImages;
 
 	public void run(String arg) {
 		OpenDialog od = new OpenDialog("Open FITS...", arg);
@@ -26,7 +29,19 @@ public class FITS_Reader extends ImagePlus implements PlugIn {
 		} catch (IOException e) {}
 		if (fi!=null && fi.width>0 && fi.height>0 && fi.offset>0) {
 			FileOpener fo = new FileOpener(fi);
-			ImagePlus imp = fo.openImage();
+			ImagePlus imp = fo.openImage();			
+			if (flipImages) {
+				if (fi.nImages==1) {
+				  ImageProcessor ip = imp.getProcessor();			   
+				  ip.flipVertical(); // origin is at bottom left corner
+				  setProcessor(fileName, ip);
+				} else {
+				  ImageStack stack = imp.getStack(); // origin is at bottom left corner				 
+				  for(int i=1; i<=stack.getSize(); i++)
+					  stack.getProcessor(i).flipVertical();
+				  setStack(fileName, stack);
+				}
+			}
 			setStack(fileName, imp.getStack());
 			Calibration cal = imp.getCalibration();
 			if (fi.fileType==FileInfo.GRAY16_SIGNED && fd.bscale==1.0 && fd.bzero==32768.0)
@@ -38,6 +53,10 @@ public class FITS_Reader extends ImagePlus implements PlugIn {
 		} else
 			IJ.error("This does not appear to be a FITS file.");
 		IJ.showStatus("");
+	}
+
+	public static void flipImages(boolean flip) {
+		flipImages = flip;
 	}
 
 }
@@ -167,5 +186,5 @@ class FitsDecoder {
 	String getHeaderInfo() {
 		return new String(info);
 	}
-
+	
 }

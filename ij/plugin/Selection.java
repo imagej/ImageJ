@@ -656,11 +656,18 @@ public class Selection implements PlugIn, Measurements {
 		Undo.setup(Undo.ROI, imp);
 		Polygon p = roi.getPolygon();
 		FloatPolygon fp = (roi.subPixelResolution()) ? roi.getFloatPolygon() : null;
-		if (p==null && fp==null) return;
+		if (p==null && fp==null)
+			return;
 		int type1 = roi.getType();
 		if (type1==Roi.COMPOSITE) {
 			IJ.error("Area to Line", "Composite selections cannot be converted to lines.");
 			return;
+		}
+		if (fp==null && type1==Roi.TRACED_ROI) {
+			for (int i=0; i<p.npoints; i++) {
+				if (p.xpoints[i]>=imp.getWidth()) p.xpoints[i]=imp.getWidth()-1;
+				if (p.ypoints[i]>=imp.getHeight()) p.ypoints[i]=imp.getHeight()-1;
+			}
 		}
 		int type2 = Roi.POLYLINE;
 		if (type1==Roi.OVAL||type1==Roi.FREEROI||type1==Roi.TRACED_ROI
@@ -669,7 +676,7 @@ public class Selection implements PlugIn, Measurements {
 		Roi roi2 = fp==null ? new PolygonRoi(p, type2) : new PolygonRoi(fp, type2);
 		transferProperties(roi, roi2);
 		Rectangle2D.Double bounds = roi.getFloatBounds();
-		roi2.setLocation(bounds.x - 0.5, bounds.y -0.5);	//area and line roi coordinates are 0.5 pxl different
+		roi2.setLocation(bounds.x - 0.4999, bounds.y -0.4999);	//area and line roi coordinates are 0.5 pxl different
 		imp.setRoi(roi2);
 	}
 

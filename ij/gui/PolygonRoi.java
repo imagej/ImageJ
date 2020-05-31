@@ -1028,7 +1028,7 @@ public class PolygonRoi extends Roi {
 	 *  If the ImagePlus is given, calibrated coordinates are used, based on its calibration,
 	 *  and 'segmentLength' should be in calibrated units.
 	 *  Returns null if an input array is null, or the number of points is 0 */
-	static public float[][] getEquidistantPoints(float[] xpoints, float[] ypoints, int npoints, double segmentLength, ImagePlus imp) {
+	static float[][] getEquidistantPoints(float[] xpoints, float[] ypoints, int npoints, double segmentLength, ImagePlus imp) {
 		if (xpoints==null || xpoints==null || npoints <= 0) return null;
 		if (xpoints.length < npoints) npoints = xpoints.length;	// arguments might be inconsistent due to asynchronous modification
 		if (ypoints.length < npoints) npoints = ypoints.length;
@@ -1049,7 +1049,7 @@ public class PolygonRoi extends Roi {
 		int pointsWritten = 1;
 		double x1, y1;
 		double x2 = xpoints[0], y2 = ypoints[0];
-		for (int i=1; i<npoints-1; i++) {
+		for (int i=1; i<npoints; i++) {
 			x1=x2; y1=y2;
 			x2=xpoints[i]; y2=ypoints[i];
 			double dx = x2-x1;
@@ -1057,16 +1057,16 @@ public class PolygonRoi extends Roi {
 			double distance = Math.sqrt(sqr(dx*pixelWidth) + sqr(dy*pixelHeight));
 			lengthRead += distance;
 			double distanceOverNextWrite = lengthRead - pointsWritten*step;
-			if (distanceOverNextWrite >= 0.0) {  // we have to write a new point
+			while ((distanceOverNextWrite >= 0.0 || i==npoints-1) && pointsWritten < npOut) {  // we have to write a new point
 				double fractionOverNextWrite = distanceOverNextWrite/distance;
+				if (distance==0) fractionOverNextWrite = 0;
 				//IJ.log("i="+i+" n="+pointsWritten+"/"+npOut+" leng="+IJ.d2s(lengthRead)+"/"+IJ.d2s(length)+" done="+IJ.d2s(pointsWritten*step)+" over="+IJ.d2s(fractionOverNextWrite)+" x,y="+IJ.d2s(x2 - fractionOverNextWrite*dx)+","+IJ.d2s(y2 - fractionOverNextWrite*dy));
 				xpOut[pointsWritten] = (float)(x2 - fractionOverNextWrite*dx);
 				ypOut[pointsWritten] = (float)(y2 - fractionOverNextWrite*dy);
+				distanceOverNextWrite -= step;
 				pointsWritten++;
 			}
 		}
-		xpOut[npOut-1] = xpoints[npoints-1];
-		ypOut[npOut-1] = ypoints[npoints-1];
 		return new float[][] {xpOut, ypOut, new float[] {(float)step}};
 	}
 	

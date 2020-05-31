@@ -71,17 +71,20 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		}
 		ImagePlus imp2;
 		Roi roi = imp.getRoi();		
-			if (duplicateStack && (first>1||last<stackSize))
-				imp2 = run(imp, first, last);
-			else if (duplicateStack || imp.getStackSize()==1)
-				imp2 = run(imp);
-			else
-				imp2 = crop(imp);
-			Calibration cal = imp2.getCalibration();
-			if (roi!=null && (cal.xOrigin!=0.0||cal.yOrigin!=0.0)) {
-				cal.xOrigin -= roi.getBounds().x;
-				cal.yOrigin -= roi.getBounds().y;
-			}	
+		if (duplicateStack && (first>1||last<stackSize))
+			imp2 = run(imp, first, last);
+		else if (duplicateStack || imp.getStackSize()==1) {
+			imp2 = run(imp);
+			if (imp.getStackSize()==1) recordCrop(imp);
+		} else {
+			imp2 = crop(imp);
+			recordCrop(imp);
+		}
+		Calibration cal = imp2.getCalibration();
+		if (roi!=null && (cal.xOrigin!=0.0||cal.yOrigin!=0.0)) {
+			cal.xOrigin -= roi.getBounds().x;
+			cal.yOrigin -= roi.getBounds().y;
+		}	
 		imp2.setTitle(newTitle);
 		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE) {
 			Roi roi2 = (Roi)cropRoi(imp, roi).clone();
@@ -92,7 +95,19 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		if (stackSize>1 && imp2.getStackSize()==stackSize)
 			imp2.setSlice(imp.getCurrentSlice());
 		if (isRotatedRect)
-			straightenRotatedRect(impA, roiA, imp2);		
+			straightenRotatedRect(impA, roiA, imp2);
+	}
+	
+	private void recordCrop(ImagePlus imp) {
+		if (Recorder.record) {
+   			if (imp.getStackSize()==1) {
+   				if (imp.getRoi()==null)
+   					Recorder.recordCall("imp2 = imp.duplicate();");
+   				else
+   					Recorder.recordCall("imp2 = imp.crop();");
+   			} else
+   				Recorder.recordCall("imp2 = imp.crop();");
+   		}
 	}
 	
  /** Rotates duplicated part of image
@@ -247,6 +262,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 	* @see ij.ImagePlus#crop
 	*/
 	public ImagePlus crop(ImagePlus imp) {
+		//if (imp!=null) throw new IllegalArgumentException();
 		if (imp.getNChannels()>1 && imp.getCompositeMode()==IJ.COMPOSITE) {
 			int z = imp.getSlice();
 			int t = imp.getFrame();
@@ -285,15 +301,6 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
  				overlay2.crop(imp.getCurrentSlice(), imp.getCurrentSlice());
  			imp2.setOverlay(overlay2);
  		}
-   		if (Recorder.record) {
-   			if (imp.getStackSize()==1) {
-   				if (imp.getRoi()==null)
-   					Recorder.recordCall("imp2 = imp.duplicate();");
-   				else
-   					Recorder.recordCall("imp2 = imp.crop();");
-   			} else
-   				Recorder.recordCall("imp2 = imp.crop();");
-   		}
 		return imp2;
 	}
 	
