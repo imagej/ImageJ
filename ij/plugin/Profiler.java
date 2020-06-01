@@ -107,7 +107,7 @@ public class Profiler implements PlugIn, PlotMaker {
 		}
 		ProfilePlot.setMinAndMax(ymin, ymax);
 		if (!Recorder.scriptMode())
-			Recorder.	recordString("setOption(\"InterpolateLines\", "+PlotWindow.interpolate+");\n");
+			Recorder.recordString("setOption(\"InterpolateLines\", "+PlotWindow.interpolate+");\n");
 	}
 		
 }

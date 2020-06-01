@@ -676,7 +676,7 @@ public class Selection implements PlugIn, Measurements {
 		Roi roi2 = fp==null ? new PolygonRoi(p, type2) : new PolygonRoi(fp, type2);
 		transferProperties(roi, roi2);
 		Rectangle2D.Double bounds = roi.getFloatBounds();
-		roi2.setLocation(bounds.x - 0.4999, bounds.y -0.4999);	//area and line roi coordinates are 0.5 pxl different
+		roi2.setLocation(bounds.x - 0.5, bounds.y -0.5);	//area and line roi coordinates are 0.5 pxl different
 		imp.setRoi(roi2);
 	}
 
