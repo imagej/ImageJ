@@ -452,7 +452,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			String path = IJ.getDir("macros")+"toolsets/icons/"+icon.substring(icon.indexOf(":")+1);
 			try {
 				BufferedImage bi = ImageIO.read(new File(path));
-				((Graphics2D)g).drawImage(bi,null, x-5,y-5);
+				if (scale==1)
+					g.drawImage(bi,x-5,y-5,null);
+				else {
+					int size = Math.max(bi.getWidth(),bi.getHeight());
+					g.drawImage(bi,x-5*scale,y-5*scale, size*scale,size*scale,null);
+				}
 			} catch (Exception e) {
 				IJ.error("Toolbar", "Error reading tool icon:\n"+path);
 			}
