@@ -292,6 +292,20 @@ public class Overlay implements Iterable<Roi> {
 		}
 	}
 
+	public void crop2(int firstC, int lastC, int firstZ, int lastZ, int firstT, int lastT) {
+		for (int i=size()-1; i>=0; i--) {
+			Roi roi = get(i);
+			int c = roi.getCPosition();
+			int z = roi.getZPosition();
+			int t = roi.getTPosition();
+IJ.log("crop: "+i+" "+c+" "+z+" "+t+firstC+" "+lastC+" "+firstZ+" "+lastZ+" "+firstT+" "+lastT);
+			if ((c>0&&(c<firstC||c>lastC)) || (z>0&&(z<firstZ||z>lastZ)) || (t>0&&(t<firstT||t>lastT))) {
+				remove(i);
+IJ.log("  remove");
+			}
+		}
+	}
+
     /** Returns the bounds of this overlay. */
     /*
     public Rectangle getBounds() {

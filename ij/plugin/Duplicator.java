@@ -70,7 +70,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			return;
 		}
 		ImagePlus imp2;
-		Roi roi = imp.getRoi();		
+		Roi roi = imp.getRoi();	
 		if (duplicateStack && (first>1||last<stackSize))
 			imp2 = run(imp, first, last);
 		else if (duplicateStack || imp.getStackSize()==1) {
@@ -258,8 +258,9 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		return imp2;
 	}
 	
-	/** Returns a copy the current stack image, cropped if there is a selection.
+	/** Returns a copy the current image or stack slice, cropped if there is a selection.
 	* @see ij.ImagePlus#crop
+	* @see ij.ImagePlus#crop(String)
 	*/
 	public ImagePlus crop(ImagePlus imp) {
 		//if (imp!=null) throw new IllegalArgumentException();
@@ -268,6 +269,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			int t = imp.getFrame();
 			return run(imp, 1, imp.getNChannels(), z, z, t, t);
 		}
+		boolean hyperstack = imp.isHyperStack();
+		int displayMode = imp.isComposite()?imp.getDisplayMode():0;
 		ImageProcessor ip = imp.getProcessor();
 		ImageProcessor ip2 = ip.crop();
 		ImagePlus imp2 = imp.createImagePlus();
@@ -287,7 +290,10 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			}
 			if (imp.isComposite()) {
 				LUT lut = ((CompositeImage)imp).getChannelLut();
-				imp2.getProcessor().setColorModel(lut);
+				if (displayMode==IJ.GRAYSCALE)
+					imp2.getProcessor().setColorModel(null);
+				else
+					imp2.getProcessor().setColorModel(lut);
 			}
 		} else {
 			String label = (String)imp.getProperty("Label");
@@ -297,10 +303,19 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && !imp.getHideOverlay()) {
 			Overlay overlay2 = overlay.crop(ip.getRoi());
- 			if (imp.getStackSize()>1)
- 				overlay2.crop(imp.getCurrentSlice(), imp.getCurrentSlice());
+ 			if (imp.getStackSize()>1) {
+ 				if (hyperstack) {
+ 					int c = imp.getC();
+ 					int z = imp.getZ();
+ 					int t = imp.getT();
+  					overlay2.crop(c,c,z,z,t,t);
+ 				} else
+ 					overlay2.crop(imp.getCurrentSlice(), imp.getCurrentSlice());
+ 			}
  			imp2.setOverlay(overlay2);
  		}
+ 		if (displayMode>0)
+ 			imp2.setDisplayMode(displayMode);
 		return imp2;
 	}
 	
@@ -382,7 +397,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		imp2.setStack("DUP_"+imp.getTitle(), stack2);
 		imp2.setDimensions(lastC-firstC+1, lastZ-firstZ+1, lastT-firstT+1);
 		if (imp.isComposite()) {
-			int mode = ((CompositeImage)imp).getMode();
+			int mode =imp.getDisplayMode();
 			if (lastC>firstC) {
 				imp2 = new CompositeImage(imp2, mode);
 				int i2 = 1;
@@ -400,7 +415,10 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 				}
 			} else if (firstC==lastC) {
 				LUT lut = ((CompositeImage)imp).getChannelLut(firstC);
-				imp2.getProcessor().setColorModel(lut);
+				if (mode==IJ.GRAYSCALE)
+					imp2.getProcessor().setColorModel(null);
+				else
+					imp2.getProcessor().setColorModel(lut);
 				imp2.setDisplayRange(lut.min, lut.max);
 			}
         }

@@ -138,8 +138,11 @@ public class Clipboard implements PlugIn, Transferable {
 		if (imp==null)
 			return null;
 		Roi roi = imp.getRoi();
-		if (roi!=null && !roi.isLine())
-			imp = imp.crop();
+		if (roi!=null && !roi.isLine()) {
+			Rectangle bounds = roi.getBounds();
+			if (!(bounds.x==0&&bounds.y==0&&bounds.width==imp.getWidth()&&bounds.height==imp.getHeight()))
+				imp = imp.crop();
+		}
 		boolean overlay = imp.getOverlay()!=null && !imp.getHideOverlay();
 		if (overlay && !imp.tempOverlay())
 			imp = imp.flatten(); 

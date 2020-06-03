@@ -2402,7 +2402,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	/** Returns a cropped copy this image or stack, where 'options'
-	 * can be "stack", "slice" or a range (e.g., "20-30").
+	 * can be "stack", "slice", "whole-slice" or a range (e.g., "20-30").
 	 * @see #duplicate
 	 * @see #crop
 	 * @see ij.plugin.Duplicator#crop
@@ -2412,7 +2412,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		int stackSize = getStackSize();
 		if (options==null || options.equals("stack"))
 			return (new Duplicator()).run(this);
-		else if (options.equals("slice") || stackSize==1)
+		else if (options.contains("whole") || stackSize==1) {
+			Roi saveRoi = getRoi();
+			deleteRoi();
+			ImagePlus imp2 = crop();
+			setRoi(saveRoi);
+			return imp2;
+		} else if (options.equals("slice") || stackSize==1)
 			return crop();
 		else {
 			String[] range = Tools.split(options, " -");
@@ -2899,30 +2905,24 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		position[2] = t;
 	}
 
-	/** Returns a "flattened" version of this image, in RGB format. */
+	/** Returns a "flattened" version of this image, or stack slice, in RGB format. */
 	public ImagePlus flatten() {
 		if (IJ.debugMode) IJ.log("flatten");
-		ImagePlus imp2 = createImagePlus();
+		ImagePlus impCopy = this;
+		if (getStackSize()>1)
+			impCopy = crop("whole-slice");
+		ImagePlus imp2 = impCopy.createImagePlus();
+		imp2.setOverlay(impCopy.getOverlay());
 		imp2.setTitle(flattenTitle);
 		ImageCanvas ic2 = new ImageCanvas(imp2);
 		imp2.flatteningCanvas = ic2;
 		imp2.setRoi(getRoi());
-		if (getStackSize()>1) {
-			imp2.setStack(getStack());
-			imp2.setSlice(getCurrentSlice());
-			if (isHyperStack()) {
-				imp2.setDimensions(getNChannels(),getNSlices(),getNFrames());
-				imp2.setPosition(getChannel(),getSlice(),getFrame());
-				imp2.setOpenAsHyperStack(true);
-			}
-		}
 		Overlay overlay2 = getOverlay();
 		if (overlay2!=null && imp2.getRoi()!=null) {
 			imp2.deleteRoi();
 			if (getWindow()!=null) IJ.wait(100);
 		}
 		setPointScale(imp2.getRoi(), overlay2);
-		imp2.setOverlay(overlay2);
 		ImageCanvas ic = getCanvas();
 		if (ic!=null)
 			ic2.setShowAllList(ic.getShowAllList());
