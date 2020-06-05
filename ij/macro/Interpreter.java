@@ -1177,7 +1177,7 @@ public class Interpreter implements MacroConstants {
 	}
 
 	// Returns true if the token at the specified location is a string
-	private boolean isString(int pcLoc) {
+	boolean isString(int pcLoc) {
 		int tok = pgm.code[pcLoc];
 		if ((tok&0xff)==VARIABLE_FUNCTION) {
 			int address = tok>>TOK_SHIFT;

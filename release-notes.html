@@ -5,19 +5,26 @@
 </head>
 <body>
 
-<li> <u>1.53c2  2 June 2020</u>
+<li> <u>1.53c8  4 June 2020</u>
 <ul>
+<li> The Color Picker Tool has a new icon.
 <li> Thanks Jerome Mutterer, added the rainbow progress bar
 easter egg, activated by switching to the angle tool and running
 a command that uses a progress bar (e.g., a radius 50 median
 filter on a 1000x1000 image).
+<li> Thanks to Bill Christens-Barry, added the TextWindow.setFont(name,style,size)
+method for setting the font used in the Log window. For monospaced text, set
+ 'name' to "Monospaced"
+(<a href="http://wsr.imagej.net/macros/examples/MonospacedText.txt">example</a>).
 <li> Thanks to Gilles Carpentier, fixed a bug that caused NaN results
 when measuring line selections created by <i>Edit&gt;Selection&gt;Area to Line</i>
 from particle analyzer selections touching the right or
 bottom edge of the image.
-<li> Thanks to Norbert Vischer, fixed a bug that caused hyperstacks
+<li> Thanks to Norbert Vischer, fixed bugs that caused hyperstacks
 with a "select all" selection to not be correcty copied to
 the system clipboard.
+<li> Thanks to Joe Want, fixed a bug that caused the macro interpreter to
+sometimes generate an invalid "Numeric return value expected" message.
 </ul>
 
 <li> <u>1.53b  31 May 2020</u>

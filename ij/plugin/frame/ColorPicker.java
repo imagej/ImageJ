@@ -187,9 +187,11 @@ class ColorGenerator extends ColorProcessor {
 
     void resetBW() {   //Paints the Color Reset Button
         setColor(0x000000);
-        drawRect(92, 300, 9, 7);
-        setColor(0x000000);
-        setRoi(88, 297, 9, 7);
+        setRoi(92, 300, 9, 7);
+        fill();
+        drawRect(88, 297, 9, 7);
+        setColor(0xffffff);
+        setRoi(89, 298, 7, 5);
         fill();
     }
 
@@ -220,6 +222,7 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener {
 	ColorGenerator ip;
 	Frame frame;
 	double scale;
+	String status = "";
 			
 	public ColorCanvas(int width, int height, Frame frame, ColorGenerator ip, double scale) {
 		this.width=width; this.height=height;
@@ -264,8 +267,8 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener {
 			Toolbar.setBackgroundColor(Toolbar.getForegroundColor());
 			Toolbar.setForegroundColor(c);
 		} else if(resetRect.contains(x,y)) {
-			Toolbar.setForegroundColor(new Color(0x000000));
-			Toolbar.setBackgroundColor(new Color(0xffffff)); 
+			Toolbar.setForegroundColor(Color.white);
+			Toolbar.setBackgroundColor(Color.black); 
 		} else if ((background1Rect.contains(x,y)) || (background2Rect.contains(x,y))) {
 			background = true;
 			if (doubleClick) editColor();
@@ -277,7 +280,6 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener {
 			ip.refreshBackground(background);
 			ip.refreshForeground(background);
 		} else {
-			//IJ.log(" " + difference + " " + doubleClick);
 			if (doubleClick)
 				editColor();
 			else
@@ -291,6 +293,7 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener {
 			ip.refreshForeground(background);
 		}
 		repaint();
+		IJ.showStatus(status+" ");
 	}
 
 	public void mouseMoved(MouseEvent e) {
@@ -301,7 +304,8 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener {
 		int g = (p&0xff00)>>8;
 		int b = p&0xff;
 		String hex = Colors.colorToString(new Color(r,g,b));
-		IJ.showStatus("red="+pad(r)+", green="+pad(g)+", blue="+pad(b)+" ("+hex+")");
+		status = "red="+pad(r)+", green="+pad(g)+", blue="+pad(b)+" ("+hex+")";
+		IJ.showStatus(status);
 
 	}
 

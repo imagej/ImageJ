@@ -2412,7 +2412,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		int stackSize = getStackSize();
 		if (options==null || options.equals("stack"))
 			return (new Duplicator()).run(this);
-		else if (options.contains("whole") || stackSize==1) {
+		else if (options.contains("whole")) {
 			Roi saveRoi = getRoi();
 			deleteRoi();
 			ImagePlus imp2 = crop();

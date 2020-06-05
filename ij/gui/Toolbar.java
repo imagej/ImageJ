@@ -302,6 +302,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
         if (tool>=CUSTOM1)
         	x -= buttonWidth-gapSize;
 		int y = offset;
+		if (dscale==1.3) y++;
+		if (dscale==1.4) {x++; y+=2;}
 		if (down[tool]) { x++; y++;}
 		this.g = g;
 		if (tool>=CUSTOM1 && tool<=getNumTools() && icons[tool]!=null) {
@@ -401,16 +403,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				return;
 			case DROPPER:
 				xOffset = x; yOffset = y;
-				g.setColor(foregroundColor);
-				m(12,2); d(14,2);
-				m(11,3); d(15,3);
-				m(11,4); d(15,4);
-				m(8,5); d(15,5);
-				m(9,6); d(14,6);
-				polyline(10,7,12,7,12,9);
-				polyline(8,7,2,13,2,15,4,15,11,8);
 				g.setColor(backgroundColor);
-				polyline(-1,-1,18,-1,18,18,-1,18,-1,-1);
+				g.fillRect(x+3*scale, y+3*scale, 14*scale, 14*scale);
+				g.setColor(foregroundColor);
+				g.fillRect(x-1, y-1, 14*scale, 14*scale);
 				return;
 			case ANGLE:
 				xOffset = x; yOffset = y+2;

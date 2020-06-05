@@ -314,8 +314,6 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
  			}
  			imp2.setOverlay(overlay2);
  		}
- 		if (displayMode>0)
- 			imp2.setDisplayMode(displayMode);
 		return imp2;
 	}
 	
@@ -431,7 +429,11 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && !imp.getHideOverlay()) {
 			Overlay overlay2 = overlay.crop(roi2!=null?roi2.getBounds():null);
-			overlay2.crop(firstC, lastC, firstZ, lastZ, firstT, lastT);
+			int nChannels = imp.getNChannels();
+			int nSlices = imp.getNSlices();
+			int nFrames = imp.getNFrames();
+			if (!(firstC==1&&lastC==nChannels&&firstZ==1&&lastZ==nSlices&&firstT==1&&lastT==nFrames))
+				overlay2.crop(firstC, lastC, firstZ, lastZ, firstT, lastT);
 			imp2.setOverlay(overlay2);
 		}
    		if (Recorder.record)

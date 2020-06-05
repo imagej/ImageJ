@@ -2777,6 +2777,7 @@ public class Functions implements MacroConstants, Measurements {
 		int nextToken = pgm.code[interp.pc+1];
 		int tok = nextToken&0xff;
 		if (tok==STRING_CONSTANT||tok==STRING_FUNCTION) return true;
+		if (tok==VARIABLE_FUNCTION && interp.isString(interp.pc+1)) return true;
 		if (tok!=WORD) return false;
 		Variable v = interp.lookupVariable(nextToken>>TOK_SHIFT);
 		if (v==null) return false;
@@ -7414,6 +7415,10 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("setGroupNames")) {
 			Roi.setGroupNames(getStringArg());
 			return null;
+		} else if (name.equals("getDefaultColor")) {
+			interp.getParens();
+			Color color = Roi.getColor();
+			return new Variable(Colors.colorToString(color));
 		}
 		ImagePlus imp = getImage();
 		if (name.equals("paste")) {
@@ -7448,10 +7453,6 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("getBounds")) {
 			getBounds();
 			return null;
-		} else if (name.equals("getDefaultColor")) {
-			interp.getParens();
-			Color color = Roi.getColor();
-			return new Variable(Colors.colorToString(color));
 		} else if (name.equals("getStrokeColor")) {
 			interp.getParens();
 			Color color = roi.getStrokeColor();
