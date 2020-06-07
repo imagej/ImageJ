@@ -57,7 +57,7 @@ public class ArrowTool extends PlugInTool {
 	}
 
 	public String getToolIcon() {
-		return "B10C037L0fe1L65e1La9e1L65a9C123L8586L9497La4a7Lb3b6Lc3c4";
+		return "C037L0ff0L74f0Lb8f0L74b8";
 	}
 
 	public String getToolName() {
