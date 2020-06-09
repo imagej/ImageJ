@@ -1741,13 +1741,16 @@ public class IJ {
 			build = "0" + build;
 		return ImageJ.VERSION+build;
 	}
-
-	/** Returns the path to the home ("user.home"), downloads, startup, ImageJ, plugins, macros, 
-		luts, temp, current or image directory if <code>title</code> is "home", "downloads", "startup", 
-		"imagej", "plugins", "macros", "luts", "temp", "current", "default", "image", otherwise, 
-		displays a dialog and returns the path to the directory selected by the user. 
-		Returns null if the specified directory is not found or the user
-		cancels the dialog box. Also aborts the macro if the user cancels
+		
+	/** Returns the path to the specified directory if <code>title</code> is
+		"home" ("user.home"), "downloads", "startup",  "imagej" (ImageJ directory),
+		"plugins", "macros", "luts", "temp", "current", "default",
+		"image" (directory active image was loaded from) or "file" 
+		(directory most recently used to open or save a file),
+		otherwise displays a dialog and returns the path to the
+		directory selected by the user. Returns null if the specified
+		directory is not found or the user cancels the dialog box.
+		Also aborts the macro if the user cancels
 		the dialog box.*/
 	public static String getDirectory(String title) {
 		String title2 = title.toLowerCase(Locale.US);
@@ -1791,6 +1794,8 @@ public class IJ {
 				return dir;
 			} else
 				return null;
+		} else if (title2.equals("file")) {
+			return OpenDialog.getLastDirectory();
 		} else {
 			DirectoryChooser dc = new DirectoryChooser(title);
 			String dir = dc.getDirectory();

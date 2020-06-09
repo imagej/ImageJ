@@ -693,7 +693,7 @@ public class TextRoi extends Roi {
 	public void setDrawStringMode(boolean drawStringMode) {
 	}
 	
-	public void setPreviousRoi(Roi previousRoi) {
+	public void setPreviousTextRoi(Roi previousRoi) {
 		this.previousRoi = previousRoi;
 	}
 	

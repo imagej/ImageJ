@@ -127,8 +127,9 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 				return;
 			}
 		}
-		if (Roi.previousRoi==null) return;
-		int id = Roi.previousRoi.getImageID();
+		Roi previousRoi = Roi.getPreviousRoi();
+		if (previousRoi==null) return;
+		int id = previousRoi.getImageID();
 		if (id>=0) return;
 		imp = WindowManager.getImage(id);
 		if (imp==null) return;

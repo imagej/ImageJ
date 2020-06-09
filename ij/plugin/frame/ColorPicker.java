@@ -256,7 +256,7 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener {
 		//IJ.log("mousePressed "+e);
 		ip.setLineWidth(1);
 		if (Toolbar.getToolId()==Toolbar.DROPPER)
-		IJ.setTool(Toolbar.RECTANGLE );
+			IJ.setTool(Toolbar.RECTANGLE );
 		int x = (int)(e.getX()/scale);
 		int y = (int)(e.getY()/scale);
 		long difference = System.currentTimeMillis()-mouseDownTime;

@@ -65,8 +65,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	int modState = NO_MODS;
 	int cornerDiameter;             //for rounded rectangle
 	int previousSX, previousSY;     //remember for aborting moving with esc and constrain
-	
-	public static Roi previousRoi;  //for Edit>Selection>Restore Selection
+		
 	public static final BasicStroke onePixelWide = new BasicStroke(1);
 	protected static Color ROIColor = Prefs.getColor(Prefs.ROICOLOR,Color.yellow);
 	protected static int pasteMode = Blitter.COPY;
@@ -80,6 +79,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	private static String groupNamesString = Prefs.get(NAMES_KEY, null);
 	private static String[] groupNames;
 	private static boolean groupNamesChanged;
+
+	/** Get using getPreviousRoi() and set using setPreviousRoi() */
+	public static Roi previousRoi; 
 
 	protected int type;
 	protected int xMax, yMax;
@@ -802,9 +804,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public void abortModification(ImagePlus imp) {
 		if (state == CONSTRUCTING) {
 			setImage(null);
-			Roi savedPreviousRoi = previousRoi;
+			Roi savedPreviousRoi = getPreviousRoi();
 			imp.setRoi(previousRoi!=null && previousRoi.getImage() == imp ? previousRoi : null);
-			previousRoi = savedPreviousRoi;     //(overrule saving this aborted roi as previousRoi)
+			setPreviousRoi(savedPreviousRoi);     //(overrule saving this aborted roi as previousRoi)
 		} else if (state == MOVING)
 			move(previousSX, previousSY);       //move back to starting point
 		else if (state == MOVING_HANDLE)
@@ -1591,7 +1593,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		if (roi2!=null)
 			roi2.copyAttributes(previousRoi);
 		imp.setRoi(roi2);
-		previousRoi = previous;
+		setPreviousRoi(previous);
 	}
 	
 	void addPoint() {
@@ -2589,6 +2591,20 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	/** Returns the number of points in this selection; equivalent to getFloatPolygon().npoints. */
 	public int size() {
 		return getFloatPolygon().npoints;
+	}
+	
+	/** Saves 'roi' so it can be restored later using Edit/Selection/Restore Selection. */
+	public static void setPreviousRoi(Roi roi) {
+		if (roi!=null) {
+			previousRoi = (Roi)roi.clone();
+			previousRoi.setImage(null);
+		} else
+			previousRoi = null;
+	}
+
+	/** Returns the Roi saved by setPreviousRoi(). */
+	public static Roi getPreviousRoi() {
+		return previousRoi;
 	}
 
 	/* 

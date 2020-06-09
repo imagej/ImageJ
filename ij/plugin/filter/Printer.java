@@ -79,6 +79,7 @@ public class Printer implements PlugInFilter, Printable {
 		}
 	}
 	
+	@Override
 	public int print(Graphics g, PageFormat pf, int pageIndex) {
 		if (pageIndex != 0) return NO_SUCH_PAGE;
 		Roi roi = imp.getRoi();
@@ -93,7 +94,6 @@ public class Printer implements PlugInFilter, Printable {
 			ip = ip.crop();
 		if (rotate)
 			ip = ip.rotateLeft();
-		//new ImagePlus("ip", ip.duplicate()).show();
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		int margin = 0;

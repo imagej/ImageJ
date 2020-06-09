@@ -443,7 +443,8 @@ public class PolygonRoi extends Roi {
 	//Within correction circle, all vertices with sharp angles are removed.
 	//Norbert Vischer
 	protected void wipeBack() {
-		if (previousRoi!=null && previousRoi.modState==SUBTRACT_FROM_ROI)
+		Roi prevRoi = Roi.getPreviousRoi();
+		if (prevRoi!=null && prevRoi.modState==SUBTRACT_FROM_ROI)
 			return;
 		double correctionRadius = 20;
 		if (ic!=null)
@@ -852,7 +853,8 @@ public class PolygonRoi extends Roi {
 		FloatPolygon points = getFloatPolygon();
 		int n = points.npoints;
 		modState = NO_MODS;
-		if (previousRoi!=null) previousRoi.modState = NO_MODS;
+		Roi prevRoi = Roi.getPreviousRoi();
+		if (prevRoi!=null) prevRoi.modState = NO_MODS;
 		int pointToDuplicate = getClosestPoint(ox, oy, points);
 		if (pointToDuplicate<0)
 			return;

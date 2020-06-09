@@ -6538,7 +6538,10 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("activateSelection")||name.equals("activateRoi")) {
 			int index = (int)getArg();
 			checkIndex(index, 0, size-1);
-			Roi roi = overlay.get(index);
+			Roi roi = imp.getRoi();
+			if (roi!=null)
+				roi.setImage(null);
+			roi = overlay.get(index);
 			if (roi==null)
 				return Double.NaN;;
 			if (imp.getStackSize()>1) {

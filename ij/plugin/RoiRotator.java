@@ -37,7 +37,7 @@ public class RoiRotator implements PlugIn {
 		Undo.setup(Undo.ROI, imp);
 		roi = (Roi)roi.clone();
 		imp.setRoi(roi2);
-		Roi.previousRoi = roi;
+		Roi.setPreviousRoi(roi);
 	}
 	
 	public double showDialog(double angle) {

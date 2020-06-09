@@ -639,7 +639,7 @@ public class Selection implements PlugIn, Measurements {
 		Undo.setup(Undo.ROI, imp);
 		Roi roi2 = lineToArea(roi);
 		imp.setRoi(roi2);
-		Roi.previousRoi = (Roi)roi.clone();
+		Roi.setPreviousRoi(roi);
 	}
 	
 	/** Converts a line selection into an area selection. */

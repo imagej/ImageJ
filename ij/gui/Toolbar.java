@@ -371,8 +371,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			case POINT:
 				xOffset = x; yOffset = y;
 				if (multiPointMode) {
-					drawPoint(1,3); drawPoint(9,1); drawPoint(15,5);
-					drawPoint(10,11); drawPoint(2,12);
+					drawPoint(1,3); drawPoint(9,0); drawPoint(15,5);
+					drawPoint(10,11); drawPoint(2,13);
 				} else {
 					m(1,8); d(6,8); d(6,6); d(10,6); d(10,10); d(6,10); d(6,9);
 					m(8,1); d(8,5); m(11,8); d(15,8); m(8,11); d(8,15);
@@ -437,10 +437,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 	void drawPoint(int x, int y) {
 		g.setColor(toolColor);
-		m(x-2,y); d(x+2,y);
-		m(x,y-2); d(x,y+2);
+		m(x-3,y); d(x+3,y);
+		m(x,y-3); d(x,y+3);
 		g.setColor(Roi.getColor());
-		dot(x,y);
+		dot(x,y); dot(x-1,y-1);
 	}
 	
 	void drawIcon(Graphics g, int tool, int x, int y) {
@@ -656,7 +656,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	private void dot(int x, int y) {
-		g.fillRect(x*scale+xOffset, y*scale+yOffset, 1*scale, 1*scale);
+		g.fillRect(xOffset+x*scale, yOffset+y*scale, 1*scale, 1*scale);
 	}
 	
 	private void polyline(int... values) {
@@ -963,14 +963,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		return buttonWidth;
 	}
 	
-	static void repaintTool(int tool) {
+	public static void repaintTool(int tool) {
 		if (IJ.getInstance()!=null) {
 			Toolbar tb = getInstance();
 			Graphics g = tb.getGraphics();
 			if (IJ.debugMode) IJ.log("Toolbar.repaintTool: "+tool+" "+g);
 			if (g==null) return;
-			if (Prefs.antialiasedTools)
-				((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			tb.drawButton(g, tool);
 			if (g!=null) g.dispose();
 		}

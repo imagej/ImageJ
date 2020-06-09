@@ -26,7 +26,7 @@ public class RoiEnlarger implements PlugIn {
 		Roi roi2 = enlarge(roi, n);
 		if (roi2!=null) {
 			imp.setRoi(roi2);
-			Roi.previousRoi = roi;
+			Roi.setPreviousRoi(roi);
 			defaultDistance = n;
 		}
 	}

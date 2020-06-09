@@ -34,7 +34,7 @@ public class RoiScaler implements PlugIn {
 		Undo.setup(Undo.ROI, imp);
 		roi = (Roi)roi.clone();
 		imp.setRoi(roi2);
-		Roi.previousRoi = roi;
+		Roi.setPreviousRoi(roi);
 	}
 	
 	public boolean showDialog() {

@@ -2328,7 +2328,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			select(index);
 			return;
 		}
-		Roi.previousRoi = (Roi)previousRoi.clone();
+		Roi.setPreviousRoi(previousRoi);
 		Roi roi = (Roi)rois.get(index);
 		if (roi!=null) {
 			roi.setImage(imp);
@@ -2582,7 +2582,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				if (imp!=null) {
 					Roi roi = imp.getRoi();
 					if (roi!=null)
-						Roi.previousRoi = (Roi)roi.clone();
+						Roi.setPreviousRoi(roi);
 				}
 				restore(imp, selected[0], true);
 				ResultsTable.selectRow(imp!=null?imp.getRoi():null);

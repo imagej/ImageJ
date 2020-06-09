@@ -46,6 +46,10 @@ public class RoiDefaultsDialog implements PlugIn, DialogListener {
 		String cname = gd.getNextChoice();		
 		Color color = Colors.getColor(cname, Color.yellow);
 		Roi.setColor(color);
+		if (color.equals(Roi.getColor())) {
+			Toolbar.repaintTool(Toolbar.POINT);
+			Toolbar.repaintTool(Toolbar.WAND);
+		}
 		Roi.setDefaultStrokeWidth(gd.getNextNumber());
 		int group = (int)gd.getNextNumber();
 		Vector stringFields = gd.getStringFields();

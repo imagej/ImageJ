@@ -1935,9 +1935,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				roi = newRoi;
 				return;
 			}
-			newRoi = (Roi)newRoi.clone();
-			if (newRoi==null)
-				{deleteRoi(); return;}
+			//newRoi = (Roi)newRoi.clone();
+			if (newRoi==null) {
+				deleteRoi();
+				return;
+			}
 		}
 		if (bounds.width==0 && bounds.height==0 && !(newRoi.getType()==Roi.POINT||newRoi.getType()==Roi.LINE)) {
 			deleteRoi();
@@ -1979,9 +1981,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void createNewRoi(int sx, int sy) {
 		Roi previousRoi = roi;
 		deleteRoi();   //also saves the roi as <code>Roi.previousRoi</code> if non-null
-		if (Roi.previousRoi != null)
-			Roi.previousRoi.setImage(previousRoi== null ? null : this); //with 'this' it will be recalled in case of ESC
-
+		Roi prevRoi = Roi.getPreviousRoi();
+		if (prevRoi != null)
+			prevRoi.setImage(previousRoi==null ? null : this); //with 'this' it will be recalled in case of ESC
 		switch (Toolbar.getToolId()) {
 			case Toolbar.RECTANGLE:
 				if (Toolbar.getRectToolType()==Toolbar.ROTATED_RECT_ROI)
@@ -2012,7 +2014,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				break;
 			case Toolbar.TEXT:
 				roi = new TextRoi(sx, sy, this);
-				((TextRoi)roi).setPreviousRoi(previousRoi);
+				((TextRoi)roi).setPreviousTextRoi(previousRoi);
 				break;
 			case Toolbar.POINT:
 				roi = new PointRoi(sx, sy, this);
@@ -2054,6 +2056,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		so it can be recovered by Edit/Selection/Restore Selection. */
 	public void deleteRoi() {
 		if (roi!=null) {
+			roi.setImage(null);
 			saveRoi();
 			if (!(IJ.altKeyDown()||IJ.shiftKeyDown())) {
 				RoiManager rm = RoiManager.getRawInstance();
@@ -2100,7 +2103,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			roi2.endPaste();
 			Rectangle r = roi2.getBounds();
 			if ((r.width>0 || r.height>0)) {
-				Roi.previousRoi = (Roi)roi2.clone();
+				Roi.setPreviousRoi(roi2);
 				if (IJ.debugMode) IJ.log("saveRoi: "+roi2);
 			}
 			if ((roi2 instanceof PointRoi) && ((PointRoi)roi2).promptBeforeDeleting()) {
@@ -2117,8 +2120,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			roi.notifyListeners(RoiListener.MODIFIED);
 			return;
 		}
-		if (Roi.previousRoi!=null) {
-			Roi pRoi = Roi.previousRoi;
+		Roi previousRoi = Roi.getPreviousRoi();
+		if (previousRoi!=null) {
+			Roi pRoi = previousRoi;
 			Rectangle r = pRoi.getBounds();
 			if (r.width<=width||r.height<=height||(r.x<width&&r.y<height)||isSmaller(pRoi)) { // will it (mostly) fit in this image?
 				roi = (Roi)pRoi.clone();
