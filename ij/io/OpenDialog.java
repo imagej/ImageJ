@@ -235,7 +235,7 @@ import javax.swing.filechooser.*;
 	}
 	
 	/** Returns the path to the directory that contains the last file
-		 opened or saVED, or null if a file has not been opened or saved. */
+		 opened or saved, or null if a file has not been opened or saved. */
 	public static String getLastDirectory() {
 		return lastDir;
 	}

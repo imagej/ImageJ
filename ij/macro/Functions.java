@@ -6535,31 +6535,9 @@ public class Functions implements MacroConstants, Measurements {
 			overlay.remove(index);
 			imp.draw();
 			return Double.NaN;
-		} else if (name.equals("activateSelection")||name.equals("activateRoi")) {
-			int index = (int)getArg();
-			checkIndex(index, 0, size-1);
-			Roi roi = imp.getRoi();
-			if (roi!=null)
-				roi.setImage(null);
-			roi = overlay.get(index);
-			if (roi==null)
-				return Double.NaN;;
-			if (imp.getStackSize()>1) {
-				if (imp.isHyperStack() && roi.hasHyperStackPosition()) {
-					int c = roi.getCPosition();
-					int z = roi.getZPosition();
-					int t = roi.getTPosition();
-					c = c>0?c:imp.getChannel();
-					z = z>0?z:imp.getSlice();
-					t = t>0?t:imp.getFrame();
-					imp.setPosition(c, z, t);
-				} else if (roi.getPosition()>0)
-					imp.setSlice(roi.getPosition());
-			}
-			imp.setRoi(roi, !Interpreter.isBatchMode());
-			if (Analyzer.addToOverlay())
-				ResultsTable.selectRow(roi);
-			return Double.NaN;
+		} else if (name.equals("activateSelection")||name.equals("activateSelectionAndWait")||name.equals("activateRoi")) {
+			boolean waitForDisplayRefresh = name.equals("activateSelectionAndWait");
+			return activateSelection(imp, overlay, waitForDisplayRefresh);
 		} else if (name.equals("moveSelection")) {
 			int index = (int)getFirstArg();
 			int x = (int)getNextArg();
@@ -6619,6 +6597,40 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Unrecognized function name");
 		return Double.NaN;
 	}
+	
+	private double activateSelection(ImagePlus imp, Overlay overlay, boolean wait) {
+		int index = (int)getArg();
+		int size = overlay.size();
+		checkIndex(index, 0, size-1);
+		Roi roi = overlay.get(index);
+		if (roi==null)
+			return Double.NaN;;
+		if (imp.getStackSize()>1) {
+			if (imp.isHyperStack() && roi.hasHyperStackPosition()) {
+				int c = roi.getCPosition();
+				int z = roi.getZPosition();
+				int t = roi.getTPosition();
+				c = c>0?c:imp.getChannel();
+				z = z>0?z:imp.getSlice();
+				t = t>0?t:imp.getFrame();
+				imp.setPosition(c, z, t);
+			} else if (roi.getPosition()>0)
+				imp.setSlice(roi.getPosition());
+		}
+		if (wait) { // wait for display to finish updating
+			ImageCanvas ic = imp.getCanvas();
+			if (ic!=null) ic.setPaintPending(true);
+			imp.setRoi(roi, !Interpreter.isBatchMode());
+			long t0 = System.currentTimeMillis();
+			do {
+				IJ.wait(5);
+			 } while (ic!=null && ic.getPaintPending() && System.currentTimeMillis()-t0<50);
+		} else
+			imp.setRoi(roi, !Interpreter.isBatchMode());			
+		if (Analyzer.addToOverlay())
+			ResultsTable.selectRow(roi);
+		return Double.NaN;
+	}	
 	
 	private double getOverlayElementBounds(Overlay overlay) {
 		int index = (int)getFirstArg();

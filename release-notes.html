@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53c21  9 June 2020</u>
+<li> <u>1.53c31  11 June 2020</u>
 <ul>
 <li> The Color Picker is improved, including a new tool icon.
 <li> The main ImageJ window is 20 pixels wider.
@@ -14,6 +14,10 @@
 easter egg, activated by switching to the angle tool and running
 a command that uses a progress bar (e.g., a radius 50 median
 filter on a 1000x1000 image).
+<li> Added the getDir("file") macro function, which returns the 
+directory of most recently opened of saved file. DOCUMENT
+<li> Thanks Jerome Mutterer, added the Overlay.activateSelectionAndWait()
+macro function. DOCUMENT
 <li> Thanks to Bill Christens-Barry, added the TextWindow.setFont(name,style,size)
 method for setting the font used in the Log window. For monospaced text, set
  'name' to "Monospaced"
@@ -30,6 +34,11 @@ sometimes generate an invalid "Numeric return value expected" message.
 <li> Thanks Jerome Mutterer, fixed a bug that caused the
 Roi.activateSelection(index) macro function to not work as expected
 when called twice with the same index.
+<li> Worked around a Java 8/Windows 10 bug that caused the
+"ImageJ" window menu bar font size to become very small
+after increasing the GUI scale.
+<li> Thanks to Garbriel Landini, fixed a 1.52m regression that caused
+histogram peaks to extend above the frame.
 </ul>
 
 <li> <u>1.53b  31 May 2020</u>

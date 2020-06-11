@@ -271,7 +271,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		outline is also displayed.  Does nothing if there
 		is no window associated with this image (i.e. show()
 		has not been called).*/
-	public void draw(){
+	public void draw() {
 		if (win!=null)
 			win.getCanvas().repaint();
 	}
@@ -1935,11 +1935,14 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				roi = newRoi;
 				return;
 			}
-			//newRoi = (Roi)newRoi.clone();
 			if (newRoi==null) {
 				deleteRoi();
 				return;
 			}
+			ImagePlus imp = newRoi.getImage();
+			if (imp!=null && imp.getID()!=getID())
+				newRoi = (Roi)newRoi.clone();
+			newRoi.setImage(null);
 		}
 		if (bounds.width==0 && bounds.height==0 && !(newRoi.getType()==Roi.POINT||newRoi.getType()==Roi.LINE)) {
 			deleteRoi();
@@ -2056,7 +2059,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		so it can be recovered by Edit/Selection/Restore Selection. */
 	public void deleteRoi() {
 		if (roi!=null) {
-			roi.setImage(null);
 			saveRoi();
 			if (!(IJ.altKeyDown()||IJ.shiftKeyDown())) {
 				RoiManager rm = RoiManager.getRawInstance();

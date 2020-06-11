@@ -244,8 +244,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (srcRect.width<imageWidth || srcRect.height<imageHeight)
 				drawZoomIndicator(g);
 			//if (IJ.debugMode) showFrameRate(g);
-		}
-		catch(OutOfMemoryError e) {IJ.outOfMemory("Paint");}
+		} catch(OutOfMemoryError e) {IJ.outOfMemory("Paint");}
 		setPaintPending(false);
     }
     

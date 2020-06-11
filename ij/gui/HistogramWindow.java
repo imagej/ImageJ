@@ -81,7 +81,6 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	/** Displays a histogram using the specified title and ImageStatistics. */
 	public HistogramWindow(String title, ImagePlus imp, ImageStatistics stats) {
 		super(NewImage.createRGBImage(title, WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
-		//IJ.log("HistogramWindow: "+stats.histMin+"  "+stats.histMax+"  "+stats.nBins);
 		this.yMax = stats.histYMax;
 		showHistogram(imp, stats);
 	}
@@ -337,7 +336,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	void drawPlot(long maxCount, ImageProcessor ip) {
 		if (maxCount==0) maxCount = 1;
 		frame = new Rectangle(XMARGIN, YMARGIN, HIST_WIDTH, HIST_HEIGHT);
-		ip.drawRect(frame.x-1, frame.y, frame.width+2, frame.height+1);		
+		ip.drawRect(frame.x-1, frame.y, frame.width+2, frame.height+1);
 		if (histogram.length==256) {
 			double scale2 = HIST_WIDTH/256.0;
 			int barWidth = 1;
@@ -346,6 +345,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			for (int i = 0; i < 256; i++) {
 				int x =(int)(i*scale2);
 				int y = (int)(((double)HIST_HEIGHT*(double)histogram[i])/maxCount);
+				if (y>HIST_HEIGHT) y = HIST_HEIGHT;
 				for (int j = 0; j<barWidth; j++)
 					ip.drawLine(x+j+XMARGIN, YMARGIN+HIST_HEIGHT, x+j+XMARGIN, YMARGIN+HIST_HEIGHT-y);
 			}
