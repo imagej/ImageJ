@@ -265,10 +265,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 	private void setStrokeWidth(Graphics2D g2d) {
 		if (scale==1) {
-			if (IJ.isMacOSX())			
-				g2d.setStroke(new BasicStroke(1.4f));
-			else if (dscale>1.0)
-				g2d.setStroke(new BasicStroke(1.25f));
+			if (dscale>1.0)
+				g2d.setStroke(new BasicStroke(IJ.isMacOSX()?1.4f:1.25f));
 		} else
 			g2d.setStroke(new BasicStroke(scale));
 	}

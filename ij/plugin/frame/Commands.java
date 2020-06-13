@@ -13,13 +13,13 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
 	private static Frame instance;
 	private static final String divider = "---------------";
 	private static final String[] commands = {
-		"Blobs (25K)",
+		"Blobs",
 		"Open...",
 		"Show Info...",
 		"Close",
 		"Close All",
+		"Appearance...",
 		"Histogram",
-		"Find Maxima...",
 		"Gaussian Blur...",		
 		"Record...",
 		"Capture Screen",
@@ -56,12 +56,8 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
 			} else
 				cmds = null;				
 		}
-		if (cmds==null) {
-			list.add(divider);
-			int len = commands.length<MAX_COMMANDS?commands.length:MAX_COMMANDS-1;
-			for (int i=0; i<len; i++)
-				list.add(commands[i]);		
-		}
+		if (cmds==null)
+			reset();
 		ImageJ ij = IJ.getInstance();
 		addKeyListener(ij);
 		Executer.addCommandListener(this);
@@ -107,11 +103,17 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
 			gd.setInsets(2, 8, 0);
 			gd.addStringField("Cmd"+IJ.pad(n++,2)+":", list.getItem(i), 20);
 		}
+		gd.enableYesNoCancel(" OK ", "Reset");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
-		for (int i=index; i<list.getItemCount(); i++)
-			list.replaceItem(gd.getNextString(),i);
+		else if (!gd.wasOKed()) {
+			boolean ok = IJ.showMessageWithCancel("Commands", "Are you sure you want to reset?");
+			if (ok) reset();
+        } else { 
+			for (int i=index; i<list.getItemCount(); i++)
+				list.replaceItem(gd.getNextString(),i);
+		}
 	}
 
 	public void itemStateChanged(ItemEvent e) {
@@ -159,6 +161,14 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
 			}
 		}
 		return index;
+	}
+	
+	private void reset() {
+		list.clear();
+		list.add(divider);
+		int len = commands.length<MAX_COMMANDS?commands.length:MAX_COMMANDS-1;
+		for (int i=0; i<len; i++)
+			list.add(commands[i]);		
 	}
 	
 	/** Overrides PlugInFrame.close(). */

@@ -416,8 +416,10 @@ public class RoiProperties implements TextListener, WindowListener {
 	}
 	
 	public void windowActivated(WindowEvent e) {
-		String gname = Roi.getGroupName(roi.getGroup());
-		groupName.setText(gname!=null?" "+gname:"");
+		if (groupName != null) {
+			String gname = Roi.getGroupName(roi.getGroup());
+			groupName.setText(gname!=null?" "+gname:"");  // add space to separate label from field
+		}
 	}
 	
 	public void windowClosing(WindowEvent e) {}

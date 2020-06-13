@@ -5,12 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.53c31  11 June 2020</u>
+<li> <u>1.53c39  13 June 2020</u>
 <ul>
 <li> The Color Picker is improved, including a new tool icon.
 <li> The main ImageJ window is 20 pixels wider.
-<li> Tool icons are bolder when the GUI scale is less the 1.5.
-<li> Thanks Jerome Mutterer, added the rainbow progress bar
+<li> Tool icons are bolder when the GUI scale is greater
+than 1.0 and less the 1.5.
+<li> Added a "Reset" button to the Edit dialog of the
+<i>Plugins&gt;Utilities&gt;Commands</i> window.
+<li> Thanks Jerome Mutterer, added the rainbowprogress bar
 easter egg, activated by switching to the angle tool and running
 a command that uses a progress bar (e.g., a radius 50 median
 filter on a 1000x1000 image).
@@ -37,6 +40,10 @@ when called twice with the same index.
 <li> Worked around a Java 8/Windows 10 bug that caused the
 "ImageJ" window menu bar font size to become very small
 after increasing the GUI scale.
+<li> Thanks to Romain Guiet and Jan Eglinger, fixed a bug that cuased
+the multi-point tool to always reset the counter to 0.
+<li> Fixed a bug that caused the <i>Edit&gt;Selection&gt;Fit Spline</i>
+command to leave an incomplete progress bar.
 <li> Thanks to Garbriel Landini, fixed a 1.52m regression that caused
 histogram peaks to extend above the frame.
 </ul>

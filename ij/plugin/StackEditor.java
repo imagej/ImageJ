@@ -262,8 +262,10 @@ public class StackEditor implements PlugIn {
 			boolean ok = IJ.showMessageWithCancel("Convert to Images?",
 			"Are you sure you want to convert this\nstack to "
 			+size+" separate windows?");
-			if (!ok)
-				{imp.unlock(); return;}
+			if (!ok) {
+				imp.unlock();
+				return;
+			}
 		}
 		Calibration cal = imp.getCalibration();
 		CompositeImage cimg = imp.isComposite()?(CompositeImage)imp:null;

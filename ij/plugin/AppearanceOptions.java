@@ -38,11 +38,17 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 		if (IJ.isLinux())
 			gd.addCheckbox("Cancel button on right", Prefs.dialogCancelButtonOnRight);
 		gd.addChoice("16-bit range:", ranges, ranges[rangeIndex]);
-		if (!IJ.isMacOSX())
-			gd.addNumericField("Menu font size:", Menus.getFontSize(), 0, 3, "points");
+		Font font = new Font("SansSerif", Font.PLAIN, 9);
+		if (!IJ.isMacOSX()) {
+			gd.setInsets(0, 0, 0);
+			gd.addNumericField("Menu font size:", Menus.getFontSize(), 0, 4, "points");
+			if (IJ.isWindows()) {
+				gd.setInsets(2,30,5);
+				gd.addMessage("Setting size>17 may not work on Windows", font);
+			}
+		}
 		gd.setInsets(0, 0, 0);
 		gd.addNumericField("GUI scale (0.5-3.0):", Prefs.getGuiScale(), 1, 4, "");
-		Font font = new Font("SansSerif", Font.PLAIN, 9);
 		gd.setInsets(2,20,0);
 		gd.addMessage("Set to 1.5 to double size of tool icons, or 2.5 to triple", font);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#appearance");

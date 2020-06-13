@@ -518,7 +518,6 @@ public class PolygonRoi extends Roi {
 		if (y1>ymax) ymax=y1;
 		if (y2>ymax) ymax=y2;
 		if (oy>ymax) ymax=oy;
-		//clip = new Rectangle(xmin, ymin, xmax-xmin, ymax-ymin);
 		int margin = boxSize;
 		if (ic!=null) {
 			double mag = ic.getMagnification();
@@ -1148,7 +1147,6 @@ public class PolygonRoi extends Roi {
 			}
 			previousSX = sx;  //save for constraining next line if desired
 			previousSY = sy;
-			//if (lineWidth>1) fitSpline();
 			notifyListeners(RoiListener.EXTENDED);
 		}
 	}
