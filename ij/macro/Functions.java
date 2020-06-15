@@ -306,8 +306,9 @@ public class Functions implements MacroConstants, Measurements {
 		return array;
 	}
 
-	// type must be added to Interpreter.getExpressionType and
-	// functions returning a string must be added to Interpreter.isString(int)
+	// Type must be added to Interpreter.getExpressionType() and
+	// Interpreter.isString(), and functions returning a string must
+	// be added to isStringFunction().
 	Variable getVariableFunction(int type) {
 		Variable var = null;
 		switch (type) {
@@ -7728,7 +7729,10 @@ public class Functions implements MacroConstants, Measurements {
 		RoiManager rm = RoiManager.getInstance2();
 		if (rm==null)
 			interp.error("No ROI Manager");
-		if (name.equals("select")) {
+		if (name.equals("size")) {
+			interp.getParens();
+			return new Variable(rm.getCount());
+		} else if (name.equals("select")) {
 			rm.select((int)getArg());
 			return null;
 		} else if (name.equals("setGroup")) {
@@ -7740,6 +7744,9 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("selectGroup")) {
 			rm.selectGroup((int)getArg());
 			return null;
+		} else if (name.equals("getName")) {
+			String roiName = rm.getName((int)getArg());
+			return new Variable(roiName!=null?roiName:"");
 		} else
 			interp.error("Unrecognized RoiManager function");
 		return null;
@@ -7760,7 +7767,7 @@ public class Functions implements MacroConstants, Measurements {
 			if (value.length()==0) value = null;
 			imp.setProp(key, value);
 			return null;
-		} else if (name.equals("get")) {  // "get" added to Interpreter.isString(int)
+		} else if (name.equals("get")) {
 			String value = imp.getProp(getStringArg());
 			return new Variable(value!=null?value:"");
 		} else if (name.equals("getNumber")) {
@@ -7827,6 +7834,20 @@ public class Functions implements MacroConstants, Measurements {
 			sb.append("\n");
 		}
 		return sb.toString();
+	}
+	
+	boolean isStringFunction(String name) {
+		if (name.equals("getStrokeColor") || name.equals("getDefaultColor")
+		|| name.equals("getFillColor") || name.equals("getName")
+		|| name.equals("getProperty") || name.equals("getProperties")
+		|| name.equals("getType") || name.equals("getString") || name.equals("title")
+		|| name.equals("headings") || name.equals("allHeadings")
+		|| name.equals("get") || name.equals("getInfo") || name.equals("getSliceLabel")
+		|| name.equals("getDicomTag") || name.equals("getList")
+		|| name.equals("getGroupNames"))
+			return true;
+		else
+			return false;
 	}
 
 } // class Functions

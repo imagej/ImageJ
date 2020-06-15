@@ -166,25 +166,9 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 						}
 					} else {
 						Overlay overlay = imp.getOverlay();
-						Overlay overlay2 = new Overlay();
-						if (overlay!=null && !imp.getHideOverlay()) {
-							for (int i=0; i<overlay.size(); i++) {
-								Roi roi2 = overlay.get(i);
-								Rectangle bounds = roi2.getBounds();
-								if (roi2 instanceof ImageRoi && bounds.x==0 && bounds.y==0) {
-									ImageRoi iroi = (ImageRoi)roi2;
-									ImageProcessor ip2 = iroi.getProcessor();
-									ip2.setInterpolationMethod(interpolationMethod);
-									ip2 = ip2.resize(newWidth, newHeight, averageWhenDownsizing);
-									iroi.setProcessor(ip2);
-									overlay2.add(iroi);
-								}
-							}
-							if (overlay2.size()>0)
-								imp.setOverlay(overlay2);
-							else
-								imp.setOverlay(null);
-						} else
+						if (overlay!=null && !imp.getHideOverlay())
+							imp.setOverlay(overlay.scale(newWidth/origWidth,newHeight/origHeight));
+						else
 							imp.setOverlay(null);
 					}
 					if (restoreRoi && roi!=null) {

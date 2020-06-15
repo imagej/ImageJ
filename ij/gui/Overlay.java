@@ -7,6 +7,7 @@ import ij.*;
 import ij.process.ImageProcessor;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.Colors;
+import ij.plugin.RoiScaler;
 import ij.measure.ResultsTable;
 
 /** An Overlay is a list of ROIs that can be drawn non-destructively on an Image. */
@@ -335,6 +336,19 @@ public class Overlay implements Iterable<Roi> {
 		return overlay2;
 	}
 	
+	/** Returns a scaled version of this Overlay. */
+	public Overlay scale(double xscale, double yscale) {
+		Overlay overlay2 = create();
+		for (int i=0; i<size(); i++) {
+			Roi roi = get(i);
+			int position = roi.getPosition();
+			roi = RoiScaler.scale(roi, xscale, yscale, false);
+			roi.setPosition(position);
+			overlay2.add(roi);
+		}
+		return overlay2;
+	}
+
     public void drawLabels(boolean b) {
     	label = b;
     }

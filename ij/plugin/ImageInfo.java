@@ -49,10 +49,10 @@ public class ImageInfo implements PlugIn {
 		path = Prefs.getCustomPrefsPath();
 		if (path!=null)
 			s += "*Custom preferences*: "+ path +"\n";
-		if (IJ.isMacOSX()) {
-			String time = " ("+ImageWindow.setMenuBarTime+"ms)";
-			s += "SetMenuBarCount: "+Menus.setMenuBarCount+time+"\n";
-		}
+		//if (IJ.isMacOSX()) {
+		//	String time = " ("+ImageWindow.setMenuBarTime+"ms)";
+		//	s += "SetMenuBarCount: "+Menus.setMenuBarCount+time+"\n";
+		//}
 		new TextWindow("Info", s, 600, 300);
 	}
 

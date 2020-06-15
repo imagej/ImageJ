@@ -405,9 +405,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				return;
 			case HAND:
 				xOffset = x+1; yOffset = y+1;
-				polyline(5,14,2,11,2,10,0,8,0,7,1,6,2,6,4,8,4,6,3,5,3,4,2,3,2,2,3,1,4,1,5,2,5,3);
+				polyline(5,15,5,14,2,11,2,10,0,8,0,7,1,6,2,6,4,8,4,6,3,5,3,4,2,3,2,2,3,1,4,1,5,2,5,3);
 				polyline(6,5,6,1,7,0,8,0,9,1,9,5,9,1,11,1,12,2,12,6);
-				polyline(13,4,14,3,15,4,15,7,14,8,14,10,13,11,13,12,12,13,12,14);
+				polyline(13,4,14,3,15,4,15,7,14,8,14,10,13,11,13,12,12,13,12,14,12,15);
 				return;
 			case DROPPER:
 				xOffset = x; yOffset = y;

@@ -60,16 +60,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 					imp2.show();
 					imp2.changes = true;
 				}
-			} else {
-				Overlay overlay = imp.getOverlay();
-				if (imp.getHideOverlay())
-					overlay = null;
-				if (overlay!=null && overlay.size()!=1)
-					overlay = null;
-				if (overlay!=null)
-					overlay = overlay.duplicate();
-				scale(ip, overlay);
-			}
+			} else
+				scale(imp);
 		}
 		catch(OutOfMemoryError o) {
 			IJ.outOfMemory("Scale");
@@ -140,26 +132,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			cal.pixelHeight *= 1.0/yscale;
 		}
 		Overlay overlay = imp.getOverlay();
-		if (imp.getHideOverlay())
-			overlay = null;
-		if (overlay!=null) {
-			overlay = overlay.duplicate();
-			Overlay overlay2 = new Overlay();
-			for (int i=0; i<overlay.size(); i++) {
-				Roi roi = overlay.get(i);
-				Rectangle bounds = roi.getBounds();
-				if (roi instanceof ImageRoi && bounds.x==0 && bounds.y==0) {
-					ImageRoi iroi = (ImageRoi)roi;
-					ImageProcessor processor = iroi.getProcessor();
-					processor.setInterpolationMethod(method);
-					processor = processor.resize(newWidth, newHeight, averageWhenDownsizing);
-					iroi.setProcessor(processor);
-					overlay2.add(iroi);
-				}
-			}
-			if (overlay2.size()>0)
-				imp2.setOverlay(overlay2);
-		}
+		if (overlay!=null && !imp.getHideOverlay() && !doZScaling)
+			imp2.setOverlay(overlay.scale(xscale, yscale));
 		IJ.showProgress(1.0);
 		int[] dim = imp.getDimensions();
 		imp2.setDimensions(dim[2], dim[3], dim[4]);
@@ -177,7 +151,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		return imp2;
 	}
 
-	private void scale(ImageProcessor ip, Overlay overlay) {
+	private void scale(ImagePlus imp) {
+		ImageProcessor ip = imp.getProcessor();
 		if (newWindow) {
 			Rectangle r = ip.getRoi();
 			ImagePlus imp2 = imp.createImagePlus();
@@ -187,18 +162,9 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 				cal.pixelWidth *= 1.0/xscale;
 				cal.pixelHeight *= 1.0/yscale;
 			}
-			if (overlay!=null) {
-				Roi roi = overlay.get(0);
-				Rectangle bounds = roi.getBounds();
-				if (roi instanceof ImageRoi && bounds.x==0 && bounds.y==0) {
-					ImageRoi iroi = (ImageRoi)roi;
-					ImageProcessor processor = iroi.getProcessor();
-					processor.setInterpolationMethod(interpolationMethod);
-					processor = processor.resize(newWidth, newHeight, averageWhenDownsizing);
-					iroi.setProcessor(processor);
-					imp2.setOverlay(new Overlay(iroi));
-				}
-			}
+			Overlay overlay = imp.getOverlay();
+			if (overlay!=null && !imp.getHideOverlay())
+				imp2.setOverlay(overlay.scale(xscale, yscale));
 			imp2.show();
 			imp.trimProcessor();
 			imp2.trimProcessor();
