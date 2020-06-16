@@ -1130,6 +1130,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				return;
 		}
 		
+		if ((System.currentTimeMillis()-mousePressedTime)<300L && !drawingTool()) {
+			if (activateOverlayRoi(ox,oy))
+				return;
+		}
+		
 		mousePressedX = ox;
 		mousePressedY = oy;
 		mousePressedTime = System.currentTimeMillis();
@@ -1536,9 +1541,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				roi=null;
 			if ((e.isAltDown()||e.isControlDown()||cmdDown) && roi==null) {
 				if (activateOverlayRoi(ox, oy))
-					return;
-			} else if ((System.currentTimeMillis()-mousePressedTime)>250L && !drawingTool()) {
-				if (activateOverlayRoi(ox,oy))
 					return;
 			}
 		}

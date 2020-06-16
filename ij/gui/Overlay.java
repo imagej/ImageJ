@@ -5,9 +5,8 @@ import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
 import ij.*;
 import ij.process.ImageProcessor;
-import ij.plugin.filter.Analyzer;
-import ij.plugin.Colors;
-import ij.plugin.RoiScaler;
+import ij.plugin.filter.*;
+import ij.plugin.*;
 import ij.measure.ResultsTable;
 
 /** An Overlay is a list of ROIs that can be drawn non-destructively on an Image. */
@@ -349,7 +348,22 @@ public class Overlay implements Iterable<Roi> {
 		return overlay2;
 	}
 
-    public void drawLabels(boolean b) {
+ 	/** Returns a rotated version of this Overlay. */
+	public Overlay rotate(double angle, double xcenter, double ycenter) {
+		//IJ.log("rotate: "+angle+" "+xcenter+" "+ycenter);
+		Overlay overlay2 = create();
+		for (int i=0; i<size(); i++) {
+			Roi roi = get(i);
+			int position = roi.getPosition();
+			if (!Rotator.GRID.equals(roi.getName()))
+				roi = RoiRotator.rotate(roi, angle, xcenter, ycenter);
+			roi.setPosition(position);
+			overlay2.add(roi);
+		}
+		return overlay2;
+	}
+
+   public void drawLabels(boolean b) {
     	label = b;
     }
     

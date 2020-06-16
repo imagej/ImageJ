@@ -8,6 +8,7 @@ import java.awt.geom.*;
 
 /** This plugin implements the Image/Rotate/Arbitrarily command. */
 public class Rotator implements ExtendedPlugInFilter, DialogListener {
+	public static final String GRID = "[grid]";
 	private int flags = DOES_ALL|SUPPORTS_MASKING|PARALLELIZE_STACKS;
 	private static double angle = 15.0;
 	private static boolean fillWithBackground;
@@ -21,6 +22,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 	private PlugInFilterRunner pfr;
 	private String[] methods = ImageProcessor.getInterpolationMethods();
 	private static int interpolationMethod = ImageProcessor.BILINEAR;
+	private Overlay overlay;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
@@ -33,6 +35,9 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 				Undo.setup(Undo.TRANSFORM, imp);
 				flags = flags | NO_UNDO_RESET;
 			}
+			overlay = imp.getOverlay();
+			if (overlay==null)
+				overlay = new Overlay();
 		}
 		return flags;
 	}
@@ -63,6 +68,11 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 		ip.rotate(angle);
 		if (!gd.wasOKed())
 			drawGridLines(gridLines);
+		if (overlay!=null && !imp.getHideOverlay()) {
+			Overlay overlay2 = overlay.rotate(angle, ip.getWidth()/2, ip.getHeight()/2);
+			if (overlay2!=null && overlay2.size()>0)
+				imp.setOverlay(overlay2);
+		}
 		if (isEnlarged && imp.getStackSize()==1) {
 			imp.changes = true;
 			imp.updateAndDraw();
@@ -86,9 +96,11 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	void drawGridLines(int lines) {
-		ImageCanvas ic = imp.getCanvas();
-		if (ic==null) return;
-		if (lines==0) {ic.setDisplayList(null); return;}
+		//if (overlay.size()>0 && GRID.equals(overlay.get(0).getName()))
+		//	overlay.remove(0);
+		overlay.remove(GRID);
+		if (lines==0)
+			return;
 		GeneralPath path = new GeneralPath();
 		float width = imp.getWidth();
 		float height = imp.getHeight();
@@ -102,7 +114,10 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 			path.moveTo(0f, ystart+yinc*i);
 			path.lineTo(width, ystart+yinc*i);
 		}
-		ic.setDisplayList(path, null, null);
+		Roi roi = new ShapeRoi(path);
+		roi.setName(GRID);
+		roi.setStrokeWidth(0);
+		overlay.add(roi);
 	}
 
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
@@ -128,9 +143,15 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
 		gd.showDialog();
-		drawGridLines(0);
-		if (gd.wasCanceled())
+		if (gd.wasCanceled()) {
+			if (overlay.size()>0) {
+				overlay.remove(GRID);
+				imp.setOverlay(overlay);
+			}
 			return DONE;
+		}
+		Overlay ovly = imp.getOverlay();
+		if (ovly!=null) ovly.remove(GRID);
 		if (!enlarge)
 			flags |= KEEP_PREVIEW;		// standard filter without enlarge
 		else if (imp.getStackSize()==1)

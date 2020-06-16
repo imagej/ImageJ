@@ -19,6 +19,12 @@ public class NonBlockingGenericDialog extends GenericDialog {
 		IJ.protectStatusBar(false);
 	}
 
+	public NonBlockingGenericDialog(String title, Frame parent) {
+		super(title, parent);
+		setModal(false);
+		IJ.protectStatusBar(false);
+	}
+
 	public synchronized void showDialog() {
 		super.showDialog();
 		if (isMacro())

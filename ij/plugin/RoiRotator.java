@@ -109,9 +109,7 @@ public class RoiRotator implements PlugIn {
 				type = Roi.FREEROI;
 			roi2 = new PolygonRoi(poly.xpoints, poly.ypoints,poly.npoints, type);
 		}
-		roi2.setStrokeColor(roi.getStrokeColor());
-		if (roi.getStroke()!=null)
-			roi2.setStroke(roi.getStroke());
+		roi2.copyAttributes(roi);
 		return roi2;
 	}
 	
@@ -122,7 +120,9 @@ public class RoiRotator implements PlugIn {
 		Rectangle r = roi.getBounds();
 		at.translate(r.x, r.y);
 		Shape shape2 = at.createTransformedShape(shape);
-		return new ShapeRoi(shape2);
+		Roi roi2 = new ShapeRoi(shape2);
+		roi2.copyAttributes(roi);
+		return roi2;
 	}
 	
 }

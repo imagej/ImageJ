@@ -7,14 +7,17 @@ import java.awt.*;
 import java.awt.image.*;
 
 /** Implements the Flip and Rotate commands in the Image/Transform submenu. */
-public class Transformer implements PlugInFilter {
-	
-	ImagePlus imp;
-	String arg;
+public class Transformer implements PlugInFilter {	
+	private ImagePlus imp;
+	private String arg;
+	private Overlay overlay;
+	private boolean firstSlice = true;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.arg = arg;
 		this.imp = imp;
+		if (imp!=null)
+			overlay = imp.getOverlay();
 		if (arg.equals("fliph") || arg.equals("flipv"))
 			return IJ.setupDialog(imp, DOES_ALL+NO_UNDO);
 		else
@@ -43,6 +46,7 @@ public class Transformer implements PlugInFilter {
 	    	ImageStack s2 = null;
 			if (arg.equals("right")) {
 	    		s2 = sp.rotateRight();
+				rotateOverlay(90);
 	    		if (transformOrigin) {
 	    			double xOrigin = imp.getHeight()-1 - cal.yOrigin;
 	    			double yOrigin = cal.xOrigin;
@@ -51,6 +55,7 @@ public class Transformer implements PlugInFilter {
 	    		}
 	    	} else {
 	    		s2 = sp.rotateLeft();
+				rotateOverlay(-90);
 	    		if (transformOrigin) {
 	    			double xOrigin = cal.yOrigin;
 	    			double yOrigin = imp.getWidth()-1 - cal.xOrigin;
@@ -69,6 +74,19 @@ public class Transformer implements PlugInFilter {
 			}
 			return;
 		}
+	}
+	
+	private void rotateOverlay(int angle) {
+		if (overlay!=null && firstSlice) {
+			double xcenter = imp.getWidth()/2.0;
+			double ycenter = imp.getHeight()/2.0;
+			double diff1 = xcenter-ycenter;
+			double diff2 = ycenter-xcenter;
+			Overlay overlay2 = overlay.rotate(angle,xcenter,ycenter);
+			overlay2.translate(diff2,diff1);
+			imp.setOverlay(overlay2);
+		}
+		firstSlice = false;
 	}
 	
 }
