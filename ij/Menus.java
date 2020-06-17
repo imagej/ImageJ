@@ -304,6 +304,12 @@ public class Menus {
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		
+		submenu = new Menu("Tools");
+		addExample(submenu, "Circle Tool", "Circle_Tool.ijm");
+		addExample(submenu, "Star Tool", "Star_Tool.ijm");
+		submenu.addActionListener(listener);
+		menu.add(submenu);
+
 		submenu = new Menu("Macro");
 		addExample(submenu, "Sphere", "Sphere.ijm");
 		addExample(submenu, "Dialog Box", "Dialog_Box.ijm");
@@ -320,9 +326,6 @@ public class Menus {
 		addExample(submenu, "Synthetic Images", "Synthetic_Images.ijm");
 		addExample(submenu, "Spiral Rotation", "Spiral_Rotation.ijm");
 		addExample(submenu, "Curve Fitting", "Curve_Fitting.ijm");
-		submenu.addSeparator();
-		addExample(submenu, "Circle Tool", "Circle_Tool.ijm");
-		addExample(submenu, "Star Tool", "Star_Tool.ijm");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 

@@ -1224,7 +1224,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 	
 	private boolean drawingTool() {
-		return Toolbar.getToolName().equals("Paintbrush Tool") || Toolbar.getToolName().equals("Pencil Tool");
+		return Toolbar.getToolId()>=15;
 	}
 	
 	void zoomToSelection(int x, int y) {

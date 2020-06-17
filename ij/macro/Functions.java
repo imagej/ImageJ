@@ -6510,6 +6510,7 @@ public class Functions implements MacroConstants, Measurements {
 			return Double.NaN;
 		}
 		Overlay overlay = imp.getOverlay();
+		int size = overlay!=null?overlay.size():0;
 		if (overlay==null && name.equals("size"))
 			return 0.0;
 		else if (name.equals("hidden"))
@@ -6521,9 +6522,18 @@ public class Functions implements MacroConstants, Measurements {
 			return overlaySetPosition(overlay);
 		} else if (name.equals("setFillColor"))
 			return overlaySetFillColor(overlay);
+		else if (name.equals("indexAt")) {
+			int x = (int)getFirstArg();
+			int y = (int)getLastArg();
+			return overlay!=null?overlay.indexAt(x,y):-1;
+		} else if (name.equals("getType")) {
+			int index = (int)getArg();
+			if (overlay==null || index==-1) return -1;
+			checkIndex(index, 0, size-1);
+			return overlay.get(index).getType();
+		}
 		if (overlay==null)
 			interp.error("No overlay");
-		int size = overlay.size();
 		if (name.equals("size")||name.equals("getSize"))
 			return size;
 		else if (name.equals("copy")) {
@@ -6587,8 +6597,6 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("setStrokeWidth")) {
 			overlay.setStrokeWidth(getArg());
 			return Double.NaN;
-		} else if (name.equals("indexAt")) {
-			return overlay.indexAt((int)getFirstArg(),(int)getLastArg());
 		} else if (name.equals("removeRois")) {
 			overlay.remove(getStringArg());
 			return Double.NaN;
@@ -7451,12 +7459,13 @@ public class Functions implements MacroConstants, Measurements {
 			return null;
 		}
 		Roi roi = imp.getRoi();
-		if (roi==null)
-			interp.error("No selection");
 		if (name.equals("size")) {
 			interp.getParens();
-			return new Variable(roi.size());
-		} else if (name.equals("contains")) {
+			return new Variable(roi!=null?roi.size():0);
+		}
+		if (roi==null)
+			interp.error("No selection");
+		if (name.equals("contains")) {
 			int x = (int)Math.round(getFirstArg());
 			int y = (int)Math.round(getLastArg());
 			return new Variable(roi.contains(x,y)?1:0);
