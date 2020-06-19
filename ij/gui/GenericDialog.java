@@ -88,16 +88,16 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     	are open. Dialog parameters are recorded by ImageJ's command recorder but
     	this requires that the first word of each label be unique. */
 	public GenericDialog(String title) {
-		this(title, getParentFrame());
+		this(title, null);
 	}
 
 	private static Frame getParentFrame() {
-		return GUI.getParentFrame();
+		return null;
 	}
 
     /** Creates a new GenericDialog using the specified title and parent frame. */
     public GenericDialog(String title, Frame parent) {
-		super(parent==null?new Frame():parent, title, true);
+		super(parent, title, true);
 		okay = new Button("  OK  ");
 		cancel = new Button("Cancel");
 		if (Prefs.blackCanvas) {
@@ -1286,12 +1286,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 	}
 
-	@Override
-	public void show() {
-		super.show();
-		if (!showDialogCalled)
-			IJ.error("GenericDialog Error", "show() called instead of showDialog()");
-	}
+	//@Override
+	//public void show() {
+	//	super.show();
+	//	if (!showDialogCalled)
+	//		IJ.error("GenericDialog Error", "show() called instead of showDialog()");
+	//}
 
 	/** For plugins that read their input only via dialogItemChanged, call it at least once, then stop recording */
 	void finalizeRecording() {

@@ -258,20 +258,4 @@ public class GUI {
 			sb.setBackground(scrollbarBackground);
 	}
 	
-	/** Returns a reference to the current image window,
-	 * or to the "ImageJ" window if no images are open.
-	*/
-	public static Frame getParentFrame() {
-		Frame parent = WindowManager.getCurrentImage()!=null?
-			(Frame)WindowManager.getCurrentImage().getWindow():IJ.getInstance()!=null?IJ.getInstance():new Frame();
-		if (IJ.isMacOSX() && IJ.isJava18()) {
-			ImageJ ij = IJ.getInstance();
-			if (ij!=null && ij.isActive())
-				parent = ij;
-			else
-				parent = null;
-		}
-		return parent;
-	}
-
 }

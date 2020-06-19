@@ -270,6 +270,8 @@ public class Compiler implements PlugIn, FilenameFilter {
 		gd.setInsets(15,5,0);
 		gd.addCheckbox("Generate debugging info (javac -g)", generateDebuggingInfo);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#compiler");
+		gd.setInsets(10,0,0);
+		gd.addMessage("The javac command line will be displayed in\nthe Log window if ImageJ is in debug mode.");
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		target = gd.getNextChoiceIndex();		

@@ -9,18 +9,11 @@ import java.awt.Frame;
  *	@author Johannes Schindelin
  */
 public class NonBlockingGenericDialog extends GenericDialog {
-
 	ImagePlus imp;                  //when non-null, this dialog gets closed when the image is closed
 	WindowListener windowListener;  //checking for whether the associated window gets closed
 
 	public NonBlockingGenericDialog(String title) {
-		super(title, GUI.getParentFrame());
-		setModal(false);
-		IJ.protectStatusBar(false);
-	}
-
-	public NonBlockingGenericDialog(String title, Frame parent) {
-		super(title, parent);
+		super(title, null);
 		setModal(false);
 		IJ.protectStatusBar(false);
 	}

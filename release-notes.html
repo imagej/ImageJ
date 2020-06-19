@@ -5,10 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.53c47  17 June 2020</u>
+<li> <u>1.53c52  19 June 2020</u>
 <ul>
-<li> Added the <i>Help&gt;Examples&gt;Tools&gt;Circle Tool</i>
-example macro tool.
+<li> Added the <i>Help&gt;Examples&gt;Tools&gt;</i>
+submenu with four tools: Circle Tool, Star Tool, Point Picker and Bug Cursor.
+<li> Added support for 24x24 macro tool icons,
+with Big Cursor tool as an example.
 <li> Double click on an overlay selection to activate it.
 <li> Thanks to Christophe Leterrier and Christian Goosmann,
 the <i>Image&gt;Scale</i>, <i>Image&gt;Adjust&gt;Size</i>,
@@ -32,7 +34,6 @@ directory of most recently opened of saved file. DOCUMENT
 <li> Thanks Jerome Mutterer, added the Overlay.activateSelectionAndWait()
 macro function. DOCUMENT
 <li> Thanks to 'Eljonco', added the RoiManager.getName() macro function. DOCUMENT
-<li> Added the Overlay.getType(index) macro function. DOCUMENT
 <li> Thanks to Bill Christens-Barry, added the TextWindow.setFont(name,style,size)
 method for setting the font used in the Log window. For monospaced text, set
  'name' to "Monospaced"
@@ -56,6 +57,8 @@ after increasing the GUI scale.
 the multi-point tool to always reset the counter to 0.
 <li> Fixed a bug that caused the <i>Edit&gt;Selection&gt;Fit Spline</i>
 command to leave an incomplete progress bar.
+<li> Fixed a bug that caused the Editor's Compile and Run "Save as" dialog
+to sometimes not default to a folder inside the plugins folder.
 <li> Thanks to Garbriel Landini, fixed a 1.52m regression that caused
 histogram peaks to extend above the frame.
 </ul>

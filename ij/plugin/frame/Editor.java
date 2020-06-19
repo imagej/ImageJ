@@ -1153,6 +1153,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	public void saveAs() {
 		String name1 = getTitle();
 		if (name1.indexOf(".")==-1) name1 += ".txt";
+		if (defaultDir!=null && name1.endsWith(".java") && !defaultDir.startsWith(Menus.getPlugInsPath())) {
+			defaultDir = null;
+		}
 		if (defaultDir==null) {
 			if (name1.endsWith(".txt")||name1.endsWith(".ijm"))
 				defaultDir = Menus.getMacrosPath();

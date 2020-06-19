@@ -45,7 +45,7 @@ public class Translator implements ExtendedPlugInFilter, DialogListener {
 			interpolationMethod = ImageProcessor.NONE;
 		gd = new GenericDialog("Translate");
 		gd.addSlider("X offset:", -100, 100, xOffset, 0.1);
-		gd.addSlider("X offset:", -100, 100, xOffset, 0.1);
+		gd.addSlider("Y offset:", -100, 100, xOffset, 0.1);
 		gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
 		gd.addCheckbox("Overlay only", false);
 		gd.addPreviewCheckbox(pfr);

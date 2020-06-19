@@ -466,7 +466,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				char command = icon.charAt(pc++);
 				if (pc>=icon.length()) break;
 				switch (command) {
-					case 'B': x+=v(); y+=v(); break;  // reset base
+					case 'B': x+=v(); y+=v(); break;  // adjust base
+					case 'N': x-=v(); y-=v(); break;  // adjust base negatively
 					case 'R': g.drawRect(x+v(), y+v(), v(), v()); break;  // rectangle
 					case 'F': g.fillRect(x+v(), y+v(), v(), v()); break;  // filled rectangle
 					case 'O': g.drawOval(x+v(), y+v(), v(), v()); break;  // oval
@@ -549,6 +550,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			case 'f': return 15*scale;
 			case 'g': return 16*scale;
 			case 'h': return 17*scale;
+			case 'i': return 18*scale;
+			case 'j': return 19*scale;
+			case 'k': return 20*scale;
+			case 'l': return 21*scale;
+			case 'm': return 22*scale;
+			case 'n': return 23*scale;
 			default: return 0;
 		}
 	}

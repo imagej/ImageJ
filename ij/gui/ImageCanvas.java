@@ -1542,7 +1542,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if ((e.isAltDown()||e.isControlDown()||cmdDown) && roi==null) {
 				if (activateOverlayRoi(ox, oy))
 					return;
+			} else if ((System.currentTimeMillis()-mousePressedTime)>250L && !drawingTool()) { // long press
+				if (activateOverlayRoi(ox,oy))
+					return;
 			}
+
 		}
 
 		PlugInTool tool = Toolbar.getPlugInTool();
