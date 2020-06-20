@@ -196,7 +196,7 @@ public class PlotDialog implements DialogListener {
 				gd.addStringField("Y Axis Label", plotYLabel, nChars);
 		}
 		if (dialogType == SET_RANGE || dialogType == X_AXIS || dialogType == Y_AXIS) {
-			Font smallFont = new Font("SansSerif", Font.PLAIN, (int)(10*Prefs.getGuiScale()));
+			Font smallFont = new Font("SansSerif", Font.PLAIN, 10);
 			gd.setInsets(10, 0, 0);			//top, left, bottom
 			gd.addMessage("*   Leave empty for automatic range", smallFont, Color.gray);
 			gd.setInsets(0, 0, 0);

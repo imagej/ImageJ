@@ -3973,13 +3973,13 @@ public class Functions implements MacroConstants, Measurements {
 				Color color = null;
 				if (interp.nextToken()==',') {
 					interp.getComma();
-					double fontSize = interp.getExpression();
+					int fontSize = (int)interp.getExpression();
 					if (interp.nextToken()==',') {
 						interp.getComma();
 						String colorName = interp.getString();
 						color = Colors.decode(colorName, Color.BLACK);
 					}
-					font = new Font("SansSerif", Font.PLAIN, (int)(fontSize*Prefs.getGuiScale()));
+					font = new Font("SansSerif", Font.PLAIN, fontSize);
 				}
 				interp.getRightParen();
 				gd.addMessage(msg, font, color);

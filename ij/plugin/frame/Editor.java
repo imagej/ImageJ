@@ -287,6 +287,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			String txt = ta.getText();
 			ta.setCaretPosition(txt.length());
 		}
+		if (name.endsWith(".ijm") && text.startsWith("//@AutoInstall"))
+			installMacros(text, false);
 		WindowManager.setWindow(this);
 		checkForCurlyQuotes = true;
 		changes = false;

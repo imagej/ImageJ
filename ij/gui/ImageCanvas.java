@@ -602,6 +602,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	/** Sets the cursor based on the current tool and cursor location. */
 	public void setCursor(int sx, int sy, int ox, int oy) {
+		//if (sx==-1 && sy==-1) throw new IllegalArgumentException();
 		xMouse = ox;
 		yMouse = oy;
 		mouseExited = false;

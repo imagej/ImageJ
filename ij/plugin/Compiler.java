@@ -15,6 +15,11 @@ import javax.tools.*;
 /** Compiles and runs plugins using the javac compiler. */
 public class Compiler implements PlugIn, FilenameFilter {
 
+	private static final String hints = 
+		"Library JAR files (e.g., imagescience.jar) should\n"
+		+"be located in the plugins/jars directory.\n \n"
+		+"The javac command line will be displayed in\n"
+		+"the Log window if ImageJ is in debug mode.";
 	private static final int TARGET14=0, TARGET15=1, TARGET16=2,  TARGET17=3,  TARGET18=4, TARGET19=5;
 	private static final String[] targets = {"1.4", "1.5", "1.6", "1.7", "1.8", "1.9"};
 	private static final String TARGET_KEY = "javac.target";
@@ -22,7 +27,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 	private static String dir, name;
 	private static Editor errors;
 	private static boolean generateDebuggingInfo;
-	private static int target = (int)Prefs.get(TARGET_KEY, TARGET16);	
+	private static int target = (int)Prefs.get(TARGET_KEY, TARGET18);	
 	private static boolean checkForUpdateDone;
 
 	public void run(String arg) {
@@ -270,8 +275,8 @@ public class Compiler implements PlugIn, FilenameFilter {
 		gd.setInsets(15,5,0);
 		gd.addCheckbox("Generate debugging info (javac -g)", generateDebuggingInfo);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#compiler");
-		gd.setInsets(10,0,0);
-		gd.addMessage("The javac command line will be displayed in\nthe Log window if ImageJ is in debug mode.");
+		Font font = new Font("SansSerif", Font.PLAIN, 10);
+		gd.addMessage(hints, font);
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		target = gd.getNextChoiceIndex();		

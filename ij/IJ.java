@@ -1039,7 +1039,7 @@ public class IJ {
 			case KeyEvent.VK_SPACE: {
 				spaceDown=true;
 				ImageWindow win = WindowManager.getCurrentWindow();
-				if (win!=null) win.getCanvas().setCursor(-1,-1,-1, -1);
+				//if (win!=null) win.getCanvas().setCursor(-1,-1,-1, -1);
 				break;
 			}
 			case KeyEvent.VK_ESCAPE: {
@@ -1059,7 +1059,7 @@ public class IJ {
 			case KeyEvent.VK_SPACE:
 				spaceDown=false;
 				ImageWindow win = WindowManager.getCurrentWindow();
-				if (win!=null) win.getCanvas().setCursor(-1,-1,-1,-1);
+				//if (win!=null) win.getCanvas().setCursor(-1,-1,-1,-1);
 				break;
 			case ALL_KEYS:
 				shiftDown=controlDown=altDown=spaceDown=false;
