@@ -1288,10 +1288,21 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		
 	/** Sets the group for the selected ROIs. */ 
 	public void setGroup(int group) {
-		int[] indexes = getSelectedIndexes();
+		int[] indexes = getIndexes();
 		for (int i: indexes) {
 			Roi roi = getRoi(i);
 			roi.setGroup(group);
+		}
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) imp.draw();
+	}
+
+	/** Sets the position for the selected ROIs. */ 
+	public void setPosition(int position) {
+		int[] indexes = getIndexes();
+		for (int i: indexes) {
+			Roi roi = getRoi(i);
+			roi.setPosition(position);
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) imp.draw();
@@ -1363,6 +1374,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int pointType = -1;
 		int pointSize = -1;
 		int group = -1;
+		int position = -1;
 		if (showDialog) {
 			//String label = (String) listModel.getElementAt(indexes[0]);
 			rpRoi = (Roi)rois.get(indexes[0]);
@@ -1385,6 +1397,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			color =	 rpRoi.getStrokeColor();
 			fillColor =	 rpRoi.getFillColor();
 			group = rpRoi.getGroup();
+			position = rpRoi.getPosition();
 			defaultColor = color;
 			if (rpRoi instanceof TextRoi) {
 				font = ((TextRoi)rpRoi).getCurrentFont();
@@ -1411,7 +1424,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (lineWidth>=0) roi.setStrokeWidth(lineWidth);
 			roi.setFillColor(fillColor);
 			if (group>0) roi.setGroup(group); // overwrite strokeColor for group>0
-			if (rpRoi!=null && n==1) {
+			if (rpRoi!=null) {
 				if (rpRoi.hasHyperStackPosition())
 					roi.setPosition(rpRoi.getCPosition(), rpRoi.getZPosition(), rpRoi.getTPosition());
 				else
@@ -1459,6 +1472,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 					Recorder.recordCall("rm.setGroup("+group+");");
 				else
 					Recorder.record("RoiManager.setGroup", group);
+			}
+			if (position>=0) {
+				if (Recorder.scriptMode())
+					Recorder.recordCall("rm.setPosition("+position+");");
+				else
+					Recorder.record("RoiManager.setPosition", position);
 			}
 			if (fillColor!=null)
 				Recorder.record("roiManager", "Set Fill Color", Colors.colorToString(fillColor));
@@ -2648,6 +2667,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return errorMessage;
 	}
 	
+	@Override
+	public String toString() {
+		return "RoiManager[size="+getCount()+", visible="+isVisible()+"]";
+	}
+
 	@Override
 	public Iterator<Roi> iterator() {
 

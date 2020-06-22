@@ -305,11 +305,11 @@ public class Menus {
 		menu.add(submenu);
 		
 		submenu = new Menu("Tools");
-		addExample(submenu, "Circle Tool", "Circle_Tool.ijm");
-		addExample(submenu, "Star Tool", "Star_Tool.ijm");
-		addExample(submenu, "Point Picker", "Point_Picker_Tool.ijm");		
-		addExample(submenu, "Big Cursor", "Big_Cursor_Tool.ijm");		
 		addExample(submenu, "Annular Selection", "Annular_Selection_Tool.ijm");		
+		addExample(submenu, "Big Cursor", "Big_Cursor_Tool.ijm");		
+		addExample(submenu, "Circle Tool", "Circle_Tool.ijm");
+		addExample(submenu, "Point Picker", "Point_Picker_Tool.ijm");		
+		addExample(submenu, "Star Tool", "Star_Tool.ijm");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 

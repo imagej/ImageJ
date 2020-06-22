@@ -7756,6 +7756,10 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("getName")) {
 			String roiName = rm.getName((int)getArg());
 			return new Variable(roiName!=null?roiName:"");
+		} else if (name.equals("setPosition")) {
+			int position = (int)getArg();
+			rm.setPosition(position);
+			return null;
 		} else
 			interp.error("Unrecognized RoiManager function");
 		return null;

@@ -1612,6 +1612,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
     
 	/** Used by the MacroInstaller class to install a set of macro tools. */
 	public void addMacroTool(String name, MacroInstaller macroInstaller, int id) {
+		//IJ.log("addMacroTool: "+id+" "+name);
 		if (id==0) {
 			resetTools();
 			if (name.startsWith("Unused"))
@@ -1648,6 +1649,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	/** Used by the MacroInstaller class to add a macro tool to the toolbar. */
 	public void addMacroTool(String name, MacroInstaller macroInstaller) {
+		//IJ.log("addMacroTool: "+name);
 		String custom1Name = names[CUSTOM1];
 		this.macroInstaller = macroInstaller;
 		addingSingleTool = true;

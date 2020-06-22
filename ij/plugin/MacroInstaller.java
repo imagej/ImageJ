@@ -161,16 +161,15 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 								macrosMenu.add(new MenuItem(name));
 						}
 					}
-					//IJ.log(count+" "+name+" "+macroStarts[count]);
 					count++;
 				}					
 			} else if (token==EOF)
 				break;
 		}
 		nMacros = count;
-		if (toolCount>0 && (isPluginsMacrosMenu||macrosMenu==null) && installTools) {
+		if (toolCount>0  && installTools) {
 			Toolbar tb = Toolbar.getInstance();
-			if (toolCount==1) 
+			if (toolCount==1)
 				tb.addMacroTool((String)tools.get(0), this);
 			else {
 				for (int i=0; i<tools.size(); i++) {
@@ -183,6 +182,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			if (toolCount>1 && Toolbar.getToolId()>=Toolbar.CUSTOM1)
 				tb.setTool(Toolbar.RECTANGLE);
 			tb.repaint();
+			installTools = false;
 		}
 		if (macrosMenu!=null)
 			this.instance = this;
@@ -224,10 +224,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		this.text = text;
 		macrosMenu = menu;
 		install();
-		int count = nShortcuts+toolCount;
-		if (count==0 && nMacros>1)
-			count = nMacros;
-		return count;
+		return nShortcuts;
 	}
 
 	public void installFile(String path) {
@@ -236,7 +233,6 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		boolean isStartupMacros = path.contains("StartupMacros");
 		if (isStartupMacros && !Toolbar.installStartupMacrosTools())
 			installTools = false;
-		//IJ.log("installFile: "+path+" "+isStartupMacros+" "+installTools);
 		install(text);
 		installTools = true;
 		if (isStartupMacros) {
@@ -368,7 +364,6 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		}
 		shortcuts.put(new Integer(code), commandPrefix+name);
 		nShortcuts++;
-		//IJ.log("addShortcut3: "+name+"	  "+shortcut+"	  "+code);
 	}
 	
 	 String showDialog() {
@@ -412,7 +407,6 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		String text = null;
 		  try {
 			InputStream is = this.getClass().getResourceAsStream(path);
-			//IJ.log(is+"	"+path);
 			if (is==null) return null;
 				InputStreamReader isr = new InputStreamReader(is);
 				StringBuffer sb = new StringBuffer();
@@ -433,7 +427,6 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 					return false; // do nothing if this tool is already running
 				MacroRunner mw = new MacroRunner(pgm, macroStarts[i], name, (String)null);
 				macroToolThread = mw.getThread();
-				//IJ.log("runMacroTool: "+macroToolThread);
 				return true;
 			}
 		}

@@ -276,6 +276,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			fileMenu.addSeparator();
 			fileMenu.add(new MenuItem("Compile and Run", new MenuShortcut(KeyEvent.VK_R)));
 		}
+		if (text.startsWith("//@AutoInstall") && (name.endsWith(".ijm")||name.endsWith(".txt"))) {
+			boolean installInPluginsMenu = !name.contains("Tool.");
+			installMacros(text, installInPluginsMenu);
+			if ( text.startsWith("//@AutoInstallAndHide"))
+				dontShowWindow = true;		
+		}
 		if (IJ.getInstance()!=null && !dontShowWindow)
 			show();
 		if (dontShowWindow) {
@@ -287,8 +293,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			String txt = ta.getText();
 			ta.setCaretPosition(txt.length());
 		}
-		if (name.endsWith(".ijm") && text.startsWith("//@AutoInstall"))
-			installMacros(text, false);
 		WindowManager.setWindow(this);
 		checkForCurlyQuotes = true;
 		changes = false;
@@ -305,8 +309,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 	
 	void installMacros(String text, boolean installInPluginsMenu) {
-		if(rejectMacrosMsg != null){
-			if(rejectMacrosMsg.length()> 0)
+		if (rejectMacrosMsg != null){
+			if (rejectMacrosMsg.length()> 0)
 					IJ.showMessage("", rejectMacrosMsg);
 			return;
 		}
@@ -319,8 +323,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		}
 		installer = new MacroInstaller();
 		installer.setFileName(getTitle());
-		int nShortcutsOrTools = installer.install(text, macrosMenu);
-		if (installInPluginsMenu || nShortcutsOrTools>0)
+		int nShortcuts = installer.install(text, macrosMenu);
+		if (installInPluginsMenu || nShortcuts>0)
 			installer.install(null);
 		dontShowWindow = installer.isAutoRunAndHide();
 		currentMacroEditor = this;
