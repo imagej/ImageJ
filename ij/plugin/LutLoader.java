@@ -59,7 +59,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 				interpolate(fi.reds, fi.greens, fi.blues, nColors);
 			fi.fileName = arg;
 			showLut(fi, true);
-			Menus.updateMenus();
+			Menus.updateMenus();			
 			return;
 		}
 		OpenDialog od = new OpenDialog("Open LUT...", arg);
@@ -72,7 +72,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 		IJ.showStatus("");
 	}
 	
-	void showLut(FileInfo fi, boolean showImage) {
+	private void showLut(FileInfo fi, boolean showImage) {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
 			if (imp.getType()==ImagePlus.COLOR_RGB)
@@ -105,8 +105,18 @@ public class LutLoader extends ImagePlus implements PlugIn {
 				if (IJ.isMacro() && imp.getWindow()!=null)
 					IJ.wait(25);
 			}
+			saveLUTName(imp, fi);
 		} else
 			createImage(fi, showImage);
+	}
+	
+	private void saveLUTName(ImagePlus imp, FileInfo fi) {
+		if (imp!=null && fi!=null && fi.fileName!=null) {
+			String name = fi.fileName;
+			if (name.endsWith(".lut"))
+				name = name.substring(0,name.length()-4);
+			imp.setProp(LUT.nameKey, name);
+		}
 	}
 	
 	void invertLut() {
@@ -349,10 +359,11 @@ public class LutLoader extends ImagePlus implements PlugIn {
 		return 256;
 	}
 
-	void createImage(FileInfo fi, boolean show) {
+	private void createImage(FileInfo fi, boolean show) {
 		IndexColorModel cm = new IndexColorModel(8, 256, fi.reds, fi.greens, fi.blues);
 		ByteProcessor bp = createImage(cm);
     	setProcessor(fi.fileName, bp);
+		saveLUTName(this, fi);
      	if (show) show();
 	}
 	

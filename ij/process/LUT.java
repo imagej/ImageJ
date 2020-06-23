@@ -7,6 +7,7 @@ import java.awt.Color;
 	/** This is an indexed color model that allows an
 		lower and upper bound to be specified. */
     public class LUT extends IndexColorModel implements Cloneable {
+    	public static final String nameKey = "CurrentLUT";
         public double min, max;
         private IndexColorModel cm;
 	

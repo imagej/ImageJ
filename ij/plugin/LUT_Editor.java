@@ -63,8 +63,12 @@ public class LUT_Editor implements PlugIn, ActionListener{
         if (gd.wasCanceled()){
             colorPanel.cancelLUT();
             return;
-        } else
+        } else {
         	colorPanel.applyLUT();
+        	String lutName = imp.getProp(LUT.nameKey);
+        	if (lutName!=null && !lutName.endsWith(" (edited)"))
+        		imp.setProp(LUT.nameKey, lutName+" (edited)");
+        }
     }
 
     void save() {

@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53c57  22 June 2020</u>
+<li> <u>1.53c60  23 June 2020</u>
 <ul>
 <li> Added the <i>Help&gt;Examples&gt;Tools&gt;</i>
 submenu with five tools: Circle Tool, Star Tool, Point Picker,
@@ -15,6 +15,9 @@ automatically added to the toolbar.
 <li> Added the "//@AutoInstall" and "//@AutoInstallAndHide"
 directives for automatically installing macros and tools
 in newly opened .ijm and .txt files.
+<li> Thanks to Gabriel Landini, the LUT name is saved
+as an image property and displayed when you
+type "i" (<i>Image&gt;Show Info</i>).
 <li> Added support for 24x24 macro tool icons. The Big Cursor
 and Annular Selection tools are examples. DOCUMENT
 <li> Double click on an overlay selection to activate it.
@@ -31,10 +34,13 @@ option to the <i>Image&gt;Transform&gt;Translate</i> command.
 than 1.0 and less the 1.5.
 <li> Added a "Reset" button to the Edit dialog of the
 <i>Plugins&gt;Utilities&gt;Commands</i> window.
-<li> Thanks Jerome Mutterer, added the rainbowprogress bar
+<li> Thanks Jerome Mutterer, added the rainbow progress bar
 easter egg, activated by switching to the angle tool and running
 a command that uses a progress bar (e.g., a radius 50 median
 filter on a 1000x1000 image).
+<li> Thanks to Fred Damen, the <i>Compile and Run</i>
+command now looks for library JAR files in both the
+plugins/jars directory and in the plugins/lib directory.
 <li> Added the getDir("file") macro function, which returns the 
 directory of most recently opened of saved file. DOCUMENT
 <li> Thanks Jerome Mutterer, added the Overlay.activateSelectionAndWait()
@@ -67,8 +73,13 @@ the multi-point tool to always reset the counter to 0.
 command to leave an incomplete progress bar.
 <li> Fixed a bug that caused the Editor's Compile and Run "Save as" dialog
 to sometimes not default to a folder inside the plugins folder.
+<li> Thanks to Laurent Thomas, fixed a bug in <i>ROI Manager&gt;Properties</i>
+that caused it not change the position of multiple ROIs.
 <li> Thanks to Garbriel Landini, fixed a 1.52m regression that caused
 histogram peaks to extend above the frame.
+<li> Thanks to Stein Rorvik, fixed a 1.52u regression that caused
+<i>File&gt;Import&gt;Image Sequence</i> to display unexpected
+error messages in the Log window.
 </ul>
 
 <li> <u>1.53b  31 May 2020</u>

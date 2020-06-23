@@ -14,6 +14,8 @@ public class Converter implements PlugIn {
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
+			if ("RGB Color".equals(arg))
+				imp.setProp(LUT.nameKey,null);
 			if (imp.isComposite() && arg.equals("RGB Color") && !imp.getStack().isRGB() && !imp.getStack().isHSB() && !imp.getStack().isLab()) {
 				if (imp.getWindow()==null && !ij.macro.Interpreter.isBatchMode())
 					RGBStackConverter.convertToRGB(imp);
@@ -114,7 +116,8 @@ public class Converter implements PlugIn {
 				}
 				IJ.showProgress(1.0);
 			}
-			
+			if ("RGB Color".equals(item))
+				imp.setProp(LUT.nameKey,null);
 		}
 		catch (IllegalArgumentException e) {
 			unsupportedConversion(imp);

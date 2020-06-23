@@ -15,9 +15,9 @@ import javax.tools.*;
 /** Compiles and runs plugins using the javac compiler. */
 public class Compiler implements PlugIn, FilenameFilter {
 
-	private static final String hints = 
+	private static final String info = 
 		"Library JAR files (e.g., imagescience.jar) should\n"
-		+"be located in the plugins/jars directory.\n \n"
+		+"be located in either plugins/jars or plugins/lib.\n \n"
 		+"The javac command line will be displayed in\n"
 		+"the Log window if ImageJ is in debug mode.";
 	private static final int TARGET14=0, TARGET15=1, TARGET16=2,  TARGET17=3,  TARGET18=4, TARGET19=5;
@@ -185,14 +185,14 @@ public class Compiler implements PlugIn, FilenameFilter {
 			list = f.list();
 		if (list==null)
 			return;
-		boolean isJarsFolder = path.endsWith("jars");
+		boolean isJarsFolder = path.endsWith("jars")|| path.endsWith("lib");
 		if (!path.endsWith(File.separator))
 			path += File.separator;
 		for (int i=0; i<list.length; i++) {
 			File f2 = new File(path+list[i]);
 			if (f2.isDirectory())
 				addJars(path+list[i], sb);
-			else if (list[i].endsWith(".jar")&&(!list[i].contains("_")||isJarsFolder||list[i].equals("loci_tools.jar"))) {
+			else if (list[i].endsWith(".jar")&&(!list[i].contains("_")||isJarsFolder)) {
 				sb.append(File.pathSeparator+path+list[i]);
 				//IJ.log("javac classpath: "+path+list[i]);
 			}
@@ -276,7 +276,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 		gd.addCheckbox("Generate debugging info (javac -g)", generateDebuggingInfo);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#compiler");
 		Font font = new Font("SansSerif", Font.PLAIN, 10);
-		gd.addMessage(hints, font);
+		gd.addMessage(info, font);
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		target = gd.getNextChoiceIndex();		

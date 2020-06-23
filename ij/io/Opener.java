@@ -370,7 +370,7 @@ public class Opener {
 		if (imp!=null && imp.getNChannels()>1)
 			imp = new CompositeImage(imp, IJ.COLOR);
 		this.fileType = wrap[0];
-		if (imp==null && (this.fileType==UNKNOWN||this.fileType==TIFF))
+		if (imp==null && !silentMode && (this.fileType==UNKNOWN||this.fileType==TIFF))
 			IJ.error("Opener", "Unsupported format or file not found:\n"+path);
 		return imp;
 	}
