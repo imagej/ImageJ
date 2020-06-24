@@ -362,9 +362,9 @@ public class LutLoader extends ImagePlus implements PlugIn {
 	private void createImage(FileInfo fi, boolean show) {
 		IndexColorModel cm = new IndexColorModel(8, 256, fi.reds, fi.greens, fi.blues);
 		ByteProcessor bp = createImage(cm);
-    	setProcessor(fi.fileName, bp);
+		setProcessor(fi.fileName, bp);
 		saveLUTName(this, fi);
-     	if (show) show();
+		if (show) show();
 	}
 	
 	/** Opens the specified ImageJ LUT and returns

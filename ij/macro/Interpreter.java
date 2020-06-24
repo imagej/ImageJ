@@ -1234,14 +1234,13 @@ public class Interpreter implements MacroConstants {
 		||tokPlus2==MINUS_EQUAL||tokPlus2==MUL_EQUAL||tokPlus2==DIV_EQUAL)) {
 			getToken();
 			Variable v = lookupLocalVariable(tokenAddress);
-			if (v==null)
-				v = push(tokenAddress, 0.0, null, this);
+			int saveAddress = tokenAddress;
 			getToken();
 			double value = 0.0;
 			if (token=='=')
 				value = getAssignmentExpression();
 			else {
-				value = v.getValue();
+				value = v!=null?v.getValue():0.0;
 				switch (token) {
 					case PLUS_EQUAL: value += getAssignmentExpression(); break;
 					case MINUS_EQUAL: value -= getAssignmentExpression(); break;
@@ -1249,6 +1248,8 @@ public class Interpreter implements MacroConstants {
 					case DIV_EQUAL: value /= getAssignmentExpression(); break;
 				}
 			}
+			if (v==null)
+				v = push(saveAddress, 0.0, null, this);
 			v.setValue(value);
 			return value;
 		} else

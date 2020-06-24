@@ -2440,6 +2440,41 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return new Duplicator().run(this, (int)s1, (int)s2);
 		}
 	}
+	
+	/** Returns an array of cropped images based on the provided
+	 * list of rois. 'options' applies with stacks and can be "stack",
+	* "slice" or a range (e.g., "20-30").
+	 * @see #crop(ij.gui.Roi[])
+	*/
+	public ImagePlus[] crop(Roi[] rois, String options) {
+		int nRois = rois.length; 
+		ImagePlus[] cropImps = new ImagePlus[nRois];
+		for (int i=0; i<nRois; i++) {
+			Roi cropRoi = rois[i];
+			String name = cropRoi.getName();
+			if (options.equals("slice") && this.getStackSize()>1) {
+				int position = cropRoi.getPosition();
+				this.setSlice(position); // no effect if roi position is undefined (=0), ok
+			}
+			this.setRoi(cropRoi);
+			ImagePlus cropped = this.crop(options);
+			if (cropRoi.getType()!=Roi.RECTANGLE) {
+				Roi cropRoi2 = (Roi)cropRoi.clone();
+				cropRoi2.setLocation(0,0);
+				cropped.setRoi(cropRoi2);
+			}
+			String name2 = IJ.pad(i+1,3)+"_"+this.getTitle();
+			cropped.setTitle(name!=null?name:name2);
+			cropped.setOverlay(null);
+			cropImps[i] = cropped;
+		}
+		return cropImps;
+	}
+
+	/** Multi-roi cropping with default "slice" option. */
+	public ImagePlus[] crop(Roi[] rois) {
+		return this.crop(rois, "slice");
+	}
 
 	/** Returns a new ImagePlus with this image's attributes
 		(e.g. spatial scale), but no image. */

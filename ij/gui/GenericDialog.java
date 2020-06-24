@@ -1580,6 +1580,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
                 "\nat "+(err.getStackTrace()[0])+"\nfrom "+(err.getStackTrace()[1]));  //requires Java 1.4
             }
         }
+        resetCounters();
         boolean workaroundOSXbug = IJ.isMacOSX() && okay!=null && !okay.isEnabled() && everythingOk;
         if (everythingOk && recorderOn)
 			optionsRecorded = true;

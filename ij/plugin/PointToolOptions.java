@@ -14,7 +14,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
 	private static GenericDialog gd = null;
 	private boolean multipointTool;
 	private boolean isMacro;
-	
+
 	public static final String help = "<html>"
 	+"<h1>Point Tool</h1>"
 	+"<font size=+1>"
@@ -31,7 +31,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
 	+"</ul>"
 	+" <br>"
 	+"</font>";
- 
+
  	public void run(String arg) {
  		if (gd!=null && gd.isShowing() && !IJ.isMacro()) {
  			gd.toFront();
@@ -39,7 +39,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
  		} else
  			showDialog();
  	}
-		
+
 	void showDialog() {
 		String options = IJ.isMacro()?Macro.getOptions():null;
 		isMacro = options!=null;
@@ -88,7 +88,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		gd.addDialogListener(this);
 		gd.showDialog();
 	}
-	
+
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
 		boolean redraw = false;
 		// type
@@ -151,46 +151,45 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		}
 		if (redraw) {
 			ImagePlus imp = null;
+			boolean impHasPointRoi = false;
 			PointRoi roi = getPointRoi();
 			if (roi!=null) {
 				roi.setShowLabels(!Prefs.noPointLabels);
 				imp = roi.getImage();
+				impHasPointRoi = true;
 			}
 			if (updateLabels) {
 				imp = WindowManager.getCurrentImage();
 				Overlay overlay = imp!=null?imp.getOverlay():null;
-				int pointRoiCount = 0;
 				if (overlay!=null) {
 					for (int i=0; i<overlay.size(); i++) {
 						Roi r = overlay.get(i);
 						roi = r!=null && (r instanceof PointRoi)?(PointRoi)r:null;
 						if (roi!=null) {
 							roi.setShowLabels(!Prefs.noPointLabels);
-							pointRoiCount++;
+							impHasPointRoi = true;
 						}
 					}
-					if (pointRoiCount==0)
-						imp = null;
 				}
 			}
-			if (imp!=null)
+			if (imp!=null && impHasPointRoi)
 				imp.draw();
 		}
 		return true;
     }
-    
+
     private static int getCounter() {
      	PointRoi roi = getPointRoi();
      	return roi!=null?roi.getCounter():0;
     }
-    
+
     private static void setCounter(int counter) {
     	PointRoi roi = getPointRoi();
 		if (roi!=null)
 			roi.setCounter(counter);
 		PointRoi.setDefaultCounter(counter);
     }
-    
+
     private static PointRoi getPointRoi() {
     	ImagePlus imp = WindowManager.getCurrentImage();
     	if (imp==null)
@@ -208,7 +207,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
      	PointRoi roi = getPointRoi();
      	return roi!=null?roi.getCount(counter):0;
     }
-    
+
     public static void update() {
     	if (gd!=null && gd.isShowing()) {
 			Vector choices = gd.getChoices();
@@ -221,5 +220,5 @@ public class PointToolOptions implements PlugIn, DialogListener {
 			((Label)gd.getMessage()).setText(""+count);
 		}
     }
-    			
+
 }

@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53c60  23 June 2020</u>
+<li> <u>1.53c62  24 June 2020</u>
 <ul>
 <li> Added the <i>Help&gt;Examples&gt;Tools&gt;</i>
 submenu with five tools: Circle Tool, Star Tool, Point Picker,
@@ -48,6 +48,9 @@ macro function. DOCUMENT
 <li> Thanks to 'Eljonco', added the RoiManager.getName() macro function. DOCUMENT
 <li> Thanks to Laurent Thomas, added the RoiManager.setPosition()
 macro function and method. DOCUMENT
+<li> Thanks to Laurent Thomas, added the ImagePlus.crop(Roi[]) and
+ImagePlus.crop(Roi[],options) methods
+(<a href="http://wsr.imagej.net/macros/js/CropMultipleRois.js">JavaScript example</a>).
 <li> Thanks to Bill Christens-Barry, added the TextWindow.setFont(name,style,size)
 method for setting the font used in the Log window. For monospaced text, set
  'name' to "Monospaced"
@@ -74,9 +77,15 @@ command to leave an incomplete progress bar.
 <li> Fixed a bug that caused the Editor's Compile and Run "Save as" dialog
 to sometimes not default to a folder inside the plugins folder.
 <li> Thanks to Laurent Thomas, fixed a bug in <i>ROI Manager&gt;Properties</i>
-that caused it not change the position of multiple ROIs.
+that caused it to not change the position of multiple ROIs.
+<li> Thanks to Michael Schmid, fixed a bug that could cause an
+exception with plugins using a DialogListener.
+<li> Thanks to Michael Schmid, fixed a bug that could cause the
+"Label Points" checkbox in Point Tool Options dialogs to be ignored.
+<li> Thanks to Christian Tischer, fixed a bug that caused the macro
+interpreter to not generate and error with statements like "v=v+1".
 <li> Thanks to Garbriel Landini, fixed a 1.52m regression that caused
-histogram peaks to extend above the frame.
+histogram peaks to extend above the frame. 
 <li> Thanks to Stein Rorvik, fixed a 1.52u regression that caused
 <i>File&gt;Import&gt;Image Sequence</i> to display unexpected
 error messages in the Log window.

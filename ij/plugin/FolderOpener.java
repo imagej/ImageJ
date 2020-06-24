@@ -116,7 +116,6 @@ public class FolderOpener implements PlugIn {
 		}
 		
 		//remove subdirectories from list
-/*
 		ArrayList fileList = new ArrayList();
 		for (int i=0; i<list.length; i++) {
 			File f = (new File(directory+list[i]));
@@ -125,7 +124,6 @@ public class FolderOpener implements PlugIn {
 		}
 		if (fileList.size()<list.length)
 			list = (String[])fileList.toArray(new String[fileList.size()]);
-*/
 
 		String title = directory;
 		if (title.endsWith(File.separator) || title.endsWith("/"))
