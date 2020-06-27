@@ -5,31 +5,35 @@
 </head>
 <body>
 
-<li> <u>1.53c62  24 June 2020</u>
+<li> <u>1.53c  26 June 2020</u>
 <ul>
 <li> Added the <i>Help&gt;Examples&gt;Tools&gt;</i>
 submenu with five tools: Circle Tool, Star Tool, Point Picker,
 Big Cursor and Annular Selection. These tools use
-the new "//@AutoInstall" directive so they are
-automatically added to the toolbar.
+the new "//@AutoInstall" directive that automatically
+adds them to the toolbar.
 <li> Added the "//@AutoInstall" and "//@AutoInstallAndHide"
 directives for automatically installing macros and tools
 in newly opened .ijm and .txt files.
+<li> Thanks to Louise Bishop, delete multiple points from
+a multi-point selection by creating a new area selection
+while holding down the alt key.
 <li> Thanks to Gabriel Landini, the LUT name is saved
 as an image property and displayed when you
 type "i" (<i>Image&gt;Show Info</i>).
 <li> Added support for 24x24 macro tool icons. The Big Cursor
-and Annular Selection tools are examples. DOCUMENT
+and Annular Selection tools are examples.
 <li> Double click on an overlay selection to activate it.
 <li> Thanks to Christophe Leterrier and Christian Goosmann,
 the <i>Image&gt;Scale</i>, <i>Image&gt;Adjust&gt;Size</i>,
 <i>Image&gt;Transform&gt;Rotate</i>, <i>Translate</i>,
 <i>Rotate 90 Degrees Right</i> and <i>Rotate 90 Degrees Left</i>
 commands now work with overlays.
-<li> Thanks to Emma, added sliders and an "Overlay only"
+<li> Thanks to 'Emma', added sliders and an "Overlay only"
 option to the <i>Image&gt;Transform&gt;Translate</i> command.
 <li> The Color Picker is improved, including a new tool icon.
-<li> The main ImageJ window is 20 pixels wider.
+<li> Toolbar buttons are one pixel larger, making the "ImageJ"
+window 20 pixels wider.
 <li> Tool icons are bolder when the GUI scale is greater
 than 1.0 and less the 1.5.
 <li> Added a "Reset" button to the Edit dialog of the
@@ -39,15 +43,17 @@ easter egg, activated by switching to the angle tool and running
 a command that uses a progress bar (e.g., a radius 50 median
 filter on a 1000x1000 image).
 <li> Thanks to Fred Damen, the <i>Compile and Run</i>
-command now looks for library JAR files in both the
-plugins/jars directory and in the plugins/lib directory.
+command now looks for library JAR files in both
+plugins/jars and plugins/lib.
 <li> Added the getDir("file") macro function, which returns the 
-directory of most recently opened of saved file. DOCUMENT
+directory of the most recently opened or saved file.
 <li> Thanks Jerome Mutterer, added the Overlay.activateSelectionAndWait()
-macro function. DOCUMENT
-<li> Thanks to 'Eljonco', added the RoiManager.getName() macro function. DOCUMENT
+macro function.
+<li> Thanks to 'Eljonco', added the RoiManager.getName() macro function.
 <li> Thanks to Laurent Thomas, added the RoiManager.setPosition()
-macro function and method. DOCUMENT
+macro function and method.
+<li> Thanks to 'quatreulls', added the Table.saveColumnHeaders(boolean)
+macro function and ResultsTable.saveColumnHeaders(boolean) method.
 <li> Thanks to Laurent Thomas, added the ImagePlus.crop(Roi[]) and
 ImagePlus.crop(Roi[],options) methods
 (<a href="http://wsr.imagej.net/macros/js/CropMultipleRois.js">JavaScript example</a>).
@@ -70,7 +76,7 @@ when called twice with the same index.
 <li> Worked around a Java 8/Windows 10 bug that caused the
 "ImageJ" window menu bar font size to become very small
 after increasing the GUI scale.
-<li> Thanks to Romain Guiet and Jan Eglinger, fixed a bug that cuased
+<li> Thanks to Romain Guiet and Jan Eglinger, fixed a bug that caused
 the multi-point tool to always reset the counter to 0.
 <li> Fixed a bug that caused the <i>Edit&gt;Selection&gt;Fit Spline</i>
 command to leave an incomplete progress bar.
@@ -83,7 +89,8 @@ exception with plugins using a DialogListener.
 <li> Thanks to Michael Schmid, fixed a bug that could cause the
 "Label Points" checkbox in Point Tool Options dialogs to be ignored.
 <li> Thanks to Christian Tischer, fixed a bug that caused the macro
-interpreter to not generate and error with statements like "v=v+1".
+interpreter to not generate an "Undefined variable" error with
+statements like "v=v+1".
 <li> Thanks to Garbriel Landini, fixed a 1.52m regression that caused
 histogram peaks to extend above the frame. 
 <li> Thanks to Stein Rorvik, fixed a 1.52u regression that caused

@@ -65,6 +65,7 @@ public class ResultsTable implements Cloneable {
 	private String title;
 	private boolean columnDeleted;
 	private boolean renameWhenSaving;
+	private boolean saveColumnHeaders = !Prefs.dontSaveHeaders;
 
 
 	/** Constructs an empty ResultsTable with the counter=0, no columns
@@ -789,6 +790,10 @@ public class ResultsTable implements Cloneable {
 		baseRowNumber = showIndexes?0:1;
 	}
 
+	public void saveColumnHeaders(boolean save) {
+		saveColumnHeaders = save;
+	}
+
 	private static DecimalFormat[] df;
 	private static DecimalFormat[] sf;
 	private static DecimalFormatSymbols dfs;
@@ -1246,7 +1251,7 @@ public class ResultsTable implements Cloneable {
 		boolean saveShowRowNumbers = showRowNumbers;
 		if (Prefs.dontSaveRowNumbers)	
 			showRowNumbers = false;
-		if (!Prefs.dontSaveHeaders && !emptyTable) {
+		if (saveColumnHeaders && !emptyTable) {
 			String headings = getColumnHeadings();
 			pw.println(headings);
 		}

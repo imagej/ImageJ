@@ -1286,13 +1286,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 	}
 
-	//@Override
-	//public void show() {
-	//	super.show();
-	//	if (!showDialogCalled)
-	//		IJ.error("GenericDialog Error", "show() called instead of showDialog()");
-	//}
-
 	/** For plugins that read their input only via dialogItemChanged, call it at least once, then stop recording */
 	void finalizeRecording() {
 		if (optionsRecorded)

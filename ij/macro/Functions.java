@@ -6936,6 +6936,8 @@ public class Functions implements MacroConstants, Measurements {
 			return showRowNumbers(true);
 		else if (name.equals("showRowIndexes"))
 			return showRowNumbers(false);
+		else if (name.startsWith("saveColumnHeader"))
+			return saveColumnHeaders();
 		else if (name.equals("sort"))
 			return sortTable();
 		else if (name.equals("hideRowNumbers")) {
@@ -7178,6 +7180,14 @@ public class Functions implements MacroConstants, Measurements {
 			rt.showRowNumbers(show);
 		else
 			rt.showRowIndexes(show);
+		unUpdatedTable = rt;
+		return null;
+	}
+
+	private Variable saveColumnHeaders() {
+		boolean save = (int)getFirstArg()!=0;
+		ResultsTable rt = getResultsTable(getTitle());
+		rt.saveColumnHeaders(save);
 		unUpdatedTable = rt;
 		return null;
 	}

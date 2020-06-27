@@ -410,9 +410,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			case DROPPER:
 				xOffset = x; yOffset = y;
 				g.setColor(backgroundColor);
-				g.fillRect(x+3*scale, y+3*scale, 14*scale, 14*scale);
+				g.fillRect(x+4*scale, y+4*scale, 14*scale, 14*scale);
+				g.drawRect(x, y, 13*scale, 13*scale);
 				g.setColor(foregroundColor);
-				g.fillRect(x-1, y-1, 14*scale, 14*scale);
+				g.fillRect(x+1, y+1, 12*scale, 12*scale);
 				return;
 			case ANGLE:
 				xOffset = x; yOffset = y+3;

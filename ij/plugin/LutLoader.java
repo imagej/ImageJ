@@ -115,7 +115,10 @@ public class LutLoader extends ImagePlus implements PlugIn {
 			String name = fi.fileName;
 			if (name.endsWith(".lut"))
 				name = name.substring(0,name.length()-4);
-			imp.setProp(LUT.nameKey, name);
+			if (name.equals("grays"))
+				imp.setProp(LUT.nameKey, null);
+			else
+				imp.setProp(LUT.nameKey, name);
 		}
 	}
 	

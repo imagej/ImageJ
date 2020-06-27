@@ -476,8 +476,11 @@ public class PointRoi extends PolygonRoi {
 		}
 		if (points2.npoints==0)
 			return null;
-		else
-			return new PointRoi(points2.xpoints, points2.ypoints, points2.npoints);
+		else {
+			PointRoi roi2 = new PointRoi(points2.xpoints, points2.ypoints, points2.npoints);
+			roi2.copyAttributes(this);
+			return roi2;
+		}
 	}
 
 	public ImageProcessor getMask() {

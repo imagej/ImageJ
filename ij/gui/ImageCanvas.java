@@ -1341,7 +1341,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				
 		if (roi!=null && (roi instanceof PointRoi)) {
 			int npoints = ((PolygonRoi)roi).getNCoordinates();
-			if (npoints>1 && handle==-1 && !(tool==Toolbar.POINT && !Toolbar.getMultiPointMode()&&IJ.shiftKeyDown())) {
+			if (npoints>1 && handle==-1 && !IJ.altKeyDown() && !(tool==Toolbar.POINT && !Toolbar.getMultiPointMode()&&IJ.shiftKeyDown())) {
 				String msg =  "Type shift-a (Edit>Selection>Select None) to delete\npoints. Use multi-point tool to add points.";
 				GenericDialog gd=new GenericDialog("Point Selection");
 				gd.addMessage(msg);
