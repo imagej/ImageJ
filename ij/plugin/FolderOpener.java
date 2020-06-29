@@ -32,6 +32,7 @@ public class FolderOpener implements PlugIn {
 	private ImagePlus image;
 	private boolean saveImage;
 	private long t0;
+	private int stackWidth, stackHeight;
 	
 	/** Opens the images in the specified directory as a stack. Displays
 		directory chooser and options dialogs if the argument is null. */
@@ -47,18 +48,31 @@ public class FolderOpener implements PlugIn {
 		Displays directory chooser and options dialogs if the the 'path'
 		argument is null. */
 	public static ImagePlus open(String path, String options) {
-		if (options==null)
-			options = "";
 		FolderOpener fo = new FolderOpener();
 		fo.saveImage = true;
+		getOptions(fo, options);
+		fo.run(path);
+		return fo.image;
+	}
+
+	/** Opens the images in the specified directory as a widthxheight virtual stack. */
+	public static ImagePlus openVirtual(String path, int width, int height) {
+		FolderOpener fo = new FolderOpener();
+		fo.saveImage = true;
+		fo.stackWidth = width;
+		fo.stackHeight = height;
+		fo.openAsVirtualStack = true;
+		fo.run(path);
+		return fo.image;
+	}
+	
+	private static void getOptions(FolderOpener fo, String options) {
 		if (options!=null) {
 			fo.openAsVirtualStack = options.contains("virtual") || options.contains("use");
 			if (options.contains("noMetaSort")) 
 				fo.sortByMetaData = false;
+			fo.filter = Macro.getValue(options, "file", "");
 		}
-		fo.filter = Macro.getValue(options, "file", "");
-		fo.run(path);
-		return fo.image;
 	}
 
 	/** Opens the images in the specified directory as a stack. Displays
@@ -235,8 +249,12 @@ public class FolderOpener implements PlugIn {
 						if (stackSize>1) {
 							stack = new FileInfoVirtualStack();
 							fileInfoStack = true;
-						} else
-							stack = new VirtualStack(width, height, cm, directory);
+						} else {
+							if (stackWidth>0 && stackHeight>0)
+								stack = new VirtualStack(stackWidth, stackHeight, cm, directory);
+							else
+								stack = new VirtualStack(width, height, cm, directory);
+						}
 						((VirtualStack)stack).setBitDepth(bitDepth);
 					} else if (scale<100.0)						
 						stack = new ImageStack((int)(width*scale/100.0), (int)(height*scale/100.0), cm);

@@ -73,6 +73,7 @@ public class JavaProperties implements PlugIn {
 		list.add("  IJ.getVersion: "+IJ.getVersion());
 		list.add("  IJ.getFullVersion: "+IJ.getFullVersion());
 		list.add("  IJ.javaVersion: "+IJ.javaVersion());
+		list.add("  IJ.isJava18(): "+IJ.isJava18());
 		list.add("  IJ.isLinux: "+IJ.isLinux());
 		list.add("  IJ.isMacintosh: "+IJ.isMacintosh());
 		list.add("  IJ.isMacOSX: "+IJ.isMacOSX());

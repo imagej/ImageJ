@@ -82,22 +82,22 @@ public class IJ {
 		isMac = !isWin && osname.startsWith("Mac");
 		isLinux = osname.startsWith("Linux");
 		String version = System.getProperty("java.version");
+		if (version==null || version.length()<2)
+			version = "1.8";
 		if (version.startsWith("1.8"))
 			javaVersion = 8;
+		else if (version.charAt(0)=='1' && Character.isDigit(version.charAt(1)))
+			javaVersion = 10 + (version.charAt(1) - '0');
+		else if (version.charAt(0)=='2' && Character.isDigit(version.charAt(1)))
+			javaVersion = 20 + (version.charAt(1) - '0');
 		else if (version.startsWith("1.6"))
 			javaVersion = 6;
 		else if (version.startsWith("1.9")||version.startsWith("9"))
 			javaVersion = 9;
-		else if (version.startsWith("10"))
-			javaVersion = 10;
-		else if (version.startsWith("11"))
-			javaVersion = 11;
-		else if (version.startsWith("12"))
-			javaVersion = 12;
 		else if (version.startsWith("1.7"))
 			javaVersion = 7;
 		else
-			javaVersion = 6;
+			javaVersion = 8;
 		dfs = new DecimalFormatSymbols(Locale.US);
 		df = new DecimalFormat[10];
 		df[0] = new DecimalFormat("0", dfs);

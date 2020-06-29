@@ -15,7 +15,6 @@ import ij.macro.Interpreter;
 	implements the File/Save As/Image Sequence command. */
 public class StackWriter implements PlugIn {
 
-	//private static String defaultDirectory = null;
 	private static String[] choices = {"BMP",  "FITS", "GIF", "JPEG", "PGM", "PNG", "Raw", "Text", "TIFF",  "ZIP"};
 	private static String staticFileType = "TIFF";
 	private String fileType = "TIFF";
@@ -25,7 +24,6 @@ public class StackWriter implements PlugIn {
 	private int startAt;
 	private boolean hyperstack;
 	private int[] dim;
-	//private static boolean startAtZero;
 
 	public void run(String arg) {
 		ImagePlus imp = WindowManager.getCurrentImage();

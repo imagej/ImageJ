@@ -40,6 +40,7 @@ public class ImageInfo implements PlugIn {
 		Dimension screen = IJ.getScreenSize();
 		s += "ImageJ home: "+IJ.getDir("imagej")+"\n";
 		s += "Java home: "+System.getProperty("java.home")+"\n";
+		s += "Java version: "+IJ.javaVersion()+"\n";
 		s += "Screen size: "+screen.width+"x"+screen.height+"\n";
 		s += "GUI scale: "+IJ.d2s(Prefs.getGuiScale(),2)+"\n";
 		//s += "Active window: "+WindowManager.getActiveWindow()+"\n";

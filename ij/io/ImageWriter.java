@@ -186,7 +186,7 @@ public class ImageWriter {
 	}
 	
 	private int getCount(long imageSize) {
-		if (savingStack)
+		if (savingStack || imageSize<4L)
 			return (int)imageSize;
 		int count = (int)(imageSize/50L);
 		if (count<65536)

@@ -157,6 +157,7 @@ public class Zoom implements PlugIn{
 			win.pack();
 		}
 		ic.repaint();
+		IJ.wait(100);
 	}
 	
 	private void scaleToFit(ImagePlus imp) {
