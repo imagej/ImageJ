@@ -50,28 +50,28 @@ public class FolderOpener implements PlugIn {
 	public static ImagePlus open(String path, String options) {
 		FolderOpener fo = new FolderOpener();
 		fo.saveImage = true;
-		getOptions(fo, options);
+		fo.getOptions(options);
 		fo.run(path);
 		return fo.image;
 	}
 
 	/** Opens the images in the specified directory as a widthxheight virtual stack. */
-	public static ImagePlus openVirtual(String path, int width, int height) {
+	public static ImagePlus open(String path, int width, int height, String options) {
 		FolderOpener fo = new FolderOpener();
 		fo.saveImage = true;
 		fo.stackWidth = width;
 		fo.stackHeight = height;
-		fo.openAsVirtualStack = true;
+		fo.getOptions(options);
 		fo.run(path);
 		return fo.image;
 	}
 	
-	private static void getOptions(FolderOpener fo, String options) {
+	private void getOptions(String options) {
 		if (options!=null) {
-			fo.openAsVirtualStack = options.contains("virtual") || options.contains("use");
+			openAsVirtualStack = options.contains("virtual") || options.contains("use");
 			if (options.contains("noMetaSort")) 
-				fo.sortByMetaData = false;
-			fo.filter = Macro.getValue(options, "file", "");
+				sortByMetaData = false;
+			filter = Macro.getValue(options, "file", "");
 		}
 	}
 
@@ -237,6 +237,10 @@ public class FolderOpener implements PlugIn {
 				if (imp!=null && stack==null) {
 					width = imp.getWidth();
 					height = imp.getHeight();
+					if (stackWidth>0 && stackHeight>0) {
+						width = stackWidth;
+						height = stackHeight;
+					}
 					bitDepth = imp.getBitDepth();
 					fi = imp.getOriginalFileInfo();
 					ImageProcessor ip = imp.getProcessor();
@@ -265,8 +269,17 @@ public class FolderOpener implements PlugIn {
 				if (imp==null)
 					continue;
 				if (imp.getWidth()!=width || imp.getHeight()!=height) {
-					IJ.log(list[i] + ": wrong size; "+width+"x"+height+" expected, "+imp.getWidth()+"x"+imp.getHeight()+" found");
-					continue;
+					if (stackWidth>0 && stackHeight>0) {
+						ImagePlus imp2 = imp.createImagePlus();
+						ImageProcessor ip = imp.getProcessor();
+						ImageProcessor ip2 = ip.createProcessor(width,height);
+						ip2.insert(ip, 0, 0);
+						imp2.setProcessor(ip2);
+						imp = imp2;
+					} else {
+						IJ.log(list[i] + ": wrong size; "+width+"x"+height+" expected, "+imp.getWidth()+"x"+imp.getHeight()+" found");
+						continue;
+					}
 				}
 				String label = imp.getTitle();
 				if (stackSize==1) {

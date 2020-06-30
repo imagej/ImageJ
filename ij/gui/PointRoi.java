@@ -223,7 +223,7 @@ public class PointRoi extends PolygonRoi {
 			slice = 0;
 		//IJ.log("draw: "+positions+" "+imp.getCurrentSlice());
 		for (int i=0; i<nPoints; i++) {
-			//IJ.log(i+" "+slice+" "+(positions!=null?positions[i]:-1));
+			//IJ.log(i+" "+slice+" "+(positions!=null?positions[i]:-1)+"  "+getPosition());
 			if (slice==0 || (positions!=null&&(slice==positions[i]||positions[i]==0)))
 				drawPoint(g, xp2[i], yp2[i], i+1);
 		}

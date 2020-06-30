@@ -102,14 +102,14 @@ public class ImageStack {
 	/** Adds the image in 'ip' to the end of the stack, setting
 		the string 'sliceLabel' as the slice metadata. */
 	public void addSlice(String sliceLabel, ImageProcessor ip) {
-		if (ip.getWidth()!=width || ip.getHeight()!=height) {
-			if (width==0 && height==0) {
-				width = ip.getWidth();
-				height = ip.getHeight();
-				stack = new Object[INITIAL_SIZE];
-				label = new String[INITIAL_SIZE];
-			} else
-				throw new IllegalArgumentException("ImageStack.addSlice(): dimensions do not match");
+		if (ip.getWidth()!=this.width || ip.getHeight()!=this.height) {
+			if (this.width==0 && this.height==0)
+				init(ip.getWidth(), ip.getHeight());
+			else {
+				ImageProcessor ip2 = ip.createProcessor(this.width,this.height);
+				ip2.insert(ip, 0, 0);
+				ip = ip2;
+			}
 		}
 		if (nSlices==0) {
 			cm = ip.getColorModel();
@@ -117,6 +117,13 @@ public class ImageStack {
 			max = ip.getMax();
 		}
 		addSlice(sliceLabel, ip.getPixels());
+	}
+	
+	private void init(int width, int height) {	
+		this.width = width;
+		this.height = height;
+		stack = new Object[INITIAL_SIZE];
+		label = new String[INITIAL_SIZE];
 	}
 	
 	/** Adds the image in 'ip' to the stack following slice 'n'. Adds
@@ -626,6 +633,27 @@ public class ImageStack {
 		return stack;
 	 }
 	 
+	/** Creates a ImageStack from a ImagePlus array. */
+	 public static ImageStack create(ImagePlus[] images) {
+		int w = 0;
+		int h = 0;
+		for (int i=0; i<images.length; i++) {
+			if (images[i].getWidth()>w) w=images[i].getWidth();
+			if (images[i].getHeight()>h) h=images[i].getHeight();
+		}
+		ImageStack stack =  new ImageStack(w, h);
+		stack.init(w, h);
+		for (int i=0; i<images.length; i++) {
+			stack.addSlice(images[i].getProcessor());
+		}
+		int bitdepth = images[0].getBitDepth();
+		if (bitdepth==16 || bitdepth==32) {
+			stack.min = Double.MAX_VALUE;
+			stack.max = 0.0;
+		}
+		return stack;
+	 }
+
 	/** Duplicates this stack. */
 	 public ImageStack duplicate() {
 	 	return crop(0, 0, 0, width, height, size());

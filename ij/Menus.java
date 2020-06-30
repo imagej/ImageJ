@@ -360,6 +360,7 @@ public class Menus {
 		addExample(submenu, "FFT Filter", "FFT_Filter.js");
 		addExample(submenu, "Curve Fitting", "Curve_Fitting.js");
 		addExample(submenu, "Overlay Text", "Overlay_Text.js");
+		addExample(submenu, "Crop Multiple Rois", "Crop_Multiple_Rois.js");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("BeanShell");

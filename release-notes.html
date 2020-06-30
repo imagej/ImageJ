@@ -5,11 +5,21 @@
 </head>
 <body>
 
-<li> <u>1.53d5  29 June 2020</u>
+<li> <u>1.53d7  30 June 2020</u>
 <ul>
+<li> The Threshold tool's "Set" function disables
+"Don't reset range" if the values set are outslide
+of the current display range.
 <li> Thanks to 'bio7' and David Gault, fixed bugs that caused
 IJ.isJava8() to return false and JavaScript to not work when
 running Java 14 or later.
+<li> Thanks to Laurent Thomas, added the ImagePlus.crop(Roi[]),
+Overlay.createStackOverlay(Roi[]) and ImageStack.create(ImagePlus[])
+methods. For an example, run
+<i>Help&gt;Examples&gt;JavaScript&gt;Crop Multiple Rois</i>.
+<li> Thanks to Vivek Gupta, fixed a bug that caused the
+run("Add Selection...") macro function to ignore the
+current selection's position.
 <li> Fixed a 1.52r regression that caused ImageJ to hang
 when saving images with fewer than 4 pixel in TIFF format.
 </ul>

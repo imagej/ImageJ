@@ -197,8 +197,12 @@ public class OverlayCommands implements PlugIn {
 	}
 	
 	private void setPosition(ImagePlus imp, Roi roi) {
-		boolean setPos = defaultRoi.getPosition()!=0;
 		int stackSize = imp.getStackSize();
+		if (roi.hasHyperStackPosition() && imp.isHyperStack())
+			return;
+		if (roi.getPosition()>0 && stackSize>1)
+			return;
+		boolean setPos = defaultRoi.getPosition()!=0;
 		if (setPos && stackSize>1) {
 			if (imp.isHyperStack()||imp.isComposite()) {
 				boolean compositeMode = imp.isComposite() && ((CompositeImage)imp).getMode()==IJ.COMPOSITE;

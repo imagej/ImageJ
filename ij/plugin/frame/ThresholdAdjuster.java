@@ -737,6 +737,11 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			level2 = level1;
 		double minDisplay = ip.getMin();
 		double maxDisplay = ip.getMax();
+		if (noReset && (level1<minDisplay||level2>maxDisplay)) {
+			noReset = false;
+			noResetChanged = true;
+			noResetButton.setState(false);
+		}
 		resetMinAndMax(ip);
 		double minValue = ip.getMin();
 		double maxValue = ip.getMax();
