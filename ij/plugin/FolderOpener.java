@@ -98,6 +98,7 @@ public class FolderOpener implements PlugIn {
 			String macroOptions = Macro.getOptions();
 			if (macroOptions!=null) {
 				directory = Macro.getValue(macroOptions, title, null);
+				//IJ.log("run2: "+directory+"  "+title);
 				if (directory!=null) {
 					directory = OpenDialog.lookupPathVariable(directory);
 					File f = new File(directory);

@@ -298,6 +298,24 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     	this.echoChar = echoChar;
     }
 
+	public void addDirectoryField(String label, String defaultPath) {
+		int columns = defaultPath!=null?Math.max(defaultPath.length(),20):20;
+		addStringField(label, defaultPath, columns);
+		if (isHeadless()) return;
+		TextField text = (TextField)stringField.lastElement();
+		GridBagLayout layout = (GridBagLayout)getLayout();
+		GridBagConstraints constraints = layout.getConstraints(text);
+		Button button = new TrimmedButton("Browse",IJ.isMacOSX()?10:0);
+		BrowseButtonListener listener = new BrowseButtonListener(label, text);
+		button.addActionListener(listener);
+		Panel panel = new Panel();
+		panel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		panel.add(text);
+		panel.add(button);
+		layout.setConstraints(panel, constraints);
+		add(panel);
+	}
+
 	/** Adds a checkbox.
 	* @param label			the label
 	* @param defaultValue	the initial state
@@ -1642,6 +1660,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		return instance;
 	}
 
+	private static boolean isHeadless() {
+		return GraphicsEnvironment.isHeadless();
+	}
+
 	/** Closes the dialog; records the options */
 	public void dispose() {
 		super.dispose();
@@ -1668,5 +1690,21 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     public void windowIconified(WindowEvent e) {}
     public void windowDeiconified(WindowEvent e) {}
     public void windowDeactivated(WindowEvent e) {}
+    
+	private class BrowseButtonListener implements ActionListener {
+		private String label;
+		private TextField textField;
+	
+		public BrowseButtonListener(String label, TextField textField) {
+			this.label = label;
+			this.textField = textField;
+		}
+	
+		public void actionPerformed(ActionEvent e) {
+			String path = IJ.getDir("Browse for \""+label+"\" directory");
+			this.textField.setText(path);
+		}
+	
+	}
 
 }

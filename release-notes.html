@@ -5,8 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.53d7  30 June 2020</u>
+<li> <u>1.53d8  3 July 2020</u>
 <ul>
+<li> Thanks to Jeff Hardin, the <i>Image&gt;Hyperstacks&gt;Stack to Hyperstack</i>
+command now works with virtual stacks not in CZT order.
 <li> The Threshold tool's "Set" function disables
 "Don't reset range" if the values set are outslide
 of the current display range.
@@ -17,6 +19,9 @@ running Java 14 or later.
 Overlay.createStackOverlay(Roi[]) and ImageStack.create(ImagePlus[])
 methods. For an example, run
 <i>Help&gt;Examples&gt;JavaScript&gt;Crop Multiple Rois</i>.
+<li> Added the FolderOpener.open(path, width, height, options)
+that opens a stack, or virtual stack, from a folder of
+images that may differ in size.
 <li> Thanks to Vivek Gupta, fixed a bug that caused the
 run("Add Selection...") macro function to ignore the
 current selection's position.

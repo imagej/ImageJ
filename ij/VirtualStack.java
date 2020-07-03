@@ -19,6 +19,7 @@ public class VirtualStack extends ImageStack {
 	private int bitDepth;
 	private Properties  properties;
 	private boolean generateData;
+	private int[] indexes;
 
 	
 	/** Default constructor. */
@@ -79,7 +80,6 @@ public class VirtualStack extends ImageStack {
 		if (fileName.startsWith("."))
 			return;
 		nSlices++;
-	   //IJ.log("addSlice: "+nSlices+"	"+fileName);
 	   if (nSlices==names.length) {
 			String[] tmp = new String[nSlices*2];
 			System.arraycopy(names, 0, tmp, 0, nSlices);
@@ -164,6 +164,7 @@ public class VirtualStack extends ImageStack {
 			label(ip, ""+n, Color.white);
 			return ip;
 		}
+		n = translate(n);
 		Opener opener = new Opener();
 		opener.setSilentMode(true);
 		IJ.redirectErrorMessages(true);
@@ -311,7 +312,17 @@ public class VirtualStack extends ImageStack {
 	public Properties getProperties() {
 		return properties;
 	}
-
+	
+	public void setIndexes(int[] indexes) {
+		this.indexes = indexes;
+	}
+	
+	protected int translate(int n) {
+		if (indexes==null || indexes.length!=nSlices)
+			return n;
+		else
+			return indexes[n-1]+1;
+	}
 
 } 
 

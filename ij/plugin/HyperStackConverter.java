@@ -12,6 +12,8 @@ import java.awt.image.ColorModel;
 /** Implements the "Stack to HyperStack", "RGB to HyperStack" 
 	and "HyperStack to Stack" commands. */
 public class HyperStackConverter implements PlugIn {
+	private static final String[] formats = {"TIFF", "JPEG", "PNG"};
+	private static String format = formats[0];
 	public static final int CZT=0, CTZ=1, ZCT=2, ZTC=3, TCZ=4, TZC=5;
 	static final int C=0, Z=1, T=2;
     static final String[] orders = {"xyczt(default)", "xyctz", "xyzct", "xyztc", "xytcz", "xytzc"};
@@ -72,8 +74,9 @@ public class HyperStackConverter implements PlugIn {
 			}
 		}
 		if (intOrder!=CZT && imp.getStack().isVirtual())
-			throw new IllegalArgumentException("Virtual stacks must by in XYCZT order");
-		(new HyperStackConverter()).shuffle(imp, intOrder);
+			reorderVirtualStack(imp, intOrder);
+		else
+			(new HyperStackConverter()).shuffle(imp, intOrder);
 		ImagePlus imp2 = imp;
 		int intMode = IJ.COMPOSITE;
 		if (mode!=null) {
@@ -93,6 +96,55 @@ public class HyperStackConverter implements PlugIn {
 		imp2.setOpenAsHyperStack(true);
 		imp2.setOverlay(imp.getOverlay());
 		return imp2;
+	}
+	
+	private static void reorderVirtualStack(ImagePlus imp, int order) {
+		int[] indexes = shuffleVirtual(imp, order);
+		VirtualStack vstack = (VirtualStack)imp.getStack();
+		vstack.setIndexes(indexes);
+	}
+	
+	private static int[] shuffleVirtual(ImagePlus imp, int order) {
+		int n = imp.getStackSize();
+        int nChannels = imp.getNChannels();
+        int nSlices = imp.getNSlices();
+        int nFrames = imp.getNFrames();
+		int first=C, middle=Z, last=T;
+		int nFirst=nChannels, nMiddle=nSlices, nLast=nFrames;
+		switch (order) {
+			case CTZ: first=C; middle=T; last=Z;
+				nFirst=nChannels; nMiddle=nFrames; nLast=nSlices;
+				break;
+			case ZCT: first=Z; middle=C; last=T;
+				nFirst=nSlices; nMiddle=nChannels; nLast=nFrames;
+				break;
+			case ZTC: first=Z; middle=T; last=C;
+				nFirst=nSlices; nMiddle=nFrames; nLast=nChannels;
+				break;
+			case TCZ: first=T; middle=C; last=Z;
+				nFirst=nFrames; nMiddle=nChannels; nLast=nSlices;
+				break;
+			case TZC: first=T; middle=Z; last=C;
+				nFirst=nFrames; nMiddle=nSlices; nLast=nChannels;
+				break;
+		}
+		int[] indexes1 = new int[n];
+		int[] indexes2 = new int[n];
+		for (int i=0; i<n; i++) {
+			indexes1[i] = i;
+			indexes2[i] = i;
+		}
+		int[] index = new int[3];
+		for (index[2]=0; index[2]<nFrames; ++index[2]) {
+			for (index[1]=0; index[1]<nSlices; ++index[1]) {
+				for (index[0]=0; index[0]<nChannels; ++index[0]) {
+					int dstIndex = index[0] + index[1]*nChannels + index[2]*nChannels*nSlices;
+					int srcIndex = index[first] + index[middle]*nFirst + index[last]*nFirst*nMiddle;
+					indexes1[dstIndex] = indexes2[srcIndex];
+				}
+			}
+		}
+		return indexes1;
 	}
 		
 	/** Displays the specified stack in a HyperStack window. Based on the 
@@ -141,34 +193,33 @@ public class HyperStackConverter implements PlugIn {
 		}
 		imp.setDimensions(nChannels, nSlices, nFrames);
 		if (ordering!=CZT && imp.getStack().isVirtual())
-			IJ.error("HyperStack Converter", "Virtual stacks must by in XYCZT order.");
-		else {
+			reorderVirtualStack(imp, ordering);
+		else
 			shuffle(imp, ordering);
-			ImagePlus imp2 = imp;
-			if (nChannels>1 && imp.getBitDepth()!=24) {
-				LUT[] luts = imp.getLuts();
-				if (luts!=null && luts.length<nChannels) luts = null;
-				imp2 = new CompositeImage(imp, mode+1);
-				if (luts!=null)
-					((CompositeImage)imp2).setLuts(luts);
-			} else if (imp.getClass().getName().indexOf("Image5D")!=-1) {
-				imp2 = imp.createImagePlus();
-				imp2.setStack(imp.getTitle(), imp.getImageStack());
-				imp2.setDimensions(imp.getNChannels(), imp.getNSlices(), imp.getNFrames());
-				imp2.getProcessor().resetMinAndMax();
-			}
-			imp2.setOpenAsHyperStack(true);
-			if (imp.getWindow()!=null || imp!=imp2) {
-				if (Interpreter.isBatchMode())
-					imp2.show();
-				else
-					new StackWindow(imp2);
-			}
-			if (imp!=imp2) {
-				imp2.setOverlay(imp.getOverlay());
-				imp.hide();
-				WindowManager.setCurrentWindow(imp2.getWindow());
-			}
+		ImagePlus imp2 = imp;
+		if (nChannels>1 && imp.getBitDepth()!=24) {
+			LUT[] luts = imp.getLuts();
+			if (luts!=null && luts.length<nChannels) luts = null;
+			imp2 = new CompositeImage(imp, mode+1);
+			if (luts!=null)
+				((CompositeImage)imp2).setLuts(luts);
+		} else if (imp.getClass().getName().indexOf("Image5D")!=-1) {
+			imp2 = imp.createImagePlus();
+			imp2.setStack(imp.getTitle(), imp.getImageStack());
+			imp2.setDimensions(imp.getNChannels(), imp.getNSlices(), imp.getNFrames());
+			imp2.getProcessor().resetMinAndMax();
+		}
+		imp2.setOpenAsHyperStack(true);
+		if (imp.getWindow()!=null || imp!=imp2) {
+			if (Interpreter.isBatchMode())
+				imp2.show();
+			else
+				new StackWindow(imp2);
+		}
+		if (imp!=imp2) {
+			imp2.setOverlay(imp.getOverlay());
+			imp.hide();
+			WindowManager.setCurrentWindow(imp2.getWindow());
 		}
 		if (Recorder.record && Recorder.scriptMode()) {
 			String order = orders[ordering];

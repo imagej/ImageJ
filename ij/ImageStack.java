@@ -633,7 +633,7 @@ public class ImageStack {
 		return stack;
 	 }
 	 
-	/** Creates a ImageStack from a ImagePlus array. */
+	/** Creates an ImageStack from an ImagePlus array. */
 	 public static ImageStack create(ImagePlus[] images) {
 		int w = 0;
 		int h = 0;
