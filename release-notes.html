@@ -5,23 +5,32 @@
 </head>
 <body>
 
-<li> <u>1.53d8  3 July 2020</u>
+<li> <u>1.53d11  7 July 2020</u>
 <ul>
+<li> The <i>File&gt;Import&gt;Image Sequence</i> comnand gets the
+directory using the new GenericDialog.addDirectoryField() method,
+based on the very useful method of the same name in Fiji's
+GenericDialogPlus class.
 <li> Thanks to Jeff Hardin, the <i>Image&gt;Hyperstacks&gt;Stack to Hyperstack</i>
 command now works with virtual stacks not in CZT order.
 <li> The Threshold tool's "Set" function disables
 "Don't reset range" if the values set are outslide
 of the current display range.
-<li> Thanks to 'bio7' and David Gault, fixed bugs that caused
-IJ.isJava8() to return false and JavaScript to not work when
-running Java 14 or later.
+<li> ImageStack now accepts images of different types. Images are 
+converted to the type specifief by the setBitDepth() method or to the 
+type of the first image added.
 <li> Thanks to Laurent Thomas, added the ImagePlus.crop(Roi[]),
 Overlay.createStackOverlay(Roi[]) and ImageStack.create(ImagePlus[])
 methods. For an example, run
 <i>Help&gt;Examples&gt;JavaScript&gt;Crop Multiple Rois</i>.
 <li> Added the FolderOpener.open(path, width, height, options)
-that opens a stack, or virtual stack, from a folder of
+method, which opens a stack, or virtual stack, from a folder of
 images that may differ in size.
+<li> Added the GenericDialog.addDirectoryField(label,path) method.
+<li> Added the ImageStack.setBitDepth() method.
+<li> Thanks to 'bio7' and David Gault, fixed bugs that caused
+IJ.isJava8() to return false and JavaScript to not work when
+running Java 14 or later.
 <li> Thanks to Vivek Gupta, fixed a bug that caused the
 run("Add Selection...") macro function to ignore the
 current selection's position.

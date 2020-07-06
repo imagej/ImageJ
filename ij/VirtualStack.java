@@ -19,7 +19,7 @@ public class VirtualStack extends ImageStack {
 	private int bitDepth;
 	private Properties  properties;
 	private boolean generateData;
-	private int[] indexes;
+	private int[] indexes;  // used to translate non-CZT hyperstack slice numbers
 
 	
 	/** Default constructor. */
@@ -164,7 +164,7 @@ public class VirtualStack extends ImageStack {
 			label(ip, ""+n, Color.white);
 			return ip;
 		}
-		n = translate(n);
+		n = translate(n);  // update n for hyperstacks not in the default CZT order
 		Opener opener = new Opener();
 		opener.setSilentMode(true);
 		IJ.redirectErrorMessages(true);
@@ -313,15 +313,16 @@ public class VirtualStack extends ImageStack {
 		return properties;
 	}
 	
+	/** Sets the table that translates slice numbers of hyperstacks not in default CZT order. */
 	public void setIndexes(int[] indexes) {
 		this.indexes = indexes;
 	}
 	
-	protected int translate(int n) {
-		if (indexes==null || indexes.length!=nSlices)
-			return n;
-		else
-			return indexes[n-1]+1;
+	/** Translates slice numbers of hyperstacks not in default CZT order. */
+	public int translate(int n) {
+		int n2 = (indexes!=null&&indexes.length==getSize()) ? indexes[n-1]+1 : n;
+		//IJ.log("translate: "+n+" "+n2+" "+getSize()+" "+(indexes!=null?indexes.length:null));
+		return n2;
 	}
 
 } 

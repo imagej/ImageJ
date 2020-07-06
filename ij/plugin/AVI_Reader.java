@@ -411,6 +411,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	public synchronized ImageProcessor getProcessor(int n) {
 		if (frameInfos==null || frameInfos.size()==0 || raFilePath==null)
 			return null;
+		n = translate(n); // update n for hyperstacks not in default CZT order
 		if (n<1 || n>frameInfos.size())
 			throw new IllegalArgumentException("Argument out of range: "+n);
 		Object pixels = null;

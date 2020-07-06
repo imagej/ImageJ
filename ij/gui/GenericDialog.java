@@ -301,7 +301,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	public void addDirectoryField(String label, String defaultPath) {
 		int columns = defaultPath!=null?Math.max(defaultPath.length(),20):20;
 		addStringField(label, defaultPath, columns);
-		if (isHeadless()) return;
+		if (GraphicsEnvironment.isHeadless())
+			return;
 		TextField text = (TextField)stringField.lastElement();
 		GridBagLayout layout = (GridBagLayout)getLayout();
 		GridBagConstraints constraints = layout.getConstraints(text);
@@ -314,6 +315,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		panel.add(button);
 		layout.setConstraints(panel, constraints);
 		add(panel);
+		if (Recorder.record || macro)
+			saveLabel(panel, label);
 	}
 
 	/** Adds a checkbox.
@@ -1660,10 +1663,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		return instance;
 	}
 
-	private static boolean isHeadless() {
-		return GraphicsEnvironment.isHeadless();
-	}
-
 	/** Closes the dialog; records the options */
 	public void dispose() {
 		super.dispose();
@@ -1701,8 +1700,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 	
 		public void actionPerformed(ActionEvent e) {
-			String path = IJ.getDir("Browse for \""+label+"\" directory");
-			this.textField.setText(path);
+			String path = IJ.getDir("Browse for \""+label+"\" folder");
+			if (path!=null)
+				this.textField.setText(path);
 		}
 	
 	}

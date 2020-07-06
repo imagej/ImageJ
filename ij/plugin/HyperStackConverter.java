@@ -12,8 +12,6 @@ import java.awt.image.ColorModel;
 /** Implements the "Stack to HyperStack", "RGB to HyperStack" 
 	and "HyperStack to Stack" commands. */
 public class HyperStackConverter implements PlugIn {
-	private static final String[] formats = {"TIFF", "JPEG", "PNG"};
-	private static String format = formats[0];
 	public static final int CZT=0, CTZ=1, ZCT=2, ZTC=3, TCZ=4, TZC=5;
 	static final int C=0, Z=1, T=2;
     static final String[] orders = {"xyczt(default)", "xyctz", "xyzct", "xyztc", "xytcz", "xytzc"};
@@ -99,16 +97,22 @@ public class HyperStackConverter implements PlugIn {
 	}
 	
 	private static void reorderVirtualStack(ImagePlus imp, int order) {
+		if (!(imp.getStack() instanceof VirtualStack))
+			return;
 		int[] indexes = shuffleVirtual(imp, order);
 		VirtualStack vstack = (VirtualStack)imp.getStack();
 		vstack.setIndexes(indexes);
 	}
 	
+	//String msg = "This is a custom VirtualStack. To switch to "+orders[order]+" order,\n"
+	//	+"save in TIFF format, import as a TIFF Virtual Stack and\n"
+	//	+"again use the \"Stack to Hyperstack\" command.";
+	
 	private static int[] shuffleVirtual(ImagePlus imp, int order) {
 		int n = imp.getStackSize();
-        int nChannels = imp.getNChannels();
-        int nSlices = imp.getNSlices();
-        int nFrames = imp.getNFrames();
+		int nChannels = imp.getNChannels();
+		int nSlices = imp.getNSlices();
+		int nFrames = imp.getNFrames();
 		int first=C, middle=Z, last=T;
 		int nFirst=nChannels, nMiddle=nSlices, nLast=nFrames;
 		switch (order) {

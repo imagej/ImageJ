@@ -190,6 +190,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		were 1<=n<=nImages. Returns null if the stack is empty.
 	*/
 	public ImageProcessor getProcessor(int n) {
+		n = translate(n);  // update n for hyperstacks not in default CZT order
 		if (n<1 || n>nImages)
 			throw new IllegalArgumentException("Argument out of range: "+n);
 		//if (n>1) IJ.log("  "+(info[n-1].getOffset()-info[n-2].getOffset()));
