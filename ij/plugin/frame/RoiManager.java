@@ -187,6 +187,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("List");
 		addPopupItem("Interpolate ROIs");
 		addPopupItem("Translate...");
+		addPopupItem("Crop and Save...");
 		addPopupItem("Help");
 		addPopupItem("Options...");
 		add(pm);
@@ -264,6 +265,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			interpolateRois();
 		else if (command.equals("Translate..."))
 			translate();
+		else if (command.equals("Crop and Save..."))
+			cropAndSave();
 		else if (command.equals("Help"))
 			help();
 		else if (command.equals("Options..."))
@@ -2252,6 +2255,21 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				Recorder.recordCall("rm.translate("+translateX+", "+translateY+");");
 			else
 				Recorder.record("roiManager", "translate", (int)translateX, (int)translateY);
+		}
+	}
+
+	private void cropAndSave() {
+		GenericDialog gd = new GenericDialog("Crop and Save");
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		String dir = "/path/to/dir/";
+		String options = "png";
+		if (record()) {
+			if (Recorder.scriptMode())
+				Recorder.recordCall("rm.cropAndSave(\""+dir+"\", \""+options+"\");");
+			else
+				Recorder.record("RoiManager.cropAndSave", dir, options);
 		}
 	}
 

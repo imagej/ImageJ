@@ -186,8 +186,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 		if (list==null)
 			return;
 		boolean isJarsFolder = path.endsWith("jars")|| path.endsWith("lib");
-		if (!path.endsWith(File.separator))
-			path += File.separator;
+		path = IJ.addSeparator(path);
 		for (int i=0; i<list.length; i++) {
 			File f2 = new File(path+list[i]);
 			if (f2.isDirectory())

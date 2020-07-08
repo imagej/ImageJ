@@ -5,20 +5,27 @@
 </head>
 <body>
 
-<li> <u>1.53d11  7 July 2020</u>
+<li> <u>1.53d14  8 July 2020</u>
 <ul>
-<li> The <i>File&gt;Import&gt;Image Sequence</i> comnand gets the
+<li> The <i>File&gt;Import&gt;Image Sequence</i> and
+<i>File&gt;Save As&gt;Image Sequence</i> comnands get the
 directory using the new GenericDialog.addDirectoryField() method,
-based on the very useful method of the same name in Fiji's
-GenericDialogPlus class.
+which is based on the very useful method with the same name
+in Fiji's GenericDialogPlus class.
 <li> Thanks to Jeff Hardin, the <i>Image&gt;Hyperstacks&gt;Stack to Hyperstack</i>
 command now works with virtual stacks not in CZT order.
 <li> The Threshold tool's "Set" function disables
 "Don't reset range" if the values set are outslide
 of the current display range.
-<li> ImageStack now accepts images of different types. Images are 
-converted to the type specifief by the setBitDepth() method or to the 
+<li> The ImageStack class now accepts images of different types. Images
+are converted to the type specifief by the setBitDepth() method or to the 
 type of the first image added.
+<li> Added the Dialog.addDirectory() macro function DOCUMENT
+and the GenericDialog.addDirectoryField() method
+(<a href="http://wsr.imagej.net/macros/tools/Square_Tool.ijm">example</a>).
+<li> Added the Overlay.cropAndSave() macro function DOCUMENT
+and the ImagePlus.cropAndSave() method
+(<a href="http://wsr.imagej.net/macros/tools/Square_Tool.ijm">example</a>).
 <li> Thanks to Laurent Thomas, added the ImagePlus.crop(Roi[]),
 Overlay.createStackOverlay(Roi[]) and ImageStack.create(ImagePlus[])
 methods. For an example, run
@@ -26,7 +33,6 @@ methods. For an example, run
 <li> Added the FolderOpener.open(path, width, height, options)
 method, which opens a stack, or virtual stack, from a folder of
 images that may differ in size.
-<li> Added the GenericDialog.addDirectoryField(label,path) method.
 <li> Added the ImageStack.setBitDepth() method.
 <li> Thanks to 'bio7' and David Gault, fixed bugs that caused
 IJ.isJava8() to return false and JavaScript to not work when

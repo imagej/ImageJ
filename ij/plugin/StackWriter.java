@@ -14,7 +14,7 @@ import ij.macro.Interpreter;
 /** This plugin, which saves the images in a stack as separate files, 
 	implements the File/Save As/Image Sequence command. */
 public class StackWriter implements PlugIn {
-
+	private static final String DIR_KEY = "save.sequence.dir";
 	private static String[] choices = {"BMP",  "FITS", "GIF", "JPEG", "PGM", "PNG", "Raw", "Text", "TIFF",  "ZIP"};
 	private static String staticFileType = "TIFF";
 	private String fileType = "TIFF";
@@ -50,9 +50,14 @@ public class StackWriter implements PlugIn {
 			}
 		}
 		
+		String options = Macro.getOptions();
+		if  (options!=null && options.contains("save="))  //macro
+			Macro.setOptions(options.replaceAll("save=", "dir="));
+		String directory = Prefs.get(DIR_KEY, IJ.getDir("downloads")+"stack2/");
 		GenericDialog gd = new GenericDialog("Save Image Sequence");
 		if (!IJ.isMacro())
 			fileType = staticFileType;
+		gd.addDirectoryField("Dir:", directory);
 		gd.addChoice("Format:", choices, fileType);
 		gd.addStringField("Name:", name, 12);
 		if (!hyperstack)
@@ -60,10 +65,13 @@ public class StackWriter implements PlugIn {
 		gd.addNumericField("Digits (1-8):", ndigits, 0);
 		if (!hyperstack)
 			gd.addCheckbox("Use slice labels as file names", useLabels);
-		gd.setSmartRecording(true);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
+		directory = gd.getNextString();
+		directory = IJ.addSeparator(directory);
+		Prefs.set(DIR_KEY, directory);
+		gd.setSmartRecording(true);
 		fileType = gd.getNextChoice();
 		if (!IJ.isMacro())
 			staticFileType = fileType;
@@ -87,8 +95,7 @@ public class StackWriter implements PlugIn {
 		}
 		String format = fileType.toLowerCase(Locale.US);
 		if (format.equals("fits") && !FileSaver.okForFits(imp))
-			return;
-			
+			return;			
 		if (format.equals("text"))
 			format = "text image";
 		String extension = "." + format;
@@ -96,41 +103,7 @@ public class StackWriter implements PlugIn {
 			extension = ".tif";
 		else if (format.equals("text image"))
 			extension = ".txt";
-			
-		String title = "Save Image Sequence";
-		String macroOptions = Macro.getOptions();
-		String directory = null;
-		if (macroOptions!=null) {
-			directory = Macro.getValue(macroOptions, title, null);
-			if (directory!=null) {
-				File f = new File(directory);
-				boolean exists = f.exists();
-				if (directory.indexOf(".")==-1 && !exists) {
-					// Is 'directory' a macro variable?
-					if (directory.startsWith("&")) directory=directory.substring(1);
-					Interpreter interp = Interpreter.getInstance();
-					String directory2 = interp!=null?interp.getStringVariable(directory):null;
-					if (directory2!=null) directory = directory2;
-				}
-				if (!f.isDirectory() && (exists||directory.lastIndexOf(".")>directory.length()-5))
-					directory = f.getParent();
-				if (directory!=null && !(directory.endsWith(File.separator)||directory.endsWith("/")))
-					directory += "/";
-			}
-		}
-		if (directory==null) {
-			if (Prefs.useFileChooser && !IJ.isMacOSX()) {
-				String digits = getDigits(number);
-				SaveDialog sd = new SaveDialog(title, name+digits+extension, extension);
-				String name2 = sd.getFileName();
-				if (name2==null)
-					return;
-				directory = sd.getDirectory();
-			} else
-				directory = IJ.getDirectory(title);
-		}
-		if (directory==null)
-			return;
+					
 		Overlay overlay = imp.getOverlay();
 		boolean isOverlay = overlay!=null && !imp.getHideOverlay();
 		if (!(format.equals("jpeg")||format.equals("png")))

@@ -14,9 +14,9 @@ import java.awt.image.ColorModel;
 public class HyperStackConverter implements PlugIn {
 	public static final int CZT=0, CTZ=1, ZCT=2, ZTC=3, TCZ=4, TZC=5;
 	static final int C=0, Z=1, T=2;
-    static final String[] orders = {"xyczt(default)", "xyctz", "xyzct", "xyztc", "xytcz", "xytzc"};
-    static int ordering = CZT;
-    static boolean splitRGB = true;
+	static final String[] orders = {"xyczt(default)", "xyctz", "xyzct", "xyztc", "xytcz", "xytzc"};
+	static int ordering = CZT;
+	static boolean splitRGB = true;
 
 	public void run(String arg) {
 		if (arg.equals("new"))

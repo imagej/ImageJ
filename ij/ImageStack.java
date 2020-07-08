@@ -22,8 +22,6 @@ public class ImageStack {
 	private float[] cTable;
 	private int viewers;
 	
-	private int hashCode;
-	
 	/** Default constructor. */
 	public ImageStack() { }
 
@@ -621,7 +619,6 @@ public class ImageStack {
 	public void setBitDepth(int depth) {
 		if (size()==0 && (depth==8||depth==16||depth==24||depth==32))
 			this.bitDepth = depth;
-hashCode = this.hashCode(); 
 	}
 
 	/** Creates a new ImageStack.

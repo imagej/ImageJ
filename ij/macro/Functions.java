@@ -3933,6 +3933,10 @@ public class Functions implements MacroConstants, Measurements {
 					columns = (int)getNextArg();
 				interp.getRightParen();
 				gd.addStringField(label, defaultStr, columns);
+			} else if (name.equals("addDirectory")) {
+				String label = getFirstString();
+				String defaultDir = getLastString();
+				gd.addDirectoryField(label, defaultDir);
 			} else if (name.equals("addNumber")) {
 				int columns = 6;
 				String units = null;
@@ -6602,7 +6606,11 @@ public class Functions implements MacroConstants, Measurements {
 			return Double.NaN;
 		} else if (name.equals("getBounds")) {
 			return getOverlayElementBounds(overlay);
- 		} else
+ 		} else if (name.equals("cropAndSave")) {
+ 			Roi[] rois = overlay.toArray();
+ 			imp.cropAndSave(rois, getFirstString(), getLastString());
+			return Double.NaN;
+		} else
 			interp.error("Unrecognized function name");
 		return Double.NaN;
 	}

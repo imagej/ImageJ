@@ -52,8 +52,7 @@ public class Raw implements PlugIn {
 		list = fo.sortFileList(list);
 		if (list==null)
 			return null;
-		if (directory!=null && !(directory.endsWith(File.separator)||directory.endsWith("/")))
-			directory += "/";
+		directory = IJ.addSeparator(directory);
 		FileInfo[] info = new FileInfo[list.length];
 		for (int i=0; i<list.length; i++) {
 			info[i] = (FileInfo)fi.clone();

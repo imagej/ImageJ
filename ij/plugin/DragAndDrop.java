@@ -207,8 +207,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 	
 	private void openDirectory(File f, String path) {
 		if (path==null) return;
-		if (!(path.endsWith(File.separator)||path.endsWith("/")))
-			path += File.separator;
+		path = IJ.addSeparator(path);
 		String[] names = f.list();
 		names = (new FolderOpener()).trimFileList(names);
 		if (names==null)

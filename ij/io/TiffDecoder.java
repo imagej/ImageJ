@@ -1,5 +1,6 @@
 package ij.io;
 import ij.util.Tools;
+import ij.IJ;
 import java.io.*;
 import java.util.*;
 import java.net.*;
@@ -78,8 +79,7 @@ public class TiffDecoder {
 	public TiffDecoder(String directory, String name) {
 		if (directory==null)
 			directory = "";
-		if (directory.length()>0 && !(directory.endsWith(File.separator)||directory.endsWith("/")))
-			directory += "/";
+		directory = IJ.addSeparator(directory);
 		this.directory = directory;
 		this.name = name;
 	}

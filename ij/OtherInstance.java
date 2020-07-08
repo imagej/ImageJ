@@ -76,9 +76,7 @@ public class OtherInstance {
 			display = display.replace('/', '_');
 		}
 		String tmpDir = System.getProperty("java.io.tmpdir");
-		if (!tmpDir.endsWith(File.separator))
-			tmpDir = tmpDir + File.separator;
-
+		tmpDir = IJ.addSeparator(tmpDir);
 		return tmpDir + "ImageJ-"
 			+ System.getProperty("user.name") + "-"
 			+ (display == null ? "" : display + "-")

@@ -299,7 +299,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     }
 
 	public void addDirectoryField(String label, String defaultPath) {
-		int columns = defaultPath!=null?Math.max(defaultPath.length(),20):20;
+		defaultPath = IJ.addSeparator(defaultPath);
+		int columns = defaultPath!=null?Math.max(defaultPath.length(),25):25;
 		addStringField(label, defaultPath, columns);
 		if (GraphicsEnvironment.isHeadless())
 			return;

@@ -447,14 +447,16 @@ public class FolderOpener implements PlugIn {
 	}
 	
 	boolean showDialog() {
-	    String options = Macro.getOptions();
-        if  (options!=null) {  //macro
-        	if (options.contains("open="))
-            	Macro.setOptions(options.replaceAll("open=", "dir="));
-        	if (options.contains("file="))
-            	Macro.setOptions(options.replaceAll("file=", "filter="));
-        }
-        directory = Prefs.get(DIR_KEY, IJ.getDir("downloads")+"stack/");
+		String options = Macro.getOptions();
+		if  (options!=null) {  //macro
+			if (options.contains("open="))
+				Macro.setOptions(options.replaceAll("open=", "dir="));
+			if (options.contains("file="))
+				Macro.setOptions(options.replaceAll("file=", "filter="));
+			if (options.contains("convert_to_rgb"))
+				bitDepth = 24;
+		}
+		directory = Prefs.get(DIR_KEY, IJ.getDir("downloads")+"stack/");
 		GenericDialog gd = new GenericDialog("Import Image Sequence");
 		gd.addDirectoryField("Dir:", directory);
 		gd.addChoice("Type:", types, bitDepthToType(bitDepth));

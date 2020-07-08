@@ -51,8 +51,7 @@ import javax.swing.filechooser.*;
 					if (chooser.showOpenDialog(null)==JFileChooser.APPROVE_OPTION) {
 						File file = chooser.getSelectedFile();
 						directory = file.getAbsolutePath();
-						if (!(directory.endsWith(File.separator)||directory.endsWith("/")))
-							directory += File.separator;
+						directory = IJ.addSeparator(directory);
 						OpenDialog.setDefaultDirectory(directory);
 					}
 				}
@@ -78,8 +77,7 @@ import javax.swing.filechooser.*;
 			if (chooser.showOpenDialog(null)==JFileChooser.APPROVE_OPTION) {
 				File file = chooser.getSelectedFile();
 				directory = file.getAbsolutePath();
-				if (!(directory.endsWith(File.separator)||directory.endsWith("/")))
-					directory += File.separator;
+				directory = IJ.addSeparator(directory);
 				OpenDialog.setDefaultDirectory(directory);
 			}
 		} catch (Exception e) {}

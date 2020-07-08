@@ -227,10 +227,7 @@ import javax.swing.filechooser.*;
 	 * @see ij.plugin.frame.Editor#setDefaultDirectory
 	*/
 	public static void setDefaultDirectory(String dir) {
-		if (dir!=null && dir.length()>0 && !(dir.endsWith(File.separator)||dir.endsWith("/"))) {
-			String separator = dir.contains("/")?"/":File.separator;
-			dir = dir + separator;
-		}
+		dir = IJ.addSeparator(dir);
 		defaultDirectory = dir;
 	}
 	

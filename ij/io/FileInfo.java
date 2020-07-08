@@ -1,5 +1,6 @@
 package ij.io;
 import ij.VirtualStack;
+import ij.IJ;
 import java.io.*;
 import java.util.Properties;
 
@@ -164,8 +165,7 @@ public class FileInfo implements Cloneable {
 		String dir = directory;
 		if (dir==null)
 			dir = "";
-		if (dir.length()>0 && !(dir.endsWith(File.separator)||dir.endsWith("/")))
-			dir += "/";
+		dir = IJ.addSeparator(dir);
 		return dir + fileName;
 	}
 

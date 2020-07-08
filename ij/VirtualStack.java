@@ -39,8 +39,7 @@ public class VirtualStack extends ImageStack {
 	*/
 	public VirtualStack(int width, int height, ColorModel cm, String path) {
 		super(width, height, cm);
-		if (path!=null && path.length()>0 && !(path.endsWith(File.separator)||path.endsWith("/")))
-			path = path + "/";
+		path = IJ.addSeparator(path);
 		this.path = path;
 		names = new String[INITIAL_SIZE];
 		labels = new String[INITIAL_SIZE];
@@ -273,10 +272,7 @@ public class VirtualStack extends ImageStack {
 	
 	/** Returns the path to the directory containing the images. */
 	public String getDirectory() {
-		String path2 = path;
-		if (path2!=null && !(path2.endsWith("/") || path2.endsWith(File.separator)))
-			path2 = path2 + "/";
-		return path2;
+		return IJ.addSeparator(path);
 	}
 		
 	/** Returns the file name of the specified slice, were 1<=n<=nslices. */

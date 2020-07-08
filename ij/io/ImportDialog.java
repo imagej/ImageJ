@@ -234,8 +234,7 @@ public class ImportDialog {
 		FileInfo fi = new FileInfo();
 		fi.fileFormat = fi.RAW;
 		fi.fileName = fileName;
-		if (directory!=null && !(directory.endsWith(File.separator)||directory.endsWith("/")))
-			directory += "/";
+		directory = IJ.addSeparator(directory);
 		fi.directory = directory;
 		fi.width = width;
 		fi.height = height;
