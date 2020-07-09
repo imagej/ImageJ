@@ -180,6 +180,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("Add Particles");
 		addPopupItem("Multi Measure");
 		addPopupItem("Multi Plot");
+		addPopupItem("Multi Crop");
 		addPopupItem("Sort");
 		addPopupItem("Specify...");
 		addPopupItem("Remove Positions...");
@@ -187,7 +188,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("List");
 		addPopupItem("Interpolate ROIs");
 		addPopupItem("Translate...");
-		addPopupItem("Crop and Save...");
 		addPopupItem("Help");
 		addPopupItem("Options...");
 		add(pm);
@@ -251,6 +251,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			multiMeasure("");
 		else if (command.equals("Multi Plot"))
 			multiPlot();
+		else if (command.equals("Multi Crop"))
+			multiCrop();
 		else if (command.equals("Sort"))
 			sort();
 		else if (command.equals("Specify..."))
@@ -265,8 +267,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			interpolateRois();
 		else if (command.equals("Translate..."))
 			translate();
-		else if (command.equals("Crop and Save..."))
-			cropAndSave();
 		else if (command.equals("Help"))
 			help();
 		else if (command.equals("Options..."))
@@ -2258,7 +2258,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 	}
 
-	private void cropAndSave() {
+	private void multiCrop() {
 		GenericDialog gd = new GenericDialog("Crop and Save");
 		gd.showDialog();
 		if (gd.wasCanceled())

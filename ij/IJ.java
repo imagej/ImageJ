@@ -1781,7 +1781,7 @@ public class IJ {
 			return dir;
 		} else if (title2.equals("image")) {
 			ImagePlus imp = WindowManager.getCurrentImage();
-	    	FileInfo fi = imp!=null?imp.getOriginalFileInfo():null;
+			FileInfo fi = imp!=null?imp.getOriginalFileInfo():null;
 			if (fi!=null && fi.directory!=null) {
 				String dir = fi.directory;
 				dir = addSeparator(dir);

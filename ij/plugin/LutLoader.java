@@ -16,52 +16,41 @@ public class LutLoader extends ImagePlus implements PlugIn {
 
 	private static String defaultDirectory = null;
 	private boolean suppressErrors;
+	
+	/** Returns the LUT 'name' as an IndexColorModel. */
+	public static IndexColorModel getLut(String name) {
+		if (name==null) return null;
+		LutLoader ll = new LutLoader();
+		FileInfo fi = ll.getBuiltInLut(name.toLowerCase());
+		if (fi.fileName!=null)
+			return new IndexColorModel(8, 256, fi.reds, fi.greens, fi.blues);
+		String path = IJ.getDir("luts")+name+".lut";
+		IndexColorModel lut = LutLoader.openLut("noerror:"+path);
+		if (lut==null) {
+			path = IJ.getDir("luts")+name.replaceAll(" ","_")+".lut";
+			lut = LutLoader.openLut("noerror:"+path);
+		}
+		return lut;
+	}
 
 	/** If 'arg'="", displays a file open dialog and opens the specified
 		LUT. If 'arg' is a path, opens the LUT specified by the path. If
 		'arg'="fire", "ice", etc., uses a method to generate the LUT. */
 	public void run(String arg) {
-		FileInfo fi = new FileInfo();
-		fi.reds = new byte[256]; 
-		fi.greens = new byte[256]; 
-		fi.blues = new byte[256];
-		fi.lutSize = 256;
-		int nColors = 0;
+		if (arg.equals("invert")) {
+			invertLut();
+			return;
+		}
 		
-		if (arg.equals("invert"))
-			{invertLut(); return;}
-		else if (arg.equals("fire"))
-			nColors = fire(fi.reds, fi.greens, fi.blues);
-		else if (arg.equals("grays"))
-			nColors = grays(fi.reds, fi.greens, fi.blues);
-		else if (arg.equals("ice"))
-			nColors = ice(fi.reds, fi.greens, fi.blues);
-		else if (arg.equals("spectrum"))
-			nColors = spectrum(fi.reds, fi.greens, fi.blues);
-		else if (arg.equals("3-3-2 RGB"))
-			nColors = rgb332(fi.reds, fi.greens, fi.blues);
-		else if (arg.equals("red"))
-			nColors = primaryColor(4, fi.reds, fi.greens, fi.blues);
-		else if (arg.equals("green"))
-			nColors = primaryColor(2, fi.reds, fi.greens, fi.blues);
-		else if (arg.equals("blue"))
-			nColors = primaryColor(1, fi.reds, fi.greens, fi.blues);
-		else if (arg.equals("cyan"))
-			nColors = primaryColor(3, fi.reds, fi.greens, fi.blues);
-		else if (arg.equals("magenta"))
-			nColors = primaryColor(5, fi.reds, fi.greens, fi.blues);
-		else if (arg.equals("yellow"))
-			nColors = primaryColor(6, fi.reds, fi.greens, fi.blues);
-		else if (arg.equals("redgreen"))
-			nColors = redGreen(fi.reds, fi.greens, fi.blues);
-		if (nColors>0) {
-			if (nColors<256)
-				interpolate(fi.reds, fi.greens, fi.blues, nColors);
-			fi.fileName = arg;
+		// Built in LUT
+		FileInfo fi = getBuiltInLut(arg);
+		if (fi.fileName!=null) {
 			showLut(fi, true);
 			Menus.updateMenus();			
 			return;
 		}
+		
+		// LUT in luts folder
 		OpenDialog od = new OpenDialog("Open LUT...", arg);
 		fi.directory = od.getDirectory();
 		fi.fileName = od.getFileName();
@@ -70,6 +59,46 @@ public class LutLoader extends ImagePlus implements PlugIn {
 		if (openLut(fi))
 			showLut(fi, arg.equals(""));
 		IJ.showStatus("");
+	}
+	
+	private FileInfo getBuiltInLut(String name) {
+		FileInfo fi = new FileInfo();
+		fi.reds = new byte[256]; 
+		fi.greens = new byte[256]; 
+		fi.blues = new byte[256];
+		fi.lutSize = 256;
+		fi.fileName = null;
+		int nColors = 0;
+		if (name.equals("fire"))
+			nColors = fire(fi.reds, fi.greens, fi.blues);
+		else if (name.equals("grays"))
+			nColors = grays(fi.reds, fi.greens, fi.blues);
+		else if (name.equals("ice"))
+			nColors = ice(fi.reds, fi.greens, fi.blues);
+		else if (name.equals("spectrum"))
+			nColors = spectrum(fi.reds, fi.greens, fi.blues);
+		else if (name.equals("3-3-2 RGB"))
+			nColors = rgb332(fi.reds, fi.greens, fi.blues);
+		else if (name.equals("red"))
+			nColors = primaryColor(4, fi.reds, fi.greens, fi.blues);
+		else if (name.equals("green"))
+			nColors = primaryColor(2, fi.reds, fi.greens, fi.blues);
+		else if (name.equals("blue"))
+			nColors = primaryColor(1, fi.reds, fi.greens, fi.blues);
+		else if (name.equals("cyan"))
+			nColors = primaryColor(3, fi.reds, fi.greens, fi.blues);
+		else if (name.equals("magenta"))
+			nColors = primaryColor(5, fi.reds, fi.greens, fi.blues);
+		else if (name.equals("yellow"))
+			nColors = primaryColor(6, fi.reds, fi.greens, fi.blues);
+		else if (name.equals("redgreen"))
+			nColors = redGreen(fi.reds, fi.greens, fi.blues);
+		if (nColors>0) {
+			if (nColors<256)
+				interpolate(fi.reds, fi.greens, fi.blues, nColors);
+			fi.fileName = name;
+		}
+		return fi;
 	}
 	
 	private void showLut(FileInfo fi, boolean showImage) {
