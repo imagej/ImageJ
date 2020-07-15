@@ -17,7 +17,11 @@ public class LutLoader extends ImagePlus implements PlugIn {
 	private static String defaultDirectory = null;
 	private boolean suppressErrors;
 	
-	/** Returns the LUT 'name' as an IndexColorModel. */
+	/** Returns the LUT 'name' as an IndexColorModel, where
+	 * 'name' can be any entry in the Image/Lookup Tables menu.
+	 * @see ij.IJ#getLuts
+	 * See: Help>Examples>JavaScript/Show all LUTs
+	*/
 	public static IndexColorModel getLut(String name) {
 		if (name==null) return null;
 		LutLoader ll = new LutLoader();
@@ -68,6 +72,10 @@ public class LutLoader extends ImagePlus implements PlugIn {
 		fi.blues = new byte[256];
 		fi.lutSize = 256;
 		fi.fileName = null;
+		if (name==null)
+			return fi;
+		if (name.equals("3-3-2 rgb")) name="3-3-2 RGB";
+		if (name.equals("red/green")) name="redgreen";
 		int nColors = 0;
 		if (name.equals("fire"))
 			nColors = fire(fi.reds, fi.greens, fi.blues);

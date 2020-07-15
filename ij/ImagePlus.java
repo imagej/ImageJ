@@ -1890,8 +1890,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			}
 			if (imageType==COLOR_RGB)
 				ContrastAdjuster.update();
-			else if (imageType==GRAY16 || imageType==GRAY32)
-				ThresholdAdjuster.update();
 			if (!noUpdateMode)
 				updateAndRepaintWindow();
 			else

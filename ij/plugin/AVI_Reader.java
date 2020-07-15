@@ -4,6 +4,7 @@ import ij.process.*;
 import ij.gui.*;
 import ij.io.*;
 import ij.plugin.Animator;
+import ij.util.Tools;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
@@ -201,12 +202,17 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	private static boolean	   staticConvertToGray;
 	private static boolean	   staticFlipVertical;
 	private static boolean	   staticIsVirtual = true;
+	
 	//dialog parameters
-	private int				   firstFrame = 1;		//the first frame to read
-	private int				   lastFrame = 0;		//the last frame to read; 0 means 'read all'
-	private boolean			   convertToGray;		//whether to convert color video to grayscale
-	private boolean			   flipVertical;		//whether to flip image vertical
-	private boolean			   isVirtual;			//whether to open as virtual stack
+	private static final String PATH_KEY = "avi.reader.path";
+	private String path; 					// file path
+	private String fileName;			// file name
+	private String fileDir;		// directory
+	private int	 firstFrame = 1;		//the first frame to read
+	private int	 lastFrame = 0;		//the last frame to read; 0 means 'read all'
+	private boolean convertToGray;		//whether to convert color video to grayscale
+	private boolean flipVertical;		//whether to flip image vertical
+	private boolean isVirtual;			//whether to open as virtual stack
    //the input file
 	private	 RandomAccessFile  raFile;
 	private	 String			   raFilePath;
@@ -294,21 +300,17 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 		String options = IJ.isMacro()?Macro.getOptions():null;
 		if (options!=null && options.contains("select=") && !options.contains("open="))
 			Macro.setOptions(options.replaceAll("select=", "open="));
-		OpenDialog	od = new OpenDialog("Open AVI File", arg);
-		String fileName = od.getFileName();
-		if (fileName == null) return;
-		String fileDir = od.getDirectory();
-		String path = fileDir + fileName;
+		path = arg;
+		if (displayDialog && !showDialog())					//ask for parameters
+			return;
 		try {
-			openAndReadHeader(path);								//open and read header
+			openAndReadHeader(path);  //open and read header
 		} catch (Exception e) {
 			error(exceptionMessage(e));
 			return;
 		} finally {
 			closeFile(raFile);
 		}
-		if (displayDialog && !showDialog(fileName))					//ask for parameters
-			return;
 		errorText = null;
 		ImageStack stack = makeStack(path, firstFrame, lastFrame, isVirtual, convertToGray, flipVertical);	//read data
 		if (aborting)
@@ -468,7 +470,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	}
 
 	/** Parameters dialog, returns false on cancel */
-	private boolean showDialog (String fileName) {
+	private boolean showDialog () {
 		if (lastFrame!=-1)
 			lastFrame = dwTotalFrames;
 		if (!IJ.isMacro()) {
@@ -476,17 +478,31 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 			flipVertical = staticFlipVertical;
 			isVirtual = staticIsVirtual;
 		}
+		String options = Macro.getOptions();
+		if  (options!=null) {  //macro
+			if (options.contains("open="))
+				Macro.setOptions(options.replace("open=", "avi="));
+			int first = (int)Tools.getNumberFromList(options, "first=");
+			if (first>0) firstFrame = first;
+			int last = (int)Tools.getNumberFromList(options, "last=");
+			if (last>0) lastFrame = last;
+		}
+		if (path==null || path.length()==0)
+			path = Prefs.get(PATH_KEY, IJ.getDir("downloads")+"movie.avi");
 		GenericDialog gd = new GenericDialog("AVI Reader");
-		gd.addNumericField("First Frame: ", firstFrame, 0);
-		gd.addNumericField("Last Frame: ", lastFrame, 0, 6, "");
+		gd.addFileField("AVI:", path);
 		gd.addCheckbox("Use Virtual Stack", isVirtual);
 		gd.addCheckbox("Convert to Grayscale", convertToGray);
 		gd.addCheckbox("Flip Vertical", flipVertical);
-		gd.setSmartRecording(true);
 		gd.showDialog();
-		if (gd.wasCanceled()) return false;
-		firstFrame = (int)gd.getNextNumber();
-		lastFrame = (int)gd.getNextNumber();
+		if (gd.wasCanceled())
+			return false;
+		path = gd.getNextString();
+		Prefs.set(PATH_KEY, path);
+		File f = new File(path);
+		fileName = f.getName();
+		fileDir = IJ.addSeparator(f.getParent());
+		gd.setSmartRecording(true);
 		isVirtual = gd.getNextBoolean();
 		convertToGray = gd.getNextBoolean();
 		flipVertical = gd.getNextBoolean();

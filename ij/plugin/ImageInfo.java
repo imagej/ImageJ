@@ -507,7 +507,7 @@ public class ImageInfo implements PlugIn {
 		for (int i=0; i<props.length; i+=2) {
 			String key = props[i];
 			String value = props[i+1];
-			if (LUT.nameKey.equals(key))
+			if (LUT.nameKey.equals(key) || "UniqueName".equals(key))
 				continue;
 			if (key!=null && value!=null && !key.equals("ShowInfo")) {
 				if (value.length()<80)

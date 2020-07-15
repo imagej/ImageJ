@@ -3937,6 +3937,10 @@ public class Functions implements MacroConstants, Measurements {
 				String label = getFirstString();
 				String defaultDir = getLastString();
 				gd.addDirectoryField(label, defaultDir);
+			} else if (name.equals("addFile")) {
+				String label = getFirstString();
+				String defaultPath = getLastString();
+				gd.addFileField(label, defaultPath);
 			} else if (name.equals("addNumber")) {
 				int columns = 6;
 				String units = null;

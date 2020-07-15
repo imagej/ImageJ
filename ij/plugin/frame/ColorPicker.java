@@ -4,14 +4,16 @@ import ij.plugin.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
+import javax.swing.BoxLayout;
 import ij.process.*;
 import ij.gui.*;
 
 /** Implements the Image/Color/Color Picker command. */
 public class ColorPicker extends PlugInDialog {
-	static final String LOC_KEY = "cp.loc";
-	static ColorPicker instance;
-
+	private static final String LOC_KEY = "cp.loc";
+	private ColorPicker instance;
+	TextField colorField;
+	
     public ColorPicker() {
 		super("CP");
 		if (instance!=null) {
@@ -31,10 +33,16 @@ public class ColorPicker extends PlugInDialog {
 		setLayout(new BorderLayout());
         ColorGenerator cg = new ColorGenerator(width, height, new int[width*height]);
         cg.drawColors(colorWidth, colorHeight, columns, rows);
-        Canvas colorCanvas = new ColorCanvas(width, height, null, cg, scale);
+        Canvas colorCanvas = new ColorCanvas(width, height, this, cg, scale);
 		//new ImagePlus("cp",cg.duplicate()).show();
         Panel panel = new Panel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.add(colorCanvas);
+		String hexColor = Colors.colorToString(Toolbar.getForegroundColor());
+        colorField = new TextField(hexColor+" ",7);
+        colorField.select(hexColor.length(),hexColor.length());
+        GUI.scale(colorField);
+        panel.add(colorField);
         add(panel);
 		setResizable(false);
 		pack();
@@ -44,7 +52,7 @@ public class ColorPicker extends PlugInDialog {
 		else
 			GUI.centerOnImageJScreen(this);
 		show();
-    }
+	}
     
     public void close() {
 	 	super.close();
@@ -226,13 +234,14 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener {
 	boolean background;
 	long mouseDownTime;
 	ColorGenerator ip;
-	Frame frame;
+	ColorPicker cp;
 	double scale;
 	String status = "";
 			
-	public ColorCanvas(int width, int height, Frame frame, ColorGenerator ip, double scale) {
+	public ColorCanvas(int width, int height, ColorPicker cp, ColorGenerator ip, double scale) {
 		this.width=width; this.height=height;
 		this.ip = ip;
+		this.cp = cp;
 		addMouseListener(this);
  		addMouseMotionListener(this);
         addKeyListener(IJ.getInstance());
@@ -287,14 +296,18 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener {
 			showStatus(" ", Toolbar.getForegroundColor().getRGB());
 			} 
 		}
+		Color color;
 		if (background) {
 			ip.refreshForeground(background);
 			ip.refreshBackground(background);
+			color= Toolbar.getBackgroundColor();
 		} else {
 			ip.refreshBackground(background);
 			ip.refreshForeground(background);
+			color= Toolbar.getForegroundColor();
 		}
-		showStatus(" ", Toolbar.getForegroundColor().getRGB());
+		cp.colorField.setText(Colors.colorToString(color));
+		showStatus(" ", color.getRGB());
 		repaint();
 	}
 

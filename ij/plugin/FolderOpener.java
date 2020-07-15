@@ -450,9 +450,9 @@ public class FolderOpener implements PlugIn {
 		String options = Macro.getOptions();
 		if  (options!=null) {  //macro
 			if (options.contains("open="))
-				Macro.setOptions(options.replaceAll("open=", "dir="));
+				Macro.setOptions(options.replace("open=", "dir="));
 			if (options.contains("file="))
-				Macro.setOptions(options.replaceAll("file=", "filter="));
+				Macro.setOptions(options.replace("file=", "filter="));
 			if (options.contains("convert_to_rgb"))
 				bitDepth = 24;
 		}

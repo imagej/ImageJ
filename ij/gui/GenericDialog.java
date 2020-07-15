@@ -9,6 +9,7 @@ import ij.plugin.filter.PlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.util.Tools;
 import ij.macro.*;
+import ij.io.OpenDialog;
 
 
 /**
@@ -308,7 +309,28 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		GridBagLayout layout = (GridBagLayout)getLayout();
 		GridBagConstraints constraints = layout.getConstraints(text);
 		Button button = new TrimmedButton("Browse",IJ.isMacOSX()?10:0);
-		BrowseButtonListener listener = new BrowseButtonListener(label, text);
+		BrowseButtonListener listener = new BrowseButtonListener(label, text, "dir");
+		button.addActionListener(listener);
+		Panel panel = new Panel();
+		panel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		panel.add(text);
+		panel.add(button);
+		layout.setConstraints(panel, constraints);
+		add(panel);
+		if (Recorder.record || macro)
+			saveLabel(panel, label);
+	}
+
+	public void addFileField(String label, String defaultPath) {
+		int columns = defaultPath!=null?Math.max(defaultPath.length(),25):25;
+		addStringField(label, defaultPath, columns);
+		if (GraphicsEnvironment.isHeadless())
+			return;
+		TextField text = (TextField)stringField.lastElement();
+		GridBagLayout layout = (GridBagLayout)getLayout();
+		GridBagConstraints constraints = layout.getConstraints(text);
+		Button button = new TrimmedButton("Browse",IJ.isMacOSX()?10:0);
+		BrowseButtonListener listener = new BrowseButtonListener(label, text, "file");
 		button.addActionListener(listener);
 		Panel panel = new Panel();
 		panel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -1694,14 +1716,25 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private class BrowseButtonListener implements ActionListener {
 		private String label;
 		private TextField textField;
-	
-		public BrowseButtonListener(String label, TextField textField) {
+		private String mode;	
+		
+		public BrowseButtonListener(String label, TextField textField, String mode) {
 			this.label = label;
 			this.textField = textField;
+			this.mode = mode;
 		}
 	
 		public void actionPerformed(ActionEvent e) {
-			String path = IJ.getDir("Browse for \""+label+"\" folder");
+			String path = null;
+			if (mode.equals("dir"))
+				path = IJ.getDir("Browse for \""+label+"\" folder");
+			else {
+				OpenDialog od = new OpenDialog("Browse for \""+label+"\"", null);
+				String directory = od.getDirectory();
+				String name = od.getFileName();
+				if (name!=null)
+					path = directory+name;
+			}
 			if (path!=null)
 				this.textField.setText(path);
 		}

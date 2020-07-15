@@ -1289,6 +1289,21 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		imp.unlock();
 	}
 		
+	private void multiCrop() {
+		GenericDialog gd = new GenericDialog("Crop and Save");
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		String dir = "/path/to/dir/";
+		String options = "png";
+		if (record()) {
+			if (Recorder.scriptMode())
+				Recorder.recordCall("rm.cropAndSave(\""+dir+"\", \""+options+"\");");
+			else
+				Recorder.record("RoiManager.cropAndSave", dir, options);
+		}
+	}
+
 	/** Sets the group for the selected ROIs. */ 
 	public void setGroup(int group) {
 		int[] indexes = getIndexes();
@@ -2255,21 +2270,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				Recorder.recordCall("rm.translate("+translateX+", "+translateY+");");
 			else
 				Recorder.record("roiManager", "translate", (int)translateX, (int)translateY);
-		}
-	}
-
-	private void multiCrop() {
-		GenericDialog gd = new GenericDialog("Crop and Save");
-		gd.showDialog();
-		if (gd.wasCanceled())
-			return;
-		String dir = "/path/to/dir/";
-		String options = "png";
-		if (record()) {
-			if (Recorder.scriptMode())
-				Recorder.recordCall("rm.cropAndSave(\""+dir+"\", \""+options+"\");");
-			else
-				Recorder.record("RoiManager.cropAndSave", dir, options);
 		}
 	}
 

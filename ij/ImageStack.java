@@ -345,7 +345,12 @@ public class ImageStack {
 	
 	/** Returns true if this is a 3-slice HSB stack. */
 	public boolean isHSB() {
-    	return nSlices==3 && getSliceLabel(1)!=null && getSliceLabel(1).equals("Hue");
+    	return nSlices==3 && bitDepth==8 && getSliceLabel(1)!=null && getSliceLabel(1).equals("Hue");
+	}
+
+	/** Returns true if this is a 3-slice 32-bit HSB stack. */
+	public boolean isHSB32() {
+    	return nSlices==3 && bitDepth==32 && getSliceLabel(1)!=null && getSliceLabel(1).equals("Hue");
 	}
 
 	/** Returns true if this is a Lab stack. */

@@ -156,6 +156,21 @@ public class ImageConverter {
 		imp.setDimensions(3, 1, 1);
 	}
 	
+	/** Converts an RGB image to a 32-bit HSB (hue, saturation and brightness) stack. */
+	public void convertToHSB32() {
+		if (type!=ImagePlus.COLOR_RGB)
+			throw new IllegalArgumentException("Image must be RGB");;
+		ColorProcessor cp;
+		if (imp.getType()==ImagePlus.COLOR_RGB)
+			cp = (ColorProcessor)imp.getProcessor();
+		else
+			cp = new ColorProcessor(imp.getImage());
+		ImageStack stack = cp.getHSB32Stack();
+		imp.trimProcessor();
+		imp.setStack(null, stack);
+		imp.setDimensions(3, 1, 1);
+	}
+
 	/** Converts an RGB image to a Lab stack. */
 	public void convertToLab() {
 		if (type!=ImagePlus.COLOR_RGB)
@@ -219,6 +234,25 @@ public class ImageConverter {
 			imp.setTitle(imp.getTitle());
 	}
 	
+	/** Converts a 3-slice (hue, saturation, brightness) 32-bit stack to RGB. */
+	public void convertHSB32ToRGB() {
+		if (imp.getStackSize()!=3)
+			throw new IllegalArgumentException("3-slice 8-bit stack required");
+		ImageStack stack = imp.getStack();
+		float[] H = (float[])stack.getPixels(1);
+		float[] S = (float[])stack.getPixels(2);
+		float[] B = (float[])stack.getPixels(3);
+		int width = imp.getWidth();
+		int height = imp.getHeight();
+		imp.trimProcessor();
+		ColorProcessor cp = new ColorProcessor(width, height);
+		cp.setHSB(H, S, B);
+		imp.setImage(cp.createImage());
+		imp.killStack();
+		if (IJ.isLinux())
+			imp.setTitle(imp.getTitle());
+	}
+
 	/** Converts a Lab stack to RGB. */
 	public void convertLabToRGB() {
 		if (imp.getStackSize()!=3)

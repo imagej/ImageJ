@@ -240,13 +240,22 @@ public class SimpleCommands implements PlugIn {
 				return;
 			}
 		}
-		if (IJ.debugMode) IJ.log("showDirectory: "+arg+", "+dir);
-		Desktop desktop = Desktop.getDesktop();
+		if (IJ.debugMode) IJ.log("Show Folder: arg="+arg+", path="+path);
+		String msg = "";
 		try {
+			if (IJ.debugMode) IJ.log("  trying Desktop.open "+dir);
+			Desktop desktop = Desktop.getDesktop();
 			desktop.open(dir);
 		} catch (Exception e) {
-			IJ.error("Failed to Show Folder: " + e.toString());
-			return;
+			msg = "Desktop.open error: "+e;
+			if (IJ.isLinux()) try {
+				if (IJ.debugMode) IJ.log("  trying xdg-open "+path);
+				Runtime.getRuntime().exec(new String[] {"xdg-open", path} );
+				return;
+			} catch (Exception e2) {
+				msg = "xdg-open error: "+e2;
+			}
+			IJ.error("Show Folder", msg);
 		}
 	}
 

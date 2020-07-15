@@ -35,7 +35,7 @@ public class Converter implements PlugIn {
 
 	/** Converts the ImagePlus to the specified image type. The string
 	argument corresponds to one of the labels in the Image/Type submenu
-	("8-bit", "16-bit", "32-bit", "8-bit Color", "RGB Color", "RGB Stack" or "HSB Stack"). */
+	("8-bit", "16-bit", "32-bit", "8-bit Color", "RGB Color", "RGB Stack", "HSB Stack", "Lab Stack" or "HSB (32-bit)"). */
 	public void convert(String item) {
 		int type = imp.getType();
 		ImageStack stack = null;
@@ -61,6 +61,9 @@ public class Converter implements PlugIn {
 		    	} else if (stack.isHSB() && item.equals("RGB Color")) {
 					new ImageConverter(imp).convertHSBToRGB();
 					if (win!=null) new ImageWindow(imp, imp.getCanvas());
+		    	} else if (stack.isHSB32() && item.equals("RGB Color")) {
+					new ImageConverter(imp).convertHSB32ToRGB();
+					if (win!=null) new ImageWindow(imp, imp.getCanvas());
 		    	} else if (stack.isLab() && item.equals("RGB Color")) {
 					new ImageConverter(imp).convertLabToRGB();
 					if (win!=null) new ImageWindow(imp, imp.getCanvas());
@@ -76,6 +79,8 @@ public class Converter implements PlugIn {
 					new StackConverter(imp).convertToRGBHyperstack();
 				else if (item.equals("HSB Stack"))
 					new StackConverter(imp).convertToHSBHyperstack();
+				else if (item.equals("HSB (32-bit)"))
+					new StackConverter(imp).convertToHSB32Hyperstack();
 				else if (item.equals("Lab Stack"))
 					new StackConverter(imp).convertToLabHyperstack();
 		    	else if (item.equals("8-bit Color")) {
@@ -100,6 +105,9 @@ public class Converter implements PlugIn {
 		    	} else if (item.equals("HSB Stack")) {
 			    	Undo.reset();
 					ic.convertToHSB();
+		    	} else if (item.equals("HSB (32-bit)")) {
+			    	Undo.reset();
+					ic.convertToHSB32();
 		    	} else if (item.equals("Lab Stack")) {
 			    	Undo.reset();
 					ic.convertToLab();

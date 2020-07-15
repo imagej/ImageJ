@@ -2365,7 +2365,12 @@ public class IJ {
 		return new Dimension(bounds.width, bounds.height);
 	}
 	
-	/** Returns, as an array of strings, a list of the LUTs in the Image/Lookup Tables menu. */
+	/** Returns, as an array of strings, a list of the LUTs in the 
+	 * Image/Lookup Tables menu.
+	 * @see ij.plugin#LutLoader.getLut
+	 * See also: Help>Examples>JavaScript/Show all LUTs
+	 * and Image/Color/Display LUTs
+	*/
 	public static String[] getLuts() {
 		ArrayList list = new ArrayList();
 		Hashtable commands = Menus.getCommands();

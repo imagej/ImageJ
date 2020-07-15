@@ -51,7 +51,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		}
 		int stackSize = imp.getStackSize();
 		String title = imp.getTitle();
-		String newTitle = WindowManager.getUniqueName(title);
+		String newTitle = WindowManager.getUniqueName(imp, title);
 		defaultTitle = newTitle;
 		duplicateStack = staticDuplicateStack && !IJ.isMacro();
 		if (!IJ.altKeyDown()||stackSize>1) {
@@ -86,6 +86,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			cal.yOrigin -= roi.getBounds().y;
 		}	
 		imp2.setTitle(newTitle);
+		imp2.setProp("UniqueName","true");
 		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE) {
 			Roi roi2 = (Roi)cropRoi(imp, roi).clone();
 			roi2.setLocation(0, 0);

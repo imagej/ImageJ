@@ -190,7 +190,8 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	/** Convolves <code>ip</code> with a kernel of width <code>kw</code> and
 		height <code>kh</code>. Returns false if the user cancels the operation. */
 	public boolean convolve(ImageProcessor ip, float[] kernel, int kw, int kh) {
-		if (canceled || kw*kh!=kernel.length) return false;
+		if (canceled || kernel==null || kw*kh!=kernel.length)
+			return false;
 		if ((kw&1)!=1 || (kh&1)!=1)
 			throw new IllegalArgumentException("Kernel width or height not odd ("+kw+"x"+kh+")");
 		boolean notFloat = !(ip instanceof FloatProcessor);

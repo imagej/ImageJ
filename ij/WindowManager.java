@@ -326,6 +326,10 @@ public class WindowManager {
 
 	/** Returns a unique name by adding, before the extension,  -1, -2, etc. as needed. */
 	public static String getUniqueName(String name) {
+		return getUniqueName(null, name);
+	}
+
+	public static String getUniqueName(ImagePlus imp, String name) {
         String name2 = name;
         String extension = "";
         int len = name2.length();
@@ -336,11 +340,12 @@ public class WindowManager {
         }
         int lastDash = name2.lastIndexOf("-");
         len = name2.length();
+        if (imp!=null && imp.getProp("UniqueName")==null)
+        	lastDash = -1;
         if (lastDash!=-1&&len-lastDash<4&&lastDash<len-1&&Character.isDigit(name2.charAt(lastDash+1))&&name2.charAt(lastDash+1)!='0')
             name2 = name2.substring(0, lastDash);
         for (int i=1; i<=99; i++) {
             String name3 = name2+"-"+ i + extension;
-            //IJ.log(i+" "+name3);
             if (!isDuplicateName(name3))
                 return name3;
         }

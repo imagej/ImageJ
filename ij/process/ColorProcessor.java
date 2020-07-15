@@ -450,6 +450,22 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 	
+	/** Returns hue, saturation and brightness in 3 float arrays. */
+	public void getHSB(float[] H, float[] S, float[] B) {
+		int c, r, g, b;
+		float[] hsb = new float[3];
+		for (int i=0; i < width*height; i++) {
+			c = pixels[i];
+			r = (c&0xff0000)>>16;
+			g = (c&0xff00)>>8;
+			b = c&0xff;
+			hsb = Color.RGBtoHSB(r, g, b, hsb);
+			H[i] = hsb[0];
+			S[i] = hsb[1];
+			B[i] = hsb[2];
+		}
+	}
+
 	/** Returns an ImageStack with three 8-bit slices,
 	    representing hue, saturation and brightness */
 	public ImageStack getHSBStack() {
@@ -458,6 +474,23 @@ public class ColorProcessor extends ImageProcessor {
 		byte[] H = new byte[width*height];
 		byte[] S = new byte[width*height];
 		byte[] B = new byte[width*height];
+		getHSB(H, S, B);
+		ColorModel cm = getDefaultColorModel();
+		ImageStack stack = new ImageStack(width, height, cm);
+		stack.addSlice("Hue", H);
+		stack.addSlice("Saturation", S);
+		stack.addSlice("Brightness", B);
+		return stack;
+	}
+
+	/** Returns an ImageStack with three 32-bit slices,
+	    representing hue, saturation and brightness */
+	public ImageStack getHSB32Stack() {
+		int width = getWidth();
+		int height = getHeight();
+		float[] H = new float[width*height];
+		float[] S = new float[width*height];
+		float[] B = new float[width*height];
 		getHSB(H, S, B);
 		ColorModel cm = getDefaultColorModel();
 		ImageStack stack = new ImageStack(width, height, cm);
@@ -549,6 +582,12 @@ public class ColorProcessor extends ImageProcessor {
 			brightness = (float)((B[i]&0xff)/255.0);
 			pixels[i] = Color.HSBtoRGB(hue, saturation, brightness);
 		}
+	}
+
+	/** Sets the current pixels from 3 float arrays (hue, saturation and brightness). */
+	public void setHSB(float[] H, float[] S, float[] B) {
+		for (int i=0; i < width*height; i++)
+			pixels[i] = Color.HSBtoRGB(H[i], S[i], B[i]);
 	}
 	
 	/** Updates the brightness using the pixels in the specified FloatProcessor). */
