@@ -96,6 +96,14 @@ public class HyperStackConverter implements PlugIn {
 		return imp2;
 	}
 	
+	/** Converts the specified hyperstack into a stack. */
+	public static void toStack(ImagePlus imp) {
+		if (imp.isHyperStack()||imp.isComposite()) {
+			imp.setDimensions(1,imp.getStackSize(),1);
+			imp.draw();				
+		}
+	}
+	
 	private static void reorderVirtualStack(ImagePlus imp, int order) {
 		if (!(imp.getStack() instanceof VirtualStack))
 			return;
@@ -235,7 +243,6 @@ public class HyperStackConverter implements PlugIn {
 					nSlices+", "+nFrames+", \""+order+"\", \""+modes[mode]+"\");");
 			}
 		}
-
 	}
 
 	/** Changes the dimension order of a 4D or 5D stack from 
@@ -306,6 +313,8 @@ public class HyperStackConverter implements PlugIn {
 			imp2.setOverlay(imp.getOverlay());
 			imp.hide();
 		}
+		if (Recorder.record && Recorder.scriptMode())
+			Recorder.recordCall("HyperStackConverter.toStack(imp);");
 	}
 	
 	void newHyperStack() {

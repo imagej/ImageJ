@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53d27  15 July 2020</u>
+<li> <u>1.53d30  16 July 2020</u>
 <ul>
 <li> The <i>File&gt;Import&gt;Image Sequence</i> and
 <i>File&gt;Save As&gt;Image Sequence</i> comnands get the
@@ -46,6 +46,9 @@ methods. For an example, run
 method, which opens a stack, or virtual stack, from a folder of
 images that may differ in size.
 <li> Added the ImageStack.setBitDepth() method.
+<li> Thanks to Aryeh Weiss, added the HyperStackConverter.toStack()
+method
+(<a href="http://wsr.imagej.net/macros/js/HyperstackToStack.js">example</a>).
 <li> Thanks to 'bio7' and David Gault, fixed bugs that caused
 IJ.isJava8() to return false and JavaScript to not work when
 running Java 14 or later.
@@ -58,6 +61,9 @@ change when scrolling through a stack and the Threshold window is open.
 the Duplicate command to propose an incorrect name
 when duplicating an image whose name ends in "-n", 
 where 'n' is a digit.
+<li> Thanks to Gabriel Landini and Michael Schmid, fixed a bug
+that caused the <i>File&gt;Show Folder&gt;</i> commands
+to not work on some Linux systems.
 <li> Fixed a 1.52r regression that caused ImageJ to hang
 when saving images with fewer than 4 pixel in TIFF format.
 <li> Thanks to Jan Brocher, fixed a 1.52u regression that caused
