@@ -57,7 +57,12 @@ public class FolderOpener implements PlugIn {
 		return fo.image;
 	}
 
-	/** Opens the images in the specified directory as a widthxheight virtual stack. */
+	/** Opens the images in the specified directory as a widthxheight stack.
+ 		Opens the images as a virtual stack if the 'options' string contains
+		'virtual' or 'use'. Add ' file=abc' to the options string to only open
+		images with, for example, 'abc' in their name. Add ' noMetaSort' to
+		disable sorting of DICOM stacks by series number (0020,0011).
+	*/
 	public static ImagePlus open(String path, int width, int height, String options) {
 		FolderOpener fo = new FolderOpener();
 		fo.saveImage = true;
@@ -111,9 +116,9 @@ public class FolderOpener implements PlugIn {
 					legacyRegex = null;
 			}
 		}
-		
-		if (!showDialog())
-			return;		
+		if (arg==null) {
+			if (!showDialog()) return;
+		}
 		String[] list = (new File(directory)).list();
 		if (list==null) {
 			IJ.error("File>Import>Image Sequence", "Directory not found: "+directory);

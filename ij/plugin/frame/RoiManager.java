@@ -22,6 +22,7 @@ import ij.io.*;
 import ij.plugin.filter.*;
 import ij.plugin.Colors;
 import ij.plugin.OverlayLabels;
+import ij.plugin.FolderOpener;
 import ij.util.*;
 import ij.macro.*;
 import ij.measure.*;
@@ -30,6 +31,7 @@ import ij.plugin.OverlayCommands;
 /** This plugin implements the Analyze/Tools/ROI Manager command. */
 public class RoiManager extends PlugInFrame implements ActionListener, ItemListener, MouseListener, MouseWheelListener, ListSelectionListener, Iterable<Roi> {
 	public static final String LOC_KEY = "manager.loc";
+	private static final String MULTI_CROP_DIR = "multi-crop.dir";
 	private static final int BUTTONS = 11;
 	private static final int DRAW=0, FILL=1, LABEL=2;
 	private static final int SHOW_ALL=0, SHOW_NONE=1, LABELS=2, NO_LABELS=3;
@@ -73,6 +75,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private double translateX = 10.0;
 	private double translateY = 10.0;
 	private static String errorMessage;
+	boolean multiCropShow = true;
+	boolean multiCropSave;
 
 
 	/** Opens the "ROI Manager" window, or activates it if it is already open.
@@ -1290,17 +1294,75 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 		
 	private void multiCrop() {
-		GenericDialog gd = new GenericDialog("Crop and Save");
+		ImagePlus imp = getImage();
+		if (imp==null)
+			return;
+		int[] indexes = getIndexes();
+		int n = indexes.length;
+		String directory = Prefs.get(MULTI_CROP_DIR, IJ.getDir("downloads")+"stack/");
+		String[] formats = {"tif", "png", "jpg"};
+		GenericDialog gd = new GenericDialog("Multi Crop");
+		gd.addDirectoryField("Dir:", directory);
+		gd.addChoice("Format:", formats, formats[0]);
+		gd.addCheckbox("Show "+n+" cropped images:", multiCropShow);
+		gd.addCheckbox("Save "+n+" cropped images:", multiCropSave);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
-		String dir = "/path/to/dir/";
-		String options = "png";
+		directory = gd.getNextString();
+		directory = IJ.addSeparator(directory);
+		Prefs.set(MULTI_CROP_DIR, directory);
+		String format = gd.getNextChoice();		
+		multiCropShow = gd.getNextBoolean();
+		multiCropSave = gd.getNextBoolean();
+		String options = "";
+		if (multiCropShow) options += " show";
+		if (multiCropSave) {
+			options += " save";
+			options += " "+format;
+		}
 		if (record()) {
 			if (Recorder.scriptMode())
-				Recorder.recordCall("rm.cropAndSave(\""+dir+"\", \""+options+"\");");
+				Recorder.recordCall("rm.multiCrop(\""+directory+"\", \""+options+"\");");
 			else
-				Recorder.record("RoiManager.cropAndSave", dir, options);
+				Recorder.record("RoiManager.multiCrop", directory, options);
+		}
+		multiCrop(directory, options);
+	}
+	
+	public void multiCrop(String directory, String options) {
+		ImagePlus imp = getImage();
+		if (imp==null)
+			return;
+		Roi[] rois = getSelectedRoisAsArray();
+		ImagePlus[] images = imp.crop(rois);
+		if (options==null) options = "";
+		if (options.contains("show") && !options.contains("save")) {
+			ImageStack stack = ImageStack.create(images);
+			new ImagePlus("CROPPED_"+getTitle(),stack).show();
+			return;
+		}
+		if (options.contains("save")) {
+			String format = "tif";
+			if (options.contains("png")) format = "png";
+			if (options.contains("jpg")) format = "jpg";
+			for (int i=0; i<images.length; i++) {
+				Rectangle bounds = rois[i].getBounds();
+				String title = IJ.pad(bounds.x,4)+"-"+IJ.pad(bounds.y,4);
+				String path = directory + title + "." + format;
+				IJ.saveAs(images[i], format, path);
+			}
+			if (options.contains("show")) {
+				int width = 1;
+				int height = 1;
+				for (int i=0; i<rois.length; i++) {
+					Rectangle bounds = rois[i].getBounds();
+					if (bounds.width>width) width = bounds.width;
+					if (bounds.height>height) height = bounds.height;
+				}
+				imp = FolderOpener.open(directory, width, height, "virtual");
+				if (imp!=null) imp.show();
+			}
 		}
 	}
 

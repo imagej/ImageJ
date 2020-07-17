@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53d30  16 July 2020</u>
+<li> <u>1.53d31  17 July 2020</u>
 <ul>
 <li> The <i>File&gt;Import&gt;Image Sequence</i> and
 <i>File&gt;Save As&gt;Image Sequence</i> comnands get the
@@ -15,6 +15,8 @@ in Fiji's GenericDialogPlus class.
 <li> The <i>File&gt;Import&gt;AVI</i> comnand gets the path to
 the AVI file using the new GenericDialog.addFileField() method,
 which is also from Fiji's GenericDialogPlus class.
+<li> Thanks to Laurent Thomas, added the <i>More&gt;&gt;Multi Crop</i>
+command to the ROI Manager.
 <li> Thanks to William Berndt, added the <i>Image&gt;Type&gt;HSB (32-bit)</i>
 command.
 <li> Thanks to Jerome Mutterer, the Color Picker now has a clipboard-copyable
@@ -35,6 +37,8 @@ and the GenericDialog.addFileField() method.
 <li> Added the Overlay.cropAndSave() macro function DOCUMENT
 and the ImagePlus.cropAndSave() method
 (<a href="http://wsr.imagej.net/macros/tools/Square_Tool.ijm">example</a>).
+<li> Thanks to Laurent Thomas, added the RoiManager.multiCrop() DOCUMENT
+macro function and RoiManager.multiCrop() method.
 <li> Thanks to Philippe Carl and Michael Schmid, added the
  LutLoader.getLut() method. For an example, run
 <i>Help&gt;Examples&gt;JavaScript&gt;Show all LUTs</i>.

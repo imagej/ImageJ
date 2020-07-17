@@ -7782,6 +7782,9 @@ public class Functions implements MacroConstants, Measurements {
 			int position = (int)getArg();
 			rm.setPosition(position);
 			return null;
+		} else if (name.equals("multiCrop")) {
+			rm.multiCrop(getFirstString(),getLastString());
+			return null;
 		} else
 			interp.error("Unrecognized RoiManager function");
 		return null;
