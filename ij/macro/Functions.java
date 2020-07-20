@@ -5713,7 +5713,9 @@ public class Functions implements MacroConstants, Measurements {
 		String name = null;
 		double[] initialValues = null;
 		if (isStringArg()) {
-			name = getString().toLowerCase(Locale.US);
+			name = getString();
+			if (!name.contains("Math."))
+				name = name.toLowerCase(Locale.US);
 			String[] list = CurveFitter.fitList;
 			for (int i=0; i<list.length; i++) {
 				if (name.equals(list[i].toLowerCase(Locale.US))) {

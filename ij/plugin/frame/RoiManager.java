@@ -75,9 +75,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private double translateX = 10.0;
 	private double translateY = 10.0;
 	private static String errorMessage;
-	boolean multiCropShow = true;
-	boolean multiCropSave;
-
+	private boolean multiCropShow = true;
+	private boolean multiCropSave;
+	private int multiCropFormatIndex;
 
 	/** Opens the "ROI Manager" window, or activates it if it is already open.
 	 * @see #RoiManager(boolean)
@@ -1303,7 +1303,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		String[] formats = {"tif", "png", "jpg"};
 		GenericDialog gd = new GenericDialog("Multi Crop");
 		gd.addDirectoryField("Dir:", directory);
-		gd.addChoice("Format:", formats, formats[0]);
+		gd.addChoice("Format:", formats, formats[multiCropFormatIndex]);
 		gd.addCheckbox("Show "+n+" cropped images:", multiCropShow);
 		gd.addCheckbox("Save "+n+" cropped images:", multiCropSave);
 		gd.showDialog();
@@ -1312,7 +1312,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		directory = gd.getNextString();
 		directory = IJ.addSeparator(directory);
 		Prefs.set(MULTI_CROP_DIR, directory);
-		String format = gd.getNextChoice();		
+		multiCropFormatIndex = gd.getNextChoiceIndex();
+		String format = formats[multiCropFormatIndex];	
 		multiCropShow = gd.getNextBoolean();
 		multiCropSave = gd.getNextBoolean();
 		String options = "";
@@ -1322,6 +1323,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			options += " "+format;
 		}
 		if (record()) {
+			if (IJ.isWindows())
+				directory = directory.replaceAll("\\\\", "/");  // replace "\" with "/"
 			if (Recorder.scriptMode())
 				Recorder.recordCall("rm.multiCrop(\""+directory+"\", \""+options+"\");");
 			else
@@ -1334,13 +1337,18 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImagePlus imp = getImage();
 		if (imp==null)
 			return;
+		Roi roiOrig = imp.getRoi();
 		Roi[] rois = getSelectedRoisAsArray();
 		ImagePlus[] images = imp.crop(rois);
 		if (options==null) options = "";
-		if (options.contains("show") && !options.contains("save")) {
-			ImageStack stack = ImageStack.create(images);
-			new ImagePlus("CROPPED_"+getTitle(),stack).show();
-			return;
+		if (options.contains("show")) {
+			ImageStack stack = ImageStack.create(images);			
+			ImagePlus imgStack = new ImagePlus("CROPPED_"+getTitle(),stack);
+			Overlay overlay = Overlay.createStackOverlay(rois);
+			imgStack.setOverlay(overlay);
+			imgStack.show();
+			if (roiOrig==null)
+				imp.deleteRoi();
 		}
 		if (options.contains("save")) {
 			String format = "tif";
@@ -1352,6 +1360,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				String path = directory + title + "." + format;
 				IJ.saveAs(images[i], format, path);
 			}
+			/*
 			if (options.contains("show")) {
 				int width = 1;
 				int height = 1;
@@ -1363,6 +1372,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				imp = FolderOpener.open(directory, width, height, "virtual");
 				if (imp!=null) imp.show();
 			}
+			*/
 		}
 	}
 

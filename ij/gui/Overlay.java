@@ -496,9 +496,10 @@ public class Overlay implements Iterable<Roi> {
 	public static Overlay createStackOverlay(Roi[] rois) {
 		Overlay overlay = new Overlay();
 		for (int i=0; i<rois.length; i++) {
-			rois[i].setLocation(0,0);
-			rois[i].setPosition(i+1);
-			overlay.add(rois[i]);
+			Roi roi = (Roi)rois[i].clone();
+			roi.setLocation(0,0);
+			roi.setPosition(i+1);
+			overlay.add(roi);
 		}
 		return overlay;
 	}

@@ -1753,49 +1753,49 @@ public class IJ {
 		Also aborts the macro if the user cancels
 		the dialog box.*/
 	public static String getDirectory(String title) {
+		String dir = null;
 		String title2 = title.toLowerCase(Locale.US);
 		if (title2.equals("plugins"))
-			return Menus.getPlugInsPath();
+			dir = Menus.getPlugInsPath();
 		else if (title2.equals("macros"))
-			return Menus.getMacrosPath();
+			dir = Menus.getMacrosPath();
 		else if (title2.equals("luts")) {
 			String ijdir = Prefs.getImageJDir();
 			if (ijdir!=null)
-				return ijdir + "luts" + File.separator;
+				dir = ijdir + "luts" + File.separator;
 			else
-				return null;
+				dir = null;
 		} else if (title2.equals("home"))
-			return System.getProperty("user.home") + File.separator;
+			dir = System.getProperty("user.home");
 		else if (title2.equals("downloads"))
-			return System.getProperty("user.home")+File.separator+"Downloads"+File.separator;
+			dir = System.getProperty("user.home")+File.separator+"Downloads";
 		else if (title2.equals("startup"))
-			return Prefs.getImageJDir();
+			dir = Prefs.getImageJDir();
 		else if (title2.equals("imagej"))
-			return Prefs.getImageJDir();
+			dir = Prefs.getImageJDir();
 		else if (title2.equals("current") || title2.equals("default"))
-			return OpenDialog.getDefaultDirectory();
+			dir = OpenDialog.getDefaultDirectory();
 		else if (title2.equals("temp")) {
-			String dir = System.getProperty("java.io.tmpdir");
+			dir = System.getProperty("java.io.tmpdir");
 			if (isMacintosh()) dir = "/tmp/";
-			dir = addSeparator(dir);
-			return dir;
 		} else if (title2.equals("image")) {
 			ImagePlus imp = WindowManager.getCurrentImage();
 			FileInfo fi = imp!=null?imp.getOriginalFileInfo():null;
 			if (fi!=null && fi.directory!=null) {
-				String dir = fi.directory;
-				dir = addSeparator(dir);
-				return dir;
+				dir = fi.directory;
 			} else
-				return null;
+				dir = null;
 		} else if (title2.equals("file")) {
-			return OpenDialog.getLastDirectory();
+			dir = OpenDialog.getLastDirectory();
 		} else {
 			DirectoryChooser dc = new DirectoryChooser(title);
-			String dir = dc.getDirectory();
+			dir = dc.getDirectory();
 			if (dir==null) Macro.abort();
-			return dir;
 		}
+		dir = addSeparator(dir);
+		if (isWindows())
+			dir = dir.replaceAll("\\\\", "/");  // replace "\" with "/"
+		return dir;
 	}
 	
 	public static String addSeparator(String path) {
