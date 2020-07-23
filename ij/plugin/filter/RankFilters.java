@@ -3,32 +3,43 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.plugin.ContrastEnhancer;
+import ij.util.ThreadUtil;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Arrays;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
 
-/** This plugin implements the Mean, Minimum, Maximum, Variance, Median, Open Maxima, Close Maxima,
+
+/** This plugin implements the Mean, Minimum, Maximum, Variance, Median,
  *	Remove Outliers, Remove NaNs and Despeckle commands.
  */
  // Version 2012-07-15 M. Schmid:	Fixes a bug that could cause preview not to work correctly
  // Version 2012-12-23 M. Schmid:	Test for inverted LUT only once (not in each slice)
  // Version 2014-10-10 M. Schmid:   Fixes a bug that caused Threshold=0 when calling from API
+ // Version 2019-07-26 M. Schmid:   Nonblocking dialog enabled
+ // Version 2020-07-17 M. Schmid:   bugfix: changing preview parameters could lead to partial filtering with different parameters.
+ //                                 Uses AtomicIntegers. Top-hat filter added
 
 public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 	public static final int	 MEAN=0, MIN=1, MAX=2, VARIANCE=3, MEDIAN=4, OUTLIERS=5, DESPECKLE=6, REMOVE_NAN=7,
-			OPEN=8, CLOSE=9;
+			OPEN=8, CLOSE=9, TOP_HAT=10; //when adding a new filter, set HIGHEST_FILTER below.
 	public static final int BRIGHT_OUTLIERS = 0, DARK_OUTLIERS = 1;
 	private static final String[] outlierStrings = {"Bright","Dark"};
-	private static int HIGHEST_FILTER = CLOSE;
+	private static int HIGHEST_FILTER = TOP_HAT;
 	// Filter parameters
-	private double radius;
-	private double threshold;
-	private int whichOutliers;
 	private int filterType;
+	private double radius;
+	private double threshold;        //this and the next for 'remove outliers' only
+	private int whichOutliers;
+	private boolean lightBackground = Prefs.get("bs.background", true); //this and the next for top hat only
+	private boolean dontSubtract;
 	// Remember filter parameters for the next time
 	private static double[] lastRadius = new double[HIGHEST_FILTER+1]; //separate for each filter type
 	private static double lastThreshold = 50.;
 	private static int lastWhichOutliers = BRIGHT_OUTLIERS;
+	private static boolean lastLightBackground = false;
+	private static boolean lastDontSubtract = false;
 	//
 	// F u r t h e r   c l a s s   v a r i a b l e s
 	int flags = DOES_ALL|SUPPORTS_MASKING|KEEP_PREVIEW;
@@ -36,16 +47,20 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 	private int nPasses = 1;			// The number of passes (color channels * stack slices)
 	private PlugInFilterRunner pfr;
 	private int pass;
+	private boolean previewing = false;
 	// M u l t i t h r e a d i n g - r e l a t e d
 	private int numThreads = Prefs.getThreads();
-	// Current state of processing is in class variables. Thus, stack parallelization must be done
-	// ONLY with one thread for the image (not using these class variables):
-	private int highestYinCache;		// the highest line read into the cache so far
-	private boolean threadWaiting;		// a thread waits until it may read data
-	private boolean copyingToCache;		// whether a thread is currently copying data to the cache
+	// The current state of multithreaded processing is in class variables.
+	// Thus, stack parallelization must be done ONLY with one thread for the image
+	// (not using these class variables).
+	// Atomic objects are used to avoid caching (i.e., to ensure that always the current state of the variable is read).
+	private AtomicInteger highestYinCache = new AtomicInteger(Integer.MIN_VALUE);	// the highest line read into the cache so far
+	private AtomicInteger nThreadsWaiting = new AtomicInteger(0);			// number of threads waiting until they may read data
+	private AtomicBoolean copyingToCache  = new AtomicBoolean(false);		// whether a thread is currently copying data to the cache
 
+	/** OPEN, CLOSE, TOPHAT need more than one run of the underlying filter */
 	private boolean isMultiStepFilter(int filterType) {
-		return filterType>=OPEN;
+		return filterType>=OPEN && filterType<=TOP_HAT;
 	}
 
 	/** Setup of the PlugInFilter. Returns the flags specifying the capabilities and needs
@@ -72,19 +87,16 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 			filterType = OUTLIERS;
 		else if (arg.equals("despeckle"))
 			filterType = DESPECKLE;
-		else if (arg.equals("close"))
-			filterType = CLOSE;
-		else if (arg.equals("open"))
-			filterType = OPEN;
+		else if (arg.equals("tophat"))
+			filterType = TOP_HAT;
 		else if (arg.equals("nan")) {
 			filterType = REMOVE_NAN;
 			if (imp!=null && imp.getBitDepth()!=32) {
 				IJ.error("RankFilters","\"Remove NaNs\" requires a 32-bit image");
 				return DONE;
 			}
-		} else if (arg.equals("final")) {	//after variance filter, adjust brightness&contrast
-			if (imp!=null  && imp.getBitDepth()!=8 && imp.getBitDepth()!=24 && imp.getRoi()==null)
-			new ContrastEnhancer().stretchHistogram(imp.getProcessor(), 0.5);
+		} else if (arg.equals("final")) {	//after variance && tophat filter, adjust brightness&contrast
+			setDisplayRange(imp.getProcessor());
 		} else if (arg.equals("masks")) {
 			showMasks();
 			return DONE;
@@ -96,7 +108,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 			Roi roi = imp.getRoi();
 			if (roi!=null && !roi.getBounds().contains(new Rectangle(imp.getWidth(), imp.getHeight())))
 				//Roi < image? (actually tested: NOT (Roi>=image))
-				flags |= SNAPSHOT;			//snapshot for resetRoiBoundary
+				flags |= SNAPSHOT;			//snapshot for resetRoiBoundary, also for top-hat subtraction
 		}
 		return flags;
 	}
@@ -106,19 +118,25 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 			filterType = MEDIAN;
 			radius = 1.0;
 		} else {
-			GenericDialog gd = NonBlockingGenericDialog.newDialog(command+"...",imp);
+			GenericDialog gd = NonBlockingGenericDialog.newDialog(command,imp);
 			radius = lastRadius[filterType]<=0 ? 2 :  lastRadius[filterType];
 			gd.addNumericField("Radius", radius, 1, 6, "pixels");
-			int digits = imp.getType() == ImagePlus.GRAY32 ? 2 : 0;
 			if (filterType==OUTLIERS) {
+				int digits = imp.getType() == ImagePlus.GRAY32 ? 2 : 0;
 				gd.addNumericField("Threshold", lastThreshold, digits);
 				gd.addChoice("Which outliers", outlierStrings, outlierStrings[lastWhichOutliers]);
 				gd.addHelp(IJ.URL+"/docs/menus/process.html#outliers");
-			} else if (filterType==REMOVE_NAN)
+			} else if (filterType==REMOVE_NAN) {
 				gd.addHelp(IJ.URL+"/docs/menus/process.html#nans");
+			} else if (filterType==TOP_HAT) {
+				gd.addCheckbox("Light Background", lastLightBackground);
+				gd.addCheckbox("Don't subtract (grayscale open)", lastDontSubtract);
+			}
 			gd.addPreviewCheckbox(pfr);		//passing pfr makes the filter ready for preview
 			gd.addDialogListener(this);		//the DialogItemChanged method will be called on user input
-			gd.showDialog();				//display the dialog; preview runs in the  now
+			previewing = true;
+			gd.showDialog();				//display the dialog; preview may run now
+			previewing = false;
 			if (gd.wasCanceled()) return DONE;
 			IJ.register(this.getClass());	//protect static class variables (filter parameters) from garbage collection
 			if (Macro.getOptions() == null) { //interactive only: remember parameters entered
@@ -126,6 +144,9 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 				if (filterType == OUTLIERS) {
 					lastThreshold = threshold;
 					lastWhichOutliers = whichOutliers;
+				} else if (filterType==TOP_HAT) {
+					lastLightBackground = lightBackground;
+					lastDontSubtract = dontSubtract;
 				}
 			}
 		}
@@ -141,7 +162,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 			double workToDo = size*(double)radius;	//estimate computing time (arb. units)
 			if (filterType==MEAN || filterType==VARIANCE) workToDo *= 0.5;
 			else if (filterType==MEDIAN) workToDo *= radius*0.5;
-			if (workToDo < 1e6 && imp.getImageStackSize()>=numThreads) {
+			if (workToDo < 1e6 && imp.getImageStackSize()>=2*numThreads) {
 				numThreads = 1;				//for fast operations, avoid overhead of multi-threading in each image
 				flags |= PARALLELIZE_STACKS;
 			}
@@ -154,20 +175,31 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		if (filterType == OUTLIERS) {
 			threshold = gd.getNextNumber();
 			whichOutliers = gd.getNextChoiceIndex();
+		} else if (filterType==TOP_HAT || filterType==OPEN || filterType==CLOSE) {
+			lightBackground = gd.getNextBoolean();
+			dontSubtract = gd.getNextBoolean();
 		}
 		int maxRadius = (filterType==MEDIAN || filterType==OUTLIERS || filterType==REMOVE_NAN) ? 100 : 1000;
 		if (gd.invalidNumber() || radius<0 || radius>maxRadius || (filterType==OUTLIERS && threshold <0))
 			return false;
+		if (filterType == TOP_HAT) {
+			if (dontSubtract)
+				flags &= ~FINAL_PROCESSING;	//grayscale open: keep display range
+			else
+				flags |= FINAL_PROCESSING;	//top-hat: readjust display range
+		}
 		return true;
 	}
 
 	public void run(ImageProcessor ip) {
-		rank(ip, radius, filterType, whichOutliers, (float)threshold);
+		rank(ip, radius, filterType, whichOutliers, (float)threshold, lightBackground, dontSubtract);
 		if (IJ.escapePressed())									// interrupted by user?
 			ip.reset();
+		else if (previewing && (flags&FINAL_PROCESSING)!=0)
+			setDisplayRange(ip);
 	}
 
-	/** Filters an image by any method except 'despecle' or 'remove outliers'.
+	/** Filters an image by any method except 'despecle', 'remove outliers', or top-hat
 	 *	@param ip	   The ImageProcessor that should be filtered (all 4 types supported)
 	 *	@param radius  Determines the kernel size, see Process>Filters>Show Circular Masks.
 	 *				   Must not be negative. No checking is done for large values that would
@@ -178,7 +210,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		rank(ip, radius, filterType, 0, 50f);
 	}
 
-	/** Filters an image by any method except 'despecle' (for 'despeckle', use 'median' and radius=1)
+	/** Filters an image by any method except 'despecle' and top-hat (for 'despeckle', use 'median' and radius=1)
 	 * @param ip The image subject to filtering
 	 * @param radius The kernel radius
 	 * @param filterType as defined above; DESPECKLE is not a valid type here; use median and
@@ -187,21 +219,53 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 	 * @param threshold Threshold for 'outliers' filter
 	 */
 	public void rank(ImageProcessor ip, double radius, int filterType, int whichOutliers, float threshold) {
+		rank(ip, radius, filterType, whichOutliers, threshold, false, false);
+	}
+
+	/** Filters an image by any method except 'despecle' (for 'despeckle', use 'median' and radius=1)
+	 * @param ip The image subject to filtering
+	 * @param radius The kernel radius
+	 * @param filterType as defined above; DESPECKLE is not a valid type here; use median and
+	 *		  a radius of 1.0 instead
+	 * @param whichOutliers BRIGHT_OUTLIERS or DARK_OUTLIERS for 'outliers' filter
+	 * @param threshold Threshold for 'outliers' filter
+	 * @param lightBackground for top-hat background subtraction, background is light, not dark
+	 * @param dontSubtract fpr top-hat filter, performs a grayscale open or close instead of top-hat,
+	 *        where the result of grayscale open/close is subtracted from the original.
+	 */
+	public void rank(ImageProcessor ip, double radius, int filterType, int whichOutliers, float threshold, boolean lightBackground, boolean dontSubtract) {
 		Rectangle roi = ip.getRoi();
 		ImageProcessor mask = ip.getMask();
 		Rectangle roi1 = null;
 		int[] lineRadii = makeLineRadii(radius);
 
-		float minMaxOutliersSign = filterType==MIN ? -1f : 1f;
+		boolean snapshotRequired = (filterType==TOP_HAT && !dontSubtract) ||
+			(isMultiStepFilter(filterType) && (roi.width!=ip.getWidth() || roi.height!=ip.getHeight()));
+		if (snapshotRequired && ip.getSnapshotPixels()==null)
+			ip.snapshot();
+
+		float minMaxOutliersSign = filterType==MIN || filterType==OPEN ? -1f : 1f; //open is minimum first
 		if (filterType == OUTLIERS)		//sign is -1 for high outliers: compare number with minimum
 			minMaxOutliersSign = (ip.isInvertedLut()==(whichOutliers==DARK_OUTLIERS)) ? -1f : 1f;
 
+		if (filterType == TOP_HAT) {
+			boolean invertedLut = ip.isInvertedLut();
+			boolean invert = (invertedLut && !lightBackground) || (!invertedLut && lightBackground);
+			minMaxOutliersSign = invert ? 1f : -1f;
+		}
+
+		ImageProcessor snapIp = null;
+		FloatProcessor fp = null, snapFp = null;
 		boolean isImagePart = (roi.width<ip.getWidth()) || (roi.height<ip.getHeight());
-		boolean[] aborted = new boolean[1];						// returns whether interrupted during preview or ESC pressed
+		AtomicInteger nextY = new AtomicInteger();		// becomes negative when interrupted during preview or ESC pressed
+		if (filterType == TOP_HAT && !dontSubtract) {
+			snapIp = ip.createProcessor(ip.getWidth(), ip.getHeight());
+			snapIp.setPixels(ip.getSnapshotPixels());
+		}
 		for (int ch=0; ch<ip.getNChannels(); ch++) {
 			int filterType1 = filterType;
-			if (isMultiStepFilter(filterType)) {
-				filterType1 = (filterType==OPEN) ? MIN : MAX;
+			if (isMultiStepFilter(filterType)) { //open, close, top-hat
+				filterType1 = (minMaxOutliersSign == -1f) ? MIN : MAX;
 					if (isImagePart) { //composite filters ('open maxima' etc.) need larger area in first step
 					int kRadius = kRadius(lineRadii);
 					int kHeight = kHeight(lineRadii);
@@ -211,28 +275,43 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 					ip.setRoi(roi1);
 				}
 			}
-			doFiltering(ip, lineRadii, filterType1, minMaxOutliersSign, threshold, ch, aborted);
-			if (aborted[0]) break;
-			if (isMultiStepFilter(filterType)) {
+			doFiltering(ip, lineRadii, filterType1, minMaxOutliersSign, threshold, ch, nextY);
+			if (isMultiStepFilter(filterType)) { //open, close, top-hat
 				ip.setRoi(roi);
 				ip.setMask(mask);
-				int filterType2 = (filterType==OPEN) ? MAX : MIN;
-				doFiltering(ip, lineRadii, filterType2, minMaxOutliersSign, threshold, ch, aborted);
-				if (aborted[0]) break;
+				if (nextY.get() < 0) break;
+				int filterType2 = (minMaxOutliersSign == -1f) ? MAX : MIN;
+				doFiltering(ip, lineRadii, filterType2, -minMaxOutliersSign, threshold, ch, nextY);
 				if (isImagePart)
 					resetRoiBoundary(ip, roi, roi1);
 			}
+			if (nextY.get() < 0) break;
+
+			if (filterType == TOP_HAT && !dontSubtract) {   //top-hat filter: Subtract opened from input
+				float offset = 0;
+				if (minMaxOutliersSign == 1f && !(ip instanceof FloatProcessor))
+					offset = (float)ip.maxValue();          //background is maximum of possible range (255 or 65535)
+				fp = ip.toFloat(ch, fp);
+				snapFp = snapIp.toFloat(ch, snapFp);
+				float[] pixels = (float[])fp.getPixels();
+				float[] snapPixels = (float[])snapFp.getPixels();
+				int width = ip.getWidth();
+				for (int y=roi.y; y<roi.y+roi.height; y++)
+					for (int ix=0, p=y*width+roi.x; ix<roi.width; ix++, p++)
+						pixels[p] = snapPixels[p] - pixels[p] + offset;
+				ip.setPixels(ch, fp);
+			}
 		}
+
 	}
 
 	// Filter a grayscale image or one channel of an RGB image with several threads
 	// Implementation: each thread uses the same input buffer (cache), always works on the next unfiltered line
 	// Usually, one thread reads reads several lines into the cache, while the others are processing the data.
-	// 'aborted[0]' is set if the main thread has been interrupted (during preview) or ESC pressed.
-	// 'aborted' must not be a class variable because it signals the other threads to stop; and this may be caused
-	// by an interrupted preview thread after the main calculation has been started.
+	// 'nextY.get()' is set to a large negative number if the main thread has been interrupted (during preview) or ESC pressed.
+	// 'nextY' must not be a class variable because it is also used with one thread (with stack parallelization)
 	private void doFiltering(final ImageProcessor ip, final int[] lineRadii, final int filterType,
-			final float minMaxOutliersSign, final float threshold, final int colorChannel, final boolean[] aborted) {
+			final float minMaxOutliersSign, final float threshold, final int colorChannel, final AtomicInteger nextY) {
 		Rectangle roi = ip.getRoi();
 		int width = ip.getWidth();
 		Object pixels = ip.getPixels();
@@ -246,39 +325,30 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		final int cacheHeight = kHeight + (numThreads>1 ? 2*numThreads : 0);
 		// 'cache' is the input buffer. Each line y in the image is mapped onto cache line y%cacheHeight
 		final float[] cache = new float[cacheWidth*cacheHeight];
-		highestYinCache = Math.max(roi.y-kHeight/2, 0) - 1; //this line+1 will be read into the cache first
+		highestYinCache.set(Math.max(roi.y-kHeight/2, 0) - 1); //this line+1 will be read into the cache first
 
-		final int[] yForThread = new int[numThreads];		//threads announce here which line they currently process
-		Arrays.fill(yForThread, -1);
-		yForThread[numThreads-1] = roi.y-1;					//first thread started should begin at roi.y
-		//IJ.log("going to filter lines "+roi.y+"-"+(roi.y+roi.height-1)+"; cacheHeight="+cacheHeight);
-		final Thread[] threads = new Thread[numThreads-1];	//thread number 0 is this one, not in the array
-		for (int t=numThreads-1; t>0; t--) {
-			final int ti=t;
-			final Thread thread = new Thread(
-					new Runnable() {
-						final public void run() {
-							doFiltering(ip, lineRadii, cache, cacheWidth, cacheHeight,
-									filterType, minMaxOutliersSign, threshold, colorChannel,
-									yForThread, ti, aborted);
-						}
-					},
-			"RankFilters-"+t);
-			thread.setPriority(Thread.currentThread().getPriority());
-			thread.start();
-			threads[ti-1] = thread;
+		final AtomicIntegerArray yForThread = new AtomicIntegerArray(numThreads);	//threads announce here which line they currently process
+		for (int i=0; i<numThreads; i++)
+			yForThread.set(i, -1);
+		nextY.set(roi.y);										//first thread started should begin at roi.y
+		Callable[] callables = new Callable[numThreads-1];
+		for (int i=0; i<numThreads-1; i++) {
+			final int threadNumber = i+1; // number 0 is reserved for main thread
+			callables[i] = new Callable<Void>() {
+				final public Void call() {
+					doFiltering(ip, lineRadii, cache, cacheWidth, cacheHeight,
+							filterType, minMaxOutliersSign, threshold, colorChannel,
+							yForThread, threadNumber, nextY);
+					return null;
+				}
+			};
 		}
+		Future[] futures = ThreadUtil.start(callables);
 
 		doFiltering(ip, lineRadii, cache, cacheWidth, cacheHeight,
 				filterType, minMaxOutliersSign, threshold, colorChannel,
-				yForThread, 0, aborted);
-		for (final Thread thread : threads)
-			try {
-					if (thread != null) thread.join();
-			} catch (InterruptedException e) {
-				aborted[0] = true;
-				Thread.currentThread().interrupt();	  //keep interrupted status (PlugInFilterRunner needs it)
-			}
+				yForThread, /*threadNumber=*/0, nextY);
+		ThreadUtil.joinAll(futures);
 		showProgress(1.0, ip instanceof ColorProcessor);
 		pass++;
 	}
@@ -308,8 +378,8 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 	// operation than the median.
 	private void doFiltering(ImageProcessor ip, int[] lineRadii, float[] cache, int cacheWidth, int cacheHeight,
 			int filterType, float minMaxOutliersSign, float threshold, int colorChannel,
-			int [] yForThread, int threadNumber, boolean[] aborted) {
-		if (aborted[0] || Thread.currentThread().isInterrupted()) return;
+			AtomicIntegerArray yForThread, int threadNumber, AtomicInteger nextY) {
+		if (nextY.get() < 0 || Thread.currentThread().isInterrupted()) return;
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		Rectangle roi = ip.getRoi();
@@ -343,17 +413,21 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		float maxValue = isFloat ? Float.NaN : (float)ip.maxValue();
 		float[] values = isFloat ? (float[])pixels : new float[roi.width];
 
-		int numThreads = yForThread.length;
+		int numThreads = yForThread.length();
 		long lastTime = System.currentTimeMillis();
 		int previousY = kHeight/2-cacheHeight;
 		boolean rgb = ip instanceof ColorProcessor;
 
-		while (!aborted[0]) {
-			int y = arrayMax(yForThread) + 1;		// y of the next line that needs processing
-			yForThread[threadNumber] = y;
-			//IJ.log("thread "+threadNumber+" @y="+y+" needs"+(y-kHeight/2)+"-"+(y+kHeight/2)+" highestYinC="+highestYinCache);
-			boolean threadFinished = y >= roi.y+roi.height;
-			if (numThreads>1 && (threadWaiting || threadFinished))		// 'if' is not synchronized to avoid overhead
+		while (true) {
+			int y = nextY.getAndIncrement();		// y of the next line that needs processing
+			if (y >= 0)
+				yForThread.set(threadNumber, y);
+			//IJ.log("thread "+threadNumber+" @y="+y+" needs"+(y-kHeight/2)+"-"+(y+kHeight/2)+" highestYinC="+highestYinCache.get());
+			boolean threadFinished = y >= roi.y+roi.height || y < 0;	// y<0 if aborted
+			if (numThreads>1 && (nThreadsWaiting.get()>0 || threadFinished))		// 'if' is not synchronized to avoid overhead
+				//If nThreadsWaiting gets incremented to 1 after the 'if' by another thread, there will be no notifyAll.
+				//This is not an issue since the the other thread rechecking for a slow thread (synchronized, ~30 lines below)
+				//will not see the current thread being slow any more, so that other thread will not wait.
 				synchronized(this) {
 					notifyAll();					// we may have blocked another thread
 					//IJ.log("thread "+threadNumber+" @y="+y+" notifying");
@@ -367,7 +441,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 					lastTime = time;
 					showProgress((y-roi.y)/(double)(roi.height), rgb);
 					if (Thread.currentThread().isInterrupted() || (imp!= null && IJ.escapePressed())) {
-						aborted[0] = true;
+						nextY.set(Integer.MIN_VALUE);
 						synchronized(this) {notifyAll();}
 						return;
 					}
@@ -380,19 +454,20 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 
 			if (numThreads>1) {							// thread synchronization
 				int slowestThreadY = arrayMinNonNegative(yForThread); // non-synchronized check to avoid overhead
+
 				if (y - slowestThreadY + kHeight > cacheHeight) {	// we would overwrite data needed by another thread
+					nThreadsWaiting.incrementAndGet();
 					synchronized(this) {
 						slowestThreadY = arrayMinNonNegative(yForThread); //recheck whether we have to wait
 						if (y - slowestThreadY + kHeight > cacheHeight) {
 							do {
-								notifyAll();			// avoid deadlock: wake up others waiting
-								threadWaiting = true;
+								//notifyAll();			// avoid deadlock: wake up others waiting
 								//IJ.log("Thread "+threadNumber+" waiting @y="+y+" slowest@y="+slowestThreadY);
 								try {
 									wait();
-									if (aborted[0]) return;
+									if (nextY.get() < 0) return;
 								} catch (InterruptedException e) {
-									aborted[0] = true;
+									nextY.set(Integer.MIN_VALUE);
 									notifyAll();
 									Thread.currentThread().interrupt(); //keep interrupted status (PlugInFilterRunner needs it)
 									return;
@@ -400,8 +475,8 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 								slowestThreadY = arrayMinNonNegative(yForThread);
 							} while (y - slowestThreadY + kHeight > cacheHeight);
 						} //if
-						threadWaiting = false;
 					}
+					nThreadsWaiting.decrementAndGet();
 				}
 			}
 
@@ -411,16 +486,16 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 					readLineToCacheOrPad(pixels, width, height, roi.y, xminInside, widthInside,
 							cache, cacheWidth, cacheHeight, padLeft, padRight, colorChannel, kHeight, yNew);
 				}
-			} else {
-				if (!copyingToCache || highestYinCache < y+kHeight/2) synchronized(cache) {
-					copyingToCache = true;				// copy new line(s) into cache
-					while (highestYinCache < arrayMinNonNegative(yForThread) - kHeight/2 + cacheHeight - 1) {
-						int yNew = highestYinCache + 1;
+			} else {										// if no other thread is copying or if the own thread needs the data
+				if (!copyingToCache.get() || highestYinCache.get() < y+kHeight/2) synchronized(cache) {
+					copyingToCache.set(true);				// copy as many new line(s) as possible into the cache
+					while (highestYinCache.get() < arrayMinNonNegative(yForThread) - kHeight/2 + cacheHeight - 1) {
+						int yNew = highestYinCache.get() + 1;
 						readLineToCacheOrPad(pixels, width, height, roi.y, xminInside, widthInside,
 							cache, cacheWidth, cacheHeight, padLeft, padRight, colorChannel, kHeight, yNew);
-						highestYinCache = yNew;
+						highestYinCache.set(yNew);
 					}
-					copyingToCache = false;
+					copyingToCache.set(false);
 				}
 			}
 
@@ -431,21 +506,16 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 			if (!isFloat)		//Float images: data are written already during 'filterLine'
 				writeLineToPixels(values, pixels, roi.x+y*width, roi.width, colorChannel);	// W R I T E
 			//IJ.log("thread "+threadNumber+" @y="+y+" line done");
-		} // while (!aborted[0]); loop over y (lines)
+		} // while (true); loop over y (lines)
 	}
 
-	private int arrayMax(int[] array) {
-		int max = Integer.MIN_VALUE;
-		for (int i=0; i<array.length; i++)
-			if (array[i] > max) max = array[i];
-		return max;
-	}
-
-	//returns the minimum of the array, but not less than 0
-	private int arrayMinNonNegative(int[] array) {
+	//returns the minimum of the array, which may be modified concurrently, but not less than 0
+	private int arrayMinNonNegative(AtomicIntegerArray array) {
 		int min = Integer.MAX_VALUE;
-		for (int i=0; i<array.length; i++)
-			if (array[i]<min) min = array[i];
+		for (int i=0; i<array.length(); i++) {
+			int v = array.get(i);
+			if (v < min) min = v;
+		}
 		return min<0 ? 0 : min;
 	}
 
@@ -763,6 +833,12 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		this.radius = radius;
 	}
 
+	/** Sets the display range after variance and top-hat (16-bit & floating-point images only) */
+	private void setDisplayRange(ImageProcessor ip) {
+		if ((ip instanceof ByteProcessor) || (ip instanceof ColorProcessor)) return;
+		new ContrastEnhancer().stretchHistogram(ip, 0.5);
+	}
+
 	/** Create a circular kernel (structuring element) of a given radius.
 	 *	@param radius
 	 *	Radius = 0.5 includes the 4 neighbors of the pixel in the center,
@@ -854,13 +930,15 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	/** This method is called by ImageJ to set the number of calls to run(ip)
-	 *	corresponding to 100% of the progress bar */
+	 *	corresponding to 100% of the progress bar.
+	 *  Setting nPasses=0 suppresses the progress bar */
 	public void setNPasses (int nPasses) {
 		this.nPasses = nPasses;
 		pass = 0;
 	}
 
 	private void showProgress(double percent, boolean rgb) {
+		if (nPasses==0) return;
 		int nPasses2 = rgb?nPasses*3:nPasses;
 		percent = (double)pass/nPasses2 + percent/nPasses2;
 		IJ.showProgress(percent);

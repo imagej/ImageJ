@@ -457,9 +457,13 @@ public class Opener {
 	public static String updateUrl(String url) {
 		if (url==null || !url.contains("nih.gov"))
 			return url;
-		url = url.replace("imagej.nih.gov/ij", "mirror.imagej.net");
-		url = url.replace("rsb.info.nih.gov/ij", "mirror.imagej.net");
-		url = url.replace("rsbweb.nih.gov/ij", "mirror.imagej.net");
+		if (IJ.isJava18())
+			url = url.replace("http:", "https:");
+		else {
+			url = url.replace("imagej.nih.gov/ij", "mirror.imagej.net");
+			url = url.replace("rsb.info.nih.gov/ij", "mirror.imagej.net");
+			url = url.replace("rsbweb.nih.gov/ij", "mirror.imagej.net");
+		}
 		return url;
 	}
 	

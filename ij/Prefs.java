@@ -232,7 +232,7 @@ public class Prefs {
 		} catch (IOException e) {
 			return("Error loading "+PROPS_NAME);
 		}
-		imagesURL = props.getProperty("images.location");
+		imagesURL = props.getProperty(IJ.isJava18()?"images.location":"images.location2");
 		loadPreferences();
 		loadOptions();
 		guiScale = get(GUI_SCALE, 1.0);
