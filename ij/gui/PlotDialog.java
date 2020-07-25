@@ -504,10 +504,14 @@ public class PlotDialog implements DialogListener {
 		EventQueue.invokeLater(new Runnable() {public void run() {IJ.selectWindow(hiresImp.getID());}});
 
 		if (Recorder.record) {
-			String options = !hiResAntiAliased ? "disable" : "";
-			if (options.length() > 0)
-				options = ",\""+options+"\"";
-			Recorder.recordString("Plot.makeHighResolution(\""+title+"\","+hiResFactor+options+");\n");
+			if (Recorder.scriptMode()) {
+				Recorder.recordCall("plot.makeHighResolution(\""+title+"\","+hiResFactor+","+hiResAntiAliased+",true);");
+			} else {
+				String options = !hiResAntiAliased ? "disable" : "";
+				if (options.length() > 0)
+					options = ",\""+options+"\"";
+				Recorder.recordString("Plot.makeHighResolution(\""+title+"\","+hiResFactor+options+");\n");
+			}
 		}
 	}
 

@@ -7299,7 +7299,9 @@ public class Functions implements MacroConstants, Measurements {
 		Frame frame = null;
 		if (title==null) {
 			frame = WindowManager.getFrontWindow();
-			if (frame!=null && (frame instanceof TextWindow)) {
+			if (!(frame instanceof TextWindow))
+				frame = null;
+			if (frame!=null) {
 				rt = ((TextWindow)frame).getResultsTable();
 				if (rt==null) {
 					if (currentTable!=null)
@@ -7315,13 +7317,28 @@ public class Functions implements MacroConstants, Measurements {
 			return currentTable;
 		if (title==null)
 			title="Results";
-		if (title.equals("Results"))
-			rt = Analyzer.getResultsTable();
-		if (frame==null)
+		if (frame==null) {
 			frame = WindowManager.getFrame(title);
-		if (frame==null)
-			return null;
-		if (!(frame instanceof TextWindow))
+			if (!(frame instanceof TextWindow))
+				frame = null;
+		}
+		if (frame==null) {
+			if (title!=null && !title.equals("Results"))
+				return null;
+			Frame[] frames = WindowManager.getNonImageWindows();
+			if (frames==null) return null;
+			for (int i=0; i<frames.length; i++) {
+				if (frames[i]!=null && (frames[i] instanceof TextWindow) &&
+				!("Results".equals(frames[i].getTitle())||"Log".equals(frames[i].getTitle())))
+					rt = ((TextWindow)frames[i]).getResultsTable();
+				if (rt!=null)
+					break;
+			}
+			if (rt!=null)
+				currentTable = rt;
+			return rt;
+		}
+		if (frame==null || !(frame instanceof TextWindow))
 			return null;
 		rt = ((TextWindow)frame).getResultsTable();
 		currentTable = rt;
