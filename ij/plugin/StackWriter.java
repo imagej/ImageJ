@@ -57,7 +57,10 @@ public class StackWriter implements PlugIn {
 		GenericDialog gd = new GenericDialog("Save Image Sequence");
 		if (!IJ.isMacro())
 			fileType = staticFileType;
-		gd.addDirectoryField("Dir:", directory);
+		gd.setInsets(5, 0, 0);
+		gd.addDirectoryField("Dir:", directory);		
+		gd.setInsets(2, 110, 5);
+		gd.addMessage("drag and drop target", IJ.font10, Color.darkGray);
 		gd.addChoice("Format:", choices, fileType);
 		gd.addStringField("Name:", name, 12);
 		if (!hyperstack)

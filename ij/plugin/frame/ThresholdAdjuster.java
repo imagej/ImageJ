@@ -97,7 +97,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		IJ.register(PasteController.class);
 
 		ij = IJ.getInstance();
-		Font font = new Font("SansSerif", Font.PLAIN, 10);
+		Font font = IJ.font10;
 		GridBagLayout gridbag = new GridBagLayout();
 		GridBagConstraints c = new GridBagConstraints();
 		setLayout(gridbag);

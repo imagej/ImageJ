@@ -38,7 +38,7 @@ public class TextRoi extends Roi {
 	private static boolean firstTime = true;
 	private Roi previousRoi;
 	private Graphics fontGraphics;
-	private static Font defaultFont = ImageJ.SansSerif12;
+	private static Font defaultFont = IJ.font12;
 
 	/** Creates a TextRoi using the defaultFont.*/
 	public TextRoi(int x, int y, String text) {

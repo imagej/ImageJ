@@ -196,7 +196,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			valueAndCount.setLayout(new GridLayout(2,1,0,0));
 			blankLabel = IJ.isMacOSX()?"           ":"                ";
 			value = new Label(blankLabel);
-			Font font = new Font("Monospaced", Font.PLAIN, 12);
+			Font font = IJ.font12;
 			value.setFont(font);
 			valueAndCount.add(value);
 			count = new Label(blankLabel);

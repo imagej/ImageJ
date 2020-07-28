@@ -8,7 +8,7 @@ import javax.swing.UIManager;
 
 /** This class consists of static GUI utility methods. */
 public class GUI {
-	private static final Font DEFAULT_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
+	private static final Font DEFAULT_FONT = IJ.font12;
 	private static Color lightGray = new Color(240,240,240);
 	private static boolean isWindows8;
 	private static Color scrollbarBackground = new Color(245,245,245);

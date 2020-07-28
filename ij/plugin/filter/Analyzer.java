@@ -376,7 +376,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			if (!IJ.isResultsWindow())
 				reset();
 			int index = rt.getColumnIndex("X");
-			if (index<0 || !rt.columnExists(index)) {
+			if ((index<0 || !rt.columnExists(index)) && rt.getLastColumn()<ResultsTable.LAST_HEADING) {
 				clearSummary();
 				rt.update(measurements, imp, roi);
 			}

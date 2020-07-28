@@ -1302,7 +1302,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		String directory = Prefs.get(MULTI_CROP_DIR, IJ.getDir("downloads")+"stack/");
 		String[] formats = {"tif", "png", "jpg"};
 		GenericDialog gd = new GenericDialog("Multi Crop");
-		gd.addDirectoryField("Dir:", directory);
+		gd.setInsets(5, 0, 0);
+		gd.addDirectoryField("Dir:", directory);		
+		gd.setInsets(2, 70, 10);
+		gd.addMessage("drag and drop target", IJ.font10, Color.darkGray);
 		gd.addChoice("Format:", formats, formats[multiCropFormatIndex]);
 		gd.addCheckbox("Show "+n+" cropped images:", multiCropShow);
 		gd.addCheckbox("Save "+n+" cropped images:", multiCropSave);

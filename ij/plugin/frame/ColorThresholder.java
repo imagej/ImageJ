@@ -97,7 +97,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		instance = this;
 
 		ij = IJ.getInstance();
-		Font font = new Font("SansSerif", Font.PLAIN, 10);
+		Font font = IJ.font10;
 		GridBagLayout gridbag = new GridBagLayout();
 		GridBagConstraints c = new GridBagConstraints();
 		setLayout(gridbag);

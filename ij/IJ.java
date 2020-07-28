@@ -31,6 +31,11 @@ import java.math.RoundingMode;
 /** This class consists of static utility methods. */
 public class IJ {
 
+	/** SansSerif, plain, 10-point */
+	public static Font font10 = new Font("SansSerif", Font.PLAIN, 10);
+	/** SansSerif, plain, 12-point */
+	public static Font font12 = ImageJ.SansSerif12;
+	
 	/** Image display modes */
 	public static final int COMPOSITE=1, COLOR=2, GRAYSCALE=3;
 	

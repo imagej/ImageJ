@@ -490,7 +490,10 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 		if (path==null || path.length()==0)
 			path = Prefs.get(PATH_KEY, IJ.getDir("downloads")+"movie.avi");
 		GenericDialog gd = new GenericDialog("AVI Reader");
+		gd.setInsets(5, 0, 0);
 		gd.addFileField("AVI:", path);
+		gd.setInsets(2, 40, 5);
+		gd.addMessage("drag and drop target", IJ.font10, Color.darkGray);
 		gd.addCheckbox("Use Virtual Stack", isVirtual);
 		gd.addCheckbox("Convert to Grayscale", convertToGray);
 		gd.addCheckbox("Flip Vertical", flipVertical);

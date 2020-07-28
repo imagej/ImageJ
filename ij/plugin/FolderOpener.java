@@ -463,11 +463,14 @@ public class FolderOpener implements PlugIn {
 		}
 		directory = Prefs.get(DIR_KEY, IJ.getDir("downloads")+"stack/");
 		GenericDialog gd = new GenericDialog("Import Image Sequence");
-		gd.addDirectoryField("Dir:", directory);
+		gd.setInsets(5, 0, 0);
+		gd.addDirectoryField("Dir:", directory);		
+		gd.setInsets(2, 55, 10);
+		gd.addMessage("drag and drop target", IJ.font10, Color.darkGray);
 		gd.addChoice("Type:", types, bitDepthToType(bitDepth));
 		gd.addStringField("Filter:", "", 10);
-		gd.setInsets(0,45,0);
-		gd.addMessage("(enclose regex in parens)", null, Color.darkGray);
+		gd.setInsets(0,55,0);
+		gd.addMessage("enclose regex in parens", IJ.font10, Color.darkGray);
 		gd.addCheckbox("Sort names numerically", sortFileNames);
 		gd.addCheckbox("Use virtual stack", openAsVirtualStack);
 		gd.addHelp(IJ.URL+"/docs/menus/file.html#seq1");

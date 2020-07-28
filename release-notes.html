@@ -5,8 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.53d45  25 July 2020</u>
+<li> <u>1.53d47  28 July 2020</u>
 <ul>
+<li> Added drag and drop support to GenericDialog directory
+and file fields, based on code from Fiji's GenericDialogPlus.
 <li> The <i>File&gt;Import&gt;Image Sequence</i> and
 <i>File&gt;Save As&gt;Image Sequence</i> comnands get the
 directory using the new GenericDialog.addDirectoryField() method,
@@ -82,7 +84,8 @@ not displayed in the active window.
 <li> Thanks to Philippe Carl and Michael Schmid, fixed a bug that
 caused the High Resolution Plot command to not be
 correctly recorded in Java(script) mode.
-<li>Thanks to Gabriel Landini, fixed <i>Process&gt;Shadows&gt;Shadows Demo</i>,
+<li>Thanks to Gabriel Landini, fixed the
+<i>Process&gt;Shadows&gt;Shadows Demo</i> command,
 which was too fast on modern computers.
 <li> Fixed a 1.52r regression that caused ImageJ to hang
 when saving images with fewer than 4 pixel in TIFF format.

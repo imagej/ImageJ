@@ -274,7 +274,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 		gd.setInsets(15,5,0);
 		gd.addCheckbox("Generate debugging info (javac -g)", generateDebuggingInfo);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#compiler");
-		Font font = new Font("SansSerif", Font.PLAIN, 10);
+		Font font = IJ.font10;
 		gd.addMessage(info, font);
 		gd.showDialog();
 		if (gd.wasCanceled()) return;

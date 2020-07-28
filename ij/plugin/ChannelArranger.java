@@ -228,7 +228,7 @@ class ThumbnailsCanvas extends Canvas implements MouseListener, MouseMotionListe
 		ImageProcessor ipSmall;
 		os = createImage((nChannels + 1) * iconSize, 2 * iconSize + 30);
 		osg = os.getGraphics();
-		osg.setFont(ImageJ.SansSerif12);
+		osg.setFont(IJ.font12);
 		int y1;
 		for (int chn = 1; chn <= nChannels; chn++) {
 			cImp.setPositionWithoutUpdate(chn, currentSlice, currentFrame);
