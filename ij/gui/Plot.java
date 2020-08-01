@@ -933,7 +933,7 @@ public class Plot implements Cloneable {
 		If 'labels' is null or empty, the labels of the data set previously (if any) are used.
 		To modify the legend's style, call 'setFont' and 'setLineWidth' before 'addLegend'. */
 	public void addLegend(String labels) {
-		addLegend(labels, null);
+		addLegend(labels, "auto");
 	}
 
 	/** Adds a legend at the position given in 'options', where 'labels' can be tab-delimited or
@@ -3468,7 +3468,35 @@ public class Plot implements Cloneable {
 			}
 		}
 	}
-
+	
+	/** Returns only indexed and sorted plot objects, if at least one label is indexed like "1__MyLabel" */
+	Vector<PlotObject> getIndexedPlotObjects(){
+		boolean withIndex = false;
+		int len = allPlotObjects.size();
+		String[] labels = new String[len];
+		Vector<PlotObject> indexedObjects = new Vector<PlotObject>();
+		for(int jj = 0; jj < len; jj++){
+			PlotObject plotObject = allPlotObjects.get(jj);
+			labels[jj] = "";
+			if (plotObject.type == PlotObject.XY_DATA && !plotObject.hasFlag(PlotObject.HIDDEN) && plotObject.label != null) {
+				String label = plotObject.label;
+				if(label.indexOf("__") >=0  && label.indexOf("__") <= 2){
+					labels[jj]= plotObject.label;
+					withIndex = true;
+				}
+			}
+		}
+		int[] ranks = Tools.rank(labels);
+		for(int jj = 0; jj < len; jj++){
+			if(labels[ranks[jj]] != ""){
+				int index = ranks[jj];
+				indexedObjects.add(allPlotObjects.get(index));
+			}
+		}
+		if(!withIndex)
+			return null;	
+		return indexedObjects;
+	}	
 
 	/** Draw the legend */
 	void drawLegend(PlotObject legendObject, ImageProcessor ip) {
@@ -3476,10 +3504,18 @@ public class Plot implements Cloneable {
 		int nLabels = 0;
 		int maxStringWidth = 0;
 		float maxLineThickness = 0;
-		for (PlotObject plotObject : allPlotObjects)
+		Vector<PlotObject> usedPlotObjects = allPlotObjects;
+		Vector<PlotObject> indexedObjects = getIndexedPlotObjects();
+		if(indexedObjects != null)
+			usedPlotObjects= indexedObjects;
+		
+		for (PlotObject plotObject : usedPlotObjects)
 			if (plotObject.type == PlotObject.XY_DATA && !plotObject.hasFlag(PlotObject.HIDDEN) && plotObject.label != null) {		//label exists: was set now or previously
 				nLabels++;
-				int w = ip.getStringWidth(plotObject.label);
+				String label = plotObject.label;
+				if(indexedObjects != null)
+					label = label.substring(label.indexOf("__"));
+				int w = ip.getStringWidth(label);
 				if (w > maxStringWidth) maxStringWidth = w;
 				if (plotObject.lineWidth > maxLineThickness) maxLineThickness = plotObject.lineWidth;
 			}
@@ -3519,7 +3555,7 @@ public class Plot implements Cloneable {
 		if (bottomUp) y += (nLabels-1) * lineHeight;
 		int xText = x0 + frameThickness/2 + sc(2f*LEGEND_PADDING + LEGEND_LINELENGTH + maxLineThickness);
 		int xMarker = x0 + frameThickness/2 + sc(LEGEND_PADDING + 0.5f*(LEGEND_LINELENGTH + maxLineThickness));
-		for (PlotObject plotObject : allPlotObjects)
+		for (PlotObject plotObject : usedPlotObjects)
 			if (plotObject.type == PlotObject.XY_DATA && !plotObject.hasFlag(PlotObject.HIDDEN) && plotObject.label != null) {		//label exists: was set now or previously
 				if (plotObject.hasFilledMarker()) {
 					ip.setColor(plotObject.color2);
@@ -3542,7 +3578,13 @@ public class Plot implements Cloneable {
 				}
 				ip.setColor(plotObject.color);
 				ip.setLineWidth(frameThickness);
-				ip.drawString(plotObject.label, xText, y+ lineHeight/2);
+				String label = plotObject.label;
+				if (indexedObjects != null){
+					int start = label.indexOf("__");
+					if(start >=0)
+						label = label.substring(start+2);
+				}
+				ip.drawString(label, xText, y+ lineHeight/2);
 				y += bottomUp ? -lineHeight : lineHeight;
 			}
 	}

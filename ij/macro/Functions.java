@@ -2578,7 +2578,7 @@ public class Functions implements MacroConstants, Measurements {
 
 	double addPlotLegend(Plot plot) {
 		String labels = getFirstString();
-		String options = null;
+		String options = "auto";
 		if (interp.nextToken()!=')')
 			options = getLastString();
 		else
@@ -3937,6 +3937,11 @@ public class Functions implements MacroConstants, Measurements {
 				String label = getFirstString();
 				String defaultDir = getLastString();
 				gd.addDirectoryField(label, defaultDir);
+			} else if (name.equals("addImageChoice")) {
+				String label = getStringArg();
+				if (WindowManager.getImageCount()==0)
+					interp.error("No images");
+				gd.addImageChoice(label, null);
 			} else if (name.equals("addFile")) {
 				String label = getFirstString();
 				String defaultPath = getLastString();
@@ -4031,6 +4036,10 @@ public class Functions implements MacroConstants, Measurements {
 			} else if (name.equals("getChoice")) {
 				interp.getParens();
 				return gd.getNextChoice();
+			} else if (name.equals("getImageChoice")) {
+				interp.getParens();
+				ImagePlus imp = gd.getNextImage();
+				return imp.getTitle();
 			} else if (name.equals("getRadioButton")) {
 				interp.getParens();
 				return gd.getNextRadioButton();
@@ -6928,6 +6937,8 @@ public class Functions implements MacroConstants, Measurements {
 			return resetTable();
 		else if (name.equals("update"))
 			return updateTable();
+		else if (name.equals("setDefaultHeadings"))
+			return setDefaultTableHeadings();
 		else if (name.equals("applyMacro"))
 			return applyMacroToTable();
 		else if (name.equals("deleteRows"))
@@ -7069,6 +7080,13 @@ public class Functions implements MacroConstants, Measurements {
 		unUpdatedTable = null;
 		if (rt==Analyzer.getResultsTable())
 			resultsPending = false;
+		return null;
+	}
+	
+	private Variable setDefaultTableHeadings() {
+		String title = getTitleArg();
+		ResultsTable rt = getResultsTable(title);
+		rt.setDefaultHeadings();
 		return null;
 	}
 

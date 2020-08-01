@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53d47  28 July 2020</u>
+<li> <u>1.53d52  1 August 2020</u>
 <ul>
 <li> Added drag and drop support to GenericDialog directory
 and file fields, based on code from Fiji's GenericDialogPlus.
@@ -23,6 +23,8 @@ which is also from Fiji's GenericDialogPlus class.
 command.
 <li> Thanks to Laurent Thomas, added the <i>More&gt;&gt;Multi Crop</i>
 command to the ROI Manager.
+<li> Thanks to Norbert Vischer, legend labels can be indexed or hidden
+in the plot window More>>Legend... dialog.
 <li> Thanks to Curtis Rueden, the sample images are
 now loaded from https://imagej.net/images/.
 <li> Thanks to Jerome Mutterer, the Color Picker now has a clipboard-copyable
@@ -40,6 +42,8 @@ and the GenericDialog.addDirectoryField() method
 (<a href="http://wsr.imagej.net/macros/tools/Square_Tool.ijm">example</a>).
 <li> Added the Dialog.addFile() macro function DOCUMENT
 and the GenericDialog.addFileField() method.
+<li> Added the Dialog.addImageChoice() macro function DOCUMENT
+and the GenericDialog.addImageChoice() method.
 <li> Added the Overlay.cropAndSave() macro function DOCUMENT
 and the ImagePlus.cropAndSave() method
 (<a href="http://wsr.imagej.net/macros/tools/Square_Tool.ijm">example</a>).
@@ -87,6 +91,9 @@ correctly recorded in Java(script) mode.
 <li>Thanks to Gabriel Landini, fixed the
 <i>Process&gt;Shadows&gt;Shadows Demo</i> command,
 which was too fast on modern computers.
+<li>Thanks to Jerome Mutterer, fixed a bug that sometimes
+caused point measurements to not work as expected
+(<a href="http://wsr.imagej.net/macros/js/MeasurePointBug.js">example</a>).
 <li> Fixed a 1.52r regression that caused ImageJ to hang
 when saving images with fewer than 4 pixel in TIFF format.
 <li> Thanks to Jan Brocher, fixed a 1.52u regression that caused

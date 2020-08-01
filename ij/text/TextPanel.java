@@ -120,6 +120,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	to "" to use a single column with no headings.
 	*/
 	public synchronized void setColumnHeadings(String labels) {
+		//if (count++==5) throw new IllegalArgumentException();
 		boolean sameLabels = labels.equals(this.labels);
 		this.labels = labels;
 		if (labels.equals("")) {

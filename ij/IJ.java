@@ -31,9 +31,9 @@ import java.math.RoundingMode;
 /** This class consists of static utility methods. */
 public class IJ {
 
-	/** SansSerif, plain, 10-point */
+	/** SansSerif, plain, 10-point font */
 	public static Font font10 = new Font("SansSerif", Font.PLAIN, 10);
-	/** SansSerif, plain, 12-point */
+	/** SansSerif, plain, 12-point font */
 	public static Font font12 = ImageJ.SansSerif12;
 	
 	/** Image display modes */

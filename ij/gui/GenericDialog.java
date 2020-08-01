@@ -85,6 +85,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private boolean showDialogCalled;
 	private boolean optionsRecorded;     // have dialogListeners been called to record options?
 	private Label lastLabelAdded;
+	private int[] windowIDs;
+	private String[] windowTitles;
 
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
@@ -304,9 +306,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     	this.echoChar = echoChar;
     }
 
-	/** Adds a directory text field and "Browse" button, where the field 
-	 * width is determined by the length of 'defaultPath', with a minimum
-	 * of 25 columns. Use getNextString to retrieve the directory path.
+	/** Adds a directory text field and "Browse" button, where the
+	 * field width is determined by the length of 'defaultPath', with
+	 * a minimum of 25 columns. Use getNextString to retrieve the
+	 * directory path.Based on the addDirectoryField() method in
+	 * Fiji's GenericDialogPlus class.
 	 */
 	public void addDirectoryField(String label, String defaultPath) {
 		int columns = defaultPath!=null?Math.max(defaultPath.length(),25):25;
@@ -334,9 +338,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			saveLabel(panel, label);
 	}
 
-	/** Adds a file text field and "Browse" button, where the field width
-	 * is determined by the length of 'defaultPath', with a minimum
-	 * of 25 columns. Use getNextString to retrieve the file path.
+	/** Adds a file text field and "Browse" button, where the
+	 * field width is determined by the length of 'defaultPath',
+	 * with a minimum of 25 columns. Use getNextString to
+	 * retrieve the file path. Based on the addFileField() method
+	 * in Fiji's GenericDialogPlus class.
 	 */
 	 public void addFileField(String label, String defaultPath) {
 		int columns = defaultPath!=null?Math.max(defaultPath.length(),25):25;
@@ -361,6 +367,32 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		add(panel);
 		if (Recorder.record || macro)
 			saveLabel(panel, label);
+	}
+
+	/** Adds a menu that lists the currently open images.
+	 * Call getNextImage() to retrieve the selected
+	 * image. Based on the addImageChoice()
+	 * method in Fiji's GenericDialogPlus class.
+	 * @param label  the label
+	 * @param defaultImage  the image title initially selected in the menu
+	 * or the first image if null
+	*/
+	public void addImageChoice(String label, String defaultImage) {
+		if (windowTitles==null) {
+			windowIDs = WindowManager.getIDList();
+			if (windowIDs==null)
+				windowIDs = new int[0];
+			windowTitles = new String[windowIDs.length];
+			for (int i=0; i<windowIDs.length; i++) {
+				ImagePlus image = WindowManager.getImage(windowIDs[i]);
+				windowTitles[i] = image==null ? "" : image.getTitle();
+			}
+		}
+		addChoice(label, windowTitles, defaultImage);
+	}
+
+	public ImagePlus getNextImage() {
+		return WindowManager.getImage(windowIDs[getNextChoiceIndex()]);
 	}
 
 	/** Adds a checkbox.
@@ -1797,9 +1829,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	
 		public void actionPerformed(ActionEvent e) {
 			String path = null;
-			if (mode.equals("dir"))
+			if (mode.equals("dir")) {
 				path = IJ.getDir("Select a Folder");
-			else {
+			} else {
 				OpenDialog od = new OpenDialog("Select a File", null);
 				String directory = od.getDirectory();
 				String name = od.getFileName();

@@ -235,10 +235,16 @@ public class PlotDialog implements DialogListener {
 				bottomUp = getFlag(lFlags, Plot.LEGEND_BOTTOM_UP);
 			}
 			gd.addMessage("Enter Labels for the datasets, one per line.\n");
+				
+			Font smallFont = IJ.font10;
+			gd.setInsets(0, 20, 0);			//top, left, bottom
+			String msg = "Prepend index plus dual underscore (e.g. '1__MyLabel' )\nto control legend order and to hide non-indexed labels";
+			gd.addMessage(msg, smallFont, Color.darkGray);
+			gd.setInsets(0, 0, 0);
+
 			gd.addTextAreas(labels, null, Math.min(nLines+1, 20), 40);
 			gd.addChoice("Legend position", LEGEND_POSITIONS, LEGEND_POSITIONS[legendPosNumber]);
 			gd.addNumericField("Font Size", legendFont.getSize2D(), 1);
-
 			gd.addCheckbox("Transparent background", transparentBackground);
 			gd.addCheckbox("Bottom-to-top", bottomUp);
 		}
