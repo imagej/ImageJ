@@ -3513,8 +3513,8 @@ public class Plot implements Cloneable {
 			if (plotObject.type == PlotObject.XY_DATA && !plotObject.hasFlag(PlotObject.HIDDEN) && plotObject.label != null) {		//label exists: was set now or previously
 				nLabels++;
 				String label = plotObject.label;
-				if(indexedObjects != null)
-					label = label.substring(label.indexOf("__"));
+				if (indexedObjects != null)
+					label = label.substring(label.indexOf("__") + 2);
 				int w = ip.getStringWidth(label);
 				if (w > maxStringWidth) maxStringWidth = w;
 				if (plotObject.lineWidth > maxLineThickness) maxLineThickness = plotObject.lineWidth;

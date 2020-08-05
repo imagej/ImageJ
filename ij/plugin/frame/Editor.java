@@ -40,7 +40,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"function print(s) {IJ.log(s);};";
 		
 	private static String JS_EXAMPLES =
-		"img = IJ.openImage(\"http://wsr.imagej.net/images/blobs.gif\")\n"
+		"img = IJ.openImage(\"http://imagej.net/images/blobs.gif\")\n"
  		+"img = IJ.createImage(\"Untitled\", \"16-bit ramp\", 500, 500, 1)\n" 		
  		+"img.show()\n"
  		+"ip = img.getProcessor()\n"

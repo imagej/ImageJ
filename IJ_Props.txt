@@ -428,7 +428,7 @@ about02=-
 # URL of directory containing the sample images
 # location2 is uses with Java 6, which does not support https
 images.location=https://imagej.net/images/
-images.location2=http://wsr.imagej.net/images/
+images.location2=http://imagej.net/images/
 
 # Images installed in the Open Samples submenu
 # RawReader expects a string with "name width height nImages bitsPerPixel offset [white]"

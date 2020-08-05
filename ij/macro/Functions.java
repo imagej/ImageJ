@@ -6937,8 +6937,6 @@ public class Functions implements MacroConstants, Measurements {
 			return resetTable();
 		else if (name.equals("update"))
 			return updateTable();
-		else if (name.equals("setDefaultHeadings"))
-			return setDefaultTableHeadings();
 		else if (name.equals("applyMacro"))
 			return applyMacroToTable();
 		else if (name.equals("deleteRows"))
@@ -7083,13 +7081,6 @@ public class Functions implements MacroConstants, Measurements {
 		return null;
 	}
 	
-	private Variable setDefaultTableHeadings() {
-		String title = getTitleArg();
-		ResultsTable rt = getResultsTable(title);
-		rt.setDefaultHeadings();
-		return null;
-	}
-
 	private Variable resetTable() {
 		String title = getTitleArg();
 		ResultsTable rt = null;
