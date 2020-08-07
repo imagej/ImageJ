@@ -1798,13 +1798,15 @@ public class IJ {
 			if (dir==null) Macro.abort();
 		}
 		dir = addSeparator(dir);
-		if (isWindows())
-			dir = dir.replaceAll("\\\\", "/");  // replace "\" with "/"
+		if (dir!=null && isWindows())
+			dir = dir.replaceAll("/", File.separator);  // replace "/" with "\"
 		return dir;
 	}
 	
 	public static String addSeparator(String path) {
-		if (path!=null && path.length()>0 && !(path.endsWith(File.separator)||path.endsWith("/"))) {
+		if (path==null)
+			return null;
+		if (path.length()>0 && !(path.endsWith(File.separator)||path.endsWith("/"))) {
 			if (IJ.isWindows()&&path.contains(File.separator))
 				path += File.separator;
 			else

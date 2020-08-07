@@ -24,8 +24,10 @@ public class TextReader implements PlugIn {
 			ImageProcessor ip = open(path);
 			if (ip!=null)
 				new ImagePlus(name, ip).show();
-			if (Recorder.record && Recorder.scriptMode())
-				Recorder.recordCall("imp = IJ.openImage(\""+path+"\");");
+			if (Recorder.record && Recorder.scriptMode()) {
+				String path2 = Recorder.fixPath(path);
+				Recorder.recordCall("imp = IJ.openImage(\""+path2+"\");");
+			}
 		}
 	}
     

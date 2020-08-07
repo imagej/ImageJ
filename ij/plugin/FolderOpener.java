@@ -417,7 +417,8 @@ public class FolderOpener implements PlugIn {
 			}
 			if (!sortByMetaData)
 				options = options + " noMetaSort";
-   			Recorder.recordCall("imp = FolderOpener.open(\""+directory+"\", \""+options+"\");");
+			String dir = Recorder.fixPath(directory);
+   			Recorder.recordCall("imp = FolderOpener.open(\""+dir+"\", \""+options+"\");");
 		}
 	}
 	

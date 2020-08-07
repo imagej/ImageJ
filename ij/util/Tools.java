@@ -337,13 +337,18 @@ import java.nio.channels.FileChannel;
 	 *  There must be no whitespace between key and number.
 	 *  Returns Double.NaN if 'list' is null, if the key is not found, if the number is 'NaN' or invalid. */
 	public static double getNumberFromList(String list, String key) {
-		if (list == null) return Double.NaN;
+		return getNumberFromList(list, key, Double.NaN);
+	}
+
+	public static double getNumberFromList(String list, String key, double defaultValue) {
+		if (list == null) return defaultValue;
 		int i = list.indexOf(key);
-		if (i < 0) return Double.NaN;
+		if (i < 0) return defaultValue;
 		int start = i + key.length();
 		int n = start;
 		while (n < list.length() && !isDelimiter(list.charAt(n))) n++;
-		return parseDouble(list.substring(start, n));
+		double value = parseDouble(list.substring(start, n));
+		return Double.isNaN(value)?defaultValue:value;
 	}
 
 	/** Retrieves a String form a list of key-number pairs like "value1="abc" str='the Text'".
@@ -354,15 +359,21 @@ import java.nio.channels.FileChannel;
 	 *  Escape sequences with backslashes are recognized, also backslash-u???? for unicode.
 	 *  Returns null if 'list' is null or if the key is not found */
 	public static String getStringFromList(String list, String key) {
-		if (list == null) return null;
+		return getStringFromList(list, key, null);
+	}
+
+	public static String getStringFromList(String list, String key, String defaultValue) {
+		if (list == null) return defaultValue;
 		int i = list.indexOf(key);
-		if (i < 0) return null;
+		if (i < 0) return defaultValue;
 		int start = i + key.length();
 		if (list.length() == start) return "";
 		char quote = list.charAt(start);
 		boolean hasQuotes = quote == '\'' || quote == '\"';
 		if (hasQuotes) start++;
 		String str = decodeEscaped(list.substring(start), hasQuotes ? quote : (char)-2);
+		if (str==null)
+			str = defaultValue;
 		return str;
 	}
 

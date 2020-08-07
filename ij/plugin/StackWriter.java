@@ -10,6 +10,7 @@ import ij.measure.Calibration;
 import ij.process.*;
 import ij.plugin.frame.Recorder;
 import ij.macro.Interpreter;
+import ij.util.Tools;
 
 /** This plugin, which saves the images in a stack as separate files, 
 	implements the File/Save As/Image Sequence command. */
@@ -24,9 +25,32 @@ public class StackWriter implements PlugIn {
 	private int startAt;
 	private boolean hyperstack;
 	private int[] dim;
+	private ImagePlus imp;
+	private String directory;
+	private String format = "tiff";
+	private String gname;
+	
+		/** Opens the images in the specified directory as a stack. Opens
+		the images as a virtual stack if the 'options' string contains
+		'virtual' or 'use'. Add ' file=abc' to the options string to only open
+		images with, for example, 'abc' in their name. Add ' noMetaSort' to
+		disable sorting of DICOM stacks by series number (0020,0011).
+		Displays directory chooser and options dialogs if the the 'path'
+		argument is null. */
+	public static void save(ImagePlus imp, String directoryPath, String options) {
+		StackWriter sw = new StackWriter();
+		sw.imp = imp;
+		sw.format = Tools.getStringFromList(options, "format=", sw.format);
+		sw.gname = Tools.getStringFromList(options, "name=");
+		sw.ndigits = (int)Tools.getNumberFromList(options, "digits=", sw.ndigits);
+		sw.useLabels = options.contains(" use");
+		sw.run(directoryPath);
+	}
+
 
 	public void run(String arg) {
-		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp==null)
+			imp = WindowManager.getCurrentImage();
 		if (imp==null || (imp!=null && imp.getStackSize()<2&&!IJ.isMacro())) {
 			IJ.error("Stack Writer", "This command requires a stack.");
 			return;
@@ -49,44 +73,13 @@ public class StackWriter implements PlugIn {
 				firstTime = false;
 			}
 		}
-		
-		String options = Macro.getOptions();
-		if  (options!=null && options.contains("save="))  //macro
-			Macro.setOptions(options.replaceAll("save=", "dir="));
-		String directory = Prefs.get(DIR_KEY, IJ.getDir("downloads")+"stack2/");
-		GenericDialog gd = new GenericDialog("Save Image Sequence");
-		if (!IJ.isMacro())
-			fileType = staticFileType;
-		gd.setInsets(5, 0, 0);
-		gd.addDirectoryField("Dir:", directory);		
-		gd.setInsets(2, 110, 5);
-		gd.addMessage("drag and drop target", IJ.font10, Color.darkGray);
-		gd.addChoice("Format:", choices, fileType);
-		gd.addStringField("Name:", name, 12);
-		if (!hyperstack)
-			gd.addNumericField("Start At:", startAt, 0);
-		gd.addNumericField("Digits (1-8):", ndigits, 0);
-		if (!hyperstack)
-			gd.addCheckbox("Use slice labels as file names", useLabels);
-		gd.showDialog();
-		if (gd.wasCanceled())
-			return;
-		directory = gd.getNextString();
-		directory = IJ.addSeparator(directory);
-		Prefs.set(DIR_KEY, directory);
-		gd.setSmartRecording(true);
-		fileType = gd.getNextChoice();
-		if (!IJ.isMacro())
-			staticFileType = fileType;
-		name = gd.getNextString();
-		if (!hyperstack)
-			startAt = (int)gd.getNextNumber();
-		if (startAt<0) startAt = 0;
-		ndigits = (int)gd.getNextNumber();
-		if (!hyperstack)
-			useLabels = gd.getNextBoolean();
-		else
-			useLabels = false;
+		if (arg!=null && arg.length()>0) {
+			directory = arg;
+			name = gname!=null?gname:name;
+		} else {		
+			if (!showDialog(imp, name))
+				return;
+		}
 		int number = 0;
 		if (ndigits<1) ndigits = 1;
 		if (ndigits>8) ndigits = 8;
@@ -96,7 +89,6 @@ public class StackWriter implements PlugIn {
 				+" digits are required to generate \nunique file names for "+stackSize+" images.");
 			return;			
 		}
-		String format = fileType.toLowerCase(Locale.US);
 		if (format.equals("fits") && !FileSaver.okForFits(imp))
 			return;			
 		if (format.equals("text"))
@@ -105,8 +97,7 @@ public class StackWriter implements PlugIn {
 		if (format.equals("tiff"))
 			extension = ".tif";
 		else if (format.equals("text image"))
-			extension = ".txt";
-					
+			extension = ".txt";					
 		Overlay overlay = imp.getOverlay();
 		boolean isOverlay = overlay!=null && !imp.getHideOverlay();
 		if (!(format.equals("jpeg")||format.equals("png")))
@@ -185,6 +176,57 @@ public class StackWriter implements PlugIn {
 		imp.unlock();
 		if (isOverlay) imp.setSlice(1);
 		IJ.showStatus("");
+	}
+	
+	private boolean showDialog(ImagePlus imp, String name) {
+		String options = Macro.getOptions();
+		if (options!=null && options.contains("save="))  //macro
+			Macro.setOptions(options.replaceAll("save=", "dir="));
+		directory = Prefs.get(DIR_KEY, IJ.getDir("downloads")+"stack2/");
+		GenericDialog gd = new GenericDialog("Save Image Sequence");
+		if (!IJ.isMacro())
+			fileType = staticFileType;
+		gd.setInsets(5, 0, 0);
+		gd.addDirectoryField("Dir:", directory);		
+		gd.setInsets(2, 110, 5);
+		gd.addMessage("drag and drop target", IJ.font10, Color.darkGray);
+		gd.addChoice("Format:", choices, fileType);
+		gd.addStringField("Name:", name, 12);
+		if (!hyperstack)
+			gd.addNumericField("Start At:", startAt, 0);
+		gd.addNumericField("Digits (1-8):", ndigits, 0);
+		if (!hyperstack)
+			gd.addCheckbox("Use slice labels as file names", useLabels);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return false;
+		directory = gd.getNextString();
+		directory = IJ.addSeparator(directory);
+		Prefs.set(DIR_KEY, directory);
+		gd.setSmartRecording(true);
+		fileType = gd.getNextChoice();
+		format = fileType.toLowerCase(Locale.US);
+		if (!IJ.isMacro())
+			staticFileType = fileType;
+		name = gd.getNextString();
+		if (!hyperstack)
+			startAt = (int)gd.getNextNumber();
+		if (startAt<0) startAt = 0;
+		ndigits = (int)gd.getNextNumber();
+		if (!hyperstack)
+			useLabels = gd.getNextBoolean();
+		else
+			useLabels = false;
+		if (Recorder.record) {
+			String options2 = "format="+format;
+			options2 += " name="+name;
+			options2 += " digits="+ndigits;
+			if (useLabels)
+				options2 += " use";			
+			String dir = Recorder.fixPath(directory);
+   			Recorder.recordCall("StackWriter.save(imp, \""+dir+"\", \""+options2+"\");");
+		}
+		return true;
 	}
 	
 	String getDigits(int n) {

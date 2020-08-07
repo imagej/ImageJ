@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53d54  5 August 2020</u>
+<li> <u>1.53d56  6 August 2020</u>
 <ul>
 <li> Added drag and drop support to GenericDialog directory
 and file fields, based on code from Fiji's GenericDialogPlus.
@@ -63,6 +63,7 @@ images that may differ in size.
 <li> Thanks to Aryeh Weiss, added the HyperStackConverter.toStack()
 method
 (<a href="http://wsr.imagej.net/macros/js/HyperstackToStack.js">example</a>).
+<li> Added the StackWriter.save() method.
 <li> Thanks to 'bio7' and David Gault, fixed bugs that caused
 IJ.isJava18() to return false and JavaScript to not work when
 running Java 14 or later.
@@ -94,6 +95,7 @@ which was too fast on modern computers.
 <li>Thanks to Jerome Mutterer, fixed a bug that sometimes
 caused point measurements to not work as expected
 (<a href="http://wsr.imagej.net/macros/js/MeasurePointBug.js">example</a>).
+<li> Fixed issues with script-mode recording of file paths on Windows.
 <li> Fixed a 1.52r regression that caused ImageJ to hang
 when saving images with fewer than 4 pixel in TIFF format.
 <li> Thanks to Jan Brocher, fixed a 1.52u regression that caused

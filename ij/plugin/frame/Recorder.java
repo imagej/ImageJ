@@ -128,7 +128,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	}
 
 	/** Replaces '\' characters with '/'. */
-	static String fixPath (String path) {
+	public static String fixPath (String path) {
 		if (path==null)
 			path = "";
 		if (!IJ.isWindows())

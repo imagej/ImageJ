@@ -171,7 +171,8 @@ public class ImportDialog {
 				IJ.showStatus((stack.size()+1) + ": " + list[i]);
 			}
 		}
-		Recorder.recordCall(fi.getCode()+"imp = Raw.openAll(\""+ fi.directory+"\", fi);");
+		String dir = Recorder.fixPath(fi.directory);
+		Recorder.recordCall(fi.getCode()+"imp = Raw.openAll(\""+ dir+"\", fi);");
 		if (stack!=null) {
 			imp = new ImagePlus("Imported Stack", stack);
 			if (imp.getBitDepth()==16 || imp.getBitDepth()==32)
@@ -192,7 +193,8 @@ public class ImportDialog {
 		if (openAll) {
 			if (virtual) {
 				ImagePlus imp = Raw.openAllVirtual(directory, fi);
-				Recorder.recordCall(fi.getCode()+"imp = Raw.openAllVirtual(\""+directory+"\", fi);");
+				String dir = Recorder.fixPath(directory);
+				Recorder.recordCall(fi.getCode()+"imp = Raw.openAllVirtual(\""+dir+"\", fi);");
 				if (imp!=null) {
 					imp.setSlice(imp.getStackSize()/2);
 					imp.show();
@@ -209,6 +211,7 @@ public class ImportDialog {
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.openImage();
 			String filePath = fi.getFilePath();
+			filePath = Recorder.fixPath(filePath);
 			Recorder.recordCall(fi.getCode()+"imp = Raw.open(\""+filePath+"\", fi);");
 			if (imp!=null) {
 				imp.show();

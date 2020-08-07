@@ -1326,12 +1326,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			options += " "+format;
 		}
 		if (record()) {
-			if (IJ.isWindows())
-				directory = directory.replaceAll("\\\\", "/");  // replace "\" with "/"
-			if (Recorder.scriptMode())
-				Recorder.recordCall("rm.multiCrop(\""+directory+"\", \""+options+"\");");
+			String dir = Recorder.fixPath(directory);
+			if (Recorder.scriptMode())			
+				Recorder.recordCall("rm.multiCrop(\""+dir+"\", \""+options+"\");");
 			else
-				Recorder.record("RoiManager.multiCrop", directory, options);
+				Recorder.record("RoiManager.multiCrop", dir, options);
 		}
 		multiCrop(directory, options);
 	}
