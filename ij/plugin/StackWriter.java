@@ -30,13 +30,7 @@ public class StackWriter implements PlugIn {
 	private String format = "tiff";
 	private String gname;
 	
-		/** Opens the images in the specified directory as a stack. Opens
-		the images as a virtual stack if the 'options' string contains
-		'virtual' or 'use'. Add ' file=abc' to the options string to only open
-		images with, for example, 'abc' in their name. Add ' noMetaSort' to
-		disable sorting of DICOM stacks by series number (0020,0011).
-		Displays directory chooser and options dialogs if the the 'path'
-		argument is null. */
+	/** Saves the specified image as a sequence of images. */
 	public static void save(ImagePlus imp, String directoryPath, String options) {
 		StackWriter sw = new StackWriter();
 		sw.imp = imp;
