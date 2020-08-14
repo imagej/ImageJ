@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53d60  7 August 2020</u>
+<li> <u>1.53d66  13 August 2020</u>
 <ul>
 <li> Added drag and drop support to GenericDialog directory
 and file fields, based on code from Fiji's GenericDialogPlus.
@@ -99,6 +99,15 @@ which was too fast on modern computers.
 caused point measurements to not work as expected
 (<a href="http://wsr.imagej.net/macros/js/MeasurePointBug.js">example</a>).
 <li> Fixed issues with script-mode recording of file paths on Windows.
+<li> On Macs, fixed a bug that caused the <i>ImageJ&gt;About ImageJ</i>
+window to open slowly.
+<li> Thanks to Michael Cammer, fixed a bug that caused the
+s2=replace(s,s1,s2) and s2=s.replace(s1,s2) macro functions to fail
+when 's1' was a single regular expression special character
+and 's2' did not have a length of one.
+<li> Thanks to Philippe Carl, fixed a bug that caused the  
+<i>Image&gt;Stacks&gt;Tools&gt;Concatenate</i> command
+to not preserve the "Info" properties.
 <li> Fixed a 1.52r regression that caused ImageJ to hang
 when saving images with fewer than 4 pixel in TIFF format.
 <li> Thanks to Jan Brocher, fixed a 1.52u regression that caused

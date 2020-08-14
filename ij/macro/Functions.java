@@ -3833,9 +3833,17 @@ public class Functions implements MacroConstants, Measurements {
 		s1 = getStringFunctionArg(s1);
 		String s2 = getString();
 		String s3 = getLastString();
-		if (s2.length()==1 && s3.length()==1)
-			return s1.replace(s2.charAt(0), s3.charAt(0));
-		else {
+		if (s2.length()==1) {
+			StringBuilder sb = new StringBuilder(s1.length());
+			for (int i=0; i<s1.length(); i++) {
+				char c = s1.charAt(i);
+				if (c==s2.charAt(0))
+					sb.append(s3);
+				else
+					sb.append(c);
+			}
+			return sb.toString();
+		} else {
 			try {
 				return s1.replaceAll(s2, s3);
 			} catch (Exception e) {

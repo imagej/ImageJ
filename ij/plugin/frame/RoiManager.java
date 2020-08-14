@@ -424,7 +424,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		roi.setName(label);
 		Roi roiCopy = (Roi)roi.clone();
 		if (ignorePosition && imp!=null && imp.getStackSize()>1 && imp.getWindow()!=null && isVisible()) {
-			// set ROI position to current stack position if image and RoiManager are visible
+ 			// set ROI position to current stack position if image and RoiManager are visible
 			roiCopy.setPosition(imp);
 		}
 		if (lineWidth>1)

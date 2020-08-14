@@ -5,11 +5,11 @@ import ij.io.*;
 import com.apple.eawt.*;
 import java.util.Vector;
 
-/** This Mac-specific plugin is designed to handle the “About ImageJ" and
-   “Quit ImageJ" commands in the Apple menu and to open files dropped on
-   ImageJ app and to open double-clicked files with creator code "imgJ".
-   With Java 8, the “About ImageJ" and “Quit ImageJ” commands work
-   without MacAdapter.
+/** This Mac-specific plugin is designed to handle the “About ImageJ",
+   Preferences and “Quit ImageJ" commands in the ImageJ menu, and to
+   open files dropped on ImageJ.app and to open double-clicked files
+   with creator code "imgJ". With Java 8, the “About ImageJ" and
+   “Quit ImageJ” commands work without MacAdapter.
 */
 public class MacAdapter implements PlugIn, ApplicationListener, Runnable {
    static Vector paths = new Vector();
@@ -21,7 +21,7 @@ public class MacAdapter implements PlugIn, ApplicationListener, Runnable {
    }
     
    public void handleAbout(ApplicationEvent event) {
-      IJ.run("About ImageJ...");
+      IJ.doCommand("About ImageJ...");
       event.setHandled(true);
    }
 

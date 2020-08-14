@@ -127,6 +127,8 @@ public class Concatenator implements PlugIn, ItemListener{
 				args += ", imp"+(i+1);
 			Recorder.recordCall("imp"+(images.length+1)+" = Concatenator.run("+args+");");
 		}
+		if (imp0!=null && newImp!=null)
+			newImp.setProperty("Info", imp0.getProperty("Info"));
 		return newImp;
 	}
 	
