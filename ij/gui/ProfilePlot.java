@@ -279,7 +279,7 @@ public class ProfilePlot {
 	double[] getIrregularProfile(Roi roi, ImageProcessor ip, Calibration cal) {
 		boolean interpolate = PlotWindow.interpolate;
 		FloatPolygon p = roi.getFloatPolygon();
-		float[][] xyPoints = ((PolygonRoi)roi).getEquidistantPoints(p.xpoints, p.ypoints, p.npoints, /*segmentLength=*/1.0, imp);
+		float[][] xyPoints = ((PolygonRoi)roi).getEquidistantPoints(p.xpoints, p.ypoints, p.npoints, 1.0, imp);
 		float[] xPoints = xyPoints[0];
 		float[] yPoints = xyPoints[1];
 		double[] values = new double[xPoints.length];

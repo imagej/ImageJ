@@ -70,13 +70,13 @@ public class RoiScaler implements PlugIn {
 			poly.addPoint(x1, y1);
 			poly.addPoint(x2, y2);
 		}
-		Rectangle r = roi.getBounds();
-		double xbase = r.x - (r.width*xscale-r.width)/2.0;
-		double ybase = r.y - (r.height*yscale-r.height)/2.0;
+		double[] centroid = roi.getContourCentroid();
+		double xcenter = centroid[0];
+		double ycenter = centroid[1];
 		for (int i=0; i<poly.npoints; i++) {
 			if (centered) {
-				poly.xpoints[i] = (float)((poly.xpoints[i]-r.x)*xscale + xbase);
-				poly.ypoints[i] = (float)((poly.ypoints[i]-r.y)*yscale + ybase);
+				poly.xpoints[i] = (float)((poly.xpoints[i]-xcenter)*xscale+xcenter);
+				poly.ypoints[i] = (float)((poly.ypoints[i]-ycenter)*yscale+ycenter);
 			} else {
 				poly.xpoints[i] = (float)(poly.xpoints[i]*xscale);
 				poly.ypoints[i] = (float)(poly.ypoints[i]*yscale);
