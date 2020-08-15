@@ -2540,9 +2540,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			setCalibration(imp.getCalibration());
 	}
 
-	/** Copies attributes (name, ID, calibration, properties, path, plot)
-	 * of the specified image, which must noy be displayed, to this image.
-	 */
+	/** Used internally. */
 	public void copyAttributes(ImagePlus imp) {
 		if (IJ.debugMode) IJ.log("copyAttributes: "+imp.getID()+"  "+this.getID()+" "+imp+"   "+this);
 		if (imp==null || imp.getWindow()!=null)
