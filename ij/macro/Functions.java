@@ -1278,6 +1278,14 @@ public class Functions implements MacroConstants, Measurements {
 				size = rt!=null?rt.size():0;
 			}
 		}
+		if (size==0) {
+			Window win = WindowManager.getActiveTable();
+			if (win!=null && (win instanceof TextWindow)) {
+				TextPanel tp = ((TextWindow)win).getTextPanel();
+				rt = tp.getOrCreateResultsTable();
+				size = rt!=null?rt.size():0;
+			}
+		}
 		if (size==0 && reportErrors)
 			interp.error("No results found");
 		return rt;
@@ -4838,7 +4846,11 @@ public class Functions implements MacroConstants, Measurements {
 			return join();
 		else if (name.equals("trim"))
 			return getStringArg().trim();
-		else
+		else if (name.equals("format")) {
+			try {return String.format(getFirstString(),getLastArg());}
+			catch (Exception e) {interp.error(""+e);}
+			return null;
+		} else
 			interp.error("Unrecognized String function");
 		return null;
 	}

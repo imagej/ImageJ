@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import ij.measure.Measurements;
 import java.awt.*;
 import java.awt.geom.*;
 
@@ -70,13 +71,26 @@ public class RoiScaler implements PlugIn {
 			poly.addPoint(x1, y1);
 			poly.addPoint(x2, y2);
 		}
-		double[] centroid = roi.getContourCentroid();
-		double xcenter = centroid[0];
-		double ycenter = centroid[1];
+		ImageStatistics stats = null;
+		if (centered) {
+			ImagePlus imp = roi.getImage();
+			if (imp==null) {
+				Rectangle r = roi.getBounds();
+				imp = IJ.createImage("Untitled", "8-bit black", r.x+r.width, r.y+r.height, 1);
+			}
+			ImageProcessor ip = imp.getProcessor();
+			ip.setRoi(roi);
+			stats = ImageStatistics.getStatistics(imp.getProcessor(), Measurements.CENTROID, null);
+			if (roi.isLine()) {
+				Rectangle r = roi.getBounds();
+				stats.xCentroid = r.x + Math.round(r.width/2.0);
+				stats.yCentroid = r.y + Math.round(r.height/2.0);
+			}
+		}
 		for (int i=0; i<poly.npoints; i++) {
 			if (centered) {
-				poly.xpoints[i] = (float)((poly.xpoints[i]-xcenter)*xscale+xcenter);
-				poly.ypoints[i] = (float)((poly.ypoints[i]-ycenter)*yscale+ycenter);
+				poly.xpoints[i] = (float)Math.round((poly.xpoints[i]-stats.xCentroid)*xscale+stats.xCentroid);
+				poly.ypoints[i] = (float)Math.round((poly.ypoints[i]-stats.yCentroid)*yscale+stats.yCentroid);
 			} else {
 				poly.xpoints[i] = (float)(poly.xpoints[i]*xscale);
 				poly.ypoints[i] = (float)(poly.ypoints[i]*yscale);

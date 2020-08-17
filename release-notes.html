@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53d68  15 August 2020</u>
+<li> <u>1.53d72  17 August 2020</u>
 <ul>
 <li> Added drag and drop support to GenericDialog directory
 and file fields, based on code from Fiji's GenericDialogPlus.
@@ -58,6 +58,8 @@ macro function and RoiManager.multiCrop() method.
 <li> Thanks to Philippe Carl and Michael Schmid, added the
  LutLoader.getLut() method. For an example, run
 <i>Help&gt;Examples&gt;JavaScript&gt;Show all LUTs</i>.
+<li> Thanks to Philippe Carl, added the String.format() macro
+function.  DOCUMENT
 <li> Thanks to Laurent Thomas, added the ImagePlus.crop(Roi[]),
 Overlay.createStackOverlay(Roi[]) and ImageStack.create(ImagePlus[])
 methods. For an example, run
@@ -122,6 +124,9 @@ to set the threshold by changing the textfield values.
 that caused the <i>Analyze&gt;Plot Profile</i> command not work as
 expected with segmented and freehand line selections on
 spatially calibrated images.
+<li> Thanks to Zeynab Mousavi, fixed a 1.52 regression that caused
+the getResults() macro function to unexpectadly cause a
+"No results found" error.
 </ul>
 
 <li> <u>1.53c  26 June 2020</u>
