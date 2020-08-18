@@ -374,6 +374,8 @@ public class WindowManager {
 				Menus.removeWindowMenuItem(index);
 				nonImageList.removeElement(win);
 			}
+			if (win!=null && win==frontTable)
+				frontTable = null;
 		}
 		setWindow(null);
 	}
@@ -411,24 +413,17 @@ public class WindowManager {
 		frontWindow = win;
 		if (win instanceof Frame)
 			frontFrame = (Frame)win;
-		setFrontTable(win);
     }
 
 	/** The specified frame becomes the front window, the one returnd by getFrontWindow(). */
 	public static void setWindow(Frame win) {
 		frontWindow = win;
 		frontFrame = win;
-		setFrontTable(win);
+		if (win!=null && win instanceof TextWindow && !(win instanceof Editor) && !"Log".equals(((TextWindow)win).getTitle()))
+			frontTable = win;
 		//System.out.println("Set window(F): "+(win!=null?win.getTitle():"null"));
     }
     
-    private static void setFrontTable(Window win) {
-    	if (win==null)
-    		return;
-		if (win instanceof TextWindow && !(win instanceof Editor) && !"Log".equals(((TextWindow)win).getTitle()))
-			frontTable = win;
-    }
-
 	/** Closes all windows. Stops and returns false if an image or Editor "save changes" dialog is canceled. */
 	public synchronized static boolean closeAllWindows() {
 		Prefs.closingAll = true;

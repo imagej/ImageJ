@@ -318,8 +318,21 @@ public class StackEditor implements PlugIn {
 
 	String getTitle(ImagePlus imp, int n) {
 		String digits = "00000000"+n;
-		return imp.getShortTitle()+"-"+digits.substring(digits.length()-4,digits.length());
+		return getShortTitle(imp)+"-"+digits.substring(digits.length()-4,digits.length());
 	}
+	
+	/** Returns a shortened version of image name that does not 
+		include spaces or a file name extension. */
+	private String getShortTitle(ImagePlus imp) {
+		String title = imp.getTitle();
+		int index = title.indexOf(' ');
+		if (index>-1)
+			title = title.substring(0, index);
+		index = title.lastIndexOf('.');
+		if (index>0)
+			title = title.substring(0, index);
+		return title;
+    }
 	
 }
 
