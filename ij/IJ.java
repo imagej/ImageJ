@@ -854,10 +854,11 @@ public class IJ {
 		java.awt.Toolkit.getDefaultToolkit().beep();
 	}
 	
-	/**	Runs the garbage collector and returns a string something
-		like "64K of 256MB (25%)" that shows how much of 
-		the  available memory is in use. This is the string
-		displayed when the user clicks in the status bar. */
+	/**	Returns a string something like "64K of 256MB (25%)"
+	 * that shows how much of  the  available memory is in use.
+	 * This is the string displayed when the user clicks in the
+	 * status bar.
+	*/
 	public static String freeMemory() {
 		long inUse = currentMemory();
 		String inUseStr = inUse<10000*1024?inUse/1024L+"K":inUse/1048576L+"MB";

@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53d74  18 August 2020</u>
+<li> <u>1.53d  20 August 2020</u>
 <ul>
 <li> Added drag and drop support to GenericDialog directory
 and file fields, based on code from Fiji's GenericDialogPlus.
@@ -24,8 +24,8 @@ command.
 <li> Thanks to Laurent Thomas, added the <i>More&gt;&gt;Multi Crop</i>
 command to the ROI Manager.
 <li> Thanks to Zeynab Mousavi, the <i>Edit&gt;Selection&gt;Scale</i>
-command uses the centroid instead of the center of the bounding box
- when "Centered" is checked in the dialog.
+command uses the centroid instead of the center of the bounding
+rectangle when "Centered" is checked in the dialog.
 <li> The <i>Help&gt;About ImageJ</i> window is larger
 and the text is drawn in an overlay.
 <li> Thanks to Peter Bankhead, the MacAdapter class is now in the ij.plugin package.
@@ -43,23 +43,23 @@ of the current display range.
 <li> The ImageStack class now accepts images of different types. Images
 are converted to the type specified by the setBitDepth() method or to the 
 type of the first image added.
-<li> Added the Dialog.addDirectory() macro function DOCUMENT
+<li> Added the Dialog.addDirectory() macro function
 and the GenericDialog.addDirectoryField() method
 (<a href="http://wsr.imagej.net/macros/tools/Square_Tool.ijm">example</a>).
-<li> Added the Dialog.addFile() macro function DOCUMENT
+<li> Added the Dialog.addFile() macro function
 and the GenericDialog.addFileField() method.
-<li> Added the Dialog.addImageChoice() macro function DOCUMENT
+<li> Added the Dialog.addImageChoice() macro function
 and the GenericDialog.addImageChoice() method.
-<li> Added the Overlay.cropAndSave() macro function DOCUMENT
+<li> Added the Overlay.cropAndSave() macro function
 and the ImagePlus.cropAndSave() method
 (<a href="http://wsr.imagej.net/macros/tools/Square_Tool.ijm">example</a>).
-<li> Thanks to Laurent Thomas, added the RoiManager.multiCrop() DOCUMENT
+<li> Thanks to Laurent Thomas, added the RoiManager.multiCrop()
 macro function and RoiManager.multiCrop() method.
 <li> Thanks to Philippe Carl and Michael Schmid, added the
  LutLoader.getLut() method. For an example, run
 <i>Help&gt;Examples&gt;JavaScript&gt;Show all LUTs</i>.
 <li> Thanks to Philippe Carl, added the String.format() macro
-function.  DOCUMENT
+function.
 <li> Thanks to Laurent Thomas, added the ImagePlus.crop(Roi[]),
 Overlay.createStackOverlay(Roi[]) and ImageStack.create(ImagePlus[])
 methods. For an example, run
@@ -126,7 +126,8 @@ expected with segmented and freehand line selections on
 spatially calibrated images.
 <li> Thanks to Zeynab Mousavi, fixed a 1.52 regression that caused
 the getResults() macro function to unexpectadly cause a
-"No results found" error.
+"No results found" error
+(<a href="http://wsr.imagej.net/macros/bugs/GetResultRegression.txt">example</a>).
 <li> Thanks to Sumin Kim, fixed a 1.52t regression that caused
 <i>Stack to Images</i> image titles to not be the same as
 before for stacks with names containing spaces.
