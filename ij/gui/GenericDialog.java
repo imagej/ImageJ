@@ -309,7 +309,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	/** Adds a directory text field and "Browse" button, where the
 	 * field width is determined by the length of 'defaultPath', with
 	 * a minimum of 25 columns. Use getNextString to retrieve the
-	 * directory path.Based on the addDirectoryField() method in
+	 * directory path. Based on the addDirectoryField() method in
 	 * Fiji's GenericDialogPlus class.
 	 */
 	public void addDirectoryField(String label, String defaultPath) {
@@ -369,7 +369,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			saveLabel(panel, label);
 	}
 
-	/** Adds a menu that lists the currently open images.
+	/** Adds a popup menu that lists the currently open images.
 	 * Call getNextImage() to retrieve the selected
 	 * image. Based on the addImageChoice()
 	 * method in Fiji's GenericDialogPlus class.

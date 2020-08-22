@@ -7922,13 +7922,13 @@ public class Functions implements MacroConstants, Measurements {
 		return sb.toString();
 	}
 	
-	boolean isStringFunction(String name) {
+	boolean isStringFunction(String name, int type) {
 		if (name.equals("getStrokeColor") || name.equals("getDefaultColor")
 		|| name.equals("getFillColor") || name.equals("getName")
 		|| name.equals("getProperty") || name.equals("getProperties")
 		|| name.equals("getType") || name.equals("getString") || name.equals("title")
 		|| name.equals("headings") || name.equals("allHeadings")
-		|| name.equals("get") || name.equals("getInfo") || name.equals("getSliceLabel")
+		|| (name.equals("get")&&type!=TABLE) || name.equals("getInfo") || name.equals("getSliceLabel")
 		|| name.equals("getDicomTag") || name.equals("getList")
 		|| name.equals("getGroupNames"))
 			return true;

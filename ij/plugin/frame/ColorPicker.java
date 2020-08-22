@@ -11,7 +11,7 @@ import ij.gui.*;
 /** Implements the Image/Color/Color Picker command. */
 public class ColorPicker extends PlugInDialog {
 	private static final String LOC_KEY = "cp.loc";
-	private ColorPicker instance;
+	private static ColorPicker instance;
 	TextField colorField;
 	
     public ColorPicker() {

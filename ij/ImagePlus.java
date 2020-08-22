@@ -2473,22 +2473,27 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return this.crop(rois, "slice");
 	}
 
-	public void cropAndSave(Roi[] rois, String directory, String options) {
+	/** Saves the contents of the ROIs in this overlay as separate images,
+	 * where 'directory' is the directory path and 'format' is "tif", "png" or "jpg".
+	* Set 'format' to "show" and the images will be displayed in a stack
+	* and not saved.
+	*/
+	public void cropAndSave(Roi[] rois, String directory, String format) {
 		ImagePlus[] images = crop(rois);
-		if (options==null) options = "";
-		if (options.contains("show")) {
+		if (format==null) format = "";
+		if (format.contains("show")) {
 			ImageStack stack = ImageStack.create(images);
 			new ImagePlus("CROPPED_"+getTitle(),stack).show();
 			return;
 		}
-		String format = "tif";
-		if (options.contains("png")) format = "png";
-		if (options.contains("jpg")) format = "jpg";
+		String fileFormat = "tif";
+		if (format.contains("png")) fileFormat = "png";
+		if (format.contains("jpg")) fileFormat = "jpg";
 		for (int i=0; i<images.length; i++) {
 			Rectangle bounds = rois[i].getBounds();
 			String title = IJ.pad(bounds.x,4)+"-"+IJ.pad(bounds.y,4);
-			String path = directory + title + "." + format;
-			IJ.saveAs(images[i], format, path);
+			String path = directory + title + "." + fileFormat;
+			IJ.saveAs(images[i], fileFormat, path);
 		}
 	}
 
