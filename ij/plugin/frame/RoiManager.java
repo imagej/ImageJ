@@ -444,7 +444,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 	void recordAdd(Color color, int lineWidth) {
 		if (Recorder.scriptMode())
-			Recorder.recordCall("rm.addRoi(imp.getRoi());");
+			Recorder.recordCall("rm.addRoi(roi);");
 		else if (color!=null && lineWidth==1)
 			Recorder.recordString("roiManager(\"Add\", \""+getHex(color)+"\");\n");
 		else if (lineWidth>1)

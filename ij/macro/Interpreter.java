@@ -926,8 +926,8 @@ public class Interpreter implements MacroConstants {
 			{putTokenBack(); getFactor(); return;}
 		int index = getIndex();
 		int expressionType = getExpressionType();
-		//if (expressionType==Variable.ARRAY) 
-		//	error("Arrays of arrays not supported");
+		if (expressionType==Variable.ARRAY) 
+			error("Arrays of arrays not supported");
 		getToken();
 		int op = token;
 		if (!(op=='='||op==PLUS_EQUAL||op==MINUS_EQUAL||op==MUL_EQUAL||op==DIV_EQUAL))
@@ -1185,8 +1185,8 @@ public class Interpreter implements MacroConstants {
 			if (type==TABLE || type==ROI || type==PROPERTY || type==ROI_MANAGER2) {
 				int token2 = pgm.code[pcLoc+2];
 				String name = pgm.table[token2>>TOK_SHIFT].str;
-				if (func.isStringFunction(name,type))
-					return true;
+				if (Functions.isStringFunction(name,type))
+					return true; 
 			}
 		}
 		if ((tok&TOK_MASK)!=WORD)

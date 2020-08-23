@@ -727,6 +727,25 @@ public class Selection implements PlugIn, Measurements {
 				}
 			}
 		}
+		if (Recorder.record && imp.getStackSize()>1) {
+			if (imp.isHyperStack()) {
+				int C = imp.getChannel();
+				int Z = imp.getSlice();
+				int T = imp.getFrame();
+				if (Recorder.scriptMode()) {
+					Recorder.recordCall("roi = imp.getRoi();");
+					Recorder.recordCall("roi.setPosition("+C+", "+Z+", "+T+");");
+				} else
+					Recorder.record("Roi.setPosition", C, Z, T);				
+			} else {
+				int position = imp.getCurrentSlice();
+				if (Recorder.scriptMode()) {
+					Recorder.recordCall("roi = imp.getRoi();");
+					Recorder.recordCall("roi.setPosition("+position+");");
+				} else
+					Recorder.record("Roi.setPosition", position);
+			}
+		}
 		rm.allowRecording(true);
 		rm.runCommand("add");
 		rm.allowRecording(false);
