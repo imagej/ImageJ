@@ -37,8 +37,7 @@ public class MacroRunner implements Runnable {
 		thread.start();
 	}
 
-	/** Create a new object that interprets macro source in a 
-		separate thread, and also passing a string argument. */
+	/** Interprets macro source in a separate thread using a string argument. */
 	public MacroRunner(String macro, String argument) {
 		this.macro = macro;
 		this.argument = argument;
@@ -47,7 +46,7 @@ public class MacroRunner implements Runnable {
 		thread.start();
 	}
 
-	/** Create a new object that interprets a macro file using a separate thread. */
+	/** Interprets a macro file in a separate thread. */
 	public MacroRunner(File file) {
 		int size = (int)file.length();
 		if (size<=0)
@@ -74,12 +73,12 @@ public class MacroRunner implements Runnable {
 		thread.start();
 	}
 
-	/** Create a new object that runs a tokenized macro in a separate thread. */
+	/** Runs a tokenized macro in a separate thread. */
 	public MacroRunner(Program pgm, int address, String name) {
 		this(pgm, address, name, (String)null);
 	}
 
-	/** Create a new object that runs a tokenized macro in a separate thread,
+	/** Runs a tokenized macro in a separate thread,
 		passing a string argument. */
 	public MacroRunner(Program pgm, int address, String name, String argument) {
 		this.pgm = pgm;
@@ -91,7 +90,7 @@ public class MacroRunner implements Runnable {
 		thread.start();
 	}
 
-	/** Create a new object that runs a tokenized macro in debug mode if 'editor' is not null. */
+	/** Runs a tokenized macro in debug mode if 'editor' is not null. */
 	public MacroRunner(Program pgm, int address, String name, Editor editor) {
 		this.pgm = pgm;
 		this.address = address;
@@ -129,6 +128,7 @@ public class MacroRunner implements Runnable {
 		return thread;
 	}
 
+	/** Used to run the macro code in 'macro' on a separate thread. */
 	public void run() {
 		Interpreter interp = new Interpreter();
 		interp.argument = argument;

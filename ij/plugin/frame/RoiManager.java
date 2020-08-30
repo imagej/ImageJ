@@ -601,8 +601,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			}
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (count>1 && index.length==1 && imp!=null)
-			imp.deleteRoi();
+		//if (count>1 && index.length==1 && imp!=null)
+		//	imp.deleteRoi();
 		updateShowAll();
 		if (record())
 			Recorder.record("roiManager", "Delete");
@@ -1601,7 +1601,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (imp==null)
 			return;
 		Roi[] rois = getSelectedRoisAsArray();
-		if (rois.length==1) {
+		if (rois.length==1 && !IJ.isMacro()) {
 			error("More than one item must be selected, or none");
 			return;
 		}
@@ -1620,6 +1620,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	private void combineRois(ImagePlus imp, Roi[] rois) {
+		if (rois.length==1) {
+		    Roi roi2 = (Roi)rois[0].clone();
+		    roi2.setPosition(0);
+		    roi2.setGroup(0);
+			imp.setRoi(roi2);
+			return;
+		}
 		IJ.resetEscape();
 		ShapeRoi s1=null, s2=null;
 		for (int i=0; i<rois.length; i++) {
@@ -2076,6 +2083,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Returns the ROI count. */
 	public int getCount() {
 		return listModel!=null?listModel.getSize():0;
+	}
+
+	/** Returns the count of selected ROIs. */
+	public int selected() {
+		return getSelectedIndexes().length;
 	}
 
 	/** Returns the index of the specified Roi, or -1 if it is not found. */

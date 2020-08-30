@@ -27,6 +27,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"importPackage(Packages.ij.process);"+
 		"importPackage(Packages.ij.measure);"+
 		"importPackage(Packages.ij.util);"+
+		"importPackage(Packages.ij.macro);"+
 		"importPackage(Packages.ij.plugin);"+
 		"importPackage(Packages.ij.io);"+
 		"importPackage(Packages.ij.plugin.filter);"+

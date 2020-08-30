@@ -72,7 +72,7 @@ public class Prefs {
 	/** Open images at 100% magnification*/
 	public static boolean open100Percent;
 	/** Backgound is black in binary images*/
-	public static boolean blackBackground;
+	public static boolean blackBackground = true;
 	/** Use JFileChooser instead of FileDialog to open and save files. */
 	public static boolean useJFileChooser;
 	/** Color to grayscale conversion is weighted (0.299, 0.587, 0.114) if the variable is true. */
@@ -491,7 +491,7 @@ public class Prefs {
 		antialiasedText = false;
 		interpolateScaledImages = (options&INTERPOLATE)!=0;
 		open100Percent = (options&ONE_HUNDRED_PERCENT)!=0;
-		blackBackground = (options&BLACK_BACKGROUND)!=0;
+		//blackBackground = (options&BLACK_BACKGROUND)!=0;
 		useJFileChooser = (options&JFILE_CHOOSER)!=0;
 		weightedColor = (options&WEIGHTED)!=0;
 		if (weightedColor)

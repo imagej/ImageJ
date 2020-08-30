@@ -5,14 +5,27 @@
 </head>
 <body>x
 
-<li> <u>1.53e4  23 August 2020</u>
+<li> <u>1.53e8  30 August 2020</u>
 <ul>
+<li> The "Black background" option is set 'true' on startup and
+is not saved in the preferences file. Add
+setOption("BlackBackground", false) to Edit>Options>Startup
+to have it set to 'false' on startup.
 <li> Thanks to Kees Straatman, improved recording of the
 <i>Edit&gt;Selection&gt;Add to Manager</i> command.
+<li> Thanks to Michael Ellis, added a module-info.java file,
+used by the Java Module System, to the ImageJ source.
+<li> Thanks to 'mkhapp', added the RoiManager.selected macro DOCUMENT
+function, which returns the number of selected ROIs in the
+ROI Manager
+(<a href="http://wsr.imagej.net/macros/SetGroupDemo.txt">example</a>).
 <li> Thanks to Philippe Carl, fixed a bug that allowed multiple copies
 of the Color Picker to be opened.
 <li> Thanks to 'Ben', fixed a bug that caused the Table.get()
 macro function to return strings instead of numbers.
+<li> Thanks to Martin Hohne, fixed a 1.53c regression that caused
+the Counter popup menu in the Point Tool options Dialog
+to not work as expected .after switching to a different image.
 </ul>
 
 <li> <u>1.53d  20 August 2020</u>

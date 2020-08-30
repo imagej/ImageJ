@@ -136,7 +136,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
 		Prefs.showAllPoints = showAllPoints;
 		if (multipointTool) {
 			int counter = gd.getNextChoiceIndex();
-			if (counter!=getCounter()) {
+			if (counter==0 || counter!=getCounter()) {
 				setCounter(counter);
 				redraw = true;
 			}

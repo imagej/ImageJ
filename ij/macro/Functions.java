@@ -7811,6 +7811,9 @@ public class Functions implements MacroConstants, Measurements {
 		if (name.equals("size")) {
 			interp.getParens();
 			return new Variable(rm.getCount());
+		} else if (name.equals("selected")) {
+			interp.getParens();
+			return new Variable(rm.selected());
 		} else if (name.equals("select")) {
 			rm.select((int)getArg());
 			return null;
