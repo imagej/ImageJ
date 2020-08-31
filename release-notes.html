@@ -5,7 +5,7 @@
 </head>
 <body>x
 
-<li> <u>1.53e8  30 August 2020</u>
+<li> <u>1.53e10  31 August 2020</u>
 <ul>
 <li> The "Black background" option is set 'true' on startup and
 is not saved in the preferences file. Add
@@ -19,13 +19,17 @@ used by the Java Module System, to the ImageJ source.
 function, which returns the number of selected ROIs in the
 ROI Manager
 (<a href="http://wsr.imagej.net/macros/SetGroupDemo.txt">example</a>).
+<li>Thanks to Fred Damen, added the ImagePlus.copyToSystem() method.
 <li> Thanks to Philippe Carl, fixed a bug that allowed multiple copies
 of the Color Picker to be opened.
 <li> Thanks to 'Ben', fixed a bug that caused the Table.get()
 macro function to return strings instead of numbers.
+<li>Thanks to Fred Damen and Michael chmid, fixed a bug
+that caused the run("Copy to System") macro function to
+sometimes copy the wrong image to the system clipboard.
 <li> Thanks to Martin Hohne, fixed a 1.53c regression that caused
 the Counter popup menu in the Point Tool options Dialog
-to not work as expected .after switching to a different image.
+to not work as expected after switching to a different image.
 </ul>
 
 <li> <u>1.53d  20 August 2020</u>

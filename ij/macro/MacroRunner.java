@@ -37,7 +37,7 @@ public class MacroRunner implements Runnable {
 		thread.start();
 	}
 
-	/** Interprets macro source in a separate thread using a string argument. */
+	/** Interprets macro source in a separate thread, passing a string argument. */
 	public MacroRunner(String macro, String argument) {
 		this.macro = macro;
 		this.argument = argument;

@@ -2726,6 +2726,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
     }
 
+	/** Copies the contents of the current selection to the internal
+		clipboard and then clears the selection. */
+	public void cut() {
+		copy(true);
+	}
+
 	/** Copies the contents of the current selection, or the entire
 		image if there is no selection, to the internal clipboard. */
 	public void copy() {
@@ -2774,8 +2780,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
     }
 
-
-	 /** Inserts the contents of the internal clipboard into the active image. If there
+	 /** Inserts the contents of the internal clipboard into this image. If there
 	 is a selection the same size as the image on the clipboard, the image is inserted
 	 into that selection, otherwise the selection is inserted into the center of the image.*/
 	 public void paste() {
@@ -2843,6 +2848,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		clipboard = null;
 	}
 	
+	/** Copies the contents of the current selection, or the entire
+		image if there is no selection, to the system clipboard. */
+	public void copyToSystem() {
+		Clipboard.copyToSystem(this);
+	}
+
 	protected void notifyListeners(final int id) {
 	    final ImagePlus imp = this;
 		EventQueue.invokeLater(new Runnable() {
