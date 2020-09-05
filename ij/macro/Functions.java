@@ -2200,11 +2200,7 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("getLimits")) {
 			return getPlotLimits(currentPlot);
 		} else if (name.equals("freeze")) {
-			if (interp.nextNextToken()==')') {
-				interp.getParens();
-				currentPlot.setFrozen(true);
-			} else
-				currentPlot.setFrozen(getBooleanArg());
+			currentPlot.setFrozen(getBooleanArg());
 			return Double.NaN;
 		}  else if (name.equals("addLegend") || name.equals("setLegend")) {
 			return addPlotLegend(currentPlot);

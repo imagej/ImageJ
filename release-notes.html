@@ -5,12 +5,14 @@
 </head>
 <body>x
 
-<li> <u>1.53e10  31 August 2020</u>
+<li> <u>1.53e15  5 September 2020</u>
 <ul>
-<li> The "Black background" option is set 'true' on startup and
-is not saved in the preferences file. Add
-setOption("BlackBackground", false) to Edit>Options>Startup
-to have it set to 'false' on startup.
+<li> Thanks to Michael Schmid, the color picker tool has
+a new icon and a new right click drop down menu.
+<li> The "Black background" option is no longer
+saved in the preferences file. Add
+setOption("BlackBackground",true) to Edit>Options>Startup
+to have it set 'true' on startup.
 <li> Thanks to Kees Straatman, improved recording of the
 <i>Edit&gt;Selection&gt;Add to Manager</i> command.
 <li> Thanks to Michael Ellis, added a module-info.java file,
@@ -27,6 +29,13 @@ macro function to return strings instead of numbers.
 <li>Thanks to Fred Damen and Michael chmid, fixed a bug
 that caused the run("Copy to System") macro function to
 sometimes copy the wrong image to the system clipboard.
+<li>Thanks to Fred Damen, fixed a bug that caused unreliable
+zooming of images with selections when using the arrow keys
+and shift or control.
+<li>Thanks to Fred Damen, fixed a bug that caused the
+img3=ImageCalculator.run(img1,img2,operation) method
+to return null if the 'operation' string did not contain
+'create' or '32-bit'.
 <li> Thanks to Martin Hohne, fixed a 1.53c regression that caused
 the Counter popup menu in the Point Tool options Dialog
 to not work as expected after switching to a different image.
