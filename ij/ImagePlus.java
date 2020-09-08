@@ -1446,9 +1446,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	*/
 	public String getProp(String key) {
 		if (imageProperties==null)
-			return null;
-		else
-			return imageProperties.getProperty(key);
+			return getStringProperty(key);
+		else {
+			String value = imageProperties.getProperty(key);
+			if (value==null)
+				value = getStringProperty(key);
+			return value;
+		}
 	}
 	
 	/** Returns the numeric property associated with the specified key
