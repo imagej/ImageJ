@@ -486,11 +486,10 @@ public class FolderOpener implements PlugIn {
 			options = options.replace("open=", "dir=");
 			options = options.replace("file=", "filter=");
 			options =  options.replace("starting=","start=");
+			options =  options.replace("number=","count=");
 			options =  options.replace("increment=","inc=");
 			if (!options.equals(optionsOrig))
 				Macro.setOptions(options);
-			if (options.contains("number="))
-				this.nFiles = (int)Tools.getNumberFromList(options,"number=",0);
 			if (options.contains("convert_to_rgb"))
 				this.bitDepth = 24;
 		}
@@ -505,6 +504,7 @@ public class FolderOpener implements PlugIn {
 		gd.setInsets(0,55,0);
 		gd.addMessage("enclose regex in parens", IJ.font10, Color.darkGray);
 		gd.addNumericField("Start:", this.start, 0, 6, "");
+		gd.addStringField("Count:", "---", 6);
 		gd.addNumericField("Inc:", this.increment, 0, 6, "");
 		gd.addNumericField("Scale:", this.scale, 0, 6, "%");
 		gd.addCheckbox("Sort names numerically", sortFileNames);
@@ -523,6 +523,10 @@ public class FolderOpener implements PlugIn {
 			filter = "("+legacyRegex+")";			
 		gd.setSmartRecording(true);
 		this.start = (int)gd.getNextNumber();
+		String countStr = gd.getNextString();
+		double count = Tools.parseDouble(countStr);
+		if (!Double.isNaN(count))
+			nFiles = (int)count;
 		this.increment = (int)gd.getNextNumber();
 		if (this.increment<1)
 			this.increment = 1;

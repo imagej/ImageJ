@@ -3,12 +3,12 @@
 <link rel="stylesheet" href="../docs/ij.css" type="text/css"/>
 <title>Release Notes</title>
 </head>
-<body>x
+<body>
 
-<li> <u>1.53e21  12 September 2020</u>
+<li> <u>1.53e  16 September 2020</u>
 <ul>
 <li> Thanks to Michael Schmid, the color picker tool has
-a new icon and a new right click drop down menu.
+a new icon and a right click drop down menu.
 <li> The "Black background" option is no longer
 saved in the preferences file. Add
 setOption("BlackBackground",true) to Edit>Options>Startup
@@ -17,7 +17,7 @@ to have it set 'true' on startup.
 <i>Edit&gt;Selection&gt;Add to Manager</i> command.
 <li> Thanks to Michael Ellis, added a module-info.java file,
 used by the Java Module System, to the ImageJ source.
-<li> Thanks to 'mkhapp', added the RoiManager.selected macro DOCUMENT
+<li> Thanks to 'mkhapp', added the RoiManager.selected macro
 function, which returns the number of selected ROIs in the
 ROI Manager
 (<a href="http://wsr.imagej.net/macros/SetGroupDemo.txt">example</a>).
@@ -26,12 +26,12 @@ ROI Manager
 of the Color Picker to be opened.
 <li> Thanks to 'Ben', fixed a bug that caused the Table.get()
 macro function to return strings instead of numbers.
-<li>Thanks to Fred Damen and Michael chmid, fixed a bug
+<li>Thanks to Fred Damen and Michael Schmid, fixed a bug
 that caused the run("Copy to System") macro function to
 sometimes copy the wrong image to the system clipboard.
 <li>Thanks to Fred Damen, fixed a bug that caused unreliable
 zooming of images with selections when using the arrow keys
-and shift or control.
+while holding the shift or control key down.
 <li>Thanks to Fred Damen, fixed a bug that caused the
 img3=ImageCalculator.run(img1,img2,operation) method
 to return null if the 'operation' string did not contain
@@ -42,7 +42,7 @@ to not work as expected after switching to a different image.
 <li> Thanks to Robert Svoboda, fixed a 1.53d regression on
 Windows that could cause the getDirectory() macro function
 to throw an exception or crash ImageJ.
-<li> Thanks to Stein Rorvik, fixed a 1.53d regression that caused
+<li> Thanks to Stein Rorvik, fixed a 1.53d regression that could cause
 the run("Image Sequence...",options) macro function to fail.
 </ul>
 

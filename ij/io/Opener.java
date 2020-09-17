@@ -950,7 +950,11 @@ public class Opener {
 				imp = dcm;
 			} else {
 				zis.close();
-				IJ.error("Opener", "This ZIP archive does not appear to contain a \nTIFF (\".tif\") or DICOM (\".dcm\") file, or ROIs (\".roi\").");
+				String msg = "This ZIP archive does not contain a TIFF or DICOM file, or ROIs:\n   "+path;
+				if (silentMode)
+					IJ.log(msg);
+				else
+					IJ.error("Opener", msg);
 				return null;
 			}
 			zis.close();

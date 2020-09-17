@@ -1958,8 +1958,8 @@ public class Plot implements Cloneable {
 		int addHspace = (int)Tools.getNumberFromList(pp.frame.options, "addhspace="); //user-defined extra space
 		int addVspace = (int)Tools.getNumberFromList(pp.frame.options, "addvspace=");
 		leftMargin	 = sc(LEFT_MARGIN*marginScale + addHspace);
-		rightMargin	 = sc(RIGHT_MARGIN*marginScale + addHspace);
-		topMargin	 = sc(TOP_MARGIN*marginScale + addVspace);
+		rightMargin = sc(RIGHT_MARGIN*marginScale + addHspace);
+		topMargin = sc(TOP_MARGIN*marginScale + addVspace);
 		bottomMargin = sc(BOTTOM_MARGIN*marginScale + 2 + addVspace);
 		if(pp != null && pp.xLabel != null && pp.xLabel.getFont() != null){
 			float numberSize = font.getSize2D();
