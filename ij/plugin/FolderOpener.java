@@ -15,6 +15,7 @@ import ij.plugin.frame.Recorder;
 /** Implements the File/Import/Image Sequence command, which
 	opens a folder of images as a stack. */
 public class FolderOpener implements PlugIn {
+	private static final int MAX_SEPARATE = 40;
 	private static final String DIR_KEY = "import.sequence.dir";
 	private static final String[] types = {"default", "16-bit", "32-bit", "RGB"};
 	private static String[] excludedTypes = {".txt", ".lut", ".roi", ".pty", ".hdr", ".java", ".ijm", ".py", ".js", ".bsh", ".xml"};
@@ -25,6 +26,7 @@ public class FolderOpener implements PlugIn {
 	private boolean sortByMetaData = true;
 	private boolean openAsVirtualStack;
 	private String directory;
+	private boolean directorySet;
 	private String filter;
 	private String legacyRegex;
 	private FileInfo fi;
@@ -37,8 +39,9 @@ public class FolderOpener implements PlugIn {
 	private int defaultBitDepth;
 	private int nFiles = 0;
 	private int start = 1;
-	private int increment = 1;
+	private int step = 1;
 	private double scale = 100.0;
+	private boolean openAsSeparateImages;
 
 	
 	/** Opens the images in the specified directory as a stack. Displays
@@ -87,7 +90,7 @@ public class FolderOpener implements PlugIn {
 		bitDepth = (int)Tools.getNumberFromList(options,"bitdepth=",0);
 		filter = Macro.getValue(options, "filter", "");
 		this.start = (int)Tools.getNumberFromList(options,"start=",1);
-		this.increment = (int)Tools.getNumberFromList(options,"inc=",1);
+		this.step = (int)Tools.getNumberFromList(options,"step=",1);
 		this.scale = Tools.getNumberFromList(options,"scale=",100);
 	}
 
@@ -101,7 +104,8 @@ public class FolderOpener implements PlugIn {
 
 	public void run(String arg) {
 		boolean isMacro = Macro.getOptions()!=null;
-		directory = null;
+		if (!directorySet)
+			directory = null;
 		if (arg!=null && !arg.equals("")) {
 			directory = arg;
 		} else {
@@ -223,7 +227,7 @@ public class FolderOpener implements PlugIn {
 			
 			// open images as stack
 			for (int i=this.start-1; i<list.length; i++) {
-				if ((counter++%this.increment)!=0)
+				if ((counter++%this.step)!=0)
 					continue;
 				Opener opener = new Opener();
 				opener.setSilentMode(true);
@@ -416,7 +420,10 @@ public class FolderOpener implements PlugIn {
 			}
 			if (arg==null && !saveImage) {
 				String time = (System.currentTimeMillis()-t0)/1000.0 + " seconds";
-				imp2.show(time);
+				if (directorySet && imp2.getStackSize()<=MAX_SEPARATE && openAsSeparateImages)
+					openAsSeparateImages(imp2);
+				else
+					imp2.show(time);
 				if (stack.isVirtual()) {
 					overlay = stack.getProcessor(1).getOverlay();
 					if (overlay!=null)
@@ -425,6 +432,8 @@ public class FolderOpener implements PlugIn {
 			}
 			if (saveImage)
 				image = imp2;
+			if (directorySet && imp2.getStackSize()>MAX_SEPARATE && openAsSeparateImages)
+				IJ.error("Import>Image Sequence", "A maximum of "+MAX_SEPARATE+" images can be opened separately.");
 		}
 		IJ.showProgress(1.0);
 		if (Recorder.record) {
@@ -438,8 +447,8 @@ public class FolderOpener implements PlugIn {
 			}
 			if (start!=1)
 				options = options + " start=" + start;				
-			if (increment!=1)
-				options = options + " inc=" + increment;				
+			if (step!=1)
+				options = options + " step=" + step;				
 			if (scale!=100)
 				options = options + " scale=" + scale;				
 			if (!sortByMetaData)
@@ -447,6 +456,13 @@ public class FolderOpener implements PlugIn {
 			String dir = Recorder.fixPath(directory);
    			Recorder.recordCall("imp = FolderOpener.open(\""+dir+"\", \""+options+"\");");
 		}
+	}
+	
+	private void openAsSeparateImages(ImagePlus imp) {
+		VirtualStack stack = (VirtualStack)imp.getStack();
+		String dir = stack.getDirectory();
+		for (int n=1; n<=stack.size(); n++)
+			IJ.open(dir+stack.getFileName(n));	
 	}
 	
 	public static boolean useInfo(String info) {
@@ -487,13 +503,21 @@ public class FolderOpener implements PlugIn {
 			options = options.replace("file=", "filter=");
 			options =  options.replace("starting=","start=");
 			options =  options.replace("number=","count=");
-			options =  options.replace("increment=","inc=");
+			options =  options.replace("increment=","step=");
+			options =  options.replace("inc=","step=");
 			if (!options.equals(optionsOrig))
 				Macro.setOptions(options);
 			if (options.contains("convert_to_rgb"))
 				this.bitDepth = 24;
 		}
-		directory = Prefs.get(DIR_KEY, IJ.getDir("downloads")+"stack/");
+		String countStr = "---";
+		if (directorySet) {
+			File f = new File(directory);
+			String[] names = f.list();
+			names = (new FolderOpener()).trimFileList(names);
+			countStr = ""+names.length;
+		} else
+			directory = Prefs.get(DIR_KEY, IJ.getDir("downloads")+"stack/");
 		GenericDialog gd = new GenericDialog("Import Image Sequence");
 		gd.setInsets(5, 0, 0);
 		gd.addDirectoryField("Dir:", directory);		
@@ -504,11 +528,13 @@ public class FolderOpener implements PlugIn {
 		gd.setInsets(0,55,0);
 		gd.addMessage("enclose regex in parens", IJ.font10, Color.darkGray);
 		gd.addNumericField("Start:", this.start, 0, 6, "");
-		gd.addStringField("Count:", "---", 6);
-		gd.addNumericField("Inc:", this.increment, 0, 6, "");
+		gd.addStringField("Count:", countStr, 6);
+		gd.addNumericField("Step:", this.step, 0, 6, "");
 		gd.addNumericField("Scale:", this.scale, 0, 6, "%");
 		gd.addCheckbox("Sort names numerically", sortFileNames);
 		gd.addCheckbox("Use virtual stack", openAsVirtualStack);
+		if (directorySet)
+			gd.addCheckbox("Open as separate images", false);		
 		gd.addHelp(IJ.URL+"/docs/menus/file.html#seq1");
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -523,13 +549,13 @@ public class FolderOpener implements PlugIn {
 			filter = "("+legacyRegex+")";			
 		gd.setSmartRecording(true);
 		this.start = (int)gd.getNextNumber();
-		String countStr = gd.getNextString();
+		countStr = gd.getNextString();
 		double count = Tools.parseDouble(countStr);
 		if (!Double.isNaN(count))
 			nFiles = (int)count;
-		this.increment = (int)gd.getNextNumber();
-		if (this.increment<1)
-			this.increment = 1;
+		this.step = (int)gd.getNextNumber();
+		if (this.step<1)
+			this.step = 1;
 		this.scale = gd.getNextNumber();
 		if (this.scale<5.0) this.scale = 5.0;
 		if (this.scale>100.0) this.scale = 100.0;
@@ -539,6 +565,10 @@ public class FolderOpener implements PlugIn {
 		openAsVirtualStack = gd.getNextBoolean();
 		if (openAsVirtualStack)
 			scale = 100.0;
+		if (directorySet) {
+			openAsSeparateImages = gd.getNextBoolean();
+			if (openAsSeparateImages) openAsVirtualStack=true;
+		}
 		if (!IJ.macroRunning()) {
 			staticSortFileNames = sortFileNames;
 			staticOpenAsVirtualStack = openAsVirtualStack;
@@ -670,6 +700,11 @@ public class FolderOpener implements PlugIn {
 	
 	public void sortByMetaData(boolean b) {
 		sortByMetaData = b;
+	}
+
+	public void setDirectory(String path) {
+		directory = path;
+		directorySet = true;
 	}
 
 	/** Sorts file names containing numerical components.

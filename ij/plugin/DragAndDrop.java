@@ -212,40 +212,9 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 		names = (new FolderOpener()).trimFileList(names);
 		if (names==null)
 			return;
-		String msg = "Open all "+names.length+" images in \"" + f.getName() + "\" as a stack?";
-		GenericDialog gd = new GenericDialog("Open Folder");
-		gd.setInsets(10,5,0);
-		gd.addMessage(msg);
-		gd.setInsets(15,35,0);
-		gd.addCheckbox("Convert to RGB", convertToRGB);
-		gd.setInsets(0,35,0);
-		gd.addCheckbox("Use Virtual Stack", virtualStack);
-		gd.enableYesNoCancel();
-		gd.showDialog();
-		if (gd.wasCanceled())
-			return;
-		if (gd.wasOKed()) {
-			convertToRGB = gd.getNextBoolean();
-			virtualStack = gd.getNextBoolean();
-			String options  = " sort";
-			if (convertToRGB) options += " convert_to_rgb";
-			if (virtualStack) options += " use";
-			IJ.run("Image Sequence...", "open=[" + path + "]"+options);
-			DirectoryChooser.setDefaultDirectory(path);
-		} else {
-			for (int k=0; k<names.length; k++) {
-				if (!names[k].startsWith(".")) {
-					IJ.redirectErrorMessages(true);
-					ImagePlus imp = IJ.openImage(path+names[k]);
-					if (imp!=null) {
-						imp.setIJMenuBar(k==names.length-1);
-						imp.show();
-					}
-					IJ.redirectErrorMessages(false);
-				}
-			}
-		}
-		IJ.register(DragAndDrop.class);
+		FolderOpener fo = new FolderOpener();
+		fo.setDirectory(path);
+		fo.run("");
 	}
 		
 }

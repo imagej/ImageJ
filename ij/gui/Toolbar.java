@@ -223,7 +223,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addMenuItem(pickerPopup, "Cyan");
 		addMenuItem(pickerPopup, "Magenta");
 		pickerPopup.addSeparator();
-		addMenuItem(pickerPopup, "Color Picker");
+		addMenuItem(pickerPopup, "Foreground...");
+		addMenuItem(pickerPopup, "Background...");
+		addMenuItem(pickerPopup, "Color Picker...");
 		add(pickerPopup);
 
 		switchPopup = new PopupMenu();
@@ -1560,6 +1562,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				setForegroundColor(Color.cyan);
 			else if ("Magenta".equals(cmd))
 				setForegroundColor(Color.magenta);
+			else if ("Foreground...".equals(cmd))
+				setForegroundColor(new ColorChooser("Select Foreground Color", foregroundColor, false).getColor());
+			else if ("Background...".equals(cmd))
+				setBackgroundColor(new ColorChooser("Select Background Color", backgroundColor, false).getColor());
 			else
 				IJ.run("Color Picker...", "");
 			if (!"Color Picker".equals(cmd))
