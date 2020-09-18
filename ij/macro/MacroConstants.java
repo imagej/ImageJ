@@ -136,8 +136,8 @@ public interface MacroConstants {
 		GET_FONT_LIST, NEW_MENU, GET_LIST, ARRAY_FUNC};
 
 	// functions that return a Variable
-	static final int TABLE=4000, ROI=4001, ROI_MANAGER2=4002, PROPERTY=4003;
-	static final String[] variableFunctions = {"Table", "Roi", "RoiManager", "Property"};
-	static final int[] variableFunctionIDs = {TABLE, ROI, ROI_MANAGER2, PROPERTY};
+	static final int TABLE=4000, ROI=4001, ROI_MANAGER2=4002, PROPERTY=4003, IMAGE=4004;
+	static final String[] variableFunctions = {"Table", "Roi", "RoiManager", "Property", "Image"};
+	static final int[] variableFunctionIDs = {TABLE, ROI, ROI_MANAGER2, PROPERTY, IMAGE};
 
 }  // interface MacroConstants

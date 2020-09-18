@@ -316,6 +316,7 @@ public class Functions implements MacroConstants, Measurements {
 			case ROI: var = doRoi(); break;
 			case ROI_MANAGER2: var = doRoiManager(); break;
 			case PROPERTY: var = doProperty(); break;
+			case IMAGE: var = doImage(); break;
 			default:
 				interp.error("Variable function expected");
 		}
@@ -7949,6 +7950,33 @@ public class Functions implements MacroConstants, Measurements {
 				break;
 		}
 		return isString;
+	}
+	
+	private Variable doImage() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (!(interp.token==WORD||interp.token==PREDEFINED_FUNCTION))
+			interp.error("Function name expected: ");
+		String name = interp.tokenString;
+		ImagePlus imp = getImage();
+		if (name.equals("width")) {
+			interp.getParens();
+			return new Variable(imp.getWidth());
+		} else if (name.equals("height")) {
+			interp.getParens();
+			return new Variable(imp.getHeight());
+		} else if (name.equals("copy")) {
+			interp.getParens();
+			imp.copy();
+			return null;
+		} else if (name.equals("paste")) {
+			imp.paste((int)getFirstArg(), (int)getLastArg());
+			imp.updateAndDraw();
+			return null;
+		}
+		return null;
 	}
 
 } // class Functions

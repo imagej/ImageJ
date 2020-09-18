@@ -127,13 +127,13 @@ public class RoiProperties implements TextListener, WindowListener {
 				gd.addStringField("Stroke color:", linec);
 				gd.addNumericField("Width:", strokeWidth, digits);
 			}
-			if (showName && !IJ.isMacro()) {
-				Vector v = gd.getStringFields();
-				groupField = (TextField)v.elementAt(v.size()-2);
-				groupField.addTextListener(this);
-				colorField = (TextField)v.elementAt(v.size()-1);
-				groupName = (Label)gd.getMessage();
-			}
+		}
+		if (showName && !IJ.isMacro()) {
+			Vector v = gd.getStringFields();
+			groupField = (TextField)v.elementAt(v.size()-2);
+			groupField.addTextListener(this);
+			colorField = (TextField)v.elementAt(v.size()-1);
+			groupName = (Label)gd.getMessage();
 		}
 
 		if (!isLine) {

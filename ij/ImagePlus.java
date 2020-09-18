@@ -2841,11 +2841,18 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 		changes = true;
     }
-
-	/** Returns the internal clipboard or null if the internal clipboard is empty. */
-	public static ImagePlus getClipboard() {
-		return clipboard;
+    
+    /** Inserts the contents of the internal clipboard at the
+    	specified location, without updating the display. */
+	 public void paste(int x, int y) {
+		if (clipboard!=null)
+			ip.insert(clipboard.getProcessor(), x, y);
 	}
+
+    /** Returns the internal clipboard or null if the internal clipboard is empty. */
+    public static ImagePlus getClipboard() {
+        return clipboard;
+    }
 
 	/** Clears the internal clipboard. */
 	public static void resetClipboard() {
