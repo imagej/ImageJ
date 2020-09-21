@@ -114,7 +114,8 @@ options16="Rounded Rect Tool...",ij.plugin.RectToolOptions
 options17="Startup...",ij.plugin.Startup
 options18="Wand Tool...",ij.plugin.WandToolOptions
 options19=-
-options20="Reset... ",ij.plugin.Options("reset")
+options20="Fresh Start",ij.plugin.Options("fresh-start")
+options21="Reset... ",ij.plugin.Options("reset")
 
 # Plugins installed in the Image/Adjust submenu
 adjust01="Brightness/Contrast...[C]",ij.plugin.frame.ContrastAdjuster

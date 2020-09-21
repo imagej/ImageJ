@@ -420,7 +420,7 @@ public class FolderOpener implements PlugIn {
 			}
 			if (arg==null && !saveImage) {
 				String time = (System.currentTimeMillis()-t0)/1000.0 + " seconds";
-				if (directorySet && imp2.getStackSize()<=MAX_SEPARATE && openAsSeparateImages)
+				if (openAsSeparateImages && imp2.getStackSize()<=MAX_SEPARATE)
 					openAsSeparateImages(imp2);
 				else
 					imp2.show(time);
@@ -432,7 +432,7 @@ public class FolderOpener implements PlugIn {
 			}
 			if (saveImage)
 				image = imp2;
-			if (directorySet && imp2.getStackSize()>MAX_SEPARATE && openAsSeparateImages)
+			if (openAsSeparateImages && imp2.getStackSize()>MAX_SEPARATE)
 				IJ.error("Import>Image Sequence", "A maximum of "+MAX_SEPARATE+" images can be opened separately.");
 		}
 		IJ.showProgress(1.0);
@@ -533,8 +533,7 @@ public class FolderOpener implements PlugIn {
 		gd.addNumericField("Scale:", this.scale, 0, 6, "%");
 		gd.addCheckbox("Sort names numerically", sortFileNames);
 		gd.addCheckbox("Use virtual stack", openAsVirtualStack);
-		if (directorySet)
-			gd.addCheckbox("Open as separate images", false);		
+		gd.addCheckbox("Open as separate images", false);		
 		gd.addHelp(IJ.URL+"/docs/menus/file.html#seq1");
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -565,13 +564,13 @@ public class FolderOpener implements PlugIn {
 		openAsVirtualStack = gd.getNextBoolean();
 		if (openAsVirtualStack)
 			scale = 100.0;
-		if (directorySet) {
-			openAsSeparateImages = gd.getNextBoolean();
-			if (openAsSeparateImages) openAsVirtualStack=true;
-		}
+		openAsSeparateImages = gd.getNextBoolean();
+		if (openAsSeparateImages)
+			openAsVirtualStack = true;
 		if (!IJ.macroRunning()) {
 			staticSortFileNames = sortFileNames;
-			staticOpenAsVirtualStack = openAsVirtualStack;
+			if (!openAsSeparateImages)
+				staticOpenAsVirtualStack = openAsVirtualStack;
 		}
 		return true;
 	}

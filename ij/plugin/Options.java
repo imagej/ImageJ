@@ -4,7 +4,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.io.*;
 import ij.plugin.filter.*;
-import ij.plugin.frame.LineWidthAdjuster;
+import ij.plugin.frame.*;
 import java.awt.*;
 
 /** This plugin implements most of the commands
@@ -12,6 +12,8 @@ import java.awt.*;
 public class Options implements PlugIn {
 
  	public void run(String arg) {
+		if (arg.equals("fresh-start"))
+			{freshStart(); return;}
 		if (arg.equals("misc"))
 			{miscOptions(); return;}
 		else if (arg.equals("line"))
@@ -193,6 +195,19 @@ public class Options implements PlugIn {
 		Prefs.flipXZ = gd.getNextBoolean();
 	}
 		
+	/** Close all images, empty ROI Manager, clear the
+		 Results table and set "Black background" 'true'. */
+	private void freshStart() {
+		if (!Commands.closeAll())
+			return;
+		if (!Analyzer.resetCounter())
+			return;
+		RoiManager rm = RoiManager.getInstance();
+		if (rm!=null)
+			rm.reset();
+		Prefs.blackBackground = true;
+	}
+
 	// Delete preferences file when ImageJ quits
 	private void reset() {
 		if (IJ.showMessageWithCancel("Reset Preferences", "Preferences will be reset when ImageJ restarts."))

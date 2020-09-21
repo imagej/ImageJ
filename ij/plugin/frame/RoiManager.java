@@ -65,7 +65,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private int defaultLineWidth = 1;
 	private Color defaultColor;
 	private boolean firstTime = true;
-	private int[] selectedIndexes;
 	private boolean appendResults;
 	private static ResultsTable mmResults, mmResults2;
 	private int imageID;
@@ -2413,7 +2412,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 	/** Assigns the ROI at the specified index to 'imp'. */
 	public void select(ImagePlus imp, int index) {
-		selectedIndexes = null;
 		if (index<0) {
 			deselect();
 			return;
@@ -2599,18 +2597,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (indexes[i]<0) indexes[i]=0;
 			if (indexes[i]>=count) indexes[i]=count-1;
 		}
-		selectedIndexes = indexes;
 		list.setSelectedIndices(indexes);
 	}
 
 	/** Returns an array of the selected indexes. */
 	public int[] getSelectedIndexes() {
-		if (selectedIndexes!=null) {
-			int[] indexes = selectedIndexes;
-			selectedIndexes = null;
-			return indexes;
-		} else
-			return list.getSelectedIndices();
+		return list.getSelectedIndices();
 	}
 
 	/** This is a macro-callable version of getSelectedIndexes().

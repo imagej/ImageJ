@@ -26,6 +26,7 @@ public class ImageCalculator implements PlugIn {
 	private static boolean createWindow = true;
 	private static boolean floatResult;
 	private boolean processStack;
+	private boolean macroCall;
 	
 	public void run(String arg) {
 		int[] wList = WindowManager.getIDList();
@@ -110,14 +111,15 @@ public class ImageCalculator implements PlugIn {
 	* @deprecated
 	* replaced by run(String,ImagePlus,ImagePlus)
 	*/
-	public void calculate(String options, ImagePlus img1, ImagePlus img2) {
-		if (img1==null || img2==null || options==null) return;
-		operator = getOperator(options);
+	public void calculate(String operation, ImagePlus img1, ImagePlus img2) {
+		if (img1==null || img2==null || operation==null) return;
+		operator = getOperator(operation);
 		if (operator==-1)
 			{IJ.error("Image Calculator", "No valid operator"); return;}
-		createWindow = options.indexOf("create")!=-1;
-		floatResult= options.indexOf("32")!=-1 || options.indexOf("float")!=-1;
-		processStack = options.indexOf("stack")!=-1;
+		createWindow = operation.indexOf("create")!=-1;
+		floatResult = operation.indexOf("32")!=-1 || operation.indexOf("float")!=-1;
+		processStack = operation.indexOf("stack")!=-1;
+		macroCall = true;
 		ImagePlus img3 = calculate(img1, img2, true);
 		if (img3!=null) img3.show();
 	}
@@ -151,7 +153,7 @@ public class ImageCalculator implements PlugIn {
 				img3 = doStackOperation(img1, img2);
 			else
 				img3 = doOperation(img1, img2);
-			if (apiCall && img3==null)
+			if (img3==null && !macroCall && (img1.getWindow()==null))
 				img3 = img1;
 			return img3;
 		}

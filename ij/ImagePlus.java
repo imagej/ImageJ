@@ -2845,8 +2845,19 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     /** Inserts the contents of the internal clipboard at the
     	specified location, without updating the display. */
 	 public void paste(int x, int y) {
-		if (clipboard!=null)
-			ip.insert(clipboard.getProcessor(), x, y);
+		if (clipboard==null)
+			return;
+		Roi roi = clipboard.getRoi();
+		boolean nonRect = roi!=null && roi.getType()!=Roi.RECTANGLE;
+		if (nonRect)
+			ip.snapshot();
+		ip.insert(clipboard.getProcessor(), x, y);
+		if (nonRect) {
+			ImageProcessor mask = roi.getMask();
+			ip.setRoi(x, y, mask.getWidth(), mask.getHeight());
+			ip.setMask(mask);
+			ip.reset(ip.getMask());
+		}
 	}
 
     /** Returns the internal clipboard or null if the internal clipboard is empty. */
