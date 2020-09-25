@@ -1461,6 +1461,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		String rpName = null;
 		Font font = null;
 		int justification = TextRoi.LEFT;
+		String roiText = null;
 		double opacity = -1;
 		int pointType = -1;
 		int pointSize = -1;
@@ -1493,6 +1494,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (rpRoi instanceof TextRoi) {
 				font = ((TextRoi)rpRoi).getCurrentFont();
 				justification = ((TextRoi)rpRoi).getJustification();
+				roiText = ((TextRoi)rpRoi).getText();
 			}
 			if (rpRoi instanceof ImageRoi)
 				opacity = ((ImageRoi)rpRoi).getOpacity();
@@ -1526,6 +1528,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				if (font!=null)
 					((TextRoi)roi).setCurrentFont(font);
 				((TextRoi)roi).setJustification(justification);
+				if (n==1) ((TextRoi)roi).setText(roiText);
 				roi.setImage(null);
 			}
 			if ((roi instanceof ImageRoi) && opacity!=-1)
@@ -1548,6 +1551,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (roi!=null && (roi instanceof TextRoi)) {
 				((TextRoi)roi).setCurrentFont(font);
 				((TextRoi)roi).setJustification(justification);
+				((TextRoi)roi).setText(roiText);
 			}
 			if (roi!=null && (roi instanceof ImageRoi) && opacity!=-1)
 				((ImageRoi)roi).setOpacity(opacity);

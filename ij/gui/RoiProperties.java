@@ -136,6 +136,7 @@ public class RoiProperties implements TextListener, WindowListener {
 			groupName = (Label)gd.getMessage();
 		}
 
+
 		if (!isLine) {
 			if (isPoint) {
 				int index = ((PointRoi)roi).getPointType();
@@ -182,6 +183,11 @@ public class RoiProperties implements TextListener, WindowListener {
 				gd.setInsets(5,20,0);
 				gd.addMessage("No properties");
 			}
+		}
+		if (isText && !isRange) {
+			String text = ((TextRoi)roi).getText();
+			int nLines = Tools.split(text, "\n").length + 1;
+			gd.addTextAreas(text, null, Math.min(nLines+1, 5), 30);
 		}
 		if (showName && "".equals(name) && "none".equals(position) && "none".equals(group) && "none".equals(fillc))
 			gd.setSmartRecording(true);
@@ -256,6 +262,7 @@ public class RoiProperties implements TextListener, WindowListener {
 			if (justification!=troi.getJustification())
 				troi.setJustification(justification);
 			troi.setAntiAlias(antialias);
+			if (!isRange) troi.setText(gd.getNextText());
 		} else if (strokeWidth2!=strokeWidth)
 			roi.setStrokeWidth((float)strokeWidth2);
 		roi.setStrokeColor(strokeColor);

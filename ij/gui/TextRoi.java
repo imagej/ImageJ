@@ -32,7 +32,6 @@ public class TextRoi extends Roi {
 	private double previousMag;
 	private boolean firstChar = true;
 	private boolean firstMouseUp = true;
-	private int cline = 0;
 	private double angle;  // degrees
 	private static double defaultAngle;
 	private static boolean firstTime = true;
@@ -155,11 +154,14 @@ public class TextRoi extends Roi {
 	public void addChar(char c) {
 		if (imp==null) return;
 		if (!(c>=' ' || c=='\b' || c=='\n')) return;
+		int cline = 0;
 		if (firstChar) {
-			cline = 0;
 			theText[cline] = new String("");
 			for (int i=1; i<MAX_LINES; i++)
 				theText[i] = null;
+		} else {
+			for (int i=0; i<theText.length && theText[i] != null; i++)
+				cline = i; //add the character to the last line
 		}
 		if ((int)c=='\b') {
 			// backspace
@@ -634,7 +636,26 @@ public class TextRoi extends Roi {
 		}
 		return text;
 	}
-	
+
+	public void setText(String text) {
+		String[] lines = Tools.split(text, "\n");
+		boolean changes = false;
+		for (int i=0; i<Math.min(lines.length, theText.length-1); i++) {
+			if (!lines[i].equals(theText[i])) {
+				theText[i] = lines[i];
+				changes = true;
+			}
+		}
+		if (lines.length < theText.length && theText[lines.length] != null) {
+			theText[lines.length] = null;
+			changes = true;
+		}
+		if (changes) {
+			firstChar = false;
+			updateBounds();
+		}
+	}
+
 	public boolean isDrawingTool() {
 		return true;
 	}
@@ -648,7 +669,7 @@ public class TextRoi extends Roi {
 			int i=0, w=0;
 			while (i<MAX_LINES && theText[i]!=null) {
 				int w2 = ip.getStringWidth(theText[i]);
-				if (w2>w)
+				if (w2>w);
 					w = w2;
 				i++;
 			}

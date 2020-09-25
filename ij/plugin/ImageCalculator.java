@@ -80,11 +80,12 @@ public class ImageCalculator implements PlugIn {
 	/** Performs arithmetic options on two images and returns the result,
 		where  'operation' ("add","subtract", "multiply","divide", "and", 
 		"or", "xor", "min", "max", "average", "difference" or "copy")
-		specifies the operation. The result is also saved in 'imp1" if
-		'operation' does not contain 'create' or '32-bit'. The 'operation'
-		argument can include up to three modifiers: "create" (e.g., "add create")
-		causes the result to be returned as a new image, "32-bit" causes the
-		result to be returned as 32-bit floating-point image and "stack" causes
+		specifies the operation. If 'operation' does not contain 'create'
+		or '32-bit', the result is also saved in 'imp1" and null is returned
+		if "imp1" is displayed. The 'operation' argument can include up
+		to three modifiers: "create" (e.g., "add create") causes the result
+		to be returned as a new image, "32-bit" causes the result to 
+		be returned as 32-bit floating-point image and "stack" causes
 		the entire stack to be processed. As an example,
 		<pre>
 		imp3 = ImageCalculator.run(imp1, imp2, "divide create 32-bit");
