@@ -28,14 +28,14 @@ public class StackWriter implements PlugIn {
 	private ImagePlus imp;
 	private String directory;
 	private String format = "tiff";
-	private String gname;
+	private String name;
 	
 	/** Saves the specified image as a sequence of images. */
 	public static void save(ImagePlus imp, String directoryPath, String options) {
 		StackWriter sw = new StackWriter();
 		sw.imp = imp;
 		sw.format = Tools.getStringFromList(options, "format=", sw.format);
-		sw.gname = Tools.getStringFromList(options, "name=");
+		sw.name = Tools.getStringFromList(options, "name=");
 		sw.ndigits = (int)Tools.getNumberFromList(options, "digits=", sw.ndigits);
 		sw.useLabels = options.contains(" use");
 		sw.run(directoryPath);
@@ -50,10 +50,12 @@ public class StackWriter implements PlugIn {
 			return;
 		}
 		int stackSize = imp.getStackSize();
-		String name = imp.getTitle();
-		int dotIndex = name.lastIndexOf(".");
-		if (dotIndex>=0)
-			name = name.substring(0, dotIndex);
+		if (name==null) {
+			name = imp.getTitle();
+			int dotIndex = name.lastIndexOf(".");
+			if (dotIndex>=0)
+				name = name.substring(0, dotIndex);
+		}
 		hyperstack = imp.isHyperStack();
 		LUT[] luts = null;
 		int lutIndex = 0;
@@ -67,11 +69,10 @@ public class StackWriter implements PlugIn {
 				firstTime = false;
 			}
 		}
-		if (arg!=null && arg.length()>0) {
+		if (arg!=null && arg.length()>0)
 			directory = arg;
-			name = gname!=null?gname:name;
-		} else {		
-			if (!showDialog(imp, name))
+		else {		
+			if (!showDialog(imp))
 				return;
 		}
 		int number = 0;
@@ -172,7 +173,7 @@ public class StackWriter implements PlugIn {
 		IJ.showStatus("");
 	}
 	
-	private boolean showDialog(ImagePlus imp, String name) {
+	private boolean showDialog(ImagePlus imp) {
 		String options = Macro.getOptions();
 		if (options!=null && options.contains("save="))  //macro
 			Macro.setOptions(options.replaceAll("save=", "dir="));
@@ -202,19 +203,25 @@ public class StackWriter implements PlugIn {
 		format = fileType.toLowerCase(Locale.US);
 		if (!IJ.isMacro())
 			staticFileType = fileType;
-		name = gd.getNextString();
+		String name2 = gd.getNextString();
+		boolean nameChanged =  !name2.equals(name);
+		name = name2;
 		if (!hyperstack)
 			startAt = (int)gd.getNextNumber();
 		if (startAt<0) startAt = 0;
-		ndigits = (int)gd.getNextNumber();
+		int ndigits2 = (int)gd.getNextNumber();
+		boolean ndigitsChanged = ndigits2!=ndigits;
+		ndigits = ndigits2;
 		if (!hyperstack)
 			useLabels = gd.getNextBoolean();
 		else
 			useLabels = false;
 		if (Recorder.record) {
 			String options2 = "format="+format;
-			options2 += " name="+name;
-			options2 += " digits="+ndigits;
+			if (nameChanged)
+				options2 += " name="+name;
+			if (ndigitsChanged)
+				options2 += " digits="+ndigits;
 			if (useLabels)
 				options2 += " use";			
 			String dir = Recorder.fixPath(directory);

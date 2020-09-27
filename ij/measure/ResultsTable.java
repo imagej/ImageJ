@@ -58,6 +58,7 @@ public class ResultsTable implements Cloneable {
 	private char delimiter = '\t';
 	private boolean headingSet; 
 	private boolean showRowNumbers;
+	private boolean showRowNumbersSet;
 	private int baseRowNumber = 1;
 	private Hashtable stringColumns;
 	private boolean NaNEmptyCells;
@@ -783,6 +784,7 @@ public class ResultsTable implements Cloneable {
 	public void showRowNumbers(boolean showNumbers) {
 		showRowNumbers = showNumbers;
 		baseRowNumber = 1;
+		showRowNumbersSet = true;
 	}
 
 	public void showRowIndexes(boolean showIndexes) {
@@ -956,6 +958,8 @@ public class ResultsTable implements Cloneable {
 		title = windowTitle;
 		if (!windowTitle.equals("Results") && this==Analyzer.getResultsTable())
 			IJ.log("ResultsTable.show(): the system ResultTable should only be displayed in the \"Results\" window.");
+		if (windowTitle.equals("Results") && !showRowNumbersSet)
+			showRowNumbers(true);
 		String tableHeadings = getColumnHeadings();		
 		TextPanel tp;
 		boolean newWindow = false;

@@ -192,7 +192,6 @@ public class FileSaver {
 			String[] labels = null;
 			ImageStack vs = imp.getStack();
 			for (int i=1; i<=vs.getSize(); i++) {
-				ImageProcessor ip = vs.getProcessor(i);
 				String label = vs.getSliceLabel(i);
 				if (i==1 && label==null)
 					break;

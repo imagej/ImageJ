@@ -5,6 +5,7 @@ import ij.process.*;
 import ij.io.*;
 import ij.plugin.filter.*;
 import ij.plugin.frame.*;
+import ij.measure.ResultsTable;
 import java.awt.*;
 
 /** This plugin implements most of the commands
@@ -145,6 +146,7 @@ public class Options implements PlugIn {
 		Prefs.copyColumnHeaders = gd.getNextBoolean();
 		Prefs.noRowNumbers = !gd.getNextBoolean();
 		Prefs.dontSaveHeaders = !gd.getNextBoolean();
+		ResultsTable.getResultsTable().saveColumnHeaders(!Prefs.dontSaveHeaders);
 		Prefs.dontSaveRowNumbers = !gd.getNextBoolean();
 		return;
 	}
