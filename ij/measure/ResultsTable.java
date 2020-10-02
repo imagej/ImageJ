@@ -115,7 +115,12 @@ public class ResultsTable implements Cloneable {
 			return (TextWindow)f;
 	}
 
-	/** Increments the measurement counter by one. */
+	/** Adds a row to the table. */
+	public void addRow() {
+		incrementCounter();
+	}
+
+	/** Adds a row to the table. */
 	public synchronized void incrementCounter() {
 		counter++;
 		if (counter==maxRows) {
@@ -169,14 +174,21 @@ public class ResultsTable implements Cloneable {
 		return counter;
 	}
 
-	/** Adds a value to the end of the given column. */
+	/** Adds a numeric value to the specified column, on the last
+	 * table row. Use addRow() to add another row to
+	 * the table.
+	 * @see #addRow
+	 * @see #addValue(String,double)
+	 * @see #addValue(String,String)
+	 * @see #size
+	*/
 	public void addValue(int column, double value) {
 		if (column>=maxColumns)
 			addColumns();
 		if (column<0 || column>=maxColumns)
 			throw new IllegalArgumentException("Column out of range");
 		if (counter==0)
-			throw new IllegalArgumentException("Counter==0");
+			incrementCounter();
 		if (columns[column]==null) {
 			columns[column] = new double[maxRows];
 			if (NaNEmptyCells)
@@ -192,11 +204,24 @@ public class ResultsTable implements Cloneable {
 		}
 	}
 	
-	/** Adds a value to the end of the given column. If the column
-		does not exist, it is created.
-		There is an example at:<br>
-		http://imagej.nih.gov/ij/plugins/sine-cosine.html
-	*/
+	/** Adds a numeric value to the specified column, on the last
+	 * table row. If the column does not exist, it is created.
+	 * Use addRow() to add another row to the table.
+	 * <p>JavaScript example:
+	 * <pre>
+	 * rt = new ResultsTable();
+	 * for (n=0; n<=2*Math.PI; n+=0.1) {
+	 *    rt.addRow();
+	 *    rt.addValue("n", n);
+	 *    rt.addValue("Sine(n)", Math.sin(n));
+	 *    rt.addValue("Cos(n)", Math.cos(n));
+	 * }
+	 * rt.show("Sine/Cosine Table");
+	 * <pre>
+	 * @see #addRow
+	 * @see #addValue(String,String)
+	 * @see #size
+	 */
 	public void addValue(String column, double value) {
 		if (column==null)
 			throw new IllegalArgumentException("Column is null");
@@ -207,8 +232,13 @@ public class ResultsTable implements Cloneable {
 		keep[index] = true;
 	}
 	
-	/** Adds a string value to the end of the given column. If the column
-		does not exist, it is created. */
+	/** Adds a string value to the specified column, on the last
+	 * table row. If the column does not exist, it is created.
+	 * Use addRow() to add another row to the table.
+	 * @see #addRow
+	 * @see #addValue(String,double)
+	 * @see #size
+	 */
 	public void addValue(String column, String value) {
 		if (column==null)
 			throw new IllegalArgumentException("Column is null");

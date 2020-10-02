@@ -22,8 +22,10 @@ public class Translator implements ExtendedPlugInFilter, DialogListener {
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
-		if (imp!=null)
+		if (imp!=null) {
 			origOverlay = imp.getOverlay();
+			Undo.saveOverlay(imp);
+		}
 		return flags;
 	}
 
@@ -47,7 +49,8 @@ public class Translator implements ExtendedPlugInFilter, DialogListener {
 		gd.addSlider("X offset:", -100, 100, xOffset, 0.1);
 		gd.addSlider("Y offset:", -100, 100, xOffset, 0.1);
 		gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
-		gd.addCheckbox("Overlay only", false);
+		if (origOverlay!=null)
+			gd.addCheckbox("Overlay only", false);
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
 		previewing = true;
@@ -64,7 +67,8 @@ public class Translator implements ExtendedPlugInFilter, DialogListener {
 		xOffset = gd.getNextNumber();
 		yOffset = gd.getNextNumber();
 		interpolationMethod = gd.getNextChoiceIndex();
-		overlayOnly = gd.getNextBoolean();
+		if (origOverlay!=null)
+			overlayOnly = gd.getNextBoolean();
 		if (gd.invalidNumber()) {
 			if (gd.wasOKed()) IJ.error("Offset is invalid.");
 			return false;

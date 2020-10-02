@@ -36,6 +36,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 				flags = flags | NO_UNDO_RESET;
 			}
 			overlay = imp.getOverlay();
+			Undo.saveOverlay(imp);
 			if (overlay==null)
 				overlay = new Overlay();
 		}

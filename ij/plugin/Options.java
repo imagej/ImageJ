@@ -198,15 +198,35 @@ public class Options implements PlugIn {
 	}
 		
 	/** Close all images, empty ROI Manager, clear the
-		 Results table and set "Black background" 'true'. */
+		 Results table, clears the Log window and sets
+		 "Black background" 'true'.
+	*/
 	private void freshStart() {
-		if (!Commands.closeAll())
-			return;
-		if (!Analyzer.resetCounter())
-			return;
-		RoiManager rm = RoiManager.getInstance();
-		if (rm!=null)
-			rm.reset();
+		String options = Macro.getOptions();
+		boolean keepImages = false;
+		boolean keepResults = false;
+		boolean keepRois = false;
+		if (options!=null) {
+			options = options.toLowerCase();
+			keepImages = options.contains("images");			
+			keepResults = options.contains("results");			
+			keepRois = options.contains("rois");
+		}
+		if (!keepImages) {
+			if (!Commands.closeAll())
+				return;
+		}
+		if (!keepResults) {
+			if (!Analyzer.resetCounter())
+				return;
+		}
+		if (!keepRois) {
+			RoiManager rm = RoiManager.getInstance();
+			if (rm!=null)
+				rm.reset();
+		}
+		if (WindowManager.getWindow("Log")!=null)
+   			IJ.log("\\Clear");
 		Prefs.blackBackground = true;
 	}
 
