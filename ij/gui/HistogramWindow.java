@@ -21,7 +21,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	static final int XMARGIN = (int)(20*SCALE);
 	static final int YMARGIN = (int)(10*SCALE);
 	static final int WIN_WIDTH = HIST_WIDTH + (int)(44*SCALE);
-	static final int WIN_HEIGHT = HIST_HEIGHT + (int)(112*SCALE);
+	static final int WIN_HEIGHT = HIST_HEIGHT + (int)(118*SCALE);
 	static final int BAR_HEIGHT = (int)(SCALE*12);
 
 	static final int INTENSITY1=0, INTENSITY2=1, RGB=2, RED=3, GREEN=4, BLUE=5;
@@ -49,6 +49,10 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	private int rgbMode = -1;
 	private String blankLabel;
 	private boolean stackHistogram;
+	private Font font = new Font("SansSerif",Font.PLAIN,(int)(12*SCALE));
+	private boolean showBins;
+	private int col1, col2, row1, row2, row3, row4, row5;
+
 	    
 	/** Displays a histogram using the title "Histogram of ImageName". */
 	public HistogramWindow(ImagePlus imp) {
@@ -191,19 +195,8 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			rgb.addActionListener(this);
 			buttons.add(rgb);
 		}
-		if (!(IJ.isMacOSX()&&isRGB)) {
-			Panel valueAndCount = new Panel();
-			valueAndCount.setLayout(new GridLayout(2,1,0,0));
-			blankLabel = IJ.isMacOSX()?"           ":"                ";
-			value = new Label(blankLabel);
-			Font font = IJ.font12;
-			value.setFont(font);
-			valueAndCount.add(value);
-			count = new Label(blankLabel);
-			count.setFont(font);
-			valueAndCount.add(count);
-			buttons.add(valueAndCount);
-		}
+		value = new Label(" ");
+		count = new Label(" ");
 		add(buttons);
 		GUI.scale(buttons);
 		pack();
@@ -216,26 +209,18 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	public void setup() {setup(null);}
 
 	public void mouseMoved(int x, int y) {
-		if (value==null || count==null)
+		ImageProcessor ip = this.imp!=null?this.imp.getProcessor():null;
+		if (ip==null)
 			return;
 		if ((frame!=null)  && x>=frame.x && x<=(frame.x+frame.width)) {
 			x = (x - frame.x);
 			int index = (int)(x*(SCALE*histogram.length)/HIST_WIDTH/SCALE);
 			if (index>=histogram.length) index = histogram.length-1;
-			String vlabel=null, clabel=null;
-			if (blankLabel.length()==11) // OS X
-				{vlabel=" "; clabel=" ";}
-			else
-				{vlabel=" value="; clabel=" count=";}
-			String v = vlabel+d2s(cal.getCValue(stats.histMin+index*stats.binSize))+blankLabel;
-			String c = clabel+histogram[index]+blankLabel;
-			int len = vlabel.length() + blankLabel.length();
-			value.setText(v.substring(0,len));
-			count.setText(c.substring(0,len));
-		} else {
-			value.setText(blankLabel);
-			count.setText(blankLabel);
-		}
+			double value = cal.getCValue(stats.histMin+index*stats.binSize);
+			drawValueAndCount(ip, value, histogram[index]);
+		} else
+			drawValueAndCount(ip, Double.NaN, -1);
+		this.imp.updateAndDraw();
 	}
 	
 	protected void drawHistogram(ImageProcessor ip, boolean fixedRange) {
@@ -412,7 +397,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 		
 	void drawText(ImageProcessor ip, int x, int y, boolean fixedRange) {
-		ip.setFont(new Font("SansSerif",Font.PLAIN,(int)(12*SCALE)));
+		ip.setFont(font);
 		ip.setAntialiasedText(true);
 		double hmin = cal.getCValue(stats.histMin);
 		double hmax = cal.getCValue(stats.histMax);
@@ -438,30 +423,44 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		}        
 		double binWidth = range/stats.nBins;
 		binWidth = Math.abs(binWidth);
-		boolean showBins = binWidth!=1.0 || !fixedRange;
-		int col1 = XMARGIN + 5;
-		int col2 = XMARGIN + HIST_WIDTH/2;
-		int row1 = y+(int)(25*SCALE);
+		showBins = binWidth!=1.0 || !fixedRange;
+		col1 = XMARGIN + 5;
+		col2 = XMARGIN + HIST_WIDTH/2;
+		row1 = y+(int)(25*SCALE);
 		if (showBins) row1 -= (int)(8*SCALE);
-		int row2 = row1 + (int)(15*SCALE);
-		int row3 = row2 + (int)(15*SCALE);
-		int row4 = row3 + (int)(15*SCALE);
+		row2 = row1 + (int)(15*SCALE);
+		row3 = row2 + (int)(15*SCALE);
+		row4 = row3 + (int)(15*SCALE);
+		row5 = row4 + (int)(15*SCALE);
 		long count = stats.longPixelCount>0?stats.longPixelCount:stats.pixelCount;
 		String modeCount = " (" + stats.maxCount + ")";
 		if (modeCount.length()>12) modeCount = "";
 		
-		ip.drawString("Count: " + count, col1, row1);
+		ip.drawString("N: " + count, col1, row1);
+		ip.drawString("Min: " + d2s(stats.min), col2, row1);
 		ip.drawString("Mean: " + d2s(stats.mean), col1, row2);
+		ip.drawString("Max: " + d2s(stats.max), col2, row2);
 		ip.drawString("StdDev: " + d2s(stats.stdDev), col1, row3);
 		ip.drawString("Mode: " + d2s(stats.dmode) + modeCount, col2, row3);
-		ip.drawString("Min: " + d2s(stats.min), col2, row1);
-		ip.drawString("Max: " + d2s(stats.max), col2, row2);
-		
 		if (showBins) {
 			ip.drawString("Bins: " + d2s(stats.nBins), col1, row4);
 			ip.drawString("Bin Width: " + d2s(binWidth), col2, row4);
 		}
+		drawValueAndCount(ip, Double.NaN, -1);		
 	}
+	
+	private void drawValueAndCount(ImageProcessor ip, double value, long count) {
+		int y = showBins?row4:row3;
+		ip.setRoi(0, y, WIN_WIDTH, WIN_HEIGHT-y);
+		ip.setColor(Color.white);
+		ip.fill();
+		ip.setColor(Color.black);
+		String sValue = Double.isNaN(value)?"---":d2s(value);
+		String sCount = count==-1?"---":""+count;
+		int row = showBins?row5:row4;
+		ip.drawString("Value: " + sValue, col1, row);
+		ip.drawString("Count: " + sCount, col2, row);
+	}	
 	
 	private String d2s(double d) {
 		if ((int)d==d)
