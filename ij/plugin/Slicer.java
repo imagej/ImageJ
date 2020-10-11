@@ -428,21 +428,31 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 ImageStack stack2 = null;
 		 boolean isStack = imp.getStackSize()>1;
 		 IJ.resetEscape();
+		 boolean macro = IJ.isMacro();
 		 for (int i=0; i<outputSlices; i++)	{
-				if (virtualStack)
-					status = outputSlices>1?(i+1)+"/"+outputSlices+", ":"";
-				ImageProcessor ip = getSlice(imp, x1, y1, x2, y2, status);
-				//IJ.log(i+" "+x1+" "+y1+" "+x2+" "+y2+"   "+ip);
-				if (isStack) drawLine(x1, y1, x2, y2, imp);
-				if (stack2==null) {
-					stack2 = createOutputStack(imp, ip);
-					if (stack2==null || stack2.getSize()<outputSlices) return null; // out of memory
-				}
-				stack2.setPixels(ip.getPixels(), i+1);
-				x1+=xInc; x2+=xInc; y1+=yInc; y2+=yInc;
-				if (IJ.escapePressed())
-					{IJ.beep(); imp.draw(); return null;}
+			if (virtualStack)
+				status = outputSlices>1?(i+1)+"/"+outputSlices+", ":"";
+			ImageProcessor ip = getSlice(imp, x1, y1, x2, y2, status);
+			if (isStack) {
+				if (macro)
+					IJ.showProgress(i,outputSlices-1);
+				else
+					drawLine(x1, y1, x2, y2, imp);
+			}
+			if (stack2==null) {
+				stack2 = createOutputStack(imp, ip);
+				if (stack2==null || stack2.getSize()<outputSlices) return null; // out of memory
+			}
+			stack2.setPixels(ip.getPixels(), i+1);
+			x1+=xInc; x2+=xInc; y1+=yInc; y2+=yInc;
+			if (IJ.escapePressed()) {
+				IJ.beep();
+				imp.draw();
+				IJ.showProgress(1.0);
+				return null;
+			}
 		 }
+		 if (macro) IJ.showProgress(1.0);
 		 return new ImagePlus("Reslice of "+imp.getShortTitle(), stack2);
 	}
 
@@ -470,8 +480,6 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 ImageProcessor ip,ip2=null;
 		 float[] line = null;
 		 boolean ortho = (int)x1==x1&&(int)y1==y1&&x1==x2||y1==y2;
-		//boolean vertical = x1==x2 && (roi==null||roiType==Roi.RECTANGLE);
-		//if (rotate) vertical = !vertical;
 		 for (int i=0; i<stackSize; i++) {
 				ip = stack.getProcessor(flip?stackSize-i:i+1);
 				if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE)
@@ -507,7 +515,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 					ip.putPixel(x++, y, Float.floatToIntBits(data[i]));
 		 } else {
 				for (int i=0; i<length; i++)
-					ip.putPixelValue(x++, y, data[i]);
+					ip.setf(x++, y, data[i]);
 		 }
 	}
 
@@ -517,7 +525,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 					ip.putPixel(x, y++, Float.floatToIntBits(data[i]));
 		 } else {
 				for (int i=0; i<length; i++)
-					ip.putPixelValue(x, y++, data[i]);
+					ip.setf(x, y++, data[i]);
 		 }
 	}
 
@@ -622,28 +630,25 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 }
 		 return data;
 	}
-
+	
 	private float[] getOrthoLine(ImageProcessor ip, int x1, int y1, int x2, int y2, float[] data) {
-		 int dx = x2-x1;
-		 int dy = y2-y1;
-		 int n = Math.max(Math.abs(dx), Math.abs(dy));
-		 if (data==null) data = new float[n];
-		 int xinc = dx/n;
-		 int yinc = dy/n;
-		 int rx = x1;
-		 int ry = y1;
-		 for (int i=0; i<n; i++) {
-		 		if (notFloat)
-					data[i] = (float)ip.getPixel(rx, ry);
-				else if (rgb) {
-					int rgbPixel = ((ColorProcessor)ip).getPixel(rx, ry);
-					data[i] = Float.intBitsToFloat(rgbPixel&0xffffff);
-				} else
-					data[i] = (float)ip.getPixelValue(rx, ry);
-				rx += xinc;
-				ry += yinc;
-		 }
-		 return data;
+		int dx = x2-x1;
+		int dy = y2-y1;
+		int n = Math.max(Math.abs(dx), Math.abs(dy));
+		if (data==null)
+			data = new float[n];
+		int xinc = dx/n;
+		int yinc = dy/n;
+		for (int i=0; i<n; i++) {
+			if (rgb) {
+				int rgbPixel = ((ColorProcessor)ip).getPixel(x1, y1);
+				data[i] = Float.intBitsToFloat(rgbPixel&0xffffff);
+			} else
+				data[i] = ip.getf(x1,y1);
+			x1 += xinc;
+			y1 += yinc;
+		}
+		return data;
 	}
 
 	void drawLine(double x1, double y1, double x2, double y2, ImagePlus imp) {

@@ -320,6 +320,8 @@ public class WindowManager {
     }
 
 	static boolean isDuplicateName(String name) {
+		if (name==null)
+			return false;
 		int n = imageList.size();
 		for (int i=0; i<n; i++) {
 			ImageWindow win = (ImageWindow)imageList.get(i);

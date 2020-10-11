@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53f26  6 October 2020</u>
+<li> <u>1.53f32  11 October 2020</u>
 <ul>
 <li> Thanks to Michael Schmid, the text in a text selection can now
 be edited in the <i>Edit&gt;Selection&gt;Properties</i>
@@ -20,6 +20,9 @@ is an overlay.
 <li> Thanks to Robert Haase, added the <i>Edit&gt;Options&gt;Fresh Start</i>
 command, which closes all images, empties the ROI Manager, clears the
 Results table and enables the "Black background" option. 
+<li> Thanks to Conner Phillips and Stein Rorvik, The Reslice command
+uses an ordinary progress bar when run from a macro, making it 
+faster on Windows when re-slicing from "Left" or "Right".
 <li> Thanks to Stein Rorvik, added an "Open as separate images" checkbox
 to the <i>File&gt;Import&gt;Image Sequence</i> dialog.
 <li> Thanks to Stein Rorvik, Added "Foreground..." and "Background..." entries
@@ -38,7 +41,7 @@ work as expected.
 virtual stacks as TIFF stacks.
 <li> Thanks to Thomas Fischer, fixed a bug that caused the
 dynamic "Value" and "Count" values in HIstogram windows
-to sometimes not be displayed or not be displayed correctly.
+to sometimes not be displayed correctly.
 <li> Thanks to 'Quiroz-1', fixed a 1.53e regression that caused
 the imageCaculator() macro function do somethimes not
 work as expected.
@@ -48,6 +51,8 @@ incorrect Results tables.
 <li> Thanks to 'tongtao', fixed a regression that caused the
 <i>Edit&gt;Copy to Image Info</i> command in the text
 editor to fail. 
+<li> Thanks to Stein Rorvik, fixed a 1.53c regression in the AVI Reader
+that caused it to throw a null pointer exception.
 </ul>
 
 <li> <u>1.53e  16 September 2020</u>
