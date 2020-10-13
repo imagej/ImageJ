@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53f32  11 October 2020</u>
+<li> <u>1.53f40  12 October 2020</u>
 <ul>
 <li> Thanks to Michael Schmid, the text in a text selection can now
 be edited in the <i>Edit&gt;Selection&gt;Properties</i>
@@ -20,7 +20,7 @@ is an overlay.
 <li> Thanks to Robert Haase, added the <i>Edit&gt;Options&gt;Fresh Start</i>
 command, which closes all images, empties the ROI Manager, clears the
 Results table and enables the "Black background" option. 
-<li> Thanks to Conner Phillips and Stein Rorvik, The Reslice command
+<li> Thanks to Conner Phillips and Stein Rorvik, the <i>Reslice</i> command
 uses an ordinary progress bar when run from a macro, making it 
 faster on Windows when re-slicing from "Left" or "Right".
 <li> Thanks to Stein Rorvik, added an "Open as separate images" checkbox
@@ -53,6 +53,8 @@ incorrect Results tables.
 editor to fail. 
 <li> Thanks to Stein Rorvik, fixed a 1.53c regression in the AVI Reader
 that caused it to throw a null pointer exception.
+<li> Thanks to Eric Perlman, fixed a 1.52 regresion that caused the
+IJ.getImage() method to sometimes display model error dialogs.
 </ul>
 
 <li> <u>1.53e  16 September 2020</u>

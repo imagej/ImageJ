@@ -254,7 +254,7 @@ public class Opener {
 		if (path==null) return null;
 		int type = getFileType(path);
 		if (type!=TIFF)
-			throw new IllegalArgumentException("TIFF file require");
+			throw new IllegalArgumentException("Opener: TIFF file required");
 		return openTiff(path, n);
 	}
 
@@ -365,13 +365,14 @@ public class Opener {
 	// Call HandleExtraFileTypes plugin to see if it can handle unknown formats
 	// or files in TIFF format that the built in reader is unable to open.
 	private ImagePlus openUsingHandleExtraFileTypes(String path) {
+		File f = new File(path);
+		if (!f.exists())
+			return null;
 		int[] wrap = new int[] {this.fileType};
 		ImagePlus imp = openWithHandleExtraFileTypes(path, wrap);
 		if (imp!=null && imp.getNChannels()>1)
 			imp = new CompositeImage(imp, IJ.COLOR);
 		this.fileType = wrap[0];
-		if (imp==null && !silentMode && (this.fileType==UNKNOWN||this.fileType==TIFF))
-			IJ.error("Opener", "Unsupported format or file not found:\n"+path);
 		return imp;
 	}
 	
@@ -448,6 +449,7 @@ public class Opener {
 			String msg = e.getMessage();
 			if (msg==null || msg.equals(""))
 				msg = "" + e;
+			msg += "\n"+url;
 			IJ.error("Open URL", msg);
 			return null;
 		} 
@@ -839,6 +841,7 @@ public class Opener {
 			info = td.getTiffInfo();
 		} catch (IOException e) {
 			this.fileType = TIFF;
+			directory = IJ.addSeparator(directory);
 			return openUsingHandleExtraFileTypes(directory+name);
 		}
 		if (info==null)

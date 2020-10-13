@@ -36,6 +36,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 	private Label message;
 	private ImagePlus imp;
 	private double gx1, gy1, gx2, gy2, gLength;
+	private Color lineColor = new Color(1f, 1f, 0f, 0.4f);
 
 	// Variables used by getIrregularProfile and doIrregularSetup
 	private int n;
@@ -433,12 +434,10 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 			if (virtualStack)
 				status = outputSlices>1?(i+1)+"/"+outputSlices+", ":"";
 			ImageProcessor ip = getSlice(imp, x1, y1, x2, y2, status);
-			if (isStack) {
-				if (macro)
-					IJ.showProgress(i,outputSlices-1);
-				else
-					drawLine(x1, y1, x2, y2, imp);
-			}
+			if (macro)
+				IJ.showProgress(i,outputSlices-1);
+			else
+				drawLine(x1, y1, x2, y2, imp);
 			if (stack2==null) {
 				stack2 = createOutputStack(imp, ip);
 				if (stack2==null || stack2.getSize()<outputSlices) return null; // out of memory
@@ -653,9 +652,11 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 
 	void drawLine(double x1, double y1, double x2, double y2, ImagePlus imp) {
 		 ImageCanvas ic = imp.getCanvas();
-		 if (ic==null) return;
+		 if (ic==null)
+		 	return;
 		 Graphics g = ic.getGraphics();
-		 g.setColor(new Color(1f, 1f, 0f, 0.4f));
+		 ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING,  RenderingHints.VALUE_ANTIALIAS_ON);
+		 g.setColor(lineColor);
 		 g.drawLine(ic.screenX((int)(x1+0.5)), ic.screenY((int)(y1+0.5)), ic.screenX((int)(x2+0.5)), ic.screenY((int)(y2+0.5)));
 	}
 

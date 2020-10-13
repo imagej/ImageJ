@@ -328,10 +328,10 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 			return;
 		} else if (errorText != null)
             IJ.showMessage("AVI Reader", errorText);				//show the error, e.g. we may have an incomplete stack
-        if (fileName==null) {
+		if (fileName==null) {
 			File f = new File(path);
 			fileName = f.getName();
-        }
+		}
 		imp = new ImagePlus(WindowManager.makeUniqueName(fileName), stack);
 		if (imp.getBitDepth()==16)
 			imp.getProcessor().resetMinAndMax();
