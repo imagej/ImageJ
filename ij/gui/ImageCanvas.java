@@ -86,6 +86,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private boolean painted;
 	private boolean hideZoomIndicator;
 	private boolean flattening;
+	private Timer pressTimer;
 		
 	public ImageCanvas(ImagePlus imp) {
 		this.imp = imp;
@@ -1096,7 +1097,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			Recorder.record("setBackgroundColor", c.getRed(), c.getGreen(), c.getBlue());
 	}
 
-	public void mousePressed(MouseEvent e) {
+	public void mousePressed(final MouseEvent e) {
 		showCursorStatus = true;
 		int toolID = Toolbar.getToolId();
 		ImageWindow win = imp.getWindow();
@@ -1221,8 +1222,21 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			default:  //selection tool
 				handleRoiMouseDown(e);
 		}
+		
+		if (pressTimer==null)
+			pressTimer = new java.util.Timer();			
+		pressTimer.schedule(new TimerTask() {
+			public void run() {
+				if (pressTimer != null) {
+					pressTimer.cancel();
+					pressTimer = null;
+				}
+				handlePopupMenu(e);
+			}
+		}, Toolbar.LONG_PRESS_THRESHOLD);
+		
 	}
-	
+		
 	private boolean drawingTool() {
 		return Toolbar.getToolId()>=15;
 	}
@@ -1531,6 +1545,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	public void mouseReleased(MouseEvent e) {
+
+		if (pressTimer!=null) {
+			pressTimer.cancel();
+			pressTimer = null;
+		}
+		
 		int ox = offScreenX(e.getX());
 		int oy = offScreenY(e.getY());
 		Overlay overlay = imp.getOverlay();
