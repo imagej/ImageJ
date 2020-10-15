@@ -5,8 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.53f40  12 October 2020</u>
+<li> <u>1.53f41  14 October 2020</u>
 <ul>
+<li> Thanks to Wei Ouyang, the magnifying tool icon has
+a popup menu and tool bar popup menus can
+be triggered by a long press, needed when
+<a href="https://ij.imjoy.io/">Image.JS</a>
+is running on Android and iOS devices that do
+not support right clicking.
 <li> Thanks to Michael Schmid, the text in a text selection can now
 be edited in the <i>Edit&gt;Selection&gt;Properties</i>
 dialog.
@@ -21,12 +27,16 @@ is an overlay.
 command, which closes all images, empties the ROI Manager, clears the
 Results table and enables the "Black background" option. 
 <li> Thanks to Conner Phillips and Stein Rorvik, the <i>Reslice</i> command
-uses an ordinary progress bar when run from a macro, making it 
-faster on Windows when re-slicing from "Left" or "Right".
+is faster on Windows when re-slicing from "Left" or "Right" and it
+uses an ordinary progress bar when run from a macro.
 <li> Thanks to Stein Rorvik, added an "Open as separate images" checkbox
 to the <i>File&gt;Import&gt;Image Sequence</i> dialog.
 <li> Thanks to Stein Rorvik, Added "Foreground..." and "Background..." entries
-to the new color picker tool right-click-menu.
+to the new color picker tool popup menu.
+<li> Thanks to Wei Ouyang, the Toolbar class uses Swing to
+allow popup menus to work when
+<a href="https://ij.imjoy.io/">Image.JS</a>
+is running on Android and iOS devices.
 <li> Thanks to 'MIKEIII' and Dmitry Fedorov, added the Image.width, Image.height,
 Image.copy and Image.paste(x,y) macro functions DOCUMENT
 (<a href="http://wsr.imagej.net/macros/PasteDemo.txt">example</a>).
