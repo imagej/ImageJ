@@ -41,7 +41,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public static final int CUSTOM7 = 21;
 	
 	public static final int DOUBLE_CLICK_THRESHOLD = 650; //ms
-	public static final int LONG_PRESS_THRESHOLD = 500; //ms
+	private static final int LONG_PRESS_THRESHOLD = 500; //ms
 
 	public static final int RECT_ROI=0, ROUNDED_RECT_ROI=1, ROTATED_RECT_ROI=2;
 	public static final int OVAL_ROI=0, ELLIPSE_ROI=1, BRUSH_ROI=2;
@@ -216,7 +216,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		zoomPopup = new PopupMenu();
 		if (Menus.getFontSize()!=0)
 			zoomPopup.setFont(Menus.getFont());
-		addMenuItem(zoomPopup, "Reset");
+		addMenuItem(zoomPopup, "Reset Zoom");
 		addMenuItem(zoomPopup, "Zoom In");
 		addMenuItem(zoomPopup, "Zoom Out");
 		addMenuItem(zoomPopup, "View 100%");
@@ -1599,7 +1599,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				IJ.runPlugIn("ij.plugin.Zoom", "in");
 			else if ("Zoom Out".equals(cmd))
 				IJ.runPlugIn("ij.plugin.Zoom", "out");
-			else if ("Reset".equals(cmd))
+			else if ("Reset Zoom".equals(cmd))
 				IJ.runPlugIn("ij.plugin.Zoom", "orig");
 			else if ("View 100%".equals(cmd))
 				IJ.runPlugIn("ij.plugin.Zoom", "100%");

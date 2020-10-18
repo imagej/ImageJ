@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /** This is a Canvas used to display images in a Window. */
 public class ImageCanvas extends Canvas implements MouseListener, MouseMotionListener, Cloneable {
 
+	private static final int LONG_PRESS_THRESHOLD = 750; //ms
 	protected static Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 	protected static Cursor handCursor = new Cursor(Cursor.HAND_CURSOR);
 	protected static Cursor moveCursor = new Cursor(Cursor.MOVE_CURSOR);
@@ -87,6 +88,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private boolean hideZoomIndicator;
 	private boolean flattening;
 	private Timer pressTimer;
+	private PopupMenu roiPopupMenu;
 		
 	public ImageCanvas(ImagePlus imp) {
 		this.imp = imp;
@@ -1155,6 +1157,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				Toolbar.getInstance().runMacroTool(toolID);
 			return;
 		}
+		
+		final Roi roi1 = imp.getRoi();
+		final int size1 = roi1!=null?roi1.size():0;
+		final Rectangle r1 = roi1!=null?roi1.getBounds():null;
 
 		switch (toolID) {
 			case Toolbar.MAGNIFIER:
@@ -1231,11 +1237,24 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					pressTimer.cancel();
 					pressTimer = null;
 				}
-				handlePopupMenu(e);
+				Roi roi2 = imp.getRoi();
+				int size2 = roi2!=null?roi2.size():0;
+				Rectangle r2 = roi2!=null?roi2.getBounds():null;
+				boolean empty = r2!=null&&r2.width==0&&r2.height==0;
+				int state = roi2!=null?roi2.getState():-1;
+				boolean unchanged = state!=Roi.MOVING_HANDLE && r1!=null && r2!=null && r2.x==r1.x
+					&& r2.y==r1.y  && r2.width==r1.width && r2.height==r1.height && size2==size1;
+				//IJ.log(size2+" "+empty+" "+unchanged+" "+state+" "+roi2);
+				if ((roi1==null && (size2<=1||empty)) || unchanged) {
+					if (roi1==null) imp.deleteRoi();
+					handlePopupMenu(e);
+				}
 			}
-		}, Toolbar.LONG_PRESS_THRESHOLD);
+		}, LONG_PRESS_THRESHOLD);
 		
 	}
+	
+	
 		
 	private boolean drawingTool() {
 		return Toolbar.getToolId()>=15;
@@ -1267,20 +1286,31 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	protected void handlePopupMenu(MouseEvent e) {
 		if (disablePopupMenu) return;
 		if (IJ.debugMode) IJ.log("show popup: " + (e.isPopupTrigger()?"true":"false"));
-		int x = e.getX();
-		int y = e.getY();
+		int sx = e.getX();
+		int sy = e.getY();
+		int ox = offScreenX(sx);
+		int oy = offScreenY(sy);
 		Roi roi = imp.getRoi();
 		if (roi!=null && (roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE || roi.getType()==Roi.ANGLE)
 		&& roi.getState()==roi.CONSTRUCTING) {
-			roi.handleMouseUp(x, y); // simulate double-click to finalize
-			roi.handleMouseUp(x, y); // polygon or polyline selection
+			roi.handleMouseUp(sx, sy); // simulate double-click to finalize
+			roi.handleMouseUp(sx, sy); // polygon or polyline selection
 			return;
+		}
+		if (roi!=null) {  // show ROI popup?
+			if (roi.contains(ox,oy)) {
+				if (roiPopupMenu==null)
+					addRoiPopupMenu();
+				if (IJ.isMacOSX()) IJ.wait(10);
+				roiPopupMenu.show(this, sx, sy);
+				return;					
+			}
 		}
 		PopupMenu popup = Menus.getPopupMenu();
 		if (popup!=null) {
 			add(popup);
 			if (IJ.isMacOSX()) IJ.wait(10);
-			popup.show(this, x, y);
+			popup.show(this, sx, sy);
 		}
 	}
 	
@@ -1736,6 +1766,30 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public void repaintOverlay() {
 		labelRects = null;
 		repaint();
+	}
+	
+	void addRoiPopupMenu() {
+		ImageJ ij = IJ.getInstance();
+		if (ij==null)
+			return;
+		roiPopupMenu = new PopupMenu();
+		GUI.scalePopupMenu(roiPopupMenu);
+		addPopupItem("ROI Properties... ", "Properties... ", roiPopupMenu, ij);
+		addPopupItem("Roi Defaults...", null, roiPopupMenu, ij);
+		addPopupItem("Add to Overlay", "Add Selection...", roiPopupMenu, ij);
+		addPopupItem("Add to ROI Manager", "Add to Manager", roiPopupMenu, ij);				
+		addPopupItem("Fit Spline", null, roiPopupMenu, ij);	
+		addPopupItem("Create Mask", null, roiPopupMenu, ij);	
+		addPopupItem("Measure", null, roiPopupMenu, ij);							
+		add(roiPopupMenu);
+	}
+
+	private void addPopupItem(String label, String command, PopupMenu pm, ImageJ ij) {
+		MenuItem mi=new MenuItem(label);
+		if (command!=null)
+			mi.setActionCommand(command);
+		mi.addActionListener(ij);
+		pm.add(mi);
 	}
 
 }

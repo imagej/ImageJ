@@ -383,6 +383,10 @@ public class Functions implements MacroConstants, Measurements {
 			return Math.acos(arg);
 		else if (name.equals("erf"))
 			return IJMath.erf(arg);
+		else if (name.equals("toRadians"))
+			return Math.toRadians(arg);
+		else if (name.equals("toDegrees"))
+			return Math.toDegrees(arg);
 		else
 			interp.error("Unrecognized function name");
 		return Double.NaN;
