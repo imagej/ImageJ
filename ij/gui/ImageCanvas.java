@@ -1243,8 +1243,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				boolean empty = r2!=null&&r2.width==0&&r2.height==0;
 				int state = roi2!=null?roi2.getState():-1;
 				boolean unchanged = state!=Roi.MOVING_HANDLE && r1!=null && r2!=null && r2.x==r1.x
-					&& r2.y==r1.y  && r2.width==r1.width && r2.height==r1.height && size2==size1;
-				//IJ.log(size2+" "+empty+" "+unchanged+" "+state+" "+roi2);
+					&& r2.y==r1.y  && r2.width==r1.width && r2.height==r1.height && size2==size1
+					&& !(size2>1&&state==Roi.CONSTRUCTING);
+				//IJ.log(size2+" "+empty+" "+unchanged+" "+state+" "+roi1+"  "+roi2);				
 				if ((roi1==null && (size2<=1||empty)) || unchanged) {
 					if (roi1==null) imp.deleteRoi();
 					handlePopupMenu(e);

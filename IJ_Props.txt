@@ -8,19 +8,18 @@
 # Version 1.53
 
 # Commands installed in the right-click popup menu
-# Overridden in StartupMacros
-popup01=Undo
-popup02=-
-popup03=Cut
-popup04=Copy
-popup05=Paste
-popup06=-
-popup07=Clear
-popup08=Fill
-popup09=Draw
-popup10=-
-popup11=Rename...
-popup12=Duplicate...
+# May be overridden in StartupMacros
+popup01=Show Info...
+popup02=Properties...
+popup03=Rename...
+popup04=Measure
+popup05=Histogram
+popup06=Duplicate...
+popup07=Original Scale
+popup08=-
+popup09=Record...
+popup10=Find Commands...
+popup11=Capture Screen
 
 # Plugins installed in the File/New submenu
 new01="Image...[n]",ij.plugin.Commands("new")
