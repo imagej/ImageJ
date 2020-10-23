@@ -203,6 +203,84 @@ public class Prefs {
 	private static String propertiesPath; // location of custom IJ_Props.txt
 	private static String preferencesPath; // location of custom IJ_Prefs.txt
 
+	/** Saves the value of the string <code>text</code> in the preferences
+	 * file using the keyword <code>key</code>. The string can be 
+	 * retrieved using the appropriate <code>get()</code> method.
+	 * @see #get(String,String)
+	*/
+	public static void set(String key, String text) {
+		if (key.indexOf('.')<1)
+			throw new IllegalArgumentException("Key must have a prefix");
+		if (text==null)
+			ijPrefs.remove(KEY_PREFIX+key);
+		else
+			ijPrefs.put(KEY_PREFIX+key, text);
+	}
+
+	/** Saves the value of the integer <code>value</code> in the preferences
+	 * file using the keyword <code>key</code>. The value can be 
+	 * retrieved using the appropriate <code>get()</code> method.
+	 * @see #get(String,double)
+	*/
+	public static void set(String key, int value) {
+		set(key, Integer.toString(value));
+	}
+
+	/** Saves the value of the double <code>value</code> in the preferences
+	 * file using the keyword <code>key</code>. The value can be 
+	 * retrieved using the appropriate <code>get()</code> method.
+	 * @see #get(String,double)
+	*/
+	public static void set(String key, double value) {
+		set(key, ""+value);
+	}
+
+	/** Saves the value of the boolean <code>value</code> in the preferences
+	 * file using the keyword <code>key</code>. The value can be 
+	 * retrieved using the appropriate <code>get()</code> method.
+	 * @see #get(String,boolean)
+	*/
+	public static void set(String key, boolean value) {
+		set(key, ""+value);
+	}
+
+	/** Uses the keyword <code>key</code> to retrieve a string from the
+		preferences file. Returns <code>defaultValue</code> if the key
+		is not found. */
+	public static String get(String key, String defaultValue) {
+		String value = ijPrefs.getProperty(KEY_PREFIX+key);
+		if (value == null)
+			return defaultValue;
+		else
+			return value;
+	}
+
+	/** Uses the keyword <code>key</code> to retrieve a number from the
+		preferences file. Returns <code>defaultValue</code> if the key
+		is not found. */
+	public static double get(String key, double defaultValue) {
+		String s = ijPrefs.getProperty(KEY_PREFIX+key);
+		Double d = null;
+		if (s!=null) {
+			try {d = new Double(s);}
+			catch (NumberFormatException e) {d = null;}
+			if (d!=null)
+				return(d.doubleValue());
+		}
+		return defaultValue;
+	}
+
+	/** Uses the keyword <code>key</code> to retrieve a boolean from
+		the preferences file. Returns <code>defaultValue</code> if
+		the key is not found. */
+	public static boolean get(String key, boolean defaultValue) {
+		String value = ijPrefs.getProperty(KEY_PREFIX+key);
+		if (value==null)
+			return defaultValue;
+		else
+			return value.equals("true");
+	}
+	
 	/** Finds and loads the configuration file ("IJ_Props.txt")
 	 * and the preferences file ("IJ_Prefs.txt").
 	 * @return	an error message if "IJ_Props.txt" not found.
@@ -328,68 +406,6 @@ public class Prefs {
 			return null;
 		else
 			return getString(DIR_IMAGE);
-	}
-
-	/** Finds a string in IJ_Props or IJ_Prefs.txt. */
-	public static String getString(String key) {
-		return props.getProperty(key);
-	}
-
-	/** Finds an string in IJ_Props or IJ_Prefs.txt. */
-	public static String getString(String key, String defaultString) {
-		if (props==null)
-			return defaultString;
-		String s = props.getProperty(key);
-		if (s==null)
-			return defaultString;
-		else
-			return s;
-	}
-
-	/** Finds a boolean in IJ_Props or IJ_Prefs.txt. */
-	public static boolean getBoolean(String key, boolean defaultValue) {
-		if (props==null) return defaultValue;
-		String s = props.getProperty(key);
-		if (s==null)
-			return defaultValue;
-		else
-			return s.equals("true");
-	}
-
-	/** Finds an int in IJ_Props or IJ_Prefs.txt. */
-	public static int getInt(String key, int defaultValue) {
-		if (props==null) //workaround for Netscape JIT bug
-			return defaultValue;
-		String s = props.getProperty(key);
-		if (s!=null) {
-			try {
-				return Integer.decode(s).intValue();
-			} catch (NumberFormatException e) {IJ.log(""+e);}
-		}
-		return defaultValue;
-	}
-
-	/** Looks up a real number in IJ_Props or IJ_Prefs.txt. */
-	public static double getDouble(String key, double defaultValue) {
-		if (props==null)
-			return defaultValue;
-		String s = props.getProperty(key);
-		Double d = null;
-		if (s!=null) {
-			try {d = new Double(s);}
-			catch (NumberFormatException e){d = null;}
-			if (d!=null)
-				return(d.doubleValue());
-		}
-		return defaultValue;
-	}
-
-	/** Finds a color in IJ_Props or IJ_Prefs.txt. */
-	public static Color getColor(String key, Color defaultColor) {
-		int i = getInt(key, 0xaaa);
-		if (i == 0xaaa)
-			return defaultColor;
-		return new Color((i >> 16) & 0xFF, (i >> 8) & 0xFF, i & 0xFF);
 	}
 
 	/** Returns the file.separator system property. */
@@ -564,76 +580,6 @@ public class Prefs {
 		prefs.put(OPTIONS2, Integer.toString(options2));
 	}
 
-	/** Saves the value of the string <code>text</code> in the preferences
-		file using the keyword <code>key</code>. This string can be 
-		retrieved using the appropriate <code>get()</code> method. */
-	public static void set(String key, String text) {
-		if (key.indexOf('.')<1)
-			throw new IllegalArgumentException("Key must have a prefix");
-		if (text==null)
-			ijPrefs.remove(KEY_PREFIX+key);
-		else
-			ijPrefs.put(KEY_PREFIX+key, text);
-	}
-
-	/** Saves <code>value</code> in the preferences file using 
-		the keyword <code>key</code>. This value can be retrieved 
-		using the appropriate <code>getPref()</code> method. */
-	public static void set(String key, int value) {
-		set(key, Integer.toString(value));
-	}
-
-	/** Saves <code>value</code> in the preferences file using 
-		the keyword <code>key</code>. This value can be retrieved 
-		using the appropriate <code>getPref()</code> method. */
-	public static void set(String key, double value) {
-		set(key, ""+value);
-	}
-
-	/** Saves the boolean variable <code>value</code> in the preferences
-		 file using the keyword <code>key</code>. This value can be retrieved 
-		using the appropriate <code>getPref()</code> method. */
-	public static void set(String key, boolean value) {
-		set(key, ""+value);
-	}
-
-	/** Uses the keyword <code>key</code> to retrieve a string from the
-		preferences file. Returns <code>defaultValue</code> if the key
-		is not found. */
-	public static String get(String key, String defaultValue) {
-		String value = ijPrefs.getProperty(KEY_PREFIX+key);
-		if (value == null)
-			return defaultValue;
-		else
-			return value;
-	}
-
-	/** Uses the keyword <code>key</code> to retrieve a number from the
-		preferences file. Returns <code>defaultValue</code> if the key
-		is not found. */
-	public static double get(String key, double defaultValue) {
-		String s = ijPrefs.getProperty(KEY_PREFIX+key);
-		Double d = null;
-		if (s!=null) {
-			try {d = new Double(s);}
-			catch (NumberFormatException e) {d = null;}
-			if (d!=null)
-				return(d.doubleValue());
-		}
-		return defaultValue;
-	}
-
-	/** Uses the keyword <code>key</code> to retrieve a boolean from
-		the preferences file. Returns <code>defaultValue</code> if
-		the key is not found. */
-	public static boolean get(String key, boolean defaultValue) {
-		String value = ijPrefs.getProperty(KEY_PREFIX+key);
-		if (value==null)
-			return defaultValue;
-		else
-			return value.equals("true");
-	}
-
 	/** Saves the Point <code>loc</code> in the preferences
 		 file as a string using the keyword <code>key</code>. */
 	public static void saveLocation(String key, Point loc) {
@@ -745,6 +691,72 @@ public class Prefs {
 	/** Returns the custom preferences (IJ_Prefs.txt) file path. */
 	public static String getCustomPrefsPath() {
 		return preferencesPath;
+	}
+
+	/** Retrieves a string from IJ_Props or IJ_Prefs.txt.
+		Does not retrieve strings set using Prefs.set(). */
+	public static String getString(String key, String defaultString) {
+		if (props==null)
+			return defaultString;
+		String s = props.getProperty(key);
+		if (s==null)
+			return defaultString;
+		else
+			return s;
+	}
+
+	/** Retrieves a string from string in IJ_Props or IJ_Prefs.txt. */
+	public static String getString(String key) {
+		return props.getProperty(key);
+	}
+
+	/** Retrieves a number from IJ_Props or IJ_Prefs.txt.
+		Does not retrieve numbers set using Prefs.set(). */
+	public static int getInt(String key, int defaultValue) {
+		if (props==null) //workaround for Netscape JIT bug
+			return defaultValue;
+		String s = props.getProperty(key);
+		if (s!=null) {
+			try {
+				return Integer.decode(s).intValue();
+			} catch (NumberFormatException e) {IJ.log(""+e);}
+		}
+		return defaultValue;
+	}
+
+	/** Retrieves a number from IJ_Props or IJ_Prefs.txt.
+		Does not retrieve numbers set using Prefs.set(). */
+	public static double getDouble(String key, double defaultValue) {
+		if (props==null)
+			return defaultValue;
+		String s = props.getProperty(key);
+		Double d = null;
+		if (s!=null) {
+			try {d = new Double(s);}
+			catch (NumberFormatException e){d = null;}
+			if (d!=null)
+				return(d.doubleValue());
+		}
+		return defaultValue;
+	}
+
+	/** Retrieves a boolean from IJ_Props or IJ_Prefs.txt.
+		Does not retrieve boolean set using Prefs.set(). */
+	public static boolean getBoolean(String key, boolean defaultValue) {
+		if (props==null) return defaultValue;
+		String s = props.getProperty(key);
+		if (s==null)
+			return defaultValue;
+		else
+			return s.equals("true");
+	}
+
+	/** Finds a color in IJ_Props or IJ_Prefs.txt. */
+	public static Color getColor(String key, Color defaultColor) {
+		int i = getInt(key, 0xaaa);
+		if (i == 0xaaa)
+			return defaultColor;
+		return new Color((i >> 16) & 0xFF, (i >> 8) & 0xFF, i & 0xFF);
 	}
 
 }

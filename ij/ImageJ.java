@@ -78,7 +78,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.53f";
-	public static final String BUILD = "47";
+	public static final String BUILD = "50";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -541,7 +541,7 @@ public class ImageJ extends Frame implements ActionListener,
 		
 		if (cmd!=null && !cmd.equals("")) {
 			commandName = cmd;
-			if (cmd.equals("Fill")||cmd.equals("Draw"))
+			if (!control && !meta && (cmd.equals("Fill")||cmd.equals("Draw")))
 				hotkey = true;
 			if (cmd.charAt(0)==MacroInstaller.commandPrefix)
 				MacroInstaller.runMacroShortcut(cmd);

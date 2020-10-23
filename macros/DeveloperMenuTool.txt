@@ -1,30 +1,22 @@
    var dCmds = newMenu("Developer Menu Tool",
-      newArray("ImageJ Website","News", "Documentation", "Resources", "Macro Language", "Macros", 
-      "Macro Functions", "Startup Macros...", "Plugins", "Source Code", "-", "Record...", 
-      "Capture Screen ", "Monitor Memory...", "Find Commands...", "Search...", "Debug Mode"));
+      newArray("ImageJ Website", "Resources",
+      "-", "Record...", "Capture Screen ", "Monitor Memory...", "Find Commands...", "Search...", "Debug Mode",
+      "-", "New Image...", "New Hyperstack...",
+      "Blobs", "Fly Brain", "HeLa Cells (48-bit RGB)", "Mitosis (5D stack)", "T1 Head (16-bits)"));
       
    macro "Developer Menu Tool - C037T0b14DT9b12eTfb12v" {
        cmd = getArgument();
        if (cmd=="ImageJ Website")
            run("URL...", "url=http://imagej.nih.gov/ij/");
-       else if (cmd=="News")
-           run("URL...", "url=http://imagej.nih.gov/ij/notes.html");
-       else if (cmd=="Documentation")
-           run("URL...", "url=http://imagej.nih.gov/ij/docs/");
-       else if (cmd=="Resources")
+        else if (cmd=="Resources")
            run("URL...", "url=http://imagej.nih.gov/ij/developer/");
-       else if (cmd=="Macro Language")
-           run("URL...", "url=http://imagej.nih.gov/ij/developer/macro/macros.html");
-       else if (cmd=="Macros")
-           run("URL...", "url=http://imagej.nih.gov/ij/macros/");
         else if (cmd=="Macro Functions")
            run("URL...", "url=http://imagej.nih.gov/ij/developer/macro/functions.html");
-        else if (cmd=="Plugins")
-           run("URL...", "url=http://imagej.nih.gov/ij/plugins/");
-        else if (cmd=="Source Code")
-           run("URL...", "url=http://imagej.nih.gov/ij/developer/source/");
         else if (cmd=="Debug Mode")
            setOption("DebugMode", true);
-	 else if (cmd!="-")
-            run(cmd);
+	    else if (cmd!="-") {
+	       if (cmd=="New Image...") cmd= "Image...";
+ 	       if (cmd=="New Hyperstack...") cmd= "Hyperstack...";
+           run(cmd);
+	   }
    }

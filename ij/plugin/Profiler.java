@@ -45,20 +45,18 @@ public class Profiler implements PlugIn, PlotMaker {
 		double ymin = ProfilePlot.getFixedMin();
 		double ymax = ProfilePlot.getFixedMax();
 		boolean fixedScale = ymin!=0.0 || ymax!=0.0;
-		boolean wasFixedScale = fixedScale;
-		
+		boolean wasFixedScale = fixedScale;			
 		GenericDialog gd = new GenericDialog("Plot Defaults");
 		gd.setInsets(4,0,0);
 		gd.addMessage("---------- Plot Defaults ---------");
 		gd.addNumericField("Width:", PlotWindow.plotWidth, 0);
 		gd.addNumericField("Height:", PlotWindow.plotHeight, 0);
-		gd.addNumericField("Font size:", PlotWindow.getDefaultFontSize(), 0);
+		gd.addNumericField("Font size:", PlotWindow.getDefaultFontSize());
 		gd.setInsets(5,20,0); //distance to previous
 		//gd.addCheckbox("Draw grid lines", !PlotWindow.noGridLines);
 		gd.addCheckbox("Draw_ticks", !PlotWindow.noTicks);
 		gd.addCheckbox("Auto-close", PlotWindow.autoClose);
-		gd.addCheckbox("List values", PlotWindow.listValues);
-		
+		gd.addCheckbox("List values", PlotWindow.listValues);		
 		gd.setInsets(15,0,0);
 		gd.addMessage("------- Profile Plot Options -------");
 		gd.setInsets(5,20,0);
@@ -76,14 +74,12 @@ public class Profiler implements PlugIn, PlotMaker {
 		int h = (int)gd.getNextNumber();
 		if (w<Plot.MIN_FRAMEWIDTH) w = Plot.MIN_FRAMEWIDTH;
 		if (h<Plot.MIN_FRAMEHEIGHT) h = Plot.MIN_FRAMEHEIGHT;
+		int fontSize = (int)gd.getNextNumber();
 		if (!gd.invalidNumber()) {
 			PlotWindow.plotWidth = w;
 			PlotWindow.plotHeight = h;
-		}
-		int fontSize = (int)gd.getNextNumber();
-		if (!gd.invalidNumber())
 			PlotWindow.setDefaultFontSize(fontSize);
-		//PlotWindow.noGridLines = !gd.getNextBoolean();
+		}
 		PlotWindow.noTicks = !gd.getNextBoolean();
 		//data options
 		PlotWindow.autoClose = gd.getNextBoolean();

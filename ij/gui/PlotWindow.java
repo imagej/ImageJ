@@ -21,6 +21,13 @@ import ij.io.SaveDialog;
 public class PlotWindow extends ImageWindow implements ActionListener, ItemListener,
 	ClipboardOwner, ImageListener, RoiListener, Runnable {
 
+	private static final int WIDTH = 600;
+	private static final int HEIGHT = 340;
+	private static final int FONT_SIZE = 14;
+	private static final String PREFS_WIDTH = "pp.width";
+	private static final String PREFS_HEIGHT = "pp.height";
+	private static final String PREFS_FONT_SIZE = "pp.fontsize";
+
 	/** @deprecated */
 	public static final int CIRCLE = Plot.CIRCLE;
 	/** @deprecated */
@@ -42,9 +49,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	/** Interpolate line profiles. To set, use Edit/Options/Plots or setOption("InterpolateLines",boolean). */
 	public static boolean interpolate = true;
 	// default values for new installations; values will be then saved in prefs
-	private static final int WIDTH = 600;
-	private static final int HEIGHT = 340;
-	private static int defaultFontSize = 14; 
+	private static int defaultFontSize = Prefs.getInt(PREFS_FONT_SIZE, FONT_SIZE);
 	/** The width of the plot (without frame) in pixels. */
 	public static int plotWidth = WIDTH;
 	/** The height of the plot in pixels. */
@@ -58,10 +63,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	 *	only min&max value of the axes are given */
 	public static boolean noTicks;
 
-
-	private static final String PREFS_WIDTH = "pp.width";
-	private static final String PREFS_HEIGHT = "pp.height";
-	private static final String PREFS_FONT_SIZE = "pp.fontsize";
 	private static final String OPTIONS = "pp.options";
 	private static final int SAVE_X_VALUES = 1;
 	private static final int AUTO_CLOSE = 2;
@@ -106,7 +107,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		autoClose = (options&AUTO_CLOSE)!=0;
 		plotWidth = Prefs.getInt(PREFS_WIDTH, WIDTH);
 		plotHeight = Prefs.getInt(PREFS_HEIGHT, HEIGHT);
-		defaultFontSize = fontSize = Prefs.getInt(PREFS_FONT_SIZE, defaultFontSize);
 		Dimension screen = IJ.getScreenSize();
 		if (plotWidth>screen.width && plotHeight>screen.height) {
 			plotWidth = WIDTH;
@@ -907,7 +907,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	
 	public static void setDefaultFontSize(int size) {
 		if (size < 9) size = 9;
-		if (size > 36) size = 36;
 		defaultFontSize = size;
 	}
 

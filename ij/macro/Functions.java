@@ -2868,7 +2868,7 @@ public class Functions implements MacroConstants, Measurements {
 		pasteMode = Roi.getCurrentPasteMode();
 		plotWidth = PlotWindow.plotWidth;
 		plotHeight = PlotWindow.plotHeight;
-		plotFontSize = PlotWindow.fontSize;
+		plotFontSize = PlotWindow.getDefaultFontSize();
 		plotInterpolate = PlotWindow.interpolate;
 		plotNoGridLines = PlotWindow.noGridLines;
 		plotNoTicks = PlotWindow.noTicks;
@@ -2907,7 +2907,7 @@ public class Functions implements MacroConstants, Measurements {
 		Roi.setPasteMode(pasteMode);
 		PlotWindow.plotWidth = plotWidth;
 		PlotWindow.plotHeight = plotHeight;
-		PlotWindow.fontSize = plotFontSize;
+		PlotWindow.setDefaultFontSize(plotFontSize);
 		PlotWindow.interpolate = plotInterpolate;
 		PlotWindow.noGridLines = plotNoGridLines;
 		PlotWindow.noTicks = plotNoTicks;

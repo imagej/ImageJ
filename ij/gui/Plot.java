@@ -177,7 +177,6 @@ public class Plot implements Cloneable {
 	int preferredPlotWidth = PlotWindow.plotWidth;  //default size of plot frame (not taking 'High-Resolution' scale factor into account)
 	int preferredPlotHeight = PlotWindow.plotHeight;
 
-
 	double xMin = Double.NaN, xMax, yMin, yMax;		//current plot range, logarithm if log axis
 	double[] currentMinMax = new double[]{Double.NaN, 0, Double.NaN, 0}; //current plot range, xMin, xMax, yMin, yMax (values, not logarithm if log axis)
 	double[] defaultMinMax = new double[]{Double.NaN, 0, Double.NaN, 0}; //default plot range
@@ -4023,7 +4022,7 @@ public class Plot implements Cloneable {
 	public void changeFont(Font font) {
 		setFont(font);
 	}
-
+	
 }
 
 /** This class contains the properties of the plot, such as size, format, range, etc, except for the data+format (plot contents).
