@@ -1,22 +1,16 @@
    var dCmds = newMenu("Developer Menu Tool",
-      newArray("ImageJ Website", "Resources",
-      "-", "Record...", "Capture Screen ", "Monitor Memory...", "Find Commands...", "Search...", "Debug Mode",
+      newArray("Record...", "Capture Screen ", "Monitor Memory...", "Find Commands...", "Commands...",
+      "Search...", "ImageJ Properties", "List Elements", "Debug Mode",
       "-", "New Image...", "New Hyperstack...",
       "Blobs", "Fly Brain", "HeLa Cells (48-bit RGB)", "Mitosis (5D stack)", "T1 Head (16-bits)"));
       
    macro "Developer Menu Tool - C037T0b14DT9b12eTfb12v" {
        cmd = getArgument();
-       if (cmd=="ImageJ Website")
-           run("URL...", "url=http://imagej.nih.gov/ij/");
-        else if (cmd=="Resources")
-           run("URL...", "url=http://imagej.nih.gov/ij/developer/");
-        else if (cmd=="Macro Functions")
-           run("URL...", "url=http://imagej.nih.gov/ij/developer/macro/functions.html");
-        else if (cmd=="Debug Mode")
-           setOption("DebugMode", true);
-	    else if (cmd!="-") {
-	       if (cmd=="New Image...") cmd= "Image...";
- 	       if (cmd=="New Hyperstack...") cmd= "Hyperstack...";
-           run(cmd);
-	   }
+       if (cmd=="Debug Mode")
+          setOption("DebugMode", true);
+       else if (cmd!="-") {
+          if (cmd=="New Image...") cmd= "Image...";
+          if (cmd=="New Hyperstack...") cmd= "Hyperstack...";
+          run(cmd);
+       }
    }

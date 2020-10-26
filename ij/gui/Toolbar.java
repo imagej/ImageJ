@@ -1089,7 +1089,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		return x>=(buttonWidth*12) && x<(buttonWidth*12+gapSize);
  	}
 
-	public void triggerPopupMenu(int newTool, MouseEvent e, boolean isRightClick, boolean isLongPress){
+	public void triggerPopupMenu(int newTool, MouseEvent e, boolean isRightClick, boolean isLongPress) {
 		mpPrevious = current;
 		if (isMacroTool(newTool)) {
 			String name = names[newTool];
@@ -1175,8 +1175,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 		if (!isValidTool(newTool))
 			return;
-		//if (menus[newTool]!=null && menus[newTool].getComponentCount()>0) {
-		if (menus[newTool]!=null) {
+		if (menus[newTool]!=null && menus[newTool].getItemCount()>0) {
             menus[newTool].show(e.getComponent(), e.getX(), e.getY());
 			return;
 		}
