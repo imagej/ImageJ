@@ -233,8 +233,8 @@ public class SimpleCommands implements PlugIn {
 			IJ.error("Folder not found: " + arg);
 			return;
 		}
-		if (arg.equals("image")&& IJ.getImage() != null) {
-			File imgPath = new File(dir + File.separator + IJ.getImage().getTitle());
+		if (arg.equals("image")&& IJ.getImage()!=null) {
+			File imgPath = new File(IJ.getDir("image"));
 			if (!imgPath.exists()) {
 				IJ.error("Image not found");
 				return;

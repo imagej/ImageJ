@@ -1413,12 +1413,13 @@ public class Menus {
 			for (int i=first; i<count; i++) {
 				MenuItem item = window.getItem(i);
 				String label = item.getLabel();
+				String cmd = item.getActionCommand();
 				if (imp!=null) {  //remove size (e.g. " 24MB")
 					int index = label.lastIndexOf(" ");
 					if (index>-1)
 						label = label.substring(0, index);
 				}
-				if (item!=null && label.equals(oldLabel)) {
+				if (item!=null && label.equals(oldLabel) && (imp==null||(""+imp.getID()).equals(cmd))) {
 					String size = "";
 					if (imp!=null)
 						size =  " " + ImageWindow.getImageSize(imp);

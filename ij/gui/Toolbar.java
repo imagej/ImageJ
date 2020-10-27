@@ -41,7 +41,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public static final int CUSTOM7 = 21;
 	
 	public static final int DOUBLE_CLICK_THRESHOLD = 650; //ms
-	private static final int LONG_PRESS_THRESHOLD = 500; //ms
+	private static final int LONG_CLICK_THRESHOLD = 500; //ms
 
 	public static final int RECT_ROI=0, ROUNDED_RECT_ROI=1, ROTATED_RECT_ROI=2;
 	public static final int OVAL_ROI=0, ELLIPSE_ROI=1, BRUSH_ROI=2;
@@ -627,8 +627,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			IJ.showStatus(name);
 			return;
 		}
-		String hint = " (long press to switch)";
-		String hint2 = " (long press to switch; double click to configure)";
+		String hint = " (alt or long click to switch)";
+		String hint2 = " (alt or long click to switch; double click to configure)";
 		switch (tool) {
 			case RECTANGLE:
 				if (rectType==ROUNDED_RECT_ROI)
@@ -677,7 +677,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				IJ.showStatus("Text tool (double-click to configure)");
 				return;
 			case MAGNIFIER:
-				IJ.showStatus("Magnifying glass (or \"+\" and \"-\" keys; long press for menu)");
+				IJ.showStatus("Magnifying glass (or \"+\" and \"-\" keys; alt or long click for menu)");
 				return;
 			case HAND:
 				IJ.showStatus("Scrolling tool (or press space bar and drag)");
@@ -685,7 +685,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			case DROPPER:
 				String fg = foregroundColor.getRed() + "," + foregroundColor.getGreen() + "," + foregroundColor.getBlue();
 				String bg = backgroundColor.getRed() + "," + backgroundColor.getGreen() + "," + backgroundColor.getBlue();
-				IJ.showStatus("Color picker " +  fg + "/"+ bg + " (long press for menu)");
+				IJ.showStatus("Color picker " +  fg + "/"+ bg + " (alt or long click for menu)");
 				return;
 			case ANGLE:
 				IJ.showStatus("Angle tool");
@@ -1250,7 +1250,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					}
 					triggerPopupMenu(newTool, e, true, true);
 				}
-			}, LONG_PRESS_THRESHOLD);
+			}, LONG_CLICK_THRESHOLD);
 		}
 		
 	}

@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /** This is a Canvas used to display images in a Window. */
 public class ImageCanvas extends Canvas implements MouseListener, MouseMotionListener, Cloneable {
 
-	private static final int LONG_PRESS_THRESHOLD = 750; //ms
+	private static final int LONG_CLICK_THRESHOLD = 750; //ms
 	protected static Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 	protected static Cursor handCursor = new Cursor(Cursor.HAND_CURSOR);
 	protected static Cursor moveCursor = new Cursor(Cursor.MOVE_CURSOR);
@@ -1230,7 +1230,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		
 		if (pressTimer==null)
-			pressTimer = new java.util.Timer();			
+			pressTimer = new java.util.Timer();	
+		final Point cursorLoc = getCursorLoc();	
 		pressTimer.schedule(new TimerTask() {
 			public void run() {
 				if (pressTimer != null) {
@@ -1245,13 +1246,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				boolean unchanged = state!=Roi.MOVING_HANDLE && r1!=null && r2!=null && r2.x==r1.x
 					&& r2.y==r1.y  && r2.width==r1.width && r2.height==r1.height && size2==size1
 					&& !(size2>1&&state==Roi.CONSTRUCTING);
-				//IJ.log(size2+" "+empty+" "+unchanged+" "+state+" "+roi1+"  "+roi2);				
+				boolean cursorMoved = !getCursorLoc().equals(cursorLoc);
+				//IJ.log(size2+" "+empty+" "+unchanged+" "+state+" "+roi1+"  "+roi2);			
 				if ((roi1==null && (size2<=1||empty)) || unchanged) {
 					if (roi1==null) imp.deleteRoi();
-					handlePopupMenu(e);
+					if (!cursorMoved) handlePopupMenu(e);
 				}
 			}
-		}, LONG_PRESS_THRESHOLD);
+		}, LONG_CLICK_THRESHOLD);
 		
 	}
 	
