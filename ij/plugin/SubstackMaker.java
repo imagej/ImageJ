@@ -26,6 +26,7 @@ import java.awt.Color;
 
 public class SubstackMaker implements PlugIn {
 	private static boolean delete = false;
+	
 
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
@@ -39,6 +40,10 @@ public class SubstackMaker implements PlugIn {
 		ImagePlus imp2 = makeSubstack(imp, userInput);
 		if (imp2!=null)
 			imp2.show();
+	}
+	
+	public void setDelete(boolean setdelete){
+		delete = setdelete
 	}
 
 	public ImagePlus makeSubstack(ImagePlus imp, String userInput) {
