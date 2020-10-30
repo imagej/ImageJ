@@ -41,7 +41,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public static final int CUSTOM7 = 21;
 	
 	public static final int DOUBLE_CLICK_THRESHOLD = 650; //ms
-	private static final int LONG_CLICK_THRESHOLD = 500; //ms
+	private static final int LONG_CLICK_THRESHOLD = 600; //ms
 
 	public static final int RECT_ROI=0, ROUNDED_RECT_ROI=1, ROTATED_RECT_ROI=2;
 	public static final int OVAL_ROI=0, ELLIPSE_ROI=1, BRUSH_ROI=2;

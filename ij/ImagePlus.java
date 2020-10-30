@@ -1089,7 +1089,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (title==null)
 			return;
     	if (win!=null) {
-    		if (ij!=null && !title.equals(this.title))
+    		if (ij!=null)
 				Menus.updateWindowMenuItem(this, this.title, title);
 			String virtual = stack!=null && stack.isVirtual()?" (V)":"";
 			String global = getGlobalCalibration()!=null?" (G)":"";

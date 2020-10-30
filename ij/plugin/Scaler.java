@@ -82,6 +82,11 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			scaler.interpolationMethod = ImageProcessor.NONE;
 		if (options.contains("bicubic"))
 			scaler.interpolationMethod = ImageProcessor.BICUBIC;
+		if (scaler.xscale==0) {
+			scaler.xscale = (double)dstWidth/imp.getWidth();
+			scaler.yscale = (double)dstHeight/imp.getWidth();
+			scaler.zscale = (double)dstDepth/imp.getStackSize();
+		}
 		boolean processStack = imp.getStackSize()>1 && !options.contains("slice");
 		//return new ImagePlus("Untitled", ip.resize(dstWidth, dstHeight, useAveraging));
 		Roi roi = imp.getRoi();
