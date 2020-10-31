@@ -88,7 +88,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private boolean flattening;
 	private Timer pressTimer;
 	private PopupMenu roiPopupMenu;
-    private static int longClickDelay = 1000; //ms
+	private static int longClickDelay = 1000; //ms
 
 		
 	public ImageCanvas(ImagePlus imp) {
