@@ -1791,6 +1791,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		addPopupItem("Roi Defaults...", null, roiPopupMenu, ij);
 		addPopupItem("Add to Overlay", "Add Selection...", roiPopupMenu, ij);
 		addPopupItem("Add to ROI Manager", "Add to Manager", roiPopupMenu, ij);				
+		addPopupItem("Duplicate...", null, roiPopupMenu, ij);	
 		addPopupItem("Fit Spline", null, roiPopupMenu, ij);	
 		addPopupItem("Create Mask", null, roiPopupMenu, ij);	
 		addPopupItem("Measure", null, roiPopupMenu, ij);							

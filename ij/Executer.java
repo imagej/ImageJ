@@ -171,12 +171,26 @@ public class Executer implements Runnable {
 				else {
 					if (repeatingCommand)
 						IJ.runMacro(previousCommand);
-					else
-						IJ.error("Unrecognized command: \"" + cmd+"\"");
+					else {
+						if (!extraCommand(cmd))
+							IJ.error("Unrecognized command: \"" + cmd+"\"");
+					}
 				}
 			}
 	 	}
     }
+    
+	private boolean extraCommand(String cmd) {
+		if (cmd!=null && cmd.equals("Duplicate Image")) {
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (imp!=null) {
+				imp.crop("whole-slice").show();
+				return true;
+			} else
+				return false;
+		} else
+			return false;
+	}
 
 	/** If the foreground image is locked during a filter operation with NonBlockingGenericDialog,
 	 *  the following plugins are allowed */

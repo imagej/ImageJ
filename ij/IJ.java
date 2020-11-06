@@ -1668,6 +1668,12 @@ public class IJ {
 	/** Sets the transfer mode used by the <i>Edit/Paste</i> command, where mode is "Copy", "Blend", "Average", "Difference", 
 		"Transparent", "Transparent2", "AND", "OR", "XOR", "Add", "Subtract", "Multiply", or "Divide". */
 	public static void setPasteMode(String mode) {
+		Roi.setPasteMode(stringToPasteMode(mode));
+	}
+
+	public static int stringToPasteMode(String mode) {
+		if (mode==null)
+			return Blitter.COPY;
 		mode = mode.toLowerCase(Locale.US);
 		int m = Blitter.COPY;
 		if (mode.startsWith("ble") || mode.startsWith("ave"))
@@ -1696,7 +1702,7 @@ public class IJ {
 			m = Blitter.MIN;
 		else if (mode.startsWith("max"))
 			m = Blitter.MAX;
-		Roi.setPasteMode(m);
+		return m;
 	}
 
 	/** Returns a reference to the active image, or displays an error

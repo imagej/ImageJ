@@ -2,7 +2,8 @@
       newArray("Record...", "Capture Screen ", "Monitor Memory...", "Find Commands...", "Commands...",
       "Search...", "ImageJ Properties", "List Elements", "Debug Mode", "ImageJ Website...",
       "-", "New Image...", "New Hyperstack...",
-      "Blobs", "Fly Brain", "HeLa Cells (48-bit RGB)", "Mitosis (5D stack)", "T1 Head (16-bits)"));
+      "Blobs", "Cell Colony", "Fly Brain", "HeLa Cells (48-bit RGB)", "Image with Overlay",
+      "Mitosis (5D stack)", "T1 Head (16-bits)"));
       
    macro "Developer Menu Tool - C037T0b14DT9b12eTfb12v" {
        cmd = getArgument();

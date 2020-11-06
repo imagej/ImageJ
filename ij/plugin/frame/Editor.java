@@ -113,6 +113,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private JavaScriptEvaluator evaluator;
 	private int messageCount;
 	private String rejectMacrosMsg;
+	private Button runMacro;
 	
 	public Editor() {
 		this(24, 80, 0, MENU_BAR);
@@ -122,6 +123,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		super("Editor");
 		WindowManager.addWindow(this);
 		addMenuBar(options);	
+		
+		//Panel panel = new Panel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		//runMacro = new Button("Run");
+		//panel.add(runMacro);
+		//add("North", panel);
+				
 		ta = new TextArea(rows, columns);
 		ta.addTextListener(this);
 		ta.addKeyListener(this);

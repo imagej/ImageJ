@@ -7992,8 +7992,14 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getParens();
 			imp.copy();
 			return null;
-		} else if (name.equals("paste")) {
-			imp.paste((int)getFirstArg(), (int)getLastArg());
+		} else if (name.equals("paste")) {	
+			int x = (int)getFirstArg();
+			int y = (int)getNextArg();
+			String mode = null;
+			if (interp.nextToken()==',')
+				mode = getNextString();
+			interp.getRightParen();
+			imp.paste(x, y, mode);
 			imp.updateAndDraw();
 			return null;
 		}

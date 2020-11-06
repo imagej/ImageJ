@@ -6,6 +6,7 @@ import java.util.*;
 import ij.process.*;
 import ij.io.*;
 import ij.gui.*;
+
 import ij.measure.*;
 import ij.plugin.filter.Analyzer;
 import ij.util.*;
@@ -636,6 +637,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 		setFileInfo(imp.getOriginalFileInfo());
 		setProperty ("Info", imp.getProperty ("Info"));
+		setProperties(imp.getPropertiesAsArray());
 	}
 
 	/** Replaces the ImageProcessor with the one specified and updates the
@@ -1500,8 +1502,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return imageProperties.size() + info2;			
 	}
 	
-	/** Used for restoring string properties from TIFF header. */
+	/** Creates a set of image properties from an array of strings.
+	 * @see #getPropertiesAsArray
+	 * @see #getProp(String)
+	 * @see #setProp(String,String)
+	*/
 	public void setProperties(String[] props) {
+		imageProperties = null;
 		if (props==null)
 			return;
 		//IJ.log("setProperties: "+props.length+" "+getTitle());
@@ -2845,13 +2852,28 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     /** Inserts the contents of the internal clipboard at the
     	specified location, without updating the display. */
 	 public void paste(int x, int y) {
+	 	paste(x, y, null);
+	}
+
+    /** Copies the contents of the internal clipboard to the
+	 * specified location using the specified transfer mode
+	 * ("Copy", "Blend", "Average", "Difference", "Transparent",
+	 * "Transparent2", "AND", "OR", "XOR", "Add", "Subtract",
+	 * "Multiply", or "Divide"). The display is not updating.
+    */
+	 public void paste(int x, int y, String mode) {
 		if (clipboard==null)
 			return;
 		Roi roi = clipboard.getRoi();
 		boolean nonRect = roi!=null && roi.getType()!=Roi.RECTANGLE;
 		if (nonRect)
 			ip.snapshot();
-		ip.insert(clipboard.getProcessor(), x, y);
+		if (mode==null)
+			ip.insert(clipboard.getProcessor(), x, y);
+		else {
+			int pasteMode = IJ.stringToPasteMode(mode);
+			ip.copyBits(clipboard.getProcessor(), x, y, pasteMode);
+		}
 		if (nonRect) {
 			ImageProcessor mask = roi.getMask();
 			ip.setRoi(x, y, mask.getWidth(), mask.getHeight());
@@ -2860,7 +2882,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 	}
 
-    /** Returns the internal clipboard or null if the internal clipboard is empty. */
+   /** Returns the internal clipboard or null if the internal clipboard is empty. */
     public static ImagePlus getClipboard() {
         return clipboard;
     }

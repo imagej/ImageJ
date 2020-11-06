@@ -41,7 +41,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public static final int CUSTOM7 = 21;
 	
 	public static final int DOUBLE_CLICK_THRESHOLD = 650; //ms
-	private static final int LONG_CLICK_THRESHOLD = 600; //ms
 
 	public static final int RECT_ROI=0, ROUNDED_RECT_ROI=1, ROTATED_RECT_ROI=2;
 	public static final int OVAL_ROI=0, ELLIPSE_ROI=1, BRUSH_ROI=2;
@@ -93,6 +92,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private CheckboxMenuItem straightLineItem, polyLineItem, freeLineItem, arrowItem;
 	private String currentSet = "Startup Macros";
 	private Timer pressTimer;
+	private static int longClickDelay = 600; //ms
 
 	private static Color foregroundColor = Prefs.getColor(Prefs.FCOLOR,Color.white);
 	private static Color backgroundColor = Prefs.getColor(Prefs.BCOLOR,Color.black);
@@ -1239,7 +1239,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			}
 		}
 
-		if (!isRightClick) {
+		if (!isRightClick && longClickDelay>0) {
 			if (pressTimer==null)
 				pressTimer = new java.util.Timer();			
 			pressTimer.schedule(new TimerTask() {
@@ -1250,7 +1250,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					}
 					triggerPopupMenu(newTool, e, true, true);
 				}
-			}, LONG_CLICK_THRESHOLD);
+			}, longClickDelay);
 		}
 		
 	}
@@ -2043,6 +2043,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	public int getNumTools() {
 		return NUM_TOOLS + nExtraTools;
+	}
+	
+	/** Sets the tool menu long click delay in milliseconds
+	 * (default is 600). Set to 0 to disable long click triggering.
+	*/
+	 public static void setLongClickDelay(int delay) {
+		longClickDelay = delay;
 	}
 
 }
