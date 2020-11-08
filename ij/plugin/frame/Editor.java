@@ -56,7 +56,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
  		+"Visible images are automatically updated.)\n";
 
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
-	public static final int MONOSPACED=1, MENU_BAR=2;
+	public static final int MONOSPACED=1, MENU_BAR=2, RUN_BAR=4;
 	public static final int MACROS_MENU_ITEMS = 15;
 	public static final String INTERACTIVE_NAME = "Interactive Interpreter";
 	static final String FONT_SIZE = "editor.font.size";
@@ -113,22 +113,28 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private JavaScriptEvaluator evaluator;
 	private int messageCount;
 	private String rejectMacrosMsg;
-	private Button runMacro;
+	private Button runButton;
 	
 	public Editor() {
 		this(24, 80, 0, MENU_BAR);
+	}
+
+	public Editor(String name) {
+		this(24, 80, 0, name!=null&&(name.endsWith(".ijm")||name.endsWith(".js"))?RUN_BAR+MENU_BAR:MENU_BAR);
 	}
 
 	public Editor(int rows, int columns, int fontSize, int options) {
 		super("Editor");
 		WindowManager.addWindow(this);
 		addMenuBar(options);	
-		
-		//Panel panel = new Panel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-		//runMacro = new Button("Run");
-		//panel.add(runMacro);
-		//add("North", panel);
-				
+		if ((options&RUN_BAR)!=0) {
+			Panel panel = new Panel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+			runButton = new Button("Run");
+			runButton.addActionListener(this);
+			panel.setFont(new Font("SansSerif", Font.PLAIN, sizes[fontSizeIndex]));
+			panel.add(runButton);
+			add("North", panel);
+		}
 		ta = new TextArea(rows, columns);
 		ta.addTextListener(this);
 		ta.addKeyListener(this);
@@ -136,10 +142,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
  		addKeyListener(IJ.getInstance());  // ImageJ handles keyboard shortcuts
 		add(ta);
 		pack();
-		if (fontSize<0)
-			fontSize = 0;
-		if (fontSize>=sizes.length)
-			fontSize = sizes.length-1;
 		setFont();
 		positionWindow();
 		if (!IJ.isJava18() && !IJ.isLinux())
@@ -764,7 +766,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	public void actionPerformed(ActionEvent e) {
 		String what = e.getActionCommand();
 		int flags = e.getModifiers();
-		boolean altKeyDown = (flags & Event.ALT_MASK)!=0;		
+		boolean altKeyDown = (flags & Event.ALT_MASK)!=0;
+        if (e.getSource()==runButton) {
+			runMacro(false);
+        	return;
+		}
 		if ("Save".equals(what))
 			save();
 		else if ("Compile and Run".equals(what))
@@ -877,7 +883,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		boolean run = !isJava && !name.contains("_Tool") && Prefs.autoRunExamples;
 		int rows = 24;
 		int columns = 70;
-		int options = MENU_BAR;
+		int options = MENU_BAR + RUN_BAR;
 		String text = null;
 		Editor ed = new Editor(rows, columns, 0, options);
 		String dir = "Macro/";

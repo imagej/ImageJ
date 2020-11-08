@@ -494,6 +494,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		ImagePlus imp = WindowManager.getCurrentImage();
 		//IJ.log("saveCommand: "+name+"  "+isSaveAs()+" "+scriptMode+"  "+commandOptions);
 		if (name!=null) {
+			if (name.equals("Duplicate Image..."))
+				name = "Duplicate...";
 			if (name.equals("Make Binary") && imp!=null && imp.getStackSize()==1) {
 				name = "Convert to Mask";
 				commandOptions = null;

@@ -2,6 +2,7 @@ package ij;
 import ij.util.Tools;
 import ij.text.TextWindow;
 import ij.plugin.MacroInstaller;
+import ij.plugin.Duplicator;
 import ij.plugin.frame.Recorder;
 import ij.plugin.frame.Editor;
 import ij.io.OpenDialog;
@@ -181,13 +182,14 @@ public class Executer implements Runnable {
     }
     
 	private boolean extraCommand(String cmd) {
-		if (cmd!=null && cmd.equals("Duplicate Image")) {
+		if (cmd!=null && cmd.equals("Duplicate Image...")) {
 			ImagePlus imp = WindowManager.getCurrentImage();
 			if (imp!=null) {
-				imp.crop("whole-slice").show();
-				return true;
+				Duplicator.ignoreNextSelection();
+				IJ.run(imp, "Duplicate...", "");
 			} else
-				return false;
+				IJ.noImage();
+			return true;
 		} else
 			return false;
 	}

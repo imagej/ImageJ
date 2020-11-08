@@ -140,7 +140,7 @@ public class Opener {
 							maxSize = 60000;
 					}
 					if (size<maxSize) {
-						Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
+						Editor ed = new Editor(path);
 						if (ed!=null) ed.open(getDir(path), getName(path));
 					} else
 						new TextWindow(path,400,450);
@@ -501,7 +501,7 @@ public class Opener {
 		else if (index!=-1 && index<len-1)
 			name = name.substring(index+1);
 		name = name.replaceAll("%20", " ");
-		Editor ed = new Editor();
+		Editor ed = new Editor(name);
 		ed.setSize(600, 300);
 		ed.create(name, text);
 		IJ.showStatus("");

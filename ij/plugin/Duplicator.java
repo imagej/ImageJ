@@ -20,7 +20,10 @@ import ij.measure.Calibration;
 */
 public class Duplicator implements PlugIn, TextListener, ItemListener {
 	private static boolean staticDuplicateStack;
+	private static boolean staticIgnoreSelection;
+	private static boolean ignoreNextSelection;
 	private boolean duplicateStack;
+	private boolean ignoreSelection;
 	private int first, last;
 	private Checkbox checkbox;
 	private TextField titleField, rangeField;
@@ -54,6 +57,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		String newTitle = WindowManager.getUniqueName(imp, title);
 		defaultTitle = newTitle;
 		duplicateStack = staticDuplicateStack && !IJ.isMacro();
+		ignoreSelection = (staticIgnoreSelection||ignoreNextSelection) && Macro.getOptions()==null;
 		if (!IJ.altKeyDown()||stackSize>1) {
 			if (imp.isHyperStack() || imp.isComposite()) {
 				duplicateHyperstack(imp, newTitle);			
@@ -70,7 +74,9 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			return;
 		}
 		ImagePlus imp2;
-		Roi roi = imp.getRoi();	
+		Roi roi = imp.getRoi();
+		if (ignoreSelection && roi!=null)
+			imp.deleteRoi();
 		if (duplicateStack && (first>1||last<stackSize))
 			imp2 = run(imp, first, last);
 		else if (duplicateStack || imp.getStackSize()==1) {
@@ -80,6 +86,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			imp2 = crop(imp);
 			recordCrop(imp);
 		}
+		if (ignoreSelection && roi!=null)
+			imp.setRoi(roi);
 		Calibration cal = imp2.getCalibration();
 		if (roi!=null && (cal.xOrigin!=0.0||cal.yOrigin!=0.0)) {
 			cal.xOrigin -= roi.getBounds().x;
@@ -100,15 +108,24 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 	}
 	
 	private void recordCrop(ImagePlus imp) {
-		if (Recorder.record) {
-   			if (imp.getStackSize()==1) {
-   				if (imp.getRoi()==null)
-   					Recorder.recordCall("imp2 = imp.duplicate();");
-   				else
-   					Recorder.recordCall("imp2 = imp.crop();");
-   			} else
-   				Recorder.recordCall("imp2 = imp.crop();");
-   		}
+		if (!Recorder.record)
+			return;
+		if (imp.getStackSize()==1) {
+			if (imp.getRoi()==null || ignoreSelection)
+				Recorder.recordCall("imp2 = imp.duplicate();");
+			else
+				Recorder.recordCall("imp2 = imp.crop();");
+		} else if (imp.getRoi()==null || ignoreSelection) {
+			if (duplicateStack)
+				Recorder.recordCall("imp2 = imp.duplicate();");
+			else
+				Recorder.recordCall("imp2 = imp.crop(\"whole-slice\");");
+		} else {
+			if (duplicateStack)
+				Recorder.recordCall("imp2 = imp.crop();");
+			else
+				Recorder.recordCall("imp2 = imp.crop(\"slice\");");
+		}
 	}
 	
  /** Rotates duplicated part of image
@@ -251,7 +268,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		if (overlay!=null && !imp.getHideOverlay())
 			imp2.setOverlay(overlay.crop(rect));
    		if (Recorder.record) {
-   			if (imp.getRoi()==null)
+   			if (imp.getRoi()==null || ignoreSelection)
    				Recorder.recordCall("imp2 = imp.duplicate();");
    			else
    				Recorder.recordCall("imp2 = imp.crop(\"stack\");");
@@ -445,6 +462,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 	String showDialog(ImagePlus imp, String dialogTitle, String prompt) {
 		int stackSize = imp.getStackSize();
 		String options = Macro.getOptions();
+		boolean isRoi = imp.getRoi()!=null;
 		boolean isMacro = options!=null;
 		duplicateStack = stackSize>1 && duplicateStack && !isMacro;
 		legacyMacro = options!=null && (options.contains("duplicate")||!options.contains("use"));
@@ -453,6 +471,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		GenericDialog gd = new GenericDialog(dialogTitle);
 		this.gd = gd;
 		gd.addStringField(prompt, title, 15);
+		if (isRoi)
+			gd.addCheckbox("Ignore selection", ignoreSelection);
 		if (stackSize>1) {
 			gd.addCheckbox("Duplicate stack", duplicateStack);
 			gd.setInsets(2, 30, 3);
@@ -472,6 +492,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		if (gd.wasCanceled())
 			return null;
 		title = gd.getNextString();
+		if (isRoi)
+			ignoreSelection = gd.getNextBoolean();
 		if (stackSize>1) {
 			duplicateStack = gd.getNextBoolean();
 			if (duplicateStack) {
@@ -488,8 +510,11 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 				last = stackSize;
 			}
 		}
-		if (!isMacro)
+		if (!isMacro) {
 			staticDuplicateStack = duplicateStack;
+			if (!ignoreNextSelection) staticIgnoreSelection=ignoreSelection;
+		}
+		ignoreNextSelection = false;
 		if (Recorder.record && titleField!=null && titleField.getText().equals(sliceLabel))
 			Recorder.recordOption("use");
 		return title;
@@ -673,6 +698,9 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			}
 		}
 	}
-
+	
+	public static void ignoreNextSelection() {
+		ignoreNextSelection = true;
+	}
 	
 }
