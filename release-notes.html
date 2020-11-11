@@ -5,10 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.53g13  7 November 2020</u>
+<li> <u>1.53g17  10 November 2020</u>
 <ul>
 <li> Thanks to Jerome Mutterer, added a "Run" button to Editor
- windows when the file name ends with ".ijm" or ".js".
+ windows when the file name ends with ".ijm", ".js", ".bsh" or ".py".
+ <li> Thanks to 'davidC', added the ij.gui.HistogramPlot class.
 <li> Thanks to Stein Rorvik, added the ImageCanvas.setLongClickDelay()
 and Toolbar.setLongClickDelay() methods.
 <li> Thanks to 'Dr. Njitram', added the recordable
@@ -25,6 +26,11 @@ work with stacks opened using
 <li> Thanks to 'muniak' and 'mountain_man', fixed a bug that
 caused the Scaler.resize() method to return an image with
 a calibration of Inf x Inf.
+<li> Thanks to Stein Rorvik, fixed a bug that caused a list of 12 'w' letters
+to appear after the Group entry in the ROI Properties dialog when it
+was called from a macro.
+<li> Thanks to 'davidC', fixed a bug that caused batch mode macros that
+created hundreds of histograms to fail.
 </ul>
 
 <li> <u>1.53f  25 October 2020</u>

@@ -85,8 +85,8 @@ public class NewPlugin implements PlugIn {
 			text = Tools.openFromIJJarAsString("/macros/"+name);
 		if (name.endsWith(".src"))
 			name = name.substring(0,name.length()-4) + ".java";
-		if (type==MACRO && !name.endsWith(".txt"))
-			name = SaveDialog.setExtension(name, ".txt");
+		if (type==MACRO && !name.endsWith(".ijm"))
+			name = SaveDialog.setExtension(name, ".ijm");
 		else if (type==JAVASCRIPT && !name.endsWith(".js")) {
 			if (name.equals("Macro")) name = "script";
 			name = SaveDialog.setExtension(name, ".js");

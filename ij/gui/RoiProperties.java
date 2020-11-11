@@ -128,12 +128,12 @@ public class RoiProperties implements TextListener, WindowListener {
 				gd.addNumericField("Width:", strokeWidth, digits);
 			}
 		}
+		groupName = (Label)gd.getMessage();
 		if (showName && !IJ.isMacro()) {
 			Vector v = gd.getStringFields();
 			groupField = (TextField)v.elementAt(v.size()-2);
 			groupField.addTextListener(this);
 			colorField = (TextField)v.elementAt(v.size()-1);
-			groupName = (Label)gd.getMessage();
 		}
 
 
@@ -423,7 +423,7 @@ public class RoiProperties implements TextListener, WindowListener {
 	}
 	
 	public void windowActivated(WindowEvent e) {
-		if (groupName != null) {
+		if (groupName!=null) {
 			String gname = Roi.getGroupName(roi.getGroup());
 			groupName.setText(gname!=null?" "+gname:"");  // add space to separate label from field
 		}

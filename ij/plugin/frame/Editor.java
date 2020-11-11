@@ -65,6 +65,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	static final String DEFAULT_DIR= "editor.dir";
 	static final String INSERT_SPACES= "editor.spaces";
 	static final String TAB_INC= "editor.tab-inc";
+	private final static int MACRO=0, JAVASCRIPT=1, BEANSHELL=2, PYTHON=3;
+	private final static String[] languages = {"Macro", "JavaScript", "BeanShell", "Python"};
+	private final static String[] extensions = {".ijm", ".js", ".bsh", ".py"};	
 	public static Editor currentMacroEditor;
 	private TextArea ta;
 	private String path;
@@ -114,6 +117,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private int messageCount;
 	private String rejectMacrosMsg;
 	private Button runButton;
+	private Choice language;
 	
 	public Editor() {
 		this(24, 80, 0, MENU_BAR);
@@ -133,6 +137,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			runButton.addActionListener(this);
 			panel.setFont(new Font("SansSerif", Font.PLAIN, sizes[fontSizeIndex]));
 			panel.add(runButton);
+			language = new Choice();
+			for (int i=0; i<languages.length; i++)
+				language.addItem(languages[i]);
+			language.addItemListener(this);
+			panel.add(language);
 			add("North", panel);
 		}
 		ta = new TextArea(rows, columns);
@@ -285,6 +294,14 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		} else {
 			fileMenu.addSeparator();
 			fileMenu.add(new MenuItem("Compile and Run", new MenuShortcut(KeyEvent.VK_R)));
+		}
+		if (language!=null) {
+			for (int i=0; i<languages.length; i++) {
+				if (name.endsWith(extensions[i])) {
+					language.select(languages[i]);
+					break;
+				}
+			}		
 		}
 		if (text.startsWith("//@AutoInstall") && (name.endsWith(".ijm")||name.endsWith(".txt"))) {
 			boolean installInPluginsMenu = !name.contains("Tool.");
@@ -767,9 +784,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		String what = e.getActionCommand();
 		int flags = e.getModifiers();
 		boolean altKeyDown = (flags & Event.ALT_MASK)!=0;
-        if (e.getSource()==runButton) {
+		if (e.getSource()==runButton) {
 			runMacro(false);
-        	return;
+			return;
 		}
 		if ("Save".equals(what))
 			save();
@@ -1129,13 +1146,31 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 
 	public void itemStateChanged(ItemEvent e) {
-		CheckboxMenuItem item = (CheckboxMenuItem)e.getSource();
 		String cmd = e.getItem().toString();
+		if (e.getSource()==language) {
+			setExtension(cmd);
+			return;
+		}
+		CheckboxMenuItem item = (CheckboxMenuItem)e.getSource();
 		if ("Tab Key Inserts Spaces".equals(cmd)) {
 			insertSpaces = e.getStateChange()==1;
 			Prefs.set(INSERT_SPACES, insertSpaces);
 		} else
 			setFont();
+	}
+	
+	private void setExtension(String language) {
+		String title = getTitle();
+		int dot = title.lastIndexOf(".");
+		if (dot>=0)
+			title = title.substring(0, dot);
+		for (int i=0; i<languages.length; i++) {
+			if (language.equals(languages[i])) {
+				title += extensions[i];
+				break;
+			}
+		}
+		setWindowTitle(title);		
 	}
 
 	/** Override windowActivated in PlugInFrame to

@@ -67,15 +67,17 @@ public class Histogram implements PlugIn, TextListener {
  		}
  		int iyMax = (int)Tools.parseDouble(yMax, 0.0);
  		boolean customHistogram = (bitDepth==8||bitDepth==24) && (!(xMin==0.0&&xMax==0.0)||nBins!=256||iyMax>0);
+		HistogramPlot plot = new HistogramPlot();
  		if (stackHistogram || customHistogram) {
  			ImagePlus imp2 = imp;
  			if (customHistogram && !stackHistogram && imp.getStackSize()>1)
  				imp2 = new ImagePlus("Temp", imp.getProcessor());
 			stats = new StackStatistics(imp2, nBins, xMin, xMax);
 			stats.histYMax = iyMax;
-			new HistogramWindow("Histogram of "+imp.getShortTitle(), imp, stats);
+			plot.draw(imp, stats);
 		} else
-			new HistogramWindow("Histogram of "+imp.getShortTitle(), imp, nBins, xMin, xMax, iyMax);
+			plot.draw(imp, nBins, xMin, xMax, iyMax);
+		plot.show();
 	}
 	
 	boolean showDialog(ImagePlus imp) {

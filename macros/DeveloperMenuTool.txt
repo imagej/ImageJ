@@ -1,17 +1,14 @@
    var dCmds = newMenu("Developer Menu Tool",
-      newArray("Record...", "Capture Screen ", "Monitor Memory...", "Find Commands...", "Commands...",
+      newArray("Record...", "Capture Screen ", "Monitor Memory...", "Find Commands...",
       "Search...", "ImageJ Properties", "List Elements", "Debug Mode", "ImageJ Website...",
-      "-", "New Image...", "New Hyperstack...",
-      "Blobs", "Cell Colony", "Fly Brain", "HeLa Cells (48-bit RGB)", "Image with Overlay",
+      "-", "Image...", "Hyperstack...", "Macro", "Open...", 
+      "-", "Blobs", "Fly Brain", "HeLa Cells (48-bit RGB)", "Image with Overlay",
       "Mitosis (5D stack)", "T1 Head (16-bits)"));
       
    macro "Developer Menu Tool - C037T0b14DT9b12eTfb12v" {
        cmd = getArgument();
        if (cmd=="Debug Mode")
           setOption("DebugMode", true);
-       else if (cmd!="-") {
-          if (cmd=="New Image...") cmd= "Image...";
-          if (cmd=="New Hyperstack...") cmd= "Hyperstack...";
+       else if (cmd!="-")
           run(cmd);
-       }
    }
