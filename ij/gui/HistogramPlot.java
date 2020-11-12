@@ -8,7 +8,7 @@ import java.awt.*;
 import java.awt.image.*;
 
 public class HistogramPlot extends ImagePlus {
-	private static final double SCALE = Prefs.getGuiScale();
+	static final double SCALE = Prefs.getGuiScale();
 	static final int HIST_WIDTH = (int)(SCALE*256);
 	static final int HIST_HEIGHT = (int)(SCALE*128);
 	static final int XMARGIN = (int)(20*SCALE);
@@ -341,21 +341,7 @@ public class HistogramPlot extends ImagePlus {
 			ip.drawString("Bins: " + d2s(stats.nBins), col1, row4);
 			ip.drawString("Bin Width: " + d2s(binWidth), col2, row4);
 		}
-		drawValueAndCount(ip, Double.NaN, -1);		
 	}
-	
-	private void drawValueAndCount(ImageProcessor ip, double value, long count) {
-		int y = showBins?row4:row3;
-		ip.setRoi(0, y, WIN_WIDTH, WIN_HEIGHT-y);
-		ip.setColor(Color.white);
-		ip.fill();
-		ip.setColor(Color.black);
-		String sValue = Double.isNaN(value)?"---":d2s(value);
-		String sCount = count==-1?"---":""+count;
-		int row = showBins?row5:row4;
-		ip.drawString("Value: " + sValue, col1, row);
-		ip.drawString("Count: " + sCount, col2, row);
-	}	
 	
 	private String d2s(double d) {
 		if ((int)d==d)

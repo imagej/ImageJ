@@ -15,14 +15,14 @@ import ij.text.TextWindow;
 /** This class is an extended ImageWindow that displays histograms. */
 public class HistogramWindow extends ImageWindow implements Measurements, ActionListener, 
 	ClipboardOwner, ImageListener, RoiListener, Runnable {
-	private static final double SCALE = Prefs.getGuiScale();
-	static final int HIST_WIDTH = (int)(SCALE*256);
-	static final int HIST_HEIGHT = (int)(SCALE*128);
-	static final int XMARGIN = (int)(20*SCALE);
-	static final int YMARGIN = (int)(10*SCALE);
-	static final int WIN_WIDTH = HIST_WIDTH + (int)(44*SCALE);
-	static final int WIN_HEIGHT = HIST_HEIGHT + (int)(118*SCALE);
-	static final int BAR_HEIGHT = (int)(SCALE*12);
+	private static final double SCALE = HistogramPlot.SCALE;
+	static final int HIST_WIDTH = HistogramPlot.HIST_WIDTH;
+	static final int HIST_HEIGHT = HistogramPlot.HIST_HEIGHT;
+	static final int XMARGIN = HistogramPlot.XMARGIN;
+	static final int YMARGIN = HistogramPlot.YMARGIN;
+	static final int WIN_WIDTH = HistogramPlot.WIN_WIDTH;
+	static final int WIN_HEIGHT = HistogramPlot.WIN_HEIGHT;
+	static final int BAR_HEIGHT = HistogramPlot.BAR_HEIGHT;
 
 	static final int INTENSITY1=0, INTENSITY2=1, RGB=2, RED=3, GREEN=4, BLUE=5;
 	
@@ -152,19 +152,19 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 
 	/** Draws the histogram using the specified title and ImageStatistics. */
-	public void showHistogram(ImagePlus imp, ImageStatistics stats) {
-		if (imp.getBitDepth()==24 && rgbMode<INTENSITY1)
+	public void showHistogram(ImagePlus srcImp, ImageStatistics stats) {
+		if (srcImp.getBitDepth()==24 && rgbMode<INTENSITY1)
 			rgbMode=INTENSITY1;
 		stackHistogram = stats.stackStatistics;
 		if (list==null)
-			setup(imp);
+			setup(srcImp);
 		this.stats = stats;
-		cal = imp.getCalibration();
+		cal = srcImp.getCalibration();
 		boolean limitToThreshold = (Analyzer.getMeasurements()&LIMIT)!=0;
-		imp.getMask();
+		srcImp.getMask();
 		histogram = stats.getHistogram();
 		if (limitToThreshold && histogram.length==256) {
-			ImageProcessor ip = imp.getProcessor();
+			ImageProcessor ip = srcImp.getProcessor();
 			if (ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD) {
 				int lower = scaleDown(ip, ip.getMinThreshold());
 				int upper = scaleDown(ip, ip.getMaxThreshold());
@@ -174,16 +174,20 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 					histogram[i] = 0L;
 			}
 		}
-		lut = imp.createLut();
-		int type = imp.getType();
+		lut = srcImp.createLut();
+		int type = srcImp.getType();
 		boolean fixedRange = type==ImagePlus.GRAY8 || type==ImagePlus.COLOR_256 || type==ImagePlus.COLOR_RGB;
-		ImageProcessor ip = this.imp.getProcessor();
+		if (imp==null) {
+			IJ.showStatus("imp==null");
+			return;
+		}
+		ImageProcessor ip = imp.getProcessor();
 		ip.setColor(Color.white);
 		ip.resetRoi();
 		ip.fill();
-		ImageProcessor srcIP = imp.getProcessor();
-		drawHistogram(imp, ip, fixedRange, stats.histMin, stats.histMax);
-		this.imp.updateAndDraw();
+		ImageProcessor srcIP = srcImp.getProcessor();
+		drawHistogram(srcImp, ip, fixedRange, stats.histMin, stats.histMax);
+		imp.updateAndDraw();
 	}
 
 	private void setup(ImagePlus imp) {
@@ -226,8 +230,6 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		setup(null);
 	}
 	
-	static int cnt = 0;
-
 	public void mouseMoved(int x, int y) {
 		ImageProcessor ip = this.imp!=null?this.imp.getProcessor():null;
 		if (ip==null)
@@ -240,7 +242,6 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			drawValueAndCount(ip, value, histogram[index]);
 		} else
 			drawValueAndCount(ip, Double.NaN, -1);
-		//if (cnt++==0) new ImagePlus("ip", ip.duplicate()).show();
 		this.imp.updateAndDraw();
 	}
 	
