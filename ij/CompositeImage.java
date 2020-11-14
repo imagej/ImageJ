@@ -374,6 +374,7 @@ public class CompositeImage extends ImagePlus {
 		return new LUT(r, g, b);
 	}
 
+	/** Returns the color used to display the image subtitle and "B&C" histogram. */
 	public Color getChannelColor() {
 		if (lut==null || mode==GRAYSCALE)
 			return Color.black;

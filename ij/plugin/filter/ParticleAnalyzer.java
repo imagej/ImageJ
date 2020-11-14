@@ -236,7 +236,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		slice = 0;
 		saveRoi = imp.getRoi();
 		saveSlice = imp.getCurrentSlice();
-		if (saveRoi!=null && saveRoi.getType()!=Roi.RECTANGLE && saveRoi.isArea())
+		if (saveRoi!=null && saveRoi.getType()!=Roi.RECTANGLE && saveRoi.isArea() && saveRoi.getType()!=Roi.COMPOSITE)
 			polygon = saveRoi.getPolygon();
 		imp.startTiming();
 		nextFontSize = defaultFontSize;
@@ -852,8 +852,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		ImageStatistics stats = getStatistics(ip2, measurements, calibration);
 		boolean include = true;
 		if (excludeEdgeParticles) {
-			if (r.x==minX||r.y==minY||r.x+r.width==maxX||r.y+r.height==maxY)
+			if (r.x==minX||r.y==minY||r.x+r.width==maxX||r.y+r.height==maxY) {
 				include = false;
+				return;
+			}
 			if (polygon!=null) {
 				Rectangle bounds = roi.getBounds();
 				int x1=bounds.x+wand.xpoints[wand.npoints-1];
@@ -870,6 +872,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				}
 			}
 		}
+
 		ImageProcessor mask = ip2.getMask();
 		if (minCircularity>0.0 || maxCircularity!=1.0) {
 			double perimeter = roi.getLength();

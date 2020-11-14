@@ -76,7 +76,7 @@ public class Functions implements MacroConstants, Measurements {
 	boolean autoContrast;
 	static WaitForUserDialog waitForUserDialog;
 	int pasteMode;
-	boolean expandableArrays;
+	boolean expandableArrays = true;
 	int plotWidth;
 	int plotHeight;
 	int plotFontSize;

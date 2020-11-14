@@ -714,12 +714,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			IJ.showMessage("Recorder", "A macro cannot be created until at least\none command has been recorded.");
 			return;
 		}
-		Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
-		if (ed==null)
-			return;
+		String name = fileName.getText();
+		Editor ed = new Editor(name);
 		boolean java = mode.getSelectedItem().equals(modes[JAVA]);
 		boolean beanshell = mode.getSelectedItem().equals(modes[BEANSHELL]);
-		String name = fileName.getText();
 		int dotIndex = name.lastIndexOf(".");
 		if (scriptMode) { // JavaScript, BeanShell or Java
 			if (dotIndex>=0) name = name.substring(0, dotIndex);
