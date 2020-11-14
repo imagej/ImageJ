@@ -114,7 +114,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c = new GridBagConstraints();
 		setLayout(grid);
 		macroOptions = Macro.getOptions();
-		//IJ.log("macroOptions: "+macroOptions+"  "+title);
 		macro = macroOptions!=null;
 		addKeyListener(this);
 		addWindowListener(this);
@@ -1398,14 +1397,13 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			add(buttons, c);
 			if (IJ.isMacOSX()&&IJ.isJava18())
 				instance = this;
-			Font font = getFont();
+			Font font = super.getFont();
 			if (IJ.debugMode) IJ.log("GenericDialog font: "+fontSizeSet+" "+font);
 			if (!fontSizeSet && font!=null && Prefs.getGuiScale()!=1.0) {
 				fontSizeSet = true;
 				setFont(font.deriveFont((float)(font.getSize()*Prefs.getGuiScale())));
 			}
 			pack();
-
 			if (okay!=null && numberField==null && stringField==null && checkbox==null
 			&& choice==null && slider==null && radioButtonGroups==null && textArea1==null)
 				okay.requestFocusInWindow();
@@ -1416,7 +1414,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 		}
 	}
-
+	
 	/** For plugins that read their input only via dialogItemChanged, call it at least once, then stop recording */
 	void finalizeRecording() {
 		if (optionsRecorded)
@@ -1434,6 +1432,19 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	public void setFont(Font font) {
 		super.setFont(!fontSizeSet&&Prefs.getGuiScale()!=1.0?font.deriveFont((float)(font.getSize()*Prefs.getGuiScale())):font);
 		fontSizeSet = true;
+		if (IJ.debugMode) IJ.log("gd.setFont: "+font+"  "+super.getFont());
+	}
+	
+	@Override
+	public Font getFont() {
+		Font font0 = super.getFont();
+		Font font = font0;
+		if (font==null) {
+			ImageJ ij = IJ.getInstance();
+			font = ij!=null? ij.getFont():null;
+		}
+		if (IJ.debugMode) IJ.log("gd.getFont: "+font0+"  "+font);
+		return font;
 	}
 
     /** Reset the counters before reading the dialog parameters */

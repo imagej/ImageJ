@@ -872,7 +872,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				}
 			}
 		}
-
 		ImageProcessor mask = ip2.getMask();
 		if (minCircularity>0.0 || maxCircularity!=1.0) {
 			double perimeter = roi.getLength();
