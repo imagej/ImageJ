@@ -124,7 +124,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 
 	public Editor(String name) {
-		this(24, 80, 0, name!=null&&(name.endsWith(".ijm")||name.endsWith(".js"))?RUN_BAR+MENU_BAR:MENU_BAR);
+		this(24, 80, 0, isScript(name)?RUN_BAR+MENU_BAR:MENU_BAR);
 	}
 
 	public Editor(int rows, int columns, int fontSize, int options) {
@@ -155,6 +155,13 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		positionWindow();
 		if (!IJ.isJava18() && !IJ.isLinux())
 			insertSpaces = false;
+	}
+	
+	private static boolean isScript(String name) {
+		if (name==null)
+			return false;
+		else
+			return name.endsWith(".ijm") || name.endsWith(".js") || name.endsWith(".bsh") || name.endsWith(".py");
 	}
 	
 	void addMenuBar(int options) {
