@@ -273,7 +273,7 @@ public class OverlayCommands implements PlugIn {
 			imp2.setTitle(WindowManager.getUniqueName(imp.getTitle()));
 			imp2.show();
 			if (Recorder.record) // Added by Marcel Boeglin 2014.01.12
-				Recorder.recordCall("imp2 = imp.flatten();");
+				Recorder.recordCall("imp = imp.flatten();");
 		}
 	}
 

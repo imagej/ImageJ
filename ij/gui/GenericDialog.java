@@ -104,6 +104,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     /** Creates a new GenericDialog using the specified title and parent frame. */
     public GenericDialog(String title, Frame parent) {
 		super(parent, title, true);
+		ImageJ ij = IJ.getInstance();
+		if (ij!=null) setFont(ij.getFont());
 		okay = new Button("  OK  ");
 		cancel = new Button("Cancel");
 		if (Prefs.blackCanvas) {
@@ -1397,7 +1399,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			add(buttons, c);
 			if (IJ.isMacOSX()&&IJ.isJava18())
 				instance = this;
-			Font font = super.getFont();
+			Font font = getFont();
 			if (IJ.debugMode) IJ.log("GenericDialog font: "+fontSizeSet+" "+font);
 			if (!fontSizeSet && font!=null && Prefs.getGuiScale()!=1.0) {
 				fontSizeSet = true;
@@ -1432,21 +1434,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	public void setFont(Font font) {
 		super.setFont(!fontSizeSet&&Prefs.getGuiScale()!=1.0?font.deriveFont((float)(font.getSize()*Prefs.getGuiScale())):font);
 		fontSizeSet = true;
-		if (IJ.debugMode) IJ.log("gd.setFont: "+font+"  "+super.getFont());
+		if (IJ.debugMode) IJ.log("gd.setFont: "+font+"  "+getFont());
 	}
 	
-	@Override
-	public Font getFont() {
-		Font font0 = super.getFont();
-		Font font = font0;
-		if (font==null) {
-			ImageJ ij = IJ.getInstance();
-			font = ij!=null? ij.getFont():null;
-		}
-		if (IJ.debugMode) IJ.log("gd.getFont: "+font0+"  "+font);
-		return font;
-	}
-
     /** Reset the counters before reading the dialog parameters */
 	void resetCounters() {
 		nfIndex = 0;        // prepare for readout

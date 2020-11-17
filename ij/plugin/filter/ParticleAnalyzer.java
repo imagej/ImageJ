@@ -79,6 +79,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	/** Display filled particle as an overlay. */
 	public static final int SHOW_OVERLAY_MASKS = 65536;
 
+	/** Use composite ROIs for particles with holes. */
+	public static final int COMPOSITE_ROIS = 131072;
+
 	static final String OPTIONS = "ap.options";
 	
 	static final int BYTE=0, SHORT=1, FLOAT=2, RGB=3;
@@ -102,7 +105,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	protected boolean processStack;
 	protected boolean showResults,excludeEdgeParticles,showSizeDistribution,
 		resetCounter,showProgress, recordStarts, displaySummary, floodFill,
-		addToManager, inSituShow;
+		addToManager, inSituShow, compositeRois;
 		
 	private boolean showResultsTable = true;
 	private boolean showSummaryTable = true;
@@ -271,9 +274,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		double unitSquared = cal.pixelWidth*cal.pixelHeight;
 		if (pixelUnits)
 			unitSquared = 1.0;
-		if (Macro.getOptions()!=null) {
+		String mOptions = Macro.getOptions();
+		if (mOptions!=null) {
 			boolean oldMacro = updateMacroOptions();
 			if (oldMacro) unitSquared = 1.0;
+			if (mOptions.contains("in_situ"))
+				inSituShow = true;
 			staticMinSize = 0.0; staticMaxSize = DEFAULT_MAX_SIZE;
 			staticMinCircularity=0.0; staticMaxCircularity=1.0;
 			staticShowChoice = NOTHING;
@@ -327,7 +333,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		labels[4]="Summarize"; states[4]=(options&DISPLAY_SUMMARY)!=0;
 		labels[5]="Record starts"; states[5]=false;
 		labels[6]="Add to Manager"; states[6]=(options&ADD_TO_MANAGER)!=0;
-		labels[7]="In_situ Show"; states[7]=(options&IN_SITU_SHOW)!=0;
+		labels[7]="Composite ROIs"; states[7]=(options&COMPOSITE_ROIS)!=0;
 		gd.addCheckboxGroup(4, 2, labels, states);
 		gd.addHelp(IJ.URL+"/docs/menus/analyze.html#ap");
 		gd.showDialog();
@@ -390,7 +396,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (gd.getNextBoolean())
 			options |= ADD_TO_MANAGER; else options &= ~ADD_TO_MANAGER;
 		if (gd.getNextBoolean())
-			options |= IN_SITU_SHOW; else options &= ~IN_SITU_SHOW;
+			options |= COMPOSITE_ROIS; else options &= ~COMPOSITE_ROIS;
 		staticOptions = options;
 		options |= SHOW_PROGRESS;
 		if ((options&DISPLAY_SUMMARY)!=0)
@@ -460,7 +466,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			showSummaryTable = false;
 		}
 		displaySummary = (options&DISPLAY_SUMMARY)!=0 ||  (options&SHOW_SUMMARY)!=0;
-		inSituShow = (options&IN_SITU_SHOW)!=0;
+		//inSituShow = (options&IN_SITU_SHOW)!=0;
+		compositeRois = (options&COMPOSITE_ROIS)!=0;
 		outputImage = null;
 		ip.snapshot();
 		ip.setProgressBar(null);
@@ -484,6 +491,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			return false;
 		width = ip.getWidth();
 		height = ip.getHeight();
+		if (inSituShow && showChoice==NOTHING)
+			showChoice = OUTLINES;
 		if (!(showChoice==NOTHING||showChoice==OVERLAY_OUTLINES||showChoice==OVERLAY_MASKS)) {
 			blackBackground = Prefs.blackBackground && inSituShow;
 			if (slice==1)
@@ -873,6 +882,14 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			}
 		}
 		ImageProcessor mask = ip2.getMask();
+		if (compositeRois && floodFill && mask!=null) {
+			mask.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
+			Roi roi2 = new ThresholdToSelection().convert(mask);
+			if (roi2!=null && (roi2 instanceof ShapeRoi)) {
+				roi2.setLocation(roi.getXBase(), roi.getYBase());
+				roi = roi2;
+			}
+		}
 		if (minCircularity>0.0 || maxCircularity!=1.0) {
 			double perimeter = roi.getLength();
 			double circularity = perimeter==0.0?0.0:4.0*Math.PI*(stats.pixelCount/(perimeter*perimeter));

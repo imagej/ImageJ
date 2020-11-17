@@ -202,7 +202,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			options = "bicubic";
 		else
 			options = "bilinear";
-		Recorder.recordCall("imp2 = imp.resize("+w2+", "+h2+(d2>0&&d2!=imp.getStackSize()?", "+d2:"")+", \""+options+"\");");
+		Recorder.recordCall("imp = imp.resize("+w2+", "+h2+(d2>0&&d2!=imp.getStackSize()?", "+d2:"")+", \""+options+"\");");
 	}
 	
 	boolean showDialog(ImageProcessor ip) {
