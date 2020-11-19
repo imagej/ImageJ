@@ -1516,7 +1516,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (color!=null) roi.setStrokeColor(color);
 			if (lineWidth>=0) roi.setStrokeWidth(lineWidth);
 			roi.setFillColor(fillColor);
-			if (group>0) roi.setGroup(group); // overwrite strokeColor for group>0
+			if (group>=0)
+				roi.setGroup(group);
 			if (rpRoi!=null) {
 				if (rpRoi.hasHyperStackPosition())
 					roi.setPosition(rpRoi.getCPosition(), rpRoi.getZPosition(), rpRoi.getTPosition());
@@ -1546,7 +1547,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (roi!=null && (n==1||!showingAll)) {
 			if (lineWidth>=0) roi.setStrokeWidth(lineWidth);
 			if (color!=null) roi.setStrokeColor(color);
-			if (group>0) roi.setGroup(group); // overwrite strokeColor for group>0
+			if (group>=0) roi.setGroup(group);
 			if (fillColor!=null) roi.setFillColor(fillColor);
 			if (roi!=null && (roi instanceof TextRoi)) {
 				((TextRoi)roi).setCurrentFont(font);
@@ -1562,7 +1563,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		if (imp!=null) imp.draw();
 		if (record()) {
-			if (group>0) {
+			if (group>=0) {
 				if (Recorder.scriptMode())
 					Recorder.recordCall("rm.setGroup("+group+");");
 				else

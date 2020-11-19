@@ -5,16 +5,17 @@
 </head>
 <body>
 
-<li> <u>1.53g16  14 November 2020</u>
+<li> <u>1.53g37  19 November 2020</u>
 <ul>
 <li> Thanks to Jerome Mutterer, added a "Run" button to Editor
  windows when the file name ends with ".ijm", ".js", ".bsh" or ".py".
- <li> Thanks to J Xiong, the particle analyzer outputs composite 
- ROIs for particles with holes when the new "Composite ROIs"
- option is enabled. 
+ <li> Thanks to J Xiong, added "Overlay" and  "Composite ROIs"
+ checkboxes to the particle analyzer.
  <li> Thanks to Christian Tischer, the Recorder supports Python.
  <li> Thanks to 'Eljonco', the "ExpandableArrays" macro option
  is now enabled by default.
+ <l> Thanks to Peter Haub, added the String.pad(n,digits)
+ macro function. DOCUMENT
  <li> Thanks to Wilhelm Burger, added the addEnumChoice() and
  getNextEnumChoice() methods to the GenericDialog class
  (<a href="http://wsr.imagej.net/plugins/GenericDialog_With_Enums.java">example</a>).
@@ -44,6 +45,10 @@ was called from a macro.
 created hundreds of histograms to fail.
 <li> Thanks to 'chrk139', fixed a bug that caused the drawOval() and fillOval()
 macro functions to not work for images larger than 2^29 pixels.
+<li> Thanks to Laurent Thomas, fixed a bug where changing
+the group attribute from a group&gt;0 to 0 in
+the <i>ROI Manager&gt;Properties</i> dialog did
+not work as expected.
 <li> Thanks to J Xiong, fixed a v1.50 regression that caused the 
 particle analyzer to not work as expected when when using the
 “Exclude on edges” option and a composite selection.

@@ -82,6 +82,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	/** Use composite ROIs for particles with holes. */
 	public static final int COMPOSITE_ROIS = 131072;
 
+	/** Use "Overlay" checkbox to display overlay. */
+	public static final int OVERLAY = 262144;
+
 	static final String OPTIONS = "ap.options";
 	
 	static final int BYTE=0, SHORT=1, FLOAT=2, RGB=3;
@@ -105,7 +108,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	protected boolean processStack;
 	protected boolean showResults,excludeEdgeParticles,showSizeDistribution,
 		resetCounter,showProgress, recordStarts, displaySummary, floodFill,
-		addToManager, inSituShow, compositeRois;
+		addToManager, inSituShow, compositeRois, showOverlay;
 		
 	private boolean showResultsTable = true;
 	private boolean showSummaryTable = true;
@@ -239,7 +242,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		slice = 0;
 		saveRoi = imp.getRoi();
 		saveSlice = imp.getCurrentSlice();
-		if (saveRoi!=null && saveRoi.getType()!=Roi.RECTANGLE && saveRoi.isArea() && saveRoi.getType()!=Roi.COMPOSITE)
+		if (saveRoi!=null && saveRoi.getType()!=Roi.RECTANGLE && saveRoi.isArea())
 			polygon = saveRoi.getPolygon();
 		imp.startTiming();
 		nextFontSize = defaultFontSize;
@@ -280,6 +283,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			if (oldMacro) unitSquared = 1.0;
 			if (mOptions.contains("in_situ"))
 				inSituShow = true;
+			if (mOptions.contains("record"))
+				recordStarts = true;
 			staticMinSize = 0.0; staticMaxSize = DEFAULT_MAX_SIZE;
 			staticMinCircularity=0.0; staticMaxCircularity=1.0;
 			staticShowChoice = NOTHING;
@@ -331,7 +336,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		labels[2]="Clear results"; states[2]=(options&CLEAR_WORKSHEET)!=0;
 		labels[3]="Include holes"; states[3]=(options&INCLUDE_HOLES)!=0;
 		labels[4]="Summarize"; states[4]=(options&DISPLAY_SUMMARY)!=0;
-		labels[5]="Record starts"; states[5]=false;
+		labels[5]="Overlay"; states[5]=(options&OVERLAY)!=0;
 		labels[6]="Add to Manager"; states[6]=(options&ADD_TO_MANAGER)!=0;
 		labels[7]="Composite ROIs"; states[7]=(options&COMPOSITE_ROIS)!=0;
 		gd.addCheckboxGroup(4, 2, labels, states);
@@ -392,7 +397,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (gd.getNextBoolean())
 			options |= DISPLAY_SUMMARY; else options &= ~DISPLAY_SUMMARY;
 		if (gd.getNextBoolean())
-			options |= RECORD_STARTS; else options &= ~RECORD_STARTS;
+			options |= OVERLAY; else options &= ~OVERLAY;
 		if (gd.getNextBoolean())
 			options |= ADD_TO_MANAGER; else options &= ~ADD_TO_MANAGER;
 		if (gd.getNextBoolean())
@@ -447,7 +452,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		resetCounter = (options&CLEAR_WORKSHEET)!=0;
 		showProgress = (options&SHOW_PROGRESS)!=0;
 		floodFill = (options&INCLUDE_HOLES)==0;
-		recordStarts = (options&RECORD_STARTS)!=0;
+		//recordStarts = (options&RECORD_STARTS)!=0;
+		showOverlay = (options&OVERLAY)!=0;
 		addToManager = (options&ADD_TO_MANAGER)!=0;
 		if (staticRoiManager!=null) {
 			addToManager = true;
@@ -466,7 +472,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			showSummaryTable = false;
 		}
 		displaySummary = (options&DISPLAY_SUMMARY)!=0 ||  (options&SHOW_SUMMARY)!=0;
-		//inSituShow = (options&IN_SITU_SHOW)!=0;
 		compositeRois = (options&COMPOSITE_ROIS)!=0;
 		outputImage = null;
 		ip.snapshot();
@@ -861,10 +866,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		ImageStatistics stats = getStatistics(ip2, measurements, calibration);
 		boolean include = true;
 		if (excludeEdgeParticles) {
-			if (r.x==minX||r.y==minY||r.x+r.width==maxX||r.y+r.height==maxY) {
+			if (r.x==minX||r.y==minY||r.x+r.width==maxX||r.y+r.height==maxY)
 				include = false;
-				return;
-			}
 			if (polygon!=null) {
 				Rectangle bounds = roi.getBounds();
 				int x1=bounds.x+wand.xpoints[wand.npoints-1];
@@ -903,9 +906,13 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			stats.xstart=x; stats.ystart=y;
 			saveResults(stats, roi);
 			if (addToManager)
-				addToRoiManager(roi, mask, particleCount);				
+				addToRoiManager(roi, mask, particleCount);
+			int saveShowChoice = showChoice;
+			if (showOverlay && showChoice==NOTHING)
+				showChoice = 	OVERLAY_OUTLINES;
 			if (showChoice!=NOTHING)
 				drawParticle(drawIP, roi, stats, mask);
+			showChoice = saveShowChoice;
 		}
 		if (redirectIP!=null)
 			ip.setRoi(r);
@@ -1055,7 +1062,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		int count = rt.size();
 		// if (count==0) return;
 		boolean lastSlice = !processStack||slice==imp.getStackSize();
-		if ((showChoice==OVERLAY_OUTLINES||showChoice==OVERLAY_MASKS) && overlay!=null && count>0 && (!processStack||slice==imp.getStackSize())) {
+		if ((showOverlay||showChoice==OVERLAY_OUTLINES||showChoice==OVERLAY_MASKS) && overlay!=null && count>0 && (!processStack||slice==imp.getStackSize())) {
 			if (processStack)
 				imp.setOverlay(overlay);
 			else {
