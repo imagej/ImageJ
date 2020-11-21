@@ -146,6 +146,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private double totalArea;
 	private FloodFiller ff;
 	private Polygon polygon;
+	private Roi exclusionRoi;
 	private RoiManager roiManager;
 	private static RoiManager staticRoiManager;
 	private static ResultsTable staticResultsTable, staticSummaryTable;
@@ -242,13 +243,22 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		slice = 0;
 		saveRoi = imp.getRoi();
 		saveSlice = imp.getCurrentSlice();
-		if (saveRoi!=null && saveRoi.getType()!=Roi.RECTANGLE && saveRoi.isArea())
-			polygon = saveRoi.getPolygon();
+		if (saveRoi!=null && saveRoi.isArea())
+			exclusionRoi = saveRoi;
+		//showPolygon(polygon);
 		imp.startTiming();
 		nextFontSize = defaultFontSize;
 		nextFontColor = defaultFontColor;
 		nextLineWidth = 1;
 		return flags;
+	}
+	
+	private void showPolygon(Polygon p) {
+		Roi roi = new PolygonRoi(p, PolygonRoi.POLYGON);
+		Rectangle r = roi.getBounds(); 
+		ImagePlus img = IJ.createImage("polygon", "8-bit black", r.x+r.width, r.y+r.height, 1);
+		img.setRoi(roi);
+		img.show();
 	}
 
 	public void run(ImageProcessor ip) {
@@ -742,7 +752,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		ip.setRoi(r);
-		if (excludeEdgeParticles && polygon!=null) {
+		if (excludeEdgeParticles && exclusionRoi!=null) {
 			ImageStatistics stats = ImageStatistics.getStatistics(ip, MIN_MAX, null);
 			if (fillColor>=stats.min && fillColor<=stats.max) {
 				double replaceColor = level1-1.0;
@@ -868,7 +878,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (excludeEdgeParticles) {
 			if (r.x==minX||r.y==minY||r.x+r.width==maxX||r.y+r.height==maxY)
 				include = false;
-			if (polygon!=null) {
+			if (exclusionRoi!=null && include==true) {
+				// Exclude particle if any point along boundary is not contained in roi.
 				Rectangle bounds = roi.getBounds();
 				int x1=bounds.x+wand.xpoints[wand.npoints-1];
 				int y1=bounds.y+wand.ypoints[wand.npoints-1];
@@ -876,7 +887,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				for (int i=0; i<wand.npoints; i++) {
 					x2=bounds.x+wand.xpoints[i];
 					y2=bounds.y+wand.ypoints[i];
-					if (!polygon.contains(x2, y2))
+					if (!exclusionRoi.contains(x2, y2))
 						{include = false; break;}
 					if ((x1==x2 && ip.getPixel(x1,y1-1)==fillColor) || (y1==y2 && ip.getPixel(x1-1,y1)==fillColor))
 						{include = false; break;}
@@ -909,7 +920,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				addToRoiManager(roi, mask, particleCount);
 			int saveShowChoice = showChoice;
 			if (showOverlay && showChoice==NOTHING)
-				showChoice = 	OVERLAY_OUTLINES;
+				showChoice = OVERLAY_OUTLINES;
 			if (showChoice!=NOTHING)
 				drawParticle(drawIP, roi, stats, mask);
 			showChoice = saveShowChoice;

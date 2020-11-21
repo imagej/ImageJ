@@ -15,9 +15,13 @@ public class ColorStatistics extends ImageStatistics {
 		the specified measurement options.
 	*/
 	public ColorStatistics(ImageProcessor ip, int mOptions, Calibration cal) {
+		setup(ip, cal);
+		if (ip instanceof IntProcessor) {
+			getIntStatistics(ip, -Integer.MAX_VALUE, Integer.MAX_VALUE);
+			return;
+		}
 		ColorProcessor cp = (ColorProcessor)ip;
 		histogram = cp.getHistogram();
-		setup(ip, cal);
 		getRawStatistics(0,255);
 		if ((mOptions&MIN_MAX)!=0)
 			getRawMinAndMax(0,255);
@@ -63,6 +67,73 @@ public class ColorStatistics extends ImageStatistics {
 			xCenterOfMass = cal.getX(xCenterOfMass);
 			yCenterOfMass = cal.getY(yCenterOfMass, height);
 		}
+	}
+	
+	void getIntStatistics(ImageProcessor ip, double minThreshold, double maxThreshold) {
+		int v;
+		int[] pixels = (int[])ip.getPixels();
+		nBins = ip.getHistogramSize();
+		histMin = ip.getHistogramMin();
+		histMax = ip.getHistogramMax();
+		histogram = new int[nBins];
+		double sum = 0;
+		double sum2 = 0;
+		byte[] mask = ip.getMaskArray();
+		
+		// Find image min and max
+		int roiMin = Integer.MAX_VALUE;
+		int roiMax = -Integer.MAX_VALUE;
+		for (int y=ry, my=0; y<(ry+rh); y++, my++) {
+			int i = y * width + rx;
+			int mi = my * rw;
+			for (int x=rx; x<(rx+rw); x++) {
+				if (mask==null || mask[mi++]!=0) {
+					v = pixels[i];
+					if (v>=minThreshold && v<=maxThreshold) {
+						if (v<roiMin) roiMin = v;
+						if (v>roiMax) roiMax = v;
+					}
+				}
+				i++;
+			}
+		}
+		min = roiMin; max = roiMax;
+		if (histMin==0.0 && histMax==0.0) {
+			histMin = min; 
+			histMax = max;
+		} else {
+			if (min<histMin) min = histMin;
+			if (max>histMax) max = histMax;
+		}
+		binSize = (histMax-histMin)/nBins;
+
+		// Generate histogram
+		double scale = nBins/(histMax-histMin);
+		int index;
+		pixelCount = 0;
+		for (int y=ry, my=0; y<(ry+rh); y++, my++) {
+			int i = y * width + rx;
+			int mi = my * rw;
+			for (int x=rx; x<(rx+rw); x++) {
+				if (mask==null || mask[mi++]!=0) {
+					v = pixels[i];
+					if (v>=minThreshold && v<=maxThreshold && v>=histMin && v<=histMax) {
+						pixelCount++;
+						sum += v;
+						sum2 += v*v;
+						index = (int)(scale*(v-histMin));
+						if (index>=nBins)
+							index = nBins-1;
+						histogram[index]++;
+					}
+				}
+				i++;
+			}
+		}
+		area = pixelCount*pw*ph;
+		mean = sum/pixelCount;
+		umean = mean;
+		calculateStdDev(pixelCount, sum, sum2);
 	}
 
 }

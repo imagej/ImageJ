@@ -16,10 +16,14 @@ public class LutViewer implements PlugInFilter {
 	
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
-		return DOES_ALL-DOES_RGB+NO_UNDO+NO_CHANGES;
+		return DOES_ALL+NO_UNDO+NO_CHANGES;
 	}
 
 	public void run(ImageProcessor ip) {
+		if (ip.getNChannels()==3) {
+			IJ.error("RGB images do not have LUTs.");
+			return;
+		}
 		int xMargin = 35;
 		int yMargin = 20;
 		int width = 256;
