@@ -2800,5 +2800,5 @@ public abstract class ImageProcessor implements Cloneable {
 		b[255] = (byte)0;
 		return new IndexColorModel(8, 256, r, g, b);
 	}
-
+	
 }

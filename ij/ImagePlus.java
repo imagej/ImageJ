@@ -515,7 +515,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			notifyListeners(OPENED);
 		}
 	}
-
+	
 	void invertLookupTable() {
 		int nImages = getStackSize();
 		ip.invertLut();
@@ -667,7 +667,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	void setProcessor2(String title, ImageProcessor ip, ImageStack newStack) {
-		//IJ.log("setProcessor2: "+ip+" "+this.ip+" "+newStack);
 		if (title!=null) setTitle(title);
 		if (ip==null)
 			return;
@@ -719,7 +718,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Replaces the image with the specified stack and updates
 		the display. Set 'title' to null to leave the title unchanged. */
     public void setStack(String title, ImageStack newStack) {
-		//IJ.log("setStack1: "+nChannels+" "+nSlices+" "+nFrames);
 		int bitDepth1 = getBitDepth();
 		int previousStackSize = getStackSize();
 		int newStackSize = newStack.getSize();
@@ -3322,6 +3320,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	if (imageProperties==null)
     		imageProperties = new Properties();
     	return imageProperties;
+    }
+    
+    public boolean isRGB() {
+		return ip!=null && ip.getNChannels()==3;
     }
     
 }

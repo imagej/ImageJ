@@ -52,7 +52,7 @@ public class Histogram implements PlugIn, TextListener {
 				xMin = 0.0;
 				xMax = Math.pow(2,ImagePlus.getDefault16bitRange())-1;
 				useImageMinAndMax = false;
-			} else if (stackHistogram && ((bitDepth==8&&!cal.calibrated())||bitDepth==24)) {
+			} else if (stackHistogram && ((bitDepth==8&&!cal.calibrated())||imp.isRGB())) {
 				xMin = 0.0;
 				xMax = 256.0;
 				useImageMinAndMax = false;
@@ -66,7 +66,7 @@ public class Histogram implements PlugIn, TextListener {
  			xMax = 0.0;
  		}
  		int iyMax = (int)Tools.parseDouble(yMax, 0.0);
- 		boolean customHistogram = (bitDepth==8||bitDepth==24) && (!(xMin==0.0&&xMax==0.0)||nBins!=256||iyMax>0);
+ 		boolean customHistogram = (bitDepth==8||imp.isRGB()) && (!(xMin==0.0&&xMax==0.0)||nBins!=256||iyMax>0);
 		HistogramPlot plot = new HistogramPlot();
  		if (stackHistogram || customHistogram) {
  			ImagePlus imp2 = imp;

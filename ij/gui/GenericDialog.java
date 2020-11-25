@@ -1034,7 +1034,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
         if (dialogListeners == null)
             dialogListeners = new Vector();
         dialogListeners.addElement(dl);
-        if (IJ.debugMode) IJ.log("GenericDialog: Listener added: "+dl);
     }
 
 	/** Returns true if the user clicked on "Cancel". */
@@ -1400,7 +1399,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			if (IJ.isMacOSX()&&IJ.isJava18())
 				instance = this;
 			Font font = getFont();
-			if (IJ.debugMode) IJ.log("GenericDialog font: "+fontSizeSet+" "+font);
 			if (!fontSizeSet && font!=null && Prefs.getGuiScale()!=1.0) {
 				fontSizeSet = true;
 				setFont(font.deriveFont((float)(font.getSize()*Prefs.getGuiScale())));
@@ -1434,7 +1432,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	public void setFont(Font font) {
 		super.setFont(!fontSizeSet&&Prefs.getGuiScale()!=1.0?font.deriveFont((float)(font.getSize()*Prefs.getGuiScale())):font);
 		fontSizeSet = true;
-		if (IJ.debugMode) IJ.log("gd.setFont: "+font+"  "+getFont());
 	}
 	
     /** Reset the counters before reading the dialog parameters */

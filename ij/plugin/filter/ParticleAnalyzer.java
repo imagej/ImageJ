@@ -145,7 +145,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private ImageProcessor mask;
 	private double totalArea;
 	private FloodFiller ff;
-	private Polygon polygon;
 	private Roi exclusionRoi;
 	private RoiManager roiManager;
 	private static RoiManager staticRoiManager;
@@ -245,7 +244,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		saveSlice = imp.getCurrentSlice();
 		if (saveRoi!=null && saveRoi.isArea())
 			exclusionRoi = saveRoi;
-		//showPolygon(polygon);
 		imp.startTiming();
 		nextFontSize = defaultFontSize;
 		nextFontColor = defaultFontColor;
@@ -253,14 +251,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		return flags;
 	}
 	
-	private void showPolygon(Polygon p) {
-		Roi roi = new PolygonRoi(p, PolygonRoi.POLYGON);
-		Rectangle r = roi.getBounds(); 
-		ImagePlus img = IJ.createImage("polygon", "8-bit black", r.x+r.width, r.y+r.height, 1);
-		img.setRoi(roi);
-		img.show();
-	}
-
 	public void run(ImageProcessor ip) {
 		if (canceled)
 			return;

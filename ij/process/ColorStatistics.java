@@ -17,7 +17,7 @@ public class ColorStatistics extends ImageStatistics {
 	public ColorStatistics(ImageProcessor ip, int mOptions, Calibration cal) {
 		setup(ip, cal);
 		if (ip instanceof IntProcessor) {
-			getIntStatistics(ip, -Integer.MAX_VALUE, Integer.MAX_VALUE);
+			getIntStatistics(ip);
 			return;
 		}
 		ColorProcessor cp = (ColorProcessor)ip;
@@ -69,12 +69,10 @@ public class ColorStatistics extends ImageStatistics {
 		}
 	}
 	
-	void getIntStatistics(ImageProcessor ip, double minThreshold, double maxThreshold) {
+	void getIntStatistics(ImageProcessor ip) {
 		int v;
 		int[] pixels = (int[])ip.getPixels();
 		nBins = ip.getHistogramSize();
-		histMin = ip.getHistogramMin();
-		histMax = ip.getHistogramMax();
 		histogram = new int[nBins];
 		double sum = 0;
 		double sum2 = 0;
@@ -89,26 +87,19 @@ public class ColorStatistics extends ImageStatistics {
 			for (int x=rx; x<(rx+rw); x++) {
 				if (mask==null || mask[mi++]!=0) {
 					v = pixels[i];
-					if (v>=minThreshold && v<=maxThreshold) {
-						if (v<roiMin) roiMin = v;
-						if (v>roiMax) roiMax = v;
-					}
+					if (v<roiMin) roiMin = v;
+					if (v>roiMax) roiMax = v;
 				}
 				i++;
 			}
 		}
 		min = roiMin; max = roiMax;
-		if (histMin==0.0 && histMax==0.0) {
-			histMin = min; 
-			histMax = max;
-		} else {
-			if (min<histMin) min = histMin;
-			if (max>histMax) max = histMax;
-		}
-		binSize = (histMax-histMin)/nBins;
+		binSize = (max-min)/nBins;
+		histMin = min; 
+		histMax = max;
 
 		// Generate histogram
-		double scale = nBins/(histMax-histMin);
+		double scale = nBins/(max-min);
 		int index;
 		pixelCount = 0;
 		for (int y=ry, my=0; y<(ry+rh); y++, my++) {
@@ -117,15 +108,13 @@ public class ColorStatistics extends ImageStatistics {
 			for (int x=rx; x<(rx+rw); x++) {
 				if (mask==null || mask[mi++]!=0) {
 					v = pixels[i];
-					if (v>=minThreshold && v<=maxThreshold && v>=histMin && v<=histMax) {
-						pixelCount++;
-						sum += v;
-						sum2 += v*v;
-						index = (int)(scale*(v-histMin));
-						if (index>=nBins)
-							index = nBins-1;
-						histogram[index]++;
-					}
+					pixelCount++;
+					sum += v;
+					sum2 += v*v;
+					index = (int)(scale*(v-min));
+					if (index>=nBins)
+						index = nBins-1;
+					histogram[index]++;
 				}
 				i++;
 			}
@@ -134,6 +123,20 @@ public class ColorStatistics extends ImageStatistics {
 		mean = sum/pixelCount;
 		umean = mean;
 		calculateStdDev(pixelCount, sum, sum2);
+		
+        // calculate mode
+        int count;
+        maxCount = 0;
+        for (int i = 0; i < nBins; i++) {
+        	count = histogram[i];
+            if (count > maxCount) {
+                maxCount = count;
+                mode = i;
+            }
+        }
+        dmode = histMin+mode*binSize;
+        if (binSize!=1.0)
+        	dmode += binSize/2.0;        	
 	}
 
 }

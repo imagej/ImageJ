@@ -120,7 +120,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		if (ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD
 		&& ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE)
 			limitToThreshold = false;  // ignore invisible thresholds
-		if (imp.getBitDepth()==24 && rgbMode<INTENSITY1)
+		if (imp.isRGB() && rgbMode<INTENSITY1)
 			rgbMode=INTENSITY1;
 		if (rgbMode==RED||rgbMode==GREEN||rgbMode==BLUE) {
 			int channel = rgbMode - 2;
@@ -153,7 +153,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 
 	/** Draws the histogram using the specified title and ImageStatistics. */
 	public void showHistogram(ImagePlus srcImp, ImageStatistics stats) {
-		if (srcImp.getBitDepth()==24 && rgbMode<INTENSITY1)
+		if (srcImp.isRGB() && rgbMode<INTENSITY1)
 			rgbMode=INTENSITY1;
 		stackHistogram = stats.stackStatistics;
 		if (list==null)
@@ -176,7 +176,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		}
 		lut = srcImp.createLut();
 		int type = srcImp.getType();
-		boolean fixedRange = type==ImagePlus.GRAY8 || type==ImagePlus.COLOR_256 || type==ImagePlus.COLOR_RGB;
+		boolean fixedRange = type==ImagePlus.GRAY8 || type==ImagePlus.COLOR_256 || srcImp.isRGB();
 		if (imp==null) {
 			IJ.showStatus("imp==null");
 			return;
@@ -191,7 +191,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 
 	private void setup(ImagePlus imp) {
-		boolean isRGB = imp.getType()==ImagePlus.COLOR_RGB;
+		boolean isRGB = imp.isRGB();
  		Panel buttons = new Panel();
  		int hgap = IJ.isMacOSX()||isRGB?1:5;
 		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT,hgap,0));
@@ -304,7 +304,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		}
 		double min = ipSource.getMin();
 		double max = ipSource.getMax();
-		if (!(ipSource instanceof ColorProcessor)) {
+		if (ipSource.getNChannels()==1) {
 			ColorModel cm = null;
 			if (imp.isComposite()) {
 				if (stats!=null && stats.pixelCount>ipSource.getPixelCount()) { // stack histogram
@@ -598,7 +598,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	
 	private void changeChannel() {
 		ImagePlus imp = WindowManager.getImage(srcImageID);
-		if (imp==null || imp.getType()!=ImagePlus.COLOR_RGB)
+		if (imp==null || !imp.isRGB())
 			return;
 		else {
 			rgbMode++;

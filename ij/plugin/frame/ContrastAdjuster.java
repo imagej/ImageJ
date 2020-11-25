@@ -362,12 +362,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		setMinAndMax(imp, min2, max2);
 		min = imp.getDisplayRangeMin();
 		max = imp.getDisplayRangeMax();
-		if (IJ.debugMode) {
-			IJ.log("min: " + min);
-			IJ.log("max: " + max);
-			IJ.log("defaultMin: " + defaultMin);
-			IJ.log("defaultMax: " + defaultMax);
-		}
 		plot.defaultMin = defaultMin;
 		plot.defaultMax = defaultMax;
 		int valueRange = (int)(defaultMax-defaultMin);
@@ -1153,6 +1147,9 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 
 	public void windowActivated(WindowEvent e) {
 		super.windowActivated(e);
+		if (IJ.debugMode) IJ.log("windowActivated: "+e.getOppositeWindow());
+		if (e.getOppositeWindow()==null)
+			return;
 		if (IJ.isMacro()) {
 			// do nothing if macro and RGB image
 			ImagePlus imp2 = WindowManager.getCurrentImage();

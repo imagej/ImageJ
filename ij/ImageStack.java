@@ -21,6 +21,7 @@ public class ImageStack {
 	private double max;
 	private float[] cTable;
 	private int viewers;
+	private boolean signedInt;
 	
 	/** Default constructor. */
 	public ImageStack() { }
@@ -303,9 +304,12 @@ public class ImageStack {
 			ip = new ByteProcessor(width, height, null, cm);
 		else if (stack[n-1] instanceof short[])
 			ip = new ShortProcessor(width, height, null, cm);
-		else if (stack[n-1] instanceof int[])
-			ip = new ColorProcessor(width, height, null);
-		else if (stack[n-1] instanceof float[])
+		else if (stack[n-1] instanceof int[]) {
+			if (signedInt)
+				ip = new IntProcessor(width, height);
+			else
+				ip = new ColorProcessor(width, height, null);
+		} else if (stack[n-1] instanceof float[])
 			ip = new FloatProcessor(width, height, null, cm);		
 		else
 			throw new IllegalArgumentException("Unknown stack type");
@@ -696,6 +700,11 @@ public class ImageStack {
 	 	viewers += inc;
 	 	if (IJ.debugMode) IJ.log("stack.viewers: "+viewers);
 	 	return viewers;
+	 }
+	 
+	 public void setOptions(String options) {
+	 	if (options==null) return;
+	 	signedInt = options.contains("32-bit int");
 	 }
 
 }

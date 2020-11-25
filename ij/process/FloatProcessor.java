@@ -90,7 +90,6 @@ public class FloatProcessor extends ImageProcessor {
 	@see #getMin()
 	*/
 	public void findMinAndMax() {
-		//ij.IJ.log("findMinAndMax: "+fixedScale);
 		if (fixedScale)
 			return;
 		min = Float.MAX_VALUE;
@@ -147,6 +146,8 @@ public class FloatProcessor extends ImageProcessor {
 
 	/** Create an 8-bit AWT image by scaling pixels in the range min-max to 0-255. */
 	public Image createImage() {
+		if (!minMaxSet)
+			findMinAndMax();
 		boolean firstTime = pixels8==null;
 		boolean thresholding = minThreshold!=NO_THRESHOLD && lutUpdateMode<NO_LUT_UPDATE;
 		//ij.IJ.log("createImage: "+firstTime+"  "+lutAnimation+"  "+thresholding);
@@ -327,7 +328,6 @@ public class FloatProcessor extends ImageProcessor {
 	public final void setf(int index, float value) {
 		pixels[index] = value;
 	}
-
 
 	/** Returns the value of the pixel at (x,y) in a
 		one element int array. iArray is an optiona
@@ -1140,6 +1140,6 @@ public class FloatProcessor extends ImageProcessor {
 		}
 		return mask;
 	}
-
+	
 }
 

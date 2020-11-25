@@ -5,7 +5,7 @@ import java.awt.*;
 import java.awt.image.*;
 
 
-/** This is an extended ColorProcessor that supports 32-bit int images. */
+/** This is an extended ColorProcessor that supports signed 32-bit int images. */
 public class IntProcessor extends ColorProcessor {
 	private byte[] pixels8;
 
@@ -23,6 +23,8 @@ public class IntProcessor extends ColorProcessor {
 	/** Create an 8-bit AWT image by scaling pixels in the range min-max to 0-255. */
 	@Override
 	public Image createImage() {
+		if (!minMaxSet)
+			findMinAndMax();
 		boolean firstTime = pixels8==null;
 		boolean thresholding = minThreshold!=NO_THRESHOLD && lutUpdateMode<NO_LUT_UPDATE;
 		//ij.IJ.log("createImage: "+firstTime+"  "+lutAnimation+"  "+thresholding);
@@ -54,24 +56,23 @@ public class IntProcessor extends ColorProcessor {
 		return createBufferedImage();
 	}
 	
-	// create 8-bit image by linearly scaling from 32-bits to 8-bits
+	// creates 8-bit image by linearly scaling from float to 8-bits
 	private byte[] create8BitImage(boolean thresholding) {
 		int size = width*height;
 		if (pixels8==null)
 			pixels8 = new byte[size];
-		int value;
-		int min2=(int)getMin(), max2=(int)getMax();
-		int maxValue = 255;
-		double scale = 256.0/(max2-min2+1);
-		if (thresholding) {
-			maxValue = 254;
-			scale = 255.0/(max2-min2+1);
-		}
+		double value;
+		int ivalue;
+		double min2 = getMin();
+		double max2 = getMax();
+		double scale = 255.0/(max2-min2);
+		int maxValue = thresholding?254:255;
 		for (int i=0; i<size; i++) {
 			value = pixels[i]-min2;
-			value = (int)(value*scale+0.5);
-			if (value>maxValue) value = maxValue;
-			pixels8[i] = (byte)value;
+			if (value<0.0) value=0.0;
+			ivalue = (int)(value*scale+0.5);
+			if (ivalue>maxValue) ivalue = maxValue;
+			pixels8[i] = (byte)ivalue;
 		}
 		return pixels8;
 	}
@@ -153,11 +154,9 @@ public class IntProcessor extends ColorProcessor {
 	public void setMinAndMax(double minimum, double maximum, int channels) {
 		min = (int)minimum;
 		max = (int)maximum;
-
 		minMaxSet = true;
 		resetThreshold();
 	}
-
 
 }
 

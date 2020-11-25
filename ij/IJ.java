@@ -2231,9 +2231,13 @@ public class IJ {
 	 public static ImagePlus createImage(String title, String type, int width, int height, int depth) {
 		type = type.toLowerCase(Locale.US);
 		int bitDepth = 8;
-		if (type.contains("16")) bitDepth = 16;
-		if (type.contains("24")||type.contains("rgb")) bitDepth = 24;
-		if (type.contains("32")) bitDepth = 32;
+		if (type.contains("16"))
+			bitDepth = 16;
+		boolean signedInt = type.contains("32-bit int");
+		if (type.contains("32"))
+			bitDepth = 32;
+		if (type.contains("24") || type.contains("rgb") || signedInt)
+			bitDepth = 24;
 		int options = NewImage.FILL_WHITE;
 		if (bitDepth==16 || bitDepth==32)
 			options = NewImage.FILL_BLACK;
@@ -2246,6 +2250,8 @@ public class IJ {
 		else if (type.contains("noise") || type.contains("random"))
 			options = NewImage.FILL_NOISE;
 		options += NewImage.CHECK_AVAILABLE_MEMORY;
+		if (signedInt)
+			options += NewImage.SIGNED_INT;
 		return NewImage.createImage(title, width, height, depth, bitDepth, options);
 	}
 

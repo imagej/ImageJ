@@ -54,7 +54,7 @@ public class HistogramPlot extends ImagePlus {
 		if (ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD
 		&& ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE)
 			limitToThreshold = false;  // ignore invisible thresholds
-		if (imp.getBitDepth()==24 && rgbMode<INTENSITY1)
+		if (imp.isRGB() && rgbMode<INTENSITY1)
 			rgbMode=INTENSITY1;
 		if (rgbMode==RED||rgbMode==GREEN||rgbMode==BLUE) {
 			int channel = rgbMode - 2;
@@ -87,7 +87,7 @@ public class HistogramPlot extends ImagePlus {
 
 	/** Draws the histogram using the specified title and ImageStatistics. */
 	public void draw(ImagePlus imp, ImageStatistics stats) {
-		if (imp.getBitDepth()==24 && rgbMode<INTENSITY1)
+		if (imp.isRGB() && rgbMode<INTENSITY1)
 			rgbMode=INTENSITY1;
 		stackHistogram = stats.stackStatistics;
 		this.stats = stats;
@@ -109,7 +109,7 @@ public class HistogramPlot extends ImagePlus {
 		}
 		lut = imp.createLut();
 		int type = imp.getType();
-		boolean fixedRange = type==ImagePlus.GRAY8 || type==ImagePlus.COLOR_256 || type==ImagePlus.COLOR_RGB;
+		boolean fixedRange = type==ImagePlus.GRAY8 || type==ImagePlus.COLOR_256 || imp.isRGB();
 		ip.setColor(Color.white);
 		ip.resetRoi();
 		ip.fill();
@@ -177,7 +177,7 @@ public class HistogramPlot extends ImagePlus {
 		}
 		double min = ipSource.getMin();
 		double max = ipSource.getMax();
-		if (!(ipSource instanceof ColorProcessor)) {
+		if (ipSource.getNChannels()==1) {
 			ColorModel cm = null;
 			if (imp.isComposite()) {
 				if (stats!=null && stats.pixelCount>ipSource.getPixelCount()) { // stack histogram

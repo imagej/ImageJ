@@ -13,7 +13,7 @@ public class NewImage {
 
 	public static final int GRAY8=0, GRAY16=1, GRAY32=2, RGB=3;
 	public static final int FILL_BLACK=1, FILL_RAMP=2, FILL_NOISE=3, FILL_RANDOM=3,
-		FILL_WHITE=4, CHECK_AVAILABLE_MEMORY=8;
+		FILL_WHITE=4, CHECK_AVAILABLE_MEMORY=8,  SIGNED_INT=16;
 	private static final int OLD_FILL_WHITE=0;
 	
     static final String TYPE = "new.type";
@@ -69,6 +69,9 @@ public class NewImage {
 			}
 		}
 		ImageStack stack = imp.createEmptyStack();
+		boolean signedInt = (options&SIGNED_INT)!=0;
+		if (type==RGB && signedInt)
+			stack.setOptions("32-bit int");
 		int inc = nSlices/40;
 		if (inc<1) inc = 1;
 		if (bigStack)
@@ -94,11 +97,15 @@ public class NewImage {
 							fillNoiseFloat(new FloatProcessor(width,height,(float[])pixels2,null));
 						break;
 					case RGB: pixels2 = new int[width*height];
-						if (fill==FILL_NOISE)
+						if (fill==FILL_NOISE) {
+						 if (signedInt)
+							fillNoiseInt(new IntProcessor(width,height,(int[])pixels2));
+						else
 							fillNoiseRGB(new ColorProcessor(width,height,(int[])pixels2), false);
+						}
 						break;
 				}
-				if ((fill==FILL_WHITE||fill==FILL_RAMP) || ((type==RGB)&&(fill!=FILL_NOISE)))
+				if (signedInt && (fill==FILL_WHITE||fill==FILL_RAMP) || ((type==RGB)&&(fill!=FILL_NOISE)))
 					System.arraycopy(ip.getPixels(), 0, pixels2, 0, width*height);
 				stack.addSlice(null, pixels2);
 				if (IJ.escapePressed()) {IJ.beep(); break;};
@@ -206,6 +213,38 @@ public class NewImage {
 		return imp;
 	}
 	
+	public static ImagePlus createIntImage(String title, int width, int height, int slices, int options) {
+		int fill = getFill(options);
+		int size = getSize(width, height);
+		if (size<0) return null;
+		int[] pixels = new int[size];
+		IntProcessor ip = new IntProcessor(width, height, pixels);
+		switch (fill) {
+			case FILL_RAMP:
+				int[] ramp = new int[width];
+				double inc = ((double)Integer.MAX_VALUE - (double)Integer.MIN_VALUE)/width;
+				for (int i=0; i<width; i++) {
+        			ramp[i] = (int)((double)Integer.MIN_VALUE + i*inc);
+        		}
+				for (int y=0; y<height; y++) {
+					int offset = y*width;
+					for (int x=0; x<width; x++)
+						pixels[offset++] = ramp[x];
+				}
+				break;
+				
+			case FILL_NOISE:
+				fillNoiseInt(new IntProcessor(width,height,(int[])pixels));
+				break;
+		}
+		ImagePlus imp = new ImagePlus(title, ip);
+		if (slices>1) {
+			boolean ok = createStack(imp, ip, slices, RGB, options);
+			if (!ok) imp = null;
+		}
+		return imp;
+	}
+
 	private static void fillNoiseRGB(ColorProcessor ip, boolean sp) {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
@@ -221,6 +260,14 @@ public class NewImage {
 		bb.noise(31); if (sp) IJ.showProgress(0.90);
 		if (sp) IJ.showProgress(1.0);
 		ip.setChannel(1,rr); ip.setChannel(2,gg); ip.setChannel(3,bb);
+	}
+
+	private static void fillNoiseInt(ImageProcessor ip) {
+		Random rnd = new Random();
+		int n = ip.getPixelCount();
+		double std =((double)Integer.MAX_VALUE - (double)Integer.MIN_VALUE)*0.12;
+		for (int i=0; i<n; i++)
+			ip.set(i, (int)(rnd.nextGaussian()*std));
 	}
 
 	/** Creates an unsigned short image. */
@@ -341,7 +388,12 @@ public class NewImage {
 			case 8: imp = createByteImage(title, width, height, nSlices, options); break;
 			case 16: imp = createShortImage(title, width, height, nSlices, options); break;
 			case 32: imp = createFloatImage(title, width, height, nSlices, options); break;
-			case 24: imp = createRGBImage(title, width, height, nSlices, options); break;
+			case 24:
+				if ((options&SIGNED_INT)!=0)
+					imp = createIntImage(title, width, height, nSlices, options);
+				else
+					imp = createRGBImage(title, width, height, nSlices, options);
+				break;
 			default: throw new IllegalArgumentException("Invalid bitDepth: "+bitDepth);
 		}
 		return imp;

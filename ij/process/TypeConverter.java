@@ -93,6 +93,12 @@ public class TypeConverter {
 		g=r/3+g/3+b/3. Call ColorProcessor.setRGBWeights() 
 		to do weighted conversions. */
 	ByteProcessor convertRGBToByte() {
+		if (ip.getNChannels()==1 && doScaling) {
+			byte[] pixels8 = ip.create8BitImage();
+			ByteProcessor bp = new ByteProcessor(ip.getWidth(), ip.getHeight(), pixels8);
+			bp.setColorModel(ip.getColorModel());
+			return bp;
+		}
 		int[] pixels32 = (int[])ip.getPixels();
 		double[] w = ColorProcessor.getWeightingFactors();
 		if (((ColorProcessor)ip).getRGBWeights()!=null)
