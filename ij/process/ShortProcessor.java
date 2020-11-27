@@ -263,8 +263,11 @@ public class ShortProcessor extends ImageProcessor {
 	@see ij.IJ#setMinAndMax(ij.ImagePlus,double,double)
 	*/
 	public void setMinAndMax(double minimum, double maximum) {
-		if (minimum==0.0 && maximum==0.0)
-			{resetMinAndMax(); return;}
+		if (ij.IJ.debugMode) ij.IJ.log("setMinAndMax: "+minimum+" "+maximum);
+		if (minimum==0.0 && maximum==0.0) {
+			resetMinAndMax();
+			return;
+		}
 		if (minimum<0.0)
 			minimum = 0.0;
 		if (maximum>65535.0)
@@ -282,6 +285,7 @@ public class ShortProcessor extends ImageProcessor {
 	public void resetMinAndMax() {
 		fixedScale = false;
 		findMinAndMax();
+		if (ij.IJ.debugMode) ij.IJ.log("resetMinAndMax: "+min+" "+max);
 		resetThreshold();
 	}
 

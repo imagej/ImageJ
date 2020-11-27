@@ -10,6 +10,7 @@ import ij.text.*;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.*;
 import ij.plugin.Colors;
+import ij.plugin.LutLoader;
 import ij.macro.Interpreter;
 import ij.util.Tools;
 
@@ -166,6 +167,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private boolean noThreshold;
 	private boolean calledByPlugin;
 	private boolean hyperstack;
+	private static LUT glasbeyLut;
 
 			
 	/** Constructs a ParticleAnalyzer.
@@ -1012,7 +1014,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			if (lineWidth!=1)
 				roi2.setStrokeWidth(lineWidth);
 			if (showChoice==OVERLAY_MASKS)
-				roi2.setFillColor(Color.cyan);
+				roi2.setFillColor(getMaskColor(count-1));
 			if (processStack || imp.getStackSize()>1) {
 				int currentSlice = slice;
 				if (!processStack)
@@ -1046,6 +1048,24 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				ip.drawString(s);
 			}
 		}
+	}
+
+	private static Color getMaskColor(int index) {
+		Color color = Color.cyan;
+		if (index<0) index=0;
+		if (glasbeyLut==null) {
+			String path = IJ.getDir("luts")+"Glasbey.lut";
+			glasbeyLut = LutLoader.openLut("noerror:"+path);
+			if (glasbeyLut==null) {
+				path = IJ.getDir("luts")+"glasbey.lut";
+				glasbeyLut = LutLoader.openLut("noerror:"+path);
+			}
+			if (glasbeyLut==null)
+				IJ.log("LUT not found: "+path);
+		}
+		if (glasbeyLut!=null)
+			color = new Color(glasbeyLut.getRGB(index));
+		return color;
 	}
 
 	void drawEllipse(ImageProcessor ip, ImageStatistics stats, int count) {
