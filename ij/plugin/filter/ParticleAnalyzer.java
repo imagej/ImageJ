@@ -97,6 +97,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private static boolean pixelUnits;
 	private static int staticOptions = Prefs.getInt(OPTIONS,CLEAR_WORKSHEET);
 	private static String[] showStrings = {"Nothing", "Outlines", "Bare Outlines", "Ellipses", "Masks", "Count Masks", "Overlay", "Overlay Masks"};
+	private static String[] showStrings2 = {"Nothing", "Overlay", "Overlay Masks", "Outlines", "Bare Outlines", "Ellipses", "Masks", "Count Masks"};
+	private static int[] showStringOrder = {0, 6, 7, 1, 2, 3, 4, 5};
 	private static double staticMinCircularity=0.0, staticMaxCircularity=1.0;
 		
 	protected static final int NOTHING=0, OUTLINES=1, BARE_OUTLINES=2, ELLIPSES=3, MASKS=4, ROI_MASKS=5,
@@ -330,7 +332,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			gd.addCheckbox("Pixel units", pixelUnits);
 		}
 		gd.addStringField("Circularity:", IJ.d2s(minCircularity)+"-"+IJ.d2s(maxCircularity), 12);
-		gd.addChoice("Show:", showStrings, showStrings[showChoice]);
+		gd.addChoice("Show:", showStrings2, showStrings[showChoice]);
 		String[] labels = new String[8];
 		boolean[] states = new boolean[8];
 		labels[0]="Display results"; states[0] = (options&SHOW_RESULTS)!=0;
@@ -385,7 +387,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			return false;
 		}
 		gd.setSmartRecording(showChoice==0);
-		showChoice = gd.getNextChoiceIndex();
+		showChoice = showStringOrder[gd.getNextChoiceIndex()];
 		gd.setSmartRecording(false);
 		staticShowChoice = showChoice;
 		if (gd.getNextBoolean())
@@ -847,9 +849,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		}
 		return true;
 	}
-	
-	int counter = 0;
-	
+		
 	void analyzeParticle(int x, int y, ImagePlus imp, ImageProcessor ip) {
 		ImageProcessor ip2 = redirectIP!=null?redirectIP:ip;
 		wand.autoOutline(x, y, level1, level2, wandMode);
@@ -870,7 +870,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (excludeEdgeParticles) {
 			if (r.x==minX||r.y==minY||r.x+r.width==maxX||r.y+r.height==maxY)
 				include = false;
-			if (exclusionRoi!=null && include==true) {
+			if (exclusionRoi!=null && include) {
 				// Exclude particle if any point along boundary is not contained in roi.
 				Rectangle bounds = roi.getBounds();
 				int x1=bounds.x+wand.xpoints[wand.npoints-1];
@@ -917,8 +917,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				drawParticle(drawIP, roi, stats, mask);
 			showChoice = saveShowChoice;
 		}
-		if (redirectIP!=null)
-			ip.setRoi(r);
+		ip.setRoi(r);
 		ip.fill(mask);
 	}
 
@@ -1064,7 +1063,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				IJ.log("LUT not found: "+path);
 		}
 		if (glasbeyLut!=null)
-			color = new Color(glasbeyLut.getRGB(index));
+			color = new Color(glasbeyLut.getRGB(index+5)); // skip problematic white and black entries
 		return color;
 	}
 
