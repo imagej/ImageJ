@@ -228,6 +228,8 @@ public class RoiDecoder {
 				if (props!=null)
 					roi.setProperties(props);
 			}
+			if (version>=228 && group>0)
+				roi.setGroup(group);
 			return roi;
 		}
 

@@ -2934,6 +2934,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		listeners.removeElement(listener);
 	}
 	
+	public static Vector getListeners() {
+		return listeners;
+	}
+	
 	/** For debug purposes, writes all registered (and possibly,
 		forgotten) ImageListeners to the log window */
 	public static void logImageListeners() {
