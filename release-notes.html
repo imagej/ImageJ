@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53g  3 December 2020</u>
+<li> <u>1.53g  4 December 2020</u>
 <ul>
 <li> Thanks to Jerome Mutterer, added a "Run" button to Editor
  windows when the file name ends with ".ijm", ".js", ".bsh" or ".py".
@@ -20,8 +20,8 @@
  <li> Thanks to Christian Tischer, the Recorder supports Python.
  <li> Thanks to 'Eljonco', the "ExpandableArrays" macro option
  is now enabled by default.
- <l> Thanks to Peter Haub, added the String.pad(n,digits)
- macro function. DOCUMENT
+ <l> Thanks to Peter Haub, added the String.pad(n,length)
+ macro function.
  <li> Thanks to Wilhelm Burger, added the addEnumChoice() and
  getNextEnumChoice() methods to the GenericDialog class
  (<a href="http://wsr.imagej.net/plugins/GenericDialog_With_Enums.java">example</a>).
@@ -61,6 +61,9 @@ null pointer exception in Fiji headless mode.
 <li> Thanks to Laurent Thomas and Hollandi Reka, fixed a bug
 that caused the ROI group of saved composite selections
 to not be restored.
+<li> Thanks to Martin Hohne, fixed a bug that caused the getValue("X")
+and getValue("Y") macro functions to not work as expected with
+line selections.
 <li> Thanks to J Xiong, fixed a v1.50 regression that caused the 
 particle analyzer to not work as expected when when using the
 “Exclude on edges” option and a composite selection.

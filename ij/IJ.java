@@ -648,10 +648,9 @@ public class IJ {
 			cal = imp.getCalibration();
 			imp.setCalibration(null);
 		}
-		ImageStatistics stats = imp.getStatistics(measurements);
 		ResultsTable rt = new ResultsTable();
 		Analyzer analyzer = new Analyzer(imp, measurements, rt);
-		analyzer.saveResults(stats, imp.getRoi());
+		analyzer.measure();
 		double value = Double.NaN;
 		try {
 			value = rt.getValue(measurement, 0);

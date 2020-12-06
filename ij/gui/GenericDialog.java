@@ -112,6 +112,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			setForeground(SystemColor.controlText);
 			setBackground(SystemColor.control);
 		}
+setForeground(Color.black);
 		GridBagLayout grid = new GridBagLayout();
 		c = new GridBagConstraints();
 		setLayout(grid);
