@@ -913,7 +913,7 @@ public class ImageReader {
 	public byte[] lzwUncompress(byte[] input) {
 		if (input==null || input.length==0)
 			return input;
-		byte[][] symbolTable = new byte[4096][1];
+		byte[][] symbolTable = new byte[16384][1];
 		int bitsToRead = 9;
 		int nextSymbol = 258;
 		int code;
@@ -939,6 +939,7 @@ public class ImageReader {
 				out.add(symbolTable[code]);
 				oldCode = code;
 			} else {
+				if (oldCode==-1) oldCode=0;
 				if (code<nextSymbol) {
 					// code is in table
 					out.add(symbolTable[code]);

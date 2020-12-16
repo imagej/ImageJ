@@ -702,21 +702,21 @@ public class ZProjector implements PlugIn {
 
 		public void projectSlice(byte[] pixels) {
 	    	for(int i=0; i<len; i++) {
-				if((pixels[i]&0xff)>fpixels[i])
+				if ((pixels[i]&0xff)>fpixels[i])
 		    		fpixels[i] = (pixels[i]&0xff); 
 	    	}
 		}
 
 		public void projectSlice(short[] pixels) {
 	    	for(int i=0; i<len; i++) {
-				if((pixels[i]&0xffff)>fpixels[i])
+				if ((pixels[i]&0xffff)>fpixels[i])
 		    		fpixels[i] = pixels[i]&0xffff;
 	    	}
 		}
 
 		public void projectSlice(float[] pixels) {
-	    	for(int i=0; i<len; i++) {
-				if(pixels[i]>fpixels[i])
+	    	for (int i=0; i<len; i++) {
+				if (!Float.isNaN(pixels[i]) && pixels[i]>fpixels[i])
 		    		fpixels[i] = pixels[i]; 
 	    	}
 		}

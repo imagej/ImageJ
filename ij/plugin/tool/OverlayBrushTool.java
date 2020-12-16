@@ -160,7 +160,8 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 	public void run() {
 		new Options();
 	}
-
+	
+		
 	class Options implements DialogListener {
 
 		Options() {
@@ -196,16 +197,16 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 			Color color = Toolbar.getForegroundColor();
 			String colorName = Colors.colorToString2(color);
 			gd = NonBlockingGenericDialog.newDialog("Overlay Brush Options");
-			gd.addSlider("Brush width (pixels):", 0, 50, width);
-			gd.addSlider("Transparency (%):", 0, 100, transparency);
+			gd.addSlider("Brush width:", 0, 50, width);
+			gd.addSlider("Transparency:", 0, 100, transparency);
 			gd.addChoice("Color:", Colors.getColors(colorName), colorName);
 			gd.setInsets(10, 0, 0);
 			String ctrlString = IJ.isMacintosh()? "CMD":"CTRL";
 			gd.addMessage("SHIFT for horizontal or vertical lines\n"+
 					"ALT to draw in background color\n"+
 					ctrlString+"-SHIFT-drag to change brush width\n"+
-					ctrlString+"-(ALT) click to change foreground (background) color\n"+
-					"or use this dialog or the Color Picker (shift-k).", null, Color.darkGray);
+					ctrlString+"-click to change foreground color\n",
+					null, Color.darkGray);
 			gd.hideCancelButton();
 			gd.addHelp("");
 			gd.setHelpLabel("Undo");

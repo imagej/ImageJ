@@ -9,7 +9,9 @@ import java.lang.reflect.*;
 /**
 * This is a non-modal dialog box used to ask the user to perform some task
 * while a macro or plugin is running. It implements the waitForUser() macro
-* function. It is based on Michael Schmid's Wait_For_User plugin.
+* function. It is based on Michael Schmid's Wait_For_User plugin.<br>
+* Example:
+* <code>new WaitForUserDialog("Use brush to draw on overlay").show();</code>
 */
 public class WaitForUserDialog extends Dialog implements ActionListener, KeyListener {
 	protected Button button;

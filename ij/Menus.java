@@ -363,6 +363,7 @@ public class Menus {
 		addExample(submenu, "Overlay Text", "Overlay_Text.js");
 		addExample(submenu, "Crop Multiple Rois", "Crop_Multiple_Rois.js");
 		addExample(submenu, "Show all LUTs", "Show_all_LUTs.js");
+		addExample(submenu, "Dialog Demo", "Dialog_Demo.js");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("BeanShell");
@@ -1370,7 +1371,8 @@ public class Menus {
 
 	/** Adds one image to the end of the Window menu. */
 	static synchronized void addWindowMenuItem(ImagePlus imp) {
-		if (ij==null) return;
+		if (ij==null)
+			return;
 		String name = imp.getTitle();
 		String size = ImageWindow.getImageSize(imp);
 		CheckboxMenuItem item = new CheckboxMenuItem(name+" "+size);

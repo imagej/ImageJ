@@ -88,11 +88,11 @@ public class JpegWriter implements PlugIn {
 				// http://svn.apache.org/repos/asf/shindig/trunk/java/gadgets/src/main/java/org/apache/shindig/gadgets/rewrite/image/JpegImageUtils.java
 				// Peter Haub, Okt. 2019
 				IIOMetadata metadata = writer.getDefaultImageMetadata(new ImageTypeSpecifier(bi.getColorModel(), bi.getSampleModel()), param);			
-				Node rootNode = metadata.getAsTree("javax_imageio_jpeg_image_1.0");				
+				Node rootNode = metadata!=null ? metadata.getAsTree("javax_imageio_jpeg_image_1.0") : null;				
 				boolean metadataUpdated = false;
 				// The top level root node has two children, out of which the second one will
 				// contain all the information related to image markers.
-				if (rootNode.getLastChild() != null) {
+				if (rootNode!=null && rootNode.getLastChild() != null) {
 					Node markerNode = rootNode.getLastChild();
 					NodeList markers = markerNode.getChildNodes();
 					// Search for 'SOF' marker where subsampling information is stored.

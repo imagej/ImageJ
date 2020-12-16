@@ -1495,6 +1495,7 @@ public class IJ {
 			ImageWindow win = imp.getWindow();
 			if (win!=null) {
 				win.toFront();
+				win.setState(Frame.NORMAL);
 				WindowManager.setWindow(win);
 			}
 			long start = System.currentTimeMillis();
@@ -1518,8 +1519,10 @@ public class IJ {
 
 	/** Activates the window with the specified title. */
 	public static void selectWindow(String title) {
-		if (title.equals("ImageJ")&&ij!=null)
-			{ij.toFront(); return;}
+		if (title.equals("ImageJ")&&ij!=null) {
+			ij.toFront();
+			return;
+		}
 		long start = System.currentTimeMillis();
 		while (System.currentTimeMillis()-start<3000) { // 3 sec timeout
 			Window win = WindowManager.getWindow(title);
@@ -1544,9 +1547,10 @@ public class IJ {
 	}
 	
 	static void selectWindow(Window win) {
-		if (win instanceof Frame)
+		if (win instanceof Frame) {
 			((Frame)win).toFront();
-		else
+			((Frame)win).setState(Frame.NORMAL);
+		} else
 			((Dialog)win).toFront();
 		long start = System.currentTimeMillis();
 		while (true) {
