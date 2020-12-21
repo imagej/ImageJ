@@ -17,7 +17,7 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 	private final static int UNCONSTRAINED=0, HORIZONTAL=1, VERTICAL=2, DO_RESIZE=3, RESIZED=4, IDLE=5; //mode flags
 	private static String WIDTH_KEY = "obrush.width";
 	private static final String LOC_KEY = "obrush.loc";
-	private float width = (float)Prefs.get(WIDTH_KEY, 5);
+	private static float width = (float)Prefs.get(WIDTH_KEY, 5);
 	private int transparency;
 	private BasicStroke stroke;
 	private GeneralPath path;
@@ -159,6 +159,10 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 
 	public void run() {
 		new Options();
+	}
+	
+	public static void setWidth(double brushWidth) {
+		width = (float)brushWidth;
 	}
 	
 		

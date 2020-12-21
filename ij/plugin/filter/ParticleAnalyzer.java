@@ -1007,6 +1007,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				overlay = new Overlay();
 				overlay.drawLabels(true);
 				overlay.setLabelFont(new Font("SansSerif", Font.PLAIN, fontSize));
+				overlay.setDraggable(false);
 			}
 			Roi roi2 = (Roi)roi.clone();
 			roi2.setStrokeColor(Color.cyan);

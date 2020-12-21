@@ -910,6 +910,18 @@ public class PointRoi extends PolygonRoi {
 		return r;
 	}
 	
+	/* Returns a version of this PointRoi that only contains points inside 'roi'. */
+	public PointRoi crop(Roi roi) {
+		PointRoi points = (PointRoi)clone();
+		Polygon p = points.getPolygon();
+		for (int i=points.size()-1; i>=0; i--) {
+			if (!roi.contains(p.xpoints[i],p.ypoints[i])) {
+				points.deletePoint(i);
+			}
+		}
+		return points;
+	}
+	
 	@Override
 	public void copyAttributes(Roi roi2) {
 		super.copyAttributes(roi2);
@@ -933,7 +945,7 @@ public class PointRoi extends PolygonRoi {
 	public boolean addToOverlay() {
 		return addToOverlay;
 	}
-
+	
 	public String toString() {
 		if (nPoints>1)
 			return ("Roi[Points, count="+nPoints+"]");

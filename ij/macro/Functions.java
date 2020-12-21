@@ -4310,6 +4310,8 @@ public class Functions implements MacroConstants, Measurements {
 			return f.exists()?"1":"0";
 		else if (name.equals("isDirectory"))
 			return f.isDirectory()?"1":"0";
+		else if (name.equals("isFile"))
+			return f.isFile()?"1":"0";
 		else if (name.equals("makeDirectory")||name.equals("mkdir")) {
 			f.mkdir(); return null;
 		} else if (name.equals("lastModified"))
@@ -6623,6 +6625,17 @@ public class Functions implements MacroConstants, Measurements {
 				Analyzer.setResultsTable(rt);
 			else
 				rt.show("Results");
+		} else if (name.equals("fill")) {
+			interp.getLeftParen();
+			Color foreground = getColor();
+			Color background = null;
+			if (interp.nextToken()!=')') {
+				interp.getComma();
+				background = getColor();
+			}
+			interp.getRightParen();
+			overlay.fill(imp, foreground, background);
+			return Double.NaN;
 		} else if (name.equals("flatten")) {
 			IJ.runPlugIn("ij.plugin.OverlayCommands", "flatten");
 			return Double.NaN;

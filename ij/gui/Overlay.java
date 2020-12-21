@@ -20,6 +20,7 @@ public class Overlay implements Iterable<Roi> {
     private boolean scalableLabels;
     private boolean isCalibrationBar;
     private boolean selectable = true;
+    private boolean draggable = true;
     
     /** Constructs an empty Overlay. */
     public Overlay() {
@@ -323,6 +324,7 @@ public class Overlay implements Iterable<Roi> {
 		overlay2.setLabelFont(labelFont, scalableLabels);
 		overlay2.setIsCalibrationBar(isCalibrationBar);
 		overlay2.selectable(selectable);
+		overlay2.setDraggable(draggable);
 		return overlay2;
 	}
 	
@@ -435,6 +437,22 @@ public class Overlay implements Iterable<Roi> {
     public boolean isCalibrationBar() {
     	return isCalibrationBar;
     }
+    
+    public void fill(ImagePlus imp, Color foreground, Color background) {
+    	ImageProcessor ip = imp.getProcessor();
+		if (background!=null) {
+			ip.resetRoi();
+			ip.setColor(background);
+			ip.fillRect(0,0,ip.getWidth(),ip.getHeight());
+		}
+		if (foreground!=null) {
+			ip.setColor(foreground);
+			for (int i=0; i<size(); i++)
+				ip.fill(get(i));
+			ip.resetRoi();
+		}
+		imp.updateAndDraw();
+    }
 
     void setVector(Vector<Roi> v) {list = v;}
         
@@ -452,6 +470,16 @@ public class Overlay implements Iterable<Roi> {
 		return selectable;
 	}
 	
+    /** Set 'false' to prevent ROIs in this overlay from being dragged by their labels. */ 
+    public void setDraggable(boolean draggable) {
+    	this.draggable = draggable;
+    }
+    
+    /** Returns 'true' if ROIs in this overlay can be dragged by their labels. */
+	public boolean isDraggable() {
+		return draggable;
+	}
+
  	public boolean scalableLabels() {
 		return scalableLabels;
 	}
