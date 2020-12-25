@@ -519,6 +519,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	}
 
 	void adjustMin(ImagePlus imp, ImageProcessor ip, double minvalue) {
+		initRGB(ip);
 		min = defaultMin + minvalue*(defaultMax-defaultMin)/(sliderRange-1.0);
 		if (max>defaultMax)
 			max = defaultMax;
@@ -532,6 +533,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	}
 
 	void adjustMax(ImagePlus imp, ImageProcessor ip, double maxvalue) {
+		initRGB(ip);
 		max = defaultMin + maxvalue*(defaultMax-defaultMin)/(sliderRange-1.0);
 		//IJ.log("adjustMax: "+maxvalue+"  "+max);
 		if (min<defaultMin)
@@ -543,6 +545,15 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			setThreshold(ip);
 		if (RGBImage) doMasking(imp, ip);
 		updateScrollBars(maxSlider, false);
+	}
+	
+	private void initRGB(ImageProcessor ip) {
+		if (!(ip instanceof ColorProcessor))
+			return;
+		if (ip.getMin()==0 && ip.getMax()==255 && !((ColorProcessor)ip).caSnapshot()) {
+	 		ip.snapshot();
+	 		((ColorProcessor)ip).caSnapshot(true);
+		}
 	}
 
 	void adjustBrightness(ImagePlus imp, ImageProcessor ip, double bvalue) {

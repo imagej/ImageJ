@@ -55,7 +55,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	protected ImageWindow win;
 	protected Roi roi;
 	protected int currentSlice; // current stack index (one-based)
-	protected static final int OPENED=0, CLOSED=1, UPDATED=2;
+	protected static final int OPENED=0, CLOSED=1, UPDATED=2, SAVED=3;
 	protected boolean compositeImage;
 	protected int width;
 	protected int height;
@@ -817,8 +817,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/**	Saves this image's FileInfo so it can be later
 		retieved using getOriginalFileInfo(). */
 	public void setFileInfo(FileInfo fi) {
-		if (fi!=null)
+		if (fi!=null) {
 			fi.pixels = null;
+			if (fi.imageSaved) {
+				notifyListeners(SAVED);
+				fi.imageSaved = false;
+			}
+		}
 		fileInfo = fi;
 	}
 
@@ -2919,6 +2924,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 							break;
 						case UPDATED:
 							listener.imageUpdated(imp);
+							break;
+						case SAVED:
+							listener.imageSaved(imp);
 							break;
 					}
 				}

@@ -89,6 +89,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		}
 		gd.addStringField("Origin (pixels):", xo+","+yo+zo);
 		gd.setInsets(5, 20, 0);
+		gd.addCheckbox("Invert Y coordinates", cal.getInvertY());
 		gd.addCheckbox("Global", global1);
 		nfields = gd.getNumericFields();
 		if (nfields!=null) {
@@ -183,6 +184,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		cal.xOrigin= Double.isNaN(x)?0.0:x;
 		cal.yOrigin= Double.isNaN(y)?cal.xOrigin:y;
 		cal.zOrigin= Double.isNaN(z)?0.0:z;
+ 		cal.setInvertY(gd.getNextBoolean());
  		global2 = gd.getNextBoolean();
 		if (!cal.equals(calOrig))
 			imp.setCalibration(cal);

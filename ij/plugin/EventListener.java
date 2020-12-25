@@ -50,25 +50,30 @@ public class EventListener implements PlugIn, IJEventListener, ImageListener, Ro
 
 	// called when an image is opened
 	public void imageOpened(ImagePlus imp) {
-		IJ.log("Opened \""+imp.getTitle()+"\""+edt());
+		IJ.log("Image opened: \""+imp.getTitle()+"\""+edt());
 	}
 
 	// Called when an image is closed
 	public void imageClosed(ImagePlus imp) {
-		IJ.log("Closed \""+imp.getTitle()+"\""+edt());
+		IJ.log("Image closed: \""+imp.getTitle()+"\""+edt());
 	}
 
 	// Called when an image's pixel data is updated
 	public void imageUpdated(ImagePlus imp) {
-		IJ.log("Updated \""+imp.getTitle()+"\""+edt());
+		IJ.log("Image updated: \""+imp.getTitle()+"\""+edt());
 	}
 	
+	// Called when an image is saved
+	public void imageSaved(ImagePlus imp) {
+		IJ.log("Image saved: \""+imp.getTitle()+"\""+edt());
+	}
+
 	private String edt() {
 		return EventQueue.isDispatchThread()?" (EDT)":" (not EDT)";
 	}
 	
 	public String commandExecuting(String command) {
-		IJ.log("Executed \""+command+"\" command");
+		IJ.log("Command executed: \""+command+"\" command");
 		return command;
 	}
 	
@@ -82,7 +87,7 @@ public class EventListener implements PlugIn, IJEventListener, ImageListener, Ro
 			case COMPLETED: type="COMPLETED"; break;
 			case DELETED: type="DELETED"; break;
 		}
-		IJ.log("ROI Modified: "+(img!=null?img.getTitle():"")+", "+type);
+		IJ.log("ROI modified: "+(img!=null?img.getTitle():"")+", "+type);
 	}
 
 

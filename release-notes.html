@@ -5,11 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.53h13  21 December 2020</u>
+<li> <u>1.53h17  25 December 2020</u>
 <ul>
 <li> Thanks to Laura Shankman, added the <i>Image&gt;Overlay&gt;Measure Overlay</i>
 command.
 <li> Added the <i>Help&gt;Examples&gt;JavaScript&gt;Dialog Demo</i> example.
+<li> Thanks to Michael Ellis and Albert Cardona, added an
+imageSaved() method to the ImageListener interface. This method is
+defined using the "default" keyword, a feature added in Java 8, so
+ImageJ now requires Java 8 or later.
 <li> Added the Overlay.fill() macro function. DOCUMENT
 <li> Thanks to Stein Rorvik, added the File.isFile() macro function. DOCUMENT
 <li> Thanks to Robert Kasumba, added the OverlayBrushTool.setWidth() method.
@@ -22,6 +26,10 @@ macro function to not work with minimized windows on Windows.
 <li> Fixed a bug that caused all tools to stop working after attempting
 to use the polygon, segmented line or angle tool on
 <a href="https://ij.imjoy.io/">ImageJ.JS</a>.
+<li> Thanks to Gabriel Landini, fixed a bug that caused the B&C tool
+to sometimes perform an Undo operation on RGB images.
+<li> Thanks to Gabriel Landini, fixed a bug that caused the B&C tool
+to sometimes perform an Undo operation on RGB images.
 </ul>
 
 <li> <u>1.53g  4 December 2020</u>

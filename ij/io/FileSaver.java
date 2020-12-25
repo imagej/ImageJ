@@ -686,6 +686,7 @@ public class FileSaver {
 			//	fi.offset = TiffEncoder.IMAGE_START;
 			fi.description = null;
 			imp.setTitle(name);
+			fi.imageSaved = true;
 			imp.setFileInfo(fi);
 		}
 	}

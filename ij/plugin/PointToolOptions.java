@@ -24,6 +24,7 @@ public class PointToolOptions implements PlugIn, DialogListener {
 	+"<li> To delete multiple points, create an area<br>selection while holding down the alt key.<br>"
 	+"<li> Press 'alt+y' (<i>Edit&gt;Selection&gt;Properties</i> plus<br>alt key) to display the counts in a results table.<br>"
 	+"<li> Press 'm' (<i>Analyze&gt;Measure</i>) to list the counter<br>and stack position associated with each point.<br>"
+	+"<li> To measure a subset of the points, move them<br>to an overlay, create a selection and then use<br><i>Image&gt;Overlay&gt;Measure Overlay</i>.<br>"
 	+"<li> Use <i>File&gt;Save As&gt;Tiff</i> or <i>File&gt;Save As&gt;Selection</i><br>to save the points and counts.<br>"
 	+"<li> Press 'F' (<i>Image&gt;Overlay</i>&gt;Flatten</i>) to create an<br>RGB image with embedded markers for export.<br>"
 	+"<li> Hold the shift key down and points will be<br>constrained to a horizontal or vertical line.<br>"

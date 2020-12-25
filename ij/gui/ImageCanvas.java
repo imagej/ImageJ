@@ -1423,7 +1423,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					imp.createNewRoi(sx,sy);
 				}
 				return;
-			}
+			}			
 			boolean segmentedTool = tool==Toolbar.POLYGON || tool==Toolbar.POLYLINE || tool==Toolbar.ANGLE;
 			if (segmentedTool && (type==Roi.POLYGON || type==Roi.POLYLINE || type==Roi.ANGLE)
 			&& roi.getState()==roi.CONSTRUCTING)
@@ -1432,15 +1432,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				imp.deleteRoi();
 				return;
 			}
-			/*
-			if ((type==Roi.POLYGON || type==Roi.POLYLINE || type==Roi.ANGLE)
-			&& roi.getState()==roi.CONSTRUCTING)
-				return;
-			if ((tool==Toolbar.POLYGON||tool==Toolbar.POLYLINE||tool==Toolbar.ANGLE)&& !(IJ.shiftKeyDown()||IJ.altKeyDown())) {
-				imp.deleteRoi();
-				return;
-			}
-			*/
 		}
 		imp.createNewRoi(sx,sy);
 	}

@@ -182,7 +182,6 @@ public class ColorProcessor extends ImageProcessor {
 			applyTable(lut, channels);
 	}
 	
-
 	public void snapshot() {
 		snapshotWidth = width;
 		snapshotHeight = height;

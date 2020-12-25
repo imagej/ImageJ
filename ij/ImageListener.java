@@ -11,5 +11,7 @@ package ij;
 	public void imageClosed(ImagePlus imp);
 
 	public void imageUpdated(ImagePlus imp);
+	
+	default void imageSaved(ImagePlus imp) { }
 
 }
