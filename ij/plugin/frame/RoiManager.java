@@ -1504,7 +1504,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			}
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (n==getCount() && n>1 && !IJ.isMacro()) {
+		if (n==getCount() && n>1 && !IJ.isMacro() && imp!=null && imp.getWindow()!=null) {
 			GenericDialog gd = new GenericDialog("ROI Manager");
 			gd.addMessage("Apply changes to all "+n+" selections?");
 			gd.showDialog();

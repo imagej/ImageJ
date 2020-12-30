@@ -151,30 +151,26 @@ public class Overlay implements Iterable<Roi> {
     
     /** Sets the stroke color of all the ROIs in this overlay. */
     public void setStrokeColor(Color color) {
-		Roi[] rois = toArray();
-		for (int i=0; i<rois.length; i++)
-			rois[i].setStrokeColor(color);
+		for (int i=0; i<size(); i++)
+			get(i).setStrokeColor(color);
 	}
 
     /** Sets the stroke width of all the ROIs in this overlay. */
     public void setStrokeWidth(Double width) {
-		Roi[] rois = toArray();
-		for (int i=0; i<rois.length; i++)
-			rois[i].setStrokeWidth(width);
+		for (int i=0; i<size(); i++)
+			get(i).setStrokeWidth(width);
 	}
 
     /** Sets the fill color of all the ROIs in this overlay. */
     public void setFillColor(Color color) {
-		Roi[] rois = toArray();
-		for (int i=0; i<rois.length; i++)
-			rois[i].setFillColor(color);
+		for (int i=0; i<size(); i++)
+			get(i).setFillColor(color);
 	}
 
 	/** Moves all the ROIs in this overlay. */
 	public void translate(int dx, int dy) {
-		Roi[] rois = toArray();
-		for (int i=0; i<rois.length; i++) {
-			Roi roi = rois[i];
+		for (int i=0; i<size(); i++) {
+			Roi roi = get(i);
 			if (roi.subPixelResolution()) {
 				Rectangle2D r = roi.getFloatBounds();
 				roi.setLocation(r.getX()+dx, r.getY()+dy);
@@ -189,10 +185,9 @@ public class Overlay implements Iterable<Roi> {
 	* Marcel Boeglin, October 2013
 	*/
 	public void translate(double dx, double dy) {
-		Roi[] rois = toArray();
 		boolean intArgs = (int)dx==dx && (int)dy==dy;
-		for (int i=0; i<rois.length; i++) {
-			Roi roi = rois[i];
+		for (int i=0; i<size(); i++) {
+			Roi roi = get(i);
 			if (roi.subPixelResolution() || !intArgs) {
 				Rectangle2D r = roi.getFloatBounds();
 				roi.setLocation(r.getX()+dx, r.getY()+dy);

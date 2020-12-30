@@ -330,6 +330,7 @@ public class Menus {
 		addExample(submenu, "Synthetic Images", "Synthetic_Images.ijm");
 		addExample(submenu, "Spiral Rotation", "Spiral_Rotation.ijm");
 		addExample(submenu, "Curve Fitting", "Curve_Fitting.ijm");
+		addExample(submenu, "Colors of 2021", "Colors_of_2021.ijm");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 

@@ -27,7 +27,7 @@ a list ImageProcessors of same type and size.
 @see ij.gui.ImageCanvas
 */
 
-public class ImagePlus implements ImageObserver, Measurements, Cloneable {
+public class ImagePlus implements ImageObserver, Measurements, Cloneable, AutoCloseable {
 
 	/** 8-bit grayscale (unsigned)*/
 	public static final int GRAY8 = 0;
@@ -2231,7 +2231,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				Point loc = null;
 				if (win!=null) loc = win.getLocation();
 				changes = false;
-				close();
+				try {close();} catch(Exception e) {}
 				FileInfo fi2 = imp.getOriginalFileInfo();
 				if (fi2!=null && (fi2.url==null || fi2.url.length()==0)) {
 					fi2.url = url2;
