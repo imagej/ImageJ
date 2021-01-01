@@ -2789,6 +2789,30 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			}
 		}
 	}
+	
+	public static Roi xor(Roi[] rois) {
+		ShapeRoi s1=null, s2=null;
+		for (int i=0; i<rois.length; i++) {
+			Roi roi = rois[i];
+			if (roi==null)
+				continue;
+			if (s1==null) {
+				if (roi instanceof ShapeRoi)
+					s1 = (ShapeRoi)roi.clone();
+				else
+					s1 = new ShapeRoi(roi);
+				if (s1==null) return null;
+			} else {
+				if (roi instanceof ShapeRoi)
+					s2 = (ShapeRoi)roi.clone();
+				else
+					s2 = new ShapeRoi(roi);
+				if (s2==null) continue;
+				s1.xor(s2);
+			}
+		}
+		return s1!=null?s1.trySimplify():null;
+	}
 
 	public static void addRoiListener(RoiListener listener) {
 		listeners.addElement(listener);

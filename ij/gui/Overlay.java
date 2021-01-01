@@ -2,7 +2,7 @@ package ij.gui;
 import java.awt.*;
 import java.util.Vector;
 import java.awt.geom.Rectangle2D;
-import java.util.Iterator;
+import java.util.*;
 import ij.*;
 import ij.process.ImageProcessor;
 import ij.plugin.filter.*;
@@ -149,6 +149,16 @@ public class Overlay implements Iterable<Roi> {
     	return (Roi[])list.toArray(array);
     }
     
+    /** Returns on array containing the ROIs with the specified indexes. */
+    public Roi[] toArray(int[] indexes) {
+		ArrayList rois = new ArrayList();
+		for (int i=0; i<size(); i++) {
+			if (indexes[i]>=0 && indexes[i]<size())
+				rois.add(get(indexes[i]));
+		}
+		return (Roi[])rois.toArray(new Roi[rois.size()]);
+	}
+
     /** Sets the stroke color of all the ROIs in this overlay. */
     public void setStrokeColor(Color color) {
 		for (int i=0; i<size(); i++)
@@ -308,6 +318,10 @@ public class Overlay implements Iterable<Roi> {
 		return new Rectangle(xmin, ymin, xmax-xmin, ymax-ymin);
 	}
 	*/
+	
+	public Roi xor(int[] indexes) {
+    	return Roi.xor(toArray(indexes));
+	}
 
 	/** Returns a new Overlay that has the same properties as this one. */
 	public Overlay create() {

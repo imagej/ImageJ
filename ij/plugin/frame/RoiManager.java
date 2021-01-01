@@ -1726,34 +1726,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	void xor() {
 		ImagePlus imp = getImage();
 		if (imp==null) return;
-		int[] indexes = getSelectedIndexes();
-		if (indexes.length==1) {
+		Roi[] rois = getSelectedRoisAsArray();
+		if (rois.length==1) {
 			error("More than one item must be selected, or none");
 			return;
 		}
-		if (indexes.length==0)
-			indexes = getAllIndexes();
-		ShapeRoi s1=null, s2=null;
-		for (int i=0; i<indexes.length; i++) {
-			Roi roi = (Roi)rois.get(indexes[i]);
-			if (roi==null)
-				continue;
-			if (s1==null) {
-				if (roi instanceof ShapeRoi)
-					s1 = (ShapeRoi)roi.clone();
-				else
-					s1 = new ShapeRoi(roi);
-				if (s1==null) return;
-			} else {
-				if (roi instanceof ShapeRoi)
-					s2 = (ShapeRoi)roi.clone();
-				else
-					s2 = new ShapeRoi(roi);
-				if (s2==null) continue;
-				s1.xor(s2);
-			}
-		}
-		if (s1!=null) imp.setRoi(s1.trySimplify());
+		Roi roi2 = Roi.xor(getSelectedRoisAsArray());
+		if (roi2!=null) imp.setRoi(roi2);
 		if (record()) Recorder.record("roiManager", "XOR");
 	}
 

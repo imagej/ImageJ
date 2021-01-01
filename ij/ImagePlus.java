@@ -2231,7 +2231,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable, AutoCl
 				Point loc = null;
 				if (win!=null) loc = win.getLocation();
 				changes = false;
-				try {close();} catch(Exception e) {}
+				close();
 				FileInfo fi2 = imp.getOriginalFileInfo();
 				if (fi2!=null && (fi2.url==null || fi2.url.length()==0)) {
 					fi2.url = url2;

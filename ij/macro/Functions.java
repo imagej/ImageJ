@@ -6678,6 +6678,14 @@ public class Functions implements MacroConstants, Measurements {
  			Roi[] rois = overlay.toArray();
  			imp.cropAndSave(rois, getFirstString(), getLastString());
 			return Double.NaN;
+		} else if (name.equals("xor")) {
+			double[] arg = getFirstArray();
+			interp.getRightParen();
+			int[] indexes = new int[arg.length];
+			for (int i=0; i<arg.length; i++)
+ 				indexes[i] = (int)arg[i];
+ 			imp.setRoi(Roi.xor(overlay.toArray(indexes)));
+			return Double.NaN;
 		} else
 			interp.error("Unrecognized function name");
 		return Double.NaN;
