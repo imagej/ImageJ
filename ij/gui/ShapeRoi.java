@@ -201,7 +201,9 @@ public class ShapeRoi extends Roi {
 
 	/**Unary exclusive or operator.
 	 * The caller is set to the non-overlapping regions between the operands.
-	 * @return the union of the non-overlapping regions of <strong><code>this</code></strong> and <code>sr</code>
+	 * @return the union of the non-overlapping regions of <code>this</code> and <code>sr</code>
+	 * @see ij.gui.Roi#xor(Roi[])
+	 * @see ij.gui.Overlay#xor(int[])
 	 */
 	public ShapeRoi xor(ShapeRoi sr) {return unaryOp(sr, XOR);}
 

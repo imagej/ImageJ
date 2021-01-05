@@ -319,8 +319,11 @@ public class Overlay implements Iterable<Roi> {
 	}
 	*/
 	
+	/* Returns the Roi that results from XORing all the ROIs
+	 * in this overlay that have an index in the array ‘indexes’.
+	*/
 	public Roi xor(int[] indexes) {
-    	return Roi.xor(toArray(indexes));
+		return Roi.xor(toArray(indexes));
 	}
 
 	/** Returns a new Overlay that has the same properties as this one. */

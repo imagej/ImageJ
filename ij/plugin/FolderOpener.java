@@ -22,6 +22,7 @@ public class FolderOpener implements PlugIn {
 	private static boolean staticSortFileNames = true;
 	private static boolean staticOpenAsVirtualStack;
 	private boolean convertToRGB;
+	private boolean convertToGrayscale;  //unused
 	private boolean sortFileNames = true;
 	private boolean sortByMetaData = true;
 	private boolean openAsVirtualStack;

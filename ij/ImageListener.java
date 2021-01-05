@@ -12,6 +12,6 @@ package ij;
 
 	public void imageUpdated(ImagePlus imp);
 	
-	default void imageSaved(ImagePlus imp) { }
+	//default void imageSaved(ImagePlus imp) { }
 
 }
