@@ -237,6 +237,7 @@ public class StackConverter {
 		}
 		IJ.showProgress(1.0);
 		imp.setStack(null,stack2);
+		imp.setProp("HSB_Stack", "true");
 		imp.setCalibration(cal);
 		imp.setDimensions(3, nSlices, 1);
 		CompositeImage ci = new CompositeImage(imp, IJ.GRAYSCALE);

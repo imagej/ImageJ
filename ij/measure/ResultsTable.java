@@ -643,7 +643,7 @@ public class ResultsTable implements Cloneable {
 			if (columns[i]!=null) {
 				String value = getValueAsString(i,row);
 				if (quoteCommas) {
-					if (value.contains(","))
+					if (value!=null && value.contains(","))
 						value = "\""+value+"\"";
 				}
 				sb.append(value);

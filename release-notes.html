@@ -5,15 +5,16 @@
 </head>
 <body>
 
-<li> <u>1.53h25  5 January 2021</u>
+<li> <u>1.53h30  7 January 2021</u>
 <ul>
 <li> Thanks to Laura Shankman, added the <i>Image&gt;Overlay&gt;Measure Overlay</i>
 command.
 <li> Thanks to Jerome Mutterer, added the <i>Help&gt;Examples&gt;Macro&gt;Colors of 2021</i>
 example, which runs in batch mode to prevent ROIs from being drawn in 1.53h21 and later.
-<li> Added the <i>Help&gt;Examples&gt;JavaScript&gt;Dialog Demo</i> example.
-<li> Thanks to Michael Ellis, the ImagePlus class now implements the
-AutoCloseable interface.
+<li> Added the <i>Help&gt;Examples&gt;JavaScript&gt;Dialog Demo</i> and
+<i>Help&gt;Examples&gt;Macro&gt;Save All Images</i> examples.
+<li> Thanks to Christophe Leterrier, <i>Image&gt;Type&gt;RGB Color</i>
+converts hyperstacks of HSB stacks to stacks of RGB images.
 <li> Thanks to Raniere Silva, added the Overlay.xor() macro function. DOCUMENT
 <li> Added the Overlay.fill() macro function. DOCUMENT
 <li> Thanks to Stein Rorvik, added the File.isFile() macro function. DOCUMENT
@@ -30,6 +31,9 @@ to use the polygon, segmented line or angle tool on
 <a href="https://ij.imjoy.io/">ImageJ.JS</a>.
 <li> Thanks to Gabriel Landini, fixed a bug that caused the B&C tool
 to sometimes perform an Undo operation on RGB images.
+<li> Thanks to Raniere Silva and Jan Eglinger, fixed a bug that
+caused an exception when saving the table created by
+<i>Image&gt;Overlay&gt;List Elements</i> in .csv format.
 <li> Fixed a 1.53h17 regression, caused by building ij.jar for Java 8,
 that prevented Fiji from launching.
 </ul>

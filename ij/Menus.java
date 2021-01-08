@@ -319,6 +319,7 @@ public class Menus {
 		addExample(submenu, "Dialog Box", "Dialog_Box.ijm");
 		addExample(submenu, "Process Folder", "Batch_Process_Folder.ijm");
 		addExample(submenu, "OpenDialog Demo", "OpenDialog_Demo.ijm");
+		addExample(submenu, "Save All Images", "Save_All_Images.ijm");
 		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.ijm");
 		addExample(submenu, "Non-numeric Table", "Non-numeric_Table.ijm");
 		addExample(submenu, "Overlay", "Overlay.ijm");

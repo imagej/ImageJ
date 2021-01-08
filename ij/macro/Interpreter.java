@@ -872,7 +872,7 @@ public class Interpreter implements MacroConstants {
 		if (tok==VARIABLE_FUNCTION) {
 			int address = rightSideToken>>TOK_SHIFT;
 			int type = pgm.table[address].type;
-			if (type==TABLE || type==ROI  || type==ROI_MANAGER2 || type==PROPERTY) {
+			if (type==TABLE || type==ROI  || type==ROI_MANAGER2 || type==PROPERTY || type==IMAGE) {
 				if (isString(pc+2))
 					return Variable.STRING;
 				int token2 = pgm.code[pc+4];
@@ -1182,7 +1182,7 @@ public class Interpreter implements MacroConstants {
 		if ((tok&0xff)==VARIABLE_FUNCTION) {
 			int address = tok>>TOK_SHIFT;
 			int type = pgm.table[address].type;
-			if (type==TABLE || type==ROI || type==PROPERTY || type==ROI_MANAGER2) {
+			if (type==TABLE || type==ROI || type==PROPERTY || type==ROI_MANAGER2 || type==IMAGE) {
 				int token2 = pgm.code[pcLoc+2];
 				String name = pgm.table[token2>>TOK_SHIFT].str;
 				if (Functions.isStringFunction(name,type))

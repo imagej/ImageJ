@@ -306,9 +306,9 @@ public class Functions implements MacroConstants, Measurements {
 		return array;
 	}
 
-	// Type must be added to Interpreter.getExpressionType() and
-	// Interpreter.isString(), and functions returning a string must
-	// be added to isStringFunction().
+	// Type must be added to Interpreter.getExpressionType(),
+	// Interpreter.isString() and functions returning a string must
+	// be added to isStringFunction(String,int).
 	Variable getVariableFunction(int type) {
 		Variable var = null;
 		switch (type) {
@@ -7295,7 +7295,7 @@ public class Functions implements MacroConstants, Measurements {
 			rt.saveAs(path);
 		} catch (Exception e) {
 			String msg = e.getMessage();
-			if (!msg.startsWith("Macro canceled"))
+			if (msg!=null && !msg.startsWith("Macro canceled"))
 				interp.error(msg);
 		}
 		return null;
@@ -7992,6 +7992,10 @@ public class Functions implements MacroConstants, Measurements {
 				if (name.equals("getName"))
 					isString = true;
 				break;
+			case IMAGE:
+				if (name.equals("getUniqueTitle"))
+					isString = true;
+				break;
 		}
 		return isString;
 	}
@@ -8025,7 +8029,10 @@ public class Functions implements MacroConstants, Measurements {
 			imp.paste(x, y, mode);
 			imp.updateAndDraw();
 			return null;
-		}
+		} else if (name.equals("getUniqueTitle")) {
+			interp.getParens();
+			return new Variable(WindowManager.makeUniqueName(imp.getTitle()));
+		}	
 		return null;
 	}
 

@@ -155,20 +155,17 @@ public class Opener {
 					IJ.runPlugIn("ij.plugin.Raw", path);
 					break;
 				case UNKNOWN:
-					String msg =
-						"File is not in a supported format, a reader\n"+
-						"plugin is not available, or it was not found.";
+					File f = new File(path);
+					String msg = (f.exists()) ?
+						"Format not supported or reader plugin not found:"
+						: "File not found:";					
 					if (path!=null) {
 						if (path.length()>64)
 							path = (new File(path)).getName();
-						if (path.length()<=64) {
-							if (IJ.redirectingErrorMessages())
-								msg += " \n   "+path;
-							else
-								msg += " \n	 \n"+path;
-						}
+						if (path.length()<=64)
+								msg += " \n"+path;
 					}
-					if (openUsingPlugins)
+					if (openUsingPlugins && msg.length()>20)
 						msg += "\n \nNOTE: The \"OpenUsingPlugins\" option is set.";
 					IJ.wait(IJ.isMacro()?500:100); // work around for OS X thread deadlock problem
 					IJ.error("Opener", msg);

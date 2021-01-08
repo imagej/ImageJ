@@ -443,7 +443,7 @@ public class OverlayCommands implements PlugIn {
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
 		String title = imp!=null?" of "+imp.getTitle():"";
-		rt.show("Overlay Elements"+title);//Marcel Boeglin 2019.10.07
+		rt.show("Overlay Elements"+title);
 	}
 	
 }
