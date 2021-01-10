@@ -52,17 +52,17 @@ public class PointRoi extends PolygonRoi {
 	private int nMarkers;
 	private boolean addToOverlay;
 	public static PointRoi savedPoints;
-		
+
 	static {
 		setDefaultType((int)Prefs.get(TYPE_KEY, HYBRID));
 		setDefaultSize((int)Prefs.get(SIZE_KEY, 1));
 	}
-	
+
 	public PointRoi() {
 		this(0.0, 0.0);
 		deletePoint(0);
 	}
-	
+
 	/** Creates a new PointRoi using the specified int arrays of offscreen coordinates. */
 	public PointRoi(int[] ox, int[] oy, int points) {
 		super(itof(ox), itof(oy), points, POINT);
@@ -142,14 +142,14 @@ public class PointRoi extends PolygonRoi {
 		if (Recorder.record) {
 			String add = Prefs.pointAddToOverlay?" add":"";
 			String options = sizes[convertSizeToIndex(size)]+" "+Colors.colorToString(getColor())+" "+types[type]+add;
-			options = options.toLowerCase();		
+			options = options.toLowerCase();
 			if (Recorder.scriptMode())
 				Recorder.recordCall("imp.setRoi(new PointRoi("+x+","+y+",\""+options+"\"));");
 			else
 				Recorder.record("makePoint", x, y, options);
 		}
 	}
-	
+
 	public void setOptions(String options) {
 		if (options==null)
 			return;
@@ -167,7 +167,7 @@ public class PointRoi extends PolygonRoi {
 		setStrokeColor(Colors.getColor(options,Roi.getColor()));
 		addToOverlay =  options.contains("add");
 	}
-	
+
 	static float[] itof(int[] arr) {
 		if (arr==null)
 			return null;
@@ -192,15 +192,15 @@ public class PointRoi extends PolygonRoi {
 		}
 		return new float[] {(float)value};
 	}
-				
+
 	void handleMouseMove(int ox, int oy) {
 	}
-	
+
 	protected void handleMouseUp(int sx, int sy) {
 		super.handleMouseUp(sx, sy);
 		modifyRoi(); //adds this point to previous points if shift key down
 	}
-	
+
 	/** Draws the points on the image. */
 	public void draw(Graphics g) {
 		updatePolygon();
@@ -215,7 +215,7 @@ public class PointRoi extends PolygonRoi {
 			if (fontSize>9)
 				Java2.setAntialiasedText(g, true);
 		}
-		int slice = imp!=null&&positions!=null&&imp.getStackSize()>1?imp.getCurrentSlice():0;		
+		int slice = imp!=null&&positions!=null&&imp.getStackSize()>1?imp.getCurrentSlice():0;
 		ImageCanvas ic = imp!=null?imp.getCanvas():null;
 		if (ic!=null && overlay && ic.getShowAllList()!=null && ic.getShowAllList().contains(this) && !Prefs.showAllSliceOnly)
 			slice = 0;  // draw point irrespective of currently selected slice
@@ -271,7 +271,7 @@ public class PointRoi extends PolygonRoi {
 		}
 		if (type!=CROSS && size>SMALL)
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		if (type==HYBRID || type==DOT) { 
+		if (type==HYBRID || type==DOT) {
 			if (!colorSet) {
 				g.setColor(color);
 				colorSet = true;
@@ -323,7 +323,7 @@ public class PointRoi extends PolygonRoi {
 		if (saveXform!=null)
 			g2d.setTransform(saveXform);
 	}
-	
+
 	public void drawPixels(ImageProcessor ip) {
 		ip.setLineWidth(Analyzer.markWidth);
 		double x0 = bounds == null ? x : bounds.x;
@@ -333,16 +333,15 @@ public class PointRoi extends PolygonRoi {
 			ip.lineTo((int)Math.round(x0+xpf[i]), (int)Math.round(y0+ypf[i]));
 		}
 	}
-	
+
 	/** Adds a point to this PointRoi. */
 	public void addPoint(ImagePlus imp, double ox, double oy) {
 		if (nPoints==xpf.length)
 			enlargeArrays();
 		addPoint2(imp, ox, oy);
 		resetBoundingRect();
-		width+=1; height+=1;
 	}
-	
+
 
 	public void addUserPoint(ImagePlus imp, double ox, double oy) {
 		addPoint(imp, ox, oy);
@@ -360,7 +359,7 @@ public class PointRoi extends PolygonRoi {
 		incrementCounter(imp);
 		lastPointTime = System.currentTimeMillis();
 	}
-	
+
 	/** Adds a point to this PointRoi. */
 	public PointRoi addPoint(double x, double y) {
 		addPoint(null, x, y);
@@ -406,7 +405,7 @@ public class PointRoi extends PolygonRoi {
 		if (rt!=null && WindowManager.getFrame(getCountsTitle())!=null)
 			displayCounts();
 	}
-	
+
 	/** Returns the index of the current counter. */
 	public int getCounter() {
 		return counter;
@@ -422,7 +421,7 @@ public class PointRoi extends PolygonRoi {
 		else
 			return counts[counter];
 	}
-	
+
 	/** Returns the index of the last counter. */
 	public int getLastCounter() {
 		return nCounters - 1;
@@ -436,7 +435,7 @@ public class PointRoi extends PolygonRoi {
 		}
 		return n;
 	}
-	
+
 	/** Returns the counter assocated with the specified point. */
 	public int getCounter(int index) {
 		if (counters==null || index>=counters.length)
@@ -452,7 +451,7 @@ public class PointRoi extends PolygonRoi {
 		positions = null;
 		PointToolOptions.update();
 	}
-	
+
 	/** Returns the points of this Roi that are not contained in the specified area ROI.
 	 *  Returns null if there are no resulting points or Roi is not an area roi. */
 	public PointRoi subtractPoints(Roi roi) {
@@ -491,7 +490,7 @@ public class PointRoi extends PolygonRoi {
 		double deltaX = getXBase() - x;
 		double deltaY = getYBase() - y;
 		for (int i=0; i<nPoints; i++)
-			mask.putPixel((int)(xpf[i] + deltaX), (int)(ypf[i] + deltaY), 255);
+			mask.putPixel((int)Math.round(xpf[i] + deltaX), (int)Math.round(ypf[i] + deltaY), 255);
 		cachedMask = mask;
 		return mask;
 	}
@@ -503,7 +502,7 @@ public class PointRoi extends PolygonRoi {
 		}
 		return false;
 	}
-	
+
 	public void setShowLabels(boolean showLabels) {
 		this.showLabels = showLabels;
 	}
@@ -521,11 +520,11 @@ public class PointRoi extends PolygonRoi {
 			Prefs.set(TYPE_KEY, type);
 		}
 	}
-	
+
 	public static int getDefaultType() {
 		return defaultType;
 	}
-	
+
 	/** Sets the point type (0=hybrid, 1=cross, 2=dot, 3=circle). */
 	public void setPointType(int type) {
 		if (type>=0 && type<types.length)
@@ -549,7 +548,7 @@ public class PointRoi extends PolygonRoi {
 			Prefs.set(SIZE_KEY, index);
 		}
 	}
-	
+
 	/** Returns the default point size 0-6 (Tiny-XXXL). */
 	public static int getDefaultSize() {
 		return convertSizeToIndex(defaultSize);
@@ -565,7 +564,7 @@ public class PointRoi extends PolygonRoi {
 	public int getSize() {
 		return convertSizeToIndex(size);
 	}
-	
+
 	private static int convertSizeToIndex(int size) {
 		switch (size) {
 			case TINY: return 0;
@@ -596,7 +595,7 @@ public class PointRoi extends PolygonRoi {
 	public boolean subPixelResolution() {
 		return true;
 	}
-	
+
 	private static PointRoi getPointRoiInstance() {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
@@ -620,7 +619,7 @@ public class PointRoi extends PolygonRoi {
 	    	return promptBeforeDeleting;
 	    else
 			return (nMarkers>8||getNCounters()>1) && imp!=null && imp.getWindow()!=null;
-	} 
+	}
 
 	public void promptBeforeDeleting(Boolean prompt) {
 		promptBeforeDeleting = prompt;
@@ -682,7 +681,7 @@ public class PointRoi extends PolygonRoi {
 		else
 			return 0;
 	}
-	
+
 	public void displayCounts() {
 		ImagePlus imp = getImage();
 		String firstColumnHdr = "Slice";
@@ -753,7 +752,7 @@ public class PointRoi extends PolygonRoi {
 		rt.show(getCountsTitle());
 		if (IJ.debugMode) debug();
 	}
-	
+
 	private void debug() {
 		FloatPolygon p = getFloatPolygon();
 		ResultsTable rt = new ResultsTable();
@@ -761,7 +760,7 @@ public class PointRoi extends PolygonRoi {
 			if (counters!=null) {
 				rt.setValue("Counter", i, counters[i]);
 				rt.setValue("Position", i, positions[i]);
-			} 
+			}
 			rt.setValue("X", i, p.xpoints[i]);
 			rt.setValue("Y", i, p.ypoints[i]);
 		}
@@ -771,7 +770,7 @@ public class PointRoi extends PolygonRoi {
 	private String getCountsTitle() {
 		return "Counts_"+(imp!=null?imp.getTitle():"");
 	}
-	
+
 	public synchronized static String[] getCounterChoices() {
 		if (counterChoices==null) {
 			counterChoices = new String[MAX_COUNTERS];
@@ -780,7 +779,7 @@ public class PointRoi extends PolygonRoi {
 		}
 		return counterChoices;
 	}
-	
+
 	private static Color getColor(int index) {
 		if (colors==null) {
 			colors = new Color[MAX_COUNTERS];
@@ -803,7 +802,7 @@ public class PointRoi extends PolygonRoi {
 	}
 
 	/** Returns a point index if it has been at least one second since
-		the last point was added and the specified screen coordinates are	 
+		the last point was added and the specified screen coordinates are
 		inside or near a point, otherwise returns -1. */
 	public int isHandle(int sx, int sy) {
 		if ((System.currentTimeMillis()-lastPointTime)<1000L)
@@ -824,8 +823,8 @@ public class PointRoi extends PolygonRoi {
 		}
 		return handle;
 	}
-	
-	/** Returns the points as an array of Points. 
+
+	/** Returns the points as an array of Points.
 	 * Wilhelm Burger: modified to use FloatPolygon for correct point positions.
 	*/
 	public Point[] getContainedPoints() {
@@ -845,7 +844,7 @@ public class PointRoi extends PolygonRoi {
 	 * Custom iterator for points contained in a {@link PointRoi}.
 	 * Author: W. Burger
 	*/
-	public Iterator<Point> iterator() {	
+	public Iterator<Point> iterator() {
 		return new Iterator<Point>() {
 			final Point[] pnts = getContainedPoints();
 			final int n = pnts.length;
@@ -869,7 +868,7 @@ public class PointRoi extends PolygonRoi {
 			}
 		};
 	}
-	
+
 	@Override
 	protected int getClosestPoint(double x, double y, FloatPolygon points) {
 		int index = -1;
@@ -909,7 +908,7 @@ public class PointRoi extends PolygonRoi {
 		}
 		return r;
 	}
-	
+
 	/* Returns a version of this PointRoi that only contains points inside 'roi'. */
 	public PointRoi crop(Roi roi) {
 		PointRoi points = (PointRoi)clone();
@@ -921,7 +920,7 @@ public class PointRoi extends PolygonRoi {
 		}
 		return points;
 	}
-	
+
 	@Override
 	public void copyAttributes(Roi roi2) {
 		super.copyAttributes(roi2);
@@ -933,7 +932,7 @@ public class PointRoi extends PolygonRoi {
 			this.fontSize = p2.fontSize;
 		}
 	}
-	
+
 	public void setCounterInfo(int[] info) {
 		counterInfo = info;
 	}
@@ -941,36 +940,36 @@ public class PointRoi extends PolygonRoi {
 	public int[] getCounterInfo() {
 		return counterInfo;
 	}
-	
+
 	public boolean addToOverlay() {
 		return addToOverlay;
 	}
-	
+
 	public String toString() {
 		if (nPoints>1)
 			return ("Roi[Points, count="+nPoints+"]");
 		else
 			return ("Roi[Point, x="+x+", y="+y+"]");
 	}
-	
+
 	/** @deprecated */
 	public void setHideLabels(boolean hideLabels) {
 		this.showLabels = !hideLabels;
 	}
-	
+
 	/** @deprecated */
 	public static void setDefaultMarkerSize(String size) {
 	}
-	
+
 	/** @deprecated */
 	public static String getDefaultMarkerSize() {
 		return sizes[defaultSize];
 	}
-	
+
 	/** Deprecated */
 	public static void setDefaultCrossColor(Color color) {
 	}
-	
+
 	/** Deprecated */
 	public static Color getDefaultCrossColor() {
 		return null;

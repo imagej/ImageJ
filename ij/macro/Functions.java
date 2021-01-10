@@ -139,7 +139,7 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_LINE: getLine(); break;
 			case GET_VOXEL_SIZE: getVoxelSize(); break;
 			case GET_HISTOGRAM: getHistogram(); break;
-			case GET_BOUNDING_RECT: case GET_BOUNDS: getBounds(); break;
+			case GET_BOUNDING_RECT: case GET_BOUNDS: getBounds(true); break;
 			case GET_LUT: getLut(); break;
 			case SET_LUT: setLut(); break;
 			case GET_COORDINATES: getCoordinates(); break;
@@ -2678,7 +2678,7 @@ public class Functions implements MacroConstants, Measurements {
 		return Double.NaN;
 	}
 
-	void getBounds() {
+	void getBounds(boolean intValues) {
 		Variable x = getFirstVariable();
 		Variable y = getNextVariable();
 		Variable width = getNextVariable();
@@ -2686,11 +2686,19 @@ public class Functions implements MacroConstants, Measurements {
 		ImagePlus imp = getImage();
 		Roi roi = imp.getRoi();
 		if (roi!=null) {
-			Rectangle2D.Double r = roi.getFloatBounds();
-			x.setValue(r.x);
-			y.setValue(r.y);
-			width.setValue(r.width);
-			height.setValue(r.height);
+			if (intValues) {
+				Rectangle r = roi.getBounds();
+				x.setValue(r.x);
+				y.setValue(r.y);
+				width.setValue(r.width);
+				height.setValue(r.height);
+			} else {
+				Rectangle2D.Double r = roi.getFloatBounds();
+				x.setValue(r.x);
+				y.setValue(r.y);
+				width.setValue(r.width);
+				height.setValue(r.height);
+			}
 		} else {
 			x.setValue(0);
 			y.setValue(0);
@@ -7587,7 +7595,10 @@ public class Functions implements MacroConstants, Measurements {
 				roiClipboard = (Roi)roiClipboard.clone();
 			return null;
 		} else if (name.equals("getBounds")) {
-			getBounds();
+			getBounds(true);
+			return null;
+		} else if (name.equals("getFloatBounds")) {
+			getBounds(false);
 			return null;
 		} else if (name.equals("getStrokeColor")) {
 			interp.getParens();

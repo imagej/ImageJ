@@ -20,6 +20,7 @@ import javax.swing.filechooser.*;
 	private static Frame sharedFrame;
 	private String title;
 	private static String lastDir, lastName;
+	private static boolean defaultDirectorySet;
 
 	
 	/** Displays a file open dialog with 'title' as the title. */
@@ -218,6 +219,8 @@ import javax.swing.filechooser.*;
 		ending in the separator character ("/" or "\"), or
 		an empty or null string. */
 	public static String getDefaultDirectory() {
+		if (Prefs.commandLineMacro() && !defaultDirectorySet)
+			return IJ.getDir("cwd");
 		if (defaultDirectory==null)
 			defaultDirectory = Prefs.getDefaultDirectory();
 		return defaultDirectory;
@@ -229,6 +232,7 @@ import javax.swing.filechooser.*;
 	public static void setDefaultDirectory(String dir) {
 		dir = IJ.addSeparator(dir);
 		defaultDirectory = dir;
+		defaultDirectorySet = true;
 	}
 	
 	/** Returns the path to the directory that contains the last file

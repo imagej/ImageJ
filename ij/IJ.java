@@ -1759,13 +1759,13 @@ public class IJ {
 	/** Returns the path to the specified directory if <code>title</code> is
 		"home" ("user.home"), "downloads", "startup",  "imagej" (ImageJ directory),
 		"plugins", "macros", "luts", "temp", "current", "default",
-		"image" (directory active image was loaded from) or "file" 
-		(directory most recently used to open or save a file),
-		otherwise displays a dialog and returns the path to the
-		directory selected by the user. Returns null if the specified
-		directory is not found or the user cancels the dialog box.
-		Also aborts the macro if the user cancels
-		the dialog box.*/
+		"image" (directory active image was loaded from), "file" 
+		(directory most recently used to open or save a file) or "cwd"
+		(current working directory), otherwise displays a dialog and
+		returns the path to the directory selected by the user. Returns
+		null if the specified directory is not found or the user cancels the
+		dialog box. Also aborts the macro if the user cancels the
+		dialog box.*/
 	public static String getDirectory(String title) {
 		String dir = null;
 		String title2 = title.toLowerCase(Locale.US);
@@ -1799,9 +1799,11 @@ public class IJ {
 				dir = fi.directory;
 			} else
 				dir = null;
-		} else if (title2.equals("file")) {
+		} else if (title2.equals("file"))
 			dir = OpenDialog.getLastDirectory();
-		} else {
+		else if (title2.equals("cwd"))
+			dir = System.getProperty("user.dir");
+		else {
 			DirectoryChooser dc = new DirectoryChooser(title);
 			dir = dc.getDirectory();
 			if (dir==null) Macro.abort();

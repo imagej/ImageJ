@@ -91,14 +91,7 @@ public class Opener {
 				(new PluginInstaller()).install(path);
 				return;
 		}
-		boolean fullPath = path.startsWith("/") || path.startsWith("\\") || path.indexOf(":\\")==1 || path.indexOf(":/")==1 || isURL;
-		if (!fullPath) {
-			String defaultDir = OpenDialog.getDefaultDirectory();
-			if (defaultDir!=null)
-				path = defaultDir + path;
-			else
-				path = (new File(path)).getAbsolutePath();
-		}
+		path = makeFullPath(path);
 		if (!silentMode)
 			IJ.showStatus("Opening: " + path);
 		long start = System.currentTimeMillis();
@@ -174,7 +167,7 @@ public class Opener {
 			}
 		}
 	}
-	
+		
 	/** Displays a JFileChooser and then opens the tiff, dicom, 
 		fits, pgm, jpeg, bmp, gif, lut, roi, or text files selected by 
 		the user. Displays error messages if one or more of the selected 
@@ -269,6 +262,20 @@ public class Opener {
 		return ""+IJ.d2s(time,2)+" seconds ("+IJ.d2s(mb/time,digits)+" MB/sec)";
 	}
 	
+	public static String makeFullPath(String path) {
+		if (path==null)
+			return path;
+		boolean fullPath = path.startsWith("/") || path.startsWith("\\") || path.indexOf(":\\")==1 || path.indexOf(":/")==1 || path.contains("://");
+		if (!fullPath) {
+			String defaultDir = OpenDialog.getDefaultDirectory();
+			if (defaultDir!=null)
+				path = defaultDir + path;
+			else
+				path = (new File(path)).getAbsolutePath();
+		}
+		return path;
+	}
+
 	private boolean isText(String path) {
 		if (path.endsWith(".txt") || path.endsWith(".ijm") || path.endsWith(".java")
 		|| path.endsWith(".js") || path.endsWith(".html") || path.endsWith(".htm")
