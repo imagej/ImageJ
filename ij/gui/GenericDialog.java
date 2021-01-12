@@ -1432,7 +1432,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	@Override
 	public void setFont(Font font) {
-		super.setFont(!fontSizeSet&&Prefs.getGuiScale()!=1.0?font.deriveFont((float)(font.getSize()*Prefs.getGuiScale())):font);
+		super.setFont(!fontSizeSet&&Prefs.getGuiScale()!=1.0&&font!=null?font.deriveFont((float)(font.getSize()*Prefs.getGuiScale())):font);
 		fontSizeSet = true;
 	}
 	

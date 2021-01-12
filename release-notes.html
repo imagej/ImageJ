@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53h37  10 January 2021</u>
+<li> <u>1.53h38  11 January 2021</u>
 <ul>
 <li> Thanks to Laura Shankman, added the <i>Image&gt;Overlay&gt;Measure Overlay</i>
 command.
@@ -23,6 +23,8 @@ macro function. DOCUMENT
 <li> Added the Roi.getFloatBounds() macro function. DOCUMENT
 <li> Added the Overlay.xor() and Roi.xor() methods.
 <li> Thanks to Robert Kasumba, added the OverlayBrushTool.setWidth() method.
+<li> Thanks to Laurent Thomas, added the ResultsTable.getColumn(String) and
+ResultsTable.getColumnAsStrings(String) methods.
 <li> Thanks to Dyuks, fixed a bug that caused the TIFF reader to sometimes throw
 an exception when opening LZW-compressed 16-bit TIFFs.
 <li> Thanks to Michael Schmid, fixed a bug that could cause the JpegWriter
@@ -43,7 +45,8 @@ from the command line, to not work as expected when ‘path’
 was just a file name.
 <li> Thanks to Michael Schmid, fixed bugs that caused the roi.getBounds()
 method and getSelectionBounds() macro function to not work 
-as expected with polyline and point selections.
+as expected with polyline and point selections on images
+zoomed more than 150%.
 <li> Fixed a 1.53h17 regression, caused by building ij.jar for Java 8,
 that prevented Fiji from launching.
 </ul>
