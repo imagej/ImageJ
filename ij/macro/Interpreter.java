@@ -872,14 +872,12 @@ public class Interpreter implements MacroConstants {
 		if (tok==VARIABLE_FUNCTION) {
 			int address = rightSideToken>>TOK_SHIFT;
 			int type = pgm.table[address].type;
-			if (type==TABLE || type==ROI  || type==ROI_MANAGER2 || type==PROPERTY || type==IMAGE) {
-				if (isString(pc+2))
-					return Variable.STRING;
-				int token2 = pgm.code[pc+4];
-				String name = pgm.table[token2>>TOK_SHIFT].str;
-				if (name.equals("getColumn"))
-					return Variable.ARRAY;
-			}
+			if (isString(pc+2))
+				return Variable.STRING;
+			int token2 = pgm.code[pc+4];
+			String name = pgm.table[token2>>TOK_SHIFT].str;
+			if (name.equals("getColumn")||name.equals("toArray"))
+				return Variable.ARRAY;			
 		}
 		if (tok!=WORD)
 			return Variable.VALUE;
@@ -1182,12 +1180,10 @@ public class Interpreter implements MacroConstants {
 		if ((tok&0xff)==VARIABLE_FUNCTION) {
 			int address = tok>>TOK_SHIFT;
 			int type = pgm.table[address].type;
-			if (type==TABLE || type==ROI || type==PROPERTY || type==ROI_MANAGER2 || type==IMAGE) {
-				int token2 = pgm.code[pcLoc+2];
-				String name = pgm.table[token2>>TOK_SHIFT].str;
-				if (Functions.isStringFunction(name,type))
-					return true; 
-			}
+			int token2 = pgm.code[pcLoc+2];
+			String name = pgm.table[token2>>TOK_SHIFT].str;
+			if (Functions.isStringFunction(name,type))
+				return true; 
 		}
 		if ((tok&TOK_MASK)!=WORD)
 			return false;

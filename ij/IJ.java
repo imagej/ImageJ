@@ -1575,9 +1575,7 @@ public class IJ {
 	}
 	
 	static void setColor(int red, int green, int blue, boolean foreground) {
-	    if (red<0) red=0; if (green<0) green=0; if (blue<0) blue=0; 
-	    if (red>255) red=255; if (green>255) green=255; if (blue>255) blue=255;  
-		Color c = new Color(red, green, blue);
+		Color c = Colors.toColor(red, green, blue);
 		if (foreground) {
 			Toolbar.setForegroundColor(c);
 			ImagePlus img = WindowManager.getCurrentImage();

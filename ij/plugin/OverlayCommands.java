@@ -401,6 +401,7 @@ public class OverlayCommands implements PlugIn {
 	}
 	
 	public static void listRois(Roi[] rois) {
+		ImagePlus imp = WindowManager.getCurrentImage();
 		ResultsTable rt = new ResultsTable();
 		for (int i=0; i<rois.length; i++) {
 			if (rois[i]==null)
@@ -410,7 +411,7 @@ public class OverlayCommands implements PlugIn {
 			String fill = Colors.colorToString(rois[i].getFillColor());
 			double strokeWidth = rois[i].getStrokeWidth();
 			int digits = strokeWidth==(int)strokeWidth?0:1;
-			String sWidth = IJ.d2s(strokeWidth,digits);
+			String sWidth = IJ.d2s( strokeWidth,digits);
 			String group = ""+rois[i].getGroup();
 			if (group.equals("0"))
 				group = "none";
@@ -418,6 +419,10 @@ public class OverlayCommands implements PlugIn {
 			int c = rois[i].getCPosition();
 			int z = rois[i].getZPosition();
 			int t = rois[i].getTPosition();
+			if (imp!=null && imp.getNChannels()==1 && imp.getNSlices()==1 && imp.getNFrames()>1) {
+				t = z;
+				z = 0;
+			}
 			rt.setValue("Index", i, i);
 			rt.setValue("Name", i, rois[i].getName());
 			rt.setValue("Type", i, rois[i].getTypeAsString());
@@ -441,7 +446,6 @@ public class OverlayCommands implements PlugIn {
 			rt.setValue("Z", i, z);	
 			rt.setValue("T", i, t);	
 		}
-		ImagePlus imp = WindowManager.getCurrentImage();
 		String title = imp!=null?" of "+imp.getTitle():"";
 		rt.show("Overlay Elements"+title);
 	}

@@ -306,9 +306,8 @@ public class Functions implements MacroConstants, Measurements {
 		return array;
 	}
 
-	// Type must be added to Interpreter.getExpressionType(),
-	// Interpreter.isString() and functions returning a string must
-	// be added to isStringFunction(String,int).
+	// Functions returning a string must be added
+	// to isStringFunction(String,int).
 	Variable getVariableFunction(int type) {
 		Variable var = null;
 		switch (type) {
@@ -317,6 +316,7 @@ public class Functions implements MacroConstants, Measurements {
 			case ROI_MANAGER2: var = doRoiManager(); break;
 			case PROPERTY: var = doProperty(); break;
 			case IMAGE: var = doImage(); break;
+			case COLOR: var = doColor(); break;
 			default:
 				interp.error("Variable function expected");
 		}
@@ -8004,7 +8004,12 @@ public class Functions implements MacroConstants, Measurements {
 					isString = true;
 				break;
 			case IMAGE:
-				if (name.equals("getUniqueTitle"))
+				if (name.equals("title") || name.equals("name"))
+					isString = true;
+				break;
+			case COLOR:
+				if (name.equals("foreground") || name.equals("background")
+				|| name.equals("toString"))
 					isString = true;
 				break;
 		}
@@ -8040,10 +8045,46 @@ public class Functions implements MacroConstants, Measurements {
 			imp.paste(x, y, mode);
 			imp.updateAndDraw();
 			return null;
-		} else if (name.equals("getUniqueTitle")) {
+		} else if (name.equals("title") || name.equals("name")) {
 			interp.getParens();
-			return new Variable(WindowManager.makeUniqueName(imp.getTitle()));
-		}	
+			return new Variable(imp.getTitle());
+		} else
+			interp.error("Unrecognized Image function");
+		return null;
+	}
+
+	private Variable doColor() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (!(interp.token==WORD||interp.token==PREDEFINED_FUNCTION||interp.token==STRING_FUNCTION))
+			interp.error("Function name expected: ");
+		String name = interp.tokenString;
+		if (name.equals("foreground")) {
+			interp.getParens();
+			Color color = Toolbar.getForegroundColor();
+			return new Variable(Colors.colorToString(color));
+		} else if (name.equals("background")) {
+			interp.getParens();
+			Color color = Toolbar.getBackgroundColor();
+			return new Variable(Colors.colorToString(color));
+		} else if (name.equals("toString")) {
+			int red = (int)getFirstArg();
+			int green = (int)getNextArg();
+			int blue = (int)getLastArg();
+			Color color = Colors.toColor(red, green, blue);
+			return new Variable(Colors.colorToString(color));
+		} else if (name.equals("toArray")) {
+			String color = getStringArg();
+			int rgb = Colors.decode(color, Color.black).getRGB();
+			Variable[] array = new Variable[3];
+			array[0] = new Variable((rgb&0xff0000)>>16);
+			array[1] = new Variable((rgb&0xff00)>>8);
+			array[2] = new Variable(rgb&0xff);
+			return new Variable(array);
+		} else
+			interp.error("Unrecognized Color function");
 		return null;
 	}
 
