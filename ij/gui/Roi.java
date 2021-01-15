@@ -88,7 +88,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	protected ImagePlus imp;
 	private int imageID;
 	protected ImageCanvas ic;
-	protected int oldX, oldY, oldWidth, oldHeight;
+	protected int oldX, oldY, oldWidth, oldHeight;  //remembers previous clip rect
 	protected int clipX, clipY, clipWidth, clipHeight;
 	protected ImagePlus clipboard;
 	protected boolean constrain;    // to be square or limit to horizontal/vertical motion
@@ -261,7 +261,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			}
 			bounds.x = x;
 			bounds.y = y;
-			if (this instanceof PolygonRoi) ((PolygonRoi)this).setIntBounds(bounds);
+			if (this instanceof PolygonRoi) setIntBounds(bounds);
 		}
 	}
 
@@ -282,10 +282,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			cachedMask = null;
 			bounds = new Rectangle2D.Double(x, y, width, height);
 		}
-		if (this instanceof PolygonRoi) ((PolygonRoi)this).setIntBounds(bounds);
+		if (this instanceof PolygonRoi) setIntBounds(bounds);
 		subPixel = true;
 	}
 
+	/** Sets the ImagePlus associated with this ROI.
+	 *  <code>imp</code> may be null to remove the association to an image. */
 	public void setImage(ImagePlus imp) {
 		this.imp = imp;
 		cachedMask = null;
@@ -472,12 +474,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		return Math.min(r.getWidth(), r.getHeight());
 	}
 
-	/** Return this selection's bounding rectangle. */
+	/** Returns this selection's bounding rectangle. */
 	public Rectangle getBounds() {
 		return new Rectangle(x, y, width, height);
 	}
 
-	/** Return this selection's bounding rectangle. */
+	/** Returns this selection's bounding rectangle (with subpixel accuracy). */
 	public Rectangle2D.Double getFloatBounds() {
 		if (bounds!=null)
 			return new Rectangle2D.Double(bounds.x, bounds.y, bounds.width, bounds.height);
@@ -485,7 +487,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			return new Rectangle2D.Double(x, y, width, height);
 	}
 
-	/** Sets the bounds of rectangular, oval or text selections. */
+	/** Sets the bounds of rectangular, oval or text selections.
+	 *  Note that for these types, subpixel resolution is ignored,
+	 *  and the x,y values are rounded down, the width and height values rounded up.
+	 *  Do not use for other ROI types since their width and height are results of
+	 *  a calculation.
+	 *  For translating ROIs, use setLocation. */
 	public void setBounds(Rectangle2D.Double b) {
 		if (!(type==RECTANGLE||type==OVAL||(this instanceof TextRoi)))
 			return;
@@ -495,6 +502,28 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		this.height = (int)Math.ceil(b.height);
 		bounds = new Rectangle2D.Double(b.x, b.y, b.width, b.height);
 		cachedMask = null;
+	}
+
+	/** Sets the integer boundaries x, y, width, height from given sub-pixel
+	 *  boundaries, such that all points are within the integer bounding rectangle.
+	 *  For open line selections and (multi)Point Rois, note that integer Roi
+	 *  coordinates correspond to the center of the 1x1 rectangle enclosing a pixel.
+	 *  Points at the boundary of such a rectangle are counted for the higher x or y
+	 *  value, in agreement to how (poly-)line or PointRois are displayed at the
+	 *  screen at high zoom levels. (For lines and points, it should include all
+	 *  pixels affected by 'draw' */
+	void setIntBounds(Rectangle2D.Double bounds) {
+		if (useLineSubpixelConvention()) { //for PointRois & open lines, ensure the 'draw' area is enclosed
+			x = (int)Math.floor(bounds.x + 0.5);
+			y = (int)Math.floor(bounds.y + 0.5);
+			width  = (int)Math.floor(bounds.x + bounds.width + 1.5)  - x;
+			height = (int)Math.floor(bounds.y + bounds.height + 1.5) - y;
+		} else {                           //for area Rois, the subpixel bounds must be enclosed in the int bounds
+			x = (int)Math.floor(bounds.x);
+			y = (int)Math.floor(bounds.y);
+			width  = (int)Math.ceil(bounds.x + bounds.width)  - x;
+			height = (int)Math.ceil(bounds.y + bounds.height) - y;
+		}
 	}
 
 	/**

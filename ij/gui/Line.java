@@ -14,9 +14,9 @@ import java.awt.geom.*;
 /** This class represents a straight line selection. */
 public class Line extends Roi {
 
-	public int x1, y1, x2, y2;	// the line
+	public int x1, y1, x2, y2;	// the line end points as integer coordinates, for compatibility only
 	public double x1d, y1d, x2d, y2d;	// the line using sub-pixel coordinates
-	protected double x1R, y1R, x2R, y2R;  // the line, relative to base of bounding rect
+	protected double x1R, y1R, x2R, y2R;  // the line, relative to base of subpixel bounding rect 'bounds'
 	protected double startxd, startyd;
 	static boolean widthChanged;
 	private boolean dragged;
@@ -31,20 +31,16 @@ public class Line extends Roi {
 	/** Creates a new straight line selection using the specified
 		starting and ending offscreen double coordinates. */
 	public Line(double ox1, double oy1, double ox2, double oy2) {
-		super((int)ox1, (int)oy1, 0, 0);
+		super((int)(ox1+0.5), (int)(oy1+0.5), 0, 0);
 		type = LINE;
-		x1d=ox1; y1d=oy1; x2d=ox2; y2d=oy2; 
-		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
-		x=(int)Math.min(x1d,x2d); y=(int)Math.min(y1d,y2d);
-		x1R=x1d-x; y1R=y1d-y; x2R=x2d-x; y2R=y2d-y;
-		width=(int)Math.abs(x2R-x1R); height=(int)Math.abs(y2R-y1R);
+		updateCoordinates(ox1, oy1, ox2, oy2);
 		if (!(this instanceof Arrow) && lineWidth>1)
 			updateWideLine(lineWidth);
 		updateClipRect();
 		oldX=x; oldY=y; oldWidth=width; oldHeight=height;
 		state = NORMAL;
 	}
-	
+
 	/** Creates a new straight line selection using the specified
 		starting and ending offscreen coordinates. */
 	public static Line create(double x1, double y1, double x2, double y2) {
@@ -64,8 +60,7 @@ public class Line extends Roi {
 			startxd = Math.round(startxd);
 			startyd = Math.round(startyd);
 		}
-		x1R = x2R = startxd - startX;
-		y1R = y2R = startyd - startY;
+		updateCoordinates(startxd, startyd, startxd, startyd);
 		if (!(this instanceof Arrow) && lineWidth>1)
 			updateWideLine(lineWidth);
 	}
@@ -108,19 +103,19 @@ public class Line extends Roi {
 		double yend = offScreenYD(sy);
 		if (xend<0.0) xend=0.0; if (yend<0.0) yend=0.0;
 		if (xend>xMax) xend=xMax; if (yend>yMax) yend=yMax;
-		double xstart=x+x1R, ystart=y+y1R;
+		double xstart=getXBase()+x1R, ystart=getYBase()+y1R;
 		if (constrain) {
 		    int i=0;
 	        double dy = Math.abs(yend-ystart);
 	        double dx = Math.abs(xend-xstart);
 	        double comp = dy / dx;
-	        
+
 	        for (;i<PI_SEARCH.length; i++) {
 	            if(comp < PI_SEARCH[i]) {
 	                break;
 	            }
 	        }
-	        
+
 	        if (i < PI_SEARCH.length) {
 	            if(yend > ystart) {
 	                yend = ystart + dx*PI_MULT[i];
@@ -131,28 +126,21 @@ public class Line extends Roi {
 	            xend = xstart;
 	        }
 		}
-		if (!magnificationForSubPixel()) {
-			xend = Math.round(xend);
-			yend = Math.round(yend);
+
+		if (!magnificationForSubPixel() || IJ.controlKeyDown()) {  //during creation, CTRL enforces integer coordinates
+			xstart=Math.round(xstart); ystart=Math.round(ystart);
+			xend=Math.round(xend);     yend=Math.round(yend);
 		}
-		x=(int)Math.min(x+x1R,xend); y=(int)Math.min(y+y1R,yend);
-		x1R=xstart-x; y1R=ystart-y;
-		x2R=xend-x; y2R=yend-y;
-		if (IJ.controlKeyDown()) {
-			x1R=(int)Math.round(x1R); y1R=(int)Math.round(y1R);
-			x2R=(int)Math.round(x2R); y2R=(int)Math.round(y2R);
-		}
-		width=(int)Math.abs(x2R-x1R); height=(int)Math.abs(y2R-y1R);
-		if (width<1) width=1; if (height<1) height=1;
+		updateCoordinates(xstart, ystart, xend, yend);
 		updateClipRect();
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX=x; oldY=y;
 		oldWidth=width; oldHeight=height;
 	}
-	
-	/** Used for angle searches in line ROI creation */
+
+	/** Used for angle searches in line ROI creation: tan = y/x for angle limits 1/2*45 degrees, and 3/2*45 deg */
 	private static final double[] PI_SEARCH = {Math.tan(Math.PI/8), Math.tan((3*Math.PI)/8)};
-	private static final double[] PI_MULT = {0, Math.tan((2*Math.PI)/8)};
+	private static final double[] PI_MULT = {0, 1}; // y/x for horizontal (0 degrees) and 45 deg
 
 	void move(int sx, int sy) {
 		int xNew = offScreenX(sx);
@@ -186,7 +174,8 @@ public class Line extends Roi {
 		}
 		double ox = offScreenXD(sx);
 		double oy = offScreenYD(sy);
-		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
+		double x1d=getXBase()+x1R, y1d=getYBase()+y1R;
+		double x2d=getXBase()+x2R, y2d=getYBase()+y2R;
 		double length = Math.sqrt(sqr(x2d-x1d) + sqr(y2d-y1d));
 		switch (activeHandle) {
 			case 0:
@@ -202,7 +191,7 @@ public class Line extends Roi {
 					double ratio = length/(Math.sqrt(sqr(x2d-x1d) + sqr(y2d-y1d)));
 					double xcd = x1d+(x2d-x1d)/2;
 					double ycd = y1d+(y2d-y1d)/2;
-					
+
 					if(center){
 						x1d=xcd-ratio*(xcd-x1d);
 						x2d=xcd+ratio*(x2d-xcd);
@@ -212,7 +201,7 @@ public class Line extends Roi {
 						x1d=x2d-ratio*(x2d-x1d);
 						y1d=y2d-ratio*(y2d-y1d);
 					}
-					
+
 				}
                 break;
 			case 1:
@@ -228,7 +217,7 @@ public class Line extends Roi {
 					double ratio = length/(Math.sqrt((x2d-x1d)*(x2d-x1d) + (y2d-y1d)*(y2d-y1d)));
 					double xcd = x1d+(x2d-x1d)/2;
 					double ycd = y1d+(y2d-y1d)/2;
-					
+
 					if(center){
 						x1d=xcd-ratio*(xcd-x1d);
 						x2d=xcd+ratio*(x2d-xcd);
@@ -238,7 +227,7 @@ public class Line extends Roi {
 						x2d=x1d+ratio*(x2d-x1d);
 						y2d=y1d+ratio*(y2d-y1d);
 					}
-										
+
 				}
                 break;
 			case 2:
@@ -252,7 +241,7 @@ public class Line extends Roi {
 			double dy = Math.abs(y1d-y2d);
 			double xcd = Math.min(x1d,x2d)+dx/2;
 			double ycd = Math.min(y1d,y2d)+dy/2;
-			
+
 			//double ratio = length/(Math.sqrt((x2d-x1d)*(x2d-x1d) + (y2d-y1d)*(y2d-y1d)));
 			if (activeHandle==0) {
 				if (dx>=dy) {
@@ -274,7 +263,7 @@ public class Line extends Roi {
 							}
 						}
 					}
-				}else {
+				} else {
 					if(aspect){
 						if(y2d>y1d) y1d=y2d-length;
 						else y1d=y2d+length;
@@ -336,10 +325,11 @@ public class Line extends Roi {
 				}
 			}
 		}
-		x=(int)Math.min(x1d,x2d); y=(int)Math.min(y1d,y2d);
-		x1R=x1d-x; y1R=y1d-y;
-		x2R=x2d-x; y2R=y2d-y;
-		width=(int)Math.abs(x2R-x1R); height=(int)Math.abs(y2R-y1R);
+		if (!magnificationForSubPixel()) {
+			x1d = Math.round(x1d); y1d = Math.round(y1d);
+			x2d = Math.round(x2d); y2d = Math.round(y2d);
+		}
+		updateCoordinates(x1d, y1d, x2d, y2d);
 		updateClipRect();
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX = x;
@@ -354,6 +344,28 @@ public class Line extends Roi {
 			ic.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 	}
 
+	/** Sets the x1d, y1d, x2d, y2d line end points,
+	 *  the (legacy) integer coordinates of the end points x1, y1, x2, y2
+	 *  the 'bounds' subpixel rectangle of the Roi superclass (spanned by the end points),
+	 *  the int x, y, width, height integer bounds of the superclass (these enclose
+	 *  the 'draw' area for 1 pixel width), and
+	 *  the coordinates x1R, y1R, x2R, y2R relative to the base x, y of the 'bounds' */
+	void updateCoordinates(double x1d, double y1d, double x2d, double y2d) {
+		this.x1d = x1d; this.y1d = y1d;
+		this.x2d = x2d; this.y2d = y2d;
+		Rectangle2D.Double bounds = this.bounds;  //local variable (this.bounds may become null asynchronously upon nudge)
+		if (bounds == null) bounds = new Rectangle2D.Double();
+		bounds.x = Math.min(x1d, x2d);
+		bounds.y = Math.min(y1d, y2d);
+		bounds.width  = Math.abs(x2d - x1d);
+		bounds.height = Math.abs(y2d - y1d);
+		setIntBounds(bounds); //sets x, y, width, height
+		x1R = x1d - bounds.x; y1R = y1d - bounds.y;
+		x2R = x2d - bounds.x; y2R = y2d - bounds.y;
+		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
+		this.bounds = bounds;
+	}
+
 	/** Draws this line on the image. */
 	public void draw(Graphics g) {
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
@@ -364,10 +376,8 @@ public class Line extends Roi {
 			else
 				color = Color.cyan;
 		}
-		double x = getXBase();
-		double y = getYBase();
 		g.setColor(color);
-		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
+		x1d=getXBase()+x1R; y1d=getYBase()+y1R; x2d=getXBase()+x2R; y2d=getYBase()+y2R;
 		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
 		int sx1 = screenXD(x1d);
 		int sy1 = screenYD(y1d);
@@ -406,7 +416,7 @@ public class Line extends Roi {
 		if (updateFullWindow)
 			{updateFullWindow = false; imp.draw();}
 	}
-	
+
 	public void showStatus() {
 		IJ.showStatus(imp.getLocationAsString((int)Math.round(x2d),(int)Math.round(y2d))+
 				", angle=" + IJ.d2s(getAngle()) + ", length=" + IJ.d2s(getLength()));
@@ -458,7 +468,7 @@ public class Line extends Roi {
 			}
 			return profile;
 	}
-	
+
 	/** Returns, as a Polygon, the two points that define this line. */
 	public Polygon getPoints() {
 		Polygon p = new Polygon();
@@ -523,7 +533,7 @@ public class Line extends Roi {
 		}
 		return p;
 	}
-	
+
 	/** Returns the number of points in this selection; equivalent to getPolygon().npoints. */
 	public int size() {
 		return getStrokeWidth()<=1?2:4;
@@ -535,7 +545,7 @@ public class Line extends Roi {
 		ip.setLineWidth(1);
 		double x = getXBase();
 		double y = getYBase();
-		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
+		x1d=getXBase()+x1R; y1d=getYBase()+y1R; x2d=getXBase()+x2R; y2d=getYBase()+y2R;
 		if (getStrokeWidth()<=1) {
 			ip.moveTo((int)Math.round(x1d), (int)Math.round(y1d));
 			ip.lineTo((int)Math.round(x2d), (int)Math.round(y2d));
@@ -555,23 +565,23 @@ public class Line extends Roi {
 		} else
 			return false;
 	}
-		
+
 	protected void handleMouseDown(int sx, int sy) {
 		super.handleMouseDown(sx, sy);
 		startxd = ic.offScreenXD(sx);
 		startyd = ic.offScreenYD(sy);
 	}
 
-	/** Returns a handle number if the specified screen coordinates are  
+	/** Returns a handle number if the specified screen coordinates are
 		inside or near a handle, otherwise returns -1. */
 	public int isHandle(int sx, int sy) {
 		int size = HANDLE_SIZE+5;
 		if (getStrokeWidth()>1) size += (int)Math.log(getStrokeWidth());
 		int halfSize = size/2;
-		int sx1 = screenXD(x+x1R) - halfSize;
-		int sy1 = screenYD(y+y1R) - halfSize;
-		int sx2 = screenXD(x+x2R) - halfSize;
-		int sy2 = screenYD(y+y2R) - halfSize;
+		int sx1 = screenXD(getXBase()+x1R) - halfSize;
+		int sy1 = screenYD(getYBase()+y1R) - halfSize;
+		int sx2 = screenXD(getXBase()+x2R) - halfSize;
+		int sy2 = screenYD(getYBase()+y2R) - halfSize;
 		int sx3 = sx1 + (sx2-sx1)/2-1;
 		int sy3 = sy1 + (sy2-sy1)/2-1;
 		if (sx>=sx1&&sx<=sx1+size&&sy>=sy1&&sy<=sy1+size) return 0;
@@ -598,22 +608,13 @@ public class Line extends Roi {
 		lineWidth = w;
 		widthChanged = true;
 	}
-		
+
 	public void setStrokeWidth(float width) {
 		super.setStrokeWidth(width);
 		if (getStrokeColor()==Roi.getColor())
 			wideLine = true;
 	}
-	
-	/** Return the bounding rectangle of this line. */
-	public Rectangle getBounds() {
-		int xmin = (int)Math.round(Math.min(x1d, x2d));
-		int ymin = (int)Math.round(Math.min(y1d, y2d));
-		int w = (int)Math.round(Math.abs(x2d - x1d));
-		int h = (int)Math.round(Math.abs(y2d - y1d));
-		return new Rectangle(xmin, ymin, w, h);
-	}
-	
+
 	protected int clipRectMargin() {
 		return 4;
 	}
@@ -637,15 +638,16 @@ public class Line extends Roi {
 	public boolean subPixelResolution() {
 		return true;
 	}
-	
+
 	public void setLocation(int x, int y) {
-		super.setLocation(x, y);
-		double xx = getXBase();
-		double yy = getYBase();
-		x1d=xx+x1R; y1d=yy+y1R; x2d=xx+x2R; y2d=yy+y2R;
-		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
+		setLocation((double)x, (double)y);
 	}
-	
+
+	/** Sets the x coordinate of the leftmost and y coordinate of the topmost end point */
+	public void setLocation(double x, double y) {
+		updateCoordinates(x+x1R, y+y1R, x+x2R, y+y2R);
+	}
+
 	public FloatPolygon getRotationCenter() {
 		double xcenter = x1d + (x2d-x1d)/2.0;
 		double ycenter = y1d + (y2d-y1d)/2.0;
@@ -653,14 +655,14 @@ public class Line extends Roi {
 		p.addPoint(xcenter,ycenter);
 		return p;
 	}
-	
+
 	/**
 	 * Dedicated point iterator for thin lines.
 	 * The iterator is based on (an improved version of) the algorithm used by
 	 * the original method {@code ImageProcessor.getLine(double, double, double, double)}.
 	 * Improvements are (a) that the endpoint is drawn too and (b) every line
 	 * point is visited only once, duplicates are skipped.
-	 * 
+	 *
 	 * Author: Wilhelm Burger (04/2017)
 	*/
 	public static class PointIterator implements Iterator<Point> {
@@ -675,7 +677,7 @@ public class Line extends Roi {
 		public PointIterator(Line line) {
 			this(line.x1d, line.y1d, line.x2d, line.y2d);
 		}
-		
+
 		public PointIterator(double x1, double y1, double x2, double y2) {
 			this.x1 = x1;
 			this.y1 = y1;
@@ -686,7 +688,7 @@ public class Line extends Roi {
 			this.yinc = dy / n;
 			x = x1;
 			y = y1;
-			u = (int) Math.round(x - 0.5);	
+			u = (int) Math.round(x - 0.5);
 			v = (int) Math.round(y - 0.5);
 			u_prev = Integer.MIN_VALUE;
 			v_prev = Integer.MIN_VALUE;
@@ -705,26 +707,26 @@ public class Line extends Roi {
 			moveToNext();
 			return p;
 		}
-		
+
 		// move to next point by skipping duplicate points
 		private void moveToNext() {
 			do {
 				i = i + 1;
 				x = x1 + i * xinc;
-				y = y1 + i * yinc; 
+				y = y1 + i * yinc;
 				u_prev = u;
 				v_prev = v;
-				u = (int) Math.round(x - 0.5);	
+				u = (int) Math.round(x - 0.5);
 				v = (int) Math.round(y - 0.5);
 			} while (i <= n && u == u_prev && v == v_prev);
 		}
-		
+
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
 	}
-	
+
 	@Override
 	public Iterator<Point> iterator() {
 		if (getStrokeWidth() <= 1.0)

@@ -540,14 +540,14 @@ public class ZProjector implements PlugIn {
 			case BYTE_TYPE:
 				oip = imp.getProcessor().createProcessor(width,height);
 				byte[] pixels8 = (byte[])oip.getPixels(); 
-				for(int i=0; i<size; i++)
-					pixels8[i] = (byte)pixels[i];
+				for (int i=0; i<size; i++)
+					pixels8[i] = (byte)(pixels[i]+0.5f);
 				break;
 			case SHORT_TYPE:
 				oip = imp.getProcessor().createProcessor(width,height);
 				short[] pixels16 = (short[])oip.getPixels(); 
 				for(int i=0; i<size; i++)
-					pixels16[i] = (short)pixels[i];
+					pixels16[i] = (short)(pixels[i]+0.5f);
 				break;
 			case FLOAT_TYPE:
 				oip = new FloatProcessor(width, height, pixels, null);

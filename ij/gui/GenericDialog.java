@@ -1760,8 +1760,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			else
 				new HTMLDialog(this, "", helpURL); //modal
 		} else {
-			String macro = "run('URL...', 'url="+helpURL+"');";
-			new MacroRunner(macro);
+			//String macro = "run('URL...', 'url="+helpURL+"');";
+			String macro = "call('ij.plugin.BrowserLauncher.open', '"+helpURL+"');";
+			new MacroRunner(macro); // open on separate thread using BrowserLauncher
 		}
 	}
 

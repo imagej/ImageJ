@@ -65,6 +65,20 @@ public class BrowserLauncher implements PlugIn {
 		catch (IOException e) {}
 	}
 
+	/** Opens the specified URL in the default browser.
+	 * Returns a message if there is an error.
+	 * Call from a macro using:<br>
+	 *    call("ij.plugin.BrowserLauncher.open",url);
+	 */
+	public static String open(String url) {
+		try {
+			openURL(url);
+		} catch (IOException e) {
+			return e.getMessage();
+		}
+		return "";
+	}
+
 	/**
 	 * Attempts to open the default web browser to the given URL.
 	 * @param url The URL to open

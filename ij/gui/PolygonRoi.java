@@ -764,26 +764,6 @@ public class PolygonRoi extends Roi {
 		}
 	}
 
-	/** Sets the integer boundaries x, y, width, height from given sub-pixel
-	 *  boundaries, such that all points are within the integer bounding rectangle.
-	 *  For open line selections and (multi)Point Rois, note that integer Roi
-	 *  coordinates correspond to the center of the 1x1 rectangle enclosing a pixel.
-	 *  Points at the boundary of such a rectangle are counted for the higher x or y
-	 *  value, in agreement to how (poly-)line or PointRois are displayed at the
-	 *  screen at high zoom levels, and including the pixels affected by 'draw' */
-	void setIntBounds(Rectangle2D.Double bounds) {
-		double offs = useLineSubpixelConvention() ? 0.5 : 0;
-		x = (int)Math.floor(bounds.x + offs);
-		y = (int)Math.floor(bounds.y + offs);
-		if (useLineSubpixelConvention()) { //for PointRois & open lines, ensure the 'draw' area is enclosed
-			width  = (int)Math.floor(bounds.x + bounds.width + 1.5)  - x;
-			height = (int)Math.floor(bounds.y + bounds.height + 1.5) - y;
-		} else {
-			width  = (int)Math.ceil(bounds.x + bounds.width + offs)  - x;
-			height = (int)Math.ceil(bounds.y + bounds.height + offs) - y;
-		}
-	}
-
 	String getAngleAsString() {
 		double angle1 = 0.0;
 		double angle2 = 0.0;
