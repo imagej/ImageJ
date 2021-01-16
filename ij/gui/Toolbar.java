@@ -1100,8 +1100,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					name = name.endsWith(" ")?name:name+" ";
 					tools[newTool].runMacroTool(name+"Options");
 				} else {
-					drawTool(newTool, true);
-					IJ.wait(50);
+					//drawTool(newTool, true);
+					//IJ.wait(50);
 					drawTool(newTool, false);
 					runMacroTool(newTool);
 				}
@@ -2050,6 +2050,23 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	*/
 	 public static void setLongClickDelay(int delay) {
 		longClickDelay = delay;
+	}
+	
+	/** Sets the icon of the specified custom tool. */
+	 public static void setIcon(String toolName, String icon) {
+	 	if (instance==null)
+	 		return;
+	 	int tool = 0;
+	 	for (int i=CUSTOM1;  i<instance.getNumTools(); i++) {
+	 		if (instance.names[i]!=null && instance.names[i].equals(toolName)) {
+	 			tool = i;
+	 			break;
+	 		}
+	 	}
+		if (tool>0) {
+	 		instance.icons[tool] = icon;
+	 		instance.drawButton(instance.getGraphics(), tool);
+	 	}
 	}
 
 }

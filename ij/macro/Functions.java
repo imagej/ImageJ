@@ -701,20 +701,6 @@ public class Functions implements MacroConstants, Measurements {
 			lnWidth = getProcessor().getLineWidth();
 		int red=0, green=0, blue=0;
 		int arg1 = (int)getFirstArg();
-		
-		if (isStringArg()) {
-			globalColor = getColor();
-			globalValue = Double.NaN;
-			ImagePlus imp = WindowManager.getCurrentImage();
-			if (imp!=null) {
-				if (overlayPath!=null)
-					addDrawingToOverlay(imp);
-				getProcessor().setColor(globalColor);
-			}
-			interp.getRightParen();
-			return;
-		}
-
 		if (interp.nextToken()==')') {
 			interp.getRightParen();
 			red = (arg1&0xff0000)>>16;
