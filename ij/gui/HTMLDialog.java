@@ -13,7 +13,7 @@ import javax.swing.event.HyperlinkEvent.EventType;
 import java.net.URL;
 
 /** This is modal or non-modal dialog box that displays HTML formated text. */
-public class HTMLDialog extends JDialog implements ActionListener, KeyListener, HyperlinkListener {
+public class HTMLDialog extends JDialog implements ActionListener, KeyListener, HyperlinkListener, WindowListener {
 	private boolean escapePressed;
 	private JEditorPane editorPane;
 	private boolean modal = true;
@@ -63,6 +63,7 @@ public class HTMLDialog extends JDialog implements ActionListener, KeyListener, 
 		panel.add(button);
 		container.add(panel, "South");
 		setForeground(Color.black);
+		addWindowListener(this);
 		pack();
 		Dimension screenD = IJ.getScreenSize();
 		Dimension dialogD = getSize();
@@ -122,5 +123,16 @@ public class HTMLDialog extends JDialog implements ActionListener, KeyListener, 
 		super.dispose();
 		if (!modal) WindowManager.removeWindow(this);
 	}
-
+	
+	public void windowClosing(WindowEvent e) {
+		dispose();
+    }
+    
+    public void windowActivated(WindowEvent e) {}
+    public void windowOpened(WindowEvent e) {}
+    public void windowClosed(WindowEvent e) {}
+    public void windowIconified(WindowEvent e) {}
+    public void windowDeiconified(WindowEvent e) {}
+    public void windowDeactivated(WindowEvent e) {}
+    
 }

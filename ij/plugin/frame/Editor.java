@@ -57,7 +57,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
  		+"Visible images are automatically updated.)\n";
 
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
-	public static final int MONOSPACED=1, MENU_BAR=2, RUN_BAR=4;
+	public static final int MONOSPACED=1, MENU_BAR=2, RUN_BAR=4, INSTALL_BUTTON=8;
 	public static final int MACROS_MENU_ITEMS = 15;
 	public static final String INTERACTIVE_NAME = "Interactive Interpreter";
 	static final String FONT_SIZE = "editor.font.size";
@@ -117,7 +117,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private JavaScriptEvaluator evaluator;
 	private int messageCount;
 	private String rejectMacrosMsg;
-	private Button runButton;
+	private Button runButton, installButton;
 	private Choice language;
 	
 	public Editor() {
@@ -125,7 +125,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 
 	public Editor(String name) {
-		this(24, 80, 0, isScript(name)?RUN_BAR+MENU_BAR:MENU_BAR);
+		this(24, 80, 0, getOptions(name));
 	}
 
 	public Editor(int rows, int columns, int fontSize, int options) {
@@ -137,7 +137,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			runButton = new Button("Run");
 			runButton.addActionListener(this);
 			panel.setFont(new Font("SansSerif", Font.PLAIN, sizes[fontSizeIndex]));
-			panel.add(runButton);
+			panel.add(runButton);			
+			if ((options&INSTALL_BUTTON)!=0) {
+				installButton = new Button("Install");
+				installButton.addActionListener(this);
+				panel.add(installButton);
+			}			
 			language = new Choice();
 			for (int i=0; i<languages.length; i++)
 				language.addItem(languages[i]);
@@ -158,11 +163,15 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			insertSpaces = false;
 	}
 	
-	private static boolean isScript(String name) {
+	private static int getOptions(String name) {
+		int options = MENU_BAR;
 		if (name==null)
-			return false;
-		else
-			return name.endsWith(".ijm") || name.endsWith(".js") || name.endsWith(".bsh") || name.endsWith(".py");
+			return options;
+		if (name.endsWith(".ijm") || name.endsWith(".js") || name.endsWith(".bsh") || name.endsWith(".py"))
+			options |= RUN_BAR;
+		if (name.endsWith(".ijm"))
+			options |= INSTALL_BUTTON;
+		return options;
 	}
 	
 	void addMenuBar(int options) {
@@ -795,7 +804,14 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if (e.getSource()==runButton) {
 			runMacro(false);
 			return;
-		}
+		} else if (e.getSource()==installButton) {
+			String text = ta.getText();
+			if (text.contains("macro \"") || text.contains("macro\""))
+				installMacros(text, true);
+			else
+				IJ.error("Editor", "File must contain at least one macro or macro tool.");
+			return;
+		} 
 		if ("Save".equals(what))
 			save();
 		else if ("Compile and Run".equals(what))
@@ -909,6 +925,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		int rows = 24;
 		int columns = 70;
 		int options = MENU_BAR + RUN_BAR;
+		if (isMacro)
+			options += INSTALL_BUTTON;
 		String text = null;
 		Editor ed = new Editor(rows, columns, 0, options);
 		String dir = "Macro/";

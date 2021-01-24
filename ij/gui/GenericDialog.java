@@ -1755,10 +1755,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	void showHelp() {
 		if (helpURL.startsWith("<html>")) {
+			String title = getTitle()+" "+helpLabel;
 			if (this instanceof NonBlockingGenericDialog)
-				new HTMLDialog("", helpURL, false); // non blocking
+				new HTMLDialog(title, helpURL, false); // non blocking
 			else
-				new HTMLDialog(this, "", helpURL); //modal
+				new HTMLDialog(this, title, helpURL); //modal
 		} else {
 			String macro = "call('ij.plugin.BrowserLauncher.open', '"+helpURL+"');";
 			new MacroRunner(macro); // open on separate thread using BrowserLauncher

@@ -977,11 +977,15 @@ public class ShapeRoi extends Roi {
 			return;
 		int flags = ic.getModifiers();
 		if ((flags&16)==0) return; // exit if mouse button up
+		int osize = size;
 		size = (int)(size*mag);
 		Point p = ic.getCursorLoc();
 		int sx = ic.screenX(p.x);
 		int sy = ic.screenY(p.y);
-		g.drawOval(sx-size/2, sy-size/2, size, size);
+		int offset = (int)Math.round(ic.getMagnification()/2.0);
+		if ((osize&1)==0)
+			offset=0; // not needed when brush width even
+		g.drawOval(sx-size/2+offset, sy-size/2+offset, size, size);
 	}
 	
 	/**Draws the shape of this object onto the specified ImageProcessor.

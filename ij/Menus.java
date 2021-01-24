@@ -311,6 +311,7 @@ public class Menus {
 		addExample(submenu, "Circle Tool", "Circle_Tool.ijm");
 		addExample(submenu, "Point Picker", "Point_Picker_Tool.ijm");		
 		addExample(submenu, "Star Tool", "Star_Tool.ijm");
+		addExample(submenu, "Animated Icon Tool", "Animated_Icon_Tool.ijm");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 

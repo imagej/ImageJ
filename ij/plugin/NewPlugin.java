@@ -79,6 +79,8 @@ public class NewPlugin implements PlugIn {
 		int options = (monospaced?Editor.MONOSPACED:0)+(menuBar?Editor.MENU_BAR:0);
 		if (name.endsWith(".ijm") || name.endsWith(".js"))
 			options |= Editor.RUN_BAR;
+		if (name.endsWith(".ijm"))
+			options |= Editor.INSTALL_BUTTON;
 		String text = "";
 		ed = new Editor(rows, columns, 0, options);
 		if (type==TEMPLATE)

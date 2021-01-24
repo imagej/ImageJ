@@ -2052,12 +2052,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		longClickDelay = delay;
 	}
 	
-	/** Sets the icon of the specified custom tool. */
+	/** Sets the icon of the specified macro or plugin tool.<br>
+	 * See: Help&gt;Examples&gt;Tool&gt;Animated Icon Tool;
+	*/
 	 public static void setIcon(String toolName, String icon) {
 	 	if (instance==null)
 	 		return;
 	 	int tool = 0;
-	 	for (int i=CUSTOM1;  i<instance.getNumTools(); i++) {
+	 	for (int i=CUSTOM1; i<instance.getNumTools(); i++) {
 	 		if (instance.names[i]!=null && instance.names[i].equals(toolName)) {
 	 			tool = i;
 	 			break;
@@ -2065,7 +2067,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	 	}
 		if (tool>0) {
 	 		instance.icons[tool] = icon;
-	 		instance.drawButton(instance.getGraphics(), tool);
+	 		Graphics2D g = (Graphics2D)instance.getGraphics();
+	 		instance.setStrokeWidth(g);
+	 		instance.drawButton(g, tool);
 	 	}
 	}
 
