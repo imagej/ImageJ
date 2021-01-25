@@ -109,13 +109,11 @@ public class Line extends Roi {
 	        double dy = Math.abs(yend-ystart);
 	        double dx = Math.abs(xend-xstart);
 	        double comp = dy / dx;
-
 	        for (;i<PI_SEARCH.length; i++) {
 	            if(comp < PI_SEARCH[i]) {
 	                break;
 	            }
 	        }
-
 	        if (i < PI_SEARCH.length) {
 	            if(yend > ystart) {
 	                yend = ystart + dx*PI_MULT[i];
@@ -126,7 +124,6 @@ public class Line extends Roi {
 	            xend = xstart;
 	        }
 		}
-
 		if (!magnificationForSubPixel() || IJ.controlKeyDown()) {  //during creation, CTRL enforces integer coordinates
 			xstart=Math.round(xstart); ystart=Math.round(ystart);
 			xend=Math.round(xend);     yend=Math.round(yend);
@@ -370,6 +367,7 @@ public class Line extends Roi {
 	public void draw(Graphics g) {
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		boolean isActiveOverlayRoi = !overlay && isActiveOverlayRoi();
+		mag = getMagnification();
 		if (isActiveOverlayRoi) {
 			if (color==Color.cyan)
 				color = Color.magenta;
@@ -387,14 +385,17 @@ public class Line extends Roi {
 		int sy3 = sy1 + (sy2-sy1)/2;
 		Graphics2D g2d = (Graphics2D)g;
 		setRenderingHint(g2d);
-		if (stroke!=null && !isActiveOverlayRoi)
+		boolean width1 = overlay && mag<1.0;
+		if (stroke!=null && !isActiveOverlayRoi && !width1)
 			g2d.setStroke(getScaledStroke());
-		if (wideLine && !isActiveOverlayRoi) {
+		else if (width1)
+			g2d.setStroke(onePixelWide);
+		if (wideLine && !isActiveOverlayRoi && !width1) {
 			double dx = sx2 - sx1;
 			double dy = sy2 - sy1;
 			double len = length(dx, dy);
-			dx *= 0.5*getMagnification()/len;	//half-pixel extension, corresponding to getFloatPolygon or convertLineToArea
-			dy *= 0.5*getMagnification()/len;
+			dx *= 0.5*mag/len;	//half-pixel extension, corresponding to getFloatPolygon or convertLineToArea
+			dy *= 0.5*mag/len;
 			g2d.draw(new Line2D.Double(sx1-dx, sy1-dy, sx2+dx, sy2+dy));
 		} else
 			g.drawLine(sx1, sy1, sx2, sy2);
@@ -404,7 +405,6 @@ public class Line extends Roi {
 			g.drawLine(sx1, sy1, sx2, sy2);
 		}
 		if (!overlay) {
-			mag = getMagnification();
 			handleColor = strokeColor!=null?strokeColor:ROIColor;
 			drawHandle(g, sx1, sy1);
 			handleColor=Color.white;
