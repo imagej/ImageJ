@@ -46,7 +46,7 @@ public class Text implements PlugIn, DialogListener {
 			antialiased = textRoi.getAntiAlias();
 		}
 		colorName = Colors.colorToString2(color);
-		gd = NonBlockingGenericDialog.newDialog("Fonts");
+		gd =GUI.newNonBlockingDialog("Fonts");
 		gd.addChoice("Font:", getFonts(), font);
 		gd.addChoice("Style:", styles, styles[style]);
 		gd.addChoice("Just:", justifications, justifications[justification]);

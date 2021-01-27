@@ -157,7 +157,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		int places = Analyzer.getPrecision();
 		if (digits>0 || (int)defaultValue!=defaultValue)
 			digits = Math.max(places, 1);
-		gd = NonBlockingGenericDialog.newDialog(title, imp);
+		gd = GUI.newNonBlockingDialog(title, imp);
 		gd.addNumericField(prompt, defaultValue, digits, 8, null);
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
@@ -165,7 +165,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	void getBinaryValue (String title, String prompt, String defaultValue) {
-		gd = NonBlockingGenericDialog.newDialog(title, imp);
+		gd = GUI.newNonBlockingDialog(title, imp);
 		gd.addStringField(prompt, defaultValue);
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
@@ -173,7 +173,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	void getGammaValue (double defaultValue) {
-		gd = NonBlockingGenericDialog.newDialog("Gamma", imp);
+		gd = GUI.newNonBlockingDialog("Gamma", imp);
 		if (GraphicsEnvironment.isHeadless())
 			gd.addNumericField("Value:", defaultValue, 2);
 		else
@@ -417,7 +417,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		String options = Macro.getOptions();
 		if (options!=null && options.startsWith("v="))
 			Macro.setOptions("code="+options);
-		gd = NonBlockingGenericDialog.newDialog("Expression Evaluator", imp);
+		gd = GUI.newNonBlockingDialog("Expression Evaluator", imp);
 		gd.addStringField("Code:", macro, 42);
 		gd.setInsets(0,40,0);
 		gd.addMessage("v=pixel value, x,y&z=pixel coordinates, w=image width,\nh=image height, a=angle, d=distance from center\n");

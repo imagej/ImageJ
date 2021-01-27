@@ -24,7 +24,7 @@ public class ArrowToolOptions implements PlugIn, DialogListener {
 		Color color = Toolbar.getForegroundColor();
 		colorName = Colors.colorToString2(color);
 		int style = Arrow.getDefaultStyle();
-		gd = NonBlockingGenericDialog.newDialog("Arrow Tool");
+		gd = GUI.newNonBlockingDialog("Arrow Tool");
 		gd.addSlider("Width:", 1, 50, (int)width);
 		gd.addSlider("Size:", 0, 50, headSize);
 		gd.addChoice("Color:", Colors.getColors(colorName), colorName);

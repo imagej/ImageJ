@@ -385,12 +385,12 @@ public class Line extends Roi {
 		int sy3 = sy1 + (sy2-sy1)/2;
 		Graphics2D g2d = (Graphics2D)g;
 		setRenderingHint(g2d);
-		boolean width1 = overlay && mag<1.0;
-		if (stroke!=null && !isActiveOverlayRoi && !width1)
+		boolean magLessThanOne = overlay && mag<1.0;
+		if (stroke!=null && !isActiveOverlayRoi && !magLessThanOne)
 			g2d.setStroke(getScaledStroke());
-		else if (width1)
+		else if (magLessThanOne)
 			g2d.setStroke(onePixelWide);
-		if (wideLine && !isActiveOverlayRoi && !width1) {
+		if (wideLine && !isActiveOverlayRoi && !magLessThanOne) {
 			double dx = sx2 - sx1;
 			double dy = sy2 - sy1;
 			double len = length(dx, dy);

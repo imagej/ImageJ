@@ -258,4 +258,31 @@ public class GUI {
 			sb.setBackground(scrollbarBackground);
 	}
 	
+	/** Returns a new NonBlockingGenericDialog with the given title,
+	 *  except when Java is running in headless mode, in which case
+	*  a GenericDialog is be returned.
+	*/
+	public static GenericDialog newNonBlockingDialog(String title) {
+		if (GraphicsEnvironment.isHeadless())
+			return new GenericDialog(title);
+		else
+			return new NonBlockingGenericDialog(title);
+	}
+
+	/** Returns a new NonBlockingGenericDialog with the given title if
+	 * Prefs.nonBlockingFilterDialogs is 'true' and 'imp' is not null and
+	 * 'imp' is displayed, otherwise returns a GenericDialog.
+	 *  @param title Dialog title
+	 *  @param imp   The image associated with this dialog
+	*/
+	public static GenericDialog newNonBlockingDialog(String title, ImagePlus imp) {
+		if (Prefs.nonBlockingFilterDialogs && imp!=null && imp.getWindow()!=null) {
+			NonBlockingGenericDialog gd = new NonBlockingGenericDialog(title);
+			gd.imp = imp;
+			return gd;
+		} else
+			return new GenericDialog(title);
+	}
+
+	
 }
