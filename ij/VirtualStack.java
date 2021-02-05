@@ -45,18 +45,16 @@ public class VirtualStack extends ImageStack {
 		labels = new String[INITIAL_SIZE];
 	}
 
-	/** Creates a virtual stack with no backing storage.
-	This example creates a one million slice virtual
-	stack that uses just 1MB of RAM:
-	<pre>
-    stack = new VirtualStack(1024,1024,1000000);
-    new ImagePlus("No Backing Store Virtual Stack",stack).show();
-	</pre>
+	/** Creates a virtual stack with no backing storage.<br>
+	 * See: Help&gt;Examples&gt;JavaScript&gt;Terabyte VirtualStack
 	*/
 	public VirtualStack(int width, int height, int slices) {
 		this(width, height, slices, "8-bit");
 	}
 
+	/** Creates a virtual stack with no backing storage.<br>
+	 * See: Help&gt;Examples&gt;JavaScript&gt;Terabyte VirtualStack
+	 */
 	public VirtualStack(int width, int height, int slices, String options) {
 		super(width, height, null);
 		nSlices = slices;
@@ -68,7 +66,8 @@ public class VirtualStack extends ImageStack {
 		this.bitDepth = depth;
 	}
 
-	/** Adds an image to the end of the stack. The argument 
+	/** Adds an image to the end of a virtual stack created using the
+	 * VirtualStack(w,h,cm,path) constructor. The argument 
 	 * can be a full file path (e.g., "C:/Users/wayne/dir1/image.tif")
 	 * if the 'path' argument in the constructor is "". File names
 	 * that start with '.' are ignored.
@@ -78,6 +77,8 @@ public class VirtualStack extends ImageStack {
 			throw new IllegalArgumentException("'fileName' is null!");
 		if (fileName.startsWith("."))
 			return;
+		if (names==null)
+				throw new IllegalArgumentException("VirtualStack(w,h,cm,path) constructor not used");
 		nSlices++;
 	   if (nSlices==names.length) {
 			String[] tmp = new String[nSlices*2];

@@ -450,6 +450,8 @@ public class Overlay implements Iterable<Roi> {
     	return isCalibrationBar;
     }
     
+    /** Fills all the ROIs in this overlay with 'foreground' after clearing the
+    	the image to 'background' if it is not null. */
     public void fill(ImagePlus imp, Color foreground, Color background) {
     	ImageProcessor ip = imp.getProcessor();
 		if (background!=null) {

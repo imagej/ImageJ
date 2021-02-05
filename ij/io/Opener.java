@@ -265,8 +265,7 @@ public class Opener {
 	public static String makeFullPath(String path) {
 		if (path==null)
 			return path;
-		boolean fullPath = path.startsWith("/") || path.startsWith("\\") || path.indexOf(":\\")==1 || path.indexOf(":/")==1 || path.contains("://");
-		if (!fullPath) {
+		if (!isFullPath(path)) {
 			String defaultDir = OpenDialog.getDefaultDirectory();
 			if (defaultDir!=null)
 				path = defaultDir + path;
@@ -274,6 +273,13 @@ public class Opener {
 				path = (new File(path)).getAbsolutePath();
 		}
 		return path;
+	}
+	
+	public static boolean isFullPath(String path) {
+		if (path==null)
+			return false;
+		else
+			return path.startsWith("/") || path.startsWith("\\") || path.contains(":\\") || path.contains(":/") || path.contains("://");
 	}
 
 	private boolean isText(String path) {

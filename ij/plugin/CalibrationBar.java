@@ -22,6 +22,7 @@ import ij.measure.*;
 */
 
 public class CalibrationBar implements PlugIn {
+	public static final double  STROKE_WIDTH = 1.0001;
 	final static int BAR_LENGTH = 128;
 	final static int BAR_THICKNESS = 12;
 	final static int XMARGIN = 10;
@@ -308,7 +309,7 @@ public class CalibrationBar implements PlugIn {
 			int j = (int)(BAR_LENGTH*zoom) - i - 1;
 			Line line = new Line(x, j+y, thickness+x, j+y);
 			line.setStrokeColor(new Color(rLUT[iMap]&0xff, gLUT[iMap]&0xff, bLUT[iMap]&0xff));
-			line.setStrokeWidth(1.0001);
+			line.setStrokeWidth(STROKE_WIDTH);
 			overlay.add(line, CALIBRATION_BAR);
 		}
 

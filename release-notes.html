@@ -5,27 +5,30 @@
 </head>
 <body>
 
-<li> <u>1.53h55 27 January 2021</u>
+<li> <u>1.53h 04 February 2021</u>
 <ul>
 <li> Thanks to Laura Shankman, added the <i>Image&gt;Overlay&gt;Measure Overlay</i>
 command.
 <li> Thanks to Jerome Mutterer, added the <i>Help&gt;Examples&gt;Macro&gt;Colors of 2021</i>
-example, which runs in batch mode to prevent ROIs from being drawn in 1.53h21 and later.
+example, which runs more smoothly with ImageJ 1.53h20 or later, where ROIs are not
+drawn in batch mode.
 <li> Added the <i>Help&gt;Examples&gt;JavaScript&gt;Dialog Demo</i> and
 <i>Help&gt;Examples&gt;Macro&gt;Save All Images</i> examples.
 <li> Thanks to Christophe Leterrier, <i>Image&gt;Type&gt;RGB Color</i>
 converts hyperstacks of HSB stacks to stacks of RGB images.
+<li> Thanks to Alex Zwetsloot, line selections are no longer activated by double clicks
+with the segmented and freehand line tools.
 <li> Thanks to Norbert Vischer, added the Color.set(string), Color.set(number),
 Color.foreground, Color.background, Color.setForeground(r,g,b),
 Color.setBackground(r,b,g), Color.setForeground(string),Color.setBackground(string),
 Color.toString(r,g,b), Color.toArray(color), Color.setLut(reds, greens, blues) and
-Color.getLut(reds, greens, blues) macro functions. DOCUMENT
-<li> Thanks to Raniere Silva, added the Overlay.xor() macro function. DOCUMENT
-<li> Added the Overlay.fill() macro function. DOCUMENT
-<li> Thanks to Stein Rorvik, added the File.isFile() macro function. DOCUMENT
+Color.getLut(reds, greens, blues) macro functions.
+<li> Thanks to Raniere Silva, added the Overlay.xor() macro function.
+<li> Added the Overlay.fill() macro function.
+<li> Thanks to Stein Rorvik, added the File.isFile() macro function.
 <li> Thanks to Raniere Silva, added the getDir("cwd") ("current working directory")
-macro function. DOCUMENT
-<li> Added the Roi.getFloatBounds() and Image.title macro functions. DOCUMENT
+macro function.
+<li> Added the Roi.getFloatBounds() and Image.title macro functions.
 <li> Thanks to Alan Brooks, added the Toolbar.setIcon() method
  (<a href="http://wsr.imagej.net/macros/tools/ToggleIconTool.txt">example1</a>,
  <a href="http://wsr.imagej.net/macros/tools/Animated_Icon_Tool.txt">example2</a>,
@@ -34,8 +37,8 @@ macro function. DOCUMENT
   <a href="http://wsr.imagej.net/macros/tools/Random_Color_Picker_Tool.txt">example5</a>).
 <li> Added the Overlay.xor() and Roi.xor() methods.
 <li> Thanks to Robert Kasumba, added the OverlayBrushTool.setWidth() method.
-<li> Thanks to Laurent Thomas, added the ResultsTable.getColumn(String) and
-ResultsTable.getColumnAsStrings(String) methods.
+<li> Thanks to Laurent Thomas, added the getColumn(String), getColumnAsStrings(String)
+and getActiveTable() methods to the ResultsTable class.
 <li> Thanks to Dyuks, fixed a bug that caused the TIFF reader to sometimes throw
 an exception when opening LZW-compressed 16-bit TIFFs.
 <li> Thanks to Michael Schmid, fixed a bug that could cause the JpegWriter
@@ -69,6 +72,9 @@ and the image was hightly magnified.
 <li> Thanks to Christian Tischer, fixed a bug that caused overlay
 calibration bars to be displayed incorrectly on images zoomed
 less than 100%.
+<li> Thanks to Norbert Vischer, fixed a bug that caused the
+selectWindow("Results") macro function to sometimes not
+work as expected.
 <li> Fixed a 1.53h17 regression, caused by building ij.jar for Java 8,
 that prevented Fiji from launching.
 <li> Thanks to Dominik Schienstock, fixed a 1.52q regression that

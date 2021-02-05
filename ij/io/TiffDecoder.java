@@ -523,6 +523,8 @@ public class TiffDecoder {
 				case PREDICTOR:
 					if (value==2 && fi.compression==FileInfo.LZW)
 						fi.compression = FileInfo.LZW_WITH_DIFFERENCING;
+					if (value==3)
+						IJ.log("TiffDecoder: unsupported predictor value of 3");
 					break;
 				case COLOR_MAP: 
 					if (count==768)

@@ -1,6 +1,7 @@
 package ij.measure;
 import ij.*;
 import ij.plugin.filter.Analyzer;
+import ij.plugin.frame.Editor;
 import ij.text.*;
 import ij.process.*;
 import ij.gui.Roi;
@@ -104,6 +105,17 @@ public class ResultsTable implements Cloneable {
 			return ((TextWindow)f).getResultsTable();
 		else
 			return null;
+	}
+	
+	/** Returns the active (front most) displayed ResultsTable. */
+	public static ResultsTable getActiveTable() {
+		ResultsTable rt = null;
+		Window win = WindowManager.getActiveTable();
+		if (win!=null && (win instanceof TextWindow)) {
+			TextPanel tp = ((TextWindow)win).getTextPanel();
+			rt = tp.getOrCreateResultsTable();
+		}
+		return rt;
 	}
 		
 	/** Obsolete. */

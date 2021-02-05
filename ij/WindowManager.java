@@ -143,7 +143,9 @@ public class WindowManager {
 		return frontWindow;
 	}
 
-	/** Returns the Window containing the active table, or null. */
+	/** Returns the Window containing the active table, or null.
+	 * @see ij.measure.ResultsTable#getActiveTable
+	*/
 	public static Window getActiveTable() {
 		return frontTable;
 	}

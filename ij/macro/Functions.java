@@ -96,7 +96,7 @@ public class Functions implements MacroConstants, Measurements {
 	void doFunction(int type) {
 		switch (type) {
 			case RUN: doRun(); break;
-			case SELECT: IJ.selectWindow(getStringArg()); resetImage(); interp.selectCount++; break;
+			case SELECT: selectWindow(); break;
 			case WAIT: IJ.wait((int)getArg()); break;
 			case BEEP: interp.getParens(); IJ.beep(); break;
 			case RESET_MIN_MAX: interp.getParens(); IJ.resetMinAndMax(); resetImage(); break;
@@ -692,6 +692,18 @@ public class Functions implements MacroConstants, Measurements {
 		resetImage();
 		IJ.setKeyUp(IJ.ALL_KEYS);
 		shiftKeyDown = altKeyDown = false;
+	}
+	
+	private void selectWindow() {
+		String title = getStringArg();
+		if (resultsPending && "Results".equals(title)) {
+			ResultsTable rt = ResultsTable.getResultsTable();
+			if (rt!=null && rt.size()>0)
+				rt.show("Results");
+		}
+		IJ.selectWindow(title);
+		resetImage();
+		interp.selectCount++;
 	}
 
 	void setForegroundColor() {

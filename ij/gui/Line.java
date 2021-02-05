@@ -4,6 +4,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.Straightener;
 import ij.plugin.frame.Recorder;
+import ij.plugin.CalibrationBar;
 import java.awt.*;
 import java.awt.image.*;
 import java.util.Iterator;
@@ -13,7 +14,6 @@ import java.awt.geom.*;
 
 /** This class represents a straight line selection. */
 public class Line extends Roi {
-
 	public int x1, y1, x2, y2;	// the line end points as integer coordinates, for compatibility only
 	public double x1d, y1d, x2d, y2d;	// the line using sub-pixel coordinates
 	protected double x1R, y1R, x2R, y2R;  // the line, relative to base of subpixel bounding rect 'bounds'
@@ -385,12 +385,12 @@ public class Line extends Roi {
 		int sy3 = sy1 + (sy2-sy1)/2;
 		Graphics2D g2d = (Graphics2D)g;
 		setRenderingHint(g2d);
-		boolean magLessThanOne = overlay && mag<1.0;
-		if (stroke!=null && !isActiveOverlayRoi && !magLessThanOne)
+		boolean cbar = overlay && mag<1.0 && Math.abs(getStrokeWidth()-CalibrationBar.STROKE_WIDTH)<0.0001;
+		if (stroke!=null && !isActiveOverlayRoi && !cbar)
 			g2d.setStroke(getScaledStroke());
-		else if (magLessThanOne)
+		else if (cbar)
 			g2d.setStroke(onePixelWide);
-		if (wideLine && !isActiveOverlayRoi && !magLessThanOne) {
+		if (wideLine && !isActiveOverlayRoi && !cbar) {
 			double dx = sx2 - sx1;
 			double dy = sy2 - sy1;
 			double len = length(dx, dy);
