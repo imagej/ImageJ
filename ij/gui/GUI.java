@@ -269,9 +269,9 @@ public class GUI {
 			return new NonBlockingGenericDialog(title);
 	}
 
-	/** Returns a new NonBlockingGenericDialog with the given title if
-	 * Prefs.nonBlockingFilterDialogs is 'true' and 'imp' is not null and
-	 * is displayed, otherwise returns a GenericDialog.
+	/** Returns a new NonBlockingGenericDialog with the given title
+	 * if Prefs.nonBlockingFilterDialogs is 'true' and 'imp' is
+	 * displayed, otherwise returns a GenericDialog.
 	 * @param title Dialog title
 	 * @param imp The image associated with this dialog
 	*/

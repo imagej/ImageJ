@@ -835,10 +835,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public void abortModification(ImagePlus imp) {
 		if (state == CONSTRUCTING) {
 			setImage(null);
-			Roi savedPreviousRoi = getPreviousRoi();
-			imp.setRoi(previousRoi!=null && previousRoi.getImage() == imp ? previousRoi : null);
-			setPreviousRoi(savedPreviousRoi);     //(overrule saving this aborted roi as previousRoi)
-		} else if (state == MOVING)
+			if (imp!=null) {
+				Roi savedPreviousRoi = getPreviousRoi();
+				imp.setRoi(previousRoi!=null && previousRoi.getImage() == imp ? previousRoi : null);
+				setPreviousRoi(savedPreviousRoi);     //(overrule saving this aborted roi as previousRoi)
+			}
+		} else if (state==MOVING)
 			move(previousSX, previousSY);       //move back to starting point
 		else if (state == MOVING_HANDLE)
 			moveHandle(previousSX, previousSY); //move handle back to starting point
@@ -1561,7 +1563,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			startY = offScreenY(sy);
 			startXD = offScreenXD(sx);
 			startYD = offScreenYD(sy);
-			//showStatus();
 		}
 	}
 
@@ -1841,8 +1842,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public void setGroup(int group) {
 		if (group<0 || group>255)
 			throw new IllegalArgumentException("Invalid group: "+group);
+		if (group>0)
+			setStrokeColor(getGroupColor(group));
+		if (group==0 && this.group>0)
+			setStrokeColor(null);			
 		this.group = group;
-		setStrokeColor(group>0?getGroupColor(group):null);
 		if (imp!=null) // Update Roi Color in the GUI
 			imp.draw();
 	}
