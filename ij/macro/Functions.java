@@ -2834,12 +2834,22 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	private void showStatus () {
-		String s = getStringArg();
+		interp.getLeftParen();
+		String s = getString();
+		String options = null;
+		if (interp.nextToken()==',') {
+			interp.getComma();
+			options = getString();
+		}
+		interp.getRightParen();
 		boolean withSign = s.startsWith("!");
 		if (withSign)
 			s = s.substring(1);
 		IJ.protectStatusBar(false);
-		IJ.showStatus(s);
+		if (options!=null)
+			IJ.showStatus(s, options);
+		else
+			IJ.showStatus(s);
 		IJ.protectStatusBar(withSign);
 		interp.statusUpdated = true;
 	}

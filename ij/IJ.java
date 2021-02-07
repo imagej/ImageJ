@@ -466,6 +466,56 @@ public class IJ {
 		}
 	}
 	
+	/**Displays a message in the status bar and flashes it,
+	 * or the active image, by default for 1000ms. Example 'options' strings:
+	 * "flash", "flash 50ms", "flash image", "flash image 100ms", "flash red",
+	 *  "flash yellow 2000ms" and "flash image orange 500ms".
+	*/ 
+	public static void showStatus(String message, String options) {
+		showStatus(message);
+		if (options==null)
+			return;
+		options = options.replace("flash", "");
+		options = options.replace("ms", "");
+		Color optionalColor = null;
+		for (String c : Colors.colors) {
+			if (options.contains(c)) {
+				optionalColor = Colors.getColor(c, ImageJ.backgroundColor);
+				options = options.replace(c, "");
+				break;
+			}
+		}
+		boolean flashImage = options.contains("image");
+		Color defaultColor = Color.white;
+		int defaultDelay = 500;
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (flashImage) {
+			options = options.replace("image", "");
+			if (imp!=null && imp.getWindow()!=null) {
+				defaultColor = Color.black;
+				defaultDelay = 100;
+			}
+			else
+				flashImage = false;
+		}
+		Color color = optionalColor!=null?optionalColor:defaultColor;
+		int delay = (int)Tools.parseDouble(options, defaultDelay);
+		if (delay>8000)
+			delay = 8000;
+		String colorString = null;
+		ImageJ ij = IJ.getInstance();
+		if (flashImage) {
+			Color previousColor = imp.getWindow().getBackground();
+			imp.getWindow().setBackground(color);
+			wait(delay);
+			imp.getWindow().setBackground(previousColor);
+		} else if (ij!=null) {
+			ij.getStatusBar().setBackground(color);
+			wait(delay);
+			ij.getStatusBar().setBackground(ij.backgroundColor);
+		}
+	}
+	
 	/**
 	* @deprecated
 	* replaced by IJ.log(), ResultsTable.setResult() and TextWindow.append().
