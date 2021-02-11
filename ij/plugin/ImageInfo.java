@@ -277,6 +277,10 @@ public class ImageInfo implements PlugIn {
 					stackType += " (ListVirtualStack)";
 				s += "Stack type: " + stackType+ "\n";
 			}
+		} else if (imp.isStack()) { // one image stack
+    		String label = imp.getStack().getShortSliceLabel(1);
+    		if (label!=null && label.length()>0)
+				s += "Image: 1/1 (" + label + ")\n";
 		}
 
 		if (imp.isLocked())

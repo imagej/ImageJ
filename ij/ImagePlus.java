@@ -722,7 +722,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		int previousStackSize = getStackSize();
 		int newStackSize = newStack.getSize();
 		if (newStackSize==0)
-			throw new IllegalArgumentException("Stack is empty");
+			throw new IllegalArgumentException("Stack is empty");		
 		if (!newStack.isVirtual()) {
 			Object[] arrays = newStack.getImageArray();
 			if (arrays==null || (arrays.length>0&&arrays[0]==null))

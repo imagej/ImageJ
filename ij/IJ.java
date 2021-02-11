@@ -466,10 +466,9 @@ public class IJ {
 		}
 	}
 	
-	/**Displays a message in the status bar and flashes it,
-	 * or the active image, by default for 1000ms. Example 'options' strings:
-	 * "flash", "flash 50ms", "flash image", "flash image 100ms", "flash red",
-	 *  "flash yellow 2000ms" and "flash image orange 500ms".
+	/**Displays a message in the status bar and flashes
+	 * either the status bar or the active image.<br>
+	 * See: http://wsr.imagej.net/macros/FlashingStatusMessages.txt
 	*/ 
 	public static void showStatus(String message, String options) {
 		showStatus(message);
@@ -486,7 +485,7 @@ public class IJ {
 			}
 		}
 		boolean flashImage = options.contains("image");
-		Color defaultColor = Color.white;
+		Color defaultColor = new Color(255,255,245);
 		int defaultDelay = 500;
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (flashImage) {
