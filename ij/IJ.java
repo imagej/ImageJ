@@ -477,11 +477,21 @@ public class IJ {
 		options = options.replace("flash", "");
 		options = options.replace("ms", "");
 		Color optionalColor = null;
-		for (String c : Colors.colors) {
-			if (options.contains(c)) {
-				optionalColor = Colors.getColor(c, ImageJ.backgroundColor);
-				options = options.replace(c, "");
-				break;
+		int index1 = options.indexOf("#");
+		if (index1>=0) {  // hex color?
+			int index2 = options.indexOf(" ", index1);
+			if (index2==-1) index2 = options.length();
+			String hexColor = options.substring(index1, index2);
+			optionalColor = Colors.decode(hexColor, null);
+			options = options.replace(hexColor, "");
+		}
+		if (optionalColor==null) {  // "red", "green", etc.
+			for (String c : Colors.colors) {
+				if (options.contains(c)) {
+					optionalColor = Colors.getColor(c, ImageJ.backgroundColor);
+					options = options.replace(c, "");
+					break;
+				}
 			}
 		}
 		boolean flashImage = options.contains("image");
@@ -506,8 +516,10 @@ public class IJ {
 		if (flashImage) {
 			Color previousColor = imp.getWindow().getBackground();
 			imp.getWindow().setBackground(color);
-			wait(delay);
-			imp.getWindow().setBackground(previousColor);
+			if (delay>0) {
+				wait(delay);			
+				imp.getWindow().setBackground(previousColor);
+			}
 		} else if (ij!=null) {
 			ij.getStatusBar().setBackground(color);
 			wait(delay);
