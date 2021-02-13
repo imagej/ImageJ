@@ -691,8 +691,7 @@ public class PointRoi extends PolygonRoi {
 			int nChannels = 1;
 			int nSlices = 1;
 			int nFrames = 1;
-			boolean isHyperstack = false;				isHyperstack = true;
-
+			boolean isHyperstack = true;
 			if (imp.isComposite() || imp.isHyperStack()) {
 				nChannels = imp.getNChannels();
 				nSlices = imp.getNSlices();

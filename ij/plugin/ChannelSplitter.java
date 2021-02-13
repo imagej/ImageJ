@@ -42,20 +42,20 @@ public class ChannelSplitter implements PlugIn {
 		ImagePlus rImp = new ImagePlus(title+" (red)", channels[0]);
 		rImp.setCalibration(cal);
 		rImp.setIJMenuBar(false);
-		rImp.setBackgroundColor(new Color(255,140,140));
+		rImp.setBackgroundColor(new Color(255,180,180));
 		rImp.show();
 		rImp.setSlice(pos);
 		if (IJ.isMacOSX()) IJ.wait(500);
 		ImagePlus gImp = new ImagePlus(title+" (green)", channels[1]);
 		gImp.setCalibration(cal);
 		gImp.setIJMenuBar(false);
-		gImp.setBackgroundColor(new Color(140,255,140));
+		gImp.setBackgroundColor(new Color(180,255,180));
 		gImp.show();
 		gImp.setSlice(pos);
 		if (IJ.isMacOSX()) IJ.wait(500);
 		ImagePlus bImp = new ImagePlus(title+" (blue)", channels[2]);
 		bImp.setCalibration(cal);
-		bImp.setBackgroundColor(new Color(140,140,255));
+		bImp.setBackgroundColor(new Color(180,180,255));
 		bImp.show();
 		bImp.setSlice(pos);
 	}

@@ -293,6 +293,13 @@ public class OverlayCommands implements PlugIn {
 
 	void flatten() {
 		ImagePlus imp = IJ.getImage();
+		Roi roi = imp.getRoi();
+		if (imp.getStackSize()>1 && roi!=null && (roi instanceof PointRoi)) {
+			ImagePlus imp2 = imp.flatten();
+			imp2.setTitle(WindowManager.getUniqueName(imp.getTitle()));
+			imp2.show();
+			return;
+		}
 		Overlay overlay = imp.getOverlay();
 		Overlay roiManagerOverlay = null;
 		ImageCanvas ic = imp.getCanvas();

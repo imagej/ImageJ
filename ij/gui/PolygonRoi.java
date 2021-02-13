@@ -796,7 +796,7 @@ public class PolygonRoi extends Roi {
 			return;
 		}
 		super.mouseDownInHandle(handle, sx, sy); //sets state, activeHandle, previousSX&Y
-		int m = (int)(10.0/ic.getMagnification());
+		int m = ic!=null?(int)(10.0/ic.getMagnification()):1;
 		xClipMin=ox-m; yClipMin=oy-m; xClipMax=ox+m; yClipMax=oy+m;
 	}
 
