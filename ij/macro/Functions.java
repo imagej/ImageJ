@@ -6631,6 +6631,11 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getParens();
 			overlayClipboard = getImage().getOverlay();
 			return Double.NaN;
+		} else if (name.equals("update")) {
+			int index = (int)getArg();
+			checkIndex(index, 0, size-1);
+			overlay.set(imp.getRoi(), index);
+			return Double.NaN;
 		} else if (name.equals("removeSelection")||name.equals("removeRoi")) {
 			int index = (int)getArg();
 			checkIndex(index, 0, size-1);

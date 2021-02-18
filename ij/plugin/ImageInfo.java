@@ -87,7 +87,7 @@ public class ImageInfo implements PlugIn {
 			return info;
 	}
 
-	private String getExifData(ImagePlus imp) {
+	public String getExifData(ImagePlus imp) {
 		FileInfo fi = imp.getOriginalFileInfo();
 		if (fi==null)
 			return null;

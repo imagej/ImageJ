@@ -5,11 +5,18 @@
 </head>
 <body>
 
-<li> <u>1.53i8 13 February 2021</u>
+<li> <u>1.53i14 18 February 2021</u>
 <ul>
+<li> Thanks to Norbert Vischer, the current line number,
+or selection range, in Editor, Table or Log windows, 
+is displayed in the status bar. The total number of lines is
+displayed after Select All.
+<li> Thanks to Norbert Vischer, ImageJ now corrects the orientation of phone photos.
+This does not work on Fiji because it is missing Exif_Reader.jar.
 <li> Thanks to Jerome Mutterer, added the showStatus(message,options)
 macro function and the IJ.showStatus(message,options) method
  (<a href="http://wsr.imagej.net/macros/FlashingStatusMessages.txt">example</a>).
+<li> Added the Overlay.update(index) macro function. DOCUMENT
 <li> Added the ImagePlus.setBackgroundColor() method,
 used by <i>Image&gt;Color&gt;Split Channels</i> to
 colorize image borders.
@@ -20,6 +27,9 @@ is not displayed on the image window info line or in the <i>Image&gt;Show Info</
 window.
 <li> Thanks to Antoneta, fixed a bug with the <i>Flatten</i> command that caused
 multi-point selections on stacks to lose counter information.
+<li> Thanks to Herbie Gluender, fixed a bug that caused unexpected overlay
+entries after running the particle analyzer with the "Add to manager" option
+in a batch mode macro.
 <li> Thanks to Shayna Sosnowik, fixed a 1.53g regression that caused
 the "Properties..." command in the ROI Manager to not work as 
 exected when changing the stroke color. 

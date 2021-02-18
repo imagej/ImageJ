@@ -131,9 +131,9 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 		Point loc = e.getLocation();
 		int buttonSize = Toolbar.getButtonSize();
 		int width = IJ.getInstance().getSize().width;
-		openAsVirtualStack = width-loc.x<=buttonSize;
+		openAsVirtualStack = width-loc.x<=(buttonSize+buttonSize/3);
 		if (openAsVirtualStack)
-			IJ.showStatus("<<Open as Virtual Stack>>");
+			IJ.showStatus("<<Open as virtual stack or text image>>");
 		else
 			IJ.showStatus("<<Drag and Drop>>");
 	}

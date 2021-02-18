@@ -2641,10 +2641,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (imp==null)
 			return;
 		ImageCanvas ic = imp.getCanvas();
-		if (ic==null) {
-			imp.setOverlay(overlay);
+		if (ic==null)
 			return;
-		}
 		ic.setShowAllList(overlay);
 		imp.draw();
 	}

@@ -436,7 +436,7 @@ public class Opener {
 				imp = openTiff(u.openStream(), name);
 			} else if (lurl.endsWith(".zip"))
 				imp = openZipUsingUrl(u);
-			else if (lurl.endsWith(".jpg") || lurl.endsWith(".gif"))
+			else if (lurl.endsWith(".jpg") || lurl.endsWith(".jpeg") || lurl.endsWith(".gif"))
 				imp = openJpegOrGifUsingURL(name, u);
 			else if (lurl.endsWith(".dcm") || lurl.endsWith(".ima")) {
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", url);
@@ -661,6 +661,28 @@ public class Opener {
 			fi.fileName = name;
 			fi.directory = dir;
 			imp.setFileInfo(fi);
+		}
+		if (imp != null) {  // correct iPhone photo orientation (Norbert Vischer)
+			String exifText = new ImageInfo().getExifData(imp);
+			if (exifText != null) {
+				String[] lines = exifText.split("\n");
+				for (int jj = 0; jj < lines.length; jj++) {
+					int orientationIndex = lines[jj].indexOf("Orientation:");
+					int rotateIndex = lines[jj].indexOf("Rotate");
+					if (orientationIndex >= 0 && rotateIndex >= 0) {
+						String rest = lines[jj].substring(rotateIndex);
+						rest = rest.replace(")", " ");
+						String[] parts = rest.split(" ");
+						if (parts.length >= 2) {
+							double angle = Double.parseDouble(parts[1]);
+							if (angle == 90 || angle == 180 || angle == 270) {
+								imp.getProcessor().rotate(angle);
+							}
+							break;
+						}
+					}
+				}
+			}
 		}
 		return imp;
 	}

@@ -17,7 +17,7 @@ import ij.io.SaveDialog;
 
 /** This is a simple TextArea based editor for editing and compiling plugins. */
 public class Editor extends PlugInFrame implements ActionListener, ItemListener,
-	TextListener, KeyListener, ClipboardOwner, MacroConstants, Runnable, Debugger {
+	TextListener, KeyListener, MouseListener, ClipboardOwner, MacroConstants, Runnable, Debugger {
 	
 	/** ImportPackage statements added in front of scripts. Contains no 
 	newlines so that lines numbers in error messages are not changed. */
@@ -155,6 +155,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		ta.addKeyListener(this);
 		if (IJ.isLinux()) ta.setBackground(Color.white);
  		addKeyListener(IJ.getInstance());  // ImageJ handles keyboard shortcuts
+		ta.addMouseListener(this);  // ImageJ handles keyboard shortcuts
 		add(ta);
 		pack();
 		setFont();
@@ -1040,11 +1041,46 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			ta.setCaretPosition(ta.getCaretPosition());
 	}
 	
-	public void keyPressed(KeyEvent e) { 
-	} 
+	public void keyPressed(KeyEvent e) { } 	
+	public void mousePressed (MouseEvent e) {}
+	public void mouseExited (MouseEvent e) {}
+	public void mouseEntered (MouseEvent e) {}
 	
+	public void mouseReleased (MouseEvent e) {
+		showLinePos();
+	}
+	public void mouseClicked (MouseEvent e) {
+		showLinePos();
+	}
+
+	private void showLinePos() { // show line numbers in status bar (Norbert Vischer)
+		char[] chars = ta.getText().toCharArray();
+		if(chars.length > 1e6)
+				return;
+		int selStart = ta.getSelectionStart();
+		int selEnd = ta.getSelectionEnd();
+		int line=0;
+		int startLine = 1;
+		int endLine = 1;
+		for (int i=1; i<chars.length; i++) {
+			if (chars[i-1]=='\n') line++;
+			if (i==selStart)
+				startLine=line + 1; 
+			if (i<=selEnd)
+				endLine=line + 1; 
+			if (i>=selEnd)
+				break;
+		}
+		String msg = "Line " + startLine;
+		if (startLine != endLine) {
+			msg += "-" + endLine;
+		}
+		IJ.showStatus(msg);
+	}
+				
 	public void keyReleased(KeyEvent e) {
 		int pos = ta.getCaretPosition();
+		showLinePos();
 		if (insertSpaces && pos>0 && e.getKeyCode()==KeyEvent.VK_TAB) {
 			String spaces = " ";
 			for (int i=1; i<tabInc; i++)
