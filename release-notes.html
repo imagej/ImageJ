@@ -5,14 +5,21 @@
 </head>
 <body>
 
-<li> <u>1.53i14 18 February 2021</u>
+<li> <u>1.53i18 20 February 2021</u>
 <ul>
+<li> Thanks to Jerome Mutterer, added the "Apply LUTs"
+checkbox to the command finder.
 <li> Thanks to Norbert Vischer, the current line number,
 or selection range, in Editor, Table or Log windows, 
 is displayed in the status bar. The total number of lines is
-displayed after Select All.
-<li> Thanks to Norbert Vischer, ImageJ now corrects the orientation of phone photos.
-This does not work on Fiji because it is missing Exif_Reader.jar.
+displayed after <i>Select All</i>.
+<li> Thanks to Norbert Vischer, ImageJ now corrects the orientation of
+phone camera photos. This does not work on Fiji because it is
+missing Exif_Reader.jar.
+<li> Thanks to Peter Haub, the particle analyzer displays
+"ParticleAnalyzer: threshold has not set; assumed to be min-max"
+in the Log window if it was not called from a macro and a
+threshold was not set.
 <li> Thanks to Jerome Mutterer, added the showStatus(message,options)
 macro function and the IJ.showStatus(message,options) method
  (<a href="http://wsr.imagej.net/macros/FlashingStatusMessages.txt">example</a>).

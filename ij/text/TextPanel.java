@@ -830,6 +830,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	public void selectAll() {
 		if (selStart==0 && selEnd==iRowCount-1) {
 			resetSelection();
+			IJ.showStatus("");
 			return;
 		}
 		selStart = 0;
@@ -837,6 +838,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		selOrigin = 0;
 		tc.repaint();
 		selLine=-1;
+		showLinePos();
 	}
 
 	/** Clears the selection, if any. */

@@ -674,10 +674,18 @@ public class Opener {
 						rest = rest.replace(")", " ");
 						String[] parts = rest.split(" ");
 						if (parts.length >= 2) {
+							ImageProcessor ip = imp.getProcessor();
 							double angle = Double.parseDouble(parts[1]);
-							if (angle == 90 || angle == 180 || angle == 270) {
-								imp.getProcessor().rotate(angle);
-							}
+							ImageProcessor ip2 = null;
+							if (angle == 90)
+								ip2 = ip.rotateRight();
+							else if (angle == 180) {
+								ip2 = ip.rotateRight();
+								ip2 = ip2.rotateRight();
+							} else if (angle == 270)
+								ip2 = ip.rotateLeft();
+							if (ip2!=null)
+								imp.setProcessor(ip2);
 							break;
 						}
 					}

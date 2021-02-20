@@ -801,9 +801,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			ImageStatistics stats = imp.getStatistics();
 			if (imageType!=BYTE || (stats.histogram[0]+stats.histogram[255]!=stats.pixelCount)) {
 				IJ.error("Particle Analyzer",
-					"A thresholded image or 8-bit binary image is\n"
-					+"required. Threshold levels can be set using\n"
-					+"the Image->Adjust->Threshold tool.");
+					"A threshold has not been set using the\n"
+					+"Image->Adjust->Threshold tool or the \n"
+					+"setThreshold(min,max) macro function.");
 				canceled = true;
 				return false;
 			}
@@ -819,6 +819,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				level2 = 0;
 				fillColor = 192;
 			}
+			if (!IJ.isMacro())
+				IJ.log("ParticleAnalyzer: threshold not set; assumed to be "+(int)level1+"-"+(int)level2);
 		} else {
 			level1 = t1;
 			level2 = t2;

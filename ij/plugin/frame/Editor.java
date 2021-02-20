@@ -1062,7 +1062,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		int line=0;
 		int startLine = 1;
 		int endLine = 1;
-		for (int i=1; i<chars.length; i++) {
+		for (int i=1; i<=chars.length; i++) {
 			if (chars[i-1]=='\n') line++;
 			if (i==selStart)
 				startLine=line + 1; 
@@ -1604,6 +1604,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 
 	void selectAll() {
 		ta.selectAll();
+		showLinePos();
 	}
     
     void changeFontSize(boolean larger) {

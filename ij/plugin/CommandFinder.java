@@ -23,9 +23,11 @@
  */
 
 package ij.plugin;
+
 import ij.*;
 import ij.text.*;
 import ij.plugin.frame.Editor;
+import ij.process.ImageProcessor;
 import ij.gui.GUI;
 import ij.gui.HTMLDialog;
 import java.awt.*;
@@ -36,7 +38,6 @@ import javax.swing.*;
 import javax.swing.table.*;
 import javax.swing.event.*;
 import javax.swing.event.DocumentEvent;
-
 
 public class CommandFinder implements PlugIn, ActionListener, WindowListener, KeyListener, ItemListener, MouseListener {
 
@@ -49,17 +50,19 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	private JScrollPane scrollPane;
 	private JButton runButton, sourceButton, closeButton, commandsButton, helpButton;
 	private JCheckBox closeCheckBox;
+	private JCheckBox lutCheckBox;
 	private Hashtable commandsHash;
-	private String [] commands;
+	private String[] commands;
 	private static boolean closeWhenRunning = Prefs.get("command-finder.close", false);
+	private static boolean applyLUT;  //= Prefs.get("command-finder.lut", false);
 	private JTable table;
 	private TableModel tableModel;
 	private int lastClickedRow;
 
 	public CommandFinder() {
-		Toolkit toolkit=Toolkit.getDefaultToolkit();
-		Integer interval=(Integer)toolkit.getDesktopProperty("awt.multiClickInterval");
-		if (interval==null)
+		Toolkit toolkit = Toolkit.getDefaultToolkit();
+		Integer interval = (Integer) toolkit.getDesktopProperty("awt.multiClickInterval");
+		if (interval == null)
 			// Hopefully 300ms is a sensible default when the property
 			// is not available.
 			multiClickInterval = 300;
@@ -73,11 +76,13 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 			this.menuItem = menuItem;
 			this.menuLocation = menuLocation;
 		}
+
 		String classCommand;
 		MenuItem menuItem;
 		String menuLocation;
+
 		public String toString() {
-			return "classCommand: " + classCommand + ", menuItem: "+menuItem+", menuLocation: "+menuLocation;
+			return "classCommand: " + classCommand + ", menuItem: " + menuItem + ", menuLocation: " + menuLocation;
 		}
 	}
 
@@ -98,15 +103,15 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		String substring = matchingSubstring.toLowerCase();
 		ArrayList list = new ArrayList();
 		int count = 0;
-		for (int i=0; i<commands.length; ++i) {
+		for (int i = 0; i < commands.length; ++i) {
 			String commandName = commands[i];
 			String command = commandName.toLowerCase();
-			CommandAction ca = (CommandAction)commandsHash.get(commandName);
+			CommandAction ca = (CommandAction) commandsHash.get(commandName);
 			String menuPath = ca.menuLocation;
-			if (menuPath==null)
+			if (menuPath == null)
 				menuPath = "";
 			menuPath = menuPath.toLowerCase();
-			if (command.indexOf(substring)>=0 || menuPath.indexOf(substring)>=0) {
+			if (command.indexOf(substring) >= 0 || menuPath.indexOf(substring) >= 0) {
 				String[] row = makeRow(commandName, ca);
 				list.add(row);
 			}
@@ -117,16 +122,16 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 	public void actionPerformed(ActionEvent ae) {
 		Object source = ae.getSource();
-		if (source==runButton) {
+		if (source == runButton) {
 			int row = table.getSelectedRow();
-			if (row<0) {
+			if (row < 0) {
 				error("Please select a command to run");
 				return;
 			}
 			runCommand(tableModel.getCommand(row));
-		} else if (source==sourceButton) {
+		} else if (source == sourceButton) {
 			int row = table.getSelectedRow();
-			if (row<0) {
+			if (row < 0) {
 				error("Please select a command");
 				return;
 			}
@@ -136,87 +141,98 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		} else if (source == commandsButton) {
 			IJ.doCommand("Commands...");
 		} else if (source == helpButton) {
-			String text = "<html>Shortcuts:<br>"
-				+ "&emsp;&uarr; &darr;&ensp; Select items<br>"
-				+ "&emsp;&crarr;&emsp; Open item<br>"
-				+ "&ensp;A-Z&ensp; Alphabetic scroll<br>"
-				+ "&emsp;&#9003;&emsp;Activate search field</html>";
+			String text = "<html>Shortcuts:<br>" + "&emsp;&uarr; &darr;&ensp; Select items<br>"
+					+ "&emsp;&crarr;&emsp; Open item<br>" + "&ensp;A-Z&ensp; Alphabetic scroll<br>"
+					+ "&emsp;&#9003;&emsp;Activate search field</html>";
 			new HTMLDialog("", text);
 		}
 	}
 
 	public void itemStateChanged(ItemEvent ie) {
 		populateList(prompt.getText());
+		applyLUT = lutCheckBox.isSelected();
+		if (applyLUT)
+			prompt.setText("Lookup Tables");
 	}
 
 	public void mouseClicked(MouseEvent e) {
-		long now=System.currentTimeMillis();
+		long now = System.currentTimeMillis();
 		int row = table.getSelectedRow();
 		// Is this fast enough to be a double-click?
-		long thisClickInterval = now-lastClickTime;
-		if (thisClickInterval<multiClickInterval) {
-			if (row>=0 && lastClickedRow>=0 && row==lastClickedRow)
+		long thisClickInterval = now - lastClickTime;
+		if (thisClickInterval < multiClickInterval) {
+			if (row >= 0 && lastClickedRow >= 0 && row == lastClickedRow)
 				runCommand(tableModel.getCommand(row));
 		}
 		lastClickTime = now;
 		lastClickedRow = row;
+		if (lutCheckBox.isSelected())
+			previewLUT();
+
 	}
 
-	public void mousePressed(MouseEvent e) {}
-	public void mouseReleased(MouseEvent e) {}
-	public void mouseEntered(MouseEvent e) {}
-	public void mouseExited(MouseEvent e) {}
-	
+	public void mousePressed(MouseEvent e) {
+	}
+
+	public void mouseReleased(MouseEvent e) {
+	}
+
+	public void mouseEntered(MouseEvent e) {
+	}
+
+	public void mouseExited(MouseEvent e) {
+	}
+
 	void showSource(String cmd) {
 		if (showMacro(cmd))
 			return;
 		Hashtable table = Menus.getCommands();
-		String className = (String)table.get(cmd);
+		String className = (String) table.get(cmd);
 		if (IJ.debugMode)
-			IJ.log("showSource: "+cmd+"   "+className);
-		if (className==null) {
-			error("No source associated with this command:\n  "+cmd);
+			IJ.log("showSource: " + cmd + "   " + className);
+		if (className == null) {
+			error("No source associated with this command:\n  " + cmd);
 			return;
 		}
 		int mstart = className.indexOf("ij.plugin.Macro_Runner(\"");
-		if (mstart>=0) { // macro or script
+		if (mstart >= 0) { // macro or script
 			int mend = className.indexOf("\")");
-			if (mend==-1)
+			if (mend == -1)
 				return;
-			String macro = className.substring(mstart+24,mend);
-			IJ.open(IJ.getDirectory("plugins")+macro);
+			String macro = className.substring(mstart + 24, mend);
+			IJ.open(IJ.getDirectory("plugins") + macro);
 			return;
 		}
 		if (className.endsWith("\")")) {
 			int openParen = className.lastIndexOf("(\"");
-			if (openParen>0)
+			if (openParen > 0)
 				className = className.substring(0, openParen);
 		}
 		if (className.startsWith("ij.")) {
 			className = className.replaceAll("\\.", "/");
-			IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+"/source/"+className+".java");
+			IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL + "/source/" + className + ".java");
 			return;
 		}
-		className = IJ.getDirectory("plugins")+className.replaceAll("\\.","/");
-		String path = className+".java";
+		className = IJ.getDirectory("plugins") + className.replaceAll("\\.", "/");
+		String path = className + ".java";
 		File f = new File(path);
 		if (f.exists()) {
 			IJ.open(path);
 			return;
 		}
-		error("Unable to display source for this plugin:\n  "+className);
+		error("Unable to display source for this plugin:\n  " + className);
 	}
-	
+
 	private boolean showMacro(String cmd) {
 		String name = null;
 		if (cmd.equals("Display LUTs"))
 			name = "ShowAllLuts.txt";
 		else if (cmd.equals("Search..."))
 			name = "Search.txt";
-		if (name==null)
+		if (name == null)
 			return false;
 		String code = BatchProcessor.openMacroFromJar(name);
-		if (code!=null) {
+		if (code != null) {
 			Editor ed = new Editor();
 			ed.setSize(700, 600);
 			ed.create(name, code);
@@ -230,7 +246,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	}
 
 	protected void runCommand(String command) {
-		IJ.showStatus("Running command "+command);
+		IJ.showStatus("Running command " + command);
 		IJ.doCommand(command);
 		closeWhenRunning = closeCheckBox.isSelected();
 		if (closeWhenRunning)
@@ -242,49 +258,55 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		int flags = ke.getModifiers();
 		int items = tableModel.getRowCount();
 		Object source = ke.getSource();
-		boolean meta = ((flags&KeyEvent.META_MASK) != 0) || ((flags&KeyEvent.CTRL_MASK) != 0);
-		if (key==KeyEvent.VK_ESCAPE || (key==KeyEvent.VK_W&&meta)) {
+		boolean meta = ((flags & KeyEvent.META_MASK) != 0) || ((flags & KeyEvent.CTRL_MASK) != 0);
+		if (key == KeyEvent.VK_ESCAPE || (key == KeyEvent.VK_W && meta)) {
 			closeWindow();
-		} else if (source==prompt) {
-			/* If you hit enter in the text field, and
-			   there's only one command that matches, run
-			   that: */
-			if (key==KeyEvent.VK_ENTER) {
-				if (1==items)
+		} else if (source == prompt) {
+			/*
+			 * If you hit enter in the text field, and there's only one command
+			 * that matches, run that:
+			 */
+			if (key == KeyEvent.VK_ENTER) {
+				if (1 == items)
 					runCommand(tableModel.getCommand(0));
 			}
-			/* If you hit the up or down arrows in the
-			   text field, move the focus to the
-			   table and select the row at the
-			   bottom or top. */
+			/*
+			 * If you hit the up or down arrows in the text field, move the
+			 * focus to the table and select the row at the bottom or top.
+			 */
 			int index = -1;
-			if (key==KeyEvent.VK_UP) {
+			if (key == KeyEvent.VK_UP) {
 				index = table.getSelectedRow() - 1;
-				if (index<0)
+				if (index < 0)
 					index = items - 1;
-			} else if (key==KeyEvent.VK_DOWN) {
+			} else if (key == KeyEvent.VK_DOWN) {
 				index = table.getSelectedRow() + 1;
-				if (index>=items)
-					index = Math.min(items-1, 0);
+				if (index >= items)
+					index = Math.min(items - 1, 0);
 			}
-			if (index>=0) {
+			if (index >= 0) {
 				table.requestFocus();
-				//completions.ensureIndexIsVisible(index);
+				// completions.ensureIndexIsVisible(index);
 				table.setRowSelectionInterval(index, index);
 			}
-		} else if (key==KeyEvent.VK_BACK_SPACE || key==KeyEvent.VK_DELETE) {
-			/* If someone presses backspace or delete they probably
-			   want to remove the last letter from the search string, so
-			   switch the focus back to the prompt: */
+		} else if (key == KeyEvent.VK_BACK_SPACE || key == KeyEvent.VK_DELETE) {
+			/*
+			 * If someone presses backspace or delete they probably want to
+			 * remove the last letter from the search string, so switch the
+			 * focus back to the prompt:
+			 */
 			prompt.requestFocus();
-		} else if (source==table) {
-			/* If you hit enter with the focus in the table, run the selected command */
-			if (key==KeyEvent.VK_ENTER) {
+		} else if (source == table) {
+			/*
+			 * If you hit enter with the focus in the table, run the selected
+			 * command
+			 */
+			if (key == KeyEvent.VK_ENTER) {
 				ke.consume();
 				int row = table.getSelectedRow();
-				if (row>=0)
+				if (row >= 0)
 					runCommand(tableModel.getCommand(row));
-			/* Loop through the list using the arrow keys */
+				/* Loop through the list using the arrow keys */
 			} else if (key == KeyEvent.VK_UP) {
 				if (table.getSelectedRow() == 0)
 					table.setRowSelectionInterval(tableModel.getRowCount() - 1, tableModel.getRowCount() - 1);
@@ -295,76 +317,110 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		}
 	}
 
-	public void keyReleased(KeyEvent ke) { }
+	public void keyReleased(KeyEvent ke) {
+		if (lutCheckBox.isSelected())
+			previewLUT();
+	}
 
-	public void keyTyped(KeyEvent ke) { }
+	public void previewLUT() {
+		int row = table.getSelectedRow();
+		if (row >= 0) {
+			String cmd = tableModel.getCommand(row);
+			String mPath = (String) tableModel.getValueAt(row, 1);
+			String cName = (String) tableModel.getValueAt(row, 2);
+			if ((mPath.indexOf("Lookup Table") > 0) && ((null == cName) || (cName.indexOf("LutLoader") > 0))) {
+				ImagePlus imp = WindowManager.getCurrentImage();
+				if (null == imp) {
+					imp = IJ.createImage("LUT Preview", "8-bit ramp", 256, 32, 1);
+					imp.show();
+				}
+				if (imp.getBitDepth() != 24) {
+					if (imp.isComposite())
+						((CompositeImage)imp).setChannelColorModel(LutLoader.getLut(cmd));
+					else{
+					ImageProcessor ip = imp.getProcessor();
+					ip.setColorModel(LutLoader.getLut(cmd));
+					}
+					imp.updateAndDraw();
+				}
+			}
+		}
+	}
+
+	public void keyTyped(KeyEvent ke) {
+	}
 
 	class PromptDocumentListener implements DocumentListener {
 		public void insertUpdate(DocumentEvent e) {
 			populateList(prompt.getText());
 		}
+
 		public void removeUpdate(DocumentEvent e) {
 			populateList(prompt.getText());
 		}
+
 		public void changedUpdate(DocumentEvent e) {
 			populateList(prompt.getText());
 		}
 	}
 
-	/* This function recurses down through a menu, adding to
-	   commandsHash the location and MenuItem of any items it
-	   finds that aren't submenus. */
+	/*
+	 * This function recurses down through a menu, adding to commandsHash the
+	 * location and MenuItem of any items it finds that aren't submenus.
+	 */
 
 	public void parseMenu(String path, Menu menu) {
-		int n=menu.getItemCount();
-		for (int i=0; i<n; ++i) {
-			MenuItem m=menu.getItem(i);
-			String label=m.getActionCommand();
+		int n = menu.getItemCount();
+		for (int i = 0; i < n; ++i) {
+			MenuItem m = menu.getItem(i);
+			String label = m.getActionCommand();
 			if (m instanceof Menu) {
-				Menu subMenu=(Menu)m;
-				parseMenu(path+">"+label,subMenu);
+				Menu subMenu = (Menu) m;
+				parseMenu(path + ">" + label, subMenu);
 			} else {
 				String trimmedLabel = label.trim();
-				if (trimmedLabel.length()==0 || trimmedLabel.equals("-"))
+				if (trimmedLabel.length() == 0 || trimmedLabel.equals("-"))
 					continue;
-				CommandAction ca=(CommandAction)commandsHash.get(label);
-				if( ca == null )
-					commandsHash.put(label, new CommandAction(null,m,path));
+				CommandAction ca = (CommandAction) commandsHash.get(label);
+				if (ca == null)
+					commandsHash.put(label, new CommandAction(null, m, path));
 				else {
-					ca.menuItem=m;
-					ca.menuLocation=path;
+					ca.menuItem = m;
+					ca.menuLocation = path;
 				}
-				CommandAction caAfter=(CommandAction)commandsHash.get(label);
+				CommandAction caAfter = (CommandAction) commandsHash.get(label);
 			}
 		}
 	}
 
-	/* Finds all the top level menus from the menu bar and
-	   recurses down through each. */
+	/*
+	 * Finds all the top level menus from the menu bar and recurses down through
+	 * each.
+	 */
 
 	public void findAllMenuItems() {
 		MenuBar menuBar = Menus.getMenuBar();
 		int topLevelMenus = menuBar.getMenuCount();
-		for (int i=0; i<topLevelMenus; ++i) {
-			Menu topLevelMenu=menuBar.getMenu(i);
+		for (int i = 0; i < topLevelMenus; ++i) {
+			Menu topLevelMenu = menuBar.getMenu(i);
 			parseMenu(topLevelMenu.getLabel(), topLevelMenu);
 		}
 	}
 
 	/**
-	 * Displays the Command Finder dialog. If a Command Finder window is
-	 * already being displayed and <tt>initialSearch</tt> contains a valid
-	 * query, it will be closed and a new one displaying the new search
-	 * will be rebuilt at the same screen location.
+	 * Displays the Command Finder dialog. If a Command Finder window is already
+	 * being displayed and <tt>initialSearch</tt> contains a valid query, it
+	 * will be closed and a new one displaying the new search will be rebuilt at
+	 * the same screen location.
 	 *
 	 * @param initialSearch
 	 *            The search string that populates Command Finder's search
-	 *            field. It is ignored if contains an invalid query (ie, if
-	 *            it is either <tt>null</tt> or <tt>empty</tt>).
+	 *            field. It is ignored if contains an invalid query (ie, if it
+	 *            is either <tt>null</tt> or <tt>empty</tt>).
 	 */
 	public void run(String initialSearch) {
-		if (frame!=null) {
-			if (initialSearch!=null && !initialSearch.isEmpty()) {
+		if (frame != null) {
+			if (initialSearch != null && !initialSearch.isEmpty()) {
 				frame.dispose(); // Rebuild dialog with new search string
 			} else {
 				WindowManager.toFront(frame);
@@ -373,29 +429,31 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		}
 		commandsHash = new Hashtable();
 
-		/* Find the "normal" commands; those which are
-		   registered plugins: */
-		Hashtable realCommandsHash = (Hashtable)(ij.Menus.getCommands().clone());
+		/*
+		 * Find the "normal" commands; those which are registered plugins:
+		 */
+		Hashtable realCommandsHash = (Hashtable) (ij.Menus.getCommands().clone());
 		Set realCommandSet = realCommandsHash.keySet();
-		for (Iterator i = realCommandSet.iterator();
-		     i.hasNext();) {
-			String command = (String)i.next();
+		for (Iterator i = realCommandSet.iterator(); i.hasNext();) {
+			String command = (String) i.next();
 			// Some of these are whitespace only or separators - ignore them:
 			String trimmedCommand = command.trim();
-			if (trimmedCommand.length()>0 && !trimmedCommand.equals("-")) {
-				commandsHash.put(command,
-						 new CommandAction((String)realCommandsHash.get(command), null, null));
+			if (trimmedCommand.length() > 0 && !trimmedCommand.equals("-")) {
+				commandsHash.put(command, new CommandAction((String) realCommandsHash.get(command), null, null));
 			}
 		}
 
-		/* There are some menu items that don't correspond to
-		   plugins, such as those added by RefreshScripts, so
-		   look through all the menus as well: */
+		/*
+		 * There are some menu items that don't correspond to plugins, such as
+		 * those added by RefreshScripts, so look through all the menus as well:
+		 */
 		findAllMenuItems();
 
-		/* Sort the commands, generate list labels for each
-		   and put them into a hash: */
-		commands = (String[])commandsHash.keySet().toArray(new String[0]);
+		/*
+		 * Sort the commands, generate list labels for each and put them into a
+		 * hash:
+		 */
+		commands = (String[]) commandsHash.keySet().toArray(new String[0]);
 		Arrays.sort(commands);
 
 		/* The code below just constructs the dialog: */
@@ -406,9 +464,11 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 					WindowManager.addWindow(this);
 				super.setVisible(visible);
 			}
+
 			public void dispose() {
 				WindowManager.removeWindow(this);
 				Prefs.set("command-finder.close", closeWhenRunning);
+				//Prefs.set("command-finder.lut", applyLUT);
 				frame = null;
 				super.dispose();
 			}
@@ -416,16 +476,22 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		Container contentPane = frame.getContentPane();
 		contentPane.setLayout(new BorderLayout());
 		frame.addWindowListener(this);
-		if (imageJ!=null && !IJ.isMacOSX()) {
+		if (imageJ != null && !IJ.isMacOSX()) {
 			Image img = imageJ.getIconImage();
-			if (img!=null)
-				try {frame.setIconImage(img);} catch (Exception e) {}
+			if (img != null)
+				try {
+					frame.setIconImage(img);
+				} catch (Exception e) {
+				}
 		}
-
 
 		closeCheckBox = new JCheckBox("Close window after running command", closeWhenRunning);
 		GUI.scale(closeCheckBox);
 		closeCheckBox.addItemListener(this);
+
+		lutCheckBox = new JCheckBox("Apply LUTs", applyLUT);
+		GUI.scale(lutCheckBox);
+		lutCheckBox.addItemListener(this);
 
 		JPanel northPanel = new JPanel(new BorderLayout());
 		JLabel searchLabel = new JLabel(" Search:");
@@ -441,14 +507,14 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 		tableModel = new TableModel();
 		table = new JTable(tableModel);
-		//table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		// table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.setRowSelectionAllowed(true);
 		table.setColumnSelectionAllowed(false);
-		//table.setAutoCreateRowSorter(true);
+		// table.setAutoCreateRowSorter(true);
 		tableModel.setColumnWidths(table.getColumnModel());
 		GUI.scale(table);
 
-		Dimension dim = new Dimension(TABLE_WIDTH, table.getRowHeight()*TABLE_ROWS);
+		Dimension dim = new Dimension(TABLE_WIDTH, table.getRowHeight() * TABLE_ROWS);
 		table.setPreferredScrollableViewportSize(dim);
 		table.addKeyListener(this);
 		table.addMouseListener(this);
@@ -464,7 +530,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 					return; // Ignore searches for non alpha-numeric characters
 				}
 				final int sRow = table.getSelectedRow();
-				for (int row = (sRow+1) % nRows; row != sRow; row = (row+1) % nRows) {
+				for (int row = (sRow + 1) % nRows; row != sRow; row = (row + 1) % nRows) {
 					final String rowData = tableModel.getValueAt(row, 0).toString();
 					final char rowCh = Character.toLowerCase(rowData.charAt(0));
 					if (ch == rowCh) {
@@ -477,7 +543,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		});
 
 		scrollPane = new JScrollPane(table);
-		if (initialSearch==null)
+		if (initialSearch == null)
 			initialSearch = "";
 		prompt.setText(initialSearch);
 		populateList(initialSearch);
@@ -509,6 +575,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 		JPanel optionsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
 		optionsPanel.add(closeCheckBox);
+		optionsPanel.add(lutCheckBox);
 
 		JPanel buttonsPanel = new JPanel();
 		buttonsPanel.add(runButton);
@@ -532,18 +599,18 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		Point pos = imageJ.getLocationOnScreen();
 		Dimension size = imageJ.getSize();
 
-		/* Generally try to position the dialog slightly
-		   offset from the main ImageJ window, but if that
-		   would push the dialog off to the screen to any
-		   side, adjust it so that it's on the screen.
-		*/
+		/*
+		 * Generally try to position the dialog slightly offset from the main
+		 * ImageJ window, but if that would push the dialog off to the screen to
+		 * any side, adjust it so that it's on the screen.
+		 */
 		int initialX = pos.x + 10;
 		int initialY = pos.y + 10 + size.height;
-		
-		initialX = Math.max(screen.x, Math.min(initialX, screen.x+screen.width-dialogWidth));
-		initialY = Math.max(screen.y, Math.min(initialY, screen.y+screen.height-dialogHeight));
-		
-		frame.setLocation(initialX,initialY);
+
+		initialX = Math.max(screen.x, Math.min(initialX, screen.x + screen.width - dialogWidth));
+		initialY = Math.max(screen.y, Math.min(initialY, screen.y + screen.height - dialogHeight));
+
+		frame.setLocation(initialX, initialY);
 		frame.setVisible(true);
 		frame.toFront();
 	}
@@ -552,24 +619,32 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	public void windowClosing(WindowEvent e) {
 		closeWindow();
 	}
-	
+
 	private void closeWindow() {
-		if (frame!=null)
+		if (frame != null)
 			frame.dispose();
 	}
 
 	public void windowActivated(WindowEvent e) {
-		if (IJ.isMacOSX() && frame!=null)
+		if (IJ.isMacOSX() && frame != null)
 			frame.setMenuBar(Menus.getMenuBar());
 	}
-	
-	public void windowDeactivated(WindowEvent e) { }
-	public void windowClosed(WindowEvent e) { }
-	public void windowOpened(WindowEvent e) { }
-	public void windowIconified(WindowEvent e) { }
-	public void windowDeiconified(WindowEvent e) { }
-	
-	
+
+	public void windowDeactivated(WindowEvent e) {
+	}
+
+	public void windowClosed(WindowEvent e) {
+	}
+
+	public void windowOpened(WindowEvent e) {
+	}
+
+	public void windowIconified(WindowEvent e) {
+	}
+
+	public void windowDeiconified(WindowEvent e) {
+	}
+
 	private class TableModel extends AbstractTableModel {
 		protected ArrayList list;
 		public final static int COLUMNS = 4;
@@ -589,10 +664,14 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 		public String getColumnName(int column) {
 			switch (column) {
-				case 0: return "Command";
-				case 1: return "Menu Path";
-				case 2: return "Class";
-				case 3: return "File";
+			case 0:
+				return "Command";
+			case 1:
+				return "Menu Path";
+			case 2:
+				return "Class";
+			case 3:
+				return "File";
 			}
 			return null;
 		}
@@ -602,22 +681,22 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		}
 
 		public Object getValueAt(int row, int column) {
-			if (row>=list.size() || column>=COLUMNS)
+			if (row >= list.size() || column >= COLUMNS)
 				return null;
-			String[] strings = (String[])list.get(row);
+			String[] strings = (String[]) list.get(row);
 			return strings[column];
 		}
-		
+
 		public String getCommand(int row) {
-			if (row<0 || row>=list.size())
+			if (row < 0 || row >= list.size())
 				return "";
 			else
-				return (String)getValueAt(row, 0);
+				return (String) getValueAt(row, 0);
 		}
 
 		public void setColumnWidths(TableColumnModel columnModel) {
-			int[] widths = {170, 150, 170, 30};
-			for (int i=0; i<widths.length; i++)
+			int[] widths = { 170, 150, 170, 30 };
+			for (int i = 0; i < widths.length; i++)
 				columnModel.getColumn(i).setPreferredWidth(widths[i]);
 		}
 
