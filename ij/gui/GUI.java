@@ -244,7 +244,7 @@ public class GUI {
 		if (component instanceof JTable)
 			((JTable) component).setRowHeight((int) (((JTable) component).getRowHeight() * guiScale * 0.9));
 		else if (component instanceof JList)
-			((JList<?>) component).setFixedCellHeight((int) (((JList<?>) component).getFixedCellHeight() * guiScale * 0.9));
+			((JList) component).setFixedCellHeight((int) (((JList) component).getFixedCellHeight() * guiScale * 0.9));
 		component.setFont(font.deriveFont((float) guiScale * font.getSize()));
 		return true;
 	}
