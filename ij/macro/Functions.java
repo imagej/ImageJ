@@ -3277,7 +3277,7 @@ public class Functions implements MacroConstants, Measurements {
 			if (!others) {
 				//S c a n   N o n - i m a g e s
 				Window[] windows = WindowManager.getAllNonImageWindows();
-				String[] textExtension = ".txt .ijm .js .java .py .bs .csv".split(" ");
+				String[] textExtension = ".txt .ijm .js .java .py .bs .csv .tsv".split(" ");
 				boolean isTextPattern = false;
 				for (int jj = 0; jj < textExtension.length; jj++) {
 					isTextPattern |= pattern.endsWith(textExtension[jj]);

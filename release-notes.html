@@ -5,10 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.53i18 20 February 2021</u>
+<li> <u>1.53i21 23 February 2021</u>
 <ul>
-<li> Thanks to Jerome Mutterer, added the "Apply LUTs"
-checkbox to the command finder.
+<li> Thanks to Jerome Mutterer, added the
+ "Apply LUTs" checkbox to the command finder
+(<i>Plugins&gt;Utilities&gt;Find Commands</i>).
 <li> Thanks to Norbert Vischer, the current line number,
 or selection range, in Editor, Table or Log windows, 
 is displayed in the status bar. The total number of lines is
@@ -37,9 +38,13 @@ multi-point selections on stacks to lose counter information.
 <li> Thanks to Herbie Gluender, fixed a bug that caused unexpected overlay
 entries after running the particle analyzer with the "Add to manager" option
 in a batch mode macro.
+<li> Thanks to Norbert Vischer, fixed a bug that caused the string functions
+added in ImageJ 1.52t (s.contains(), s.endsWith(), s.indexOf(), s.lastIndexOf(),
+s.lengths.startsWith()) to return a string instead of a number when used
+in an assignment statement.
 <li> Thanks to Shayna Sosnowik, fixed a 1.53g regression that caused
 the "Properties..." command in the ROI Manager to not work as 
-exected when changing the stroke color. 
+expected when changing the stroke color. 
 </ul>
 
 <li> <u>1.53h 04 February 2021</u>

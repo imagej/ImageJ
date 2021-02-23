@@ -16,8 +16,9 @@ import java.io.PrintWriter;
 /** This is the recursive descent parser/interpreter for the ImageJ macro language. */
 public class Interpreter implements MacroConstants {
 
-	static final int STACK_SIZE=1000;
-	static final int MAX_ARGS=20;
+	static final int STACK_SIZE = 1000;
+	static final int MAX_ARGS = 20;
+	private static final int NUMERIC_STRING_FUNCTION = 99;
 
 	int pc;
 	int token;
@@ -352,7 +353,7 @@ public class Interpreter implements MacroConstants {
 	}
 	
 	private void doStringFunction() {
-		boolean stringFunction = (pgm.code[pc+2]&0xff)==136;
+		boolean stringFunction = (pgm.code[pc+2]&0xff)==STRING_FUNCTION;
 		putTokenBack();
 		String s = stringFunction?getString():""+getExpression();
 		if (s.endsWith(".0"))
@@ -831,7 +832,6 @@ public class Interpreter implements MacroConstants {
 			case Variable.STRING: doStringAssignment(); break;
 			case Variable.ARRAY: doArrayAssignment(); break;
 			case USER_FUNCTION: doUserFunctionAssignment(); break;
-			case STRING_FUNCTION: doNumericStringAssignment(); break;
 			default:
 				putTokenBack();
 				double value = getAssignmentExpression();
@@ -885,8 +885,14 @@ public class Interpreter implements MacroConstants {
 		if (v==null)
 			return Variable.VALUE;
 		int type = v.getType();
-		if (type!=Variable.ARRAY)
-			return type;
+		if (type==Variable.VALUE)
+			return Variable.VALUE;
+		else if (type==Variable.STRING) {
+			if (isString(pc+2))
+				return Variable.STRING;
+			else 
+				return Variable.VALUE;
+		}
 		if (pgm.code[pc+3]=='.')
 			return Variable.VALUE;		
 		if (pgm.code[pc+3]!='[')
@@ -1188,13 +1194,17 @@ public class Interpreter implements MacroConstants {
 		if ((tok&TOK_MASK)!=WORD)
 			return false;
 		Variable v = lookupVariable(tok>>TOK_SHIFT);
-		if (v==null) return false;
+		if (v==null)
+			return false;
 		if (pgm.code[pcLoc+1]=='[') {
 			Variable[] array = v.getArray();
 			if (array!=null && array.length>0)
 				return array[0].getType()==Variable.STRING;
 		}
-		return v.getType()==Variable.STRING;
+		int type = v.getType();
+		if (type==Variable.STRING && (pgm.code[pcLoc+1]&0xff)=='.' && (pgm.code[pcLoc+2]&0xff)!=STRING_FUNCTION)
+			return false;
+		return type==Variable.STRING;
 	}
 
 	double compareStrings(String s1, String s2, int op) {
@@ -1464,49 +1474,49 @@ public class Interpreter implements MacroConstants {
 		Variable v;
 		getToken();
 		switch (token) {
-		case STRING_CONSTANT:
-			str = tokenString;
-			break;
-		case STRING_FUNCTION:
-			str = func.getStringFunction(pgm.table[tokenAddress].type);
-			break;
-		case VARIABLE_FUNCTION:		
-			if (!isString(pc)) {
+			case STRING_CONSTANT:
+				str = tokenString;
+				break;
+			case STRING_FUNCTION:
+				str = func.getStringFunction(pgm.table[tokenAddress].type);
+				break;
+			case VARIABLE_FUNCTION:		
+				if (!isString(pc)) {
+					putTokenBack();
+					str = toString(getStringExpression());
+					break;
+				}
+				v = func.getVariableFunction(pgm.table[tokenAddress].type);
+				str = v.getString();
+				if (str==null) {
+					double value = v.getValue();
+					if ((int)value==value)
+						str = IJ.d2s(value,0);
+					else
+						str = ""+value;
+				}
+				break;
+			case USER_FUNCTION:
+				v = runUserFunction();
+				if (v==null)
+					error("No return value");
+				str = v.getString();
+				if (str==null) {
+					double value = v.getValue();
+					if ((int)value==value)
+						str = IJ.d2s(value,0);
+					else
+						str = ""+value;
+				}
+				break;
+			case WORD:
+				str = lookupStringVariable();
+				if (str!=null)
+					break;
+				// else fall through
+			default:
 				putTokenBack();
 				str = toString(getStringExpression());
-				break;
-			}
-			v = func.getVariableFunction(pgm.table[tokenAddress].type);
-			str = v.getString();
-			if (str==null) {
-				double value = v.getValue();
-				if ((int)value==value)
-					str = IJ.d2s(value,0);
-				else
-					str = ""+value;
-			}
-			break;
-		case USER_FUNCTION:
-			v = runUserFunction();
-			if (v==null)
-				error("No return value");
-			str = v.getString();
-			if (str==null) {
-				double value = v.getValue();
-				if ((int)value==value)
-					str = IJ.d2s(value,0);
-				else
-					str = ""+value;
-			}
-			break;
-		case WORD:
-			str = lookupStringVariable();
-			if (str!=null)
-				break;
-			// else fall through
-		default:
-			putTokenBack();
-			str = toString(getStringExpression());
 		}
 		return str;
 	}

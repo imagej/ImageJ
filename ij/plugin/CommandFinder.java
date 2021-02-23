@@ -54,7 +54,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	private Hashtable commandsHash;
 	private String[] commands;
 	private static boolean closeWhenRunning = Prefs.get("command-finder.close", false);
-	private static boolean applyLUT;  //= Prefs.get("command-finder.lut", false);
+	private static boolean applyLUT; 
 	private JTable table;
 	private TableModel tableModel;
 	private int lastClickedRow;
@@ -337,9 +337,10 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 				if (imp.getBitDepth() != 24) {
 					if (imp.isComposite())
 						((CompositeImage)imp).setChannelColorModel(LutLoader.getLut(cmd));
-					else{
-					ImageProcessor ip = imp.getProcessor();
-					ip.setColorModel(LutLoader.getLut(cmd));
+					else {
+						ImageProcessor ip = imp.getProcessor();
+						ip.setColorModel(LutLoader.getLut(cmd));
+						IJ.showStatus(cmd);
 					}
 					imp.updateAndDraw();
 				}
@@ -468,7 +469,6 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 			public void dispose() {
 				WindowManager.removeWindow(this);
 				Prefs.set("command-finder.close", closeWhenRunning);
-				//Prefs.set("command-finder.lut", applyLUT);
 				frame = null;
 				super.dispose();
 			}
