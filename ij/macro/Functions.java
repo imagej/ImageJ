@@ -5198,10 +5198,14 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("getOrthoViews"))
 			return getOrthoViews();
 		ImagePlus imp = getImage();
-		if (name.equals("setPosition"))
-			{setPosition(imp); return Double.NaN;}
-		if (name.equals("getPosition"))
-			{getPosition(imp); return Double.NaN;}
+		if (name.equals("setPosition")) {
+			setPosition(imp);
+			return Double.NaN;
+		}
+		if (name.equals("getPosition")) {
+			getPosition(imp);
+			return Double.NaN;
+		}
 		Calibration cal = imp.getCalibration();
 		if (name.equals("getFrameRate"))
 			{interp.getParens(); return cal.fps;}

@@ -130,7 +130,7 @@ public class StackWriter implements PlugIn {
 			imp2.setCalibration(cal);
 			String digits = getDigits(number++);
 			if (useLabels) {
-				label = stack.getShortSliceLabel(i);
+				label = stack.getShortSliceLabel(i, 111);
 				if (label!=null && label.equals("")) label = null;
 				if (label!=null) label = label.replaceAll("/","-");
 			}

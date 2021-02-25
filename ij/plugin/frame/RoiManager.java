@@ -702,31 +702,31 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Roi roi = (Roi)rois.get(index);
 		if (imp==null || roi==null)
 			return false;
+			//IJ.log("restore: "+roi.getPosition()+"  "+roi.getZPosition()+"  "+imp.getNSlices()+"  "+imp.getStackSize());
 		if (setSlice) {
-			if (imp.lock()) {
-				boolean hyperstack = imp.isHyperStack();
-				if (hyperstack && roi.hasHyperStackPosition())
-					imp.setPosition(roi.getCPosition(), roi.getZPosition(), roi.getTPosition());
-				else {
-					String label = (String)listModel.getElementAt(index);
-					int n = getSliceNumber(roi, label);
-					if (n>=1 && n<=imp.getStackSize()) {
-						if (hyperstack) {
-							if (imp.getNSlices()>1 && n<=imp.getNSlices())
-								imp.setPosition(imp.getC(),n,imp.getT());
-							else if (imp.getNFrames()>1 && n<=imp.getNFrames())
-								imp.setPosition(imp.getC(),imp.getZ(),n);
-							else
-								imp.setPosition(n);
-						} else
-							imp.setSlice(n);
-					} else if (roi.getZPosition()>0 && imp.getNSlices()==imp.getStackSize())
-						imp.setSlice(roi.getZPosition());
+			boolean hyperstack = imp.isHyperStack();
+			if (hyperstack && roi.hasHyperStackPosition())
+				imp.setPosition(roi.getCPosition(), roi.getZPosition(), roi.getTPosition());
+			else if (roi.getZPosition()>0 && imp.getNSlices()==imp.getStackSize())
+					imp.setSlice(roi.getZPosition());
+			else if (roi.getPosition()>0 && roi.getPosition()<=imp.getStackSize())
+				imp.setSlice(roi.getPosition());
+			else {
+				String label = (String)listModel.getElementAt(index);
+				int n = getSliceNumber(roi, label);
+				if (n>=1 && n<=imp.getStackSize()) {
+					if (hyperstack) {
+						if (imp.getNSlices()>1 && n<=imp.getNSlices())
+							imp.setPosition(imp.getC(),n,imp.getT());
+						else if (imp.getNFrames()>1 && n<=imp.getNFrames())
+							imp.setPosition(imp.getC(),imp.getZ(),n);
+						else
+							imp.setPosition(n);
+					} else
+						imp.setSlice(n);
 				}
-				imp.unlock();
-			} else
-				return false;
-		}
+			}
+		}	
 		if (showAllCheckbox.getState() && !restoreCentered && !noUpdateMode) {
 			roi.setImage(null);
 			imp.setRoi(roi);
@@ -2405,7 +2405,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int n = getCount();
 		if (index>=n) return;
 		boolean mm = list.getSelectionMode() == ListSelectionModel.MULTIPLE_INTERVAL_SELECTION;
-		if (mm) list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		if (mm)
+			list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		int delay = 1;
 		long start = System.currentTimeMillis();
 		while (true) {
@@ -2418,7 +2419,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			imp = WindowManager.getCurrentImage();
 		if (imp!=null)
 			restore(imp, index, true);
-		if (mm) list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		if (mm)
+			list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 	}
 
 	public void selectAndMakeVisible(ImagePlus imp, int index) {

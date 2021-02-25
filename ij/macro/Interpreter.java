@@ -18,7 +18,6 @@ public class Interpreter implements MacroConstants {
 
 	static final int STACK_SIZE = 1000;
 	static final int MAX_ARGS = 20;
-	private static final int NUMERIC_STRING_FUNCTION = 99;
 
 	int pc;
 	int token;
