@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53i25 1 March 2021</u>
+<li> <u>1.53i29 12 March 2021</u>
 <ul>
 <li> Thanks to Jerome Mutterer, added the
  "Apply LUTs" checkbox to the command finder
@@ -24,15 +24,19 @@ threshold was not set.
 <li> Thanks to Laurent Thomas, <i>File&gt;Save As&gt;Image Sequence</i>,
 with "Use slice labels as names" enabled, now supports file names as
 long as 111 characters, excluding the extension.
+<li> Thanks to Michael Schmid, ImageJ displays “horizontal” in the
+image info line of column average plots and “vertical” for
+row average plots.
 <li> Thanks to Jerome Mutterer, added the showStatus(message,options)
 macro function and the IJ.showStatus(message,options) method
  (<a href="http://wsr.imagej.net/macros/FlashingStatusMessages.txt">example</a>).
 <li> Added the Overlay.update(index) macro function. DOCUMENT
-<li> Added the ImagePlus.setBackgroundColor() method,
+<li> Added the ImagePlus.setBorderColor() method,
 used by <i>Image&gt;Color&gt;Split Channels</i> to
 colorize image borders.
-<li> Thanks to Laurent Thomas, added the ImageStack.getShortStackLabel(n,max)
-method.
+<li> Thanks to Laurent Thomas, added the ImageStack.getShortStackLabel(n,max),
+Zoom.toSelection(imp), Zoom.set(imp,mag) and Zoom.set(imp,mag,x,y)
+methods.
 <li> Thanks to Herbie Gluender, fixed a bug that caused the status bar
 to stop being updated after activating an overlay selection.
 <li> Thanks to Fred Damen, fixed a bug with one slice stacks where the slice label
@@ -53,6 +57,12 @@ wrong position.
 <li> Thanks to Laurent Thomas, fixed a bug that caused the
 ContrastEnhancer.stretchHistogram() methoid to not work as
 expected with stacks.
+<li> Thanks to Michael Schmid, fixed a bug that caused
+WaitForUserDialogs to not be scaled on high-resolution
+screens.
+<li> Thanks to Stein Rorvik, fixed a macro interpreter bug that caused
+if statements using built in string functions to fail
+(e.g., "if (getTitle.length>10) ...").
 <li> Thanks to Shayna Sosnowik, fixed a 1.53g regression that caused
 the "Properties..." command in the ROI Manager to not work as 
 expected when changing the stroke color. 

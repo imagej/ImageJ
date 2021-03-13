@@ -44,6 +44,7 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
         add(button, c);
 		setResizable(false);
 		addKeyListener(this);
+		GUI.scale(this);
 		pack();
 		if (xloc==-1)
 			GUI.centerOnImageJScreen(this);

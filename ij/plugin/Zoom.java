@@ -3,10 +3,28 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
+import ij.plugin.frame.Recorder;
 import java.awt.*;
 
 /** This plugin implements the commands in the Image/Zoom submenu. */
-public class Zoom implements PlugIn{
+public class Zoom implements PlugIn {
+
+	public static void toSelection(ImagePlus imp) {
+		Zoom zoom = new Zoom();
+		ImageCanvas ic = imp.getCanvas();
+		if (ic!=null)
+			zoom.zoomToSelection(imp, ic);
+	}
+
+	public static void set(ImagePlus imp, double magnification) {
+		Zoom zoom = new Zoom();
+		zoom.setZoom(imp, magnification, -1, -1);
+	}
+
+	public static void set(ImagePlus imp, double magnification, int x, int y) {
+		Zoom zoom = new Zoom();
+		zoom.setZoom(imp, magnification, x, y);
+	}
 
 	public void run(String arg) {
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -36,10 +54,11 @@ public class Zoom implements PlugIn{
 			ic.unzoom();
     	else if (arg.equals("100%"))
     		ic.zoom100Percent();
-		else if (arg.equals("to"))
+		else if (arg.equals("to")) {
 			zoomToSelection(imp, ic);
-		else if (arg.equals("set"))
-			setZoom(imp, ic);
+			Recorder.recordCall("Zoom.toSelection(imp);");
+		} else if (arg.equals("set"))
+			setZoom(imp, -1, -1, -1);
 		else if (arg.equals("max")) {
 			ImageWindow win = imp.getWindow();
 			if (win!=null) {
@@ -49,7 +68,7 @@ public class Zoom implements PlugIn{
 		} else if (arg.equals("scale"))
 			scaleToFit(imp);
 	}
-	
+		
 	void zoomToSelection(ImagePlus imp, ImageCanvas ic) {
 		Roi roi = imp.getRoi();
 		ic.unzoom();
@@ -73,11 +92,16 @@ public class Zoom implements PlugIn{
 	
 	/** Based on Albert Cardona's ZoomExact plugin:
 		http://albert.rierol.net/software.html */
-	void setZoom(ImagePlus imp, ImageCanvas ic) {
+	void setZoom(ImagePlus imp, double mag, int x, int y) {
+		ImageCanvas ic = imp.getCanvas();
+		if (ic==null)
+			return;
 		int width = imp.getWidth();
 		int height = imp.getHeight();
-		int x = width/2;
-		int y = height/2;
+		if (x==-1) {
+			x = width/2;
+			y = height/2;
+		}
 		Rectangle srcRect = ic.getSrcRect();
 		Roi roi = imp.getRoi();
 		boolean areaSelection = false;
@@ -90,24 +114,33 @@ public class Zoom implements PlugIn{
 				srcRect = bounds;
 		}
 		ImageWindow win = imp.getWindow();
-		GenericDialog gd = new GenericDialog("Set Zoom");
-		gd.addNumericField("Zoom:", ic.getMagnification() * 200, 0, 4, "%");
-		gd.addNumericField("X center:", x, 0, 5, "");
-		gd.addNumericField("Y center:", y, 0, 5, "");
-		if (areaSelection) {
-			gd.addNumericField("Width:", srcRect.width, 0, 5, "");
-			gd.addNumericField("Height:", srcRect.height, 0, 5, "");
-		}
-		gd.showDialog();
-		if (gd.wasCanceled()) return;
-		double mag = gd.getNextNumber()/100.0;
-		x = (int)gd.getNextNumber();
-		y = (int)gd.getNextNumber();
 		int srcWidth = srcRect.width;
 		int srcHeight = srcRect.height;
-		if (areaSelection) {
-			srcWidth = (int)gd.getNextNumber();
-			srcHeight = (int)gd.getNextNumber();
+		if (mag==-1) {
+			GenericDialog gd = new GenericDialog("Set Zoom");
+			gd.addNumericField("Zoom:", ic.getMagnification() * 200, 0, 4, "%");
+			gd.addNumericField("X center:", x, 0, 5, "");
+			gd.addNumericField("Y center:", y, 0, 5, "");
+			if (areaSelection) {
+				gd.addNumericField("Width:", srcRect.width, 0, 5, "");
+				gd.addNumericField("Height:", srcRect.height, 0, 5, "");
+			}
+			gd.showDialog();
+			if (gd.wasCanceled()) return;
+			mag = gd.getNextNumber()/100.0;
+			int x2 = (int)gd.getNextNumber();
+			int y2 = (int)gd.getNextNumber();
+			boolean defaultLocation = x==x2 && y==y2;
+			x = x2;
+			y = y2;
+			if (areaSelection) {
+				srcWidth = (int)gd.getNextNumber();
+				srcHeight = (int)gd.getNextNumber();
+			}
+			if (defaultLocation)
+				Recorder.recordCall("Zoom.set(imp, "+mag+");");
+			else
+				Recorder.recordCall("Zoom.set(imp, "+mag+", "+x+", "+y+");");
 		}
 		if (x<0) x=0;
 		if (y<0) y=0;

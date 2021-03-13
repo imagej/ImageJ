@@ -24,6 +24,9 @@ public class Profiler implements PlugIn, PlotMaker {
 			return;
 		plot.setPlotMaker(this);
 		plot.show();
+		Roi roi = imp.getRoi();
+		if (roi!=null && roi.getType()==Roi.RECTANGLE)
+			plot.getImagePlus().setProperty ("Label", plotVertically ? "vertical" : "horizontal");
 	}
 	
 	public Plot getPlot() {

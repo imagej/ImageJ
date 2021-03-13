@@ -861,7 +861,8 @@ public class Interpreter implements MacroConstants {
 				int token2 = pgm.code[pc+4];
 				String name = pgm.table[token2>>TOK_SHIFT].str;
 				if (name.equals("getValue")) return STRING_FUNCTION;
-			}
+			} else if (numericStringFunction(pc+2))
+				return Variable.VALUE;
 			return Variable.STRING;
 		}
 		if (tok==ARRAY_FUNCTION)
@@ -1137,9 +1138,12 @@ public class Interpreter implements MacroConstants {
 		String s1 = null;
 		int next = pgm.code[pc+1];
 		int tok = next&TOK_MASK;
-		if (tok==STRING_CONSTANT || tok==STRING_FUNCTION || isString(pc+1))
-			s1 = getString();
-		else
+		if (tok==STRING_CONSTANT || tok==STRING_FUNCTION || isString(pc+1)) {
+			if (numericStringFunction(pc+1))
+				v1 = getExpression();
+			else
+				s1 = getString();
+		} else
 			v1 = getExpression();
 		next = nextToken();
 		if (next>=EQ && next<=LTE) {
@@ -1177,6 +1181,16 @@ public class Interpreter implements MacroConstants {
 				v1 = Tools.parseDouble(s1, Double.NaN);
 		}
 		return v1;
+	}
+	
+	private boolean numericStringFunction(int loc) {
+		if ((pgm.code[loc]&TOK_MASK)!=STRING_FUNCTION)
+			return false;
+		if (pgm.code[loc+1]=='.'  && (pgm.code[loc+2]&0xff)!=STRING_FUNCTION)
+			return true;
+		if (pgm.code[loc+1]=='('  && pgm.code[loc+2]==')' && pgm.code[loc+3]=='.'  && (pgm.code[loc+4]&0xff)!=STRING_FUNCTION)
+			return true;
+		return false;
 	}
 
 	// Returns true if the token at the specified location is a string
@@ -1594,7 +1608,12 @@ public class Interpreter implements MacroConstants {
 				break;
 			case STRING_FUNCTION:
 				String str = func.getStringFunction(pgm.table[tokenAddress].type);
-				value = Tools.parseDouble(str);
+				if (nextToken()=='.') {
+					getToken();  // '.'
+					getToken();  // numericFunction
+					value = getNumericStringFunction(str);
+				} else
+					value = Tools.parseDouble(str);
 				if ("NaN".equals(str))
 					value = Double.NaN;
 				else if (Double.isNaN(value))
@@ -1693,6 +1712,31 @@ public class Interpreter implements MacroConstants {
 		return value;
 	}
 
+
+	private double getNumericStringFunction(String str) {
+		double value = Double.NaN;
+		if (token==WORD) {
+			if (tokenString.equals("length")) {
+				getParens();
+				value = str.length();
+			} else if (tokenString.equals("contains"))
+				value = str.contains(func.getStringArg())?1:0;
+			else if (tokenString.equals("charAt"))
+				value = str.charAt((int)func.getArg());
+		} else if (token==NUMERIC_FUNCTION) {
+			int type = pgm.table[tokenAddress].type;
+			switch (type) {
+				case INDEX_OF: value = func.indexOf(str); break;
+				case LAST_INDEX_OF: value = str.lastIndexOf(func.getStringArg()); break;
+				case STARTS_WITH: value = str.startsWith(func.getStringArg())?1:0; break;
+				case ENDS_WITH: value = str.endsWith(func.getStringArg())?1:0; break;
+				case MATCHES: value = func.matches(str); break;
+			}
+		} else
+			error("Numeric function expected");
+		return value;
+	}
+
 	final Variable getArrayElement(Variable v) {
 		int index = getIndex();
 		Variable[] array = v.getArray();
@@ -1715,27 +1759,7 @@ public class Interpreter implements MacroConstants {
 		String str = v.getString();
 		if (str==null)
 			error("Array or string expected");	
-		double value = Double.NaN;		
-		if (token==WORD) {
-			if (tokenString.equals("length")) {
-				getParens();
-				value = str.length();
-			} else if (tokenString.equals("contains"))
-				value = str.contains(func.getStringArg())?1:0;
-			else if (tokenString.equals("charAt"))
-				value = str.charAt((int)func.getArg());
-		} else if (token==NUMERIC_FUNCTION) {
-			int type = pgm.table[tokenAddress].type;
-			switch (type) {
-				case INDEX_OF: value = func.indexOf(str); break;
-				case LAST_INDEX_OF: value = str.lastIndexOf(func.getStringArg()); break;
-				case STARTS_WITH: value = str.startsWith(func.getStringArg())?1:0; break;
-				case ENDS_WITH: value = str.endsWith(func.getStringArg())?1:0; break;
-				case MATCHES: value = func.matches(str); break;
-			}
-		} else
-			error("Numeric function expected");
-		return value;
+		return getNumericStringFunction(str);
 	}
 	
 	final double getStringExpression() {

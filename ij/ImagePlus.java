@@ -102,7 +102,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public boolean setIJMenuBar = Prefs.setIJMenuBar;
 	private Plot plot;
 	private Properties imageProperties;
-	private Color backgroundColor;
+	private Color borderColor;
 
 
     /** Constructs an uninitialized ImagePlus. */
@@ -533,8 +533,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Called by ImageWindow.windowActivated(). */
 	public void setActivated() {
 		activated = true;
-		if (backgroundColor!=null && win!=null)
-			win.setBackground(backgroundColor);
+		if (borderColor!=null && win!=null)
+			win.setBackground(borderColor);
 	}
 
 	/** Returns this image as a AWT image. */
@@ -3339,8 +3339,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return ip!=null && ip.getNChannels()==3;
     }
     
-    public void setBackgroundColor(Color backgroundColor) {
-    	this.backgroundColor = backgroundColor;
+    public void setBorderColor(Color borderColor) {
+    	this.borderColor = borderColor;
     }
-    
+        
 }
