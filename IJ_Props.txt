@@ -407,7 +407,7 @@ utilities10="Capture Image",ij.plugin.ScreenGrabber("image")
 utilities11=-
 utilities12="ImageJ Properties",ij.plugin.JavaProperties
 utilities13="Threads",ij.plugin.ThreadLister
-utilities14="Benchmark",ij.plugin.filter.Benchmark
+utilities14="Benchmark",ij.plugin.Benchmark
 utilities15="Reset...",ij.plugin.SimpleCommands("reset")
 
 # Plugins installed in the Plugins/New submenu

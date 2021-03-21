@@ -1,4 +1,4 @@
-package ij.plugin.filter;
+package ij.plugin;
 import java.awt.*;
 import ij.*;
 import ij.process.*;
@@ -7,73 +7,77 @@ import ij.text.*;
 /** Implements the Plugins/Utilities/Run Benchmark command. 
 	results and additional benchmarks are available at 
 	"http://imagej.nih.gov/ij/plugins/benchmarks.html". */
-public class Benchmark implements PlugInFilter{
-
-	String arg;
-	ImagePlus imp;
-	boolean showUpdates= true;
+public class Benchmark implements PlugIn {
+	int size = 5000;
+	int ops = 80;
+	boolean showUpdates = false;
 	int counter;
-	
-	public int setup(String arg, ImagePlus imp) {
-		this.imp = imp;
-		return DOES_ALL+NO_CHANGES+SNAPSHOT;
-	}
 
-	public void run(ImageProcessor ip) {
-		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-		ip.setInterpolate(false);
+	public void run(String arg) {
+		IJ.showStatus("Creating "+size+"x"+size+" 16-bit image");
+		long t0 = System.currentTimeMillis();
+		ImagePlus imp = IJ.createImage("Untitled", "16-bit noise", size, size, 1);
+		ImageProcessor ip = imp.getProcessor();
+		ip.snapshot();
+		for (int i=0; i<9; i++) {
+			ip.blurGaussian(40);
+			ip.getStatistics();
+			update(imp);
+		}
 		for (int i=0; i <4; i++) {
 			ip.invert();
-			updateScreen(imp);
+			update(imp);
 		}
 		for (int i=0; i <4; i++) {
 			ip.flipVertical();
-			updateScreen(imp);
+			update(imp);
 		}
-		ip.flipHorizontal(); updateScreen(imp);
-		ip.flipHorizontal(); updateScreen(imp);
+		ip.flipHorizontal(); update(imp);
+		ip.flipHorizontal(); update(imp);
 		for (int i=0; i <6; i++) {
 			ip.smooth();
-			updateScreen(imp);
+			update(imp);
 		}
 		ip.reset();
 		for (int i=0; i <6; i++) {
 			ip.sharpen();
-			updateScreen(imp);
+			update(imp);
 		}
 		ip.reset();
-		ip.smooth(); updateScreen(imp);
-		ip.findEdges(); updateScreen(imp);
-		ip.invert(); updateScreen(imp);
-		ip.autoThreshold(); updateScreen(imp);
+		ip.smooth(); update(imp);
+		ip.findEdges(); update(imp);
+		ip.invert(); update(imp);
+		ip.autoThreshold(); update(imp);
 		ip.reset();
-		ip.medianFilter(); updateScreen(imp);
+		ip.medianFilter(); update(imp);
 		for (int i=0; i <360; i +=15) {
 			ip.reset();
 			ip.rotate(i);
-			updateScreen(imp);
+			update(imp);
 		}
 		double scale = 1.5;
 		for (int i=0; i <8; i++) {
 			ip.reset();
 			ip.scale(scale, scale);
-			updateScreen(imp);
+			update(imp);
 			scale = scale*1.5;
 		}
 		for (int i=0; i <12; i++) {
 			ip.reset();
 			scale = scale/1.5;
 			ip.scale(scale, scale);
-			updateScreen(imp);
+			update(imp);
 		}
-		ip.reset();
-		updateScreen(imp);
+		double time = (System.currentTimeMillis()-t0)/1000.0;
+		IJ.showStatus(IJ.d2s(time,1)+" seconds to perform "+counter+" operations on a "+size+"x"+size+" 16-bit image");
 	}
 	
-	void updateScreen(ImagePlus imp) {
+	void update(ImagePlus imp) {
 		if (showUpdates)
 			imp.updateAndDraw();
-		IJ.showStatus((counter++) + "/"+72);
+		counter++;
+		IJ.showStatus(counter + "/"+ops);
+		IJ.showProgress(-counter, ops);
 	}
 
 	/*

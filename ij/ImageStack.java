@@ -256,12 +256,15 @@ public class ImageStack {
 	}
 	
 	/** Returns the label of the specified slice, were 1<=n<=nslices.
-		Returns null if the slice does not have a label. For DICOM
-		and FITS stacks, labels may contain header information. */
+		Returns null if the slice does not have a label or 'n';
+		is out of range. For DICOM and FITS stacks, labels may
+		contain header information.
+	*/
 	public String getSliceLabel(int n) {
 		if (n<1 || n>nSlices)
-			throw new IllegalArgumentException(outOfRange+n);
-		return label[n-1];
+			return null;
+		else
+			return label[n-1];
 	}
 	
 	/** Returns a shortened version (up to the first 60 characters
