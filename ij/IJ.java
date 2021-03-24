@@ -773,10 +773,12 @@ public class IJ {
 	}
 
 	/**	Updates the progress bar, where the length of the bar is set to
-    (<code>currentValue+1)/finalValue</code> of the maximum bar length.
-    The bar is erased if <code>currentValue&gt;=finalValue</code>. 
-    The bar is updated only if more than 90 ms have passed since the last call.
-    Does nothing if the ImageJ window is not present. */
+     * (<code>currentValue+1)/finalValue</code> of the maximum bar length.
+     * The bar is erased if <code>currentValue&gt;=finalValue</code>. 
+     * The bar is updated only if more than 90 ms have passed since the
+     * last call. Displays subordinate progress bars as dots if
+     * 'currentIndex' is negative (example: Plugins/Utilities/Benchmark).
+    */
     public static void showProgress(int currentIndex, int finalIndex) {
 		if (progressBar!=null) {
 			progressBar.show(currentIndex, finalIndex);

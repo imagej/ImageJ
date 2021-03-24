@@ -2114,6 +2114,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void killRoi() {
 		deleteRoi();
 	}
+	
+	/** Deletes the current region of interest. */
+	public void resetRoi() {
+		deleteRoi();
+	}
 
 	public void saveRoi() {
 		Roi roi2 = roi;

@@ -695,8 +695,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if (selStart==-1 || selEnd==-1)
 			return copyAll();
 		StringBuffer sb = new StringBuffer();
+		ResultsTable rt2 = getResultsTable();
+		boolean hasRowNumers = rt2!=null && rt2.showRowNumbers();
 		if (Prefs.copyColumnHeaders && labels!=null && !labels.equals("") && selStart==0 && selEnd==iRowCount-1) {
-			if (Prefs.noRowNumbers) {
+			if (hasRowNumers && Prefs.noRowNumbers) {
 				String s = labels;
 				int index = s.indexOf("\t");
 				if (index!=-1)
@@ -711,7 +713,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			String s = new String(chars);
 			if (s.endsWith("\t"))
 				s = s.substring(0, s.length()-1);
-			if (Prefs.noRowNumbers && labels!=null && !labels.equals("")) {
+			if (hasRowNumers && Prefs.noRowNumbers && labels!=null && !labels.equals("")) {
 				int index = s.indexOf("\t");
 				if (index!=-1)
 					s = s.substring(index+1, s.length());

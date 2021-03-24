@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53i 20 March 2021</u>
+<li> <u>1.53i 24 March 2021</u>
 <ul>
 <li> Thanks to Jerome Mutterer, added the
  "Apply LUTs" checkbox to the command finder
@@ -17,7 +17,9 @@ displayed after <i>Select All</i>.
 <li> Thanks to Norbert Vischer, ImageJ now corrects the orientation of
 phone camera photos. This does not work on Fiji because it is
 missing Exif_Reader.jar.
-<li> Improved the Plugins>Utilities>Benchmark command.
+<li> Improved the Plugins>Utilities>Benchmark command. It now
+suppresses subordinate status bar messages and displays
+subordinate progress bars as dots. 
 <li> Thanks to Peter Haub, the particle analyzer displays
 "ParticleAnalyzer: threshold has not set; assumed to be min-max"
 in the Log window if it was not called from a macro and a
@@ -64,9 +66,16 @@ screens.
 <li> Thanks to Stein Rorvik, fixed a macro interpreter bug that caused
 if statements using built in string functions to fail
 (e.g., "if (getTitle.length>10) ...").
+<li> Thanks to Norbert Vischer, fixed a bug that caused the
+first column of tables copied to the clipboard to be missing
+if the table did not have row numbers and the
+"Copy row numbers" option in
+<i>Edit&gt;Options&gt;Input/Output</i> was not enabled.
 <li> Thanks to Shayna Sosnowik, fixed a 1.53g regression that caused
 the "Properties..." command in the ROI Manager to not work as 
-expected when changing the stroke color. 
+expected when changing the stroke color.
+<li> Thanks to Stein Rorvik, fixed a 1.53i regression that caused
+the str.trim() macro function to fail.
 </ul>
 
 <li> <u>1.53h 04 February 2021</u>

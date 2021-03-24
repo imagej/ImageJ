@@ -1186,9 +1186,13 @@ public class Interpreter implements MacroConstants {
 	private boolean numericStringFunction(int loc) {
 		if ((pgm.code[loc]&TOK_MASK)!=STRING_FUNCTION)
 			return false;
-		if (pgm.code[loc+1]=='.'  && (pgm.code[loc+2]&0xff)!=STRING_FUNCTION)
+		int address = pgm.code[loc]>>TOK_SHIFT;
+		int type = pgm.table[address].type;
+		if (type==VARIABLE_FUNCTION||type==DIALOG||type==FILE||type==STRING||type==EXT||type==LIST||type==IJ_CALL)
+			return false;
+		if (pgm.code[loc+1]=='.' && (pgm.code[loc+2]&0xff)!=STRING_FUNCTION)
 			return true;
-		if (pgm.code[loc+1]=='('  && pgm.code[loc+2]==')' && pgm.code[loc+3]=='.'  && (pgm.code[loc+4]&0xff)!=STRING_FUNCTION)
+		if (pgm.code[loc+1]=='(' && pgm.code[loc+2]==')' && pgm.code[loc+3]=='.'  && (pgm.code[loc+4]&0xff)!=STRING_FUNCTION)
 			return true;
 		return false;
 	}
@@ -1623,9 +1627,9 @@ public class Interpreter implements MacroConstants {
 				v = func.getVariableFunction(pgm.table[tokenAddress].type);
 				if (v==null)
 					error("No return value");
-				if (v.getString()!=null)
+				if (v.getString()!=null) {
 						error("Numeric return value expected");
-				else
+				} else
 					value = v.getValue();
 				break;
 			case USER_FUNCTION:
@@ -1949,9 +1953,6 @@ public class Interpreter implements MacroConstants {
 				str = ""+str.length();
 			} else if (tokenString.equals("contains")) {
 				str = ""+str.contains(func.getStringArg());
-			} else if (tokenString.equals("trim")) {
-				getParens();
-				str = str.trim();
 			} else if (tokenString.equals("charAt")) {
 				str = ""+str.charAt((int)func.getArg());
 			} else if (tokenString.equals("replaceAll")) {
@@ -1976,6 +1977,7 @@ public class Interpreter implements MacroConstants {
 				case TO_LOWER_CASE: getParens(); str = str.toLowerCase(Locale.US); break;
 				case TO_UPPER_CASE: getParens(); str = str.toUpperCase(Locale.US); break;
 				case REPLACE: str = func.replace(str); break;
+				case TRIM: getParens();  str = str.trim(); break;
 				default:
 					str = null;
 			}

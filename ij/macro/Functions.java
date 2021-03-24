@@ -281,6 +281,7 @@ public class Functions implements MacroConstants, Measurements {
 			case DEBUG: str = debug(); break;
 			case IJ_CALL: str = ijCall(); break;
 			case GET_RESULT_STRING: str = getResultString(null); break;
+			case TRIM: str = trim(); break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -3886,6 +3887,12 @@ public class Functions implements MacroConstants, Measurements {
 			}
 		}
 	}
+	
+	String trim() {
+		if (interp.nextToken()=='=')
+			interp.error("'trim' is a reserved word");
+		return getStringArg().trim();
+	}
 
 	void floodFill() {
 		int x = (int)getFirstArg();
@@ -4851,7 +4858,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (interp.token!='.')
 			interp.error("'.' expected");
 		interp.getToken();
-		if (interp.token!=WORD)
+		if (!(interp.token==WORD||interp.token==STRING_FUNCTION))
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
 		if (name.equals("append"))
@@ -5898,7 +5905,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (interp.token!='.')
 			interp.error("'.' expected");
 		interp.getToken();
-		if (!(interp.token==WORD||interp.token==PREDEFINED_FUNCTION))
+		if (!(interp.token==WORD||interp.token==PREDEFINED_FUNCTION||interp.token==STRING_FUNCTION))
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
 		if (name.equals("copy"))
@@ -7954,8 +7961,14 @@ public class Functions implements MacroConstants, Measurements {
 			imp.setProperty("Info", getStringArg());
 			return null;
 		} else if (name.equals("getSliceLabel")) {
-			String value = imp.getStack().getSliceLabel((int)getArg());
-			Variable v = new Variable(value!=null?value:"");
+			String label = imp.getStack().getSliceLabel(imp.getCurrentSlice());
+			if (interp.nextToken()=='(') {
+				if (interp.nextNextToken()==')')
+					interp.getParens();
+				else
+					label = imp.getStack().getSliceLabel((int)getArg());
+			}
+			Variable v = new Variable(label!=null?label:"");
 			return v;
 		} else if (name.equals("setSliceLabel")) {
 			String label = getFirstString();
@@ -8026,7 +8039,7 @@ public class Functions implements MacroConstants, Measurements {
 			case PROPERTY:
 				if (name.equals("getProperty") || name.equals("getProperties")
 				|| (name.equals("get")&&type!=TABLE) || name.equals("getInfo")
-				|| name.equals("getList") || name.equals("setSliceLabel")
+				|| name.equals("getList") || name.equals("getSliceLabel")
 				|| name.equals("getDicomTag"))
 					isString = true;
 				break;
