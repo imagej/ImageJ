@@ -720,24 +720,32 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		add(theLabel, c);
 		c.fill = GridBagConstraints.NONE;
     }
+    
+    /** Add one or two (side by side) text areas without scrollbars. 
+     * @see #addTextAreas(String, String, int, int, int)*/
+    public void addTextAreas(String text1, String text2, int rows, int columns) {
+    	// for backward compatibility
+    	addTextAreas(text1, text2, rows, columns, TextArea.SCROLLBARS_NONE);
+    }
 
 	/** Adds one or two (side by side) text areas.
 	* @param text1	initial contents of the first text area
 	* @param text2	initial contents of the second text area or null
 	* @param rows	the number of rows
 	* @param columns	the number of columns
+	* @param scrollbars one of java.awt.TextArea.SCROLLBARS constants to set if the text areas should have horizontal, vertical, both or no scrollbars
 	*/
-    public void addTextAreas(String text1, String text2, int rows, int columns) {
+    public void addTextAreas(String text1, String text2, int rows, int columns, int scrollbars) {
 		if (textArea1!=null) return;
 		Panel panel = new Panel();
 		Font font = new Font("SansSerif", Font.PLAIN, (int)(14*Prefs.getGuiScale()));
-		textArea1 = new TextArea(text1,rows,columns,TextArea.SCROLLBARS_NONE);
+		textArea1 = new TextArea(text1,rows,columns,scrollbars);
 		if (IJ.isLinux()) textArea1.setBackground(Color.white);
 		textArea1.setFont(font);
 		textArea1.addTextListener(this);
 		panel.add(textArea1);
 		if (text2!=null) {
-			textArea2 = new TextArea(text2,rows,columns,TextArea.SCROLLBARS_NONE);
+			textArea2 = new TextArea(text2,rows,columns,scrollbars);
 			if (IJ.isLinux()) textArea2.setBackground(Color.white);
 			textArea2.setFont(font);
 			panel.add(textArea2);
