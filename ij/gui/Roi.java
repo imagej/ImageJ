@@ -55,7 +55,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public static final int FERET_ARRAY_POINTOFFSET = 8; // Where point coordinates start in Feret array
 	private static final String NAMES_KEY = "group.names";
 
-	static final int NO_MODS=0, ADD_TO_ROI=1, SUBTRACT_FROM_ROI=2; // modification states
+	static final int NO_MODS=0, ADD_TO_ROI=1, SUBTRACT_FROM_ROI=2, KEEP_WITHIN_ROI=3; // modification states
 
 	int startX, startY, x, y, width, height;
 	double startXD, startYD;
@@ -1615,9 +1615,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			s2 = (ShapeRoi)this;
 		else
 			s2 = new ShapeRoi(this);
-		if (previousRoi.modState==ADD_TO_ROI)
+		if (previousRoi.modState==ADD_TO_ROI) {
 			s1.or(s2);
-		else
+		}else if(previousRoi.modState==KEEP_WITHIN_ROI){
+			s1.and(s2);
+		}else
 			s1.not(s2);
 		previousRoi.modState = NO_MODS;
 		Roi roi2 = s1.trySimplify();
@@ -1656,8 +1658,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		makeOval(), makePolygon() and makeSelection() macro functions. */
 	public void update(boolean add, boolean subtract) {
 		if (previousRoi==null) return;
+		IJ.log("Update: "+add+" "+subtract);
 		if (add) {
 			previousRoi.modState = ADD_TO_ROI;
+			if(subtract) previousRoi.modState = KEEP_WITHIN_ROI;
 			modifyRoi();
 		} else if (subtract) {
 			previousRoi.modState = SUBTRACT_FROM_ROI;

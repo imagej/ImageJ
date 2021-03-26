@@ -1447,9 +1447,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int tool = Toolbar.getToolId();
 		if (tool>Toolbar.FREEROI && tool!=Toolbar.WAND && tool!=Toolbar.POINT)
 			{roi.modState = Roi.NO_MODS; return;}
-		if (e.isShiftDown())
+		if (e.isShiftDown()){
 			roi.modState = Roi.ADD_TO_ROI;
-		else if (e.isAltDown())
+			if (e.isAltDown()) roi.modState = Roi.KEEP_WITHIN_ROI;
+		}else if (e.isAltDown())
 			roi.modState = Roi.SUBTRACT_FROM_ROI;
 		else
 			roi.modState = Roi.NO_MODS;
