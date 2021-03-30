@@ -1658,7 +1658,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		makeOval(), makePolygon() and makeSelection() macro functions. */
 	public void update(boolean add, boolean subtract) {
 		if (previousRoi==null) return;
-		IJ.log("Update: "+add+" "+subtract);
 		if (add) {
 			previousRoi.modState = ADD_TO_ROI;
 			if(subtract) previousRoi.modState = KEEP_WITHIN_ROI;
