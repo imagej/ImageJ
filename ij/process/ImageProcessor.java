@@ -430,6 +430,24 @@ public abstract class ImageProcessor implements Cloneable {
 
 	/** Returns the background fill value. */
 	public abstract double getBackgroundValue();
+	
+	/** Use the global (Color Picker) foreground color as the default fill/draw color. */
+	public void useGlobalForegroundColor() {
+		double value = Toolbar.getForegroundValue();
+		if (Double.isNaN(value))
+			setColor(Toolbar.getForegroundColor());
+		else
+			setValue(value);
+	}
+
+	/** Use the global (Color Picker) background color as the default fill/draw color. */
+	public void useGlobalBackgroundColor() {
+		double value = Toolbar.getBackgroundValue();
+		if (Double.isNaN(value))
+			setColor(Toolbar.getBackgroundColor());
+		else
+			setValue(value);
+	}
 
 	/** Returns the smallest displayed pixel value. */
 	public abstract double getMin();

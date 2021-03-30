@@ -98,9 +98,7 @@ public class CanvasResizer implements PlugIn {
 	
 	public ImageStack expandStack(ImageStack stackOld, int wNew, int hNew, int xOff, int yOff) {
 		int nFrames = stackOld.getSize();
-		ImageProcessor ipOld = stackOld.getProcessor(1);
-		java.awt.Color colorBack = Toolbar.getBackgroundColor();
-		
+		ImageProcessor ipOld = stackOld.getProcessor(1);		
 		ImageStack stackNew = new ImageStack(wNew, hNew, stackOld.getColorModel());
 		ImageProcessor ipNew;
 		
@@ -110,7 +108,7 @@ public class CanvasResizer implements PlugIn {
 			if (zeroFill)
 				ipNew.setValue(0.0);
 			else 
-				ipNew.setColor(colorBack);
+				ipNew.useGlobalBackgroundColor();
 			ipNew.fill();
 			ipNew.insert(stackOld.getProcessor(i), xOff, yOff);
 			stackNew.addSlice(stackOld.getSliceLabel(i), ipNew);

@@ -8120,6 +8120,12 @@ public class Functions implements MacroConstants, Measurements {
 			return setForegroundOrBackground(true);
 		} else if (name.equals("setBackground")) {
 			return setForegroundOrBackground(false);
+		} else if (name.equals("setForegroundValue")) {
+			Toolbar.setForegroundValue(getArg());
+			return null;
+		} else if (name.equals("setBackgroundValue")) {
+			Toolbar.setBackgroundValue(getArg());
+			return null;
 		} else if (name.equals("toString")) {
 			int red = (int)getFirstArg();
 			int green = (int)getNextArg();

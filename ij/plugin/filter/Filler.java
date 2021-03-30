@@ -77,7 +77,7 @@ public class Filler implements PlugInFilter, Measurements {
 	}
 	
 	public void clear(ImageProcessor ip) {
-	 	ip.setColor(Toolbar.getBackgroundColor());
+	 	ip.useGlobalBackgroundColor();
 		if (isLineSelection()) {
 			if (isStraightLine() && roi.getStrokeWidth()>1)
 				ip.fillPolygon(roi.getPolygon());
@@ -87,7 +87,7 @@ public class Filler implements PlugInFilter, Measurements {
 			((TextRoi)roi).clear(ip);
 		else
 	 		ip.fill(); // fill with background color
-		ip.setColor(Toolbar.getForegroundColor());
+		ip.useGlobalForegroundColor();
 	}
 		
 	/**
@@ -96,7 +96,7 @@ public class Filler implements PlugInFilter, Measurements {
 	*/
 	public void fill(ImageProcessor ip) {
 		if (!IJ.isMacro() || !ip.fillValueSet())
-			ip.setColor(Toolbar.getForegroundColor());
+			ip.useGlobalForegroundColor();
 		if (isLineSelection()) {
 			if (isStraightLine() && roi.getStrokeWidth()>1 && !(roi instanceof Arrow)) {
 				Roi roi2=Roi.convertLineToArea(roi);
@@ -114,7 +114,7 @@ public class Filler implements PlugInFilter, Measurements {
 	* replaced by ImageProcessor.draw(Roi)
 	*/
 	public void draw(ImageProcessor ip) {
-		ip.setColor(Toolbar.getForegroundColor());
+		ip.useGlobalForegroundColor();
 		roi.drawPixels(ip);
 		if (IJ.altKeyDown())
 			drawLabel(ip);
@@ -216,7 +216,7 @@ public class Filler implements PlugInFilter, Measurements {
  		Rectangle r = ip.getRoi();
  		if (mask==null)
  			makeMask(ip, r);
-  		ip.setColor(Toolbar.getBackgroundColor());
+   		ip.useGlobalBackgroundColor();  		
  		int stackSize = imp.getStackSize();
  		if (stackSize>1)
  			ip.snapshot();
@@ -234,7 +234,7 @@ public class Filler implements PlugInFilter, Measurements {
  		ip.fill();
  		ip.setRoi(r); // restore original ROI
  		if (sliceCount==stackSize) {
-			ip.setColor(Toolbar.getForegroundColor());
+			ip.useGlobalForegroundColor();
 			Roi roi = imp.getRoi();
 			imp.deleteRoi();
 			imp.updateAndDraw();
