@@ -279,7 +279,7 @@ public class Functions implements MacroConstants, Measurements {
 			case EXEC: str = exec(); break;
 			case LIST: str = doList(); break;
 			case DEBUG: str = debug(); break;
-			case IJ_CALL: str = ijCall(); break;
+			case IJ_CALL: str = doIJ(); break;
 			case GET_RESULT_STRING: str = getResultString(null); break;
 			case TRIM: str = trim(); break;
 			default:
@@ -5112,11 +5112,19 @@ public class Functions implements MacroConstants, Measurements {
 			return Toolbar.getForegroundColor().getRGB()&0xffffff;
 		else if (key.equals("rgb.background"))
 			return Toolbar.getBackgroundColor().getRGB()&0xffffff;
-		else if (key.contains("foreground"))
-			return getColorValue(Toolbar.getForegroundColor());
-		else if (key.contains("background"))
-			return getColorValue(Toolbar.getBackgroundColor());
-		else if (key.equals("font.size")) {
+		else if (key.contains("foreground")) {
+			double value = Toolbar.getForegroundValue();
+			if (Double.isNaN(value))
+				return getColorValue(Toolbar.getForegroundColor());
+			else
+				return value;
+		} else if (key.contains("background")) {
+			double value = Toolbar.getBackgroundValue();
+			if (Double.isNaN(value))
+				return getColorValue(Toolbar.getBackgroundColor());
+			else
+				return value;
+		} else if (key.equals("font.size")) {
 			resetImage();
 			ImageProcessor ip = getProcessor();
 			setFont(ip);
@@ -6487,7 +6495,7 @@ public class Functions implements MacroConstants, Measurements {
 		resetImage();
 	}
 
-	private String ijCall() {
+	private String doIJ() {
 		interp.getToken();
 		if (interp.token!='.')
 			interp.error("'.' expected");
@@ -6515,9 +6523,27 @@ public class Functions implements MacroConstants, Measurements {
 			renameResults();
 		else if (name.equals("getFullVersion"))
 			{interp.getParens(); return ""+IJ.getFullVersion();}
+		else if (name.equals("checksum"))
+			return checksum();
 		else
 			interp.error("Unrecognized IJ function name");
 		return null;
+	}
+
+	private String checksum(){
+		String method = getFirstString();
+		String src = getLastString();
+		method = method.toUpperCase();
+		if (method.contains("FILE") && method.contains("MD5"))
+			return Tools.getHash("MD5", true, src);
+		if (method.contains("STRING") && method.contains("MD5"))
+			return Tools.getHash("MD5", false, src);
+		if (method.contains("FILE") && method.contains("SHA-256"))
+			return Tools.getHash("SHA-256", true, src);
+		if (method.contains("STRING") && method.contains("SHA-256"))
+			return Tools.getHash("SHA-256", false, src);		
+		interp.error("must contain 'file' or 'string' and 'MD5' or 'SHA-256'");
+		return "0";
 	}
 
 	private String pad() {

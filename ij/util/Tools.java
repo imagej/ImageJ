@@ -5,6 +5,9 @@ import java.util.*;
 import java.io.*;
 import java.util.Comparator;
 import java.nio.channels.FileChannel;
+import java.nio.file.*;
+import java.security.MessageDigest;
+
 
 /** This class contains static utility methods. */
  public class Tools {
@@ -417,6 +420,46 @@ import java.nio.channels.FileChannel;
 			case 'n': return '\n';
 			default: return c;
 		}
+	}
+	
+	/** Returns the checksum of a string or file, or "0" if no success.
+	The 'method' argument must be "MD5" or "SHA-256".
+	*/
+	public static String getHash(String method, boolean fromFile, String pathOrString) {
+		method = method.toUpperCase();
+		boolean md5 = method.contains("MD5");
+		boolean sha_256 = method.contains("SHA-256");
+		try {
+			MessageDigest digest = null;
+			if (md5)
+				digest = MessageDigest.getInstance("MD5");
+			else if(sha_256)
+				 digest = MessageDigest.getInstance("SHA-256");
+			else
+				return "0";
+			Path path = Paths.get(pathOrString);
+			byte[] encodedhash;
+			if (fromFile)
+				encodedhash = digest.digest(Files.readAllBytes(path));
+			else
+				encodedhash = digest.digest(pathOrString.getBytes());
+
+			return bytesToHex(encodedhash);
+
+		} catch (Exception e) {}
+		return "0";
+	}
+
+	private static String bytesToHex(byte[] hash) {
+		StringBuilder hexString = new StringBuilder(2 * hash.length);
+		for (int i = 0; i < hash.length; i++) {
+			String hex = Integer.toHexString(0xff & hash[i]);
+			if (hex.length() == 1) {
+				hexString.append('0');
+			}
+			hexString.append(hex);
+		}
+		return hexString.toString();
 	}
 
 }

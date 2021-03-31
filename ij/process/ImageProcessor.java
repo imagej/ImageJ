@@ -431,8 +431,12 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Returns the background fill value. */
 	public abstract double getBackgroundValue();
 	
-	/** Use the global (Color Picker) foreground color as the default fill/draw color. */
-	public void useGlobalForegroundColor() {
+	/** Sets the global (Color Picker) foreground color
+	 * as the fill/draw color.
+	 * @see ij.gui.Toolbar#setForegroundColor(Color)
+	 * @see ij.gui.Toolbar#setForegroundValue(double)
+	*/
+	public void setGlobalForegroundColor() {
 		double value = Toolbar.getForegroundValue();
 		if (Double.isNaN(value))
 			setColor(Toolbar.getForegroundColor());
@@ -440,8 +444,12 @@ public abstract class ImageProcessor implements Cloneable {
 			setValue(value);
 	}
 
-	/** Use the global (Color Picker) background color as the default fill/draw color. */
-	public void useGlobalBackgroundColor() {
+	/** Sets the global (Color Picker) background color
+	 * as the fill/draw color.
+	 * @see ij.gui.Toolbar#setBackgroundColor(Color)
+	 * @see ij.gui.Toolbar#setBackgroundValue(double)
+	*/
+	public void setGlobalBackgroundColor() {
 		double value = Toolbar.getBackgroundValue();
 		if (Double.isNaN(value))
 			setColor(Toolbar.getBackgroundColor());

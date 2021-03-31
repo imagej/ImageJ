@@ -108,7 +108,7 @@ public class CanvasResizer implements PlugIn {
 			if (zeroFill)
 				ipNew.setValue(0.0);
 			else 
-				ipNew.useGlobalBackgroundColor();
+				ipNew.setGlobalBackgroundColor();
 			ipNew.fill();
 			ipNew.insert(stackOld.getProcessor(i), xOff, yOff);
 			stackNew.addSlice(stackOld.getSliceLabel(i), ipNew);
@@ -121,7 +121,7 @@ public class CanvasResizer implements PlugIn {
 		if (zeroFill)
 			ipNew.setValue(0.0);
 		else 
-			ipNew.setColor(Toolbar.getBackgroundColor());
+			ipNew.setGlobalBackgroundColor();
 		ipNew.fill();
 		ipNew.insert(ipOld, xOff, yOff);
 		return ipNew;
