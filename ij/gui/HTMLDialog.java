@@ -73,9 +73,20 @@ public class HTMLDialog extends JDialog implements ActionListener, KeyListener, 
 		if (dialogD.height > 0.80*screenD.height && screenD.height>400)  //max 80% of screen height
 			dialogD.height = (int)(0.80*screenD.height);
 		setSize(dialogD);
-		GUI.centerOnImageJScreen(this);
-		if (!modal) WindowManager.addWindow(this);
-		show();
+		GUI.centerOnImageJScreen(this);		
+		if (!modal) {
+			WindowManager.addWindow(this);
+			show();
+		}
+		final JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+		if (verticalScrollBar!=null) {
+			EventQueue.invokeLater(new Runnable() {
+				public void run() {
+					verticalScrollBar.setValue(verticalScrollBar.getMinimum()); //start scrollbar at top
+				}
+			});
+		}
+		if (modal) show();
 	}
 
 	public void actionPerformed(ActionEvent e) {
