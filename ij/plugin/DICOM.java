@@ -258,7 +258,9 @@ class DicomDecoder {
 	private static final int AE=0x4145, AS=0x4153, AT=0x4154, CS=0x4353, DA=0x4441, DS=0x4453, DT=0x4454,
 		FD=0x4644, FL=0x464C, IS=0x4953, LO=0x4C4F, LT=0x4C54, PN=0x504E, SH=0x5348, SL=0x534C, 
 		SS=0x5353, ST=0x5354, TM=0x544D, UI=0x5549, UL=0x554C, US=0x5553, UT=0x5554,
-		OB=0x4F42, OW=0x4F57, SQ=0x5351, UN=0x554E, QQ=0x3F3F;
+		OB=0x4F42, OW=0x4F57, SQ=0x5351, UN=0x554E, QQ=0x3F3F,
+		OF=0x4F46, OL=0x4F4C, OD=0x4F44, UC=0x5543, UR=0x5552, OV=0x4F56, SV=0x5356, UV=0x5556;
+		
 		
 	private static Properties dictionary;
 
@@ -461,6 +463,8 @@ class DicomDecoder {
 		
 		switch (vr) {
 			case OB: case OW: case SQ: case UN: case UT:
+			case OF: case OL: case OD: case UC: case UR: 
+			case OV: case SV: case UV:
 				// Explicit VR with 32-bit length if other two bytes are zero
 				if ( (b2 == 0) || (b3 == 0) ) return getInt();
 				// Implicit VR with 32-bit length
@@ -468,10 +472,10 @@ class DicomDecoder {
 				if (littleEndian)
 					return ((b3<<24) + (b2<<16) + (b1<<8) + b0);
 				else
-					return ((b0<<24) + (b1<<16) + (b2<<8) + b3);		
+					return ((b0<<24) + (b1<<16) + (b2<<8) + b3);
 			case AE: case AS: case AT: case CS: case DA: case DS: case DT:  case FD:
 			case FL: case IS: case LO: case LT: case PN: case SH: case SL: case SS:
-			case ST: case TM:case UI: case UL: case US: case QQ:
+			case ST: case TM: case UI: case UL: case US: case QQ:
 				// Explicit vr with 16-bit length
 				if (littleEndian)
 					return ((b3<<8) + b2);

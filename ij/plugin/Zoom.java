@@ -28,8 +28,7 @@ public class Zoom implements PlugIn {
 	
 	public static void in(ImagePlus imp) {
 		ImageCanvas ic = imp.getCanvas();
-		if (ic==null)
-			return;
+		if (ic==null) return;
 		waitUntilActivated(imp);
 		int x = ic.screenX(imp.getWidth()/2);
 		int y = ic.screenY(imp.getHeight()/2);
@@ -40,8 +39,7 @@ public class Zoom implements PlugIn {
 
 	public static void out(ImagePlus imp) {
 		ImageCanvas ic = imp.getCanvas();
-		if (ic==null)
-			return;
+		if (ic==null) return;
 		waitUntilActivated(imp);
 		int x = ic.screenX(imp.getWidth()/2);
 		int y = ic.screenY(imp.getHeight()/2);
@@ -50,13 +48,35 @@ public class Zoom implements PlugIn {
 			imp.repaintWindow();
 	}
 
-	private static void waitUntilActivated(ImagePlus imp) {
-		if (imp.getCanvas()!=null) {
-			long t0 = System.currentTimeMillis();
-			while (!imp.activated() && (System.currentTimeMillis()-t0)<=1000)
-				IJ.wait(10);
-			IJ.wait(20);
+	public static void unzoom(ImagePlus imp) {
+		ImageCanvas ic = imp.getCanvas();
+		if (ic!=null) {
+			waitUntilActivated(imp);
+			ic.unzoom();
 		}
+	}
+	
+	public static void maximize(ImagePlus imp) {
+		ImageWindow win = imp.getWindow();
+		if (win!=null) {
+			waitUntilActivated(imp);
+			win.maximize();
+			IJ.wait(100);
+		}
+	}
+
+	private static void waitUntilActivated(ImagePlus imp) {
+		int count = 0;
+		boolean isCanvas = imp.getCanvas()!=null;
+		if (isCanvas) {
+			long t0 = System.currentTimeMillis();
+			while (!imp.windowActivated() && (System.currentTimeMillis()-t0)<=1000) {
+				IJ.wait(10);
+				count++;
+			}
+		}
+		if (IJ.debugMode)
+			IJ.log("Zoom: "+ count+" "+imp.windowActivated()+" "+isCanvas+" "+imp);
     }
 
 	public void run(String arg) {
@@ -91,21 +111,20 @@ public class Zoom implements PlugIn {
 			if (ic.getMagnification()<1.0)
 				imp.repaintWindow();
 			Recorder.recordCall("Zoom.out(imp);");
-    	} else if (arg.equals("orig"))
-			ic.unzoom();
-    	else if (arg.equals("100%"))
+    	} else if (arg.equals("orig")) {
+			unzoom(imp);
+			Recorder.recordCall("Zoom.unzoom(imp);");
+    	} else if (arg.equals("100%")) {
+    	    waitUntilActivated(imp);
     		ic.zoom100Percent();
-		else if (arg.equals("to")) {
+		} else if (arg.equals("to")) {
 			zoomToSelection(imp, ic);
 			Recorder.recordCall("Zoom.toSelection(imp);");
-		} else if (arg.equals("set"))
+		} else if (arg.equals("set")) {
 			setZoom(imp, -1, -1, -1);
-		else if (arg.equals("max")) {
-			ImageWindow win = imp.getWindow();
-			if (win!=null) {
-				win.maximize();
-				IJ.wait(100);
-			}
+		} else if (arg.equals("max")) {
+			maximize(imp);
+			Recorder.recordCall("Zoom.maximize(imp);");
 		} else if (arg.equals("scale"))
 			scaleToFit(imp);
 	}
@@ -123,7 +142,7 @@ public class Zoom implements PlugIn {
 		int x = r.x+r.width/2;
 		int y = r.y+r.height/2;
 		mag = ic.getHigherZoomLevel(mag);
-		while(r.width*mag<w.width - marginw && r.height*mag<w.height - marginh) {
+		while (r.width*mag<w.width-marginw && r.height*mag<w.height-marginh) {
 			ic.zoomIn(ic.screenX(x), ic.screenY(y));
 			double cmag = ic.getMagnification();
 			if (cmag==32.0) break;
@@ -199,6 +218,7 @@ public class Zoom implements PlugIn {
 			int canvasHeight = (int)(srcHeight*mag+insets.top+insets.bottom+ImageWindow.VGAP*2+win.getSliderHeight());
 			ic.setSourceRect(new Rectangle(x-srcWidth/2,y-srcHeight/2,srcWidth,srcHeight));
 			ic.setMagnification(mag);
+			ic.setSize(new Dimension((int)(srcWidth*mag), (int)(srcHeight*mag)));
 			win.setSize(canvasWidth, canvasHeight);
 			return;
 		}

@@ -3348,7 +3348,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	this.borderColor = borderColor;
     }
     
-    public boolean activated() {
+    public boolean windowActivated() {
     	return this.activated;
     }
         
