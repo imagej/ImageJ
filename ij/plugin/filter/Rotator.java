@@ -23,6 +23,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 	private String[] methods = ImageProcessor.getInterpolationMethods();
 	private static int interpolationMethod = ImageProcessor.BILINEAR;
 	private Overlay overlay;
+	private boolean done;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
@@ -81,12 +82,19 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 			imp.updateAndDraw();
 			Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
 		}
+		if (done) { // remove grid
+			Overlay ovly = imp.getOverlay();
+			if (ovly!=null) {
+				ovly.remove(GRID);
+				if (ovly.size()==0) imp.setOverlay(null);			
+			}
+		}
 	}
 
 	void enlargeCanvas() {
 		imp.unlock();
-		IJ.run("Select All");
-		IJ.run("Rotate...", "angle="+angle);
+		IJ.run(imp, "Select All", "");
+		IJ.run(imp, "Rotate...", "angle="+angle);
 		Roi roi = imp.getRoi();
 		Rectangle r = roi.getBounds();
 		if (r.width<imp.getWidth()) r.width = imp.getWidth();
@@ -94,13 +102,13 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 		IJ.showStatus("Rotate: Enlarging...");
 		if (imp.getStackSize()==1)
 			Undo.setup(Undo.COMPOUND_FILTER, imp);
-		IJ.run("Canvas Size...", "width="+r.width+" height="+r.height+" position=Center "+(fillWithBackground?"":"zero"));
+		IJ.run(imp, "Canvas Size...", "width="+r.width+" height="+r.height+" position=Center "+(fillWithBackground?"":"zero"));
 		IJ.showStatus("Rotating...");
 	}
 
 	void drawGridLines(int lines) {
-		//if (overlay.size()>0 && GRID.equals(overlay.get(0).getName()))
-		//	overlay.remove(0);
+		if (overlay==null)
+			return;
 		overlay.remove(GRID);
 		if (lines==0)
 			return;
@@ -154,11 +162,15 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 			return DONE;
 		}
 		Overlay ovly = imp.getOverlay();
-		if (ovly!=null) ovly.remove(GRID);
-		if (!enlarge)
-			flags |= KEEP_PREVIEW;		// standard filter without enlarge
-		else if (imp.getStackSize()==1)
+		if (ovly!=null) {
+			ovly.remove(GRID);
+			if (ovly.size()==0) imp.setOverlay(null);		
+		}
+		if (enlarge)
 			flags |= NO_CHANGES;			// undoable as a "compound filter"
+		else if (imp.getStackSize()==1)			
+			flags |= KEEP_PREVIEW;		// standard filter without enlarge
+		done = true;
 		return IJ.setupDialog(imp, flags);
 	}
 

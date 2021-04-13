@@ -462,7 +462,9 @@ public class Prefs {
 			if (!IJ.isLinux()) dialogCancelButtonOnRight = false;
 			saveOptions(prefs);
 			savePluginPrefs(prefs);
-			IJ.getInstance().savePreferences(prefs);
+			ImageJ ij = IJ.getInstance();
+			if (ij!=null)
+				ij.savePreferences(prefs);
 			Menus.savePreferences(prefs);
 			ParticleAnalyzer.savePreferences(prefs);
 			Analyzer.savePreferences(prefs);

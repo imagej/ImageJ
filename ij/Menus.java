@@ -1661,6 +1661,8 @@ public class Menus {
 
 	/** Called once when ImageJ quits. */
 	public static void savePreferences(Properties prefs) {
+		if (pluginsPrefs==null)
+			return;
 		int index = 0;
 		for (Enumeration en=pluginsPrefs.elements(); en.hasMoreElements();) {
 			String key = "plugin" + (index/10)%10 + index%10;

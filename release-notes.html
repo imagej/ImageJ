@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53j12 7 April 2021</u>
+<li> <u>1.53j18 13 April 2021</u>
 <ul>
 <li> Thanks to Stein Rorvik, added the Color.setForegroundValue()
 and Color.setBackgroundValue() macro functions and the    DOCUMENT
@@ -27,6 +27,12 @@ more text than what fits in the window.
 <li> Thanks to 'Sethur', fixed bugs that caused DICOM
 files using newer VRs (from 2014 and later), such as
 UC and UR, to fail.
+<li> Thanks to Bruno Vellutini, fixed a bug that caused images rotated
+interactively using the "Enlarge image" and "Preview" options to not
+have the grid lines removed after the rotation.
+<li> Thanks to Jerome Mutterer, fixed a bug that caused the
+Prefs.savePreferences() method to throw and illegal argument
+exception if the "ImageJ" window was not open.
 </ul>
 
 <li> <u>1.53i 24 March 2021</u>
