@@ -92,11 +92,11 @@ public class ImagesToStack implements PlugIn {
 				gd.addChoice("Method:", methods, methods[staticMethod]);
 			}
 			gd.addStringField("Name:", name, 12);
-			gd.addStringField("Title Contains:", "", 12);
+			gd.addStringField("Title contains:", "", 12);
 			if (sizesDiffer)
-				gd.addCheckbox("Bicubic Interpolation", staticBicubic);
-			gd.addCheckbox("Use Titles as Labels", staticTitlesAsLabels);
-			gd.addCheckbox("Keep Source Images", staticKeep);
+				gd.addCheckbox("Bicubic interpolation", staticBicubic);
+			gd.addCheckbox("Use titles as labels", staticTitlesAsLabels);
+			gd.addCheckbox("Keep source images", staticKeep);
 			gd.showDialog();
 			if (gd.wasCanceled()) return;
 			if (sizesDiffer)
@@ -150,6 +150,8 @@ public class ImagesToStack implements PlugIn {
 			if (ip.getMin()<min) min = ip.getMin();
 			if (ip.getMax()>max) max = ip.getMax();
 			String label = titlesAsLabels?images[i].getTitle():null;
+			if (label==null)
+				label = (String)images[i].getProperty("Label");
 			if (label!=null) {
 				String info = (String)images[i].getProperty("Info");
 				if (info!=null) label += "\n" + info;

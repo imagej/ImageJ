@@ -826,6 +826,8 @@ public class Menus {
 	/** Returns the specified ImageJ menu (e.g., "File>New") or null if it is not found. */
 	public static Menu getImageJMenu(String menuPath) {
 		if (menus==null)
+			IJ.init();
+		if (menus==null)
 			return null;
 		if (menus.get(menuPath)!=null)
 			return getMenu(menuPath, false);
@@ -1333,6 +1335,8 @@ public class Menus {
         
 	/** Returns the hashtable that associates commands with plugins. */
 	public static Hashtable getCommands() {
+		if (pluginsTable==null)
+			IJ.init();
 		return pluginsTable;
 	}
         

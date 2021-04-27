@@ -288,29 +288,31 @@ public class Prefs {
 	public static String load(Object ij, Applet applet) {
 		if (ImageJDir==null)
 			ImageJDir = System.getProperty("user.dir");
-		InputStream f = null;
-		try { // Look for IJ_Props.txt in ImageJ folder
-			f = new FileInputStream(ImageJDir+"/"+PROPS_NAME);
-			propertiesPath = ImageJDir+"/"+PROPS_NAME;
-		} catch (FileNotFoundException e) {
-			f = null;
+		if (ij!=null) {
+			InputStream f = null;
+			try { // Look for IJ_Props.txt in ImageJ folder
+				f = new FileInputStream(ImageJDir+"/"+PROPS_NAME);
+				propertiesPath = ImageJDir+"/"+PROPS_NAME;
+			} catch (FileNotFoundException e) {
+				f = null;
+			}
+			if (f==null) {
+				// Look in ij.jar if not found in ImageJ folder
+				f = ij.getClass().getResourceAsStream("/"+PROPS_NAME);
+			}			
+			if (applet!=null)
+				return loadAppletProps(f, applet);
+			if (f==null)
+				return PROPS_NAME+" not found in ij.jar or in "+ImageJDir;
+			f = new BufferedInputStream(f);
+			try {
+				props.load(f);
+				f.close();
+			} catch (IOException e) {
+				return("Error loading "+PROPS_NAME);
+			}
+			imagesURL = props.getProperty(IJ.isJava18()?"images.location":"images.location2");
 		}
-		if (f==null) {
-			// Look in ij.jar if not found in ImageJ folder
-			f = ij.getClass().getResourceAsStream("/"+PROPS_NAME);
-		}			
-		if (applet!=null)
-			return loadAppletProps(f, applet);
-		if (f==null)
-			return PROPS_NAME+" not found in ij.jar or in "+ImageJDir;
-		f = new BufferedInputStream(f);
-		try {
-			props.load(f);
-			f.close();
-		} catch (IOException e) {
-			return("Error loading "+PROPS_NAME);
-		}
-		imagesURL = props.getProperty(IJ.isJava18()?"images.location":"images.location2");
 		loadPreferences();
 		loadOptions();
 		guiScale = get(GUI_SCALE, 1.0);

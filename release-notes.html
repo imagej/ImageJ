@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53j18 13 April 2021</u>
+<li> <u>1.53j26 27 April 2021</u>
 <ul>
 <li> Thanks to Stein Rorvik, added the Color.setForegroundValue()
 and Color.setBackgroundValue() macro functions and the    DOCUMENT
@@ -18,6 +18,9 @@ a string or file
 (<a href="http://wsr.imagej.net/macros/ChecksumTest.txt">example</a>).
 <li> Thanks to Fred Damen, added the Zoom.in(imp), Zoom.out(imp),
 Zoom.unzoom(imp) and Zoom.maximize(imp) methods.
+<li> Thanks to Laurent Thomas, added support for scrollbars in 
+GenericDialog TextAreas
+(<a href="http://wsr.imagej.net/macros/js/GenericDialogScrollbars.js">example</a>).
 <li> Thanks to Fred Damen, fixed bugs that caused programmatic image
 window zooming to not work reliably
 (<a href="http://wsr.imagej.net/macros/js/ZoomTest.js">example</a>).
@@ -31,8 +34,17 @@ UC and UR, to fail.
 interactively using the "Enlarge image" and "Preview" options to not
 have the grid lines removed after the rotation.
 <li> Thanks to Jerome Mutterer, fixed a bug that caused the
-Prefs.savePreferences() method to throw and illegal argument
+Prefs.savePreferences() method to throw a null pointer
 exception if the "ImageJ" window was not open.
+<li> Thanks to Stein Rorvik, fixed a bug that caused the slice
+label to be incorrect after importing an image sequence and
+"Start" was greater than 1 and "Count" was 1.
+<li> Thanks to Stein Rorvik, fixed a bug that caused
+the <i>Images to Stack</i> command to ignore slice labels
+when the "Use titles as labels" option was not enabled.
+<li> Thanks to 'ghf', worked around a Fiji bug that caused the
+<i>File&gt;Import&gt;Image Sequence</i> command to fail
+if the folder contained a .rar file.
 </ul>
 
 <li> <u>1.53i 24 March 2021</u>

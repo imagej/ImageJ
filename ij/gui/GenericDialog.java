@@ -730,14 +730,23 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     public void addTextAreas(String text1, String text2, int rows, int columns) {
 		if (textArea1!=null) return;
 		Panel panel = new Panel();
+		int scrollbars = TextArea.SCROLLBARS_NONE;
+		if (text1.endsWith("SCROLLBARS_BOTH")) {
+			scrollbars = TextArea.SCROLLBARS_BOTH;
+			text1 = text1.substring(0, text1.length()-15);
+		}
+		if (text1.endsWith("SCROLLBARS_VERTICAL_ONLY")) {
+			scrollbars = TextArea.SCROLLBARS_VERTICAL_ONLY;
+			text1 = text1.substring(0, text1.length()-24);
+		}
 		Font font = new Font("SansSerif", Font.PLAIN, (int)(14*Prefs.getGuiScale()));
-		textArea1 = new TextArea(text1,rows,columns,TextArea.SCROLLBARS_NONE);
+		textArea1 = new TextArea(text1,rows,columns,scrollbars);
 		if (IJ.isLinux()) textArea1.setBackground(Color.white);
 		textArea1.setFont(font);
 		textArea1.addTextListener(this);
 		panel.add(textArea1);
 		if (text2!=null) {
-			textArea2 = new TextArea(text2,rows,columns,TextArea.SCROLLBARS_NONE);
+			textArea2 = new TextArea(text2,rows,columns,scrollbars);
 			if (IJ.isLinux()) textArea2.setBackground(Color.white);
 			textArea2.setFont(font);
 			panel.add(textArea2);

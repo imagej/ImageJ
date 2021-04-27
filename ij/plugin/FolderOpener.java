@@ -18,7 +18,7 @@ public class FolderOpener implements PlugIn {
 	private static final int MAX_SEPARATE = 40;
 	private static final String DIR_KEY = "import.sequence.dir";
 	private static final String[] types = {"default", "16-bit", "32-bit", "RGB"};
-	private static String[] excludedTypes = {".txt", ".lut", ".roi", ".pty", ".hdr", ".java", ".ijm", ".py", ".js", ".bsh", ".xml"};
+	private static String[] excludedTypes = {".txt", ".lut", ".roi", ".pty", ".hdr", ".java", ".ijm", ".py", ".js", ".bsh", ".xml", ".rar"};
 	private static boolean staticSortFileNames = true;
 	private static boolean staticOpenAsVirtualStack;
 	private boolean convertToRGB;
@@ -422,7 +422,10 @@ public class FolderOpener implements PlugIn {
 				}
 			}
 			if (imp2.getStackSize()==1) {
-				imp2.setProperty("Label", list[0]);
+				int idx = this.start-1;
+				if (idx<0 || idx>=list.length)
+					idx = 0;
+				imp2.setProperty("Label", list[idx]);
 				if (info1!=null)
 					imp2.setProperty("Info", info1);
 			}
