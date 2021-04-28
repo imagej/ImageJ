@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53j26 27 April 2021</u>
+<li> <u>1.53j29 28 April 2021</u>
 <ul>
 <li> Thanks to Stein Rorvik, added the Color.setForegroundValue()
 and Color.setBackgroundValue() macro functions and the    DOCUMENT
@@ -44,7 +44,11 @@ the <i>Images to Stack</i> command to ignore slice labels
 when the "Use titles as labels" option was not enabled.
 <li> Thanks to 'ghf', worked around a Fiji bug that caused the
 <i>File&gt;Import&gt;Image Sequence</i> command to fail
-if the folder contained a .rar file.
+if the folder contained a ".h5" file.
+<li> Thanks to Jerome Mutterer, fixed bugs that caused the
+Stack.setDisplayMode(), Stack.setSlice() and Stack.setFrame()
+macro functions to sometimes not work as expected
+in batch mode.
 </ul>
 
 <li> <u>1.53i 24 March 2021</u>

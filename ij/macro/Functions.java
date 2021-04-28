@@ -5409,7 +5409,8 @@ public class Functions implements MacroConstants, Measurements {
 		if (m==-1)
 			interp.error("Invalid mode");
 		((CompositeImage)imp).setMode(m);
-		imp.updateAndDraw();
+		if (imp.getWindow()!=null)
+			imp.updateAndDraw();
 	}
 
 	void swapStackImages(ImagePlus imp) {

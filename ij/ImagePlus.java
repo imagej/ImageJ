@@ -422,7 +422,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** ImageCanvas.paint() calls this method when the
 		ImageProcessor has generated a new image. */
 	public void updateImage() {
-		if (ip!=null)
+		if (ip!=null && win!=null)
 			img = ip.createImage();
 	}
 
@@ -542,6 +542,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (img==null && ip!=null)
 			img = ip.createImage();
 		return img;
+	}
+	
+	public static String img() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp==null) return "null imp";
+		return imp.img==null?"null":"not null";
 	}
 
 	/** Returns a copy of this image as an 8-bit or RGB BufferedImage.
