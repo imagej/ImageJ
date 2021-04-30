@@ -298,6 +298,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		nothing if there is no window associated with
 		this image (i.e. show() has not been called).*/
 	public synchronized void updateAndDraw() {
+		if (win==null)
+			return;
 		if (stack!=null && !stack.isVirtual() && currentSlice>=1 && currentSlice<=stack.size()) {		
 			if (stack.size()>1 && win!=null && !(win instanceof StackWindow)) {
 				setStack(stack);	//adds scroll bar if stack size has changed to >1
@@ -544,12 +546,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return img;
 	}
 	
-	public static String img() {
-		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp==null) return "null imp";
-		return imp.img==null?"null":"not null";
-	}
-
 	/** Returns a copy of this image as an 8-bit or RGB BufferedImage.
 	 * @see ij.process.ShortProcessor#get16BitBufferedImage
 	 */

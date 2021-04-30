@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53j29 28 April 2021</u>
+<li> <u>1.53j31 30 April 2021</u>
 <ul>
 <li> Thanks to Stein Rorvik, added the Color.setForegroundValue()
 and Color.setBackgroundValue() macro functions and the    DOCUMENT
@@ -16,6 +16,9 @@ ImageProcessor.setGlobalBackgroundColor() methods.
 function, which returns the MD5 (or SHA-256) checksum from
 a string or file
 (<a href="http://wsr.imagej.net/macros/ChecksumTest.txt">example</a>).
+<li> Thanks to Michael Schmid, added the
+Fit.doWeightedFit(equation,x,y,weights[,initialGuesses])   DOCUMENT
+macro function.
 <li> Thanks to Fred Damen, added the Zoom.in(imp), Zoom.out(imp),
 Zoom.unzoom(imp) and Zoom.maximize(imp) methods.
 <li> Thanks to Laurent Thomas, added support for scrollbars in 
@@ -47,8 +50,12 @@ when the "Use titles as labels" option was not enabled.
 if the folder contained a ".h5" file.
 <li> Thanks to Jerome Mutterer, fixed bugs that caused the
 Stack.setDisplayMode(), Stack.setSlice() and Stack.setFrame()
-macro functions to sometimes not work as expected
-in batch mode.
+macro functions to not work as expected in
+batch mode, and the ImagePlus.setDisplayMode(),
+ImagePlus.setZ() and ImagePlus.setSetT() methods
+to not work as expected when the image was
+not displayed.
+
 </ul>
 
 <li> <u>1.53i 24 March 2021</u>

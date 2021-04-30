@@ -43,6 +43,7 @@ import java.awt.Color;
  *  2016-11-28: added static getNumParams methods
  *  2018-03-23: fixes NullPointerException for custom fit without initialParamVariations
  *  2018-07-19: added error function erf (=integral over Gaussian)
+ *  2021-04-30: data points can have weights
  */
 
 public class CurveFitter implements UserFunction{
@@ -94,7 +95,7 @@ public class CurveFitter implements UserFunction{
 	"y = a*(1-exp(-b*x))^c",									//CHAPMAN
 	"y = a+b*erf((x-c)/d)"										//ERF; note that the c parameter is sqrt2 times the Gaussian
 	};
-	
+
 	/** ImageJ Macro language code for the built-in functions */
 	public static final String[] fMacro = {
 	"y = a+x*b","y = a+x*(b+x*c)",								//STRAIGHT_LINE,POLY2
@@ -123,10 +124,12 @@ public class CurveFitter implements UserFunction{
 
 	private int fitType = -1;		// Number of curve type to fit
 	private double[] xData, yData;	// x,y data to fit
+	private double[] weights;		// weights for the data to fit
 	private double[] xDataSave, yDataSave;	//saved original data after fitting modified data
 	private int numPoints;			// number of data points in actual fit
 	private double ySign = 0;		// remember sign of y data for power-law fit via regression
-	private double sumY = Double.NaN, sumY2 = Double.NaN;  // sum(y), sum(y^2) of the data used for fitting
+	private double sumY = Double.NaN, sumY2 = Double.NaN;  // sum(y*w), sum(y^2*w) of the data used for fitting (w=weight, default 1)
+	private double sumWeights = Double.NaN;  //sum of weights (or numPoints, if no weigths are given)
 	private int numParams;			// number of parameters
 	private double[] initialParams; // user specified or estimated initial parameters
 	private double[] initialParamVariations; // estimate of range of parameters
@@ -259,14 +262,16 @@ public class CurveFitter implements UserFunction{
 	}
 
 	/** Fit a function defined as a macro String like "y = a + b*x + c*x*x".
+	 *  When showSettings is true, pops up a dialog allowing the user to set the initial
+	 *						fit parameters and various numbers controlling the Minimizer
 	 *	Returns the number of parameters, or 0 in case of a macro syntax error.
 	 *
-	 *	For good performance, it is advisable to set also the typical variation range
-	 *	of the initial parameters by the
-	 *	getMinimizer().setInitialParamVariations(double[]) method (especially if one or
-	 *	more of the initialParams are zero).
 	 *	Use getStatus() and/or getStatusString() to see whether fitting was (probably) successful and
 	 *	getParams() to access the result.
+	 *
+	 *	For complicated fits and good performance, it is advisable to use the doCustomFit method with
+	 *  a (java) UserFunction, which also has more options.
+	 *
 	 */
 	public int doCustomFit(String equation, double[] initialParams, boolean showSettings) {
 		customFormula = null;
@@ -298,22 +303,26 @@ public class CurveFitter implements UserFunction{
 	 *	Use getStatus() and/or getStatusString() to see whether fitting was (probably) successful and
 	 *	getParams() to access the result.
 	 *
-	 *	@param userFunction		A plugin where the fit function is defined by the
-	 *							userFunction(params, x) method.
-	 *							This function must allow simultaneous calls in multiple threads.
+	 *  For getter performance, if possible it is advisable to first call setOffsetMultiplySlopeParams,
+	 *  to avoid searching for one or two parameters that can be calculated directly by linear regression.
+	 *
+	 *	@param userFunction     A class instance implementing the userFunction interface. There, the
+	 *                          fit function hould be defined by the method userFunction(params, x).
+	 *                          This function must allow simultaneous calls in multiple threads.
 	 *	@param numParams		Number of parameters of the fit function.
 	 *	@param formula			A String describing the fit formula, may be null.
-	 *	@param initialParams	Starting point for the parameters; may be null (than values
-	 *							of 0 are used). The fit function with these parameters must
-	 *							not return NaN for any of the data points given in the
-	 *							constructor (xData).
+	 *	@param initialParams	Starting point for the parameters;  the fit function with these parameters
+	 *                          must not return NaN for any of the data points given in the constructor (xData).
+	 *                          initialParams may be null, then random values are used,
+	 *                          with repeated tries if the userFunction returns NaN.
 	 *	@param initialParamVariations Each parameter is initially varied by up to +/- this value.
-	 *							If not given (null), initial variations are taken as
-	 *							10% of initial parameter value or 0.01 for parameters that are zero.
-	 *							When this array is given, all elements must be positive (nonzero).
-	 *							See Minimizer.minimize for details.
-	 *	@param showSettings		Displays a popup dialog for modifying the initial parameters and
-	 *							a few numbers controlling the minimizer.
+	 *                          If not given (null), initial variations are taken as
+	 *                          10% of initial parameter value or 0.01 for parameters that are zero.
+	 *                          When this array is given, all elements must be positive (nonzero).
+	 *                          See Minimizer.minimize for details. Providing this array is
+	 *                          especially valuable if one or more initial parameters have a value of 0.
+	 *	@param showSettings     Displays a popup dialog for modifying the initial parameters and
+	 *                          a few numbers controlling the minimizer.
 	 */
 	public void doCustomFit(UserFunction userFunction, int numParams, String formula,
 		double[] initialParams, double[] initialParamVariations, boolean showSettings) {
@@ -328,6 +337,14 @@ public class CurveFitter implements UserFunction{
 	/** Sets the initial parameters, which override the default initial parameters. */
 	public void setInitialParameters(double[] initialParams) {
 		this.initialParams = initialParams;
+	}
+
+	/** Sets weights of the data points. The 'weights' array must have the same length as the data arrays
+	 *  passed with the constructor. If the error bars of the data points are known, the weights
+	 *  should be proportional to 1/error^2.
+	 *  When weights are specified, note that 'getSumResidualsSqr' will return the weighted sum. */
+	public void setWeights(double[] weights) {
+		this.weights = weights;
 	}
 
 	/** Returns a reference to the Minimizer used, for accessing Minimizer methods directly.
@@ -557,8 +574,10 @@ public class CurveFitter implements UserFunction{
 		return residuals;
 	}
 
-	/* Get the sum of the residuals (may be NaN if the minimizer could not start properly
+	/** Returns the sum of the residuals (may be NaN if the minimizer could not start properly
 	 *	i.e., if getStatus() returns Minimizer.INITILIZATION_FAILURE).
+	 *  If weights have been specified, each of the residuals is multiplied by the corresponding
+	 *  weight before summing.
 	 */
 	public double getSumResidualsSqr() {
 		return getParams()[numParams];	// value is stored as last element by the minimizer
@@ -567,6 +586,9 @@ public class CurveFitter implements UserFunction{
 	/** Returns the standard deviation of the residuals.
 	 *	Here, the standard deviation is defined here as the root-mean-square of the residuals
 	 *	times sqrt(n/(n-1)); where n is the number of points.
+	 *  If weights are provided, the standard deviation does not take the weights into account.
+	 *  With weights, the standard deviation and getSumResidualsSqr (which uses weights)
+	 *  are not related the usual way.
 	 */
 	public double getSD() {
 		double[] residuals = getResiduals();
@@ -580,19 +602,19 @@ public class CurveFitter implements UserFunction{
 		return Math.sqrt(stdDev/(n-1.0));
 	}
 
-	/** Returns R^2, where 1.0 is best.
+	/** Returns R^2, where 1.0 is best. For unweighted data,
 	<pre>
 	 r^2 = 1 - SSE/SSD
 
-	 where:	 SSE = sum of the squared errors
-				 SSD = sum of the squared deviations about the mean.
+	 where:  SSE = sum of the squared errors
+	         SSD = sum of the squared deviations about the mean.
 	</pre>
 	 *	For power, exp by linear regression and 'Rodbard NIH Image', this is calculated for the
 	 *	fit actually done, not for the residuals of the original data.
-	*/
+	 */
 	public double getRSquared() {
 		if (Double.isNaN(sumY)) calculateSumYandY2();
-		double sumMeanDiffSqr = sumY2 - sumY*sumY/numPoints;
+		double sumMeanDiffSqr = sumY2 - sumY*sumY/sumWeights;
 		double rSquared = 0.0;
 		if (sumMeanDiffSqr > 0.0)
 			rSquared = 1.0 - getSumResidualsSqr()/sumMeanDiffSqr;
@@ -601,12 +623,13 @@ public class CurveFitter implements UserFunction{
 
 	/** Get a measure of "goodness of fit" where 1.0 is best.
 	 *	Approaches R^2 if the number of points is much larger than the number of fit parameters.
+	 *  Assumes that the data points are independent (i.e., each point having a different x value).
 	 *	For power, exp by linear regression and 'Rodbard NIH Image', this is calculated for the
 	 *	fit actually done, not for the residuals of the original data.
 	 */
 	public double getFitGoodness() {
 		if (Double.isNaN(sumY)) calculateSumYandY2();
-		double sumMeanDiffSqr = sumY2 - sumY*sumY/numPoints;
+		double sumMeanDiffSqr = sumY2 - sumY*sumY/sumWeights;
 		double fitGoodness = 0.0;
 		int degreesOfFreedom = numPoints - getNumParams();
 		if (sumMeanDiffSqr > 0.0 && degreesOfFreedom > 0)
@@ -740,7 +763,7 @@ public class CurveFitter implements UserFunction{
 			fitType = RODBARD;
 		return fList[fitType];
 	}
-	
+
 	/** Returns macro code of the form "y = ...x" for the fit function used.
 	 *  Note that this is not neccessarily the equation acutally used for the fit
 	 *  (for the various "linear regression" types and RODBARD2, the fit is done
@@ -791,7 +814,9 @@ public class CurveFitter implements UserFunction{
 		if (numRegressionParams == 0) {		// simply calculate sum of residuals
 			for (int i=0; i<numPoints; i++) {
 				double fValue = f(params,xData[i]);
-				sumResidualsSqr += sqr(fValue-yData[i]);
+				double resSqr = sqr(fValue-yData[i]);
+				if (weights != null) resSqr *= weights[i];
+				sumResidualsSqr += resSqr;
 			}
             //IJ.log(IJ.d2s(params[0],3,5)+","+IJ.d2s(params[1],3,5)+": r="+IJ.d2s(sumResidualsSqr,3,5)+Thread.currentThread().getName() );
 		} else {	// handle simple linear dependencies by linear regression:
@@ -846,27 +871,30 @@ public class CurveFitter implements UserFunction{
 	private void doRegression(double[] params) {
 		double sumX=0, sumX2=0, sumXY=0; //sums for regression; here 'x' are function values
 		double sumY=0, sumY2=0;			//only calculated for 'slope', otherwise we use the values calculated already
+		double sumWeights=0;
 		for (int i=0; i<numPoints; i++) {
 			double fValue = fitType == STRAIGHT_LINE ? 0 : f(params, xData[i]);	 // function value
 			if (Double.isNaN(fValue)) { //check for NaN now; later we need NaN checking for division-by-zero check.
 				params[numParams] = Double.NaN;
 				return;					//sum of squared residuals is NaN if any value is NaN
 			}
+			double w = weights==null ? 1 : weights[i];
+			sumWeights += w;
 			//if(getIterations()==0)IJ.log(xData[i]+"\t"+yData[i]+"\t"+fValue); //x,y,function
 			if (hasSlopeParam) {		// fit y = offset + slope*x + function(of other params)
 				double x = xData[i];
 				double y = yData[i] - fValue;
-				sumX += x;
-				sumX2 += x*x;
-				sumXY += x*y;
-				sumY2 += y*y;
-				sumY += y;
+				sumX += x*w;
+				sumX2 += x*x*w;
+				sumXY += x*y*w;
+				sumY2 += y*y*w;
+				sumY += y*w;
 			} else {					// fit y = offset + factor * function(of other params)
 				double x = fValue;
 				double y = yData[i];
-				sumX += fValue;
-				sumX2 += fValue*fValue;
-				sumXY += fValue*yData[i];
+				sumX += fValue*w;
+				sumX2 += fValue*fValue*w;
+				sumXY += fValue*yData[i]*w;
 			}
 		}
 		if (!hasSlopeParam) {
@@ -884,21 +912,21 @@ public class CurveFitter implements UserFunction{
 				sumResidualsSqr = 2e-15*sumY2;
 		} else {						// full linear regression or offset only. Slope is named 'factor' here
 			if (factorParam >= 0) {
-				factor = (sumXY-sumX*sumY/numPoints)/(sumX2-sumX*sumX/numPoints);
+				factor = (sumXY-sumX*sumY/sumWeights)/(sumX2-sumX*sumX/sumWeights);
 				if (restrictPower & factor<=0)	// power-law fit with (0,0) point: power must be >0
 					factor = 1e-100;
 				else if (Double.isNaN(factor) || Double.isInfinite(factor))
 					factor = 0;			// all 'x' values are equal, any factor (slope) will fit
 			}
-			double offset = (sumY-factor*sumX)/numPoints;
+			double offset = (sumY-factor*sumX)/sumWeights;
 			params[offsetParam] = offset;
-			sumResidualsSqr = sqr(factor)*sumX2 + numPoints*sqr(offset) + sumY2 +
+			sumResidualsSqr = sqr(factor)*sumX2 + sumWeights*sqr(offset) + sumY2 +
 					2*factor*offset*sumX - 2*factor*sumXY - 2*offset*sumY;
 			// check for accuracy problem: large difference of small numbers?
 			// Don't report unrealistic or even negative values, otherwise minimization could lead
 			// into parameters where we have a numeric problem
-			if (sumResidualsSqr < 2e-15*(sqr(factor)*sumX2 + numPoints*sqr(offset) + sumY2))
-				sumResidualsSqr = 2e-15*(sqr(factor)*sumX2 + numPoints*sqr(offset) + sumY2);
+			if (sumResidualsSqr < 2e-15*(sqr(factor)*sumX2 + sumWeights*sqr(offset) + sumY2))
+				sumResidualsSqr = 2e-15*(sqr(factor)*sumX2 + sumWeights*sqr(offset) + sumY2);
 			//if(){IJ.log("sumX="+sumX+" sumX2="+sumX2+" sumXY="+sumXY+" factor="+factor+" offset=="+offset);}
 		}
 		params[numParams] = sumResidualsSqr;
@@ -1216,13 +1244,16 @@ public class CurveFitter implements UserFunction{
 	}
 
 
-	/** calculates the sum of y and y^2 */
+	/** calculates the sum of y and y^2 (weighted sum if we have weights) */
 	private void calculateSumYandY2() {
-		sumY = 0.0; sumY2 = 0.0;
+		sumY = 0.0; sumY2 = 0.0; sumWeights = 0.0;
+		double w = 1.0;
 		for (int i=0; i<numPoints; i++) {
 			double y = yData[i];
-			sumY += y;
-			sumY2 += y*y;
+			if (weights != null) w = weights[i];
+			sumY += y*w;
+			sumY2 += y*y*w;
+			sumWeights += w;
 		}
 	}
 
