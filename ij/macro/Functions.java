@@ -2219,6 +2219,9 @@ public class Functions implements MacroConstants, Measurements {
 			return getPlotLimits(currentPlot);
 		} else if (name.equals("freeze")) {
 			currentPlot.setFrozen(getBooleanArg());
+			return Double.NaN;			
+		} else if (name.equals("removeNaNs")) {
+			currentPlot.removeNaNs();
 			return Double.NaN;
 		}  else if (name.equals("addLegend") || name.equals("setLegend")) {
 			return addPlotLegend(currentPlot);
@@ -5409,8 +5412,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (m==-1)
 			interp.error("Invalid mode");
 		((CompositeImage)imp).setMode(m);
-		if (imp.getWindow()!=null)
-			imp.updateAndDraw();
+		imp.updateAndDraw();
 	}
 
 	void swapStackImages(ImagePlus imp) {

@@ -187,8 +187,10 @@ public class CompositeImage extends ImagePlus {
 	}
 
 	public void updateAndDraw() {
-		if (win==null)
+		if (win==null) {
+			img = null;
 			return;
+		}
 		updateImage();
 		if (win!=null)
 			notifyListeners(UPDATED);
