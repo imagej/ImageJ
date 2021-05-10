@@ -705,12 +705,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			//IJ.log("restore: "+roi.getPosition()+"  "+roi.getZPosition()+"  "+imp.getNSlices()+"  "+imp.getStackSize());
 		if (setSlice) {
 			boolean hyperstack = imp.isHyperStack();
+			int position = roi.getPosition();
 			if (hyperstack && roi.hasHyperStackPosition())
 				imp.setPosition(roi.getCPosition(), roi.getZPosition(), roi.getTPosition());
+			else if (hyperstack && imp.getNSlices()==1)
+				imp.setPosition(imp.getChannel(), 1, position);
+			else if (hyperstack)
+				imp.setPosition(imp.getChannel(), position, imp.getChannel());
 			else if (roi.getZPosition()>0 && imp.getNSlices()==imp.getStackSize())
-					imp.setSlice(roi.getZPosition());
-			else if (roi.getPosition()>0 && roi.getPosition()<=imp.getStackSize())
-				imp.setSlice(roi.getPosition());
+				imp.setSlice(roi.getZPosition());
+			else if (position>0 && position<=imp.getStackSize())
+				imp.setSlice(position);
 			else {
 				String label = (String)listModel.getElementAt(index);
 				int n = getSliceNumber(roi, label);

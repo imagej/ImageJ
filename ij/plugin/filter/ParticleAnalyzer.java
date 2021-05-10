@@ -1033,16 +1033,19 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			overlay.add(roi2);
 		} else {
 			Rectangle r = roi.getBounds();
-			int nPoints = ((PolygonRoi)roi).getNCoordinates();
-			int[] xp = ((PolygonRoi)roi).getXCoordinates();
-			int[] yp = ((PolygonRoi)roi).getYCoordinates();
-			int x=r.x, y=r.y;
 			if (!inSituShow)
 				ip.setValue(0.0);
-			ip.moveTo(x+xp[0], y+yp[0]);
-			for (int i=1; i<nPoints; i++)
-				ip.lineTo(x+xp[i], y+yp[i]);
-			ip.lineTo(x+xp[0], y+yp[0]);
+			if (roi instanceof PolygonRoi) {
+				int nPoints = ((PolygonRoi)roi).getNCoordinates();
+				int[] xp = ((PolygonRoi)roi).getXCoordinates();
+				int[] yp = ((PolygonRoi)roi).getYCoordinates();
+				int x=r.x, y=r.y;
+				ip.moveTo(x+xp[0], y+yp[0]);
+				for (int i=1; i<nPoints; i++)
+					ip.lineTo(x+xp[i], y+yp[i]);
+				ip.lineTo(x+xp[0], y+yp[0]);
+			} else
+				roi.drawPixels(ip);
 			if (showChoice!=BARE_OUTLINES) {
 				String s = ResultsTable.d2s(count,0);
 				ip.moveTo(r.x+r.width/2-ip.getStringWidth(s)/2, r.y+r.height/2+fontSize/2);

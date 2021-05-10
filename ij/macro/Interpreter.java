@@ -831,6 +831,7 @@ public class Interpreter implements MacroConstants {
 			case Variable.STRING: doStringAssignment(); break;
 			case Variable.ARRAY: doArrayAssignment(); break;
 			case USER_FUNCTION: doUserFunctionAssignment(); break;
+			case STRING_FUNCTION: doNumericStringAssignment(); break;
 			default:
 				putTokenBack();
 				double value = getAssignmentExpression();

@@ -2,6 +2,8 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import ij.measure.ResultsTable;
+import ij.util.Tools;
 
 /** Implements the Plugins/Utilities/Run Benchmark command.
  * Suppresses subordinate status bar messages by using
@@ -10,9 +12,18 @@ import ij.gui.*;
  * IJ.showProgress(-currentIndex,finalIndex).
 */
 public class Benchmark implements PlugIn {
-    int size = 5000;
-    int ops = 62;
-    int counter;
+    private String[] results = {
+        "10.9|MacBook Air (M1, 2020, Native)",
+        "17.2|iMac Pro (2017)",
+        "18.1|MacBook Air (M1, 2020, Rosetta)",
+		"24.7|27\" iMac (Early 2015)",
+    	"29.7|13\" MacBook Pro (Late 2015)",
+    	"29.7|15\" MacBook Pro (Early 2013)",
+    	"62.3|Acer Aspire laptop (Core i5, 2014)"
+	};
+    private int size = 5000;
+    private int ops = 62;
+    private int counter;
 
     public void run(String arg) {
     	ImagePlus cImp = WindowManager.getCurrentImage();
@@ -56,6 +67,21 @@ public class Benchmark implements PlugIn {
             scale = scale*1.2;
         }
         double time = (System.currentTimeMillis()-t0)/1000.0;
+        ResultsTable rt = new ResultsTable();
+        rt.showRowNumbers(true);
+        for (int i=0; i<results.length; i++) {
+        	String[] columns = Tools.split(results[i],"|");
+			rt.addRow();
+      		rt.addValue("Time", columns[0]);
+      		rt.addValue("Computer", columns[1]);
+        }
+		rt.addRow();
+		String t = IJ.d2s(time,1);
+		if (t.length()<4) t=" "+t;
+		rt.addValue("Time", t);
+		rt.addValue("Computer", "<<THIS MACHINE>>");
+		rt.sort("Time");
+        rt.show("Benchmark Results");
         IJ.showStatus("!"+IJ.d2s(time,1)+" seconds to perform "+counter+" operations on a "+size+"x"+size+" 16-bit image");
     }
     
