@@ -16,10 +16,11 @@ public class Benchmark implements PlugIn {
         "10.9|MacBook Air (M1, 2020, Native)",
         "17.2|iMac Pro (2017)",
         "18.1|MacBook Air (M1, 2020, Rosetta)",
+        "22.8|Dell T7920 (Dual Xeon, 282GB RAM, 2018)", 
 		"24.7|27\" iMac (Early 2015)",
     	"29.7|13\" MacBook Pro (Late 2015)",
     	"29.7|15\" MacBook Pro (Early 2013)",
-    	"62.3|Acer Aspire laptop (Core i5, 2014)"
+     	"62.3|Acer Aspire laptop (Core i5, 2014)"
 	};
     private int size = 5000;
     private int ops = 62;
@@ -79,7 +80,7 @@ public class Benchmark implements PlugIn {
 		String t = IJ.d2s(time,1);
 		if (t.length()<4) t=" "+t;
 		rt.addValue("Time", t);
-		rt.addValue("Computer", "<<THIS MACHINE>>");
+		rt.addValue("Computer", "<<THIS MACHINE ("+Prefs.getThreads()+" THREADS)>>");
 		rt.sort("Time");
         rt.show("Benchmark Results");
         IJ.showStatus("!"+IJ.d2s(time,1)+" seconds to perform "+counter+" operations on a "+size+"x"+size+" 16-bit image");

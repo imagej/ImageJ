@@ -722,10 +722,14 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     }
 
 	/** Adds one or two (side by side) text areas.
-	* @param text1	initial contents of the first text area
-	* @param text2	initial contents of the second text area or null
-	* @param rows	the number of rows
-	* @param columns	the number of columns
+	 * Append "SCROLLBARS_VERTICAL_ONLY" to the text of
+	 * the first text area to get vertical scrollbars
+	 * and "SCROLLBARS_BOTH" to get both vertical and
+	 * horizontal scrollbars.
+	 * @param text1	initial contents of the first text area
+	 * @param text2	initial contents of the second text area or null
+	 * @param rows	the number of rows
+	 * @param columns	the number of columns
 	*/
     public void addTextAreas(String text1, String text2, int rows, int columns) {
 		if (textArea1!=null) return;
