@@ -195,6 +195,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 				announceSliceNumber(i);
 				ip.setPixels(stack.getPixels(i));
 				ip.setSliceNumber(i);
+				ip.setSnapshotPixels(null);
 				processOneImage(ip, fp, null);
 				if (IJ.escapePressed()) {IJ.beep(); break;}
 			}

@@ -154,7 +154,7 @@ public class ImageReader {
 		int base = 0;
 		short last = 0;
 		for (int k=0; k<fi.stripOffsets.length; k++) {
-			//IJ.log("seek: "+fi.stripOffsets[k]+" "+fi.stripLengths[k]+"  "+(in instanceof RandomAccessStream));
+			//IJ.log("seek: "+k+" "+fi.stripOffsets[k]+" "+fi.stripLengths[k]+"  "+(in instanceof RandomAccessStream));
 			if (in instanceof RandomAccessStream)
 				((RandomAccessStream)in).seek(fi.stripOffsets[k]);
 			else if (k > 0) {

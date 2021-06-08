@@ -798,7 +798,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			imageType = BYTE;
 		if (t1==ImageProcessor.NO_THRESHOLD) {
 			noThreshold = true;
-			ImageStatistics stats = imp.getStatistics();
+			ImageStatistics stats = imp.getRawStatistics();
 			if (imageType!=BYTE || (stats.histogram[0]+stats.histogram[255]!=stats.pixelCount)) {
 				IJ.error("Particle Analyzer",
 					"A threshold has not been set using the\n"
@@ -807,14 +807,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				canceled = true;
 				return false;
 			}
-			boolean threshold255 = invertedLut;
-			if (Prefs.blackBackground)
-				threshold255 = !threshold255;
-			if (threshold255) {
-				level1 = 255;
-				level2 = 255;
-				fillColor = 64;
-			} else {
+			level1 = 255;
+			level2 = 255;
+			fillColor = 64;
+			if (!Prefs.blackBackground && !imp.isInvertedLut() && stats.histogram[0]<(imp.getWidth()*imp.getHeight())/2) {
 				level1 = 0;
 				level2 = 0;
 				fillColor = 192;

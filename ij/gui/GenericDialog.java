@@ -735,11 +735,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		if (textArea1!=null) return;
 		Panel panel = new Panel();
 		int scrollbars = TextArea.SCROLLBARS_NONE;
-		if (text1.endsWith("SCROLLBARS_BOTH")) {
+		if (text1!=null && text1.endsWith("SCROLLBARS_BOTH")) {
 			scrollbars = TextArea.SCROLLBARS_BOTH;
 			text1 = text1.substring(0, text1.length()-15);
 		}
-		if (text1.endsWith("SCROLLBARS_VERTICAL_ONLY")) {
+		if (text1!=null && text1.endsWith("SCROLLBARS_VERTICAL_ONLY")) {
 			scrollbars = TextArea.SCROLLBARS_VERTICAL_ONLY;
 			text1 = text1.substring(0, text1.length()-24);
 		}
