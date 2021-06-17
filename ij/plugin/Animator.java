@@ -3,6 +3,7 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.Calibration;
+import ij.plugin.frame.Recorder;
 import java.awt.Point;
 
 /** This plugin animates stacks. */
@@ -356,18 +357,37 @@ public class Animator implements PlugIn {
 		}
 		imp.updateStatusbarValue();
 	}
-
+	
 	void setSlice() {
-        GenericDialog gd = new GenericDialog("Set Slice");
-        gd.addNumericField("Slice Number (1-"+nSlices+"):", slice, 0);
-        gd.showDialog();
-        if (!gd.wasCanceled()) {
-        	int n = (int)gd.getNextNumber();
-        	if (imp.isDisplayedHyperStack())
-        		imp.setPosition(n);
-        	else
-        		imp.setSlice(n);
-        }
+		if (imp.isDisplayedHyperStack()) {
+			GenericDialog gd = new GenericDialog("Set Position");
+			int c = imp.getChannel();
+			int z = imp.getSlice();
+			int t = imp.getFrame();			
+			gd.addNumericField("Channel:", c);
+			gd.addNumericField("Slice:", z);
+			gd.addNumericField("Frame:", t);
+			gd.showDialog();
+			if (!gd.wasCanceled()) {
+				c = (int) gd.getNextNumber();
+				z = (int) gd.getNextNumber();
+				t = (int) gd.getNextNumber();
+				imp.setPosition(c, z, t);
+			}
+			if (Recorder.record) {
+				String method = Recorder.scriptMode()?"imp":"Stack";
+				Recorder.recordString(method+".setPosition("+c+","+z+","+t+");\n");
+				Recorder.disableCommandRecording();
+			}
+		} else {
+			GenericDialog gd = new GenericDialog("Set Slice");
+			gd.addNumericField("Slice (1-"+nSlices+"):", slice, 0);
+			gd.showDialog();
+			if (!gd.wasCanceled()) {
+				int slice = (int)gd.getNextNumber();
+				imp.setSlice(slice);
+			}
+		}
 	}
 
 	/** Returns the current animation speed in frames per second. */

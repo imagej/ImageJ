@@ -298,10 +298,14 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			textArea.append(str);
 	}
 	
+	public static void disableCommandRecording() {
+		commandName = null;
+	}
+	
 	public static void recordCall(String call) {
 		recordCall(call, false);
 	}
-
+	
 	public static void recordCall(String call, boolean recordCommand) {
 		if (IJ.debugMode) IJ.log("recordCall: "+call+"  "+commandName);
 		boolean isMacro = Thread.currentThread().getName().endsWith("Macro$") && !recordInMacros;

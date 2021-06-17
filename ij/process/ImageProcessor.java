@@ -478,6 +478,11 @@ public abstract class ImageProcessor implements Cloneable {
 		ByteProcessors, resets the LUT. */
 	public void resetMinAndMax() {}
 
+	/** Sets the lower and upper threshold levels using NO_LUT_UPDATE. */
+	public void setThreshold(double minThreshold, double maxThreshold) {
+		setThreshold(minThreshold, maxThreshold, NO_LUT_UPDATE);
+	}
+
 	/** Sets the lower and upper threshold levels. The 'lutUpdate' argument
 		can be RED_LUT, BLACK_AND_WHITE_LUT, OVER_UNDER_LUT or NO_LUT_UPDATE.
 		Thresholding of RGB images is not supported. */
