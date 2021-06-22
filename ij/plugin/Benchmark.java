@@ -80,7 +80,9 @@ public class Benchmark implements PlugIn {
 		String t = IJ.d2s(time,1);
 		if (t.length()<4) t=" "+t;
 		rt.addValue("Time", t);
-		rt.addValue("Computer", "<<THIS MACHINE ("+Prefs.getThreads()+" THREADS)>>");
+		int threads = Prefs.getThreads();
+		String suffix = " THREAD"+(threads>1?"S":"")+")>>";
+		rt.addValue("Computer", "<<THIS MACHINE ("+threads+suffix);
 		rt.sort("Time");
         rt.show("Benchmark Results");
         IJ.showStatus("!"+IJ.d2s(time,1)+" seconds to perform "+counter+" operations on a "+size+"x"+size+" 16-bit image");
@@ -118,7 +120,7 @@ public class Benchmark implements PlugIn {
     }
 
     void error(String msg) {
-        IJ.log("Benchmark: "+msg+" regression");
+        IJ.log("Benchmark: "+msg+" error");
     }
 }
 

@@ -17,6 +17,7 @@ public class VirtualStack extends ImageStack {
 	private String[] names;
 	private String[] labels;
 	private int bitDepth;
+	private int delay;
 	private Properties  properties;
 	private boolean generateData;
 	private int[] indexes;  // used to translate non-CZT hyperstack slice numbers
@@ -62,6 +63,7 @@ public class VirtualStack extends ImageStack {
   		if (options.contains("16-bit")) depth=16;
  	    if (options.contains("RGB")) depth=24;
         if (options.contains("32-bit")) depth=32;
+        if (options.contains("delay")) delay=250;
         this.generateData = options.contains("fill");
 		this.bitDepth = depth;
 	}
@@ -149,6 +151,7 @@ public class VirtualStack extends ImageStack {
 				case 24: ip = new ColorProcessor(w,h); break;
 				case 32: ip = new FloatProcessor(w,h); break;
 			}
+			String hlabel = null;
 			if (generateData) {
 				int value = 0;
 				ImagePlus img = WindowManager.getCurrentImage();
@@ -160,8 +163,14 @@ public class VirtualStack extends ImageStack {
 					for (int i=0; i<ip.getPixelCount(); i++)
 						ip.set(i,value++);
 				}
+				if (img!=null && img.isHyperStack()) {
+					int[] pos = img.convertIndexToPosition(n);
+					hlabel = pos[0]+" "+pos[1]+" "+pos[2]+" "+n;
+				}
 			}
-			label(ip, ""+n, Color.white);
+			label(ip, hlabel!=null?hlabel:""+n, Color.white);
+			if (delay>0)
+				IJ.wait(delay);
 			return ip;
 		}
 		n = translate(n);  // update n for hyperstacks not in the default CZT order
