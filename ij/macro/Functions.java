@@ -5220,6 +5220,18 @@ public class Functions implements MacroConstants, Measurements {
 			setPosition(imp);
 			return Double.NaN;
 		}
+		if (name.equals("setChannel")) {
+			imp.setPosition((int)getArg(),imp.getSlice(),imp.getFrame());
+			return Double.NaN;
+		}
+		if (name.equals("setSlice")) {
+			imp.setPosition(imp.getChannel(), (int)getArg(), imp.getFrame());
+			return Double.NaN;
+		}
+		if (name.equals("setFrame")) {
+			imp.setPosition(imp.getChannel(), imp.getSlice(), (int)getArg());
+			return Double.NaN;
+		}
 		if (name.equals("getPosition")) {
 			getPosition(imp);
 			return Double.NaN;
@@ -5245,16 +5257,12 @@ public class Functions implements MacroConstants, Measurements {
 			{getStackUnits(cal); return Double.NaN;}
 		if (name.equals("setUnits"))
 			{setStackUnits(imp); return Double.NaN;}
-		if (imp.getStackSize()==1)
+		if (imp.getStackSize()==1) {
 			interp.error("Stack required");
+			return Double.NaN;			
+		}
 		if (name.equals("setDimensions"))
 			setDimensions(imp);
-		else if (name.equals("setChannel"))
-			imp.setPosition((int)getArg(), imp.getSlice(), imp.getFrame());
-		else if (name.equals("setSlice"))
-			imp.setPosition(imp.getChannel(), (int)getArg(), imp.getFrame());
-		else if (name.equals("setFrame"))
-			imp.setPosition(imp.getChannel(), imp.getSlice(), (int)getArg());
 		else if (name.equals("setDisplayMode"))
 			setDisplayMode(imp, getStringArg());
 		else if (name.equals("getDisplayMode"))
@@ -8010,7 +8018,11 @@ public class Functions implements MacroConstants, Measurements {
 			return v;
 		} else if (name.equals("setSliceLabel")) {
 			String label = getFirstString();
-			int slice = (int)getLastArg();
+			int slice = imp.getCurrentSlice();
+			if (interp.nextToken()==',')
+				slice = (int)getLastArg();
+			else
+				interp.getRightParen();
 			if (slice<1 || slice>imp.getStackSize())
 				interp.error("Argument must be >=1 and <="+imp.getStackSize());
 			imp.getStack().setSliceLabel(label, slice);

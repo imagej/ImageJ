@@ -135,7 +135,6 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 				if (t==imp.getFrame()&&e.getAdjustmentType()==AdjustmentEvent.TRACK) return;
 			}
 			slice = (t-1)*nChannels*nSlices + (z-1)*nChannels + c;
-			//System.out.println("notify: "+slice);
 			notify();
 		}
 		if (!running)
@@ -237,7 +236,6 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 				catch(InterruptedException e) {}
 			}
 			if (done) return;
-			//System.out.println("setSlice: "+slice);
 			if (slice>0) {
 				int s = slice;
 				slice = 0;
@@ -300,7 +298,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			tSelector.setValue(frame);
 			SyncWindows.setT(this, frame);
 		}
-    	this.slice = (t-1)*nChannels*nSlices + (z-1)*nChannels + c;
+		this.slice = (t-1)*nChannels*nSlices + (z-1)*nChannels + c;
 		imp.updatePosition(c, z, t);
 		if (this.slice>0) {
 			int s = this.slice;

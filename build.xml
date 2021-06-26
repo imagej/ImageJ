@@ -16,7 +16,8 @@
     <copy file="IJ_Props.txt" todir="build" />
     <copy file="images/microscope.gif" tofile="build/microscope.gif" />
     <copy file="images/about.jpg" tofile="build/about.jpg" />
-	<copy file="plugins/MacAdapter.class" tofile="build/ij/plugin/MacAdapter.class" /> 
+	<copy file="plugins/MacAdapter.class" tofile="build/ij/plugin/MacAdapter.class" />
+	<copy file="plugins/MacAdapter9.class" tofile="build/ij/plugin/MacAdapter9.class" /> 
     <copy todir="build/macros"><fileset dir="macros"/></copy>
     <!-- Build ij.jar. -->
     <jar jarfile="ij.jar" basedir="build"
