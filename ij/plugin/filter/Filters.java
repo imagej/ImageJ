@@ -20,11 +20,15 @@ public class Filters implements PlugInFilter {
 		this.imp = imp;
 		if (imp!=null) {
 			Roi roi = imp.getRoi();
+			if (Prefs.modernMode && imp.getType()==ImagePlus.GRAY16 && arg.equals("invert")) {
+				imp.resetRoi();
+				roi = null;
+			}
 			if (roi!=null && !roi.isArea())
 				noRoi = true;
 		}
 		int flags = IJ.setupDialog(imp, DOES_ALL-DOES_8C+SUPPORTS_MASKING);
-		if ((flags&PlugInFilter.DOES_STACKS)!=0 && imp.getType()==ImagePlus.GRAY16 && imp.getStackSize()>1 && arg.equals("invert")) {
+		if ((flags&PlugInFilter.DOES_STACKS)!=0 && imp.getType()==ImagePlus.GRAY16 && imp.getStackSize()>1 && !Prefs.modernMode && arg.equals("invert")) {
 				invert16BitStack(imp);
 				return DONE;
 		}
@@ -38,6 +42,9 @@ public class Filters implements PlugInFilter {
 	
 		if (arg.equals("invert")) {
 	 		ip.invert();
+	 		slice++;
+	 		if (Prefs.modernMode && imp.getBitDepth()==16 && imp.getStackSize()>1 && slice==imp.getStackSize())
+	 			imp.resetDisplayRange();
 	 		return;
 	 	}
 	 	

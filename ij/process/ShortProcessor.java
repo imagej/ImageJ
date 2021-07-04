@@ -569,10 +569,20 @@ public class ShortProcessor extends ImageProcessor {
     }
 
 	public void invert() {
-		resetMinAndMax();
-		process(INVERT, 0.0);
+		if (ij.Prefs.modernMode)
+			invert(65536);
+		else {
+			resetMinAndMax();
+			process(INVERT, 0.0);
+		}
 	}
 	
+	public void invert(int range) {
+		setMinAndMax(0, 65535);
+		process(INVERT, 0.0);
+		resetMinAndMax();
+	}
+
 	public void add(int value) {process(ADD, value);}
 	public void add(double value) {process(ADD, value);}
 	public void set(double value) {process(SET, value);}

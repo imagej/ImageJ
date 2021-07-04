@@ -58,7 +58,7 @@ public class Prefs {
 		REVERSE_NEXT_PREVIOUS_ORDER=1<<5, AUTO_RUN_EXAMPLES=1<<6, SHOW_ALL_POINTS=1<<7,
 		DO_NOT_SAVE_WINDOW_LOCS=1<<8, JFILE_CHOOSER_CHANGED=1<<9,
 		CANCEL_BUTTON_ON_RIGHT=1<<10, IGNORE_RESCALE_SLOPE=1<<11,
-		NON_BLOCKING_DIALOGS=1<<12;
+		NON_BLOCKING_DIALOGS=1<<12, MODERN_MODE=1<<13;
 	public static final String OPTIONS2 = "prefs.options2";
     
 	/** file.separator system property */
@@ -186,6 +186,8 @@ public class Prefs {
 	public static boolean supportMacroUndo;
 	/** Use NonBlockingGenericDialogs in filters */	
 	public static boolean nonBlockingFilterDialogs;
+	/** Use v=65535-v to invert 16-bit images (more to come) */	
+	public static boolean modernMode;
 	//Save location of moved image windows */	
 	//public static boolean saveImageLocation = true;
 
@@ -551,6 +553,7 @@ public class Prefs {
 		dialogCancelButtonOnRight = (options2&CANCEL_BUTTON_ON_RIGHT)!=0;
 		ignoreRescaleSlope = (options2&IGNORE_RESCALE_SLOPE)!=0;
 		nonBlockingFilterDialogs = (options2&NON_BLOCKING_DIALOGS)!=0;
+		modernMode = (options2&MODERN_MODE)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -581,7 +584,8 @@ public class Prefs {
 			+ (jFileChooserSettingChanged?JFILE_CHOOSER_CHANGED:0)
 			+ (dialogCancelButtonOnRight?CANCEL_BUTTON_ON_RIGHT:0)
 			+ (ignoreRescaleSlope?IGNORE_RESCALE_SLOPE:0)
-			+ (nonBlockingFilterDialogs?NON_BLOCKING_DIALOGS:0);
+			+ (nonBlockingFilterDialogs?NON_BLOCKING_DIALOGS:0)
+			+ (modernMode?MODERN_MODE:0);
 		prefs.put(OPTIONS2, Integer.toString(options2));
 	}
 
