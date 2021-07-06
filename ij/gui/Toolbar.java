@@ -5,7 +5,11 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.io.File;
-import java.util.*;
+import java.util.Timer;
+import java.util.Hashtable;
+import java.util.TimerTask;
+import java.util.Arrays;
+import java.util.Locale;
 import ij.*;
 import ij.plugin.frame.*;
 import ij.plugin.MacroInstaller;
@@ -1271,7 +1275,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 		if (!isRightClick && longClickDelay>0) {
 			if (pressTimer==null)
-				pressTimer = new java.util.Timer();			
+				pressTimer = new Timer();			
 			pressTimer.schedule(new TimerTask() {
 				public void run() {
 					if (pressTimer != null) {

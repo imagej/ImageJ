@@ -186,7 +186,7 @@ public class Prefs {
 	public static boolean supportMacroUndo;
 	/** Use NonBlockingGenericDialogs in filters */	
 	public static boolean nonBlockingFilterDialogs;
-	/** Use v=65535-v to invert 16-bit images (more to come) */	
+	/** Currently not used */	
 	public static boolean modernMode;
 	//Save location of moved image windows */	
 	//public static boolean saveImageLocation = true;

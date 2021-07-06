@@ -5,24 +5,28 @@
 </head>
 <body>
 
-<li> <u>1.53k16 3 July 2021</u>
+<li> <u>1.53 5 July 2021</u>
 <ul>
-<li> Thanks Mike Nelson, added the "Modern mode" option to
-the <i>Edit&gt;Options&gt;Misc</i> dialog. 16-bit images are
-inverted using <i>v=65535-v</i> When this option is enabled.
+<li> Thanks Mike Nelson, 16-bit images are
+inverted using the full pixel value range (0-65535) or, if set,
+using the "Unsigned 16-bit range" in the "Set" option of the
+<i>Image&gt;Adjust&gt;Brightness/Contrast</i> dialog.
 <li> Thanks to Alan Brooks, added the macOS-specific
-MacAdapter9 plugin, which supports drag and drop on the
-ImageJ.app and the "About ImageJ" command on Java 9 or
-later.
+MacAdapter9 plugin, which, on Java 9 or later,
+supports drag and drop on the ImageJ.app and the
+"About ImageJ" command.
 <li> Thanks to Romain Guiet, the ROI Manager's
-“Associate ‘Show All’ ROIs with slices” option is
+"Associate 'Show All' ROIs with slices" option is
 now enabled by default.
 <li> Thanks to Gilles Carpentier, the particle analyzer now assumes
 the threshold is 255 unless "Black background" is not set,
 the image does not have an inverted LUT and fewer than
 half the pixels have a value of zero, in which case
 the threshold is set to zero.
-<li> Thanks to 'pdd2110', added the Property.setSliceLabel(label) method. DOCUMENT
+<li> Thanks to 'pdd2110', added the Property.setSliceLabel(label)
+macro function. DOCUMENT
+<li> Thanks to 'John D.', added the GenericDialog.addButton() method
+(<a href="http://wsr.imagej.net/plugins/Button_Example.java">example</a>).
 <li> Thanks to 'Oodegard', fixed a bug that caused the
 "Auto-next slice" option of the point tool to not
 work as expected with hyperstacks.

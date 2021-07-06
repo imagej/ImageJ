@@ -567,18 +567,13 @@ public class ShortProcessor extends ImageProcessor {
 			}
 		}
     }
-
+    
 	public void invert() {
-		if (ij.Prefs.modernMode)
-			invert(65536);
-		else {
-			resetMinAndMax();
-			process(INVERT, 0.0);
-		}
-	}
-	
-	public void invert(int range) {
-		setMinAndMax(0, 65535);
+		int range = 65536;
+		int defaultRange = ij.ImagePlus.getDefault16bitRange();
+		if (defaultRange>0 && !isSigned16Bit())
+			range = (int)Math.pow(2,defaultRange);
+		setMinAndMax(0, range-1);
 		process(INVERT, 0.0);
 		resetMinAndMax();
 	}

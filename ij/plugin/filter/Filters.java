@@ -20,7 +20,7 @@ public class Filters implements PlugInFilter {
 		this.imp = imp;
 		if (imp!=null) {
 			Roi roi = imp.getRoi();
-			if (Prefs.modernMode && imp.getType()==ImagePlus.GRAY16 && arg.equals("invert")) {
+			if (imp.getType()==ImagePlus.GRAY16 && arg.equals("invert")) {
 				imp.resetRoi();
 				roi = null;
 			}
@@ -28,10 +28,6 @@ public class Filters implements PlugInFilter {
 				noRoi = true;
 		}
 		int flags = IJ.setupDialog(imp, DOES_ALL-DOES_8C+SUPPORTS_MASKING);
-		if ((flags&PlugInFilter.DOES_STACKS)!=0 && imp.getType()==ImagePlus.GRAY16 && imp.getStackSize()>1 && !Prefs.modernMode && arg.equals("invert")) {
-				invert16BitStack(imp);
-				return DONE;
-		}
 		return flags;
 	}
 
@@ -43,7 +39,7 @@ public class Filters implements PlugInFilter {
 		if (arg.equals("invert")) {
 	 		ip.invert();
 	 		slice++;
-	 		if (Prefs.modernMode && imp.getBitDepth()==16 && imp.getStackSize()>1 && slice==imp.getStackSize())
+	 		if (imp.getBitDepth()==16 && imp.getStackSize()>1 && slice==imp.getStackSize())
 	 			imp.resetDisplayRange();
 	 		return;
 	 	}
@@ -94,28 +90,7 @@ public class Filters implements PlugInFilter {
 	 	}
         	 	
 	}
-	
-	void invert16BitStack(ImagePlus imp) {
-		imp.deleteRoi();
-		imp.getCalibration().disableDensityCalibration();
-		ImageStatistics stats = new StackStatistics(imp);
-		ImageStack stack = imp.getStack();
-		int nslices = stack.size();
-		int min=(int)stats.min, range=(int)(stats.max-stats.min);
-		int n = imp.getWidth()*imp.getHeight();
-		for (int slice=1; slice<=nslices; slice++) {
-			ImageProcessor ip = stack.getProcessor(slice);
-			short[] pixels = (short[])ip.getPixels();
-			for (int i=0; i<n; i++) {
-				int before = pixels[i]&0xffff;
-				pixels[i] = (short)(range-((pixels[i]&0xffff)-min));
-			}
-		}
-		imp.setStack(null, stack);
-		imp.setDisplayRange(0, range);
-		imp.updateAndDraw();
-	}
-	
+		
 	/** Returns the default standard deviation used by Process/Noise/Add Specified Noise. */
 	public static double getSD() {
 		return sd;
