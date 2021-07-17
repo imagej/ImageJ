@@ -1164,9 +1164,10 @@ public class Opener {
 	public static void openResultsTable(String path) {
 		try {
 			ResultsTable rt = ResultsTable.open(path);
-			rt.showRowNumbers(true);
-			if (rt!=null)
+			if (rt!=null) {
+				rt.showRowNumbers(true);
 				rt.show("Results");
+			}
 		} catch(IOException e) {
 			IJ.error("Open Results", e.getMessage());
 		}

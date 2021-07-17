@@ -1531,7 +1531,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				else
 					roi.setPosition(rpRoi.getPosition());
 			}
-			if (roi instanceof TextRoi) {
+			if ((roi instanceof TextRoi) && showDialog) {
 				roi.setImage(imp);
 				if (font!=null)
 					((TextRoi)roi).setCurrentFont(font);

@@ -975,6 +975,25 @@ public class Interpreter implements MacroConstants {
 				if (token==ARRAY_FUNCTION)
 					array[index].setArray(func.getArrayFunction(pgm.table[tokenAddress].type));
 				break;
+			case USER_FUNCTION:
+				int savePC = pc;
+				getToken(); // the function
+				boolean simpleFunctionCall = isSimpleFunctionCall(true);
+				pc = savePC;
+				if (simpleFunctionCall) {
+					getToken(); // the function
+					Variable v2 = runUserFunction();
+					if (v2==null)
+						error("No return value");
+					if (done) return;
+					int type = v2.getType();
+					if (type==Variable.VALUE)
+						array[index].setValue(v2.getValue());
+					else
+						array[index].setString(v2.getString());
+				} else
+					array[index].setValue(getExpression());
+				break;
 			default:
 				switch (op) {
 					case '=': array[index].setValue(getExpression()); break;
@@ -1026,7 +1045,6 @@ public class Interpreter implements MacroConstants {
 		int count = 0;
 		do {
 			getToken();
-			//IJ.log(pgm.decodeToken(token, tokenAddress));
 			if (token=='(')
 				count++;
 			else if (token==')')
