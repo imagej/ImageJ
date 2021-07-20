@@ -226,7 +226,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			open(null);
 		else if (command.equals("Save...")) {
 			Thread t1 = new Thread(new Runnable() {
-				public void run() {save();}
+				public void run() {
+					save(null);
+				}
 			});
 			t1.start();
 		} else if (command.equals("Fill"))
@@ -791,7 +793,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return slice;
 	}
 
-	void open(String path) {
+	/** Opens a single .roi file or a ZIP-compressed set of ROIs.
+		Returns 'true' if the operation was succesful. */
+	public boolean open(String path) {
 		Macro.setOptions(null);
 		String name = null;
 		if (path==null || path.equals("")) {
@@ -799,17 +803,22 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			String directory = od.getDirectory();
 			name = od.getFileName();
 			if (name==null)
-				return;
+				return false;
 			path = directory + name;
 		}
-		if (Recorder.record && !Recorder.scriptMode())
-			Recorder.record("roiManager", "Open", path);
+		if (Recorder.record && !IJ.macroRunning()) {
+			if (Recorder.scriptMode())
+				Recorder.recordCall("rm.open(\""+path+"\");");
+			else
+				Recorder.record("roiManager", "Open", path);
+		}
+		boolean ok = false;
 		if (path.endsWith(".zip")) {
 			boolean wasRecording = Recorder.record;
 			Recorder.record = false;
-			openZip(path);
+			ok = openZip(path);
 			Recorder.record = wasRecording;
-			return;
+			return ok;
 		}
 		Opener o = new Opener();
 		if (name==null) name = o.getName(path);
@@ -822,13 +831,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			listModel.addElement(name);
 			rois.add(roi);
 			errorMessage = null;
-		} else
-			errorMessage = "Unable to 	open ROI at "+path;
+			ok = true;
+		} else {
+			errorMessage = "Unable to open ROI at "+path;
+			ok = false;
+		}
 		updateShowAll();
+		return ok;
 	}
 
 	// Modified on 2005/11/15 by Ulrik Stervbo to only read .roi files and to not empty the current list
-	void openZip(String path) {
+	boolean openZip(String path) {
 		ZipInputStream in = null;
 		ByteArrayOutputStream out = null;
 		int nRois = 0;
@@ -872,16 +885,23 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			error(errorMessage);
 		}
 		updateShowAll();
+		return errorMessage==null;
 	}
 
-	boolean save() {
+	/** If one ROI is selected, it is saved as a .Roi
+	 * file, if multiple (or none) ROIs are selected,
+	 * they are saved as a .zip ROI set.
+	 * @see #setSelectedIndexes
+	*/
+	public boolean save(String path) {
 		if (getCount()==0)
 			return error("The selection list is empty.");
 		int[] indexes = getIndexes();
 		if (indexes.length>1)
-			return saveMultiple(indexes, null);
+			return saveMultiple(indexes, path);
 		else
-			return saveOne(indexes, null);
+			return saveOne(indexes, path);
+
 	}
 
 	boolean saveOne(int[] indexes, String path) {
@@ -911,14 +931,18 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			errorMessage = e.getMessage();
 			IJ.error("ROI Manager", errorMessage);
 		}
-		if (Recorder.record && !IJ.isMacro())
-			Recorder.record("roiManager", "Save", path);
+		if (Recorder.record && !IJ.isMacro()) {
+			if (Recorder.scriptMode())
+				Recorder.recordCall("rm.save(\""+path+"\");");
+			else
+				Recorder.record("roiManager", "Save", path);
+		}
 		return true;
 	}
 
 	boolean saveMultiple(int[] indexes, String path) {
 		Macro.setOptions(null);
-		if (path==null) {
+		if (path==null || path.equals("")) {
 			SaveDialog sd = new SaveDialog("Save ROIs...", "RoiSet", ".zip");
 			String name = sd.getFileName();
 			if (name == null)
@@ -962,8 +986,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		double time = (System.currentTimeMillis()-t0)/1000.0;
 		IJ.showProgress(1.0);
 		IJ.showStatus(IJ.d2s(time,3)+" seconds, "+indexes.length+" ROIs, "+path);
-		if (Recorder.record && !IJ.isMacro())
-			Recorder.record("roiManager", "Save", path);
+		if (Recorder.record && !IJ.isMacro()) {
+			if (Recorder.scriptMode())
+				Recorder.recordCall("rm.save(\""+path+"\");");
+			else
+				Recorder.record("roiManager", "Save", path);
+		}
 		return true;
 	}
 
@@ -2268,19 +2296,22 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		cmd = cmd.toLowerCase();
 		macro = true;
 		if (cmd.equals("open")) {
-			open(Opener.makeFullPath(name));
+			boolean okay = open(Opener.makeFullPath(name));
 			macro = false;
-			return true;
+			return okay;
 		} else if (cmd.equals("save")) {
+			boolean okay = false;
 			if (name!=null && name.endsWith(".roi"))
-				saveOne(getIndexes(), name);
+				okay = saveOne(getIndexes(), name);
 			else
-				save(name, false);
+				okay = save(name, false);
+			return okay;
 		} else if (cmd.equals("save selected")) {
+			boolean okay = true;
 			if (name!=null && name.endsWith(".roi"))
-				saveOne(getIndexes(), name);
+				return saveOne(getIndexes(), name);
 			else
-				save(name, true);
+				return save(name, true);
 		} else if (cmd.equals("rename")) {
 			rename(name);
 			macro = false;
@@ -2574,9 +2605,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 	}
 
-	/** Selects multiple ROIs, where 'indexes' is an array of integers,
-		each greater than or equal to 0 and less than the value returned by getCount().
-	*/
 	/** Selects multiple ROIs, where 'indexes' is an array of integers, each
 	* greater than or equal to 0 and less than the value returned by getCount().
 	* @see #getSelectedIndexes

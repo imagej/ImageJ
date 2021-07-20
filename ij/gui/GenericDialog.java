@@ -1378,7 +1378,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			if (cmd!=null && cmd.equals("Calibrate..."))
 				text2 = text2.replace('\n',' ');
 			if (cmd!=null && cmd.equals("Convolve...")){
-				if(!text2.endsWith("\n"))
+				if (!text2.endsWith("\n"))
 					text2 += "\n";
 			}
 			text2 = Recorder.fixString(text2);
