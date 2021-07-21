@@ -794,7 +794,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	/** Opens a single .roi file or a ZIP-compressed set of ROIs.
-		Returns 'true' if the operation was succesful. */
+	 *	Returns 'true' if the operation was succesful.
+	*/
 	public boolean open(String path) {
 		Macro.setOptions(null);
 		String name = null;
@@ -888,9 +889,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return errorMessage==null;
 	}
 
-	/** If one ROI is selected, it is saved as a .Roi
-	 * file, if multiple (or none) ROIs are selected,
-	 * they are saved as a .zip ROI set.
+	/** If one ROI is selected, it is saved as a .roi
+	 * file, if multiple (or no) ROIs are selected,
+	 * they are saved as a .zip ROI set. Returns 
+	 * 'true' if the save operation was succesful.
 	 * @see #setSelectedIndexes
 	*/
 	public boolean save(String path) {
@@ -2296,18 +2298,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		cmd = cmd.toLowerCase();
 		macro = true;
 		if (cmd.equals("open")) {
-			boolean okay = open(Opener.makeFullPath(name));
+			boolean ok = open(Opener.makeFullPath(name));
 			macro = false;
-			return okay;
+			return ok;
 		} else if (cmd.equals("save")) {
-			boolean okay = false;
+			boolean ok = false;
 			if (name!=null && name.endsWith(".roi"))
-				okay = saveOne(getIndexes(), name);
+				ok = saveOne(getIndexes(), name);
 			else
-				okay = save(name, false);
-			return okay;
+				ok = save(name, false);
+			return ok;
 		} else if (cmd.equals("save selected")) {
-			boolean okay = true;
 			if (name!=null && name.endsWith(".roi"))
 				return saveOne(getIndexes(), name);
 			else

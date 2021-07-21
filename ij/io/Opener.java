@@ -182,6 +182,8 @@ public class Opener {
 				public void run() {
 					JFileChooser fc = new JFileChooser();
 					fc.setMultiSelectionEnabled(true);
+					fc.setDragEnabled(true);
+					fc.setTransferHandler(new DragAndDropHandler(fc));
 					File dir = null;
 					String sdir = OpenDialog.getDefaultDirectory();
 					if (sdir!=null)
