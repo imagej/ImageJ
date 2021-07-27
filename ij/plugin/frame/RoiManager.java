@@ -1681,7 +1681,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			 roi = Roi.convertLineToArea(roi);
 			if (s1==null) {
 				if (roi instanceof ShapeRoi)
-					s1 = (ShapeRoi)roi;
+					s1 = (ShapeRoi)roi.clone();
 				else
 					s1 = new ShapeRoi(roi);
 				if (s1==null) return;

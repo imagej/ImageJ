@@ -5,12 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.53m5 21 July 2021</u>
+<li> <u>1.53m7 26 July 2021</u>
 <ul>
 <li> Thanks to Michael Schmid, added support for
 drag and drop to JFileChooser dialogs.
+<li> Thanks to Nicolas De Francesco, updated the
+<i>Edit&gt;Selection&gt;Fit Rectangle</i>command so that
+it produces a more predictable result.
 <li> Thanks to Fred Damen, improved recording of the 
-ROI Manager's "Open..." aand "Save..." commands and
+ROI Manager's "Open..." and "Save..." commands, and
 made the open(path) and save(path) methods public.
 <li> Thanks to Norbert Vischer, fixed a bug that caused the
 <i>Process&gt;Filters&gt;Convolve</i> command to sometimes not
@@ -23,6 +26,9 @@ macro error when assigning a string value returned by a user
 defined function to an array element.
 <li> Thanks to Fred Damen, fixed a bug that caused the RoiManager.save()
 method to always return true.
+<li> Thanks to Ved Sharma, fixed a bug that cause the
+ROI Manager's "OR (Combine)" command to not work as
+expected if the first ROI was composite.
 <li> Thanks to Ved Sharma, fixed a regression that caused the 
 roiManager(“Set Fill Color”,color) macro function to fail when
 used with a text selection.
