@@ -5,13 +5,17 @@
 </head>
 <body>
 
-<li> <u>1.53m7 26 July 2021</u>
+<li> <u>1.53m8 28 July 2021</u>
 <ul>
 <li> Thanks to Michael Schmid, added support for
 drag and drop to JFileChooser dialogs.
 <li> Thanks to Nicolas De Francesco, updated the
-<i>Edit&gt;Selection&gt;Fit Rectangle</i>command so that
+<i>Edit&gt;Selection&gt;Fit Rectangle</i> command so that
 it produces a more predictable result.
+<li> Thanks to Philippe Carl, <i>File&gt;Import&gt;Image Sequence</i>
+no longer limits the number of files that can be
+imported to 40 when the "Open as separate images"
+option is enabled.
 <li> Thanks to Fred Damen, improved recording of the 
 ROI Manager's "Open..." and "Save..." commands, and
 made the open(path) and save(path) methods public.
@@ -26,9 +30,16 @@ macro error when assigning a string value returned by a user
 defined function to an array element.
 <li> Thanks to Fred Damen, fixed a bug that caused the RoiManager.save()
 method to always return true.
-<li> Thanks to Ved Sharma, fixed a bug that cause the
+<li> Thanks to Ved Sharma, fixed a bug that caused the
 ROI Manager's "OR (Combine)" command to not work as
 expected if the first ROI was composite.
+<li> Thanks to Philippe Carl, fixed a bug that caused the
+<i>File&gt;Import&gt;Image Sequence</i> command to not
+work expected when importing stacks and the 
+"Open as separate images" option is enabled.
+<li> Thanks to Philippe Carl, fixed a bug that caused the
+<i>Image&gt;Overlay&gt;Flatten</i> command to fail with
+composite images with an ROI but no overlay.
 <li> Thanks to Ved Sharma, fixed a regression that caused the 
 roiManager(“Set Fill Color”,color) macro function to fail when
 used with a text selection.
