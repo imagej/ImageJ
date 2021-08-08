@@ -166,8 +166,10 @@ public class ByteStatistics extends ImageStatistics {
 		for (int i=minThreshold; i<=maxThreshold; i++) {
 			if (histogram[i]>0) {
 				v = cTable[i];
-				if (v<min) min = v;
-				if (v>max) max = v;
+				if (v<min)
+					min = v;
+				else if (v>max)
+					max = v;
 			}
 		}
 	}

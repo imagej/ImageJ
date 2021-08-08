@@ -414,8 +414,10 @@ public class FHT extends FloatProcessor {
 			base = row * maxN;
 			for (int col=0; col<maxN; col++) {
 				r = fps[base+col];
-				if (r<min) min = r;
-				if (r>max) max = r;
+				if (r<min)
+					min = r;
+				else if (r>max)
+					max = r;
 			}
 		}
 

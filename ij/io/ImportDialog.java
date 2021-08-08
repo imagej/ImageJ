@@ -157,8 +157,10 @@ public class ImportDialog {
 					}
 					for (int n=1; n<=slices; n++) {
 						ImageProcessor ip = stack2.getProcessor(n);
-						if (ip.getMin()<min) min = ip.getMin();
-						if (ip.getMax()>max) max = ip.getMax();
+						if (ip.getMin()<min)
+							min = ip.getMin();
+						else if (ip.getMax()>max)
+							max = ip.getMax();
 						String label = list[i];
 						if (slices>1) label += "-" + IJ.pad(n,digits);
 						stack.addSlice(label, ip);

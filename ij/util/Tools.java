@@ -62,7 +62,7 @@ import java.security.MessageDigest;
 			value = a[i];
 			if (value<min)
 				min = value;
-			if (value>max)
+			else if (value>max)
 				max = value;
 		}
 		double[] minAndMax = new double[2];
@@ -79,7 +79,7 @@ import java.security.MessageDigest;
 			value = a[i];
 			if (value<min)
 				min = value;
-			if (value>max)
+			else if (value>max)
 				max = value;
 		}
 		double[] minAndMax = new double[2];

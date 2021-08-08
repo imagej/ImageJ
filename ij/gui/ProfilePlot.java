@@ -328,8 +328,10 @@ public class ProfilePlot {
 		double value;
 		for (int i=0; i<profile.length; i++) {
 			value = profile[i];
-			if (value<min) min=value;
-			if (value>max) max=value;
+			if (value<min)
+				min = value;
+			else if (value>max)
+				max = value;
 		}
 		this.min = min;
 		this.max = max;

@@ -213,8 +213,10 @@ public class ShortStatistics extends ImageStatistics {
 		for (int i=minValue; i<=maxValue; i++) {
 			if (hist[i]>0) {
 				v = cTable[i];
-				if (v<min) min = v;
-				if (v>max) max = v;
+				if (v<min)
+					min = v;
+				else if (v>max)
+					max = v;
 			}
 		}
 	}

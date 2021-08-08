@@ -94,7 +94,10 @@ public class Interpreter implements MacroConstants {
 	}
 	
 	/** Runs the specified macro, passing it a string 
-		argument and returning a string value. */
+	 * argument and returning a string value.
+	 * @see ij.IJ#runMacro(String,String)
+	 * @see ij.IJ#runMacroFile(String,String)
+	*/
 	public String run(String macro, String arg) {
 		argument = arg;
 		calledMacro = true;

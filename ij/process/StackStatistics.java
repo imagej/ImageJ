@@ -91,8 +91,10 @@ public class StackStatistics extends ImageStatistics {
 					if (mask==null || mask[mi++]!=0) {
 						v = ip.getPixelValue(x,y);
 						if (v>=minThreshold && v<=maxThreshold) {
-							if (v<roiMin) roiMin = v;
-							if (v>roiMax) roiMax = v;
+							if (v<roiMin)
+								roiMin = v;
+							else if (v>roiMax)
+								roiMax = v;
 						}
 					}
 					i++;

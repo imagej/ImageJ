@@ -312,7 +312,7 @@ public class OverlayCommands implements PlugIn {
 		int flags = IJ.setupDialog(imp, 0);
 		if (flags==PlugInFilter.DONE)
 			return;
-		else if (flags==PlugInFilter.DOES_STACKS && !(imp.isComposite()&&overlay==null&&roiManagerOverlay==null)) {
+		else if (flags==PlugInFilter.DOES_STACKS && !(imp.isComposite()&&overlay==null)) {
 			//Added by Marcel Boeglin 2014.01.24
 			if (overlay==null && roiManagerOverlay==null && !imp.isComposite()) {
 				IJ.error("Flatten", "Overlay or multi-channel image required");

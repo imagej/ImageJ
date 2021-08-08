@@ -99,7 +99,7 @@ public class FloatProcessor extends ImageProcessor {
 			if (!Float.isInfinite(value)) {
 				if (value<min)
 					min = value;
-				if (value>max)
+				else if (value>max)
 					max = value;
 			}
 		}

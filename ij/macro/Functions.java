@@ -3098,7 +3098,7 @@ public class Functions implements MacroConstants, Measurements {
 				shiftKeyDown = altKeyDown = false;
 			} else
 				rm.select(index);
-		} else if (cmd.equals("count"))
+		} else if (cmd.equals("count")||cmd.equals("size"))
 			countOrIndex = rm.getCount();
 		else if (cmd.equals("index"))
 			countOrIndex = rm.getSelectedIndex();
@@ -5543,7 +5543,7 @@ public class Functions implements MacroConstants, Measurements {
 		waitForUserDialog.show();
 		interp.waitingForUser = false;
 		Interpreter.setInstance(instance); // works around bug caused by use of drawing tools
-		if (waitForUserDialog.escPressed())
+		if (waitForUserDialog.escPressed() || IJ.escapePressed())
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 	}
 

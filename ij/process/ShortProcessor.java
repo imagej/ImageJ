@@ -78,7 +78,7 @@ public class ShortProcessor extends ImageProcessor {
 			value = pixels[i]&0xffff;
 			if (value<min)
 				min = value;
-			if (value>max)
+			else if (value>max)
 				max = value;
 		}
 		minMaxSet = true;

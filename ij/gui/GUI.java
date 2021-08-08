@@ -199,7 +199,7 @@ public class GUI {
 	}
 
 	public static void scalePopupMenu(final PopupMenu popup) {
-		final float scale = (float) Prefs.getGuiScale();
+		final float scale = (float)Prefs.getGuiScale();
 		if (scale==1f)
 			return;
 		Font font = popup.getFont();
