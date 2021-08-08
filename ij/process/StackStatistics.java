@@ -93,7 +93,7 @@ public class StackStatistics extends ImageStatistics {
 						if (v>=minThreshold && v<=maxThreshold) {
 							if (v<roiMin)
 								roiMin = v;
-							else if (v>roiMax)
+							if (v>roiMax)
 								roiMax = v;
 						}
 					}

@@ -416,7 +416,7 @@ public class FHT extends FloatProcessor {
 				r = fps[base+col];
 				if (r<min)
 					min = r;
-				else if (r>max)
+				if (r>max)
 					max = r;
 			}
 		}

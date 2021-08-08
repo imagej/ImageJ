@@ -92,9 +92,12 @@ public class FloatProcessor extends ImageProcessor {
 	public void findMinAndMax() {
 		if (fixedScale)
 			return;
-		min = Float.MAX_VALUE;
-		max = -Float.MAX_VALUE;
-		for (int i=0; i < width*height; i++) {
+		if (Float.isInfinite(pixels[0])) {
+			min = Float.MAX_VALUE;
+			max = -Float.MAX_VALUE;
+		} else
+			min = max = pixels[0];
+		for (int i=1; i<width*height; i++) {
 			float value = pixels[i];
 			if (!Float.isInfinite(value)) {
 				if (value<min)

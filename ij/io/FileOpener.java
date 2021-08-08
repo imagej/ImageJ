@@ -276,7 +276,7 @@ public class FileOpener {
 			ip.resetMinAndMax();
 			if (ip.getMin()<min)
 				min = ip.getMin();
-			else if (ip.getMax()>max)
+			if (ip.getMax()>max)
 				max = ip.getMax();
 		}
 		imp.getProcessor().setMinAndMax(min, max);

@@ -89,7 +89,7 @@ public class ColorStatistics extends ImageStatistics {
 					v = pixels[i];
 					if (v<roiMin)
 						roiMin = v;
-					else if (v>roiMax)
+					if (v>roiMax)
 						roiMax = v;
 				}
 				i++;

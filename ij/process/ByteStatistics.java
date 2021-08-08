@@ -168,7 +168,7 @@ public class ByteStatistics extends ImageStatistics {
 				v = cTable[i];
 				if (v<min)
 					min = v;
-				else if (v>max)
+				if (v>max)
 					max = v;
 			}
 		}

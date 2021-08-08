@@ -83,7 +83,7 @@ public class FloatStatistics extends ImageStatistics {
 		} else {
 			if (min<histMin)
 				min = histMin;
-			else if (max>histMax)
+			if (max>histMax)
 				max = histMax;
 		}
 		binSize = (histMax-histMin)/nBins;

@@ -132,9 +132,8 @@ public class IntProcessor extends ColorProcessor {
 	public void findMinAndMax() {
 		int size = width*height;
 		int value;
-		min = Integer.MAX_VALUE;
-		max = -Integer.MAX_VALUE;
-		for (int i=0; i<size; i++) {
+		min = max = pixels[0];
+		for (int i=1; i<size; i++) {
 			value = pixels[i];
 			if (value<min)
 				min = value;

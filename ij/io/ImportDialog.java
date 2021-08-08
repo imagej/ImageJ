@@ -159,7 +159,7 @@ public class ImportDialog {
 						ImageProcessor ip = stack2.getProcessor(n);
 						if (ip.getMin()<min)
 							min = ip.getMin();
-						else if (ip.getMax()>max)
+						if (ip.getMax()>max)
 							max = ip.getMax();
 						String label = list[i];
 						if (slices>1) label += "-" + IJ.pad(n,digits);

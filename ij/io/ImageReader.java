@@ -603,7 +603,7 @@ public class ImageReader {
 					value = ((buffer[base]&0xff)<<8) | (buffer[base+1]&0xff);
 				if (value<min)
 					min = value;
-				else if (value>max)
+				if (value>max)
 					max = value;
 				stack[channel][pixel] = (short)(value);
 				channel++;
@@ -647,7 +647,7 @@ public class ImageReader {
 					value = ((buffer[base]&0xff)<<8) | (buffer[base+1]&0xff);
 				if (value<min)
 					min = value;
-				else if (value>max)
+				if (value>max)
 					max = value;
 				stack[channel][pixel] = (short)(value);
 				channel++;

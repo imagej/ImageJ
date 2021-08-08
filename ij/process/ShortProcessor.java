@@ -72,9 +72,8 @@ public class ShortProcessor extends ImageProcessor {
 			return;
 		int size = width*height;
 		int value;
-		min = 65535;
-		max = 0;
-		for (int i=0; i<size; i++) {
+		min = max = pixels[0]&0xffff;
+		for (int i=1; i<size; i++) {
 			value = pixels[i]&0xffff;
 			if (value<min)
 				min = value;
