@@ -189,7 +189,7 @@ public class FolderOpener implements PlugIn {
 				Opener opener = new Opener();
 				opener.setSilentMode(true);
 				IJ.redirectErrorMessages(true);
-				ImagePlus imp = opener.openImage(directory, list[i]);
+				ImagePlus imp = opener.openTempImage(directory, list[i]);
 				IJ.redirectErrorMessages(false);
 				if (imp!=null) {
 					width = imp.getWidth();
@@ -244,7 +244,7 @@ public class FolderOpener implements PlugIn {
 					IJ.open(directory+list[i]);
 					imp = null;
 				} else if (!openAsVirtualStack||stack==null) {
-					imp = opener.openImage(directory, list[i]);
+					imp = opener.openTempImage(directory, list[i]);
 					stackSize = imp!=null?imp.getStackSize():1;
 				}
 				IJ.redirectErrorMessages(false);

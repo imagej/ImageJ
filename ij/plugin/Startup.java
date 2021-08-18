@@ -20,7 +20,8 @@ import java.util.Vector;
 			"12-bit (0-4095) range",
 			"Splash Screen",
 			"Bolder selections",
-			"Add to overlay"
+			"Add to overlay",
+			"Flip FITS images"
 		};
 	private String macro = "";
 	private int originalLength;
@@ -97,6 +98,8 @@ import java.util.Vector;
 			statement = "Roi.setDefaultStrokeWidth(2);\n";
 		else if (item.equals(code[8]))
 			statement = "setOption(\"Add to overlay\", true);\n";
+		else if (item.equals(code[9]))
+			statement = "setOption(\"FlipFitsImages\", false);\n";
 		if (statement!=null) {
 			TextArea ta = gd.getTextArea1();
 			ta.insert(statement, ta.getCaretPosition());

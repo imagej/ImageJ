@@ -8,12 +8,13 @@ import ij.process.*;
 import ij.measure.*;
 
 /** Opens and displays FITS images. The FITS format is 
-	described at "http://fits.gsfc.nasa.gov/fits_standard.html".
-	Add setOption("FlipFitsImages",true) to the
-	Edit/Options/Startup dialog to have images flipped vertically.
+ * described at "http://fits.gsfc.nasa.gov/fits_standard.html".
+ * Add setOption("FlipFitsImages",false) to the
+ * Edit/Options/Startup dialog to have FITS images not
+ * flipped vertically.
 */
 public class FITS_Reader extends ImagePlus implements PlugIn {
-	private static boolean flipImages;
+	private static boolean flipImages = true;
 
 	public void run(String arg) {
 		OpenDialog od = new OpenDialog("Open FITS...", arg);

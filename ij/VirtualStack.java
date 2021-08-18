@@ -177,7 +177,7 @@ public class VirtualStack extends ImageStack {
 		Opener opener = new Opener();
 		opener.setSilentMode(true);
 		IJ.redirectErrorMessages(true);
-		ImagePlus imp = opener.openImage(path+names[n-1]);
+		ImagePlus imp = opener.openTempImage(path, names[n-1]);
 		IJ.redirectErrorMessages(false);
 		ImageProcessor ip = null;
 		int depthThisImage = 0;

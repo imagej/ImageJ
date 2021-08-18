@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53m12 8 August 2021</u>
+<li> <u>1.53m15 17 August 2021</u>
 <ul>
 <li> Thanks to Barry DeZonia, the findMinAndMax() method 
 for the Short/Int/Float processors is now faster and
@@ -23,6 +23,11 @@ option is enabled.
 <li> Thanks to Fred Damen, improved recording of the 
 ROI Manager's "Open..." and "Save..." commands, and
 made the open(path) and save(path) methods public.
+<li> Thanks to Michael Schmid, the 
+<i>File&gt;Import&gt;Image Sequence</i> command no
+longer creates excessive image IDs.
+<li> Thanks to Michael Schmid, added the FolderOpener.openProcessor()
+method, used by the FileInfoVirtualStack class.
 <li> Thanks to Norbert Vischer, fixed a bug that caused the
 <i>Process&gt;Filters&gt;Convolve</i> command to sometimes not
 be correctly recorded.
@@ -47,6 +52,8 @@ composite images with an ROI or ROI Manager in "Show All" mode".
 <li> Thanks to Ved Sharma, fixed a regression that caused the 
 roiManager(“Set Fill Color”,color) macro function to fail when
 used with a text selection.
+<li> Thanks to 'natalia', fixed a 1.52p regression that caused
+FITS images to open flipped vertically.
 </ul>
 
 <li> <u>1.53k 6 July 2021</u>
