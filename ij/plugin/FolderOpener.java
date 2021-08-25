@@ -15,10 +15,10 @@ import ij.plugin.frame.Recorder;
 /** Implements the File/Import/Image Sequence command, which
 	opens a folder of images as a stack. */
 public class FolderOpener implements PlugIn {
-	private static final int MAX_SEPARATE = 40;
+	private static final int MAX_SEPARATE = 100;
 	private static final String DIR_KEY = "import.sequence.dir";
 	private static final String[] types = {"default", "16-bit", "32-bit", "RGB"};
-	private static String[] excludedTypes = {".txt", ".lut", ".roi", ".pty", ".hdr", ".java", ".ijm", ".py", ".js", ".bsh", ".xml"};
+	private static String[] excludedTypes = {".txt",".lut",".roi",".pty",".hdr",".java",".ijm",".py",".js",".bsh",".xml",".rar",".h5",".doc",".xls"};
 	private static boolean staticSortFileNames = true;
 	private static boolean staticOpenAsVirtualStack;
 	private boolean convertToRGB;
@@ -189,7 +189,7 @@ public class FolderOpener implements PlugIn {
 				Opener opener = new Opener();
 				opener.setSilentMode(true);
 				IJ.redirectErrorMessages(true);
-				ImagePlus imp = opener.openImage(directory, list[i]);
+				ImagePlus imp = opener.openTempImage(directory, list[i]);
 				IJ.redirectErrorMessages(false);
 				if (imp!=null) {
 					width = imp.getWidth();
@@ -244,7 +244,7 @@ public class FolderOpener implements PlugIn {
 					IJ.open(directory+list[i]);
 					imp = null;
 				} else if (!openAsVirtualStack||stack==null) {
-					imp = opener.openImage(directory, list[i]);
+					imp = opener.openTempImage(directory, list[i]);
 					stackSize = imp!=null?imp.getStackSize():1;
 				}
 				IJ.redirectErrorMessages(false);
@@ -422,15 +422,24 @@ public class FolderOpener implements PlugIn {
 				}
 			}
 			if (imp2.getStackSize()==1) {
-				imp2.setProperty("Label", list[0]);
+				int idx = this.start-1;
+				if (idx<0 || idx>=list.length)
+					idx = 0;
+				imp2.setProperty("Label", list[idx]);
 				if (info1!=null)
 					imp2.setProperty("Info", info1);
 			}
 			if (arg==null && !saveImage) {
 				String time = (System.currentTimeMillis()-t0)/1000.0 + " seconds";
-				if (openAsSeparateImages && imp2.getStackSize()<=MAX_SEPARATE)
+				if (openAsSeparateImages) {
+					if (imp2.getStackSize()>MAX_SEPARATE && !IJ.isMacro()) {
+						boolean ok = IJ.showMessageWithCancel("Import>Image Sequence",
+						"Are you sure you want to open "+imp2.getStackSize()
+						+" separate windows?\nThis may cause the system to become very slow or stall.");
+						if (!ok) return;
+					}
 					openAsSeparateImages(imp2);
-				else
+				} else
 					imp2.show(time);
 				if (stack.isVirtual()) {
 					overlay = stack.getProcessor(1).getOverlay();
@@ -440,8 +449,6 @@ public class FolderOpener implements PlugIn {
 			}
 			if (saveImage)
 				image = imp2;
-			if (openAsSeparateImages && imp2.getStackSize()>MAX_SEPARATE)
-				IJ.error("Import>Image Sequence", "A maximum of "+MAX_SEPARATE+" images can be opened separately.");
 		}
 		IJ.showProgress(1.0);
 		if (Recorder.record) {
@@ -469,10 +476,17 @@ public class FolderOpener implements PlugIn {
 	private void openAsSeparateImages(ImagePlus imp) {
 		VirtualStack stack = (VirtualStack)imp.getStack();
 		String dir = stack.getDirectory();
-		for (int n=1; n<=stack.size(); n++)
-			IJ.open(dir+stack.getFileName(n));	
+		int skip = 0;
+		for (int n=1; n<=stack.size(); n++) {
+			ImagePlus imp2 = IJ.openImage(dir+stack.getFileName(n));
+			if (skip<=0) {
+				imp2.show();
+				skip = imp2.getStackSize()-1;
+			} else
+				skip--;
+		}	
 	}
-	
+
 	public static boolean useInfo(String info) {
 		return info!=null && !(info.startsWith("Software")||info.startsWith("ImageDescription"));
 	 }

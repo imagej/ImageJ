@@ -108,12 +108,13 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 			}
 		}
 		nImages = info.length;
-		FileOpener fo = new FileOpener(info[0] );
+		FileOpener fo = new FileOpener(info[0]);
 		ImagePlus imp = fo.openImage();
 		if (nImages==1 && fi.fileType==FileInfo.RGB48)
 			return imp;
 		Properties props = fo.decodeDescriptionString(fi);
 		ImagePlus imp2 = new ImagePlus(fi.fileName, this);
+		imp2.setDisplayRange(imp.getDisplayRangeMin(),imp.getDisplayRangeMax());
 		imp2.setFileInfo(fi);
 		if (imp!=null && props!=null) {
 			setBitDepth(imp.getBitDepth());
@@ -195,20 +196,24 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 			throw new IllegalArgumentException("Argument out of range: "+n);
 		//if (n>1) IJ.log("  "+(info[n-1].getOffset()-info[n-2].getOffset()));
 		info[n-1].nImages = 1; // why is this needed?
-		ImagePlus imp = null;
+		ImageProcessor ip = null;
 		if (IJ.debugMode) {
 			long t0 = System.currentTimeMillis();
 			FileOpener fo = new FileOpener(info[n-1]);
-			imp = fo.openImage();
+			ip = fo.openProcessor();
 			IJ.log("FileInfoVirtualStack: "+n+", offset="+info[n-1].getOffset()+", "+(System.currentTimeMillis()-t0)+"ms");
 		} else {
 			FileOpener fo = new FileOpener(info[n-1]);
-			imp = fo.openImage();
-			if (info[n-1].fileType==FileInfo.RGB48 && info[n-1].sliceNumber>0)
-				imp.setSlice(info[n-1].sliceNumber);
+			if (info[n-1].fileType==FileInfo.RGB48) {
+				ImagePlus imp = fo.openImage();
+				if (info[n-1].sliceNumber>0)
+					imp.setSlice(info[n-1].sliceNumber);
+				ip = imp.getProcessor();
+			} else
+				ip = fo.openProcessor();
 		}
-		if (imp!=null)
-			return imp.getProcessor();
+		if (ip!=null)
+			return ip;
 		else {
 			int w=getWidth(), h=getHeight();
 			IJ.log("Read error or file not found ("+n+"): "+info[n-1].directory+info[n-1].fileName);
@@ -252,7 +257,6 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 	/** Adds an image to this stack. */
 	public synchronized  void addImage(FileInfo fileInfo) {
 		nImages++;
-		//IJ.log("addImage: "+nImages+"	"+fileInfo);
 		if (info==null)
 			info = new FileInfo[250];
 		if (nImages==info.length) {

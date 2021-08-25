@@ -372,6 +372,26 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			saveLabel(panel, label);
 	}
 
+	/**
+	 * Add button to the dialog
+	 * @param label button label
+	 * @param listener listener to handle the action when pressing the button
+	*/
+	public void addButton(String label, ActionListener listener) {
+		if (GraphicsEnvironment.isHeadless())
+			return;
+		Button button = new Button(label);
+		button.addActionListener(listener);
+		button.addKeyListener(this);		
+		GridBagLayout layout = (GridBagLayout)getLayout();
+		Panel panel = new Panel();
+		addPanel(panel);
+		GridBagConstraints constraints = layout.getConstraints(panel);
+		remove(panel);
+		layout.setConstraints(button, constraints);
+		add(button);
+	}
+
 	/** Adds a popup menu that lists the currently open images.
 	 * Call getNextImage() to retrieve the selected
 	 * image. Based on the addImageChoice()
@@ -722,22 +742,35 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     }
 
 	/** Adds one or two (side by side) text areas.
-	* @param text1	initial contents of the first text area
-	* @param text2	initial contents of the second text area or null
-	* @param rows	the number of rows
-	* @param columns	the number of columns
+	 * Append "SCROLLBARS_VERTICAL_ONLY" to the text of
+	 * the first text area to get vertical scrollbars
+	 * and "SCROLLBARS_BOTH" to get both vertical and
+	 * horizontal scrollbars.
+	 * @param text1	initial contents of the first text area
+	 * @param text2	initial contents of the second text area or null
+	 * @param rows	the number of rows
+	 * @param columns	the number of columns
 	*/
     public void addTextAreas(String text1, String text2, int rows, int columns) {
 		if (textArea1!=null) return;
 		Panel panel = new Panel();
+		int scrollbars = TextArea.SCROLLBARS_NONE;
+		if (text1!=null && text1.endsWith("SCROLLBARS_BOTH")) {
+			scrollbars = TextArea.SCROLLBARS_BOTH;
+			text1 = text1.substring(0, text1.length()-15);
+		}
+		if (text1!=null && text1.endsWith("SCROLLBARS_VERTICAL_ONLY")) {
+			scrollbars = TextArea.SCROLLBARS_VERTICAL_ONLY;
+			text1 = text1.substring(0, text1.length()-24);
+		}
 		Font font = new Font("SansSerif", Font.PLAIN, (int)(14*Prefs.getGuiScale()));
-		textArea1 = new TextArea(text1,rows,columns,TextArea.SCROLLBARS_NONE);
+		textArea1 = new TextArea(text1,rows,columns,scrollbars);
 		if (IJ.isLinux()) textArea1.setBackground(Color.white);
 		textArea1.setFont(font);
 		textArea1.addTextListener(this);
 		panel.add(textArea1);
 		if (text2!=null) {
-			textArea2 = new TextArea(text2,rows,columns,TextArea.SCROLLBARS_NONE);
+			textArea2 = new TextArea(text2,rows,columns,scrollbars);
 			if (IJ.isLinux()) textArea2.setBackground(Color.white);
 			textArea2.setFont(font);
 			panel.add(textArea2);
@@ -1344,6 +1377,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			String cmd = Recorder.getCommand();
 			if (cmd!=null && cmd.equals("Calibrate..."))
 				text2 = text2.replace('\n',' ');
+			if (cmd!=null && cmd.equals("Convolve...")){
+				if (!text2.endsWith("\n"))
+					text2 += "\n";
+			}
 			text2 = Recorder.fixString(text2);
 			Recorder.recordOption(key, text2);
 		}

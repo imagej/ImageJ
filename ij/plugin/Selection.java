@@ -934,10 +934,24 @@ public class Selection implements PlugIn, Measurements {
 			double pd = ((xp[i2min] - xp[imin]) * (yp[jmin] - yp[imin]) - (xp[jmin] - xp[imin]) * (yp[i2min] - yp[imin])) / Math.sqrt(Math.pow(xp[i2min] - xp[imin], 2) + Math.pow(yp[i2min] - yp [imin], 2)); // signed feret diameter
 			double pairAngle = Math.atan2( yp[i2min]- yp[imin], xp[i2min]- xp[imin]);
 			double minAngle = pairAngle + Math.PI/2;
-			double x1 = xp[imin] + Math.cos(pairAngle) * min_hmax + Math.cos(minAngle) * pd/2;
-			double y1 = yp[imin] + Math.sin(pairAngle) * min_hmax + Math.sin(minAngle) * pd/2;
-			double x2 = xp[imin] + Math.cos(pairAngle) * min_hmin + Math.cos(minAngle) * pd/2;
-			double y2 = yp[imin] + Math.sin(pairAngle) * min_hmin + Math.sin(minAngle) * pd/2;
+
+			// rectangle center and signed full height
+			double xm = xp[imin] + Math.cos(pairAngle) * (min_hmax + min_hmin)/2 + Math.cos(minAngle) * pd/2;
+			double ym = yp[imin] + Math.sin(pairAngle) * (min_hmax + min_hmin)/2 + Math.sin(minAngle) * pd/2;
+			double hm = min_hmax - min_hmin;
+			
+			if (minFD > Math.abs(hm)) { // ensure control axis is parallel to longer side
+				pairAngle = pairAngle - Math.PI/2;
+				minFD = Math.abs(hm);
+				hm = pd;
+				}
+			
+			if (pairAngle * hm > 0)	hm = -hm; // ensure first control point at the top
+	
+			double x1 = xm + Math.cos(pairAngle) * hm/2;
+			double y1 = ym + Math.sin(pairAngle) * hm/2;
+			double x2 = xm - Math.cos(pairAngle) * hm/2;
+			double y2 = ym - Math.sin(pairAngle) * hm/2;
 			Undo.setup(Undo.ROI, imp);
 			imp.deleteRoi();
 			Roi roi2 = new RotatedRectRoi(x1,  y1,  x2,  y2,  minFD);

@@ -394,7 +394,9 @@ public class WindowManager {
 		if (index==-1)
 			return;  // not on the window list
 		try {
-			imageList.remove(win);
+			synchronized(WindowManager.class) {
+				imageList.remove(win);
+			}
 			activations.remove(win);
 			if (imageList.size()>1 && !Prefs.closingAll) {
 				ImageWindow win2 = activations.size()>0?(ImageWindow)activations.get(activations.size()-1):null;

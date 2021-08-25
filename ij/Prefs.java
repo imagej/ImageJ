@@ -58,7 +58,7 @@ public class Prefs {
 		REVERSE_NEXT_PREVIOUS_ORDER=1<<5, AUTO_RUN_EXAMPLES=1<<6, SHOW_ALL_POINTS=1<<7,
 		DO_NOT_SAVE_WINDOW_LOCS=1<<8, JFILE_CHOOSER_CHANGED=1<<9,
 		CANCEL_BUTTON_ON_RIGHT=1<<10, IGNORE_RESCALE_SLOPE=1<<11,
-		NON_BLOCKING_DIALOGS=1<<12;
+		NON_BLOCKING_DIALOGS=1<<12, MODERN_MODE=1<<13;
 	public static final String OPTIONS2 = "prefs.options2";
     
 	/** file.separator system property */
@@ -100,7 +100,7 @@ public class Prefs {
 	/** Do not draw black border around image. */
 	public static boolean noBorder;
 	/** Only show ROIs associated with current slice in Roi Manager "Show All" mode. */
-	public static boolean showAllSliceOnly;
+	public static boolean showAllSliceOnly = true;
 	/** Include column headers when copying tables to clipboard. */
 	public static boolean copyColumnHeaders;
 	/** Do not include row numbers when copying tables to clipboard. */
@@ -186,6 +186,8 @@ public class Prefs {
 	public static boolean supportMacroUndo;
 	/** Use NonBlockingGenericDialogs in filters */	
 	public static boolean nonBlockingFilterDialogs;
+	/** Currently not used */	
+	public static boolean modernMode;
 	//Save location of moved image windows */	
 	//public static boolean saveImageLocation = true;
 
@@ -288,29 +290,31 @@ public class Prefs {
 	public static String load(Object ij, Applet applet) {
 		if (ImageJDir==null)
 			ImageJDir = System.getProperty("user.dir");
-		InputStream f = null;
-		try { // Look for IJ_Props.txt in ImageJ folder
-			f = new FileInputStream(ImageJDir+"/"+PROPS_NAME);
-			propertiesPath = ImageJDir+"/"+PROPS_NAME;
-		} catch (FileNotFoundException e) {
-			f = null;
+		if (ij!=null) {
+			InputStream f = null;
+			try { // Look for IJ_Props.txt in ImageJ folder
+				f = new FileInputStream(ImageJDir+"/"+PROPS_NAME);
+				propertiesPath = ImageJDir+"/"+PROPS_NAME;
+			} catch (FileNotFoundException e) {
+				f = null;
+			}
+			if (f==null) {
+				// Look in ij.jar if not found in ImageJ folder
+				f = ij.getClass().getResourceAsStream("/"+PROPS_NAME);
+			}			
+			if (applet!=null)
+				return loadAppletProps(f, applet);
+			if (f==null)
+				return PROPS_NAME+" not found in ij.jar or in "+ImageJDir;
+			f = new BufferedInputStream(f);
+			try {
+				props.load(f);
+				f.close();
+			} catch (IOException e) {
+				return("Error loading "+PROPS_NAME);
+			}
+			imagesURL = props.getProperty(IJ.isJava18()?"images.location":"images.location2");
 		}
-		if (f==null) {
-			// Look in ij.jar if not found in ImageJ folder
-			f = ij.getClass().getResourceAsStream("/"+PROPS_NAME);
-		}			
-		if (applet!=null)
-			return loadAppletProps(f, applet);
-		if (f==null)
-			return PROPS_NAME+" not found in ij.jar or in "+ImageJDir;
-		f = new BufferedInputStream(f);
-		try {
-			props.load(f);
-			f.close();
-		} catch (IOException e) {
-			return("Error loading "+PROPS_NAME);
-		}
-		imagesURL = props.getProperty(IJ.isJava18()?"images.location":"images.location2");
 		loadPreferences();
 		loadOptions();
 		guiScale = get(GUI_SCALE, 1.0);
@@ -462,7 +466,9 @@ public class Prefs {
 			if (!IJ.isLinux()) dialogCancelButtonOnRight = false;
 			saveOptions(prefs);
 			savePluginPrefs(prefs);
-			IJ.getInstance().savePreferences(prefs);
+			ImageJ ij = IJ.getInstance();
+			if (ij!=null)
+				ij.savePreferences(prefs);
 			Menus.savePreferences(prefs);
 			ParticleAnalyzer.savePreferences(prefs);
 			Analyzer.savePreferences(prefs);
@@ -547,6 +553,7 @@ public class Prefs {
 		dialogCancelButtonOnRight = (options2&CANCEL_BUTTON_ON_RIGHT)!=0;
 		ignoreRescaleSlope = (options2&IGNORE_RESCALE_SLOPE)!=0;
 		nonBlockingFilterDialogs = (options2&NON_BLOCKING_DIALOGS)!=0;
+		modernMode = (options2&MODERN_MODE)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -577,7 +584,8 @@ public class Prefs {
 			+ (jFileChooserSettingChanged?JFILE_CHOOSER_CHANGED:0)
 			+ (dialogCancelButtonOnRight?CANCEL_BUTTON_ON_RIGHT:0)
 			+ (ignoreRescaleSlope?IGNORE_RESCALE_SLOPE:0)
-			+ (nonBlockingFilterDialogs?NON_BLOCKING_DIALOGS:0);
+			+ (nonBlockingFilterDialogs?NON_BLOCKING_DIALOGS:0)
+			+ (modernMode?MODERN_MODE:0);
 		prefs.put(OPTIONS2, Integer.toString(options2));
 	}
 

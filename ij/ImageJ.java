@@ -77,8 +77,8 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
-	public static final String VERSION = "1.53i";
-	public static final String BUILD = ""; //44
+	public static final String VERSION = "1.53m";
+	public static final String BUILD = "15";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -216,7 +216,10 @@ public class ImageJ extends Frame implements ActionListener,
 		}
 		if (IJ.isMacintosh()&&applet==null) {
 			try {
-				IJ.runPlugIn("ij.plugin.MacAdapter", ""); 
+				if (IJ.javaVersion()>8) // newer JREs use different drag-drop, about mechanism
+					IJ.runPlugIn("ij.plugin.MacAdapter9", "");
+				else
+					IJ.runPlugIn("ij.plugin.MacAdapter", "");
 			} catch(Throwable e) {}
 		} 
 		if (applet==null)
@@ -734,7 +737,8 @@ public class ImageJ extends Frame implements ActionListener,
 		if (!noGUI && (ij==null || (ij!=null && !ij.isShowing()))) {
 			ij = new ImageJ(null, mode);
 			ij.exitWhenQuitting = true;
-		}
+		} else if (batchMode && noGUI)
+			Prefs.load(null, null);
 		int macros = 0;
 		for (int i=0; i<nArgs; i++) {
 			String arg = args[i];

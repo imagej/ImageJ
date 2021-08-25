@@ -5,7 +5,11 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.io.File;
-import java.util.*;
+import java.util.Timer;
+import java.util.Hashtable;
+import java.util.TimerTask;
+import java.util.Arrays;
+import java.util.Locale;
 import ij.*;
 import ij.plugin.frame.*;
 import ij.plugin.MacroInstaller;
@@ -96,6 +100,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 	private static Color foregroundColor = Prefs.getColor(Prefs.FCOLOR,Color.white);
 	private static Color backgroundColor = Prefs.getColor(Prefs.BCOLOR,Color.black);
+	private static double foregroundValue = Double.NaN;
+	private static double backgroundValue = Double.NaN;
 	private static int ovalType = OVAL_ROI;
 	private static int rectType = RECT_ROI;
 	private static boolean multiPointMode = Prefs.multiPointMode;
@@ -936,6 +942,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (c==null)
 			return;
 		foregroundColor = c;
+		foregroundValue = Double.NaN;
 		IJ.notifyEventListeners(IJEventListener.FOREGROUND_COLOR_CHANGED);
 		if (instance==null)
 			return;
@@ -954,9 +961,36 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public static void setBackgroundColor(Color c) {
 		if (c!=null) {
 			backgroundColor = c;
+			backgroundValue = Double.NaN;
 			repaintTool(DROPPER);
 			IJ.notifyEventListeners(IJEventListener.BACKGROUND_COLOR_CHANGED);
 		}
+	}
+	
+	public static double getForegroundValue() {
+		return foregroundValue;
+	}
+	
+	public static void setForegroundValue(double value) {
+		if (value>=0) {
+			int v = (int)value;
+			if (v>255) v=255;
+			setForegroundColor(new Color(v,v,v));
+		}
+		foregroundValue = value;
+	}
+
+	public static double getBackgroundValue() {
+		return backgroundValue;
+	}
+
+	public static void setBackgroundValue(double value) {
+		if (value>=0) {
+			int v = (int)value;
+			if (v>255) v=255;
+			setBackgroundColor(new Color(v,v,v));
+		}
+		backgroundValue = value;
 	}
 	
 	private static void setRoiColor(Color c) {
@@ -1241,7 +1275,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 		if (!isRightClick && longClickDelay>0) {
 			if (pressTimer==null)
-				pressTimer = new java.util.Timer();			
+				pressTimer = new Timer();			
 			pressTimer.schedule(new TimerTask() {
 				public void run() {
 					if (pressTimer != null) {

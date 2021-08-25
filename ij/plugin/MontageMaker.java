@@ -182,9 +182,15 @@ public class MontageMaker implements PlugIn {
 				bgColor = Color.white;
 			}
 		}
-		montage.setColor(bgColor);
+		if (Double.isNaN(Toolbar.getBackgroundValue()))
+			montage.setColor(bgColor);
+		else
+			montage.setGlobalBackgroundColor();
 		montage.fill();
-		montage.setColor(fgColor);
+		if (Double.isNaN(Toolbar.getForegroundValue()))
+			montage.setColor(fgColor);
+		else
+			montage.setGlobalForegroundColor();
 		montage.setFont(new Font("SansSerif", Font.PLAIN, fontSize));
 		montage.setAntialiasedText(true);
 		ImageStack stack = imp.getStack();

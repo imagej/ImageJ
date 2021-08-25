@@ -323,13 +323,15 @@ public class ProfilePlot {
 
 	void findMinAndMax() {
 		if (profile==null) return;
-		double min = Double.MAX_VALUE;
-		double max = -Double.MAX_VALUE;
+		double min = profile[0];
+		double max = profile[0];
 		double value;
-		for (int i=0; i<profile.length; i++) {
+		for (int i=1; i<profile.length; i++) {
 			value = profile[i];
-			if (value<min) min=value;
-			if (value>max) max=value;
+			if (value<min)
+				min = value;
+			else if (value>max)
+				max = value;
 		}
 		this.min = min;
 		this.max = max;

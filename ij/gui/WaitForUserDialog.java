@@ -15,6 +15,7 @@ import java.lang.reflect.*;
 */
 public class WaitForUserDialog extends Dialog implements ActionListener, KeyListener {
 	protected Button button;
+	protected Button cancelButton;
 	protected MultiLineLabel label;
 	static protected int xloc=-1, yloc=-1;
 	private boolean escPressed;
@@ -33,15 +34,25 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
         GridBagLayout gridbag = new GridBagLayout(); //set up the layout
         GridBagConstraints c = new GridBagConstraints();
         setLayout(gridbag);
-        c.insets = new Insets(6, 6, 0, 6); 
+		c.insets = new Insets(6, 6, 0, 6); 
         c.gridx = 0; c.gridy = 0; c.anchor = GridBagConstraints.WEST;
         add(label,c); 
+		
 		button = new Button("  OK  ");
 		button.addActionListener(this);
 		button.addKeyListener(this);
         c.insets = new Insets(2, 6, 6, 6); 
-        c.gridx = 0; c.gridy = 2; c.anchor = GridBagConstraints.EAST;
+        c.gridx = 0; c.gridy = 1; c.anchor = GridBagConstraints.EAST;
         add(button, c);
+
+		if (IJ.isMacro()) {
+			cancelButton = new Button(" Cancel ");
+			cancelButton.addActionListener(this);
+			cancelButton.addKeyListener(this);
+			c.anchor = GridBagConstraints.WEST; //same as OK button but WEST	
+        	add(cancelButton, c);
+        }
+
 		setResizable(false);
 		addKeyListener(this);
 		GUI.scale(this);
@@ -73,6 +84,10 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
     }
 
 	public void actionPerformed(ActionEvent e) {
+		String s = e.getActionCommand();
+		if(s.indexOf("Cancel") >= 0){
+			escPressed = true;
+		}
 		close();
 	}
 	

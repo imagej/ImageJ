@@ -10,8 +10,9 @@ import javax.swing.*;
 import javax.swing.filechooser.*;
 
 /** This class displays a dialog window from 
-	which the user can select an input file. */ 
- public class OpenDialog {
+ * which the user can select an input file.
+*/ 
+public class OpenDialog {
 
 	private String dir;
 	private String name;
@@ -101,6 +102,8 @@ import javax.swing.filechooser.*;
 	void jOpenDispatchThread(String title, String path, final String fileName) {
 		JFileChooser fc = new JFileChooser();
 		fc.setDialogTitle(title);
+		fc.setDragEnabled(true);
+		fc.setTransferHandler(new DragAndDropHandler(fc));
 		File fdir = null;
 		if (path!=null)
 			fdir = new File(path);
@@ -126,6 +129,8 @@ import javax.swing.filechooser.*;
 				public void run() {
 				JFileChooser fc = new JFileChooser();
 				fc.setDialogTitle(title);
+				fc.setDragEnabled(true);
+				fc.setTransferHandler(new JFileChooserDnDropHandler(fc));
 				File fdir = null;
 				if (path!=null)
 					fdir = new File(path);

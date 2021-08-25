@@ -995,6 +995,31 @@ public class Plot implements Cloneable {
 		if (index < 0) index = allPlotObjects.size() + index;
 		allPlotObjects.get(index).label = label;
 	}
+	
+	/** Removes NaNs from the xValues and yValues arrays of all plot objects. */ 
+	public void removeNaNs() {
+		for (PlotObject plotObj : allPlotObjects){
+			if(plotObj != null && plotObj.xValues!= null && plotObj.yValues != null ){
+				int oldSize = plotObj.xValues.length;
+				float[] xVals = new float[oldSize];
+				float[] yVals = new float[oldSize];
+				int newSize = 0;
+				for (int kk = 0; kk < oldSize; kk++) {
+					if (!Float.isNaN(plotObj.xValues[kk] + plotObj.yValues[kk])) {
+						xVals[newSize] = plotObj.xValues[kk];
+						yVals[newSize] = plotObj.yValues[kk];
+						newSize++;
+					}
+				}
+				if (newSize < oldSize) {
+					plotObj.xValues = new float[newSize];
+					plotObj.yValues = new float[newSize];
+					System.arraycopy(xVals, 0, plotObj.xValues, 0, newSize);
+					System.arraycopy(yVals, 0, plotObj.yValues, 0, newSize);
+				}
+			}
+		}
+	}
 
 	/** Returns an array of the available curve types ("Line", "Bar", "Circle", etc). */
 	public String[] getTypes() {

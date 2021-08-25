@@ -174,6 +174,52 @@ public class FileOpener {
 		return imp;
 	}
 	
+	public ImageProcessor openProcessor() {
+		Object pixels;
+		ProgressBar pb=null;
+	    ImageProcessor ip = null;		
+		ColorModel cm = createColorModel(fi);
+		switch (fi.fileType) {
+			case FileInfo.GRAY8:
+			case FileInfo.COLOR8:
+			case FileInfo.BITMAP:
+				pixels = readPixels(fi);
+				if (pixels==null) return null;
+				ip = new ByteProcessor(width, height, (byte[])pixels, cm);
+				break;
+			case FileInfo.GRAY16_SIGNED:
+			case FileInfo.GRAY16_UNSIGNED:
+			case FileInfo.GRAY12_UNSIGNED:
+				pixels = readPixels(fi);
+				if (pixels==null) return null;
+	    		ip = new ShortProcessor(width, height, (short[])pixels, cm);
+				break;
+			case FileInfo.GRAY32_INT:
+			case FileInfo.GRAY32_UNSIGNED:
+			case FileInfo.GRAY32_FLOAT:
+			case FileInfo.GRAY24_UNSIGNED:
+			case FileInfo.GRAY64_FLOAT:
+				pixels = readPixels(fi);
+				if (pixels==null) return null;
+	    		ip = new FloatProcessor(width, height, (float[])pixels, cm);
+				break;
+			case FileInfo.RGB:
+			case FileInfo.BGR:
+			case FileInfo.ARGB:
+			case FileInfo.ABGR:
+			case FileInfo.BARG:
+			case FileInfo.RGB_PLANAR:
+			case FileInfo.CMYK:
+				pixels = readPixels(fi);
+				if (pixels==null) return null;
+				ip = new ColorProcessor(width, height, (int[])pixels);
+				if (fi.fileType==FileInfo.CMYK)
+					ip.invert();
+				break;
+		}
+		return ip;
+	}
+
 	void setOverlay(ImagePlus imp, byte[][] rois) {
 		Overlay overlay = new Overlay();
 		Overlay proto = null;

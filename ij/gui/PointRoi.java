@@ -366,6 +366,16 @@ public class PointRoi extends PolygonRoi {
 		return this;
 	}
 
+	/** Adds a point at the specified stack position. */
+	public void addPoint(double x, double y, int position) {
+		if (counters==null) {
+			counters = new short[100];
+			positions = new int[100];
+		}
+		addPoint(null, x, y);
+		positions[nPoints-1] = position;	
+	}
+
 	protected void deletePoint(int index) {
 		super.deletePoint(index);
 		if (index>=0 && index<=nPoints && counters!=null) {
@@ -405,7 +415,7 @@ public class PointRoi extends PolygonRoi {
 		if (rt!=null && WindowManager.getFrame(getCountsTitle())!=null)
 			displayCounts();
 	}
-
+	
 	/** Returns the index of the current counter. */
 	public int getCounter() {
 		return counter;

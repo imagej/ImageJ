@@ -430,6 +430,32 @@ public abstract class ImageProcessor implements Cloneable {
 
 	/** Returns the background fill value. */
 	public abstract double getBackgroundValue();
+	
+	/** Sets the global (Color Picker) foreground color
+	 * as the fill/draw color.
+	 * @see ij.gui.Toolbar#setForegroundColor(Color)
+	 * @see ij.gui.Toolbar#setForegroundValue(double)
+	*/
+	public void setGlobalForegroundColor() {
+		double value = Toolbar.getForegroundValue();
+		if (Double.isNaN(value))
+			setColor(Toolbar.getForegroundColor());
+		else
+			setValue(value);
+	}
+
+	/** Sets the global (Color Picker) background color
+	 * as the fill/draw color.
+	 * @see ij.gui.Toolbar#setBackgroundColor(Color)
+	 * @see ij.gui.Toolbar#setBackgroundValue(double)
+	*/
+	public void setGlobalBackgroundColor() {
+		double value = Toolbar.getBackgroundValue();
+		if (Double.isNaN(value))
+			setColor(Toolbar.getBackgroundColor());
+		else
+			setValue(value);
+	}
 
 	/** Returns the smallest displayed pixel value. */
 	public abstract double getMin();
@@ -451,6 +477,11 @@ public abstract class ImageProcessor implements Cloneable {
 		image values needed to correctly display the image. For
 		ByteProcessors, resets the LUT. */
 	public void resetMinAndMax() {}
+
+	/** Sets the lower and upper threshold levels using NO_LUT_UPDATE. */
+	public void setThreshold(double minThreshold, double maxThreshold) {
+		setThreshold(minThreshold, maxThreshold, NO_LUT_UPDATE);
+	}
 
 	/** Sets the lower and upper threshold levels. The 'lutUpdate' argument
 		can be RED_LUT, BLACK_AND_WHITE_LUT, OVER_UNDER_LUT or NO_LUT_UPDATE.

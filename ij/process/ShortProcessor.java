@@ -72,13 +72,12 @@ public class ShortProcessor extends ImageProcessor {
 			return;
 		int size = width*height;
 		int value;
-		min = 65535;
-		max = 0;
-		for (int i=0; i<size; i++) {
+		min = max = pixels[0]&0xffff;
+		for (int i=1; i<size; i++) {
 			value = pixels[i]&0xffff;
 			if (value<min)
 				min = value;
-			if (value>max)
+			else if (value>max)
 				max = value;
 		}
 		minMaxSet = true;
@@ -567,12 +566,17 @@ public class ShortProcessor extends ImageProcessor {
 			}
 		}
     }
-
+    
 	public void invert() {
-		resetMinAndMax();
+		int range = 65536;
+		int defaultRange = ij.ImagePlus.getDefault16bitRange();
+		if (defaultRange>0 && !isSigned16Bit())
+			range = (int)Math.pow(2,defaultRange);
+		setMinAndMax(0, range-1);
 		process(INVERT, 0.0);
+		resetMinAndMax();
 	}
-	
+
 	public void add(int value) {process(ADD, value);}
 	public void add(double value) {process(ADD, value);}
 	public void set(double value) {process(SET, value);}

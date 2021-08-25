@@ -281,7 +281,6 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 	* @see ij.ImagePlus#crop(String)
 	*/
 	public ImagePlus crop(ImagePlus imp) {
-		//if (imp!=null) throw new IllegalArgumentException();
 		if (imp.getNChannels()>1 && imp.getCompositeMode()==IJ.COMPOSITE) {
 			int z = imp.getSlice();
 			int t = imp.getFrame();

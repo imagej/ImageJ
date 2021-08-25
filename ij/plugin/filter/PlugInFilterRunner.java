@@ -106,7 +106,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 					((ExtendedPlugInFilter)theFilter).setNPasses(nPasses);
 				if ((flags&PlugInFilter.NO_CHANGES)==0) {	// for filters modifying the image
 					boolean disableUndo = Prefs.disableUndo || (flags&PlugInFilter.NO_UNDO)!=0;
-					if (!disableUndo) {
+					if (!disableUndo || ((ip instanceof ColorProcessor)&&WindowManager.getWindow("B&C")!=null)) {
 						ip.snapshot();
 						snapshotPixels = ip.getSnapshotPixels();
 					}
@@ -195,6 +195,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 				announceSliceNumber(i);
 				ip.setPixels(stack.getPixels(i));
 				ip.setSliceNumber(i);
+				ip.setSnapshotPixels(null);
 				processOneImage(ip, fp, null);
 				if (IJ.escapePressed()) {IJ.beep(); break;}
 			}

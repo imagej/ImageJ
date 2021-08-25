@@ -40,11 +40,13 @@ import javax.swing.filechooser.*;
 					JFileChooser chooser = new JFileChooser();
 					chooser.setDialogTitle(title);
 					chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					chooser.setDragEnabled(true);
+					chooser.setTransferHandler(new DragAndDropHandler(chooser));
 					String defaultDir = OpenDialog.getDefaultDirectory();
 					if (defaultDir!=null) {
 						File f = new File(defaultDir);
 						if (IJ.debugMode)
-							IJ.log("DirectoryChooser,setSelectedFile: "+f);
+							IJ.log("DirectoryChooser,setSelectedFileW: "+f);
 						chooser.setSelectedFile(f);
 					}
 					chooser.setApproveButtonText("Select");
@@ -66,6 +68,8 @@ import javax.swing.filechooser.*;
 			JFileChooser chooser = new JFileChooser();
 			chooser.setDialogTitle(title);
 			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			chooser.setDragEnabled(true);
+			chooser.setTransferHandler(new DragAndDropHandler(chooser));
 			String defaultDir = OpenDialog.getDefaultDirectory();
 			if (defaultDir!=null) {
 				File f = new File(defaultDir);

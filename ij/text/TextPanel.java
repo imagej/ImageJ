@@ -97,7 +97,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 
 	void addPopupMenu() {
-		pm=new PopupMenu();
+		pm = new PopupMenu();
+		GUI.scalePopupMenu(pm);
 		addPopupItem("Save As...");
 		pm.addSeparator();
 		addPopupItem("Cut");

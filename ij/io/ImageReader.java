@@ -154,7 +154,7 @@ public class ImageReader {
 		int base = 0;
 		short last = 0;
 		for (int k=0; k<fi.stripOffsets.length; k++) {
-			//IJ.log("seek: "+fi.stripOffsets[k]+" "+fi.stripLengths[k]+"  "+(in instanceof RandomAccessStream));
+			//IJ.log("seek: "+k+" "+fi.stripOffsets[k]+" "+fi.stripLengths[k]+"  "+(in instanceof RandomAccessStream));
 			if (in instanceof RandomAccessStream)
 				((RandomAccessStream)in).seek(fi.stripOffsets[k]);
 			else if (k > 0) {
@@ -601,8 +601,10 @@ public class ImageReader {
 					value = ((buffer[base+1]&0xff)<<8) | (buffer[base]&0xff);
 				else
 					value = ((buffer[base]&0xff)<<8) | (buffer[base+1]&0xff);
-				if (value<min) min = value;
-				if (value>max) max = value;
+				if (value<min)
+					min = value;
+				if (value>max)
+					max = value;
 				stack[channel][pixel] = (short)(value);
 				channel++;
 				if (channel==channels) {
@@ -643,8 +645,10 @@ public class ImageReader {
 					value = ((buffer[base+1]&0xff)<<8) | (buffer[base]&0xff);
 				else
 					value = ((buffer[base]&0xff)<<8) | (buffer[base+1]&0xff);
-				if (value<min) min = value;
-				if (value>max) max = value;
+				if (value<min)
+					min = value;
+				if (value>max)
+					max = value;
 				stack[channel][pixel] = (short)(value);
 				channel++;
 				if (channel==channels) {
