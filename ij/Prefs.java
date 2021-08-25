@@ -121,6 +121,8 @@ public class Prefs {
 	public static boolean openDicomsAsFloat;
 	/** Ignore Rescale Slope when opening DICOMs */
 	public static boolean ignoreRescaleSlope;
+	/** Assume that DICOM volumes use identical RescaleSlope and RescaleIntercept across all slices */
+	public static boolean assumeFixedDicomScaling;
 	/** Plot rectangular selectons vertically */
 	public static boolean verticalProfile;
 	/** Rotate YZ orthogonal views 90 degrees */
