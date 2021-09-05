@@ -810,7 +810,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			level1 = 255;
 			level2 = 255;
 			fillColor = 64;
-			if (!Prefs.blackBackground && !imp.isInvertedLut() && stats.histogram[0]<(imp.getWidth()*imp.getHeight())/2) {
+			if (!Prefs.blackBackground && !imp.isInvertedLut()) {
 				level1 = 0;
 				level2 = 0;
 				fillColor = 192;

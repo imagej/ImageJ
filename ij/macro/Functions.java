@@ -2827,7 +2827,7 @@ public class Functions implements MacroConstants, Measurements {
 		String msg = null;
 		if (interp.nextToken()=='(') {
 			interp.getLeftParen();
-			if (isStringArg())
+			if (interp.nextToken()!=')')
 				msg = getString();
 			interp.getRightParen();
 		}

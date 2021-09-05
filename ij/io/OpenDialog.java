@@ -130,7 +130,7 @@ public class OpenDialog {
 				JFileChooser fc = new JFileChooser();
 				fc.setDialogTitle(title);
 				fc.setDragEnabled(true);
-				fc.setTransferHandler(new JFileChooserDnDropHandler(fc));
+				fc.setTransferHandler(new DragAndDropHandler(fc));
 				File fdir = null;
 				if (path!=null)
 					fdir = new File(path);

@@ -177,7 +177,7 @@ public class FileOpener {
 	public ImageProcessor openProcessor() {
 		Object pixels;
 		ProgressBar pb=null;
-	    ImageProcessor ip = null;		
+		ImageProcessor ip = null;		
 		ColorModel cm = createColorModel(fi);
 		switch (fi.fileType) {
 			case FileInfo.GRAY8:

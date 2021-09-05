@@ -134,6 +134,10 @@ public class FolderOpener implements PlugIn {
 			if (!showDialog()) return;
 		}
 		File file = new File(directory);
+		if (!file.exists()) {
+			IJ.error("File>Import>Image Sequence", "Directory not found: "+directory);
+			return;
+		}
 		String[] list = file.list();
 		if (list==null) {
 			String parent = file.getParent();

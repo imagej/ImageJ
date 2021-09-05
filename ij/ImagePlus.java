@@ -169,11 +169,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void setTemporary() {
 		if (!temporary) {
 			temporary = true;		
-    		currentID++;
-    		ID = -Integer.MAX_VALUE;
-    	}
+			currentID++;
+			ID = -Integer.MAX_VALUE;
+		}
 	}
-
 
 	/** Locks the image so other threads can test to see if it is in use.
 	 * One thread can lock an image multiple times, then it has to unlock
