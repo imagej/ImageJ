@@ -72,7 +72,8 @@ public class ShortProcessor extends ImageProcessor {
 			return;
 		int size = width*height;
 		int value;
-		min = max = pixels[0]&0xffff;
+		int min = pixels[0]&0xffff;
+		int max = pixels[0]&0xffff;
 		for (int i=1; i<size; i++) {
 			value = pixels[i]&0xffff;
 			if (value<min)
@@ -80,6 +81,8 @@ public class ShortProcessor extends ImageProcessor {
 			else if (value>max)
 				max = value;
 		}
+		this.min = min;
+		this.max = max;
 		minMaxSet = true;
 	}
 

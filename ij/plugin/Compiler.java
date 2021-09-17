@@ -229,8 +229,8 @@ public class Compiler implements PlugIn, FilenameFilter {
 						IJ.error("File name must end with \".java\" or \".class\".");
 						okay = false;
 					}
-				} else if (!(lcName.endsWith(".java")||lcName.endsWith(".txt")||lcName.endsWith(".ijm")||lcName.endsWith(".js"))) {
-					IJ.error("File name must end with \".java\", \".txt\" or \".js\".");
+				} else if (!(lcName.endsWith(".java")||lcName.endsWith(".txt")||lcName.endsWith(".ijm")||lcName.endsWith(".js")||lcName.endsWith(".py")||lcName.endsWith(".bsh"))) {
+					IJ.error("File name must end with \".java\", \".txt\", \".ijm\", \".js\" or \".py\"");
 					okay = false;
 				}
 			}

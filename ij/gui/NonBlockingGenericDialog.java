@@ -16,6 +16,7 @@ public class NonBlockingGenericDialog extends GenericDialog {
 		super(title, null);
 		setModal(false);
 		IJ.protectStatusBar(false);
+		instance = this;
 	}
 
 	public synchronized void showDialog() {

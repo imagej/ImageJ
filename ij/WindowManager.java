@@ -333,6 +333,21 @@ public class WindowManager {
 		}
 		return false;
 	}
+	
+	/*
+	static boolean isDuplicateBatchModeName(String name) {
+		int[] list = getIDList();
+		for (int i=0; i<list.length; i++) {
+			ImagePlus imp = getImage(list[i]);
+
+			if (imp==null) return false;
+			String name2 = imp.getTitle();
+			if (name.equals(name2))
+				return true;
+		}
+		return false;
+	}
+	*/
 
 	/** Returns a unique name by adding, before the extension,  -1, -2, etc. as needed. */
 	public static String getUniqueName(String name) {

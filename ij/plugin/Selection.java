@@ -619,6 +619,8 @@ public class Selection implements PlugIn, Measurements {
 		if (Prefs.blackBackground)
 			threshold = (threshold==255)?0:255;
 		ip.setThreshold(threshold, threshold, ImageProcessor.NO_LUT_UPDATE);
+		if (!IJ.isMacro())
+			IJ.log("Create Selection: threshold not set; assumed to be "+threshold+"-"+threshold);
 		IJ.runPlugIn("ij.plugin.filter.ThresholdToSelection", "");
 	}
 	
