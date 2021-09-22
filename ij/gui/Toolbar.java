@@ -97,6 +97,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private String currentSet = "Startup Macros";
 	private Timer pressTimer;
 	private static int longClickDelay = 600; //ms
+	private boolean disableRecording;
 
 	private static Color foregroundColor = Prefs.getColor(Prefs.FCOLOR,Color.white);
 	private static Color backgroundColor = Prefs.getColor(Prefs.BCOLOR,Color.black);
@@ -246,6 +247,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		pickerPopup.addSeparator();
 		addMenuItem(pickerPopup, "Foreground...");
 		addMenuItem(pickerPopup, "Background...");
+		addMenuItem(pickerPopup, "Colors...");
 		addMenuItem(pickerPopup, "Color Picker...");
 		add(pickerPopup);
 		
@@ -894,10 +896,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		showMessage(current);
 		if (Recorder.record) {
 			String name = getName(current);
-			if (name!=null) {
+			if (name!=null && name.equals("dropper")) disableRecording=true;
+			if (name!=null && !disableRecording) {
 				IJ.wait(100); // workaround for OSX/Java 8 bug
 				Recorder.record("setTool", name);
 			}
+			if (name!=null && !name.equals("dropper")) disableRecording=false;
 		}
 		if (legacyMode)
 			repaint();
@@ -1594,7 +1598,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 	}
 
-	private 	void installStartupMacros() {
+	private void installStartupMacros() {
 		resetTools();
 		String path = IJ.getDir("macros")+"StartupMacros.txt";
 		File f = new File(path);
@@ -1644,34 +1648,40 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				IJ.runPlugIn("ij.plugin.Zoom", "set");
 			else if ("Maximize".equals(cmd))
 				IJ.runPlugIn("ij.plugin.Zoom", "max");
-			setTool(previousTool);			
+			disableRecording = true;
+			setTool(previousTool);
+			disableRecording = false;			
 			return;
 		}
 		
 		if (pickerPopup==popup) {
 			if ("White/Black".equals(cmd)) {
-				setForegroundColor(Color.white);
-				setBackgroundColor(Color.black);				
+				setAndRecordForgroundColor(Color.white);
+				setAndRecordBackgroundColor(Color.black);				
 			} else if ("Black/White".equals(cmd)) {
-				setForegroundColor(Color.black);
-				setBackgroundColor(Color.white);				
+				setAndRecordForgroundColor(Color.black);
+				setAndRecordBackgroundColor(Color.white);				
 			} else if ("Red".equals(cmd))
-				setForegroundColor(Color.red);
+				setAndRecordForgroundColor(Color.red);
 			else if ("Green".equals(cmd))
-				setForegroundColor(Color.green);
+				setAndRecordForgroundColor(Color.green);
 			else if ("Blue".equals(cmd))
-				setForegroundColor(Color.blue);
+				setAndRecordForgroundColor(Color.blue);
 			else if ("Yellow".equals(cmd))
-				setForegroundColor(Color.yellow);
+				setAndRecordForgroundColor(Color.yellow);
 			else if ("Cyan".equals(cmd))
-				setForegroundColor(Color.cyan);
+				setAndRecordForgroundColor(Color.cyan);
 			else if ("Magenta".equals(cmd))
-				setForegroundColor(Color.magenta);
+				setAndRecordForgroundColor(Color.magenta);
 			else if ("Foreground...".equals(cmd))
-				setForegroundColor(new ColorChooser("Select Foreground Color", foregroundColor, false).getColor());
+				setAndRecordForgroundColor(new ColorChooser("Select Foreground Color", foregroundColor, false).getColor());
 			else if ("Background...".equals(cmd))
-				setBackgroundColor(new ColorChooser("Select Background Color", backgroundColor, false).getColor());
-			else
+				setAndRecordBackgroundColor(new ColorChooser("Select Background Color", backgroundColor, false).getColor());
+			else if ("Colors...".equals(cmd)) {
+				IJ.run("Colors...", "");
+				Recorder.setForegroundColor(getForegroundColor());
+				Recorder.setBackgroundColor(getBackgroundColor());
+			} else
 				IJ.run("Color Picker...", "");
 			if (!"Color Picker".equals(cmd))
 				ColorPicker.update();	
@@ -1691,6 +1701,16 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			tools[tool].runMenuTool(names[tool], cmd);
     }
     
+    private void setAndRecordForgroundColor(Color color) {
+    	setForegroundColor(color);
+    	Recorder.setForegroundColor(color);
+    }
+    
+    private void setAndRecordBackgroundColor(Color color) {
+    	setBackgroundColor(color);
+		Recorder.setBackgroundColor(color);
+    }
+
 	public Dimension getPreferredSize(){
 		return ps;
 	}

@@ -25,12 +25,18 @@ public class ScaleBar implements PlugIn {
 	private ScaleBarConfiguration config = new ScaleBarConfiguration(sConfig);
 
 	ImagePlus imp;
-	int xloc, yloc;
 	int hBarWidthInPixels;
 	int vBarHeightInPixels;
 	int roiX, roiY, roiWidth, roiHeight;
 	boolean userRoiExists;
 	boolean[] checkboxStates = new boolean[6];
+
+	Rectangle hBackground = new Rectangle();
+	Rectangle hBar = new Rectangle();
+	Rectangle hText = new Rectangle();
+	Rectangle vBackground = new Rectangle();
+	Rectangle vBar = new Rectangle();
+	Rectangle vText = new Rectangle();
 
 	/**
 	 * This method is called when the plugin is loaded. 'arg', which
@@ -54,7 +60,8 @@ public class ScaleBar implements PlugIn {
 			return;
 		}
 
-		persistConfiguration();
+		if (!IJ.isMacro())
+			persistConfiguration();
 		updateScalebar(!config.labelAll);
 	 }
 
@@ -168,6 +175,9 @@ public class ScaleBar implements PlugIn {
 		if (config.hBarWidth <= 0 || config.vBarHeight <= 0 || currentROIExists) {
 			computeDefaultBarWidth(currentROIExists);
 		}
+		if (IJ.macroRunning()) {
+			config.updateFrom(new ScaleBarConfiguration());
+		}
 
 		// Draw a first preview scalebar, with the default or presisted
 		// configuration.
@@ -176,6 +186,8 @@ public class ScaleBar implements PlugIn {
 		// Create & show the dialog, then return.
 		boolean multipleSlices = imp.getStackSize() > 1;
 		GenericDialog dialog = new BarDialog(getHUnit(), getVUnit(), config.hDigits, config.vDigits, multipleSlices);
+		DialogListener dialogListener = new BarDialogListener(multipleSlices);
+		dialog.addDialogListener(dialogListener);
 		dialog.showDialog();
 		return dialog.wasOKed();
 	}
@@ -214,7 +226,7 @@ public class ScaleBar implements PlugIn {
 	/**
 	 * Create & draw the scalebar using an Overlay.
 	 */
-	Overlay createScaleBarOverlay() {
+	Overlay createScaleBarOverlay() throws MissingRoiException {
 		Overlay overlay = new Overlay();
 
 		Color color = getColor();
@@ -226,13 +238,7 @@ public class ScaleBar implements PlugIn {
 		ImageProcessor ip = imp.getProcessor();
 		ip.setFont(font);
 
-		Rectangle[] r = getElementsPosition(ip);
-		Rectangle hBackground = r[0];
-		Rectangle hBar = r[1];
-		Rectangle hText = r[2];
-		Rectangle vBackground = r[3];
-		Rectangle vBar = r[4];
-		Rectangle vText = r[5];
+		setElementsPositions(ip);
 
 		if (bcolor != null) {
 			if (config.showHorizontal) {
@@ -260,12 +266,12 @@ public class ScaleBar implements PlugIn {
 
 		if (!config.hideText) {
 			if (config.showHorizontal) {
-				TextRoi hTextRoi = new TextRoi(hText.x, hText.y - hText.height, getHLabel(), font);
+				TextRoi hTextRoi = new TextRoi(hText.x, hText.y, getHLabel(), font);
 				hTextRoi.setStrokeColor(color);
 				overlay.add(hTextRoi, SCALE_BAR);
 			}
 			if (config.showVertical) {
-				TextRoi vTextRoi = new TextRoi(vText.x, vText.y, getVLabel(), font);
+				TextRoi vTextRoi = new TextRoi(vText.x, vText.y + vText.height, getVLabel(), font);
 				vTextRoi.setStrokeColor(color);
 				vTextRoi.setAngle(90.0);
 				overlay.add(vTextRoi, SCALE_BAR);
@@ -273,55 +279,6 @@ public class ScaleBar implements PlugIn {
 		}
 
 		return overlay;
-	}
-
-	Rectangle[] getElementsPosition(ImageProcessor ip) {
-		Rectangle hBackground = new Rectangle();
-		Rectangle hBar = new Rectangle();
-		Rectangle hText = new Rectangle();
-		Rectangle vBackground = new Rectangle();
-		Rectangle vBar = new Rectangle();
-		Rectangle vText = new Rectangle();
-
-		boolean upper = config.location.equals(locations[UPPER_RIGHT]) || config.location.equals(locations[UPPER_LEFT]);
-		boolean right = config.location.equals(locations[UPPER_RIGHT]) || config.location.equals(locations[LOWER_RIGHT]);
-
-		int textGap = config.fontSize/(config.serifFont?8:4);
-
-		hBar.x = xloc;
-		hBar.y = yloc + (config.showVertical ? computeVLabelHeightInPixels() : 0);
-		hBar.width = hBarWidthInPixels;
-		hBar.height = config.barThicknessInPixels;
-
-		vBar.x = hBar.x + (right ? (hBar.width - config.barThicknessInPixels) : 0);
-		vBar.y = hBar.y + (upper ? 0 : - vBarHeightInPixels + config.barThicknessInPixels);
-		vBar.width = config.barThicknessInPixels;
-		vBar.height = vBarHeightInPixels;
-
-		hText.width = config.hideText ? 0 : ip.getStringWidth(getHLabel());
-		hText.height = config.hideText ? 0 : (textGap + ip.getStringBounds(getHLabel()).height);
-		hText.x = hBar.x + (hBarWidthInPixels - hText.width) / 2;
-		hText.y = hBar.y + config.barThicknessInPixels + hText.height;
-
-		vText.width = config.hideText ? 0 : (textGap + ip.getStringBounds(getVLabel()).height);
-		vText.height = config.hideText ? 0 : ip.getStringWidth(getVLabel());
-		vText.x = vBar.x + (right ? config.barThicknessInPixels : - vText.width);
-		vText.y = vBar.y + (vBarHeightInPixels + vText.height) / 2;
-
-		int margin = Math.max(computeHLabelWidthInPixels()/20, 2);
-
-		hBackground.x = hBar.x - margin;
-		hBackground.y = hBar.y - margin;
-		hBackground.width = margin + hBarWidthInPixels + computeHLabelWidthInPixels() + margin;
-		hBackground.height = margin + config.barThicknessInPixels + hText.height + margin;
-
-		vBackground.x = vBar.x - margin - (right ? 0 : vText.width);
-		vBackground.y = vBar.y - margin;
-		vBackground.width = margin + config.barThicknessInPixels + vText.width + margin;
-		vBackground.height = margin + vBarHeightInPixels + computeVLabelHeightInPixels() + margin + (upper ? 0 : hText.height);
-
-		Rectangle[] r = {hBackground, hBar, hText, vBackground, vBar, vText};
-		return r;
 	}
 
 	/**
@@ -338,16 +295,68 @@ public class ScaleBar implements PlugIn {
 		return IJ.d2s(config.vBarHeight, config.vDigits) + " " + getVUnit();
 	}
 
-	int computeHLabelWidthInPixels() {
+	/**
+	 * Returns the width of the box that contains the horizontal scalebar and
+	 * its label.
+	 */
+	int getHBoxWidthInPixels() {
+		updateFont();
 		ImageProcessor ip = imp.getProcessor();
-		int hLabelWidth = config.hideText?0:ip.getStringWidth(getHLabel());
-		return (hLabelWidth < hBarWidthInPixels)?0:(int) (hBarWidthInPixels-hLabelWidth)/2;
+		int hLabelWidth = config.hideText ? 0 : ip.getStringWidth(getHLabel());
+		int hBoxWidth = Math.max(hBarWidthInPixels, hLabelWidth);
+		return (config.showHorizontal ? hBoxWidth : 0);
 	}
 
-	int computeVLabelHeightInPixels() {
+	/**
+	 * Returns the height of the box that contains the horizontal scalebar and
+	 * its label.
+	 */
+	int getHBoxHeightInPixels() {
+		int hLabelHeight = config.hideText ? 0 : config.fontSize;
+		int hBoxHeight = config.barThicknessInPixels + (int) (hLabelHeight * 1.25);
+		return (config.showHorizontal ? hBoxHeight : 0);
+	}
+
+	/**
+	 * Returns the height of the box that contains the vertical scalebar and
+	 * its label.
+	 */
+	int getVBoxHeightInPixels() {
+		updateFont();
 		ImageProcessor ip = imp.getProcessor();
-		int vLabelHeight = config.hideText?0:ip.getStringWidth(getVLabel());
-		return (vLabelHeight < vBarHeightInPixels)?0:(int) (vBarHeightInPixels-vLabelHeight)/2;
+		int vLabelHeight = config.hideText ? 0 : ip.getStringWidth(getVLabel());
+		int vBoxHeight = Math.max(vBarHeightInPixels, vLabelHeight);
+		return (config.showVertical ? vBoxHeight : 0);
+	}
+
+	/**
+	 * Returns the width of the box that contains the vertical scalebar and
+	 * its label.
+	 */
+	int getVBoxWidthInPixels() {
+		int vLabelWidth = config.hideText ? 0 : config.fontSize;
+		int vBoxWidth = config.barThicknessInPixels + (int) (vLabelWidth * 1.25);
+		return (config.showVertical ? vBoxWidth : 0);
+	}
+
+	/**
+	 * Returns the size of margins that should be displayed between the scalebar
+	 * elements and the image edge.
+	 */
+	int getOuterMarginSizeInPixels() {
+		int imageWidth = imp.getWidth();
+		int imageHeight = imp.getHeight();
+		return (imageWidth + imageHeight) / 100;
+	}
+
+	/**
+	 * Retruns the size of margins that should be displayed between the scalebar
+	 * elements and the edge of the element's backround.
+	 */
+	int getInnerMarginSizeInPixels() {
+		int maxWidth = Math.max(getHBoxWidthInPixels(), getVBoxHeightInPixels());
+		int margin = Math.max(maxWidth/20, 2);
+		return config.bcolor.equals("None") ? 0 : margin;
 	}
 
 	void updateFont() {
@@ -358,43 +367,104 @@ public class ScaleBar implements PlugIn {
 		ip.setAntialiasedText(true);
 	}
 
-	void updateLocation() throws MissingRoiException {
+	/**
+	 * Sets the positions x y of hBackground and vBackground based on
+	 * the current configuration.
+	 */
+	void setBackgroundBoxesPositions(ImageProcessor ip) throws MissingRoiException {
 		Calibration cal = imp.getCalibration();
-		ImageWindow win = imp.getWindow();
-		double mag = (win!=null)?win.getCanvas().getMagnification():1.0;
-
 		hBarWidthInPixels = (int)(config.hBarWidth/cal.pixelWidth);
 		vBarHeightInPixels = (int)(config.vBarHeight/cal.pixelHeight);
+
 		int imageWidth = imp.getWidth();
 		int imageHeight = imp.getHeight();
-		int margin = (imageWidth+imageHeight)/100;
-		if (mag==1.0)
-			margin = (int)(margin*1.5);
-		updateFont();
-		int hLabelWidth = computeHLabelWidthInPixels();
-		int fontSize = config.hideText ? 0 : config.fontSize;
-		int x = 0;
-		int y = 0;
+		int hBoxWidth = getHBoxWidthInPixels();
+		int hBoxHeight = getHBoxHeightInPixels();
+		int vBoxWidth = getVBoxWidthInPixels();
+		int vBoxHeight = getVBoxHeightInPixels();
+		int outerMargin = getOuterMarginSizeInPixels();
+		int innerMargin = getInnerMarginSizeInPixels();
+		
+		hBackground.width = innerMargin + hBoxWidth + innerMargin;
+		hBackground.height = innerMargin + hBoxHeight + innerMargin;
+		vBackground.width = innerMargin + vBoxWidth + innerMargin;
+		vBackground.height = innerMargin + vBoxHeight + innerMargin;
+
 		if (config.location.equals(locations[UPPER_RIGHT])) {
-			x = imageWidth - margin - (config.showVertical ? fontSize : 0) - hBarWidthInPixels + hLabelWidth;
-			y = margin;
+			hBackground.x = imageWidth - outerMargin - innerMargin - vBoxWidth - hBoxWidth - innerMargin;
+			hBackground.y = outerMargin;
+			vBackground.x = imageWidth - outerMargin - innerMargin - vBoxWidth - innerMargin;
+			vBackground.y = outerMargin;
+
 		} else if (config.location.equals(locations[LOWER_RIGHT])) {
-			x = imageWidth - margin - (config.showVertical ? fontSize : 0) - hBarWidthInPixels + hLabelWidth;
-			y = imageHeight - margin - config.barThicknessInPixels - fontSize;
+			hBackground.x = imageWidth - outerMargin - innerMargin - vBoxWidth - hBoxWidth + (config.showVertical ? config.barThicknessInPixels : 0) - innerMargin;
+			hBackground.y = imageHeight - outerMargin - innerMargin - hBoxHeight - innerMargin;
+			vBackground.x = imageWidth - outerMargin - innerMargin - vBoxWidth - innerMargin;
+			vBackground.y = imageHeight - outerMargin - innerMargin - hBoxHeight + (config.showHorizontal ? config.barThicknessInPixels : 0) - vBoxHeight - innerMargin;
+			vBackground.height += (config.showHorizontal ? hBoxHeight - config.barThicknessInPixels : 0);
+
 		} else if (config.location.equals(locations[UPPER_LEFT])) {
-			x = margin - hLabelWidth + (config.showVertical ? fontSize : 0);
-			y = margin;
+			hBackground.x = outerMargin;
+			hBackground.y = outerMargin;
+			vBackground.x = outerMargin;
+			vBackground.y = outerMargin;
+
 		} else if (config.location.equals(locations[LOWER_LEFT])) {
-			x = margin - hLabelWidth + (config.showVertical ? fontSize : 0);
-			y = imageHeight - margin - config.barThicknessInPixels - fontSize;
+			hBackground.x = outerMargin;
+			hBackground.y = imageHeight - outerMargin - innerMargin - hBoxHeight - innerMargin;
+			vBackground.x = outerMargin;
+			vBackground.y = imageHeight - outerMargin - innerMargin - hBoxHeight + (config.showHorizontal ? config.barThicknessInPixels : 0) - vBoxHeight - innerMargin;
+
 		} else {
 			if (!userRoiExists)
 				throw new MissingRoiException();
-			x = roiX;
-			y = roiY;
+
+			hBackground.x = roiX;
+			hBackground.y = roiY;
+			vBackground.x = roiX;
+			vBackground.y = roiY;
 		}
-		xloc = x;
-		yloc = y;
+	}
+
+	/**
+	 * Sets the rectangles x y positions for scalebar elements (hBar, hText, vBar, vText),
+	 * based on the current configuration. Also sets the width and height of the rectangles.
+	 * 
+	 * The position of each rectangle is relative to hBackground and vBackground,
+	 * so setBackgroundBoxesPositions() must run before this method computes positions.
+	 * This method calls setBackgroundBoxesPositions().
+	 */
+	void setElementsPositions(ImageProcessor ip) throws MissingRoiException {
+
+		setBackgroundBoxesPositions(ip);
+
+		int hBoxWidth = getHBoxWidthInPixels();
+		int hBoxHeight = getHBoxHeightInPixels();
+
+		int vBoxWidth = getVBoxWidthInPixels();
+		int vBoxHeight = getVBoxHeightInPixels();
+
+		int innerMargin = getInnerMarginSizeInPixels();
+		
+		hBar.x = hBackground.x + innerMargin + (hBoxWidth - hBarWidthInPixels)/2;
+		hBar.y = hBackground.y + innerMargin;
+		hBar.width = hBarWidthInPixels;
+		hBar.height = config.barThicknessInPixels;
+
+		hText.height = config.hideText ? 0 : config.fontSize;
+		hText.width = config.hideText ? 0 : ip.getStringWidth(getHLabel());
+		hText.x = hBackground.x + innerMargin + (hBoxWidth - hText.width)/2;
+		hText.y = hBar.y + hBar.height;
+
+		vBar.width = config.barThicknessInPixels;
+		vBar.height = vBarHeightInPixels;
+		vBar.x = vBackground.x + innerMargin;
+		vBar.y = vBackground.y + innerMargin + (vBoxHeight - vBar.height)/2;
+
+		vText.height = config.hideText ? 0 : ip.getStringWidth(getVLabel());
+		vText.width = config.hideText ? 0 : config.fontSize;
+		vText.x = vBar.x + vBar.width;
+		vText.y = vBackground.y + innerMargin + (vBoxHeight - vText.height)/2;
 	}
 
 	Color getColor() {
@@ -437,13 +507,14 @@ public class ScaleBar implements PlugIn {
 	 */
 	void updateScalebar(boolean previewOnly) {
 		removeScalebar();
+
+		Overlay scaleBarOverlay;
 		try {
-			updateLocation();
+			scaleBarOverlay = createScaleBarOverlay();
 		} catch (MissingRoiException e) {
 			return; // Simply don't draw the scalebar.
 		}
 
-		Overlay scaleBarOverlay = createScaleBarOverlay();
 		Overlay impOverlay = imp.getOverlay();
 		if (impOverlay==null) {
 			impOverlay = new Overlay();
@@ -456,25 +527,40 @@ public class ScaleBar implements PlugIn {
 		} else {
 			if (previewOnly) {
 				ImageProcessor ip = imp.getProcessor();
-				ip.drawOverlay(scaleBarOverlay);
+				drawOverlayOnProcessor(scaleBarOverlay, ip);
+				imp.updateAndDraw();
 			} else {
 				ImageStack stack = imp.getStack();
 				for (int i=1; i<=stack.size(); i++) {
 					ImageProcessor ip = stack.getProcessor(i);
-					ip.drawOverlay(scaleBarOverlay);
+					drawOverlayOnProcessor(scaleBarOverlay, ip);
+					imp.updateAndDraw();
 				}
 				imp.setStack(stack);
 			}
 		}
 	}
 
-   class BarDialog extends GenericDialog {
+	void drawOverlayOnProcessor(Overlay overlay, ImageProcessor processor) {
+		if (processor.getBitDepth() == 8 || processor.getBitDepth() == 24) {
+			// drawOverlay() only works for 8-bits and RGB
+			processor.drawOverlay(overlay);
+			return;
+		}
+		ImageProcessor ip = new ByteProcessor(imp.getWidth(), imp.getHeight());
+		ip.drawOverlay(overlay);
+		for (int y = 0; y < ip.getHeight(); y++)
+			for (int x = 0; x < ip.getWidth(); x++) {
+				int p = ip.get(x, y);
+				if (p > 0)
+					processor.putPixelValue(x, y, p / 255. * (processor.getMax() - processor.getMin()) + processor.getMin());
+			}
+	}
 
-		private boolean multipleSlices;
+   class BarDialog extends GenericDialog {
 
 		BarDialog(String hUnits, String vUnits, int hDigits, int vDigits, boolean multipleSlices) {
 			super("Scale Bar");
-			this.multipleSlices = multipleSlices;
 
 			addNumericField("Width in "+hUnits+": ", config.hBarWidth, hDigits);
 			addNumericField("Height in "+vUnits+": ", config.vBarHeight, vDigits);
@@ -497,77 +583,50 @@ public class ScaleBar implements PlugIn {
 				addCheckbox("Label all slices", config.labelAll);
 			}
 		}
-
-		public void textValueChanged(TextEvent e) {
-			TextField hWidthField = ((TextField)numberField.elementAt(0));
-			Double d = getValue(hWidthField.getText());
-			if (d==null)
-				return;
-			config.hBarWidth = d.doubleValue();
-			TextField vHeightField = ((TextField)numberField.elementAt(1));
-			d = getValue(vHeightField.getText());
-			if (d==null)
-				return;
-			config.vBarHeight = d.doubleValue();
-			TextField thicknessField = ((TextField)numberField.elementAt(2));
-			d = getValue(thicknessField.getText());
-			if (d==null)
-				return;
-			config.barThicknessInPixels = (int)d.doubleValue();
-			TextField fontSizeField = ((TextField)numberField.elementAt(3));
-			d = getValue(fontSizeField.getText());
-			if (d==null)
-				return;
-			int size = (int)d.doubleValue();
-			if (size>5)
-				config.fontSize = size;
-
-			String widthString = hWidthField.getText();
-			boolean hasDecimalPoint = false;
-			config.hDigits = 0;
-			for (int i = 0; i < widthString.length(); i++) {
-				if (hasDecimalPoint) {
-					config.hDigits += 1;
-				}
-				if (widthString.charAt(i) == '.') {
-					hasDecimalPoint = true;
-				}
-			}
-
-			String heightString = vHeightField.getText();
-			hasDecimalPoint = false;
-			config.vDigits = 0;
-			for (int i = 0; i < heightString.length(); i++) {
-				if (hasDecimalPoint) {
-					config.vDigits += 1;
-				}
-				if (heightString.charAt(i) == '.') {
-					hasDecimalPoint = true;
-				}
-			}
-
-			updateScalebar(true);
-		}
-
-		public void itemStateChanged(ItemEvent e) {
-			Choice col = (Choice)(choice.elementAt(0));
-			config.color = col.getSelectedItem();
-			Choice bcol = (Choice)(choice.elementAt(1));
-			config.bcolor = bcol.getSelectedItem();
-			Choice loc = (Choice)(choice.elementAt(2));
-			config.location = loc.getSelectedItem();
-			config.showHorizontal = ((Checkbox)(checkbox.elementAt(0))).getState();
-			config.showVertical = ((Checkbox)(checkbox.elementAt(1))).getState();
-			config.boldText = ((Checkbox)(checkbox.elementAt(2))).getState();
-			config.hideText = ((Checkbox)(checkbox.elementAt(3))).getState();
-			config.serifFont = ((Checkbox)(checkbox.elementAt(4))).getState();
-			config.useOverlay = ((Checkbox)(checkbox.elementAt(5))).getState();
-			if (multipleSlices)
-				config.labelAll = ((Checkbox)(checkbox.elementAt(6))).getState();
-			updateScalebar(true);
-		}
-
    } //BarDialog inner class
+
+	class BarDialogListener implements DialogListener {
+
+		boolean multipleSlices;
+
+		public BarDialogListener(boolean multipleSlices) {
+			super();
+			this.multipleSlices = multipleSlices;
+		}
+
+		@Override
+		public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
+			config.hBarWidth = gd.getNextNumber();
+			config.vBarHeight = gd.getNextNumber();
+			config.barThicknessInPixels = (int)gd.getNextNumber();
+			config.fontSize = (int)gd.getNextNumber();
+			config.color = gd.getNextChoice();
+			config.bcolor = gd.getNextChoice();
+			config.location = gd.getNextChoice();
+			config.showHorizontal = gd.getNextBoolean();
+			config.showVertical = gd.getNextBoolean();
+			if (!IJ.macroRunning() && !config.showHorizontal && !config.showVertical)
+				config.showHorizontal = true;
+			config.boldText = gd.getNextBoolean();
+			config.hideText = gd.getNextBoolean();
+			config.serifFont = gd.getNextBoolean();
+			config.useOverlay = gd.getNextBoolean();
+			if (multipleSlices)
+				config.labelAll = gd.getNextBoolean();
+			if (!config.showHorizontal && !config.showVertical) {
+				// Previous versions of this plugin did not handle vertical scale bars:
+				// the macro syntax was different in that "height" meant "thickness" of
+				// the horizontal scalebar.
+				// If the conditional above is true, then the macro syntax is the old
+				// one, so we swap a few config variables.
+				config.showHorizontal = true;
+				config.barThicknessInPixels = (int)config.vBarHeight;
+				config.vBarHeight = 0.0;
+			}
+			updateScalebar(true);
+			return true;
+		}
+	}
 
    class MissingRoiException extends Exception {
 		MissingRoiException() {

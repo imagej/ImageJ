@@ -104,7 +104,7 @@ public class Colors implements PlugIn, ItemListener {
 	}
 
 	public static Color getColor(String name, Color defaultColor) {
-		if (name==null || name.length()<3)
+		if (name==null || name.length()<2)
 			return defaultColor;
 		name = name.toLowerCase(Locale.US);
 		Color c = defaultColor;
@@ -129,7 +129,7 @@ public class Colors implements PlugIn, ItemListener {
 	}
 
 	public static Color decode(String hexColor, Color defaultColor) {
-		if (hexColor==null || hexColor.length()<3)
+		if (hexColor==null || hexColor.length()<2)
 			return defaultColor;
 		Color color = getColor(hexColor, null);
 		if (color==null) {

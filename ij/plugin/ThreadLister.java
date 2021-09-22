@@ -2,6 +2,7 @@ package ij.plugin;
 import java.io.*;
 import ij.*;
 import ij.text.*;
+import javax.swing.SwingUtilities;
 
 /**
 * Displays thread information in a text window.
@@ -21,6 +22,18 @@ public class ThreadLister implements PlugIn {
 			new TextWindow("Threads", caw.toString(), 420, 420);
 		} catch
 			(Exception e) {}
+			
+		// cause an exception on the EDT
+		if (IJ.altKeyDown()) {
+			SwingUtilities.invokeLater(new Runnable() {
+			  public void run() {
+				((Object) null).toString();        
+			  }
+			});
+		}
+		// cause an exception off the EDT
+		//((Object) null).toString();
+
 	}
 
 

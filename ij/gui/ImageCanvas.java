@@ -1254,7 +1254,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					//IJ.log(size2+" "+empty+" "+unchanged+" "+state+" "+roi1+"  "+roi2);			
 					if ((roi1==null && (size2<=1||empty)) || unchanged) {
 						if (roi1==null) imp.deleteRoi();
-						if (!cursorMoved) handlePopupMenu(e);
+						if (!cursorMoved && Toolbar.getToolId()!=Toolbar.HAND)
+							handlePopupMenu(e);
 					}
 				}
 			}, longClickDelay);
