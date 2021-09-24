@@ -79,7 +79,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.53m";
-	public static final String BUILD = "33";
+	public static final String BUILD = "36";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -911,7 +911,11 @@ public class ImageJ extends Frame implements ActionListener,
 		PrintWriter pw = new PrintWriter(caw);
 		e.printStackTrace(pw);
 		String s = caw.toString();
-		if (s!=null) IJ.log(s);
+		if (s!=null && s.contains("ij.")) {
+			if (IJ.getInstance()!=null)
+				s = IJ.getInstance().getInfo()+"\n"+s;
+			IJ.log(s);
+		}
     }
     
   } // inner class ExceptionHandler

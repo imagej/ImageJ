@@ -175,7 +175,7 @@ public class ScaleBar implements PlugIn {
 		if (config.hBarWidth <= 0 || config.vBarHeight <= 0 || currentROIExists) {
 			computeDefaultBarWidth(currentROIExists);
 		}
-		if (IJ.macroRunning()) {
+		if (IJ.isMacro()) {
 			config.updateFrom(new ScaleBarConfiguration());
 		}
 
@@ -605,7 +605,7 @@ public class ScaleBar implements PlugIn {
 			config.location = gd.getNextChoice();
 			config.showHorizontal = gd.getNextBoolean();
 			config.showVertical = gd.getNextBoolean();
-			if (!IJ.macroRunning() && !config.showHorizontal && !config.showVertical)
+			if (!IJ.isMacro() && !config.showHorizontal && !config.showVertical)
 				config.showHorizontal = true;
 			config.boldText = gd.getNextBoolean();
 			config.hideText = gd.getNextBoolean();
