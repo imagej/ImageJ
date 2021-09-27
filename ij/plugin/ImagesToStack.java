@@ -157,7 +157,7 @@ public class ImagesToStack implements PlugIn {
 			if (ip.getMax()>max) max = ip.getMax();
 			String label = titlesAsLabels?images[i].getTitle():null;
 			if (label==null)
-				label = (String)images[i].getProperty("Label");
+				label = images[i].getProp("Slice_Label");
 			if (label!=null) {
 				String info = (String)images[i].getProperty("Info");
 				if (info!=null) label += "\n" + info;

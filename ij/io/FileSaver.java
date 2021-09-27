@@ -101,10 +101,10 @@ public class FileSaver {
 		if (imp.getProperty("FHT")!=null && path.contains("FFT of "))
 			setupFFTSave();
 		fi.info = imp.getInfoProperty();
-		Object label = imp.getProperty("Label");
-		if (label!=null && (label instanceof String)) {
+		String label = imp.isStack()?imp.getStack().getSliceLabel(1):null;
+		if (label!=null) {
 			fi.sliceLabels = new String[1];
-			fi.sliceLabels[0] = (String)label;
+			fi.sliceLabels[0] = label;
 		}
 		fi.description = getDescriptionString();
 		if (imp.getProperty(Plot.PROPERTY_KEY) != null) {

@@ -172,11 +172,10 @@ public class ScaleBar implements PlugIn {
 		if (currentROIExists) {
 			config.location = locations[AT_SELECTION];
 		}
+		if (IJ.isMacro())
+			config.updateFrom(new ScaleBarConfiguration());
 		if (config.hBarWidth <= 0 || config.vBarHeight <= 0 || currentROIExists) {
 			computeDefaultBarWidth(currentROIExists);
-		}
-		if (IJ.isMacro()) {
-			config.updateFrom(new ScaleBarConfiguration());
 		}
 
 		// Draw a first preview scalebar, with the default or presisted
@@ -207,7 +206,7 @@ public class ScaleBar implements PlugIn {
 	 * Return the X unit strings defined in the image calibration.
 	 */
 	String getHUnit() {
-		String hUnits = imp.getCalibration().getXUnit();
+		String hUnits = imp.getCalibration().getXUnits();
 		if (hUnits.equals("microns"))
 			hUnits = IJ.micronSymbol+"m";
 		return hUnits;
@@ -217,7 +216,7 @@ public class ScaleBar implements PlugIn {
 	 * Return the Y unit strings defined in the image calibration.
 	 */
 	String getVUnit() {
-		String vUnits = imp.getCalibration().getYUnit();
+		String vUnits = imp.getCalibration().getYUnits();
 		if (vUnits.equals("microns"))
 			vUnits = IJ.micronSymbol+"m";
 		return vUnits;
@@ -376,6 +375,8 @@ public class ScaleBar implements PlugIn {
 		hBarWidthInPixels = (int)(config.hBarWidth/cal.pixelWidth);
 		vBarHeightInPixels = (int)(config.vBarHeight/cal.pixelHeight);
 
+		boolean hTextTop = config.showVertical && (config.location.equals(locations[UPPER_LEFT]) || config.location.equals(locations[UPPER_RIGHT]));
+		
 		int imageWidth = imp.getWidth();
 		int imageHeight = imp.getHeight();
 		int hBoxWidth = getHBoxWidthInPixels();
@@ -391,10 +392,11 @@ public class ScaleBar implements PlugIn {
 		vBackground.height = innerMargin + vBoxHeight + innerMargin;
 
 		if (config.location.equals(locations[UPPER_RIGHT])) {
-			hBackground.x = imageWidth - outerMargin - innerMargin - vBoxWidth - hBoxWidth - innerMargin;
+			hBackground.x = imageWidth - outerMargin - innerMargin - vBoxWidth + (config.showVertical ? config.barThicknessInPixels : 0) - hBoxWidth - innerMargin;
 			hBackground.y = outerMargin;
 			vBackground.x = imageWidth - outerMargin - innerMargin - vBoxWidth - innerMargin;
-			vBackground.y = outerMargin;
+			vBackground.y = outerMargin + (hTextTop ? hBoxHeight - config.barThicknessInPixels : 0);
+			hBackground.width += (config.showVertical ? vBoxWidth - config.barThicknessInPixels : 0);
 
 		} else if (config.location.equals(locations[LOWER_RIGHT])) {
 			hBackground.x = imageWidth - outerMargin - innerMargin - vBoxWidth - hBoxWidth + (config.showVertical ? config.barThicknessInPixels : 0) - innerMargin;
@@ -404,16 +406,19 @@ public class ScaleBar implements PlugIn {
 			vBackground.height += (config.showHorizontal ? hBoxHeight - config.barThicknessInPixels : 0);
 
 		} else if (config.location.equals(locations[UPPER_LEFT])) {
-			hBackground.x = outerMargin;
+			hBackground.x = outerMargin + (config.showVertical ? vBackground.width - 2*innerMargin - config.barThicknessInPixels : 0);
 			hBackground.y = outerMargin;
 			vBackground.x = outerMargin;
-			vBackground.y = outerMargin;
+			vBackground.y = outerMargin + (hTextTop ? hBoxHeight - config.barThicknessInPixels : 0);
+			hBackground.width += (config.showVertical ? vBoxWidth - config.barThicknessInPixels : 0);
+			hBackground.x -= (config.showVertical ? vBoxWidth - config.barThicknessInPixels : 0);
 
 		} else if (config.location.equals(locations[LOWER_LEFT])) {
-			hBackground.x = outerMargin;
+			hBackground.x = outerMargin + (config.showVertical ? vBackground.width - 2*innerMargin - config.barThicknessInPixels : 0);
 			hBackground.y = imageHeight - outerMargin - innerMargin - hBoxHeight - innerMargin;
 			vBackground.x = outerMargin;
 			vBackground.y = imageHeight - outerMargin - innerMargin - hBoxHeight + (config.showHorizontal ? config.barThicknessInPixels : 0) - vBoxHeight - innerMargin;
+			vBackground.height += (config.showHorizontal ? hBoxHeight - config.barThicknessInPixels : 0);
 
 		} else {
 			if (!userRoiExists)
@@ -445,25 +450,29 @@ public class ScaleBar implements PlugIn {
 		int vBoxHeight = getVBoxHeightInPixels();
 
 		int innerMargin = getInnerMarginSizeInPixels();
+
+		boolean right = config.location.equals(locations[LOWER_RIGHT]) || config.location.equals(locations[UPPER_RIGHT]);
+		boolean upper = config.location.equals(locations[UPPER_RIGHT]) || config.location.equals(locations[UPPER_LEFT]);
+		boolean hTextTop = config.showVertical && upper;
 		
-		hBar.x = hBackground.x + innerMargin + (hBoxWidth - hBarWidthInPixels)/2;
-		hBar.y = hBackground.y + innerMargin;
+		hBar.x = hBackground.x + innerMargin + (hBoxWidth - hBarWidthInPixels)/2 + (config.showVertical && !right && upper ? vBoxWidth - config.barThicknessInPixels : 0);
+		hBar.y = hBackground.y + innerMargin + (hTextTop ? hBoxHeight - config.barThicknessInPixels : 0);
 		hBar.width = hBarWidthInPixels;
 		hBar.height = config.barThicknessInPixels;
 
 		hText.height = config.hideText ? 0 : config.fontSize;
 		hText.width = config.hideText ? 0 : ip.getStringWidth(getHLabel());
-		hText.x = hBackground.x + innerMargin + (hBoxWidth - hText.width)/2;
-		hText.y = hBar.y + hBar.height;
+		hText.x = hBackground.x + innerMargin + (hBoxWidth - hText.width)/2 + (config.showVertical && !right && upper ? vBoxWidth - config.barThicknessInPixels : 0);
+		hText.y = hTextTop ? (hBackground.y + innerMargin - (int)(config.fontSize*0.25)) : (hBar.y + hBar.height);
 
 		vBar.width = config.barThicknessInPixels;
 		vBar.height = vBarHeightInPixels;
-		vBar.x = vBackground.x + innerMargin;
+		vBar.x = vBackground.x + (right ? innerMargin : vBackground.width - config.barThicknessInPixels - innerMargin);
 		vBar.y = vBackground.y + innerMargin + (vBoxHeight - vBar.height)/2;
 
 		vText.height = config.hideText ? 0 : ip.getStringWidth(getVLabel());
 		vText.width = config.hideText ? 0 : config.fontSize;
-		vText.x = vBar.x + vBar.width;
+		vText.x = right ? (vBar.x + vBar.width) : (vBar.x - vBoxWidth + config.barThicknessInPixels - (int)(config.fontSize*0.25));
 		vText.y = vBackground.y + innerMargin + (vBoxHeight - vText.height)/2;
 	}
 
@@ -547,13 +556,40 @@ public class ScaleBar implements PlugIn {
 			processor.drawOverlay(overlay);
 			return;
 		}
+		// Generate a buffer ImageProcessor, completely black.
+		// We will draw the overlay on it, then loop over each pixel,
+		// to replace drawn pixels in the original processor.
 		ImageProcessor ip = new ByteProcessor(imp.getWidth(), imp.getHeight());
+		ip.setCalibrationTable(processor.getCalibrationTable());
+		LUT lut = ip.getLut();
+		for (Roi roi : overlay) {
+			Color fillColor = roi.getFillColor();
+			if (fillColor != null) {
+				int i = processor.getBestIndex(fillColor);
+				roi.setFillColor(new Color(lut.getRed(i), lut.getGreen(i), lut.getBlue(i)));
+				// Below, when looping on each pixel of the buffer, we detect whether it was
+				// drawn by checking if the pixel value is greater than zero. Hence, we cannot
+				// put zero-valued pixels when the Roi is black, or these pixels will not
+				// be part of the drawing.
+				if (roi.getFillColor().equals(Color.BLACK)) roi.setFillColor(new Color(1, 1, 1));
+			}
+			Color strokeColor = roi.getStrokeColor();
+			if (strokeColor != null) {
+				int i = processor.getBestIndex(strokeColor);
+				roi.setStrokeColor(new Color(lut.getRed(i), lut.getGreen(i), lut.getBlue(i)));
+				if (roi.getStrokeColor().equals(Color.BLACK)) roi.setStrokeColor(new Color(1, 1, 1));
+			}
+		}
 		ip.drawOverlay(overlay);
 		for (int y = 0; y < ip.getHeight(); y++)
 			for (int x = 0; x < ip.getWidth(); x++) {
 				int p = ip.get(x, y);
-				if (p > 0)
-					processor.putPixelValue(x, y, p / 255. * (processor.getMax() - processor.getMin()) + processor.getMin());
+				if (p > 0) {
+					p = (int) (p * ((processor.getMax() - processor.getMin()) / 255d) + (float)processor.getMin());
+					if (processor.getBitDepth() == 32)
+						p = Float.floatToIntBits(p);
+					processor.putPixel(x, y, p);
+				}
 			}
 	}
 
@@ -605,15 +641,13 @@ public class ScaleBar implements PlugIn {
 			config.location = gd.getNextChoice();
 			config.showHorizontal = gd.getNextBoolean();
 			config.showVertical = gd.getNextBoolean();
-			if (!IJ.isMacro() && !config.showHorizontal && !config.showVertical)
-				config.showHorizontal = true;
 			config.boldText = gd.getNextBoolean();
 			config.hideText = gd.getNextBoolean();
 			config.serifFont = gd.getNextBoolean();
 			config.useOverlay = gd.getNextBoolean();
 			if (multipleSlices)
 				config.labelAll = gd.getNextBoolean();
-			if (!config.showHorizontal && !config.showVertical) {
+			if (!config.showHorizontal && !config.showVertical && IJ.isMacro()) {
 				// Previous versions of this plugin did not handle vertical scale bars:
 				// the macro syntax was different in that "height" meant "thickness" of
 				// the horizontal scalebar.
@@ -623,6 +657,27 @@ public class ScaleBar implements PlugIn {
 				config.barThicknessInPixels = (int)config.vBarHeight;
 				config.vBarHeight = 0.0;
 			}
+
+			String widthString = ((TextField) gd.getNumericFields().elementAt(0)).getText();
+			boolean hasDecimalPoint = false;
+			config.hDigits = 0;
+			for (int i = 0; i < widthString.length(); i++) {
+				if (hasDecimalPoint)
+					config.hDigits += 1;
+				if (widthString.charAt(i) == '.')
+					hasDecimalPoint = true;
+			}
+
+			String heightString = ((TextField) gd.getNumericFields().elementAt(1)).getText();
+			hasDecimalPoint = false;
+			config.vDigits = 0;
+			for (int i = 0; i < heightString.length(); i++) {
+				if (hasDecimalPoint)
+					config.vDigits += 1;
+				if (heightString.charAt(i) == '.')
+					hasDecimalPoint = true;
+			}
+
 			updateScalebar(true);
 			return true;
 		}

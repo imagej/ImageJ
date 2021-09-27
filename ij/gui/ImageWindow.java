@@ -310,7 +310,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			}
     		s += "; ";
 		} else {
-			String label = (String)imp.getProperty("Label");
+			String label = imp.getProp("Slice_Label");
 			if (label==null && imp.isStack())
 				label = imp.getStack().getSliceLabel(1);
 			if (label!=null && label.length()>0) {

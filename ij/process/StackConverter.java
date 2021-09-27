@@ -173,6 +173,8 @@ public class StackConverter {
 
 	/** Converts the Stack to RGB. */
 	public void convertToRGB() {
+		int z = imp.getNSlices();
+		int t = imp.getNFrames();
 		if (imp.isComposite()) {
 			RGBStackConverter.convertToRGB(imp);
 			return;
@@ -201,6 +203,7 @@ public class StackConverter {
 		}
 		IJ.showProgress(1.0);
 		imp.setStack(null, stack2);
+		imp.setDimensions(1, z, t);
 		imp.setCalibration(imp.getCalibration()); //update calibration
 	}
 

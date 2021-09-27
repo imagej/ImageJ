@@ -159,7 +159,7 @@ public class FileOpener {
 		if (fi.info!=null)
 			imp.setProperty("Info", fi.info);
 		if (fi.sliceLabels!=null&&fi.sliceLabels.length==1&&fi.sliceLabels[0]!=null)
-			imp.setProperty("Label", fi.sliceLabels[0]);
+			imp.setProp("Slice_Label", fi.sliceLabels[0]);
 		if (fi.plot!=null) try {
 			Plot plot = new Plot(imp, new ByteArrayInputStream(fi.plot));
 			imp.setProperty(Plot.PROPERTY_KEY, plot);

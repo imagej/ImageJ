@@ -1656,7 +1656,7 @@ public class Functions implements MacroConstants, Measurements {
 				ImagePlus imp = getImage();
 				String label = null;
 				if (imp.getStackSize()==1)
-					label = (String)imp.getProperty("Label");
+					label = imp.getProp("Slice_Label");
 				else
 					label = imp.getStack().getShortSliceLabel(imp.getCurrentSlice());
 				return label!=null?label:"";
@@ -4173,8 +4173,6 @@ public class Functions implements MacroConstants, Measurements {
 			imp.setProperty("Info", metadata);
 		else {
 			imp.getStack().setSliceLabel(metadata, imp.getCurrentSlice());
-			if (imp.getStackSize()==1)
-					imp.setProperty("Label", metadata);
 			if (!Interpreter.isBatchMode()) imp.repaintWindow();
 		}
 	}

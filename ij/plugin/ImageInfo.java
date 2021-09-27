@@ -513,7 +513,7 @@ public class ImageInfo implements PlugIn {
 			String value = props[i+1];
 			if (LUT.nameKey.equals(key) || "UniqueName".equals(key))
 				continue;
-			if (key!=null && value!=null && !key.equals("ShowInfo")) {
+			if (key!=null && value!=null && !(key.equals("ShowInfo")||key.equals("Slice_Label"))) {
 				if (value.length()<80)
 					s += key + ": " + value + "\n";
 				else

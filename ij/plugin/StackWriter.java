@@ -122,12 +122,12 @@ public class StackWriter implements PlugIn {
 			}
 			imp2.setProcessor(null, ip);
 			String label2 = stack.getSliceLabel(i);
-			imp2.setProperty("Label", null);
+			imp2.setProp("Slice_Label", null);
 			if (label2!=null) {
 				if (label2.contains("\n"))
 					imp2.setProperty("Info", label2);
 				else
-					imp2.setProperty("Label", label2);;
+					imp2.setProp("Slice_Label", label2);;
 			} else {
 				Properties props = imp2.getProperties();
 				if (props!=null) props.remove("Info");

@@ -101,6 +101,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			imp2.setRoi(roi2);
 		}
 		imp2.show();
+		if (imp2.getStackSize()>1 && IJ.isLinux())
+			WindowManager.setTempCurrentImage(imp2);
 		if (stackSize>1 && imp2.getStackSize()==stackSize)
 			imp2.setSlice(imp.getCurrentSlice());
 		if (isRotatedRect)
@@ -303,7 +305,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 				if (label.length()>250 && label.indexOf('\n')>0 && label.contains("0002,"))
 					imp2.setProperty("Info", label); // DICOM metadata
 				else
-					imp2.setProperty("Label", label);					
+					imp2.setProp("Slice_Label", label);					
 			}
 			if (imp.isComposite()) {
 				LUT lut = ((CompositeImage)imp).getChannelLut();
@@ -313,9 +315,9 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 					imp2.getProcessor().setColorModel(lut);
 			}
 		} else {
-			String label = (String)imp.getProperty("Label");
+			String label = imp.getProp("Slice_Label");
 			if (label!=null)
-				imp2.setProperty("Label", label);
+				imp2.setProp("Slice_Label", label);
 		}
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && !imp.getHideOverlay()) {

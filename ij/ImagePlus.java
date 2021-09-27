@@ -829,7 +829,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	private synchronized void setStackNull() {
 		if (oneSliceStack && stack!=null && stack.size()>0) {
 			String label = stack.getSliceLabel(1);
-			setProperty("Label", label);
+			setProp("Slice_Label", label);
 		}
 		stack = null;
 		oneSliceStack = false;
@@ -1690,7 +1690,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			ImageProcessor ip2 = getProcessor();
 			if (ip2==null)
 				return s;
-			String label = (String)getProperty("Label");
+			String label = getProp("Slice_Label");
 			if (label==null) {
 				String info = (String)getProperty("Info");
 				label = info!=null?getTitle()+"\n"+info:null; // DICOM metadata

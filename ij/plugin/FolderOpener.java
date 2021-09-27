@@ -430,7 +430,7 @@ public class FolderOpener implements PlugIn, TextListener {
 				int idx = this.start-1;
 				if (idx<0 || idx>=list.length)
 					idx = 0;
-				imp2.setProperty("Label", list[idx]);
+				imp2.setProp("Slice_Label", list[idx]);
 				if (info1!=null)
 					imp2.setProperty("Info", info1);
 			}
