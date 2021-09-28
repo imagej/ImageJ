@@ -9,7 +9,7 @@ import java.awt.*;
 public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	
 	public static final String MACRO_KEY = "math.macro";
-	private int flags = DOES_ALL|SUPPORTS_MASKING|KEEP_PREVIEW;
+	private int flags = DOES_ALL|SUPPORTS_MASKING|KEEP_PREVIEW|PARALLELIZE_STACKS;
 	private String arg;
 	private ImagePlus imp;
 	private boolean canceled;	
@@ -46,8 +46,6 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		this.arg = arg;
 		this.imp = imp;
 		IJ.register(ImageMath.class);
-		if (!arg.equals("macro") || Interpreter.getInstance()==null)
-			flags |= PARALLELIZE_STACKS;
 		return flags;
 	}
 
@@ -477,7 +475,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 				lastMaxValue = maxValue;
 				lastAndValue = andValue;
 				lastGammaValue = gammaValue;
-				lastMacro = macro;
+				lastMacro = macro2;
 			}
 			return IJ.setupDialog(imp, flags);
 		}

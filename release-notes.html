@@ -5,9 +5,9 @@
 </head>
 <body>
 
-<li> <li> <u>1.53m41 27 September 2021</u>
+<li> <u>1.53m 28 September 2021</u>
 <ul>
-<li> Thanks to Zoltan Kis, the <i>File&gt;Image&gt;Image Sequence</i>
+<li> Thanks to Zoltan Kis, the <i>File&gt;Import&gt;Image Sequence</i>
 dialog now displays the number of images that will be opened.
 <li> Thanks to Norbert Vischer, exceptions on the Event Dispatch Thread
 are now reported in the Log window.
@@ -20,19 +20,19 @@ that menu recordable.
 <li> Thanks to Esteban Fernandez, added a "Fill color:"
 field to the <i>Image&gt;Stacks&gt;Images to Stack</i>
 dialog box.
-<li> Thanks to Barry DeZonia, the findMinAndMax() method 
-for the Short/Int/Float processors is now faster and
-the <i>Plugins&gt;Utilities&gt;Benchmark</i> command
-runs 3% faster.
+<li> Thanks to Barry DeZonia, the findMinAndMax() methods 
+in the Short/Int/Float processors are now faster
+(<i>Plugins&gt;Utilities&gt;Benchmark</i>
+runs 3% faster).
 <li> Thanks to Michael Schmid, added support for
 drag and drop to JFileChooser dialogs.
 <li> Thanks to Nicolas De Francesco, updated the
 <i>Edit&gt;Selection&gt;Fit Rectangle</i> command so that
-it produces a more predictable result.
+it produces more predictable results.
 <li> Thanks to Philippe Carl, <i>File&gt;Import&gt;Image Sequence</i>
 no longer limits the number of files that can be
-imported to 40 when the "Open as separate images"
-option is enabled.
+imported to 40 when "Open as separate images"
+is enabled.
 <li> Thanks to Fred Damen, improved recording of the 
 ROI Manager's "Open..." and "Save..." commands, and
 made the open(path) and save(path) methods public.
@@ -45,7 +45,7 @@ method, used by the FileInfoVirtualStack class.
 <i>Process&gt;Filters&gt;Convolve</i> command to sometimes not
 be correctly recorded.
 <li> Thanks to Fred Damen, fixed a bug that caused a null pointer
-exception if the <i>File&gt;Import&gt;Results</i> dialog
+exception when the <i>File&gt;Import&gt;Results</i> dialog
 was canceled.
 <li> Thanks to Ved Sharma, fixed a bug that caused an invalid
 macro error when assigning a string value returned by a user
@@ -57,14 +57,15 @@ ROI Manager's "OR (Combine)" command to not work as
 expected if the first ROI was composite.
 <li> Thanks to Philippe Carl, fixed a bug that caused the
 <i>File&gt;Import&gt;Image Sequence</i> command to not
-work expected when importing stacks and the 
-"Open as separate images" option is enabled.
+work as expected when importing stacks and the 
+"Open as separate images" option was enabled.
 <li> Thanks to Philippe Carl, fixed a bug that caused the
-<i>Image&gt;Overlay&gt;Flatten</i> command to fail with
-composite images with an ROI or ROI Manager in "Show All" mode".
-<li> Thanks to Rodrigo Gonçalves, fixed a bug that caused
+<i>Image&gt;Overlay&gt;Flatten</i> command to not work
+with ROIs, or the ROI Manager in "Show All" mode, on
+composite  images.
+<li> Thanks to Rodrigo Goncalves, fixed a bug that caused
 the <i>File&gt;Save As&gt;Image Sequence</i> command to
-display multiple error messages if the specified directory
+display multiple error messages when the specified directory
 did not exist.
 <li> Thanks to Herbie Gluender, fixed a bug the caused the
 exit(msg) macro function to fail when the argument was a
@@ -83,7 +84,7 @@ and multiple frames.
 the Property.setSliceLabel() macro function to sometimes
 not work as expected with single images. 
 <li> Thanks to Ved Sharma, fixed a regression that caused the 
-roiManager(“Set Fill Color”,color) macro function to fail when
+roiManager("Set Fill Color",color) macro function to fail when
 used with a text selection.
 <li> Thanks to 'natalia', fixed a 1.52p regression that caused
 FITS images to open flipped vertically.
