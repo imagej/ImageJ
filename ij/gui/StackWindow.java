@@ -33,7 +33,11 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		pack();
 		ic = imp.getCanvas();
 		if (ic!=null) ic.setMaxBounds();
+		if (IJ.isMacro())
+			imp.setDeactivated(); //prepare for waitTillActivated (imp may have been activated before if it gets a new Window now)
 		show();
+		if (IJ.isMacro())
+			imp.waitTillActivated();
 		int previousSlice = imp.getCurrentSlice();
 		if (previousSlice>1 && previousSlice<=imp.getStackSize())
 			imp.setSlice(previousSlice);

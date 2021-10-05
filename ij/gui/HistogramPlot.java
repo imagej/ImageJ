@@ -17,6 +17,7 @@ public class HistogramPlot extends ImagePlus {
 	static final int WIN_HEIGHT = HIST_HEIGHT + (int)(118*SCALE);
 	static final int BAR_HEIGHT = (int)(SCALE*12);
 	static final int INTENSITY1=0, INTENSITY2=1, RGB=2, RED=3, GREEN=4, BLUE=5;
+	static final Color frameColor = new Color(30,60,120);
 	
 	int rgbMode = -1;
 	ImageStatistics stats;
@@ -25,7 +26,7 @@ public class HistogramPlot extends ImagePlus {
 	long[] histogram;
 	LookUpTable lut;
 	int decimalPlaces;
-	int digits;
+	int digits; 
 	long newMaxCount;
 	boolean logScale;
 	int yMax;
@@ -216,7 +217,6 @@ public class HistogramPlot extends ImagePlus {
 	void drawPlot(long maxCount, ImageProcessor ip) {
 		if (maxCount==0) maxCount = 1;
 		frame = new Rectangle(XMARGIN, YMARGIN, HIST_WIDTH, HIST_HEIGHT);
-		ip.drawRect(frame.x-1, frame.y, frame.width+2, frame.height+1);
 		if (histogram.length==256) {
 			double scale2 = HIST_WIDTH/256.0;
 			int barWidth = 1;
@@ -249,6 +249,9 @@ public class HistogramPlot extends ImagePlus {
 				}
 			}
 		}
+		ip.setColor(frameColor);
+		ip.drawRect(frame.x-1, frame.y, frame.width+2, frame.height+1);
+		ip.setColor(Color.black);
 	}
 		
 	void drawLogPlot (long maxCount, ImageProcessor ip) {

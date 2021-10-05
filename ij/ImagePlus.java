@@ -499,7 +499,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			activated = false;
 			int stackSize = getStackSize();
 			if (stackSize>1)
-				win = new StackWindow(this);
+				win = new StackWindow(this);	// displays the window and (if macro) waits for window to be activated
 			else if (getProperty(Plot.PROPERTY_KEY) != null)
 				win = new PlotWindow(this, (Plot)(getProperty(Plot.PROPERTY_KEY)));
 			else
@@ -508,16 +508,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (overlay!=null && getCanvas()!=null)
 				getCanvas().setOverlay(overlay);
 			IJ.showStatus(statusMessage);
-			if (IJ.isMacro()) { // wait for window to be activated
-				long start = System.currentTimeMillis();
-				while (!activated) {
-					IJ.wait(5);
-					if ((System.currentTimeMillis()-start)>2000) {
-						WindowManager.setTempCurrentImage(this);
-						break; // 2 second timeout
-					}
-				}
-			}
+			if (IJ.isMacro() && stackSize==1) // for non-stacks, wait for window to be activated
+				waitTillActivated();
 			if (imageType==GRAY16 && default16bitDisplayRange!=0) {
 				resetDisplayRange();
 				updateAndDraw();
@@ -548,11 +540,47 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 	}
 
+	/** Waits until the image window becomes activated. This is necessary in
+	 *  macros or other programs if an ImagePlus is shown on the screen,
+	 *  because displaying the window is asynchronous (happens later)
+	 *  and will make the image the active one. Without waiting, in the
+	 *  meanwhile another window could be already the active one and would
+	 *  become deactivated.
+	 *  If the ImagePlus may have been displayed previously, first call
+	 *  setDeactivated().
+	 *  <code>ImagePlus.show()</code> and <code>new StackWindow(ImagePlus)</code>
+	 *  call this method if IJ.isMacro() is true, i.e., when running a macro or
+	 *  executing an IJ.run(...) call.
+	*/
+	public void waitTillActivated() {
+		if (win == null) return;
+		if (EventQueue.isDispatchThread()) { //'activated' is set in the EventQueue, we can't wait for it in the EventQueue
+			WindowManager.setTempCurrentImage(this);
+			return;
+		}
+		long start = System.currentTimeMillis();
+		while (!activated) {
+			IJ.wait(5);
+			if ((System.currentTimeMillis()-start)>2000) {
+				WindowManager.setTempCurrentImage(this);
+				break; // 2 second timeout
+			}
+		}
+	}
+
 	/** Called by ImageWindow.windowActivated(). */
 	public void setActivated() {
 		activated = true;
 		if (borderColor!=null && win!=null)
 			win.setBackground(borderColor);
+	}
+
+	/** Called by <code>new StackWindow(ImagePlus)</code>
+	 * before showing the StackWindow, to prepare for
+	 * waitTillActivated().
+	*/
+	public void setDeactivated() {
+		activated = false;
 	}
 
 	/** Returns this image as a AWT image. */

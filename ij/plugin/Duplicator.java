@@ -101,8 +101,6 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			imp2.setRoi(roi2);
 		}
 		imp2.show();
-		if (imp2.getStackSize()>1 && IJ.isLinux())
-			WindowManager.setTempCurrentImage(imp2);
 		if (stackSize>1 && imp2.getStackSize()==stackSize)
 			imp2.setSlice(imp.getCurrentSlice());
 		if (isRotatedRect)
