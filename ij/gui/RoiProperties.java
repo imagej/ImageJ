@@ -49,17 +49,6 @@ public class RoiProperties implements TextListener, WindowListener {
 		this.roi = roi;
 	}
 	
-	private String decodeColor(Color color, Color defaultColor) {
-		if (color==null)
-			color = defaultColor;
-		String str = "#"+Integer.toHexString(color.getRGB());
-		if (str.length()==9 && str.startsWith("#ff"))
-			str = "#"+str.substring(3);
-		String lc = Colors.hexToColor(str);
-		if (lc!=null) str = lc;
-		return str;
-	}
-	
 	/** Displays the dialog box and returns 'false' if the user cancels it. */
 	public boolean showDialog() {
 		String name= roi.getName();

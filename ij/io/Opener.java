@@ -663,7 +663,7 @@ public class Opener {
 				IJ.error("Opener", e.getMessage()+"\n(Note: ImageJ cannot open CMYK JPEGs)\n \n"+dir+name);
 				return null; // error loading image
 			}				
-			if (imp.getType()==ImagePlus.COLOR_RGB)
+			if (imp.getType()==ImagePlus.COLOR_RGB && !silentMode)
 				convertGrayJpegTo8Bits(imp);
 			FileInfo fi = new FileInfo();
 			fi.fileFormat = fi.GIF_OR_JPG;

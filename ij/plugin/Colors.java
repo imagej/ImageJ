@@ -4,6 +4,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.io.*;
 import ij.plugin.filter.*;
+import ij.util.Tools;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -19,6 +20,7 @@ public class Colors implements PlugIn, ItemListener {
 		showDialog();
 	}
 
+	/** The Edit>Options>Colors dialog */
 	void showDialog() {
 		Color fc =Toolbar.getForegroundColor();
 		String fname = getColorName(fc, "black");
@@ -68,83 +70,100 @@ public class Colors implements PlugIn, ItemListener {
 		}
 	}
 
+	/** For named colors, returns the name, or 'defaultName' if not a named color.
+	 *  If 'defaultName' is non-null and starts with an uppercase character,
+	 *  the returned name is capitalized (first character uppercase).
+	 *  Use colorToString or colorToString2 to get a String representation (hexadecimal)
+	 *  also for unnamed colors.*/
 	public static String getColorName(Color c, String defaultName) {
 		if (c==null) return defaultName;
-		String name = defaultName;
-		if (name!=null && name.length()>0 && Character.isUpperCase(name.charAt(0))) {
-			if (c.equals(Color.red)) name = colors2[0];
-			else if (c.equals(Color.green)) name = colors2[1];
-			else if (c.equals(Color.blue)) name = colors2[2];
-			else if (c.equals(Color.magenta)) name = colors2[3];
-			else if (c.equals(Color.cyan)) name = colors2[4];
-			else if (c.equals(Color.yellow)) name = colors2[5];
-			else if (c.equals(Color.orange)) name = colors2[6];
-			else if (c.equals(Color.black)) name = colors2[7];
-			else if (c.equals(Color.white)) name = colors2[8];
-			else if (c.equals(Color.gray)) name = colors2[9];
-			else if (c.equals(Color.lightGray)) name = colors2[10];
-			else if (c.equals(Color.darkGray)) name = colors2[11];
-			else if (c.equals(Color.pink)) name = colors2[12];
-		} else {
-			if (c.equals(Color.red)) name = colors[0];
-			else if (c.equals(Color.green)) name = colors[1];
-			else if (c.equals(Color.blue)) name = colors[2];
-			else if (c.equals(Color.magenta)) name = colors[3];
-			else if (c.equals(Color.cyan)) name = colors[4];
-			else if (c.equals(Color.yellow)) name = colors[5];
-			else if (c.equals(Color.orange)) name = colors[6];
-			else if (c.equals(Color.black)) name = colors[7];
-			else if (c.equals(Color.white)) name = colors[8];
-			else if (c.equals(Color.gray)) name = colors[9];
-			else if (c.equals(Color.lightGray)) name = colors[10];
-			else if (c.equals(Color.darkGray)) name = colors[11];
-			else if (c.equals(Color.pink)) name = colors[12];
-		}
-		return name;
+		boolean useCapitalizedName = defaultName!=null && defaultName.length()>0 && Character.isUpperCase(defaultName.charAt(0));
+		return getColorName(c, defaultName, useCapitalizedName);
 	}
 
+	/** For named colors, returns the name, or 'defaultName' if not a named color.
+	 *  'color' must not be null. */
+	private static String getColorName(Color c, String defaultName, boolean useCapitalizedName) {
+		String[] colorNames = useCapitalizedName ? colors2 : colors;
+		if (c.equals(Color.red))            return colorNames[0];
+		else if (c.equals(Color.green))     return colorNames[1];
+		else if (c.equals(Color.blue))      return colorNames[2];
+		else if (c.equals(Color.magenta))   return colorNames[3];
+		else if (c.equals(Color.cyan))      return colorNames[4];
+		else if (c.equals(Color.yellow))    return colorNames[5];
+		else if (c.equals(Color.orange))    return colorNames[6];
+		else if (c.equals(Color.black))     return colorNames[7];
+		else if (c.equals(Color.white))     return colorNames[8];
+		else if (c.equals(Color.gray))      return colorNames[9];
+		else if (c.equals(Color.lightGray)) return colorNames[10];
+		else if (c.equals(Color.darkGray))  return colorNames[11];
+		else if (c.equals(Color.pink))      return colorNames[12];
+		return defaultName;
+	}
+
+	/** For named colors, converts the name String to the corresponding color.
+	 *  Returns 'defaultColor' if the color has no name.
+	 *  Use 'decode' to also decode hex color names like "#ffff00" */
 	public static Color getColor(String name, Color defaultColor) {
 		if (name==null || name.length()<2)
 			return defaultColor;
 		name = name.toLowerCase(Locale.US);
 		Color c = defaultColor;
 		if (name.contains(colors[7])) c = Color.black;
-		else if (name.contains(colors[8])) c = Color.white;
-		else if (name.contains(colors[0])) c = Color.red;
-		else if (name.contains(colors[2])) c = Color.blue;
-		else if (name.contains(colors[5])) c = Color.yellow;
-		else if (name.contains(colors[1])) c = Color.green;
-		else if (name.contains(colors[3])) c = Color.magenta;
-		else if (name.contains(colors[4])) c = Color.cyan;
-		else if (name.contains(colors[6])) c = Color.orange;
-		else if (name.contains(colors[9])) c = Color.gray;
-		else if (name.contains(colors[10])) c = Color.lightGray;
-		else if (name.contains(colors[11])) c = Color.darkGray;
+		else if (name.contains(colors[8]))  c = Color.white;
+		else if (name.contains(colors[0]))  c = Color.red;
+		else if (name.contains(colors[2]))  c = Color.blue;
+		else if (name.contains(colors[5]))  c = Color.yellow;
+		else if (name.contains(colors[1]))  c = Color.green;
+		else if (name.contains(colors[3]))  c = Color.magenta;
+		else if (name.contains(colors[4]))  c = Color.cyan;
+		else if (name.contains(colors[6]))  c = Color.orange;
 		else if (name.contains(colors[12])) c = Color.pink;
+		else if (name.contains(colors[9]) || name.contains("grey")) { //gray or grey
+			if (name.contains("light"))     c = Color.lightGray;
+			else if (name.contains("dark")) c = Color.darkGray;
+			else                            c = Color.gray;
+		}
 		return c;
 	}
 
+	/** Converts a String with the color name or the hexadecimal representation
+	 *  of a color with 6 or 8 hex digits to a Color.
+	 *  With 8 hex digits, the first two digits are the alpha.
+	 *  With 6 hex digits, the color is opaque (alpha = hex ff).
+	 *  A hex String may be preceded by '#' such as "#80ff00".
+	 *  When the string does not include a valid color name or hex code,
+	 *  returns Color.GRAY. */
 	public static Color decode(String hexColor) {
 		return decode(hexColor, Color.gray);
 	}
 
+	/** Converts a String with the color name or the hexadecimal representation
+	 *  of a color with 6 or 8 hex digits to a Color.
+	 *  With 8 hex digits, the first two digits are the alpha.
+	 *  With 6 hex digits, the color is opaque (alpha = hex ff).
+	 *  A hex String may be preceded by "#" such as "#80ff00" or "0x".
+	 *  When the string does not include a valid color name or hex code,
+	 *  returns 'defaultColor'. */
 	public static Color decode(String hexColor, Color defaultColor) {
 		if (hexColor==null || hexColor.length()<2)
 			return defaultColor;
-		Color color = getColor(hexColor, null);
+		Color color = getColor(hexColor, null);  //for named colors
 		if (color==null) {
 			if (hexColor.startsWith("#"))
 				hexColor = hexColor.substring(1);
+			else if (hexColor.startsWith("0x"))
+				hexColor = hexColor.substring(2);
 			int len = hexColor.length();
 			if (!(len==6 || len==8))
 				return defaultColor;
-			float alpha = len==8?parseHex(hexColor.substring(0,2)):1f;
-			if (len==8)
-				hexColor = hexColor.substring(2);
-			float red = parseHex(hexColor.substring(0,2));
-			float green = parseHex(hexColor.substring(2,4));
-			float blue = parseHex(hexColor.substring(4,6));
-			color = new Color(red, green, blue, alpha);
+			boolean hasAlpha = len==8;
+			try {
+				int rgba = (int)Long.parseLong(hexColor, 16);
+				color = new Color(rgba, hasAlpha);
+			} catch (NumberFormatException e) {
+				return defaultColor;
+			}
 		}
 		return color;
 	}
@@ -162,76 +181,68 @@ public class Colors implements PlugIn, ItemListener {
 	}
 
 	/** Converts a hex color (e.g., "ffff00") into "red", "green", "yellow", etc.
-		Returns null if the color is not one of the eight primary colors. */
+	 *  Returns null if the hex color does not have a name.
+	 *  Unused in ImageJ, for compatibility only. */
 	public static String hexToColor(String hex) {
 		if (hex==null) return null;
-		if (hex.startsWith("#"))
-			hex = hex.substring(1);
-		String color = null;
-		if (hex.equals("ff0000")) color = "red";
-		else if (hex.equals("00ff00")) color = "green";
-		else if (hex.equals("0000ff")) color = "blue";
-		else if (hex.equals("000000")) color = "black";
-		else if (hex.equals("ffffff")) color = "white";
-		else if (hex.equals("ffff00")) color = "yellow";
-		else if (hex.equals("00ffff")) color = "cyan";
-		else if (hex.equals("ff00ff")) color = "magenta";
-		else if (hex.equals("ffc800")) color = "orange";
-		else if (hex.equals("808080")) color = "gray";
-		return color;
+		Color color = decode(hex, null);
+		if (color==null) return null;
+		return getColorName(color, null, false);
 	}
 
-	/** Converts a hex color (e.g., "ffff00") into "Red", "Green", "Yellow", etc.
-		Returns null if the color is not one of the eight primary colors. */
+	/** Converts a hex color (e.g., "ffff00" or "#ffff00") into a color name
+	 *  "Red", "Green", "Yellow", etc.
+	 *  Returns null if the hex color does not have a name.
+	 *  Unused in ImageJ, for compatibility only. */
 	public static String hexToColor2(String hex) {
 		if (hex==null) return null;
-		if (hex.startsWith("#"))
-			hex = hex.substring(1);
-		String color = null;
-		if (hex.equals("ff0000")) color = "Red";
-		else if (hex.equals("00ff00")) color = "Green";
-		else if (hex.equals("0000ff")) color = "Blue";
-		else if (hex.equals("000000")) color = "Black";
-		else if (hex.equals("ffffff")) color = "White";
-		else if (hex.equals("ffff00")) color = "Yellow";
-		else if (hex.equals("00ffff")) color = "Cyan";
-		else if (hex.equals("ff00ff")) color = "Magenta";
-		else if (hex.equals("ffc800")) color = "Orange";
-		else if (hex.equals("808080")) color = "Gray";
-		return color;
+		Color color = decode(hex, null);
+		if (color==null) return null;
+		return getColorName(color, null, true);
 	}
 
-	/** Converts a Color into a string ("red", "green", #aa55ff, etc.). */
+	/** Converts a Color into a lowercase string ("red", "green", "#aa55ff", etc.).
+	 *  If <code>color</code> is <code>null</code>, returns the String "none". */
 	public static String colorToString(Color color) {
-		String str = color!=null?"#"+Integer.toHexString(color.getRGB()):"none";
-		if (str.length()==9 && str.startsWith("#ff"))
-			str = "#"+str.substring(3);
-		String str2 = hexToColor(str);
-		return str2!=null?str2:str;
+		if (color == null) return "none";
+		String str = getColorName(color, null, false);
+		if (str == null)
+			str = "#"+getHexString(color);
+		return str;
 	}
 
-	/** Converts a Color into a string ("Red", "Green", #aa55ff, etc.). */
+	/** Converts a Color into a string ("Red", "Green", #aa55ff, etc.).
+	 *  If <code>color</code> is <code>null</code>, returns the String "None". */
 	public static String colorToString2(Color color) {
-		String str = color!=null?"#"+Integer.toHexString(color.getRGB()):"None";
-		if (str.length()==9 && str.startsWith("#ff"))
-			str = "#"+str.substring(3);
-		String str2 = hexToColor2(str);
-		return str2!=null?str2:str;
+		if (color == null) return "None";
+		String str = getColorName(color, null, true);
+		if (str == null)
+			str = "#"+getHexString(color);
+		return str;
 	}
-	
+
+	/** Returns the 6-digit hex string such as "aa55ff" for opaque colors or
+	 *  or 8-digit like "80aa55ff" for other colors (the first two hex digits are alpha).
+	 *  'color' must not be null. */
+	private static String getHexString(Color color) {
+		int rgb = color.getRGB();
+		boolean isOpaque = (rgb & 0xff000000) == 0xff000000;
+		if (isOpaque)
+			rgb &= 0x00ffffff;  //don't show alpha for opaque colors
+		String format = isOpaque? "%06x" : "%08x";
+		return String.format(format, rgb);
+	}
+
+	/** Returns an opaque color with the specified red, green, and blue values.
+	 *  Values is outside the 0-255 range are replaced by the nearest
+	 *  valid number (0 or 255) */
 	public static Color toColor(int red, int green, int blue) {
 	    if (red<0) red=0; if (green<0) green=0; if (blue<0) blue=0; 
 	    if (red>255) red=255; if (green>255) green=255; if (blue>255) blue=255;  
 		return  new Color(red, green, blue);
 	}
 
-	private static float parseHex(String hex) {
-		float value = 0f;
-		try {value=Integer.parseInt(hex,16);}
-		catch(Exception e) { }
-		return value/255f;
-	}
-
+	/** Callback listener for Choice modifications in the dialog */
 	public void itemStateChanged(ItemEvent e) {
 		Choice choice = (Choice)e.getSource();
 		String item = choice.getSelectedItem();
@@ -248,6 +259,10 @@ public class Colors implements PlugIn, ItemListener {
 		}
 	}
 
+	/** Returns an array of the color Strings in the argument(s) and the 13
+	 *  predefined color names "Red", "Green", ... "Pink".
+	 *  The Strings arguments must be either "None" or hex codes starting with "#".
+	 *  Any null arguments are ignored. */
 	public static String[] getColors(String... moreColors) {
 		ArrayList names = new ArrayList();
 		for (String arg: moreColors) {

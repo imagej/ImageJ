@@ -21,7 +21,6 @@ public class FolderOpener implements PlugIn, TextListener {
 	private static String[] excludedTypes = {".txt",".lut",".roi",".pty",".hdr",".java",".ijm",".py",".js",".bsh",".xml",".rar",".h5",".doc",".xls"};
 	private static boolean staticSortFileNames = true;
 	private static boolean staticOpenAsVirtualStack;
-	private boolean convertToRGB;
 	private boolean convertToGrayscale;  //unused
 	private boolean sortFileNames = true;
 	private boolean sortByMetaData = true;
@@ -134,9 +133,13 @@ public class FolderOpener implements PlugIn, TextListener {
 		if (arg==null) {
 			if (!showDialog()) return;
 		}
+		if (directory==null || directory.length()==0) {
+			error("No directory specified.     ");
+			return;
+		}
 		File file = new File(directory);
 		if (!file.exists()) {
-			IJ.error("File>Import>Image Sequence", "Directory not found: "+directory);
+			error("Directory not found: "+directory);
 			return;
 		}
 		String[] list = file.list();
@@ -147,7 +150,7 @@ public class FolderOpener implements PlugIn, TextListener {
 			if (list!=null)
 				directory = parent;
 			else {
-				IJ.error("File>Import>Image Sequence", "Directory not found: "+directory);
+				error("Directory not found: "+directory);
 				return;
 			}
 		}
@@ -176,7 +179,16 @@ public class FolderOpener implements PlugIn, TextListener {
 			title = title.substring(0, title.length()-1);
 		
 		list = trimFileList(list);
-		if (list==null) return;
+		if (list==null)
+			return;
+		String pluginName = "Sequence Reader";
+		if (legacyRegex!=null)
+			pluginName += "(legacy)";
+		list = getFilteredList(list, filter, pluginName);
+		if (list==null)
+			return;
+		if (sortFileNames || IJ.isMacOSX())
+			list = StringSorter.sortNumerically(list);
 		if (IJ.debugMode) IJ.log("FolderOpener: "+directory+" ("+list.length+" files)");
 		int width=0, height=0, stackSize=1;
 		ImageStack stack = null;
@@ -210,20 +222,14 @@ public class FolderOpener implements PlugIn, TextListener {
 				}
 			}
 			if (width==0) {
-				IJ.error("Sequence Reader", "This folder does not appear to contain\n"
+				error("This folder does not appear to contain\n"
 				+ "any TIFF, JPEG, BMP, DICOM, GIF, FITS or PGM files.\n \n"
 				+ "   \""+directory+"\"");
 				return;
 			}
-			String pluginName = "Sequence Reader";
-			if (legacyRegex!=null)
-				pluginName += "(legacy)";
-			list = getFilteredList(list, filter, pluginName);
-			if (list==null)
-				return;
 			IJ.showStatus("");
 			t0 = System.currentTimeMillis();
-			if (sortFileNames || dicomImages || IJ.isMacOSX())
+			if (dicomImages && !IJ.isMacOSX() && !sortFileNames)
 				list = StringSorter.sortNumerically(list);
 
 			if (this.nFiles<1)
@@ -260,13 +266,13 @@ public class FolderOpener implements PlugIn, TextListener {
 						width = stackWidth;
 						height = stackHeight;
 					}
-					if (bitDepth==0) bitDepth = imp.getBitDepth();
+					if (bitDepth==0)
+						bitDepth = imp.getBitDepth();
 					fi = imp.getOriginalFileInfo();
 					ImageProcessor ip = imp.getProcessor();
 					min = ip.getMin();
 					max = ip.getMax();
 					cal = imp.getCalibration();
-					if (convertToRGB) bitDepth = 24;
 					ColorModel cm = imp.getProcessor().getColorModel();
 					if (openAsVirtualStack) {
 						if (stackSize>1) {
@@ -346,10 +352,6 @@ public class FolderOpener implements PlugIn, TextListener {
 								label2 += ":"+slice;
 						}
 						ip = inputStack.getProcessor(slice);
-						if (convertToRGB) {
-							ip = ip.convertToRGB();
-							bitDepth2 = 24;
-						}
 						if (bitDepth2!=bitDepth) {
 							if (dicomImages && bitDepth==16 && bitDepth2==32 && this.scale==100) {
 								ip = ip.convertToFloat();
@@ -478,6 +480,10 @@ public class FolderOpener implements PlugIn, TextListener {
 		}
 	}
 	
+	private void error(String msg) {
+		IJ.error("Import>Image Sequence", msg);
+	}
+	
 	private void openAsSeparateImages(ImagePlus imp) {
 		VirtualStack stack = (VirtualStack)imp.getStack();
 		String dir = stack.getDirectory();
@@ -540,7 +546,7 @@ public class FolderOpener implements PlugIn, TextListener {
 		String countStr = "---";
 		if (!directorySet)
 			directory = Prefs.get(DIR_KEY, IJ.getDir("downloads")+"stack/");
-		if (directory!=null) {			
+		if (directory!=null && !IJ.isMacro()) {			
 			File f = new File(directory);
 			String[] names = f.list();
 			names = trimFileList(names);

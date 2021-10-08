@@ -1702,13 +1702,17 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
     }
     
     private void setAndRecordForgroundColor(Color color) {
-    	setForegroundColor(color);
-    	Recorder.setForegroundColor(color);
+    	if (color!=null) {
+    		setForegroundColor(color);
+    		Recorder.setForegroundColor(color);
+    	}
     }
     
     private void setAndRecordBackgroundColor(Color color) {
-    	setBackgroundColor(color);
-		Recorder.setBackgroundColor(color);
+    	if (color!=null) {
+    		setBackgroundColor(color);
+			Recorder.setBackgroundColor(color);
+		}
     }
 
 	public Dimension getPreferredSize(){

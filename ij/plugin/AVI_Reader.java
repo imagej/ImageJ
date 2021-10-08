@@ -486,21 +486,25 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 		if  (options!=null) {  //macro
 			if (options.contains("open="))
 				Macro.setOptions(options.replace("open=", "avi="));
-			int first = (int)Tools.getNumberFromList(options, "first=");
-			if (first>0) firstFrame = first;
-			int last = (int)Tools.getNumberFromList(options, "last=");
-			if (last>0) lastFrame = last;
 		}
 		if (path==null || path.length()==0)
 			path = Prefs.get(PATH_KEY, IJ.getDir("downloads")+"movie.avi");
 		GenericDialog gd = new GenericDialog("AVI Reader");
 		gd.setInsets(5, 0, 0);
-		gd.addFileField("AVI:", path);
+		gd.addFileField("AVI:", path, 29);
 		gd.setInsets(2, 40, 5);
 		gd.addMessage("drag and drop target", IJ.font10, Color.darkGray);
 		gd.addCheckbox("Use Virtual Stack", isVirtual);
 		gd.addCheckbox("Convert to Grayscale", convertToGray);
 		gd.addCheckbox("Flip Vertical", flipVertical);
+		gd.setInsets(15, 0, 3);
+		gd.addNumericField("First:", firstFrame, 0);
+		gd.addNumericField("Last:", lastFrame, lastFrame, 6, "*");
+		TextField lastField = (TextField)(gd.getNumericFields().lastElement());
+		if (lastFrame == 0)
+			lastField.setText("");
+		gd.setInsets(0, 40, 5);
+		gd.addMessage("* Leave empty or set to 0 for reading to the end.\n   Also accepts e.g. -5 to skip last 5 frames.", IJ.font10, Color.darkGray);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
@@ -513,6 +517,12 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 		isVirtual = gd.getNextBoolean();
 		convertToGray = gd.getNextBoolean();
 		flipVertical = gd.getNextBoolean();
+		double first = gd.getNextNumber();
+		if (!Double.isNaN(first)) firstFrame = (int)first;
+		if (lastField.getText().length()==0)
+			lastField.setText("0");
+		double last = gd.getNextNumber();
+		if (!Double.isNaN(last)) lastFrame = (int)last;
 		if (!IJ.isMacro()) {
 			staticConvertToGray = convertToGray;
 			staticFlipVertical = flipVertical;
