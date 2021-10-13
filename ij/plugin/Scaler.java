@@ -84,7 +84,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			scaler.interpolationMethod = ImageProcessor.BICUBIC;
 		if (scaler.xscale==0) {
 			scaler.xscale = (double)dstWidth/imp.getWidth();
-			scaler.yscale = (double)dstHeight/imp.getWidth();
+			scaler.yscale = (double)dstHeight/imp.getHeight();
 			scaler.zscale = (double)dstDepth/imp.getStackSize();
 		}
 		boolean processStack = imp.getStackSize()>1 && !options.contains("slice");
