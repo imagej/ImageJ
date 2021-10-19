@@ -82,7 +82,7 @@ public class Opener {
 	 * @see ij.IJ#openImage(String)
 	*/
 	public void open(String path) {
-		boolean isURL = path.indexOf("://")>0;
+		boolean isURL = (path.contains("://") || path.contains("file:/"));
 		if (isURL && isText(path)) {
 			openTextURL(path);
 			return;
@@ -229,7 +229,7 @@ public class Opener {
 			path = getPath();
 		if (path==null) return null;
 		ImagePlus img = null;
-		if (path.indexOf("://")>0)
+		if (path.contains("://") || path.contains("file:/")) // path is a URL
 			img = openURL(path);
 		else
 			img = openImage(getDir(path), getName(path));
