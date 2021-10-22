@@ -995,7 +995,7 @@ public class Plot implements Cloneable {
 		if (index < 0) index = allPlotObjects.size() + index;
 		allPlotObjects.get(index).label = label;
 	}
-	
+
 	/** Removes NaNs from the xValues and yValues arrays of all plot objects. */ 
 	public void removeNaNs() {
 		for (PlotObject plotObj : allPlotObjects){
@@ -1102,15 +1102,19 @@ public class Plot implements Cloneable {
 		allPlotObjects.add(new PlotObject(x1, y1, x2, y2, currentLineWidth, step, currentColor, PlotObject.DOTTED_LINE));
 	}
 
-	/** Sets the font size for all following addLabel() etc. operations. */
+	/** Sets the font size for all following addLabel() etc. operations. The currently set font when
+	 *	displaying the plot determines the font of all labels & numbers.
+	 *  After the plot has been shown, sets the font for the numbers and the legend (if present).
+	 *	If the plot is hown already, call update() thereafter to make the change visible. */
 	public void setFontSize(int size) {
 		setFont(-1, (float)size);
 	}
 
 	/** Sets the font for all following addLabel() etc. operations. The currently set font when
 	 *	displaying the plot determines the font of all labels & numbers.
-	 *  After the plot has been shown, sets the font for the numbers and the legend (if present).
-	 *	Call update() thereafter to make the change visible (if the image is shown already). */
+	 *  After the plot has been shown, sets the font for the numbers and the legend (if present);
+	 *  use setFont(char, Font) to set these fonts individually.
+	 *	If the plot is hown already, call update() thereafter to make the change visible. */
 	public void setFont(Font font) {
 		if (font == null) font = defaultFont;
 		currentFont = font;
@@ -1126,7 +1130,8 @@ public class Plot implements Cloneable {
 	 *	when displaying the plot determines the font of the numbers at the axes.
 	 *	That font also sets the default label font size, which may be overridden by
 	 *	setAxisLabelFontSize or setXLabelFont, setYLabelFont.
-	 *  After the plot has been shown, sets the font for the numbers and the legend (if present).
+	 *  After the plot has been shown, sets the font for the numbers and the legend (if present);
+	 *  use setFont(char, Font) to set these fonts individually.
 	 *	Styles are defined in the Font class, e.g. Font.PLAIN, Font.BOLD.
 	 *	Set <code>style</code> to -1 to leave the style unchanged.
 	 *	Call update() thereafter to make the change visible (if the image is shown already). */
@@ -1180,7 +1185,7 @@ public class Plot implements Cloneable {
 
 	/** Gets the font for xLabel ('x'), yLabel('y'), numbers ('f' for 'frame') or the legend ('l').
 	 *	Returns null if the given PlotObject does not exist or its font is null */
-	Font getFont(char c) {
+	public Font getFont(char c) {
 		PlotObject plotObject = pp.getPlotObject(c);
 		if (plotObject != null)
 			return plotObject.getFont();
@@ -1189,7 +1194,7 @@ public class Plot implements Cloneable {
 	}
 
 	/** Sets the font for xLabel ('x'), yLabel('y'), numbers ('f' for 'frame') or the legend ('l') */
-	void setFont(char c, Font font) {
+	public void setFont(char c, Font font) {
 		PlotObject plotObject = pp.getPlotObject(c);
 		if (plotObject != null)
 			plotObject.setFont(font);
@@ -1278,7 +1283,8 @@ public class Plot implements Cloneable {
 		return nObjects;
 	}
 
-	/** Gets an array with human-readable designations of the PlotObjects with types fitting the mask */
+	/** Gets an array with human-readable designations of the PlotObjects with types fitting the mask
+	 *  (i.e., 'mask' should be a bitwise or of the types desired) */
 	String[] getPlotObjectDesignations(int mask, boolean includeHidden) {
 		int nObjects = getNumPlotObjects(mask, includeHidden);
 		String[] names = new String[nObjects];
@@ -1327,9 +1333,10 @@ public class Plot implements Cloneable {
 	}
 
 	/** Add the i-th PlotObject (in the sequence how they were added, including hidden ones)
-	 *  from another plot to this one.
+	 *  from another plot to this one. PlotObjects here refers to curves, arrows, labels etc.
+	 *  (not legend, axes and frame, though implemented as PlotObjects)
 	 *  Use 'update' to update the plot thereafter.
-	 *  @return Index of the plotObject added in the sequence they were added **/
+	 *  @return Index of the plotObject added in the sequence they were added */
 	public int addObjectFromPlot(Plot plot, int i) {
 		PlotObject plotObject = plot.getPlotObjectDeepClone(i);
 		plotObject.unsetFlag(PlotObject.CONSTRUCTOR_DATA);
@@ -1340,7 +1347,9 @@ public class Plot implements Cloneable {
 
 	/** Get the style of the i-th PlotObject (curve, label, ...) in the sequence
 	 *	they were added (including hidden ones), as String with comma delimiters:
-	 *	Main Color, Secondary Color (or "none"), Line Width [, Symbol shape for XY_DATA] [,hidden] **/
+	 *	Main Color, Secondary Color (or "none"), Line Width [, Symbol shape for XY_DATA] [,hidden]
+	 *  PlotObjects here refers to curves, arrows, labels etc.
+	 *  (not legend, exes and frame, though implemented as PlotObjects) */
 	public String getPlotObjectStyle(int i) {
 		return getPlotObjectStyle(allPlotObjects.get(i));
 	}
@@ -1357,20 +1366,24 @@ public class Plot implements Cloneable {
 	}
 
 	/** Get the label the i-th PlotObject (in the sequence how they were added, including hidden ones).
-	 *  Returns null if no label **/
+	 *  Returns null if no label. PlotObjects here refers to curves, arrows, labels etc.
+	 *  (not legend, exes and frame, though implemented as PlotObjects) */
 	public String getPlotObjectLabel(int i) {
 		return allPlotObjects.get(i).label;
 	}
 
-	/** Set the label the i-th PlotObject (in the sequence how they were added, including hidden ones) **/
+	/** Set the label the i-th PlotObject (in the sequence how they were added, including hidden ones)
+	 *  PlotObjects here refers to curves, arrows, labels etc.
+	 *  (not legend, exes and frame, though implemented as PlotObjects) */
 	public void setPlotObjectLabel(int i, String label) {
 		allPlotObjects.get(i).label = label;
 	}
 
 	/** Sets the style of the specified PlotObject (curve, label, etc.) from a
 	 *	comma-delimited string ("color1,color2,lineWidth[,symbol][,hidden]"),
-	 * where "color2" can be "none" and "symbol" and "hidden" are optional.
-	*/
+	 *  where "color2" can be "none" and "symbol" and "hidden" are optional.
+	 *  PlotObjects here refers to curves, arrows, labels etc.
+	 *  (not legend, exes and frame, though implemented as PlotObjects) */
 	public void setStyle(int index, String style) {
 		if (index<0 || index>=allPlotObjects.size())
 			throw new IllegalArgumentException("Index out of range");
@@ -1411,6 +1424,7 @@ public class Plot implements Cloneable {
 	}
 
 	/** Returns the index of the first plot object fitting the type mask and with all data equal to those given.
+	 *  ('mask' should be a bitwise or of the types desired)
 	 *  Returns or -1 is no such plot object exists.
 	 *  The array 'values' should contain the x, y, x error bar, yerror bar data. The 'values' array may have any size;
 	 *  only the data given are compared (e.g. for an array with length 2, there is no check for erro bars).
@@ -1494,6 +1508,9 @@ public class Plot implements Cloneable {
 	public void setLimitsToFit(boolean updateImg) {
 		saveMinMax();
 		currentMinMax = getMinAndMax(true, ALL_AXES_RANGE);
+		if (Double.isNaN(defaultMinMax[0]) && Double.isNaN(defaultMinMax[2])) //no range at all so far
+			System.arraycopy(currentMinMax, 0, defaultMinMax, 0, Math.min(currentMinMax.length, defaultMinMax.length));
+
 		enlargeRange(currentMinMax);              //avoid points exactly at the border
 		//System.arraycopy(currentMinMax, 0, defaultMinMax, 0, currentMinMax.length);
 		if (plotDrawn && updateImg) updateImage();

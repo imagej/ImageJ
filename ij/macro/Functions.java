@@ -2221,6 +2221,7 @@ public class Functions implements MacroConstants, Measurements {
 			currentPlot.setFrozen(getBooleanArg());
 			return Double.NaN;			
 		} else if (name.equals("removeNaNs")) {
+			interp.getParens();
 			currentPlot.removeNaNs();
 			return Double.NaN;
 		}  else if (name.equals("addLegend") || name.equals("setLegend")) {

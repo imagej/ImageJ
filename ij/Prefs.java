@@ -514,7 +514,7 @@ public class Prefs {
 		antialiasedText = false;
 		interpolateScaledImages = (options&INTERPOLATE)!=0;
 		open100Percent = (options&ONE_HUNDRED_PERCENT)!=0;
-		//blackBackground = (options&BLACK_BACKGROUND)!=0;
+		blackBackground = (options&BLACK_BACKGROUND)!=0;
 		useJFileChooser = (options&JFILE_CHOOSER)!=0;
 		weightedColor = (options&WEIGHTED)!=0;
 		if (weightedColor)

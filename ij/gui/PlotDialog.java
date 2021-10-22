@@ -492,7 +492,10 @@ public class PlotDialog implements DialogListener {
 	private void doHighResolutionDialog(Frame parent) {
 		GenericDialog gd = parent == null ? new GenericDialog(HEADINGS[dialogType]) :
 				new GenericDialog(HEADINGS[dialogType], parent);
-		String title = plot.getTitle() +"_HiRes";
+		String title = plot.getTitle();
+		if (title.toLowerCase().endsWith(".tif") || title.toLowerCase().endsWith(".zip"))
+			title = title.substring(0, title.length()-4);
+		title += "_HiRes";
 		title = WindowManager.makeUniqueName(title);
 		gd.addStringField("Title: ", title, 20);
 		gd.addNumericField("Scale factor", hiResFactor, 1);

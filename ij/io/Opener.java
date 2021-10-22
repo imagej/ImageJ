@@ -82,7 +82,7 @@ public class Opener {
 	 * @see ij.IJ#openImage(String)
 	*/
 	public void open(String path) {
-		boolean isURL = path.indexOf("://")>0;
+		boolean isURL = path.indexOf("://")>0 || path.contains("file:/");
 		if (isURL && isText(path)) {
 			openTextURL(path);
 			return;
@@ -229,7 +229,7 @@ public class Opener {
 			path = getPath();
 		if (path==null) return null;
 		ImagePlus img = null;
-		if (path.indexOf("://")>0)
+		if (path.contains("://") || path.contains("file:/")) // path is a URL
 			img = openURL(path);
 		else
 			img = openImage(getDir(path), getName(path));
@@ -663,7 +663,7 @@ public class Opener {
 				IJ.error("Opener", e.getMessage()+"\n(Note: ImageJ cannot open CMYK JPEGs)\n \n"+dir+name);
 				return null; // error loading image
 			}				
-			if (imp.getType()==ImagePlus.COLOR_RGB && !silentMode)
+			if (imp.getType()==ImagePlus.COLOR_RGB)
 				convertGrayJpegTo8Bits(imp);
 			FileInfo fi = new FileInfo();
 			fi.fileFormat = fi.GIF_OR_JPG;

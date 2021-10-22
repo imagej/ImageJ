@@ -606,11 +606,20 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	/** Replaces the image, if any, with the one specified.
-		Throws an IllegalStateException if an error occurs
-		while loading the image. */
+	 * Throws an IllegalStateException if an error occurs
+	 * while loading the image.
+	*/
 	public void setImage(Image image) {
 		if (image instanceof BufferedImage) {
-			BufferedImage bi = (BufferedImage)image;
+			BufferedImage bi = (BufferedImage)image;			
+			int nBands = bi.getSampleModel().getNumBands();
+			if (nBands>1) {
+				ImageStack biStack = new ImageStack(bi.getWidth(), bi.getHeight());			
+				for (int b=0; b<nBands; b++)
+					biStack.addSlice(convertToImageProcessor(bi, b));
+				setImage(new ImagePlus("", biStack));
+				return;
+			}			
 			if (bi.getType()==BufferedImage.TYPE_USHORT_GRAY) {
 				setProcessor(null, new ShortProcessor(bi));
 				return;
@@ -644,6 +653,33 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			else
 				repaintWindow();
 		}
+	}
+	
+	/**
+	 * Extract pixels as an an ImageProcessor from a single band of a BufferedImage.
+	 * @param img
+	 * @param band
+	 * @return
+	 */
+	public static ImageProcessor convertToImageProcessor(BufferedImage img, int band) {
+		int w = img.getWidth();
+		int h = img.getHeight();
+		int dataType = img.getSampleModel().getDataType();
+		// Read data as float (no matter what it is - it's the most accuracy ImageJ can provide)
+		FloatProcessor fp = new FloatProcessor(w, h);
+		float[] pixels = (float[])fp.getPixels();
+		img.getRaster().getSamples(0, 0, w, h, band, pixels);
+		// Convert to 8 or 16-bit, if appropriate
+		if (dataType == DataBuffer.TYPE_BYTE) {
+			ByteProcessor bp = new ByteProcessor(w, h);
+			bp.setPixels(0, fp);
+			return bp;
+		} else if (dataType == DataBuffer.TYPE_USHORT) {
+			ShortProcessor sp = new ShortProcessor(w, h);
+			sp.setPixels(0, fp);
+			return sp;
+		} else
+			return fp;
 	}
 
 	/** Replaces this image with the specified ImagePlus. May
