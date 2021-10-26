@@ -24,7 +24,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		this(imp, null);
 	}
 
-    public StackWindow(ImagePlus imp, ImageCanvas ic) {
+	public StackWindow(ImagePlus imp, ImageCanvas ic) {
 		super(imp, ic);
 		addScrollbars(imp);
 		addMouseWheelListener(this);
@@ -32,12 +32,12 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			sliceSelector = new Scrollbar(); // prevents Image5D from crashing
 		pack();
 		ic = imp.getCanvas();
-		if (ic!=null) ic.setMaxBounds();
-		if (IJ.isMacro())
-			imp.setDeactivated(); //prepare for waitTillActivated (imp may have been activated before if it gets a new Window now)
+		if (ic!=null)
+			ic.setMaxBounds();
+		if (IJ.isMacro() && !isVisible()) //'super' may have called show()
+			imp.setDeactivated(); //prepare for waitTillActivated (imp may have been activated before)
 		show();
-		if (IJ.isMacro())
-			imp.waitTillActivated();
+		imp.waitTillActivated();
 		int previousSlice = imp.getCurrentSlice();
 		if (previousSlice>1 && previousSlice<=imp.getStackSize())
 			imp.setSlice(previousSlice);
@@ -116,10 +116,10 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	public synchronized void setSlidersEnabled(final boolean b) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				if (sliceSelector != null)     sliceSelector.setEnabled(b);
-				if (cSelector != null)         cSelector.setEnabled(b);
-				if (zSelector != null)         zSelector.setEnabled(b);
-				if (tSelector != null)         tSelector.setEnabled(b);
+				if (sliceSelector != null)	   sliceSelector.setEnabled(b);
+				if (cSelector != null)		   cSelector.setEnabled(b);
+				if (zSelector != null)		   zSelector.setEnabled(b);
+				if (tSelector != null)		   tSelector.setEnabled(b);
 				if (animationSelector != null) animationSelector.setEnabled(b);
 			}
 		});
@@ -206,7 +206,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			done = true;
 			notify();
 		}
-        return true;
+		return true;
 	}
 
 	/** Displays the specified slice and updates the stack scrollbar. */
@@ -255,9 +255,9 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		String subtitle = super.createSubtitle();
 		if (!hyperStack || imp.getStackSize()==1)
 			return subtitle;
-    	String s="";
-    	int[] dim = imp.getDimensions(false);
-    	int channels=dim[2], slices=dim[3], frames=dim[4];
+		String s="";
+		int[] dim = imp.getDimensions(false);
+		int channels=dim[2], slices=dim[3], frames=dim[4];
 		if (channels>1) {
 			s += "c:"+imp.getChannel()+"/"+channels;
 			if (slices>1||frames>1) s += " ";
@@ -279,26 +279,26 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			subtitle = subtitle.substring(index, subtitle.length());
 		} else
 			subtitle = "";
-    	return s + subtitle;
-    }
+		return s + subtitle;
+	}
 
-    public boolean isHyperStack() {
-    	return hyperStack && getNScrollbars()>0;
-    }
+	public boolean isHyperStack() {
+		return hyperStack && getNScrollbars()>0;
+	}
 
-    public void setPosition(int channel, int slice, int frame) {
-    	if (cSelector!=null && channel!=c) {
-    		c = channel;
+	public void setPosition(int channel, int slice, int frame) {
+		if (cSelector!=null && channel!=c) {
+			c = channel;
 			cSelector.setValue(channel);
 			SyncWindows.setC(this, channel);
 		}
-    	if (zSelector!=null && slice!=z) {
-    		z = slice;
+		if (zSelector!=null && slice!=z) {
+			z = slice;
 			zSelector.setValue(slice);
 			SyncWindows.setZ(this, slice);
 		}
-    	if (tSelector!=null && frame!=t) {
-    		t = frame;
+		if (tSelector!=null && frame!=t) {
+			t = frame;
 			tSelector.setValue(frame);
 			SyncWindows.setT(this, frame);
 		}
@@ -310,15 +310,15 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			if (s!=imp.getCurrentSlice())
 				imp.setSlice(s);
 		}
-    }
+	}
 
-    private void setSlice(ImagePlus imp, int n) {
+	private void setSlice(ImagePlus imp, int n) {
 		if (imp.isLocked()) {
 			IJ.beep();
 			IJ.showStatus("Image is locked");
 		} else
 			imp.setSlice(n);
-    }
+	}
 
 	public boolean validDimensions() {
 		int c = imp.getNChannels();
@@ -334,40 +334,40 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			return true;
 	}
 
-    public void setAnimate(boolean b) {
-    	if (running2!=b && animationSelector!=null)
-    		animationSelector.updatePlayPauseIcon();
+	public void setAnimate(boolean b) {
+		if (running2!=b && animationSelector!=null)
+			animationSelector.updatePlayPauseIcon();
 		running2 = b;
-    }
+	}
 
-    public boolean getAnimate() {
-    	return running2;
-    }
+	public boolean getAnimate() {
+		return running2;
+	}
 
-    public int getNScrollbars() {
-    	int n = 0;
-    	if (cSelector!=null) n++;
-    	if (zSelector!=null) n++;
-    	if (tSelector!=null) n++;
-    	return n;
-    }
+	public int getNScrollbars() {
+		int n = 0;
+		if (cSelector!=null) n++;
+		if (zSelector!=null) n++;
+		if (tSelector!=null) n++;
+		return n;
+	}
 
-    void removeScrollbars() {
-    	if (cSelector!=null) {
-    		remove(cSelector);
+	void removeScrollbars() {
+		if (cSelector!=null) {
+			remove(cSelector);
 			cSelector.removeAdjustmentListener(this);
-    		cSelector = null;
-    	}
-    	if (zSelector!=null) {
-    		remove(zSelector);
+			cSelector = null;
+		}
+		if (zSelector!=null) {
+			remove(zSelector);
 			zSelector.removeAdjustmentListener(this);
-    		zSelector = null;
-    	}
-    	if (tSelector!=null) {
-    		remove(tSelector);
+			zSelector = null;
+		}
+		if (tSelector!=null) {
+			remove(tSelector);
 			tSelector.removeAdjustmentListener(this);
-    		tSelector = null;
-    	}
-    }
+			tSelector = null;
+		}
+	}
 
 }

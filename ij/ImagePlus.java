@@ -561,6 +561,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		long start = System.currentTimeMillis();
 		while (!activated) {
 			IJ.wait(5);
+			if (ij != null && ij.quitting()) return;
 			if ((System.currentTimeMillis()-start)>2000) {
 				WindowManager.setTempCurrentImage(this);
 				break; // 2 second timeout
@@ -568,7 +569,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 	}
 
-	/** Called by ImageWindow.windowActivated(). */
+	/** Called by ImageWindow.windowActivated(); to end waiting in waitTillActivated. */
 	public void setActivated() {
 		activated = true;
 		if (borderColor!=null && win!=null)
@@ -613,7 +614,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (image instanceof BufferedImage) {
 			BufferedImage bi = (BufferedImage)image;			
 			int nBands = bi.getSampleModel().getNumBands();
-			if (nBands>1) {
+			int type = bi.getType();
+			boolean rgb = type==BufferedImage.TYPE_3BYTE_BGR || type==BufferedImage.TYPE_INT_RGB || type==BufferedImage.TYPE_4BYTE_ABGR;
+			if (nBands>1 && !rgb) {
 				ImageStack biStack = new ImageStack(bi.getWidth(), bi.getHeight());			
 				for (int b=0; b<nBands; b++)
 					biStack.addSlice(convertToImageProcessor(bi, b));
@@ -850,14 +853,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				setOpenAsHyperStack(true);
 			activated = false;
 			win = new StackWindow(this, dimensionsChanged?null:getCanvas());   // replaces this window
-			if (IJ.isMacro()) { // wait for stack window to be activated
-				long start = System.currentTimeMillis();
-				while (!activated) {
-					IJ.wait(5);
-					if ((System.currentTimeMillis()-start)>200)
-						break; // 0.2 second timeout
-				}
-			}
+			if (IJ.isMacro()) waitTillActivated(); // wait for stack window to be activated
 			setPosition(1, 1, 1);
 		} else if (newStackSize>1 && invalidDimensions) {
 			if (isDisplayedHyperStack())
