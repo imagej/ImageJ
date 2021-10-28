@@ -37,7 +37,8 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		if (IJ.isMacro() && !isVisible()) //'super' may have called show()
 			imp.setDeactivated(); //prepare for waitTillActivated (imp may have been activated before)
 		show();
-		imp.waitTillActivated();
+		if (IJ.isMacro())
+			imp.waitTillActivated();
 		int previousSlice = imp.getCurrentSlice();
 		if (previousSlice>1 && previousSlice<=imp.getStackSize())
 			imp.setSlice(previousSlice);

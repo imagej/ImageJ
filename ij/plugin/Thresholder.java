@@ -216,6 +216,8 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			boolean invertedLut = imp.isInvertedLut();
 			if ((invertedLut && Prefs.blackBackground) || (!invertedLut && !Prefs.blackBackground)) {
 				ip.invertLut();
+				if (!IJ.isMacro() && !Prefs.whiteBackgroundSet && !invertedLut && !Prefs.blackBackground)
+					IJ.log("\"Black background\" not set; inverting LUT");
 				if (IJ.debugMode) IJ.log("Thresholder (inverting lut)");
 			}
 		}

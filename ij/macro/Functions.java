@@ -4644,7 +4644,7 @@ public class Functions implements MacroConstants, Measurements {
 		else if (arg1.startsWith("openashyper"))
 			getImage().setOpenAsHyperStack(true);
 		else if (arg1.startsWith("black"))
-			Prefs.blackBackground = state;
+			Prefs.setBlackBackground(state);
 		else if (arg1.startsWith("display lab"))
 			Analyzer.setMeasurement(LABELS, state);
 		else if (arg1.startsWith("limit to"))

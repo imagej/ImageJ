@@ -184,8 +184,9 @@ public class Options implements PlugIn {
 	void dicom() {
 		GenericDialog gd = new GenericDialog("DICOM Options");
 		gd.addCheckbox("Open as 32-bit float", Prefs.openDicomsAsFloat);
-		gd.addCheckbox("Ignore Rescale Slope", Prefs.ignoreRescaleSlope);
-		gd.addMessage("Orthogonal Views");
+		gd.addCheckbox("Ignore rescale slope", Prefs.ignoreRescaleSlope);
+		gd.addCheckbox("Fixed Z slope and intercept", Prefs.fixedDicomScaling);
+		gd.addMessage("Orthogonal views");
 		gd.setInsets(5, 40, 0);
 		gd.addCheckbox("Rotate YZ", Prefs.rotateYZ);
 		gd.setInsets(0, 40, 0);
@@ -195,6 +196,7 @@ public class Options implements PlugIn {
 			return;
 		Prefs.openDicomsAsFloat = gd.getNextBoolean();
 		Prefs.ignoreRescaleSlope = gd.getNextBoolean();
+		Prefs.fixedDicomScaling = gd.getNextBoolean();
 		Prefs.rotateYZ = gd.getNextBoolean();
 		Prefs.flipXZ = gd.getNextBoolean();
 	}
@@ -229,7 +231,7 @@ public class Options implements PlugIn {
 		}
 		if (WindowManager.getWindow("Log")!=null)
    			IJ.log("\\Clear");
-		Prefs.blackBackground = true;
+		Prefs.setBlackBackground(true);
 	}
 
 	// Delete preferences file when ImageJ quits
