@@ -20,7 +20,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	private boolean doZScaling;
 	private static boolean averageWhenDownsizing = true;
 	private static boolean newWindow = true;
-	private static int interpolationMethod = ImageProcessor.BILINEAR;
+	private static int staticInterpolationMethod = ImageProcessor.BILINEAR;
+	private int interpolationMethod = staticInterpolationMethod;
 	private String[] methods = ImageProcessor.getInterpolationMethods();
 	private static boolean fillWithBackground;
 	private static boolean processStack = true;
@@ -222,6 +223,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 					zstr = "1.0";
 			}
 			Macro.setOptions(options);
+			interpolationMethod = ImageProcessor.BILINEAR;
 		}
 		int bitDepth = imp.getBitDepth();
 		int stackSize = imp.getStackSize();
@@ -329,8 +331,18 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		}
 		if (isStack) {
 			newDepth = (int)Math.round(Tools.parseDouble(gd.getNextString(), 0));
-			if (newDepth==stackSize && zscale!=1.0 && zscale>0.0)
-				newDepth = (int)Math.round(stackSize*zscale);
+			if (zscale>0.0) {
+				int nSlices = stackSize;
+				if (imp.isHyperStack()) {
+					int slices = imp.getNSlices();
+					int frames = imp.getNFrames();
+					if (slices==1&&frames>1)
+						nSlices = frames;
+					else
+						nSlices = slices;
+				}
+				newDepth = (int)Math.round(nSlices*zscale);
+			}
 		}
 		interpolationMethod = gd.getNextChoiceIndex();
 		if (bitDepth==8 || bitDepth==24)
@@ -355,6 +367,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 				bgValue = bgc.getRGB();
 		} else
 			bgValue = 0.0;
+		if (!isMacro)
+			staticInterpolationMethod = interpolationMethod;
 		return true;
 	}
 

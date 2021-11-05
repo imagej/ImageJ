@@ -83,7 +83,7 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
         iterations = (int)gd.getNextNumber();
         count = (int)gd.getNextNumber();
         boolean bb = Prefs.blackBackground;
-        Prefs.setBlackBackground(gd.getNextBoolean());
+        Prefs.blackBackground = gd.getNextBoolean();
         if (Prefs.blackBackground!=bb)
         	ThresholdAdjuster.update();
         Prefs.padEdges = gd.getNextBoolean();

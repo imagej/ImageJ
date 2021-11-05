@@ -5,6 +5,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.frame.Recorder;
 import ij.plugin.filter.PlugInFilter;
+import ij.plugin.frame.ThresholdAdjuster;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -216,8 +217,8 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			boolean invertedLut = imp.isInvertedLut();
 			if ((invertedLut && Prefs.blackBackground) || (!invertedLut && !Prefs.blackBackground)) {
 				ip.invertLut();
-				if (!IJ.isMacro() && !Prefs.whiteBackgroundSet && !invertedLut && !Prefs.blackBackground)
-					IJ.log("\"Black background\" not set; inverting LUT");
+				if (!IJ.isMacro() && ThresholdAdjuster.isDarkBackground() && !invertedLut && !Prefs.blackBackground)
+					IJ.log("\"Black background\" not set in Process>Binary>Options; inverting LUT");
 				if (IJ.debugMode) IJ.log("Thresholder (inverting lut)");
 			}
 		}

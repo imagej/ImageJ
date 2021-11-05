@@ -231,7 +231,7 @@ public class Options implements PlugIn {
 		}
 		if (WindowManager.getWindow("Log")!=null)
    			IJ.log("\\Clear");
-		Prefs.setBlackBackground(true);
+		Prefs.blackBackground = true;
 	}
 
 	// Delete preferences file when ImageJ quits

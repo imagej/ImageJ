@@ -351,6 +351,16 @@ public class Functions implements MacroConstants, Measurements {
 			return Math.pow(getFirstArg(), getLastArg());
 		else if (name.equals("atan2"))
 			return Math.atan2(getFirstArg(), getLastArg());
+		else if (name.equals("constrain"))
+			return Math.min(Math.max(getFirstArg(), getNextArg()), getLastArg());
+		else if (name.equals("map")) {
+			double value = getFirstArg();
+			double fromLow = getNextArg();
+			double fromHigh = getNextArg();
+			double toLow = getNextArg();
+			double toHigh = getLastArg();
+			return (value-fromLow)*(toHigh-toLow)/(fromHigh-fromLow)+toLow;
+		}
 		double arg = getArg();
 		if (name.equals("ceil"))
 			return Math.ceil(arg);
@@ -4644,7 +4654,7 @@ public class Functions implements MacroConstants, Measurements {
 		else if (arg1.startsWith("openashyper"))
 			getImage().setOpenAsHyperStack(true);
 		else if (arg1.startsWith("black"))
-			Prefs.setBlackBackground(state);
+			Prefs.blackBackground = state;
 		else if (arg1.startsWith("display lab"))
 			Analyzer.setMeasurement(LABELS, state);
 		else if (arg1.startsWith("limit to"))

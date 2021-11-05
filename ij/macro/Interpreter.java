@@ -99,14 +99,16 @@ public class Interpreter implements MacroConstants {
 	 * @see ij.IJ#runMacroFile(String,String)
 	*/
 	public String run(String macro, String arg) {
-		argument = arg;
-		calledMacro = true;
-		if (IJ.getInstance()==null)
-			setBatchMode(true);
-		Interpreter saveInstance = instance;
-		run(macro);
-		instance = saveInstance;
-		return returnValue;
+		synchronized(Interpreter.class) {
+			argument = arg;
+			calledMacro = true;
+			if (IJ.getInstance()==null)
+				setBatchMode(true);
+			Interpreter saveInstance = instance;
+			run(macro);
+			instance = saveInstance;
+			return returnValue;
+		}
 	}
 	
 	/** Evaluates 'code' and returns the output, or any error, as a String.

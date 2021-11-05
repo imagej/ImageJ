@@ -5,9 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.53n17 27 October 2021</u>
+<li> <u>1.53n25 4 November 2021</u>
 <ul>
-<li> Thanks to 'Sethur', added DICOM preference
+<li> Thanks to Stein Rorvik, added a "Raw values" checkbox
+to the <i>Image&gt;Adjust&gt;Threshold</i> dialog
+<li> Thanks to 'Sethur', added a DICOM preference
 allowing fixed scaling across slices via RescaleSlope
 and Intercept.
 <li> Thanks to Norbert Vischer, added a "Cancel" button
@@ -18,6 +20,11 @@ outline from the plot.
 <li> Thanks to Michael Schmid, restored the ability
 to select the starting and ending frame in the
 <i>File&gt;Import&gt;AVI</i> dialog.
+<li> Thanks to Joseph Chen, removed the "Don't reset range"
+checkbox from the <i>Image&gt;Adjust&gt;Threshold</i> dialog.
+<li> Thanks to Jerome Mutterer, added the Math.constrain(n,min,max)
+and Math.map(n,low1,high1,low2,high2) macro functions
+(<a href="http://wsr.imagej.net/macros/tools/Constrain_Map_Demo_Tool.ijm">example tool</a>).
 <li> Thanks to Peter Bankhead, the ImagePlus(String,Image)
 constructor adds support for multi-band
 BufferedImages.
@@ -33,12 +40,17 @@ when converting stacks to hyperstacks.
 sometimes caused <i>File&gt;Import&gt;Image Sequence</i>
 to open images as the wrong type when
 using a filter.
+<li> Thanks to Romain Guiet, fixed a bug that caused
+the <i>Image&gt;Scale</i> command to not work
+correctly with hyperstacks.
 <li> Thanks to Stein Rorvik, fixed a 1.53m regression
 that caused macros importing an image sequence to
 sometimes not open all the images in the folder.
 <li> Thanks to Michael Schmid, fixed a 1.53m regression
 that caused image stacks to open slowly on Windows
 in batch mode.
+<li> Thanks to Stein Rorvik, fixed a 1.53m regression that caused
+run("Macro...", "code=[] stack") macro statements to fail.
 </ul>
 
 <li> <u>1.53m 28 September 2021</u>
