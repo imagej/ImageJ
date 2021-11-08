@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53n25 4 November 2021</u>
+<li> <u>1.53n 7 November 2021</u>
 <ul>
 <li> Thanks to Stein Rorvik, added a "Raw values" checkbox
 to the <i>Image&gt;Adjust&gt;Threshold</i> dialog
@@ -26,7 +26,7 @@ checkbox from the <i>Image&gt;Adjust&gt;Threshold</i> dialog.
 and Math.map(n,low1,high1,low2,high2) macro functions
 (<a href="http://wsr.imagej.net/macros/tools/Constrain_Map_Demo_Tool.ijm">example tool</a>).
 <li> Thanks to Peter Bankhead, the ImagePlus(String,Image)
-constructor adds support for multi-band
+constructor now supports multi-band
 BufferedImages.
 <li> Thanks to Michael Schmid, fixed bugs and improved
 the documentation of the Colors class.
@@ -45,12 +45,17 @@ the <i>Image&gt;Scale</i> command to not work
 correctly with hyperstacks.
 <li> Thanks to Stein Rorvik, fixed a 1.53m regression
 that caused macros importing an image sequence to
-sometimes not open all the images in the folder.
+sometimes not open all images in a folder.
 <li> Thanks to Michael Schmid, fixed a 1.53m regression
 that caused image stacks to open slowly on Windows
 in batch mode.
-<li> Thanks to Stein Rorvik, fixed a 1.53m regression that caused
-run("Macro...", "code=[] stack") macro statements to fail.
+<li> Thanks to Stein Rorvik and Michael Schmid, fixed a 1.53m
+regression that caused macro statements like
+run("Macro...", "code=[...] stack") to fail.
+<li> Thanks to Herbie Gluender, fixed a 1.53m regression that
+caused the <i>Image&gt;Adjust&gt;Brightness/Contrast</i>
+dialog to not work as expected with 32-bit images
+containing NaNs.
 </ul>
 
 <li> <u>1.53m 28 September 2021</u>

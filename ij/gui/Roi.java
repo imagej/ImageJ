@@ -628,6 +628,13 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		double length = p.getLength(isLine);
 
 		int npoints = p.npoints;
+		if (npoints<2)
+			return p;
+		if (Math.abs(interval)<0.01) {
+			IJ.error("Interval must be >= 0.01");
+			return p;
+		}
+		
 		if (!isLine) {//**append (and later remove) closing point to end of array
 			npoints++;
 			p.xpoints = java.util.Arrays.copyOf(p.xpoints, npoints);

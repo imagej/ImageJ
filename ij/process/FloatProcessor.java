@@ -96,7 +96,7 @@ public class FloatProcessor extends ImageProcessor {
 		float max = -Float.MAX_VALUE;
 		int i = 0;
 		for (; i<width*height; i++) {
-			if (!Float.isInfinite(pixels[i])) {
+			if (!(Float.isNaN(pixels[i])||Float.isInfinite(pixels[i]))) {
 				min = max = pixels[i];
 				i++;
 				break;
