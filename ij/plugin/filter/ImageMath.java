@@ -254,7 +254,9 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 			"function dummy() {}\n"+
 			macro+";\n"; // code starts at program counter location 'PCStart'
 		Interpreter interp = new Interpreter();
-		interp.run(code, null);
+		synchronized(ImageMath.class) {
+			interp.run(code, null);
+		}
 		if (interp.wasError()) {
 			WindowManager.setTempCurrentImage(temp);
 			return;

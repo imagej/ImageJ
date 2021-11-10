@@ -80,7 +80,7 @@ public class RoiScaler implements PlugIn {
 			}
 			ImageProcessor ip = imp.getProcessor();
 			ip.setRoi(roi);
-			stats = ImageStatistics.getStatistics(imp.getProcessor(), Measurements.CENTROID, null);
+			stats = ImageStatistics.getStatistics(ip, Measurements.CENTROID, null);
 			if (roi.isLine()) {
 				Rectangle r = roi.getBounds();
 				stats.xCentroid = r.x + Math.round(r.width/2.0);
