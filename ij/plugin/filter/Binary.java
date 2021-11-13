@@ -16,10 +16,11 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
     static final String NO_OPERATION = "Nothing";
     static final String[] outputTypes = {"Overwrite", "8-bit", "16-bit", "32-bit"};
     static final String[] operations = {NO_OPERATION, "Erode", "Dilate", "Open", "Close", "Outline", "Fill Holes", "Skeletonize"};
+	static final String COUNT_KEY = "binary.count";
 
     //parameters / options
     static int iterations = 1;      //iterations for erode, dilate, open, close
-    static int count = 1;           //nearest neighbor count for erode, dilate, open, close
+    static int count = (int)Prefs.get(COUNT_KEY, 1); //nearest neighbor count for erode, dilate, open, close
     String operation = NO_OPERATION;  //for dialog; will be copied to 'arg' for actual previewing
 
     String arg;
@@ -49,13 +50,15 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
         if (doOptions) {
             this.imp = imp;
             this.pfr = pfr;
+            if (count<1) count=1;
+            if (count>8) count=8;
             GenericDialog gd = new GenericDialog("Binary Options");
             gd.addNumericField("Iterations (1-"+MAX_ITERATIONS+"):", iterations, 0, 3, "");
             gd.addNumericField("Count (1-8):", count, 0, 3, "");
             gd.addCheckbox("Black background", Prefs.blackBackground);
             gd.addCheckbox("Pad edges when eroding", Prefs.padEdges);
             gd.addChoice("EDM output:", outputTypes, outputTypes[EDM.getOutputType()]);
-            if (imp != null) {
+            if (imp!=null) {
                 gd.addChoice("Do:", operations, operation);
                 gd.addPreviewCheckbox(pfr);
                 gd.addDialogListener(this);
@@ -64,7 +67,9 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
             gd.addHelp(IJ.URL+"/docs/menus/process.html#options");
             gd.showDialog();
             previewing = false;
-            if (gd.wasCanceled()) return DONE;
+            if (gd.wasCanceled())
+            	return DONE;
+            Prefs.set(COUNT_KEY, count);
             if (imp==null) {                 //options dialog only, no do/preview
                 dialogItemChanged(gd, null); //read dialog result
                 return DONE;

@@ -25,11 +25,13 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 	private static boolean useBW = true;
 	private boolean useLocal = true;
 	private boolean listThresholds;
+	private boolean createStack;
 	private boolean convertToMask;
 	private String method = methods[0];
 	private String background = backgrounds[0];
 	private static boolean staticUseLocal = true;
 	private static boolean staticListThresholds;
+	private static boolean staticCreateStack;
 	private static String staticMethod = methods[0];
 	private static String staticBackground = backgrounds[0];
 	private ImagePlus imp;
@@ -61,6 +63,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			background = staticBackground;
 			useLocal = staticUseLocal;
 			listThresholds = staticListThresholds;
+			createStack = staticCreateStack;
 			if (!thresholdSet)
 				updateThreshold(imp);
 		} else {
@@ -78,6 +81,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		gd.addCheckbox("Only convert current image", oneSlice);
 		gd.addCheckbox("Black background (of binary masks)", Prefs.blackBackground);
 		gd.addCheckbox("List thresholds", listThresholds);
+		gd.addCheckbox("Create new stack", createStack);
 		choices = gd.getChoices();
 		if (choices!=null) {
 			((Choice)choices.elementAt(0)).addItemListener(this);
@@ -93,27 +97,35 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		oneSlice = gd.getNextBoolean();
 		Prefs.blackBackground = gd.getNextBoolean();
 		listThresholds = gd.getNextBoolean();
+		createStack = gd.getNextBoolean();
 		if (!IJ.isMacro()) {
 			staticMethod = method;
 			staticBackground = background;
 			staticUseLocal = useLocal;
 			staticListThresholds = listThresholds;
+			staticCreateStack = createStack;
 		}
 		if (oneSlice) {
 			useLocal = false;
 			listThresholds = false;
+			createStack = false;
 			if (oneSlice && imp.getBitDepth()!=8) {
 				IJ.error("Thresholder", "8-bit stack required to process a single slice.");
 				return;
 			}
 		}
 		Undo.reset();
+		if (createStack)
+			imp = imp.duplicate();
 		if (useLocal)
 			convertStackToBinary(imp);
 		else
 			applyThreshold(imp, oneSlice);
 		Prefs.blackBackground = saveBlackBackground;
-		if (thresholdSet) {
+		if (createStack) {
+			imp.setTitle(imp.getTitle().replace("DUP_","MASK_"));		
+			imp.show();
+		} else if (thresholdSet) {
 			if (imp.getProcessor().getLutUpdateMode()!=ImageProcessor.NO_LUT_UPDATE)
 				imp.getProcessor().resetThreshold();
 			imp.updateAndDraw();

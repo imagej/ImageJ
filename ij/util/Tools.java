@@ -54,12 +54,19 @@ import java.security.MessageDigest;
 		return ip.getStats();
 	}
 
+	/** Determines the minimum and maximum value in the array <code>a</code>
+	 *  and returns them as 2-element array {minimum, maximum}. */
 	public static double[] getMinMax(double[] a) {
-		double min = a[0];
-		double max = a[0];
-		double value;
-		for (int i=1; i<a.length; i++) {
-			value = a[i];
+		double min = Double.NaN;
+		double max = Double.NaN;
+		int i=0;
+		for (; i<a.length; i++)
+			if (!Double.isNaN(a[i]))
+				break;
+		min = a[i];
+		max = a[i];
+		for (; i<a.length; i++) {
+			double value = a[i];
 			if (value<min)
 				min = value;
 			else if (value>max)
@@ -71,12 +78,19 @@ import java.security.MessageDigest;
 		return minAndMax;
 	}
 
+	/** Determines the minimum and maximum value in the array <code>a</code>
+	 *  and returns them as 2-element array {minimum, maximum}. */
 	public static double[] getMinMax(float[] a) {
-		double min = a[0];
-		double max = a[0];
-		double value;
-		for (int i=1; i<a.length; i++) {
-			value = a[i];
+		float min = Float.NaN;
+		float max = Float.NaN;
+		int i=0;
+		for (; i<a.length; i++)
+			if (!Float.isNaN(a[i]))
+				break;
+		min = a[i];
+		max = a[i];
+		for (; i<a.length; i++) {
+			float value = a[i];
 			if (value<min)
 				min = value;
 			else if (value>max)
