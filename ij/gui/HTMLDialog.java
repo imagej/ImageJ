@@ -2,6 +2,7 @@ package ij.gui;
 import ij.*;
 import ij.plugin.URLOpener;
 import ij.macro.MacroRunner;
+import ij.util.Java2;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -35,7 +36,8 @@ public class HTMLDialog extends JDialog implements ActionListener, KeyListener, 
 	}
 	
 	private void init(String message) {
-		ij.util.Java2.setSystemLookAndFeel();
+		LookAndFeel saveLookAndFeel = Java2.getLookAndFeel();
+		Java2.setSystemLookAndFeel();
 		Container container = getContentPane();
 		container.setLayout(new BorderLayout());
 		if (message==null) message = "";
@@ -87,6 +89,7 @@ public class HTMLDialog extends JDialog implements ActionListener, KeyListener, 
 			});
 		}
 		if (modal) show();
+		Java2.setLookAndFeel(saveLookAndFeel);
 	}
 
 	public void actionPerformed(ActionEvent e) {

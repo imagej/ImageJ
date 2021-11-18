@@ -19,7 +19,7 @@ public class ImageStack {
 	private ColorModel cm;
 	private double min=Double.MAX_VALUE;
 	private double max;
-	private float[] cTable;
+	protected float[] cTable;
 	private int viewers;
 	private boolean signedInt;
 	

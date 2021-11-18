@@ -51,10 +51,6 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 	}
 	
 	void convertStack(ImagePlus imp) {
-		if (imp.getStack().isVirtual()) {
-			IJ.error("Thresholder", "This command does not work with virtual stacks.\nUse Image>Duplicate to convert to a normal stack.");
-			return;
-		}
 		showLegacyDialog = false;
 		boolean thresholdSet = imp.isThreshold();
 		this.imp = imp;
@@ -98,6 +94,10 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		Prefs.blackBackground = gd.getNextBoolean();
 		listThresholds = gd.getNextBoolean();
 		createStack = gd.getNextBoolean();
+		if (imp.getStack().isVirtual()) {
+			oneSlice = false;
+			createStack = true;
+		}
 		if (!IJ.isMacro()) {
 			staticMethod = method;
 			staticBackground = background;
@@ -115,16 +115,26 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			}
 		}
 		Undo.reset();
-		if (createStack)
+		ImageProcessor ip = imp.getProcessor();
+		double minThreshold = ip.getMinThreshold();
+		double maxThreshold = ip.getMaxThreshold();
+		int currentSlice = imp.getCurrentSlice();
+		if (createStack) {
 			imp = imp.duplicate();
+			imp.setTitle(imp.getTitle().replace("DUP_","MASK_"));
+			if (minThreshold!=ImageProcessor.NO_THRESHOLD)
+				imp.getProcessor().setThreshold(minThreshold,maxThreshold,ImageProcessor.RED_LUT);
+			imp.setSlice(currentSlice);
+		}
 		if (useLocal)
 			convertStackToBinary(imp);
 		else
 			applyThreshold(imp, oneSlice);
 		Prefs.blackBackground = saveBlackBackground;
 		if (createStack) {
-			imp.setTitle(imp.getTitle().replace("DUP_","MASK_"));		
+			imp.setSlice(1);  //why is this needed
 			imp.show();
+			imp.setSlice(currentSlice);
 		} else if (thresholdSet) {
 			if (imp.getProcessor().getLutUpdateMode()!=ImageProcessor.NO_LUT_UPDATE)
 				imp.getProcessor().resetThreshold();

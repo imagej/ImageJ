@@ -33,6 +33,7 @@ import javax.swing.filechooser.*;
  	
 	// runs JFileChooser on event dispatch thread to avoid possible thread deadlocks
  	void getDirectoryUsingJFileChooser(final String title) {
+ 		LookAndFeel saveLookAndFeel = Java2.getLookAndFeel();
 		Java2.setSystemLookAndFeel();
 		try {
 			EventQueue.invokeAndWait(new Runnable() {
@@ -59,10 +60,12 @@ import javax.swing.filechooser.*;
 				}
 			});
 		} catch (Exception e) {}
+		Java2.setLookAndFeel(saveLookAndFeel);
 	}
  
 	// Choose a directory using JFileChooser on the current thread
  	void getDirectoryUsingJFileChooserOnThisThread(final String title) {
+		LookAndFeel saveLookAndFeel = Java2.getLookAndFeel();
 		Java2.setSystemLookAndFeel();
 		try {
 			JFileChooser chooser = new JFileChooser();
@@ -85,6 +88,7 @@ import javax.swing.filechooser.*;
 				OpenDialog.setDefaultDirectory(directory);
 			}
 		} catch (Exception e) {}
+		Java2.setLookAndFeel(saveLookAndFeel);
 	}
 
  	// On Mac OS X, we can select directories using the native file open dialog
@@ -127,11 +131,5 @@ import javax.swing.filechooser.*;
     	if (dir==null || (new File(dir)).isDirectory())
 			OpenDialog.setDefaultDirectory(dir);
     }
-
-	//private void setSystemLookAndFeel() {
-	//	try {
-	//		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-	//	} catch(Throwable t) {}
-	//}
 
 }

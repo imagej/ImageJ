@@ -212,9 +212,11 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 			} else
 				ip = fo.openProcessor();
 		}
-		if (ip!=null)
+		if (ip!=null) {
+			if (cTable!=null)
+				ip.setCalibrationTable(cTable);
 			return ip;
-		else {
+		} else {
 			int w=getWidth(), h=getHeight();
 			IJ.log("Read error or file not found ("+n+"): "+info[n-1].directory+info[n-1].fileName);
 			switch (getBitDepth()) {

@@ -10,8 +10,6 @@ here to prevent errors when ImageJ is running on Java 1.1 JVMs.
 */
 public class Java2 {
 
-	private static boolean lookAndFeelSet;
-
 	public static void setAntialiased(Graphics g, boolean antialiased) {
 			Graphics2D g2d = (Graphics2D)g;
 			if (antialiased)
@@ -43,13 +41,29 @@ public class Java2 {
 	
 	/** Sets the Swing look and feel to the system look and feel (Windows only). */
 	public static void setSystemLookAndFeel() {
-		if (lookAndFeelSet || !IJ.isWindows()) return;
+		if (!IJ.isWindows())
+			return;
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch(Throwable t) {}
-		lookAndFeelSet = true;
-		IJ.register(Java2.class);
 	}
+
+	/** Sets the Swing look and feel. */
+	public static void setLookAndFeel(LookAndFeel newLookAndFeel) {
+		if (!IJ.isWindows())
+			return;
+		try {
+			UIManager.setLookAndFeel(newLookAndFeel);
+		} catch(Throwable t) {}
+	}
+	
+	/** Returns the current Swing look and feel or null. */
+	public static LookAndFeel getLookAndFeel() {
+		if (!IJ.isWindows())
+			return null;
+		return UIManager.getLookAndFeel();
+	}
+
 
 }
 

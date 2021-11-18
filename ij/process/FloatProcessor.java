@@ -92,26 +92,26 @@ public class FloatProcessor extends ImageProcessor {
 	public void findMinAndMax() {
 		if (fixedScale)
 			return;
-		float min = Float.MAX_VALUE;
-		float max = -Float.MAX_VALUE;
-		int i = 0;
-		for (; i<width*height; i++) {
-			if (!(Float.isNaN(pixels[i])||Float.isInfinite(pixels[i]))) {
-				min = max = pixels[i];
-				i++;
+		float min = Float.NaN;
+		float max = Float.NaN;
+		int len = width*height;
+		int i=0;
+		for (; i<len; i++)
+			if (!Float.isNaN(pixels[i]))
 				break;
-			}
+		if (i<len) {
+			min = pixels[i];
+			max = pixels[i];
 		}
-		for (; i<width*height; i++) {
+		for (; i<len; i++) {
 			float value = pixels[i];
-			if (!Float.isInfinite(value)) {
-				if (value<min)
-					min = value;
-				else if (value>max)
-					max = value;
-			}
+			if (value<min)
+				min = value;
+			else if (value>max)
+				max = value;
 		}
-		this.min = min; this.max = max;
+		this.min = min;
+		this.max = max;
 		minMaxSet = true;
 	}
 

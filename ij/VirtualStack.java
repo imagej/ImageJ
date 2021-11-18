@@ -220,6 +220,8 @@ public class VirtualStack extends ImageStack {
 			ip2.insert(ip, 0, 0);
 			ip = ip2;
 		}
+		if (cTable!=null)
+			ip.setCalibrationTable(cTable);
 		return ip;
 	 }
 	 	 

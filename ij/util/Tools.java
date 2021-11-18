@@ -63,8 +63,10 @@ import java.security.MessageDigest;
 		for (; i<a.length; i++)
 			if (!Double.isNaN(a[i]))
 				break;
-		min = a[i];
-		max = a[i];
+		if (i<a.length) {
+			min = a[i];
+			max = a[i];
+		}
 		for (; i<a.length; i++) {
 			double value = a[i];
 			if (value<min)
@@ -87,8 +89,10 @@ import java.security.MessageDigest;
 		for (; i<a.length; i++)
 			if (!Float.isNaN(a[i]))
 				break;
-		min = a[i];
-		max = a[i];
+		if (i<a.length) {
+			min = a[i];
+			max = a[i];
+		}
 		for (; i<a.length; i++) {
 			float value = a[i];
 			if (value<min)

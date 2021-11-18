@@ -92,11 +92,13 @@ public class SaveDialog {
 	    
 	// Save using JFileChooser.
 	void jSave(String title, String defaultDir, String defaultName) {
+		LookAndFeel saveLookAndFeel = Java2.getLookAndFeel();
 		Java2.setSystemLookAndFeel();
 		if (EventQueue.isDispatchThread())
 			jSaveDispatchThread(title, defaultDir, defaultName);
 		else
 			jSaveInvokeAndWait(title, defaultDir, defaultName);
+		Java2.setLookAndFeel(saveLookAndFeel);
 	}
 
 	// Save using JFileChooser.

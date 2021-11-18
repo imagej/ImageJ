@@ -90,11 +90,13 @@ public class OpenDialog {
 
 	// Uses JFileChooser to display file open dialog box.
 	void jOpen(String title, String path, String fileName) {
+		LookAndFeel saveLookAndFeel = Java2.getLookAndFeel();
 		Java2.setSystemLookAndFeel();
 		if (EventQueue.isDispatchThread())
 			jOpenDispatchThread(title, path, fileName);
 		else
 			jOpenInvokeAndWait(title, path, fileName);
+		Java2.setLookAndFeel(saveLookAndFeel);
 	}
 		
 	// Uses the JFileChooser class to display the dialog box.
