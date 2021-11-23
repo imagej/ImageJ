@@ -50,7 +50,7 @@ public class Java2 {
 
 	/** Sets the Swing look and feel. */
 	public static void setLookAndFeel(LookAndFeel newLookAndFeel) {
-		if (!IJ.isWindows())
+		if (!IJ.isWindows() || newLookAndFeel==null)
 			return;
 		try {
 			UIManager.setLookAndFeel(newLookAndFeel);

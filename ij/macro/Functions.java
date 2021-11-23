@@ -7315,7 +7315,7 @@ public class Functions implements MacroConstants, Measurements {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null)
 			Overlay.updateTableOverlay(imp, row1, row2, tableSize);
-		rt.show(title);
+		rt.show(rt.getTitle());
 		return null;
 	}
 

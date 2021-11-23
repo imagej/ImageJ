@@ -5,11 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.5315 18 November 2021</u>
+<li> <u>1.5319 23 November 2021</u>
 <ul>
-<li> Thanks to Kimberly Meechan and Jan Eglinger, the DirectoryChooser
-now restores the original look-and-feel after temporarily using
-the system look-and-feel on Windows. 
+<li> Thanks to Kimberly Meechan and Jan Eglinger, ImageJ restores
+the original look and feel after temporarily using the system
+look and feel with Windows dialogs.
 <li> Thanks to Stein Rorvik, the count field in the
 <i>Process&gt;Binary&gt;Options</i> dialog is saved
 in the preferences file.
@@ -21,7 +21,15 @@ of thresholded 16-bit and 32-bit images to be displayed incorrectly
 if the "Limit to threshold" measurement option
 was enabled.
 <li> Thanks to Stein Rorvik, fixed a bug that caused the loss of
-density calibration of virtual stacks.
+density calibration with virtual stacks.
+<li> Thanks to Kees Straatman, fixed a bug that caused the
+IJ.openImage() method to not work with images opened using
+Bio-Formats. As a result, the <i>Open Next</i>, <i>Import&gt;Image Sequence</i>
+and <i>Process&gt;Batch&gt;</i> commands now work with images
+opened using Bio-Formats.
+<li> Thanks to Michael Cammer, fixed a bug that caused the
+Table.deleteRows() macro function to not work as expected
+with tables not named "Results".
 <li> Thanks to 'CellKai', fixed a 1.53d regression that caused the
 RoiScaler.scale() method to sometimes not work as expected.
 </ul>

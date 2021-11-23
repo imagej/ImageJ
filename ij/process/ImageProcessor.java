@@ -1812,16 +1812,18 @@ public abstract class ImageProcessor implements Cloneable {
 	public abstract void set(int index, int value);
 
 	/** Returns the value of the pixel at (x,y) as a float. Faster
-	    than getPixelValue() because no bounds checking is done. */
+	 * than getPixelValue() but does no bounds checking and
+	 * does not return calibrated values.
+	*/
 	public abstract float getf(int x, int y);
 
 	public abstract float getf(int index);
 
 	/** Sets the value of the pixel at (x,y) to 'value'. Does no bounds
-	    checking or clamping, making it faster than putPixel(). Due to the lack
-	    of bounds checking, (x,y) coordinates outside the image may cause
-	    an exception. Due to the lack of clamping, values outside the 0-255
-	    range (for byte) or 0-65535 range (for short) are not handled correctly.
+	 * checking or clamping, making it faster than putPixel(). Due to the lack
+	 * of bounds checking, (x,y) coordinates outside the image may cause
+	 * an exception. Due to the lack of clamping, values outside the 0-255
+	 * range (for byte) or 0-65535 range (for short) are not handled correctly.
 	*/
 	public abstract void setf(int x, int y, float value);
 
@@ -2029,6 +2031,7 @@ public abstract class ImageProcessor implements Cloneable {
 	 * This is an alias for getPixelValue(x,y).
 	 * @see ImageProcessor#getPixel
 	 * @see ImageProcessor#getPixelValue
+	 * @see ImageProcessor#getf
 	*/
 	public double getValue(int x, int y) {
 		return getPixelValue(x,y);
@@ -2038,6 +2041,9 @@ public abstract class ImageProcessor implements Cloneable {
 	 * images, returns a calibrated value if a calibration table
 	 * has been set using setCalibraionTable(). For RGB images,
 	 * returns the luminance value.
+	 * @see ImageProcessor#getPixel
+	 * @see ImageProcessor#getValue
+	 * @see ImageProcessor#getf
 	*/
 	public abstract float getPixelValue(int x, int y);
 

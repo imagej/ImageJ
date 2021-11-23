@@ -40,13 +40,8 @@ public class Opener {
 	private String omDirectory;
 	private File[] omFiles;
 	private static boolean openUsingPlugins;
-	private static boolean bioformats;
 	private String url;
 
-	static {
-		Hashtable commands = Menus.getCommands();
-		bioformats = commands!=null && commands.get("Bio-Formats Importer")!=null;
-	}
 
 	public Opener() {
 	}
@@ -370,7 +365,11 @@ public class Opener {
 				else
 					return null;
 			case UNKNOWN: case TEXT:
-				return openUsingHandleExtraFileTypes(path);
+				imp = openUsingBioFormats(path);
+				if (imp!=null)
+					return imp;
+				else
+					return openUsingHandleExtraFileTypes(path);
 			default:
 				return null;
 		}
@@ -389,11 +388,14 @@ public class Opener {
 		File f = new File(path);
 		if (!f.exists())
 			return null;
+		int nImages = WindowManager.getImageCount();
 		int[] wrap = new int[] {this.fileType};
 		ImagePlus imp = openWithHandleExtraFileTypes(path, wrap);
 		if (imp!=null && imp.getNChannels()>1)
 			imp = new CompositeImage(imp, IJ.COLOR);
 		this.fileType = wrap[0];
+		if (imp==null && (this.fileType==UNKNOWN||this.fileType==TIFF) && WindowManager.getImageCount()==nImages)
+			IJ.error("Opener", "Unsupported format or file not found:\n"+path);
 		return imp;
 	}
 	
@@ -1159,8 +1161,7 @@ public class Opener {
 			if (imp.getStackSize()==3 && imp.getNChannels()==3 && imp.getBitDepth()==8)
 				imp = imp.flatten();
 			return imp;
-		} catch(Exception e) {
-		}
+		} catch(Exception e) {}
 		return null;
 	}
 
@@ -1246,7 +1247,7 @@ public class Opener {
 		 // Big-endian TIFF ("MM")
 		if (name.endsWith(".lsm"))
 				return UNKNOWN; // The LSM	Reader plugin opens these files
-		if (b0==73 && b1==73 && b2==42 && b3==0 && !(bioformats&&name.endsWith(".flex")))
+		if (b0==73 && b1==73 && b2==42 && b3==0 && !name.endsWith(".flex"))
 			return TIFF;
 
 		 // Little-endian TIFF ("II")
