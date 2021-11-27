@@ -1448,8 +1448,17 @@ public class IJ {
 		setRawThreshold(img, lowerThreshold, upperThreshold, displayMode);
 	}
 
+	/** This is a version of setThreshold() that uses raw (uncalibrated)
+	 * values in the range 0-255 for 8-bit images and 0-65535 for 16-bit
+	 * images and the "Red" LUT display mode.
+	*/
+	public static void setRawThreshold(ImagePlus img, double lowerThreshold, double upperThreshold) {
+		setRawThreshold(img, lowerThreshold, upperThreshold, null);
+	}
+
 	/** This is a version of setThreshold() that always uses raw (uncalibrated) values
-		 in the range 0-255 for 8-bit images and 0-65535 for 16-bit images. */
+	 * in the range 0-255 for 8-bit images and 0-65535 for 16-bit images.
+	*/
 	public static void setRawThreshold(ImagePlus img, double lowerThreshold, double upperThreshold, String displayMode) {
 		int mode = ImageProcessor.RED_LUT;
 		if (displayMode!=null) {

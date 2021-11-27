@@ -489,11 +489,6 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			minThreshold = 255;
 		if (Recorder.record) {
 			boolean stack = stackHistogram!=null && stackHistogram.getState();
-			if (noReset && ip.getBitDepth()!=8) {
-				ImageStatistics stats2 = ip.getStats();
-				if (ip.getMin()>stats2.min || ip.getMax()<stats2.max)
-					ContrastAdjuster.recordSetMinAndMax(ip.getMin(),ip.getMax());
-			}
 			boolean darkb = darkBackground!=null && darkBackground.getState();
 			String options = method+(darkb?" dark":"")+(noReset?" no-reset":"")+(stack?" stack":"");
 			if (Recorder.scriptMode())
@@ -771,21 +766,18 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			} else {
 				int min = (int)ip.getMinThreshold();
 				int max = (int)ip.getMaxThreshold();
-				if (cal.isSigned16Bit()) {
+				if (cal.isSigned16Bit() && calibrated) {
 					min = (int)cal.getCValue(level1);
 					max = (int)cal.getCValue(level2);
 					if (Recorder.scriptMode())
 						Recorder.recordCall("IJ.setThreshold(imp, "+min+", "+max+");");
 					else
 						Recorder.record("setThreshold", min, max);
-				}
-				if (Recorder.scriptMode())
-					Recorder.recordCall("IJ.setRawThreshold(imp, "+min+", "+max+", null);");
-				else {
-					if (calibrated)
-						Recorder.record("setThreshold", min, max, "raw");
+				} else {
+					if (Recorder.scriptMode())
+						Recorder.recordCall("IJ.setRawThreshold(imp, "+min+", "+max+");");
 					else
-						Recorder.record("setThreshold", min, max);
+						Recorder.record("setThreshold", min, max, "raw");
 				}
 			}
 		}

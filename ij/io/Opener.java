@@ -40,8 +40,13 @@ public class Opener {
 	private String omDirectory;
 	private File[] omFiles;
 	private static boolean openUsingPlugins;
+	private static boolean bioformats;
 	private String url;
 
+	static {
+		Hashtable commands = Menus.getCommands();
+		bioformats = commands!=null && commands.get("Bio-Formats Importer")!=null;
+	}
 
 	public Opener() {
 	}
@@ -719,7 +724,7 @@ public class Opener {
 		} 
 		if (img==null)
 			return null;
-		if (img.getColorModel().hasAlpha()) {
+		if (img.getColorModel().hasAlpha() && img.getType()!=BufferedImage.TYPE_4BYTE_ABGR) {
 			int width = img.getWidth();
 			int height = img.getHeight();
 			BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -1247,7 +1252,7 @@ public class Opener {
 		 // Big-endian TIFF ("MM")
 		if (name.endsWith(".lsm"))
 				return UNKNOWN; // The LSM	Reader plugin opens these files
-		if (b0==73 && b1==73 && b2==42 && b3==0 && !name.endsWith(".flex"))
+		if (b0==73 && b1==73 && b2==42 && b3==0 && !(bioformats&&name.endsWith(".flex")))
 			return TIFF;
 
 		 // Little-endian TIFF ("II")

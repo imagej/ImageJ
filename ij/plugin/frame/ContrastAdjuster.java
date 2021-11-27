@@ -55,8 +55,8 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	Font sanFont = IJ.font12;
 	int channels = 7; // RGB
 	Choice choice;
-	private String blankMinLabel = "--------";
-	private String blankMaxLabel = "--------";
+	private String blankLabel8 = "--------";
+	private String blankLabel12 = "------------";
 	private double scale = Prefs.getGuiScale();
 	private int digits;
 
@@ -115,17 +115,16 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			c.insets = new Insets(0, 10, 0, 10);
 			gridbag.setConstraints(panel, c);
 			panel.setLayout(new BorderLayout());
-			minLabel = new Label(blankMinLabel, Label.LEFT);
+			minLabel = new Label(blankLabel8, Label.LEFT);
 			minLabel.setFont(monoFont);
 			if (IJ.debugMode) minLabel.setBackground(Color.yellow);
 			panel.add("West", minLabel);
-			maxLabel = new Label(blankMaxLabel, Label.RIGHT);
+			maxLabel = new Label(blankLabel8, Label.RIGHT);
 			maxLabel.setFont(monoFont);
 			if (IJ.debugMode) maxLabel.setBackground(Color.yellow);
 			panel.add("East", maxLabel);
 			add(panel);
-			blankMinLabel = "        ";
-			blankMaxLabel = "        ";
+			blankLabel8 = "        ";
 		}
 
 		// min slider
@@ -170,7 +169,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		brightnessSlider.setUnitIncrement(1);
 		brightnessSlider.setFocusable(false);
 		if (windowLevel)
-			addLabel("Level: ", levelLabel=new TrimmedLabel("        "));
+			addLabel("Level: ", levelLabel=new TrimmedLabel(blankLabel12));
 		else
 			addLabel("Brightness", null);
 
@@ -187,7 +186,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			contrastSlider.setUnitIncrement(1);
 			contrastSlider.setFocusable(false);
 			if (windowLevel)
-				addLabel("Window: ", windowLabel=new TrimmedLabel("        "));
+				addLabel("Window: ", windowLabel=new TrimmedLabel(blankLabel12));
 			else
 				addLabel("Contrast", null);
 		}
@@ -437,11 +436,11 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			realValue = true;
 		}
 		if (windowLevel) {
-			digits = realValue?2:0;
+			digits = realValue?3:0;
 			double window = max-min;
 			double level = min+(window)/2.0;
-			windowLabel.setText(IJ.d2s(window, digits));
-			levelLabel.setText(IJ.d2s(level, digits));
+			windowLabel.setText(ResultsTable.d2s(window, digits));
+			levelLabel.setText(ResultsTable.d2s(level, digits));
 		} else {
 			digits = realValue?4:0;
 			if (realValue) {
@@ -454,10 +453,10 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 				if (amin>99999.0*s||amax>99999.0*s) digits = 0;
 				if (amin>9999999.0*s||amax>9999999.0*s) digits = -2;
 			}
-			String minString = IJ.d2s(min, min==0.0?0:digits) + blankMinLabel;
-			minLabel.setText(minString.substring(0,blankMinLabel.length()));
-			String maxString = blankMaxLabel + IJ.d2s(max, digits);
-			maxString = maxString.substring(maxString.length()-blankMaxLabel.length(), maxString.length());
+			String minString = IJ.d2s(min, min==0.0?0:digits) + blankLabel8;
+			minLabel.setText(minString.substring(0,blankLabel8.length()));
+			String maxString = blankLabel8 + IJ.d2s(max, digits);
+			maxString = maxString.substring(maxString.length()-blankLabel8.length(), maxString.length());
 			maxLabel.setText(maxString);
 		}
 	}
