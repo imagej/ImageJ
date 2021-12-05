@@ -107,7 +107,7 @@ import java.io.*;
 		//gd.addStringField("Height (pixels): ", height==0?"\u2014":""+height, 6);
 		gd.addNumericField("Scale factor:", scale, 2);
 		gd.addCheckbox("Average when downsizing", averageWhenDownSizing);
-		gd.addCheckbox("Read images using Bio-Formats", useBioFormats);
+		//gd.addCheckbox("Read images using Bio-Formats", useBioFormats);
 		gd.setOKLabel("Convert");
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -117,7 +117,7 @@ import java.io.*;
 		//height = (int)Tools.parseDouble(gd.getNextString(), 0.0);
 		scale = gd.getNextNumber();
 		averageWhenDownSizing = gd.getNextBoolean();
-		useBioFormats = gd.getNextBoolean();
+		//useBioFormats = gd.getNextBoolean();
 		return true;
 	}
 
