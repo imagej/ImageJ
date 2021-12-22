@@ -184,7 +184,7 @@ public class FileInfo implements Cloneable {
 	public int getBytesPerPixel() {
 		switch (fileType) {
 			case GRAY8: case COLOR8: case BITMAP: return 1;
-			case GRAY16_SIGNED: case GRAY16_UNSIGNED: return 2;
+			case GRAY16_SIGNED: case GRAY16_UNSIGNED: case GRAY12_UNSIGNED: return 2;
 			case GRAY32_INT: case GRAY32_UNSIGNED: case GRAY32_FLOAT: case ARGB: case GRAY24_UNSIGNED: case BARG: case ABGR: case CMYK: return 4;
 			case RGB: case RGB_PLANAR: case BGR: return 3;
 			case RGB48: case RGB48_PLANAR: return 6;

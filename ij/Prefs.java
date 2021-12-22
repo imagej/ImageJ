@@ -90,7 +90,7 @@ public class Prefs {
 	/** Draw tool icons using antialiasing (always true). */
 	public static boolean antialiasedTools = true;
 	/** Export TIFF and Raw using little-endian byte order. */
-	public static boolean intelByteOrder;
+	public static boolean intelByteOrder = true;
 	/** No longer used */
 	public static boolean doubleBuffer = true;
 	/** Do not label multiple points created using point tool. */

@@ -151,7 +151,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 			String str = ""+obj;
 			if (str!=null && str.startsWith("https:/")) {
 				if (!str.startsWith("https://"))
-					str = str.replace("https:/", "http://");
+					str = str.replace("https:/", "https://");
 				obj = str;
 			}
 			if (obj!=null && (obj instanceof String))

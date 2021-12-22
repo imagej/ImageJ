@@ -100,6 +100,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		pm = new PopupMenu();
 		GUI.scalePopupMenu(pm);
 		addPopupItem("Save As...");
+		addPopupItem("Table Action");
 		pm.addSeparator();
 		addPopupItem("Cut");
 		addPopupItem("Copy");
@@ -364,7 +365,11 @@ public class TextPanel extends Panel implements AdjustmentListener,
     /** For better performance, open double-clicked files on
     	separate thread instead of on event dispatch thread. */
     public void run() {
-        if (filePath!=null) IJ.open(filePath);
+        if (filePath==null)
+        	return;
+        File f = new File(filePath);
+		if (f.exists() || filePath.startsWith("https"))
+			IJ.open(filePath);
     }
 
 	public void mouseExited (MouseEvent e) {
@@ -419,9 +424,22 @@ public class TextPanel extends Panel implements AdjustmentListener,
  	public void mouseReleased (MouseEvent e) {
 			showLinePos();
 	}
-	public void mouseClicked (MouseEvent e) {}
-	public void mouseEntered (MouseEvent e) {}
-
+	
+	public void mouseClicked (MouseEvent e) {
+		if (e.getClickCount() == 2 && !e.isConsumed()) {
+			e.consume();
+			boolean doubleClickableTable = title!=null && (title.equals("Log")||title.startsWith("Overlay Elements"));
+			Hashtable commands = Menus.getCommands();
+			boolean tableActionCommand = commands!=null && commands.get("Table Action")!=null;
+			if (!tableActionCommand)
+				tableActionCommand = ij.plugin.MacroInstaller.isMacroCommand("Table Action");
+			if (doubleClickableTable && !tableActionCommand)
+				return;
+			String options = title+"|"+getSelectionStart()+"|"+getSelectionEnd();
+			IJ.run("Table Action", options);
+		}
+	}
+	
 	public void mouseWheelMoved(MouseWheelEvent event) {
 		synchronized(this) {
 			int rot = event.getWheelRotation();
@@ -430,6 +448,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			tc.repaint();
 		}
 	}
+
+	public void mouseEntered (MouseEvent e) {}
 
 	private void scroll(int inc) {
 		synchronized(this) {
@@ -513,6 +533,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			sort();
  		else if (cmd.equals("Plot..."))
 			new PlotContentsDialog(title, getOrCreateResultsTable()).showDialog(getParent() instanceof Frame ? (Frame)getParent() : null);
+		else if (cmd.equals("Table Action")) {
+			String options = title+"|"+getSelectionStart()+"|"+getSelectionEnd();
+			IJ.run("Table Action", options);
+		}
 	}
 
  	public void lostOwnership (Clipboard clip, Transferable cont) {}

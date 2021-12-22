@@ -460,6 +460,19 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		return false;
 	}
 	
+	/** Returns 'true' if the macro command 'name' exists. */
+	public static boolean isMacroCommand(String name) {
+		if (instance==null)
+			return false;
+		if (name.startsWith(commandPrefixS))
+			name = name.substring(1);
+		for (int i=0; i<instance.nMacros; i++) {
+			if (name.equals(instance.macroNames[i]))
+				return true;
+		}
+		return false;
+	}
+
 	public static void runMacroShortcut(String name) {
 		if (instance==null)
 			return;

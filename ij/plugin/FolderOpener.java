@@ -115,16 +115,8 @@ public class FolderOpener implements PlugIn, TextListener {
 				openAsVirtualStack = staticOpenAsVirtualStack;
 			}
 			arg = null;
-			String title = "Open Image Sequence...";
 			String macroOptions = Macro.getOptions();
 			if (macroOptions!=null) {
-				directory = Macro.getValue(macroOptions, title, null);
-				if (directory!=null) {
-					directory = OpenDialog.lookupPathVariable(directory);
-					File f = new File(directory);
-					if (!f.isDirectory() && (f.exists()||directory.lastIndexOf(".")>directory.length()-5))
-						directory = f.getParent();
-				}
 				legacyRegex = Macro.getValue(macroOptions, "or", "");
 				if (legacyRegex.equals(""))
 					legacyRegex = null;
@@ -138,10 +130,6 @@ public class FolderOpener implements PlugIn, TextListener {
 			return;
 		}
 		File file = new File(directory);
-		if (!file.exists()) {
-			error("Directory not found: "+directory);
-			return;
-		}
 		String[] list = file.list();
 		if (list==null) {
 			String parent = file.getParent();
@@ -154,6 +142,10 @@ public class FolderOpener implements PlugIn, TextListener {
 				return;
 			}
 		}
+		if (!(directory.endsWith("/")||directory.endsWith("\\")))
+			directory += "/";
+		if (arg==null && Macro.getOptions()==null)
+			Prefs.set(DIR_KEY, directory);
 		//remove subdirectories from list
 		ArrayList fileList = new ArrayList();
 		for (int i=0; i<list.length; i++) {
@@ -544,7 +536,7 @@ public class FolderOpener implements PlugIn, TextListener {
 				this.bitDepth = 24;
 		}
 		String countStr = "---";
-		if (!directorySet)
+		if (!directorySet && options==null)
 			directory = Prefs.get(DIR_KEY, IJ.getDir("downloads")+"stack/");
 		if (directory!=null && !IJ.isMacro()) {			
 			File f = new File(directory);
@@ -586,7 +578,6 @@ public class FolderOpener implements PlugIn, TextListener {
 		if (gd.wasCanceled())
 			return false;
 		directory = gd.getNextString();
-		Prefs.set(DIR_KEY, directory);
 		gd.setSmartRecording(true);
 		int index = gd.getNextChoiceIndex();
 		bitDepth = typeToBitDepth(types[index]);
@@ -750,6 +741,7 @@ public class FolderOpener implements PlugIn, TextListener {
 		sortByMetaData = b;
 	}
 
+	/** Used by DragAndDrop when a directory is dragged onto the ImageJ window. */
 	public void setDirectory(String path) {
 		directory = path;
 		directorySet = true;

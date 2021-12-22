@@ -193,6 +193,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("Translate...");
 		addPopupItem("Help");
 		addPopupItem("Options...");
+		addPopupItem("ROI Manager Action");
 		add(pm);
 	}
 
@@ -278,6 +279,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			options();
 		else if (command.equals("\"Show All\" Color..."))
 			setShowAllColor();
+		else if (command.equals("ROI Manager Action"))
+  			IJ.run(command);
 		allowRecording = false;
 	}
 
@@ -2694,9 +2697,16 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public void allowRecording(boolean allow) {
 		this.allowRecording = allow;
 	}
+	
+	/* handle double clicking on a ROI. */
+	public void mouseClicked (MouseEvent e) {
+		if (e.getClickCount() == 2 && !e.isConsumed()) {
+			e.consume();
+			IJ.run("ROI Manager Action");
+		}
+	}
 
 	public void mouseReleased (MouseEvent e) {}
-	public void mouseClicked (MouseEvent e) {}
 	public void mouseEntered (MouseEvent e) {}
 	public void mouseExited (MouseEvent e) {}
 

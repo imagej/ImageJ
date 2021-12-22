@@ -34,7 +34,7 @@ public class TiffEncoder {
 		fi.intelByteOrder = littleEndian;
 		bitsPerSample = 8;
 		samplesPerPixel = 1;
-		nEntries = 9;
+		nEntries = 10;
 		int bytesPerPixel = 1;
 		int bpsSize = 0;
 
@@ -47,7 +47,7 @@ public class TiffEncoder {
 				bitsPerSample = 16;
 				photoInterp = fi.whiteIsZero?0:1;
 				if (fi.lutSize>0) {
-					nEntries = 10;
+					nEntries++;
 					colorMapSize = MAP_SIZE*2;
 				}
 				bytesPerPixel = 2;
@@ -56,7 +56,7 @@ public class TiffEncoder {
 				bitsPerSample = 32;
 				photoInterp = fi.whiteIsZero?0:1;
 				if (fi.lutSize>0) {
-					nEntries = 10;
+					nEntries++;
 					colorMapSize = MAP_SIZE*2;
 				}
 				bytesPerPixel = 4;
@@ -77,7 +77,7 @@ public class TiffEncoder {
 				break;
 			case FileInfo.COLOR8:
 				photoInterp = 3;
-				nEntries = 10;
+				nEntries++;
 				colorMapSize = MAP_SIZE*2;
 				break;
 			default:
@@ -289,7 +289,8 @@ public class TiffEncoder {
 			tagDataOffset += BPS_DATA_SIZE;
 		} else
 			writeEntry(out, TiffDecoder.BITS_PER_SAMPLE,  3, 1, bitsPerSample);
-		writeEntry(out, TiffDecoder.PHOTO_INTERP,     3, 1, photoInterp);
+		writeEntry(out, TiffDecoder.COMPRESSION,  3, 1, 1);	//No Compression
+		writeEntry(out, TiffDecoder.PHOTO_INTERP, 3, 1, photoInterp);
 		if (description!=null) {
 			writeEntry(out, TiffDecoder.IMAGE_DESCRIPTION, 2, description.length, tagDataOffset);
 			tagDataOffset += description.length;
