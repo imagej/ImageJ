@@ -144,7 +144,7 @@ public class FolderOpener implements PlugIn, TextListener {
 		}
 		if (!(directory.endsWith("/")||directory.endsWith("\\")))
 			directory += "/";
-		if (arg==null && Macro.getOptions()==null)
+		if (arg==null && !isMacro)
 			Prefs.set(DIR_KEY, directory);
 		//remove subdirectories from list
 		ArrayList fileList = new ArrayList();

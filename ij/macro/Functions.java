@@ -120,7 +120,7 @@ public class Functions implements MacroConstants, Measurements {
 			case DRAW_LINE: drawLine(); break;
 			case REQUIRES: requires(); break;
 			case AUTO_UPDATE: autoUpdate = getBooleanArg(); break;
-			case UPDATE_DISPLAY: interp.getParens(); updateDisplay(); break;
+			case UPDATE_DISPLAY: interp.getParens(); updateNeeded=true; updateDisplay(); break;
 			case DRAW_STRING: drawString(); break;
 			case SET_PASTE_MODE: IJ.setPasteMode(getStringArg()); break;
 			case DO_COMMAND: doCommand(); break;

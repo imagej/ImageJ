@@ -714,7 +714,7 @@ public class TiffDecoder {
 						chars[j] = (char)(buffer[k++]&255 + ((buffer[k++]&255)<<8));
 				} else {
 					for (int j=0, k=0; j<len; j++)
-						chars[j] = (char)(((buffer[k++]&255)<<8) + buffer[k++]&255);
+						chars[j] = (char)(((buffer[k++]&255)<<8) + (buffer[k++]&255));
 				}
 				fi.sliceLabels[index++] = new String(chars);
 				//ij.IJ.log(i+"  "+fi.sliceLabels[i-1]+"  "+len);

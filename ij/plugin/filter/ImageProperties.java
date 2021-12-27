@@ -43,6 +43,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			if (options.contains("unit="))
 				legacyMacro = true;
 		}
+		boolean isComposite = imp.isComposite();
 		Calibration cal = imp.getCalibration();
 		Calibration calOrig = cal.copy();
 		oldUnitIndex = getUnitIndex(cal.getUnit());
@@ -91,6 +92,8 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		gd.setInsets(5, 20, 0);
 		gd.addCheckbox("Invert Y coordinates", cal.getInvertY());
 		gd.addCheckbox("Global", global1);
+		if (isComposite)
+			gd.addCheckbox("Composite min projection", imp.getProp("CompositeProjection")!=null);
 		nfields = gd.getNumericFields();
 		if (nfields!=null) {
 			pixelWidthField  = (TextField)nfields.elementAt(3);
@@ -196,7 +199,22 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		if (global2 && global2!=global1)
 			FileOpener.setShowConflictMessage(true);
 			
+		boolean projectionChanged = false;
+		if (isComposite) {
+			boolean minProjection = gd.getNextBoolean();
+			if (minProjection && imp.getProp("CompositeProjection")==null) {
+				imp.setProp("CompositeProjection", "min");
+				projectionChanged = true;
+			} else if (!minProjection && imp.getProp("CompositeProjection")!=null) {
+				imp.setProp("CompositeProjection", null);
+				projectionChanged = true;
+			}
+			if (projectionChanged)
+				imp.updateAndDraw();
+			}
+			
 		if (Recorder.record) {
+			String cproject = imp.getProp("CompositeProjection");
 			if (Recorder.scriptMode()) {
 				if (xUnitChanged)
 					Recorder.recordCall("imp.getCalibration().setXUnit(\""+xunit2+"\");", true);
@@ -204,6 +222,11 @@ public class ImageProperties implements PlugInFilter, TextListener {
 					Recorder.recordCall("imp.getCalibration().setYUnit(\""+yunit2+"\");", true);
 				if (zUnitChanged)
 					Recorder.recordCall("imp.getCalibration().setZUnit(\""+zunit2+"\");", true);
+				if (projectionChanged) {
+					if (cproject!=null) cproject="\""+cproject+"\"";
+					Recorder.recordCall("imp.setProp(\"CompositeProjection\", "+(cproject!=null?cproject:"null")+");");
+					Recorder.recordCall("imp.updateAndDraw();");
+				}
 			} else {
 				if (xUnitChanged)
 					Recorder.record("Stack.setXUnit", xunit2);
@@ -211,6 +234,11 @@ public class ImageProperties implements PlugInFilter, TextListener {
 					Recorder.record("Stack.setYUnit", yunit2);
 				if (zUnitChanged)
 					Recorder.record("Stack.setZUnit", zunit2);
+				if (projectionChanged) {
+					if (cproject==null) cproject="";
+					Recorder.recordString("Property.set(\"CompositeProjection\", \""+cproject+"\");\n");
+					Recorder.recordString("updateDisplay();\n");
+				}
 			}
 		}
 

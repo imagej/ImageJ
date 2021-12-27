@@ -101,6 +101,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 			long bytesPerImage = fi.width*fi.height*fi.getBytesPerPixel();
 			if (fi.fileType==FileInfo.GRAY12_UNSIGNED)
 				bytesPerImage = (int)(1.5*fi.width)*fi.height;
+			if (IJ.debugMode) IJ.log("bytesPerImage="+bytesPerImage);
 			n = validateNImages(fi, bytesPerImage);
 			info = new FileInfo[n];
 			for (int i=0; i<n; i++) {
