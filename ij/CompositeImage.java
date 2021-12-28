@@ -277,13 +277,20 @@ public class CompositeImage extends ImagePlus {
 			rgbImage = null;
 		}
 		cip[currentChannel].setMinAndMax(ip.getMin(),ip.getMax());
-		boolean minProjection = getProp("CompositeProjection")!=null;
+		int projectionMode = ImageProcessor.MAX_PROJECTION;
+		String prop = getProp("CompositeProjection");
+		if (prop!=null) {
+			if (prop.contains("Min")||prop.contains("min"))
+				projectionMode = ImageProcessor.MIN_PROJECTION;
+			if (prop.contains("Sum")||prop.contains("sum"))
+				projectionMode = ImageProcessor.SUM_PROJECTION;
+		}
 		long t0 = IJ.debugMode?System.currentTimeMillis():0L;
 		if (singleChannel && nChannels<=3) {
 			switch (currentChannel) {
-				case 0: cip[0].updateComposite(rgbPixels, 1, 0); break;
-				case 1: cip[1].updateComposite(rgbPixels, 2, 0); break;
-				case 2: cip[2].updateComposite(rgbPixels, 3, 0); break;
+				case 0: cip[0].updateComposite(rgbPixels, ImageProcessor.UPDATE_RED); break;
+				case 1: cip[1].updateComposite(rgbPixels, ImageProcessor.UPDATE_GREEN); break;
+				case 2: cip[2].updateComposite(rgbPixels, ImageProcessor.UPDATE_BLUE); break;
 			}
 		} else {
 			if (cip==null) return;
@@ -298,17 +305,16 @@ public class CompositeImage extends ImagePlus {
 				syncChannels = false;
 			}
 			if (active[0])
-				cip[0].updateComposite(rgbPixels, 4, 0);
+				cip[0].updateComposite(rgbPixels, ImageProcessor.ADD_FIRST_CHANNEL);
 			else {
-				int fill = minProjection?0xffffff:0;
+				int fill = projectionMode==ImageProcessor.MIN_PROJECTION?0xffffff:0;
 				for (int i=1; i<imageSize; i++)
 					rgbPixels[i] = fill;
 			}
 			if (cip==null || nChannels>cip.length)
 				return;
-			int projectionMode = minProjection?ImageProcessor.MIN_PROJECTION:ImageProcessor.MAX_PROJECTION;
 			for (int i=1; i<nChannels; i++)
-				if (active[i]) cip[i].updateComposite(rgbPixels, 5, projectionMode);
+				if (active[i]) cip[i].updateComposite(rgbPixels, projectionMode);
 		}
 		if (IJ.debugMode) IJ.log(""+(System.currentTimeMillis()-t0));
 		createBufferedImage();

@@ -12,6 +12,7 @@ import ij.plugin.frame.Recorder;
 
 public class ImageProperties implements PlugInFilter, TextListener {
 	private final String SAME = "-";
+	private static final String[] projections = {"Max","Min","Sum"};
 	ImagePlus imp;
 	static final int NANOMETER=0, MICROMETER=1, MILLIMETER=2, CENTIMETER=3,
 		 METER=4, KILOMETER=5, INCH=6, FOOT=7, MILE=8, PIXEL=9, OTHER_UNIT=10;
@@ -58,6 +59,11 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		String xunit = cal.getXUnit();
 		String yunit = cal.getYUnit();
 		String zunit = cal.getZUnit();
+		String project = imp.getProp("CompositeProjection");
+		if (project==null) project="";
+		if (project.contains("Min")||project.contains("min")) project="Min";
+		if (project.contains("Sum")||project.contains("sum")) project="Sum";
+		if (!(project.equals("Min")||project.equals("Sum"))) project="Max";
 		GenericDialog gd = new GenericDialog(imp.getTitle());
 		gd.addNumericField("Channels (c):", channels, 0);
 		gd.addNumericField("Slices (z):", slices, 0);
@@ -89,11 +95,10 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			zo = "," + zo;
 		}
 		gd.addStringField("Origin (pixels):", xo+","+yo+zo);
+		gd.addChoice("Projection:", projections, project);
 		gd.setInsets(5, 20, 0);
 		gd.addCheckbox("Invert Y coordinates", cal.getInvertY());
 		gd.addCheckbox("Global", global1);
-		if (isComposite)
-			gd.addCheckbox("Composite min projection", imp.getProp("CompositeProjection")!=null);
 		nfields = gd.getNumericFields();
 		if (nfields!=null) {
 			pixelWidthField  = (TextField)nfields.elementAt(3);
@@ -187,6 +192,19 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		cal.xOrigin= Double.isNaN(x)?0.0:x;
 		cal.yOrigin= Double.isNaN(y)?cal.xOrigin:y;
 		cal.zOrigin= Double.isNaN(z)?0.0:z;
+		
+		boolean projectionChanged = false;
+		if (isComposite) {
+			String choice = gd.getNextChoice();
+			if (!choice.equals(project)) {
+				project = choice;
+				imp.setProp("CompositeProjection", project);
+				projectionChanged = true;
+			}
+			if (projectionChanged)
+				imp.updateAndDraw();
+		}
+
  		cal.setInvertY(gd.getNextBoolean());
  		global2 = gd.getNextBoolean();
 		if (!cal.equals(calOrig))
@@ -197,24 +215,9 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		else
 			imp.repaintWindow();
 		if (global2 && global2!=global1)
-			FileOpener.setShowConflictMessage(true);
-			
-		boolean projectionChanged = false;
-		if (isComposite) {
-			boolean minProjection = gd.getNextBoolean();
-			if (minProjection && imp.getProp("CompositeProjection")==null) {
-				imp.setProp("CompositeProjection", "min");
-				projectionChanged = true;
-			} else if (!minProjection && imp.getProp("CompositeProjection")!=null) {
-				imp.setProp("CompositeProjection", null);
-				projectionChanged = true;
-			}
-			if (projectionChanged)
-				imp.updateAndDraw();
-			}
+			FileOpener.setShowConflictMessage(true);			
 			
 		if (Recorder.record) {
-			String cproject = imp.getProp("CompositeProjection");
 			if (Recorder.scriptMode()) {
 				if (xUnitChanged)
 					Recorder.recordCall("imp.getCalibration().setXUnit(\""+xunit2+"\");", true);
@@ -223,8 +226,8 @@ public class ImageProperties implements PlugInFilter, TextListener {
 				if (zUnitChanged)
 					Recorder.recordCall("imp.getCalibration().setZUnit(\""+zunit2+"\");", true);
 				if (projectionChanged) {
-					if (cproject!=null) cproject="\""+cproject+"\"";
-					Recorder.recordCall("imp.setProp(\"CompositeProjection\", "+(cproject!=null?cproject:"null")+");");
+					project="\""+project+"\"";
+					Recorder.recordCall("imp.setProp(\"CompositeProjection\", "+project+");");
 					Recorder.recordCall("imp.updateAndDraw();");
 				}
 			} else {
@@ -235,8 +238,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 				if (zUnitChanged)
 					Recorder.record("Stack.setZUnit", zunit2);
 				if (projectionChanged) {
-					if (cproject==null) cproject="";
-					Recorder.recordString("Property.set(\"CompositeProjection\", \""+cproject+"\");\n");
+					Recorder.recordString("Property.set(\"CompositeProjection\", \""+project+"\");\n");
 					Recorder.recordString("updateDisplay();\n");
 				}
 			}
