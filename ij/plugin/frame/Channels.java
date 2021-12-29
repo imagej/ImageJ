@@ -8,7 +8,7 @@ import java.awt.event.*;
 /** Displays the ImageJ Channels window. */
 public class Channels extends PlugInDialog implements PlugIn, ItemListener, ActionListener {
 
-	private static String[] modes = {"Composite", "Color", "Grayscale"};
+	private static String[] modes = {"Composite Sum", "Composite Max", "Composite Min", "Color", "Grayscale"};
 	private static String[] menuItems = {"Make Composite", "Convert to RGB", "Split Channels", "Merge Channels...",
 		"Edit LUT...", "-", "Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "Grays"};
 
@@ -110,10 +110,17 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 		for (int i=0; i<checkbox.length; i++)
 			checkbox[i].setState(active[i]);
 		int index = 0;
+		
+		String cmode = ci.getProp("CompositeProjection");
+		int cindex = 0;
+		if (cmode!=null) {			
+			if (cmode.contains("Max")||cmode.contains("max")) cindex=1;
+			if (cmode.contains("Min")||cmode.contains("min")) cindex=2;
+		}
 		switch (ci.getMode()) {
-			case IJ.COMPOSITE: index=0; break;
-			case IJ.COLOR: index=1; break;
-			case IJ.GRAYSCALE: index=2; break;
+			case IJ.COMPOSITE: index=cindex; break;
+			case IJ.COLOR: index=3; break;
+			case IJ.GRAYSCALE: index=4; break;
 		}
 		choice.select(index);
 	}
@@ -162,27 +169,37 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 		Object source = e.getSource();
 		if (source==choice) {
 			int index = ((Choice)source).getSelectedIndex();
+			String cstr = null;
+			int cmode = IJ.COMPOSITE;
 			switch (index) {
-				case 0: ci.setMode(IJ.COMPOSITE); break;
-				case 1: ci.setMode(IJ.COLOR); break;
-				case 2: ci.setMode(IJ.GRAYSCALE); break;
+				case 0: cmode=IJ.COMPOSITE; cstr="Sum"; break;
+				case 1: cmode=IJ.COMPOSITE; ; cstr="Max"; break;
+				case 2: cmode=IJ.COMPOSITE; ; cstr="Min"; break;
+				case 3: cmode=IJ.COLOR; break;
+				case 4: cmode=IJ.GRAYSCALE; break;
 			}
+			if (cstr!=null && !(cstr.equals("Sum")&&ci.getProp("CompositeProjection")==null))
+				ci.setProp("CompositeProjection", cstr);
+			ci.setMode(cmode);
 			ci.updateAndDraw();
 			if (Recorder.record) {
 				String mode = null;
 				if (Recorder.scriptMode()) {
 					switch (index) {
-						case 0: mode="IJ.COMPOSITE"; break;
-						case 1: mode="IJ.COLOR"; break;
-						case 2: mode="IJ.GRAYSCALE"; break;
+						case 0: case 1: case 2: mode="IJ.COMPOSITE"; break;
+						case 3: mode="IJ.COLOR"; break;
+						case 4: mode="IJ.GRAYSCALE"; break;
 					}
+					cstr="\""+cstr+"\"";
+					Recorder.recordCall("imp.setProp(\"CompositeProjection\", "+cstr+");");
 					Recorder.recordCall("imp.setDisplayMode("+mode+");");
 				} else {
 					switch (index) {
-						case 0: mode="composite"; break;
-						case 1: mode="color"; break;
-						case 2: mode="grayscale"; break;
+						case 0: case 1: case 2: mode="composite"; break;
+						case 3: mode="color"; break;
+						case 4: mode="grayscale"; break;
 					}
+					Recorder.recordString("Property.set(\"CompositeProjection\", \""+cstr+"\");\n");
 					Recorder.record("Stack.setDisplayMode", mode);
 				}
 			}

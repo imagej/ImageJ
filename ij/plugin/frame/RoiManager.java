@@ -1977,7 +1977,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			imageID = imp.getID();
 		if (mode==LABELS || mode==NO_LABELS)
 			showAll = true;
-		if (showAll) imp.deleteRoi();
+		if (showAll)
+			imp.deleteRoi();
 		if (mode==SHOW_NONE) {
 			removeOverlay(imp);
 			imageID = 0;
@@ -2682,8 +2683,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (imp==null)
 			return;
 		ImageCanvas ic = imp.getCanvas();
-		if (ic==null)
+		if (ic==null) {
+			if (imp.getOverlay()==null)
+				imp.setOverlay(overlay);
 			return;
+		}
 		ic.setShowAllList(overlay);
 		imp.draw();
 	}

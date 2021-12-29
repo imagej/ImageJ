@@ -277,13 +277,13 @@ public class CompositeImage extends ImagePlus {
 			rgbImage = null;
 		}
 		cip[currentChannel].setMinAndMax(ip.getMin(),ip.getMax());
-		int projectionMode = ImageProcessor.MAX_PROJECTION;
+		int projectionMode = ImageProcessor.SUM_PROJECTION;
 		String prop = getProp("CompositeProjection");
 		if (prop!=null) {
+			if (prop.contains("Max")||prop.contains("max"))
+				projectionMode = ImageProcessor.MAX_PROJECTION;
 			if (prop.contains("Min")||prop.contains("min"))
 				projectionMode = ImageProcessor.MIN_PROJECTION;
-			if (prop.contains("Sum")||prop.contains("sum"))
-				projectionMode = ImageProcessor.SUM_PROJECTION;
 		}
 		long t0 = IJ.debugMode?System.currentTimeMillis():0L;
 		if (singleChannel && nChannels<=3) {

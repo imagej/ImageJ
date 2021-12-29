@@ -12,7 +12,7 @@ import ij.plugin.frame.Recorder;
 
 public class ImageProperties implements PlugInFilter, TextListener {
 	private final String SAME = "-";
-	private static final String[] projections = {"Max","Min","Sum"};
+	private static final String[] projections = {"Sum","Max","Min"};
 	ImagePlus imp;
 	static final int NANOMETER=0, MICROMETER=1, MILLIMETER=2, CENTIMETER=3,
 		 METER=4, KILOMETER=5, INCH=6, FOOT=7, MILE=8, PIXEL=9, OTHER_UNIT=10;
@@ -44,7 +44,6 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			if (options.contains("unit="))
 				legacyMacro = true;
 		}
-		boolean isComposite = imp.isComposite();
 		Calibration cal = imp.getCalibration();
 		Calibration calOrig = cal.copy();
 		oldUnitIndex = getUnitIndex(cal.getUnit());
@@ -62,8 +61,8 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		String project = imp.getProp("CompositeProjection");
 		if (project==null) project="";
 		if (project.contains("Min")||project.contains("min")) project="Min";
-		if (project.contains("Sum")||project.contains("sum")) project="Sum";
-		if (!(project.equals("Min")||project.equals("Sum"))) project="Max";
+		if (project.contains("Max")||project.contains("max")) project="Max";
+		if (!(project.equals("Min")||project.equals("Max"))) project="Sum";
 		GenericDialog gd = new GenericDialog(imp.getTitle());
 		gd.addNumericField("Channels (c):", channels, 0);
 		gd.addNumericField("Slices (z):", slices, 0);
@@ -95,7 +94,6 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			zo = "," + zo;
 		}
 		gd.addStringField("Origin (pixels):", xo+","+yo+zo);
-		gd.addChoice("Projection:", projections, project);
 		gd.setInsets(5, 20, 0);
 		gd.addCheckbox("Invert Y coordinates", cal.getInvertY());
 		gd.addCheckbox("Global", global1);
@@ -193,18 +191,6 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		cal.yOrigin= Double.isNaN(y)?cal.xOrigin:y;
 		cal.zOrigin= Double.isNaN(z)?0.0:z;
 		
-		boolean projectionChanged = false;
-		if (isComposite) {
-			String choice = gd.getNextChoice();
-			if (!choice.equals(project)) {
-				project = choice;
-				imp.setProp("CompositeProjection", project);
-				projectionChanged = true;
-			}
-			if (projectionChanged)
-				imp.updateAndDraw();
-		}
-
  		cal.setInvertY(gd.getNextBoolean());
  		global2 = gd.getNextBoolean();
 		if (!cal.equals(calOrig))
@@ -225,11 +211,6 @@ public class ImageProperties implements PlugInFilter, TextListener {
 					Recorder.recordCall("imp.getCalibration().setYUnit(\""+yunit2+"\");", true);
 				if (zUnitChanged)
 					Recorder.recordCall("imp.getCalibration().setZUnit(\""+zunit2+"\");", true);
-				if (projectionChanged) {
-					project="\""+project+"\"";
-					Recorder.recordCall("imp.setProp(\"CompositeProjection\", "+project+");");
-					Recorder.recordCall("imp.updateAndDraw();");
-				}
 			} else {
 				if (xUnitChanged)
 					Recorder.record("Stack.setXUnit", xunit2);
@@ -237,10 +218,6 @@ public class ImageProperties implements PlugInFilter, TextListener {
 					Recorder.record("Stack.setYUnit", yunit2);
 				if (zUnitChanged)
 					Recorder.record("Stack.setZUnit", zunit2);
-				if (projectionChanged) {
-					Recorder.recordString("Property.set(\"CompositeProjection\", \""+project+"\");\n");
-					Recorder.recordString("updateDisplay();\n");
-				}
 			}
 		}
 

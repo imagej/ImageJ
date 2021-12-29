@@ -5,13 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.53o53 27 December 2021</u>
+<li> <u>1.53o57 29 December 2021</u>
 <ul>
-<li> Thanks to Christophe Leterrier, added a multi-channel
-composite image "Projection" choice to the
-<i>Image&gt;Properties</i> dialog, with
-"Max", "Min" and "Sum" choices. The "Min" option is useful
-for displaying composite images with inverted LUTs
+<li> Thanks to Christophe Leterrier, added 
+“Composite Sum”, “Composite Max” and “Composite Min” as choices in
+the <i>Image&gt;Color&gt;Channels Tool</i> dialog. “Composite Min”
+is useful for displaying composite images with inverted LUTs
 (<a href="http://wsr.imagej.net/images/3_channel_inverted_luts.tif">example image</a>,
 <a href="http://wsr.imagej.net/macros/Invert_All_LUTs.ijm">example macro</a>).
 <li> Thanks to Jerome Mutterer, added support for Results Table and ROI Manager
@@ -59,6 +58,9 @@ PNG images to open as stacks.
 RoiScaler.scale() method to sometimes not work as expected.
 <li> Thanks to 'odinsbane', fixed a 1.53m regression that
 caused exceptions to sometimes not be shown.
+<li> Thanks to 'chin', fixed a 1.53i regression that caused the
+roiManager("Show All") macro function to not work in
+batch mode.
 </ul>
 
 <li> <u>1.53n 7 November 2021</u>
