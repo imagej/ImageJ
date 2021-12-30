@@ -159,7 +159,7 @@ public class ImageStack {
 		label[n] = tempLabel;
 	}
 	
-	/** Deletes the specified slice, were 1<=n<=nslices. */
+	/** Deletes the specified slice, where {@literal 1<=n<=nslices}. */
 	public void deleteSlice(int n) {
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
@@ -210,7 +210,7 @@ public class ImageStack {
 		}
 	}
 	
-	/** Returns the pixel array for the specified slice, were 1<=n<=nslices. */
+	/** Returns the pixel array for the specified slice, where {@literal 1<=n<=nslices}. */
 	public Object getPixels(int n) {
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
@@ -218,7 +218,7 @@ public class ImageStack {
 	}
 	
 	/** Assigns a pixel array to the specified slice,
-		were 1<=n<=nslices. */
+		where {@literal 1<=n<=nslices}. */
 	public void setPixels(Object pixels, int n) {
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
@@ -255,7 +255,7 @@ public class ImageStack {
 			return label;
 	}
 	
-	/** Returns the label of the specified slice, were 1<=n<=nslices.
+	/** Returns the label of the specified slice, where {@literal 1<=n<=nslices}. <br>
 		Returns null if the slice does not have a label or 'n';
 		is out of range. For DICOM and FITS stacks, labels may
 		contain header information.
@@ -294,15 +294,15 @@ public class ImageStack {
 		return shortLabel;
 	}
 	
-	/** Sets the label of the specified slice, were 1<=n<=nslices. */
+	/** Sets the label of the specified slice, where {@literal 1<=n<=nslices}. */
 	public void setSliceLabel(String label, int n) {
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
 		this.label[n-1] = label;
 	}
 	
-	/** Returns an ImageProcessor for the specified slice,
-		were 1<=n<=nslices. Returns null if the stack is empty.
+	/** Returns an ImageProcessor for the specified slice, where {@literal 1<=n<=nslices}. <br>
+	 * Returns null if the stack is empty.
 	*/
 	public ImageProcessor getProcessor(int n) {
 		ImageProcessor ip;
@@ -333,8 +333,7 @@ public class ImageStack {
 		return ip;
 	}
 	
-	/** Assigns the pixel array of an ImageProcessor to the
-		 specified slice, were 1<=n<=nslices. */
+	/** Assigns the pixel array of an ImageProcessor to the specified slice, where {@literal 1<=n<=nslices}. */
 	public void setProcessor(ImageProcessor ip, int n) {
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
