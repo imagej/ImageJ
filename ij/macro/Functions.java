@@ -1819,9 +1819,13 @@ public class Functions implements MacroConstants, Measurements {
 			title = "";
 		}
 		interp.getRightParen();
-		if (withCancel)
-			IJ.showMessageWithCancel(title, message);
-		else
+		if (withCancel) {
+			boolean rtn = IJ.showMessageWithCancel(title, message);
+			if (!rtn) {
+				interp.finishUp();
+				throw new RuntimeException(Macro.MACRO_CANCELED);
+			}
+		} else
 			IJ.showMessage(title, message);
 	}
 

@@ -44,12 +44,14 @@ public abstract class ImageProcessor implements Cloneable {
 
 	/** Modified isodata method used in Image/Adjust/Threshold tool */
 	public static final int ISODATA2 = 1;
+	
+	/** Composite image projection modes. */
+	public static final int UPDATE_RED=1, UPDATE_GREEN=2, UPDATE_BLUE=3, SET_FIRST_CHANNEL=4,
+		SUM_PROJECTION=5, MAX_PROJECTION=6, MIN_PROJECTION=7, INVERT_PROJECTION=8;
 
 	/** Interpolation methods */
 	public static final int NEAREST_NEIGHBOR=0, NONE=0, BILINEAR=1, BICUBIC=2;
 	public static final int BLUR_MORE=0, FIND_EDGES=1, MEDIAN_FILTER=2, MIN=3, MAX=4, CONVOLVE=5;
-	public static final int UPDATE_RED=1, UPDATE_GREEN=2, UPDATE_BLUE=3, ADD_FIRST_CHANNEL=4,
-		SUM_PROJECTION=5, MAX_PROJECTION=6, MIN_PROJECTION=7;
 	static public final int RED_LUT=0, BLACK_AND_WHITE_LUT=1, NO_LUT_UPDATE=2, OVER_UNDER_LUT=3;
 	static final int INVERT=0, FILL=1, ADD=2, MULT=3, AND=4, OR=5,
 		XOR=6, GAMMA=7, LOG=8, MINIMUM=9, MAXIMUM=10, SQR=11, SQRT=12, EXP=13, ABS=14, SET=15;
@@ -2652,7 +2654,7 @@ public abstract class ImageProcessor implements Cloneable {
 				for (int i=0; i<size; i++)
 					rgbPixels[i] = (rgbPixels[i]&0xffffff00) | blues[bytes[i]&0xff];
 				break;
-			case ADD_FIRST_CHANNEL:
+			case SET_FIRST_CHANNEL:
 				for (int i=0; i<size; i++) {
 					int index = bytes[i]&0xff;
 					rgbPixels[i] = reds[index] | greens[index] | blues[index];
@@ -2705,6 +2707,27 @@ public abstract class ImageProcessor implements Cloneable {
 		lutAnimation = false;
 	}
 	
+	/*
+	public void updateComposite(short[] red, short[] green, short[] blue, int mode) {
+		int redValue, greenValue, blueValue;
+		int size = width*height;
+		if (bytes==null || !lutAnimation)
+			bytes = create8BitImage();
+		if (cm==null)
+			makeDefaultColorModel();
+		if (reds==null || cm!=cm2)
+			updateLutBytes();
+		for (int i=0; i<size; i++) {
+			int pixel = rgbPixels[i];
+			redValue = reds[bytes[i]&0xff];
+			greenValue = greens[bytes[i]&0xff];
+			blueValue = blues[bytes[i]&0xff];
+			
+		}
+		lutAnimation = false;
+	}
+	*/
+
 	// method and variables used by updateComposite()
 	byte[]  create8BitImage() {return null;}
 	private byte[] bytes;

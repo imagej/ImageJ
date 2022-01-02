@@ -12,7 +12,6 @@ import ij.plugin.frame.Recorder;
 
 public class ImageProperties implements PlugInFilter, TextListener {
 	private final String SAME = "-";
-	private static final String[] projections = {"Sum","Max","Min"};
 	ImagePlus imp;
 	static final int NANOMETER=0, MICROMETER=1, MILLIMETER=2, CENTIMETER=3,
 		 METER=4, KILOMETER=5, INCH=6, FOOT=7, MILE=8, PIXEL=9, OTHER_UNIT=10;

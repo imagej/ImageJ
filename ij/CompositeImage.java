@@ -284,6 +284,8 @@ public class CompositeImage extends ImagePlus {
 				projectionMode = ImageProcessor.MAX_PROJECTION;
 			if (prop.contains("Min")||prop.contains("min"))
 				projectionMode = ImageProcessor.MIN_PROJECTION;
+			if (prop.contains("Invert")||prop.contains("invert"))
+				projectionMode = ImageProcessor.INVERT_PROJECTION;
 		}
 		long t0 = IJ.debugMode?System.currentTimeMillis():0L;
 		if (singleChannel && nChannels<=3) {
@@ -292,6 +294,8 @@ public class CompositeImage extends ImagePlus {
 				case 1: cip[1].updateComposite(rgbPixels, ImageProcessor.UPDATE_GREEN); break;
 				case 2: cip[2].updateComposite(rgbPixels, ImageProcessor.UPDATE_BLUE); break;
 			}
+		} else if (projectionMode==ImageProcessor.INVERT_PROJECTION){
+			makeInvertedComposite();
 		} else {
 			if (cip==null) return;
 			if (syncChannels) {
@@ -305,7 +309,7 @@ public class CompositeImage extends ImagePlus {
 				syncChannels = false;
 			}
 			if (active[0])
-				cip[0].updateComposite(rgbPixels, ImageProcessor.ADD_FIRST_CHANNEL);
+				cip[0].updateComposite(rgbPixels, ImageProcessor.SET_FIRST_CHANNEL);
 			else {
 				int fill = projectionMode==ImageProcessor.MIN_PROJECTION?0xffffff:0;
 				for (int i=1; i<imageSize; i++)
@@ -323,7 +327,76 @@ public class CompositeImage extends ImagePlus {
 		singleChannel = false;
 	}
 		
-	void createImage() {
+	// Creates multi-channel composite view with inverted LUTs
+	// https://forum.image.sc/t/multi-channel-composite-view-with-inverted-luts-in-imagej-fiji/61163
+	// Peter Haub, 12'2021
+	private void makeInvertedComposite() {
+		int bitDepth = getBitDepth();
+		int w = getWidth();
+		int h = getHeight();
+		int nChn = getNChannels();
+		byte[][] in8 = null;
+		short[][] in16 = null;
+		float[][] in32 = null;
+		switch (bitDepth) {
+			case 8: in8=new byte[nChn][]; break;
+			case 16: in16=new short[nChn][]; break;
+			case 32: in32=new float[nChn][]; break;
+		}
+		double[] mins = new double[nChn];
+		double[] maxs = new double[nChn];
+		double[] scale = new double[nChn];		
+		LUT[] luts = getLuts();
+		
+		for (int c=0; c<nChn; c++){
+			mins[c] = cip[c].getMin();
+			maxs[c] = cip[c].getMax();
+			scale[c] = (255.0 / (maxs[c] - mins[c]));			
+			switch (bitDepth) {
+				case 8: in8[c] = (byte[]) cip[c].getPixels(); break;
+				case 16: in16[c] = (short[]) cip[c].getPixels(); break;
+				case 32: in32[c] = (float[]) cip[c].getPixels(); break;
+			}
+		} 
+		      			
+		int value;
+		int[] v = new int[nChn];
+		int[] r = new int[nChn]; int[] g = new int[nChn]; int[] b = new int[nChn];
+		int sumR, sumG, sumB;
+		int newR, newG, newB;
+		
+		for (int idx=0; idx<w*h; idx++) {
+			for (int c=0; c<nChn; c++){
+				switch (bitDepth) {
+					case 8: v[c] = (int)Math.floor(((in8[c][idx]&0xff)-mins[c])*scale[c]);; break;
+					case 16: v[c] = (int)Math.floor(((in16[c][idx]&0xffff)-mins[c])*scale[c]); break;
+					case 32: v[c] = (int)Math.floor((in32[c][idx]-mins[c])*scale[c]); break;
+				}
+				r[c] = luts[c].getRed(v[c]);
+				g[c] = luts[c].getGreen(v[c]);
+				b[c] = luts[c].getBlue(v[c]);                   
+			}
+
+			// Modify 'composite merge' condition here
+			sumR = sumG = sumB = 0;
+			for (int c=0; c<nChn; c++){
+				sumR += r[c];
+				sumG += g[c];
+				sumB += b[c];
+			}
+			newR = sumR - (nChn-1)*255;
+			newG = sumG - (nChn-1)*255;
+			newB = sumB - (nChn-1)*255;
+
+			newR = Math.max(newR, 0);
+			newG = Math.max(newG, 0);
+			newB = Math.max(newB, 0);
+			value = newR*256*256 + newG*256 + newB;
+			rgbPixels[idx] = value;
+		}   
+    }
+    
+    void createImage() {
 		if (imageSource==null) {
 			rgbCM = new DirectColorModel(32, 0xff0000, 0xff00, 0xff);
 			imageSource = new MemoryImageSource(width, height, rgbCM, rgbPixels, 0, width);
@@ -425,8 +498,10 @@ public class CompositeImage extends ImagePlus {
 			return;
 		if (mode==COMPOSITE && getNChannels()>MAX_CHANNELS)
 			mode = COLOR;
-		for (int i=0; i<MAX_CHANNELS; i++)
-			active[i] = true;
+		if (!(mode==COMPOSITE && mode==this.mode)) {
+			for (int i=0; i<MAX_CHANNELS; i++)
+				active[i] = true;
+		}
 		if (this.mode!=COMPOSITE && mode==COMPOSITE)
 			img = null;
 		this.mode = mode;

@@ -1455,8 +1455,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			setup();
 			if (centerDialog)
 				GUI.centerOnImageJScreen(this);
-			setVisible(true);					//except for NonBlockingGenericDialog, returns after 'dispose' by OK or Cancel
-
+			setVisible(true);  //except for NonBlockingGenericDialog, returns after 'dispose' by OK or Cancel
 		}
 	}
 	

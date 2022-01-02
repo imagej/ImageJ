@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53o57 29 December 2021</u>
+<li> <u>1.53o60 2 January 2022</u>
 <ul>
 <li> Thanks to Christophe Leterrier, added 
 “Composite Sum”, “Composite Max” and “Composite Min” as choices in
@@ -16,6 +16,8 @@ is useful for displaying composite images with inverted LUTs
 <li> Thanks to Jerome Mutterer, added support for Results Table and ROI Manager
 customizable actions
 (<a href="http://wsr.imagej.net/macros/TableAndRoiManagerActions.ijm">example</a>).
+<li> Thanks to Peter Haub, added “Composite Invert” as a choice in 
+the <i>Image&gt;Color&gt;Channels Tool</i> dialog.
 <li> Thanks to Fred Damen, the <i>Image&gt;Adjust&gt;Window/Level</i>
 and Histogram dialogs use scientific notation as needed to display
 small values.
@@ -52,6 +54,9 @@ dragged and dropped "https://" URLs to not open.
 <li> Thanks to Hidenao Iwia, fixed a bug that caused
 GRAY12_UNSIGNED images to not open correctly as
 FileInfoVirtual stacks.
+<li> Thanks to Stein Rorvik, fixed a bug that caused the
+showMessageWithCancel() macro function to fail when run
+from the command line.
 <li> Thanks to 'IztokD', fixed a regression that caused some
 PNG images to open as stacks.
 <li> Thanks to 'CellKai', fixed a 1.53d regression that caused the
