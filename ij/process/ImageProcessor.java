@@ -2706,27 +2706,6 @@ public abstract class ImageProcessor implements Cloneable {
 		}
 		lutAnimation = false;
 	}
-	
-	/*
-	public void updateComposite(short[] red, short[] green, short[] blue, int mode) {
-		int redValue, greenValue, blueValue;
-		int size = width*height;
-		if (bytes==null || !lutAnimation)
-			bytes = create8BitImage();
-		if (cm==null)
-			makeDefaultColorModel();
-		if (reds==null || cm!=cm2)
-			updateLutBytes();
-		for (int i=0; i<size; i++) {
-			int pixel = rgbPixels[i];
-			redValue = reds[bytes[i]&0xff];
-			greenValue = greens[bytes[i]&0xff];
-			blueValue = blues[bytes[i]&0xff];
-			
-		}
-		lutAnimation = false;
-	}
-	*/
 
 	// method and variables used by updateComposite()
 	byte[]  create8BitImage() {return null;}

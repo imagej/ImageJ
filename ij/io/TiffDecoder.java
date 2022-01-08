@@ -692,7 +692,7 @@ public class TiffDecoder {
 				chars[j] = (char)(buffer[k++]&255 + ((buffer[k++]&255)<<8));
 		} else {
 			for (int j=0, k=0; j<len; j++)
-				chars[j] = (char)(((buffer[k++]&255)<<8) + buffer[k++]&255);
+				chars[j] = (char)(((buffer[k++]&255)<<8) + (buffer[k++]&255));
 		}
 		fi.info = new String(chars);
 	}
@@ -780,7 +780,7 @@ public class TiffDecoder {
 					chars[j] = (char)(buffer[k++]&255 + ((buffer[k++]&255)<<8));
 			} else {
 				for (int j=0, k=0; j<len; j++)
-					chars[j] = (char)(((buffer[k++]&255)<<8) + buffer[k++]&255);
+					chars[j] = (char)(((buffer[k++]&255)<<8) + (buffer[k++]&255));
 			}
 			fi.properties[index++] = new String(chars);
 		}

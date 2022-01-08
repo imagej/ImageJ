@@ -295,7 +295,7 @@ public class CompositeImage extends ImagePlus {
 				case 2: cip[2].updateComposite(rgbPixels, ImageProcessor.UPDATE_BLUE); break;
 			}
 		} else if (projectionMode==ImageProcessor.INVERT_PROJECTION){
-			makeInvertedComposite();
+			makeInvertedComposite(active);
 		} else {
 			if (cip==null) return;
 			if (syncChannels) {
@@ -325,16 +325,23 @@ public class CompositeImage extends ImagePlus {
 		if (img==null && awtImage!=null)
 			img = awtImage;
 		singleChannel = false;
-	}
-		
+	}		
+    
 	// Creates multi-channel composite view with inverted LUTs
 	// https://forum.image.sc/t/multi-channel-composite-view-with-inverted-luts-in-imagej-fiji/61163
 	// Peter Haub, 12'2021
-	private void makeInvertedComposite() {
+	private void makeInvertedComposite(boolean[] chnActive) {
 		int bitDepth = getBitDepth();
 		int w = getWidth();
 		int h = getHeight();
 		int nChn = getNChannels();
+		
+		int nChnActive = 0;
+		for (int c=0; c<nChn; c++){
+			if (chnActive[c])
+				nChnActive++;
+		}		
+		
 		byte[][] in8 = null;
 		short[][] in16 = null;
 		float[][] in32 = null;
@@ -368,10 +375,12 @@ public class CompositeImage extends ImagePlus {
 		for (int idx=0; idx<w*h; idx++) {
 			for (int c=0; c<nChn; c++){
 				switch (bitDepth) {
-					case 8: v[c] = (int)Math.floor(((in8[c][idx]&0xff)-mins[c])*scale[c]);; break;
+					case 8: v[c] = (int)Math.floor(((in8[c][idx]&0xff)-mins[c])*scale[c]); break;
 					case 16: v[c] = (int)Math.floor(((in16[c][idx]&0xffff)-mins[c])*scale[c]); break;
 					case 32: v[c] = (int)Math.floor((in32[c][idx]-mins[c])*scale[c]); break;
 				}
+				v[c] = Math.min(v[c], 255);
+				v[c] = Math.max(v[c], 0);
 				r[c] = luts[c].getRed(v[c]);
 				g[c] = luts[c].getGreen(v[c]);
 				b[c] = luts[c].getBlue(v[c]);                   
@@ -380,13 +389,15 @@ public class CompositeImage extends ImagePlus {
 			// Modify 'composite merge' condition here
 			sumR = sumG = sumB = 0;
 			for (int c=0; c<nChn; c++){
-				sumR += r[c];
-				sumG += g[c];
-				sumB += b[c];
+				if (chnActive[c]){				
+					sumR += r[c];
+					sumG += g[c];
+					sumB += b[c];
+				}
 			}
-			newR = sumR - (nChn-1)*255;
-			newG = sumG - (nChn-1)*255;
-			newB = sumB - (nChn-1)*255;
+			newR = sumR - (nChnActive-1)*255;
+			newG = sumG - (nChnActive-1)*255;
+			newB = sumB - (nChnActive-1)*255;
 
 			newR = Math.max(newR, 0);
 			newG = Math.max(newG, 0);
@@ -395,8 +406,8 @@ public class CompositeImage extends ImagePlus {
 			rgbPixels[idx] = value;
 		}   
     }
-    
-    void createImage() {
+       
+	void createImage() {
 		if (imageSource==null) {
 			rgbCM = new DirectColorModel(32, 0xff0000, 0xff00, 0xff);
 			imageSource = new MemoryImageSource(width, height, rgbCM, rgbPixels, 0, width);

@@ -367,24 +367,36 @@ public class Prefs {
 	/** Returns the path, ending in File.separator, to the ImageJ directory. */
 	public static String getImageJDir() {
 		String path = Menus.getImageJPath();
-		if (path==null)
+		if (path==null) {
+			if (ImageJDir==null)
+				ImageJDir = System.getProperty("user.dir");
 			return ImageJDir + File.separator;
-		else
+		} else
 			return path;
 	}
 
 	/** Returns the path to the directory where the 
 		preferences file (IJPrefs.txt) is saved. */
 	public static String getPrefsDir() {
+		// look in current directory
 		if (prefsDir==null) {
-			if (ImageJDir==null)
-				ImageJDir = System.getProperty("user.dir");
-			File f = new File(ImageJDir+File.separator+PREFS_NAME);
+			String cwd = System.getProperty("user.dir");
+			File f = new File(cwd+File.separator+PREFS_NAME);
 			if (f.exists()) {
-				prefsDir = ImageJDir;
-				preferencesPath = ImageJDir+"/"+PREFS_NAME;
+				prefsDir = cwd;
+				preferencesPath = cwd+"/"+PREFS_NAME;
 			}
-			//System.out.println("getPrefsDir: "+f+"  "+prefsDir);
+			// look in ImageJ directory
+			if (prefsDir==null) {
+				String ijDir = getImageJDir();
+				ijDir = ijDir.substring(0, ijDir.length()-1);
+				f = new File(ijDir+File.separator+PREFS_NAME);
+				if (f.exists()) {
+					prefsDir = ijDir;
+					preferencesPath = ijDir+"/"+PREFS_NAME;
+				}
+			}
+			// use home directory
 			if (prefsDir==null) {
 				String dir = System.getProperty("user.home");
 				if (IJ.isMacOSX())
@@ -393,7 +405,7 @@ public class Prefs {
 					dir += File.separator+".imagej";
 				prefsDir = dir;
 			}
-		}
+		}		
 		return prefsDir;
 	}
 

@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53o60 2 January 2022</u>
+<li> <u>1.53o65 8 January 2022</u>
 <ul>
 <li> Thanks to Christophe Leterrier, added 
 “Composite Sum”, “Composite Max” and “Composite Min” as choices in
@@ -21,6 +21,9 @@ the <i>Image&gt;Color&gt;Channels Tool</i> dialog.
 <li> Thanks to Fred Damen, the <i>Image&gt;Adjust&gt;Window/Level</i>
 and Histogram dialogs use scientific notation as needed to display
 small values.
+<li> Thanks to Stein Rorvik, ImageJ looks for the preferences file ("IJ_Prefs.txt”)
+in the current directory, the ImageJ directory and the username/.imagej directory
+(username/Preferences on MacOS).
 <li> Thanks to Kimberly Meechan and Jan Eglinger, ImageJ restores
 the original look and feel after temporarily using the system
 look and feel with Windows dialogs.
@@ -30,6 +33,7 @@ in the preferences file.
 <li> Thanks to Stein Rorvik, added a "Create new stack" checkbox
 to the <i>Process&gt;Binary&gt;Make Binary</i>
 and <i>Convert to Mask</i> dialog boxes.
+<li> Thanks to Stein Rorvik, added the getDir("preferences") macro function.
 <li> Thanks to Fred Damen, added the ImagePlus.setDefaultDisplayRange()
 method
 (<a href="http://wsr.imagej.net/macros/js/SetDefaultDisplayRangeDemo.js">JavaScript example</a>).
