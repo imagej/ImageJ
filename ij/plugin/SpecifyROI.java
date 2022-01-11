@@ -116,10 +116,7 @@ public class SpecifyROI implements PlugIn, DialogListener {
 		if (cal.scaledOrOffset()) {
 			boolean unitsMatch = cal.getXUnit().equals(cal.getYUnit());
 			String units = unitsMatch ? cal.getUnits() : cal.getXUnit()+" x "+cal.getYUnit();
-			units = " (" + units + ")";
-			if ("unit".equals(cal.getXUnit()))
-				units = "";
-			gd.addCheckbox("Scaled units"+units, scaledUnits);
+			gd.addCheckbox("Scaled units ("+units+")", scaledUnits);
 		}
 		fields = gd.getNumericFields();
 		gd.addDialogListener(this);
@@ -200,14 +197,20 @@ public class SpecifyROI implements PlugIn, DialogListener {
 				newWidth = true;
 			}
 		}
-		if (e!=null && cal.scaled() && e.getSource()==checkboxes.get(SCALED_UNITS)) {
-			double xFactor = scaledUnits ? cal.pixelWidth : 1./cal.pixelWidth;
-			double yFactor = scaledUnits ? cal.pixelHeight : 1./cal.pixelHeight;
-			width *= xFactor;  //transform everything to keep roi the same
-			height *= yFactor;
-			xRoi *= xFactor;
-			yRoi *= yFactor;
-			newWidth = true; newHeight = true; newXY = true;
+		if (e!=null && cal.scaledOrOffset() && e.getSource()==checkboxes.get(SCALED_UNITS)) {
+			// transform everything to keep roi the same
+			if (scaledUnits) {
+				width *= cal.pixelWidth;
+				height *= cal.pixelWidth;
+				xRoi = cal.getX(xRoi);
+				yRoi = cal.getY(yRoi);
+			} else {
+				width /= cal.pixelWidth;
+				height /= cal.pixelWidth;
+				xRoi = cal.getRawX(xRoi);
+				yRoi = cal.getRawY(yRoi);
+			}
+			newWidth = newHeight = newXY = true;
 		}
 		int digits = (scaledUnits || (int)width!=width) ? 2 : 0;
 		if (newWidth)
