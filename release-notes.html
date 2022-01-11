@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53o65 8 January 2022</u>
+<li> <u>1.53o69 10 January 2022</u>
 <ul>
 <li> Thanks to Christophe Leterrier, added 
 “Composite Sum”, “Composite Max” and “Composite Min” as choices in
@@ -21,6 +21,9 @@ the <i>Image&gt;Color&gt;Channels Tool</i> dialog.
 <li> Thanks to Fred Damen, the <i>Image&gt;Adjust&gt;Window/Level</i>
 and Histogram dialogs use scientific notation as needed to display
 small values.
+<li> Thanks to Stein Rorvik, <i>Edit&gt;Selection&gt;Specify</i>
+respects the image origin when “Scaled units” is checked
+in the dialog.
 <li> Thanks to Stein Rorvik, ImageJ looks for the preferences file ("IJ_Prefs.txt”)
 in the current directory, the ImageJ directory and the username/.imagej directory
 (username/Preferences on MacOS).
@@ -61,6 +64,9 @@ FileInfoVirtual stacks.
 <li> Thanks to Stein Rorvik, fixed a bug that caused the
 showMessageWithCancel() macro function to fail when run
 from the command line.
+<li> Thanks to Fred Damen, fixed a bug that caused slice labels
+of one slice stacks to not be displayed in the
+<i>Image&gt;Show Info</i> window.
 <li> Thanks to 'IztokD', fixed a regression that caused some
 PNG images to open as stacks.
 <li> Thanks to 'CellKai', fixed a 1.53d regression that caused the

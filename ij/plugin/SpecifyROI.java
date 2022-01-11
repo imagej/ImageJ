@@ -60,9 +60,9 @@ public class SpecifyROI implements PlugIn, DialogListener {
 			height = r.height;
 			xRoi = r.x;
 			yRoi = r.y;
-			if (scaledUnits && cal.scaled()) {
-				xRoi = xRoi*cal.pixelWidth;
-				yRoi = yRoi*cal.pixelHeight;
+			if (scaledUnits && cal.scaledOrOffset()) {
+				xRoi = cal.getX(xRoi);
+				yRoi = cal.getY(yRoi);
 				width = width*cal.pixelWidth;
 				height = height*cal.pixelHeight;
 			}
@@ -98,7 +98,7 @@ public class SpecifyROI implements PlugIn, DialogListener {
 	void showDialog() {
 		Calibration cal = imp.getCalibration();
 		int digits = 0;
-		if (scaledUnits && cal.scaled())
+		if (scaledUnits && cal.scaledOrOffset())
 			digits = 2;
 		Roi roi = imp.getRoi();
 		if (roi==null)
@@ -113,10 +113,13 @@ public class SpecifyROI implements PlugIn, DialogListener {
 		gd.addCheckbox("Oval", oval);
 		gd.addCheckbox("Constrain square/circle", square);
 		gd.addCheckbox("Centered",centered);
-		if (cal.scaled()) {
+		if (cal.scaledOrOffset()) {
 			boolean unitsMatch = cal.getXUnit().equals(cal.getYUnit());
 			String units = unitsMatch ? cal.getUnits() : cal.getXUnit()+" x "+cal.getYUnit();
-			gd.addCheckbox("Scaled units ("+units+")", scaledUnits);
+			units = " (" + units + ")";
+			if ("unit".equals(cal.getXUnit()))
+				units = "";
+			gd.addCheckbox("Scaled units"+units, scaledUnits);
 		}
 		fields = gd.getNumericFields();
 		gd.addDialogListener(this);
@@ -139,9 +142,9 @@ public class SpecifyROI implements PlugIn, DialogListener {
 		double widthPxl = width;
 		double heightPxl = height;
 		Calibration cal = imp.getCalibration();
-		if (scaledUnits && cal.scaled()) {
-			xPxl /= cal.pixelWidth;
-			yPxl /= cal.pixelHeight;
+		if (scaledUnits && cal.scaledOrOffset()) {
+			xPxl = cal.getRawX(xPxl);
+			yPxl = cal.getRawY(yPxl);
 			widthPxl /= cal.pixelWidth;
 			heightPxl /= cal.pixelHeight;
 			prevPixelWidth = cal.pixelWidth;
@@ -168,7 +171,7 @@ public class SpecifyROI implements PlugIn, DialogListener {
 		oval = gd.getNextBoolean();
 		square = gd.getNextBoolean();
 		centered = gd.getNextBoolean();
-		if (cal.scaled())
+		if (cal.scaledOrOffset())
 			scaledUnits = gd.getNextBoolean();
 		if (gd.invalidNumber() || width<=0 || height<=0)
 			return false;
@@ -200,7 +203,7 @@ public class SpecifyROI implements PlugIn, DialogListener {
 		if (e!=null && cal.scaled() && e.getSource()==checkboxes.get(SCALED_UNITS)) {
 			double xFactor = scaledUnits ? cal.pixelWidth : 1./cal.pixelWidth;
 			double yFactor = scaledUnits ? cal.pixelHeight : 1./cal.pixelHeight;
-			width *= xFactor;				 //transform everything to keep roi the same
+			width *= xFactor;  //transform everything to keep roi the same
 			height *= yFactor;
 			xRoi *= xFactor;
 			yRoi *= yFactor;

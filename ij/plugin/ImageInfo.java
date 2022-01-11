@@ -60,7 +60,7 @@ public class ImageInfo implements PlugIn {
 	public String getImageInfo(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
 		String infoProperty = null;
-		if (imp.getStackSize()>1) {
+		if (imp.getStackSize()>1 || imp.isStack()) {
 			ImageStack stack = imp.getStack();
 			String label = stack.getSliceLabel(imp.getCurrentSlice());
 			if (label!=null && label.indexOf('\n')>0)

@@ -197,6 +197,7 @@ public class Prefs {
 	static String prefsDir;
 	static String imagesURL;
 	static String ImageJDir;
+	static String pluginsDirProperty;
 	static int threads;
 	static int transparentIndex = -1;
 	private static boolean resetPreferences;
@@ -368,11 +369,29 @@ public class Prefs {
 	public static String getImageJDir() {
 		String path = Menus.getImageJPath();
 		if (path==null) {
-			if (ImageJDir==null)
-				ImageJDir = System.getProperty("user.dir");
-			return ImageJDir + File.separator;
+			String ijPath = getPluginsDirProperty();
+			//if (ijPath==null)
+			//	ijPath = ImageJDir;
+			if (ijPath==null)
+				ijPath = System.getProperty("user.dir");
+			return ijPath + File.separator;
 		} else
 			return path;
+	}
+	
+	public static String getPluginsDirProperty() {
+		if (pluginsDirProperty==null) {
+			String ijDir = System.getProperty("plugins.dir");
+			if (ijDir!=null) {
+				if (ijDir.endsWith("/")||ijDir.endsWith("\\"))
+					ijDir = ijDir.substring(0, ijDir.length()-1);
+				if (ijDir.endsWith("/plugins")||ijDir.endsWith("\\plugins"))
+					ijDir = ijDir.substring(0, ijDir.length()-8);
+				pluginsDirProperty = ijDir;
+			} else
+				pluginsDirProperty = "";
+		}
+		return pluginsDirProperty.length()>0?pluginsDirProperty:null;
 	}
 
 	/** Returns the path to the directory where the 

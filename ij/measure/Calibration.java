@@ -89,11 +89,17 @@ public class Calibration implements Cloneable {
 	public Calibration() {
 	}
 	
-	/** Returns true if this image is spatially calibrated. */
+	/** Returns 'true' if this image is spatially calibrated. */
 	public boolean scaled() {
 		return pixelWidth!=1.0 || pixelHeight!=1.0 || pixelDepth!=1.0 || !unit.equals("pixel");
 	}
 	
+	/** Returns 'true' if this image is spatially calibrated or has offsets. */
+	public boolean scaledOrOffset() {
+		return pixelWidth!=1.0 || pixelHeight!=1.0 || pixelDepth!=1.0
+			|| xOrigin!=0.0 || yOrigin!=0.0 || zOrigin!=0.0;
+	}
+
 	/** Sets the default length unit (e.g. "mm", "inch"). */
 	public void setUnit(String unit) {
 		this.unit = sanitizeUnit(unit);
