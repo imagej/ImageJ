@@ -34,8 +34,6 @@ public class SpecifyROI implements PlugIn, DialogListener {
 	private static boolean scaledUnits;
 	private final static int WIDTH = 0, HEIGHT = 1, X_ROI = 2, Y_ROI = 3;	//sequence of NumericFields
 	private final static int OVAL = 0, SQUARE = 1, CENTERED = 2, SCALED_UNITS = 3; //sequence of Checkboxes
-	private static Rectangle prevRoi;
-	private static double prevPixelWidth = 1.0;
 	private int iSlice;
 	private boolean bAbort;
 	private ImagePlus imp;
@@ -44,14 +42,11 @@ public class SpecifyROI implements PlugIn, DialogListener {
 
 	public void run(String arg) {
 		imp = IJ.getImage();
-		if (imp == null) return;
 		if (!imp.okToDeleteRoi())
 			return;
 		stackSize = imp.getStackSize();
 		Roi roi = imp.getRoi();
 		Calibration cal = imp.getCalibration();
-		if (roi!=null && roi.getBounds().equals(prevRoi) && cal.pixelWidth==prevPixelWidth)
-			roi = null;
 		if (roi!=null) {
 			boolean rectOrOval = roi!=null && (roi.getType()==Roi.RECTANGLE||roi.getType()==Roi.OVAL);
 			oval = rectOrOval && (roi.getType()==Roi.OVAL); // Handle existing oval ROI
@@ -144,7 +139,6 @@ public class SpecifyROI implements PlugIn, DialogListener {
 			yPxl = cal.getRawY(yPxl);
 			widthPxl /= cal.pixelWidth;
 			heightPxl /= cal.pixelHeight;
-			prevPixelWidth = cal.pixelWidth;
 		}
 		Roi roi;
 		if (oval)
@@ -152,8 +146,6 @@ public class SpecifyROI implements PlugIn, DialogListener {
 		else
 			roi = new Roi(xPxl, yPxl, widthPxl, heightPxl);
 		imp.setRoi(roi);
-		prevRoi = roi.getBounds();
-		//prevPixelWidth = cal.pixelWidth;
 	}
 
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {

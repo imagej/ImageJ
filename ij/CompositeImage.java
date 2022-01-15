@@ -12,6 +12,8 @@ public class CompositeImage extends ImagePlus {
 	/** Display modes (note: TRANSPARENT mode has not yet been implemented) */
 	public static final int COMPOSITE=1, COLOR=2, GRAYSCALE=3, TRANSPARENT=4;
 	public static final int MAX_CHANNELS = 7;
+	public static final Color[] colors = {Color.red, Color.green, Color.blue, Color.white, Color.cyan, Color.magenta, Color.yellow};
+
 	int[] rgbPixels;
 	boolean newPixels;
 	MemoryImageSource imageSource;
@@ -21,7 +23,6 @@ public class CompositeImage extends ImagePlus {
 	BufferedImage rgbImage;
 	ColorModel rgbCM;
 	ImageProcessor[] cip;
-	Color[] colors = {Color.red, Color.green, Color.blue, Color.white, Color.cyan, Color.magenta, Color.yellow};
 	LUT[] lut;
 	int currentChannel = -1;
 	int previousChannel;

@@ -2512,10 +2512,14 @@ public class IJ {
 		PrintWriter pw = new PrintWriter(caw);
 		e.printStackTrace(pw);
 		String s = caw.toString();
+		String lineNumber = "";
 		if (s!=null && s.contains("ThreadDeath"))
 			return;
+		Interpreter interpreter = Thread.currentThread().getName().endsWith("Macro$") ? Interpreter.getInstance() : null;
+		if (interpreter!=null)
+			lineNumber = "\nMacro line number: " + interpreter.getLineNumber();
 		if (getInstance()!=null) {
-			s = IJ.getInstance().getInfo()+"\n \n"+s;
+			s = IJ.getInstance().getInfo()+lineNumber+"\n \n"+s;
 			new TextWindow("Exception", s, 500, 340);
 		} else
 			log(s);

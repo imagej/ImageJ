@@ -599,6 +599,22 @@ public class ResultsTable implements Cloneable {
 		else
 			stringColumn.set(row, value);
 	}
+	
+	/** Sets the values of the given column to the values in the array.
+	 *  If the specified column does not exist, it is created.
+	 *  When adding columns, <code>show()</code> must be called to
+	 *  update the window that displays the table.
+	 *  If the array is shorter than the column length, the remaining
+	 *  values of the column are left unchanged. If the array is longer,
+	 *  the table is extended. String values are unaffected, but only
+	 *  used if the numeric value at the given position is NaN. */
+	public void setValues(String column, double[] values) {
+		if (values.length > 0)
+			setValue(column, 0, values[0]); //creates the column if required
+		int col = getColumnIndex(column);
+		for (int i=1; i<values.length; i++)
+			setValue(col, i, values[i]);
+	}
 
 	/** Returns a tab or comma delimited string containing the column headings. */
 	public String getColumnHeadings() {

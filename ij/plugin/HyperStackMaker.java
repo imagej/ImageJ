@@ -97,6 +97,7 @@ public class HyperStackMaker implements PlugIn {
 		Overlay overlay = new Overlay();
 		int n = stack.size();
 		int channel=1, slice=1, frame=1;
+		boolean rgb = imp.getBitDepth()==24;
 		boolean hyperstack = imp.isHyperStack();
 		for (int i=1; i<=n; i++) {
 			int yloc = 30;
@@ -109,7 +110,10 @@ public class HyperStackMaker implements PlugIn {
 			ip.setRoi(0, yloc+25, width, height-(yloc+25));
 			ip.fill();
 			
-			ip.setColor(Color.white);
+			if (rgb && channel<=CompositeImage.colors.length)
+				ip.setColor(CompositeImage.colors[channel-1]);
+			else
+				ip.setColor(Color.white);
 			Font font = new Font("SansSerif",Font.PLAIN,24);
 			ip.setFont(font);
 			String text = "c="+IJ.pad(channel,3)+", z="+IJ.pad(slice,3)+", t="+IJ.pad(frame,3)+", i="+IJ.pad(i,4);
@@ -124,20 +128,22 @@ public class HyperStackMaker implements PlugIn {
 			overlay.add(roi);
 			ip.drawString(text, 5, yloc+27);
 			
-			// embed channel, slice, frame and stack index into pixel data
-			yloc += 30;;
-			int size = 20;
-			ip.setValue(channel); ip.setRoi(size,yloc,size,size); ip.fill();
-			ip.setColor(Color.white); ip.drawRect(size,yloc,size,size);
-			ip.setValue(slice); ip.setRoi(size*3,yloc,size,size); ip.fill();
-			ip.setColor(Color.white); ip.drawRect(size*3,yloc,size,size);
-			ip.setValue(frame); ip.setRoi(size*5,yloc,size,size); ip.fill();
-			ip.setColor(Color.white); ip.drawRect(size*5,yloc,size,size);
-			ip.setValue(i); ip.setRoi(size*7,yloc,size,size); ip.fill();
-			ip.setColor(Color.white); ip.drawRect(size*7,yloc,size,size);
+			if (!rgb) {
+				// embed channel, slice, frame and stack index into pixel data
+				yloc += 30;;
+				int size = 20;
+				ip.setValue(channel); ip.setRoi(size,yloc,size,size); ip.fill();
+				ip.setColor(Color.white); ip.drawRect(size,yloc,size,size);
+				ip.setValue(slice); ip.setRoi(size*3,yloc,size,size); ip.fill();
+				ip.setColor(Color.white); ip.drawRect(size*3,yloc,size,size);
+				ip.setValue(frame); ip.setRoi(size*5,yloc,size,size); ip.fill();
+				ip.setColor(Color.white); ip.drawRect(size*5,yloc,size,size);
+				ip.setValue(i); ip.setRoi(size*7,yloc,size,size); ip.fill();
+				ip.setColor(Color.white); ip.drawRect(size*7,yloc,size,size);
+			}
 			
 			yloc = 90;
-			if (i==1 && hyperstack) {
+			if (i==1 && hyperstack && !rgb) {
 				String msg = "Press shift-z (Image>Color>Channels Tool)\n"+
 					"to open the \"Channels\" window, which will\n"+
 					"allow you switch to composite color mode\n"+
