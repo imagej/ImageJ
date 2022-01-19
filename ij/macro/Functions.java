@@ -4339,6 +4339,9 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.startsWith("getDefaultDir")) {
 			String dir = OpenDialog.getDefaultDirectory();
 			return dir!=null?dir:"";
+		} else if (name.equals("openSequence")) {
+			openSequence();
+			return null;
 		}
 
 		File f = new File(getStringArg());
@@ -4371,11 +4374,22 @@ public class Functions implements MacroConstants, Measurements {
 			return ""+f.lastModified();
 		else if (name.equals("dateLastModified"))
 			return (new Date(f.lastModified())).toString();
-		else if (name.equals("delete")) {
+		else if (name.equals("delete"))
 			return f.delete()?"1":"0";
-		} else
+		else
 			interp.error("Unrecognized File function "+name);
 		return null;
+	}
+	
+	private void openSequence() {
+		String path = getFirstString();
+		String options = "";
+		if (interp.nextToken()==',')
+			options = getNextString();
+		interp.getRightParen();
+		ImagePlus imp = FolderOpener.open(path, options);
+		if (imp!=null)
+			imp.show();
 	}
 
 	String nameWithoutExtension() {

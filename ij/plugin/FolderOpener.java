@@ -42,6 +42,7 @@ public class FolderOpener implements PlugIn, TextListener {
 	private int step = 1;
 	private double scale = 100.0;
 	private boolean openAsSeparateImages;
+	private boolean runningOpen;	
 	private TextField dirField, filterField, startField, countField, stepField;
 
 	
@@ -53,11 +54,14 @@ public class FolderOpener implements PlugIn, TextListener {
 
 	/** Opens the images in the specified directory as a stack. Opens
 		the images as a virtual stack if the 'options' string contains
-		'virtual' or 'use'. Add ' file=abc' to the options string to only open
-		images with, for example, 'abc' in their name. Add ' noMetaSort' to
-		disable sorting of DICOM stacks by series number (0020,0011).
-		Displays directory chooser and options dialogs if the the 'path'
-		argument is null. */
+		'virtual' or 'use'. Add ' filter=abc' to the options string to only open
+		images with, for example, 'abc' in their name. The image type, start,
+		step, count and scale can also be set, for example
+		"bitdepth=32 start=10 step=2 count=10 scale=50".
+		Add ' noMetaSort' to disable sorting of DICOM stacks by series
+		number (0020,0011). Displays the Import/Sequence dialog if the
+		the 'path' argument is null.
+	*/
 	public static ImagePlus open(String path, String options) {
 		FolderOpener fo = new FolderOpener();
 		fo.saveImage = true;
@@ -68,9 +72,10 @@ public class FolderOpener implements PlugIn, TextListener {
 
 	/** Opens the images in the specified directory as a widthxheight stack.
  		Opens the images as a virtual stack if the 'options' string contains
-		'virtual' or 'use'. Add ' file=abc' to the options string to only open
-		images with, for example, 'abc' in their name. Add ' noMetaSort' to
-		disable sorting of DICOM stacks by series number (0020,0011).
+		'virtual'. Add ' filter=abc' to the options string to only open
+		images with, for example, 'abc' in their name. The image type, start,
+		step, count and scale can also be set, for example
+		"bitdepth=32 start=10 step=2 count=10 scale=50".
 	*/
 	public static ImagePlus open(String path, int width, int height, String options) {
 		FolderOpener fo = new FolderOpener();
@@ -93,6 +98,13 @@ public class FolderOpener implements PlugIn, TextListener {
 		this.start = (int)Tools.getNumberFromList(options,"start=",1);
 		this.step = (int)Tools.getNumberFromList(options,"step=",1);
 		this.scale = Tools.getNumberFromList(options,"scale=",100);
+		this.nFiles = (int)Tools.getNumberFromList(options,"count=",0);
+		if (options.contains(" open")) {
+			this.openAsSeparateImages = true;
+			this.openAsVirtualStack = true;
+			this.saveImage = false;
+			this.runningOpen = true;
+		}
 	}
 
 	/** Opens the images in the specified directory as a stack. Displays
@@ -428,7 +440,7 @@ public class FolderOpener implements PlugIn, TextListener {
 				if (info1!=null)
 					imp2.setProperty("Info", info1);
 			}
-			if (arg==null && !saveImage) {
+			if ((arg==null||runningOpen) && !saveImage) {
 				String time = (System.currentTimeMillis()-t0)/1000.0 + " seconds";
 				if (openAsSeparateImages) {
 					if (imp2.getStackSize()>MAX_SEPARATE && !IJ.isMacro()) {
@@ -451,7 +463,7 @@ public class FolderOpener implements PlugIn, TextListener {
 		}
 		IJ.showProgress(1.0);
 		if (Recorder.record) {
-			String options = openAsVirtualStack?"virtual":"";
+			String options = openAsVirtualStack&&!openAsSeparateImages?"virtual":"";
 			if (bitDepth!=defaultBitDepth)
 				options = options + " bitdepth=" + bitDepth;				
 			if (filter!=null && filter.length()>0) {
@@ -467,8 +479,18 @@ public class FolderOpener implements PlugIn, TextListener {
 				options = options + " scale=" + scale;				
 			if (!sortByMetaData)
 				options = options + " noMetaSort";
+			if (!Recorder.scriptMode() && openAsSeparateImages)
+				options = options + " open";
 			String dir = Recorder.fixPath(directory);
-   			Recorder.recordCall("imp = FolderOpener.open(\""+dir+"\", \""+options+"\");");
+			if (Recorder.scriptMode())
+   				Recorder.recordCall("imp = FolderOpener.open(\""+dir+"\", \""+options+"\");");
+   			else {
+   				if (options.length()==0)
+   					Recorder.recordString("File.openSequence(\""+dir+"\");\n");
+   				else
+   					Recorder.recordString("File.openSequence(\""+dir+"\", \""+options+"\");\n");
+   				Recorder.disableCommandRecording();
+   			}
 		}
 	}
 	
