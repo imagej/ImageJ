@@ -9,15 +9,15 @@
     <javac srcdir="./ij" destdir="build" optimize="on" source="1.8" target="1.8" debug="on" includeantruntime="false" encoding="utf-8">
     </javac>
   </target>
-  
+
 
   <target name="build" depends="compile" description="Build ij.jar.">
     <!-- Copy needed files into the build directory. -->
     <copy file="IJ_Props.txt" todir="build" />
     <copy file="images/microscope.gif" tofile="build/microscope.gif" />
     <copy file="images/about.jpg" tofile="build/about.jpg" />
-	<copy file="plugins/MacAdapter.class" tofile="build/ij/plugin/MacAdapter.class" />
-	<copy file="plugins/MacAdapter9.class" tofile="build/ij/plugin/MacAdapter9.class" /> 
+    <copy file="plugins/MacAdapter.class" tofile="build/ij/plugin/MacAdapter.class" />
+    <copy file="plugins/MacAdapter9.class" tofile="build/ij/plugin/MacAdapter9.class" />
     <copy todir="build/macros"><fileset dir="macros"/></copy>
     <!-- Build ij.jar. -->
     <jar jarfile="ij.jar" basedir="build"
@@ -35,13 +35,14 @@
     <copy file="ij.jar" toDir=".." />
     <java maxmemory="640m" jar="ij.jar" fork="yes" />
   </target>
-    
+
 
   <target name="run2" depends="build" description="Build and run ImageJ.">
     <!-- Run in ImageJ directory -->
     <copy file="ij.jar" toDir=".." />
     <java maxmemory="640m" dir=".." jar="ij.jar" fork="yes" />
   </target>
+
 
   <target name="zip" depends="clean" description="Build zrc.zip.">
     <zip zipfile="../src.zip"
@@ -55,7 +56,7 @@
   <target name="javadocs" description="Build the JavaDocs.">
     <delete dir="../api" />
     <mkdir dir="../api" />
-    <javadoc 
+    <javadoc
            sourcepath="."
            encoding="utf-8"
            packagenames="ij.*"
@@ -66,7 +67,6 @@
            windowtitle="ImageJ API">
     </javadoc>
   </target>
-  
-  
-   </project>
 
+
+</project>
