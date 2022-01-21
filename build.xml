@@ -2,45 +2,50 @@
 
 <project name="ImageJ" default="run">
 
+  <property name="build.dir" value="build" />
+  <property name="jarfile" value="ij.jar" />
+  <property name="javadoc.dir" value="../api" />
+
+
   <target name="compile" description="Compile everything.">
     <!-- First, ensure the build directory exists. -->
-    <mkdir dir="build" />
+    <mkdir dir="${build.dir}" />
     <!-- Build everything; add debug="on" to debug -->
-    <javac srcdir="./ij" destdir="build" optimize="on" source="1.8" target="1.8" debug="on" includeantruntime="false" encoding="utf-8">
+    <javac srcdir="./ij" destdir="${build.dir}" optimize="on" source="1.8" target="1.8" debug="on" includeantruntime="false" encoding="utf-8">
     </javac>
   </target>
 
 
   <target name="build" depends="compile" description="Build ij.jar.">
     <!-- Copy needed files into the build directory. -->
-    <copy file="IJ_Props.txt" todir="build" />
-    <copy file="images/microscope.gif" tofile="build/microscope.gif" />
-    <copy file="images/about.jpg" tofile="build/about.jpg" />
-    <copy file="plugins/MacAdapter.class" tofile="build/ij/plugin/MacAdapter.class" />
-    <copy file="plugins/MacAdapter9.class" tofile="build/ij/plugin/MacAdapter9.class" />
-    <copy todir="build/macros"><fileset dir="macros"/></copy>
+    <copy file="IJ_Props.txt" todir="${build.dir}" />
+    <copy file="images/microscope.gif" tofile="${build.dir}/microscope.gif" />
+    <copy file="images/about.jpg" tofile="${build.dir}/about.jpg" />
+    <copy file="plugins/MacAdapter.class" tofile="${build.dir}/ij/plugin/MacAdapter.class" />
+    <copy file="plugins/MacAdapter9.class" tofile="${build.dir}/ij/plugin/MacAdapter9.class" />
+    <copy todir="${build.dir}/macros"><fileset dir="macros"/></copy>
     <!-- Build ij.jar. -->
-    <jar jarfile="ij.jar" basedir="build"
+    <jar jarfile="${jarfile}" basedir="${build.dir}"
          manifest="MANIFEST.MF" />
   </target>
 
 
   <target name="clean" description="Delete the build files.">
-    <delete dir="build" />
-    <delete file="ij.jar" />
+    <delete dir="${build.dir}" />
+    <delete file="${jarfile}" />
   </target>
 
 
   <target name="run" depends="build" description="Build and run ImageJ.">
-    <copy file="ij.jar" toDir=".." />
-    <java maxmemory="640m" jar="ij.jar" fork="yes" />
+    <copy file="${jarfile}" toDir=".." />
+    <java maxmemory="640m" jar="${jarfile}" fork="yes" />
   </target>
 
 
   <target name="run2" depends="build" description="Build and run ImageJ.">
     <!-- Run in ImageJ directory -->
-    <copy file="ij.jar" toDir=".." />
-    <java maxmemory="640m" dir=".." jar="ij.jar" fork="yes" />
+    <copy file="${jarfile}" toDir=".." />
+    <java maxmemory="640m" dir=".." jar="${jarfile}" fork="yes" />
   </target>
 
 
@@ -54,13 +59,13 @@
 
 
   <target name="javadocs" description="Build the JavaDocs.">
-    <delete dir="../api" />
-    <mkdir dir="../api" />
+    <delete dir="${javadoc.dir}" />
+    <mkdir dir="${javadoc.dir}" />
     <javadoc
            sourcepath="."
            encoding="utf-8"
            packagenames="ij.*"
-           destdir="../api"
+           destdir="${javadoc.dir}"
            author="true"
            version="true"
            use="true"
