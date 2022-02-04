@@ -334,6 +334,11 @@ public class OvalRoi extends Roi {
 		return sr.getFloatPolygon();
 	}
 
+	/** Returns this OvalRoi as a 4 point FloatPolygon (x,y,w,h). */
+	public FloatPolygon getFloatPolygon4() {
+		return super.getFloatPolygon();
+	}
+
 	/** Returns the number of corner points in the mask of this selection; equivalent to getPolygon().npoints. */
 	public int size() {
 		return getPolygon().npoints;

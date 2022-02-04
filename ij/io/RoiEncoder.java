@@ -160,7 +160,18 @@ public class RoiEncoder {
 		putShort(RoiDecoder.BOTTOM, r.y+r.height);
 		putShort(RoiDecoder.RIGHT, r.x+r.width);	
 		if (roi.subPixelResolution() && (type==rect||type==oval)) {
-			FloatPolygon p = roi.getFloatPolygon();
+			FloatPolygon p = null;
+			if (roi instanceof OvalRoi)
+				p = ((OvalRoi)roi).getFloatPolygon4();
+			else {
+				int d = roi.getCornerDiameter();
+				if (d>0) {
+					roi.setCornerDiameter(0);
+					p = roi.getFloatPolygon();
+					roi.setCornerDiameter(d);
+				} else
+					p = roi.getFloatPolygon();
+			}
 			if (p.npoints==4) {
 				putFloat(RoiDecoder.XD, p.xpoints[0]);
 				putFloat(RoiDecoder.YD, p.ypoints[0]);

@@ -7,6 +7,7 @@ import ij.util.Tools;
 import ij.io.FileOpener;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.Rectangle2D;
 
 /** Implements the Analyze/Set Scale command. */
 public class ScaleDialog implements PlugInFilter {
@@ -34,10 +35,17 @@ public class ScaleDialog implements PlugInFilter {
 		String scale = "<no scale>";
 		int digits = 2;
 		Roi roi = imp.getRoi();
-		if (roi!=null && (roi instanceof Line)) {
-			measured = ((Line)roi).getRawLength();
-			length = IJ.d2s(measured, 2);
+		if (roi!=null) {
+			if (roi instanceof Line) {
+				measured = ((Line)roi).getRawLength();
+				length = IJ.d2s(measured, 2);
+			} else if (roi.getType()==Roi.RECTANGLE) {
+				Rectangle2D r = roi.getFloatBounds();
+				measured = Math.max(r.getWidth(),r.getHeight());
+				length = IJ.d2s(measured, 2);
+			}
 		}
+
 		if (isCalibrated) {
 			if (measured!=0.0)
 				known = measured*cal.pixelWidth;

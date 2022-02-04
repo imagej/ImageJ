@@ -452,6 +452,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 				if (amin>9999.0*s||amax>9999.0*s) digits = 1;
 				if (amin>99999.0*s||amax>99999.0*s) digits = 0;
 				if (amin>9999999.0*s||amax>9999999.0*s) digits = -2;
+				if ((amin>0&&amin<0.001)||(amax>0&&amax<0.001)) digits = -2;
 			}
 			String minString = IJ.d2s(min, min==0.0?0:digits) + blankLabel8;
 			minLabel.setText(minString.substring(0,blankLabel8.length()));
@@ -872,8 +873,8 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		double maxValue = cal.getCValue(max);
 		int channels = imp.getNChannels();
 		GenericDialog gd = new GenericDialog("Set Display Range");
-		gd.addNumericField("Minimum displayed value: ", minValue, digits, 7, "");
-		gd.addNumericField("Maximum displayed value: ", maxValue, digits, 7, "");
+		gd.addNumericField("Minimum displayed value: ", minValue, digits, 9, "");
+		gd.addNumericField("Maximum displayed value: ", maxValue, digits, 9, "");
 		gd.addChoice("Unsigned 16-bit range:", sixteenBitRanges, sixteenBitRanges[get16bitRangeIndex()]);
 		String label = "Propagate to all other ";
 		label = imp.isComposite()?label+channels+" channel images":label+"open images";
@@ -1076,9 +1077,9 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 				Recorder.record("setMinAndMax", imin, imax);
 		} else {
 			if (Recorder.scriptMode())
-				Recorder.recordCall("imp.setDisplayRange("+IJ.d2s(min,2)+", "+IJ.d2s(max,2)+");");
+				Recorder.recordCall("imp.setDisplayRange("+ResultsTable.d2s(min,2)+", "+ResultsTable.d2s(max,2)+");");
 			else
-				Recorder.record("setMinAndMax", IJ.d2s(min,2), IJ.d2s(max,2));
+				Recorder.recordString("setMinAndMax("+ResultsTable.d2s(min,2)+", "+ResultsTable.d2s(max,2)+");");
 		}
 	}
 

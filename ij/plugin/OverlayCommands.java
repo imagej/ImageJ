@@ -427,10 +427,6 @@ public class OverlayCommands implements PlugIn {
 			int c = rois[i].getCPosition();
 			int z = rois[i].getZPosition();
 			int t = rois[i].getTPosition();
-			if (imp!=null && imp.getNChannels()==1 && imp.getNSlices()==1 && imp.getNFrames()>1) {
-				t = z;
-				z = 0;
-			}
 			rt.setValue("Index", i, i);
 			rt.setValue("Name", i, rois[i].getName());
 			rt.setValue("Type", i, rois[i].getTypeAsString());

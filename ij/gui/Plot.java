@@ -3450,20 +3450,26 @@ public class Plot implements Cloneable {
 	void drawFloatPolyline(ImageProcessor ip, float[] x, float[] y, int n) {
 		if (x==null || x.length==0) return;
 		int x1, y1;
-		boolean isNaN1;
+		boolean isNaN0;
+		boolean isNaN1 = true; //no previous point
 		int x2 = scaleX(x[0]);
 		int y2 = scaleY(y[0]);
-		boolean isNaN2 = Float.isNaN(x[0]) || Float.isNaN(y[0]) || (logXAxis && x[0]<=0) || (logYAxis && y[0]<=0);;
+		boolean isNaN2 = Float.isNaN(x[0]) || Float.isNaN(y[0]) || (logXAxis && x[0]<=0) || (logYAxis && y[0]<=0);
 		for (int i=1; i<n; i++) {
 			x1 = x2;
 			y1 = y2;
+			isNaN0 = isNaN1;
 			isNaN1 = isNaN2;
 			x2 = scaleX(x[i]);
 			y2 = scaleY(y[i]);
 			isNaN2 = Float.isNaN(x[i]) || Float.isNaN(y[i]) || (logXAxis && x[i]<=0) || (logYAxis && y[i]<=0);
 			if (!isNaN1 && !isNaN2)
 				ip.drawLine(x1, y1, x2, y2);
+			else if (isNaN0 && !isNaN1 && isNaN2) // an isolated point
+				ip.drawLine(x1, y1, x1, y1);
 		}
+		if (isNaN1 && !isNaN2)
+			ip.drawLine(x2, y2, x2, y2);          // the last (isolated) point
 	}
 
 	/**

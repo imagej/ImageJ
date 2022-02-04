@@ -338,10 +338,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (overlay==null) break;
 			Roi roi = overlay.get(i);
 			if (roi==null) break;
+			int c = roi.getCPosition();
+			int z = roi.getZPosition();
+			int t = roi.getTPosition();
 			if (hyperstack) {
-				int c = roi.getCPosition();
-				int z = roi.getZPosition();
-				int t = roi.getTPosition();
 				int position = roi.getPosition();
 				//IJ.log(c+" "+z+" "+t+"  "+position+" "+roiManagerShowAllMode);
 				if (position>0) {
@@ -353,12 +353,18 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				if (((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame)) || roiManagerShowAllMode)
 					drawRoi(g, roi, drawLabels?i+LIST_OFFSET:-1);
 			} else {
-				int position =  stackSize>1?roi.getPosition():0;
+				int position = stackSize>1?roi.getPosition():0;
+				if (position==0 && c==1) {
+					if (z==1)
+						position = t;
+					else if (t==1)
+						position = z;
+				}
 				if (position==0 && stackSize>1)
 					position = getSliceNumber(roi.getName());
 				if (position>0 && imp.getCompositeMode()==IJ.COMPOSITE)
 					position = 0;
-				//IJ.log(position+"  "+currentImage+" "+roiManagerShowAllMode);
+				//IJ.log(position+"  "+currentImage+" "+roiManagerShowAllMode+" "+c+" "+z+" "+t);
 				if (position==0 || position==currentImage || roiManagerShowAllMode)
 					drawRoi(g, roi, drawLabels?i+LIST_OFFSET:-1);
 			}

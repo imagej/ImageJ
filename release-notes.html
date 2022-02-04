@@ -5,8 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.53p6 19 January 2022</u>
+<li> <u>1.53p20 4 February 2022</u>
 <ul>
+<li> Thanks to Stein Rorvik, <i>Analyze&gt;Set Scale</i>,
+when there is a rectangular selection, sets "Distance in pixels" to the
+largest of the selections's width and height.
+<li> Thanks to Alan Brooks, the "B&C" dialog now uses scientific
+notation for small (less than 0.001) values.
 <li> Thanks to Michael Schmid, the macro line number is added to the
 "Exception" window when a macro causes an exception
 (<a href="http://wsr.imagej.net/macros/MacroException.ijm">example</a>).
@@ -17,6 +22,31 @@ method.
 <li> Thanks to Peter Lunding Jensen, fixed bugs that caused
 the <i>File&gt;New&gt;Hyperstack</i> command to incorrectly
 label RGB hyperstacks.
+<li> Thanks to 'ALisboa', fixed a bug that caused the
+<i>File&gt;Import&gt;Image Sequence</i> command
+to throw an exception if the directory path was
+invalid.
+<li> Fixed bugs that caused saved sub-pixel resolution rounded rectangle
+and oval ROIs to not be reopened correctly
+(<a href="http://wsr.imagej.net/macros/js/SubPixelSelections.js">example</a>).
+<li> Thanks to Michael Schmid, fixed a bug that caused
+"Synchronize Windows" to throw a NullPointerException when
+using the "Close All" command.
+<li> Thanks to Michael Schmid, fixed a bug that caused
+zero-length lines and isolated points in lines to not
+be shown in plots.
+<li> Thanks to Michael Mell, fixed a bug that caused
+ROIs in an overlay on a single channel 3D image to not
+be displayed correctly if the position was set using
+roi.setPosition(c,z,t).
+<li> Thanks to Kenta Shimamoto and Christoph Gohlke,
+fixed a bug that caused tiff images larger than 2 GB
+to open vertically inverted.
+<li> Fixed a 1.53j regression that caused activation
+of ROIs in an overlay by double clicking on a row
+in an "Overlay Elements of..." table to not work
+as expected.
+
 </ul>
 
 <li> <u>1.53o 11 January 2022</u>

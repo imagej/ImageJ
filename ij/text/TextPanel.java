@@ -344,8 +344,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if (overlay==null)
 			return;
 		String[] columns = s.split("\t");
-		int index = (int)Tools.parseDouble(columns[0]);
+		int index = (int)Tools.parseDouble(columns[1]);
 		Roi roi = overlay.get(index);
+		if (roi==null)
+			return;
 		if (imp.isHyperStack()) {
 			int c = roi.getCPosition();
 			int z = roi.getZPosition();

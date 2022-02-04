@@ -145,8 +145,10 @@ public class FolderOpener implements PlugIn, TextListener {
 		String[] list = file.list();
 		if (list==null) {
 			String parent = file.getParent();
-			file = new File(parent);
-			list = file.list();
+			if (parent!=null) {
+				file = new File(parent);
+				list = file.list();
+			}
 			if (list!=null)
 				directory = parent;
 			else {

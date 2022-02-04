@@ -664,8 +664,10 @@ public class SyncWindows extends PlugInFrame implements
 
 			// Add Windows to list, select windows, that previously were selected
 			for(int n=0; n<imageIDs.length;++n) {
+				ImagePlus imp = WindowManager.getImage(imageIDs[n]);
+				if (imp == null) continue;	//image may have been closed in the meanwhile (e.g. 'Close All')
 				vListMap.addElement(new Integer(imageIDs[n]));
-				wList.add(WindowManager.getImage(imageIDs[n]).getTitle());
+				wList.add(imp.getTitle());
 				if ( vwins != null && vwins.contains(new Integer(imageIDs[n])) ) {
 					wList.select(n);
 				}
@@ -682,6 +684,7 @@ public class SyncWindows extends PlugInFrame implements
 
 			wList.addItemListener(this);
 			wList.addActionListener(this);
+			//wList.addKeyListener(ijInstance); //would cause ImageJ to zoom when up/down arrows are pressed
 			return (Component)wList;
 		}
 		else {
@@ -702,30 +705,36 @@ public class SyncWindows extends PlugInFrame implements
 
 		// Checkbox: synchronize cursor
 		cCursor = new Checkbox("Sync cursor", true);
+		cCursor.addKeyListener(ijInstance);
 		p.add(cCursor);
 
 		// Checkbox: propagate slice
 		cSlice = new Checkbox("Sync z-slices",true);
+		cSlice.addKeyListener(ijInstance);
 		p.add(cSlice);
 
 //		TODO: Give functionality to Synchronize Channels and Synchronize t-Frames checkboxes.
 
 		// Checkbox: synchronize channels (for hyperstacks)
 		cChannel = new Checkbox("Sync channels", true);
+		cChannel.addKeyListener(ijInstance);
 		p.add(cChannel);
 
 		// Checkbox: synchronize time-frames (for hyperstacks)
 		cFrame = new Checkbox("Sync t-frames", true);
+		cFrame.addKeyListener(ijInstance);
 		p.add(cFrame);
 
 		// Checkbox: image coordinates
 		cCoords = new Checkbox("Image coordinates", true);
 		cCoords.addItemListener(this);
+		cCoords.addKeyListener(ijInstance);
 		p.add(cCoords);
 
 		// Checkbox: image scaling (take pixel scale and offset into account)
 		cScaling = new Checkbox("Image scaling", false);
 		cScaling.addItemListener(this);
+		cScaling.addKeyListener(ijInstance);
 		p.add(cScaling);
 
 
@@ -733,11 +742,13 @@ public class SyncWindows extends PlugInFrame implements
 		// Synchronize all windows.
 		bSyncAll = new Button("Synchronize All");
 		bSyncAll.addActionListener(this);
+		bSyncAll.addKeyListener(ijInstance);
 		p.add(bSyncAll);
 
 		// Unsynchronize all windows.
 		bUnsyncAll = new Button("Unsynchronize All");
 		bUnsyncAll.addActionListener(this);
+		bUnsyncAll.addKeyListener(ijInstance);
 		p.add(bUnsyncAll);
 
 		return p;
