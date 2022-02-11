@@ -376,7 +376,6 @@ public class Opener {
 				imp = null;
 				if (name.endsWith(".lsm"))
 					useHandleExtraFileTypes = true; // use LSM_Reader to opem .lsm files
-IJ.log("useHandleExtraFileTypes: "+useHandleExtraFileTypes+" "+path);
 				if (!useHandleExtraFileTypes)
 					imp = openUsingBioFormats(path);
 				useHandleExtraFileTypes = false;

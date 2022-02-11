@@ -503,7 +503,7 @@ public class TiffDecoder {
 							error("ImageJ cannot open 12-bit LZW-compressed TIFFs");
 					} else if (value==32773)  // PackBits compression
 						fi.compression = FileInfo.PACK_BITS;
-					else if (value==32946 || value==8)
+					else if (value==32946 || value==8) //8=Adobe deflate
 						fi.compression = FileInfo.ZIP;
 					else if (value!=1 && value!=0 && !(value==7&&fi.width<500)) {
 						// don't abort with Spot camera compressed (7) thumbnails

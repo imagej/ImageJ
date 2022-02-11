@@ -11,8 +11,8 @@ public class CompositeImage extends ImagePlus {
 
 	/** Display modes (note: TRANSPARENT mode has not yet been implemented) */
 	public static final int COMPOSITE=1, COLOR=2, GRAYSCALE=3, TRANSPARENT=4;
-	public static final int MAX_CHANNELS = 7;
-	public static final Color[] colors = {Color.red, Color.green, Color.blue, Color.white, Color.cyan, Color.magenta, Color.yellow};
+	public static final int MAX_CHANNELS = 8;
+	public static final Color[] colors = {Color.red, Color.green, Color.blue, Color.white, Color.cyan, Color.magenta, Color.yellow, Color.white};
 
 	int[] rgbPixels;
 	boolean newPixels;
