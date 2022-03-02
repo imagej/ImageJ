@@ -123,7 +123,7 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 			return Tools.split(str, "\n");
 	}
 	
-	/** Deletes the specified image, were 1<=n<=nslices. */
+	/** Deletes the specified image, where {@literal 1<=n<=nslices}. */
 	public void deleteSlice(int n) {
 		if (n<1 || n>nImages)
 			throw new IllegalArgumentException("Argument out of range: "+n);
@@ -135,7 +135,7 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 	}
 	
 	/** Returns an ImageProcessor for the specified slice,
-		were 1<=n<=nslices. Returns null if the stack is empty.
+		where {@literal 1<=n<=nslices}. Returns null if the stack is empty.
 	*/
 	public ImageProcessor getProcessor(int n) {
 		if (n<1 || n>nImages)

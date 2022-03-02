@@ -412,7 +412,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	}
 
 	/** Returns an ImageProcessor for the specified slice of this virtual stack (if it is one)
-     *  where 1<=n<=nslices. Returns null if no virtual stack or no slices or error reading the frame.
+     *  where {@literal 1<=n<=nslices}. Returns null if no virtual stack or no slices or error reading the frame.
 	 */
 	public synchronized ImageProcessor getProcessor(int n) {
 		if (frameInfos==null || frameInfos.size()==0 || raFilePath==null)
@@ -465,7 +465,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 	}
 
 	/** Deletes the specified image from this virtual stack (if it is one),
-	 *	where 1<=n<=nslices. */
+	 *	where {@literal 1<=n<=nslices}. */
 	public void deleteSlice(int n) {
 		if (frameInfos==null || frameInfos.size()==0) return;
 		if (n<1 || n>frameInfos.size())

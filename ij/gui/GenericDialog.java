@@ -422,7 +422,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 
 	public ImagePlus getNextImage() {
-		return WindowManager.getImage(windowIDs[getNextChoiceIndex()]);
+		int index = getNextChoiceIndex();
+		return index<0 ? null :  WindowManager.getImage(windowIDs[index]);
 	}
 
 	/**

@@ -5,11 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.53p24 11 February 2022</u>
+<li> <u>1.53p31 1 March 2022</u>
 <ul>
 <li> Thanks to Stein Rorvik, <i>Analyze&gt;Set Scale</i>,
 when there is a rectangular selection, sets "Distance in pixels" to the
 largest of the selections's width and height.
+<li> Thanks to Ron DeSpain, drag and drop sets the default path to the
+source folder. The default path is listed in the
+<i>Plugins&gt;Utilities&gt;ImageJ Properties</i> output
+as “Current dir”.
 <li> Thanks to Alan Brooks, the "B&C" dialog now uses scientific
 notation for small (less than 0.001) values.
 <li> Thanks to Michael Schmid, the macro line number is added to the
@@ -19,6 +23,7 @@ notation for small (less than 0.001) values.
 of channels in composite mode) from 7 to 8.
 <li> Thanks to 'JWinchester', added the recordable File.openSequence(path,options)
 macro function. DOCUMENT
+<li> Added the Roi.setUnscalableStrokeWidth() macro function. DOCUMENT
 <li> Thanks to Michael Schmid, added the ResultsTable.setValues()
 method.
 <li> Thanks to Peter Lunding Jensen, fixed bugs that caused
@@ -44,6 +49,10 @@ roi.setPosition(c,z,t).
 <li> Thanks to Kenta Shimamoto and Christoph Gohlke,
 fixed a bug that caused tiff images larger than 2 GB
 to open upside down.
+<li> Thanks to Thomas Laurent, fixed a bug that caused
+a double-click on the rectangle ROI icon to display
+both the "ROI Defaults" dialog and
+the “right-click” menu.
 <li> Fixed a 1.53j regression that caused activation
 of ROIs in an overlay by double clicking on a row
 in an "Overlay Elements of..." table to not work
@@ -51,6 +60,10 @@ as expected.
 <li> Thanks to 'hwada', fixed a 1.53i regression that
 caused an extra click to be needed to activate and move
 an ROI in an overlay with labels.
+<li> Thanks to Gabriel Landini, fixed a 1.53g regression that caused
+the <i>File&gt;New&gt;Image</i> command to not
+work as expected when creating stacks and "Fill with" was
+"white" or "ramp".
 
 </ul>
 

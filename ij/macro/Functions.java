@@ -41,6 +41,7 @@ public class Functions implements MacroConstants, Measurements {
 	PrintWriter writer;
 	boolean altKeyDown, shiftKeyDown;
 	boolean antialiasedText;
+	boolean nonScalableText;
 	StringBuffer buffer;
 	RoiManager roiManager;
 	Properties props;
@@ -3169,9 +3170,10 @@ public class Functions implements MacroConstants, Measurements {
 			antialiasedText = false;
 			if (interp.nextToken()==',') {
 				String styles = getLastString().toLowerCase();
-				if (styles.indexOf("bold")!=-1) style += Font.BOLD;
-				if (styles.indexOf("italic")!=-1) style += Font.ITALIC;
-				if (styles.indexOf("anti")!=-1) antialiasedText = true;
+				if (styles.contains("bold")) style += Font.BOLD;
+				if (styles.contains("italic")) style += Font.ITALIC;
+				if (styles.contains("anti")) antialiasedText = true;
+				if (styles.contains("nonscal")) nonScalableText = true;
 			} else
 				interp.getRightParen();
 		}
@@ -4106,7 +4108,7 @@ public class Functions implements MacroConstants, Measurements {
 			} else if (name.equals("getImageChoice")) {
 				interp.getParens();
 				ImagePlus imp = gd.getNextImage();
-				return imp.getTitle();
+				return imp!=null?imp.getTitle():"";
 			} else if (name.equals("getRadioButton")) {
 				interp.getParens();
 				return gd.getNextRadioButton();
@@ -7019,6 +7021,8 @@ public class Functions implements MacroConstants, Measurements {
 			roi.setAntiAlias(false);
 		roi.setAngle(angle);
 		roi.setJustification(justification);
+		if (nonScalableText)
+			roi.setNonScalable(true);
 		addRoi(imp, roi);
 		return Double.NaN;
 	}
@@ -7814,6 +7818,9 @@ public class Functions implements MacroConstants, Measurements {
 			else if (str.equals("right"))
 				just = TextRoi.RIGHT;
 			((TextRoi)roi).setJustification(just);
+			return null;
+		} else if (name.equals("setUnscalableStrokeWidth")) {
+			roi.setUnscalableStrokeWidth(getArg());
 			return null;
 		} else
 			interp.error("Unrecognized Roi function");

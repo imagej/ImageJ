@@ -98,14 +98,14 @@ public class NewImage {
 						break;
 					case RGB: pixels2 = new int[width*height];
 						if (fill==FILL_NOISE) {
-						 if (signedInt)
-							fillNoiseInt(new IntProcessor(width,height,(int[])pixels2));
-						else
-							fillNoiseRGB(new ColorProcessor(width,height,(int[])pixels2), false);
+							if (signedInt)
+								fillNoiseInt(new IntProcessor(width,height,(int[])pixels2));
+							else
+								fillNoiseRGB(new ColorProcessor(width,height,(int[])pixels2), false);
 						}
 						break;
 				}
-				if (signedInt && (fill==FILL_WHITE||fill==FILL_RAMP) || ((type==RGB)&&(fill!=FILL_NOISE)))
+				if (fill==FILL_WHITE||fill==FILL_RAMP)
 					System.arraycopy(ip.getPixels(), 0, pixels2, 0, width*height);
 				stack.addSlice(null, pixels2);
 				if (IJ.escapePressed()) {IJ.beep(); break;};

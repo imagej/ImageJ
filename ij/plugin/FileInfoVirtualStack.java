@@ -177,7 +177,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		return s!=null&&s.equals("true")?true:false;
 	}
 
-	/** Deletes the specified image, were 1<=n<=nImages. */
+	/** Deletes the specified image, where {@literal 1<=n<=nImages}. */
 	public void deleteSlice(int n) {
 		if (n<1 || n>nImages)
 			throw new IllegalArgumentException("Argument out of range: "+n);
@@ -189,7 +189,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 	}
 	
 	/** Returns an ImageProcessor for the specified image,
-		were 1<=n<=nImages. Returns null if the stack is empty.
+		where {@literal 1<=n<=nImages}. Returns null if the stack is empty.
 	*/
 	public ImageProcessor getProcessor(int n) {
 		n = translate(n);  // update n for hyperstacks not in default CZT order

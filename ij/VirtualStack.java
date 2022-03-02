@@ -105,7 +105,7 @@ public class VirtualStack extends ImageStack {
 	public void addSlice(String sliceLabel, ImageProcessor ip, int n) {
 	}
 
-	/** Deletes the specified slice, were 1<=n<=nslices. */
+	/** Deletes the specified slice, where {@literal 1<=n<=nslices}. */
 	public void deleteSlice(int n) {
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException("Argument out of range: "+n);
@@ -124,7 +124,7 @@ public class VirtualStack extends ImageStack {
 			deleteSlice(n);
 	}
 	   
-   /** Returns the pixel array for the specified slice, were 1<=n<=nslices. */
+   /** Returns the pixel array for the specified slice, where {@literal 1<=n<=nslices}. */
 	public Object getPixels(int n) {
 		ImageProcessor ip = getProcessor(n);
 		if (ip!=null)
@@ -133,15 +133,15 @@ public class VirtualStack extends ImageStack {
 			return null;
 	}		
 	
-	 /** Assigns a pixel array to the specified slice,
-		were 1<=n<=nslices. */
+	/** Assigns a pixel array to the specified slice, where {@literal 1<=n<=nslices}. */
 	public void setPixels(Object pixels, int n) {
 	}
 
-   /** Returns an ImageProcessor for the specified slice,
-		were 1<=n<=nslices. Returns null if the stack is empty.
+	/** Returns an ImageProcessor for the specified slice,
+	 * where {@literal 1<=n<=nslices}. Returns null if
+	 * the stack is empty.
 	*/
-	public ImageProcessor getProcessor(int n) {
+     public ImageProcessor getProcessor(int n) {
 		if (path==null) {  //Help>Examples?JavaScript>Terabyte VirtualStack
 			ImageProcessor ip = null;
 			int w=getWidth(), h=getHeight();
@@ -287,7 +287,7 @@ public class VirtualStack extends ImageStack {
 		return IJ.addSeparator(path);
 	}
 		
-	/** Returns the file name of the specified slice, were 1<=n<=nslices. */
+	/** Returns the file name of the specified slice, where {@literal 1<=n<=nslices}. */
 	public String getFileName(int n) {
 		return names[n-1];
 	}

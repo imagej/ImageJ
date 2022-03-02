@@ -195,6 +195,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 					}
 					OpenDialog.setLastDirectory(f.getParent()+File.separator);
 					OpenDialog.setLastName(f.getName());
+					OpenDialog.setDefaultDirectory(f.getParent());
 				}
 			} else {
 				IJ.log("File not found: " + path);

@@ -13,6 +13,7 @@ import ij.util.Tools;
 */
 public class Benchmark implements PlugIn {
     private String[] results = {
+        " 9.5|MacBook Pro (M1 Max, 2021)",
         "10.9|MacBook Air (M1, 2020, Native)",
         "17.2|iMac Pro (2017)",
         "18.1|MacBook Air (M1, 2020, Rosetta)",

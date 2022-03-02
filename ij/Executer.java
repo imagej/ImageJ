@@ -10,6 +10,7 @@ import java.io.*;
 import java.util.*;
 import java.awt.event.KeyEvent;
 import java.awt.Menu;
+import java.awt.GraphicsEnvironment;
 
 
 /** Runs ImageJ menu commands in a separate thread.*/
@@ -160,8 +161,10 @@ public class Executer implements Runnable {
 			if (openRecent(cmd))
 				return;
 			// is it an example in Help>Examples menu?
-			if (Editor.openExample(cmd))
+			if (IJ.getInstance()!=null && !GraphicsEnvironment.isHeadless()) {
+				Editor.openExample(cmd);
 				return;
+			}
 			if ("Auto Threshold".equals(cmd)&&(String)table.get("Auto Threshold...")!=null)
 				runCommand("Auto Threshold...");
 			else if ("Enhance Local Contrast (CLAHE)".equals(cmd)&&(String)table.get("CLAHE ")!=null)

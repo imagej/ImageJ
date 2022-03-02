@@ -98,7 +98,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private Timer pressTimer;
 	private static int longClickDelay = 600; //ms
 	private boolean disableRecording;
-
+	
 	private static Color foregroundColor = Prefs.getColor(Prefs.FCOLOR,Color.white);
 	private static Color backgroundColor = Prefs.getColor(Prefs.BCOLOR,Color.black);
 	private static double foregroundValue = Double.NaN;
@@ -1203,6 +1203,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	public void mousePressed(final MouseEvent e) {
+		boolean disablePopup = false;
 		int x = e.getX();
 		if (inGap(x))
 			return;
@@ -1239,8 +1240,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				case RECTANGLE:
 					if (rectType==ROUNDED_RECT_ROI)
 						IJ.doCommand("Rounded Rect Tool...");
-					else
+					else {
+						disablePopup = true;
 						IJ.doCommand("Roi Defaults...");
+					}
 					break;
 				case OVAL:
 					showBrushDialog();
@@ -1277,7 +1280,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			}
 		}
 
-		if (!isRightClick && longClickDelay>0) {
+		if (!isRightClick && longClickDelay>0 && !disablePopup) {
 			if (pressTimer==null)
 				pressTimer = new Timer();			
 			pressTimer.schedule(new TimerTask() {
