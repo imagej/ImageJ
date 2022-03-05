@@ -394,7 +394,7 @@ public class ResultsTable implements Cloneable {
 		return rt;
 	}
 
-	/** Returns true if the specified column exists and is not empty. */
+	/** Returns 'true' if the specified column exists and is not empty. */
 	public boolean columnExists(int column) {
 		if ((column<0) || (column>=maxColumns))
 			return false;

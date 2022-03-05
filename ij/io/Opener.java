@@ -58,9 +58,9 @@ public class Opener {
 	 * the user. Displays an error message if the selected file is not
 	 * in a supported format. This is the method that
 	 * ImageJ's File/Open command uses to open files.
-	 * @see ij.IJ#open()
+	 * @see ij.IJ#open
 	 * @see ij.IJ#open(String)
-	 * @see ij.IJ#openImage()
+	 * @see ij.IJ#openImage
 	 * @see ij.IJ#openImage(String)
 	*/
 	public void open() {
@@ -227,7 +227,8 @@ public class Opener {
 	 * or is not found. Displays a file open dialog if 'path'
 	 * is null or an empty string.
 	 * @see ij.IJ#openImage(String)
-	 * @see ij.IJ#openImage()
+	 * @see ij.IJ#openImage
+	 * @see #openUsingBioFormats
 	*/
 	public ImagePlus openImage(String path) {
 		if (path==null || path.equals(""))

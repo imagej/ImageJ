@@ -7111,8 +7111,10 @@ public class Functions implements MacroConstants, Measurements {
 			return new Variable(getResult(getRT(null)));
 		else if (name.equals("getColumn"))
 			return getColumn();
-		else if (name.equals("getString"))
-			return new Variable(getResultString(getRT(null)));
+		else if (name.equals("getColumn"))
+			return getColumn();
+		else if (name.equals("columnExists"))
+			return columnExists();
 		else if (name.equals("set"))
 			return setTableValue();
 		else if (name.equals("setColumn"))
@@ -7366,6 +7368,12 @@ public class Functions implements MacroConstants, Measurements {
 		return column;
 	}
 
+	private Variable columnExists() {
+		String col = getFirstString();
+		ResultsTable rt = getResultsTable(getTitle());
+		return new Variable(rt.columnExists(col)?1:0);
+	}
+	
 	private Variable renameColumn() {
 		String oldName = getFirstString();
 		String newName = getNextString();

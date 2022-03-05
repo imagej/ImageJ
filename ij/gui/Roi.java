@@ -2013,6 +2013,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	 * the width to 0.0 and the ROI will be drawn using a
 	 * a 1 pixel stroke width regardless of the magnification.
 	 * @see #setDefaultStrokeWidth(double)
+	 * @see #setUnscalableStrokeWidth(double)	 
 	 * @see #setStrokeColor(Color)
 	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
@@ -2043,6 +2044,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		setStrokeWidth((float)strokeWidth);
 	}
 
+	/** Sets the width of the line used to draw this ROI and
+	 * prevents the width from increasing when the image
+	 * is zoomed.
+	*/
 	public void setUnscalableStrokeWidth(double strokeWidth) {
 		setStrokeWidth((float)strokeWidth);
 		scaleStrokeWidth = false;

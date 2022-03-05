@@ -1946,12 +1946,13 @@ public class IJ {
 	}
 
 	/** Opens the specified file as a tiff, bmp, dicom, fits, pgm, gif, jpeg 
-		or text image and returns an ImagePlus object if successful.
-		Calls HandleExtraFileTypes plugin if the file type is not recognised.
-		Displays a file open dialog if 'path' is null or an empty string.
-		Note that 'path' can also be a URL. Some reader plugins, including
-		the Bio-Formats plugin, display the image and return null.
-		Use IJ.open() to display a file open dialog box.
+	 * or text image and returns an ImagePlus object if successful.
+	 * Calls HandleExtraFileTypes plugin if the file type is not recognised.
+	 * Displays a file open dialog if 'path' is null or an empty string.
+	 * Note that 'path' can also be a URL. Some reader plugins, including
+	 * the Bio-Formats plugin, display the image and return null.
+	 * Use IJ.open() to display a file open dialog box.
+	 * @see ij.io.Opener#openUsingBioFormats(String)
 	*/
 	public static ImagePlus openImage(String path) {
 		macroRunning = true;
@@ -1992,7 +1993,7 @@ public class IJ {
 			if (len>5242880L)
 				return "<Error: file is larger than 5MB>";
 			InputStream in = u.openStream();
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
 			sb = new StringBuffer() ;
 			String line;
 			while ((line=br.readLine()) != null)
@@ -2464,7 +2465,7 @@ public class IJ {
 	
 	/** Returns, as an array of strings, a list of the LUTs in the 
 	 * Image/Lookup Tables menu.
-	 * @see ij.plugin#LutLoader.getLut
+	 * @see ij.plugin.LutLoader#getLut
 	 * See also: Help>Examples>JavaScript/Show all LUTs
 	 * and Image/Color/Display LUTs
 	*/

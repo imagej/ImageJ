@@ -79,7 +79,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.53p";
-	public static final String BUILD = ""; //31
+	public static final String BUILD = ""; //33;
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -898,7 +898,7 @@ public class ImageJ extends Frame implements ActionListener,
 		progressBar.init((int)(ProgressBar.WIDTH*scale), (int)(ProgressBar.HEIGHT*scale));
 		pack();
 	}
-		
+	
   /** Handles exceptions on the EDT. */
   public static class ExceptionHandler implements Thread.UncaughtExceptionHandler {
 
