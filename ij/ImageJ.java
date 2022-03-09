@@ -78,8 +78,8 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
-	public static final String VERSION = "1.53p";
-	public static final String BUILD = ""; //33;
+	public static final String VERSION = "1.53q";
+	public static final String BUILD = "2";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -465,9 +465,9 @@ public class ImageJ extends Frame implements ActionListener,
 			Hashtable macroShortcuts = Menus.getMacroShortcuts();
 			if (macroShortcuts.size()>0) {
 				if (shift)
-					cmd = (String)macroShortcuts.get(new Integer(keyCode+200));
+					cmd = (String)macroShortcuts.get(Integer.valueOf(keyCode+200));
 				else
-					cmd = (String)macroShortcuts.get(new Integer(keyCode));
+					cmd = (String)macroShortcuts.get(Integer.valueOf(keyCode));
 				if (cmd!=null) {
 					commandName = cmd;
 					MacroInstaller.runMacroShortcut(cmd);
@@ -485,9 +485,9 @@ public class ImageJ extends Frame implements ActionListener,
 		if ((!Prefs.requireControlKey||control||meta||functionKey||numPad) && keyChar!='+') {
 			Hashtable shortcuts = Menus.getShortcuts();
 			if (shift && !functionKey)
-				cmd = (String)shortcuts.get(new Integer(keyCode+200));
+				cmd = (String)shortcuts.get(Integer.valueOf(keyCode+200));
 			else
-				cmd = (String)shortcuts.get(new Integer(keyCode));
+				cmd = (String)shortcuts.get(Integer.valueOf(keyCode));
 		}
 		
 		if (cmd==null) {

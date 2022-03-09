@@ -492,10 +492,10 @@ public class ControlPanel implements PlugIn {
 		JFrame frame = panel.getFrame();
 		if (frame!=null) {
 			Rectangle rect=frame.getBounds();
-			String xCoord = (new Integer(rect.x)).toString();
-			String yCoord = (new Integer(rect.y)).toString();
-			String width = (new Integer(rect.width)).toString();
-			String height = (new Integer(rect.height)).toString();
+			String xCoord = (Integer.valueOf(rect.x)).toString();
+			String yCoord = (Integer.valueOf(rect.y)).toString();
+			String width = (Integer.valueOf(rect.width)).toString();
+			String height = (Integer.valueOf(rect.height)).toString();
 			if (pTitle.equals("Control_Panel")) pTitle = "Control_Panel.@Main";
 			String geometry = xCoord+" "+yCoord+" "+width+" "+height;
 			if (IJ.debugMode) IJ.log("CP.recordGeometry: "+pTitle+" "+geometry);

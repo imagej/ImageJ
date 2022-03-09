@@ -345,7 +345,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		// avoid conflicts with ImageJ menu shortcuts.
 		if (len==1 || shortcut.equals("N+") || shortcut.equals("N-") ) {
 			Hashtable macroShortcuts = Menus.getMacroShortcuts();
-			macroShortcuts.put(new Integer(code), commandPrefix+name);
+			macroShortcuts.put(Integer.valueOf(code), commandPrefix+name);
 			nShortcuts++;
 			if(!bothNumKeys)
 				return;
@@ -355,14 +355,14 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			code = Menus.convertShortcutToCode(shortcut);
 		}
 		Hashtable shortcuts = Menus.getShortcuts();
-		if (shortcuts.get(new Integer(code))!=null) {
+		if (shortcuts.get(Integer.valueOf(code))!=null) {
 			if (shortcutsInUse==null)
 				shortcutsInUse = "\n \n";
 			shortcutsInUse += "	  " + name + "\n";
 			inUseCount++;
 			return;
 		}
-		shortcuts.put(new Integer(code), commandPrefix+name);
+		shortcuts.put(Integer.valueOf(code), commandPrefix+name);
 		nShortcuts++;
 	}
 	

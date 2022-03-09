@@ -143,7 +143,7 @@ public class SyncWindows extends PlugInFrame implements
 		ImagePlus imp = source.getImagePlus();
 		if (imp==null)
 			return false;
-		return vwins.contains(new Integer(imp.getID()));
+		return vwins.contains(Integer.valueOf(imp.getID()));
 	}
 
 	// --------------------------------------------------
@@ -666,9 +666,9 @@ public class SyncWindows extends PlugInFrame implements
 			for(int n=0; n<imageIDs.length;++n) {
 				ImagePlus imp = WindowManager.getImage(imageIDs[n]);
 				if (imp == null) continue;	//image may have been closed in the meanwhile (e.g. 'Close All')
-				vListMap.addElement(new Integer(imageIDs[n]));
+				vListMap.addElement(Integer.valueOf(imageIDs[n]));
 				wList.add(imp.getTitle());
-				if ( vwins != null && vwins.contains(new Integer(imageIDs[n])) ) {
+				if ( vwins != null && vwins.contains(Integer.valueOf(imageIDs[n])) ) {
 					wList.select(n);
 				}
 			}

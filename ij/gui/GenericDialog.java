@@ -704,7 +704,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		add(thisChoice, c);
 		choice.addElement(thisChoice);
 		int index = thisChoice.getSelectedIndex();
-		defaultChoiceIndexes.addElement(new Integer(index));
+		defaultChoiceIndexes.addElement(Integer.valueOf(index));
 		if (Recorder.record || macro)
 			saveLabel(thisChoice, label);
 	}
@@ -907,9 +907,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		tf.addFocusListener(this);
 		tf.addKeyListener(this);
 		numberField.addElement(tf);
-		sliderIndexes.add(new Integer(numberField.size()-1));
+		sliderIndexes.add(Integer.valueOf(numberField.size()-1));
 		sliderScales.add(new Double(scale));
-		sliderDigits.add(new Integer(digits));
+		sliderDigits.add(Integer.valueOf(digits));
 		defaultValues.addElement(new Double(defaultValue/scale));
 		defaultText.addElement(tf.getText());
 		tf.setEditable(true);

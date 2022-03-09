@@ -81,7 +81,7 @@ public class SubstackMaker implements PlugIn {
 			if (idx1>=1) {									// input displayed in range
 				String rngStart = userInput.substring(0, idx1);
 				String rngEnd = userInput.substring(idx1+1);
-				Integer obj = new Integer(rngStart);
+				Integer obj = Integer.valueOf(rngStart);
 				int first = obj.intValue();
 				int inc = 1;
 				int idx2 = rngEnd.indexOf("-");
@@ -89,10 +89,10 @@ public class SubstackMaker implements PlugIn {
 					String rngEndAndInc = rngEnd;
 					rngEnd = rngEndAndInc.substring(0, idx2);
 					String rngInc = rngEndAndInc.substring(idx2+1);
-					obj = new Integer(rngInc);
+					obj = Integer.valueOf(rngInc);
 					inc = obj.intValue();
 				}
-				obj = new Integer(rngEnd);
+				obj = Integer.valueOf(rngEnd);
 				int last = obj.intValue();
 				imp2 = stackRange(imp, first, last, inc, stackTitle);
 			} else {
@@ -106,12 +106,12 @@ public class SubstackMaker implements PlugIn {
 					int idx2 = userInput.indexOf(",");
 					if (idx2>0) {
 						String num = userInput.substring(0,idx2);
-						Integer obj = new Integer(num);
+						Integer obj = Integer.valueOf(num);
 						numList[i] = obj.intValue();
 						userInput = userInput.substring(idx2+1);
 					} else {
 						String num = userInput;
-						Integer obj = new Integer(num);
+						Integer obj = Integer.valueOf(num);
 						numList[i] = obj.intValue();
 					}
 				}

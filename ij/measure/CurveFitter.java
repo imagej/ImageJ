@@ -795,7 +795,7 @@ public class CurveFitter implements UserFunction{
 		if (namesTable == null) {
 			Hashtable<String,Integer> h = new Hashtable<String,Integer>();
 			for (int i=0; i<fitList.length; i++)
-				h.put(fitList[i], new Integer(i));
+				h.put(fitList[i], Integer.valueOf(i));
 			namesTable = h;
 		}
 		Integer i = (Integer)namesTable.get(fitName);

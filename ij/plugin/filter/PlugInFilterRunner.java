@@ -431,7 +431,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 	 */
 	private void announceSliceNumber(int slice) {
 		synchronized(sliceForThread){
-			Integer number = new Integer(slice);
+			Integer number = Integer.valueOf(slice);
 			sliceForThread.put(Thread.currentThread(), number);
 		}
 	}
