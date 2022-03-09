@@ -257,7 +257,7 @@ import java.security.MessageDigest;
 		final Double[] data = new Double[n];
 		for (int i=0; i<n; i++) {
 			indexes[i] = Integer.valueOf(i);
-			data[i] = new Double(values[i]);
+			data[i] = Double.valueOf(values[i]);
 		}
 		Arrays.sort(indexes, new Comparator<Integer>() {
 			public int compare(final Integer o1, final Integer o2) {

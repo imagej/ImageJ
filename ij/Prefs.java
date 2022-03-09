@@ -265,7 +265,7 @@ public class Prefs {
 		String s = ijPrefs.getProperty(KEY_PREFIX+key);
 		Double d = null;
 		if (s!=null) {
-			try {d = new Double(s);}
+			try {d = Double.valueOf(s);}
 			catch (NumberFormatException e) {d = null;}
 			if (d!=null)
 				return(d.doubleValue());
@@ -772,7 +772,7 @@ public class Prefs {
 		String s = props.getProperty(key);
 		Double d = null;
 		if (s!=null) {
-			try {d = new Double(s);}
+			try {d = Double.valueOf(s);}
 			catch (NumberFormatException e){d = null;}
 			if (d!=null)
 				return(d.doubleValue());

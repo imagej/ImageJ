@@ -1597,7 +1597,7 @@ public class ResultsTable implements Cloneable {
 		ComparableEntry[] ces = new ComparableEntry[size()];
 		ArrayList stringColumn = null;
 		if (stringColumns!=null)
-		    stringColumn = (ArrayList) stringColumns.get (new Integer (col));
+		    stringColumn = (ArrayList) stringColumns.get (Integer.valueOf(col));
 		for (int i = 0; i < size(); i++) {
 		    ComparableEntry ce = new ComparableEntry();
 		    ce.index = i;
@@ -1617,9 +1617,9 @@ public class ResultsTable implements Cloneable {
 		    ArrayList sc = null;
 		    Map scs =  stringColumns;
 		    	if (scs != null)
-			sc = (ArrayList) scs.get (new Integer (i));
+			sc = (ArrayList) scs.get (Integer.valueOf(i));
 		    if (sc != null) {
-				ArrayList sc2 = (ArrayList) rt2.stringColumns.get (new Integer (i));
+				ArrayList sc2 = (ArrayList) rt2.stringColumns.get (Integer.valueOf(i));
 				for (int j = 0; j < size(); j++)
 			    	sc.set (j, sc2.get (ces[j].index));
 		    }

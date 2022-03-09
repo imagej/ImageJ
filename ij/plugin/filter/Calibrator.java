@@ -387,7 +387,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	double getNum(StringTokenizer st) {
 		Double d;
 		String token = st.nextToken();
-		try {d = new Double(token);}
+		try {d = Double.valueOf(token);}
 		catch (NumberFormatException e){d = null;}
 		if (d!=null)
 			return(d.doubleValue());

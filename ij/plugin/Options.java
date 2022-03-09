@@ -63,7 +63,7 @@ public class Options implements PlugIn {
 			FloatBlitter.divideByZeroValue = Float.MAX_VALUE;
 		else {
 			Float f;
-			try {f = new Float(divValue);}
+			try {f = Float.valueOf(divValue);}
 			catch (NumberFormatException e) {f = null;}
 			if (f!=null)
 				FloatBlitter.divideByZeroValue = f.floatValue();

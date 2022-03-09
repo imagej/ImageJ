@@ -947,7 +947,7 @@ class DicomDecoder {
  		if (s.startsWith("\\"))
  			s = s.substring(1);
 		Double d;
-		try {d = new Double(s);}
+		try {d = Double.valueOf(s);}
 		catch (NumberFormatException e) {d = null;}
 		if (d!=null)
 			return(d.doubleValue());

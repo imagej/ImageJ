@@ -262,7 +262,7 @@ public class ProfilePlot {
 						value = ip.getInterpolatedValue(x, y);
 					else
 						value = ip.getPixelValue((int)Math.round(x), (int)Math.round(y));
-					values.add(new Double(value));
+					values.add(Double.valueOf(value));
 					lastx=x; lasty=y;
 				}
 				x += xinc;

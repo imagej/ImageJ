@@ -200,7 +200,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		tf.addFocusListener(this);
 		tf.addKeyListener(this);
 		numberField.addElement(tf);
-		defaultValues.addElement(new Double(defaultValue));
+		defaultValues.addElement(Double.valueOf(defaultValue));
 		defaultText.addElement(tf.getText());
 		c.gridx = GridBagConstraints.RELATIVE;
 		c.anchor = GridBagConstraints.WEST;
@@ -908,9 +908,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		tf.addKeyListener(this);
 		numberField.addElement(tf);
 		sliderIndexes.add(Integer.valueOf(numberField.size()-1));
-		sliderScales.add(new Double(scale));
+		sliderScales.add(Double.valueOf(scale));
 		sliderDigits.add(Integer.valueOf(digits));
-		defaultValues.addElement(new Double(defaultValue/scale));
+		defaultValues.addElement(Double.valueOf(defaultValue/scale));
 		defaultText.addElement(tf.getText());
 		tf.setEditable(true);
 		firstSlider = false;
@@ -1165,7 +1165,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	protected Double getValue(String text) {
 		Double d;
-		try {d = new Double(text);}
+		try {d = Double.valueOf(text);}
 		catch (NumberFormatException e){
 			d = null;
 		}

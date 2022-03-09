@@ -180,7 +180,7 @@ class FitsDecoder {
 	}
 
 	double parseDouble(String s) throws NumberFormatException {
-		Double d = new Double(s);
+		Double d = Double.valueOf(s);
 		return d.doubleValue();
 	}
 

@@ -129,7 +129,7 @@ public class ExtensionDescriptor {
         oArray[i] = array[i].getString();
         break;
       case Variable.VALUE:
-        oArray[i] = new Double( array[i].getValue() );
+        oArray[i] = Double.valueOf( array[i].getValue() );
         break;
       case Variable.ARRAY:
         oArray[i] = convertArray(array[i].getArray());
@@ -213,9 +213,9 @@ public class ExtensionDescriptor {
         return null;
       }
       if (output) {
-        return new Double[] { new Double(var.getValue()) };
+        return new Double[] { Double.valueOf(var.getValue()) };
       } else {
-        return new Double( var.getValue() );
+        return Double.valueOf( var.getValue() );
       }
     case MacroExtension.ARG_ARRAY:
       if (var.getType() != Variable.ARRAY) {
