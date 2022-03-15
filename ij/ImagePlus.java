@@ -616,7 +616,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			BufferedImage bi = (BufferedImage)image;			
 			int nBands = bi.getSampleModel().getNumBands();
 			int type = bi.getType();
-			boolean rgb = type==BufferedImage.TYPE_3BYTE_BGR || type==BufferedImage.TYPE_INT_RGB || type==BufferedImage.TYPE_4BYTE_ABGR;
+			boolean rgb = type==BufferedImage.TYPE_3BYTE_BGR||type==BufferedImage.TYPE_INT_RGB
+				||type==BufferedImage.TYPE_4BYTE_ABGR||type==BufferedImage.TYPE_BYTE_INDEXED
+				||type==BufferedImage.TYPE_INT_ARGB||type==BufferedImage.TYPE_CUSTOM;
+			if (IJ.debugMode) IJ.log("setImage: type="+type+", bands="+nBands+", rgb="+rgb);
 			if (nBands>1 && !rgb) {
 				ImageStack biStack = new ImageStack(bi.getWidth(), bi.getHeight());			
 				for (int b=0; b<nBands; b++)

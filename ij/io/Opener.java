@@ -733,7 +733,8 @@ public class Opener {
 		} 
 		if (img==null)
 			return null;
-		if (img.getColorModel().hasAlpha() && img.getType()!=BufferedImage.TYPE_4BYTE_ABGR) {
+		if (IJ.debugMode) IJ.log("type="+img.getType()+", alpha="+img.getColorModel().hasAlpha()+", bands="+img.getSampleModel().getNumBands());
+		if (img.getColorModel().hasAlpha()) {
 			int width = img.getWidth();
 			int height = img.getHeight();
 			BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);

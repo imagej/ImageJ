@@ -204,7 +204,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			}
 			xbase = Math.max(xbase, maxWindow.x);
 			ybase = Math.max(ybase, maxWindow.y);
-			if (IJ.debugMode) IJ.log("ImageWindow.xbase: "+xbase);
+			//if (IJ.debugMode) IJ.log("ImageWindow.xbase: "+xbase);
 			xloc = xbase;
 			yloc = ybase;
 		}
@@ -585,7 +585,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	
 	public void focusGained(FocusEvent e) {
 		if (!Interpreter.isBatchMode() && ij!=null && !ij.quitting() && imp!=null) {
-			if (IJ.debugMode) IJ.log("focusGained: "+imp);
+			//if (IJ.debugMode) IJ.log("focusGained: "+imp);
 			WindowManager.setCurrentWindow(this);
 		}
 	}
@@ -753,7 +753,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			long time = System.currentTimeMillis()-t0;
 			setMenuBarTime = time;
 			Menus.setMenuBarCount++;
-			if (IJ.debugMode) IJ.log("setMenuBar: "+time+"ms ("+Menus.setMenuBarCount+")");
+			//if (IJ.debugMode) IJ.log("setMenuBar: "+time+"ms ("+Menus.setMenuBarCount+")");
 			if (time>2000L)
 				Prefs.setIJMenuBar = false;
 		}

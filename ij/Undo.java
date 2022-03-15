@@ -97,7 +97,7 @@ public class Undo {
 	}
 		
 	public static void reset() {
-		if (IJ.debugMode) IJ.log("Undo.reset: "+ whatToUndo+" "+impCopy);
+		//if (IJ.debugMode) IJ.log("Undo.reset: "+ whatToUndo+" "+impCopy);
 		if (whatToUndo==COMPOUND_FILTER || whatToUndo==OVERLAY_ADDITION)
 			return;
 		whatToUndo = NOTHING;

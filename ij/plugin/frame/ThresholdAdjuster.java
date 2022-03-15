@@ -64,7 +64,6 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	boolean firstActivation = true;
 	boolean setButtonPressed;
 	boolean noReset = true;
-	boolean noResetChanged;
 	boolean enterPressed;
 
 	public ThresholdAdjuster() {
@@ -443,7 +442,6 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			updateLabels(imp, ip);
 			updatePercentiles(imp, ip);
 			updatePlot(ip);
-			//updateScrollBars();
 			imp.updateAndDraw();
 			imageWasUpdated = false;
 		}
@@ -490,7 +488,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		if (Recorder.record) {
 			boolean stack = stackHistogram!=null && stackHistogram.getState();
 			boolean darkb = darkBackground!=null && darkBackground.getState();
-			String options = method+(darkb?" dark":"")+(noReset?" no-reset":"")+(stack?" stack":"");
+			String options = method+(darkb?" dark":"")+(stack?" stack":"");
 			if (Recorder.scriptMode())
 				Recorder.recordCall("IJ.setAutoThreshold(imp, \""+options+"\");");
 			else
@@ -674,16 +672,6 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	void reset(ImagePlus imp, ImageProcessor ip) {
-		if (noResetChanged) {
-			noResetChanged = false;
-			if ((noReset&&mode!=OVER_UNDER) || ip.getBitDepth()==8)
-				return;
-			if (!noReset) {
-				ImageStatistics stats = ip.getStats();
-				if (ip.getMin()==stats.min && ip.getMax()==stats.max)
-					return; // not contrast enhanced; no need to reset
-			}
-		}
 		ip.resetThreshold();
 		if (!noReset)
 			resetMinAndMax(ip);
@@ -737,13 +725,6 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		}
 		if (level2<level1)
 			level2 = level1;
-		double minDisplay = ip.getMin();
-		double maxDisplay = ip.getMax();
-		if (noReset && (level1<minDisplay||level2>maxDisplay)) {
-			noReset = false;
-			noResetChanged = true;
-			//noResetButton.setState(false);
-		}
 		resetMinAndMax(ip);
 		double minValue = ip.getMin();
 		double maxValue = ip.getMax();

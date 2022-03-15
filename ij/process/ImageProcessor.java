@@ -560,7 +560,7 @@ public abstract class ImageProcessor implements Cloneable {
 		}
 		cm = new IndexColorModel(8, 256, rLUT2, gLUT2, bLUT2);
 	}
-
+	
 	/** Automatically sets the lower and upper threshold levels, where 'method'
 	 * must be "Default", "Huang", "Intermodes", "IsoData", "IJ_IsoData", "Li",
 	 * "MaxEntropy", "Mean", "MinError", "Minimum", "Moments", "Otsu",

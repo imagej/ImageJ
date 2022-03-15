@@ -60,8 +60,7 @@ public class ThreadLister implements PlugIn {
         g.enumerate(groups, false);
         
         out.println(indent + "Thread Group: " + g.getName() + 
-                "  Max Priority: " + g.getMaxPriority() +
-                (g.isDaemon()?" Daemon":"") + "\n");
+            "  Max Priority: " + g.getMaxPriority() + "\n");
         
         for(int i = 0; i < num_threads; i++)
             print_thread_info(out, threads[i], indent + "    ");
