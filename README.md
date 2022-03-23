@@ -48,7 +48,7 @@ The README included in the ZIP archive has more information.
 
 ### With Maven
 
-You can compile and run ImageJ using the [Maven build tool]:
+You can compile and run ImageJ using the [Maven] build tool:
 
 | Command               | Action                                                                |
 |-----------------------|-----------------------------------------------------------------------|
