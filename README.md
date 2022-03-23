@@ -1,3 +1,5 @@
+[![](https://github.com/imagej/ImageJ/actions/workflows/build-main.yml/badge.svg)](https://github.com/imagej/ImageJ/actions/workflows/build-main.yml)
+
 # ImageJ
 
 ImageJ is [public domain] software for processing and analyzing scientific
