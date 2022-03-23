@@ -5,9 +5,12 @@
   <property name="build.dir" value="build" />
   <property name="jarfile" value="ij.jar" />
   <property name="javadoc.dir" value="../api" />
+  <property name="repository" value="https://maven.scijava.org/content/groups/public" />
+  <property name="src-tests.dir" value="tests" />
+  <property name="build-tests.dir" value="${build.dir}/tests" />
+  <property name="build-tests-lib.dir" value="${build.dir}/tests/lib" />
 
-
-  <target name="compile" description="Compile everything.">
+  <target name="compile" description="Compile the source code.">
     <!-- First, ensure the build directory exists. -->
     <mkdir dir="${build.dir}" />
     <!-- Build everything; add debug="on" to debug -->
@@ -26,7 +29,8 @@
     <copy todir="${build.dir}/macros"><fileset dir="macros"/></copy>
     <!-- Build ij.jar. -->
     <jar jarfile="${jarfile}" basedir="${build.dir}"
-         manifest="MANIFEST.MF" />
+         manifest="MANIFEST.MF"
+         excludes="${src-tests.dir}" />
   </target>
 
 
@@ -71,6 +75,50 @@
            use="true"
            windowtitle="ImageJ API">
     </javadoc>
+  </target>
+
+
+  <target name="compile-tests" depends="compile" description="Compile the unit tests.">
+    <!-- First, ensure needed build directories exist. -->
+    <mkdir dir="${build-tests.dir}" />
+    <mkdir dir="${build-tests-lib.dir}" />
+    <!-- Download dependencies needed for the unit tests. -->
+    <get src="${repository}/junit/junit/4.13.2/junit-4.13.2.jar"
+         dest="${build-tests-lib.dir}" skipexisting="true" />
+    <get src="${repository}/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar"
+         dest="${build-tests-lib.dir}" skipexisting="true" />
+    <get src="${repository}/ome/formats-api/6.9.0/formats-api-6.9.0.jar"
+         dest="${build-tests-lib.dir}" skipexisting="true" />
+    <get src="${repository}/ome/formats-bsd/6.9.0/formats-bsd-6.9.0.jar"
+         dest="${build-tests-lib.dir}" skipexisting="true" />
+    <!-- Build the unit tests in debug mode. -->
+    <path id="compile-tests.classpath">
+      <pathelement location="${build.dir}" />
+      <fileset dir="${build-tests-lib.dir}" includes="*.jar" />
+    </path>
+    <javac srcdir="${src-tests.dir}" destdir="${build-tests.dir}" classpathref="compile-tests.classpath"
+           optimize="on" source="1.8" target="1.8" debug="on" includeantruntime="false" encoding="utf-8"
+           excludes="data/**" />
+  </target>
+
+
+  <target name="run-tests" depends="compile-tests" description="Run the unit tests.">
+    <path id="run-tests.classpath">
+      <pathelement location="${build.dir}" />
+      <pathelement location="${build-tests.dir}" />
+      <fileset dir="${build-tests-lib.dir}" includes="*.jar" />
+    </path>
+    <!-- Construct a list of test classes to run. -->
+    <path id="test-files">
+      <fileset dir="${src-tests.dir}" includes="**/*Test.java" />
+    </path>
+    <pathconvert dirsep="." pathsep=" " property="test-classes" refid="test-files">
+      <regexpmapper from="^.*/tests/(.*)\.java$$" to="\1" />
+    </pathconvert>
+    <!-- Run all the test classes. -->
+    <java classname="org.junit.runner.JUnitCore" classpathref="run-tests.classpath" fork="yes">
+      <arg line="${test-classes}" />
+    </java>
   </target>
 
 
