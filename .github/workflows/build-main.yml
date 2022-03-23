@@ -16,7 +16,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v2
         with:
-          java-version: '8'
+          java-version: '11'
           distribution: 'zulu'
           cache: 'maven'
       - name: Set up CI environment
