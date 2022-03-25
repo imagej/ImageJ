@@ -109,30 +109,30 @@
 	</dependencies>
 
 	<build>
-    <sourceDirectory>${project.basedir}</sourceDirectory>
-    <testSourceDirectory>${project.basedir}/tests</testSourceDirectory>
-    <resources>
-      <resource>
-        <directory>${project.basedir}</directory>
-        <includes>
-          <include>IJ_Props.txt</include>
-        </includes>
-      </resource>
-      <resource>
+		<sourceDirectory>${project.basedir}</sourceDirectory>
+		<testSourceDirectory>${project.basedir}/tests</testSourceDirectory>
+		<resources>
+			<resource>
+				<directory>${project.basedir}</directory>
+				<includes>
+					<include>IJ_Props.txt</include>
+				</includes>
+			</resource>
+			<resource>
 				<directory>${project.basedir}/images</directory>
-      </resource>
-      <resource>
+			</resource>
+			<resource>
 				<directory>${project.basedir}/macros</directory>
 				<targetPath>macros</targetPath>
-      </resource>
-      <resource>
+			</resource>
+			<resource>
 				<directory>${project.basedir}/plugins</directory>
 				<targetPath>ij/plugin</targetPath>
-        <includes>
+				<includes>
 					<include>**/*.class</include>
-        </includes>
-      </resource>
-    </resources>
+				</includes>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
