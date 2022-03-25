@@ -224,5 +224,47 @@
 				</dependency>
 			</dependencies>
 		</profile>
+		<profile>
+			<!--
+			TEMP: This profile can be removed once pom-scijava 32.0.0 is released.
+			It forces deployment to s01.oss.sonatype.org rather than oss.sonatype.org.
+			-->
+			<id>sonatype-oss-release</id>
+			<properties>
+				<sonatype-oss-repository>https://s01.oss.sonatype.org</sonatype-oss-repository>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>${nexus-staging-maven-plugin.version}</version>
+						<configuration>
+							<nexusUrl>${sonatype-oss-repository}/</nexusUrl>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+			<repositories>
+				<repository>
+					<id>sonatype-nexus-releases</id>
+					<name>Sonatype Nexus Releases</name>
+					<url>${sonatype-oss-repository}/content/repositories/releases</url>
+					<releases>
+						<enabled>true</enabled>
+					</releases>
+					<snapshots>
+						<enabled>false</enabled>
+					</snapshots>
+				</repository>
+			</repositories>
+			<distributionManagement>
+				<repository>
+					<id>sonatype-nexus-staging</id>
+					<name>Nexus Release Repository</name>
+					<url>${sonatype-oss-repository}/service/local/staging/deploy/maven2/</url>
+				</repository>
+			</distributionManagement>
+		</profile>
 	</profiles>
 </project>
