@@ -124,13 +124,7 @@ public class Undo {
 		}
 		switch (whatToUndo) {
 			case FILTER:
-				if (overlayCopy!=null) {
-					Overlay overlay = imp.getOverlay();
-					if (overlay!=null) {
-						imp.setOverlay(overlayCopy);
-						overlayCopy = overlay.duplicate();
-					}
-				}
+				undoOverlay(imp);
 				ImageProcessor ip = imp.getProcessor();
 				if (ip!=null) {
 					if (!IJ.macroRunning()) {
@@ -154,6 +148,8 @@ public class Undo {
 						return;
 					} else
 						imp.setProcessor(null, ipCopy);
+					if (whatToUndo==COMPOUND_FILTER_DONE)
+						undoOverlay(imp);
 				}
 				break;
 			case TRANSFORM:
@@ -193,6 +189,16 @@ public class Undo {
     	reset();
 	}
 	
+	private static void undoOverlay(ImagePlus imp) {
+		if (overlayCopy!=null) {
+			Overlay overlay = imp.getOverlay();
+			if (overlay!=null) {
+				imp.setOverlay(overlayCopy);
+				overlayCopy = overlay.duplicate();
+			}
+		}
+	}
+
 	static boolean swapImages(ImagePlus imp1, ImagePlus imp2) {
 		if (imp1.getWidth()!=imp2.getWidth() || imp1.getHeight()!=imp2.getHeight()
 		|| imp1.getBitDepth()!=imp2.getBitDepth() || IJ.macroRunning())

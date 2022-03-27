@@ -880,7 +880,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			tc.repaint();
 	}
 
-	/** Creates a selection and insures that it is visible. */
+	/** Creates a selection and insures it is visible. */
 	public void setSelection (int startLine, int endLine) {
 		if (startLine>endLine) endLine = startLine;
 		if (startLine<0) startLine = 0;
@@ -904,7 +904,34 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		tc.repaint();
 	}
 
+	/** Updates the vertical scroll bar so that the specified row is visible. */
+	public void showRow(int rowIndex) {
+		showCell(rowIndex, null);
+	}
 
+
+	/** Updates the scroll bars so that the specified cell is visible. */
+	public void showCell(int rowIndex, String column) {
+		if (rowIndex<0) rowIndex=0;
+		if (rowIndex>=iRowCount) rowIndex=iRowCount-1;
+		sbVert.setValue(rowIndex);
+		iY=iRowHeight*sbVert.getValue();
+		int hstart = sbHoriz.getValue();
+		int hVisible = sbHoriz.getVisibleAmount()-1;
+		int col = 0;
+		if (column!=null && sColHead!=null && iColWidth!=null) {
+			for (int i=0; i<sColHead.length; i++) {
+				if (column.equals(sColHead[i])) {
+					for (int j=0; j<i; j++)
+						col += iColWidth[j];
+					break;
+				}
+			}
+		}
+		sbHoriz.setValue(col);
+		iX=col;
+		tc.repaint();
+	}
 
 	/** Writes all the text in this TextPanel to a file. */
 	public void save(PrintWriter pw) {

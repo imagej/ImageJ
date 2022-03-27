@@ -162,8 +162,8 @@ public class Executer implements Runnable {
 				return;
 			// is it an example in Help>Examples menu?
 			if (IJ.getInstance()!=null && !GraphicsEnvironment.isHeadless()) {
-				Editor.openExample(cmd);
-				return;
+				if (Editor.openExample(cmd))		
+					return;
 			}
 			if ("Auto Threshold".equals(cmd)&&(String)table.get("Auto Threshold...")!=null)
 				runCommand("Auto Threshold...");

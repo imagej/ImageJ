@@ -1205,9 +1205,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		TextField tf = (TextField)(stringField.elementAt(sfIndex));
 		theText = tf.getText();
 		String label = labels!=null?(String)labels.get((Object)tf):"";
+		boolean numberExpected = theText!=null && theText.length()>0
+			&& (Character.isDigit(theText.charAt(0))||theText.startsWith("-"));
 		if (macro) {
 			theText = Macro.getValue(macroOptions, label, theText);
-			if (theText!=null && (theText.startsWith("&")||label.toLowerCase(Locale.US).startsWith(theText))) {
+			if (theText!=null && (theText.startsWith("&")||numberExpected||label.toLowerCase(Locale.US).startsWith(theText))) {
 				// Is the value a macro variable?
 				if (theText.startsWith("&")) theText = theText.substring(1);
 				Interpreter interp = Interpreter.getInstance();
