@@ -14,7 +14,7 @@
     <!-- First, ensure the build directory exists. -->
     <mkdir dir="${build.dir}" />
     <!-- Build everything; add debug="on" to debug -->
-    <javac srcdir="./ij" destdir="${build.dir}" optimize="on" source="1.8" target="1.8" debug="on" includeantruntime="false" encoding="utf-8">
+    <javac srcdir="./ij" destdir="${build.dir}" optimize="on" source="1.6" target="1.6" debug="on" includeantruntime="false" encoding="utf-8">
     </javac>
   </target>
 
