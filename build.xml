@@ -2,46 +2,56 @@
 
 <project name="ImageJ" default="run">
 
-  <target name="compile" description="Compile everything.">
+  <property name="build.dir" value="build" />
+  <property name="jarfile" value="ij.jar" />
+  <property name="javadoc.dir" value="../api" />
+  <property name="repository" value="https://maven.scijava.org/content/groups/public" />
+  <property name="src-tests.dir" value="tests" />
+  <property name="build-tests.dir" value="${build.dir}/tests" />
+  <property name="build-tests-lib.dir" value="${build.dir}/tests/lib" />
+
+  <target name="compile" description="Compile the source code.">
     <!-- First, ensure the build directory exists. -->
-    <mkdir dir="build" />
+    <mkdir dir="${build.dir}" />
     <!-- Build everything; add debug="on" to debug -->
-    <javac srcdir="./ij" destdir="build" optimize="on" source="1.8" target="1.8" debug="on" includeantruntime="false" encoding="utf-8">
+    <javac srcdir="./ij" destdir="${build.dir}" optimize="on" source="1.6" target="1.6" debug="on" includeantruntime="false" encoding="utf-8">
     </javac>
   </target>
-  
+
 
   <target name="build" depends="compile" description="Build ij.jar.">
     <!-- Copy needed files into the build directory. -->
-    <copy file="IJ_Props.txt" todir="build" />
-    <copy file="images/microscope.gif" tofile="build/microscope.gif" />
-    <copy file="images/about.jpg" tofile="build/about.jpg" />
-	<copy file="plugins/MacAdapter.class" tofile="build/ij/plugin/MacAdapter.class" />
-	<copy file="plugins/MacAdapter9.class" tofile="build/ij/plugin/MacAdapter9.class" /> 
-    <copy todir="build/macros"><fileset dir="macros"/></copy>
+    <copy file="IJ_Props.txt" todir="${build.dir}" />
+    <copy file="images/microscope.gif" tofile="${build.dir}/microscope.gif" />
+    <copy file="images/about.jpg" tofile="${build.dir}/about.jpg" />
+    <copy file="plugins/MacAdapter.class" tofile="${build.dir}/ij/plugin/MacAdapter.class" />
+    <copy file="plugins/MacAdapter9.class" tofile="${build.dir}/ij/plugin/MacAdapter9.class" />
+    <copy todir="${build.dir}/macros"><fileset dir="macros"/></copy>
     <!-- Build ij.jar. -->
-    <jar jarfile="ij.jar" basedir="build"
-         manifest="MANIFEST.MF" />
+    <jar jarfile="${jarfile}" basedir="${build.dir}"
+         manifest="MANIFEST.MF"
+         excludes="${src-tests.dir}" />
   </target>
 
 
   <target name="clean" description="Delete the build files.">
-    <delete dir="build" />
-    <delete file="ij.jar" />
+    <delete dir="${build.dir}" />
+    <delete file="${jarfile}" />
   </target>
 
 
   <target name="run" depends="build" description="Build and run ImageJ.">
-    <copy file="ij.jar" toDir=".." />
-    <java maxmemory="640m" jar="ij.jar" fork="yes" />
+    <copy file="${jarfile}" toDir=".." />
+    <java maxmemory="640m" jar="${jarfile}" fork="yes" />
   </target>
-    
+
 
   <target name="run2" depends="build" description="Build and run ImageJ.">
     <!-- Run in ImageJ directory -->
-    <copy file="ij.jar" toDir=".." />
-    <java maxmemory="640m" dir=".." jar="ij.jar" fork="yes" />
+    <copy file="${jarfile}" toDir=".." />
+    <java maxmemory="640m" dir=".." jar="${jarfile}" fork="yes" />
   </target>
+
 
   <target name="zip" depends="clean" description="Build zrc.zip.">
     <zip zipfile="../src.zip"
@@ -53,20 +63,63 @@
 
 
   <target name="javadocs" description="Build the JavaDocs.">
-    <delete dir="../api" />
-    <mkdir dir="../api" />
-    <javadoc 
+    <delete dir="${javadoc.dir}" />
+    <mkdir dir="${javadoc.dir}" />
+    <javadoc
            sourcepath="."
            encoding="utf-8"
            packagenames="ij.*"
-           destdir="../api"
+           destdir="${javadoc.dir}"
            author="true"
            version="true"
            use="true"
            windowtitle="ImageJ API">
     </javadoc>
   </target>
-  
-  
-   </project>
 
+
+  <target name="compile-tests" depends="compile" description="Compile the unit tests.">
+    <!-- First, ensure needed build directories exist. -->
+    <mkdir dir="${build-tests.dir}" />
+    <mkdir dir="${build-tests-lib.dir}" />
+    <!-- Download dependencies needed for the unit tests. -->
+    <get src="${repository}/junit/junit/4.13.2/junit-4.13.2.jar"
+         dest="${build-tests-lib.dir}" skipexisting="true" />
+    <get src="${repository}/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar"
+         dest="${build-tests-lib.dir}" skipexisting="true" />
+    <get src="${repository}/ome/formats-api/6.9.0/formats-api-6.9.0.jar"
+         dest="${build-tests-lib.dir}" skipexisting="true" />
+    <get src="${repository}/ome/formats-bsd/6.9.0/formats-bsd-6.9.0.jar"
+         dest="${build-tests-lib.dir}" skipexisting="true" />
+    <!-- Build the unit tests in debug mode. -->
+    <path id="compile-tests.classpath">
+      <pathelement location="${build.dir}" />
+      <fileset dir="${build-tests-lib.dir}" includes="*.jar" />
+    </path>
+    <javac srcdir="${src-tests.dir}" destdir="${build-tests.dir}" classpathref="compile-tests.classpath"
+           optimize="on" source="1.8" target="1.8" debug="on" includeantruntime="false" encoding="utf-8"
+           excludes="data/**" />
+  </target>
+
+
+  <target name="run-tests" depends="compile-tests" description="Run the unit tests.">
+    <path id="run-tests.classpath">
+      <pathelement location="${build.dir}" />
+      <pathelement location="${build-tests.dir}" />
+      <fileset dir="${build-tests-lib.dir}" includes="*.jar" />
+    </path>
+    <!-- Construct a list of test classes to run. -->
+    <path id="test-files">
+      <fileset dir="${src-tests.dir}" includes="**/*Test.java" />
+    </path>
+    <pathconvert dirsep="." pathsep=" " property="test-classes" refid="test-files">
+      <regexpmapper from="^.*/tests/(.*)\.java$$" to="\1" />
+    </pathconvert>
+    <!-- Run all the test classes. -->
+    <java classname="org.junit.runner.JUnitCore" classpathref="run-tests.classpath" fork="yes">
+      <arg line="${test-classes}" />
+    </java>
+  </target>
+
+
+</project>
