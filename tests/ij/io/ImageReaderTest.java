@@ -247,12 +247,12 @@ public class ImageReaderTest {
 		assertNull(rdr.readPixels("ashdjjfj"));
 		
 		// stream that can't be opened
-		Object guppy = rdr.readPixels("http://fred.joe.john.edu/zoobat/ironman/guppy.tiff");
+		Object guppy = rdr.readPixels("https://downloads.imagej.net/no-such-directory/guppy.tiff");
 		assertTrue(guppy == null ||
 			(guppy instanceof byte[] && ((byte[]) guppy).length == 0));
 
 		// another stream that can't be opened
-		assertNull(rdr.readPixels("http://www.google.com/ooglywooglygugglychoogly.tiff"));
+		assertNull(rdr.readPixels("https://downloads.imagej.net/no-such-directory/no-such-file.tiff"));
 		
 		// not testing positive case:
 		//   - underlying code simply sets up a stream and calls readPixels() on it. We've thoroughly tested this above.
