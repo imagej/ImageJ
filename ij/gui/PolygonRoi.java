@@ -1373,37 +1373,6 @@ public class PolygonRoi extends Roi {
 			h = cal.pixelHeight;
 		}
 		return sumdx*w+sumdy*h-(nCorners*((w+h)-Math.sqrt(w*w+h*h)));
-		/* Alternative code leading to slightly different results:
-		 *  It does this by calculating the total length of the ROI boundary
-		 *  and subtracting 1-sqrt(2)/2 for each corner.
-		 *  For example, a 1x1 pixel ROI has a boundary length of 4 and
-		 *  and 4 corners so the perimeter is 4-4*(1-sqrt(2)/2) = 2*sqrt(2).
-		 *  A 2x2 pixel ROI has a boundary length of 8 and 4 corners so the
-		 *  perimeter is 8-4*(1-sqrt(2)/2) = 4 + 2*sqrt(2).		/*	int x0 = xp[nPoints-2];
-		int y0 = yp[nPoints-2];
-		int x1 = xp[nPoints-1];
-		int y1 = yp[nPoints-1];
-		int sumdx = 0;
-		int sumdy = 0;
-		int nCorners = 0;
-		for (int i=0; i<nPoints; i++) {
-			int x2 = xp[i];
-			int y2 = yp[i];  //The following is the cross product r01 x r12 = (x1-x0)*(y2-y1) - (y1-y0)*(x2-x1)
-			int crossProduct = x0*(y1-y2) - y0*(x1-x2) + (y2*x1-y1*x2);
-			if (crossProduct != 0) nCorners++;
-			sumdx += Math.abs(x2-x1);
-			sumdy += Math.abs(y2-y1);
-			x0 = x1; y0 = y1;
-			x1 = x2; y1 = y2;
-		}
-		double pw=1.0, ph=1.0;  //pixel width & height (in scaled units)
-		if (imp!=null) {
-			Calibration cal = imp.getCalibration();
-			pw = cal.pixelWidth;
-			ph = cal.pixelHeight;
-		}
-		return sumdx*pw + sumdy*ph - 0.5*nCorners*((pw+ph) - Math.sqrt(pw*pw+ph*ph));
-		*/
 	}
 
 	/** Returns the perimeter (for ROIs) or length (for lines).*/
@@ -1417,7 +1386,7 @@ public class PolygonRoi extends Roi {
 
 	/** Returns the perimeter (for ROIs) or length (for lines), using calibration if imp is not null */
 	double getLength(ImagePlus imp) {
-		if (type==TRACED_ROI)
+		if (isTraced())
 			return getTracedPerimeter(imp);
 
 		if (nPoints>2) {
@@ -1434,6 +1403,39 @@ public class PolygonRoi extends Roi {
 			return getLength(xpf, ypf, nPoints, closeShape, imp);
 		else
 			return getLength(xp, yp, nPoints, closeShape, imp);
+	}
+	
+	/** Returns 'true' if this ROI was created using
+	 *  the wand tool or the particle analyzer.
+	*/
+	private boolean isTraced() {
+		if (type==TRACED_ROI)
+			return true;
+		else if (type!=POLYGON)
+			return false;
+		else if (xp==null) {
+			if (xpf==null)
+				return false;
+			for (int i=0; i<nPoints; i++) {
+				int nexti = i+1;
+				if (nexti==nPoints)
+				  nexti = 0;
+				if (!((xpf[nexti]-xpf[i])==0||(ypf[nexti]-ypf[i])==0))
+					return false;
+				if ((xpf[i]!=(int)xpf[i])||(ypf[i]!=(int)ypf[i]))
+					return false;
+			}
+			xp = toInt(xpf, xp, nPoints);
+			yp = toInt(ypf, yp, nPoints);
+		}
+		for (int i=0; i<nPoints; i++) {
+			int nexti = i+1;
+			if (nexti==nPoints)
+			  nexti = 0;
+			if (!((xp[nexti]-xp[i])==0||(yp[nexti]-yp[i])==0))
+				return false;
+		}
+		return true;
 	}
 
 	/** Returns the length of a polygon with integer coordinates. Uses no calibration if imp is null. */

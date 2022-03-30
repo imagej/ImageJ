@@ -5,13 +5,13 @@ import ij.gui.*;
 import java.awt.*;
 import java.awt.event.*;
 
-/** Displays the ImageJ Channels window. */
+/** Displays the ImageJ "Channels" dialog. */
 public class Channels extends PlugInDialog implements PlugIn, ItemListener, ActionListener {
 
 	private static String[] modes = {"Composite Sum", "Composite Max", "Composite Min",
 		"Composite Invert", "Color", "Grayscale"};
 	private static String[] menuItems = {"Make Composite", "Convert to RGB", "Split Channels", "Merge Channels...",
-		"Edit LUT...", "-", "Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "Grays"};
+		"Invert LUTs", "Edit LUT...", "-", "Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "Grays"};
 
 	private static String moreLabel = "More "+'\u00bb';
 	private Choice choice;
@@ -244,6 +244,8 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 			pm.show(this, bloc.x, bloc.y);
 		} else if (command.equals("Convert to RGB"))
 			IJ.doCommand("Stack to RGB");
+		else if (command.equals("Invert LUTs"))
+			IJ.runMacroFile("ij.jar:InvertAllLuts", null);
 		else
 			IJ.doCommand(command);
 	}

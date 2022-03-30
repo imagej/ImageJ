@@ -215,7 +215,6 @@ public class Macro_Runner implements PlugIn {
 		String macro = null;
         try {
 			InputStream is = c .getResourceAsStream("/macros/"+name+".txt");
-			//IJ.log(is+"  "+("/macros/"+name+".txt"));
 			if (is==null)
 				return runMacroFile(name, arg);
             InputStreamReader isr = new InputStreamReader(is);
