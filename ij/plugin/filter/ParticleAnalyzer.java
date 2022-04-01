@@ -810,13 +810,18 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			level1 = 255;
 			level2 = 255;
 			fillColor = 64;
-			if (!Prefs.blackBackground && !imp.isInvertedLut()) {
+			if (!Prefs.blackBackground && !invertedLut) {
 				level1 = 0;
 				level2 = 0;
 				fillColor = 192;
 			}
-			if (!IJ.isMacro())
-				IJ.log("ParticleAnalyzer: threshold not set; assumed to be "+(int)level1+"-"+(int)level2);
+			if (!IJ.isMacro()) {
+				boolean blackBackground = imageType==BYTE && Prefs.blackBackground && level1==255 && level1==level2;
+				if (!blackBackground) {
+					String suffix = !blackBackground?" (\"Black background\" not set)":"";
+					IJ.log("ParticleAnalyzer: threshold not set; assumed to be "+(int)level1+"-"+(int)level2+suffix);
+				}
+			}
 		} else {
 			level1 = t1;
 			level2 = t2;

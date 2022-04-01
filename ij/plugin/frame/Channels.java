@@ -11,7 +11,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 	private static String[] modes = {"Composite Sum", "Composite Max", "Composite Min",
 		"Composite Invert", "Color", "Grayscale"};
 	private static String[] menuItems = {"Make Composite", "Convert to RGB", "Split Channels", "Merge Channels...",
-		"Invert LUTs", "Edit LUT...", "-", "Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "Grays"};
+		"Edit LUT...", "Invert LUTs", "-", "Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "Grays"};
 
 	private static String moreLabel = "More "+'\u00bb';
 	private Choice choice;
@@ -183,6 +183,14 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 				ci.setProp("CompositeProjection", cstr);
 			ci.setMode(cmode);
 			ci.updateAndDraw();
+			if (cmode==IJ.COMPOSITE && ("Min".equals(cstr)||"Invert".equals(cstr)) && !imp.isInvertedLut()) {
+				String msg =
+					"You may need to run More "+'\u00bb'+" \"Invert LUTs\" to view\n"
+					+"this image in \"Composite "+cstr+"\" mode. Note that\n"
+					+"the \"Invert LUTs\" command only works with linear\n"
+					+"LUTs that use one primary color.";
+				IJ.showMessage(msg);
+			}	
 			if (Recorder.record) {
 				String mode = null;
 				if (Recorder.scriptMode()) {

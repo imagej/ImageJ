@@ -1,0 +1,56 @@
+// "Invert all LUTs"
+// Converts all LUTs in a multi-channel image between
+// inverted and non inverted and switches the
+// composite rendering mode accordingly.
+// !!Only works with linear LUTs (one primary color). 
+// Author: Kevin Terretaz
+
+  requires("1.53o");
+  getDimensions(width, height, channels, slices, frames);
+  REDS = newArray(256);
+  GREENS = newArray(256);
+  BLUES = newArray(256);
+  for (c=1; c<=channels; c++) {
+      Stack.setChannel(c);
+      getLut(reds,greens,blues);
+      RED=reds[255]; GREEN=greens[255]; BLUE=blues[255];
+      if (is("Inverting LUT")) {
+          for (i=0; i<256; i++) { 
+              REDS[i]   = (RED/256)*(i+1);
+              GREENS[i] = (GREEN/256)*(i+1);
+              BLUES[i]  = (BLUE/256)*(i+1);
+          }
+          setLut(REDS, GREENS, BLUES);
+          if (RED+GREEN+BLUE == 0)
+             run("Grays");
+      } else {
+         //make inverted LUT
+         for(i=0; i<256; i++) { 
+              REDS[i]   = 255-(((255-RED)/256)*i);
+              GREENS[i] = 255-(((255-GREEN)/256)*i);
+              BLUES[i]  = 255-(((255-BLUE)/256)*i);
+          }
+          setLut(REDS, GREENS, BLUES);
+          if (RED+GREEN+BLUE == 765) {
+             run("Grays"); 
+             run("Invert LUT");
+         }
+      }
+  }
+  Stack.setChannel(1);
+  // CompositeProjection mode switch :
+  mode = Property.get("CompositeProjection");
+  if (is("Inverting LUT")&&(mode=="Min"||mode=="Invert"))
+     ; // do nothing
+  else if (!is("Inverting LUT")&&(mode=="Sum"||mode=="Max"))
+     ; // do nothing
+  else if (mode=="Invert")
+     Property.set("CompositeProjection", "Sum");
+  else if (mode=="Min")
+     Property.set("CompositeProjection", "Max");
+  else if (mode=="Max")
+     Property.set("CompositeProjection", "Min");
+  else // if Composite Sum
+     Property.set("CompositeProjection", "Invert"); 
+  updateDisplay();
+

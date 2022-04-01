@@ -1513,8 +1513,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			imageProperties = new Properties();
 		if (value==null || value.length()==0)
 			imageProperties.remove(key);
-		else
+		else {
 			imageProperties.setProperty(key, value);
+			if (key.equals("CompositeProjection"))
+				Channels.updateChannels();
+		}
 	}
 	
 	/** Saves a persistent numeric propery. The property is
