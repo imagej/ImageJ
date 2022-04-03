@@ -73,6 +73,7 @@ public class ColorProcessor extends ImageProcessor {
 			rgbRaster = Raster.createWritableRaster(rgbSampleModel, dataBuffer, null);
 		}
 		if (image==null) {
+			if (cm==null) createColorModel();
 			image = new BufferedImage(cm, rgbRaster, false, null);
 		}
 		return image;
@@ -113,6 +114,11 @@ public class ColorProcessor extends ImageProcessor {
 		fgColor = color.getRGB();
 		drawingColor = color;
 		fillValueSet = true;
+	}
+	
+	/** Sets the background fill/draw color. */
+	public void setBackgroundColor(Color color) {
+		setBackgroundValue(color.getRGB());
 	}
 
 	/** Sets the fill/draw color, where <code>color</code> is an RGB int. */

@@ -676,6 +676,7 @@ public class FloatProcessor extends ImageProcessor {
 		int index, ixs, iys;
 		
 		if (interpolationMethod==BICUBIC) {
+			ip2.setBackgroundValue(getBackgroundValue());
 			for (int y=roiY; y<(roiY + roiHeight); y++) {
 				index = y*width + roiX;
 				tmp3 = tmp1 - y*sa + centerX;
@@ -1024,6 +1025,13 @@ public class FloatProcessor extends ImageProcessor {
 		fillValueSet = true;
 	}
 	
+	/** Sets the background fill/draw color. */
+	public void setBackgroundColor(Color color) {
+		int bestIndex = getBestIndex(color);
+		double value = getMin() + (getMax()-getMin())*(bestIndex/255.0);
+		setBackgroundValue(value);
+	}
+
 	/** Sets the default fill/draw value. */
 	public void setValue(double value) {
 		fillColor = (float)value;

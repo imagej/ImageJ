@@ -407,6 +407,10 @@ public abstract class ImageProcessor implements Cloneable {
 		value closest to the specified color. */
 	public abstract void setColor(Color color);
 
+	/** Sets the background fill/draw color. */
+	public void setBackgroundColor(Color color) {
+	}
+
 	/** Sets the default fill/draw value. */
 	public void setColor(int value) {
 		setValue(value);
@@ -1118,6 +1122,15 @@ public abstract class ImageProcessor implements Cloneable {
 			data[i] = getPixel(x, y++);
 	}
 
+	/** Returns the pixel values down the column starting at (x,y). */
+	public float[] getColumn(int x, int y, float[] data, int length) {
+		if (data==null)
+			data = new float[length];
+		for (int i=0; i<length; i++)
+			data[i] = getf(x, y++);
+		return data;
+	}
+
 	/** Inserts the pixels contained in 'data' into a
 		horizontal line starting at (x,y). */
 	public void putRow(int x, int y, int[] data, int length) {
@@ -1135,11 +1148,15 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Inserts the pixels contained in 'data' into a
 		column starting at (x,y). */
 	public void putColumn(int x, int y, int[] data, int length) {
-		//if (x>=0 && x<width && y>=0 && (y+length)<=height)
-		//	((ShortProcessor)this).putColumn2(x, y, data, length);
-		//else
-			for (int i=0; i<length; i++)
-				putPixel(x, y++, data[i]);
+		for (int i=0; i<length; i++)
+			putPixel(x, y++, data[i]);
+	}
+
+	/** Inserts the pixels contained in 'data' into a
+		column starting at (x,y). */
+	public void putColumn(int x, int y, float[] data, int length) {
+		for (int i=0; i<length; i++)
+			setf(x, y++, data[i]);
 	}
 
 	/**

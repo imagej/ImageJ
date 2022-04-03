@@ -67,13 +67,9 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 				ip = imp.getStack().getProcessor(slice);
 		}
 		ip.setInterpolationMethod(interpolationMethod);
-		if (fillWithBackground) {
-			Color bgc = Toolbar.getBackgroundColor();
-			if (bitDepth==8)
-				ip.setBackgroundValue(ip.getBestIndex(bgc));
-			else if (bitDepth==24)
-				ip.setBackgroundValue(bgc.getRGB());
-		} else
+		if (fillWithBackground)
+			ip.setBackgroundColor(Toolbar.getBackgroundColor());
+		else
 			ip.setBackgroundValue(0);
 		ip.rotate(angle);
 		if (!gd.wasOKed())
@@ -151,8 +147,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 		gd.addSlider("Angle:", -90, 90, angle, 0.1);
 		gd.addNumericField("Grid lines:", gridLines, 0);
 		gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
-		if (bitDepth==8 || bitDepth==24)
-			gd.addCheckbox("Fill with background color", fillWithBackground);
+		gd.addCheckbox("Fill with background color", fillWithBackground);
 		if (canEnlarge)
 			gd.addCheckbox("Enlarge image", enlarge);
 		else
@@ -189,8 +184,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 		}
 		gridLines = (int)gd.getNextNumber();
 		interpolationMethod = gd.getNextChoiceIndex();
-		if (bitDepth==8 || bitDepth==24)
-			fillWithBackground = gd.getNextBoolean();
+		fillWithBackground = gd.getNextBoolean();
 		if (canEnlarge)
 			enlarge = gd.getNextBoolean();
 		return true;

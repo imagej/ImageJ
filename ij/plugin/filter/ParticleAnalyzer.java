@@ -818,7 +818,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			if (!IJ.isMacro()) {
 				boolean blackBackground = imageType==BYTE && Prefs.blackBackground && level1==255 && level1==level2;
 				if (!blackBackground) {
-					String suffix = !blackBackground?" (\"Black background\" not set)":"";
+					String suffix = !Prefs.blackBackground?" (\"Black background\" not set)":"";
 					IJ.log("ParticleAnalyzer: threshold not set; assumed to be "+(int)level1+"-"+(int)level2+suffix);
 				}
 			}

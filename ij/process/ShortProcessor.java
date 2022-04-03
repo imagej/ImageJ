@@ -983,6 +983,13 @@ public class ShortProcessor extends ImageProcessor {
 		fillValueSet = true;
 	}
 	
+	/** Sets the background fill/draw color. */
+	public void setBackgroundColor(Color color) {
+		int bestIndex = getBestIndex(color);
+		int value = (int)(getMin() + (getMax()-getMin())*(bestIndex/255.0));
+		setBackgroundValue(value);
+	}
+
 	/** Sets the default fill/draw value, where 0<=value<=65535). */
 	public void setValue(double value) {
 			fgColor = (int)value;
