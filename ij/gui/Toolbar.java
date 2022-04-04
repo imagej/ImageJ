@@ -975,7 +975,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		return foregroundValue;
 	}
 	
-	/** Sets the foreground color to grayscale, where {@literal 0<=value<=255}. */
+	/** Sets the foreground color to grayscale, where value
+		is between 0 (black) and 255 (white). */
 	public static void setForegroundValue(double value) {
 		if (value>=0) {
 			int v = (int)value;
@@ -989,7 +990,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		return backgroundValue;
 	}
 
-	/** Sets the foreground color to grayscale, where {@literal 0<=value<=255}. */
+	/** Sets the background color to grayscale, where value
+		is between 0 (black) and 255 (white). */
 	public static void setBackgroundValue(double value) {
 		if (value>=0) {
 			int v = (int)value;

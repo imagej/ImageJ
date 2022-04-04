@@ -153,10 +153,11 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	
 	void getValue (String title, String prompt, double defaultValue, int digits) {
 		int places = Analyzer.getPrecision();
+		if (places>7) places=7;
 		if (digits>0 || (int)defaultValue!=defaultValue)
 			digits = Math.max(places, 1);
 		gd = GUI.newNonBlockingDialog(title, imp);
-		gd.addNumericField(prompt, defaultValue, digits, 8, null);
+		gd.addNumericField(prompt, defaultValue, digits, 12, null);
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
 		gd.showDialog();

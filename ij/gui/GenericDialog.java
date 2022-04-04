@@ -106,7 +106,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		super(parent, title, true);
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null) setFont(ij.getFont());
-		okay = new Button("	 OK	 ");
+		okay = new Button("  OK  ");
 		cancel = new Button("Cancel");
 		if (Prefs.blackCanvas) {
 			setForeground(SystemColor.controlText);
