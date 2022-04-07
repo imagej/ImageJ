@@ -8,8 +8,9 @@ import java.awt.event.*;
 /** Displays the ImageJ "Channels" dialog. */
 public class Channels extends PlugInDialog implements PlugIn, ItemListener, ActionListener {
 
-	private static String[] modes = {"Composite Sum", "Composite Max", "Composite Min",
-		"Composite Invert", "Color", "Grayscale"};
+	private static final String[] modes = {"Composite", "Color", "Grayscale", "---------", "Composite Max",
+		"Composite Min", "Composite Invert"};
+	private static final int COMP=0, COLOR=1, GRAY=2, DIVIDER=3, MAX=4, MIN=5, INVERT=6;
 	private static String[] menuItems = {"Make Composite", "Convert to RGB", "Split Channels", "Merge Channels...",
 		"Edit LUT...", "Invert LUTs", "-", "Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "Grays"};
 
@@ -111,16 +112,16 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 		int index = 0;
 		
 		String cmode = ci.getProp("CompositeProjection");
-		int cindex = 0;
+		int cindex = COMP;
 		if (cmode!=null) {			
-			if (cmode.contains("Max")||cmode.contains("max")) cindex=1;
-			if (cmode.contains("Min")||cmode.contains("min")) cindex=2;
-			if (cmode.contains("Invert")||cmode.contains("min")) cindex=3;
+			if (cmode.contains("Max")||cmode.contains("max")) cindex=MAX;
+			if (cmode.contains("Min")||cmode.contains("min")) cindex=MIN;
+			if (cmode.contains("Invert")||cmode.contains("invert")) cindex=INVERT;
 		}
 		switch (ci.getMode()) {
 			case IJ.COMPOSITE: index=cindex; break;
-			case IJ.COLOR: index=4; break;
-			case IJ.GRAYSCALE: index=5; break;
+			case IJ.COLOR: index=COLOR; break;
+			case IJ.GRAYSCALE: index=GRAY; break;
 		}
 		choice.select(index);
 	}
@@ -172,41 +173,38 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 			String cstr = null;
 			int cmode = IJ.COMPOSITE;
 			switch (index) {
-				case 0: cmode=IJ.COMPOSITE; cstr="Sum"; break;
-				case 1: cmode=IJ.COMPOSITE; ; cstr="Max"; break;
-				case 2: cmode=IJ.COMPOSITE; ; cstr="Min"; break;
-				case 3: cmode=IJ.COMPOSITE; ; cstr="Invert"; break;
-				case 4: cmode=IJ.COLOR; break;
-				case 5: cmode=IJ.GRAYSCALE; break;
+				case COMP: cmode=IJ.COMPOSITE; cstr="Sum"; break;
+				case COLOR: cmode=IJ.COLOR; break;
+				case GRAY: cmode=IJ.GRAYSCALE; break;
+				case DIVIDER: cmode=IJ.COMPOSITE; cstr="Sum"; break;
+				case MAX: cmode=IJ.COMPOSITE; ; cstr="Max"; break;
+				case MIN: cmode=IJ.COMPOSITE; ; cstr="Min"; break;
+				case INVERT: cmode=IJ.COMPOSITE; ; cstr="Invert"; break;
 			}
 			if (cstr!=null && !(cstr.equals("Sum")&&ci.getProp("CompositeProjection")==null))
 				ci.setProp("CompositeProjection", cstr);
+			//IJ.log(cmode+" "+cstr+" "+imp.isInvertedLut());
+			if (cmode==IJ.COMPOSITE && (("Min".equals(cstr)||"Invert".equals(cstr)) && !imp.isInvertedLut())
+			|| ("Max".equals(cstr)||"Sum".equals(cstr)) && imp.isInvertedLut())
+				IJ.runMacroFile("ij.jar:InvertAllLuts", null);	
 			ci.setMode(cmode);
 			ci.updateAndDraw();
-			if (cmode==IJ.COMPOSITE && ("Min".equals(cstr)||"Invert".equals(cstr)) && !imp.isInvertedLut()) {
-				String msg =
-					"You may need to run More "+'\u00bb'+" \"Invert LUTs\" to view\n"
-					+"this image in \"Composite "+cstr+"\" mode. Note that\n"
-					+"the \"Invert LUTs\" command only works with linear\n"
-					+"LUTs that use one primary color.";
-				IJ.showMessage(msg);
-			}	
 			if (Recorder.record) {
 				String mode = null;
-				if (Recorder.scriptMode()) {
+				if (index!=DIVIDER && Recorder.scriptMode()) {
 					switch (index) {
-						case 0: case 1: case 2: case 3: mode="IJ.COMPOSITE"; break;
-						case 4: mode="IJ.COLOR"; break;
-						case 5: mode="IJ.GRAYSCALE"; break;
+						case COMP: case MAX: case MIN: case INVERT: mode="IJ.COMPOSITE"; break;
+						case COLOR: mode="IJ.COLOR"; break;
+						case GRAY: mode="IJ.GRAYSCALE"; break;
 					}
 					cstr="\""+cstr+"\"";
 					Recorder.recordCall("imp.setProp(\"CompositeProjection\", "+cstr+");");
 					Recorder.recordCall("imp.setDisplayMode("+mode+");");
 				} else {
 					switch (index) {
-						case 0: case 1: case 2: case 3: mode="composite"; break;
-						case 4: mode="color"; break;
-						case 5: mode="grayscale"; break;
+						case COMP: case MAX: case MIN: case INVERT: mode="composite"; break;
+						case COLOR: mode="color"; break;
+						case GRAY: mode="grayscale"; break;
 					}
 					Recorder.recordString("Property.set(\"CompositeProjection\", \""+cstr+"\");\n");
 					Recorder.record("Stack.setDisplayMode", mode);

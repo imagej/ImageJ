@@ -67,6 +67,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	boolean noReset = true;
 	boolean noResetChanged;
 	boolean enterPressed;
+	boolean windowActivated;
 
 	public ThresholdAdjuster() {
 		super("Threshold");
@@ -215,7 +216,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		stackHistogram.setState(false);
 		stackHistogram.addItemListener(this);
 		panel.add(stackHistogram);
-		noReset = Prefs.get(NO_RESET, false);
+		noReset = Prefs.get(NO_RESET, true);
 		noResetCheckbox = new Checkbox("Don't reset range");
 		noResetCheckbox.setState(noReset);
 		noResetCheckbox.addItemListener(this);
@@ -433,7 +434,9 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 					&& ip.getCurrentColorModel() != ip.getColorModel(); //does not work???
 			if (not8Bits && minMaxChange && (!noReset || mode==OVER_UNDER)) {
 				double max1 = ip.getMax();
-				resetMinAndMax(ip);
+				if (!windowActivated)
+					resetMinAndMax(ip);
+				windowActivated = false;
 				if (maxThreshold==max1)
 					maxThreshold = ip.getMax();
 			}
@@ -504,7 +507,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 					ContrastAdjuster.recordSetMinAndMax(ip.getMin(),ip.getMax());
 			}
 			boolean darkb = darkBackground!=null && darkBackground.getState();
-			String options = method+(darkb?" dark":"")+(noReset?" no-reset":"")+(stack?" stack":""+(rawValues.getState()?" raw":""));
+			String options = method+(darkb?" dark":"")+(noReset?" no-reset":"")+(stack?" stack":"");
 			if (Recorder.scriptMode())
 				Recorder.recordCall("IJ.setAutoThreshold(imp, \""+options+"\");");
 			else
@@ -688,6 +691,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	void reset(ImagePlus imp, ImageProcessor ip) {
+		//IJ.log("reset1: "+noReset+" "+noResetChanged+" "+mode);
 		if (noResetChanged) {
 			noResetChanged = false;
 			if ((noReset&&mode!=OVER_UNDER) || ip.getBitDepth()==8)
@@ -893,7 +897,6 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		else if (minValue>=0)   { action = MIN_THRESHOLD; minValue = -1; }
 		else if (maxValue>=0)   { action = MAX_THRESHOLD; maxValue = -1; }
 		else return;
-
 		imp = WindowManager.getCurrentImage();
 		if (imp==null) {
 			IJ.beep();
@@ -947,6 +950,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
     	plot.requestFocus();
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (!firstActivation && imp!=null) {
+			windowActivated = true;
 			setup(imp, false);
 			updateScrollBars();
 		}

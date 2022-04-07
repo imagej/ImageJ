@@ -25,10 +25,20 @@
              run("Grays");
       } else {
          //make inverted LUT
-         for(i=0; i<256; i++) { 
+         isLinear = true;
+         for (i=0; i<256; i++) {
+              if (i<255) {
+                  if (abs(reds[i+1]-reds[i])>1) isLinear=false;
+                  if (abs(greens[i+1]-greens[i])>1) isLinear=false;
+                  if (abs(blues[i+1]-blues[i])>1) isLinear=false;
+              }
               REDS[i]   = 255-(((255-RED)/256)*i);
               GREENS[i] = 255-(((255-GREEN)/256)*i);
               BLUES[i]  = 255-(((255-BLUE)/256)*i);
+          }
+          if (!isLinear) {
+             showMessage("Channels", "The More>>Invert LUTs command\nrequires one color linear LUTs.");
+             exit;
           }
           setLut(REDS, GREENS, BLUES);
           if (RED+GREEN+BLUE == 765) {
