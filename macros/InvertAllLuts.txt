@@ -7,6 +7,27 @@
 
   requires("1.53o");
   getDimensions(width, height, channels, slices, frames);
+
+  // Are the LUTs linear?
+  if (!is("Inverting LUT")) {
+     for (c=1; c<=channels; c++) {
+        Stack.setChannel(c);
+        getLut(reds,greens,blues);
+        isLinear = true;
+        for (i=0; i<255; i++) {
+           if ((reds[i+1]-reds[i])>1) isLinear=false;
+           if ((greens[i+1]-greens[i])>1) isLinear=false;
+           if ((blues[i+1]-blues[i])>1) isLinear=false;
+        }
+        if (!isLinear) {
+           showMessage("Channels", "The More>>Invert LUTs command\nrequires one color linear LUTs.");
+           Property.set("CompositeProjection", "Sum");
+           updateDisplay();
+           exit;
+        }
+     }
+  }
+
   REDS = newArray(256);
   GREENS = newArray(256);
   BLUES = newArray(256);
@@ -25,20 +46,10 @@
              run("Grays");
       } else {
          //make inverted LUT
-         isLinear = true;
          for (i=0; i<256; i++) {
-              if (i<255) {
-                  if (abs(reds[i+1]-reds[i])>1) isLinear=false;
-                  if (abs(greens[i+1]-greens[i])>1) isLinear=false;
-                  if (abs(blues[i+1]-blues[i])>1) isLinear=false;
-              }
               REDS[i]   = 255-(((255-RED)/256)*i);
               GREENS[i] = 255-(((255-GREEN)/256)*i);
               BLUES[i]  = 255-(((255-BLUE)/256)*i);
-          }
-          if (!isLinear) {
-             showMessage("Channels", "The More>>Invert LUTs command\nrequires one color linear LUTs.");
-             exit;
           }
           setLut(REDS, GREENS, BLUES);
           if (RED+GREEN+BLUE == 765) {
@@ -47,6 +58,7 @@
          }
       }
   }
+
   Stack.setChannel(1);
   // CompositeProjection mode switch :
   mode = Property.get("CompositeProjection");

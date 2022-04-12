@@ -14,10 +14,22 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 	private static String[] menuItems = {"Make Composite", "Convert to RGB", "Split Channels", "Merge Channels...",
 		"Edit LUT...", "Invert LUTs", "-", "Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "Grays"};
 
+	public static final String help = "<html>"
+	+"<h1>Composite Display Modes</h1>"
+	+"<font size=+1>"
+	+"<ul>"
+	+"<li> <u>Composite</u> - Converts the channels to RGB and sums. RGB values are clipped to 255, which can cause saturation in areas with overlapping bright signals.<br>"
+	+"<li> <u>Composite Max</u> - Converts the channels to RGB and uses maximum intensity projection.<br>"
+	+"<li> <u>Composite Min</u> - Inverts the LUTs (if needed), converts the channels to RGB and uses minimum intensity projection.<br>"
+	+"<li> <u>Composite Invert</u> - Inverts the LUTs (if needed), converts the channels to RGB and sums.<br>"
+	+" <br>"
+	+"The macro at http://wsr.imagej.net/macros/CompositeProjection.ijm uses the \"Invert LUTs\", \"Split Channels\", \"RGB Color\", \"Images to Stack\" and \"Z Project\" commands to attempt to duplicate these four display modes.<br>"
+	+"</font>";
+
 	private static String moreLabel = "More "+'\u00bb';
 	private Choice choice;
 	private Checkbox[] checkbox;
-	private Button moreButton;
+	private Button helpButton, moreButton;
 	private static Channels instance;
 	private int id;
 	private static Point location;
@@ -68,11 +80,20 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 
 		c.insets = new Insets(0, 15, 10, 15);
 		c.fill = GridBagConstraints.NONE;
+		c.gridwidth = 2;
 		c.gridy = y++;
-		moreButton = new Button(moreLabel);
+		Panel panel = new Panel();
+		int hgap = IJ.isMacOSX()?1:5;
+		panel.setLayout(new FlowLayout(FlowLayout.RIGHT,hgap,0));
+		helpButton = new TrimmedButton("Help",IJ.isMacOSX()?10:0);//new Button("Help");
+		helpButton.addActionListener(this);
+		helpButton.addKeyListener(ij);
+		panel.add(helpButton, c);
+		add(panel, c);
+		moreButton = new TrimmedButton(moreLabel,IJ.isMacOSX()?10:0);//new Button(moreLabel);
 		moreButton.addActionListener(this);
 		moreButton.addKeyListener(ij);
-		add(moreButton, c);
+		panel.add(moreButton, c);
 		update();
 
 		pm=new PopupMenu();
@@ -243,6 +264,11 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 	}
 	
 	public void actionPerformed(ActionEvent e) {
+		Object source = e.getSource();
+		if (source==helpButton) {
+			new HTMLDialog("Channels", help, false);
+			return;
+		}
 		String command = e.getActionCommand();
 		if (command==null) return;
 		if (command.equals(moreLabel)) {
@@ -250,8 +276,6 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 			pm.show(this, bloc.x, bloc.y);
 		} else if (command.equals("Convert to RGB"))
 			IJ.doCommand("Stack to RGB");
-		else if (command.equals("Invert LUTs"))
-			IJ.runMacroFile("ij.jar:InvertAllLuts", null);
 		else
 			IJ.doCommand(command);
 	}

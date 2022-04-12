@@ -132,14 +132,15 @@ adjust09="Coordinates...",ij.plugin.Coordinates
 color01="Split Channels",ij.plugin.ChannelSplitter
 color02="Merge Channels...",ij.plugin.RGBStackMerge
 color03="Arrange Channels...",ij.plugin.ChannelArranger
-color04="Channels Tool...[Z]",ij.plugin.frame.Channels
-color05=-
-color06="Stack to RGB",ij.plugin.RGBStackConverter
-color07="Make Composite",ij.plugin.CompositeConverter
-color08="Show LUT",ij.plugin.filter.LutViewer
-color09="Display LUTs",ij.plugin.SimpleCommands("display")
-color10="Edit LUT...",ij.plugin.LUT_Editor
-color11="Color Picker...[K]",ij.plugin.frame.ColorPicker
+color04="Invert LUTs",ij.plugin.SimpleCommands("invert")
+color05="Channels Tool...[Z]",ij.plugin.frame.Channels
+color06=-
+color07="Stack to RGB",ij.plugin.RGBStackConverter
+color08="Make Composite",ij.plugin.CompositeConverter
+color09="Show LUT",ij.plugin.filter.LutViewer
+color10="Display LUTs",ij.plugin.SimpleCommands("display")
+color11="Edit LUT...",ij.plugin.LUT_Editor
+color12="Color Picker...[K]",ij.plugin.frame.ColorPicker
 
 # Plugins installed in the Image/Stacks submenu
 stacks01="Add Slice",ij.plugin.StackEditor("add")

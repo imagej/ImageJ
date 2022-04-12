@@ -56,6 +56,9 @@ public class SimpleCommands implements PlugIn {
 			showDirectory(arg.replace("showdir", ""));
 		else if (arg.equals("measure"))
 			measureStack();
+		else if (arg.equals("invert"))
+			IJ.runMacroFile("ij.jar:InvertAllLuts", null);
+
 	}
 	
 	private synchronized void showFonts() {
