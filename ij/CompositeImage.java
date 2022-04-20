@@ -283,12 +283,12 @@ public class CompositeImage extends ImagePlus {
 		if (prop!=null) {
 			if (prop.contains("Max")||prop.contains("max"))
 				projectionMode = ImageProcessor.MAX_PROJECTION;
-			if (prop.contains("Min")||prop.contains("min"))
+			else if (prop.contains("Min")||prop.contains("min"))
 				projectionMode = ImageProcessor.MIN_PROJECTION;
-			if (prop.contains("Invert")||prop.contains("invert"))
+			else if (prop.contains("Invert")||prop.contains("invert"))
 				projectionMode = ImageProcessor.INVERT_PROJECTION;
 		}
-		long t0 = IJ.debugMode?System.currentTimeMillis():0L;
+		long t0 = IJ.debugMode?System.nanoTime():0L;
 		if (singleChannel && nChannels<=3) {
 			switch (currentChannel) {
 				case 0: cip[0].updateComposite(rgbPixels, ImageProcessor.UPDATE_RED); break;
@@ -321,7 +321,7 @@ public class CompositeImage extends ImagePlus {
 			for (int i=1; i<nChannels; i++)
 				if (active[i]) cip[i].updateComposite(rgbPixels, projectionMode);
 		}
-		if (IJ.debugMode) IJ.log(""+(System.currentTimeMillis()-t0));
+		if (IJ.debugMode) IJ.log(""+(System.nanoTime()-t0)/1000L);
 		createBufferedImage();
 		if (img==null && awtImage!=null)
 			img = awtImage;

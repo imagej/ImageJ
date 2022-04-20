@@ -8,23 +8,27 @@
   requires("1.53o");
   getDimensions(width, height, channels, slices, frames);
 
-  // Are the LUTs linear?
+  // Are the LUTs single color and linear?
   if (!is("Inverting LUT")) {
      for (c=1; c<=channels; c++) {
         Stack.setChannel(c);
         getLut(reds,greens,blues);
-        isLinear = true;
+        linearR = true;
+        linearG = true;
+        linearB = true;
+        zeroR = true;
+        zeroG = true;
+        zeroB = true;
         for (i=0; i<255; i++) {
-           if ((reds[i+1]-reds[i])>1) isLinear=false;
-           if ((greens[i+1]-greens[i])>1) isLinear=false;
-           if ((blues[i+1]-blues[i])>1) isLinear=false;
+           if ((reds[i+1]-reds[i])!=1) linearR=false;
+           if ((greens[i+1]-greens[i])!=1) linearG=false;
+           if ((blues[i+1]-blues[i])!=1) linearB=false;
+           if (reds[i]!=0) zeroR=false;
+           if (greens[i]!=0) zeroG=false;
+           if (blues[i]!=0) zeroB=false;
         }
-        if (!isLinear) {
-           showMessage("Channels", "The More>>Invert LUTs command\nrequires one color linear LUTs.");
-           Property.set("CompositeProjection", "Sum");
-           updateDisplay();
-           exit;
-        }
+        if ((linearR+linearG+linearB+zeroR+zeroG+zeroB)!=3)
+          exit;
      }
   }
 

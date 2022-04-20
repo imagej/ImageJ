@@ -31,7 +31,7 @@ public class ZProjector implements PlugIn {
     private static final int FLOAT_TYPE = 2;
     
     public static final String lutMessage =
-    	"Stacks with inverter LUTs may not project correctly.\n"
+    	"Stacks with inverting LUTs may not project correctly.\n"
     	+"To create a standard LUT, invert the stack (Edit/Invert)\n"
     	+"and invert the LUT (Image/Lookup Tables/Invert LUT)."; 
 
@@ -173,7 +173,8 @@ public class ZProjector implements PlugIn {
 
 		if (arg.equals("") && projImage!=null) {
 			long tstop = System.currentTimeMillis();
-			if (simpleComposite) IJ.run(projImage, "Grays", "");
+			if (simpleComposite && imp.getBitDepth()!=24)
+				IJ.run(projImage, "Grays", "");
 			projImage.show("ZProjector: " +IJ.d2s((tstop-tstart)/1000.0,2)+" seconds");
 		}
 

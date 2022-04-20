@@ -2677,7 +2677,7 @@ public abstract class ImageProcessor implements Cloneable {
 					rgbPixels[i] = reds[index] | greens[index] | blues[index];
 				}
 				break;
-			case SUM_PROJECTION: // default up to v1.53o
+			case SUM_PROJECTION:
 				for (int i=0; i<size; i++) {
 					int pixel = rgbPixels[i];
 					redValue = (pixel&0x00ff0000) + reds[bytes[i]&0xff];
@@ -2689,7 +2689,7 @@ public abstract class ImageProcessor implements Cloneable {
 					rgbPixels[i] = redValue | greenValue | blueValue;
 				}
 				break;
-			case MAX_PROJECTION: // default with v1.53o and later
+			case MAX_PROJECTION:
 				for (int i=0; i<size; i++) {
 					int pixel = rgbPixels[i];
 					int index = bytes[i]&0xff;

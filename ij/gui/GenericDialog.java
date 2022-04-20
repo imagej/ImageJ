@@ -1468,8 +1468,14 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			return;
 		optionsRecorded = true;
 		if (!wasCanceled && dialogListeners!=null && dialogListeners.size()>0) {
-			resetCounters();
-			((DialogListener)dialogListeners.elementAt(0)).dialogItemChanged(this,null);
+			try {
+				resetCounters();
+				((DialogListener)dialogListeners.elementAt(0)).dialogItemChanged(this,null);
+			} catch (Exception err) {	// for exceptions, don't cover the input by a window
+				IJ.beep();				// but show them at in the "Log"
+				IJ.log("ERROR: "+err+"\nin DialogListener of "+dialogListeners.elementAt(0)+
+				"\nat "+(err.getStackTrace()[0])+"\nfrom "+(err.getStackTrace()[1]));
+			}
 			recorderOn = false;
 		}
 		resetCounters();
@@ -1745,7 +1751,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			} catch (Exception err) {			  // for exceptions, don't cover the input by a window but
 				IJ.beep();							// show them at in the "Log"
 				IJ.log("ERROR: "+err+"\nin DialogListener of "+dialogListeners.elementAt(i)+
-				"\nat "+(err.getStackTrace()[0])+"\nfrom "+(err.getStackTrace()[1]));  //requires Java 1.4
+				"\nat "+(err.getStackTrace()[0])+"\nfrom "+(err.getStackTrace()[1]));
 			}
 		}
 		resetCounters();

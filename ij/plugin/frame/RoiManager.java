@@ -520,9 +520,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			isStandard = true;
 		else if (len>=17 && name.charAt(5)=='-' && name.charAt(11)=='-' )
 			isStandard = true;
-		else if (len>=9 && name.charAt(4)=='-')
+		else if (len>=9 && name.charAt(4)=='-' && Character.isDigit(name.charAt(5)))
 			isStandard = true;
-		else if (len>=11 && name.charAt(5)=='-')
+		else if (len>=11 && name.charAt(5)=='-' && Character.isDigit(name.charAt(6)))
 			isStandard = true;
 		return isStandard;
 	}
