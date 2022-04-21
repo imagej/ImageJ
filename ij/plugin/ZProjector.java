@@ -237,6 +237,7 @@ public class ZProjector implements PlugIn {
 	}
 
     private void doRGBProjection(ImageStack stack) {
+        boolean clip = method==SUM_METHOD && "true".equals(imp.getProp("ClipWhenSumming"));        	
         ImageStack[] channels = ChannelSplitter.splitRGB(stack, true);
         ImagePlus red = new ImagePlus("Red", channels[0]);
         ImagePlus green = new ImagePlus("Green", channels[1]);
@@ -268,6 +269,8 @@ public class ZProjector implements PlugIn {
         	blue2.setProcessor(b.convertToByte(false));
         }
         RGBStackMerge merge = new RGBStackMerge();
+        if (clip)
+        	merge.setScaleWhenConverting(false);
         ImageStack stack2 = merge.mergeStacks(w, h, d, red2.getStack(), green2.getStack(), blue2.getStack(), true);
         imp = saveImp;
         projImage = new ImagePlus(makeTitle(), stack2);

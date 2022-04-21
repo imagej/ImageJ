@@ -113,7 +113,6 @@ public class LutLoader extends ImagePlus implements PlugIn {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
 			if (imp.getProcessor().getNChannels()!=1) {
-if (imp!=null) throw new IllegalArgumentException();
 				IJ.error("LUTs cannot be assiged to RGB Images.");
 			} else if (imp.isComposite() && ((CompositeImage)imp).getMode()==IJ.GRAYSCALE) {
 				CompositeImage cimp = (CompositeImage)imp;
