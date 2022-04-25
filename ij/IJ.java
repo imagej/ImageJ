@@ -62,7 +62,6 @@ public class IJ {
 	private static boolean macroRunning;
 	private static Thread previousThread;
 	private static TextPanel logPanel;
-	private static boolean checkForDuplicatePlugins = true;		
 	private static ClassLoader classLoader;
 	private static boolean memMessageDisplayed;
 	private static long maxMemory;
@@ -228,11 +227,6 @@ public class IJ {
 		if (IJ.debugMode)
 			IJ.log("runUserPlugIn: "+className+", arg="+argument(arg));
 		if (applet!=null) return null;
-		if (checkForDuplicatePlugins) {
-			// check for duplicate classes and jars in the plugins folder
-			IJ.runPlugIn("ij.plugin.ClassChecker", "");
-			checkForDuplicatePlugins = false;
-		}
 		if (createNewLoader)
 			classLoader = null;
 		ClassLoader loader = getClassLoader();

@@ -254,7 +254,7 @@ public class ZProjector implements PlugIn {
 		color = "(blue)"; doProjection();
 		ImagePlus blue2 = projImage;
         int w = red2.getWidth(), h = red2.getHeight(), d = red2.getStackSize();
-        if (method==SD_METHOD) {
+        if (method==SD_METHOD || (method==SUM_METHOD&&!clip)) {
         	ImageProcessor r = red2.getProcessor();
         	ImageProcessor g = green2.getProcessor();
         	ImageProcessor b = blue2.getProcessor();
@@ -262,11 +262,17 @@ public class ZProjector implements PlugIn {
         	double rmax = r.getStats().max; if (rmax>max) max=rmax;
         	double gmax = g.getStats().max; if (gmax>max) max=gmax;
         	double bmax = b.getStats().max; if (bmax>max) max=bmax;
-        	double scale = 255/max;
-        	r.multiply(scale); g.multiply(scale); b.multiply(scale);
-        	red2.setProcessor(r.convertToByte(false));
-        	green2.setProcessor(g.convertToByte(false));
-        	blue2.setProcessor(b.convertToByte(false));
+        	float scale = (float)(255.0/max);
+			float[] rpixels = (float[])r.getPixels();
+			float[] gpixels = (float[])g.getPixels();
+			float[] bpixels = (float[])b.getPixels();
+			for (int i=0; i<rpixels.length; i++) {
+				rpixels[i] *= scale;
+				gpixels[i] *= scale;
+				bpixels[i] *= scale;
+			}
+			r.resetMinAndMax(); g.resetMinAndMax(); b.resetMinAndMax();
+        	if (method==SUM_METHOD&&clip) clip=true;
         }
         RGBStackMerge merge = new RGBStackMerge();
         if (clip)

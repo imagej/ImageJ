@@ -10,9 +10,7 @@ public class ClassChecker implements PlugIn {
 	String[] names;
 
 	public void run(String arg) {
-		//long start = System.currentTimeMillis();
 		deleteDuplicates();
-		//IJ.log("Time: "+(System.currentTimeMillis()-start));
 	}
 	
 	void deleteDuplicates() {
@@ -35,10 +33,8 @@ public class ClassChecker implements PlugIn {
 		for (int i=0; i<names.length; i++) {
 			if (path1==null && names[i].equals(name)) {
 				path1 = paths[i] +names[i];
-//IJ.log("path1: "+i+"   "+name+"   "+path1+"   "+paths[i]+"   "+names[i]);
 			} else if (path2==null && names[i].equals(name)) {
 				path2 = paths[i] +names[i];
-//IJ.log("path2: "+i+"   "+name+"   "+path2+"   "+paths[i]+"   "+names[i]);
 			}
 			if (path1!=null && path2!=null) {
 				file1 = new File(path1);

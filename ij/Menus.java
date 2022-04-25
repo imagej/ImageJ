@@ -1685,7 +1685,7 @@ public class Menus {
 		if (err!=null) IJ.error(err);
 		m.installStartupMacroSet();
 		IJ.resetClassLoader();
-		IJ.runPlugIn("ij.plugin.ClassChecker", "");
+		//IJ.runPlugIn("ij.plugin.ClassChecker", "");
 		IJ.showStatus("Menus updated: "+m.nPlugins + " commands, " + m.nMacros + " macros");
 	}
 	

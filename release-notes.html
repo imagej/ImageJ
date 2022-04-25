@@ -5,20 +5,30 @@
 </head>
 <body>
 
+<li> <u>1.53s6 25 April 2022</u>
+<ul>
+<li> Thanks to Wilhelm Burger, ImageJ only uses the ClassChecker
+when running the <i>Compile and Run</i> command.
+</ul>
+
 <li> <u>1.53r 21 April 2022</u>
 <ul>
+<li> Added a "Help" button to the <i>Channels</i> dialog.
 <li> The <i>Image&gt;Type&gt;RGB Stack</i> command converts
 multi-channel composite images into RGB stacks
 (<a href="http://wsr.imagej.net/macros/CompositeProjection.ijm">example</a>).
-<li> Added a "Help" button to the <i>Channels</i> dialog.
+<li> Set the "ClipWhenSumming" image property "true" and the
+<i>Image&gt;Stacks&gt;Z Project</i> command will clip at 255
+when summing RGB stacks
+(<a href="http://wsr.imagej.net/macros/CompositeProjection.ijm">example</a>).
 <li> Added the <i>Image&gt;Color&gt;Invert LUTs</i> command.
 <li> Thanks to Bram van den Broek, restored the "Don't reset range"
-option to the "Threshold" dialog.
+option to the <i>Threshold</i> dialog.
 <li> Thanks to Alan Brooks, the "Fill with background color"
 option of the <i>Image&gt;Transform&gt;Rotate</i> command
 is now available with 16 and 32 bit images.
 <li> Thanks to Philippe Carl, press shift+alt+n to create a
-text window with “Run” and “Install” buttons, and a language
+text window with "Run" and "Install" buttons, and a language
 drop down menu.
 <li> Thanks to Stein Rorvik, added the ImageJ.getStatusBarText() method.
 <li> Thanks to Wilhelm Burger, added versions of the ImageProcessor
@@ -59,7 +69,6 @@ images with overlays to not work as expected.
 PNG images to open as stacks.
 <li> Thanks to Christophe Leterrier, fixed a 1.53p regression that caused the
 run("Table...",options) macro function to fail.
-
 </ul>
 
 <li> <u>1.53p 4 March 2022</u>
