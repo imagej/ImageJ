@@ -4,7 +4,7 @@ import ij.util.*;
 import java.io.*;
 import java.util.*;
 
-/** Checks for duplicate class and JAR files in the plugins folders and deletes older duplicates. */
+/** Checks for duplicate class and JAR files in the plugins folders. */
 public class ClassChecker implements PlugIn {
 	String[] paths;
 	String[] names;
@@ -42,20 +42,17 @@ public class ClassChecker implements PlugIn {
 				if (file1==null || file2==null) return;
 				date1 = file1.lastModified();
 				date2 = file2.lastModified();
-				if (date1<date2) {
-					write(path1);
-					file1.delete();
-				} else {
-					write(path2);
-					file2.delete();
-				}
+				if (date1<date2)
+					log(path1);
+				else
+					log(path2);
 				break;
 			}
 		}
 	}
 
-	void write(String path) {
-		IJ.log("Deleting duplicate plugin: "+path);
+	void log(String path) {
+		IJ.log("Duplicate plugin: "+path);
 	}
 
 	/** Gets lists of all the class and jar files in the plugins

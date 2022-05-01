@@ -5,15 +5,15 @@ import java.awt.*;
 import ij.plugin.filter.*;
 
 public class Filter_Plugin implements PlugInFilter {
-	ImagePlus imp;
+    ImagePlus imp;
 
-	public int setup(String arg, ImagePlus imp) {
-		this.imp = imp;
-		return DOES_ALL;
-	}
+    public int setup(String arg, ImagePlus imp) {
+        this.imp = imp;
+        return DOES_ALL;
+    }
 
-	public void run(ImageProcessor ip) {
-		ip.invert();
-	}
+    public void run(ImageProcessor ip) {
+        ip.invert();
+    }
 
 }

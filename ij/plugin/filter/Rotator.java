@@ -98,7 +98,9 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 		IJ.run(imp, "Select All", "");
 		IJ.run(imp, "Rotate...", "angle="+angle);
 		Roi roi = imp.getRoi();
-		Rectangle r = roi.getBounds();
+		imp.deleteRoi();
+		Rectangle2D.Double fb = roi.getFloatBounds();
+		Rectangle r = new Rectangle((int)Math.round(fb.x),(int)Math.round(fb.y),(int)Math.round(fb.width),(int)Math.round(fb.height));
 		if (r.width<imp.getWidth()) r.width = imp.getWidth();
 		if (r.height<imp.getHeight()) r.height = imp.getHeight();
 		IJ.showStatus("Rotate: Enlarging...");

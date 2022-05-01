@@ -125,6 +125,7 @@ public class NewPlugin implements PlugIn {
 		text += "\t}\n";
 		text += "\n";
 		text += "}\n";
+		text = text.replaceAll("\\t","    ");
 		ed.create(pluginName, text);
 	}
 	
