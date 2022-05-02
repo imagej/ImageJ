@@ -497,8 +497,11 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			duplicateStack = gd.getNextBoolean();
 			if (duplicateStack) {
 				String[] range = Tools.split(gd.getNextString(), " -");
-				double d1 = gd.parseDouble(range[0]);
-				double d2 = range.length==2?gd.parseDouble(range[1]):Double.NaN;
+				double d1=1, d2=stackSize;
+				if (range!=null && range.length>0) {
+					d1 = gd.parseDouble(range[0]);
+					d2 = range.length==2?gd.parseDouble(range[1]):Double.NaN;
+				}
 				first = Double.isNaN(d1)?1:(int)d1;
 				last = Double.isNaN(d2)?stackSize:(int)d2;
 				if (first<1) first = 1;

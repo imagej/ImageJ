@@ -936,38 +936,48 @@ public class Plot implements Cloneable {
 	}
 
 	/** Adds a legend at the position given in 'options', where 'labels' can be tab-delimited or
-		newline-delimited list of curve or point labels in the sequence these data were added.
-		Hidden data sets are ignored.
-		If 'labels' is null or empty, the labels of the data set previously (if any) are used.
+	 *  newline-delimited list of curve or point labels in the sequence these data were added.
+	 *  Hidden data sets are ignored; no labels (and no delimiters) should be provided for these.
+	 *  Apart from top to bottom and bottom to top (controlled by "bottom-to-top" in the options),
+	 *  the sequence may be altered by preceding numbers followed by double underscores, such as
+	 *  "1__Other Data Set\t0__First Data Set" (the number and double underscore won't be displayed).
+	 *  When this possibility is used, only items with double underscores will be shown in the legend
+	 *  (preceding double underscores without a number make the item appear in the legend without altering the sequence).
+	 * 	If 'labels' is null or empty, the labels of the data set previously (if any) are used.
 		To modify the legend's style, call 'setFont' and 'setLineWidth' before 'addLegend'. */
-		public void addLegend(String labels, String options) {
-			int flags = 0;
-			if (options!=null) {
-				options = options.toLowerCase();
-				if (options.contains("top-left"))
-					flags |= Plot.TOP_LEFT;
-				else if (options.contains("top-right"))
-					flags |= Plot.TOP_RIGHT;
-				else if (options.contains("bottom-left"))
-					flags |= Plot.BOTTOM_LEFT;
-				else if (options.contains("bottom-right"))
-					flags |= Plot.BOTTOM_RIGHT;
-				else if (!options.contains("off") && !options.contains("no"))
-					flags |= Plot.AUTO_POSITION;
-				if (options.contains("bottom-to-top"))
-					flags |= Plot.LEGEND_BOTTOM_UP;
-				if (options.contains("transparent"))
-					flags |= Plot.LEGEND_TRANSPARENT;
-			}
-			setLegend(labels, flags);
+	public void addLegend(String labels, String options) {
+		int flags = 0;
+		if (options!=null) {
+			options = options.toLowerCase();
+			if (options.contains("top-left"))
+				flags |= Plot.TOP_LEFT;
+			else if (options.contains("top-right"))
+				flags |= Plot.TOP_RIGHT;
+			else if (options.contains("bottom-left"))
+				flags |= Plot.BOTTOM_LEFT;
+			else if (options.contains("bottom-right"))
+				flags |= Plot.BOTTOM_RIGHT;
+			else if (!options.contains("off") && !options.contains("no"))
+				flags |= Plot.AUTO_POSITION;
+			if (options.contains("bottom-to-top"))
+				flags |= Plot.LEGEND_BOTTOM_UP;
+			if (options.contains("transparent"))
+				flags |= Plot.LEGEND_TRANSPARENT;
 		}
+		setLegend(labels, flags);
+	}
 
 	/** Adds a legend. The legend will be always drawn last (on top of everything).
 	 *	To modify the legend's style, call 'setFont' and 'setLineWidth' before 'addLegend'
 	 *	@param labels labels of the points or curves in the sequence of the data were added, tab-delimited or linefeed-delimited.
 	 *	The labels of the datasets will be set to these values. If null or not given, the labels set
 	 *	previously (if any) will be used.
-	 *  Hidden data sets are ignored.
+	 *	Hidden data sets are ignored; no labels (and no delimiters) should be provided for these.
+	 *	Apart from top to bottom and bottom to top (controlled by the LEGEND_BOTTOM_UP flag),
+	 *  the sequence may be altered by preceding numbers followed by double underscores, such as
+	 *  "1__Other Data Set\t0__First Data Set" (the number and double underscore won't be displayed).
+	 *  When this possibility is used, only items with double underscores will be shown in the legend
+	 *  (preceding double underscores without a number make the item appear in the legend without altering the sequence).
 	 *	@param flags  Bitwise or of position (AUTO_POSITION, TOP_LEFT etc.), LEGEND_TRANSPARENT, and LEGEND_BOTTOM_UP if desired.
 	 *	Updates the image (if it is shown already). */
 	public void setLegend(String labels, int flags) {
@@ -3044,7 +3054,7 @@ public class Plot implements Cloneable {
 					for (int i=0; i<Math.min(plotObject.xValues.length, plotObject.yValues.length); i++) {
 						if ((!logXAxis || plotObject.xValues[i]>0) && (!logYAxis || plotObject.yValues[i]>0)
 						&& !Double.isNaN(plotObject.xValues[i]) && !Double.isNaN(plotObject.yValues[i]))
-							drawShape(plotObject, scaleX(plotObject.xValues[i]), scaleY(plotObject.yValues[i]), markSize, i);
+							drawShape(plotObject, scaleX(plotObject.xValues[i]), scaleY(plotObject.yValues[i]), plotObject.shape, markSize, i);
 					}
 					if (plotObject.shape==CUSTOM)
 						ip.setFont(saveFont);
@@ -3273,8 +3283,7 @@ public class Plot implements Cloneable {
 	}
 
 	/** Draw the symbol for the data point number 'pointIndex' (pointIndex < 0 when drawing the legend) */
-	void drawShape(PlotObject plotObject, int x, int y, int size, int pointIndex) {
-		int shape = plotObject.shape;
+	void drawShape(PlotObject plotObject, int x, int y, int shape, int size, int pointIndex) {
 		if (shape == DIAMOND) size = (int)(size*1.21);
 		int xbase = x-sc(size/2);
 		int ybase = y-sc(size/2);
@@ -3602,26 +3611,39 @@ public class Plot implements Cloneable {
 		if (bottomUp) y += (nLabels-1) * lineHeight;
 		int xText = x0 + frameThickness/2 + sc(2f*LEGEND_PADDING + LEGEND_LINELENGTH + maxLineThickness);
 		int xMarker = x0 + frameThickness/2 + sc(LEGEND_PADDING + 0.5f*(LEGEND_LINELENGTH + maxLineThickness));
+		int xLine0 = x0 + frameThickness/2 + sc(LEGEND_PADDING) + 1;
 		for (PlotObject plotObject : usedPlotObjects)
 			if (plotObject.type == PlotObject.XY_DATA && !plotObject.hasFlag(PlotObject.HIDDEN) && plotObject.label != null) {		//label exists: was set now or previously
-				if (plotObject.hasFilledMarker()) {
+				int shape = plotObject.shape;
+				if (shape == SEPARATED_BAR) shape = BOX; //for bar plots, draw a square in the legend
+				int yShiftLine = 0;
+				if (shape == FILLED || shape == BAR && plotObject.color2 != null)  //shift line up to make space for fill pattern
+					yShiftLine = sc(0.1f*legendObject.getFontSize() + 0.3f*plotObject.lineWidth);
+				int markerSize = plotObject.getMarkerSize();
+				if (plotObject.shape == SEPARATED_BAR && markerSize < 0.6*legendObject.getFontSize())
+					markerSize = 2*(int)(0.3*legendObject.getFontSize()) + 1; // for 'separated bar', a larger box (an odd number, to have it centered)
+				if (plotObject.hasFilledMarker() || (plotObject.shape == SEPARATED_BAR && plotObject.color2 != null)) {
 					ip.setColor(plotObject.color2);
-					fillShape(plotObject.shape, xMarker, y, plotObject.getMarkerSize());
+					fillShape(shape, xMarker, y, markerSize);
+				} else if (yShiftLine != 0) {  //fill area below line (shape=FILLED or BAR)
+					ip.setColor(plotObject.color2 == null ? plotObject.color : plotObject.color2);
+					ip.fillRect(xLine0, y-yShiftLine, 2*(xMarker - xLine0)+1, yShiftLine+(int)(0.3*legendObject.getFontSize()));
 				}
 				int lineWidth = sc(plotObject.lineWidth);
+				if (lineWidth < 1) lineWidth = 1;
 				ip.setLineWidth(lineWidth);
-				if (plotObject.hasMarker()) {
-					Font saveFont = ip.getFont();
-					ip.setColor(plotObject.color);
-					drawShape(plotObject, xMarker, y, plotObject.getMarkerSize(), -1);
-					if (plotObject.shape==CUSTOM) ip.setFont(saveFont);
-				}
 				if (plotObject.hasCurve() || plotObject.shape==BAR) {
 					Color c = plotObject.shape == CONNECTED_CIRCLES ?
 							(plotObject.color2 == null ? Color.black : plotObject.color2) :
 							plotObject.color;
 					ip.setColor(c);
-					ip.drawLine(x0+frameThickness/2+sc(LEGEND_PADDING)+lineWidth, y, xText-sc(LEGEND_PADDING)-lineWidth, y);
+					ip.fillRect(xLine0, y-lineWidth/2-yShiftLine, 2*(xMarker - xLine0)+1, lineWidth); //draw line as a rectangle
+				}
+				if (plotObject.hasMarker() || plotObject.shape == SEPARATED_BAR) {
+					Font saveFont = ip.getFont();
+					ip.setColor(plotObject.color);
+					drawShape(plotObject, xMarker, y, shape, markerSize, -1);
+					if (plotObject.shape==CUSTOM) ip.setFont(saveFont);
 				}
 				ip.setColor(plotObject.color);
 				ip.setLineWidth(frameThickness);
@@ -4306,7 +4328,7 @@ class PlotObject implements Cloneable, Serializable {
 	}
 
 	/** Size of the markers for an XY_DATA object with markers */
-	int getMarkerSize () {
+	int getMarkerSize() {
 		return lineWidth<=1 ? 5 : 7;
 	}
 
@@ -4328,6 +4350,11 @@ class PlotObject implements Cloneable, Serializable {
 		if (font == null && fontFamily != null)     //after recovery from serialization, create the font from its description
 			font = FontUtil.getFont(fontFamily, flags&FONT_STYLE_MASK, fontSize);
 		return font;
+	}
+
+	/** Returns the font size */
+	float getFontSize() {
+		return fontSize;
 	}
 
 	/** Returns all data xValues, yValues, xEValues, yEValues as a float[][] array. Note that future versions may have more data. */
