@@ -1201,6 +1201,9 @@ public class ResultsTable implements Cloneable {
 		String[] headings = lines[0].split(cellSeparator);
 		if (headings.length<1)
 			throw new IOException("This is not a tab or comma delimited text file.");
+		String zeroWidthSpace = "\uFEFF";
+		if (headings[0].startsWith(zeroWidthSpace))
+			headings[0] = headings[0].substring(1, headings[0].length());
 		int numbersInHeadings = 0;
 		for (int i=0; i<headings.length; i++) {
 			if (headings[i].equals("NaN") || !Double.isNaN(Tools.parseDouble(headings[i])))
