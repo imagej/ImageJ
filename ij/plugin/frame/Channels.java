@@ -19,7 +19,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 	+"<h1>Composite Display Modes</h1>"
 	+"<font size=+1>"
 	+"<ul>"
-	+"<li> <u>Composite</u> -  Effectively creates an RGB image for each channel, based on its LUT, and the red, green and blue values are added together to create the displayed image. The values are clipped at 255, which can cause saturation (e.g., the 5 channel \"Neuron\" sample image). This is the original ImageJ composite mode.<br>"
+	+"<li> <u>Composite</u> -  Effectively creates an RGB image for each channel, based on its LUT, and then adds the red, green and blue values to create the displayed image. The values are clipped at 255, which can cause saturation. For an example, open the \"Neuron (5 channel)\" sample image and compare the <i>Composite</i> and <i>Composite Max</i> display modes. This is the original ImageJ composite mode.<br>"
 	+"<li> <u>Composite Max</u> - Similar to <i>Composite</i>, except uses the maximum of the red, green and blue values across all channels.<br>"
 	+"<li> <u>Composite Min</u> - Similar to <i>Composite</i>, except uses the minimum of the red, green and blue values across all channels. This mode, and <i>Composite Invert</i>, require that the channels have inverting (white background) LUTs. Linear non-inverting LUTs that use a single color are automatically inverted.<br>"
 	+"<li> <u>Composite Invert</u> - Similar to <i>Composite</i>, except the red, green and blue values are effectively subracted from 255. The values are clipped at 0, which can cause saturation.<br>"
@@ -36,7 +36,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 	+"<li> <u>Red, Green, Blue, Cyan, Magenta, Yellow, Grays</u> - Updates the current channel's LUT so that it uses the selected color.<br>"
 	+"</ul>"
 	+"<br>"
-	+"The <i>\"Channels & Colors\"</i> chapter of Peter Bankhead's \"<i>Introduction to Bioimage Analysis</i>\" (https://bioimagebook.github.io) is a good introduction to multichannel images and LUTs.<br>"	
+	+"The <i>\"Channels & Colors\"</i> chapter of Pete Bankhead's \"<i>Introduction to Bioimage Analysis</i>\" (https://bioimagebook.github.io) is a good introduction to multichannel images and LUTs.<br>"	
 	+"<br>"	
 	+"The macro at http://wsr.imagej.net/macros/CompositeProjection.ijm uses the \"Invert LUTs\", \"RGB Stack\", \"Z Project\" and \"Invert\" commands to reproduce the four composite display modes.<br>"
 	+"</font>";

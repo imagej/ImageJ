@@ -65,6 +65,7 @@ public class SubstackMaker implements PlugIn {
 	}
 
 	public ImagePlus makeSubstack(ImagePlus imp, String userInput) {
+		boolean hasFrames = imp.getNFrames()==imp.getStackSize();
 		String stackTitle = "Substack ("+userInput+")";
 		if (stackTitle.length()>25) {
 			int idxA = stackTitle.indexOf(",",18);
@@ -120,6 +121,8 @@ public class SubstackMaker implements PlugIn {
 		} catch (Exception e) {
 			IJ.error("Substack Maker", "Invalid input string:  \n \n  \""+userInput+"\"");
 		}
+		if (hasFrames && imp2!=null)
+			imp2.setDimensions(1, 1, imp2.getStackSize());
 		return imp2;
 	}
 	

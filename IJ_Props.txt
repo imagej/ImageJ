@@ -185,6 +185,7 @@ hyperstacks01="New Hyperstack...",ij.plugin.HyperStackMaker
 hyperstacks02="Stack to Hyperstack...",ij.plugin.HyperStackConverter("stacktohs")
 hyperstacks03="Hyperstack to Stack",ij.plugin.HyperStackConverter("hstostack")
 hyperstacks04="Reduce Dimensionality...",ij.plugin.HyperStackReducer
+hyperstacks05="Make Subset...",ij.plugin.SubstackMaker
 
 # Plugins installed in the Image/Transform submenu
 transform01="Flip Horizontally",ij.plugin.filter.Transformer("fliph")

@@ -243,13 +243,12 @@ public class ImageInfo implements PlugIn {
     			label = " (" + label + ")";
     		else
     			label = "";
-			if (interval>0.0 || fps!=0.0) {
+			if (imp.getNFrames()>1 || interval>0.0 || fps!=0.0) {
 				s += "Frame: " + number + label + "\n";
 				if (fps!=0.0) {
 					String sRate = Math.abs(fps-Math.round(fps))<0.00001?IJ.d2s(fps,0):IJ.d2s(fps,5);
 					s += "Frame rate: " + sRate + " fps\n";
-				}
-				if (interval!=0.0)
+				} else
 					s += "Frame interval: " + ((int)interval==interval?IJ.d2s(interval,0):IJ.d2s(interval,5)) + " " + cal.getTimeUnit() + "\n";
 			} else
 				s += "Image: " + number + label + "\n";

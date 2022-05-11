@@ -193,7 +193,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			defaultString = ij.measure.ResultsTable.d2s(defaultValue, digits);
 		if (Double.isNaN(defaultValue))
 			defaultString = "";
-		TextField tf = new TextField(defaultString, columns);
+		TextField tf = newTextField(defaultString, columns);
 		if (IJ.isLinux()) tf.setBackground(Color.white);
 		tf.addActionListener(this);
 		tf.addTextListener(this);
@@ -289,7 +289,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			defaultStrings = new Vector(4);
 		}
 
-		TextField tf = new TextField(defaultText, columns);
+		TextField tf = newTextField(defaultText, columns);
 		if (IJ.isLinux()) tf.setBackground(Color.white);
 		tf.setEchoChar(echoChar);
 		echoChar = 0;
@@ -891,6 +891,23 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		s.setUnitIncrement(1);
 		if (IJ.isMacOSX())
 			s.addKeyListener(this);
+						
+		s.addMouseWheelListener(new MouseWheelListener() {
+			public void mouseWheelMoved(MouseWheelEvent e) {
+				Scrollbar sb = (Scrollbar)e.getSource();
+				int value = sb.getValue() + e.getWheelRotation();
+				sb.setValue(value);
+				for (int i=0; i<slider.size(); i++) {
+					if (sb==slider.elementAt(i)) {
+						int index = ((Integer)sliderIndexes.get(i)).intValue();
+						TextField tf = (TextField)numberField.elementAt(index);
+						double scale = ((Double)sliderScales.get(i)).doubleValue();
+						int digits = ((Integer)sliderDigits.get(i)).intValue();
+						tf.setText(""+IJ.d2s(sb.getValue()/scale,digits));
+					}
+				}
+			}
+		});
 
 		if (numberField==null) {
 			numberField = new Vector(5);
@@ -900,8 +917,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		if (IJ.isWindows()) columns -= 2;
 		if (columns<1) columns = 1;
 		//IJ.log("scale=" + scale + ", columns=" + columns + ", digits=" + digits);
-		TextField tf = new TextField(IJ.d2s(defaultValue/scale, digits), columns);
-		if (IJ.isLinux()) tf.setBackground(Color.white);
+		TextField tf = newTextField(IJ.d2s(defaultValue/scale,digits),columns);
+		//if (IJ.isLinux()) tf.setBackground(Color.white);
 		tf.addActionListener(this);
 		tf.addTextListener(this);
 		tf.addFocusListener(this);
@@ -939,6 +956,13 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		add(panel, c);
 		if (Recorder.record || macro)
 			saveLabel(tf, label);
+	}
+	
+	private TextField newTextField(String txt, int columns) {
+		if (IJ.isLinux())
+			return new TrimmedTextField(txt,columns);
+		else
+			return new TextField(txt,columns);
 	}
 
 	/** Adds a Panel to the dialog. */
@@ -1928,6 +1952,27 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			}
 			if (path!=null)
 				this.textField.setText(path);
+		}
+	
+	}
+	
+	private class TrimmedTextField extends TextField {
+	
+		public TrimmedTextField(String text, int columns) {
+			super(text, columns);
+		}
+
+		public Dimension getMinimumSize() {
+			Dimension d = super.getMinimumSize();
+			if (d!=null) {
+				d.width = d.width;
+				d.height = d.height*3/4;
+			}
+			return d;
+		}
+
+		public Dimension getPreferredSize() {
+			return getMinimumSize();
 		}
 	
 	}

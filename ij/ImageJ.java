@@ -79,7 +79,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.53s";
-	public static final String BUILD = "19";
+	public static final String BUILD = "29";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -609,6 +609,11 @@ public class ImageJ extends Frame implements ActionListener,
 			return true;
 		// Control Panel?
 		if (frame!=null && frame instanceof javax.swing.JFrame)
+			return true;
+		// Channels dialog?
+		Window window = WindowManager.getActiveWindow();
+		title = window!=null&&(window instanceof Dialog)?((Dialog)window).getTitle():null;
+		if (title!=null && title.equals("Channels"))
 			return true;
 		ImageWindow win = imp.getWindow();
 		// LOCI Data Browser window?

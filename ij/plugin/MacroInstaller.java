@@ -575,10 +575,6 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		autoRunPgm = null;
 	}
 	
-	public MacroInstaller getInstance() {
-		return instance;
-	}
-	
 	public String toString() {
 		return ("MacroInstaller[size="+macroNames.size()+(macroNames.size()>0?","+macroNames.get(0):"")+"]");
 	}
