@@ -96,7 +96,10 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		imp2.setTitle(newTitle);
 		imp2.setProp("UniqueName","true");
 		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE) {
-			Roi roi2 = (Roi)cropRoi(imp, roi).clone();
+			Roi roi2 = cropRoi(imp, roi);
+			if (roi2==null)
+				return;
+			roi2 = (Roi)roi2.clone();
 			roi2.setLocation(0, 0);
 			imp2.setRoi(roi2);
 		}
@@ -665,6 +668,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		if (imp==null)
 			return roi;
 		Rectangle b = roi.getBounds();
+		if (b.width==0 || b.height==0)
+			return null; // zero area
 		int w = imp.getWidth();
 		int h = imp.getHeight();
 		if (b.x<0 || b.y<0 || b.x+b.width>w || b.y+b.height>h) {

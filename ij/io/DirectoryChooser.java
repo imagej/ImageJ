@@ -39,7 +39,6 @@ import javax.swing.filechooser.*;
 			EventQueue.invokeAndWait(new Runnable() {
 				public void run() {
 					JFileChooser chooser = new JFileChooser();
-					GUI.scale(chooser);
 					chooser.setDialogTitle(title);
 					chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 					chooser.setDragEnabled(true);
@@ -70,7 +69,6 @@ import javax.swing.filechooser.*;
 		Java2.setSystemLookAndFeel();
 		try {
 			JFileChooser chooser = new JFileChooser();
-			GUI.scale(chooser);
 			chooser.setDialogTitle(title);
 			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 			chooser.setDragEnabled(true);

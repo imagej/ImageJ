@@ -505,7 +505,7 @@ public class Selection implements PlugIn, Measurements {
 		if (p!=null) {
 			Undo.setup(Undo.ROI, imp);
 			imp.deleteRoi();
-			Roi roi2 = new PolygonRoi(p, roi.POLYGON);
+			Roi roi2 = new PolygonRoi(p, Roi.POLYGON);
 			transferProperties(roi, roi2);
 			imp.setRoi(roi2);
 			IJ.showTime(imp, startTime, "Convex Hull ", 1);

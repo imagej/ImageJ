@@ -47,6 +47,7 @@ public class PolygonRoi extends Roi {
 		xp2 = new int[nPoints];
 		yp2 = new int[nPoints];
 		init2(type);
+		state = NORMAL;
 	}
 
 	/** Creates a new polygon or polyline ROI from float x and y arrays.
@@ -64,6 +65,7 @@ public class PolygonRoi extends Roi {
 		xp2 = new int[nPoints];
 		yp2 = new int[nPoints];
 		init2(type);
+		state = NORMAL;
 	}
 
 	/** Creates a new polygon or polyline ROI from float x and y arrays.

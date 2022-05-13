@@ -66,14 +66,12 @@ public class PointRoi extends PolygonRoi {
 	/** Creates a new PointRoi using the specified int arrays of offscreen coordinates. */
 	public PointRoi(int[] ox, int[] oy, int points) {
 		super(itof(ox), itof(oy), points, POINT);
-		width+=1; height+=1;
 		updateCounts();
 	}
 
 	/** Creates a new PointRoi using the specified float arrays of offscreen coordinates. */
 	public PointRoi(float[] ox, float[] oy, int points) {
 		super(ox, oy, points, POINT);
-		width+=1; height+=1;
 		updateCounts();
 	}
 
