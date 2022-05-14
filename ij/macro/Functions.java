@@ -4007,10 +4007,15 @@ public class Functions implements MacroConstants, Measurements {
 				String defaultDir = getLastString();
 				gd.addDirectoryField(label, defaultDir);
 			} else if (name.equals("addImageChoice")) {
-				String label = getStringArg();
+				String label = getFirstString();
+				String defaultImage = null;
+				if (interp.nextToken()==',')
+					defaultImage = getLastString();
+				else
+					interp.getRightParen();
 				if (WindowManager.getImageCount()==0)
 					interp.error("No images");
-				gd.addImageChoice(label, null);
+				gd.addImageChoice(label, defaultImage);
 			} else if (name.equals("addFile")) {
 				String label = getFirstString();
 				String defaultPath = getLastString();
@@ -5527,15 +5532,15 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	String doToString() {
-		String s = getFirstString();
-		interp.getToken();
-		if (interp.token==',') {
-			double value = Tools.parseDouble(s);
-			s = IJ.d2s(value, (int)interp.getExpression());
-			interp.getToken();
-		}
-		if (interp.token!=')') interp.error("')' expected");
-		return s;
+		int digits = 4;
+		double n = getFirstArg();
+		if ((int)n==n)
+			digits = 0;
+		if (interp.nextToken()==',')
+			digits = (int)getLastArg();
+		else
+			interp.getRightParen();
+		return IJ.d2s(n,digits);
 	}
 
 	double matches(String str) {

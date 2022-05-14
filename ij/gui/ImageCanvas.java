@@ -265,7 +265,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
     private void drawRoi(Roi roi, Graphics g) {
-		if (Interpreter.isBatchMode())
+		if (Interpreter.isBatchMode() && imp!=null && imp.getWindow()==null)
 			return;
 		if (roi==currentRoi) {
 			Color lineColor = roi.getStrokeColor();
