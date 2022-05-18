@@ -20,9 +20,7 @@ import ij.process.*;
 import ij.gui.*;
 import ij.io.*;
 import ij.plugin.filter.*;
-import ij.plugin.Colors;
-import ij.plugin.OverlayLabels;
-import ij.plugin.FolderOpener;
+import ij.plugin.*;
 import ij.util.*;
 import ij.macro.*;
 import ij.measure.*;
@@ -77,6 +75,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private boolean multiCropShow = true;
 	private boolean multiCropSave;
 	private int multiCropFormatIndex;
+	private static double angle = 45.0;
+	private static double xscale = 1.5;
+	private static double yscale = 1.5;
+	private static boolean scaleCentered = true;
+	
 
 	/** Opens the "ROI Manager" window, or activates it if it is already open.
 	 * @see #RoiManager(boolean)
@@ -190,10 +193,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("Labels...");
 		addPopupItem("List");
 		addPopupItem("Interpolate ROIs");
+		addPopupItem("Scale...");
+		addPopupItem("Rotate...");
 		addPopupItem("Translate...");
+		addPopupItem("ROI Manager Action");
 		addPopupItem("Help");
 		addPopupItem("Options...");
-		addPopupItem("ROI Manager Action");
 		add(pm);
 	}
 
@@ -271,6 +276,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			listRois();
 		else if (command.equals("Interpolate ROIs"))
 			interpolateRois();
+		else if (command.equals("Scale..."))
+			scale();
+		else if (command.equals("Rotate..."))
+			rotate();
 		else if (command.equals("Translate..."))
 			translate();
 		else if (command.equals("Help"))
@@ -2156,14 +2165,27 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	/** Returns the name of the ROI with the specified index,
-		or null if the index is out of range.
-		See also: RoiManager.getName() macro function.
+	 * or null if the index is out of range.
+	 * See also: RoiManager.getName() macro function.
 	*/
 	public String getName(int index) {
 		if (index>=0 && index<getCount())
-			return	(String) listModel.getElementAt(index);
+			return	(String)listModel.getElementAt(index);
 		else
 			return null;
+	}
+
+	/** Returns the index of the first ROI with the
+	 * specified name, or -1 if no ROI has that name.
+	 * See also: RoiManager.getIndex() macro function.
+	*/
+	public int getIndex(String name) {
+		Roi[] rois = getRoisAsArray();
+		for (int i=0; i<rois.length; i++) {
+			if (name.equals(rois[i].getName()))
+				return i;
+		}
+		return -1;
 	}
 
 	/** Returns the name of the ROI with the specified index.
@@ -2369,6 +2391,104 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		updateShowAll();
 	}
 
+	private void scale() {
+		GenericDialog gd = new GenericDialog("Scale");
+		gd.addNumericField("X scale factor:", xscale, 2, 4, "");
+		gd.addNumericField("Y scale factor:", yscale, 2, 4, "");
+		gd.addCheckbox("Centered", scaleCentered);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		xscale = gd.getNextNumber();
+		yscale = gd.getNextNumber();
+		scaleCentered = gd.getNextBoolean();
+		scale(xscale, yscale, scaleCentered);
+		if (record()) {
+			if (Recorder.scriptMode())
+				Recorder.recordCall("rm.scale("+xscale+", "+yscale+", "+scaleCentered+");");
+			else
+				Recorder.recordString("RoiManager.scale("+xscale+", "+yscale+", "+scaleCentered+");\n");
+		}
+	}
+
+	public void scale(double xscale, double yscale, boolean centered) {
+		int[] indexes = getIndexes();
+		for (int i=0; i<indexes.length; i++) {
+			Roi roi = (Roi)rois.get(i);
+			Roi roi2 = RoiScaler.scale(roi, xscale, yscale, centered);
+			rois.set(i, roi2);
+		}
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) {
+			Roi[] rois = getRoisAsArray();
+			Overlay overlay = newOverlay();
+			for (int i=0; i<rois.length; i++)
+				overlay.add(rois[i]);
+			setOverlay(imp, overlay);
+		}
+	}
+
+	private void rotate() {
+		double xcenter = Double.NaN;
+		double ycenter = Double.NaN;
+		GenericDialog gd = new GenericDialog("Rotate");
+		gd.addNumericField("Angle:", angle, 2, 5, "degrees");
+		gd.addCheckbox("Rotate around image center", false);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		angle = gd.getNextNumber();
+		if (angle==0.0)
+			return;
+		boolean rotateAroundImageCenter = gd.getNextBoolean();
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null && rotateAroundImageCenter) {
+			xcenter = imp.getWidth()/2.0;
+			ycenter = imp.getHeight()/2.0;
+		}
+		rotate(angle, xcenter, ycenter);
+		if (record()) {
+			if (Recorder.scriptMode()) {
+				if (Double.isNaN(xcenter))
+					Recorder.recordCall("rm.rotate("+angle+");");
+				else
+					Recorder.recordCall("rm.rotate("+angle+", "+xcenter+", "+ycenter+");");
+			} else {
+				if (Double.isNaN(xcenter))
+					Recorder.recordString("RoiManager.rotate("+angle+");\n");
+				else
+					Recorder.recordString("RoiManager.rotate("+angle+", "+xcenter+", "+ycenter+");\n");
+			}
+		}
+	}
+	
+	public void rotate(double angle) {
+		rotate(angle, Double.NaN, Double.NaN);
+	}
+
+	public void rotate(double angle, double xcenter, double ycenter) {
+		boolean useRoiCenter = Double.isNaN(xcenter);
+		int[] indexes = getIndexes();
+		for (int i=0; i<indexes.length; i++) {
+			Roi roi = (Roi)rois.get(i);
+			if (useRoiCenter) {
+				FloatPolygon center = roi.getRotationCenter();
+				xcenter = center.xpoints[0];
+				ycenter = center.ypoints[0];
+			}
+			Roi roi2 = RoiRotator.rotate(roi, angle, xcenter, ycenter);
+			rois.set(i, roi2);
+		}
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) {
+			Roi[] rois = getRoisAsArray();
+			Overlay overlay = newOverlay();
+			for (int i=0; i<rois.length; i++)
+				overlay.add(rois[i]);
+			setOverlay(imp, overlay);
+		}
+	}
+
 	private void translate() {
 		GenericDialog gd = new GenericDialog("Translate");
 		gd.addNumericField("X offset (pixels): ", translateX, 0);
@@ -2383,7 +2503,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (Recorder.scriptMode())
 				Recorder.recordCall("rm.translate("+translateX+", "+translateY+");");
 			else
-				Recorder.record("roiManager", "translate", (int)translateX, (int)translateY);
+				Recorder.record("RoiManager.translate", (int)translateX, (int)translateY);
 		}
 	}
 

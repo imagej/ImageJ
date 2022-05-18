@@ -8000,6 +8000,9 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("select")) {
 			rm.select((int)getArg());
 			return null;
+		} else if (name.equals("selectByName")) {
+			rm.select(rm.getIndex(getStringArg()));
+			return null;
 		} else if (name.equals("setGroup")) {
 			int group = (int)getArg();
 			if (group<0 || group>255)
@@ -8012,12 +8015,28 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("getName")) {
 			String roiName = rm.getName((int)getArg());
 			return new Variable(roiName!=null?roiName:"");
+		} else if (name.equals("getIndex")) {
+			return new Variable(rm.getIndex(getStringArg()));
 		} else if (name.equals("setPosition")) {
 			int position = (int)getArg();
 			rm.setPosition(position);
 			return null;
 		} else if (name.equals("multiCrop")) {
 			rm.multiCrop(getFirstString(),getLastString());
+			return null;
+		} else if (name.equals("scale")) {
+			rm.scale(getFirstArg(),getNextArg(), getLastArg()==1?true:false);
+			return null;
+		} else if (name.equals("rotate")) {
+			double angle = getFirstArg();
+			if (interp.nextToken()==')') {
+				rm.rotate(angle);
+				interp.getRightParen();
+			} else
+				rm.rotate(angle, getNextArg(), getLastArg());
+			return null;
+		} else if (name.equals("translate")) {
+			rm.translate(getFirstArg(),getLastArg());
 			return null;
 		} else
 			interp.error("Unrecognized RoiManager function");

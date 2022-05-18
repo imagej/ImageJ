@@ -1969,7 +1969,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	/** Copy the attributes (outline color, fill color, outline width)
 		of	'roi2' to the this selection. */
 	public void copyAttributes(Roi roi2) {
-		this. strokeColor = roi2. strokeColor;
+		this. strokeColor = roi2.strokeColor;
 		this.fillColor = roi2.fillColor;
 		this.setStrokeWidth(roi2.getStrokeWidth());
 		this.setName(roi2.getName());

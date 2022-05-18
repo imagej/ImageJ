@@ -83,15 +83,16 @@ selection13=-
 selection14="Properties... [y]",ij.plugin.Selection("properties")
 selection15="Scale... ",ij.plugin.RoiScaler
 selection16="Rotate...",ij.plugin.Selection("rotate")
-selection17="Enlarge...",ij.plugin.RoiEnlarger
-selection18="Make Band...",ij.plugin.Selection("band")
-selection19="Specify...",ij.plugin.SpecifyROI
-selection20="Straighten...",ij.plugin.Straightener
-selection21="To Bounding Box",ij.plugin.Selection("tobox")
-selection22="Line to Area",ij.plugin.Selection("toarea")
-selection23="Area to Line",ij.plugin.Selection("toline")
-selection24="Image to Selection...",ij.plugin.OverlayCommands("image-roi")
-selection25="Add to Manager[t]",ij.plugin.Selection("add")
+selection17="Translate... ",ij.plugin.Selection("translate")
+selection18="Enlarge...",ij.plugin.RoiEnlarger
+selection19="Make Band...",ij.plugin.Selection("band")
+selection20="Specify...",ij.plugin.SpecifyROI
+selection21="Straighten...",ij.plugin.Straightener
+selection22="To Bounding Box",ij.plugin.Selection("tobox")
+selection23="Line to Area",ij.plugin.Selection("toarea")
+selection24="Area to Line",ij.plugin.Selection("toline")
+selection25="Image to Selection...",ij.plugin.OverlayCommands("image-roi")
+selection26="Add to Manager[t]",ij.plugin.Selection("add")
 
 # Plugins installed in the Edit/Options submenu
 options01="Appearance...",ij.plugin.AppearanceOptions

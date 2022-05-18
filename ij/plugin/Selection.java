@@ -23,8 +23,8 @@ public class Selection implements PlugIn, Measurements {
 	private static int lineWidth = 1;
 	private static boolean smooth;
 	private static boolean adjust;
-
-	
+	private static double translateX;
+	private static double translateY;
 
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
@@ -75,6 +75,8 @@ public class Selection implements PlugIn, Measurements {
 			toBoundingBox(imp); 
 		else if (arg.equals("rotate"))
 			rotate(imp); 
+		else if (arg.equals("translate"))
+			translate(imp); 
 		else if (arg.equals("enlarge"))
 			enlarge(imp); 
 		else if (arg.equals("rect"))
@@ -960,6 +962,39 @@ public class Selection implements PlugIn, Measurements {
 			transferProperties(roi, roi2);
 			imp.setRoi(roi2);
 			IJ.showTime(imp, startTime, "Fit Rectangle ", 1);
+		}
+	}
+	
+	private void translate(ImagePlus imp) {
+		if (!imp.okToDeleteRoi())
+			return;
+		Roi roi = imp.getRoi();
+		String options = Macro.getOptions();
+		if (options!=null && options.contains("interpolation=")) {
+			IJ.run("Translate...", options); // run Image>Transform>Translate
+			return;
+		}
+		if (roi==null) {
+			noRoi("Translate");
+			return;
+		}
+		double dx = translateX;
+		double dy = translateY;
+		GenericDialog gd = new GenericDialog("Translate");
+		gd.addNumericField("X offset (pixels): ", dx, 0);
+		gd.addNumericField("Y offset (pixels): ", dy, 0);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		dx = gd.getNextNumber();
+		dy = gd.getNextNumber();
+		Rectangle2D r = roi.getFloatBounds();
+		roi.setLocation(r.getX()+dx, r.getY()+dy);
+		if (imp!=null)
+			imp.draw();
+		if (options==null) {
+			translateX = dx;
+			translateY = dy;
 		}
 	}
 	
