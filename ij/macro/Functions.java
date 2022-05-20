@@ -8030,8 +8030,8 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("rotate")) {
 			double angle = getFirstArg();
 			if (interp.nextToken()==')') {
-				rm.rotate(angle);
 				interp.getRightParen();
+				rm.rotate(angle);
 			} else
 				rm.rotate(angle, getNextArg(), getLastArg());
 			return null;
