@@ -299,7 +299,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		if (info!=null)
 			imp2.setProperty("Info", info);
 		imp2.setProperties(imp.getPropertiesAsArray());
-		if (imp.isStack()) {
+		if (imp.hasImageStack()) {
 			ImageStack stack = imp.getStack();
 			String label = stack.getSliceLabel(imp.getCurrentSlice());
 			if (label!=null) {

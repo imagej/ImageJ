@@ -1322,7 +1322,7 @@ public class ResultsTable implements Cloneable {
 	}
 
 	public boolean saveAndRename(String path) {
-		if (!"Results".equals(title))
+		if (title!=null && !title.equals("Results"))
 			renameWhenSaving = true;
 		boolean ok = save(path);
 		renameWhenSaving = false;

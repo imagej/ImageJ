@@ -101,7 +101,7 @@ public class FileSaver {
 		if (imp.getProperty("FHT")!=null && path.contains("FFT of "))
 			setupFFTSave();
 		fi.info = imp.getInfoProperty();
-		String label = imp.isStack()?imp.getStack().getSliceLabel(1):null;
+		String label = imp.hasImageStack()?imp.getStack().getSliceLabel(1):null;
 		if (label!=null) {
 			fi.sliceLabels = new String[1];
 			fi.sliceLabels[0] = label;

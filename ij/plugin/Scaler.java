@@ -137,6 +137,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			cal.pixelWidth *= 1.0/xscale;
 			cal.pixelHeight *= 1.0/yscale;
 		}
+		cal.xOrigin *= xscale;
+		cal.yOrigin *= yscale;		
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && !imp.getHideOverlay() && !doZScaling)
 			imp2.setOverlay(overlay.scale(xscale, yscale));
@@ -150,9 +152,12 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		if (imp.isHyperStack())
 			imp2.setOpenAsHyperStack(true);
 		if (doZScaling) {
+			double oldSize = imp2.getStackSize();
 			Resizer resizer = new Resizer();
 			resizer.setAverageWhenDownsizing(averageWhenDownsizing);
-			imp2 = resizer.zScale(imp2, newDepth, interpolationMethod);
+			imp2 = resizer.zScale(imp2, newDepth, interpolationMethod);			
+			cal = imp2.getCalibration();
+			cal.zOrigin *= imp2.getStackSize()/oldSize;
 		}
 		return imp2;
 	}
@@ -168,6 +173,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 				cal.pixelWidth *= 1.0/xscale;
 				cal.pixelHeight *= 1.0/yscale;
 			}
+			cal.xOrigin *= xscale;
+			cal.yOrigin *= yscale;		
 			Overlay overlay = imp.getOverlay();
 			if (overlay!=null && !imp.getHideOverlay())
 				imp2.setOverlay(overlay.scale(xscale, yscale));

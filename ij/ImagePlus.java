@@ -1220,7 +1220,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	return size;
 	}
 
-	/** If this is a stack, returns the number of slices, else returns 1. */
+	/** Returns the number of stack images. */
 	public int getStackSize() {
 		if (stack==null || oneSliceStack)
 			return 1;
@@ -3419,6 +3419,22 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	return setIJMenuBar && Prefs.setIJMenuBar;
     }
 
+    /** Returns 'true' if this ImagePlus contains an ImageStack.
+     * A better name for this method would have been hasImageStack().
+	 * @see #getStackSize
+	 * @see #getNChannels
+	 * @see #getNSlices
+	 * @see #getNFrames
+	 * @see #getNDimensions	 
+    */
+    public boolean hasImageStack() {
+    	return stack!=null;
+    }
+
+	/**
+	* @deprecated
+	* Replaced by ImagePlus.hasImageStack()
+	*/
     public boolean isStack() {
     	return stack!=null;
     }
