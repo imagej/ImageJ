@@ -324,6 +324,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	 */
 	public void addDirectoryField(String label, String defaultPath) {
 		int columns = defaultPath!=null?Math.max(defaultPath.length(),25):25;
+		if (columns>50) columns=50;
 		addDirectoryField(label, defaultPath, columns);
 	}
 

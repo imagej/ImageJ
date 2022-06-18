@@ -5532,15 +5532,21 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	String doToString() {
-		int digits = 4;
-		double n = getFirstArg();
-		if ((int)n==n)
-			digits = 0;
-		if (interp.nextToken()==',')
-			digits = (int)getLastArg();
-		else
-			interp.getRightParen();
-		return IJ.d2s(n,digits);
+		interp.getLeftParen();
+		if (interp.nextNextToken()==',') {//1.53t bug fix
+			double n = interp.getExpression();
+			int digits = (int)getLastArg();
+			return IJ.d2s(n, digits);
+		}
+		String s = getString();
+		interp.getToken();
+		if (interp.token==',') {
+			double value = Tools.parseDouble(s);
+			s = IJ.d2s(value, (int)interp.getExpression());
+			interp.getToken();
+		}
+		if (interp.token!=')') interp.error("')' expected");
+		return s;
 	}
 
 	double matches(String str) {
@@ -6127,9 +6133,10 @@ public class Functions implements MacroConstants, Measurements {
 		Variable[] a = getArray();
 		interp.getRightParen();
 		StringBuilder sb = joinArray(a, ", ");
+		String str = sb.toString();
 		if (prefix!=null)
-			sb.append(prefix+" ");
-		interp.log(sb.toString());
+			str = prefix+" "+str;
+		interp.log(str);
 		return null;
 	}
 
