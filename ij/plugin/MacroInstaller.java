@@ -199,6 +199,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			if (macrosMenu!=null) {
 				resetMenu(isPluginsMacrosMenu);
 				macrosMenu.add(new MenuItem(anonymousName));
+				instance = this;
 			}
 			macroNames.add(anonymousName);
 			nMacros = 1;

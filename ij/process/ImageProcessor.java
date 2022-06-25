@@ -866,8 +866,8 @@ public abstract class ImageProcessor implements Cloneable {
 		else {
 			if ((roi instanceof PointRoi) && roi.size()==1) {
 				setMask(null);
-				FloatPolygon p = roi.getFloatPolygon();
-				setRoi((int)p.xpoints[0], (int)p.ypoints[0], 1, 1);
+				Polygon p = roi.getPolygon();
+				setRoi(p.xpoints[0], p.ypoints[0], 1, 1);
 			} else {
 				setMask(roi.getMask());
 				setRoi(roi.getBounds());
