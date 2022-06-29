@@ -26,9 +26,8 @@ public class ProfilePlot {
 	protected String yLabel;
 	protected float[] xValues;
 
-	// Modification for initial scale
+	//start for absolute pixel scaling
 	protected double xStart = 0;
-	// END of Modification
 
 	public ProfilePlot() {
 	}
@@ -62,20 +61,14 @@ public class ProfilePlot {
 				profile = getIrregularProfile(roi, ip, cal);
 			else
 				profile = getWideLineProfile(imp, lineWidth);
-		// ADDED || Prefs.verticalProfile || IJ.altKeyDown()
-		// allows for switching between vertical and horizontal profile in current plot
-		} else if (averageHorizontally || Prefs.verticalProfile || IJ.altKeyDown()){
+		} else if (averageHorizontally) {
 			profile = getRowAverageProfile(roi.getBounds(), cal, ip);
-			// Modification
-			xStart = roi.getBounds().y;
-			//END Modification
-			}
-		else	{
+			if (Prefs.absolutePixelScale) xStart = roi.getBounds().y * cal.pixelWidth;
+		}
+		else {
 			profile = getColumnAverageProfile(roi.getBounds(), ip);
-			// Modification
-			xStart = roi.getBounds().x;
-			//END Modification
-			}
+			if (Prefs.absolutePixelScale) xStart = roi.getBounds().x * cal.pixelWidth;
+		}
 		ip.setCalibrationTable(null);
 		ImageCanvas ic = imp.getCanvas();
 		if (ic!=null)
@@ -117,10 +110,8 @@ public class ProfilePlot {
   		if (xValues==null) {
 			xValues = new float[n];
 			for (int i=0; i<n; i++)
-				// Modifications to have proper scaling in x
-				// xValues[i] = (float)(i*xInc);
-				xValues[i] = (float)(xStart + i*xInc);
-				// END of Modification
+				if(Prefs.absolutePixelScale) xValues[i] = (float)(xStart + i*xInc);
+				else xValues[i] = (float)(i*xInc);
 		}
         float[] yValues = new float[n];
         for (int i=0; i<n; i++)
@@ -184,31 +175,7 @@ public class ProfilePlot {
 			double[] values = line.getPixels();
 			if (values==null) return null;
 
-			//current code (1.53t)
-//			if (cal!=null && cal.pixelWidth!=cal.pixelHeight) {
-//				FloatPolygon p = line.getFloatPoints();
-//				double dx = p.xpoints[1] - p.xpoints[0];
-//				double dy = p.ypoints[1] - p.ypoints[0];
-//				double pixelLength = Math.sqrt(dx*dx + dy*dy);
-//				dx = cal.pixelWidth*dx;
-//				dy = cal.pixelHeight*dy;
-//				double calibratedLength = Math.sqrt(dx*dx + dy*dy);
-//				xInc = calibratedLength * 1.0/pixelLength;
-//			}
-
-		// Modifications to have proper scaling in x
-		// It works well with horizontal or vertical lines
-		// Use SHIFT+LeftClick during line selection!
-
-//			if (cal!=null && cal.pixelWidth!=cal.pixelHeight) {
-//				double dx = cal.pixelWidth*(line.x2 - line.x1);
-//				double dy = cal.pixelHeight*(line.y2 - line.y1);
-//				double length = Math.round(Math.sqrt(dx*dx + dy*dy));
-//				if (values.length>1)
-//					xInc = length/(values.length-1);
-//			}
-
-		if (cal!=null ) { // Taken out : && cal.pixelWidth!=cal.pixelHeight
+		if (cal!=null) { // Taken out : && cal.pixelWidth!=cal.pixelHeight
 			FloatPolygon p = line.getFloatPoints();
 			double dx = p.xpoints[1] - p.xpoints[0];
 			double dy = p.ypoints[1] - p.ypoints[0];
@@ -216,20 +183,16 @@ public class ProfilePlot {
 			dx = cal.pixelWidth*dx;
 			dy = cal.pixelHeight*dy;
 			double calibratedLength = Math.sqrt(dx*dx + dy*dy);
-			xInc = calibratedLength * 1.0/pixelLength;
 			xStart = 0;
+			xInc = calibratedLength * 1.0/pixelLength;
 			if (values.length>1) {
-		
-				if (dy == 0.0) {
-					xStart = line.x1;
-					xInc = dx/(values.length-1);
-				} else if (dx == 0.0) {
-					xStart = line.y1;
-					xInc = dy/(values.length-1);
+				if (dy == 0.0 && Prefs.absolutePixelScale ) {
+					xStart = line.x1d * cal.pixelWidth;
+				} else if (dx == 0.0 && Prefs.absolutePixelScale) {
+					xStart = line.y1d * cal.pixelWidth;
 				}
 			}
 		}
-		// END of Modification
 			return values;
 	}
 
@@ -274,7 +237,7 @@ public class ProfilePlot {
 	}
 
 	/** Returns the profile for a polyline with single-pixel width.
-	 *  If subpixel resolution is enabled (Plot options>subpixel resolution),
+	 *  If subpixel resolution is enabled (Plot optionsoptions>subpixel resolution),
 	 *  the line coordinates are interpreted as the roi line shown at high zoom level,
 	 *  i.e., integer (x,y) is at the top left corner of pixel (x,y).
 	 *  Thus, the coordinates of the pixel center are taken as (x+0.5, y+0.5).

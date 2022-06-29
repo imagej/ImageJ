@@ -236,11 +236,10 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		more = new Button(moreButtonLabel);
 		more.addActionListener(this);
 		bottomPanel.add(more);
-		// Modifications
+		//Adds Options button to Window for easier access to Plot Options
 		editoptions = new Button(editoptionsButtonLabel);
 		editoptions.addActionListener(this);
 		bottomPanel.add(editoptions);
-		// END Modifications
 		if (plot!=null && plot.getPlotMaker()!=null) {
 			live = new Button("Live");
 			live.addActionListener(this);
@@ -272,9 +271,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 			showList(/*useLabels=*/false);
 		else
 			ic.requestFocus();	//have focus on the canvas, not the button, so that pressing the space bar allows panning
-		// Modifications
-		toggleLiveProfiling();
-		// END Modifications
+		//automatically enables live if Auto-live in Plot Options is enabled
+		if(Prefs.autoLive) toggleLiveProfiling();
+
 	}
 
 	/** Sets the Plot object shown in this PlotWindow. Does not update the window. */
@@ -459,12 +458,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 			new PlotDialog(plot, PlotDialog.HI_RESOLUTION).showDialog(this);
 		else if (b==menuItems[PROFILE_PLOT_OPTIONS])
 			IJ.doCommand("Plots...");
-			// Modifications
 		else if (b==editoptions)
-			//saveAsText();
 			IJ.run("Profile Plot Options...");
-			//ij.doCommand("Profile Plot Options...");
-			// END modification
 		ic.requestFocus();	//have focus on the canvas, not the button, so that pressing the space bar allows panning
 		} catch (Exception ex) { IJ.handleException(ex); }
 	}

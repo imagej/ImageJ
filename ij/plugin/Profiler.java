@@ -69,6 +69,8 @@ public class Profiler implements PlugIn, PlotMaker {
 		gd.setInsets(10,20,0);
 		gd.addCheckbox("Vertical profile", Prefs.verticalProfile);
 		gd.addCheckbox("Interpolate line profiles", PlotWindow.interpolate);
+		gd.addCheckbox("Absolute pixel scale", Prefs.absolutePixelScale);
+		gd.addCheckbox("Auto-live", Prefs.autoLive);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#plot-options");
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -94,6 +96,8 @@ public class Profiler implements PlugIn, PlotMaker {
 		//profile options
 		Prefs.verticalProfile = gd.getNextBoolean();
 		PlotWindow.interpolate = gd.getNextBoolean();
+		Prefs.absolutePixelScale = gd.getNextBoolean();
+		Prefs.autoLive = gd.getNextBoolean();
 		if (!fixedScale && !wasFixedScale && (ymin!=0.0 || ymax!=0.0))
 			fixedScale = true;
 		if (!fixedScale) {

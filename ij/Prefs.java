@@ -125,6 +125,10 @@ public class Prefs {
 	public static boolean fixedDicomScaling;
 	/** Plot rectangular selectons vertically */
 	public static boolean verticalProfile;
+	/** Scale plot based on actual/absolute pixel location of ROI*/
+	public static boolean absolutePixelScale;
+	/** Turn live display on plots automatically */
+	public static boolean autoLive;
 	/** Rotate YZ orthogonal views 90 degrees */
 	public static boolean rotateYZ;
 	/** Rotate XZ orthogonal views 180 degrees */
