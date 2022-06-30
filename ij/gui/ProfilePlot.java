@@ -237,7 +237,7 @@ public class ProfilePlot {
 	}
 
 	/** Returns the profile for a polyline with single-pixel width.
-	 *  If subpixel resolution is enabled (Plot optionsoptions>subpixel resolution),
+	 *  If subpixel resolution is enabled (Plot options>subpixel resolution),
 	 *  the line coordinates are interpreted as the roi line shown at high zoom level,
 	 *  i.e., integer (x,y) is at the top left corner of pixel (x,y).
 	 *  Thus, the coordinates of the pixel center are taken as (x+0.5, y+0.5).
