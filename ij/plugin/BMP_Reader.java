@@ -33,7 +33,15 @@ public class BMP_Reader extends ImagePlus implements PlugIn {
                         String msg = e.getMessage();
                         if (msg==null || msg.equals(""))
                                 msg = ""+e;
-                        IJ.error("BMP Reader", msg);
+                        if (msg.equals("Compression not supported")) {
+                        	ImagePlus imp = Opener.openUsingImageIO(path);
+                        	if (imp!=null) {
+                				setProcessor(name, imp.getProcessor());
+								if (arg.equals(""))
+									show();
+							}
+                        } else
+                        	IJ.error("BMP Reader", msg);
                         return;
                 } finally {
 					if (is!=null) {

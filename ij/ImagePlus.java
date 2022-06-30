@@ -1276,9 +1276,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		dimensionsSet = true;
 	}
 
-	/** Returns 'true' if this image is a hyperstack. */
+	/** Returns 'true' if this image has more than
+	 * three dimension of more than one channel.
+	*/
 	public boolean isHyperStack() {
-		return isDisplayedHyperStack() || (openAsHyperStack&&getNDimensions()>3);
+		return getNDimensions()>3 || getNChannels()>1;
 	}
 
 	/** Returns the number of dimensions (2, 3, 4 or 5). */
@@ -3420,7 +3422,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     }
 
     /** Returns 'true' if this ImagePlus contains an ImageStack.
-     * A better name for this method would have been hasImageStack().
 	 * @see #getStackSize
 	 * @see #getNChannels
 	 * @see #getNSlices
