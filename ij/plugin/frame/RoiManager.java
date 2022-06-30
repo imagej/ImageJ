@@ -342,7 +342,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	private boolean okToSet() {
-		return !(IJ.isMacOSX()&&IJ.isJava18());
+		//return !(IJ.isMacOSX()&&IJ.isJava18());
+		return false;
 	}
 
 	void add(boolean shiftKeyDown, boolean altKeyDown) {

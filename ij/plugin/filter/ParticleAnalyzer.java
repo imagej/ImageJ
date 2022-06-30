@@ -173,13 +173,24 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 
 			
 	/** Constructs a ParticleAnalyzer.
-		@param options	a flag word created by Oring SHOW_RESULTS, EXCLUDE_EDGE_PARTICLES, etc.
-		@param measurements a flag word created by ORing constants defined in the Measurements interface
-		@param rt		a ResultsTable where the measurements will be stored
-		@param minSize	the smallest particle size in pixels
-		@param maxSize	the largest particle size in pixels
-		@param minCirc	minimum circularity
-		@param maxCirc	maximum circularity
+	 * @param options	a flag word created by Oring SHOW_RESULTS, EXCLUDE_EDGE_PARTICLES, etc.
+	 * @param measurements a flag word created by ORing constants defined in the Measurements interface
+	 * @param rt		a ResultsTable where the measurements will be stored
+	 * @param minSize	the smallest particle size in pixels
+	 * @param maxSize	the largest particle size in pixels
+	 * @param minCirc	minimum circularity
+	 * @param maxCirc	maximum circularity
+	 * <pre>
+	 * // JavaScript example
+	 * imp = IJ.openImage("https://imagej.net/images/blobs.gif");
+	 * IJ.setAutoThreshold(imp, "Default"); 
+	 * rt = new ResultsTable();
+	 * options = ParticleAnalyzer.SHOW_NONE;
+	 * measurements = Measurements.AREA + Measurements.PERIMETER;
+	 * pa = new ParticleAnalyzer(options, measurements, rt, 0, Double.MAX_VALUE, 0, 1);
+	 * pa.analyze(imp);
+	 * rt.show("Results");
+  	 * </pre>
 	*/
 	public ParticleAnalyzer(int options, int measurements, ResultsTable rt, double minSize, double maxSize, double minCirc, double maxCirc) {
 		this.options = options;

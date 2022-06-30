@@ -4,6 +4,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.*;
 import ij.plugin.frame.Recorder;
+import ij.plugin.frame.RoiManager;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.filter.ThresholdToSelection;
 import ij.macro.Interpreter;
@@ -309,6 +310,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 
 	/** Returns the ID of the image associated with this ROI. */
 	public int getImageID() {
+		ImagePlus imp = this.imp;
 		return imp!=null?imp.getID():imageID;
 	}
 
@@ -1165,7 +1167,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 
 	/** Nudge ROI one pixel on arrow key press. */
 	public void nudge(int key) {
-		if (WindowManager.getActiveWindow() instanceof ij.plugin.frame.RoiManager)
+		if (WindowManager.getActiveWindow() instanceof RoiManager)
 			return;
 		if (bounds != null && (!isInteger(bounds.x) || !isInteger(bounds.y)))
 			cachedMask = null;
@@ -1610,6 +1612,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 				subtractPoints();
 			return;
 		}
+		Roi originalRoi = (Roi)previousRoi.clone();
 		Roi previous = (Roi)previousRoi.clone();
 		previous.modState = NO_MODS;
 		ShapeRoi s1	 = null;
@@ -1632,6 +1635,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		if (roi2!=null)
 			roi2.copyAttributes(previousRoi);
 		imp.setRoi(roi2);
+		RoiManager rm = RoiManager.getRawInstance();		
+		if (rm!=null && rm.getCount()>0) {
+			Roi[] rois = rm.getSelectedRoisAsArray();
+			if (rois!=null && rois.length==1 && rois[0].equals(originalRoi))
+				rm.runCommand("update");
+		}
 		setPreviousRoi(previous);
 	}
 

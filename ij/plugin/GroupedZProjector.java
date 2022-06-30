@@ -4,7 +4,7 @@ import ij.gui.GenericDialog;
 import ij.process.*;
 import ij.measure.Calibration;
 
-/** This plugin implements the Image/Stacks/Tools/Grouped Z Project command. */
+/** Implements the Image/Stacks/Tools/Grouped Z Project command. */
 
 public class GroupedZProjector implements PlugIn {
 	private static int method = ZProjector.AVG_METHOD;
@@ -18,7 +18,7 @@ public class GroupedZProjector implements PlugIn {
 			return;
 		}
 		if (imp.isHyperStack()) {
-			new ZProjector().run("");
+			new ZProjector().run2(imp, "");
 			return;
 		}
 		if (!showDialog(imp))
