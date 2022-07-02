@@ -536,8 +536,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		return getBounds();
 	}
 
-	/** Returns the outline of this selection as a Polygon, or
-		null if this is a straight line selection.
+	/** Returns the outline of this selection as a Polygon.
 		@see ij.process.ImageProcessor#setRoi
 		@see ij.process.ImageProcessor#drawPolygon
 		@see ij.process.ImageProcessor#fillPolygon
@@ -556,7 +555,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		return new Polygon(xpoints, ypoints, 4);
 	}
 
-	/** Returns the outline (in image pixel coordinates) as a FloatPolygon */
+	/** Returns the outline of this selection as a FloatPolygon */
 	public FloatPolygon getFloatPolygon() {
 		if (cornerDiameter>0) {  // Rounded Rectangle
 			ShapeRoi s = new ShapeRoi(this);

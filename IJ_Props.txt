@@ -431,7 +431,8 @@ about02=-
 
 # URL of directory containing the sample images
 # location2 is uses with Java 6, which does not support https
-images.location=https://imagej.net/images/
+# 2022-06-30 (1.53t20): stopped using https due to Windows bug 
+images.location=http://imagej.net/images/
 images.location2=http://imagej.net/images/
 
 # Images installed in the Open Samples submenu

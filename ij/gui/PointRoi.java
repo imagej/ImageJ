@@ -13,7 +13,9 @@ import java.awt.event.KeyEvent;
 import java.util.*;
 import java.awt.geom.*;
 
-/** This class represents a collection of points that can be associated with counters.
+/** This class represents a collection of points that can be associated 
+ * with counters. Use the getPolygon() or getFloatPolygon() methods
+ * to retrieve the coordinates of the points. 
  * @see <a href="http://wsr.imagej.net/macros/js/PointProperties.js">PointProperties.js</a>
 */
 public class PointRoi extends PolygonRoi {

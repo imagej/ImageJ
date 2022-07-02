@@ -241,14 +241,13 @@ public class Menus {
 		addPlugInItem(help, "ImageJ Website...", "ij.plugin.BrowserLauncher", 0, false);
 		help.addSeparator();
 		addPlugInItem(help, "Dev. Resources...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/developer/index.html\")", 0, false);
-		addPlugInItem(help, "Plugins...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/plugins\")", 0, false);
-		addPlugInItem(help, "Macros...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/macros/\")", 0, false);
 		addPlugInItem(help, "Macro Functions...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/developer/macro/functions.html\")", 0, false);
 		Menu examplesMenu = getExamplesMenu(ij);
 		addPlugInItem(examplesMenu, "Open as Panel", "ij.plugin.SimpleCommands(\"opencp\")", 0, false);
 		help.add(examplesMenu);
 		help.addSeparator();
 		addPlugInItem(help, "Update ImageJ...", "ij.plugin.ImageJ_Updater", 0, false);
+		addPlugInItem(help, "Release Notes...", "ij.plugin.BrowserLauncher(\"http://wsr.imagej.net/notes.html\")", 0, false);
 		addPlugInItem(help, "Refresh Menus", "ij.plugin.ImageJ_Updater(\"menus\")", 0, false);
 		help.addSeparator();
 		Menu aboutMenu = getMenu("Help>About Plugins", true);

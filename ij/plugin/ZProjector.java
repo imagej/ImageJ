@@ -304,13 +304,17 @@ public class ZProjector implements PlugIn {
     public void doProjection() {
 		if (imp==null)
 			return;
+		if (method<AVG_METHOD || method>MEDIAN_METHOD)
+			method = AVG_METHOD;
 		if (imp.getBitDepth()==24) {
 			doRGBProjection();
 			return;
 		}
+		if (imp.getBitDepth()==32 && method==AVG_METHOD) {
+			projImage = doAverageFloatProjection(imp);
+			return;
+		}
 		sliceCount = 0;
-		if (method<AVG_METHOD || method>MEDIAN_METHOD)
-			method = AVG_METHOD;
     	for (int slice=startSlice; slice<=stopSlice; slice+=increment)
     		sliceCount++;
 		if (method==MEDIAN_METHOD) {
@@ -647,7 +651,33 @@ public class ZProjector implements PlugIn {
 			return a[middle];
 	}
 
-     /** Abstract class that specifies structure of ray
+	// do average projection, ignoring NaNs
+	private ImagePlus doAverageFloatProjection(ImagePlus imp) {
+		ImageStack stack = imp.getStack();
+		int w = stack.getWidth();
+		int h = stack.getHeight();
+		int d = stack.getSize();
+		ImagePlus projection = IJ.createImage(makeTitle(), "32-bit Black", w, h, 1);
+		ImageProcessor ip = projection.getProcessor();
+		for (int x=0; x<w; x++) {
+			for (int y=0; y<h; y++) {
+				double sum = 0.0;
+				int count = 0;
+				for (int z=startSlice-1; z<stopSlice-1; z++) {
+					double value = stack.getVoxel(x, y, z);
+					if (!Double.isNaN(value)) {
+						sum += value;
+						count++;
+					}
+				}
+				ip.setf(x, y, (float)(sum/count));
+			}
+		}
+		ip.resetMinAndMax();
+		return projection;
+	}
+    
+    /** Abstract class that specifies structure of ray
 	function. Preprocessing should be done in derived class
 	constructors.
 	*/

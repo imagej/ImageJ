@@ -1057,9 +1057,7 @@ public class IJ {
 		return str;
 	}
 
-	/** Adds the specified class to a Vector to keep it from being garbage
-	collected, which would cause the classes static fields to be reset. 
-	Probably not needed with Java 1.2 or later. */
+	/** Obsolete */
 	public static void register(Class c) {
 		if (ij!=null) ij.register(c);
 	}
