@@ -2,78 +2,29 @@
 // Converts all LUTs in a multi-channel image between
 // inverted and non inverted and switches the
 // composite rendering mode accordingly.
-// !!Only works with linear LUTs (one primary color). 
 // Author: Kevin Terretaz
+// Contributor: Nicolás De Francesco
 
-  requires("1.53o");
-  getDimensions(width, height, channels, slices, frames);
+requires("1.53o");
+getDimensions(width, height, channels, slices, frames);
+REDS = newArray(256);
+GREENS = newArray(256);
+BLUES = newArray(256);
+for (c=1; c<=channels; c++) {
+    Stack.setChannel(c);
+    getLut(reds,greens,blues);
+    for (i=0; i<256; i++) {
+        hsv = HSV_from_RGB(255-reds[i], 255-greens[i], 255-blues[i]);
+        hsv[0] = (hsv[0]+128)%256;
+        rgb = RGB_from_HSV(hsv[0], hsv[1], hsv[2]);
+        REDS[i] = round(rgb[0]);
+        GREENS[i] = round(rgb[1]);
+        BLUES[i] = round(rgb[2]);
+    }
+    setLut(REDS, GREENS, BLUES);
+}
 
-  // Are the LUTs single color and linear?
-  for (c=1; c<=channels; c++) {
-     Stack.setChannel(c);
-     getLut(reds,greens,blues);
-     linearR = true;
-     linearG = true;
-     linearB = true;
-     rZeroCount = 0;
-     gZeroCount = 0;
-     bZeroCount = 0;
-     rMaxCount = 0;
-     gMaxCount = 0;
-     bMaxCount = 0;
-     for (i=0; i<255; i++) {
-        if (abs(reds[i+1]-reds[i])!=1) linearR=false;
-        if (abs(greens[i+1]-greens[i])!=1) linearG=false;
-        if (abs(blues[i+1]-blues[i])!=1) linearB=false;
-        if (reds[i]==0) rZeroCount++;
-        if (greens[i]==0) gZeroCount++;
-        if (blues[i]==0) bZeroCount++;
-        if (reds[i]==255) rMaxCount++;
-        if (greens[i]==255) gMaxCount++;
-        if (blues[i]==255) bMaxCount++;
-     }
-     zeroR = rZeroCount==255;
-     zeroG = gZeroCount==255;
-     zeroB = bZeroCount==255;
-     maxR = rMaxCount==255;
-     maxG = gMaxCount==255;
-     maxB = bMaxCount==255;
-     if ((linearR+linearG+linearB+zeroR+zeroG+zeroB+maxR+maxG+maxB)!=3)
-        exit;
-  }
-
-  REDS = newArray(256);
-  GREENS = newArray(256);
-  BLUES = newArray(256);
-  for (c=1; c<=channels; c++) {
-      Stack.setChannel(c);
-      getLut(reds,greens,blues);
-      RED=reds[255]; GREEN=greens[255]; BLUE=blues[255];
-      if (is("Inverting LUT")) {
-          for (i=0; i<256; i++) { 
-              REDS[i]   = (RED/256)*(i+1);
-              GREENS[i] = (GREEN/256)*(i+1);
-              BLUES[i]  = (BLUE/256)*(i+1);
-          }
-          setLut(REDS, GREENS, BLUES);
-          if (RED+GREEN+BLUE == 0)
-             run("Grays");
-      } else {
-         //make inverted LUT
-         for (i=0; i<256; i++) {
-              REDS[i]   = 255-(((255-RED)/256)*i);
-              GREENS[i] = 255-(((255-GREEN)/256)*i);
-              BLUES[i]  = 255-(((255-BLUE)/256)*i);
-          }
-          setLut(REDS, GREENS, BLUES);
-          if (RED+GREEN+BLUE == 765) {
-             run("Grays"); 
-             run("Invert LUT");
-         }
-      }
-  }
-
-  Stack.setChannel(1);
+Stack.setChannel(1);
   // CompositeProjection mode switch :
   mode = Property.get("CompositeProjection");
   if (is("Inverting LUT")&&(mode=="Min"||mode=="Invert"))
@@ -90,3 +41,28 @@
      Property.set("CompositeProjection", "Invert"); 
   updateDisplay();
 
+function HSV_from_RGB(r, g, b) {
+    // adapted from https://en.wikipedia.org/wiki/HSL_and_HSV#From_RGB
+    v = maxOf(r, maxOf(g, b)); // value (brightness)
+    c = v - minOf(r, minOf(g, b)); // chroma    
+    h = 0;
+    if (c>0) {
+        if (v==r) h = 256/6 * (0 + g-b)/c;
+        if (v==g) h = 256/6 * (2 + (b-r)/c);
+        if (v==b) h = 256/6 * (4 + (r-g)/c);
+    }
+    h = (h+256)%256;
+    s = 0;
+    if (v>0) s = c/v*256;
+    hsv = newArray(h, s, v);
+    return hsv;
+}   
+    
+function RGB_from_HSV(h, s, v) {
+    // adapted from https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_to_RGB_alternative
+    r = v - v * s / 256 * maxOf(0, minOf((5+h/256*6)%6, minOf(4-(5+h/256*6)%6, 1)));
+    g = v - v * s / 256 * maxOf(0, minOf((3+h/256*6)%6, minOf(4-(3+h/256*6)%6, 1)));
+    b = v - v * s / 256 * maxOf(0, minOf((1+h/256*6)%6, minOf(4-(1+h/256*6)%6, 1)));
+    rgb = newArray(r, g, b);
+    return rgb;
+}
