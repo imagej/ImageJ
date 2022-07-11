@@ -16,6 +16,7 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 	private String[] labels;
 	private int nImages;
 	private int imageWidth, imageHeight;
+	private ImagePlus imp2;
 
 	public void run(String arg) {
 		OpenDialog  od = new OpenDialog("Open Image List", arg);
@@ -49,8 +50,9 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 		if (!showDialog(imp)) return;
 		if (!virtual)
 			stack = convertToRealStack(imp);
-		ImagePlus imp2 = new ImagePlus(name, stack);
+		imp2 = new ImagePlus(name, stack);
 		imp2.setCalibration(imp.getCalibration());
+		imp2.setFileInfo(imp.getOriginalFileInfo());
 		imp2.show();
 	}
 	
@@ -160,6 +162,8 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 			if (ip.getWidth()!=imageWidth || ip.getHeight()!=imageHeight)
 			ip = ip.resize(imageWidth, imageHeight);
 			IJ.redirectErrorMessages(false);
+			if (imp2!=null)
+				imp2.setFileInfo(imp.getOriginalFileInfo());
 			return ip;
 		} else {
 				ImageProcessor ip = null;
@@ -196,6 +200,21 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 	public int getHeight() {
 		return imageHeight;
 	}
-
+	
+	/** Reduces the number of slices in this stack by a factor. */
+	public void reduce(int factor) {
+		if (factor<2 || nImages/factor<1)
+			return;
+		nImages = nImages/factor;
+		for (int i=0; i<nImages; i++) {
+			list[i] = list[i*factor];
+			labels[i] = labels[i*factor];
+		}
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) {
+			imp.setSlice(1);
+			imp.updateAndRepaintWindow();
+		}
+	}
 
 }

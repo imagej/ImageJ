@@ -117,6 +117,10 @@ public class StackConverter {
 			throw new IllegalArgumentException("Unsupported conversion");
 		ImageStack stack1 = imp.getStack();
 		ImageStack stack2 = new ImageStack(width, height);
+		int channels = imp.getNChannels();
+	    LUT[] luts = channels>1?imp.getLuts():null;
+	    if (luts!=null && luts.length!=channels)
+	    	luts = null;
 		String label;
 	    int inc = nSlices/20;
 	    if (inc<1) inc = 1;
@@ -125,6 +129,10 @@ public class StackConverter {
 		for(int i=1; i<=nSlices; i++) {
 			label = stack1.getSliceLabel(1);
 			ip1 = stack1.getProcessor(1);
+			if (luts!=null) {
+				int index = ((i-1)%channels);
+				ip1.setMinAndMax(luts[index].min,luts[index].max);
+			}
 			ip2 = ip1.convertToShort(scale);
 			stack1.deleteSlice(1);
 			stack2.addSlice(label, ip2);
@@ -135,6 +143,12 @@ public class StackConverter {
 		}
 		IJ.showProgress(1.0);
 		imp.setStack(null, stack2);
+		if (scale) {
+			for (int c=channels; c>=1; c--) {
+				imp.setPosition(c,imp.getSlice(),imp.getFrame());
+				imp.setDisplayRange(0,65535);
+			}
+		}
 	}
 
 	/** Converts this Stack to 32-bit (float) grayscale. */

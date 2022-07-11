@@ -18,7 +18,7 @@ public class VirtualStack extends ImageStack {
 	private String[] labels;
 	private int bitDepth;
 	private int delay;
-	private Properties  properties;
+	private Properties properties;
 	private boolean generateData;
 	private int[] indexes;  // used to translate non-CZT hyperstack slice numbers
 
@@ -332,6 +332,6 @@ public class VirtualStack extends ImageStack {
 		//IJ.log("translate: "+n+" "+n2+" "+getSize()+" "+(indexes!=null?indexes.length:null));
 		return n2;
 	}
-
+	
 } 
 

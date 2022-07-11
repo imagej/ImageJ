@@ -60,13 +60,14 @@ public class ImageInfo implements PlugIn {
 	public String getImageInfo(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
 		String infoProperty = null;
-		if (imp.getStackSize()>1 || imp.hasImageStack()) {
+		boolean isStack = imp.getStackSize()>1;
+		if (isStack || imp.hasImageStack()) {
 			ImageStack stack = imp.getStack();
 			String label = stack.getSliceLabel(imp.getCurrentSlice());
 			if (label!=null && label.indexOf('\n')>0)
 				infoProperty = label;
 		}
-		if (infoProperty==null) {
+		if (infoProperty==null || (isStack && (imp.getStack() instanceof ListVirtualStack))) {
 			infoProperty = (String)imp.getProperty("Info");
 			if (infoProperty==null)
 				infoProperty = getExifData(imp);
