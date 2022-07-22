@@ -5,11 +5,26 @@
 </head>
 <body>
 
-<li> <u>1.53t30 11 July 2022</u>
+<li> <u>1.53t33 22 July 2022</u>
 <ul>
+<li> Thanks to Michael Schmid, the <i>Analyze&gt;Tools&gt;Analyze Line Graph</i>
+command is greatly enhanced:
+  <ul>
+  <li> Works on all image types.
+  <li> Spatial calibration is read correctly.
+  <li> Reads values for each x value in pixels.
+  <li> Without calibration, the values are pixel coordinates, not pixel coordinates + 0.5.
+  <li> Tries to follow the curves, even if curves cross each other.
+  <li> Plots (and lists) different curves as different data sets.
+  <li> Honors non-rectangular selections instead of deleting them.
+  <li> Produces somewhat usable output even without a selection or any editing.
+  </ul>
+<li> Thanks to Thomas Laurent, the String.format() macro function now
+accepts a variable number of numeric arguments. DOCUMENT
 <li> Thanks to Stein Rorvik, the <i>Image&gt;Stacks&gt;Tools&gt;Reduce</i>
-command produces a virtual stack if the source stack is a
-ListVirtualStack.
+command produces a virtual stack if the source is a virtual stack
+created using <i>File&gt;Import&gt;Image Sequence</i> or
+<i>File&gt;Import&gt;Stack from List</i>.
 <li> Thanks to Nicolas De Francesco, the <i>Image&gt;Color&gt;Invert LUTs</i>
 command (used by the "Channels" tool) works with non-linear LUTs.
 <li> Thanks to Volko Straub, the <i>Image&gt;Stacks&gt;Z Project</i>

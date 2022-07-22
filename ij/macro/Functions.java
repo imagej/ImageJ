@@ -4920,12 +4920,24 @@ public class Functions implements MacroConstants, Measurements {
 			return getStringArg().trim();
 		else if (name.equals("pad"))
 			return pad();
-		else if (name.equals("format")) {
-			try {return String.format(getFirstString(),getLastArg());}
-			catch (Exception e) {interp.error(""+e);}
-			return null;
-		} else
+		else if (name.equals("format"))
+			return format();
+		else
 			interp.error("Unrecognized String function");
+		return null;
+	}
+	
+	private String format() {
+		try {
+			String command = getFirstString();
+			ArrayList<Double> params = new ArrayList<Double>();
+			while (interp.nextToken()==',')
+				params.add(getNextArg());
+			interp.getRightParen();
+			return String.format(command, params.toArray());
+		} catch (Exception e) {
+			interp.error(""+e);
+		}
 		return null;
 	}
 

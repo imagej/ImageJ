@@ -414,7 +414,10 @@ public class Plot implements Cloneable {
 
 	/** Sets the current limits from an array xMin, xMax, yMin, yMax
 	 *  The array may be also longer or shorter, but should not contain NaN values.
-	 *  Does not update the plot, does not save the old limits. */
+	 *  This method should be used after the plot has been displayed.
+	 *  Does not update the plot; use updateImage() thereafter.
+	 *  Does not save the previous limits, i.e., leaves the default limits (for reset via the 'R' field) untouched.
+	*/
 	public void setLimits(double[] limits) {
 		System.arraycopy(limits, 0, currentMinMax, 0, Math.min(limits.length, defaultMinMax.length));
 	}

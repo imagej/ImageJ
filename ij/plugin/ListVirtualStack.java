@@ -201,7 +201,7 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 		return imageHeight;
 	}
 	
-	/** Reduces the number of slices in this stack by a factor. */
+	@Override
 	public void reduce(int factor) {
 		if (factor<2 || nImages/factor<1)
 			return;

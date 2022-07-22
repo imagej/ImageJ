@@ -333,5 +333,21 @@ public class VirtualStack extends ImageStack {
 		return n2;
 	}
 	
+	/** Reduces the number of slices in this stack by a factor. */
+	public void reduce(int factor) {
+		if (factor<2 || nSlices/factor<1 || names==null)
+			return;
+		nSlices = nSlices/factor;
+		for (int i=0; i<nSlices; i++) {
+			names[i] = names[i*factor];
+			labels[i] = labels[i*factor];
+		}
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) {
+			imp.setSlice(1);
+			imp.updateAndRepaintWindow();
+		}
+	}
+
 } 
 
