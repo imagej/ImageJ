@@ -188,6 +188,9 @@ public class Prefs {
 	public static boolean supportMacroUndo;
 	/** Use NonBlockingGenericDialogs in filters */	
 	public static boolean nonBlockingFilterDialogs;
+	/** Turn live display on plots automatically */
+	public static boolean autoLivePlots;
+
 	//Save location of moved image windows */	
 	//public static boolean saveImageLocation = true;
 

@@ -67,8 +67,9 @@ public class Profiler implements PlugIn, PlotMaker {
 		gd.addNumericField("Minimum Y:", ymin, 2);
 		gd.addNumericField("Maximum Y:", ymax, 2);
 		gd.setInsets(10,20,0);
-		gd.addCheckbox("Vertical profile", Prefs.verticalProfile);
-		gd.addCheckbox("Interpolate line profiles", PlotWindow.interpolate);
+		String[] labels = {"Vertical", "Interpolate", "Live"};
+		boolean[] states = {Prefs.verticalProfile, PlotWindow.interpolate, Prefs.autoLivePlots};
+		gd.addCheckboxGroup(2, 2, labels, states);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#plot-options");
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -94,6 +95,7 @@ public class Profiler implements PlugIn, PlotMaker {
 		//profile options
 		Prefs.verticalProfile = gd.getNextBoolean();
 		PlotWindow.interpolate = gd.getNextBoolean();
+		Prefs.autoLivePlots = gd.getNextBoolean();
 		if (!fixedScale && !wasFixedScale && (ymin!=0.0 || ymax!=0.0))
 			fixedScale = true;
 		if (!fixedScale) {

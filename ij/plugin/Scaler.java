@@ -99,7 +99,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			scaler.processStack = true;
 		return scaler.createNewStack(imp, ip, dstWidth, dstHeight, dstDepth);
 	}
-	
+
 	private ImagePlus createNewStack(ImagePlus imp, ImageProcessor ip, int newWidth, int newHeight, int newDepth) {
 		int nSlices = imp.getStackSize();
 		int w=imp.getWidth(), h=imp.getHeight();
@@ -140,8 +140,13 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		cal.xOrigin *= xscale;
 		cal.yOrigin *= yscale;		
 		Overlay overlay = imp.getOverlay();
-		if (overlay!=null && !imp.getHideOverlay() && !doZScaling)
+		if (overlay!=null && !imp.getHideOverlay() && !doZScaling) {
+			overlay = overlay.duplicate();
+			Rectangle roi = imp.getProcessor().getRoi();
+			if (roi!=null)
+				overlay = overlay.crop(ip.getRoi());
 			imp2.setOverlay(overlay.scale(xscale, yscale));
+		}
 		IJ.showProgress(1.0);
 		int[] dim = imp.getDimensions();
 		imp2.setDimensions(dim[2], dim[3], dim[4]);
@@ -176,8 +181,16 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			cal.xOrigin *= xscale;
 			cal.yOrigin *= yscale;		
 			Overlay overlay = imp.getOverlay();
-			if (overlay!=null && !imp.getHideOverlay())
-				imp2.setOverlay(overlay.scale(xscale, yscale));
+			if (overlay!=null && !imp.getHideOverlay()) {
+				overlay = overlay.duplicate();
+				int slice = imp.getCurrentSlice();
+				overlay.crop(slice,slice);
+				Rectangle roi = imp.getProcessor().getRoi();
+				if (roi!=null)
+					overlay = overlay.crop(ip.getRoi());
+				overlay = overlay.scale(xscale, yscale);
+				imp2.setOverlay(overlay);
+			}
 			imp2.show();
 			imp.trimProcessor();
 			imp2.trimProcessor();

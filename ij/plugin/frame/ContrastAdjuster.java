@@ -1071,14 +1071,16 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	public static void recordSetMinAndMax(double min, double max) {
 		if ((int)min==min && (int)max==max) {
 			int imin=(int)min, imax = (int)max;
-			if (Recorder.scriptMode())
+			if (Recorder.scriptMode()) {
 				Recorder.recordCall("imp.setDisplayRange("+imin+", "+imax+");");
-			else
+				Recorder.recordCall("imp.updateAndDraw();");
+			} else
 				Recorder.record("setMinAndMax", imin, imax);
 		} else {
-			if (Recorder.scriptMode())
+			if (Recorder.scriptMode()) {
 				Recorder.recordCall("imp.setDisplayRange("+ResultsTable.d2s(min,2)+", "+ResultsTable.d2s(max,2)+");");
-			else
+				Recorder.recordCall("imp.updateAndDraw();");
+			} else
 				Recorder.recordString("setMinAndMax("+ResultsTable.d2s(min,2)+", "+ResultsTable.d2s(max,2)+");");
 		}
 	}
