@@ -4836,6 +4836,8 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (arg.startsWith("line")) {
 			Roi roi = getImage().getRoi();
 			state = roi!=null?roi.isLine():false;
+		} else if (arg.startsWith("fft")) {
+			state = getImage().getProperty("FHT")!=null;
 		} else
 			interp.error("Invalid argument");
 		return state?1.0:0.0;
