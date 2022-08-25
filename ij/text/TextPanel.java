@@ -435,7 +435,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			boolean tableActionCommand = commands!=null && commands.get("Table Action")!=null;
 			if (!tableActionCommand)
 				tableActionCommand = ij.plugin.MacroInstaller.isMacroCommand("Table Action");
-			if (doubleClickableTable && !tableActionCommand)
+			if (doubleClickableTable || !tableActionCommand)
 				return;
 			String options = title+"|"+getSelectionStart()+"|"+getSelectionEnd();
 			IJ.run("Table Action", options);
