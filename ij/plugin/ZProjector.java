@@ -661,16 +661,16 @@ public class ZProjector implements PlugIn {
 		ImageProcessor ip = projection.getProcessor();
 		for (int x=0; x<w; x++) {
 			for (int y=0; y<h; y++) {
-				double sum = 0.0;
+				float sum = 0.0f;
 				int count = 0;
 				for (int z=startSlice-1; z<stopSlice; z++) {
 					double value = stack.getVoxel(x, y, z);
 					if (!Double.isNaN(value)) {
-						sum += value;
+						sum += (float)value;
 						count++;
 					}
 				}
-				ip.setf(x, y, (float)(sum/count));
+				ip.setf(x, y, sum / count);
 			}
 		}
 		ip.resetMinAndMax();
