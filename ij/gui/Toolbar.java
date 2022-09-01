@@ -164,9 +164,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	void addPopupMenus() {
-		rectPopup = new PopupMenu();
-		if (Menus.getFontSize()!=0)
-			rectPopup.setFont(Menus.getFont());
+		rectPopup = newPopupMenu();
 		rectItem = new CheckboxMenuItem("Rectangle", rectType==RECT_ROI);
 		rectItem.addItemListener(this);
 		rectPopup.add(rectItem);
@@ -178,9 +176,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		rectPopup.add(rotatedRectItem);
 		add(rectPopup);
 
-		ovalPopup = new PopupMenu();
-		if (Menus.getFontSize()!=0)
-			ovalPopup.setFont(Menus.getFont());
+		ovalPopup = newPopupMenu();
 		ovalItem = new CheckboxMenuItem("Oval selections", ovalType==OVAL_ROI);
 		ovalItem.addItemListener(this);
 		ovalPopup.add(ovalItem);
@@ -192,9 +188,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		ovalPopup.add(brushItem);
 		add(ovalPopup);
 
-		pointPopup = new PopupMenu();
-		if (Menus.getFontSize()!=0)
-			pointPopup.setFont(Menus.getFont());
+		pointPopup = newPopupMenu();
 		pointItem = new CheckboxMenuItem("Point Tool", !multiPointMode);
 		pointItem.addItemListener(this);
 		pointPopup.add(pointItem);
@@ -203,9 +197,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		pointPopup.add(multiPointItem);
 		add(pointPopup);
 
-		linePopup = new PopupMenu();
-		if (Menus.getFontSize()!=0)
-			linePopup.setFont(Menus.getFont());
+		linePopup = newPopupMenu();
 		straightLineItem = new CheckboxMenuItem("Straight Line", lineType==LINE&&!arrowMode);
 		straightLineItem.addItemListener(this);
 		linePopup.add(straightLineItem);
@@ -220,9 +212,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		linePopup.add(arrowItem);
 		add(linePopup);
 
-		zoomPopup = new PopupMenu();
-		if (Menus.getFontSize()!=0)
-			zoomPopup.setFont(Menus.getFont());
+		zoomPopup = newPopupMenu();
 		addMenuItem(zoomPopup, "Reset Zoom");
 		addMenuItem(zoomPopup, "Zoom In");
 		addMenuItem(zoomPopup, "Zoom Out");
@@ -233,9 +223,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addMenuItem(zoomPopup, "Maximize");
 		add(zoomPopup);
 
-		pickerPopup = new PopupMenu();
-		if (Menus.getFontSize()!=0)
-			pickerPopup.setFont(Menus.getFont());
+		pickerPopup = newPopupMenu();
 		addMenuItem(pickerPopup, "White/Black");
 		addMenuItem(pickerPopup, "Black/White");
 		addMenuItem(pickerPopup, "Red");
@@ -251,10 +239,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addMenuItem(pickerPopup, "Color Picker...");
 		add(pickerPopup);
 		
-		switchPopup = new PopupMenu();
-		if (Menus.getFontSize()!=0)
-			switchPopup.setFont(Menus.getFont());
+		switchPopup = newPopupMenu();
 		add(switchPopup);
+	}
+	
+	private PopupMenu newPopupMenu() {
+		PopupMenu popup = new PopupMenu();
+		GUI.scalePopupMenu(popup);
+		return popup;
 	}
 	
 	private void addMenuItem(PopupMenu menu, String command) {
@@ -1169,8 +1161,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			ovalItem.setState(ovalType==OVAL_ROI);	
 			ellipseItem.setState(ovalType==ELLIPSE_ROI);	
 			brushItem.setState(ovalType==BRUSH_ROI);	
-			if (IJ.isMacOSX()) IJ.wait(10);	
-			ovalPopup.show(e.getComponent(),x,y);	
+			if (IJ.isMacOSX()) IJ.wait(10);
+ovalPopup.setFont(new Font("SanSerif", Font.PLAIN, 20));		
+			ovalPopup.show(e.getComponent(),x,y);		
 			mouseDownTime = 0L;	
 		}	
 		if (current==POINT && isRightClick) {	
@@ -2137,5 +2130,5 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	 		instance.drawButton(g, tool);
 	 	}
 	}
-
+	
 }

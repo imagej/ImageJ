@@ -111,7 +111,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 		panel.add(moreButton, c);
 		update();
 
-		pm=new PopupMenu();
+		pm = new PopupMenu();
 		GUI.scalePopupMenu(pm);
 		for (int i=0; i<menuItems.length; i++)
 			addPopupItem(menuItems[i]);
