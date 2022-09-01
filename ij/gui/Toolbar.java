@@ -163,10 +163,16 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		ps = new Dimension(buttonWidth*NUM_BUTTONS-(buttonWidth-gapSize), buttonHeight);
 	}
 
-	void addPopupMenus() {
-		rectPopup = new PopupMenu();
+	private PopupMenu scaledPopupMenu() {
+		PopupMenu pMenu = new PopupMenu();
 		if (Menus.getFontSize()!=0)
-			rectPopup.setFont(Menus.getFont());
+			pMenu.setFont(Menus.getFont());
+		ij.gui.GUI.scalePopupMenu(pMenu);
+		return pMenu;
+	}
+
+	void addPopupMenus() {
+		rectPopup = scaledPopupMenu();
 		rectItem = new CheckboxMenuItem("Rectangle", rectType==RECT_ROI);
 		rectItem.addItemListener(this);
 		rectPopup.add(rectItem);
@@ -178,9 +184,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		rectPopup.add(rotatedRectItem);
 		add(rectPopup);
 
-		ovalPopup = new PopupMenu();
-		if (Menus.getFontSize()!=0)
-			ovalPopup.setFont(Menus.getFont());
+		ovalPopup = scaledPopupMenu();
 		ovalItem = new CheckboxMenuItem("Oval selections", ovalType==OVAL_ROI);
 		ovalItem.addItemListener(this);
 		ovalPopup.add(ovalItem);
@@ -192,9 +196,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		ovalPopup.add(brushItem);
 		add(ovalPopup);
 
-		pointPopup = new PopupMenu();
-		if (Menus.getFontSize()!=0)
-			pointPopup.setFont(Menus.getFont());
+		pointPopup = scaledPopupMenu();
 		pointItem = new CheckboxMenuItem("Point Tool", !multiPointMode);
 		pointItem.addItemListener(this);
 		pointPopup.add(pointItem);
@@ -203,9 +205,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		pointPopup.add(multiPointItem);
 		add(pointPopup);
 
-		linePopup = new PopupMenu();
-		if (Menus.getFontSize()!=0)
-			linePopup.setFont(Menus.getFont());
+		linePopup = scaledPopupMenu();
 		straightLineItem = new CheckboxMenuItem("Straight Line", lineType==LINE&&!arrowMode);
 		straightLineItem.addItemListener(this);
 		linePopup.add(straightLineItem);
@@ -220,9 +220,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		linePopup.add(arrowItem);
 		add(linePopup);
 
-		zoomPopup = new PopupMenu();
-		if (Menus.getFontSize()!=0)
-			zoomPopup.setFont(Menus.getFont());
+		zoomPopup = scaledPopupMenu();
 		addMenuItem(zoomPopup, "Reset Zoom");
 		addMenuItem(zoomPopup, "Zoom In");
 		addMenuItem(zoomPopup, "Zoom Out");
@@ -233,9 +231,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addMenuItem(zoomPopup, "Maximize");
 		add(zoomPopup);
 
-		pickerPopup = new PopupMenu();
-		if (Menus.getFontSize()!=0)
-			pickerPopup.setFont(Menus.getFont());
+		pickerPopup = scaledPopupMenu();
 		addMenuItem(pickerPopup, "White/Black");
 		addMenuItem(pickerPopup, "Black/White");
 		addMenuItem(pickerPopup, "Red");
@@ -250,10 +246,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addMenuItem(pickerPopup, "Colors...");
 		addMenuItem(pickerPopup, "Color Picker...");
 		add(pickerPopup);
-		
-		switchPopup = new PopupMenu();
-		if (Menus.getFontSize()!=0)
-			switchPopup.setFont(Menus.getFont());
+
+		switchPopup = scaledPopupMenu();
 		add(switchPopup);
 	}
 	
@@ -1799,7 +1793,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
         if (commands==null)
         	return;
 		if (menus[tool]==null) {
-			menus[tool] = new PopupMenu("");
+			menus[tool] = scaledPopupMenu();
 			if (Menus.getFontSize()!=0)
 				menus[tool].setFont(Menus.getFont());
 			add(menus[tool] );
