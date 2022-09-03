@@ -663,7 +663,7 @@ public class ZProjector implements PlugIn {
 			for (int y=0; y<h; y++) {
 				double sum = 0.0;
 				int count = 0;
-				for (int z=startSlice-1; z<stopSlice-1; z++) {
+				for (int z=startSlice-1; z<stopSlice; z++) {
 					double value = stack.getVoxel(x, y, z);
 					if (!Double.isNaN(value)) {
 						sum += value;

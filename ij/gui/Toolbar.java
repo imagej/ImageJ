@@ -1161,8 +1161,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			ovalItem.setState(ovalType==OVAL_ROI);	
 			ellipseItem.setState(ovalType==ELLIPSE_ROI);	
 			brushItem.setState(ovalType==BRUSH_ROI);	
-			if (IJ.isMacOSX()) IJ.wait(10);
-ovalPopup.setFont(new Font("SanSerif", Font.PLAIN, 20));		
+			if (IJ.isMacOSX()) IJ.wait(10);		
 			ovalPopup.show(e.getComponent(),x,y);		
 			mouseDownTime = 0L;	
 		}	
@@ -1793,8 +1792,7 @@ ovalPopup.setFont(new Font("SanSerif", Font.PLAIN, 20));
         	return;
 		if (menus[tool]==null) {
 			menus[tool] = new PopupMenu("");
-			if (Menus.getFontSize()!=0)
-				menus[tool].setFont(Menus.getFont());
+			GUI.scalePopupMenu(menus[tool]);
 			add(menus[tool] );
 		} else
 			menus[tool].removeAll();
