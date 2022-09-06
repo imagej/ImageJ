@@ -1086,7 +1086,7 @@ public class ResultsTable implements Cloneable {
 				int height = 300;
 				if (size()>15) height = 400;
 				if (size()>30 && width>300) height = 500;
-				win = new TextWindow(windowTitle, "", width, height);
+				win = new TextWindow(windowTitle+"(Results)", "", width, height);
 				cloneNeeded = true;
 			}
 			tp = win.getTextPanel();

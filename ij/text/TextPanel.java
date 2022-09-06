@@ -6,6 +6,7 @@ import java.util.*;
 import java.awt.datatransfer.*;
 import ij.*;
 import ij.plugin.filter.Analyzer;
+import ij.plugin.Distribution;
 import ij.io.SaveDialog;
 import ij.measure.*;
 import ij.util.Tools;
@@ -87,7 +88,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	public TextPanel(String title) {
 		this();
 		this.title = title;
-		if (title.equals("Results")) {
+		if (title.equals("Results") || title.endsWith("(Results)")) {
 			pm.addSeparator();
 			addPopupItem("Clear Results");
 			addPopupItem("Summarize");
@@ -519,12 +520,20 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			rename(null);
 		else if (cmd.equals("Duplicate..."))
 			duplicate();
-		else if (cmd.equals("Summarize"))
-			IJ.doCommand("Summarize");
-		else if (cmd.equals("Distribution..."))
-			IJ.doCommand("Distribution...");
-		else if (cmd.equals("Clear Results"))
-			IJ.doCommand("Clear Results");
+		else if (cmd.equals("Summarize")) {
+			if ("Results".equals(title))
+				IJ.doCommand("Summarize");
+			else {
+				Analyzer analyzer = new Analyzer(null, getResultsTable());
+				analyzer.summarize();
+			}
+		} else if (cmd.equals("Distribution...")) {
+			if ("Results".equals(title))
+				IJ.doCommand("Distribution...");
+			else
+				new Distribution().run(getResultsTable());
+		} else if (cmd.equals("Clear Results"))
+			doClear();
 		else if (cmd.equals("Set Measurements..."))
 			IJ.doCommand("Set Measurements...");
  		else if (cmd.equals("Options..."))
@@ -619,9 +628,6 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			rt2.show("Results");
 		} else {
 			tw.setTitle(title2);
-			int mbSize = tw.mb!=null?tw.mb.getMenuCount():0;
-			if (mbSize>0 && tw.mb.getMenu(mbSize-1).getLabel().equals("Results"))
-				tw.mb.remove(mbSize-1);
 			title = title2;
 			rt2.show(title);
 		}

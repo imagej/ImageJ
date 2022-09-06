@@ -8,6 +8,7 @@ import ij.gui.*;
 import ij.util.*;
 import ij.plugin.filter.GaussianBlur;
 import ij.plugin.Binner;
+import ij.plugin.Colors;
 import ij.process.AutoThresholder.Method;
 import ij.Prefs;
 import ij.measure.Measurements;
@@ -406,6 +407,14 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Sets the default fill/draw value to the pixel
 		value closest to the specified color. */
 	public abstract void setColor(Color color);
+	
+	/* Sets the fill/draw color, where 'color' is
+	 * "white", "black", "blue", etc., or a hex value
+	 * like "#ff0000".
+	*/
+	public void setColor(String color) {
+		setColor(Colors.decode(color, Color.white));
+	}
 
 	/** Sets the background fill/draw color. */
 	public void setBackgroundColor(Color color) {
