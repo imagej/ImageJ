@@ -52,6 +52,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	
 	public Analyzer() {
 		rt = systemRT;
+		rt.setIsResultsTable(true);
 		rt.showRowNumbers(true);
 		rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
 		rt.setNaNEmptyCells((systemMeasurements&NaN_EMPTY_CELLS)!=0);

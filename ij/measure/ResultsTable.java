@@ -68,6 +68,7 @@ public class ResultsTable implements Cloneable {
 	private boolean columnDeleted;
 	private boolean renameWhenSaving;
 	private boolean saveColumnHeaders = !Prefs.dontSaveHeaders;
+	public boolean isResultsTable;
 
 
 	/** Constructs an empty ResultsTable with the counter=0, no columns
@@ -1046,8 +1047,11 @@ public class ResultsTable implements Cloneable {
 		title = windowTitle;
 		if (!windowTitle.equals("Results") && this==Analyzer.getResultsTable())
 			IJ.log("ResultsTable.show(): the system ResultTable should only be displayed in the \"Results\" window.");
-		if (windowTitle.equals("Results") && !showRowNumbersSet)
-			showRowNumbers(true);
+		if (windowTitle.equals("Results")) {
+			if(!showRowNumbersSet)
+				showRowNumbers(true);
+			isResultsTable = true;
+		}
 		String tableHeadings = getColumnHeadings();		
 		TextPanel tp;
 		boolean newWindow = false;
@@ -1086,7 +1090,8 @@ public class ResultsTable implements Cloneable {
 				int height = 300;
 				if (size()>15) height = 400;
 				if (size()>30 && width>300) height = 500;
-				win = new TextWindow(windowTitle+"(Results)", "", width, height);
+				String wtitle = windowTitle + (isResultsTable&&showRowNumbers?"(Results)":"");
+				win = new TextWindow(wtitle, "", width, height);
 				cloneNeeded = true;
 			}
 			tp = win.getTextPanel();
@@ -1380,6 +1385,7 @@ public class ResultsTable implements Cloneable {
 	public synchronized Object clone() {
 		try { 
 			ResultsTable rt2 = (ResultsTable)super.clone();
+			rt2.isResultsTable = isResultsTable;
 			rt2.headings = new String[headings.length];
 			for (int i=0; i<=lastColumn; i++)
 				rt2.headings[i] = headings[i];
@@ -1651,6 +1657,10 @@ public class ResultsTable implements Cloneable {
 				return +1;
 			return  (dValue < e.dValue) ? -1 : ( (dValue > e.dValue) ? 1 : 0 );
 		}
+	}
+	
+	public void setIsResultsTable(boolean isResultsTable) {
+		this.isResultsTable = isResultsTable;
 	}
 		
 }

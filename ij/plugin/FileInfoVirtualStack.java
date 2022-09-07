@@ -140,7 +140,8 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 					mode = IJ.GRAYSCALE;
 				imp2 = new CompositeImage(imp2, mode);
 			}
-		}
+		} else if (imp!=null)
+			imp2.setCalibration(imp.getCalibration());
 		return imp2;
 	}
 	
