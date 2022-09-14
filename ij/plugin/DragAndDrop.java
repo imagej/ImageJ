@@ -175,7 +175,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 			if (null == f) return;
 			String path = f.getCanonicalPath();
 			if (f.exists()) {
-				if (f.isDirectory() && !(new File(path, ".zgroup").exists()||new File(path, ".zarray").exists())) {
+				if (f.isDirectory() && !(new File(path, ".zgroup").exists()||new File(path, ".zarray").exists()||path.endsWith(".n5"))) {
 					if (openAsVirtualStack)
 						IJ.run("Image Sequence...", "open=[" + path + "] sort use");
 					else
