@@ -88,8 +88,14 @@ public class Options implements PlugIn {
 	}
 
 	void lineWidth() {
-		int width = (int)IJ.getNumber("Line Width:", Line.getWidth());
-		if (width==IJ.CANCELED) return;
+		GenericDialog gd = new GenericDialog("Default Line Width");
+		gd.addNumericField("Line width: ", Line.getWidth(), 0);
+		gd.setInsets(5,2,0);
+		gd.addMessage("Sets the default line selection width.\nPress 'y' (Edit>Selection>Properties)\nto change the width of the current\nline selection.");
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		int width = (int)gd.getNextNumber();
 		Line.setWidth(width);
 		LineWidthAdjuster.update();
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -97,7 +103,8 @@ public class Options implements PlugIn {
 			ImageProcessor ip = imp.getProcessor();
 			ip.setLineWidth(Line.getWidth());
             Roi roi = imp.getRoi();
-            if (roi!=null && roi.isLine()) imp.draw();
+            if (roi!=null && roi.isLine())
+            	imp.draw();
 		}
 	}
 

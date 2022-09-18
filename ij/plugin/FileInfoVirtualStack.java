@@ -118,30 +118,31 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		ImagePlus imp2 = new ImagePlus(fi.fileName, this);
 		imp2.setDisplayRange(imp.getDisplayRangeMin(),imp.getDisplayRangeMax());
 		imp2.setFileInfo(fi);
-		if (imp!=null && props!=null) {
+		if (imp!=null) {
 			setBitDepth(imp.getBitDepth());
 			imp2.setCalibration(imp.getCalibration());
 			imp2.setOverlay(imp.getOverlay());
 			if (fi.info!=null)
 				imp2.setProperty("Info", fi.info);
-			int channels = getInt(props,"channels");
-			int slices = getInt(props,"slices");
-			int frames = getInt(props,"frames");
-			if (channels*slices*frames==nImages) {
-				imp2.setDimensions(channels, slices, frames);
-				if (getBoolean(props, "hyperstack"))
-					imp2.setOpenAsHyperStack(true);
+			if (props!=null) {
+				int channels = getInt(props,"channels");
+				int slices = getInt(props,"slices");
+				int frames = getInt(props,"frames");
+				if (channels*slices*frames==nImages) {
+					imp2.setDimensions(channels, slices, frames);
+					if (getBoolean(props, "hyperstack"))
+						imp2.setOpenAsHyperStack(true);
+				}
+				if (channels>1 && fi.description!=null) {
+					int mode = IJ.COMPOSITE;
+					if (fi.description.indexOf("mode=color")!=-1)
+						mode = IJ.COLOR;
+					else if (fi.description.indexOf("mode=gray")!=-1)
+						mode = IJ.GRAYSCALE;
+					imp2 = new CompositeImage(imp2, mode);
+				}
 			}
-			if (channels>1 && fi.description!=null) {
-				int mode = IJ.COMPOSITE;
-				if (fi.description.indexOf("mode=color")!=-1)
-					mode = IJ.COLOR;
-				else if (fi.description.indexOf("mode=gray")!=-1)
-					mode = IJ.GRAYSCALE;
-				imp2 = new CompositeImage(imp2, mode);
-			}
-		} else if (imp!=null)
-			imp2.setCalibration(imp.getCalibration());
+		}
 		return imp2;
 	}
 	

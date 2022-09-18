@@ -768,11 +768,63 @@ public class Selection implements PlugIn, Measurements {
 			IJ.error("This command requires a selection.");
 			return false;
 		}
+		String name = roi.getName();
+		if (name==null) name = "";
+		int position = roi.getPosition();
+		int group = roi.getGroup();
+		Color color = roi.getStrokeColor();
+		Color fillColor = roi.getFillColor();
+		int width = (int)roi.getStrokeWidth();
 		RoiProperties rp = new RoiProperties(title, roi);
 		boolean ok = rp.showDialog();
+		if (Recorder.record) {
+			boolean groupChanged = false;
+			String name2 = roi.getName();
+			if (name2==null) name2 = "";
+			int position2 = roi.getPosition();
+			int group2 = roi.getGroup();
+			if (group2!=group) groupChanged=true;
+			Color color2 = roi.getStrokeColor();
+			Color fillColor2 = roi.getFillColor();
+			int width2 = (int)roi.getStrokeWidth();
+			if (Recorder.scriptMode()) {
+				Recorder.recordCall("roi = imp.getRoi();");
+				if (name2!=name)
+					Recorder.recordCall("roi.setName(\""+name2+"\");");
+				if (position2!=position)
+					Recorder.recordCall("roi.setPosition("+position2+");");
+				if (group2!=group)
+					Recorder.recordCall("roi.setGroup("+group2+");");
+				if (width2!=width)
+					Recorder.recordCall("roi.setStrokeWidth("+width2+");");
+				if (color2!=color && !groupChanged)
+					Recorder.recordCall("roi.setStrokeColor("+getColor(color2)+");");
+				if (fillColor2!=fillColor)
+					Recorder.recordCall("roi.setFillColor("+getColor(fillColor2)+");");
+				Recorder.recordCall("imp.draw();");
+			} else {
+				if (name2!=name)
+					Recorder.record("Roi.setName", name2);
+				if (groupChanged)
+					Recorder.record("Roi.setGroup", group2);
+				if (position2!=position)
+					Recorder.record("Roi.setPosition", position2);
+				if (color2!=color && !groupChanged)
+					Recorder.record("Roi.setStrokeColor", Colors.colorToString(color2));
+				if (fillColor2!=fillColor)
+					Recorder.record("Roi.setFillColor", Colors.colorToString(fillColor2));
+				if (width2!=width)
+					Recorder.record("Roi.setStrokeWidth", width2);
+			}
+			Recorder.disableCommandRecording();
+		}
 		if (IJ.debugMode)
 			IJ.log(roi.getDebugInfo());
 		return ok;
+	}
+	
+	private String getColor(Color color) {
+		return "new Color("+color.getRed()+","+color.getGreen()+","+color.getBlue()+")";
 	}
 	
 	private void makeBand(ImagePlus imp) {

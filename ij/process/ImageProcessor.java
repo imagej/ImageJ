@@ -408,7 +408,7 @@ public abstract class ImageProcessor implements Cloneable {
 		value closest to the specified color. */
 	public abstract void setColor(Color color);
 	
-	/* Sets the fill/draw color, where 'color' is
+	/** Sets the fill/draw color, where 'color' is
 	 * "white", "black", "blue", etc., or a hex value
 	 * like "#ff0000".
 	*/

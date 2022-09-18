@@ -1924,7 +1924,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public void setStrokeColor(Color c) {
 		 strokeColor = c;
 	}
-
+	
 	/** Returns the the color used to draw the ROI outline or null if the default color is being used.
 	 * @see #setStrokeColor(Color)
 	 */
@@ -2062,7 +2062,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 
 	}
 
-	/** Returns the lineWidth. */
+	/** Returns the line width. */
 	public float getStrokeWidth() {
 		return (stroke!=null&&!usingDefaultStroke)?stroke.getLineWidth():0f;
 	}

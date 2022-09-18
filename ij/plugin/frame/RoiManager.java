@@ -2696,10 +2696,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			overlay = newOverlay();
 		for (int i=0; i<n; i++) {
 			Roi roi = (Roi)rois[i].clone();
-			if (!Prefs.showAllSliceOnly && !IJ.isMacro())
-				roi.setPosition(0);
-			//if (roi.getStrokeWidth()==1)
-			//	roi.setStrokeWidth(0);
 			overlay.add(roi);
 		}
 		if (overlayTemplate!=null)
