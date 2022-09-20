@@ -297,7 +297,7 @@ public class TiffEncoder {
 		}
 		writeEntry(out, TiffDecoder.STRIP_OFFSETS,    4, 1, imageOffset);
 		writeEntry(out, TiffDecoder.SAMPLES_PER_PIXEL,3, 1, samplesPerPixel);
-		writeEntry(out, TiffDecoder.ROWS_PER_STRIP,   3, 1, fi.height);
+		writeEntry(out, TiffDecoder.ROWS_PER_STRIP,   4, 1, fi.height);
 		writeEntry(out, TiffDecoder.STRIP_BYTE_COUNT, 4, 1, imageSize);
 		if (fi.unit!=null && fi.pixelWidth!=0 && fi.pixelHeight!=0) {
 			writeEntry(out, TiffDecoder.X_RESOLUTION, 5, 1, tagDataOffset);
