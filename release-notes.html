@@ -33,6 +33,9 @@ the global line selection width.
 <li> Thanks to Nayana Gaur, fixed a bug that caused ROIs with
 x or y coordinates greater than 60,535 and less than 65,535 to
 be saved incorrectly.
+<li> Thanks to Christoph Gohike, fixed a bug that caused ImageJ to
+create TIFF files with invalid RowsPerStrip tags when the image
+height was greater than 65535. 
 <li> Thanks to Mark Hiner, fixed a 1.53t regression that caused
 the <i>Image&gt;Stacks&gt;Z Project</i> command to ignore the last
 slice when doing "Average" projection of 32-bit stacks.
