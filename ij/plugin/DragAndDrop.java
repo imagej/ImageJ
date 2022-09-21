@@ -175,28 +175,33 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 			if (null == f) return;
 			String path = f.getCanonicalPath();
 			if (f.exists()) {
-				if (f.isDirectory() && !(new File(path, ".zgroup").exists()||new File(path, ".zarray").exists()||path.endsWith(".n5"))) {
-					if (openAsVirtualStack)
-						IJ.run("Image Sequence...", "open=[" + path + "] sort use");
-					else
-						openDirectory(f, path);
+				if (openAsVirtualStack && !f.isDirectory() && (path.endsWith(".tif")||path.endsWith(".TIF")))
+					(new FileInfoVirtualStack()).run(path);
+				else if (openAsVirtualStack && !f.isDirectory() && (path.endsWith(".avi")||path.endsWith(".AVI")))
+					IJ.run("AVI...", "open=["+path+"] use");
+				else if (openAsVirtualStack && !f.isDirectory() && (path.endsWith(".txt"))) {
+					ImageProcessor ip = (new TextReader()).open(path);
+					if (ip!=null)
+						new ImagePlus(f.getName(),ip).show();
 				} else {
-					if (openAsVirtualStack && (path.endsWith(".tif")||path.endsWith(".TIF")))
-						(new FileInfoVirtualStack()).run(path);
-					else if (openAsVirtualStack && (path.endsWith(".avi")||path.endsWith(".AVI")))
-						IJ.run("AVI...", "open=["+path+"] use");
-					else if (openAsVirtualStack && (path.endsWith(".txt"))) {
-						ImageProcessor ip = (new TextReader()).open(path);
-						if (ip!=null)
-							new ImagePlus(f.getName(),ip).show();
-					} else {
+					if ((new Opener()).openAndAddToRecent(path, false))
 						Recorder.recordOpen(path);
-						(new Opener()).openAndAddToRecent(path);
+					else {
+						if (f.isDirectory()) {
+							if (openAsVirtualStack)
+								IJ.run("Image Sequence...", "open=[" + path + "] sort use");
+							else
+								openDirectory(f, path);
+							return;
+						} else {
+							IJ.error("Opener", "Unsupported format or file not found:\n"+path);
+						}
 					}
-					OpenDialog.setLastDirectory(f.getParent()+File.separator);
-					OpenDialog.setLastName(f.getName());
-					OpenDialog.setDefaultDirectory(f.getParent());
 				}
+				
+				OpenDialog.setLastDirectory(f.getParent()+File.separator);
+				OpenDialog.setLastName(f.getName());
+				OpenDialog.setDefaultDirectory(f.getParent());
 			} else {
 				IJ.log("File not found: " + path);
 			}
