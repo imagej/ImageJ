@@ -181,7 +181,7 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 		}
 		
 		private void drawLetter(Graphics g) {
-			Font font = new Font("SansSerif", Font.PLAIN, 14);
+			Font font = ImageJ.SansSerif14;
 			if (SCALE>1.0)
 				font = font.deriveFont((float)(font.getSize()*SCALE));
 			g.setFont(font);

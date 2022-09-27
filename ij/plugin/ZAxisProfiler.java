@@ -69,31 +69,32 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 		
 		String xAxisLabel = showingDialog&&choice.equals(choices[0])?"Frame":"Slice";
 		Calibration cal = imp.getCalibration();
+		double calFactor = 1.0;
+		double origin = -1;
 		if (cal.scaled()) {
-			double c = 1.0f;
-			double origin = 0;
 			if (timeProfile) {
-				c = (float) cal.frameInterval;
-				boolean zeroInterval = c==0;
+				calFactor = (float) cal.frameInterval;
+				boolean zeroInterval = calFactor==0;
 				if (zeroInterval)
-					c = 1;
+					calFactor = 1;
+				else
+					origin = 0;
 				String timeUnit = zeroInterval?"Frame":"["+cal.getTimeUnit()+"]";
 				xAxisLabel = timeUnit;
 			} else {
-				c = (float) cal.pixelDepth;
-				boolean zeroDepth = c==0;
+				calFactor = (float) cal.pixelDepth;
+				boolean zeroDepth = calFactor==0;
 				if (zeroDepth)
-					c = 1;
-				origin = cal.zOrigin;
+					calFactor = 1;
+				else
+					origin = cal.zOrigin;
 				String depthUnit = zeroDepth?"Slice":"["+cal.getZUnit()+"]";
 				xAxisLabel = depthUnit;
 			}
-			for (int i=0; i<x.length; i++)
-				x[i] = (float)((i-cal.zOrigin)*c);
-		} else {
-			for (int i=0; i<x.length; i++)
-				x[i] = i+1;
 		}
+		for (int i=0; i<x.length; i++)
+			x[i] = (float)((i-origin)*calFactor);
+
 		String title;
 		if (roi!=null) {
 			Rectangle r = roi.getBounds();
@@ -102,38 +103,41 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 			title = imp.getTitle()+"-0-0";
 		//String xAxisLabel = showingDialog&&choice.equals(choices[0])?"Frame":"Slice";
 		Plot plot = new Plot(title, xAxisLabel, "Mean", x, y);
-		if (x.length<=60) {
-			plot.setColor(Color.red);
-			plot.addPoints(x, y, Plot.CIRCLE);
-			plot.setColor(Color.black);
-		}
+		boolean useConnectedCircles = x.length<=60; 	//not LINE but CONNECTED_CIRCLES
+		if (useConnectedCircles)
+			plot.setStyle(0, "black, gray, 1, connected");
+		plot.setColor(Color.black);
 		double ymin = ProfilePlot.getFixedMin();
-		double ymax= ProfilePlot.getFixedMax();
+		double ymax = ProfilePlot.getFixedMax();
 		if (!(ymin==0.0 && ymax==0.0)) {
 			double[] a = Tools.getMinMax(x);
 			double xmin=a[0]; double xmax=a[1];
 			plot.setLimits(xmin, xmax, ymin, ymax);
+		} else {
+			double[] a = Tools.getMinMax(y);
+			ymin = a[0]; ymax = a[1];
 		}
-		if (!firstTime) {
-			int pos = imp.getCurrentSlice();
-			int size = imp.getStackSize();
-			if (hyperstack) {
-				if (timeProfile) {
-					pos = imp.getT();
-					size = imp.getNFrames();
-				} else {
-					pos = imp.getZ();
-					size = imp.getNSlices();
-				}
-			}
-			double xx = (pos-1.0)/(size-1.0);
-			if (xx==0.0)
-				plot.setLineWidth(2);
-			plot.setColor(Color.blue);
-			plot.drawNormalizedLine(xx, 0, xx, 1.0);
-			plot.setColor(Color.black);
-			plot.setLineWidth(1);
+		//draw a blue vertical line for the current stack position (in live mode)
+		int pos = imp.getCurrentSlice();
+		if (hyperstack) {
+			if (timeProfile)
+				pos = imp.getT();
+			else
+				pos = imp.getZ();
 		}
+		double xx = (pos - 1 - origin)*calFactor;
+		if (!useConnectedCircles) {  //For a line plot, the frame starts and ends at the first and last point
+			if (pos==1)              //shift 1 pxl towards the center to avoid hiding the blue line hidden behind the frame
+				xx += calFactor*Math.min(0.4, x.length*0.7/(double)plot.getDrawingFrame().width);
+			else if (pos==x.length)
+				xx -= calFactor*Math.min(0.4, x.length*0.7/(double)plot.getDrawingFrame().width);
+		}
+		if (firstTime)               //don't draw the line for the first time, create an (invisible) PlotObject
+			xx = Double.NaN;         //(otherwise, the number of PlotObjects would change, breaking the Plot.COPY_EXTRA_OBJECTS)
+		plot.setColor(Color.blue);
+		plot.drawLine(xx, ymin-10*(ymax-ymin), xx, ymax+10*(ymax-ymin));
+		plot.setColor(Color.black);
+		plot.setLineWidth(1);
 		firstTime = false;
 		return plot;
 	}
@@ -258,4 +262,3 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 	}
 	
 }
-

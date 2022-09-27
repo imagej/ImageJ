@@ -53,7 +53,7 @@ import java.util.Vector;
 	private boolean showDialog() {
 		gd = new GenericDialog("Startup Macro");
 		String text = "Macro code contained in this text area\nexecutes when ImageJ starts up.";
-		Font font = new Font("SansSerif", Font.PLAIN, 14);
+		Font font = ImageJ.SansSerif14;
 		gd.setInsets(5,15,0);
 		gd.addMessage(text, font);
 		gd.setInsets(5, 10, 0);

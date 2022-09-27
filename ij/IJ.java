@@ -35,6 +35,8 @@ public class IJ {
 	public static Font font10 = new Font("SansSerif", Font.PLAIN, 10);
 	/** SansSerif, plain, 12-point font */
 	public static Font font12 = ImageJ.SansSerif12;
+	/** SansSerif, plain, 14-point font */
+	public static Font font14 = ImageJ.SansSerif14;
 	
 	/** Image display modes */
 	public static final int COMPOSITE=1, COLOR=2, GRAYSCALE=3;
