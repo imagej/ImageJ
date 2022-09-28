@@ -113,7 +113,7 @@ public class Opener {
 			else
 				imp.show(getLoadRate(start,imp));
 		} else {
-			if (isDirectory)
+			if (this.fileType != CUSTOM && isDirectory)
 				this.fileType = UNKNOWN;
 			switch (this.fileType) {
 				case LUT:
