@@ -48,7 +48,7 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 			}
 		}
 		gd.setInsets(0, 0, 0);
-		gd.addNumericField("GUI scale (0.5-3.0):", Prefs.getGuiScale(), 1, 4, "");
+		gd.addNumericField("GUI scale (0.5-3.0):", Prefs.getGuiScale(), 2, 5, "");
 		gd.setInsets(2,20,0);
 		gd.addMessage("Set to 1.5 to double size of tool icons, or 2.5 to triple", font);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#appearance");

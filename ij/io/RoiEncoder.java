@@ -79,7 +79,7 @@ public class RoiEncoder {
 
 	void write(Roi roi, OutputStream f) throws IOException {
 		Rectangle r = roi.getBounds();
-		if (r.width>65535||r.height>65535||r.x>65535||r.y>65535)
+		if (r.width>60000||r.height>60000||r.x>60000||r.y>60000)
 			roi.enableSubPixelResolution();
 		int roiType = roi.getType();
 		int type = rect;

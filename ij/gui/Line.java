@@ -590,10 +590,18 @@ public class Line extends Roi {
 		return -1;
 	}
 
+	/** Returns the default line width. Use getStrokeWidth()to
+	 * get the width of a Line instance.
+	 * @see #getStrokeWidth
+	*/
 	public static int getWidth() {
 		return lineWidth;
 	}
 
+	/** Sets the default line width. Use setStrokeWidth()
+	 * to set the width of a Line instance.
+	 * @see #setStrokeWidth
+	*/
 	public static void setWidth(int w) {
 		if (w<1) w = 1;
 		int max = 500;
@@ -609,6 +617,7 @@ public class Line extends Roi {
 		widthChanged = true;
 	}
 
+	/* Sets the width of this line. */
 	public void setStrokeWidth(float width) {
 		super.setStrokeWidth(width);
 		if (getStrokeColor()==Roi.getColor())

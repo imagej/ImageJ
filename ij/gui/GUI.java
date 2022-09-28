@@ -8,7 +8,7 @@ import javax.swing.UIManager;
 
 /** This class consists of static GUI utility methods. */
 public class GUI {
-	private static final Font DEFAULT_FONT = IJ.font12;
+	private static final Font DEFAULT_FONT = ImageJ.SansSerif12;
 	private static Color lightGray = new Color(240,240,240);
 	private static boolean isWindows8;
 	private static Color scrollbarBackground = new Color(245,245,245);
@@ -199,14 +199,22 @@ public class GUI {
 	}
 
 	public static void scalePopupMenu(final PopupMenu popup) {
+		//System.out.println("scalePopupMenu1: "+popup);
+		if (Menus.getFontSize()!=0) {
+            popup.setFont(Menus.getFont(false));
+			//System.out.println("scalePopupMenu2: "+popup.getFont());
+            return;
+        }
 		final float scale = (float)Prefs.getGuiScale();
 		if (scale==1f)
 			return;
-		Font font = popup.getFont();
-		if (font == null)
-			font = DEFAULT_FONT;
-		font = font.deriveFont(scale*font.getSize());
+		Font font=popup.getFont();
+		if (font==null)
+			font = new Font("SansSerif", Font.PLAIN, (int)(scale*13));
+		else
+			font = font.deriveFont(scale*font.getSize());
 		popup.setFont(font);
+		//System.out.println("scalePopupMenu3: "+popup.getFont());
 	}
 	
 	/**
