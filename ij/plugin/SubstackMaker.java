@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import ij.plugin.frame.Recorder;
 import ij.io.FileInfo;
 import java.awt.Color;
 
@@ -25,8 +26,9 @@ import java.awt.Color;
  */
 
 public class SubstackMaker implements PlugIn {
-	private static boolean delete = false;
-	
+	private static boolean staticDelete;
+	private boolean delete;
+	private boolean methodCall;
 
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
@@ -41,12 +43,29 @@ public class SubstackMaker implements PlugIn {
 		if (imp2!=null)
 			imp2.show();
 	}
-	
-	public void setDelete(boolean setdelete){
-		delete = setdelete
+
+	/**
+	 * Extracts selected slices from a stack to make a new substack.
+	 * Takes three types of inputs: a range of images (e.g. "2-14"), a range of
+	 * images with an increment (e.g. "2-14-3"), or a list of images (e.g. "7,9,25,27").
+	 * Precede with 'delete ' (e.g. "delete 2-14") and the slices will be deleted
+	 * from the stack.
+	*/
+	public static ImagePlus run(ImagePlus imp, String rangeOrList) {
+		SubstackMaker sm = new SubstackMaker();
+		sm.delete = rangeOrList.contains("delete ");
+		if (sm.delete)
+			rangeOrList = rangeOrList.replace("delete ","");
+		sm.methodCall = true;
+		ImagePlus imp2 = sm.makeSubstack(imp, rangeOrList);
+		if (sm.delete)
+			return imp;
+		else
+			return imp2;
 	}
 
 	public ImagePlus makeSubstack(ImagePlus imp, String userInput) {
+		boolean hasFrames = imp.getNFrames()==imp.getStackSize();
 		String stackTitle = "Substack ("+userInput+")";
 		if (stackTitle.length()>25) {
 			int idxA = stackTitle.indexOf(",",18);
@@ -63,7 +82,7 @@ public class SubstackMaker implements PlugIn {
 			if (idx1>=1) {									// input displayed in range
 				String rngStart = userInput.substring(0, idx1);
 				String rngEnd = userInput.substring(idx1+1);
-				Integer obj = new Integer(rngStart);
+				Integer obj = Integer.valueOf(rngStart);
 				int first = obj.intValue();
 				int inc = 1;
 				int idx2 = rngEnd.indexOf("-");
@@ -71,10 +90,10 @@ public class SubstackMaker implements PlugIn {
 					String rngEndAndInc = rngEnd;
 					rngEnd = rngEndAndInc.substring(0, idx2);
 					String rngInc = rngEndAndInc.substring(idx2+1);
-					obj = new Integer(rngInc);
+					obj = Integer.valueOf(rngInc);
 					inc = obj.intValue();
 				}
-				obj = new Integer(rngEnd);
+				obj = Integer.valueOf(rngEnd);
 				int last = obj.intValue();
 				imp2 = stackRange(imp, first, last, inc, stackTitle);
 			} else {
@@ -88,29 +107,33 @@ public class SubstackMaker implements PlugIn {
 					int idx2 = userInput.indexOf(",");
 					if (idx2>0) {
 						String num = userInput.substring(0,idx2);
-						Integer obj = new Integer(num);
+						Integer obj = Integer.valueOf(num);
 						numList[i] = obj.intValue();
 						userInput = userInput.substring(idx2+1);
 					} else {
 						String num = userInput;
-						Integer obj = new Integer(num);
+						Integer obj = Integer.valueOf(num);
 						numList[i] = obj.intValue();
 					}
 				}
 				imp2 = stackList(imp, count, numList, stackTitle);
 			}
 		} catch (Exception e) {
-			IJ.error("Substack Maker", "Invalid input string:        \n \n  \""+userInput+"\"");
+			IJ.error("Substack Maker", "Invalid input string:  \n \n  \""+userInput+"\"");
 		}
+		if (hasFrames && imp2!=null)
+			imp2.setDimensions(1, 1, imp2.getStackSize());
 		return imp2;
 	}
 	
 	String showDialog() {
 		String options = Macro.getOptions();
+		boolean isMacro = options!=null;
 		if (options!=null && !options.contains("slices=")) {
 			Macro.setOptions(options.replace("channels=", "slices="));
 			Macro.setOptions(options.replace("frames=", "slices="));
 		}
+		if (!isMacro) delete = staticDelete;
 		GenericDialog gd = new GenericDialog("Substack Maker");
 		gd.setInsets(10,45,0);
 		gd.addMessage("Enter a range (e.g. 2-14), a range with increment\n(e.g. 1-100-2) or a list (e.g. 7,9,25,27)", null, Color.darkGray);
@@ -120,8 +143,14 @@ public class SubstackMaker implements PlugIn {
 		if (gd.wasCanceled())
 			return null;
 		else {
+			String userInput = gd.getNextString();
 			delete = gd.getNextBoolean();
-			return gd.getNextString();
+			if (!isMacro) staticDelete = delete;
+			if (delete)
+				Recorder.recordCall("SubstackMaker.run(imp, \""+"delete "+userInput+"\");");
+			else
+				Recorder.recordCall("imp2 = SubstackMaker.run(imp, \""+userInput+"\");");
+			return userInput;
 		}
 	}
 
@@ -137,7 +166,8 @@ public class SubstackMaker implements PlugIn {
 			int currSlice = numList[i]-j;
 			ImageProcessor ip2 = stack.getProcessor(currSlice);
 			ip2.setRoi(roi);
-			ip2 = ip2.crop();
+			if (!methodCall || !delete)
+				ip2 = ip2.crop();
 			if (stack2==null)
 				stack2 = new ImageStack(ip2.getWidth(), ip2.getHeight());
 			stack2.addSlice(stack.getSliceLabel(currSlice), ip2);

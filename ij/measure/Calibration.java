@@ -58,9 +58,6 @@ public class Calibration implements Cloneable {
 	/* Z distance unit */
 	private String zunit;
 
-	/* Distance units (e.g. 'microns', 'inches') */
-	private String units;
-
 	/* Pixel value unit (e.g. 'gray level', 'OD') */
 	private String valueUnit = DEFAULT_VALUE_UNIT;
 
@@ -92,15 +89,20 @@ public class Calibration implements Cloneable {
 	public Calibration() {
 	}
 	
-	/** Returns true if this image is spatially calibrated. */
+	/** Returns 'true' if this image is spatially calibrated. */
 	public boolean scaled() {
 		return pixelWidth!=1.0 || pixelHeight!=1.0 || pixelDepth!=1.0 || !unit.equals("pixel");
 	}
 	
+	/** Returns 'true' if this image is spatially calibrated or has offsets. */
+	public boolean scaledOrOffset() {
+		return pixelWidth!=1.0 || pixelHeight!=1.0 || pixelDepth!=1.0
+			|| xOrigin!=0.0 || yOrigin!=0.0 || zOrigin!=0.0;
+	}
+
 	/** Sets the default length unit (e.g. "mm", "inch"). */
 	public void setUnit(String unit) {
 		this.unit = sanitizeUnit(unit);
-		units = null;
 	}
  	
    	/** Sets the X length unit. */
@@ -154,21 +156,40 @@ public class Calibration implements Cloneable {
  		return zunit!=null?zunit:unit;
  	}
 
+	/** Returns the plural form of the unit passed as argument (e.g. "micron" gives "microns", "inch" gives "inches"). */
+	private static String pluralForm(String unit) {
+		String units;
+		if (unit.equals("pixel"))
+			units = "pixels";
+		else if (unit.equals("micron"))
+			units = "microns";
+		else if (unit.equals("inch"))
+			units = "inches";
+		else
+			units = unit;
+	   return units;
+	}
+
 	/** Returns the plural form of the length unit (e.g. "microns", "inches"). */
  	public String getUnits() {
- 		if (units==null) {
-  			if (unit.equals("pixel"))
- 				units = "pixels";
- 			else if (unit.equals("micron"))
- 				units = "microns";
-  			else if (unit.equals("inch"))
- 				units = "inches";
-			else
- 				units = unit;
- 		}
- 		return units;
+		return pluralForm(getUnit());
  	}
- 	
+
+	/** Returns the plural form of the X length unit (e.g. "microns", "inches"), or of the default unit if 'xunit' is null. */
+	public String getXUnits() {
+		return pluralForm(getXUnit());
+	}
+
+	/** Returns the plural form of the Y length unit (e.g. "microns", "inches"), or of the default unit if 'yunit' is null. */
+	public String getYUnits() {
+		return pluralForm(getYUnit());
+	}
+
+	/** Returns the plural form of the Z length unit (e.g. "microns", "inches"), or of the default unit if 'zunit' is null. */
+	public String getZUnits() {
+		return pluralForm(getZUnit());
+	}
+
    	/** Sets the time unit (e.g. "sec", "msec"). */
  	public void setTimeUnit(String unit) {
  		if (unit==null || unit.equals(""))

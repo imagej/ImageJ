@@ -17,7 +17,7 @@ public class NewPlugin implements PlugIn {
     private static int tableWidth = 350;
     private static int tableHeight = 250;
     private int type = MACRO;
-    private String name = "Macro.txt";
+    private String name = "Macro.ijm";
     private boolean monospaced;
     private boolean menuBar = true;
 	private Editor ed;
@@ -26,10 +26,13 @@ public class NewPlugin implements PlugIn {
     	type = -1;
     	if (arg.startsWith("text")||arg.equals("")) {
     		type = TEXT_FILE;
-    		name = "Untitled.txt";
+    		if (IJ.altKeyDown())
+    			name = "Untitled.ijm";
+    		else
+    			name = "Untitled.txt";
     	} else if (arg.equals("macro")) {
     		type = MACRO;
-    		name = "Macro.txt";
+    		name = "Macro.ijm";
     	} else if (arg.equals("macro-tool")) {
     		type = TEMPLATE;
     		name = "Circle_Tool.txt";
@@ -77,14 +80,18 @@ public class NewPlugin implements PlugIn {
     
 	public void createMacro(String name) {
 		int options = (monospaced?Editor.MONOSPACED:0)+(menuBar?Editor.MENU_BAR:0);
+		if (name.endsWith(".ijm") || name.endsWith(".js"))
+			options |= Editor.RUN_BAR;
+		if (name.endsWith(".ijm"))
+			options |= Editor.INSTALL_BUTTON;
 		String text = "";
 		ed = new Editor(rows, columns, 0, options);
 		if (type==TEMPLATE)
 			text = Tools.openFromIJJarAsString("/macros/"+name);
 		if (name.endsWith(".src"))
 			name = name.substring(0,name.length()-4) + ".java";
-		if (type==MACRO && !name.endsWith(".txt"))
-			name = SaveDialog.setExtension(name, ".txt");
+		if (type==MACRO && !name.endsWith(".ijm"))
+			name = SaveDialog.setExtension(name, ".ijm");
 		else if (type==JAVASCRIPT && !name.endsWith(".js")) {
 			if (name.equals("Macro")) name = "script";
 			name = SaveDialog.setExtension(name, ".js");
@@ -118,6 +125,7 @@ public class NewPlugin implements PlugIn {
 		text += "\t}\n";
 		text += "\n";
 		text += "}\n";
+		text = text.replaceAll("\\t","    ");
 		ed.create(pluginName, text);
 	}
 	

@@ -23,6 +23,8 @@ public class Converter implements PlugIn {
 					(new RGBStackConverter()).run("");
 					imp.setTitle(imp.getTitle()); // updates size in Window menu
 				}
+			} else if (imp.isComposite() && imp.getNChannels()>1 && imp.getNChannels()==imp.getStackSize() && arg.equals("RGB Stack")) {
+				convertCompositeToRGBStack(imp);
 			} else if (imp.lock()) {
 				convert(arg);
 				imp.unlock();
@@ -182,6 +184,20 @@ public class Converter implements PlugIn {
 		if (n<2) n = 2;
 		if (n>256) n = 256;
 		return n;
+	}
+	
+	private void convertCompositeToRGBStack(ImagePlus imp) {
+		imp.setDisplayMode(IJ.COLOR);
+		if (imp.getNChannels()!=imp.getStackSize())
+			IJ.run(imp, "Reduce Dimensionality...", "channels");
+		ImagePlus[] channels = ChannelSplitter.split(imp);
+		ImageStack stack = new ImageStack();
+		for (int i=0; i<channels.length; i++) {
+			ImageProcessor ip = channels[i].getProcessor();
+			ip = ip.convertToRGB();
+			stack.addSlice(ip);
+		}
+		imp.setStack(stack);
 	}
 		
 }

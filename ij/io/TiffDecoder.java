@@ -503,7 +503,7 @@ public class TiffDecoder {
 							error("ImageJ cannot open 12-bit LZW-compressed TIFFs");
 					} else if (value==32773)  // PackBits compression
 						fi.compression = FileInfo.PACK_BITS;
-					else if (value==32946 || value==8)
+					else if (value==32946 || value==8) //8=Adobe deflate
 						fi.compression = FileInfo.ZIP;
 					else if (value!=1 && value!=0 && !(value==7&&fi.width<500)) {
 						// don't abort with Spot camera compressed (7) thumbnails
@@ -523,6 +523,8 @@ public class TiffDecoder {
 				case PREDICTOR:
 					if (value==2 && fi.compression==FileInfo.LZW)
 						fi.compression = FileInfo.LZW_WITH_DIFFERENCING;
+					if (value==3)
+						IJ.log("TiffDecoder: unsupported predictor value of 3");
 					break;
 				case COLOR_MAP: 
 					if (count==768)
@@ -690,7 +692,7 @@ public class TiffDecoder {
 				chars[j] = (char)(buffer[k++]&255 + ((buffer[k++]&255)<<8));
 		} else {
 			for (int j=0, k=0; j<len; j++)
-				chars[j] = (char)(((buffer[k++]&255)<<8) + buffer[k++]&255);
+				chars[j] = (char)(((buffer[k++]&255)<<8) + (buffer[k++]&255));
 		}
 		fi.info = new String(chars);
 	}
@@ -712,7 +714,7 @@ public class TiffDecoder {
 						chars[j] = (char)(buffer[k++]&255 + ((buffer[k++]&255)<<8));
 				} else {
 					for (int j=0, k=0; j<len; j++)
-						chars[j] = (char)(((buffer[k++]&255)<<8) + buffer[k++]&255);
+						chars[j] = (char)(((buffer[k++]&255)<<8) + (buffer[k++]&255));
 				}
 				fi.sliceLabels[index++] = new String(chars);
 				//ij.IJ.log(i+"  "+fi.sliceLabels[i-1]+"  "+len);
@@ -778,7 +780,7 @@ public class TiffDecoder {
 					chars[j] = (char)(buffer[k++]&255 + ((buffer[k++]&255)<<8));
 			} else {
 				for (int j=0, k=0; j<len; j++)
-					chars[j] = (char)(((buffer[k++]&255)<<8) + buffer[k++]&255);
+					chars[j] = (char)(((buffer[k++]&255)<<8) + (buffer[k++]&255));
 			}
 			fi.properties[index++] = new String(chars);
 		}

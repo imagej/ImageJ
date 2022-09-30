@@ -5,7 +5,7 @@ import ij.plugin.Duplicator;
 
 /**
 * @deprecated
-* replaced by Duplicator class
+* replaced by ij.plugin.Duplicator class
 */
 public class Duplicater implements PlugInFilter {
 	ImagePlus imp;

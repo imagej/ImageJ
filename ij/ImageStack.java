@@ -19,8 +19,9 @@ public class ImageStack {
 	private ColorModel cm;
 	private double min=Double.MAX_VALUE;
 	private double max;
-	private float[] cTable;
+	protected float[] cTable;
 	private int viewers;
+	private boolean signedInt;
 	
 	/** Default constructor. */
 	public ImageStack() { }
@@ -158,7 +159,7 @@ public class ImageStack {
 		label[n] = tempLabel;
 	}
 	
-	/** Deletes the specified slice, were 1<=n<=nslices. */
+	/** Deletes the specified slice, where {@literal 1<=n<=nslices}. */
 	public void deleteSlice(int n) {
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
@@ -209,15 +210,14 @@ public class ImageStack {
 		}
 	}
 	
-	/** Returns the pixel array for the specified slice, were 1<=n<=nslices. */
+	/** Returns the pixel array for the specified slice, where {@literal 1<=n<=nslices}. */
 	public Object getPixels(int n) {
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
 		return stack[n-1];
 	}
 	
-	/** Assigns a pixel array to the specified slice,
-		were 1<=n<=nslices. */
+	/** Assigns a pixel array to the specified slice, where {@literal 1<=n<=nslices}. */
 	public void setPixels(Object pixels, int n) {
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
@@ -254,19 +254,31 @@ public class ImageStack {
 			return label;
 	}
 	
-	/** Returns the label of the specified slice, were 1<=n<=nslices.
-		Returns null if the slice does not have a label. For DICOM
-		and FITS stacks, labels may contain header information. */
+	/** Returns the label of the specified slice, where {@literal 1<=n<=nslices}.
+		Returns null if the slice does not have a label or 'n';
+		is out of range. For DICOM and FITS stacks, labels may
+		contain header information.
+	*/
 	public String getSliceLabel(int n) {
 		if (n<1 || n>nSlices)
-			throw new IllegalArgumentException(outOfRange+n);
-		return label[n-1];
+			return null;
+		else
+			return label[n-1];
 	}
 	
-	/** Returns a shortened version (up to the first 60 characters or first newline and 
-		suffix removed) of the label of the specified slice.
-		Returns null if the slice does not have a label. */
+	/** Returns a shortened version (up to the first 60 characters
+	 * or first newline), with the extension removed, of the specified
+	 * slice label, or null if the slice does not have a label.
+	*/
 	public String getShortSliceLabel(int n) {
+		return getShortSliceLabel(n, 60);
+	}
+
+	/** Returns a shortened version (up to the first 'max' characters
+	 * or first newline), with the extension removed, of the specified
+	 * slice label, or null if the slice does not have a label.
+	*/
+	public String getShortSliceLabel(int n, int max) {
 		String shortLabel = getSliceLabel(n);
 		if (shortLabel==null) return null;
     	int newline = shortLabel.indexOf('\n');
@@ -276,12 +288,12 @@ public class ImageStack {
     	int len = shortLabel.length();
 		if (len>4 && shortLabel.charAt(len-4)=='.' && !Character.isDigit(shortLabel.charAt(len-1)))
 			shortLabel = shortLabel.substring(0,len-4);
-		if (shortLabel.length()>60)
-			shortLabel = shortLabel.substring(0, 60);
+		if (shortLabel.length()>max)
+			shortLabel = shortLabel.substring(0, max);
 		return shortLabel;
 	}
-
-	/** Sets the label of the specified slice, were 1<=n<=nslices. */
+	
+	/** Sets the label of the specified slice, where {@literal 1<=n<=nslices}. */
 	public void setSliceLabel(String label, int n) {
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
@@ -289,9 +301,10 @@ public class ImageStack {
 	}
 	
 	/** Returns an ImageProcessor for the specified slice,
-		were 1<=n<=nslices. Returns null if the stack is empty.
-	*/
-	public ImageProcessor getProcessor(int n) {
+	 * where {@literal 1<=n<=nslices}.
+ 	 * Returns null if the stack is empty.
+ 	*/
+ 	public ImageProcessor getProcessor(int n) {
 		ImageProcessor ip;
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
@@ -303,9 +316,12 @@ public class ImageStack {
 			ip = new ByteProcessor(width, height, null, cm);
 		else if (stack[n-1] instanceof short[])
 			ip = new ShortProcessor(width, height, null, cm);
-		else if (stack[n-1] instanceof int[])
-			ip = new ColorProcessor(width, height, null);
-		else if (stack[n-1] instanceof float[])
+		else if (stack[n-1] instanceof int[]) {
+			if (signedInt)
+				ip = new IntProcessor(width, height);
+			else
+				ip = new ColorProcessor(width, height, null);
+		} else if (stack[n-1] instanceof float[])
 			ip = new FloatProcessor(width, height, null, cm);		
 		else
 			throw new IllegalArgumentException("Unknown stack type");
@@ -317,8 +333,9 @@ public class ImageStack {
 		return ip;
 	}
 	
-	/** Assigns the pixel array of an ImageProcessor to the
-		 specified slice, were 1<=n<=nslices. */
+	/** Assigns the pixel array of an ImageProcessor to the specified slice,
+	 * where {@literal 1<=n<=nslices}.
+	*/
 	public void setProcessor(ImageProcessor ip, int n) {
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
@@ -696,6 +713,11 @@ public class ImageStack {
 	 	viewers += inc;
 	 	if (IJ.debugMode) IJ.log("stack.viewers: "+viewers);
 	 	return viewers;
+	 }
+	 
+	 public void setOptions(String options) {
+	 	if (options==null) return;
+	 	signedInt = options.contains("32-bit int");
 	 }
 
 }

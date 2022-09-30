@@ -1,0 +1,68 @@
+// "Invert all LUTs"
+// Converts all LUTs in a multi-channel image between
+// inverted and non inverted and switches the
+// composite rendering mode accordingly.
+// Author: Kevin Terretaz
+// Contributor: Nicolás De Francesco
+
+requires("1.53o");
+getDimensions(width, height, channels, slices, frames);
+REDS = newArray(256);
+GREENS = newArray(256);
+BLUES = newArray(256);
+for (c=1; c<=channels; c++) {
+    Stack.setChannel(c);
+    getLut(reds,greens,blues);
+    for (i=0; i<256; i++) {
+        hsv = HSV_from_RGB(255-reds[i], 255-greens[i], 255-blues[i]);
+        hsv[0] = (hsv[0]+128)%256;
+        rgb = RGB_from_HSV(hsv[0], hsv[1], hsv[2]);
+        REDS[i] = round(rgb[0]);
+        GREENS[i] = round(rgb[1]);
+        BLUES[i] = round(rgb[2]);
+    }
+    setLut(REDS, GREENS, BLUES);
+}
+
+Stack.setChannel(1);
+  // CompositeProjection mode switch :
+  mode = Property.get("CompositeProjection");
+  if (is("Inverting LUT")&&(mode=="Min"||mode=="Invert"))
+     ; // do nothing
+  else if (!is("Inverting LUT")&&(mode=="Sum"||mode=="Max"))
+     ; // do nothing
+  else if (mode=="Invert")
+     Property.set("CompositeProjection", "Sum");
+  else if (mode=="Min")
+     Property.set("CompositeProjection", "Max");
+  else if (mode=="Max")
+     Property.set("CompositeProjection", "Min");
+  else // if Composite Sum
+     Property.set("CompositeProjection", "Invert"); 
+  updateDisplay();
+
+function HSV_from_RGB(r, g, b) {
+    // adapted from https://en.wikipedia.org/wiki/HSL_and_HSV#From_RGB
+    v = maxOf(r, maxOf(g, b)); // value (brightness)
+    c = v - minOf(r, minOf(g, b)); // chroma    
+    h = 0;
+    if (c>0) {
+        if (v==r) h = 256/6 * (0 + g-b)/c;
+        if (v==g) h = 256/6 * (2 + (b-r)/c);
+        if (v==b) h = 256/6 * (4 + (r-g)/c);
+    }
+    h = (h+256)%256;
+    s = 0;
+    if (v>0) s = c/v*256;
+    hsv = newArray(h, s, v);
+    return hsv;
+}   
+    
+function RGB_from_HSV(h, s, v) {
+    // adapted from https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_to_RGB_alternative
+    r = v - v * s / 256 * maxOf(0, minOf((5+h/256*6)%6, minOf(4-(5+h/256*6)%6, 1)));
+    g = v - v * s / 256 * maxOf(0, minOf((3+h/256*6)%6, minOf(4-(3+h/256*6)%6, 1)));
+    b = v - v * s / 256 * maxOf(0, minOf((1+h/256*6)%6, minOf(4-(1+h/256*6)%6, 1)));
+    rgb = newArray(r, g, b);
+    return rgb;
+}

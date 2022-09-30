@@ -9,10 +9,13 @@ import java.lang.reflect.*;
 /**
 * This is a non-modal dialog box used to ask the user to perform some task
 * while a macro or plugin is running. It implements the waitForUser() macro
-* function. It is based on Michael Schmid's Wait_For_User plugin.
+* function. It is based on Michael Schmid's Wait_For_User plugin.<br>
+* Example:
+* <code>new WaitForUserDialog("Use brush to draw on overlay").show();</code>
 */
 public class WaitForUserDialog extends Dialog implements ActionListener, KeyListener {
 	protected Button button;
+	protected Button cancelButton;
 	protected MultiLineLabel label;
 	static protected int xloc=-1, yloc=-1;
 	private boolean escPressed;
@@ -23,7 +26,7 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 		if (text!=null && text.startsWith("IJ: "))
 			text = text.substring(4);
 		label = new MultiLineLabel(text, 175);
-		if (!IJ.isLinux()) label.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		if (!IJ.isLinux()) label.setFont(ImageJ.SansSerif14);
 		if (IJ.isMacOSX()) {
 			RoiManager rm = RoiManager.getInstance();
 			if (rm!=null) rm.runCommand("enable interrupts");
@@ -31,17 +34,28 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
         GridBagLayout gridbag = new GridBagLayout(); //set up the layout
         GridBagConstraints c = new GridBagConstraints();
         setLayout(gridbag);
-        c.insets = new Insets(6, 6, 0, 6); 
+		c.insets = new Insets(6, 6, 0, 6); 
         c.gridx = 0; c.gridy = 0; c.anchor = GridBagConstraints.WEST;
         add(label,c); 
+		
 		button = new Button("  OK  ");
 		button.addActionListener(this);
 		button.addKeyListener(this);
         c.insets = new Insets(2, 6, 6, 6); 
-        c.gridx = 0; c.gridy = 2; c.anchor = GridBagConstraints.EAST;
+        c.gridx = 0; c.gridy = 1; c.anchor = GridBagConstraints.EAST;
         add(button, c);
+
+		if (IJ.isMacro()) {
+			cancelButton = new Button(" Cancel ");
+			cancelButton.addActionListener(this);
+			cancelButton.addKeyListener(this);
+			c.anchor = GridBagConstraints.WEST; //same as OK button but WEST	
+        	add(cancelButton, c);
+        }
+
 		setResizable(false);
 		addKeyListener(this);
+		GUI.scale(this);
 		pack();
 		if (xloc==-1)
 			GUI.centerOnImageJScreen(this);
@@ -70,6 +84,10 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
     }
 
 	public void actionPerformed(ActionEvent e) {
+		String s = e.getActionCommand();
+		if(s.indexOf("Cancel") >= 0){
+			escPressed = true;
+		}
 		close();
 	}
 	

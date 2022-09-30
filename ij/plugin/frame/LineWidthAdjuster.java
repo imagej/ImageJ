@@ -24,6 +24,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 	boolean done;
 	TextField tf;
 	Checkbox checkbox;
+	int lineWidth0 = (int)Line.getWidth();
 
 	public LineWidthAdjuster() {
 		super("Line Width");
@@ -155,6 +156,23 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		instance = null;
 		done = true;
 		Prefs.saveLocation(LOC_KEY, getLocation());
+		int strokeWidth = -1;
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) {
+			Roi roi = imp.getRoi();
+			if (roi!=null && roi.isLine())
+				strokeWidth = (int)roi.getStrokeWidth();
+		}
+		if (Recorder.record && strokeWidth>=0 && strokeWidth!=lineWidth0) {
+			if (Recorder.scriptMode()) {
+				Recorder.recordCall("roi = imp.getRoi();");
+				Recorder.recordCall("roi.setStrokeWidth("+strokeWidth+");");
+				Recorder.recordCall("imp.draw();");
+			} else {
+				Recorder.record("Roi.setStrokeWidth", strokeWidth);
+			}
+			Recorder.disableCommandRecording();
+		}
 		synchronized(this) {notify();}
 	}
 

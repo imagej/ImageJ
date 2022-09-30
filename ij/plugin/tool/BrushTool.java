@@ -254,7 +254,7 @@ public class BrushTool extends PlugInTool implements Runnable {
 			Color color = Toolbar.getForegroundColor();
 			String colorName = Colors.colorToString2(color);
 			String name = isPencil?"Pencil":"Brush";
-			gd = NonBlockingGenericDialog.newDialog(name+" Options");
+			gd = GUI.newNonBlockingDialog(name+" Options");
 			gd.addSlider(name+" width:", 1, 50, width);
 			//gd.addSlider("Transparency (%):", 0, 100, transparency);
 			gd.addChoice("Color:", Colors.getColors(colorName), colorName);

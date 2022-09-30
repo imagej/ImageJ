@@ -201,7 +201,9 @@ public class ShapeRoi extends Roi {
 
 	/**Unary exclusive or operator.
 	 * The caller is set to the non-overlapping regions between the operands.
-	 * @return the union of the non-overlapping regions of <strong><code>this</code></strong> and <code>sr</code>
+	 * @return the union of the non-overlapping regions of <code>this</code> and <code>sr</code>
+	 * @see ij.gui.Roi#xor(Roi[])
+	 * @see ij.gui.Overlay#xor(int[])
 	 */
 	public ShapeRoi xor(ShapeRoi sr) {return unaryOp(sr, XOR);}
 
@@ -975,11 +977,15 @@ public class ShapeRoi extends Roi {
 			return;
 		int flags = ic.getModifiers();
 		if ((flags&16)==0) return; // exit if mouse button up
+		int osize = size;
 		size = (int)(size*mag);
 		Point p = ic.getCursorLoc();
 		int sx = ic.screenX(p.x);
 		int sy = ic.screenY(p.y);
-		g.drawOval(sx-size/2, sy-size/2, size, size);
+		int offset = (int)Math.round(ic.getMagnification()/2.0);
+		if ((osize&1)==0)
+			offset=0; // not needed when brush width even
+		g.drawOval(sx-size/2+offset, sy-size/2+offset, size, size);
 	}
 	
 	/**Draws the shape of this object onto the specified ImageProcessor.

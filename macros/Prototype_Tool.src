@@ -9,16 +9,16 @@ import java.awt.event.*;
 
 public class Prototype_Tool extends PlugInTool {
 
-	public void mousePressed(ImagePlus imp, MouseEvent e) {
-		IJ.log("mouse pressed: "+e);
-	}
+    public void mousePressed(ImagePlus imp, MouseEvent e) {
+        IJ.log("mouse pressed: "+e);
+    }
 
-	public void mouseDragged(ImagePlus imp, MouseEvent e) {
-		IJ.log("mouse dragged: "+e);
-	}
+    public void mouseDragged(ImagePlus imp, MouseEvent e) {
+        IJ.log("mouse dragged: "+e);
+    }
 
-	public void showOptionsDialog() {
-		IJ.log("icon double-clicked");
-	}
+    public void showOptionsDialog() {
+        IJ.log("icon double-clicked");
+    }
 
 }

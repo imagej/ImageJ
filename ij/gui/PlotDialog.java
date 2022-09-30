@@ -297,7 +297,8 @@ public class PlotDialog implements DialogListener {
 	 *  the fields must be exactly the same as those for setting up the fields in 'setupDialog' (fields must be
 	 *  also read in the same sequence). */
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
-		if (dialogShowing && e == null) return true;	//gets called with e=null upon OK; ignore this
+		if (dialogShowing && e==null)
+			return true;	//gets called with e=null upon OK; ignore this
 		boolean livePlot = plot.plotMaker != null;
 
 		if (dialogType == SET_RANGE || dialogType == X_AXIS) {
@@ -491,7 +492,10 @@ public class PlotDialog implements DialogListener {
 	private void doHighResolutionDialog(Frame parent) {
 		GenericDialog gd = parent == null ? new GenericDialog(HEADINGS[dialogType]) :
 				new GenericDialog(HEADINGS[dialogType], parent);
-		String title = plot.getTitle() +"_HiRes";
+		String title = plot.getTitle();
+		if (title.toLowerCase().endsWith(".tif") || title.toLowerCase().endsWith(".zip"))
+			title = title.substring(0, title.length()-4);
+		title += "_HiRes";
 		title = WindowManager.makeUniqueName(title);
 		gd.addStringField("Title: ", title, 20);
 		gd.addNumericField("Scale factor", hiResFactor, 1);

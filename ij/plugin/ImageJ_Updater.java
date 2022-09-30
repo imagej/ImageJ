@@ -83,7 +83,7 @@ public class ImageJ_Updater implements PlugIn {
 	}
 
 	int showDialog(String[] versions) {
-		GenericDialog gd = new GenericDialog("ImageJ Updater 2");
+		GenericDialog gd = new GenericDialog("ImageJ Updater");
 		gd.addChoice("Upgrade To:", versions, versions[0]);
 		String msg = 
 			"You are currently running v"+ImageJ.VERSION+ImageJ.BUILD+".\n"+

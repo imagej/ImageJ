@@ -6,6 +6,7 @@ import java.util.*;
 import ij.process.*;
 import ij.io.*;
 import ij.gui.*;
+
 import ij.measure.*;
 import ij.plugin.filter.Analyzer;
 import ij.util.*;
@@ -54,7 +55,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	protected ImageWindow win;
 	protected Roi roi;
 	protected int currentSlice; // current stack index (one-based)
-	protected static final int OPENED=0, CLOSED=1, UPDATED=2;
+	protected static final int OPENED=0, CLOSED=1, UPDATED=2, SAVED=3;
 	protected boolean compositeImage;
 	protected int width;
 	protected int height;
@@ -101,6 +102,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public boolean setIJMenuBar = Prefs.setIJMenuBar;
 	private Plot plot;
 	private Properties imageProperties;
+	private Color borderColor;
+	private boolean temporary;
+	private double defaultMin, defaultMax;
 
 
     /** Constructs an uninitialized ImagePlus. */
@@ -161,6 +165,14 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
     private void setID() {
     	ID = --currentID;
+	}
+	
+	public void setTemporary() {
+		if (!temporary) {
+			temporary = true;		
+			currentID++;
+			ID = -Integer.MAX_VALUE;
+		}
 	}
 
 	/** Locks the image so other threads can test to see if it is in use.
@@ -296,6 +308,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		nothing if there is no window associated with
 		this image (i.e. show() has not been called).*/
 	public synchronized void updateAndDraw() {
+		if (win==null) {
+			img = null;
+			return;
+		}
 		if (stack!=null && !stack.isVirtual() && currentSlice>=1 && currentSlice<=stack.size()) {		
 			if (stack.size()>1 && win!=null && !(win instanceof StackWindow)) {
 				setStack(stack);	//adds scroll bar if stack size has changed to >1
@@ -420,6 +436,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** ImageCanvas.paint() calls this method when the
 		ImageProcessor has generated a new image. */
 	public void updateImage() {
+		if (win==null) {
+			img = null;
+			return;
+		}
 		if (ip!=null)
 			img = ip.createImage();
 	}
@@ -427,6 +447,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Closes the window, if any, that is displaying this image. */
 	public void hide() {
 		if (win==null) {
+			img = null;
 			Interpreter.removeBatchModeImage(this);
 			return;
 		}
@@ -461,7 +482,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Opens a window to display this image and displays
 		'statusMessage' in the status bar. */
 	public void show(String statusMessage) {
-		if (isVisible())
+		if (isVisible() || temporary)
 			return;
 		win = null;
 		if ((IJ.isMacro() && ij==null) || Interpreter.isBatchMode()) {
@@ -479,7 +500,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			activated = false;
 			int stackSize = getStackSize();
 			if (stackSize>1)
-				win = new StackWindow(this);
+				win = new StackWindow(this);	// displays the window and (if macro) waits for window to be activated
 			else if (getProperty(Plot.PROPERTY_KEY) != null)
 				win = new PlotWindow(this, (Plot)(getProperty(Plot.PROPERTY_KEY)));
 			else
@@ -488,16 +509,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (overlay!=null && getCanvas()!=null)
 				getCanvas().setOverlay(overlay);
 			IJ.showStatus(statusMessage);
-			if (IJ.isMacro()) { // wait for window to be activated
-				long start = System.currentTimeMillis();
-				while (!activated) {
-					IJ.wait(5);
-					if ((System.currentTimeMillis()-start)>2000) {
-						WindowManager.setTempCurrentImage(this);
-						break; // 2 second timeout
-					}
-				}
-			}
+			if (IJ.isMacro() && stackSize==1) // for non-stacks, wait for window to be activated
+				waitTillActivated();
 			if (imageType==GRAY16 && default16bitDisplayRange!=0) {
 				resetDisplayRange();
 				updateAndDraw();
@@ -514,7 +527,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			notifyListeners(OPENED);
 		}
 	}
-
+	
 	void invertLookupTable() {
 		int nImages = getStackSize();
 		ip.invertLut();
@@ -528,9 +541,48 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 	}
 
-	/** Called by ImageWindow.windowActivated(). */
+	/** Waits until the image window becomes activated. This is necessary in
+	 *  macros or other programs if an ImagePlus is shown on the screen,
+	 *  because displaying the window is asynchronous (happens later)
+	 *  and will make the image the active one. Without waiting, in the
+	 *  meanwhile another window could be already the active one and would
+	 *  become deactivated.
+	 *  If the ImagePlus may have been displayed previously, first call
+	 *  setDeactivated().
+	 *  <code>ImagePlus.show()</code> and <code>new StackWindow(ImagePlus)</code>
+	 *  call this method if IJ.isMacro() is true, i.e., when running a macro or
+	 *  executing an IJ.run(...) call.
+	*/
+	public void waitTillActivated() {
+		if (win == null) return;
+		if (EventQueue.isDispatchThread()) { //'activated' is set in the EventQueue, we can't wait for it in the EventQueue
+			WindowManager.setTempCurrentImage(this);
+			return;
+		}
+		long start = System.currentTimeMillis();
+		while (!activated) {
+			IJ.wait(5);
+			if (ij != null && ij.quitting()) return;
+			if ((System.currentTimeMillis()-start)>2000) {
+				WindowManager.setTempCurrentImage(this);
+				break; // 2 second timeout
+			}
+		}
+	}
+
+	/** Called by ImageWindow.windowActivated(); to end waiting in waitTillActivated. */
 	public void setActivated() {
 		activated = true;
+		if (borderColor!=null && win!=null)
+			win.setBackground(borderColor);
+	}
+
+	/** Called by <code>new StackWindow(ImagePlus)</code>
+	 * before showing the StackWindow, to prepare for
+	 * waitTillActivated().
+	*/
+	public void setDeactivated() {
+		activated = false;
 	}
 
 	/** Returns this image as a AWT image. */
@@ -539,7 +591,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			img = ip.createImage();
 		return img;
 	}
-
+	
 	/** Returns a copy of this image as an 8-bit or RGB BufferedImage.
 	 * @see ij.process.ShortProcessor#get16BitBufferedImage
 	 */
@@ -556,11 +608,25 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	/** Replaces the image, if any, with the one specified.
-		Throws an IllegalStateException if an error occurs
-		while loading the image. */
+	 * Throws an IllegalStateException if an error occurs
+	 * while loading the image.
+	*/
 	public void setImage(Image image) {
 		if (image instanceof BufferedImage) {
-			BufferedImage bi = (BufferedImage)image;
+			BufferedImage bi = (BufferedImage)image;			
+			int nBands = bi.getSampleModel().getNumBands();
+			int type = bi.getType();
+			boolean rgb = type==BufferedImage.TYPE_3BYTE_BGR||type==BufferedImage.TYPE_INT_RGB
+				||type==BufferedImage.TYPE_4BYTE_ABGR||type==BufferedImage.TYPE_BYTE_INDEXED
+				||type==BufferedImage.TYPE_INT_ARGB||type==BufferedImage.TYPE_CUSTOM;
+			if (IJ.debugMode) IJ.log("setImage: type="+type+", bands="+nBands+", rgb="+rgb);
+			if (nBands>1 && !rgb) {
+				ImageStack biStack = new ImageStack(bi.getWidth(), bi.getHeight());			
+				for (int b=0; b<nBands; b++)
+					biStack.addSlice(convertToImageProcessor(bi, b));
+				setImage(new ImagePlus("", biStack));
+				return;
+			}			
 			if (bi.getType()==BufferedImage.TYPE_USHORT_GRAY) {
 				setProcessor(null, new ShortProcessor(bi));
 				return;
@@ -594,6 +660,33 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			else
 				repaintWindow();
 		}
+	}
+	
+	/**
+	 * Extract pixels as an an ImageProcessor from a single band of a BufferedImage.
+	 * @param img
+	 * @param band
+	 * @return
+	 */
+	public static ImageProcessor convertToImageProcessor(BufferedImage img, int band) {
+		int w = img.getWidth();
+		int h = img.getHeight();
+		int dataType = img.getSampleModel().getDataType();
+		// Read data as float (no matter what it is - it's the most accuracy ImageJ can provide)
+		FloatProcessor fp = new FloatProcessor(w, h);
+		float[] pixels = (float[])fp.getPixels();
+		img.getRaster().getSamples(0, 0, w, h, band, pixels);
+		// Convert to 8 or 16-bit, if appropriate
+		if (dataType == DataBuffer.TYPE_BYTE) {
+			ByteProcessor bp = new ByteProcessor(w, h);
+			bp.setPixels(0, fp);
+			return bp;
+		} else if (dataType == DataBuffer.TYPE_USHORT) {
+			ShortProcessor sp = new ShortProcessor(w, h);
+			sp.setPixels(0, fp);
+			return sp;
+		} else
+			return fp;
 	}
 
 	/** Replaces this image with the specified ImagePlus. May
@@ -636,6 +729,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 		setFileInfo(imp.getOriginalFileInfo());
 		setProperty ("Info", imp.getProperty ("Info"));
+		setProperties(imp.getPropertiesAsArray());
 	}
 
 	/** Replaces the ImageProcessor with the one specified and updates the
@@ -665,7 +759,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	void setProcessor2(String title, ImageProcessor ip, ImageStack newStack) {
-		//IJ.log("setProcessor2: "+ip+" "+this.ip+" "+newStack);
 		if (title!=null) setTitle(title);
 		if (ip==null)
 			return;
@@ -717,12 +810,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Replaces the image with the specified stack and updates
 		the display. Set 'title' to null to leave the title unchanged. */
     public void setStack(String title, ImageStack newStack) {
-		//IJ.log("setStack1: "+nChannels+" "+nSlices+" "+nFrames);
 		int bitDepth1 = getBitDepth();
 		int previousStackSize = getStackSize();
 		int newStackSize = newStack.getSize();
 		if (newStackSize==0)
-			throw new IllegalArgumentException("Stack is empty");
+			throw new IllegalArgumentException("Stack is empty");		
 		if (!newStack.isVirtual()) {
 			Object[] arrays = newStack.getImageArray();
 			if (arrays==null || (arrays.length>0&&arrays[0]==null))
@@ -765,14 +857,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				setOpenAsHyperStack(true);
 			activated = false;
 			win = new StackWindow(this, dimensionsChanged?null:getCanvas());   // replaces this window
-			if (IJ.isMacro()) { // wait for stack window to be activated
-				long start = System.currentTimeMillis();
-				while (!activated) {
-					IJ.wait(5);
-					if ((System.currentTimeMillis()-start)>200)
-						break; // 0.2 second timeout
-				}
-			}
+			if (IJ.isMacro()) waitTillActivated(); // wait for stack window to be activated
 			setPosition(1, 1, 1);
 		} else if (newStackSize>1 && invalidDimensions) {
 			if (isDisplayedHyperStack())
@@ -808,7 +893,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	private synchronized void setStackNull() {
 		if (oneSliceStack && stack!=null && stack.size()>0) {
 			String label = stack.getSliceLabel(1);
-			setProperty("Label", label);
+			setProp("Slice_Label", label);
 		}
 		stack = null;
 		oneSliceStack = false;
@@ -817,8 +902,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/**	Saves this image's FileInfo so it can be later
 		retieved using getOriginalFileInfo(). */
 	public void setFileInfo(FileInfo fi) {
-		if (fi!=null)
+		if (fi!=null) {
 			fi.pixels = null;
+			if (fi.imageSaved) {
+				notifyListeners(SAVED);
+				fi.imageSaved = false;
+			}
+		}
 		fileInfo = fi;
 	}
 
@@ -1089,7 +1179,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (title==null)
 			return;
     	if (win!=null) {
-    		if (ij!=null && !title.equals(this.title))
+    		if (ij!=null)
 				Menus.updateWindowMenuItem(this, this.title, title);
 			String virtual = stack!=null && stack.isVirtual()?" (V)":"";
 			String global = getGlobalCalibration()!=null?" (G)":"";
@@ -1130,7 +1220,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	return size;
 	}
 
-	/** If this is a stack, returns the number of slices, else returns 1. */
+	/** Returns the number of stack images. */
 	public int getStackSize() {
 		if (stack==null || oneSliceStack)
 			return 1;
@@ -1186,9 +1276,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		dimensionsSet = true;
 	}
 
-	/** Returns 'true' if this image is a hyperstack. */
+	/** Returns 'true' if this image has more
+	 * than three dimensions.
+	*/
 	public boolean isHyperStack() {
-		return isDisplayedHyperStack() || (openAsHyperStack&&getNDimensions()>3);
+		return getNDimensions()>3;
 	}
 
 	/** Returns the number of dimensions (2, 3, 4 or 5). */
@@ -1423,8 +1515,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			imageProperties = new Properties();
 		if (value==null || value.length()==0)
 			imageProperties.remove(key);
-		else
+		else {
 			imageProperties.setProperty(key, value);
+			if (key.equals("CompositeProjection"))
+				Channels.updateChannels();
+		}
 	}
 	
 	/** Saves a persistent numeric propery. The property is
@@ -1500,8 +1595,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return imageProperties.size() + info2;			
 	}
 	
-	/** Used for restoring string properties from TIFF header. */
+	/** Creates a set of image properties from an array of strings.
+	 * @see #getPropertiesAsArray
+	 * @see #getProp(String)
+	 * @see #setProp(String,String)
+	*/
 	public void setProperties(String[] props) {
+		imageProperties = null;
 		if (props==null)
 			return;
 		//IJ.log("setProperties: "+props.length+" "+getTitle());
@@ -1606,6 +1706,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				pvalue[3] = index;
 				// fall through to get rgb values
 			case COLOR_RGB:
+				if (ip!=null && ip.getNChannels()==1) {
+					pvalue[0] = ip.getPixel(x, y);
+					return pvalue;
+				}
 				int c = 0;
 				if (imageType==COLOR_RGB && ip!=null)
 					c = ip.getPixel(x, y);
@@ -1655,7 +1759,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			ImageProcessor ip2 = getProcessor();
 			if (ip2==null)
 				return s;
-			String label = (String)getProperty("Label");
+			String label = getProp("Slice_Label");
 			if (label==null) {
 				String info = (String)getProperty("Info");
 				label = info!=null?getTitle()+"\n"+info:null; // DICOM metadata
@@ -1834,7 +1938,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return position;
 	}
 
-	/** Displays the specified stack image, where 1<=n<=stackSize.
+	/** Displays the specified stack image, where {@literal 1<=n<=stackSize}.
 	 * Does nothing if this image is not a stack.
 	 * @see #setPosition
 	 * @see #setC
@@ -1901,7 +2005,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 	}
 
-	/** Displays the specified stack image (1<=n<=stackSize)
+	/** Displays the specified stack image ({@literal 1<=n<=stackSize})
 		without updating the display. */
 	public void setSliceWithoutUpdate(int n) {
 		noUpdateMode = true;
@@ -2048,7 +2152,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 					}
 				}
 				if (Prefs.pointAutoNextSlice && getStackSize()>1) {
+					boolean order = Prefs.reverseNextPreviousOrder;
+					Prefs.reverseNextPreviousOrder = true;
 					IJ.run(this, "Next Slice [>]", "");
+					Prefs.reverseNextPreviousOrder = order;
 					deleteRoi();
 				}
 				break;
@@ -2060,23 +2167,20 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Deletes the current region of interest. Makes a copy of the ROI
 		so it can be recovered by Edit/Selection/Restore Selection. */
 	public void deleteRoi() {
-		if (roi!=null) {
-			saveRoi();
-			if (!(IJ.altKeyDown()||IJ.shiftKeyDown())) {
-				RoiManager rm = RoiManager.getRawInstance();
-				if (rm!=null)
-					rm.deselect(roi);
-			}
-			if (roi!=null) {
-				roi.notifyListeners(RoiListener.DELETED);
-				if (roi instanceof PointRoi)
-					((PointRoi)roi).resetCounters();
-			}
-			roi = null;
-			if (ip!=null)
-				ip.resetRoi();
-			draw();
+		if (roi==null)
+			return;
+		saveRoi();
+		if (!(IJ.altKeyDown()||IJ.shiftKeyDown())) {
+			RoiManager rm = RoiManager.getRawInstance();
+			if (rm!=null)
+				rm.deselect(roi);
 		}
+		if (roi!=null)
+			roi.notifyListeners(RoiListener.DELETED);
+		roi = null;
+		if (ip!=null)
+			ip.resetRoi();
+		draw();
 	}
 
 	public boolean okToDeleteRoi() {
@@ -2098,6 +2202,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	/** Deletes the current region of interest. */
 	public void killRoi() {
+		deleteRoi();
+	}
+	
+	/** Deletes the current region of interest. */
+	public void resetRoi() {
 		deleteRoi();
 	}
 
@@ -2421,9 +2530,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return (new Duplicator()).run(this);
 		else if (options.contains("whole")) {
 			Roi saveRoi = getRoi();
-			deleteRoi();
+			if (saveRoi!=null)
+				this.roi = null;
 			ImagePlus imp2 = crop();
-			setRoi(saveRoi);
+			if (saveRoi!=null)
+				this.roi = saveRoi;
 			return imp2;
 		} else if (options.contains("slice") || stackSize==1)
 			return crop();
@@ -2724,8 +2835,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     			String s = (int)value==value?IJ.d2s(value,0)+".0":IJ.d2s(value,4,7);
     			return(", value=" + s);
 			case COLOR_RGB:
-				String hex = Colors.colorToString(new Color(v[0],v[1],v[2]));
-				return(", value=" + IJ.pad(v[0],3) + "," + IJ.pad(v[1],3) + "," + IJ.pad(v[2],3) + " ("+hex + ")");
+				if (ip!=null && ip.getNChannels()==1)
+	 				return(", value=" + v[0]);
+	 			else {
+					String hex = Colors.colorToString(new Color(v[0],v[1],v[2]));
+					return(", value=" + IJ.pad(v[0],3) + "," + IJ.pad(v[1],3) + "," + IJ.pad(v[2],3) + " ("+hex + ")");
+				}
     		default: return("");
 		}
     }
@@ -2804,7 +2919,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			cr = cRoi.getBounds();
 		if (cr==null)
 			cr = new Rectangle(0, 0, w, h);
-		if (r==null || Math.abs(cr.width-r.width)>10 || Math.abs(cr.height-r.height)>10) {
+		if (r==null || (cr.width!=r.width || cr.height!=r.height)) {
 			// Create a new roi centered on visible part of image, or centered on image if clipboard is >= image
 			ImageCanvas ic = win!=null?ic = win.getCanvas():null;
 			Rectangle srcRect = ic!=null?ic.getSrcRect():new Rectangle(0,0,width,height);
@@ -2845,13 +2960,28 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     /** Inserts the contents of the internal clipboard at the
     	specified location, without updating the display. */
 	 public void paste(int x, int y) {
+	 	paste(x, y, null);
+	}
+
+    /** Copies the contents of the internal clipboard to the
+	 * specified location using the specified transfer mode
+	 * ("Copy", "Blend", "Average", "Difference", "Transparent",
+	 * "Transparent2", "AND", "OR", "XOR", "Add", "Subtract",
+	 * "Multiply", or "Divide"). The display is not updating.
+    */
+	 public void paste(int x, int y, String mode) {
 		if (clipboard==null)
 			return;
 		Roi roi = clipboard.getRoi();
 		boolean nonRect = roi!=null && roi.getType()!=Roi.RECTANGLE;
 		if (nonRect)
 			ip.snapshot();
-		ip.insert(clipboard.getProcessor(), x, y);
+		if (mode==null)
+			ip.insert(clipboard.getProcessor(), x, y);
+		else {
+			int pasteMode = IJ.stringToPasteMode(mode);
+			ip.copyBits(clipboard.getProcessor(), x, y, pasteMode);
+		}
 		if (nonRect) {
 			ImageProcessor mask = roi.getMask();
 			ip.setRoi(x, y, mask.getWidth(), mask.getHeight());
@@ -2860,7 +2990,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 	}
 
-    /** Returns the internal clipboard or null if the internal clipboard is empty. */
+   /** Returns the internal clipboard or null if the internal clipboard is empty. */
     public static ImagePlus getClipboard() {
         return clipboard;
     }
@@ -2877,6 +3007,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	protected void notifyListeners(final int id) {
+		if (temporary)
+			return;
 	    final ImagePlus imp = this;
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -2892,6 +3024,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 						case UPDATED:
 							listener.imageUpdated(imp);
 							break;
+						case SAVED:
+							//listener.imageSaved(imp);
+							break;
 					}
 				}
 			}
@@ -2904,6 +3039,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	public static void removeImageListener(ImageListener listener) {
 		listeners.removeElement(listener);
+	}
+	
+	public static Vector getListeners() {
+		return listeners;
 	}
 	
 	/** For debug purposes, writes all registered (and possibly,
@@ -2943,7 +3082,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	/** Sets the display range of the current channel. With non-composite
-	    images it is identical to ip.setMinAndMax(min, max). */
+	 * images it is identical to ip.setMinAndMax(min, max).
+	 * Call updateAndDraw() to update the display.
+	*/
 	public void setDisplayRange(double min, double max) {
 		if (ip!=null)
 			ip.setMinAndMax(min, max);
@@ -2969,10 +3110,17 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	public void resetDisplayRange() {
-		if (imageType==GRAY16 && default16bitDisplayRange>=8 && default16bitDisplayRange<=16 && !(getCalibration().isSigned16Bit()))
+		if (defaultMin!=0.0 || defaultMax!=0.0)
+			setDisplayRange(defaultMin, defaultMax);
+		else if (imageType==GRAY16 && default16bitDisplayRange>=8 && default16bitDisplayRange<=16 && !(getCalibration().isSigned16Bit()))
 			ip.setMinAndMax(0, Math.pow(2,default16bitDisplayRange)-1);
 		else
 			ip.resetMinAndMax();
+	}
+
+	public void setDefaultDisplayRange(double min, double max) {
+		this.defaultMin = min;
+		this.defaultMax = max;
 	}
 
 	/** Returns 'true' if this image is thresholded. */
@@ -2994,8 +3142,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     }
 
 	public void updatePosition(int c, int z, int t) {
-		//IJ.log("updatePosition: "+c+", "+z+", "+t);
-		position[0] = c;
+ 		position[0] = c;
 		position[1] = z;
 		position[2] = t;
 	}
@@ -3005,7 +3152,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (IJ.debugMode) IJ.log("flatten");
 		ImagePlus impCopy = this;
 		if (getStackSize()>1)
-			impCopy = crop("whole-slice");
+			impCopy = crop("whole-slice");			
 		ImagePlus imp2 = impCopy.createImagePlus();
 		imp2.setOverlay(impCopy.getOverlay());
 		imp2.setTitle(flattenTitle);
@@ -3013,7 +3160,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		imp2.flatteningCanvas = ic2;
 		imp2.setRoi(getRoi());
 		Overlay overlay2 = getOverlay();
-		if (overlay2!=null && imp2.getRoi()!=null) {
+		if (overlay2!=null && imp2.getRoi()!=null && !(imp2.getRoi() instanceof PointRoi)) {
 			imp2.deleteRoi();
 			if (getWindow()!=null) IJ.wait(100);
 		}
@@ -3037,15 +3184,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	/** Flattens all slices of this stack or HyperStack.<br>
 	 * @throws UnsupportedOperationException if this image<br>
-	 * does not have an overlay and the RoiManager overlay is null<br>
-	 * or Java version is less than 1.6.
+	 * does not have an overlay and the RoiManager overlay is null.<br>
+	 * Non-RGB stacks are converted to RGB.<br>
 	 * Copied from OverlayCommands and modified by Marcel Boeglin
 	 * on 2014.01.08 to work with HyperStacks.
 	 */
 	public void flattenStack() {
 		if (IJ.debugMode) IJ.log("flattenStack");
-		if (getStackSize()==1)
-			throw new UnsupportedOperationException("Image stack required");
 		boolean composite = isComposite();
 		if (getBitDepth()!=24)
 			new ImageConverter(this).convertToRGB();
@@ -3064,7 +3209,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		Overlay overlay2 = overlay1!=null?overlay1:roiManagerOverlay;
 		if (composite && overlay2==null)
 				return;
-		if (overlay2==null||overlay2.size()==0)
+		if (overlay2==null || overlay2.size()==0)
 			throw new UnsupportedOperationException("A non-empty overlay is required");
 		ImageStack stack2 = getStack();
 		boolean showAll = overlay1!=null?false:roiManagerShowAllMode;
@@ -3276,6 +3421,21 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	return setIJMenuBar && Prefs.setIJMenuBar;
     }
 
+    /** Returns 'true' if this ImagePlus contains an ImageStack.
+	 * @see #getStackSize
+	 * @see #getNChannels
+	 * @see #getNSlices
+	 * @see #getNFrames
+	 * @see #getNDimensions	 
+    */
+    public boolean hasImageStack() {
+    	return stack!=null;
+    }
+
+	/**
+	* @deprecated
+	* Replaced by ImagePlus.hasImageStack()
+	*/
     public boolean isStack() {
     	return stack!=null;
     }
@@ -3294,4 +3454,16 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	return imageProperties;
     }
     
+    public boolean isRGB() {
+		return ip!=null && ip.getNChannels()==3;
+    }
+    
+    public void setBorderColor(Color borderColor) {
+    	this.borderColor = borderColor;
+    }
+    
+    public boolean windowActivated() {
+    	return this.activated;
+    }
+        
 }

@@ -266,6 +266,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 			showList(/*useLabels=*/false);
 		else
 			ic.requestFocus();	//have focus on the canvas, not the button, so that pressing the space bar allows panning
+		if (Prefs.autoLivePlots && bgThread==null)
+			enableLivePlot();
 	}
 
 	/** Sets the Plot object shown in this PlotWindow. Does not update the window. */

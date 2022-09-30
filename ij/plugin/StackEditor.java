@@ -35,15 +35,8 @@ public class StackEditor implements PlugIn {
  		if (!imp.lock()) return;
 		int id = 0;
 		ImageStack stack = imp.getStack();
-		if (stack.size()==1) {
-			String label = stack.getSliceLabel(1);
-			if (label!=null && label.indexOf("\n")!=-1)
-				stack.setSliceLabel(null, 1);
-			Object obj = imp.getProperty("Label");
-			if (obj!=null && (obj instanceof String))
-				stack.setSliceLabel((String)obj, 1);
+		if (stack.size()==1)
 			id = imp.getID();
-		}
 		ImageProcessor ip = imp.getProcessor();
 		int n = imp.getCurrentSlice();
 		if (IJ.altKeyDown()) n--; // insert in front of current slice
@@ -68,7 +61,7 @@ public class StackEditor implements PlugIn {
  		stack.deleteSlice(n);
  		if (stack.size()==1) {
 			String label = stack.getSliceLabel(1);
- 			if (label!=null) imp.setProperty("Label", label);
+ 			if (label!=null) imp.setProp("Slice_Label", label);
  		}
 		imp.setStack(null, stack);
  		if (n--<1) n = 1;

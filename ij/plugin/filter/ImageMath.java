@@ -9,7 +9,7 @@ import java.awt.*;
 public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	
 	public static final String MACRO_KEY = "math.macro";
-	private int flags = DOES_ALL|SUPPORTS_MASKING|KEEP_PREVIEW;
+	private int flags = DOES_ALL|SUPPORTS_MASKING|KEEP_PREVIEW|PARALLELIZE_STACKS;
 	private String arg;
 	private ImagePlus imp;
 	private boolean canceled;	
@@ -46,8 +46,6 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		this.arg = arg;
 		this.imp = imp;
 		IJ.register(ImageMath.class);
-		if (!arg.equals("macro") || Interpreter.getInstance()==null)
-			flags |= PARALLELIZE_STACKS;
 		return flags;
 	}
 
@@ -155,17 +153,18 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	
 	void getValue (String title, String prompt, double defaultValue, int digits) {
 		int places = Analyzer.getPrecision();
+		if (places>7) places=7;
 		if (digits>0 || (int)defaultValue!=defaultValue)
 			digits = Math.max(places, 1);
-		gd = NonBlockingGenericDialog.newDialog(title, imp);
-		gd.addNumericField(prompt, defaultValue, digits, 8, null);
+		gd = GUI.newNonBlockingDialog(title, imp);
+		gd.addNumericField(prompt, defaultValue, digits, 12, null);
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
 		gd.showDialog();
 	}
 
 	void getBinaryValue (String title, String prompt, String defaultValue) {
-		gd = NonBlockingGenericDialog.newDialog(title, imp);
+		gd = GUI.newNonBlockingDialog(title, imp);
 		gd.addStringField(prompt, defaultValue);
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
@@ -173,7 +172,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	void getGammaValue (double defaultValue) {
-		gd = NonBlockingGenericDialog.newDialog("Gamma", imp);
+		gd = GUI.newNonBlockingDialog("Gamma", imp);
 		if (GraphicsEnvironment.isHeadless())
 			gd.addNumericField("Value:", defaultValue, 2);
 		else
@@ -256,7 +255,9 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 			"function dummy() {}\n"+
 			macro+";\n"; // code starts at program counter location 'PCStart'
 		Interpreter interp = new Interpreter();
-		interp.run(code, null);
+		synchronized(ImageMath.class) {
+			interp.run(code, null);
+		}
 		if (interp.wasError()) {
 			WindowManager.setTempCurrentImage(temp);
 			return;
@@ -417,7 +418,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		String options = Macro.getOptions();
 		if (options!=null && options.startsWith("v="))
 			Macro.setOptions("code="+options);
-		gd = NonBlockingGenericDialog.newDialog("Expression Evaluator", imp);
+		gd = GUI.newNonBlockingDialog("Expression Evaluator", imp);
 		gd.addStringField("Code:", macro, 42);
 		gd.setInsets(0,40,0);
 		gd.addMessage("v=pixel value, x,y&z=pixel coordinates, w=image width,\nh=image height, a=angle, d=distance from center\n");
@@ -477,7 +478,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 				lastMaxValue = maxValue;
 				lastAndValue = andValue;
 				lastGammaValue = gammaValue;
-				lastMacro = macro;
+				lastMacro = macro2;
 			}
 			return IJ.setupDialog(imp, flags);
 		}

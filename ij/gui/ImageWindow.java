@@ -62,11 +62,11 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		super(title);
 	}
 
-    public ImageWindow(ImagePlus imp) {
-    	this(imp, null);
-   }
-    
-    public ImageWindow(ImagePlus imp, ImageCanvas ic) {
+	public ImageWindow(ImagePlus imp) {
+		this(imp, null);
+	}
+
+	public ImageWindow(ImagePlus imp, ImageCanvas ic) {
 		super(imp.getTitle());
 		if (SCALE>1.0) {
 			TEXT_GAP = (int)(TEXT_GAP*SCALE);
@@ -76,12 +76,12 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			setForeground(Color.white);
 			setBackground(Color.black);
 		} else {
-        	setForeground(Color.black);
-        	if (IJ.isLinux())
-        		setBackground(ImageJ.backgroundColor);
-        	else
-        		setBackground(Color.white);
-        }
+			setForeground(Color.black);
+		if (IJ.isLinux())
+			setBackground(ImageJ.backgroundColor);
+		else
+			setBackground(Color.white);
+		}
 		boolean openAsHyperStack = imp.getOpenAsHyperStack();
 		ij = IJ.getInstance();
 		this.imp = imp;
@@ -114,6 +114,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			setLocation(loc.x, loc.y);
 			if (!(this instanceof StackWindow || this instanceof PlotWindow)) { //layout now unless components will be added later
 				pack();
+				if (IJ.isMacro())
+					imp.setDeactivated(); //prepare for waitTillActivated (imp may have been activated before if it gets a new Window now)
 				show();
 			}
 			if (ic.getMagnification()!=0.0)
@@ -145,11 +147,14 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			if (Interpreter.isBatchMode() || (IJ.getInstance()==null&&this instanceof HistogramWindow)) {
 				WindowManager.setTempCurrentImage(imp);
 				Interpreter.addBatchModeImage(imp);
-			} else
+			} else {
+				if (IJ.isMacro())
+					imp.setDeactivated(); //prepare for waitTillActivated (imp may have been activated previously and gets a new Window now)
 				show();
+			}
 		}
-     }
-    
+	}
+
 	private void setLocationAndSize(boolean updating) {
 		if (imp==null)
 			return;
@@ -199,7 +204,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			}
 			xbase = Math.max(xbase, maxWindow.x);
 			ybase = Math.max(ybase, maxWindow.y);
-			if (IJ.debugMode) IJ.log("ImageWindow.xbase: "+xbase);
+			//if (IJ.debugMode) IJ.log("ImageWindow.xbase: "+xbase);
 			xloc = xbase;
 			yloc = ybase;
 		}
@@ -231,7 +236,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		ic.setMagnification(mag);
 		if (y+height*mag>screenHeight)
 			y = ybase;
-        if (Prefs.open100Percent && ic.getMagnification()<1.0) {
+		if (Prefs.open100Percent && ic.getMagnification()<1.0) {
 			while(ic.getMagnification()<1.0)
 				ic.zoomIn(0, 0);
 			setSize(Math.min(width, screenWidth-x), Math.min(height, screenHeight-y));
@@ -251,7 +256,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	public double getInitialMagnification() {
 		return initialMagnification;
 	}
-	
+
 	/** Override Container getInsets() to make room for some text above the image. */
 	public Insets getInsets() {
 		Insets insets = super.getInsets();
@@ -266,15 +271,17 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		return insets;
 	}
 
-    /** Draws the subtitle. */
-    public void drawInfo(Graphics g) {
-    	if (imp==null)
-    		return;
-        if (textGap!=0) {
+	/** Draws the subtitle. */
+	public void drawInfo(Graphics g) {
+		if (imp==null)
+			return;
+		if (textGap!=0) {
 			Insets insets = super.getInsets();
+			Color savec = null;
 			if (imp.isComposite()) {
 				CompositeImage ci = (CompositeImage)imp;
 				if (ci.getMode()==IJ.COMPOSITE) {
+					savec = g.getColor();
 					Color c = ci.getChannelColor();
 					if (Color.green.equals(c))
 						c = new Color(0,180,0);
@@ -287,30 +294,34 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 				g.setFont(font);
 			}
 			g.drawString(createSubtitle(), insets.left+5, insets.top+TEXT_GAP);
+			if (savec!=null)
+				g.setColor(savec);
 		}
-    }
-    
-    /** Creates the subtitle. */
-    public String createSubtitle() {
-    	String s="";
-    	if (imp==null)
-    		return s;
-    	int nSlices = imp.getStackSize();
-    	if (nSlices>1) {
-    		ImageStack stack = imp.getStack();
-    		int currentSlice = imp.getCurrentSlice();
-    		s += currentSlice+"/"+nSlices;
-    		String label = stack.getShortSliceLabel(currentSlice);
-    		if (label!=null && label.length()>0) {
-    			if (imp.isHyperStack()) label = label.replace(';', ' ');
-    			s += " (" + label + ")";
-    		}
+	}
+
+	/** Creates the subtitle. */
+	public String createSubtitle() {
+		String s="";
+		if (imp==null)
+			return s;
+		int stackSize = imp.getStackSize();
+		if (stackSize>1) {
+			ImageStack stack = imp.getStack();
+			int currentSlice = imp.getCurrentSlice();
+			s += currentSlice+"/"+stackSize;
+			String label = stack.getShortSliceLabel(currentSlice);
+			if (label!=null && label.length()>0) {
+				if (imp.isHyperStack()) label = label.replace(';', ' ');
+				s += " (" + label + ")";
+			}
 			if ((this instanceof StackWindow) && running2) {
 				return s;
 			}
-    		s += "; ";
+			s += "; ";
 		} else {
-			String label = (String)imp.getProperty("Label");
+			String label = imp.getProp("Slice_Label");
+			if (label==null && imp.hasImageStack())
+				label = imp.getStack().getSliceLabel(1);
 			if (label!=null && label.length()>0) {
 				int newline = label.indexOf('\n');
 				if (newline>0)
@@ -319,13 +330,13 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 				if (len>4 && label.charAt(len-4)=='.' && !Character.isDigit(label.charAt(len-1)))
 					label = label.substring(0,len-4);
 				if (label.length()>60)
-					label = label.substring(0, 60);
+					label = label.substring(0, 60)+"...";
 				s = "\""+label + "\"; ";
 			}
 		}
-    	int type = imp.getType();
-    	Calibration cal = imp.getCalibration();
-    	if (cal.scaled()) {
+		int type = imp.getType();
+		Calibration cal = imp.getCalibration();
+		if (cal.scaled()) {
 			boolean unitsMatch = cal.getXUnit().equals(cal.getYUnit());
 			double cwidth = imp.getWidth()*cal.pixelWidth;
 			double cheight = imp.getHeight()*cal.pixelHeight;
@@ -339,44 +350,44 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 					+ d2s(cheight) + " " + cal.getYUnit()
 					+ " (" + imp.getWidth() + "x" + imp.getHeight() + "); ";
 			}
-    	} else
-    		s += imp.getWidth() + "x" + imp.getHeight() + " pixels; ";
-    	switch (type) {
-	    	case ImagePlus.GRAY8:
-	    	case ImagePlus.COLOR_256:
-	    		s += "8-bit";
-	    		break;
-	    	case ImagePlus.GRAY16:
-	    		s += "16-bit";
-	    		break;
-	    	case ImagePlus.GRAY32:
-	    		s += "32-bit";
-	    		break;
-	    	case ImagePlus.COLOR_RGB:
-	    		s += "RGB";
-	    		break;
-    	}
-    	if (imp.isInvertedLut())
-    		s += " (inverting LUT)";
-     	return s+"; "+getImageSize(imp);
-    }
-    
-    public static String getImageSize(ImagePlus imp) {
-    	if (imp==null)
-    		return null;
-    	double size = imp.getSizeInBytes()/1024.0;
+		} else
+			s += imp.getWidth() + "x" + imp.getHeight() + " pixels; ";
+		switch (type) {
+			case ImagePlus.GRAY8:
+			case ImagePlus.COLOR_256:
+				s += "8-bit";
+				break;
+			case ImagePlus.GRAY16:
+				s += "16-bit";
+				break;
+			case ImagePlus.GRAY32:
+				s += "32-bit";
+				break;
+			case ImagePlus.COLOR_RGB:
+				s += imp.isRGB() ? "RGB" :  "32-bit (int)";
+				break;
+		}
+		if (imp.isInvertedLut())
+			s += " (inverting LUT)";
+	 	return s+"; "+getImageSize(imp);
+	}
+	
+	public static String getImageSize(ImagePlus imp) {
+		if (imp==null)
+			return null;
+		double size = imp.getSizeInBytes()/1024.0;
    		String s2=null, s3=null;
-    	if (size<1024.0)
-    		{s2=IJ.d2s(size,0); s3="K";}
-    	else if (size<10000.0)
-     		{s2=IJ.d2s(size/1024.0,1); s3="MB";}
-    	else if (size<1048576.0)
-    		{s2=IJ.d2s(Math.round(size/1024.0),0); s3="MB";}
+		if (size<1024.0)
+			{s2=IJ.d2s(size,0); s3="K";}
+		else if (size<10000.0)
+	 		{s2=IJ.d2s(size/1024.0,1); s3="MB";}
+		else if (size<1048576.0)
+			{s2=IJ.d2s(Math.round(size/1024.0),0); s3="MB";}
 	   	else
-    		{s2=IJ.d2s(size/1048576.0,1); s3="GB";}
-    	if (s2.endsWith(".0")) s2 = s2.substring(0, s2.length()-2);
-    	return s2+s3;
-    }
+			{s2=IJ.d2s(size/1048576.0,1); s3="GB";}
+		if (s2.endsWith(".0")) s2 = s2.substring(0, s2.length()-2);
+		return s2+s3;
+	}
     
     private String d2s(double n) {
 		int digits = Tools.getDecimalPlaces(n);
@@ -553,7 +564,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	}
 	
 	public void maximize() {
-		if (GenericDialog.getInstance()!=null)
+		if (GenericDialog.getInstance()!=null && IJ.isMacOSX() && IJ.isJava18())
 			return; // workaround for OSX/Java 8 maximize bug 
 		Rectangle rect = getMaximumBounds();
 		if (IJ.debugMode) IJ.log("maximize: "+rect);
@@ -574,7 +585,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	
 	public void focusGained(FocusEvent e) {
 		if (!Interpreter.isBatchMode() && ij!=null && !ij.quitting() && imp!=null) {
-			if (IJ.debugMode) IJ.log("focusGained: "+imp);
+			//if (IJ.debugMode) IJ.log("focusGained: "+imp);
 			WindowManager.setCurrentWindow(this);
 		}
 	}
@@ -627,13 +638,13 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		int rotation = e.getWheelRotation();
 		int amount = e.getScrollAmount();
 		boolean ctrl = (e.getModifiers()&Event.CTRL_MASK)!=0;
-		if (IJ.debugMode) {
-			IJ.log("mouseWheelMoved: "+e);
-			IJ.log("  type: "+e.getScrollType());
-			IJ.log("  ctrl: "+ctrl);
-			IJ.log("  rotation: "+rotation);
-			IJ.log("  amount: "+amount);
-		}
+		//if (IJ.debugMode) {
+		//	IJ.log("mouseWheelMoved: "+e);
+		//	IJ.log("  type: "+e.getScrollType());
+		//	IJ.log("  ctrl: "+ctrl);
+		//	IJ.log("  rotation: "+rotation);
+		//	IJ.log("  amount: "+amount);
+		//}
 		if (amount<1) amount=1;
 		if (rotation==0)
 			return;
@@ -742,7 +753,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			long time = System.currentTimeMillis()-t0;
 			setMenuBarTime = time;
 			Menus.setMenuBarCount++;
-			if (IJ.debugMode) IJ.log("setMenuBar: "+time+"ms ("+Menus.setMenuBarCount+")");
+			//if (IJ.debugMode) IJ.log("setMenuBar: "+time+"ms ("+Menus.setMenuBarCount+")");
 			if (time>2000L)
 				Prefs.setIJMenuBar = false;
 		}

@@ -63,7 +63,7 @@ public class Variable implements MacroConstants, Cloneable {
 
 	double convertToDouble() {
 		try {
-			Double d = new Double(str);
+			Double d = Double.valueOf(str);
 			return d.doubleValue();
 		} catch (NumberFormatException e){
 			return Double.NaN;

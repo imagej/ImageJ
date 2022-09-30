@@ -106,7 +106,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 					((ExtendedPlugInFilter)theFilter).setNPasses(nPasses);
 				if ((flags&PlugInFilter.NO_CHANGES)==0) {	// for filters modifying the image
 					boolean disableUndo = Prefs.disableUndo || (flags&PlugInFilter.NO_UNDO)!=0;
-					if (!disableUndo) {
+					if (!disableUndo || ((ip instanceof ColorProcessor)&&WindowManager.getWindow("B&C")!=null)) {
 						ip.snapshot();
 						snapshotPixels = ip.getSnapshotPixels();
 					}
@@ -121,7 +121,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 				}
 				if ((flags&PlugInFilter.NO_CHANGES)==0&&(flags&PlugInFilter.KEEP_THRESHOLD)==0)
 					ip.resetBinaryThreshold();
-			} else {  //  stack
+			} else {  // stack
 				if ((flags&PlugInFilter.NO_UNDO_RESET)==0)
 					Undo.reset();	 // no undo for processing a complete stack
 				IJ.resetEscape();
@@ -195,6 +195,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 				announceSliceNumber(i);
 				ip.setPixels(stack.getPixels(i));
 				ip.setSliceNumber(i);
+				ip.setSnapshotPixels(null);
 				processOneImage(ip, fp, null);
 				if (IJ.escapePressed()) {IJ.beep(); break;}
 			}
@@ -430,7 +431,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 	 */
 	private void announceSliceNumber(int slice) {
 		synchronized(sliceForThread){
-			Integer number = new Integer(slice);
+			Integer number = Integer.valueOf(slice);
 			sliceForThread.put(Thread.currentThread(), number);
 		}
 	}

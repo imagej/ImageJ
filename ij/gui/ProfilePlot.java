@@ -262,7 +262,7 @@ public class ProfilePlot {
 						value = ip.getInterpolatedValue(x, y);
 					else
 						value = ip.getPixelValue((int)Math.round(x), (int)Math.round(y));
-					values.add(new Double(value));
+					values.add(Double.valueOf(value));
 					lastx=x; lasty=y;
 				}
 				x += xinc;
@@ -296,9 +296,10 @@ public class ProfilePlot {
 		if (roi == null) return null;	//roi may have changed asynchronously
 		if ((roi instanceof PolygonRoi) && roi.getState()==Roi.CONSTRUCTING)
 			return null;				//don't disturb roi under construction by spline fit
-		roi = (Roi)roi.clone();
+		roi = (Roi)roi.clone();		
 		ImageProcessor ip2 = (new Straightener()).straightenLine(imp, lineWidth);
-		if (ip2 == null) return null;
+		if (ip2==null)
+			return null;
 		int width = ip2.getWidth();
 		int height = ip2.getHeight();
 		if (ip2 instanceof FloatProcessor)
@@ -313,23 +314,20 @@ public class ProfilePlot {
 		}
 		for (int i=0; i<width; i++)
 			profile[i] /= height;
-		imp.setRoi(roi);
-		if (roi.getType()==Roi.POLYLINE&& !((PolygonRoi)roi).isSplineFit()) {
-			((PolygonRoi)roi).fitSpline();
-			imp.draw();
-		}
 		return profile;
 	}
 
 	void findMinAndMax() {
 		if (profile==null) return;
-		double min = Double.MAX_VALUE;
-		double max = -Double.MAX_VALUE;
+		double min = profile[0];
+		double max = profile[0];
 		double value;
-		for (int i=0; i<profile.length; i++) {
+		for (int i=1; i<profile.length; i++) {
 			value = profile[i];
-			if (value<min) min=value;
-			if (value>max) max=value;
+			if (value<min)
+				min = value;
+			else if (value>max)
+				max = value;
 		}
 		this.min = min;
 		this.max = max;

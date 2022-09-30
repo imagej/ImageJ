@@ -33,8 +33,8 @@ public class RoiInterpolator implements PlugIn {
 		ArrayList<Integer> templateSlices = new ArrayList<Integer>();
 		for (Roi roi : rois){
 			int slice = roiman.getSliceNumber(roi.getName());
-			if (!templateSlices.contains(new Integer(slice)))
-				templateSlices.add(new Integer(slice));
+			if (!templateSlices.contains(Integer.valueOf(slice)))
+				templateSlices.add(Integer.valueOf(slice));
 			if (slice==0) //ignore non-slice associated ROIs
 				continue;
 			zmin = Math.min(slice, zmin);
@@ -80,7 +80,7 @@ public class RoiInterpolator implements PlugIn {
 		ThresholdToSelection ts = new ThresholdToSelection();
 		ts.setup("", binary);
 		for (int s=0; s<nSlices; s++) {
-			if (templateSlices.contains(new Integer(s+zmin)))
+			if (templateSlices.contains(Integer.valueOf(s+zmin)))
 				continue;
 			ImageProcessor bp = stack.getProcessor(s+1);
 			int threshold = 255;

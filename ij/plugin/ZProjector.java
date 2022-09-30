@@ -31,7 +31,7 @@ public class ZProjector implements PlugIn {
     private static final int FLOAT_TYPE = 2;
     
     public static final String lutMessage =
-    	"Stacks with inverter LUTs may not project correctly.\n"
+    	"Stacks with inverting LUTs may not project correctly.\n"
     	+"To create a standard LUT, invert the stack (Edit/Invert)\n"
     	+"and invert the LUT (Image/Lookup Tables/Invert LUT)."; 
 
@@ -129,11 +129,16 @@ public class ZProjector implements PlugIn {
     }
 
     public void run(String arg) {
-		imp = IJ.getImage();
-		if (imp==null) {
+		ImagePlus img = IJ.getImage();
+		if (img==null) {
 	    	IJ.noImage(); 
 	    	return; 
 		}
+		run2(img, arg);
+    }
+    
+    public void run2(ImagePlus img, String arg) {
+    	imp = img;
 
 		//  Make sure input image is a stack.
 		if(imp.getStackSize()==1) {
@@ -173,7 +178,8 @@ public class ZProjector implements PlugIn {
 
 		if (arg.equals("") && projImage!=null) {
 			long tstop = System.currentTimeMillis();
-			if (simpleComposite) IJ.run(projImage, "Grays", "");
+			if (simpleComposite && imp.getBitDepth()!=24)
+				IJ.run(projImage, "Grays", "");
 			projImage.show("ZProjector: " +IJ.d2s((tstop-tstart)/1000.0,2)+" seconds");
 		}
 
@@ -236,6 +242,7 @@ public class ZProjector implements PlugIn {
 	}
 
     private void doRGBProjection(ImageStack stack) {
+        boolean clip = method==SUM_METHOD && "true".equals(imp.getProp("ClipWhenSumming"));        	
         ImageStack[] channels = ChannelSplitter.splitRGB(stack, true);
         ImagePlus red = new ImagePlus("Red", channels[0]);
         ImagePlus green = new ImagePlus("Green", channels[1]);
@@ -252,7 +259,7 @@ public class ZProjector implements PlugIn {
 		color = "(blue)"; doProjection();
 		ImagePlus blue2 = projImage;
         int w = red2.getWidth(), h = red2.getHeight(), d = red2.getStackSize();
-        if (method==SD_METHOD) {
+        if (method==SD_METHOD || (method==SUM_METHOD&&!clip)) {
         	ImageProcessor r = red2.getProcessor();
         	ImageProcessor g = green2.getProcessor();
         	ImageProcessor b = blue2.getProcessor();
@@ -260,13 +267,21 @@ public class ZProjector implements PlugIn {
         	double rmax = r.getStats().max; if (rmax>max) max=rmax;
         	double gmax = g.getStats().max; if (gmax>max) max=gmax;
         	double bmax = b.getStats().max; if (bmax>max) max=bmax;
-        	double scale = 255/max;
-        	r.multiply(scale); g.multiply(scale); b.multiply(scale);
-        	red2.setProcessor(r.convertToByte(false));
-        	green2.setProcessor(g.convertToByte(false));
-        	blue2.setProcessor(b.convertToByte(false));
+        	float scale = (float)(255.0/max);
+			float[] rpixels = (float[])r.getPixels();
+			float[] gpixels = (float[])g.getPixels();
+			float[] bpixels = (float[])b.getPixels();
+			for (int i=0; i<rpixels.length; i++) {
+				rpixels[i] *= scale;
+				gpixels[i] *= scale;
+				bpixels[i] *= scale;
+			}
+			r.resetMinAndMax(); g.resetMinAndMax(); b.resetMinAndMax();
+        	if (method==SUM_METHOD&&clip) clip=true;
         }
         RGBStackMerge merge = new RGBStackMerge();
+        if (clip)
+        	merge.setScaleWhenConverting(false);
         ImageStack stack2 = merge.mergeStacks(w, h, d, red2.getStack(), green2.getStack(), blue2.getStack(), true);
         imp = saveImp;
         projImage = new ImagePlus(makeTitle(), stack2);
@@ -289,13 +304,17 @@ public class ZProjector implements PlugIn {
     public void doProjection() {
 		if (imp==null)
 			return;
+		if (method<AVG_METHOD || method>MEDIAN_METHOD)
+			method = AVG_METHOD;
 		if (imp.getBitDepth()==24) {
 			doRGBProjection();
 			return;
 		}
+		if (imp.getBitDepth()==32 && method==AVG_METHOD) {
+			projImage = doAverageFloatProjection(imp);
+			return;
+		}
 		sliceCount = 0;
-		if (method<AVG_METHOD || method>MEDIAN_METHOD)
-			method = AVG_METHOD;
     	for (int slice=startSlice; slice<=stopSlice; slice+=increment)
     		sliceCount++;
 		if (method==MEDIAN_METHOD) {
@@ -540,14 +559,14 @@ public class ZProjector implements PlugIn {
 			case BYTE_TYPE:
 				oip = imp.getProcessor().createProcessor(width,height);
 				byte[] pixels8 = (byte[])oip.getPixels(); 
-				for(int i=0; i<size; i++)
-					pixels8[i] = (byte)pixels[i];
+				for (int i=0; i<size; i++)
+					pixels8[i] = (byte)(pixels[i]+0.5f);
 				break;
 			case SHORT_TYPE:
 				oip = imp.getProcessor().createProcessor(width,height);
 				short[] pixels16 = (short[])oip.getPixels(); 
 				for(int i=0; i<size; i++)
-					pixels16[i] = (short)pixels[i];
+					pixels16[i] = (short)(pixels[i]+0.5f);
 				break;
 			case FLOAT_TYPE:
 				oip = new FloatProcessor(width, height, pixels, null);
@@ -632,7 +651,33 @@ public class ZProjector implements PlugIn {
 			return a[middle];
 	}
 
-     /** Abstract class that specifies structure of ray
+	// do average projection, ignoring NaNs
+	private ImagePlus doAverageFloatProjection(ImagePlus imp) {
+		ImageStack stack = imp.getStack();
+		int w = stack.getWidth();
+		int h = stack.getHeight();
+		int d = stack.getSize();
+		ImagePlus projection = IJ.createImage(makeTitle(), "32-bit Black", w, h, 1);
+		ImageProcessor ip = projection.getProcessor();
+		for (int x=0; x<w; x++) {
+			for (int y=0; y<h; y++) {
+				double sum = 0.0;
+				int count = 0;
+				for (int z=startSlice-1; z<stopSlice; z++) {
+					double value = stack.getVoxel(x, y, z);
+					if (!Double.isNaN(value)) {
+						sum += value;
+						count++;
+					}
+				}
+				ip.setf(x, y, (float)(sum/count));
+			}
+		}
+		ip.resetMinAndMax();
+		return projection;
+	}
+    
+    /** Abstract class that specifies structure of ray
 	function. Preprocessing should be done in derived class
 	constructors.
 	*/
@@ -702,21 +747,21 @@ public class ZProjector implements PlugIn {
 
 		public void projectSlice(byte[] pixels) {
 	    	for(int i=0; i<len; i++) {
-				if((pixels[i]&0xff)>fpixels[i])
+				if ((pixels[i]&0xff)>fpixels[i])
 		    		fpixels[i] = (pixels[i]&0xff); 
 	    	}
 		}
 
 		public void projectSlice(short[] pixels) {
 	    	for(int i=0; i<len; i++) {
-				if((pixels[i]&0xffff)>fpixels[i])
+				if ((pixels[i]&0xffff)>fpixels[i])
 		    		fpixels[i] = pixels[i]&0xffff;
 	    	}
 		}
 
 		public void projectSlice(float[] pixels) {
-	    	for(int i=0; i<len; i++) {
-				if(pixels[i]>fpixels[i])
+	    	for (int i=0; i<len; i++) {
+				if (!Float.isNaN(pixels[i]) && pixels[i]>fpixels[i])
 		    		fpixels[i] = pixels[i]; 
 	    	}
 		}

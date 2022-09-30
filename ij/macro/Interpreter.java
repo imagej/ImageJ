@@ -16,8 +16,8 @@ import java.io.PrintWriter;
 /** This is the recursive descent parser/interpreter for the ImageJ macro language. */
 public class Interpreter implements MacroConstants {
 
-	static final int STACK_SIZE=1000;
-	static final int MAX_ARGS=20;
+	static final int STACK_SIZE = 1000;
+	static final int MAX_ARGS = 20;
 
 	int pc;
 	int token;
@@ -94,7 +94,10 @@ public class Interpreter implements MacroConstants {
 	}
 	
 	/** Runs the specified macro, passing it a string 
-		argument and returning a string value. */
+	 * argument and returning a string value.
+	 * @see ij.IJ#runMacro(String,String)
+	 * @see ij.IJ#runMacroFile(String,String)
+	*/
 	public String run(String macro, String arg) {
 		argument = arg;
 		calledMacro = true;
@@ -352,7 +355,7 @@ public class Interpreter implements MacroConstants {
 	}
 	
 	private void doStringFunction() {
-		boolean stringFunction = (pgm.code[pc+2]&0xff)==136;
+		boolean stringFunction = (pgm.code[pc+2]&0xff)==STRING_FUNCTION;
 		putTokenBack();
 		String s = stringFunction?getString():""+getExpression();
 		if (s.endsWith(".0"))
@@ -862,7 +865,8 @@ public class Interpreter implements MacroConstants {
 				int token2 = pgm.code[pc+4];
 				String name = pgm.table[token2>>TOK_SHIFT].str;
 				if (name.equals("getValue")) return STRING_FUNCTION;
-			}
+			} else if (numericStringFunction(pc+2))
+				return Variable.VALUE;
 			return Variable.STRING;
 		}
 		if (tok==ARRAY_FUNCTION)
@@ -872,14 +876,12 @@ public class Interpreter implements MacroConstants {
 		if (tok==VARIABLE_FUNCTION) {
 			int address = rightSideToken>>TOK_SHIFT;
 			int type = pgm.table[address].type;
-			if (type==TABLE || type==ROI  || type==ROI_MANAGER2 || type==PROPERTY) {
-				if (isString(pc+2))
-					return Variable.STRING;
-				int token2 = pgm.code[pc+4];
-				String name = pgm.table[token2>>TOK_SHIFT].str;
-				if (name.equals("getColumn"))
-					return Variable.ARRAY;
-			}
+			if (isString(pc+2))
+				return Variable.STRING;
+			int token2 = pgm.code[pc+4];
+			String name = pgm.table[token2>>TOK_SHIFT].str;
+			if (name.equals("getColumn")||name.equals("toArray"))
+				return Variable.ARRAY;			
 		}
 		if (tok!=WORD)
 			return Variable.VALUE;
@@ -887,8 +889,14 @@ public class Interpreter implements MacroConstants {
 		if (v==null)
 			return Variable.VALUE;
 		int type = v.getType();
-		if (type!=Variable.ARRAY)
-			return type;
+		if (type==Variable.VALUE)
+			return Variable.VALUE;
+		else if (type==Variable.STRING) {
+			if (isString(pc+2))
+				return Variable.STRING;
+			else 
+				return Variable.VALUE;
+		}
 		if (pgm.code[pc+3]=='.')
 			return Variable.VALUE;		
 		if (pgm.code[pc+3]!='[')
@@ -970,6 +978,25 @@ public class Interpreter implements MacroConstants {
 				if (token==ARRAY_FUNCTION)
 					array[index].setArray(func.getArrayFunction(pgm.table[tokenAddress].type));
 				break;
+			case USER_FUNCTION:
+				int savePC = pc;
+				getToken(); // the function
+				boolean simpleFunctionCall = isSimpleFunctionCall(true);
+				pc = savePC;
+				if (simpleFunctionCall) {
+					getToken(); // the function
+					Variable v2 = runUserFunction();
+					if (v2==null)
+						error("No return value");
+					if (done) return;
+					int type = v2.getType();
+					if (type==Variable.VALUE)
+						array[index].setValue(v2.getValue());
+					else
+						array[index].setString(v2.getString());
+				} else
+					array[index].setValue(getExpression());
+				break;
 			default:
 				switch (op) {
 					case '=': array[index].setValue(getExpression()); break;
@@ -1021,7 +1048,6 @@ public class Interpreter implements MacroConstants {
 		int count = 0;
 		do {
 			getToken();
-			//IJ.log(pgm.decodeToken(token, tokenAddress));
 			if (token=='(')
 				count++;
 			else if (token==')')
@@ -1134,9 +1160,12 @@ public class Interpreter implements MacroConstants {
 		String s1 = null;
 		int next = pgm.code[pc+1];
 		int tok = next&TOK_MASK;
-		if (tok==STRING_CONSTANT || tok==STRING_FUNCTION || isString(pc+1))
-			s1 = getString();
-		else
+		if (tok==STRING_CONSTANT || tok==STRING_FUNCTION || isString(pc+1)) {
+			if (numericStringFunction(pc+1))
+				v1 = getExpression();
+			else
+				s1 = getString();
+		} else
 			v1 = getExpression();
 		next = nextToken();
 		if (next>=EQ && next<=LTE) {
@@ -1175,6 +1204,20 @@ public class Interpreter implements MacroConstants {
 		}
 		return v1;
 	}
+	
+	private boolean numericStringFunction(int loc) {
+		if ((pgm.code[loc]&TOK_MASK)!=STRING_FUNCTION)
+			return false;
+		int address = pgm.code[loc]>>TOK_SHIFT;
+		int type = pgm.table[address].type;
+		if (type==VARIABLE_FUNCTION||type==DIALOG||type==FILE||type==STRING||type==EXT||type==LIST||type==IJ_CALL)
+			return false;
+		if (pgm.code[loc+1]=='.' && (pgm.code[loc+2]&0xff)!=STRING_FUNCTION)
+			return true;
+		if (pgm.code[loc+1]=='(' && pgm.code[loc+2]==')' && pgm.code[loc+3]=='.'  && (pgm.code[loc+4]&0xff)!=STRING_FUNCTION)
+			return true;
+		return false;
+	}
 
 	// Returns true if the token at the specified location is a string
 	boolean isString(int pcLoc) {
@@ -1182,23 +1225,25 @@ public class Interpreter implements MacroConstants {
 		if ((tok&0xff)==VARIABLE_FUNCTION) {
 			int address = tok>>TOK_SHIFT;
 			int type = pgm.table[address].type;
-			if (type==TABLE || type==ROI || type==PROPERTY || type==ROI_MANAGER2) {
-				int token2 = pgm.code[pcLoc+2];
-				String name = pgm.table[token2>>TOK_SHIFT].str;
-				if (Functions.isStringFunction(name,type))
-					return true; 
-			}
+			int token2 = pgm.code[pcLoc+2];
+			String name = pgm.table[token2>>TOK_SHIFT].str;
+			if (Functions.isStringFunction(name,type))
+				return true; 
 		}
 		if ((tok&TOK_MASK)!=WORD)
 			return false;
 		Variable v = lookupVariable(tok>>TOK_SHIFT);
-		if (v==null) return false;
+		if (v==null)
+			return false;
 		if (pgm.code[pcLoc+1]=='[') {
 			Variable[] array = v.getArray();
 			if (array!=null && array.length>0)
 				return array[0].getType()==Variable.STRING;
 		}
-		return v.getType()==Variable.STRING;
+		int type = v.getType();
+		if (type==Variable.STRING && (pgm.code[pcLoc+1]&0xff)=='.' && (pgm.code[pcLoc+2]&0xff)!=STRING_FUNCTION)
+			return false;
+		return type==Variable.STRING;
 	}
 
 	double compareStrings(String s1, String s2, int op) {
@@ -1468,49 +1513,49 @@ public class Interpreter implements MacroConstants {
 		Variable v;
 		getToken();
 		switch (token) {
-		case STRING_CONSTANT:
-			str = tokenString;
-			break;
-		case STRING_FUNCTION:
-			str = func.getStringFunction(pgm.table[tokenAddress].type);
-			break;
-		case VARIABLE_FUNCTION:		
-			if (!isString(pc)) {
+			case STRING_CONSTANT:
+				str = tokenString;
+				break;
+			case STRING_FUNCTION:
+				str = func.getStringFunction(pgm.table[tokenAddress].type);
+				break;
+			case VARIABLE_FUNCTION:		
+				if (!isString(pc)) {
+					putTokenBack();
+					str = toString(getStringExpression());
+					break;
+				}
+				v = func.getVariableFunction(pgm.table[tokenAddress].type);
+				str = v.getString();
+				if (str==null) {
+					double value = v.getValue();
+					if ((int)value==value)
+						str = IJ.d2s(value,0);
+					else
+						str = ""+value;
+				}
+				break;
+			case USER_FUNCTION:
+				v = runUserFunction();
+				if (v==null)
+					error("No return value");
+				str = v.getString();
+				if (str==null) {
+					double value = v.getValue();
+					if ((int)value==value)
+						str = IJ.d2s(value,0);
+					else
+						str = ""+value;
+				}
+				break;
+			case WORD:
+				str = lookupStringVariable();
+				if (str!=null)
+					break;
+				// else fall through
+			default:
 				putTokenBack();
 				str = toString(getStringExpression());
-				break;
-			}
-			v = func.getVariableFunction(pgm.table[tokenAddress].type);
-			str = v.getString();
-			if (str==null) {
-				double value = v.getValue();
-				if ((int)value==value)
-					str = IJ.d2s(value,0);
-				else
-					str = ""+value;
-			}
-			break;
-		case USER_FUNCTION:
-			v = runUserFunction();
-			if (v==null)
-				error("No return value");
-			str = v.getString();
-			if (str==null) {
-				double value = v.getValue();
-				if ((int)value==value)
-					str = IJ.d2s(value,0);
-				else
-					str = ""+value;
-			}
-			break;
-		case WORD:
-			str = lookupStringVariable();
-			if (str!=null)
-				break;
-			// else fall through
-		default:
-			putTokenBack();
-			str = toString(getStringExpression());
 		}
 		return str;
 	}
@@ -1589,7 +1634,12 @@ public class Interpreter implements MacroConstants {
 				break;
 			case STRING_FUNCTION:
 				String str = func.getStringFunction(pgm.table[tokenAddress].type);
-				value = Tools.parseDouble(str);
+				if (nextToken()=='.') {
+					getToken();  // '.'
+					getToken();  // numericFunction
+					value = getNumericStringFunction(str);
+				} else
+					value = Tools.parseDouble(str);
 				if ("NaN".equals(str))
 					value = Double.NaN;
 				else if (Double.isNaN(value))
@@ -1599,9 +1649,9 @@ public class Interpreter implements MacroConstants {
 				v = func.getVariableFunction(pgm.table[tokenAddress].type);
 				if (v==null)
 					error("No return value");
-				if (v.getString()!=null)
+				if (v.getString()!=null) {
 						error("Numeric return value expected");
-				else
+				} else
 					value = v.getValue();
 				break;
 			case USER_FUNCTION:
@@ -1688,6 +1738,31 @@ public class Interpreter implements MacroConstants {
 		return value;
 	}
 
+
+	private double getNumericStringFunction(String str) {
+		double value = Double.NaN;
+		if (token==WORD) {
+			if (tokenString.equals("length")) {
+				getParens();
+				value = str.length();
+			} else if (tokenString.equals("contains"))
+				value = str.contains(func.getStringArg())?1:0;
+			else if (tokenString.equals("charAt"))
+				value = str.charAt((int)func.getArg());
+		} else if (token==NUMERIC_FUNCTION) {
+			int type = pgm.table[tokenAddress].type;
+			switch (type) {
+				case INDEX_OF: value = func.indexOf(str); break;
+				case LAST_INDEX_OF: value = str.lastIndexOf(func.getStringArg()); break;
+				case STARTS_WITH: value = str.startsWith(func.getStringArg())?1:0; break;
+				case ENDS_WITH: value = str.endsWith(func.getStringArg())?1:0; break;
+				case MATCHES: value = func.matches(str); break;
+			}
+		} else
+			error("Numeric function expected");
+		return value;
+	}
+
 	final Variable getArrayElement(Variable v) {
 		int index = getIndex();
 		Variable[] array = v.getArray();
@@ -1710,27 +1785,7 @@ public class Interpreter implements MacroConstants {
 		String str = v.getString();
 		if (str==null)
 			error("Array or string expected");	
-		double value = Double.NaN;		
-		if (token==WORD) {
-			if (tokenString.equals("length")) {
-				getParens();
-				value = str.length();
-			} else if (tokenString.equals("contains"))
-				value = str.contains(func.getStringArg())?1:0;
-			else if (tokenString.equals("charAt"))
-				value = str.charAt((int)func.getArg());
-		} else if (token==NUMERIC_FUNCTION) {
-			int type = pgm.table[tokenAddress].type;
-			switch (type) {
-				case INDEX_OF: value = func.indexOf(str); break;
-				case LAST_INDEX_OF: value = str.lastIndexOf(func.getStringArg()); break;
-				case STARTS_WITH: value = str.startsWith(func.getStringArg())?1:0; break;
-				case ENDS_WITH: value = str.endsWith(func.getStringArg())?1:0; break;
-				case MATCHES: value = func.matches(str); break;
-			}
-		} else
-			error("Numeric function expected");
-		return value;
+		return getNumericStringFunction(str);
 	}
 	
 	final double getStringExpression() {
@@ -1920,9 +1975,6 @@ public class Interpreter implements MacroConstants {
 				str = ""+str.length();
 			} else if (tokenString.equals("contains")) {
 				str = ""+str.contains(func.getStringArg());
-			} else if (tokenString.equals("trim")) {
-				getParens();
-				str = str.trim();
 			} else if (tokenString.equals("charAt")) {
 				str = ""+str.charAt((int)func.getArg());
 			} else if (tokenString.equals("replaceAll")) {
@@ -1947,6 +1999,7 @@ public class Interpreter implements MacroConstants {
 				case TO_LOWER_CASE: getParens(); str = str.toLowerCase(Locale.US); break;
 				case TO_UPPER_CASE: getParens(); str = str.toUpperCase(Locale.US); break;
 				case REPLACE: str = func.replace(str); break;
+				case TRIM: getParens();  str = str.trim(); break;
 				default:
 					str = null;
 			}

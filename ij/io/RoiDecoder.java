@@ -228,6 +228,8 @@ public class RoiDecoder {
 				if (props!=null)
 					roi.setProperties(props);
 			}
+			if (version>=228 && group>0)
+				roi.setGroup(group);
 			return roi;
 		}
 
@@ -270,7 +272,7 @@ public class RoiDecoder {
 			case polygon: case freehand: case traced: case polyline: case freeline: case angle: case point:
 					//IJ.log("type: "+type);
 					//IJ.log("n: "+n);
-					//IJ.log("rect: "+left+","+top+" "+width+" "+height);
+					//ij.IJ.log("rect: "+left+","+top+" "+width+" "+height);
 					if (n==0 || n<0) break;
 					int[] x = new int[n];
 					int[] y = new int[n];

@@ -5,6 +5,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.frame.Recorder;
 import ij.plugin.filter.PlugInFilter;
+import ij.plugin.frame.ThresholdAdjuster;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -24,11 +25,13 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 	private static boolean useBW = true;
 	private boolean useLocal = true;
 	private boolean listThresholds;
+	private boolean createStack;
 	private boolean convertToMask;
 	private String method = methods[0];
 	private String background = backgrounds[0];
 	private static boolean staticUseLocal = true;
 	private static boolean staticListThresholds;
+	private static boolean staticCreateStack;
 	private static String staticMethod = methods[0];
 	private static String staticBackground = backgrounds[0];
 	private ImagePlus imp;
@@ -40,30 +43,14 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			showLegacyDialog = false;
 		ImagePlus imp = IJ.getImage();
 		if (imp.getStackSize()==1) {
-			if (!convertToMask && imp.getProcessor().isBinary())
-				setThreshold(imp);
-			else {
-				Undo.setup(Undo.TRANSFORM, imp);
-				applyThreshold(imp, false);
-			}
+			Undo.setup(Undo.TRANSFORM, imp);
+			applyThreshold(imp, false);
 		} else
 			convertStack(imp);
 		IJ.showProgress(1.0);
 	}
 	
-	private void setThreshold(ImagePlus imp) {
-		ImageProcessor ip = imp.getProcessor();
-		int threshold = ip.isInvertedLut()?255:0;
-		if (Prefs.blackBackground)
-			threshold = ip.isInvertedLut()?0:255;		
-		ip.setThreshold(threshold, threshold, ImageProcessor.NO_LUT_UPDATE);
-	}
-	
 	void convertStack(ImagePlus imp) {
-		if (imp.getStack().isVirtual()) {
-			IJ.error("Thresholder", "This command does not work with virtual stacks.\nUse Image>Duplicate to convert to a normal stack.");
-			return;
-		}
 		showLegacyDialog = false;
 		boolean thresholdSet = imp.isThreshold();
 		this.imp = imp;
@@ -72,6 +59,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			background = staticBackground;
 			useLocal = staticUseLocal;
 			listThresholds = staticListThresholds;
+			createStack = staticCreateStack;
 			if (!thresholdSet)
 				updateThreshold(imp);
 		} else {
@@ -89,6 +77,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		gd.addCheckbox("Only convert current image", oneSlice);
 		gd.addCheckbox("Black background (of binary masks)", Prefs.blackBackground);
 		gd.addCheckbox("List thresholds", listThresholds);
+		gd.addCheckbox("Create new stack", createStack);
 		choices = gd.getChoices();
 		if (choices!=null) {
 			((Choice)choices.elementAt(0)).addItemListener(this);
@@ -104,27 +93,49 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		oneSlice = gd.getNextBoolean();
 		Prefs.blackBackground = gd.getNextBoolean();
 		listThresholds = gd.getNextBoolean();
+		createStack = gd.getNextBoolean();
+		if (imp.getStack().isVirtual()) {
+			oneSlice = false;
+			createStack = true;
+		}
 		if (!IJ.isMacro()) {
 			staticMethod = method;
 			staticBackground = background;
 			staticUseLocal = useLocal;
 			staticListThresholds = listThresholds;
+			staticCreateStack = createStack;
 		}
 		if (oneSlice) {
 			useLocal = false;
 			listThresholds = false;
+			createStack = false;
 			if (oneSlice && imp.getBitDepth()!=8) {
 				IJ.error("Thresholder", "8-bit stack required to process a single slice.");
 				return;
 			}
 		}
 		Undo.reset();
+		ImageProcessor ip = imp.getProcessor();
+		double minThreshold = ip.getMinThreshold();
+		double maxThreshold = ip.getMaxThreshold();
+		int currentSlice = imp.getCurrentSlice();
+		if (createStack) {
+			imp = imp.duplicate();
+			imp.setTitle(imp.getTitle().replace("DUP_","MASK_"));
+			if (minThreshold!=ImageProcessor.NO_THRESHOLD)
+				imp.getProcessor().setThreshold(minThreshold,maxThreshold,ImageProcessor.RED_LUT);
+			imp.setSlice(currentSlice);
+		}
 		if (useLocal)
 			convertStackToBinary(imp);
 		else
 			applyThreshold(imp, oneSlice);
 		Prefs.blackBackground = saveBlackBackground;
-		if (thresholdSet) {
+		if (createStack) {
+			imp.setSlice(1);  //why is this needed
+			imp.show();
+			imp.setSlice(currentSlice);
+		} else if (thresholdSet) {
 			if (imp.getProcessor().getLutUpdateMode()!=ImageProcessor.NO_LUT_UPDATE)
 				imp.getProcessor().resetThreshold();
 			imp.updateAndDraw();
@@ -228,6 +239,8 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			boolean invertedLut = imp.isInvertedLut();
 			if ((invertedLut && Prefs.blackBackground) || (!invertedLut && !Prefs.blackBackground)) {
 				ip.invertLut();
+				if (!IJ.isMacro() && ThresholdAdjuster.isDarkBackground() && !invertedLut && !Prefs.blackBackground)
+					IJ.log("\"Black background\" not set in Process>Binary>Options; inverting LUT");
 				if (IJ.debugMode) IJ.log("Thresholder (inverting lut)");
 			}
 		}

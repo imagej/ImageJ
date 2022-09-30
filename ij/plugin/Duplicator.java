@@ -20,9 +20,12 @@ import ij.measure.Calibration;
 */
 public class Duplicator implements PlugIn, TextListener, ItemListener {
 	private static boolean staticDuplicateStack;
+	private static boolean staticIgnoreSelection;
+	private static boolean ignoreNextSelection;
 	private boolean duplicateStack;
+	private boolean ignoreSelection;
 	private int first, last;
-	private Checkbox checkbox;
+	private Checkbox stackCheckbox;
 	private TextField titleField, rangeField;
 	private TextField[] rangeFields;
 	private int firstC, lastC, firstZ, lastZ, firstT, lastT;
@@ -54,6 +57,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		String newTitle = WindowManager.getUniqueName(imp, title);
 		defaultTitle = newTitle;
 		duplicateStack = staticDuplicateStack && !IJ.isMacro();
+		ignoreSelection = (staticIgnoreSelection||ignoreNextSelection) && Macro.getOptions()==null;
 		if (!IJ.altKeyDown()||stackSize>1) {
 			if (imp.isHyperStack() || imp.isComposite()) {
 				duplicateHyperstack(imp, newTitle);			
@@ -70,7 +74,9 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			return;
 		}
 		ImagePlus imp2;
-		Roi roi = imp.getRoi();	
+		Roi roi = imp.getRoi();
+		if (ignoreSelection && roi!=null)
+			imp.deleteRoi();
 		if (duplicateStack && (first>1||last<stackSize))
 			imp2 = run(imp, first, last);
 		else if (duplicateStack || imp.getStackSize()==1) {
@@ -80,6 +86,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			imp2 = crop(imp);
 			recordCrop(imp);
 		}
+		if (ignoreSelection && roi!=null)
+			imp.setRoi(roi);
 		Calibration cal = imp2.getCalibration();
 		if (roi!=null && (cal.xOrigin!=0.0||cal.yOrigin!=0.0)) {
 			cal.xOrigin -= roi.getBounds().x;
@@ -88,7 +96,10 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		imp2.setTitle(newTitle);
 		imp2.setProp("UniqueName","true");
 		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE) {
-			Roi roi2 = (Roi)cropRoi(imp, roi).clone();
+			Roi roi2 = cropRoi(imp, roi);
+			if (roi2==null)
+				return;
+			roi2 = (Roi)roi2.clone();
 			roi2.setLocation(0, 0);
 			imp2.setRoi(roi2);
 		}
@@ -100,15 +111,24 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 	}
 	
 	private void recordCrop(ImagePlus imp) {
-		if (Recorder.record) {
-   			if (imp.getStackSize()==1) {
-   				if (imp.getRoi()==null)
-   					Recorder.recordCall("imp2 = imp.duplicate();");
-   				else
-   					Recorder.recordCall("imp2 = imp.crop();");
-   			} else
-   				Recorder.recordCall("imp2 = imp.crop();");
-   		}
+		if (!Recorder.record)
+			return;
+		if (imp.getStackSize()==1) {
+			if (imp.getRoi()==null || ignoreSelection)
+				Recorder.recordCall("imp = imp.duplicate();");
+			else
+				Recorder.recordCall("imp = imp.crop();");
+		} else if (imp.getRoi()==null || ignoreSelection) {
+			if (duplicateStack)
+				Recorder.recordCall("imp = imp.duplicate();");
+			else
+				Recorder.recordCall("imp = imp.crop(\"whole-slice\");");
+		} else {
+			if (duplicateStack)
+				Recorder.recordCall("imp = imp.crop();");
+			else
+				Recorder.recordCall("imp = imp.crop(\"slice\");");
+		}
 	}
 	
  /** Rotates duplicated part of image
@@ -251,10 +271,10 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		if (overlay!=null && !imp.getHideOverlay())
 			imp2.setOverlay(overlay.crop(rect));
    		if (Recorder.record) {
-   			if (imp.getRoi()==null)
-   				Recorder.recordCall("imp2 = imp.duplicate();");
+   			if (imp.getRoi()==null || ignoreSelection)
+   				Recorder.recordCall("imp = imp.duplicate();");
    			else
-   				Recorder.recordCall("imp2 = imp.crop(\"stack\");");
+   				Recorder.recordCall("imp = imp.crop(\"stack\");");
    		}
 		return imp2;
 	}
@@ -264,7 +284,6 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 	* @see ij.ImagePlus#crop(String)
 	*/
 	public ImagePlus crop(ImagePlus imp) {
-		//if (imp!=null) throw new IllegalArgumentException();
 		if (imp.getNChannels()>1 && imp.getCompositeMode()==IJ.COMPOSITE) {
 			int z = imp.getSlice();
 			int t = imp.getFrame();
@@ -280,14 +299,14 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		if (info!=null)
 			imp2.setProperty("Info", info);
 		imp2.setProperties(imp.getPropertiesAsArray());
-		if (imp.isStack()) {
+		if (imp.hasImageStack()) {
 			ImageStack stack = imp.getStack();
 			String label = stack.getSliceLabel(imp.getCurrentSlice());
 			if (label!=null) {
 				if (label.length()>250 && label.indexOf('\n')>0 && label.contains("0002,"))
 					imp2.setProperty("Info", label); // DICOM metadata
 				else
-					imp2.setProperty("Label", label);					
+					imp2.setProp("Slice_Label", label);					
 			}
 			if (imp.isComposite()) {
 				LUT lut = ((CompositeImage)imp).getChannelLut();
@@ -297,9 +316,9 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 					imp2.getProcessor().setColorModel(lut);
 			}
 		} else {
-			String label = (String)imp.getProperty("Label");
+			String label = imp.getProp("Slice_Label");
 			if (label!=null)
-				imp2.setProperty("Label", label);
+				imp2.setProp("Slice_Label", label);
 		}
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && !imp.getHideOverlay()) {
@@ -365,7 +384,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			imp2.setOverlay(overlay2);
 		}
    		if (Recorder.record)
-   			Recorder.recordCall("imp2 = imp.crop(\""+firstSlice+"-"+lastSlice+"\");");
+   			Recorder.recordCall("imp = imp.crop(\""+firstSlice+"-"+lastSlice+"\");");
 		return imp2;
 	}
 
@@ -438,13 +457,14 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			imp2.setOverlay(overlay2);
 		}
    		if (Recorder.record)
-   			Recorder.recordCall("imp2 = new Duplicator().run(imp, "+firstC+", "+lastC+", "+firstZ+", "+lastZ+", "+firstT+", "+lastT+");");
+   			Recorder.recordCall("imp = new Duplicator().run(imp, "+firstC+", "+lastC+", "+firstZ+", "+lastZ+", "+firstT+", "+lastT+");");
 		return imp2;
 	}
 
 	String showDialog(ImagePlus imp, String dialogTitle, String prompt) {
 		int stackSize = imp.getStackSize();
 		String options = Macro.getOptions();
+		boolean isRoi = imp.getRoi()!=null;
 		boolean isMacro = options!=null;
 		duplicateStack = stackSize>1 && duplicateStack && !isMacro;
 		legacyMacro = options!=null && (options.contains("duplicate")||!options.contains("use"));
@@ -453,13 +473,15 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		GenericDialog gd = new GenericDialog(dialogTitle);
 		this.gd = gd;
 		gd.addStringField(prompt, title, 15);
+		if (isRoi)
+			gd.addCheckbox("Ignore selection", ignoreSelection);
 		if (stackSize>1) {
 			gd.addCheckbox("Duplicate stack", duplicateStack);
 			gd.setInsets(2, 30, 3);
 			gd.addStringField("Range:", "1-"+stackSize);
 			if (!isMacro) {
-				checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
-				checkbox.addItemListener(this);
+				stackCheckbox = (Checkbox)(gd.getCheckboxes().elementAt(gd.getCheckboxes().size()-1));
+				stackCheckbox.addItemListener(this);
 				Vector v = gd.getStringFields();
 				titleField = (TextField)v.elementAt(0);
 				rangeField = (TextField)v.elementAt(1);
@@ -472,12 +494,17 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		if (gd.wasCanceled())
 			return null;
 		title = gd.getNextString();
+		if (isRoi)
+			ignoreSelection = gd.getNextBoolean();
 		if (stackSize>1) {
 			duplicateStack = gd.getNextBoolean();
 			if (duplicateStack) {
 				String[] range = Tools.split(gd.getNextString(), " -");
-				double d1 = gd.parseDouble(range[0]);
-				double d2 = range.length==2?gd.parseDouble(range[1]):Double.NaN;
+				double d1=1, d2=stackSize;
+				if (range!=null && range.length>0) {
+					d1 = gd.parseDouble(range[0]);
+					d2 = range.length==2?gd.parseDouble(range[1]):Double.NaN;
+				}
 				first = Double.isNaN(d1)?1:(int)d1;
 				last = Double.isNaN(d2)?stackSize:(int)d2;
 				if (first<1) first = 1;
@@ -488,8 +515,11 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 				last = stackSize;
 			}
 		}
-		if (!isMacro)
+		if (!isMacro) {
 			staticDuplicateStack = duplicateStack;
+			if (!ignoreNextSelection) staticIgnoreSelection=ignoreSelection;
+		}
+		ignoreNextSelection = false;
 		if (Recorder.record && titleField!=null && titleField.getText().equals(sliceLabel))
 			Recorder.recordOption("use");
 		return title;
@@ -499,7 +529,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		if (titleChanged)
 			return null;
 		String title = defaultTitle;
-		if (imp.getStackSize()>1 && !duplicateStack && !legacyMacro && (checkbox==null||!checkbox.getState())) {
+		if (imp.getStackSize()>1 && !duplicateStack && !legacyMacro && (stackCheckbox==null||!stackCheckbox.getState())) {
 			ImageStack stack = imp.getStack();
 			String label = stack.getShortSliceLabel(imp.getCurrentSlice());
 			if (label!=null && label.length()==0)
@@ -575,8 +605,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			nRangeFields++;
 		}
 		if (!isMacro) {
-			checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
-			checkbox.addItemListener(this);
+			stackCheckbox = (Checkbox)(gd.getCheckboxes().elementAt(gd.getCheckboxes().size()-1));
+			stackCheckbox.addItemListener(this);
 			Vector v = gd.getStringFields();
 			rangeFields = new TextField[3];
 			for (int i=0; i<nRangeFields; i++) {
@@ -638,6 +668,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		if (imp==null)
 			return roi;
 		Rectangle b = roi.getBounds();
+		if (b.width==0 || b.height==0)
+			return null; // zero area
 		int w = imp.getWidth();
 		int h = imp.getHeight();
 		if (b.x<0 || b.y<0 || b.x+b.width>w || b.y+b.height>h) {
@@ -660,11 +692,11 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			if (!titleField.getText().equals(getNewTitle()))
 				titleChanged = true;
 		} else
-			checkbox.setState(true);
+			stackCheckbox.setState(true);
 	}
 	
 	public void itemStateChanged(ItemEvent e) {
-		duplicateStack = checkbox.getState();
+		duplicateStack = stackCheckbox.getState();
 		if (titleField!=null) {
 			String title = getNewTitle();
 			if (title!=null && !title.equals(titleField.getText())) {
@@ -673,6 +705,9 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			}
 		}
 	}
-
+	
+	public static void ignoreNextSelection() {
+		ignoreNextSelection = true;
+	}
 	
 }

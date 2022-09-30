@@ -86,9 +86,11 @@ public class JavaProperties implements PlugIn {
 		list.add("  IJ.getDir(\"macros\"): "+ IJ.getDir("macros"));
 		list.add("  IJ.getDir(\"luts\"): "+ IJ.getDir("luts"));
 		list.add("  IJ.getDir(\"current\"): "+ IJ.getDir("current"));
+		list.add("  IJ.getDir(\"cwd\"): "+ IJ.getDir("cwd"));
 		list.add("  IJ.getDir(\"temp\"): "+ IJ.getDir("temp"));
 		list.add("  IJ.getDir(\"default\"): "+ IJ.getDir("default"));
 		list.add("  IJ.getDir(\"image\"): "+ IJ.getDir("image"));
+		list.add("  IJ.getDir(\"preferences\"): "+ IJ.getDir("preferences"));
 		list.add("");
 		
 		list.add("  Menus.getPlugInsPath: "+Menus.getPlugInsPath());

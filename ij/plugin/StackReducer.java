@@ -21,6 +21,12 @@ public class StackReducer implements PlugIn {
 			{IJ.error("Stack or hyperstack required"); return;}
 		if (!showDialog(stack))
 			return;
+		if (!hyperstack && (stack instanceof VirtualStack)) {
+			int previousSize = stack.size();
+			((VirtualStack)stack).reduce(factor);
+			if (stack.size()<previousSize)
+				return;
+		}
 		if (hyperstack)
 			reduceHyperstack(imp, factor, reduceSlices);
 		else
@@ -95,5 +101,5 @@ public class StackReducer implements PlugIn {
 		if (virtual) imp.setTitle(imp.getTitle());
 		IJ.showProgress(1.0);
 	}
-
+	
 }

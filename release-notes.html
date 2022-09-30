@@ -5,14 +5,832 @@
 </head>
 <body>
 
-<li> <u>1.53g3  27 October 2020</u>
+<li> <u>1.53u40 29 September 2022</u>
 <ul>
+<li> Thanks to Herbie Gluender, improved recording of the
+<i>Edit&gt;Selection&gt;Properties</i> command and added a
+comment to the <i>Edit&gt;Options&gt;Line Width</i> Dialog
+to make it clearer what the command does.
+<li> Thanks to Pau Carrillo-Barbera, the Selection Brush Tool is no
+longer disabled when activating a selection in an overlay by
+double clicking on it.
+<li> Added the ImageProcessor.setColor(String) method.
+<li> Thanks to Tiago Ferreira, fixed a bug that caused toolbar
+contextual menus to ignore the <i>Edit&gt;Options&gt;Appearance</i>
+GUI scale setting.
+<li> Thanks to Jan Brocher, fixed a bug that caused the "Results" menu
+in a table to disappear if the table was renamed.
+<li> Thanks to Rene Ramekers, fixed a bug that caused
+<i>File&gt;Import&gt;TIFF Virtual Stack</i> to not correctly 
+calibrate TIFF stacks not created by ImageJ.
+<li> Thanks to Andrey Kazak, fixed a bug that caused the
+<i>Image&gt;Overlay&gt;From ROI Manager</i> command,
+when not used in a macro, to not copy 
+the ROI positions.
+<li> Thanks to Herbie Gluender, fixed a bug that caused the
+<i>Edit&gt;Selection&gt;Straighten</i> command to change
+the global line selection width.
+<li> Thanks to Nayana Gaur, fixed a bug that caused ROIs with
+x or y coordinates greater than 60,535 and less than 65,535 to
+be saved incorrectly.
+<li> Thanks to Christoph Gohike, fixed a bug that caused ImageJ to
+create TIFF files with invalid RowsPerStrip tags when the image
+height was greater than 65535.
+<li> Thanks to Michael Schmid, fixed several bugs
+with <i>Image&gt;Stacks&gt;Plot Z-axis Profile</i>
+"Live" plots.
+<li> Thanks to Jerome Mutterer, fixed a bug that caused the "CP"
+window to not be updated when the Color Picker tool was used to pick
+new colors from the active image.
+<li> Thanks to Ko Sugawara, fixed a bug that caused the 
+Opener.openAndAddToRecent() method to return 'false' when
+the file was opened successfully.
+<li> Thanks to Stein Rorvik, worked around a Java bug on Windows that 
+caused the main menu bar sub-menus to not scale to larger than 17 points.
+The menu bar size on Windows is still limited to 17 points regardless
+of the "GUI scale" setting in
+<i>Edit&gt;Options&gt;Appearance</i>.
+<li> Thanks to Mark Hiner, fixed a 1.53t regression that caused
+the <i>Image&gt;Stacks&gt;Z Project</i> command to ignore the last
+slice when doing "Average" projection of 32-bit stacks.
+<li> Thanks to Jerome Mutterer, fixed a 1.53o regression that caused
+unexpected error messages when double clicking on a line in a table or
+in the ROI Manager when a custom action was not defined
+(<a href="http://wsr.imagej.net/macros/TableAndRoiManagerActions.ijm">example</a>).
+</ul>
+
+<li> <u>1.53t 24 August 2022</u>
+<ul>
+<li> Thanks to Michael Schmid, the <i>Analyze&gt;Tools&gt;Analyze Line Graph</i>
+command is greatly enhanced:
+  <ul>
+  <li> Works on all image types.
+  <li> Spatial calibration is read correctly.
+  <li> Reads values for each x value in pixels.
+  <li> Without calibration, the values are pixel coordinates, not pixel coordinates + 0.5.
+  <li> Tries to follow the curves, even if curves cross each other.
+  <li> Plots (and lists) different curves as different data sets.
+  <li> Honors non-rectangular selections instead of deleting them.
+  <li> Produces somewhat usable output even without a selection or any editing.
+  </ul>
+<li> Thanks to Thomas Laurent, the String.format() macro function now
+accepts a variable number of numeric arguments.
+<li> Thanks to Stein Rorvik, the <i>Image&gt;Stacks&gt;Tools&gt;Reduce</i>
+command produces a virtual stack if the source is a virtual stack
+created using <i>File&gt;Import&gt;Image Sequence</i> or
+<i>File&gt;Import&gt;Stack from List</i>.
+<li> Thanks to Nicolas De Francesco, the <i>Image&gt;Color&gt;Invert LUTs</i>
+command (used by the "Channels" tool) works with non-linear LUTs.
+<li> Thanks to Volko Straub, the <i>Image&gt;Stacks&gt;Z Project</i>
+command ignores NaNs when doing "Average" projection of
+32-bit stacks.
+<li> Thanks to 'Danielle_Z', ImageJ now opens compressed BMP images.
+<li> Thanks to Philippe Carl, the ROI Manager's "Labels"
+checkbox is no longer enabled on Windows when clicking on
+"Show All" and ROIs are now automatically updated in the ROI Manager
+after being modified by holding down the shift or alt key.
+<li> Thanks to Dennis Chang and Michael Schmid, added the is("FFT")
+macro function.
+<li> Thanks to 'Leonicolash' and Volker Backer, fixed a bug that
+caused the Table.sort() macro function to fail after
+using saveAs("Results", path).
+<li> Thanks to Daniel Leswasserman, fixed a bug that sometimes caused
+the "Dir:" field of the <i>File&gt;Import&gt;Image Sequence</i> dialog
+to be too wide.
+<li> Thanks to Michael Schmid, fixed a bug that caused the
+Roi.getImageID() method to throw a NullPointerException.
+<li> Fixed a bug that caused sample images to not open
+on Windows 10 with Java 1.8.0_172.
+<li> Thanks to Christophe Leterrier, fixed a bug that caused
+32-bit to 16-bit conversions of multichannel images to not
+work as expected.
+<li> Thanks to Stein Rorvik, fixed a bug that caused the
+<i>File&gt;Import&gt;Stack From List</i> command to not
+preserve EXIF data.
+<li> Thanks to Stein Rorvik, fixed several bugs related to scaling of
+stacks with overlays.
+<li> Thanks to Fred Damen, fixed a 1.52u regression that caused
+getStatistics().mean values of single point selections
+to be incorrect.
+<li> Thanks to Mark Hiner, fixed a 1.53h regression that sometimes 
+caused line selection bounds to be too large.
+</ul>
+
+<li> <u>1.53s 19 May 2022</u>
+<ul>
+<li> Thanks to Stein Rorvik, added the
+<i>Edit&gt;Selection&gt;Translate</i> command, the ROI Manager <i>Scale</i> and
+<i>Rotate</i> commands, and the RoiManager.scale(), RoiManager.rotate(),
+RoiManager.translate(), RoiManager.selectByName() and RoiManager.getIndex()
+macro functions.
+<li> Thanks to Fred Damen, added the <i>Image&gt;HyperStacks&gt;Make Subset</i>
+command, an alias for the <i>Image&gt;Stacks&gt;Tools&gt;Make Substack</i>
+command.
+<li> Thanks to Fred Damen, GenericDialog sliders are mouse wheel controllable
+and TextFields on Linux are not as tall.
+<li> Thanks to Wilhelm Burger, the ClassChecker no longer
+deletes files and only runs when the <i>Compile and Run</i>
+command is used.
+<li> Thanks to Stein Rorvik, added the Dialog.addImageChoice(label,default)
+macro function.
+<li> Thanks to Michael Schmid, fixed several plot legand issues
+(<a href="http://wsr.imagej.net/macros/PlotLegendTest.txt">example</a>).
+<li> Thanks to Laurent Thomas, units of imported tiffs are
+converted to microns if the pixel width is <= 0.001 cm
+(previously it was <= 0.0001 cm).
+<li> Thanks to Lance Davidson, ImageJ now correctly opens CSV
+files that start with a 0xFEFF character (zero width no-break space).
+<li> Thanks to Tiago Ferreira, fixed a bug that caused commands 
+and keyboard shortcuts installed by StartupMacros.txt in the
+<i>Plugins&gt;Macros</i> menu to be deleted when a macro tool
+was added to the toolbar.
+<li> Thanks to 'DentedDuck', fixed a bug that caused the
+<i>Image&gt;Transform&gt;Rotate</i> command to increase the image
+width or height by one pixel if the angle was 0 or 90 degrees
+and "Enlage image" was checked.
+<li> Thanks to Norbert Vischer, fixed a bug that caused an
+exception to occur when duplicating a stack and the "Range:"
+field was empty.
+<li> Thanks to Fred Damen, fixed a bug that caused the
+<i>Image&gt;Stacks&gt;Tools&gt;Make Substack</i> command
+to not work correctly with stacks with nSlices=1 and
+nFrames&gt;1.
+<li> Thanks to Michael Schmid, fixed a bug that caused point
+selection bounds to be too wide and tall by 1 pixel
+(<a href="http://wsr.imagej.net/macros/PointBounds.ijm">example</a>).
+<li> Thanks to Stein Rorvik, fixed a bug that caused the
+toString(number,decimalPlaces) macro function to not work
+as expected.
+<li> Thanks to Ellie Cho and 'Research_Associate', fixed a 1.53h
+regression that caused ROIs to not be drawn on images 
+displayed using setBatchMode("show").
+</ul>
+
+<li> <u>1.53r 21 April 2022</u>
+<ul>
+<li> Added a "Help" button to the <i>Channels</i> dialog.
+<li> The <i>Image&gt;Type&gt;RGB Stack</i> command converts
+multi-channel composite images into RGB stacks
+(<a href="http://wsr.imagej.net/macros/CompositeProjection.ijm">example</a>).
+<li> Set the "ClipWhenSumming" image property "true" and the
+<i>Image&gt;Stacks&gt;Z Project</i> command will clip at 255
+when summing RGB stacks
+(<a href="http://wsr.imagej.net/macros/CompositeProjection.ijm">example</a>).
+<li> Added the <i>Image&gt;Color&gt;Invert LUTs</i> command.
+<li> Thanks to Bram van den Broek, restored the "Don't reset range"
+option to the <i>Threshold</i> dialog.
+<li> Thanks to Alan Brooks, the "Fill with background color"
+option of the <i>Image&gt;Transform&gt;Rotate</i> command
+is now available with 16 and 32 bit images.
+<li> Thanks to Philippe Carl, press shift+alt+n to create a
+text window with "Run" and "Install" buttons, and a language
+drop down menu.
+<li> Thanks to Stein Rorvik, added the ImageJ.getStatusBarText() method.
+<li> Thanks to Wilhelm Burger, added versions of the ImageProcessor
+getColumn() and putColumn() methods that accept float[] arguments.
+<li> Thanks to Alan Brooks, added the
+ImageProcessor.setBackgroundColor(Color) method.
+<li> Thanks to Stein Rorvik, fixed a bug that caused values
+to not be displayed correctly in <i>Image&gt;Math&gt;</i> dialogs
+if "Decimal places" in the <i>Analyze&gt;Set Measurement</i>
+was set to 9.
+<li> Thanks to Abbas Haghshenas and Nicolas De Francesco, fixed
+a 1.54p regression that caused the "OK" button in dialog boxes
+to be left-aligned on Windows.
+</ul>
+
+<li> <u>1.53q 30 March 2022</u>
+<ul>
+<li> Thanks to Kevin Terretaz, added the More&gt;Invert LUTs command
+to the "Channels" dialog.
+<li> Thanks to Olivier Burri, ImageJ calculates the perimeter of a
+"polygon" ROI the same way as a "traced" ROI if it appears to have
+been created by edge tracing.
+<li> Thanks to 'muniak', the <i>Process&gt;Enhance Contrast</i>
+dialog displays values using 2 decimal places.
+<li> Thanks to Norbert Vischer, replaced, in the ImageJ source,
+deprecated new Integer(intOrString) and new Double(intOrString)
+constructors with Integer.valueOf(intOrString)
+and Double.valueOf(intOrString).
+<li> Thanks to 'TMC', added the showRow() and showCell() methods
+to the TextPanel class
+(<a href="http://wsr.imagej.net/macros/SetTablePosition.ijm">example</a>).
+<li> Thanks to Fred Damen, fixed a bug that caused bin starts in tables
+created by clicking on "List" in histogram windows to be rounded
+to integers.
+<li> Thanks to Herbie Gluender, fixed a bug that caused <i>Undo</i> of rotated
+images with overlays to not work as expected.
+<li> Thanks to Michael Schmid, fixed a regression that caused some
+PNG images to open as stacks.
+<li> Thanks to Christophe Leterrier, fixed a 1.53p regression that caused the
+run("Table...",options) macro function to fail.
+</ul>
+
+<li> <u>1.53p 4 March 2022</u>
+<ul>
+<li> Thanks to Stein Rorvik, <i>Analyze&gt;Set Scale</i>,
+when there is a rectangular selection, sets "Distance in pixels" to the
+largest of the selections' width and height.
+<li> Thanks to Ron DeSpain, drag and drop sets the default path to the
+source folder. The default path is listed in the
+<i>Plugins&gt;Utilities&gt;ImageJ Properties</i> output
+as "Current dir".
+<li> Thanks to Alan Brooks, the "B&C" dialog now uses scientific
+notation for small (less than 0.001) values.
+<li> Thanks to Michael Schmid, the macro line number is added to the
+"Exception" window when a macro causes an exception
+(<a href="http://wsr.imagej.net/macros/MacroException.ijm">example</a>).
+<li> Thanks to James Manton, increased MAX_CHANNELS (maximum number
+of image channels in composite mode) from 7 to 8.
+<li> Thanks to 'JWinchester', added the recordable File.openSequence(path,options)
+macro function.
+<li> Added the Roi.setUnscalableStrokeWidth() macro function.
+<li> Thanks to Carl Priddy, added the Table.columnExists() macro function.
+<li> Thanks to Michael Schmid, added the ResultsTable.setValues()
+method.
+<li> Thanks to Peter Lunding Jensen, fixed bugs that caused
+the <i>File&gt;New&gt;Hyperstack</i> command to incorrectly
+label RGB hyperstacks.
+<li> Thanks to 'ALisboa', fixed a bug that caused the
+<i>File&gt;Import&gt;Image Sequence</i> command
+to throw an exception if the directory path was
+invalid.
+<li> Fixed bugs that caused saved sub-pixel resolution rounded rectangle
+and oval ROIs to not be reopened correctly
+(<a href="http://wsr.imagej.net/macros/js/SubPixelSelections.js">example</a>).
+<li> Thanks to Michael Schmid, fixed a bug that caused
+"Synchronize Windows" to throw a NullPointerException when
+using the "Close All" command.
+<li> Thanks to Michael Schmid, fixed a bug that caused
+zero-length lines and isolated points in lines to not
+be shown in plots.
+<li> Thanks to Michael Mell, fixed a bug that caused
+ROIs in an overlay on a single channel 3D image to not
+be displayed correctly if the position was set using
+roi.setPosition(c,z,t).
+<li> Thanks to Kenta Shimamoto and Christoph Gohlke,
+fixed a bug that caused tiff images larger than 2 GB
+to open upside down.
+<li> Thanks to Laurent Thomas, fixed a bug that caused
+a double-click on the rectangle ROI icon in the toolbar
+to display both the "ROI Defaults" dialog and
+the right-click menu.
+<li> Thanks to Laurent Thomas, fixed a bug that caused
+the IJ.openUrlAsString() method to not correctly interpret
+special characters
+<li> Fixed a 1.53j regression that caused activation
+of ROIs in an overlay by double clicking on a row
+in an "Overlay Elements of..." table to not work
+as expected.
+<li> Thanks to 'hwada', fixed a 1.53i regression that
+caused an extra click to be needed to activate and move
+an ROI in an overlay with labels.
+<li> Thanks to Gabriel Landini, fixed a 1.53g regression that caused
+the <i>File&gt;New&gt;Image</i> command to not
+work as expected when creating stacks and "Fill with" was
+"white" or "ramp".
+</ul>
+
+<li> <u>1.53o 11 January 2022</u>
+<ul>
+<li> Thanks to Christophe Leterrier and Peter Haub, added 
+"Composite Sum", "Composite Max", "Composite Min" and
+"Composite Invert" as choices in
+the <i>Image&gt;Color&gt;Channels Tool</i> dialog. "Composite Min" and
+"Composite Invert" are useful for displaying composite images with inverted LUTs
+(<a href="http://wsr.imagej.net/images/3_channel_inverted_luts.tif">example image</a>,
+<a href="http://wsr.imagej.net/macros/Invert_All_LUTs.ijm">example macro</a>).
+<li> Thanks to Jerome Mutterer, added support for Results Table and ROI Manager
+customizable actions
+(<a href="http://wsr.imagej.net/macros/TableAndRoiManagerActions.ijm">example</a>).
+<li> Thanks to Fred Damen, the <i>Image&gt;Adjust&gt;Window/Level</i>
+and <i>Analyze&gt;Histogram</i> windows use scientific notation as needed
+to display small values.
+<li> Thanks to Stein Rorvik, <i>Edit&gt;Selection&gt;Specify</i>
+respects the image origin when "Scaled units" is checked
+in the dialog.
+<li> Thanks to Stein Rorvik, ImageJ looks for the preferences file ("IJ_Prefs.txt")
+in the current directory, the ImageJ directory and the username/.imagej directory
+(username/Preferences on MacOS).
+<li> Thanks to Kimberly Meechan and Jan Eglinger, ImageJ restores
+the original look and feel after temporarily using the system
+look and feel with Windows dialogs.
+<li> Thanks to Stein Rorvik, the count field in the
+<i>Process&gt;Binary&gt;Options</i> dialog is saved
+in the preferences file.
+<li> Thanks to Stein Rorvik, added a "Create new stack" checkbox
+to the <i>Process&gt;Binary&gt;Make Binary</i>
+and <i>Convert to Mask</i> dialog boxes.
+<li> Thanks to Stein Rorvik, added the getDir("preferences") macro function.
+<li> Thanks to Fred Damen, added the ImagePlus.setDefaultDisplayRange()
+method
+(<a href="http://wsr.imagej.net/macros/js/SetDefaultDisplayRangeDemo.js">JavaScript example</a>).
+<li> Thanks to Michael Schmid, fixed a bug that caused histograms
+of thresholded 16-bit and 32-bit images to be displayed incorrectly
+if the "Limit to threshold" measurement option
+was enabled.
+<li> Thanks to Stein Rorvik, fixed a bug that caused the loss of
+density calibration with virtual stacks.
+<li> Thanks to Kees Straatman, fixed a bug that caused the
+IJ.openImage() method to not work with images opened using
+Bio-Formats. As a result, the <i>Open Next</i>, <i>Import&gt;Image Sequence</i>
+and <i>Process&gt;Batch&gt;</i> commands now work with images
+opened using Bio-Formats.
+<li> Thanks to Michael Cammer, fixed a bug that caused the
+Table.deleteRows() macro function to not work as expected
+with tables not named "Results".
+<li> Thanks to 'yogurt', fixed a bug that caused unexpected
+popup menus when using the selection brush tool.
+<li> Thanks to Christian Tischer, fixed a bug that caused some
+dragged and dropped "https://" URLs to not open.
+<li> Thanks to Hidenao Iwia, fixed a bug that caused
+GRAY12_UNSIGNED images to not open correctly as
+FileInfoVirtual stacks.
+<li> Thanks to Stein Rorvik, fixed a bug that caused the
+showMessageWithCancel() macro function to fail when run
+from the command line.
+<li> Thanks to Fred Damen, fixed a bug that caused slice labels
+of one slice stacks to not be displayed in the
+<i>Image&gt;Show Info</i> window.
+<li> Thanks to 'IztokD', fixed a regression that caused some
+PNG images to open as stacks.
+<li> Thanks to 'CellKai', fixed a 1.53d regression that caused the
+RoiScaler.scale() method to sometimes not work as expected.
+<li> Thanks to 'odinsbane', fixed a 1.53m regression that
+caused exceptions to sometimes not be shown.
+<li> Thanks to 'chin', fixed a 1.53i regression that caused the
+roiManager("Show All") macro function to not work in
+batch mode.
+</ul>
+
+<li> <u>1.53n 7 November 2021</u>
+<ul>
+<li> Thanks to Stein Rorvik, added a "Raw values" checkbox
+to the <i>Image&gt;Adjust&gt;Threshold</i> dialog
+<li> Thanks to 'Sethur', added a DICOM preference
+allowing fixed scaling across slices via RescaleSlope
+and Intercept.
+<li> Thanks to Norbert Vischer, added a "Cancel" button
+to the waitForUser() dialog.
+<li> Thanks to Christopher Schmied, histogram plot
+outlines are drawn in dark blue to help distinguish the
+outline from the plot.
+<li> Thanks to Michael Schmid, restored the ability
+to select the starting and ending frame in the
+<i>File&gt;Import&gt;AVI</i> dialog.
+<li> Thanks to Joseph Chen, removed the "Don't reset range"
+checkbox from the <i>Image&gt;Adjust&gt;Threshold</i> dialog.
+<li> Thanks to Jerome Mutterer, added the Math.constrain(n,min,max)
+and Math.map(n,low1,high1,low2,high2) macro functions
+(<a href="http://wsr.imagej.net/macros/tools/Constrain_Map_Demo_Tool.ijm">example tool</a>).
+<li> Thanks to Peter Bankhead, the ImagePlus(String,Image)
+constructor now supports multi-band
+BufferedImages.
+<li> Thanks to Michael Schmid, fixed bugs and improved
+the documentation of the Colors class.
+<li> Thanks to Michael Cammer, fixed a bug that
+caused the border color of composite images to
+change to the color of the channel being displayed.
+<li> Thanks to Michael Schmid, fixed a bug that
+caused macros to fail due to a race condition
+when converting stacks to hyperstacks.
+<li> Thanks to Stanislav Chizhik, fixed a bug that
+sometimes caused <i>File&gt;Import&gt;Image Sequence</i>
+to open images as the wrong type when
+using a filter.
+<li> Thanks to Romain Guiet, fixed a bug that caused
+the <i>Image&gt;Scale</i> command to not work
+correctly with hyperstacks.
+<li> Thanks to Stein Rorvik, fixed a 1.53m regression
+that caused macros importing an image sequence to
+sometimes not open all images in a folder.
+<li> Thanks to Michael Schmid, fixed a 1.53m regression
+that caused image stacks to open slowly on Windows
+in batch mode.
+<li> Thanks to Stein Rorvik and Michael Schmid, fixed a 1.53m
+regression that caused macro statements like
+run("Macro...", "code=[...] stack") to fail.
+<li> Thanks to Herbie Gluender, fixed a 1.53m regression that
+caused the <i>Image&gt;Adjust&gt;Brightness/Contrast</i>
+dialog to not work as expected with 32-bit images
+containing NaNs.
+</ul>
+
+<li> <u>1.53m 28 September 2021</u>
+<ul>
+<li> Thanks to Zoltan Kis, the <i>File&gt;Import&gt;Image Sequence</i>
+dialog now displays the number of images that will be opened.
+<li> Thanks to Norbert Vischer, exceptions on the Event Dispatch Thread
+are now reported in the Log window.
+<li> Thanks to Remi Berthoz, the <i>Analyze&gt;Tools&gt;Scale Bar</i>
+command now has the ability to draw both vertical and/or
+horizontal scale bars.
+<li> Thanks to Stein Rorvik, added a "Colors..." command to the
+Color Picker dropdown menu and made most of the commands in
+that menu recordable. 
+<li> Thanks to Esteban Fernandez, added a "Fill color:"
+field to the <i>Image&gt;Stacks&gt;Images to Stack</i>
+dialog box.
+<li> Thanks to Barry DeZonia, the findMinAndMax() methods 
+in the Short/Int/Float processors are now faster
+(<i>Plugins&gt;Utilities&gt;Benchmark</i>
+runs 3% faster).
+<li> Thanks to Michael Schmid, added support for
+drag and drop to JFileChooser dialogs.
+<li> Thanks to Nicolas De Francesco, updated the
+<i>Edit&gt;Selection&gt;Fit Rectangle</i> command so that
+it produces more predictable results.
+<li> Thanks to Philippe Carl, <i>File&gt;Import&gt;Image Sequence</i>
+no longer limits the number of files that can be
+imported to 40 when "Open as separate images"
+is enabled.
+<li> Thanks to Fred Damen, improved recording of the 
+ROI Manager's "Open..." and "Save..." commands, and
+made the open(path) and save(path) methods public.
+<li> Thanks to Michael Schmid, the 
+<i>File&gt;Import&gt;Image Sequence</i> command no
+longer creates excessive image IDs.
+<li> Thanks to Michael Schmid, added the FolderOpener.openProcessor()
+method, used by the FileInfoVirtualStack class.
+<li> Thanks to Norbert Vischer, fixed a bug that caused the
+<i>Process&gt;Filters&gt;Convolve</i> command to sometimes not
+be correctly recorded.
+<li> Thanks to Fred Damen, fixed a bug that caused a null pointer
+exception when the <i>File&gt;Import&gt;Results</i> dialog
+was canceled.
+<li> Thanks to Ved Sharma, fixed a bug that caused an invalid
+macro error when assigning a string value returned by a user
+defined function to an array element.
+<li> Thanks to Fred Damen, fixed a bug that caused the RoiManager.save()
+method to always return true.
+<li> Thanks to Ved Sharma, fixed a bug that caused the
+ROI Manager's "OR (Combine)" command to not work as
+expected if the first ROI was composite.
+<li> Thanks to Philippe Carl, fixed a bug that caused the
+<i>File&gt;Import&gt;Image Sequence</i> command to not
+work as expected when importing stacks and the 
+"Open as separate images" option was enabled.
+<li> Thanks to Philippe Carl, fixed a bug that caused the
+<i>Image&gt;Overlay&gt;Flatten</i> command to not work
+with ROIs, or the ROI Manager in "Show All" mode, on
+composite  images.
+<li> Thanks to Rodrigo Goncalves, fixed a bug that caused
+the <i>File&gt;Save As&gt;Image Sequence</i> command to
+display multiple error messages when the specified directory
+did not exist.
+<li> Thanks to Herbie Gluender, fixed a bug the caused the
+exit(msg) macro function to fail when the argument was a
+number or a call to a user-defined function.
+<li> Thanks to Jerome Mutterer, fixed a typo in
+OpenDialog.java that caused the GitHub version of ImageJ
+to fail to compile.
+<li> Thanks to Daniel Nebdal, fixed a bug that caused the
+<i>Plugins&gt;Macros&gt;Edit</i> command to not open
+".py" and ".bsh" files.
+<li> Thanks to Remi Berthoz, fixed a bug that caused the
+<i>Image&gt;Type&gt;RGB Stack</i> command to not work
+correctly with RGB stacks that had multiple slices
+and multiple frames.
+<li> Thanks to Stein Rorvik, fixed a bug that caused
+the Property.setSliceLabel() macro function to sometimes
+not work as expected with single images. 
+<li> Thanks to Ved Sharma, fixed a regression that caused the 
+roiManager("Set Fill Color",color) macro function to fail when
+used with a text selection.
+<li> Thanks to 'natalia', fixed a 1.52p regression that caused
+FITS images to open flipped vertically.
+<li> Thanks to "J Xiong", fixed a regression that caused the
+particle analyzer to not work the same as it did in ImageJ 1.52
+with binary images that were not thresholded and the "Black background"
+options was not set.
+<li> Thanks to Hyung-song Nam, fixed a 1.53f regression that caused
+menus to unexpectedly popup when using the "hand" tool to
+scroll through images.
+</ul>
+
+<li> <u>1.53k 6 July 2021</u>
+<ul>
+<li> Thanks Mike Nelson, 16-bit images are
+inverted using the full pixel value range (0-65535) or, if set,
+using the "Unsigned 16-bit range" in the "Set" option of the
+<i>Image&gt;Adjust&gt;Brightness/Contrast</i> dialog.
+<li> Thanks to Alan Brooks, added the macOS-specific
+MacAdapter9 plugin, which, on Java 9 or later,
+supports drag and drop on the ImageJ.app and the
+"About ImageJ" command.
+<li> Thanks to Romain Guiet, the ROI Manager's
+"Associate 'Show All' ROIs with slices" option is
+now enabled by default.
+<li> Thanks to Gilles Carpentier, the particle analyzer now assumes
+the threshold is 255 unless "Black background" is not set,
+the image does not have an inverted LUT and fewer than
+half the pixels have a value of zero, in which case
+the threshold is set to zero.
+<li> Thanks to 'pdd2110', added the Property.setSliceLabel(label)
+macro function.
+<li> Thanks to 'John D.', added the GenericDialog.addButton() method
+(<a href="http://wsr.imagej.net/plugins/Button_Example.java">example</a>).
+<li> Thanks to 'Oodegard', fixed a bug that caused the
+"Auto-next slice" option of the point tool to not
+work as expected with hyperstacks.
+<li> Thanks to Michael Schmid, fixed a bug that caused
+NaN values in tables read from a file to be
+strings instead of numbers.
+<li> Thanks to Gabriel Landini and Michael Schmid, fixed a bug
+that caused the "Top Hat" filter to fail when applying it to a
+stack one slice at a time.
+<li> Thanks to Laurent Thomas, fixed a bug that caused the
+<i>Image&gt;Stacks&gt;Set Slice</i> command to not
+work as expected with hyperstacks.
+<li> Thanks to Laurent Thomas, fixed a bug that caused hyperstacks
+to be displayed incorrectly if the Z or T sliders where 
+moved quickly and the images were slow to load.
+<li> Thanks to Michael Schmid, fixed a bug that sometimes caused
+the WindowManager.getIDList() method to throw an exception.
+</ul>
+
+<li> <u>1.53j 13 May 2021</u>
+<ul>
+<li> Thanks to 'VolkerH', the table created by
+<i>Image&gt;Overlay&gt;List Elements</i> now
+displays row numbers and arrow selection 'X' and 'Y'
+values are the coordinates of the arrow tip.
+<li> Thanks to Stein Rorvik, added the Color.setForegroundValue()
+and Color.setBackgroundValue() macro functions and the
+Toolbar.setForegroundValue(), Toolbar.setBackgroundValue(),
+ImageProcessor.setGlobalForegroundColor() and
+ImageProcessor.setGlobalBackgroundColor() methods.
+<li> Thanks to Norbert Vischer, added the IJ.checksum() macro
+function, which returns the MD5 (or SHA-256) checksum from
+a string or file
+(<a href="http://wsr.imagej.net/macros/ChecksumTest.txt">example</a>).
+<li> Thanks to Michael Schmid, added the
+Fit.doWeightedFit(equation,x,y,weights[,initialGuesses])
+macro function.
+<li> Thanks to Norbert Vischer, added the Plot.removeNaNs macro function.
+<li> Thanks to Laurent Thomas, added support for scrollbars in 
+GenericDialog TextAreas.
+<li> Thanks to Fred Damen, added the Zoom.in(imp), Zoom.out(imp),
+Zoom.unzoom(imp) and Zoom.maximize(imp) methods.
+<li> Thanks to John Dunsmuir, added the PointRoi.addPoint(x,y,position) method.
+<li> Thanks to Fred Damen, fixed bugs that caused programmatic image
+window zooming to not work reliably
+(<a href="http://wsr.imagej.net/macros/js/ZoomTest.js">example</a>).
+<li> Thanks to Michael Schmid, fixed a bug with HTMLDialogs that
+caused the initial scroll position to be at the end when displaying
+more text than what fits in the window.
+<li> Thanks to 'Sethur', fixed bugs that caused DICOM
+files using newer VRs (from 2014 and later), such as
+UC and UR, to fail.
+<li> Thanks to Bruno Vellutini, fixed a bug that caused images rotated
+interactively using the "Enlarge image" and "Preview" options to not
+have the grid lines removed after the rotation.
+<li> Thanks to Jerome Mutterer, fixed a bug that caused the
+Prefs.savePreferences() method to throw a null pointer
+exception if the "ImageJ" window was not open.
+<li> Thanks to Stein Rorvik, fixed a bug that caused the slice
+label to be incorrect after importing an image sequence and
+"Start" was greater than 1 and "Count" was 1.
+<li> Thanks to Stein Rorvik, fixed a bug that caused
+the <i>Images to Stack</i> command to ignore slice labels
+when the "Use titles as labels" option was not enabled.
+<li> Thanks to 'ghf', worked around a Fiji bug that caused the
+<i>File&gt;Import&gt;Image Sequence</i> command to fail
+if the folder contained a ".h5" file.
+<li> Thanks to Jerome Mutterer, fixed bugs that caused the
+Stack.setDisplayMode(), Stack.setSlice(), Stack.setFrame()
+and Stack.setPosition() macro functions to not work as expected
+in batch mode, and the ImagePlus.setDisplayMode(),
+ImagePlus.setZ(), ImagePlus.setSetT() and
+ImagePlus.setPosition() methods to not work as expected when
+the image was not displayed.
+<li> Thanks to Nicolas Montes, fixed a bug that caused the
+particle analyzer to throw an exception when both the
+"Composite ROIs" and "Show: Outlines" options where used.
+<li> Thanks to Christian Kremser, fixed a 1.53i regression
+that caused macro statements like "n=Dialog.getNumber()+1"
+to generate and error.
+<li> Thanks to Christian Tischer, fixed a regression that
+caused the ROI Manager to not set the hyperstack position
+of ROIs without a c,z,t position.
+
+</ul>
+
+<li> <u>1.53i 24 March 2021</u>
+<ul>
+<li> Thanks to Jerome Mutterer, added the
+ "Apply LUTs" checkbox to the command finder
+(<i>Plugins&gt;Utilities&gt;Find Commands</i>).
+<li> Thanks to Norbert Vischer, the current line number,
+or selection range, in Editor, Table or Log windows, 
+is displayed in the status bar. The total number of lines is
+displayed after <i>Select All</i>.
+<li> Thanks to Norbert Vischer, ImageJ now corrects the orientation of
+phone camera photos. Does not work on Fiji because it is
+missing Exif_Reader.jar.
+<li> Improved the Plugins>Utilities>Benchmark command. It now
+suppresses subordinate status bar messages and displays
+subordinate progress bars as dots. 
+<li> Thanks to Peter Haub, the particle analyzer displays
+"ParticleAnalyzer: threshold has not set; assumed to be min-max"
+in the Log window if it was not called from a macro and a
+threshold was not set.
+<li> Thanks to Laurent Thomas, <i>File&gt;Save As&gt;Image Sequence</i>,
+when "Use slice labels as names" is enabled, now supports file names as
+long as 111 characters, excluding the extension.
+<li> Thanks to Michael Schmid, ImageJ displays "horizontal" in the
+image info line of column average plots and "vertical" with
+row average plots.
+<li> Thanks to Jerome Mutterer, added the showStatus(message,options)
+macro function and the IJ.showStatus(message,options) method
+ (<a href="http://wsr.imagej.net/macros/FlashingStatusMessages.txt">example</a>).
+<li> Added the Overlay.update(index) macro function.
+<li> Added the ImagePlus.setBorderColor() method,
+used by <i>Image&gt;Color&gt;Split Channels</i> to
+colorize image borders.
+<li> Thanks to Laurent Thomas, added the ImageStack.getShortStackLabel(n,max),
+Zoom.toSelection(imp), Zoom.set(imp,mag) and Zoom.set(imp,mag,x,y)
+methods.
+<li> Thanks to Herbie Gluender, fixed a bug that caused the status bar
+to stop being updated after activating an overlay selection.
+<li> Thanks to Fred Damen, fixed a bug with one slice stacks that caused the
+slice label to not be displayed on the image info line or in the
+<i>Image&gt;Show Info</i> window.
+<li> Thanks to Antoneta, fixed a bug with the <i>Flatten</i> command that caused
+multi-point selections on stacks to lose counter information.
+<li> Thanks to Herbie Gluender, fixed a bug that caused unexpected overlay
+entries after running the particle analyzer with the "Add to manager" option
+in a batch mode macro.
+<li> Thanks to Norbert Vischer, fixed a bug that caused string functions
+added in ImageJ 1.52t (s.contains(), s.endsWith(), s.indexOf(), s.lastIndexOf(),
+s.lengths.startsWith()) to return a string instead of a number when used
+in an assignment statement.
+<li> Thanks to Robert Haase, fixed a bug with the roiManager("select",index) 
+macro function that caused it to sometimes restore ROIs at the
+wrong position.
+<li> Thanks to Laurent Thomas, fixed a bug that caused the
+ContrastEnhancer.stretchHistogram() methoid to not work as
+expected with stacks.
+<li> Thanks to Michael Schmid, fixed a bug that caused
+WaitForUserDialogs to not be scaled on high-resolution
+screens.
+<li> Thanks to Stein Rorvik, fixed a macro interpreter bug that caused
+if statements using string functions to sometimes fail
+(e.g., "if (getTitle.length>10) ...").
+<li> Thanks to Norbert Vischer, fixed a bug that caused the
+first column of tables copied to the clipboard to be missing
+if the table did not have row numbers and the
+"Copy row numbers" option in
+<i>Edit&gt;Options&gt;Input/Output</i> was not enabled.
+<li> Thanks to Shayna Sosnowik, fixed a 1.53g regression that caused
+the "Properties..." command in the ROI Manager to not work as 
+expected when changing the stroke color.
+<li> Thanks to Stein Rorvik, fixed a 1.53i regression that caused
+the str.trim() macro function to sometimes fail.
+</ul>
+
+<li> <u>1.53h 04 February 2021</u>
+<ul>
+<li> Thanks to Laura Shankman, added the <i>Image&gt;Overlay&gt;Measure Overlay</i>
+command.
+<li> Thanks to Jerome Mutterer, added the <i>Help&gt;Examples&gt;Macro&gt;Colors of 2021</i>
+example, which runs more smoothly with ImageJ 1.53h20 or later, where ROIs are not
+drawn in batch mode.
+<li> Added the <i>Help&gt;Examples&gt;JavaScript&gt;Dialog Demo</i> and
+<i>Help&gt;Examples&gt;Macro&gt;Save All Images</i> examples.
+<li> Thanks to Christophe Leterrier, <i>Image&gt;Type&gt;RGB Color</i>
+converts hyperstacks of HSB stacks to stacks of RGB images.
+<li> Thanks to Alex Zwetsloot, line selections are no longer activated by double clicks
+with the segmented and freehand line tools.
+<li> Thanks to Norbert Vischer, added the Color.set(string), Color.set(number),
+Color.foreground, Color.background, Color.setForeground(r,g,b),
+Color.setBackground(r,b,g), Color.setForeground(string),Color.setBackground(string),
+Color.toString(r,g,b), Color.toArray(color), Color.setLut(reds, greens, blues) and
+Color.getLut(reds, greens, blues) macro functions.
+<li> Thanks to Raniere Silva, added the Overlay.xor() macro function.
+<li> Added the Overlay.fill() macro function.
+<li> Thanks to Stein Rorvik, added the File.isFile() macro function.
+<li> Thanks to Raniere Silva, added the getDir("cwd") ("current working directory")
+macro function.
+<li> Added the Roi.getFloatBounds() and Image.title macro functions.
+<li> Thanks to Alan Brooks, added the Toolbar.setIcon() method
+ (<a href="http://wsr.imagej.net/macros/tools/ToggleIconTool.txt">example1</a>,
+ <a href="http://wsr.imagej.net/macros/tools/Animated_Icon_Tool.txt">example2</a>,
+ <a href="http://wsr.imagej.net/macros/tools/Googly_Eyes_Tool.txt">example3</a>,
+ <a href="http://wsr.imagej.net/macros/tools/Scrolling_Tool_Icons.txt">example4</a>.
+  <a href="http://wsr.imagej.net/macros/tools/Random_Color_Picker_Tool.txt">example5</a>).
+<li> Added the Overlay.xor() and Roi.xor() methods.
+<li> Thanks to Robert Kasumba, added the OverlayBrushTool.setWidth() method.
+<li> Thanks to Laurent Thomas, added the getColumn(String), getColumnAsStrings(String)
+and getActiveTable() methods to the ResultsTable class.
+<li> Thanks to Dyuks, fixed a bug that caused the TIFF reader to sometimes throw
+an exception when opening LZW-compressed 16-bit TIFFs.
+<li> Thanks to Michael Schmid, fixed a bug that could cause the JpegWriter
+to throw a NullPointerException if JAI ImageIO was installed.
+<li> Thanks to Michael Cammer, fixed a bug that caused the selectWindow(title)
+macro function to not work with minimized windows on Windows.
+<li> Fixed a bug that caused all tools to stop working after attempting
+to use the polygon, segmented line or angle tool on
+<a href="https://ij.imjoy.io/">ImageJ.JS</a>.
+<li> Thanks to Gabriel Landini, fixed a bug that caused the B&C tool
+to sometimes perform an Undo operation on RGB images.
+<li> Thanks to Raniere Silva and Jan Eglinger, fixed a bug that
+caused an exception when saving the table created by
+<i>Image&gt;Overlay&gt;List Elements</i> in .csv format.
+<li> Thanks to Raniere Silva, fixed bugs that caused the open(path)
+and roiManager(“Open”,path) macro functions, in macros run 
+from the command line, to not work as expected when ‘path’
+was just a file name.
+<li> Thanks to Michael Schmid, fixed bugs that caused the roi.getBounds()
+method and getSelectionBounds() macro function to not work 
+as expected with polyline, point and straight line selections on
+images zoomed more than 150%.
+<li> Thanks to Christian Tischer, fixed a bug that caused the
+<i>Image&gt;Overlay&gt;List Elements</i> command to incorrectly
+report positions of time series overlays.
+<li> Thanks to Laurent Thomas, fixed a bug that sometimes caused
+GenericDialogs to not open URLs bound to "Help" buttons.
+<li> Thanks to Jan Eglinger, fixed a bug that caused the selection
+brush tool to behave inconsistantly when the brush width was odd
+and the image was hightly magnified.
+<li> Thanks to Christian Tischer, fixed a bug that caused overlay
+calibration bars to be displayed incorrectly on images zoomed
+less than 100%.
+<li> Thanks to Norbert Vischer, fixed a bug that caused the
+selectWindow("Results") macro function to sometimes not
+work as expected.
+<li> Fixed a 1.53h17 regression, caused by building ij.jar for Java 8,
+that prevented Fiji from launching.
+<li> Thanks to Dominik Schienstock, fixed a 1.52q regression that
+caused some filters to throw exceptions in headless mode.
+</ul>
+
+<li> <u>1.53g  4 December 2020</u>
+<ul>
+<li> Thanks to Jerome Mutterer, added a "Run" button to Editor
+ windows when the file name ends with ".ijm", ".js", ".bsh" or ".py".
+ <li> The "Overlay Masks" option in the particle anayzer now
+ displays masks in colors taken from the Glasbey LUT.
+ <li> Thanks to J Xiong, added "Overlay" and  "Composite ROIs"
+ checkboxes to the particle analyzer
+ (<a href="http://wsr.imagej.net/macros/MeasureWithOrWithoutHoles.ijm">example</a>).
+ <li> Thanks to Michael Doube, added an IntProcessor class that provides
+ support for signed 32-bit int images
+  (<a href="http://wsr.imagej.net/macros/js/CreateAndDisplayIntImage.js">example</a>).
+ <li> Thanks to Christian Tischer, the Recorder supports Python.
+ <li> Thanks to 'Eljonco', the "ExpandableArrays" macro option
+ is now enabled by default.
+ <l> Thanks to Peter Haub, added the String.pad(n,length)
+ macro function.
+ <li> Thanks to Wilhelm Burger, added the addEnumChoice() and
+ getNextEnumChoice() methods to the GenericDialog class
+ (<a href="http://wsr.imagej.net/plugins/GenericDialog_With_Enums.java">example</a>).
+<li> Thanks to 'davidC', added the ij.gui.HistogramPlot class.
+<li> Thanks to Stein Rorvik, added the ImageCanvas.setLongClickDelay()
+and Toolbar.setLongClickDelay() methods.
+<li> Thanks to 'Dr. Njitram', added the recordable
+SubstackMaker.run(imp,rangeOrList) method.
+<li> Thanks to Albert Cardona, modified the ImageJ.keyPressed() method
+so that, if the KeyEvent is consumed, it returns immediately.
+<li> Thanks to Wei Ouyang, replaced the "Duplicate..." command
+in the default image contextual menu with "Duplicate Image",
+which ignores any selection and duplicates the entire image.
 <li> Thanks to Stein Rorvik, fixed a bug that sometimes caused images
 to be incorrectly added to the <i>Window</i> menu.
 <li> Thanks to Stein Rorvik, fixed a bug that caused the
 <i>File&gt;Show Folder&gt;Image</i> command to not
 work with stacks opened using
 <i>File&gt;Import&gt;Image Sequence</i>.
+<li> Thanks to 'muniak' and 'mountain_man', fixed a bug that
+caused the Scaler.resize() method to return an image with
+a calibration of Inf x Inf.
+<li> Thanks to Stein Rorvik, fixed a bug that caused a list of 12 'w' letters
+to appear after the Group entry in the ROI Properties dialog when it
+was called from a macro.
+<li> Thanks to 'davidC', fixed a bug that caused batch mode macros that
+created hundreds of histograms to fail.
+<li> Thanks to 'chrk139', fixed a bug that caused the drawOval() and fillOval()
+macro functions to not work for images larger than 2^29 pixels.
+<li> Thanks to Laurent Thomas, fixed a bug where changing
+the group attribute from a group&gt;0 to 0 in
+the <i>ROI Manager&gt;Properties</i> dialog did
+not work as expected.
+<li> Thanks to Gilles Vanwalleghem, fixed a bug that caused the
+run(“Reduce Dimensionality…”) macro function to throw a
+null pointer exception in Fiji headless mode.
+<li> Thanks to Laurent Thomas and Hollandi Reka, fixed a bug
+that caused the ROI group of saved composite selections
+to not be restored.
+<li> Thanks to Martin Hohne, fixed a bug that caused the getValue("X")
+and getValue("Y") macro functions to not work as expected with
+line selections.
+<li> Thanks to J Xiong, fixed a v1.50 regression that caused the 
+particle analyzer to not work as expected when when using the
+“Exclude on edges” option and a composite selection.
+<li> Thanks to Fred Damen, fixed a 1.53c regression that caused
+the GenericDialog.getFont() method to sometimes return null.
+<li> Fixed a regression that caused the particle analyzer to
+sometimes fail on MacOS.
 </ul>
 
 <li> <u>1.53f  25 October 2020</u>
@@ -20,7 +838,7 @@ work with stacks opened using
 <li> Thanks to Wei Ouyang, tool bar and image popup menus are
 triggered by long presses in addition to right clicks, needed
 because right clicks are not normally possible when
-<a href="https://ij.imjoy.io/">Image.JS</a>
+<a href="https://ij.imjoy.io/">ImageJ.JS</a>
 is running on Android and iOS devices.
 <li> Thanks to Wei Ouyang, added a popup menu to the
 magnifying glass tool icon.

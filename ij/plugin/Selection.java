@@ -23,8 +23,8 @@ public class Selection implements PlugIn, Measurements {
 	private static int lineWidth = 1;
 	private static boolean smooth;
 	private static boolean adjust;
-
-	
+	private static double translateX;
+	private static double translateY;
 
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
@@ -75,6 +75,8 @@ public class Selection implements PlugIn, Measurements {
 			toBoundingBox(imp); 
 		else if (arg.equals("rotate"))
 			rotate(imp); 
+		else if (arg.equals("translate"))
+			translate(imp); 
 		else if (arg.equals("enlarge"))
 			enlarge(imp); 
 		else if (arg.equals("rect"))
@@ -505,7 +507,7 @@ public class Selection implements PlugIn, Measurements {
 		if (p!=null) {
 			Undo.setup(Undo.ROI, imp);
 			imp.deleteRoi();
-			Roi roi2 = new PolygonRoi(p, roi.POLYGON);
+			Roi roi2 = new PolygonRoi(p, Roi.POLYGON);
 			transferProperties(roi, roi2);
 			imp.setRoi(roi2);
 			IJ.showTime(imp, startTime, "Convex Hull ", 1);
@@ -619,6 +621,8 @@ public class Selection implements PlugIn, Measurements {
 		if (Prefs.blackBackground)
 			threshold = (threshold==255)?0:255;
 		ip.setThreshold(threshold, threshold, ImageProcessor.NO_LUT_UPDATE);
+		if (!IJ.isMacro())
+			IJ.log("Create Selection: threshold not set; assumed to be "+threshold+"-"+threshold);
 		IJ.runPlugIn("ij.plugin.filter.ThresholdToSelection", "");
 	}
 	
@@ -764,11 +768,63 @@ public class Selection implements PlugIn, Measurements {
 			IJ.error("This command requires a selection.");
 			return false;
 		}
+		String name = roi.getName();
+		if (name==null) name = "";
+		int position = roi.getPosition();
+		int group = roi.getGroup();
+		Color color = roi.getStrokeColor();
+		Color fillColor = roi.getFillColor();
+		int width = (int)roi.getStrokeWidth();
 		RoiProperties rp = new RoiProperties(title, roi);
 		boolean ok = rp.showDialog();
+		if (Recorder.record) {
+			boolean groupChanged = false;
+			String name2 = roi.getName();
+			if (name2==null) name2 = "";
+			int position2 = roi.getPosition();
+			int group2 = roi.getGroup();
+			if (group2!=group) groupChanged=true;
+			Color color2 = roi.getStrokeColor();
+			Color fillColor2 = roi.getFillColor();
+			int width2 = (int)roi.getStrokeWidth();
+			if (Recorder.scriptMode()) {
+				Recorder.recordCall("roi = imp.getRoi();");
+				if (name2!=name)
+					Recorder.recordCall("roi.setName(\""+name2+"\");");
+				if (position2!=position)
+					Recorder.recordCall("roi.setPosition("+position2+");");
+				if (group2!=group)
+					Recorder.recordCall("roi.setGroup("+group2+");");
+				if (width2!=width)
+					Recorder.recordCall("roi.setStrokeWidth("+width2+");");
+				if (color2!=color && !groupChanged)
+					Recorder.recordCall("roi.setStrokeColor("+getColor(color2)+");");
+				if (fillColor2!=fillColor)
+					Recorder.recordCall("roi.setFillColor("+getColor(fillColor2)+");");
+				Recorder.recordCall("imp.draw();");
+			} else {
+				if (name2!=name)
+					Recorder.record("Roi.setName", name2);
+				if (groupChanged)
+					Recorder.record("Roi.setGroup", group2);
+				if (position2!=position)
+					Recorder.record("Roi.setPosition", position2);
+				if (color2!=color && !groupChanged)
+					Recorder.record("Roi.setStrokeColor", Colors.colorToString(color2));
+				if (fillColor2!=fillColor)
+					Recorder.record("Roi.setFillColor", Colors.colorToString(fillColor2));
+				if (width2!=width)
+					Recorder.record("Roi.setStrokeWidth", width2);
+			}
+			Recorder.disableCommandRecording();
+		}
 		if (IJ.debugMode)
 			IJ.log(roi.getDebugInfo());
 		return ok;
+	}
+	
+	private String getColor(Color color) {
+		return "new Color("+color.getRed()+","+color.getGreen()+","+color.getBlue()+")";
 	}
 	
 	private void makeBand(ImagePlus imp) {
@@ -934,16 +990,63 @@ public class Selection implements PlugIn, Measurements {
 			double pd = ((xp[i2min] - xp[imin]) * (yp[jmin] - yp[imin]) - (xp[jmin] - xp[imin]) * (yp[i2min] - yp[imin])) / Math.sqrt(Math.pow(xp[i2min] - xp[imin], 2) + Math.pow(yp[i2min] - yp [imin], 2)); // signed feret diameter
 			double pairAngle = Math.atan2( yp[i2min]- yp[imin], xp[i2min]- xp[imin]);
 			double minAngle = pairAngle + Math.PI/2;
-			double x1 = xp[imin] + Math.cos(pairAngle) * min_hmax + Math.cos(minAngle) * pd/2;
-			double y1 = yp[imin] + Math.sin(pairAngle) * min_hmax + Math.sin(minAngle) * pd/2;
-			double x2 = xp[imin] + Math.cos(pairAngle) * min_hmin + Math.cos(minAngle) * pd/2;
-			double y2 = yp[imin] + Math.sin(pairAngle) * min_hmin + Math.sin(minAngle) * pd/2;
+
+			// rectangle center and signed full height
+			double xm = xp[imin] + Math.cos(pairAngle) * (min_hmax + min_hmin)/2 + Math.cos(minAngle) * pd/2;
+			double ym = yp[imin] + Math.sin(pairAngle) * (min_hmax + min_hmin)/2 + Math.sin(minAngle) * pd/2;
+			double hm = min_hmax - min_hmin;
+			
+			if (minFD > Math.abs(hm)) { // ensure control axis is parallel to longer side
+				pairAngle = pairAngle - Math.PI/2;
+				minFD = Math.abs(hm);
+				hm = pd;
+				}
+			
+			if (pairAngle * hm > 0)	hm = -hm; // ensure first control point at the top
+	
+			double x1 = xm + Math.cos(pairAngle) * hm/2;
+			double y1 = ym + Math.sin(pairAngle) * hm/2;
+			double x2 = xm - Math.cos(pairAngle) * hm/2;
+			double y2 = ym - Math.sin(pairAngle) * hm/2;
 			Undo.setup(Undo.ROI, imp);
 			imp.deleteRoi();
 			Roi roi2 = new RotatedRectRoi(x1,  y1,  x2,  y2,  minFD);
 			transferProperties(roi, roi2);
 			imp.setRoi(roi2);
 			IJ.showTime(imp, startTime, "Fit Rectangle ", 1);
+		}
+	}
+	
+	private void translate(ImagePlus imp) {
+		if (!imp.okToDeleteRoi())
+			return;
+		Roi roi = imp.getRoi();
+		String options = Macro.getOptions();
+		if (options!=null && options.contains("interpolation=")) {
+			IJ.run("Translate...", options); // run Image>Transform>Translate
+			return;
+		}
+		if (roi==null) {
+			noRoi("Translate");
+			return;
+		}
+		double dx = translateX;
+		double dy = translateY;
+		GenericDialog gd = new GenericDialog("Translate");
+		gd.addNumericField("X offset (pixels): ", dx, 0);
+		gd.addNumericField("Y offset (pixels): ", dy, 0);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		dx = gd.getNextNumber();
+		dy = gd.getNextNumber();
+		Rectangle2D r = roi.getFloatBounds();
+		roi.setLocation(r.getX()+dx, r.getY()+dy);
+		if (imp!=null)
+			imp.draw();
+		if (options==null) {
+			translateX = dx;
+			translateY = dy;
 		}
 	}
 	

@@ -23,7 +23,6 @@ public class Straightener implements PlugIn {
 		}
 		if (!imp.lock()) return;
 		int width = (int)Math.round(roi.getStrokeWidth());
-		int originalWidth = width;
 		boolean isMacro = IJ.macroRunning() && Macro.getOptions()!=null;
 		int stackSize = imp.getStackSize();
 		if (stackSize==1) processStack = false;
@@ -39,7 +38,7 @@ public class Straightener implements PlugIn {
 			if (gd.wasCanceled()) {imp.unlock(); return;}
 			newTitle = gd.getNextString();
 			width = (int)gd.getNextNumber();
-			Line.setWidth(width);
+			roi.setStrokeWidth(width);
 			if (stackSize>1)
 				processStack = gd.getNextBoolean();
 		}
@@ -63,7 +62,6 @@ public class Straightener implements PlugIn {
 		if (cal.pixelWidth==cal.pixelHeight)
 			imp2.setCalibration(cal);
 		imp2.show();
-		if (isMacro) Line.setWidth(originalWidth);
 	}
 
 	public ImageProcessor straighten(ImagePlus imp, Roi roi, int width) {

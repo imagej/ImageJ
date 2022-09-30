@@ -120,7 +120,7 @@ import java.util.Vector;
 		
 	boolean showDialog() {
 		validateFormat();
-		gd = NonBlockingGenericDialog.newDialog("Batch Process");
+		gd = GUI.newNonBlockingDialog("Batch Process");
 		addPanels(gd);
 		gd.setInsets(15, 0, 5);
 		gd.addChoice("Output_format:", formats, format);

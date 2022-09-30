@@ -48,6 +48,7 @@ public class Options implements PlugIn {
 			gd.addCheckbox("Save window locations", !Prefs.doNotSaveWindowLocations);
 		gd.addCheckbox("Non-blocking filter dialogs", Prefs.nonBlockingFilterDialogs);
 		gd.addCheckbox("Debug mode", IJ.debugMode);
+		//gd.addCheckbox("Modern mode", Prefs.modernMode);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#misc");
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -62,7 +63,7 @@ public class Options implements PlugIn {
 			FloatBlitter.divideByZeroValue = Float.MAX_VALUE;
 		else {
 			Float f;
-			try {f = new Float(divValue);}
+			try {f = Float.valueOf(divValue);}
 			catch (NumberFormatException e) {f = null;}
 			if (f!=null)
 				FloatBlitter.divideByZeroValue = f.floatValue();
@@ -83,11 +84,18 @@ public class Options implements PlugIn {
 			Prefs.doNotSaveWindowLocations = !gd.getNextBoolean();
 		Prefs.nonBlockingFilterDialogs = gd.getNextBoolean();
 		IJ.setDebugMode(gd.getNextBoolean());
+		//Prefs.modernMode = gd.getNextBoolean();
 	}
 
 	void lineWidth() {
-		int width = (int)IJ.getNumber("Line Width:", Line.getWidth());
-		if (width==IJ.CANCELED) return;
+		GenericDialog gd = new GenericDialog("Default Line Width");
+		gd.addNumericField("Line width: ", Line.getWidth(), 0);
+		gd.setInsets(5,2,0);
+		gd.addMessage("Sets the default line selection width.\nPress 'y' (Edit>Selection>Properties)\nto change the width of the current\nline selection.");
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		int width = (int)gd.getNextNumber();
 		Line.setWidth(width);
 		LineWidthAdjuster.update();
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -95,7 +103,8 @@ public class Options implements PlugIn {
 			ImageProcessor ip = imp.getProcessor();
 			ip.setLineWidth(Line.getWidth());
             Roi roi = imp.getRoi();
-            if (roi!=null && roi.isLine()) imp.draw();
+            if (roi!=null && roi.isLine())
+            	imp.draw();
 		}
 	}
 
@@ -182,8 +191,9 @@ public class Options implements PlugIn {
 	void dicom() {
 		GenericDialog gd = new GenericDialog("DICOM Options");
 		gd.addCheckbox("Open as 32-bit float", Prefs.openDicomsAsFloat);
-		gd.addCheckbox("Ignore Rescale Slope", Prefs.ignoreRescaleSlope);
-		gd.addMessage("Orthogonal Views");
+		gd.addCheckbox("Ignore rescale slope", Prefs.ignoreRescaleSlope);
+		gd.addCheckbox("Fixed Z slope and intercept", Prefs.fixedDicomScaling);
+		gd.addMessage("Orthogonal views");
 		gd.setInsets(5, 40, 0);
 		gd.addCheckbox("Rotate YZ", Prefs.rotateYZ);
 		gd.setInsets(0, 40, 0);
@@ -193,6 +203,7 @@ public class Options implements PlugIn {
 			return;
 		Prefs.openDicomsAsFloat = gd.getNextBoolean();
 		Prefs.ignoreRescaleSlope = gd.getNextBoolean();
+		Prefs.fixedDicomScaling = gd.getNextBoolean();
 		Prefs.rotateYZ = gd.getNextBoolean();
 		Prefs.flipXZ = gd.getNextBoolean();
 	}

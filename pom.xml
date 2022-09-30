@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>31.1.0</version>
+		<relativePath />
+	</parent>
+
+	<groupId>net.imagej</groupId>
+	<artifactId>ij</artifactId>
+	<version>1.x-SNAPSHOT</version>
+
+	<name>ImageJ</name>
+	<description>ImageJ is an open source Java image processing program inspired by NIH Image for the Macintosh.</description>
+	<url>https://imagej.nih.gov/ij</url>
+	<inceptionYear>1997</inceptionYear>
+	<organization>
+		<name>NIH</name>
+		<url>https://nih.gov/</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>Public domain</name>
+			<url>https://imagej.nih.gov/ij/disclaimer.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>rasband</id>
+			<name>Wayne Rasband</name>
+			<url>https://imagej.net/people/rasband</url>
+			<roles>
+				<role>founder</role>
+				<role>lead</role>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+			</roles>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor><name>See release notes</name></contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>ImageJ</name>
+			<subscribe>https://imagej.nih.gov/ij/list.html</subscribe>
+			<unsubscribe>https://imagej.nih.gov/ij/list.html</unsubscribe>
+			<post>imagej@list.nih.gov</post>
+			<archive>https://list.nih.gov/archives/imagej.html</archive>
+		</mailingList>
+		<mailingList>
+			<name>Image.sc Forum</name>
+			<archive>https://forum.image.sc/tag/imagej</archive>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:https://github.com/imagej/ImageJ</connection>
+		<developerConnection>scm:git:git@github.com:imagej/ImageJ</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/imagej/ImageJ</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>https://github.com/imagej/ImageJ/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>GitHub Actions</system>
+		<url>https://github.com/imagej/ImageJ/actions</url>
+	</ciManagement>
+
+	<properties>
+		<package-name>ij</package-name>
+		<main-class>ij.ImageJ</main-class>
+		<license.licenseName>N/A</license.licenseName>
+		<license.copyrightOwners>N/A</license.copyrightOwners>
+
+		<scijava.jvm.version>6</scijava.jvm.version>
+		<scijava.jvm.build.version>[9,)</scijava.jvm.build.version>
+		<javac.path>${java.home}/../lib/tools.jar</javac.path>
+
+		<!-- HACK: Work around usage of Java-7-specific JList code. -->
+		<maven.compiler.source>9</maven.compiler.source>
+		<maven.compiler.target>6</maven.compiler.target>
+		<maven.compiler.release></maven.compiler.release>
+
+		<!-- HACK: Work around 'String index out of bounds' javadoc error. -->
+		<maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
+
+		<!-- TEMP: Until unit tests errors are all resolved. -->
+		<maven.test.skip>true</maven.test.skip>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<sourceDirectory>${project.basedir}</sourceDirectory>
+		<testSourceDirectory>${project.basedir}/tests</testSourceDirectory>
+		<resources>
+			<resource>
+				<directory>${project.basedir}</directory>
+				<includes>
+					<include>IJ_Props.txt</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>${project.basedir}/images</directory>
+			</resource>
+			<resource>
+				<directory>${project.basedir}/macros</directory>
+				<targetPath>macros</targetPath>
+			</resource>
+			<resource>
+				<directory>${project.basedir}/plugins</directory>
+				<targetPath>ij/plugin</targetPath>
+				<includes>
+					<include>**/*.class</include>
+				</includes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-compile</id>
+						<configuration>
+							<!-- compile everything to ensure module-info contains right entries -->
+							<!-- required when JAVA_HOME is JDK 8 or below -->
+							<jdkToolchain>
+								<version>9</version>
+							</jdkToolchain>
+							<excludes>
+								<exclude>tests/**</exclude>
+							</excludes>
+							<release>9</release>
+						</configuration>
+					</execution>
+					<execution>
+						<id>complete-recompile</id>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<!-- recompile everything for target VM except the module-info.java -->
+						<configuration>
+							<excludes>
+								<exclude>**/module-info.java</exclude>
+								<exclude>tests/**</exclude>
+							</excludes>
+							<!--
+							Force recompilation.
+							See https://issues.apache.org/jira/browse/MCOMPILER-209
+							-->
+							<useIncrementalCompilation>true</useIncrementalCompilation>
+						</configuration>
+					</execution>
+				</executions>
+				<!-- defaults for compile and testCompile -->
+				<configuration>
+					<!-- jdkToolchain required when JAVA_HOME is JDK 9 or above -->
+					<jdkToolchain>
+						<version>[1.6,8)</version>
+					</jdkToolchain>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<!-- Avoid failing due to javadoc errors -->
+					<doclint>none</doclint>
+					<!--
+					Required to build javadoc with a module-info.java present.
+					See also https://bugs.openjdk.java.net/browse/JDK-8212233
+					-->
+					<source>9</source>
+					<links>
+						<link>https://imagej.nih.gov/ij/developer/api/</link>
+					</links>
+					<sourceFileIncludes>ij/**/*.java</sourceFileIncludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-source-plugin</artifactId>
+				<configuration>
+					<includes>ij/**</includes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>javac</id>
+			<activation>
+				<file>
+					<!-- NB: Custom properties do not work here, so we hardcode. -->
+					<exists>${java.home}/../lib/tools.jar</exists>
+				</file>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>com.sun</groupId>
+					<artifactId>tools</artifactId>
+					<version>1.4.2</version>
+					<scope>system</scope>
+					<systemPath>${javac.path}</systemPath>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<!--
+			TEMP: This profile can be removed once pom-scijava 32.0.0 is released.
+			It forces deployment to s01.oss.sonatype.org rather than oss.sonatype.org.
+			-->
+			<id>sonatype-oss-release</id>
+			<properties>
+				<sonatype-oss-repository>https://s01.oss.sonatype.org</sonatype-oss-repository>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>${nexus-staging-maven-plugin.version}</version>
+						<configuration>
+							<nexusUrl>${sonatype-oss-repository}/</nexusUrl>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+			<repositories>
+				<repository>
+					<id>sonatype-nexus-releases</id>
+					<name>Sonatype Nexus Releases</name>
+					<url>${sonatype-oss-repository}/content/repositories/releases</url>
+					<releases>
+						<enabled>true</enabled>
+					</releases>
+					<snapshots>
+						<enabled>false</enabled>
+					</snapshots>
+				</repository>
+			</repositories>
+			<distributionManagement>
+				<repository>
+					<id>sonatype-nexus-staging</id>
+					<name>Nexus Release Repository</name>
+					<url>${sonatype-oss-repository}/service/local/staging/deploy/maven2/</url>
+				</repository>
+			</distributionManagement>
+		</profile>
+	</profiles>
+</project>

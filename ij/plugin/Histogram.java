@@ -52,7 +52,7 @@ public class Histogram implements PlugIn, TextListener {
 				xMin = 0.0;
 				xMax = Math.pow(2,ImagePlus.getDefault16bitRange())-1;
 				useImageMinAndMax = false;
-			} else if (stackHistogram && ((bitDepth==8&&!cal.calibrated())||bitDepth==24)) {
+			} else if (stackHistogram && ((bitDepth==8&&!cal.calibrated())||imp.isRGB())) {
 				xMin = 0.0;
 				xMax = 256.0;
 				useImageMinAndMax = false;
@@ -66,16 +66,18 @@ public class Histogram implements PlugIn, TextListener {
  			xMax = 0.0;
  		}
  		int iyMax = (int)Tools.parseDouble(yMax, 0.0);
- 		boolean customHistogram = (bitDepth==8||bitDepth==24) && (!(xMin==0.0&&xMax==0.0)||nBins!=256||iyMax>0);
+ 		boolean customHistogram = (bitDepth==8||imp.isRGB()) && (!(xMin==0.0&&xMax==0.0)||nBins!=256||iyMax>0);
+		HistogramPlot plot = new HistogramPlot();
  		if (stackHistogram || customHistogram) {
  			ImagePlus imp2 = imp;
  			if (customHistogram && !stackHistogram && imp.getStackSize()>1)
  				imp2 = new ImagePlus("Temp", imp.getProcessor());
 			stats = new StackStatistics(imp2, nBins, xMin, xMax);
 			stats.histYMax = iyMax;
-			new HistogramWindow("Histogram of "+imp.getShortTitle(), imp, stats);
+			plot.draw(imp, stats);
 		} else
-			new HistogramWindow("Histogram of "+imp.getShortTitle(), imp, nBins, xMin, xMax, iyMax);
+			plot.draw(imp, nBins, xMin, xMax, iyMax);
+		plot.show();
 	}
 	
 	boolean showDialog(ImagePlus imp) {
@@ -107,19 +109,18 @@ public class Histogram implements PlugIn, TextListener {
 		gd.addCheckbox("Use pixel value range", useImageMinAndMax);
 		gd.setInsets(5, 40, 10);
 		gd.addMessage("or use:");
-		int fwidth = 6;
+		int fwidth = 8;
 		int nwidth = Math.max(IJ.d2s(xMin,2).length(), IJ.d2s(xMax,2).length());
 		if (nwidth>fwidth) fwidth = nwidth;
-		int digits = 2;
+		int digits = -2;  // use scientific notation if needed
 		if (xMin==(int)xMin && xMax==(int)xMax)
 			digits = 0;
 		gd.addNumericField("X_min:", xMin, digits, fwidth, null);
 		gd.addNumericField("X_max:", xMax, digits, fwidth, null);
 		gd.setInsets(15, 0, 10);
-		gd.addStringField("Y_max:", yMax, 6);
+		gd.addStringField("Y_max:", yMax, fwidth);
 		if (stackSize>1)
 			gd.addCheckbox("Stack histogram", stackHistogram);
-		
 		Vector numbers = gd.getNumericFields();
 		if (numbers!=null) {
 			minField = (TextField)numbers.elementAt(1);

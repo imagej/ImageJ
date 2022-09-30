@@ -15,7 +15,7 @@ public class ColorProcessor extends ImageProcessor {
 	protected int[] pixels;
 	protected int[] snapshotPixels = null;
 	private int bgColor = 0xffffffff; //white
-	private int min=0, max=255;
+	protected int min=0, max=255;
 	private WritableRaster rgbRaster;
 	private SampleModel rgbSampleModel;
 	private boolean caSnapshot;
@@ -73,9 +73,9 @@ public class ColorProcessor extends ImageProcessor {
 			rgbRaster = Raster.createWritableRaster(rgbSampleModel, dataBuffer, null);
 		}
 		if (image==null) {
+			if (cm==null) createColorModel();
 			image = new BufferedImage(cm, rgbRaster, false, null);
 		}
-		//ij.IJ.log("image: "+image);
 		return image;
 	}
 
@@ -88,7 +88,7 @@ public class ColorProcessor extends ImageProcessor {
 
 	public void setColorModel(ColorModel cm) {
 		if (cm!=null && (cm instanceof IndexColorModel))
-			throw new IllegalArgumentException("DirectColorModel required");
+			throw new IllegalArgumentException("RGB images do not support IndexColorModels");
 		this.cm = cm;
 		rgbSampleModel = null;
 		rgbRaster = null;
@@ -109,14 +109,17 @@ public class ColorProcessor extends ImageProcessor {
 		return new Color(r,g,b);
 	}
 
-
 	/** Sets the foreground color. */
 	public void setColor(Color color) {
 		fgColor = color.getRGB();
 		drawingColor = color;
 		fillValueSet = true;
 	}
-
+	
+	/** Sets the background fill/draw color. */
+	public void setBackgroundColor(Color color) {
+		setBackgroundValue(color.getRGB());
+	}
 
 	/** Sets the fill/draw color, where <code>color</code> is an RGB int. */
 	public void setColor(int color) {
@@ -185,7 +188,6 @@ public class ColorProcessor extends ImageProcessor {
 			applyTable(lut, channels);
 	}
 	
-
 	public void snapshot() {
 		snapshotWidth = width;
 		snapshotHeight = height;
@@ -1409,7 +1411,7 @@ public class ColorProcessor extends ImageProcessor {
 	/** Not implemented. */
 	public void threshold(int level) {}
 	
-	/** Returns the number of color channels of the image, i.e., 3. */
+	/** Returns the number of color channels (3). */
 	public int getNChannels() {
 		return 3;
 	}

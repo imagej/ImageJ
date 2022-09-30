@@ -2,6 +2,7 @@ package ij;
 import ij.util.Tools;
 import ij.text.TextWindow;
 import ij.plugin.MacroInstaller;
+import ij.plugin.Duplicator;
 import ij.plugin.frame.Recorder;
 import ij.plugin.frame.Editor;
 import ij.io.OpenDialog;
@@ -9,6 +10,7 @@ import java.io.*;
 import java.util.*;
 import java.awt.event.KeyEvent;
 import java.awt.Menu;
+import java.awt.GraphicsEnvironment;
 
 
 /** Runs ImageJ menu commands in a separate thread.*/
@@ -159,8 +161,10 @@ public class Executer implements Runnable {
 			if (openRecent(cmd))
 				return;
 			// is it an example in Help>Examples menu?
-			if (Editor.openExample(cmd))
-				return;
+			if (IJ.getInstance()!=null && !GraphicsEnvironment.isHeadless()) {
+				if (Editor.openExample(cmd))		
+					return;
+			}
 			if ("Auto Threshold".equals(cmd)&&(String)table.get("Auto Threshold...")!=null)
 				runCommand("Auto Threshold...");
 			else if ("Enhance Local Contrast (CLAHE)".equals(cmd)&&(String)table.get("CLAHE ")!=null)
@@ -171,12 +175,27 @@ public class Executer implements Runnable {
 				else {
 					if (repeatingCommand)
 						IJ.runMacro(previousCommand);
-					else
-						IJ.error("Unrecognized command: \"" + cmd+"\"");
+					else {
+						if (!extraCommand(cmd))
+							IJ.error("Unrecognized command: \"" + cmd+"\"");
+					}
 				}
 			}
 	 	}
     }
+    
+	private boolean extraCommand(String cmd) {
+		if (cmd!=null && cmd.equals("Duplicate Image...")) {
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (imp!=null) {
+				Duplicator.ignoreNextSelection();
+				IJ.run(imp, "Duplicate...", "");
+			} else
+				IJ.noImage();
+			return true;
+		} else
+			return false;
+	}
 
 	/** If the foreground image is locked during a filter operation with NonBlockingGenericDialog,
 	 *  the following plugins are allowed */

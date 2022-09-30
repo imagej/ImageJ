@@ -17,7 +17,7 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 	private final static int UNCONSTRAINED=0, HORIZONTAL=1, VERTICAL=2, DO_RESIZE=3, RESIZED=4, IDLE=5; //mode flags
 	private static String WIDTH_KEY = "obrush.width";
 	private static final String LOC_KEY = "obrush.loc";
-	private float width = (float)Prefs.get(WIDTH_KEY, 5);
+	private static float width = (float)Prefs.get(WIDTH_KEY, 5);
 	private int transparency;
 	private BasicStroke stroke;
 	private GeneralPath path;
@@ -160,7 +160,12 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 	public void run() {
 		new Options();
 	}
-
+	
+	public static void setWidth(double brushWidth) {
+		width = (float)brushWidth;
+	}
+	
+		
 	class Options implements DialogListener {
 
 		Options() {
@@ -195,17 +200,17 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 		public void showDialog() {
 			Color color = Toolbar.getForegroundColor();
 			String colorName = Colors.colorToString2(color);
-			gd = NonBlockingGenericDialog.newDialog("Overlay Brush Options");
-			gd.addSlider("Brush width (pixels):", 0, 50, width);
-			gd.addSlider("Transparency (%):", 0, 100, transparency);
+			gd = GUI.newNonBlockingDialog("Overlay Brush Options");
+			gd.addSlider("Brush width:", 0, 50, width);
+			gd.addSlider("Transparency:", 0, 100, transparency);
 			gd.addChoice("Color:", Colors.getColors(colorName), colorName);
 			gd.setInsets(10, 0, 0);
 			String ctrlString = IJ.isMacintosh()? "CMD":"CTRL";
 			gd.addMessage("SHIFT for horizontal or vertical lines\n"+
 					"ALT to draw in background color\n"+
 					ctrlString+"-SHIFT-drag to change brush width\n"+
-					ctrlString+"-(ALT) click to change foreground (background) color\n"+
-					"or use this dialog or the Color Picker (shift-k).", null, Color.darkGray);
+					ctrlString+"-click to change foreground color\n",
+					null, Color.darkGray);
 			gd.hideCancelButton();
 			gd.addHelp("");
 			gd.setHelpLabel("Undo");

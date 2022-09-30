@@ -11,7 +11,9 @@ public class CompositeImage extends ImagePlus {
 
 	/** Display modes (note: TRANSPARENT mode has not yet been implemented) */
 	public static final int COMPOSITE=1, COLOR=2, GRAYSCALE=3, TRANSPARENT=4;
-	public static final int MAX_CHANNELS = 7;
+	public static final int MAX_CHANNELS = 8;
+	public static final Color[] colors = {Color.red, Color.green, Color.blue, Color.white, Color.cyan, Color.magenta, Color.yellow, Color.white};
+
 	int[] rgbPixels;
 	boolean newPixels;
 	MemoryImageSource imageSource;
@@ -21,7 +23,6 @@ public class CompositeImage extends ImagePlus {
 	BufferedImage rgbImage;
 	ColorModel rgbCM;
 	ImageProcessor[] cip;
-	Color[] colors = {Color.red, Color.green, Color.blue, Color.white, Color.cyan, Color.magenta, Color.yellow};
 	LUT[] lut;
 	int currentChannel = -1;
 	int previousChannel;
@@ -187,6 +188,10 @@ public class CompositeImage extends ImagePlus {
 	}
 
 	public void updateAndDraw() {
+		if (win==null) {
+			img = null;
+			return;
+		}
 		updateImage();
 		if (win!=null)
 			notifyListeners(UPDATED);
@@ -273,12 +278,25 @@ public class CompositeImage extends ImagePlus {
 			rgbImage = null;
 		}
 		cip[currentChannel].setMinAndMax(ip.getMin(),ip.getMax());
+		int projectionMode = ImageProcessor.SUM_PROJECTION;
+		String prop = getProp("CompositeProjection");
+		if (prop!=null) {
+			if (prop.contains("Max")||prop.contains("max"))
+				projectionMode = ImageProcessor.MAX_PROJECTION;
+			else if (prop.contains("Min")||prop.contains("min"))
+				projectionMode = ImageProcessor.MIN_PROJECTION;
+			else if (prop.contains("Invert")||prop.contains("invert"))
+				projectionMode = ImageProcessor.INVERT_PROJECTION;
+		}
+		long t0 = IJ.debugMode?System.nanoTime():0L;
 		if (singleChannel && nChannels<=3) {
 			switch (currentChannel) {
-				case 0: cip[0].updateComposite(rgbPixels, 1); break;
-				case 1: cip[1].updateComposite(rgbPixels, 2); break;
-				case 2: cip[2].updateComposite(rgbPixels, 3); break;
+				case 0: cip[0].updateComposite(rgbPixels, ImageProcessor.UPDATE_RED); break;
+				case 1: cip[1].updateComposite(rgbPixels, ImageProcessor.UPDATE_GREEN); break;
+				case 2: cip[2].updateComposite(rgbPixels, ImageProcessor.UPDATE_BLUE); break;
 			}
+		} else if (projectionMode==ImageProcessor.INVERT_PROJECTION){
+			makeInvertedComposite(active);
 		} else {
 			if (cip==null) return;
 			if (syncChannels) {
@@ -292,20 +310,104 @@ public class CompositeImage extends ImagePlus {
 				syncChannels = false;
 			}
 			if (active[0])
-				cip[0].updateComposite(rgbPixels, 4);
-			else
-				{for (int i=1; i<imageSize; i++) rgbPixels[i] = 0;}
+				cip[0].updateComposite(rgbPixels, ImageProcessor.SET_FIRST_CHANNEL);
+			else {
+				int fill = projectionMode==ImageProcessor.MIN_PROJECTION?0xffffff:0;
+				for (int i=1; i<imageSize; i++)
+					rgbPixels[i] = fill;
+			}
 			if (cip==null || nChannels>cip.length)
 				return;
 			for (int i=1; i<nChannels; i++)
-				if (active[i]) cip[i].updateComposite(rgbPixels, 5);
+				if (active[i]) cip[i].updateComposite(rgbPixels, projectionMode);
 		}
+		if (IJ.debugMode) IJ.log(""+(System.nanoTime()-t0)/1000L);
 		createBufferedImage();
 		if (img==null && awtImage!=null)
 			img = awtImage;
 		singleChannel = false;
-	}
+	}		
+    
+	// Creates multi-channel composite view with inverted LUTs
+	// https://forum.image.sc/t/multi-channel-composite-view-with-inverted-luts-in-imagej-fiji/61163
+	// Peter Haub, 12'2021
+	private void makeInvertedComposite(boolean[] chnActive) {
+		int bitDepth = getBitDepth();
+		int w = getWidth();
+		int h = getHeight();
+		int nChn = getNChannels();
 		
+		int nChnActive = 0;
+		for (int c=0; c<nChn; c++){
+			if (chnActive[c])
+				nChnActive++;
+		}		
+		
+		byte[][] in8 = null;
+		short[][] in16 = null;
+		float[][] in32 = null;
+		switch (bitDepth) {
+			case 8: in8=new byte[nChn][]; break;
+			case 16: in16=new short[nChn][]; break;
+			case 32: in32=new float[nChn][]; break;
+		}
+		double[] mins = new double[nChn];
+		double[] maxs = new double[nChn];
+		double[] scale = new double[nChn];		
+		LUT[] luts = getLuts();
+		
+		for (int c=0; c<nChn; c++){
+			mins[c] = cip[c].getMin();
+			maxs[c] = cip[c].getMax();
+			scale[c] = (255.0 / (maxs[c] - mins[c]));			
+			switch (bitDepth) {
+				case 8: in8[c] = (byte[]) cip[c].getPixels(); break;
+				case 16: in16[c] = (short[]) cip[c].getPixels(); break;
+				case 32: in32[c] = (float[]) cip[c].getPixels(); break;
+			}
+		} 
+		      			
+		int value;
+		int[] v = new int[nChn];
+		int[] r = new int[nChn]; int[] g = new int[nChn]; int[] b = new int[nChn];
+		int sumR, sumG, sumB;
+		int newR, newG, newB;
+		
+		for (int idx=0; idx<w*h; idx++) {
+			for (int c=0; c<nChn; c++){
+				switch (bitDepth) {
+					case 8: v[c] = (int)Math.floor(((in8[c][idx]&0xff)-mins[c])*scale[c]); break;
+					case 16: v[c] = (int)Math.floor(((in16[c][idx]&0xffff)-mins[c])*scale[c]); break;
+					case 32: v[c] = (int)Math.floor((in32[c][idx]-mins[c])*scale[c]); break;
+				}
+				v[c] = Math.min(v[c], 255);
+				v[c] = Math.max(v[c], 0);
+				r[c] = luts[c].getRed(v[c]);
+				g[c] = luts[c].getGreen(v[c]);
+				b[c] = luts[c].getBlue(v[c]);                   
+			}
+
+			// Modify 'composite merge' condition here
+			sumR = sumG = sumB = 0;
+			for (int c=0; c<nChn; c++){
+				if (chnActive[c]){				
+					sumR += r[c];
+					sumG += g[c];
+					sumB += b[c];
+				}
+			}
+			newR = sumR - (nChnActive-1)*255;
+			newG = sumG - (nChnActive-1)*255;
+			newB = sumB - (nChnActive-1)*255;
+
+			newR = Math.max(newR, 0);
+			newG = Math.max(newG, 0);
+			newB = Math.max(newB, 0);
+			value = newR*256*256 + newG*256 + newB;
+			rgbPixels[idx] = value;
+		}   
+    }
+       
 	void createImage() {
 		if (imageSource==null) {
 			rgbCM = new DirectColorModel(32, 0xff0000, 0xff00, 0xff);
@@ -374,6 +476,7 @@ public class CompositeImage extends ImagePlus {
 		return new LUT(r, g, b);
 	}
 
+	/** Returns the color used to display the image subtitle and "B&C" histogram. */
 	public Color getChannelColor() {
 		if (lut==null || mode==GRAYSCALE)
 			return Color.black;
@@ -407,8 +510,10 @@ public class CompositeImage extends ImagePlus {
 			return;
 		if (mode==COMPOSITE && getNChannels()>MAX_CHANNELS)
 			mode = COLOR;
-		for (int i=0; i<MAX_CHANNELS; i++)
-			active[i] = true;
+		if (!(mode==COMPOSITE && mode==this.mode)) {
+			for (int i=0; i<MAX_CHANNELS; i++)
+				active[i] = true;
+		}
 		if (this.mode!=COMPOSITE && mode==COMPOSITE)
 			img = null;
 		this.mode = mode;

@@ -103,7 +103,7 @@ public class TextRoi extends Roi {
 		if (font==null)
 			font = defaultFont;
 		if (font==null)
-			font = new Font("SansSerif", Font.PLAIN, 14);
+			font = ImageJ.SansSerif14;
 		this.font = font;
 		setAntiAlias(antialiasedText);
 		firstChar = false;
@@ -195,7 +195,7 @@ public class TextRoi extends Roi {
 
 	Font getScaledFont() {
 		if (font==null)
-			font = new Font("SansSerif", Font.PLAIN, 14);
+			font = ImageJ.SansSerif14;
 		double mag = getMagnification();
 		if (nonScalable || imp==null || mag==1.0)
 			return font;

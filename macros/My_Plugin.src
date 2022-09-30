@@ -7,11 +7,11 @@ import ij.plugin.frame.*;
 
 public class My_Plugin implements PlugIn {
 
-	public void run(String arg) {
-		ImagePlus imp = IJ.getImage();
-		IJ.run(imp, "Invert", "");
-		IJ.wait(1000);
-		IJ.run(imp, "Invert", "");
-	}
+    public void run(String arg) {
+        ImagePlus imp = IJ.getImage();
+        IJ.run(imp, "Invert", "");
+        IJ.wait(1000);
+        IJ.run(imp, "Invert", "");
+    }
 
 }

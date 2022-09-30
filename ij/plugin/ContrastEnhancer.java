@@ -7,14 +7,15 @@ import java.awt.*;
 
 /** Implements ImageJ's Process/Enhance Contrast command. */
 public class ContrastEnhancer implements PlugIn, Measurements {
-
+	static final double defaultSaturated = 0.35;
+	static double gSaturated = defaultSaturated;
+	static boolean gEqualize;
+	double saturated = defaultSaturated;
 	int max, range;
 	boolean classicEqualization;
 	int stackSize;
 	boolean updateSelectionOnly;
 	boolean equalize, normalize, processStack, useStackHistogram, entireImage;
-	static double saturated = 0.35;
-	static boolean gEqualize, gNormalize;
 
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
@@ -43,14 +44,18 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		String options = IJ.isMacro()?Macro.getOptions():null;
 		if (options!=null && options.contains("normalize_all"))
 			Macro.setOptions(options.replaceAll("normalize_all", "process_all"));
-		equalize=gEqualize; normalize=gNormalize;
+		boolean isMacro = options!=null;
+		if (!isMacro) {
+			equalize = gEqualize;
+			saturated = gSaturated;
+		}
 		int bitDepth = imp.getBitDepth();
 		boolean composite = imp.isComposite();
 		if (composite) stackSize = 1;
 		Roi roi = imp.getRoi();
 		boolean areaRoi = roi!=null && roi.isArea() && !composite;
 		GenericDialog gd = new GenericDialog("Enhance Contrast");
-		gd.addNumericField("Saturated pixels:", saturated, 1, 4, "%");
+		gd.addNumericField("Saturated pixels:", saturated, 2, 5, "%");
 		if (bitDepth!=24 && !composite)
 			gd.addCheckbox("Normalize", normalize);
 		if (areaRoi) {
@@ -85,7 +90,10 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		if (saturated>100.0) saturated = 100;
 		if (processStack && !equalize)
 			normalize = true;
-		gEqualize=equalize; gNormalize=normalize;
+		if (!isMacro) {
+			gEqualize = equalize;
+			gSaturated = saturated;
+		}
 		return true;
 	}
  
@@ -95,8 +103,9 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 			stats = new StackStatistics(imp);
 		if (processStack) {
 			ImageStack stack = imp.getStack();
-			for (int i=1; i<=stackSize; i++) {
-				IJ.showProgress(i, stackSize);
+			int size = this.stackSize==0?stack.size():this.stackSize;
+			for (int i=1; i<=size; i++) {
+				IJ.showProgress(i, size);
 				ImageProcessor ip = stack.getProcessor(i);
 				ip.setRoi(imp.getRoi());
 				if (!useStackHistogram)
@@ -159,24 +168,6 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 			}
 			imp.setDisplayRange(min, max);
 		}
-		/*
-		int channels = imp.getNChannels();b
-		int channel = imp.getChannel();
-		int slice = imp.getSlice();
-		int frame = imp.getFrame();
-		for (int c=1; c<=channels; c++) {
-			imp.setPosition(c, slice, frame);
-			ImageProcessor ip = imp.getProcessor();
-			int[] a = getMinAndMax(ip, saturated, stats);
-			int hmin=a[0], hmax=a[1];
-			if (hmax>hmin) {
-				double min = stats.histMin+hmin*stats.binSize;
-				double max = stats.histMin+hmax*stats.binSize;
-				imp.setDisplayRange(min, max);
-			}
-		}
-		imp.setPosition(channel, slice, frame);
-		*/
 	}
 
 	int[] getMinAndMax(ImageProcessor ip, double saturated, ImageStatistics stats) {
@@ -272,11 +263,10 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 				histogram = stats.histogram16;
 		}
 		if (processStack) {
-			//int[] mask = imp.getMask();
-			//Rectangle rect = imp.get
 			ImageStack stack = imp.getStack();
-			for (int i=1; i<=stackSize; i++) {
-				IJ.showProgress(i, stackSize);
+			int size = this.stackSize==0?stack.size():this.stackSize;
+			for (int i=1; i<=size; i++) {
+				IJ.showProgress(i, size);
 				ImageProcessor ip = stack.getProcessor(i);
 				if (histogram==null)
 					histogram = ip.getHistogram();
@@ -351,6 +341,7 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 	
 	public void setProcessStack(boolean processStack) {
 		this.processStack = processStack;
+		this.normalize = true;
 	}
 
 	public void setUseStackHistogram(boolean useStackHistogram) {

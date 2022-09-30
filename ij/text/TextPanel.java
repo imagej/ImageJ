@@ -1,5 +1,4 @@
 package ij.text;
-
 import java.awt.*;
 import java.io.*;
 import java.awt.event.*;
@@ -7,6 +6,7 @@ import java.util.*;
 import java.awt.datatransfer.*;
 import ij.*;
 import ij.plugin.filter.Analyzer;
+import ij.plugin.Distribution;
 import ij.io.SaveDialog;
 import ij.measure.*;
 import ij.util.Tools;
@@ -88,7 +88,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	public TextPanel(String title) {
 		this();
 		this.title = title;
-		if (title.equals("Results")) {
+		if (title.equals("Results") || title.endsWith("(Results)")) {
 			pm.addSeparator();
 			addPopupItem("Clear Results");
 			addPopupItem("Summarize");
@@ -98,8 +98,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 
 	void addPopupMenu() {
-		pm=new PopupMenu();
+		pm = new PopupMenu();
+		GUI.scalePopupMenu(pm);
 		addPopupItem("Save As...");
+		addPopupItem("Table Action");
 		pm.addSeparator();
 		addPopupItem("Cut");
 		addPopupItem("Copy");
@@ -273,6 +275,17 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		tc.repaint();
  	}
 
+	private void showLinePos() { // show line numbers in status bar (Norbert Visher)
+		int startLine = getSelectionStart() +1;
+		int endLine = getSelectionEnd() + 1;
+		String msg = "Line " + startLine;
+		if (startLine != endLine) {
+			msg += "-" + endLine;
+		}
+		if (!msg.equals("Line 0"))
+			IJ.showStatus(msg);
+	}
+	
 	public void mousePressed (MouseEvent e) {
 		int x=e.getX(), y=e.getY();
 		if (e.isPopupTrigger() || e.isMetaDown())
@@ -332,8 +345,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if (overlay==null)
 			return;
 		String[] columns = s.split("\t");
-		int index = (int)Tools.parseDouble(columns[0]);
+		int index = (int)Tools.parseDouble(columns[1]);
 		Roi roi = overlay.get(index);
+		if (roi==null)
+			return;
 		if (imp.isHyperStack()) {
 			int c = roi.getCPosition();
 			int z = roi.getZPosition();
@@ -353,7 +368,11 @@ public class TextPanel extends Panel implements AdjustmentListener,
     /** For better performance, open double-clicked files on
     	separate thread instead of on event dispatch thread. */
     public void run() {
-        if (filePath!=null) IJ.open(filePath);
+        if (filePath==null)
+        	return;
+        File f = new File(filePath);
+		if (f.exists() || filePath.startsWith("https"))
+			IJ.open(filePath);
     }
 
 	public void mouseExited (MouseEvent e) {
@@ -405,10 +424,25 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		}
 	}
 
- 	public void mouseReleased (MouseEvent e) {}
-	public void mouseClicked (MouseEvent e) {}
-	public void mouseEntered (MouseEvent e) {}
-
+ 	public void mouseReleased (MouseEvent e) {
+			showLinePos();
+	}
+	
+	public void mouseClicked (MouseEvent e) {
+		if (e.getClickCount() == 2 && !e.isConsumed()) {
+			e.consume();
+			boolean doubleClickableTable = title!=null && (title.equals("Log")||title.startsWith("Overlay Elements"));
+			Hashtable commands = Menus.getCommands();
+			boolean tableActionCommand = commands!=null && commands.get("Table Action")!=null;
+			if (!tableActionCommand)
+				tableActionCommand = ij.plugin.MacroInstaller.isMacroCommand("Table Action");
+			if (doubleClickableTable || !tableActionCommand)
+				return;
+			String options = title+"|"+getSelectionStart()+"|"+getSelectionEnd();
+			IJ.run("Table Action", options);
+		}
+	}
+	
 	public void mouseWheelMoved(MouseWheelEvent event) {
 		synchronized(this) {
 			int rot = event.getWheelRotation();
@@ -417,6 +451,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			tc.repaint();
 		}
 	}
+
+	public void mouseEntered (MouseEvent e) {}
 
 	private void scroll(int inc) {
 		synchronized(this) {
@@ -450,6 +486,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 
 	public void keyReleased (KeyEvent e) {
 		IJ.setKeyUp(e.getKeyCode());
+		showLinePos();
 	}
 
 	public void keyTyped (KeyEvent e) {
@@ -483,12 +520,20 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			rename(null);
 		else if (cmd.equals("Duplicate..."))
 			duplicate();
-		else if (cmd.equals("Summarize"))
-			IJ.doCommand("Summarize");
-		else if (cmd.equals("Distribution..."))
-			IJ.doCommand("Distribution...");
-		else if (cmd.equals("Clear Results"))
-			IJ.doCommand("Clear Results");
+		else if (cmd.equals("Summarize")) {
+			if ("Results".equals(title))
+				IJ.doCommand("Summarize");
+			else {
+				Analyzer analyzer = new Analyzer(null, getResultsTable());
+				analyzer.summarize();
+			}
+		} else if (cmd.equals("Distribution...")) {
+			if ("Results".equals(title))
+				IJ.doCommand("Distribution...");
+			else
+				new Distribution().run(getResultsTable());
+		} else if (cmd.equals("Clear Results"))
+			doClear();
 		else if (cmd.equals("Set Measurements..."))
 			IJ.doCommand("Set Measurements...");
  		else if (cmd.equals("Options..."))
@@ -499,6 +544,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			sort();
  		else if (cmd.equals("Plot..."))
 			new PlotContentsDialog(title, getOrCreateResultsTable()).showDialog(getParent() instanceof Frame ? (Frame)getParent() : null);
+		else if (cmd.equals("Table Action")) {
+			String options = title+"|"+getSelectionStart()+"|"+getSelectionEnd();
+			IJ.run("Table Action", options);
+		}
 	}
 
  	public void lostOwnership (Clipboard clip, Transferable cont) {}
@@ -579,9 +628,6 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			rt2.show("Results");
 		} else {
 			tw.setTitle(title2);
-			int mbSize = tw.mb!=null?tw.mb.getMenuCount():0;
-			if (mbSize>0 && tw.mb.getMenu(mbSize-1).getLabel().equals("Results"))
-				tw.mb.remove(mbSize-1);
 			title = title2;
 			rt2.show(title);
 		}
@@ -682,8 +728,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if (selStart==-1 || selEnd==-1)
 			return copyAll();
 		StringBuffer sb = new StringBuffer();
+		ResultsTable rt2 = getResultsTable();
+		boolean hasRowNumers = rt2!=null && rt2.showRowNumbers();
 		if (Prefs.copyColumnHeaders && labels!=null && !labels.equals("") && selStart==0 && selEnd==iRowCount-1) {
-			if (Prefs.noRowNumbers) {
+			if (hasRowNumers && Prefs.noRowNumbers) {
 				String s = labels;
 				int index = s.indexOf("\t");
 				if (index!=-1)
@@ -698,7 +746,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			String s = new String(chars);
 			if (s.endsWith("\t"))
 				s = s.substring(0, s.length()-1);
-			if (Prefs.noRowNumbers && labels!=null && !labels.equals("")) {
+			if (hasRowNumers && Prefs.noRowNumbers && labels!=null && !labels.equals("")) {
 				int index = s.indexOf("\t");
 				if (index!=-1)
 					s = s.substring(index+1, s.length());
@@ -817,6 +865,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	public void selectAll() {
 		if (selStart==0 && selEnd==iRowCount-1) {
 			resetSelection();
+			IJ.showStatus("");
 			return;
 		}
 		selStart = 0;
@@ -824,6 +873,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		selOrigin = 0;
 		tc.repaint();
 		selLine=-1;
+		showLinePos();
 	}
 
 	/** Clears the selection, if any. */
@@ -836,7 +886,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			tc.repaint();
 	}
 
-	/** Creates a selection and insures that it is visible. */
+	/** Creates a selection and insures it is visible. */
 	public void setSelection (int startLine, int endLine) {
 		if (startLine>endLine) endLine = startLine;
 		if (startLine<0) startLine = 0;
@@ -860,7 +910,34 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		tc.repaint();
 	}
 
+	/** Updates the vertical scroll bar so that the specified row is visible. */
+	public void showRow(int rowIndex) {
+		showCell(rowIndex, null);
+	}
 
+
+	/** Updates the scroll bars so that the specified cell is visible. */
+	public void showCell(int rowIndex, String column) {
+		if (rowIndex<0) rowIndex=0;
+		if (rowIndex>=iRowCount) rowIndex=iRowCount-1;
+		sbVert.setValue(rowIndex);
+		iY=iRowHeight*sbVert.getValue();
+		int hstart = sbHoriz.getValue();
+		int hVisible = sbHoriz.getVisibleAmount()-1;
+		int col = 0;
+		if (column!=null && sColHead!=null && iColWidth!=null) {
+			for (int i=0; i<sColHead.length; i++) {
+				if (column.equals(sColHead[i])) {
+					for (int j=0; j<i; j++)
+						col += iColWidth[j];
+					break;
+				}
+			}
+		}
+		sbHoriz.setValue(col);
+		iX=col;
+		tc.repaint();
+	}
 
 	/** Writes all the text in this TextPanel to a file. */
 	public void save(PrintWriter pw) {

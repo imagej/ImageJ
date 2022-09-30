@@ -23,6 +23,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 	private String[] methods = ImageProcessor.getInterpolationMethods();
 	private static int interpolationMethod = ImageProcessor.BILINEAR;
 	private Overlay overlay;
+	private boolean done;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
@@ -31,13 +32,19 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 			Roi roi = imp.getRoi();
 			if (roi!=null && roi.isLine())
 				roi = null;
+			overlay = imp.getOverlay();
+			if (roi!=null && overlay!=null && Macro.getOptions()==null) {
+				String msg = "This image has an overlay so the\nselection will be removed.";
+				if (!IJ.showMessageWithCancel("Rotator", msg))
+					return DONE;
+				imp.deleteRoi();
+			}
 			Rectangle r = roi!=null?roi.getBounds():null;
 			canEnlarge = r==null || (r.x==0&&r.y==0&&r.width==imp.getWidth()&&r.height==imp.getHeight());
 			if (imp.getDisplayMode()==IJ.COMPOSITE) { // setup Undo for composite color stacks
 				Undo.setup(Undo.TRANSFORM, imp);
 				flags = flags | NO_UNDO_RESET;
 			}
-			overlay = imp.getOverlay();
 			Undo.saveOverlay(imp);
 			if (overlay==null)
 				overlay = new Overlay();
@@ -60,13 +67,9 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 				ip = imp.getStack().getProcessor(slice);
 		}
 		ip.setInterpolationMethod(interpolationMethod);
-		if (fillWithBackground) {
-			Color bgc = Toolbar.getBackgroundColor();
-			if (bitDepth==8)
-				ip.setBackgroundValue(ip.getBestIndex(bgc));
-			else if (bitDepth==24)
-				ip.setBackgroundValue(bgc.getRGB());
-		} else
+		if (fillWithBackground)
+			ip.setBackgroundColor(Toolbar.getBackgroundColor());
+		else
 			ip.setBackgroundValue(0);
 		ip.rotate(angle);
 		if (!gd.wasOKed())
@@ -81,26 +84,35 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 			imp.updateAndDraw();
 			Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
 		}
+		if (done) { // remove grid
+			Overlay ovly = imp.getOverlay();
+			if (ovly!=null) {
+				ovly.remove(GRID);
+				if (ovly.size()==0) imp.setOverlay(null);			
+			}
+		}
 	}
 
 	void enlargeCanvas() {
 		imp.unlock();
-		IJ.run("Select All");
-		IJ.run("Rotate...", "angle="+angle);
+		IJ.run(imp, "Select All", "");
+		IJ.run(imp, "Rotate...", "angle="+angle);
 		Roi roi = imp.getRoi();
-		Rectangle r = roi.getBounds();
+		imp.deleteRoi();
+		Rectangle2D.Double fb = roi.getFloatBounds();
+		Rectangle r = new Rectangle((int)Math.round(fb.x),(int)Math.round(fb.y),(int)Math.round(fb.width),(int)Math.round(fb.height));
 		if (r.width<imp.getWidth()) r.width = imp.getWidth();
 		if (r.height<imp.getHeight()) r.height = imp.getHeight();
 		IJ.showStatus("Rotate: Enlarging...");
 		if (imp.getStackSize()==1)
 			Undo.setup(Undo.COMPOUND_FILTER, imp);
-		IJ.run("Canvas Size...", "width="+r.width+" height="+r.height+" position=Center "+(fillWithBackground?"":"zero"));
+		IJ.run(imp, "Canvas Size...", "width="+r.width+" height="+r.height+" position=Center "+(fillWithBackground?"":"zero"));
 		IJ.showStatus("Rotating...");
 	}
 
 	void drawGridLines(int lines) {
-		//if (overlay.size()>0 && GRID.equals(overlay.get(0).getName()))
-		//	overlay.remove(0);
+		if (overlay==null)
+			return;
 		overlay.remove(GRID);
 		if (lines==0)
 			return;
@@ -137,8 +149,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 		gd.addSlider("Angle:", -90, 90, angle, 0.1);
 		gd.addNumericField("Grid lines:", gridLines, 0);
 		gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
-		if (bitDepth==8 || bitDepth==24)
-			gd.addCheckbox("Fill with background color", fillWithBackground);
+		gd.addCheckbox("Fill with background color", fillWithBackground);
 		if (canEnlarge)
 			gd.addCheckbox("Enlarge image", enlarge);
 		else
@@ -154,11 +165,15 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 			return DONE;
 		}
 		Overlay ovly = imp.getOverlay();
-		if (ovly!=null) ovly.remove(GRID);
-		if (!enlarge)
-			flags |= KEEP_PREVIEW;		// standard filter without enlarge
-		else if (imp.getStackSize()==1)
+		if (ovly!=null) {
+			ovly.remove(GRID);
+			if (ovly.size()==0) imp.setOverlay(null);		
+		}
+		if (enlarge)
 			flags |= NO_CHANGES;			// undoable as a "compound filter"
+		else if (imp.getStackSize()==1)			
+			flags |= KEEP_PREVIEW;		// standard filter without enlarge
+		done = true;
 		return IJ.setupDialog(imp, flags);
 	}
 
@@ -171,8 +186,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 		}
 		gridLines = (int)gd.getNextNumber();
 		interpolationMethod = gd.getNextChoiceIndex();
-		if (bitDepth==8 || bitDepth==24)
-			fillWithBackground = gd.getNextBoolean();
+		fillWithBackground = gd.getNextBoolean();
 		if (canEnlarge)
 			enlarge = gd.getNextBoolean();
 		return true;

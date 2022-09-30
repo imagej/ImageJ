@@ -26,12 +26,18 @@ public class Distribution implements PlugIn, TextListener {
 
 	public void run(String arg) {
 		ResultsTable rt=ResultsTable.getResultsTable();
-		int count = rt.size();
-		if (count==0) {
+		if (rt.size()==0) {
 			IJ.error("Distribution", "The \"Results\" table is empty");
 			return;
 		}
-		String head= rt.getColumnHeadings();
+		run(rt);
+	}
+	
+	public void run(ResultsTable rt) {
+		if (rt==null)
+			return;
+		int count = rt.size();
+		String head = rt.getColumnHeadings();
 		//IJ.log(head);
 
 		StringTokenizer t = new StringTokenizer(head, "\t");

@@ -75,7 +75,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			}
 		}
 		if (!isStack) {
-			IJ.error("Othogonal Views", "This command requires a stack, or a hypertack with Z>1.");
+			IJ.error("Orthogonal Views", "This command requires a stack, or a hyperstack with Z>1.");
 			return;
 		}
 		yz_image = WindowManager.getImage(yzID);
@@ -581,10 +581,12 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			notify();
 		}
 		imp.setOverlay(null);
-		canvas.removeMouseListener(this);
-		canvas.removeMouseMotionListener(this);
-		canvas.removeKeyListener(this);
-		canvas.setCustomRoi(false);
+		if (canvas!=null) {
+			canvas.removeMouseListener(this);
+			canvas.removeMouseMotionListener(this);
+			canvas.removeKeyListener(this);
+			canvas.setCustomRoi(false);
+		}
 		xz_image.setOverlay(null);
 		ImageWindow win1 = xz_image.getWindow();
 		if (win1!=null) {

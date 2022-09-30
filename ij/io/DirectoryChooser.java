@@ -33,6 +33,7 @@ import javax.swing.filechooser.*;
  	
 	// runs JFileChooser on event dispatch thread to avoid possible thread deadlocks
  	void getDirectoryUsingJFileChooser(final String title) {
+ 		LookAndFeel saveLookAndFeel = Java2.getLookAndFeel();
 		Java2.setSystemLookAndFeel();
 		try {
 			EventQueue.invokeAndWait(new Runnable() {
@@ -40,11 +41,13 @@ import javax.swing.filechooser.*;
 					JFileChooser chooser = new JFileChooser();
 					chooser.setDialogTitle(title);
 					chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					chooser.setDragEnabled(true);
+					chooser.setTransferHandler(new DragAndDropHandler(chooser));
 					String defaultDir = OpenDialog.getDefaultDirectory();
 					if (defaultDir!=null) {
 						File f = new File(defaultDir);
 						if (IJ.debugMode)
-							IJ.log("DirectoryChooser,setSelectedFile: "+f);
+							IJ.log("DirectoryChooser,setSelectedFileW: "+f);
 						chooser.setSelectedFile(f);
 					}
 					chooser.setApproveButtonText("Select");
@@ -57,15 +60,19 @@ import javax.swing.filechooser.*;
 				}
 			});
 		} catch (Exception e) {}
+		Java2.setLookAndFeel(saveLookAndFeel);
 	}
  
 	// Choose a directory using JFileChooser on the current thread
  	void getDirectoryUsingJFileChooserOnThisThread(final String title) {
+		LookAndFeel saveLookAndFeel = Java2.getLookAndFeel();
 		Java2.setSystemLookAndFeel();
 		try {
 			JFileChooser chooser = new JFileChooser();
 			chooser.setDialogTitle(title);
 			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			chooser.setDragEnabled(true);
+			chooser.setTransferHandler(new DragAndDropHandler(chooser));
 			String defaultDir = OpenDialog.getDefaultDirectory();
 			if (defaultDir!=null) {
 				File f = new File(defaultDir);
@@ -81,6 +88,7 @@ import javax.swing.filechooser.*;
 				OpenDialog.setDefaultDirectory(directory);
 			}
 		} catch (Exception e) {}
+		Java2.setLookAndFeel(saveLookAndFeel);
 	}
 
  	// On Mac OS X, we can select directories using the native file open dialog
@@ -97,13 +105,14 @@ import javax.swing.filechooser.*;
 		}
 		if (IJ.debugMode)
 			IJ.log("DirectoryChooser: dir=\""+dir+"\",  file=\""+name+"\"");
-		OpenDialog od = new OpenDialog(title, dir, name);
-		if (od.getDirectory()==null)
+		OpenDialog od = new OpenDialog(title, dir, null);
+		String odDir = od.getDirectory();
+		if (odDir==null)
 			directory = null;
-		else
-			directory = od.getDirectory() + od.getFileName() + "/";
-		if (directory!=null)
+		else {
+			directory = odDir + od.getFileName() + "/";
 			OpenDialog.setDefaultDirectory(directory);
+		}
 		System.setProperty("apple.awt.fileDialogForDirectories", "false");
  		Prefs.useJFileChooser = saveUseJFC;
 	}
@@ -122,11 +131,5 @@ import javax.swing.filechooser.*;
     	if (dir==null || (new File(dir)).isDirectory())
 			OpenDialog.setDefaultDirectory(dir);
     }
-
-	//private void setSystemLookAndFeel() {
-	//	try {
-	//		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-	//	} catch(Throwable t) {}
-	//}
 
 }

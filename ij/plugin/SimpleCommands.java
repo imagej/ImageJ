@@ -56,6 +56,9 @@ public class SimpleCommands implements PlugIn {
 			showDirectory(arg.replace("showdir", ""));
 		else if (arg.equals("measure"))
 			measureStack();
+		else if (arg.equals("invert"))
+			IJ.runMacroFile("ij.jar:InvertAllLuts", null);
+
 	}
 	
 	private synchronized void showFonts() {
@@ -148,7 +151,7 @@ public class SimpleCommands implements PlugIn {
 				if (label2.length()==0)
 					label2 = null;
 				stack.setSliceLabel(label2, n);
-				imp.setProperty("Label", label2);	
+				imp.setProp("Slice_Label", label2);	
 				imp.repaintWindow();
 			}
 		}
@@ -161,7 +164,7 @@ public class SimpleCommands implements PlugIn {
 		for (int i=1; i<=size; i++)
 			stack.setSliceLabel(null, i);
 		if (size==1)
-			imp.setProperty("Label", null);				
+			imp.setProp("Slice_Label", null);				
 		imp.repaintWindow();
 	}
 	

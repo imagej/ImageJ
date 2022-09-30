@@ -193,7 +193,7 @@ public class Concatenator implements PlugIn, ItemListener{
 		// Copy across info fields
 		ImagePlus imp = new ImagePlus(newtitle, concat_Stack);
 		imp.setCalibration(cal);
-		imp.setProperty("Number of Stacks", new Integer(count));
+		imp.setProperty("Number of Stacks", Integer.valueOf(count));
 		imp.setProperty("Stacks Properties", propertyArr);
 		imp.setProperty("Image Titles", imageTitles);
 		imp.getProcessor().setMinAndMax(min, max);

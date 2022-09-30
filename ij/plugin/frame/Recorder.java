@@ -22,8 +22,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	/** Set this variable true to allow recording within IJ.run() calls. */
 	public static boolean recordInMacros;
 
-	private final static int MACRO=0, JAVASCRIPT=1, BEANSHELL=2, JAVA=3;
-	private final static String[] modes = {"Macro", "JavaScript", "BeanShell", "Java"};
+	private final static int MACRO=0, JAVASCRIPT=1, BEANSHELL=2, PYTHON=3, JAVA=4;
+	private final static String[] modes = {"Macro", "JavaScript", "BeanShell", "Python", "Java"};
 	private Choice mode;
 	private Button makeMacro, help;
 	private TextField fileName;
@@ -298,10 +298,14 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			textArea.append(str);
 	}
 	
+	public static void disableCommandRecording() {
+		commandName = null;
+	}
+	
 	public static void recordCall(String call) {
 		recordCall(call, false);
 	}
-
+	
 	public static void recordCall(String call, boolean recordCommand) {
 		if (IJ.debugMode) IJ.log("recordCall: "+call+"  "+commandName);
 		boolean isMacro = Thread.currentThread().getName().endsWith("Macro$") && !recordInMacros;
@@ -494,6 +498,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		ImagePlus imp = WindowManager.getCurrentImage();
 		//IJ.log("saveCommand: "+name+"  "+isSaveAs()+" "+scriptMode+"  "+commandOptions);
 		if (name!=null) {
+			if (name.equals("Duplicate Image..."))
+				name = "Duplicate...";
 			if (name.equals("Make Binary") && imp!=null && imp.getStackSize()==1) {
 				name = "Convert to Mask";
 				commandOptions = null;
@@ -712,14 +718,13 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			IJ.showMessage("Recorder", "A macro cannot be created until at least\none command has been recorded.");
 			return;
 		}
-		Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
-		if (ed==null)
-			return;
+		String name = fileName.getText();
+		Editor ed = new Editor(name);
 		boolean java = mode.getSelectedItem().equals(modes[JAVA]);
 		boolean beanshell = mode.getSelectedItem().equals(modes[BEANSHELL]);
-		String name = fileName.getText();
+		boolean python = mode.getSelectedItem().equals(modes[PYTHON]);
 		int dotIndex = name.lastIndexOf(".");
-		if (scriptMode) { // JavaScript, BeanShell or Java
+		if (scriptMode) { // JavaScript, BeanShell, Python  or Java
 			if (dotIndex>=0) name = name.substring(0, dotIndex);
 			if (text.indexOf("rm.")!=-1) {
 				text = (java?"RoiManager ":"")+ "rm = RoiManager.getRoiManager();\n"
@@ -734,12 +739,18 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 				text = text + "imp.setOverlay(overlay);\n";
 			if (text.indexOf("imp =")!=-1 && !(text.indexOf("IJ.getImage")!=-1||text.indexOf("IJ.saveAs")!=-1||text.indexOf("imp.close")!=-1))
 				text = text + "imp.show();\n";
+			if (python) {
+				text = text.replaceAll("new ", "");
+				text = text.replaceAll("\n//", "\n#");
+			}
 			if (java) {
 				name += ".java";
 				createPlugin(text, name);
 				return;
 			} else if (beanshell)
 				name += ".bsh";
+			else if (python)
+				name += ".py";
 			else
 				name += ".js";
 		} else { // ImageJ macro
@@ -814,6 +825,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			fileName.setText("Script.js");
 		else if (name.equals(modes[BEANSHELL]))
 			fileName.setText("Script.bsh");
+		else if (name.equals(modes[PYTHON]))
+			fileName.setText("Script.py");
 		else
 			fileName.setText("My_Plugin.java");
 		fgColorSet = bgColorSet = false;

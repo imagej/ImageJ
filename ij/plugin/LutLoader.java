@@ -112,9 +112,9 @@ public class LutLoader extends ImagePlus implements PlugIn {
 	private void showLut(FileInfo fi, boolean showImage) {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
-			if (imp.getType()==ImagePlus.COLOR_RGB)
+			if (imp.getProcessor().getNChannels()!=1) {
 				IJ.error("LUTs cannot be assiged to RGB Images.");
-			else if (imp.isComposite() && ((CompositeImage)imp).getMode()==IJ.GRAYSCALE) {
+			} else if (imp.isComposite() && ((CompositeImage)imp).getMode()==IJ.GRAYSCALE) {
 				CompositeImage cimp = (CompositeImage)imp;
 				cimp.setMode(IJ.COLOR);
 				int saveC = cimp.getChannel();
@@ -132,7 +132,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 					((CompositeImage)imp).setChannelColorModel(cm);
 				else {
 					ip.setColorModel(cm);
-					ip.setMinAndMax(ip.getMin(), ip.getMax());
+					//ip.setMinAndMax(ip.getMin(), ip.getMax());
 					if (imp.getWindow()==null)
 						imp.setProcessor(ip);
 				}
@@ -163,8 +163,10 @@ public class LutLoader extends ImagePlus implements PlugIn {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
 			{IJ.noImage(); return;}
-		if (imp.getType()==ImagePlus.COLOR_RGB)
-			{IJ.error("RGB images do not use LUTs"); return;}
+		if (imp.getProcessor().getNChannels()==3) {
+			IJ.error("RGB images do not use LUTs");
+			return;
+		}
 		if (imp.isComposite()) {
 			CompositeImage ci = (CompositeImage)imp;
 			LUT lut = ci.getChannelLut();

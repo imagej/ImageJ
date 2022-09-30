@@ -18,6 +18,7 @@ public class RGBStackMerge implements PlugIn {
 	private boolean ignoreLuts;
 	private boolean autoFillDisabled;
 	private String firstChannelName;
+	private boolean scaleWhenConverting = true;
  
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
@@ -428,7 +429,7 @@ public class RGBStackMerge implements PlugIn {
 				return (byte[])pixels;
 			else {
 				ImageProcessor ip = stack.getProcessor(slice);
-				ip = ip.convertToByte(true);
+				ip = ip.convertToByte(scaleWhenConverting);
 				return (byte[])ip.getPixels();
 			}
 		} else { //RGB
@@ -447,6 +448,10 @@ public class RGBStackMerge implements PlugIn {
 	
 	void error(String msg) {
 		IJ.error("Merge Channels", msg);
+	}
+	
+	public void setScaleWhenConverting(boolean scale) {
+		this.scaleWhenConverting = scale;
 	}
 
 }

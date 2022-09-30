@@ -267,7 +267,8 @@ public class PlotContentsDialog implements DialogListener {
 	}
 
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
-		if (e == null) return true;	//gets called with e=null upon OK
+		if (e==null)
+			return true;	//gets called with e=null upon OK
 		boolean setStyle = false;
 		if (dialogType == STYLE) {
 			int objectIndex = objectChoice.getSelectedIndex();  // no getNextChoice since Choices depend on dialog type

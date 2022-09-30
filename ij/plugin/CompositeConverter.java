@@ -12,7 +12,6 @@ import ij.plugin.frame.Recorder;
 public class CompositeConverter implements PlugIn {
 
 	public void run(String arg) {
-		String[] modes = {"Composite", "Color", "Grayscale"};
 		ImagePlus imp = IJ.getImage();
 		if (imp.isComposite()) {
 			CompositeImage ci = (CompositeImage)imp;
@@ -22,14 +21,9 @@ public class CompositeConverter implements PlugIn {
 			}
 			return;
 		}
-		String mode = modes[0];
-		int z = imp.getStackSize();
 		int c = imp.getNChannels();
-		if (c==1) {
-			c = z;
-			imp.setDimensions(c, 1, 1);
-			if (c>7) mode = modes[2];
-		}
+		int z = imp.getNSlices();
+		int t = imp.getNFrames();
 		if (imp.getBitDepth()==24) {
 			ImageWindow win = imp.getWindow();
 			Point loc = win!=null?win.getLocation():null;
@@ -38,18 +32,22 @@ public class CompositeConverter implements PlugIn {
 			if (loc!=null) ImageWindow.setNextLocation(loc);
 			imp2.show();
 			imp.changes = false;
-			if (z==1) {
+			if (z*t==1) {
 				imp.hide();
 				WindowManager.setCurrentWindow(imp2.getWindow());
 			} else {
 				if (arg!=null && arg.equals("color"))
 					((CompositeImage)imp2).setMode(IJ.COLOR);
-				imp2.setZ(slice);
+				imp2.setSlice(slice);
 				imp.close();
 			}
 			if (IJ.isMacro() && !Interpreter.isBatchMode())
 				IJ.wait(500);
 		} else if (c>=2 || (IJ.macroRunning()&&c>=1)) {
+			String[] modes = {"Composite", "Color", "Grayscale"};
+			String mode = modes[0];
+			if (c==1 && z*t>7)
+				mode = modes[2];
 			GenericDialog gd = new GenericDialog("Make Composite");
 			gd.addChoice("Display Mode:", modes, mode);
 			gd.showDialog();
@@ -89,7 +87,9 @@ public class CompositeConverter implements PlugIn {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		ImageStack stack1 = imp.getStack();
-		int n = stack1.getSize();
+		int z = imp.getNSlices();
+		int t = imp.getNFrames();
+		int n = z*t;
 		ImageStack stack2 = new ImageStack(width, height);
 		for (int i=0; i<n; i++) {
 			ColorProcessor ip = (ColorProcessor)stack1.getProcessor(1);
@@ -102,9 +102,8 @@ public class CompositeConverter implements PlugIn {
 			stack2.addSlice(null, G);
 			stack2.addSlice(null, B);
 		}
-		n *= 3;
 		ImagePlus imp2 = new ImagePlus(imp.getTitle(), stack2);
-		imp2.setDimensions(3, n/3, 1);
+		imp2.setDimensions(3, z, t);
  		imp2 = new CompositeImage(imp2, IJ.COMPOSITE);
 		return imp2;
 	}

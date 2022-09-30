@@ -74,6 +74,11 @@ public class StackWriter implements PlugIn {
 		else {		
 			if (!showDialog(imp))
 				return;
+		}		
+		File d = new File(directory);
+		if (d==null || !d.isDirectory()) {
+			IJ.error("File>Save As>Image Sequence", "Directory not found: "+directory);
+			return;
 		}
 		int number = 0;
 		if (ndigits<1) ndigits = 1;
@@ -117,12 +122,12 @@ public class StackWriter implements PlugIn {
 			}
 			imp2.setProcessor(null, ip);
 			String label2 = stack.getSliceLabel(i);
-			imp2.setProperty("Label", null);
+			imp2.setProp("Slice_Label", null);
 			if (label2!=null) {
 				if (label2.contains("\n"))
 					imp2.setProperty("Info", label2);
 				else
-					imp2.setProperty("Label", label2);;
+					imp2.setProp("Slice_Label", label2);;
 			} else {
 				Properties props = imp2.getProperties();
 				if (props!=null) props.remove("Info");
@@ -130,7 +135,7 @@ public class StackWriter implements PlugIn {
 			imp2.setCalibration(cal);
 			String digits = getDigits(number++);
 			if (useLabels) {
-				label = stack.getShortSliceLabel(i);
+				label = stack.getShortSliceLabel(i, 111);
 				if (label!=null && label.equals("")) label = null;
 				if (label!=null) label = label.replaceAll("/","-");
 			}

@@ -5,6 +5,9 @@ import java.util.*;
 import java.io.*;
 import java.util.Comparator;
 import java.nio.channels.FileChannel;
+import java.nio.file.*;
+import java.security.MessageDigest;
+
 
 /** This class contains static utility methods. */
  public class Tools {
@@ -51,15 +54,24 @@ import java.nio.channels.FileChannel;
 		return ip.getStats();
 	}
 
+	/** Determines the minimum and maximum value in the array <code>a</code>
+	 *  and returns them as 2-element array {minimum, maximum}. */
 	public static double[] getMinMax(double[] a) {
-		double min = Double.MAX_VALUE;
-		double max = -Double.MAX_VALUE;
-		double value;
-		for (int i=0; i<a.length; i++) {
-			value = a[i];
+		double min = Double.NaN;
+		double max = Double.NaN;
+		int i=0;
+		for (; i<a.length; i++)
+			if (!Double.isNaN(a[i]))
+				break;
+		if (i<a.length) {
+			min = a[i];
+			max = a[i];
+		}
+		for (; i<a.length; i++) {
+			double value = a[i];
 			if (value<min)
 				min = value;
-			if (value>max)
+			else if (value>max)
 				max = value;
 		}
 		double[] minAndMax = new double[2];
@@ -68,15 +80,24 @@ import java.nio.channels.FileChannel;
 		return minAndMax;
 	}
 
+	/** Determines the minimum and maximum value in the array <code>a</code>
+	 *  and returns them as 2-element array {minimum, maximum}. */
 	public static double[] getMinMax(float[] a) {
-		double min = Double.MAX_VALUE;
-		double max = -Double.MAX_VALUE;
-		double value;
-		for (int i=0; i<a.length; i++) {
-			value = a[i];
+		float min = Float.NaN;
+		float max = Float.NaN;
+		int i=0;
+		for (; i<a.length; i++)
+			if (!Float.isNaN(a[i]))
+				break;
+		if (i<a.length) {
+			min = a[i];
+			max = a[i];
+		}
+		for (; i<a.length; i++) {
+			float value = a[i];
 			if (value<min)
 				min = value;
-			if (value>max)
+			else if (value>max)
 				max = value;
 		}
 		double[] minAndMax = new double[2];
@@ -235,8 +256,8 @@ import java.nio.channels.FileChannel;
 		final Integer[] indexes = new Integer[n];
 		final Double[] data = new Double[n];
 		for (int i=0; i<n; i++) {
-			indexes[i] = new Integer(i);
-			data[i] = new Double(values[i]);
+			indexes[i] = Integer.valueOf(i);
+			data[i] = Double.valueOf(values[i]);
 		}
 		Arrays.sort(indexes, new Comparator<Integer>() {
 			public int compare(final Integer o1, final Integer o2) {
@@ -254,7 +275,7 @@ import java.nio.channels.FileChannel;
 		int n = data.length;
 		final Integer[] indexes = new Integer[n];
 		for (int i=0; i<n; i++)
-			indexes[i] = new Integer(i);
+			indexes[i] = Integer.valueOf(i);
 		Arrays.sort(indexes, new Comparator<Integer>() {
 			public int compare(final Integer o1, final Integer o2) {
 				return data[o1].compareToIgnoreCase(data[o2]);
@@ -417,6 +438,46 @@ import java.nio.channels.FileChannel;
 			case 'n': return '\n';
 			default: return c;
 		}
+	}
+	
+	/** Returns the checksum of a string or file, or "0" if no success.
+	The 'method' argument must be "MD5" or "SHA-256".
+	*/
+	public static String getHash(String method, boolean fromFile, String pathOrString) {
+		method = method.toUpperCase();
+		boolean md5 = method.contains("MD5");
+		boolean sha_256 = method.contains("SHA-256");
+		try {
+			MessageDigest digest = null;
+			if (md5)
+				digest = MessageDigest.getInstance("MD5");
+			else if(sha_256)
+				 digest = MessageDigest.getInstance("SHA-256");
+			else
+				return "0";
+			Path path = Paths.get(pathOrString);
+			byte[] encodedhash;
+			if (fromFile)
+				encodedhash = digest.digest(Files.readAllBytes(path));
+			else
+				encodedhash = digest.digest(pathOrString.getBytes());
+
+			return bytesToHex(encodedhash);
+
+		} catch (Exception e) {}
+		return "0";
+	}
+
+	private static String bytesToHex(byte[] hash) {
+		StringBuilder hexString = new StringBuilder(2 * hash.length);
+		for (int i = 0; i < hash.length; i++) {
+			String hex = Integer.toHexString(0xff & hash[i]);
+			if (hex.length() == 1) {
+				hexString.append('0');
+			}
+			hexString.append(hex);
+		}
+		return hexString.toString();
 	}
 
 }

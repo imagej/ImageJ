@@ -4,8 +4,9 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.text.*;
-/** Implements the Plugins/Utilities/Run Benchmark command. 
-	results and additional benchmarks are available at 
+/** Implements the Plugins/Utilities/Run Benchmark command when
+	the current image is 512x512 and RGB. Results and additional
+	benchmarks are available at<br> 
 	"http://imagej.nih.gov/ij/plugins/benchmarks.html". */
 public class Benchmark implements PlugInFilter{
 

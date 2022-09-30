@@ -46,13 +46,13 @@ public class Analyzer implements PlugInFilter, Measurements {
 	private static String redirectTitle = "";
 	private static ImagePlus redirectImage; // non-displayed images
 	static int firstParticle, lastParticle;
-	private static boolean summarized;
 	private static boolean switchingModes;
 	private static boolean showMin = true;
 	private static boolean showAngle = true;
 	
 	public Analyzer() {
 		rt = systemRT;
+		rt.setIsResultsTable(true);
 		rt.showRowNumbers(true);
 		rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
 		rt.setNaNEmptyCells((systemMeasurements&NaN_EMPTY_CELLS)!=0);
@@ -719,11 +719,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 	
 	private void clearSummary() {
-		if (summarized && rt.size()>=4 && "Max".equals(rt.getLabel(rt.size()-1))) {
+		if (rt.size()>=4 && "Max".equals(rt.getLabel(rt.size()-1))) {
 			for (int i=0; i<4; i++)
 				rt.deleteRow(rt.size()-1);
 			rt.show("Results");
-			summarized = false;
 		}
 	}
 		
@@ -882,7 +881,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 	
 	public void summarize() {
-		if (summarized)
+		if (rt==null || "Max".equals(rt.getLabel(rt.size()-1)))
 			return;
 		int n = rt.size();
 		if (n<2)
@@ -919,8 +918,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.setValue(headings[col], n+2, min[col]);
 			rt.setValue(headings[col], n+3, max[col]);
 		}
-		rt.show("Results");
-		summarized = true;
+		rt.show(rt.getTitle());
 	}
 
 	/** Returns the current measurement count. */
@@ -953,7 +951,6 @@ public class Analyzer implements PlugInFilter, Measurements {
 		RoiManager.resetMultiMeasureResults();
 		unsavedMeasurements = false;
 		if (tp!=null) tp.clear();
-		summarized = false;
 		return true;
 	}
 	
@@ -1052,7 +1049,6 @@ public class Analyzer implements PlugInFilter, Measurements {
 		rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
 		rt.setNaNEmptyCells((systemMeasurements&NaN_EMPTY_CELLS)!=0);
 		systemRT = rt;
-		summarized = false;
 		umeans = null;
 		unsavedMeasurements = false;
 	}

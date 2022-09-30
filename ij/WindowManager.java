@@ -143,7 +143,9 @@ public class WindowManager {
 		return frontWindow;
 	}
 
-	/** Returns the Window containing the active table, or null. */
+	/** Returns the Window containing the active table, or null.
+	 * @see ij.measure.ResultsTable#getActiveTable
+	*/
 	public static Window getActiveTable() {
 		return frontTable;
 	}
@@ -331,6 +333,21 @@ public class WindowManager {
 		}
 		return false;
 	}
+	
+	/*
+	static boolean isDuplicateBatchModeName(String name) {
+		int[] list = getIDList();
+		for (int i=0; i<list.length; i++) {
+			ImagePlus imp = getImage(list[i]);
+
+			if (imp==null) return false;
+			String name2 = imp.getTitle();
+			if (name.equals(name2))
+				return true;
+		}
+		return false;
+	}
+	*/
 
 	/** Returns a unique name by adding, before the extension,  -1, -2, etc. as needed. */
 	public static String getUniqueName(String name) {
@@ -392,7 +409,9 @@ public class WindowManager {
 		if (index==-1)
 			return;  // not on the window list
 		try {
-			imageList.remove(win);
+			synchronized(WindowManager.class) {
+				imageList.remove(win);
+			}
 			activations.remove(win);
 			if (imageList.size()>1 && !Prefs.closingAll) {
 				ImageWindow win2 = activations.size()>0?(ImageWindow)activations.get(activations.size()-1):null;

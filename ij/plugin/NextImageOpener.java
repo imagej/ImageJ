@@ -42,10 +42,7 @@ public class NextImageOpener implements PlugIn {
 			IJ.error("Next Image", "Directory information for \""+imp0.getTitle()+"\" not found.");
 			return;
 		}
-		// get the next name (full path)
-		//long start = System.currentTimeMillis();
 		String nextPath = getNext(currentPath, getName(imp0), forward);
-		//IJ.log("time: "+(System.currentTimeMillis()-start));
 		if (IJ.debugMode) IJ.log("OpenNext.nextPath:" + nextPath);
 		// open
 		if (nextPath != null) {
@@ -76,8 +73,14 @@ public class NextImageOpener implements PlugIn {
 	}
 	
 	String open(String nextPath) {
-		ImagePlus imp2 = IJ.openImage(nextPath);
-		if (imp2==null) return null;
+		int nImages = WindowManager.getImageCount();
+		ImagePlus imp2 = IJ.openImage(nextPath);		
+		if (imp2==null) {
+			if (WindowManager.getImageCount()>nImages)
+				return "ok";
+			else
+				return null;
+		}
 		String newTitle = imp2.getTitle();
 		if (imp0.changes) {
 			String msg;
@@ -138,7 +141,7 @@ public class NextImageOpener implements PlugIn {
 			if (canOpen) {
 				Opener o = new Opener();
 				int type = o.getFileType(nextPath);
-				if (type==Opener.UNKNOWN || type==Opener.JAVA_OR_TEXT
+				if (type==Opener.JAVA_OR_TEXT
 				||  type==Opener.ROI ||  type==Opener.TEXT)
 					canOpen = false;
 			}

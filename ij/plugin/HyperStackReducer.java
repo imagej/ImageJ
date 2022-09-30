@@ -178,7 +178,8 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 		if (slices1!=1) slices2 = gd.getNextBoolean()?slices1:1;
 		if (frames1!=1) frames2 = gd.getNextBoolean()?frames1:1;
 		keep = gd.getNextBoolean();
-		((Label)gd.getMessage()).setText(getNewDimensions());
+		if (imp!=null && imp.getWindow()!=null)
+			((Label)gd.getMessage()).setText(getNewDimensions());
 		return true;
 	}
 

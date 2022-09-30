@@ -92,11 +92,13 @@ public class SaveDialog {
 	    
 	// Save using JFileChooser.
 	void jSave(String title, String defaultDir, String defaultName) {
+		LookAndFeel saveLookAndFeel = Java2.getLookAndFeel();
 		Java2.setSystemLookAndFeel();
 		if (EventQueue.isDispatchThread())
 			jSaveDispatchThread(title, defaultDir, defaultName);
 		else
 			jSaveInvokeAndWait(title, defaultDir, defaultName);
+		Java2.setLookAndFeel(saveLookAndFeel);
 	}
 
 	// Save using JFileChooser.
@@ -104,6 +106,8 @@ public class SaveDialog {
 	void jSaveDispatchThread(String title, String defaultDir, String defaultName) {
 		JFileChooser fc = new JFileChooser();
 		fc.setDialogTitle(title);
+		fc.setDragEnabled(true);
+		fc.setTransferHandler(new DragAndDropHandler(fc));
 		if (defaultDir!=null) {
 			File f = new File(defaultDir);
 			if (f!=null)
@@ -143,6 +147,8 @@ public class SaveDialog {
 				public void run() {
 					JFileChooser fc = new JFileChooser();
 					fc.setDialogTitle(title);
+					fc.setDragEnabled(true);
+					fc.setTransferHandler(new DragAndDropHandler(fc));
 					if (defaultDir!=null) {
 						File f = new File(defaultDir);
 						if (f!=null)

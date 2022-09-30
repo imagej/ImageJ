@@ -21,6 +21,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	public static final String LOC_KEY = "threshold.loc";
 	public static final String MODE_KEY = "threshold.mode";
 	public static final String DARK_BACKGROUND = "threshold.dark";
+	public static final String RAW_VALUES = "threshold.raw";
 	public static final String NO_RESET = "threshold.no-reset";
 	static final int RED=0, BLACK_AND_WHITE=1, OVER_UNDER=2;
 	static final String[] modes = {"Red","B&W", "Over/Under"};
@@ -60,12 +61,13 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	boolean done;
 	int lutColor;
 	Choice methodChoice, modeChoice;
-	Checkbox darkBackground, stackHistogram, noResetButton;
+	Checkbox darkBackground, stackHistogram, rawValues, noResetCheckbox;
 	boolean firstActivation = true;
 	boolean setButtonPressed;
-	boolean noReset;
+	boolean noReset = true;
 	boolean noResetChanged;
 	boolean enterPressed;
+	boolean windowActivated;
 
 	public ThresholdAdjuster() {
 		super("Threshold");
@@ -213,16 +215,20 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		stackHistogram = new Checkbox("Stack histogram");
 		stackHistogram.setState(false);
 		stackHistogram.addItemListener(this);
-		panel.add(stackHistogram); 
-		noReset = Prefs.get(NO_RESET, false);
-		noResetButton = new Checkbox("Don't reset range");
-		noResetButton.setState(noReset);
-		noResetButton.addItemListener(this);
-		panel.add(noResetButton);
+		panel.add(stackHistogram);
+		noReset = Prefs.get(NO_RESET, true);
+		noResetCheckbox = new Checkbox("Don't reset range");
+		noResetCheckbox.setState(noReset);
+		noResetCheckbox.addItemListener(this);
+		panel.add(noResetCheckbox);
+		rawValues = new Checkbox("Raw values");
+		rawValues.setState(Prefs.get(RAW_VALUES, false));
+		rawValues.addItemListener(this);
+		panel.add(rawValues);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 2;
-		c.insets = new Insets(5, 5, 0, 0);
+		c.insets = new Insets(2, 5, 5, 0);
 		add(panel, c);
 
 		// buttons
@@ -381,8 +387,10 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			}
 		} else if (source==darkBackground) {
 			doBackground = true;
-		} else if (source==noResetButton) {
-			noReset = noResetButton.getState();
+		} else if (source==rawValues) {
+			ThresholdAdjuster.update();
+		} else if (source==noResetCheckbox) {
+			noReset = noResetCheckbox.getState();
 			noResetChanged = true;
 			doReset = true;
 		} else
@@ -426,11 +434,13 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 					&& ip.getCurrentColorModel() != ip.getColorModel(); //does not work???
 			if (not8Bits && minMaxChange && (!noReset || mode==OVER_UNDER)) {
 				double max1 = ip.getMax();
-				resetMinAndMax(ip);
+				if (!windowActivated)
+					resetMinAndMax(ip);
+				windowActivated = false;
 				if (maxThreshold==max1)
 					maxThreshold = ip.getMax();
 			}
-			ImageStatistics stats = plot.setHistogram(imp, entireStack(imp));
+			ImageStatistics stats = plot.setHistogram(imp, entireStack(imp),rawValues.getState());
 			if (stats == null)
 				return null;
 			if (isThreshold) {
@@ -446,7 +456,6 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			updateLabels(imp, ip);
 			updatePercentiles(imp, ip);
 			updatePlot(ip);
-			//updateScrollBars();
 			imp.updateAndDraw();
 			imageWasUpdated = false;
 		}
@@ -610,12 +619,13 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			maxLabel.setText("");
 		} else {
 			Calibration cal = imp.getCalibration();
-			if (cal.calibrated()) {
+			boolean calibrated = cal.calibrated() && !rawValues.getState();
+			if (calibrated) {
 				min = cal.getCValue((int)min);
 				max = cal.getCValue((int)max);
 			}
 			if ((((int)min==min && (int)max==max && Math.abs(min)<1e6 && Math.abs(max)<1e6)) ||
-					(ip instanceof ShortProcessor && (cal.isSigned16Bit() || !cal.calibrated()))) {
+					(ip instanceof ShortProcessor && (cal.isSigned16Bit() || !calibrated))) {
 				minLabel.setText(ResultsTable.d2s(min,0));
 				maxLabel.setText(ResultsTable.d2s(max,0));
 			} else {
@@ -681,6 +691,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	void reset(ImagePlus imp, ImageProcessor ip) {
+		//IJ.log("reset1: "+noReset+" "+noResetChanged+" "+mode);
 		if (noResetChanged) {
 			noResetChanged = false;
 			if ((noReset&&mode!=OVER_UNDER) || ip.getBitDepth()==8)
@@ -694,7 +705,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		ip.resetThreshold();
 		if (!noReset)
 			resetMinAndMax(ip);
-		ImageStatistics stats = plot.setHistogram(imp, entireStack(imp));
+		ImageStatistics stats = plot.setHistogram(imp, entireStack(imp),rawValues.getState());
 		if (ip.getBitDepth()!=8 && entireStack(imp))
 			ip.setMinAndMax(stats.min, stats.max);
 		updateScrollBars();
@@ -715,10 +726,13 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			level1 = scaleUp(ip, defaultMinThreshold);
 			level2 = scaleUp(ip, defaultMaxThreshold);
 		}
-		level1 = cal.getCValue(level1);
-		level2 = cal.getCValue(level2);
+		boolean calibrated = cal.calibrated() && !rawValues.getState();
+		if (calibrated) {
+			level1 = cal.getCValue(level1);
+			level2 = cal.getCValue(level2);
+		}
 		if (setButtonPressed) {
-			int digits = (ip instanceof FloatProcessor)||(cal.calibrated() && !cal.isSigned16Bit()) ? Math.max(Analyzer.getPrecision(), 4) : 0;
+				int digits = (ip instanceof FloatProcessor)||(calibrated && !cal.isSigned16Bit()) ? Math.max(Analyzer.getPrecision(), 4) : 0;
 			GenericDialog gd = new GenericDialog("Set Threshold Levels");
 			gd.addNumericField("Lower threshold level: ", level1, Math.abs(level1)<1e7 ? digits : -4, 10, null);
 			gd.addNumericField("Upper threshold level: ", level2, Math.abs(level2)<1e7 ? digits : -4, 10, null);
@@ -735,17 +749,12 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			level2 = Tools.parseDouble(maxLabel.getText(), level2);
 		}
 		enterPressed = false;
-		level1 = cal.getRawValue(level1);
-		level2 = cal.getRawValue(level2);
+		if (calibrated) {
+			level1 = cal.getRawValue(level1);
+			level2 = cal.getRawValue(level2);
+		}
 		if (level2<level1)
 			level2 = level1;
-		double minDisplay = ip.getMin();
-		double maxDisplay = ip.getMax();
-		if (noReset && (level1<minDisplay||level2>maxDisplay)) {
-			noReset = false;
-			noResetChanged = true;
-			noResetButton.setState(false);
-		}
 		resetMinAndMax(ip);
 		double minValue = ip.getMin();
 		double maxValue = ip.getMax();
@@ -768,21 +777,18 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			} else {
 				int min = (int)ip.getMinThreshold();
 				int max = (int)ip.getMaxThreshold();
-				if (cal.isSigned16Bit()) {
+				if (cal.isSigned16Bit() && calibrated) {
 					min = (int)cal.getCValue(level1);
 					max = (int)cal.getCValue(level2);
 					if (Recorder.scriptMode())
 						Recorder.recordCall("IJ.setThreshold(imp, "+min+", "+max+");");
 					else
 						Recorder.record("setThreshold", min, max);
-				}
-				if (Recorder.scriptMode())
-					Recorder.recordCall("IJ.setRawThreshold(imp, "+min+", "+max+", null);");
-				else {
-					if (cal.calibrated())
-						Recorder.record("setThreshold", min, max, "raw");
+				} else {
+					if (Recorder.scriptMode())
+						Recorder.recordCall("IJ.setRawThreshold(imp, "+min+", "+max+");");
 					else
-						Recorder.record("setThreshold", min, max);
+						Recorder.record("setThreshold", min, max, "raw");
 				}
 			}
 		}
@@ -891,7 +897,6 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		else if (minValue>=0)   { action = MIN_THRESHOLD; minValue = -1; }
 		else if (maxValue>=0)   { action = MAX_THRESHOLD; maxValue = -1; }
 		else return;
-
 		imp = WindowManager.getCurrentImage();
 		if (imp==null) {
 			IJ.beep();
@@ -933,7 +938,8 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		Prefs.saveLocation(LOC_KEY, getLocation());
 		Prefs.set(MODE_KEY, mode);
 		Prefs.set(DARK_BACKGROUND, darkBackground.getState());
-		Prefs.set(NO_RESET, noResetButton.getState());
+		Prefs.set(NO_RESET, noResetCheckbox.getState());
+		Prefs.set(RAW_VALUES, rawValues.getState());
 		synchronized(this) {
 			notify();
 		}
@@ -944,6 +950,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
     	plot.requestFocus();
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (!firstActivation && imp!=null) {
+			windowActivated = true;
 			setup(imp, false);
 			updateScrollBars();
 		}
@@ -971,6 +978,11 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			}
 		}
 	}
+	
+	public static boolean isDarkBackground() {
+		return instance!=null?instance.darkBackground.getState():false;
+	}
+
 
 	/** Returns the current thresholding method ("Default", "Huang", etc). */
 	public static String getMethod() {
@@ -1051,7 +1063,7 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
         return new Dimension(width+2, height+2);
     }
 
-	ImageStatistics setHistogram(ImagePlus imp, boolean entireStack) {
+	ImageStatistics setHistogram(ImagePlus imp, boolean entireStack, boolean rawValues) {
 		if (IJ.debugMode) IJ.log("ThresholdAdjuster:setHistogram: "+entireStack+" "+entireStack2);
 		double mean = entireStack?imp.getProcessor().getStats().mean:0.0;
 		if (entireStack && stats!=null && imp.getID()==imageID2
@@ -1084,12 +1096,15 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 				}
 			}
 			Calibration cal = imp.getCalibration();
+			boolean calibrated = cal.calibrated() && !rawValues;
 			if (ip instanceof FloatProcessor) {
 				int digits = Math.max(Analyzer.getPrecision(), 2);
 				IJ.showStatus("min="+IJ.d2s(ip.getMin(),digits)+", max="+IJ.d2s(ip.getMax(),digits));
 			} else {
-				int digits = cal.calibrated() && !cal.isSigned16Bit() ? 2 : 0;
-				IJ.showStatus("min="+IJ.d2s(cal.getCValue(ip.getMin()), digits)+", max="+IJ.d2s(cal.getCValue(ip.getMax()), digits));
+				int digits = calibrated && !cal.isSigned16Bit() ? 2 : 0;
+				double cmin = calibrated?cal.getCValue(ip.getMin()):ip.getMin();
+				double cmax = calibrated?cal.getCValue(ip.getMax()):ip.getMax();
+				IJ.showStatus("min="+IJ.d2s(cal.getCValue(cmin), digits)+", max="+IJ.d2s(cal.getCValue(cmax), digits));
 			}
 			ip = ip.convertToByte(true);
 			ip.setColorModel(ip.getDefaultColorModel());

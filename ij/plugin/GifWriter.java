@@ -452,7 +452,6 @@ void Process8bitCLT(ImagePlus image) {
 				colorTab[k+2] = (byte)m.getBlue(i);
 			}
 		}
-		m.finalize();  
 	}	   
 
    /**

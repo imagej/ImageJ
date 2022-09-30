@@ -17,6 +17,7 @@ import java.net.*;
 import java.awt.image.*;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 
 /**
 This frame is the main ImageJ class.
@@ -77,11 +78,13 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
-	public static final String VERSION = "1.53g";
-	public static final String BUILD = "3";
+	public static final String VERSION = "1.53u";
+	public static final String BUILD = "40";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
+	/** SansSerif, 14-point, plain font. */
+	public static final Font SansSerif14 = new Font("SansSerif", Font.PLAIN, 14);
 	/** Address of socket where Image accepts commands */
 	public static final int DEFAULT_PORT = 57294;
 	
@@ -94,6 +97,9 @@ public class ImageJ extends Frame implements ActionListener,
 	/** Run embedded and invisible in another application. */
 	public static final int NO_SHOW = 2;
 	
+	/** Run as the ImageJ application. */
+	public static final int IMAGEJ_APP = 3;
+
 	/** Run ImageJ in debug mode. */
 	public static final int DEBUG = 256;
 
@@ -143,6 +149,11 @@ public class ImageJ extends Frame implements ActionListener,
 		if ((mode&DEBUG)!=0)
 			IJ.setDebugMode(true);
 		mode = mode & 255;
+		boolean useExceptionHandler = false;
+		if (mode==IMAGEJ_APP) {
+			mode = STANDALONE;
+			useExceptionHandler = true;
+		}
 		if (IJ.debugMode) IJ.log("ImageJ starting in debug mode: "+mode);
 		embedded = applet==null && (mode==EMBEDDED||mode==NO_SHOW);
 		this.applet = applet;
@@ -212,15 +223,22 @@ public class ImageJ extends Frame implements ActionListener,
 			IJ.error(err1);
 		if (err2!=null) {
 			IJ.error(err2);
-			IJ.runPlugIn("ij.plugin.ClassChecker", "");
+			//IJ.runPlugIn("ij.plugin.ClassChecker", "");
 		}
-		if (IJ.isMacintosh()&&applet==null) { 
+		if (IJ.isMacintosh()&&applet==null) {
 			try {
-				IJ.runPlugIn("ij.plugin.MacAdapter", ""); 
+				if (IJ.javaVersion()>8) // newer JREs use different drag-drop, about mechanism
+					IJ.runPlugIn("ij.plugin.MacAdapter9", "");
+				else
+					IJ.runPlugIn("ij.plugin.MacAdapter", "");
 			} catch(Throwable e) {}
 		} 
 		if (applet==null)
 			IJ.runPlugIn("ij.plugin.DragAndDrop", "");
+		if (!getTitle().contains("Fiji") && useExceptionHandler) {
+			Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler());
+			System.setProperty("sun.awt.exception.handler",ExceptionHandler.class.getName());
+		}
 		String str = m.getMacroCount()==1?" macro":" macros";
 		configureProxy();
 		if (applet==null)
@@ -301,6 +319,11 @@ public class ImageJ extends Frame implements ActionListener,
 
 	public Panel getStatusBar() {
         return statusBar;
+	}
+	
+	public static String getStatusBarText() {
+		ImageJ ij = IJ.getInstance();
+		return ij!=null?ij.statusLine.getText():"";
 	}
 
     /** Starts executing a menu command in a separate thread. */
@@ -400,6 +423,8 @@ public class ImageJ extends Frame implements ActionListener,
 	public void mouseEntered(MouseEvent e) {}
 
  	public void keyPressed(KeyEvent e) {
+		if (e.isConsumed())
+			return;
 		int keyCode = e.getKeyCode();
 		IJ.setKeyDown(keyCode);
 		hotkey = false;
@@ -447,9 +472,9 @@ public class ImageJ extends Frame implements ActionListener,
 			Hashtable macroShortcuts = Menus.getMacroShortcuts();
 			if (macroShortcuts.size()>0) {
 				if (shift)
-					cmd = (String)macroShortcuts.get(new Integer(keyCode+200));
+					cmd = (String)macroShortcuts.get(Integer.valueOf(keyCode+200));
 				else
-					cmd = (String)macroShortcuts.get(new Integer(keyCode));
+					cmd = (String)macroShortcuts.get(Integer.valueOf(keyCode));
 				if (cmd!=null) {
 					commandName = cmd;
 					MacroInstaller.runMacroShortcut(cmd);
@@ -467,9 +492,9 @@ public class ImageJ extends Frame implements ActionListener,
 		if ((!Prefs.requireControlKey||control||meta||functionKey||numPad) && keyChar!='+') {
 			Hashtable shortcuts = Menus.getShortcuts();
 			if (shift && !functionKey)
-				cmd = (String)shortcuts.get(new Integer(keyCode+200));
+				cmd = (String)shortcuts.get(Integer.valueOf(keyCode+200));
 			else
-				cmd = (String)shortcuts.get(new Integer(keyCode));
+				cmd = (String)shortcuts.get(Integer.valueOf(keyCode));
 		}
 		
 		if (cmd==null) {
@@ -587,6 +612,11 @@ public class ImageJ extends Frame implements ActionListener,
 		// Control Panel?
 		if (frame!=null && frame instanceof javax.swing.JFrame)
 			return true;
+		// Channels dialog?
+		Window window = WindowManager.getActiveWindow();
+		title = window!=null&&(window instanceof Dialog)?((Dialog)window).getTitle():null;
+		if (title!=null && title.equals("Channels"))
+			return true;
 		ImageWindow win = imp.getWindow();
 		// LOCI Data Browser window?
 		if (imp.getStackSize()>1 && win!=null && win.getClass().getName().startsWith("loci"))
@@ -597,8 +627,8 @@ public class ImageJ extends Frame implements ActionListener,
 	public void keyTyped(KeyEvent e) {
 		char keyChar = e.getKeyChar();
 		int flags = e.getModifiers();
-		if (IJ.debugMode) IJ.log("keyTyped: char=\"" + keyChar + "\" (" + (int)keyChar 
-			+ "), flags= "+Integer.toHexString(flags)+ " ("+KeyEvent.getKeyModifiersText(flags)+")");
+		//if (IJ.debugMode) IJ.log("keyTyped: char=\"" + keyChar + "\" (" + (int)keyChar 
+		//	+ "), flags= "+Integer.toHexString(flags)+ " ("+KeyEvent.getKeyModifiersText(flags)+")");
 		if (keyChar=='\\' || keyChar==171 || keyChar==223) {
 			if (((flags&Event.ALT_MASK)!=0))
 				doCommand("Animation Options...");
@@ -648,7 +678,7 @@ public class ImageJ extends Frame implements ActionListener,
 			if (mb!=null && mb!=getMenuBar()) {
 				setMenuBar(mb);
 				Menus.setMenuBarCount++;
-				if (IJ.debugMode) IJ.log("setMenuBar: "+Menus.setMenuBarCount);
+				//if (IJ.debugMode) IJ.log("setMenuBar: "+Menus.setMenuBarCount);
 			}
 		}
 	}
@@ -694,7 +724,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	public static void main(String args[]) {
 		boolean noGUI = false;
-		int mode = STANDALONE;
+		int mode = IMAGEJ_APP;
 		arguments = args;
 		int nArgs = args!=null?args.length:0;
 		boolean commandLine = false;
@@ -723,7 +753,7 @@ public class ImageJ extends Frame implements ActionListener,
 			} 
 		}
   		// If existing ImageJ instance, pass arguments to it and quit.
-  		boolean passArgs = mode==STANDALONE && !noGUI;
+  		boolean passArgs = (mode==IMAGEJ_APP||mode==STANDALONE) && !noGUI;
 		if (IJ.isMacOSX() && !commandLine)
 			passArgs = false;
 		if (passArgs && isRunning(args)) 
@@ -732,7 +762,8 @@ public class ImageJ extends Frame implements ActionListener,
 		if (!noGUI && (ij==null || (ij!=null && !ij.isShowing()))) {
 			ij = new ImageJ(null, mode);
 			ij.exitWhenQuitting = true;
-		}
+		} else if (batchMode && noGUI)
+			Prefs.load(null, null);
 		int macros = 0;
 		for (int i=0; i<nArgs; i++) {
 			String arg = args[i];
@@ -879,5 +910,34 @@ public class ImageJ extends Frame implements ActionListener,
 		progressBar.init((int)(ProgressBar.WIDTH*scale), (int)(ProgressBar.HEIGHT*scale));
 		pack();
 	}
+	
+  /** Handles exceptions on the EDT. */
+  public static class ExceptionHandler implements Thread.UncaughtExceptionHandler {
+
+    // for EDT exceptions
+    public void handle(Throwable thrown) {
+      handleException(Thread.currentThread().getName(), thrown);
+    }
+
+    // for other uncaught exceptions
+    public void uncaughtException(Thread thread, Throwable thrown) {
+      handleException(thread.getName(), thrown);
+    }
+
+    protected void handleException(String tname, Throwable e) {
+    	if (Macro.MACRO_CANCELED.equals(e.getMessage()))
+			return;
+		CharArrayWriter caw = new CharArrayWriter();
+		PrintWriter pw = new PrintWriter(caw);
+		e.printStackTrace(pw);
+		String s = caw.toString();
+		if (s!=null && s.contains("ij.")) {
+			if (IJ.getInstance()!=null)
+				s = IJ.getInstance().getInfo()+"\n"+s;
+			IJ.log(s);
+		}
+    }
+    
+  } // inner class ExceptionHandler
 
 }

@@ -17,7 +17,7 @@ import ij.io.SaveDialog;
 
 /** This is a simple TextArea based editor for editing and compiling plugins. */
 public class Editor extends PlugInFrame implements ActionListener, ItemListener,
-	TextListener, KeyListener, ClipboardOwner, MacroConstants, Runnable, Debugger {
+	TextListener, KeyListener, MouseListener, ClipboardOwner, MacroConstants, Runnable, Debugger {
 	
 	/** ImportPackage statements added in front of scripts. Contains no 
 	newlines so that lines numbers in error messages are not changed. */
@@ -32,6 +32,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"importPackage(Packages.ij.io);"+
 		"importPackage(Packages.ij.plugin.filter);"+
 		"importPackage(Packages.ij.plugin.frame);"+
+		"importPackage(Packages.ij.plugin.tool);"+
 		"importPackage(java.lang);"+
 		"importPackage(java.awt);"+
 		"importPackage(java.awt.image);"+
@@ -56,7 +57,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
  		+"Visible images are automatically updated.)\n";
 
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
-	public static final int MONOSPACED=1, MENU_BAR=2;
+	public static final int MONOSPACED=1, MENU_BAR=2, RUN_BAR=4, INSTALL_BUTTON=8;
 	public static final int MACROS_MENU_ITEMS = 15;
 	public static final String INTERACTIVE_NAME = "Interactive Interpreter";
 	static final String FONT_SIZE = "editor.font.size";
@@ -65,6 +66,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	static final String DEFAULT_DIR= "editor.dir";
 	static final String INSERT_SPACES= "editor.spaces";
 	static final String TAB_INC= "editor.tab-inc";
+	private final static int MACRO=0, JAVASCRIPT=1, BEANSHELL=2, PYTHON=3;
+	private final static String[] languages = {"Macro", "JavaScript", "BeanShell", "Python"};
+	private final static String[] extensions = {".ijm", ".js", ".bsh", ".py"};	
 	public static Editor currentMacroEditor;
 	private TextArea ta;
 	private String path;
@@ -113,30 +117,62 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private JavaScriptEvaluator evaluator;
 	private int messageCount;
 	private String rejectMacrosMsg;
+	private Button runButton, installButton;
+	private Choice language;
 	
 	public Editor() {
 		this(24, 80, 0, MENU_BAR);
+	}
+
+	public Editor(String name) {
+		this(24, 80, 0, getOptions(name));
 	}
 
 	public Editor(int rows, int columns, int fontSize, int options) {
 		super("Editor");
 		WindowManager.addWindow(this);
 		addMenuBar(options);	
+		if ((options&RUN_BAR)!=0) {
+			Panel panel = new Panel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+			runButton = new Button("Run");
+			runButton.addActionListener(this);
+			panel.setFont(new Font("SansSerif", Font.PLAIN, sizes[fontSizeIndex]));
+			panel.add(runButton);			
+			if ((options&INSTALL_BUTTON)!=0) {
+				installButton = new Button("Install");
+				installButton.addActionListener(this);
+				panel.add(installButton);
+			}			
+			language = new Choice();
+			for (int i=0; i<languages.length; i++)
+				language.addItem(languages[i]);
+			language.addItemListener(this);
+			panel.add(language);
+			add("North", panel);
+		}
 		ta = new TextArea(rows, columns);
 		ta.addTextListener(this);
 		ta.addKeyListener(this);
 		if (IJ.isLinux()) ta.setBackground(Color.white);
  		addKeyListener(IJ.getInstance());  // ImageJ handles keyboard shortcuts
+		ta.addMouseListener(this);  // ImageJ handles keyboard shortcuts
 		add(ta);
 		pack();
-		if (fontSize<0)
-			fontSize = 0;
-		if (fontSize>=sizes.length)
-			fontSize = sizes.length-1;
 		setFont();
 		positionWindow();
 		if (!IJ.isJava18() && !IJ.isLinux())
 			insertSpaces = false;
+	}
+	
+	private static int getOptions(String name) {
+		int options = MENU_BAR;
+		if (name==null)
+			return options;
+		if (name.endsWith(".ijm") || name.endsWith(".js") || name.endsWith(".bsh") || name.endsWith(".py"))
+			options |= RUN_BAR;
+		if (name.endsWith(".ijm"))
+			options |= INSTALL_BUTTON;
+		return options;
 	}
 	
 	void addMenuBar(int options) {
@@ -276,6 +312,14 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		} else {
 			fileMenu.addSeparator();
 			fileMenu.add(new MenuItem("Compile and Run", new MenuShortcut(KeyEvent.VK_R)));
+		}
+		if (language!=null) {
+			for (int i=0; i<languages.length; i++) {
+				if (name.endsWith(extensions[i])) {
+					language.select(languages[i]);
+					break;
+				}
+			}		
 		}
 		if (text.startsWith("//@AutoInstall") && (name.endsWith(".ijm")||name.endsWith(".txt"))) {
 			boolean installInPluginsMenu = !name.contains("Tool.");
@@ -757,7 +801,18 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	public void actionPerformed(ActionEvent e) {
 		String what = e.getActionCommand();
 		int flags = e.getModifiers();
-		boolean altKeyDown = (flags & Event.ALT_MASK)!=0;		
+		boolean altKeyDown = (flags & Event.ALT_MASK)!=0;
+		if (e.getSource()==runButton) {
+			runMacro(false);
+			return;
+		} else if (e.getSource()==installButton) {
+			String text = ta.getText();
+			if (text.contains("macro \"") || text.contains("macro\""))
+				installMacros(text, true);
+			else
+				IJ.error("Editor", "File must contain at least one macro or macro tool.");
+			return;
+		} 
 		if ("Save".equals(what))
 			save();
 		else if ("Compile and Run".equals(what))
@@ -870,7 +925,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		boolean run = !isJava && !name.contains("_Tool") && Prefs.autoRunExamples;
 		int rows = 24;
 		int columns = 70;
-		int options = MENU_BAR;
+		int options = MENU_BAR + RUN_BAR;
+		if (isMacro)
+			options += INSTALL_BUTTON;
 		String text = null;
 		Editor ed = new Editor(rows, columns, 0, options);
 		String dir = "Macro/";
@@ -984,11 +1041,46 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			ta.setCaretPosition(ta.getCaretPosition());
 	}
 	
-	public void keyPressed(KeyEvent e) { 
-	} 
+	public void keyPressed(KeyEvent e) { } 	
+	public void mousePressed (MouseEvent e) {}
+	public void mouseExited (MouseEvent e) {}
+	public void mouseEntered (MouseEvent e) {}
 	
+	public void mouseReleased (MouseEvent e) {
+		showLinePos();
+	}
+	public void mouseClicked (MouseEvent e) {
+		showLinePos();
+	}
+
+	private void showLinePos() { // show line numbers in status bar (Norbert Vischer)
+		char[] chars = ta.getText().toCharArray();
+		if(chars.length > 1e6)
+				return;
+		int selStart = ta.getSelectionStart();
+		int selEnd = ta.getSelectionEnd();
+		int line=0;
+		int startLine = 1;
+		int endLine = 1;
+		for (int i=1; i<=chars.length; i++) {
+			if (chars[i-1]=='\n') line++;
+			if (i==selStart)
+				startLine=line + 1; 
+			if (i<=selEnd)
+				endLine=line + 1; 
+			if (i>=selEnd)
+				break;
+		}
+		String msg = "Line " + startLine;
+		if (startLine != endLine) {
+			msg += "-" + endLine;
+		}
+		IJ.showStatus(msg);
+	}
+				
 	public void keyReleased(KeyEvent e) {
 		int pos = ta.getCaretPosition();
+		showLinePos();
 		if (insertSpaces && pos>0 && e.getKeyCode()==KeyEvent.VK_TAB) {
 			String spaces = " ";
 			for (int i=1; i<tabInc; i++)
@@ -1116,13 +1208,31 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 
 	public void itemStateChanged(ItemEvent e) {
-		CheckboxMenuItem item = (CheckboxMenuItem)e.getSource();
 		String cmd = e.getItem().toString();
+		if (e.getSource()==language) {
+			setExtension(cmd);
+			return;
+		}
+		CheckboxMenuItem item = (CheckboxMenuItem)e.getSource();
 		if ("Tab Key Inserts Spaces".equals(cmd)) {
 			insertSpaces = e.getStateChange()==1;
 			Prefs.set(INSERT_SPACES, insertSpaces);
 		} else
 			setFont();
+	}
+	
+	private void setExtension(String language) {
+		String title = getTitle();
+		int dot = title.lastIndexOf(".");
+		if (dot>=0)
+			title = title.substring(0, dot);
+		for (int i=0; i<languages.length; i++) {
+			if (language.equals(languages[i])) {
+				title += extensions[i];
+				break;
+			}
+		}
+		setWindowTitle(title);		
 	}
 
 	/** Override windowActivated in PlugInFrame to
@@ -1494,6 +1604,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 
 	void selectAll() {
 		ta.selectAll();
+		showLinePos();
 	}
     
     void changeFontSize(boolean larger) {

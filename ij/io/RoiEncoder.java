@@ -79,7 +79,7 @@ public class RoiEncoder {
 
 	void write(Roi roi, OutputStream f) throws IOException {
 		Rectangle r = roi.getBounds();
-		if (r.width>65535||r.height>65535||r.x>65535||r.y>65535)
+		if (r.width>60000||r.height>60000||r.x>60000||r.y>60000)
 			roi.enableSubPixelResolution();
 		int roiType = roi.getType();
 		int type = rect;
@@ -160,7 +160,18 @@ public class RoiEncoder {
 		putShort(RoiDecoder.BOTTOM, r.y+r.height);
 		putShort(RoiDecoder.RIGHT, r.x+r.width);	
 		if (roi.subPixelResolution() && (type==rect||type==oval)) {
-			FloatPolygon p = roi.getFloatPolygon();
+			FloatPolygon p = null;
+			if (roi instanceof OvalRoi)
+				p = ((OvalRoi)roi).getFloatPolygon4();
+			else {
+				int d = roi.getCornerDiameter();
+				if (d>0) {
+					roi.setCornerDiameter(0);
+					p = roi.getFloatPolygon();
+					roi.setCornerDiameter(d);
+				} else
+					p = roi.getFloatPolygon();
+			}
 			if (p.npoints==4) {
 				putFloat(RoiDecoder.XD, p.xpoints[0]);
 				putFloat(RoiDecoder.YD, p.ypoints[0]);

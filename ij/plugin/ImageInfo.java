@@ -60,13 +60,14 @@ public class ImageInfo implements PlugIn {
 	public String getImageInfo(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
 		String infoProperty = null;
-		if (imp.getStackSize()>1) {
+		boolean isStack = imp.getStackSize()>1;
+		if (isStack || imp.hasImageStack()) {
 			ImageStack stack = imp.getStack();
 			String label = stack.getSliceLabel(imp.getCurrentSlice());
 			if (label!=null && label.indexOf('\n')>0)
 				infoProperty = label;
 		}
-		if (infoProperty==null) {
+		if (infoProperty==null || (isStack && (imp.getStack() instanceof ListVirtualStack))) {
 			infoProperty = (String)imp.getProperty("Info");
 			if (infoProperty==null)
 				infoProperty = getExifData(imp);
@@ -87,7 +88,7 @@ public class ImageInfo implements PlugIn {
 			return info;
 	}
 
-	private String getExifData(ImagePlus imp) {
+	public String getExifData(ImagePlus imp) {
 		FileInfo fi = imp.getOriginalFileInfo();
 		if (fi==null)
 			return null;
@@ -243,13 +244,12 @@ public class ImageInfo implements PlugIn {
     			label = " (" + label + ")";
     		else
     			label = "";
-			if (interval>0.0 || fps!=0.0) {
+			if (imp.getNFrames()>1 || interval>0.0 || fps!=0.0) {
 				s += "Frame: " + number + label + "\n";
 				if (fps!=0.0) {
 					String sRate = Math.abs(fps-Math.round(fps))<0.00001?IJ.d2s(fps,0):IJ.d2s(fps,5);
 					s += "Frame rate: " + sRate + " fps\n";
-				}
-				if (interval!=0.0)
+				} else
 					s += "Frame interval: " + ((int)interval==interval?IJ.d2s(interval,0):IJ.d2s(interval,5)) + " " + cal.getTimeUnit() + "\n";
 			} else
 				s += "Image: " + number + label + "\n";
@@ -277,6 +277,10 @@ public class ImageInfo implements PlugIn {
 					stackType += " (ListVirtualStack)";
 				s += "Stack type: " + stackType+ "\n";
 			}
+		} else if (imp.hasImageStack()) { // one image stack
+    		String label = imp.getStack().getShortSliceLabel(1);
+    		if (label!=null && label.length()>0)
+				s += "Image: 1/1 (" + label + ")\n";
 		}
 
 		if (imp.isLocked())
@@ -509,7 +513,7 @@ public class ImageInfo implements PlugIn {
 			String value = props[i+1];
 			if (LUT.nameKey.equals(key) || "UniqueName".equals(key))
 				continue;
-			if (key!=null && value!=null && !key.equals("ShowInfo")) {
+			if (key!=null && value!=null && !(key.equals("ShowInfo")||key.equals("Slice_Label"))) {
 				if (value.length()<80)
 					s += key + ": " + value + "\n";
 				else

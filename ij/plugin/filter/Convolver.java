@@ -72,7 +72,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 			kernelText = lastKernelText;
 			normalizeFlag = lastNormalizeFlag;
 		}
-		gd = NonBlockingGenericDialog.newDialog("Convolver...", imp);
+		gd = GUI.newNonBlockingDialog("Convolver...", imp);
 		gd.setInsets(5,20,0);
 		gd.addMessage(" \nKernel:"); //reserve two lines
 		messageLabel = (MultiLineLabel)gd.getMessage();

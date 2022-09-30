@@ -35,6 +35,7 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 			} catch (Throwable e) { IJ.error("Problem downloading functions.html"); return;}
 		}
 		String f = IJ.runMacro("return File.openAsString(getDirectory('macros')+'functions.html');");
+		f = f.replaceAll("&quot;", "\"");
 		String [] l = f.split("\n");
 		commands= new String [l.length];
 		int c=0;

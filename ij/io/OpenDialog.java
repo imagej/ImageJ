@@ -10,8 +10,9 @@ import javax.swing.*;
 import javax.swing.filechooser.*;
 
 /** This class displays a dialog window from 
-	which the user can select an input file. */ 
- public class OpenDialog {
+ * which the user can select an input file.
+*/ 
+public class OpenDialog {
 
 	private String dir;
 	private String name;
@@ -20,6 +21,7 @@ import javax.swing.filechooser.*;
 	private static Frame sharedFrame;
 	private String title;
 	private static String lastDir, lastName;
+	private static boolean defaultDirectorySet;
 
 	
 	/** Displays a file open dialog with 'title' as the title. */
@@ -88,11 +90,13 @@ import javax.swing.filechooser.*;
 
 	// Uses JFileChooser to display file open dialog box.
 	void jOpen(String title, String path, String fileName) {
+		LookAndFeel saveLookAndFeel = Java2.getLookAndFeel();
 		Java2.setSystemLookAndFeel();
 		if (EventQueue.isDispatchThread())
 			jOpenDispatchThread(title, path, fileName);
 		else
 			jOpenInvokeAndWait(title, path, fileName);
+		Java2.setLookAndFeel(saveLookAndFeel);
 	}
 		
 	// Uses the JFileChooser class to display the dialog box.
@@ -100,6 +104,8 @@ import javax.swing.filechooser.*;
 	void jOpenDispatchThread(String title, String path, final String fileName) {
 		JFileChooser fc = new JFileChooser();
 		fc.setDialogTitle(title);
+		fc.setDragEnabled(true);
+		fc.setTransferHandler(new DragAndDropHandler(fc));
 		File fdir = null;
 		if (path!=null)
 			fdir = new File(path);
@@ -125,6 +131,8 @@ import javax.swing.filechooser.*;
 				public void run() {
 				JFileChooser fc = new JFileChooser();
 				fc.setDialogTitle(title);
+				fc.setDragEnabled(true);
+				fc.setTransferHandler(new DragAndDropHandler(fc));
 				File fdir = null;
 				if (path!=null)
 					fdir = new File(path);
@@ -218,6 +226,8 @@ import javax.swing.filechooser.*;
 		ending in the separator character ("/" or "\"), or
 		an empty or null string. */
 	public static String getDefaultDirectory() {
+		if (Prefs.commandLineMacro() && !defaultDirectorySet)
+			return IJ.getDir("cwd");
 		if (defaultDirectory==null)
 			defaultDirectory = Prefs.getDefaultDirectory();
 		return defaultDirectory;
@@ -229,6 +239,7 @@ import javax.swing.filechooser.*;
 	public static void setDefaultDirectory(String dir) {
 		dir = IJ.addSeparator(dir);
 		defaultDirectory = dir;
+		defaultDirectorySet = true;
 	}
 	
 	/** Returns the path to the directory that contains the last file

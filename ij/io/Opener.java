@@ -42,6 +42,7 @@ public class Opener {
 	private static boolean openUsingPlugins;
 	private static boolean bioformats;
 	private String url;
+	private boolean useHandleExtraFileTypes;
 
 	static {
 		Hashtable commands = Menus.getCommands();
@@ -57,9 +58,9 @@ public class Opener {
 	 * the user. Displays an error message if the selected file is not
 	 * in a supported format. This is the method that
 	 * ImageJ's File/Open command uses to open files.
-	 * @see ij.IJ#open()
+	 * @see ij.IJ#open
 	 * @see ij.IJ#open(String)
-	 * @see ij.IJ#openImage()
+	 * @see ij.IJ#openImage
 	 * @see ij.IJ#openImage(String)
 	*/
 	public void open() {
@@ -82,7 +83,7 @@ public class Opener {
 	 * @see ij.IJ#openImage(String)
 	*/
 	public void open(String path) {
-		boolean isURL = path.indexOf("://")>0;
+		boolean isURL = path.contains("://") || path.contains("file:/");
 		if (isURL && isText(path)) {
 			openTextURL(path);
 			return;
@@ -91,22 +92,17 @@ public class Opener {
 				(new PluginInstaller()).install(path);
 				return;
 		}
-		boolean fullPath = path.startsWith("/") || path.startsWith("\\") || path.indexOf(":\\")==1 || path.indexOf(":/")==1 || isURL;
-		if (!fullPath) {
-			String defaultDir = OpenDialog.getDefaultDirectory();
-			if (defaultDir!=null)
-				path = defaultDir + path;
-			else
-				path = (new File(path)).getAbsolutePath();
-		}
+		path = makeFullPath(path);
 		if (!silentMode)
 			IJ.showStatus("Opening: " + path);
 		long start = System.currentTimeMillis();
 		ImagePlus imp = null;
 		if (path.endsWith(".txt"))
 			this.fileType = JAVA_OR_TEXT;
-		else
+		else {
+			useHandleExtraFileTypes = true;
 			imp = openImage(path);
+		}
 		if (imp==null && isURL)
 			return;
 		if (imp!=null) {
@@ -140,7 +136,7 @@ public class Opener {
 							maxSize = 60000;
 					}
 					if (size<maxSize) {
-						Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
+						Editor ed = new Editor(path);
 						if (ed!=null) ed.open(getDir(path), getName(path));
 					} else
 						new TextWindow(path,400,450);
@@ -155,20 +151,17 @@ public class Opener {
 					IJ.runPlugIn("ij.plugin.Raw", path);
 					break;
 				case UNKNOWN:
-					String msg =
-						"File is not in a supported format, a reader\n"+
-						"plugin is not available, or it was not found.";
+					File f = new File(path);
+					String msg = (f.exists()) ?
+						"Format not supported or reader plugin not found:"
+						: "File not found:";					
 					if (path!=null) {
 						if (path.length()>64)
 							path = (new File(path)).getName();
-						if (path.length()<=64) {
-							if (IJ.redirectingErrorMessages())
-								msg += " \n   "+path;
-							else
-								msg += " \n	 \n"+path;
-						}
+						if (path.length()<=64)
+								msg += " \n"+path;
 					}
-					if (openUsingPlugins)
+					if (openUsingPlugins && msg.length()>20)
 						msg += "\n \nNOTE: The \"OpenUsingPlugins\" option is set.";
 					IJ.wait(IJ.isMacro()?500:100); // work around for OS X thread deadlock problem
 					IJ.error("Opener", msg);
@@ -177,7 +170,7 @@ public class Opener {
 			}
 		}
 	}
-	
+		
 	/** Displays a JFileChooser and then opens the tiff, dicom, 
 		fits, pgm, jpeg, bmp, gif, lut, roi, or text files selected by 
 		the user. Displays error messages if one or more of the selected 
@@ -185,6 +178,7 @@ public class Opener {
 		that ImageJ's File/Open command uses to open files if
 		"Open/Save Using JFileChooser" is checked in EditOptions/Misc. */
 	public void openMultiple() {
+		LookAndFeel saveLookAndFeel = Java2.getLookAndFeel();
 		Java2.setSystemLookAndFeel();
 		// run JFileChooser in a separate thread to avoid possible thread deadlocks
 		try {
@@ -192,6 +186,8 @@ public class Opener {
 				public void run() {
 					JFileChooser fc = new JFileChooser();
 					fc.setMultiSelectionEnabled(true);
+					fc.setDragEnabled(true);
+					fc.setTransferHandler(new DragAndDropHandler(fc));
 					File dir = null;
 					String sdir = OpenDialog.getDefaultDirectory();
 					if (sdir!=null)
@@ -221,6 +217,7 @@ public class Opener {
 			if (i==0 && !error)
 				Menus.addOpenRecentItem(path);
 		}
+		Java2.setLookAndFeel(saveLookAndFeel);
 	}
 	
 	/**
@@ -230,14 +227,15 @@ public class Opener {
 	 * or is not found. Displays a file open dialog if 'path'
 	 * is null or an empty string.
 	 * @see ij.IJ#openImage(String)
-	 * @see ij.IJ#openImage()
+	 * @see ij.IJ#openImage
+	 * @see #openUsingBioFormats
 	*/
 	public ImagePlus openImage(String path) {
 		if (path==null || path.equals(""))
 			path = getPath();
 		if (path==null) return null;
 		ImagePlus img = null;
-		if (path.indexOf("://")>0)
+		if (path.contains("://") || path.contains("file:/")) // path is a URL
 			img = openURL(path);
 		else
 			img = openImage(getDir(path), getName(path));
@@ -272,6 +270,26 @@ public class Opener {
 		return ""+IJ.d2s(time,2)+" seconds ("+IJ.d2s(mb/time,digits)+" MB/sec)";
 	}
 	
+	public static String makeFullPath(String path) {
+		if (path==null)
+			return path;
+		if (!isFullPath(path)) {
+			String defaultDir = OpenDialog.getDefaultDirectory();
+			if (defaultDir!=null)
+				path = defaultDir + path;
+			else
+				path = (new File(path)).getAbsolutePath();
+		}
+		return path;
+	}
+	
+	public static boolean isFullPath(String path) {
+		if (path==null)
+			return false;
+		else
+			return path.startsWith("/") || path.startsWith("\\") || path.contains(":\\") || path.contains(":/") || path.contains("://");
+	}
+
 	private boolean isText(String path) {
 		if (path.endsWith(".txt") || path.endsWith(".ijm") || path.endsWith(".java")
 		|| path.endsWith(".js") || path.endsWith(".html") || path.endsWith(".htm")
@@ -292,7 +310,7 @@ public class Opener {
 		open(path);
 		if (!error)
 			Menus.addOpenRecentItem(path);
-		return error;
+		return !error;
 	}
 
 	/**
@@ -356,10 +374,26 @@ public class Opener {
 				else
 					return null;
 			case UNKNOWN: case TEXT:
-				return openUsingHandleExtraFileTypes(path);
+				imp = null;
+				if (name.endsWith(".lsm"))
+					useHandleExtraFileTypes = true; // use LSM_Reader to opem .lsm files
+				if (!useHandleExtraFileTypes)
+					imp = openUsingBioFormats(path);
+				useHandleExtraFileTypes = false;
+				if (imp!=null)
+					return imp;
+				else
+					return openUsingHandleExtraFileTypes(path);
 			default:
 				return null;
 		}
+	}
+	
+	public ImagePlus openTempImage(String directory, String name) {
+		ImagePlus imp = openImage(directory, name);
+		if (imp!=null)
+			imp.setTemporary();
+		return imp;
 	}
 	
 	// Call HandleExtraFileTypes plugin to see if it can handle unknown formats
@@ -368,11 +402,14 @@ public class Opener {
 		File f = new File(path);
 		if (!f.exists())
 			return null;
+		int nImages = WindowManager.getImageCount();
 		int[] wrap = new int[] {this.fileType};
 		ImagePlus imp = openWithHandleExtraFileTypes(path, wrap);
 		if (imp!=null && imp.getNChannels()>1)
 			imp = new CompositeImage(imp, IJ.COLOR);
 		this.fileType = wrap[0];
+		if (imp==null && (this.fileType==UNKNOWN||this.fileType==TIFF) && WindowManager.getImageCount()==nImages)
+			IJ.error("Opener", "Unsupported format or file not found:\n"+path);
 		return imp;
 	}
 	
@@ -426,7 +463,7 @@ public class Opener {
 				imp = openTiff(u.openStream(), name);
 			} else if (lurl.endsWith(".zip"))
 				imp = openZipUsingUrl(u);
-			else if (lurl.endsWith(".jpg") || lurl.endsWith(".gif"))
+			else if (lurl.endsWith(".jpg") || lurl.endsWith(".jpeg") || lurl.endsWith(".gif"))
 				imp = openJpegOrGifUsingURL(name, u);
 			else if (lurl.endsWith(".dcm") || lurl.endsWith(".ima")) {
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", url);
@@ -501,7 +538,7 @@ public class Opener {
 		else if (index!=-1 && index<len-1)
 			name = name.substring(index+1);
 		name = name.replaceAll("%20", " ");
-		Editor ed = new Editor();
+		Editor ed = new Editor(name);
 		ed.setSize(600, 300);
 		ed.create(name, text);
 		IJ.showStatus("");
@@ -652,10 +689,40 @@ public class Opener {
 			fi.directory = dir;
 			imp.setFileInfo(fi);
 		}
+		if (imp != null) {  // correct iPhone photo orientation (Norbert Vischer)
+			String exifText = new ImageInfo().getExifData(imp);
+			if (exifText != null) {
+				String[] lines = exifText.split("\n");
+				for (int jj = 0; jj < lines.length; jj++) {
+					int orientationIndex = lines[jj].indexOf("Orientation:");
+					int rotateIndex = lines[jj].indexOf("Rotate");
+					if (orientationIndex >= 0 && rotateIndex >= 0) {
+						String rest = lines[jj].substring(rotateIndex);
+						rest = rest.replace(")", " ");
+						String[] parts = rest.split(" ");
+						if (parts.length >= 2) {
+							ImageProcessor ip = imp.getProcessor();
+							double angle = Double.parseDouble(parts[1]);
+							ImageProcessor ip2 = null;
+							if (angle == 90)
+								ip2 = ip.rotateRight();
+							else if (angle == 180) {
+								ip2 = ip.rotateRight();
+								ip2 = ip2.rotateRight();
+							} else if (angle == 270)
+								ip2 = ip.rotateLeft();
+							if (ip2!=null)
+								imp.setProcessor(ip2);
+							break;
+						}
+					}
+				}
+			}
+		}
 		return imp;
 	}
 	
-	ImagePlus openUsingImageIO(String path) {
+	public static ImagePlus openUsingImageIO(String path) {
 		ImagePlus imp = null;
 		BufferedImage img = null;
 		File f = new File(path);
@@ -666,6 +733,7 @@ public class Opener {
 		} 
 		if (img==null)
 			return null;
+		if (IJ.debugMode) IJ.log("type="+img.getType()+", alpha="+img.getColorModel().hasAlpha()+", bands="+img.getSampleModel().getNumBands());
 		if (img.getColorModel().hasAlpha()) {
 			int width = img.getWidth();
 			int height = img.getHeight();
@@ -1051,8 +1119,12 @@ public class Opener {
 		if (imp==null)
 			return null;
 		int[] offsets = info[0].stripOffsets;
-		if (offsets!=null&&offsets.length>1 && offsets[offsets.length-1]<offsets[0])
-			ij.IJ.run(imp, "Flip Vertically", "stack");
+		if (offsets!=null&&offsets.length>1) {
+			long firstOffset = (long)offsets[0]&0xffffffffL;
+			long lastOffset = (long)offsets[offsets.length-1]&0xffffffffL;
+			if (lastOffset<firstOffset)
+				ij.IJ.run(imp, "Flip Vertically", "stack");
+		}
 		imp = makeComposite(imp, info[0]);
 		if (imp.getBitDepth()==32 && imp.getTitle().startsWith("FFT of"))
 			return openFFT(imp);
@@ -1105,13 +1177,41 @@ public class Opener {
 			if (images==null || images.length==0)
 				return null;
 			ImagePlus imp = images[0];
-			if (imp.getStackSize()==3 && imp.getNChannels()==3 && imp.getBitDepth()==8)
-				imp = imp.flatten();
 			return imp;
-		} catch(Exception e) {
-		}
+		} catch(Exception e) {}
 		return null;
 	}
+	
+	/*
+	public static boolean isRGBStack(ImagePlus imp) {
+		if (imp==null)
+			return false;
+		boolean rgb = imp.getStackSize()==3 && imp.getNChannels()==3 && imp.getBitDepth()==8;
+		if (!rgb)
+			return false;
+		for (int i=1; i<=3; i++) {
+			imp.setSlice(i);
+			LUT lut = imp.getProcessor().getLut();
+			if (lut==null) {
+				rgb = false;
+				break;
+			}
+			byte[] bytes = lut.getBytes();				
+			if (bytes==null) {
+				rgb = false;
+				break;
+			}
+			if (!((i==0 && (bytes[255]&255)==255 && (bytes[511]&255)==0 && (bytes[767]&255)==0)
+			|| (i==1 && (bytes[255]&255)==0 && (bytes[511]&255)==255 && (bytes[767]&255)==0)
+			|| (i==2 && (bytes[255]&255)==0 && (bytes[511]&255)==0 && (bytes[767]&255)==255))) {
+				rgb = false;
+				break;
+			}
+		}
+		imp.setSlice(1);
+		return rgb;
+	}
+	*/
 
 	/** Opens a lookup table (LUT) and returns it as a LUT object, or returns null if there is an error.
 	 * @see ij.ImagePlus#setLut
@@ -1124,9 +1224,10 @@ public class Opener {
 	public static void openResultsTable(String path) {
 		try {
 			ResultsTable rt = ResultsTable.open(path);
-			rt.showRowNumbers(true);
-			if (rt!=null)
+			if (rt!=null) {
+				rt.showRowNumbers(true);
 				rt.show("Results");
+			}
 		} catch(IOException e) {
 			IJ.error("Open Results", e.getMessage());
 		}

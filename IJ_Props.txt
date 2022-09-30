@@ -14,7 +14,7 @@ popup02=Properties...
 popup03=Rename...
 popup04=Measure
 popup05=Histogram
-popup06=Duplicate...
+popup06=Duplicate Image...
 popup07=Original Scale
 popup08=-
 popup09=Record...
@@ -83,15 +83,16 @@ selection13=-
 selection14="Properties... [y]",ij.plugin.Selection("properties")
 selection15="Scale... ",ij.plugin.RoiScaler
 selection16="Rotate...",ij.plugin.Selection("rotate")
-selection17="Enlarge...",ij.plugin.RoiEnlarger
-selection18="Make Band...",ij.plugin.Selection("band")
-selection19="Specify...",ij.plugin.SpecifyROI
-selection20="Straighten...",ij.plugin.Straightener
-selection21="To Bounding Box",ij.plugin.Selection("tobox")
-selection22="Line to Area",ij.plugin.Selection("toarea")
-selection23="Area to Line",ij.plugin.Selection("toline")
-selection24="Image to Selection...",ij.plugin.OverlayCommands("image-roi")
-selection25="Add to Manager[t]",ij.plugin.Selection("add")
+selection17="Translate... ",ij.plugin.Selection("translate")
+selection18="Enlarge...",ij.plugin.RoiEnlarger
+selection19="Make Band...",ij.plugin.Selection("band")
+selection20="Specify...",ij.plugin.SpecifyROI
+selection21="Straighten...",ij.plugin.Straightener
+selection22="To Bounding Box",ij.plugin.Selection("tobox")
+selection23="Line to Area",ij.plugin.Selection("toarea")
+selection24="Area to Line",ij.plugin.Selection("toline")
+selection25="Image to Selection...",ij.plugin.OverlayCommands("image-roi")
+selection26="Add to Manager[t]",ij.plugin.Selection("add")
 
 # Plugins installed in the Edit/Options submenu
 options01="Appearance...",ij.plugin.AppearanceOptions
@@ -132,14 +133,15 @@ adjust09="Coordinates...",ij.plugin.Coordinates
 color01="Split Channels",ij.plugin.ChannelSplitter
 color02="Merge Channels...",ij.plugin.RGBStackMerge
 color03="Arrange Channels...",ij.plugin.ChannelArranger
-color04="Channels Tool...[Z]",ij.plugin.frame.Channels
-color05=-
-color06="Stack to RGB",ij.plugin.RGBStackConverter
-color07="Make Composite",ij.plugin.CompositeConverter
-color08="Show LUT",ij.plugin.filter.LutViewer
-color09="Display LUTs",ij.plugin.SimpleCommands("display")
-color10="Edit LUT...",ij.plugin.LUT_Editor
-color11="Color Picker...[K]",ij.plugin.frame.ColorPicker
+color04="Invert LUTs",ij.plugin.SimpleCommands("invert")
+color05="Channels Tool...[Z]",ij.plugin.frame.Channels
+color06=-
+color07="Stack to RGB",ij.plugin.RGBStackConverter
+color08="Make Composite",ij.plugin.CompositeConverter
+color09="Show LUT",ij.plugin.filter.LutViewer
+color10="Display LUTs",ij.plugin.SimpleCommands("display")
+color11="Edit LUT...",ij.plugin.LUT_Editor
+color12="Color Picker...[K]",ij.plugin.frame.ColorPicker
 
 # Plugins installed in the Image/Stacks submenu
 stacks01="Add Slice",ij.plugin.StackEditor("add")
@@ -184,6 +186,7 @@ hyperstacks01="New Hyperstack...",ij.plugin.HyperStackMaker
 hyperstacks02="Stack to Hyperstack...",ij.plugin.HyperStackConverter("stacktohs")
 hyperstacks03="Hyperstack to Stack",ij.plugin.HyperStackConverter("hstostack")
 hyperstacks04="Reduce Dimensionality...",ij.plugin.HyperStackReducer
+hyperstacks05="Make Subset...",ij.plugin.SubstackMaker
 
 # Plugins installed in the Image/Transform submenu
 transform01="Flip Horizontally",ij.plugin.filter.Transformer("fliph")
@@ -219,7 +222,8 @@ overlay07="Remove Overlay",ij.plugin.OverlayCommands("remove")
 overlay08="List Elements",ij.plugin.OverlayCommands("list")
 overlay09="Flatten[F]",ij.plugin.OverlayCommands("flatten")
 overlay10="Labels...",ij.plugin.OverlayLabels
-overlay11="Overlay Options...[Y]",ij.plugin.OverlayCommands("options")
+overlay11="Measure Overlay",ij.plugin.OverlayCommands("measure")
+overlay12="Overlay Options...[Y]",ij.plugin.OverlayCommands("options")
 
 # Plugins installed in the Image/Lookup Tables submenu
 lookup01="Invert LUT",ij.plugin.LutLoader("invert")
@@ -406,7 +410,7 @@ utilities10="Capture Image",ij.plugin.ScreenGrabber("image")
 utilities11=-
 utilities12="ImageJ Properties",ij.plugin.JavaProperties
 utilities13="Threads",ij.plugin.ThreadLister
-utilities14="Benchmark",ij.plugin.filter.Benchmark
+utilities14="Benchmark",ij.plugin.Benchmark
 utilities15="Reset...",ij.plugin.SimpleCommands("reset")
 
 # Plugins installed in the Plugins/New submenu
@@ -427,7 +431,8 @@ about02=-
 
 # URL of directory containing the sample images
 # location2 is uses with Java 6, which does not support https
-images.location=https://imagej.net/images/
+# 2022-06-30 (1.53t20): stopped using https due to Windows bug 
+images.location=http://imagej.net/images/
 images.location2=http://imagej.net/images/
 
 # Images installed in the Open Samples submenu

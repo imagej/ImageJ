@@ -72,20 +72,24 @@ public class ShortProcessor extends ImageProcessor {
 			return;
 		int size = width*height;
 		int value;
-		min = 65535;
-		max = 0;
-		for (int i=0; i<size; i++) {
+		int min = pixels[0]&0xffff;
+		int max = pixels[0]&0xffff;
+		for (int i=1; i<size; i++) {
 			value = pixels[i]&0xffff;
 			if (value<min)
 				min = value;
-			if (value>max)
+			else if (value>max)
 				max = value;
 		}
+		this.min = min;
+		this.max = max;
 		minMaxSet = true;
 	}
 
 	/** Create an 8-bit AWT image by scaling pixels in the range min-max to 0-255. */
 	public Image createImage() {
+		if (!minMaxSet)
+			findMinAndMax();
 		boolean firstTime = pixels8==null;
 		boolean thresholding = minThreshold!=NO_THRESHOLD && lutUpdateMode<NO_LUT_UPDATE;
 		//ij.IJ.log("createImage: "+firstTime+"  "+lutAnimation+"  "+thresholding);
@@ -261,8 +265,10 @@ public class ShortProcessor extends ImageProcessor {
 	@see ij.IJ#setMinAndMax(ij.ImagePlus,double,double)
 	*/
 	public void setMinAndMax(double minimum, double maximum) {
-		if (minimum==0.0 && maximum==0.0)
-			{resetMinAndMax(); return;}
+		if (minimum==0.0 && maximum==0.0) {
+			resetMinAndMax();
+			return;
+		}
 		if (minimum<0.0)
 			minimum = 0.0;
 		if (maximum>65535.0)
@@ -563,12 +569,17 @@ public class ShortProcessor extends ImageProcessor {
 			}
 		}
     }
-
+    
 	public void invert() {
-		resetMinAndMax();
+		int range = 65536;
+		int defaultRange = ij.ImagePlus.getDefault16bitRange();
+		if (defaultRange>0 && !isSigned16Bit())
+			range = (int)Math.pow(2,defaultRange);
+		setMinAndMax(0, range-1);
 		process(INVERT, 0.0);
+		resetMinAndMax();
 	}
-	
+
 	public void add(int value) {process(ADD, value);}
 	public void add(double value) {process(ADD, value);}
 	public void set(double value) {process(SET, value);}
@@ -972,6 +983,13 @@ public class ShortProcessor extends ImageProcessor {
 		fillValueSet = true;
 	}
 	
+	/** Sets the background fill/draw color. */
+	public void setBackgroundColor(Color color) {
+		int bestIndex = getBestIndex(color);
+		int value = (int)(getMin() + (getMax()-getMin())*(bestIndex/255.0));
+		setBackgroundValue(value);
+	}
+
 	/** Sets the default fill/draw value, where 0<=value<=65535). */
 	public void setValue(double value) {
 			fgColor = (int)value;
@@ -1247,7 +1265,7 @@ public class ShortProcessor extends ImageProcessor {
 		}
 		return mask;
 	}
-
+	
 	/** Not implemented. */
 	public void medianFilter() {}
 	/** Not implemented. */

@@ -37,7 +37,8 @@ public class PNG_Writer implements PlugIn {
                 msg = ""+e;
             msg = "An error occured writing the file.\n \n" + msg;
             if (msg.contains("NullPointerException"))
-            	msg = "Incorrect file path: \""+path+"\"";
+            	msg = "Incorrect file path:";
+            msg += "\n \n"+path;
             IJ.error("PNG Writer", msg);
         }
         IJ.showStatus("");

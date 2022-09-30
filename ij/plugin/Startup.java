@@ -20,7 +20,8 @@ import java.util.Vector;
 			"12-bit (0-4095) range",
 			"Splash Screen",
 			"Bolder selections",
-			"Add to overlay"
+			"Add to overlay",
+			"Flip FITS images"
 		};
 	private String macro = "";
 	private int originalLength;
@@ -52,7 +53,7 @@ import java.util.Vector;
 	private boolean showDialog() {
 		gd = new GenericDialog("Startup Macro");
 		String text = "Macro code contained in this text area\nexecutes when ImageJ starts up.";
-		Font font = new Font("SansSerif", Font.PLAIN, 14);
+		Font font = ImageJ.SansSerif14;
 		gd.setInsets(5,15,0);
 		gd.addMessage(text, font);
 		gd.setInsets(5, 10, 0);
@@ -97,6 +98,8 @@ import java.util.Vector;
 			statement = "Roi.setDefaultStrokeWidth(2);\n";
 		else if (item.equals(code[8]))
 			statement = "setOption(\"Add to overlay\", true);\n";
+		else if (item.equals(code[9]))
+			statement = "setOption(\"FlipFitsImages\", false);\n";
 		if (statement!=null) {
 			TextArea ta = gd.getTextArea1();
 			ta.insert(statement, ta.getCaretPosition());

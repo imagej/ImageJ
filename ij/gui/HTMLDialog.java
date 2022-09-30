@@ -2,6 +2,7 @@ package ij.gui;
 import ij.*;
 import ij.plugin.URLOpener;
 import ij.macro.MacroRunner;
+import ij.util.Java2;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -13,7 +14,7 @@ import javax.swing.event.HyperlinkEvent.EventType;
 import java.net.URL;
 
 /** This is modal or non-modal dialog box that displays HTML formated text. */
-public class HTMLDialog extends JDialog implements ActionListener, KeyListener, HyperlinkListener {
+public class HTMLDialog extends JDialog implements ActionListener, KeyListener, HyperlinkListener, WindowListener {
 	private boolean escapePressed;
 	private JEditorPane editorPane;
 	private boolean modal = true;
@@ -35,7 +36,8 @@ public class HTMLDialog extends JDialog implements ActionListener, KeyListener, 
 	}
 	
 	private void init(String message) {
-		ij.util.Java2.setSystemLookAndFeel();
+		LookAndFeel saveLookAndFeel = Java2.getLookAndFeel();
+		Java2.setSystemLookAndFeel();
 		Container container = getContentPane();
 		container.setLayout(new BorderLayout());
 		if (message==null) message = "";
@@ -63,18 +65,33 @@ public class HTMLDialog extends JDialog implements ActionListener, KeyListener, 
 		panel.add(button);
 		container.add(panel, "South");
 		setForeground(Color.black);
+		addWindowListener(this);
 		pack();
 		Dimension screenD = IJ.getScreenSize();
 		Dimension dialogD = getSize();
 		int maxWidth = (int)(Math.min(0.70*screenD.width, 800)); //max 70% of screen width, but not more than 800 pxl
 		if (maxWidth>400 && dialogD.width>maxWidth)
 			dialogD.width = maxWidth;
-		if (dialogD.height > 0.80*screenD.height && screenD.height>400)  //max 80% of screen height
+		if ("Channels".equals(getTitle()))
+			dialogD.height = 1000;
+		if (dialogD.height>0.80*screenD.height && screenD.height>400)  //max 80% of screen height
 			dialogD.height = (int)(0.80*screenD.height);
 		setSize(dialogD);
-		GUI.centerOnImageJScreen(this);
-		if (!modal) WindowManager.addWindow(this);
-		show();
+		GUI.centerOnImageJScreen(this);		
+		if (!modal) {
+			WindowManager.addWindow(this);
+			show();
+		}
+		final JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+		if (verticalScrollBar!=null) {
+			EventQueue.invokeLater(new Runnable() {
+				public void run() {
+					verticalScrollBar.setValue(verticalScrollBar.getMinimum()); //start scrollbar at top
+				}
+			});
+		}
+		if (modal) show();
+		Java2.setLookAndFeel(saveLookAndFeel);
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -122,5 +139,16 @@ public class HTMLDialog extends JDialog implements ActionListener, KeyListener, 
 		super.dispose();
 		if (!modal) WindowManager.removeWindow(this);
 	}
-
+	
+	public void windowClosing(WindowEvent e) {
+		dispose();
+    }
+    
+    public void windowActivated(WindowEvent e) {}
+    public void windowOpened(WindowEvent e) {}
+    public void windowClosed(WindowEvent e) {}
+    public void windowIconified(WindowEvent e) {}
+    public void windowDeiconified(WindowEvent e) {}
+    public void windowDeactivated(WindowEvent e) {}
+    
 }

@@ -20,7 +20,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	private boolean doZScaling;
 	private static boolean averageWhenDownsizing = true;
 	private static boolean newWindow = true;
-	private static int interpolationMethod = ImageProcessor.BILINEAR;
+	private static int staticInterpolationMethod = ImageProcessor.BILINEAR;
+	private int interpolationMethod = staticInterpolationMethod;
 	private String[] methods = ImageProcessor.getInterpolationMethods();
 	private static boolean fillWithBackground;
 	private static boolean processStack = true;
@@ -82,6 +83,11 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			scaler.interpolationMethod = ImageProcessor.NONE;
 		if (options.contains("bicubic"))
 			scaler.interpolationMethod = ImageProcessor.BICUBIC;
+		if (scaler.xscale==0) {
+			scaler.xscale = (double)dstWidth/imp.getWidth();
+			scaler.yscale = (double)dstHeight/imp.getHeight();
+			scaler.zscale = (double)dstDepth/imp.getStackSize();
+		}
 		boolean processStack = imp.getStackSize()>1 && !options.contains("slice");
 		//return new ImagePlus("Untitled", ip.resize(dstWidth, dstHeight, useAveraging));
 		Roi roi = imp.getRoi();
@@ -93,7 +99,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			scaler.processStack = true;
 		return scaler.createNewStack(imp, ip, dstWidth, dstHeight, dstDepth);
 	}
-	
+
 	private ImagePlus createNewStack(ImagePlus imp, ImageProcessor ip, int newWidth, int newHeight, int newDepth) {
 		int nSlices = imp.getStackSize();
 		int w=imp.getWidth(), h=imp.getHeight();
@@ -131,9 +137,16 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			cal.pixelWidth *= 1.0/xscale;
 			cal.pixelHeight *= 1.0/yscale;
 		}
+		cal.xOrigin *= xscale;
+		cal.yOrigin *= yscale;		
 		Overlay overlay = imp.getOverlay();
-		if (overlay!=null && !imp.getHideOverlay() && !doZScaling)
+		if (overlay!=null && !imp.getHideOverlay() && !doZScaling) {
+			overlay = overlay.duplicate();
+			Rectangle roi = imp.getProcessor().getRoi();
+			if (roi!=null)
+				overlay = overlay.crop(ip.getRoi());
 			imp2.setOverlay(overlay.scale(xscale, yscale));
+		}
 		IJ.showProgress(1.0);
 		int[] dim = imp.getDimensions();
 		imp2.setDimensions(dim[2], dim[3], dim[4]);
@@ -144,9 +157,12 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		if (imp.isHyperStack())
 			imp2.setOpenAsHyperStack(true);
 		if (doZScaling) {
+			double oldSize = imp2.getStackSize();
 			Resizer resizer = new Resizer();
 			resizer.setAverageWhenDownsizing(averageWhenDownsizing);
-			imp2 = resizer.zScale(imp2, newDepth, interpolationMethod);
+			imp2 = resizer.zScale(imp2, newDepth, interpolationMethod);			
+			cal = imp2.getCalibration();
+			cal.zOrigin *= imp2.getStackSize()/oldSize;
 		}
 		return imp2;
 	}
@@ -162,9 +178,19 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 				cal.pixelWidth *= 1.0/xscale;
 				cal.pixelHeight *= 1.0/yscale;
 			}
+			cal.xOrigin *= xscale;
+			cal.yOrigin *= yscale;		
 			Overlay overlay = imp.getOverlay();
-			if (overlay!=null && !imp.getHideOverlay())
-				imp2.setOverlay(overlay.scale(xscale, yscale));
+			if (overlay!=null && !imp.getHideOverlay()) {
+				overlay = overlay.duplicate();
+				int slice = imp.getCurrentSlice();
+				overlay.crop(slice,slice);
+				Rectangle roi = imp.getProcessor().getRoi();
+				if (roi!=null)
+					overlay = overlay.crop(ip.getRoi());
+				overlay = overlay.scale(xscale, yscale);
+				imp2.setOverlay(overlay);
+			}
 			imp2.show();
 			imp.trimProcessor();
 			imp2.trimProcessor();
@@ -197,7 +223,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			options = "bicubic";
 		else
 			options = "bilinear";
-		Recorder.recordCall("imp2 = imp.resize("+w2+", "+h2+(d2>0&&d2!=imp.getStackSize()?", "+d2:"")+", \""+options+"\");");
+		Recorder.recordCall("imp = imp.resize("+w2+", "+h2+(d2>0&&d2!=imp.getStackSize()?", "+d2:"")+", \""+options+"\");");
 	}
 	
 	boolean showDialog(ImageProcessor ip) {
@@ -217,6 +243,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 					zstr = "1.0";
 			}
 			Macro.setOptions(options);
+			interpolationMethod = ImageProcessor.BILINEAR;
 		}
 		int bitDepth = imp.getBitDepth();
 		int stackSize = imp.getStackSize();
@@ -324,8 +351,18 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		}
 		if (isStack) {
 			newDepth = (int)Math.round(Tools.parseDouble(gd.getNextString(), 0));
-			if (newDepth==stackSize && zscale!=1.0 && zscale>0.0)
-				newDepth = (int)Math.round(stackSize*zscale);
+			if (zscale>0.0) {
+				int nSlices = stackSize;
+				if (imp.isHyperStack()) {
+					int slices = imp.getNSlices();
+					int frames = imp.getNFrames();
+					if (slices==1&&frames>1)
+						nSlices = frames;
+					else
+						nSlices = slices;
+				}
+				newDepth = (int)Math.round(nSlices*zscale);
+			}
 		}
 		interpolationMethod = gd.getNextChoiceIndex();
 		if (bitDepth==8 || bitDepth==24)
@@ -350,6 +387,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 				bgValue = bgc.getRGB();
 		} else
 			bgValue = 0.0;
+		if (!isMacro)
+			staticInterpolationMethod = interpolationMethod;
 		return true;
 	}
 

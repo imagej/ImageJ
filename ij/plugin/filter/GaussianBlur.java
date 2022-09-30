@@ -83,7 +83,7 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
                 Macro.setOptions(options.replaceAll("radius=", "sigma="));
             }
         }
-		GenericDialog gd = NonBlockingGenericDialog.newDialog(command, imp);
+		GenericDialog gd = GUI.newNonBlockingDialog(command, imp);
         sigma = Math.abs(sigma);
         gd.addNumericField("Sigma (Radius):", sigma, 2);
         if (imp.getCalibration()!=null && !imp.getCalibration().getUnits().equals("pixels")) {

@@ -35,6 +35,8 @@ public class IJ {
 	public static Font font10 = new Font("SansSerif", Font.PLAIN, 10);
 	/** SansSerif, plain, 12-point font */
 	public static Font font12 = ImageJ.SansSerif12;
+	/** SansSerif, plain, 14-point font */
+	public static Font font14 = ImageJ.SansSerif14;
 	
 	/** Image display modes */
 	public static final int COMPOSITE=1, COLOR=2, GRAYSCALE=3;
@@ -62,7 +64,6 @@ public class IJ {
 	private static boolean macroRunning;
 	private static Thread previousThread;
 	private static TextPanel logPanel;
-	private static boolean checkForDuplicatePlugins = true;		
 	private static ClassLoader classLoader;
 	private static boolean memMessageDisplayed;
 	private static long maxMemory;
@@ -211,10 +212,12 @@ public class IJ {
  			else
 				new PlugInFilterRunner(thePlugIn, commandName, arg);
 		} catch (ClassNotFoundException e) {
-			log("Plugin or class not found: \"" + className + "\"\n(" + e+")");
-			String path = Prefs.getCustomPropsPath();
-			if (path!=null);
-				log("Error may be due to custom properties at " + path);
+			if (!(className!=null && className.startsWith("ij.plugin.MacAdapter"))) {
+				log("Plugin or class not found: \"" + className + "\"\n(" + e+")");
+				String path = Prefs.getCustomPropsPath();
+				if (path!=null);
+					log("Error may be due to custom properties at " + path);
+			}
 		}
 		catch (InstantiationException e) {log("Unable to load plugin (ins)");}
 		catch (IllegalAccessException e) {log("Unable to load plugin, possibly \nbecause it is not public.");}
@@ -226,11 +229,6 @@ public class IJ {
 		if (IJ.debugMode)
 			IJ.log("runUserPlugIn: "+className+", arg="+argument(arg));
 		if (applet!=null) return null;
-		if (checkForDuplicatePlugins) {
-			// check for duplicate classes and jars in the plugins folder
-			IJ.runPlugIn("ij.plugin.ClassChecker", "");
-			checkForDuplicatePlugins = false;
-		}
 		if (createNewLoader)
 			classLoader = null;
 		ClassLoader loader = getClassLoader();
@@ -384,8 +382,8 @@ public class IJ {
 			commandTable.put("Line Graph (21K)", "Line Graph");			
 			commandTable.put("Mitosis (26MB, 5D stack)", "Mitosis (5D stack)");
 			commandTable.put("MRI Stack (528K)", "MRI Stack");
-			commandTable.put("M51 Galaxy (177K, 16-bits)", "M51 Galaxy (16-bits))");
-			commandTable.put("Neuron (1.6M, 5 channels", "Neuron (5 channels");
+			commandTable.put("M51 Galaxy (177K, 16-bits)", "M51 Galaxy (16-bits)");
+			commandTable.put("Neuron (1.6M, 5 channels)", "Neuron (5 channels)");
 			commandTable.put("Nile Bend (1.9M)", "Nile Bend");			
 			commandTable.put("Organ of Corti (2.8M, 4D stack)", "Organ of Corti (4D stack)");
 			commandTable.put("Particles (75K)", "Particles");
@@ -463,6 +461,67 @@ public class IJ {
 			ImageCanvas ic = imp!=null?imp.getCanvas():null;
 			if (ic!=null)
 				ic.setShowCursorStatus(s.length()==0?true:false);
+		}
+	}
+	
+	/**Displays a message in the status bar and flashes
+	 * either the status bar or the active image.<br>
+	 * See: http://wsr.imagej.net/macros/FlashingStatusMessages.txt
+	*/ 
+	public static void showStatus(String message, String options) {
+		showStatus(message);
+		if (options==null)
+			return;
+		options = options.replace("flash", "");
+		options = options.replace("ms", "");
+		Color optionalColor = null;
+		int index1 = options.indexOf("#");
+		if (index1>=0) {  // hex color?
+			int index2 = options.indexOf(" ", index1);
+			if (index2==-1) index2 = options.length();
+			String hexColor = options.substring(index1, index2);
+			optionalColor = Colors.decode(hexColor, null);
+			options = options.replace(hexColor, "");
+		}
+		if (optionalColor==null) {  // "red", "green", etc.
+			for (String c : Colors.colors) {
+				if (options.contains(c)) {
+					optionalColor = Colors.getColor(c, ImageJ.backgroundColor);
+					options = options.replace(c, "");
+					break;
+				}
+			}
+		}
+		boolean flashImage = options.contains("image");
+		Color defaultColor = new Color(255,255,245);
+		int defaultDelay = 500;
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (flashImage) {
+			options = options.replace("image", "");
+			if (imp!=null && imp.getWindow()!=null) {
+				defaultColor = Color.black;
+				defaultDelay = 100;
+			}
+			else
+				flashImage = false;
+		}
+		Color color = optionalColor!=null?optionalColor:defaultColor;
+		int delay = (int)Tools.parseDouble(options, defaultDelay);
+		if (delay>8000)
+			delay = 8000;
+		String colorString = null;
+		ImageJ ij = IJ.getInstance();
+		if (flashImage) {
+			Color previousColor = imp.getWindow().getBackground();
+			imp.getWindow().setBackground(color);
+			if (delay>0) {
+				wait(delay);			
+				imp.getWindow().setBackground(previousColor);
+			}
+		} else if (ij!=null) {
+			ij.getStatusBar().setBackground(color);
+			wait(delay);
+			ij.getStatusBar().setBackground(ij.backgroundColor);
 		}
 	}
 	
@@ -648,10 +707,9 @@ public class IJ {
 			cal = imp.getCalibration();
 			imp.setCalibration(null);
 		}
-		ImageStatistics stats = imp.getStatistics(measurements);
 		ResultsTable rt = new ResultsTable();
 		Analyzer analyzer = new Analyzer(imp, measurements, rt);
-		analyzer.saveResults(stats, imp.getRoi());
+		analyzer.measure();
 		double value = Double.NaN;
 		try {
 			value = rt.getValue(measurement, 0);
@@ -713,10 +771,12 @@ public class IJ {
 	}
 
 	/**	Updates the progress bar, where the length of the bar is set to
-    (<code>currentValue+1)/finalValue</code> of the maximum bar length.
-    The bar is erased if <code>currentValue&gt;=finalValue</code>. 
-    The bar is updated only if more than 90 ms have passed since the last call.
-    Does nothing if the ImageJ window is not present. */
+     * (<code>currentValue+1)/finalValue</code> of the maximum bar length.
+     * The bar is erased if <code>currentValue&gt;=finalValue</code>. 
+     * The bar is updated only if more than 90 ms have passed since the
+     * last call. Displays subordinate progress bars as dots if
+     * 'currentIndex' is negative (example: Plugins/Utilities/Benchmark).
+    */
     public static void showProgress(int currentIndex, int finalIndex) {
 		if (progressBar!=null) {
 			progressBar.show(currentIndex, finalIndex);
@@ -999,9 +1059,7 @@ public class IJ {
 		return str;
 	}
 
-	/** Adds the specified class to a Vector to keep it from being garbage
-	collected, which would cause the classes static fields to be reset. 
-	Probably not needed with Java 1.2 or later. */
+	/** Obsolete */
 	public static void register(Class c) {
 		if (ij!=null) ij.register(c);
 	}
@@ -1027,7 +1085,6 @@ public class IJ {
 	}
 	
 	public static void setKeyDown(int key) {
-		if (debugMode) IJ.log("setKeyDown: "+key);
 		switch (key) {
 			case KeyEvent.VK_CONTROL:
 				controlDown=true;
@@ -1057,7 +1114,6 @@ public class IJ {
 	}
 
 	public static void setKeyUp(int key) {
-		if (debugMode) IJ.log("setKeyUp: "+key);
 		switch (key) {
 			case KeyEvent.VK_CONTROL: controlDown=false; break;
 			case KeyEvent.VK_META: if (isMacintosh()) controlDown=false; break;
@@ -1386,8 +1442,17 @@ public class IJ {
 		setRawThreshold(img, lowerThreshold, upperThreshold, displayMode);
 	}
 
+	/** This is a version of setThreshold() that uses raw (uncalibrated)
+	 * values in the range 0-255 for 8-bit images and 0-65535 for 16-bit
+	 * images and the "Red" LUT display mode.
+	*/
+	public static void setRawThreshold(ImagePlus img, double lowerThreshold, double upperThreshold) {
+		setRawThreshold(img, lowerThreshold, upperThreshold, null);
+	}
+
 	/** This is a version of setThreshold() that always uses raw (uncalibrated) values
-		 in the range 0-255 for 8-bit images and 0-65535 for 16-bit images. */
+	 * in the range 0-255 for 8-bit images and 0-65535 for 16-bit images.
+	*/
 	public static void setRawThreshold(ImagePlus img, double lowerThreshold, double upperThreshold, String displayMode) {
 		int mode = ImageProcessor.RED_LUT;
 		if (displayMode!=null) {
@@ -1498,6 +1563,7 @@ public class IJ {
 			ImageWindow win = imp.getWindow();
 			if (win!=null) {
 				win.toFront();
+				win.setState(Frame.NORMAL);
 				WindowManager.setWindow(win);
 			}
 			long start = System.currentTimeMillis();
@@ -1521,8 +1587,10 @@ public class IJ {
 
 	/** Activates the window with the specified title. */
 	public static void selectWindow(String title) {
-		if (title.equals("ImageJ")&&ij!=null)
-			{ij.toFront(); return;}
+		if (title.equals("ImageJ")&&ij!=null) {
+			ij.toFront();
+			return;
+		}
 		long start = System.currentTimeMillis();
 		while (System.currentTimeMillis()-start<3000) { // 3 sec timeout
 			Window win = WindowManager.getWindow(title);
@@ -1547,9 +1615,10 @@ public class IJ {
 	}
 	
 	static void selectWindow(Window win) {
-		if (win instanceof Frame)
+		if (win instanceof Frame) {
 			((Frame)win).toFront();
-		else
+			((Frame)win).setState(Frame.NORMAL);
+		} else
 			((Dialog)win).toFront();
 		long start = System.currentTimeMillis();
 		while (true) {
@@ -1574,9 +1643,7 @@ public class IJ {
 	}
 	
 	static void setColor(int red, int green, int blue, boolean foreground) {
-	    if (red<0) red=0; if (green<0) green=0; if (blue<0) blue=0; 
-	    if (red>255) red=255; if (green>255) green=255; if (blue>255) blue=255;  
-		Color c = new Color(red, green, blue);
+		Color c = Colors.toColor(red, green, blue);
 		if (foreground) {
 			Toolbar.setForegroundColor(c);
 			ImagePlus img = WindowManager.getCurrentImage();
@@ -1668,6 +1735,12 @@ public class IJ {
 	/** Sets the transfer mode used by the <i>Edit/Paste</i> command, where mode is "Copy", "Blend", "Average", "Difference", 
 		"Transparent", "Transparent2", "AND", "OR", "XOR", "Add", "Subtract", "Multiply", or "Divide". */
 	public static void setPasteMode(String mode) {
+		Roi.setPasteMode(stringToPasteMode(mode));
+	}
+
+	public static int stringToPasteMode(String mode) {
+		if (mode==null)
+			return Blitter.COPY;
 		mode = mode.toLowerCase(Locale.US);
 		int m = Blitter.COPY;
 		if (mode.startsWith("ble") || mode.startsWith("ave"))
@@ -1696,7 +1769,7 @@ public class IJ {
 			m = Blitter.MIN;
 		else if (mode.startsWith("max"))
 			m = Blitter.MAX;
-		Roi.setPasteMode(m);
+		return m;
 	}
 
 	/** Returns a reference to the active image, or displays an error
@@ -1752,13 +1825,14 @@ public class IJ {
 	/** Returns the path to the specified directory if <code>title</code> is
 		"home" ("user.home"), "downloads", "startup",  "imagej" (ImageJ directory),
 		"plugins", "macros", "luts", "temp", "current", "default",
-		"image" (directory active image was loaded from) or "file" 
-		(directory most recently used to open or save a file),
-		otherwise displays a dialog and returns the path to the
-		directory selected by the user. Returns null if the specified
-		directory is not found or the user cancels the dialog box.
-		Also aborts the macro if the user cancels
-		the dialog box.*/
+		"image" (directory active image was loaded from), "file" 
+		(directory most recently used to open or save a file), "cwd"
+		(current working directory) or "preferences" (location of
+		"IJ_Prefs.txt" file), otherwise displays a dialog and
+		returns the path to the directory selected by the user. Returns
+		null if the specified directory is not found or the user cancels the
+		dialog box. Also aborts the macro if the user cancels the
+		dialog box.*/
 	public static String getDirectory(String title) {
 		String dir = null;
 		String title2 = title.toLowerCase(Locale.US);
@@ -1782,6 +1856,8 @@ public class IJ {
 			dir = Prefs.getImageJDir();
 		else if (title2.equals("current") || title2.equals("default"))
 			dir = OpenDialog.getDefaultDirectory();
+		else if (title2.equals("preferences"))
+			dir = Prefs.getPrefsDir();
 		else if (title2.equals("temp")) {
 			dir = System.getProperty("java.io.tmpdir");
 			if (isMacintosh()) dir = "/tmp/";
@@ -1792,9 +1868,11 @@ public class IJ {
 				dir = fi.directory;
 			} else
 				dir = null;
-		} else if (title2.equals("file")) {
+		} else if (title2.equals("file"))
 			dir = OpenDialog.getLastDirectory();
-		} else {
+		else if (title2.equals("cwd"))
+			dir = System.getProperty("user.dir");
+		else {
 			DirectoryChooser dc = new DirectoryChooser(title);
 			dir = dc.getDirectory();
 			if (dir==null) Macro.abort();
@@ -1862,12 +1940,13 @@ public class IJ {
 	}
 
 	/** Opens the specified file as a tiff, bmp, dicom, fits, pgm, gif, jpeg 
-		or text image and returns an ImagePlus object if successful.
-		Calls HandleExtraFileTypes plugin if the file type is not recognised.
-		Displays a file open dialog if 'path' is null or an empty string.
-		Note that 'path' can also be a URL. Some reader plugins, including
-		the Bio-Formats plugin, display the image and return null.
-		Use IJ.open() to display a file open dialog box.
+	 * or text image and returns an ImagePlus object if successful.
+	 * Calls HandleExtraFileTypes plugin if the file type is not recognised.
+	 * Displays a file open dialog if 'path' is null or an empty string.
+	 * Note that 'path' can also be a URL. Some reader plugins, including
+	 * the Bio-Formats plugin, display the image and return null.
+	 * Use IJ.open() to display a file open dialog box.
+	 * @see ij.io.Opener#openUsingBioFormats(String)
 	*/
 	public static ImagePlus openImage(String path) {
 		macroRunning = true;
@@ -1908,7 +1987,7 @@ public class IJ {
 			if (len>5242880L)
 				return "<Error: file is larger than 5MB>";
 			InputStream in = u.openStream();
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
 			sb = new StringBuffer() ;
 			String line;
 			while ((line=br.readLine()) != null)
@@ -2225,9 +2304,13 @@ public class IJ {
 	 public static ImagePlus createImage(String title, String type, int width, int height, int depth) {
 		type = type.toLowerCase(Locale.US);
 		int bitDepth = 8;
-		if (type.contains("16")) bitDepth = 16;
-		if (type.contains("24")||type.contains("rgb")) bitDepth = 24;
-		if (type.contains("32")) bitDepth = 32;
+		if (type.contains("16"))
+			bitDepth = 16;
+		boolean signedInt = type.contains("32-bit int");
+		if (type.contains("32"))
+			bitDepth = 32;
+		if (type.contains("24") || type.contains("rgb") || signedInt)
+			bitDepth = 24;
 		int options = NewImage.FILL_WHITE;
 		if (bitDepth==16 || bitDepth==32)
 			options = NewImage.FILL_BLACK;
@@ -2240,6 +2323,8 @@ public class IJ {
 		else if (type.contains("noise") || type.contains("random"))
 			options = NewImage.FILL_NOISE;
 		options += NewImage.CHECK_AVAILABLE_MEMORY;
+		if (signedInt)
+			options += NewImage.SIGNED_INT;
 		return NewImage.createImage(title, width, height, depth, bitDepth, options);
 	}
 
@@ -2374,7 +2459,7 @@ public class IJ {
 	
 	/** Returns, as an array of strings, a list of the LUTs in the 
 	 * Image/Lookup Tables menu.
-	 * @see ij.plugin#LutLoader.getLut
+	 * @see ij.plugin.LutLoader#getLut
 	 * See also: Help>Examples>JavaScript/Show all LUTs
 	 * and Image/Color/Display LUTs
 	*/
@@ -2386,10 +2471,8 @@ public class IJ {
 			return new String[0];
 		for (int i=0; i<lutsMenu.getItemCount(); i++) {
 			MenuItem menuItem = lutsMenu.getItem(i);
-			if (menuItem.getActionListeners().length == 0) // separator?
-				continue;
 			String label = menuItem.getLabel();
-			if (label.equals("Invert LUT") || label.equals("Apply LUT"))
+			if (label.equals("-") || label.equals("Invert LUT") || label.equals("Apply LUT"))
 				continue;
 			String command = (String)commands.get(label);
 			if (command==null || command.startsWith("ij.plugin.LutLoader"))
@@ -2424,10 +2507,14 @@ public class IJ {
 		PrintWriter pw = new PrintWriter(caw);
 		e.printStackTrace(pw);
 		String s = caw.toString();
+		String lineNumber = "";
 		if (s!=null && s.contains("ThreadDeath"))
 			return;
+		Interpreter interpreter = Thread.currentThread().getName().endsWith("Macro$") ? Interpreter.getInstance() : null;
+		if (interpreter!=null)
+			lineNumber = "\nMacro line number: " + interpreter.getLineNumber();
 		if (getInstance()!=null) {
-			s = IJ.getInstance().getInfo()+"\n \n"+s;
+			s = IJ.getInstance().getInfo()+lineNumber+"\n \n"+s;
 			new TextWindow("Exception", s, 500, 340);
 		} else
 			log(s);

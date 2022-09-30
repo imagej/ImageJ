@@ -160,10 +160,13 @@ public class ImageCalculator implements PlugIn {
 		}
 		boolean stackOp = false;
 		if (size1>1) {
-			int result = IJ.setupDialog(img1, 0);
+			int result = IJ.setupDialog(img1, PlugInFilter.NO_CHANGES);
 			if (result==PlugInFilter.DONE)
 				return null;
-			if (result==PlugInFilter.DOES_STACKS) {
+			processStack = (result&PlugInFilter.DOES_STACKS)!=0;
+			if (processStack) {
+				if (img1.getStack().isVirtual())
+					createWindow = true;
 				img3 = doStackOperation(img1, img2);
 				stackOp = true;
 			} else

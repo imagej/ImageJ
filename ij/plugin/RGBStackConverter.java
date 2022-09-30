@@ -126,6 +126,7 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 		ImageProcessor ip = imp.getProcessor();
 		double min = ip.getMin();
 		double max = ip.getMax();
+		boolean hsbStack = imp.getProp("HSB_Stack")!=null;
 		for (int z=1; z<=slices; z++) {
 			if (slices==1) z = z1;
 			for (int t=1; t<=frames; t++) {
@@ -133,9 +134,17 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 				if (frames==1) t = t1;
 				//ip = stack.getProcessor(n1);
 				imp.setPositionWithoutUpdate(c1, z, t);
-				Image img = imp.getImage();
+				boolean isHSB = hsbStack && imp.getNChannels()==3;
 				int n2 = imp2.getStackIndex(c1, z, t);
-				stack2.setPixels((new ColorProcessor(img)).getPixels(), n2);
+				if (isHSB) {
+					ImagePlus hsbImp = new Duplicator().run(imp, 1, 3, z, z, t, t);
+					ImageConverter ic = new ImageConverter(hsbImp);
+					ic.convertHSBToRGB();
+					stack2.setPixels(hsbImp.getProcessor().getPixels(), n2);				
+				} else {
+					Image img = imp.getImage();
+					stack2.setPixels((new ColorProcessor(img)).getPixels(), n2);				
+				}
 			}
 		}
 		imp.setPosition(c1, z1, t1);
