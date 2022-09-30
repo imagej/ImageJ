@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53u33 26 September 2022</u>
+<li> <u>1.53u40 29 September 2022</u>
 <ul>
 <li> Thanks to Herbie Gluender, improved recording of the
 <i>Edit&gt;Selection&gt;Properties</i> command and added a
@@ -45,6 +45,11 @@ new colors from the active image.
 <li> Thanks to Ko Sugawara, fixed a bug that caused the 
 Opener.openAndAddToRecent() method to return 'false' when
 the file was opened successfully.
+<li> Thanks to Stein Rorvik, worked around a Java bug on Windows that 
+caused the main menu bar sub-menus to not scale to larger than 17 points.
+The menu bar size on Windows is still limited to 17 points regardless
+of the "GUI scale" setting in
+<i>Edit&gt;Options&gt;Appearance</i>.
 <li> Thanks to Mark Hiner, fixed a 1.53t regression that caused
 the <i>Image&gt;Stacks&gt;Z Project</i> command to ignore the last
 slice when doing "Average" projection of 32-bit stacks.
