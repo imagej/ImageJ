@@ -2,6 +2,8 @@ package ij.gui;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+
 import ij.*;
 import ij.process.*;
 import ij.util.*;
@@ -42,10 +44,18 @@ public class ProfilePlot {
 			return;
 		}
 		int roiType = roi.getType();
-		if (!(roi.isLine() || roiType==Roi.RECTANGLE)) {
+		boolean isRotatedRect = true;
+		try {
+			RotatedRectRoi ignore = (RotatedRectRoi) roi;
+		} catch (Exception e) {
+			isRotatedRect = false;
+		}
+		if (!(roi.isLine() || roiType==Roi.RECTANGLE || isRotatedRect)) {
 			IJ.error("Line or rectangular selection required.");
 			return;
 		}
+
+
 		Calibration cal = imp.getCalibration();
 		xInc = cal.pixelWidth;
 		units = cal.getUnits();
@@ -61,6 +71,8 @@ public class ProfilePlot {
 				profile = getWideLineProfile(imp, lineWidth);
 		} else if (averageHorizontally)
 			profile = getRowAverageProfile(roi.getBounds(), cal, ip);
+		else if (isRotatedRect)
+			profile = getRotatedProfile(imp, roi);
 		else
 			profile = getColumnAverageProfile(roi.getBounds(), ip);
 		ip.setCalibrationTable(null);
@@ -315,6 +327,20 @@ public class ProfilePlot {
 		for (int i=0; i<width; i++)
 			profile[i] /= height;
 		return profile;
+	}
+
+	double[] getRotatedProfile(ImagePlus imp, Roi roi){
+		// point 1,4 = "bottom", 2,3 = "top"
+		Polygon polygon = roi.getPolygon();
+		int[] xp = polygon.xpoints;
+		int[] yp = polygon.ypoints;
+
+		ImageProcessor ip = imp.getProcessor();
+
+		Line line = new Line(xp[0], yp[0], xp[1], yp[1]);
+		line.setImage(imp);
+
+		return new double[]{0};
 	}
 
 	void findMinAndMax() {

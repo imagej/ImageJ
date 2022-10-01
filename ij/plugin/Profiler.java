@@ -31,7 +31,12 @@ public class Profiler implements PlugIn, PlotMaker {
 	
 	public Plot getPlot() {
 		Roi roi = imp.getRoi();
-		if (roi==null || !(roi.isLine()||roi.getType()==Roi.RECTANGLE)) {
+		boolean isRotatedRect = true;
+		try {
+			RotatedRectRoi ignore = (RotatedRectRoi) roi;
+		} catch (Exception e) {isRotatedRect = false;}
+
+		if (roi==null || !(roi.isLine()||roi.getType()==Roi.RECTANGLE || isRotatedRect)) {
 			if (firstTime)
 				IJ.error("Plot Profile", "Line or rectangular selection required");
 			return null;
