@@ -44,12 +44,8 @@ public class ProfilePlot {
 			return;
 		}
 		int roiType = roi.getType();
-		boolean isRotatedRect = true;
-		try {
-			RotatedRectRoi ignore = (RotatedRectRoi) roi;
-		} catch (Exception e) {
-			isRotatedRect = false;
-		}
+		boolean isRotatedRect = roi instanceof RotatedRectRoi;
+
 		if (!(roi.isLine() || roiType==Roi.RECTANGLE || isRotatedRect)) {
 			IJ.error("Line or rectangular selection required.");
 			return;
@@ -330,39 +326,33 @@ public class ProfilePlot {
 	}
 
 	double[] getRotatedProfile(ImagePlus imp, Roi roi){
-		// point 1,4 = "bottom", 2,3 = "top"
 		Polygon polygon = roi.getPolygon();
 
-		if(polygon.npoints < 3)
+		// with very small shape its possible there will be not enough points
+		if(polygon.npoints < 4)
 			return new double[]{0};
 
+		// point 1,4 = "bottom", 2,3 = "top"
 		int[] xp = polygon.xpoints;
 		int[] yp = polygon.ypoints;
 
 		ImageProcessor ip = imp.getProcessor();
 
 		//Same length by virtue of being a square, in theory
-		Line.PointIterator startIterator = new Line.PointIterator(xp[0], yp[0], xp[1], yp[1]);
-		Line.PointIterator endIterator = new Line.PointIterator(xp[3], yp[3], xp[2], yp[2]);
+		Line.PointIterator startIterator = new Line.PointIterator(xp[3], yp[3], xp[2], yp[2]);
+		Line.PointIterator endIterator = new Line.PointIterator(xp[0], yp[0], xp[1], yp[1]);
 
+		// Length of the profile is the length of the 'bottom' line
 		double[] profile = new double[(int) Math.ceil(Math.sqrt(Math.pow(xp[0] - xp[3], 2) + Math.pow(yp[0] - yp[3], 2)))];
 
-
-		Point start = new Point(xp[0], yp[0]);
-		Point end = new Point(xp[3], yp[3]);
 		while(startIterator.hasNext() && endIterator.hasNext()){
+			Point start = startIterator.next();
+			Point end = endIterator.next();
+
 			double[] pixels = ip.getLine(start.x, start.y, end.x, end.y);
 
-			Line line = new Line(start.x, start.y, end.x, end.y);
-			line.setImage(imp);
-			line.draw(imp.getCanvas().getGraphics());
-
-			//Due to slight rounding errors its possible the length is off by 1
 			for(int i = 0; i < Math.min(profile.length, pixels.length); i++)
 				profile[i] += pixels[i];
-
-			start = startIterator.next();
-			end = endIterator.next();
 		}
 
 		Arrays.setAll(profile, i -> profile[i]/startIterator.getLength());
