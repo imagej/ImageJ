@@ -730,6 +730,8 @@ public class Line extends Roi {
 			} while (i <= n && u == u_prev && v == v_prev);
 		}
 
+		public int getLength() {return n;}
+
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
