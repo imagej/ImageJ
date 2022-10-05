@@ -61,9 +61,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		if (!IJ.altKeyDown()||stackSize>1) {
 			if (imp.isHyperStack() || imp.isComposite()) {
 				duplicateHyperstack(imp, newTitle);			
-				if (isRotatedRect) {
-					straightenRotatedRect(impA, roiA, IJ.getImage());	
-				}								
+				if (isRotatedRect)
+					straightenRotatedRect(impA, roiA, IJ.getImage());								
 				return;
 			} else
 				newTitle = showDialog(imp, "Duplicate...", "Title: ");

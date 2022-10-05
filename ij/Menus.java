@@ -1666,7 +1666,7 @@ public class Menus {
 		size = (int)Math.round(size*scale);
 		//if (cachedFont==null) System.out.println("getFont: "+size0+" "+size+" "+fontSize+" "+scale+" "+checkSize);
 		if (checkSize && IJ.isWindows() && size>17)
-			size = 17;  // Java resets the menu bar font size to 12 if you try to set it to >17
+			size = 17; // On Windows, the menu bar font size is set 12 if you set it to >17
 		Font menuFont =  new Font("SanSerif", Font.PLAIN, size);
 		return menuFont;
 	}
@@ -1731,6 +1731,7 @@ public class Menus {
 		addItem(getMenu(menuPath), label, 0, false);
 	}
 	
+	/** Work around Windows bug that limits menu bar sub-menu to 17 points. */
 	private static void fixFontSize(MenuItem item) {
 		if (IJ.isWindows() && item!=null)
 			item.setFont(getCachedFont());

@@ -51,7 +51,7 @@ public class Functions implements MacroConstants, Measurements {
 	boolean resultsPending;
 	Overlay offscreenOverlay;
 	Overlay overlayClipboard;
-	Roi roiClipboard;
+	static Roi roiClipboard;
 	GeneralPath overlayPath;
 	boolean overlayDrawLabels;
 	ResultsTable currentTable;
@@ -7715,6 +7715,7 @@ public class Functions implements MacroConstants, Measurements {
 		ImagePlus imp = getImage();
 		if (name.equals("paste")) {
 			interp.getParens();
+			//IJ.log("paste: "+roiClipboard);
 			if (roiClipboard!=null)
 				getImage().setRoi((Roi)roiClipboard.clone());
 			return null;
@@ -7740,6 +7741,7 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("copy")) {
 			interp.getParens();
 			roiClipboard = getImage().getRoi();
+			//IJ.log("copy: "+roiClipboard);
 			if (roiClipboard!=null)
 				roiClipboard = (Roi)roiClipboard.clone();
 			return null;
@@ -8229,6 +8231,10 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("title") || name.equals("name")) {
 			interp.getParens();
 			return new Variable(imp.getTitle());
+		} else if (name.equals("removeScale")) {
+			interp.getParens();
+			imp.removeScale();
+			return null;
 		} else
 			interp.error("Unrecognized Image function");
 		return null;

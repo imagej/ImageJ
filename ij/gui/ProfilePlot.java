@@ -42,18 +42,34 @@ public class ProfilePlot {
 			return;
 		}
 		int roiType = roi.getType();
-		if (!(roi.isLine() || roiType==Roi.RECTANGLE)) {
+		boolean rotatedRect = roi!=null && (roi instanceof RotatedRectRoi);
+		if (!(roi.isLine()||roiType==Roi.RECTANGLE||rotatedRect)) {
 			IJ.error("Line or rectangular selection required.");
 			return;
 		}
+		Roi saveRoi = null;
+		if (rotatedRect) {
+			boolean rgb = imp.getBitDepth()==24;
+			if (rgb)
+				saveRoi = roi;
+			double[] p = ((RotatedRectRoi)roi).getParams();
+			roi = new Line(p[0], p[1], p[2], p[3]);
+			roi.setStrokeWidth(p[4]);
+			roi.setImage(imp);
+			roiType = Roi.LINE;
+			if (rgb)
+				imp.setRoi(roi);
+		}		
 		Calibration cal = imp.getCalibration();
 		xInc = cal.pixelWidth;
 		units = cal.getUnits();
 		yLabel = cal.getValueUnit();
 		ImageProcessor ip = imp.getProcessor();
-		if (roiType==Roi.LINE)
+		if (roiType==Roi.LINE) {
 			profile = getStraightLineProfile(roi, cal, ip);
-		else if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE) {
+			if (saveRoi!=null)
+				imp.setRoi(saveRoi);
+		} else if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE) {
 			int lineWidth = (int)Math.round(roi.getStrokeWidth());
 			if (lineWidth<=1)
 				profile = getIrregularProfile(roi, ip, cal);

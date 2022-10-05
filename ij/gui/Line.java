@@ -449,8 +449,10 @@ public class Line extends Roi {
 				ImageProcessor ip = imp.getProcessor();
 				profile = ip.getLine(x1d, y1d, x2d, y2d);
 			} else {
-				ImageProcessor ip2 = (new Straightener()).rotateLine(imp,(int)getStrokeWidth());
-				if (ip2==null) return new double[0];
+				Straightener s = new Straightener();
+				ImageProcessor ip2 = imp.getBitDepth()==24?s.rotateLine(imp,width):s.straightenLine(imp,this,0);
+				if (ip2==null)
+					return new double[0];
 				int width = ip2.getWidth();
 				int height = ip2.getHeight();
 				if (ip2 instanceof FloatProcessor)

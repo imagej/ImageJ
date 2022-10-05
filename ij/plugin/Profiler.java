@@ -1,10 +1,7 @@
 package ij.plugin;
 import ij.*;
-import ij.process.*;
 import ij.gui.*;
 import ij.plugin.frame.Recorder;
-import java.awt.*;
-import java.awt.event.*;
 
 /** Implements the Analyze/Plot Profile and Edit/Options/Profile Plot Options commands. */
 public class Profiler implements PlugIn, PlotMaker {
@@ -13,8 +10,10 @@ public class Profiler implements PlugIn, PlotMaker {
 	boolean plotVertically;
 
 	public void run(String arg) {
-		if (arg.equals("set"))
-			{doOptions(); return;}
+		if (arg.equals("set")) {
+			doOptions();
+			return;
+		}
 		imp = IJ.getImage();
 		if (firstTime)
 			plotVertically = Prefs.verticalProfile || IJ.altKeyDown();
@@ -31,7 +30,7 @@ public class Profiler implements PlugIn, PlotMaker {
 	
 	public Plot getPlot() {
 		Roi roi = imp.getRoi();
-		if (roi==null || !(roi.isLine()||roi.getType()==Roi.RECTANGLE)) {
+		if (roi==null || !(roi.isLine()||roi.getType()==Roi.RECTANGLE||(roi instanceof RotatedRectRoi))) {
 			if (firstTime)
 				IJ.error("Plot Profile", "Line or rectangular selection required");
 			return null;

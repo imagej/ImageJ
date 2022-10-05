@@ -5,6 +5,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.util.Tools;
 import ij.io.FileOpener;
+import ij.plugin.frame.Recorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
@@ -187,8 +188,17 @@ class SetScaleDialog extends GenericDialog {
 			((TextField)stringField.elementAt(0)).setText("pixel");
 			setScale(NO_SCALE);
 			scaleChanged = true;
-			if (IJ.isMacOSX())
-				{setVisible(false); setVisible(true);}
+			if (IJ.isMacOSX() && false){
+				setVisible(false);
+				setVisible(true);
+			}
+			if (Recorder.record) {
+				Recorder.disableCommandRecording();				
+				if (Recorder.scriptMode())
+					Recorder.recordCall("imp.removeScale();");
+				else
+					Recorder.record("Image.removeScale");
+			}
 		}
 	}
 

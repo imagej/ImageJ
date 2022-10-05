@@ -95,10 +95,19 @@ public class Straightener implements PlugIn {
 		imp.setSlice(current);
 		return stack2;
 	}
-
+	
 	public ImageProcessor straightenLine(ImagePlus imp, int width) {
+		return straightenLine(imp, null, width);
+	}
+
+	public ImageProcessor straightenLine(ImagePlus imp, Line line, int width) {
 		Roi tempRoi = imp.getRoi();
-		if (tempRoi == null) return null;	//roi may have changed asynchronously
+		if (line!=null) {
+			tempRoi = line;
+			width = (int)line.getStrokeWidth();
+		}
+		if (tempRoi == null)
+			return null;	//roi may have changed asynchronously
 		if (tempRoi instanceof Line) {
 			FloatPolygon fp = ((Line)tempRoi).getFloatPoints();
 			tempRoi = new PolygonRoi(fp.xpoints, fp.ypoints, 2, Roi.POLYLINE);
@@ -173,7 +182,7 @@ public class Straightener implements PlugIn {
 		Roi roi = imp.getRoi();
 		if (roi==null || roi.getType()!=Roi.LINE)
 			throw new IllegalArgumentException("Straight line selection expected");
-		ImageProcessor ip2 = imp.getBitDepth()==24?straightenRGB(imp, width):straightenLine(imp, width);
+		ImageProcessor ip2 = imp.getBitDepth()==24?straightenRGB(imp,width):straightenLine(imp,width);
 		return ip2;
 	}
 
