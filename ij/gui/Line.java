@@ -450,7 +450,7 @@ public class Line extends Roi {
 				profile = ip.getLine(x1d, y1d, x2d, y2d);
 			} else {
 				Straightener s = new Straightener();
-				ImageProcessor ip2 = imp.getBitDepth()==24?s.rotateLine(imp,width):s.straightenLine(imp,this,0);
+				ImageProcessor ip2 = s.straightenLine(imp,this,0);
 				if (ip2==null)
 					return new double[0];
 				int width = ip2.getWidth();
@@ -509,6 +509,7 @@ public class Line extends Roi {
 		return getFloatPolygon(getStrokeWidth());
 	}
 
+	/** Obsolete */
 	public FloatPolygon getFloatPolygon(double strokeWidth) {
 		FloatPolygon p = new FloatPolygon();
 		if (strokeWidth <= 1) {

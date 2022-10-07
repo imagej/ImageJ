@@ -2702,16 +2702,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		if (line==null || !line.isLine())
 			throw new IllegalArgumentException("Line selection required");
 		double lineWidth = line.getStrokeWidth();
+		if (lineWidth<1.0)
+			lineWidth = 1.0;
 		Roi roi2 = null;
 		if (line.getType()==Roi.LINE) {
-			if (lineWidth<=1.0)
-				lineWidth = 1.0000001;
-			FloatPolygon p = ((Line)line).getFloatPolygon(lineWidth);
-			roi2 = new PolygonRoi(p, Roi.POLYGON);
+			FloatPolygon p = ((Line)line).getFloatPoints();
+			roi2 = new RotatedRectRoi(p.xpoints[0],p.ypoints[0],p.xpoints[1],p.ypoints[1],lineWidth);
 			line.setStrokeWidth(lineWidth);
 		} else {
-			if (lineWidth<1)
-				lineWidth = 1;
 			Rectangle bounds = line.getBounds();
 			double width = bounds.x+bounds.width + lineWidth;
 			double height = bounds.y+bounds.height + lineWidth;

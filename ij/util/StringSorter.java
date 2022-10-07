@@ -5,6 +5,8 @@ public class StringSorter {
 	
 	/** Sorts the array. */
 	public static void sort(String[] a) {
+		if (a==null)
+			return;
 		if (!alreadySorted(a))
 			sort(a, 0, a.length - 1);
 	}
@@ -23,7 +25,7 @@ public class StringSorter {
 	}
 		
 	static boolean alreadySorted(String[] a) {
-		for ( int i=1; i<a.length; i++ ) {
+		for (int i=1; i<a.length; i++ ) {
 			if (a[i].compareTo(a[i-1]) < 0 )
 			return false;
 		}

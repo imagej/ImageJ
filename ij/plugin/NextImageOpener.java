@@ -112,8 +112,13 @@ public class NextImageOpener implements PlugIn {
 	/** gets the next image name in a directory list */
 	String getNext(String path, String imageName, boolean forward) {
 		File dir = new File(path);
-		if (!dir.isDirectory()) return null;
+		if (!dir.isDirectory())
+			return null;
 		String[] names = dir.list();
+		if (names==null) {
+			IJ.log("getNext directory empty: "+path);
+			return null;
+		}
 		ij.util.StringSorter.sort(names);
 		int thisfile = -1;
 		for (int i=0; i<names.length; i++) {

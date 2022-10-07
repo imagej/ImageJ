@@ -372,8 +372,8 @@ public class ScaleBar implements PlugIn {
 	 */
 	void setBackgroundBoxesPositions(ImageProcessor ip) throws MissingRoiException {
 		Calibration cal = imp.getCalibration();
-		hBarWidthInPixels = (int)(config.hBarWidth/cal.pixelWidth);
-		vBarHeightInPixels = (int)(config.vBarHeight/cal.pixelHeight);
+		hBarWidthInPixels = (int)Math.round(config.hBarWidth/cal.pixelWidth);
+		vBarHeightInPixels = (int)Math.round(config.vBarHeight/cal.pixelHeight);
 
 		boolean hTextTop = config.showVertical && (config.location.equals(locations[UPPER_LEFT]) || config.location.equals(locations[UPPER_RIGHT]));
 		
@@ -463,7 +463,7 @@ public class ScaleBar implements PlugIn {
 		hText.height = config.hideText ? 0 : config.fontSize;
 		hText.width = config.hideText ? 0 : ip.getStringWidth(getHLabel());
 		hText.x = hBackground.x + innerMargin + (hBoxWidth - hText.width)/2 + (config.showVertical && !right && upper ? vBoxWidth - config.barThicknessInPixels : 0);
-		hText.y = hTextTop ? (hBackground.y + innerMargin - (int)(config.fontSize*0.25)) : (hBar.y + hBar.height);
+		hText.y = hTextTop ? (hBackground.y + innerMargin - (int)Math.round(config.fontSize*0.25)) : (hBar.y + hBar.height);
 
 		vBar.width = config.barThicknessInPixels;
 		vBar.height = vBarHeightInPixels;
@@ -472,7 +472,7 @@ public class ScaleBar implements PlugIn {
 
 		vText.height = config.hideText ? 0 : ip.getStringWidth(getVLabel());
 		vText.width = config.hideText ? 0 : config.fontSize;
-		vText.x = right ? (vBar.x + vBar.width) : (vBar.x - vBoxWidth + config.barThicknessInPixels - (int)(config.fontSize*0.25));
+		vText.x = right ? (vBar.x + vBar.width) : (vBar.x - vBoxWidth + config.barThicknessInPixels - (int)Math.round(config.fontSize*0.25));
 		vText.y = vBackground.y + innerMargin + (vBoxHeight - vText.height)/2;
 	}
 
@@ -585,7 +585,7 @@ public class ScaleBar implements PlugIn {
 			for (int x = 0; x < ip.getWidth(); x++) {
 				int p = ip.get(x, y);
 				if (p > 0) {
-					p = (int) (p * ((processor.getMax() - processor.getMin()) / 255d) + (float)processor.getMin());
+					p = (int)Math.round(p * ((processor.getMax() - processor.getMin()) / 255d) + (float)processor.getMin());
 					if (processor.getBitDepth() == 32)
 						p = Float.floatToIntBits(p);
 					processor.putPixel(x, y, p);
