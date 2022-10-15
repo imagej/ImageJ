@@ -30,7 +30,12 @@ public class Binner implements PlugIn {
 		imp.startTiming();
 		ImagePlus imp2 = shrink(imp, xshrink, yshrink, zshrink, method);
 		IJ.showTime(imp, imp.getStartTime(), "", imp.getStackSize());
-		imp.setStack(imp2.getStack());
+		//if (imp2!=null) {
+		//	imp2.show();
+		//	return;
+		//}
+		if (!imp2.isHyperStack())
+			imp.setStack(imp2.getStack());
 		imp.setCalibration(imp2.getCalibration());
 		if (zshrink>1)
 			imp.setSlice(1);
@@ -39,10 +44,11 @@ public class Binner implements PlugIn {
 	public ImagePlus shrink(ImagePlus imp, int xshrink, int yshrink, int zshrink, int method) {
 		this.xshrink = xshrink;
 		this.yshrink = yshrink;
+		this.zshrink = zshrink;
 		int w = imp.getWidth()/xshrink;
 		int h = imp.getHeight()/yshrink;
 		ColorModel cm=imp.createLut().getColorModel();
-		ImageStack stack=imp.getStack();
+		ImageStack stack = imp.getStack();
 		ImageStack stack2 = new ImageStack (w, h, cm);
 		int d = stack.size();
 		if (method==SUM) {
@@ -63,19 +69,40 @@ public class Binner implements PlugIn {
 			if (ip.isInvertedLut()) ip2.invert();
 			stack2.addSlice(stack.getSliceLabel(z), ip2);
 		}
-		if (zshrink>1 && !imp.isHyperStack())
-			stack2 = shrinkZ(stack2, zshrink);
-		ImagePlus imp2 = imp.createImagePlus();
-		imp2.setStack("Reduced "+imp.getShortTitle(), stack2);
+		int channels = imp.getNChannels();
+		int slices = imp.getNSlices();
+		int frames = imp.getNFrames();
+		if (zshrink>1) {
+			if (imp.isHyperStack()) {
+				if (channels>1 && (slices==1||frames==1)) {
+					imp.setStack(stack2);
+					ImagePlus[] images = ChannelSplitter.split(imp);
+					for (int i=0; i<images.length; i++) {
+						ImageStack tstack = shrinkZ(images[i].getStack(), zshrink);
+						images[i].setStack(tstack);
+					}
+					ImagePlus img = RGBStackMerge.mergeChannels(images, false);
+					stack2 = img.getStack();
+					if (slices>1) slices /= zshrink;
+					if (frames>1) frames /= zshrink;
+				}
+			} else
+				stack2 = shrinkZ(stack2, zshrink);
+		}
+		ImagePlus imp2 = null;
+		if (imp.isHyperStack()) {
+			imp2 = imp;
+			imp2.setStack(stack2, channels, slices, frames);
+		} else {
+			imp2 = imp.createImagePlus();
+			imp2.setStack("Reduced "+imp.getShortTitle(), stack2);
+		}
 		Calibration cal2 = imp2.getCalibration();
 		if (cal2.scaled()) {
 			cal2.pixelWidth *= xshrink;
 			cal2.pixelHeight *= yshrink;
 			cal2.pixelDepth *= zshrink;
 		}
-		//if (zshrink>1 && imp.isHyperStack())
-		//	imp2 = shrinkHyperstackZ(imp2, zshrink);
-		imp2.setOpenAsHyperStack(imp.isHyperStack());
 		if (method==SUM  && imp2.getBitDepth()>8) {
 			ImageProcessor ip = imp2.getProcessor();
 			ip.setMinAndMax(ip.getMin(), ip.getMax()*xshrink*yshrink*zshrink);
@@ -91,6 +118,8 @@ public class Binner implements PlugIn {
 		ImageStack stack2 = new ImageStack (w, h, stack.getColorModel());
 		for (int z=1; z<=d2; z++)
 			stack2.addSlice(stack.getProcessor(z).duplicate());
+		if (method==MEDIAN) // median z-binning does not work 
+			method = AVERAGE;
 		boolean rgb = stack.getBitDepth()==24;
 		ImageProcessor ip = rgb?new ColorProcessor(d, h):new FloatProcessor(d, h);
 		for (int x=0; x<w; x++) {
@@ -111,36 +140,7 @@ public class Binner implements PlugIn {
 		}
 		return stack2;
 	}
-	
-	public ImagePlus shrinkHyperstackZ(ImagePlus imp, int zshrink) {
-		int width = imp.getWidth();
-		int height = imp.getHeight();
-		int channels = imp.getNChannels();
-		int slices = imp.getNSlices();
-		int frames = imp.getNFrames();
-		ImageStack stack = imp.getStack();
-		int slices2 = slices/zshrink;
-		ImageStack stack2 = new ImageStack(width, height);
-		for (int c=1; c<=channels; c++) {
-			for (int t=1; t<=frames; t++) {
-				ImageStack tstack = new ImageStack(width, height);
-				for (int z=1; z<=slices; z++) {
-					int i = imp.getStackIndex(c, z, t);
-					ImageProcessor ip = stack.getProcessor(imp.getStackIndex(c, z, t));
-						tstack.addSlice(stack.getSliceLabel(i), ip);
-				}
-				//IJ.log("1: "+c+"  "+t+" "+tstack.size()+"  "+slices);
-				tstack = shrinkZ(tstack, zshrink);
-				for (int i=1; i<=tstack.size(); i++)
-					stack2.addSlice(tstack.getSliceLabel(i), tstack.getProcessor(i));
-			}
-		}
-		imp.setStack(stack2, channels, slices2, frames);
-		new HyperStackConverter().shuffle(imp, HyperStackConverter.ZTC);
-		IJ.showProgress(1.0);
-		return imp;
-	}
-	
+		
 	public ImageProcessor shrink(ImageProcessor ip, int xshrink, int yshrink, int method) {
 		this.xshrink = xshrink;
 		this.yshrink = yshrink;
@@ -190,13 +190,13 @@ public class Binner implements PlugIn {
 	}
 
 	private float getMedian(ImageProcessor ip, int x, int y) {
-		int shrinksize=xshrink*yshrink;
+		int shrinksize = xshrink*yshrink;
 		float[] pixels = new float[shrinksize];
 		int p=0;
 		// fill pixels within local neighborhood
 		for (int y2=0; y2<yshrink; y2++) {
 			for (int x2=0;  x2<xshrink; x2++)
-				pixels[p++]= ip.getf(x*xshrink+x2, y*yshrink+y2); 
+				pixels[p++] = ip.getf(x*xshrink+x2, y*yshrink+y2); 
 		}
 		// find median value
 		int halfsize=shrinksize/2;
@@ -275,8 +275,8 @@ public class Binner implements PlugIn {
 		gd.showDialog();
 		if (gd.wasCanceled()) 
 			return false;
-		xshrink = (int) gd.getNextNumber();
-		yshrink = (int) gd.getNextNumber();
+		xshrink = (int)gd.getNextNumber();
+		yshrink = (int)gd.getNextNumber();
 		if (stack)
 			zshrink = (int) gd.getNextNumber();
 		method = gd.getNextChoiceIndex();

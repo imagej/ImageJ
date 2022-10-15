@@ -2415,18 +2415,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public void scale(double xscale, double yscale, boolean centered) {
 		int[] indexes = getIndexes();
 		for (int i=0; i<indexes.length; i++) {
-			Roi roi = (Roi)rois.get(i);
+			Roi roi = (Roi)rois.get(indexes[i]);
 			Roi roi2 = RoiScaler.scale(roi, xscale, yscale, centered);
-			rois.set(i, roi2);
+			rois.set(indexes[i], roi2);
 		}
-		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null) {
-			Roi[] rois = getRoisAsArray();
-			Overlay overlay = newOverlay();
-			for (int i=0; i<rois.length; i++)
-				overlay.add(rois[i]);
-			setOverlay(imp, overlay);
-		}
+		updateShowAll();
 	}
 
 	private void rotate() {
@@ -2471,23 +2464,16 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		boolean useRoiCenter = Double.isNaN(xcenter);
 		int[] indexes = getIndexes();
 		for (int i=0; i<indexes.length; i++) {
-			Roi roi = (Roi)rois.get(i);
+			Roi roi = (Roi)rois.get(indexes[i]);
 			if (useRoiCenter) {
 				FloatPolygon center = roi.getRotationCenter();
 				xcenter = center.xpoints[0];
 				ycenter = center.ypoints[0];
 			}
 			Roi roi2 = RoiRotator.rotate(roi, angle, xcenter, ycenter);
-			rois.set(i, roi2);
+			rois.set(indexes[i], roi2);
 		}
-		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null) {
-			Roi[] rois = getRoisAsArray();
-			Overlay overlay = newOverlay();
-			for (int i=0; i<rois.length; i++)
-				overlay.add(rois[i]);
-			setOverlay(imp, overlay);
-		}
+		updateShowAll();
 	}
 
 	private void translate() {

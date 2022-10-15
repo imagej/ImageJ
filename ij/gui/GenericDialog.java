@@ -1513,7 +1513,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 	
 	/** Reset the counters before reading the dialog parameters */
-	void resetCounters() {
+	public void resetCounters() {
 		nfIndex = 0;		// prepare for readout
 		sfIndex = 0;
 		cbIndex = 0;
@@ -1522,7 +1522,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		radioButtonIndex = 0;
 		invalidNumber = false;
 	}
-
+	
 	/** Returns the Vector containing the numeric TextFields. */
 	public Vector getNumericFields() {
 		return numberField;

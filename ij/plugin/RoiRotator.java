@@ -77,6 +77,8 @@ public class RoiRotator implements PlugIn {
 			return rotateShape((ShapeRoi)roi, -theta, xcenter, ycenter);
 		FloatPolygon poly = roi.getFloatPolygon();
 		int type = roi.getType();
+		boolean rotatedRect = roi instanceof RotatedRectRoi;
+		double rotatedRectWidth = 0;
 		if (type==Roi.LINE) {
 			Line line = (Line)roi;
 			double x1=line.x1d;
@@ -86,6 +88,12 @@ public class RoiRotator implements PlugIn {
 			poly = new FloatPolygon();
 			poly.addPoint(x1, y1);
 			poly.addPoint(x2, y2);
+		} else if (rotatedRect) {
+			double[] p = ((RotatedRectRoi)roi).getParams();
+			poly = new FloatPolygon();
+			poly.addPoint(p[0], p[1]);
+			poly.addPoint(p[2], p[3]);
+			rotatedRectWidth = p[4];
 		}
 		for (int i=0; i<poly.npoints; i++) {
 			double dx = poly.xpoints[i]-xcenter;
@@ -98,6 +106,8 @@ public class RoiRotator implements PlugIn {
 		Roi roi2 = null;
 		if (type==Roi.LINE)
 			roi2 = new Line(poly.xpoints[0], poly.ypoints[0], poly.xpoints[1], poly.ypoints[1]);
+		else if (rotatedRect)
+			roi2 = new RotatedRectRoi(poly.xpoints[0], poly.ypoints[0], poly.xpoints[1], poly.ypoints[1], rotatedRectWidth);
 		else if (type==Roi.POINT)
 			roi2 = new PointRoi(poly.xpoints, poly.ypoints,poly.npoints);
 		else {

@@ -5,8 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.53u45 6 October 2022</u>
+<li> <u>1.53u49 14 October 2022</u>
 <ul>
+<li> Thanks to Giovanni Cardone, the <i>Image&gt;Transform&gt;Bin</i>
+command supports z-binning of 4D hyperstacks.
 <li> Thanks to Dr. Njitram, the <i>Analyze&gt;Plot Profile</i>
 command works with rotated rectangles.
 <li> The <i>Edit&gt;Selection&gt;Line to Area</i> command
@@ -19,6 +21,10 @@ to make it clearer what the command does.
 <li> Thanks to Pau Carrillo-Barbera, the Selection Brush Tool is no
 longer disabled when activating a selection in an overlay by
 double clicking on it.
+<li> Thanks to 'John D.', made GenericDialog.resetCounters()
+public so it can be called by plugins using
+GenericDialog.addButton()
+(<a href="http://wsr.imagej.net/plugins/Button_Example2.java">example</a>).
 <li> Thanks to Dennis Chang, added the recordable Image.removeScale()
 macro function and ImagePlus.removeScale() method.
 <li> Added the ImageProcessor.setColor(String) method.
@@ -59,6 +65,12 @@ of the "GUI scale" setting.
 <li> Thanks to Stein Rorvik, fixed a bug that caused the Roi.Paste
 macro function to not work as expected.
 <li> Thanks to 'bobfRT1', fixed a scale bar width rounding error.
+<li> Thanks to 'rlimame', fixed a bug that caused the
+<i>Edit&gt;Selection&gt;Rotate</i> command to convert
+Rotated Rectangle selections to Polygon selections.
+<li> Thanks to Michael Schmid, fixed bugs that caused the
+<i>Scale</i> and <i>Rotate</i> commands in the ROI Manager to
+only work correctly when when processing all the ROIs.
 <li> Thanks to Mark Hiner, fixed a 1.53t regression that caused
 the <i>Image&gt;Stacks&gt;Z Project</i> command to ignore the last
 slice when doing "Average" projection of 32-bit stacks.
@@ -538,7 +550,8 @@ the threshold is set to zero.
 <li> Thanks to 'pdd2110', added the Property.setSliceLabel(label)
 macro function.
 <li> Thanks to 'John D.', added the GenericDialog.addButton() method
-(<a href="http://wsr.imagej.net/plugins/Button_Example.java">example</a>).
+(<a href="http://wsr.imagej.net/plugins/Button_Example.java">example1</a>,
+<a href="http://wsr.imagej.net/plugins/Button_Example2.java">example2</a>).
 <li> Thanks to 'Oodegard', fixed a bug that caused the
 "Auto-next slice" option of the point tool to not
 work as expected with hyperstacks.
