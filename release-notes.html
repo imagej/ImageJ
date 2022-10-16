@@ -5,10 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.53u49 14 October 2022</u>
+<li> <u>1.53u  15 October 2022</u>
 <ul>
 <li> Thanks to Giovanni Cardone, the <i>Image&gt;Transform&gt;Bin</i>
-command supports z-binning of 4D hyperstacks.
+command now supports z-binning of 4D hyperstacks.
 <li> Thanks to Dr. Njitram, the <i>Analyze&gt;Plot Profile</i>
 command works with rotated rectangles.
 <li> The <i>Edit&gt;Selection&gt;Line to Area</i> command
@@ -16,7 +16,7 @@ converts straight line selections to rotated rectangle
 selections.
 <li> Thanks to Herbie Gluender, improved recording of the
 <i>Edit&gt;Selection&gt;Properties</i> command and added a
-comment to the <i>Edit&gt;Options&gt;Line Width</i> Dialog
+comment to the <i>Edit&gt;Options&gt;Line Width</i> dialog
 to make it clearer what the command does.
 <li> Thanks to Pau Carrillo-Barbera, the Selection Brush Tool is no
 longer disabled when activating a selection in an overlay by
@@ -26,20 +26,20 @@ public so it can be called by plugins using
 GenericDialog.addButton()
 (<a href="http://wsr.imagej.net/plugins/Button_Example2.java">example</a>).
 <li> Thanks to Dennis Chang, added the recordable Image.removeScale()
-macro function and ImagePlus.removeScale() method.
+macro function and the ImagePlus.removeScale() method.
 <li> Added the ImageProcessor.setColor(String) method.
 <li> Thanks to Tiago Ferreira, fixed a bug that caused toolbar
 contextual menus to ignore the <i>Edit&gt;Options&gt;Appearance</i>
-GUI scale setting.
+"GUI scale" setting.
 <li> Thanks to Jan Brocher, fixed a bug that caused the "Results" menu
 in a table to disappear if the table was renamed.
-<li> Thanks to Rene Ramekers, fixed a bug that caused
-<i>File&gt;Import&gt;TIFF Virtual Stack</i> to not correctly 
-calibrate TIFF stacks not created by ImageJ.
+<li> Thanks to Rene Ramekers, fixed a bug that caused the
+<i>File&gt;Import&gt;TIFF Virtual Stack</i> command to not 
+correctly calibrate TIFF stacks that were not created
+by ImageJ.
 <li> Thanks to Andrey Kazak, fixed a bug that caused the
-<i>Image&gt;Overlay&gt;From ROI Manager</i> command,
-when not used in a macro, to not copy 
-the ROI positions.
+<i>Image&gt;Overlay&gt;From ROI Manager</i> menu command to
+not transfer the ROI positions.
 <li> Thanks to Herbie Gluender, fixed a bug that caused the
 <i>Edit&gt;Selection&gt;Straighten</i> command to change
 the global line selection width.
@@ -48,7 +48,7 @@ x or y coordinates greater than 60,535 and less than 65,535 to
 be saved incorrectly.
 <li> Thanks to Christoph Gohike, fixed a bug that caused ImageJ to
 create TIFF files with invalid RowsPerStrip tags when the image
-height was greater than 65535.
+height was greater than 65,535.
 <li> Thanks to Michael Schmid, fixed several bugs
 with <i>Image&gt;Stacks&gt;Plot Z-axis Profile</i>
 "Live" plots.
@@ -60,8 +60,8 @@ Opener.openAndAddToRecent() method to return 'false' when
 the file was opened successfully.
 <li> Thanks to Stein Rorvik, worked around a Java bug on Windows that 
 caused the main menu bar sub-menus to not scale to larger than 17 points.
-The menu bar font size is still limited to 17 points regardless
-of the "GUI scale" setting.
+Unfortunately, the main menu bar font size on Windows is still limited to
+17 points regardless of the "GUI scale" setting.
 <li> Thanks to Stein Rorvik, fixed a bug that caused the Roi.Paste
 macro function to not work as expected.
 <li> Thanks to 'bobfRT1', fixed a scale bar width rounding error.
@@ -70,7 +70,7 @@ macro function to not work as expected.
 Rotated Rectangle selections to Polygon selections.
 <li> Thanks to Michael Schmid, fixed bugs that caused the
 <i>Scale</i> and <i>Rotate</i> commands in the ROI Manager to
-only work correctly when when processing all the ROIs.
+only work correctly when processing all the ROIs.
 <li> Thanks to Mark Hiner, fixed a 1.53t regression that caused
 the <i>Image&gt;Stacks&gt;Z Project</i> command to ignore the last
 slice when doing "Average" projection of 32-bit stacks.

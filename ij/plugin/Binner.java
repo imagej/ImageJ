@@ -30,10 +30,6 @@ public class Binner implements PlugIn {
 		imp.startTiming();
 		ImagePlus imp2 = shrink(imp, xshrink, yshrink, zshrink, method);
 		IJ.showTime(imp, imp.getStartTime(), "", imp.getStackSize());
-		//if (imp2!=null) {
-		//	imp2.show();
-		//	return;
-		//}
 		if (!imp2.isHyperStack())
 			imp.setStack(imp2.getStack());
 		imp.setCalibration(imp2.getCalibration());
