@@ -20,10 +20,6 @@ public class Filters implements PlugInFilter {
 		this.imp = imp;
 		if (imp!=null) {
 			Roi roi = imp.getRoi();
-			if (imp.getType()==ImagePlus.GRAY16 && arg.equals("invert")) {
-				imp.resetRoi();
-				roi = null;
-			}
 			if (roi!=null && !roi.isArea())
 				noRoi = true;
 		}

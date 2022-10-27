@@ -103,6 +103,9 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 			return;
 		}
 		imp2.setOpenAsHyperStack(slices2>1||frames2>1);
+		Object info = imp.getProperty("Info");
+		if (info!=null) imp2.setProperty("Info", info);		
+		imp2.setProperties(imp.getPropertiesAsArray());
 		imp2.show();
 		if (!keep) {
 			imp.changes = false;

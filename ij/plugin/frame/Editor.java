@@ -1164,7 +1164,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				if (imp!=null)
 					imp.updateAndDraw();
 			}
-		} else if (!code.startsWith("[Macro ")) {
+		} else if (!code.startsWith("[Macro ") && !code.contains("waitForUser")) {
 			String rtn = interpreter.eval(code);
 			if (rtn!=null)
 				insertText(rtn);

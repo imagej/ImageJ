@@ -4925,7 +4925,10 @@ public class Functions implements MacroConstants, Measurements {
 			return pad();
 		else if (name.equals("format"))
 			return format();
-		else
+		else if (name.equals("setFontSize")) {
+			getProcessor().setFontSize((int)getArg());
+			return null;
+		} else
 			interp.error("Unrecognized String function");
 		return null;
 	}

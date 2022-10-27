@@ -620,7 +620,7 @@ public class ImageReader {
 
 	Object readCompressedRGB48(InputStream in) throws IOException {
 		if (fi.compression==FileInfo.LZW_WITH_DIFFERENCING||fi.compression==FileInfo.ZIP_WITH_DIFFERENCING)
-			throw new IOException("ImageJ cannot open 48-bit compressed TIFFs with predictor");
+			throw new IOException("ImageJ cannot open 48-bit compressed TIFFs with predictors");
 		int channels = 3;
 		short[][] stack = new short[channels][nPixels];
 		DataInputStream dis = new DataInputStream(in);

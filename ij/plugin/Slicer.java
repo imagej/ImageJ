@@ -631,6 +631,9 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 	}
 	
 	private float[] getOrthoLine(ImageProcessor ip, int x1, int y1, int x2, int y2, float[] data) {
+		int w = ip.getWidth();
+		int h = ip.getHeight();
+		boolean checkBounds = x1<0||x1>w||y1<0||y1>h||x2<0||x2>w||y2<0||y2>h;
 		int dx = x2-x1;
 		int dy = y2-y1;
 		int n = Math.max(Math.abs(dx), Math.abs(dy));
@@ -638,11 +641,15 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 			data = new float[n];
 		int xinc = dx/n;
 		int yinc = dy/n;
+		int width = ip.getWidth();
+		int height = ip.getHeight();
 		for (int i=0; i<n; i++) {
 			if (rgb) {
 				int rgbPixel = ((ColorProcessor)ip).getPixel(x1, y1);
 				data[i] = Float.intBitsToFloat(rgbPixel&0xffffff);
-			} else
+			} else if (checkBounds)
+				data[i] = x1>0&&x1<width&&y1>0&&y1<height?ip.getf(x1,y1):0;
+			else
 				data[i] = ip.getf(x1,y1);
 			x1 += xinc;
 			y1 += yinc;
