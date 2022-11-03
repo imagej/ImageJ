@@ -1,14 +1,23 @@
 package ij.gui;
-import ij.*;
-import ij.process.*;
-import ij.measure.*;
-import ij.plugin.frame.*;
-import ij.util.Tools;
-import ij.util.FloatArray;
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.geom.*;
-import java.awt.event.*;
+import java.awt.Color;
+import java.awt.Event;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
+import java.awt.geom.GeneralPath;
+
+import ij.IJ;
+import ij.ImagePlus;
+import ij.Prefs;
+import ij.measure.Calibration;
+import ij.measure.SplineFitter;
+import ij.plugin.frame.LineWidthAdjuster;
+import ij.plugin.frame.Recorder;
+import ij.process.FloatPolygon;
+import ij.process.ImageProcessor;
+import ij.process.PolygonFiller;
 
 /** This class represents a polygon region of interest or polyline of interest. */
 public class PolygonRoi extends Roi {
@@ -123,6 +132,7 @@ public class PolygonRoi extends Roi {
 	}
 
 	/** @deprecated */
+	@Deprecated
 	public PolygonRoi(int[] xPoints, int[] yPoints, int nPoints, ImagePlus imp, int type) {
 		this(xPoints, yPoints, nPoints, type);
 		setImage(imp);
@@ -192,6 +202,7 @@ public class PolygonRoi extends Roi {
 			g.drawRect(screenXD(startXD)-4, screenYD(startYD)-4, 8, 8);
 	}
 
+	@Override
 	public void draw(Graphics g) {
 		updatePolygon();
 		Color color =  strokeColor!=null?strokeColor:ROIColor;
@@ -298,10 +309,11 @@ public class PolygonRoi extends Roi {
 			g2d.draw(path);
 	}
 
+	@Override
 	public void drawPixels(ImageProcessor ip) {
 		int saveWidth = ip.getLineWidth();
 		if (getStrokeWidth()>1f)
-			ip.setLineWidth((int)Math.round(getStrokeWidth()));
+			ip.setLineWidth(Math.round(getStrokeWidth()));
 		double xbase = getXBase();
 		double ybase = getYBase();
 		if (xSpline!=null) {
@@ -327,6 +339,7 @@ public class PolygonRoi extends Roi {
 		updateFullWindow = true;
 	}
 
+	@Override
 	protected void grow(int sx, int sy) {
 	// Overrides grow() in Roi class
 	}
@@ -344,8 +357,8 @@ public class PolygonRoi extends Roi {
 				float xbase = (float)getXBase();
 				float ybase = (float)getYBase();
 				for (int i=0; i<nPoints; i++) {
-					xp2[i] = (int)Math.round(xpf[i]+xbase);
-					yp2[i] = (int)Math.round(ypf[i]+ybase);
+					xp2[i] = Math.round(xpf[i]+xbase);
+					yp2[i] = Math.round(ypf[i]+ybase);
 				}
 			} else {
 				for (int i=0; i<nPoints; i++) {
@@ -370,6 +383,7 @@ public class PolygonRoi extends Roi {
 		}
 	}
 
+	@Override
 	public void mouseMoved(MouseEvent e) {
 		int sx = e.getX();
 		int sy = e.getY();
@@ -599,6 +613,7 @@ public class PolygonRoi extends Roi {
 		}
 	}
 
+	@Override
 	protected void moveHandle(int sx, int sy) {
 		if (constrain) {  // constrain in 90deg steps
 			int dx = sx - previousSX;
@@ -783,7 +798,8 @@ public class PolygonRoi extends Roi {
 		return ", angle=" + IJ.d2s(degrees2);
 	}
 
-   protected void mouseDownInHandle(int handle, int sx, int sy) {
+   @Override
+protected void mouseDownInHandle(int handle, int sx, int sy) {
 		if (state==CONSTRUCTING)
 			return;
 		int ox = offScreenX(sx);
@@ -1070,6 +1086,7 @@ public class PolygonRoi extends Roi {
 
 	/** With segmented selections, ignore first mouse up and finalize
 		when user double-clicks, control-clicks or clicks in start box. */
+	@Override
 	protected void handleMouseUp(int sx, int sy) {
 		if (state==MOVING) {
 			state = NORMAL;
@@ -1173,6 +1190,7 @@ public class PolygonRoi extends Roi {
 	 *  This convention is opposite to that of the java.awt.Shape class.
 	 *  In x, the offset is chosen slightly below 0.5 to reduce the impact of numerical
 	 *  errors. */
+	@Override
 	public boolean contains(int x, int y) {
 		if (!super.contains(x, y))
 			return false;
@@ -1191,6 +1209,7 @@ public class PolygonRoi extends Roi {
 	/** Returns whether coordinate (x,y) is contained in the Roi.
 	 *  Note that the coordinate (0,0) is the top-left corner of pixel (0,0).
 	 *  Use contains(int, int) to determine whether a given pixel is contained in the Roi. */
+	@Override
 	public boolean containsPoint(double x, double y) {
 		if (!super.containsPoint(x, y))
 			return false;
@@ -1209,6 +1228,7 @@ public class PolygonRoi extends Roi {
 
 	/** Returns a handle number if the specified screen coordinates are
 		inside or near a handle, otherwise returns -1. */
+	@Override
 	public int isHandle(int sx, int sy) {
 		if (!(xSpline!=null||type==POLYGON||type==POLYLINE||type==ANGLE||type==POINT)||clipboard!=null)
 		   return -1;
@@ -1226,6 +1246,7 @@ public class PolygonRoi extends Roi {
 		return handle;
 	}
 
+	@Override
 	public ImageProcessor getMask() {
 		ImageProcessor mask = cachedMask;
 		if (mask!=null && mask.getPixels()!=null
@@ -1378,6 +1399,7 @@ public class PolygonRoi extends Roi {
 	}
 
 	/** Returns the perimeter (for ROIs) or length (for lines).*/
+	@Override
 	public double getLength() {
 		return getLength(imp);
 	}
@@ -1479,6 +1501,7 @@ public class PolygonRoi extends Roi {
 	}
 
 	/** Returns the angle in degrees between the first two segments of this polyline.*/
+	@Override
 	public double getAngle() {
 		return degrees;
 	}
@@ -1539,6 +1562,7 @@ public class PolygonRoi extends Roi {
 		@see ij.process.ImageProcessor#drawPolygon
 		@see ij.process.ImageProcessor#fillPolygon
 	*/
+	@Override
 	public Polygon getPolygon() {
 		int n;
 		int[] xpoints1, ypoints1;
@@ -1565,6 +1589,7 @@ public class PolygonRoi extends Roi {
 	}
 
 	/** Returns this polygon or polyline as float arrays in image pixel coordinates. */
+	@Override
 	public FloatPolygon getFloatPolygon() {
 		int n = xSpline!=null?splinePoints:nPoints;
 		float[] xpoints2 = new float[n];
@@ -1591,10 +1616,12 @@ public class PolygonRoi extends Roi {
 	}
 
 	/** Returns the number of points in this selection; equivalent to getPolygon().npoints. */
+	@Override
 	public int size() {
 		return xSpline!=null?splinePoints:nPoints;
 	}
 
+	@Override
 	public FloatPolygon getInterpolatedPolygon(double interval, boolean smooth) {
 		FloatPolygon p = getFloatPolygon();
 		if (smooth && (type==TRACED_ROI || type==FREEROI || type==FREELINE)) {
@@ -1612,11 +1639,13 @@ public class PolygonRoi extends Roi {
 		return super.getInterpolatedPolygon(p, interval, smooth);
 	}
 
+	@Override
 	protected int clipRectMargin() {
 		return type==POINT?4:0;
 	}
 
 	/** Returns a copy of this PolygonRoi. */
+	@Override
 	public synchronized Object clone() {
 		PolygonRoi r = (PolygonRoi)super.clone();
 		if (xpf!=null) {
@@ -1679,12 +1708,14 @@ public class PolygonRoi extends Roi {
 		maxPoints = newSize;
 	}
 
+	@Override
 	public void setLocation(double x, double y) {
 		super.setLocation(x, y);
 		if ((int)x!=x || (int)y!=y)
 			enableSubPixelResolution();
 	}
 
+	@Override
 	public void enableSubPixelResolution() {
 		super.enableSubPixelResolution();
 		if (xpf==null && xp!=null) {
@@ -1693,6 +1724,7 @@ public class PolygonRoi extends Roi {
 		}
 	}
 
+	@Override
 	public String getDebugInfo() {
 		String s = "ROI Debug Properties\n";
 		s += "	bounds: "+bounds+"\n";
@@ -1700,6 +1732,11 @@ public class PolygonRoi extends Roi {
 		if (xpf!=null && xpf.length>0)
 			s += "	xpf[0],ypf[0]: "+xpf[0]+","+ypf[0]+"\n";
 		return s;
+	}
+	
+	@Override
+	public boolean isAreaRoi() {
+		return type == Roi.POLYGON;
 	}
 
 }

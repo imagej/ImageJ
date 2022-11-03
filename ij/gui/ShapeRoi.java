@@ -1,15 +1,32 @@
 package ij.gui;
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.geom.*;
-import java.awt.event.KeyEvent;
-import java.util.*;
-import ij.*;
-import ij.process.*;
-import ij.measure.*;
-import ij.plugin.filter.Analyzer;
-import ij.util.Tools;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.Stroke;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
+import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.geom.PathIterator;
+import java.awt.geom.QuadCurve2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
+import java.util.ArrayList;
+import java.util.Vector;
+
+import ij.measure.Calibration;
+import ij.process.FloatPolygon;
+import ij.process.ImageProcessor;
+import ij.process.PolygonFiller;
 import ij.util.FloatArray;
+import ij.util.Tools;
 
 /**A subclass of <code>ij.gui.Roi</code> (2D Regions Of Interest) implemented in terms of java.awt.Shape.
  * A ShapeRoi is constructed from a <code>ij.gui.Roi</code> object, or as a result of logical operators
@@ -153,6 +170,7 @@ public class ShapeRoi extends Roi {
 	}
 	
 	/**Returns a deep copy of this. */
+	@Override
 	public synchronized Object clone() { // the equivalent of "operator=" ?
 		ShapeRoi sr = (ShapeRoi)super.clone();
 		sr.type = COMPOSITE;
@@ -276,14 +294,14 @@ public class ShapeRoi extends Roi {
 		switch(roiType) {
 			case Roi.LINE:
 				Line line = (Line)roi;				
-				shape = new Line2D.Double ((double)(line.x1-r.x), (double)(line.y1-r.y), (double)(line.x2-r.x), (double)(line.y2-r.y) );
+				shape = new Line2D.Double (line.x1-r.x, line.y1-r.y, line.x2-r.x, line.y2-r.y );
 				break;
 			case Roi.RECTANGLE:
 				int arcSize = roi.getCornerDiameter();
 				if (arcSize>0)
 					shape = new RoundRectangle2D.Double(0, 0, r.width, r.height, arcSize, arcSize);
 				else
-					shape = new Rectangle2D.Double(0.0, 0.0, (double)r.width, (double)r.height);
+					shape = new Rectangle2D.Double(0.0, 0.0, r.width, r.height);
 				break;
 			case Roi.POLYLINE: case Roi.FREELINE: case Roi.ANGLE:
 				closeShape = false;
@@ -364,19 +382,19 @@ public class ShapeRoi extends Roi {
 			int type = (int)seg[0];
 			switch(type) {
 				case PathIterator.SEG_MOVETO:
-					((GeneralPath)s).moveTo(seg[1], seg[2]);
+					s.moveTo(seg[1], seg[2]);
 					break;
 				case PathIterator.SEG_LINETO:
-					((GeneralPath)s).lineTo(seg[1], seg[2]);
+					s.lineTo(seg[1], seg[2]);
 					break;
 				case PathIterator.SEG_QUADTO:
-					((GeneralPath)s).quadTo(seg[1], seg[2],seg[3], seg[4]);
+					s.quadTo(seg[1], seg[2],seg[3], seg[4]);
 					break;
 				case PathIterator.SEG_CUBICTO:
-					((GeneralPath)s).curveTo(seg[1], seg[2], seg[3], seg[4], seg[5], seg[6]);
+					s.curveTo(seg[1], seg[2], seg[3], seg[4], seg[5], seg[6]);
 					break;
 				case PathIterator.SEG_CLOSE:
-					((GeneralPath)s).closePath();
+					s.closePath();
 					break;
 				default: break;
 			}
@@ -418,6 +436,7 @@ public class ShapeRoi extends Roi {
 
 	/** Saves an Roi so it can be retrieved later using getRois(). Not compatible with the other functions of this class.
 	 * @deprecated  Use ShapeRoi(Roi) creator and merge with <code>or(ShapeRoi)</code>. */
+	@Deprecated
 	void saveRoi(Roi roi) {
 		if (savedRois==null)
 			savedRois = new Vector();
@@ -603,6 +622,7 @@ public class ShapeRoi extends Roi {
 	 *  points exactly on horizontal borders, are considered outside (inside) at the border
 	 *  with the lower (higher) y.
 	 */
+	@Override
 	public boolean contains(int x, int y) {
 		if (shape==null) return false;
 		return shape.contains(x-this.x+0.494, y-this.y+0.49994);
@@ -611,6 +631,7 @@ public class ShapeRoi extends Roi {
 	/** Returns whether coordinate (x,y) is contained in the Roi.
 	 *  Note that the coordinate (0,0) is the top-left corner of pixel (0,0).
 	 *  Use contains(int, int) to determine whether a given pixel is contained in the Roi. */
+	@Override
 	public boolean containsPoint(double x, double y) {
 		if (!super.containsPoint(x, y))
 			return false;
@@ -618,6 +639,7 @@ public class ShapeRoi extends Roi {
 	}
 
 	/** Returns the perimeter of this ShapeRoi. */
+	@Override
 	public double getLength() {
 		if (width==0 && height==0)
 			return 0.0;
@@ -929,6 +951,7 @@ public class ShapeRoi extends Roi {
 	}
 
 	/** Non-destructively draws the shape of this object on the associated ImagePlus. */
+	@Override
 	public void draw(Graphics g) {
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		boolean isActiveOverlayRoi = !overlay && isActiveOverlayRoi();
@@ -992,6 +1015,7 @@ public class ShapeRoi extends Roi {
 	 * <br> This method will always draw a flattened version of the actual shape
 	 * (i.e., all curve segments will be approximated by line segments).
 	 */
+	@Override
 	public void drawPixels(ImageProcessor ip) {
 		PathIterator pIter = shape.getPathIterator(new AffineTransform(), flatness);
 		float[] coords = new float[6];
@@ -1026,6 +1050,7 @@ public class ShapeRoi extends Roi {
 	 *  points exactly on horizontal borders, are considered outside (inside) at the border
 	 *  with the lower (higher) y.
 	 *  */
+	@Override
 	public ImageProcessor getMask() {
 		if (shape==null)
 			return null;
@@ -1097,6 +1122,7 @@ public class ShapeRoi extends Roi {
 	}
 
 	/** Always returns -1 since ShapeRois do not have handles. */
+	@Override
 	public int isHandle(int sx, int sy) {
 		   return -1;
 	}
@@ -1167,11 +1193,13 @@ public class ShapeRoi extends Roi {
 		return new FloatPolygon(xpf, ypf, n);
 	}
 
+	@Override
 	public FloatPolygon getFloatConvexHull() {
 		FloatPolygon fp = getFloatPolygon(FLATNESS, /*separateSubpaths=*/ false, /*addPointForClose=*/ false, /*absoluteCoord=*/ true);
 		return fp == null ? null : fp.getConvexHull();
 	}
 	
+	@Override
 	public Polygon getPolygon() {
 		FloatPolygon fp = getFloatPolygon();
 		return new Polygon(toIntR(fp.xpoints), toIntR(fp.ypoints), fp.npoints);
@@ -1179,6 +1207,7 @@ public class ShapeRoi extends Roi {
 
 	/** Returns all vertex points of the shape as approximated by polygons,
 	 *  in image pixel coordinates */
+	@Override
 	public FloatPolygon getFloatPolygon() {
 		return getFloatPolygon(FLATNESS, /*separateSubpaths=*/ false, /*addPointForClose=*/ false, /*absoluteCoord=*/ true);
 	}
@@ -1186,6 +1215,7 @@ public class ShapeRoi extends Roi {
 	/** Returns all vertex points of the shape as approximated by polygons,
 	 *  where options may include "close" to add points to close each subpath, and
 	 *  "separate" to insert NaN values between subpaths (= individual polygons) */
+	@Override
 	public FloatPolygon getFloatPolygon(String options) {
 		options = options.toLowerCase();
 		boolean separateSubpaths = options.indexOf("separate") >= 0;
@@ -1195,6 +1225,7 @@ public class ShapeRoi extends Roi {
 
 	/** Retuns the number of vertices, of this shape as approximated by straight lines.
 	 *  Note that points might be counted twice where the shape gets closed. */
+	@Override
 	public int size() {
 		return getPolygon().npoints;
 	}
@@ -1203,5 +1234,10 @@ public class ShapeRoi extends Roi {
 		for (int i=0; i<a.length; i++)
 			if (a[i] != (int)a[i]) return false;
 		return true;
+	}
+	
+	@Override
+	public boolean isAreaRoi() {
+		return false;
 	}
 }

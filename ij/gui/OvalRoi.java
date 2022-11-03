@@ -1,10 +1,15 @@
 package ij.gui;
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.geom.*;
-import ij.*;
-import ij.process.*;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Polygon;
+import java.awt.geom.Ellipse2D;
+
+import ij.ImagePlus;
 import ij.measure.Calibration;
+import ij.process.ByteProcessor;
+import ij.process.FloatPolygon;
+import ij.process.ImageProcessor;
 
 /** Oval region of interest */
 public class OvalRoi extends Roi {
@@ -33,6 +38,7 @@ public class OvalRoi extends Roi {
 	}
 
 	/** @deprecated */
+		@Deprecated
 		public OvalRoi(int x, int y, int width, int height, ImagePlus imp) {
 		this(x, y, width, height);
 		setImage(imp);
@@ -41,6 +47,7 @@ public class OvalRoi extends Roi {
 	/** Feret (caliper width) values, see ij.gui.Roi.getFeretValues().
 	 *  The superclass method of calculating this via the convex hull is less accurate for the MinFeret
 	 *  because it does not get the exact minor axis. */
+	@Override
 	public double[] getFeretValues() {
 		double[] a = new double[FERET_ARRAYSIZE];
 		double pw=1.0, ph=1.0;
@@ -67,6 +74,7 @@ public class OvalRoi extends Roi {
 		return a;
 	}
 
+	@Override
 	protected void moveHandle(int sx, int sy) {
 		double asp;
 		if (clipboard!=null) return;
@@ -193,8 +201,8 @@ public class OvalRoi extends Roi {
 		}
 
 		if (aspect && !constrain) {
-			if (activeHandle==1 || activeHandle==5) width=(int)Math.rint((double)height*asp);
-			else height=(int)Math.rint((double)width/asp);
+			if (activeHandle==1 || activeHandle==5) width=(int)Math.rint(height*asp);
+			else height=(int)Math.rint(width/asp);
 
 			switch (activeHandle) {
 				case 0:
@@ -229,11 +237,11 @@ public class OvalRoi extends Roi {
 			// Attempt to preserve aspect ratio when roi very small:
 			if (width<8) {
 				if (width<1) width = 1;
-				height=(int)Math.rint((double)width/asp_bk);
+				height=(int)Math.rint(width/asp_bk);
 			}
 			if (height<8) {
 				if (height<1) height =1;
-				width=(int)Math.rint((double)height*asp_bk);
+				width=(int)Math.rint(height*asp_bk);
 			}
 		}
 
@@ -245,6 +253,7 @@ public class OvalRoi extends Roi {
 		bounds = null;
 	}
 
+	@Override
 	public void draw(Graphics g) {
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		if (fillColor!=null) color = fillColor;
@@ -295,12 +304,13 @@ public class OvalRoi extends Roi {
 	}
 
 	/** Draws an outline of this OvalRoi on the image. */
+	@Override
 	public void drawPixels(ImageProcessor ip) {
 		Polygon p = getPolygon();
 		if (p.npoints>0) {
 			int saveWidth = ip.getLineWidth();
 			if (getStrokeWidth()>1f)
-				ip.setLineWidth((int)Math.round(getStrokeWidth()));
+				ip.setLineWidth(Math.round(getStrokeWidth()));
 			ip.drawPolygon(p);
 			ip.setLineWidth(saveWidth);
 		}
@@ -309,6 +319,7 @@ public class OvalRoi extends Roi {
 	}		
 
 	/** Returns this OvalRoi as a Polygon that outlines the mask, in image pixel coordinates. */
+	@Override
 	public Polygon getPolygon() {
 		return getPolygon(true);
 	}
@@ -329,6 +340,7 @@ public class OvalRoi extends Roi {
 	}		
 
 	/** Returns this OvalRoi as a FloatPolygon approximating the ellipse. */
+	@Override
 	public FloatPolygon getFloatPolygon() {
 		ShapeRoi sr = new ShapeRoi(new java.awt.geom.Ellipse2D.Double(x-0.0004, y-0.0004, width+0.0008, height+0.0008));  //better accuracy with slightly increased size
 		return sr.getFloatPolygon();
@@ -340,6 +352,7 @@ public class OvalRoi extends Roi {
 	}
 
 	/** Returns the number of corner points in the mask of this selection; equivalent to getPolygon().npoints. */
+	@Override
 	public int size() {
 		return getPolygon().npoints;
 	}
@@ -347,6 +360,7 @@ public class OvalRoi extends Roi {
 	/** Tests whether the center of the specified pixel is inside the boundary of this OvalRoi.
 	 *  Authors: Barry DeZonia and Michael Schmid
 	 */
+	@Override
 	public boolean contains(int ox, int oy) {
 		double a = width*0.5;
 		double b = height*0.5;
@@ -360,6 +374,7 @@ public class OvalRoi extends Roi {
 	/** Returns whether coordinate (x,y) is contained in the Roi.
 	 *  Note that the coordinate (0,0) is the top-left corner of pixel (0,0).
 	 *  Use contains(int, int) to determine whether a given pixel is contained in the Roi. */
+	@Override
 	public boolean containsPoint(double x, double y) {
 		if (!super.containsPoint(x, y))
 			return false;
@@ -369,6 +384,7 @@ public class OvalRoi extends Roi {
 
 	/** Returns a handle number if the specified screen coordinates are  
 		inside or near a handle, otherwise returns -1. */
+	@Override
 	public int isHandle(int sx, int sy) {
 		if (clipboard!=null || ic==null) return -1;
 		double mag = ic.getMagnification();
@@ -395,6 +411,7 @@ public class OvalRoi extends Roi {
 		return -1;
 	}
 
+	@Override
 	public ImageProcessor getMask() {
 		ImageProcessor mask = cachedMask;
 		if (mask!=null && mask.getPixels()!=null && mask.getWidth()==width && mask.getHeight()==height)
@@ -420,6 +437,7 @@ public class OvalRoi extends Roi {
 	}
 
 	/** Returns the perimeter length using Ramanujan's approximation for the circumference of an ellipse */
+	@Override
 	public double getLength() {
 		double pw=1.0, ph=1.0;
 		if (imp!=null) {
@@ -430,6 +448,11 @@ public class OvalRoi extends Roi {
 		double a = 0.5*width*pw;
 		double b = 0.5*height*ph;
 		return Math.PI*(3*(a + b) - Math.sqrt((3*a + b)*(a + 3*b)));
+	}
+	
+	@Override
+	public boolean isAreaRoi() {
+		return true;
 	}
 		
 }

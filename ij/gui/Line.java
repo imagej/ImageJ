@@ -1,16 +1,29 @@
 package ij.gui;
-import ij.*;
-import ij.process.*;
-import ij.measure.*;
-import ij.plugin.Straightener;
-import ij.plugin.frame.Recorder;
-import ij.plugin.CalibrationBar;
-import java.awt.*;
-import java.awt.image.*;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.awt.event.*;
-import java.awt.geom.*;
+
+import ij.IJ;
+import ij.ImagePlus;
+import ij.Prefs;
+import ij.WindowManager;
+import ij.measure.Calibration;
+import ij.plugin.CalibrationBar;
+import ij.plugin.Straightener;
+import ij.plugin.frame.Recorder;
+import ij.process.FloatPolygon;
+import ij.process.FloatProcessor;
+import ij.process.ImageProcessor;
 
 /** This class represents a straight line selection. */
 public class Line extends Roi {
@@ -69,20 +82,24 @@ public class Line extends Roi {
 	* @deprecated
 	* replaced by Line(int, int, int, int)
 	*/
+	@Deprecated
 	public Line(int ox1, int oy1, int ox2, int oy2, ImagePlus imp) {
 		this(ox1, oy1, ox2, oy2);
 		setImage(imp);
 	}
 
+	@Override
 	protected void grow(int sx, int sy) { //mouseDragged
 		drawLine(sx, sy);
 		dragged = true;
 	}
 
+	@Override
 	public void mouseMoved(MouseEvent e) {
 		drawLine(e.getX(), e.getY());
 	}
 
+	@Override
 	protected void handleMouseUp(int screenX, int screenY) {
 		mouseUpCount++;
 		if (Prefs.enhancedLineTool && mouseUpCount==1 && !dragged)
@@ -139,6 +156,7 @@ public class Line extends Roi {
 	private static final double[] PI_SEARCH = {Math.tan(Math.PI/8), Math.tan((3*Math.PI)/8)};
 	private static final double[] PI_MULT = {0, 1}; // y/x for horizontal (0 degrees) and 45 deg
 
+	@Override
 	void move(int sx, int sy) {
 		int xNew = offScreenX(sx);
 		int yNew = offScreenY(sy);
@@ -158,6 +176,7 @@ public class Line extends Roi {
 		oldHeight=height;
 	}
 
+	@Override
 	protected void moveHandle(int sx, int sy) {
 		if (constrain && activeHandle == 2) {  // constrain translation in 90deg steps
 			int dx = sx - previousSX;
@@ -335,6 +354,7 @@ public class Line extends Roi {
 		oldHeight = height;
 	}
 
+	@Override
 	protected void mouseDownInHandle(int handle, int sx, int sy) {
 		super.mouseDownInHandle(handle, sx, sy); //sets state, activeHandle, previousSX&Y
 		if (getStrokeWidth()<=3)
@@ -364,6 +384,7 @@ public class Line extends Roi {
 	}
 
 	/** Draws this line on the image. */
+	@Override
 	public void draw(Graphics g) {
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		boolean isActiveOverlayRoi = !overlay && isActiveOverlayRoi();
@@ -417,16 +438,19 @@ public class Line extends Roi {
 			{updateFullWindow = false; imp.draw();}
 	}
 
+	@Override
 	public void showStatus() {
 		IJ.showStatus(imp.getLocationAsString((int)Math.round(x2d),(int)Math.round(y2d))+
 				", angle=" + IJ.d2s(getAngle()) + ", length=" + IJ.d2s(getLength()));
 	}
 
+	@Override
 	public double getAngle() {
 		return getFloatAngle(x1d, y1d, x2d, y2d);
 	}
 
 	/** Returns the length of this line. */
+	@Override
 	public double getLength() {
 		if (imp==null || IJ.altKeyDown())
 			return getRawLength();
@@ -494,6 +518,7 @@ public class Line extends Roi {
 	 * @see #getFloatPolygon
 	 * @see #getPoints
 	 */
+	@Override
 	public Polygon getPolygon() {
 		FloatPolygon p = getFloatPolygon();
 		return new Polygon(toIntR(p.xpoints), toIntR(p.ypoints), p.npoints);
@@ -505,6 +530,7 @@ public class Line extends Roi {
 	 * a 4-point FloatPolygon.
 	 * @see #getFloatPoints
 	 */
+	@Override
 	public FloatPolygon getFloatPolygon() {
 		return getFloatPolygon(getStrokeWidth());
 	}
@@ -538,12 +564,14 @@ public class Line extends Roi {
 	}
 
 	/** Returns the number of points in this selection; equivalent to getPolygon().npoints. */
+	@Override
 	public int size() {
 		return getStrokeWidth()<=1?2:4;
 	}
 
 	/** If the width of this line is less than or equal to one, draws the line.
 	 *  Otherwise draws the outline of the area of this line */
+	@Override
 	public void drawPixels(ImageProcessor ip) {
 		ip.setLineWidth(1);
 		double x = getXBase();
@@ -559,6 +587,7 @@ public class Line extends Roi {
 		}
 	}
 
+	@Override
 	public boolean contains(int x, int y) {
 		if (getStrokeWidth()>1) {
 			if ((x==x1&&y==y1) || (x==x2&&y==y2))
@@ -569,6 +598,7 @@ public class Line extends Roi {
 			return false;
 	}
 
+	@Override
 	protected void handleMouseDown(int sx, int sy) {
 		super.handleMouseDown(sx, sy);
 		startxd = ic.offScreenXD(sx);
@@ -577,6 +607,7 @@ public class Line extends Roi {
 
 	/** Returns a handle number if the specified screen coordinates are
 		inside or near a handle, otherwise returns -1. */
+	@Override
 	public int isHandle(int sx, int sy) {
 		int size = HANDLE_SIZE+5;
 		if (getStrokeWidth()>1) size += (int)Math.log(getStrokeWidth());
@@ -621,17 +652,20 @@ public class Line extends Roi {
 	}
 
 	/* Sets the width of this line. */
+	@Override
 	public void setStrokeWidth(float width) {
 		super.setStrokeWidth(width);
 		if (getStrokeColor()==Roi.getColor())
 			wideLine = true;
 	}
 
+	@Override
 	protected int clipRectMargin() {
 		return 4;
 	}
 
 	/** Nudge end point of line by one pixel. */
+	@Override
 	public void nudgeCorner(int key) {
 		if (ic==null) return;
 		double inc = 1.0/ic.getMagnification();
@@ -647,19 +681,23 @@ public class Line extends Roi {
 	}
 
 	/** Always returns true. */
+	@Override
 	public boolean subPixelResolution() {
 		return true;
 	}
 
+	@Override
 	public void setLocation(int x, int y) {
 		setLocation((double)x, (double)y);
 	}
 
 	/** Sets the x coordinate of the leftmost and y coordinate of the topmost end point */
+	@Override
 	public void setLocation(double x, double y) {
 		updateCoordinates(x+x1R, y+y1R, x+x2R, y+y2R);
 	}
 
+	@Override
 	public FloatPolygon getRotationCenter() {
 		double xcenter = x1d + (x2d-x1d)/2.0;
 		double ycenter = y1d + (y2d-y1d)/2.0;
@@ -745,6 +783,11 @@ public class Line extends Roi {
 			return new PointIterator(this);	// use the specific thin-line iterator
 		else
 			return super.iterator();	// fall back on Roi's iterator
+	}
+	
+	@Override
+	public boolean isAreaRoi() {
+		return false;
 	}
 
 }

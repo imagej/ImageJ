@@ -1,17 +1,31 @@
 package ij.gui;
-import ij.*;
-import ij.process.*;
-import ij.measure.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Random;
+
+import ij.IJ;
+import ij.ImagePlus;
+import ij.Prefs;
+import ij.WindowManager;
+import ij.measure.ResultsTable;
 import ij.plugin.Colors;
 import ij.plugin.PointToolOptions;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
+import ij.process.ByteProcessor;
+import ij.process.FloatPolygon;
+import ij.process.ImageProcessor;
 import ij.util.Java2;
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.event.KeyEvent;
-import java.util.*;
-import java.awt.geom.*;
 
 /** This class represents a collection of points that can be associated 
  * with counters. Use the getPolygon() or getFloatPolygon() methods
@@ -196,19 +210,21 @@ public class PointRoi extends PolygonRoi {
 	void handleMouseMove(int ox, int oy) {
 	}
 
+	@Override
 	protected void handleMouseUp(int sx, int sy) {
 		super.handleMouseUp(sx, sy);
 		modifyRoi(); //adds this point to previous points if shift key down
 	}
 
 	/** Draws the points on the image. */
+	@Override
 	public void draw(Graphics g) {
 		updatePolygon();
 		if (showLabels && nPoints>1) {
 			fontSize = 8;
 			double scale = size>=XXL?2:1.5;
 			fontSize += scale*convertSizeToIndex(size);
-			fontSize = (int)Math.round(fontSize);
+			fontSize = Math.round(fontSize);
 			//IJ.log("fontSize: "+fontSize+" "+scale);
 			font = new Font("SansSerif", Font.PLAIN, fontSize);
 			g.setFont(font);
@@ -314,7 +330,7 @@ public class PointRoi extends PolygonRoi {
 				g.drawOval(x-(size2+1), y-(size2+1), size+1, size+1);
 		}
 		if (type==CIRCLE) {
-			int scaledSize = (int)Math.round(size+1);
+			int scaledSize = Math.round(size+1);
 			g.setColor(color);
 			if (size>LARGE)
 				g2d.setStroke(twoPixelsWide);
@@ -324,6 +340,7 @@ public class PointRoi extends PolygonRoi {
 			g2d.setTransform(saveXform);
 	}
 
+	@Override
 	public void drawPixels(ImageProcessor ip) {
 		ip.setLineWidth(Analyzer.markWidth);
 		double x0 = bounds == null ? x : bounds.x;
@@ -376,6 +393,7 @@ public class PointRoi extends PolygonRoi {
 		positions[nPoints-1] = position;	
 	}
 
+	@Override
 	protected void deletePoint(int index) {
 		super.deletePoint(index);
 		if (index>=0 && index<=nPoints && counters!=null) {
@@ -492,6 +510,7 @@ public class PointRoi extends PolygonRoi {
 		}
 	}
 
+	@Override
 	public ImageProcessor getMask() {
 		ImageProcessor mask = cachedMask;
 		if (mask!=null && mask.getPixels()!=null)
@@ -506,6 +525,7 @@ public class PointRoi extends PolygonRoi {
 	}
 
 	/** Returns true if (x,y) is one of the points in this collection. */
+	@Override
 	public boolean contains(int x, int y) {
 		for (int i=0; i<nPoints; i++) {
 			if (x==this.x+xpf[i] && y==this.y+ypf[i]) return true;
@@ -602,6 +622,7 @@ public class PointRoi extends PolygonRoi {
 	}
 
 	/** Always returns true. */
+	@Override
 	public boolean subPixelResolution() {
 		return true;
 	}
@@ -813,6 +834,7 @@ public class PointRoi extends PolygonRoi {
 	/** Returns a point index if it has been at least one second since
 		the last point was added and the specified screen coordinates are
 		inside or near a point, otherwise returns -1. */
+	@Override
 	public int isHandle(int sx, int sy) {
 		if ((System.currentTimeMillis()-lastPointTime)<1000L)
 			return -1;
@@ -836,15 +858,17 @@ public class PointRoi extends PolygonRoi {
 	/** Returns the points as an array of Points.
 	 * Wilhelm Burger: modified to use FloatPolygon for correct point positions.
 	*/
+	@Override
 	public Point[] getContainedPoints() {
 		FloatPolygon p = getFloatPolygon();
 		Point[] points = new Point[p.npoints];
 		for (int i=0; i<p.npoints; i++)
-			points[i] = new Point((int) Math.round(p.xpoints[i] - 0.5f), (int) Math.round(p.ypoints[i] - 0.5f));
+			points[i] = new Point(Math.round(p.xpoints[i] - 0.5f), Math.round(p.ypoints[i] - 0.5f));
 		return points;
 	}
 
 	/** Returns the points as a FloatPolygon. */
+	@Override
 	public FloatPolygon getContainedFloatPoints() {
 		return getFloatPolygon();
 	}
@@ -853,6 +877,7 @@ public class PointRoi extends PolygonRoi {
 	 * Custom iterator for points contained in a {@link PointRoi}.
 	 * Author: W. Burger
 	*/
+	@Override
 	public Iterator<Point> iterator() {
 		return new Iterator<Point>() {
 			final Point[] pnts = getContainedPoints();
@@ -898,6 +923,7 @@ public class PointRoi extends PolygonRoi {
 	}
 
 	/** Returns a copy of this PointRoi. */
+	@Override
 	public synchronized Object clone() {
 		PointRoi r = (PointRoi)super.clone();
 		if (counters!=null) {
@@ -954,6 +980,7 @@ public class PointRoi extends PolygonRoi {
 		return addToOverlay;
 	}
 
+	@Override
 	public String toString() {
 		if (nPoints>1)
 			return ("Roi[Points, count="+nPoints+"]");
@@ -962,15 +989,18 @@ public class PointRoi extends PolygonRoi {
 	}
 
 	/** @deprecated */
+	@Deprecated
 	public void setHideLabels(boolean hideLabels) {
 		this.showLabels = !hideLabels;
 	}
 
 	/** @deprecated */
+	@Deprecated
 	public static void setDefaultMarkerSize(String size) {
 	}
 
 	/** @deprecated */
+	@Deprecated
 	public static String getDefaultMarkerSize() {
 		return sizes[defaultSize];
 	}
@@ -984,4 +1014,8 @@ public class PointRoi extends PolygonRoi {
 		return null;
 	}
 
+	@Override
+	public boolean isAreaRoi() {
+		return false;
+	}
 }

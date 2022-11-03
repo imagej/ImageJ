@@ -1,9 +1,17 @@
 package ij.gui;
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Composite;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.awt.image.DirectColorModel;
+
 import ij.ImagePlus;
-import ij.process.*;
 import ij.io.FileSaver;
-import java.awt.*;
-import java.awt.image.*;
+import ij.process.ColorProcessor;
+import ij.process.ImageProcessor;
 
 /** An ImageRoi is an Roi that overlays an image. 
 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
@@ -31,6 +39,7 @@ public class ImageRoi extends Roi {
 		setStrokeColor(Color.black);
 	}
 		
+	@Override
 	public void draw(Graphics g) {
 		Graphics2D g2d = (Graphics2D)g;						
 		double mag = getMagnification();
@@ -121,6 +130,7 @@ public class ImageRoi extends Roi {
 		return ip;
 	}
 
+	@Override
 	public synchronized Object clone() {
 		ImageRoi roi2 = (ImageRoi)super.clone();
 		ImagePlus imp = new ImagePlus("", img);
@@ -145,6 +155,11 @@ public class ImageRoi extends Roi {
 		this.ip = ip;
 		width = ip.getWidth();
 		height = ip.getHeight();
+	}
+	
+	@Override
+	public boolean isAreaRoi() {
+		return true;
 	}
 
 }

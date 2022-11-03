@@ -1,13 +1,24 @@
 package ij.gui;
-import ij.*;
-import ij.process.*;
-import ij.util.*;
-import ij.macro.Interpreter;
-import ij.plugin.frame.Recorder;
-import ij.plugin.Colors;
-import java.awt.geom.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+
+import ij.IJ;
+import ij.ImageJ;
+import ij.ImagePlus;
+import ij.WindowManager;
+import ij.macro.Interpreter;
+import ij.plugin.Colors;
+import ij.plugin.frame.Recorder;
+import ij.process.ImageProcessor;
+import ij.util.Java2;
+import ij.util.Tools;
 
 
 /** This class is a rectangular ROI containing text. */
@@ -113,6 +124,7 @@ public class TextRoi extends Roi {
 	}
 
 	/** @deprecated */
+	@Deprecated
 	public TextRoi(int x, int y, String text, Font font, Color color) {
 		super(x, y, 1, 1);
 		if (font==null) font = new Font(name, style, size);
@@ -163,7 +175,7 @@ public class TextRoi extends Roi {
 			for (int i=0; i<theText.length && theText[i] != null; i++)
 				cline = i; //add the character to the last line
 		}
-		if ((int)c=='\b') {
+		if (c=='\b') {
 			// backspace
 			if (theText[cline].length()>0)
 				theText[cline] = theText[cline].substring(0, theText[cline].length()-1);
@@ -177,7 +189,7 @@ public class TextRoi extends Roi {
 				imp.draw(clipX, clipY, clipWidth, clipHeight);
 			firstChar = false;
 			return;
-		} else if ((int)c=='\n') {
+		} else if (c=='\n') {
 			// newline
 			if (cline<(MAX_LINES-1)) cline++;
 			theText[cline] = "";
@@ -210,6 +222,7 @@ public class TextRoi extends Roi {
 	 *	@see ij.process.ImageProcessor#setAntialiasedText(boolean)
 	 *	@see ij.process.ImageProcessor#setColor(Color)
 	*/
+	@Override
 	public void drawPixels(ImageProcessor ip) {
 		if (!ip.fillValueSet())
 			ip.setColor(Toolbar.getForegroundColor());
@@ -242,6 +255,7 @@ public class TextRoi extends Roi {
 	}
 
 	/** Draws the text on the screen, clipped to the ROI. */
+	@Override
 	public void draw(Graphics g) {
 		if (IJ.debugMode) IJ.log("draw: "+theText[0]+"  "+this.width+","+this.height);
 		if (Interpreter.isBatchMode() && ic!=null && ic.getDisplayList()!=null)
@@ -267,6 +281,7 @@ public class TextRoi extends Roi {
 		}
 	}
 	
+	@Override
 	public void drawOverlay(Graphics g) {
 		drawText(g);
 	}
@@ -466,6 +481,7 @@ public class TextRoi extends Roi {
 		defaultAngle = angle;
 	}
 
+	@Override
 	protected void handleMouseUp(int screenX, int screenY) {
 		super.handleMouseUp(screenX, screenY);
 		if (this.width<5 && this.height<5 && imp!=null && previousRoi==null) {
@@ -525,7 +541,7 @@ public class TextRoi extends Roi {
 	private Graphics getFontGraphics(Font font) {
 		if (fontGraphics==null) {
 			BufferedImage bi =new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-			fontGraphics = (Graphics2D)bi.getGraphics();
+			fontGraphics = bi.getGraphics();
 		}
 		fontGraphics.setFont(font);
 		return  fontGraphics;
@@ -656,6 +672,7 @@ public class TextRoi extends Roi {
 		}
 	}
 
+	@Override
 	public boolean isDrawingTool() {
 		return true;
 	}
@@ -689,6 +706,7 @@ public class TextRoi extends Roi {
 	}
 
 	/** Returns a copy of this TextRoi. */
+	@Override
 	public synchronized Object clone() {
 		TextRoi tr = (TextRoi)super.clone();
 		tr.theText = new String[MAX_LINES];
@@ -697,6 +715,7 @@ public class TextRoi extends Roi {
 		return tr;
 	}
 	
+	@Override
 	public double getAngle() {
 		return angle;
 	}
@@ -719,25 +738,32 @@ public class TextRoi extends Roi {
 	}
 	
 	/** @deprecated Replaced by getDefaultFontName */
+	@Deprecated
 	public static String getFont() {
 		return name;
 	}
 
 	/** @deprecated Replaced by getDefaultFontSize */
+	@Deprecated
 	public static int getSize() {
 		return size;
 	}
 
 	/** @deprecated Replaced by getDefaultFontStyle */
+	@Deprecated
 	public static int getStyle() {
 		return style;
 	}
 	
 	/** @deprecated Replaced by setFont(font) */
+	@Deprecated
 	public void setCurrentFont(Font font) {
 		this.font = font;
 		updateBounds();
 	}
 
-        
+	@Override
+	public boolean isAreaRoi() {
+		return false;
+	}
 }

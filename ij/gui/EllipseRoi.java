@@ -1,11 +1,13 @@
 package ij.gui;
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.event.*;
-import ij.*;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
+
+import ij.IJ;
+import ij.ImagePlus;
+import ij.measure.Calibration;
 import ij.plugin.frame.Recorder;
 import ij.process.FloatPolygon;
-import ij.measure.Calibration;
 
 /** This class implements the ellipse selection tool. */
 public class EllipseRoi extends PolygonRoi {
@@ -34,6 +36,7 @@ public class EllipseRoi extends PolygonRoi {
 		bounds = null;
 	}
 
+	@Override
 	public void draw(Graphics g) {
 		super.draw(g);
 		if (!overlay) {
@@ -42,6 +45,7 @@ public class EllipseRoi extends PolygonRoi {
 		}
 	}
 
+	@Override
 	protected void grow(int sx, int sy) {
 		double x1 = xstart;
 		double y1 = ystart;
@@ -80,6 +84,7 @@ public class EllipseRoi extends PolygonRoi {
 		showStatus();
 	}
 	
+	@Override
 	public void showStatus() {
 		double[] p = getParams();
 		double dx = p[2] - p[0];
@@ -99,6 +104,7 @@ public class EllipseRoi extends PolygonRoi {
 		IJ.showStatus("major=" + IJ.d2s(major)+", minor=" + IJ.d2s(minor)+", angle=" + IJ.d2s(angle));
 	}
 
+	@Override
 	public void nudgeCorner(int key) {
 		if (ic==null) return;
 		double x1 = xpf[handle[2]]+x;
@@ -131,6 +137,7 @@ public class EllipseRoi extends PolygonRoi {
 		}
 	}
 	
+	@Override
 	protected void handleMouseUp(int screenX, int screenY) {
 		if (state==CONSTRUCTING) {
 			if (Recorder.record) {
@@ -148,6 +155,7 @@ public class EllipseRoi extends PolygonRoi {
 		modifyRoi();
 	}
 	
+	@Override
 	protected void moveHandle(int sx, int sy) {
 		double ox = offScreenXD(sx); 
 		double oy = offScreenYD(sy);
@@ -188,6 +196,7 @@ public class EllipseRoi extends PolygonRoi {
 		defaultRatio = aspectRatio;
 	}
 	
+	@Override
 	public int isHandle(int sx, int sy) {
 		int size = getHandleSize()+5;
 		int halfSize = size/2;
@@ -203,6 +212,7 @@ public class EllipseRoi extends PolygonRoi {
 	}
 	
 	/** Returns the perimeter of this ellipse. */
+	@Override
 	public double getLength() {
 		double length = 0.0;
 		double dx, dy;
@@ -234,6 +244,7 @@ public class EllipseRoi extends PolygonRoi {
 		return params;
 	}
 
+	@Override
 	public double[] getFeretValues() {
 		double a[] = super.getFeretValues();
 		double pw=1.0, ph=1.0;
@@ -262,8 +273,13 @@ public class EllipseRoi extends PolygonRoi {
 	}
 	
 	/** Always returns true. */
+	@Override
 	public boolean subPixelResolution() {
 		return true;
 	}
-
+	
+	@Override
+	public boolean isAreaRoi() {
+		return true;
+	}
 }

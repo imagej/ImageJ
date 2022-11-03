@@ -1,20 +1,49 @@
 package ij.gui;
-import ij.*;
-import ij.process.*;
-import ij.measure.*;
-import ij.plugin.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Event;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Properties;
+import java.util.Vector;
+
+import ij.IJ;
+import ij.ImagePlus;
+import ij.Prefs;
+import ij.Undo;
+import ij.WindowManager;
+import ij.macro.Interpreter;
+import ij.measure.Calibration;
+import ij.plugin.LutLoader;
+import ij.plugin.RectToolOptions;
+import ij.plugin.filter.ThresholdToSelection;
 import ij.plugin.frame.Recorder;
 import ij.plugin.frame.RoiManager;
-import ij.plugin.filter.Analyzer;
-import ij.plugin.filter.ThresholdToSelection;
-import ij.macro.Interpreter;
-import ij.io.RoiDecoder;
-import java.awt.*;
-import java.util.*;
-import java.io.*;
-import java.awt.image.*;
-import java.awt.event.*;
-import java.awt.geom.*;
+import ij.process.Blitter;
+import ij.process.ByteProcessor;
+import ij.process.FloatPolygon;
+import ij.process.ImageProcessor;
+import ij.process.ImageStatistics;
+import ij.process.LUT;
+import ij.process.PolygonFiller;
 
 /**
  * A rectangular region of interest and superclass for the other ROI classes.
@@ -243,6 +272,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	}
 
 	/** @deprecated */
+	@Deprecated
 	public Roi(int x, int y, int width, int height, ImagePlus imp) {
 		this(x, y, width, height);
 		setImage(imp);
@@ -532,6 +562,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	* @deprecated
 	* replaced by getBounds()
 	*/
+	@Deprecated
 	public Rectangle getBoundingRect() {
 		return getBounds();
 	}
@@ -759,7 +790,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		for (int y=0; y<bounds.height; y++) {
 			for (int x=0; x<bounds.width; x++) {
 				if (mask==null || mask.getPixel(x,y)!=0)
-					points.addPoint((float)(bounds.x+x),(float)(bounds.y+y));
+					points.addPoint(bounds.x+x,bounds.y+y);
 			}
 		}
 		return points;
@@ -823,6 +854,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 
 	/** Returns a copy of this roi. See Thinking is Java by Bruce Eckel
 		(www.eckelobjects.com) for a good description of object cloning. */
+	@Override
 	public synchronized Object clone() {
 		try {
 			Roi r = (Roi)super.clone();
@@ -1068,8 +1100,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		}
 
 		if (aspect && !constrain) {
-			if (activeHandle==1 || activeHandle==5) width=(int)Math.rint((double)height*asp);
-			else height=(int)Math.rint((double)width/asp);
+			if (activeHandle==1 || activeHandle==5) width=(int)Math.rint(height*asp);
+			else height=(int)Math.rint(width/asp);
 
 			switch (activeHandle){
 				case 0:
@@ -1105,11 +1137,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			// Attempt to preserve aspect ratio when roi very small:
 			if (width<8) {
 				if(width<1) width = 1;
-				height=(int)Math.rint((double)width/asp_bk);
+				height=(int)Math.rint(width/asp_bk);
 			}
 			if (height<8) {
 				if(height<1) height =1;
-				width=(int)Math.rint((double)height*asp_bk);
+				width=(int)Math.rint(height*asp_bk);
 			}
 		}
 
@@ -1449,6 +1481,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	* @deprecated
 	* replaced by drawPixels(ImageProcessor)
 	*/
+	@Deprecated
 	public void drawPixels() {
 		if (imp!=null)
 			drawPixels(imp.getProcessor());
@@ -1462,7 +1495,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		endPaste();
 		int saveWidth = ip.getLineWidth();
 		if (getStrokeWidth()>1f)
-			ip.setLineWidth((int)Math.round(getStrokeWidth()));
+			ip.setLineWidth(Math.round(getStrokeWidth()));
 		if (cornerDiameter>0)
 			drawRoundedRect(ip);
 		else {
@@ -1988,6 +2021,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	* @deprecated
 	* replaced by setStrokeColor()
 	*/
+	@Deprecated
 	public void setInstanceColor(Color c) {
 		 strokeColor = c;
 	}
@@ -1996,6 +2030,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	* @deprecated
 	* replaced by setStrokeWidth(int)
 	*/
+	@Deprecated
 	public void setLineWidth(int width) {
 		setStrokeWidth(width) ;
 	}
@@ -2350,6 +2385,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	}
 
 	/** Checks whether two rectangles are equal. */
+	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof Roi) {
 			Roi roi2 = (Roi)obj;
@@ -2533,6 +2569,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			return props.size();
 	}
 
+	@Override
 	public String toString() {
 		return ("Roi["+getTypeAsString()+", x="+x+", y="+y+", width="+width+", height="+height+"]");
 	}
@@ -2691,6 +2728,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	/** Obsolete, replaced by Roi.convertLineToArea()
 	 * @deprecated
 	*/
+	@Deprecated
 	public Roi convertToPolygon() {
 		return convertLineToArea(this);
 	}
@@ -2891,6 +2929,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	 * @see #getContainedPoints()
 	 * @see #getContainedFloatPoints()
 	*/
+	@Override
 	public Iterator<Point> iterator() {
 		// Returns the default (mask-based) point iterator. Note that 'Line' overrides the
 		// iterator() method and returns a specific point iterator.
@@ -2963,6 +3002,18 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Returns true if this {@link Roi} instance is an "area ROI", that is,
+	 * coordinates returned by returned {@code Roi#getFloatPolygon()} are referenced
+	 * to the top-left corner of pixels. In contrast, integer coordinates of "line
+	 * ROIs" are positioned at pixel centers.
+	 * 
+	 * @return true if an area ROI
+	 */
+	public boolean isAreaRoi() {
+		return type == Roi.RECTANGLE;
 	}
 
 }

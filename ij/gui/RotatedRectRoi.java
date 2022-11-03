@@ -1,11 +1,14 @@
 package ij.gui;
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.event.*;
-import ij.*;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
+
+import ij.IJ;
+import ij.ImagePlus;
+import ij.measure.Calibration;
 import ij.plugin.frame.Recorder;
 import ij.process.FloatPolygon;
-import ij.measure.Calibration;
 
 /** This class implements the rotated rectangle selection tool. */
 public class RotatedRectRoi extends PolygonRoi {
@@ -35,6 +38,7 @@ public class RotatedRectRoi extends PolygonRoi {
 		bounds = null;
 	}
 
+	@Override
 	public void draw(Graphics g) {	
 		super.draw(g);
 		if (!overlay && ic!=null) {
@@ -69,6 +73,7 @@ public class RotatedRectRoi extends PolygonRoi {
 		return ypf[index]+(ypf[indexPlus1]-ypf[index])/2+y;
 	}
 
+	@Override
 	protected void grow(int sx, int sy) {
 		double x1 = xstart;
 		double y1 = ystart;
@@ -100,6 +105,7 @@ public class RotatedRectRoi extends PolygonRoi {
 		showStatus();
 	}
 	
+	@Override
 	public void showStatus() {
 		double[] p = getParams();
 		double dx = p[2] - p[0];
@@ -119,6 +125,7 @@ public class RotatedRectRoi extends PolygonRoi {
 		IJ.showStatus("length=" + IJ.d2s(length)+", width=" + IJ.d2s(width)+", angle=" + IJ.d2s(angle));
 	}
 
+	@Override
 	public void nudgeCorner(int key) {
 		if (ic==null) return;
 		double[] p = getParams();
@@ -153,6 +160,7 @@ public class RotatedRectRoi extends PolygonRoi {
 		}
 	}
 	
+	@Override
 	protected void handleMouseUp(int screenX, int screenY) {
 		nPoints = 4;
 		state = NORMAL;
@@ -165,6 +173,7 @@ public class RotatedRectRoi extends PolygonRoi {
 		}
 	}
 	
+	@Override
 	protected void moveHandle(int sx, int sy) {
 		double ox = offScreenXD(sx); 
 		double oy = offScreenYD(sy);
@@ -196,12 +205,13 @@ public class RotatedRectRoi extends PolygonRoi {
 		imp.draw();
 	}
 	
+	@Override
 	public int isHandle(int sx, int sy) {
 		int size = getHandleSize()+5;
 		int halfSize = size/2;
 		int index = -1;
 		for (int i=0; i<4; i++) {
-			int sx2 = (int)Math.round(hxs(i)-halfSize), sy2=(int)Math.round(hys(i)-halfSize);
+			int sx2 = Math.round(hxs(i)-halfSize), sy2=Math.round(hys(i)-halfSize);
 			if (sx>=sx2 && sx<=sx2+size && sy>=sy2 && sy<=sy2+size) {
 				index = i;
 				break;
@@ -222,7 +232,13 @@ public class RotatedRectRoi extends PolygonRoi {
 	}
 	
 	/** Always returns true. */
+	@Override
 	public boolean subPixelResolution() {
+		return true;
+	}
+	
+	@Override
+	public boolean isAreaRoi() {
 		return true;
 	}
 
