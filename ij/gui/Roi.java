@@ -287,6 +287,17 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		subPixel = true;
 	}
 
+	public void translate(double dx, double dy) {
+		boolean intArgs = (int)dx==dx && (int)dy==dy;
+		if (subPixelResolution() || !intArgs) {
+			Rectangle2D r = getFloatBounds();
+			setLocation(r.getX()+dx, r.getY()+dy);
+		} else {
+			Rectangle r = getBounds();
+			setLocation(r.x+(int)dx, r.y+(int)dy);
+		}
+	}
+
 	/** Sets the ImagePlus associated with this ROI.
 	 *  <code>imp</code> may be null to remove the association to an image. */
 	public void setImage(ImagePlus imp) {
@@ -2264,7 +2275,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 
 
 	/** Return 'true' if this is a line or point selection. */
-	protected boolean isLineOrPoint() {
+	public boolean isLineOrPoint() {
 		return isLine() || type==POINT;
 	}
 

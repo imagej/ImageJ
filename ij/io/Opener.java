@@ -552,8 +552,14 @@ public class Opener {
 			fileTypes[0] = CUSTOM;
 			return null;
 		}
-		imp = (ImagePlus)IJ.runPlugIn("HandleExtraFileTypes", path);
-		if (imp==null) return null;
+		try {
+			imp = (ImagePlus)IJ.runPlugIn("HandleExtraFileTypes", path);
+		} catch(Exception e) {
+			if (IJ.debugMode) IJ.log("openWithHandleExtraFileTypes:\n"+path+"\n"+e);
+			imp = null;
+		}
+		if (imp==null)
+			return null;
 		FileInfo fi = imp.getOriginalFileInfo();
 		if (fi==null) {
 			fi = new FileInfo();

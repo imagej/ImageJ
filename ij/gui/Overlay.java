@@ -179,33 +179,16 @@ public class Overlay implements Iterable<Roi> {
 
 	/** Moves all the ROIs in this overlay. */
 	public void translate(int dx, int dy) {
-		for (int i=0; i<size(); i++) {
-			Roi roi = get(i);
-			if (roi.subPixelResolution()) {
-				Rectangle2D r = roi.getFloatBounds();
-				roi.setLocation(r.getX()+dx, r.getY()+dy);
-			} else {
-				Rectangle r = roi.getBounds();
-				roi.setLocation(r.x+dx, r.y+dy);
-			}
-		}
+		for (int i=0; i<size(); i++)
+			get(i).translate(dx,dy);
 	}
 
 	/** Moves all the ROIs in this overlay.
 	* Marcel Boeglin, October 2013
 	*/
 	public void translate(double dx, double dy) {
-		boolean intArgs = (int)dx==dx && (int)dy==dy;
-		for (int i=0; i<size(); i++) {
-			Roi roi = get(i);
-			if (roi.subPixelResolution() || !intArgs) {
-				Rectangle2D r = roi.getFloatBounds();
-				roi.setLocation(r.getX()+dx, r.getY()+dy);
-			} else {
-				Rectangle r = roi.getBounds();
-				roi.setLocation(r.x+(int)dx, r.y+(int)dy);
-			}
-		}
+		for (int i=0; i<size(); i++)
+			get(i).translate(dx,dy);
 	}
 	
 	/** Measures the ROIs in this overlay on the specified image

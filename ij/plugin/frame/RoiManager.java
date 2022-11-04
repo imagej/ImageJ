@@ -2497,11 +2497,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Moves the selected ROIs or all the ROIs if none are selected. */
 	public void translate(double dx, double dy) {
 		Roi[] rois = getSelectedRoisAsArray();
-		for (int i=0; i<rois.length; i++) {
-			Roi roi = rois[i];
-			Rectangle2D r = roi.getFloatBounds();
-			roi.setLocation(r.getX()+dx, r.getY()+dy);
-		}
+		for (int i=0; i<rois.length; i++)
+			rois[i].translate(dx,dy);
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null)
 			imp.draw();

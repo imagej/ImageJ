@@ -989,6 +989,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	/** Adds an image to the dialog. */
 	public void addImage(ImagePlus image) {
+		if (image==null)
+			return;
 		ImagePanel imagePanel = new ImagePanel(image);
 		addPanel(imagePanel);
 		if (imagePanels==null)

@@ -4087,6 +4087,8 @@ public class Functions implements MacroConstants, Measurements {
 				gd.addChoice(prompt, choices, defaultChoice);
 			} else if (name.equals("setInsets")) {
 				gd.setInsets((int)getFirstArg(), (int)getNextArg(), (int)getLastArg());
+			} else if (name.equals("addImage")) {
+				gd.addImage(IJ.openImage(getStringArg()));
 			} else if (name.equals("addToSameRow")) {
 				interp.getParens();
 				gd.addToSameRow();
@@ -7727,7 +7729,7 @@ public class Functions implements MacroConstants, Measurements {
 			return setSplineAnchors(imp, false);
 		else if (name.equals("setPolylineSplineAnchors"))
 			return setSplineAnchors(imp, true);
-		else if (name.equals("remove")) {
+		else if (name.equals("remove")||name.equals("selectNone")) {
 			getImage().deleteRoi();
 			return null;
 		}
@@ -7861,6 +7863,10 @@ public class Functions implements MacroConstants, Measurements {
 			return null;
 		} else if (name.equals("setUnscalableStrokeWidth")) {
 			roi.setUnscalableStrokeWidth(getArg());
+			return null;
+		} else if (name.equals("translate")) {
+			roi.translate(getFirstArg(),getLastArg());
+			imp.draw();
 			return null;
 		} else
 			interp.error("Unrecognized Roi function");

@@ -14,6 +14,7 @@ import java.util.Set;
 	It was written by jerome.mutterer at ibmp.fr, and is based on Mark Longair's CommandFinder plugin.
 */
 public class FunctionFinder implements TextListener,  WindowListener, KeyListener, ItemListener, ActionListener {
+	private static String url = "http://wsr.imagej.net/developer/macro/functions.html";
 	private static Dialog dialog;
 	private TextField prompt;
 	private List functions;
@@ -27,11 +28,11 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 
 		String exists = IJ.runMacro("return File.exists(getDirectory('macros')+'functions.html');");
 		if (exists=="0")	{
-			String installLocalMacroFunctionsFile = "functions = File.openUrlAsString('"+IJ.URL+"/developer/macro/functions.html');\n"+
+			String installLocalMacroFunctionsFile = "functions = File.openUrlAsString(\""+url+"\");\n"+
 			"f = File.open(getDirectory('macros')+'functions.html');\n"+
 			"print (f, functions);\n"+
 			"File.close(f);";
-			try { IJ.runMacro(installLocalMacroFunctionsFile);
+			try {IJ.runMacro(installLocalMacroFunctionsFile);
 			} catch (Throwable e) { IJ.error("Problem downloading functions.html"); return;}
 		}
 		String f = IJ.runMacro("return File.openAsString(getDirectory('macros')+'functions.html');");
@@ -197,6 +198,7 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		String url2 = this.url;
 		Object b = e.getSource();
 		if (b==insertButton) {
 			int index = functions.getSelectedIndex();
@@ -205,16 +207,15 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 				edPaste(selected);
 			}
 		} else if (b==infoButton) {
-			String url = IJ.URL+"/developer/macro/functions.html";
 			int index = functions.getSelectedIndex();
 			if (index>=0) {
 				String selected = functions.getItem(index);
 				int index2 = selected.indexOf("(");
 				if (index2==-1)
 					index2 = selected.length();
-				url = url + "#" + selected.substring(0, index2);
+				url2 = url2 + "#" + selected.substring(0, index2);
 			}
-			IJ.runPlugIn("ij.plugin.BrowserLauncher", url);
+			IJ.runPlugIn("ij.plugin.BrowserLauncher", url2);
 		} else if (b==closeButton)
 		closeAndRefocus();
 	}
