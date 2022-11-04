@@ -36,6 +36,8 @@ public class OverlayCommands implements PlugIn {
 			hide();
 		else if (arg.equals("show"))
 			show();
+		else if (arg.equals("toggle"))
+			toggle();
 		else if (arg.equals("remove"))
 			remove();
 		else if (arg.equals("from"))
@@ -279,6 +281,11 @@ public class OverlayCommands implements PlugIn {
 				rm.runCommand("show all with labels");
 			}
 		}
+	}
+
+	void toggle() {
+		ImagePlus imp = IJ.getImage();
+		imp.setHideOverlay(!imp.getHideOverlay());
 	}
 
 	void remove() {
