@@ -43,7 +43,7 @@ public class TiffDecoder {
 	public static final int NIH_IMAGE_HDR = 43314;
 	public static final int META_DATA_BYTE_COUNTS = 50838; // private tag registered with Adobe
 	public static final int META_DATA = 50839; // private tag registered with Adobe
-	
+
 	//constants
 	static final int UNSIGNED = 1;
 	static final int SIGNED = 2;
@@ -63,7 +63,7 @@ public class TiffDecoder {
 	static final int ROI = 0x726f6920;     // "roi " (ROI)
 	static final int OVERLAY = 0x6f766572; // "over" (overlay)
 	static final int PROPERTIES = 0x70726f70; // "prop" (properties)
-	
+
 	private String directory;
 	private String name;
 	private String url;
@@ -75,7 +75,7 @@ public class TiffDecoder {
 	private int[] metaDataCounts;
 	private String tiffMetadata;
 	private int photoInterp;
-		
+
 	public TiffDecoder(String directory, String name) {
 		if (directory==null)
 			directory = "";
@@ -101,7 +101,7 @@ public class TiffDecoder {
 		else
 			return ((b1 << 24) + (b2 << 16) + (b3 << 8) + b4);
 	}
-	
+
 	final long getUnsignedInt() throws IOException {
 		return (long)getInt()&0xffffffffL;
 	}
@@ -144,7 +144,7 @@ public class TiffDecoder {
 		long offset = ((long)getInt())&0xffffffffL;
 		return offset;
 	}
-		
+
 	int getValue(int fieldType, int count) throws IOException {
 		int value = 0;
 		int unused;
@@ -154,8 +154,8 @@ public class TiffDecoder {
 		} else
 			value = getInt();
 		return value;
-	}	
-	
+	}
+
 	void getColorMap(long offset, FileInfo fi) throws IOException {
 		byte[] colorTable16 = new byte[768*2];
 		long saveLoc = in.getLongFilePointer();
@@ -181,7 +181,7 @@ public class TiffDecoder {
 		if (sum!=0 && fi.fileType==FileInfo.GRAY8)
 			fi.fileType = FileInfo.COLOR8;
 	}
-	
+
 	byte[] getString(int count, long offset) throws IOException {
 		count--; // skip null byte at end of string
 		if (count<=3)
@@ -228,16 +228,16 @@ public class TiffDecoder {
 
 	void decodeNIHImageHeader(int offset, FileInfo fi) throws IOException {
 		long saveLoc = in.getLongFilePointer();
-		
+
 		in.seek(offset+12);
 		int version = in.readShort();
-		
+
 		in.seek(offset+160);
 		double scale = in.readDouble();
 		if (version>106 && scale!=0.0) {
 			fi.pixelWidth = 1.0/scale;
 			fi.pixelHeight = fi.pixelWidth;
-		} 
+		}
 
 		// spatial calibration
 		in.seek(offset+172);
@@ -288,7 +288,7 @@ public class TiffDecoder {
 			} else
 				fi.valueUnit = " ";
 		}
-			
+
 		in.seek(offset+260);
 		int nImages = in.readShort();
 		if (nImages>=2 && (fi.fileType==FileInfo.GRAY8||fi.fileType==FileInfo.COLOR8)) {
@@ -297,15 +297,15 @@ public class TiffDecoder {
 			int skip = in.readShort();		//CurrentSlice
 			fi.frameInterval = in.readFloat();
 		}
-			
+
 		in.seek(offset+272);
 		float aspectRatio = in.readFloat();
 		if (version>140 && aspectRatio!=0.0)
 			fi.pixelHeight = fi.pixelWidth/aspectRatio;
-		
+
 		in.seek(saveLoc);
 	}
-	
+
 	void dumpTag(int tag, int count, int value, FileInfo fi) {
 		long lvalue = ((long)value)&0xffffffffL;
 		String name = getName(tag);
@@ -336,14 +336,14 @@ public class TiffDecoder {
 			case ARTIST: name="Artist"; break;
 			case HOST_COMPUTER: name="HostComputer"; break;
 			case PLANAR_CONFIGURATION: name="PlanarConfiguration"; break;
-			case COMPRESSION: name="Compression"; break; 
-			case PREDICTOR: name="Predictor"; break; 
-			case COLOR_MAP: name="ColorMap"; break; 
-			case SAMPLE_FORMAT: name="SampleFormat"; break; 
-			case JPEG_TABLES: name="JPEGTables"; break; 
-			case NIH_IMAGE_HDR: name="NIHImageHeader"; break; 
-			case META_DATA_BYTE_COUNTS: name="MetaDataByteCounts"; break; 
-			case META_DATA: name="MetaData"; break; 
+			case COMPRESSION: name="Compression"; break;
+			case PREDICTOR: name="Predictor"; break;
+			case COLOR_MAP: name="ColorMap"; break;
+			case SAMPLE_FORMAT: name="SampleFormat"; break;
+			case JPEG_TABLES: name="JPEGTables"; break;
+			case NIH_IMAGE_HDR: name="NIHImageHeader"; break;
+			case META_DATA_BYTE_COUNTS: name="MetaDataByteCounts"; break;
+			case META_DATA: name="MetaData"; break;
 			default: name="???"; break;
 		}
 		return name;
@@ -360,7 +360,7 @@ public class TiffDecoder {
 		else
 			return 0.0;
 	}
-	
+
 	FileInfo OpenIFD() throws IOException {
 	// Get Image File Directory data
 		int tag, fieldType, count, value;
@@ -380,11 +380,11 @@ public class TiffDecoder {
 			long lvalue = ((long)value)&0xffffffffL;
 			if (debugMode && ifdCount<10) dumpTag(tag, count, value, fi);
 			switch (tag) {
-				case IMAGE_WIDTH: 
+				case IMAGE_WIDTH:
 					fi.width = value;
 					fi.intelByteOrder = littleEndian;
 					break;
-				case IMAGE_LENGTH: 
+				case IMAGE_LENGTH:
 					fi.height = value;
 					break;
  				case STRIP_OFFSETS:
@@ -432,6 +432,8 @@ public class TiffDecoder {
 								fi.fileType = FileInfo.GRAY32_INT;
 							else if (value==12)
 								fi.fileType = FileInfo.GRAY12_UNSIGNED;
+							else if (value==10)
+								fi.fileType = FileInfo.GRAY10_UNSIGNED;
 							else if (value==1)
 								fi.fileType = FileInfo.BITMAP;
 							else
@@ -467,12 +469,12 @@ public class TiffDecoder {
 					fi.rowsPerStrip = value;
 					break;
 				case X_RESOLUTION:
-					double xScale = getRational(lvalue); 
-					if (xScale!=0.0) fi.pixelWidth = 1.0/xScale; 
+					double xScale = getRational(lvalue);
+					if (xScale!=0.0) fi.pixelWidth = 1.0/xScale;
 					break;
 				case Y_RESOLUTION:
-					double yScale = getRational(lvalue); 
-					if (yScale!=0.0) fi.pixelHeight = 1.0/yScale; 
+					double yScale = getRational(lvalue);
+					if (yScale!=0.0) fi.pixelHeight = 1.0/yScale;
 					break;
 				case RESOLUTION_UNIT:
 					if (value==1&&fi.unit==null)
@@ -501,6 +503,8 @@ public class TiffDecoder {
 						fi.compression = FileInfo.LZW;
 						if (fi.fileType==FileInfo.GRAY12_UNSIGNED)
 							error("ImageJ cannot open 12-bit LZW-compressed TIFFs");
+						if (fi.fileType==FileInfo.GRAY10_UNSIGNED)
+							error("ImageJ cannot open 10-bit LZW-compressed TIFFs");
 					} else if (value==32773)  // PackBits compression
 						fi.compression = FileInfo.PACK_BITS;
 					else if (value==32946 || value==8) //8=Adobe deflate
@@ -529,7 +533,7 @@ public class TiffDecoder {
 					} else if (value==3)
 						IJ.log("TiffDecoder: unsupported predictor value of 3");
 					break;
-				case COLOR_MAP: 
+				case COLOR_MAP:
 					if (count==768)
 						getColorMap(lvalue, fi);
 					break;
@@ -550,7 +554,7 @@ public class TiffDecoder {
 					if (fi.compression==FileInfo.JPEG)
 						error("Cannot open JPEG-compressed TIFFs with separate tables");
 					break;
-				case IMAGE_DESCRIPTION: 
+				case IMAGE_DESCRIPTION:
 					if (ifdCount==1) {
 						byte[] s = getString(count, lvalue);
 						if (s!=null) saveImageDescription(s,fi);
@@ -567,14 +571,14 @@ public class TiffDecoder {
 							fi.nImages=9999;
 					}
 					break;
-				case IPLAB: 
+				case IPLAB:
 					fi.nImages=value;
 					break;
-				case NIH_IMAGE_HDR: 
+				case NIH_IMAGE_HDR:
 					if (count==256)
 						decodeNIHImageHeader(value, fi);
 					break;
- 				case META_DATA_BYTE_COUNTS: 
+ 				case META_DATA_BYTE_COUNTS:
 					long saveLoc = in.getLongFilePointer();
 					in.seek(lvalue);
 					metaDataCounts = new int[count];
@@ -582,7 +586,7 @@ public class TiffDecoder {
 						metaDataCounts[c] = getInt();
 					in.seek(saveLoc);
 					break;
- 				case META_DATA: 
+ 				case META_DATA:
  					getMetaData(value, fi);
  					break;
 				default:
@@ -617,7 +621,7 @@ public class TiffDecoder {
 		}
 		int nTypes = (hdrSize-4)/8;
 		int[] types = new int[nTypes];
-		int[] counts = new int[nTypes];		
+		int[] counts = new int[nTypes];
 		if (debugMode) {
 			dInfo += "Metadata:\n";
 			dInfo += "   Entries: "+(metaDataCounts.length-1)+"\n";
@@ -670,13 +674,13 @@ public class TiffDecoder {
 			else if (types[i]==PROPERTIES)
 				getProperties(start, start+counts[i]-1, fi);
 			else if (types[i]<0xffffff) {
-				for (int j=start; j<start+counts[i]; j++) { 
-					int len = metaDataCounts[j]; 
-					fi.metaData[eMDindex] = new byte[len]; 
-					in.readFully(fi.metaData[eMDindex], len); 
-					fi.metaDataTypes[eMDindex] = types[i]; 
-					eMDindex++; 
-				} 
+				for (int j=start; j<start+counts[i]; j++) {
+					int len = metaDataCounts[j];
+					fi.metaData[eMDindex] = new byte[len];
+					in.readFully(fi.metaData[eMDindex], len);
+					fi.metaDataTypes[eMDindex] = types[i];
+					eMDindex++;
+				}
 			} else
 				skipUnknownType(start, start+counts[i]-1);
 			start += counts[i];
@@ -746,8 +750,8 @@ public class TiffDecoder {
 
 	void getRoi(int first, FileInfo fi) throws IOException {
 		int len = metaDataCounts[first];
-		fi.roi = new byte[len]; 
-		in.readFully(fi.roi, len); 
+		fi.roi = new byte[len];
+		in.readFully(fi.roi, len);
 	}
 
 	void getPlot(int first, FileInfo fi) throws IOException {
@@ -793,7 +797,7 @@ public class TiffDecoder {
 		if (in!=null) in.close();
 		throw new IOException(message);
 	}
-	
+
 	void skipUnknownType(int first, int last) throws IOException {
 	    byte[] buffer = new byte[metaDataCounts[first]];
 		for (int i=first; i<=last; i++) {
@@ -807,7 +811,7 @@ public class TiffDecoder {
 	public void enableDebugging() {
 		debugMode = true;
 	}
-		
+
 	public FileInfo[] getTiffInfo() throws IOException {
 		long ifdOffset;
 		ArrayList list = new ArrayList();
@@ -857,7 +861,7 @@ public class TiffDecoder {
 			return info;
 		}
 	}
-	
+
 	String getGapInfo(FileInfo[] fi) {
 		if (fi.length<2) return "0";
 		long minGap = Long.MAX_VALUE;
@@ -872,7 +876,7 @@ public class TiffDecoder {
 		maxGap -= imageSize;
 		if (minGap==maxGap)
 			return ""+minGap;
-		else 
+		else
 			return "varies ("+minGap+" to "+maxGap+")";
 	}
 

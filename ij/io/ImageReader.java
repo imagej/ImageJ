@@ -37,11 +37,11 @@ public class ImageReader {
 	    height = fi.height;
 	    skipCount = fi.getOffset();
 	}
-	
+
 	void eofError() {
 		eofErrorCount++;
 	}
-	
+
 	byte[] read8bitImage(InputStream in) throws IOException {
 		if (fi.compression>FileInfo.COMPRESSION_NONE)
 			return readCompressed8bitImage(in);
@@ -61,7 +61,7 @@ public class ImageReader {
   		}
 		return pixels;
 	}
-	
+
 	byte[] readCompressed8bitImage(InputStream in) throws IOException {
 		byte[] pixels = new byte[nPixels];
 		int current = 0;
@@ -98,7 +98,7 @@ public class ImageReader {
 		}
 		return pixels;
 	}
-	
+
 	/** Reads a 16-bit image. Signed pixels are converted to unsigned by adding 32768. */
 	short[] read16bitImage(InputStream in) throws IOException {
 		if (fi.compression>FileInfo.COMPRESSION_NONE || (fi.stripOffsets!=null&&fi.stripOffsets.length>1) && fi.fileType!=FileInfo.RGB48_PLANAR)
@@ -110,7 +110,7 @@ public class ImageReader {
 		int base = 0;
 		int count, value;
 		int bufferCount;
-		
+
 		while (totalRead<byteCount) {
 			if ((totalRead+bufferSize)>byteCount)
 				bufferSize = (int)(byteCount-totalRead);
@@ -147,7 +147,7 @@ public class ImageReader {
 		}
 		return pixels;
 	}
-	
+
 	short[] readCompressed16bitImage(InputStream in) throws IOException {
 		if (IJ.debugMode) IJ.log("ImageReader.read16bit, offset="+fi.stripOffsets[0]);
 		short[] pixels = new short[nPixels];
@@ -209,7 +209,7 @@ public class ImageReader {
 		int count, value;
 		int bufferCount;
 		int tmp;
-		
+
 		while (totalRead<byteCount) {
 			if ((totalRead+bufferSize)>byteCount)
 				bufferSize = (int)(byteCount-totalRead);
@@ -256,7 +256,7 @@ public class ImageReader {
 		}
 		return pixels;
 	}
-	
+
 	float[] readCompressed32bitImage(InputStream in) throws IOException {
 		float[] pixels = new float[nPixels];
 		int base = 0;
@@ -325,7 +325,7 @@ public class ImageReader {
 		int bufferCount;
 		long tmp;
 		long b1, b2, b3, b4, b5, b6, b7, b8;
-		
+
 		while (totalRead<byteCount) {
 			if ((totalRead+bufferSize)>byteCount)
 				bufferSize = (int)(byteCount-totalRead);
@@ -345,8 +345,8 @@ public class ImageReader {
 			pixelsRead = bufferSize/bytesPerPixel;
 			int j = 0;
 			for (int i=base; i < (base+pixelsRead); i++) {
-				b1 = buffer[j+7]&0xff;  b2 = buffer[j+6]&0xff;  b3 = buffer[j+5]&0xff;  b4 = buffer[j+4]&0xff; 
-				b5 = buffer[j+3]&0xff;  b6 = buffer[j+2]&0xff;  b7 = buffer[j+1]&0xff;  b8 = buffer[j]&0xff; 
+				b1 = buffer[j+7]&0xff;  b2 = buffer[j+6]&0xff;  b3 = buffer[j+5]&0xff;  b4 = buffer[j+4]&0xff;
+				b5 = buffer[j+3]&0xff;  b6 = buffer[j+2]&0xff;  b7 = buffer[j+1]&0xff;  b8 = buffer[j]&0xff;
 				if (fi.intelByteOrder)
 					tmp = (long)((b1<<56)|(b2<<48)|(b3<<40)|(b4<<32)|(b5<<24)|(b6<<16)|(b7<<8)|b8);
 				else
@@ -373,7 +373,7 @@ public class ImageReader {
 		int count, value;
 		int bufferCount;
 		int r, g, b, a;
-		
+
 		while (totalRead<byteCount) {
 			if ((totalRead+bufferSize)>byteCount)
 				bufferSize = (int)(byteCount-totalRead);
@@ -498,7 +498,7 @@ public class ImageReader {
 		}
 		return pixels;
 	}
-	
+
 	int[] readJPEG(InputStream in) throws IOException {
 		BufferedImage bi = ImageIO.read(in);
 		ImageProcessor ip =  new ColorProcessor(bi);
@@ -521,7 +521,7 @@ public class ImageReader {
 			r = buffer[i]&0xff;
 			pixels[i] = 0xff000000 | (r<<16);
 		}
-		
+
 		showProgress(40, 100);
 		dis.readFully(buffer);
 		for (int i=0; i < planeSize; i++) {
@@ -565,11 +565,11 @@ public class ImageReader {
 		if (showProgressBar && (System.currentTimeMillis()-startTime)>500L)
 			IJ.showProgress(current, last);
 	}
-	
+
 	private void showProgress(long current, long last) {
 		showProgress((int)(current/10L), (int)(last/10L));
 	}
-	
+
 	Object readRGB48(InputStream in) throws IOException {
 		if (fi.compression>FileInfo.COMPRESSION_NONE)
 			return readCompressedRGB48(in);
@@ -666,7 +666,7 @@ public class ImageReader {
 		int channels = fi.samplesPerPixel;
 		if (channels==1) channels=3;
 		Object[] stack = new Object[channels];
-		for (int i=0; i<channels; i++) 
+		for (int i=0; i<channels; i++)
 			stack[i] = read16bitImage(in);
 		return stack;
 	}
@@ -688,6 +688,53 @@ public class ImageReader {
 				if (count==width) break;
 				pixels[index2+count] = (short)(((buffer[index1+1]&0xf)*256) + (buffer[index1+2]&0xff));
 				count++; index1+=3;
+			}
+		}
+		return pixels;
+	}
+
+	short[] read10bitImage(InputStream in) throws IOException {
+		int bytesPerLine = (int)(width*1.25);
+		//if ((width&1)==1) bytesPerLine++; // add 1 if odd
+		byte[] buffer = new byte[bytesPerLine*height];
+		short[] pixels = new short[nPixels];
+		DataInputStream dis = new DataInputStream(in);
+		dis.readFully(buffer);
+		for (int y=0; y<height; y++) {
+			int index1 = y*bytesPerLine;
+			int index2 = y*width;
+			int count = 0;
+			while (count<width) {
+				final short B0 = (short) (buffer[index1] & 0xFF);
+				final short B1 = (short) (buffer[index1 + 1] & 0xFF);
+				final short B2 = (short) (buffer[index1 + 2] & 0xFF);
+				final short B3 = (short) (buffer[index1 + 3] & 0xFF);
+				final short B4 = (short) (buffer[index1 + 4] & 0xFF);
+				short b0, b1, b2, b3;
+
+				// Set pixel 1
+				b0 = (short) (B0 << 2);
+				b1 = (short) (B1 >> 6);
+				pixels[index2 + count] = (short) (b0 | b1);
+				count++;
+
+				// set pixel 2
+				b1 = (short) ((B1 & (0xFF >> 2)) << 4);
+				b2 = (short) (B2 >> 4);
+				pixels[index2 + count] = (short) (b1 | b2);
+				count++;
+
+				// set pixel 3
+				b2 = (short) ((B2 & (0xFF >> 4)) << 6);
+				b3 = (short) (B3 >> 2);
+				pixels[index2 + count] = (short) (b2 | b3);
+				count++;
+
+				// set pixel 4
+				b3 = (short) ((B3 & (0xFF >> 6)) << 8);
+				pixels[index2 + count] = (short) (b3 | B4);
+				count++;
+				index1 += 5;
 			}
 		}
 		return pixels;
@@ -761,8 +808,8 @@ public class ImageReader {
 		else
 			bufferSize = (bufferSize/8192)*8192;
 	}
-	
-	/** 
+
+	/**
 	Reads the image from the InputStream and returns the pixel
 	array (byte, short, int or float). Returns null if there
 	was an IO exception. Does not close the InputStream.
@@ -837,6 +884,11 @@ public class ImageReader {
 					skip(in);
 					pixels = (Object)read24bitImage(in);
 					break;
+				case FileInfo.GRAY10_UNSIGNED:
+					skip(in);
+					data = read10bitImage(in);
+					pixels = (Object)data;
+					break;
 				default:
 					pixels = null;
 			}
@@ -849,9 +901,9 @@ public class ImageReader {
 			return null;
 		}
 	}
-	
-	/** 
-	Skips the specified number of bytes, then reads an image and 
+
+	/**
+	Skips the specified number of bytes, then reads an image and
 	returns the pixel array (byte, short, int or float). Returns
 	null if there was an IO exception. Does not close the InputStream.
 	*/
@@ -864,9 +916,9 @@ public class ImageReader {
 		else
 			return pixels;
 	}
-	
-	/** 
-	Reads the image from a URL and returns the pixel array (byte, 
+
+	/**
+	Reads the image from a URL and returns the pixel array (byte,
 	short, int or float). Returns null if there was an IO exception.
 	*/
 	public Object readPixels(String url) {
@@ -878,7 +930,7 @@ public class ImageReader {
 		catch (IOException e) {IJ.log(""+e); return null;}
 		return readPixels(is);
 	}
-	
+
 	private byte[] uncompress(byte[] input) {
 		if (fi.compression==FileInfo.PACK_BITS)
 			return packBitsUncompress(input, fi.rowsPerStrip*fi.width*fi.getBytesPerPixel());
@@ -909,7 +961,7 @@ public class ImageReader {
 	}
 
   /**
- * Utility method for decoding an LZW-compressed image strip. 
+ * Utility method for decoding an LZW-compressed image strip.
  * Adapted from the TIFF 6.0 Specification:
  * http://partners.adobe.com/asn/developer/pdfs/tn/TIFF6.pdf (page 61)
  * Author: Curtis Rueden (ctrueden at wisc.edu)
@@ -926,7 +978,7 @@ public class ImageReader {
 		BitBuffer bb = new BitBuffer(input);
 		byte[] byteBuffer1 = new byte[16];
 		byte[] byteBuffer2 = new byte[16];
-		
+
 		while (out.size()<byteCount) {
 			code = bb.getBits(bitsToRead);
 			if (code==EOI_CODE || code==-1)
@@ -972,7 +1024,7 @@ public class ImageReader {
 		}
 		return out.toByteArray();
 	}
-	 
+
 	/** Based on the Bio-Formats PackbitsCodec written by Melissa Linkert. */
 	public byte[] packBitsUncompress(byte[] input, int expected) {
 		if (expected==0) expected = Integer.MAX_VALUE;
@@ -1064,6 +1116,4 @@ class ByteVector {
 		System.arraycopy(data, 0, bytes, 0, size);
 		return bytes;
 	}
-		
 }
-

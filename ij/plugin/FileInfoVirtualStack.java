@@ -7,12 +7,12 @@ import java.awt.*;
 import java.io.*;
 import java.util.Properties;
 
-/** This plugin opens a multi-page TIFF file, or a set of raw images, as a 
+/** This plugin opens a multi-page TIFF file, or a set of raw images, as a
 	virtual stack. It implements the File/Import/TIFF Virtual Stack command. */
 public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 	private FileInfo[] info;
 	private int nImages;
-	
+
 	/* Default constructor. */
 	public FileInfoVirtualStack() {}
 
@@ -25,7 +25,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 			imp.show();
 	}
 
-	/* Constructs a FileInfoVirtualStack from a FileInfo 
+	/* Constructs a FileInfoVirtualStack from a FileInfo
 		object and displays it if 'show' is true. */
 	public FileInfoVirtualStack(FileInfo fi, boolean show) {
 		info = new FileInfo[1];
@@ -34,7 +34,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		if (imp!=null && show)
 			imp.show();
 	}
-	
+
 	/* Constructs a FileInfoVirtualStack from an array of FileInfo objects. */
 	public FileInfoVirtualStack(FileInfo[] fi) {
 		info = fi;
@@ -69,7 +69,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		if (imp!=null)
 			imp.show();
 	}
-	
+
 	private void init(String dir, String name) {
 		if (name.endsWith(".zip")) {
 			IJ.error("Virtual Stack", "ZIP compressed stacks not supported");
@@ -93,7 +93,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		if (IJ.debugMode)
 			IJ.log(info[0].debugInfo);
 	}
-		
+
 	private ImagePlus open() {
 		FileInfo fi = info[0];
 		int n = fi.nImages;
@@ -101,6 +101,8 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 			long bytesPerImage = fi.width*fi.height*fi.getBytesPerPixel();
 			if (fi.fileType==FileInfo.GRAY12_UNSIGNED)
 				bytesPerImage = (int)(1.5*fi.width)*fi.height;
+			if (fi.fileType==FileInfo.GRAY10_UNSIGNED)
+				bytesPerImage = (int)(1.25*fi.width)*fi.height;
 			n = validateNImages(fi, bytesPerImage);
 			info = new FileInfo[n];
 			for (int i=0; i<n; i++) {
@@ -145,7 +147,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		}
 		return imp2;
 	}
-	
+
 	private int validateNImages(FileInfo fi, long bytesPerImage) {
 		File f = new File(fi.getFilePath());
 		if (!f.exists())
@@ -170,7 +172,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 			try {
 				return Double.valueOf(s);
 			} catch (NumberFormatException e) {}
-		}	
+		}
 		return null;
 	}
 
@@ -189,7 +191,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		info[nImages-1] = null;
 		nImages--;
 	}
-	
+
 	/** Returns an ImageProcessor for the specified image,
 		where {@literal 1<=n<=nImages}. Returns null if the stack is empty.
 	*/
@@ -231,7 +233,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 			}
 		}
 	 }
- 
+
 	/** Returns the number of slices in this stack. */
 	public int size() {
 		return getSize();
@@ -254,11 +256,11 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 	public int getWidth() {
 		return info[0].width;
 	}
-	
+
 	public int getHeight() {
 		return info[0].height;
 	}
-	
+
 	/** Adds an image to this stack. */
 	public synchronized  void addImage(FileInfo fileInfo) {
 		nImages++;
@@ -271,7 +273,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		}
 		info[nImages-1] = fileInfo;
 	}
-	
+
 	@Override
 	public String getDirectory() {
 		if (info!=null && info.length>0)
@@ -279,7 +281,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		else
 			return null;
 	}
-		
+
 	@Override
 	public String getFileName(int n) {
 		int index = n - 1;
@@ -288,6 +290,4 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		else
 			return null;
 	}
-
-		
 }

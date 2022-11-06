@@ -7,7 +7,7 @@ public class TiffEncoder {
 	static final int MAP_SIZE = 768; // in 16-bit words
 	static final int BPS_DATA_SIZE = 6;
 	static final int SCALE_DATA_SIZE = 16;
-		
+
 	private FileInfo fi;
 	private int bitsPerSample;
 	private int photoInterp;
@@ -28,7 +28,7 @@ public class TiffEncoder {
 	private byte buffer[] = new byte[8];
 	private int colorMapSize = 0;
 
-		
+
 	public TiffEncoder (FileInfo fi) {
 		this.fi = fi;
 		fi.intelByteOrder = littleEndian;
@@ -103,7 +103,7 @@ public class TiffEncoder {
 		fi.offset = (int)imageOffset;
 		//ij.IJ.log(imageOffset+", "+ifdSize+", "+bpsSize+", "+descriptionSize+", "+scaleSize+", "+colorMapSize+", "+nMetaDataEntries*4+", "+metaDataSize);
 	}
-	
+
 	/** Saves the image as a TIFF file. The OutputStream is not closed.
 		The fi.pixels field must contain the image data. If fi.nImages>1
 		then fi.pixels must be a 2D array. The fi.offset field is ignored. */
@@ -145,7 +145,7 @@ public class TiffEncoder {
 		} else if (bigTiff)
 				ij.IJ.log("Stack is larger than 4GB. Most TIFF readers will only open the first image. Use this information to open as raw:\n"+fi);
 	}
-	
+
 	public void write(DataOutputStream out) throws IOException {
 		write((OutputStream)out);
 	}
@@ -239,7 +239,7 @@ public class TiffEncoder {
 		nMetaDataTypes = nTypes;
 		return size;
 	}
-	
+
 	/** Writes the 8-byte image file header. */
 	void writeHeader(OutputStream out) throws IOException {
 		byte[] hdr = new byte[8];
@@ -264,7 +264,7 @@ public class TiffEncoder {
 		}
 		out.write(hdr);
 	}
-	
+
 	/** Writes one 12-byte IFD entry. */
 	void writeEntry(OutputStream out, int tag, int fieldType, int count, int value) throws IOException {
 		writeShort(out, tag);
@@ -276,9 +276,9 @@ public class TiffEncoder {
 		} else
 			writeInt(out, value); // may be an offset
 	}
-	
+
 	/** Writes one IFD (Image File Directory). */
-	void writeIFD(OutputStream out, int imageOffset, int nextIFD) throws IOException {	
+	void writeIFD(OutputStream out, int imageOffset, int nextIFD) throws IOException {
 		int tagDataOffset = HDR_SIZE + ifdSize;
 		writeShort(out, nEntries);
 		writeEntry(out, TiffDecoder.NEW_SUBFILE_TYPE, 4, 1, 0);
@@ -325,7 +325,7 @@ public class TiffEncoder {
 		}
 		writeInt(out, nextIFD);
 	}
-	
+
 	/** Writes the 6 bytes of data required by RGB BitsPerSample tag. */
 	void writeBitsPerPixel(OutputStream out) throws IOException {
 		int bitsPerPixel = fi.fileType==FileInfo.RGB48?16:8;
@@ -364,14 +364,14 @@ public class TiffEncoder {
 		}
 		out.write(colorTable16);
 	}
-	
-	/** Writes image metadata ("info" property, 
+
+	/** Writes image metadata ("info" property,
 		stack slice labels, channel display ranges, luts, ROIs,
 		overlays, properties and extra metadata). */
 	void writeMetaData(OutputStream out) throws IOException {
-	
+
 		// write byte counts (META_DATA_BYTE_COUNTS tag)
-		writeInt(out, 4+nMetaDataTypes*8); // header size	
+		writeInt(out, 4+nMetaDataTypes*8); // header size
 		if (fi.info!=null && fi.info.length()>0)
 			writeInt(out, fi.info.length()*2);
 		for (int i=0; i<nSliceLabels; i++) {
@@ -399,8 +399,8 @@ public class TiffEncoder {
 				writeInt(out, fi.properties[i].length()*2);
 		}
 		for (int i=0; i<extraMetaDataEntries; i++)
-			writeInt(out, fi.metaData[i].length);	
-		
+			writeInt(out, fi.metaData[i].length);
+
 		// write header (META_DATA tag header)
 		writeInt(out, TiffDecoder.MAGIC_NUMBER); // "IJIJ"
 		if (fi.info!=null) {
@@ -439,7 +439,7 @@ public class TiffEncoder {
 			writeInt(out, fi.metaDataTypes[i]);
 			writeInt(out, 1); // count
 		}
-		
+
 		// write data (META_DATA tag body)
 		if (fi.info!=null)
 			writeChars(out, fi.info);
@@ -468,7 +468,7 @@ public class TiffEncoder {
 				writeChars(out, fi.properties[i]);
 		}
 		for (int i=0; i<extraMetaDataEntries; i++)
-			out.write(fi.metaData[i]); 					
+			out.write(fi.metaData[i]);
 	}
 
 	/** Creates an optional image description string for saving calibration data.
@@ -483,7 +483,7 @@ public class TiffEncoder {
 		} else
 			description = null;
 	}
-		
+
 	final void writeShort(OutputStream out, int v) throws IOException {
 		if (littleEndian) {
        		out.write(v&255);
@@ -535,22 +535,21 @@ public class TiffEncoder {
     final void writeDouble(OutputStream out, double v) throws IOException {
 		writeLong(out, Double.doubleToLongBits(v));
     }
-    
+
 	final void writeChars(OutputStream out, String s) throws IOException {
         int len = s.length();
         if (littleEndian) {
 			for (int i = 0 ; i < len ; i++) {
 				int v = s.charAt(i);
-				out.write(v&255); 
-				out.write((v>>>8)&255); 
+				out.write(v&255);
+				out.write((v>>>8)&255);
 			}
         } else {
 			for (int i = 0 ; i < len ; i++) {
 				int v = s.charAt(i);
-				out.write((v>>>8)&255); 
-				out.write(v&255); 
+				out.write((v>>>8)&255);
+				out.write(v&255);
 			}
         }
     }
-    
 }

@@ -9,66 +9,69 @@ public class FileInfo implements Cloneable {
 
 	/** 8-bit unsigned integer (0-255). */
 	public static final int GRAY8 = 0;
-	
+
 	/**	16-bit signed integer (-32768-32767). Imported signed images
 		are converted to unsigned by adding 32768. */
 	public static final int GRAY16_SIGNED = 1;
-	
+
 	/** 16-bit unsigned integer (0-65535). */
 	public static final int GRAY16_UNSIGNED = 2;
-	
+
 	/**	32-bit signed integer. Imported 32-bit integer images are
 		converted to floating-point. */
 	public static final int GRAY32_INT = 3;
-	
+
 	/** 32-bit floating-point. */
 	public static final int GRAY32_FLOAT = 4;
-	
+
 	/** 8-bit unsigned integer with color lookup table. */
 	public static final int COLOR8 = 5;
-	
+
 	/** 24-bit interleaved RGB. Import/export only. */
-	public static final int RGB = 6;	
-	
+	public static final int RGB = 6;
+
 	/** 24-bit planer RGB. Import only. */
 	public static final int RGB_PLANAR = 7;
-	
+
 	/** 1-bit black and white. Import only. */
 	public static final int BITMAP = 8;
-	
+
 	/** 32-bit interleaved ARGB. Import only. */
 	public static final int ARGB = 9;
-	
+
 	/** 24-bit interleaved BGR. Import only. */
 	public static final int BGR = 10;
-	
+
 	/**	32-bit unsigned integer. Imported 32-bit integer images are
 		converted to floating-point. */
 	public static final int GRAY32_UNSIGNED = 11;
-	
+
 	/** 48-bit interleaved RGB. */
-	public static final int RGB48 = 12;	
+	public static final int RGB48 = 12;
 
 	/** 12-bit unsigned integer (0-4095). Import only. */
-	public static final int GRAY12_UNSIGNED = 13;	
+	public static final int GRAY12_UNSIGNED = 13;
 
 	/** 24-bit unsigned integer. Import only. */
-	public static final int GRAY24_UNSIGNED = 14;	
+	public static final int GRAY24_UNSIGNED = 14;
 
 	/** 32-bit interleaved BARG (MCID). Import only. */
-	public static final int BARG  = 15;	
+	public static final int BARG  = 15;
 
 	/** 64-bit floating-point. Import only.*/
-	public static final int GRAY64_FLOAT  = 16;	
+	public static final int GRAY64_FLOAT  = 16;
 
 	/** 48-bit planar RGB. Import only. */
-	public static final int RGB48_PLANAR = 17;	
+	public static final int RGB48_PLANAR = 17;
 
 	/** 32-bit interleaved ABGR. Import only. */
 	public static final int ABGR = 18;
 
 	/** 32-bit interleaved CMYK. Import only. */
 	public static final int CMYK = 19;
+
+	/** 10-bit unsigned integer (0-1023). Import only. */
+	public static final int GRAY10_UNSIGNED = 20;
 
 	// File formats
 	public static final int UNKNOWN = 0;
@@ -91,12 +94,12 @@ public class FileInfo implements Cloneable {
 	public static final int PACK_BITS = 5;
 	public static final int ZIP = 6;
 	public static final int ZIP_WITH_DIFFERENCING = 7;
-	
+
 	/* File format (TIFF, GIF_OR_JPG, BMP, etc.). Used by the File/Revert command */
 	public int fileFormat;
-	
+
 	/* File type (GRAY8, GRAY_16_UNSIGNED, RGB, etc.) */
-	public int fileType;	
+	public int fileType;
 	public String fileName;
 	public String directory;
 	public String url;
@@ -108,21 +111,21 @@ public class FileInfo implements Cloneable {
     public boolean whiteIsZero;
     public boolean intelByteOrder;
 	public int compression;
-    public int[] stripOffsets;  
+    public int[] stripOffsets;
     public int[] stripLengths;
     public int rowsPerStrip;
 	public int lutSize;
 	public byte[] reds;
 	public byte[] greens;
 	public byte[] blues;
-	public Object pixels;	
+	public Object pixels;
 	public String debugInfo;
 	public String[] sliceLabels;
 	public String info;
 	public InputStream inputStream;
 	public VirtualStack virtualStack;
 	public int sliceNumber; // used by FileInfoVirtualStack
-	
+
 	public double pixelWidth=1.0;
 	public double pixelHeight=1.0;
 	public double pixelDepth=1.0;
@@ -148,7 +151,7 @@ public class FileInfo implements Cloneable {
 	public String openNextDir, openNextName;
 	public String[] properties; // {key,value,key,value,...}
 	public boolean imageSaved;
-    
+
 	/** Creates a FileInfo object with all of its fields set to their default value. */
      public FileInfo() {
     	// assign default values
@@ -161,7 +164,7 @@ public class FileInfo implements Cloneable {
 		compression = COMPRESSION_NONE;
 		samplesPerPixel = 1;
     }
-    
+
      /** Returns the file path. */
 	public String getFilePath() {
 		String dir = directory;
@@ -175,7 +178,7 @@ public class FileInfo implements Cloneable {
     public final long getOffset() {
     	return longOffset>0L?longOffset:((long)offset)&0xffffffffL;
     }
-    
+
     /** Returns the gap between images as a long. */
     public final long getGap() {
     	return longGap>0L?longGap:((long)gapBetweenImages)&0xffffffffL;
@@ -185,7 +188,7 @@ public class FileInfo implements Cloneable {
 	public int getBytesPerPixel() {
 		switch (fileType) {
 			case GRAY8: case COLOR8: case BITMAP: return 1;
-			case GRAY16_SIGNED: case GRAY16_UNSIGNED: case GRAY12_UNSIGNED: return 2;
+			case GRAY16_SIGNED: case GRAY16_UNSIGNED: case GRAY12_UNSIGNED: case GRAY10_UNSIGNED: return 2;
 			case GRAY32_INT: case GRAY32_UNSIGNED: case GRAY32_FLOAT: case ARGB: case GRAY24_UNSIGNED: case BARG: case ABGR: case CMYK: return 4;
 			case RGB: case RGB_PLANAR: case BGR: return 3;
 			case RGB48: case RGB48_PLANAR: return 6;
@@ -213,7 +216,7 @@ public class FileInfo implements Cloneable {
 			+ ", ranges=" + (displayRanges!=null?""+displayRanges.length/2:"null")
 			+ ", samples=" + samplesPerPixel;
     }
-    
+
     /** Returns JavaScript code that can be used to recreate this FileInfo. */
     public String getCode() {
     	String code = "fi = new FileInfo();\n";
@@ -227,15 +230,15 @@ public class FileInfo implements Cloneable {
     	else if (fileType==RGB)
     		type = "RGB";
     	if (type!=null)
-    		code += "fi.fileType = FileInfo."+type+";\n"; 
+    		code += "fi.fileType = FileInfo."+type+";\n";
     	code += "fi.width = "+width+";\n";
     	code += "fi.height = "+height+";\n";
     	if (nImages>1)
-			code += "fi.nImages = "+nImages+";\n";  	
+			code += "fi.nImages = "+nImages+";\n";
     	if (getOffset()>0)
-			code += "fi.longOffset = "+getOffset()+";\n";  	
+			code += "fi.longOffset = "+getOffset()+";\n";
     	if (intelByteOrder)
-			code += "fi.intelByteOrder = true;\n";  	
+			code += "fi.intelByteOrder = true;\n";
     	return code;
     }
 
@@ -244,6 +247,8 @@ public class FileInfo implements Cloneable {
 			case GRAY8: return "byte";
 			case GRAY16_SIGNED: return "short";
 			case GRAY16_UNSIGNED: return "ushort";
+                        case GRAY10_UNSIGNED: return "ushort";
+                        case GRAY12_UNSIGNED: return "ushort";
 			case GRAY32_INT: return "int";
 			case GRAY32_UNSIGNED: return "uint";
 			case GRAY32_FLOAT: return "float";
