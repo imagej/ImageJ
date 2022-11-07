@@ -693,9 +693,15 @@ public class ImageReader {
 		return pixels;
 	}
 
+	/**
+	 * Reads in the contents of a 10-bit TIFF grayscale image file and converts to a 16-bit image.
+	 * 5 bytes are read-in at a time and produces 4 pixels.
+	 * @param in
+	 * @return the pixels of the 10-bit image
+	 * @throws IOException
+	 */
 	short[] read10bitImage(InputStream in) throws IOException {
-		int bytesPerLine = (int)(width*1.25);
-		//if ((width&1)==1) bytesPerLine++; // add 1 if odd
+		int bytesPerLine = (int)(width*1.25); // there are 1.25 bytes of data for each pixel (5 bytes per 4 pixels)
 		byte[] buffer = new byte[bytesPerLine*height];
 		short[] pixels = new short[nPixels];
 		DataInputStream dis = new DataInputStream(in);
@@ -705,36 +711,38 @@ public class ImageReader {
 			int index2 = y*width;
 			int count = 0;
 			while (count<width) {
-				final short B0 = (short) (buffer[index1] & 0xFF);
-				final short B1 = (short) (buffer[index1 + 1] & 0xFF);
-				final short B2 = (short) (buffer[index1 + 2] & 0xFF);
-				final short B3 = (short) (buffer[index1 + 3] & 0xFF);
-				final short B4 = (short) (buffer[index1 + 4] & 0xFF);
-				short b0, b1, b2, b3;
+				if (index1 + 4 < buffer.length) {
+					final short B0 = (short) (buffer[index1] & 0xFF);
+					final short B1 = (short) (buffer[index1 + 1] & 0xFF);
+					final short B2 = (short) (buffer[index1 + 2] & 0xFF);
+					final short B3 = (short) (buffer[index1 + 3] & 0xFF);
+					final short B4 = (short) (buffer[index1 + 4] & 0xFF);
+					short b0, b1, b2, b3;
 
-				// Set pixel 1
-				b0 = (short) (B0 << 2);
-				b1 = (short) (B1 >> 6);
-				pixels[index2 + count] = (short) (b0 | b1);
-				count++;
+					// Set pixel 1
+					b0 = (short) (B0 << 2);
+					b1 = (short) (B1 >> 6);
+					pixels[index2 + count] = (short) (b0 | b1);
+					count++;
 
-				// set pixel 2
-				b1 = (short) ((B1 & (0xFF >> 2)) << 4);
-				b2 = (short) (B2 >> 4);
-				pixels[index2 + count] = (short) (b1 | b2);
-				count++;
+					// set pixel 2
+					b1 = (short) ((B1 & (0xFF >> 2)) << 4);
+					b2 = (short) (B2 >> 4);
+					pixels[index2 + count] = (short) (b1 | b2);
+					count++;
 
-				// set pixel 3
-				b2 = (short) ((B2 & (0xFF >> 4)) << 6);
-				b3 = (short) (B3 >> 2);
-				pixels[index2 + count] = (short) (b2 | b3);
-				count++;
+					// set pixel 3
+					b2 = (short) ((B2 & (0xFF >> 4)) << 6);
+					b3 = (short) (B3 >> 2);
+					pixels[index2 + count] = (short) (b2 | b3);
+					count++;
 
-				// set pixel 4
-				b3 = (short) ((B3 & (0xFF >> 6)) << 8);
-				pixels[index2 + count] = (short) (b3 | B4);
-				count++;
-				index1 += 5;
+					// set pixel 4
+					b3 = (short) ((B3 & (0xFF >> 6)) << 8);
+					pixels[index2 + count] = (short) (b3 | B4);
+					count++;
+					index1 += 5;
+				}
 			}
 		}
 		return pixels;
