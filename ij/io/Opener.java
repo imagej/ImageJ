@@ -507,8 +507,6 @@ public class Opener {
 	}
 	
 	private ImagePlus openCachedImage(String url) {
-		if (url==null || !url.contains("/images"))
-			return null;
 		String ijDir = IJ.getDirectory("imagej");
 		if (ijDir==null)
 			return null;
