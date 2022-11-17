@@ -2270,7 +2270,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 
 	/** Returns 'true' if this is a line selection. */
 	public boolean isLine() {
-		return type>=LINE && type<=FREELINE;
+		return type>=LINE && type<=ANGLE;
 	}
 
 

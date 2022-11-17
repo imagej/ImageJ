@@ -29,7 +29,7 @@ public class URLOpener implements PlugIn {
 				openTextFile(urlOrName, true);
 			else {
 				double startTime = System.currentTimeMillis();
-				String url = urlOrName.indexOf("://")>0?urlOrName:Prefs.getImagesURL()+urlOrName;
+				String url = imageURL(urlOrName);
 				ImagePlus imp = new ImagePlus(url);
 				if (Recorder.record)
 					Recorder.recordCall("imp = IJ.openImage(\""+url+"\");");
@@ -103,6 +103,10 @@ public class URLOpener implements PlugIn {
 		IJ.register(URLOpener.class);  // keeps this class from being GC'd
 	}
 	
+	private static String imageURL(String urlOrName) {
+		return urlOrName.indexOf("://")>0?urlOrName:Prefs.getImagesURL()+urlOrName;
+	}
+	
 	boolean noExtension(String url) {
 		int lastSlash = url.lastIndexOf("/");
 		if (lastSlash==-1) lastSlash = 0;
@@ -157,10 +161,10 @@ public class URLOpener implements PlugIn {
 		IJ.resetEscape();
 		for (int i=0; i<n; i++) {
 			IJ.showStatus((i+1)+"/"+n+" ("+names[i]+")");
-			String url = Prefs. getImagesURL()+names[i];
+			String url = imageURL(names[i]);
 			byte[] data = PluginInstaller.download(url, null);
 			if (data==null) continue;
-			f = new File(dir,names[i]);
+			f = new File(dir,names[i].substring(names[i].lastIndexOf("/") + 1));
 			try {
 				FileOutputStream out = new FileOutputStream(f);
 				out.write(data, 0, data.length);
