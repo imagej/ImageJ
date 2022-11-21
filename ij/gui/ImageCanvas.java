@@ -747,8 +747,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				resetMaxBounds(); // Works around problem that prevented window from being larger than maximized size
 			resetMaxBoundsCount++;
 		}
-		if (scaleToFit || IJ.altKeyDown())
-			{fitToWindow(); return;}
+		if (scaleToFit || IJ.altKeyDown()) {
+			fitToWindow();
+			return;
+		}
 		if (width>imageWidth*magnification)
 			width = (int)(imageWidth*magnification);
 		if (height>imageHeight*magnification)

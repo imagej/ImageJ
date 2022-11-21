@@ -257,7 +257,6 @@ public class Zoom implements PlugIn {
 	}
 	
 	private void scaleToFit(ImagePlus imp) {
-		waitUntilActivated(imp);
 		ImageCanvas ic = imp.getCanvas();
 		if (ic==null)
 			return;
@@ -270,7 +269,6 @@ public class Zoom implements PlugIn {
 			ic.fitToWindow();
 			IJ.showStatus("Resize window to scale (use 'alt' key as shortcut)");
 		}
-
 	}
 	
 }

@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.53v18  16 November 2022</u>
+<li> <u>1.53v  21 November 2022</u>
 <ul>
 <li> Thanks to Andrey Kazak, added the String.setFontSize() macro function.
 <li> Thanks to Mario Faretta, added the Dialog.addImage(path) macro function.
@@ -14,7 +14,7 @@ function and Roi.translate() method
 (<a href="http://wsr.imagej.net/macros/RoiTranslate.ijm">macro example</a>,
 <a href="http://wsr.imagej.net/macros/js/RoiTranslate.js">JavaScript example</a>).
 <li> Thanks to Avinoam Kalma, fixed a bug that caused ImageJ
-to not correctly read TIFF images saved with the “deflate”
+to not correctly read TIFF images saved with the "deflate"
 compression option.
 <li> Thanks to Mary Brown, fixed a bug that caused the
 "Menu font size"  setting in the <i>Edit&gt;Options&gt;Appearance</i>
@@ -24,13 +24,13 @@ dialog to not be preserved in the preferences file.
 exception if the selection extended beyond the
 image bounds.
 <li> Thanks to 'Alex' and Curtis Rueden, fixed a bug that caused ImageJ
-to freeze if “waitForUser” was entered into the “Interactive Interpreter”
+to freeze if "waitForUser" was entered into the "Interactive Interpreter"
 window.
 <li> Thanks to 'Olivier', fixed a bug that caused RGB DICOM files imported
 using Bio-Formats as hyperstacks to "loose" the metadata when converted
 to RGB.
 <li> Thanks to Wilhelm Burger, fixed a bug that caused the Roi.isLine() and
-Roi.isLineOrPoint() methods to return 'false' for angle selections;
+Roi.isLineOrPoint() methods to return 'false' for angle selections.
 <li> Thanks to Curtis Rueden, fixed a bug that caused the
 <i>File&gt;Open Samples&gt;Cache Sample Images</i> command
 to not work on Fiji.
@@ -38,7 +38,7 @@ to not work on Fiji.
 <i>Image&gt;Invert</i> command to ignore selections when inverting
 16-bit images. Note that the image may not be displayed correctly unless
 it uses the full pixel value range (0-65535) or a range has been set
-using the "Set" option of the Image>Adjust>Brightness/Contrast
+using the "Set" option of the <i>Image&gt;Adjust&gt;Brightness/Contrast</i>
 dialog.
 </ul>
 
