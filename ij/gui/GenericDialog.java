@@ -1,18 +1,73 @@
 package ij.gui;
-import ij.*;
-import ij.plugin.frame.Recorder;
-import ij.plugin.ScreenGrabber;
-import ij.plugin.filter.PlugInFilter;
-import ij.plugin.filter.PlugInFilterRunner;
-import ij.util.Tools;
-import ij.macro.*;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Button;
+import java.awt.Checkbox;
+import java.awt.CheckboxGroup;
+import java.awt.Choice;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.Label;
+import java.awt.Panel;
+import java.awt.Scrollbar;
+import java.awt.SystemColor;
+import java.awt.TextArea;
+import java.awt.TextField;
+import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetAdapter;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+import java.awt.event.TextEvent;
+import java.awt.event.TextListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.Hashtable;
+import java.util.Locale;
+import java.util.Vector;
+
+import ij.CompositeImage;
+import ij.IJ;
+import ij.ImageJ;
+import ij.ImagePlus;
+import ij.Macro;
+import ij.Prefs;
+import ij.WindowManager;
 import ij.io.OpenDialog;
-import java.awt.*;
-import java.io.*;
-import java.awt.event.*;
-import java.util.*;
-import java.awt.datatransfer.*;
-import java.awt.dnd.*;
+import ij.macro.Interpreter;
+import ij.macro.MacroRunner;
+import ij.plugin.ScreenGrabber;
+import ij.plugin.filter.PlugInFilterRunner;
+import ij.plugin.frame.Recorder;
+import ij.util.Tools;
 
 
 /**
@@ -430,19 +485,80 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	/**
 	 * Adds a group of choices to the dialog with menu items taken from the
 	 * <code>enum</code> class of the specified default item (enum constant).
-	 * The default item is automatically set. Calls the original (string-based)
+	 * Calls the original (string-based)
 	 * {@link GenericDialog#addChoice(String, String[], String)} method.
+	 * Usage example:
+	 * <pre>
+	 * import ij.process.AutoThresholder.Method;
+	 * ...
+	 * Method method = Method.Otsu;
+	 * 
+	 * GenericDialog gd = new GenericDialog("Select AutoThresholder Method");
+	 * gd.addEnumChoice("All threshold methods", method);
+	 * ...
+	 * gd.showDialog();
+	 * ...
+	 * method = gd.getNextEnumChoice(Method.class);
+	 * </pre>
 	 * 
 	 * @param <E> the generic enum type containing the items to chose from
 	 * @param label the label displayed for this choice group
 	 * @param defaultItem the menu item initially selected
+	 * 
+	 * @see #addEnumChoice(String, Enum[], Enum)
+	 * @see #getNextEnumChoice(Class)
 	 */
-	public <E extends Enum<E>> void addEnumChoice(String label, Enum<E> defaultItem) {
+	public <E extends Enum<E>> void addEnumChoice(String label, E defaultItem) {
 		Class<E> enumClass = defaultItem.getDeclaringClass();	
 		E[] enums = enumClass.getEnumConstants();
 		String[] items = new String[enums.length];
 		for (int i = 0; i < enums.length; i++) {
 			items[i] = enums[i].name();
+		}
+		this.addChoice(label, items, defaultItem.name());
+	}
+	
+	/**
+	 * Adds a group of choices to the dialog with menu items taken from the supplied
+	 * array of <code>enum</code> elements. This allows to present only a subset of
+	 * enum choices in a specified order. A default item (enum constant) must be
+	 * specified which, if {@code null} of not contained in the enum array, is
+	 * replaced by the first element of the enum array. Calls the original
+	 * (string-based) {@link GenericDialog#addChoice(String, String[], String)}
+	 * method. Usage example:
+	 * <pre>
+	 * import ij.process.AutoThresholder.Method;
+	 * ...
+	 * Method[] selectMethods = {Method.Triangle, Method.Otsu, Method.Huang};
+	 * Method method = Method.Otsu;
+	 * 
+	 * GenericDialog gd = new GenericDialog("Select AutoThresholder Method");
+	 * gd.addEnumChoice("Select threshold methods", selectMethods, method);
+	 * ...
+	 * gd.showDialog();
+	 * ...
+	 * method = gd.getNextEnumChoice(Method.class);
+	 * </pre>
+	 * 
+	 * @param <E> the generic enum type containing the items to choose from
+	 * @param label the label displayed for this choice group
+	 * @param enumArray an array of enum items (of type E)
+	 * @param defaultItem the menu item initially selected (of type E, may be {@code null})
+	 * 
+	 * @see #addEnumChoice(String, Enum)
+	 * @see #getNextEnumChoice(Class)
+	 */
+	public <E extends Enum<E>> void addEnumChoice(String label, E[] enumArray, E defaultItem) {
+		String[] items = new String[enumArray.length];
+		boolean contained = false;	// to check if defaultItem is contained in enumArray
+		for (int i = 0; i < enumArray.length; i++) {
+			if (enumArray[i] == defaultItem) {
+				contained = true;
+			}
+			items[i] = enumArray[i].name();
+		}
+		if (!contained) {
+			defaultItem = enumArray[0];
 		}
 		this.addChoice(label, items, defaultItem.name());
 	}
@@ -894,6 +1010,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			s.addKeyListener(this);
 						
 		s.addMouseWheelListener(new MouseWheelListener() {
+			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
 				Scrollbar sb = (Scrollbar)e.getSource();
 				int value = sb.getValue() + e.getWheelRotation();
@@ -1127,7 +1244,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		String theText = tf.getText();
 		String label=null;
 		if (macro) {
-			label = (String)labels.get((Object)tf);
+			label = (String)labels.get(tf);
 			theText = Macro.getValue(macroOptions, label, theText);
 		}
 		String originalText = (String)defaultText.elementAt(nfIndex);
@@ -1181,7 +1298,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 
 	private void recordCheckboxOption(Checkbox cb) {
-		String label = (String)labels.get((Object)cb);
+		String label = (String)labels.get(cb);
 		if (label!=null) {
 			if (cb.getState()) // checked
 				Recorder.recordOption(label);
@@ -1231,7 +1348,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			return "";
 		TextField tf = (TextField)(stringField.elementAt(sfIndex));
 		theText = tf.getText();
-		String label = labels!=null?(String)labels.get((Object)tf):"";
+		String label = labels!=null?(String)labels.get(tf):"";
 		boolean numberExpected = theText!=null && theText.length()>0
 			&& (Character.isDigit(theText.charAt(0))||theText.startsWith("-"));
 		if (macro) {
@@ -1249,7 +1366,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			if (s!=null&&s.length()>=3&&Character.isLetter(s.charAt(0))&&s.charAt(1)==':'&&s.charAt(2)=='\\')
 				s = s.replaceAll("\\\\", "/");	// replace "\" with "/" in Windows file paths
 			s = Recorder.fixString(s);
-			if (!smartRecording || !s.equals((String)defaultStrings.elementAt(sfIndex)))
+			if (!smartRecording || !s.equals(defaultStrings.elementAt(sfIndex)))
 				recordOption(tf, s);
 			else if (Recorder.getCommandOptions()==null)
 				Recorder.recordOption(" ");
@@ -1267,7 +1384,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			recordCheckboxOption(cb);
 		boolean state = cb.getState();
 		if (macro) {
-			String label = (String)labels.get((Object)cb);
+			String label = (String)labels.get(cb);
 			String key = Macro.trimKey(label);
 			state = isMatch(macroOptions, key+" ");
 		}
@@ -1309,7 +1426,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		Choice thisChoice = (Choice)(choice.elementAt(choiceIndex));
 		String item = thisChoice.getSelectedItem();
 		if (macro) {
-			String label = (String)labels.get((Object)thisChoice);
+			String label = (String)labels.get(thisChoice);
 			item = Macro.getValue(macroOptions, label, item);
 			if (item!=null && item.startsWith("&")) // value is macro variable
 				item = getChoiceVariable(item);
@@ -1327,7 +1444,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		Choice thisChoice = (Choice)(choice.elementAt(choiceIndex));
 		int index = thisChoice.getSelectedIndex();
 		if (macro) {
-			String label = (String)labels.get((Object)thisChoice);
+			String label = (String)labels.get(thisChoice);
 			String oldItem = thisChoice.getSelectedItem();
 			int oldIndex = thisChoice.getSelectedIndex();
 			String item = Macro.getValue(macroOptions, label, oldItem);
@@ -1368,7 +1485,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		if (checkbox!=null)
 			item = checkbox.getLabel();
 		if (macro) {
-			String label = (String)labels.get((Object)cg);
+			String label = (String)labels.get(cg);
 			item = Macro.getValue(macroOptions, label, item);
 		}
 		if (recorderOn)
@@ -1606,6 +1723,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 
 	/* Display the dialog at the specified location. */
+	@Override
 	public void setLocation(int x, int y) {
 		super.setLocation(x, y);
 		centerDialog = false;
@@ -1619,6 +1737,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	protected void setup() {
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 		if (source==okay || source==cancel | source==no) {
@@ -1640,6 +1759,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			notifyListeners(e);
 	}
 
+	@Override
 	public void textValueChanged(TextEvent e) {
 		notifyListeners(e);
 		if (slider==null) return;
@@ -1658,10 +1778,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 	}
 
+	@Override
 	public void itemStateChanged(ItemEvent e) {
 		notifyListeners(e);
 	}
 
+	@Override
 	public void focusGained(FocusEvent e) {
 		Component c = e.getComponent();
 		//IJ.log("focusGained: "+c);
@@ -1669,12 +1791,14 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			((TextField)c).selectAll();
 	}
 
+	@Override
 	public void focusLost(FocusEvent e) {
 		Component c = e.getComponent();
 		if (c instanceof TextField)
 			((TextField)c).select(0,0);
 	}
 
+	@Override
 	public void keyPressed(KeyEvent e) {
 		Component component = e.getComponent();
 		int keyCode = e.getKeyCode();
@@ -1724,6 +1848,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 	}
 
+	@Override
 	public void keyReleased(KeyEvent e) {
 		int keyCode = e.getKeyCode();
 		IJ.setKeyUp(keyCode);
@@ -1735,13 +1860,16 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			new ScreenGrabber().run("");
 	}
 
+	@Override
 	public void keyTyped(KeyEvent e) {}
 
+	@Override
 	public Insets getInsets() {
 		Insets i= super.getInsets();
 		return new Insets(i.top+10, i.left+10, i.bottom+10, i.right+10);
 	}
 
+	@Override
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
 		Object source = e.getSource();
 		for (int i=0; i<slider.size(); i++) {
@@ -1793,6 +1921,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			repaint(); // OSX 10.4 bug delays update of enabled until the next input
 	}
 
+	@Override
 	public void repaint() {
 		super.repaint();
 		if (imagePanels!=null) {
@@ -1801,10 +1930,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 	}
 
+	@Override
 	public void paint(Graphics g) {
 		super.paint(g);
 		if (firstPaint && IJ.isMacOSX() && IJ.isJava18()) { // fix for incompletely drawn dialogs on Macs
 			EventQueue.invokeLater(new Runnable() {
+				@Override
 				public void run() {
 					IJ.wait(50);
 					Dimension size = getSize();
@@ -1816,6 +1947,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 	}
 
+	@Override
 	public void windowClosing(WindowEvent e) {
 		wasCanceled = true;
 		dispose();
@@ -1855,6 +1987,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 
 	/** Closes the dialog; records the options */
+	@Override
 	public void dispose() {
 		super.dispose();
 		instance = null;
@@ -1874,11 +2007,17 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		return lastLabelAdded;
 	}
 
+	@Override
 	public void windowActivated(WindowEvent e) {}
+	@Override
 	public void windowOpened(WindowEvent e) {}
+	@Override
 	public void windowClosed(WindowEvent e) {}
+	@Override
 	public void windowIconified(WindowEvent e) {}
+	@Override
 	public void windowDeiconified(WindowEvent e) {}
+	@Override
 	public void windowDeactivated(WindowEvent e) {}
 	
 	@SuppressWarnings("unchecked")
@@ -1942,6 +2081,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			this.mode = mode;
 		}
 	
+		@Override
 		public void actionPerformed(ActionEvent e) {
 			String path = null;
 			if (mode.equals("dir")) {
@@ -1965,6 +2105,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			super(text, columns);
 		}
 
+		@Override
 		public Dimension getMinimumSize() {
 			Dimension d = super.getMinimumSize();
 			if (d!=null) {
@@ -1974,6 +2115,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			return d;
 		}
 
+		@Override
 		public Dimension getPreferredSize() {
 			return getMinimumSize();
 		}
