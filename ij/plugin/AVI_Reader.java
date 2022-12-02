@@ -355,6 +355,24 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 		return open(path, true);
 	}
 
+	/** Opens an AVI file, where 'options' can contain
+	 * 'virtual' (open as virtual stack),
+	 * 'convert' (convert color images to grayscale) or
+	 * 'flip' (flip vertically).
+	 * The ImagePlus is not displayed.
+	*/
+	public static ImagePlus open(String path, String options) {
+		AVI_Reader reader = new AVI_Reader();
+		boolean virtual = options.contains("virtual");
+		boolean convertToGray = options.contains("convert");
+		boolean flipVertical = options.contains("flip");
+		ImageStack stack = reader.makeStack (path, 1, 0, virtual, convertToGray, flipVertical);
+		if (stack!=null)
+			return new ImagePlus((new File(path)).getName(), stack);
+		else
+			return null;
+	}
+
 	/** Opens an AVI file as a stack in memory or a virtual stack. The ImagePlus is not displayed. */
 	public static ImagePlus open(String path, boolean virtual) {
 		AVI_Reader reader = new AVI_Reader();

@@ -9,7 +9,7 @@ import java.awt.geom.*;
 /** This plugin implements the Image/Rotate/Arbitrarily command. */
 public class Rotator implements ExtendedPlugInFilter, DialogListener {
 	public static final String GRID = "|GRID|";
-	private int flags = DOES_ALL|SUPPORTS_MASKING|PARALLELIZE_STACKS;
+	private int flags = DOES_ALL|SUPPORTS_MASKING;
 	private static double angle = 15.0;
 	private static boolean fillWithBackground;
 	private static boolean enlarge;
