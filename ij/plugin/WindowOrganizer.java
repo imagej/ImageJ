@@ -93,6 +93,8 @@ public class WindowOrganizer implements PlugIn {
 			}
 		} while (!theyFit);
 		int nColumns = (screen.width-XSTART)/(tileWidth+GAP);
+		if (nColumns<=0)
+			nColumns = 1;
 		int nRows = nPics/nColumns;
 		if ((nPics%nColumns)!=0)
 			nRows++;
@@ -106,6 +108,7 @@ public class WindowOrganizer implements PlugIn {
 			}
 			ImageWindow win = getWindow(wList[i]);
 			if (win!=null) {
+				win.setExtendedState(Frame.NORMAL);
 				win.setLocation(hloc + screen.x, vloc + screen.y);
 				ImageCanvas canvas = win.getCanvas();
 				while (win.getSize().width*0.85>=tileWidth && canvas.getMagnification()>0.03125)
@@ -136,6 +139,7 @@ public class WindowOrganizer implements PlugIn {
 			ImageWindow win = getWindow(wList[i]);
 			if (win==null)
 				continue;
+			win.setExtendedState(Frame.NORMAL);
 			Dimension d = win.getSize();
 			if (i==0) {
 				xstep = (int)(d.width*0.8);

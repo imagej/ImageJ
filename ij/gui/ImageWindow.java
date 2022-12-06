@@ -534,7 +534,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			wWidth = (int)(width*mag+extraSize.width);
 		}
 		int xloc = (int)(maxWidth-wWidth)/2;
-		if (xloc<maxWindow.x) xloc = maxWindow.x;
+		if (xloc<maxWindow.x)
+			xloc = maxWindow.x;
+		if (xloc>maxWindow.x+maxWindow.width-wWidth)
+			xloc = maxWindow.x;
 		wWidth = Math.min(wWidth, maxWindow.x-xloc+maxWindow.width);
 		wHeight = Math.min(wHeight, maxWindow.height);
 		return new Rectangle(xloc, maxWindow.y, wWidth, wHeight);

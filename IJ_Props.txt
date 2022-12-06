@@ -5,7 +5,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.53
+# Version 1.54
 
 # Commands installed in the right-click popup menu
 # May be overridden in StartupMacros
@@ -272,17 +272,18 @@ binary05="Dilate",ij.plugin.filter.Binary("dilate")
 binary06="Open",ij.plugin.filter.Binary("open")
 # Can't use "Close" because it conflicts with File/Close
 binary07="Close-",ij.plugin.filter.Binary("close")
-binary08=-
-binary09="Outline",ij.plugin.filter.Binary("outline")
-binary10="Fill Holes",ij.plugin.filter.Binary("fill")
-binary11="Skeletonize",ij.plugin.filter.Binary("skel")
-binary12=-
-binary13="Distance Map",ij.plugin.filter.EDM("edm")
-binary14="Ultimate Points",ij.plugin.filter.EDM("points")
-binary15="Watershed",ij.plugin.filter.EDM("watershed")
-binary16="Voronoi",ij.plugin.filter.EDM("voronoi")
-binary17=-
-binary18="Options...",ij.plugin.filter.Binary("options")
+binary08="Median",ij.plugin.filter.Binary("median")
+binary09=-
+binary10="Outline",ij.plugin.filter.Binary("outline")
+binary11="Fill Holes",ij.plugin.filter.Binary("fill")
+binary12="Skeletonize",ij.plugin.filter.Binary("skel")
+binary13=-
+binary14="Distance Map",ij.plugin.filter.EDM("edm")
+binary15="Ultimate Points",ij.plugin.filter.EDM("points")
+binary16="Watershed",ij.plugin.filter.EDM("watershed")
+binary17="Voronoi",ij.plugin.filter.EDM("voronoi")
+binary18=-
+binary19="Options...",ij.plugin.filter.Binary("options")
 
 # Plugins installed in the Process/Math submenu
 math01="Add...",ij.plugin.filter.ImageMath("add")

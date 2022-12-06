@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.image.*;
 import ij.gui.*;
 import ij.Prefs;
+import ij.plugin.filter.RankFilters;
 
 /**
 This is an 8-bit image and methods that operate on that image. Based on the ImageProcessor class
