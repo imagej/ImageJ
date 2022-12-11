@@ -32,7 +32,7 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
     int foreground, background;
     int flags = DOES_8G | DOES_8C | SUPPORTS_MASKING | PARALLELIZE_STACKS | KEEP_PREVIEW | KEEP_THRESHOLD;
     int nPasses;
-    double medianRadius = 3;
+    static double medianRadius = 3;
 
     public int setup(String arg, ImagePlus imp) {
         this.arg = arg;
@@ -80,7 +80,7 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
             return operation.equals(NO_OPERATION) ? DONE : IJ.setupDialog(imp, flags);
         } else {   //no dialog, 'arg' is operation type
             if (!((ByteProcessor)imp.getProcessor()).isBinary()) {
-                IJ.error("8-bit binary (black and white only) image required.");
+                IJ.error("8-bit binary (0 and 255 only) image required.");
                 return DONE;
             }
             return IJ.setupDialog(imp, flags);
@@ -167,8 +167,10 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
     }
 
     void median(ImageProcessor ip) {
+    	ip.resetThreshold();
 		new RankFilters().rank(ip, medianRadius, RankFilters.MEAN);
-		ip.threshold(128);
+		//ip.threshold(128,255);
+		ip.threshold(127);
 	}
 
 	void skeletonize(ImageProcessor ip) {

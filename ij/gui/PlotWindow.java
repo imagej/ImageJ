@@ -632,7 +632,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
         rangeArrowsVisible = true;
     }
 
-	void hideRangeArrows() {
+	public void hideRangeArrows() {
 		if (imp == null || rangeArrowRois==null) return;
 		Overlay ovly = imp.getOverlay();
 		if (ovly == null) return;

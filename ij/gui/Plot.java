@@ -3290,13 +3290,20 @@ public class Plot implements Cloneable {
 
 	/** Draw the symbol for the data point number 'pointIndex' (pointIndex < 0 when drawing the legend) */
 	void drawShape(PlotObject plotObject, int x, int y, int shape, int size, int pointIndex) {
-		if (shape == DIAMOND) size = (int)(size*1.21);
+		if (ip==null)
+			return;
+		int lineWidth = ip.getLineWidth();
+		if (shape == DIAMOND)
+			size = (int)(size*1.21);
 		int xbase = x-sc(size/2);
 		int ybase = y-sc(size/2);
 		int xend = x+sc(size/2);
 		int yend = y+sc(size/2);
-		if (ip==null)
-			return;
+		if (lineWidth>3) {
+			int newLineWidth = 3;
+			ip.setLineWidth(newLineWidth);
+		}
+		//IJ.log("drawShape: "+size+" "+size);
 		switch(shape) {
 			case X:
 				ip.drawLine(xbase,ybase,xend,yend);
@@ -3370,6 +3377,7 @@ public class Plot implements Cloneable {
 				}
 				break;
 		}
+		ip.setLineWidth(lineWidth);
 	}
 
 	/** Fill the area of the symbols for data points (except for shape=DOT)
@@ -4335,7 +4343,12 @@ class PlotObject implements Cloneable, Serializable {
 
 	/** Size of the markers for an XY_DATA object with markers */
 	int getMarkerSize() {
-		return lineWidth<=1 ? 5 : 7;
+		if (lineWidth<=1)
+			return 5;
+		else if (lineWidth<=3)
+			return 7;
+		else
+			return (int)(lineWidth+4);
 	}
 
 	/** Sets the font. Also writes font properties for serialization. */

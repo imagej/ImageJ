@@ -60,9 +60,9 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 		float[] y;
 		boolean hyperstack = imp.isHyperStack();
 		if (hyperstack)
-			y = getHyperstackProfile(roi, minThreshold, maxThreshold);
+			y = getHyperstackProfile(imp, minThreshold, maxThreshold);
 		else
-			y = getZAxisProfile(roi, minThreshold, maxThreshold);
+			y = getZAxisProfile(imp, minThreshold, maxThreshold);
 		if (y==null)
 			return null;
 		float[] x = new float[y.length];
@@ -146,7 +146,8 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 		return imp;
 	}
 
-	private float[] getHyperstackProfile(Roi roi, double minThreshold, double maxThreshold) {
+	private float[] getHyperstackProfile(ImagePlus imp, double minThreshold, double maxThreshold) {
+		Roi roi = imp.getRoi();
 		int slices = imp.getNSlices();
 		int frames = imp.getNFrames();
 		int c = imp.getC();
@@ -205,7 +206,8 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 		return values;
 	}
 
-	private float[] getZAxisProfile(Roi roi, double minThreshold, double maxThreshold) {
+	private float[] getZAxisProfile(ImagePlus imp, double minThreshold, double maxThreshold) {
+		Roi roi = imp.getRoi();
 		ImageStack stack = imp.getStack();
 		if (firstTime) {
 			int slices = imp.getNSlices();

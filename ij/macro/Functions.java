@@ -2693,10 +2693,8 @@ public class Functions implements MacroConstants, Measurements {
 			currentPlot.addHorizontalErrorBars(y);
 		else if (errorBars != null)
 			currentPlot.addPoints(x, y, errorBars, what);
-		else if (what==Plot.CUSTOM)
-			currentPlot.add(shape, x, y);
 		else
-			currentPlot.addPoints(x, y, what);
+			currentPlot.add(shape, x, y);
 		if (label != null)
 			currentPlot.setLabel(-1, label);
 		return Double.NaN;

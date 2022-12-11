@@ -110,6 +110,9 @@ public class FileSaver {
 		if (imp.getProperty(Plot.PROPERTY_KEY) != null) {
 			Plot plot = (Plot)(imp.getProperty(Plot.PROPERTY_KEY));
 			fi.plot = plot.toByteArray();
+			ImageWindow win = imp.getWindow();
+			if (win!=null && (win instanceof PlotWindow))
+				((PlotWindow)win).hideRangeArrows();
 		}
 		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
 		fi.overlay = getOverlay(imp);

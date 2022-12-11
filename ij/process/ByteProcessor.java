@@ -5,7 +5,6 @@ import java.awt.*;
 import java.awt.image.*;
 import ij.gui.*;
 import ij.Prefs;
-import ij.plugin.filter.RankFilters;
 
 /**
 This is an 8-bit image and methods that operate on that image. Based on the ImageProcessor class
@@ -1171,14 +1170,24 @@ public class ByteProcessor extends ImageProcessor {
 		return histogram;
 	}
 
-	/** Sets pixels less than or equal to level to 0 and all other pixels to 255. */
-	public void threshold(int level) {
+	/** Sets pixels less than 'level1' or greater than
+	 * 'level2' to 0 and all other pixels to 255.
+	*/
+	public void threshold(int level1, int level2) {
 		for (int i=0; i<width*height; i++) {
-			if ((pixels[i] & 0xff) <= level)
+			int value = (pixels[i]&0xff);
+			if (value<level1 || value>level2)
 				pixels[i] = 0;
 			else
 				pixels[i] = (byte)255;
 		}
+	}
+
+	/** Sets pixels less than or equal to 'level'
+	 * to 0 and all other pixels to 255.
+	*/
+	public void threshold(int level) {
+		threshold(level+1, 255);
 	}
 
 	public void applyLut() {

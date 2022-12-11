@@ -2233,6 +2233,13 @@ public abstract class ImageProcessor implements Cloneable {
 		that corresponds to the current ROI. */
 	public abstract ImageProcessor crop();
 
+	/** Sets pixels less than 'level1' or greater than
+	 * 'level2' to 0 and all other pixels to 255.
+	 * Only works with 8-bit images.
+	*/
+	public void threshold(int level1, int level2) {
+	}
+
 	/** Sets pixels less than or equal to level to 0 and all other
 		pixels to 255. Only works with 8-bit and 16-bit images. */
 	public abstract void threshold(int level);
