@@ -60,7 +60,7 @@ public class BrowserLauncher implements PlugIn {
 	public void run(String theURL) {
 		if (error) return;
 		if (theURL==null || theURL.equals(""))
-			theURL = IJ.URL;
+			theURL = "http://imagej.org";
 		try {openURL(theURL);}
 		catch (IOException e) {}
 	}

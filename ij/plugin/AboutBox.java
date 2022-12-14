@@ -21,7 +21,7 @@ import java.awt.image.*;
 		text[0] = "ImageJ "+ImageJ.VERSION+ImageJ.BUILD;
 		text[1] = "Wayne Rasband and contributors";
 		text[2] = "National Institutes of Health, USA";
-		text[3] = IJ.URL;
+		text[3] = "http://imagej.org";
 		text[4] = "Java "+System.getProperty("java.version")+(IJ.is64Bit()?" (64-bit)":" (32-bit)");
 		text[5] = IJ.freeMemory();
 		text[6] = "ImageJ is in the public domain";

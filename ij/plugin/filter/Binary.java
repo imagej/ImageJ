@@ -169,8 +169,7 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
     void median(ImageProcessor ip) {
     	ip.resetThreshold();
 		new RankFilters().rank(ip, medianRadius, RankFilters.MEAN);
-		//ip.threshold(128,255);
-		ip.threshold(127);
+		ip.threshold(128,255);
 	}
 
 	void skeletonize(ImageProcessor ip) {

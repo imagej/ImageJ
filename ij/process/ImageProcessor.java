@@ -1940,31 +1940,7 @@ public abstract class ImageProcessor implements Cloneable {
 	public void putPixel(int x, int y, int[] iArray) {
 		putPixel(x, y, iArray[0]);
 	}
-	
-	/*
-	public int[] getRGBValue(int index, int[] rgb) {
-		if (rgb==null) rgb = new int[3];
-		if (this instanceof ColorProcessor)
-			return rgb;
-		if (rLUT1==null) {
-			if (cm==null)
-				makeDefaultColorModel();
-			baseCM = cm;
-			IndexColorModel m = (IndexColorModel)cm;
-			rLUT1 = new byte[256]; gLUT1 = new byte[256]; bLUT1 = new byte[256];
-			m.getReds(rLUT1); m.getGreens(gLUT1); m.getBlues(bLUT1);
-		}
-		int min2=(int)getMin(), max2=(int)getMax();
-		double scale = 256.0/(max2-min2+1);
-		double value = getf(index)-min2;
-		if (value<0.0) value = 0.0;
-		int v = (int)(value*scale+0.5);
-		if (v>255) v = 255;
-		rgb[0]=rLUT1[v]; rgb[1]=gLUT1[v]; rgb[2]=bLUT1[v];		
-		return rgb;
-	}
-	*/
-	
+		
 	/** Uses the current interpolation method (bilinear or bicubic)
 		to find the pixel value at real coordinates (x,y). */
 	public abstract double getInterpolatedPixel(double x, double y);
