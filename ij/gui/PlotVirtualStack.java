@@ -11,7 +11,6 @@ public class PlotVirtualStack extends VirtualStack {
 	
 	public PlotVirtualStack(int width, int height) {
 		super(width, height);
-		this.bitDepth = bitDepth;
 	}
 	
 	/** Adds a plot to the end of the stack. */

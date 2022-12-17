@@ -936,6 +936,7 @@ public class Menus {
         		if (entry.getName().endsWith("plugins.config"))
 					return jarFile.getInputStream(entry);
 			}
+			jarFile.close();
 		}
     	catch (Throwable e) {
     		IJ.log(jar+": "+e);
@@ -967,15 +968,14 @@ public class Menus {
 						name = className;
 					name = name.replace('_', ' ');
 					className = className.replace('/', '.');
-					//if (className.indexOf(".")==-1 || Character.isUpperCase(className.charAt(0)))
 					sb.append(plugins + ", \""+name+"\", "+className+"\n");
 				}
 			}
+			jarFile.close();
 		}
     	catch (Throwable e) {
     		IJ.log(jar+": "+e);
     	}
-		//IJ.log(""+(sb!=null?sb.toString():"null"));
 		if (sb==null)
 			return null;
 		else
