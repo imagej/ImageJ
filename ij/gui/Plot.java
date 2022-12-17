@@ -613,12 +613,12 @@ public class Plot implements Cloneable {
 	/** Sets the length of the major tick in pixels.
 	 *	Call update() thereafter to make the change visible (if the image is shown already). */
 	public void setTickLength(int tickLength) {
-			tickLength = tickLength;
+			this.tickLength = tickLength;
 	}
 
 	/** Sets the length of the minor tick in pixels. */
 	public void setMinorTickLength(int minorTickLength) {
-			minorTickLength = minorTickLength;
+			this.minorTickLength = minorTickLength;
 	}
 
 	/** Sets the flags that control the axes format.

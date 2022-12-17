@@ -936,6 +936,7 @@ public class Menus {
         		if (entry.getName().endsWith("plugins.config"))
 					return jarFile.getInputStream(entry);
 			}
+			jarFile.close();
 		}
     	catch (Throwable e) {
     		IJ.log(jar+": "+e);
@@ -971,6 +972,7 @@ public class Menus {
 					sb.append(plugins + ", \""+name+"\", "+className+"\n");
 				}
 			}
+			jarFile.close();
 		}
     	catch (Throwable e) {
     		IJ.log(jar+": "+e);

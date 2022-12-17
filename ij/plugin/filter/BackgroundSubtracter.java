@@ -806,7 +806,6 @@ class RollingBall {
         double smallballradius; // radius of rolling ball (downscaled in x,y and z when image is shrunk)
         int halfWidth;      // distance in x or y from center of patch to any edge (patch "radius")
         
-        this.shrinkFactor = shrinkFactor;
         smallballradius = ballradius/shrinkFactor;
         if (smallballradius<1)
             smallballradius = 1;
