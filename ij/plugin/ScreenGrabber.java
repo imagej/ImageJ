@@ -1,13 +1,17 @@
 package ij.plugin;
+
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import java.awt.*;
+import java.awt.image.MultiResolutionImage;
 
-/** This plugin implements the Plugins/Utilities/Capture Screen
-    and Plugins/Utilities/Capture Image commands. Note that these
-    commands may not work on Linux if windows translucency or 
-    special effects are enabled in the windows manager. */
+/**
+ * This plugin implements the Plugins/Utilities/Capture Screen and
+ * Plugins/Utilities/Capture Image commands. Note that these commands may not
+ * work on Linux if windows translucency or special effects are enabled in the
+ * windows manager.
+ */
 public class ScreenGrabber implements PlugIn {
 	private static int delay = 10;
 
@@ -19,49 +23,62 @@ public class ScreenGrabber implements PlugIn {
 			imp2 = captureDelayed();
 		else
 			imp2 = captureScreen();
-		if (imp2!=null)
+		if (imp2 != null)
 			imp2.show();
 	}
-	
+
 	private ImagePlus captureDelayed() {
 		GenericDialog gd = new GenericDialog("Delayed Capture");
 		gd.addNumericField("Delay (seconds):", delay, 0);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return null;
-		int delay = (int)gd.getNextNumber();
-		if (delay<0) return null;
-		if (delay>60) delay=60;
-		for (int i=0; i<delay; i++) {
+		int delay = (int) gd.getNextNumber();
+		if (delay < 0)
+			return null;
+		if (delay > 60)
+			delay = 60;
+		for (int i = 0; i < delay; i++) {
 			IJ.wait(1000);
-			IJ.showStatus("Delayed capture: "+(i+1)+"/"+delay);
-			if (delay>4 && i==delay-2) IJ.beep();
+			IJ.showStatus("Delayed capture: " + (i + 1) + "/" + delay);
+			if (delay > 4 && i == delay - 2)
+				IJ.beep();
 		}
 		return captureScreen();
 	}
 
-    
 	/** Captures the entire screen and returns it as an ImagePlus. */
 	public ImagePlus captureScreen() {
 		ImagePlus imp = null;
+		Image img=null;
 		try {
 			Robot robot = new Robot();
 			Rectangle r = GUI.getScreenBounds(IJ.getInstance()); // screen showing "ImageJ" window
-			Image img = robot.createScreenCapture(r);
-			if (img!=null) imp = new ImagePlus("Screenshot", img);
-		} catch(Exception e) {}
+
+			MultiResolutionImage mImage = robot.createMultiResolutionScreenCapture(r);
+			java.util.List<Image> resolutionVariants = mImage.getResolutionVariants();
+			if (resolutionVariants.size() > 1) {
+				img = resolutionVariants.get(1);
+			} else {
+				img = resolutionVariants.get(0);
+			}
+			if (img != null)
+				imp = new ImagePlus("Screenshot", img);
+		} catch (Exception e) {
+		}
 		return imp;
 	}
 
 	/** Captures the active image window and returns it as an ImagePlus. */
 	public ImagePlus captureImage() {
 		ImagePlus imp = IJ.getImage();
-		if (imp==null) {
+		if (imp == null) {
 			IJ.noImage();
 			return null;
 		}
 		ImageWindow win = imp.getWindow();
-		if (win==null) return null;
+		if (win == null)
+			return null;
 		win.toFront();
 		IJ.wait(500);
 		Point loc = win.getLocation();
@@ -77,9 +94,10 @@ public class ScreenGrabber implements PlugIn {
 		try {
 			Robot robot = new Robot();
 			img = robot.createScreenCapture(r);
-		} catch(Exception e) { }
+		} catch (Exception e) {
+		}
 		ic.hideZoomIndicator(wasHidden);
-		if (img!=null) {
+		if (img != null) {
 			String title = WindowManager.getUniqueName(imp.getTitle());
 			imp2 = new ImagePlus(title, img);
 		}
@@ -87,4 +105,3 @@ public class ScreenGrabber implements PlugIn {
 	}
 
 }
-
