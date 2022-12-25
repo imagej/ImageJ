@@ -33,7 +33,7 @@ public class StackStatistics extends ImageStatistics {
 		double minThreshold = -Float.MAX_VALUE;
 		double maxThreshold = Float.MAX_VALUE;
         Calibration cal = imp.getCalibration();
-		if (limitToThreshold && ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD) {
+		if (limitToThreshold && ip.isThreshold()) {
 			minThreshold=cal.getCValue(ip.getMinThreshold());
 			maxThreshold=cal.getCValue(ip.getMaxThreshold());
 		}
@@ -163,7 +163,7 @@ public class StackStatistics extends ImageStatistics {
 		int minThreshold = 0;
 		int maxThreshold = 255;
 		ImageProcessor ip = imp.getProcessor();
-		if (limitToThreshold && ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD) {
+		if (limitToThreshold && ip.isThreshold()) {
 			minThreshold = (int)ip.getMinThreshold();
 			maxThreshold = (int)ip.getMaxThreshold();
 		}

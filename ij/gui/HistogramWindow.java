@@ -117,8 +117,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	public void showHistogram(ImagePlus imp, int bins, double histMin, double histMax) {
 		boolean limitToThreshold = (Analyzer.getMeasurements()&LIMIT)!=0;
 		ImageProcessor ip = imp.getProcessor();
-		if (ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD
-		&& ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE)
+		if (ip.isThreshold() && ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE)
 			limitToThreshold = false;  // ignore invisible thresholds
 		if (imp.isRGB() && rgbMode<INTENSITY1)
 			rgbMode=INTENSITY1;
@@ -165,7 +164,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		histogram = stats.getHistogram();
 		if (limitToThreshold && histogram.length==256) {
 			ImageProcessor ip = srcImp.getProcessor();
-			if (ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD) {
+			if (ip.isThreshold()) {
 				int lower = scaleDown(ip, ip.getMinThreshold());
 				int upper = scaleDown(ip, ip.getMaxThreshold());
 				for (int i=0; i<lower; i++)
@@ -313,7 +312,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 					max = stats.max;
 				} else
 					cm = ((CompositeImage)imp).getChannelLut();
-			} else if (ipSource.getMinThreshold()==ImageProcessor.NO_THRESHOLD)
+			} else if (!ipSource.isThreshold())
 				cm = ipSource.getColorModel();
 			else
 				cm = ipSource.getCurrentColorModel();

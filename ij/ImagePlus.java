@@ -1409,7 +1409,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void setTypeToColor256() {
 		if (imageType==ImagePlus.GRAY8) {
 			ImageProcessor ip2 = getProcessor();
-			if (ip2!=null && ip2.getMinThreshold()==ImageProcessor.NO_THRESHOLD && ip2.isColorLut() && !ip2.isPseudoColorLut()) {
+			if (ip2!=null && !ip2.isThreshold() && ip2.isColorLut() && !ip2.isPseudoColorLut()) {
 				imageType = COLOR_256;
 				typeSet = true;
 			}
@@ -3136,7 +3136,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		this.defaultMax = max;
 	}
 
-	/** Returns 'true' if this image is thresholded. */
+	/** Returns 'true' if this image is thresholded.
+	 * @see ij.process.ImageProcessor#isThreshold
+	*/
 	public boolean isThreshold() {
 		return ip!=null && ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD;
 	}

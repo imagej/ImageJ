@@ -25,7 +25,7 @@ public class LutApplier implements PlugInFilter {
 	}
 	
 	void apply(ImagePlus imp, ImageProcessor ip) {
-        if (ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD) {
+        if (ip.isThreshold()) {
             imp.unlock();
 			IJ.runPlugIn("ij.plugin.Thresholder", "skip");
             return;

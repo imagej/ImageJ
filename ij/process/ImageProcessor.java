@@ -30,7 +30,9 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Value of pixels included in masks. */
 	public static final int BLACK = 0xFF000000;
 
-	/** Value returned by getMinThreshold() when thresholding is not enabled. */
+	/** Value returned by getMinThreshold() when image is not thresholded.
+	 * @see #isThreshold
+	*/
 	public static final double NO_THRESHOLD = -808080.0;
 
 	/** Left justify text. */
@@ -767,7 +769,10 @@ public abstract class ImageProcessor implements Cloneable {
 	}
 
 	/** Returns the lower threshold level. Returns NO_THRESHOLD
-		if thresholding is not enabled. */
+	 * if thresholding is not enabled.
+	 * @see ImageProcessor#isThreshold
+	 * @see ij.ImagePlus#isThreshold
+	*/
 	public double getMinThreshold() {
 		return minThreshold;
 	}
@@ -775,6 +780,13 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Returns the upper threshold level. */
 	public double getMaxThreshold() {
 		return maxThreshold;
+	}
+	
+	/** Returns 'true' if this image is thresholded.
+	 * @see ij.ImagePlus#isThreshold
+	*/
+	public boolean isThreshold() {
+		return getMinThreshold()!=ImageProcessor.NO_THRESHOLD;
 	}
 
 	/** Returns the LUT update mode, which can be RED_LUT, BLACK_AND_WHITE_LUT,

@@ -103,9 +103,8 @@ public class Projector implements PlugIn {
 
 	private boolean showDialog() {
 		ImageProcessor ip = imp.getProcessor();
-		double lower = ip.getMinThreshold();
-		if (lower!=ImageProcessor.NO_THRESHOLD) {
-			transparencyLower = (int)lower;
+		if (ip.isThreshold()) {
+			transparencyLower = (int)ip.getMinThreshold();
 			transparencyUpper = (int)ip.getMaxThreshold();
 		}
 		Calibration cal = imp.getCalibration();

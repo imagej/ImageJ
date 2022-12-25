@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.54a16  14 December 2022</u>
+<li> <u>1.54a26  25 December 2022</u>
 <ul>
 <li> Thanks to Herbie Gluender, added the 
 <i>Process&gt;Binary&gt;Median</i>
@@ -13,9 +13,11 @@ command and the ImageProcessor.threshold(level1,level2)
 method.
 <li> Thanks to Christian Tischer, added the
 AVI_Reader.open(path,options) method.
-<li> Thanks to Wilhelm Burger, added a GenericDialog.addEnumChoice()
-for reducing choices
+<li> Thanks to Wilhelm Burger, added the GenericDialog.addEnumChoice()
+method
 (<a href="http://wsr.imagej.net/macros/AddEnumChoice.bsh">BeanShell example</a>).
+<li> Thanks to Wilhelm Burger, added the ImageProcessor.isThreshold()
+method.
 <li> Thanks to Andrew McCall, fixed a bug that caused the
 <i>Image&gt;Transform&gt;Rotate</i> command to fail when rotating
 very large stacks. Processing is now slower because 
@@ -27,6 +29,10 @@ not be drawn correctly when the line width was greater that 3
 be included when saving a plot in tiff format.
 <li> Thanks to Eg Laf, fixed a bug that caused the multi-point tool
 to throw an exception when it was used for counting.
+<li> Thanks to 'Bio7', fixed minor bugs that caused compiler warnings.
+<li> Thanks to 'Wyn', worked around a bug in Fiji’s <i>Import&gt;Movie (FFMPEG)</i>
+command that caused the <i>Duplicate</i> and <i>Reslice</i> commands to
+sometimes throw exceptions.
 </ul>
 
 <li> <u>1.53v  21 November 2022</u>

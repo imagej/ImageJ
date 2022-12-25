@@ -481,6 +481,10 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 boolean ortho = (int)x1==x1&&(int)y1==y1&&x1==x2||y1==y2;
 		 for (int i=0; i<stackSize; i++) {
 				ip = stack.getProcessor(flip?stackSize-i:i+1);
+				if (ip==null) { // work around for Fiji Import>Movie (FFMPEG) bug
+					imp.setSlice(flip?stackSize-i:i+1);
+					ip = imp.getProcessor();
+				}
 				if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE)
 					line = getIrregularProfile(roi, ip);
 				else if (ortho)

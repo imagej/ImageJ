@@ -242,6 +242,10 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 				IJ.showProgress(i,n);
 			}
 			ImageProcessor ip2 = stack.getProcessor(i);
+			if (ip2==null) { // work around for Fiji Import>Movie (FFMPEG) bug
+				imp.setSlice(i);
+				ip2 = imp.getProcessor();
+			}
 			ip2.setRoi(rect);
 			ip2 = ip2.crop();
 			if (stack2==null)

@@ -1713,12 +1713,12 @@ public class IJ {
 				
 		}
 		Wand w = new Wand(ip);
-		double t1 = ip.getMinThreshold();
-		if (t1==ImageProcessor.NO_THRESHOLD || (ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE&& tolerance>0.0)) {
+		if (!ip.isThreshold() || (ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE&& tolerance>0.0)) {
 			w.autoOutline(x, y, tolerance, imode);
 			smooth = false;
-		} else
-			w.autoOutline(x, y, t1, ip.getMaxThreshold(), imode);
+		} else {
+			w.autoOutline(x, y, ip.getMinThreshold(), ip.getMaxThreshold(), imode);
+		}
 		if (w.npoints>0) {
 			Roi previousRoi = img.getRoi();
 			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);

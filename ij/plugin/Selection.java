@@ -542,7 +542,7 @@ public class Selection implements PlugIn, Measurements {
 		Prefs.useInvertingLut = false;
 		boolean selectAll = roi!=null && roi.getType()==Roi.RECTANGLE && roi.getBounds().width==imp.getWidth()
 			&& roi.getBounds().height==imp.getHeight() && imp.isThreshold();
-		boolean overlay = imp.getOverlay()!=null && imp.getProcessor().getMinThreshold()==ImageProcessor.NO_THRESHOLD;
+		boolean overlay = imp.getOverlay()!=null && !imp.isThreshold();
 		if (!overlay && (roi==null || selectAll)) {
 			createMaskFromThreshold(imp);
 			Prefs.useInvertingLut = useInvertingLut;
@@ -582,7 +582,7 @@ public class Selection implements PlugIn, Measurements {
 	
 	void createMaskFromThreshold(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
-		if (ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD) {
+		if (!ip.isThreshold()) {
 			IJ.error("Create Mask", "Area selection, overlay or thresholded image required");
 			return;
 		}
@@ -604,7 +604,7 @@ public class Selection implements PlugIn, Measurements {
 
 	void createSelectionFromMask(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
-		if (ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD) {
+		if (ip.isThreshold()) {
 			IJ.runPlugIn("ij.plugin.filter.ThresholdToSelection", "");
 			return;
 		}

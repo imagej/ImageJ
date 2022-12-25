@@ -285,7 +285,7 @@ public class ImageInfo implements PlugIn {
 
 		if (imp.isLocked())
 			s += "**Locked**\n";
-		if (ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD)
+		if (!ip.isThreshold())
 			s += "No threshold\n";
 	    else {
 	    	double lower = ip.getMinThreshold();

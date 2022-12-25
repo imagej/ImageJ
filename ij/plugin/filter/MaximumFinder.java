@@ -120,7 +120,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
         ImageProcessor ip = imp.getProcessor();
         ip.resetBinaryThreshold(); // remove any invisible threshold set by Make Binary or Convert to Mask
-        thresholded = ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD;
+        thresholded = ip.isThreshold();
         String options = Macro.getOptions();
         if  (options!=null && options.indexOf("noise=") >= 0) { // ensure compatibility with old macros
             oldMacro = true;                                    // specifying "noise=", not "prominence="
