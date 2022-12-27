@@ -298,6 +298,9 @@ public class AutoThresholder {
 	
 	int defaultIsoData(int[] data) {
 		// This is the modified IsoData method used by the "Threshold" widget in "Default" mode
+		int threshold = bilevel(data);
+		if (threshold>=0)
+			return threshold;
 		int n = data.length;
 		int[] data2 = new int[n];
 		int mode=0, maxCount=0;
@@ -320,6 +323,27 @@ public class AutoThresholder {
 			data2[mode] = hmax;
 		}
 		return IJIsoData(data2);
+	}
+	
+	int bilevel(int[] hist) {
+		int firstNonZero=-1, secondNonZero=-1;
+		int nonZero = 0;
+		for (int i=0; i<256; i++) {
+			int count = hist[i];
+			if (count>0) {
+				nonZero++;
+				if (nonZero>2) return -1;
+				if (firstNonZero==-1)
+					firstNonZero = i;
+				else
+					secondNonZero = i;
+			}
+		}
+		//IJ.log("bilevel: "+nonZero+" "+firstNonZero+" "+secondNonZero);
+		if (nonZero==2)
+			return secondNonZero-1;
+		else
+			return -1;
 	}
 
 	int IJIsoData(int[] data) {
