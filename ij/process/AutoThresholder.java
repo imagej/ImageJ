@@ -44,7 +44,9 @@ public class AutoThresholder {
 			throw new IllegalArgumentException("Histogram is null");
 		if (histogram.length!=256)
 			throw new IllegalArgumentException("Histogram length not 256");
-		int threshold = 0;
+		int threshold = bilevel(histogram);
+		if (threshold>=0)
+			return threshold;
 		switch (method) {
 			case Default: threshold =  defaultIsoData(histogram); break;
 			case IJ_IsoData: threshold =  IJIsoData(histogram); break;
@@ -298,9 +300,6 @@ public class AutoThresholder {
 	
 	int defaultIsoData(int[] data) {
 		// This is the modified IsoData method used by the "Threshold" widget in "Default" mode
-		int threshold = bilevel(data);
-		if (threshold>=0)
-			return threshold;
 		int n = data.length;
 		int[] data2 = new int[n];
 		int mode=0, maxCount=0;
@@ -326,22 +325,22 @@ public class AutoThresholder {
 	}
 	
 	int bilevel(int[] hist) {
-		int firstNonZero=-1, secondNonZero=-1;
-		int nonZero = 0;
-		for (int i=0; i<256; i++) {
+		int nonZeroBins = 0;
+		int nonZeroBin1=-1, nonZeroBin2=-1;
+		for (int i=0; i<hist.length; i++) {
 			int count = hist[i];
 			if (count>0) {
-				nonZero++;
-				if (nonZero>2) return -1;
-				if (firstNonZero==-1)
-					firstNonZero = i;
+				nonZeroBins++;
+				if (nonZeroBins>2)
+					return -1;
+				if (nonZeroBin1==-1)
+					nonZeroBin1 = i;
 				else
-					secondNonZero = i;
+					nonZeroBin2 = i;
 			}
 		}
-		//IJ.log("bilevel: "+nonZero+" "+firstNonZero+" "+secondNonZero);
-		if (nonZero==2)
-			return secondNonZero-1;
+		if (nonZeroBins==2)
+			return nonZeroBin2-1;
 		else
 			return -1;
 	}
