@@ -497,7 +497,6 @@ public class ShortProcessor extends ImageProcessor {
 				switch(op) {
 					case INVERT:
 						v2 = max2 - (v1 - min2);
-						//v2 = 65535 - (v1+offset);
 						break;
 					case FILL:
 						v2 = fgColor2;
@@ -570,6 +569,14 @@ public class ShortProcessor extends ImageProcessor {
 		}
     }
     
+	/** The image or ROI is inverted using the full
+	 * pixel value range (0-65535) or, if set, using
+	 * the "Unsigned 16-bit range" in the "Set" option
+	 * of the Image&gt;Adjust&gt;Brightness/Contrast
+	 * dialog.
+	 * @see ij.ImagePlus#setDefault16bitRange
+	 * @see ij.ImagePlus#getDefault16bitRange
+	*/
 	public void invert() {
 		int range = 65536;
 		int defaultRange = ij.ImagePlus.getDefault16bitRange();

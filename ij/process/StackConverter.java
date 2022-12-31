@@ -74,6 +74,7 @@ public class StackConverter {
 			((CompositeImage)imp).resetDisplayRanges();
 			((CompositeImage)imp).updateAllChannelsAndDraw();
 		}
+		ImageConverter.record();
 		imp.setSlice(currentSlice);
 		IJ.showProgress(1.0);
 	}
@@ -149,6 +150,7 @@ public class StackConverter {
 				imp.setDisplayRange(0,65535);
 			}
 		}
+		ImageConverter.record();
 	}
 
 	/** Converts this Stack to 32-bit (float) grayscale. */
@@ -322,6 +324,6 @@ public class StackConverter {
         }
 		imp.setStack(null, stack2);
 		imp.setTypeToColor256();
-	}
+	}	
 
 }

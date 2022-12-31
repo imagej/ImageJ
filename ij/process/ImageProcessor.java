@@ -475,10 +475,10 @@ public abstract class ImageProcessor implements Cloneable {
 			setValue(value);
 	}
 
-	/** Returns the smallest displayed pixel value. */
+	/** Returns the minimum displayed pixel value. */
 	public abstract double getMin();
 
-	/** Returns the largest displayed pixel value. */
+	/** Returns the maximum displayed pixel value. */
 	public abstract double getMax();
 
 	/** This image will be displayed by mapping pixel values in the
@@ -2108,7 +2108,22 @@ public abstract class ImageProcessor implements Cloneable {
 		supported. */
 	public abstract void applyTable(int[] lut);
 
-	/** Inverts the image or ROI. */
+	/** Inverts the image or ROI.
+	 * <p>
+	 * With 8-bit images, p=255-p.
+	 * <p>
+	 * With RGB images, converts each pixel to
+	 * three 8-bit pixels and uses p=255-p.
+	 * <p>
+	 * With 16-bit images, p=65535-p, or p=255-p,
+	 * p=1024-p, etc. if an "Unsigned 16-bit range"
+	 * is set using the "Set" option of the
+	 * Image&gt;Adjust&gt;Brightness/Contrast dialog.
+	 * <p>
+	 * With 32-bit images, p=max-(p-min), where 'min'
+	 * and 'max' are the minimum and maximum displayed
+	 * pixel values.
+	*/
 	public void invert() {process(INVERT, 0.0);}
 
 	/** Adds 'value' to each pixel in the image or ROI. */

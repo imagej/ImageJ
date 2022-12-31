@@ -445,7 +445,6 @@ public class FloatProcessor extends ImageProcessor {
 
 	private void process(int op, double value) {
 		float c, v1, v2;
-		//boolean resetMinMax = roiWidth==width && roiHeight==height && !(op==FILL);
 		c = (float)value;
 		float min2=0f, max2=0f;
 		if (op==INVERT)
@@ -514,8 +513,14 @@ public class FloatProcessor extends ImageProcessor {
 		}
 	}
 
-	/** Each pixel in the image is inverted using p=max-(p-min), where 'min'
-		and 'max' are the display range limits set using setMinAndMax(). */
+	/** Each pixel in the image or ROI is inverted using
+	 * p=max-(p-min), where 'min' and 'max' are the minimum
+	 * and maximum displayed pixel values.
+	 * @see #getMin
+	 * @see #getMax
+	 * @see #setMinAndMax
+	 * @see #resetMinAndMax
+	*/
 	public void invert() {
 		process(INVERT, 0.0);
 	}

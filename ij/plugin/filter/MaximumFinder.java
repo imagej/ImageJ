@@ -223,7 +223,8 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         }
         ByteProcessor outIp = null;
         boolean strictMode = oldMacro ? excludeOnEdges : strict;
-        outIp = findMaxima(ip, tolerance, strictMode, threshold, outputType, excludeOnEdges, false); //process the image
+		boolean isEDM = imp!=null && imp.getBitDepth()==32 && imp.getTitle().startsWith("EDM of ");
+        outIp = findMaxima(ip, tolerance, strictMode, threshold, outputType, excludeOnEdges, isEDM); //process the image
         if (outIp == null) return;              //cancelled by user or previewing or no output image
         if (!Prefs.blackBackground)             //normally, output has an inverted LUT, "active" pixels black (255) - like a mask
             outIp.invertLut();

@@ -66,13 +66,13 @@ public class ImageConverter {
 		imp.setCalibration(imp.getCalibration()); //update calibration
 	}
 	
-	private void record() {
+	public static void record() {
 		if (Recorder.record) {
 			Boolean state = ImageConverter.getDoScaling();
 			if (Recorder.scriptMode())
 				Recorder.recordCall("ImageConverter.setDoScaling("+state+");", true);
 			else
-				Recorder.	recordString("setOption(\"ScaleConversions\", "+state+");\n");
+				Recorder.recordString("setOption(\"ScaleConversions\", "+state+");\n");
 		}
 	}
 

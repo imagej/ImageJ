@@ -41,7 +41,7 @@ public class IJ {
 	/** Image display modes */
 	public static final int COMPOSITE=1, COLOR=2, GRAYSCALE=3;
 	
-	public static final String URL = "http://imagej.nih.gov/ij";
+	public static final String URL = "http://imagej.net/ij";
 	public static final int ALL_KEYS = -1;
 	
 	/** Use setDebugMode(boolean) to enable/disable debug mode. */
