@@ -8019,6 +8019,18 @@ public class Functions implements MacroConstants, Measurements {
 		if (interp.token!=WORD)
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
+		if (name.equals("associateROIsWithSlices")) {
+			Prefs.showAllSliceOnly = getBooleanArg();
+			return null;
+		}
+		if (name.equals("restoreCentered")) {
+			RoiManager.restoreCentered(getBooleanArg());
+			return null;
+		}
+		if (name.equals("useNamesAsLabels")) {
+			Prefs.useNamesAsLabels = getBooleanArg();
+			return null;
+		}
 		RoiManager rm = RoiManager.getInstance2();
 		if (rm==null)
 			interp.error("No ROI Manager");

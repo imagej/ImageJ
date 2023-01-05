@@ -1939,9 +1939,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				imp.draw();
 		}
 		if (record()) {
-			Recorder.record("roiManager", "Associate", Prefs.showAllSliceOnly?"true":"false");
-			Recorder.record("roiManager", "Centered", restoreCentered?"true":"false");
-			Recorder.record("roiManager", "UseNames", Prefs.useNamesAsLabels?"true":"false");
+			if (Recorder.scriptMode()) {
+				Recorder.recordString("Prefs.showAllSliceOnly = "+Prefs.showAllSliceOnly+";\n");
+				Recorder.recordString("RoiManager.restoreCentered("+restoreCentered+");\n");
+				Recorder.recordString("Prefs.useNamesAsLabels = "+Prefs.useNamesAsLabels+";\n");
+			} else {
+				Recorder.recordString("RoiManager.associateROIsWithSlices("+Prefs.showAllSliceOnly+");\n");
+				Recorder.recordString("RoiManager.restoreCentered("+restoreCentered+");\n");
+				Recorder.recordString("RoiManager.useNamesAsLabels("+Prefs.useNamesAsLabels+");\n");
+			}
 		}
 	}
 
@@ -2802,6 +2808,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 	public void allowRecording(boolean allow) {
 		this.allowRecording = allow;
+	}
+	
+	public static void restoreCentered(boolean b) {
+		restoreCentered = b;
 	}
 	
 	/* handle double clicking on a ROI. */

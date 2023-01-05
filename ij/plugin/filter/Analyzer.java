@@ -261,12 +261,12 @@ public class Analyzer implements PlugInFilter, Measurements {
 			measurePoint(roi);
 			return;
 		}
-		if (roi!=null && roi.isLine()) {
-			measureLength(roi);
-			return;
-		}
 		if (roi!=null && roi.getType()==Roi.ANGLE) {
 			measureAngle(roi);
+			return;
+		}
+		if (roi!=null && roi.isLine()) {
+			measureLength(roi);
 			return;
 		}
 		ImageStatistics stats;
@@ -680,16 +680,16 @@ public class Analyzer implements PlugInFilter, Measurements {
 				rt.update(measurements, imp, roi);
 		}
 		if (roi!=null) {
-			if (roi.isLine()) {
+			if (roi.getType()==Roi.ANGLE) {
+				double angle = ((PolygonRoi)roi).getAngle();
+				if (Prefs.reflexAngle) angle = 360.0-angle;
+				rt.addValue("Angle", angle);
+			} else if (roi.isLine()) {
 				rt.addValue("Length", roi.getLength());
 				if (roi.getType()==Roi.LINE && showAngle) {
 					Line line = (Line)roi;
 					rt.addValue("Angle", line.getFloatAngle(line.x1d,line.y1d,line.x2d,line.y2d));
 				}
-			} else if (roi.getType()==Roi.ANGLE) {
-				double angle = ((PolygonRoi)roi).getAngle();
-				if (Prefs.reflexAngle) angle = 360.0-angle;
-				rt.addValue("Angle", angle);
 			} else if (roi instanceof PointRoi)
 				savePoints((PointRoi)roi);
 		}
