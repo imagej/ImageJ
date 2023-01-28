@@ -69,7 +69,7 @@ public class Profiler implements PlugIn, PlotMaker {
 		String[] labels = {"Vertical", "Interpolate", "Live"};
 		boolean[] states = {Prefs.verticalProfile, PlotWindow.interpolate, Prefs.autoLivePlots};
 		gd.addCheckboxGroup(2, 2, labels, states);
-		gd.addHelp(IJ.URL+"/docs/menus/edit.html#plot-options");
+		gd.addHelp(IJ.URL2+"/docs/menus/edit.html#plot-options");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;

@@ -1890,7 +1890,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	private void help() {
-		String macro = "run('URL...', 'url="+IJ.URL+"/docs/menus/analyze.html#manager');";
+		String macro = "run('URL...', 'url="+IJ.URL2+"/docs/menus/analyze.html#manager');";
 		new MacroRunner(macro);
 	}
 

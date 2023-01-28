@@ -3232,8 +3232,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			int Z = getNSlices();
 			for (int z=1; z<=Z; z++) {
 				for (int t=1; t<=getNFrames(); t++) {
-					int s = z + (t-1)*Z;
-					flattenImage(stack2, s, overlay2.duplicate(), showAll, z, t);
+					int image = z + (t-1)*Z;
+					flattenImage(stack2, image, overlay2.duplicate(), showAll, z, t);
 				}
 			}
 		} else {
@@ -3246,7 +3246,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	/** Flattens Overlay 'overlay' on slice 'slice' of ImageStack 'stack'.
 	 * Copied from OverlayCommands by Marcel Boeglin 2014.01.08.
-	 */
+	*/
 	private void flattenImage(ImageStack stack, int slice, Overlay overlay, boolean showAll) {
 		ImageProcessor ips = stack.getProcessor(slice);
 		ImagePlus imp1 = new ImagePlus("temp", ips);
@@ -3265,8 +3265,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	/** Flattens Overlay 'overlay' on slice 'slice' corresponding to
-	 * coordinates 'z' and 't' in RGB-HyperStack 'stack'
-	 */
+	 * coordinates 'z' and 't' in RGB-HyperStack 'stack'.
+	*/
 	private void flattenImage(ImageStack stack, int slice, Overlay overlay, boolean showAll, int z, int t) {
 		ImageProcessor ips = stack.getProcessor(slice);
 		ImagePlus imp1 = new ImagePlus("temp", ips);

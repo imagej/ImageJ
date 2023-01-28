@@ -49,7 +49,7 @@ public class Options implements PlugIn {
 		gd.addCheckbox("Non-blocking filter dialogs", Prefs.nonBlockingFilterDialogs);
 		gd.addCheckbox("Debug mode", IJ.debugMode);
 		//gd.addCheckbox("Modern mode", Prefs.modernMode);
-		gd.addHelp(IJ.URL+"/docs/menus/edit.html#misc");
+		gd.addHelp(IJ.URL2+"/docs/menus/edit.html#misc");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -171,7 +171,7 @@ public class Options implements PlugIn {
 		if (weighted)
 			prompt += " (" + IJ.d2s(weights[0]) + "," + IJ.d2s(weights[1]) + ","+ IJ.d2s(weights[2]) + ")";
 		gd.addCheckbox(prompt, weighted);
-		gd.addHelp(IJ.URL+"/docs/menus/edit.html#conversions");
+		gd.addHelp(IJ.URL2+"/docs/menus/edit.html#conversions");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;

@@ -425,7 +425,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		gd.setInsets(5,40,0);
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
-		gd.addHelp(IJ.URL+"/docs/menus/process.html#math-macro");
+		gd.addHelp(IJ.URL2+"/docs/menus/process.html#math-macro");
 		gd.showDialog();
 	}
 

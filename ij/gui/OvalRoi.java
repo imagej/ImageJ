@@ -411,7 +411,7 @@ public class OvalRoi extends Roi {
 			for (int x=0; x<width; x++) {
 				xx = x - a;
 				yy = y - b;   
-				if ((xx*xx/a2+yy*yy/b2)<=1.0)
+				if ((xx*xx/a2+yy*yy/b2)<=1.0 && offset+x<pixels.length)
 					pixels[offset+x] = -1;
 			}
 		}

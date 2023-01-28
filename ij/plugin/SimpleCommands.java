@@ -117,7 +117,7 @@ public class SimpleCommands implements PlugIn {
 	}
 		
 	private void installation() {
-		String url = IJ.URL+"/docs/install/";
+		String url = IJ.URL2+"/docs/install/";
 		if (IJ.isMacintosh())
 			url += "osx.html";
 		else if (IJ.isWindows())
@@ -131,7 +131,7 @@ public class SimpleCommands implements PlugIn {
 		IJ.showMessage("\"About Plugins\" Submenu", 
 			"Plugins packaged as JAR files can add entries\n"+
 			"to this submenu. There is an example at\n \n"+
-			IJ.URL+"/plugins/jar-demo.html");
+			IJ.URL2+"/plugins/jar-demo.html");
 	}
 	
 	private void setSliceLabel() {
@@ -197,7 +197,7 @@ public class SimpleCommands implements PlugIn {
 			"Plugins were not loaded due to macOS Path Randomization.\n"+
 			"To work around this problem, move ImageJ.app out of the\n"+
 			"ImageJ folder and then copy it back. More information is at\n \n"+
-			IJ.URL+"/docs/install/osx.html#randomization");
+			IJ.URL2+"/docs/install/osx.html#randomization");
 	}
 	
 	private void installMagicMontageTools() {

@@ -101,7 +101,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		gd.addCheckbox("Global calibration", IJ.isMacro()?false:global1);
 		gd.addCheckbox("Show plot", IJ.isMacro()?false:showPlotFlagSaved);
 		//gd.addCheckbox("Show Simplex Settings", showSettings);
-		gd.addHelp(IJ.URL+"/docs/menus/analyze.html#cal");
+		gd.addHelp(IJ.URL2+"/docs/menus/analyze.html#cal");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;

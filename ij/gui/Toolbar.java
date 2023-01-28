@@ -1528,11 +1528,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					"toolset to view its source code.\n"+
 					" \n"+
 					"More macro toolsets are available at\n"+
-					"  <"+IJ.URL+"/macros/toolsets/>\n"+
+					"  <"+IJ.URL2+"/macros/toolsets/>\n"+
 					" \n"+
 					"Plugin tools can be downloaded from\n"+
 					"the Tools section of the Plugins page at\n"+
-					"  <"+IJ.URL+"/plugins/>\n"
+					"  <"+IJ.URL2+"/plugins/>\n"
 					);
 				return;
 			} else if (label.endsWith("*")) {
@@ -2066,7 +2066,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	private void showSource(String name) {
 		if (IJ.shiftKeyDown()) {
-			IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+"/source/ij/plugin/tool/"+name+"Tool.java");
+			IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL2+"/source/ij/plugin/tool/"+name+"Tool.java");
 			IJ.setKeyUp(KeyEvent.VK_SHIFT);
 		}
 	}

@@ -41,7 +41,12 @@ public class IJ {
 	/** Image display modes */
 	public static final int COMPOSITE=1, COLOR=2, GRAYSCALE=3;
 	
-	public static final String URL = "http://imagej.nih.gov/ij"; //"http://imagej.net/ij"
+	/** @deprecated */
+	public static final String URL = "http://imagej.nih.gov/ij";
+	
+	/** ImageJ website */
+	public static final String URL2 = "http://imagej.net/ij";
+
 	public static final int ALL_KEYS = -1;
 	
 	/** Use setDebugMode(boolean) to enable/disable debug mode. */

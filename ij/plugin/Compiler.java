@@ -273,7 +273,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 		gd.addChoice("Target: ", targets, targets[target]);
 		gd.setInsets(15,5,0);
 		gd.addCheckbox("Generate debugging info (javac -g)", generateDebuggingInfo);
-		gd.addHelp(IJ.URL+"/docs/menus/edit.html#compiler");
+		gd.addHelp(IJ.URL2+"/docs/menus/edit.html#compiler");
 		Font font = IJ.font10;
 		gd.addMessage(info, font);
 		gd.showDialog();

@@ -102,7 +102,7 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
         gd.addPreviewCheckbox(pfr);
         gd.addDialogListener(this);
         previewing = true;
-		gd.addHelp(IJ.URL+"/docs/menus/process.html#background");
+		gd.addHelp(IJ.URL2+"/docs/menus/process.html#background");
         gd.showDialog();
         previewing = false;
         if (gd.wasCanceled()) return DONE;

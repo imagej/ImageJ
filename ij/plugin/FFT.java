@@ -504,7 +504,7 @@ public class FFT implements PlugIn, Measurements {
 		gd.setInsets(8, 20, 0);
 		gd.addCheckbox("Reuse \"FFT of...\" window", reuseWindow);
 		gd.addCheckbox("Do forward transform", iDoFFT);
-		gd.addHelp(IJ.URL+"/docs/menus/process.html#fft-options");
+		gd.addHelp(IJ.URL2+"/docs/menus/process.html#fft-options");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;

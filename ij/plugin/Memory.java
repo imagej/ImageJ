@@ -32,7 +32,7 @@ public class Memory implements PlugIn {
 		gd.addCheckbox("Keep multiple undo buffers", Prefs.keepUndoBuffers);
 		gd.setInsets(12, 0, 0);
 		gd.addCheckbox("Run garbage collector on status bar click", !Prefs.noClickToGC);
-		gd.addHelp(IJ.URL+"/docs/menus/edit.html#memory");
+		gd.addHelp(IJ.URL2+"/docs/menus/edit.html#memory");
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		int max2 = (int)gd.getNextNumber();
@@ -108,7 +108,7 @@ public class Memory implements PlugIn {
 		String msg =
 			   "ImageJ is unable to change the memory limit. For \n"
 			+ "more information, refer to the installation notes at\n \n"
-			+ "    "+IJ.URL+"/docs/install/\n"
+			+ "    "+IJ.URL2+"/docs/install/\n"
 			+ " \n";
 		if (fileMissing) {
 			if (IJ.isMacOSX())

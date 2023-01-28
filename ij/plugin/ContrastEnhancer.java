@@ -68,7 +68,7 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 				gd.addCheckbox("Process_all "+stackSize+" slices", processStack);
 			gd.addCheckbox("Use stack histogram", useStackHistogram);
 		}
-        gd.addHelp(IJ.URL+"/docs/menus/process.html#enhance");
+        gd.addHelp(IJ.URL2+"/docs/menus/process.html#enhance");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;

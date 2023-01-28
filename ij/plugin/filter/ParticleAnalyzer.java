@@ -355,7 +355,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		labels[6]="Add to Manager"; states[6]=(options&ADD_TO_MANAGER)!=0;
 		labels[7]="Composite ROIs"; states[7]=(options&COMPOSITE_ROIS)!=0;
 		gd.addCheckboxGroup(4, 2, labels, states);
-		gd.addHelp(IJ.URL+"/docs/menus/analyze.html#ap");
+		gd.addHelp(IJ.URL2+"/docs/menus/analyze.html#ap");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;

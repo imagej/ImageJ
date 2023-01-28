@@ -96,7 +96,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
         gd.addCheckbox(" Use overlay", useOverlay);
         gd.addCheckbox(" Use_text tool font", useTextToolFont);
         gd.addPreviewCheckbox(pfr);
-        gd.addHelp(IJ.URL+"/docs/menus/image.html#label");
+        gd.addHelp(IJ.URL2+"/docs/menus/image.html#label");
         gd.addDialogListener(this);
         previewing = true;
 		gd.showDialog();

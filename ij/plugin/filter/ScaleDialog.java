@@ -73,7 +73,7 @@ public class ScaleDialog implements PlugInFilter {
 		gd.addCheckbox("Global", global1);
 		gd.setInsets(10, 0, 0);
 		gd.addMessage("Scale: "+"12345.789 pixels per centimeter");
-		gd.addHelp(IJ.URL+"/docs/menus/analyze.html#scale");
+		gd.addHelp(IJ.URL2+"/docs/menus/analyze.html#scale");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;

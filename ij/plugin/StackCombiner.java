@@ -136,7 +136,7 @@ public class StackCombiner implements PlugIn {
 		gd.addChoice("Stack1:", titles, titles[0]);
 		gd.addChoice("Stack2:", titles, titles[1]);
 		gd.addCheckbox("Combine vertically", false);
-        gd.addHelp(IJ.URL+"/docs/menus/image.html#combine");
+        gd.addHelp(IJ.URL2+"/docs/menus/image.html#combine");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;

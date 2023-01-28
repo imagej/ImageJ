@@ -63,7 +63,7 @@ public class NewImage {
 					+ "Memory in use: "+IJ.freeMemory()+"\n \n"	
 					+ "More information can be found in the \"Memory\"\n"
 					+ "sections of the ImageJ installation notes at\n"
-					+ "\""+IJ.URL+"/docs/install/\".");
+					+ "\""+IJ.URL2+"/docs/install/\".");
 					return false;
 				}
 			}

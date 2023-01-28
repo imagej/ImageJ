@@ -333,9 +333,9 @@ public class Macro_Runner implements PlugIn {
 		gd.addMessage(msg);
 		gd.showDialog();
 		if (!gd.wasCanceled()) {
-			ok = (new PluginInstaller()).install(IJ.URL+url);
+			ok = (new PluginInstaller()).install(IJ.URL2+url);
 			if (!ok)
-				IJ.error("Unable to download "+name+" from "+IJ.URL+url);
+				IJ.error("Unable to download "+name+" from "+IJ.URL2+url);
 		}
 		return ok;
 	}

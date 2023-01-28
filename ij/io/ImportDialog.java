@@ -92,7 +92,7 @@ public class ImportDialog {
 		gd.addCheckbox("Little-endian byte order", intelByteOrder);
 		gd.addCheckbox("Open all files in folder", openAll);
 		gd.addCheckbox("Use virtual stack", virtual);
-		gd.addHelp(IJ.URL+"/docs/menus/file.html#raw");
+		gd.addHelp(IJ.URL2+"/docs/menus/file.html#raw");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;

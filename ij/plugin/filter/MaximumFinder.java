@@ -143,7 +143,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         gd.addDialogListener(this);
         checkboxes = gd.getCheckboxes();
         previewing = true;
-		gd.addHelp(IJ.URL+"/docs/menus/process.html#find-maxima");
+		gd.addHelp(IJ.URL2+"/docs/menus/process.html#find-maxima");
         gd.showDialog();          //input by the user (or macro) happens here
         if (gd.wasCanceled())
             return DONE;

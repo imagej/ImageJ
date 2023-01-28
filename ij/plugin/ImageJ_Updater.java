@@ -119,7 +119,7 @@ public class ImageJ_Updater implements PlugIn {
 		byte[] data;
 		try {
 			URL url = new URL(address);
-			IJ.showStatus("Connecting to "+IJ.URL);
+			IJ.showStatus("Connecting to "+IJ.URL2);
 			URLConnection uc = url.openConnection();
 			int len = uc.getContentLength();
 			if (IJ.debugMode) IJ.log("Updater (url): "+ address + " "+ len);
@@ -156,7 +156,7 @@ public class ImageJ_Updater implements PlugIn {
 	}
 
 	String[] openUrlAsList(String address) {
-		IJ.showStatus("Connecting to "+IJ.URL);
+		IJ.showStatus("Connecting to "+IJ.URL2);
 		Vector v = new Vector();
 		try {
 			URL url = new URL(address);

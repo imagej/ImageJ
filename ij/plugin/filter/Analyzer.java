@@ -201,7 +201,7 @@ public class Analyzer implements PlugInFilter, Measurements {
         gd.addChoice("Redirect to:", titles, target);
 		gd.setInsets(5, 0, 0);
 		gd.addNumericField("Decimal places (0-9):", precision, 0, 2, "");
-		gd.addHelp(IJ.URL+"/docs/menus/analyze.html#set");
+		gd.addHelp(IJ.URL2+"/docs/menus/analyze.html#set");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;

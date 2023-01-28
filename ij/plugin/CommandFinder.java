@@ -210,7 +210,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		}
 		if (className.startsWith("ij.")) {
 			className = className.replaceAll("\\.", "/");
-			IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL + "/source/" + className + ".java");
+			IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL2 + "/source/" + className + ".java");
 			return;
 		}
 		className = IJ.getDirectory("plugins") + className.replaceAll("\\.", "/");

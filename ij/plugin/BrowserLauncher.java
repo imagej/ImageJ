@@ -60,7 +60,7 @@ public class BrowserLauncher implements PlugIn {
 	public void run(String theURL) {
 		if (error) return;
 		if (theURL==null || theURL.equals(""))
-			theURL = IJ.URL;
+			theURL = IJ.URL2;
 		try {openURL(theURL);}
 		catch (IOException e) {}
 	}

@@ -417,7 +417,7 @@ public class FFTFilter implements  PlugInFilter, Measurements {
 		gd.addCheckbox("Display filter", displayFilter);
 		if (stackSize>1)
 			gd.addCheckbox("Process entire stack", processStack);	
-		gd.addHelp(IJ.URL+"/docs/menus/process.html#fft-bandpass");
+		gd.addHelp(IJ.URL2+"/docs/menus/process.html#fft-bandpass");
 		gd.showDialog();
 		if(gd.wasCanceled())
 			return false;

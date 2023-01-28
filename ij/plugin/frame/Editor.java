@@ -957,7 +957,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		String[] selectedWords = Tools.split(selText, "/,(,[\"\'&+");
 		if (selectedWords.length==1 && selectedWords[0].length()>0) 
 			url += "#" +selectedWords[0];//append selection as hash tag
-		IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+url);
+		IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL2+url);
 	}
 
 	final void runToInsertionPoint() {

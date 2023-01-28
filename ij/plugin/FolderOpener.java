@@ -597,7 +597,7 @@ public class FolderOpener implements PlugIn, TextListener {
 		gd.addCheckbox("Sort names numerically", sortFileNames);
 		gd.addCheckbox("Use virtual stack", openAsVirtualStack);
 		gd.addCheckbox("Open as separate images", false);		
-		gd.addHelp(IJ.URL+"/docs/menus/file.html#seq1");
+		gd.addHelp(IJ.URL2+"/docs/menus/file.html#seq1");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;

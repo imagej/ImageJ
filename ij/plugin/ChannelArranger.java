@@ -44,7 +44,7 @@ public class ChannelArranger implements PlugIn, TextListener {
 		Vector v = gd.getStringFields();
 		orderField = (TextField)v.elementAt(0);
 		orderField.addTextListener(this);
-		gd.addHelp(IJ.URL+"/docs/menus/image.html#arrange");
+		gd.addHelp(IJ.URL2+"/docs/menus/image.html#arrange");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;

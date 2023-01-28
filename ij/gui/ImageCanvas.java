@@ -352,7 +352,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					drawRoi(g, roi, drawLabels?i+LIST_OFFSET:-1);
 			} else {
 				int position = stackSize>1?roi.getPosition():0;
-				if (position==0 && c==1) {
+				if (stackSize>1 && position==0 && c==1) {
 					if (z==1)
 						position = t;
 					else if (t==1)
@@ -362,7 +362,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					position = getSliceNumber(roi.getName());
 				if (position>0 && imp.getCompositeMode()==IJ.COMPOSITE)
 					position = 0;
-				//IJ.log(position+"  "+currentImage+" "+roiManagerShowAllMode+" "+c+" "+z+" "+t);
 				if (position==0 || position==currentImage || roiManagerShowAllMode)
 					drawRoi(g, roi, drawLabels?i+LIST_OFFSET:-1);
 			}
