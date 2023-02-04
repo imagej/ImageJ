@@ -164,13 +164,13 @@ public class WindowManager {
 		if ((nWindows+nBatchImages)==0)
 			return null;
 		int[] list = new int[nWindows+nBatchImages];
-		int index = 0;
 		for (int i=0; i<nWindows; i++) {
-			ImageWindow win = (ImageWindow)imageList.get(index++);
+			ImageWindow win = (ImageWindow)imageList.get(i);
 			list[i] = win.getImagePlus().getID();
 		}
-		for (int i=0; i<nBatchImages; i++)
-			list[i] = batchModeImages[i];
+		int index = 0;
+		for (int i=nWindows; i<nWindows+nBatchImages; i++)
+			list[i] = batchModeImages[index++];
 		//IJ.log("getIDList");
 		//for (int i=0; i<list.length; i++) {
 		//IJ.log("  "+i+" "+nWindows+" "+nBatchImages+" "+list[i]+" "+getImage((list[i])));

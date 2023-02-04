@@ -64,8 +64,10 @@ public class OtherInstance {
 				String rtn = IJ.runMacro(cmd.substring(5));
 				if (rtn!=null)
 					System.out.print(rtn);
-			} else if (cmd.startsWith("user.dir "))
+			} else if (cmd.startsWith("user.dir ")) {
 				OpenDialog.setDefaultDirectory(cmd.substring(9));
+				System.setProperty("user.dir", cmd.substring(9));
+			}
 		}
 	}
 
