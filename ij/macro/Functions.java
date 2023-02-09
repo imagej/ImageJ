@@ -4735,6 +4735,8 @@ public class Functions implements MacroConstants, Measurements {
 			PlotWindow.interpolate = state;
 		else if (arg1.equals("flipfitsimages"))
 			FITS_Reader.flipImages(state);
+		else if (arg1.startsWith("monospaced"))
+			TextWindow.setMonospaced(state);
 		//else if (arg1.startsWith("saveimageloc")) {
 		//	Prefs.saveImageLocation = state;
 		//	if (!state) Prefs.set(ImageWindow.LOC_KEY,null);

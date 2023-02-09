@@ -980,12 +980,18 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			RoiEncoder re = new RoiEncoder(out);
 			for (int i=0; i<indexes.length; i++) {
 				IJ.showProgress(i, indexes.length);
-				String label = getUniqueName(names, indexes[i]);
+				String label = (String)listModel.getElementAt(i);
 				Roi roi = (Roi)rois.get(indexes[i]);
 				if (IJ.debugMode) IJ.log("saveMultiple: "+i+"  "+label+"  "+roi);
 				if (roi==null) continue;
 				if (!label.endsWith(".roi")) label += ".roi";
-				zos.putNextEntry(new ZipEntry(label));
+				try {
+					zos.putNextEntry(new ZipEntry(label));
+				} catch(ZipException e) {
+					label = getUniqueName(names, indexes[i]);
+					if (!label.endsWith(".roi")) label += ".roi";
+					zos.putNextEntry(new ZipEntry(label));
+				}
 				re.write(roi);
 				out.flush();
 			}

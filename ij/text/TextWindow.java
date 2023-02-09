@@ -3,6 +3,7 @@ import ij.*;
 import ij.io.*;
 import ij.gui.*;
 import ij.plugin.filter.Analyzer;
+import ij.plugin.frame.Recorder;
 import ij.macro.Interpreter;
 import ij.measure.ResultsTable;
 import java.awt.*;
@@ -23,13 +24,13 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	public static final String LOG_HEIGHT_KEY = "log.height";
 	public static final String DEBUG_LOC_KEY = "debug.loc";
 	static final String FONT_SIZE = "tw.font.size";
-	static final String FONT_ANTI= "tw.font.anti";
 	TextPanel textPanel;
-    CheckboxMenuItem antialiased;
+    CheckboxMenuItem monospacedButton;
 	int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
-	int fontSize = (int)Prefs.get(FONT_SIZE, 5);
+	int fontSize = (int)Prefs.get(FONT_SIZE, 6);
 	MenuBar mb;
 	private static Font font;
+	private static boolean monospaced;
 	private boolean isResultsTable;
  
 	/**
@@ -179,9 +180,9 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		m.add(new MenuItem("Make Text Smaller"));
 		m.add(new MenuItem("Make Text Larger"));
 		m.addSeparator();
-		antialiased = new CheckboxMenuItem("Antialiased", Prefs.get(FONT_ANTI, IJ.isMacOSX()?true:false));
-		antialiased.addItemListener(this);
-		m.add(antialiased);
+		monospacedButton = new CheckboxMenuItem("Monospaced", monospaced);
+		monospacedButton.addItemListener(this);
+		m.add(monospacedButton);
 		m.add(new MenuItem("Save Settings"));
 		m.addActionListener(this);
 		mb.add(m);
@@ -211,11 +212,16 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	
 	void setFont() {
 		if (font!=null)
-       		textPanel.setFont(font, antialiased.getState());
-       	else
-       		textPanel.setFont(new Font("SanSerif", Font.PLAIN, sizes[fontSize]), antialiased.getState());
+       		textPanel.setFont(font, true);
+       	else {
+        	textPanel.setFont(new Font(getFontName(), Font.PLAIN, sizes[fontSize]), true);
+       	}
 	}
 	
+    private String getFontName() {
+    	return monospacedButton.getState()?"Monospaced":"SansSerif";
+    }
+
 	boolean openFile(String path) {
 		OpenDialog od = new OpenDialog("Open Text File...", path);
 		String directory = od.getDirectory();
@@ -283,7 +289,15 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	}
 
 	public void itemStateChanged(ItemEvent e) {
+		font = null;
         setFont();
+		if (Recorder.record) {
+			boolean state = monospacedButton.getState();
+			if (Recorder.scriptMode())
+				Recorder.recordCall("TextWindow.setMonospaced("+state+");");
+			else
+				Recorder.recordString("setOption(\"MonospacedText\", "+state+");\n");
+		}
 	}
 
 	public void close() {
@@ -361,12 +375,23 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
     
     public static void setFont(String name, int style, int size) {
     	font = new Font(name,style,size);
+		Frame log = WindowManager.getFrame("Log");
+		if (log!=null && (log instanceof TextWindow))
+			((TextWindow)log).setFont();
+    }
+
+    public static void setMonospaced(boolean b) {
+    	monospaced = b;
+		Frame log = WindowManager.getFrame("Log");
+		if (log!=null && (log instanceof TextWindow)) {
+			((TextWindow)log).monospacedButton.setState(monospaced);
+			((TextWindow)log).setFont();
+		}
     }
 
 	void saveSettings() {
 		Prefs.set(FONT_SIZE, fontSize);
-		Prefs.set(FONT_ANTI, antialiased.getState());
-		IJ.showStatus("Font settings saved (size="+sizes[fontSize]+", antialiased="+antialiased.getState()+")");
+		IJ.showStatus("Font settings saved (size="+sizes[fontSize]+")");
 	}
 	
 	public void focusGained(FocusEvent e) {
