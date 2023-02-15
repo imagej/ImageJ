@@ -53,6 +53,9 @@ public class IJ {
 	public static boolean debugMode;
 	
 	public static boolean hideProcessStackDialog;
+	
+	/** Turn off all status and progress bar updates **/
+	public static boolean ignoreStatusAndProgressUpdates = false;
 	    
     public static final char micronSymbol = '\u00B5';
     public static final char angstromSymbol = '\u00C5';
@@ -143,6 +146,12 @@ public class IJ {
 	public static void setDebugMode(boolean b) {
 		debugMode = b;
 		LogStream.redirectSystem(debugMode);
+	}
+
+	/** Turn on/off ignoring of status and progress bar updates.*/
+	public static void setIgnoreStatusAndProgressUpdates(boolean b) {
+		ignoreStatusAndProgressUpdates = b;
+		LogStream.redirectSystem(ignoreStatusAndProgressUpdates);
 	}
 
 	/** Runs the macro contained in the string <code>macro</code>
@@ -450,6 +459,7 @@ public class IJ {
 		with '!', subsequent showStatus() calls in the current
 		thread (without "!" in the message) are suppressed. */
 	public static void showStatus(String s) {
+		if (ignoreStatusAndProgressUpdates) return;
 		if ((Interpreter.getInstance()==null&&statusBarThread==null)
 		|| (statusBarThread!=null&&Thread.currentThread()!=statusBarThread))
 			protectStatusBar(false);
@@ -474,6 +484,7 @@ public class IJ {
 	 * See: http://wsr.imagej.net/macros/FlashingStatusMessages.txt
 	*/ 
 	public static void showStatus(String message, String options) {
+		if (ignoreStatusAndProgressUpdates) return;
 		showStatus(message);
 		if (options==null)
 			return;
@@ -772,6 +783,7 @@ public class IJ {
     updated only if more than 90 ms have passes since the last call. Does nothing 
 	if the ImageJ window is not present. */
 	public static void showProgress(double progress) {
+		if (ignoreStatusAndProgressUpdates) return;
 		if (progressBar!=null) progressBar.show(progress, false);
 	}
 
@@ -783,6 +795,7 @@ public class IJ {
      * 'currentIndex' is negative (example: Plugins/Utilities/Benchmark).
     */
     public static void showProgress(int currentIndex, int finalIndex) {
+    	if (ignoreStatusAndProgressUpdates) return;
 		if (progressBar!=null) {
 			progressBar.show(currentIndex, finalIndex);
 			if (currentIndex==finalIndex)
