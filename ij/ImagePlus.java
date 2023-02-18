@@ -1846,9 +1846,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (channel>nChannels) channel=nChannels;
 		if (slice>nSlices) slice=nSlices;
 		if (frame>nFrames) frame=nFrames;
-		if (isDisplayedHyperStack())
-			((StackWindow)win).setPosition(channel, slice, frame);
-		else {
+		if (isDisplayedHyperStack()) {
+			if (noUpdateMode) {
+				setSlice((frame-1)*nChannels*nSlices + (slice-1)*nChannels + channel);
+				updatePosition(channel, slice, frame);
+			} else
+				((StackWindow)win).setPosition(channel, slice, frame);
+		} else {
 			boolean channelChanged = channel!=getChannel();
 			setSlice((frame-1)*nChannels*nSlices + (slice-1)*nChannels + channel);
 			updatePosition(channel, slice, frame);

@@ -24,8 +24,9 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	public static final String LOG_HEIGHT_KEY = "log.height";
 	public static final String DEBUG_LOC_KEY = "debug.loc";
 	static final String FONT_SIZE = "tw.font.size";
+	static final String FONT_ANTI= "tw.font.anti";
 	TextPanel textPanel;
-    CheckboxMenuItem monospacedButton;
+    CheckboxMenuItem monospacedButton, antialiasedButton;
 	int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
 	int fontSize = (int)Prefs.get(FONT_SIZE, 6);
 	MenuBar mb;
@@ -183,6 +184,10 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		monospacedButton = new CheckboxMenuItem("Monospaced", monospaced);
 		monospacedButton.addItemListener(this);
 		m.add(monospacedButton);
+		antialiasedButton = new CheckboxMenuItem("Antialiased", Prefs.get(FONT_ANTI, true));
+		if (IJ.isMacOSX()) antialiasedButton.setState(true);
+		antialiasedButton.addItemListener(this);
+		m.add(antialiasedButton);
 		m.add(new MenuItem("Save Settings"));
 		m.addActionListener(this);
 		mb.add(m);
@@ -212,9 +217,9 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	
 	void setFont() {
 		if (font!=null)
-       		textPanel.setFont(font, true);
+       		textPanel.setFont(font, antialiasedButton.getState());
        	else {
-        	textPanel.setFont(new Font(getFontName(), Font.PLAIN, sizes[fontSize]), true);
+        	textPanel.setFont(new Font(getFontName(), Font.PLAIN, sizes[fontSize]), antialiasedButton.getState());
        	}
 	}
 	
@@ -389,8 +394,13 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		}
     }
 
+    public static void setAntialiased(boolean b) {
+    	IJ.log("Use Font>Antialiased command");
+    }
+
 	void saveSettings() {
 		Prefs.set(FONT_SIZE, fontSize);
+		Prefs.set(FONT_ANTI, antialiasedButton.getState());
 		IJ.showStatus("Font settings saved (size="+sizes[fontSize]+")");
 	}
 	

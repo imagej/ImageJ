@@ -93,7 +93,7 @@ class TextCanvas extends Canvas {
 		gImage=iImage.getGraphics();
 		gImage.setFont(fFont);
 		Java2.setAntialiasedText(gImage, antialiased);
-		if(fMetrics==null)
+		if (fMetrics==null)
 			fMetrics=gImage.getFontMetrics();
 	}
 
