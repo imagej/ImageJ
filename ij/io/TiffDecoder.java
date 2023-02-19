@@ -432,6 +432,8 @@ public class TiffDecoder {
 								fi.fileType = FileInfo.GRAY32_INT;
 							else if (value==12)
 								fi.fileType = FileInfo.GRAY12_UNSIGNED;
+							else if (value==10)
+								fi.fileType = FileInfo.GRAY10_UNSIGNED;
 							else if (value==1)
 								fi.fileType = FileInfo.BITMAP;
 							else
@@ -499,8 +501,8 @@ public class TiffDecoder {
 				case COMPRESSION:
 					if (value==5)  {// LZW compression
 						fi.compression = FileInfo.LZW;
-						if (fi.fileType==FileInfo.GRAY12_UNSIGNED)
-							error("ImageJ cannot open 12-bit LZW-compressed TIFFs");
+						if (fi.fileType==FileInfo.GRAY12_UNSIGNED||fi.fileType==FileInfo.GRAY10_UNSIGNED)
+							error("ImageJ cannot open 10-bit or 12-bit LZW-compressed TIFFs");
 					} else if (value==32773)  // PackBits compression
 						fi.compression = FileInfo.PACK_BITS;
 					else if (value==32946 || value==8) //8=Adobe deflate

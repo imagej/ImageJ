@@ -671,7 +671,63 @@ public class ImageReader {
 		return stack;
 	}
 
-	short[] read12bitImage(InputStream in) throws IOException {
+	/**
+ 	 * Reads in the contents of a 10-bit TIFF grayscale
+ 	 * image file and converts to a 16-bit image.
+ 	 * 5 bytes are read-in at a time and produces 4 pixels.
+ 	 * @param in
+ 	 * @return the pixels of the 10-bit image
+ 	 * @throws IOException
+ 	*/
+ 	short[] read10bitImage(InputStream in) throws IOException {
+ 		int bytesPerLine = (int)(width*1.25); // there are 1.25 bytes of data for each pixel (5 bytes per 4 pixels)
+ 		byte[] buffer = new byte[bytesPerLine*height];
+ 		short[] pixels = new short[nPixels];
+ 		DataInputStream dis = new DataInputStream(in);
+ 		dis.readFully(buffer);
+ 		for (int y=0; y<height; y++) {
+ 			int index1 = y*bytesPerLine;
+ 			int index2 = y*width;
+ 			int count = 0;
+			while (count<width) {
+ 				if (index1 + 4 < buffer.length) {
+ 					final short B0 = (short) (buffer[index1] & 0xFF);
+ 					final short B1 = (short) (buffer[index1 + 1] & 0xFF);
+ 					final short B2 = (short) (buffer[index1 + 2] & 0xFF);
+ 					final short B3 = (short) (buffer[index1 + 3] & 0xFF);
+ 					final short B4 = (short) (buffer[index1 + 4] & 0xFF);
+ 					short b0, b1, b2, b3;
+
+ 					// Set pixel 1
+ 					b0 = (short) (B0 << 2);
+ 					b1 = (short) (B1 >> 6);
+ 					pixels[index2 + count] = (short) (b0 | b1);
+ 					count++;
+
+ 					// set pixel 2
+ 					b1 = (short) ((B1 & (0xFF >> 2)) << 4);
+ 					b2 = (short) (B2 >> 4);
+ 					pixels[index2 + count] = (short) (b1 | b2);
+ 					count++;
+
+ 					// set pixel 3
+ 					b2 = (short) ((B2 & (0xFF >> 4)) << 6);
+ 					b3 = (short) (B3 >> 2);
+ 					pixels[index2 + count] = (short) (b2 | b3);
+ 					count++;
+
+ 					// set pixel 4
+ 					b3 = (short) ((B3 & (0xFF >> 6)) << 8);
+ 					pixels[index2 + count] = (short) (b3 | B4);
+ 					count++;
+ 					index1 += 5;
+ 				}
+ 			}
+ 		}
+ 		return pixels;
+ 	}
+ 	
+ 	short[] read12bitImage(InputStream in) throws IOException {
 		int bytesPerLine = (int)(width*1.5);
 		if ((width&1)==1) bytesPerLine++; // add 1 if odd
 		byte[] buffer = new byte[bytesPerLine*height];
@@ -833,7 +889,12 @@ public class ImageReader {
 					short[] data = read12bitImage(in);
 					pixels = (Object)data;
 					break;
-				case FileInfo.GRAY24_UNSIGNED:
+				case FileInfo.GRAY10_UNSIGNED:
+ 					skip(in);
+ 					data = read10bitImage(in);
+ 					pixels = (Object)data;
+ 					break;
+ 				case FileInfo.GRAY24_UNSIGNED:
 					skip(in);
 					pixels = (Object)read24bitImage(in);
 					break;

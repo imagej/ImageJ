@@ -69,6 +69,9 @@ public class FileInfo implements Cloneable {
 
 	/** 32-bit interleaved CMYK. Import only. */
 	public static final int CMYK = 19;
+	
+	/** 10-bit unsigned integer (0-1023). Import only. */
+	public static final int GRAY10_UNSIGNED = 20;
 
 	// File formats
 	public static final int UNKNOWN = 0;
@@ -185,7 +188,7 @@ public class FileInfo implements Cloneable {
 	public int getBytesPerPixel() {
 		switch (fileType) {
 			case GRAY8: case COLOR8: case BITMAP: return 1;
-			case GRAY16_SIGNED: case GRAY16_UNSIGNED: case GRAY12_UNSIGNED: return 2;
+			case GRAY16_SIGNED: case GRAY16_UNSIGNED: case GRAY12_UNSIGNED: case GRAY10_UNSIGNED: return 2;
 			case GRAY32_INT: case GRAY32_UNSIGNED: case GRAY32_FLOAT: case ARGB: case GRAY24_UNSIGNED: case BARG: case ABGR: case CMYK: return 4;
 			case RGB: case RGB_PLANAR: case BGR: return 3;
 			case RGB48: case RGB48_PLANAR: return 6;
@@ -243,7 +246,7 @@ public class FileInfo implements Cloneable {
     	switch (fileType) {
 			case GRAY8: return "byte";
 			case GRAY16_SIGNED: return "short";
-			case GRAY16_UNSIGNED: return "ushort";
+			case GRAY10_UNSIGNED: case GRAY12_UNSIGNED: GRAY16_UNSIGNED: return "ushort";
 			case GRAY32_INT: return "int";
 			case GRAY32_UNSIGNED: return "uint";
 			case GRAY32_FLOAT: return "float";

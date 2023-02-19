@@ -83,6 +83,7 @@ public class FileOpener {
 			case FileInfo.GRAY16_SIGNED:
 			case FileInfo.GRAY16_UNSIGNED:
 			case FileInfo.GRAY12_UNSIGNED:
+			case FileInfo.GRAY10_UNSIGNED:
 				pixels = readPixels(fi);
 				if (pixels==null) return null;
 	    		ip = new ShortProcessor(width, height, (short[])pixels, cm);
@@ -190,6 +191,7 @@ public class FileOpener {
 			case FileInfo.GRAY16_SIGNED:
 			case FileInfo.GRAY16_UNSIGNED:
 			case FileInfo.GRAY12_UNSIGNED:
+			case FileInfo.GRAY10_UNSIGNED:
 				pixels = readPixels(fi);
 				if (pixels==null) return null;
 	    		ip = new ShortProcessor(width, height, (short[])pixels, cm);
@@ -359,6 +361,7 @@ public class FileOpener {
 				case FileInfo.GRAY16_SIGNED:
 				case FileInfo.GRAY16_UNSIGNED:
 				case FileInfo.GRAY12_UNSIGNED:
+				case FileInfo.GRAY10_UNSIGNED:
 					ip = new ShortProcessor(width, height, (short[])pixels, cm);
 					imp.setProcessor(null, ip);
 					break;

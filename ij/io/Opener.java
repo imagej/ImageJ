@@ -808,7 +808,10 @@ public class Opener {
 			if (info[0].fileType==FileInfo.GRAY12_UNSIGNED) {
 				imageSize = (int)(fi.width*fi.height*1.5);
 				if ((imageSize&1)==1) imageSize++; // add 1 if odd
-			} if (info[0].fileType==FileInfo.BITMAP) {
+			} else if (info[0].fileType==FileInfo.GRAY10_UNSIGNED) {
+				imageSize = (int)(fi.width*fi.height*1.25);
+                if ((imageSize&1)==1) imageSize++; // add 1 if odd
+			} else if (info[0].fileType==FileInfo.BITMAP) {
 				int scan=(int)Math.ceil(fi.width/8.0);
 				imageSize = scan*fi.height;
 			}
@@ -879,7 +882,8 @@ public class Opener {
 			if (stack.size()==0)
 				return null;
 			if (fi.fileType==FileInfo.GRAY16_UNSIGNED||fi.fileType==FileInfo.GRAY12_UNSIGNED
-			||fi.fileType==FileInfo.GRAY32_FLOAT||fi.fileType==FileInfo.RGB48) {
+			||fi.fileType==FileInfo.GRAY32_FLOAT||fi.fileType==FileInfo.RGB48
+			||fi.fileType==FileInfo.GRAY10_UNSIGNED) {
 				ImageProcessor ip = stack.getProcessor(1);
 				ip.resetMinAndMax();
 				stack.update(ip);
