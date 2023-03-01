@@ -434,7 +434,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	/** ImageCanvas.paint() calls this method when the
-		ImageProcessor has generated a new image. */
+	 * ImageProcessor has generated a new image.
+	*/
 	public void updateImage() {
 		if (win==null) {
 			img = null;

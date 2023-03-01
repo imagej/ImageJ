@@ -5,10 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.54c26  18 February 2023</u>
+<li> <u>1.54c28  1 March 2023</u>
 <ul>
 <li> Thanks to Jerome Mutterer, added support for 
 <a href="../macros/Library.txt">Turtle Graphics</a>.
+<li> Thanks to Eugene Katrukha, re-implemented the
+<i>Edit&gt;Selection&gt;Fit Spline</i> command
+using Haysn Hornbeck's freely available
+"Fast Cubic Spline Interpolation"
+algorithm.
 <li> Thanks to Paul Evans, ImageJ can now open 10-bit tiffs.
 <li> Thanks to Stein Rorvik, on Linux and Windows, text
 rendering in the Log window and tables is optimized for
@@ -35,6 +40,9 @@ correctly with hyperstacks.
 <li> Thanks to 'Sethur', fixed a v1.53t regression that caused
 "Average Intensity" Z projection to not work correctly with 
 32-bit hyperstacks.
+<li> Thanks to Eugene Katrukha, fixed a bug that caused the
+<i>Edit&gt;Selection&gt;Fit Spline</i> command to 
+shorted freehand line selections.
 </ul>
 
 <li> <u>1.54b  08 January 2023</u>

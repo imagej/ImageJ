@@ -1,11 +1,16 @@
 package ij.measure;
 
-/** This class fits a spline function to a set of points.
-	It is based on the InitSpline() and EvalSine() functions from 
-	XY (http://www.trilon.com/xv/), an interactive image manipulation
-	program for the X Window System written by John Bradley. Eric Kischell
-	(keesh@ieee.org) converted these functions to Java and integrated
-	them into the PolygonRoi class.
+
+/** This class interpolates a set of points using natural cubic splines
+ *	(assuming zero second derivatives at end points).
+ *  Given a set of knots x (all different and arranged in increasing order)
+ *  and function values y at these positions, the class build the spline
+ *  that can be evaluated at any point xp within the range of x.
+ *  It is based on the publication 
+ *  Haysn Hornbeck "Fast Cubic Spline Interpolation"
+ *  https://arxiv.org/abs/2001.09253 
+ *  Implemented by Eugene Katrukha (katpyxa@gmail.com)
+ *  to fit the layout of SplineFitter class of ImageJ
 */
 public class SplineFitter {
 	private double[] y2;
@@ -18,7 +23,7 @@ public class SplineFitter {
 	public SplineFitter(int[] x, int[] y, int n) {
 		initSpline(x, y, n);
 	}
-
+	
 	/** For closed curves: the first and last y value should be identical;
 	 *	internally, a periodic continuation with a few will be used at both
 	 *	ends */
@@ -29,33 +34,61 @@ public class SplineFitter {
 	public SplineFitter(float[] x, float[] y, int n) {
 		initSpline(x, y, n, false);
 	}
-
+	
 	/** Given arrays of data points x[0..n-1] and y[0..n-1], computes the
-		values of the second derivative at each of the data points
-		y2[0..n-1] for use in the evalSpline() function. */
-	private void initSpline(int[] x, int[] y, int n) {
-		int i,k;
-		double p,qn,sig,un;
+	values of the second derivative at each of the data points
+	y2[0..n-1] for use in the evalSpline() function. */
+	private void initSpline(int[] x, int[] y, int n) {		
+		int j;
+		double new_x,new_y,old_x,old_y,new_dj, old_dj;
+		double aj,bj,dj,cj;
+		double inv_denom;
 		y2 = new double[n];	 // cached
-		double[] u	= new double[n];
-		for (i=1; i<n-1; i++) {
-			// 888 chk for div by 0?
-			sig = ((double) x[i]-x[i-1]) / ((double) x[i+1] - x[i-1]);
-			p = sig * y2[i-1] + 2.0;
-			y2[i] = (sig-1.0) / p;
-			u[i] = (((double) y[i+1]-y[i]) / (x[i+1]-x[i])) -
-				   (((double) y[i]-y[i-1]) / (x[i]-x[i-1]));
-			u[i] = (6.0 * u[i]/ (x[i+1]-x[i-1]) - sig*u[i-1]) / p;
+		double[] c_p = new double[n];
+		
+		//ends conditions:natural spline,
+		//i.e. second derivative at ends is equal to zero
+		c_p[0]=0;
+		y2[0]=0;
+		c_p[n-1]=0;
+		y2[n-1]=0;
+		
+		//recycle these values in later routines
+		new_x = x[1];
+		new_y = y[1];
+		cj = x[1]-x[0];
+		new_dj = (y[1]-y[0])/cj;
+		
+		//forward substitution portion
+		j=1;
+		while(j<(n-1)) {
+			old_x = new_x;
+			old_y = new_y;
+			aj=cj;
+			old_dj = new_dj;
+			//generate new quantities
+			new_x = x[j+1];
+			new_y = y[j+1];
+			cj = new_x-old_x;
+			new_dj = (new_y-old_y)/cj;
+			bj = 2.0*(cj+aj);
+			inv_denom = 1.0/(bj-aj*c_p[j-1]);
+			dj = 6.0*(new_dj-old_dj);
+			y2[j]= ( dj- aj*y2[j-1])*inv_denom;
+			c_p[j] = cj*inv_denom;
+			j+=1;
 		}
-		qn = un = 0.0;
-		y2[n-1] = (un-qn*u[n-2]) / (qn*y2[n-2]+1.0);
-		for (k=n-2; k>=0; k--)
-			y2[k] = y2[k]*y2[k+1]+u[k];
+		
+		// backward substitution portion
+		while (j>0) {
+			j-=1;
+			y2[j]=y2[j]-c_p[j]*y2[j+1];
+		}
 		ixpoints = x;
 		iypoints = y;
 		npoints = n;
 	}
-
+	
 	private void initSpline(float[] x, float[] y, int n, boolean closed) {
 		if (closed) {					//add periodic continuation at both ends
 			extendBy = EXTEND_BY;
@@ -80,28 +113,56 @@ public class SplineFitter {
 			x = xx;
 			y = yy;
 		}
-		int i,k;
-		double p,qn,sig,un;
+		int j;
+		double new_x,new_y,old_x,old_y,new_dj, old_dj;
+		double aj,bj,dj,cj;
+		double inv_denom;
 		y2 = new double[n];	 // cached
-		double[] u	= new double[n];
-		for (i=1; i<n-1; i++) {
-			// 888 chk for div by 0?
-			sig = ((double) x[i]-x[i-1]) / ((double) x[i+1] - x[i-1]);
-			p = sig * y2[i-1] + 2.0;
-			y2[i] = (sig-1.0) / p;
-			u[i] = (((double) y[i+1]-y[i]) / (x[i+1]-x[i])) -
-				   (((double) y[i]-y[i-1]) / (x[i]-x[i-1]));
-			u[i] = (6.0 * u[i]/ (x[i+1]-x[i-1]) - sig*u[i-1]) / p;
+		double[] c_p = new double[n];
+		
+		//ends conditions:natural spline,
+		//i.e. second derivative at ends is equal to zero
+		c_p[0]=0;
+		y2[0]=0;
+		c_p[n-1]=0;
+		y2[n-1]=0;
+		
+		//recycle these values in later routines
+		new_x = x[1];
+		new_y = y[1];
+		cj = x[1]-x[0];
+		new_dj = (y[1]-y[0])/cj;
+		
+		//forward substitution portion
+		j=1;
+		while(j<(n-1)) {
+			old_x = new_x;
+			old_y = new_y;
+			aj=cj;
+			old_dj = new_dj;
+			//generate new quantities
+			new_x = x[j+1];
+			new_y = y[j+1];
+			cj = new_x-old_x;
+			new_dj = (new_y-old_y)/cj;
+			bj = 2.0*(cj+aj);
+			inv_denom = 1.0/(bj-aj*c_p[j-1]);
+			dj = 6.0*(new_dj-old_dj);
+			y2[j]= ( dj- aj*y2[j-1])*inv_denom;
+			c_p[j] = cj*inv_denom;
+			j+=1;
 		}
-		qn = un = 0.0;
-		y2[n-1] = (un-qn*u[n-2]) / (qn*y2[n-2]+1.0);
-		for (k=n-2; k>=0; k--)
-			y2[k] = y2[k]*y2[k+1]+u[k];
+		
+		// backward substitution portion
+		while (j>0) {
+			j-=1;
+			y2[j]=y2[j]-c_p[j]*y2[j+1];
+		}
 		xpoints = x;
 		ypoints = y;
 		npoints = n;
 	}
-
+	
 	/** Evalutes spline function at given point */
 	public double evalSpline(double xp) {
 		if (xpoints!=null)
@@ -110,50 +171,51 @@ public class SplineFitter {
 			return evalSpline(ixpoints, iypoints, npoints, xp);
 	}
 	
+	/** provides interpolated function value at position xp**/
 	public double evalSpline(int x[], int y[], int n, double xp) {
-		int klo,khi,k;
-		double h,b,a;
-		klo = 0;
-		khi = n-1;
-		while (khi-klo > 1) {
-			k = (khi+klo) >> 1;
-			if (x[k] > xp) khi = k;
-			else klo = k;
+		int ls,rs,m;
+		double ba,ba2,xa,bx, lower, C, D;
+		
+		//binary search of the interval
+		ls = 0;
+		rs = n-1;
+		while (rs>1+ls) {
+			m = (int) Math.floor(0.5*(ls+rs));
+			if(x[m]<xp)
+				ls=m;
+			else rs = m;
 		}
-		h = x[khi] - x[klo];
-		/* orig code */
-		/* if (h==0.0) FatalError("bad xvalues in splint\n"); */
-		if (h==0.0) return (0.0);  /* arbitr ret for now */
-		a = (x[khi]-xp)/h;
-		b = (xp-x[klo])/h;
-		// should have better err checking
-		if(y2==null) return (0.0);
-		return (a*y[klo] + b*y[khi] + ((a*a*a-a)*y2[klo] +(b*b*b-b)*y2[khi]) * (h*h) / 6.0);
+		ba = x[rs]-x[ls];
+		xa = xp -x[ls];
+		bx = x[rs]-xp;
+		ba2 = ba*ba;
+		lower = xa*y[rs]+bx*y[ls];
+		C = (xa*xa-ba2)*xa*y2[rs];
+		D = (bx*bx-ba2)*bx*y2[ls];
+		return (lower +(C+D)/6.0)/ba;
 	}
 	
 	public double evalSpline(float x[], float y[], int n, double xp) {
-		int klo,khi,k;
-		double h,b,a;
-		klo = 0;
-		khi = n-1;
-		while (khi-klo>1) {
-			k = (khi+klo)>>1;
-			if (x[k]>xp)
-				khi = k;
-			else
-				klo = k;
+		int ls,rs,m;
+		double ba,ba2,xa,bx, lower, C, D;
+		
+		//binary search of the interval
+		ls = 0;
+		rs = n-1;
+		while (rs>1+ls) {
+			m = (int) Math.floor(0.5*(ls+rs));
+			if(x[m]<xp)
+				ls=m;
+			else rs = m;
 		}
-		h = x[khi] - x[klo];
-		/* orig code */
-		/* if (h==0.0) FatalError("bad xvalues in splint\n"); */
-		if (h==0.0)
-			return (0.0);  /* arbitr ret for now */
-		a = (x[khi]-xp)/h;
-		b = (xp-x[klo])/h;
-		// should have better err checking
-		if (y2==null)
-			return (0.0);
-		return (a*y[klo] + b*y[khi] + ((a*a*a-a)*y2[klo] +(b*b*b-b)*y2[khi]) * (h*h) / 6.0);
+		ba = x[rs]-x[ls];
+		xa = xp -x[ls];
+		bx = x[rs]-xp;
+		ba2 = ba*ba;
+		lower = xa*y[rs]+bx*y[ls];
+		C = (xa*xa-ba2)*xa*y2[rs];
+		D = (bx*bx-ba2)*bx*y2[ls];
+		return (lower +(C+D)/6.0)/ba;
 	}
-
+		
 }

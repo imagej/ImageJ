@@ -103,6 +103,7 @@ public class CompositeImage extends ImagePlus {
 		return img;
 	}
 	
+	@Override
 	public void updateChannelAndDraw() {
 		if (!customLuts) singleChannel = true;
 		updateAndDraw();
@@ -118,6 +119,7 @@ public class CompositeImage extends ImagePlus {
 		}
 	}
 
+	@Override
 	public ImageProcessor getChannelProcessor() {
 		if (cip!=null && currentChannel!=-1)
 			return cip[currentChannel];
@@ -187,6 +189,7 @@ public class CompositeImage extends ImagePlus {
 		}
 	}
 
+	@Override
 	public void updateAndDraw() {
 		if (win==null) {
 			img = null;
@@ -198,6 +201,12 @@ public class CompositeImage extends ImagePlus {
 		draw();
 	}
 
+	/* This method is called by ImageCanvas.paint() to
+	 * update the RGB version of this composite image
+	 * when the are changes to the pixel values, the
+	 * LUTs or the display mode.
+	*/
+	@Override
 	public synchronized void updateImage() {
 		int imageSize = width*height;
 		int nChannels = getNChannels();

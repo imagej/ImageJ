@@ -681,6 +681,7 @@ public class ImageReader {
  	*/
  	short[] read10bitImage(InputStream in) throws IOException {
  		int bytesPerLine = (int)(width*1.25); // there are 1.25 bytes of data for each pixel (5 bytes per 4 pixels)
+ 		if ((width&1)==1) bytesPerLine++; // add 1 if odd
  		byte[] buffer = new byte[bytesPerLine*height];
  		short[] pixels = new short[nPixels];
  		DataInputStream dis = new DataInputStream(in);
@@ -721,7 +722,8 @@ public class ImageReader {
  					pixels[index2 + count] = (short) (b3 | B4);
  					count++;
  					index1 += 5;
- 				}
+ 				} else
+ 					break;
  			}
  		}
  		return pixels;

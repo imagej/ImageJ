@@ -368,18 +368,54 @@ public class Selection implements PlugIn, Measurements {
 		return y+44.0;
 	}
 
+	/**
+		Smooth the specified line, preserving the end points.<br>
+		Author: Eugene Katrukha
+	*/
 	int[] smooth(int[] a, int n) {
-		FloatProcessor fp = new FloatProcessor(n, 1);
-		for (int i=0; i<n; i++)
-			fp.putPixelValue(i, 0, a[i]);
-		GaussianBlur gb = new GaussianBlur();
-		gb.blur1Direction(fp, 2.0, 0.01, true, 0);
-		IJ.showProgress(1.0);
-		for (int i=0; i<n; i++)
-			a[i] = (int)Math.round(fp.getPixelValue(i, 0));
+		float [] out = new float[n];
+		int i,j;
+		//no point in averaging 2 points
+		if(n<3)
+			return a;
+		//preserve end points
+		out[0]=	a[0];
+		out[n-1] = a[n-1];
+		//average middle points
+		for (i=1; i<(n-1); i++) {
+			out[i]=0.0f;			
+			for(j=(i-1);j<(i+2);j++){
+				out[i] += a[j];
+			}
+			out[i] /= 3.0f;
+		}
+		for (i=0; i<n; i++)
+			a[i] = (int)Math.round(out[i]);
 		return a;
 	}
-	
+
+	/**
+		Smooth the specified line, preserving the end points.<br>
+		Author: Eugene Katrukha
+	*/
+	float[] smooth(float[] a, int n) {
+		float [] out = new float[n];
+		int i,j;
+		//no point in averaging 2 points
+		if(n<3)
+			return a;
+		//preserve end points
+		out[0]=	a[0];
+		out[n-1] = a[n-1];
+		for (i=1; i<(n-1); i++) {
+			out[i]=0.0f;
+			for(j=(i-1);j<(i+2);j++)
+				out[i] += a[j];
+			out[i] /= 3.0f;
+		}
+		return out;
+	}
+		
 	float[] getCurvature(int[] x, int[] y, int n) {
 		float[] x2 = new float[n];
 		float[] y2 = new float[n];
@@ -438,17 +474,6 @@ public class Selection implements PlugIn, Measurements {
 		p.setName(roi.getName());
 		imp.setRoi(p);
 		return p;
-	}
-	
-	float[] smooth(float[] a, int n) {
-		FloatProcessor fp = new FloatProcessor(n, 1);
-		for (int i=0; i<n; i++)
-			fp.setf(i, 0, a[i]);
-		GaussianBlur gb = new GaussianBlur();
-		gb.blur1Direction(fp, 2.0, 0.01, true, 0);
-		for (int i=0; i<n; i++)
-			a[i] = fp.getf(i, 0);
-		return a;
 	}
 	
 	float[] getCurvature(float[] x, float[] y, int n) {
