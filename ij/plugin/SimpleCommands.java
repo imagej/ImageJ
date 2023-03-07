@@ -147,7 +147,7 @@ public class SimpleCommands implements PlugIn {
 		gd.showDialog();
 		if (!gd.wasCanceled()) {
 			label2 = gd.getNextString();
-			if (label2!=label) {
+			if (label2!=null && !label2.equals(label)) {
 				if (label2.length()==0)
 					label2 = null;
 				stack.setSliceLabel(label2, n);

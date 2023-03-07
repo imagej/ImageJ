@@ -81,9 +81,9 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		try {
 			info = td.getTiffInfo();
 		} catch (IOException e) {
-			String msg = e.getMessage();
-			if (msg==null||msg.equals("")) msg = ""+e;
-			IJ.error("TiffDecoder", msg);
+			// try opening using bio-formats 
+			dir = IJ.addSeparator(dir);
+			IJ.open(dir+name);
 			return;
 		}
 		if (info==null || info.length==0) {

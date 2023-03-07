@@ -443,7 +443,7 @@ public class PlotContentsDialog implements DialogListener {
 		for (int i=0; i<allTables.length; i++) {
 			TextWindow tw = tableWindows.get(i);
 			allTables[i] = tw.getResultsTable();
-			if (allTableNames[i] == previousTableName)
+			if (allTableNames[i]!=null && allTableNames[i].equals(previousTableName))
 				defaultTableIndex = i;
 			allTableNames[i] = tw.getTitle();
 		}

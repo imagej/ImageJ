@@ -5,25 +5,28 @@
 </head>
 <body>
 
-<li> <u>1.54c28  1 March 2023</u>
+<li> <u>1.54c  6 March 2023</u>
 <ul>
 <li> Thanks to Jerome Mutterer, added support for 
-<a href="../macros/Library.txt">Turtle Graphics</a>.
+<a href="http://wsr.imagej.net/macros/Library.txt">Turtle Graphics</a>.
 <li> Thanks to Eugene Katrukha, re-implemented the
 <i>Edit&gt;Selection&gt;Fit Spline</i> command
 using Haysn Hornbeck's freely available
 "Fast Cubic Spline Interpolation"
 algorithm.
-<li> Thanks to Paul Evans, ImageJ can now open 10-bit tiffs.
-<li> Thanks to Stein Rorvik, on Linux and Windows, text
-rendering in the Log window and tables is optimized for
-LCD screens.
+<li> Thanks to Paul Evans, ImageJ now opens 10-bit tiffs.
+<li> Thanks to Stein Rorvik, text rendering in the Log
+window and tables is optimized for LCD screens on
+Linux and Windows, 
 <li> Thanks to Damon Poburko, the <i>Save</i> command in the
 ROI Manager is now much faster.
 <li> Thanks to Fred Damen, added a <i>Font&gt;Monospaced</i>
 checkbox menu command to the Log window.
 <li> Thanks to Fred Damen, the <i>Edit&gt;Options&gt;Compiler</i>
 command supports Java versions greater than 9.
+<li> Thanks to 'michihaa', the <i>File&gt;Import&gt;Tiff Virtual Stack</i>
+command calls the Bio-Formats Importer for files that can't
+be opened by the built in tiff reader.
 <li> Thanks to Stein Rorvik, added the
 TextWindow.setAntialiased(boolean) method.
 <li> Fixed a bug that caused the selectImage(n) macro function,
@@ -34,6 +37,9 @@ from command line macros.
 <li> Thanks to 'Sethur', fixed a bug the caused the
 ImagePlus.setPositionWithoutupdate(c,z,t) method to not
 work as expected.
+<li> Thanks to Eugene Katrukha, fixed a bug that caused the
+<i>Edit&gt;Selection&gt;Fit Spline</i> command to 
+shorten freehand line selections.
 <li> Thanks to 'lguerard', fixed a v1.53 regression that caused
 the <i>Image&gt;Overlay&gt;Flatten</i> command to not work
 correctly with hyperstacks.
@@ -42,7 +48,10 @@ correctly with hyperstacks.
 32-bit hyperstacks.
 <li> Thanks to Eugene Katrukha, fixed a bug that caused the
 <i>Edit&gt;Selection&gt;Fit Spline</i> command to 
-shorted freehand line selections.
+shorten freehand line selections.
+<li> Thanks to 'michihaa', fixed a bug that caused files with a
+".tiff" extension dragged and dropped on the "&gt;&gt;" icon
+in the toolbar to not open as virtual stacks.
 </ul>
 
 <li> <u>1.54b  08 January 2023</u>

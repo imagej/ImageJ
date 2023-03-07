@@ -918,6 +918,7 @@ public class Opener {
 		try {
 			info = td.getTiffInfo();
 		} catch (IOException e) {
+			// try opening using bio-formats 
 			this.fileType = TIFF;
 			directory = IJ.addSeparator(directory);
 			return openUsingHandleExtraFileTypes(directory+name);
