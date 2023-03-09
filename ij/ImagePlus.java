@@ -399,6 +399,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	 * @see #getNChannels
 	 * @see #isComposite
 	 * @see #getCompositeMode
+	 * <p>
+	 * Javascript example:
+	 * <pre>
+	 * luts = imp.getLuts();<br>
+	 * for (i=0; i<luts.length; i++)<br>
+	 *    IJ.log((i+1)+“: “+luts[i].min+”-”+luts[i].max);<br>
+	 * </pre>
 	*/
 	public LUT[] getLuts() {
 		ImageProcessor ip2 = getProcessor();
@@ -619,9 +626,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			int type = bi.getType();
 			boolean rgb = type==BufferedImage.TYPE_3BYTE_BGR||type==BufferedImage.TYPE_INT_RGB
 				||type==BufferedImage.TYPE_4BYTE_ABGR||type==BufferedImage.TYPE_BYTE_INDEXED
-				||type==BufferedImage.TYPE_INT_ARGB||type==BufferedImage.TYPE_CUSTOM
-				||type==BufferedImage.TYPE_INT_BGR;
-			if (IJ.debugMode) IJ.log("setImage: type="+type+", bands="+nBands+", rgb="+rgb);
+				||type==BufferedImage.TYPE_INT_ARGB||type==BufferedImage.TYPE_INT_BGR;
+			int dataType = bi.getSampleModel().getDataType();
+			if (IJ.debugMode) IJ.log("setImage: type="+type+", bands="+nBands+", rgb="+rgb+", datatype="+dataType);
 			if (nBands>1 && !rgb) {
 				ImageStack biStack = new ImageStack(bi.getWidth(), bi.getHeight());			
 				for (int b=0; b<nBands; b++)
@@ -3108,10 +3115,18 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			ip.setMinAndMax(min, max);
 	}
 
+	/** Returns the display range minimum of the current channel.
+	 * @see ij.process.ImageProcessor#getMin
+	 * @see #getLuts
+	*/
 	public double getDisplayRangeMin() {
 		return ip.getMin();
 	}
 
+	/** Returns the display range maximum of the current channel.
+	 * @see ij.process.ImageProcessor#getMax
+	 * @see #getLuts
+	*/
 	public double getDisplayRangeMax() {
 		return ip.getMax();
 	}
@@ -3119,7 +3134,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/**	Sets the display range of specified channels in an RGB image, where 4=red,
 		2=green, 1=blue, 6=red+green, etc. With non-RGB images, this method is
 		identical to setDisplayRange(min, max).  This method is used by the
-		Image/Adjust/Color Balance tool . */
+		Image/Adjust/Color Balance tool .
+	*/
 	public void setDisplayRange(double min, double max, int channels) {
 		if (ip instanceof ColorProcessor)
 			((ColorProcessor)ip).setMinAndMax(min, max, channels);

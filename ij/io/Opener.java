@@ -740,10 +740,12 @@ public class Opener {
 		if (img==null)
 			return null;
 		if (IJ.debugMode) IJ.log("type="+img.getType()+", alpha="+img.getColorModel().hasAlpha()+", bands="+img.getSampleModel().getNumBands());
+		int nBands = 1;
 		if (img.getColorModel().hasAlpha()) {
 			int width = img.getWidth();
 			int height = img.getHeight();
 			BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+			nBands = bi.getSampleModel().getNumBands();
 			Graphics g = bi.getGraphics();
 			g.setColor(Color.white);
 			g.fillRect(0,0,width,height);
@@ -751,6 +753,8 @@ public class Opener {
 			img = bi;
 		}
 		imp = new ImagePlus(f.getName(), img);
+		if (imp.getBitDepth()==16)
+			imp = new CompositeImage(imp, IJ.COMPOSITE);
 		FileInfo fi = new FileInfo();
 		fi.fileFormat = fi.IMAGEIO;
 		fi.fileName = f.getName();

@@ -273,8 +273,8 @@ public class ShortProcessor extends ImageProcessor {
 			minimum = 0.0;
 		if (maximum>65535.0)
 			maximum = 65535.0;
-		min = (int)minimum;
-		max = (int)maximum;
+		min = (int)Math.round(minimum);
+		max = (int)Math.round(maximum);
 		fixedScale = true;
 		minMaxSet = true;
 		resetThreshold();

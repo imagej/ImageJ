@@ -2,7 +2,6 @@ package ij.plugin.filter;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
-//import ij.text.*;
 import ij.measure.ResultsTable;
 import java.awt.*;
 import java.awt.event.*;
@@ -11,8 +10,8 @@ import java.util.ArrayList;
 
 /** Displays the active image's look-up table. */
 public class LutViewer implements PlugInFilter {
-
-	ImagePlus imp;
+	private double guiScale = Prefs.getGuiScale();
+	private ImagePlus imp;
 	
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
@@ -24,13 +23,13 @@ public class LutViewer implements PlugInFilter {
 			IJ.error("RGB images do not have LUTs.");
 			return;
 		}
-		int xMargin = 35;
-		int yMargin = 20;
-		int width = 256;
-		int height = 128;
+		int xMargin = (int)(35*guiScale);
+		int yMargin = (int)(20*guiScale);
+		int width = (int)(256*guiScale);
+		int height = (int)(128*guiScale);
 		int x, y, x1, y1, x2, y2;
 		int imageWidth, imageHeight;
-		int barHeight = 12;
+		int barHeight = (int)(12*guiScale);
 		boolean isGray;
 		double scale;
 
@@ -46,22 +45,24 @@ public class LutViewer implements PlugInFilter {
 		imageWidth = width + 2*xMargin;
 		imageHeight = height + 3*yMargin;
 		Image img = IJ.getInstance().createImage(imageWidth, imageHeight);
-		Graphics g = img.getGraphics();
+		Graphics2D g = (Graphics2D)img.getGraphics();
+		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		g.setFont(new Font("SansSerif",Font.PLAIN,(int)(12*guiScale)));
 		g.setColor(Color.white);
 		g.fillRect(0, 0, imageWidth, imageHeight);
 		g.setColor(Color.black);
 		g.drawRect(xMargin, yMargin, width, height);
 
-		scale = 256.0/mapSize;
+		scale = (256.0*guiScale)/mapSize;
 		if (isGray)
 			g.setColor(Color.black);
 		else
 			g.setColor(Color.red);
 		x1 = xMargin;
 		y1 = yMargin + height - (reds[0]&0xff)/2;
-		for (int i = 1; i<256; i++) {
-			x2 = xMargin + i;
-			y2 = yMargin + height - (reds[(int)(i/scale)]&0xff)/2;
+		for (int i=0; i<256; i++) {
+			x2 = xMargin + (int)(i*guiScale);
+			y2 = yMargin + height - (int)((reds[i]&0xff)*guiScale/2);
 			g.drawLine(x1, y1, x2, y2);
 			x1 = x2;
 			y1 = y2;
@@ -69,11 +70,12 @@ public class LutViewer implements PlugInFilter {
 
 		if (!isGray) {
 			g.setColor(Color.green);
+			//g.setLineWidth(guiScale);
 			x1 = xMargin;
-			y1 = yMargin + height - (greens[0]&0xff)/2;
-			for (int i = 1; i<256; i++) {
-				x2 = xMargin + i;
-				y2 = yMargin + height - (greens[(int)(i/scale)]&0xff)/2;
+			y1 = yMargin + height - (int)((greens[0]&0xff)*guiScale/2);
+			for (int i=0; i<256; i++) {
+				x2 = xMargin + (int)(i*guiScale);
+				y2 = yMargin + height - (int)((greens[i]&0xff)*guiScale/2);
 				g.drawLine(x1, y1, x2, y2);
 				x1 = x2;
 				y1 = y2;
@@ -83,10 +85,10 @@ public class LutViewer implements PlugInFilter {
 		if (!isGray) {
 			g.setColor(Color.blue);
 			x1 = xMargin;
-			y1 = yMargin + height - (blues[0]&0xff)/2;
-			for (int i = 1; i<255; i++) {
-				x2 = xMargin + i;
-				y2 = yMargin + height - (blues[(int)(i/scale)]&0xff)/2;
+			y1 = yMargin + height - (int)((blues[0]&0xff)*guiScale/2);
+			for (int i=0; i<255; i++) {
+				x2 = xMargin + (int)(i*guiScale);
+				y2 = yMargin + height - (int)((blues[i]&0xff)*guiScale/2);
 				g.drawLine(x1, y1, x2, y2);
 				x1 = x2;
 				y1 = y2;
@@ -94,18 +96,17 @@ public class LutViewer implements PlugInFilter {
 		}
 
 		x = xMargin;
-		y = yMargin + height + 2;
-		lut.drawColorBar(g, x, y, 256, barHeight);
+		y = yMargin + height + (int)(2*guiScale);
+		lut.drawColorBar(g, x, y, (int)(256*guiScale), barHeight);
 		
-		y += barHeight + 15;
+		y += barHeight + (int)(15*guiScale);
 		g.setColor(Color.black);
-		g.drawString("0", x - 4, y);
-		g.drawString(""+(mapSize-1), x + width - 10, y);
-		g.drawString("255", 7, yMargin + 4);
+		g.drawString("0", x-(int)(4*guiScale), y);
+		g.drawString(""+(mapSize-1), x+width - (int)(10*guiScale), y);
+		g.drawString("255", (int)(7*guiScale), yMargin + (int)(4*guiScale));
 		g.dispose();
 		
         ImagePlus imp = new ImagePlus("Look-Up Table", img);
-        //imp.show();
         new LutWindow(imp, new ImageCanvas(imp), ip);
     }
 

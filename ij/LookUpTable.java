@@ -66,7 +66,6 @@ public class LookUpTable extends Object {
 	*/
 	public boolean isGrayscale() {
 		boolean isGray = true;
-		
 		if (mapSize < 256)
 			return false;
 		for (int i=0; i<mapSize; i++)
@@ -76,14 +75,15 @@ public class LookUpTable extends Object {
 	}
 			
 	public void drawColorBar(Graphics g, int x, int y, int width, int height) {
-		if (mapSize == 0)
+		if (mapSize!=256)
 			return;
+		double scale = width/256.0;
 		ColorProcessor cp = new ColorProcessor(width, height);
-		double scale = 256.0/mapSize;
+		cp.setLineWidth((int)(scale+0.99));
 		for (int i = 0; i<256; i++) {
-			int index = (int)(i/scale);
-			cp.setColor(new Color(rLUT[index]&0xff,gLUT[index]&0xff,bLUT[index]&0xff));
-			cp.moveTo(i,0); cp.lineTo(i,height);
+			cp.setColor(new Color(rLUT[i]&0xff,gLUT[i]&0xff,bLUT[i]&0xff));
+			int xloc = (int)(i*scale);
+			cp.drawLine(xloc, 0, xloc, height);
 		}
 		g.drawImage(cp.createImage(),x,y,null);
 		g.setColor(Color.black);

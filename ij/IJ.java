@@ -2015,50 +2015,7 @@ public class IJ {
 			return new String(sb);
 		else
 			return "";
-	}
-	
-	/* 
-	public static void addRootCA() throws Exception {
-		String path = "/Users/wayne/Downloads/Certificates/lets-encrypt-x1-cross-signed.pem";
-		InputStream fis = new BufferedInputStream(new FileInputStream(path));
-		Certificate ca = CertificateFactory.getInstance("X.509").generateCertificate(fis);
-		KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-		ks.load(null, null);
-		ks.setCertificateEntry(Integer.toString(1), ca);
-		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-		tmf.init(ks);
-		SSLContext ctx = SSLContext.getInstance("TLS");
-		ctx.init(null, tmf.getTrustManagers(), null); 
-		HttpsURLConnection.setDefaultSSLSocketFactory(ctx.getSocketFactory());
-	}
-	*/
-	
-	/*
-	// Create a new trust manager that trust all certificates
-	// http://stackoverflow.com/questions/10135074/download-file-from-https-server-using-java
-	private static void trustAllCerts() {
-		trustManagerCreated = true;
-		TrustManager[] trustAllCerts = new TrustManager[] {
-			new X509TrustManager() {
-				public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-					return null;
-				}
-				public void checkClientTrusted (java.security.cert.X509Certificate[] certs, String authType) {
-				}
-				public void checkServerTrusted (java.security.cert.X509Certificate[] certs, String authType) {
-				}
-			}
-		};
-		// Activate the new trust manager
-		try {
-			SSLContext sc = SSLContext.getInstance("SSL");
-			sc.init(null, trustAllCerts, new java.security.SecureRandom());
-			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-		} catch (Exception e) {
-			IJ.log(""+e);
-		}
-	}
-	*/
+	}	
 
 	/** Saves the current image, lookup table, selection or text window to the specified file path. 
 		The path must end in ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", ".fits", ".pgm", ".png", ".lut", ".roi" or ".txt".  */

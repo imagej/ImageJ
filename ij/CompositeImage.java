@@ -690,17 +690,21 @@ public class CompositeImage extends ImagePlus {
 	}
 
 	public double getDisplayRangeMin() {
-		if (lut!=null)
-			return lut[getChannelIndex()].min;
-		else
-			return 0.0;
+		if (lut==null)
+			setupLuts(getNChannels());
+		double min = lut[getChannelIndex()].min;
+		if (getBitDepth()!=32)
+			min = Math.round(min);
+		return min;
 	}
 
 	public double getDisplayRangeMax() {
-		if (lut!=null)
-			return lut[getChannelIndex()].max;
-		else
-			return 255.0;
+		if (lut==null)
+			setupLuts(getNChannels());
+		double max = lut[getChannelIndex()].max;
+		if (getBitDepth()!=32)
+			max = Math.round(max);
+		return max;
 	}
 
 	public void resetDisplayRange() {
