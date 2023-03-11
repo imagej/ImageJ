@@ -503,7 +503,26 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			changes = true;
 			checkForCurlyQuotes = false;
 		}
-		currentMacroEditor = this;
+		currentMacroEditor = this;			
+		if (text.startsWith("// include ")) { // include additional functions
+			String path = text.substring(11, text.indexOf("\n"));
+			boolean isURL = path.startsWith("http://") || path.startsWith("https://");
+			if (!isURL) {
+				boolean fullPath = path.startsWith("/") || path.startsWith("\\") || path.indexOf(":\\")==1 || path.indexOf(":/")==1;
+				if (!fullPath) {
+					String macrosDir = Menus.getMacrosPath();
+					if (macrosDir!=null)
+						path = Menus.getMacrosPath() + path;
+				}
+				File f = new File(path);
+				if (!f.exists())
+					IJ.error("Include file not found:\n"+path);
+			}
+			if (isURL)
+				text = text + IJ.openUrlAsString(path);
+			else
+				text = text+IJ.openAsString(path);
+		}
 		new MacroRunner(text, debug?this:null);
 	}
 	
