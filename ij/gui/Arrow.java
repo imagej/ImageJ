@@ -57,6 +57,8 @@ public class Arrow extends Line {
 			flipEnds();
 		}
 		Shape shape = getShape();
+		if (shape==null)
+			return;
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		if (fillColor!=null) color = fillColor;
 		g.setColor(color);
@@ -214,13 +216,16 @@ public class Arrow extends Line {
  	}
  	
 	private Shape getShape() {
-		Shape arrow = getPath();
-		BasicStroke stroke = new BasicStroke((float)getStrokeWidth(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
-		Shape outlineShape = stroke.createStrokedShape(arrow);
-		Area a1 = new Area(arrow);
-		Area a2 = new Area(outlineShape);
-		try {a1.add(a2);} catch(Exception e) {};
-		return a1;
+		try {
+			Shape arrow = getPath();
+			BasicStroke stroke = new BasicStroke((float)getStrokeWidth(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
+			Shape outlineShape = stroke.createStrokedShape(arrow);
+			Area a1 = new Area(arrow);
+			Area a2 = new Area(outlineShape);
+			a1.add(a2);
+			return a1;
+		} catch(Exception e) {};
+		return null;
 	}
 
 	private ShapeRoi getShapeRoi() {

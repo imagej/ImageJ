@@ -390,7 +390,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		PointRoi pointRoi = roi instanceof PointRoi?(PointRoi)roi:null;
 		for (int i=0; i<p.npoints; i++) {
 			int position = 0;
-			if (pointRoi!=null)
+			if (pointRoi!=null && p.npoints>1)
 				position = pointRoi.getPointPosition(i);
 			ImageProcessor ip = null;
 			if (stack!=null && position>0 && position<=stack.size())
