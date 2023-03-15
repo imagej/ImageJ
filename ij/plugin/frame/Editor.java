@@ -132,8 +132,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	public Editor(int rows, int columns, int fontSize, int options) {
 		super("Editor");
 		WindowManager.addWindow(this);
-		addMenuBar(options);	
-		if ((options&RUN_BAR)!=0) {
+		addMenuBar(options);
+		boolean addRunBar = (options&RUN_BAR)!=0;	
+		if (addRunBar) {
 			Panel panel = new Panel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 			runButton = new Button("Run");
 			runButton.addActionListener(this);
@@ -161,6 +162,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		pack();
 		setFont();
 		positionWindow();
+		if (addRunBar)
+			ta.requestFocus(); // needed for selections to show
 		if (!IJ.isJava18() && !IJ.isLinux())
 			insertSpaces = false;
 	}
@@ -503,9 +506,22 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			changes = true;
 			checkForCurlyQuotes = false;
 		}
-		currentMacroEditor = this;			
-		if (text.startsWith("// include ")) { // include additional functions
-			String path = text.substring(11, text.indexOf("\n"));
+		currentMacroEditor = this;
+		text = doInclude(text);		
+		MacroRunner mr = new MacroRunner();
+		if (debug)
+			mr.setEditor(this);
+		mr.run(text);
+	}
+	
+	/** Process any #include statment at begining of macro. */
+	public static String doInclude(String code) {
+		if (code.startsWith("#include ")||code.startsWith("// include ")) {
+			if (IJ.isWindows())
+				code = code.replaceAll("\r\n", "\n");
+			int offset = code.startsWith("#include ")?9:11;
+			int eol = code.indexOf("\n");
+			String path = code.substring(offset, eol);
 			boolean isURL = path.startsWith("http://") || path.startsWith("https://");
 			if (!isURL) {
 				boolean fullPath = path.startsWith("/") || path.startsWith("\\") || path.indexOf(":\\")==1 || path.indexOf(":/")==1;
@@ -518,14 +534,15 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				if (!f.exists())
 					IJ.error("Include file not found:\n"+path);
 			}
+			code = code.substring(eol+1,code.length());
 			if (isURL)
-				text = text + IJ.openUrlAsString(path);
+				code = "//\n"+code + IJ.openUrlAsString(path);
 			else
-				text = text+IJ.openAsString(path);
+				code = "//\n"+code + IJ.openAsString(path);
 		}
-		new MacroRunner(text, debug?this:null);
+		return code;
 	}
-	
+
 	void evaluateMacro() {
 		String title = getTitle();
 		if (title.endsWith(".js")||title.endsWith(".bsh")||title.endsWith(".py"))
@@ -1388,8 +1405,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		searchString = s2;
 		if (index<0)
 			{IJ.beep(); return;}
-		ta.setSelectionStart(index);
-		ta.setSelectionEnd(index+s.length());
+		ta.select(index, index+s.length());
 	}
 	
 	boolean isWholeWordMatch(String text, String word, int index) {

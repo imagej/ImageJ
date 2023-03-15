@@ -142,8 +142,10 @@ public class Macro_Runner implements PlugIn {
 				return runBeanShell(macro, arg);
 			else if (name.endsWith(".py"))
 				return runPython(macro, arg);
-			else
+			else {
+				macro = Editor.doInclude(macro);
 				return runMacro(macro, arg);
+			}
 		}
 		catch (Exception e) {
 			if (!Macro.MACRO_CANCELED.equals(e.getMessage()))
