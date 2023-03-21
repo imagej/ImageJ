@@ -242,7 +242,7 @@ public class Arrow extends Line {
 
 	public ImageProcessor getMask() {
 		Roi roi = getShapeRoi();
-		if (width==0 && height==0 || roi==null)
+		if ((width==0 && height==0) || roi==null)
 			return null;
 		else
 			return roi.getMask();

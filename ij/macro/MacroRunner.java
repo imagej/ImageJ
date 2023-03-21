@@ -18,7 +18,6 @@ public class MacroRunner implements Runnable {
 	private Thread thread;
 	private String argument;
 	private Editor editor;
-	private int lineNumberOffset;
 
 	/** Create a MacroRunner. */
 	public MacroRunner() {
@@ -131,7 +130,7 @@ public class MacroRunner implements Runnable {
 		return thread;
 	}
 	
-	/** Use 'editor' to run the macro in debug mode. */
+	/** Use the specified Editor to run the macro in debug mode. */
 	public void setEditor(Editor editor) {
 		this.editor = editor;
 	}

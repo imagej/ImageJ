@@ -4737,6 +4737,8 @@ public class Functions implements MacroConstants, Measurements {
 			FITS_Reader.flipImages(state);
 		else if (arg1.startsWith("monospaced"))
 			TextWindow.setMonospaced(state);
+		else if (arg1.startsWith("fullrange"))
+			Prefs.fullRange16bitInversions = state;
 		//else if (arg1.startsWith("saveimageloc")) {
 		//	Prefs.saveImageLocation = state;
 		//	if (!state) Prefs.set(ImageWindow.LOC_KEY,null);

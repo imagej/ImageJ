@@ -165,18 +165,20 @@ public class Options implements PlugIn {
 		double[] weights = ColorProcessor.getWeightingFactors();
 		boolean weighted = !(weights[0]==1d/3d && weights[1]==1d/3d && weights[2]==1d/3d);
 		//boolean weighted = !(Math.abs(weights[0]-1d/3d)<0.0001 && Math.abs(weights[1]-1d/3d)<0.0001 && Math.abs(weights[2]-1d/3d)<0.0001);
-		GenericDialog gd = new GenericDialog("Type Conversion Options");
+		GenericDialog gd = new GenericDialog("Conversion Options");
 		gd.addCheckbox("Scale when converting", ImageConverter.getDoScaling());
 		String prompt = "Weighted RGB conversions";
 		if (weighted)
 			prompt += " (" + IJ.d2s(weights[0]) + "," + IJ.d2s(weights[1]) + ","+ IJ.d2s(weights[2]) + ")";
 		gd.addCheckbox(prompt, weighted);
+		gd.addCheckbox("Full range 16-bit inversions", Prefs.fullRange16bitInversions);
 		gd.addHelp(IJ.URL2+"/docs/menus/edit.html#conversions");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		ImageConverter.setDoScaling(gd.getNextBoolean());
 		Prefs.weightedColor = gd.getNextBoolean();
+		Prefs.fullRange16bitInversions = gd.getNextBoolean();
 		if (!Prefs.weightedColor)
 			ColorProcessor.setWeightingFactors(1d/3d, 1d/3d, 1d/3d);
 		else if (Prefs.weightedColor && !weighted)

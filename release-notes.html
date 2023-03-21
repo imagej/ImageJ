@@ -5,12 +5,20 @@
 </head>
 <body>
 
-<li> <u>1.54d14  15 March 2023</u>
+<li> <u>1.54d17  21 March 2023</u>
 <ul>
 <li> Thanks to Norbert Vischer, added an '#include'
 statement to the macro language. For an example,
 use the <i>Help&gt;Examples&gt;Macro&gt;Turtle Graphics</i>
 command.
+<li> Thanks to Stein Rorvik and Dennis Chang, added the
+"Full range 16-bit inversons" option to the
+<i>Edit&gt;Options&gt;Conversions</i> dialog
+and the setOption("fullRangeInversions")
+macro function.
+<li> Thanks to Norbert Vischer, the <i>Process&gt;Binary&gt;Convert to Mask</i>
+command no longer records the unnecessary and confusing
+“method=Default background=Default” options.
 <li> Thanks to Wilco Kasteleijn, fixed a bug
 with opening 16-bit RGB PNGs
 (<a href="https://imagej.net/ij/images/Jupiter-16-bit-RGB.png">example</a>).
@@ -27,6 +35,9 @@ command and point selections.
 <li> Fixed a 1.53g text editor regression where Search and Debug
 selections were not visible on windows with "Run", "Install"
 and "Macro" buttons.
+<li> Thanks to Dennis Chang, fixed a 1.53k regression that caused
+the <i>Edit&gt;Invert</i> command to not work as expected with
+density calibrated 16-bit images.
 </ul>
 
 <li> <u>1.54c  6 March 2023</u>

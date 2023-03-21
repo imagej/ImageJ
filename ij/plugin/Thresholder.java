@@ -87,8 +87,14 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		if (gd.wasCanceled())
 			return;
 		this.imp = null;
-		method = gd.getNextChoice();
-		background = gd.getNextChoice();
+		gd.setSmartRecording(method.equals("Default")?true:false);
+		int index = gd.getNextChoiceIndex();
+		method = methods[index];
+		gd.setSmartRecording(false);
+		gd.setSmartRecording(background.equals("Default")?true:false);
+		index = gd.getNextChoiceIndex();
+		background = backgrounds[index];
+		gd.setSmartRecording(false);
 		useLocal = gd.getNextBoolean();
 		oneSlice = gd.getNextBoolean();
 		Prefs.blackBackground = gd.getNextBoolean();

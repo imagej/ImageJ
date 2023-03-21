@@ -514,7 +514,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		mr.run(text);
 	}
 	
-	/** Process any #include statment at begining of macro. */
+	/** Process optional #include statment at begining of macro. */
 	public static String doInclude(String code) {
 		if (code.startsWith("#include ")||code.startsWith("// include ")) {
 			if (IJ.isWindows())

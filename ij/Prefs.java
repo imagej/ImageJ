@@ -190,6 +190,8 @@ public class Prefs {
 	public static boolean nonBlockingFilterDialogs;
 	/** Turn live display on plots automatically */
 	public static boolean autoLivePlots;
+	/** Use full range for 16-bit inversions */
+	public static boolean fullRange16bitInversions;
 
 	//Save location of moved image windows */	
 	//public static boolean saveImageLocation = true;

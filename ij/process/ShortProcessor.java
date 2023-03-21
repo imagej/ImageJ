@@ -565,22 +565,33 @@ public class ShortProcessor extends ImageProcessor {
 		}
     }
     
-	/** The image or ROI is inverted using the full
-	 * pixel value range (0-65535) or, if set, using
-	 * the "Unsigned 16-bit range" in the "Set" option
+	/** If "Full range 16-bit inversions"
+	 * (Prefs.fullRange16bitInversions) is set in 
+	 * Edit/Options/Conversions, the image
+	 * or ROI is inverted using the full pixel
+	 * value range (0-65535) or, if set, using the
+	 * "Unsigned 16-bit range" in the "Set" option
 	 * of the Image&gt;Adjust&gt;Brightness/Contrast
-	 * dialog.
+	 * dialog.<br>
+	 * Otherwise, each pixel in the
+	 * image or ROI is inverted using v2=max-(v1-min),
+	 * where 'min' and 'max' are the image's minimum
+	 * and maximum pixel values.
 	 * @see ij.ImagePlus#setDefault16bitRange
-	 * @see ij.ImagePlus#getDefault16bitRange
 	*/
 	public void invert() {
-		int range = 65536;
-		int defaultRange = ij.ImagePlus.getDefault16bitRange();
-		if (defaultRange>0 && !isSigned16Bit())
-			range = (int)Math.pow(2,defaultRange);
-		setMinAndMax(0, range-1);
-		process(INVERT, 0.0);
-		resetMinAndMax();
+		if (ij.Prefs.fullRange16bitInversions) {
+			int range = 65536;
+			int defaultRange = ij.ImagePlus.getDefault16bitRange();
+			if (defaultRange>0 && !isSigned16Bit())
+				range = (int)Math.pow(2,defaultRange);
+			setMinAndMax(0, range-1);
+			process(INVERT, 0.0);
+			resetMinAndMax();
+		} else {
+			resetMinAndMax();
+			process(INVERT, 0.0);
+		}
 	}
 
 	public void add(int value) {process(ADD, value);}

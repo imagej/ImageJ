@@ -2266,7 +2266,7 @@ public class Interpreter implements MacroConstants {
 		return imp2;
 	} 
  
- 	/** The specified string, if not null, is added to strings passed to the run() method. */
+ 	/** Obsolete; replaced by the #include statement. */
  	public static void setAdditionalFunctions(String functions) {
  		additionalFunctions = functions;
 	} 
