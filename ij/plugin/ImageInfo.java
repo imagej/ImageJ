@@ -189,13 +189,7 @@ public class ImageInfo implements PlugIn {
     	switch (type) {
 	    	case ImagePlus.GRAY8:
 	    		s += "Bits per pixel: 8 ";
-	    		String lut = "LUT";
-	    		if (imp.getProcessor().isColorLut())
-	    			lut = "color " + lut;
-	    		else
-	    			lut = "grayscale " + lut;
-	    		if (imp.isInvertedLut())
-	    			lut = "inverting " + lut;
+	    		String lut = getLutInfo(imp);
 				s += "(" + lut + ")\n";
 				if (imp.getNChannels()>1)
 					s += displayRanges(imp);
@@ -204,10 +198,10 @@ public class ImageInfo implements PlugIn {
 				break;
 	    	case ImagePlus.GRAY16: case ImagePlus.GRAY32:
 	    		if (type==ImagePlus.GRAY16) {
-	    			String sign = cal.isSigned16Bit()?"signed":"unsigned";
-	    			s += "Bits per pixel: 16 ("+sign+")\n";
+	    			String sign = cal.isSigned16Bit()?"signed, ":"unsigned, ";
+	    			s += "Bits per pixel: 16 ("+sign+getLutInfo(imp)+")\n";
 	    		} else
-	    			s += "Bits per pixel: 32 (float)\n";
+	    			s += "Bits per pixel: 32 (float, "+getLutInfo(imp)+")\n";
 				if (imp.getNChannels()>1)
 					s += displayRanges(imp);
 				else {
@@ -465,6 +459,17 @@ public class ImageInfo implements PlugIn {
 	    }
 
 		return s;
+	}
+	
+	private String getLutInfo(ImagePlus imp) {
+		String lut = "LUT";
+		if (imp.getProcessor().isColorLut())
+			lut = "color " + lut;
+		else
+			lut = "grayscale " + lut;
+		if (imp.isInvertedLut())
+			lut = "inverting " + lut;
+		return lut;
 	}
 
 	private String displayRanges(ImagePlus imp) {

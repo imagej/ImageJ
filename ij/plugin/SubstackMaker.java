@@ -162,6 +162,8 @@ public class SubstackMaker implements PlugIn {
 		double min = imp.getDisplayRangeMin();
 		double max = imp.getDisplayRangeMax();
 		Roi roi = imp.getRoi();
+		boolean dup = imp.getWindow()!=null && !delete;
+IJ.log(dup+" "+(imp.getWindow()!=null)+" "+!delete);
 		for (int i=0, j=0; i<count; i++) {
 			int currSlice = numList[i]-j;
 			ImageProcessor ip2 = stack.getProcessor(currSlice);
@@ -170,7 +172,7 @@ public class SubstackMaker implements PlugIn {
 				ip2 = ip2.crop();
 			if (stack2==null)
 				stack2 = new ImageStack(ip2.getWidth(), ip2.getHeight());
-			stack2.addSlice(stack.getSliceLabel(currSlice), ip2);
+			stack2.addSlice(stack.getSliceLabel(currSlice), dup?ip2.duplicate():ip2);
 			if (delete) {
 				stack.deleteSlice(currSlice);
 				j++;
@@ -200,6 +202,7 @@ public class SubstackMaker implements PlugIn {
 		double max = imp.getDisplayRangeMax();
 		Roi roi = imp.getRoi();
 		boolean showProgress = stack.size()>400 || stack.isVirtual();
+		boolean dup = imp.getWindow()!=null && !delete;
 		for (int i= first, j=0; i<= last; i+=inc) {
 			if (showProgress) IJ.showProgress(i,last);
 			int currSlice = i-j;
@@ -208,7 +211,7 @@ public class SubstackMaker implements PlugIn {
 			ip2 = ip2.crop();
 			if (stack2==null)
 				stack2 = new ImageStack(ip2.getWidth(), ip2.getHeight());
-			stack2.addSlice(stack.getSliceLabel(currSlice), ip2);
+			stack2.addSlice(stack.getSliceLabel(currSlice), dup?ip2.duplicate():ip2);
 			if (delete) {
 				stack.deleteSlice(currSlice);
 				j++;

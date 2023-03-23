@@ -589,8 +589,11 @@ public class ShortProcessor extends ImageProcessor {
 			process(INVERT, 0.0);
 			resetMinAndMax();
 		} else {
+			double min2 = getMin();
+			double max2 = getMax();
 			resetMinAndMax();
 			process(INVERT, 0.0);
+			setMinAndMax(min2,max2);
 		}
 	}
 
