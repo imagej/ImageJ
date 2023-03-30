@@ -46,6 +46,13 @@ public class Overlay implements Iterable<Roi> {
 		add(roi);
 	}
 
+    /** Adds the ROIs in 'overlay2' to this overlay. */
+	public Overlay add(Overlay overlay2) {
+		for (int i=0; i<overlay2.size(); i++)
+			add(overlay2.get(i));
+		return this;
+	}
+
     /** Adds an ROI to this Overlay. */
     public void addElement(Roi roi) {
     	if (roi!=null)

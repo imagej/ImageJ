@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.54d20  22 March 2023</u>
+<li> <u>1.54d  30 March 2023</u>
 <ul>
 <li> Thanks to Norbert Vischer, added an '#include'
 statement to the macro language. For an example,
@@ -20,7 +20,9 @@ macro function.
 information for 16 and 32 bit images.
 <li> Thanks to Norbert Vischer, the <i>Process&gt;Binary&gt;Convert to Mask</i>
 command no longer records the unnecessary and confusing
-“method=Default background=Default” options.
+"method=Default background=Default" options.
+<li> Thanks to 'Maro', added the RoiManager.selectPosition(c,z,t)
+macro function.
 <li> Thanks to Wilco Kasteleijn, fixed a bug
 with opening 16-bit RGB PNGs
 (<a href="https://imagej.net/ij/images/Jupiter-16-bit-RGB.png">example</a>).
@@ -36,7 +38,11 @@ plots.
 command and point selections.
 <li> Thanks to 'jboulanger', fixed a bug with
 <i>Image&gt;Stacks&gt;Tools&gt;Make Substack</i> where modifications to
-the newly created image appeared in the original image.
+the newly created stack appeared in the original stack.
+<li> Thanks to Eric Denarier, fixed a bug with creation of selections
+less than one pixel in size.
+<li> Thanks to Corey Elowsky, fixed bug where a red cursor was saved
+with synchronized images.
 <li> Fixed a 1.53g text editor regression where Search and Debug
 selections were not visible on windows with "Run", "Install"
 and "Macro" buttons.

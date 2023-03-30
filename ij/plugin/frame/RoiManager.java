@@ -2620,6 +2620,23 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		setSelectedIndexes(selected);
 	}
 
+	/** Selects all ROIs at the specified position. */
+	public void selectPosition(int c, int z, int t) {
+		ArrayList<Integer>listSelected = new ArrayList<Integer>();
+		for (int i=0; i<getCount(); i++) {
+			Roi roi = getRoi(i);
+			int c2 = roi.getCPosition();
+			int z2 = roi.getZPosition();
+			int t2 = roi.getTPosition();
+			if ((c!=0&&c==c2) || (z!=0&&z==z2) || (t!=0&&t==t2))
+				listSelected.add(i);
+		}
+		int[] selected = new int[listSelected.size()];
+		for (int j=0; j<listSelected.size(); j++)
+			selected[j] = listSelected.get(j);
+		setSelectedIndexes(selected);
+	}
+
 	/** Obsolete; replaced by RoiManager.selectGroup() macro function. */
 	public static void selectGroup(String group) {
 		RoiManager rm = getInstance();

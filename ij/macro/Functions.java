@@ -6703,6 +6703,18 @@ public class Functions implements MacroConstants, Measurements {
 				interp.error("Overlay clipboard empty");
 			getImage().setOverlay(overlayClipboard);
 			return Double.NaN;
+		} else if (name.equals("pasteAndMerge")) {
+			/*
+			interp.getParens();
+			if (overlayClipboard==null)
+				interp.error("Overlay clipboard empty");
+			Overlay overlay = getImage().getOverlay(); 
+			if (overlay!=null)
+				getImage().setOverlay(overlay.add(overlayClipboard));
+			else
+				getImage().setOverlay(overlayClipboard);
+			*/
+			return Double.NaN;
 		} else if (name.equals("drawLabels")) {
 			overlayDrawLabels = getBooleanArg();
 			Overlay overlay = imp.getOverlay();
@@ -8060,6 +8072,9 @@ public class Functions implements MacroConstants, Measurements {
 			return null;
 		} else if (name.equals("selectGroup")) {
 			rm.selectGroup((int)getArg());
+			return null;
+		} else if (name.equals("selectPosition")) {
+			rm.selectPosition((int)getFirstArg(),(int)getNextArg(),(int)getLastArg());
 			return null;
 		} else if (name.equals("getName")) {
 			String roiName = rm.getName((int)getArg());

@@ -529,9 +529,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		if (useLineSubpixelConvention()) { //for PointRois & open lines, ensure the 'draw' area is enclosed
 			x = (int)Math.floor(bounds.x + 0.5);
 			y = (int)Math.floor(bounds.y + 0.5);
-			width  = (int)Math.floor(bounds.x + bounds.width + 1.0)  - x;
-			height = (int)Math.floor(bounds.y + bounds.height + 1.0) - y;
-		} else {                           //for area Rois, the subpixel bounds must be enclosed in the int bounds
+			width  = (int)Math.floor(bounds.x + bounds.width + 1.5)  - x;
+			height = (int)Math.floor(bounds.y + bounds.height + 1.5) - y;
+		} else {  //for area Rois, the subpixel bounds must be enclosed in the int bounds
 			x = (int)Math.floor(bounds.x);
 			y = (int)Math.floor(bounds.y);
 			width  = (int)Math.ceil(bounds.x + bounds.width)  - x;

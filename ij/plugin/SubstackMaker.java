@@ -163,7 +163,6 @@ public class SubstackMaker implements PlugIn {
 		double max = imp.getDisplayRangeMax();
 		Roi roi = imp.getRoi();
 		boolean dup = imp.getWindow()!=null && !delete;
-IJ.log(dup+" "+(imp.getWindow()!=null)+" "+!delete);
 		for (int i=0, j=0; i<count; i++) {
 			int currSlice = numList[i]-j;
 			ImageProcessor ip2 = stack.getProcessor(currSlice);

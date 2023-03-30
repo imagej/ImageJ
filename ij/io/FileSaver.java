@@ -164,6 +164,8 @@ public class FileSaver {
 			return null;
 		if (Orthogonal_Views.isOrthoViewsImage(imp))
 			return null;
+		if (n==1 && overlay.get(0).isCursor())
+			return null; // don't save red sync windows cursor
 		byte[][] array = new byte[n][];
 		for (int i=0; i<overlay.size(); i++) {
 			Roi roi = overlay.get(i);
