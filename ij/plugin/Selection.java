@@ -283,27 +283,47 @@ public class Selection implements PlugIn, Measurements {
 		Undo.setup(Undo.ROI, imp);
 		adjust = gd.getNextBoolean();
 		int sign = adjust ? -1 : 1;
-		FloatPolygon poly = roi.getInterpolatedPolygon(sign*interval, smooth);
-		int t = roi.getType();
-		int type = roi.isLine()?Roi.FREELINE:Roi.FREEROI;
-		if (t==Roi.POLYGON && interval>1.0)
-			type = Roi.POLYGON;
-		if ((t==Roi.RECTANGLE||t==Roi.OVAL||t==Roi.FREEROI) && interval>=8.0)
-			type = Roi.POLYGON;
-		if ((t==Roi.LINE||t==Roi.FREELINE) && interval>=8.0)
-			type = Roi.POLYLINE;
-		if (t==Roi.POLYLINE && interval>=8.0)
-			type = Roi.POLYLINE;
-		ImageCanvas ic = imp.getCanvas();
-		if (poly.npoints<=150 && ic!=null && ic.getMagnification()>=12.0)
-			type = roi.isLine()?Roi.POLYLINE:Roi.POLYGON;
-		Roi p = new PolygonRoi(poly,type);
+		Roi newRoi = null;
+		if (roi instanceof ShapeRoi && ((ShapeRoi)roi).getRois().length>1) {
+			// handle composite roi, thanks to Michael Ellis
+			Roi[] rois = ((ShapeRoi) roi).getRois();
+			ShapeRoi newShapeRoi = null;
+			for (Roi roi2 : rois) {
+				FloatPolygon fPoly = roi2.getInterpolatedPolygon(interval,smooth);
+				PolygonRoi polygon = new PolygonRoi(fPoly,PolygonRoi.POLYGON);
+				if (newShapeRoi==null) // First Roi is the outer boundary
+					newShapeRoi = new ShapeRoi(polygon);
+				else {
+					// Assume subsequent Rois are holes to be subtracted
+					ShapeRoi tempRoi = new ShapeRoi(polygon);
+					tempRoi.not(newShapeRoi);
+					newShapeRoi = tempRoi;
+				}
+			}
+			newRoi = newShapeRoi;
+		} else {
+			FloatPolygon poly = roi.getInterpolatedPolygon(sign*interval, smooth);
+			int t = roi.getType();
+			int type = roi.isLine()?Roi.FREELINE:Roi.FREEROI;
+			if (t==Roi.POLYGON && interval>1.0)
+				type = Roi.POLYGON;
+			if ((t==Roi.RECTANGLE||t==Roi.OVAL||t==Roi.FREEROI) && interval>=8.0)
+				type = Roi.POLYGON;
+			if ((t==Roi.LINE||t==Roi.FREELINE) && interval>=8.0)
+				type = Roi.POLYLINE;
+			if (t==Roi.POLYLINE && interval>=8.0)
+				type = Roi.POLYLINE;
+			ImageCanvas ic = imp.getCanvas();
+			if (poly.npoints<=150 && ic!=null && ic.getMagnification()>=12.0)
+				type = roi.isLine()?Roi.POLYLINE:Roi.POLYGON;
+			newRoi = new PolygonRoi(poly,type);
+		}
 		if (roi.getStroke()!=null)
-			p.setStrokeWidth(roi.getStrokeWidth());
-		p.setStrokeColor(roi.getStrokeColor());
-		p.setName(roi.getName());
-		transferProperties(roi, p);
-		imp.setRoi(p);
+			newRoi.setStrokeWidth(roi.getStrokeWidth());
+		newRoi.setStrokeColor(roi.getStrokeColor());
+		newRoi.setName(roi.getName());
+		transferProperties(roi, newRoi);
+		imp.setRoi(newRoi);
 	}
 	
 	private static void transferProperties(Roi roi1, Roi roi2) {

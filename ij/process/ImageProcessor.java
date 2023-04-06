@@ -2917,18 +2917,18 @@ public abstract class ImageProcessor implements Cloneable {
 		return null;
 	}
 
-	protected IndexColorModel getThresholdColorModel() {
+	/** Returns a color model based on the colors of the input from 0 to 254 (inclusive).
+	 *  Entry 255 is red, for showing the thresholded areas. */
+	protected static IndexColorModel getThresholdColorModel(byte[]reds, byte[] greens, byte[] blues) {
 		byte[] r = new byte[256];
 		byte[] g = new byte[256];
 		byte[] b = new byte[256];
-		for(int i=0; i<255; i++) {
-			r[i]=(byte)i;
-			g[i]=(byte)i;
-			b[i]=(byte)i;
-		}
+		System.arraycopy(reds, 0, r, 0, 255);
+		System.arraycopy(greens, 0, g, 0, 255);
+		System.arraycopy(blues, 0, b, 0, 255);
 		r[255] = (byte)255;
-		g[255] = (byte)0;
-		b[255] = (byte)0;
+		// g[255] = (byte)0; //unchanged
+		// b[255] = (byte)0;
 		return new IndexColorModel(8, 256, r, g, b);
 	}
 	

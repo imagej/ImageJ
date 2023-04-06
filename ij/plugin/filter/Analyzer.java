@@ -41,7 +41,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	public static int markWidth;
 	public static int precision = Prefs.getInt(PRECISION,3);
 	private static float[] umeans = new float[MAX_STANDARDS];
-	private static ResultsTable systemRT = new ResultsTable();
+	private static ResultsTable systemRT;
 	private static int redirectTarget;
 	private static String redirectTitle = "";
 	private static ImagePlus redirectImage; // non-displayed images
@@ -49,6 +49,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 	private static boolean switchingModes;
 	private static boolean showMin = true;
 	private static boolean showAngle = true;
+	
+	static {
+		systemRT = new ResultsTable();
+		systemRT.showRowNumbers(true);
+	}
 	
 	public Analyzer() {
 		rt = systemRT;
@@ -992,7 +997,6 @@ public class Analyzer implements PlugInFilter, Measurements {
 	/** Returns the default results table. This table should only
 		be displayed in a the "Results" window. */
 	public static ResultsTable getResultsTable() {
-		systemRT.showRowNumbers(true);
 		return systemRT;
 	}
 	

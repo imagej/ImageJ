@@ -867,6 +867,11 @@ public class ResultsTable implements Cloneable {
 	}
 
 	public void showRowNumbers(boolean showNumbers) {
+		if (!showNumbers && this==Analyzer.getResultsTable()) {
+			IJ.beep();
+			IJ.showStatus("Standard \"Results\" table always has row numbers");
+			return;
+		}
 		showRowNumbers = showNumbers;
 		baseRowNumber = 1;
 		showRowNumbersSet = true;

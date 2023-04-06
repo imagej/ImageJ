@@ -2281,6 +2281,8 @@ public class Functions implements MacroConstants, Measurements {
 			return replacePlot(currentPlot);
 		} else if (name.equals("addText") || name.equals("drawLabel")) {
 			return addPlotText(currentPlot);
+		} else if (name.equals("enableLive")) {
+			return enableLivePlot(currentPlot);
 		}
 		// the following commands need a plot under construction
 		if (plot==null)
@@ -2706,6 +2708,15 @@ public class Functions implements MacroConstants, Measurements {
 		double[] x = getNextArray();
 		double[] y = getLastArray();
 		plot.replace(index, shape, x, y);
+		return Double.NaN;
+	}
+
+	double enableLivePlot(Plot plot) {
+		boolean b = getBooleanArg();
+		ImagePlus imp = plot.getImagePlus();
+		PlotWindow pw = imp == null ? null : (PlotWindow)imp.getWindow();
+		if (pw != null)
+			pw.enableLivePlot(b);
 		return Double.NaN;
 	}
 

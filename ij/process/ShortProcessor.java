@@ -1154,7 +1154,7 @@ public class ShortProcessor extends ImageProcessor {
 					rLUT2 = new byte[256]; gLUT2 = new byte[256]; bLUT2 = new byte[256];
 				}
 				if (lutUpdateMode==RED_LUT)
-					cm = getThresholdColorModel();
+					cm = getThresholdColorModel(rLUT1, gLUT1, bLUT1);
 				else
 					cm = getDefaultColorModel();
 			}
