@@ -24,6 +24,7 @@ public class CompositeConverter implements PlugIn {
 		int c = imp.getNChannels();
 		int z = imp.getNSlices();
 		int t = imp.getNFrames();
+		boolean threeSliceStack = imp.getStackSize()==3 && z==3;
 		if (imp.getBitDepth()==24) {
 			ImageWindow win = imp.getWindow();
 			Point loc = win!=null?win.getLocation():null;
@@ -43,7 +44,14 @@ public class CompositeConverter implements PlugIn {
 			}
 			if (IJ.isMacro() && !Interpreter.isBatchMode())
 				IJ.wait(500);
-		} else if (c>=2 || (IJ.macroRunning()&&c>=1)) {
+		} else if (c>=2 || (IJ.macroRunning()&&c>=1) || threeSliceStack) {
+			if (threeSliceStack) {
+				imp.setDimensions(3,1,1);
+				ImageStack stack = imp.getStack();
+				stack.setSliceLabel("Red",1);
+				stack.setSliceLabel("Green",2);
+				stack.setSliceLabel("Blue",3);
+			}
 			String[] modes = {"Composite", "Color", "Grayscale"};
 			String mode = modes[0];
 			if (c==1 && z*t>7)

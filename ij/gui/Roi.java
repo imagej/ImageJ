@@ -1320,9 +1320,13 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		setRenderingHint(g2d);
 		if (cornerDiameter>0) {
 			int sArcSize = (int)Math.round(cornerDiameter*mag);
-			if (fillColor!=null)
+			if (fillColor!=null) {
 				g.fillRoundRect(sx1, sy1, sw, sh, sArcSize, sArcSize);
-			else
+				if (strokeColor!=null) {
+					g.setColor(strokeColor);
+					g.drawRoundRect(sx1, sy1, sw, sh, sArcSize, sArcSize);
+				}
+			} else
 				g.drawRoundRect(sx1, sy1, sw, sh, sArcSize, sArcSize);
 		} else {
 			if (fillColor!=null) {
@@ -1330,9 +1334,13 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 					g.setColor(Color.cyan);
 					g.drawRect(sx1, sy1, sw, sh);
 				} else {
-					if (!(this instanceof TextRoi))
+					if (!(this instanceof TextRoi)) {
 						g.fillRect(sx1, sy1, sw, sh);
-					else
+						if (strokeColor!=null) {
+							g.setColor(strokeColor);
+							g.drawRect(sx1, sy1, sw, sh);
+						}
+					} else
 						g.drawRect(sx1, sy1, sw, sh);
 				}
 			} else
@@ -1954,6 +1962,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	 */
 	public void setFillColor(Color color) {
 		fillColor = color;
+		if (isArea()) strokeColor=null;
 	}
 
 	/** Returns the fill color used to display this ROI, or null if it is displayed transparently.
@@ -2052,8 +2061,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			this.stroke = new BasicStroke(strokeWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
 		else
 			this.stroke = new BasicStroke(strokeWidth);
-		if (strokeWidth>1f)
-			fillColor = null;
+		//if (strokeWidth>1f)
+		//	fillColor = null;
 		if (notify)
 			notifyListeners(RoiListener.MODIFIED);
 	}

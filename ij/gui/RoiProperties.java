@@ -254,8 +254,8 @@ public class RoiProperties implements TextListener, WindowListener {
 			if (!isRange) troi.setText(gd.getNextText());
 		} else if (strokeWidth2!=strokeWidth)
 			roi.setStrokeWidth((float)strokeWidth2);
-		roi.setStrokeColor(strokeColor);
 		roi.setFillColor(fillColor);
+		roi.setStrokeColor(strokeColor);
 		if (showName) {
 			setPosition(roi, position, position2);
 			setGroup(roi, group, group2);

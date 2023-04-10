@@ -274,8 +274,13 @@ public class OvalRoi extends Roi {
 			if (!overlay && isActiveOverlayRoi()) {
 				g.setColor(Color.cyan);
 				g.drawOval(sx1, sy1, sw, sh);
-			} else
+			} else {
 				g.fillOval(sx1, sy1, sw, sh);
+				if (strokeColor!=null) {
+					g.setColor(strokeColor);
+					g.drawOval(sx1, sy1, sw, sh);
+				}
+			}
 		} else
 			g.drawOval(sx1, sy1, sw, sh);
 		if (clipboard==null && !overlay) {
