@@ -331,6 +331,7 @@ public class Menus {
 		addExample(submenu, "Curve Fitting", "Curve_Fitting.ijm");
 		addExample(submenu, "Colors of 2021", "Colors_of_2021.ijm");
 		addExample(submenu, "Turtle Graphics", "Turtle_Graphics.ijm");
+		addExample(submenu, "Easter Eggs", "Easter_Eggs.ijm");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 

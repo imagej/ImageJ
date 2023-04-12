@@ -2,9 +2,10 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
-import java.awt.*;
 import ij.measure.*;
+import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 
 /** This plugin implements the Analyze/Tools/Scale Bar command.
  * Divakar Ramachandran added options to draw a background 
@@ -25,6 +26,7 @@ public class ScaleBar implements PlugIn {
 	private ScaleBarConfiguration config = new ScaleBarConfiguration(sConfig);
 
 	ImagePlus imp;
+	ArrayList<Roi> previousScaleBar;
 	int hBarWidthInPixels;
 	int vBarHeightInPixels;
 	int roiX, roiY, roiWidth, roiHeight;
@@ -51,18 +53,21 @@ public class ScaleBar implements PlugIn {
 		}
 		// Snapshot before anything, so we can revert if the user cancels the action.
 		imp.getProcessor().snapshot();
+		saveAndDeleteOverlayScaleBar();
 
 		userRoiExists = parseCurrentROI();
-		boolean userOKed = askUserConfiguration(userRoiExists);
+		GenericDialog dialog = askUserConfiguration(userRoiExists);
 
-		if (!userOKed) {
+		if (dialog.wasCanceled()) {
 			removeScalebar();
+			restoreOverlayScaleBar();
 			return;
-		}
-
-		if (!IJ.isMacro())
-			persistConfiguration();
-		updateScalebar(!config.labelAll);
+		} else if (dialog.wasOKed()) {
+			if (!IJ.isMacro())
+				persistConfiguration();
+			updateScalebar(!config.labelAll);
+		} else				//user has pressed 'remove scale bar'
+			removeScalebar();
 	 }
 
 	/**
@@ -90,6 +95,34 @@ public class ScaleBar implements PlugIn {
 		}
 	}
 
+	/** Saves the current scale bar previously drawn as an overlay by this plugin,
+	 *  so it can be restored later. The scale bar overlay is deleted. */
+	void saveAndDeleteOverlayScaleBar() {
+		Overlay overlay = imp.getOverlay();
+		if (overlay == null) return;
+		while (true) {
+			int index = overlay.getIndex(SCALE_BAR);
+			if (index < 0) break;
+			if (previousScaleBar == null)
+				previousScaleBar = new ArrayList<Roi>();
+			previousScaleBar.add(overlay.get(index));
+			overlay.remove(index);
+		}
+	}
+
+	/** Restores the overlay scale bar previously saved */
+	void restoreOverlayScaleBar() {
+		if (previousScaleBar == null) return;
+		Overlay overlay = imp.getOverlay();
+		if (overlay == null) {
+			overlay = new Overlay();
+			imp.setOverlay(overlay);
+		}
+		for (Roi roi : previousScaleBar)
+			overlay.add(roi, SCALE_BAR);
+		imp.draw();
+	}
+
 	/**
 	 * If there is a user selected ROI, set the class variables {roiX}
 	 * and {roiY}, {roiWidth}, {roiHeight} to the corresponding
@@ -108,9 +141,9 @@ public class ScaleBar implements PlugIn {
     }
 
 	/**
-	 * There is no hard codded value for the width of the scalebar,
+	 * There is no hard coded value for the width of the scalebar,
 	 * when the plugin is called for the first time in an ImageJ
-	 * instance, a defautl value for the width will be computed by
+	 * instance, a default value for the width will be computed by
 	 * this method.
 	 */
 	void computeDefaultBarWidth(boolean currentROIExists) {
@@ -129,43 +162,55 @@ public class ScaleBar implements PlugIn {
 		double imageWidth = imp.getWidth()*pixelWidth;
 		double imageHeight = imp.getHeight()*pixelHeight;
 
+		boolean hBarWidthChanged = false;
 		if (currentROIExists && roiX>=0 && roiWidth>10) {
 			// If the user has a ROI, set the bar width according to ROI width.
 			config.hBarWidth = roiWidth*pixelWidth;
+			hBarWidthChanged = true;
 		}
-		else if (config.hBarWidth<=0.0 || config.hBarWidth>0.67*imageWidth) {
+		else if (config.hBarWidth<=0.0 || config.hBarWidth<0.01*imageWidth || config.hBarWidth>0.67*imageWidth) {
 			// If the bar is of negative width or too wide for the image,
 			// set the bar width to 80 pixels.
 			config.hBarWidth = (80.0*pixelWidth)/mag;
+			config.hBarWidth = Utils.round(config.hBarWidth);
+			// If 80 pixels is too much, do 2/3 of the image. If too small, 4% of image (rounded down)
 			if (config.hBarWidth>0.67*imageWidth)
-				// If 80 pixels is too much, do 2/3 of the image.
-				config.hBarWidth = 0.67*imageWidth;
-			if (config.hBarWidth>5.0)
-				// If the resulting size is larger than 5 units, round the value.
-				config.hBarWidth = (int) config.hBarWidth;
+				config.hBarWidth = Utils.round(0.67*imageWidth);
+			else if (config.hBarWidth<0.04*imageWidth)
+				config.hBarWidth = Utils.round(0.04*imageWidth);
+			hBarWidthChanged = true;
 		}
 
+		boolean vBarHeightChanged = false;
 		if (currentROIExists && roiY>=0 && roiHeight>10) {
 			config.vBarHeight = roiHeight*pixelHeight;
+			vBarHeightChanged = true;
 		}
-		else if (config.vBarHeight<=0.0 || config.vBarHeight>0.67*imageHeight) {
+		else if (config.vBarHeight<=0.0 || config.vBarHeight<0.01*imageHeight || config.vBarHeight>0.67*imageHeight) {
 			config.vBarHeight = (80.0*pixelHeight)/mag;
+			config.vBarHeight = Utils.round(config.vBarHeight);
+			// If 80 pixels is too much, do 2/3 of the image. If too small, 4% of image (rounded down)
 			if (config.vBarHeight>0.67*imageHeight)
-				// If 80 pixels is too much, do 2/3 of the image.
-				config.vBarHeight = 0.67*imageHeight;
-			if (config.vBarHeight>5.0)
-				// If the resulting size is larger than 5 units, round the value.
-				config.vBarHeight = (int) config.vBarHeight;
+				config.vBarHeight = Utils.round(0.67*imageHeight);
+			else if (config.vBarHeight<0.04*imageHeight)
+				config.vBarHeight = Utils.round(0.04*imageHeight);
+			vBarHeightChanged = true;
 		}
+		if (hBarWidthChanged)
+			config.hDigits = Utils.getDigits(config.hBarWidth);
+		if (vBarHeightChanged)
+			config.vDigits = Utils.getDigits(config.vBarHeight);
 	} 
 
 	/**
-	 * Genreate & draw the configuration dialog.
+	 * Generates & draws the configuration dialog.
 	 * 
-	 * Return the value of dialog.wasOKed() when the user clicks OK
-	 * or Cancel.
+	 * Returns a reference to the dialog, to check for
+	 * dialog.wasOKed() (draw the dialog),
+	 * dialog.wasCanceled (cancel, revert to previous) or
+	 * none of these (remove previous overlay scale bar)
 	 */
-	boolean askUserConfiguration(boolean currentROIExists) {
+	GenericDialog askUserConfiguration(boolean currentROIExists) {
 		// Update the user configuration if there is an ROI, or if
 		// the defined bar width is negative (it is if it has never
 		// been set in this ImageJ instance).
@@ -174,7 +219,10 @@ public class ScaleBar implements PlugIn {
 		}
 		if (IJ.isMacro())
 			config.updateFrom(new ScaleBarConfiguration());
-		if (config.hBarWidth <= 0 || config.vBarHeight <= 0 || currentROIExists) {
+		Calibration cal = imp.getCalibration();
+		if (config.showHorizontal && (config.hBarWidth <= 5*cal.pixelWidth || config.hBarWidth > cal.pixelWidth*imp.getWidth()) ||
+				config.showVertical && (config.vBarHeight <= 5*cal.pixelHeight || config.vBarHeight > cal.pixelHeight*imp.getHeight()) ||
+				currentROIExists) {
 			computeDefaultBarWidth(currentROIExists);
 		}
 
@@ -184,15 +232,15 @@ public class ScaleBar implements PlugIn {
 		
 		// Create & show the dialog, then return.
 		boolean multipleSlices = imp.getStackSize() > 1;
-		GenericDialog dialog = new BarDialog(getHUnit(), getVUnit(), config.hDigits, config.vDigits, multipleSlices);
+		GenericDialog dialog = new BarDialog(getHUnit(), getVUnit(), multipleSlices);
 		DialogListener dialogListener = new BarDialogListener(multipleSlices);
 		dialog.addDialogListener(dialogListener);
 		dialog.showDialog();
-		return dialog.wasOKed();
+		return dialog;
 	}
 
 	/**
-	 * Store the active configuration into the static variable that
+	 * Stores the active configuration into the static variable that
 	 * is persisted across calls of the plugin.
 	 * 
 	 * The "active" configuration is normally the one reflected by
@@ -595,11 +643,10 @@ public class ScaleBar implements PlugIn {
 
    class BarDialog extends GenericDialog {
 
-		BarDialog(String hUnits, String vUnits, int hDigits, int vDigits, boolean multipleSlices) {
+		BarDialog(String hUnits, String vUnits, boolean multipleSlices) {
 			super("Scale Bar");
-
-			addNumericField("Width in "+hUnits+": ", config.hBarWidth, hDigits);
-			addNumericField("Height in "+vUnits+": ", config.vBarHeight, vDigits);
+			addNumericField("Width in "+hUnits+": ", config.hBarWidth, config.hDigits);
+			addNumericField("Height in "+vUnits+": ", config.vBarHeight, config.vDigits);
 			addNumericField("Thickness in pixels: ", config.barThicknessInPixels, 0);
 			addNumericField("Font size: ", config.fontSize, 0);
 			addChoice("Color: ", colors, config.color);
@@ -618,6 +665,8 @@ public class ScaleBar implements PlugIn {
 				setInsets(0, 25, 0);
 				addCheckbox("Label all slices", config.labelAll);
 			}
+			if (previousScaleBar != null)
+				enableYesNoCancel("OK", "Remove Scale Bar");
 		}
    } //BarDialog inner class
 
@@ -659,24 +708,9 @@ public class ScaleBar implements PlugIn {
 			}
 
 			String widthString = ((TextField) gd.getNumericFields().elementAt(0)).getText();
-			boolean hasDecimalPoint = false;
-			config.hDigits = 0;
-			for (int i = 0; i < widthString.length(); i++) {
-				if (hasDecimalPoint)
-					config.hDigits += 1;
-				if (widthString.charAt(i) == '.')
-					hasDecimalPoint = true;
-			}
-
+			config.hDigits = Utils.getDigits(widthString);
 			String heightString = ((TextField) gd.getNumericFields().elementAt(1)).getText();
-			hasDecimalPoint = false;
-			config.vDigits = 0;
-			for (int i = 0; i < heightString.length(); i++) {
-				if (hasDecimalPoint)
-					config.vDigits += 1;
-				if (heightString.charAt(i) == '.')
-					hasDecimalPoint = true;
-			}
+			config.vDigits = Utils.getDigits(heightString);
 
 			updateScalebar(true);
 			return true;
@@ -757,4 +791,49 @@ public class ScaleBar implements PlugIn {
 		}
 	} //ScaleBarConfiguration inner class
 
+	// Utils inner class (for methods called from main and inner classes)
+	static class Utils {
+		/** Decimal digits for displaying a number encoded in a String */
+		static int getDigits(double x) {
+			if (Math.abs(x) > 1000000 || Math.abs(x) < 1e-4)
+				return getDigits(IJ.d2s(x, -9).replaceAll("0+E", "E")); //('0' before exponent deleted)
+			else
+				return getDigits(IJ.d2s(x, 9).replaceAll("0+\\z", "")); //(trailing '0' deleted)
+		}
+
+		/** Decimal digits for displaying a number encoded in a String */
+		static int getDigits(String str) {
+			boolean hasDecimalPoint = false;
+			boolean scientificFormat = false;
+			int totalDigits = 0;
+			int decimalDigits = 0;
+			for (int i = 0; i < str.length(); i++) {
+				char c = str.charAt(i);
+				if (c == '.') {
+					hasDecimalPoint = true;
+				} else if (c == 'e' || c == 'E') {
+					scientificFormat = true;
+					break;
+				} else if (c >= '0' && c <= '9') {
+					totalDigits++;
+					if (hasDecimalPoint)
+						decimalDigits++;
+				}
+			}
+			if (scientificFormat) {
+				int digits = -(totalDigits-1);
+				if (digits == 0) digits = -1;
+				return digits;
+			} else {
+				return decimalDigits;
+			}
+		}
+		/** Rounds down a positive value such that the first digit is 1, 2, or 5 */
+		static double round(double x) {
+			double base = Math.pow(10, Math.floor(Math.log10(x)+1e-8));
+			if (x > 4.999999*base) return 5*base;
+			else if (x > 1.999999*base) return 2*base;
+			else return base;
+		}
+	} // Utils inner class 
 } //ScaleBar class

@@ -957,8 +957,13 @@ public class ShapeRoi extends Roi {
 			if (isActiveOverlayRoi) {
 				g2d.setColor(Color.cyan);
 				g2d.draw(aTx.createTransformedShape(shape));
-			} else
+			} else {
 				g2d.fill(aTx.createTransformedShape(shape));
+				if (strokeColor!=null) {
+					g.setColor(strokeColor);
+					g2d.draw(aTx.createTransformedShape(shape));
+				}
+			}
 		} else
 			g2d.draw(aTx.createTransformedShape(shape));
 		if (stroke!=null) g2d.setStroke(defaultStroke);

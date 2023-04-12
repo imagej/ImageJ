@@ -840,7 +840,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			r.setImage(null);
 			if (!usingDefaultStroke)
 				r.setStroke(getStroke());
+			Color strokeColor2 = getStrokeColor();
 			r.setFillColor(getFillColor());
+			r.setStrokeColor(strokeColor2);
 			r.imageID = getImageID();
 			r.listenersNotified = false;
 			if (bounds!=null)
@@ -2441,17 +2443,17 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	/**Converts an image pixel x (offscreen)coordinate to a screen x coordinate,
 	 * taking the the line or area convention for coordinates into account */
 	protected int screenXD(double ox) {
-		if (ic == null) return (int)ox;
+		if (ic==null) return (int)ox;
 		if (useLineSubpixelConvention()) ox += 0.5;
-		return ic.screenXD(ox);
+		return ic!=null?ic.screenXD(ox):(int)ox;
 	}
 
 	/**Converts an image pixel y (offscreen)coordinate to a screen y coordinate,
 	 * taking the the line or area convention for coordinates into account */
 	protected int screenYD(double oy) {
-		if (ic == null) return (int)oy;
+		if (ic==null) return (int)oy;
 		if (useLineSubpixelConvention()) oy += 0.5;
-		return ic.screenYD(oy);
+		return ic!=null?ic.screenYD(oy):(int)oy;
 	}
 
 	protected int screenX(int ox) {return screenXD(ox);}

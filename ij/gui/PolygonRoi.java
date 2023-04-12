@@ -273,7 +273,7 @@ public class PolygonRoi extends Roi {
 		boolean doScaling = ic!=null; //quicker drawing if we don't need to convert to screen coordinates
 		if (ic!=null) {
 			Rectangle srcRect = ic.getSrcRect();
-			if (srcRect!=null && srcRect.x == 0 && srcRect.y == 0 && ic.getMagnification()==1.0)
+			if (srcRect!=null && srcRect.x == 0 && srcRect.y == 0 && ic!=null && ic.getMagnification()==1.0)
 				doScaling = false;
 		}
 		double xd = getXBase();

@@ -4708,8 +4708,6 @@ public class Functions implements MacroConstants, Measurements {
 			Analyzer.setMeasurement(STACK_POSITION, state);
 		else if (arg1.startsWith("std"))
 			Analyzer.setMeasurement(STD_DEV, state);
-		else if (arg1.equals("showrownumbers"))
-			ResultsTable.getResultsTable().showRowNumbers(state);
 		else if (arg1.equals("showrowindexes"))
 			ResultsTable.getResultsTable().showRowIndexes(state);
 		else if (arg1.startsWith("show"))
