@@ -4734,9 +4734,10 @@ public class Functions implements MacroConstants, Measurements {
 			Prefs.supportMacroUndo = state;
 		else if (arg1.equals("inverty"))
 			getImage().getCalibration().setInvertY(state);
-		else if (arg1.equals("scaleconversions"))
+		else if (arg1.equals("scaleconversions")) {
 			ImageConverter.setDoScaling(state);
-		else if (arg1.startsWith("copyhead"))
+			Prefs.calibrateConversions = false;
+		} else if (arg1.startsWith("copyhead"))
 			Prefs.copyColumnHeaders = state;
 		else if (arg1.equals("waitforcompletion"))
 			waitForCompletion = state;
@@ -4748,10 +4749,10 @@ public class Functions implements MacroConstants, Measurements {
 			TextWindow.setMonospaced(state);
 		else if (arg1.startsWith("fullrange"))
 			Prefs.fullRange16bitInversions = state;
-		//else if (arg1.startsWith("saveimageloc")) {
-		//	Prefs.saveImageLocation = state;
-		//	if (!state) Prefs.set(ImageWindow.LOC_KEY,null);
-		else
+		else if (arg1.startsWith("calibrate")) {
+			Prefs.calibrateConversions = state;
+			ImageConverter.setDoScaling(true);
+		} else
 			interp.error("Invalid option");
 	}
 

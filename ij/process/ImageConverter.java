@@ -28,8 +28,13 @@ public class ImageConverter {
 		}
 		ImageProcessor ip = imp.getProcessor();
 		if (type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32) {
-			imp.setProcessor(null, ip.convertToByte(doScaling));
-			imp.setCalibration(imp.getCalibration()); //update calibration
+			if (Prefs.calibrateConversions) {
+				doScaling = true;
+				convertAndCalibrate(imp,"8-bit");
+			} else {
+				imp.setProcessor(null, ip.convertToByte(doScaling));
+				imp.setCalibration(imp.getCalibration()); //update calibration
+			}
 			record();
 		} else if (type==ImagePlus.COLOR_RGB)
 	    	imp.setProcessor(null, ip.convertToByte(doScaling));
@@ -62,17 +67,63 @@ public class ImageConverter {
 		if (type==ImagePlus.GRAY32)
 			record();
 		imp.trimProcessor();
-		imp.setProcessor(null, ip.convertToShort(doScaling));
-		imp.setCalibration(imp.getCalibration()); //update calibration
+		if (Prefs.calibrateConversions && imp.getBitDepth()==32) {
+			doScaling = true;
+			convertAndCalibrate(imp,"16-bit");
+		} else {
+			imp.setProcessor(null, ip.convertToShort(doScaling));
+			imp.setCalibration(imp.getCalibration()); //update calibration
+		}
+	}
+	
+	public static void convertAndCalibrate(ImagePlus imp, String type) {
+		ImageProcessor ip = imp.getProcessor();
+		double min = ip.getMin();
+		double max = ip.getMax();
+		ip.resetMinAndMax();
+		double min2 = ip.getMin();
+		double max2 = ip.getMax();
+		boolean eightBitConversion = type.equals("8-bit");
+		ImageProcessor ip2 = null;
+		if (eightBitConversion)
+			ip2 = ip.convertToByte(true);
+		else
+			ip2 = ip.convertToShort(true);
+		imp.setProcessor(null,ip2);
+		Calibration cal = imp.getCalibration();
+		int maxRange = eightBitConversion?255:65535;
+		double[] x = {0,maxRange};		
+		double[] y = {min2,max2};
+		CurveFitter cf = new CurveFitter(x,y);
+		cf.doFit(CurveFitter.STRAIGHT_LINE, false);
+		int np = cf.getNumParams();
+		double[] p = cf.getParams();
+		double[] parameters = new double[np];
+		for (int i=0; i<np; i++)
+			parameters[i] = p[i];
+		cal.setFunction(Calibration.STRAIGHT_LINE, parameters, type+" converted");
+		min = cal.getRawValue(min);
+		max = cal.getRawValue(max);
+		if (IJ.debugMode) IJ.log("convertAndCalibrate: "+min+" "+max);
+		imp.setDisplayRange(min,max);
+		imp.updateAndDraw();
 	}
 	
 	public static void record() {
 		if (Recorder.record) {
-			Boolean state = ImageConverter.getDoScaling();
-			if (Recorder.scriptMode())
-				Recorder.recordCall("ImageConverter.setDoScaling("+state+");", true);
-			else
-				Recorder.recordString("setOption(\"ScaleConversions\", "+state+");\n");
+			if (Prefs.calibrateConversions) {
+				boolean state = true;
+				if (Recorder.scriptMode())
+					Recorder.recordCall("Prefs.calibrateConversions = true;", true);
+				else
+					Recorder.recordString("setOption(\"CalibrateConversions\", "+state+");\n");
+			} else {
+				Boolean state = ImageConverter.getDoScaling();
+				if (Recorder.scriptMode())
+					Recorder.recordCall("ImageConverter.setDoScaling("+state+");", true);
+				else
+					Recorder.recordString("setOption(\"ScaleConversions\", "+state+");\n");
+			}
 		}
 	}
 

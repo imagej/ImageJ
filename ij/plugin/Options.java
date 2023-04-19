@@ -167,6 +167,8 @@ public class Options implements PlugIn {
 		//boolean weighted = !(Math.abs(weights[0]-1d/3d)<0.0001 && Math.abs(weights[1]-1d/3d)<0.0001 && Math.abs(weights[2]-1d/3d)<0.0001);
 		GenericDialog gd = new GenericDialog("Conversion Options");
 		gd.addCheckbox("Scale when converting", ImageConverter.getDoScaling());
+		gd.setInsets(0,40,0);
+		gd.addCheckbox("Calibrate", Prefs.calibrateConversions);
 		String prompt = "Weighted RGB conversions";
 		if (weighted)
 			prompt += " (" + IJ.d2s(weights[0]) + "," + IJ.d2s(weights[1]) + ","+ IJ.d2s(weights[2]) + ")";
@@ -177,8 +179,11 @@ public class Options implements PlugIn {
 		if (gd.wasCanceled())
 			return;
 		ImageConverter.setDoScaling(gd.getNextBoolean());
+		Prefs.calibrateConversions = gd.getNextBoolean();
 		Prefs.weightedColor = gd.getNextBoolean();
 		Prefs.fullRange16bitInversions = gd.getNextBoolean();
+		if (Prefs.calibrateConversions)
+			ImageConverter.setDoScaling(true);
 		if (!Prefs.weightedColor)
 			ColorProcessor.setWeightingFactors(1d/3d, 1d/3d, 1d/3d);
 		else if (Prefs.weightedColor && !weighted)

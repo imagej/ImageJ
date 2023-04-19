@@ -193,8 +193,11 @@ public class ImageInfo implements PlugIn {
 				s += "(" + lut + ")\n";
 				if (imp.getNChannels()>1)
 					s += displayRanges(imp);
-				else
+				else {
 					s += "Display range: "+(int)ip.getMin()+"-"+(int)ip.getMax()+"\n";
+					ImageStatistics stats = ip.getStats();
+					s += "Pixel value range: "+(int)stats.min+"-"+(int)stats.max+"\n";
+				}
 				break;
 	    	case ImagePlus.GRAY16: case ImagePlus.GRAY32:
 	    		if (type==ImagePlus.GRAY16) {
@@ -205,15 +208,31 @@ public class ImageInfo implements PlugIn {
 				if (imp.getNChannels()>1)
 					s += displayRanges(imp);
 				else {
+					String pvrLabel = "Pixel value range: ";
 					s += "Display range: ";
 					double min = ip.getMin();
 					double max = ip.getMax();
-					if (cal.calibrated()) {
+					if (type==ImagePlus.GRAY32)
+						s += d2s(min) + " - " + d2s(max) + "\n";
+					else if (cal.calibrated()) {
+						pvrLabel = "Raw pixel value range: ";
 						min = cal.getCValue((int)min);
 						max = cal.getCValue((int)max);
+						s += d2s(min) + " - " + d2s(max) + "\n";
+					} else
+						s += (int)min+"-"+(int)max+"\n";
+					ImageStatistics stats = ip.getStats();
+					String dash = "-";
+					if (ip.isSigned16Bit()) {
+						stats.min -= 32768;
+						stats.max -= 32768;
+						dash = " - ";
 					}
-					s += d2s(min) + " - " + d2s(max) + "\n";
-				}
+					if (type==ImagePlus.GRAY32)
+						s += pvrLabel+d2s(stats.min)+dash+d2s(stats.max)+"\n";
+					else
+						s += pvrLabel+(int)stats.min+dash+(int)stats.max+"\n";
+			}
 				break;
 	    	case ImagePlus.COLOR_256:
 	    		s += "Bits per pixel: 8 (color LUT)\n";

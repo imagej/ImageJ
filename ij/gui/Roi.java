@@ -1936,14 +1936,19 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		return ROIColor;
 	}
 
-	/** Sets the color used by this ROI to draw its outline. This color, if not null,
-	 * overrides the global color set by the static setColor() method.
+	/** Sets the color used by this ROI to draw its outline.
+	 * This color, if not null, overrides the global color set
+	 * by the static setColor() method. Set the stroke color
+	 * after setting the fill color to both fill and outline
+	 * the ROI.
 	 * @see #getStrokeColor
 	 * @see #setStrokeWidth
 	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
 	public void setStrokeColor(Color c) {
-		 strokeColor = c;
+		strokeColor = c;
+		//if (getType()==TRACED_ROI && c!=null && fillColor!=null)
+		//	throw new IllegalArgumentException();
 	}
 	
 	/** Returns the the color used to draw the ROI outline or null if the default color is being used.
@@ -1964,7 +1969,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	 */
 	public void setFillColor(Color color) {
 		fillColor = color;
-		if (isArea()) strokeColor=null;
+		if (fillColor!=null && isArea())
+			strokeColor=null;
 	}
 
 	/** Returns the fill color used to display this ROI, or null if it is displayed transparently.

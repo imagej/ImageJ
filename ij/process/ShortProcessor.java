@@ -9,12 +9,12 @@ import ij.gui.*;
 	and methods that operate on that image. */
 public class ShortProcessor extends ImageProcessor {
 
-	private int min, max, snapshotMin, snapshotMax;
-	private short[] pixels;
-	private byte[] pixels8;
+	protected int min, max, snapshotMin, snapshotMax; //wsr
+	protected short[] pixels;
+	protected byte[] pixels8;
 	private short[] snapshotPixels;
 	private byte[] LUT;
-	private boolean fixedScale;
+	protected boolean fixedScale;
 	private int bgValue;
 
 
@@ -292,7 +292,7 @@ public class ShortProcessor extends ImageProcessor {
 			return 0;
 	}
 
-	public final int get(int x, int y) {
+	public int get(int x, int y) { //wsr final
 		return pixels[y*width+x]&0xffff;
 	}
 

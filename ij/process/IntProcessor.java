@@ -1,5 +1,4 @@
 package ij.process;
-
 import java.util.*;
 import java.awt.*;
 import java.awt.image.*;
@@ -9,12 +8,12 @@ import java.awt.image.*;
 public class IntProcessor extends ColorProcessor {
 	private byte[] pixels8;
 
-	/**Creates a blank IntProcessor with the specified dimensions. */
+	/** Creates a blank IntProcessor with the specified dimensions. */
 	public IntProcessor(int width, int height) {
 		this(width, height, new int[width*height]);
 	}
 
-	/**Creates an IntProcessor from a pixel array. */
+	/** Creates an IntProcessor from a pixel array. */
 	public IntProcessor(int width, int height, int[] pixels) {
 		super(width, height, pixels);
 		makeDefaultColorModel();

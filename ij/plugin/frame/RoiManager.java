@@ -1528,7 +1528,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				fillColor =	 rpRoi.getFillColor();
 				rpName = rpRoi.getName();
 			}
-			if (rpRoi.getStrokeColor()==null)
+			if (rpRoi.getStrokeColor()==null && rpRoi.getFillColor()==null)
 				rpRoi.setStrokeColor(Roi.getColor());
 			rpRoi = (Roi) rpRoi.clone();
 			if (n>1)

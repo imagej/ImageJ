@@ -139,7 +139,7 @@ public class OverlayCommands implements PlugIn {
 		String name = roi.getName();
 		boolean newOverlay = name!=null && name.equals("new-overlay");
 		Roi roiClone = (Roi)roi.clone();
-		if (roi.getStrokeColor()==null)
+		if (roi.getStrokeColor()==null && roi.getFillColor()==null)
 			roi.setStrokeColor(Roi.getColor());
 		if (overlay==null || newOverlay)
 			overlay = OverlayLabels.createOverlay();
