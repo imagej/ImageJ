@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.54e21  19 April 2023</u>
+<li> <u>1.54e25  29 April 2023</u>
 <ul>
 <li> Thanks to Jerome Mutterer, selections can now be both
 filled and outlined.  For an example, use the new
@@ -13,9 +13,12 @@ filled and outlined.  For an example, use the new
 command.
 <li> Thanks to Eric Kischell, added a "Calibrate" checkbox to the
 <i>Edit&gt;Options&gt;Conversions</i> dialog and a
-setOption("CalibrateConversions",boolean) macro DOCUMENT
+setOption("CalibrateConversions",boolean) macro
 function
 (<a href="http://wsr.imagej.net/macros/CalibrateConversions.ijm">example</a>).
+<li> Thanks to Chris Ambrose, the title is displayed in the
+status bar when the cursor is moved over an image with the
+alt key down.
 <li> Thanks to 'Nottsuni', the <i>Image&gt;Show Info</i> command
 displays both the pixel value range and the display range.
 <li> Thanks to Michael Ellis, the <i>Edit&gt;Selection&gt;Interpolate</i>
@@ -37,7 +40,7 @@ statement to the macro language. For an example,
 use the <i>Help&gt;Examples&gt;Macro&gt;Turtle Graphics</i>
 command.
 <li> Thanks to Stein Rorvik and Dennis Chang, added the
-"Full range 16-bit inversons" option to the
+"Full range 16-bit inversions" option to the
 <i>Edit&gt;Options&gt;Conversions</i> dialog
 and the setOption("fullRangeInversions")
 macro function.
@@ -102,11 +105,11 @@ be opened by the built in tiff reader.
 TextWindow.setAntialiased(boolean) method.
 <li> Fixed a bug that caused the selectImage(n) macro function,
 where n&gt;0, to sometimes fail in batch mode macros.
-<li> Thanks go 'Sethur', fixed a bug that caused the current
+<li> Thanks to 'Sethur', fixed a bug that caused the current
 working directory to not be transferred to plugins executed
 from command line macros.
 <li> Thanks to 'Sethur', fixed a bug the caused the
-ImagePlus.setPositionWithoutupdate(c,z,t) method to not
+ImagePlus.setPositionWithoutUpdate(c,z,t) method to not
 work as expected.
 <li> Thanks to Eugene Katrukha, fixed a bug that caused the
 <i>Edit&gt;Selection&gt;Fit Spline</i> command to 

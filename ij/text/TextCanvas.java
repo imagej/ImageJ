@@ -129,7 +129,7 @@ class TextCanvas extends Canvas {
 			return null;
 		if (row>=tp.vData.size())
 			return null;
-		char[] chars = row<tp.vData.size()?(char[])(tp.vData.elementAt(row)):null;
+		char[] chars = row>=0&&row<tp.vData.size()?(char[])(tp.vData.elementAt(row)):null;
 		if (chars==null || chars.length==0)
 			return null;
 		

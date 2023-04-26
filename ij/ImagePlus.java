@@ -2778,8 +2778,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     */
 	public void mouseMoved(int x, int y) {
 		Roi roi2 = getRoi();
-		if (ij!=null && !IJ.statusBarProtected() && (roi2==null || roi2.getState()==Roi.NORMAL))
-			ij.showStatus(getLocationAsString(x,y) + getValueAsString(x,y));
+		if (ij!=null && !IJ.statusBarProtected() && (roi2==null || roi2.getState()==Roi.NORMAL)) {
+			String title = IJ.altKeyDown()?" ("+getTitle()+")":"";
+			ij.showStatus(getLocationAsString(x,y) + getValueAsString(x,y)+title);
+		}
 	}
 
     /** Redisplays the (x,y) coordinates and pixel value (which may

@@ -476,7 +476,7 @@ public class ShortProcessor extends ImageProcessor {
 		findMinAndMax();
 	}
 
-	private void process(int op, double value) {
+	protected void process(int op, double value) { //wsr
 		int v1, v2;
 		double range = getMax()-getMin();
 		//boolean resetMinMax = roiWidth==width && roiHeight==height && !(op==FILL);

@@ -42,6 +42,12 @@ public class StackConverter {
 			imp.setSlice(currentSlice);
 			return;
 		}
+		if (Prefs.calibrateConversions && !composite && (type==ImagePlus.GRAY16||type==ImagePlus.GRAY32)) {
+			if (type==ImagePlus.GRAY16 && imp.getCalibration().calibrated())
+				convertToGray32();
+			ImageConverter.convertAndCalibrate(imp,"8-bit");
+			return;
+		}
 		
 		ImageStack stack2 = new ImageStack(width, height);
 		Image img;
@@ -116,6 +122,10 @@ public class StackConverter {
 			return;
 		if (!(type==ImagePlus.GRAY8 || type==ImagePlus.GRAY32))
 			throw new IllegalArgumentException("Unsupported conversion");
+		if (Prefs.calibrateConversions && imp.getNChannels()==1 && type==ImagePlus.GRAY32) {
+			ImageConverter.convertAndCalibrate(imp,"16-bit");
+			return;
+		}
 		ImageStack stack1 = imp.getStack();
 		ImageStack stack2 = new ImageStack(width, height);
 		int channels = imp.getNChannels();

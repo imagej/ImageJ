@@ -29,7 +29,8 @@ public class ImageConverter {
 		ImageProcessor ip = imp.getProcessor();
 		if (type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32) {
 			if (Prefs.calibrateConversions) {
-				doScaling = true;
+				if (type==ImagePlus.GRAY16 && imp.getCalibration().calibrated())
+					convertToGray32();
 				convertAndCalibrate(imp,"8-bit");
 			} else {
 				imp.setProcessor(null, ip.convertToByte(doScaling));
@@ -67,30 +68,39 @@ public class ImageConverter {
 		if (type==ImagePlus.GRAY32)
 			record();
 		imp.trimProcessor();
-		if (Prefs.calibrateConversions && imp.getBitDepth()==32) {
-			doScaling = true;
+		if (Prefs.calibrateConversions && type==ImagePlus.GRAY32)
 			convertAndCalibrate(imp,"16-bit");
-		} else {
+		else {
 			imp.setProcessor(null, ip.convertToShort(doScaling));
 			imp.setCalibration(imp.getCalibration()); //update calibration
 		}
 	}
 	
 	public static void convertAndCalibrate(ImagePlus imp, String type) {
+		setDoScaling(true);
+		Calibration cal = imp.getCalibration();
 		ImageProcessor ip = imp.getProcessor();
+		int stackSize = imp.getStackSize();
 		double min = ip.getMin();
 		double max = ip.getMax();
 		ip.resetMinAndMax();
 		double min2 = ip.getMin();
 		double max2 = ip.getMax();
 		boolean eightBitConversion = type.equals("8-bit");
-		ImageProcessor ip2 = null;
-		if (eightBitConversion)
-			ip2 = ip.convertToByte(true);
-		else
-			ip2 = ip.convertToShort(true);
-		imp.setProcessor(null,ip2);
-		Calibration cal = imp.getCalibration();
+		if (stackSize>1) {
+			cal.disableDensityCalibration();
+			ImageStatistics stats = new StackStatistics(imp);
+			min2 = stats.min;
+			max2 = stats.max;
+			convertStack(imp, eightBitConversion, min2, max2);
+		} else {
+			ImageProcessor ip2 = null;
+			if (eightBitConversion)
+				ip2 = ip.convertToByte(true);
+			else
+				ip2 = ip.convertToShort(true);
+			imp.setProcessor(null,ip2);
+		}
 		int maxRange = eightBitConversion?255:65535;
 		double[] x = {0,maxRange};		
 		double[] y = {min2,max2};
@@ -107,6 +117,36 @@ public class ImageConverter {
 		if (IJ.debugMode) IJ.log("convertAndCalibrate: "+min+" "+max);
 		imp.setDisplayRange(min,max);
 		imp.updateAndDraw();
+	}
+	
+	private static void convertStack(ImagePlus imp, boolean eightBitConversion, double min, double max) {
+		int nSlices = imp.getStackSize();
+		int width = imp.getWidth();
+		int height = imp.getHeight();
+		ImageStack stack1 = imp.getStack();
+		ImageStack stack2 = new ImageStack(width, height);
+		String label;
+	    int inc = nSlices/20;
+	    if (inc<1) inc = 1;
+	    ImageProcessor ip1, ip2;
+		for(int i=1; i<=nSlices; i++) {
+			label = stack1.getSliceLabel(1);
+			ip1 = stack1.getProcessor(1);
+			ip1.setMinAndMax(min, max);
+			if (eightBitConversion)
+				ip2 = ip1.convertToByte(true);
+			else
+				ip2 = ip1.convertToShort(true);
+			stack1.deleteSlice(1);
+			stack2.addSlice(label, ip2);
+			if ((i%inc)==0) {
+				IJ.showProgress((double)i/nSlices);
+				IJ.showStatus("Converting to 16-bits: "+i+"/"+nSlices);
+			}
+		}
+		IJ.showProgress(1.0);
+		imp.setStack(null, stack2);
+		ImageConverter.record();
 	}
 	
 	public static void record() {

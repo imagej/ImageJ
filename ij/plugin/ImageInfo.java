@@ -195,6 +195,7 @@ public class ImageInfo implements PlugIn {
 					s += displayRanges(imp);
 				else {
 					s += "Display range: "+(int)ip.getMin()+"-"+(int)ip.getMax()+"\n";
+					ip.resetRoi();
 					ImageStatistics stats = ip.getStats();
 					s += "Pixel value range: "+(int)stats.min+"-"+(int)stats.max+"\n";
 				}
@@ -212,21 +213,23 @@ public class ImageInfo implements PlugIn {
 					s += "Display range: ";
 					double min = ip.getMin();
 					double max = ip.getMax();
+					String dash = "-";
+					if (type==ImagePlus.GRAY32||cal.calibrated())
+						dash = " - ";
 					if (type==ImagePlus.GRAY32)
-						s += d2s(min) + " - " + d2s(max) + "\n";
+						s += d2s(min) + dash + d2s(max) + "\n";
 					else if (cal.calibrated()) {
 						pvrLabel = "Raw pixel value range: ";
 						min = cal.getCValue((int)min);
 						max = cal.getCValue((int)max);
-						s += d2s(min) + " - " + d2s(max) + "\n";
+						s += d2s(min) + dash + d2s(max) + "\n";
 					} else
-						s += (int)min+"-"+(int)max+"\n";
+						s += (int)min+dash+(int)max+"\n";
+					ip.resetRoi();
 					ImageStatistics stats = ip.getStats();
-					String dash = "-";
 					if (ip.isSigned16Bit()) {
 						stats.min -= 32768;
 						stats.max -= 32768;
-						dash = " - ";
 					}
 					if (type==ImagePlus.GRAY32)
 						s += pvrLabel+d2s(stats.min)+dash+d2s(stats.max)+"\n";
@@ -408,7 +411,7 @@ public class ImageInfo implements PlugIn {
 			s += "Macro is running"+(Interpreter.isBatchMode()?" in batch mode":"")+"\n";
 
 	    Roi roi = imp.getRoi();
-	    if (roi == null) {
+	    if (roi==null) {
 			if (cal.calibrated())
 	    		s += " \n";
 	    	s += "No selection\n";

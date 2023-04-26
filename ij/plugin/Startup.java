@@ -21,7 +21,8 @@ import java.util.Vector;
 			"Splash Screen",
 			"Bolder selections",
 			"Add to overlay",
-			"Flip FITS images"
+			"Flip FITS images",
+			"Calibrate conversions"
 		};
 	private String macro = "";
 	private int originalLength;
@@ -100,6 +101,8 @@ import java.util.Vector;
 			statement = "setOption(\"Add to overlay\", true);\n";
 		else if (item.equals(code[9]))
 			statement = "setOption(\"FlipFitsImages\", false);\n";
+		else if (item.equals(code[10]))
+			statement = "setOption(\"CalibrateConversions\", true);\n";
 		if (statement!=null) {
 			TextArea ta = gd.getTextArea1();
 			ta.insert(statement, ta.getCaretPosition());
