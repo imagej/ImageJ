@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.54e25  29 April 2023</u>
+<li> <u>1.54e33  09 May 2023</u>
 <ul>
 <li> Thanks to Jerome Mutterer, selections can now be both
 filled and outlined.  For an example, use the new
@@ -17,8 +17,8 @@ setOption("CalibrateConversions",boolean) macro
 function
 (<a href="http://wsr.imagej.net/macros/CalibrateConversions.ijm">example</a>).
 <li> Thanks to Chris Ambrose, the title is displayed in the
-status bar when the cursor is moved over an image with the
-alt key down.
+status bar when the cursor is moved over an image and the
+alt key is down.
 <li> Thanks to 'Nottsuni', the <i>Image&gt;Show Info</i> command
 displays both the pixel value range and the display range.
 <li> Thanks to Michael Ellis, the <i>Edit&gt;Selection&gt;Interpolate</i>
@@ -31,6 +31,14 @@ and float images with inverting LUTs.
 not working with 1 channel, 3 slice stacks
 (<a href="http://wsr.imagej.net/macros/Create16bitRGBTiff.ijm">example</a>).
 <li> Thanks to Michael Schmid, fixed several scale bar bugs.
+<li> Thanks to Philippe Carl, fixed bug with roiManager("Select",i)
+macro function not updating the active selection.
+<li> Thanks to Kurt De Vos, fixed bug with using
+<i>Process&gt;Filter&gt;Convolve</i> in Fiji headless
+mode.
+<li> Thanks to Alan Brooks, fixed transparency bug with the
+ImageRoi.setProcessor() method
+(<a href="http://wsr.imagej.net/macros/js/SpinningLeafAnimation.js">example</a>).
 </ul>
 
 <li> <u>1.54d  30 March 2023</u>

@@ -36,6 +36,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	private static boolean lastNormalizeFlag = defaultNormalizeFlag;
 	private String kernelText = defaultKernelText;
 	private boolean normalizeFlag = defaultNormalizeFlag;
+	private boolean dialogItemChangedCalled;
 
 	public int setup(String arg, ImagePlus imp) {
  		this.imp = imp;
@@ -78,7 +79,8 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		messageLabel = (MultiLineLabel)gd.getMessage();
 		gd.setInsets(5,20,0);
 		gd.addTextAreas(kernelText, null, 10, 30);
-		gd.addPanel(makeButtonPanel(gd));
+		if (!GraphicsEnvironment.isHeadless())
+			gd.addPanel(makeButtonPanel(gd));
 		gd.addCheckbox("Normalize Kernel", normalizeFlag);
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
@@ -98,6 +100,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		normalizeFlag = gd.getNextBoolean();
 		normalize = normalizeFlag;
 		kernelError = !decodeKernel(kernelText);
+		dialogItemChangedCalled = true;
 		if (!kernelError) {
 			IJ.showStatus("Convolve: "+kw+"x"+kh+" kernel");
 			return true;

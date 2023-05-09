@@ -40,7 +40,7 @@ public class Functions implements MacroConstants, Measurements {
 	GenericDialog gd;
 	PrintWriter writer;
 	boolean altKeyDown, shiftKeyDown;
-	boolean antialiasedText;
+	boolean antialiasedText = true;
 	boolean nonScalableText;
 	StringBuffer buffer;
 	RoiManager roiManager;
@@ -3177,12 +3177,12 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();
 		} else {
 			size = (int)getNextArg();
-			antialiasedText = false;
+			antialiasedText = true;
 			if (interp.nextToken()==',') {
 				String styles = getLastString().toLowerCase();
 				if (styles.contains("bold")) style += Font.BOLD;
 				if (styles.contains("italic")) style += Font.ITALIC;
-				if (styles.contains("anti")) antialiasedText = true;
+				if (styles.contains("non-anti")) antialiasedText = false;
 				if (styles.contains("nonscal")) nonScalableText = true;
 			} else
 				interp.getRightParen();

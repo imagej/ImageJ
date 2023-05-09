@@ -46,6 +46,8 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		this.arg = arg;
 		this.imp = imp;
 		IJ.register(ImageMath.class);
+		//if (imp!=null && imp.getRoi()==null && imp.getStackSize()==1 && imp.getWidth()>100 && !arg.equals("macro"))
+		//	flags |= PARALLELIZE_IMAGES;
 		return flags;
 	}
 
@@ -112,26 +114,25 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		} else if (arg.equals("sqrt")) {
 			ip.sqrt();
 		} else if (arg.equals("reciprocal")) {
-			if (!isFloat(ip))
+			if (ip.getBitDepth()!=32) {
+				canceled = true;
 				return;
-			float[] pixels = (float[])ip.getPixels();
-			for (int i=0; i<ip.getWidth()*ip.getHeight(); i++) {
-				if (pixels[i]==0f)
-					pixels[i] = Float.NaN;
-				else
-					pixels[i] = 1f/pixels[i];
 			}
-			ip.resetMinAndMax();
+			Rectangle roi = ip.getRoi();
+			for (int y=roi.y; y<(roi.y+roi.height); y++) {
+				for (int x=roi.x; x<(roi.x+roi.width); x++) {
+					float value = ip.getf(x,y);
+					ip.setf(x,y,value==0f?Float.NaN:1f/value);
+				}
+			}
 		} else if (arg.equals("nan")) {
 	 		setBackgroundToNaN(ip);
 		} else if (arg.equals("abs")) {
-			if (!((ip instanceof FloatProcessor)||imp.getCalibration().isSigned16Bit())) {
-				IJ.error("32-bit or signed 16-bit image required");
-				canceled = true;
-			} else {
+			if ((ip instanceof FloatProcessor)||imp.getCalibration().isSigned16Bit()) {
 				ip.abs();
 				ip.resetMinAndMax();
-			}
+			} else
+				canceled = true;
 		} else if (arg.equals("macro")) {
 			applyMacro(ip);
 		}
@@ -142,15 +143,6 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		return gd!=null && gd.isPreviewActive();
 	}
  
- 	boolean isFloat(ImageProcessor ip) {
-		if (!(ip instanceof FloatProcessor)) {
-			IJ.error("32-bit float image required");
-			canceled = true;
-			return false;
-		} else
-			return true;
-	}
-	
 	void getValue (String title, String prompt, double defaultValue, int digits) {
 		int places = Analyzer.getPrecision();
 		if (places>7) places=7;

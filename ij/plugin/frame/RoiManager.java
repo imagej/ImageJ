@@ -686,10 +686,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		rois.set(index, roi);
 		listModel.setElementAt(name2, index);
 		list.setSelectedIndex(index);
-		if (Prefs.useNamesAsLabels && labelsCheckbox.getState()) {
-			ImagePlus imp = WindowManager.getCurrentImage();
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null && imp.getRoi()!=null)
+			imp.setRoi(roi);
+		if (Prefs.useNamesAsLabels && labelsCheckbox.getState())
 			if (imp!=null) imp.draw();
-		}
 		if (record())
 			Recorder.record("roiManager", "Rename", name2);
 		return true;

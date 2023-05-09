@@ -339,7 +339,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 		Rectangle roi2 = new Rectangle(roi.x, y1, roi.width, roi.y+roi.height-y1);
 		((PlugInFilter)theFilter).run(duplicateProcessor(ip, roi2)); 	// current thread does the rest
 		pass++;
-		if (roisForThread != null) {
+		if (roisForThread!=null) {
 			for (Enumeration<Thread> en = roisForThread.keys(); en.hasMoreElements();) {
 				Thread theThread = en.nextElement();
 				try {
@@ -446,8 +446,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 		}
 	}
 
-	/** The dispatcher for the background threads
-	 */
+	/** The dispatcher for the background threads */
 	public void run() {
 		Thread thread = Thread.currentThread();
 		try {

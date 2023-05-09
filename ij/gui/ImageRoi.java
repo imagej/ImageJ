@@ -126,8 +126,6 @@ public class ImageRoi extends Roi {
 		ImagePlus imp = new ImagePlus("", img);
 		roi2.setProcessor(imp.getProcessor());
 		roi2.setOpacity(getOpacity());
-		roi2.zeroTransparent = !zeroTransparent;
-		roi2.setZeroTransparent(zeroTransparent);
 		return roi2;
 	}
 	
@@ -143,6 +141,10 @@ public class ImageRoi extends Roi {
 	public void setProcessor(ImageProcessor ip) {
 		img = ip.createImage();
 		this.ip = ip;
+		if (zeroTransparent) {
+			setZeroTransparent(false);
+			setZeroTransparent(true);
+		}
 		width = ip.getWidth();
 		height = ip.getHeight();
 	}

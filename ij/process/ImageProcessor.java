@@ -65,7 +65,7 @@ public abstract class ImageProcessor implements Cloneable {
 	protected int cx, cy; //current drawing coordinates
 	protected Font font = ij.IJ.font12;
 	protected FontMetrics fontMetrics;
-	protected boolean antialiasedText;
+	protected boolean antialiasedText = true;
 	protected boolean boldFont;
 	private static String[] interpolationMethods;
 	// Over/Under tresholding colors
