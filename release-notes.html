@@ -5,12 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.54e36  11 May 2023</u>
+<li> <u>1.54e37  11 May 2023</u>
 <ul>
 <li> Thanks to Jerome Mutterer, selections can now be both
 filled and outlined.  For an example, use the new
 <i>Help&gt;Examples&gt;Macro&gt;Easter Eggs</i>
 command.
+<li> Thanks to Rodrigo Gonçalves, added a "Do not create substack” checkbox
+to the <i>Make Substack</i> dialog.
 <li> Thanks to Eric Kischell, added a "Calibrate" checkbox to the
 <i>Edit&gt;Options&gt;Conversions</i> dialog and a
 setOption("CalibrateConversions",boolean) macro
@@ -39,10 +41,9 @@ mode.
 <li> Thanks to Alan Brooks, fixed transparency bug with the
 ImageRoi.setProcessor() method
 (<a href="http://wsr.imagej.net/macros/js/SpinningLeafAnimation.js">example</a>).
-<li> Thanks to Rodrigo Gonçalves, worked around a <i>Make Substack</i>
-bug when "Delete slices from original stack" was enabled
-and the stack was opened by Fiji's FFMPEG plugin as
-a virtual stack.
+<li> Thanks to Rodrigo Gonçalves, added a warning message to the
+<i>Make Substack</i> dialog with virtual stacks opened
+by Fiji's FFMPEG plugin, which does not support slice deletion.
 <li> Thanks to Justin Conroy, fixed arrow selection scaling bug.
 </ul>
 

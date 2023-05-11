@@ -1455,9 +1455,6 @@ public abstract class ImageProcessor implements Cloneable {
 		}
 
 		Java2.setAntialiasedText(g, false);
-		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 		g.setColor(Color.white);
 		g.fillRect(0, 0, w, h);
 		g.setColor(Color.black);

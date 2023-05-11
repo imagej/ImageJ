@@ -28,7 +28,10 @@ import java.awt.Color;
 public class SubstackMaker implements PlugIn {
 	private static boolean staticDelete;
 	private boolean delete;
+	private static boolean staticNoCreate;
+	private boolean noCreate;
 	private boolean methodCall;
+	private boolean isFFMPEG;
 
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
@@ -36,11 +39,16 @@ public class SubstackMaker implements PlugIn {
 			(new SubHyperstackMaker()).run("");
 			return;
 		}
+		ImageStack stack = imp.getStack();
+		if (stack.isVirtual() && stack.getClass().getName().contains("ffmpeg")) {
+			// stacks opened with FFMPEG plugin do not support delete
+			isFFMPEG = true;
+		} 
 		String userInput = showDialog();
 		if (userInput==null)
 			return;
 		ImagePlus imp2 = makeSubstack(imp, userInput);
-		if (imp2!=null)
+		if (imp2!=null && !noCreate)
 			imp2.show();
 	}
 
@@ -54,8 +62,13 @@ public class SubstackMaker implements PlugIn {
 	public static ImagePlus run(ImagePlus imp, String rangeOrList) {
 		SubstackMaker sm = new SubstackMaker();
 		sm.delete = rangeOrList.contains("delete ");
+		sm.noCreate = rangeOrList.contains("do ");
 		if (sm.delete)
 			rangeOrList = rangeOrList.replace("delete ","");
+		if (sm.noCreate) {
+			rangeOrList = rangeOrList.replace("do ","");
+			sm.delete = true;
+		}
 		sm.methodCall = true;
 		ImagePlus imp2 = sm.makeSubstack(imp, rangeOrList);
 		if (sm.delete)
@@ -133,23 +146,41 @@ public class SubstackMaker implements PlugIn {
 			Macro.setOptions(options.replace("channels=", "slices="));
 			Macro.setOptions(options.replace("frames=", "slices="));
 		}
-		if (!isMacro) delete = staticDelete;
+		if (!isMacro) {
+			delete = staticDelete;
+			noCreate = staticNoCreate;
+		}
 		GenericDialog gd = new GenericDialog("Substack Maker");
 		gd.setInsets(10,45,0);
 		gd.addMessage("Enter a range (e.g. 2-14), a range with increment\n(e.g. 1-100-2) or a list (e.g. 7,9,25,27)", null, Color.darkGray);
 		gd.addStringField("Slices:", "", 40);
-		gd.addCheckbox("Delete slices from original stack", delete);
+		if (!isFFMPEG) {
+			gd.addCheckbox("Delete slices from original stack", delete);
+			gd.addCheckbox("Do not create substack", noCreate);
+		} else
+			gd.addMessage("FFMPEG plugin does not support virtual stack delete");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return null;
 		else {
 			String userInput = gd.getNextString();
-			delete = gd.getNextBoolean();
-			if (!isMacro) staticDelete = delete;
-			if (delete)
-				Recorder.recordCall("SubstackMaker.run(imp, \""+"delete "+userInput+"\");");
-			else
-				Recorder.recordCall("imp2 = SubstackMaker.run(imp, \""+userInput+"\");");
+			if (isFFMPEG) {
+				staticDelete = delete = false;
+				staticNoCreate = noCreate = false;
+			} else {
+				delete = gd.getNextBoolean();
+				noCreate = gd.getNextBoolean();
+				if (noCreate)
+					staticDelete = delete = true;
+			}
+			if (!isMacro) {
+				staticDelete = delete;
+				staticNoCreate = noCreate;
+			}
+			options = "";
+			if (delete) options = "delete "+options;
+			if (noCreate) options = "do "+options;
+			Recorder.recordCall("SubstackMaker.run(imp, \""+options+userInput+"\");");
 			return userInput;
 		}
 	}
@@ -159,12 +190,11 @@ public class SubstackMaker implements PlugIn {
 		ImageStack stack = imp.getStack();
 		ImageStack stack2 = null;
 		boolean virtualStack = stack.isVirtual();
-		if (virtualStack && stack.getClass().getName().contains("ffmpeg"))
-			staticDelete = delete = false; // Fiji's FFMPEG plugin 
 		double min = imp.getDisplayRangeMin();
 		double max = imp.getDisplayRangeMax();
 		Roi roi = imp.getRoi();
 		boolean dup = imp.getWindow()!=null && !delete;
+		if (noCreate) dup=false;
 		for (int i=0, j=0; i<count; i++) {
 			int currSlice = numList[i]-j;
 			ImageProcessor ip2 = stack.getProcessor(currSlice);
@@ -199,13 +229,12 @@ public class SubstackMaker implements PlugIn {
 		ImageStack stack = imp.getStack();
 		ImageStack stack2 = null;
 		boolean virtualStack = stack.isVirtual();
-		if (virtualStack && stack.getClass().getName().contains("ffmpeg"))
-			staticDelete = delete = false; // Fiji's FFMPEG plugin 
 		double min = imp.getDisplayRangeMin();
 		double max = imp.getDisplayRangeMax();
 		Roi roi = imp.getRoi();
 		boolean showProgress = stack.size()>400 || stack.isVirtual();
 		boolean dup = imp.getWindow()!=null && !delete;
+		if (noCreate) dup=false;
 		for (int i= first, j=0; i<= last; i+=inc) {
 			if (showProgress) IJ.showProgress(i,last);
 			int currSlice = i-j;
