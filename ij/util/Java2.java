@@ -19,13 +19,13 @@ public class Java2 {
 	}
 
 	public static void setAntialiasedText(Graphics g, boolean antialiasedText) {
-			Graphics2D g2d = (Graphics2D)g;
-			if (antialiasedText) {
-				//if (IJ.isMacOSX())
-				//	g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-				g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
-			  } else
-				g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+		Graphics2D g2d = (Graphics2D)g;
+		if (antialiasedText) {
+			//if (IJ.isMacOSX())
+			//	g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+			g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
+		} else
+			g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
 	}
 
 	public static int getStringWidth(String s, FontMetrics fontMetrics, Graphics g) {

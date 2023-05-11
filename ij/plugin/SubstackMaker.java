@@ -159,6 +159,8 @@ public class SubstackMaker implements PlugIn {
 		ImageStack stack = imp.getStack();
 		ImageStack stack2 = null;
 		boolean virtualStack = stack.isVirtual();
+		if (virtualStack && stack.getClass().getName().contains("ffmpeg"))
+			staticDelete = delete = false; // Fiji's FFMPEG plugin 
 		double min = imp.getDisplayRangeMin();
 		double max = imp.getDisplayRangeMax();
 		Roi roi = imp.getRoi();
@@ -197,6 +199,8 @@ public class SubstackMaker implements PlugIn {
 		ImageStack stack = imp.getStack();
 		ImageStack stack2 = null;
 		boolean virtualStack = stack.isVirtual();
+		if (virtualStack && stack.getClass().getName().contains("ffmpeg"))
+			staticDelete = delete = false; // Fiji's FFMPEG plugin 
 		double min = imp.getDisplayRangeMin();
 		double max = imp.getDisplayRangeMax();
 		Roi roi = imp.getRoi();

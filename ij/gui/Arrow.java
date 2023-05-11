@@ -405,5 +405,17 @@ public class Arrow extends Line {
 	public static boolean getDefaultOutline() {
 		return defaultOutline;
 	}
+	
+	@Override
+	public void copyAttributes(Roi roi2) {
+		super.copyAttributes(roi2);
+		if (roi2 instanceof Arrow) {
+			Arrow a2 = (Arrow)roi2;
+			this.style = a2.getStyle();
+			this.headSize = a2.getHeadSize();
+			this.doubleHeaded = a2.getDoubleHeaded();
+			this.outline = a2.getOutline();
+		}
+	}
 
 }

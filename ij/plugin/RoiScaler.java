@@ -97,9 +97,12 @@ public class RoiScaler implements PlugIn {
 			}
 		}
 		Roi roi2 = null;
-		if (type==Roi.LINE)
-			roi2 = new Line(poly.xpoints[0], poly.ypoints[0], poly.xpoints[1], poly.ypoints[1]);
-		else if (type==Roi.POINT)
+		if (type==Roi.LINE) {
+			if (roi instanceof Arrow)
+				roi2 = new Arrow(poly.xpoints[0], poly.ypoints[0], poly.xpoints[1], poly.ypoints[1]);
+			else
+				roi2 = new Line(poly.xpoints[0], poly.ypoints[0], poly.xpoints[1], poly.ypoints[1]);
+		} else if (type==Roi.POINT)
 			roi2 = new PointRoi(poly.xpoints, poly.ypoints,poly.npoints);
 		else {
 			if (type==Roi.RECTANGLE)
