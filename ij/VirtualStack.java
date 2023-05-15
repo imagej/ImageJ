@@ -107,10 +107,10 @@ public class VirtualStack extends ImageStack {
 
 	/** Deletes the specified slice, where {@literal 1<=n<=nslices}. */
 	public void deleteSlice(int n) {
+		if (nSlices==0)
+			return;
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException("Argument out of range: "+n);
-		if (nSlices<1)
-			return;
 		for (int i=n; i<nSlices; i++)
 			names[i-1] = names[i];
 		names[nSlices-1] = null;

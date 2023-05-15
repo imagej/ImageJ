@@ -15,6 +15,9 @@ public class Colors implements PlugIn, ItemListener {
 	private static final String[] colors2 = {"Red","Green","Blue","Magenta","Cyan","Yellow","Orange","Black","White","Gray","lightGray","darkGray","Pink"};
 	private Choice fchoice, bchoice, schoice;
 	private Color fc2, bc2, sc2;
+	private static final double gamma = 0.8;
+	private static final double intensityMax = 255;
+
 
  	public void run(String arg) {
 		showDialog();
@@ -273,4 +276,52 @@ public class Colors implements PlugIn, ItemListener {
 			names.add(arg);
 		return (String[])names.toArray(new String[names.size()]);
 	}
+	
+	/** Converts a wavelength (380-750 nm) to color.
+	 * Based on the wavelength_to_rgb.R program at
+	 * https://gist.github.com/friendly/67a7df339aa999e2bcfcfec88311abfc,
+	 * which in turn is based on a FORTRAN program at
+	 * http://www.physics.sfasu.edu/astro/color.html.
+	 * Thia method is used the the LutLoader class to 
+	 * generate the "Spectrum" LUT.
+	*/
+	public static Color wavelengthToColor(double wl) {
+		double R, G, B;
+		if (wl >= 380 & wl <= 440) {
+			double attenuation = 0.3 + 0.7 * (wl - 380) / (440 - 380);
+			R = Math.pow((-(wl - 440) / (440 - 380) * attenuation), gamma);
+			G = 0.0;
+			B = Math.pow((1.0 * attenuation), gamma);
+		} else if (wl >= 440 & wl <= 490) {
+			R = 0.0;
+			G = Math.pow(((wl - 440) / (490 - 440)), gamma);
+			B = 1.0;
+		} else if (wl >= 490 & wl <= 510) {
+			R = 0.0;
+			G = 1.0;
+			B = Math.pow((-(wl - 510) / (510 - 490)), gamma);
+		} else if (wl >= 510 & wl <= 580) {
+			R = Math.pow(((wl - 510) / (580 - 510)), gamma);
+			G = 1.0;
+			B = 0.0;
+		} else if (wl >= 580 & wl <= 645) {
+			R = 1.0;
+			G = Math.pow((-(wl - 645) / (645 - 580)), gamma);
+			B = 0.0;
+		} else if (wl >= 645 & wl <= 750) {
+			double attenuation = 0.3 + 0.7 * (750 - wl) / (750 - 645);
+			R = Math.pow((1.0 * attenuation), gamma);
+			G = 0.0;
+			B = 0.0;
+		} else {
+			R = 0.0;
+			G = 0.0;
+			B = 0.0;
+		}
+		R = Math.floor(R*255);
+		G = Math.floor(G*255);
+		B = Math.floor(B*255);
+		return new Color((int)R, (int)G, (int)B);
+	}
+
 }

@@ -299,6 +299,7 @@ public class Menus {
 		addExample(submenu, "Plot Styles", "Plot_Styles_.ijm");
 		addExample(submenu, "Random Data", "Random_Data_.ijm");
 		addExample(submenu, "Plot Results", "Plot_Results_.ijm");
+		addExample(submenu, "Plot With Spectrum", "Plot_With_Spectrum_.ijm");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		

@@ -31,7 +31,6 @@ public class SubstackMaker implements PlugIn {
 	private static boolean staticNoCreate;
 	private boolean noCreate;
 	private boolean methodCall;
-	private boolean isFFMPEG;
 
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
@@ -40,16 +39,16 @@ public class SubstackMaker implements PlugIn {
 			return;
 		}
 		ImageStack stack = imp.getStack();
-		if (stack.isVirtual() && stack.getClass().getName().contains("ffmpeg")) {
-			// stacks opened with FFMPEG plugin do not support delete
-			isFFMPEG = true;
-		} 
+		int size1 = stack.size();
 		String userInput = showDialog();
 		if (userInput==null)
 			return;
 		ImagePlus imp2 = makeSubstack(imp, userInput);
 		if (imp2!=null && !noCreate)
 			imp2.show();
+		// stacks opened with FFMPEG and BioFormats plugins do not support slice delete
+		if (delete && stack.isVirtual() && stack.size()==size1)
+			IJ.log("This virtual stack does not support delete: "+stack.getClass().getName());
 	}
 
 	/**
@@ -62,11 +61,11 @@ public class SubstackMaker implements PlugIn {
 	public static ImagePlus run(ImagePlus imp, String rangeOrList) {
 		SubstackMaker sm = new SubstackMaker();
 		sm.delete = rangeOrList.contains("delete ");
-		sm.noCreate = rangeOrList.contains("do ");
+		sm.noCreate = rangeOrList.contains("do_not ");
 		if (sm.delete)
 			rangeOrList = rangeOrList.replace("delete ","");
 		if (sm.noCreate) {
-			rangeOrList = rangeOrList.replace("do ","");
+			rangeOrList = rangeOrList.replace("do_not ","");
 			sm.delete = true;
 		}
 		sm.methodCall = true;
@@ -132,6 +131,7 @@ public class SubstackMaker implements PlugIn {
 				imp2 = stackList(imp, count, numList, stackTitle);
 			}
 		} catch (Exception e) {
+			IJ.showProgress(1,1);
 			IJ.error("Substack Maker", "Invalid input string:  \n \n  \""+userInput+"\"");
 		}
 		if (hasFrames && imp2!=null)
@@ -154,32 +154,24 @@ public class SubstackMaker implements PlugIn {
 		gd.setInsets(10,45,0);
 		gd.addMessage("Enter a range (e.g. 2-14), a range with increment\n(e.g. 1-100-2) or a list (e.g. 7,9,25,27)", null, Color.darkGray);
 		gd.addStringField("Slices:", "", 40);
-		if (!isFFMPEG) {
-			gd.addCheckbox("Delete slices from original stack", delete);
-			gd.addCheckbox("Do not create substack", noCreate);
-		} else
-			gd.addMessage("FFMPEG plugin does not support virtual stack delete");
+		gd.addCheckbox("Delete slices from original stack", delete);
+		gd.addCheckbox("Do_not create substack", noCreate);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return null;
 		else {
 			String userInput = gd.getNextString();
-			if (isFFMPEG) {
-				staticDelete = delete = false;
-				staticNoCreate = noCreate = false;
-			} else {
-				delete = gd.getNextBoolean();
-				noCreate = gd.getNextBoolean();
-				if (noCreate)
-					staticDelete = delete = true;
-			}
+			delete = gd.getNextBoolean();
+			noCreate = gd.getNextBoolean();
+			if (noCreate)
+				staticDelete = delete = true;
 			if (!isMacro) {
 				staticDelete = delete;
 				staticNoCreate = noCreate;
 			}
 			options = "";
+			if (noCreate) options = "do_not "+options;
 			if (delete) options = "delete "+options;
-			if (noCreate) options = "do "+options;
 			Recorder.recordCall("SubstackMaker.run(imp, \""+options+userInput+"\");");
 			return userInput;
 		}
@@ -194,16 +186,17 @@ public class SubstackMaker implements PlugIn {
 		double max = imp.getDisplayRangeMax();
 		Roi roi = imp.getRoi();
 		boolean dup = imp.getWindow()!=null && !delete;
-		if (noCreate) dup=false;
 		for (int i=0, j=0; i<count; i++) {
 			int currSlice = numList[i]-j;
-			ImageProcessor ip2 = stack.getProcessor(currSlice);
-			ip2.setRoi(roi);
-			if (!methodCall || !delete)
-				ip2 = ip2.crop();
-			if (stack2==null)
-				stack2 = new ImageStack(ip2.getWidth(), ip2.getHeight());
-			stack2.addSlice(stack.getSliceLabel(currSlice), dup?ip2.duplicate():ip2);
+			if (!noCreate) {
+				ImageProcessor ip2 = stack.getProcessor(currSlice);
+				ip2.setRoi(roi);
+				if (!methodCall || !delete)
+					ip2 = ip2.crop();
+				if (stack2==null)
+					stack2 = new ImageStack(ip2.getWidth(), ip2.getHeight());
+				stack2.addSlice(stack.getSliceLabel(currSlice), dup?ip2.duplicate():ip2);
+			}
 			if (delete) {
 				stack.deleteSlice(currSlice);
 				j++;
@@ -217,6 +210,8 @@ public class SubstackMaker implements PlugIn {
 			if (swin!=null)
 				swin.updateSliceSelector();
 		}
+		if (stack2==null)
+			return null;
 		ImagePlus impSubstack = imp.createImagePlus();
 		impSubstack.setStack(stackTitle, stack2);
 		if (virtualStack)
@@ -234,16 +229,17 @@ public class SubstackMaker implements PlugIn {
 		Roi roi = imp.getRoi();
 		boolean showProgress = stack.size()>400 || stack.isVirtual();
 		boolean dup = imp.getWindow()!=null && !delete;
-		if (noCreate) dup=false;
 		for (int i= first, j=0; i<= last; i+=inc) {
 			if (showProgress) IJ.showProgress(i,last);
 			int currSlice = i-j;
-			ImageProcessor ip2 = stack.getProcessor(currSlice);
-			ip2.setRoi(roi);
-			ip2 = ip2.crop();
-			if (stack2==null)
-				stack2 = new ImageStack(ip2.getWidth(), ip2.getHeight());
-			stack2.addSlice(stack.getSliceLabel(currSlice), dup?ip2.duplicate():ip2);
+			if (!noCreate) {
+				ImageProcessor ip2 = stack.getProcessor(currSlice);
+				ip2.setRoi(roi);
+				ip2 = ip2.crop();
+				if (stack2==null)
+					stack2 = new ImageStack(ip2.getWidth(), ip2.getHeight());
+				stack2.addSlice(stack.getSliceLabel(currSlice), dup?ip2.duplicate():ip2);
+			}
 			if (delete) {
 				stack.deleteSlice(currSlice);
 				j++;
@@ -257,6 +253,8 @@ public class SubstackMaker implements PlugIn {
 			if (swin!=null)
 				swin.updateSliceSelector();
 		}
+		if (stack2==null)
+			return null;
 		ImagePlus substack = imp.createImagePlus();
 		substack.setStack(title, stack2);
 		substack.setCalibration(imp.getCalibration());
