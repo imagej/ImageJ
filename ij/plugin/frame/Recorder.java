@@ -168,7 +168,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	
 	public static void record(String method, String arg) {
 		if (IJ.debugMode) IJ.log("record: "+method+"  "+arg);
-		boolean sw = method.equals("selectWindow");
+		boolean sw = method.equals("selectWindow")||method.equals("selectImage");
 		if (textArea!=null && !(scriptMode&&sw||commandName!=null&&sw)) {
 			if (scriptMode && method.equals("roiManager"))
 				textArea.append("rm.runCommand(imp,\""+arg+"\");\n");

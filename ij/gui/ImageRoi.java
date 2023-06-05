@@ -108,8 +108,8 @@ public class ImageRoi extends Roi {
 	private ImageProcessor makeZeroTransparent(ImageProcessor ip, boolean transparent) {
 		if (transparent) {
 			ip.setColorModel(new DirectColorModel(32,0x00ff0000,0x0000ff00,0x000000ff,0xff000000));
-			for (int x=0; x<width; x++) {
-				for (int y=0; y<height; y++) {
+			for (int x=0; x<ip.getWidth(); x++) {
+				for (int y=0; y<ip.getHeight(); y++) {
 					double v = ip.getPixelValue(x, y);
 					if (v>1)
 						ip.set(x, y, ip.get(x,y)|0xff000000); // set alpha bits

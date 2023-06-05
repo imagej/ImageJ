@@ -16,7 +16,6 @@ public class Colors implements PlugIn, ItemListener {
 	private Choice fchoice, bchoice, schoice;
 	private Color fc2, bc2, sc2;
 	private static final double gamma = 0.8;
-	private static final double intensityMax = 255;
 
 
  	public void run(String arg) {
@@ -282,8 +281,6 @@ public class Colors implements PlugIn, ItemListener {
 	 * https://gist.github.com/friendly/67a7df339aa999e2bcfcfec88311abfc,
 	 * which in turn is based on a FORTRAN program at
 	 * http://www.physics.sfasu.edu/astro/color.html.
-	 * Thia method is used the the LutLoader class to 
-	 * generate the "Spectrum" LUT.
 	*/
 	public static Color wavelengthToColor(double wl) {
 		double R, G, B;

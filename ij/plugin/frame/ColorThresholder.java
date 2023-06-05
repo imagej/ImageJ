@@ -92,6 +92,11 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			WindowManager.toFront(instance);
 			return;
 		}
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null && imp.getBitDepth()!=24) {
+			IJ.error("Color Thresholder", "The Color Thresholder only works with RGB images.\nUse Image>Type>RGB Color to convert to RGB.");
+			return;
+		}
 		thread = new Thread(this, "BandAdjuster");
 		WindowManager.addWindow(this);
 		instance = this;

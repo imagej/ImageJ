@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.54e46  15 May 2023</u>
+<li> <u>1.54e  4 June 2023</u>
 <ul>
 <li> Thanks to Jerome Mutterer, added the
 <i>Help&gt;Examples&gt;Plots&gt;Plot with Spectrum</i>
@@ -14,7 +14,10 @@ example macro.
 filled and outlined.  For an example, use the new
 <i>Help&gt;Examples&gt;Macro&gt;Easter Eggs</i>
 command.
-<li> Thanks to Rodrigo Gonçalves, added a "Do not create substack” checkbox
+<li> Thanks to Zoltan Kis, when manually switching image windows,
+"selectImage(title);" is recorded instead of
+"selectWindow(title);".
+<li> Thanks to Rodrigo Goncalves, added a "Do not create substack" checkbox
 to the <i>Make Substack</i> dialog.
 <li> Thanks to Eric Kischell, added a "Calibrate" checkbox to the
 <i>Edit&gt;Options&gt;Conversions</i> dialog and a
@@ -31,8 +34,7 @@ command works with composite selections with holes.
 <li> Thanks to Philippe Carl and Michael Schmid, added the
 Plot.eneableLive() macro function.
 <li> Thanks to Jerome Mutterer, added the Color.wavelengthToColor()
-macro function and the Colors.wavelengthToColor() method,
-which is now used to generate the "Spectrum" LUT.
+macro function and the Colors.wavelengthToColor() method.
 <li> Thanks to Michael Schmid, fixed issue with thresholding of 16-bit
 and float images with inverting LUTs.
 <li> Thanks to 'Jossie', fixed problem with <i>Image&gt;Color&gt;Make Composite</i>
@@ -47,10 +49,15 @@ mode.
 <li> Thanks to Alan Brooks, fixed transparency bug with the
 ImageRoi.setProcessor() method
 (<a href="http://wsr.imagej.net/macros/js/SpinningLeafAnimation.js">example</a>).
-<li> Thanks to Rodrigo Gonçalves, added a warning message to the
+<li> Thanks to Rodrigo Goncalves, added a warning message to the
 <i>Make Substack</i> dialog with virtual stacks opened
 by Fiji's FFMPEG plugin, which does not support slice deletion.
 <li> Thanks to Justin Conroy, fixed arrow selection scaling bug.
+<li> Thanks to Herbie Gluender, fixed isKeyDown() bug when using
+"Run" button in macro editor.
+<li> Thanks to Jerome Mutterer, fixed a bug with deleting
+a rescaled overlay image ROI with a transparent background.
+
 </ul>
 
 <li> <u>1.54d  30 March 2023</u>
