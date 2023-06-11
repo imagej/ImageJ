@@ -100,6 +100,8 @@ public class HyperStackMaker implements PlugIn {
 		boolean rgb = imp.getBitDepth()==24;
 		boolean hyperstack = imp.isHyperStack();
 		for (int i=1; i<=n; i++) {
+			String label = "\""+channel+","+slice+","+frame+"\"";
+			stack.setSliceLabel(label, i);
 			int yloc = 30;
 			IJ.showProgress(i, n);
 			ImageProcessor ip = stack.getProcessor(i);

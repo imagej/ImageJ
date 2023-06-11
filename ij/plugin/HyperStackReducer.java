@@ -21,6 +21,9 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 	/** Constructs a HyperStackReducer using the specified source image. */
 	public HyperStackReducer(ImagePlus imp) {
 		this.imp = imp;
+		this.channels1 = this.channels2 = imp.getNChannels();
+		this.slices1 = this.slices2 = imp.getNSlices();
+		this.frames1 = this.frames2 = imp.getNFrames();
 	}
 
 	public void run(String arg) {
@@ -78,6 +81,9 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 	}
 
 	public void reduce(ImagePlus imp2) {
+		this.channels2 = imp2.getNChannels();
+		this.slices2 = imp2.getNSlices();
+		this.frames2 = imp2.getNFrames();
 		int channels = imp2.getNChannels();
 		int slices = imp2.getNSlices();
 		int frames = imp2.getNFrames();

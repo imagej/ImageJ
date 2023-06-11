@@ -308,6 +308,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			currentImage = -1;
 		int channel=0, slice=0, frame=0;
 		boolean hyperstack = imp.isHyperStack();
+		if (imp.getNChannels()>1)
+			hyperstack = true;
 		if (hyperstack) {
 			channel = imp.getChannel();
 			slice = imp.getSlice();
@@ -336,7 +338,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			int t = roi.getTPosition();
 			if (hyperstack) {
 				int position = roi.getPosition();
-				//IJ.log(c+" "+z+" "+t+"  "+position+" "+roiManagerShowAllMode);
+				//IJ.log(c+" "+z+" "+t+"  "+channel+" "+position+" "+roiManagerShowAllMode);
 				if (position>0) {
 					if (z==0 && imp.getNSlices()>1)
 						z = position;

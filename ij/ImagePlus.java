@@ -633,7 +633,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				ImageStack biStack = new ImageStack(bi.getWidth(), bi.getHeight());			
 				for (int b=0; b<nBands; b++)
 					biStack.addSlice(convertToImageProcessor(bi, b));
-				setImage(new ImagePlus("", biStack));
+				setImage(new ImagePlus(getTitle(), biStack));
 				return;
 			}			
 			if (bi.getType()==BufferedImage.TYPE_USHORT_GRAY) {
@@ -672,7 +672,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 	
 	/**
-	 * Extract pixels as an an ImageProcessor from a single band of a BufferedImage.
+	 * Extract pixels as an ImageProcessor from a single band of a BufferedImage.
 	 * @param img
 	 * @param band
 	 * @return

@@ -131,6 +131,7 @@ public class ChannelArranger implements PlugIn, TextListener {
 			}
 			img2.setOverlay(overlay);
 		}
+		img2.setProperty("Info", img.getProperty("Info"));
 		img.changes = false;
 		img.close();
 		return img2;

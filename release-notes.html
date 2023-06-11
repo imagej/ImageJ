@@ -5,6 +5,24 @@
 </head>
 <body>
 
+<li> <u>1.54f7  11 June 2023</u>
+<ul>
+<li> Thanks to Norbert Vischer, <i>File&gt;New&gt;Hyperstack</i>
+adds slice labels when "Label Images" is checked in the
+dialog.
+<li> Fixed bug with getDir() macro function and IJ.getDir() method
+changing the default directory when used to choose a directory.
+<li> Thanks to 'sat1999', fixed bug with File.setDefaultDir()
+macro function and OpenDialog.setDefaultDirectory() method
+not working as expected when used with directory choosers
+added to dialog boxes.
+<li> Thanks to Norbert Vischer, fixed bug with <i>Image&gt;Color&gt;Split Channels</i>
+not correctly handling overlays.
+<li> Thanks to Norbert Vischer, fixed bug with <i>Image&gt;Color&gt;Arrange Channels</i>
+losing metadata.
+
+</ul>
+
 <li> <u>1.54e  4 June 2023</u>
 <ul>
 <li> Thanks to Jerome Mutterer, added the
@@ -57,7 +75,6 @@ by Fiji's FFMPEG plugin, which does not support slice deletion.
 "Run" button in macro editor.
 <li> Thanks to Jerome Mutterer, fixed a bug with deleting
 a rescaled overlay image ROI with a transparent background.
-
 </ul>
 
 <li> <u>1.54d  30 March 2023</u>

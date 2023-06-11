@@ -47,8 +47,8 @@ import javax.swing.filechooser.*;
 					if (defaultDir!=null) {
 						File f = new File(defaultDir);
 						if (IJ.debugMode)
-							IJ.log("DirectoryChooser,setSelectedFileW: "+f);
-						chooser.setSelectedFile(f);
+							IJ.log("DirectoryChooser-setCurrentDir: "+f);
+						chooser.setCurrentDirectory(f);
 					}
 					chooser.setApproveButtonText("Select");
 					if (chooser.showOpenDialog(null)==JFileChooser.APPROVE_OPTION) {
@@ -77,8 +77,8 @@ import javax.swing.filechooser.*;
 			if (defaultDir!=null) {
 				File f = new File(defaultDir);
 				if (IJ.debugMode)
-					IJ.log("DirectoryChooser,setSelectedFile: "+f);
-				chooser.setSelectedFile(f);
+					IJ.log("DirectoryChooser-setCurrentDir: "+f);
+				chooser.setCurrentDirectory(f);
 			}
 			chooser.setApproveButtonText("Select");
 			if (chooser.showOpenDialog(null)==JFileChooser.APPROVE_OPTION) {
@@ -96,13 +96,8 @@ import javax.swing.filechooser.*;
  		boolean saveUseJFC = Prefs.useJFileChooser;
  		Prefs.useJFileChooser = false;
 		System.setProperty("apple.awt.fileDialogForDirectories", "true");
-		String dir=null, name=null;
-		String defaultDir = OpenDialog.getDefaultDirectory();
-		if (defaultDir!=null) {
-			File f = new File(defaultDir);
-			dir = f.getParent();
-			name = f.getName();
-		}
+		String dir = OpenDialog.getDefaultDirectory();
+		String name = null;
 		if (IJ.debugMode)
 			IJ.log("DirectoryChooser: dir=\""+dir+"\",  file=\""+name+"\"");
 		OpenDialog od = new OpenDialog(title, dir, null);

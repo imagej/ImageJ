@@ -299,9 +299,10 @@ public class RGBStackMerge implements PlugIn {
 			for (int z=0; z<slices; z++) {
 				for (int c=0; c<channels; c++) {
 					ImageProcessor ip = stacks[c].getProcessor(index[c]+1);
+					String label = stacks[c].getSliceLabel(index[c]+1);
 					if (keep)
 						ip = ip.duplicate();
-					stack2.addSlice(null, ip);
+					stack2.addSlice(label, ip);
 					if (keep)
 						index[c]++;
 					else
