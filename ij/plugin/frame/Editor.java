@@ -38,6 +38,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"importPackage(java.awt);"+
 		"importPackage(java.awt.image);"+
 		"importPackage(java.awt.geom);"+
+		"importPackage(java.awt.event);"+
 		"importPackage(java.util);"+
 		"importPackage(java.io);"+
 		"function print(s) {IJ.log(s);};";
@@ -496,7 +497,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else
 			text = ta.getSelectedText();
 		Interpreter.abort();  // abort any currently running macro
-		if (checkForCurlyQuotes && text.contains("\u201D")) {
+		if (checkForCurlyQuotes) {
 			// replace curly quotes with standard quotes
  			text = text.replaceAll("\u201C", "\""); 
 			text = text.replaceAll("\u201D", "\"");

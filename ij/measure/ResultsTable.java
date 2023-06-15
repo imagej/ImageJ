@@ -903,7 +903,7 @@ public class ResultsTable implements Cloneable {
 			return "3.4e38";
 		double np = n;
 		if (n<0.0) np = -n;
-		if ((np<0.001 && np!=0.0 && np<1.0/Math.pow(10,decimalPlaces)) || np>999999999999d || decimalPlaces<0) {
+		if ((np!=0.0 && np<1.0/Math.pow(10,decimalPlaces)) || np>999999999999d || decimalPlaces<0) {
 			if (decimalPlaces<0) {
 				decimalPlaces = -decimalPlaces;
 				if (decimalPlaces>9) decimalPlaces=9;

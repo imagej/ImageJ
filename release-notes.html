@@ -5,8 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.54f7  11 June 2023</u>
+<li> <u>1.54f12  15 June 2023</u>
 <ul>
+<li> Thanks to Philippe Carl, made the ImagePanel class, used
+to add images to GenericDialogs, public
+(<a href="http://wsr.imagej.net/macros/js/DialogImageDemo.js">example</a>).
 <li> Thanks to Norbert Vischer, <i>File&gt;New&gt;Hyperstack</i>
 adds slice labels when "Label Images" is checked in the
 dialog.
@@ -20,6 +23,12 @@ added to dialog boxes.
 not correctly handling overlays.
 <li> Thanks to Norbert Vischer, fixed bug with <i>Image&gt;Color&gt;Arrange Channels</i>
 losing metadata.
+<li> Thanks to Jeremy Adler and Michael Schmid, fixed bug that caused
+<i>Make Band</i> to fail when the selection extended beyond the
+image edge.
+<li> Thanks to Julia Behnsen and Michael Schmid, fixed bug with 
+automatic switching to scientific notation in results tables
+(<a href="http://wsr.imagej.net/macros/bugs/ScientificNotation.ijm">test case</a>).
 
 </ul>
 

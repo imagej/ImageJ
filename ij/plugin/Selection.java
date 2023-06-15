@@ -924,16 +924,16 @@ public class Selection implements PlugIn, Measurements {
 		Prefs.blackBackground = saveBlackBackground;
 		ip = edm.getProcessor();
 		ip.setThreshold(0, n, ImageProcessor.NO_LUT_UPDATE);
-		int xx=-1, yy=-1;
-		for (int x=r.x; x<r.x+r.width; x++) {
-			for (int y=r.y; y<r.y+r.height; y++) {
+		int xx=-1, yy=-1;	//will become the start position for the Wand
+		for (int y=Math.max(r.y,0); y<Math.min(r.y+r.height, height); y++) {
+			for (int x=Math.max(r.x,0); x<Math.min(r.x+r.width, width); x++) {
 				if (ip.getPixel(x, y)<n) {
 					xx=x; yy=y;
 					break;
 				}
 			}
 			if (xx>=0||yy>=0)
-				break;
+			break;
 		}
 		int count = IJ.doWand(edm, xx, yy, 0, null);
 		if (count<=0) {
