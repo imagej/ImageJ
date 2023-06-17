@@ -19,6 +19,7 @@ public class Java2 {
 	}
 
 	public static void setAntialiasedText(Graphics g, boolean antialiasedText) {
+		if (IJ.debugMode) IJ.log("setAntialiasedText: "+antialiasedText);
 		Graphics2D g2d = (Graphics2D)g;
 		if (antialiasedText) {
 			//if (IJ.isMacOSX())

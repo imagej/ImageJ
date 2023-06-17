@@ -65,7 +65,7 @@ public abstract class ImageProcessor implements Cloneable {
 	protected int cx, cy; //current drawing coordinates
 	protected Font font = ij.IJ.font12;
 	protected FontMetrics fontMetrics;
-	protected boolean antialiasedText = true;
+	protected boolean antialiasedText;
 	protected boolean boldFont;
 	private static String[] interpolationMethods;
 	// Over/Under tresholding colors
@@ -1385,7 +1385,11 @@ public abstract class ImageProcessor implements Cloneable {
 
 	private void setupFontMetrics() {
 		if (fontMetrics==null) {
-			fmImage=new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+			if (ij.IJ.font12==font && ij.IJ.isMacOSX())
+				antialiasedText = true; // non-antialiased text is broken on macOS
+			if ((this instanceof ShortProcessor) || (this instanceof FloatProcessor))
+				antialiasedText = false; // antialiased text not supported on 16 and 32 bit images
+			fmImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
 			fmGraphics = (Graphics2D)fmImage.getGraphics();
 			fmGraphics.setFont(font);
 			Java2.setAntialiasedText(fmGraphics, antialiasedText);
@@ -1484,13 +1488,14 @@ public abstract class ImageProcessor implements Cloneable {
 	 *  including the descent of the font (i.e., characters reaching below the baseline)
 	 *  For multi-line strings, the y coordinate applies to the first line. */
 	public void drawString(String s, int x, int y) {
+		if (ij.IJ.debugMode) ij.IJ.log("drawString: "+antialiasedText+" "+s);
 		moveTo(x, y);
 		drawString(s);
 	}
 
 	/** Draws a string at the specified location with a filled background.
 		A JavaScript example is available at
-			http://imagej.nih.gov/ij/macros/js/DrawTextWithBackground.js
+			http://wsr.imagej.net/macros/js/DrawTextWithBackground.js
 	*/
 	public void drawString(String s, int x, int y, Color background) {
 		Color foreground = drawingColor;
@@ -1534,31 +1539,31 @@ public abstract class ImageProcessor implements Cloneable {
 	public void setFont(Font font) {
 		this.font = font;
 		boldFont = font.isBold();
+		if (font.getSize()>=14 || ij.IJ.isMacOSX())
+			antialiasedText = true;
+		fontMetrics = null;
 		setupFontMetrics();
 		fmGraphics.setFont(font);
-		Java2.setAntialiasedText(fmGraphics, antialiasedText);
 		fontMetrics = fmGraphics.getFontMetrics(font);
 	}
 	
 	/** Sets the size of the font used by drawString(). */
 	public void setFontSize(int size) {
 		setFont(font.deriveFont(font.getStyle(), size));
-		if (size>15)
-			setAntialiasedText(true);
 	}
 
 
-	/** Specifies whether or not text is drawn using antialiasing. Antialiased
-		test requires an 8 bit or RGB image. Antialiasing does not
-		work with 8-bit images that are not using 0-255 display range. */
+	/** Specifies whether or not text is drawn using antialiasing, which
+	 * is enabled by default on macOS or when the font size is 14 or greater.
+	 * Antialiased text requires an 8 bit or RGB image. Antialiasing does not
+	 * work with 8-bit images that are not using 0-255 display range.
+	*/
 	public void setAntialiasedText(boolean antialiasedText) {
-		setupFontMetrics();
 		if (antialiasedText && (((this instanceof ByteProcessor)&&getMin()==0.0&&getMax()==255.0) || (this instanceof ColorProcessor)))
 			this.antialiasedText = true;
 		else
 			this.antialiasedText = false;
-		Java2.setAntialiasedText(fmGraphics, this.antialiasedText);
-		fontMetrics = fmGraphics.getFontMetrics(font);
+		fontMetrics = null;
 	}
 
 	/** Returns the width in pixels of the specified string, including any background
