@@ -388,7 +388,9 @@ public class PointRoi extends PolygonRoi {
 			}
 			if (rt!=null && WindowManager.getFrame(getCountsTitle())!=null)
 				displayCounts();
-		}
+		} else if (index==0 && nPoints==0)
+			counts[0] = 0;
+			
 	}
 
 	private synchronized void incrementCounter(ImagePlus imp) {

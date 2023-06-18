@@ -1488,7 +1488,6 @@ public abstract class ImageProcessor implements Cloneable {
 	 *  including the descent of the font (i.e., characters reaching below the baseline)
 	 *  For multi-line strings, the y coordinate applies to the first line. */
 	public void drawString(String s, int x, int y) {
-		if (ij.IJ.debugMode) ij.IJ.log("drawString: "+antialiasedText+" "+s);
 		moveTo(x, y);
 		drawString(s);
 	}

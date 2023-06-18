@@ -5,8 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.54f12  15 June 2023</u>
+<li> <u>1.54f23  18 June 2023</u>
 <ul>
+
+<li> Thanks to Dennis Chang, drawString() defaults to antialiasing when
+the font size is 14 or greater and antialiasing is disabled by
+default on Macs to work around a Java/macOS text rendering bug
+(<a href="http://wsr.imagej.net/macros/SmallText.ijm">example macro</a>,
+<a href="http://wsr.imagej.net/macros/js/SmallText.js">example script</a>).
 <li> Thanks to Philippe Carl, made the ImagePanel class, used
 to add images to GenericDialogs, public
 (<a href="http://wsr.imagej.net/macros/js/DialogImageDemo.js">example</a>).
@@ -29,6 +35,8 @@ image edge.
 <li> Thanks to Julia Behnsen and Michael Schmid, fixed bug with 
 automatic switching to scientific notation in results tables
 (<a href="http://wsr.imagej.net/macros/bugs/ScientificNotation.ijm">test case</a>).
+<li> Thanks to 'melikovk' and 'scuniff', fixed an incorrect PointRoi point count
+bug when points added interactively.
 
 </ul>
 
