@@ -155,7 +155,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     } // boolean showDialog
 
     /** Read the parameters (during preview or after showing the dialog) */
-    public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
+	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
         tolerance = gd.getNextNumber();
         if (tolerance<0) tolerance = 0;
         outputType = previewing ? POINT_SELECTION : dialogOutputType;
@@ -295,7 +295,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 	* @param xx Array containing peaks.
 	* @param tolerance Depth of a qualified valley must exceed tolerance.
 	* Tolerance must be >= 0. Flat tops are marked at their centers.
-	* @param  edgeMode 0=include, 1=exclude, 3=circular
+	* @param  edgeMode 0=include, 1=exclude, 2=circular
 	* edgeMode = 0 (include edges) peak may be separated by one qualified valley and by a border.
 	* edgeMode = 1 (exclude edges) peak must be separated by two qualified valleys
 	* edgeMode = 2 (circular) array is regarded to be circular
@@ -321,13 +321,20 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 		    xx = cascade3;
 		}
 		int[] maxPositions = new int[len];
-		double max = xx[0];
-		double min = xx[0];
-		int maxPos = 0;
+        int jStart = 0;
+        double min = Double.NaN, max = Double.NaN;
+        do {                            //find first non-NaN value
+			max = xx[jStart];
+            min = xx[jStart];
+            jStart++;
+            if (jStart >= xx.length)
+                return new int[]{};     //only NaNs
+        } while (Double.isNaN(min));
+		int maxPos = jStart-1;
 		int lastMaxPos = -1;
 		boolean leftValleyFound = (edgeMode == INCLUDE_EDGE);
 		int maxCount = 0;
-		for (int jj = 1; jj < len; jj++) {
+		for (int jj = jStart; jj < len; jj++) {
 			double val = xx[jj];
 			if (val > min + tolerance)
 				leftValleyFound = true;

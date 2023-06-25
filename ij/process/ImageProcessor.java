@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.image.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.font.GlyphVector;
+import java.awt.font.FontRenderContext;
 import ij.gui.*;
 import ij.util.*;
 import ij.plugin.filter.GaussianBlur;
@@ -1462,6 +1463,7 @@ public abstract class ImageProcessor implements Cloneable {
 		g.setColor(Color.white);
 		g.fillRect(0, 0, w, h);
 		g.setColor(Color.black);
+		//if (ij.IJ.isMacOSX()) drawStringUsingGlyphVector(g, font, s, 0, h-descent); else
 		g.drawString(s, 0, h-descent);
 		g.dispose();
 		ImageProcessor ip = new ColorProcessor(bi);
@@ -1479,6 +1481,20 @@ public abstract class ImageProcessor implements Cloneable {
 		resetRoi();
 		cy += h;
 	}
+	
+	// Failed attempt to work around non-antialiased text rendering bug on macOS
+	/*
+	private static void drawStringUsingGlyphVector(Graphics2D g, Font font, String text, int x, int y) {
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+        g.setFont(font);
+        FontRenderContext frc = g.getFontRenderContext();
+        GlyphVector gv = font.createGlyphVector(frc, text);
+        //Shape shape = gv.getOutline();
+        //g.translate(0, 10);
+		//g.fill(shape);
+        g.drawGlyphVector(gv, x, y);
+	}
+	*/
 
 	/** Draws a string at the specified location using the current fill/draw value.
 	 *  Draws multiple lines if the string contains newline characters.

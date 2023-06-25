@@ -236,6 +236,11 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 			if (showingLabels)
 				imp.setSlice(i);
 			ImageProcessor ip = stack.getProcessor(i);
+			if (ip==null) {
+				IJ.log("ZAxisProfiler: stack.getProcessor("+i+") returned null ("+stack.getClass().getName()+","+ imp+")");
+				values[i-1] = Float.NaN;
+				continue;
+			}
 			if (minThreshold!=ImageProcessor.NO_THRESHOLD)
 				ip.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
 			ip.setRoi(roi);

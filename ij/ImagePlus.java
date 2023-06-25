@@ -3402,6 +3402,24 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public boolean getHideOverlay() {
 		return hideOverlay;
 	}
+	
+	public boolean toggleOverlay() {
+		if (getOverlay()!=null)
+			setHideOverlay(!hideOverlay);
+		else {
+			RoiManager rm = RoiManager.getInstance();
+			if (rm!=null) {
+				setHideOverlay(!hideOverlay);
+				if (hideOverlay)
+					rm.runCommand("show none");
+				else if (rm.getCount()>1) {
+					if (!IJ.isMacro()) rm.toFront();
+					rm.runCommand("show all with labels");
+				}
+			}
+		}
+		return hideOverlay;
+	}
 
 	/** Enable/disable use of antialiasing by the flatten() method. */
 	public void setAntialiasRendering(boolean antialiasRendering) {

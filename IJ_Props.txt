@@ -219,11 +219,12 @@ overlay04="Show Overlay",ij.plugin.OverlayCommands("show")
 overlay05="From ROI Manager",ij.plugin.OverlayCommands("from")
 overlay06="To ROI Manager",ij.plugin.OverlayCommands("to")
 overlay07="Remove Overlay",ij.plugin.OverlayCommands("remove")
-overlay08="List Elements",ij.plugin.OverlayCommands("list")
-overlay09="Flatten[F]",ij.plugin.OverlayCommands("flatten")
-overlay10="Labels...",ij.plugin.OverlayLabels
-overlay11="Measure Overlay",ij.plugin.OverlayCommands("measure")
-overlay12="Overlay Options...[Y]",ij.plugin.OverlayCommands("options")
+overlay08="Toggle Overlay",ij.plugin.OverlayCommands("toggle")
+overlay09="List Elements",ij.plugin.OverlayCommands("list")
+overlay10="Flatten[F]",ij.plugin.OverlayCommands("flatten")
+overlay11="Labels...",ij.plugin.OverlayLabels
+overlay12="Measure Overlay",ij.plugin.OverlayCommands("measure")
+overlay13="Overlay Options...[Y]",ij.plugin.OverlayCommands("options")
 
 # Plugins installed in the Image/Lookup Tables submenu
 lookup01="Invert LUT",ij.plugin.LutLoader("invert")

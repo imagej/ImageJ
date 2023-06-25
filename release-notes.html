@@ -5,9 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.54f23  18 June 2023</u>
+<li> <u>1.54f31  25 June 2023</u>
 <ul>
 
+<li> Thanks to Stephen Cross, added the <i>Image&gt;Overlay&gt;Toggle Overlay</i>
+command.
 <li> Thanks to Dennis Chang, drawString() defaults to antialiasing when
 the font size is 14 or greater and antialiasing is disabled by
 default on Macs to work around a Java/macOS text rendering bug
@@ -37,6 +39,11 @@ automatic switching to scientific notation in results tables
 (<a href="http://wsr.imagej.net/macros/bugs/ScientificNotation.ijm">test case</a>).
 <li> Thanks to 'melikovk' and 'scuniff', fixed an incorrect PointRoi point count
 bug when points added interactively.
+<li> Thanks to Herbie Gluender and Michael Schmid, fixed a bug with the
+Array.findMaxima() macro function that occurred the first array element
+was NaN.
+<li> Thanks to Michael Cammer, fixed a 1.54e scale bar regression with
+images that are spatially calibrated and have an ROI. 
 
 </ul>
 

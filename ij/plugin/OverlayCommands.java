@@ -38,6 +38,8 @@ public class OverlayCommands implements PlugIn {
 			show();
 		else if (arg.equals("remove"))
 			remove();
+		else if (arg.equals("toggle"))
+			toggle();
 		else if (arg.equals("from"))
 			fromRoiManager();
 		else if (arg.equals("to"))
@@ -289,6 +291,12 @@ public class OverlayCommands implements PlugIn {
 				ic.setShowAllList(null);
 			imp.setOverlay(null);
 		}
+	}
+
+	void toggle() {
+		ImagePlus imp = IJ.getImage();
+		if (imp!=null)
+			imp.toggleOverlay();
 	}
 
 	void flatten() {

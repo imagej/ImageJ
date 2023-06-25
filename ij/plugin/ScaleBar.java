@@ -3,6 +3,7 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
+import ij.util.Tools;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -150,9 +151,7 @@ public class ScaleBar implements PlugIn {
 		Calibration cal = imp.getCalibration();
 		ImageWindow win = imp.getWindow();
 		double mag = (win!=null)?win.getCanvas().getMagnification():1.0;
-		if (mag>1.0)
-			mag = 1.0;
-
+		if (mag>1.0) mag=1.0;
 		double pixelWidth = cal.pixelWidth;
 		if (pixelWidth==0.0)
 			pixelWidth = 1.0;
@@ -163,12 +162,18 @@ public class ScaleBar implements PlugIn {
 		double imageHeight = imp.getHeight()*pixelHeight;
 
 		boolean hBarWidthChanged = false;
-		if (currentROIExists && roiX>=0 && roiWidth>10) {
+		String options = Macro.getOptions();
+		if (options!=null && options.contains("width=")) {
+			// macro sets the bar width
+			String hBarWidthStr = Macro.getValue(options,"width","-1");
+			config.hBarWidth = Tools.parseDouble(hBarWidthStr,-1);
+			if (config.hBarWidth>0)
+				config.hDigits = Utils.getDigits(hBarWidthStr);
+		} else if (currentROIExists && roiX>=0 && roiWidth>10) {
 			// If the user has a ROI, set the bar width according to ROI width.
 			config.hBarWidth = roiWidth*pixelWidth;
 			hBarWidthChanged = true;
-		}
-		else if (config.hBarWidth<=0.0 || config.hBarWidth<0.01*imageWidth || config.hBarWidth>0.67*imageWidth) {
+		} else if (config.hBarWidth<=0.0 || config.hBarWidth<0.01*imageWidth || config.hBarWidth>0.67*imageWidth) {
 			// If the bar is of negative width or too wide for the image,
 			// set the bar width to 80 pixels.
 			config.hBarWidth = (80.0*pixelWidth)/mag;
@@ -182,11 +187,14 @@ public class ScaleBar implements PlugIn {
 		}
 
 		boolean vBarHeightChanged = false;
-		if (currentROIExists && roiY>=0 && roiHeight>10) {
+		if (options!=null && options.contains("height=")) {
+			// macro sets the bar height
+			config.vBarHeight = Tools.parseDouble(Macro.getValue(options,"height","-1"),-1);
+			hBarWidthChanged = true;
+		} else if (currentROIExists && roiY>=0 && roiHeight>10) {
 			config.vBarHeight = roiHeight*pixelHeight;
 			vBarHeightChanged = true;
-		}
-		else if (config.vBarHeight<=0.0 || config.vBarHeight<0.01*imageHeight || config.vBarHeight>0.67*imageHeight) {
+		} else if (config.vBarHeight<=0.0 || config.vBarHeight<0.01*imageHeight || config.vBarHeight>0.67*imageHeight) {
 			config.vBarHeight = (80.0*pixelHeight)/mag;
 			config.vBarHeight = Utils.round(config.vBarHeight);
 			// If 80 pixels is too much, do 2/3 of the image. If too small, 4% of image (rounded down)
@@ -200,6 +208,7 @@ public class ScaleBar implements PlugIn {
 			config.hDigits = Utils.getDigits(config.hBarWidth);
 		if (vBarHeightChanged)
 			config.vDigits = Utils.getDigits(config.vBarHeight);
+		//IJ.log("computeDefaultBarWidth2: "+config.hBarWidth+" "+currentROIExists+" "+config.vDigits);
 	} 
 
 	/**
