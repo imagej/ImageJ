@@ -14,3 +14,4 @@
 
 # IntelliJ IDEA
 /.idea/
+/.jython_cache/
