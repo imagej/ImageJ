@@ -189,8 +189,10 @@ public class ScaleBar implements PlugIn {
 		boolean vBarHeightChanged = false;
 		if (options!=null && options.contains("height=")) {
 			// macro sets the bar height
-			config.vBarHeight = Tools.parseDouble(Macro.getValue(options,"height","-1"),-1);
-			hBarWidthChanged = true;
+			String vBarHeightStr = Macro.getValue(options,"height","-1");
+			config.vBarHeight = Tools.parseDouble(vBarHeightStr,-1);
+			if (config.vBarHeight>0)
+				config.vDigits = Utils.getDigits(vBarHeightStr);
 		} else if (currentROIExists && roiY>=0 && roiHeight>10) {
 			config.vBarHeight = roiHeight*pixelHeight;
 			vBarHeightChanged = true;
@@ -223,11 +225,13 @@ public class ScaleBar implements PlugIn {
 		// Update the user configuration if there is an ROI, or if
 		// the defined bar width is negative (it is if it has never
 		// been set in this ImageJ instance).
-		if (currentROIExists) {
+		if (currentROIExists)
 			config.location = locations[AT_SELECTION];
+		if (IJ.isMacro()) {
+			config = new ScaleBarConfiguration();
+			config.boldText = false;
+			config.useOverlay = false;
 		}
-		if (IJ.isMacro())
-			config.updateFrom(new ScaleBarConfiguration());
 		Calibration cal = imp.getCalibration();
 		if (config.showHorizontal && (config.hBarWidth <= 5*cal.pixelWidth || config.hBarWidth > cal.pixelWidth*imp.getWidth()) ||
 				config.showVertical && (config.vBarHeight <= 5*cal.pixelHeight || config.vBarHeight > cal.pixelHeight*imp.getHeight()) ||
@@ -654,6 +658,8 @@ public class ScaleBar implements PlugIn {
 
 		BarDialog(String hUnits, String vUnits, boolean multipleSlices) {
 			super("Scale Bar");
+			if (config.hDigits>7) config.hDigits=4;
+			if (config.vDigits>7) config.vDigits=4;
 			addNumericField("Width in "+hUnits+": ", config.hBarWidth, config.hDigits);
 			addNumericField("Height in "+vUnits+": ", config.vBarHeight, config.vDigits);
 			addNumericField("Thickness in pixels: ", config.barThicknessInPixels, 0);
@@ -695,14 +701,19 @@ public class ScaleBar implements PlugIn {
 			config.barThicknessInPixels = (int)gd.getNextNumber();
 			config.fontSize = (int)gd.getNextNumber();
 			config.color = gd.getNextChoice();
-			config.bcolor = gd.getNextChoice();
-			config.location = gd.getNextChoice();
+			config.bcolor = bcolors[gd.getNextChoiceIndex()];
+			if (imp!=null && imp.getRoi()!=null)
+				config.location = gd.getNextChoice(); //disables smart recording
+			else
+				config.location = locations[gd.getNextChoiceIndex()];
 			config.showHorizontal = gd.getNextBoolean();
 			config.showVertical = gd.getNextBoolean();
 			config.boldText = gd.getNextBoolean();
 			config.hideText = gd.getNextBoolean();
 			config.serifFont = gd.getNextBoolean();
 			config.useOverlay = gd.getNextBoolean();
+			if (imp.isComposite())
+				config.useOverlay = true;
 			if (multipleSlices)
 				config.labelAll = gd.getNextBoolean();
 			if (!config.showHorizontal && !config.showVertical && IJ.isMacro()) {
@@ -712,7 +723,9 @@ public class ScaleBar implements PlugIn {
 				// If the conditional above is true, then the macro syntax is the old
 				// one, so we swap a few config variables.
 				config.showHorizontal = true;
-				config.barThicknessInPixels = (int)config.vBarHeight;
+				String options = Macro.getOptions();
+				if ((int)config.vBarHeight!=50 && options!=null&&options.contains("height=")&&!options.contains("thickness="))
+					config.barThicknessInPixels = (int)config.vBarHeight;
 				config.vBarHeight = 0.0;
 			}
 
