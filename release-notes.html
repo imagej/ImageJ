@@ -5,16 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.54f34  28 June 2023</u>
+<li> <u>1.54f  29 June 2023</u>
 <ul>
 
-<li> The <i>Analyze&gt;Tools&gt;Scale Bar</i> command simplifies
-the options string when recording the
-run("Scale Bar...",options) statement.
+<li> Improved recording of the <i>Analyze&gt;Tools&gt;Scale Bar</i> command.
 <li> Thanks to Stephen Cross, added the <i>Image&gt;Overlay&gt;Toggle Overlay</i>
 command.
 <li> Thanks to Dennis Chang, drawString() defaults to antialiasing when
-the font size is 14 or greater and antialiasing is disabled by
+the font size is 14 or greater and it is disabled by
 default on Macs to work around a Java/macOS text rendering bug
 (<a href="http://wsr.imagej.net/macros/SmallText.ijm">example macro</a>,
 <a href="http://wsr.imagej.net/macros/js/SmallText.js">example script</a>).
@@ -25,7 +23,8 @@ to add images to GenericDialogs, public
 adds slice labels when "Label Images" is checked in the
 dialog.
 <li> Fixed bug with getDir() macro function and IJ.getDir() method
-changing the default directory when used to choose a directory.
+changing the default directory when they are used to choose
+a directory.
 <li> Thanks to 'sat1999', fixed bug with File.setDefaultDir()
 macro function and OpenDialog.setDefaultDirectory() method
 not working as expected when used with directory choosers
@@ -40,12 +39,12 @@ image edge.
 <li> Thanks to Julia Behnsen and Michael Schmid, fixed bug with 
 automatic switching to scientific notation in results tables
 (<a href="http://wsr.imagej.net/macros/bugs/ScientificNotation.ijm">test case</a>).
-<li> Thanks to 'melikovk' and 'scuniff', fixed an incorrect PointRoi point count
-bug when points added interactively.
+<li> Thanks to 'melikovk' and 'scuniff', fixed a PointRoi point count
+bug when points are added both programmatically and interactively.
 <li> Thanks to Herbie Gluender and Michael Schmid, fixed a bug with the
-Array.findMaxima() macro function that occurred the first array element
+Array.findMaxima() macro function that occurred when the first array element
 was NaN.
-<li> Thanks to Michael Cammer, fixed a 1.54e <i>Analyze&gt;Tools&gt;Scale BAr</i>
+<li> Thanks to Michael Cammer, fixed a 1.54e <i>Analyze&gt;Tools&gt;Scale BAR</i>
 regression with images that are spatially calibrated and have an ROI. 
 
 </ul>
