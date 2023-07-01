@@ -50,6 +50,7 @@ import ij.gui.*;
  *                                      16-bit and float output possible,
  *                                      parallel processing for stacks
  *                                      Voronoi output added
+ * @see <a href="https://imagej.net/plugins/adjustable-watershed/adjustable-watershed">Adjustable Watershed plugin</a>
  */
 public class EDM implements ExtendedPlugInFilter {
     /** Output type: overwrite current 8-bit image */

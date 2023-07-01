@@ -561,6 +561,16 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 								commandOptions = commandOptions.substring(0,index);
 						}
 					}
+					if (name.equals("Scale Bar...")) {
+						commandOptions = commandOptions.replace("thickness=4 ","");
+						commandOptions = commandOptions.replace("location=[Lower Right] ","");
+						commandOptions = commandOptions.replace("font=14 ","");
+						commandOptions = commandOptions.replace("color=White ","");
+						commandOptions = commandOptions.replace("background=None ","");
+						if (commandOptions.contains("height=50")||commandOptions.contains("thickness="))
+							commandOptions = commandOptions.replace("horizontal ","");
+							
+					}
 					String prefix = "run(";
 					if (scriptMode) {
 						boolean addImp = imageUpdated || (WindowManager.getCurrentImage()!=null
