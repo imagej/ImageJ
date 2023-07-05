@@ -1358,8 +1358,8 @@ class DicomDictionary {
 		"00187062=LTExposure Control Mode Description",
 		"00187064=CSExposure Status",
 		"00187065=DSPhototimer Setting",
-		"00188151=ISX-Ray Tube Current in µA",
-		"00189330=ISX-Ray Tube Current in mA",
+		"00188151=DSX-Ray Tube Current in µA",
+		"00189330=DSX-Ray Tube Current in mA",
 		
 		"0020000D=UIStudy Instance UID",
 		"0020000E=UISeries Instance UID",
