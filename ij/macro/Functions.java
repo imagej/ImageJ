@@ -3362,6 +3362,8 @@ public class Functions implements MacroConstants, Measurements {
 							rm.close();
 						}
 					}
+					if (unUpdatedTable!=null && pattern.equals(unUpdatedTable.getTitle()))
+						unUpdatedTable = null;
 				}
 			}
 

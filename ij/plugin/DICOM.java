@@ -1192,7 +1192,7 @@ class DicomDictionary {
 		"00181147=CSField of View Shape",
 		"00181149=ISField of View Dimensions(s)",
 		"00181150=ISExposure Time",
-		"00181151=ISX-ray Tube Current",
+		"00181151=ISX-Ray Tube Current",
 		"00181152=ISExposure",
 		"00181153=ISExposure in uAs",
 		"00181154=DSAverage Pulse Width",
@@ -1358,6 +1358,8 @@ class DicomDictionary {
 		"00187062=LTExposure Control Mode Description",
 		"00187064=CSExposure Status",
 		"00187065=DSPhototimer Setting",
+		"00188151=DSX-Ray Tube Current in µA",
+		"00189330=DSX-Ray Tube Current in mA",
 		
 		"0020000D=UIStudy Instance UID",
 		"0020000E=UISeries Instance UID",

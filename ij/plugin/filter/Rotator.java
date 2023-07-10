@@ -140,7 +140,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 		String macroOptions = Macro.getOptions();
 		if (macroOptions!=null) {
 			if (macroOptions.indexOf(" interpolate")!=-1)
-				macroOptions.replaceAll(" interpolate", " interpolation=Bilinear");
+				macroOptions = macroOptions.replaceAll(" interpolate", " interpolation=Bilinear");
 			else if (macroOptions.indexOf(" interpolation=")==-1)
 				macroOptions = macroOptions+" interpolation=None";
 			Macro.setOptions(macroOptions);
