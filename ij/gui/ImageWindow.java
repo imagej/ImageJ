@@ -257,16 +257,25 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		return initialMagnification;
 	}
 
-	/** Override Container getInsets() to make room for some text above the image. */
 	public Insets getInsets() {
+		return getInsets(true);
+	}
+
+	/** Override Container getInsets() to make room for some text above the image.
+	 *  With "includeSmallImageMargins", also includes the margins for padding an image
+	 *  that is too small for the window size. */
+	public Insets getInsets(boolean includeSmallImageMargins) {
 		Insets insets = super.getInsets();
 		if (imp==null)
 			return insets;
 		double mag = ic.getMagnification();
-		int extraWidth = (int)((MIN_WIDTH - imp.getWidth()*mag)/2.0);
-		if (extraWidth<0) extraWidth = 0;
-		int extraHeight = (int)((MIN_HEIGHT - imp.getHeight()*mag)/2.0);
-		if (extraHeight<0) extraHeight = 0;
+		int extraWidth = 0, extraHeight = 0;
+		if (includeSmallImageMargins) {
+			extraWidth = (int)((MIN_WIDTH - imp.getWidth()*mag)/2.0);
+			if (extraWidth<0) extraWidth = 0;
+			extraHeight = (int)((MIN_HEIGHT - imp.getHeight()*mag)/2.0);
+			if (extraHeight<0) extraHeight = 0;
+		}
 		insets = new Insets(insets.top+textGap+extraHeight, insets.left+extraWidth, insets.bottom+extraHeight, insets.right+extraWidth);
 		return insets;
 	}

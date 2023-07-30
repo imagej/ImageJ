@@ -752,7 +752,7 @@ public class Opener {
 			img = bi;
 		}
 		imp = new ImagePlus(f.getName(), img);
-		if (imp.getBitDepth()==16)
+		if (imp.getBitDepth()==16 && imp.getStackSize()>1)
 			imp = new CompositeImage(imp, IJ.COMPOSITE);
 		FileInfo fi = new FileInfo();
 		fi.fileFormat = fi.IMAGEIO;

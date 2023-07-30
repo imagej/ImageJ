@@ -6,7 +6,7 @@ import ij.measure.*;
 import ij.util.Tools;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
+import java.util.*;
 
 /** This plugin implements the Analyze/Tools/Scale Bar command.
  * Divakar Ramachandran added options to draw a background 
@@ -728,12 +728,13 @@ public class ScaleBar implements PlugIn {
 					config.barThicknessInPixels = (int)config.vBarHeight;
 				config.vBarHeight = 0.0;
 			}
-
-			String widthString = ((TextField) gd.getNumericFields().elementAt(0)).getText();
-			config.hDigits = Utils.getDigits(widthString);
-			String heightString = ((TextField) gd.getNumericFields().elementAt(1)).getText();
-			config.vDigits = Utils.getDigits(heightString);
-
+			Vector numericFields = gd.getNumericFields();
+			if (numericFields!=null) {
+				String widthString = ((TextField) numericFields.elementAt(0)).getText();
+				config.hDigits = Utils.getDigits(widthString);
+				String heightString = ((TextField) numericFields.elementAt(1)).getText();
+				config.vDigits = Utils.getDigits(heightString);
+			}
 			updateScalebar(true);
 			return true;
 		}

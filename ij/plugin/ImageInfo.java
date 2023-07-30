@@ -520,7 +520,10 @@ public class ImageInfo implements PlugIn {
 	}
 
 	private void showInfo(ImagePlus imp, String info, int width, int height) {
-		new TextWindow("Info for "+imp.getTitle(), info, width, height);
+		if (GraphicsEnvironment.isHeadless())
+			IJ.log(info);
+		else
+			new TextWindow("Info for "+imp.getTitle(), info, width, height);
 		//Editor ed = new Editor();
 		//ed.setSize(width, height);
 		//ed.create("Info for "+imp.getTitle(), info);

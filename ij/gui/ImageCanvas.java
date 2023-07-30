@@ -769,14 +769,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		ImageWindow win = imp.getWindow();
 		if (win==null) return;
 		Rectangle bounds = win.getBounds();
-		Insets insets = win.getInsets();
+		Insets insets = win.getInsets(false); // do not include small window padding
 		int sliderHeight = win.getSliderHeight();
 		double xmag = (double)(bounds.width-(insets.left+insets.right+ImageWindow.HGAP*2))/srcRect.width;
 		double ymag = (double)(bounds.height-(ImageWindow.VGAP*2+insets.top+insets.bottom+sliderHeight))/srcRect.height;
 		setMagnification(Math.min(xmag, ymag));
 		int width=(int)(imageWidth*magnification);
 		int height=(int)(imageHeight*magnification);
-		if (width==dstWidth&&height==dstHeight) return;
+		if (width==dstWidth && height==dstHeight)
+			return;
 		srcRect=new Rectangle(0,0,imageWidth, imageHeight);
 		setSize(width, height);
 		getParent().doLayout();
