@@ -77,14 +77,12 @@ Returns a copy of <i>array</i>.
 Returns a version of <i>array</i> where all numeric or string elements
 in the array that contain <i>value</i> have been deleted
 (<a href="../../macros/examples/ArrayDeleteDemo.txt">examples</a>).
-Requires 1.52o.
 <br>
 
 <a name="Array.deleteIndex"></a>
 <b>Array.deleteIndex(array, index)</b> - 
 Returns a version of <i>array</i> where the element with the
 specified index has been deleted.
-Requires 1.52o.
 <br>
 
 <a name="Array.fill"></a>
@@ -187,7 +185,6 @@ String sorts are case-insensitive.
 Sorts multiple arrays, where all the arrays adopt the sort
 order of <i>array1</i>
 (<a href="../../macros/examples/ArraySortDemo.txt">example</a>).
-Requires 1.52u.
 <br>
 
 <a name="Array.trim"></a>
@@ -470,7 +467,6 @@ and color
 The message can be broken into
 multiple lines by inserting new line characters ("\n") into the string.
 The 'fontSize' and 'fontColor' arguments are optional.
-Requires 1.52q.
 <br>
 <a name="Dialog.addString"></a>
 <b>Dialog.addString(label, initialText)</b> -
@@ -874,13 +870,11 @@ Returns the file name (e.g., "blobs.tif") from <i>path</i>.<br>
 <a name="File.getNameWithoutExtension"></a>
 <b>File.getNameWithoutExtension(path)</b> - 
 Returns the name (e.g., "blobs") from <i>path</i> without the extension.
-Requires 1.52r.
 <br>
 
 <a name="File.getDirectory"></a>
 <b>File.getDirectory(path)</b> - 
 Returns the directory (e.g., "C:/Users/wayne/images/") from <i>path</i>.
-Requires 1.52r.
 <br>
 
 <a name="File.getDefaultDir"></a>
@@ -889,13 +883,11 @@ Returns the default directory used by file open dialogs
 or the current working directory if called from a
 command line macro and File.setDefaultDir() has
 not been called.
-Requires 1.52s.
 <br>
 
 <a name="File.setDefaultDir"></a>
 <b>File.setDefaultDir(directoryPath)</b> - 
 Sets the default directory used by file open dialogs.
-Requires 1.52s.
 <br>
 
 <a name="File.getParent"></a>
@@ -1750,7 +1742,6 @@ images and intensity values from RGB images.
 Uses bilinear interpolation if 'x' or 'y' are not integers.
 Use <a href="#getPixel">getPixel(x, y)</a>
 to read raw pixel values.
-Requires 1.52p.
 <p>
 
 <a name="get-foreground"></a>
@@ -1813,13 +1804,11 @@ are not named "Results".
 <a name="rotation-angle"></a>
 <b>getValue("rotation.angle")</b><br>
 Returns the current <i>Image&gt;Transform&gt;Rotate</i> angle.
-Requires 1.52p.
 <p>
 
 <a name="image.size"></a>
 <b>getValue("image.size")</b><br>
 Returns the size of the current image in bytes.
-Requires 1.52u.
 <p>
 
 <a name="getMeasurementValue"></a>
@@ -1832,7 +1821,6 @@ Returns a measurement result, where the argument is
 "MinThr", "MaxThr" or "Length".
 Add " raw" to the argument to disable calibration, for example getValue("Mean raw").
 Add " limit" to the argument to enable the "limit to threshold" option.
-Requires 1.52p.
 <p>
 
 <a name="getVoxelSize"></a>
@@ -2035,7 +2023,6 @@ Returns <i>true</i> if ImageJ is running as an applet.
 <a name="is_area"></a>
 <b>is("area")</b><br>
 Returns <i>true</i> if the current image has an area selection.
-Requires 1.52m.
 <p>
 
 <a name="is_batch_mode"></a>
@@ -2097,7 +2084,6 @@ Returns <i>true</i> if the 'invertY' property of the active image is enabled.
 <a name="is_line"></a>
 <b>is("line")</b><br>
 Returns <i>true</i> if the current image has a line selection.
-Requires 1.52m.
 <p>
 
 <a name="is_locked"></a>
@@ -2319,7 +2305,6 @@ Creates a point selection at the specified location, with the type ('hybrd', 'cr
 or 'extra large') of the point defined in the 'options' string
 (<a href="../../macros/PointsToOverlayDemo.txt">example</a>).
 The point is added to an overlay if the options string contains 'add'.
-Requires 1.52i.
 <p> 
 Create a multi-point selection by using <i>makeSelection("point", xpoints, ypoints)</i>.
 All the makePoint() options ('cross', 'small', 'red', etc.) can be added to first argument.
@@ -3000,7 +2985,6 @@ dataset provided by <i>Plot.create</i> or <i>Plot.add</i>.
 <b>Plot.add(type, xValues, yValues, label)</b><br>
 Adds a curve or set of points to the plot and sets the dataset
 label used by <a href="#Plot.showValuesWithLabels">Plot.showValuesWithLabels</a>.
-Requires 1.52q.
 <br>
 
 <a name="Plot.addHistogram"></a>
@@ -3009,7 +2993,6 @@ Creates a 'staircase' histogram from array 'values'.
 If 'binWidth' is 0, automatic binning is applied. 
 'binCenter' is optional with default=0. BinCenter can, for example,
 be set to an expected symmetry point for avoiding artificial asymmetry.
-Requires 1.52f. 
 <br>
 
 <a name="Plot.drawVectors"></a>
@@ -3155,7 +3138,6 @@ Set the style of the plot object (curve, label, etc.) with the specified index, 
 a comma-delimiterd string ("color1, color2, line width, symbol").
 For an example, run the <i>Help&gt;Examples&gt;Plots&gt;Plot Styles</i>
 command.
-Requires 1.52h.
 <br>
 
 <a name="Plot.freeze"></a>
@@ -3225,7 +3207,6 @@ Displays the plot values in the Results window using the
 dataset labels, for example the labels supplied by
 <a href="#Plot.setLegend">Plot.setLegend</a>.
 Must be preceded by <i>Plot.show</i>.
-Requires 1.52q.
 <br>
 <a name="Plot.drawGrid"></a>
 <b>Plot.drawGrid()</b><br>
@@ -3478,7 +3459,6 @@ macro for examples.
 <a name="Roi.size"></a>
 <b>Roi.size</b><br>
 Returns the size of the current selection in points.
-Requires 1.52r.
 <br>
 
 <a name="Roi.contains"></a>
@@ -3625,7 +3605,6 @@ the fill color to both fill and outline the selection.
 <b>Roi.setAntiAlias(boolean)</b><br>
 Controls whether anti-aliasing is used when drawing selections
 (<a href="https://wsr.imagej.net/macros/AntiAliasingDemo.txt">example</a>).
-Requires 1.52p.
 <br>
 
 <a name="Roi.setName"></a>
@@ -3649,7 +3628,6 @@ Requires 1.53p.
 <a name="Roi.getStrokeWidth"></a>
 <b>Roi.getStrokeWidth</b><br>
 Returns the stroke width of the current selection.
-Requires 1.52r.
 <br>
 
 <a name="Roi.setGroup"></a>
@@ -3657,28 +3635,24 @@ Requires 1.52r.
 Sets the group (a positive number) of the current selection. Zero sets the group to "none".
 See also: <a href="#RoiManager.selectGroup">RoiManager.selectGroup</a>
 and <a href="#RoiManager.setGroup">RoiManager.setGroup</a>.
-Requires 1.52t.
 <br>
 
 <a name="Roi.getGroup"></a>
 <b>Roi.getGroup</b> - 
 Returns the group (a positive number) of the current selection, or zero if
 the selection is not in a group.
-Requires 1.52t.
 <br>
 
 <a name="Roi.setDefaultGroup"></a>
 <b>Roi.setDefaultGroup(group)</b> - 
 Sets the default group (a positive number) of the current selection.
 Zero sets the default group to "none".
-Requires 1.52t.
 <br>
 
 <a name="Roi.getDefaultGroup"></a>
 <b>Roi.getDefaultGroup</b> - 
 Returns the default group (a positive number) of the current selection,
 or zero if the selection is not in a group.
-Requires 1.52t.
 <br>
 
 <a name="Roi.setPosition"></a>
@@ -3690,20 +3664,17 @@ Requires 1.53b.
 <a name="Roi.setPosition_channel"></a>
 <b>Roi.setPosition(channel, slice, frame)</b> - 
 Sets the selection position.
-Requires 1.52r.
 <br>
 
 <a name="Roi.getPosition"></a>
 <b>Roi.getPosition(channel, slice, frame)</b> - 
 Returns the selection position.
-Requires 1.52r.
 <br>
 
 <a name="Roi.getPointPosition"></a>
 <b>Roi.getPointPosition(index)</b><br>
 Returns the stack position of the point with the
 specified index in the current point selection.
-Requires 1.52r.
 <br>
 
 <a name="Roi.setJustification"></a>
@@ -4908,7 +4879,6 @@ Returns the x, y, z, time and value units.
 <a name="Stack.setUnits"></a>
 <b>Stack.setUnits(X, Y, Z, Time, Value)</b> -
 Sets the x, y, z, time and value units.
-Requires 1.52r.
 <br>
 
 <a name="Stack.setXUnit"></a>
@@ -4982,7 +4952,6 @@ If an <i>Orthogonal Views</i> is active, its crosspoint is set to x, y, z
 <a name="Stack.getOrthoViews"></a>
 <b>Stack.getOrthoViews(x, y, z)</b> - 
 If an <i>Orthogonal Views</i> is active, its crosspoint is returned as x, y, z values.
-Requires 1.52r.
 <br>
 
 <a name="Stack.getOrthoViewsID"></a>
@@ -4994,7 +4963,6 @@ Returns the image ID of the current <i>Orthogonal Views</i>, or zero if none is 
 <b>Stack.getOrthoViewsIDs(XY, YZ, XZ)</b> - 
 If an <i>Orthogonal Views</i> is active, the three views are returned as
 XY, YZ, XZ image ID values.
-Requires 1.52r.
 <br>
 
 <a name="Stack.stopOrthoViews"></a>
@@ -5094,7 +5062,6 @@ Returns the contents of the clipboard.
 <b>String.join(array)</b> - 
 Creates a ", " delimited string from the elements of 'array'.
 See also: <a href="#split">split</a>.
-Requires 1.52s.
 <br>
 
 <a name="String.join"></a>
@@ -5105,7 +5072,7 @@ Creates a string from the elements of 'array', using the specified string delimi
 <a name="String.trim"></a>
 <b>String.trim(string)</b> - 
 Returns a copy of 'string' that has leading and trailing whitespace omitted.
-Requires 1.52s. Can be replaced with string.trim() in ImageJ 1.52t and later.
+Can be replaced with string.trim() in ImageJ 1.52t and later.
 <br>
 
 <a name="String.show"></a>
@@ -5293,7 +5260,6 @@ numeric values except for row labels.
 Sets the location and size of the current table. Works with
 other types of windows if a title is specified as the
 fifth argument.
-Requires 1.52o.
 <br>
 
 </blockquote>
