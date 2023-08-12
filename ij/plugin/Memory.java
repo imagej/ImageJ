@@ -59,7 +59,7 @@ public class Memory implements PlugIn {
 			+"may cause ImageJ to fail to start. The title of\n"
 			+"the Edit>Options>Memory & Threads dialog\n"
 			+"box changes to \"Memory (64-bit)\" when ImageJ\n"
-			+"is running on a 64-bit version of Java."));
+			+"is running on a 64-bit version of Java."))
 				return;
 		}
 		try {

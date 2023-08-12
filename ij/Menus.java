@@ -1169,7 +1169,7 @@ public class Menus {
 			command = className.substring(slashIndex+1);
 		}
 		command = command.replace('_',' ');
-		command = command.trim();
+		//command = command.trim();
 		boolean itemExists = (pluginsTable.get(command)!=null);
 		if(force && itemExists)
 			return;

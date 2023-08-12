@@ -1894,6 +1894,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			if (glasbeyLut==null) {
 				String path = IJ.getDir("luts")+"Glasbey.lut";
 				glasbeyLut = LutLoader.openLut("noerror:"+path);
+				if (glasbeyLut==null) {
+					path = IJ.getDir("luts")+"glasbey.lut";
+					glasbeyLut = LutLoader.openLut("noerror:"+path);
+				}
 				if (glasbeyLut==null)
 					IJ.log("LUT not found: "+path);
 			}

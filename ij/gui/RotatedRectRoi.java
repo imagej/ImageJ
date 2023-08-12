@@ -14,7 +14,7 @@ public class RotatedRectRoi extends PolygonRoi {
 	private double rectWidth = DefaultRectWidth;
 
 	public RotatedRectRoi(double x1, double y1, double x2, double y2, double rectWidth) {
-		super(new float[5], new float[5], 5, FREEROI);
+		super(new float[4], new float[4], 4, FREEROI);
 		this.rectWidth = rectWidth;
 		makeRectangle(x1, y1, x2, y2);
 		state = NORMAL;
@@ -80,10 +80,9 @@ public class RotatedRectRoi extends PolygonRoi {
 		
 	void makeRectangle(double x1, double y1, double x2, double y2) {
 		double length = Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
-		double angle = Math.atan ((x2-x1)/(y2-y1));
-		double wsa = (rectWidth/2.0)*Math.sin((Math.PI/2.0)+angle);
-		double wca = (rectWidth/2.0)*Math.cos((Math.PI/2)+angle);
-		nPoints = 5;
+		double wsa =  0.5*rectWidth*(y2-y1)/length;
+		double wca = -0.5*rectWidth*(x2-x1)/length;
+		nPoints = 4;
 		xpf[3] = (float)(x1-wsa);
 		ypf[3] = (float)(y1-wca);
 		xpf[0] = (float)(x1+wsa);
@@ -92,8 +91,6 @@ public class RotatedRectRoi extends PolygonRoi {
 		ypf[1] = (float)(y2+wca);
 		xpf[2] = (float)(x2-wsa);
 		ypf[2] = (float)(y2-wca);
-		xpf[4] = xpf[0];
-		ypf[4] = ypf[0];
 		makePolygonRelative();
 		cachedMask = null;
 		DefaultRectWidth = rectWidth;

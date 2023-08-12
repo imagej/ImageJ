@@ -93,9 +93,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	}
 	
 	public static void record(String method) {
-		if (textArea==null)
-			return;
-		textArea.append(method+"();\n");
+		if (textArea!=null)
+			textArea.append(method+";\n");
 	}
 
 	/** Starts recording a command. Does nothing if the recorder is

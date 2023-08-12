@@ -225,8 +225,7 @@ public class PolygonRoi extends Roi {
 			} else
 				drawSpline(g, xSpline, ySpline, splinePoints, true, fill, isActiveOverlayRoi);
 		} else {
-			if (type==POLYLINE || type==FREELINE || type==ANGLE || state==CONSTRUCTING) {
-				g.drawPolyline(xp2, yp2, nPoints);
+			if (type==POLYLINE || type==FREELINE || type==ANGLE || (state==CONSTRUCTING && !(this instanceof RotatedRectRoi))) {				g.drawPolyline(xp2, yp2, nPoints);
 				if (wideLine && !overlay) {
 					g2d.setStroke(onePixelWide);
 					g.setColor(getColor());

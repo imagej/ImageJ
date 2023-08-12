@@ -187,7 +187,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	
 	void addMenuBar(int options) {
 		mb = new MenuBar();
-		if (Menus.getFontSize()!=0) ;
+		if (Menus.getFontSize()!=0)
 			mb.setFont(Menus.getFont());
 		Menu m = new Menu("File");
 		m.add(new MenuItem("New...", new MenuShortcut(KeyEvent.VK_N, true)));
