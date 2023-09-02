@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.54g12  12 August 2023</u>
+<li> <u>1.54g15  02 September 2023</u>
 <ul>
 <li> Thanks to Nicolas De Francesco and Curtis Rueden,
 the macro language documentation (functions.html) is now included
@@ -14,6 +14,8 @@ command.
 <li> Thanks to Robert Baer, the “Associate ’Show All’ ROIs with slices”
 option in the ROI Manager’s More&gt;&gt;Options dialog is now always
 enabled when ImageJ starts up.
+<li> Thanks to Fred Damen and Michael Schmid, the ImageProcessor.getSliceNumber()
+method no long requires a PlugInFilter to return the stack position.
 <li> Thanks to 'Phiir42', fixed bug with closed tables reopening after
 a macro finishes.
 <li> Thanks to 'Ender', fixed headless mode "Scale Bar" and "Show Info" bugs.
@@ -24,8 +26,12 @@ very small images or user resized windows
 RotatedRectRoi rounding bug and a bug where the resulting polygon consisted
 of 5 points instead of 4.
 <li> Thanks to Volker Backer, fixed a Roi group bug with Fiji on Linux.
+<li> Thanks to Yuekan Jiao and Michael Schmid, fixed a rounding error with
+PointRoi.getContainedPoints().
 <li> Thanks to Guenter Pudmich, fixed a 1.54d regression that caused 16-bit
 grayscale PNGs to be opened incorrectly.
+<li> Thanks to Saleh Altahini, fixed bug with opening ImspectorPro MSR files
+using Bio-Formats.
 </ul>
 
 <li> <u>1.54f  29 June 2023</u>

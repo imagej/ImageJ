@@ -41,6 +41,7 @@ public class PlotVirtualStack extends VirtualStack {
 					ip = ip.convertToRGB();
 				else if (bitDepth==8)
 					ip =  ip.convertToByte(false);
+				ip.setSliceNumber(n);
 				return ip;
 			} catch (Exception e) {
 				IJ.handleException(e);

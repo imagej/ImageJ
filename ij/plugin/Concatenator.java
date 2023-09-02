@@ -76,14 +76,14 @@ public class Concatenator implements PlugIn, ItemListener{
 	/** Concatenates four images, stacks or hyperstacks. */
 	public static ImagePlus run(ImagePlus img1, ImagePlus img2, ImagePlus img3, ImagePlus img4) {
 		ImagePlus[] images = new ImagePlus[4];
-		images[0]=img1; images[1]=img2;  images[2]=img3; images[2]=img4;
+		images[0]=img1; images[1]=img2;  images[2]=img3; images[3]=img4;
 		return (new Concatenator()).concatenate(images, false);
 	}
 
 	/** Concatenates five images, stacks or hyperstacks. */
 	public static ImagePlus run(ImagePlus img1, ImagePlus img2, ImagePlus img3, ImagePlus img4, ImagePlus img5) {
 		ImagePlus[] images = new ImagePlus[5];
-		images[0]=img1; images[1]=img2;  images[2]=img3; images[2]=img4; images[5]=img5;
+		images[0]=img1; images[1]=img2;  images[2]=img3; images[3]=img4; images[4]=img5;
 		return (new Concatenator()).concatenate(images, false);
 	}
 

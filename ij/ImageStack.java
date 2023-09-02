@@ -330,6 +330,7 @@ public class ImageStack {
 			ip.setMinAndMax(min, max);
 		if (cTable!=null)
 			ip.setCalibrationTable(cTable);
+		ip.setSliceNumber(n);
 		return ip;
 	}
 	

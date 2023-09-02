@@ -4,18 +4,20 @@ import java.awt.Polygon;
 import java.awt.geom.Rectangle2D;
 
 /** Used by the Roi classes to return float coordinate arrays and to
-	determine if a point is inside or outside of spline fitted selections. */
+	determine if a point is inside or outside of spline fitted selections.
+	Use the public 'xpoints' and 'ypoints' fields to access the coordinates
+	and the 'npoints' field to determine the number of points. */
 public class FloatPolygon {
 	private Rectangle bounds;
 	private float minX, minY, maxX, maxY;
 
-	/** The number of points. */
+	/** The number of points in the 'xpoints' and 'ypoints' arrays. */
 	public int npoints;
 
-	/* The array of x coordinates. */
+	/* An array containing 'npoints' x coordinates. */
 	public float xpoints[];
 
-	/* The array of y coordinates. */
+	/* An array containing 'npoints' y coordinates. */
 	public float ypoints[];
 
 	/** Constructs an empty FloatPolygon. */ 

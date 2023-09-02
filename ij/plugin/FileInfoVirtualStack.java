@@ -220,6 +220,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		if (ip!=null) {
 			if (cTable!=null)
 				ip.setCalibrationTable(cTable);
+			ip.setSliceNumber(n);
 			return ip;
 		} else {
 			int w=getWidth(), h=getHeight();

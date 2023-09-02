@@ -2877,7 +2877,7 @@ public abstract class ImageProcessor implements Cloneable {
 		ij.plugin.filter.ImageMath.applyMacro(this, macro, false);
 	}
 
-	/* Returns the PlugInFilter slice number. */
+	/** Returns the stack position (1-n) of this image. */
 	public int getSliceNumber() {
 		if (sliceNumber<1)
 			return 1;
@@ -2885,7 +2885,8 @@ public abstract class ImageProcessor implements Cloneable {
 			return sliceNumber;
 	}
 
-	/** PlugInFilterRunner uses this method to set the slice number. */
+	/** ImagePlus.setStack() and the PlugInFilterRunner
+	  use this method to set the stack position. */
 	public void setSliceNumber(int slice) {
 		sliceNumber = slice;
 	}

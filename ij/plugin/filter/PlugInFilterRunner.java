@@ -442,7 +442,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 	public int getSliceNumber() {
 		synchronized(sliceForThread){
 			Integer number = (Integer)sliceForThread.get(Thread.currentThread());
-			return (number == null) ? -1 : number.intValue();
+			return (number==null) ? -1 : number.intValue();
 		}
 	}
 

@@ -1301,6 +1301,10 @@ public class Opener {
 		int b0=buf[0]&255, b1=buf[1]&255, b2=buf[2]&255, b3=buf[3]&255;
 		//IJ.log("getFileType: "+ name+" "+b0+" "+b1+" "+b2+" "+b3);
 		
+		 // ImspectorPro MSR
+		if (name.endsWith(".msr")||name.endsWith(".MSR"))
+			return UNKNOWN; // Open with Bio-formats plugin
+		
 		 // Combined TIFF and DICOM created by GE Senographe scanners
 		if (buf[128]==68 && buf[129]==73 && buf[130]==67 && buf[131]==77
 		&& ((b0==73 && b1==73)||(b0==77 && b1==77)))

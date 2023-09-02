@@ -2015,6 +2015,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				updateAndRepaintWindow();
 			else
 				img = null;
+			if (ip!=null)
+				ip.setSliceNumber(n);
 		}
 	}
 

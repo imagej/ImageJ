@@ -846,7 +846,7 @@ public class PointRoi extends PolygonRoi {
 		FloatPolygon p = getFloatPolygon();
 		Point[] points = new Point[p.npoints];
 		for (int i=0; i<p.npoints; i++)
-			points[i] = new Point((int) Math.round(p.xpoints[i] - 0.5f), (int) Math.round(p.ypoints[i] - 0.5f));
+			points[i] = new Point((int) Math.round(p.xpoints[i]), (int) Math.round(p.ypoints[i]));
 		return points;
 	}
 

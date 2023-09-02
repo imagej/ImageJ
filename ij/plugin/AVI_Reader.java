@@ -451,12 +451,16 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 			closeFile(rFile);
 		}
 		if (pixels == null) return null; //failed
+		ImageProcessor ip = null;
 		if (pixels instanceof byte[])
-			return new ByteProcessor(dwWidth, biHeight, (byte[])pixels, cm);
+			ip = new ByteProcessor(dwWidth, biHeight, (byte[])pixels, cm);
 		else if (pixels instanceof short[])
-			return new ShortProcessor(dwWidth, biHeight, (short[])pixels, cm);
+			ip = new ShortProcessor(dwWidth, biHeight, (short[])pixels, cm);
 		else
-			return new ColorProcessor(dwWidth, biHeight, (int[])pixels);
+			ip = new ColorProcessor(dwWidth, biHeight, (int[])pixels);
+		if (ip!=null)
+			ip.setSliceNumber(n);
+		return ip;
 	}
 
 	/** Returns the image width of the virtual stack */

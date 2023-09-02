@@ -222,6 +222,7 @@ public class VirtualStack extends ImageStack {
 		}
 		if (cTable!=null)
 			ip.setCalibrationTable(cTable);
+		ip.setSliceNumber(n);
 		return ip;
 	 }
 	 	 

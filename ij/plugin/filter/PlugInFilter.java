@@ -30,7 +30,8 @@ public interface PlugInFilter {
 		this method and unlock it when the filter is finished.
         For PlugInFilters specifying the {@link #NO_IMAGE_REQUIRED} flag
         and not the {@link #DONE} flag, run(ip) is called once with the
-        argument <code>null</code>.
+        argument <code>null</code>. Use ip.getSliceNumber()
+        to get the stack position (1-n).
      */
 	public void run(ImageProcessor ip);
 

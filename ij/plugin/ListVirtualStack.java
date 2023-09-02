@@ -164,6 +164,7 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 			IJ.redirectErrorMessages(false);
 			if (imp2!=null)
 				imp2.setFileInfo(imp.getOriginalFileInfo());
+			ip.setSliceNumber(n);
 			return ip;
 		} else {
 				ImageProcessor ip = null;
@@ -174,6 +175,7 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 					case 32: ip=new FloatProcessor(imageWidth,imageHeight); break;
 				}
 			IJ.redirectErrorMessages(false);
+			ip.setSliceNumber(n);
 			return ip;
 		}
 	 }
