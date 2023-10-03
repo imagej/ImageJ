@@ -1239,6 +1239,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 
 	private void recordOption(Object component, String value) {
+		if (labels==null)
+			return;
 		String label = (String)labels.get(component);
 		if (value.equals("")) value = "[]";
 		Recorder.recordOption(label, value);

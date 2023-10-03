@@ -25,7 +25,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	private final static int MACRO=0, JAVASCRIPT=1, BEANSHELL=2, PYTHON=3, JAVA=4;
 	private final static String[] modes = {"Macro", "JavaScript", "BeanShell", "Python", "Java"};
 	private Choice mode;
-	private Button makeMacro, help;
+	private Button createButton, runButton, helpButton;
 	private TextField fileName;
 	private String fitTypeStr = CurveFitter.fitList[0];
 	private static TextArea textArea;
@@ -65,23 +65,35 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (m.equals("Plugin")) m=modes[JAVA];
 		mode.select(m);
 		panel.add(mode);
-		panel.add(new Label("    Name:"));
+		panel.add(new Label("  Name:"));
 		fileName = new TextField(defaultName, 15);
 		setFileName();
 		panel.add(fileName);
-		panel.add(new Label("   "));
-		makeMacro = new Button("Create");
-		makeMacro.addActionListener(this);
-		panel.add(makeMacro);
-		panel.add(new Label("   "));
-		help = new Button("?");
-		help.addActionListener(this);
-		panel.add(help);
+		panel.add(new Label("  "));
+		createButton = new Button("Create");
+		createButton.addActionListener(this);
+		panel.add(createButton);
+		if (!IJ.isMacOSX())
+			panel.add(new Label(" "));
+		runButton = new Button("Run");
+		runButton.addActionListener(this);
+		panel.add(runButton);
+		if (!IJ.isMacOSX())
+			panel.add(new Label(" "));
+		helpButton = new Button("Help");
+		helpButton.addActionListener(this);
+		panel.add(helpButton);
 		add("North", panel);
 		textArea = new TextArea("", 15, 80, TextArea.SCROLLBARS_VERTICAL_ONLY);
 		textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		if (IJ.isLinux()) textArea.setBackground(Color.white);
 		add("Center", textArea);
+		textArea.addKeyListener(new KeyAdapter() {
+			public void keyPressed (KeyEvent e) {
+				if (e.getKeyCode()==KeyEvent.VK_CONTROL)
+           			runCode();
+        	}
+    	});
 		GUI.scale(this);
 		pack();
 		GUI.centerOnImageJScreen(this);
@@ -814,9 +826,11 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource()==makeMacro)
+		if (e.getSource()==createButton)
 			createMacro();
-		else if (e.getSource()==help)
+		else if (e.getSource()==runButton)
+			runCode();
+		else if (e.getSource()==helpButton)
 			showHelp();
 	}
 
@@ -850,22 +864,69 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	public void imageOpened(ImagePlus imp) { }
 
 	public void imageClosed(ImagePlus imp) { }
+	
+	void runCode() {
+		if (textArea==null)
+			return;
+		String name = fileName.getText();
+		if (name==null)
+			return;
+		int start = textArea.getSelectionStart();
+		int end = textArea.getSelectionEnd();
+		if (start==0 && end==0) {
+			IJ.error("Run", "Executes the selected text or the line\ncontaining the cursor. Use the control\nkey as a shortcut.");
+			return;
+		}			
+		if (start==end) {
+			String text = textArea.getText();
+			while (start>0) {
+				start--;
+				if (text.charAt(start)=='\n') {
+					start++;
+					break;
+				}
+			}
+			if (text.charAt(end)=='\n')
+				end--;
+			while (end<text.length()-1) {
+				end++;
+				if (text.charAt(end)=='\n')
+					break;
+			}
+			textArea.setSelectionStart(start);
+			textArea.setSelectionEnd(end);
+		}
+		String text = textArea.getSelectedText();
+		if (text==null)
+			return;
+		if (name.endsWith("js"))
+			(new Macro_Runner()).runJavaScript(text, "");
+		else if (name.endsWith("bsh") || name.endsWith("java"))
+			Macro_Runner.runBeanShell(text,"");
+		else if (name.endsWith("py"))
+			Macro_Runner.runPython(text,"");
+		else
+			IJ.runMacro(text, "");
+	}
 
     void showHelp() {
     	IJ.showMessage("Recorder",
-			"Click \"Create\" to open recorded commands\n"  
-			+"as a macro in an editor window.\n" 
-			+" \n" 
-			+"In the editor:\n" 
+			"Click \"Create\" to open the recorded commands\n"  
+			+"in an Editor window.\n" 
+			+" \n"
+			+"Click \"Run\" to execute the selected text or the line\n"
+			+"containing the cursor. Use the control key as a shortcut.\n"
+			+" \n"
+			+"In the Editor, after running \"Create\":\n" 
 			+" \n"
 			+"    Type ctrl+R (Macros>Run Macro) to\n" 
-			+"    run the macro.\n"     
+			+"    run the macro or script.\n"     
 			+" \n"    
 			+"    Use File>Save As to save it and\n" 
 			+"    ImageJ's Open command to open it.\n" 
 			+" \n"    
-			+"    To create a command, save in the plugins\n"  
-			+"    folder and run Help>Refresh Menus.\n"  
+			+"    To create a command, save the macro or script in\n"  
+			+"    the plugins folder and run Help>Refresh Menus.\n"  
 		);
     }
     

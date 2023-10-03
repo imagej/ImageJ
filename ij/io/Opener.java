@@ -1313,6 +1313,12 @@ public class Opener {
 		 // Big-endian TIFF ("MM")
 		if (name.endsWith(".lsm"))
 				return UNKNOWN; // The LSM	Reader plugin opens these files
+				
+		 // OME TIFF
+		if (bioformats && name.contains(".ome.tif"))
+				return UNKNOWN; // Open with Bio-formats plugin
+				
+		// TIFF
 		if (b0==73 && b1==73 && b2==42 && b3==0 && !(bioformats&&name.endsWith(".flex")))
 			return TIFF;
 

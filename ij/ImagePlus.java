@@ -1102,13 +1102,15 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	/* Returns uncalibrated statistics for this image or ROI, including
-		256 bin histogram, pixelCount, mean, mode, min and max. */
+		256 bin histogram, pixelCount, mean, mode, standard deviation,
+		min and max.
+	*/
 	public ImageStatistics getRawStatistics() {
 		if (roi!=null && roi.isArea())
 			ip.setRoi(roi);
 		else
 			ip.resetRoi();
-		return ImageStatistics.getStatistics(ip, AREA+MEAN+MODE+MIN_MAX, null);
+		return ImageStatistics.getStatistics(ip, AREA+MEAN+MODE+STD_DEV+MIN_MAX, null);
 	}
 
 	/** Returns an ImageStatistics object generated using the

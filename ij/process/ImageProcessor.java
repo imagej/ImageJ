@@ -76,6 +76,8 @@ public abstract class ImageProcessor implements Cloneable {
 	private int sliceNumber;
 	private Overlay overlay;
 	private boolean noReset;
+	private boolean histogram16;
+	private boolean addOne;
 
     ProgressBar progressBar;
 	protected int width, snapshotWidth;
@@ -594,6 +596,8 @@ public abstract class ImageProcessor implements Cloneable {
 			throw new IllegalArgumentException("Null method");
 		boolean darkBackground = method.contains("dark");
 		noReset = method.contains("no-reset");
+		histogram16 = method.contains("16") && getBitDepth()==16;
+		addOne = !method.contains("16");
 		int lut = RED_LUT;
 		if (method.contains("b&w"))
 			lut = BLACK_AND_WHITE_LUT;
@@ -630,7 +634,7 @@ public abstract class ImageProcessor implements Cloneable {
 		double min=0.0, max=0.0;
 		boolean notByteData = !(this instanceof ByteProcessor);
 		ImageProcessor ip2 = this;
-		if (notByteData) {
+		if (notByteData && !histogram16) {
 			ImageProcessor mask = ip2.getMask();
 			Rectangle rect = ip2.getRoi();
 			if (!noReset || lutUpdate==OVER_UNDER_LUT)
@@ -643,21 +647,32 @@ public abstract class ImageProcessor implements Cloneable {
 		}
 		ImageStatistics stats = ip2.getStats();
 		AutoThresholder thresholder = new AutoThresholder();
-		int threshold = thresholder.getThreshold(method, stats.histogram);
+		thresholder.setBilevelSubractOne(addOne);
+		int[] histogram = stats.histogram;
+		if (histogram16 && stats.histogram16!=null)
+			histogram = stats.histogram16;
+		int threshold = thresholder.getThreshold(method, histogram);
 		double lower, upper;
+		double tmax = 255.0;
+		if (histogram.length>256)
+			tmax = 65535.0;
 		if (darkBackground) {
 			if (isInvertedLut())
 				{lower=0.0; upper=threshold;}
 			else
-				{lower=threshold+1; upper=255.0;}
+				{lower=threshold+(addOne?1:0); upper=tmax;}
 		} else {
 			if (isInvertedLut())
-				{lower=threshold+1; upper=255.0;}
+				{lower=threshold+(addOne?1:0); upper=tmax;}
 			else
 				{lower=0.0; upper=threshold;}
 		}
-		if (lower>255) lower = 255;
-		scaleAndSetThreshold(lower, upper, lutUpdate);
+		if (histogram16)
+			setThreshold(lower, upper, lutUpdate);
+		else {
+			if (lower>255) lower = 255;
+			scaleAndSetThreshold(lower, upper, lutUpdate);
+		}
 	}
 
 	/** Automatically sets the lower and upper threshold levels, where 'method'
@@ -2877,7 +2892,7 @@ public abstract class ImageProcessor implements Cloneable {
 		ij.plugin.filter.ImageMath.applyMacro(this, macro, false);
 	}
 
-	/** Returns the stack position (1-n) of this image. */
+	/** Returns the current stack position (1-n) of this image. */
 	public int getSliceNumber() {
 		if (sliceNumber<1)
 			return 1;
@@ -2885,8 +2900,10 @@ public abstract class ImageProcessor implements Cloneable {
 			return sliceNumber;
 	}
 
-	/** ImagePlus.setStack() and the PlugInFilterRunner
-	  use this method to set the stack position. */
+	/** ImagePlus.setStack(n), ImageStack.getProcessor(n),
+	 * VirtualStack.getProcessor(n) and the PlugInFilterRunner 
+	 * set the stack position using this method.
+	*/
 	public void setSliceNumber(int slice) {
 		sliceNumber = slice;
 	}

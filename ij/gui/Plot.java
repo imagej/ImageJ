@@ -1000,10 +1000,11 @@ public class Plot implements Cloneable {
 		if (plotDrawn) updateImage();
 	}
 
-	/** Sets the label for the plot object nuber 'index' in the sequence they were added.
+	/** Sets the label for the plot object number 'index' in the sequence they were added.
 	 *  With index=-1, sets the label for the last object added.
 	 *  For x/y data, the label is used for the legend and as header in getResultsTableWithLabels.
-	 *  For Text/Label objects, it affects the label shown (but the plot is not redisplayed). */
+	 *  For Text/Label objects, it affects the label shown (but the plot is not redisplayed).
+	*/
 	public void setLabel(int index, String label) {
 		if (index < 0) index = allPlotObjects.size() + index;
 		allPlotObjects.get(index).label = label;

@@ -120,10 +120,16 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		} else {
 			GenericDialog gd = GUI.newNonBlockingDialog(command,imp);
 			radius = lastRadius[filterType]<=0 ? 2 :  lastRadius[filterType];
-			gd.addNumericField("Radius", radius, 1, 6, "pixels");
+			if (filterType!=OUTLIERS)
+				gd.addNumericField("Radius", radius, 1, 6, "pixels");
 			if (filterType==OUTLIERS) {
-				int digits = imp.getType() == ImagePlus.GRAY32 ? 2 : 0;
-				gd.addNumericField("Threshold", lastThreshold, digits);
+				int digits = imp.getType()==ImagePlus.GRAY32 ? 2 : 0;				
+				gd.addSlider("Radius:", 0.5, 25, radius, 0.5);
+				double maxValue = lastThreshold*2;
+				ImageStatistics stats = imp.getRawStatistics();
+				if (stats.stdDev>maxValue)
+					maxValue = stats.stdDev;
+				gd.addSlider("Threshold:", 0, maxValue, lastThreshold);
 				gd.addChoice("Which outliers", outlierStrings, outlierStrings[lastWhichOutliers]);
 				gd.addHelp(IJ.URL2+"/docs/menus/process.html#outliers");
 			} else if (filterType==REMOVE_NAN) {

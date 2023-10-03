@@ -125,7 +125,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	private boolean listenersNotified;
 	private boolean antiAlias = true;
 	private int group;
-	private boolean usingDefaultStroke;
 	private static int defaultHandleSize;
 	private int handleSize = -1;
 	private boolean scaleStrokeWidth; // Scale stroke width when zooming images?
@@ -168,10 +167,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			g.dispose();
 		}
 		double defaultWidth = defaultStrokeWidth();
-		if (defaultWidth>0) {
-			stroke = new BasicStroke((float)defaultWidth);
-			usingDefaultStroke = true;
-		}
+		if (defaultWidth>0)
+			setStrokeWidth(defaultWidth);
 		fillColor = defaultFillColor;
 		this.group = defaultGroup; //initialize with current group and associated color
 		if (defaultGroup>0)
@@ -222,10 +219,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 				setStrokeColor(scolor);
 		}
 		double defaultWidth = defaultStrokeWidth();
-		if (defaultWidth>0) {
-			stroke = new BasicStroke((float)defaultWidth);
-			usingDefaultStroke = true;
-		}
+		if (defaultWidth>0)
+			setStrokeWidth(defaultWidth);
 		fillColor = defaultFillColor;
 		this.group = defaultGroup;
 		if (defaultGroup>0)
@@ -838,8 +833,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		try {
 			Roi r = (Roi)super.clone();
 			r.setImage(null);
-			if (!usingDefaultStroke)
-				r.setStroke(getStroke());
+			r.setStroke(getStroke());
 			Color strokeColor2 = getStrokeColor();
 			r.setFillColor(getFillColor());
 			r.setStrokeColor(strokeColor2);
@@ -1411,7 +1405,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public static int getDefaultHandleSize() {
 		if (defaultHandleSize>0)
 			return defaultHandleSize;
-		double defaultWidth = defaultStrokeWidth();
+		double defaultWidth = 1.0;
+		double guiScale = Prefs.getGuiScale();
+		if (guiScale>1.0) {
+			defaultWidth = guiScale;
+			if (defaultWidth<1.5) defaultWidth = 1.5;
+		}
 		int size = 7;
 		if (defaultWidth>1.5) size=9;
 		if (defaultWidth>=3) size=11;
@@ -1782,6 +1781,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	/** Sets the default stroke width. */
 	public static void setDefaultStrokeWidth(double width) {
 		defaultStrokeWidth = width<0.0?0.0:width;
+		if (defaultStrokeWidth>1)
+			Line.setWidth(1);
 		resetDefaultHandleSize();
 	}
 
@@ -2060,12 +2061,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public void setStrokeWidth(float strokeWidth) {
 		if (strokeWidth<0f)
 			strokeWidth = 0f;
-		if (strokeWidth==0f && usingDefaultStroke)
-			return;
-		if (strokeWidth>0f) {
+		if (strokeWidth>0f)
 			scaleStrokeWidth = true;
-			usingDefaultStroke = false;
-		}
 		boolean notify = listeners.size()>0 && isLine() && getStrokeWidth()!=strokeWidth;
 		if (strokeWidth==0f)
 			this.stroke = null;
@@ -2073,8 +2070,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			this.stroke = new BasicStroke(strokeWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
 		else
 			this.stroke = new BasicStroke(strokeWidth);
-		//if (strokeWidth>1f)
-		//	fillColor = null;
 		if (notify)
 			notifyListeners(RoiListener.MODIFIED);
 	}
@@ -2096,22 +2091,17 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 
 	/** Returns the line width. */
 	public float getStrokeWidth() {
-		return (stroke!=null&&!usingDefaultStroke)?stroke.getLineWidth():0f;
+		return stroke!=null?stroke.getLineWidth():0f;
 	}
 
 	/** Sets the Stroke used to draw this ROI. */
 	public void setStroke(BasicStroke stroke) {
 		this.stroke = stroke;
-		if (stroke!=null)
-			usingDefaultStroke = false;
 	}
 
 	/** Returns the Stroke used to draw this ROI, or null if no Stroke is used. */
 	public BasicStroke getStroke() {
-		if (usingDefaultStroke)
-			return null;
-		else
-			return stroke;
+		return stroke;
 	}
 
 	/** Returns 'true' if the stroke width is scaled as images are zoomed. */
@@ -2120,7 +2110,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	}
 
 	protected BasicStroke getScaledStroke() {
-		if (ic==null || usingDefaultStroke || !scaleStrokeWidth)
+		if (ic==null || !scaleStrokeWidth)
 			return stroke;
 		double mag = ic.getMagnification();
 		if (mag!=1.0) {

@@ -543,13 +543,17 @@ public class Line extends Roi {
 	}
 
 	/** If the width of this line is less than or equal to one, draws the line.
-	 *  Otherwise draws the outline of the area of this line */
+	 *  Otherwise draws the outline of the area of this line. */
 	public void drawPixels(ImageProcessor ip) {
-		ip.setLineWidth(1);
+		boolean fillLine = getStrokeWidth()>1 && getWidth()<=1;
+		if (fillLine)
+			ip.setLineWidth((int)Math.round(getStrokeWidth()));
+		else
+			ip.setLineWidth(1);
 		double x = getXBase();
 		double y = getYBase();
 		x1d=getXBase()+x1R; y1d=getYBase()+y1R; x2d=getXBase()+x2R; y2d=getYBase()+y2R;
-		if (getStrokeWidth()<=1) {
+		if (getStrokeWidth()<=1 || fillLine) {
 			ip.moveTo((int)Math.round(x1d), (int)Math.round(y1d));
 			ip.lineTo((int)Math.round(x2d), (int)Math.round(y2d));
 		} else {

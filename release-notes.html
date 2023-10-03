@@ -5,8 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.54g15  02 September 2023</u>
+<li> <u>1.54g25  03 October 2023</u>
 <ul>
+<li> Thanks to Zoltan Kis, the <i>Process&gt;Noise&gt;Remove Outliers</i>
+tools uses sliders for setting the radius and
+threshold.
 <li> Thanks to Nicolas De Francesco and Curtis Rueden,
 the macro language documentation (functions.html) is now included
 in ij.jar and this file is used by the Editor's Macros>Function Finder
@@ -14,8 +17,15 @@ command.
 <li> Thanks to Robert Baer, the “Associate ’Show All’ ROIs with slices”
 option in the ROI Manager’s More&gt;&gt;Options dialog is now always
 enabled when ImageJ starts up.
+<li> Thanks to Christian Tischer, files with an "ome.tif" or "ome.tiff" extension
+are opened using Bio-Formats.
+<li> Thanks to Yuekan Jiao, added a '16-bit' option to the setAutoThreshold()
+macro function and the ImageProcessor.setAutoThreshold(String) method.
+With this option, the full 16-bit histogram is used to calculate the 
+threshold of 16-bit images
+(<a href="http://wsr.imagej.net/macros/js/AutoThreshold16.js">example</a>).
 <li> Thanks to Fred Damen and Michael Schmid, the ImageProcessor.getSliceNumber()
-method no long requires a PlugInFilter to return the stack position.
+method no longer requires a PlugInFilter to return the stack position.
 <li> Thanks to 'Phiir42', fixed bug with closed tables reopening after
 a macro finishes.
 <li> Thanks to 'Ender', fixed headless mode "Scale Bar" and "Show Info" bugs.
@@ -30,8 +40,7 @@ of 5 points instead of 4.
 PointRoi.getContainedPoints().
 <li> Thanks to Guenter Pudmich, fixed a 1.54d regression that caused 16-bit
 grayscale PNGs to be opened incorrectly.
-<li> Thanks to Saleh Altahini, fixed bug with opening ImspectorPro MSR files
-using Bio-Formats.
+<li> Thanks to Saleh Altahini, fixed bug with opening ImspectorPro MSR files.
 </ul>
 
 <li> <u>1.54f  29 June 2023</u>
