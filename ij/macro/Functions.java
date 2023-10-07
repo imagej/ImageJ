@@ -3610,10 +3610,7 @@ public class Functions implements MacroConstants, Measurements {
 		ip.setRoi(img.getRoi());
 		if (mString!=null) {
 			try {
-				if (mString.indexOf("stack")!=-1)
-					IJ.setAutoThreshold(img, mString);
-				else
-					ip.setAutoThreshold(mString);
+				img.setAutoThreshold(mString);
 			} catch (Exception e) {
 				interp.error(""+e.getMessage());
 			}

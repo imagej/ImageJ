@@ -3162,6 +3162,19 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		this.defaultMin = min;
 		this.defaultMax = max;
 	}
+	
+	/** Uses the specified method to set the threshold levels
+	 * of this image. Use AutoThresholder.getMethods()
+	 * to get a list of the available methods. Add " dark"
+	 * to the method name if the image has a dark background.
+	 * Add " 16-bit" to use the full 16-bit histogram
+	 * when calculating the threshold of 16-bit images.
+	 * Add " stack" to use the histogram of the entire
+	 * stack when calculating the threshold.
+	*/
+	public void setAutoThreshold(String method) {
+		IJ.setAutoThreshold(this, method);
+	}
 
 	/** Returns 'true' if this image is thresholded.
 	 * @see ij.process.ImageProcessor#isThreshold

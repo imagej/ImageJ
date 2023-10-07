@@ -43,8 +43,6 @@ public class AutoThresholder {
 	public int getThreshold(Method method, int[] histogram) {
 		if (histogram==null)
 			throw new IllegalArgumentException("Histogram is null");
-		//if (histogram.length!=256)
-		//	throw new IllegalArgumentException("Histogram length not 256");
 		int threshold = bilevel(histogram);
 		if (threshold>=0)
 			return threshold;

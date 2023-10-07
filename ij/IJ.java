@@ -1487,6 +1487,7 @@ public class IJ {
 		}
 	}
 
+	/** Replaced by ImagePlus.setAutoThreshold(). */
 	public static void setAutoThreshold(ImagePlus imp, String method) {
 		ImageProcessor ip = imp.getProcessor();
 		if (ip instanceof ColorProcessor)
@@ -1507,7 +1508,10 @@ public class IJ {
 	}
 	
 	private static void setStackThreshold(ImagePlus imp, ImageProcessor ip, String method) {
-		boolean darkBackground = method.indexOf("dark")!=-1;
+		boolean darkBackground = method.contains("dark");
+		boolean histo16 = imp.getBitDepth()==16 && method.contains("16");
+		//IJ.log("setStackThreshold: "+histo16+" "+method);
+		boolean addOne = !method.contains("16");
 		int measurements = Analyzer.getMeasurements();
 		Analyzer.setMeasurements(Measurements.AREA+Measurements.MIN_MAX);
 		ImageStatistics stats = new StackStatistics(imp);
@@ -1518,26 +1522,34 @@ public class IJ {
 			min = stats.min;
 			max = stats.max;
 		}
-		int threshold = thresholder.getThreshold(method, stats.histogram);
+		int[] histogram = stats.histogram;
+		if (histo16)
+			histogram = stats.histogram16;
+		int threshold = thresholder.getThreshold(method, histogram);
 		double lower, upper;
+		double tmax = 255.0;
+		if (histogram.length>256)
+			tmax = 65535.0;
 		if (darkBackground) {
 			if (ip.isInvertedLut())
 				{lower=0.0; upper=threshold;}
 			else
-				{lower=threshold+1; upper=255.0;}
+				{lower=threshold+(addOne?1:0); upper=tmax;}
 		} else {
 			if (ip.isInvertedLut())
-				{lower=threshold+1; upper=255.0;}
+				{lower=threshold+(addOne?1:0); upper=tmax;}
 			else
 				{lower=0.0; upper=threshold;}
 		}
-		if (lower>255) lower = 255;
-		if (max>min) {
-			lower = min + (lower/255.0)*(max-min);
-			upper = min + (upper/255.0)*(max-min);
-		} else
-			lower = upper = min;
-		ip.setMinAndMax(min, max);
+		if (!histo16) {
+			if (lower>255) lower = 255;
+			if (max>min) {
+				lower = min + (lower/255.0)*(max-min);
+				upper = min + (upper/255.0)*(max-min);
+			} else
+				lower = upper = min;
+			ip.setMinAndMax(min, max);
+		}
 		ip.setThreshold(lower, upper, ImageProcessor.RED_LUT);
 		imp.updateAndDraw();
 	}

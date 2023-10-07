@@ -5,8 +5,18 @@
 </head>
 <body>
 
-<li> <u>1.54g25  03 October 2023</u>
+<li> <u>1.54g27  07 October 2023</u>
 <ul>
+<li> Thanks to Yuekan Jiao, replaced “Don’t reset range” with
+“16-bit histogram” in the <i>Image&gt;Adjust&gt;Threshold</i> dialog
+and added a '16-bit' option to the setAutoThreshold()
+macro function and the ImagePlus.setAutoThreshold(String) method.
+When this option is enabled, the full 16-bit histogram is used to 
+calculate the threshold of 16-bit images
+(<a href="http://wsr.imagej.net/macros/js/AutoThreshold16.js">example</a>).
+<li> Thanks to Eyal Rozenberg, the <i>File&gt;Import&gt;Raw</i> command
+uses the directory name as the image title when the
+"Open all files in folder" option is enabled.
 <li> Thanks to Zoltan Kis, the <i>Process&gt;Noise&gt;Remove Outliers</i>
 tools uses sliders for setting the radius and
 threshold.
@@ -19,11 +29,6 @@ option in the ROI Manager’s More&gt;&gt;Options dialog is now always
 enabled when ImageJ starts up.
 <li> Thanks to Christian Tischer, files with an "ome.tif" or "ome.tiff" extension
 are opened using Bio-Formats.
-<li> Thanks to Yuekan Jiao, added a '16-bit' option to the setAutoThreshold()
-macro function and the ImageProcessor.setAutoThreshold(String) method.
-With this option, the full 16-bit histogram is used to calculate the 
-threshold of 16-bit images
-(<a href="http://wsr.imagej.net/macros/js/AutoThreshold16.js">example</a>).
 <li> Thanks to Fred Damen and Michael Schmid, the ImageProcessor.getSliceNumber()
 method no longer requires a PlugInFilter to return the stack position.
 <li> Thanks to 'Phiir42', fixed bug with closed tables reopening after

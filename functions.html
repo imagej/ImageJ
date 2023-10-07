@@ -4191,8 +4191,11 @@ See also:
 <b>setAutoThreshold(method)</b><br>
 Uses the specified method to set the threshold levels of  the current
 image. Use the getList("threshold.methods") function to get a list of
-the available methods. Concatenate " dark" to the method name if the image
-has a dark background. For an example, see the 
+the available methods. Add " dark" to the method name if the image
+has a dark background. Add " 16-bit" to use the full 16-bit histogram
+when calculating the threshold of 16-bit images. Add " stack" to use 
+histogram of the entire stack when calculating the threshold.
+For an example, see the 
 <a href="../../macros/examples/AutoThresholdingDemo.txt">AutoThresholdingDemo</a>
 macro.
 <p>

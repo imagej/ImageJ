@@ -126,7 +126,7 @@ public class ImportDialog {
 	}
 	
 	/** Opens all the images in the directory. */
-	void openAll(String[] list, FileInfo fi) {
+	void openAll(String directory, String[] list, FileInfo fi) {
 		FolderOpener fo = new FolderOpener();
 		list = fo.trimFileList(list);
 		list = fo.sortFileList(list);
@@ -176,7 +176,8 @@ public class ImportDialog {
 		String dir = Recorder.fixPath(fi.directory);
 		Recorder.recordCall(fi.getCode()+"imp = Raw.openAll(\""+ dir+"\", fi);");
 		if (stack!=null) {
-			imp = new ImagePlus("Imported Stack", stack);
+			String title = FolderOpener.trimTitle(directory);
+			imp = new ImagePlus(title, stack);
 			if (imp.getBitDepth()==16 || imp.getBitDepth()==32)
 				imp.getProcessor().setMinAndMax(min, max);
                 Calibration cal = imp.getCalibration();
@@ -206,7 +207,7 @@ public class ImportDialog {
 			}
 			String[] list = new File(directory).list();
 			if (list==null) return;
-			openAll(list, fi);
+			openAll(directory, list, fi);
 		} else if (virtual)
 			new FileInfoVirtualStack(fi);
 		else {
