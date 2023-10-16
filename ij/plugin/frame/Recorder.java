@@ -886,7 +886,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					break;
 				}
 			}
-			if (text.charAt(end)=='\n')
+			if (end<text.length() && text.charAt(end)=='\n')
 				end--;
 			while (end<text.length()-1) {
 				end++;

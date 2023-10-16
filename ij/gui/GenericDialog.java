@@ -2011,9 +2011,16 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	
 		public void actionPerformed(ActionEvent e) {
 			String path = null;
-			if (mode.equals("dir"))
+			if (mode.equals("dir")) {
+				String saveDefaultDir = OpenDialog.getDefaultDirectory();
+				String dir = this.textField.getText();
+				boolean setDefaultDir = dir!=null && !dir.equals("");
+     			if (setDefaultDir)
+					OpenDialog.setDefaultDirectory(dir);
 				path = IJ.getDir("Select a Folder");
-			else {
+				if (setDefaultDir)
+					OpenDialog.setDefaultDirectory(saveDefaultDir);
+			} else {
 				OpenDialog od = new OpenDialog("Select a File", null);
 				String directory = od.getDirectory();
 				String name = od.getFileName();

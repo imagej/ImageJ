@@ -5,11 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.54g27  07 October 2023</u>
+<li> <u>1.54g30  16 October 2023</u>
 <ul>
-<li> Thanks to Yuekan Jiao, replaced “Don’t reset range” with
-“16-bit histogram” in the <i>Image&gt;Adjust&gt;Threshold</i> dialog
-and added a '16-bit' option to the setAutoThreshold()
+<li> Thanks to Yuekan Jiao, added a “16-bit histogram” 
+option to the <i>Image&gt;Adjust&gt;Threshold</i> dialog
+and a '16-bit' option to the setAutoThreshold()
 macro function and the ImagePlus.setAutoThreshold(String) method.
 When this option is enabled, the full 16-bit histogram is used to 
 calculate the threshold of 16-bit images
@@ -31,6 +31,10 @@ enabled when ImageJ starts up.
 are opened using Bio-Formats.
 <li> Thanks to Fred Damen and Michael Schmid, the ImageProcessor.getSliceNumber()
 method no longer requires a PlugInFilter to return the stack position.
+<li> Thanks to Fred Damen, added the Dialog.getLocation(x,y) macro function. DOC
+<li> Thanks to Fred Damen, the second argument of the
+Dialog.addDirectory(label,defaultdir) function is no longer ignored when
+the user clicks on the "Browse" button.
 <li> Thanks to 'Phiir42', fixed bug with closed tables reopening after
 a macro finishes.
 <li> Thanks to 'Ender', fixed headless mode "Scale Bar" and "Show Info" bugs.

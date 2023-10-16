@@ -21,6 +21,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	public static final String LOC_KEY = "threshold.loc";
 	public static final String MODE_KEY = "threshold.mode";
 	public static final String DARK_BACKGROUND = "threshold.dark";
+	public static final String NO_RESET = "threshold.no-reset";
 	public static final String RAW_VALUES = "threshold.raw";
 	public static final String SIXTEEN_BIT = "threshold.16-bit";
 	static final int RED=0, BLACK_AND_WHITE=1, OVER_UNDER=2;
@@ -61,12 +62,12 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	boolean done;
 	int lutColor;
 	Choice methodChoice, modeChoice;
-	Checkbox darkBackground, stackCheckbox, rawValues, sixteenBitCheckbox;
+	Checkbox darkBackground, stackCheckbox, noResetCheckbox, rawValues, sixteenBitCheckbox;
 	boolean firstActivation = true;
 	boolean setButtonPressed;
 	boolean noReset = true;
-	boolean sixteenBit = true;
-	boolean sixteenBitChanged;
+	boolean sixteenBit = false;
+	boolean noResetChanged;
 	boolean enterPressed;
 	boolean windowActivated;
 
@@ -207,7 +208,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 
 		// checkboxes
 		panel = new Panel();
-		panel.setLayout(new GridLayout(2, 2));
+		panel.setLayout(new GridLayout(3, 2));
 		boolean db = Prefs.get(DARK_BACKGROUND, Prefs.blackBackground?true:false);
 		darkBackground = new Checkbox("Dark background");
 		darkBackground.setState(db);
@@ -217,16 +218,23 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		stackCheckbox.setState(false);
 		stackCheckbox.addItemListener(this);
 		panel.add(stackCheckbox);
-		sixteenBit = Prefs.get(SIXTEEN_BIT, true);
-		noReset = sixteenBit;
+		noReset = Prefs.get(NO_RESET, true);
+		sixteenBit = Prefs.get(SIXTEEN_BIT, false);
+		if (sixteenBit)
+			noReset = true;
+		noResetCheckbox = new Checkbox("Don't reset range");
+		noResetCheckbox.setState(noReset);
+		noResetCheckbox.addItemListener(this);
+		panel.add(noResetCheckbox);
+		rawValues = new Checkbox("Raw values");
+		rawValues.setState(Prefs.get(RAW_VALUES, false));
+		rawValues.addItemListener(this);
+		panel.add(rawValues);		
 		sixteenBitCheckbox = new Checkbox("16-bit histogram");
 		sixteenBitCheckbox.setState(sixteenBit);
 		sixteenBitCheckbox.addItemListener(this);
 		panel.add(sixteenBitCheckbox);
-		rawValues = new Checkbox("Raw values");
-		rawValues.setState(Prefs.get(RAW_VALUES, false));
-		rawValues.addItemListener(this);
-		panel.add(rawValues);
+
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 2;
@@ -389,12 +397,17 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 			}
 		} else if (source==darkBackground) {
 			doBackground = true;
+		} else if (source==noResetCheckbox) {
+			noReset = noResetCheckbox.getState();
+			noResetChanged = true;
+			doAutoAdjust = true;
 		} else if (source==rawValues) {
 			ThresholdAdjuster.update();
 		} else if (source==sixteenBitCheckbox) {
 			sixteenBit = sixteenBitCheckbox.getState();
-			noReset = sixteenBit;
-			sixteenBitChanged = true;
+			if (sixteenBit)
+				noReset = true;
+			noResetChanged = true;
 			doAutoAdjust = true;
 		} else
 			doAutoAdjust = true;
@@ -486,9 +499,11 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	void autoSetLevels(ImagePlus imp) {
+		int bitDepth = imp.getBitDepth();
 		boolean darkb = darkBackground!=null && darkBackground.getState();
 		boolean stack = entireStack(imp);
-		String methodAndOptions = method+(darkb?" dark":"")+(sixteenBit?" 16-bit":"")+(stack?" stack":"");
+		boolean hist16 = sixteenBit && bitDepth!=32;
+		String methodAndOptions = method+(darkb?" dark":"")+(hist16?" 16-bit":"")+(stack?" stack":"")+(noReset?" no-reset":"");
 		imp.setAutoThreshold(methodAndOptions);
 		ImageProcessor ip = imp.getProcessor();
 		double level1 = ip.getMinThreshold();
@@ -709,8 +724,8 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 
 	void reset(ImagePlus imp, ImageProcessor ip) {
 		//IJ.log("reset1: "+noReset+" "+sixteenBitChanged+" "+mode);
-		if (sixteenBitChanged) {
-			sixteenBitChanged = false;
+		if (noResetChanged) {
+			noResetChanged = false;
 			if ((noReset&&mode!=OVER_UNDER) || ip.getBitDepth()==8)
 				return;
 			if (!noReset) {
@@ -955,6 +970,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		Prefs.saveLocation(LOC_KEY, getLocation());
 		Prefs.set(MODE_KEY, mode);
 		Prefs.set(DARK_BACKGROUND, darkBackground.getState());
+		Prefs.set(NO_RESET, noResetCheckbox.getState());
 		Prefs.set(SIXTEEN_BIT, sixteenBitCheckbox.getState());
 		Prefs.set(RAW_VALUES, rawValues.getState());
 		synchronized(this) {

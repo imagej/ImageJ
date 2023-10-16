@@ -4103,6 +4103,14 @@ public class Functions implements MacroConstants, Measurements {
 				gd.addToSameRow();
 			} else if (name.equals("setLocation")) {
 				gd.setLocation((int)getFirstArg(), (int)getLastArg());
+			} else if (name.equals("getLocation")) {
+				Variable v1 = getFirstVariable();
+				Variable v2 = getLastVariable();
+				Point loc = gd.getLocation();
+				int x = loc.x;
+				int y = loc.y;
+				v1.setValue(x);
+				v2.setValue(y);
 			} else if (name.equals("show")) {
 				interp.getParens();
 				gd.showDialog();
@@ -4136,7 +4144,7 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		return null;
 	}
-
+	
 	void addCheckboxGroup(GenericDialog gd) {
 		int rows = (int)getFirstArg();
 		int columns = (int)getNextArg();
