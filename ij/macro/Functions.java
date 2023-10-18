@@ -8100,8 +8100,7 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("getIndex")) {
 			return new Variable(rm.getIndex(getStringArg()));
 		} else if (name.equals("setPosition")) {
-			int position = (int)getArg();
-			rm.setPosition(position);
+			setRoiManagerPosition(rm);
 			return null;
 		} else if (name.equals("multiCrop")) {
 			rm.multiCrop(getFirstString(),getLastString());
@@ -8123,6 +8122,18 @@ public class Functions implements MacroConstants, Measurements {
 		} else
 			interp.error("Unrecognized RoiManager function");
 		return null;
+	}
+	
+	private void setRoiManagerPosition(RoiManager rm) {
+		int channel = (int)getFirstArg();
+		if (interp.nextToken()==')') {
+			interp.getRightParen();
+			rm.setPosition(channel);
+			return;
+		}
+		int slice = (int)getNextArg();
+		int frame = (int)getLastArg();
+		rm.setPosition(channel, slice, frame);
 	}
 
 	private Variable doProperty() {

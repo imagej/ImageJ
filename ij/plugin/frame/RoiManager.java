@@ -1443,12 +1443,23 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (imp!=null) imp.draw();
 	}
 
-	/** Sets the position for the selected ROIs. */ 
+	/** Sets the position of the selected ROIs. */ 
 	public void setPosition(int position) {
 		int[] indexes = getIndexes();
 		for (int i: indexes) {
 			Roi roi = getRoi(i);
 			roi.setPosition(position);
+		}
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) imp.draw();
+	}
+
+	/** Sets the c,z,t position of the selected ROIs. */ 
+	public void setPosition(int c, int z, int t) {
+		int[] indexes = getIndexes();
+		for (int i: indexes) {
+			Roi roi = getRoi(i);
+			roi.setPosition(c, z, t);
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) imp.draw();

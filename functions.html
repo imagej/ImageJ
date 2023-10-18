@@ -592,6 +592,11 @@ Default insets:<br>
 <b>Dialog.setLocation(x, y)</b> -
 Sets the screen location where this dialog will be displayed.
 <br>
+<a name="Dialog.getLocation"></a>
+<b>Dialog.getLocation(x, y)</b> -
+Returns the screen location of this dialog.
+Requires 1.54g.
+<br>
 <a name="Dialog.show"></a>
 <b>Dialog.show()</b> -
 Displays the dialog and waits until the user clicks "OK" or "Cancel". The macro 
@@ -4017,8 +4022,13 @@ See also: <a href="#Roi.setGroup">Roi.setGroup</a>,
 <br>
 
 <a name="RoiManager.setPosition"></a>
-<b>RoiManager.setPosition</b><br>
+<b>RoiManager.setPosition(slice)</b><br>
 Sets the position of the selected selections.
+<br>
+
+<b>RoiManager.setPosition(channel, slice, frame)</b><br>
+Sets the position of the selected selections.
+Requires 1.54g.
 <br>
 
 <a name="RoiManager.size"></a>
@@ -5412,7 +5422,7 @@ in the dialog box.
 
 <p class=navbar> <a href="#Top">top</a> | <a href="https://imagej.nih.gov/ij/index.html">home</a></p>
 
-<small>Last updated 2023/07/28</small>
+<small>Last updated 2023/10/18</small>
 
 </body>
 </html>
