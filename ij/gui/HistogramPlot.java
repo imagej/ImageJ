@@ -361,10 +361,16 @@ public class HistogramPlot extends ImagePlus {
 	
     @Override
     public void show() {
-		if (IJ.isMacro()&&Interpreter.isBatchMode())
-			super.show();
-		else
-			new HistogramWindow(this, WindowManager.getImage(srcImageID));
+		HistogramWindow hw = new HistogramWindow(this, WindowManager.getImage(srcImageID));
+		try {
+			ResultsTable rt = hw.getResultsTable();
+			int col = rt.getColumnIndex("value");
+			float[] xvalues = rt.getColumn(col);
+			col = rt.getColumnIndex("count");
+			float[] yvalues = rt.getColumn(col);
+			setProperty("XValues", xvalues); // Allows values to be retrieved by
+			setProperty("YValues", yvalues); // by Plot.getValues() macro function
+		} catch (Exception e) {}
 	}
 	
 }

@@ -2346,8 +2346,15 @@ public class Functions implements MacroConstants, Measurements {
 		Variable yvar = getLastArrayVariable();
 		float[] xvalues = new float[0];
 		float[] yvalues = new float[0];
-		IJ.wait(100); //https://forum.image.sc/t/plot-getvalues-returns-odd-results/72673
 		ImagePlus imp = getImage();
+		long maxDelay = 100; //https://forum.image.sc/t/plot-getvalues-returns-odd-results
+		long t0 = System.currentTimeMillis();
+		while ((System.currentTimeMillis()-t0)<maxDelay) {
+			if (imp.getProperty("XValues")!=null || imp.getTitle().startsWith("Plot of"))
+				break;
+			IJ.wait(5);
+			imp = getImage();
+		}
 		ImageWindow win = imp.getWindow();
 		if (imp.getProperty("XValues")!=null) {
 			xvalues = (float[])imp.getProperty("XValues");

@@ -114,7 +114,17 @@ public class Distribution implements PlugIn, TextListener {
 				maxCount = stats.histogram[i];
 		}
 		stats.histYMax = maxCount;
-		new HistogramWindow(parameter+" Distribution", imp, stats);
+		HistogramWindow hw = new HistogramWindow(parameter+" Distribution", imp, stats);
+		try {
+			ResultsTable rt2 = hw.getResultsTable();
+			int col = rt2.getColumnIndex("bin start");
+			float[] xvalues = rt2.getColumn(col);
+			col = rt2.getColumnIndex("count");
+			float[] yvalues = rt2.getColumn(col);
+			ImagePlus img = hw.getImagePlus();
+			img.setProperty("XValues", xvalues); // Allows values to be retrieved by
+			img.setProperty("YValues", yvalues); // by Plot.getValues() macro function
+		} catch (Exception e) {}
 	}
 	
 	int getIndex(String[] strings) {
