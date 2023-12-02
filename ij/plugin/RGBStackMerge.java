@@ -110,7 +110,7 @@ public class RGBStackMerge implements PlugIn {
 			}
 		}
 		if (width==0) {
-			error("There must be at least one source image or stack.");
+			error("Requires at least one source image or stack.");
 			return;
 		}
 		

@@ -5,12 +5,26 @@
 </head>
 <body>
 
-<li> <u>1.54h  20 October 2023</u>
+<li> <u>1.54h9  02 December 2023</u>
 <ul>
+<li> Thanks to 'mandamanta', a warning is displayed in the "Log" 
+window if no particles are detected by the particle analyzer 
+when its running in batch mode.
+<li> Thanks to Stein Rorvik, fixed bug where use of a modifier key
+in the text editor caused isKeyDown() calls to be stuck
+returning 'true' for that modifier.
 <li> Thanks to 'IztokD', fixed bugs with the Plot.getValues() macro
-function not working in batch mode.
+functio not working in batch mode.
+<li> Thanks to 'Fijipuff', fixed bug with making montages of multi-channel 
+COMPOSITE mode images.
 <li> Thanks to Nick Condon, fixed a 1.53 regression that made the
 Plot.getValues() macro function slower.
+<li> Thanks to Stein Rorvik, fixed a 1.54e regression with the
+Overlay.addSelection(fcolor,0,bcolor) macro function when used
+with a text selection.
+<li> Thanks to Michael Cammer, fixed a 1.53b regression that caused
+selection outlines to scale when zooming if the GUI scale was greater
+than 1.0.
 </ul>
 
 <li> <u>1.54g  18 October 2023</u>

@@ -1153,11 +1153,16 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			Analyzer.lastParticle = Analyzer.getCounter()-1;
 		} else
 			Analyzer.firstParticle = Analyzer.lastParticle = 0;
-		if (showResults && rt.size()==0 && !(IJ.isMacro()||calledByPlugin) && (!processStack||slice==imp.getStackSize())) {
+		if (showResults && rt.size()==0 && !(calledByPlugin) && (!processStack||slice==imp.getStackSize())) {
 			int digits = (int)level1==level1&&(int)level2==level2?0:2;
 			String range = IJ.d2s(level1,digits)+"-"+IJ.d2s(level2,digits);
 			String assummed = noThreshold?"assumed":"";
-			IJ.showMessage("Particle Analyzer", "No particles were detected. The "+assummed+"\nthreshold ("+range+") may not be correct.");
+			assummed += assummed.length()>0&&!IJ.isMacro()?"\n":"";
+			String msg = "No particles detected. The "+assummed+"threshold ("+range+") may not be correct.";
+			if (IJ.isMacro())
+				IJ.log(msg);
+			else 
+				IJ.showMessage("Particle Analyzer", msg);
 		}
 	}
 	

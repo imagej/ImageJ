@@ -73,21 +73,24 @@ public class LookUpTable extends Object {
 				isGray = false;
 		return isGray;
 	}
-			
+
+	/** Draws a color bar with the LUT, with a black rectangle around.
+	 *  'x' is the coordinate of the field for the lowest LUT color.
+	 *  Note that 'width' is the width of the area for the LUT colors; thus no colors
+	 *  will be omitted with a 256-entry LUT if width=256.
+	 *  The left line of the rectangle is at x, the right one at x+width+1. */
 	public void drawColorBar(Graphics g, int x, int y, int width, int height) {
-		if (mapSize!=256)
-			return;
-		double scale = width/256.0;
+		double scale = width/(double)mapSize;
 		ColorProcessor cp = new ColorProcessor(width, height);
-		cp.setLineWidth((int)(scale+0.99));
-		for (int i = 0; i<256; i++) {
+		for (int i = 0; i<mapSize; i++) {
 			cp.setColor(new Color(rLUT[i]&0xff,gLUT[i]&0xff,bLUT[i]&0xff));
-			int xloc = (int)(i*scale);
-			cp.drawLine(xloc, 0, xloc, height);
+			int xloc0 = (int)Math.round(i*scale);
+			int xloc1 = (int)Math.round((i+1)*scale);
+			cp.fillRect(xloc0, 0, xloc1-xloc0, height);
 		}
-		g.drawImage(cp.createImage(),x,y,null);
+		g.drawImage(cp.createImage(), x+1, y, null);
 		g.setColor(Color.black);
-		g.drawRect(x, y, width, height);
+		g.drawRect(x, y, width+1, height);
 	}
 
 	public void drawUnscaledColorBar(ImageProcessor ip, int x, int y, int width, int height) {
@@ -107,9 +110,9 @@ public class LookUpTable extends Object {
 				bar.moveTo(i, 0); bar.lineTo(i, height);
 			}
 		}
-		ip.insert(bar, x,y);
+		ip.insert(bar, x+1, y);
 		ip.setColor(Color.black);
-		ip.drawRect(x-1, y, width+2, height);
+		ip.drawRect(x, y, width+2, height);
 	}
 			
 	public static ColorModel createGrayscaleColorModel(boolean invert) {

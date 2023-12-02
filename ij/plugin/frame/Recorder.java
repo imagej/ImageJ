@@ -90,8 +90,14 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		add("Center", textArea);
 		textArea.addKeyListener(new KeyAdapter() {
 			public void keyPressed (KeyEvent e) {
-				if (e.getKeyCode()==KeyEvent.VK_CONTROL)
-           			runCode();
+				//IJ.log("keyPressed: "+e);
+				if (e.getKeyCode()==KeyEvent.VK_R) {
+					int flags = e.getModifiers();
+					boolean control = (flags & KeyEvent.CTRL_MASK) != 0;
+					boolean meta = (flags & KeyEvent.META_MASK) != 0;
+					if (control || meta)
+           				runCode();
+           		}
         	}
     	});
 		GUI.scale(this);
@@ -874,7 +880,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		int start = textArea.getSelectionStart();
 		int end = textArea.getSelectionEnd();
 		if (start==0 && end==0) {
-			IJ.error("Run", "Executes the selected text or the line\ncontaining the cursor. Use the control\nkey as a shortcut.");
+			IJ.error("Run", "Executes the selected text or the line\ncontaining the cursor. Type ctrl+r as a shortcut.");
 			return;
 		}			
 		if (start==end) {
@@ -915,7 +921,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			+"in an Editor window.\n" 
 			+" \n"
 			+"Click \"Run\" to execute the selected text or the line\n"
-			+"containing the cursor. Use the control key as a shortcut.\n"
+			+"containing the cursor. Type ctrl+r as a shortcut.\n"
 			+" \n"
 			+"In the Editor, after running \"Create\":\n" 
 			+" \n"

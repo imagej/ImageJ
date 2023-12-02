@@ -2283,14 +2283,14 @@ public class Functions implements MacroConstants, Measurements {
 			return addPlotText(currentPlot);
 		} else if (name.equals("enableLive")) {
 			return enableLivePlot(currentPlot);
+		} else if (name.equals("update")) {
+			return updatePlot(currentPlot);
 		}
 		// the following commands need a plot under construction
 		if (plot==null)
 			interp.error("No plot defined");
 		if (name.equals("show")) {
 			return showPlot();
-		} else if (name.equals("update")) {
-			return updatePlot();
 		} else if (name.equals("drawLine")) {
 			return drawPlotLine(false);
 		} else if (name.equals("drawNormalizedLine")) {
@@ -2435,13 +2435,13 @@ public class Functions implements MacroConstants, Measurements {
 			if (plotWindow!=null)
 				plotID = plotWindow.getImagePlus().getID();
 		}
-		plot = null;
+		plot = null;		//not a plot under construction any more
 		interp.getParens();
 		return Double.NaN;
 	}
 
-	double updatePlot() {
-		if (plot!=null) {
+	double updatePlot(Plot thePlot) {
+		if (thePlot == plot) {
 			ImagePlus plotImage = WindowManager.getImage(plotID);
 			ImageWindow win = plotImage!=null?plotImage.getWindow():null;
 			if (win!=null)
@@ -2451,8 +2451,9 @@ public class Functions implements MacroConstants, Measurements {
 				if (plotWindow!=null)
 					plotID = plotWindow.getImagePlus().getID();
 			}
-		}
-		plot = null;
+		} else
+			thePlot.updateImage();
+		plot = null;		//not a plot under construction any more
 		interp.getParens();
 		return Double.NaN;
 	}
