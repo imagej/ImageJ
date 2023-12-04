@@ -3057,6 +3057,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 							break;
 						case SAVED:
 							//listener.imageSaved(imp);
+							if (listener instanceof ImageListenerAdapter)
+                               ((ImageListenerAdapter)listener).imageSaved(imp);
 							break;
 					}
 				}
