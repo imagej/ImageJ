@@ -16,18 +16,19 @@ package ij;
 */
 public class ImageListenerAdapter implements ImageListener {
 
-   @Override
-   public void imageOpened(ImagePlus imp) {
-   }
+	@Override
+	public void imageOpened(ImagePlus imp) {
+	}
 
-   @Override
-   public void imageClosed(ImagePlus imp) {
-   }
+	@Override
+	public void imageClosed(ImagePlus imp) {
+	}
 
-   @Override
-   public void imageUpdated(ImagePlus imp) {
-   }
+	@Override
+	public void imageUpdated(ImagePlus imp) {
+	}
 
-   public void imageSaved(ImagePlus imp) {
-   }
+	public void imageSaved(ImagePlus imp) {
+	}
+
 }

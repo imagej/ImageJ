@@ -8,7 +8,9 @@ import java.awt.event.*;
 import java.awt.image.*;
 import java.util.ArrayList;
 
-/** Displays the active image's look-up table. */
+/** Displays the active image's look-up table.
+* Implements the Image/Color/Show LUT command.
+*/
 public class LutViewer implements PlugInFilter {
 	private double guiScale = Prefs.getGuiScale();
 	private ImagePlus imp;

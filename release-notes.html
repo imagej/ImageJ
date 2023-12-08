@@ -5,14 +5,19 @@
 </head>
 <body>
 
-<li> <u>1.54h9  02 December 2023</u>
+<li> <u>1.54h16  08 December 2023</u>
 <ul>
+<li> Thanks to Michael Schmid, improved the fidelity of
+the RGB to indexed color conversion done by
+<i>Image&gt;Type&gt;8-bit Color</i> command.
 <li> Thanks to Michael Ellis, added the ImageListenerAdapter
 class, which supports notification when an ImagePlus
 is saved.
 <li> Thanks to 'mandamanta', a warning is displayed in the "Log" 
 window if no particles are detected by the particle analyzer 
 when its running in batch mode.
+<li> Thanks to Michael Schmid, the Plot.update() macro function
+now works for plots that are not under construction.
 <li> Thanks to Stein Rorvik, fixed bug where use of a modifier key
 in the text editor caused isKeyDown() calls to be stuck
 returning 'true' for that modifier.
@@ -20,6 +25,19 @@ returning 'true' for that modifier.
 functio not working in batch mode.
 <li> Thanks to 'Fijipuff', fixed bug with making montages of multi-channel 
 COMPOSITE mode images.
+<li> Thanks to Michael Schmid, fixed exceptions that occurred 
+with Plot.addLabel() and with the <i>Image&gt;Color&gt;Show LUT</i>
+command.
+<li> Thanks to Michael Schmid, fixed an exception that occurred 
+with Plot.addLabel().
+<li> Thanks to Michael Schmid, fixed several
+<i>Image&gt;Color&gt;Show LUT</i>
+bugs.
+<li> Thanks to Michael Schmid, fixed bug with virtual stacks
+that cache pixel data.
+<li> Thanks to Rodrigo Goncalves, fixed bug that caused the
+Color Thresholder's "Original" button to not work as
+expected.
 <li> Thanks to Nick Condon, fixed a 1.53 regression that made the
 Plot.getValues() macro function slower.
 <li> Thanks to Stein Rorvik, fixed a 1.54e regression with the
