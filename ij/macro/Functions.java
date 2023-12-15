@@ -4109,6 +4109,9 @@ public class Functions implements MacroConstants, Measurements {
 			} else if (name.equals("addToSameRow")) {
 				interp.getParens();
 				gd.addToSameRow();
+			} else if (name.equals("enableYesNoCancel")) {
+				interp.getParens();
+				gd.enableYesNoCancel(" Yes ", " No ");
 			} else if (name.equals("setLocation")) {
 				gd.setLocation((int)getFirstArg(), (int)getLastArg());
 			} else if (name.equals("getLocation")) {
@@ -4145,6 +4148,14 @@ public class Functions implements MacroConstants, Measurements {
 			} else if (name.equals("getRadioButton")) {
 				interp.getParens();
 				return gd.getNextRadioButton();
+			} else if (name.equals("getYesNoCancel")) {
+				interp.getParens();
+				String result = "no";
+				if (gd.wasCanceled())
+					 result = "cancel";
+				  else if (gd.wasOKed())
+					 result = "yes";
+				return result;
 			} else
 				interp.error("Unrecognized Dialog function "+name);
 		} catch (IndexOutOfBoundsException e) {

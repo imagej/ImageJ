@@ -445,14 +445,7 @@ public class Opener {
 		if (imp!=null)
 			return imp;
 		try {
-			String name = "";
-			int index = url.lastIndexOf('/');
-			if (index==-1)
-				index = url.lastIndexOf('\\');
-			if (index>0)
-				name = url.substring(index+1);
-			else
-				throw new MalformedURLException("Invalid URL: "+url);
+			String name = getUrlName(url);
 			if (url.indexOf(" ")!=-1)
 				url = url.replaceAll(" ", "%20");
 			URL u = new URL(url);
@@ -463,12 +456,12 @@ public class Opener {
 				imp = openTiff(u.openStream(), name);
 			} else if (lurl.endsWith(".zip"))
 				imp = openZipUsingUrl(u);
-			else if (lurl.endsWith(".jpg") || lurl.endsWith(".jpeg") || lurl.endsWith(".gif"))
+			else if (lurl.endsWith(".jpg") || lurl.endsWith(".jpeg") || lurl.endsWith(".gif")||lurl.contains(".jpg?")||lurl.contains(".jpeg?"))
 				imp = openJpegOrGifUsingURL(name, u);
 			else if (lurl.endsWith(".dcm") || lurl.endsWith(".ima")) {
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", url);
 				if (imp!=null && imp.getWidth()==0) imp = null;
-			} else if (lurl.endsWith(".png"))
+			} else if (lurl.endsWith(".png")||lurl.contains(".png?"))
 				imp = openPngUsingURL(name, u);
 			else {
 				URLConnection uc = u.openConnection();
@@ -490,6 +483,29 @@ public class Opener {
 			IJ.error("Open URL", msg);
 			return null;
 		} 
+	}
+	
+	private String getUrlName(String url) {
+		String origUrl = url;
+		String name = "";
+		int ndx = url.lastIndexOf(".jpeg?");
+		if (ndx>0)
+			url = url.substring(0, ndx+5);
+		else {
+			ndx = url.lastIndexOf(".jpg?");
+			if (ndx==-1)
+				ndx = url.lastIndexOf(".png?");
+			if (ndx>0)
+				url = url.substring(0, ndx+4);
+		}
+		int index = url.lastIndexOf('/');
+		if (index==-1)
+			index = url.lastIndexOf('\\');
+		if (index>0)
+			name = url.substring(index+1);
+		else
+			throw new IllegalArgumentException("Invalid URL: "+url);
+		return name;
 	}
 	
 	/** Can't open imagej.nih.gov URLs due to encryption so redirect to imagej.net mirror. */
@@ -648,7 +664,8 @@ public class Opener {
 		return imp;
 	}
 
-	ImagePlus openJpegOrGifUsingURL(String title, URL url) {
+ImagePlus openJpegOrGifUsingURL(String title, URL url) {
+		if (IJ.debugMode) IJ.log("openJpegOrGifUsingURL: "+url);
 		if (url==null) return null;
 		Image img = Toolkit.getDefaultToolkit().createImage(url);
 		if (img!=null) {
