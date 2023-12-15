@@ -16,6 +16,10 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
 
 	public YesNoCancelDialog(Frame parent, String title, String msg, String yesLabel, String noLabel) {
 		super(parent, title, true);
+		//if (msg.contains("[NON_BLOCKING]")) {
+		//	setModal(false);
+		//	msg = msg.replace("[NON_BLOCKING]", "");
+		//}
 		setLayout(new BorderLayout());
 		Panel panel = new Panel();
 		panel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));

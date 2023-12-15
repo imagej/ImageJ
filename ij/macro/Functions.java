@@ -4110,8 +4110,7 @@ public class Functions implements MacroConstants, Measurements {
 				interp.getParens();
 				gd.addToSameRow();
 			} else if (name.equals("enableYesNoCancel")) {
-				interp.getParens();
-				gd.enableYesNoCancel(" Yes ", " No ");
+				gd.enableYesNoCancel(getFirstString(), getLastString());
 			} else if (name.equals("setLocation")) {
 				gd.setLocation((int)getFirstArg(), (int)getLastArg());
 			} else if (name.equals("getLocation")) {
@@ -4152,9 +4151,9 @@ public class Functions implements MacroConstants, Measurements {
 				interp.getParens();
 				String result = "no";
 				if (gd.wasCanceled())
-					 result = "cancel";
-				  else if (gd.wasOKed())
-					 result = "yes";
+					result = "cancel";
+				else if (gd.wasOKed())
+					result = "yes";
 				return result;
 			} else
 				interp.error("Unrecognized Dialog function "+name);

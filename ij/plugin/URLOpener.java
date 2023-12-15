@@ -21,7 +21,6 @@ public class URLOpener implements PlugIn {
 		a file name, opens the image with that name from the 'images.location'
 		URL in IJ_Props.txt. If it is blank, prompts for an image
 		URL and open the specified image.
-		http://co3d-icc-review-progqi.oss.eu-west-0.prod-cloud-ocb.orange-business.com/gaston.jpeg?AWSAccessKeyId=S3BC6CQHTB5IZNVBAR8P&Expires=1702508400&Signature=%2BjZBuG6gArIByiyDOVNZvnFnqtg%3D
 	*/
 	public void run(String urlOrName) {
 		if (IJ.debugMode) IJ.log("URLOpener.run: "+urlOrName);
