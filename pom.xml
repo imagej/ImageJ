@@ -15,7 +15,7 @@
 
 	<name>ImageJ</name>
 	<description>ImageJ is an open source Java image processing program inspired by NIH Image for the Macintosh.</description>
-	<url>https://imagej.nih.gov/ij</url>
+	<url>https://imagej.net/ij</url>
 	<inceptionYear>1997</inceptionYear>
 	<organization>
 		<name>NIH</name>
@@ -24,7 +24,7 @@
 	<licenses>
 		<license>
 			<name>Public domain</name>
-			<url>https://imagej.nih.gov/ij/disclaimer.html</url>
+			<url>https://imagej.net/ij/disclaimer.html</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
@@ -52,8 +52,8 @@
 	<mailingLists>
 		<mailingList>
 			<name>ImageJ</name>
-			<subscribe>https://imagej.nih.gov/ij/list.html</subscribe>
-			<unsubscribe>https://imagej.nih.gov/ij/list.html</unsubscribe>
+			<subscribe>https://imagej.net/ij/list.html</subscribe>
+			<unsubscribe>https://imagej.net/ij/list.html</unsubscribe>
 			<post>imagej@list.nih.gov</post>
 			<archive>https://list.nih.gov/archives/imagej.html</archive>
 		</mailingList>
@@ -191,7 +191,7 @@
 					-->
 					<source>9</source>
 					<links>
-						<link>https://imagej.nih.gov/ij/developer/api/</link>
+						<link>https://imagej.net/ij/developer/api/</link>
 					</links>
 					<sourceFileIncludes>ij/**/*.java</sourceFileIncludes>
 				</configuration>
