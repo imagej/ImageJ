@@ -327,7 +327,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	 */
 	public void addDirectoryField(String label, String defaultPath) {
 		int columns = defaultPath!=null?Math.max(defaultPath.length(),25):25;
-		if (columns>50) columns=50;
+		if (columns>60) columns=60;
 		addDirectoryField(label, defaultPath, columns);
 	}
 
@@ -360,6 +360,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	 */
 	 public void addFileField(String label, String defaultPath) {
 		int columns = defaultPath!=null?Math.max(defaultPath.length(),25):25;
+		if (columns>60) columns=60;
 		addFileField(label, defaultPath, columns);
 	 }
 
@@ -1493,6 +1494,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	/** Displays this dialog box. */
 	public void showDialog() {
 		showDialogCalled = true;
+		addToSameRow = false;
 		if (macro) {
 			dispose();
 			recorderOn = Recorder.record && Recorder.recordInMacros;

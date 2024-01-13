@@ -945,6 +945,11 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			instance.dispose();
 	}
 
+ 	public static void start() {
+		if (instance==null)
+			IJ.run("Orthogonal Views");
+	}
+
 	public static synchronized boolean isOrthoViewsImage(ImagePlus imp) {
 		if (imp==null || instance==null)
 			return false;

@@ -158,6 +158,10 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	public void mouseClicked(MouseEvent e) {
 		long now = System.currentTimeMillis();
 		int row = table.getSelectedRow();
+		int col = table.getSelectedColumn();
+		// Display cell contents in status bar
+		String value = tableModel.getValueAt(row, col).toString();
+		IJ.showStatus(value);
 		// Is this fast enough to be a double-click?
 		long thisClickInterval = now - lastClickTime;
 		if (thisClickInterval < multiClickInterval) {

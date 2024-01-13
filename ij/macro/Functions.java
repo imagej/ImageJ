@@ -4021,9 +4021,16 @@ public class Functions implements MacroConstants, Measurements {
 				interp.getRightParen();
 				gd.addStringField(label, defaultStr, columns);
 			} else if (name.equals("addDirectory")) {
+				int columns = 0;
 				String label = getFirstString();
-				String defaultDir = getLastString();
-				gd.addDirectoryField(label, defaultDir);
+				String defaultDir = getNextString();
+				if (interp.nextToken()==',')
+					columns = (int)getNextArg();
+				interp.getRightParen();
+				if (columns==0)
+					gd.addDirectoryField(label, defaultDir);
+				else
+					gd.addDirectoryField(label, defaultDir, columns);
 			} else if (name.equals("addImageChoice")) {
 				String label = getFirstString();
 				String defaultImage = null;
@@ -4035,9 +4042,16 @@ public class Functions implements MacroConstants, Measurements {
 					interp.error("No images");
 				gd.addImageChoice(label, defaultImage);
 			} else if (name.equals("addFile")) {
+				int columns = 0;
 				String label = getFirstString();
-				String defaultPath = getLastString();
-				gd.addFileField(label, defaultPath);
+				String defaultPath = getNextString();
+				if (interp.nextToken()==',')
+					columns = (int)getNextArg();
+				interp.getRightParen();
+				if (columns==0)
+					gd.addFileField(label, defaultPath);
+				else
+					gd.addFileField(label, defaultPath, columns);
 			} else if (name.equals("addNumber")) {
 				int columns = 6;
 				String units = null;
@@ -5297,6 +5311,10 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("stopOrthoViews")) {
 			interp.getParens();
 			Orthogonal_Views.stop();
+			return Double.NaN;
+		} else if (name.equals("startOrthoViews")) {
+			interp.getParens();
+			Orthogonal_Views.start();
 			return Double.NaN;
 		} else if (name.equals("getOrthoViewsID")) {
 			interp.getParens();

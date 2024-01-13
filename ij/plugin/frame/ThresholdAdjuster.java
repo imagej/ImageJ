@@ -991,15 +991,20 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 
 	/** Sets the thresholding method ("Default", "Huang", etc). */
 	public static void setMethod(String thresholdingMethod) {
+		if (thresholdingMethod==null)
+			return;
 		boolean valid = false;
 		for (int i=0; i<methodNames.length; i++) {
-			if (methodNames[i].equals(thresholdingMethod)) {
+			if (thresholdingMethod.startsWith(thresholdingMethod)) {
 				valid = true;
 				break;
 			}
 		}
 		if (valid) {
 			method = thresholdingMethod;
+			int index = method.indexOf(" ");
+			if (index>0)
+				method = method.substring(0,index);
 			if (instance!=null)
 				instance.methodChoice.select(method);
 		}

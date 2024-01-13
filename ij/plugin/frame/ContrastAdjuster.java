@@ -831,7 +831,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			i++;
 			count = histogram[i];
 			if (count>limit) count = 0;
-			found = count> threshold;
+			found = count>threshold;
 		} while (!found && i<255);
 		int hmin = i;
 		i = 256;
@@ -863,7 +863,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 				Recorder.record("run", "Enhance Contrast", "saturated=0.35");
 		}
 	}
-
+	
 	void setMinAndMax(ImagePlus imp, ImageProcessor ip) {
 		min = imp.getDisplayRangeMin();
 		max = imp.getDisplayRangeMax();
