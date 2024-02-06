@@ -4789,6 +4789,8 @@ public class Functions implements MacroConstants, Measurements {
 			TextWindow.setMonospaced(state);
 		else if (arg1.startsWith("fullrange"))
 			Prefs.fullRange16bitInversions = state;
+		else if (arg1.startsWith("opengrayscale"))
+			Prefs.openGrayscaleJpegsAsRGB = state;
 		else if (arg1.startsWith("calibrate")) {
 			Prefs.calibrateConversions = state;
 			ImageConverter.setDoScaling(true);

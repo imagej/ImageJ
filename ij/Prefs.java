@@ -195,6 +195,8 @@ public class Prefs {
 	public static boolean fullRange16bitInversions;
 	/** Calibrate image type conversions */
 	public static boolean calibrateConversions;
+	/** Open grayscale RGB JPEGs as RGB */
+	public static boolean openGrayscaleJpegsAsRGB;
 
 	//Save location of moved image windows */	
 	//public static boolean saveImageLocation = true;

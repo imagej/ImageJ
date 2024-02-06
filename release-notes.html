@@ -5,8 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.54i6  12 January 2024</u>
+<li> <u>1.54i12  05 February 2024</u>
 <ul>
+<li> Thanks to Christian Tischer, added an “Open grayscale JPEGs as RGB”
+option to the <i>Edit&gt;Options&gt;Input/Output</i> dialog and a related
+setOption(“OpenGrayscaleJpegsAsRGB”) macro function. DOCUMENT
+<li> Thanks to Philippe Carl, the point options dialog is now non-modal
+when the point tool is in the single point mode. 
 <li> Thanks to Stein Rorvik, added the Dialog.addFile(label,path,columns)
 and Dialog.addDirectory(label,path,columns) macro functions and limited
 the field width to 60 columns if the number of columns is not
@@ -20,6 +25,12 @@ macro function. DOCUMENT
 (used by Overlay.xor(indexes)).
 <li> Thanks to Philippe Carl, fixed bug with the Threshold window method not being
 updated when using the setAutoThreshold() macro function.
+<li> Thanks to Michael Schmid, fixed bug with handling of infinite values
+plots.
+<li> Thanks to Michael Schmid, fixed bug where recording was silently
+turned off when running a multi-threaded plugin. 
+<li> Thanks to Norbert Vischer, fixed a v1.54h regression that caused an unexpected
+"No particles detected. The threshold may not be correct." message.
 </ul>
 
 <li> <u>1.54h  15 December 2023</u>

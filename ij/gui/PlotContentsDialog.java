@@ -207,10 +207,9 @@ public class PlotContentsDialog implements DialogListener {
 			addFitCurve();
 		plot.updateImage();
 		if (creatingPlot) {
-			boolean recording = Recorder.record;
-			Recorder.record = false; // don't record creating the image as image selection
+			Recorder.suspendRecording(); // don't record creating the image as image selection
 			plot.show();
-			if (recording) Recorder.record = true;
+			Recorder.resumeRecording();
 		}
 
 		gd.showDialog();

@@ -1159,9 +1159,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			String assummed = noThreshold?"assumed":"";
 			assummed += assummed.length()>0&&!IJ.isMacro()?"\n":"";
 			String msg = "No particles detected. The "+assummed+"threshold ("+range+") may not be correct.";
-			if (IJ.isMacro())
-				IJ.log(msg);
-			else 
+			if (IJ.isMacro()) {
+				if (assummed.length()>0) IJ.log(msg);
+			} else 
 				IJ.showMessage("Particle Analyzer", msg);
 		}
 	}

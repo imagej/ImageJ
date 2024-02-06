@@ -829,10 +829,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		boolean ok = false;
 		if (path.endsWith(".zip")) {
-			boolean wasRecording = Recorder.record;
-			Recorder.record = false;
+			Recorder.suspendRecording();
 			ok = openZip(path);
-			Recorder.record = wasRecording;
+			Recorder.resumeRecording();
 			return ok;
 		}
 		Opener o = new Opener();
@@ -1991,14 +1990,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			error("Image with composite selection required");
 			return;
 		}
-		boolean record = Recorder.record;
-		Recorder.record = false;
+		Recorder.suspendRecording();
 		Roi[] rois = ((ShapeRoi)roi).getRois();
 		for (int i=0; i<rois.length; i++) {
 			imp.setRoi(rois[i]);
 			addRoi(false);
 		}
-		Recorder.record = record;
+		Recorder.resumeRecording();
 		if (record()) Recorder.record("roiManager", "Split");
 	}
 
