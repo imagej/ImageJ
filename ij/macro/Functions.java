@@ -770,6 +770,7 @@ public class Functions implements MacroConstants, Measurements {
 				if (overlayPath!=null)
 					addDrawingToOverlay(imp);
 				getProcessor().setColor(globalColor);
+				getProcessor().setFillValueSet(true);				
 			}
 			interp.getRightParen();
 			return;
@@ -785,8 +786,10 @@ public class Functions implements MacroConstants, Measurements {
 		if (red>255) red=255; if (green>255) green=255; if (blue>255) blue=255;
 		globalColor = new Color(red, green, blue);
 		globalValue = Double.NaN;
-		if (WindowManager.getCurrentImage()!=null)
+		if (WindowManager.getCurrentImage()!=null) {
 			getProcessor().setColor(globalColor);
+			getProcessor().setFillValueSet(true);				
+		}				
 	}
 
 	void setColor(double value) {
@@ -4261,11 +4264,9 @@ public class Functions implements MacroConstants, Measurements {
 			type = imp.getStackSize()>1?"label":"info";
 		}
 		String metadata = null;
-		if (type.contains("info")) {
+		if (type.contains("info"))
 			metadata = (String)imp.getProperty("Info");
-			if (metadata==null && imp.getStackSize()>1)
-				metadata = imp.getStack().getSliceLabel(imp.getCurrentSlice());
-		} else
+		else
 			metadata = imp.getStack().getSliceLabel(imp.getCurrentSlice());
 		if (metadata==null)
 			metadata = "";

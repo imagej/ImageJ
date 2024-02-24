@@ -5,8 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.54i12  05 February 2024</u>
+<li> <u>1.54i21  24 February 2024</u>
 <ul>
+<li> Thanks to Fred Damen, hex notation (e.g., "0xff00ff") can be 
+used in GenericDialog numeric fields.
 <li> Thanks to Christian Tischer, added an “Open grayscale JPEGs as RGB”
 option to the <i>Edit&gt;Options&gt;Input/Output</i> dialog and a related
 setOption(“OpenGrayscaleJpegsAsRGB”) macro function. DOCUMENT
@@ -28,9 +30,23 @@ updated when using the setAutoThreshold() macro function.
 <li> Thanks to Michael Schmid, fixed bug with handling of infinite values
 plots.
 <li> Thanks to Michael Schmid, fixed bug where recording was silently
-turned off when running a multi-threaded plugin. 
+turned off when running a multi-threaded plugin.
+<li> Thanks to Gabriel Landini, fixed bug with <i>Make Montage</i> not working
+with one channel hyperstacks.
+<li> Thanks to Norbert Vischer, fixed bug (feature?) where the getMetadata("info")
+macro function would unexpectedly return the current stack slice label when the
+image's "Info" property was null.
+<li> Thanks to Philippe Carl, fixed bug with zooming in/out using (ctrl or shift)+scroll wheel
+and, with hyperstacks, removed the option to zoom in/out using ctrl+scroll wheel,
+allowing this option to be used to set slice positions.
+<li> Thanks to Stein Rorvik, fixed bug where calling run("Clear Outside","slice")
+set the foreground color to the background color.
+<li> Thanks to Fred Damen, fixed bug where the <i>Process&gt;Math&gt;Set</i>
+command did not work as expected with RGB images.
 <li> Thanks to Norbert Vischer, fixed a v1.54h regression that caused an unexpected
 "No particles detected. The threshold may not be correct." message.
+<li> Fixed v1.49r regression that caused invalid "Save changes..." dialog after
+running macro in the Editor.
 </ul>
 
 <li> <u>1.54h  15 December 2023</u>

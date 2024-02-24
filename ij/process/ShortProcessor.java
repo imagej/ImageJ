@@ -997,7 +997,6 @@ public class ShortProcessor extends ImageProcessor {
 				setValue(0.0);
 		} else
 			fgColor = (int)(getMin() + (getMax()-getMin())*(bestIndex/255.0));
-		fillValueSet = true;
 	}
 	
 	/** Sets the background fill/draw color. */
@@ -1009,10 +1008,9 @@ public class ShortProcessor extends ImageProcessor {
 
 	/** Sets the default fill/draw value, where 0<=value<=65535). */
 	public void setValue(double value) {
-			fgColor = (int)value;
-			if (fgColor<0) fgColor = 0;
-			if (fgColor>65535) fgColor = 65535;
-			fillValueSet = true;
+		fgColor = (int)value;
+		if (fgColor<0) fgColor = 0;
+		if (fgColor>65535) fgColor = 65535;
 	}
 
 	/** Returns the foreground fill/draw value. */

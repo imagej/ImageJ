@@ -172,13 +172,15 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		synchronized(this) {
 			int rotation = e.getWheelRotation();
 			boolean ctrl = (e.getModifiers()&Event.CTRL_MASK)!=0;
+			if (hyperStack) // ctrl+scroll wheel adjusts hyperstack slice positions
+				ctrl = false;
 			if ((ctrl||IJ.shiftKeyDown()) && ic!=null) {
 				Point loc = ic.getCursorLoc();
 				int x = ic.screenX(loc.x);
 				int y = ic.screenY(loc.y);
 				if (rotation<0)
 					ic.zoomIn(x,y);
-				else
+				else if (rotation>0)
 					ic.zoomOut(x,y);
 				return;
 			}

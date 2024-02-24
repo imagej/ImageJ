@@ -441,7 +441,7 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Returns the default fill/draw value. */
 	public abstract double getForegroundValue();
 
-	/** Returns 'true' if the fill/draw value has been set. */
+	/** Returns 'true' if the fill/draw value has been set in a macro. */
 	public boolean fillValueSet() {
 		return fillValueSet;
 	}
@@ -2972,4 +2972,9 @@ public abstract class ImageProcessor implements Cloneable {
 		return new IndexColorModel(8, 256, r, g, b);
 	}
 	
+	/** For internal use */
+	public void setFillValueSet(boolean set) {
+		fillValueSet = set;
+	}
+
 }

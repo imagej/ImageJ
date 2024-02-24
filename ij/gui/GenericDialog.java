@@ -1202,6 +1202,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		if (theText.equals(originalText)) {
 			value = defaultValue;
 			if (smartRecording) skipRecording=true;
+		} else if (theText.startsWith("0x")) {
+			value = parseHex(theText.substring(2));
 		} else {
 			Double d = getValue(theText);
 			if (d!=null)
@@ -1229,6 +1231,14 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 		nfIndex++;
 		return value;
+	}
+	
+	int parseHex(String hexString) {
+		int n = 0;;
+		try {
+			n = Integer.parseInt(hexString, 16);
+		} catch (NumberFormatException e) {}
+		return n;
 	}
 
 	private String trim(String value) {

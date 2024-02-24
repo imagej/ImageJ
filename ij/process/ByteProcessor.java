@@ -324,7 +324,6 @@ public class ByteProcessor extends ImageProcessor {
 	public void setColor(Color color) {
 		drawingColor = color;
 		fgColor = getBestIndex(color);
-		fillValueSet = true;
 	}
 
 	/** Sets the background fill/draw color. */
@@ -337,7 +336,6 @@ public class ByteProcessor extends ImageProcessor {
 		fgColor = (int)value;
 		if (fgColor<0) fgColor = 0;
 		if (fgColor>255) fgColor = 255;
-		fillValueSet = true;
 	}
 
 	/** Returns the foreground fill/draw value. */

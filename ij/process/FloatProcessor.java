@@ -1027,7 +1027,6 @@ public class FloatProcessor extends ImageProcessor {
 			fillColor = 0f;
 		else
 			fillColor = (float)(getMin() + (getMax()-getMin())*(bestIndex/255.0));
-		fillValueSet = true;
 	}
 	
 	/** Sets the background fill/draw color. */
@@ -1040,7 +1039,6 @@ public class FloatProcessor extends ImageProcessor {
 	/** Sets the default fill/draw value. */
 	public void setValue(double value) {
 		fillColor = (float)value;
-		fillValueSet = true;
 	}
 	
 	/** Returns the foreground fill/draw value. */

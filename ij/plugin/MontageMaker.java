@@ -27,6 +27,8 @@ public class MontageMaker implements PlugIn {
 			return;
 		}
 		hyperstack = imp.isHyperStack();
+		if (imp.getNChannels()==1)
+			hyperstack = false;
 		if (hyperstack && imp.getNSlices()>1 && imp.getNFrames()>1) {
 			error("5D hyperstacks are not supported");
 			return;

@@ -509,7 +509,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				text2 = text2.replaceAll("\u201D", "\"");
 				ta.setText(text2);
 			}
-			changes = true;
 			checkForCurlyQuotes = false;
 		}
 		currentMacroEditor = this;
