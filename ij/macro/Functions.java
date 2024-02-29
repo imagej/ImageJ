@@ -770,7 +770,7 @@ public class Functions implements MacroConstants, Measurements {
 				if (overlayPath!=null)
 					addDrawingToOverlay(imp);
 				getProcessor().setColor(globalColor);
-				getProcessor().setFillValueSet(true);				
+				getProcessor().fillColorSet(true);				
 			}
 			interp.getRightParen();
 			return;
@@ -788,7 +788,7 @@ public class Functions implements MacroConstants, Measurements {
 		globalValue = Double.NaN;
 		if (WindowManager.getCurrentImage()!=null) {
 			getProcessor().setColor(globalColor);
-			getProcessor().setFillValueSet(true);				
+			getProcessor().fillColorSet(true);				
 		}				
 	}
 
@@ -814,6 +814,7 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		globalValue = value;
 		globalColor = null;
+		ip.fillColorSet(true);				
 	}
 
 	void makeLine() {

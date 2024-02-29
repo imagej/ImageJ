@@ -843,15 +843,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	if (currentSlice<1) setCurrentSlice(1);
     	boolean resetCurrentSlice = currentSlice>newStackSize;
     	if (resetCurrentSlice) setCurrentSlice(newStackSize);
-    	ImageProcessor ip = newStack.getProcessor(currentSlice);
-    	if (newStack.isVirtual()) // work around bug with cached virtual stacks
-    		ip = ip.duplicate();
-    	boolean dimensionsChanged = width>0 && height>0 && (width!=ip.getWidth()||height!=ip.getHeight());
+    	ImageProcessor newIP = newStack.getProcessor(currentSlice);
+    	boolean dimensionsChanged = width>0 && height>0 && (width!=newIP.getWidth()||height!=newIP.getHeight());
     	if (this.stack==null)
     	    newStack.viewers(+1);
     	this.stack = newStack;
     	oneSliceStack = false;
-    	setProcessor2(title, ip, newStack);
+    	setProcessor2(title, newIP, newStack);
 		if (bitDepth1!=0 && bitDepth1!=getBitDepth())
 			compositeChanges = true;
 		if (compositeChanges && (this instanceof CompositeImage)) {

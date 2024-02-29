@@ -133,7 +133,6 @@ public class VirtualStack extends ImageStack {
 			return null;
 	}		
 	
-	/** Assigns a pixel array to the specified slice, where {@literal 1<=n<=nslices}. */
 	public void setPixels(Object pixels, int n) {
 	}
 
