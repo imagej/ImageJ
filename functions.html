@@ -526,19 +526,30 @@ and <i>default</i> is the default choice.
 <b>Dialog.addDirectory(label, defaultPath)</b> -
 Adds a directory field and "Browse" button. The
 field width is determined by the length of 'defaultPath',
-with a minimum of 25 columns. Use Dialog getString
-to retrieve the directory path. Use
+with a minimum of 25 and a maximum of 60 columns. Use Dialog
+getString to retrieve the directory path. Use
 <a href="#File.setDefaultDir">File.setDefaultDir()</a>
 to set the default directory used when the user
 clicks on "Browse".
 Requires 1.53d.
 <br>
+<b>Dialog.addDirectory(label, defaultPath, columns)</b> -
+Adds a directory field and "Browse" button, using a
+field width of 'columns'.
+Requires 1.54i.
+<br>
 <a name="Dialog.addFile"></a>
 <b>Dialog.addFile(label, defaultPath)</b> -
 Adds a file field and "Browse" button. The
 field width is determined by the length of 'defaultPath',
-with a minimum of 25 columns. Use Dialog getString
-to retrieve the file path. Requires 1.53d.
+with a minimum of 25 and a maximum of 60 columns. Use Dialog
+getString to retrieve the file path.
+Requires 1.53d.
+<br>
+<b>Dialog.addFile(label, defaultPath, columns)</b> -
+Adds a file field and "Browse" button, using a field width
+of 'columns'.
+Requires 1.54i.
 <br>
 <a name="Dialog.addImage"></a>
 <b>Dialog.addImage(pathOrURL)</b> -
@@ -4527,7 +4538,12 @@ Enables/disables the <i>Image&gt;Stacks&gt;Tools&gt;Animation Options</i> "Loop 
 <a name="setOption_MonospacedText"></a>
 <b>setOption("MonospacedText", boolean)</b><br>
 Enables/disables monospaced text in the "Log" window.
-Requires 1.54c11.
+Requires 1.54c.
+<br>
+<a name="setOption_OpenGrayscaleJpegsAsRGB"></a>
+<b>setOption("OpenGrayscaleJpegsAsRGB", boolean)</b><br>
+Enable to open grayscale RGB JPEGs as RGB images.
+Requires 1.54i.
 <br>
 <a name="setOption_OpenUsingPlugins"></a>
 <b>setOption("OpenUsingPlugins", boolean)</b><br>
@@ -4985,6 +5001,12 @@ If an <i>Orthogonal Views</i> is active, the three views are returned as
 XY, YZ, XZ image ID values.
 <br>
 
+<a name="Stack.startOrthoViews"></a>
+<b>Stack.startOrthoViews</b> - 
+Enables <i>Orthogonal Views</i>.
+Requires 1.54i.
+<br>
+
 <a name="Stack.stopOrthoViews"></a>
 <b>Stack.stopOrthoViews</b> - 
 Stops the current <i>Orthogonal Views</i> and closes the "YZ" and "XZ" windows.
@@ -5429,7 +5451,7 @@ in the dialog box.
 
 <p class=navbar> <a href="#Top">top</a> | <a href="https://imagej.nih.gov/ij/index.html">home</a></p>
 
-<small>Last updated 2024/02/22</small>
+<small>Last updated 2024/03/03</small>
 
 </body>
 </html>

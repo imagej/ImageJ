@@ -139,8 +139,13 @@ public class VirtualStack extends ImageStack {
 	/** Returns an ImageProcessor for the specified slice,
 	 * where {@literal 1<=n<=nslices}. Returns null if
 	 * the stack is empty.
+	 * When overriding this function, note that the ImageProcessor
+	 * may be modified at a later time. Its pixel array
+	 * can get replaced by the pixel array of another slice.
+	 * This is because the ImageProcessor may be re-used when a
+	 * different slice is accessed via ImagePlus.setSlice.
 	*/
-     public ImageProcessor getProcessor(int n) {
+	public ImageProcessor getProcessor(int n) {
 		if (path==null) {  //Help>Examples?JavaScript>Terabyte VirtualStack
 			ImageProcessor ip = null;
 			int w=getWidth(), h=getHeight();

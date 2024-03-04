@@ -76,7 +76,7 @@ class TextCanvas extends Canvas {
 					gImage.fillRect(x,y,w2-1,tp.iRowHeight);
 				}
 				gImage.setColor(t);
-				char[] chars = getChars(i,j);
+				char[] chars = tp.getChars(i,j);
 				if (chars!=null)
 					gImage.drawChars(chars,0,chars.length,x+2,y+tp.iRowHeight-5);
 				x+=w;
@@ -124,49 +124,6 @@ class TextCanvas extends Canvas {
 		gImage.drawLine(0,0,iWidth,0);
 	}
 	
-	synchronized char[] getChars(int column, int row) {
-		if (tp==null || tp.vData==null)
-			return null;
-		if (row>=tp.vData.size())
-			return null;
-		char[] chars = row>=0&&row<tp.vData.size()?(char[])(tp.vData.elementAt(row)):null;
-		if (chars==null || chars.length==0)
-			return null;
-		
-		if (tp.iColCount==1)
-			return chars;
-	    
-	    int start = 0;
-	    int tabs = 0;
-	    int length = chars.length;
-	    
-	    while (column>tabs) {
-	    	if (chars[start]=='\t')
-	    		tabs++;
-	    	start++;
-	    	if (start>=length)
-	    		return null;
-	    };
-	    if (start<0 || start>=chars.length) {
-			System.out.println("start="+start+", chars.length="+chars.length);	    	
-	    	return null;
-	    }
-	    if (chars[start]=='\t')
-	    	return null;
-	    
-	    int end = start;
-	    while (chars[end]!='\t' && end<(length-1))
-	    	end++;
-	    if (chars[end]=='\t')
-	    	end--;
-	    	
-	    char[] chars2 = new char[end-start+1];
-	    for (int i=0,j=start; i<chars2.length; i++,j++) {
-	    	chars2[i] = chars[j];
-	    } 
-		return chars2;
-	}
-	
 	void calcAutoWidth(int column) {
 		if (tp.sColHead==null || column>=tp.iColWidth.length || gImage==null)
 			return;
@@ -182,12 +139,12 @@ class TextCanvas extends Canvas {
 		}
 		int rowCount = Math.min(tp.iRowCount, maxRows);
 		for (int row=0; row<rowCount; row++) {
-			char[] chars = getChars(column,row);
+			char[] chars = tp.getChars(column,row);
 			if (chars!=null)
 				w = Math.max(w,fMetrics.charsWidth(chars,0,chars.length));
 		}
 		//System.out.println("calcAutoWidth: "+column+"  "+tp.iRowCount);
-		char[] chars = tp.iRowCount>0?getChars(column, tp.iRowCount-1):null;
+		char[] chars = tp.iRowCount>0?tp.getChars(column, tp.iRowCount-1):null;
 		if (chars!=null)
 			w = Math.max(w,fMetrics.charsWidth(chars,0,chars.length));
 		if (column<tp.iColWidth.length)

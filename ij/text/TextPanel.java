@@ -136,7 +136,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
         	iColCount = sColHead.length;
 		}
 		flush();
-		vData=new Vector();
+		vData = new Vector();
 		if (!(iColWidth!=null && iColWidth.length==iColCount && sameLabels && iColCount!=1)) {
 			iColWidth=new int[iColCount];
 			columnsManuallyAdjusted = false;
@@ -242,9 +242,52 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	String getCell(int column, int row) {
 		if (column<0||column>=iColCount||row<0||row>=iRowCount)
 			return null;
-		return new String(tc.getChars(column, row));
+		return new String(getChars(column, row));
 	}
 
+	synchronized char[] getChars(int column, int row) {
+		if (vData==null)
+			return null;
+		if (row>=vData.size())
+			return null;
+		char[] chars = row>=0&&row<vData.size()?(char[])(vData.elementAt(row)):null;
+		if (chars==null || chars.length==0)
+			return null;
+		
+		if (iColCount==1)
+			return chars;
+	    
+	    int start = 0;
+	    int tabs = 0;
+	    int length = chars.length;
+	    
+	    while (column>tabs) {
+	    	if (chars[start]=='\t')
+	    		tabs++;
+	    	start++;
+	    	if (start>=length)
+	    		return null;
+	    };
+	    if (start<0 || start>=chars.length) {
+			System.out.println("start="+start+", chars.length="+chars.length);	    	
+	    	return null;
+	    }
+	    if (chars[start]=='\t')
+	    	return null;
+	    
+	    int end = start;
+	    while (chars[end]!='\t' && end<(length-1))
+	    	end++;
+	    if (chars[end]=='\t')
+	    	end--;
+	    	
+	    char[] chars2 = new char[end-start+1];
+	    for (int i=0,j=start; i<chars2.length; i++,j++) {
+	    	chars2[i] = chars[j];
+	    } 
+		return chars2;
+	}
+	
 	synchronized void adjustVScroll() {
 		if(iRowHeight==0) return;
 		Dimension d = tc.getSize();
