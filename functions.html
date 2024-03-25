@@ -1591,10 +1591,12 @@ See also: <a href="#dialog">Dialog.create</a>.
 <b>getPixel(x, y)</b><br>
 Returns the raw value of the pixel at <i>(x, y)</i>. Uses bilinear
 interpolation if 'x' or 'y' are not integers. Use
-<a href="#getValue">getValue(x, y)</a> to get
+<a href="#getValue">getValue(x,y)</a> to get
 calibrated pixel values from 8 and 16 bit images
 and intensity values from RGB images.
-Note that pixels in RGB images contain red, green and 
+The getPixel() function returns zero for locations outside
+the image and getValue() returns NaN.
+The pixels in RGB images contain red, green and 
 blue components that need to be extracted using shifting
 and masking. See the <a href="../../macros/tools/ColorPickerTool.txt">Color Picker Tool</a>
 macro for an example that shows how to do this.
@@ -5451,7 +5453,7 @@ in the dialog box.
 
 <p class=navbar> <a href="#Top">top</a> | <a href="https://imagej.nih.gov/ij/index.html">home</a></p>
 
-<small>Last updated 2024/03/03</small>
+<small>Last updated 2024/03/13</small>
 
 </body>
 </html>

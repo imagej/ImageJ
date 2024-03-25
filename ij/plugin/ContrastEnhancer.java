@@ -339,6 +339,15 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		this.normalize = normalize;
 	}
 	
+	
+	public void setEqualize(boolean equalize) {
+		this.equalize = equalize;
+	}
+
+	public void setSaturated(double saturated) {
+		this.saturated = saturated;
+	}
+	
 	public void setProcessStack(boolean processStack) {
 		this.processStack = processStack;
 		this.normalize = true;

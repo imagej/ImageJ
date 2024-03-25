@@ -912,7 +912,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (compositeRois && floodFill && mask!=null) {
 			mask.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
 			Roi roi2 = new ThresholdToSelection().convert(mask);
-			if (roi2!=null && (roi2 instanceof ShapeRoi)) {
+			if (roi2!=null) {
 				roi2.setLocation(roi.getXBase(), roi.getYBase());
 				roi = roi2;
 			}

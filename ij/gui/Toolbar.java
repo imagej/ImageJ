@@ -1415,13 +1415,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	void drawTool(int tool, boolean drawDown) {
 		down[tool] = drawDown;
 		Graphics g = this.getGraphics();
+		if (g==null) return;
 		if (!drawDown) {
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		}
 		drawButton(g, tool);
-		if (null==g) return;
-		g.dispose();
+		if (null!=g)
+			g.dispose();
 	}
 
 	boolean isLine(int tool) {

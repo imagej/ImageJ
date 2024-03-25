@@ -144,6 +144,7 @@ public class VirtualStack extends ImageStack {
 	 * can get replaced by the pixel array of another slice.
 	 * This is because the ImageProcessor may be re-used when a
 	 * different slice is accessed via ImagePlus.setSlice.
+	 * {@link <a href="https://wsr.imagej.net/plugins/Test_Virtual_Stack2.java#gemsiv">Example</a>}
 	*/
 	public ImageProcessor getProcessor(int n) {
 		if (path==null) {  //Help>Examples?JavaScript>Terabyte VirtualStack

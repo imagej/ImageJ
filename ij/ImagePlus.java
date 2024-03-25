@@ -27,7 +27,7 @@ a list ImageProcessors of same type and size.
 @see ij.gui.ImageCanvas
 */
 
-public class ImagePlus implements ImageObserver, Measurements, Cloneable {
+public class ImagePlus implements ImageObserver, Measurements, Cloneable, AutoCloseable {
 
 	/** 8-bit grayscale (unsigned)*/
 	public static final int GRAY8 = 0;

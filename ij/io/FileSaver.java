@@ -571,10 +571,10 @@ public class FileSaver {
 		return true;
 	}
 
-	/** Save the image as tab-delimited text using a save file
-		dialog. Returns false if the user selects cancel. */
+	/** Save the image as comma or tab-delimited text using a save
+		file dialog. Returns false if the user selects cancel. */
 	public boolean saveAsText() {
-		String path = getPath("Text", ".txt");
+		String path = getPath("Text", ".csv");
 		if (path==null)
 			return false;
 		return saveAsText(path);
@@ -591,6 +591,8 @@ public class FileSaver {
 			if (scientificNotation)
 				precision = -precision;
 			TextEncoder file = new TextEncoder(imp.getProcessor(), cal, precision);
+			if (path.endsWith(".csv")||path.endsWith(".CSV"))
+				file.setDelimiter(",");
 			out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
 			file.write(out);
 			out.close();
