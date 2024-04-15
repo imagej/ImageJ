@@ -455,6 +455,12 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		row5 = row4 + (int)(15*SCALE);
 		long count = stats.longPixelCount>0?stats.longPixelCount:stats.pixelCount;
 		String modeCount = " (" + stats.maxCount + ")";
+		if (histogram!=null) {// Add '*' if multi-modal histogram
+			int mcount = 0;;
+			for (int i=0; i<histogram.length; i++)
+				if (histogram[i]==stats.maxCount) mcount++;
+			if (mcount>1) modeCount=modeCount+"*";
+		}
 		if (modeCount.length()>12) modeCount = "";
 		
 		ip.drawString("N: " + count, col1, row1);

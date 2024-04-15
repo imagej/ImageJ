@@ -698,7 +698,7 @@ public class ResultsTable implements Cloneable {
 			if (columns[i]!=null) {
 				String value = getValueAsString(i,row);
 				if (quoteCommas) {
-					if (value!=null && value.contains(","))
+					if (value!=null && (value.contains(",")||value.equals("")))
 						value = "\""+value+"\"";
 				}
 				sb.append(value);
@@ -731,13 +731,8 @@ public class ResultsTable implements Cloneable {
 			String str = null;
 			if (Double.isNaN(value) && stringColumns!=null) {
 				ArrayList stringColumn = (ArrayList)stringColumns.get(Integer.valueOf(col));
-				if (stringColumn!=null && row>=0 && row<stringColumn.size()) {
-						str = (String)stringColumn.get(row);
-						if (firstValueNumeric && "".equals(str)) {
-							nValues = row;
-							break;
-						}
-				}
+				if (stringColumn!=null && row>=0 && row<stringColumn.size())
+					str = (String)stringColumn.get(row);
 			}
 			if (str!=null)
 				values[row] = new Variable(str);
