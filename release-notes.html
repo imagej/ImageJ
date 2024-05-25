@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.54j15  15 April 2024</u>
+<li> <u>1.54j22  24 May 2024</u>
 <ul>
 <li> Thanks to 'ramnoob', added a number of official tags 
 to the DICOM reader.
@@ -15,6 +15,9 @@ used by the <i>File&gt;Save As&gt;Text Image</i> command from
 <li> Thanks to Gabriel Landini, ImageJ adds an "*" next to
 the Mode value in the Histogram window if the histogram is
 multi-modal.
+<li> Thanks to Norbert Vischer, added the
+setOption("MouseWheelStackScrolling",boolean) macro
+function.
 <li> Thanks to Albert Cardona and Curtis Rueden, added
 public setEqualize() and setSaturated() methods to the
 ContrastEnhancer class.
@@ -27,6 +30,19 @@ saved and reopened.
 <li> Thanks to Stein Rorvik, fixed a bug where the
 Table.getColumn() macro function did not work with
 columns containing empty strings.
+<li> Thanks to Norbert Vischer, fixed bug where
+text fields in GenericDialogs opened after a showMessage()
+were non-editable.
+<li> Thanks to Jan Brocher, fixed bug where drag-and-drop of
+directories onto GenericDialog directory fields did not
+work as expected.
+<li> Thanks to Norbert Vischer, fixed an Overlay.clear macro
+function bug.
+<Li> Thanks to Alexander Bender, fixed bug with ROI Manager
+ignoring selection when saving.
+<li> Thanks to Michael Schmid, fixed 1.53t regression
+where Image&gt;Stacks&gt;Z Project</i> failed when doing
+"Average" projection of 32-bit float stacks
 </ul>
 
 <li> <u>1.54i  03 March 2024</u>

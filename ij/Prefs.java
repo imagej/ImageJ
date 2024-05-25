@@ -197,6 +197,8 @@ public class Prefs {
 	public static boolean calibrateConversions;
 	/** Open grayscale RGB JPEGs as RGB */
 	public static boolean openGrayscaleJpegsAsRGB;
+	/** Scroll stacks using mouse wheel */
+	public static boolean mouseWheelStackScrolling = true;
 
 	//Save location of moved image windows */	
 	//public static boolean saveImageLocation = true;

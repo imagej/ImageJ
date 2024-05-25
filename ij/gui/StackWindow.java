@@ -184,6 +184,8 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 					ic.zoomOut(x,y);
 				return;
 			}
+			if (!Prefs.mouseWheelStackScrolling)
+				return;
 			if (hyperStack) {
 				if (rotation>0)
 					IJ.run(imp, "Next Slice [>]", "");

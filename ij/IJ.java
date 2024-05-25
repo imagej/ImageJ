@@ -812,6 +812,7 @@ public class IJ {
 				if (isMacro() && md.escapePressed())
 					throw new RuntimeException(Macro.MACRO_CANCELED);
 			}
+			IJ.wait(25); // fix GenericDialog non-editable text field
 		} else
 			System.out.println(msg);
 	}

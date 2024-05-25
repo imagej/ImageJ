@@ -4796,7 +4796,9 @@ public class Functions implements MacroConstants, Measurements {
 		else if (arg1.startsWith("calibrate")) {
 			Prefs.calibrateConversions = state;
 			ImageConverter.setDoScaling(true);
-		} else
+		} else if (arg1.startsWith("mousewheel"))
+			Prefs.mouseWheelStackScrolling = state;
+		else
 			interp.error("Invalid option");
 	}
 
@@ -7149,7 +7151,7 @@ public class Functions implements MacroConstants, Measurements {
 
 	void addRoi(ImagePlus imp, Roi roi){
 		Overlay overlay = imp.getOverlay();
-		if (overlay==null || overlay.size()==0) {
+		if (overlay==null) {
 			if (offscreenOverlay==null)
 				offscreenOverlay = new Overlay();
 			overlay = offscreenOverlay;
