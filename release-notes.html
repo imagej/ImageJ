@@ -5,19 +5,23 @@
 </head>
 <body>
 
-<li> <u>1.54j22  24 May 2024</u>
+<li> <u>1.54j  12 June 2024</u>
 <ul>
 <li> Thanks to 'ramnoob', added a number of official tags 
 to the DICOM reader.
 <li> Thanks to Abdul Hannan, changed the default extension
 used by the <i>File&gt;Save As&gt;Text Image</i> command from
-“.txt” to “.csv”.
+".txt" to ".csv".
 <li> Thanks to Gabriel Landini, ImageJ adds an "*" next to
 the Mode value in the Histogram window if the histogram is
 multi-modal.
 <li> Thanks to Norbert Vischer, added the
 setOption("MouseWheelStackScrolling",boolean) macro
 function.
+<li> Thanks to Gilles Carpentier, added the
+Table.showHistogramTable macro function, which is
+equivalent to clicking on "List" in a Histogram
+window.
 <li> Thanks to Albert Cardona and Curtis Rueden, added
 public setEqualize() and setSaturated() methods to the
 ContrastEnhancer class.
@@ -27,7 +31,7 @@ work as expected.
 <li> Thanks to Norbert Vischer, fixed bug where empty string
 fields in tables are converted to NaNs after the table is
 saved and reopened.
-<li> Thanks to Stein Rorvik, fixed a bug where the
+<li> Thanks to Stein Rorvik, fixed bug where the
 Table.getColumn() macro function did not work with
 columns containing empty strings.
 <li> Thanks to Norbert Vischer, fixed bug where
@@ -38,8 +42,8 @@ directories onto GenericDialog directory fields did not
 work as expected.
 <li> Thanks to Norbert Vischer, fixed an Overlay.clear macro
 function bug.
-<Li> Thanks to Alexander Bender, fixed bug with ROI Manager
-ignoring selection when saving.
+<Li> Thanks to Alexander Bender, fixed bug with the ROI Manager
+ignoring selections when saving.
 <li> Thanks to Michael Schmid, fixed 1.53t regression
 where Image&gt;Stacks&gt;Z Project</i> failed when doing
 "Average" projection of 32-bit float stacks

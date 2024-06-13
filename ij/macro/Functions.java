@@ -7274,11 +7274,28 @@ public class Functions implements MacroConstants, Measurements {
 			return setSelection();
 		else if (name.equals("setLocAndSize") || name.equals("setLocationAndSize"))
 			return setTableLocAndSize();
+		else if (name.equals("showHistogramTable") || name.equals("list"))
+			return tableList();
 		else
 			interp.error("Unrecognized function name");
 		return null;
 	}
-
+	
+	private Variable tableList() {
+		ImagePlus img = WindowManager.getCurrentImage();
+		boolean isHistogram = false;
+		if (img!=null) {
+			ImageWindow win = img.getWindow();
+			if (win!=null && win instanceof HistogramWindow) {
+				((HistogramWindow)win).showList();
+				isHistogram = true;
+			}
+		}
+		if (!isHistogram)
+			interp.error("No histogram window");
+		return null;
+	}
+	
 	private Variable setTableLocAndSize() {
 		double x = getFirstArg();
 		double y = getNextArg();
