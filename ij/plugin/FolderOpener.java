@@ -535,16 +535,17 @@ public class FolderOpener implements PlugIn, TextListener {
 				fi.longOffset = fi.getOffset() + i*(size + fi.getGap());
 				stack.addImage(fi);
 			}
-		} else {
-			FileInfo fi = info[0];
-			if (fi.fileType==FileInfo.RGB48) {
-				for (int slice=1; slice<=3; slice++) {
-					FileInfo fi2 = (FileInfo)fi.clone();
-					fi2.sliceNumber = slice;
-					stack.addImage(fi2);
-				}
-			} else
-				stack.addImage(fi);
+		} else {		
+			for (FileInfo fi : info) {
+				if (fi.fileType == FileInfo.RGB48) {
+					for (int slice = 1; slice <= 3; slice++) {
+						FileInfo fi2 = (FileInfo) fi.clone();
+						fi2.sliceNumber = slice;
+						stack.addImage(fi2);
+					}
+				} else
+					stack.addImage(fi);
+			}
 		}
 	}
 	
