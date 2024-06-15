@@ -2027,17 +2027,23 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	
 		public void actionPerformed(ActionEvent e) {
 			String path = null;
+			String dialogTitle = label;
+			if (dialogTitle == null || dialogTitle.length() == 0)
+				dialogTitle = mode.equals("dir") ? "a Folder" : "a File";
+			else if (dialogTitle.endsWith(":"))	//remove trailing colon
+				dialogTitle = dialogTitle.substring(0, dialogTitle.length() - 1);
+			dialogTitle = "Select " + dialogTitle;
 			if (mode.equals("dir")) {
 				String saveDefaultDir = OpenDialog.getDefaultDirectory();
 				String dir = this.textField.getText();
 				boolean setDefaultDir = dir!=null && !dir.equals("");
      			if (setDefaultDir)
 					OpenDialog.setDefaultDirectory(dir);
-				path = IJ.getDir("Select a Folder");
+				path = IJ.getDir(dialogTitle);
 				if (setDefaultDir)
 					OpenDialog.setDefaultDirectory(saveDefaultDir);
 			} else {
-				OpenDialog od = new OpenDialog("Select a File", null);
+				OpenDialog od = new OpenDialog(dialogTitle, null);
 				String directory = od.getDirectory();
 				String name = od.getFileName();
 				if (name!=null)
@@ -2049,7 +2055,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				this.textField.setText(path);
 			}
 		}
-	
 	}
 	
 	private class TrimmedTextField extends TextField {

@@ -44,10 +44,12 @@ public class OpenDialog {
 			path = lookupPathVariable(path);
 		}
 		if (path==null || path.equals("")) {
+			IJ.showStatus(title);
 			if (Prefs.useJFileChooser)
 				jOpen(title, getDefaultDirectory(), null);
 			else
 				open(title, getDefaultDirectory(), null);
+			IJ.showStatus("");
 			if (name!=null)
 				setDefaultDirectory(dir);
 			this.title = title;

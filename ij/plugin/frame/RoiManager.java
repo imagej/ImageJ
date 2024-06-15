@@ -34,7 +34,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private static final int DRAW=0, FILL=1, LABEL=2;
 	private static final int SHOW_ALL=0, SHOW_NONE=1, LABELS=2, NO_LABELS=3;
 	private static final int MENU=0, COMMAND=1;
-	private static final int IGNORE_POSITION=-999;  // ignore the ROI's built in position
 	private static final int CHANNEL=0, SLICE=1, FRAME=2, SHOW_DIALOG=3;
 	private static int rows = 15;
 	private static int lastNonShiftClick = -1;
@@ -362,7 +361,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	boolean addRoi(boolean promptForName) {
-		return addRoi(null, promptForName, null, IGNORE_POSITION);
+		return addRoi(null, promptForName, null, -1);
 	}
 
 	boolean addRoi(Roi roi, boolean promptForName, Color color, int lineWidth) {
@@ -384,18 +383,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			color = roi.getStrokeColor();
 		else if (color==null && defaultColor!=null)
 			color = defaultColor;
-		boolean ignorePosition = false;
-		if (lineWidth==IGNORE_POSITION) {
-			ignorePosition = true;
-			lineWidth = -1;
-		}
 		if (lineWidth<0) {
 			int sw = (int)roi.getStrokeWidth();
 			lineWidth = sw>1?sw:defaultLineWidth;
 		}
 		if (lineWidth>100) lineWidth = 1;
 		int n = getCount();
-		int position = imp!=null&&!ignorePosition?roi.getPosition():0;
+		int position = imp!=null?roi.getPosition():0;
 		int saveCurrentSlice = imp!=null?imp.getCurrentSlice():0;
 		if (position>0 && position!=saveCurrentSlice) {
 			if (imp.lock())
@@ -437,10 +431,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		listModel.addElement(label);
 		roi.setName(label);
 		Roi roiCopy = (Roi)roi.clone();
-		if (ignorePosition && imp!=null && imp.getStackSize()>1 && imp.getWindow()!=null && isVisible()) {
- 			// set ROI position to current stack position if image and RoiManager are visible
+ 		// set ROI position to current stack position if image and RoiManager are visible
+		if (imp!=null && imp.getStackSize()>1 && imp.getWindow()!=null && isVisible())
 			roiCopy.setPosition(imp);
-		}
 		if (lineWidth>1)
 			roiCopy.setStrokeWidth(lineWidth);
 		if (color!=null)
