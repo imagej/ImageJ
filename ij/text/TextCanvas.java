@@ -106,7 +106,7 @@ class TextCanvas extends Canvas {
 			gImage.setColor(Color.lightGray);
 			gImage.fillRect(x+1,0,w,tp.iRowHeight);
 			gImage.setColor(Color.black);
-			if (tp.sColHead[i]!=null)
+			if (i<tp.sColHead.length && tp.sColHead[i]!=null)
 				gImage.drawString(tp.sColHead[i],x+2,tp.iRowHeight-5);
 			if (tp.iColCount>0) {
 				gImage.setColor(Color.darkGray);

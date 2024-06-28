@@ -287,7 +287,7 @@ public class Macro_Runner implements PlugIn {
 	/** Runs a BeanShell script on the current thread, passing a string argument, 
 		which the script can retrieve using the getArgument() function. Returns,
 		as a string, the last expression evaluated by the script.
-		Uses the plugin at http://imagej.nih.gov/ij/plugins/bsh/
+		Uses the plugin at http://imagej.net/ij/plugins/bsh/
 		to run the script.
 	*/
 	public static String runBeanShell(String script, String arg) {
@@ -309,7 +309,7 @@ public class Macro_Runner implements PlugIn {
 		which the script can retrieve using the getArgument() function. Returns,
 		as a string, the value of the variable 'result'. For example, a Python script  
 		containing the line "result=123" will return the string "123".
-		Uses the plugin at http://imagej.nih.gov/ij/plugins/jython/
+		Uses the plugin at http://imagej.net/ij/plugins/jython/
 		to run the script.
 	*/
 	public static String runPython(String script, String arg) {

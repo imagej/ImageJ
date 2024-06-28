@@ -117,7 +117,7 @@ public class TextRoi extends Roi {
 		super(x, y, 1, 1);
 		if (font==null) font = new Font(name, style, size);
 		this.font = font;
-		IJ.error("TextRoi", "API has changed. See updated example at\nhttp://imagej.nih.gov/ij/macros/js/TextOverlay.js");
+		IJ.error("TextRoi", "API has changed. See updated example at\nhttp://imagej.net/ij/macros/js/TextOverlay.js");
 	}
 
 	public TextRoi(int x, int y, ImagePlus imp) {

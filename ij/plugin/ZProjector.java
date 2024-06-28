@@ -72,7 +72,7 @@ public class ZProjector implements PlugIn {
 	/** Performs projection using the specified method and stack range, and returns
 		 the result, where 'method' is "avg", "min", "max", "sum", "sd" or "median".
 		Add " all" to 'method' to project all hyperstack time points. <br>
-		Example: http://imagej.nih.gov/ij/macros/js/ProjectionDemo.js
+		Example: http://imagej.net/ij/macros/js/ProjectionDemo.js
 	*/
 	 public static ImagePlus run(ImagePlus imp, String method, int startSlice, int stopSlice) {
     	ZProjector zp = new ZProjector(imp);

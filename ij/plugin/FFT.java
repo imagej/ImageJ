@@ -14,7 +14,7 @@ import java.util.*;
 This class implements the FFT, Inverse FFT and Redisplay Power Spectrum commands 
 in the Process/FFT submenu. It is based on Arlo Reeves'	 
 Pascal implementation of the Fast Hartley Transform from NIH Image 
-(http://imagej.nih.gov/ij/docs/ImageFFT/). 
+(http://imagej.net/ij/docs/ImageFFT/). 
 The Fast Hartley Transform was restricted by U.S. Patent No. 4,646,256, but was placed 
 in the public domain by Stanford University in 1995 and is now freely available.
 

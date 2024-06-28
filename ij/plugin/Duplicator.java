@@ -85,8 +85,10 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			imp2 = crop(imp);
 			recordCrop(imp);
 		}
-		if (ignoreSelection && roi!=null)
+		if (ignoreSelection && roi!=null) {
 			imp.setRoi(roi);
+			imp2.setRoi((Roi)roi.clone());
+		}
 		Calibration cal = imp2.getCalibration();
 		if (roi!=null && (cal.xOrigin!=0.0||cal.yOrigin!=0.0)) {
 			cal.xOrigin -= roi.getBounds().x;
@@ -94,7 +96,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		}	
 		imp2.setTitle(newTitle);
 		imp2.setProp("UniqueName","true");
-		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE) {
+		if (roi!=null && !ignoreSelection && roi.isArea() && roi.getType()!=Roi.RECTANGLE) {
 			Roi roi2 = cropRoi(imp, roi);
 			if (roi2==null)
 				return;

@@ -5,8 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.54k3  15 June 2024</u>
+<li> <u>1.54k8  28 June 2024</u>
 <ul>
+<li> Thanks to Herbie Gluender, the <i>Image&gt;Duplicate</i>
+command retains the selection when "Ignore Selection" is
+checked in the dialog.
 <li> Thanks to Michael Schmid, file dialogs show the
 prompt in the status bar, a work around on Macs where
 file dialogs do not have titles.
@@ -15,7 +18,14 @@ file dialogs do not have titles.
 first FileInfo from tiff stacks.
 <li> Thanks to Michael Nonet and Guenter Pudmich, fixed bug
 with the roiManager("rename",name) macro function causing the
-stack position to be lost. 
+stack position to be lost.
+<li> Thanks to Philippe Carl and Michael Schmid, fixed bug
+where the roiManager("select",index) macro function did
+not remove previous selections.
+<li> Thanks to Felix Rudolphi and Curtis Rueden, fixed a
+1.54i regression that caused FileOpener to throw
+HeadlessExceptions in headless environments.
+
 </ul>
 
 <li> <u>1.54j  12 June 2024</u>
@@ -3114,6 +3124,6 @@ small 16-bit images or selections to be much slower.
 analyzer to hang when processong 32-bit images.
 </ul> 
 
-<a href="http://imagej.nih.gov/ij">Home</a>
+<a href="http://imagej.net/ij">Home</a>
 </body>
 </html>

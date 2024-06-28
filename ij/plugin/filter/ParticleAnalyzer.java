@@ -1194,7 +1194,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	
 	/** Sets the RoiManager to be used by the next ParticleAnalyzer 
 		instance. There is a JavaScript example at
-		http://imagej.nih.gov/ij/macros/js/HiddenRoiManager.js
+		http://imagej.net/ij/macros/js/HiddenRoiManager.js
 	*/
 	public static void setRoiManager(RoiManager manager) {
 		staticRoiManager = manager;

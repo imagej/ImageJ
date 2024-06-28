@@ -10,8 +10,8 @@ import ij.macro.Interpreter;
 /** This plugin implements the Process/Image Calculator command.
 <pre>
    // test script
-   imp1 = IJ.openImage("http://imagej.nih.gov/ij/images/boats.gif")
-   imp2 = IJ.openImage("http://imagej.nih.gov/ij/images/bridge.gif")
+   imp1 = IJ.openImage("http://imagej.net/ij/images/boats.gif")
+   imp2 = IJ.openImage("http://imagej.net/ij/images/bridge.gif")
    imp3 = ImageCalculator.run(imp1, imp2, "add create 32-bit");
    imp3.show();
 </pre>
