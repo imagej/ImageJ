@@ -30,7 +30,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	private TextField fileName;
 	private static Vector<Thread> notRecordingThreads = new Vector<Thread>();
 	private String fitTypeStr = CurveFitter.fitList[0];
-	private static TextArea textArea = new TextArea();	//recorded code goes here (start with dummy to avoid NullPointerException)
+	private static TextArea textArea;
 	private static Recorder instance;
 	private static String commandName;
 	private static String commandOptions;
@@ -135,7 +135,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	 *  whether the Macro Recorder is open and recording is not suspended
 	 *  for the current thread.*/
 	private static boolean recordingEnabled() {
-		if (getInstance() == null) return false;
+		if (getInstance()==null || textArea==null)
+			return false;
 		return !notRecordingThreads.contains(Thread.currentThread());
 	}
 
@@ -279,7 +280,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	}
 
 	public static void record(String method, String a1, int a2) {
-		textArea.append(method+"(\""+a1+"\", "+a2+");\n");
+		if (recordingEnabled())
+			textArea.append(method+"(\""+a1+"\", "+a2+");\n");
 	}
 
 	public static void record(String method, String args, int a1, int a2) {
@@ -786,6 +788,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	}
 
 	void createMacro() {
+		if (!recordingEnabled())
+			return;
 		String text = textArea.getText();
 		if (text==null || text.equals("")) {
 			IJ.showMessage("Recorder", "A macro cannot be created until at least\none command has been recorded.");
@@ -918,7 +922,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	public void imageClosed(ImagePlus imp) { }
 	
 	void runCode() {
-		if (instance==null)
+		if (instance==null || !recordingEnabled())
 			return;
 		String name = fileName.getText();
 		if (name==null)
@@ -991,7 +995,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	}
 
 	public String getText() {
-		return textArea.getText();
+		return recordingEnabled()?textArea.getText():"";
 	}
 	
 	public static Recorder getInstance() {
