@@ -3194,9 +3194,9 @@ public class Functions implements MacroConstants, Measurements {
 				String styles = getLastString().toLowerCase();
 				if (styles.contains("bold")) style += Font.BOLD;
 				if (styles.contains("italic")) style += Font.ITALIC;
-				if (styles.contains("non-")||styles.contains("no-")) antialiasedText=false;
 				if (styles.contains("nonscal")) nonScalableText=true;
 				if (styles.contains("anti")) antialiasedText=true;
+				if (styles.contains("non-")||styles.contains("no-")) antialiasedText=false;
 			} else
 				interp.getRightParen();
 		}

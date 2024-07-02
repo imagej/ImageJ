@@ -5,8 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.54k8  28 June 2024</u>
+<li> <u>1.54k10  2 July 2024</u>
 <ul>
+<li> Thanks to Bram van den Broek, the <i>Image&gt;Duplicate</i>
+command enables the "Ignore Selection" option when the ROI is 
+outside the image.
 <li> Thanks to Herbie Gluender, the <i>Image&gt;Duplicate</i>
 command retains the selection when "Ignore Selection" is
 checked in the dialog.
@@ -22,6 +25,9 @@ stack position to be lost.
 <li> Thanks to Philippe Carl and Michael Schmid, fixed bug
 where the roiManager("select",index) macro function did
 not remove previous selections.
+<li> Thanks to Oleg Dobrokhotov, fixed bug with the
+"non-antialiased" option of the setFont() macro
+function to not work as expected.
 <li> Thanks to Felix Rudolphi and Curtis Rueden, fixed a
 1.54i regression that caused FileOpener to throw
 HeadlessExceptions in headless environments.
