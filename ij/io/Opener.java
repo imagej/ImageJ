@@ -43,6 +43,7 @@ public class Opener {
 	private static boolean bioformats;
 	private String url;
 	private boolean useHandleExtraFileTypes;
+	private boolean doNotUseBioFormats;
 
 	static {
 		Hashtable commands = Menus.getCommands();
@@ -1332,7 +1333,7 @@ ImagePlus openJpegOrGifUsingURL(String title, URL url) {
 				return UNKNOWN; // The LSM	Reader plugin opens these files
 				
 		 // OME TIFF
-		if (bioformats && name.contains(".ome.tif"))
+		if (!doNotUseBioFormats && bioformats && name.contains(".ome.tif"))
 				return UNKNOWN; // Open with Bio-formats plugin
 				
 		// TIFF
@@ -1475,6 +1476,10 @@ ImagePlus openJpegOrGifUsingURL(String title, URL url) {
 	/** Returns the state of the openUsingPlugins flag. */
 	public static boolean getOpenUsingPlugins() {
 		return openUsingPlugins;
+	}
+	
+	public void doNotUseBioFormats() {
+		doNotUseBioFormats = true;
 	}
 		
 }

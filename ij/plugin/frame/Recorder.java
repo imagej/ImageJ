@@ -118,7 +118,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	 *  resumeRecording the same number of times to resume recording.
 	 *  The suspendRecording method does nothing if the Recorder window is not open. */
 	public static void suspendRecording() {
-		if (getInstance() == null) return;
+		if (getInstance()==null) return;
 		notRecordingThreads.add(Thread.currentThread());
 	}
 
@@ -127,7 +127,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	 *  The resumeRecording method is unrelated to recording in macros, i.e.,
 	 *  resumeRecording does not enable recording in macros; use 'recordInMacros' for this. */
 	public static void resumeRecording() {
-		if (getInstance() == null) return;
+		if (getInstance()==null) return;
 		notRecordingThreads.remove(Thread.currentThread());
 	}
 

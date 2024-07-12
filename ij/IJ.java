@@ -1988,7 +1988,9 @@ public class IJ {
 
 	/** Opens the nth image of the specified tiff stack. */
 	public static ImagePlus openImage(String path, int n) {
-		return (new Opener()).openImage(path, n);
+		Opener opener = new Opener();
+		opener.doNotUseBioFormats();
+		return opener.openImage(path, n);
 	}
 
 	/** Opens the specified tiff file as a virtual stack. */
