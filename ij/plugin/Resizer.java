@@ -127,6 +127,10 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			interpolationMethod = gd.getNextChoiceIndex();
 			if (constrain && newWidth==0)
 				sizeToHeight = true;
+			String options = Macro.getOptions();
+			if (options != null && options.contains("constrain")
+					&& options.contains("height=") && !options.contains("width="))
+				sizeToHeight = true;
 			if (newWidth<=0.0 && !constrain)  newWidth = 50;
 			if (newHeight<=0.0) newHeight = 50;
 		}

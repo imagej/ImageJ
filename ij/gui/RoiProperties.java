@@ -31,7 +31,9 @@ public class RoiProperties implements TextListener, WindowListener {
 	private TextField groupField, colorField;
 	private Label groupName;
 
-	/** Constructs a ColorChooser using the specified title and initial color. */
+	/** Constructs a RoiProperties using the specified title for a given roi;
+	 *  call showDialog for the actual dialog.
+	 *  Note that the title determines which fields will be shown in the dialog. */
 	public RoiProperties(String title, Roi roi) {
 		if (roi==null)
 			throw new IllegalArgumentException("ROI is null");
@@ -81,6 +83,8 @@ public class RoiProperties implements TextListener, WindowListener {
 			position =  roi.getCPosition() +","+roi.getZPosition()+","+ roi.getTPosition();
 		if (position.equals("0"))
 			position = "none";
+		else if (position.equals(""+PointRoi.POINTWISE_POSITION))
+			position = "point-specific";
 		String group = ""+roi.getGroup();
 		if (group.equals("0"))
 			group = "none";
@@ -97,8 +101,8 @@ public class RoiProperties implements TextListener, WindowListener {
 			String label = "Position:";
 			ImagePlus imp = WindowManager.getCurrentImage();
 			if (position.contains(",") || (imp!=null&&imp.isHyperStack()))
-				label = "Position (c,s,f):";
-			gd.addStringField(label, position);
+				label = "Position (c,z,t):";
+			gd.addStringField(label, position, 20);
 			gd.addStringField("Group:", group);
 			gd.addToSameRow(); gd.addMessage("wwwwwwwwwwww");
 		}
@@ -124,7 +128,6 @@ public class RoiProperties implements TextListener, WindowListener {
 			groupField.addTextListener(this);
 			colorField = (TextField)v.elementAt(v.size()-1);
 		}
-
 
 		if (!isLine) {
 			if (isPoint) {

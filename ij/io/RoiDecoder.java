@@ -376,19 +376,20 @@ public class RoiDecoder {
 				roi.setProperties(props);
 		}
 
+		roi.setPosition(position);
+		if (channel>0 || slice>0 || frame>0)
+			roi.setPosition(channel, slice, frame);
+
 		if (version>=227) {
 			int[] counters = getPointCounters(n);
 			if (counters!=null && (roi instanceof PointRoi))
-				((PointRoi)roi).setCounters(counters);
+				((PointRoi)roi).setCounters(counters);	//must be after roi.setPosition()
 		}
 		
 		// set group (1.52t or later)
 		if (version>=228 && group>0)
 			roi.setGroup(group);
 
-		roi.setPosition(position);
-		if (channel>0 || slice>0 || frame>0)
-			roi.setPosition(channel, slice, frame);
 		decodeOverlayOptions(roi, version, options, overlayLabelColor, overlayFontSize);
 		return roi;
 	}

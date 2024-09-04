@@ -6,6 +6,7 @@ import ij.plugin.Colors;
 import ij.plugin.PointToolOptions;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
+import ij.util.Tools;
 import ij.util.Java2;
 import java.awt.*;
 import java.awt.image.*;
@@ -22,6 +23,8 @@ public class PointRoi extends PolygonRoi {
 	public static final String[] sizes = {"Tiny", "Small", "Medium", "Large", "Extra Large", "XXL", "XXXL"};
 	public static final String[] types = {"Hybrid", "Cross", "Dot", "Circle"};
 	public static final int HYBRID=0, CROSS=1, CROSSHAIR=1, DOT=2, CIRCLE=3;
+	/**	Returned by getPosition if point stack positions are different */
+	public static final int POINTWISE_POSITION = -2;
 	private static final String TYPE_KEY = "point.type";
 	private static final String SIZE_KEY = "point.size";
 	private static final String CROSS_COLOR_KEY = "point.cross.color";
@@ -215,12 +218,13 @@ public class PointRoi extends PolygonRoi {
 			if (fontSize>9)
 				Java2.setAntialiasedText(g, true);
 		}
-		int slice = imp!=null&&positions!=null&&imp.getStackSize()>1?imp.getCurrentSlice():0;
+		int[] positions = this.positions;	//use a copy to avoid NullPointerException on asynchronous change to null
+		int slice = imp!=null && positions!=null && imp.getStackSize()>1?imp.getCurrentSlice():0;
 		ImageCanvas ic = imp!=null?imp.getCanvas():null;
 		if (ic!=null && overlay && ic.getShowAllList()!=null && ic.getShowAllList().contains(this) && !Prefs.showAllSliceOnly)
-			slice = 0;  // draw point irrespective of currently selected slice
+			slice = 0;  // In RoiManager's "show all" mode and not "associate with slice", draw point irrespective of currently selected slice
 		if (Prefs.showAllPoints)
-			slice = 0;
+			slice = 0;  // "Show on all slices" in Point tool options 
 		//IJ.log("draw: "+positions+" "+imp.getCurrentSlice());
 		for (int i=0; i<nPoints; i++) {
 			//IJ.log(i+" "+slice+" "+(positions!=null?positions[i]:-1)+"  "+getPosition());
@@ -690,12 +694,70 @@ public class PointRoi extends PolygonRoi {
 			counts[(counters==null || counters[i]>=counts.length) ? 0 : counters[i]] ++;
 	}
 
+	/** Sets the stack position (image number) of all points in this Roi.
+	 *  The points are only displayed when the stack is at the specified position.
+	 *  Set to zero to have the points displayed on all images in the stack.
+	 *  The stack position, when set, determines the visibility of this Roi
+	 *  (i) if it is part of an overlay (normal overlay or the RoiManager's
+	 *      'Show All' overlay), or
+	 *  (ii) if it is the currently active Roi and Prefs.showAllPoints
+	 *       ('Show an all slices' in the Point Tool Options dialog) is off.
+	 *  Clears any association of this Roi to a hyperstack position.
+	 *
+	 *  Note that the behavior differs from that of the other Roi types:
+	 *  For the other Roi types, setPosition does not restrict the visibility
+	 *  to stack slice 'n' if that roi is the currently active Roi; it only
+	 *  affects the visibility if that Roi is part of an overlay.
+	 */
+	public void setPosition(int n) {
+		if (n<0 && n!=POINTWISE_POSITION)
+			n = 0;
+		if (n == 0) {
+			positions = null;
+		} else {
+			if (positions == null)
+				positions = new int[counters == null ? nPoints*2 : counters.length];
+			if (n != POINTWISE_POSITION)
+				Arrays.fill(positions, n);
+		}
+		hyperstackPosition = false;
+	}
+
+	/** Returns the stack position (image number) of the points in this Roi, if
+	 *  all points have the same position. Returns 0 if none of the points is
+	 *  associated with a particular stack image, and PointRoi.POINTWISE_POSITION = -2
+	 *  if there are different stack positions for different points.
+	 */
+	public int getPosition() {
+		if (positions == null || nPoints < 1) {
+			return 0;
+		} else {
+			int position = positions[0];
+			for (int i=1; i<nPoints; i++)
+				if (positions[i] != position)
+					return POINTWISE_POSITION;
+			return position;
+		}
+	}
+
 	/** Returns the stack slice of the point with the given index, or 0 if no slice defined for this point */
 	public int getPointPosition(int index) {
 		if (positions!=null && index<nPoints)
 			return positions[index];
 		else
 			return 0;
+	}
+
+	/** Returns whether this Roi contains a point associated to the given stack slice.
+	 *  Returns true for (non-existant) slice 0.
+	 *  Does not care whether points would be shown irrespective of the slice number
+	 *  (as given by the Point Tool options "Show on all slices", Prefs.showAllPoints).
+	 */
+	public boolean hasPointPosition(int slice) {
+		if (slice < 0)  return false;
+		if (slice == 0) return true;
+		if (positions == null) return true;
+		return Tools.indexOf(positions, slice) >= 0;
 	}
 
 	public void displayCounts() {

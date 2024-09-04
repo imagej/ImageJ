@@ -3,7 +3,6 @@ import ij.*;
 import ij.plugin.filter.Analyzer;
 
 /** Calibration objects contain an image's spatial and density calibration data. */
-   
 public class Calibration implements Cloneable {
 
 	public static final int STRAIGHT_LINE=0,POLY2=1,POLY3=2,POLY4=3,
@@ -75,7 +74,12 @@ public class Calibration implements Cloneable {
 	private boolean zeroClip;
 	private boolean invertY;
 
+	
 	/** Constructs a new Calibration object using the default values. */ 
+	public Calibration() {
+	}
+	
+	/* Obsolete */
 	public Calibration(ImagePlus imp) {
 		if (imp!=null) {
 			bitDepth = imp.getBitDepth();
@@ -83,12 +87,7 @@ public class Calibration implements Cloneable {
 				invertedLut=imp.isInvertedLut();
 		}
 	}
-	
-	/** Constructs a new Calibration object using the default values.
-		For density calibration, the image is assumed to be 8-bits. */ 
-	public Calibration() {
-	}
-	
+
 	/** Returns 'true' if this image is spatially calibrated. */
 	public boolean scaled() {
 		return pixelWidth!=1.0 || pixelHeight!=1.0 || pixelDepth!=1.0 || !unit.equals("pixel");

@@ -359,6 +359,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					position = getSliceNumber(roi.getName());
 				if (position>0 && imp.getCompositeMode()==IJ.COMPOSITE)
 					position = 0;
+				if (position == PointRoi.POINTWISE_POSITION)
+					position = 0;
+				if ((roi instanceof PointRoi) && Prefs.showAllPoints)
+					position = 0;
+				//IJ.log(c+" "+z+" "+t+" p="+position+"getP="+roi.getPosition()+" "+roiManagerShowAllMode);
 				if (position==0 || position==currentImage || roiManagerShowAllMode)
 					drawRoi(g, roi, drawLabels?i+LIST_OFFSET:-1);
 			}

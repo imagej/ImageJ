@@ -413,7 +413,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		listModel.addElement(label);
 		roi.setName(label);
 		Roi roiCopy = (Roi)roi.clone();
-		boolean hasPosition = roiCopy.getPosition()>0 || roiCopy.hasHyperStackPosition(); 		
+		boolean hasPosition = roiCopy.getPosition()>0 || roiCopy.getPosition()==PointRoi.POINTWISE_POSITION || roiCopy.hasHyperStackPosition(); 		
 		if (!hasPosition && imp!=null && imp.getStackSize()>1)
 			roiCopy.setPosition(imp); // set ROI position to current stack position
 		if (lineWidth>1)
@@ -626,7 +626,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (clone) {
 				String name = (String)listModel.getElementAt(index);
 				Roi roi2 = (Roi)roi.clone();
-				roi2.setPosition(imp);
+				if (roi2.getPosition() != PointRoi.POINTWISE_POSITION)
+					roi2.setPosition(imp);
 				roi.setName(name);
 				roi2.setName(name);
 				rois.set(index, roi2);
@@ -705,6 +706,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				imp.setSlice(roi.getZPosition());
 			else if (position>0 && position<=imp.getStackSize())
 				imp.setSlice(position);
+			else if ((roi instanceof PointRoi) && !Prefs.showAllPoints && !((PointRoi)roi).hasPointPosition(imp.getSlice()))
+				imp.setSlice(((PointRoi)roi).getPointPosition(0));
 			else {
 				String label = (String)listModel.getElementAt(index);
 				int n = getSliceNumber(roi, label);
@@ -1559,6 +1562,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (group>=0)
 				roi.setGroup(group);
 			if (rpRoi!=null) {
+				//IJ.log("new pos="+rpRoi.getPosition());
 				if (rpRoi.hasHyperStackPosition())
 					roi.setPosition(rpRoi.getCPosition(), rpRoi.getZPosition(), rpRoi.getTPosition());
 				else
@@ -1806,7 +1810,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		runCommand("add");
 	}
 
-	private static boolean channel=false, slice=true, frame=false;
+	private static boolean channel=false, slice=true, frame=false;  //remembers checkbox states for removePositions
 
 	private void removePositions(int position) {
 		int[] indexes = getIndexes();
@@ -1832,11 +1836,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			gd.setInsets(5,15,0);
 			gd.addMessage("Remove positions for:      ", font);
 			gd.setInsets(6,25,0);
-			gd.addCheckbox("Channels:", channel);
+			gd.addCheckbox("Channels c:", channel);
 			gd.setInsets(0,25,0);
-			gd.addCheckbox("Slices:", slice);
+			gd.addCheckbox("Slices z:", slice);
 			gd.setInsets(0,25,0);
-			gd.addCheckbox("Frames:", frame);
+			gd.addCheckbox("Frames t:", frame);
 			gd.showDialog();
 			if (gd.wasCanceled())
 				return;
@@ -1862,12 +1866,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			int c = roi.getCPosition();
 			int z = roi.getZPosition();
 			int t = roi.getTPosition();
-			if (c>0 || t>0) {
+			if (roi.hasHyperStackPosition()) {
 				if (removeChannels) c = 0;
 				if (removeSlices) z = 0;
 				if (removeFrames) t = 0;
 				roi.setPosition(c, z, t);
-			} else
+			} else if (removeSlices)
 				roi.setPosition(0);
 		}
 		if (imp!=null)

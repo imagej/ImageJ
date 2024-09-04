@@ -114,7 +114,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	private String name;
 	private int position;
 	private int channel, slice, frame;
-	private boolean hyperstackPosition;
+	protected boolean hyperstackPosition;
 	private Overlay prototypeOverlay;
 	private boolean subPixel;
 	private boolean activeOverlayRoi;
@@ -2186,6 +2186,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	/** Sets the stack position (image number) of this ROI. In an overlay, this
 	* ROI is only displayed when the stack is at the specified position.
 	* Set to zero to have the ROI displayed on all images in the stack.
+	* Clears the hyperStackPosition, if there was one.
 	* @see ij.gui.Overlay
 	*/
 	public void setPosition(int n) {
@@ -2195,8 +2196,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		hyperstackPosition = false;
 	}
 
-	/** Returns the stack position (image number) of this ROI, or
-	*  zero if the ROI is not associated with a particular stack image.
+	/** Returns the stack position (image number) for displaying this ROI,
+	*   in an overlay (or the RoiManager's 'Show All'. Returns zero if the
+	*   ROI is not associated with a particular stack image.
+	*   PointRois can also return PointRoi.POINTWISE_POSITION.
 	* @see ij.gui.Overlay
 	*/
 	public int getPosition() {
@@ -2244,14 +2247,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	}
 
 	/** Returns the slice position of this ROI, or zero
-	*  if this ROI is not associated with a particular slice.
+	*   if this ROI is not associated with a particular slice.
 	*/
 	public final int getZPosition() {
-		return slice==0&&!hyperstackPosition?position:slice;
+		return slice==0&&!hyperstackPosition ? position : slice;
 	}
 
 	/** Returns the frame position of this ROI, or zero
-	*  if this ROI is not associated with a particular frame.
+	*   if this ROI is not associated with a particular frame.
 	*/
 	public final int getTPosition() {
 		return frame;
