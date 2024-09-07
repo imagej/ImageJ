@@ -31,13 +31,15 @@ public class RoiProperties implements TextListener, WindowListener {
 	private TextField groupField, colorField;
 	private Label groupName;
 
-	/** Constructs a RoiProperties using the specified title for a given roi;
+	/** Constructs a RoiProperties using the specified title for a given image and roi;
 	 *  call showDialog for the actual dialog.
 	 *  Note that the title determines which fields will be shown in the dialog. */
-	public RoiProperties(String title, Roi roi) {
+	public RoiProperties(String title, ImagePlus imp, Roi roi) {
 		if (roi==null)
 			throw new IllegalArgumentException("ROI is null");
 		this.title = title;
+		this.imp = imp;
+		this.roi = roi;
 		showName = title.startsWith("Prop");
 		showListCoordinates = showName && title.endsWith(" ");
 		nProperties = showListCoordinates?roi.getPropertyCount():0;
@@ -48,12 +50,19 @@ public class RoiProperties implements TextListener, WindowListener {
 			overlay = imp!=null?imp.getOverlay():null;
 			setPositions = roi.getPosition()!=0;
 		}
-		this.roi = roi;
+	}
+
+	/** Constructs a RoiProperties using the specified title for a given roi;
+	 *  call showDialog for the actual dialog.
+	 *  Note that the title determines which fields will be shown in the dialog. */
+	 
+	public RoiProperties(String title, Roi roi) {
+		this(title, WindowManager.getCurrentImage(), roi);
 	}
 	
 	/** Displays the dialog box and returns 'false' if the user cancels it. */
 	public boolean showDialog() {
-		String name= roi.getName();
+		String name = roi.getName();
 		boolean isRange = name!=null && name.startsWith("range:");
 		String nameLabel = isRange?"Range:":"Name:";
 		if (isRange) name = name.substring(7);
@@ -99,7 +108,6 @@ public class RoiProperties implements TextListener, WindowListener {
 		if (showName) {
 			gd.addStringField(nameLabel, name, 20);
 			String label = "Position:";
-			ImagePlus imp = WindowManager.getCurrentImage();
 			if (position.contains(",") || (imp!=null&&imp.isHyperStack()))
 				label = "Position (c,z,t):";
 			gd.addStringField(label, position, 20);
@@ -140,6 +148,9 @@ public class RoiProperties implements TextListener, WindowListener {
 				gd.addStringField("Fill color:", fillc);
 			}
 		}
+		boolean askShowOnAllSlices = addToOverlay && imp!=null && imp.getNSlices()>1;
+		if (askShowOnAllSlices)
+			gd.addCheckbox("Show on all Slices", roi.getPosition()==0&&!roi.hasHyperStackPosition());
 		if (addToOverlay)
 			gd.addCheckbox("New overlay", false);
 		if (overlayOptions) {
@@ -211,8 +222,15 @@ public class RoiProperties implements TextListener, WindowListener {
 			} else
 				fillc = gd.getNextString();
 		}
+		if (askShowOnAllSlices) {
+			boolean overlayOnAllSlices = gd.getNextBoolean();
+			if (overlayOnAllSlices)
+				roi.setPosition(0);
+			else if (roi.getPosition() == 0)
+				roi.setPosition(imp);
+		}
 		boolean applyToOverlay = false;
-		boolean newOverlay = addToOverlay?gd.getNextBoolean():false;
+		boolean newOverlay = addToOverlay ? gd.getNextBoolean() : false;
 		if (overlayOptions) {
 			setPositions = gd.getNextBoolean();
 			if (overlay!=null) {
@@ -267,12 +285,19 @@ public class RoiProperties implements TextListener, WindowListener {
 		if (applyToOverlay) {
 			if (imp==null || overlay==null)
 				return true;
+			Undo.setup(Undo.OVERLAY, imp);
 			Roi[] rois = overlay.toArray();
 			for (int i=0; i<rois.length; i++) {
-				rois[i].setStrokeColor(strokeColor);
+				if (strokeColor != null)
+					rois[i].setStrokeColor(strokeColor);
 				if (strokeWidth2!=strokeWidth)
 					rois[i].setStrokeWidth((float)strokeWidth2);
 				rois[i].setFillColor(fillColor);
+				if (setPositions) {
+					if (rois[i].getPosition()==0 && !rois[i].hasHyperStackPosition())
+						rois[i].setPosition(imp);
+				} else
+					rois[i].setPosition(0);
 			}
 			imp.draw();
 			imp.getProcessor(); // needed for correct recordering

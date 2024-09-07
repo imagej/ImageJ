@@ -111,8 +111,10 @@ public class OverlayCommands implements PlugIn {
 			gd.addCheckbox("Remove existing overlay", false);
 			gd.showDialog();
 			if (gd.wasCanceled()) return;
-			if (gd.getNextBoolean())
+			if (gd.getNextBoolean()) {
+				Undo.setup(Undo.OVERLAY, imp);
 				imp.setOverlay(null);
+			}
 			return;
  		}
 		if (roi==null) {
@@ -130,13 +132,17 @@ public class OverlayCommands implements PlugIn {
 				roi.setFillColor(defaultRoi.getFillColor());
 		}
 		setPosition(imp, roi);
+		boolean hasPosition = roi.getPosition()!=0 || roi.hasHyperStackPosition();
 		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;
 		if (IJ.altKeyDown() || (IJ.macroRunning() && Macro.getOptions()!=null)) {
 			RoiProperties rp = new RoiProperties("Add to Overlay", roi);
 			if (!rp.showDialog()) return;
+			boolean hasPosition2 = roi.getPosition()!=0 || roi.hasHyperStackPosition();
 			defaultRoi.setStrokeColor(roi.getStrokeColor());
 			defaultRoi.setStrokeWidth(roi.getStrokeWidth());
 			defaultRoi.setFillColor(roi.getFillColor());
+			if (hasPosition2 != hasPosition)
+				defaultRoi.setPosition(hasPosition2 ? 1 : 0);
 		}
 		String name = roi.getName();
 		boolean newOverlay = name!=null && name.equals("new-overlay");
@@ -289,6 +295,7 @@ public class OverlayCommands implements PlugIn {
 			ImageCanvas ic = imp.getCanvas();
 			if (ic!=null)
 				ic.setShowAllList(null);
+			Undo.setup(Undo.OVERLAY, imp);
 			imp.setOverlay(null);
 		}
 	}
@@ -403,7 +410,7 @@ public class OverlayCommands implements PlugIn {
 		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;
 		if (points) roi.setStrokeColor(Color.red);
 		roi.setPosition(defaultRoi.getPosition());
-		RoiProperties rp = new RoiProperties("Overlay Options", roi);
+		RoiProperties rp = new RoiProperties("Overlay Options", imp, roi);
 		if (!rp.showDialog()) return;
 		defaultRoi = roi;
 	}

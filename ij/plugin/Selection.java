@@ -68,7 +68,7 @@ public class Selection implements PlugIn, Measurements {
 		else if (arg.equals("toline"))
 			areaToLine(imp); 
 		else if (arg.equals("properties"))
-			{setProperties("Properties ", imp.getRoi()); imp.draw();}
+			{setProperties("Properties ", imp); imp.draw();}
 		else if (arg.equals("band"))
 			makeBand(imp);
 		else if (arg.equals("tobox"))
@@ -800,8 +800,12 @@ public class Selection implements PlugIn, Measurements {
 		rm.allowRecording(false);
 		IJ.setKeyUp(IJ.ALL_KEYS);
 	}
-	
-	boolean setProperties(String title, Roi roi) {
+
+	/** Implements the Edit>Selection>Properties command.
+	 *  With the alt key down and a multipoint selection, shows the point counts instead. */
+	boolean setProperties(String title, ImagePlus imp) {
+		if (imp == null) return false;	//should never happen (called only from 'run', where imp!=null)
+		Roi roi = imp.getRoi();
 		if ((roi instanceof PointRoi) && Toolbar.getMultiPointMode() && IJ.altKeyDown()) {
 			((PointRoi)roi).displayCounts();
 			return true;
@@ -820,7 +824,7 @@ public class Selection implements PlugIn, Measurements {
 		Color color = roi.getStrokeColor();
 		Color fillColor = roi.getFillColor();
 		int width = (int)roi.getStrokeWidth();
-		RoiProperties rp = new RoiProperties(title, roi);
+		RoiProperties rp = new RoiProperties(title, imp, roi);
 		boolean ok = rp.showDialog();
 		if (Recorder.record) {
 			boolean groupChanged = false;

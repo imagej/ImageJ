@@ -435,25 +435,24 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			max = cal.getCValue((int)max);
 			realValue = true;
 		}
+		digits = realValue?4:0;
+		if (realValue) {
+			double s = min<0||max<0?0.1:1.0;
+			double amin = Math.abs(min);
+			double amax = Math.abs(max);
+			if (amin>99.0*s||amax>99.0*s) digits = 3;
+			if (amin>999.0*s||amax>999.0*s) digits = 2;
+			if (amin>9999.0*s||amax>9999.0*s) digits = 1;
+			if (amin>99999.0*s||amax>99999.0*s) digits = 0;
+			if (amin>9999999.0*s||amax>9999999.0*s) digits = -2;
+			if ((amin>0&&amin<0.001)||(amax>0&&amax<0.001)) digits = -2;
+		}
 		if (windowLevel) {
-			digits = realValue?3:0;
 			double window = max-min;
 			double level = min+(window)/2.0;
 			windowLabel.setText(ResultsTable.d2s(window, digits));
 			levelLabel.setText(ResultsTable.d2s(level, digits));
 		} else {
-			digits = realValue?4:0;
-			if (realValue) {
-				double s = min<0||max<0?0.1:1.0;
-				double amin = Math.abs(min);
-				double amax = Math.abs(max);
-				if (amin>99.0*s||amax>99.0*s) digits = 3;
-				if (amin>999.0*s||amax>999.0*s) digits = 2;
-				if (amin>9999.0*s||amax>9999.0*s) digits = 1;
-				if (amin>99999.0*s||amax>99999.0*s) digits = 0;
-				if (amin>9999999.0*s||amax>9999999.0*s) digits = -2;
-				if ((amin>0&&amin<0.001)||(amax>0&&amax<0.001)) digits = -2;
-			}
 			String minString = IJ.d2s(min, min==0.0?0:digits) + blankLabel8;
 			minLabel.setText(minString.substring(0,blankLabel8.length()));
 			String maxString = blankLabel8 + IJ.d2s(max, digits);
@@ -868,7 +867,6 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		min = imp.getDisplayRangeMin();
 		max = imp.getDisplayRangeMax();
 		Calibration cal = imp.getCalibration();
-		//int digits = (ip instanceof FloatProcessor)||cal.calibrated()?2:0;
 		double minValue = cal.getCValue(min);
 		double maxValue = cal.getCValue(max);
 		int channels = imp.getNChannels();
@@ -1024,15 +1022,14 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		min = imp.getDisplayRangeMin();
 		max = imp.getDisplayRangeMax();
 		Calibration cal = imp.getCalibration();
-		int digits = (ip instanceof FloatProcessor)||cal.calibrated()?2:0;
 		double minValue = cal.getCValue(min);
 		double maxValue = cal.getCValue(max);
 		//IJ.log("setWindowLevel: "+min+" "+max);
 		double windowValue = maxValue - minValue;
 		double levelValue = minValue + windowValue/2.0;
 		GenericDialog gd = new GenericDialog("Set W&L");
-		gd.addNumericField("Window Center (Level): ", levelValue, digits);
-		gd.addNumericField("Window Width: ", windowValue, digits);
+		gd.addNumericField("Window Center (Level): ", levelValue, digits, 9, "");
+		gd.addNumericField("Window Width: ", windowValue, digits, 9, "");
 		gd.addCheckbox("Propagate to all open images", false);
 		gd.showDialog();
 		if (gd.wasCanceled())
