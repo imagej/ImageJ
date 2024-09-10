@@ -5,8 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.54k19  6 September 2024</u>
+<li> <u>1.54k21  10 September 2024</u>
 <ul>
+<li> Thanks to 'Carlos', added the RoiManager.delete(index) macro function DOC
+and the RoiManager.delete(index) method.
 <li> Thanks to Michael Schmid, the dialog shown for <i>Image&gt;Overlay&gt;Add Selection</i>
 with the ALT key down has an additional "Show on all slices" checkbox.
 Using "Apply" in the <i>Image&gt;Overlay&gt;Overlay Options</i> dialog
@@ -54,6 +56,10 @@ using inadequate precision when displaying values.
 <li> Thanks to Michael Schmid, fixed <i>Undo</i> exception
 after using <i>Image&gt;Adjust&gt;Size</i> on
 a stack.
+<li> Thanks to 'Carlos', fixed bug with freehand and
+segmented line selection iterators when the line was
+completely straight vertically or
+horizontally.
 <li> Thanks to Felix Rudolphi and Curtis Rueden, fixed a
 1.54i regression that caused FileOpener to throw
 HeadlessExceptions in headless environments.

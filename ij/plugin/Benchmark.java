@@ -13,6 +13,7 @@ import ij.util.Tools;
 */
 public class Benchmark implements PlugIn {
     private String[] results = {
+        " 6.3|Custom PC (AMD 9700X, Zen 5, 2024)",
         " 6.8|MacBook Pro (M3 Pro, 2023)",
         " 9.5|MacBook Pro (M1 Max, 2021)",
         "10.5|Custom PC (12th Gen Core i9, 2022)",

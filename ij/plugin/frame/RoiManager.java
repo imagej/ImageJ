@@ -585,13 +585,23 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				}
 			}
 		}
-		ImagePlus imp = WindowManager.getCurrentImage();
-		//if (count>1 && index.length==1 && imp!=null)
-		//	imp.deleteRoi();
 		updateShowAll();
 		if (record())
 			Recorder.record("roiManager", "Delete");
 		return true;
+	}
+
+	public void delete(int index) {
+		int count = getCount();
+		if (count==0 || index>=count)
+			return;
+		if (EventQueue.isDispatchThread()) {
+			rois.remove(index);
+			listModel.remove(index);
+		} else
+			deleteOnEDT(index);
+		updateShowAll();
+		repaint();
 	}
 
 	 // Delete ROI on event dispatch thread

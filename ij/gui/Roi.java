@@ -2955,6 +2955,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			if (isLine()) {
 				Roi roi2 = Roi.convertLineToArea(Roi.this);
 				mask = roi2.getMask();
+				if (mask==null && roi2.getType()==RECTANGLE) {
+					mask = new ByteProcessor(roi2.width, roi2.height);
+					mask.invert();
+				}
 				xbase = roi2.x;
 				ybase = roi2.y;
 			} else {

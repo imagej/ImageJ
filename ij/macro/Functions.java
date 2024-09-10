@@ -8178,6 +8178,9 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("translate")) {
 			rm.translate(getFirstArg(),getLastArg());
 			return null;
+		} else if (name.equals("delete")) {
+			rm.delete((int)getArg());
+			return null;
 		} else
 			interp.error("Unrecognized RoiManager function");
 		return null;
