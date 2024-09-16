@@ -5,21 +5,21 @@
 </head>
 <body>
 
-<li> <u>1.54k23  14 September 2024</u>
+<li> <u>1.54k  15 September 2024</u>
 <ul>
-<li> Thanks to 'Carlos', added the RoiManager.delete(index) macro function DOC
+<li> Thanks to 'Carlos', added the RoiManager.delete(index) macro function
 and the RoiManager.delete(index) method.
 <li> Thanks to Michael Schmid, the dialog shown for <i>Image&gt;Overlay&gt;Add Selection</i>
 with the ALT key down has an additional "Show on all slices" checkbox.
 Using "Apply" in the <i>Image&gt;Overlay&gt;Overlay Options</i> dialog
 can be also used to remove the stack positions for the current overlay
-("Set stack positions" off, equivalent to "Show on all slices"). With
+("Set stack positions" off is equivalent to "Show on all slices"). With
 "Set stack positions" on, the stack position of the overlay elements is set
 to the current slice if it was previously unspecified. Modifying an overlay
 with "Apply" in <i>Image&gt;Overlay&gt;Overlay Options</i> and removing an
 overlay are undoable operations (ctrl+z).
 <li> Thanks to Michael Schmid, the stack positions of multi-point ROIs can be set in
-in the <i>Edit&gt;Selection&gt;Properties</i> dialog or in the ROI Manager's
+the <i>Edit&gt;Selection&gt;Properties</i> dialog or in the ROI Manager's
 Properties dialog. The ROI Manager's More&gt;&gt;Remove Positions command also works
 for multi-point ROIs.
 <li> Thanks to 'nicole3432', restored the particle analyzers's "Record starts" option.
@@ -43,7 +43,7 @@ where the roiManager("select",index) macro function did
 not remove previous selections.
 <li> Thanks to Oleg Dobrokhotov, fixed bug with the
 "non-antialiased" option of the setFont() macro
-function to not work as expected.
+function not working as expected.
 <li> Thanks to Jonathan Cottet, fixed bug with
 IJ.openImage(path,n) opening .ome.tif files.
 <li> Thanks to Fred Demen and Michael Schmid, fixed bug
@@ -52,7 +52,7 @@ the "width=" option was missing and the "constrain"
 option was presendt.
 <li> Thanks to Fred Demen, fixed bug with the
 <i>Image&gt;Adjust&gt;Window/Level</i> "Set" dialog
-using inadequate precision when displaying values.
+using inadequate precision when displaying float values.
 <li> Thanks to Michael Schmid, fixed <i>Undo</i> exception
 after using <i>Image&gt;Adjust&gt;Size</i> on
 a stack.

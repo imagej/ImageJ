@@ -591,6 +591,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;
 	}
 
+	/** Deletes the ROI at 'index' and updates the display. */
 	public void delete(int index) {
 		int count = getCount();
 		if (count==0 || index>=count)
