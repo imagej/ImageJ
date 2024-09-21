@@ -100,18 +100,22 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	}
 
 	protected void populateList(String matchingSubstring) {
-		String substring = matchingSubstring.toLowerCase();
+		String[] words = matchingSubstring.toLowerCase().split("\\s+");  // Split the search string into words
 		ArrayList list = new ArrayList();
-		int count = 0;
 		for (int i = 0; i < commands.length; ++i) {
 			String commandName = commands[i];
 			String command = commandName.toLowerCase();
 			CommandAction ca = (CommandAction) commandsHash.get(commandName);
-			String menuPath = ca.menuLocation;
-			if (menuPath == null)
-				menuPath = "";
-			menuPath = menuPath.toLowerCase();
-			if (command.indexOf(substring) >= 0 || menuPath.indexOf(substring) >= 0) {
+			String menuPath = (ca.menuLocation != null) ? ca.menuLocation.toLowerCase() : "";
+			// Check if all words match either the command or the menu path
+			boolean allWordsMatch = true;
+			for (String word : words) {
+				if (!(command.contains(word) || menuPath.contains(word))) {
+					allWordsMatch = false;
+					break;
+				}
+			}
+			if (allWordsMatch) {
 				String[] row = makeRow(commandName, ca);
 				list.add(row);
 			}
