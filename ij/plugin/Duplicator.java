@@ -61,6 +61,8 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		ignoreSelection = (staticIgnoreSelection||ignoreNextSelection) && Macro.getOptions()==null;
 		if (!IJ.altKeyDown()||stackSize>1) {
 			if (imp.isHyperStack() || imp.isComposite()) {
+				if (roiOutside)
+					imp.deleteRoi();
 				duplicateHyperstack(imp, newTitle);			
 				if (isRotatedRect)
 					straightenRotatedRect(impA, roiA, IJ.getImage());								
