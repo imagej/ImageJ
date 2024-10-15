@@ -1114,11 +1114,9 @@ public abstract class ImageProcessor implements Cloneable {
 	public double[] getLine(double x1, double y1, double x2, double y2) {
 		double dx = x2-x1;
 		double dy = y2-y1;
-		int n = (int)Math.round(Math.sqrt(dx*dx + dy*dy));
+		int n = (int)Math.round(Math.sqrt(dx*dx + dy*dy)) + 1;
 		double xinc = n>0?dx/n:0;
 		double yinc = n>0?dy/n:0;
-		if (!((xinc==0&&n==height) || (yinc==0&&n==width)))
-			n++;
 		double[] data = new double[n];
 		double rx = x1;
 		double ry = y1;

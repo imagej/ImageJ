@@ -102,7 +102,7 @@ public class Line extends Roi {
 		double xend = offScreenXD(sx);
 		double yend = offScreenYD(sy);
 		if (xend<0.0) xend=0.0; if (yend<0.0) yend=0.0;
-		if (xend>xMax) xend=xMax; if (yend>yMax) yend=yMax;
+		if (xend>xMax-1) xend=xMax-1; if (yend>yMax-1) yend=yMax-1;
 		double xstart=getXBase()+x1R, ystart=getYBase()+y1R;
 		if (constrain) {
 		    int i=0;
@@ -442,7 +442,8 @@ public class Line extends Roi {
 	}
 
 	/** Returns the pixel values along this line.
-	 *  The line roi must have an associated ImagePlus */
+	 *  The line roi must have an associated ImagePlus.
+	*/
 	public double[] getPixels() {
 			double[] profile;
 			if (getStrokeWidth()<=1) {
