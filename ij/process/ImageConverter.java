@@ -150,7 +150,7 @@ public class ImageConverter {
 	}
 	
 	public static void record() {
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			if (Prefs.calibrateConversions) {
 				boolean state = true;
 				if (Recorder.scriptMode())

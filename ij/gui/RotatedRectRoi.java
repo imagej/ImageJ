@@ -153,7 +153,7 @@ public class RotatedRectRoi extends PolygonRoi {
 	protected void handleMouseUp(int screenX, int screenY) {
 		nPoints = 4;
 		state = NORMAL;
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			double[] p = getParams();
 			if (Recorder.scriptMode())
 				Recorder.recordCall("imp.setRoi(new RotatedRectRoi("+(int)p[0]+","+(int)p[1]+","+(int)p[2]+","+(int)p[3]+","+(int)p[4]+"));");

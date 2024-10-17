@@ -776,7 +776,7 @@ public class Selection implements PlugIn, Measurements {
 				}
 			}
 		}
-		if (Recorder.record && imp.getStackSize()>1) {
+		if (IJ.recording() && imp.getStackSize()>1) {
 			if (imp.isHyperStack()) {
 				int C = imp.getChannel();
 				int Z = imp.getSlice();
@@ -826,7 +826,7 @@ public class Selection implements PlugIn, Measurements {
 		int width = (int)roi.getStrokeWidth();
 		RoiProperties rp = new RoiProperties(title, imp, roi);
 		boolean ok = rp.showDialog();
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			boolean groupChanged = false;
 			String name2 = roi.getName();
 			if (name2==null) name2 = "";

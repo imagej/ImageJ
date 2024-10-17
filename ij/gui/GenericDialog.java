@@ -216,7 +216,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			panel.add(new Label(" "+units));
 			add(panel, c);
 		}
-		if (Recorder.record || macro)
+		if (IJ.recording() || macro)
 			saveLabel(tf, label);
 	}
 
@@ -307,7 +307,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		defaultStrings.addElement(defaultText);
 		tf.setDropTarget(null);
 		new DropTarget(tf, new TextDropTarget(tf));
-		if (Recorder.record || macro)
+		if (IJ.recording() || macro)
 			saveLabel(tf, label);
 	}
 
@@ -348,7 +348,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		panel.add(button);
 		layout.setConstraints(panel, constraints);
 		add(panel);
-		if (Recorder.record || macro)
+		if (IJ.recording() || macro)
 			saveLabel(panel, label);
 	}
 
@@ -380,7 +380,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		panel.add(button);
 		layout.setConstraints(panel, constraints);
 		add(panel);
-		if (Recorder.record || macro)
+		if (IJ.recording() || macro)
 			saveLabel(panel, label);
 	}
 
@@ -668,7 +668,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				checkbox.addElement(cb);
 				cb.setState(defaultValues[i1]);
 				cb.addItemListener(this);
-				if (Recorder.record || macro)
+				if (IJ.recording() || macro)
 					saveLabel(cb, labels[i1]);
 				if (IJ.isLinux()) {
 					Panel panel2 = new Panel();
@@ -724,7 +724,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.anchor = GridBagConstraints.WEST;
 		c.insets = new Insets(insets.top, insets.left, 0, 0);
 		add(panel, c);
-		if (Recorder.record || macro)
+		if (IJ.recording() || macro)
 			saveLabel(cg, label);
 	}
 
@@ -771,7 +771,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		choice.addElement(thisChoice);
 		int index = thisChoice.getSelectedIndex();
 		defaultChoiceIndexes.addElement(Integer.valueOf(index));
-		if (Recorder.record || macro)
+		if (IJ.recording() || macro)
 			saveLabel(thisChoice, label);
 	}
 
@@ -1021,7 +1021,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.insets.left = 0;
 		c.insets.bottom -= 3;
 		add(panel, c);
-		if (Recorder.record || macro)
+		if (IJ.recording() || macro)
 			saveLabel(tf, label);
 	}
 	

@@ -590,7 +590,7 @@ public class PolygonRoi extends Roi {
 		if (imp!=null && !(type==TRACED_ROI))
 			imp.draw(x-5, y-5, width+10, height+10);
 		oldX=x; oldY=y; oldWidth=width; oldHeight=height;
-		if (Recorder.record && userCreated && (type==POLYGON||type==POLYLINE||type==ANGLE
+		if (IJ.recording() && userCreated && (type==POLYGON||type==POLYLINE||type==ANGLE
 		||(type==POINT&&Recorder.scriptMode()&&nPoints==3)))
 			Recorder.recordRoi(getPolygon(), type);
 		if (type!=POINT) modifyRoi();

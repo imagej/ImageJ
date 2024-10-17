@@ -33,7 +33,7 @@ public class URLOpener implements PlugIn {
 				double startTime = System.currentTimeMillis();
 				String url = imageURL(urlOrName);
 				ImagePlus imp = new ImagePlus(url);
-				if (Recorder.record)
+				if (IJ.recording())
 					Recorder.recordCall("imp = IJ.openImage(\""+url+"\");");
 				if (imp.getType()==ImagePlus.COLOR_RGB)
 					Opener.convertGrayJpegTo8Bits(imp);

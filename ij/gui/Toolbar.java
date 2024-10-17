@@ -886,7 +886,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (null==g) return;
 		g.dispose();
 		showMessage(current);
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			String name = getName(current);
 			if (name!=null && name.equals("dropper")) disableRecording=true;
 			if (name!=null && !disableRecording) {

@@ -244,7 +244,7 @@ public class PlotContentsDialog implements DialogListener {
 			lastFitFunction = fitFunctionChoice.getSelectedItem();
 			IJ.log(curveFitterStatusString);
 		}
-		if (Recorder.record && !Recorder.scriptMode()) {
+		if (IJ.recording() && !Recorder.scriptMode()) {
 			if (dialogType == ADD_FROM_PLOT) {
 				Recorder.recordString("Plot.addFromPlot(\""+plotChoice.getSelectedItem()+"\", "+objectChoice.getSelectedIndex()+");\n");
 			} else if (dialogType == ADD_FROM_TABLE) {

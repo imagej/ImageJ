@@ -108,7 +108,7 @@ public class FFT implements PlugIn, Measurements {
 			doForwardTransform(fht);   
 		}	 
 		IJ.showProgress(1.0);
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			if (inverse)
    				Recorder.recordCall("imp = FFT.inverse(imp);");
    			else

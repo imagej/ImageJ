@@ -334,13 +334,13 @@ public class OverlayCommands implements PlugIn {
 				return;
 			}
 			flattenStack(imp);
-			if (Recorder.record)
+			if (IJ.recording())
 				Recorder.recordCall("imp.flattenStack();");
 		} else {
 			ImagePlus imp2 = imp.flatten();
 			imp2.setTitle(WindowManager.getUniqueName(imp.getTitle()));
 			imp2.show();
-			if (Recorder.record) // Added by Marcel Boeglin 2014.01.12
+			if (IJ.recording()) // Added by Marcel Boeglin 2014.01.12
 				Recorder.recordCall("imp = imp.flatten();");
 		}
 	}

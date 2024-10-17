@@ -250,7 +250,7 @@ public class SaveDialog {
 	/** Returns the selected file name. */
 	public String getFileName() {
 		if (name!=null) {
-			if (Recorder.record && dir!=null)
+			if (IJ.recording() && dir!=null)
 				Recorder.recordPath(title, dir+name);
 			OpenDialog.setLastName(name);
 		}

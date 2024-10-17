@@ -218,7 +218,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		if (autoThreshold)
 			autoThreshold(ip);
 		else {
-			if (Recorder.record && !Recorder.scriptMode() && (!IJ.isMacro()||Recorder.recordInMacros))
+			if (IJ.recording() && !Recorder.scriptMode() && (!IJ.isMacro()||Recorder.recordInMacros))
 				Recorder.record("//setThreshold", (int)saveMinThreshold, (int)saveMaxThreshold);
  			minThreshold = saveMinThreshold;
  			maxThreshold = saveMaxThreshold;

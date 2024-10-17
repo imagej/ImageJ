@@ -233,7 +233,7 @@ public class HyperStackConverter implements PlugIn {
 			imp.hide();
 			WindowManager.setCurrentWindow(imp2.getWindow());
 		}
-		if (Recorder.record && Recorder.scriptMode()) {
+		if (IJ.recording() && Recorder.scriptMode()) {
 			String order = orders[ordering];
 			if (order.equals(orders[0])) { // default order
 				Recorder.recordCall("imp2 = HyperStackConverter.toHyperStack(imp, "+nChannels+", "+
@@ -313,7 +313,7 @@ public class HyperStackConverter implements PlugIn {
 			imp2.setOverlay(imp.getOverlay());
 			imp.hide();
 		}
-		if (Recorder.record && Recorder.scriptMode())
+		if (IJ.recording() && Recorder.scriptMode())
 			Recorder.recordCall("HyperStackConverter.toStack(imp);");
 	}
 	

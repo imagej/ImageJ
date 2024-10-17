@@ -127,7 +127,7 @@ public class ImagesToStack implements PlugIn {
 				staticKeep = keep;
 				staticTitlesAsLabels = titlesAsLabels;
 			}
-			if (Recorder.record)
+			if (IJ.recording())
    				Recorder.recordCall("imp = ImagesToStack.run(arrayOfImages);");
 		} else
 			keep = false;

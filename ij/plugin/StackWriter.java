@@ -155,7 +155,7 @@ public class StackWriter implements PlugIn {
 					}
 				}
 			}
-			if (Recorder.record)
+			if (IJ.recording())
 				Recorder.disablePathRecording();
 			imp2.setOverlay(null);
 			if (overlay!=null && format.equals("tiff")) {
@@ -221,7 +221,7 @@ public class StackWriter implements PlugIn {
 			useLabels = gd.getNextBoolean();
 		else
 			useLabels = false;
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			String options2 = "format="+format;
 			if (nameChanged)
 				options2 += " name="+name;

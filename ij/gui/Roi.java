@@ -1606,7 +1606,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		state = NORMAL;
 		if (imp==null) return;
 		imp.draw(clipX-5, clipY-5, clipWidth+10, clipHeight+10);
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			String method;
 			if (type==OVAL)
 				Recorder.record("makeOval", x, y, width, height);

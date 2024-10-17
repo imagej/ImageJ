@@ -55,7 +55,7 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
 			imp.updateAndDraw();
 		}
 		IJ.showProgress(1.0);
-		if (Recorder.record && slice==1)
+		if (IJ.recording() && slice==1)
 			Recorder.recordCall("FFT.filter(imp,filter); //see Help/Examples/JavaScript/FFT Filter");
 	}
 	

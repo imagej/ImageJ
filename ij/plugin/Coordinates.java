@@ -139,7 +139,7 @@ public class Coordinates implements PlugIn, DialogListener {
 		}
 		ImageWindow win = imp.getWindow();
 		imp.repaintWindow();
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			if (Recorder.scriptMode()) {
 				if (xUnitChanged)
 					Recorder.recordCall("imp.getCalibration().setXUnit(\""+xUnit2+"\");", true);

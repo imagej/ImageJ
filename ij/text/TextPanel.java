@@ -675,7 +675,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			rt2.show(title);
 		}
 		Menus.updateWindowMenuItem(title1, title2);
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			if (Recorder.scriptMode())
 				Recorder.recordString("IJ.renameResults(\""+title1+"\", \""+title2+"\");\n");
 			else
@@ -766,7 +766,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	Returns the number of characters copied.
 	*/
 	public int copySelection() {
-		if (Recorder.record && title.equals("Results"))
+		if (IJ.recording() && title.equals("Results"))
 			Recorder.record("String.copyResults");
 		if (selStart==-1 || selEnd==-1)
 			return copyAll();
@@ -847,7 +847,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 				IJ.error("Text selection required");
 			return;
 		}
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			if (Recorder.scriptMode())
 				Recorder.recordString("IJ.deleteRows("+selStart+", "+selEnd+");\n");
 			else {
@@ -1061,13 +1061,13 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		}
 		if (isResults) {
 			Analyzer.setUnsavedMeasurements(false);
-			if (Recorder.record && !IJ.isMacro())
+			if (IJ.recording() && !IJ.isMacro())
 				Recorder.record("saveAs", "Results", path);
 		} else if (rt!=null) {
-			if (Recorder.record && !IJ.isMacro())
+			if (IJ.recording() && !IJ.isMacro())
 				Recorder.record("saveAs", "Results", path);
 		} else {
-			if (Recorder.record && !IJ.isMacro())
+			if (IJ.recording() && !IJ.isMacro())
 				Recorder.record("saveAs", "Text", path);
 		}
 		IJ.showStatus("");
@@ -1224,7 +1224,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		rt2.sort(column);
 		rt2.show(title);
 		scrollToTop();
-		if (Recorder.record)
+		if (IJ.recording())
 			Recorder.record("Table.sort", column);
 	}
 

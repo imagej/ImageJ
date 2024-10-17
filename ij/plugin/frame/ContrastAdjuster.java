@@ -721,7 +721,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		reset(imp, ip);
 		imp.changes = true;
 		imp.unlock();
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			if (Recorder.scriptMode()) {
 				if (option==null) option = "";
 				Recorder.recordCall("IJ.run(imp, \"Apply LUT\", \""+option+"\");");
@@ -753,7 +753,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		previousImageID = 0;
 	 	((ColorProcessor)ip).caSnapshot(false);
 		setup();
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			if (Recorder.scriptMode())
 				Recorder.recordCall("IJ.run(imp, \"Apply LUT\", \"\");");
 			else
@@ -795,7 +795,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		imp.changes = true;
 		previousImageID = 0;
 		setup();
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			if (Recorder.scriptMode())
 				Recorder.recordCall("IJ.run(imp, \"Apply LUT\", \"stack\");");
 			else
@@ -855,7 +855,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			return;
 		}
 		updateScrollBars(null, false);
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			if (Recorder.scriptMode())
 				Recorder.recordCall("IJ.run(imp, \"Enhance Contrast\", \"saturated=0.35\");");
 			else
@@ -919,7 +919,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			}
 			if (propagate)
 				propagate(imp);
-			if (Recorder.record) {
+			if (IJ.recording()) {
 				if (imp.getBitDepth()==32)
 					recordSetMinAndMax(min, max);
 				else {
@@ -1049,7 +1049,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			if (RGBImage) doMasking(imp, ip);
 			if (propagate)
 				propagate(imp);
-			if (Recorder.record) {
+			if (IJ.recording()) {
 				if (imp.getBitDepth()==32)
 					recordSetMinAndMax(min, max);
 				else {
@@ -1131,7 +1131,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		switch (action) {
 			case RESET:
 				reset(imp, ip);
-				if (Recorder.record) {
+				if (IJ.recording()) {
 						if (Recorder.scriptMode())
 							Recorder.recordCall("IJ.resetMinAndMax(imp);");
 						else

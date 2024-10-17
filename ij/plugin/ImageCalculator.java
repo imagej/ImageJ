@@ -173,7 +173,7 @@ public class ImageCalculator implements PlugIn {
 				img3 = doOperation(img1, img2);
 		} else
 			img3 = doOperation(img1, img2);
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			String options = operators[operator];
 			if (createWindow) options += " create";
 			if (floatResult) options += " 32-bit";

@@ -192,7 +192,7 @@ class SetScaleDialog extends GenericDialog {
 				setVisible(false);
 				setVisible(true);
 			}
-			if (Recorder.record) {
+			if (IJ.recording()) {
 				Recorder.disableCommandRecording();				
 				if (Recorder.scriptMode())
 					Recorder.recordCall("imp.removeScale();");

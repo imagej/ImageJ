@@ -3953,7 +3953,7 @@ public class Functions implements MacroConstants, Measurements {
 		else
 			ff.fill8(x, y);
 		updateAndDraw();
-		if (Recorder.record && pgm.hasVars)
+		if (IJ.recording() && pgm.hasVars)
 			Recorder.record("floodFill", x, y);
 	}
 

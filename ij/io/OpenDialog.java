@@ -209,7 +209,7 @@ public class OpenDialog {
 	/** Returns the selected file name. */
 	public String getFileName() {
 		if (name!=null) {
-			if (Recorder.record && recordPath && dir!=null)
+			if (IJ.recording() && recordPath && dir!=null)
 				Recorder.recordPath(title, dir+name);
 			lastName = name;
 		}

@@ -1337,7 +1337,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			setDefaultDirectory(dir);
 			if (defaultDir!=null)
 				Prefs.set(DEFAULT_DIR, defaultDir);
-			if (Recorder.record)
+			if (IJ.recording())
 				Recorder.record("saveAs", "Text", path);
 		}
 	}

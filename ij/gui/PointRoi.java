@@ -142,7 +142,7 @@ public class PointRoi extends PolygonRoi {
 		setCounter(Toolbar.getMultiPointMode()?defaultCounter:0);
 		incrementCounter(imp);
 		enlargeArrays(50);
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			String add = Prefs.pointAddToOverlay?" add":"";
 			String options = sizes[convertSizeToIndex(size)]+" "+Colors.colorToString(getColor())+" "+types[type]+add;
 			options = options.toLowerCase();

@@ -452,7 +452,7 @@ public class FolderOpener implements PlugIn, TextListener {
 				image = imp2;
 		}
 		IJ.showProgress(1.0);
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			String options = openAsVirtualStack&&!openAsSeparateImages?"virtual":"";
 			if (bitDepth!=defaultBitDepth)
 				options = options + " bitdepth=" + bitDepth;				

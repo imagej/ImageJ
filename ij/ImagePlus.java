@@ -983,7 +983,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			ip.setCalibrationTable(cal.getCTable());
 		else
 			ip.setCalibrationTable(null);
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			Recorder recorder = Recorder.getInstance();
 			if (recorder!=null) recorder.imageUpdated(this);
 		}
@@ -2050,7 +2050,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			deleteRoi();
 			return;
 		}
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			Recorder recorder = Recorder.getInstance();
 			if (recorder!=null) recorder.imageUpdated(this);
 		}

@@ -90,7 +90,7 @@ public class Line extends Roi {
 		state = NORMAL;
 		if (imp==null) return;
 		imp.draw(clipX-5, clipY-5, clipWidth+10, clipHeight+10);
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			String method = (this instanceof Arrow)?"makeArrow":"makeLine";
 			Recorder.record(method, x1, y1, x2, y2);
 		}

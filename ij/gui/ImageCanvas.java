@@ -1100,13 +1100,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	
 	private void setForegroundColor(Color c) {
 		Toolbar.setForegroundColor(c);
-		if (Recorder.record)
+		if (IJ.recording())
 			Recorder.record("setForegroundColor", c.getRed(), c.getGreen(), c.getBlue());
 	}
 
 	private void setBackgroundColor(Color c) {
 		Toolbar.setBackgroundColor(c);
-		if (Recorder.record)
+		if (IJ.recording())
 			Recorder.record("setBackgroundColor", c.getRed(), c.getGreen(), c.getBlue());
 	}
 
@@ -1219,7 +1219,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				if (Prefs.smoothWand)
 					mode = mode + " smooth";
 				int npoints = IJ.doWand(imp, ox, oy, tolerance, mode);
-				if (Recorder.record && npoints>0) {
+				if (IJ.recording() && npoints>0) {
 					if (Recorder.scriptMode())
 						Recorder.recordCall("IJ.doWand(imp, "+ox+", "+oy+", "+tolerance+", \""+mode+"\");");
 					else {

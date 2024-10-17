@@ -32,7 +32,7 @@ public class PlugInDialog extends Dialog implements PlugIn, WindowListener, Focu
     public void windowClosing(WindowEvent e) {
     	if (e.getSource()==this) {
     		close();
-    		if (Recorder.record)
+    		if (IJ.recording())
     			Recorder.record("run", "Close");
     	}
     }

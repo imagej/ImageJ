@@ -248,7 +248,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			pm.show(this, ploc.x, bloc.y);
 		} else if (command.equals("OR (Combine)")) {
 			new MacroRunner("roiManager(\"Combine\");");
-			if (Recorder.record) Recorder.record("roiManager", "Combine");
+			if (IJ.recording()) Recorder.record("roiManager", "Combine");
 		} else if (command.equals("Split"))
 			split();
 		else if (command.equals("AND"))
@@ -305,7 +305,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (firstTime && okToSet())
 				labelsCheckbox.setState(true);
 			showAll(showAllCheckbox.getState()?SHOW_ALL:SHOW_NONE);
-			if (Recorder.record && recordShowAll) {
+			if (IJ.recording() && recordShowAll) {
 				if (showAllMode)
 						Recorder.record("roiManager", "Show All");
 					else
@@ -324,7 +324,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				showAll(SHOW_NONE);
 			else {
 				showAll(editState?LABELS:NO_LABELS);
-				if (Recorder.record) {
+				if (IJ.recording()) {
 					if (editState)
 						Recorder.record("roiManager", "Show All with labels");
 					else if (showAllState)
@@ -808,7 +808,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				return false;
 			path = directory + name;
 		}
-		if (Recorder.record && !IJ.macroRunning()) {
+		if (IJ.recording() && !IJ.macroRunning()) {
 			if (Recorder.scriptMode())
 				Recorder.recordCall("rm.open(\""+path+"\");");
 			else
@@ -933,7 +933,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			errorMessage = e.getMessage();
 			IJ.error("ROI Manager", errorMessage);
 		}
-		if (Recorder.record && !IJ.isMacro()) {
+		if (IJ.recording() && !IJ.isMacro()) {
 			if (Recorder.scriptMode())
 				Recorder.recordCall("rm.save(\""+path+"\");");
 			else
@@ -994,7 +994,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		double time = (System.currentTimeMillis()-t0)/1000.0;
 		IJ.showProgress(1.0);
 		IJ.showStatus(IJ.d2s(time,3)+" seconds, "+indexes.length+" ROIs, "+path);
-		if (Recorder.record && !IJ.isMacro()) {
+		if (IJ.recording() && !IJ.isMacro()) {
 			if (Recorder.scriptMode())
 				Recorder.recordCall("rm.save(\""+path+"\");");
 			else
