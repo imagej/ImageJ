@@ -381,9 +381,9 @@ public class Prefs {
 	public static String getImageJDir() {
 		String path = Menus.getImageJPath();
 		if (path==null) {
-			String ijPath = getPluginsDirProperty();
-			//if (ijPath==null)
-			//	ijPath = ImageJDir;
+			String ijPath = ImageJDir;
+			if (ijPath==null)
+				ijPath = getPluginsDirProperty();
 			if (ijPath==null)
 				ijPath = System.getProperty("user.dir");
 			return ijPath + File.separator;
@@ -442,7 +442,7 @@ public class Prefs {
 
 	/** Sets the path to the ImageJ directory. */
 	static void setHomeDir(String path) {
-		if (path.endsWith(File.separator))
+		if (path.endsWith(File.separator) || path.endsWith("/"))
 			path = path.substring(0, path.length()-1);
 		ImageJDir = path;
 	}

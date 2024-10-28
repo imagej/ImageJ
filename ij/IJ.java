@@ -2574,6 +2574,7 @@ public class IJ {
 			statusBarThread = null;
 	}
 
+	/** Returns 'true' if the Recorder is running and ImageJ is not in headless mode. */
 	public static boolean recording() {
 		return (!GraphicsEnvironment.isHeadless()&&Recorder.record);
 	}

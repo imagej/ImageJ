@@ -86,7 +86,7 @@ public class FloatStatistics extends ImageStatistics {
 			if (max>histMax)
 				max = histMax;
 		}
-		binSize = (histMax-histMin)/nBins;
+		binSize = (histMax-histMin+1)/nBins;
 
 		// Generate histogram
 		double scale = nBins/(histMax-histMin);

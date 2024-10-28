@@ -96,7 +96,7 @@ public class ColorStatistics extends ImageStatistics {
 			}
 		}
 		min = roiMin; max = roiMax;
-		binSize = (max-min)/nBins;
+		binSize = (max-min+1)/nBins;
 		histMin = min; 
 		histMax = max;
 

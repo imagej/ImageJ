@@ -2304,6 +2304,7 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("drawShapes")) {
 			return drawShapes();
 		} else if (name.equals("drawGrid")) {
+			interp.getParens();
 			plot.drawShapes("redraw_grid", null);
 			return Double.NaN;
 		} else if (name.startsWith("setLineWidth")) {
