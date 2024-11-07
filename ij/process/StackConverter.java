@@ -5,7 +5,7 @@ import java.awt.image.*;
 import ij.*;
 import ij.gui.*;
 import ij.measure.*;
-import ij.plugin.RGBStackConverter;
+import ij.plugin.*;
 
 /** This class does stack type conversions. */
 public class StackConverter {
@@ -57,6 +57,7 @@ public class StackConverter {
 	    int inc = nSlices/20;
 	    if (inc<1) inc = 1;
 	    LUT[] luts = composite?((CompositeImage)imp).getLuts():null;
+		boolean scale = ImageConverter.getDoScaling();
 		for(int i=1; i<=nSlices; i++) {
 			label = stack1.getSliceLabel(1);
 			ip = stack1.getProcessor(1);
@@ -67,7 +68,6 @@ public class StackConverter {
 				max = luts[index].max;
 			}
 			ip.setMinAndMax(min, max);
-			boolean scale = ImageConverter.getDoScaling();
 			stack2.addSlice(label, ip.convertToByte(scale));
 			if ((i%inc)==0) {
 				IJ.showProgress((double)i/nSlices);
@@ -76,9 +76,14 @@ public class StackConverter {
 		}
 		imp.setStack(null, stack2);
 		imp.setCalibration(imp.getCalibration()); //update calibration
-		if (imp.isComposite()) {
-			((CompositeImage)imp).resetDisplayRanges();
-			((CompositeImage)imp).updateAllChannelsAndDraw();
+		if (composite && luts!=null) {
+			if (scale) {
+				for (int i=0; i<luts.length; i++) {
+					luts[i].min = 0;
+					luts[i].max = 255;
+				}
+			}
+			((CompositeImage)imp).setLuts(luts);
 		}
 		ImageConverter.record();
 		imp.setSlice(currentSlice);
@@ -99,7 +104,7 @@ public class StackConverter {
 		String label;
 	    int inc = nSlices/20;
 	    if (inc<1) inc = 1;
-		for(int i=1; i<=nSlices; i++) {
+		for (int i=1; i<=nSlices; i++) {
 			label = stack1.getSliceLabel(1);
 			ip = stack1.getProcessor(1);
 			stack1.deleteSlice(1);
@@ -116,7 +121,7 @@ public class StackConverter {
 		IJ.showProgress(1.0);
 	}
 
-	/** Converts this Stack to 16-bit grayscale. */
+	/** Converts this Stack to 16-bit grayscale. */	
 	public void convertToGray16() {
 		if (type==ImagePlus.GRAY16)
 			return;
@@ -126,6 +131,9 @@ public class StackConverter {
 			ImageConverter.convertAndCalibrate(imp,"16-bit");
 			return;
 		}
+		ImageProcessor ip = imp.getProcessor();
+		double min = ip.getMin();
+		double max = ip.getMax();
 		ImageStack stack1 = imp.getStack();
 		ImageStack stack2 = new ImageStack(width, height);
 		int channels = imp.getNChannels();
@@ -137,13 +145,15 @@ public class StackConverter {
 	    if (inc<1) inc = 1;
 	    boolean scale = type==ImagePlus.GRAY32 && ImageConverter.getDoScaling();
 	    ImageProcessor ip1, ip2;
-		for(int i=1; i<=nSlices; i++) {
+		for (int i=1; i<=nSlices; i++) {
 			label = stack1.getSliceLabel(1);
 			ip1 = stack1.getProcessor(1);
 			if (luts!=null) {
-				int index = ((i-1)%channels);
-				ip1.setMinAndMax(luts[index].min,luts[index].max);
+				int index = (i-1)%luts.length;
+				min = luts[index].min;
+				max = luts[index].max;
 			}
+			ip1.setMinAndMax(min, max);
 			ip2 = ip1.convertToShort(scale);
 			stack1.deleteSlice(1);
 			stack2.addSlice(label, ip2);
@@ -154,13 +164,16 @@ public class StackConverter {
 		}
 		IJ.showProgress(1.0);
 		imp.setStack(null, stack2);
-		if (scale) {
-			for (int c=channels; c>=1; c--) {
-				imp.setPosition(c,imp.getSlice(),imp.getFrame());
-				imp.setDisplayRange(0,65535);
+		if (imp.isComposite() && luts!=null) {
+			if (scale) {
+				for (int i=0; i<luts.length; i++) {
+					luts[i].min = 0;
+					luts[i].max = 65535;
+				}
 			}
+			((CompositeImage)imp).setLuts(luts);
+			imp.updateAndDraw();
 		}
-		ImageConverter.record();
 	}
 
 	/** Converts this Stack to 32-bit (float) grayscale. */
@@ -176,6 +189,12 @@ public class StackConverter {
 	    if (inc<1) inc = 1;
 	    ImageProcessor ip1, ip2;
 	    Calibration cal = imp.getCalibration();
+	    double min = imp.getDisplayRangeMin();
+		double max = imp.getDisplayRangeMax();
+	    int channels = imp.getNChannels();
+	    LUT[] luts = imp.getLuts();
+	    if ((luts!=null && luts.length!=channels) || cal.calibrated())
+	    	luts = null;
 		for(int i=1; i<=nSlices; i++) {
 			label = stack1.getSliceLabel(1);
 			ip1 = stack1.getProcessor(1);
@@ -195,6 +214,11 @@ public class StackConverter {
 			imp.resetDisplayRange();
 			imp.updateAndDraw();
 		}
+		if (imp.isHyperStack() && luts!=null)
+			((CompositeImage)imp).setLuts(luts);
+		else if (!cal.calibrated())
+			imp.setDisplayRange(min, max);
+
 	}
 
 	/** Converts the Stack to RGB. */

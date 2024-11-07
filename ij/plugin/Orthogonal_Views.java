@@ -53,6 +53,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private boolean initialized;
 	private boolean sliceSet;
 	private Thread thread;
+	final static String CROSS = "|OV|";
 
 	 
 	public void run(String arg) {
@@ -563,7 +564,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		
 	}
 	 
-	/** draws the crosses in the images */
+	/** draws the crosses on the images */
 	void drawCross(ImagePlus imp, Point p, GeneralPath path) {
 		int width=imp.getWidth();
 		int height=imp.getHeight();
@@ -580,7 +581,17 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			done = true;
 			notify();
 		}
-		imp.setOverlay(null);
+		Overlay overlay = imp.getOverlay();
+		if (overlay!=null) {
+			overlay.remove(CROSS);
+			ImageCanvas ic = imp.getCanvas();
+			if (ic!=null)
+				ic.setCustomRoi(true);
+			if (overlay.size()==0)
+				imp.setOverlay(null);
+			else
+				imp.draw();
+		}
 		if (canvas!=null) {
 			canvas.removeMouseListener(this);
 			canvas.removeMouseMotionListener(this);
@@ -747,13 +758,28 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		updateViews(p, is);
 		GeneralPath path = new GeneralPath();
 		drawCross(imp, p, path);
-		if (!done)
-			imp.setOverlay(path, color, new BasicStroke(1));
+		if (!done) {
+			if (imp.getOverlay()==null)
+				imp.setOverlay(new Overlay());
+			setOverlay(imp, path);
+		}
 		canvas.setCustomRoi(true);
 		updateCrosses(p.x, p.y, arat, brat);
 		if (syncZoom) updateMagnification(p.x, p.y);
 		arrangeWindows(sticky);
 		initialized = true;
+	}
+
+	private void setOverlay(ImagePlus imp, GeneralPath path) {
+		Overlay overlay = imp.getOverlay();
+		if (overlay==null)
+			overlay = new Overlay();
+		Roi roi = new ShapeRoi(path);
+		roi.setStrokeColor(color);
+		roi.setStroke(new BasicStroke(1));
+		overlay.remove(CROSS);
+		overlay.add(roi, CROSS);
+		imp.setOverlay(overlay);
 	}
 
 	private void updateCrosses(int x, int y, double arat, double brat) {
@@ -768,7 +794,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		GeneralPath path = new GeneralPath();
 		drawCross(xz_image, p, path);
 		if (!done)
-			xz_image.setOverlay(path, color, new BasicStroke(1));
+			setOverlay(xz_image, path);
 		if (rotateYZ) {
 			if (flipXZ)
 				zcoord=(int)Math.round(brat*(z-zlice));
@@ -782,7 +808,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		path = new GeneralPath();
 		drawCross(yz_image, p, path);
 		if (!done)
-			yz_image.setOverlay(path, color, new BasicStroke(1));
+			setOverlay(yz_image, path);
 		IJ.showStatus(imp.getLocationAsString(crossLoc.x, crossLoc.y));
 	}
 
