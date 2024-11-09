@@ -21,6 +21,7 @@ public class Overlay implements Iterable<Roi> {
     private boolean isCalibrationBar;
     private boolean selectable = true;
     private boolean draggable = true;
+    private double minStrokeWidth = -1;
     
     /** Constructs an empty Overlay. */
     public Overlay() {
@@ -36,8 +37,11 @@ public class Overlay implements Iterable<Roi> {
 
     /** Adds an ROI to this Overlay. */
     public void add(Roi roi) {
-    	if (roi!=null)
+    	if (roi!=null) {
+    		if (minStrokeWidth>=0)
+    			roi.setMinStrokeWidth(minStrokeWidth);
     		list.add(roi);
+    	}
     }
         
     /** Adds an ROI to this Overlay using the specified name. */
@@ -478,6 +482,11 @@ public class Overlay implements Iterable<Roi> {
     public void setDraggable(boolean draggable) {
     	this.draggable = draggable;
     }
+    
+    /** Sets the minimum scaled stroke width (default is 0.05). */
+	public void setMinStrokeWidth(double minWidth) {
+		minStrokeWidth = minWidth;
+	}
     
     /** Returns 'true' if ROIs in this overlay can be dragged by their labels. */
 	public boolean isDraggable() {

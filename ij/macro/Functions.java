@@ -6765,16 +6765,6 @@ public class Functions implements MacroConstants, Measurements {
 			getImage().setOverlay(overlayClipboard);
 			return Double.NaN;
 		} else if (name.equals("pasteAndMerge")) {
-			/*
-			interp.getParens();
-			if (overlayClipboard==null)
-				interp.error("Overlay clipboard empty");
-			Overlay overlay = getImage().getOverlay(); 
-			if (overlay!=null)
-				getImage().setOverlay(overlay.add(overlayClipboard));
-			else
-				getImage().setOverlay(overlayClipboard);
-			*/
 			return Double.NaN;
 		} else if (name.equals("drawLabels")) {
 			overlayDrawLabels = getBooleanArg();
@@ -6798,11 +6788,13 @@ public class Functions implements MacroConstants, Measurements {
 		if (overlay==null && name.equals("size")) {
 			interp.getParens();
 			return 0.0;
-		} else if (name.equals("hidden"))
+		} else if (name.equals("hidden")) {
 			return overlay!=null && imp.getHideOverlay()?1.0:0.0;
-		else if (name.equals("addSelection") || name.equals("addRoi"))
+		} else if (name.equals("setMinStrokeWidth")) {
+			return setMinStrokeWidth(imp, overlay);
+		} else if (name.equals("addSelection") || name.equals("addRoi")) {
 			return overlayAddSelection(imp, overlay);
-		else if (name.equals("setPosition")) {
+		} else if (name.equals("setPosition")) {
 			addDrawingToOverlay(imp);
 			return overlaySetPosition(overlay);
 		} else if (name.equals("setFillColor"))
@@ -6954,7 +6946,7 @@ public class Functions implements MacroConstants, Measurements {
 			ResultsTable.selectRow(roi);
 		return Double.NaN;
 	}
-
+	
 	private double getOverlayElementBounds(Overlay overlay) {
 		int index = (int)getFirstArg();
 		Variable x = getNextVariable();
@@ -6971,7 +6963,7 @@ public class Functions implements MacroConstants, Measurements {
 		height.setValue(r.height);
 		return Double.NaN;
 	}
-
+	
 	double overlayAddSelection(ImagePlus imp, Overlay overlay) {
 		String strokeColor = null;
 		double strokeWidth = Double.NaN;
@@ -7011,6 +7003,16 @@ public class Functions implements MacroConstants, Measurements {
 			roi.setFillColor(Colors.decode(fillColor, Color.black));
 		overlay.add(roi);
 		imp.setOverlay(overlay);
+		return Double.NaN;
+	}
+
+	private double setMinStrokeWidth(ImagePlus imp, Overlay overlay) {
+		double minStrokeWidth = getArg();
+		if (overlay==null) {
+			overlay = new Overlay();
+			imp.setOverlay(overlay);
+		}
+		overlay.setMinStrokeWidth(minStrokeWidth);
 		return Double.NaN;
 	}
 
@@ -7813,7 +7815,10 @@ public class Functions implements MacroConstants, Measurements {
 			return new Variable(Colors.colorToString(color));
 		}
 		ImagePlus imp = getImage();
-		if (name.equals("paste")) {
+		if (name.equals("setMinStrokeWidth")) {
+			setMinStrokeWidth(imp, imp.getOverlay());
+			return null;
+		} else if (name.equals("paste")) {
 			interp.getParens();
 			//IJ.log("paste: "+roiClipboard);
 			if (roiClipboard!=null)

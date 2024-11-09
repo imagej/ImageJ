@@ -173,7 +173,8 @@ public class StackConverter {
 			}
 			((CompositeImage)imp).setLuts(luts);
 			imp.updateAndDraw();
-		}
+		} else if (scale)
+			imp.setDisplayRange(0,65535);
 	}
 
 	/** Converts this Stack to 32-bit (float) grayscale. */
