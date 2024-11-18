@@ -6790,8 +6790,6 @@ public class Functions implements MacroConstants, Measurements {
 			return 0.0;
 		} else if (name.equals("hidden")) {
 			return overlay!=null && imp.getHideOverlay()?1.0:0.0;
-		} else if (name.equals("setMinStrokeWidth")) {
-			return setMinStrokeWidth(imp, overlay);
 		} else if (name.equals("addSelection") || name.equals("addRoi")) {
 			return overlayAddSelection(imp, overlay);
 		} else if (name.equals("setPosition")) {
@@ -7003,16 +7001,6 @@ public class Functions implements MacroConstants, Measurements {
 			roi.setFillColor(Colors.decode(fillColor, Color.black));
 		overlay.add(roi);
 		imp.setOverlay(overlay);
-		return Double.NaN;
-	}
-
-	private double setMinStrokeWidth(ImagePlus imp, Overlay overlay) {
-		double minStrokeWidth = getArg();
-		if (overlay==null) {
-			overlay = new Overlay();
-			imp.setOverlay(overlay);
-		}
-		overlay.setMinStrokeWidth(minStrokeWidth);
 		return Double.NaN;
 	}
 
@@ -7815,10 +7803,7 @@ public class Functions implements MacroConstants, Measurements {
 			return new Variable(Colors.colorToString(color));
 		}
 		ImagePlus imp = getImage();
-		if (name.equals("setMinStrokeWidth")) {
-			setMinStrokeWidth(imp, imp.getOverlay());
-			return null;
-		} else if (name.equals("paste")) {
+		if (name.equals("paste")) {
 			interp.getParens();
 			//IJ.log("paste: "+roiClipboard);
 			if (roiClipboard!=null)
@@ -7908,6 +7893,9 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("setStrokeWidth")) {
 			roi.setStrokeWidth(getArg());
 			imp.draw();
+			return null;
+		} else if (name.equals("setMinStrokeWidth")) {
+			roi.setMinStrokeWidth(getArg());
 			return null;
 		} else if (name.equals("getStrokeWidth")) {
 			interp.getParens();

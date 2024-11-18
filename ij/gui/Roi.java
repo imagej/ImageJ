@@ -77,8 +77,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	private static int defaultGroup; // zero is no specific group
 	private static Color groupColor;
 	private static double defaultStrokeWidth;
-	private static float defaultMinStrokeWidth = 0.05f;
-	private float minStrokeWidth = defaultMinStrokeWidth;
+	private float minStrokeWidth = 0.1f;
 	private static String groupNamesString = Prefs.get(NAMES_KEY, null);
 	private static String[] groupNames;
 	private static boolean groupNamesChanged;
