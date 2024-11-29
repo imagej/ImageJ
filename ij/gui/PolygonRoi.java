@@ -1420,7 +1420,7 @@ public class PolygonRoi extends Roi {
 	private boolean isTraced() {
 		if (type==TRACED_ROI)
 			return true;
-		else if (type!=POLYGON)
+		else if (type!=POLYGON || (this instanceof RotatedRectRoi))
 			return false;
 		else if (xp==null) {
 			if (xpf==null)

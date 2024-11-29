@@ -84,7 +84,12 @@ public class Options implements PlugIn {
 			Prefs.doNotSaveWindowLocations = !gd.getNextBoolean();
 		Prefs.nonBlockingFilterDialogs = gd.getNextBoolean();
 		IJ.setDebugMode(gd.getNextBoolean());
-		//Prefs.modernMode = gd.getNextBoolean();
+		if (IJ.recording() && IJ.isMacOSX()) {
+			if (Recorder.scriptMode())
+				Recorder.recordCall("Prefs.setIJMenuBar = "+Prefs.setIJMenuBar+";");
+			else
+				Recorder.recordString("setOption(\"setIJMenuBar\", "+Prefs.setIJMenuBar+");\n");
+		}
 	}
 
 	void lineWidth() {

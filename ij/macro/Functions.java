@@ -4799,6 +4799,8 @@ public class Functions implements MacroConstants, Measurements {
 			ImageConverter.setDoScaling(true);
 		} else if (arg1.startsWith("mousewheel"))
 			Prefs.mouseWheelStackScrolling = state;
+		else if (arg1.startsWith("setijmenubar"))
+			Prefs.setIJMenuBar = state;
 		else
 			interp.error("Invalid option");
 	}

@@ -14,7 +14,7 @@ public class RotatedRectRoi extends PolygonRoi {
 	private double rectWidth = DefaultRectWidth;
 
 	public RotatedRectRoi(double x1, double y1, double x2, double y2, double rectWidth) {
-		super(new float[4], new float[4], 4, FREEROI);
+		super(new float[4], new float[4], 4, POLYGON);
 		this.rectWidth = rectWidth;
 		makeRectangle(x1, y1, x2, y2);
 		state = NORMAL;
