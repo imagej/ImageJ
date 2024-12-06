@@ -199,6 +199,15 @@ public class ImagesToStack implements PlugIn {
 						}
 						ip2.insert(ip, xoff, yoff);
 						ip = ip2;
+						Overlay overlay2 = images[i].getOverlay();
+						if (overlay2!=null) {
+							overlay2.translate(xoff, yoff);
+							for (int j=0; j<overlay2.size(); j++) {
+								Roi roi = overlay2.get(j);
+								roi.setPosition(i+1);
+								overlay.add((Roi)roi.clone());
+							}
+						}
 						break;
 					case SCALE_SMALL: case SCALE_LARGE:
 						ip.setInterpolationMethod((bicubic?ImageProcessor.BICUBIC:ImageProcessor.BILINEAR));
