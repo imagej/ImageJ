@@ -63,7 +63,6 @@ public class Interpreter implements MacroConstants {
 	int loopDepth;
 	static boolean tempShowMode;
 	boolean waitingForUser;
-	int selectCount;
 	
 	static TextWindow arrayWindow;
 	int inspectStkIndex = -1;
@@ -1975,8 +1974,6 @@ public class Interpreter implements MacroConstants {
 				str = ""+str.length();
 			} else if (tokenString.equals("contains")) {
 				str = ""+str.contains(func.getStringArg());
-			} else if (tokenString.equals("charAt")) {
-				str = ""+str.charAt((int)func.getArg());
 			} else if (tokenString.equals("replaceAll")) {
 				str = func.replace(str);
 			} else
@@ -2000,6 +1997,11 @@ public class Interpreter implements MacroConstants {
 				case TO_UPPER_CASE: getParens(); str = str.toUpperCase(Locale.US); break;
 				case REPLACE: str = func.replace(str); break;
 				case TRIM: getParens();  str = str.trim(); break;
+				case CHARAT:
+					int index = (int)func.getArg();
+					func.checkIndex(index, 0, str.length()-1);
+					str = ""+str.charAt(index);
+					break;
 				default:
 					str = null;
 			}
@@ -2094,11 +2096,6 @@ public class Interpreter implements MacroConstants {
 		}
 		if (func.unUpdatedTable!=null)
 			func.unUpdatedTable.show(func.unUpdatedTable.getTitle());
-		if (IJ.isMacOSX() && selectCount>0 && debugger==null) {
-			Frame frame = WindowManager.getFrontWindow();
-			if (frame!=null && (frame instanceof ImageWindow))
-				ImageWindow.setImageJMenuBar((ImageWindow)frame);
-		}
 	}
 	
 	/** Aborts currently running macro. */
@@ -2519,18 +2516,7 @@ public class Interpreter implements MacroConstants {
 	}
 	
 	private static Interpreter lastInterp;
-	
-	public static boolean nonBatchMacroRunning() {
-		Interpreter interp = getInstance();
-		if (interp==null)
-			return false;
-		int count =  interp.selectCount;
-		if (interp==lastInterp)
-			interp.selectCount++;
-		lastInterp = interp;
-		return !interp.waitingForUser && interp.debugger==null && count>0 && !isBatchMode();
-	}
-	
+		
 	public void setApplyMacroTable(ResultsTable rt) {
 		applyMacroTable = rt;
 	}

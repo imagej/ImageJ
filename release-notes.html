@@ -6,30 +6,29 @@
 <body>
 
 
-<li> <u>1.54m28  29 November 2024</u>
+<li> <u>1.54m  5 December 2024</u>
 <ul>
-<li> Thanks to 'Jerry1144', added the setOption("setIJMenuBar",boolean)
-macro function
-(<a href="http://wsr.imagej.net/macros/MacWindowSwitchingDemo.ijm">example</a>). DOC 
-<li> Thanks to Kenneth Sloan, added the Roi.setMinStrokeWidth(minStrokeWidth)
-macro function and Java method that you can use to specify a
-minimum scaled stroke width
-(<a href="http://wsr.imagej.net/macros/Polygons.ijm">example</a>). DOC
 <li> Thanks to Michael Cammer, the <i>Orthogonal Views</i> command
 no longer removes overlays.
 <li> Thanks to 'Patricia' and Herbie Gluender, the
 <i>Image&gt;Transform&gt;Image to Results</i> command
 now shows NaNs when values are outside non-rectangular
 selections.
-<li> Thanks to Kevin Terretaz, CommandFinder
+<li> Thanks to Kevin Terretaz, Command Finder
 (<i>Plugins&gt;Utilities&gt;Find Commands</i>) filtering is more
 precise and flexible. It now splits the input into individual words 
 and returns commands where all words are found in either the command 
 name or the menu path.
+<li> Thanks to 'Jerry1144', added the setOption("SetIJMenuBar",boolean)
+macro function.
+<li> Thanks to Kenneth Sloan, added the Roi.setMinStrokeWidth(minStrokeWidth)
+macro function and Java method that you can use to specify a
+minimum scaled stroke width
+(<a href="http://wsr.imagej.net/macros/Polygons.ijm">example</a>).
 <li> Thanks to Bram van den Broek, fixed bug with duplicating hyperstacks when
 the selection was outside the image border.
 <li> Thanks to Giovanni Cardone and Michael Schmid, fixed bug with
-right arrow in dialox box sliders not working as expected on
+right arrow in dialog box sliders not working as expected on
 Linux and Windows.
 <li> Thanks to Giovanni Cardone and Michael Schmid, fixed bug where
 the ImageProcessor.getLine() method returned a smaller than 
@@ -50,6 +49,11 @@ conversion bugs.
 not checked and "One row per slice" was.
 <li> Thanks to 'scouser27', fixed a bug with how perimeters
 of rotated rectangle selections are calculated.
+<li> Thanks to Jurgen_Gluch and Ved Sharma, fixed bugs where the charAt()
+macro function would return a number instead of a string and would 
+throw an exception if the index was out of range.
+<li> Fixed a 1.54i regression that caused the Command Finder to throw an
+exception when clicking on a blank field.
 </ul>
 
 <li> <u>1.54k  15 September 2024</u>

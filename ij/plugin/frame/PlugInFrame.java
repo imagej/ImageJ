@@ -43,10 +43,6 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
     }
 
     public void windowActivated(WindowEvent e) {
-		if (Prefs.setIJMenuBar) {
-			this.setMenuBar(Menus.getMenuBar());
-			Menus.setMenuBarCount++;
-		}
 		WindowManager.setWindow(this);
 	}
 

@@ -163,11 +163,15 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		long now = System.currentTimeMillis();
 		int row = table.getSelectedRow();
 		int col = table.getSelectedColumn();
+		IJ.wait(10);
 		// Display cell contents in status bar
 		if (tableModel==null)
 			return;
-		String value = tableModel.getValueAt(row, col).toString();
-		IJ.showStatus(value);
+		String value = (String)tableModel.getValueAt(row, col);
+		if (value!=null)
+			IJ.showStatus(value);
+		else
+			IJ.showStatus("");
 		// Is this fast enough to be a double-click?
 		long thisClickInterval = now - lastClickTime;
 		if (thisClickInterval < multiClickInterval) {
@@ -636,8 +640,6 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	}
 
 	public void windowActivated(WindowEvent e) {
-		if (IJ.isMacOSX() && frame != null && Prefs.setIJMenuBar)
-			frame.setMenuBar(Menus.getMenuBar());
 	}
 
 	public void windowDeactivated(WindowEvent e) {
