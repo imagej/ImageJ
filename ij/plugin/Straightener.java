@@ -25,7 +25,10 @@ public class Straightener implements PlugIn {
 		int width = (int)Math.round(roi.getStrokeWidth());
 		boolean isMacro = IJ.macroRunning() && Macro.getOptions()!=null;
 		int stackSize = imp.getStackSize();
-		if (stackSize==1) processStack = false;
+		if (stackSize==1)
+			processStack = false;
+		if (imp.isComposite())
+			processStack = true;
 		String newTitle = WindowManager.getUniqueName(imp.getTitle());
 		if (width<=1 || isMacro || stackSize>1) {
 			if (width<=1) width = 20;
@@ -49,8 +52,21 @@ public class Straightener implements PlugIn {
 		ImageProcessor ip2 = null;
 		ImagePlus imp2 = null;
 		if (processStack) {
+			boolean compositeMode = imp.isComposite() && imp.getDisplayMode()==IJ.COMPOSITE;
+			if (compositeMode)
+				imp.setDisplayMode(IJ.COLOR);
 			ImageStack stack2 = straightenStack(imp, roi, width);
 			imp2 = new ImagePlus(newTitle, stack2);
+			if (compositeMode)
+				imp.setDisplayMode(IJ.COMPOSITE);
+			if (imp.isComposite()) {
+				ImageConverter.setDoScaling(false);
+				if (imp.getBitDepth()==8)
+					new StackConverter(imp2).convertToGray8();
+				else if (imp.getBitDepth()==16)
+					new StackConverter(imp2).convertToGray16();
+				ImageConverter.setDoScaling(true);
+			}
 		} else {
 			ip2 = straighten(imp, roi, width);
 			imp2 = new ImagePlus(newTitle, ip2);
@@ -61,7 +77,14 @@ public class Straightener implements PlugIn {
 		Calibration cal = imp.getCalibration();
 		if (cal.pixelWidth==cal.pixelHeight)
 			imp2.setCalibration(cal);
-		imp2.show();
+		if (imp.isComposite()) {
+			LUT[] luts = imp.getLuts();
+			CompositeImage cImp = new CompositeImage(imp2);
+			cImp.setLuts(luts);
+			cImp.setDisplayMode(imp.getDisplayMode());
+			cImp.show();
+		} else
+			imp2.show();
 	}
 
 	public ImageProcessor straighten(ImagePlus imp, Roi roi, int width) {
