@@ -6,12 +6,14 @@
 <body>
 
 
-<li> <u>1.54n4  17 December 2024</u>
+<li> <u>1.54n6  26 January 2025</u>
 <ul>
 <li> Thanks to Christophe Leterrier, fixed bugs with how
 the <i>Image&gt;Stacks&gt;Tools&gt;Combine</i> and
 <i>Edit&gt;Selection&gt;Straighten</i> commands handle
 multi-channel images.
+<li> Thanks to Murilo Spineli, fixed crashes with processes
+started by exec() macro function.
 </ul>
 
 <li> <u>1.54m  5 December 2024</u>
@@ -28,7 +30,8 @@ precise and flexible. It now splits the input into individual words
 and returns commands where all words are found in either the command 
 name or the menu path.
 <li> Thanks to 'Jerry1144', added the setOption("SetIJMenuBar",boolean)
-macro function.
+macro function. Determines whether the ImageJ menu bar is displayed on
+image window activation on Macs.
 <li> Thanks to Kenneth Sloan, added the Roi.setMinStrokeWidth(minStrokeWidth)
 macro function and Java method that you can use to specify a
 minimum scaled stroke width

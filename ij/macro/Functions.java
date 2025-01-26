@@ -5157,6 +5157,25 @@ public class Functions implements MacroConstants, Measurements {
 		return desc.dispatch(this);
 	}
 
+	void handleProcessBuffers(InputStream... streams){
+		for (int i = 0; i < streams.length; i++) {
+			final InputStream is = streams[i];
+			new Thread(new Runnable(){
+                @Override
+                public void run(){
+                    try {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                        while (br.readLine() != null)
+                        {}
+                    } catch (IOException ioe)
+                        {
+                        ioe.printStackTrace();  
+                    }
+                }
+            }).start();
+		}
+	}
+
 	String exec() {
 		String[] cmd;
 		StringBuffer sb = new StringBuffer(256);
@@ -5191,14 +5210,20 @@ public class Functions implements MacroConstants, Measurements {
 			Process p = Runtime.getRuntime().exec(cmd);
 			boolean returnImmediately = openingDoc || !waitForCompletion;
 			waitForCompletion = true;
-			if (returnImmediately)
+			if (returnImmediately){
+				handleProcessBuffers(p.getInputStream(), p.getErrorStream()); // empty both buffers
 				return null;
-			reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			} else {
+				handleProcessBuffers(p.getErrorStream()); // empty only unused ErrorStream buffer
+			}
+			reader = new BufferedReader(new InputStreamReader(p.getInputStream())); // notice that this function will discard all process error output
 			String line; int count=1;
 			while ((line=reader.readLine())!=null)  {
         		sb.append(line+"\n");
-        		if (count++==1&&line.startsWith("Microsoft Windows"))
-        			break; // user probably ran 'cmd' without /c option
+        		if (count++==1&&line.startsWith("Microsoft Windows")){
+					handleProcessBuffers(p.getInputStream()); // must empty the InputStream buffer anyway
+					break; // user probably ran 'cmd' without /c option
+				}
         	}
 		} catch (Exception e) {
     		sb.append(e.getMessage()+"\n");

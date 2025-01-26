@@ -166,7 +166,7 @@ public class Prefs {
 	public static boolean autoRunExamples = true;
 	/** Ignore stack positions when displaying points. */
 	public static boolean showAllPoints;
-	/** Set ImageJ menu bar on image window activation on Macs. */
+	/** Show ImageJ menu bar on image window activation on Macs. */
 	public static boolean setIJMenuBar = IJ.isMacOSX();
 	/** "ImageJ" window is always on top. */
 	public static boolean alwaysOnTop;

@@ -108,7 +108,7 @@ import java.awt.Color;
 			+Colors.colorToString(new Color(getRGB(255)))+", min="+IJ.d2s(min,4)+", max="+IJ.d2s(max,4);
 	}
 	
-	/** Returns 'true' if the LUTs of these two images differ. */
+	/** Returns 'true' if the LUTs of the two images differ. */
 	public static boolean LutsDiffer(ImagePlus imp1, ImagePlus imp2) {
 		if (!imp1.isComposite() || !imp2.isComposite())
 			return false;

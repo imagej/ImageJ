@@ -141,8 +141,12 @@ public class StackWriter implements PlugIn {
 			}
 			if (label==null)
 				path = directory+name+digits+extension;
-			else
-				path = directory+label+extension;
+			else {
+				if (label.toLowerCase().endsWith(".tiff") && ".tif".equals(extension))
+					path = directory+label;
+				else
+					path = directory+label+extension;
+			}
 			if (i==1) {
 				File f = new File(path);
 				if (f.exists()) {
@@ -261,4 +265,3 @@ public class StackWriter implements PlugIn {
 	}
 	
 }
-
