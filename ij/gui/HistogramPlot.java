@@ -304,7 +304,10 @@ public class HistogramPlot extends ImagePlus {
 			}
 			ip.setJustification(ImageProcessor.LEFT_JUSTIFY);
 		}        
-		double binWidth = (hmax-hmin+1)/stats.nBins;
+		double range = hmax-hmin;
+		if (fixedRange&&!cal.calibrated()&&hmin==0&&hmax==255)
+			range = 256;
+		double binWidth = range/stats.nBins;
 		binWidth = Math.abs(binWidth);
 		showBins = binWidth!=1.0 || !fixedRange;
 		col1 = XMARGIN + 5;
