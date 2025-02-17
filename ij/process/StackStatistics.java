@@ -4,7 +4,7 @@ import ij.gui.*;
 import ij.measure.*;
 import ij.plugin.filter.Analyzer;
 import java.awt.*;
-
+ 
 /** Statistics, including the histogram, of a stack. */
 public class StackStatistics extends ImageStatistics {
 	
@@ -147,6 +147,8 @@ public class StackStatistics extends ImageStatistics {
         histMin = cal.getRawValue(histMin); 
         histMax =  cal.getRawValue(histMax);
         binSize = (histMax-histMin+1)/nBins;
+        if (imp.getBitDepth()==32)
+			binSize = (histMax-histMin)/nBins;       	
         int bits = imp.getBitDepth();
         if (histMin==0.0 && histMax==256.0 && (bits==8||bits==24))
         	histMax = 255.0;

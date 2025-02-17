@@ -3326,12 +3326,17 @@ Returns the image property (a string) associated with <i>key</i>,
 or an empty string if <i>key</i> is not found.
 <br>
 
-<a name="Property.getNumber"></a>
-<b>Property.getNumber(key)</b><br>
+<a name="Property.getValue"></a>
+<b>Property.getValue(key)</b><br>
 Returns the image property associated with <i>key</i>,
 as a number, or returns NaN if <i>key</i> is not found
 or the property cannot be converted into a number.
-Requires 1.53b.
+Requires 1.53n.
+<br>
+
+<a name="Property.getNumber"></a>
+<b>Property.getNumber(key)</b><br>
+Alias for Property.getValue(key).
 <br>
 
 <a name="Property.set"></a>
@@ -5483,7 +5488,7 @@ in the dialog box.
 
 <p class=navbar> <a href="#Top">top</a> | <a href="https://imagej.net/ij/index.html">home</a></p>
 
-<small>Last updated 2025-01-18</small>
+<small>Last updated 2025-02-15</small>
 
 </body>
 </html>

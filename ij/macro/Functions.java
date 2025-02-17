@@ -8235,7 +8235,7 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("get")) {
 			String value = imp.getProp(getStringArg());
 			return new Variable(value!=null?value:"");
-		} else if (name.equals("getNumber")) {
+		} else if (name.equals("getNumber") || name.equals("getValue")) {
 			String svalue = imp.getProp(getStringArg());
 			double nvalue = svalue!=null?Tools.parseDouble(svalue):Double.NaN;
 			return new Variable(nvalue);

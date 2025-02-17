@@ -106,11 +106,11 @@ public class HistogramPlot extends ImagePlus {
 		drawHistogram(imp, ip, fixedRange, stats.histMin, stats.histMax);
 	}
 	
-	protected void drawHistogram(ImageProcessor ip, boolean fixedRange) {
-		drawHistogram(null, ip, fixedRange, 0.0, 0.0);
+	protected void drawHistogram(ImageProcessor ip, boolean unused) {
+		drawHistogram(null, ip, unused, 0.0, 0.0);
 	}
 
-	void drawHistogram(ImagePlus imp, ImageProcessor ip, boolean fixedRange, double xMin, double xMax) {
+	void drawHistogram(ImagePlus imp, ImageProcessor ip, boolean unused, double xMin, double xMax) {
 		setTitle("Histogram of "+imp.getShortTitle());
 		int x, y;
 		long maxCount2 = 0;
@@ -141,7 +141,7 @@ public class HistogramPlot extends ImagePlus {
 		else
 			drawAlignedColorBar(imp, xMin, xMax, ip, x-1, y, HIST_WIDTH, BAR_HEIGHT);
 		y += BAR_HEIGHT+(int)(15*SCALE);
-  		drawText(ip, x, y, fixedRange);
+  		drawText(ip, x, y);
   		srcImageID = imp.getID();
 	}
        
@@ -282,7 +282,7 @@ public class HistogramPlot extends ImagePlus {
 		ip.setColor(Color.black);
 	}
 		
-	void drawText(ImageProcessor ip, int x, int y, boolean fixedRange) {
+	void drawText(ImageProcessor ip, int x, int y) {
 		ip.setFont(font);
 		ip.setAntialiasedText(true);
 		double hmin = cal.getCValue(stats.histMin);
@@ -304,12 +304,12 @@ public class HistogramPlot extends ImagePlus {
 			}
 			ip.setJustification(ImageProcessor.LEFT_JUSTIFY);
 		}        
-		double range = hmax-hmin;
-		if (fixedRange&&!cal.calibrated()&&hmin==0&&hmax==255)
-			range = 256;
-		double binWidth = range/stats.nBins;
+		//double range = hmax-hmin;
+		//if (fixedRange&&!cal.calibrated()&&hmin==0&&hmax==255)
+		//	range = 256;
+		double binWidth = stats.binSize;
 		binWidth = Math.abs(binWidth);
-		showBins = binWidth!=1.0 || !fixedRange;
+		showBins = binWidth!=1.0;
 		col1 = XMARGIN + 5;
 		col2 = XMARGIN + HIST_WIDTH/2;
 		row1 = y+(int)(25*SCALE);
