@@ -1100,8 +1100,10 @@ public abstract class ImageProcessor implements Cloneable {
 
 	/**
 	 * Returns an array containing the pixel values along the
-	 * line starting at (x1,y1) and ending at (x2,y2). Pixel
-	 * values are sampled using getInterpolatedValue(double,double)
+	 * line starting at (x1,y1) and ending at (x2,y2). The end
+	 * point is included, and the interval is chosen such that
+	 * the distance between successive points is close to 1.0 pixel.
+	 * Pixel values are sampled using getInterpolatedValue(double,double)
 	 * if interpolation is enabled or getPixelValue(int,int) if it is not.
 	 * For byte and short images, returns calibrated values if a
 	 * calibration table has been set using setCalibrationTable().
@@ -1114,20 +1116,20 @@ public abstract class ImageProcessor implements Cloneable {
 	public double[] getLine(double x1, double y1, double x2, double y2) {
 		double dx = x2-x1;
 		double dy = y2-y1;
-		int n = (int)Math.round(Math.sqrt(dx*dx + dy*dy)) + 1;
+		int n = (int)Math.round(Math.sqrt(dx*dx + dy*dy));
 		double xinc = n>0?dx/n:0;
 		double yinc = n>0?dy/n:0;
-		double[] data = new double[n];
+		double[] data = new double[n+1];
 		double rx = x1;
 		double ry = y1;
 		if (interpolate) {
-			for (int i=0; i<n; i++) {
+			for (int i=0; i<=n; i++) {
 				data[i] = getInterpolatedValue(rx, ry);
 				rx += xinc;
 				ry += yinc;
 			}
 		} else {
-			for (int i=0; i<n; i++) {
+			for (int i=0; i<=n; i++) {
 				data[i] = getPixelValue((int)Math.round(rx), (int)Math.round(ry));
 				rx += xinc;
 				ry += yinc;
