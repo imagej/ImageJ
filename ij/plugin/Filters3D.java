@@ -72,11 +72,11 @@ public class Filters3D implements PlugIn {
 	}
 
 	private void run(ImagePlus imp, int filter, float radX, float radY, float radZ) {
-		int cmax=imp.getC(), cmin=cmax-1, tmax=imp.getT(), tmin=tmax-1, nSlices=imp.getNSlices();
+		int cmax=imp.getC(), cmin=cmax-1, tmax=imp.getT(), tmin=tmax-1, nZSlices=imp.getNSlices();
 		if(doAllChs) { cmin=0; cmax=imp.getNChannels(); }
 		if(doAllFrms) { tmin=0; tmax=imp.getNFrames(); }
-		if(imp.getStackSize()==imp.getNFrames()) nSlices=imp.getNFrames();
-		ImageStack res = filter(imp.getStack(), filter, radX, radY, radZ, imp.getNChannels(), nSlices, cmin, cmax, tmin, tmax);
+		if(imp.getStackSize()==imp.getNFrames()) nZSlices=imp.getNFrames();
+		ImageStack res = filter(imp.getStack(), filter, radX, radY, radZ, imp.getNChannels(), nZSlices, cmin, cmax, tmin, tmax);
 		imp.setStack(res);
 	}
 
@@ -97,21 +97,21 @@ public class Filters3D implements PlugIn {
 	 * @return
 	 */
 	public static ImageStack filter(final ImageStack stack, final int filter, final float vx, final float vy, final float vz,
-			final int nChs, int numberOfSlices, int cmin, int cmax, int tmin, int tmax) {
+			final int nChs, int numberOfZSlices, int cmin, int cmax, int tmin, int tmax) {
 	
 		if (stack.getBitDepth()==24)
-			return filterRGB(stack, filter, vx, vy, vz, numberOfSlices, tmin, tmax);
+			return filterRGB(stack, filter, vx, vy, vz, numberOfZSlices, tmin, tmax);
 
 		// get stack info
 		final int width= stack.getWidth();
 		final int height= stack.getHeight();
 		final int depth= stack.size();
-		if(numberOfSlices>depth) numberOfSlices=depth;
-		final int nSlices=numberOfSlices;
+		if(numberOfZSlices>depth) numberOfZSlices=depth;
+		final int nZSlices=numberOfZSlices;
 		if(cmin<0) cmin=0;
 		if(tmin<0) tmin=0;
 		if(cmax<nChs) cmax=nChs;
-		if(tmax>(depth/nChs/nSlices)) tmax=depth/nChs/nSlices;
+		if(tmax>(depth/nChs/nZSlices)) tmax=depth/nChs/nZSlices;
 		ImageStack res = null;
 		
 		if ((filter==MEAN) || (filter==MEDIAN) || (filter==MIN) || (filter==MAX) || (filter==VAR)) {
@@ -126,7 +126,7 @@ public class Filters3D implements PlugIn {
 			final int n_cpus = Prefs.getThreads();
 
 			final int dec = (int) Math.ceil((double) stack.size() / (double) n_cpus);
-			for(int fr=0; fr< (depth/nSlices/nChs); fr++) {
+			for(int fr=0; fr< (depth/nZSlices/nChs); fr++) {
 				for(int ch=0; ch<nChs; ch++) {
 					if( fr>=tmin && fr<tmax && ch>=cmin && ch<cmax) {
 						final int chf=ch;
@@ -138,15 +138,15 @@ public class Filters3D implements PlugIn {
 								public void run() {
 									StackProcessor processor = new StackProcessor(stack);
 									for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
-										processor.filter3D(out, nChs, nSlices, vx, vy, vz, chf, chf+1, dec * k, dec * (k + 1), frf, frf+1, filter);
+										processor.filter3D(out, nChs, nZSlices, vx, vy, vz, chf, chf+1, dec * k, dec * (k + 1), frf, frf+1, filter);
 									}
 								}
 							};
 						}
 						ThreadUtil.startAndJoin(threads);
 					}else {
-						for(int sl=0;sl<nSlices;sl++) {
-							int index=1+ch+(nChs*sl)+(nChs*nSlices*fr);
+						for(int sl=0;sl<nZSlices;sl++) {
+							int index=1+ch+(nChs*sl)+(nChs*nZSlices*fr);
 							out.setProcessor(stack.getProcessor(index),index);
 							out.setSliceLabel(stack.getSliceLabel(index), index);
 						}
@@ -158,11 +158,11 @@ public class Filters3D implements PlugIn {
 		return res;
 	}
 
-	private static ImageStack filterRGB(ImageStack rgb_in, int filter, float vx, float vy, float vz, int nSlices, int tmin, int tmax) {
+	private static ImageStack filterRGB(ImageStack rgb_in, int filter, float vx, float vy, float vz, int nZSlices, int tmin, int tmax) {
         ImageStack[] channels = ChannelSplitter.splitRGB(rgb_in, false);
-		ImageStack red = filter(channels[0], filter, vx, vy, vz, 1, nSlices, 0, 1, tmin, tmax);
-		ImageStack green = filter(channels[1], filter, vx, vy, vz, 1, nSlices, 0, 1, tmin, tmax);
-		ImageStack blue = filter(channels[2], filter, vx, vy, vz, 1, nSlices, 0, 1, tmin, tmax);
+		ImageStack red = filter(channels[0], filter, vx, vy, vz, 1, nZSlices, 0, 1, tmin, tmax);
+		ImageStack green = filter(channels[1], filter, vx, vy, vz, 1, nZSlices, 0, 1, tmin, tmax);
+		ImageStack blue = filter(channels[2], filter, vx, vy, vz, 1, nZSlices, 0, 1, tmin, tmax);
         return RGBStackMerge.mergeStacks(red, green, blue, false);
 	}
 
