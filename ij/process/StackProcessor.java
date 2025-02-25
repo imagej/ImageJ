@@ -195,11 +195,9 @@ public class StackProcessor {
 	    int inc = nSlices/20;
 	    if (inc<1) inc = 1;
 	    boolean stackSource = srcIp==null;
-	    int div=nSlices;
-	    if(stackSource) div=srcStack.getSize();
 	    for (int i=1; i<=nSlices; i++) {
 	    	if (stackSource)
-	    		srcIp = srcStack.getProcessor(((i-1)%div)+1);
+	    		srcIp = srcStack.getProcessor(i);
  	    	ImageProcessor dstIp = stack.getProcessor(i);
 	    	dstIp.copyBits(srcIp, xloc, yloc, mode);
 			if ((i%inc) == 0) IJ.showProgress((double)i/nSlices);
