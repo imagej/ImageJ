@@ -2213,6 +2213,17 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public int getPosition() {
 		return position;
 	}
+	
+	public String getPositionAsString() {
+		String position = "" + getPosition();
+		if (hasHyperStackPosition())
+			position =  getCPosition() +","+getZPosition()+","+ getTPosition();
+		if (position.equals("0"))
+			position = "none";
+		else if (position.equals(""+PointRoi.POINTWISE_POSITION))
+			position = "point-specific";
+		return position;
+	}
 
 	/** Sets the hyperstack position of this ROI. In an overlay, this
 	* ROI is only displayed when the hyperstack is at the specified position.
@@ -2584,7 +2595,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	}
 
 	public String toString() {
-		return ("Roi["+getTypeAsString()+", x="+x+", y="+y+", width="+width+", height="+height+"]");
+		return ("Roi["+getTypeAsString()+", x="+x+", y="+y+", width="+width+", height="+height+", pos="+getPositionAsString()+"]");
 	}
 
 	/** Deprecated */

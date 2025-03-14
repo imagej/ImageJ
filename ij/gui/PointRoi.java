@@ -57,6 +57,7 @@ public class PointRoi extends PolygonRoi {
 	private int nMarkers;
 	private boolean addToOverlay;
 	public static PointRoi savedPoints;
+	private boolean positionSet;
 
 	static {
 		setDefaultType((int)Prefs.get(TYPE_KEY, HYBRID));
@@ -721,6 +722,7 @@ public class PointRoi extends PolygonRoi {
 				Arrays.fill(positions, n);
 		}
 		hyperstackPosition = false;
+		positionSet = true;
 	}
 
 	/** Returns the stack position (image number) of the points in this Roi, if
@@ -729,9 +731,9 @@ public class PointRoi extends PolygonRoi {
 	 *  if there are different stack positions for different points.
 	 */
 	public int getPosition() {
-		if (positions == null || nPoints < 1) {
+		if (positions==null || nPoints<1 || !positionSet)
 			return 0;
-		} else {
+		else {
 			int position = positions[0];
 			for (int i=1; i<nPoints; i++)
 				if (positions[i] != position)
@@ -1024,9 +1026,9 @@ public class PointRoi extends PolygonRoi {
 
 	public String toString() {
 		if (nPoints>1)
-			return ("Roi[Points, count="+nPoints+"]");
+			return ("Roi[Points, count="+nPoints+", pos="+getPositionAsString()+"]");
 		else
-			return ("Roi[Point, x="+x+", y="+y+"]");
+			return ("Roi[Point, x="+x+", y="+y+", pos="+getPositionAsString()+"]");
 	}
 
 	/** @deprecated */
