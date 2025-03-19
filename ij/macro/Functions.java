@@ -4546,11 +4546,11 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	String openAsRawString() {
-		int max = 5000;
+		long max = 5000;
 		String path = getFirstString();
 		boolean specifiedMax = false;
 		if (interp.nextToken()==',') {
-			max = (int)getNextArg();
+			max = (long)getNextArg();
 			specifiedMax = true;
 		}
 		interp.getRightParen();
@@ -4567,12 +4567,12 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("File not found");
 		try {
 			StringBuffer sb = new StringBuffer(5000);
-			int len = (int)file.length();
+			long len = file.length();
 			if (max>len || (path.endsWith(".txt")&&!specifiedMax))
 				max = len;
 			InputStream in = new BufferedInputStream(new FileInputStream(path));
 			DataInputStream dis = new DataInputStream(in);
-			byte[] buffer = new byte[max];
+			byte[] buffer = new byte[(int)max];
 			dis.readFully(buffer);
 			dis.close();
 			char[] buffer2 = new char[buffer.length];

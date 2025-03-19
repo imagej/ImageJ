@@ -36,7 +36,7 @@ public class Straightener implements PlugIn {
 			gd.addStringField("Title:", newTitle, 15);
 			gd.addNumericField("Line Width:", width, 0, 3, "pixels");
 			if (stackSize>1)
-				gd.addCheckbox("Process Entire Stack", processStack);
+				gd.addCheckbox("Process entire stack", processStack);
 			gd.showDialog();
 			if (gd.wasCanceled()) {imp.unlock(); return;}
 			newTitle = gd.getNextString();

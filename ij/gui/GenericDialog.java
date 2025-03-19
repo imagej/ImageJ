@@ -1259,6 +1259,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 
 	private void recordCheckboxOption(Checkbox cb) {
+		if (labels==null)
+			return;
 		String label = (String)labels.get((Object)cb);
 		if (label!=null) {
 			if (cb.getState()) // checked

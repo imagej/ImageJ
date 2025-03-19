@@ -6,11 +6,19 @@
 <body>
 
 
-<li> <u>1.54q2  14 March 2025</u>
+<li> <u>1.54q6  19 March 2025</u>
 <ul>
+<li> Removed the particle analyzers's "Record starts" option because
+it caused a NullPointerException when running in Fiji headless
+mode.
 <li> Thanks to Michael Schmid, fixed bug where <i>Image&gt;Stacks&gt;Label</i>
 produces a NullPointerException in "overlay" mode when previewing
 and the current stack slice is not the first one.
+<li> Thanks to Christophe Leterrier, Jurgen Gluch and Guenter Pudmich,
+fixed bug with the File.openAsRawString() macro function not working with
+files larger than 2GB.
+<li> Thanks to 'scouser27', fixed bug with cancelling the duplication of
+a rotated rectangle on a hyperstack.
 <li> Thanks to Michael Schmid, fixed 1.54m9 <i>Analyze&gt;Plot Profile</i>
 regression where ImageProcessor.getLine() did not sample the
 correct points.
