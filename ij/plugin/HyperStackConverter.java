@@ -6,6 +6,11 @@ import ij.measure.Calibration;
 import ij.macro.Interpreter;
 import ij.io.FileInfo;
 import ij.plugin.frame.Recorder;
+import ij.util.Tools;
+import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.TextListener;
 import java.awt.image.ColorModel;
 
 
@@ -17,17 +22,20 @@ public class HyperStackConverter implements PlugIn {
 	static final String[] orders = {"xyczt(default)", "xyctz", "xyzct", "xyztc", "xytcz", "xytzc"};
 	static int ordering = CZT;
 	static boolean splitRGB = true;
+	static final String[] DIMENSION_LABELS = {"Channels (c):", "Slices (z):", "Frames (t):"};
+	static final int MAX_DIMENSIONS = DIMENSION_LABELS.length;
+	static int lastAutoCbxIndex = -1;    //remembers which dimension to auto-calculate in Stack to hyperstack
 
 	public void run(String arg) {
 		if (arg.equals("new"))
 			{newHyperStack(); return;}
 		ImagePlus imp = IJ.getImage();
-    	if (arg.equals("stacktohs"))
-    		convertStackToHS(imp);
-    	else if (arg.equals("hstostack"))
-    		convertHSToStack(imp);
+		if (arg.equals("stacktohs"))
+			convertStackToHS(imp);
+		else if (arg.equals("hstostack"))
+			convertHSToStack(imp);
 	}
-	
+
 	/** Converts the specified stack into a hyperstack with 'c' channels, 'z' slices and
 		 't' frames using the default ordering ("xyczt") and display mode ("Composite"). */
 	public static ImagePlus toHyperStack(ImagePlus imp, int c, int z, int t) {
@@ -95,7 +103,7 @@ public class HyperStackConverter implements PlugIn {
 		imp2.setOverlay(imp.getOverlay());
 		return imp2;
 	}
-	
+
 	/** Converts the specified hyperstack into a stack. */
 	public static void toStack(ImagePlus imp) {
 		if (imp.isHyperStack()||imp.isComposite()) {
@@ -103,7 +111,7 @@ public class HyperStackConverter implements PlugIn {
 			imp.draw();				
 		}
 	}
-	
+
 	private static void reorderVirtualStack(ImagePlus imp, int order) {
 		if (!(imp.getStack() instanceof VirtualStack))
 			return;
@@ -111,11 +119,11 @@ public class HyperStackConverter implements PlugIn {
 		VirtualStack vstack = (VirtualStack)imp.getStack();
 		vstack.setIndexes(indexes);
 	}
-	
+
 	//String msg = "This is a custom VirtualStack. To switch to "+orders[order]+" order,\n"
 	//	+"save in TIFF format, import as a TIFF Virtual Stack and\n"
 	//	+"again use the \"Stack to Hyperstack\" command.";
-	
+
 	private static int[] shuffleVirtual(ImagePlus imp, int order) {
 		int n = imp.getStackSize();
 		int nChannels = imp.getNChannels();
@@ -158,43 +166,130 @@ public class HyperStackConverter implements PlugIn {
 		}
 		return indexes1;
 	}
-		
+
 	/** Displays the specified stack in a HyperStack window. Based on the 
 		Stack_to_Image5D class in Joachim Walter's Image5D plugin. */
 	void convertStackToHS(ImagePlus imp) {
-        int nChannels = imp.getNChannels();
-        int nSlices = imp.getNSlices();
-        int nFrames = imp.getNFrames();
-		int stackSize = imp.getImageStackSize();
+		final int stackSize = imp.getImageStackSize();
+		final boolean rgb = imp.getBitDepth()==24;
+		final int[] dimensions = {imp.getNChannels(), imp.getNSlices(), imp.getNFrames()};
 		if (stackSize==1) {
 			IJ.error("Stack to HyperStack", "Stack required");
 			return;
 		}
-		boolean rgb = imp.getBitDepth()==24;
-		String[] modes = {"Composite", "Color", "Grayscale"};
-		GenericDialog gd = new GenericDialog("Convert to HyperStack");
+		final String[] modes = {"Composite", "Color", "Grayscale"};
+		final Checkbox[] autoCbxs = new Checkbox[MAX_DIMENSIONS]; //checkboxes for auto calculation
+		final GenericDialog gd = new GenericDialog("Convert to HyperStack");
 		gd.addChoice("Order:", orders, orders[ordering]);
-		gd.addNumericField("Channels (c):", nChannels, 0);
-		gd.addNumericField("Slices (z):", nSlices, 0);
-		gd.addNumericField("Frames (t):", nFrames, 0);
-		gd.addChoice("Display Mode:", modes, modes[1]);
+		for (int i=0; i<MAX_DIMENSIONS; i++) {              //Channels C, Slices Z, Times T
+			gd.addNumericField(DIMENSION_LABELS[i], dimensions[i], 0);
+			if (rgb && i==C)
+				gd.getLabel().setVisible(false);            //channels input not allowed for RGB (thus make label invisible)
+			if (!GraphicsEnvironment.isHeadless()) {	    //add 'auto' checkbox
+				Checkbox cb = new Checkbox("auto", i==lastAutoCbxIndex);
+				autoCbxs[i] = cb;
+				Panel panel = new Panel();
+				panel.add(cb);
+				gd.addToSameRow();
+				gd.addPanel(panel);
+			}
+		}
+		gd.addChoice("Display Mode:", modes, modes[2]);
 		if (rgb) {
 			gd.setInsets(15, 0, 0);
 			gd.addCheckbox("Convert RGB to 3 Channel Hyperstack", splitRGB);
+			autoCbxs[C].setVisible(false);                  //channels input not allowed for RGB (TextField & checkbox invisible)
+			autoCbxs[C].setState(false);
+			((TextField)(gd.getNumericFields().elementAt(C))).setVisible(false);
 		}
+
+		if (!GraphicsEnvironment.isHeadless()) {
+			final DialogListener dialogListener = new DialogListener() { // checks the validity of the input and calculates 'auto' dimension
+				public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
+					gd.resetCounters();
+					int autoCbxIndex = -1;
+					for (int i=0; i<MAX_DIMENSIONS; i++) {  //determine currently active #auto checkbox
+						if (autoCbxs[i].getState()) {
+							autoCbxIndex = i;
+							break;
+						}
+					}
+
+					int numFieldIndex = e==null ?           //numeric field triggering the callback or -1
+							-1 : gd.getNumericFields().indexOf(e.getSource());
+					//IJ.log("autoCbx="+autoCbxIndex+" numSrc="+numFieldIndex+" e="+e);
+					if (numFieldIndex >= 0 && numFieldIndex == autoCbxIndex) {
+						autoCbxs[autoCbxIndex].setState(false); //if manual input into 'auto' field: disable 'auto'
+						autoCbxIndex = -1;
+					}
+					double sizeProduct = 1;
+					for (int i=0; i<MAX_DIMENSIONS; i++) {
+						double num = gd.getNextNumber();
+						if (i==autoCbxIndex) continue;
+						if (!(num > 0 && num == (int)num)) {
+							IJ.showStatus(DIMENSION_LABELS[i]+" Invalid");
+							return false;
+						}
+						sizeProduct *= num;
+					}
+					if (autoCbxIndex >= 0) {                //calculate the 'auto' dimension
+						double autoValue = stackSize/sizeProduct;
+						boolean autoOk = (autoValue == (int)autoValue);
+						String autoFieldText = autoOk ? Integer.toString((int)autoValue) : "invalid";
+						final TextField autoField = (TextField)(gd.getNumericFields().elementAt(autoCbxIndex)); //input field with auto-calculated dimension
+						final TextListener[] listeners = autoField.getTextListeners();
+						for (TextListener l:listeners)      //disable callback when we set the field text
+							autoField.removeTextListener(l);
+						autoField.setText(autoFieldText);
+						EventQueue.invokeLater(new Runnable() {
+							public void run() {             //re-enable listeners later, after the change is really done (otherwise race condition)
+								for (TextListener l:listeners)
+									autoField.addTextListener(l);
+							}
+						});
+						if (!autoOk) {
+							IJ.showStatus(DIMENSION_LABELS[autoCbxIndex]+" No integer result");
+							return false;
+						}
+					} else if (sizeProduct != stackSize) {
+						IJ.showStatus("channels * slices * frames = " + (int)sizeProduct + " differs from stack size (" + stackSize + ")");
+						return false;
+					}
+					lastAutoCbxIndex = autoCbxIndex;
+					IJ.showStatus("");
+					return true;
+				}
+			}; //end of new DialogListener
+			gd.addDialogListener(dialogListener);
+
+			for (final Checkbox cb : autoCbxs) {            //listener: enabling an 'auto' checkbox should trigger calculation
+				cb.addItemListener(new ItemListener() {
+					public void itemStateChanged(ItemEvent e) {
+						if (cb.getState()) {
+							for (Checkbox cb2 : autoCbxs)
+								if (cb2 != e.getSource())
+									cb2.setState(false);    //radio-button like, never more than one checkbox on
+							gd.getButtons()[0].setEnabled(dialogListener.dialogItemChanged(gd, e)); //auto calculation; enable ok button if success
+						}
+					}
+				});
+			}
+			dialogListener.dialogItemChanged(gd, null);     //enables/diables fields
+		}
+
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		ordering = gd.getNextChoiceIndex();
-		nChannels = (int) gd.getNextNumber();
-		nSlices = (int) gd.getNextNumber();
-		nFrames = (int) gd.getNextNumber();
+		int nChannels = (int) gd.getNextNumber();
+		int nSlices = (int) gd.getNextNumber();
+		int nFrames = (int) gd.getNextNumber();
 		int mode = gd.getNextChoiceIndex();
 		if (rgb)
 			splitRGB = gd.getNextBoolean();
-		if (rgb && splitRGB==true) {
+/*		if (rgb && splitRGB==true) {
 			new CompositeConverter().run(mode==0?"composite":"color");
 			return;
-		}
+		}*/
 		if (rgb && nChannels>1) {
 			IJ.error("HyperStack Converter", "RGB stacks are limited to one channel");
 			return;
@@ -233,6 +328,11 @@ public class HyperStackConverter implements PlugIn {
 			imp.hide();
 			WindowManager.setCurrentWindow(imp2.getWindow());
 		}
+		if (rgb && splitRGB==true) {
+			new CompositeConverter().run(mode==0?"composite":"color");
+			return;
+		}
+
 		if (IJ.recording() && Recorder.scriptMode()) {
 			String order = orders[ordering];
 			if (order.equals(orders[0])) { // default order
@@ -249,9 +349,9 @@ public class HyperStackConverter implements PlugIn {
 		the specified order (CTZ, ZCT, ZTC, TCZ or TZC) to 
 		the XYCZT order used by ImageJ. */
 	public void shuffle(ImagePlus imp, int order) {
-        int nChannels = imp.getNChannels();
-        int nSlices = imp.getNSlices();
-        int nFrames = imp.getNFrames();
+		int nChannels = imp.getNChannels();
+		int nSlices = imp.getNSlices();
+		int nFrames = imp.getNFrames();
 		int first=C, middle=Z, last=T;
 		int nFirst=nChannels, nMiddle=nSlices, nLast=nFrames;
 		switch (order) {
@@ -311,12 +411,17 @@ public class HyperStackConverter implements PlugIn {
 			new StackWindow(imp2);
 		if (imp!=imp2) {
 			imp2.setOverlay(imp.getOverlay());
+			Calibration cal = imp2.getCalibration();
+			if (cal.frameInterval>0)
+				imp2.setDimensions(1,1,imp2.getStackSize());
+			else
+				imp2.setDimensions(1,imp2.getStackSize(),1);
 			imp.hide();
 		}
 		if (IJ.recording() && Recorder.scriptMode())
 			Recorder.recordCall("HyperStackConverter.toStack(imp);");
 	}
-	
+
 	void newHyperStack() {
 		IJ.runMacroFile("ij.jar:HyperStackMaker", "");
 	}

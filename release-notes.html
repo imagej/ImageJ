@@ -6,8 +6,15 @@
 <body>
 
 
-<li> <u>1.54q6  19 March 2025</u>
+<li> <u>1.54q13  12 April 2025</u>
 <ul>
+<li> Thanks to 'aschain', the 3D filters in the <i>Process&gt;Filters</i>
+menu now work with hyperstacks.
+<li> Thanks to Michael Schmid, added 'auto' checkboxes to the
+<i>Image&gt;Hyperstacks&gt;Stack to Hyperstack</i> dialog for
+calculating one of the fields.
+<li> Thanks to Jerome Mutterer, added the Array.applyMacro() macro
+function. DOC
 <li> Removed the particle analyzers's "Record starts" option because
 it caused a NullPointerException when running in Fiji headless
 mode.
@@ -19,12 +26,18 @@ fixed bug with the File.openAsRawString() macro function not working with
 files larger than 2GB.
 <li> Thanks to 'scouser27', fixed bug with cancelling the duplication of
 a rotated rectangle on a hyperstack.
+<li> Fixed bug where the <i>Image&gt;Hyperstacks&gt;Hyperstack to Stack</i>
+command did not correctly set the dimensions.
+<li> Thanks to Christian Tischer, fixed bug where the ChanneSplitter.split()
+method failed in Fiji headless mode.
 <li> Thanks to Michael Schmid, fixed 1.54m9 <i>Analyze&gt;Plot Profile</i>
 regression where ImageProcessor.getLine() did not sample the
 correct points.
 <li> Thanks to 'AndreC' and 'scouser27' fixed regression that caused point
 selections on hyperstacks to not be correctly added to overlays and the
 ROI Manager.
+<li> Thanks to Michael Schmid, fixed 1.54k regression with saving and
+opening point ROIs.
 </ul>
 
 <li> <u>1.54n  17 February 2025</u>

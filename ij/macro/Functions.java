@@ -6126,9 +6126,28 @@ public class Functions implements MacroConstants, Measurements {
 			return deleteArrayIndex();
 		else if (name.equals("filter"))
 			return filterArray();
+		else if (name.equals("applyMacro"))
+			return applyMacroToArray();
 		else
 			interp.error("Unrecognized Array function");
 		return null;
+	}
+	
+	Variable[] applyMacroToArray() {
+		interp.getLeftParen();
+		Variable[] a = getArray();
+		String macro = (String)getNextString();
+		interp.getRightParen();
+		ResultsTable rt = new ResultsTable();
+		rt.setColumn("v", a);
+		rt.applyMacro(macro);
+		Variable column = null;
+		try {
+			column =  new Variable(rt.getColumnAsVariables("v"));
+		} catch (Exception e) {
+			interp.error(e.getMessage());
+		}
+		return column.getArray();
 	}
 
 	Variable[] filterArray() {

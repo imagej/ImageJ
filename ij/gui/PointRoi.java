@@ -465,6 +465,7 @@ public class PointRoi extends PolygonRoi {
 			return counters[index];
 	}
 
+	/** Deletes all counters and stack position associations */
 	public void resetCounters() {
 		for (int i=0; i<counts.length; i++)
 			counts[i] = 0;
@@ -669,7 +670,7 @@ public class PointRoi extends PolygonRoi {
 	/** Sets the counter number and slice number for each point from an
 	 *  array, where the lower 8 bits are the counter number and the
 	 *  higher 24 bits contain the slice position of each point.
-	 *  Used when reading a roi fromfile (RoiDecoder).  */
+	 *  Used when reading a roi from file (RoiDecoder).  */
 	public void setCounters(int[] counters) {
 		if (counters!=null) {
 			int n = counters.length;
@@ -704,6 +705,7 @@ public class PointRoi extends PolygonRoi {
 	 *  (ii) if it is the currently active Roi and Prefs.showAllPoints
 	 *       ('Show an all slices' in the Point Tool Options dialog) is off.
 	 *  Clears any association of this Roi to a hyperstack position.
+	 *  Stack positions of individual points are overwritten.
 	 *
 	 *  Note that the behavior differs from that of the other Roi types:
 	 *  For the other Roi types, setPosition does not restrict the visibility
@@ -716,8 +718,11 @@ public class PointRoi extends PolygonRoi {
 		if (n == 0) {
 			positions = null;
 		} else {
-			if (positions == null)
-				positions = new int[counters == null ? nPoints*2 : counters.length];
+			if (positions == null) {
+				if (counters == null)
+					counters = new short[nPoints*2];
+				positions = new int[counters.length];
+			}
 			if (n != POINTWISE_POSITION)
 				Arrays.fill(positions, n);
 		}
