@@ -1207,12 +1207,12 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 		byte[] bPixels = null;
 		int[] cPixels = null;
 		short[] sPixels = null;
-		if (biBitCount <=8 || convertToGray) {
-			bPixels = new byte[dwWidth * biHeight];
-			pixels = bPixels;
-		} else if (biBitCount == 16 && dataCompression == NO_COMPRESSION) {
+		if (biBitCount == 16 && dataCompression == NO_COMPRESSION) {
 			sPixels = new short[dwWidth * biHeight];
 			pixels = sPixels;
+		} else if (biBitCount <=8 || convertToGray) {
+			bPixels = new byte[dwWidth * biHeight];
+			pixels = bPixels;
 		} else {
 			cPixels = new int[dwWidth * biHeight];
 			pixels = cPixels;
@@ -1223,12 +1223,12 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 			int	 offset		= topDown ? 0 : (biHeight-1)*dwWidth;
 			int	 rawOffset	= 0;
 			for (int i = biHeight - 1; i >= 0; i--) {  //for all lines
-				if (biBitCount <=8 || isPlanarFormat)
+				if (biBitCount==16 && dataCompression == NO_COMPRESSION)
+					unpackShort(rawData, rawOffset, sPixels, offset, dwWidth);
+				else if (biBitCount <=8 || isPlanarFormat) //planar&converToGray: read 1st plane (Y)
 					unpack8bit(rawData, rawOffset, bPixels, offset, dwWidth);
 				else if (convertToGray)
 					unpackGray(rawData, rawOffset, bPixels, offset, dwWidth);
-				else if (biBitCount==16 && dataCompression == NO_COMPRESSION)
-					unpackShort(rawData, rawOffset, sPixels, offset, dwWidth);
 				else
 					unpack(rawData, rawOffset, cPixels, offset, dwWidth);
 				rawOffset += isPlanarFormat ? dwWidth : scanLineSize;
