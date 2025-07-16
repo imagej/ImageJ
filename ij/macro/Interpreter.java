@@ -1373,9 +1373,7 @@ public class Interpreter implements MacroConstants {
 			instance = null;
 		if (showMessage && message!=null) {
 			String line = getErrorLine();
-			done = true;
-			if (line.length()>120)
-				line = line.substring(0,119)+"...";			
+			done = true;		
 			Frame f = WindowManager.getFrame("Debug");			
 			TextPanel panel = null;
 			if (showVariables && f!=null && (f instanceof TextWindow)) { //clear previous content
@@ -1392,7 +1390,7 @@ public class Interpreter implements MacroConstants {
 					calledFrom += "\t\t(called from line " + theline +")\n";
 				}
 			}
-			showError("Macro Error", message+" in line "+lineNumber +"\n" + calledFrom +" \n"+line, variables);
+			showError("Macro Error", message+" in line "+lineNumber +"\n" + calledFrom +" \n"+line.substring(0,119)+"...", variables);
 			f = WindowManager.getFrame("Debug");
 			if (showVariables && f!=null && (f instanceof TextWindow)) {
 				TextWindow debugWindow = (TextWindow)f;
