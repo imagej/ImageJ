@@ -187,21 +187,25 @@ class GifDecoder {
 	 * @return int read status code
 	 */
 	public int read(BufferedInputStream is) {
-		init();
-		if (is != null) {
-			in = is;
-			readHeader();
-			if (!err()) {
-				readContents();
-				if (frameCount < 0)
-					status = STATUS_FORMAT_ERROR;
-			}
-		} else {
-			status = STATUS_OPEN_ERROR;
-		}
-		try {
-			is.close();
-		} catch (IOException e) {}
+		status = STATUS_OK;
+    try {
+      if (is != null) {
+        in = is;
+        status = read(in);
+      } else {
+        status = STATUS_OPEN_ERROR;
+      }
+    } catch (IOException e) {
+      status = STATUS_OPEN_ERROR;
+    } finally {
+      if (is != null) {
+        try {
+          is.close();
+        } catch (IOException e) {
+          // Log error but don't change status
+        }
+      }
+    }
 		return status;
 	}
 
