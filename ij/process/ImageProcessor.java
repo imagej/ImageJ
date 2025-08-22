@@ -1057,22 +1057,22 @@ public abstract class ImageProcessor implements Cloneable {
 					v = i ^ (int)value;
 					break;
 				case GAMMA:
-					v = (int)(Math.exp(Math.log(i/255.0)*value)*255.0);
+					v = (int)Math.round(Math.exp(Math.log(i/255.0)*value)*255.0);
 					break;
 				case LOG:
 					if (i==0)
 						v = 0;
 					else
-						v = (int)(Math.log(i) * SCALE);
+						v = (int)Math.round(Math.log(i) * SCALE);
 					break;
 				case EXP:
-					v = (int)(Math.exp(i/SCALE));
+					v = (int)Math.round(Math.exp(i/SCALE));
 					break;
 				case SQR:
 						v = i*i;
 					break;
 				case SQRT:
-						v = (int)Math.sqrt(i);
+						v = (int)Math.round(Math.sqrt(i));
 					break;
 				case MINIMUM:
 					if (i<value)

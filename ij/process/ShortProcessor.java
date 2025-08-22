@@ -519,23 +519,23 @@ public class ShortProcessor extends ImageProcessor {
 						if (range<=0.0 || v1==min2)
 							v2 = v1;
 						else					
-							v2 = (int)(Math.exp(value*Math.log((v1-min2)/range))*range+min2);
+							v2 = (int)Math.round(Math.exp(value*Math.log((v1-min2)/range))*range+min2);
 						break;
 					case LOG:
 						if (v1<=0)
 							v2 = 0;
 						else 
-							v2 = (int)(Math.log(v1)*(max2/Math.log(max2)));
+							v2 = (int)Math.round(Math.log(v1)*(max2/Math.log(max2)));
 						break;
 					case EXP:
-						v2 = (int)(Math.exp(v1*(Math.log(max2)/max2)));
+						v2 = (int)Math.round(Math.exp(v1*(Math.log(max2)/max2)));
 						break;
 					case SQR:
 						double d1 = v1;
 						v2 = (int)(d1*d1);
 						break;
 					case SQRT:
-						v2 = (int)Math.sqrt(v1);
+						v2 = (int)Math.round(Math.sqrt(v1));
 						break;
 					case ABS:
 						v2 = (int)Math.abs(v1);
@@ -1289,4 +1289,3 @@ public class ShortProcessor extends ImageProcessor {
 	public void dilate() {}
 
 }
-

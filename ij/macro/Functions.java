@@ -5858,8 +5858,16 @@ public class Functions implements MacroConstants, Measurements {
 				IJ.makePoint((int)x, (int)y);
 			else
 				IJ.makePoint(x, y);
-		} else
-			getImage().setRoi(new PointRoi(x, y, options));
+		} else {
+			if (options!=null && options.equals("add")) { //add point to multi-point selection
+				IJ.setKeyDown(KeyEvent.VK_SHIFT);
+				if ((int)x==x && (int)y==y)
+					IJ.makePoint((int)x, (int)y);
+				else
+					IJ.makePoint(x, y);
+			} else
+				getImage().setRoi(new PointRoi(x, y, options));
+		}
 		resetImage();
 		shiftKeyDown = altKeyDown = false;
 	}

@@ -619,7 +619,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 		long pos = raFile.getFilePointer();
 		//IJ.log("at 0x"+Long.toHexString(pos)+" filesize=0x"+Long.toHexString(fileSize));
 		// extended AVI: try to find further 'RIFF' chunks, where we expect AVIX tags
-		while (pos>0 && pos<fileSize && (frameNumber<lastFrameToRead+1))
+		while (pos>0 && pos<fileSize && (frameNumber<=lastFrameToRead))
 				pos = findFourccAndRead(FOURCC_RIFF, false, fileSize, false);
 		return;
 	 }
