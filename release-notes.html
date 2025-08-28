@@ -5,9 +5,11 @@
 </head>
 <body>
 
-
-<li> <u>1.54q19  21 August 2025</u>
+<li> <u>1.54q21  28 August 2025</u>
 <ul>
+<li> Thanks to 'AFMiJ', updated <i>Image&gt;Adjust&gt;Brightness/Contrast</i>
+to show the image histogram with the LUT colors of the image
+(<a href="https://github.com/imagej/ImageJ/issues/281#issuecomment-3219377578">Github</a>).
 <li> Thanks to 'aschain', the 3D filters in the <i>Process&gt;Filters</i>
 menu now work with hyperstacks.
 <li> Thanks to Michael Schmid, added 'auto' checkboxes to the
@@ -18,6 +20,8 @@ function. DOC
 <li> Removed the particle analyzers's "Record starts" option because
 it caused a NullPointerException when running in Fiji headless
 mode.
+<li> Thanks to Michael Schmid, histogram plots now show pixel values
+occurring once (count=1) in log mode.
 <li> Thanks to Michael Schmid, fixed bug where <i>Image&gt;Stacks&gt;Label</i>
 produces a NullPointerException in "overlay" mode when previewing
 and the current stack slice is not the first one.

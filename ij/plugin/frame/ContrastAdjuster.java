@@ -22,6 +22,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	static final int AUTO_THRESHOLD = 5000;
 	static final String[] channelLabels = {"Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "All"};
 	static final String[] altChannelLabels = {"Channel 1", "Channel 2", "Channel 3", "Channel 4", "Channel 5", "Channel 6", "All"};
+	static final String[] greyChannelLabels = {"LUT level"};
 	static final int[] channelConstants = {4, 2, 1, 3, 5, 6, 7};
 
 	ContrastPlot plot = new ContrastPlot();
@@ -55,6 +56,8 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	Font sanFont = IJ.font12;
 	int channels = 7; // RGB
 	Choice choice;
+	Checkbox logHistCheckbox;
+	boolean isLogHist = false;
 	private String blankLabel8 = "--------";
 	private String blankLabel12 = "------------";
 	private double scale = Prefs.getGuiScale();
@@ -126,6 +129,14 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			add(panel);
 			blankLabel8 = "        ";
 		}
+
+		// log histogram scale checkbox
+		logHistCheckbox = new Checkbox("Log scale");
+		logHistCheckbox.setState(isLogHist);
+		logHistCheckbox.addItemListener(this);
+		c.gridy = y++;
+		gridbag.setConstraints(logHistCheckbox, c);
+		add(logHistCheckbox);
 
 		// min slider
 		if (!windowLevel) {
@@ -256,6 +267,9 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		if (imp!=null && imp.isComposite()) {
 			for (int i=0; i<altChannelLabels.length; i++)
 				choice.addItem(altChannelLabels[i]);
+		} else if (imp!=null && ((imp.getType() == ImagePlus.GRAY8) || (imp.getType() == ImagePlus.GRAY16) || (imp.getType() == ImagePlus.GRAY32))) {
+			for (int i=0; i<greyChannelLabels.length; i++)
+				choice.addItem(greyChannelLabels[i]);
 		} else {
 			for (int i=0; i<channelLabels.length; i++)
 				choice.addItem(channelLabels[i]);
@@ -387,15 +401,22 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			if (imp.isComposite()) {
 				int channel = imp.getChannel();
 				if (channel<=4) {
+					choice.removeAll();
+					addBalanceChoices();
 					choice.select(channel-1);
 					channels = channelConstants[channel-1];
 				}
-				if (choice.getItem(0).equals("Red")) {
+				if (!choice.getItem(0).equals("Channel 1")) { // if the choice is wrong
+					choice.removeAll();
+					addBalanceChoices();
+				}
+			} else if ((imp.getType() == ImagePlus.GRAY8) || (imp.getType() == ImagePlus.GRAY16) || (imp.getType() == ImagePlus.GRAY32)) { // grey image
+				if (!choice.getItem(0).equals("LUT level")) { // if the choice is wrong
 					choice.removeAll();
 					addBalanceChoices();
 				}
 			} else { // not composite
-				if (choice.getItem(0).equals("Channel 1")) {
+				if (!choice.getItem(0).equals("Red")) { // if the choice is wrong
 					choice.removeAll();
 					addBalanceChoices();
 				}
@@ -607,6 +628,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	void plotHistogram(ImagePlus imp) {
 		ImageStatistics stats;
 		if (balance && (channels==4 || channels==2 || channels==1) && imp.getType()==ImagePlus.COLOR_RGB) {
+			setTitle("Color");
 			int w = imp.getWidth();
 			int h = imp.getHeight();
 			byte[] r = new byte[w*h];
@@ -623,6 +645,10 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			ImageProcessor ip = new ByteProcessor(w, h, pixels, null);
 			stats = ImageStatistics.getStatistics(ip, 0, imp.getCalibration());
 		} else {
+				if (balance) {setTitle("Color");}
+				if (balance && ((imp.getType() == ImagePlus.GRAY8) || (imp.getType() == ImagePlus.GRAY16) || (imp.getType() == ImagePlus.GRAY32)) && !imp.isComposite()) { // image is grey
+					setTitle("LUT Color");
+				}
 			int range = imp.getType()==ImagePlus.GRAY16?ImagePlus.getDefault16bitRange():0;
 			if (range!=0 && imp.getProcessor().getMax()==Math.pow(2,range)-1 && !(imp.getCalibration().isSigned16Bit())) {
 				ImagePlus imp2 = new ImagePlus("Temp", imp.getProcessor());
@@ -630,10 +656,8 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			} else
 				stats = imp.getStatistics();
 		}
-		Color color = Color.gray;
-		if (imp.isComposite() && !(balance&&channels==7))
-			color = ((CompositeImage)imp).getChannelColor();
-		plot.setHistogram(stats, color);
+		// Default histogram color for images without LUT is now defined in the setHistogram method
+		plot.setHistogram(stats, isLogHist);
 	}
 
 	void apply(ImagePlus imp, ImageProcessor ip) {
@@ -1146,6 +1170,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			case BRIGHTNESS: adjustBrightness(imp, ip, bvalue); break;
 			case CONTRAST: adjustContrast(imp, ip, cvalue); break;
 		}
+		plotHistogram(imp);
 		updatePlot();
 		updateLabels(imp);
 		if ((IJ.shiftKeyDown()||(balance&&channels==7)) && imp.isComposite())
@@ -1186,19 +1211,35 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	}
 	
 	public synchronized  void itemStateChanged(ItemEvent e) {
-		int index = choice.getSelectedIndex();
-		channels = channelConstants[index];
-		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null && imp.isComposite()) {
-			if (index+1<=imp.getNChannels())
-				imp.setPosition(index+1, imp.getSlice(), imp.getFrame());
-			else {
-				choice.select(channelLabels.length-1);
-				channels = 7;
+		Object source = e.getSource();
+		if (source==logHistCheckbox) {
+			isLogHist=logHistCheckbox.getState();
+			// IJ.log("log state changed");
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (imp!=null) {
+				// IJ.log("now updating histogram from itemStateChanged "+imp);
+				plotHistogram(imp);
+				updatePlot();
+				updateLabels(imp);
 			}
-		} else {
-			imp.getProcessor().snapshot();
-			doReset = true;
+		}
+		else {
+			int index = choice.getSelectedIndex();
+			channels = channelConstants[index];
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (imp!=null) {
+				if (imp.isComposite()) {
+					if (index+1<=imp.getNChannels())
+						imp.setPosition(index+1, imp.getSlice(), imp.getFrame());
+					else {
+						choice.select(channelLabels.length-1);
+						channels = 7;
+					}
+				} else {
+					imp.getProcessor().snapshot();
+					doReset = true;
+				}
+			}
 		}
 		notify();
 	}
@@ -1221,7 +1262,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 
 
 class ContrastPlot extends Canvas implements MouseListener {
-
+	Color[] hColors;
 	static final int WIDTH=128, HEIGHT=64;
 	double defaultMin = 0;
 	double defaultMax = 255;
@@ -1238,6 +1279,8 @@ class ContrastPlot extends Canvas implements MouseListener {
 
 	public ContrastPlot() {
 		addMouseListener(this);
+		width = (int)(width*1.3); // increase size
+		height = (int)(height*1.3); // increase size
 		if (scale>1.0) {
 			width = (int)(width*scale);
 			height = (int)(height*scale);
@@ -1251,9 +1294,36 @@ class ContrastPlot extends Canvas implements MouseListener {
         return new Dimension(width+1, height+1);
     }
 
-	void setHistogram(ImageStatistics stats, Color color) {
-		this.color = color;
+	void setHistogram(ImageStatistics stats, boolean isLogHist) {
 		histogram = stats.histogram;
+		if (isLogHist) {
+			for (int j=0;j<256;j++) {
+				histogram[j]=(int)(Math.log(histogram[j])*100);
+			}
+		}
+		ImagePlus imp = WindowManager.getCurrentImage();
+		hColors = new Color[256];
+		for (int i=0; i<256; i++) { // set the default histogram color when there is no LUT
+			hColors[i] = new Color(110, 110,150);
+		}
+		int impType= imp.getType();
+		if ((impType == ImagePlus.GRAY8) || (impType == ImagePlus.GRAY16) || (impType == ImagePlus.GRAY32)) { //if image has LUT
+			ImageProcessor ip = imp.getProcessor();
+			ColorModel cm = ip.getColorModel();
+			IndexColorModel icm = (IndexColorModel)cm;
+			int mapSize = icm.getMapSize();
+			if (mapSize!=256)
+				return;
+			byte[] red = new byte[256];
+			byte[] green = new byte[256];
+			byte[] blue = new byte[256];
+			icm.getReds(red);
+			icm.getGreens(green);
+			icm.getBlues(blue);
+			for (int i=0; i<256; i++) {
+				hColors[i] = new Color(red[i]&255, green[i]&255, blue[i]&255);
+			}
+		}
 		if (histogram.length!=256) {
 			histogram=null;
 			return;
@@ -1271,11 +1341,16 @@ class ContrastPlot extends Canvas implements MouseListener {
 			if ((histogram[i]>maxCount2) && (i!=mode))
 				maxCount2 = histogram[i];
 		}
-		hmax = stats.maxCount;
+		if (isLogHist) {
+			hmax =(int)(Math.log(stats.maxCount)*100);
+		} else {
+			hmax = stats.maxCount;
+		}
 		if ((hmax>(maxCount2*2)) && (maxCount2!=0)) {
 			hmax = (int)(maxCount2*1.5);
 			histogram[mode] = hmax;
 		}
+
 		os = null;
 	}
 
@@ -1284,9 +1359,17 @@ class ContrastPlot extends Canvas implements MouseListener {
 	}
 
 	public void paint(Graphics g) {
-		int x1, y1, x2, y2;
+		int x1, y1, x2, y2,j,j1,j2;
+		double colscale;
 		double scale = (double)width/(defaultMax-defaultMin);
 		double slope = 0.0;
+		j1=(int)((min-defaultMin)/(defaultMax-defaultMin)*255);
+		j2=(int)((max-defaultMin)/(defaultMax-defaultMin)*255);
+		if (j2>j1) {
+			colscale=255.0/(j2-j1);
+		} else {
+			colscale=1;
+		}
 		if (max!=min)
 			slope = height/(max-min);
 		if (min>=defaultMin) {
@@ -1315,11 +1398,20 @@ class ContrastPlot extends Canvas implements MouseListener {
 				osg = os.getGraphics();
 				osg.setColor(Color.white);
 				osg.fillRect(0, 0, width, height);
-				osg.setColor(color);
 				double scale2 = width/256.0;
 				for (int i = 0; i < 256; i++) {
 					int x =(int)(i*scale2);
-					osg.drawLine(x, height, x, height - ((int)(height*histogram[i])/hmax));
+					j=(int) ((i-j1)*colscale);
+					if (i<j1) {j=0;};
+					if (i>j2) {j=255;};
+					// IJ.log("--> "+String.valueOf(j1)+" "+String.valueOf(j2)+" "+String.valueOf(i)+" "+String.valueOf(j));
+					if (hColors!=null)
+						osg.setColor(hColors[j]);
+					int y = height - ((int)(height*histogram[i])/hmax);
+					osg.drawLine(x, height, x, y);
+					osg.setColor(Color.black);
+					osg.fillRect(x, y, 1, 1);
+					//IJ.log("--> "+String.valueOf(i)+" "+String.valueOf(x)+" "+String.valueOf(histogram[i])+" "+String.valueOf(height - ((int)(height*histogram[i])/hmax)));
 				}
 				osg.dispose();
 			}
@@ -1358,5 +1450,6 @@ class TrimmedLabel extends Label {
     }
 
 } // TrimmedLabel class
+
 
 
