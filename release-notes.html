@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.54q21  28 August 2025</u>
+<li> <u>1.54q 2 September 2025</u>
 <ul>
 <li> Thanks to 'AFMiJ', updated <i>Image&gt;Adjust&gt;Brightness/Contrast</i>
 to show the image histogram with the LUT colors of the image
@@ -16,7 +16,8 @@ menu now work with hyperstacks.
 <i>Image&gt;Hyperstacks&gt;Stack to Hyperstack</i> dialog for
 calculating one of the fields.
 <li> Thanks to Jerome Mutterer, added the Array.applyMacro() macro
-function. DOC
+function
+(<a href="http://wsr.imagej.net/macros/examples/ArrayApplyMacroDemo.ijm">example</a>).
 <li> Removed the particle analyzers's "Record starts" option because
 it caused a NullPointerException when running in Fiji headless
 mode.
@@ -44,10 +45,13 @@ selections on hyperstacks to not be correctly added to overlays and the
 ROI Manager.
 <li> Thanks to Michael Schmid, fixed 1.54k regression with saving and
 opening point ROIs.
-<li> Fixed 1.54q2 regression that caused multi-point selections
-to lose their point positions when they are added to the ROI Manager.
-<li> Fixed 1.53 regression that caused the AVI Reader to not open all
+<li> Fixed 1.54q2 regression where multi-point selections
+lost their point positions when added to the ROI Manager.
+<li> Fixed 1.53 regression where the AVI Reader did not open all
 frames when the "Use virtual stack" option was not enabled.
+<li> Thanks to Michael Daube, fixed 1.54 regression where the
+Roi.getZPosition() method did not work as expected with
+PointRois.
 </ul>
 
 <li> <u>1.54p  17 February 2025</u>

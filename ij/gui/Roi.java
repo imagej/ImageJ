@@ -2269,7 +2269,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	*   if this ROI is not associated with a particular slice.
 	*/
 	public final int getZPosition() {
-		return slice==0&&!hyperstackPosition ? position : slice;
+		return slice==0&&!hyperstackPosition ? getPosition() : slice;
 	}
 
 	/** Returns the frame position of this ROI, or zero

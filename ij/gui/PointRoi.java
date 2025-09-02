@@ -1034,9 +1034,9 @@ public class PointRoi extends PolygonRoi {
 
 	public String toString() {
 		if (nPoints>1)
-			return ("Roi[Points, count="+nPoints+", pos="+getPositionAsString()+", size="+size+"]");
+			return ("Roi[Points, count="+nPoints+", pos="+getPositionAsString()+", psize="+size+"]");
 		else
-			return ("Roi[Point, x="+x+", y="+y+", pos="+getPositionAsString()+", size="+size+"]");
+			return ("Roi[Point, x="+x+", y="+y+", pos="+getPositionAsString()+", psize="+size+"]");
 	}
 
 	/** @deprecated */
