@@ -115,7 +115,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	private String name;
 	private int position;
 	private int channel, slice, frame;
-	protected boolean hyperstackPosition;
 	private Overlay prototypeOverlay;
 	private boolean subPixel;
 	private boolean activeOverlayRoi;
@@ -1848,7 +1847,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 				temp[i] = groupNames[i];
 			groupNames = temp;
 		}
-		//IJ.log("setGroupName: "+groupNumber+"  "+name+"  "+groupNames.length);
 		groupNames[groupNumber-1] = name;
 		groupNamesChanged = true;
 	}
@@ -2201,7 +2199,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		if (n<0) n=0;
 		position = n;
 		channel = slice = frame = 0;
-		hyperstackPosition = false;
 	}
 
 	/** Returns the stack position (image number) for displaying this ROI,
@@ -2237,12 +2234,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		if (frame<0) frame=0;
 		this.frame = frame;
 		position = 0;
-		hyperstackPosition = true;
 	}
 
 	/** Returns 'true' if setPosition(C,Z,T) has been called. */
 	public boolean hasHyperStackPosition() {
-		return hyperstackPosition;
+		if (getPosition()==PointRoi.POINTWISE_POSITION)
+			return false;
+		else
+			return channel>0 || slice>0 || frame>0;
 	}
 
 	/** Sets the position of this ROI based on the stack position of the specified image.  */
@@ -2269,7 +2268,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	*   if this ROI is not associated with a particular slice.
 	*/
 	public final int getZPosition() {
-		return slice==0&&!hyperstackPosition ? getPosition() : slice;
+		return slice==0&&!hasHyperStackPosition() ? getPosition() : slice;
 	}
 
 	/** Returns the frame position of this ROI, or zero

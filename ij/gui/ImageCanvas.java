@@ -345,7 +345,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					else if (t==0)
 						t = position;
 				}
-				if (((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame)) || roiManagerShowAllMode)
+				//IJ.log("drawOverlay: i="+i+", pos="+roi.getPosition());
+				if (((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame)) || roiManagerShowAllMode || position == PointRoi.POINTWISE_POSITION)
 					drawRoi(g, roi, drawLabels?i+LIST_OFFSET:-1);
 			} else {
 				int position = stackSize>1?roi.getPosition():0;
@@ -363,7 +364,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					position = 0;
 				if ((roi instanceof PointRoi) && Prefs.showAllPoints)
 					position = 0;
-				//IJ.log(c+" "+z+" "+t+" p="+position+"getP="+roi.getPosition()+" "+roiManagerShowAllMode);
+				//IJ.log("drawOverlay: i="+i+", pos="+roi.getPosition()+", pos2="+position);
 				if (position==0 || position==currentImage || roiManagerShowAllMode)
 					drawRoi(g, roi, drawLabels?i+LIST_OFFSET:-1);
 			}

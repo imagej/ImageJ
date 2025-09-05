@@ -251,6 +251,9 @@ public class OverlayCommands implements PlugIn {
 	}
 	
 	private void setPosition(ImagePlus imp, Roi roi) {
+		//IJ.log("Overlay.setPosition: "+roi.size());
+		if (roi instanceof PointRoi && roi.size()>1)
+			return;
 		int stackSize = imp.getStackSize();
 		if (roi.hasHyperStackPosition() && imp.isHyperStack())
 			return;

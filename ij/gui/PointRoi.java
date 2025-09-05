@@ -57,7 +57,6 @@ public class PointRoi extends PolygonRoi {
 	private int nMarkers;
 	private boolean addToOverlay;
 	public static PointRoi savedPoints;
-	private boolean positionSet;
 
 	static {
 		setDefaultType((int)Prefs.get(TYPE_KEY, HYBRID));
@@ -423,8 +422,6 @@ public class PointRoi extends PolygonRoi {
 			counters[nPoints-1] = (short)counter;
 			if (imp!=null)
 					positions[nPoints-1] = imp.getStackSize()>1 ? imp.getCurrentSlice() : 0;
-			//if (positions[nPoints-1]==0 || positions[nPoints-1]==1 || counters[nPoints-1]==0)
-			//IJ.log("incrementCounter: "+nPoints+" "+counters.length+" "+counters[nPoints-1]+"   "+positions[nPoints-1]+" "+imp);
 		}
 		if (rt!=null && WindowManager.getFrame(getCountsTitle())!=null)
 			displayCounts();
@@ -728,8 +725,7 @@ public class PointRoi extends PolygonRoi {
 			if (n != POINTWISE_POSITION)
 				Arrays.fill(positions, n);
 		}
-		hyperstackPosition = false;
-		positionSet = true;
+		super.setPosition(0);
 	}
 
 	/** Returns the stack position (image number) of the points in this Roi, if
@@ -738,16 +734,19 @@ public class PointRoi extends PolygonRoi {
 	 *  if there are different stack positions for different points.
 	 */
 	public int getPosition() {
-		//if (positions==null || nPoints<1 || !positionSet)
+		int position = 0;
 		if (positions==null || nPoints<1)
-			return 0;
+			position = 0;
+		else if (nPoints==1)
+			position = super.getPosition();
 		else {
-			int position = positions[0];
-			for (int i=1; i<nPoints; i++)
+			position = positions[0];
+			for (int i=1; i<nPoints; i++) {
 				if (positions[i] != position)
-					return POINTWISE_POSITION;
-			return position;
+					position = POINTWISE_POSITION;
+			}
 		}
+		return position;
 	}
 
 	/** Returns the stack slice of the point with the given index, or 0 if no slice defined for this point */

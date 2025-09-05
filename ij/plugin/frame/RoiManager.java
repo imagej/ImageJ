@@ -703,7 +703,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Roi roi = (Roi)rois.get(index);
 		if (imp==null || roi==null)
 			return false;
-			//IJ.log("restore: "+roi.getPosition()+"  "+roi.getZPosition()+"  "+imp.getNSlices()+"  "+imp.getStackSize());
 		if (setSlice) {
 			boolean hyperstack = imp.isHyperStack();
 			int position = roi.getPosition();
@@ -1575,7 +1574,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (group>=0)
 				roi.setGroup(group);
 			if (rpRoi!=null) {
-				//IJ.log("new pos="+rpRoi.getPosition());
 				if (rpRoi.hasHyperStackPosition())
 					roi.setPosition(rpRoi.getCPosition(), rpRoi.getZPosition(), rpRoi.getTPosition());
 				else
@@ -2717,7 +2715,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			index += rot;
 			if (index<0) index = 0;
 			if (index>=getCount()) index = getCount();
-			//IJ.log(index+"  "+rot);
 			select(index);
 			if (IJ.isWindows())
 				list.requestFocusInWindow();
