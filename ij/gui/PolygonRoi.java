@@ -690,7 +690,6 @@ public class PolygonRoi extends Roi {
 	}
 
 	protected void resetBoundingRect() {
-		//IJ.log("resetBoundingRect");
 		if (xpf!=null) {
 			resetSubPixelBoundingRect();
 			xp = toInt(xpf, xp, nPoints);
@@ -715,7 +714,6 @@ public class PolygonRoi extends Roi {
 			for (int i=0; i<nPoints; i++)
 				yp[i] -= ymin;
 		}
-		//IJ.log("reset: "+ymin+" "+before+" "+yp[0]);
 		x+=xmin; y+=ymin;
 		width=xmax-xmin; height=ymax-ymin;
 		if (useLineSubpixelConvention()) {
@@ -725,7 +723,6 @@ public class PolygonRoi extends Roi {
 	}
 
 	private void resetSubPixelBoundingRect() {
-		//IJ.log("resetSubPixelBoundingRect: "+state+" "+bounds);
 		if (xSpline!=null) {
 			resetSplineFitBoundingRect();
 			return;
@@ -946,11 +943,8 @@ public class PolygonRoi extends Roi {
 	 *  points remains unchanged.
 	 *  @return Arrays of x coordinates and y coordinates */
 	float[][] getSpline(int evaluationPoints, float[] xSpline, float[] ySpline) {
-		if (xpf==null) {
-			xpf = toFloat(xp);
-			ypf = toFloat(yp);
+		if (xpf==null)
 			enableSubPixelResolution();
-		}
 		if (xSpline==null || xSpline.length!=evaluationPoints)
 			xSpline = new float[evaluationPoints];
 		if (ySpline==null || ySpline.length!=evaluationPoints)
@@ -1065,7 +1059,6 @@ public class PolygonRoi extends Roi {
 			while ((distanceOverNextWrite >= 0.0 || i==npoints-1) && pointsWritten < npOut) {  // we have to write a new point
 				double fractionOverNextWrite = distanceOverNextWrite/distance;
 				if (distance==0) fractionOverNextWrite = 0;
-				//IJ.log("i="+i+" n="+pointsWritten+"/"+npOut+" leng="+IJ.d2s(lengthRead)+"/"+IJ.d2s(length)+" done="+IJ.d2s(pointsWritten*step)+" over="+IJ.d2s(fractionOverNextWrite)+" x,y="+IJ.d2s(x2 - fractionOverNextWrite*dx)+","+IJ.d2s(y2 - fractionOverNextWrite*dy));
 				xpOut[pointsWritten] = (float)(x2 - fractionOverNextWrite*dx);
 				ypOut[pointsWritten] = (float)(y2 - fractionOverNextWrite*dy);
 				distanceOverNextWrite -= step;

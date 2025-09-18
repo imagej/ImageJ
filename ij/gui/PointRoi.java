@@ -421,7 +421,7 @@ public class PointRoi extends PolygonRoi {
 			}
 			counters[nPoints-1] = (short)counter;
 			if (imp!=null)
-					positions[nPoints-1] = imp.getStackSize()>1 ? imp.getCurrentSlice() : 0;
+				positions[nPoints-1] = imp.getStackSize()>1 ? imp.getCurrentSlice() : 0;
 		}
 		if (rt!=null && WindowManager.getFrame(getCountsTitle())!=null)
 			displayCounts();
@@ -725,9 +725,9 @@ public class PointRoi extends PolygonRoi {
 			if (n != POINTWISE_POSITION)
 				Arrays.fill(positions, n);
 		}
-		super.setPosition(0);
+		super.setPosition(nPoints>1?0:n);
 	}
-
+	
 	/** Returns the stack position (image number) of the points in this Roi, if
 	 *  all points have the same position. Returns 0 if none of the points is
 	 *  associated with a particular stack image, and PointRoi.POINTWISE_POSITION = -2
@@ -738,7 +738,7 @@ public class PointRoi extends PolygonRoi {
 		if (positions==null || nPoints<1)
 			position = 0;
 		else if (nPoints==1)
-			position = super.getPosition();
+			return super.getPosition();
 		else {
 			position = positions[0];
 			for (int i=1; i<nPoints; i++) {
