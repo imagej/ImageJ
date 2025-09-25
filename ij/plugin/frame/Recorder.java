@@ -650,7 +650,9 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 				}
 			} else {
 				Roi roi = imp!=null?imp.getRoi():null;
-				if (name.equals("Threshold...") || name.equals("Fonts...") || name.equals("Brightness/Contrast...") || name.equals("Channels Tool..."))
+				if (name.equals("Text Window") && !scriptMode)
+					textArea.append("showText(\"Untitled.txt\", \"\");\n");
+				else if (name.equals("Threshold...") || name.equals("Fonts...") || name.equals("Brightness/Contrast...") || name.equals("Channels Tool..."))
 					textArea.append((scriptMode?"//IJ.":"//")+"run(\""+name+"\");\n");
 				else if (name.equals("Start Animation [\\]"))
 					textArea.append("doCommand(\"Start Animation [\\\\]\");\n");

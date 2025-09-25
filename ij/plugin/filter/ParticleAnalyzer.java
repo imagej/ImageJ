@@ -256,6 +256,11 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		processStack = (flags&DOES_STACKS)!=0;
 		slice = 0;
 		saveRoi = imp.getRoi();
+		Rectangle b = saveRoi!=null?saveRoi.getBounds():null;
+		if (b!=null && b.x==0 && b.y==0 && b.width==imp.getWidth() && b.height==imp.getHeight()) {
+			imp.deleteRoi();
+			saveRoi = null;
+		}
 		saveSlice = imp.getCurrentSlice();
 		if (saveRoi!=null && saveRoi.isArea())
 			exclusionRoi = saveRoi;
