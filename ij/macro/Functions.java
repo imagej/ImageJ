@@ -239,7 +239,7 @@ public class Functions implements MacroConstants, Measurements {
 			case MATCHES: value = matches(null); break;
 			case GET_STRING_WIDTH: value = getStringWidth(); break;
 			case FIT: value = fit(); break;
-			case OVERLAY: value = overlay(); break;
+			case OVERLAY: value = doOverlay(); break;
 			case SELECTION_CONTAINS: value = selectionContains(); break;
 			case PLOT: value = doPlot(); break;
 			default:
@@ -6776,7 +6776,7 @@ public class Functions implements MacroConstants, Measurements {
 			IJ.renameResults(arg1);
 	}
 
-	double overlay() {
+	double doOverlay() {
 		interp.getToken();
 		if (interp.token!='.')
 			interp.error("'.' expected");

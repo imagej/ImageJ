@@ -68,7 +68,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	/** Display image containing binary masks of measured particles. */
 	public static final int SHOW_MASKS = 4096;
 
-	/** Use 4-connected particle tracing. */
+	/** Use 4-connected particle tracing. In a macro, add "four" to the options string. */
 	public static final int FOUR_CONNECTED = 8192;
 
 	/** Replace original image with masks. */

@@ -1354,7 +1354,7 @@ public class Interpreter implements MacroConstants {
 		}
 	}
 
-	void error (String message) {
+	void error(String message) {
 		errorMessage = message;
 		if (ignoreErrors)
 			return;
@@ -1373,9 +1373,23 @@ public class Interpreter implements MacroConstants {
 			instance = null;
 		if (showMessage && message!=null) {
 			String line = getErrorLine();
+			String originalLine = line;
 			done = true;
-			if (line.length()>120)
-				line = line.substring(0,119)+"...";			
+			int max = 90;
+			int len = line.length();
+			if (len>max) {
+				StringBuilder sb = new StringBuilder(len+50);
+				int count = 0;
+				for (int i=0; i<len; i++){
+					sb.append(line.charAt(i));
+					count++;
+					if (count>=max && i<len-7) {
+						sb.append("\n  ");
+						count = 0;
+					}
+				}
+				line = sb.toString();
+			}
 			Frame f = WindowManager.getFrame("Debug");			
 			TextPanel panel = null;
 			if (showVariables && f!=null && (f instanceof TextWindow)) { //clear previous content
@@ -1398,7 +1412,7 @@ public class Interpreter implements MacroConstants {
 				TextWindow debugWindow = (TextWindow)f;
 				debugWindow.append("\n---\t\t---\nError:\t\t" + message + " in line "+lineNumber + ":");
 				debugWindow.append(calledFrom + "\t\t");	
-				debugWindow.append("\t\t"+line);
+				debugWindow.append("\t\t"+originalLine);
 			}			
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 		}
