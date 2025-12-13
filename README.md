@@ -36,6 +36,10 @@ Where `1.53j` is the version of ImageJ you would like to use:
 
 ## Building from source
 
+### Prerequisites
+
+It is recommended to build ImageJ with OpenJDK 8 or 11. Building with newer versions (17, 21, 25) is not currently supported, due to ImageJ bytecode targeting Java 1.6 as minimum Java version.
+
 ### With Ant
 
 The [Apache Ant] utility will compile and run ImageJ using the
