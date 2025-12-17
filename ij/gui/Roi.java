@@ -55,7 +55,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public static final int FERET_ARRAYSIZE = 16; // Size of array with Feret values
 	public static final int FERET_ARRAY_POINTOFFSET = 8; // Where point coordinates start in Feret array
 	private static final String NAMES_KEY = "group.names";
-	private static final int MAX_ROI_GROUP = Integer.MAX_VALUE - 10; // limit the size of the array for the group name
+	private static final int MAX_ROI_GROUP = 65535; // limit to uint16 max value
 
 	static final int NO_MODS=0, ADD_TO_ROI=1, SUBTRACT_FROM_ROI=2; // modification states
 
