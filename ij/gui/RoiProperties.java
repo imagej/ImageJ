@@ -419,7 +419,7 @@ public class RoiProperties implements TextListener, WindowListener {
 		TextField tf = (TextField) e.getSource();
 		String str = tf.getText();
 		double group = Tools.parseDouble(str, Double.NaN);
-		if (!Double.isNaN(group) && group>=0 && group<=255) {
+		if (!Double.isNaN(group) && group>=0 && group<=Roi.MAX_ROI_GROUP) {
 			roi.setGroup((int)group);
 			String name = Roi.getGroupName((int)group);
 			if (name==null)

@@ -55,6 +55,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	public static final int FERET_ARRAYSIZE = 16; // Size of array with Feret values
 	public static final int FERET_ARRAY_POINTOFFSET = 8; // Where point coordinates start in Feret array
 	private static final String NAMES_KEY = "group.names";
+	public static final int MAX_ROI_GROUP = 65535; // limit to uint16 max value
 
 	static final int NO_MODS=0, ADD_TO_ROI=1, SUBTRACT_FROM_ROI=2; // modification states
 
@@ -1807,7 +1808,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	 * @see #getGroupColor
 	*/
 	public static void setDefaultGroup(int group) {
-		if (group<0 || group>255)
+		if (group<0 || group>MAX_ROI_GROUP)
 			throw new IllegalArgumentException("Invalid group: "+group);
 		defaultGroup = group;
 		groupColor = getGroupColor(group);
@@ -1820,7 +1821,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 
 	/** Returns the group name associtated with the specified group. */
 	public static String getGroupName(int groupNumber) {
-		if (groupNumber<1 || groupNumber>255)
+		if (groupNumber<1 || groupNumber>MAX_ROI_GROUP)
 			return null;
 		if (groupNames==null && groupNamesString==null)
 			return null;
@@ -1835,7 +1836,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	}
 
 	public static synchronized void setGroupName(int groupNumber, String name) {
-		if (groupNumber<1 || groupNumber>255)
+		if (groupNumber<1 || groupNumber>MAX_ROI_GROUP)
 			return;
 		if (groupNamesString==null && groupNames==null)
 			groupNames = new String[groupNumber];
@@ -1884,8 +1885,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 
 	/** Sets the group of this Roi, and updates stroke color accordingly. */
 	public void setGroup(int group) {
-		if (group<0 || group>255)
-			throw new IllegalArgumentException("Invalid group: "+group);
+		if (group<0 || group>MAX_ROI_GROUP)
+			group = 0;
 		if (group>0)
 			setStrokeColor(getGroupColor(group));
 		if (group==0 && this.group>0)

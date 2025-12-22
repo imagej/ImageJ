@@ -5,11 +5,20 @@
 </head>
 <body>
 
-<li> <u>1.54s6 2 October 2025</u>
+<li> <u>1.54s11 21 December 2025</u>
 <ul>
+<li> Thanks to Curtis Rueden, increased the maximum ROI group
+number from 255 to 65535.
 <li> Thanks to Bram van den Broek, macro error messages longer
 than 90 characters are displayed on multiple lines and the full
 message is displayed in the Debug window.
+<li> Thanks to Michael Schmid, the
+call("ij.plugin.tool.BrushTool.setBrushWidth",width)
+macro function now works when the Brush Options dialog is
+not open, and it is now recordable.
+<li> Thanks to Jerome Mutterer, fixed regression that caused
+"Show All" in the ROI Manager to not work as expected with
+composite images.
 </ul>
 
 <li> <u>1.54r 25 September 2025</u>

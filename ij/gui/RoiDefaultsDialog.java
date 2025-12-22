@@ -54,7 +54,7 @@ public class RoiDefaultsDialog implements PlugIn, DialogListener {
 		int group = (int)gd.getNextNumber();
 		Vector stringFields = gd.getStringFields();
 		TextField nameField = (TextField)(stringFields.get(0));
-		if (group>=0 && group<=255 && group!=currentGroup) {
+		if (group>=0 && group<=Roi.MAX_ROI_GROUP && group!=currentGroup) {
 			Roi.setDefaultGroup(group);
 			String name = getGroupName(group);
 			nameField.setText(name);

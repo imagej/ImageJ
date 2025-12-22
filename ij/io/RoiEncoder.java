@@ -15,7 +15,7 @@ import java.awt.geom.*;
 public class RoiEncoder {
 	static final int HEADER_SIZE = 64;
 	static final int HEADER2_SIZE = 64;
-	static final int VERSION = 228; // v1.52t (roi groups, scale stroke width)
+	static final int VERSION = 229; // v1.54s (extended roi groups via uint16)
 	private String path;
 	private OutputStream f;
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, 
@@ -423,7 +423,12 @@ public class RoiEncoder {
 			putProps(roi, hdr2Offset);
 		if (countersSize>0)
 			putPointCounters(roi, hdr2Offset);
-		putByte(hdr2Offset+RoiDecoder.GROUP, roi.getGroup());
+		int group = roi.getGroup();
+		if (group > 255) {
+			putByte(hdr2Offset+RoiDecoder.GROUP, 0);  // marker for extended group
+			putShort(hdr2Offset+RoiDecoder.GROUP_EXTENDED, group);
+		} else
+			putByte(hdr2Offset+RoiDecoder.GROUP, group);
 	}
 
 	void putName(Roi roi, int hdr2Offset) {

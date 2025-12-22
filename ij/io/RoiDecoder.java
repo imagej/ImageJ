@@ -89,6 +89,7 @@ public class RoiDecoder {
 	public static final int ROI_PROPS_OFFSET = 40;
 	public static final int ROI_PROPS_LENGTH = 44;
 	public static final int COUNTERS_OFFSET = 48;
+	public static final int GROUP_EXTENDED = 52;  //short (uint16) for groups > 255
 
 	// subtypes
 	public static final int TEXT = 1;
@@ -207,7 +208,11 @@ public class RoiDecoder {
 			overlayFontSize = getShort(hdr2Offset+OVERLAY_FONT_SIZE);
 			imageOpacity = getByte(hdr2Offset+IMAGE_OPACITY);
 			imageSize = getInt(hdr2Offset+IMAGE_SIZE);
-			group = getByte(hdr2Offset+GROUP);
+			int groupByte = getByte(hdr2Offset+GROUP);
+			if (version>=229 && groupByte==0 && hdr2Offset+GROUP_EXTENDED+2<=size)
+				group = getUnsignedShort(hdr2Offset+GROUP_EXTENDED);
+			else
+				group = groupByte;
 		}
 		
 		if (name!=null && name.endsWith(".roi"))

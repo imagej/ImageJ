@@ -3,6 +3,7 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.plugin.Colors;
+import ij.plugin.frame.Recorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
@@ -174,16 +175,18 @@ public class BrushTool extends PlugInTool implements Runnable {
 	}
 
 	private void setWidth(int width) {
-		if (gd==null)
-			return;
-		Vector numericFields = gd.getNumericFields();
-		TextField widthField  = (TextField)numericFields.elementAt(0);
-		widthField.setText(""+width);
-		Vector sliders = gd.getSliders();
-		Scrollbar sb = (Scrollbar)sliders.elementAt(0);
-		sb.setValue(width);
+		if (gd==null) {
+			this.width = width;
+		} else {
+			Vector numericFields = gd.getNumericFields();
+			TextField widthField  = (TextField)numericFields.elementAt(0);
+			widthField.setText(""+width);
+			Vector sliders = gd.getSliders();
+			Scrollbar sb = (Scrollbar)sliders.elementAt(0);
+			sb.setValue(width);
+		}
 	}
-			
+
 	private void setColor(Color c) {
 		if (gd==null)
 			return;
@@ -277,9 +280,16 @@ public class BrushTool extends PlugInTool implements Runnable {
 				if (imp!=null) IJ.run("Undo");
 				return true;
 			}
+			int oldWidth = width;
 			width = (int)gd.getNextNumber();
 			if (gd.invalidNumber() || width<0)
 				width = (int)Prefs.get(widthKey, 1);
+			if (width!=oldWidth && IJ.recording()) {
+				if (Recorder.scriptMode())
+					Recorder.recordCall("BrushTool.setBrushWidth("+width+");");
+				else
+					Recorder.recordString("call(\"ij.plugin.tool.BrushTool.setBrushWidth\","+width+");\n");
+			}
 			//transparency = (int)gd.getNextNumber();
 			//if (gd.invalidNumber() || transparency<0 || transparency>100)
 			//	transparency = 100;

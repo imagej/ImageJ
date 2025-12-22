@@ -337,13 +337,20 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (hyperstack) {
 				int position = roi.getPosition();
 				if (position>0) {
-					if (z==0 && imp.getNSlices()>1)
+					if (imp.getNChannels()==stackSize) {
+						c = position;
+						z = t = 0;
+					} else if (imp.getNSlices()==stackSize) {
 						z = position;
-					else if (t==0)
+						c = t = 0;
+					} else if (imp.getNFrames()==stackSize) {
 						t = position;
+						c = z = 0;
+					}
 				}
-				//IJ.log("drawOverlay: i="+i+", pos="+roi.getPosition()+" "+c+" "+z+" "+t+" "+roiManagerShowAllMode);
-				if (((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame)) || roiManagerShowAllMode || position == PointRoi.POINTWISE_POSITION)
+				boolean match = (c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame);
+				//IJ.log("drawOverlay1: i="+i+", pos="+roi.getPosition()+" "+c+" "+z+" "+t+" "+match+" "+roiManagerShowAllMode);
+				if (match || roiManagerShowAllMode || position==PointRoi.POINTWISE_POSITION)
 					drawRoi(g, roi, drawLabels?i+LIST_OFFSET:-1);
 			} else {
 				int position = stackSize>1?roi.getPosition():0;
