@@ -10,6 +10,7 @@ public class TextEncoder {
 	private ImageProcessor ip;
 	private Calibration cal;
 	private int precision;
+	private String delimiter = "\t";
 
 	/** Constructs a TextEncoder from an ImageProcessor and optional Calibration. */
 	public TextEncoder (ImageProcessor ip, Calibration cal, int precision) {
@@ -41,7 +42,7 @@ public class TextEncoder {
 				else
 					pw.print(IJ.d2s(value, precision));
 				if (x!=(width-1))
-					pw.print("\t");
+					pw.print(delimiter);
 			}
 			pw.println();
 			if (y%inc==0) IJ.showProgress((double)y/height);
@@ -49,6 +50,10 @@ public class TextEncoder {
 		pw.close();
 		IJ.showProgress(1.0);
 		//IJ.showStatus("");
+	}
+	
+	public void setDelimiter(String delimiter) {
+		this.delimiter = delimiter;
 	}
 	
 }

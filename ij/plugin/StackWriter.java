@@ -141,8 +141,12 @@ public class StackWriter implements PlugIn {
 			}
 			if (label==null)
 				path = directory+name+digits+extension;
-			else
-				path = directory+label+extension;
+			else {
+				if (label.toLowerCase().endsWith(".tiff") && ".tif".equals(extension))
+					path = directory+label;
+				else
+					path = directory+label+extension;
+			}
 			if (i==1) {
 				File f = new File(path);
 				if (f.exists()) {
@@ -155,7 +159,7 @@ public class StackWriter implements PlugIn {
 					}
 				}
 			}
-			if (Recorder.record)
+			if (IJ.recording())
 				Recorder.disablePathRecording();
 			imp2.setOverlay(null);
 			if (overlay!=null && format.equals("tiff")) {
@@ -221,7 +225,7 @@ public class StackWriter implements PlugIn {
 			useLabels = gd.getNextBoolean();
 		else
 			useLabels = false;
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			String options2 = "format="+format;
 			if (nameChanged)
 				options2 += " name="+name;
@@ -261,4 +265,3 @@ public class StackWriter implements PlugIn {
 	}
 	
 }
-

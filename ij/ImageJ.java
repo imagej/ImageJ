@@ -78,8 +78,8 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
-	public static final String VERSION = "1.54h";
-	public static final String BUILD = "2";
+	public static final String VERSION = "1.54s";
+	public static final String BUILD = "11";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -675,7 +675,7 @@ public class ImageJ extends Frame implements ActionListener,
 		if (IJ.isMacintosh() && !quitting) {
 			IJ.wait(10); // may be needed for Java 1.4 on OS X
 			MenuBar mb = Menus.getMenuBar();
-			if (mb!=null && mb!=getMenuBar()) {
+			if (mb!=null && mb!=getMenuBar() && !IJ.isMacro()) {
 				setMenuBar(mb);
 				Menus.setMenuBarCount++;
 				//if (IJ.debugMode) IJ.log("setMenuBar: "+Menus.setMenuBarCount);

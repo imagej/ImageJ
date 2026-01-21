@@ -27,7 +27,9 @@ import java.awt.image.*;
 		text[6] = "ImageJ is in the public domain";
 		ImageProcessor ip = null;
 		ImageJ ij = IJ.getInstance();
-		URL url = ij .getClass() .getResource("/about.jpg");
+		if (ij==null)
+			return;
+		URL url = ij.getClass().getResource("/about.jpg");
 		if (url!=null) {
 			Image img = null;
 			try {img = ij.createImage((ImageProducer)url.getContent());}

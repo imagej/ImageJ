@@ -166,7 +166,7 @@ public class Prefs {
 	public static boolean autoRunExamples = true;
 	/** Ignore stack positions when displaying points. */
 	public static boolean showAllPoints;
-	/** Set MenuBar on Macs running Java 8. */
+	/** Show ImageJ menu bar on image window activation on Macs. */
 	public static boolean setIJMenuBar = IJ.isMacOSX();
 	/** "ImageJ" window is always on top. */
 	public static boolean alwaysOnTop;
@@ -195,6 +195,10 @@ public class Prefs {
 	public static boolean fullRange16bitInversions;
 	/** Calibrate image type conversions */
 	public static boolean calibrateConversions;
+	/** Open grayscale RGB JPEGs as RGB */
+	public static boolean openGrayscaleJpegsAsRGB;
+	/** Scroll stacks using mouse wheel */
+	public static boolean mouseWheelStackScrolling = true;
 
 	//Save location of moved image windows */	
 	//public static boolean saveImageLocation = true;
@@ -377,9 +381,9 @@ public class Prefs {
 	public static String getImageJDir() {
 		String path = Menus.getImageJPath();
 		if (path==null) {
-			String ijPath = getPluginsDirProperty();
-			//if (ijPath==null)
-			//	ijPath = ImageJDir;
+			String ijPath = ImageJDir;
+			if (ijPath==null)
+				ijPath = getPluginsDirProperty();
 			if (ijPath==null)
 				ijPath = System.getProperty("user.dir");
 			return ijPath + File.separator;
@@ -438,7 +442,7 @@ public class Prefs {
 
 	/** Sets the path to the ImageJ directory. */
 	static void setHomeDir(String path) {
-		if (path.endsWith(File.separator))
+		if (path.endsWith(File.separator) || path.endsWith("/"))
 			path = path.substring(0, path.length()-1);
 		ImageJDir = path;
 	}

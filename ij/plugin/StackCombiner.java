@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import ij.io.FileInfo;
 import java.awt.*;
 
 /**
@@ -24,14 +25,25 @@ public class StackCombiner implements PlugIn {
 			error();
 			return;
 		}
+		imp1.setDisplayMode(IJ.COLOR);
+		imp2.setDisplayMode(IJ.COLOR);
+		if (LUT.LutsDiffer(imp1,imp2)) {
+			RGBStackConverter.convertToRGB(imp1);
+			RGBStackConverter.convertToRGB(imp2);
+		}
 		int[] dim1 = imp1.getDimensions();
 		int[] dim2 = imp2.getDimensions();
+		boolean isHyperStack1 = imp1.isHyperStack() || imp1.isComposite();
+		boolean isHyperStack2 = imp2.isHyperStack() || imp2.isComposite();
 		if (imp1.isHyperStack() || imp2.isHyperStack()) {
 			if (dim1[2]!=dim2[2] || dim1[3]!=dim2[3] || dim1[4]!=dim2[4]) {
 				IJ.error("StackCombiner", "Hyperstacks must have identical CZT dimensions");	
 				return;
 			}
 		}
+		LUT[] luts = null;
+		if (imp1.isComposite())
+			luts = imp1.getLuts();
 		ImageStack stack1 = imp1.getStack();
 		ImageStack stack2 = imp2.getStack();
 		ImageStack stack3 = vertical?combineVertically(stack1, stack2):combineHorizontally(stack1, stack2);
@@ -41,16 +53,19 @@ public class StackCombiner implements PlugIn {
 		imp2.close();
 		ImagePlus imp3 = imp1.createImagePlus();
 		imp3.setStack(stack3);
-		if (imp1.isHyperStack())
+		if (isHyperStack1)
 			imp3.setDimensions(dim1[2],dim1[3],dim1[4]);
 		if (imp1.isComposite()) {
 			imp3 = new CompositeImage(imp3, imp1.getCompositeMode());
 			imp3.setDimensions(dim1[2],dim1[3],dim1[4]);
+			if (luts!=null)
+				((CompositeImage)imp3).setLuts(luts);
+			((CompositeImage)imp3).resetDisplayRanges();
 		}
 		imp3.setTitle("Combined Stacks");
 		imp3.show();
 	}
-	
+		
 	public ImageStack combineHorizontally(ImageStack stack1, ImageStack stack2) {
 		int d1 = stack1.getSize();
 		int d2 = stack2.getSize();

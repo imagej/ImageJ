@@ -72,7 +72,7 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 			case 13: mode = Blitter.MAX; break;
 		}
 		Roi.setPasteMode(mode);
-		if (Recorder.record)
+		if (IJ.recording())
 			Recorder.record("setPasteMode", pasteMode.getSelectedItem());
 		ImagePlus imp = WindowManager.getCurrentImage();
 	}

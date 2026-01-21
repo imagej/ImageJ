@@ -7,7 +7,7 @@ import java.awt.image.ColorModel;
 /**
 This class contains a Java implementation of the Fast Hartley
 Transform. It is based on Pascal code in NIH Image contributed 
-by Arlo Reeves (http://imagej.nih.gov/ij/docs/ImageFFT/).
+by Arlo Reeves (http://imagej.net/ij/docs/ImageFFT/).
 The Fast Hartley Transform was restricted by U.S. Patent No. 4,646,256, 
 but was placed in the public domain by Stanford University in 1995 
 and is now freely available.

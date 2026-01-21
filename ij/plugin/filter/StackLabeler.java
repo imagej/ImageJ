@@ -218,7 +218,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 				frame = pos[1];
 		}
 		if (useOverlay) {
-			if (image==1) {
+			if (image==1 || previewing) {
 				overlay = new Overlay();
 				if (baseOverlay!=null) {
 					for (int i=0; i<baseOverlay.size(); i++)

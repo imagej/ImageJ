@@ -68,7 +68,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	/** Display image containing binary masks of measured particles. */
 	public static final int SHOW_MASKS = 4096;
 
-	/** Use 4-connected particle tracing. */
+	/** Use 4-connected particle tracing. In a macro, add "four" to the options string. */
 	public static final int FOUR_CONNECTED = 8192;
 
 	/** Replace original image with masks. */
@@ -256,6 +256,11 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		processStack = (flags&DOES_STACKS)!=0;
 		slice = 0;
 		saveRoi = imp.getRoi();
+		Rectangle b = saveRoi!=null?saveRoi.getBounds():null;
+		if (b!=null && b.x==0 && b.y==0 && b.width==imp.getWidth() && b.height==imp.getHeight()) {
+			imp.deleteRoi();
+			saveRoi = null;
+		}
 		saveSlice = imp.getCurrentSlice();
 		if (saveRoi!=null && saveRoi.isArea())
 			exclusionRoi = saveRoi;
@@ -912,7 +917,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (compositeRois && floodFill && mask!=null) {
 			mask.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
 			Roi roi2 = new ThresholdToSelection().convert(mask);
-			if (roi2!=null && (roi2 instanceof ShapeRoi)) {
+			if (roi2!=null) {
 				roi2.setLocation(roi.getXBase(), roi.getYBase());
 				roi = roi2;
 			}
@@ -1153,11 +1158,16 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			Analyzer.lastParticle = Analyzer.getCounter()-1;
 		} else
 			Analyzer.firstParticle = Analyzer.lastParticle = 0;
-		if (showResults && rt.size()==0 && !(IJ.isMacro()||calledByPlugin) && (!processStack||slice==imp.getStackSize())) {
+		if (showResults && rt.size()==0 && !(calledByPlugin) && (!processStack||slice==imp.getStackSize())) {
 			int digits = (int)level1==level1&&(int)level2==level2?0:2;
 			String range = IJ.d2s(level1,digits)+"-"+IJ.d2s(level2,digits);
 			String assummed = noThreshold?"assumed":"";
-			IJ.showMessage("Particle Analyzer", "No particles were detected. The "+assummed+"\nthreshold ("+range+") may not be correct.");
+			assummed += assummed.length()>0&&!IJ.isMacro()?"\n":"";
+			String msg = "No particles detected. The "+assummed+"threshold ("+range+") may not be correct.";
+			if (IJ.isMacro()) {
+				if (assummed.length()>0) IJ.log(msg);
+			} else 
+				IJ.showMessage("Particle Analyzer", msg);
 		}
 	}
 	
@@ -1189,7 +1199,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	
 	/** Sets the RoiManager to be used by the next ParticleAnalyzer 
 		instance. There is a JavaScript example at
-		http://imagej.nih.gov/ij/macros/js/HiddenRoiManager.js
+		http://imagej.net/ij/macros/js/HiddenRoiManager.js
 	*/
 	public static void setRoiManager(RoiManager manager) {
 		staticRoiManager = manager;

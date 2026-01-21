@@ -72,7 +72,7 @@ public class ZProjector implements PlugIn {
 	/** Performs projection using the specified method and stack range, and returns
 		 the result, where 'method' is "avg", "min", "max", "sum", "sd" or "median".
 		Add " all" to 'method' to project all hyperstack time points. <br>
-		Example: http://imagej.nih.gov/ij/macros/js/ProjectionDemo.js
+		Example: http://imagej.net/ij/macros/js/ProjectionDemo.js
 	*/
 	 public static ImagePlus run(ImagePlus imp, String method, int startSlice, int stopSlice) {
     	ZProjector zp = new ZProjector(imp);
@@ -659,20 +659,23 @@ public class ZProjector implements PlugIn {
 		int d = stack.getSize();
 		ImagePlus projection = IJ.createImage(makeTitle(), "32-bit Black", w, h, 1);
 		ImageProcessor ip = projection.getProcessor();
-		for (int x=0; x<w; x++) {
-			for (int y=0; y<h; y++) {
-				double sum = 0.0;
-				int count = 0;
-				for (int z=startSlice-1; z<stopSlice; z+=increment) {
-					double value = stack.getVoxel(x, y, z);
-					if (!Double.isNaN(value)) {
-						sum += value;
-						count++;
-					}
-				}
-				ip.setf(x, y, (float)(sum/count));
+		double[] sum = new double[w*h];
+		int[] count = new int[w*h];
+		for (int z=startSlice; z<=stopSlice; z+=increment) {
+		    ImageProcessor stackIp = stack.getProcessor(z);
+		    for (int y=0, p=0; y<h; y++) {
+			for (int x=0; x<w; x++, p++) {				
+			    float value = stackIp.getPixelValue(x, y);
+			    if (!Double.isNaN(value)) {
+				sum[p] += value;
+				count[p]++;
+			    }
 			}
+		    }
 		}
+		for (int y=0, p=0; y<h; y++)
+		    for (int x=0; x<w; x++, p++)
+				ip.setf(x, y, (float)(sum[p]/count[p]));
 		ip.resetMinAndMax();
 		return projection;
 	}
@@ -864,5 +867,3 @@ public class ZProjector implements PlugIn {
     } // end StandardDeviation
 
 }  // end ZProjection
-
-

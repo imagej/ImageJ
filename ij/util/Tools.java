@@ -132,6 +132,37 @@ import java.security.MessageDigest;
 			a[i] += value;
 	}
 
+	/** Returns the index of the first array element equal to the key,
+	 *  or -1 if no such element.
+	 *  This function can be also used as 'contains' by checking for
+	 *  the return value being >= 0.
+	 */
+	public static int indexOf(int[] array, int key) {
+		for (int i=0; i<array.length; i++)
+			if (array[i] == key)
+				return i;
+		return -1;
+	}
+
+	/** Returns the index of the first array element equal to the key,
+	 *  or -1 if no such element. If the key is null, returns the index
+	 *  of the first array element that is null, otherwise -1.
+	 *  This function can be also used as 'contains' by checking for
+	 *  the return value being >= 0.
+	 */
+	public static int indexOf(Object[] array, Object key) {
+		if (key != null) {
+			for (int i=0; i<array.length; i++)	
+				if (key.equals(array[i]))
+					return i;
+		} else {	// if key == null
+			for (int i=0; i<array.length; i++)
+				if (array[i] == null)
+					return i;
+		}
+		return -1;
+	}
+
 	/** Converts carriage returns to line feeds. */
 	public static String fixNewLines(String s) {
 		if (s==null)

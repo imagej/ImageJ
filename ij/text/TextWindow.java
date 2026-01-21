@@ -296,7 +296,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	public void itemStateChanged(ItemEvent e) {
 		font = null;
         setFont();
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			boolean state = monospacedButton.getState();
 			if (Recorder.scriptMode())
 				Recorder.recordCall("TextWindow.setMonospaced("+state+");");

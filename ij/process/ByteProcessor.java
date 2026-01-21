@@ -107,7 +107,7 @@ public class ByteProcessor extends ImageProcessor {
 		return createBufferedImage();
 	}
 
-	Image createBufferedImage() {
+	synchronized Image createBufferedImage() {
 		if (raster==null) {
 			SampleModel sm = getIndexSampleModel();
 			DataBuffer db = new DataBufferByte(pixels, width*height, 0);
@@ -324,7 +324,6 @@ public class ByteProcessor extends ImageProcessor {
 	public void setColor(Color color) {
 		drawingColor = color;
 		fgColor = getBestIndex(color);
-		fillValueSet = true;
 	}
 
 	/** Sets the background fill/draw color. */
@@ -337,7 +336,6 @@ public class ByteProcessor extends ImageProcessor {
 		fgColor = (int)value;
 		if (fgColor<0) fgColor = 0;
 		if (fgColor>255) fgColor = 255;
-		fillValueSet = true;
 	}
 
 	/** Returns the foreground fill/draw value. */
@@ -411,7 +409,7 @@ public class ByteProcessor extends ImageProcessor {
 		}
 	}
 
-	public void setPixels(Object pixels) {
+	public synchronized void setPixels(Object pixels) {
 		if (pixels!=null && this.pixels!=null && (((byte[])pixels).length!=this.pixels.length))
 			throw new IllegalArgumentException("");
 		this.pixels = (byte[])pixels;

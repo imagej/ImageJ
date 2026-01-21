@@ -212,34 +212,10 @@ public class Filler implements PlugInFilter, Measurements {
 			IJ.error("\"Clear Outside\" does not work with line selections.");
 			return;
 		}
- 		sliceCount++;
- 		Rectangle r = ip.getRoi();
- 		if (mask==null)
- 			makeMask(ip, r);
-   		ip.setGlobalBackgroundColor();  		
- 		int stackSize = imp.getStackSize();
- 		if (stackSize>1)
- 			ip.snapshot();
-		ip.fill();
- 		ip.reset(mask);
-		int width = ip.getWidth();
-		int height = ip.getHeight();
- 		ip.setRoi(0, 0, r.x, height);
- 		ip.fill();
- 		ip.setRoi(r.x, 0, r.width, r.y);
- 		ip.fill();
- 		ip.setRoi(r.x, r.y+r.height, r.width, height-(r.y+r.height));
- 		ip.fill();
- 		ip.setRoi(r.x+r.width, 0, width-(r.x+r.width), height);
- 		ip.fill();
- 		ip.setRoi(r); // restore original ROI
- 		if (sliceCount==stackSize) {
-			ip.setGlobalForegroundColor();
-			Roi roi = imp.getRoi();
-			imp.deleteRoi();
-			imp.updateAndDraw();
-			imp.setRoi(roi);
-		}
+		double fgValue = ip.getForegroundValue();
+   		ip.setGlobalBackgroundColor();
+   		ip.fillOutside(imp.getRoi());
+   		ip.setValue(fgValue);		
 	}
 
 	public void makeMask(ImageProcessor ip, Rectangle r) {

@@ -159,7 +159,7 @@ public class Overlay implements Iterable<Roi> {
     /** Returns on array containing the ROIs with the specified indexes. */
     public Roi[] toArray(int[] indexes) {
 		ArrayList rois = new ArrayList();
-		for (int i=0; i<size(); i++) {
+		for (int i=0; i<indexes.length; i++) {
 			if (indexes[i]>=0 && indexes[i]<size())
 				rois.add(get(indexes[i]));
 		}

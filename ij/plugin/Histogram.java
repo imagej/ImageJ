@@ -172,11 +172,11 @@ public class Histogram implements PlugIn, TextListener {
 			if (d.cancelPressed())
 				return PlugInFilter.DONE;
 			else if (d.yesPressed()) {
-				if (Recorder.record)
+				if (IJ.recording())
 					Recorder.recordOption("stack");
 				return flags+PlugInFilter.DOES_STACKS;
 			}
-			if (Recorder.record)
+			if (IJ.recording())
 				Recorder.recordOption("slice");
 		}
 		return flags;

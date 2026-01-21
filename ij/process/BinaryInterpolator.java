@@ -31,7 +31,7 @@ public class BinaryInterpolator {
 			}
 		}
 		if (firstIndex == -1) {
-			IJ.error("There must be at least one selection in order to interpolate.");
+			IJ.error("ROI Interpolator", "At least one selection required.");
 			return;
 		}
 

@@ -20,8 +20,10 @@ public class URLOpener implements PlugIn {
 	/** If 'urlOrName' is a URL, opens the image at that URL. If it is
 		a file name, opens the image with that name from the 'images.location'
 		URL in IJ_Props.txt. If it is blank, prompts for an image
-		URL and open the specified image. */
+		URL and open the specified image.
+	*/
 	public void run(String urlOrName) {
+		if (IJ.debugMode) IJ.log("URLOpener.run: "+urlOrName);
 		if (!urlOrName.equals("")) {
 			if (urlOrName.equals("cache"))
 				cacheSampleImages();
@@ -31,7 +33,7 @@ public class URLOpener implements PlugIn {
 				double startTime = System.currentTimeMillis();
 				String url = imageURL(urlOrName);
 				ImagePlus imp = new ImagePlus(url);
-				if (Recorder.record)
+				if (IJ.recording())
 					Recorder.recordCall("imp = IJ.openImage(\""+url+"\");");
 				if (imp.getType()==ImagePlus.COLOR_RGB)
 					Opener.convertGrayJpegTo8Bits(imp);
@@ -108,6 +110,8 @@ public class URLOpener implements PlugIn {
 	}
 	
 	boolean noExtension(String url) {
+		if (url.contains(".jpg?")||url.contains(".jpeg?")||url.contains(".png?"))
+			return false;
 		int lastSlash = url.lastIndexOf("/");
 		if (lastSlash==-1) lastSlash = 0;
 		int lastDot = url.lastIndexOf(".");

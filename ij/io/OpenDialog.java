@@ -44,10 +44,12 @@ public class OpenDialog {
 			path = lookupPathVariable(path);
 		}
 		if (path==null || path.equals("")) {
+			IJ.showStatus(title);
 			if (Prefs.useJFileChooser)
 				jOpen(title, getDefaultDirectory(), null);
 			else
 				open(title, getDefaultDirectory(), null);
+			IJ.showStatus("");
 			if (name!=null)
 				setDefaultDirectory(dir);
 			this.title = title;
@@ -207,7 +209,7 @@ public class OpenDialog {
 	/** Returns the selected file name. */
 	public String getFileName() {
 		if (name!=null) {
-			if (Recorder.record && recordPath && dir!=null)
+			if (IJ.recording() && recordPath && dir!=null)
 				Recorder.recordPath(title, dir+name);
 			lastName = name;
 		}

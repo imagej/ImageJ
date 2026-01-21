@@ -127,6 +127,10 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			interpolationMethod = gd.getNextChoiceIndex();
 			if (constrain && newWidth==0)
 				sizeToHeight = true;
+			String options = Macro.getOptions();
+			if (options != null && options.contains("constrain")
+					&& options.contains("height=") && !options.contains("width="))
+				sizeToHeight = true;
 			if (newWidth<=0.0 && !constrain)  newWidth = 50;
 			if (newHeight<=0.0) newHeight = 50;
 		}
@@ -138,7 +142,10 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				newHeight = (int)Math.round(newWidth*(origHeight/origWidth));
 		}
 		ip.setInterpolationMethod(interpolationMethod);
-		Undo.setup(crop?Undo.TRANSFORM:Undo.TYPE_CONVERSION, imp);
+		if (stackSize==1)
+			Undo.setup(crop?Undo.TRANSFORM:Undo.TYPE_CONVERSION, imp);
+		if (imp.getOverlay() != null)
+			Undo.saveOverlay(imp);
 			    	
 		if (roi!=null || newWidth!=origWidth || newHeight!=origHeight) {
 			try {

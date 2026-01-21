@@ -62,7 +62,7 @@ public class Executer implements Runnable {
 			}
 		}
 		try {
-			if (Recorder.record) {
+			if (IJ.recording()) {
 				Recorder.setCommand(command);
 				runCommand(command);
 				Recorder.saveCommand();

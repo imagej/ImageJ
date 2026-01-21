@@ -48,10 +48,10 @@ public class FileOpener {
 	
 	/** Opens the image and returns it has an ImagePlus object. */
 	public ImagePlus openImage() {
-		boolean wasRecording = Recorder.record;
-		Recorder.record = false;
+		boolean headless = GraphicsEnvironment.isHeadless();
+		if (!headless) Recorder.suspendRecording();
 		ImagePlus imp = open(false);
-		Recorder.record = wasRecording;
+		if (!headless) Recorder.resumeRecording();
 		return imp;
 	}
 

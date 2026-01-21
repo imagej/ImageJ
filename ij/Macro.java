@@ -157,6 +157,8 @@ public class Macro {
 	}
 	
 	public static String trimKey(String key) {
+		if (key==null)
+			return key;
 		int index = key.indexOf(" ");
 		if (index>-1)
 			key = key.substring(0,index);

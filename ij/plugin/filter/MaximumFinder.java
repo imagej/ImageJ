@@ -249,7 +249,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 
     /** Finds the image maxima and returns them as a Polygon, where
      * poly.npoints is the number of maxima. There is an example at<br>
-     * http://imagej.nih.gov/ij/macros/js/FindMaxima.js.
+     * http://imagej.net/ij/macros/js/FindMaxima.js.
      * @param ip             The input image
      * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value
      *                       from the ridge to a higher maximum

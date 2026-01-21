@@ -68,7 +68,7 @@ public class Selection implements PlugIn, Measurements {
 		else if (arg.equals("toline"))
 			areaToLine(imp); 
 		else if (arg.equals("properties"))
-			{setProperties("Properties ", imp.getRoi()); imp.draw();}
+			{setProperties("Properties ", imp); imp.draw();}
 		else if (arg.equals("band"))
 			makeBand(imp);
 		else if (arg.equals("tobox"))
@@ -245,6 +245,7 @@ public class Selection implements PlugIn, Measurements {
 		if (roi instanceof EllipseRoi)
 			return;
 		PolygonRoi p = (PolygonRoi)roi;
+		p = (PolygonRoi)p.clone();
 		Undo.setup(Undo.ROI, imp);
 		if (!segmentedSelection && p.getNCoordinates()>3) {
 			if (p.subPixelResolution())
@@ -259,6 +260,7 @@ public class Selection implements PlugIn, Measurements {
 			p.removeSplineFit();
 		else
 			p.fitSpline();
+		imp.setRoi(p);
 		imp.draw();
 		LineWidthAdjuster.update(); 
 	}
@@ -344,7 +346,6 @@ public class Selection implements PlugIn, Measurements {
 		float[] curvature = getCurvature(x, y, n);
 		Rectangle r = roi.getBounds();
 		double threshold = rodbard(length);
-		//IJ.log("trim: "+length+" "+threshold);
 		double distance = Math.sqrt((x[1]-x[0])*(x[1]-x[0])+(y[1]-y[0])*(y[1]-y[0]));
 		x[0] += r.x; y[0]+=r.y;
 		int i2 = 1;
@@ -465,7 +466,6 @@ public class Selection implements PlugIn, Measurements {
 		y = smooth(y, n);
 		float[] curvature = getCurvature(x, y, n);
 		double threshold = rodbard(length);
-		//IJ.log("trim: "+length+" "+threshold);
 		double distance = Math.sqrt((x[1]-x[0])*(x[1]-x[0])+(y[1]-y[0])*(y[1]-y[0]));
 		int i2 = 1;
 		double x1,y1,x2=0,y2=0;
@@ -776,7 +776,7 @@ public class Selection implements PlugIn, Measurements {
 				}
 			}
 		}
-		if (Recorder.record && imp.getStackSize()>1) {
+		if (IJ.recording() && imp.getStackSize()>1) {
 			if (imp.isHyperStack()) {
 				int C = imp.getChannel();
 				int Z = imp.getSlice();
@@ -800,8 +800,12 @@ public class Selection implements PlugIn, Measurements {
 		rm.allowRecording(false);
 		IJ.setKeyUp(IJ.ALL_KEYS);
 	}
-	
-	boolean setProperties(String title, Roi roi) {
+
+	/** Implements the Edit>Selection>Properties command.
+	 *  With the alt key down and a multipoint selection, shows the point counts instead. */
+	boolean setProperties(String title, ImagePlus imp) {
+		if (imp == null) return false;	//should never happen (called only from 'run', where imp!=null)
+		Roi roi = imp.getRoi();
 		if ((roi instanceof PointRoi) && Toolbar.getMultiPointMode() && IJ.altKeyDown()) {
 			((PointRoi)roi).displayCounts();
 			return true;
@@ -820,9 +824,9 @@ public class Selection implements PlugIn, Measurements {
 		Color color = roi.getStrokeColor();
 		Color fillColor = roi.getFillColor();
 		int width = (int)roi.getStrokeWidth();
-		RoiProperties rp = new RoiProperties(title, roi);
+		RoiProperties rp = new RoiProperties(title, imp, roi);
 		boolean ok = rp.showDialog();
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			boolean groupChanged = false;
 			String name2 = roi.getName();
 			if (name2==null) name2 = "";

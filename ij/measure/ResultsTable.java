@@ -383,6 +383,29 @@ public class ResultsTable implements Cloneable {
 	}
 	
 	/** Creates a ResultsTable from an image or image selection. */
+	public static ResultsTable createTableFromImage(ImagePlus imp) {
+		if (imp==null)
+			return null;
+		Roi roi = imp.getRoi();
+		ImageProcessor ip = imp.getProcessor();
+		if (roi==null || roi.getType()==Roi.RECTANGLE)
+			return createTableFromImage(ip);
+		ResultsTable rt = new ResultsTable();
+		Rectangle r = ip.getRoi();
+		for (int y=r.y; y<r.y+r.height; y++) {
+			rt.incrementCounter();
+			rt.addLabel(" ", "Y"+y);
+			for (int x=r.x; x<r.x+r.width; x++) {
+				if (roi.contains(x,y))
+					rt.addValue("X"+x, ip.getPixelValue(x,y));
+				else
+					rt.addValue("X"+x, Double.NaN);
+			}
+		}
+		return rt;
+	}
+
+	/** Creates a ResultsTable from an image or image selection. */
 	public static ResultsTable createTableFromImage(ImageProcessor ip) {
 		ResultsTable rt = new ResultsTable();
 		Rectangle r = ip.getRoi();
@@ -698,7 +721,7 @@ public class ResultsTable implements Cloneable {
 			if (columns[i]!=null) {
 				String value = getValueAsString(i,row);
 				if (quoteCommas) {
-					if (value!=null && value.contains(","))
+					if (value!=null && (value.contains(",")||value.equals("")))
 						value = "\""+value+"\"";
 				}
 				sb.append(value);
@@ -731,13 +754,8 @@ public class ResultsTable implements Cloneable {
 			String str = null;
 			if (Double.isNaN(value) && stringColumns!=null) {
 				ArrayList stringColumn = (ArrayList)stringColumns.get(Integer.valueOf(col));
-				if (stringColumn!=null && row>=0 && row<stringColumn.size()) {
-						str = (String)stringColumn.get(row);
-						if (firstValueNumeric && "".equals(str)) {
-							nValues = row;
-							break;
-						}
-				}
+				if (stringColumn!=null && row>=0 && row<stringColumn.size())
+					str = (String)stringColumn.get(row);
 			}
 			if (str!=null)
 				values[row] = new Variable(str);

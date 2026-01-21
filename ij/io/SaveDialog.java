@@ -29,10 +29,12 @@ public class SaveDialog {
 			return;
 		String defaultDir = OpenDialog.getDefaultDirectory();
 		defaultName = setExtension(defaultName, extension);
+		IJ.showStatus(title);
 		if (Prefs.useJFileChooser)
 			jSave(title, defaultDir, defaultName);
 		else
 			save(title, defaultDir, defaultName);
+		IJ.showStatus("");
 		if (name!=null && dir!=null)
 			OpenDialog.setDefaultDirectory(dir);
 		IJ.showStatus(title+": "+dir+name);
@@ -248,7 +250,7 @@ public class SaveDialog {
 	/** Returns the selected file name. */
 	public String getFileName() {
 		if (name!=null) {
-			if (Recorder.record && dir!=null)
+			if (IJ.recording() && dir!=null)
 				Recorder.recordPath(title, dir+name);
 			OpenDialog.setLastName(name);
 		}

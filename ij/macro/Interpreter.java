@@ -63,7 +63,6 @@ public class Interpreter implements MacroConstants {
 	int loopDepth;
 	static boolean tempShowMode;
 	boolean waitingForUser;
-	int selectCount;
 	
 	static TextWindow arrayWindow;
 	int inspectStkIndex = -1;
@@ -1355,7 +1354,7 @@ public class Interpreter implements MacroConstants {
 		}
 	}
 
-	void error (String message) {
+	void error(String message) {
 		errorMessage = message;
 		if (ignoreErrors)
 			return;
@@ -1374,9 +1373,23 @@ public class Interpreter implements MacroConstants {
 			instance = null;
 		if (showMessage && message!=null) {
 			String line = getErrorLine();
+			String originalLine = line;
 			done = true;
-			if (line.length()>120)
-				line = line.substring(0,119)+"...";			
+			int max = 90;
+			int len = line.length();
+			if (len>max) {
+				StringBuilder sb = new StringBuilder(len+50);
+				int count = 0;
+				for (int i=0; i<len; i++){
+					sb.append(line.charAt(i));
+					count++;
+					if (count>=max && i<len-7) {
+						sb.append("\n  ");
+						count = 0;
+					}
+				}
+				line = sb.toString();
+			}
 			Frame f = WindowManager.getFrame("Debug");			
 			TextPanel panel = null;
 			if (showVariables && f!=null && (f instanceof TextWindow)) { //clear previous content
@@ -1399,7 +1412,7 @@ public class Interpreter implements MacroConstants {
 				TextWindow debugWindow = (TextWindow)f;
 				debugWindow.append("\n---\t\t---\nError:\t\t" + message + " in line "+lineNumber + ":");
 				debugWindow.append(calledFrom + "\t\t");	
-				debugWindow.append("\t\t"+line);
+				debugWindow.append("\t\t"+originalLine);
 			}			
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 		}
@@ -1975,8 +1988,6 @@ public class Interpreter implements MacroConstants {
 				str = ""+str.length();
 			} else if (tokenString.equals("contains")) {
 				str = ""+str.contains(func.getStringArg());
-			} else if (tokenString.equals("charAt")) {
-				str = ""+str.charAt((int)func.getArg());
 			} else if (tokenString.equals("replaceAll")) {
 				str = func.replace(str);
 			} else
@@ -2000,6 +2011,11 @@ public class Interpreter implements MacroConstants {
 				case TO_UPPER_CASE: getParens(); str = str.toUpperCase(Locale.US); break;
 				case REPLACE: str = func.replace(str); break;
 				case TRIM: getParens();  str = str.trim(); break;
+				case CHARAT:
+					int index = (int)func.getArg();
+					func.checkIndex(index, 0, str.length()-1);
+					str = ""+str.charAt(index);
+					break;
 				default:
 					str = null;
 			}
@@ -2094,11 +2110,6 @@ public class Interpreter implements MacroConstants {
 		}
 		if (func.unUpdatedTable!=null)
 			func.unUpdatedTable.show(func.unUpdatedTable.getTitle());
-		if (IJ.isMacOSX() && selectCount>0 && debugger==null) {
-			Frame frame = WindowManager.getFrontWindow();
-			if (frame!=null && (frame instanceof ImageWindow))
-				ImageWindow.setImageJMenuBar((ImageWindow)frame);
-		}
 	}
 	
 	/** Aborts currently running macro. */
@@ -2519,18 +2530,7 @@ public class Interpreter implements MacroConstants {
 	}
 	
 	private static Interpreter lastInterp;
-	
-	public static boolean nonBatchMacroRunning() {
-		Interpreter interp = getInstance();
-		if (interp==null)
-			return false;
-		int count =  interp.selectCount;
-		if (interp==lastInterp)
-			interp.selectCount++;
-		lastInterp = interp;
-		return !interp.waitingForUser && interp.debugger==null && count>0 && !isBatchMode();
-	}
-	
+		
 	public void setApplyMacroTable(ResultsTable rt) {
 		applyMacroTable = rt;
 	}

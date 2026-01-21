@@ -41,15 +41,12 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		Roi roiA = imp.getRoi();
 		ImagePlus impA = imp;
 		boolean isRotatedRect = (roiA!=null &&  roiA instanceof RotatedRectRoi);
-		if (isRotatedRect) {
-			Rectangle bounds = imp.getRoi().getBounds();
-			imp.setRoi(bounds);
-		}
+		boolean roiOutside = false;
 		if (roiA!=null) {
 			Rectangle r = roiA.getBounds();
 			if (r.x>=imp.getWidth() || r.y>=imp.getHeight() || r.x+r.width<=0 || r.y+r.height<=0) {
-				IJ.error("Roi is outside image");
-				return;
+				ignoreSelection = true;
+				roiOutside = true;
 			}
 		}
 		int stackSize = imp.getStackSize();
@@ -60,12 +57,18 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		ignoreSelection = (staticIgnoreSelection||ignoreNextSelection) && Macro.getOptions()==null;
 		if (!IJ.altKeyDown()||stackSize>1) {
 			if (imp.isHyperStack() || imp.isComposite()) {
-				duplicateHyperstack(imp, newTitle);			
-				if (isRotatedRect)
+				if (roiOutside)
+					imp.deleteRoi();
+				boolean ok = duplicateHyperstack(imp, newTitle);			
+				if (ok && isRotatedRect)
 					straightenRotatedRect(impA, roiA, IJ.getImage());								
 				return;
 			} else
 				newTitle = showDialog(imp, "Duplicate...", "Title: ");
+		}
+		if (isRotatedRect) {
+			Rectangle bounds = imp.getRoi().getBounds();
+			imp.setRoi(bounds);
 		}
 		if (newTitle==null) {
 			if (isRotatedRect)
@@ -85,8 +88,11 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			imp2 = crop(imp);
 			recordCrop(imp);
 		}
-		if (ignoreSelection && roi!=null)
+		if (ignoreSelection && roi!=null) {
 			imp.setRoi(roi);
+			if (!roiOutside)
+				imp2.setRoi((Roi)roi.clone());
+		}
 		Calibration cal = imp2.getCalibration();
 		if (roi!=null && (cal.xOrigin!=0.0||cal.yOrigin!=0.0)) {
 			cal.xOrigin -= roi.getBounds().x;
@@ -94,7 +100,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		}	
 		imp2.setTitle(newTitle);
 		imp2.setProp("UniqueName","true");
-		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE) {
+		if (roi!=null && !ignoreSelection && roi.isArea() && roi.getType()!=Roi.RECTANGLE) {
 			Roi roi2 = cropRoi(imp, roi);
 			if (roi2==null)
 				return;
@@ -273,7 +279,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && !imp.getHideOverlay())
 			imp2.setOverlay(overlay.crop(rect));
-   		if (Recorder.record) {
+   		if (IJ.recording()) {
    			if (imp.getRoi()==null || ignoreSelection)
    				Recorder.recordCall("imp = imp.duplicate();");
    			else
@@ -386,7 +392,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			overlay2.crop(firstSlice, lastSlice);
 			imp2.setOverlay(overlay2);
 		}
-   		if (Recorder.record)
+   		if (IJ.recording())
    			Recorder.recordCall("imp = imp.crop(\""+firstSlice+"-"+lastSlice+"\");");
 		return imp2;
 	}
@@ -459,7 +465,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 				overlay2.crop(firstC, lastC, firstZ, lastZ, firstT, lastT);
 			imp2.setOverlay(overlay2);
 		}
-   		if (Recorder.record)
+   		if (IJ.recording())
    			Recorder.recordCall("imp = new Duplicator().run(imp, "+firstC+", "+lastC+", "+firstZ+", "+lastZ+", "+firstT+", "+lastT+");");
 		return imp2;
 	}
@@ -523,7 +529,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			if (!ignoreNextSelection) staticIgnoreSelection=ignoreSelection;
 		}
 		ignoreNextSelection = false;
-		if (Recorder.record && titleField!=null && titleField.getText().equals(sliceLabel))
+		if (IJ.recording() && titleField!=null && titleField.getText().equals(sliceLabel))
 			Recorder.recordOption("use");
 		return title;
 	}
@@ -545,10 +551,10 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		return title;
 	}
 	
-	void duplicateHyperstack(ImagePlus imp, String newTitle) {
+	boolean duplicateHyperstack(ImagePlus imp, String newTitle) {
 		newTitle = showHSDialog(imp, newTitle);
 		if (newTitle==null)
-			return;
+			return false;
 		ImagePlus imp2 = null;
 		Roi roi = imp.getRoi();
 		if (!duplicateStack) {
@@ -563,11 +569,11 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			firstT = lastT = imp.getFrame();
 		}
 		imp2 = run(imp, firstC, lastC, firstZ, lastZ, firstT, lastT);
-		if (imp2==null) return;
+		if (imp2==null) return false;
 		imp2.setTitle(newTitle);
 		if (imp2.getWidth()==0 || imp2.getHeight()==0) {
 			IJ.error("Duplicator", "Selection is outside the image");
-			return;
+			return false;
 		}
 		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE) {
 			Roi roi2 = (Roi)cropRoi(imp, roi).clone();
@@ -578,6 +584,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		imp2.setPosition(imp.getC(), imp.getZ(), imp.getT());
 		if (IJ.isMacro()&&imp2.getWindow()!=null)
 			IJ.wait(50);
+		return true;
 	}
 
 	String showHSDialog(ImagePlus imp, String newTitle) {

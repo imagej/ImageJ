@@ -225,7 +225,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 				IJ.runMacroFile("ij.jar:InvertAllLuts", null);	
 			ci.setMode(cmode);
 			ci.updateAndDraw();
-			if (Recorder.record) {
+			if (IJ.recording()) {
 				String mode = null;
 				if (index!=DIVIDER && Recorder.scriptMode()) {
 					switch (index) {
@@ -253,7 +253,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 					if (ci.getMode()==IJ.COMPOSITE) {
 						boolean[] active = ci.getActiveChannels();
 						active[i] = cb.getState();
-						if (Recorder.record) {
+						if (IJ.recording()) {
 							String str = "";
 							for (int c=0; c<ci.getNChannels(); c++)
 								str += active[c]?"1":"0";
@@ -264,7 +264,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 						}
 					} else {
 						imp.setPosition(i+1, imp.getSlice(), imp.getFrame());
-						if (Recorder.record) {
+						if (IJ.recording()) {
 							if (Recorder.scriptMode())
 								Recorder.recordCall("imp.setC("+(i+1)+");");
 							else

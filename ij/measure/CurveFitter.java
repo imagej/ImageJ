@@ -90,7 +90,7 @@ public class CurveFitter implements UserFunction{
 	"y = a*exp(bx)", "y = a*x^b",								//EXP_REGRESSION, POWER_REGRESSION
 	"y = a+bx+cx^2+dx^3+ex^4+fx^5", "y = a+bx+cx^2+dx^3+ex^4+fx^5+gx^6",
 	"y = a+bx+cx^2+dx^3+ex^4+fx^5+gx^6+hx^7", "y = a+bx+cx^2+dx^3+ex^4+fx^5+gx^6+hx^7+ix^8",
-	"y = a*exp(-(x-b)*(x-b)/(2*c*c)))",						//GAUSSIAN_NOOFFSET
+	"y = a*exp(-(x-b)*(x-b)/(2*c*c))",						//GAUSSIAN_NOOFFSET
 	"y = a*(1-exp(-b*x))",										//EXP_RECOVERY_NOOFFSET
 	"y = a*(1-exp(-b*x))^c",									//CHAPMAN
 	"y = a+b*erf((x-c)/d)"										//ERF; note that the c parameter is sqrt2 times the Gaussian

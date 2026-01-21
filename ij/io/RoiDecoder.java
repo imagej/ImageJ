@@ -89,6 +89,7 @@ public class RoiDecoder {
 	public static final int ROI_PROPS_OFFSET = 40;
 	public static final int ROI_PROPS_LENGTH = 44;
 	public static final int COUNTERS_OFFSET = 48;
+	public static final int GROUP_EXTENDED = 52;  //short (uint16) for groups > 255
 
 	// subtypes
 	public static final int TEXT = 1;
@@ -207,7 +208,11 @@ public class RoiDecoder {
 			overlayFontSize = getShort(hdr2Offset+OVERLAY_FONT_SIZE);
 			imageOpacity = getByte(hdr2Offset+IMAGE_OPACITY);
 			imageSize = getInt(hdr2Offset+IMAGE_SIZE);
-			group = getByte(hdr2Offset+GROUP);
+			int groupByte = getByte(hdr2Offset+GROUP);
+			if (version>=229 && groupByte==0 && hdr2Offset+GROUP_EXTENDED+2<=size)
+				group = getUnsignedShort(hdr2Offset+GROUP_EXTENDED);
+			else
+				group = groupByte;
 		}
 		
 		if (name!=null && name.endsWith(".roi"))
@@ -376,19 +381,20 @@ public class RoiDecoder {
 				roi.setProperties(props);
 		}
 
+		roi.setPosition(position);
+		if (channel>0 || slice>0 || frame>0)
+			roi.setPosition(channel, slice, frame);
+
 		if (version>=227) {
 			int[] counters = getPointCounters(n);
 			if (counters!=null && (roi instanceof PointRoi))
-				((PointRoi)roi).setCounters(counters);
+				((PointRoi)roi).setCounters(counters);	//must be after roi.setPosition()
 		}
 		
 		// set group (1.52t or later)
 		if (version>=228 && group>0)
 			roi.setGroup(group);
 
-		roi.setPosition(position);
-		if (channel>0 || slice>0 || frame>0)
-			roi.setPosition(channel, slice, frame);
 		decodeOverlayOptions(roi, version, options, overlayLabelColor, overlayFontSize);
 		return roi;
 	}

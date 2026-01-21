@@ -886,7 +886,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (null==g) return;
 		g.dispose();
 		showMessage(current);
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			String name = getName(current);
 			if (name!=null && name.equals("dropper")) disableRecording=true;
 			if (name!=null && !disableRecording) {
@@ -949,6 +949,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 		ColorPicker.update();
 		if (!IJ.isMacro()) setRoiColor(c);
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null)
+			imp.getProcessor().fillColorSet(false);
 	}
 
 	public static Color getBackgroundColor() {
@@ -1412,13 +1415,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	void drawTool(int tool, boolean drawDown) {
 		down[tool] = drawDown;
 		Graphics g = this.getGraphics();
+		if (g==null) return;
 		if (!drawDown) {
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		}
 		drawButton(g, tool);
-		if (null==g) return;
-		g.dispose();
+		if (null!=g)
+			g.dispose();
 	}
 
 	boolean isLine(int tool) {
@@ -1734,7 +1738,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 	/** Adds a tool to the toolbar. The 'toolTip' string is displayed in the status bar
 		 when the mouse is over the tool icon. The 'toolTip' string may include icon 
-		(http://imagej.nih.gov/ij/developer/macro/macros.html#tools).
+		(http://imagej.net/ij/developer/macro/macros.html#tools).
 		Returns the tool ID, or -1 if all tool slots are in use. */
 	public int addTool(String toolTip) {
 		int index = toolTip.indexOf('-');

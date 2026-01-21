@@ -100,8 +100,8 @@ public class RoiRotator implements PlugIn {
 			double dy = ycenter-poly.ypoints[i];
 			double radius = Math.sqrt(dx*dx+dy*dy);
 			double a = Math.atan2(dy, dx);
-			poly.xpoints[i] = (float)(xcenter + radius*Math.cos(a+theta));
-			poly.ypoints[i] = (float)(ycenter - radius*Math.sin(a+theta));
+			poly.xpoints[i] = (float)(xcenter+radius*Math.cos(a+theta));
+			poly.ypoints[i] = (float)(ycenter-radius*Math.sin(a+theta));
 		}
 		Roi roi2 = null;
 		if (type==Roi.LINE)

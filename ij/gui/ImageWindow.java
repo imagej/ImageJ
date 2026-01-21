@@ -601,7 +601,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 
 	public void windowActivated(WindowEvent e) {
 		if (IJ.debugMode) IJ.log("windowActivated: "+imp.getTitle());
-		if (IJ.isMacOSX())
+		if (IJ.isMacOSX() && Prefs.setIJMenuBar && !IJ.isMacro())
 			setImageJMenuBar(this);
 		if (imp==null)
 			return;
@@ -753,14 +753,13 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (mb!=null && mb==win.getMenuBar())
 			setMenuBar = false;
 		setMenuBarTime = 0L;
-		if (setMenuBar && ij!=null && !ij.quitting() && !Interpreter.nonBatchMacroRunning()) {
+		if (setMenuBar && ij!=null && !ij.quitting()) {
 			IJ.wait(10); // may be needed for Java 1.4 on OS X
 			long t0 = System.currentTimeMillis();
 			win.setMenuBar(mb);
 			long time = System.currentTimeMillis()-t0;
 			setMenuBarTime = time;
 			Menus.setMenuBarCount++;
-			//if (IJ.debugMode) IJ.log("setMenuBar: "+time+"ms ("+Menus.setMenuBarCount+")");
 			if (time>2000L)
 				Prefs.setIJMenuBar = false;
 		}

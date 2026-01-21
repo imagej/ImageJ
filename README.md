@@ -1,4 +1,4 @@
-[![](https://github.com/imagej/ImageJ/actions/workflows/build-main.yml/badge.svg)](https://github.com/imagej/ImageJ/actions/workflows/build-main.yml)
+[![Build Status](https://github.com/imagej/ImageJ/actions/workflows/build.yml/badge.svg)](https://github.com/imagej/ImageJ/actions/workflows/build.yml)
 
 # ImageJ
 
@@ -29,12 +29,16 @@ To use ImageJ as a library in your [Maven] project, add the dependency:
 
 Where `1.53j` is the version of ImageJ you would like to use:
 
-* Versions up to 1.48q are [in the SciJava Maven repository](https://maven.scijava.org/content/repositories/releases/net/imagej/ij/).
-* Versions starting with 1.48r are [on Maven Central](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22net.imagej%22%20AND%20a%3A%22ij%22).
+* Versions up to 1.48q are [in the SciJava Maven repository](https://maven.scijava.org/#browse/search/generic=group.raw%3Dnet.imagej%20AND%20name.raw%3Dij).
+* Versions starting with 1.48r are [on Maven Central](https://central.sonatype.com/artifact/net.imagej/ij/versions).
 * Be aware that versions prior to 1.53k may not identically match the
   corresponding release tags here in this repository.
 
 ## Building from source
+
+### Prerequisites
+
+It is recommended to build ImageJ with OpenJDK 8 or 11. Building with newer versions (17, 21, 25) is not currently supported, due to ImageJ bytecode targeting Java 1.6 as minimum Java version.
 
 ### With Ant
 

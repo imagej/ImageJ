@@ -96,7 +96,7 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 		}
 		if (runCount==0)
 			applyMacro();
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			String macro = getMacroCode();
 			macro = macro.replaceAll("\n", " ");
 			if (Recorder.scriptMode()) {

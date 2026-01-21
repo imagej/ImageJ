@@ -78,6 +78,7 @@ public abstract class ImageProcessor implements Cloneable {
 	private boolean noReset;
 	private boolean histogram16;
 	private boolean addOne;
+	private boolean fillColorSet;
 
     ProgressBar progressBar;
 	protected int width, snapshotWidth;
@@ -114,7 +115,6 @@ public abstract class ImageProcessor implements Cloneable {
 	protected boolean minMaxSet;
 	protected static double seed = Double.NaN;
 	protected static Random rnd;
-	protected boolean fillValueSet;
 
 	protected void showProgress(double percentDone) {
 		if (progressBar!=null)
@@ -441,9 +441,9 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Returns the default fill/draw value. */
 	public abstract double getForegroundValue();
 
-	/** Returns 'true' if the fill/draw value has been set. */
+	/** Returns 'true' if the fill/draw value has been set in a macro. */
 	public boolean fillValueSet() {
-		return fillValueSet;
+		return fillColorSet;
 	}
 
 	/** Sets the background fill value used by the rotate() and scale() methods. */
@@ -1057,22 +1057,22 @@ public abstract class ImageProcessor implements Cloneable {
 					v = i ^ (int)value;
 					break;
 				case GAMMA:
-					v = (int)(Math.exp(Math.log(i/255.0)*value)*255.0);
+					v = (int)Math.round(Math.exp(Math.log(i/255.0)*value)*255.0);
 					break;
 				case LOG:
 					if (i==0)
 						v = 0;
 					else
-						v = (int)(Math.log(i) * SCALE);
+						v = (int)Math.round(Math.log(i) * SCALE);
 					break;
 				case EXP:
-					v = (int)(Math.exp(i/SCALE));
+					v = (int)Math.round(Math.exp(i/SCALE));
 					break;
 				case SQR:
 						v = i*i;
 					break;
 				case SQRT:
-						v = (int)Math.sqrt(i);
+						v = (int)Math.round(Math.sqrt(i));
 					break;
 				case MINIMUM:
 					if (i<value)
@@ -1100,8 +1100,10 @@ public abstract class ImageProcessor implements Cloneable {
 
 	/**
 	 * Returns an array containing the pixel values along the
-	 * line starting at (x1,y1) and ending at (x2,y2). Pixel
-	 * values are sampled using getInterpolatedValue(double,double)
+	 * line starting at (x1,y1) and ending at (x2,y2). The end
+	 * point is included, and the interval is chosen such that
+	 * the distance between successive points is close to 1.0 pixel.
+	 * Pixel values are sampled using getInterpolatedValue(double,double)
 	 * if interpolation is enabled or getPixelValue(int,int) if it is not.
 	 * For byte and short images, returns calibrated values if a
 	 * calibration table has been set using setCalibrationTable().
@@ -1117,19 +1119,17 @@ public abstract class ImageProcessor implements Cloneable {
 		int n = (int)Math.round(Math.sqrt(dx*dx + dy*dy));
 		double xinc = n>0?dx/n:0;
 		double yinc = n>0?dy/n:0;
-		if (!((xinc==0&&n==height) || (yinc==0&&n==width)))
-			n++;
-		double[] data = new double[n];
+		double[] data = new double[n+1];
 		double rx = x1;
 		double ry = y1;
 		if (interpolate) {
-			for (int i=0; i<n; i++) {
+			for (int i=0; i<=n; i++) {
 				data[i] = getInterpolatedValue(rx, ry);
 				rx += xinc;
 				ry += yinc;
 			}
 		} else {
-			for (int i=0; i<n; i++) {
+			for (int i=0; i<=n; i++) {
 				data[i] = getPixelValue((int)Math.round(rx), (int)Math.round(ry));
 				rx += xinc;
 				ry += yinc;
@@ -2972,4 +2972,9 @@ public abstract class ImageProcessor implements Cloneable {
 		return new IndexColorModel(8, 256, r, g, b);
 	}
 	
+	/** For internal use */
+	public void fillColorSet(boolean set) {
+		fillColorSet = set;
+	}
+
 }

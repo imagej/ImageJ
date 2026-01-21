@@ -360,11 +360,11 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener {
 		Color c = new Color(r, g, b);
 		if (setBackground) {
 			Toolbar.setBackgroundColor(c);
-			if (Recorder.record)
+			if (IJ.recording())
 				Recorder.setBackgroundColor(c);
 		} else {
 			Toolbar.setForegroundColor(c);
-			if (Recorder.record)
+			if (IJ.recording())
 				Recorder.setForegroundColor(c);
 		}
 	}

@@ -216,7 +216,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			panel.add(new Label(" "+units));
 			add(panel, c);
 		}
-		if (Recorder.record || macro)
+		if (IJ.recording() || macro)
 			saveLabel(tf, label);
 	}
 
@@ -307,7 +307,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		defaultStrings.addElement(defaultText);
 		tf.setDropTarget(null);
 		new DropTarget(tf, new TextDropTarget(tf));
-		if (Recorder.record || macro)
+		if (IJ.recording() || macro)
 			saveLabel(tf, label);
 	}
 
@@ -327,7 +327,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	 */
 	public void addDirectoryField(String label, String defaultPath) {
 		int columns = defaultPath!=null?Math.max(defaultPath.length(),25):25;
-		if (columns>50) columns=50;
+		if (columns>60) columns=60;
 		addDirectoryField(label, defaultPath, columns);
 	}
 
@@ -348,7 +348,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		panel.add(button);
 		layout.setConstraints(panel, constraints);
 		add(panel);
-		if (Recorder.record || macro)
+		if (IJ.recording() || macro)
 			saveLabel(panel, label);
 	}
 
@@ -360,6 +360,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	 */
 	 public void addFileField(String label, String defaultPath) {
 		int columns = defaultPath!=null?Math.max(defaultPath.length(),25):25;
+		if (columns>60) columns=60;
 		addFileField(label, defaultPath, columns);
 	 }
 
@@ -379,7 +380,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		panel.add(button);
 		layout.setConstraints(panel, constraints);
 		add(panel);
-		if (Recorder.record || macro)
+		if (IJ.recording() || macro)
 			saveLabel(panel, label);
 	}
 
@@ -626,7 +627,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	* @param labels			the labels
 	* @param defaultValues	the initial states
 	* @param headings	the column headings
-	* Example: http://imagej.nih.gov/ij/plugins/multi-column-dialog/index.html
+	* Example: http://imagej.net/ij/plugins/multi-column-dialog/index.html
 	*/
 	public void addCheckboxGroup(int rows, int columns, String[] labels, boolean[] defaultValues, String[] headings) {
 		Panel panel = new Panel();
@@ -667,7 +668,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				checkbox.addElement(cb);
 				cb.setState(defaultValues[i1]);
 				cb.addItemListener(this);
-				if (Recorder.record || macro)
+				if (IJ.recording() || macro)
 					saveLabel(cb, labels[i1]);
 				if (IJ.isLinux()) {
 					Panel panel2 = new Panel();
@@ -723,7 +724,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.anchor = GridBagConstraints.WEST;
 		c.insets = new Insets(insets.top, insets.left, 0, 0);
 		add(panel, c);
-		if (Recorder.record || macro)
+		if (IJ.recording() || macro)
 			saveLabel(cg, label);
 	}
 
@@ -770,7 +771,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		choice.addElement(thisChoice);
 		int index = thisChoice.getSelectedIndex();
 		defaultChoiceIndexes.addElement(Integer.valueOf(index));
-		if (Recorder.record || macro)
+		if (IJ.recording() || macro)
 			saveLabel(thisChoice, label);
 	}
 
@@ -950,6 +951,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			sliderDigits = new Vector(5);
 		}
 		Scrollbar s = new Scrollbar(Scrollbar.HORIZONTAL, (int)defaultValue, 1, (int)minValue, (int)maxValue+1);
+		if (IJ.debugMode) IJ.log("Scrollbar: "+scale+" "+defaultValue+" "+minValue+" "+maxValue);
 		GUI.fixScrollbar(s);
 		slider.addElement(s);
 		s.addAdjustmentListener(this);
@@ -1019,7 +1021,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.insets.left = 0;
 		c.insets.bottom -= 3;
 		add(panel, c);
-		if (Recorder.record || macro)
+		if (IJ.recording() || macro)
 			saveLabel(tf, label);
 	}
 	
@@ -1201,6 +1203,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		if (theText.equals(originalText)) {
 			value = defaultValue;
 			if (smartRecording) skipRecording=true;
+		} else if (theText.startsWith("0x")) {
+			value = parseHex(theText.substring(2));
 		} else {
 			Double d = getValue(theText);
 			if (d!=null)
@@ -1229,6 +1233,14 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		nfIndex++;
 		return value;
 	}
+	
+	int parseHex(String hexString) {
+		int n = 0;;
+		try {
+			n = Integer.parseInt(hexString, 16);
+		} catch (NumberFormatException e) {}
+		return n;
+	}
 
 	private String trim(String value) {
 		if (value.endsWith(".0"))
@@ -1247,6 +1259,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 
 	private void recordCheckboxOption(Checkbox cb) {
+		if (labels==null)
+			return;
 		String label = (String)labels.get((Object)cb);
 		if (label!=null) {
 			if (cb.getState()) // checked
@@ -1493,6 +1507,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	/** Displays this dialog box. */
 	public void showDialog() {
 		showDialogCalled = true;
+		addToSameRow = false;
 		if (macro) {
 			dispose();
 			recorderOn = Recorder.record && Recorder.recordInMacros;
@@ -1719,7 +1734,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				if (!Double.isNaN(value)) {
 					Scrollbar sb = (Scrollbar)slider.elementAt(i);
 					double scale = ((Double)sliderScales.get(i)).doubleValue();
-					sb.setValue((int)(value*scale));
+					sb.setValue((int)Math.round(value*scale));
 				}
 			}
 		}
@@ -1809,7 +1824,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		return new Insets(i.top+10, i.left+10, i.bottom+10, i.right+10);
 	}
 
-	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
+	/** Callback for sliders */
+	public void adjustmentValueChanged(AdjustmentEvent e) {
 		Object source = e.getSource();
 		for (int i=0; i<slider.size(); i++) {
 			if (source==slider.elementAt(i)) {
@@ -1891,7 +1907,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	/** Adds a "Help" button that opens the specified URL in the default browser.
 		With v1.46b or later, displays an HTML formatted message if
 		'url' starts with "<html>". There is an example at
-		http://imagej.nih.gov/ij/macros/js/DialogWithHelp.js
+		http://imagej.net/ij/macros/js/DialogWithHelp.js
 		If url is an empty String, pressing the "Help" button does nothing except
 	calling the DialogListeners (if any). See also: setHelpLabel.
 	*/
@@ -1993,7 +2009,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		@Override
 		public void drop(DropTargetDropEvent event) {
 			try {
-				text.setText(getString(event));
+				String path = getString(event);
+				path = Recorder.fixPath(path);
+				if (!path.endsWith("/")&& (new File(path)).isDirectory())
+					path = path + "/";
+				text.setText(path);
 			} catch (Exception e) { e.printStackTrace(); }
 		}
 	}
@@ -2011,29 +2031,34 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	
 		public void actionPerformed(ActionEvent e) {
 			String path = null;
+			String dialogTitle = label;
+			if (dialogTitle == null || dialogTitle.length() == 0)
+				dialogTitle = mode.equals("dir") ? "a Folder" : "a File";
+			else if (dialogTitle.endsWith(":"))	//remove trailing colon
+				dialogTitle = dialogTitle.substring(0, dialogTitle.length() - 1);
+			dialogTitle = "Select " + dialogTitle;
 			if (mode.equals("dir")) {
 				String saveDefaultDir = OpenDialog.getDefaultDirectory();
 				String dir = this.textField.getText();
 				boolean setDefaultDir = dir!=null && !dir.equals("");
      			if (setDefaultDir)
 					OpenDialog.setDefaultDirectory(dir);
-				path = IJ.getDir("Select a Folder");
+				path = IJ.getDir(dialogTitle);
 				if (setDefaultDir)
 					OpenDialog.setDefaultDirectory(saveDefaultDir);
 			} else {
-				OpenDialog od = new OpenDialog("Select a File", null);
+				OpenDialog od = new OpenDialog(dialogTitle, null);
 				String directory = od.getDirectory();
 				String name = od.getFileName();
 				if (name!=null)
 					path = directory+name;
 			}
 			if (path!=null) {
-				if (IJ.isWindows())
-					path = path.replaceAll("\\\\", "/"); // replace "\" with "/"
+				//if (IJ.isWindows())
+				//	path = path.replaceAll("\\\\", "/"); // replace "\" with "/"
 				this.textField.setText(path);
 			}
 		}
-	
 	}
 	
 	private class TrimmedTextField extends TextField {

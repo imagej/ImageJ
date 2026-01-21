@@ -169,10 +169,9 @@ public class SimpleCommands implements PlugIn {
 	}
 	
 	private void imageToResults() {
-		ImagePlus imp = IJ.getImage();
-		ImageProcessor ip = imp.getProcessor();
-		ResultsTable rt = ResultsTable.createTableFromImage(ip);
-		rt.show("Results");
+		ResultsTable rt = ResultsTable.createTableFromImage(IJ.getImage());
+		if (rt!=null)
+			rt.show("Results");
 	}
 	
 	private void resultsToImage() {

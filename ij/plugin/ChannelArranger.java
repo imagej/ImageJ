@@ -83,7 +83,7 @@ public class ChannelArranger implements PlugIn, TextListener {
 		The following example opens the FluorescentCells sample  
 		image and reverses the order of the channels.
 		<pre>
-		ImagePlus img = IJ.openImage("http://imagej.nih.gov/ij/images/FluorescentCells.zip");
+		ImagePlus img = IJ.openImage("http://imagej.net/ij/images/FluorescentCells.zip");
 		int[] order = {3,2,1};
 		ImagePlus img2 = ChannelArranger.run(img, order);
 		img2.setDisplayMode(IJ.COLOR);

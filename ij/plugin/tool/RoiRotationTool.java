@@ -67,7 +67,7 @@ public class RoiRotationTool extends PlugInTool {
 	}
 		
 	public void mouseReleased(ImagePlus imp, MouseEvent e) {
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			Roi roi = imp.getRoi();
 			int n = roi.getPolygon().npoints;
 			if (n<=20 && roi.getType()!=Roi.LINE)

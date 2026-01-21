@@ -113,7 +113,6 @@ public class ColorProcessor extends ImageProcessor {
 	public void setColor(Color color) {
 		fgColor = color.getRGB();
 		drawingColor = color;
-		fillValueSet = true;
 	}
 	
 	/** Sets the background fill/draw color. */
@@ -124,13 +123,11 @@ public class ColorProcessor extends ImageProcessor {
 	/** Sets the fill/draw color, where <code>color</code> is an RGB int. */
 	public void setColor(int color) {
 		fgColor = color;
-		fillValueSet = true;
 	}
 
 	/** Sets the default fill/draw value, where <code>value</code> is interpreted as an RGB int. */
 	public void setValue(double value) {
 		fgColor = (int)value;
-		fillValueSet = true;
 	}
 
 	/** Returns the foreground fill/draw value. */
@@ -315,6 +312,13 @@ public class ColorProcessor extends ImageProcessor {
 	}
 	public final void set(int index, int value) {
 		pixels[index] = value;
+	}
+	
+	public void set(double value) {
+		int saveColor = fgColor;
+		fgColor = (int)value;
+		fill();
+		fgColor = saveColor;
 	}
 
 	public final float getf(int x, int y) {

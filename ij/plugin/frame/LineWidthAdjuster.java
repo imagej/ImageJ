@@ -163,7 +163,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 			if (roi!=null && roi.isLine())
 				strokeWidth = (int)roi.getStrokeWidth();
 		}
-		if (Recorder.record && strokeWidth>=0 && strokeWidth!=lineWidth0) {
+		if (IJ.recording() && strokeWidth>=0 && strokeWidth!=lineWidth0) {
 			if (Recorder.scriptMode()) {
 				Recorder.recordCall("roi = imp.getRoi();");
 				Recorder.recordCall("roi.setStrokeWidth("+strokeWidth+");");

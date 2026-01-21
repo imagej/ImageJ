@@ -2,22 +2,34 @@ package ij.process;
 
 import java.awt.*;
 import java.awt.image.*;
-import ij.*; //??
+import ij.*;
 
 /** Converts an RGB image to 8-bit index color using Heckbert's median-cut
     color quantization algorithm. Based on median.c by Anton Kruger from the
     September, 1994 issue of Dr. Dobbs Journal.
+
+    2023-11-26 Modifictions by Michael Schmid:
+    Calculates the average color values of the 8x8x8 bins, thus the color in the
+    output is the exact average of the pixel colors (not the weighted average
+    of the bin origins). In addition, bins are assigned to the closest available
+    color, which is not necessarily that from the original median cut segmentation
+    (refinement).
+    This reduces the occurrence of large deviations from the orignal.
+    In most cases, colors that occur very often are exactly perserved.
 */
+
 public class MedianCut {
-	
-	static final int MAXCOLORS = 256;	// maximum # of output colors
+
+	static final int MAXCOLORS = 256;	// maximum # of output colors (max 256)
 	static final int HSIZE = 32768;		// size of image histogram
 	private int[] hist;					// RGB histogram and reverse color lookup table
 	private int[] histPtr;				// points to colors in "hist"
+	private byte[] inverseMap;			// color table entry for each histogram bin
+	private long[] sumOffsetR, sumOffsetG, sumOffsetB; // if there is only one color in the bin, the color
 	private Cube[] list;				// list of cubes
-	private int[] pixels32;
+	private int[] pixels32;				// input pixels in 3x8-bit rgb format (alpha, if present, is ignored)
 	private int width, height;
-	private IndexColorModel cm; 
+	private IndexColorModel cm;
 
 	public MedianCut(int[] pixels, int width, int height) {
 		int color16;
@@ -30,9 +42,19 @@ public class MedianCut {
 		IJ.showProgress(0.3);
 		IJ.showStatus("Building 32x32x32 RGB histogram");
 		hist = new int[HSIZE];
+		sumOffsetR = new long[HSIZE];
+		sumOffsetG = new long[HSIZE];
+		sumOffsetB = new long[HSIZE];
 		for (int i=0; i<width*height; i++) {
-			color16 = rgb(pixels32[i]);
-			hist[color16]++;
+			int c = pixels32[i];
+			int r = (c&0xff0000)>>16;
+			int g = (c&0x00ff00)>>8;
+			int b = (c&0x0000ff);
+			int bgr15 = bgr15(r, g, b);
+			hist[bgr15]++;
+			sumOffsetR[bgr15] += r - ((r>>3)<<3);		//sum differences between value and origin of 8x8x8 bin
+			sumOffsetG[bgr15] += g - ((g>>3)<<3);
+			sumOffsetB[bgr15] += b - ((b>>3)<<3);
 		}
 	}
 	
@@ -46,7 +68,6 @@ public class MedianCut {
 			if (hist[i]>0) count++;
 		return count;
 	}
-	
 
 	Color getModalColor() {
 		int max=0;
@@ -58,31 +79,36 @@ public class MedianCut {
 			}
 		return new Color(red(c), green(c), blue(c));
 	}
-	
 
-	// Convert from 24-bit to 15-bit color
-	private final int rgb(int c) {
+	/** Converts form 3*8-bit color to 15-bit color. Do NOT call with byte arguments,
+	 *  these would be converted to negative ints for values >=128. */
+	private final static int bgr15(int r, int g, int b) {
+		int r5 = r>>3, g5 = g>>3, b5 = b>>3;	//5-bit color values
+		return (b5<<10) | (g5<<5) | r5;			//15-bit color, index in histogram
+	}
+
+	/** Converts from 24-bit color to 15-bit color, which is used as index in histrogram */
+	private final static int bgr15(int c) {
 		int r = (c&0xf80000)>>19;
 		int g = (c&0xf800)>>6;
 		int b = (c&0xf8)<<7;
 		return b | g | r;
 	}
-	
+
 	// Get red component of a 15-bit color
 	private final int red(int x) {
 		return (x&31)<<3;
 	}
-	
+
 	// Get green component of a 15-bit color
 	private final int green(int x) {
 		return (x>>2)&0xf8;
 	}
-	
+
 	// Get blue component of a 15-bit color
 	private final int blue(int x) {
 		return (x>>7)&0xf8;
 	}
-
 
 	/** Uses Heckbert's median-cut algorithm to divide the color space defined by
 	"hist" into "maxcubes" cubes. The centroids (average value) of each cube
@@ -184,7 +210,7 @@ public class MedianCut {
 		// compute the color map, the inverse color map, and return
 		// an 8-bit image.
 		IJ.showProgress(0.9);
-		makeInverseMap(hist, ncubes);
+		makeInverseMap(ncubes);
 		IJ.showProgress(0.95);
 		return makeImage();
 	}
@@ -217,58 +243,157 @@ public class MedianCut {
 		cube.bmin = bmin; cube.bmax = bmax;
 	}
 
-
-	void makeInverseMap(int[] hist, int ncubes) {
+	void makeInverseMap(int ncubes) {
 	// For each cube in the list of cubes, computes the centroid
 	// (average value) of the colors enclosed by that cube, and
 	// then loads the centroids in the color map. Next loads
-	// "hist" with indices into the color map
-
-		int r, g, b;
-		int color;
-		float rsum, gsum, bsum;
-		Cube cube;
+	// "inverseMap" with indices into the color map
 		byte[] rLUT = new byte[256];
 		byte[] gLUT = new byte[256];
 		byte[] bLUT = new byte[256];
-
+		inverseMap = new byte[HSIZE];		//for each histogram bin, index of the LUT entry
 		IJ.showStatus("Making inverse map");
-		for (int k=0; k<=ncubes-1; k++) {
-			cube = list[k];
-			rsum = gsum = bsum = (float)0.0;
-			for (int i=cube.lower; i<=cube.upper; i++) {
-				color = histPtr[i];
-				r = red(color);
-				rsum += (float)r*(float)hist[color];
-				g = green(color);
-				gsum += (float)g*(float)hist[color];
-				b = blue(color);
-				bsum += (float)b*(float)hist[color];
-			}
-
-			// Update the color map
-			r = (int)(rsum/(float)cube.count);
-			g = (int)(gsum/(float)cube.count);
-			b = (int)(bsum/(float)cube.count);
-			if (r==248 && g==248 && b==248)
-				r=g=b=255;  // Restore white (255,255,255)
-			rLUT[k] = (byte)r;
-			gLUT[k] = (byte)g;
-			bLUT[k] = (byte)b;
+		createInverseMap(ncubes, rLUT, gLUT, bLUT);
+		for (int i=0; i<5; i++) {	//up to five attampts to refine the mapping
+			boolean changes = improveInverseMap(ncubes, rLUT, gLUT, bLUT);
+			if (!changes) break;
 		}
 		cm = new IndexColorModel(8, ncubes, rLUT, gLUT, bLUT);
-		
-		// For each color in each cube, load the corre- 
-		// sponding slot in "hist" with the centroid of the cube.
+	}
+
+	/** Based on the median cut result, i.e., a segmentation of all histogram bins
+	 *  in 'ncubes' Cube objects with different colors, assigns colors to the
+	 *  bins (the 'inverseMap' and sets the colors according to the centroid
+	 *  of all points in the 'Cube'. */
+	void createInverseMap(int ncubes, byte[] rLUT, byte[] gLUT, byte[] bLUT) {
 		for (int k=0; k<=ncubes-1; k++) {
-			cube = list[k];
+			long rsum=0, gsum=0, bsum=0;
+			Cube cube = list[k];
+			int singleColor = -2;
 			for (int i=cube.lower; i<=cube.upper; i++) {
-				color = histPtr[i];
-				hist[color] = k;
+				int color15 = histPtr[i];
+				int r = red(color15);
+				rsum += r*hist[color15] + sumOffsetR[color15];
+				int g = green(color15);
+				gsum += g*hist[color15] + sumOffsetG[color15];
+				int b = blue(color15);
+				bsum += b*hist[color15] + sumOffsetB[color15];
+			}
+
+			// Color is the centoid of all colors in the cube
+			rLUT[k] = (byte)Math.round(rsum/(double)cube.count);
+			gLUT[k] = (byte)Math.round(gsum/(double)cube.count);
+			bLUT[k] = (byte)Math.round(bsum/(double)cube.count);
+		}
+		
+		// For each histogram bin in each cube, write the corresponding LUT index
+		// into the inverseMap.
+		for (int k=0; k<=ncubes-1; k++) {
+			Cube cube = list[k];
+			for (int i=cube.lower; i<=cube.upper; i++) {
+				int color15 = histPtr[i];
+				inverseMap[color15] = (byte)k;
 			}
 		}
 	}
-	
+
+	/** Modifies the inverse map in case there is a better match for a histogram bin
+	 *  centroid than the one from the previous round. If so, returns true for 'changes done'.
+	 *  If it turns out that at least one of the colors in the LUT is unused after
+	 *  this refinement, replaces that color(s) with the color(s) of the bin centroid(s)
+	 *  that are represented worst by the colors in the LUT.
+	 *  Note that 'ncubes' is the number of entries in the color LUT */
+	boolean improveInverseMap(int ncubes, byte[] rLUT, byte[] gLUT, byte[] bLUT) {
+		boolean changes = false;
+		boolean[] colorChanged = new boolean[ncubes];
+		double[]  distanceSqr  = new double[HSIZE];			//distance (squared) to nearest color
+		for (int i=0; i<hist.length; i++) {
+			if (hist[i] != 0) {
+				int nearestColor = -1;
+				double minDistanceSqr = Double.MAX_VALUE;
+				double rBin = red(i)  + sumOffsetR[i]/hist[i];
+				double gBin = green(i)+ sumOffsetG[i]/hist[i];
+				double bBin = blue(i) + sumOffsetB[i]/hist[i];
+				for (int k=0; k<ncubes; k++) {
+					if (i == bgr15(rLUT[k]&0xff, gLUT[k]&0xff, bLUT[k]&0xff)) { //this color bin is already in the table
+						minDistanceSqr = 0;
+						nearestColor = k;
+						inverseMap[i] = (byte)k;			//usually the case, just to make sure
+						break;
+					}
+					double dSqr = getDistanceSqr(rLUT[k]&0xff, gLUT[k]&0xff, bLUT[k]&0xff, rBin, gBin, bBin);
+					if (dSqr < minDistanceSqr) {
+						minDistanceSqr = dSqr;
+						nearestColor = k;
+					}
+				}
+				distanceSqr[i] = minDistanceSqr;
+				if (nearestColor != (inverseMap[i]&0xff)) {	//there is a better color table entry for this bin
+					changes = true;
+					colorChanged[nearestColor] = true;		//remember to recalculate centroid for these colors
+					colorChanged[inverseMap[i]&0xff] = true;
+					inverseMap[i] = (byte)nearestColor;
+				}
+			}
+		}
+		if (changes) {
+			boolean[] unused = new boolean[ncubes];
+			long[] rsum = new long[ncubes];
+			long[] gsum = new long[ncubes];
+			long[] bsum = new long[ncubes];
+			int[] nPxl =  new int[ncubes];
+			for (int i=0; i<hist.length; i++) {
+				int k = inverseMap[i]&0xff;			//LUT index
+				if (colorChanged[k]) {
+					rsum[k] += red(i)*hist[i]   + sumOffsetR[i];
+					gsum[k] += green(i)*hist[i] + sumOffsetG[i];
+					bsum[k] += blue(i)*hist[i]  + sumOffsetB[i];
+					nPxl[k] += hist[i];
+				}
+			}
+			for (int k=0; k<=ncubes-1; k++) {
+				if (colorChanged[k]) {
+					if (nPxl[k] > 0) {
+						int r = (int)Math.round(rsum[k]/(double)nPxl[k]);
+						int g = (int)Math.round(gsum[k]/(double)nPxl[k]);
+						int b = (int)Math.round(bsum[k]/(double)nPxl[k]);
+						rLUT[k] = (byte)r;
+						gLUT[k] = (byte)g;
+						bLUT[k] = (byte)b;
+					} else
+						unused[k] = true;
+				}
+			}
+			for (int k=0; k<=ncubes-1; k++) {	//for unused LUT entries (usually one at most), find a new color
+				if (unused[k]) {
+					double worst = 0;			//worst distance^2 to existing color * number of pixels in bin
+					int iOfWorst = -1;
+					for (int i=0; i<hist.length; i++) {
+						double badness = distanceSqr[i]*hist[i];
+						if (badness > worst) {
+							worst = badness;
+							iOfWorst = i;
+						}
+					}
+					setColorToBinCentroid(iOfWorst, rLUT, gLUT, bLUT, k);
+					inverseMap[iOfWorst] = (byte)k;
+				}
+			}
+		}
+		return changes;
+	}
+
+	/** Transfers the color of the centroid of bin 'histIndex' to the lutIndex-th lut entry */
+	void setColorToBinCentroid(int histIndex, byte[] rLUT, byte[] gLUT, byte[] bLUT, int lutIndex) {
+		rLUT[lutIndex] = (byte)Math.round(red(histIndex)   + sumOffsetR[histIndex]*(1./hist[histIndex]));
+		gLUT[lutIndex] = (byte)Math.round(green(histIndex) + sumOffsetG[histIndex]*(1./hist[histIndex]));
+		bLUT[lutIndex] = (byte)Math.round(blue(histIndex)  + sumOffsetB[histIndex]*(1./hist[histIndex]));
+	}
+
+	/** Distance (squared) between two color values */
+	static double getDistanceSqr(double r1, double g1, double b1, double r2, double g2, double b2) {
+		return (r2-r1)*(r2-r1) + (g2-g1)*(g2-g1) + (b2-b1)*(b2-b1);
+	}
 
 	void reorderColors(int[] a, int lo, int hi, int longDim) {
 	// Change the ordering of the 5-bit colors in each word of int[]
@@ -351,11 +476,10 @@ public class MedianCut {
             quickSort( a, lo0, hi );
          if( lo < hi0 )
             quickSort( a, lo, hi0 );
-
       }
    }
 
-
+	/** Generates an 8-bit image with the indexColorModel created in makeInverseMap */
 	ImageProcessor makeImage() {
 	// Generate 8-bit image
 	
@@ -366,21 +490,20 @@ public class MedianCut {
 		IJ.showStatus("Creating 8-bit image");
 	    pixels8 = new byte[width*height];
 	    for (int i=0; i<width*height; i++) {
-	    	color16 = rgb(pixels32[i]);
-	    	pixels8[i] = (byte)hist[color16];
+	    	color16 = bgr15(pixels32[i]);
+	    	pixels8[i] = (byte)inverseMap[color16];
 	    }
 	    ImageProcessor ip = new ByteProcessor(width, height, pixels8, cm);
         IJ.showProgress(1.0);
 		return ip;
 	}
-	
-	
+
 } //class MedianCut
 
 
 class Cube {			// structure for a cube in color space
-	int  lower;			// one corner's index in histogram
-	int  upper;			// another corner's index in histogram
+	int  lower;			// one corner's index in histogram pointer
+	int  upper;			// another corner's index in histogram pointer
 	int  count;			// cube's histogram count
 	int  level;			// cube's level
 	int  rmin, rmax;

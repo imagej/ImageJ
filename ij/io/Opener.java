@@ -43,6 +43,7 @@ public class Opener {
 	private static boolean bioformats;
 	private String url;
 	private boolean useHandleExtraFileTypes;
+	private boolean doNotUseBioFormats;
 
 	static {
 		Hashtable commands = Menus.getCommands();
@@ -445,14 +446,7 @@ public class Opener {
 		if (imp!=null)
 			return imp;
 		try {
-			String name = "";
-			int index = url.lastIndexOf('/');
-			if (index==-1)
-				index = url.lastIndexOf('\\');
-			if (index>0)
-				name = url.substring(index+1);
-			else
-				throw new MalformedURLException("Invalid URL: "+url);
+			String name = getUrlName(url);
 			if (url.indexOf(" ")!=-1)
 				url = url.replaceAll(" ", "%20");
 			URL u = new URL(url);
@@ -463,12 +457,12 @@ public class Opener {
 				imp = openTiff(u.openStream(), name);
 			} else if (lurl.endsWith(".zip"))
 				imp = openZipUsingUrl(u);
-			else if (lurl.endsWith(".jpg") || lurl.endsWith(".jpeg") || lurl.endsWith(".gif"))
+			else if (lurl.endsWith(".jpg") || lurl.endsWith(".jpeg") || lurl.endsWith(".gif")||lurl.contains(".jpg?")||lurl.contains(".jpeg?"))
 				imp = openJpegOrGifUsingURL(name, u);
 			else if (lurl.endsWith(".dcm") || lurl.endsWith(".ima")) {
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", url);
 				if (imp!=null && imp.getWidth()==0) imp = null;
-			} else if (lurl.endsWith(".png"))
+			} else if (lurl.endsWith(".png")||lurl.contains(".png?"))
 				imp = openPngUsingURL(name, u);
 			else {
 				URLConnection uc = u.openConnection();
@@ -490,6 +484,29 @@ public class Opener {
 			IJ.error("Open URL", msg);
 			return null;
 		} 
+	}
+	
+	private String getUrlName(String url) {
+		String origUrl = url;
+		String name = "";
+		int ndx = url.lastIndexOf(".jpeg?");
+		if (ndx>0)
+			url = url.substring(0, ndx+5);
+		else {
+			ndx = url.lastIndexOf(".jpg?");
+			if (ndx==-1)
+				ndx = url.lastIndexOf(".png?");
+			if (ndx>0)
+				url = url.substring(0, ndx+4);
+		}
+		int index = url.lastIndexOf('/');
+		if (index==-1)
+			index = url.lastIndexOf('\\');
+		if (index>0)
+			name = url.substring(index+1);
+		else
+			throw new IllegalArgumentException("Invalid URL: "+url);
+		return name;
 	}
 	
 	/** Can't open imagej.nih.gov URLs due to encryption so redirect to imagej.net mirror. */
@@ -648,7 +665,8 @@ public class Opener {
 		return imp;
 	}
 
-	ImagePlus openJpegOrGifUsingURL(String title, URL url) {
+ImagePlus openJpegOrGifUsingURL(String title, URL url) {
+		if (IJ.debugMode) IJ.log("openJpegOrGifUsingURL: "+url);
 		if (url==null) return null;
 		Image img = Toolkit.getDefaultToolkit().createImage(url);
 		if (img!=null) {
@@ -767,7 +785,7 @@ public class Opener {
 	/** Converts the specified RGB image to 8-bits if the 3 channels are identical. */
 	public static void convertGrayJpegTo8Bits(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
-		if (ip.getBitDepth()==24 && ip.isGrayscale()) {
+		if (!Prefs.openGrayscaleJpegsAsRGB && ip.getBitDepth()==24 && ip.isGrayscale()) {
 			IJ.showStatus("Converting to 8-bit grayscale");
 			new ImageConverter(imp).convertToGray8();
 		}
@@ -1315,7 +1333,7 @@ public class Opener {
 				return UNKNOWN; // The LSM	Reader plugin opens these files
 				
 		 // OME TIFF
-		if (bioformats && name.contains(".ome.tif"))
+		if (!doNotUseBioFormats && bioformats && name.contains(".ome.tif"))
 				return UNKNOWN; // Open with Bio-formats plugin
 				
 		// TIFF
@@ -1458,6 +1476,10 @@ public class Opener {
 	/** Returns the state of the openUsingPlugins flag. */
 	public static boolean getOpenUsingPlugins() {
 		return openUsingPlugins;
+	}
+	
+	public void doNotUseBioFormats() {
+		doNotUseBioFormats = true;
 	}
 		
 }

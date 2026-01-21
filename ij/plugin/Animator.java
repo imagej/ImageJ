@@ -374,7 +374,7 @@ public class Animator implements PlugIn {
 				t = (int) gd.getNextNumber();
 				imp.setPosition(c, z, t);
 			}
-			if (Recorder.record) {
+			if (IJ.recording()) {
 				String method = Recorder.scriptMode()?"imp":"Stack";
 				Recorder.recordString(method+".setPosition("+c+","+z+","+t+");\n");
 				Recorder.disableCommandRecording();

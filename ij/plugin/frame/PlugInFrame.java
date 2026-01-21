@@ -30,7 +30,7 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
     public void windowClosing(WindowEvent e) {
     	if (e.getSource()==this) {
     		close();
-    		if (Recorder.record)
+    		if (IJ.recording())
     			Recorder.record("run", "Close");
     	}
     }
@@ -43,10 +43,6 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
     }
 
     public void windowActivated(WindowEvent e) {
-		if (Prefs.setIJMenuBar) {
-			this.setMenuBar(Menus.getMenuBar());
-			Menus.setMenuBarCount++;
-		}
 		WindowManager.setWindow(this);
 	}
 

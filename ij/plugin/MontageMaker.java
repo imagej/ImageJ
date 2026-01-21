@@ -27,6 +27,8 @@ public class MontageMaker implements PlugIn {
 			return;
 		}
 		hyperstack = imp.isHyperStack();
+		if (imp.getNChannels()==1)
+			hyperstack = false;
 		if (hyperstack && imp.getNSlices()>1 && imp.getNFrames()>1) {
 			error("5D hyperstacks are not supported");
 			return;
@@ -36,16 +38,20 @@ public class MontageMaker implements PlugIn {
 			int channel = imp.getChannel();
 			CompositeImage ci = (CompositeImage)imp;
 			int mode = ci.getMode();
-			if (mode==IJ.COMPOSITE)
+			if (mode==IJ.COMPOSITE) {
 				ci.setMode(IJ.COLOR);
+				imp.updateAndDraw();
+			}
 			ImageStack stack = new ImageStack(imp.getWidth(), imp.getHeight());
 			for (int c=1; c<=channels; c++) {
 				imp.setPosition(c, imp.getSlice(), imp.getFrame());
 				Image img = imp.getImage();
 				stack.addSlice(null, new ColorProcessor(img));
 			}
-			if (ci.getMode()!=mode)
+			if (ci.getMode()!=mode) {
 				ci.setMode(mode);
+				imp.updateAndDraw();
+			}
 			imp.setPosition(channel, imp.getSlice(), imp.getFrame());
 			Calibration cal = imp.getCalibration();
 			imp = new ImagePlus(imp.getTitle(), stack);

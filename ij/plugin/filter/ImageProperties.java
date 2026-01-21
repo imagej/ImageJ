@@ -202,7 +202,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		if (global2 && global2!=global1)
 			FileOpener.setShowConflictMessage(true);			
 			
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			if (Recorder.scriptMode()) {
 				if (xUnitChanged)
 					Recorder.recordCall("imp.getCalibration().setXUnit(\""+xunit2+"\");", true);

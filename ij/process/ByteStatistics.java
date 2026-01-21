@@ -14,8 +14,9 @@ public class ByteStatistics extends ImageStatistics {
 	/** Constructs a ByteStatistics object from a ByteProcessor using
 		the specified measurement and calibration. */
 	public ByteStatistics(ImageProcessor ip, int mOptions, Calibration cal) {
-		ByteProcessor bp = (ByteProcessor)ip;
-		histogram = bp.getHistogram();
+		if (ip.getBitDepth()!=8)
+			throw new IllegalArgumentException("8-bit image required");
+		histogram = ip.getHistogram();
 		setup(ip, cal);
 		double minT = ip.getMinThreshold();
 		int minThreshold,maxThreshold;

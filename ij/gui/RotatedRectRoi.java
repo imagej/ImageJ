@@ -14,7 +14,7 @@ public class RotatedRectRoi extends PolygonRoi {
 	private double rectWidth = DefaultRectWidth;
 
 	public RotatedRectRoi(double x1, double y1, double x2, double y2, double rectWidth) {
-		super(new float[4], new float[4], 4, FREEROI);
+		super(new float[4], new float[4], 4, POLYGON);
 		this.rectWidth = rectWidth;
 		makeRectangle(x1, y1, x2, y2);
 		state = NORMAL;
@@ -153,7 +153,7 @@ public class RotatedRectRoi extends PolygonRoi {
 	protected void handleMouseUp(int screenX, int screenY) {
 		nPoints = 4;
 		state = NORMAL;
-		if (Recorder.record) {
+		if (IJ.recording()) {
 			double[] p = getParams();
 			if (Recorder.scriptMode())
 				Recorder.recordCall("imp.setRoi(new RotatedRectRoi("+(int)p[0]+","+(int)p[1]+","+(int)p[2]+","+(int)p[3]+","+(int)p[4]+"));");
