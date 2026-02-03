@@ -17,7 +17,7 @@ import java.awt.event.*;
 import java.text.*;
 import java.util.*;	
 import java.awt.*;	
-import java.applet.Applet;
+
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
@@ -59,8 +59,8 @@ public class IJ {
     public static final char degreeSymbol = '\u00B0';
 
 	private static ImageJ ij;
-	private static java.applet.Applet applet;
-	private static ProgressBar progressBar;
+    private static Object applet;
+    private static ProgressBar progressBar;
 	private static TextPanel textPanel;
 	private static String osname, osarch;
 	private static boolean isMac, isWin, isLinux, is64Bit;
@@ -124,7 +124,7 @@ public class IJ {
 		df[0].setRoundingMode(RoundingMode.HALF_UP);
 	}
 			
-	static void init(ImageJ imagej, Applet theApplet) {
+	static void init(ImageJ imagej, Object theApplet) {
 		ij = imagej;
 		applet = theApplet;
 		progressBar = ij.getProgressBar();
@@ -441,10 +441,28 @@ public class IJ {
 		return macroRunning || Interpreter.getInstance()!=null;
 	}
 
-	/**Returns the Applet that created this ImageJ or null if running as an application.*/
-	public static java.applet.Applet getApplet() {
-		return applet;
-	}
+    /**
+     * Returns the Applet that created this ImageJ.
+     * @deprecated Applet support has been removed in Java 26
+     * @return always returns null
+     */
+    @Deprecated
+    public static java.applet.Applet getApplet() {
+        return null;
+    }
+
+    /**
+     * @deprecated Applet support removed in Java 26
+     * @throws UnsupportedOperationException if applet is not null
+     */
+    @Deprecated
+    public static void setApplet(Object applet) {
+        if (applet != null) {
+            throw new UnsupportedOperationException(
+                    "Applet support has been removed in Java 26"
+            );
+        }
+    }
 	
 	/**Displays a message in the ImageJ status bar. If 's' starts 
 		with '!', subsequent showStatus() calls in the current

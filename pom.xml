@@ -89,8 +89,8 @@
 		<javac.path>${java.home}/../lib/tools.jar</javac.path>
 
 		<!-- HACK: Work around usage of Java-7-specific JList code. -->
-		<maven.compiler.source>9</maven.compiler.source>
-		<maven.compiler.target>6</maven.compiler.target>
+		<maven.compiler.source>8</maven.compiler.source>
+		<maven.compiler.target>8</maven.compiler.target>
 		<maven.compiler.release></maven.compiler.release>
 
 		<!-- HACK: Work around 'String index out of bounds' javadoc error. -->
@@ -176,8 +176,8 @@
 					<jdkToolchain>
 						<version>[1.6,8)</version>
 					</jdkToolchain>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>8</source>
+					<target>8</target>
 				</configuration>
 			</plugin>
 			<plugin>
