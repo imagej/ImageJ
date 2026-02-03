@@ -1447,7 +1447,8 @@ public class IJ {
 	public static void setThreshold(double lowerThreshold, double upperThresold) {
 		setThreshold(lowerThreshold, upperThresold, null);
 	}
-	
+
+
 	/** Sets the lower and upper threshold levels and displays the image using
 		the specified <code>displayMode</code> ("Red", "Black & White", "Over/Under" or "No Update"). */
 	public static void setThreshold(double lowerThreshold, double upperThreshold, String displayMode) {
