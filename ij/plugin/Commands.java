@@ -9,7 +9,6 @@ import ij.macro.Interpreter;
 import ij.plugin.Compiler;
 import java.awt.Window;
 import java.io.File;
-import java.applet.Applet;
 	
 /**	Runs miscellaneous File and Window menu commands. */
 public class Commands implements PlugIn {
@@ -147,7 +146,7 @@ public class Commands implements PlugIn {
 	
 	// Plugins>Macros>Open Startup Macros command
 	void openStartupMacros() {
-		Applet applet = IJ.getApplet();
+		Object applet = IJ.getApplet();
 		if (applet!=null)
 			IJ.run("URL...", "url="+IJ.URL2+"/applet/StartupMacros.txt");
 		else {

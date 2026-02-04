@@ -112,7 +112,7 @@ public class ImageJ extends Frame implements ActionListener,
 	private ProgressBar progressBar;
 	private JLabel statusLine;
 	private boolean firstTime = true;
-	private java.applet.Applet applet; // null if not running as an applet
+	private Object applet; // null if not running as an applet
 	private Vector classes = new Vector();
 	private boolean exitWhenQuitting;
 	private boolean quitting;
@@ -137,14 +137,14 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 
 	/** Creates a new ImageJ frame that runs as an applet. */
-	public ImageJ(java.applet.Applet applet) {
+	public ImageJ(Object applet) {
 		this(applet, STANDALONE);
 	}
 
 	/** If 'applet' is not null, creates a new ImageJ frame that runs as an applet.
 		If  'mode' is ImageJ.EMBEDDED and 'applet is null, creates an embedded 
 		(non-standalone) version of ImageJ. */
-	public ImageJ(java.applet.Applet applet, int mode) {
+	public ImageJ(Object applet, int mode) {
 		super("ImageJ");
 		if ((mode&DEBUG)!=0)
 			IJ.setDebugMode(true);
