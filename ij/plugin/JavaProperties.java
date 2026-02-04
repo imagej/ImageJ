@@ -5,12 +5,11 @@ import ij.io.OpenDialog;
 import ij.gui.GUI;
 import java.awt.*;
 import java.util.*;
-import java.applet.Applet;
 
 /** Displays the Java system properties in a text window. */
 public class JavaProperties implements PlugIn {
 
-	ArrayList list = new ArrayList();
+	ArrayList<String> list = new ArrayList();
 	
 	public void run(String arg) {
 		show("java.version");
@@ -39,15 +38,7 @@ public class JavaProperties implements PlugIn {
 		}
 		list.add("  line.separator: " + str1 + str2);
 			
-		Applet applet = IJ.getApplet();
-		if (applet!=null) {
-			list.add("");
-			list.add("  code base: "+applet.getCodeBase());
-			list.add("  document base: "+applet.getDocumentBase());
-			list.add("  sample images dir: "+Prefs.getImagesURL());
-			TextWindow tw = new TextWindow("Properties", "", list, 400, 400);
-			return;
-		}
+
 		list.add("");
 		show("user.name");
 		show("user.home");

@@ -447,7 +447,7 @@ public class IJ {
      * @return always returns null
      */
     @Deprecated
-    public static java.applet.Applet getApplet() {
+    public static Object getApplet() {
         return null;
     }
 
