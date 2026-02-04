@@ -2,10 +2,8 @@ package ij;
 import ij.util.Java2;
 import java.io.*;
 import java.util.*;
-import java.applet.*;
 import java.net.URL;
 import java.awt.*;
-import java.applet.Applet;
 import ij.io.*;
 import ij.util.Tools;
 import ij.gui.*;
@@ -300,7 +298,7 @@ public class Prefs {
 	 * and the preferences file ("IJ_Prefs.txt").
 	 * @return	an error message if "IJ_Props.txt" not found.
 	*/
-	public static String load(Object ij, Applet applet) {
+	public static String load(Object ij, Object applet) {
 		if (ImageJDir==null)
 			ImageJDir = System.getProperty("user.dir");
 		if (ij!=null) {
@@ -315,8 +313,6 @@ public class Prefs {
 				// Look in ij.jar if not found in ImageJ folder
 				f = ij.getClass().getResourceAsStream("/"+PROPS_NAME);
 			}			
-			if (applet!=null)
-				return loadAppletProps(f, applet);
 			if (f==null)
 				return PROPS_NAME+" not found in ij.jar or in "+ImageJDir;
 			f = new BufferedInputStream(f);
@@ -345,19 +341,9 @@ public class Prefs {
 	}
 	*/
 
-	static String loadAppletProps(InputStream f, Applet applet) {
-		if (f==null)
-			return PROPS_NAME+" not found in ij.jar";
-		try {
-			props.load(f);
-			f.close();
-		}
-		catch (IOException e) {return("Error loading "+PROPS_NAME);}
-		try {
-			URL url = new URL(applet.getDocumentBase(), "images/");
-			imagesURL = url.toString();
-		}
-		catch (Exception e) {}
+	@Deprecated
+	static String loadAppletProps(InputStream f, Object applet) {
+		// Note: Support for applets has been removed in Java 26.
 		return null;
 	}
 
