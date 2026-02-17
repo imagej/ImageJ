@@ -1,10 +1,10 @@
 package ij;
+
 import ij.gui.*;
-import ij.process.*;
-import ij.io.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.plugin.frame.*;
+import ij.stub.Applet;
 import ij.text.*;
 import ij.macro.Interpreter;
 import ij.io.Opener;
@@ -17,7 +17,6 @@ import java.net.*;
 import java.awt.image.*;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.SwingUtilities;
 
 /**
 This frame is the main ImageJ class.
@@ -112,7 +111,7 @@ public class ImageJ extends Frame implements ActionListener,
 	private ProgressBar progressBar;
 	private JLabel statusLine;
 	private boolean firstTime = true;
-	private java.applet.Applet applet; // null if not running as an applet
+	private Applet applet; // null if not running as an applet
 	private Vector classes = new Vector();
 	private boolean exitWhenQuitting;
 	private boolean quitting;
@@ -137,19 +136,19 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 
 	/** Creates a new ImageJ frame that runs as an applet.
-	 @deprecated Applets were removed in Java 26*/
-	@Deprecated
-	public ImageJ(java.applet.Applet applet) {
+	    @deprecated Applets were removed in Java 26*/
+	@Deprecated(since = "IJ XX; Java 26")
+	public ImageJ(Applet applet) {
 		this(applet, STANDALONE);
 	}
 
 	/** If 'applet' is not null, creates a new ImageJ frame that runs as an applet.
-		If  'mode' is ImageJ.EMBEDDED and 'applet is null, creates an embedded 
-		(non-standalone) version of ImageJ.
+	    If  'mode' is ImageJ.EMBEDDED and 'applet is null, creates an embedded
+	    (non-standalone) version of ImageJ.
 	    @deprecated Applets were removed in Java 26.
 	 */
-	@Deprecated
-	public ImageJ(java.applet.Applet applet, int mode) {
+	@Deprecated(since = "IJ XX; Java 26")
+	public ImageJ(Applet applet, int mode) {
 		super("ImageJ");
 		if ((mode&DEBUG)!=0)
 			IJ.setDebugMode(true);
