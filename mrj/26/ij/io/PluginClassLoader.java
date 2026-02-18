@@ -144,23 +144,45 @@ public class PluginClassLoader extends URLClassLoader {
             throw new ClassNotFoundException(name);
         }
 
-        try (InputStream in = resourceUrl.openStream()) {
-            var bytes = in.readAllBytes();
-            var remapped = maybeRemapAppletRefs(bytes);
+        try {
+            var conn = resourceUrl.openConnection();
 
-            var lastDot = name.lastIndexOf('.');
-            if (lastDot != -1) {
-                var pkg = name.substring(0, lastDot);
-                if (getDefinedPackage(pkg) == null) {
-                    definePackage(pkg, null, null, null, null, null, null, null);
+            try (InputStream in = conn.getInputStream()) {
+                var bytes = in.readAllBytes();
+                var remapped = maybeRemapAppletRefs(bytes);
+
+                var lastDot = name.lastIndexOf('.');
+                if (lastDot != -1) {
+                    var pkg = name.substring(0, lastDot);
+                    if (getDefinedPackage(pkg) == null) {
+                        definePackage(pkg, null, null, null, null, null, null, null);
+                    }
                 }
+
+                try {
+                    var basePath = getCodeSourcePath(resourceUrl, resourceName);
+
+                    CodeSource codeSource = null;
+                    if (conn instanceof JarURLConnection jarURLConnection) {
+                        var jarEntry = jarURLConnection.getJarEntry();
+                        if (jarEntry != null) {
+                            codeSource = new CodeSource(resourceUrl, jarEntry.getCodeSigners());
+                        }
+                    }
+
+                    if (codeSource == null) {
+                        codeSource = getCodeSource(basePath);
+                    }
+
+                    //Files.write(Paths.get(name + ".class"), remapped);
+
+                    return defineClass(name, remapped, 0, remapped.length, codeSource);
+                } catch (IOException | IllegalStateException e) {
+                    throw new ClassNotFoundException(name, e);
+                }
+            } catch (IOException e) {
+                throw new ClassNotFoundException(name, e);
             }
-
-            var codeSource = getCodeSource(resourceUrl, resourceName);
-
-            //Files.write(Paths.get(name + ".class"), remapped);
-
-            return defineClass(name, remapped, 0, remapped.length, codeSource);
         } catch (IOException e) {
             throw new ClassNotFoundException(name, e);
         }
@@ -223,14 +245,8 @@ public class PluginClassLoader extends URLClassLoader {
         return fieldRemapper.andThen(ClassTransform.transformingMethods(methodTransform));
     }
 
-    private CodeSource getCodeSource(URL classUrl, String className) {
-        if (classUrl == null) {
-            return null;
-        }
-
+    private CodeSource getCodeSource(URI base) {
         try {
-            var base = getCodeSourcePath(classUrl, className);
-
             return METADATA_CACHE.computeIfAbsent(base, (URI uri) -> {
                 try {
                     var url = uri.toURL();
