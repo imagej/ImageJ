@@ -171,7 +171,7 @@ public class PluginClassLoader extends URLClassLoader {
                     }
 
                     if (codeSource == null) {
-                        codeSource = getCodeSource(basePath);
+                        codeSource = getCodeSource(basePath, conn);
                     }
 
                     //Files.write(Paths.get(name + ".class"), remapped);
@@ -245,14 +245,11 @@ public class PluginClassLoader extends URLClassLoader {
         return fieldRemapper.andThen(ClassTransform.transformingMethods(methodTransform));
     }
 
-    private CodeSource getCodeSource(URI base) {
+    private CodeSource getCodeSource(URI base, URLConnection conn) {
         try {
             return METADATA_CACHE.computeIfAbsent(base, (URI uri) -> {
                 try {
-                    var url = uri.toURL();
-                    var con = url.openConnection();
-
-                    if (con instanceof JarURLConnection jarURLConnection) {
+                    if (conn instanceof JarURLConnection jarURLConnection) {
                         return new CodeSource(jarURLConnection.getJarFileURL(), jarURLConnection.getCertificates());
                     }
 
