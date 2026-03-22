@@ -176,6 +176,7 @@ public class ImageStack {
 	
 	/** Deletes the last slice in the stack. */
 	public void deleteLastSlice() {
+		int nSlices = getSize();
 		if (nSlices>0)
 			deleteSlice(nSlices);
 	}
@@ -358,22 +359,22 @@ public class ImageStack {
 	
 	/** Returns true if this is a 3-slice, 8-bit RGB stack. */
 	public boolean isRGB() {
-    	return nSlices==3 && (stack[0] instanceof byte[]) && getSliceLabel(1)!=null && getSliceLabel(1).equals("Red");
+    	return getSize()==3 && (stack[0] instanceof byte[]) && getSliceLabel(1)!=null && getSliceLabel(1).equals("Red");
 	}
 	
 	/** Returns true if this is a 3-slice HSB stack. */
 	public boolean isHSB() {
-    	return nSlices==3 && bitDepth==8 && getSliceLabel(1)!=null && getSliceLabel(1).equals("Hue");
+    	return getSize()==3 && bitDepth==8 && getSliceLabel(1)!=null && getSliceLabel(1).equals("Hue");
 	}
 
 	/** Returns true if this is a 3-slice 32-bit HSB stack. */
 	public boolean isHSB32() {
-    	return nSlices==3 && bitDepth==32 && getSliceLabel(1)!=null && getSliceLabel(1).equals("Hue");
+    	return getSize()==3 && bitDepth==32 && getSliceLabel(1)!=null && getSliceLabel(1).equals("Hue");
 	}
 
 	/** Returns true if this is a Lab stack. */
 	public boolean isLab() {
-    	return nSlices==3 && getSliceLabel(1)!=null && getSliceLabel(1).equals("L*");	
+    	return getSize()==3 && getSliceLabel(1)!=null && getSliceLabel(1).equals("L*");	
 	}
 
 	/** Returns true if this is a virtual (disk resident) stack. 
@@ -424,7 +425,7 @@ public class ImageStack {
 			throw new IndexOutOfBoundsException();
 	}
 		
-	/* Sets the value of the specified voxel. */
+	/** Sets the value of the specified voxel. */
 	public final void setVoxel(int x, int y, int z, double value) {
 		if (x>=0 && x<width && y>=0 && y<height && z>=0 && z<nSlices) {
 			switch (bitDepth) {
