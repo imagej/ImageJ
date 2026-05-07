@@ -400,6 +400,8 @@ public class Menus {
 		
 		submenu = new Menu("Games");
 		addExample(submenu, "Asteroids", "Asteroids.js");
+		addExample(submenu, "Breakout", "Breakout.ijm");
+		addExample(submenu, "Life", "GameOfLife.js");
 		addExample(submenu, "Pong", "Pong.ijm");
 		addExample(submenu, "Snake", "Snake.ijm");
 		submenu.addActionListener(listener);

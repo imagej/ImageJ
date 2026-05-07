@@ -5,15 +5,22 @@
 </head>
 <body>
 
-<li> <u>1.54t8 26 April 2026</u>
+<li> <u>1.54t10 7 May 2026</u>
 <ul>
 <li> Added the <i>Help&gt;Examples&gt;Games</i> menu, with "Asteroids",
-"Pong" and "Snake" entries. They provide examples that show how
-to write macros and scripts that use the arrow keys.
+"Breakout", "Life", "Pong" and "Snake" entries. These are macros and
+scripts that implement classic Atari video games, and a JavaScript
+version of Conway's Game of Life, created by ChatGPT. They demonstrate
+how to use AI to create macros and scripts, how to use the arrow keys,
+and how to use the autoUpdate(false) and updateDisplay()macro functions
+to get flicker free animation in macros.
+<li> Thanks to Jerome Mutterer, added the <i>Process&gt;Binary&gt;Dither</i>
+command, with support for "Floyd-Steinberg", "Bayer 2x2", "Bayer 4x4",
+"Random noise" and "Halftone" dithering.
 <li> The up and down arrow keys no longer zoom images in and out.
 Use the "+" and"-" keys instead.
 <li> The restoreSettings() macro function is automatically called when
-a macro terminates if saveSettings() was called.
+a macro terminates and saveSettings() was called.
 <li>Added the setOption("requireControlKey",boolean) macro function. DOC
 <li> The arrow keys, when used to move selections or to zoom in
 and out, now require the control (or command) key when the
