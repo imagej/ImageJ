@@ -28,7 +28,7 @@ import ij.plugin.frame.Recorder;
  *
  * Example macro:
  * run("Blobs (25K)");
- * run("Dithering ", "algorithm=Halftone shape=Circle size=5 orientation=115");
+ * run("Dither...", "algorithm=Halftone shape=Circle size=5 orientation=115");
  *
  * Authors:
  * - ChatGPT (assisted implementation)
@@ -166,7 +166,6 @@ public class Dithering implements ExtendedPlugInFilter, DialogListener {
 
     public void run(ImageProcessor ip) {
         ImageProcessor bp = ip.convertToByte(true);
-
         int[][] pixel = bp.getIntArray();
         int width = bp.getWidth();
         int height = bp.getHeight();
@@ -184,6 +183,8 @@ public class Dithering implements ExtendedPlugInFilter, DialogListener {
 
         bp.setIntArray(pixel);
         ip.insert(bp, 0, 0);
+        if (ip.getBitDepth()==16)
+        	ip.resetMinAndMax();
     }
 
     public void setNPasses(int nPasses) {

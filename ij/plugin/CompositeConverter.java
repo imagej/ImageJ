@@ -82,7 +82,9 @@ public class CompositeConverter implements PlugIn {
 		if (imp.getBitDepth()==24) {
 			if (Recorder.scriptMode())
 				Recorder.recordCall("ImagePlus", "imp2 = CompositeConverter.makeComposite(imp);");
-			return convertRGBToComposite(imp);
+			ImagePlus imp2 = convertRGBToComposite(imp);
+			imp2.setCalibration(imp.getCalibration());
+			return imp2;
 		} else
 			return null;
 	}
