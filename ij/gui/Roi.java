@@ -131,7 +131,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	private int handleSize = -1;
 	private boolean scaleStrokeWidth; // Scale stroke width when zooming images?
 
-	/** Creates a rectangular ROI. */
+	/** Creates a rectangular ROI. To avoid “Can't
+	 * unambiguously select between fixed arity
+	 * signatures…” JavaScript errors, use
+	 * Roi.create(x,y,width,height).
+	*/
 	public Roi(int x, int y, int width, int height) {
 		this(x, y, width, height, 0);
 	}
@@ -235,7 +239,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			this.strokeColor = groupColor;
 	}
 
-	/** Creates a rectangular ROI. */
+	/** Creates a rectangular ROI and avoids “Can't unambiguously
+	 * select between fixed arity signatures…” JavaScript errors.
+	*/
 	public static Roi create(double x, double y, double width, double height) {
 		return new Roi(x, y, width, height);
 	}

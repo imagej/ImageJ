@@ -183,7 +183,7 @@ public class Dithering implements ExtendedPlugInFilter, DialogListener {
 
         bp.setIntArray(pixel);
         ip.insert(bp, 0, 0);
-        if (ip.getBitDepth()==16)
+        if (ip.getBitDepth()==16 || ip.getBitDepth()==32)
         	ip.resetMinAndMax();
     }
 

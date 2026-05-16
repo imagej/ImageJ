@@ -1873,6 +1873,10 @@ public class Functions implements MacroConstants, Measurements {
 		Variable y = getNextVariable();
 		Variable z = getNextVariable();
 		Variable flags = getLastVariable();
+		if (WindowManager.getCurrentImage()==null) {
+			interp.finishUp();
+			throw new RuntimeException(Macro.MACRO_CANCELED);
+		}
 		ImagePlus imp = getImage();
 		ImageCanvas ic = imp.getCanvas();
 		if (ic==null) return;

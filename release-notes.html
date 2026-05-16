@@ -5,15 +5,16 @@
 </head>
 <body>
 
-<li> <u>1.54t12 10 May 2026</u>
+<li> <u>1.54t 16 May 2026</u>
 <ul>
-<li> Added the <i>Help&gt;Examples&gt;Games</i> menu, with "Asteroids",
-"Breakout", "Life", "Pong" and "Snake" entries. These are macros and
-scripts that implement classic Atari video games, and a JavaScript
-version of Conway's Game of Life, created by ChatGPT. They demonstrate
-how to use AI to create macros and scripts, how to use the arrow keys,
-and how to use the autoUpdate(false) and updateDisplay()macro functions
-to get flicker free animation in macros.
+<li> Added the <i>Help&gt;Examples&gt;Games</i> menu, with "2048",
+"Asteroids", "Breakout", "Life", "Pong", "Snake" and "Tetris" entries.
+Each entry is a macro or JavaScript that implements a video game.
+They demonstrate how to use AI to create macros and scripts, how
+to use the arrow keys, how to get flicker free animation in macros
+and how to use the Roi.create() methods to avoid the dreaded
+"Can't unambiguously select between fixed arity signatures..."
+JavaScript error.
 <li> Thanks to Jerome Mutterer, added the <i>Process&gt;Binary&gt;Dither</i>
 command, with support for "Floyd-Steinberg", "Bayer 2x2", "Bayer 4x4",
 "Random noise" and "Halftone" dithering.
@@ -21,12 +22,14 @@ command, with support for "Floyd-Steinberg", "Bayer 2x2", "Bayer 4x4",
 Use the "+" and"-" keys instead.
 <li> The restoreSettings() macro function is automatically called when
 a macro terminates and saveSettings() was called.
-<li>Added the setOption("requireControlKey",boolean) macro function. DOC
+<li>Added the setOption("requireControlKey",boolean) macro function.
 <li> The arrow keys, when used to move selections or to zoom in
 and out, now require the control (or command) key when the
 <i>Edit&gt;Options&gt;Misc&gt;Require control key for shortcuts</i>
 option is enabled
 (<a href="http://wsr.imagej.net/macros/js/Asteroids.js">example</a>).
+<li> The getCursorLoc() macro function no longer displays an
+error message when no windows are open.
 <li> Thanks to Michael Schmid, fixed bug with the "Sliding paraboloid"
 option of the BackgroundSubtracter that caused an endless loop with
 some images containing NaNs.
