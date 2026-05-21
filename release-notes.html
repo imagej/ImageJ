@@ -7,6 +7,10 @@
 
 <li> <u>1.54t 16 May 2026</u>
 <ul>
+<li> Fixed bug where <i>Array.fourier()</i> returned an incorrect first value
+scaled by 1/sqrt(2), because the DC bin used sqrt(H[0]²) instead of
+sqrt(H[0]²+H[0]²) as required by FHT periodicity
+(<a href="https://github.com/imagej/ImageJ/issues/262">Github</a>).
 <li> Added the <i>Help&gt;Examples&gt;Games</i> menu, with "2048",
 "Asteroids", "Breakout", "Life", "Pong", "Snake" and "Tetris" entries.
 Each entry is a macro or JavaScript that implements a video game.

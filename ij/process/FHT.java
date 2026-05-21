@@ -94,8 +94,9 @@ public class FHT extends FloatProcessor {
 	*
 	* Normalization is done such that the peak height in the Fourier transform
 	* (roughly) corresponds to the RMS amplitude of a sinewave (i.e., amplitude/sqrt(2)),
-	* and the first Fourier amplitude corresponds to DC component (average value of
-	* the data). If the sine frequency falls between two discrete frequencies of the
+	* and the first Fourier amplitude corresponds to sqrt(2) times the average value of
+	* the data (applying the same formula as for all other frequency components). If the
+	* sine frequency falls between two discrete frequencies of the
 	* Fourier transform, peak heights can deviate from the true RMS amplitude by up to
 	* approx. 36, 18, 15, and 0.1% for no window function, Hamming, Hann and flat-top
 	* window functions, respectively.
@@ -150,7 +151,7 @@ public class FHT extends FloatProcessor {
 			y[x] *= (1./sum);
 		transform1D(y); //transform
 		float[] result = new float[size/2];
-		result[0] = (float)Math.sqrt(y[0]*y[0]);
+		result[0] = (float)Math.sqrt(y[0]*y[0]+y[0]*y[0]); // H[N-0]=H[0] by FHT periodicity
 		for (int x=1; x<size/2; x++)
 			result[x] = (float)Math.sqrt(y[x]*y[x]+y[size-x]*y[size-x]);
 		return result;
