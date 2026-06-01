@@ -284,7 +284,6 @@ binary15="Ultimate Points",ij.plugin.filter.EDM("points")
 binary16="Watershed",ij.plugin.filter.EDM("watershed")
 binary17="Voronoi",ij.plugin.filter.EDM("voronoi")
 binary18="Dither...",ij.plugin.filter.Dithering
-
 binary19=-
 binary20="Options...",ij.plugin.filter.Binary("options")
 
@@ -416,6 +415,7 @@ utilities12="ImageJ Properties",ij.plugin.JavaProperties
 utilities13="Threads",ij.plugin.ThreadLister
 utilities14="Benchmark",ij.plugin.Benchmark
 utilities15="Reset...",ij.plugin.SimpleCommands("reset")
+utilities16="DICOM Metadata...",ij.plugin.DicomMetadata
 
 # Plugins installed in the Plugins/New submenu
 new_01="Macro",ij.plugin.NewPlugin("macro")
@@ -471,4 +471,3 @@ open27="T1 Head (16-bits)",ij.plugin.URLOpener("t1-head.zip")
 open28="T1 Head Renderings",ij.plugin.URLOpener("t1-rendering.zip")
 open29="TEM Filter",ij.plugin.URLOpener("TEM_filter_sample.jpg")
 open30="Tree Rings",ij.plugin.URLOpener("Tree_Rings.jpg")
-

@@ -145,6 +145,9 @@ public class Tokenizer implements MacroConstants {
 					else
 						st.pushBack();
 					break;
+				case '?':
+					pgm.hasQuestionMark = true;
+					break;
 				default:
             }
             tokenString = ret;

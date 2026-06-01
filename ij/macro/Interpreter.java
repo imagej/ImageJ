@@ -18,6 +18,7 @@ public class Interpreter implements MacroConstants {
 
 	static final int STACK_SIZE = 1000;
 	static final int MAX_ARGS = 20;
+	static final int TERNARY_STRING = 999;
 
 	int pc;
 	int token;
@@ -834,6 +835,7 @@ public class Interpreter implements MacroConstants {
 			case Variable.ARRAY: doArrayAssignment(); break;
 			case USER_FUNCTION: doUserFunctionAssignment(); break;
 			case STRING_FUNCTION: doNumericStringAssignment(); break;
+			case TERNARY_STRING: doTernaryStringAssignment(); break;
 			default:
 				putTokenBack();
 				double value = getAssignmentExpression();
@@ -844,8 +846,10 @@ public class Interpreter implements MacroConstants {
 	int getExpressionType() {
 		int rightSideToken = pgm.code[pc+2];
 		int tok = rightSideToken&0xff;
+				
 		if (tok==STRING_CONSTANT)
 			return Variable.STRING;
+			
 		if (tok==STRING_FUNCTION) {
 			int address = rightSideToken>>TOK_SHIFT;
 			int type = pgm.table[address].type;
@@ -868,10 +872,13 @@ public class Interpreter implements MacroConstants {
 				return Variable.VALUE;
 			return Variable.STRING;
 		}
+		
 		if (tok==ARRAY_FUNCTION)
 			return Variable.ARRAY;
+			
 		if (tok==USER_FUNCTION)
 			return USER_FUNCTION;
+			
 		if (tok==VARIABLE_FUNCTION) {
 			int address = rightSideToken>>TOK_SHIFT;
 			int type = pgm.table[address].type;
@@ -882,8 +889,28 @@ public class Interpreter implements MacroConstants {
 			if (name.equals("getColumn")||name.equals("toArray"))
 				return Variable.ARRAY;			
 		}
+		
 		if (tok!=WORD)
 			return Variable.VALUE;
+			
+		if (pgm.hasQuestionMark) {
+			int savePC = pc;
+			lineNumber = pgm.lineNumbers[pc];
+			while (!done && lineNumber==pgm.lineNumbers[pc]) {
+				//IJ.log(pgm.decodeToken(token, tokenAddress));
+				getToken();
+				if (token==';')
+					break;
+				if (token=='?' && nextToken()==STRING_CONSTANT) {
+					pc = savePC-1;
+					getToken();
+					return TERNARY_STRING;
+				}
+			}
+			pc = savePC-1;
+			getToken();
+		}
+
 		Variable v = lookupVariable(rightSideToken>>TOK_SHIFT);
 		if (v==null)
 			return Variable.VALUE;
@@ -1108,6 +1135,39 @@ public class Interpreter implements MacroConstants {
 			error("Array expected");
 	}
 
+	final void doTernaryStringAssignment() {
+		Variable v = lookupLocalVariable(tokenAddress);
+		if (v==null) {
+			if (nextToken()=='=')
+				v = push(tokenAddress, 0.0, null, this);
+			else
+				error("Undefined identifier");
+		}
+		getToken();
+		if (token!='=')
+			error("'=' expected");
+		double value = getLogicalExpression2();
+		getToken(); // Consume '?'
+		if (token!='?')
+			error("'?' expected");
+		boolean condition = (value!=0.0); // ImageJ macro treats non-zero as true
+		String string;		
+		if (condition) { // True branch
+			string = getString();
+			getToken(); // skip ':'
+			if (token!=':')
+				error("':' expected");
+			getString(); // Skip the false expression
+		} else { // False branch
+			getString(); // Skip the true expression
+			getToken(); // skip ':'
+			if (token!=':')
+				error("':' expected");
+			string = getString();
+		}
+		v.setString(string);
+	}
+
 	final void doIf() {
 		looseSyntax = false;
 		boolean b = getBoolean();
@@ -1139,7 +1199,6 @@ public class Interpreter implements MacroConstants {
 
 	final double getLogicalExpression() {
 		double value = getLogicalExpression2();
-		//IJ.log("getLogicalExpression: "+value+" "+nextToken());
 		if (nextToken()=='?')
 			return ternaryOperatorValue(value);
 		else
@@ -1163,18 +1222,20 @@ public class Interpreter implements MacroConstants {
 		return v1;
 	}
 
+	// Handle ternary operator
+	// condition ? true-expression : false-expression;
 	private double ternaryOperatorValue(double value) {
-		getToken(); // Consume '?'		
+		getToken(); // Consume '?'
+		if (nextToken()==STRING_CONSTANT)
+			error("String operands not supported");
 		boolean condition = (value!=0.0); // ImageJ macro treats non-zero as true		
-		if (condition) {
-			// True branch: Evaluate the expression after '?'
+		if (condition) { // True branch
 			value = getExpression();
 			getToken(); // skip ':'
 			if (token!=':')
 				error("':' expected");
 			getExpression(); // Skip the false expression
-		} else {
-			// False branch: Skip the true expression up to the ':'
+		} else { // False branch
 			getExpression(); // Skip the true expression
 			getToken(); // skip ':'
 			if (token!=':')
