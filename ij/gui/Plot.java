@@ -24,6 +24,7 @@ import ij.measure.ResultsTable;
  * @author Philippe CARL, CNRS, philippe.carl (AT) unistra.fr (log axes, arrows, ArrayList data)
  * @author Norbert Vischer (overlay range arrows, 'R'eset range, filled plots, dynamic plots, boxes and whiskers, superscript)
  * @author Michael Schmid (axis grid/ticks, resizing/panning/changing range, high-resolution, serialization)
+ * @author Anthony Sinadinos (plot ROIs)
  */
 public class Plot implements Cloneable {
 
@@ -165,6 +166,7 @@ public class Plot implements Cloneable {
 	PlotProperties ppSnapshot;						//copy for reverting
 	Vector<PlotObject> allPlotObjects = new Vector<PlotObject>();	//all curves, labels etc., also serialized for saving/reading
 	Vector<PlotObject> allPlotObjectsSnapshot;      //copy for reverting
+	Vector<PlotObject> roiPlotObjects = new Vector<PlotObject>();	//all plot data within a user specified ROI
 	private PlotVirtualStack stack;
 	/** For high-resolution plots, everything will be scaled with this number. Otherwise, must be 1.0.
 	 *  (creating margins, saving PlotProperties etc only supports scale=1.0) */
@@ -3849,7 +3851,7 @@ public class Plot implements Cloneable {
 	 * not written, independent of writeFirstXColumn.
 	 * When the data sets have labels and useLabels is true, they are used for column headings,
 	 * otherwise columns are named X, Y, X1, Y1, ... */
-	ResultsTable getResultsTable(boolean writeFirstXColumn, boolean useLabels) {
+	ResultsTable getResultsTableOriginal(boolean writeFirstXColumn, boolean useLabels) {
 		ResultsTable rt = new ResultsTable();
 		// find the longest x-value data set and count the data sets
 		int nDataSets =	 0;
@@ -3910,6 +3912,112 @@ public class Plot implements Cloneable {
 		for (int i=0; i<nColumns; i++)
 			rt.setDecimalPlaces(i, getPrecision(rt.getColumn(i)));
 		return rt;
+	}
+
+	/** Creates a ResultsTable with the data of the plot selection. Returns null if no data.
+	 * Does not write the first x column if writeFirstXColumn is false.
+	 * When all columns are the same length, x columns equal to the first x column are
+	 * not written, independent of writeFirstXColumn.
+	 * When the data sets have labels and useLabels is true, they are used for column headings,
+	 * otherwise columns are named X, Y, X1, Y1, ... */
+	//ResultsTable getResultsFromSelection(boolean writeFirstXColumn, boolean useLabels) {
+	ResultsTable getResultsTable(boolean writeFirstXColumn, boolean useLabels) {
+		Roi roi = imp.getRoi();
+		if (roi != null && roi.isArea()) {
+			//create another PlotObjects Vector to hold a version of the data only encompassing datapoints that fall within the ROI
+			roiPlotObjects.clear(); //empty the roiPlotObject vector ready to populate it with another set of data... consider handling a copy of the data elsewhere for 'Undo' purposes
+			for (PlotObject plotObject : allPlotObjects) {
+				if (plotObject.xValues != null && plotObject.type==PlotObject.XY_DATA) {
+					float[] xValueArray = plotObject.xValues;
+					ArrayList<Integer> roixIndexList = new ArrayList<Integer>();
+					float[] yValueArray = plotObject.yValues;
+					ArrayList<Integer> roiyIndexList = new ArrayList<Integer>();
+					int foundValues = 0;
+					for (int i = 0; i < xValueArray.length; i++) {
+						if (roi.containsPoint(scaleXtoPxl(xValueArray[i]), scaleYtoPxl(yValueArray[i]))) {
+							foundValues++;
+							roixIndexList.add(i);
+							roiyIndexList.add(i);
+						}
+					}
+					if (foundValues > 0) {
+						float[] roixValueArray = new float[foundValues];
+						float[] roiyValueArray = new float[foundValues];
+						for (int i = 0; i < foundValues; i++) {
+							roixValueArray[i] = xValueArray[roixIndexList.get(i)];
+							roiyValueArray[i] = yValueArray[roiyIndexList.get(i)];
+						}
+						roiPlotObjects.add(new PlotObject(roixValueArray, roiyValueArray, /*yErrorBars*/null, plotObject.shape, currentLineWidth, currentColor, currentColor2, plotObject.label)); //consider changing the datapoints appearance here to indicate that they are highlighted
+					}
+				}
+			}
+			ResultsTable rt = new ResultsTable();
+			// find the longest x-value data set and count the data sets
+			int nDataSets =	 0;
+			int tableLength = 0;
+			for (PlotObject plotObject : roiPlotObjects)
+				if (plotObject.xValues != null) {
+					nDataSets++;
+					tableLength = Math.max(tableLength, plotObject.xValues.length);
+				}
+			if (nDataSets == 0)
+				return null;
+			// enter columns one by one to lists of data and headings
+			ArrayList<String> headings = new ArrayList<String>(2*nDataSets);
+			ArrayList<float[]> data = new ArrayList<float[]>(2*nDataSets);
+			int dataSetNumber = 0;
+			int arrowsNumber = 0;
+			PlotObject firstXYobject = null;
+			boolean allSameLength = true;
+			for (PlotObject plotObject : roiPlotObjects) {
+				if (plotObject.type==PlotObject.XY_DATA) {
+					if (firstXYobject != null && firstXYobject.xValues.length!=plotObject.xValues.length) {
+						allSameLength = false;
+						break;
+					}
+					if (firstXYobject==null)
+						firstXYobject = plotObject;
+				}
+			}
+			firstXYobject = null;
+			for (PlotObject plotObject : roiPlotObjects) {
+				if (plotObject.type==PlotObject.XY_DATA) {
+					boolean sameX = firstXYobject!=null && Arrays.equals(firstXYobject.xValues, plotObject.xValues) && allSameLength;
+					boolean sameXY = sameX && Arrays.equals(firstXYobject.yValues, plotObject.yValues); //ignore duplicates (e.g. Markers plus Curve)
+					boolean writeX = firstXYobject==null ? writeFirstXColumn : !sameX;
+					addToLists(headings, data, plotObject, dataSetNumber, writeX, /*writeY=*/!sameXY, /*multipleSets=*/nDataSets>1, useLabels);
+					if (firstXYobject == null)
+						firstXYobject = plotObject;
+					dataSetNumber++;
+				} else if (plotObject.type==PlotObject.ARROWS) {
+					addToLists(headings, data, plotObject, arrowsNumber, /*writeX=*/true, /*writeY=*/true, /*multipleSets=*/nDataSets>1, /*useLabels=*/false);
+					arrowsNumber++;
+				}
+			}
+			// populate the ResultsTable
+			int nColumns = headings.size();
+			for (int line=0; line<tableLength; line++) {
+				for (int col=0; col<nColumns; col++) {
+					String heading = headings.get(col);
+					float[] values = data.get(col);
+					if (line<values.length)
+						rt.setValue(heading, line, values[line]);
+					else
+						rt.setValue(heading, line, "");
+				}
+			}
+			// set the decimals (precision) of the table columns
+			nColumns = rt.getLastColumn() + 1;
+			for (int i=0; i<nColumns; i++)
+				rt.setDecimalPlaces(i, getPrecision(rt.getColumn(i)));
+			return rt;
+			
+		} else {
+			//return a results table of all data if no ROI is defined
+			//ResultsTable rt = getResultsTable(writeFirstXColumn, useLabels);
+			ResultsTable rt = getResultsTableOriginal(writeFirstXColumn, useLabels);
+			return rt; 
+		}
 	}
 
 	// when writing data in scientific mode, use at least 4 decimals behind the decimal point
