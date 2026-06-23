@@ -246,7 +246,7 @@ public class FileInfo implements Cloneable {
     	switch (fileType) {
 			case GRAY8: return "byte";
 			case GRAY16_SIGNED: return "short";
-			case GRAY10_UNSIGNED: case GRAY12_UNSIGNED: GRAY16_UNSIGNED: return "ushort";
+			case GRAY10_UNSIGNED: case GRAY12_UNSIGNED: case GRAY16_UNSIGNED: return "ushort";
 			case GRAY32_INT: return "int";
 			case GRAY32_UNSIGNED: return "uint";
 			case GRAY32_FLOAT: return "float";
