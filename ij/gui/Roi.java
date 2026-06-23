@@ -1914,6 +1914,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 		}
 	}
 
+	/** Returns the current group LUT.*/
+	public static LUT getGroupLut(){
+		return groupLut;
+	}
+
+	/** Returns the name or the path of the current group LUT.*/
+	public static String getGroupLutName() {
+		return groupLutName;
+	}
+
 	// Returns the color associated with the specified group index
 	private static Color getGroupColor(int group) {
 		Color color = ROIColor; // Default ROI color
