@@ -5,8 +5,20 @@
 </head>
 <body>
 
-<li> <u>1.54u6 1 June 2026</u>
+<li> <u>1.54u7 22 June 2026</u>
 <ul>
+<li> Thanks to Mustufa Merchant, added the
+   <i>Analyze&gt;Tools&gt;Compare Images</i> command. It measures
+	how similar two images of the same size are, using metrics that are widely
+	used to evaluate denoising, compression, reconstruction and registration:
+	<ul>
+	<li>MSE  - mean squared error</li>
+	<li>RMSE - root mean squared error</li>
+	<li>MAE  - mean absolute error</li>
+	<li>Max  - maximum absolute difference</li>
+	<li>PSNR - peak signal-to-noise ratio, in decibels (higher is more similar)</li>
+	<li>SSIM - mean structural similarity index, in the range -1..1 (1 is identical)</li>
+	</ul>
 <li> Thanks to Mustufa Merchant, added the
 <i>Plugins&gt;Utilities&gt;DICOM Metadata</i> command.
 The <i>Image&gt;Show Info</i> command displays the same

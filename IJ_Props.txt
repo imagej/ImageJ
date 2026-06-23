@@ -365,6 +365,7 @@ tools06="Scale Bar...",ij.plugin.ScaleBar
 tools07="Calibration Bar...",ij.plugin.CalibrationBar
 tools08="Synchronize Windows",ij.plugin.frame.SyncWindows
 tools09="Grid...",ij.plugin.Grid
+tools10="Compare Images...",ij.plugin.ImageComparator
 
 # Plugins installed in the Plugins menu
 plug-in01=>"Macros"
