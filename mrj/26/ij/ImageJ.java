@@ -1,10 +1,10 @@
 package ij;
+
 import ij.gui.*;
-import ij.process.*;
-import ij.io.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.plugin.frame.*;
+import ij.stub.Applet;
 import ij.text.*;
 import ij.macro.Interpreter;
 import ij.io.Opener;
@@ -17,7 +17,6 @@ import java.net.*;
 import java.awt.image.*;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.SwingUtilities;
 
 /**
 This frame is the main ImageJ class.
@@ -78,8 +77,8 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
-	public static final String VERSION = "1.54u";
-	public static final String BUILD = "7";
+	public static final String VERSION = "1.54s";
+	public static final String BUILD = "13";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -112,7 +111,7 @@ public class ImageJ extends Frame implements ActionListener,
 	private ProgressBar progressBar;
 	private JLabel statusLine;
 	private boolean firstTime = true;
-	private java.applet.Applet applet; // null if not running as an applet
+	private Applet applet; // null if not running as an applet
 	private Vector classes = new Vector();
 	private boolean exitWhenQuitting;
 	private boolean quitting;
@@ -137,19 +136,19 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 
 	/** Creates a new ImageJ frame that runs as an applet.
-	 @deprecated Applets were removed in Java 26*/
-	@Deprecated
-	public ImageJ(java.applet.Applet applet) {
+	    @deprecated Applets were removed in Java 26*/
+	@Deprecated(since = "IJ XX; Java 26")
+	public ImageJ(Applet applet) {
 		this(applet, STANDALONE);
 	}
 
 	/** If 'applet' is not null, creates a new ImageJ frame that runs as an applet.
-		If  'mode' is ImageJ.EMBEDDED and 'applet is null, creates an embedded 
-		(non-standalone) version of ImageJ.
+	    If  'mode' is ImageJ.EMBEDDED and 'applet is null, creates an embedded
+	    (non-standalone) version of ImageJ.
 	    @deprecated Applets were removed in Java 26.
 	 */
-	@Deprecated
-	public ImageJ(java.applet.Applet applet, int mode) {
+	@Deprecated(since = "IJ XX; Java 26")
+	public ImageJ(Applet applet, int mode) {
 		super("ImageJ");
 		if ((mode&DEBUG)!=0)
 			IJ.setDebugMode(true);
@@ -448,7 +447,8 @@ public class ImageJ extends Frame implements ActionListener,
 			return; // Allow macOS to run ImageJ>Hide ImageJ command
 		String cmd = null;
 		ImagePlus imp = WindowManager.getCurrentImage();
-		boolean isStack = (imp!=null) && (imp.getStackSize()>1);		
+		boolean isStack = (imp!=null) && (imp.getStackSize()>1);
+		
 		if (imp!=null && !meta && ((keyChar>=32 && keyChar<=255) || keyChar=='\b' || keyChar=='\n')) {
 			Roi roi = imp.getRoi();
 			if (roi!=null && roi instanceof TextRoi) {
@@ -470,7 +470,7 @@ public class ImageJ extends Frame implements ActionListener,
 				return;
 			}
 		}
-		      		
+        		
 		// Handle one character macro shortcuts
 		if (!control && !meta) {
 			Hashtable macroShortcuts = Menus.getMacroShortcuts();
@@ -490,13 +490,10 @@ public class ImageJ extends Frame implements ActionListener,
 		if (keyCode==KeyEvent.VK_SEPARATOR)
 			keyCode = KeyEvent.VK_DECIMAL;
 		boolean functionKey = keyCode>=KeyEvent.VK_F1 && keyCode<=KeyEvent.VK_F12;
-		boolean arrowKey = keyCode==37 || keyCode==38 || keyCode==39 || keyCode==40;
-		if (Interpreter.getInstance()==null)
-			arrowKey = false;
 		boolean numPad = keyCode==KeyEvent.VK_DIVIDE || keyCode==KeyEvent.VK_MULTIPLY
 			|| keyCode==KeyEvent.VK_DECIMAL
 			|| (keyCode>=KeyEvent.VK_NUMPAD0 && keyCode<=KeyEvent.VK_NUMPAD9);			
-		if ((!Prefs.requireControlKey||control||meta||functionKey||numPad||arrowKey) && keyChar!='+') {
+		if ((!Prefs.requireControlKey||control||meta||functionKey||numPad) && keyChar!='+') {
 			Hashtable shortcuts = Menus.getShortcuts();
 			if (shift && !functionKey)
 				cmd = (String)shortcuts.get(Integer.valueOf(keyCode+200));
@@ -551,10 +548,10 @@ public class ImageJ extends Frame implements ActionListener,
 							cmd="Next Slice [>]";
 					else if (stackKey && keyCode==KeyEvent.VK_LEFT)
 							cmd="Previous Slice [<]";
-					//else if (zoomKey && keyCode==KeyEvent.VK_DOWN && !ignoreArrowKeys(imp,control) && Toolbar.getToolId()<Toolbar.SPARE6)
-					//		cmd="Out [-]";
-					//else if (zoomKey && keyCode==KeyEvent.VK_UP && !ignoreArrowKeys(imp,control) && Toolbar.getToolId()<Toolbar.SPARE6)
-					//		cmd="In [+]";
+					else if (zoomKey && keyCode==KeyEvent.VK_DOWN && !ignoreArrowKeys(imp) && Toolbar.getToolId()<Toolbar.SPARE6)
+							cmd="Out [-]";
+					else if (zoomKey && keyCode==KeyEvent.VK_UP && !ignoreArrowKeys(imp) && Toolbar.getToolId()<Toolbar.SPARE6)
+							cmd="In [+]";
 					else if (roi!=null) {
 						if ((flags & KeyEvent.ALT_MASK)!=0 || (flags & KeyEvent.CTRL_MASK)!=0)
 							roi.nudgeCorner(keyCode);
@@ -611,7 +608,7 @@ public class ImageJ extends Frame implements ActionListener,
 		return false;
 	}
 	
-	private boolean ignoreArrowKeys(ImagePlus imp, boolean control) {
+	private boolean ignoreArrowKeys(ImagePlus imp) {
 		Frame frame = WindowManager.getFrontWindow();
 		String title = frame!=null?frame.getTitle():null;
 		if (title!=null && title.equals("ROI Manager"))
@@ -627,8 +624,6 @@ public class ImageJ extends Frame implements ActionListener,
 		ImageWindow win = imp.getWindow();
 		// LOCI Data Browser window?
 		if (imp.getStackSize()>1 && win!=null && win.getClass().getName().startsWith("loci"))
-			return true;
-		if (Prefs.requireControlKey && !control) 
 			return true;
 		return false;
 	}

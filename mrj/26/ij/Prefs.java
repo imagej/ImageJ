@@ -1,11 +1,10 @@
 package ij;
+import ij.stub.Applet;
 import ij.util.Java2;
 import java.io.*;
 import java.util.*;
-import java.applet.*;
 import java.net.URL;
 import java.awt.*;
-import java.applet.Applet;
 import ij.io.*;
 import ij.util.Tools;
 import ij.gui.*;
@@ -20,7 +19,7 @@ import ij.text.TextWindow;
 /**
 This class contains the ImageJ preferences, which are 
 loaded from the "IJ_Props.txt" and "IJ_Prefs.txt" files.
-@see ij.ImageJ
+@see ImageJ
 */
 public class Prefs {
 
@@ -296,23 +295,22 @@ public class Prefs {
 			return value.equals("true");
 	}
 
-	/**
-	 * Finds and loads the configuration file ("IJ_Props.txt")
-	 * and the preferences file ("IJ_Prefs.txt").
-	 *
-	 * @param ij
-	 * @return    an error message if "IJ_Props.txt" not found.
-	 */
-	public static String load(Object ij) {
-		return load(ij, null);
-	}
-	
-	/** Finds and loads the configuration file ("IJ_Props.txt")
+    /**
+     * Finds and loads the configuration file ("IJ_Props.txt")
+     * and the preferences file ("IJ_Prefs.txt").
+     *
+     * @param ij
+     * @return    an error message if "IJ_Props.txt" not found.
+     */
+    public static String load(Object ij) {
+        return load(ij, null);
+    }
+
+    /** Finds and loads the configuration file ("IJ_Props.txt")
 	 * and the preferences file ("IJ_Prefs.txt").
 	 * @return	an error message if "IJ_Props.txt" not found.
-	 * @deprecated Prefer {@link #load(Object)} as Applets were removed in Java 26.
 	*/
-	@Deprecated
+	@Deprecated(since = "IJ XX; Java 26")
 	public static String load(Object ij, Applet applet) {
 		if (ImageJDir==null)
 			ImageJDir = System.getProperty("user.dir");
@@ -358,7 +356,7 @@ public class Prefs {
 	}
 	*/
 
-	@Deprecated
+	@Deprecated(since = "IJ XX; Java 26")
 	static String loadAppletProps(InputStream f, Applet applet) {
 		if (f==null)
 			return PROPS_NAME+" not found in ij.jar";

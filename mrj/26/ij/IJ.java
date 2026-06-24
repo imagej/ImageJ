@@ -1,6 +1,8 @@
 package ij;
+
 import ij.gui.*;
 import ij.process.*;
+import ij.stub.Applet;
 import ij.text.*;
 import ij.io.*;
 import ij.plugin.*;
@@ -16,14 +18,9 @@ import ij.measure.Measurements;
 import java.awt.event.*;
 import java.text.*;
 import java.util.*;	
-import java.awt.*;	
-import java.applet.Applet;
+import java.awt.*;
 import java.io.*;
-import java.lang.reflect.*;
 import java.net.*;
-import javax.net.ssl.*;
-import java.security.cert.*;
-import java.security.KeyStore;
 import java.nio.ByteBuffer;
 import java.math.RoundingMode;
 
@@ -59,7 +56,7 @@ public class IJ {
     public static final char degreeSymbol = '\u00B0';
 
 	private static ImageJ ij;
-	private static java.applet.Applet applet;
+	private static Applet applet;
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
 	private static String osname, osarch;
@@ -123,7 +120,7 @@ public class IJ {
 		df[9] = new DecimalFormat("0.000000000", dfs);
 		df[0].setRoundingMode(RoundingMode.HALF_UP);
 	}
-
+			
 	static void init(ImageJ imagej, Applet theApplet) {
 		ij = imagej;
 		applet = theApplet;
@@ -443,11 +440,11 @@ public class IJ {
 
 	/**
 	 * Returns the Applet that created this ImageJ or null if running as an application.
-	 * @deprecated Always returns null when running on Java 26+ due to removal of Applets.
+	 * @deprecated Always returns null since removal of Applets in Java 26.
 	 */
-	@Deprecated
-	public static java.applet.Applet getApplet() {
-		return applet;
+	@Deprecated(since = "IJ XX; Java 26")
+	public static Applet getApplet() {
+		return null;
 	}
 	
 	/**Displays a message in the ImageJ status bar. If 's' starts 
@@ -922,7 +919,7 @@ public class IJ {
 	
 	/** Emits an audio beep. */
 	public static void beep() {
-		java.awt.Toolkit.getDefaultToolkit().beep();
+		Toolkit.getDefaultToolkit().beep();
 	}
 	
 	/**	Returns a string something like "64K of 256MB (25%)"
