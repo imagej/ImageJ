@@ -22,6 +22,7 @@
   <target name="build" depends="compile" description="Build ij.jar.">
     <!-- Copy needed files into the build directory. -->
     <copy file="IJ_Props.txt" todir="${build.dir}" />
+    <copy file="functions.html" todir="${build.dir}" />
     <copy file="images/microscope.gif" tofile="${build.dir}/microscope.gif" />
     <copy file="images/about.jpg" tofile="${build.dir}/about.jpg" />
     <copy file="plugins/MacAdapter.class" tofile="${build.dir}/ij/plugin/MacAdapter.class" />
