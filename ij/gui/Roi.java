@@ -74,7 +74,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	protected static int lineWidth = 1;
 	protected static Color defaultFillColor;
 	private static Vector listeners = new Vector();
-	private static LUT glasbeyLut;
+	private static LUT groupLut; // LUT used to assign colors to ROI groups
+	private static String groupLutName = "Glasbey.lut";
 	private static int defaultGroup; // zero is no specific group
 	private static Color groupColor;
 	private static double defaultStrokeWidth;
@@ -1902,22 +1903,50 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 			imp.draw();
 	}
 
-	/** Retrieves color associated to a given roi group. */
-	private static Color getGroupColor(int group) {
-		Color color = ROIColor; // default ROI color
-		if (group>0) { // read Glasbey Lut
-			if (glasbeyLut==null) {
-				String path = IJ.getDir("luts")+"Glasbey.lut";
-				glasbeyLut = LutLoader.openLut("noerror:"+path);
-				if (glasbeyLut==null) {
-					path = IJ.getDir("luts")+"glasbey.lut";
-					glasbeyLut = LutLoader.openLut("noerror:"+path);
+	/** Sets a custom LUT for coloring ROI groups. */
+	public static void setGroupLut(String path) {
+		LUT customLut = LutLoader.openLut(path);
+		if (customLut != null) {
+			groupLut = customLut;
+			groupLutName = path;
+		} else {
+			IJ.error("LUT Error", "Unable to load group LUT: " + path);
+		}
+	}
+
+	/** Returns the current group LUT.*/
+	public static LUT getGroupLut(){
+		return groupLut;
+	}
+
+	/** Returns the name or the path of the current group LUT.*/
+	public static String getGroupLutName() {
+		return groupLutName;
+	}
+
+	// Returns the color associated with the specified group index
+	public static Color getGroupColor(int group) {
+		Color color = ROIColor; // Default ROI color
+		if (group > 0) {
+			if (groupLut == null) {
+				// Load the default Glasbey LUT if no custom LUT is set
+				String path = IJ.getDir("luts") + "Glasbey.lut";
+				groupLut = LutLoader.openLut("noerror:" + path);
+
+				if (groupLut == null) {
+					// Fallback for case sensitivity on certain file systems
+					path = IJ.getDir("luts") + "glasbey.lut";
+					groupLut = LutLoader.openLut("noerror:" + path);
 				}
-				if (glasbeyLut==null)
-					IJ.log("LUT not found: "+path);
+
+				if (groupLut == null)
+					IJ.log("Default Group LUT not found: " + path);
 			}
-			if (glasbeyLut!=null)
-				color = new Color(glasbeyLut.getRGB(group));
+
+			// Extract the specific color for this group from the LUT
+			if (groupLut != null) {
+				color = new Color(groupLut.getRGB(group));
+			}
 		}
 		return color;
 	}
