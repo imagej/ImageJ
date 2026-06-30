@@ -1925,7 +1925,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable, Iter
 	}
 
 	// Returns the color associated with the specified group index
-	private static Color getGroupColor(int group) {
+	public static Color getGroupColor(int group) {
 		Color color = ROIColor; // Default ROI color
 		if (group > 0) {
 			if (groupLut == null) {
