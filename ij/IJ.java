@@ -123,7 +123,7 @@ public class IJ {
 		df[9] = new DecimalFormat("0.000000000", dfs);
 		df[0].setRoundingMode(RoundingMode.HALF_UP);
 	}
-			
+
 	static void init(ImageJ imagej, Applet theApplet) {
 		ij = imagej;
 		applet = theApplet;
@@ -441,7 +441,11 @@ public class IJ {
 		return macroRunning || Interpreter.getInstance()!=null;
 	}
 
-	/**Returns the Applet that created this ImageJ or null if running as an application.*/
+	/**
+	 * Returns the Applet that created this ImageJ or null if running as an application.
+	 * @deprecated Always returns null when running on Java 26+ due to removal of Applets.
+	 */
+	@Deprecated
 	public static java.applet.Applet getApplet() {
 		return applet;
 	}

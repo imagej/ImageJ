@@ -295,11 +295,24 @@ public class Prefs {
 		else
 			return value.equals("true");
 	}
+
+	/**
+	 * Finds and loads the configuration file ("IJ_Props.txt")
+	 * and the preferences file ("IJ_Prefs.txt").
+	 *
+	 * @param ij
+	 * @return    an error message if "IJ_Props.txt" not found.
+	 */
+	public static String load(Object ij) {
+		return load(ij, null);
+	}
 	
 	/** Finds and loads the configuration file ("IJ_Props.txt")
 	 * and the preferences file ("IJ_Prefs.txt").
 	 * @return	an error message if "IJ_Props.txt" not found.
+	 * @deprecated Prefer {@link #load(Object)} as Applets were removed in Java 26.
 	*/
+	@Deprecated
 	public static String load(Object ij, Applet applet) {
 		if (ImageJDir==null)
 			ImageJDir = System.getProperty("user.dir");
@@ -345,6 +358,7 @@ public class Prefs {
 	}
 	*/
 
+	@Deprecated
 	static String loadAppletProps(InputStream f, Applet applet) {
 		if (f==null)
 			return PROPS_NAME+" not found in ij.jar";
