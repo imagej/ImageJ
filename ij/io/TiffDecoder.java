@@ -507,6 +507,8 @@ public class TiffDecoder {
 						fi.compression = FileInfo.PACK_BITS;
 					else if (value==32946 || value==8) //8=Adobe deflate
 						fi.compression = FileInfo.ZIP;
+					else if (value==50000) // Zstandard
+						fi.compression = FileInfo.ZSTD;
 					else if (value!=1 && value!=0 && !(value==7&&fi.width<500)) {
 						// don't abort with Spot camera compressed (7) thumbnails
 						// otherwise, this is an unknown compression type
@@ -528,6 +530,8 @@ public class TiffDecoder {
 							fi.compression = FileInfo.LZW_WITH_DIFFERENCING;
 						else if (fi.compression==FileInfo.ZIP)
 							fi.compression = FileInfo.ZIP_WITH_DIFFERENCING;
+						else if (fi.compression==FileInfo.ZSTD)
+							fi.compression = FileInfo.ZSTD_WITH_DIFFERENCING;
 					} else if (value==3)
 						IJ.log("TiffDecoder: unsupported predictor value of 3");
 					break;
