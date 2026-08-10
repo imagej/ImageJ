@@ -305,6 +305,24 @@ public class FileOpener {
 		return imp;
 	}
 	
+	/** Applies the slice labels, ROI, overlay and properties stored in the
+		FileInfo. Called by Opener.openTiffStack() for stacks that it assembles
+		itself, one IFD per slice, which is the path taken by compressed stacks;
+		openStack() above applies the same metadata inline. */
+	void setStackMetadata(ImagePlus imp) {
+		ImageStack stack = imp.getStack();
+		if (fi.sliceLabels!=null && fi.sliceLabels.length<=stack.size()) {
+			for (int i=0; i<fi.sliceLabels.length; i++)
+				stack.setSliceLabel(fi.sliceLabels[i], i+1);
+		}
+		if (fi.roi!=null)
+			decodeAndSetRoi(imp, fi);
+		if (fi.overlay!=null)
+			setOverlay(imp, fi.overlay);
+		if (fi.properties!=null)
+			imp.setProperties(fi.properties);
+	}
+
 	private void decodeAndSetRoi(ImagePlus imp, FileInfo fi) {
 		Roi roi = RoiDecoder.openFromByteArray(fi.roi);
 		imp.setRoi(roi);
