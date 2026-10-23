@@ -572,6 +572,16 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		return comp;
 	}
 	
+	/** On Linux, Java passes the maximized size to the window manager as the
+		largest size the window may ever have, which stops it from growing past
+		the screen it opened on. Allow the whole desktop instead; maximize()
+		still fits the image to the current screen. */
+	public void setMaximizedBounds(Rectangle bounds) {
+		if (IJ.isLinux() && bounds!=null)
+			bounds = GUI.getUnionOfBounds();
+		super.setMaximizedBounds(bounds);
+	}
+	
 	public void maximize() {
 		if (GenericDialog.getInstance()!=null && IJ.isMacOSX() && IJ.isJava18())
 			return; // workaround for OSX/Java 8 maximize bug 
