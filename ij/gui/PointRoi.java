@@ -891,8 +891,11 @@ public class PointRoi extends PolygonRoi {
 		the last point was added and the specified screen coordinates are
 		inside or near a point, otherwise returns -1. */
 	public int isHandle(int sx, int sy) {
-		if ((System.currentTimeMillis()-lastPointTime)<1000L)
-			return -1;
+		if ((System.currentTimeMillis()-lastPointTime)<1000L) {
+			boolean samePoint = sx == xp2[nPoints-1] && sy == yp2[nPoints-1];
+			if (!samePoint)
+				return -1;
+		}
 		int size = HANDLE_SIZE+this.size;
 		int halfSize = size/2;
 		int handle = -1;
