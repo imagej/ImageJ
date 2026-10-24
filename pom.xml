@@ -84,13 +84,13 @@
 		<license.licenseName>N/A</license.licenseName>
 		<license.copyrightOwners>N/A</license.copyrightOwners>
 
-		<scijava.jvm.version>6</scijava.jvm.version>
+		<scijava.jvm.version>1.6</scijava.jvm.version>
 		<scijava.jvm.build.version>[9,)</scijava.jvm.build.version>
 		<javac.path>${java.home}/../lib/tools.jar</javac.path>
 
 		<!-- HACK: Work around usage of Java-7-specific JList code. -->
 		<maven.compiler.source>9</maven.compiler.source>
-		<maven.compiler.target>6</maven.compiler.target>
+		<maven.compiler.target>${scijava.jvm.version}</maven.compiler.target>
 		<maven.compiler.release></maven.compiler.release>
 
 		<!-- HACK: Work around 'String index out of bounds' javadoc error. -->
@@ -174,10 +174,10 @@
 				<configuration>
 					<!-- jdkToolchain required when JAVA_HOME is JDK 9 or above -->
 					<jdkToolchain>
-						<version>[1.6,8)</version>
+						<version>[${scijava.jvm.version},8)</version>
 					</jdkToolchain>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>${scijava.jvm.version}</source>
+					<target>${scijava.jvm.version}</target>
 				</configuration>
 			</plugin>
 			<plugin>
