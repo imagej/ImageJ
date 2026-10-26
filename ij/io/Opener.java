@@ -1318,6 +1318,10 @@ ImagePlus openJpegOrGifUsingURL(String title, URL url) {
 		
 		int b0=buf[0]&255, b1=buf[1]&255, b2=buf[2]&255, b3=buf[3]&255;
 		//IJ.log("getFileType: "+ name+" "+b0+" "+b1+" "+b2+" "+b3);
+
+		// RAW 
+		if (name.toLowerCase(Locale.US).endsWith(".raw") && !Prefs.skipRawDialog)
+			return RAW;
 		
 		 // ImspectorPro MSR
 		if (name.endsWith(".msr")||name.endsWith(".MSR"))
@@ -1419,10 +1423,6 @@ ImagePlus openJpegOrGifUsingURL(String title, URL url) {
 		// BMP ("BM")
 		if ((b0==66 && b1==77)||name.endsWith(".dib"))
 			return BMP;
-				
-		// RAW
-		if (name.endsWith(".raw") && !Prefs.skipRawDialog)
-			return RAW;
 
 		return UNKNOWN;
 	}
