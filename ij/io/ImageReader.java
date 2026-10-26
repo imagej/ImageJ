@@ -84,7 +84,7 @@ public class ImageReader {
 			byteArray = uncompress(byteArray);
 			int length = byteArray.length;
 			length = length - (length%fi.width);
-			if (fi.compression==FileInfo.LZW_WITH_DIFFERENCING||fi.compression==FileInfo.ZIP_WITH_DIFFERENCING) {
+			if (fi.compression==FileInfo.LZW_WITH_DIFFERENCING||fi.compression==FileInfo.ZIP_WITH_DIFFERENCING||fi.compression==FileInfo.ZSTD_WITH_DIFFERENCING) {
 				for (int b=0; b<length; b++) {
 					byteArray[b] += last;
 					last = b % fi.width == fi.width - 1 ? 0 : byteArray[b];
@@ -181,7 +181,7 @@ public class ImageReader {
 				for (int i=base,j=0; i<pmax; i++,j+=2)
 					pixels[i] = (short)(((byteArray[j]&0xff)<<8) | (byteArray[j+1]&0xff));
 			}
-			if (fi.compression==FileInfo.LZW_WITH_DIFFERENCING||fi.compression==FileInfo.ZIP_WITH_DIFFERENCING) {
+			if (fi.compression==FileInfo.LZW_WITH_DIFFERENCING||fi.compression==FileInfo.ZIP_WITH_DIFFERENCING||fi.compression==FileInfo.ZSTD_WITH_DIFFERENCING) {
 				for (int b=base; b<pmax; b++) {
 					pixels[b] += last;
 					last = b % fi.width == fi.width - 1 ? 0 : pixels[b];
@@ -303,7 +303,7 @@ public class ImageReader {
 						pixels[i] = tmp;
 				}
 			}
-			if (fi.compression==FileInfo.LZW_WITH_DIFFERENCING||fi.compression==FileInfo.ZIP_WITH_DIFFERENCING) {
+			if (fi.compression==FileInfo.LZW_WITH_DIFFERENCING||fi.compression==FileInfo.ZIP_WITH_DIFFERENCING||fi.compression==FileInfo.ZSTD_WITH_DIFFERENCING) {
 				for (int b=base; b<pmax; b++) {
 					pixels[b] += last;
 					last = b % fi.width == fi.width - 1 ? 0 : pixels[b];
@@ -444,7 +444,7 @@ public class ImageReader {
 		int red=0, green=0, blue=0, alpha = 0;
 		boolean bgr = fi.fileType==FileInfo.BGR;
 		boolean cmyk = fi.fileType==FileInfo.CMYK;
-		boolean differencing = fi.compression==FileInfo.LZW_WITH_DIFFERENCING||fi.compression==FileInfo.ZIP_WITH_DIFFERENCING;
+		boolean differencing = fi.compression==FileInfo.LZW_WITH_DIFFERENCING||fi.compression==FileInfo.ZIP_WITH_DIFFERENCING||fi.compression==FileInfo.ZSTD_WITH_DIFFERENCING;
 		for (int i=0; i<fi.stripOffsets.length; i++) {
 			if (in instanceof RandomAccessStream)
 				((RandomAccessStream)in).seek(fi.stripOffsets[i]);
@@ -619,7 +619,7 @@ public class ImageReader {
 	}
 
 	Object readCompressedRGB48(InputStream in) throws IOException {
-		if (fi.compression==FileInfo.LZW_WITH_DIFFERENCING||fi.compression==FileInfo.ZIP_WITH_DIFFERENCING)
+		if (fi.compression==FileInfo.LZW_WITH_DIFFERENCING||fi.compression==FileInfo.ZIP_WITH_DIFFERENCING||fi.compression==FileInfo.ZSTD_WITH_DIFFERENCING)
 			throw new IOException("ImageJ cannot open 48-bit compressed TIFFs with predictors");
 		int channels = 3;
 		short[][] stack = new short[channels][nPixels];
@@ -949,8 +949,17 @@ public class ImageReader {
 			return lzwUncompress(input);
 		else if (fi.compression==FileInfo.ZIP || fi.compression==FileInfo.ZIP_WITH_DIFFERENCING)
 			return zipUncompress(input);
+		else if (fi.compression==FileInfo.ZSTD || fi.compression==FileInfo.ZSTD_WITH_DIFFERENCING)
+			return zstdUncompress(input);
 		else
 			return input;
+	}
+
+	/** TIFF Zstandard (compression tag 50000) support. Requires a Zstandard
+		library on the class path; see {@link ZstdDecoder}. */
+	public byte[] zstdUncompress(byte[] input) {
+		byte[] output = ZstdDecoder.decompress(input, fi.rowsPerStrip*fi.width*fi.getBytesPerPixel());
+		return output!=null?output:new byte[0];
 	}
 
 	/** TIFF Adobe ZIP support contributed by Jason Newton. */
