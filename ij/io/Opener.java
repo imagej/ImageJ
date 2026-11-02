@@ -925,6 +925,11 @@ ImagePlus openJpegOrGifUsingURL(String title, URL url) {
 				imp.setOpenAsHyperStack(true);
 			} else if (imp.getNChannels()>1)
 				imp = makeComposite(imp, fi);
+			// Applied last, after any conversion to a CompositeImage, since that
+			// replaces 'imp'. FileOpener.openStack() does the same for stacks
+			// read contiguously; without this, compressed stacks silently lose
+			// their slice labels, ROI, overlay and properties.
+			new FileOpener(fi).setStackMetadata(imp);
 			IJ.showProgress(1.0);
 			return imp;
 		}
