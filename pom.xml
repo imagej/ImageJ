@@ -98,6 +98,8 @@
 
 		<!-- TEMP: Until unit tests errors are all resolved. -->
 		<maven.test.skip>true</maven.test.skip>
+
+		<maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
 	</properties>
 
 	<dependencies>
@@ -136,6 +138,7 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
 				<executions>
 					<execution>
 						<id>default-compile</id>
@@ -147,6 +150,7 @@
 							</jdkToolchain>
 							<excludes>
 								<exclude>tests/**</exclude>
+								<exclude>mrj/**</exclude>
 							</excludes>
 							<release>9</release>
 						</configuration>
@@ -161,7 +165,33 @@
 							<excludes>
 								<exclude>**/module-info.java</exclude>
 								<exclude>tests/**</exclude>
+								<exclude>mrj/**</exclude>
 							</excludes>
+							<!--
+							Force recompilation.
+							See https://issues.apache.org/jira/browse/MCOMPILER-209
+							-->
+							<useIncrementalCompilation>true</useIncrementalCompilation>
+						</configuration>
+					</execution>
+					<execution>
+						<id>mrj-26</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+							<jdkToolchain>
+								<version>26</version>
+							</jdkToolchain>
+							<release>26</release>
+							<compileSourceRoots>
+								<compileSourceRoot>${project.basedir}/mrj/26</compileSourceRoot>
+							</compileSourceRoots>
+							<includes>
+								<include>**/*.java</include>
+							</includes>
+							<multiReleaseOutput>true</multiReleaseOutput>
 							<!--
 							Force recompilation.
 							See https://issues.apache.org/jira/browse/MCOMPILER-209
@@ -178,6 +208,16 @@
 					</jdkToolchain>
 					<source>1.6</source>
 					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<Multi-Release>true</Multi-Release>
+						</manifestEntries>
+					</archive>
 				</configuration>
 			</plugin>
 			<plugin>

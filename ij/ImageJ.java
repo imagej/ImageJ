@@ -136,14 +136,19 @@ public class ImageJ extends Frame implements ActionListener,
 		this(null, mode);
 	}
 
-	/** Creates a new ImageJ frame that runs as an applet. */
+	/** Creates a new ImageJ frame that runs as an applet.
+	 @deprecated Applets were removed in Java 26*/
+	@Deprecated
 	public ImageJ(java.applet.Applet applet) {
 		this(applet, STANDALONE);
 	}
 
 	/** If 'applet' is not null, creates a new ImageJ frame that runs as an applet.
 		If  'mode' is ImageJ.EMBEDDED and 'applet is null, creates an embedded 
-		(non-standalone) version of ImageJ. */
+		(non-standalone) version of ImageJ.
+	    @deprecated Applets were removed in Java 26.
+	 */
+	@Deprecated
 	public ImageJ(java.applet.Applet applet, int mode) {
 		super("ImageJ");
 		if ((mode&DEBUG)!=0)
