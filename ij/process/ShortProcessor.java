@@ -129,11 +129,12 @@ public class ShortProcessor extends ImageProcessor {
 		int value;
 		int min2=(int)getMin(), max2=(int)getMax();
 		int maxValue = 255;
-		double scale = 256.0/(max2-min2+1);
+		double scale = 256.0/(max2-min2);
 		if (thresholding) {
 			maxValue = 254;
-			scale = 255.0/(max2-min2+1);
+			scale = 255.0/(max2-min2);
 		}
+		if (max2==min2) scale = 1.0;	//any non-NaN value would be ok, multiplied by 0
 		for (int i=0; i<size; i++) {
 			value = (pixels[i]&0xffff)-min2;
 			if (value<0) value = 0;

@@ -2014,8 +2014,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				ContrastAdjuster.update();
 				//IJ.showStatus(n+": min="+ip.getMin()+", max="+ip.getMax());
 			}
-			if (imageType==COLOR_RGB)
-				ContrastAdjuster.update();
 			if (!noUpdateMode)
 				updateAndRepaintWindow();
 			else

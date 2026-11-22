@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.54u9 23 October 2026</u>
+<li> <u>1.54u10 22 November 2026</u>
 <ul>
 <li> Thanks to Gabriel Messaoudi, added custom LUT support for ROI group colors.
 <li> Thanks to Mustufa Merchant, added the
@@ -31,7 +31,39 @@ to the macro language. DOC
 (<a href="https://github.com/imagej/ImageJ/issues/262">Github</a>).
 <li> Thanks to Michael Schmid, fixed bug where the multi-point 
 tool created multiple points when repeatable clicking
-at the same location. 
+at the same location.
+<li> Thanks to Michael Schmid, fixed numerous ContrastAdjuster issues ('Brightness/Contrast',
+'Window/Level' and 'Color Balance' commands):
+  <ul>
+    <li> Fixed exception with uniform 16-bit and float images (i.e. with all pixel values equal).
+    <li> Fixed exception that could happen on 'Apply' when there was an OvalRoi
+    with bounds outside the image.
+    <li> Fixed a bug that caused the bounding box of a multipoint ROI to remain
+    unmodified for an RGB image.
+    <li> Fixed a 'Color Balance' bug that could make it use the wrong channel after
+    switching between a composite image and an RGB image (Found by Claude).
+    <li> Histogram uses current image when B&C activated.
+    <li> Other sliders are updated correctly when a slider is quickly moved.
+    <li> 'Reset' and 'Auto' show uniform 16-bit and float images as mid-gray.
+    <li> RGB images no longer sometimes use the wrong snapshot.
+    <li> Histograms of RGB images are sums of the histograms of the color channels involved.
+    <li> For RGB images, bringing B&C to the front does not overwrite the Undo buffer of a previous filter operation.
+    <li> 'Apply' for RGB images is undoable.
+    <li> 'Color Balance' with RBG images is faster and uses less memory.
+    <li> With 16-bit images with low pixel values (e.g. 0-255 or 0-1024), 'Apply' no longer stretches the display range to 0-65535.
+    <li> Keyboard shortcuts work when the 'Log scale' checkbox has focus.
+    <li> Fixed several race conditions that could cause exceptions.
+    <li> Histogram display:
+      <ul>
+        <li> Lowest histogram bin does not disappear behind the left edge of the frame.
+        <li> Fixed bug with 16-bit images with only pixel values of 0, 1 and 2.
+        <li> Dots at top of histogram lines do not disappear above the upper edge of the frame.
+        <li> Fixed bug with stray dots below the end of the histogram line.
+        <li> Fixed an int overflow calculating the histogram lines for large images (>26 MPixels) (found by Claude).
+        <li> Log scale shows bins with a count of 1.
+        <li> For RGB images, the 'transfer function' line remains the same.
+    </ul>
+  </ul>
 </ul>
 
 <li> <u>1.54t 16 May 2026</u>
